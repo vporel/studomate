@@ -2,13 +2,13 @@
 
 import { Box } from "@mui/material"
 
-export const JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH = 20
+export const JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH = 20
 
-const JunctionNodeAddBranchButton = ({index, position, onClick}: {index: number, position: {top: number, left: number}, onClick: (index: number) => void}) => {
+const JunctionNodeBranchAddButton = ({index, position, onClick}: {index: number, position: {top: number, left: number}, onClick: (index: number) => void}) => {
 
 	return <Box 
 		component="button" 
-		className="junction-node__add-branch-button" 
+		className="junction-node__branch__add-button" 
 		sx={{
 			position: "absolute",
 			top: position.top+"px",

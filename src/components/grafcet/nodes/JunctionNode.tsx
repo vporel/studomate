@@ -1,10 +1,10 @@
 'use client'
 import React, { useCallback, useEffect, useState, type FC } from 'react';
-import { Dimensions, Handle, Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react"
+import { Dimensions, Handle, Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react";
 import { Box, useTheme } from '@mui/material';
 import HandleWithConnectionsLimit from '@/lib/react-flow/HandleWithConnectionsLimit';
 import { FLOW_GRID_CELL_WIDTH } from '@/constants';
-import { JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH } from './JunctionNodeAddBranchButton';
+import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from './JunctionNodeBranchAddButton';
 
 export const JUNCTION_NODE_MIN_WIDTH = 200
 export const JUNCTION_NODE_HEIGHT = 30
@@ -31,13 +31,12 @@ export type JunctionNodeType = Node<JunctionNodeData>
 export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 	orientation: "start"|"end", 
 	className?: string, 
-	children: (
-		addBranchButtonsPositions: number[], //In pixels from the left of the node
-		onAddBranch: (buttonIndex: number) => void,
-		handleBranchPointerDown: (e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => void,
-		handleBranchPointerMove: (e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => void,
-		handleBranchPointerUp: (e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => void,
-	) => React.ReactNode
+	children: ({
+		branchAddButtonsPositions: number[], //In pixels from the left of the node
+		onBranchAdd: (buttonIndex: number) => void,
+		onBranchMove: (branchIndex: number, delta: number) => void,
+		onPivotMove: (delta: number) => void,
+	}) => React.ReactNode
 }
 
 const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selected, width: reactFlowNodeWidth, orientation, className, children}) =>{
@@ -46,9 +45,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 	const oldWidth = React.useRef(reactFlowNodeWidth)
 	const oldPositionAbsoluteX = React.useRef(positionAbsoluteX)
 	const borderColor = selected ? th.palette.primary.main : "black"
-	const [addBranchButtonsPositions, setAddBranchButtonsPositions] = useState<number[]>([])
+	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([])
 
-	const onAddBranch = useCallback((buttonIndex: number) => {
+	const onBranchAdd = useCallback((buttonIndex: number) => {
 		let newBranchPosition = 0
 		if(data.branchesPositions.length == 0) newBranchPosition = data.width/2
 		else{
@@ -64,16 +63,12 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 		updateNodeData(id, {branchesPositions: newBranchesPositions})
 	}, [data.width, data.branchesPositions])
 
-	const handleBranchPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => {
-		(e.target as HTMLDivElement).setPointerCapture(e.pointerId)
+	const onBranchMove = useCallback((branchIndex: number, delta: number) => {
+
 	}, [])
 
-	const handleBranchPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => {
-		if(e.buttons !== 1) return;
-	}, [])
-	
-	const handleBranchPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>, branchIndex: number) => {
-		(e.target as HTMLDivElement).releasePointerCapture(e.pointerId)
+	const onPivotMove = useCallback((delta: number) => {
+
 	}, [])
 
 	//Snap to grid
@@ -103,7 +98,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 	//Calculate the positions for the add branch buttons
 	useEffect(() => {
 		if(data.branchesPositions.length == 0){
-			setAddBranchButtonsPositions([data.width/2])
+			setBranchAddButtonsPositions([data.width/2])
 			return
 		}
 		const buttonsPositions = []
@@ -114,7 +109,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 		}
 		if((data.width - data.branchesPositions[data.branchesPositions.length-1]) <= JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2) buttonsPositions.push(data.width+(JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2))
 		else buttonsPositions.push((data.branchesPositions[data.branchesPositions.length-1] + data.width)/2)
-		setAddBranchButtonsPositions(buttonsPositions)
+		setBranchAddButtonsPositions(buttonsPositions)
 	}, [data.width, data.branchesPositions])
 
 	return <>
@@ -142,18 +137,18 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 		<Box className={"grafcet-node junction-node "+className} sx={{
 			width: (reactFlowNodeWidth != 0 ? reactFlowNodeWidth : data.width)+"px", height: JUNCTION_NODE_HEIGHT+"px",
 			display: "flex", flexDirection: "column", position: "relative",
-			".junction-node__add-branch-button": {
+			".junction-node__branch__add-button": {
 				visibility: "hidden",
 				opacity: 0,
 			},
 			"&:hover":{
-				".junction-node__add-branch-button": {
+				".junction-node__branch__add-button": {
 					visibility: "visible",
 					opacity: 1
 				}
 			}
 		}}>
-			{children(addBranchButtonsPositions, onAddBranch, handleBranchPointerDown, handleBranchPointerMove, handleBranchPointerUp)}
+			{children({branchAddButtonsPositions, onBranchAdd, onBranchMove, onPivotMove})}
 		</Box>
 	</>
 }

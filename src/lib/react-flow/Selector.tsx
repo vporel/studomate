@@ -17,32 +17,13 @@ type SelectorStyle= {
 }
 
 /**
- * This hooks has been made to override some functions
- * Example : screenToFlowPosition in order ot prevent the selection from fitting the snapgrid
- * @returns 
- */
-function useCustomViewportHelper(){
-	const { transform, domNode } = useStore(state => ({transform: state.transform, domNode: state.domNode}))
-
-	return useMemo(() => ({
-		screenToFlowPosition: (clientPosition: XYPosition) => {
-			if (!domNode) return clientPosition;
-			const { x: domX, y: domY } = domNode.getBoundingClientRect();
-			const correctedPosition = { x: clientPosition.x - domX, y: clientPosition.y - domY };
-			return pointToRendererPoint(correctedPosition, transform);
-		}
-	}), [transform, domNode])
-}
-
-/**
  * If the shape if 'rectangle', the direction right-left selects an element event if it's partially in the selection surface
  * With the shape 'lasso', the partial mode is always enabled
  * @param param0 
  * @returns 
  */
 const Selector = ({shape = "rectangle", style}: {shape?: "rectangle"|"lasso", style?: Partial<SelectorStyle>}) => {
-	const {setNodes} = useReactFlow()
-	const { screenToFlowPosition } = useCustomViewportHelper()
+	const {setNodes, screenToFlowPosition} = useReactFlow()
 	const canvas = React.useRef<HTMLCanvasElement>(null)
 	const ctx = React.useRef<CanvasRenderingContext2D|undefined|null>(null)
 	const {width, height, nodeLookup} = useStore((state) => ({
@@ -63,7 +44,7 @@ const Selector = ({shape = "rectangle", style}: {shape?: "rectangle"|"lasso", st
 
 	function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>){
 		(e.target as HTMLCanvasElement).setPointerCapture(e.pointerId)
-		const {x, y} = screenToFlowPosition({x: e.pageX, y: e.pageY})
+		const {x, y} = screenToFlowPosition({x: e.pageX, y: e.pageY}, {snapToGrid: false})
 		switch(shape){
 			case "rectangle": rectanglePoints.current.p1 = {x, y}; break;
 			case "lasso": lassoPoints.current = [[x, y]]; break;
@@ -90,7 +71,7 @@ const Selector = ({shape = "rectangle", style}: {shape?: "rectangle"|"lasso", st
 
 	function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>){
 		if(e.buttons !== 1) return;
-		const {x, y} = screenToFlowPosition({x: e.pageX, y: e.pageY})
+		const {x, y} = screenToFlowPosition({x: e.pageX, y: e.pageY}, {snapToGrid: false})
 		switch(shape){
 			case "rectangle": {
 				rectanglePoints.current.p2 = {x, y}
