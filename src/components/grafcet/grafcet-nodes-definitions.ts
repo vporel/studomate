@@ -1,20 +1,22 @@
 import StepNode, { STEP_NODE_DEFAULT_DATA, STEP_NODE_DEFAULT_DIMENSIONS, StepNodeType } from './nodes/StepNode';
 import ActionNode, { ACTION_NODE_DEFAULT_DATA, ACTION_NODE_DEFAULT_DIMENSIONS, ActionNodeType } from './nodes/ActionNode';
-import AndJunctionEndNode, { AndJunctionEndNodeType } from './nodes/AndJunctionEndNode';
+import AndJunctionEndNode, { AndJunctionEndNodeType } from './nodes/junctions/AndJunctionEndNode';
 import SourceArrowNode, { SOURCE_ARROW_NODE_DEFAULT_DATA, SOURCE_ARROW_NODE_DEFAULT_DIMENSIONS, SourceArrowNodeType } from './nodes/SourceArrowNode';
 import DestinationArrowNode, { DESTINATION_ARROW_NODE_DEFAULT_DATA, DESTINATION_ARROW_NODE_DEFAULT_DIMENSIONS, DestinationArrowNodeType } from './nodes/DestinationArrowNode';
 import TransitionNode, { TRANSITION_NODE_DEFAULT_DATA, TRANSITION_NODE_DEFAULT_DIMENSIONS, TransitionNodeType } from './nodes/TransitionNode';
-import AndJunctionStartNode, { AndJunctionStartNodeType } from './nodes/AndJunctionStartNode';
-import OrJunctionStartNode, { OrJunctionStartNodeType } from './nodes/OrJunctionStartNode';
-import OrJunctionEndNode, { OrJunctionEndNodeType } from './nodes/OrJunctionEndNode';
+import AndJunctionStartNode, { AndJunctionStartNodeType } from './nodes/junctions/AndJunctionStartNode';
+import OrJunctionStartNode, { OrJunctionStartNodeType } from './nodes/junctions/OrJunctionStartNode';
+import OrJunctionEndNode, { OrJunctionEndNodeType } from './nodes/junctions/OrJunctionEndNode';
 import { Connection, Dimensions, Node } from '@xyflow/react';
-import { JUNCTION_NODE_DEFAULT_DATA, JUNCTION_NODE_DEFAULT_DIMENSIONS } from './nodes/JunctionNode';
-import CustomEdge from './edges/CustomEdge';
+import { JUNCTION_NODE_DEFAULT_DATA, JUNCTION_NODE_DEFAULT_DIMENSIONS } from './nodes/junctions/JunctionNode';
+import CustomEdge, { CustomEdgeType } from './edges/CustomEdge';
 
 export type NodeTypeKey = "step"|"action"|"transition"|"source-arrow"|"destination-arrow"|"or-junction-start"|
   "or-junction-end"|"and-junction-start"|"and-junction-end"
 
-export type GrafcetNode = StepNodeType|ActionNodeType|TransitionNodeType|SourceArrowNodeType|DestinationArrowNodeType|OrJunctionStartNodeType|OrJunctionEndNodeType|AndJunctionStartNodeType|AndJunctionEndNodeType //List of all the node types
+export type JunctionNode = OrJunctionStartNodeType|OrJunctionEndNodeType|AndJunctionStartNodeType|AndJunctionEndNodeType
+export type GrafcetNode = StepNodeType|ActionNodeType|TransitionNodeType|SourceArrowNodeType|DestinationArrowNodeType|JunctionNode //List of all the node types
+export type GrafcetEdge = CustomEdgeType //List of all the edges types
 
 export const nodesDefaultDimensions: Record<NodeTypeKey, Dimensions> = {
   "step": STEP_NODE_DEFAULT_DIMENSIONS,
@@ -53,7 +55,7 @@ export const nodeTypes: Record<NodeTypeKey, any> = {
 }
 
 export const edgeTypes = {
-  "custom": CustomEdge,
+  "custom-edge": CustomEdge,
 }
 
 export function validateConnection(connection: Connection, nodes: Node[]): boolean{

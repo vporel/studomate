@@ -1,15 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  BaseEdge,
-  Edge,
-  EdgeLabelRenderer,
-  getBezierPath,
-  useReactFlow,
-  type EdgeProps,
-} from '@xyflow/react';
+import { Edge, useReactFlow, type EdgeProps } from '@xyflow/react';
 import { getConnectionLinePoints } from '../CustomConnectionLine';
 import { getStraightPathFromPoints } from '@/lib/svg';
 import { Box, useTheme } from '@mui/material';
+
+export type CustomEdgeData = {points: [number, number][]}
+
+export type CustomEdgeType = Edge<CustomEdgeData> & {type: "custom-edge"}
 
 function getPointsForAdding(points: [number, number][]): [number, number][]{
 	const pointsForAdding: [number, number][] = []
@@ -27,7 +24,7 @@ const CustomEdge = ({
   interactionWidth,
   selected
   
-}: EdgeProps<Edge<{points: [number, number][]}>>) => {
+}: EdgeProps<CustomEdgeType>) => {
 	const th = useTheme()
 	const { updateEdgeData, screenToFlowPosition } = useReactFlow();
 	const [points, setPoints] = useState<[number, number][]>(data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY))

@@ -11,17 +11,21 @@ import { edgeTypes, GrafcetNode, nodesDefaultData, nodesDefaultDimensions, nodeT
 import { createElementId } from '@/schemas/schemas-helpers';
 import { usePagesContext } from '@/PagesContext';
 import CustomConnectionLine from './CustomConnectionLine';
-import GrafcetContextMenu from './GrafcetContextMenu';
+import GrafcetContextMenu from './context-menu/GrafcetContextMenu';
 import { GrafcetPageContextProvider, useGrafcetPageContext } from './GrafcetPageContext';
+import useFlowToolDragOverHandlers from './useFlowToolDragOverHandlers';
+import useFlowContextMenuActionsHandlers from './useFlowContextMenuActionsHandlers';
+import useFlowShortcutsHandler from './useFlowShortcutsHandler';
  
 export function GrafcetPageContent({pageId}: {pageId: string}) {
   const th = useTheme()
   const [nodes, setNodes, onNodesChange] = useNodesState<GrafcetNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
-  const [toolType] = useGrafcetToolbarDnD()
   const {screenToFlowPosition} = useReactFlow()
   const {updatePageData} = usePagesContext()
-  const {flowDimensions, setContextMenuData} = useGrafcetPageContext()
+  const {flowDimensions, contextMenuEvents} = useGrafcetPageContext()
+  const [handleToolDragOver, handleToolDrop] = useFlowToolDragOverHandlers()
+  const handleShortcuts = useFlowShortcutsHandler()
 
   const onConnect = useCallback(
     (params: any) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
@@ -43,34 +47,9 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
   //   setEdges(testEdges)
   // }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-  }, [])
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    if(!toolType) return
-    const position = screenToFlowPosition({x: e.pageX, y:e.pageY})
-    position.x = position.x - (nodesDefaultDimensions[toolType].width/2)
-    position.y = position.y - (nodesDefaultDimensions[toolType].height/2)
-    const newNode = {
-      id: createElementId(),
-      type: toolType,
-      position,
-      data: nodesDefaultData[toolType]
-    } as GrafcetNode
-    setNodes(nds => nds.concat([newNode]))
-  }, [toolType])
-
-  useEffect(() => {
-    const hideContextMenu = () => setContextMenuData(data => ({...data, visible: false}))
-
-    window.addEventListener("mousedown", hideContextMenu)
-    return () => {
-      window.removeEventListener("mousedown", hideContextMenu)
-    }
-  }, [])
+  //Context menu actions
+  useFlowContextMenuActionsHandlers()
+  
  
   return (
     <Box className="grafcet-page" id={pageId} sx={{
@@ -103,7 +82,7 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          defaultEdgeOptions={{type: "custom"}}
+          defaultEdgeOptions={{type: "custom-edge"}}
           connectionLineComponent={CustomConnectionLine}
           isValidConnection={connection => validateConnection(connection, nodes)}
           minZoom={0.5}
@@ -114,27 +93,21 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
           snapGrid={[FLOW_GRID_CELL_WIDTH, FLOW_GRID_CELL_WIDTH]}
           translateExtent={[[0, 0], [flowDimensions.width-2, flowDimensions.height-2]]}
           nodeExtent={[[0, 0], [flowDimensions.width-2, flowDimensions.height-2]]}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
+          onDragOver={handleToolDragOver}
+          onDrop={handleToolDrop}
           tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
-          onKeyDown={e => {
-            //Ctrl+A : Select all
-            if((e.ctrlKey || e.metaKey) && e.key == "a"){
-              e.preventDefault()
-              setNodes(nds => nds.map(n => ({...n, selected: true})))
-            }
-          }}
+          onKeyDown={handleShortcuts}
           onPaneContextMenu={e => {
             e.preventDefault()
-            setContextMenuData(data => ({...data, elementType: "pane", position: screenToFlowPosition({x: e.pageX, y: e.pageY}), visible: true}))
+            contextMenuEvents.emit("show", {element: {type: "pane"}, position: screenToFlowPosition({x: e.pageX, y: e.pageY})})
           }}
           onNodeContextMenu={(e, node) => {
             e.preventDefault()
-            setContextMenuData(data => ({...data, elementType: "node", elementId: node.id, position: screenToFlowPosition({x: e.pageX, y: e.pageY}), visible: true}))
+            contextMenuEvents.emit("show", {element: node, position: screenToFlowPosition({x: e.pageX, y: e.pageY})})
           }}
           onEdgeContextMenu={(e, edge) => {
             e.preventDefault()
-            setContextMenuData(data => ({...data, elementType: "edge", elementId: edge.id, position: screenToFlowPosition({x: e.pageX, y: e.pageY}), visible: true}))
+            contextMenuEvents.emit("show", {element: edge, position: screenToFlowPosition({x: e.pageX, y: e.pageY})})
           }}
           zoomOnScroll={false}
           onWheelCapture={e => {
@@ -142,9 +115,7 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
           }}
         >
           <Background bgColor='white'/>
-          <GrafcetContextMenu 
-            onHide={() => setContextMenuData(data => ({...data, visible: false}))}
-          />
+          <GrafcetContextMenu  />
         </ReactFlow>
       </Box>
     </Box>

@@ -1,12 +1,10 @@
 import GrafcetElement from "./grafcet-element.schema"
-import JunctionBranch from "./junction-branch.schema"
 
-export type JunctionType = "or"|"and"
+export type JunctionType = "or-start"|"or-end"|"and-start"|"and-end"
 
 export default class Junction extends GrafcetElement{
     id: string = ""
-    type: JunctionType = "or"
-    branches: JunctionBranch[] = []
-
+    type: JunctionType = "or-start"
+    branchesPositions: number[] = []
     pivotPosition: number = 0
 }

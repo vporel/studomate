@@ -1,31 +1,39 @@
 'use client'
 import { PAPERS_SIZES } from '@/constants';
 import { mmToPx } from '@/lib/utils';
-import { createTheme } from '@mui/material';
-import { Dimensions, Node, XYPosition } from '@xyflow/react';
-import { createContext, useState, useContext, ReactNode, useCallback, Dispatch, SetStateAction } from 'react';
+import { Dimensions } from '@xyflow/react';
+import { createContext, useState, useContext, ReactNode, useMemo } from 'react';
+import mitt, { Emitter } from 'mitt';
+import { GrafcetContextMenuProps } from './context-menu/grafcet-context-menu-types';
 
-export type GrafcetContextMenuElementType = "pane"|"node"|"edge"
-export type GrafcetContextMenuData = {elementType: GrafcetContextMenuElementType, elementId?: string, visible: boolean, position: XYPosition}
+export type GrafcetContextMenuPaneAction = {type: "select-all"}|{type: "select-all-edges"}|{type: "export"}
+export type GrafcetContextMenuNodeAction = {nodeId: string} & ({type: "junction-select-pivot"}|{type: "junction-select-branch", branchIndex: number})
+export type GrafcetContextMenuEdgeAction = {}
+
+export type GrafcetContextMenuEvents = {
+	show: GrafcetContextMenuProps,
+	hide: void,
+	"pane-action": GrafcetContextMenuPaneAction,
+	"node-action": GrafcetContextMenuNodeAction,
+	"edge-action": GrafcetContextMenuEdgeAction
+}
 
 type GrafcetPageContextType = {
 	flowDimensions: Dimensions,
-	contextMenuData: GrafcetContextMenuData,
-	setContextMenuData: Dispatch<SetStateAction<GrafcetContextMenuData>>,
+	contextMenuEvents: Emitter<GrafcetContextMenuEvents>
 };	
 
 const GrafcetPageContext = createContext<GrafcetPageContextType>({
 	flowDimensions: {width: 0, height: 0},
-	contextMenuData: {elementType: "pane", elementId: "", visible: false, position: {x: 0, y: 0}},
-	setContextMenuData: () => {}
+	contextMenuEvents: mitt<GrafcetContextMenuEvents>()
 });
 
 export const GrafcetPageContextProvider = ({ children }: { children: ReactNode }) => {
 	const [flowDimensions, setFlowDimensions] = useState<Dimensions>({width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width), height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height)})
-	const [contextMenuData, setContextMenuData] = useState<GrafcetContextMenuData>({elementType: "pane", elementId: "", visible: false, position: {x: 0, y: 0}})
+	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), [])
 
 	return (
-		<GrafcetPageContext.Provider value={{ flowDimensions, contextMenuData, setContextMenuData }}>
+		<GrafcetPageContext.Provider value={{ flowDimensions, contextMenuEvents }}>
 			{children}
 		</GrafcetPageContext.Provider>
 	);

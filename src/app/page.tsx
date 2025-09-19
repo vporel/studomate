@@ -1,4 +1,5 @@
-import Image from "next/image";
+'use client'
+
 import GrafcetPage from "../components/grafcet/GrafcetPage";
 import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
 import PagesTabBar from "@/components/pages/PagesTabBar";
@@ -7,11 +8,13 @@ import MenuBar from "@/components/MenuBar";
 import StatusBar from "@/components/StatusBar";
 import { Position } from "@xyflow/react";
 import GrafcetToolbarDnDContext, { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
-import { ProjectContextProvider } from "@/components/project/ProjectContext";
+import { ProjectContextProvider, useProjectContext } from "@/components/ProjectContext";
 import { PagesContextProvider } from "@/PagesContext";
 
 export default function App() {
-	return <ProjectContextProvider>
+	const {project} = useProjectContext()
+
+	return (
         <PagesContextProvider>
 			<div style={{
 				display: "flex", flexDirection: "column",
@@ -40,5 +43,5 @@ export default function App() {
 				<StatusBar />
 			</div>
 		</PagesContextProvider>
-	</ProjectContextProvider>
+	)
 }

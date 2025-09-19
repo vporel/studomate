@@ -1,6 +1,5 @@
 import Action from "./action.schema"
 import GrafcetComment from "./grafcet-comment.schema"
-import GrafcetFluxElement from "./grafcet-flux-element.schema"
 import Junction from "./junction.schema"
 import StepReferral from "./step-referral.schema"
 import Step from "./step.schema"
@@ -13,9 +12,19 @@ export default class Grafcet{
     actions: Action[] = []
     stepsReferrals: StepReferral[] = []
     junctions: Junction[] = []
+    comments: GrafcetComment[] = []
+
     /**
      * 
+     * @returns The keys are the steps' ids, the values are the ids of the steps and transition(s) necessary to activate the designated step
      */
-    flux: GrafcetFluxElement[] = []
-    comments: GrafcetComment[] = []
+    getStepsActivationConditions(): Record<string, string[]>{
+
+        return {}
+    }
+
+    validate(): string[]|null{
+
+        return null
+    }
 }

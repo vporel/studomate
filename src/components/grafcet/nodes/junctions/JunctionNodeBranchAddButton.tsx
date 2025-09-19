@@ -8,11 +8,11 @@ const JunctionNodeBranchAddButton = ({index, position, onClick}: {index: number,
 
 	return <Box 
 		component="button" 
-		className="junction-node__branch__add-button" 
+		className="junction__branch__add-button" 
 		sx={{
 			position: "absolute",
 			top: position.top+"px",
-			left: (position.left-(JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2))+"px",
+			left: (position.left-(JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2))+"px",
 			padding: "0px",
 			width: "20px!important",
 			height: "20px!important",
@@ -34,4 +34,4 @@ const JunctionNodeBranchAddButton = ({index, position, onClick}: {index: number,
 	</Box>
 }
 
-export default JunctionNodeAddBranchButton
+export default JunctionNodeBranchAddButton

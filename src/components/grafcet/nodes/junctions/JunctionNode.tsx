@@ -5,6 +5,10 @@ import { Box, useTheme } from '@mui/material';
 import HandleWithConnectionsLimit from '@/lib/react-flow/HandleWithConnectionsLimit';
 import { FLOW_GRID_CELL_WIDTH } from '@/constants';
 import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from './JunctionNodeBranchAddButton';
+import { useGrafcetPageContext } from '../../GrafcetPageContext';
+import useJunctionSelectedBars from './useJunctionSelectedBars';
+import useBranchAddButtonsPositions from './useBranchAddButtonsPositions';
+import useBranchActions from './useBranchActions';
 
 export const JUNCTION_NODE_MIN_WIDTH = 200
 export const JUNCTION_NODE_HEIGHT = 30
@@ -31,11 +35,11 @@ export type JunctionNodeType = Node<JunctionNodeData>
 export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 	orientation: "start"|"end", 
 	className?: string, 
-	children: ({
+	children: (props: {
 		branchAddButtonsPositions: number[], //In pixels from the left of the node
 		onBranchAdd: (buttonIndex: number) => void,
-		onBranchMove: (branchIndex: number, delta: number) => void,
-		onPivotMove: (delta: number) => void,
+		selectedBranchIndex: number, //-1 if no one
+		pivotSelected: boolean,
 	}) => React.ReactNode
 }
 
@@ -45,31 +49,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 	const oldWidth = React.useRef(reactFlowNodeWidth)
 	const oldPositionAbsoluteX = React.useRef(positionAbsoluteX)
 	const borderColor = selected ? th.palette.primary.main : "black"
-	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([])
-
-	const onBranchAdd = useCallback((buttonIndex: number) => {
-		let newBranchPosition = 0
-		if(data.branchesPositions.length == 0) newBranchPosition = data.width/2
-		else{
-			if(buttonIndex == 0) newBranchPosition = data.branchesPositions[0]/2
-			else if(buttonIndex == data.branchesPositions.length) newBranchPosition = (data.branchesPositions[data.branchesPositions.length-1] + data.width)/2
-			else{
-				newBranchPosition = (data.branchesPositions[buttonIndex-1] + data.branchesPositions[buttonIndex])/2
-			}
-		}
-		if(newBranchPosition % FLOW_GRID_CELL_WIDTH != 0) newBranchPosition = newBranchPosition - (newBranchPosition % FLOW_GRID_CELL_WIDTH)
-		const newBranchesPositions = [...data.branchesPositions]
-		newBranchesPositions.splice(buttonIndex, 0, newBranchPosition)
-		updateNodeData(id, {branchesPositions: newBranchesPositions})
-	}, [data.width, data.branchesPositions])
-
-	const onBranchMove = useCallback((branchIndex: number, delta: number) => {
-
-	}, [])
-
-	const onPivotMove = useCallback((delta: number) => {
-
-	}, [])
+	const branchAddButtonsPositions = useBranchAddButtonsPositions(data)
+	const [pivotSelected,  selectedBranchIndex] = useJunctionSelectedBars(id)
+	const {add: onBranchAdd} = useBranchActions(id, data)
 
 	//Snap to grid
 	useEffect(() => {
@@ -94,23 +76,6 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 			oldWidth.current = reactFlowNodeWidth
 		}
 	}, [id, reactFlowNodeWidth, positionAbsoluteX])
-
-	//Calculate the positions for the add branch buttons
-	useEffect(() => {
-		if(data.branchesPositions.length == 0){
-			setBranchAddButtonsPositions([data.width/2])
-			return
-		}
-		const buttonsPositions = []
-		if(data.branchesPositions[0] <= JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2) buttonsPositions.push(-JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2)
-		else buttonsPositions.push(data.branchesPositions[0])
-		for(let i = 1; i < data.branchesPositions.length; i++){
-			buttonsPositions.push((data.branchesPositions[i-1] + data.branchesPositions[i])/2)
-		}
-		if((data.width - data.branchesPositions[data.branchesPositions.length-1]) <= JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2) buttonsPositions.push(data.width+(JUNCTION_NODE_ADD_BRANCH_BUTTON_WIDTH/2))
-		else buttonsPositions.push((data.branchesPositions[data.branchesPositions.length-1] + data.width)/2)
-		setBranchAddButtonsPositions(buttonsPositions)
-	}, [data.width, data.branchesPositions])
 
 	return <>
 		<NodeResizer 
@@ -148,7 +113,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({id, positionAbsoluteX, data, selec
 				}
 			}
 		}}>
-			{children({branchAddButtonsPositions, onBranchAdd, onBranchMove, onPivotMove})}
+			{children({branchAddButtonsPositions, onBranchAdd, selectedBranchIndex, pivotSelected})}
 		</Box>
 	</>
 }
