@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useCallback, useEffect } from 'react';
-import { ReactFlow, addEdge, Background, useNodesState, useEdgesState, ConnectionLineType, useReactFlow, ReactFlowProvider, XYPosition, Dimensions, useKeyPress } from '@xyflow/react';
+import { ReactFlow, addEdge, Background, useNodesState, useEdgesState, ConnectionLineType, useReactFlow, ReactFlowProvider, XYPosition, Dimensions, useKeyPress, useStore } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './_grafcet-page.css';
 import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from '@/constants';
@@ -10,20 +10,20 @@ import { useGrafcetToolbarDnD } from './toolbar/GrafcetToolbarDnDContext';
 import { edgeTypes, GrafcetNode, nodesDefaultData, nodesDefaultDimensions, nodeTypes, testEdges, testNodes, validateConnection } from './grafcet-nodes-definitions';
 import { createElementId } from '@/schemas/schemas-helpers';
 import { usePagesContext } from '@/PagesContext';
-import CustomConnectionLine from './CustomConnectionLine';
+import CustomConnectionLine from './connections-lines/CustomConnectionLine';
 import GrafcetContextMenu from './context-menu/GrafcetContextMenu';
-import { GrafcetPageContextProvider, useGrafcetPageContext } from './GrafcetPageContext';
+import { GrafcetContextProvider, useGrafcetContext } from './GrafcetContext';
 import useFlowToolDragOverHandlers from './useFlowToolDragOverHandlers';
 import useFlowContextMenuActionsHandlers from './useFlowContextMenuActionsHandlers';
 import useFlowShortcutsHandler from './useFlowShortcutsHandler';
  
-export function GrafcetPageContent({pageId}: {pageId: string}) {
+export function GrafcetPageContent() {
   const th = useTheme()
   const [nodes, setNodes, onNodesChange] = useNodesState<GrafcetNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
   const {screenToFlowPosition} = useReactFlow()
   const {updatePageData} = usePagesContext()
-  const {flowDimensions, contextMenuEvents} = useGrafcetPageContext()
+  const {grafcetId, flowDimensions, contextMenuEvents} = useGrafcetContext()
   const [handleToolDragOver, handleToolDrop] = useFlowToolDragOverHandlers()
   const handleShortcuts = useFlowShortcutsHandler()
 
@@ -34,12 +34,12 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
 
   //Share the grafcet data
   useEffect(() => {
-    updatePageData(pageId, {
+    updatePageData(grafcetId, {
       width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width),
       height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height),
       nodes
     })
-  }, [nodes])
+  }, [grafcetId, nodes])
 
   //Initial data
   // useEffect(() => {
@@ -52,9 +52,9 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
   
  
   return (
-    <Box className="grafcet-page" id={pageId} sx={{
+    <Box className="grafcet-page" id={grafcetId} sx={{
         padding: '25px', 
-        width: '100%', height: '100%', overflow: 'auto',
+        width: '100%', height: '100%', overflowX: "hidden", overflowY: 'auto',
         background: '#dedede', position: 'relative'
     }}>  
       <Box sx={{
@@ -122,10 +122,10 @@ export function GrafcetPageContent({pageId}: {pageId: string}) {
   );
 }
 
-export default function GrafcetPage({pageId}: {pageId: string}){
-  return <GrafcetPageContextProvider>
+export default function GrafcetPage({grafcetId}: {grafcetId: string}){
+  return <GrafcetContextProvider grafcetId={grafcetId}>
     <ReactFlowProvider>
-      <GrafcetPageContent pageId={pageId} />
+      <GrafcetPageContent />
     </ReactFlowProvider>
-  </GrafcetPageContextProvider>
+  </GrafcetContextProvider>
 }

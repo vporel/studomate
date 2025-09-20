@@ -5,10 +5,14 @@ import { useGrafcetToolbarDnD } from "./toolbar/GrafcetToolbarDnDContext"
 import { useReactFlow } from "@xyflow/react"
 import { GrafcetNode, nodesDefaultData, nodesDefaultDimensions } from "./grafcet-nodes-definitions"
 import { createElementId } from "@/schemas/schemas-helpers"
+import { useProjectContext } from "../projects/ProjectContext"
+import { useGrafcetContext } from "./GrafcetContext"
 
 export default function useFlowToolDragOverHandlers(): [handleToolDragOver: (e: React.DragEvent) => void, handleToolDrop: (e: React.DragEvent) => void]{
+	const {grafcetId} = useGrafcetContext()
 	const [toolType] = useGrafcetToolbarDnD()
-	const {screenToFlowPosition, setNodes} = useReactFlow()
+	const {screenToFlowPosition, setNodes } = useReactFlow()
+	const {grafcetEvents} = useProjectContext()
 
 	const handleToolDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault()
@@ -28,7 +32,8 @@ export default function useFlowToolDragOverHandlers(): [handleToolDragOver: (e: 
 		  data: nodesDefaultData[toolType]
 		} as GrafcetNode
 		setNodes(nds => nds.concat([newNode]))
-	}, [toolType])
+		grafcetEvents.emit("node-add", {grafcetId: grafcetId, ...newNode})
+	}, [grafcetId, toolType, grafcetEvents])
 
 	return [handleToolDragOver, handleToolDrop]
 }

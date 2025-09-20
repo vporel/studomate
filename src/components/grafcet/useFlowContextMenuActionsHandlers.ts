@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect } from "react"
-import { ContextMenuPaneAction, useGrafcetPageContext } from "./GrafcetPageContext"
+import { ContextMenuPaneAction, useGrafcetContext } from "./GrafcetContext"
 import { useReactFlow } from "@xyflow/react"
 
 export default function useFlowContextMenuActionsHandlers(){
-	const {contextMenuEvents} = useGrafcetPageContext()
+	const {contextMenuEvents} = useGrafcetContext()
 	const {setNodes, setEdges} = useReactFlow()
 
 	//Pane actions

@@ -13,12 +13,12 @@ export default function useBranchAddButtonsPositions(nodeData: JunctionNodeData)
 			return
 		}
 		const buttonsPositions = []
-		if(nodeData.branchesPositions[0] <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2) buttonsPositions.push(-JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2)
-		else buttonsPositions.push(nodeData.branchesPositions[0])
+		if(nodeData.branchesPositions[0] <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH) buttonsPositions.push(-JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2)
+		else buttonsPositions.push(nodeData.branchesPositions[0]/2)
 		for(let i = 1; i < nodeData.branchesPositions.length; i++){
 			buttonsPositions.push((nodeData.branchesPositions[i-1] + nodeData.branchesPositions[i])/2)
 		}
-		if((nodeData.width - nodeData.branchesPositions[nodeData.branchesPositions.length-1]) <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2) buttonsPositions.push(nodeData.width+(JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2))
+		if((nodeData.width - nodeData.branchesPositions[nodeData.branchesPositions.length-1]) <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH) buttonsPositions.push(nodeData.width+(JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH/2))
 		else buttonsPositions.push((nodeData.branchesPositions[nodeData.branchesPositions.length-1] + nodeData.width)/2)
 		setBranchAddButtonsPositions(buttonsPositions)
 	}, [nodeData.width, nodeData.branchesPositions])

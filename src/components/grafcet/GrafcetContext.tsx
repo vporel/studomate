@@ -18,25 +18,27 @@ export type GrafcetContextMenuEvents = {
 	"edge-action": GrafcetContextMenuEdgeAction
 }
 
-type GrafcetPageContextType = {
+type GrafcetContextType = {
+	grafcetId: string,
 	flowDimensions: Dimensions,
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>
 };	
 
-const GrafcetPageContext = createContext<GrafcetPageContextType>({
+const GrafcetContext = createContext<GrafcetContextType>({
+	grafcetId: "",
 	flowDimensions: {width: 0, height: 0},
 	contextMenuEvents: mitt<GrafcetContextMenuEvents>()
 });
 
-export const GrafcetPageContextProvider = ({ children }: { children: ReactNode }) => {
+export const GrafcetContextProvider = ({ grafcetId, children }: { grafcetId: string, children: ReactNode }) => {
 	const [flowDimensions, setFlowDimensions] = useState<Dimensions>({width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width), height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height)})
 	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), [])
 
 	return (
-		<GrafcetPageContext.Provider value={{ flowDimensions, contextMenuEvents }}>
+		<GrafcetContext.Provider value={{ grafcetId, flowDimensions, contextMenuEvents }}>
 			{children}
-		</GrafcetPageContext.Provider>
+		</GrafcetContext.Provider>
 	);
 }
 
-export const useGrafcetPageContext = () => useContext(GrafcetPageContext);
+export const useGrafcetContext = () => useContext(GrafcetContext);

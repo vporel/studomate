@@ -13,8 +13,8 @@ export type GrafcetPageData = {
 type PageData = GrafcetPageData|{}
 
 type PagesContextType = {
-	getPageData: (pageId: string) => PageData,
-	updatePageData: (pageId: string, newData: PageData) => void
+	getPageData: (objectId: string) => PageData,
+	updatePageData: (objectId: string, newData: PageData) => void
 };	
 
 const PagesContext = createContext<PagesContextType>({
@@ -25,14 +25,14 @@ const PagesContext = createContext<PagesContextType>({
 export const PagesContextProvider = ({ children }: { children: ReactNode }) => {
 	const [pagesData, setPagesData] = useState<Record<string, PageData>>({})
 
-	const getPageData = useCallback((pageId: string) => {
-		return pagesData[pageId]
+	const getPageData = useCallback((objectId: string) => {
+		return pagesData[objectId]
 	}, [pagesData])
 
-	const updatePageData = useCallback((pageId: string, newData: PageData) => {
+	const updatePageData = useCallback((objectId: string, newData: PageData) => {
 		setPagesData(oldPagesData => {
 			const newPagesData = {...oldPagesData}	
-			newPagesData[pageId] = {...newPagesData[pageId], ...newData}
+			newPagesData[objectId] = {...newPagesData[objectId], ...newData}
 			return newPagesData
 		})
 	}, [])

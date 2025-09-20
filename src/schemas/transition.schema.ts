@@ -1,8 +1,14 @@
-import GrafcetElement from "./grafcet-element.schema"
+import GrafcetElement, { GrafcetElementDimensions, GrafcetElementPosition } from "./grafcet-element.schema"
 
 export default class Transition extends GrafcetElement{
     id: string = ""
     expression: string = ""
+
+    constructor(id: string, expression: string, position: GrafcetElementPosition, dimensions: GrafcetElementDimensions){
+        super(position, dimensions)
+        this.id = id
+        this.expression = expression
+    }
 
     /**
      * 

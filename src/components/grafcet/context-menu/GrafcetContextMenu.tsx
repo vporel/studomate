@@ -3,7 +3,7 @@
 import { Box, Divider, MenuItem } from "@mui/material"
 import { Dimensions, useReactFlow, XYPosition } from "@xyflow/react"
 import { Fragment, useEffect, useMemo, useRef, useState } from "react"
-import { useGrafcetPageContext } from "../GrafcetPageContext"
+import { useGrafcetContext } from "../GrafcetContext"
 import { JunctionNodeData } from "../nodes/junctions/JunctionNode"
 import { ChevronRight as ChevronRightIcon } from "@mui/icons-material"
 import { GrafcetEdge, GrafcetNode, JunctionNode } from "../grafcet-nodes-definitions"
@@ -20,7 +20,7 @@ import paneContextMenuItems from "./pane-context-menu-items"
  */
 const GrafcetContextMenu = () => {
 	const ref = useRef<HTMLDivElement>(null)
-	const {flowDimensions, contextMenuEvents} = useGrafcetPageContext()
+	const {flowDimensions, contextMenuEvents} = useGrafcetContext()
 	const [element, setElement] = useState<GrafcetContextMenuElement>({type: "pane"})
 	const [visible, show, hide] = useBooleanState(false)
 	const [position, setPosition] = useState<XYPosition>({x: 0, y: 0})

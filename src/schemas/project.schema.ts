@@ -1,12 +1,12 @@
-import Page from "./page.schema"
+import Grafcet from "./grafcet.schema"
 import Variable from "./variable.schema"
 
 export default class Project{
-    appVersion: string = ""
+    appVersion: string = "0.1.0"
     creationDate: Date = new Date()
     lastModificationDate: Date = new Date()
     author?: string = ""
     variables: Variable[] = []
-    pages: Page[] = []
-    pagesOrder: string[] = []
+    grafcets: Record<string, Grafcet> = {}
+
 }

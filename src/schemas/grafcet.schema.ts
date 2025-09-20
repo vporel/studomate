@@ -5,14 +5,22 @@ import StepReferral from "./step-referral.schema"
 import Step from "./step.schema"
 import Transition from "./transition.schema"
 
+export type GrafcetFormat = {
+    type: "A4"|"A3",
+    orientation: "portrait"|"landscape"
+}
+
 export default class Grafcet{
     id: string = ""
+    format: GrafcetFormat = {type: "A4", orientation: "portrait"}
+    grafcet: Grafcet|null = null
     steps: Step[] = []
     transitions: Transition[] = []
     actions: Action[] = []
     stepsReferrals: StepReferral[] = []
     junctions: Junction[] = []
     comments: GrafcetComment[] = []
+    links: [] = []
 
     /**
      * 

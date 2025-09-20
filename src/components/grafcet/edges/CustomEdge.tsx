@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Edge, useReactFlow, type EdgeProps } from '@xyflow/react';
-import { getConnectionLinePoints } from '../CustomConnectionLine';
+import { getConnectionLinePoints } from '../connections-lines/CustomConnectionLine';
 import { getStraightPathFromPoints } from '@/lib/svg';
 import { Box, useTheme } from '@mui/material';
 

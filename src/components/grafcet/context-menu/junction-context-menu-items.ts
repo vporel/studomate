@@ -1,6 +1,6 @@
 'use client'
 
-import { GrafcetContextMenuEvents } from "../GrafcetPageContext"
+import { GrafcetContextMenuEvents } from "../GrafcetContext"
 import { GrafcetcontextMenuItemType } from "./grafcet-context-menu-types"
 import { JunctionNodeData } from "../nodes/junctions/JunctionNode"
 import { JunctionNode } from "../grafcet-nodes-definitions"

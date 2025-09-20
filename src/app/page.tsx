@@ -4,11 +4,11 @@ import GrafcetPage from "../components/grafcet/GrafcetPage";
 import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
 import PagesTabBar from "@/components/pages/PagesTabBar";
 import { Box } from "@mui/material";
-import MenuBar from "@/components/MenuBar";
+import MenuBar from "@/components/menu/MenuBar";
 import StatusBar from "@/components/StatusBar";
 import { Position } from "@xyflow/react";
 import GrafcetToolbarDnDContext, { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
-import { ProjectContextProvider, useProjectContext } from "@/components/ProjectContext";
+import { ProjectContextProvider, useProjectContext } from "@/components/projects/ProjectContext";
 import { PagesContextProvider } from "@/PagesContext";
 
 export default function App() {
@@ -36,7 +36,7 @@ export default function App() {
 								{id: "xx", title: "Grafcet 1", active: true},
 								{id: "yy", title: "Grafcet 2"},
 							]}/>
-							<GrafcetPage pageId="page-1"/>
+							<GrafcetPage grafcetId="page-1"/>
 						</Box>
 					</GrafcetToolbarDnDProvider>
 				</Box>

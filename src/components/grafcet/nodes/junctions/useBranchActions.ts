@@ -1,12 +1,13 @@
 'use client'
 
 import { FLOW_GRID_CELL_WIDTH } from "@/constants"
-import { useReactFlow } from "@xyflow/react"
+import { useReactFlow, useUpdateNodeInternals } from "@xyflow/react"
 import { useCallback } from "react"
 import { JunctionNodeData } from "./JunctionNode"
 
 export default function useBranchActions(nodeId: string, nodeData: JunctionNodeData): {add: (buttonIndex: number) => void}{
 	const {updateNodeData} = useReactFlow()
+	const updatenodeInternals = useUpdateNodeInternals()
 
 	const add = useCallback((buttonIndex: number) => {
 		let newBranchPosition = 0
@@ -22,7 +23,8 @@ export default function useBranchActions(nodeId: string, nodeData: JunctionNodeD
 		const newBranchesPositions = [...nodeData.branchesPositions]
 		newBranchesPositions.splice(buttonIndex, 0, newBranchPosition)
 		updateNodeData(nodeId, {branchesPositions: newBranchesPositions})
-	}, [nodeData.width, nodeData.branchesPositions])
+		updatenodeInternals(nodeId)
+	}, [nodeId, nodeData.width, nodeData.branchesPositions])
 
 	return {add}
 }

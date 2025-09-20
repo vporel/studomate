@@ -1,14 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useState } from "react"
-import { GrafcetContextMenuNodeAction, useGrafcetPageContext } from "../../GrafcetPageContext"
+import { GrafcetContextMenuNodeAction, useGrafcetContext } from "../../GrafcetContext"
 
 /**
  * 
  * @returns selectedBranchIndex = -1 if no branch is selected
  */
-export default function useJunctionSelectedBars(nodeId: string): [pivotSelected: boolean, selectedBranchIndex: number, clearSelection: () => void]{
-	const {contextMenuEvents} = useGrafcetPageContext()
+export default function useSelectedBars(nodeId: string): [pivotSelected: boolean, selectedBranchIndex: number, clearSelection: () => void]{
+	const {contextMenuEvents} = useGrafcetContext()
 	const [pivotSelected, setPivotSelected] = useState<boolean>(false)
 	const [selectedBranchIndex, setSelectedBranchIndex] = useState<number>(-1)
 	const clearSelection = useCallback(() => {

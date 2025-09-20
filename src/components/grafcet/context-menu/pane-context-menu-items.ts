@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from "react"
-import { GrafcetContextMenuEvents, useGrafcetPageContext } from "../GrafcetPageContext"
+import { GrafcetContextMenuEvents, useGrafcetContext } from "../GrafcetContext"
 import { Edge, Node, useReactFlow } from "@xyflow/react"
 import { GrafcetcontextMenuItemType } from "./grafcet-context-menu-types"
 import { Emitter } from "mitt"

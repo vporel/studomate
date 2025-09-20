@@ -1,7 +1,7 @@
 'use client'
 
 import { Box, MenuItem, Typography } from "@mui/material"
-import { DownloadButton } from "./menu/file/Export";
+import { DownloadButton } from "./file/Export";
 
 const MenuBar = () => {
 
@@ -27,7 +27,7 @@ const MenuBar = () => {
 				{menuItems.map(item => <MenuItem key={item.id}>{item.title}</MenuItem>)}
 			</Box>
 			<Box sx={{display: "flex", alignContent: "center", justifyContent: "end", gap: 1}}>
-				<DownloadButton pageId="page-1"/>
+				<DownloadButton objectId="page-1"/>
 				<Typography sx={{padding: "0px 10px"}}>Project name</Typography>
 			</Box>
 		</Box>
