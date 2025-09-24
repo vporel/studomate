@@ -1,21 +1,14 @@
 "use client";
-import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Action, { ActionData } from "@/schemas/grafcet/action.schema";
+import Comment, { CommentData } from "@/schemas/grafcet/comment.schema";
 import { Box, useTheme } from "@mui/material";
-import {
-	Node,
-	NodeProps,
-	NodeResizer,
-	Position,
-	useReactFlow,
-} from "@xyflow/react";
+import { Node, NodeProps, NodeResizer, useReactFlow } from "@xyflow/react";
 import React, { useEffect, type FC } from "react";
 
-export type ActionNodeType = Node<ActionData> & { type: "action" };
+export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
-export type ActionNodeProps = NodeProps<ActionNodeType>;
+export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const ActionNode: FC<ActionNodeProps> = ({
+const CommentNode: FC<CommentNodeProps> = ({
 	id,
 	data,
 	selected,
@@ -28,17 +21,17 @@ const ActionNode: FC<ActionNodeProps> = ({
 	const [editing, setEditing] = React.useState(false);
 	const borderColor = selected ? th.palette.primary.main : "black";
 
-	const onExpressionChange = React.useCallback(
-		(newExpression: string) => {
-			updateNodeData(id, { ...data, expression: newExpression });
+	const onTextChange = React.useCallback(
+		(newText: string) => {
+			updateNodeData(id, { ...data, text: newText });
 		},
 		[id, data, updateNodeData]
 	);
 
-	//Update the width branches positions when the node is resized
+	//Update the width and the height when the node is resized
 	useEffect(() => {
-		updateNodeData(id, (n) => {
-			const dataToChange: Partial<ActionData> = {};
+		updateNodeData(id, () => {
+			const dataToChange: Partial<CommentData> = {};
 			if (nodeWidth != 0) dataToChange.width = nodeWidth;
 			if (nodeHeight != 0) dataToChange.height = nodeHeight;
 			return dataToChange;
@@ -49,27 +42,16 @@ const ActionNode: FC<ActionNodeProps> = ({
 		<>
 			<NodeResizer
 				isVisible={selected}
-				minWidth={Action.defaultDimensions.width}
-				minHeight={Action.defaultDimensions.height}
-				maxHeight={Action.defaultDimensions.height * 2}
-			/>
-			<HandleWithConnectionsLimit
-				limit={1}
-				id="from-step"
-				type="target"
-				position={Position.Left}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				minWidth={Comment.defaultDimensions.width}
+				minHeight={Comment.defaultDimensions.height}
 			/>
 			<Box
-				className="grafcet-node action-node"
+				className="grafcet-node comment-node"
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
 					borderWidth: "1px",
-					borderStyle: "solid",
+					borderStyle: "dashed",
 					borderColor: borderColor,
 					borderRadius: "5px",
 					backgroundColor: "white",
@@ -88,9 +70,9 @@ const ActionNode: FC<ActionNodeProps> = ({
 			>
 				<textarea
 					ref={textareaRef}
-					className="node__input action_node__textarea"
-					value={data?.expression}
-					onChange={(e) => onExpressionChange(e.target.value)}
+					className="node__input comment_node__textarea"
+					value={data?.text}
+					onChange={(e) => onTextChange(e.target.value)}
 					rows={1}
 					style={{
 						width: "100%",
@@ -102,6 +84,7 @@ const ActionNode: FC<ActionNodeProps> = ({
 						padding: "0",
 						lineHeight: "1.2rem",
 						pointerEvents: !editing ? "none" : "all",
+						fontSize: "0.8rem",
 					}}
 					onBlur={() => setEditing(false)}
 				/>
@@ -110,4 +93,4 @@ const ActionNode: FC<ActionNodeProps> = ({
 	);
 };
 
-export default ActionNode;
+export default CommentNode;

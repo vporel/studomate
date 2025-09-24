@@ -1,16 +1,23 @@
 "use client";
 import { range } from "@/lib/array";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Step, { StepData } from "@/schemas/grafcet/step.schema";
+import { StepReferralSourceData } from "@/schemas/grafcet/step-referral-source.schema";
+import StepReferral from "@/schemas/grafcet/step-referral.schema";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
 
-export type StepNodeType = Node<StepData> & { type: "step" };
+export type StepReferralSourceNodeType = Node<StepReferralSourceData> & {
+	type: "step-referral-source";
+};
 
-export type StepNodeProps = NodeProps<StepNodeType>;
+export type StepReferralSourceNodeProps = NodeProps<StepReferralSourceNodeType>;
 
-const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
+const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({
+	id,
+	data,
+	selected,
+}) => {
 	const th = useTheme();
 	const { updateNodeData } = useReactFlow();
 	const inputRef = React.useRef<HTMLInputElement>(null);
@@ -20,8 +27,8 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	return (
 		<>
 			<HandleWithConnectionsLimit
-				limit={10}
-				id="from-transition"
+				limit={1}
+				id="from-step"
 				type="target"
 				position={Position.Top}
 				style={{
@@ -29,53 +36,50 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					backgroundColor: borderColor,
 				}}
 			/>
-			<HandleWithConnectionsLimit
-				limit={1}
-				id="to-transition"
-				type="source"
-				position={Position.Bottom}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
-			/>
-			<HandleWithConnectionsLimit
-				limit={1}
-				id="to-action"
-				type="source"
-				position={Position.Right}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
-			/>
 			<Box
-				className="grafcet-node step-node"
+				className="grafcet-node step-referral-source-node"
 				sx={{
-					width: Step.defaultDimensions.width + "px",
-					height: Step.defaultDimensions.height + "px",
-					borderWidth: data.isInitial ? "4px" : "1px",
-					borderStyle: data.isInitial ? "double" : "solid",
-					borderColor: borderColor,
-					borderRadius: "5px",
-					backgroundColor: "white",
-					transition: "background .2s ease, borderColor .2s ease",
-					"&:hover": {
-						background: "#efefef",
-					},
+					width: StepReferral.defaultDimensions.width + "px",
 					display: "flex",
-					justifyContent: "center",
+					flexDirection: "column",
+					alignItems: "center",
+					gap: "5px",
 				}}
 				onDoubleClick={() => {
 					setEditing(true);
 					inputRef.current?.focus();
 				}}
 			>
+				<Box
+					sx={{
+						width: "1px",
+						height: "20px",
+						background: borderColor,
+						position: "relative",
+						"&::before, &::after": {
+							content: '""',
+							position: "absolute",
+							width: "1px",
+							height: "10px",
+							background: borderColor,
+						},
+						"&::before": {
+							transform: "rotate(-45deg)",
+							top: "11px",
+							left: "-4px",
+						},
+						"&::after": {
+							transform: "rotate(45deg)",
+							top: "11px",
+							left: "4px",
+						},
+					}}
+				></Box>
 				<input
 					ref={inputRef}
 					className="node__input"
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
-					value={data.number}
+					value={data.targetStepNumber}
 					onKeyDown={(e) => {
 						if (
 							e.key.length == 1 &&
@@ -86,7 +90,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					onChange={(e) =>
 						updateNodeData(id, {
 							...data,
-							number:
+							destinationStepNumber:
 								e.target.value == "" ||
 								parseInt(e.target.value) < 0
 									? ""
@@ -95,12 +99,9 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					}
 					style={{
 						width: "100%",
-						height: "100%",
 						textAlign: "center",
 						border: "none",
 						outline: "none",
-						boxSizing: "border-box",
-						padding: 0,
 						pointerEvents: !editing ? "none" : "all",
 					}}
 					onBlur={() => setEditing(false)}
@@ -110,4 +111,4 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	);
 };
 
-export default StepNode;
+export default StepReferralSourceNode;

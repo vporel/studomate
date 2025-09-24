@@ -1,31 +1,70 @@
-'use client'
+"use client";
 
-import { useEffect } from "react"
-import { GrafcetNodeAddActionData, useProjectContext } from "./ProjectContext"
-import Project from "@/schemas/project.schema"
-import Step from "@/schemas/step.schema"
-import { STEP_NODE_DEFAULT_DIMENSIONS } from "../grafcet/nodes/StepNode"
+import GrafcetElement from "@/schemas/grafcet/grafcet-element.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Project from "@/schemas/project/project.schema";
+import { useEffect } from "react";
+import { nodesSchemasClasses } from "../grafcet/grafcet-nodes-definitions";
+import { GrafcetNodeAddActionData, useProjectContext } from "./ProjectContext";
 
-export default function useGrafcetEventsHandler(setProject: (val: (p: Project) => Project) => void){
-	const {grafcetEvents} = useProjectContext()
+export default function useGrafcetEventsHandler(
+	setProject: (val: (p: Project | null) => Project | null) => void
+) {
+	const { grafcetEvents } = useProjectContext();
+
+	//Grafcet
+	useEffect(() => {
+		const grafcetAddHandler = (grafcet: Grafcet) => {
+			setProject((p) => {
+				if (!p) {
+					console.error("Project is null, cannot add grafcet.");
+					return p;
+				}
+				const newProject = { ...p };
+				newProject.grafcets[grafcet.id] = grafcet;
+				return newProject;
+			});
+		};
+		grafcetEvents.on("grafcet-add", grafcetAddHandler);
+		return () => {
+			grafcetEvents.off("grafcet-add", grafcetAddHandler);
+		};
+	}, [grafcetEvents, setProject]);
 
 	//Nodes
 	useEffect(() => {
-		const nodeAddHandler = (action: GrafcetNodeAddActionData) => {
-			setProject(p => {
-				const newProject = {...p}
-				switch(action.type){
-					case "step": {
-						newProject.grafcets[action.grafcetId].steps.push(new Step(action.id, action.data.number, action.position, STEP_NODE_DEFAULT_DIMENSIONS));
-						break;
-					}
+		const nodeAddHandler = (eventData: GrafcetNodeAddActionData) => {
+			setProject((p) => {
+				if (!p) {
+					console.error("Project is null, cannot add node.");
+					return p;
 				}
-				return newProject
-			})
-		}
-		grafcetEvents.on("node-add", nodeAddHandler)
+				if (!p.grafcets[eventData.grafcetId]) {
+					console.error(
+						"Grafcet with id",
+						eventData.grafcetId,
+						"not found in project."
+					);
+					return p;
+				}
+				const newProject = { ...p };
+				const element = new nodesSchemasClasses[eventData.type](
+					eventData.id,
+					eventData.data,
+					eventData.position
+				) as GrafcetElement;
+				const group = newProject.grafcets[
+					eventData.grafcetId
+				].getElementGroup(eventData.type);
+				if (!group.find((e) => e.id === element.id)) {
+					group.push(element as any);
+				}
+				return newProject;
+			});
+		};
+		grafcetEvents.on("node-add", nodeAddHandler);
 		return () => {
-			grafcetEvents.off("node-add", nodeAddHandler)
-		}
-	}, [grafcetEvents, setProject])
+			grafcetEvents.off("node-add", nodeAddHandler);
+		};
+	}, [grafcetEvents, setProject]);
 }
