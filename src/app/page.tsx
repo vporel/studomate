@@ -8,7 +8,7 @@ import { useProjectContext } from "@/components/projects/ProjectContext";
 import StatusBar from "@/components/StatusBar";
 import { PagesContextProvider } from "@/PagesContext";
 import { Box } from "@mui/material";
-import GrafcetPage from "../components/grafcet/GrafcetPage";
+import GrafcetPage from "../components/grafcet/flow/GrafcetPage";
 
 export default function App() {
 	const { project } = useProjectContext();

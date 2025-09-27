@@ -1,7 +1,7 @@
 "use client";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
+import Junction, { JunctionData } from "@/schemas/grafcet/junction.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
@@ -40,25 +40,17 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
 	const [pivotSelected, selectedBranchIndex] = useSelectedBars(id);
 	const { add: onBranchAdd } = useBranchActions(id, data);
-	const handleKeyDown = useBarMoveHandler(
-		id,
-		pivotSelected,
-		selectedBranchIndex
-	);
+	const handleKeyDown = useBarMoveHandler(id, pivotSelected, selectedBranchIndex);
 
 	useBranchesPositionsAdapter(id, nodeWidth, positionAbsoluteX);
 
 	//Snap to grid
 	useEffect(() => {
-		if (data.width % FLOW_GRID_CELL_WIDTH !== 0)
-			throw new Error("The width does not snap the grid");
+		if (data.width % FLOW_GRID_CELL_WIDTH !== 0) throw new Error("The width does not snap the grid");
 	}, [data.width]);
 
 	useEffect(() => {
-		if (
-			(pivotSelected || selectedBranchIndex != -1) &&
-			nodeHTMLElement.current
-		)
+		if ((pivotSelected || selectedBranchIndex != -1) && nodeHTMLElement.current)
 			nodeHTMLElement.current.focus();
 	}, [pivotSelected, selectedBranchIndex]);
 
@@ -76,9 +68,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 					limit={1}
 					id={"branch-" + (index + 1)}
 					type={orientation == "start" ? "source" : "target"}
-					position={
-						orientation == "start" ? Position.Bottom : Position.Top
-					}
+					position={orientation == "start" ? Position.Bottom : Position.Top}
 					style={{
 						left: pos + "px",
 						borderColor: borderColor,
@@ -90,9 +80,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 				limit={1}
 				id="pivot"
 				type={orientation == "start" ? "target" : "source"}
-				position={
-					orientation == "start" ? Position.Top : Position.Bottom
-				}
+				position={orientation == "start" ? Position.Top : Position.Bottom}
 				style={{
 					left: data.pivotPosition + "px",
 					borderColor: borderColor,

@@ -1,8 +1,8 @@
 "use client";
 import { range } from "@/lib/array";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import { StepReferralSourceData } from "@/schemas/grafcet/step-referral-source.schema";
-import StepReferral from "@/schemas/grafcet/step-referral.schema";
+import StepReferral from "@/schemas/grafcet/StepReferral.class";
+import { StepReferralSourceData } from "@/schemas/grafcet/StepReferralSource.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
@@ -13,11 +13,7 @@ export type StepReferralSourceNodeType = Node<StepReferralSourceData> & {
 
 export type StepReferralSourceNodeProps = NodeProps<StepReferralSourceNodeType>;
 
-const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({
-	id,
-	data,
-	selected,
-}) => {
+const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const { updateNodeData } = useReactFlow();
 	const inputRef = React.useRef<HTMLInputElement>(null);
@@ -81,18 +77,13 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
 					value={data.targetStepNumber}
 					onKeyDown={(e) => {
-						if (
-							e.key.length == 1 &&
-							!range(0, 10).includes(parseInt(e.key))
-						)
-							e.preventDefault();
+						if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) e.preventDefault();
 					}}
 					onChange={(e) =>
 						updateNodeData(id, {
 							...data,
 							destinationStepNumber:
-								e.target.value == "" ||
-								parseInt(e.target.value) < 0
+								e.target.value == "" || parseInt(e.target.value) < 0
 									? ""
 									: parseInt(e.target.value),
 						})

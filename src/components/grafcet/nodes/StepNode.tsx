@@ -1,7 +1,7 @@
 "use client";
 import { range } from "@/lib/array";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Step, { StepData } from "@/schemas/grafcet/step.schema";
+import Step, { StepData } from "@/schemas/grafcet/Step.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
@@ -77,18 +77,13 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
 					value={data.number}
 					onKeyDown={(e) => {
-						if (
-							e.key.length == 1 &&
-							!range(0, 10).includes(parseInt(e.key))
-						)
-							e.preventDefault();
+						if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) e.preventDefault();
 					}}
 					onChange={(e) =>
 						updateNodeData(id, {
 							...data,
 							number:
-								e.target.value == "" ||
-								parseInt(e.target.value) < 0
+								e.target.value == "" || parseInt(e.target.value) < 0
 									? ""
 									: parseInt(e.target.value),
 						})

@@ -1,27 +1,15 @@
 "use client";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Action, { ActionData } from "@/schemas/grafcet/action.schema";
+import Action, { ActionData } from "@/schemas/grafcet/Action.class";
 import { Box, useTheme } from "@mui/material";
-import {
-	Node,
-	NodeProps,
-	NodeResizer,
-	Position,
-	useReactFlow,
-} from "@xyflow/react";
+import { Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react";
 import React, { useEffect, type FC } from "react";
 
 export type ActionNodeType = Node<ActionData> & { type: "action" };
 
 export type ActionNodeProps = NodeProps<ActionNodeType>;
 
-const ActionNode: FC<ActionNodeProps> = ({
-	id,
-	data,
-	selected,
-	width: nodeWidth,
-	height: nodeHeight,
-}) => {
+const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
 	const { updateNodeData } = useReactFlow();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);

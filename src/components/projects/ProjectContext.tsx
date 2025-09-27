@@ -1,25 +1,13 @@
 "use client";
-import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import Project from "@/schemas/project/project.schema";
+import CommandsStack from "@/schemas/commands/CommandsStack.class";
+import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import Project from "@/schemas/project/Project.class";
 import mitt, { Emitter } from "mitt";
-import {
-	createContext,
-	ReactNode,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
-import { GrafcetEdge, GrafcetNode } from "../grafcet/grafcet-nodes-definitions";
+import { createContext, ReactNode, useContext, useMemo, useRef, useState } from "react";
 import useGrafcetEventsHandler from "./useGrafcetEventsHandler";
 
-export type GrafcetNodeAddActionData = { grafcetId: string } & GrafcetNode;
-export type GrafcetEdgeAddActionData = { grafcetId: string } & GrafcetEdge;
-
 export type GrafcetEvents = {
-	"grafcet-add": Grafcet;
-	"node-add": GrafcetNodeAddActionData;
-	"edge-add": GrafcetEdgeAddActionData;
+	"grafcet-save": Grafcet;
 };
 
 type ProjectContextType = {
@@ -32,33 +20,14 @@ const ProjectContext = createContext<ProjectContextType>({
 	grafcetEvents: mitt<GrafcetEvents>(),
 });
 
-const GrafcetEventsHandlerComponent = ({
-	setProject,
-}: {
-	setProject: (val: (p: Project | null) => Project | null) => void;
-}) => {
-	useGrafcetEventsHandler(setProject);
-	return null;
-};
-
-export const ProjectContextProvider = ({
-	children,
-}: {
-	children: ReactNode;
-}) => {
+export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
 	const [project, setProject] = useState<Project | null>(new Project());
+	const commandsStackRef = useRef<CommandsStack<Project>>(new CommandsStack<Project>());
 	const grafcetEvents = useMemo(() => mitt<GrafcetEvents>(), []);
 
-	useEffect(() => {
-		console.log("Project updated:", project);
-	}, [project]);
+	useGrafcetEventsHandler(grafcetEvents, setProject, commandsStackRef.current);
 
-	return (
-		<ProjectContext.Provider value={{ project, grafcetEvents }}>
-			<GrafcetEventsHandlerComponent setProject={setProject} />
-			{children}
-		</ProjectContext.Provider>
-	);
+	return <ProjectContext.Provider value={{ project, grafcetEvents }}>{children}</ProjectContext.Provider>;
 };
 
 export const useProjectContext = () => useContext(ProjectContext);

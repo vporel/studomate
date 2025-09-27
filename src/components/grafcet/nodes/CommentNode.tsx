@@ -1,5 +1,5 @@
 "use client";
-import Comment, { CommentData } from "@/schemas/grafcet/comment.schema";
+import Comment, { CommentData } from "@/schemas/grafcet/Comment.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, useReactFlow } from "@xyflow/react";
 import React, { useEffect, type FC } from "react";
@@ -8,13 +8,7 @@ export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
 export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const CommentNode: FC<CommentNodeProps> = ({
-	id,
-	data,
-	selected,
-	width: nodeWidth,
-	height: nodeHeight,
-}) => {
+const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
 	const { updateNodeData } = useReactFlow();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);

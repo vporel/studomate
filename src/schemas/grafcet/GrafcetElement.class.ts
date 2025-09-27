@@ -1,3 +1,5 @@
+import { XYPosition } from "@xyflow/react";
+
 export type GrafcetElementType =
 	| "step"
 	| "transition"
@@ -10,15 +12,14 @@ export type GrafcetElementType =
 	| "junction-or-end"
 	| "comment";
 
-export type GrafcetElementPosition = { x: number; y: number };
-export type GrafcetElementDimensions = { width: number; height: number };
-
-export default class GrafcetElement {
+export default class GrafcetElement<DataType> {
 	id: string = "";
-	position: GrafcetElementPosition = { x: 0, y: 0 };
+	data: DataType;
+	position: XYPosition = { x: 0, y: 0 };
 
-	constructor(id: string, position: GrafcetElementPosition) {
+	constructor(id: string, data: DataType, position: XYPosition) {
 		this.id = id;
+		this.data = data;
 		this.position = position;
 	}
 }

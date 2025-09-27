@@ -1,8 +1,6 @@
 "use client";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Transition, {
-	TransitionData,
-} from "@/schemas/grafcet/transition.schema";
+import Transition, { TransitionData } from "@/schemas/grafcet/transition.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";

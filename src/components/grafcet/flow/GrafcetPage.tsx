@@ -3,47 +3,38 @@ import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from "@/constants";
 import { mmToPx } from "@/lib/utils";
 import { usePagesContext } from "@/PagesContext";
 import { Box, useTheme } from "@mui/material";
-import {
-	addEdge,
-	Background,
-	ReactFlow,
-	ReactFlowProvider,
-	useEdgesState,
-	useNodesState,
-	useReactFlow,
-} from "@xyflow/react";
+import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
+import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
+import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
+import { GrafcetContextProvider, useGrafcetContext } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
-import CustomConnectionLine from "./connections-lines/CustomConnectionLine";
-import GrafcetContextMenu from "./context-menu/GrafcetContextMenu";
 import {
 	edgeTypes,
+	GrafcetEdge,
 	GrafcetNode,
 	nodeTypes,
 	validateConnection,
 } from "./grafcet-nodes-definitions";
-import { GrafcetContextProvider, useGrafcetContext } from "./GrafcetContext";
-import useFlowContextMenuActionsHandlers from "./useFlowContextMenuActionsHandlers";
-import useFlowShortcutsHandler from "./useFlowShortcutsHandler";
-import useFlowToolDragOverHandlers from "./useFlowToolDragOverHandlers";
+import useContextMenuActionsHandlers from "./useContextMenuActionsHandlers";
+import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
+import useEdgesHandlers from "./useEdgesHandlers";
+import useNodesHandlers from "./useNodesHandlers";
+import useShortcutsHandler from "./useShortcutsHandler";
+import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
 export function GrafcetPageContent() {
 	const th = useTheme();
-	const [nodes, setNodes, onNodesChange] = useNodesState<GrafcetNode>([]);
-	const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
-	const { screenToFlowPosition } = useReactFlow();
+	const [nodes, setNodes] = useState<GrafcetNode[]>([]);
+	const [edges, setEdges] = useState<GrafcetEdge[]>([]);
 	const { updatePageData } = usePagesContext();
-	const { grafcetId, flowDimensions, contextMenuEvents } =
-		useGrafcetContext();
-	const [handleToolDragOver, handleToolDrop] = useFlowToolDragOverHandlers();
-	const handleShortcuts = useFlowShortcutsHandler();
-
-	const onConnect = useCallback(
-		(params: any) =>
-			setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-		[setEdges]
-	);
+	const { grafcetId, flowDimensions } = useGrafcetContext();
+	const { onNodesChange, onNodesDelete, onNodeDragStop } = useNodesHandlers(setNodes);
+	const { onEdgesChange, onConnect, onEdgesDelete } = useEdgesHandlers(setEdges);
+	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
+	const handleShortcuts = useShortcutsHandler();
+	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
 
 	//Share the grafcet data
 	useEffect(() => {
@@ -52,7 +43,7 @@ export function GrafcetPageContent() {
 			height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height),
 			nodes,
 		});
-	}, [grafcetId, nodes]);
+	}, [grafcetId, nodes, updatePageData]);
 
 	//Initial data
 	// useEffect(() => {
@@ -61,7 +52,7 @@ export function GrafcetPageContent() {
 	// }, [])
 
 	//Context menu actions
-	useFlowContextMenuActionsHandlers();
+	useContextMenuActionsHandlers();
 
 	return (
 		<Box
@@ -103,14 +94,15 @@ export function GrafcetPageContent() {
 					edges={edges}
 					onNodesChange={onNodesChange}
 					onEdgesChange={onEdgesChange}
+					onNodesDelete={onNodesDelete}
+					onNodeDragStop={onNodeDragStop}
 					onConnect={onConnect}
+					onEdgesDelete={onEdgesDelete}
 					nodeTypes={nodeTypes}
 					edgeTypes={edgeTypes}
 					defaultEdgeOptions={{ type: "custom-edge" }}
 					connectionLineComponent={CustomConnectionLine}
-					isValidConnection={(connection) =>
-						validateConnection(connection, nodes)
-					}
+					isValidConnection={(connection) => validateConnection(connection as Connection, nodes)}
 					minZoom={0.5}
 					maxZoom={2}
 					snapToGrid={true}
@@ -129,36 +121,9 @@ export function GrafcetPageContent() {
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
 					onKeyDown={handleShortcuts}
-					onPaneContextMenu={(e) => {
-						e.preventDefault();
-						contextMenuEvents.emit("show", {
-							element: { type: "pane" },
-							position: screenToFlowPosition({
-								x: e.pageX,
-								y: e.pageY,
-							}),
-						});
-					}}
-					onNodeContextMenu={(e, node) => {
-						e.preventDefault();
-						contextMenuEvents.emit("show", {
-							element: node,
-							position: screenToFlowPosition({
-								x: e.pageX,
-								y: e.pageY,
-							}),
-						});
-					}}
-					onEdgeContextMenu={(e, edge) => {
-						e.preventDefault();
-						contextMenuEvents.emit("show", {
-							element: edge,
-							position: screenToFlowPosition({
-								x: e.pageX,
-								y: e.pageY,
-							}),
-						});
-					}}
+					onPaneContextMenu={onPaneContextMenu as any}
+					onNodeContextMenu={onNodeContextMenu}
+					onEdgeContextMenu={onEdgeContextMenu}
 					zoomOnScroll={false}
 					onWheelCapture={(e) => {
 						if (!e.ctrlKey && !e.metaKey) e.stopPropagation();

@@ -1,5 +1,5 @@
-import Grafcet from "../grafcet/grafcet.schema";
-import Variable from "../variable.schema";
+import Grafcet from "../grafcet/Grafcet.class";
+import Variable from "../Variable.class";
 
 export default class Project {
 	appVersion: string = "0.1.0";
