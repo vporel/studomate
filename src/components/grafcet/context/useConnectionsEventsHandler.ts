@@ -8,7 +8,7 @@ import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemo
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/ConnectionsUpdateCommand.class";
 import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useEffect } from "react";
-import { GrafcetConnectionsEvents } from "./GrafcetContext";
+import { GrafcetConnectionsEvents } from "./connections-events";
 
 export default function useConnectionsEventsHandler(
 	connectionsEvents: Emitter<GrafcetConnectionsEvents>,
@@ -24,7 +24,7 @@ export default function useConnectionsEventsHandler(
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ConnectionsAddCommand(connections),
+				[new ConnectionsAddCommand(connections)],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);
@@ -43,13 +43,15 @@ export default function useConnectionsEventsHandler(
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ConnectionsUpdateCommand(
-					connections.map((c) => {
-						const previous = grafcet.getConnection(c.from.id, c.to.id);
-						if (!previous) throw new Error("Previous connection not found");
-						return { connection: c, previous };
-					})
-				),
+				[
+					new ConnectionsUpdateCommand(
+						connections.map((c) => {
+							const previous = grafcet.getConnection(c.source.id, c.target.id);
+							if (!previous) throw new Error("Previous connection not found");
+							return { connection: c, previous };
+						})
+					),
+				],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);
@@ -68,7 +70,7 @@ export default function useConnectionsEventsHandler(
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ConnectionsRemoveCommand(connections),
+				[new ConnectionsRemoveCommand(connections)],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);

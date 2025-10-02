@@ -1,9 +1,9 @@
 "use client";
 
 import { Emitter } from "mitt";
-import { GrafcetContextMenuEvents } from "../context/GrafcetContext";
+import { GrafcetContextMenuEvents } from "../context/context-menu-events";
 import { JunctionNode } from "../flow/grafcet-nodes-definitions";
-import { GrafcetcontextMenuItemType } from "./grafcet-context-menu-types";
+import { GrafcetcontextMenuItemType } from "./grafcet-context-menu";
 
 export default function junctionContextMenuItems(
 	junction: JunctionNode,

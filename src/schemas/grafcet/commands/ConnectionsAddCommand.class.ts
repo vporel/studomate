@@ -7,13 +7,15 @@ export default class ConnectionsAddCommand extends GrafcetCommand<GrafcetConnect
 		return "connections-add";
 	}
 
-	execute(grafcet: Grafcet): Grafcet {
+	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
 		grafcet.addConnections(this.payload);
-		return grafcet;
+		return [grafcet, true];
 	}
 
 	cancel(grafcet: Grafcet): Grafcet {
-		grafcet.removeConnections(this.payload);
+		grafcet.removeConnections(
+			this.payload.map((c) => ({ sourceId: c.source.id, targetId: c.target.id }))
+		);
 		return grafcet;
 	}
 }

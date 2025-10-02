@@ -105,14 +105,14 @@ export default class Grafcet {
 	}
 
 	updateElements(
-		elements: { type: GrafcetElementType; id: string; data: any; position: XYPosition }[]
+		elements: { type: GrafcetElementType; id: string; data?: any; position?: XYPosition }[]
 	): void {
 		elements.forEach(({ type, id, data, position }) => {
 			const group = this.getElementGroup(type);
 			const element = group.find((e) => e.id === id);
 			if (element) {
-				element.data = data;
-				element.position = position;
+				if (data) element.data = { ...element.data, ...data };
+				if (position) element.position = position;
 			}
 		});
 	}
@@ -124,33 +124,40 @@ export default class Grafcet {
 			if (index !== -1) {
 				group.splice(index, 1);
 			}
+			// Remove related connections
+			const relatedConnections = this.connections.filter(
+				(c) => c.source.id === id || c.target.id === id
+			);
+			this.removeConnections(
+				relatedConnections.map((c) => ({ sourceId: c.source.id, targetId: c.target.id }))
+			);
 		});
 	}
 
-	getConnection(fromId: string, toId: string): GrafcetConnection | undefined {
-		return this.connections.find((c) => c.from.id === fromId && c.to.id === toId);
+	getConnection(sourceId: string, targetId: string): GrafcetConnection | undefined {
+		return this.connections.find((c) => c.source.id === sourceId && c.target.id === targetId);
 	}
 
 	addConnections(connections: GrafcetConnection[]): void {
-		// Check if connection elements exist, the from and the to
+		// Check if connection elements exist, the source and the target
 		connections.forEach((connection) => {
-			const fromExists = !!this.getElement(connection.from.type, connection.from.id);
-			const toExists = !!this.getElement(connection.to.type, connection.to.id);
-			if (!fromExists) {
+			const sourceExists = !!this.getElement(connection.source.type, connection.source.id);
+			const targetExists = !!this.getElement(connection.target.type, connection.target.id);
+			if (!sourceExists) {
 				throw new Error(
-					`Connection 'from' element missing: type=${connection.from.type}, id=${connection.from.id}`
+					`Connection 'source' element missing: type=${connection.source.type}, id=${connection.source.id}`
 				);
 			}
-			if (!toExists) {
+			if (!targetExists) {
 				throw new Error(
-					`Connection 'to' element missing: type=${connection.to.type}, id=${connection.to.id}`
+					`Connection 'target' element missing: type=${connection.target.type}, id=${connection.target.id}`
 				);
 			}
 			if (
-				fromExists &&
-				toExists &&
+				sourceExists &&
+				targetExists &&
 				!this.connections.find(
-					(c) => c.from.id === connection.from.id && c.to.id === connection.to.id
+					(c) => c.source.id === connection.source.id && c.target.id === connection.target.id
 				)
 			) {
 				this.connections.push(connection);
@@ -161,7 +168,7 @@ export default class Grafcet {
 	updateConnections(connections: GrafcetConnection[]): void {
 		connections.forEach((connection) => {
 			const index = this.connections.findIndex(
-				(c) => c.from.id === connection.from.id && c.to.id === connection.to.id
+				(c) => c.source.id === connection.source.id && c.target.id === connection.target.id
 			);
 			if (index !== -1) {
 				this.connections[index] = connection;
@@ -171,13 +178,13 @@ export default class Grafcet {
 
 	removeConnections(
 		connections: {
-			from: { type: GrafcetElementType; id: string };
-			to: { type: GrafcetElementType; id: string };
+			sourceId: string;
+			targetId: string;
 		}[]
 	): void {
 		connections.forEach((connection) => {
 			const index = this.connections.findIndex(
-				(c) => c.from.id === connection.from.id && c.to.id === connection.to.id
+				(c) => c.source.id === connection.sourceId && c.target.id === connection.targetId
 			);
 			if (index !== -1) {
 				this.connections.splice(index, 1);

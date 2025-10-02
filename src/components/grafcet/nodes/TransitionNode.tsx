@@ -4,6 +4,7 @@ import Transition, { TransitionData } from "@/schemas/grafcet/transition.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
+import GrafcetNode from "./GrafcetNode";
 
 export type TransitionNodeType = Node<TransitionData> & {
 	type: "transition";
@@ -47,8 +48,9 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
-				className="grafcet-node transition-node"
+			<GrafcetNode
+				id={id}
+				type="transition"
 				sx={{
 					position: "relative",
 					width: Transition.defaultDimensions.width + "px",
@@ -100,7 +102,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 					}}
 					onBlur={() => setEditing(false)}
 				/>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

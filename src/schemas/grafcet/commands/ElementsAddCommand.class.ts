@@ -14,7 +14,7 @@ export default class ElementsAddCommand extends GrafcetCommand<
 		return "elements-add";
 	}
 
-	execute(grafcet: Grafcet): Grafcet {
+	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
 		grafcet.addElements(
 			this.payload.map((e) => ({
 				type: e.type,
@@ -23,7 +23,7 @@ export default class ElementsAddCommand extends GrafcetCommand<
 				position: e.position,
 			}))
 		);
-		return grafcet;
+		return [grafcet, true];
 	}
 
 	cancel(grafcet: Grafcet): Grafcet {

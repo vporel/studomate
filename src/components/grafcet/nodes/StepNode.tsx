@@ -2,9 +2,10 @@
 import { range } from "@/lib/array";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Step, { StepData } from "@/schemas/grafcet/Step.class";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
+import GrafcetNode from "./GrafcetNode";
 
 export type StepNodeType = Node<StepData> & { type: "step" };
 
@@ -49,8 +50,9 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
-				className="grafcet-node step-node"
+			<GrafcetNode
+				id={id}
+				type="step"
 				sx={{
 					width: Step.defaultDimensions.width + "px",
 					height: Step.defaultDimensions.height + "px",
@@ -100,7 +102,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					}}
 					onBlur={() => setEditing(false)}
 				/>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

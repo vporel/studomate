@@ -2,9 +2,10 @@
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.class";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
+import GrafcetNode from "../GrafcetNode";
 import useBarMoveHandler from "./useBarMoveHandler";
 import useBranchActions from "./useBranchActions";
 import useBranchAddButtonsPositions from "./useBranchAddButtonsPositions";
@@ -26,6 +27,7 @@ export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 
 const JunctionNode: FC<JunctionNodeProps> = ({
 	id,
+	type,
 	positionAbsoluteX,
 	data,
 	selected,
@@ -87,10 +89,12 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
+			<GrafcetNode
+				id={id}
+				type={type}
+				className={`junction-node ${className}`}
 				ref={nodeHTMLElement}
 				tabIndex={0}
-				className={"grafcet-node junction-node " + className}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: Junction.defaultDimensions.height + "px",
@@ -116,7 +120,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 					selectedBranchIndex,
 					pivotSelected,
 				})}
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

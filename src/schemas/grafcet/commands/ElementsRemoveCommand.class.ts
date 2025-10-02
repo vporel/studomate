@@ -1,5 +1,5 @@
-import Grafcet from "../Grafcet.class";
-import { GrafcetElementType, XYPosition } from "../GrafcetElement.class";
+import Grafcet, { XYPosition } from "../Grafcet.class";
+import { GrafcetElementType } from "../GrafcetElement.class";
 import GrafcetCommand from "./AbstractGrafcetCommand.class";
 
 export default class ElementsRemoveCommand extends GrafcetCommand<
@@ -14,14 +14,14 @@ export default class ElementsRemoveCommand extends GrafcetCommand<
 		return "elements-remove";
 	}
 
-	execute(grafcet: Grafcet): Grafcet {
+	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
 		grafcet.removeElements(
 			this.payload.map((e) => ({
 				type: e.type,
 				id: e.id,
 			}))
 		);
-		return grafcet;
+		return [grafcet, true];
 	}
 
 	cancel(grafcet: Grafcet): Grafcet {

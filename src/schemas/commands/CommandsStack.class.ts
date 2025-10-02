@@ -6,8 +6,8 @@ import AbstractCommand from "./AbstractCommand.class";
  * @template T - The type of the object the commands operate on.
  */
 export default class CommandsStack<T> {
-	commandsToUndo: AbstractCommand<T, any>[];
-	commandsToRedo: AbstractCommand<T, any>[];
+	commandsToUndo: AbstractCommand<T, any>[][];
+	commandsToRedo: AbstractCommand<T, any>[][];
 	undoLimit: number;
 
 	constructor(undoLimit = 100) {
@@ -16,14 +16,20 @@ export default class CommandsStack<T> {
 		this.undoLimit = undoLimit;
 	}
 
-	execute(command: AbstractCommand<T, any>, object: T): T {
-		const newObject = command.execute(object);
-		this.commandsToUndo.push(command);
+	execute(commands: AbstractCommand<T, any>[], object: T): T {
+		const validCommands: AbstractCommand<T, any>[] = [];
+		for (const command of commands) {
+			const [result, isCommandValid] = command.execute(object);
+			if (!isCommandValid) continue;
+			validCommands.push(command);
+			object = result;
+		}
+		this.commandsToUndo.push(validCommands);
 		this.commandsToRedo = [];
 		if (this.commandsToUndo.length > this.undoLimit) {
 			this.commandsToUndo.shift();
 		}
-		return newObject;
+		return object;
 	}
 
 	/**
@@ -31,12 +37,14 @@ export default class CommandsStack<T> {
 	 * @param object
 	 * @returns Tuple : The first element is the new object after undoing the command, the second element is the command that was undone. If there is no command to undo, both elements are null.
 	 */
-	undo(object: T): [T | null, AbstractCommand<T, any> | null] {
-		if (this.commandsToUndo.length === 0) return [null, null];
-		const command = this.commandsToUndo.pop();
-		if (!command) return [null, null];
-		this.commandsToRedo.push(command);
-		return [command.cancel(object), command];
+	undo(object: T): [T, AbstractCommand<T, any>[] | null] {
+		const commands = this.commandsToUndo.pop();
+		if (!commands) return [object, null];
+		this.commandsToRedo.push(commands);
+		for (const command of commands) {
+			object = command.cancel(object);
+		}
+		return [object, commands];
 	}
 
 	/**
@@ -44,12 +52,15 @@ export default class CommandsStack<T> {
 	 * @param object
 	 * @returns Tuple : The first element is the new object after redoing the command, the second element is the command that was redone. If there is no command to redo, both elements are null.
 	 */
-	redo(object: T): [T | null, AbstractCommand<T, any> | null] {
-		if (this.commandsToRedo.length === 0) return [null, null];
-		const command = this.commandsToRedo.pop();
-		if (!command) return [null, null];
-		this.commandsToUndo.push(command);
-		return [command.execute(object), command];
+	redo(object: T): [T, AbstractCommand<T, any>[] | null] {
+		const commands = this.commandsToRedo.pop();
+		if (!commands) return [object, null];
+		for (const command of commands) {
+			const [result] = command.execute(object);
+			object = result;
+		}
+		this.commandsToUndo.push(commands);
+		return [object, commands];
 	}
 
 	clear(): void {

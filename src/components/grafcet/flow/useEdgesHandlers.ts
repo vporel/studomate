@@ -22,37 +22,20 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 		onEdgesChange: useCallback(
 			(changes) => {
 				setEdges((eds) => applyEdgeChanges(changes, eds));
-				connectionsEvents.emit(
-					"update",
-					changes
-						.filter((c) => c.type === "replace" && !!c.item)
-						.map((c: any) => {
-							const fromNode = getInternalNode(c.item.source);
-							const toNode = getInternalNode(c.item.target);
-							return new GrafcetConnection(
-								c.item.id,
-								{ type: fromNode!.type as GrafcetElementType, id: c.item.source },
-								{ type: toNode!.type as GrafcetElementType, id: c.item.target },
-								{
-									points: c.item.data?.points ?? [],
-								}
-							);
-						})
-				);
 			},
-			[connectionsEvents, getInternalNode, setEdges]
+			[setEdges]
 		),
 		onConnect: useCallback(
 			(params: Connection) => {
 				const id = createElementId();
 				setEdges((edgesSnapshot) => addEdge({ ...params, id }, edgesSnapshot));
-				const fromNode = getInternalNode(params.source);
-				const toNode = getInternalNode(params.target);
-				if (!fromNode || !toNode) return;
+				const sourceNode = getInternalNode(params.source);
+				const targetNode = getInternalNode(params.target);
+				if (!sourceNode || !targetNode) return;
 				const edgePosition = getEdgePosition({
 					id,
-					sourceNode: fromNode,
-					targetNode: toNode,
+					sourceNode: sourceNode,
+					targetNode: targetNode,
 					sourceHandle: params.sourceHandle || null,
 					targetHandle: params.targetHandle || null,
 					connectionMode: ConnectionMode.Strict,
@@ -60,8 +43,16 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 				connectionsEvents.emit("add", [
 					new GrafcetConnection(
 						id,
-						{ type: fromNode.type as GrafcetElementType, id: fromNode.id },
-						{ type: toNode.type as GrafcetElementType, id: toNode.id },
+						{
+							type: sourceNode.type as GrafcetElementType,
+							id: sourceNode.id,
+							handleId: params.sourceHandle || "",
+						},
+						{
+							type: targetNode.type as GrafcetElementType,
+							id: targetNode.id,
+							handleId: params.targetHandle || "",
+						},
 						{
 							points: getConnectionLinePoints(
 								edgePosition!.sourceX,
@@ -80,12 +71,20 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 				connectionsEvents.emit(
 					"remove",
 					deleted.map((e) => {
-						const fromNode = getInternalNode(e.source);
-						const toNode = getInternalNode(e.target);
+						const sourceNode = getInternalNode(e.source);
+						const targetNode = getInternalNode(e.target);
 						return new GrafcetConnection(
 							e.id,
-							{ type: fromNode!.type as GrafcetElementType, id: e.source },
-							{ type: toNode!.type as GrafcetElementType, id: e.target },
+							{
+								type: sourceNode!.type as GrafcetElementType,
+								id: e.source,
+								handleId: e.sourceHandle || "",
+							},
+							{
+								type: targetNode!.type as GrafcetElementType,
+								id: e.target,
+								handleId: e.targetHandle || "",
+							},
 							{
 								points: e.data?.points ?? [],
 							}

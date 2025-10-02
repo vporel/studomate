@@ -2,8 +2,8 @@
 
 import { Edge, Node } from "@xyflow/react";
 import { Emitter } from "mitt";
-import { GrafcetContextMenuEvents } from "../context/GrafcetContext";
-import { GrafcetcontextMenuItemType } from "./grafcet-context-menu-types";
+import { GrafcetContextMenuEvents } from "../context/context-menu-events";
+import { GrafcetcontextMenuItemType } from "./grafcet-context-menu";
 
 export default function paneContextMenuItems(
 	getNodes: () => Node[],

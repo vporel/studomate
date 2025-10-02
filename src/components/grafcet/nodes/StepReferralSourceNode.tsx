@@ -6,6 +6,7 @@ import { StepReferralSourceData } from "@/schemas/grafcet/StepReferralSource.cla
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
+import GrafcetNode from "./GrafcetNode";
 
 export type StepReferralSourceNodeType = Node<StepReferralSourceData> & {
 	type: "step-referral-source";
@@ -32,8 +33,9 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
-				className="grafcet-node step-referral-source-node"
+			<GrafcetNode
+				id={id}
+				type="step-referral-source"
 				sx={{
 					width: StepReferral.defaultDimensions.width + "px",
 					display: "flex",
@@ -97,7 +99,7 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 					}}
 					onBlur={() => setEditing(false)}
 				/>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

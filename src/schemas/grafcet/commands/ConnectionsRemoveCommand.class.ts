@@ -7,9 +7,11 @@ export default class ConnectionsRemoveCommand extends GrafcetCommand<GrafcetConn
 		return "connections-remove";
 	}
 
-	execute(grafcet: Grafcet): Grafcet {
-		grafcet.removeConnections(this.payload);
-		return grafcet;
+	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
+		grafcet.removeConnections(
+			this.payload.map((c) => ({ sourceId: c.source.id, targetId: c.target.id }))
+		);
+		return [grafcet, true];
 	}
 
 	cancel(grafcet: Grafcet): Grafcet {

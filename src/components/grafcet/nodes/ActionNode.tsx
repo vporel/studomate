@@ -1,9 +1,11 @@
 "use client";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Action, { ActionData } from "@/schemas/grafcet/Action.class";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react";
 import React, { useEffect, type FC } from "react";
+import { useGrafcetContext } from "../context/GrafcetContext";
+import GrafcetNode from "./GrafcetNode";
 
 export type ActionNodeType = Node<ActionData> & { type: "action" };
 
@@ -15,23 +17,40 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editing, setEditing] = React.useState(false);
 	const borderColor = selected ? th.palette.primary.main : "black";
+	const oldExpressionRef = React.useRef(data?.expression ?? "");
+	const { elementsEvents } = useGrafcetContext();
 
 	const onExpressionChange = React.useCallback(
 		(newExpression: string) => {
 			updateNodeData(id, { ...data, expression: newExpression });
+			oldExpressionRef.current = newExpression;
 		},
 		[id, data, updateNodeData]
 	);
 
-	//Update the width branches positions when the node is resized
+	//Update the data when the node is resized
 	useEffect(() => {
-		updateNodeData(id, (n) => {
+		updateNodeData(id, () => {
 			const dataToChange: Partial<ActionData> = {};
 			if (nodeWidth != 0) dataToChange.width = nodeWidth;
 			if (nodeHeight != 0) dataToChange.height = nodeHeight;
+			if (Object.keys(dataToChange).length !== 0) {
+				elementsEvents.emit("update", {
+					elements: [{ id, type: "action", data: dataToChange }],
+				});
+			}
 			return dataToChange;
 		});
-	}, [id, nodeWidth, nodeHeight, updateNodeData]);
+	}, [id, nodeWidth, nodeHeight, updateNodeData, elementsEvents]);
+
+	//Save an update command when the user stops editing and the expression has changed
+	useEffect(() => {
+		if (!editing && oldExpressionRef.current !== data?.expression) {
+			elementsEvents.emit("update", {
+				elements: [{ id, type: "action", data: { expression: data.expression } }],
+			});
+		}
+	}, [editing, data, elementsEvents, id]);
 
 	return (
 		<>
@@ -51,8 +70,9 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
-				className="grafcet-node action-node"
+			<GrafcetNode
+				type="action"
+				id={id}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
@@ -93,7 +113,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 					}}
 					onBlur={() => setEditing(false)}
 				/>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

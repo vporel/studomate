@@ -6,6 +6,7 @@ import { StepReferralTargetData } from "@/schemas/grafcet/StepReferralTarget.cla
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
 import React, { type FC } from "react";
+import GrafcetNode from "./GrafcetNode";
 
 export type StepReferralTargetNodeType = Node<StepReferralTargetData> & {
 	type: "step-referral-target";
@@ -32,8 +33,9 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 					backgroundColor: borderColor,
 				}}
 			/>
-			<Box
-				className="grafcet-node step-referral-target-node"
+			<GrafcetNode
+				id={id}
+				type="step-referral-target"
 				sx={{
 					width: StepReferral.defaultDimensions.width + "px",
 					display: "flex",
@@ -97,7 +99,7 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 						},
 					}}
 				></Box>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

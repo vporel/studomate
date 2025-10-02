@@ -51,6 +51,7 @@ export default function App() {
 										id: "xx",
 										title: "Grafcet 1",
 										active: true,
+										hasChanges: true,
 									},
 									{ id: "yy", title: "Grafcet 2" },
 								]}

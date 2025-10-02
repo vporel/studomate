@@ -1,8 +1,9 @@
 "use client";
 import Comment, { CommentData } from "@/schemas/grafcet/Comment.class";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, useReactFlow } from "@xyflow/react";
 import React, { useEffect, type FC } from "react";
+import GrafcetNode from "./GrafcetNode";
 
 export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
@@ -39,8 +40,9 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 				minWidth={Comment.defaultDimensions.width}
 				minHeight={Comment.defaultDimensions.height}
 			/>
-			<Box
-				className="grafcet-node comment-node"
+			<GrafcetNode
+				id={id}
+				type="comment"
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
@@ -82,7 +84,7 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 					}}
 					onBlur={() => setEditing(false)}
 				/>
-			</Box>
+			</GrafcetNode>
 		</>
 	);
 };

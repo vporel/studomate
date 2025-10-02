@@ -1,20 +1,23 @@
 import { GrafcetElementType } from "./GrafcetElement.class";
 
+export type GrafcetConnectionIdentifier = { type: GrafcetElementType; id: string; handleId: string };
+export type GrafcetConnectionData = { points: [number, number][] };
+
 export default class GrafcetConnection {
 	id: string;
-	from: { type: GrafcetElementType; id: string };
-	to: { type: GrafcetElementType; id: string };
-	data: { points: [number, number][] };
+	source: GrafcetConnectionIdentifier;
+	target: GrafcetConnectionIdentifier;
+	data: GrafcetConnectionData;
 
 	constructor(
 		id: string,
-		from: { type: GrafcetElementType; id: string },
-		to: { type: GrafcetElementType; id: string },
-		data: { points: [number, number][] }
+		source: GrafcetConnectionIdentifier,
+		target: GrafcetConnectionIdentifier,
+		data: GrafcetConnectionData
 	) {
 		this.id = id;
-		this.from = from;
-		this.to = to;
+		this.source = source;
+		this.target = target;
 		this.data = data;
 	}
 }

@@ -1,19 +1,15 @@
 import { getStraightPathFromPoints } from "@/lib/svg";
 import { Box, useTheme } from "@mui/material";
 import { Edge, useReactFlow, type EdgeProps } from "@xyflow/react";
-import React, { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
+import useAddPointHandler from "./useAddPointHandler";
+import useEdgeStateUpdaterEventsHandlers from "./useEdgeStateUpdaterEventsHandlers";
+import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
 
 export type CustomEdgeData = { points: [number, number][] };
 
 export type CustomEdgeType = Edge<CustomEdgeData> & { type: "custom-edge" };
-
-function getPointsForAdding(points: [number, number][]): [number, number][] {
-	const pointsForAdding: [number, number][] = [];
-	for (let i = 1; i < points.length; i++)
-		pointsForAdding.push([(points[i][0] + points[i - 1][0]) / 2, (points[i][1] + points[i - 1][1]) / 2]);
-	return pointsForAdding;
-}
 
 const CustomEdge = ({
 	id,
@@ -24,30 +20,40 @@ const CustomEdge = ({
 	data,
 	interactionWidth,
 	selected,
+	source,
+	sourceHandleId,
+	target,
+	targetHandleId,
 }: EdgeProps<CustomEdgeType>) => {
 	const th = useTheme();
-	const { updateEdgeData, screenToFlowPosition } = useReactFlow();
+	const { updateEdgeData, getInternalNode } = useReactFlow();
+	const sourceNode = useMemo(() => getInternalNode(source), [source, getInternalNode]);
+	const targetNode = useMemo(() => getInternalNode(target), [target, getInternalNode]);
 	const [points, setPoints] = useState<[number, number][]>(
 		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY)
 	);
-	const [pointsForAdding, setPointsForAdding] = useState<[number, number][]>(getPointsForAdding(points));
 	const pathString = getStraightPathFromPoints(points);
 	const color = !selected ? "black" : th.palette.primary.main;
-	const addPoint = useCallback(
-		(index: number) => {
-			setPoints((pts) => {
-				const newPoints = [...pts];
-				newPoints.splice(index + 1, 0, pointsForAdding[index]);
-				return newPoints;
-			});
-		},
-		[pointsForAdding]
+	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(
+		points,
+		setPoints,
+		id,
+		sourceNode,
+		sourceHandleId,
+		targetNode,
+		targetHandleId
 	);
-
-	//Create the points for adding
-	useEffect(() => {
-		setPointsForAdding(getPointsForAdding(points));
-	}, [points]);
+	const { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp } =
+		usePointPointerEventsHandlers(
+			points,
+			setPoints,
+			setPointsForAdding,
+			id,
+			sourceNode,
+			sourceHandleId,
+			targetNode,
+			targetHandleId
+		);
 
 	//Update the points when the source position changes
 	useEffect(() => {
@@ -72,37 +78,7 @@ const CustomEdge = ({
 		updateEdgeData(id, { points });
 	}, [id, points, updateEdgeData]);
 
-	function handlePointPointerDown(e: React.PointerEvent<SVGCircleElement>, index: number) {
-		e.stopPropagation();
-		(e.target as SVGCircleElement).setPointerCapture(e.pointerId);
-		if (e.buttons === 2) {
-			//Right click
-			//Delete point on right click
-			if (index > 0 && index < points.length - 1) {
-				setPoints((pts) => {
-					const newPoints = [...pts];
-					newPoints.splice(index, 1);
-					setPointsForAdding(getPointsForAdding(newPoints));
-					return newPoints;
-				});
-			}
-		}
-	}
-
-	function handlePointPointerMove(e: React.PointerEvent<SVGCircleElement>, index: number) {
-		if (e.buttons !== 1) return;
-		const { x, y } = screenToFlowPosition({ x: e.pageX, y: e.pageY });
-		setPoints((pts) => {
-			const newPoints = [...pts];
-			newPoints.splice(index, 1, [x, y]);
-			setPointsForAdding(getPointsForAdding(newPoints));
-			return newPoints;
-		});
-	}
-
-	function handlePointPointerUp(e: React.PointerEvent<SVGCircleElement>, index: number) {
-		(e.target as SVGCircleElement).releasePointerCapture(e.pointerId);
-	}
+	useEdgeStateUpdaterEventsHandlers(id, setPoints);
 
 	return (
 		<Box

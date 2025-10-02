@@ -2,13 +2,20 @@
 
 import CommandsStack from "@/schemas/commands/CommandsStack.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
+import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
+import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/ConnectionsUpdateCommand.class";
 import ElementsAddCommand from "@/schemas/grafcet/commands/ElementsAddCommand.class";
 import ElementsRemoveCommand from "@/schemas/grafcet/commands/ElementsRemoveCommand.class";
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateCommand.class";
 import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useEffect } from "react";
-import { GrafcetNode } from "../flow/grafcet-nodes-definitions";
-import { GrafcetElementsEvents } from "./GrafcetContext";
+import {
+	GrafcetElementsEvents,
+	GrafcetElementsEventsAddData,
+	GrafcetElementsEventsRemoveData,
+	GrafcetElementsEventsUpdateData,
+} from "./elements-events";
 
 export default function useElementsEventsHandler(
 	elementsEvents: Emitter<GrafcetElementsEvents>,
@@ -18,20 +25,22 @@ export default function useElementsEventsHandler(
 ) {
 	//add event
 	useEffect(() => {
-		const handler = (nodes: GrafcetNode[]) => {
+		const handler = (nodes: GrafcetElementsEventsAddData[]) => {
 			if (!grafcet) {
 				throw new Error("Grafcet is null");
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ElementsAddCommand(
-					nodes.map((node) => ({
-						type: node.type,
-						id: node.id,
-						data: node.data,
-						position: node.position,
-					}))
-				),
+				[
+					new ElementsAddCommand(
+						nodes.map((node) => ({
+							type: node.type,
+							id: node.id,
+							data: node.data,
+							position: node.position,
+						}))
+					),
+				],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);
@@ -44,25 +53,43 @@ export default function useElementsEventsHandler(
 
 	//update event
 	useEffect(() => {
-		const handler = (nodes: GrafcetNode[]) => {
+		const handler = ({
+			elements,
+			connections,
+		}: {
+			elements: GrafcetElementsEventsUpdateData[];
+			connections?: GrafcetConnection[];
+		}) => {
 			if (!grafcet) {
 				throw new Error("Grafcet is null");
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ElementsUpdateCommand(
-					nodes.map((node) => ({
-						type: node.type,
-						id: node.id,
-						data: node.data,
-						position: node.position,
-						previousData: grafcet.getElement(node.type, node.id)?.data || {},
-						previousPosition: grafcet.getElement(node.type, node.id)?.position || {
-							x: 0,
-							y: 0,
-						},
-					}))
-				),
+				[
+					new ElementsUpdateCommand(
+						elements.map((e) => ({
+							type: e.type,
+							id: e.id,
+							data: e.data,
+							position: e.position,
+							previousData: e.data ? grafcet.getElement(e.type, e.id)?.data || {} : undefined,
+							previousPosition: e.position
+								? grafcet.getElement(e.type, e.id)?.position || {
+										x: 0,
+										y: 0,
+								  }
+								: undefined,
+						}))
+					),
+
+					new ConnectionsUpdateCommand(
+						(connections || []).map((c) => {
+							const previous = grafcet.getConnection(c.source.id, c.target.id);
+							if (!previous) throw new Error("Previous connection not found");
+							return { connection: c, previous };
+						})
+					),
+				],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);
@@ -75,20 +102,29 @@ export default function useElementsEventsHandler(
 
 	//remove event
 	useEffect(() => {
-		const handler = (nodes: GrafcetNode[]) => {
+		const handler = ({
+			elements,
+			connections,
+		}: {
+			elements: GrafcetElementsEventsRemoveData[];
+			connections?: GrafcetConnection[];
+		}) => {
 			if (!grafcet) {
 				throw new Error("Grafcet is null");
 				return;
 			}
 			const newGrafcet = commandsStack.execute(
-				new ElementsRemoveCommand(
-					nodes.map((node) => ({
-						type: node.type,
-						id: node.id,
-						data: node.data,
-						position: node.position,
-					}))
-				),
+				[
+					new ElementsRemoveCommand(
+						elements.map((e) => ({
+							type: e.type,
+							id: e.id,
+							data: e.data,
+							position: e.position,
+						}))
+					),
+					new ConnectionsRemoveCommand(connections || []),
+				],
 				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
 			);
 			setGrafcet(newGrafcet);

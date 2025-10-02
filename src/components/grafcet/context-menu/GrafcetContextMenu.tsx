@@ -11,7 +11,7 @@ import {
 	GrafcetContextMenuElement,
 	GrafcetcontextMenuItemType,
 	GrafcetContextMenuProps,
-} from "./grafcet-context-menu-types";
+} from "./grafcet-context-menu";
 import junctionContextMenuItems from "./junction-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
