@@ -21,7 +21,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				height: "100%",
 				width: "200px",
 				borderRight: "1px solid lightgray",
-				backgroundColor: "#efefef",
+				backgroundColor: "white",
 				padding: "10px",
 				...style,
 			}}

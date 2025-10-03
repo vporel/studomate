@@ -33,7 +33,7 @@ export const PagesContextProvider = ({ children }: { children: ReactNode }) => {
 
 	const updatePageData = useCallback((objectId: string, newData: PageData) => {
 		setPagesData((oldPagesData) => {
-			const newPagesData = { ...oldPagesData };
+			const newPagesData = structuredClone(oldPagesData);
 			newPagesData[objectId] = { ...newPagesData[objectId], ...newData };
 			return newPagesData;
 		});

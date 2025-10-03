@@ -1,11 +1,12 @@
 "use client";
 
+import StatusBar from "@/components/footer/StatusBar";
 import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
 import { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
-import MenuBar from "@/components/menu/MenuBar";
+import MenuBar from "@/components/header/menu/MenuBar";
+import TitleBar from "@/components/header/TitleBar";
 import PagesTabBar from "@/components/pages/PagesTabBar";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import StatusBar from "@/components/StatusBar";
 import { PagesContextProvider } from "@/PagesContext";
 import { Box } from "@mui/material";
 import GrafcetPage from "../components/grafcet/flow/GrafcetPage";
@@ -23,7 +24,21 @@ export default function App() {
 					overflow: "hidden",
 				}}
 			>
-				<MenuBar />
+				<Box
+					sx={{
+						width: "100%",
+						flexShrink: 0,
+						display: "flex",
+						alignItems: "center",
+						borderBottom: "1px solid lightgray",
+					}}
+				>
+					<Box component="img" src="./favicon.ico" sx={{ width: "40px", margin: "0 0.5rem" }} />
+					<Box sx={{ flex: 1, paddingTop: "5px" }}>
+						<TitleBar />
+						<MenuBar />
+					</Box>
+				</Box>
 				<Box
 					sx={{
 						width: "100%",
@@ -54,6 +69,7 @@ export default function App() {
 										hasChanges: true,
 									},
 									{ id: "yy", title: "Grafcet 2" },
+									{ id: "zz", title: "Grafcet 3" },
 								]}
 							/>
 							<GrafcetPage grafcetId="page-1" />

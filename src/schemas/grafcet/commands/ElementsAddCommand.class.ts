@@ -1,8 +1,8 @@
 import Grafcet, { XYPosition } from "../Grafcet.class";
 import { GrafcetElementType } from "../GrafcetElement.class";
-import GrafcetCommand from "./AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "./AbstractGrafcetCommand.class";
 
-export default class ElementsAddCommand extends GrafcetCommand<
+export default class ElementsAddCommand extends AbstractGrafcetCommand<
 	{
 		type: GrafcetElementType;
 		id: string;

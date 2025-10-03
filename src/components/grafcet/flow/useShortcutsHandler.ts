@@ -1,6 +1,6 @@
 "use client";
 
-import GrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/ConnectionsUpdateCommand.class";
@@ -13,7 +13,7 @@ import { useGrafcetContext } from "../context/GrafcetContext";
 import { edgeStateUpdaterEvents } from "../edges/useEdgeStateUpdaterEventsHandlers";
 
 function commandUndo(
-	command: GrafcetCommand<any> | null,
+	command: AbstractGrafcetCommand<any> | null,
 	setNodes: (payload: any[] | ((nodes: any[]) => any[])) => void,
 	setEdges: (payload: any[] | ((edges: any[]) => any[])) => void
 ) {
@@ -63,7 +63,7 @@ function commandUndo(
 }
 
 function commandRedo(
-	command: GrafcetCommand<any> | null,
+	command: AbstractGrafcetCommand<any> | null,
 	setNodes: (payload: any[] | ((nodes: any[]) => any[])) => void,
 	setEdges: (payload: any[] | ((edges: any[]) => any[])) => void
 ) {

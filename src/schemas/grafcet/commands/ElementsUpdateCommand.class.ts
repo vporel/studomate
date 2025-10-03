@@ -1,6 +1,6 @@
 import Grafcet, { XYPosition } from "../Grafcet.class";
 import { GrafcetElementType } from "../GrafcetElement.class";
-import GrafcetCommand from "./AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "./AbstractGrafcetCommand.class";
 
 /**
  * Command to update elements in the grafcet.
@@ -9,7 +9,7 @@ import GrafcetCommand from "./AbstractGrafcetCommand.class";
  * If the data is provided, the previousData property must also be provided to allow undoing the command.
  * If the position is provided, the previousPosition property must also be provided to allow undoing the command.
  */
-export default class ElementsUpdateCommand extends GrafcetCommand<
+export default class ElementsUpdateCommand extends AbstractGrafcetCommand<
 	{
 		type: GrafcetElementType;
 		id: string;

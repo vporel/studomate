@@ -1,9 +1,8 @@
 "use client";
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import { PAPERS_SIZES } from "@/constants";
-import { deepObjectsComparison } from "@/lib/object";
 import { mmToPx } from "@/lib/utils";
-import { usePagesContext } from "@/PagesContext";
-import GrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { Dimensions } from "@xyflow/react";
 import mitt, { Emitter } from "mitt";
@@ -21,8 +20,8 @@ type GrafcetContextType = {
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>;
 	elementsEvents: Emitter<GrafcetElementsEvents>;
 	connectionsEvents: Emitter<GrafcetConnectionsEvents>;
-	undoLastCommand: () => GrafcetCommand<any>[] | null;
-	redoLastCommand: () => GrafcetCommand<any>[] | null;
+	undoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
+	redoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
 };
 
 const GrafcetContext = createContext<GrafcetContextType>({
@@ -52,7 +51,7 @@ export const GrafcetContextProvider = ({
 	const nodesEvents = useMemo(() => mitt<GrafcetElementsEvents>(), []);
 	const connectionsEvents = useMemo(() => mitt<GrafcetConnectionsEvents>(), []);
 	const { commandsStackRef, undoLastCommand, redoLastCommand } = useCommandsStack(grafcet, setGrafcet);
-	const { updatePageData } = usePagesContext();
+	const { updateGrafcetData } = useProjectContext();
 
 	useElementsEventsHandler(nodesEvents, grafcet, setGrafcet, commandsStackRef.current);
 	useConnectionsEventsHandler(connectionsEvents, grafcet, setGrafcet, commandsStackRef.current);
@@ -64,15 +63,8 @@ export const GrafcetContextProvider = ({
 	//Listen to grafcet changes
 	useEffect(() => {
 		if (!grafcet) return;
-		const dataToUpdate: any = {};
-		if (!deepObjectsComparison(previousGrafcetRef.current, grafcet)) {
-			previousGrafcetRef.current = grafcet;
-			dataToUpdate.hasChanges = true;
-		}
-		if (Object.keys(dataToUpdate).length > 0) updatePageData(grafcetId, dataToUpdate);
-	}, [grafcetId, grafcet, updatePageData]);
-
-	console.log(grafcet);
+		updateGrafcetData(grafcetId, { grafcet });
+	}, [grafcetId, grafcet, updateGrafcetData]);
 
 	return (
 		<GrafcetContext.Provider

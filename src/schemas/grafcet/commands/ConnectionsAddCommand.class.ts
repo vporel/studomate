@@ -1,8 +1,8 @@
 import Grafcet from "../Grafcet.class";
 import GrafcetConnection from "../GrafcetConnection.class";
-import GrafcetCommand from "./AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "./AbstractGrafcetCommand.class";
 
-export default class ConnectionsAddCommand extends GrafcetCommand<GrafcetConnection[]> {
+export default class ConnectionsAddCommand extends AbstractGrafcetCommand<GrafcetConnection[]> {
 	getType(): string {
 		return "connections-add";
 	}

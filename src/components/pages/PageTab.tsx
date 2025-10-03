@@ -1,8 +1,9 @@
 "use client";
 
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, useTheme } from "@mui/material";
+import { alpha, Box, Typography, useTheme } from "@mui/material";
 
 export type PageTabProps = {
 	id: string;
@@ -21,26 +22,57 @@ const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
 			sx={{
 				height: "100%",
 				width: "fit-content",
-				padding: "10px",
+				padding: "5px 5px 5px 10px",
 				display: "flex",
 				alignItems: "center",
-				justifyContent: "center",
+				justifyContent: "space-between",
+				gap: "10px",
 				cursor: "pointer",
 				userSelect: "none",
 				transition: "all .2s ease",
-				borderRadius: "5px 5px 0px 0px",
 				position: "relative",
-				backgroundColor: !active ? "white" : th.palette.primary.main,
+				backgroundColor: !active ? "white" : alpha(th.palette.primary.main, 1),
 				color: !active ? th.palette.text.primary : "white",
+				borderRight: "1px solid lightgray",
 				":hover": {
 					backgroundColor: "#dfdfdf",
 					color: th.palette.text.primary,
-					borderColor: th.palette.primary.main,
+					".page__tab-icon": { opacity: 1 },
 				},
 			}}
 		>
-			<span>{title}</span>
-			{hasChanges ? <CircleIcon /> : <CloseIcon />}
+			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
+				<AccountTreeIcon
+					sx={{
+						transform: "rotate(90deg) translateX(-1px)",
+						color: active ? "white" : th.palette.primary.main,
+						fontSize: "1.2rem",
+					}}
+				/>
+				<Typography component="span" sx={{ fontSize: "0.9rem" }}>
+					{title}
+				</Typography>
+			</Box>
+			<Box
+				className="page__tab-icon"
+				sx={{
+					opacity: active || hasChanges ? 1 : 0,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					padding: "3px",
+					borderRadius: "5px",
+					":hover": {
+						background: "#cfcfcf",
+					},
+				}}
+			>
+				{hasChanges ? (
+					<CircleIcon sx={{ fontSize: "0.9rem" }} />
+				) : (
+					<CloseIcon sx={{ fontSize: "0.9rem" }} />
+				)}
+			</Box>
 		</Box>
 	);
 };

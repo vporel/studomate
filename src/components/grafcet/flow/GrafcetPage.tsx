@@ -1,4 +1,5 @@
 "use client";
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from "@/constants";
 import { mmToPx } from "@/lib/utils";
 import { usePagesContext } from "@/PagesContext";
@@ -28,6 +29,7 @@ export function GrafcetPageContent() {
 	const th = useTheme();
 	const [nodes, setNodes] = useState<GrafcetNode[]>([]);
 	const [edges, setEdges] = useState<GrafcetEdge[]>([]);
+	const { updateGrafcetData } = useProjectContext();
 	const { updatePageData } = usePagesContext();
 	const { grafcetId, flowDimensions } = useGrafcetContext();
 	const { onNodesChange, onNodesDelete, onNodeDragStop } = useNodesHandlers(setNodes);
@@ -35,6 +37,11 @@ export function GrafcetPageContent() {
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
 	const handleShortcuts = useShortcutsHandler();
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
+
+	//Share the grafcet data with the project context
+	useEffect(() => {
+		updateGrafcetData(grafcetId, { flowNodes: nodes });
+	}, [grafcetId, nodes, updateGrafcetData]);
 
 	//Share the grafcet data
 	useEffect(() => {

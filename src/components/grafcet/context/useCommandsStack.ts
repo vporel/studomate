@@ -1,7 +1,7 @@
 "use client";
 
 import CommandsStack from "@/schemas/commands/CommandsStack.class";
-import GrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
+import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { RefObject, useCallback, useRef } from "react";
 
@@ -10,8 +10,8 @@ export default function useCommandsStack(
 	setGrafcet: (g: Grafcet) => void
 ): {
 	commandsStackRef: RefObject<CommandsStack<Grafcet>>;
-	undoLastCommand: () => GrafcetCommand<any>[] | null;
-	redoLastCommand: () => GrafcetCommand<any>[] | null;
+	undoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
+	redoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
 } {
 	const commandsStackRef = useRef<CommandsStack<Grafcet>>(new CommandsStack<Grafcet>(100));
 

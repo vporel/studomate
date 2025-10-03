@@ -8,18 +8,16 @@ const StatusBar = () => {
 			className="status-bar"
 			sx={{
 				width: "100%",
-				height: "30px",
+				height: "35px",
 				borderTop: "1px solid lightgray",
 				display: "flex",
 				justifyContent: "space-between",
 				alignItems: "center",
 				padding: "10px",
-				background: "#efefff",
+				background: "white",
 				zIndex: 100,
 			}}
-		>
-			Statut
-		</Box>
+		></Box>
 	);
 };
 
