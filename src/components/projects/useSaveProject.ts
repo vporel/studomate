@@ -4,13 +4,16 @@ import { openSaveDialog, writeFile } from "@/lib/file-system";
 import { deepObjectsComparison } from "@/lib/object";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
+import { Emitter } from "mitt";
 import { useCallback, useRef, useState } from "react";
+import { ProjectEvents } from "./project-events";
 
 export default function useSaveProject(
 	project: Project | null,
 	setProject: (g: Project) => void,
 	fileHandle: FileSystemFileHandle | null,
-	setFileHandle: (fh: FileSystemFileHandle | null) => void
+	setFileHandle: (fh: FileSystemFileHandle | null) => void,
+	projectEvents: Emitter<ProjectEvents>
 ): {
 	hasUnsavedChanges: boolean;
 	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
@@ -64,8 +67,9 @@ export default function useSaveProject(
 		// Update previousGrafcetsRef
 		previousGrafcetsRef.current = structuredClone(grafcetsRef.current);
 		setHasUnsavedChanges(false);
+		projectEvents.emit("saved");
 		return true;
-	}, [project, setProject, fileHandle, setFileHandle]);
+	}, [project, setProject, fileHandle, setFileHandle, projectEvents]);
 
 	return { hasUnsavedChanges, updateGrafcetData, saveProject };
 }

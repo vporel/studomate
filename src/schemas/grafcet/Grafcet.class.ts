@@ -33,7 +33,8 @@ export const elementsSchemasClasses: Record<GrafcetElementType, any> = {
 };
 
 export default class Grafcet {
-	id: string = "";
+	id: string;
+	name: string;
 	format: GrafcetFormat = { type: "A4", orientation: "portrait" };
 	steps: Step[] = [];
 	actions: Action[] = [];
@@ -47,8 +48,9 @@ export default class Grafcet {
 	comments: Comment[] = [];
 	connections: GrafcetConnection[] = [];
 
-	constructor(id: string, format: GrafcetFormat) {
+	constructor(id: string, name: string, format: GrafcetFormat) {
 		this.id = id;
+		this.name = name;
 		this.format = format;
 	}
 

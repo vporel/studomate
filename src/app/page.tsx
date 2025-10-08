@@ -70,7 +70,7 @@ export default function App() {
 						<PagesTabBar />
 						<GrafcetToolbarDnDProvider>
 							<GrafcetToolbar />
-							<GrafcetPage grafcetId="page-1" />
+							<GrafcetPage grafcetId="page1" />
 						</GrafcetToolbarDnDProvider>
 					</Box>
 				</Box>

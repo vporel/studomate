@@ -1,21 +1,8 @@
 "use client";
-import { Node } from "@xyflow/react";
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
-
-type PageDataBase = {
-	title: string;
-	active: boolean;
-	hasUnsavedChanges: boolean;
-};
-
-export type GrafcetPageData = PageDataBase & {
-	type: "grafcet";
-	width?: number;
-	height?: number;
-	nodes?: Array<Node>;
-};
-
-type PageData = GrafcetPageData;
+import { createContext, ReactNode, useContext, useEffect } from "react";
+import { useProjectContext } from "../projects/ProjectContext";
+import { PageData } from "./pages-data";
+import usePagesData from "./usePagesData";
 
 type PagesContextType = {
 	pagesData: Record<string, PageData>;
@@ -34,15 +21,27 @@ export const PagesContextProvider = ({
 	initialPagesData: Record<string, PageData>;
 	children: ReactNode;
 }) => {
-	const [pagesData, setPagesData] = useState<Record<string, PageData>>(initialPagesData);
+	const { pagesData, updatePageData, setPagesData } = usePagesData(initialPagesData);
+	const { projectEvents } = useProjectContext();
 
-	const updatePageData = useCallback((objectId: string, newData: Partial<PageData>) => {
-		setPagesData((oldPagesData) => {
-			const newPagesData = structuredClone(oldPagesData);
-			newPagesData[objectId] = { ...newPagesData[objectId], ...newData };
-			return newPagesData;
-		});
-	}, []);
+	useEffect(() => {
+		const handleProjectSaved = () => {
+			// Set hasUnsavedChanges to false for all pages
+			setPagesData((oldPagesData) => {
+				const newPagesData = structuredClone(oldPagesData);
+				for (const pageId in newPagesData) {
+					newPagesData[pageId].hasUnsavedChanges = false;
+				}
+				return newPagesData;
+			});
+		};
+
+		projectEvents.on("saved", handleProjectSaved);
+
+		return () => {
+			projectEvents.off("saved", handleProjectSaved);
+		};
+	}, [projectEvents, setPagesData]);
 
 	return <PagesContext.Provider value={{ pagesData, updatePageData }}>{children}</PagesContext.Provider>;
 };

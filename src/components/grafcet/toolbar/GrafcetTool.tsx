@@ -31,7 +31,7 @@ const GrafcetTool = ({
 				justifyContent: "center",
 				opacity: disabled ? 0.4 : 1,
 				"&:hover": {
-					background: "#e0e0e0",
+					background: "rgb(240, 240, 240)",
 				},
 			}}
 			draggable

@@ -4,16 +4,16 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
 // import CloseIcon from "@mui/icons-material/Close";
 import CloseIcon from "@mui/icons-material/Delete";
-import { alpha, Box, Typography, useTheme } from "@mui/material";
+import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
 
 export type PageTabProps = {
 	id: string;
 	title: string;
 	active?: boolean;
-	hasChanges?: boolean;
+	hasUnsavedChanges?: boolean;
 };
 
-const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
+const PageTab = ({ id, title, active, hasUnsavedChanges }: PageTabProps) => {
 	const th = useTheme();
 
 	return (
@@ -38,12 +38,16 @@ const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
 				":hover": {
 					backgroundColor: "#dfdfdf",
 					color: th.palette.text.primary,
-					".page__tab-icon": { opacity: 1 },
+					".page__tab__type-icon": { color: th.palette.primary.main },
+					".page__tab__button-icon": { opacity: 1 },
+					".circle-icon": { display: "none" },
+					".close-icon": { display: "block" },
 				},
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
 				<AccountTreeIcon
+					className="page__tab__type-icon"
 					sx={{
 						transform: "rotate(90deg) translateX(-1px)",
 						color: active ? "white" : th.palette.primary.main,
@@ -54,10 +58,10 @@ const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
 					{title}
 				</Typography>
 			</Box>
-			<Box
-				className="page__tab-icon"
+			<IconButton
+				className="page__tab__button-icon"
 				sx={{
-					opacity: active || hasChanges ? 1 : 0,
+					opacity: active || hasUnsavedChanges ? 1 : 0,
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
@@ -68,12 +72,12 @@ const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
 					},
 				}}
 			>
-				{hasChanges ? (
-					<CircleIcon sx={{ fontSize: "0.9rem" }} />
-				) : (
-					<CloseIcon sx={{ fontSize: "0.9rem" }} />
-				)}
-			</Box>
+				{hasUnsavedChanges && <CircleIcon className="circle-icon" sx={{ fontSize: "0.9rem" }} />}
+				<CloseIcon
+					className="close-icon"
+					sx={{ fontSize: "0.9rem", display: hasUnsavedChanges ? "none" : "block" }}
+				/>
+			</IconButton>
 		</Box>
 	);
 };

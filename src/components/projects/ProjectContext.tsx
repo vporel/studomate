@@ -2,14 +2,14 @@
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import AbstractProjectCommand from "@/schemas/project/commands/AbstractProjectCommand.class";
 import Project from "@/schemas/project/Project.class";
-import { createContext, ReactNode, useContext } from "react";
+import mitt, { Emitter } from "mitt";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 import UnsavedChangesDialog from "../misc/UnsavedChangesDialog";
+import { ProjectEvents } from "./project-events";
 import useCommandsStack from "./useCommandsStack";
 import useOpenProject from "./useOpenProject";
 import useProject from "./useProject";
 import useSaveProject from "./useSaveProject";
-
-export type GrafcetEvents = {};
 
 type ProjectContextType = {
 	project: Project | null;
@@ -19,6 +19,7 @@ type ProjectContextType = {
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
 	undoLastCommand: () => AbstractProjectCommand<any>[] | null;
 	redoLastCommand: () => AbstractProjectCommand<any>[] | null;
+	projectEvents: Emitter<ProjectEvents>;
 };
 
 const ProjectContext = createContext<ProjectContextType>({
@@ -29,15 +30,18 @@ const ProjectContext = createContext<ProjectContextType>({
 	saveProject: async () => null,
 	undoLastCommand: () => null,
 	redoLastCommand: () => null,
+	projectEvents: mitt<ProjectEvents>(),
 });
 
 export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
 	const { project, setProject, fileHandle, setFileHandle } = useProject();
+	const projectEvents = useMemo(() => mitt<ProjectEvents>(), []);
 	const { updateGrafcetData, hasUnsavedChanges, saveProject } = useSaveProject(
 		project,
 		setProject,
 		fileHandle,
-		setFileHandle
+		setFileHandle,
+		projectEvents
 	);
 	const { openProject, unsavedChangesDialogOpen, closeUnsavedChangesDialog } = useOpenProject(
 		hasUnsavedChanges,
@@ -56,6 +60,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				saveProject,
 				undoLastCommand,
 				redoLastCommand,
+				projectEvents,
 			}}
 		>
 			{children}
