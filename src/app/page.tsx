@@ -5,9 +5,9 @@ import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
 import { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
 import MenuBar from "@/components/header/menu/MenuBar";
 import TitleBar from "@/components/header/TitleBar";
+import { PagesContextProvider } from "@/components/pages/PagesContext";
 import PagesTabBar from "@/components/pages/PagesTabBar";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import { PagesContextProvider } from "@/PagesContext";
 import { Box } from "@mui/material";
 import GrafcetPage from "../components/grafcet/flow/GrafcetPage";
 
@@ -15,9 +15,18 @@ export default function App() {
 	const { project } = useProjectContext();
 
 	return (
-		<PagesContextProvider>
-			<div
-				style={{
+		<PagesContextProvider
+			initialPagesData={{
+				page1: {
+					type: "grafcet",
+					title: "Grafcet 1",
+					active: true,
+					hasUnsavedChanges: false,
+				},
+			}}
+		>
+			<Box
+				sx={{
 					display: "flex",
 					flexDirection: "column",
 					height: "100vh",
@@ -48,36 +57,25 @@ export default function App() {
 						overflow: "hidden",
 					}}
 				>
-					<GrafcetToolbarDnDProvider>
-						<GrafcetToolbar />
-						<Box
-							className="pages__container"
-							sx={{
-								height: "100%",
-								display: "flex",
-								flex: 1,
-								flexDirection: "column",
-								position: "relative",
-							}}
-						>
-							<PagesTabBar
-								tabsData={[
-									{
-										id: "xx",
-										title: "Grafcet 1",
-										active: true,
-										hasChanges: true,
-									},
-									{ id: "yy", title: "Grafcet 2" },
-									{ id: "zz", title: "Grafcet 3" },
-								]}
-							/>
+					{/* <ActivityToolbar /> */}
+					<Box
+						sx={{
+							height: "100%",
+							display: "flex",
+							flex: 1,
+							flexDirection: "column",
+							position: "relative",
+						}}
+					>
+						<PagesTabBar />
+						<GrafcetToolbarDnDProvider>
+							<GrafcetToolbar />
 							<GrafcetPage grafcetId="page-1" />
-						</Box>
-					</GrafcetToolbarDnDProvider>
+						</GrafcetToolbarDnDProvider>
+					</Box>
 				</Box>
 				<StatusBar />
-			</div>
+			</Box>
 		</PagesContextProvider>
 	);
 }

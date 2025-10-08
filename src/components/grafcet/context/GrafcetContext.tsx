@@ -6,7 +6,7 @@ import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCo
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { Dimensions } from "@xyflow/react";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { GrafcetConnectionsEvents } from "./connections-events";
 import { GrafcetContextMenuEvents } from "./context-menu-events";
 import { GrafcetElementsEvents } from "./elements-events";
@@ -41,7 +41,6 @@ export const GrafcetContextProvider = ({
 	grafcetId: string;
 	children: ReactNode;
 }) => {
-	const previousGrafcetRef = useRef<Grafcet | null>(null);
 	const [grafcet, setGrafcet] = useState<Grafcet | null>(null);
 	const [flowDimensions, setFlowDimensions] = useState<Dimensions>({
 		width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width),

@@ -1,8 +1,8 @@
 "use client";
+import { usePagesContext } from "@/components/pages/PagesContext";
 import { useProjectContext } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from "@/constants";
 import { mmToPx } from "@/lib/utils";
-import { usePagesContext } from "@/PagesContext";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";

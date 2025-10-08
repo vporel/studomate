@@ -8,8 +8,8 @@ const StepReferralTargetTool = ({ disabled }: { disabled?: boolean }) => {
 		<GrafcetTool type="step-referral-target" disabled={disabled}>
 			<Box
 				style={{
-					width: "40px",
-					height: "40px",
+					width: "30px",
+					height: "30px",
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",
@@ -20,6 +20,7 @@ const StepReferralTargetTool = ({ disabled }: { disabled?: boolean }) => {
 					sx={{
 						width: "1px",
 						height: "14px",
+						marginTop: "6px",
 						background: "black",
 						position: "relative",
 						"&::before, &::after": {

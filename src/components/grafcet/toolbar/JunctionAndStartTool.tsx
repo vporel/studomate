@@ -9,19 +9,15 @@ const AndJunctionStartTool = ({ disabled }: { disabled?: boolean }) => {
 			<Box
 				sx={{
 					width: "40px",
-					height: "40px",
+					height: "35px",
 					display: "flex",
 					flexDirection: "column",
 					justifyContent: "center",
 					alignItems: "center",
 				}}
 			>
-				<Box
-					sx={{ width: "1px", height: "4px", background: "black" }}
-				/>
-				<Box
-					sx={{ width: "100%", height: "1px", background: "black" }}
-				/>
+				<Box sx={{ width: "1px", height: "4px", background: "black" }} />
+				<Box sx={{ width: "100%", height: "1px", background: "black" }} />
 				<Box
 					sx={{
 						width: "100%",
@@ -30,9 +26,7 @@ const AndJunctionStartTool = ({ disabled }: { disabled?: boolean }) => {
 						marginTop: "1px",
 					}}
 				/>
-				<Box
-					sx={{ width: "100%", height: "5px", position: "relative" }}
-				>
+				<Box sx={{ width: "100%", height: "5px", position: "relative" }}>
 					<Box
 						sx={{
 							width: "1px",

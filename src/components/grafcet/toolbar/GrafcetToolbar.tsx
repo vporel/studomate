@@ -1,11 +1,11 @@
 "use client";
 
-import { Box, Divider, Grid } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import React from "react";
 import ActionTool from "./ActionTool";
 import CommentTool from "./CommentTool";
 import JunctionAndEndTool from "./JunctionAndEndTool";
-import AndJunctionStartTool from "./JunctionAndStartTool";
+import JunctionAndStartTool from "./JunctionAndStartTool";
 import JunctionOrEndTool from "./JunctionOrEndTool";
 import JunctionOrStartTool from "./JunctionOrStartTool";
 import StepReferralSourceTool from "./StepReferralSourceTool";
@@ -15,73 +15,34 @@ import TransitionTool from "./TransitionTool";
 
 const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	return (
-		<div
+		<Box
 			className="grafcet-toolbar"
 			style={{
-				height: "100%",
-				width: "200px",
-				borderRight: "1px solid lightgray",
+				width: "100%",
+				height: "38px",
+				borderBottom: "1px solid lightgray",
 				backgroundColor: "white",
-				padding: "10px",
+				padding: "10px 5px",
+				display: "flex",
+				alignItems: "center",
+				gap: "5px",
 				...style,
 			}}
 		>
-			<Grid container spacing={1}>
-				<Grid size={3}>
-					<Box>
-						<StepTool />
-					</Box>
-				</Grid>
-				<Grid size={6}>
-					<Box>
-						<ActionTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<TransitionTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<JunctionOrStartTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<JunctionOrEndTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<AndJunctionStartTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<JunctionAndEndTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<StepReferralSourceTool />
-					</Box>
-				</Grid>
-				<Grid size={3}>
-					<Box>
-						<StepReferralTargetTool />
-					</Box>
-				</Grid>
-			</Grid>
-			<Divider style={{ margin: "10px 0" }} />
-			<Grid container spacing={1}>
-				<Grid size={6}>
-					<Box>
-						<CommentTool />
-					</Box>
-				</Grid>
-			</Grid>
-		</div>
+			<StepTool />
+			<ActionTool />
+			<TransitionTool />
+			<Divider orientation="vertical" style={{ margin: "10px 0" }} />
+			<JunctionOrStartTool />
+			<JunctionOrEndTool />
+			<JunctionAndStartTool />
+			<JunctionAndEndTool />
+			<Divider orientation="vertical" style={{ margin: "10px 0" }} />
+			<StepReferralSourceTool />
+			<StepReferralTargetTool />
+			<Divider orientation="vertical" style={{ margin: "10px 0" }} />
+			<CommentTool />
+		</Box>
 	);
 };
 

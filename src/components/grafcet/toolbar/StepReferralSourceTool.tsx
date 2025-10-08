@@ -8,8 +8,8 @@ const StepReferralSourceTool = ({ disabled }: { disabled?: boolean }) => {
 		<GrafcetTool type="step-referral-source" disabled={disabled}>
 			<Box
 				style={{
-					width: "40px",
-					height: "40px",
+					width: "30px",
+					height: "30px",
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",

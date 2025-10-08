@@ -8,8 +8,8 @@ const CommentTool = ({ disabled }: { disabled?: boolean }) => {
 		<GrafcetTool type="comment" disabled={disabled}>
 			<Box
 				style={{
-					width: "85px",
-					height: "40px",
+					width: "60px",
+					height: "30px",
 					border: "1px dashed black",
 					borderRadius: 5,
 					display: "flex",

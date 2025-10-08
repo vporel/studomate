@@ -2,7 +2,8 @@
 
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
-import CloseIcon from "@mui/icons-material/Close";
+// import CloseIcon from "@mui/icons-material/Close";
+import CloseIcon from "@mui/icons-material/Delete";
 import { alpha, Box, Typography, useTheme } from "@mui/material";
 
 export type PageTabProps = {
@@ -33,7 +34,7 @@ const PageTab = ({ id, title, active, hasChanges }: PageTabProps) => {
 				position: "relative",
 				backgroundColor: !active ? "white" : alpha(th.palette.primary.main, 1),
 				color: !active ? th.palette.text.primary : "white",
-				borderRight: "1px solid lightgray",
+				borderRight: "1px solid rgba(0, 0, 0, 0.1)",
 				":hover": {
 					backgroundColor: "#dfdfdf",
 					color: th.palette.text.primary,
