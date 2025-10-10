@@ -9,7 +9,7 @@ import { useGrafcetContext } from "../context/GrafcetContext";
 import { JunctionNode } from "../flow/grafcet-nodes-definitions";
 import {
 	GrafcetContextMenuElement,
-	GrafcetcontextMenuItemType,
+	GrafcetContextMenuItemType,
 	GrafcetContextMenuProps,
 } from "./grafcet-context-menu";
 import junctionContextMenuItems from "./junction-context-menu-items";
@@ -29,7 +29,7 @@ const GrafcetContextMenu = () => {
 	const { getNodes, getEdges } = useReactFlow();
 	const [positionShiftAxes, setPositionShiftAxes] = useState<null | "x" | "y" | "xy">(null);
 	//Groups of items, the groups will be separated with dividers
-	const menuItems: GrafcetcontextMenuItemType[][] = useMemo(() => {
+	const menuItems: GrafcetContextMenuItemType[][] = useMemo(() => {
 		const commonNodesItems = [[{ label: "Supprimer", onClick: () => {} }]];
 
 		if (element.type == "pane") {

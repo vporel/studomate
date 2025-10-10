@@ -6,11 +6,11 @@ export type GrafcetContextMenuProps = { element: GrafcetContextMenuElement; posi
 
 type GrafcetContextMenuItemBaseType = {
 	label: string;
-	shortcut?: "Ctrl+A";
+	shortcut?: string;
 	onClick?: () => void;
 	disabled?: boolean;
 };
 
-export type GrafcetcontextMenuItemType = GrafcetContextMenuItemBaseType & {
+export type GrafcetContextMenuItemType = GrafcetContextMenuItemBaseType & {
 	subItems?: GrafcetContextMenuItemBaseType[];
 };

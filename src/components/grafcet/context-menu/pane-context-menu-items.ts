@@ -3,13 +3,13 @@
 import { Edge, Node } from "@xyflow/react";
 import { Emitter } from "mitt";
 import { GrafcetContextMenuEvents } from "../context/context-menu-events";
-import { GrafcetcontextMenuItemType } from "./grafcet-context-menu";
+import { GrafcetContextMenuItemType } from "./grafcet-context-menu";
 
 export default function paneContextMenuItems(
 	getNodes: () => Node[],
 	getEdges: () => Edge[],
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>
-): GrafcetcontextMenuItemType[][] {
+): GrafcetContextMenuItemType[][] {
 	return [
 		[
 			{

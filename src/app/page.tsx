@@ -3,7 +3,7 @@
 import StatusBar from "@/components/footer/StatusBar";
 import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
 import { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
-import MenuBar from "@/components/header/menu/MenuBar";
+import AppMenuBar from "@/components/header/menu-bar/AppMenuBar";
 import TitleBar from "@/components/header/TitleBar";
 import { PagesContextProvider } from "@/components/pages/PagesContext";
 import PagesTabBar from "@/components/pages/PagesTabBar";
@@ -45,7 +45,7 @@ export default function App() {
 					<Box component="img" src="./favicon.ico" sx={{ width: "40px", margin: "0 0.5rem" }} />
 					<Box sx={{ flex: 1, paddingTop: "5px" }}>
 						<TitleBar />
-						<MenuBar />
+						<AppMenuBar />
 					</Box>
 				</Box>
 				<Box
