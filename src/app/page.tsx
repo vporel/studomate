@@ -20,7 +20,11 @@ export default function App() {
 				page1: {
 					type: "grafcet",
 					title: "Grafcet 1",
-					active: true,
+					hasUnsavedChanges: false,
+				},
+				page2: {
+					type: "grafcet",
+					title: "Grafcet 2",
 					hasUnsavedChanges: false,
 				},
 			}}

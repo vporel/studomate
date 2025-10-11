@@ -2,7 +2,6 @@ import { Node } from "@xyflow/react";
 
 type PageDataBase = {
 	title: string;
-	active: boolean;
 	hasUnsavedChanges: boolean;
 };
 

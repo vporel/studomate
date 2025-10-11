@@ -5,19 +5,23 @@ import CircleIcon from "@mui/icons-material/Circle";
 // import CloseIcon from "@mui/icons-material/Close";
 import CloseIcon from "@mui/icons-material/Delete";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
+import { usePagesContext } from "./PagesContext";
 
 export type PageTabProps = {
 	id: string;
 	title: string;
-	active?: boolean;
 	hasUnsavedChanges?: boolean;
 };
 
-const PageTab = ({ id, title, active, hasUnsavedChanges }: PageTabProps) => {
+const PageTab = ({ id, title, hasUnsavedChanges }: PageTabProps) => {
 	const th = useTheme();
+	const { activePageId, setActivePageId } = usePagesContext();
+
+	const active = id === activePageId;
 
 	return (
 		<Box
+			tabIndex={0}
 			className="pages__tab"
 			data-page-id={id}
 			sx={{
@@ -36,13 +40,16 @@ const PageTab = ({ id, title, active, hasUnsavedChanges }: PageTabProps) => {
 				color: !active ? th.palette.text.primary : "white",
 				borderRight: "1px solid rgba(0, 0, 0, 0.1)",
 				":hover": {
-					backgroundColor: "#dfdfdf",
-					color: th.palette.text.primary,
-					".page__tab__type-icon": { color: th.palette.primary.main },
+					backgroundColor: !active ? "#dfdfdf" : alpha(th.palette.primary.main, 1),
+					color: !active ? th.palette.text.primary : "white",
+					".page__tab__type-icon": { color: !active ? th.palette.primary.main : "white" },
 					".page__tab__button-icon": { opacity: 1 },
 					".circle-icon": { display: "none" },
 					".close-icon": { display: "block" },
 				},
+			}}
+			onClick={() => {
+				setActivePageId(id);
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -67,8 +74,9 @@ const PageTab = ({ id, title, active, hasUnsavedChanges }: PageTabProps) => {
 					justifyContent: "center",
 					padding: "3px",
 					borderRadius: "5px",
+					color: !active ? th.palette.text.primary : "white",
 					":hover": {
-						background: "#cfcfcf",
+						background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
 					},
 				}}
 			>

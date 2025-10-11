@@ -13,7 +13,6 @@ const PagesTabBar = () => {
 			Object.keys(pagesData).map((id) => ({
 				id,
 				title: pagesData[id].title,
-				active: pagesData[id].active,
 				hasUnsavedChanges: pagesData[id].hasUnsavedChanges,
 			})),
 		[pagesData]
