@@ -19,7 +19,7 @@ export async function openFileDialog(
 			],
 		};
 		// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
-		return await window.showOpenFilePicker(options);
+		return (await window.showOpenFilePicker(options))[0];
 	} catch (err) {
 		//Open cancelled or failed
 		return null;

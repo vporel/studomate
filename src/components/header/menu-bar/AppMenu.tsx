@@ -57,7 +57,6 @@ const AppMenu = ({
 					setAnchorEl(e.currentTarget);
 				}}
 				onMouseEnter={(e) => {
-					console.log("enter");
 					if (activeMenuId && activeMenuId !== menu.id) {
 						onActivate(menu.id);
 						setAnchorEl(e.currentTarget);

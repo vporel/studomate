@@ -1,12 +1,10 @@
 "use client";
 
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { useState } from "react";
 import { useProjectContext } from "../projects/ProjectContext";
 
 const TitleBar = () => {
-	const { project, hasUnsavedChanges, saveProject } = useProjectContext();
-	const [saving, setSaving] = useState(false);
+	const { project, hasUnsavedChanges, saveProject, savingProject } = useProjectContext();
 
 	return (
 		<Box
@@ -33,19 +31,17 @@ const TitleBar = () => {
 						fontSize: "0.8rem",
 						cursor: "pointer",
 						userSelect: "none",
-						opacity: saving ? 0.5 : 1,
+						opacity: savingProject ? 0.5 : 1,
 					}}
 					onClick={async () => {
-						if (saving) return;
-						setSaving(true);
+						if (savingProject) return;
 						await saveProject();
-						setSaving(false);
 					}}
 				>
 					Cliquez ici pour enregistrer.
 				</Typography>
 			)}
-			{saving && <CircularProgress size={15} />}
+			{savingProject && <CircularProgress size={15} />}
 		</Box>
 	);
 };

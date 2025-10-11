@@ -1,11 +1,13 @@
 "use client";
 
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import { MenuList } from "@mui/material";
 import { useCallback, useState } from "react";
 import { AppMenuType } from "./app-menu-bar";
 import AppMenu from "./AppMenu";
 
 const MenuBar = () => {
+	const { newProject, openProject, saveProject } = useProjectContext();
 	const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 	const onActivate = useCallback((menuId: string) => {
 		setActiveMenuId((current) => (current === menuId ? null : menuId));
@@ -24,18 +26,21 @@ const MenuBar = () => {
 					{
 						label: "Nouveau projet",
 						shortcut: "Ctrl+N",
+						onClick: newProject,
 					},
 				],
 				[
 					{
 						label: "Ouvrir projet",
 						shortcut: "Ctrl+O",
+						onClick: openProject,
 					},
 				],
 				[
 					{
 						label: "Enregistrer",
 						shortcut: "Ctrl+S",
+						onClick: saveProject,
 					},
 				],
 				[

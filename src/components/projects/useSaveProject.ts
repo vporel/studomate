@@ -18,10 +18,12 @@ export default function useSaveProject(
 	hasUnsavedChanges: boolean;
 	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
+	savingProject: boolean;
 } {
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 	const grafcetsRef = useRef<Record<string, { grafcet?: Grafcet; flowNodes?: any[] }>>({});
 	const previousGrafcetsRef = useRef<Record<string, { grafcet?: Grafcet; flowNodes?: any[] }>>({});
+	const [savingProject, setSavingProject] = useState(false);
 
 	const updateGrafcetData = useCallback(
 		(grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => {
@@ -62,14 +64,16 @@ export default function useSaveProject(
 			setFileHandle(handle);
 		}
 		if (!handle) return null;
+		setSavingProject(true);
 		//Save the project to the file
 		await writeFile(newProject, handle);
 		// Update previousGrafcetsRef
 		previousGrafcetsRef.current = structuredClone(grafcetsRef.current);
 		setHasUnsavedChanges(false);
 		projectEvents.emit("saved");
+		setSavingProject(false);
 		return true;
 	}, [project, setProject, fileHandle, setFileHandle, projectEvents]);
 
-	return { hasUnsavedChanges, updateGrafcetData, saveProject };
+	return { hasUnsavedChanges, updateGrafcetData, saveProject, savingProject };
 }
