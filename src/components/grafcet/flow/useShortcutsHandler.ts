@@ -1,5 +1,6 @@
 "use client";
 
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
@@ -112,12 +113,14 @@ function commandRedo(
 	}
 }
 
-export default function useShortcutsHandler(): (e: React.KeyboardEvent) => void {
+export default function useShortcutsHandler(grafcetId: string): (e: React.KeyboardEvent) => void {
 	const { setNodes, setEdges } = useReactFlow();
 	const { undoLastCommand, redoLastCommand } = useGrafcetContext();
+	const { activeScope } = useProjectContext();
 
 	return useCallback(
 		(e: React.KeyboardEvent) => {
+			if (activeScope !== grafcetId) return;
 			//Ctrl+A : Select all
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {

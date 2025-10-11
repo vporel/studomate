@@ -29,13 +29,13 @@ export function GrafcetPageContent() {
 	const th = useTheme();
 	const [nodes, setNodes] = useState<GrafcetNode[]>([]);
 	const [edges, setEdges] = useState<GrafcetEdge[]>([]);
-	const { updateGrafcetData } = useProjectContext();
+	const { updateGrafcetData, setActiveScope } = useProjectContext();
 	const { updatePageData } = usePagesContext();
 	const { grafcetId, flowDimensions } = useGrafcetContext();
 	const { onNodesChange, onNodesDelete, onNodeDragStop } = useNodesHandlers(setNodes);
 	const { onEdgesChange, onConnect, onEdgesDelete } = useEdgesHandlers(setEdges);
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
-	const handleShortcuts = useShortcutsHandler();
+	const handleShortcuts = useShortcutsHandler(grafcetId);
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
 
 	//Share the grafcet data with the project context
@@ -127,6 +127,9 @@ export function GrafcetPageContent() {
 					onDragOver={handleToolDragOver}
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
+					onFocus={() => {
+						setActiveScope(grafcetId);
+					}}
 					onKeyDown={handleShortcuts}
 					onPaneContextMenu={onPaneContextMenu as any}
 					onNodeContextMenu={onNodeContextMenu}

@@ -1,13 +1,11 @@
 "use client";
 import useBooleanState from "@/lib/hooks/useBooleanState";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
-import AbstractProjectCommand from "@/schemas/project/commands/AbstractProjectCommand.class";
 import Project from "@/schemas/project/Project.class";
 import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import UnsavedChangesDialog from "../misc/UnsavedChangesDialog";
 import { ProjectEvents } from "./project-events";
-import useCommandsStack from "./useCommandsStack";
 import useOpenProject from "./useOpenProject";
 import useProject from "./useProject";
 import useSaveProject from "./useSaveProject";
@@ -20,9 +18,13 @@ type ProjectContextType = {
 	openProject: () => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
 	savingProject: boolean;
-	undoLastCommand: () => AbstractProjectCommand<any>[] | null;
-	redoLastCommand: () => AbstractProjectCommand<any>[] | null;
 	projectEvents: Emitter<ProjectEvents>;
+	/**
+	 * The currently active scope (used for keyboard shortcuts)
+	 * The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
+	 */
+	activeScope: string | null;
+	setActiveScope: (scope: string) => void;
 };
 
 const ProjectContext = createContext<ProjectContextType>({
@@ -33,9 +35,9 @@ const ProjectContext = createContext<ProjectContextType>({
 	openProject: async () => false,
 	saveProject: async () => null,
 	savingProject: false,
-	undoLastCommand: () => null,
-	redoLastCommand: () => null,
 	projectEvents: mitt<ProjectEvents>(),
+	activeScope: null,
+	setActiveScope: () => {},
 });
 
 export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
@@ -57,13 +59,12 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 	const [onUnsavedChangesDialogContinue, setOnUnsavedChangesDialogContinue] = useState<null | (() => void)>(
 		null
 	);
-	const { commandsStackRef, undoLastCommand, redoLastCommand } = useCommandsStack(project, setProject);
+	const [activeScope, setActiveScope] = useState<string | null>(null);
 
 	const newProject = useCallback(() => {
 		setProject(new Project("Nouveau projet", ""));
 		setFileHandle(null);
-		commandsStackRef.current.clear();
-	}, [setProject, setFileHandle, commandsStackRef]);
+	}, [setProject, setFileHandle]);
 
 	const newProjectWithPrompt = useCallback(async () => {
 		if (hasUnsavedChanges) {
@@ -86,18 +87,16 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				setOnUnsavedChangesDialogContinue(() => () => {
 					openProject().then((result) => {
 						resolve(result);
-						commandsStackRef.current.clear();
 					});
 				});
 				openUnsavedChangesDialog();
 			} else {
 				openProject().then((result) => {
 					resolve(result);
-					commandsStackRef.current.clear();
 				});
 			}
 		});
-	}, [commandsStackRef, hasUnsavedChanges, openProject, openUnsavedChangesDialog]);
+	}, [hasUnsavedChanges, openProject, openUnsavedChangesDialog]);
 
 	return (
 		<ProjectContext.Provider
@@ -109,9 +108,9 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				openProject: openProjectWithPrompt,
 				saveProject,
 				savingProject,
-				undoLastCommand,
-				redoLastCommand,
 				projectEvents,
+				activeScope,
+				setActiveScope,
 			}}
 		>
 			{children}
