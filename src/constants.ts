@@ -1,3 +1,7 @@
+export const APP_NAME = "Studomate";
+export const APP_SLOGAN = "Créer, Simuler, Automatiser";
+export const APP_SHORT_DESCRIPTION =
+	"Créez et simulez facilement des systèmes automatisés (Grafcet, ...) avec notre application intuitive.";
 export const APP_VERSION = "0.1.0";
 
 //Papers sizes in mm

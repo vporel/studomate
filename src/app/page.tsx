@@ -1,34 +1,47 @@
 "use client";
 
+import Explorer from "@/components/explorer/Explorer";
 import StatusBar from "@/components/footer/StatusBar";
-import GrafcetToolbar from "@/components/grafcet/toolbar/GrafcetToolbar";
-import { GrafcetToolbarDnDProvider } from "@/components/grafcet/toolbar/GrafcetToolbarDnDContext";
 import AppMenuBar from "@/components/header/menu-bar/AppMenuBar";
 import TitleBar from "@/components/header/TitleBar";
-import { PagesContextProvider } from "@/components/pages/PagesContext";
-import PagesTabBar from "@/components/pages/PagesTabBar";
+import { PageData } from "@/components/pages/context/pages-data";
+import { PagesContextProvider } from "@/components/pages/context/PagesContext";
+import PagesView from "@/components/pages/PagesView";
 import { useProjectContext } from "@/components/projects/ProjectContext";
+import Pane from "@/lib/split-pane/Pane";
+import SplitPane from "@/lib/split-pane/SplitPane";
+import Project from "@/schemas/project/Project.class";
 import { Box } from "@mui/material";
-import GrafcetPage from "../components/grafcet/flow/GrafcetPage";
+
+function getInitialPagesData(project: Project): Record<string, PageData> {
+	const pagesData: Record<string, PageData> = {};
+	if (Object.keys(project.grafcets).length === 0) {
+		pagesData["project-startup"] = {
+			type: "project-startup",
+			title: "Démarrage",
+		};
+	} else {
+		for (const grafcetId in project.grafcets) {
+			const grafcet = project.grafcets[grafcetId];
+			pagesData[grafcetId] = {
+				type: "grafcet",
+				title: grafcet.name,
+				grafcet: grafcet,
+			};
+		}
+	}
+	return pagesData;
+}
 
 export default function App() {
 	const { project } = useProjectContext();
 
+	if (!project) {
+		return <></>;
+	}
+
 	return (
-		<PagesContextProvider
-			initialPagesData={{
-				page1: {
-					type: "grafcet",
-					title: "Grafcet 1",
-					hasUnsavedChanges: false,
-				},
-				page2: {
-					type: "grafcet",
-					title: "Grafcet 2",
-					hasUnsavedChanges: false,
-				},
-			}}
-		>
+		<PagesContextProvider initialPagesData={getInitialPagesData(project)}>
 			<Box
 				sx={{
 					display: "flex",
@@ -46,38 +59,24 @@ export default function App() {
 						borderBottom: "1px solid lightgray",
 					}}
 				>
-					<Box component="img" src="./favicon.ico" sx={{ width: "40px", margin: "0 0.5rem" }} />
+					<Box
+						component="img"
+						src="/images/favicon.ico"
+						sx={{ width: "40px", margin: "0 0.5rem" }}
+					/>
 					<Box sx={{ flex: 1, paddingTop: "5px" }}>
 						<TitleBar />
 						<AppMenuBar />
 					</Box>
 				</Box>
-				<Box
-					sx={{
-						width: "100%",
-						display: "flex",
-						flex: 1,
-						position: "relative",
-						overflow: "hidden",
-					}}
-				>
-					{/* <ActivityToolbar /> */}
-					<Box
-						sx={{
-							height: "100%",
-							display: "flex",
-							flex: 1,
-							flexDirection: "column",
-							position: "relative",
-						}}
-					>
-						<PagesTabBar />
-						<GrafcetToolbarDnDProvider>
-							<GrafcetToolbar />
-							<GrafcetPage grafcetId="page1" />
-						</GrafcetToolbarDnDProvider>
-					</Box>
-				</Box>
+				<SplitPane split="vertical" sx={{ flex: 1, position: "relative", overflow: "hidden" }}>
+					<Pane initialSize={200} minSize={200} maxSize={400}>
+						<Explorer />
+					</Pane>
+					<Pane style={{ height: "100%" }}>
+						<PagesView />
+					</Pane>
+				</SplitPane>
 				<StatusBar />
 			</Box>
 		</PagesContextProvider>

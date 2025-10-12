@@ -41,7 +41,8 @@ export const GrafcetContextProvider = ({
 	grafcetId: string;
 	children: ReactNode;
 }) => {
-	const [grafcet, setGrafcet] = useState<Grafcet | null>(null);
+	const { project, updateGrafcetData } = useProjectContext();
+	const [grafcet, setGrafcet] = useState<Grafcet>(project!.grafcets[grafcetId]);
 	const [flowDimensions, setFlowDimensions] = useState<Dimensions>({
 		width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width),
 		height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height),
@@ -50,14 +51,9 @@ export const GrafcetContextProvider = ({
 	const nodesEvents = useMemo(() => mitt<GrafcetElementsEvents>(), []);
 	const connectionsEvents = useMemo(() => mitt<GrafcetConnectionsEvents>(), []);
 	const { commandsStackRef, undoLastCommand, redoLastCommand } = useCommandsStack(grafcet, setGrafcet);
-	const { updateGrafcetData } = useProjectContext();
 
 	useElementsEventsHandler(nodesEvents, grafcet, setGrafcet, commandsStackRef.current);
 	useConnectionsEventsHandler(connectionsEvents, grafcet, setGrafcet, commandsStackRef.current);
-
-	useEffect(() => {
-		setGrafcet(new Grafcet(grafcetId, { type: "A4", orientation: "portrait" }));
-	}, [grafcetId]);
 
 	//Listen to grafcet changes
 	useEffect(() => {

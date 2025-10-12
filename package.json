@@ -13,6 +13,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
+    "@mui/x-tree-view": "^8.14.0",
     "@xyflow/react": "^12.8.4",
     "dom-to-image": "^2.6.0",
     "html-to-image": "^1.11.13",

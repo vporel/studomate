@@ -28,7 +28,6 @@ export default function useElementsEventsHandler(
 		const handler = (nodes: GrafcetElementsEventsAddData[]) => {
 			if (!grafcet) {
 				throw new Error("Grafcet is null");
-				return;
 			}
 			const newGrafcet = commandsStack.execute(
 				[

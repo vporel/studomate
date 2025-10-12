@@ -1,4 +1,5 @@
 import { ProjectContextProvider } from "@/components/projects/ProjectContext";
+import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/constants";
 import { ThemeProvider } from "@/theme/ThemeContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Studomate",
-	description: "",
+	title: APP_NAME,
+	description: APP_SHORT_DESCRIPTION,
 };
 
 export default function RootLayout({

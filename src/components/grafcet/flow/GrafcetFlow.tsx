@@ -1,8 +1,8 @@
 "use client";
-import { usePagesContext } from "@/components/pages/PagesContext";
+import { usePagesContext } from "@/components/pages/context/PagesContext";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from "@/constants";
-import { mmToPx } from "@/lib/utils";
+import { FLOW_GRID_CELL_WIDTH } from "@/constants";
+import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -25,10 +25,18 @@ import useNodesHandlers from "./useNodesHandlers";
 import useShortcutsHandler from "./useShortcutsHandler";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
-export function GrafcetPageContent() {
+function getInitialNodes(initialGrafcet: Grafcet): GrafcetNode[] {
+	return [];
+}
+
+function getInitialEdges(initialGrafcet: Grafcet): GrafcetEdge[] {
+	return [];
+}
+
+export function GrafcetFlowContent({ initialGrafcet }: { initialGrafcet: Grafcet }) {
 	const th = useTheme();
-	const [nodes, setNodes] = useState<GrafcetNode[]>([]);
-	const [edges, setEdges] = useState<GrafcetEdge[]>([]);
+	const [nodes, setNodes] = useState<GrafcetNode[]>(getInitialNodes(initialGrafcet));
+	const [edges, setEdges] = useState<GrafcetEdge[]>(getInitialEdges(initialGrafcet));
 	const { updateGrafcetData, setActiveScope } = useProjectContext();
 	const { updatePageData } = usePagesContext();
 	const { grafcetId, flowDimensions } = useGrafcetContext();
@@ -46,17 +54,10 @@ export function GrafcetPageContent() {
 	//Share the grafcet data
 	useEffect(() => {
 		updatePageData(grafcetId, {
-			width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width),
-			height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height),
 			nodes,
+			edges,
 		});
-	}, [grafcetId, nodes, updatePageData]);
-
-	//Initial data
-	// useEffect(() => {
-	//   setNodes(testNodes as any)
-	//   setEdges(testEdges)
-	// }, [])
+	}, [grafcetId, nodes, edges, updatePageData]);
 
 	//Context menu actions
 	useContextMenuActionsHandlers();
@@ -71,7 +72,7 @@ export function GrafcetPageContent() {
 				height: "100%",
 				overflowX: "hidden",
 				overflowY: "auto",
-				background: "#dedede",
+				background: "rgb(235, 235, 235)",
 				position: "relative",
 			}}
 		>
@@ -147,11 +148,17 @@ export function GrafcetPageContent() {
 	);
 }
 
-export default function GrafcetPage({ grafcetId }: { grafcetId: string }) {
+export default function GrafcetFlow({
+	grafcetId,
+	initialGrafcet,
+}: {
+	grafcetId: string;
+	initialGrafcet: Grafcet;
+}) {
 	return (
 		<GrafcetContextProvider grafcetId={grafcetId}>
 			<ReactFlowProvider>
-				<GrafcetPageContent />
+				<GrafcetFlowContent initialGrafcet={initialGrafcet} />
 			</ReactFlowProvider>
 		</GrafcetContextProvider>
 	);

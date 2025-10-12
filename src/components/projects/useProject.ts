@@ -1,11 +1,11 @@
 "use client";
 
 import Project from "@/schemas/project/Project.class";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 export default function useProject(): {
 	project: Project | null;
-	setProject: (g: Project) => void;
+	setProject: Dispatch<SetStateAction<Project | null>>;
 	fileHandle: FileSystemFileHandle | null;
 	setFileHandle: (fh: FileSystemFileHandle | null) => void;
 } {

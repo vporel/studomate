@@ -1,23 +1,26 @@
 "use client";
 
-import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import InclinedAccountTreeIcon from "@/components/icons/InclinedAccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
-// import CloseIcon from "@mui/icons-material/Close";
 import CloseIcon from "@mui/icons-material/Delete";
+import HomeIcon from "@mui/icons-material/Home";
+// import CloseIcon from "@mui/icons-material/Close";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
-import { usePagesContext } from "./PagesContext";
+import { usePagesContext } from "../context/PagesContext";
+import { PageType } from "../context/pages-data";
 
 export type PageTabProps = {
 	id: string;
 	title: string;
+	type: PageType;
 	hasUnsavedChanges?: boolean;
 };
 
-const PageTab = ({ id, title, hasUnsavedChanges }: PageTabProps) => {
+const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
 	const th = useTheme();
-	const { activePageId, setActivePageId } = usePagesContext();
-
+	const { activePageId, setActivePageId, closePage } = usePagesContext();
 	const active = id === activePageId;
+	const TypeIconComponent = type === "project-startup" ? HomeIcon : InclinedAccountTreeIcon;
 
 	return (
 		<Box
@@ -53,15 +56,14 @@ const PageTab = ({ id, title, hasUnsavedChanges }: PageTabProps) => {
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-				<AccountTreeIcon
+				<TypeIconComponent
 					className="page__tab__type-icon"
 					sx={{
-						transform: "rotate(90deg) translateX(-1px)",
 						color: active ? "white" : th.palette.primary.main,
 						fontSize: "1.2rem",
 					}}
 				/>
-				<Typography component="span" sx={{ fontSize: "0.9rem" }}>
+				<Typography component="span" sx={{ fontSize: "0.85rem" }}>
 					{title}
 				</Typography>
 			</Box>
@@ -78,6 +80,10 @@ const PageTab = ({ id, title, hasUnsavedChanges }: PageTabProps) => {
 					":hover": {
 						background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
 					},
+				}}
+				onClick={(e) => {
+					e.stopPropagation();
+					closePage(id);
 				}}
 			>
 				{hasUnsavedChanges && <CircleIcon className="circle-icon" sx={{ fontSize: "0.9rem" }} />}

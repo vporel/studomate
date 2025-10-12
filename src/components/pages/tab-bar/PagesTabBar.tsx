@@ -2,8 +2,8 @@
 
 import { Box } from "@mui/material";
 import { useMemo } from "react";
+import { usePagesContext } from "../context/PagesContext";
 import PageTab, { PageTabProps } from "./PageTab";
-import { usePagesContext } from "./PagesContext";
 
 const PagesTabBar = () => {
 	const { pagesData } = usePagesContext();
@@ -13,6 +13,7 @@ const PagesTabBar = () => {
 			Object.keys(pagesData).map((id) => ({
 				id,
 				title: pagesData[id].title,
+				type: pagesData[id].type,
 				hasUnsavedChanges: pagesData[id].hasUnsavedChanges,
 			})),
 		[pagesData]
@@ -27,6 +28,7 @@ const PagesTabBar = () => {
 				display: "flex",
 				alignItems: "center",
 				borderBottom: "1px solid lightgray",
+				backgroundColor: "white",
 			}}
 		>
 			{tabsData?.map((tabData) => (

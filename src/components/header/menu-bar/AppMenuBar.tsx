@@ -7,7 +7,7 @@ import { AppMenuType } from "./app-menu-bar";
 import AppMenu from "./AppMenu";
 
 const MenuBar = () => {
-	const { newProject, openProject, saveProject } = useProjectContext();
+	const { newProject, newGrafcet, openProject, saveProject } = useProjectContext();
 	const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 	const onActivate = useCallback((menuId: string) => {
 		setActiveMenuId((current) => (current === menuId ? null : menuId));
@@ -25,7 +25,7 @@ const MenuBar = () => {
 				[
 					{
 						label: "Nouveau projet",
-						shortcut: "Ctrl+N",
+						// The shortcut Ctrl+N is reserved by the browser to open a new window so we don't use it
 						onClick: newProject,
 					},
 				],
@@ -73,6 +73,21 @@ const MenuBar = () => {
 					{
 						label: "Coller",
 						shortcut: "Ctrl+V",
+					},
+				],
+			],
+		},
+		{
+			id: "project",
+			label: "Projet",
+			items: [
+				[
+					{
+						label: "Nouveau grafcet",
+						shortcut: "Ctrl+G",
+						onClick: () => {
+							newGrafcet("Sans titre", { type: "A4", orientation: "portrait" });
+						},
 					},
 				],
 			],

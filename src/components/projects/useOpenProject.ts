@@ -6,9 +6,14 @@ import { useCallback } from "react";
 
 export default function useOpenProject(
 	setProject: (g: Project) => void,
-	setFileHandle: (fh: FileSystemFileHandle | null) => void
+	setFileHandle: (fh: FileSystemFileHandle | null) => void,
+	hasUnsavedChanges: boolean,
+	openUnsavedChangesDialog: () => void,
+	setOnUnsavedChangesDialogCancel: (cb: () => void) => void,
+	setOnUnsavedChangesDialogContinue: (cb: () => void) => void
 ): {
 	openProject: () => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
+	openProjectWithPrompt: () => Promise<boolean>;
 } {
 	const openProject = useCallback(async () => {
 		const handle = await openFileDialog("Fichiers JSON", { "application/json": [".json"] });
@@ -21,5 +26,31 @@ export default function useOpenProject(
 		return true;
 	}, [setFileHandle, setProject]);
 
-	return { openProject };
+	const openProjectWithPrompt = useCallback(() => {
+		return new Promise<boolean>((resolve) => {
+			if (hasUnsavedChanges) {
+				setOnUnsavedChangesDialogCancel(() => () => {
+					resolve(false);
+				});
+				setOnUnsavedChangesDialogContinue(() => () => {
+					openProject().then((result) => {
+						resolve(result);
+					});
+				});
+				openUnsavedChangesDialog();
+			} else {
+				openProject().then((result) => {
+					resolve(result);
+				});
+			}
+		});
+	}, [
+		hasUnsavedChanges,
+		openProject,
+		openUnsavedChangesDialog,
+		setOnUnsavedChangesDialogCancel,
+		setOnUnsavedChangesDialogContinue,
+	]);
+
+	return { openProject, openProjectWithPrompt };
 }

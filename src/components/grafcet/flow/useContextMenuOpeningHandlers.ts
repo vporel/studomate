@@ -1,7 +1,7 @@
 "use client";
 
 import { useReactFlow } from "@xyflow/react";
-import React from "react";
+import React, { useCallback } from "react";
 import { useGrafcetContext } from "../context/GrafcetContext";
 
 export default function useContextMenuOpeningHandlers(): {
@@ -13,35 +13,44 @@ export default function useContextMenuOpeningHandlers(): {
 	const { contextMenuEvents } = useGrafcetContext();
 
 	return {
-		onPaneContextMenu: (e: React.MouseEvent) => {
-			e.preventDefault();
-			contextMenuEvents.emit("show", {
-				element: { type: "pane" },
-				position: screenToFlowPosition({
-					x: e.pageX,
-					y: e.pageY,
-				}),
-			});
-		},
-		onNodeContextMenu: (e: React.MouseEvent, node: any) => {
-			e.preventDefault();
-			contextMenuEvents.emit("show", {
-				element: node,
-				position: screenToFlowPosition({
-					x: e.pageX,
-					y: e.pageY,
-				}),
-			});
-		},
-		onEdgeContextMenu: (e: React.MouseEvent, edge: any) => {
-			e.preventDefault();
-			contextMenuEvents.emit("show", {
-				element: edge,
-				position: screenToFlowPosition({
-					x: e.pageX,
-					y: e.pageY,
-				}),
-			});
-		},
+		onPaneContextMenu: useCallback(
+			(e: React.MouseEvent) => {
+				e.preventDefault();
+				contextMenuEvents.emit("show", {
+					element: { type: "pane" },
+					position: screenToFlowPosition({
+						x: e.pageX,
+						y: e.pageY,
+					}),
+				});
+			},
+			[contextMenuEvents, screenToFlowPosition]
+		),
+		onNodeContextMenu: useCallback(
+			(e: React.MouseEvent, node: any) => {
+				e.preventDefault();
+				contextMenuEvents.emit("show", {
+					element: node,
+					position: screenToFlowPosition({
+						x: e.pageX,
+						y: e.pageY,
+					}),
+				});
+			},
+			[contextMenuEvents, screenToFlowPosition]
+		),
+		onEdgeContextMenu: useCallback(
+			(e: React.MouseEvent, edge: any) => {
+				e.preventDefault();
+				contextMenuEvents.emit("show", {
+					element: edge,
+					position: screenToFlowPosition({
+						x: e.pageX,
+						y: e.pageY,
+					}),
+				});
+			},
+			[contextMenuEvents, screenToFlowPosition]
+		),
 	};
 }

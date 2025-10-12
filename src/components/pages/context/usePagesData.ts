@@ -2,9 +2,9 @@
 
 import { deepObjectsComparison } from "@/lib/object";
 import { useCallback, useRef, useState } from "react";
-import { PageData } from "./pages-data";
+import { GrafcetPageData, PageData } from "./pages-data";
 
-const GrafcetPageObservedProperties = ["title", "nodes"];
+const GRAFCET_PAGE_OBSERVED_PROPERTIES: (keyof GrafcetPageData)[] = ["title", "nodes", "edges"];
 
 export default function usePagesData(initialPagesData: Record<string, PageData>): {
 	pagesData: Record<string, PageData>;
@@ -16,12 +16,23 @@ export default function usePagesData(initialPagesData: Record<string, PageData>)
 
 	const updatePageData = useCallback((objectId: string, newData: Partial<PageData>) => {
 		setPagesData((oldPagesData) => {
-			const newPagesData = structuredClone(oldPagesData);
+			const newPagesData: any = structuredClone(oldPagesData);
 			newPagesData[objectId] = { ...newPagesData[objectId], ...newData };
 			// Check if any of the observed properties have changed
 			const previousData = previousPagesDataRef.current[objectId];
 			if (previousData) {
-				for (const prop of GrafcetPageObservedProperties) {
+				let observedProperties: any[] = [];
+				switch (newPagesData[objectId].type) {
+					case "grafcet":
+						observedProperties = GRAFCET_PAGE_OBSERVED_PROPERTIES;
+						break;
+					case "project-startup":
+						observedProperties = ["title"];
+						break;
+					default:
+						observedProperties = [];
+				}
+				for (const prop of observedProperties) {
 					if (
 						!deepObjectsComparison(
 							(previousData as any)[prop],

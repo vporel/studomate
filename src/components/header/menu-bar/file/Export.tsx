@@ -1,4 +1,4 @@
-import { GrafcetPageData, usePagesContext } from "@/components/pages/PagesContext";
+import { GrafcetPageData, usePagesContext } from "@/components/pages/context/PagesContext";
 import { downloadFromUrl } from "@/lib/utils";
 import { getNodesBounds } from "@xyflow/react";
 import domToImage from "dom-to-image";

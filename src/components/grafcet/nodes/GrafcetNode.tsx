@@ -12,16 +12,14 @@ interface GrafcetNodeProps extends BoxProps {
 }
 
 const GrafcetNode = forwardRef<HTMLElement, GrafcetNodeProps>(function GrafcetNode(
-	{ id, type, className = "", children, ...rest },
+	{ id, type, className = "", children, ...props },
 	ref
 ) {
 	return (
-		<Box id={id} ref={ref} className={`grafcet-node ${type + "-node"} ${className}`} {...rest}>
+		<Box id={id} ref={ref} className={`grafcet-node ${type + "-node"} ${className}`} {...props}>
 			{children}
 		</Box>
 	);
 });
-
-GrafcetNode.displayName = "GrafcetNode";
 
 export default GrafcetNode;
