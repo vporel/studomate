@@ -20,8 +20,8 @@ const SplitPane = ({ children, split = "vertical", width, height, ...props }: Sp
 			style={{
 				display: "flex",
 				flexDirection: isHorizontal ? "row" : "column",
-				width: "100%",
-				height: "100%",
+				width: isHorizontal ? "100%" : width ?? "100%",
+				height: !isHorizontal ? "100%" : height ?? "100%",
 			}}
 		>
 			{children.map((child, index) => (
