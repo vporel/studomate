@@ -35,7 +35,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<ExplorerHeader />
-			<SimpleTreeView>
+			<SimpleTreeView defaultExpandedItems={["grafcets"]}>
 				<CustomTreeItem
 					itemId="grafcets"
 					label="Grafcets"

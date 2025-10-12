@@ -2,15 +2,19 @@
 
 import { openFileDialog, readFile } from "@/lib/file-system";
 import Project from "@/schemas/project/Project.class";
-import { useCallback } from "react";
+import { Emitter } from "mitt";
+import { Dispatch, SetStateAction, useCallback } from "react";
+import { ProjectEventsOut } from "./project-events";
 
 export default function useOpenProject(
 	setProject: (g: Project) => void,
 	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
+	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
 	openUnsavedChangesDialog: () => void,
 	setOnUnsavedChangesDialogCancel: (cb: () => void) => void,
-	setOnUnsavedChangesDialogContinue: (cb: () => void) => void
+	setOnUnsavedChangesDialogContinue: (cb: () => void) => void,
+	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
 	openProject: () => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	openProjectWithPrompt: () => Promise<boolean>;
@@ -35,19 +39,25 @@ export default function useOpenProject(
 				setOnUnsavedChangesDialogContinue(() => () => {
 					openProject().then((result) => {
 						resolve(result);
+						setHasUnsavedChanges(false);
+						projectEventsOut.emit("project-opened");
 					});
 				});
 				openUnsavedChangesDialog();
 			} else {
 				openProject().then((result) => {
 					resolve(result);
+					setHasUnsavedChanges(false);
+					projectEventsOut.emit("project-opened");
 				});
 			}
 		});
 	}, [
 		hasUnsavedChanges,
+		setHasUnsavedChanges,
 		openProject,
 		openUnsavedChangesDialog,
+		projectEventsOut,
 		setOnUnsavedChangesDialogCancel,
 		setOnUnsavedChangesDialogContinue,
 	]);

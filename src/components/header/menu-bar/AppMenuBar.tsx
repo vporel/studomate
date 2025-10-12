@@ -1,13 +1,15 @@
 "use client";
 
-import { useProjectContext } from "@/components/projects/ProjectContext";
 import { MenuList } from "@mui/material";
 import { useCallback, useState } from "react";
 import { AppMenuType } from "./app-menu-bar";
 import AppMenu from "./AppMenu";
+import useEditMenu from "./edit/useEditMenu";
+import useFileMenu from "./file/useFileMenu";
+import useProjectMenu from "./project/useProjectMenu";
+import useViewMenu from "./view/useViewMenu";
 
 const MenuBar = () => {
-	const { newProject, newGrafcet, openProject, saveProject } = useProjectContext();
 	const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 	const onActivate = useCallback((menuId: string) => {
 		setActiveMenuId((current) => (current === menuId ? null : menuId));
@@ -17,84 +19,12 @@ const MenuBar = () => {
 		setActiveMenuId(null);
 	}, []);
 
-	const menus: AppMenuType[] = [
-		{
-			id: "file",
-			label: "Fichier",
-			items: [
-				[
-					{
-						label: "Nouveau projet",
-						// The shortcut Ctrl+N is reserved by the browser to open a new window so we don't use it
-						onClick: newProject,
-					},
-				],
-				[
-					{
-						label: "Ouvrir projet",
-						shortcut: "Ctrl+O",
-						onClick: openProject,
-					},
-				],
-				[
-					{
-						label: "Enregistrer",
-						shortcut: "Ctrl+S",
-						onClick: saveProject,
-					},
-				],
-				[
-					{
-						label: "Exporter",
-						shortcut: "Ctrl+E",
-					},
-				],
-			],
-		},
-		{
-			id: "edit",
-			label: "Edition",
-			items: [
-				[
-					{
-						label: "Annuler",
-						shortcut: "Ctrl+Z",
-					},
-					{
-						label: "Rétablir",
-						shortcut: "Ctrl+Y",
-					},
-				],
-				[
-					{
-						label: "Copier",
-						shortcut: "Ctrl+C",
-					},
-					{
-						label: "Coller",
-						shortcut: "Ctrl+V",
-					},
-				],
-			],
-		},
-		{
-			id: "project",
-			label: "Projet",
-			items: [
-				[
-					{
-						label: "Nouveau grafcet",
-						shortcut: "Ctrl+G",
-						onClick: () => {
-							newGrafcet("Sans titre", { type: "A4", orientation: "portrait" });
-						},
-					},
-				],
-			],
-		},
-		// { id: "view", title: "Vue" },
-		// { id: "help", title: "Aide" },
-	];
+	const fileMenu = useFileMenu();
+	const projectMenu = useProjectMenu();
+	const editMenu = useEditMenu();
+	const viewMenu = useViewMenu();
+
+	const menus: AppMenuType[] = [fileMenu, projectMenu, editMenu, viewMenu];
 
 	return (
 		<MenuList

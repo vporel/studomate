@@ -4,6 +4,7 @@ import { ProjectEventsOut } from "@/components/projects/project-events";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useEffect } from "react";
+import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "../ProjectStartupPage";
 import { PageData } from "./pages-data";
 
 export default function useProjectEventsOutHandlers(
@@ -11,6 +12,36 @@ export default function useProjectEventsOutHandlers(
 	projectEventsOut: Emitter<ProjectEventsOut>,
 	setActivePageId: Dispatch<SetStateAction<string>>
 ) {
+	// When a project is created, close all the pages and open the project startup page
+	useEffect(() => {
+		const handleProjectCreated = () => {
+			setPagesData({
+				[PROJECT_STARTUP_PAGE_ID]: PROJECT_STARTUP_PAGE_DATA,
+			});
+			setActivePageId(PROJECT_STARTUP_PAGE_ID);
+		};
+
+		projectEventsOut.on("project-created", handleProjectCreated);
+		return () => {
+			projectEventsOut.off("project-created", handleProjectCreated);
+		};
+	}, [projectEventsOut, setPagesData, setActivePageId]);
+
+	// When a project is opened, close all the pages and open the project startup page
+	useEffect(() => {
+		const handleProjectOpened = () => {
+			setPagesData({
+				[PROJECT_STARTUP_PAGE_ID]: PROJECT_STARTUP_PAGE_DATA,
+			});
+			setActivePageId(PROJECT_STARTUP_PAGE_ID);
+		};
+
+		projectEventsOut.on("project-opened", handleProjectOpened);
+		return () => {
+			projectEventsOut.off("project-opened", handleProjectOpened);
+		};
+	}, [projectEventsOut, setPagesData, setActivePageId]);
+
 	// When the project is saved, set hasUnsavedChanges to false for all pages
 	useEffect(() => {
 		const handleProjectSaved = () => {
@@ -24,10 +55,9 @@ export default function useProjectEventsOutHandlers(
 			});
 		};
 
-		projectEventsOut.on("saved", handleProjectSaved);
-
+		projectEventsOut.on("project-saved", handleProjectSaved);
 		return () => {
-			projectEventsOut.off("saved", handleProjectSaved);
+			projectEventsOut.off("project-saved", handleProjectSaved);
 		};
 	}, [projectEventsOut, setPagesData]);
 
@@ -48,7 +78,6 @@ export default function useProjectEventsOutHandlers(
 		};
 
 		projectEventsOut.on("grafcet-open", handleGrafcetOpen);
-
 		return () => {
 			projectEventsOut.off("grafcet-open", handleGrafcetOpen);
 		};

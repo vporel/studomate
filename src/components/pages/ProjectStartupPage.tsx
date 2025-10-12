@@ -5,6 +5,13 @@ import { Box, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mu
 import InclinedAccountTree from "../icons/InclinedAccountTree";
 import { useProjectContext } from "../projects/ProjectContext";
 import Page from "./Page";
+import { ProjectStartPageData } from "./context/pages-data";
+
+export const PROJECT_STARTUP_PAGE_ID = "project-startup";
+export const PROJECT_STARTUP_PAGE_DATA: ProjectStartPageData = {
+	type: "project-startup",
+	title: "Démarrage",
+};
 
 const ProjectStartupPage = ({ pageId }: { pageId: string }) => {
 	const { newGrafcet } = useProjectContext();

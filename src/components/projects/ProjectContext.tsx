@@ -57,6 +57,37 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 	const [onUnsavedChangesDialogContinue, setOnUnsavedChangesDialogContinue] = useState<null | (() => void)>(
 		null
 	);
+	const {
+		updateGrafcetData,
+		saveGrafcetData,
+		hasUnsavedChanges,
+		setHasUnsavedChanges,
+		saveProject,
+		savingProject,
+	} = useSaveProject(project, setProject, fileHandle, setFileHandle, projectEventsOut);
+
+	const { openProjectWithPrompt } = useOpenProject(
+		setProject,
+		setFileHandle,
+		hasUnsavedChanges,
+		setHasUnsavedChanges,
+		openUnsavedChangesDialog,
+		setOnUnsavedChangesDialogCancel,
+		setOnUnsavedChangesDialogContinue,
+		projectEventsOut
+	);
+
+	const { newProjectWithPrompt } = useNewProject(
+		setProject,
+		setFileHandle,
+		hasUnsavedChanges,
+		setHasUnsavedChanges,
+		openUnsavedChangesDialog,
+		setOnUnsavedChangesDialogCancel,
+		setOnUnsavedChangesDialogContinue,
+		projectEventsOut
+	);
+
 	const newGrafcet = useCallback(
 		(name: string, format: GrafcetFormat) => {
 			if (!project) return null;
@@ -68,24 +99,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		},
 		[project, projectEventsOut, setProject]
 	);
-	const { updateGrafcetData, saveGrafcetData, hasUnsavedChanges, saveProject, savingProject } =
-		useSaveProject(project, setProject, fileHandle, setFileHandle, projectEventsOut);
-	const { openProjectWithPrompt } = useOpenProject(
-		setProject,
-		setFileHandle,
-		hasUnsavedChanges,
-		openUnsavedChangesDialog,
-		setOnUnsavedChangesDialogCancel,
-		setOnUnsavedChangesDialogContinue
-	);
-	const { newProjectWithPrompt } = useNewProject(
-		setProject,
-		setFileHandle,
-		hasUnsavedChanges,
-		openUnsavedChangesDialog,
-		setOnUnsavedChangesDialogCancel,
-		setOnUnsavedChangesDialogContinue
-	);
+
 	const [activeScope, setActiveScope] = useState<string | null>(null);
 
 	useShortcutsHandler(newGrafcet, openProjectWithPrompt, saveProject);

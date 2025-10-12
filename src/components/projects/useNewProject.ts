@@ -1,15 +1,19 @@
 "use client";
 
 import Project from "@/schemas/project/Project.class";
-import { useCallback } from "react";
+import { Emitter } from "mitt";
+import { Dispatch, SetStateAction, useCallback } from "react";
+import { ProjectEventsOut } from "./project-events";
 
 export default function useNewProject(
 	setProject: (p: Project) => void,
 	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
+	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
 	openUnsavedChangesDialog: () => void,
 	setOnUnsavedChangesDialogCancel: (cb: (() => void) | null) => void,
-	setOnUnsavedChangesDialogContinue: (cb: () => void) => void
+	setOnUnsavedChangesDialogContinue: (cb: () => void) => void,
+	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
 	newProject: () => void;
 	newProjectWithPrompt: () => Promise<void>;
@@ -24,17 +28,23 @@ export default function useNewProject(
 			setOnUnsavedChangesDialogCancel(null);
 			setOnUnsavedChangesDialogContinue(() => () => {
 				newProject();
+				setHasUnsavedChanges(false);
+				projectEventsOut.emit("project-created");
 			});
 			openUnsavedChangesDialog();
 		} else {
 			newProject();
+			setHasUnsavedChanges(false);
+			projectEventsOut.emit("project-created");
 		}
 	}, [
 		hasUnsavedChanges,
+		setHasUnsavedChanges,
 		newProject,
 		openUnsavedChangesDialog,
 		setOnUnsavedChangesDialogCancel,
 		setOnUnsavedChangesDialogContinue,
+		projectEventsOut,
 	]);
 
 	return { newProject, newProjectWithPrompt };

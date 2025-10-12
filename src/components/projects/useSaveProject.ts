@@ -22,6 +22,7 @@ export default function useSaveProject(
 	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
 	hasUnsavedChanges: boolean;
+	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>;
 	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
 	saveGrafcetData: (grafcetId: string) => void; //Save in the projet object (not in the file)
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
@@ -85,10 +86,17 @@ export default function useSaveProject(
 		// Update previousGrafcetsRef
 		previousGrafcetsRef.current = structuredClone(grafcetsRef.current);
 		setHasUnsavedChanges(false);
-		projectEventsOut.emit("saved");
+		projectEventsOut.emit("project-saved");
 		setSavingProject(false);
 		return true;
 	}, [project, setProject, fileHandle, setFileHandle, projectEventsOut]);
 
-	return { hasUnsavedChanges, updateGrafcetData, saveGrafcetData, saveProject, savingProject };
+	return {
+		hasUnsavedChanges,
+		setHasUnsavedChanges,
+		updateGrafcetData,
+		saveGrafcetData,
+		saveProject,
+		savingProject,
+	};
 }

@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import { PaneProps } from "./split-pane";
 
-const Pane = ({ children, ...props }: PaneProps) => {
+const Pane = ({ children }: PaneProps) => {
 	return <Fragment>{children}</Fragment>;
 };
 

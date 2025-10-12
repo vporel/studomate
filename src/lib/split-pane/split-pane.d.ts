@@ -8,6 +8,7 @@ export interface PaneProps extends BoxProps {
 	initialSize?: SizeValue; //%, px, number (in pixels)
 	minSize?: SizeValue;
 	maxSize?: SizeValue;
+	visible?: boolean; //default: true
 }
 
 export interface SplitPaneProps extends BoxProps {

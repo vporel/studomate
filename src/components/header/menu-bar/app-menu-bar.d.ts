@@ -3,6 +3,7 @@ type AppMenuItemBaseType = {
 	shortcut?: string;
 	onClick?: () => void;
 	disabled?: boolean;
+	checked?: boolean;
 };
 
 export type AppMenuType = {
