@@ -10,8 +10,11 @@ export default function usePagesData(initialPagesData: Record<string, PageData>)
 	pagesData: Record<string, PageData>;
 	setPagesData: React.Dispatch<React.SetStateAction<Record<string, PageData>>>;
 	updatePageData: (objectId: string, newData: Partial<PageData>) => void;
+	pagesOrder: string[];
+	setPagesOrder: React.Dispatch<React.SetStateAction<string[]>>;
 } {
 	const [pagesData, setPagesData] = useState<Record<string, PageData>>(initialPagesData);
+	const [pagesOrder, setPagesOrder] = useState<string[]>(Object.keys(initialPagesData));
 	const previousPagesDataRef = useRef<Record<string, PageData>>({});
 
 	const updatePageData = useCallback((objectId: string, newData: Partial<PageData>) => {
@@ -52,5 +55,5 @@ export default function usePagesData(initialPagesData: Record<string, PageData>)
 		});
 	}, []);
 
-	return { pagesData, setPagesData, updatePageData };
+	return { pagesData, setPagesData, updatePageData, pagesOrder, setPagesOrder };
 }

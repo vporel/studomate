@@ -1,4 +1,5 @@
-import GrafcetElement, { Dimensions } from "./GrafcetElement.class";
+import { Dimensions } from "./Grafcet.class";
+import GrafcetElement from "./GrafcetElement.class";
 
 export type StepData = {
 	number: number | "";
@@ -22,5 +23,14 @@ export default class Step extends GrafcetElement<StepData> {
 	 */
 	validate(): string[] | null {
 		return null;
+	}
+
+	copy(): Step {
+		return new Step(this.id, { ...this.data }, { ...this.position });
+	}
+
+	static createFromJSON(json: string): Step {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(new Step("", { ...Step.defaultData }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

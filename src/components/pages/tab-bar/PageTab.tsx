@@ -4,6 +4,7 @@ import InclinedAccountTreeIcon from "@/components/icons/InclinedAccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
 import CloseIcon from "@mui/icons-material/Delete";
 import HomeIcon from "@mui/icons-material/Home";
+import TuneIcon from "@mui/icons-material/Tune";
 // import CloseIcon from "@mui/icons-material/Close";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
 import { usePagesContext } from "../context/PagesContext";
@@ -20,7 +21,12 @@ const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
 	const th = useTheme();
 	const { activePageId, setActivePageId, closePage } = usePagesContext();
 	const active = id === activePageId;
-	const TypeIconComponent = type === "project-startup" ? HomeIcon : InclinedAccountTreeIcon;
+	const TypeIconComponent =
+		type === "project-startup"
+			? HomeIcon
+			: type === "project-properties"
+			? TuneIcon
+			: InclinedAccountTreeIcon;
 
 	return (
 		<Box

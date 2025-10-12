@@ -1,37 +1,54 @@
 "use client";
 
 import FolderIcon from "@mui/icons-material/Folder";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view";
-import React from "react";
-import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
+import React, { useRef } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
-import { useProjectContext } from "../projects/ProjectContext";
+import ExplorerGrafcetsItems from "./ExplorerGrafcetsItems";
 import ExplorerHeader from "./ExplorerHeader";
+import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
+import useExplorerContextMenu from "./useExplorerContextMenu";
 
-const treeItemStyles: CustomTreeItemStyles = {
+export const treeItemStyles: CustomTreeItemStyles = {
 	root: {
 		userSelect: "none",
 	},
 	label: {
-		fontSize: "0.9rem",
+		fontSize: "0.85rem",
 	},
 	icon: {
 		fontSize: "1.1rem",
 	},
+	input: {
+		fontSize: "0.85rem",
+		height: "20px",
+	},
 };
 
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
-	const { project } = useProjectContext();
+	const explorerRef = useRef<HTMLDivElement>(null);
+	const {
+		visible: contextMenuVisible,
+		element: contextMenuElement,
+		position: contextMenuPosition,
+		openContextMenu,
+		closeContextMenu,
+	} = useExplorerContextMenu(explorerRef);
 
 	return (
 		<Box
+			ref={explorerRef}
 			className="explorer"
 			style={{
 				height: "100%",
 				width: "100%",
 				backgroundColor: "rgb(250, 250, 250)",
 				...style,
+			}}
+			onContextMenu={(e) => {
+				e.preventDefault();
+				openContextMenu(e, { type: "pane" });
 			}}
 		>
 			<ExplorerHeader />
@@ -42,29 +59,19 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 				>
-					{Object.values(project!.grafcets).length === 0 ? (
-						<Typography
-							sx={{
-								padding: "3px 0 3px 33px",
-								color: "gray",
-								fontSize: "0.8rem",
-							}}
-						>
-							Aucun grafcet
-						</Typography>
-					) : (
-						Object.values(project!.grafcets).map((grafcet) => (
-							<CustomTreeItem
-								key={grafcet.id}
-								itemId={grafcet.id}
-								label={grafcet.name}
-								IconComponent={InclinedAccountTreeIcon}
-								styles={treeItemStyles}
-							/>
-						))
-					)}
+					<ExplorerGrafcetsItems styles={treeItemStyles} onContextMenu={openContextMenu} />
 				</CustomTreeItem>
 			</SimpleTreeView>
+			{explorerRef.current && (
+				<ExplorerContextMenu
+					visible={contextMenuVisible}
+					element={contextMenuElement}
+					position={contextMenuPosition}
+					onClose={closeContextMenu}
+					explorerWidth={window.innerWidth}
+					explorerHeight={window.innerHeight}
+				/>
+			)}
 		</Box>
 	);
 };

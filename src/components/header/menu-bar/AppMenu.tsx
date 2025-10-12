@@ -95,12 +95,17 @@ const AppMenu = ({
 									gap: "10px",
 									textAlign: "left",
 									position: "relative",
-									padding: "5px 10px",
+									padding: "5px 20px 5px 0px",
 								}}
 							>
 								<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-									<FlexBox center width="16px">
-										{item.checked && <CheckIcon fontSize="small" />}
+									<FlexBox alignItems="center" justifyContent="end" width="30px">
+										{item.checked && (
+											<CheckIcon
+												fontSize="small"
+												sx={{ transform: "translateY(-2px)" }}
+											/>
+										)}
 									</FlexBox>
 									<Typography sx={{ fontSize: "0.85rem", py: 0, my: 0 }}>
 										{item.label}

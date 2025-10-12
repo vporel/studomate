@@ -9,12 +9,12 @@ import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
 import { ProjectEventsOut } from "./project-events";
 
 export type GrafcetRefData = {
-	grafcet?: Grafcet;
+	grafcet: Grafcet;
 	flowNodes?: any[];
 	flowEdges?: any[];
 };
 
-export default function useSaveProject(
+export default function useProjectSave(
 	project: Project | null,
 	setProject: Dispatch<SetStateAction<Project | null>>,
 	fileHandle: FileSystemFileHandle | null,
@@ -34,7 +34,7 @@ export default function useSaveProject(
 	const [savingProject, setSavingProject] = useState(false);
 
 	const updateGrafcetData = useCallback((grafcetId: string, data: GrafcetRefData) => {
-		if (!grafcetsRef.current[grafcetId]) grafcetsRef.current[grafcetId] = {};
+		if (!grafcetsRef.current[grafcetId]) return;
 		grafcetsRef.current[grafcetId] = { ...grafcetsRef.current[grafcetId], ...data };
 		//Check if the grafcet data has changed compared to previousGrafcetsRef (only the grafcet property)
 		const previousData = previousGrafcetsRef.current[grafcetId];
@@ -49,7 +49,7 @@ export default function useSaveProject(
 	const saveGrafcetData = useCallback((grafcetId: string) => {
 		setProject((oldProject) => {
 			if (!oldProject) return oldProject;
-			const newProject = Object.assign(Object.create(Project.prototype), oldProject);
+			const newProject = oldProject.copy();
 			if (grafcetsRef.current[grafcetId]) {
 				newProject.updateGrafcet(grafcetId, grafcetsRef.current[grafcetId].grafcet);
 			}
@@ -58,7 +58,8 @@ export default function useSaveProject(
 	}, []);
 
 	const saveProject = useCallback(async () => {
-		const newProject = Object.assign(Object.create(Project.prototype), project);
+		if (!project) return false;
+		const newProject = project.copy();
 		for (const grafcetId in grafcetsRef.current) {
 			if (grafcetsRef.current[grafcetId].grafcet) {
 				newProject.updateGrafcet(grafcetId, grafcetsRef.current[grafcetId].grafcet);

@@ -1,5 +1,5 @@
 "use client";
-import { SxProps } from "@mui/material";
+import { alpha, SxProps } from "@mui/material";
 import Box from "@mui/material/Box";
 import {
 	TreeItemCheckbox,
@@ -18,12 +18,20 @@ export type CustomTreeItemStyles = {
 	root?: SxProps;
 	label?: SxProps;
 	icon?: SxProps;
+	input?: SxProps;
 };
 
 interface CustomTreeItemProps
 	extends Omit<UseTreeItemParameters, "rootRef">,
 		Omit<React.HTMLAttributes<HTMLLIElement>, "onFocus"> {
 	IconComponent?: React.ElementType;
+	labelMode?: "normal" | "edit";
+	inputProps?: {
+		value?: string;
+		onChange?: React.ChangeEventHandler<HTMLInputElement>;
+		onBlur?: React.FocusEventHandler<HTMLInputElement>;
+		onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+	};
 	styles?: CustomTreeItemStyles;
 }
 
@@ -31,7 +39,18 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 	props: CustomTreeItemProps,
 	ref: React.Ref<HTMLLIElement>
 ) {
-	const { id, itemId, label, disabled, children, IconComponent, styles, ...other } = props;
+	const {
+		id,
+		itemId,
+		label,
+		labelMode = "normal",
+		disabled,
+		children,
+		IconComponent,
+		inputProps,
+		styles,
+		...other
+	} = props;
 
 	const {
 		getContextProviderProps,
@@ -44,6 +63,14 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 		status,
 	} = useTreeItem({ id, itemId, children, label, disabled, rootRef: ref });
 
+	const inputRef = React.useRef<HTMLInputElement>(null);
+
+	React.useEffect(() => {
+		if (labelMode === "edit" && inputRef.current) {
+			inputRef.current.focus();
+		}
+	}, [labelMode]);
+
 	return (
 		<TreeItemProvider {...getContextProviderProps()}>
 			<TreeItemRoot {...getRootProps(other)} sx={styles?.root}>
@@ -54,7 +81,31 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 					<TreeItemCheckbox {...getCheckboxProps()} />
 					<Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1 }}>
 						{IconComponent && <IconComponent sx={styles?.icon} />}
-						<TreeItemLabel {...getLabelProps()} sx={styles?.label} />
+						{labelMode === "normal" ? (
+							<TreeItemLabel {...getLabelProps()} sx={styles?.label} />
+						) : (
+							<Box
+								component="input"
+								ref={inputRef}
+								sx={{
+									outline: "none",
+									border: "1px solid lightgray",
+									backgroundColor: (th) => alpha(th.palette.primary.main, 0.05),
+									color: (th) => th.palette.primary.main,
+									width: "100%",
+									height: "22px",
+									...styles?.input,
+								}}
+								value={inputProps?.value}
+								onChange={inputProps?.onChange}
+								onClick={(e) => e.stopPropagation()}
+								onBlur={(e) => inputProps?.onBlur?.(e)}
+								onKeyDown={(e) => {
+									e.stopPropagation();
+									inputProps?.onKeyDown?.(e);
+								}}
+							/>
+						)}
 					</Box>
 				</TreeItemContent>
 				{children && <TreeItemGroupTransition {...getGroupTransitionProps()} />}

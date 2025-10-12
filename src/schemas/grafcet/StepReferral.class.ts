@@ -1,8 +1,9 @@
-import GrafcetElement, { Dimensions } from "./GrafcetElement.class";
+import { Dimensions } from "./Grafcet.class";
+import GrafcetElement from "./GrafcetElement.class";
 
 export type StepReferralData = {};
 
-export default class StepReferral<DataType> extends GrafcetElement<DataType> {
+export default abstract class StepReferral<DataType> extends GrafcetElement<DataType> {
 	static defaultDimensions: Dimensions = {
 		width: 40,
 		height: 40,

@@ -26,4 +26,13 @@ export default class Transition extends GrafcetElement<TransitionData> {
 
 		return null;
 	}
+
+	copy(): Transition {
+		return new Transition(this.id, { ...this.data }, { ...this.position });
+	}
+
+	static createFromJSON(json: string): Transition {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(new Transition("", { ...Transition.defaultData }, { x: 0, y: 0 }), jsonParsed);
+	}
 }

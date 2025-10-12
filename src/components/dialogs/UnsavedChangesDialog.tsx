@@ -13,12 +13,24 @@ const UnsavedChangesDialog = ({
 	onCancel,
 	onContinueWithoutSaving,
 	onSave,
+	buttonsProps,
 }: {
 	open: boolean;
 	message: string;
 	onCancel: () => void;
 	onContinueWithoutSaving: () => void;
 	onSave: () => void;
+	buttonsProps?: {
+		cancel?: {
+			text?: string;
+		};
+		continueWithoutSaving?: {
+			text?: string;
+		};
+		save?: {
+			text?: string;
+		};
+	};
 }) => {
 	return (
 		<Dialog onClose={onCancel} open={open}>
@@ -42,13 +54,13 @@ const UnsavedChangesDialog = ({
 			</DialogContent>
 			<DialogActions>
 				<Button autoFocus onClick={onSave}>
-					Enregistrer
+					{buttonsProps?.save?.text || "Enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onContinueWithoutSaving}>
-					Quitter sans enregistrer
+					{buttonsProps?.continueWithoutSaving?.text || "Quitter sans enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onCancel}>
-					Annuler
+					{buttonsProps?.cancel?.text || "Annuler"}
 				</Button>
 			</DialogActions>
 		</Dialog>

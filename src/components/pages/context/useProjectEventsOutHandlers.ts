@@ -10,7 +10,9 @@ import { PageData } from "./pages-data";
 export default function useProjectEventsOutHandlers(
 	setPagesData: Dispatch<SetStateAction<Record<string, PageData>>>,
 	projectEventsOut: Emitter<ProjectEventsOut>,
-	setActivePageId: Dispatch<SetStateAction<string>>
+	setActivePageId: Dispatch<SetStateAction<string>>,
+	openPage: (pageId: string, pageData: PageData) => void,
+	closePage: (pageId: string) => void
 ) {
 	// When a project is created, close all the pages and open the project startup page
 	useEffect(() => {
@@ -65,21 +67,41 @@ export default function useProjectEventsOutHandlers(
 	useEffect(() => {
 		const handleGrafcetOpen = (grafcet: Grafcet) => {
 			// Set hasUnsavedChanges to false for all pages
-			setPagesData((oldPagesData) => {
-				const newPagesData = structuredClone(oldPagesData);
-				newPagesData[grafcet.id] = {
-					type: "grafcet",
-					title: grafcet.name,
-					grafcet,
-				};
-				return newPagesData;
+			openPage(grafcet.id, {
+				type: "grafcet",
+				title: grafcet.name,
+				grafcet,
 			});
-			setActivePageId(grafcet.id);
 		};
 
 		projectEventsOut.on("grafcet-open", handleGrafcetOpen);
 		return () => {
 			projectEventsOut.off("grafcet-open", handleGrafcetOpen);
 		};
-	}, [projectEventsOut, setPagesData, setActivePageId]);
+	}, [projectEventsOut, openPage]);
+
+	// When a grafcet is deleted, remove it from the pages data
+	useEffect(() => {
+		projectEventsOut.on("grafcet-deleted", closePage);
+		return () => {
+			projectEventsOut.off("grafcet-deleted", closePage);
+		};
+	}, [projectEventsOut, closePage]);
+
+	// When a grafcet is renamed, update its title in the pages data
+	useEffect(() => {
+		const handleGrafcetRenamed = ({ grafcetId, newName }: { grafcetId: string; newName: string }) => {
+			setPagesData((oldPagesData) => {
+				const newPagesData = structuredClone(oldPagesData);
+				if (newPagesData[grafcetId] && newPagesData[grafcetId].type === "grafcet") {
+					newPagesData[grafcetId].title = newName;
+				}
+				return newPagesData;
+			});
+		};
+		projectEventsOut.on("grafcet-renamed", handleGrafcetRenamed);
+		return () => {
+			projectEventsOut.off("grafcet-renamed", handleGrafcetRenamed);
+		};
+	}, [projectEventsOut, setPagesData]);
 }

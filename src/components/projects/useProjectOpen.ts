@@ -6,7 +6,7 @@ import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import { ProjectEventsOut } from "./project-events";
 
-export default function useOpenProject(
+export default function useProjectOpen(
 	setProject: (g: Project) => void,
 	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
@@ -23,8 +23,7 @@ export default function useOpenProject(
 		const handle = await openFileDialog("Fichiers JSON", { "application/json": [".json"] });
 		if (!handle) return false;
 		const text = await readFile(handle);
-		const json = JSON.parse(text);
-		const newProject = Object.assign(Object.create(Project.prototype), json);
+		const newProject = Project.createFromJSON(text);
 		setFileHandle(handle);
 		setProject(newProject);
 		return true;

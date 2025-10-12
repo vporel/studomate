@@ -25,14 +25,45 @@ export default class Project {
 	addGrafcet(name: string, format: GrafcetFormat): Grafcet {
 		const grafcetId = createElementId();
 		this.grafcets[grafcetId] = new Grafcet(grafcetId, name, format);
+		this.touch();
 		return this.grafcets[grafcetId];
 	}
 
 	updateGrafcet(grafcetId: string, grafcet: Grafcet) {
 		this.grafcets[grafcetId] = grafcet;
+		this.touch();
+	}
+
+	deleteGrafcet(grafcetId: string) {
+		delete this.grafcets[grafcetId];
+		this.touch();
 	}
 
 	touch() {
 		this.lastModificationDate = new Date();
+	}
+
+	copy(): Project {
+		const newProject = Object.assign(new Project("", ""), this);
+		for (const grafcetId in this.grafcets) {
+			newProject.grafcets[grafcetId] = this.grafcets[grafcetId].copy();
+		}
+		return newProject;
+	}
+
+	static createFromJSON(json: string): Project {
+		const jsonParsed = JSON.parse(json);
+		const project = Object.assign(new Project("", ""), jsonParsed);
+		project.creationDate = new Date(jsonParsed.creationDate);
+		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
+		project.variables = (jsonParsed.variables || []).map((v: any) =>
+			Variable.createFromJSON(JSON.stringify(v))
+		);
+		const grafcets: Record<string, Grafcet> = {};
+		for (const grafcetId in jsonParsed.grafcets) {
+			grafcets[grafcetId] = Grafcet.createFromJSON(JSON.stringify(jsonParsed.grafcets[grafcetId]));
+		}
+		project.grafcets = grafcets;
+		return project;
 	}
 }

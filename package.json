@@ -15,6 +15,7 @@
     "@mui/material": "^7.3.2",
     "@mui/x-tree-view": "^8.14.0",
     "@xyflow/react": "^12.8.4",
+    "date-fns": "^4.1.0",
     "dom-to-image": "^2.6.0",
     "html-to-image": "^1.11.13",
     "mitt": "^3.0.1",

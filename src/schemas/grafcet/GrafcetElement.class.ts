@@ -12,7 +12,7 @@ export type GrafcetElementType =
 	| "junction-or-end"
 	| "comment";
 
-export default class GrafcetElement<DataType> {
+export default abstract class GrafcetElement<DataType> {
 	id: string = "";
 	data: DataType;
 	position: XYPosition = { x: 0, y: 0 };
@@ -22,4 +22,6 @@ export default class GrafcetElement<DataType> {
 		this.data = data;
 		this.position = position;
 	}
+
+	abstract copy(): GrafcetElement<DataType>;
 }

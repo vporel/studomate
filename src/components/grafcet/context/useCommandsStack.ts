@@ -17,18 +17,14 @@ export default function useCommandsStack(
 
 	const undoLastCommand = useCallback(() => {
 		if (!grafcet) return null;
-		const [newGrafcet, commands] = commandsStackRef.current.undo(
-			Object.assign(Object.create(Grafcet.prototype), { ...grafcet }) as Grafcet
-		);
+		const [newGrafcet, commands] = commandsStackRef.current.undo(grafcet.copy());
 		if (newGrafcet) setGrafcet(newGrafcet);
 		return commands;
 	}, [grafcet, setGrafcet]);
 
 	const redoLastCommand = useCallback(() => {
 		if (!grafcet) return null;
-		const [newGrafcet, commands] = commandsStackRef.current.redo(
-			Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
-		);
+		const [newGrafcet, commands] = commandsStackRef.current.redo(grafcet.copy());
 		if (newGrafcet) setGrafcet(newGrafcet);
 		return commands;
 	}, [grafcet, setGrafcet]);

@@ -13,11 +13,11 @@ export const PROJECT_STARTUP_PAGE_DATA: ProjectStartPageData = {
 	title: "Démarrage",
 };
 
-const ProjectStartupPage = ({ pageId }: { pageId: string }) => {
+const ProjectStartupPage = () => {
 	const { newGrafcet } = useProjectContext();
 
 	return (
-		<Page pageId={pageId} sx={{ justifyContent: "center", alignItems: "start" }}>
+		<Page pageId={PROJECT_STARTUP_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>
 			<Box
 				sx={{
 					padding: "4rem 1rem",
@@ -29,7 +29,7 @@ const ProjectStartupPage = ({ pageId }: { pageId: string }) => {
 					{APP_SLOGAN}
 				</Typography>
 				<Grid container spacing={2} sx={{ marginTop: "2rem" }}>
-					<Grid size={{ xs: 6, sm: 6 }}>
+					<Grid size={{ xs: 12, sm: 6 }}>
 						<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: "0.5rem" }}>
 							Démarrer
 						</Typography>

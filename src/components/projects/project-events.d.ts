@@ -5,4 +5,6 @@ export type ProjectEventsOut = {
 	"project-opened": void; // Emitted when a project is opened
 	"project-saved": void; // Emitted when the project is saved
 	"grafcet-open": Grafcet; //Emitted to ask to open a grafcet in the UI
+	"grafcet-deleted": string; // Emitted when a grafcet is deleted, with the grafcetId
+	"grafcet-renamed": { grafcetId: string; newName: string }; // Emitted when a grafcet is renamed
 };

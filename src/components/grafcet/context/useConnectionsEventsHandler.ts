@@ -25,7 +25,7 @@ export default function useConnectionsEventsHandler(
 			}
 			const newGrafcet = commandsStack.execute(
 				[new ConnectionsAddCommand(connections)],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};
@@ -52,7 +52,7 @@ export default function useConnectionsEventsHandler(
 						})
 					),
 				],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};
@@ -71,7 +71,7 @@ export default function useConnectionsEventsHandler(
 			}
 			const newGrafcet = commandsStack.execute(
 				[new ConnectionsRemoveCommand(connections)],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};

@@ -40,7 +40,7 @@ export default function useElementsEventsHandler(
 						}))
 					),
 				],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};
@@ -89,7 +89,7 @@ export default function useElementsEventsHandler(
 						})
 					),
 				],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};
@@ -124,7 +124,7 @@ export default function useElementsEventsHandler(
 					),
 					new ConnectionsRemoveCommand(connections || []),
 				],
-				Object.assign(Object.create(Grafcet.prototype), grafcet) as Grafcet
+				grafcet.copy()
 			);
 			setGrafcet(newGrafcet);
 		};

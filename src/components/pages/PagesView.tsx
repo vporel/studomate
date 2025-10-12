@@ -5,6 +5,7 @@ import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
 import { usePagesContext } from "./context/PagesContext";
 import GrafcetPage from "./GrafcetPage";
+import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 
@@ -100,7 +101,9 @@ const PagesView = () => {
 					{Object.entries(pagesData).map(([id, pageData]) => {
 						switch (pageData.type) {
 							case "project-startup":
-								return <ProjectStartupPage key={id} pageId={id} />;
+								return <ProjectStartupPage key={id} />;
+							case "project-properties":
+								return <ProjectPropertiesPage key={id} />;
 							case "grafcet":
 								return (
 									<GrafcetPage key={id} grafcetId={id} initialGrafcet={pageData.grafcet} />

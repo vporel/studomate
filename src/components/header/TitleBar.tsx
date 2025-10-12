@@ -1,26 +1,53 @@
 "use client";
 
+import FlexBox from "@/lib/boxes/FlexBox";
 import { Box, CircularProgress, Typography } from "@mui/material";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useProjectContext } from "../projects/ProjectContext";
 
 const TitleBar = () => {
-	const { project, hasUnsavedChanges, saveProject, savingProject } = useProjectContext();
+	const { project, hasUnsavedChanges, saveProject, savingProject, changeProjectName } = useProjectContext();
+	const projectNameInputRef = useRef<HTMLInputElement>(null);
+	const [editingProjectName, setEditingProjectName] = useState<string>(project?.name ?? "");
+	const saveProjectName = useCallback(() => {
+		changeProjectName(editingProjectName.trim() !== "" ? editingProjectName.trim() : project?.name ?? "");
+	}, [editingProjectName, project?.name, changeProjectName]);
+
+	useEffect(() => {
+		setEditingProjectName(project?.name ?? "");
+	}, [project?.name]);
 
 	return (
-		<Box
+		<FlexBox
+			centerVertical
 			sx={{
 				width: "100%",
 				height: "25px",
 				backgroundColor: "white",
 				paddingLeft: "5px",
-				display: "flex",
-				alignItems: "center",
 				gap: "10px",
 			}}
 		>
-			<Typography variant="h6" fontSize="1.1rem">
-				{project?.name}
-			</Typography>
+			<Box
+				ref={projectNameInputRef}
+				component="input"
+				value={editingProjectName}
+				onChange={(e) => setEditingProjectName(e.target.value)}
+				onBlur={() => {
+					saveProjectName();
+				}}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") {
+						projectNameInputRef.current?.blur();
+						saveProjectName();
+					}
+				}}
+				sx={{
+					fontWeight: "bold",
+					width: "250px",
+				}}
+			/>
+
 			{hasUnsavedChanges && (
 				<Typography
 					color="error"
@@ -42,7 +69,7 @@ const TitleBar = () => {
 				</Typography>
 			)}
 			{savingProject && <CircularProgress size={15} />}
-		</Box>
+		</FlexBox>
 	);
 };
 

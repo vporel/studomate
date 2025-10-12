@@ -3,18 +3,20 @@ import useBooleanState from "@/lib/hooks/useBooleanState";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
-import UnsavedChangesDialog from "../misc/UnsavedChangesDialog";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import UnsavedChangesDialog from "../dialogs/UnsavedChangesDialog";
 import { ProjectEventsOut } from "./project-events";
-import useNewProject from "./useNewProject";
-import useOpenProject from "./useOpenProject";
+import useGrafcetActions from "./useGrafcetActions";
 import useProject from "./useProject";
-import useSaveProject from "./useSaveProject";
+import useNewProject from "./useProjectNew";
+import useProjectOpen from "./useProjectOpen";
+import useProjectSave from "./useProjectSave";
 import useShortcutsHandler from "./useShortcutsHandler";
 
 type ProjectContextType = {
 	project: Project | null;
-	newGrafcet: (name: string, format: GrafcetFormat) => Grafcet | null;
+	changeProjectName: (newName: string) => void;
+	changeProjectAuthor: (newAuthor: string) => void;
 	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
 	hasUnsavedChanges: boolean;
 	newProject: () => Promise<void>;
@@ -29,11 +31,15 @@ type ProjectContextType = {
 	 */
 	activeScope: string | null;
 	setActiveScope: (scope: string) => void;
+	newGrafcet: (name: string, format: GrafcetFormat) => Grafcet | null;
+	deleteGrafcet: (grafcetId: string) => void;
+	renameGrafcet: (grafcetId: string, newName: string) => void;
 };
 
 const ProjectContext = createContext<ProjectContextType>({
 	project: new Project("Nouveau projet", ""),
-	newGrafcet: () => null,
+	changeProjectName: () => {},
+	changeProjectAuthor: () => {},
 	updateGrafcetData: () => {},
 	hasUnsavedChanges: false,
 	newProject: async () => {},
@@ -44,10 +50,14 @@ const ProjectContext = createContext<ProjectContextType>({
 	projectEventsOut: mitt<ProjectEventsOut>(),
 	activeScope: null,
 	setActiveScope: () => {},
+	newGrafcet: () => null,
+	deleteGrafcet: () => {},
+	renameGrafcet: () => {},
 });
 
 export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
-	const { project, setProject, fileHandle, setFileHandle } = useProject();
+	const { project, setProject, fileHandle, setFileHandle, changeProjectName, changeProjectAuthor } =
+		useProject();
 	const projectEventsOut = useMemo(() => mitt<ProjectEventsOut>(), []);
 	const [unsavedChangesDialogOpen, openUnsavedChangesDialog, closeUnsavedChangesDialog] =
 		useBooleanState(false);
@@ -64,9 +74,9 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		setHasUnsavedChanges,
 		saveProject,
 		savingProject,
-	} = useSaveProject(project, setProject, fileHandle, setFileHandle, projectEventsOut);
+	} = useProjectSave(project, setProject, fileHandle, setFileHandle, projectEventsOut);
 
-	const { openProjectWithPrompt } = useOpenProject(
+	const { openProjectWithPrompt } = useProjectOpen(
 		setProject,
 		setFileHandle,
 		hasUnsavedChanges,
@@ -88,16 +98,11 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		projectEventsOut
 	);
 
-	const newGrafcet = useCallback(
-		(name: string, format: GrafcetFormat) => {
-			if (!project) return null;
-			const newProject = Object.assign(new Project("", ""), project);
-			const grafcet = newProject.addGrafcet(name, format);
-			projectEventsOut.emit("grafcet-open", grafcet);
-			setProject(newProject);
-			return grafcet;
-		},
-		[project, projectEventsOut, setProject]
+	const { newGrafcet, deleteGrafcet, renameGrafcet } = useGrafcetActions(
+		project,
+		setProject,
+		setHasUnsavedChanges,
+		projectEventsOut
 	);
 
 	const [activeScope, setActiveScope] = useState<string | null>(null);
@@ -108,7 +113,8 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		<ProjectContext.Provider
 			value={{
 				project,
-				newGrafcet,
+				changeProjectName,
+				changeProjectAuthor,
 				updateGrafcetData,
 				hasUnsavedChanges,
 				newProject: newProjectWithPrompt,
@@ -119,6 +125,9 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				projectEventsOut,
 				activeScope,
 				setActiveScope,
+				newGrafcet,
+				deleteGrafcet,
+				renameGrafcet,
 			}}
 		>
 			{children}

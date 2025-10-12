@@ -1,7 +1,7 @@
 import { GrafcetEdge, GrafcetNode } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 
-export type PageType = "project-startup" | "grafcet";
+export type PageType = "project-startup" | "project-properties" | "grafcet";
 
 type PageDataCommon = {
 	title: string;
@@ -12,6 +12,10 @@ export type ProjectStartPageData = PageDataCommon & {
 	type: "project-startup";
 };
 
+export type ProjectPropertiesPageData = PageDataCommon & {
+	type: "project-properties";
+};
+
 export type GrafcetPageData = PageDataCommon & {
 	type: "grafcet";
 	grafcet: Grafcet;
@@ -19,4 +23,4 @@ export type GrafcetPageData = PageDataCommon & {
 	edges?: GrafcetEdge[];
 };
 
-type PageData = ProjectStartPageData | GrafcetPageData;
+type PageData = ProjectStartPageData | ProjectPropertiesPageData | GrafcetPageData;

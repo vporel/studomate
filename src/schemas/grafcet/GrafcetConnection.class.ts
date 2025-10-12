@@ -20,4 +20,26 @@ export default class GrafcetConnection {
 		this.target = target;
 		this.data = data;
 	}
+
+	copy(): GrafcetConnection {
+		return new GrafcetConnection(
+			this.id,
+			{ ...this.source },
+			{ ...this.target },
+			{ points: this.data.points.map((p) => [p[0], p[1]]) }
+		);
+	}
+
+	static createFromJSON(json: string): GrafcetConnection {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(
+			new GrafcetConnection(
+				"",
+				{ type: "step", id: "", handleId: "" },
+				{ type: "step", id: "", handleId: "" },
+				{ points: [] }
+			),
+			jsonParsed
+		);
+	}
 }

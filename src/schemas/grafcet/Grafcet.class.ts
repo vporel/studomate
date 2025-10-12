@@ -193,4 +193,60 @@ export default class Grafcet {
 			}
 		});
 	}
+
+	copy(): Grafcet {
+		const newGrafcet = Object.assign(new Grafcet(this.id, this.name, this.format), this);
+		newGrafcet.steps = this.steps.map((s) => s.copy());
+		newGrafcet.actions = this.actions.map((a) => a.copy());
+		newGrafcet.transitions = this.transitions.map((t) => t.copy());
+		newGrafcet.stepsReferralsSources = this.stepsReferralsSources.map((s) => s.copy());
+		newGrafcet.stepsReferralsTargets = this.stepsReferralsTargets.map((s) => s.copy());
+		newGrafcet.junctionsAndStarts = this.junctionsAndStarts.map((j) => j.copy());
+		newGrafcet.junctionsAndEnds = this.junctionsAndEnds.map((j) => j.copy());
+		newGrafcet.junctionsOrStarts = this.junctionsOrStarts.map((j) => j.copy());
+		newGrafcet.junctionsOrEnds = this.junctionsOrEnds.map((j) => j.copy());
+		newGrafcet.comments = this.comments.map((c) => c.copy());
+		newGrafcet.connections = this.connections.map((c) => c.copy());
+		return newGrafcet;
+	}
+
+	static createFromJSON(json: string): Grafcet {
+		const jsonParsed = JSON.parse(json);
+		const grafcet = Object.assign(
+			new Grafcet("", "", { type: "A4", orientation: "portrait" }),
+			jsonParsed
+		);
+		grafcet.steps = (jsonParsed.steps ?? []).map((s: any) => Step.createFromJSON(JSON.stringify(s)));
+		grafcet.actions = (jsonParsed.actions ?? []).map((a: any) =>
+			Action.createFromJSON(JSON.stringify(a))
+		);
+		grafcet.transitions = (jsonParsed.transitions ?? []).map((t: any) =>
+			Transition.createFromJSON(JSON.stringify(t))
+		);
+		grafcet.stepsReferralsSources = (jsonParsed.stepsReferralsSources ?? []).map((s: any) =>
+			StepReferralSource.createFromJSON(JSON.stringify(s))
+		);
+		grafcet.stepsReferralsTargets = (jsonParsed.stepsReferralsTargets ?? []).map((s: any) =>
+			StepReferralTarget.createFromJSON(JSON.stringify(s))
+		);
+		grafcet.junctionsAndStarts = (jsonParsed.junctionsAndStarts ?? []).map((j: any) =>
+			JunctionAndStart.createFromJSON(JSON.stringify(j))
+		);
+		grafcet.junctionsAndEnds = (jsonParsed.junctionsAndEnds ?? []).map((j: any) =>
+			JunctionAndEnd.createFromJSON(JSON.stringify(j))
+		);
+		grafcet.junctionsOrStarts = (jsonParsed.junctionsOrStarts ?? []).map((j: any) =>
+			JunctionOrStart.createFromJSON(JSON.stringify(j))
+		);
+		grafcet.junctionsOrEnds = (jsonParsed.junctionsOrEnds ?? []).map((j: any) =>
+			JunctionOrEnd.createFromJSON(JSON.stringify(j))
+		);
+		grafcet.comments = (jsonParsed.comments ?? []).map((c: any) =>
+			Comment.createFromJSON(JSON.stringify(c))
+		);
+		grafcet.connections = (jsonParsed.connections ?? []).map((c: any) =>
+			GrafcetConnection.createFromJSON(JSON.stringify(c))
+		);
+		return grafcet;
+	}
 }

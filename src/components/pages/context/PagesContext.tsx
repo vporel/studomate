@@ -1,10 +1,21 @@
 "use client";
-import UnsavedChangesDialog from "@/components/misc/UnsavedChangesDialog";
+import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog";
 import useBooleanState from "@/lib/hooks/useBooleanState";
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import {
+	createContext,
+	Dispatch,
+	ReactNode,
+	SetStateAction,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import { useProjectContext } from "../../projects/ProjectContext";
+import { PROJECT_PROPERTIES_PAGE_DATA, PROJECT_PROPERTIES_PAGE_ID } from "../ProjectPropertiesPage";
 import { PageData } from "./pages-data";
 import useClosePage from "./useClosePage";
+import useOpenPage from "./useOpenPage";
 import usePagesData from "./usePagesData";
 import useProjectEventsOutHandlers from "./useProjectEventsOutHandlers";
 import useSavePageChanges from "./useSavePageChanges";
@@ -12,17 +23,25 @@ import useSavePageChanges from "./useSavePageChanges";
 type PagesContextType = {
 	pagesData: Record<string, PageData>;
 	updatePageData: (objectId: string, newData: Partial<PageData>) => void;
+	pagesOrder: string[];
+	setPagesOrder: Dispatch<SetStateAction<string[]>>;
 	activePageId: string;
 	setActivePageId: Dispatch<SetStateAction<string>>;
 	closePage: (pageId: string) => Promise<boolean>;
+	openPage: (pageId: string, pageData: PageData) => void;
+	openProjectPropertiesPage: () => void;
 };
 
 const PagesContext = createContext<PagesContextType>({
 	pagesData: {},
 	updatePageData: () => {},
+	pagesOrder: [],
+	setPagesOrder: () => {},
 	activePageId: "",
 	setActivePageId: () => {},
 	closePage: async () => false,
+	openPage: () => {},
+	openProjectPropertiesPage: () => {},
 });
 
 export const PagesContextProvider = ({
@@ -32,10 +51,8 @@ export const PagesContextProvider = ({
 	initialPagesData: Record<string, PageData>;
 	children: ReactNode;
 }) => {
-	if (Object.keys(initialPagesData).length === 0) {
-		throw new Error("PagesContextProvider requires at least one page in initialPagesData");
-	}
-	const { pagesData, updatePageData, setPagesData } = usePagesData(initialPagesData);
+	const { pagesData, updatePageData, setPagesData, pagesOrder, setPagesOrder } =
+		usePagesData(initialPagesData);
 	const [activePageId, setActivePageId] = useState<string>(Object.keys(initialPagesData)[0]);
 	const { projectEventsOut, setActiveScope } = useProjectContext();
 	const savePageChanges = useSavePageChanges();
@@ -49,9 +66,10 @@ export const PagesContextProvider = ({
 	const [onUnsavedChangesDialogSaveAndContinue, setOnUnsavedChangesDialogSaveAndContinue] = useState<
 		null | (() => void)
 	>(null);
-	const { closePageWithPrompt } = useClosePage(
+	const { closePage, closePageWithPrompt } = useClosePage(
 		pagesData,
 		setPagesData,
+		setPagesOrder,
 		setActivePageId,
 		openUnsavedChangesDialog,
 		setOnUnsavedChangesDialogCancel,
@@ -59,8 +77,13 @@ export const PagesContextProvider = ({
 		setOnUnsavedChangesDialogSaveAndContinue,
 		savePageChanges
 	);
+	const { openPage } = useOpenPage(setPagesData, setPagesOrder, setActivePageId);
 
-	useProjectEventsOutHandlers(setPagesData, projectEventsOut, setActivePageId);
+	const openProjectPropertiesPage = useCallback(() => {
+		openPage(PROJECT_PROPERTIES_PAGE_ID, PROJECT_PROPERTIES_PAGE_DATA);
+	}, [openPage]);
+
+	useProjectEventsOutHandlers(setPagesData, projectEventsOut, setActivePageId, openPage, closePage);
 
 	useEffect(() => {
 		setActiveScope(activePageId);
@@ -71,9 +94,13 @@ export const PagesContextProvider = ({
 			value={{
 				pagesData,
 				updatePageData,
+				pagesOrder,
+				setPagesOrder,
 				activePageId,
 				setActivePageId,
 				closePage: closePageWithPrompt,
+				openPage,
+				openProjectPropertiesPage,
 			}}
 		>
 			{children}
@@ -92,6 +119,11 @@ export const PagesContextProvider = ({
 				onSave={async () => {
 					closeUnsavedChangesDialog();
 					if (onUnsavedChangesDialogSaveAndContinue) onUnsavedChangesDialogSaveAndContinue();
+				}}
+				buttonsProps={{
+					continueWithoutSaving: {
+						text: "Fermer sans enregistrer",
+					},
 				}}
 			/>
 		</PagesContext.Provider>

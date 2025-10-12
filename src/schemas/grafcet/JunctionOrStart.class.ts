@@ -1,3 +1,15 @@
 import Junction from "./junction.class";
 
-export default class JunctionOrStart extends Junction {}
+export default class JunctionOrStart extends Junction {
+	copy(): JunctionOrStart {
+		return new JunctionOrStart(this.id, { ...this.data }, { ...this.position });
+	}
+
+	static createFromJSON(json: string): JunctionOrStart {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(
+			new JunctionOrStart("", { ...Junction.defaultData }, { x: 0, y: 0 }),
+			jsonParsed
+		);
+	}
+}

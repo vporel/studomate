@@ -7,7 +7,7 @@ export type JunctionData = {
 	branchesPositions: number[]; //In pixels from the left of the node
 };
 
-export default class Junction extends GrafcetElement<JunctionData> {
+export default abstract class Junction extends GrafcetElement<JunctionData> {
 	static defaultDimensions: Dimensions = {
 		width: 200,
 		height: 30,

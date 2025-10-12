@@ -12,12 +12,19 @@ export type VariableType =
 	| "TP";
 
 export default class Variable {
-	id: string = "";
-	mnemonic: string = "";
-	zone: VariableZone = "logic-input";
-	type: VariableType = "bool";
+	id: string;
+	mnemonic: string;
+	zone: VariableZone;
+	type: VariableType;
 	address?: string;
 	comment?: string;
+
+	constructor(id: string, mnemonic: string, zone: VariableZone, type: VariableType) {
+		this.id = id;
+		this.mnemonic = mnemonic;
+		this.zone = zone;
+		this.type = type;
+	}
 
 	/**
 	 *
@@ -49,5 +56,14 @@ export default class Variable {
 			if (!this.address.match(addressRegex)) errors.push("L'adresse est invalide");
 		}
 		return errors.length == 0 ? null : errors;
+	}
+
+	copy(): Variable {
+		return Object.assign(new Variable("", "", "memory", "bool"), this);
+	}
+
+	static createFromJSON(json: string): Variable {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(new Variable("", "", "memory", "bool"), jsonParsed);
 	}
 }

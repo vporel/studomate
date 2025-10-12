@@ -6,19 +6,24 @@ import { PageData } from "./pages-data";
 export default function useClosePage(
 	pagesData: Record<string, PageData>,
 	setPagesData: Dispatch<SetStateAction<Record<string, PageData>>>,
+	setPagesOrder: Dispatch<SetStateAction<string[]>>,
 	setActivePageId: Dispatch<SetStateAction<string>>,
 	openUnsavedChangesDialog: () => void,
 	setOnUnsavedChangesDialogCancel: Dispatch<SetStateAction<null | (() => void)>>,
 	setOnUnsavedChangesDialogContinueWithoutSaving: Dispatch<SetStateAction<null | (() => void)>>,
 	setOnUnsavedChangesDialogSaveAndContinue: Dispatch<SetStateAction<null | (() => void)>>,
 	savePageChanges: (pageId: string, pageData: PageData) => void
-) {
+): {
+	closePage: (pageId: string) => void;
+	closePageWithPrompt: (pageId: string) => Promise<boolean>;
+} {
 	const closePage = useCallback(
 		(pageId: string) => {
 			setPagesData((oldPagesData) => {
 				if (!oldPagesData[pageId]) return oldPagesData;
 				const newPagesData = structuredClone(oldPagesData);
 				delete newPagesData[pageId];
+				setPagesOrder((oldOrder) => oldOrder.filter((id) => id !== pageId));
 				//If the page was active, activate the previous page if the page is not the first one, otherwise the next one
 				setActivePageId((currentActivePageId) => {
 					if (currentActivePageId !== pageId || Object.keys(newPagesData).length === 0)
@@ -32,7 +37,7 @@ export default function useClosePage(
 				return newPagesData;
 			});
 		},
-		[setPagesData, setActivePageId]
+		[setPagesData, setActivePageId, setPagesOrder]
 	);
 
 	const closePageWithPrompt = useCallback(

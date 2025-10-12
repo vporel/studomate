@@ -1,23 +1,35 @@
 "use client";
 
-import { Box } from "@mui/material";
+import FlexBox from "@/lib/boxes/FlexBox";
+import { formatDate } from "@/lib/date";
+import { Typography } from "@mui/material";
+import { useProjectContext } from "../projects/ProjectContext";
 
 const StatusBar = () => {
+	const { project } = useProjectContext();
 	return (
-		<Box
+		<FlexBox
+			centerVertical
+			between
 			className="status-bar"
 			sx={{
 				width: "100%",
-				height: "30px",
+				height: "25px",
 				borderTop: "1px solid lightgray",
-				display: "flex",
-				justifyContent: "space-between",
-				alignItems: "center",
 				padding: "10px",
 				background: "white",
 				zIndex: 100,
 			}}
-		></Box>
+		>
+			<FlexBox centerVertical>
+				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
+					Auteur : {project?.author || "Inconnu"} | Date de création :{" "}
+					{project ? formatDate(project.creationDate, "dd/MM/yyyy") : "/"}
+				</Typography>
+			</FlexBox>
+
+			<FlexBox centerVertical gap={1}></FlexBox>
+		</FlexBox>
 	);
 };
 

@@ -28,4 +28,13 @@ export default class Action extends GrafcetElement<ActionData> {
 
 		return null;
 	}
+
+	copy(): Action {
+		return new Action(this.id, { ...this.data }, { ...this.position });
+	}
+
+	static createFromJSON(json: string): Action {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(new Action("", { ...Action.defaultData }, { x: 0, y: 0 }), jsonParsed);
+	}
 }
