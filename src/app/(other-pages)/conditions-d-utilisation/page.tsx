@@ -1,7 +1,7 @@
 "use client";
 
 import routes from "@/app/routes";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Divider, Typography } from "@mui/material";
 import Link from "next/link";
 
 export default function TermsOfUse() {
@@ -11,6 +11,7 @@ export default function TermsOfUse() {
 				Conditions générales d’utilisation
 			</Typography>
 			<Typography>Dernière mise à jour : 13/10/2025</Typography>
+			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h3" gutterBottom mt={3}>
 				1. Objet

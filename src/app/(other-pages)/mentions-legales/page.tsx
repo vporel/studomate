@@ -1,7 +1,7 @@
 "use client";
 
 import routes from "@/app/routes";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Divider, Typography } from "@mui/material";
 import Link from "next/link";
 
 export default function LegalMentions() {
@@ -11,6 +11,7 @@ export default function LegalMentions() {
 				Mentions légales
 			</Typography>
 			<Typography>Dernière mise à jour : 13/10/2024</Typography>
+			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h3" gutterBottom mt={3}>
 				1. Éditeur du site

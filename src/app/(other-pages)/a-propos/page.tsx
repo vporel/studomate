@@ -1,7 +1,7 @@
 "use client";
 
 import routes from "@/app/routes";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Divider, Typography } from "@mui/material";
 import Link from "next/link";
 
 export default function About() {
@@ -10,6 +10,7 @@ export default function About() {
 			<Typography variant="h2" color="primary" gutterBottom>
 				À propos de Studomate
 			</Typography>
+			<Divider sx={{ my: 2 }} />
 			<Typography variant="h3" gutterBottom mt={3}>
 				Mission
 			</Typography>
