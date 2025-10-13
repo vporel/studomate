@@ -11,9 +11,7 @@ export default function useProjectOpen(
 	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
 	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
-	openUnsavedChangesDialog: () => void,
-	setOnUnsavedChangesDialogCancel: (cb: () => void) => void,
-	setOnUnsavedChangesDialogContinue: (cb: () => void) => void,
+	openUnsavedChangesDialog: (onCancel: (() => void) | null, onContinue: () => void) => void,
 	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
 	openProject: () => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
@@ -32,17 +30,18 @@ export default function useProjectOpen(
 	const openProjectWithPrompt = useCallback(() => {
 		return new Promise<boolean>((resolve) => {
 			if (hasUnsavedChanges) {
-				setOnUnsavedChangesDialogCancel(() => () => {
-					resolve(false);
-				});
-				setOnUnsavedChangesDialogContinue(() => () => {
-					openProject().then((result) => {
-						resolve(result);
-						setHasUnsavedChanges(false);
-						projectEventsOut.emit("project-opened");
-					});
-				});
-				openUnsavedChangesDialog();
+				openUnsavedChangesDialog(
+					() => {
+						resolve(false);
+					},
+					() => {
+						openProject().then((result) => {
+							resolve(result);
+							setHasUnsavedChanges(false);
+							projectEventsOut.emit("project-opened");
+						});
+					}
+				);
 			} else {
 				openProject().then((result) => {
 					resolve(result);
@@ -51,15 +50,7 @@ export default function useProjectOpen(
 				});
 			}
 		});
-	}, [
-		hasUnsavedChanges,
-		setHasUnsavedChanges,
-		openProject,
-		openUnsavedChangesDialog,
-		projectEventsOut,
-		setOnUnsavedChangesDialogCancel,
-		setOnUnsavedChangesDialogContinue,
-	]);
+	}, [hasUnsavedChanges, setHasUnsavedChanges, openProject, openUnsavedChangesDialog, projectEventsOut]);
 
 	return { openProject, openProjectWithPrompt };
 }

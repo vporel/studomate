@@ -84,6 +84,7 @@ const ExplorerGrafcetsItems = ({
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
 	const { project } = useProjectContext();
+
 	return (
 		<Fragment>
 			{Object.values(project!.grafcets).length === 0 ? (

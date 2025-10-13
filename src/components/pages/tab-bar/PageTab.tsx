@@ -2,10 +2,9 @@
 
 import InclinedAccountTreeIcon from "@/components/icons/InclinedAccountTree";
 import CircleIcon from "@mui/icons-material/Circle";
-import CloseIcon from "@mui/icons-material/Delete";
+import CloseIcon from "@mui/icons-material/Close";
 import HomeIcon from "@mui/icons-material/Home";
 import TuneIcon from "@mui/icons-material/Tune";
-// import CloseIcon from "@mui/icons-material/Close";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
 import { usePagesContext } from "../context/PagesContext";
 import { PageType } from "../context/pages-data";

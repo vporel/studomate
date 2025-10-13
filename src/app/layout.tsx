@@ -1,9 +1,9 @@
-import { ProjectContextProvider } from "@/components/projects/ProjectContext";
 import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/constants";
 import { ThemeProvider } from "@/theme/ThemeContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AppContextProvider } from "../components/AppContext";
+import NextTopLoader from "nextjs-toploader";
+import { ToastContainer } from "react-toastify";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +19,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: APP_NAME,
 	description: APP_SHORT_DESCRIPTION,
+	icons: {
+		icon: "/images/favicon.ico",
+	},
+	authors: [{ name: "Studomate", url: "" }],
+	creator: "Vivian NKOUANANG (vporel)",
 };
 
 export default function RootLayout({
@@ -29,10 +34,19 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
+				<NextTopLoader
+					color={"gray"}
+					initialPosition={0.08}
+					showSpinner={false}
+					crawlSpeed={200}
+					height={3}
+					crawl={true}
+					easing="ease"
+					speed={200}
+				/>
 				<ThemeProvider>
-					<AppContextProvider>
-						<ProjectContextProvider>{children}</ProjectContextProvider>
-					</AppContextProvider>
+					{children}
+					<ToastContainer position="bottom-right" />
 				</ThemeProvider>
 			</body>
 		</html>

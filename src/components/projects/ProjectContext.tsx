@@ -1,14 +1,14 @@
 "use client";
-import useBooleanState from "@/lib/hooks/useBooleanState";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import UnsavedChangesDialog from "../dialogs/UnsavedChangesDialog";
 import { ProjectEventsOut } from "./project-events";
 import useGrafcetActions from "./useGrafcetActions";
 import useProject from "./useProject";
-import useNewProject from "./useProjectNew";
+import useProjectClose from "./useProjectClose";
+import useProjectNew from "./useProjectNew";
 import useProjectOpen from "./useProjectOpen";
 import useProjectSave from "./useProjectSave";
 import useShortcutsHandler from "./useShortcutsHandler";
@@ -24,6 +24,7 @@ type ProjectContextType = {
 	saveGrafcetData: (grafcetId: string) => void; //Save in the projet object (not in the file)
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
 	savingProject: boolean;
+	closeProject: () => void;
 	projectEventsOut: Emitter<ProjectEventsOut>;
 	/**
 	 * The currently active scope (used for keyboard shortcuts)
@@ -47,6 +48,7 @@ const ProjectContext = createContext<ProjectContextType>({
 	saveGrafcetData: () => {},
 	saveProject: async () => null,
 	savingProject: false,
+	closeProject: () => {},
 	projectEventsOut: mitt<ProjectEventsOut>(),
 	activeScope: null,
 	setActiveScope: () => {},
@@ -59,14 +61,19 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 	const { project, setProject, fileHandle, setFileHandle, changeProjectName, changeProjectAuthor } =
 		useProject();
 	const projectEventsOut = useMemo(() => mitt<ProjectEventsOut>(), []);
-	const [unsavedChangesDialogOpen, openUnsavedChangesDialog, closeUnsavedChangesDialog] =
-		useBooleanState(false);
+	const [unsavedChangesDialogOpen, setUnsavedChangesDialogOpen] = useState(false);
 	const [onUnsavedChangesDialogCancel, setOnUnsavedChangesDialogCancel] = useState<null | (() => void)>(
 		null
 	);
 	const [onUnsavedChangesDialogContinue, setOnUnsavedChangesDialogContinue] = useState<null | (() => void)>(
 		null
 	);
+	const closeUnsavedChangesDialog = useCallback(() => setUnsavedChangesDialogOpen(false), []);
+	const openUnsavedChangesDialog = useCallback((onCancel: (() => void) | null, onContinue: () => void) => {
+		setUnsavedChangesDialogOpen(true);
+		setOnUnsavedChangesDialogCancel(() => onCancel);
+		setOnUnsavedChangesDialogContinue(() => onContinue);
+	}, []);
 	const {
 		updateGrafcetData,
 		saveGrafcetData,
@@ -82,19 +89,24 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		hasUnsavedChanges,
 		setHasUnsavedChanges,
 		openUnsavedChangesDialog,
-		setOnUnsavedChangesDialogCancel,
-		setOnUnsavedChangesDialogContinue,
 		projectEventsOut
 	);
 
-	const { newProjectWithPrompt } = useNewProject(
+	const { newProjectWithPrompt } = useProjectNew(
 		setProject,
 		setFileHandle,
 		hasUnsavedChanges,
 		setHasUnsavedChanges,
 		openUnsavedChangesDialog,
-		setOnUnsavedChangesDialogCancel,
-		setOnUnsavedChangesDialogContinue,
+		projectEventsOut
+	);
+
+	const { closeProjectWithPrompt } = useProjectClose(
+		setProject,
+		setFileHandle,
+		hasUnsavedChanges,
+		setHasUnsavedChanges,
+		openUnsavedChangesDialog,
 		projectEventsOut
 	);
 
@@ -109,6 +121,20 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 
 	useShortcutsHandler(newGrafcet, openProjectWithPrompt, saveProject);
 
+	//Show a browser dialog when the user tries to close the tab or refresh the page with unsaved changes
+	useEffect(() => {
+		const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+			if (hasUnsavedChanges) {
+				e.preventDefault();
+			}
+		};
+
+		window.addEventListener("beforeunload", beforeUnloadHandler);
+		return () => {
+			window.removeEventListener("beforeunload", beforeUnloadHandler);
+		};
+	}, [hasUnsavedChanges]);
+
 	return (
 		<ProjectContext.Provider
 			value={{
@@ -122,6 +148,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				saveGrafcetData,
 				saveProject,
 				savingProject,
+				closeProject: closeProjectWithPrompt,
 				projectEventsOut,
 				activeScope,
 				setActiveScope,

@@ -1,6 +1,6 @@
 "use client";
 
-import { alpha, Box, Divider, Grid, Typography } from "@mui/material";
+import { alpha, Box, Grid, Typography } from "@mui/material";
 import { useState } from "react";
 import { useProjectContext } from "../projects/ProjectContext";
 import Page from "./Page";
@@ -71,8 +71,7 @@ const ProjectPropertiesPage = () => {
 				}}
 			>
 				<Typography variant="h2">Propriétés du projet</Typography>
-				<Divider sx={{ borderColor: "black", borderWidth: "2px", my: 1 }} />
-				<Grid container spacing={2} sx={{ mb: 2 }}>
+				<Grid container spacing={2} sx={{ mt: 3, mb: 2 }}>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyLabel label="Nom" />
 						<PropertyTextField defaultValue={project!.name} onSave={changeProjectName} />

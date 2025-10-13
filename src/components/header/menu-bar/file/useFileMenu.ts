@@ -4,7 +4,7 @@ import { useProjectContext } from "@/components/projects/ProjectContext";
 import { useMemo } from "react";
 
 export default function useFileMenu() {
-	const { newProject, openProject, saveProject } = useProjectContext();
+	const { newProject, openProject, saveProject, closeProject } = useProjectContext();
 
 	return useMemo(
 		() => ({
@@ -38,8 +38,15 @@ export default function useFileMenu() {
 						shortcut: "Ctrl+E",
 					},
 				],
+				[
+					{
+						label: "Fermer le projet",
+						shortcut: "Ctrl+F4",
+						onClick: closeProject,
+					},
+				],
 			],
 		}),
-		[newProject, openProject, saveProject]
+		[newProject, openProject, saveProject, closeProject]
 	);
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useAppContext } from "@/components/AppContext";
+import { AppContextProvider, useAppContext } from "@/components/AppContext";
+import AppStartup from "@/components/AppStartup";
 import Explorer from "@/components/explorer/Explorer";
 import StatusBar from "@/components/footer/StatusBar";
 import AppMenuBar from "@/components/header/menu-bar/AppMenuBar";
@@ -9,7 +10,7 @@ import { PageData } from "@/components/pages/context/pages-data";
 import { PagesContextProvider } from "@/components/pages/context/PagesContext";
 import PagesView from "@/components/pages/PagesView";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/components/pages/ProjectStartupPage";
-import { useProjectContext } from "@/components/projects/ProjectContext";
+import { ProjectContextProvider, useProjectContext } from "@/components/projects/ProjectContext";
 import Pane from "@/lib/split-pane/Pane";
 import SplitPane from "@/lib/split-pane/SplitPane";
 import Project from "@/schemas/project/Project.class";
@@ -32,12 +33,12 @@ function getInitialPagesData(project: Project): Record<string, PageData> {
 	return pagesData;
 }
 
-export default function App() {
+function AppComponent() {
 	const { viewAppearance } = useAppContext();
 	const { project } = useProjectContext();
 
 	if (!project) {
-		return <></>;
+		return <AppStartup />;
 	}
 
 	return (
@@ -80,5 +81,15 @@ export default function App() {
 				<StatusBar />
 			</Box>
 		</PagesContextProvider>
+	);
+}
+
+export default function App() {
+	return (
+		<AppContextProvider>
+			<ProjectContextProvider>
+				<AppComponent />
+			</ProjectContextProvider>
+		</AppContextProvider>
 	);
 }

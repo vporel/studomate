@@ -5,35 +5,35 @@ import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import { ProjectEventsOut } from "./project-events";
 
-export default function useProjectNew(
-	setProject: (p: Project) => void,
+export default function useProjectClose(
+	setProject: (p: Project | null) => void,
 	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
 	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
 	openUnsavedChangesDialog: (onCancel: (() => void) | null, onContinue: () => void) => void,
 	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
-	newProject: () => void;
-	newProjectWithPrompt: () => Promise<void>;
+	closeProject: () => void;
+	closeProjectWithPrompt: () => Promise<void>;
 } {
-	const newProject = useCallback(() => {
-		setProject(new Project("Nouveau projet", ""));
+	const closeProject = useCallback(() => {
+		setProject(null);
 		setFileHandle(null);
 	}, [setProject, setFileHandle]);
 
-	const newProjectWithPrompt = useCallback(async () => {
+	const closeProjectWithPrompt = useCallback(async () => {
 		if (hasUnsavedChanges) {
 			openUnsavedChangesDialog(null, () => {
-				newProject();
+				closeProject();
 				setHasUnsavedChanges(false);
-				projectEventsOut.emit("project-created");
+				projectEventsOut.emit("project-closed");
 			});
 		} else {
-			newProject();
+			closeProject();
 			setHasUnsavedChanges(false);
-			projectEventsOut.emit("project-created");
+			projectEventsOut.emit("project-closed");
 		}
-	}, [hasUnsavedChanges, setHasUnsavedChanges, newProject, openUnsavedChangesDialog, projectEventsOut]);
+	}, [hasUnsavedChanges, setHasUnsavedChanges, closeProject, openUnsavedChangesDialog, projectEventsOut]);
 
-	return { newProject, newProjectWithPrompt };
+	return { closeProject, closeProjectWithPrompt };
 }

@@ -22,7 +22,7 @@ type ThemeContextType = {
 	setTheme: (theme: Theme) => void;
 };
 
-const defaultTheme: Theme = {
+export const DEFAULT_THEME: Theme = {
 	light: {
 		primaryColor: "#1976d2",
 		secondaryColor: "#9c27b0",
@@ -37,12 +37,12 @@ const defaultTheme: Theme = {
 	},
 };
 const ThemeContext = createContext<ThemeContextType>({
-	theme: defaultTheme,
+	theme: DEFAULT_THEME,
 	setTheme: () => {},
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-	const [theme, setTheme] = useState<Theme>(defaultTheme);
+	const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
 	const breakpoints = useMemo(() => createTheme({}).breakpoints, []);
 	const muiTheme = useMemo(
 		() =>
