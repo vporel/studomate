@@ -105,9 +105,7 @@ const PagesView = () => {
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
 							case "grafcet":
-								return (
-									<GrafcetPage key={id} grafcetId={id} initialGrafcet={pageData.grafcet} />
-								);
+								return <GrafcetPage key={id} initialGrafcet={pageData.grafcet} />;
 							default:
 								return null;
 						}

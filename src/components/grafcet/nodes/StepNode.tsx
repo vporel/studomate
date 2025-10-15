@@ -4,8 +4,10 @@ import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLi
 import Step, { StepData } from "@/schemas/grafcet/Step.class";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
-import React, { type FC } from "react";
+import React, { useCallback, useEffect, type FC } from "react";
+import { useGrafcetContext } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
+import { nodeStateEventsIn } from "./nodes-states-events";
 
 export type StepNodeType = Node<StepData> & { type: "step" };
 
@@ -16,7 +18,34 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const { updateNodeData } = useReactFlow();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const [editing, setEditing] = React.useState(false);
+	const [editingNumber, setEditingNumber] = React.useState(data.number + "");
 	const borderColor = selected ? th.palette.primary.main : "black";
+	const { elementsEvents } = useGrafcetContext();
+
+	const saveNumber = useCallback(() => {
+		const number: number | "" =
+			editingNumber === "" || isNaN(parseInt(editingNumber)) || parseInt(editingNumber) < 0
+				? ""
+				: parseInt(editingNumber);
+		updateNodeData(id, {
+			number,
+		});
+		elementsEvents.emit("update", { elements: [{ id, type: "step", data: { number } }] });
+	}, [editingNumber, updateNodeData, id, elementsEvents]);
+
+	//Listen the set-data event from the commands handlers to update the internal state
+	useEffect(() => {
+		const handler = (e: { nodeId: string; data: Partial<StepData> }) => {
+			if (e.nodeId === id) {
+				if (e.data.number !== undefined) setEditingNumber(e.data.number + "");
+			}
+		};
+
+		nodeStateEventsIn.on("set-internal-data", handler);
+		return () => {
+			nodeStateEventsIn.off("set-internal-data", handler);
+		};
+	}, [id]);
 
 	return (
 		<>
@@ -77,19 +106,21 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					ref={inputRef}
 					className="node__input"
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
-					value={data.number}
+					value={editingNumber}
+					onChange={(e) => setEditingNumber(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) e.preventDefault();
+						if (e.key === "Enter" || e.key === "Escape") {
+							//The save is done only on blur to avoid multiple saves when pressing enter
+							inputRef.current?.blur();
+						} else {
+							if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key)))
+								e.preventDefault();
+						}
 					}}
-					onChange={(e) =>
-						updateNodeData(id, {
-							...data,
-							number:
-								e.target.value == "" || parseInt(e.target.value) < 0
-									? ""
-									: parseInt(e.target.value),
-						})
-					}
+					onBlur={() => {
+						setEditing(false);
+						saveNumber();
+					}}
 					style={{
 						width: "100%",
 						height: "100%",
@@ -100,7 +131,6 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 						padding: 0,
 						pointerEvents: !editing ? "none" : "all",
 					}}
-					onBlur={() => setEditing(false)}
 				/>
 			</GrafcetNode>
 		</>

@@ -12,17 +12,13 @@ import { GrafcetConnectionsEvents } from "./connections-events";
 
 export default function useConnectionsEventsHandler(
 	connectionsEvents: Emitter<GrafcetConnectionsEvents>,
-	grafcet: Grafcet | null,
-	setGrafcet: Dispatch<SetStateAction<Grafcet | null>>,
+	grafcet: Grafcet,
+	setGrafcet: Dispatch<SetStateAction<Grafcet>>,
 	commandsStack: CommandsStack<Grafcet>
 ) {
 	//add event
 	useEffect(() => {
 		const handler = (connections: GrafcetConnection[]) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-				return;
-			}
 			const newGrafcet = commandsStack.execute(
 				[new ConnectionsAddCommand(connections)],
 				grafcet.copy()
@@ -38,10 +34,6 @@ export default function useConnectionsEventsHandler(
 	//update event
 	useEffect(() => {
 		const handler = (connections: GrafcetConnection[]) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-				return;
-			}
 			const newGrafcet = commandsStack.execute(
 				[
 					new ConnectionsUpdateCommand(
@@ -65,10 +57,6 @@ export default function useConnectionsEventsHandler(
 	//remove event
 	useEffect(() => {
 		const handler = (connections: GrafcetConnection[]) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-				return;
-			}
 			const newGrafcet = commandsStack.execute(
 				[new ConnectionsRemoveCommand(connections)],
 				grafcet.copy()

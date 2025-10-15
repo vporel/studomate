@@ -16,8 +16,8 @@ import paneContextMenuItems from "./pane-context-menu-items";
  * @param param0 position : the position in the flow
  * @returns
  */
-const GrafcetContextMenu = () => {
-	const { flowDimensions, contextMenuEvents } = useGrafcetContext();
+const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: number; height: number } }) => {
+	const { contextMenuEvents } = useGrafcetContext();
 	const [element, setElement] = useState<GrafcetContextMenuElement>({ type: "pane" });
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });

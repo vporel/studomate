@@ -1,14 +1,10 @@
 "use client";
 
-import mitt, { Emitter } from "mitt";
 import { useEffect } from "react";
 import { CustomEdgeData } from "./CustomEdge";
+import { edgeStateEventsIn } from "./edges-states-events";
 
-export const edgeStateUpdaterEvents: Emitter<{
-	"set-data": { edgeId: string; data: CustomEdgeData };
-}> = mitt();
-
-export default function useEdgeStateUpdaterEventsHandlers(
+export default function useEdgeStateEventsInHandlers(
 	edgeId: string,
 	setPoints: (points: [number, number][]) => void
 ) {
@@ -20,9 +16,9 @@ export default function useEdgeStateUpdaterEventsHandlers(
 			}
 		};
 
-		edgeStateUpdaterEvents.on("set-data", handler);
+		edgeStateEventsIn.on("set-data", handler);
 		return () => {
-			edgeStateUpdaterEvents.off("set-data", handler);
+			edgeStateEventsIn.off("set-data", handler);
 		};
 	}, [edgeId, setPoints]);
 }

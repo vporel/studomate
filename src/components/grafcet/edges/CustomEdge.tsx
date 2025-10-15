@@ -4,7 +4,7 @@ import { Edge, useReactFlow, type EdgeProps } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
 import useAddPointHandler from "./useAddPointHandler";
-import useEdgeStateUpdaterEventsHandlers from "./useEdgeStateUpdaterEventsHandlers";
+import useEdgeStateEventsInHandlers from "./useEdgeStateEventsInHandlers";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
 
 export type CustomEdgeData = { points: [number, number][] };
@@ -78,7 +78,7 @@ const CustomEdge = ({
 		updateEdgeData(id, { points });
 	}, [id, points, updateEdgeData]);
 
-	useEdgeStateUpdaterEventsHandlers(id, setPoints);
+	useEdgeStateEventsInHandlers(id, setPoints);
 
 	return (
 		<Box

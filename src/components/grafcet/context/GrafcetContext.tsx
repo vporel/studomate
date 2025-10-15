@@ -1,10 +1,7 @@
 "use client";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import { PAPERS_SIZES } from "@/constants";
-import { mmToPx } from "@/lib/utils";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
-import { Dimensions } from "@xyflow/react";
 import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { GrafcetConnectionsEvents } from "./connections-events";
@@ -15,8 +12,7 @@ import useConnectionsEventsHandler from "./useConnectionsEventsHandler";
 import useElementsEventsHandler from "./useElementsEventsHandler";
 
 type GrafcetContextType = {
-	grafcetId: string;
-	flowDimensions: Dimensions;
+	grafcet: Grafcet;
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>;
 	elementsEvents: Emitter<GrafcetElementsEvents>;
 	connectionsEvents: Emitter<GrafcetConnectionsEvents>;
@@ -25,8 +21,7 @@ type GrafcetContextType = {
 };
 
 const GrafcetContext = createContext<GrafcetContextType>({
-	grafcetId: "",
-	flowDimensions: { width: 0, height: 0 },
+	grafcet: {} as Grafcet,
 	contextMenuEvents: mitt<GrafcetContextMenuEvents>(),
 	elementsEvents: mitt<GrafcetElementsEvents>(),
 	connectionsEvents: mitt<GrafcetConnectionsEvents>(),
@@ -35,39 +30,34 @@ const GrafcetContext = createContext<GrafcetContextType>({
 });
 
 export const GrafcetContextProvider = ({
-	grafcetId,
+	initialGrafcet,
 	children,
 }: {
-	grafcetId: string;
+	initialGrafcet: Grafcet;
 	children: ReactNode;
 }) => {
-	const { project, updateGrafcetData } = useProjectContext();
-	const [grafcet, setGrafcet] = useState<Grafcet>(project!.grafcets[grafcetId]);
-	const [flowDimensions, setFlowDimensions] = useState<Dimensions>({
-		width: mmToPx(PAPERS_SIZES.A4_PORTRAIT.width),
-		height: mmToPx(PAPERS_SIZES.A4_PORTRAIT.height),
-	});
+	const { updateGrafcetData } = useProjectContext();
+	const [grafcet, setGrafcet] = useState<Grafcet>(initialGrafcet);
 	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);
-	const nodesEvents = useMemo(() => mitt<GrafcetElementsEvents>(), []);
+	const elementsEvents = useMemo(() => mitt<GrafcetElementsEvents>(), []);
 	const connectionsEvents = useMemo(() => mitt<GrafcetConnectionsEvents>(), []);
 	const { commandsStackRef, undoLastCommand, redoLastCommand } = useCommandsStack(grafcet, setGrafcet);
 
-	useElementsEventsHandler(nodesEvents, grafcet, setGrafcet, commandsStackRef.current);
+	useElementsEventsHandler(elementsEvents, grafcet, setGrafcet, commandsStackRef.current);
 	useConnectionsEventsHandler(connectionsEvents, grafcet, setGrafcet, commandsStackRef.current);
 
 	//Listen to grafcet changes
 	useEffect(() => {
 		if (!grafcet) return;
-		updateGrafcetData(grafcetId, { grafcet });
-	}, [grafcetId, grafcet, updateGrafcetData]);
+		updateGrafcetData(grafcet.id, { grafcet });
+	}, [grafcet, updateGrafcetData]);
 
 	return (
 		<GrafcetContext.Provider
 			value={{
-				grafcetId,
-				flowDimensions,
+				grafcet,
 				contextMenuEvents,
-				elementsEvents: nodesEvents,
+				elementsEvents,
 				connectionsEvents,
 				undoLastCommand,
 				redoLastCommand,

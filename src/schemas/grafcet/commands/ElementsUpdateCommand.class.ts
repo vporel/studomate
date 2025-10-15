@@ -13,8 +13,8 @@ export default class ElementsUpdateCommand extends AbstractGrafcetCommand<
 	{
 		type: GrafcetElementType;
 		id: string;
-		data?: any;
-		previousData?: any;
+		data?: Partial<any>;
+		previousData?: Partial<any>;
 		position?: XYPosition;
 		previousPosition?: XYPosition;
 	}[]

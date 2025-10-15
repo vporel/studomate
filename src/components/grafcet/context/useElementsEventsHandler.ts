@@ -19,16 +19,13 @@ import {
 
 export default function useElementsEventsHandler(
 	elementsEvents: Emitter<GrafcetElementsEvents>,
-	grafcet: Grafcet | null,
-	setGrafcet: Dispatch<SetStateAction<Grafcet | null>>,
+	grafcet: Grafcet,
+	setGrafcet: Dispatch<SetStateAction<Grafcet>>,
 	commandsStack: CommandsStack<Grafcet>
 ) {
 	//add event
 	useEffect(() => {
 		const handler = (nodes: GrafcetElementsEventsAddData[]) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-			}
 			const newGrafcet = commandsStack.execute(
 				[
 					new ElementsAddCommand(
@@ -59,10 +56,6 @@ export default function useElementsEventsHandler(
 			elements: GrafcetElementsEventsUpdateData[];
 			connections?: GrafcetConnection[];
 		}) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-				return;
-			}
 			const newGrafcet = commandsStack.execute(
 				[
 					new ElementsUpdateCommand(
@@ -108,10 +101,6 @@ export default function useElementsEventsHandler(
 			elements: GrafcetElementsEventsRemoveData[];
 			connections?: GrafcetConnection[];
 		}) => {
-			if (!grafcet) {
-				throw new Error("Grafcet is null");
-				return;
-			}
 			const newGrafcet = commandsStack.execute(
 				[
 					new ElementsRemoveCommand(

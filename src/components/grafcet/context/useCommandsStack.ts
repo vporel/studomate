@@ -6,7 +6,7 @@ import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { RefObject, useCallback, useRef } from "react";
 
 export default function useCommandsStack(
-	grafcet: Grafcet | null,
+	grafcet: Grafcet,
 	setGrafcet: (g: Grafcet) => void
 ): {
 	commandsStackRef: RefObject<CommandsStack<Grafcet>>;
@@ -16,16 +16,14 @@ export default function useCommandsStack(
 	const commandsStackRef = useRef<CommandsStack<Grafcet>>(new CommandsStack<Grafcet>(100));
 
 	const undoLastCommand = useCallback(() => {
-		if (!grafcet) return null;
 		const [newGrafcet, commands] = commandsStackRef.current.undo(grafcet.copy());
-		if (newGrafcet) setGrafcet(newGrafcet);
+		if (commands) setGrafcet(newGrafcet);
 		return commands;
 	}, [grafcet, setGrafcet]);
 
 	const redoLastCommand = useCallback(() => {
-		if (!grafcet) return null;
 		const [newGrafcet, commands] = commandsStackRef.current.redo(grafcet.copy());
-		if (newGrafcet) setGrafcet(newGrafcet);
+		if (commands) setGrafcet(newGrafcet);
 		return commands;
 	}, [grafcet, setGrafcet]);
 

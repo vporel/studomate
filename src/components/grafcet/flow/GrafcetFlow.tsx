@@ -1,12 +1,13 @@
 "use client";
 import { usePagesContext } from "@/components/pages/context/PagesContext";
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import { FLOW_GRID_CELL_WIDTH } from "@/constants";
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import { FLOW_GRID_CELL_WIDTH, PAPERS_SIZES } from "@/constants";
+import { mmToPx } from "@/lib/utils";
+import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { GrafcetContextProvider, useGrafcetContext } from "../context/GrafcetContext";
@@ -33,31 +34,63 @@ function getInitialEdges(initialGrafcet: Grafcet): GrafcetEdge[] {
 	return [];
 }
 
-export function GrafcetFlowContent({ initialGrafcet }: { initialGrafcet: Grafcet }) {
+function getFlowDimensions(format: GrafcetFormat) {
+	switch (format.type) {
+		case "A4":
+			return {
+				width: mmToPx(
+					format.orientation === "portrait"
+						? PAPERS_SIZES.A4_PORTRAIT.width
+						: PAPERS_SIZES.A4_LANDSCAPE.width
+				),
+				height: mmToPx(
+					format.orientation === "portrait"
+						? PAPERS_SIZES.A4_PORTRAIT.height
+						: PAPERS_SIZES.A4_LANDSCAPE.height
+				),
+			};
+		case "A3":
+			return {
+				width: mmToPx(
+					format.orientation === "portrait"
+						? PAPERS_SIZES.A3_PORTRAIT.width
+						: PAPERS_SIZES.A3_LANDSCAPE.width
+				),
+				height: mmToPx(
+					format.orientation === "portrait"
+						? PAPERS_SIZES.A3_PORTRAIT.height
+						: PAPERS_SIZES.A3_LANDSCAPE.height
+				),
+			};
+	}
+}
+
+export function GrafcetFlowContent() {
 	const th = useTheme();
-	const [nodes, setNodes] = useState<GrafcetNode[]>(getInitialNodes(initialGrafcet));
-	const [edges, setEdges] = useState<GrafcetEdge[]>(getInitialEdges(initialGrafcet));
+	const { grafcet } = useGrafcetContext();
+	const [nodes, setNodes] = useState<GrafcetNode[]>(getInitialNodes(grafcet));
+	const [edges, setEdges] = useState<GrafcetEdge[]>(getInitialEdges(grafcet));
 	const { updateGrafcetData, setActiveScope } = useProjectContext();
 	const { updatePageData } = usePagesContext();
-	const { grafcetId, flowDimensions } = useGrafcetContext();
+	const flowDimensions = useMemo(() => getFlowDimensions(grafcet.format), [grafcet.format]);
 	const { onNodesChange, onNodesDelete, onNodeDragStop } = useNodesHandlers(setNodes);
 	const { onEdgesChange, onConnect, onEdgesDelete } = useEdgesHandlers(setEdges);
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
-	const handleShortcuts = useShortcutsHandler(grafcetId);
+	const handleShortcuts = useShortcutsHandler(grafcet.id);
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
 
 	//Share the grafcet data with the project context
 	useEffect(() => {
-		updateGrafcetData(grafcetId, { flowNodes: nodes });
-	}, [grafcetId, nodes, updateGrafcetData]);
+		updateGrafcetData(grafcet.id, { flowNodes: nodes });
+	}, [grafcet.id, nodes, updateGrafcetData]);
 
 	//Share the grafcet data
 	useEffect(() => {
-		updatePageData(grafcetId, {
+		updatePageData(grafcet.id, {
 			nodes,
 			edges,
 		});
-	}, [grafcetId, nodes, edges, updatePageData]);
+	}, [grafcet.id, nodes, edges, updatePageData]);
 
 	//Context menu actions
 	useContextMenuActionsHandlers();
@@ -65,7 +98,7 @@ export function GrafcetFlowContent({ initialGrafcet }: { initialGrafcet: Grafcet
 	return (
 		<Box
 			className="grafcet-page"
-			id={grafcetId}
+			id={grafcet.id}
 			sx={{
 				padding: "25px",
 				width: "100%",
@@ -129,7 +162,7 @@ export function GrafcetFlowContent({ initialGrafcet }: { initialGrafcet: Grafcet
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
 					onFocus={() => {
-						setActiveScope(grafcetId);
+						setActiveScope(grafcet.id);
 					}}
 					onKeyDown={handleShortcuts}
 					onPaneContextMenu={onPaneContextMenu as any}
@@ -141,24 +174,18 @@ export function GrafcetFlowContent({ initialGrafcet }: { initialGrafcet: Grafcet
 					}}
 				>
 					<Background bgColor="white" />
-					<GrafcetContextMenu />
+					<GrafcetContextMenu flowDimensions={flowDimensions} />
 				</ReactFlow>
 			</Box>
 		</Box>
 	);
 }
 
-export default function GrafcetFlow({
-	grafcetId,
-	initialGrafcet,
-}: {
-	grafcetId: string;
-	initialGrafcet: Grafcet;
-}) {
+export default function GrafcetFlow({ initialGrafcet }: { initialGrafcet: Grafcet }) {
 	return (
-		<GrafcetContextProvider grafcetId={grafcetId}>
+		<GrafcetContextProvider initialGrafcet={initialGrafcet}>
 			<ReactFlowProvider>
-				<GrafcetFlowContent initialGrafcet={initialGrafcet} />
+				<GrafcetFlowContent />
 			</ReactFlowProvider>
 		</GrafcetContextProvider>
 	);

@@ -6,12 +6,12 @@ import GrafcetToolbar from "../grafcet/toolbar/GrafcetToolbar";
 import { GrafcetToolbarDnDProvider } from "../grafcet/toolbar/GrafcetToolbarDnDContext";
 import Page from "./Page";
 
-const GrafcetPage = ({ grafcetId, initialGrafcet }: { grafcetId: string; initialGrafcet: Grafcet }) => {
+const GrafcetPage = ({ initialGrafcet }: { initialGrafcet: Grafcet }) => {
 	return (
-		<Page pageId={grafcetId} sx={{ flexDirection: "column", paddingBottom: 4 }}>
+		<Page pageId={initialGrafcet.id} sx={{ flexDirection: "column", paddingBottom: 4 }}>
 			<GrafcetToolbarDnDProvider>
 				<GrafcetToolbar />
-				<GrafcetFlow grafcetId={grafcetId} initialGrafcet={initialGrafcet} />
+				<GrafcetFlow initialGrafcet={initialGrafcet} />
 			</GrafcetToolbarDnDProvider>
 		</Page>
 	);
