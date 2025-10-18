@@ -52,6 +52,8 @@ export const GrafcetContextProvider = ({
 		updateGrafcetData(grafcet.id, { grafcet });
 	}, [grafcet, updateGrafcetData]);
 
+	console.log(commandsStackRef.current);
+
 	return (
 		<GrafcetContext.Provider
 			value={{

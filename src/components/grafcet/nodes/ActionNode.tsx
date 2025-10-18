@@ -3,9 +3,10 @@ import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLi
 import Action, { ActionData } from "@/schemas/grafcet/Action.class";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react";
-import React, { useEffect, type FC } from "react";
+import React, { useCallback, useEffect, type FC } from "react";
 import { useGrafcetContext } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
+import { nodeStateEventsIn } from "./nodes-states-events";
 
 export type ActionNodeType = Node<ActionData> & { type: "action" };
 
@@ -16,41 +17,47 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 	const { updateNodeData } = useReactFlow();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editing, setEditing] = React.useState(false);
+	const [editingExpression, setEditingExpression] = React.useState(data.expression);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const oldExpressionRef = React.useRef(data?.expression ?? "");
 	const { elementsEvents } = useGrafcetContext();
 
-	const onExpressionChange = React.useCallback(
-		(newExpression: string) => {
-			updateNodeData(id, { ...data, expression: newExpression });
-			oldExpressionRef.current = newExpression;
-		},
-		[id, data, updateNodeData]
-	);
-
-	//Update the data when the node is resized
-	useEffect(() => {
-		updateNodeData(id, () => {
-			const dataToChange: Partial<ActionData> = {};
-			if (nodeWidth != 0) dataToChange.width = nodeWidth;
-			if (nodeHeight != 0) dataToChange.height = nodeHeight;
-			if (Object.keys(dataToChange).length !== 0) {
-				elementsEvents.emit("update", {
-					elements: [{ id, type: "action", data: dataToChange }],
-				});
-			}
-			return dataToChange;
+	const saveExpression = useCallback(() => {
+		updateNodeData(id, {
+			expression: editingExpression,
 		});
-	}, [id, nodeWidth, nodeHeight, updateNodeData, elementsEvents]);
+		elementsEvents.emit("update", {
+			elements: [{ id, type: "action", data: { expression: editingExpression } }],
+		});
+	}, [editingExpression, updateNodeData, id, elementsEvents]);
 
-	//Save an update command when the user stops editing and the expression has changed
+	// //Update the data when the node is resized
+	// useEffect(() => {
+	// 	updateNodeData(id, () => {
+	// 		const dataToChange: Partial<ActionData> = {};
+	// 		if (nodeWidth != 0) dataToChange.width = nodeWidth;
+	// 		if (nodeHeight != 0) dataToChange.height = nodeHeight;
+	// 		if (Object.keys(dataToChange).length !== 0) {
+	// 			elementsEvents.emit("update", {
+	// 				elements: [{ id, type: "action", data: dataToChange }],
+	// 			});
+	// 		}
+	// 		return dataToChange;
+	// 	});
+	// }, [id, nodeWidth, nodeHeight, updateNodeData, elementsEvents]);
+
+	//Listen the set-data event from the commands handlers to update the internal state
 	useEffect(() => {
-		if (!editing && oldExpressionRef.current !== data?.expression) {
-			elementsEvents.emit("update", {
-				elements: [{ id, type: "action", data: { expression: data.expression } }],
-			});
-		}
-	}, [editing, data, elementsEvents, id]);
+		const handler = (e: { nodeId: string; data: Partial<ActionData> }) => {
+			if (e.nodeId === id) {
+				if (e.data.expression !== undefined) setEditingExpression(e.data.expression);
+			}
+		};
+
+		nodeStateEventsIn.on("set-internal-data", handler);
+		return () => {
+			nodeStateEventsIn.off("set-internal-data", handler);
+		};
+	}, [id]);
 
 	return (
 		<>
@@ -97,21 +104,31 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 				<textarea
 					ref={textareaRef}
 					className="node__input action_node__textarea"
-					value={data?.expression}
-					onChange={(e) => onExpressionChange(e.target.value)}
+					value={editingExpression}
+					onChange={(e) => setEditingExpression(e.target.value)}
 					rows={1}
+					onKeyDown={(e) => {
+						if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
+							//The save is done only on blur to avoid multiple saves when pressing enter
+							textareaRef.current?.blur();
+						}
+					}}
+					onBlur={() => {
+						setEditing(false);
+						saveExpression();
+					}}
 					style={{
 						width: "100%",
+						height: "100%",
 						border: "none",
 						outline: "none",
 						resize: "none",
 						boxSizing: "border-box",
 						overflow: "hidden",
 						padding: "0",
-						lineHeight: "1.2rem",
+						lineHeight: "1.1rem",
 						pointerEvents: !editing ? "none" : "all",
 					}}
-					onBlur={() => setEditing(false)}
 				/>
 			</GrafcetNode>
 		</>
