@@ -1,18 +1,18 @@
 "use client";
 
 import Project from "@/schemas/project/Project.class";
+import { createElementId } from "@/schemas/schemas-helpers";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 
 export default function useProject(): {
 	project: Project | null;
 	setProject: Dispatch<SetStateAction<Project | null>>;
-	fileHandle: FileSystemFileHandle | null;
-	setFileHandle: (fh: FileSystemFileHandle | null) => void;
 	changeProjectName: (newName: string) => void;
 	changeProjectAuthor: (newAuthor: string) => void;
 } {
-	const [project, setProject] = useState<Project | null>(new Project("Nouveau projet", ""));
-	const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | null>(null);
+	const [project, setProject] = useState<Project | null>(
+		new Project(createElementId(), "Nouveau projet", "")
+	);
 
 	const changeProjectName = useCallback((newName: string) => {
 		setProject((oldProject) => {
@@ -35,8 +35,6 @@ export default function useProject(): {
 	return {
 		project,
 		setProject,
-		fileHandle,
-		setFileHandle,
 		changeProjectName,
 		changeProjectAuthor,
 	};

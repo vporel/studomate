@@ -35,7 +35,7 @@ const NoPage = () => {
 					gap: 2,
 				}}
 			>
-				<Box component="img" src="/images/favicon.ico" alt="No page" sx={{ width: "100px" }} />
+				<Box component="img" src="/images/icon.png" alt="No page" sx={{ width: "100px" }} />
 				<Typography
 					variant="h2"
 					sx={{

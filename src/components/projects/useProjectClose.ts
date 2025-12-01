@@ -7,7 +7,6 @@ import { ProjectEventsOut } from "./project-events";
 
 export default function useProjectClose(
 	setProject: (p: Project | null) => void,
-	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
 	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
 	openUnsavedChangesDialog: (onCancel: (() => void) | null, onContinue: () => void) => void,
@@ -18,8 +17,7 @@ export default function useProjectClose(
 } {
 	const closeProject = useCallback(() => {
 		setProject(null);
-		setFileHandle(null);
-	}, [setProject, setFileHandle]);
+	}, [setProject]);
 
 	const closeProjectWithPrompt = useCallback(async () => {
 		if (hasUnsavedChanges) {

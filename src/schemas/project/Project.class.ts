@@ -4,6 +4,7 @@ import { createElementId } from "../schemas-helpers";
 import Variable from "../Variable.class";
 
 export default class Project {
+	id: string;
 	appVersion: string;
 	name: string;
 	creationDate: Date;
@@ -12,7 +13,8 @@ export default class Project {
 	variables: Variable[];
 	grafcets: Record<string, Grafcet>;
 
-	constructor(name: string, author: string) {
+	constructor(id: string, name: string, author: string) {
+		this.id = id;
 		this.appVersion = APP_VERSION;
 		this.name = name;
 		this.creationDate = new Date();
@@ -44,7 +46,7 @@ export default class Project {
 	}
 
 	copy(): Project {
-		const newProject = Object.assign(new Project("", ""), this);
+		const newProject = Object.assign(new Project("", "", ""), this);
 		for (const grafcetId in this.grafcets) {
 			newProject.grafcets[grafcetId] = this.grafcets[grafcetId].copy();
 		}
@@ -53,7 +55,7 @@ export default class Project {
 
 	static createFromJSON(json: string): Project {
 		const jsonParsed = JSON.parse(json);
-		const project = Object.assign(new Project("", ""), jsonParsed);
+		const project = Object.assign(new Project("", "", ""), jsonParsed);
 		project.creationDate = new Date(jsonParsed.creationDate);
 		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>

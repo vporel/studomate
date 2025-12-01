@@ -1,26 +1,28 @@
 "use client";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
+import { createElementId } from "@/schemas/schemas-helpers";
 import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import UnsavedChangesDialog from "../dialogs/UnsavedChangesDialog";
 import { ProjectEventsOut } from "./project-events";
+import ProjectOpenModal from "./ProjectOpenModal";
 import useGrafcetActions from "./useGrafcetActions";
 import useProject from "./useProject";
 import useProjectClose from "./useProjectClose";
 import useProjectNew from "./useProjectNew";
 import useProjectOpen from "./useProjectOpen";
-import useProjectSave from "./useProjectSave";
+import useProjectSave, { GrafcetRefData } from "./useProjectSave";
 import useShortcutsHandler from "./useShortcutsHandler";
 
 type ProjectContextType = {
 	project: Project | null;
 	changeProjectName: (newName: string) => void;
 	changeProjectAuthor: (newAuthor: string) => void;
-	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
+	updateGrafcetData: (grafcetId: string, data: GrafcetRefData) => void;
 	hasUnsavedChanges: boolean;
 	newProject: () => Promise<void>;
-	openProject: () => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
+	openProject: () => void; // Returns true if a project was opened, false if cancelled or failed
 	saveGrafcetData: (grafcetId: string) => void; //Save in the projet object (not in the file)
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
 	savingProject: boolean;
@@ -38,7 +40,7 @@ type ProjectContextType = {
 };
 
 const ProjectContext = createContext<ProjectContextType>({
-	project: new Project("Nouveau projet", ""),
+	project: new Project(createElementId(), "Nouveau projet", ""),
 	changeProjectName: () => {},
 	changeProjectAuthor: () => {},
 	updateGrafcetData: () => {},
@@ -58,8 +60,7 @@ const ProjectContext = createContext<ProjectContextType>({
 });
 
 export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
-	const { project, setProject, fileHandle, setFileHandle, changeProjectName, changeProjectAuthor } =
-		useProject();
+	const { project, setProject, changeProjectName, changeProjectAuthor } = useProject();
 	const projectEventsOut = useMemo(() => mitt<ProjectEventsOut>(), []);
 	const [unsavedChangesDialogOpen, setUnsavedChangesDialogOpen] = useState(false);
 	const [onUnsavedChangesDialogCancel, setOnUnsavedChangesDialogCancel] = useState<null | (() => void)>(
@@ -81,11 +82,10 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		setHasUnsavedChanges,
 		saveProject,
 		savingProject,
-	} = useProjectSave(project, setProject, fileHandle, setFileHandle, projectEventsOut);
+	} = useProjectSave(project, setProject, projectEventsOut);
 
-	const { openProjectWithPrompt } = useProjectOpen(
+	const { openProject, openModalVisible, showOpenModalWithPrompt, hideOpenModal } = useProjectOpen(
 		setProject,
-		setFileHandle,
 		hasUnsavedChanges,
 		setHasUnsavedChanges,
 		openUnsavedChangesDialog,
@@ -94,7 +94,6 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 
 	const { newProjectWithPrompt } = useProjectNew(
 		setProject,
-		setFileHandle,
 		hasUnsavedChanges,
 		setHasUnsavedChanges,
 		openUnsavedChangesDialog,
@@ -103,7 +102,6 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 
 	const { closeProjectWithPrompt } = useProjectClose(
 		setProject,
-		setFileHandle,
 		hasUnsavedChanges,
 		setHasUnsavedChanges,
 		openUnsavedChangesDialog,
@@ -119,7 +117,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 
 	const [activeScope, setActiveScope] = useState<string | null>(null);
 
-	useShortcutsHandler(newGrafcet, openProjectWithPrompt, saveProject);
+	useShortcutsHandler(newGrafcet, showOpenModalWithPrompt, saveProject);
 
 	//Show a browser dialog when the user tries to close the tab or refresh the page with unsaved changes
 	useEffect(() => {
@@ -144,7 +142,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 				updateGrafcetData,
 				hasUnsavedChanges,
 				newProject: newProjectWithPrompt,
-				openProject: openProjectWithPrompt,
+				openProject: showOpenModalWithPrompt,
 				saveGrafcetData,
 				saveProject,
 				savingProject,
@@ -175,6 +173,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 					if (onUnsavedChangesDialogContinue) onUnsavedChangesDialogContinue();
 				}}
 			/>
+			<ProjectOpenModal open={openModalVisible} onClose={hideOpenModal} onProjectClick={openProject} />
 		</ProjectContext.Provider>
 	);
 };

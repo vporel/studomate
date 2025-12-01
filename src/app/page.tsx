@@ -60,11 +60,7 @@ function AppComponent() {
 						borderBottom: "1px solid lightgray",
 					}}
 				>
-					<Box
-						component="img"
-						src="/images/favicon.ico"
-						sx={{ width: "40px", margin: "0 0.5rem" }}
-					/>
+					<Box component="img" src="/images/icon.png" sx={{ width: "50px", margin: "10px" }} />
 					<Box sx={{ flex: 1, paddingTop: "5px" }}>
 						<TitleBar />
 						<AppMenuBar />

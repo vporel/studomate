@@ -1,13 +1,13 @@
 "use client";
 
 import Project from "@/schemas/project/Project.class";
+import { createElementId } from "@/schemas/schemas-helpers";
 import { Emitter } from "mitt";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import { ProjectEventsOut } from "./project-events";
 
 export default function useProjectNew(
 	setProject: (p: Project) => void,
-	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	hasUnsavedChanges: boolean,
 	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>,
 	openUnsavedChangesDialog: (onCancel: (() => void) | null, onContinue: () => void) => void,
@@ -17,9 +17,8 @@ export default function useProjectNew(
 	newProjectWithPrompt: () => Promise<void>;
 } {
 	const newProject = useCallback(() => {
-		setProject(new Project("Nouveau projet", ""));
-		setFileHandle(null);
-	}, [setProject, setFileHandle]);
+		setProject(new Project(createElementId(), "Nouveau projet", ""));
+	}, [setProject]);
 
 	const newProjectWithPrompt = useCallback(async () => {
 		if (hasUnsavedChanges) {

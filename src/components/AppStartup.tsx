@@ -41,7 +41,7 @@ const AppStartup = () => {
 				<FlexBox centerVertical gap={2.5}>
 					<Box
 						component="img"
-						src="/images/favicon.ico"
+						src="/images/icon.png"
 						sx={{ width: "80px", marginBottom: "0.5rem" }}
 					/>
 					<Box flex={1}>

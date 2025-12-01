@@ -1,7 +1,7 @@
 "use client";
 
-import { openSaveDialog, writeFile } from "@/lib/file-system";
 import { deepObjectsComparison } from "@/lib/object";
+import { localStorageSaveProject } from "@/local-storage/projects";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
 import { Emitter } from "mitt";
@@ -17,13 +17,11 @@ export type GrafcetRefData = {
 export default function useProjectSave(
 	project: Project | null,
 	setProject: Dispatch<SetStateAction<Project | null>>,
-	fileHandle: FileSystemFileHandle | null,
-	setFileHandle: (fh: FileSystemFileHandle | null) => void,
 	projectEventsOut: Emitter<ProjectEventsOut>
 ): {
 	hasUnsavedChanges: boolean;
 	setHasUnsavedChanges: Dispatch<SetStateAction<boolean>>;
-	updateGrafcetData: (grafcetId: string, data: { grafcet?: Grafcet; flowNodes?: any[] }) => void;
+	updateGrafcetData: (grafcetId: string, data: GrafcetRefData) => void;
 	saveGrafcetData: (grafcetId: string) => void; //Save in the projet object (not in the file)
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
 	savingProject: boolean;
@@ -68,29 +66,17 @@ export default function useProjectSave(
 		//Update the project's last modified date
 		newProject.touch();
 		setProject(newProject);
-
-		//If no fileHandle, open a save dialog
-		let handle = fileHandle;
-		if (!handle) {
-			//Open a save dialog
-			handle = await openSaveDialog(
-				"Fichiers JSON",
-				{ "application/json": [".json"] },
-				newProject.name + ".json"
-			);
-			setFileHandle(handle);
-		}
-		if (!handle) return null;
 		setSavingProject(true);
-		//Save the project to the file
-		await writeFile(newProject, handle);
+		//Save the project in the local storage
+		localStorageSaveProject(newProject);
+
 		// Update previousGrafcetsRef
 		previousGrafcetsRef.current = structuredClone(grafcetsRef.current);
 		setHasUnsavedChanges(false);
 		projectEventsOut.emit("project-saved");
 		setSavingProject(false);
 		return true;
-	}, [project, setProject, fileHandle, setFileHandle, projectEventsOut]);
+	}, [project, setProject, projectEventsOut]);
 
 	return {
 		hasUnsavedChanges,
