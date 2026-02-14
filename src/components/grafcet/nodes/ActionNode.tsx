@@ -2,9 +2,9 @@
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Action, { ActionData } from "@/schemas/grafcet/Action.class";
 import { useTheme } from "@mui/material";
-import { Node, NodeProps, NodeResizer, Position, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useCallback, useEffect, type FC } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import { nodeStateEventsIn } from "./nodes-states-events";
 
@@ -14,21 +14,17 @@ export type ActionNodeProps = NodeProps<ActionNodeType>;
 
 const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
-	const { updateNodeData } = useReactFlow();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editing, setEditing] = React.useState(false);
 	const [editingExpression, setEditingExpression] = React.useState(data.expression);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const { elementsEvents } = useGrafcetContext();
+	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 
 	const saveExpression = useCallback(() => {
 		updateNodeData(id, {
 			expression: editingExpression,
 		});
-		elementsEvents.emit("update", {
-			elements: [{ id, type: "action", data: { expression: editingExpression } }],
-		});
-	}, [editingExpression, updateNodeData, id, elementsEvents]);
+	}, [editingExpression, updateNodeData, id]);
 
 	// //Update the data when the node is resized
 	// useEffect(() => {

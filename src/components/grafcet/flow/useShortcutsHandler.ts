@@ -1,47 +1,45 @@
 "use client";
 
-import { useProjectContext } from "@/components/projects/ProjectContext";
-import { useReactFlow } from "@xyflow/react";
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import React, { useCallback } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
-import useCommandsHandlers from "./useCommandsHandlers";
+import { useShallow } from "zustand/shallow";
+import { useGrafcetStore } from "../context/GrafcetContext";
 
-export default function useShortcutsHandler(grafcetId: string): (e: React.KeyboardEvent) => void {
-	const { setNodes, setEdges } = useReactFlow();
-	const { undoLastCommand, redoLastCommand } = useGrafcetContext();
-	const { commandUndo, commandRedo } = useCommandsHandlers();
-	const { activeScope } = useProjectContext();
+export default function useShortcutsHandler(): (e: React.KeyboardEvent) => void {
+	const { grafcetId, undoOperation, redoOperation, selectAllNodesAndEdges } = useGrafcetStore(
+		useShallow((state) => ({
+			grafcetId: state.grafcet.id,
+			undoOperation: state.undoOperation,
+			redoOperation: state.redoOperation,
+			selectAllNodesAndEdges: state.selectAllNodesAndEdges,
+		})),
+	);
+
+	const activeScope = useProjectStore((state) => state.activeScope);
 
 	return useCallback(
 		(e: React.KeyboardEvent) => {
 			if (activeScope !== grafcetId) return;
-			//Ctrl+A : Select all
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
 					case "a": {
 						e.preventDefault();
-						setNodes((nds) => nds.map((n) => ({ ...n, selected: true })));
+						selectAllNodesAndEdges();
 						break;
 					}
 					case "z": {
 						e.preventDefault();
-						const commands = undoLastCommand();
-						for (const command of commands ?? []) {
-							commandUndo(command);
-						}
+						undoOperation();
 						break;
 					}
 					case "y": {
 						e.preventDefault();
-						const commands = redoLastCommand();
-						for (const command of commands ?? []) {
-							commandRedo(command);
-						}
+						redoOperation();
 						break;
 					}
 				}
 			}
 		},
-		[activeScope, grafcetId, setNodes, undoLastCommand, commandUndo, redoLastCommand, commandRedo]
+		[activeScope, grafcetId, selectAllNodesAndEdges, undoOperation, redoOperation],
 	);
 }

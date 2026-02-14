@@ -1,33 +1,36 @@
 "use client";
 
+import { platformShortcut } from "@/lib/platform";
 import { Edge, Node } from "@xyflow/react";
-import { Emitter } from "mitt";
-import { GrafcetContextMenuEvents } from "../context/context-menu-events";
-import { GrafcetContextMenuItemType } from "./grafcet-context-menu";
 
 export default function paneContextMenuItems(
 	getNodes: () => Node[],
 	getEdges: () => Edge[],
-	contextMenuEvents: Emitter<GrafcetContextMenuEvents>
-): GrafcetContextMenuItemType[][] {
+	actions: { selectAllNodesAndEdges: () => void; selectAllEdges: () => void },
+): {
+	label: string;
+	shortcut?: string;
+	onClick: () => void;
+	disabled: boolean;
+}[][] {
 	return [
 		[
 			{
 				label: "Tout sélectionner",
-				shortcut: "Ctrl+A",
-				onClick: () => contextMenuEvents.emit("pane-action", { type: "select-all" }),
+				shortcut: platformShortcut("Ctrl + A", "Cmd + A"),
+				onClick: actions.selectAllNodesAndEdges,
 				disabled: getNodes().length == 0 && getNodes().length == 0,
 			},
 			{
 				label: "Sélectionner les liaisons",
-				onClick: () => contextMenuEvents.emit("pane-action", { type: "select-all-edges" }),
+				onClick: actions.selectAllEdges,
 				disabled: getEdges().length == 0,
 			},
 		],
 		[
 			{
 				label: "Exporter",
-				onClick: () => contextMenuEvents.emit("pane-action", { type: "export" }),
+				onClick: () => {},
 				disabled: getNodes().length == 0 && getNodes().length == 0,
 			},
 		],

@@ -1,10 +1,7 @@
 "use client";
 
-import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { InternalNode, Node } from "@xyflow/react";
 import React, { useCallback, useEffect, useState } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 
 export function getPointsForAdding(points: [number, number][]): [number, number][] {
 	const pointsForAdding: [number, number][] = [];
@@ -17,17 +14,13 @@ export default function useAddPointHandler(
 	points: [number, number][],
 	setPoints: React.Dispatch<React.SetStateAction<[number, number][]>>,
 	edgeId: string,
-	sourceNode: InternalNode<Node> | undefined,
-	sourceHandleId: string | undefined | null,
-	targetNode: InternalNode<Node> | undefined,
-	targetHandleId: string | undefined | null
 ): {
 	pointsForAdding: [number, number][];
 	setPointsForAdding: React.Dispatch<React.SetStateAction<[number, number][]>>;
 	addPoint: (index: number) => void;
 } {
 	const [pointsForAdding, setPointsForAdding] = useState<[number, number][]>(getPointsForAdding(points));
-	const { connectionsEvents } = useGrafcetContext();
+	const updateConnectionData = useGrafcetStore((state) => state.updateConnectionData);
 
 	const addPoint = useCallback(
 		(index: number) => {
@@ -37,35 +30,9 @@ export default function useAddPointHandler(
 				newPoints.splice(index + 1, 0, pointsForAdding[index]);
 				return newPoints;
 			});
-			connectionsEvents.emit("update", [
-				new GrafcetConnection(
-					edgeId,
-					{
-						type: sourceNode!.type as GrafcetElementType,
-						id: sourceNode!.id,
-						handleId: sourceHandleId || "",
-					},
-					{
-						type: targetNode!.type as GrafcetElementType,
-						id: targetNode!.id,
-						handleId: targetHandleId || "",
-					},
-					{
-						points: newPoints,
-					}
-				),
-			]);
+			updateConnectionData(edgeId, { points: newPoints });
 		},
-		[
-			connectionsEvents,
-			edgeId,
-			pointsForAdding,
-			setPoints,
-			sourceHandleId,
-			sourceNode,
-			targetHandleId,
-			targetNode,
-		]
+		[updateConnectionData, edgeId, pointsForAdding, setPoints],
 	);
 
 	//Create the points for adding

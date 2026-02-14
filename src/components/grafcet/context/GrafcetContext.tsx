@@ -1,32 +1,22 @@
 "use client";
-import { useProjectContext } from "@/components/projects/ProjectContext";
-import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import { createGrafcetStore } from "@/stores/grafcet/grafcet-store";
+import { GrafcetStoreState } from "@/stores/grafcet/grafcet-store-types";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { GrafcetConnectionsEvents } from "./connections-events";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
+import { StoreApi, useStore } from "zustand";
+import { useShallow } from "zustand/shallow";
 import { GrafcetContextMenuEvents } from "./context-menu-events";
-import { GrafcetElementsEvents } from "./elements-events";
-import useCommandsStack from "./useCommandsStack";
-import useConnectionsEventsHandler from "./useConnectionsEventsHandler";
-import useElementsEventsHandler from "./useElementsEventsHandler";
 
 type GrafcetContextType = {
-	grafcet: Grafcet;
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>;
-	elementsEvents: Emitter<GrafcetElementsEvents>;
-	connectionsEvents: Emitter<GrafcetConnectionsEvents>;
-	undoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
-	redoLastCommand: () => AbstractGrafcetCommand<any>[] | null;
+	store: StoreApi<GrafcetStoreState> | null;
 };
 
 const GrafcetContext = createContext<GrafcetContextType>({
-	grafcet: {} as Grafcet,
 	contextMenuEvents: mitt<GrafcetContextMenuEvents>(),
-	elementsEvents: mitt<GrafcetElementsEvents>(),
-	connectionsEvents: mitt<GrafcetConnectionsEvents>(),
-	undoLastCommand: () => null,
-	redoLastCommand: () => null,
+	store: null,
 });
 
 export const GrafcetContextProvider = ({
@@ -36,33 +26,33 @@ export const GrafcetContextProvider = ({
 	initialGrafcet: Grafcet;
 	children: ReactNode;
 }) => {
-	const { updateGrafcetData } = useProjectContext();
-	const [grafcet, setGrafcet] = useState<Grafcet>(initialGrafcet);
-	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);
-	const elementsEvents = useMemo(() => mitt<GrafcetElementsEvents>(), []);
-	const connectionsEvents = useMemo(() => mitt<GrafcetConnectionsEvents>(), []);
-	const { commandsStackRef, undoLastCommand, redoLastCommand } = useCommandsStack(grafcet, setGrafcet);
+	const storeRef = useRef<StoreApi<GrafcetStoreState> | null>(null);
 
-	useElementsEventsHandler(elementsEvents, grafcet, setGrafcet, commandsStackRef.current);
-	useConnectionsEventsHandler(connectionsEvents, grafcet, setGrafcet, commandsStackRef.current);
+	if (!storeRef.current) {
+		storeRef.current = createGrafcetStore(initialGrafcet);
+	}
+
+	const { updateGrafcetData } = useProjectStore(
+		useShallow((state) => ({ updateGrafcetData: state.updateGrafcetData })),
+	);
+	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);
 
 	//Listen to grafcet changes
 	useEffect(() => {
-		if (!grafcet) return;
-		updateGrafcetData(grafcet.id, { grafcet });
-	}, [grafcet, updateGrafcetData]);
-
-	console.log(commandsStackRef.current);
+		if (!storeRef.current) return;
+		const unsubscribe = storeRef.current.subscribe((state) => {
+			updateGrafcetData(state.grafcet);
+		});
+		return () => {
+			unsubscribe();
+		};
+	}, [updateGrafcetData]);
 
 	return (
 		<GrafcetContext.Provider
 			value={{
-				grafcet,
 				contextMenuEvents,
-				elementsEvents,
-				connectionsEvents,
-				undoLastCommand,
-				redoLastCommand,
+				store: storeRef.current,
 			}}
 		>
 			{children}
@@ -71,3 +61,11 @@ export const GrafcetContextProvider = ({
 };
 
 export const useGrafcetContext = () => useContext(GrafcetContext);
+
+export function useGrafcetStore<T>(selector: (state: GrafcetStoreState) => T) {
+	const { store } = useGrafcetContext();
+	if (!store) {
+		throw new Error("useGrafcetStore must be used within a GrafcetContextProvider");
+	}
+	return useStore(store, selector);
+}

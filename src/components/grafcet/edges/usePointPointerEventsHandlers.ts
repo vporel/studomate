@@ -1,10 +1,8 @@
 "use client";
 
-import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { InternalNode, Node, useReactFlow } from "@xyflow/react";
+import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import { getPointsForAdding } from "./useAddPointHandler";
 
 export default function usePointPointerEventsHandlers(
@@ -12,13 +10,9 @@ export default function usePointPointerEventsHandlers(
 	setPoints: React.Dispatch<React.SetStateAction<[number, number][]>>,
 	setPointsForAdding: React.Dispatch<React.SetStateAction<[number, number][]>>,
 	edgeId: string,
-	sourceNode: InternalNode<Node> | undefined,
-	sourceHandleId: string | undefined | null,
-	targetNode: InternalNode<Node> | undefined,
-	targetHandleId: string | undefined | null
 ) {
 	const { screenToFlowPosition } = useReactFlow();
-	const { connectionsEvents } = useGrafcetContext();
+	const updateConnectionData = useGrafcetStore((state) => state.updateConnectionData);
 
 	const handlePointPointerDown = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
@@ -37,7 +31,7 @@ export default function usePointPointerEventsHandlers(
 				}
 			}
 		},
-		[points, setPoints, setPointsForAdding]
+		[points, setPoints, setPointsForAdding],
 	);
 
 	const handlePointPointerMove = useCallback(
@@ -51,32 +45,15 @@ export default function usePointPointerEventsHandlers(
 				return newPoints;
 			});
 		},
-		[screenToFlowPosition, setPoints, setPointsForAdding]
+		[screenToFlowPosition, setPoints, setPointsForAdding],
 	);
 
 	const handlePointPointerUp = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
 			(e.target as SVGCircleElement).releasePointerCapture(e.pointerId);
-			connectionsEvents.emit("update", [
-				new GrafcetConnection(
-					edgeId,
-					{
-						type: sourceNode!.type as GrafcetElementType,
-						id: sourceNode!.id,
-						handleId: sourceHandleId || "",
-					},
-					{
-						type: targetNode!.type as GrafcetElementType,
-						id: targetNode!.id,
-						handleId: targetHandleId || "",
-					},
-					{
-						points: points,
-					}
-				),
-			]);
+			updateConnectionData(edgeId, { points });
 		},
-		[connectionsEvents, edgeId, points, sourceHandleId, sourceNode, targetHandleId, targetNode]
+		[updateConnectionData, edgeId, points],
 	);
 
 	return { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp };

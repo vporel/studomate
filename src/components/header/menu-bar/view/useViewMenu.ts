@@ -2,8 +2,9 @@
 
 import { useAppContext } from "@/components/AppContext";
 import { useMemo } from "react";
+import { AppMenuType } from "../app-menu-bar";
 
-export default function useViewMenu() {
+export default function useViewMenu(): AppMenuType {
 	const { viewAppearance, setViewAppearance } = useAppContext();
 
 	return useMemo(
@@ -21,6 +22,6 @@ export default function useViewMenu() {
 				],
 			],
 		}),
-		[viewAppearance, setViewAppearance]
+		[viewAppearance, setViewAppearance],
 	);
 }

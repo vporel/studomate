@@ -1,14 +1,15 @@
 "use client";
 
-import { usePagesContext } from "@/components/pages/context/PagesContext";
-import { useProjectContext } from "@/components/projects/ProjectContext";
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/lib/context-menu/context-menu";
 import { useCallback } from "react";
+import { useShallow } from "zustand/shallow";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMenuItemType[][] {
-	const { project, deleteGrafcet } = useProjectContext();
-	const { openPage } = usePagesContext();
+	const { deleteGrafcet, openPage } = useProjectStore(
+		useShallow((state) => ({ deleteGrafcet: state.deleteGrafcet, openPage: state.openPage })),
+	);
 
 	return useCallback(
 		(grafcetId: string) => {
@@ -19,10 +20,10 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 						onClick: () => {
 							const grafcet = project?.grafcets[grafcetId];
 							if (grafcet) {
-								openPage(grafcetId, {
+								openPage({
+									id: grafcetId,
 									type: "grafcet",
 									title: grafcet.name,
-									grafcet,
 								});
 							}
 						},
@@ -41,6 +42,6 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 				],
 			];
 		},
-		[project?.grafcets, openPage, deleteGrafcet]
+		[openPage, deleteGrafcet],
 	);
 }

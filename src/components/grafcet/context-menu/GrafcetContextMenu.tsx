@@ -5,8 +5,10 @@ import ContextMenu from "@/lib/context-menu/ContextMenu";
 import useBooleanState from "@/lib/hooks/useBooleanState";
 import { useReactFlow, XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
-import { JunctionNode } from "../flow/grafcet-nodes-definitions";
+import { useShallow } from "zustand/shallow";
+import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
+import { GrafcetNode, JunctionNode } from "../flow/grafcet-nodes-definitions";
+import commonNodeContextMenuItems from "./common-node-context-menu-items";
 import { GrafcetContextMenuElement, GrafcetContextMenuProps } from "./grafcet-context-menu";
 import junctionContextMenuItems from "./junction-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
@@ -22,21 +24,26 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
 	const { getNodes, getEdges } = useReactFlow();
+	const { addNode, deleteNode } = useGrafcetStore(
+		useShallow((state) => ({ addNode: state.addNode, deleteNode: state.deleteNode })),
+	);
 	//Groups of items, the groups will be separated with dividers
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
-		const commonNodesItems = [[{ label: "Supprimer", onClick: () => {} }]];
-
 		if (element.type == "pane") {
 			return paneContextMenuItems(getNodes, getEdges, contextMenuEvents);
-		} else if (element.type.includes("junction")) {
-			return [
-				...junctionContextMenuItems(element as JunctionNode, contextMenuEvents),
-				...commonNodesItems,
-			];
 		} else {
-			return commonNodesItems;
+			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNode, {
+				deleteNode,
+			});
+			if (element.type.includes("junction")) {
+				return [
+					...junctionContextMenuItems(element as JunctionNode, contextMenuEvents),
+					...commonNodeItems,
+				];
+			}
+			return commonNodeItems;
 		}
-	}, [element, getNodes, getEdges, contextMenuEvents]);
+	}, [element, getNodes, getEdges, contextMenuEvents, deleteNode]);
 
 	//Show the menu on 'show' event
 	useEffect(() => {

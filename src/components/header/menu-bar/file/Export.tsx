@@ -1,26 +1,35 @@
-import { GrafcetPageData, usePagesContext } from "@/components/pages/context/PagesContext";
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import { downloadFromUrl } from "@/lib/utils";
-import { getNodesBounds } from "@xyflow/react";
+import { GrafcetFlowData } from "@/stores/project/project-store-types";
+import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import domToImage from "dom-to-image";
+import { useShallow } from "zustand/shallow";
 
 export function DownloadButton({ objectId }: { objectId: string }) {
-	const { getPageData } = usePagesContext();
+	const { getGrafcetFlowData, getGrafcet } = useProjectStore(
+		useShallow((state) => ({
+			getGrafcetFlowData: state.getGrafcetFlowData,
+			getGrafcet: state.getGrafcet,
+		})),
+	);
 	const onClick = () => {
-		const pageData = getPageData(objectId) as GrafcetPageData;
+		const data = getGrafcetFlowData(objectId) as GrafcetFlowData;
+		const format = getGrafcet(objectId)?.format;
+		if (!data || !format) return;
+		const dimensions = getFlowDimensions(format);
 		// we calculate a transform for the nodes so that all nodes are visible
 		// we then overwrite the transform of the `.react-flow__viewport` element
 		// with the style option of the html-to-image library
-		const nodesBounds = getNodesBounds(pageData.nodes);
 		const padding = 10;
 		const pixelRatio = 5;
 		const scaledPadding = padding * pixelRatio;
 		const htmlElement = document.querySelector(
-			".grafcet-page#" + objectId + " .react-flow__viewport"
+			".grafcet-page#" + objectId + " .react-flow__viewport",
 		) as HTMLElement;
 		domToImage
 			.toJpeg(htmlElement, {
-				width: pageData.width * pixelRatio,
-				height: pageData.height * pixelRatio,
+				width: dimensions.width * pixelRatio,
+				height: dimensions.height * pixelRatio,
 
 				bgcolor: "white",
 				style: {

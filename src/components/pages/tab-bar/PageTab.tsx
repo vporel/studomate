@@ -1,31 +1,36 @@
 "use client";
 
 import InclinedAccountTreeIcon from "@/components/icons/InclinedAccountTree";
-import CircleIcon from "@mui/icons-material/Circle";
+import { useProjectStore } from "@/components/projects/ProjectContext";
+import { PageType } from "@/stores/project/project-store-types";
 import CloseIcon from "@mui/icons-material/Close";
 import HomeIcon from "@mui/icons-material/Home";
 import TuneIcon from "@mui/icons-material/Tune";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
-import { usePagesContext } from "../context/PagesContext";
-import { PageType } from "../context/pages-data";
+import { useShallow } from "zustand/shallow";
 
 export type PageTabProps = {
 	id: string;
 	title: string;
 	type: PageType;
-	hasUnsavedChanges?: boolean;
 };
 
-const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
+const PageTab = ({ id, title, type }: PageTabProps) => {
 	const th = useTheme();
-	const { activePageId, setActivePageId, closePage } = usePagesContext();
+	const { activePageId, setActivePage, closePage } = useProjectStore(
+		useShallow((state) => ({
+			activePageId: state.activePageId,
+			setActivePage: state.setActivePage,
+			closePage: state.closePage,
+		})),
+	);
 	const active = id === activePageId;
 	const TypeIconComponent =
 		type === "project-startup"
 			? HomeIcon
 			: type === "project-properties"
-			? TuneIcon
-			: InclinedAccountTreeIcon;
+				? TuneIcon
+				: InclinedAccountTreeIcon;
 
 	return (
 		<Box
@@ -57,7 +62,7 @@ const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
 				},
 			}}
 			onClick={() => {
-				setActivePageId(id);
+				setActivePage(id);
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -75,7 +80,7 @@ const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
 			<IconButton
 				className="page__tab__button-icon"
 				sx={{
-					opacity: active || hasUnsavedChanges ? 1 : 0,
+					opacity: active ? 1 : 0,
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
@@ -91,11 +96,7 @@ const PageTab = ({ id, title, type, hasUnsavedChanges }: PageTabProps) => {
 					closePage(id);
 				}}
 			>
-				{hasUnsavedChanges && <CircleIcon className="circle-icon" sx={{ fontSize: "0.9rem" }} />}
-				<CloseIcon
-					className="close-icon"
-					sx={{ fontSize: "0.9rem", display: hasUnsavedChanges ? "none" : "block" }}
-				/>
+				<CloseIcon className="close-icon" sx={{ fontSize: "0.9rem", display: "block" }} />
 			</IconButton>
 		</Box>
 	);

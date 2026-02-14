@@ -1,10 +1,9 @@
 "use client";
 
-import GrafcetConnection, { GrafcetConnectionData } from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { applyNodeChanges, OnNodesChange, useReactFlow } from "@xyflow/react";
-import { Dispatch, SetStateAction, useCallback } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { applyNodeChanges, NodeChange, OnNodesChange } from "@xyflow/react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { useShallow } from "zustand/shallow";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetNode } from "./grafcet-nodes-definitions";
 
 export default function useNodesHandlers(setNodes: Dispatch<SetStateAction<GrafcetNode[]>>): {
@@ -12,84 +11,39 @@ export default function useNodesHandlers(setNodes: Dispatch<SetStateAction<Grafc
 	onNodesDelete: (deleted: GrafcetNode[]) => void;
 	onNodeDragStop: (event: any, node: GrafcetNode, nodes: GrafcetNode[]) => void;
 } {
-	const { getNodeConnections, getEdge, getNode } = useReactFlow();
-	const { elementsEvents } = useGrafcetContext();
+	const { deleteNodes, onNodesPositionsChange } = useGrafcetStore(
+		useShallow((state) => ({
+			deleteNodes: state.deleteNodes,
+			onNodesPositionsChange: state.onNodesPositionsChange,
+		})),
+	);
+	const onNodesChange = useCallback(
+		(changes: NodeChange<GrafcetNode>[]) => {
+			setNodes((nds) => applyNodeChanges(changes, nds));
+		},
+		[setNodes],
+	);
 
-	return {
-		onNodesChange: useCallback(
-			(changes) => {
-				setNodes((nds) => applyNodeChanges(changes, nds));
-			},
-			[setNodes]
-		),
-		onNodesDelete: useCallback(
-			(deleted: GrafcetNode[]) => {
-				const connections: GrafcetConnection[] = [];
-				for (const n of deleted) {
-					for (const nc of [
-						...getNodeConnections({ nodeId: n.id, type: "source" }),
-						...getNodeConnections({ nodeId: n.id, type: "target" }),
-					]) {
-						const edge = getEdge(nc.edgeId);
-						if (edge) {
-							connections.push(
-								new GrafcetConnection(
-									edge.id,
-									{
-										id: edge.source,
-										type: getNode(edge.source)!.type as GrafcetElementType,
-										handleId: edge.sourceHandle!,
-									},
-									{
-										id: edge.target,
-										type: getNode(edge.target)!.type as GrafcetElementType,
-										handleId: edge.targetHandle!,
-									},
-									edge.data as GrafcetConnectionData
-								)
-							);
-						}
-					}
-				}
-				elementsEvents.emit("remove", { elements: deleted, connections });
-			},
-			[elementsEvents, getEdge, getNode, getNodeConnections]
-		),
-		onNodeDragStop: useCallback(
-			(_: any, __: GrafcetNode, nodes: GrafcetNode[]) => {
-				const connections: GrafcetConnection[] = [];
-				for (const n of nodes) {
-					for (const nc of [
-						...getNodeConnections({ nodeId: n.id, type: "source" }),
-						...getNodeConnections({ nodeId: n.id, type: "target" }),
-					]) {
-						const edge = getEdge(nc.edgeId);
-						if (edge) {
-							connections.push(
-								new GrafcetConnection(
-									edge.id,
-									{
-										id: edge.source,
-										type: getNode(edge.source)!.type as GrafcetElementType,
-										handleId: edge.sourceHandle!,
-									},
-									{
-										id: edge.target,
-										type: getNode(edge.target)!.type as GrafcetElementType,
-										handleId: edge.targetHandle!,
-									},
-									edge.data as GrafcetConnectionData
-								)
-							);
-						}
-					}
-				}
-				elementsEvents.emit("update", {
-					elements: nodes.map((n) => ({ id: n.id, type: n.type, position: n.position })),
-					connections,
-				});
-			},
-			[elementsEvents, getEdge, getNode, getNodeConnections]
-		),
-	};
+	const onNodesDelete = useCallback(
+		(deleted: GrafcetNode[]) => {
+			const deletedIds = deleted.map((n) => n.id);
+			deleteNodes(deletedIds);
+		},
+		[deleteNodes],
+	);
+	const onNodeDragStop = useCallback(
+		(_: any, __: GrafcetNode, nodes: GrafcetNode[]) => {
+			onNodesPositionsChange(nodes.map((n) => n.id));
+		},
+		[onNodesPositionsChange],
+	);
+
+	return useMemo(
+		() => ({
+			onNodesChange,
+			onNodesDelete,
+			onNodeDragStop,
+		}),
+		[onNodesChange, onNodesDelete, onNodeDragStop],
+	);
 }

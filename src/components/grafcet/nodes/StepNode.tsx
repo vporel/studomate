@@ -3,9 +3,9 @@ import { range } from "@/lib/array";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Step, { StepData } from "@/schemas/grafcet/Step.class";
 import { useTheme } from "@mui/material";
-import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { useCallback, useEffect, type FC } from "react";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import { nodeStateEventsIn } from "./nodes-states-events";
 
@@ -15,12 +15,11 @@ export type StepNodeProps = NodeProps<StepNodeType>;
 
 const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
-	const { updateNodeData } = useReactFlow();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const [editing, setEditing] = React.useState(false);
 	const [editingNumber, setEditingNumber] = React.useState(data.number + "");
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const { elementsEvents } = useGrafcetContext();
+	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 
 	const saveNumber = useCallback(() => {
 		const number: number | "" =
@@ -30,8 +29,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 		updateNodeData(id, {
 			number,
 		});
-		elementsEvents.emit("update", { elements: [{ id, type: "step", data: { number } }] });
-	}, [editingNumber, updateNodeData, id, elementsEvents]);
+	}, [editingNumber, updateNodeData, id]);
 
 	//Listen the set-data event from the commands handlers to update the internal state
 	useEffect(() => {

@@ -3,12 +3,18 @@
 import { Emitter } from "mitt";
 import { GrafcetContextMenuEvents } from "../context/context-menu-events";
 import { JunctionNode } from "../flow/grafcet-nodes-definitions";
-import { GrafcetContextMenuItemType } from "./grafcet-context-menu";
 
 export default function junctionContextMenuItems(
 	junction: JunctionNode,
-	contextMenuEvents: Emitter<GrafcetContextMenuEvents>
-): GrafcetContextMenuItemType[][] {
+	contextMenuEvents: Emitter<GrafcetContextMenuEvents>,
+): {
+	label: string;
+	onClick?: () => void;
+	subItems?: {
+		label: string;
+		onClick: () => void;
+	}[];
+}[][] {
 	return [
 		[
 			{

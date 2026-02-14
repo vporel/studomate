@@ -84,6 +84,7 @@ const AppMenu = ({
 						{group.map((item, itemIndex) => (
 							<MenuItem
 								key={itemIndex}
+								disabled={item.disabled}
 								onClick={() => {
 									handleClose();
 									item.onClick?.();

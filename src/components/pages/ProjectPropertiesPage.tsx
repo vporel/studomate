@@ -1,13 +1,15 @@
 "use client";
 
+import { PageData } from "@/stores/project/project-store-types";
 import { alpha, Box, Grid, Typography } from "@mui/material";
 import { useState } from "react";
-import { useProjectContext } from "../projects/ProjectContext";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
-import { ProjectPropertiesPageData } from "./context/pages-data";
 
 export const PROJECT_PROPERTIES_PAGE_ID = "project-properties";
-export const PROJECT_PROPERTIES_PAGE_DATA: ProjectPropertiesPageData = {
+export const PROJECT_PROPERTIES_PAGE_DATA: PageData = {
+	id: PROJECT_PROPERTIES_PAGE_ID,
 	type: "project-properties",
 	title: "Propriétés du projet",
 };
@@ -60,7 +62,14 @@ const PropertyTextField = ({
 };
 
 const ProjectPropertiesPage = () => {
-	const { project, changeProjectName, changeProjectAuthor } = useProjectContext();
+	const { name, author, changeProjectName, changeProjectAuthor } = useProjectStore(
+		useShallow((state) => ({
+			name: state.project?.name ?? "",
+			author: state.project?.author ?? "",
+			changeProjectName: state.setProjectName,
+			changeProjectAuthor: state.setProjectAuthor,
+		})),
+	);
 
 	return (
 		<Page pageId={PROJECT_PROPERTIES_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>
@@ -74,14 +83,11 @@ const ProjectPropertiesPage = () => {
 				<Grid container spacing={2} sx={{ mt: 3, mb: 2 }}>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyLabel label="Nom" />
-						<PropertyTextField defaultValue={project!.name} onSave={changeProjectName} />
+						<PropertyTextField defaultValue={name} onSave={changeProjectName} />
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyLabel label="Auteur" />
-						<PropertyTextField
-							defaultValue={project!.author ?? ""}
-							onSave={changeProjectAuthor}
-						/>
+						<PropertyTextField defaultValue={author} onSave={changeProjectAuthor} />
 					</Grid>
 				</Grid>
 			</Box>

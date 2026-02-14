@@ -6,20 +6,15 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import { useCallback } from "react";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "../projects/ProjectContext";
 
 const UnsavedChangesDialog = ({
-	open,
 	message,
-	onCancel,
-	onContinueWithoutSaving,
-	onSave,
 	buttonsProps,
 }: {
-	open: boolean;
 	message: string;
-	onCancel: () => void;
-	onContinueWithoutSaving: () => void;
-	onSave: () => void;
 	buttonsProps?: {
 		cancel?: {
 			text?: string;
@@ -32,14 +27,42 @@ const UnsavedChangesDialog = ({
 		};
 	};
 }) => {
+	const { visible, setVisible, saveProject, onContinue, onCancel } = useProjectStore(
+		useShallow((state) => ({
+			visible: state.unsavedChangesDialogVisible,
+			setVisible: state.setUnsavedChangesDialogVisible,
+			saveProject: state.saveProject,
+			onContinue: state.onUnsavedChangesDialogContinue,
+			onCancel: state.onUnsavedChangesDialogCancel,
+		})),
+	);
+
+	const onClose = useCallback(() => {
+		setVisible(false);
+		if (onCancel) onCancel();
+	}, [setVisible, onCancel]);
+
+	const onContinueWithoutSaving = useCallback(() => {
+		setVisible(false);
+		if (onContinue) onContinue();
+	}, [setVisible, onContinue]);
+
+	const onSave = useCallback(async () => {
+		setVisible(false);
+		const result = await saveProject();
+		if (result) {
+			if (onContinue) onContinue();
+		}
+	}, [setVisible, saveProject, onContinue]);
+
 	return (
-		<Dialog onClose={onCancel} open={open}>
+		<Dialog onClose={onClose} open={visible}>
 			<DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
 				Modifications non enregistrées
 			</DialogTitle>
 			<IconButton
 				aria-label="close"
-				onClick={onCancel}
+				onClick={onClose}
 				sx={(th) => ({
 					position: "absolute",
 					right: 8,
@@ -59,7 +82,7 @@ const UnsavedChangesDialog = ({
 				<Button autoFocus onClick={onContinueWithoutSaving}>
 					{buttonsProps?.continueWithoutSaving?.text || "Quitter sans enregistrer"}
 				</Button>
-				<Button autoFocus onClick={onCancel}>
+				<Button autoFocus onClick={onClose}>
 					{buttonsProps?.cancel?.text || "Annuler"}
 				</Button>
 			</DialogActions>

@@ -1,9 +1,6 @@
 import { GrafcetContextMenuProps } from "../context-menu/grafcet-context-menu";
 
-export type GrafcetContextMenuPaneAction =
-	| { type: "select-all" }
-	| { type: "select-all-edges" }
-	| { type: "export" };
+export type GrafcetContextMenuPaneAction = {};
 
 export type GrafcetContextMenuNodeAction = { nodeId: string } & (
 	| { type: "junction-select-pivot" }

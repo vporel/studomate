@@ -30,30 +30,13 @@ const CustomEdge = ({
 	const sourceNode = useMemo(() => getInternalNode(source), [source, getInternalNode]);
 	const targetNode = useMemo(() => getInternalNode(target), [target, getInternalNode]);
 	const [points, setPoints] = useState<[number, number][]>(
-		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY)
+		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
 	);
 	const pathString = getStraightPathFromPoints(points);
 	const color = !selected ? "black" : th.palette.primary.main;
-	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(
-		points,
-		setPoints,
-		id,
-		sourceNode,
-		sourceHandleId,
-		targetNode,
-		targetHandleId
-	);
+	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(points, setPoints, id);
 	const { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp } =
-		usePointPointerEventsHandlers(
-			points,
-			setPoints,
-			setPointsForAdding,
-			id,
-			sourceNode,
-			sourceHandleId,
-			targetNode,
-			targetHandleId
-		);
+		usePointPointerEventsHandlers(points, setPoints, setPointsForAdding, id);
 
 	//Update the points when the source position changes
 	useEffect(() => {
@@ -133,7 +116,7 @@ const CustomEdge = ({
 								onPointerUp={(e) => handlePointPointerUp(e, index)}
 							/>
 						</g>
-					)
+					),
 			)}
 			{pointsForAdding.map((p, index) => (
 				<g key={index}>

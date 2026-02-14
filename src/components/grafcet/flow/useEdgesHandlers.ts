@@ -1,13 +1,9 @@
 "use client";
 
-import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { createElementId } from "@/schemas/schemas-helpers";
-import { addEdge, applyEdgeChanges, Connection, OnEdgesChange, useReactFlow } from "@xyflow/react";
-import { ConnectionMode, getEdgePosition } from "@xyflow/system";
+import { applyEdgeChanges, Connection, OnEdgesChange } from "@xyflow/react";
 import { Dispatch, SetStateAction, useCallback } from "react";
-import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
-import { useGrafcetContext } from "../context/GrafcetContext";
+import { useShallow } from "zustand/shallow";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetEdge } from "./grafcet-nodes-definitions";
 
 export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<GrafcetEdge[]>>): {
@@ -15,84 +11,32 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 	onConnect: (params: Connection) => void;
 	onEdgesDelete: (deleted: GrafcetEdge[]) => void;
 } {
-	const { getInternalNode } = useReactFlow();
-	const { connectionsEvents } = useGrafcetContext();
+	const { onConnect, deleteEdges } = useGrafcetStore(
+		useShallow((state) => ({
+			onConnect: state.onConnect,
+			deleteEdges: state.deleteEdges,
+		})),
+	);
 
 	return {
 		onEdgesChange: useCallback(
 			(changes) => {
 				setEdges((eds) => applyEdgeChanges(changes, eds));
 			},
-			[setEdges]
+			[setEdges],
 		),
 		onConnect: useCallback(
-			(params: Connection) => {
-				const id = createElementId();
-				setEdges((edgesSnapshot) => addEdge({ ...params, id }, edgesSnapshot));
-				const sourceNode = getInternalNode(params.source);
-				const targetNode = getInternalNode(params.target);
-				if (!sourceNode || !targetNode) return;
-				const edgePosition = getEdgePosition({
-					id,
-					sourceNode: sourceNode,
-					targetNode: targetNode,
-					sourceHandle: params.sourceHandle || null,
-					targetHandle: params.targetHandle || null,
-					connectionMode: ConnectionMode.Strict,
-				});
-				connectionsEvents.emit("add", [
-					new GrafcetConnection(
-						id,
-						{
-							type: sourceNode.type as GrafcetElementType,
-							id: sourceNode.id,
-							handleId: params.sourceHandle || "",
-						},
-						{
-							type: targetNode.type as GrafcetElementType,
-							id: targetNode.id,
-							handleId: params.targetHandle || "",
-						},
-						{
-							points: getConnectionLinePoints(
-								edgePosition!.sourceX,
-								edgePosition!.sourceY,
-								edgePosition!.targetX,
-								edgePosition!.targetY
-							),
-						}
-					),
-				]);
+			(connection: Connection) => {
+				onConnect(connection);
 			},
-			[setEdges, getInternalNode, connectionsEvents]
+			[onConnect],
 		),
 		onEdgesDelete: useCallback(
 			(deleted: GrafcetEdge[]) => {
-				connectionsEvents.emit(
-					"remove",
-					deleted.map((e) => {
-						const sourceNode = getInternalNode(e.source);
-						const targetNode = getInternalNode(e.target);
-						return new GrafcetConnection(
-							e.id,
-							{
-								type: sourceNode!.type as GrafcetElementType,
-								id: e.source,
-								handleId: e.sourceHandle || "",
-							},
-							{
-								type: targetNode!.type as GrafcetElementType,
-								id: e.target,
-								handleId: e.targetHandle || "",
-							},
-							{
-								points: e.data?.points ?? [],
-							}
-						);
-					})
-				);
+				const ids = new Set(deleted.map((e) => e.id));
+				deleteEdges(Array.from(ids));
 			},
-			[connectionsEvents, getInternalNode]
+			[deleteEdges],
 		),
 	};
 }

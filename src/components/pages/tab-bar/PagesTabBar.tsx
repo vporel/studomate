@@ -1,12 +1,17 @@
 "use client";
 
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
-import { usePagesContext } from "../context/PagesContext";
+import { useShallow } from "zustand/shallow";
 import PageTab, { PageTabProps } from "./PageTab";
 
 const PagesTabBar = () => {
-	const { pagesData } = usePagesContext();
+	const { pagesData } = useProjectStore(
+		useShallow((state) => ({
+			pagesData: state.pagesData,
+		})),
+	);
 
 	const tabsData: PageTabProps[] = useMemo(
 		() =>
@@ -14,9 +19,8 @@ const PagesTabBar = () => {
 				id,
 				title: pagesData[id].title,
 				type: pagesData[id].type,
-				hasUnsavedChanges: pagesData[id].hasUnsavedChanges,
 			})),
-		[pagesData]
+		[pagesData],
 	);
 
 	return (

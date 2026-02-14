@@ -3,10 +3,16 @@
 import FlexBox from "@/lib/boxes/FlexBox";
 import { formatDate } from "@/lib/date";
 import { Typography } from "@mui/material";
-import { useProjectContext } from "../projects/ProjectContext";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "../projects/ProjectContext";
 
 const StatusBar = () => {
-	const { project } = useProjectContext();
+	const { projectAuthor, projectCreationDate } = useProjectStore(
+		useShallow((state) => ({
+			projectAuthor: state.project?.author,
+			projectCreationDate: state.project?.creationDate,
+		})),
+	);
 	return (
 		<FlexBox
 			centerVertical
@@ -23,8 +29,8 @@ const StatusBar = () => {
 		>
 			<FlexBox centerVertical>
 				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
-					Auteur : {project?.author || "Inconnu"} | Date de création :{" "}
-					{project ? formatDate(project.creationDate, "dd/MM/yyyy") : "/"}
+					Auteur : {projectAuthor || "Inconnu"} | Date de création :{" "}
+					{projectCreationDate ? formatDate(projectCreationDate, "dd/MM/yyyy") : "/"}
 				</Typography>
 			</FlexBox>
 

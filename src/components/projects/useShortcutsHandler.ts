@@ -1,13 +1,18 @@
 "use client";
 
-import { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import React, { useEffect } from "react";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "./ProjectContext";
 
-export default function useShortcutsHandler(
-	newGrafcet: (name: string, format: GrafcetFormat) => void,
-	openProject: () => void,
-	saveProject: () => void
-) {
+export default function useShortcutsHandler() {
+	const { setOpenModalVisible, saveProject, newGrafcet } = useProjectStore(
+		useShallow((state) => ({
+			setOpenModalVisible: state.setOpenModalVisible,
+			saveProject: state.saveProject,
+			newGrafcet: state.newGrafcet,
+		})),
+	);
+
 	useEffect(() => {
 		const handleKeyDown = (e: React.KeyboardEvent) => {
 			if (e.ctrlKey || e.metaKey) {
@@ -15,7 +20,7 @@ export default function useShortcutsHandler(
 					case "o": {
 						e.stopPropagation();
 						e.preventDefault();
-						openProject();
+						setOpenModalVisible(true);
 						break;
 					}
 					case "s": {
@@ -37,5 +42,5 @@ export default function useShortcutsHandler(
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown as any);
 		};
-	}, [newGrafcet, openProject, saveProject]);
+	}, [newGrafcet, setOpenModalVisible, saveProject]);
 }

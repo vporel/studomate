@@ -4,8 +4,9 @@ import { APP_NAME, APP_SHORT_DESCRIPTION, APP_SLOGAN } from "@/constants";
 import FlexBox from "@/lib/boxes/FlexBox";
 import { alpha, Box, Button, Divider, Grid, SxProps, Theme, Typography } from "@mui/material";
 import Link from "next/link";
+import { useShallow } from "zustand/shallow";
 import routes from "../app/routes";
-import { useProjectContext } from "./projects/ProjectContext";
+import { useProjectStore } from "./projects/ProjectContext";
 
 const buttonSx: SxProps<Theme> = {
 	padding: "4rem 2rem",
@@ -26,7 +27,12 @@ const linkSx: SxProps<Theme> = {
 };
 
 const AppStartup = () => {
-	const { newProject, openProject } = useProjectContext();
+	const { setOpenModalVisible, newProject } = useProjectStore(
+		useShallow((state) => ({
+			setOpenModalVisible: state.setOpenModalVisible,
+			newProject: state.newProject,
+		})),
+	);
 
 	return (
 		<FlexBox center sx={{ background: "rgb(235, 235, 235)", height: "100vh" }}>
@@ -68,7 +74,7 @@ const AppStartup = () => {
 						</Button>
 					</Grid>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Button fullWidth sx={buttonSx} onClick={openProject}>
+						<Button fullWidth sx={buttonSx} onClick={() => setOpenModalVisible(true)}>
 							Ouvrir un <br /> projet existant
 						</Button>
 					</Grid>

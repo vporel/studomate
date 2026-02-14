@@ -2,7 +2,7 @@
 
 import { Box, BoxProps } from "@mui/material";
 import { forwardRef, ReactNode } from "react";
-import { usePagesContext } from "./context/PagesContext";
+import { useProjectStore } from "../projects/ProjectContext";
 
 interface PageComponentProps extends BoxProps {
 	pageId: string;
@@ -10,7 +10,7 @@ interface PageComponentProps extends BoxProps {
 }
 
 const Page = forwardRef<HTMLElement, PageComponentProps>(function Page({ children, pageId, ...props }, ref) {
-	const { activePageId } = usePagesContext();
+	const activePageId = useProjectStore((state) => state.activePageId);
 	const open = activePageId === pageId;
 
 	return (

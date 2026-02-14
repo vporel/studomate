@@ -2,57 +2,63 @@
 
 import { Typography } from "@mui/material";
 import { Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
+import { useShallow } from "zustand/shallow";
 import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
-import { usePagesContext } from "../pages/context/PagesContext";
-import { useProjectContext } from "../projects/ProjectContext";
+import { useProjectStore } from "../projects/ProjectContext";
 import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
 import { ExplorerContextMenuEventsOutGrafcetRename } from "./context-menu/explorer-context-menu-events";
 import { explorerContextMenuEventsOut } from "./context-menu/ExplorerContextMenu";
 
 const ExplorerGrafcetItem = ({
-	grafcet,
+	grafcetId,
+	grafcetName,
 	styles,
 	onContextMenu,
 }: {
-	grafcet: any;
+	grafcetId: string;
+	grafcetName: string;
 	styles: CustomTreeItemStyles;
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
-	const { openPage } = usePagesContext();
-	const { renameGrafcet } = useProjectContext();
+	const { renameGrafcet, openPage } = useProjectStore(
+		useShallow((state) => ({ renameGrafcet: state.renameGrafcet, openPage: state.openPage })),
+	);
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
-	const [editingName, setEditingName] = useState(grafcet.name);
+	const [editingName, setEditingName] = useState(grafcetName);
 
 	const saveName = useCallback(() => {
-		renameGrafcet(grafcet.id, editingName.trim() !== "" ? editingName.trim() : grafcet.name);
-	}, [editingName, grafcet.id, grafcet.name, renameGrafcet]);
+		renameGrafcet(grafcetId, editingName.trim() !== "" ? editingName.trim() : grafcetName);
+	}, [editingName, grafcetId, grafcetName, renameGrafcet]);
 
 	useEffect(() => {
 		const handler = (e: ExplorerContextMenuEventsOutGrafcetRename) => {
-			if (e.grafcetId === grafcet.id) setLabelMode("edit");
+			if (e.grafcetId === grafcetId) setLabelMode("edit");
 		};
 		explorerContextMenuEventsOut.on("grafcet-rename", handler);
 		return () => {
 			explorerContextMenuEventsOut.off("grafcet-rename", handler);
 		};
-	}, [grafcet.id]);
+	}, [grafcetId]);
 
 	return (
 		<CustomTreeItem
-			key={grafcet.id}
-			itemId={grafcet.id}
-			label={grafcet.name}
+			key={grafcetId}
+			itemId={grafcetId}
+			label={grafcetName}
 			labelMode={labelMode}
 			IconComponent={InclinedAccountTreeIcon}
 			styles={styles}
 			onClick={() =>
-				openPage(grafcet.id, {
+				openPage({
+					id: grafcetId,
 					type: "grafcet",
-					title: grafcet.name,
-					grafcet: grafcet,
+					title: grafcetName,
 				})
 			}
+			onDoubleClick={() => {
+				setLabelMode("edit");
+			}}
 			inputProps={{
 				value: editingName,
 				onChange: (e) => setEditingName(e.target.value),
@@ -70,7 +76,7 @@ const ExplorerGrafcetItem = ({
 			onContextMenu={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				onContextMenu(e, { type: "grafcet", grafcetId: grafcet.id });
+				onContextMenu(e, { type: "grafcet", grafcetId: grafcetId });
 			}}
 		/>
 	);
@@ -83,11 +89,25 @@ const ExplorerGrafcetsItems = ({
 	styles: CustomTreeItemStyles;
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
-	const { project } = useProjectContext();
+	const grafcetsIds = useProjectStore(
+		useShallow((state) => (state.project ? Object.keys(state.project.grafcets) : [])),
+	);
+	const grafcetsNames = useProjectStore(
+		useShallow((state) =>
+			state.project
+				? Object.fromEntries(Object.values(state.project.grafcets).map((g) => [g.id, g.name]))
+				: {},
+		),
+	);
+
+	const grafcets: { id: string; name: string }[] = [];
+	for (const id of grafcetsIds) {
+		grafcets.push({ id, name: grafcetsNames[id] });
+	}
 
 	return (
 		<Fragment>
-			{Object.values(project!.grafcets).length === 0 ? (
+			{grafcetsIds.length === 0 ? (
 				<Typography
 					sx={{
 						padding: "3px 0 3px 33px",
@@ -98,12 +118,13 @@ const ExplorerGrafcetsItems = ({
 					Aucun grafcet
 				</Typography>
 			) : (
-				Object.values(project!.grafcets)
+				grafcets
 					.sort((a, b) => a.name.localeCompare(b.name))
 					.map((grafcet) => (
 						<ExplorerGrafcetItem
 							key={grafcet.id}
-							grafcet={grafcet}
+							grafcetId={grafcet.id}
+							grafcetName={grafcet.name}
 							styles={styles}
 							onContextMenu={onContextMenu}
 						/>

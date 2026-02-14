@@ -3,19 +3,28 @@
 import FlexBox from "@/lib/boxes/FlexBox";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useProjectContext } from "../projects/ProjectContext";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "../projects/ProjectContext";
 
 const TitleBar = () => {
-	const { project, hasUnsavedChanges, saveProject, savingProject, changeProjectName } = useProjectContext();
+	const { projectName, hasUnsavedChanges, saveProject, savingProject } = useProjectStore(
+		useShallow((state) => ({
+			projectName: state.project?.name ?? "",
+			hasUnsavedChanges: state.hasUnsavedChanges,
+			saveProject: state.saveProject,
+			savingProject: state.savingProject,
+		})),
+	);
+	const changeProjectName = useProjectStore((state) => state.setProjectName);
 	const projectNameInputRef = useRef<HTMLInputElement>(null);
-	const [editingProjectName, setEditingProjectName] = useState<string>(project?.name ?? "");
+	const [editingProjectName, setEditingProjectName] = useState<string>(projectName);
 	const saveProjectName = useCallback(() => {
-		changeProjectName(editingProjectName.trim() !== "" ? editingProjectName.trim() : project?.name ?? "");
-	}, [editingProjectName, project?.name, changeProjectName]);
+		changeProjectName(editingProjectName.trim() !== "" ? editingProjectName.trim() : projectName);
+	}, [editingProjectName, projectName, changeProjectName]);
 
 	useEffect(() => {
-		setEditingProjectName(project?.name ?? "");
-	}, [project?.name]);
+		setEditingProjectName(projectName);
+	}, [projectName]);
 
 	return (
 		<FlexBox

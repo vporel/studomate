@@ -1,20 +1,21 @@
 "use client";
 
 import { APP_NAME, APP_SLOGAN } from "@/constants";
+import { PageData } from "@/stores/project/project-store-types";
 import { Box, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";
 import InclinedAccountTree from "../icons/InclinedAccountTree";
-import { useProjectContext } from "../projects/ProjectContext";
+import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
-import { ProjectStartPageData } from "./context/pages-data";
 
 export const PROJECT_STARTUP_PAGE_ID = "project-startup";
-export const PROJECT_STARTUP_PAGE_DATA: ProjectStartPageData = {
+export const PROJECT_STARTUP_PAGE_DATA: PageData = {
+	id: PROJECT_STARTUP_PAGE_ID,
 	type: "project-startup",
 	title: "Démarrage",
 };
 
 const ProjectStartupPage = () => {
-	const { newGrafcet } = useProjectContext();
+	const newGrafcet = useProjectStore((state) => state.newGrafcet);
 
 	return (
 		<Page pageId={PROJECT_STARTUP_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>

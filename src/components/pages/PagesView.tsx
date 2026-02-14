@@ -3,7 +3,8 @@
 import { APP_NAME } from "@/constants";
 import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
-import { usePagesContext } from "./context/PagesContext";
+import { useShallow } from "zustand/shallow";
+import { useProjectStore } from "../projects/ProjectContext";
 import GrafcetPage from "./GrafcetPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
@@ -81,7 +82,12 @@ const NoPage = () => {
 };
 
 const PagesView = () => {
-	const { pagesData } = usePagesContext();
+	const { pagesData, getGrafcet } = useProjectStore(
+		useShallow((state) => ({
+			pagesData: state.pagesData,
+			getGrafcet: state.getGrafcet,
+		})),
+	);
 
 	return (
 		<Box
@@ -105,7 +111,7 @@ const PagesView = () => {
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
 							case "grafcet":
-								return <GrafcetPage key={id} initialGrafcet={pageData.grafcet} />;
+								return <GrafcetPage key={id} initialGrafcet={getGrafcet(id)} />;
 							default:
 								return null;
 						}

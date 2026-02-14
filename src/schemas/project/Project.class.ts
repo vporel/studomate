@@ -3,6 +3,8 @@ import Grafcet, { GrafcetFormat } from "../grafcet/Grafcet.class";
 import { createElementId } from "../schemas-helpers";
 import Variable from "../Variable.class";
 
+export const DEFAULT_PROJECT_NAME = "Nouveau projet";
+
 export default class Project {
 	id: string;
 	appVersion: string;
@@ -59,7 +61,7 @@ export default class Project {
 		project.creationDate = new Date(jsonParsed.creationDate);
 		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>
-			Variable.createFromJSON(JSON.stringify(v))
+			Variable.createFromJSON(JSON.stringify(v)),
 		);
 		const grafcets: Record<string, Grafcet> = {};
 		for (const grafcetId in jsonParsed.grafcets) {
