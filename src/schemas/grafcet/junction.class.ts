@@ -8,14 +8,14 @@ export type JunctionData = {
 };
 
 export default abstract class Junction extends GrafcetElement<JunctionData> {
-	static defaultDimensions: Dimensions = {
+	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 200,
 		height: 30,
 	};
 
-	static defaultData: JunctionData = {
-		width: Junction.defaultDimensions.width,
-		pivotPosition: Junction.defaultDimensions.width / 2,
+	static DEFAULT_DATA: JunctionData = {
+		width: Junction.DEFAULT_DIMENSIONS.width,
+		pivotPosition: Junction.DEFAULT_DIMENSIONS.width / 2,
 		branchesPositions: [10, 190],
 	};
 }

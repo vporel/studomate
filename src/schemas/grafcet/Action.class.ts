@@ -8,15 +8,15 @@ export type ActionData = {
 };
 
 export default class Action extends GrafcetElement<ActionData> {
-	static defaultDimensions: Dimensions = {
+	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 100,
 		height: 40,
 	};
 
-	static defaultData: ActionData = {
+	static DEFAULT_DATA: ActionData = {
 		expression: "",
-		width: Action.defaultDimensions.width,
-		height: Action.defaultDimensions.height,
+		width: Action.DEFAULT_DIMENSIONS.width,
+		height: Action.DEFAULT_DIMENSIONS.height,
 	};
 
 	/**
@@ -35,6 +35,6 @@ export default class Action extends GrafcetElement<ActionData> {
 
 	static createFromJSON(json: string): Action {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Action("", { ...Action.defaultData }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(new Action("", { ...Action.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

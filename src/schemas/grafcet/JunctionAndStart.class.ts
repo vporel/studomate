@@ -8,8 +8,8 @@ export default class JunctionAndStart extends Junction {
 	static createFromJSON(json: string): JunctionAndStart {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new JunctionAndStart("", { ...Junction.defaultData }, { x: 0, y: 0 }),
-			jsonParsed
+			new JunctionAndStart("", { ...Junction.DEFAULT_DATA }, { x: 0, y: 0 }),
+			jsonParsed,
 		);
 	}
 }

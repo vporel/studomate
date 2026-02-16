@@ -36,30 +36,30 @@ export type GrafcetNode =
 	| CommentNodeType;
 export type GrafcetEdge = CustomEdgeType; //List of all the edges types
 
-export const nodesDefaultDimensions: Record<GrafcetElementType, Dimensions> = {
-	step: Step.defaultDimensions,
-	action: Action.defaultDimensions,
-	transition: Transition.defaultDimensions,
-	"step-referral-source": StepReferral.defaultDimensions,
-	"step-referral-target": StepReferral.defaultDimensions,
-	"junction-or-start": Junction.defaultDimensions,
-	"junction-or-end": Junction.defaultDimensions,
-	"junction-and-start": Junction.defaultDimensions,
-	"junction-and-end": Junction.defaultDimensions,
-	comment: Comment.defaultDimensions,
+export const NODES_DEFAULT_DIMENSIONS: Record<GrafcetElementType, Dimensions> = {
+	step: Step.DEFAULT_DIMENSIONS,
+	action: Action.DEFAULT_DIMENSIONS,
+	transition: Transition.DEFAULT_DIMENSIONS,
+	"step-referral-source": StepReferral.DEFAULT_DIMENSIONS,
+	"step-referral-target": StepReferral.DEFAULT_DIMENSIONS,
+	"junction-or-start": Junction.DEFAULT_DIMENSIONS,
+	"junction-or-end": Junction.DEFAULT_DIMENSIONS,
+	"junction-and-start": Junction.DEFAULT_DIMENSIONS,
+	"junction-and-end": Junction.DEFAULT_DIMENSIONS,
+	comment: Comment.DEFAULT_DIMENSIONS,
 };
 
-export const nodesDefaultData: Record<GrafcetElementType, any> = {
-	step: Step.defaultData,
-	action: Action.defaultData,
-	transition: Transition.defaultData,
-	"step-referral-source": StepReferralSource.defaultData,
-	"step-referral-target": StepReferralTarget.defaultData,
-	"junction-or-start": Junction.defaultData,
-	"junction-or-end": Junction.defaultData,
-	"junction-and-start": Junction.defaultData,
-	"junction-and-end": Junction.defaultData,
-	comment: Comment.defaultData,
+export const NODES_DEFAULT_DATA: Record<GrafcetElementType, any> = {
+	step: Step.DEFAULT_DATA,
+	action: Action.DEFAULT_DATA,
+	transition: Transition.DEFAULT_DATA,
+	"step-referral-source": StepReferralSource.DEFAULT_DATA,
+	"step-referral-target": StepReferralTarget.DEFAULT_DATA,
+	"junction-or-start": Junction.DEFAULT_DATA,
+	"junction-or-end": Junction.DEFAULT_DATA,
+	"junction-and-start": Junction.DEFAULT_DATA,
+	"junction-and-end": Junction.DEFAULT_DATA,
+	comment: Comment.DEFAULT_DATA,
 };
 
 export const nodeTypes: Record<GrafcetElementType, any> = {

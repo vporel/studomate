@@ -5,7 +5,7 @@ export type StepReferralTargetData = StepReferralData & {
 };
 
 export default class StepReferralTarget extends StepReferral<StepReferralTargetData> {
-	static defaultData: StepReferralTargetData = {
+	static DEFAULT_DATA: StepReferralTargetData = {
 		sourceStepNumber: "",
 	};
 
@@ -16,8 +16,8 @@ export default class StepReferralTarget extends StepReferral<StepReferralTargetD
 	static createFromJSON(json: string): StepReferralTarget {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new StepReferralTarget("", { ...StepReferralTarget.defaultData }, { x: 0, y: 0 }),
-			jsonParsed
+			new StepReferralTarget("", { ...StepReferralTarget.DEFAULT_DATA }, { x: 0, y: 0 }),
+			jsonParsed,
 		);
 	}
 }

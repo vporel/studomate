@@ -55,7 +55,9 @@ export const handleNodesDelete = (
 			position: node.position,
 		}));
 	if (nodesToRemove.length === 0) return [];
-	return [new ElementsRemoveCommand(nodesToRemove), new ConnectionsRemoveCommand(connections)];
+	const commands: AbstractGrafcetCommand<any>[] = [new ElementsRemoveCommand(nodesToRemove)];
+	if (connections.length > 0) commands.push(new ConnectionsRemoveCommand(connections));
+	return commands;
 };
 
 export const handleNodeDataChange = (

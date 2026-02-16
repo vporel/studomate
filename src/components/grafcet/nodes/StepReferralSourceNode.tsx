@@ -37,7 +37,7 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 				id={id}
 				type="step-referral-source"
 				sx={{
-					width: StepReferral.defaultDimensions.width + "px",
+					width: StepReferral.DEFAULT_DIMENSIONS.width + "px",
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",

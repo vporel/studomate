@@ -60,9 +60,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 		<>
 			<NodeResizer
 				isVisible={selected}
-				minWidth={Junction.defaultDimensions.width}
-				minHeight={Junction.defaultDimensions.height}
-				maxHeight={Junction.defaultDimensions.height}
+				minWidth={Junction.DEFAULT_DIMENSIONS.width}
+				minHeight={Junction.DEFAULT_DIMENSIONS.height}
+				maxHeight={Junction.DEFAULT_DIMENSIONS.height}
 			/>
 			{data.branchesPositions.map((pos, index) => (
 				<HandleWithConnectionsLimit
@@ -97,7 +97,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 				tabIndex={0}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
-					height: Junction.defaultDimensions.height + "px",
+					height: Junction.DEFAULT_DIMENSIONS.height + "px",
 					display: "flex",
 					flexDirection: "column",
 					position: "relative",

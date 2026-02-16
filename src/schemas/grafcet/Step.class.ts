@@ -7,12 +7,12 @@ export type StepData = {
 };
 
 export default class Step extends GrafcetElement<StepData> {
-	static defaultDimensions: Dimensions = {
+	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 40,
 		height: 40,
 	};
 
-	static defaultData: StepData = {
+	static DEFAULT_DATA: StepData = {
 		number: "",
 		isInitial: false,
 	};
@@ -31,6 +31,6 @@ export default class Step extends GrafcetElement<StepData> {
 
 	static createFromJSON(json: string): Step {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Step("", { ...Step.defaultData }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(new Step("", { ...Step.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

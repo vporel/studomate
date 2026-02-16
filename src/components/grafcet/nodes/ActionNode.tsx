@@ -34,10 +34,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 		<>
 			<NodeResizer
 				isVisible={selected}
-				minWidth={Action.defaultDimensions.width}
-				minHeight={Action.defaultDimensions.height}
-				maxWidth={Action.defaultDimensions.width * 3}
-				maxHeight={Action.defaultDimensions.height * 2}
+				minWidth={Action.DEFAULT_DIMENSIONS.width}
+				minHeight={Action.DEFAULT_DIMENSIONS.height}
+				maxWidth={Action.DEFAULT_DIMENSIONS.width * 3}
+				maxHeight={Action.DEFAULT_DIMENSIONS.height * 2}
 			/>
 			<HandleWithConnectionsLimit
 				limit={1}
@@ -100,6 +100,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 						padding: "0",
 						lineHeight: "1.1rem",
 						pointerEvents: !editing ? "none" : "all",
+						fontSize: "0.8rem",
 					}}
 				/>
 			</GrafcetNode>

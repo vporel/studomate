@@ -7,6 +7,6 @@ export default class JunctionOrEnd extends Junction {
 
 	static createFromJSON(json: string): JunctionOrEnd {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new JunctionOrEnd("", { ...Junction.defaultData }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(new JunctionOrEnd("", { ...Junction.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

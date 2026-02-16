@@ -37,7 +37,7 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 				id={id}
 				type="step-referral-target"
 				sx={{
-					width: StepReferral.defaultDimensions.width + "px",
+					width: StepReferral.DEFAULT_DIMENSIONS.width + "px",
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",

@@ -23,7 +23,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 		(newExpression: string) => {
 			updateNodeData(id, { ...data, expression: newExpression });
 		},
-		[id, data, updateNodeData]
+		[id, data, updateNodeData],
 	);
 
 	return (
@@ -53,8 +53,8 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 				type="transition"
 				sx={{
 					position: "relative",
-					width: Transition.defaultDimensions.width + "px",
-					height: Transition.defaultDimensions.height + "px",
+					width: Transition.DEFAULT_DIMENSIONS.width + "px",
+					height: Transition.DEFAULT_DIMENSIONS.height + "px",
 					display: "flex",
 					justifyContent: "center",
 					alignItems: "center",

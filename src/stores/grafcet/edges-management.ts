@@ -85,6 +85,7 @@ export const getEdgesUpdateCommandsWhenNodesMovedOrResized = (
 			};
 		}),
 	);
+	if (connectionsToUpdate.length === 0) return [];
 	return [
 		new ConnectionsUpdateCommand(
 			connectionsToUpdate.map((connection) => ({

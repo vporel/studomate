@@ -70,8 +70,8 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 				id={id}
 				type="step"
 				sx={{
-					width: Step.defaultDimensions.width + "px",
-					height: Step.defaultDimensions.height + "px",
+					width: Step.DEFAULT_DIMENSIONS.width + "px",
+					height: Step.DEFAULT_DIMENSIONS.height + "px",
 					borderWidth: data.isInitial ? "4px" : "1px",
 					borderStyle: data.isInitial ? "double" : "solid",
 					borderColor: borderColor,

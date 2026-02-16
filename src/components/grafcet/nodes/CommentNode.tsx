@@ -15,21 +15,19 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editing, setEditing] = React.useState(false);
+	const [editingText, setEditingText] = React.useState(data.text);
 	const borderColor = selected ? th.palette.primary.main : "black";
 
-	const onTextChange = React.useCallback(
-		(newText: string) => {
-			updateNodeData(id, { ...data, text: newText });
-		},
-		[id, data, updateNodeData],
-	);
+	const saveText = React.useCallback(() => {
+		updateNodeData(id, { text: editingText });
+	}, [id, editingText, updateNodeData]);
 
 	return (
 		<>
 			<NodeResizer
 				isVisible={selected}
-				minWidth={Comment.defaultDimensions.width}
-				minHeight={Comment.defaultDimensions.height}
+				minWidth={Comment.DEFAULT_DIMENSIONS.width}
+				minHeight={Comment.DEFAULT_DIMENSIONS.height}
 			/>
 			<GrafcetNode
 				id={id}
@@ -58,22 +56,32 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 				<textarea
 					ref={textareaRef}
 					className="node__input comment_node__textarea"
-					value={data?.text}
-					onChange={(e) => onTextChange(e.target.value)}
+					value={editingText}
+					onChange={(e) => setEditingText(e.target.value)}
 					rows={1}
+					onKeyDown={(e) => {
+						if (e.key === "Escape") {
+							//The save is done only on blur to avoid multiple saves when pressing enter
+							textareaRef.current?.blur();
+						}
+					}}
+					onBlur={() => {
+						setEditing(false);
+						saveText();
+					}}
 					style={{
 						width: "100%",
+						height: "100%",
 						border: "none",
 						outline: "none",
 						resize: "none",
 						boxSizing: "border-box",
 						overflow: "hidden",
 						padding: "0",
-						lineHeight: "1.2rem",
+						lineHeight: "1rem",
 						pointerEvents: !editing ? "none" : "all",
 						fontSize: "0.8rem",
 					}}
-					onBlur={() => setEditing(false)}
 				/>
 			</GrafcetNode>
 		</>
