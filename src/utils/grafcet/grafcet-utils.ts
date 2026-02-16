@@ -1,4 +1,5 @@
 import { getConnectionLinePoints } from "@/components/grafcet/connections-lines/CustomConnectionLine";
+import { GrafcetEdge } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import { PAPERS_SIZES } from "@/constants";
 import { mmToPx } from "@/lib/utils";
 import { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
@@ -7,9 +8,9 @@ import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
 import { ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { ConnectionMode, getEdgePosition } from "@xyflow/system";
 
-export function grafcetConnectionFromXYFlowConnection(
+export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	rfInstance: ReactFlowInstance,
-	connection: XYFlowConnection,
+	connection: XYFlowConnection | GrafcetEdge,
 	connectionId: string,
 ): GrafcetConnection | null {
 	const sourceNode = rfInstance.getInternalNode(connection.source);
@@ -35,7 +36,7 @@ export function grafcetConnectionFromXYFlowConnection(
 			id: targetNode.id,
 			handleId: connection.targetHandle || "",
 		},
-		{
+		(connection as GrafcetEdge).data || {
 			points: getConnectionLinePoints(
 				edgePosition!.sourceX,
 				edgePosition!.sourceY,

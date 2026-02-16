@@ -6,52 +6,42 @@ import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { GrafcetContextProvider, useGrafcetStore } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
-import {
-	edgeTypes,
-	GrafcetEdge,
-	GrafcetNode,
-	nodeTypes,
-	validateConnection,
-} from "./grafcet-nodes-definitions";
+import { edgeTypes, nodeTypes, validateConnection } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useEdgesHandlers from "./useEdgesHandlers";
 import useNodesHandlers from "./useNodesHandlers";
 import useShortcutsHandler from "./useShortcutsHandler";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
-function getInitialNodes(initialGrafcet?: Grafcet): GrafcetNode[] {
-	return [];
-}
-
-function getInitialEdges(initialGrafcet?: Grafcet): GrafcetEdge[] {
-	return [];
-}
-
 export function GrafcetFlowContent() {
 	const th = useTheme();
-	const initialGrafcet = useGrafcetStore((state) => state.initialGrafcet);
-	const [nodes, setNodes] = useState<GrafcetNode[]>(getInitialNodes(initialGrafcet));
-	const [edges, setEdges] = useState<GrafcetEdge[]>(getInitialEdges(initialGrafcet));
 	const { setActiveScope } = useProjectStore(
 		useShallow((state) => ({
 			setActiveScope: state.setActiveScope,
 		})),
 	);
-	const { onNodesChange, onNodesDelete, onNodeDragStop } = useNodesHandlers(setNodes);
-	const { onEdgesChange, onConnect, onEdgesDelete } = useEdgesHandlers(setEdges);
+	const { onNodesDelete } = useNodesHandlers();
+	const { onConnect, onEdgesDelete } = useEdgesHandlers();
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
 	const handleShortcuts = useShortcutsHandler();
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
 	// const { store } = useGrafcetContext();
-	const setReactFlowInstance = useGrafcetStore((state) => state.setReactFlowInstance);
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
 	const grafcetFormat = useGrafcetStore((state) => state.grafcet.format);
+	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
+	const edges = useGrafcetStore(useShallow((state) => state.edges));
+	const { setReactFlowInstance, onNodesChange } = useGrafcetStore(
+		useShallow((state) => ({
+			setReactFlowInstance: state.setReactFlowInstance,
+			onNodesChange: state.onNodesChange,
+		})),
+	);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
 
 	//Share the grafcet data
@@ -107,9 +97,7 @@ export function GrafcetFlowContent() {
 					edges={edges}
 					onInit={setReactFlowInstance as any}
 					onNodesChange={onNodesChange}
-					onEdgesChange={onEdgesChange}
 					onNodesDelete={onNodesDelete}
-					onNodeDragStop={onNodeDragStop}
 					onConnect={onConnect}
 					onEdgesDelete={onEdgesDelete}
 					nodeTypes={nodeTypes}

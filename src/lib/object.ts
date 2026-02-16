@@ -9,12 +9,12 @@
 export function deepMerge<TargetType = any, SourceType = any>(
 	target: TargetType,
 	source: SourceType,
-	options?: { onlyExistingKeys?: boolean }
+	options?: { onlyExistingKeys?: boolean },
 ): TargetType {
 	if (!source) return target;
 	const _target: any = target;
 	const _source: any = source;
-	for (let key in _source) {
+	for (const key in _source) {
 		if ((target as object).hasOwnProperty(key) || !options?.onlyExistingKeys) {
 			if (typeof _source[key] === "object" && !Array.isArray(_source[key])) {
 				if (!_target[key]) _target[key] = {};
@@ -32,7 +32,7 @@ export function deepMerge<TargetType = any, SourceType = any>(
  */
 export function objectFromProperties(keys: string[], sourceObject: any | undefined | null): object {
 	const extractedObject: any = {};
-	for (let key of keys) extractedObject[key] = sourceObject ? sourceObject[key] : "";
+	for (const key of keys) extractedObject[key] = sourceObject ? sourceObject[key] : "";
 	return extractedObject as object;
 }
 

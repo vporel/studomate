@@ -15,8 +15,18 @@ export default function useShortcutsHandler() {
 
 	useEffect(() => {
 		const handleKeyDown = (e: React.KeyboardEvent) => {
+			const isInput =
+				(e.target as HTMLElement).tagName === "INPUT" ||
+				(e.target as HTMLElement).tagName === "TEXTAREA";
+			if (isInput) return; //Don't trigger shortcuts when the user is typing in an input or textarea
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
+					case "z": {
+						//Prevent the default undo behavior of the browser, which can cause issues with our custom undo implementation
+						e.stopPropagation();
+						e.preventDefault();
+						break;
+					}
 					case "o": {
 						e.stopPropagation();
 						e.preventDefault();

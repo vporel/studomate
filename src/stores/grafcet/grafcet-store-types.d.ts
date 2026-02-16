@@ -1,7 +1,7 @@
 import AbstractCommand from "@/schemas/commands/AbstractCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { GrafcetConnectionData } from "@/schemas/grafcet/GrafcetConnection.class";
-import { ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
+import { NodeChange, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { GrafcetEdge, GrafcetNode } from "../../components/grafcet/flow/grafcet-nodes-definitions";
 
 /**
@@ -13,21 +13,38 @@ import { GrafcetEdge, GrafcetNode } from "../../components/grafcet/flow/grafcet-
 export interface GrafcetStoreState {
 	initialGrafcet?: Grafcet; //The initial grafcet, used as reference
 	grafcet: Grafcet;
+	/**
+	 * The instance should not be used to set the nodes and edges,
+	 * but only to get the flow state
+	 * The nodes and edges lists are managed by the store
+	 */
 	rfInstance: ReactFlowInstance | null;
+	nodes: GrafcetNode[];
+	edges: GrafcetEdge[];
 
 	setReactFlowInstance: (instance: ReactFlowInstance) => void;
 	getNodes: () => GrafcetNode[];
 	addNodes: (newNodes: GrafcetNode[]) => void;
 	deleteNodes: (nodeIds: string[]) => void;
-	onNodesPositionsChange: (nodesIds: string[]) => void;
-	updateNodeData: (nodeId: string, newData: Partial<GrafcetNode["data"]>) => void;
+	onNodesChange: (changes: NodeChange<GrafcetNode>[]) => void;
+	updateNodeData: (
+		nodeId: string,
+		newData:
+			| Partial<GrafcetNode["data"]>
+			| ((prevData: GrafcetNode["data"]) => Partial<GrafcetNode["data"]>),
+	) => void;
 
 	getEdges: () => GrafcetEdge[];
 	onConnect: (connection: XYFlowConnection) => void;
 	deleteEdges: (edgeIds: string[]) => void;
 
 	//This function only update the schema
-	updateConnectionData: (connectionId: string, newData: Partial<GrafcetConnectionData>) => void;
+	updateEdgeData: (
+		edgeId: string,
+		newData:
+			| Partial<GrafcetConnectionData>
+			| ((prevData: GrafcetConnectionData) => Partial<GrafcetConnectionData>),
+	) => void;
 
 	selectAllEdges: () => void;
 	selectAllNodesAndEdges: () => void;
@@ -46,3 +63,10 @@ export interface GrafcetStoreState {
 	 */
 	redoOperation: () => void; // Returns the list of commands that were redone, or null if no operation to redo
 }
+
+export type GrafcetStoreSetFunction = (
+	partial:
+		| GrafcetStoreState
+		| Partial<GrafcetStoreState>
+		| ((partial: Partial<GrafcetStoreState>) => GrafcetStoreState | Partial<GrafcetStoreState>),
+) => void;

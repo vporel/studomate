@@ -1,10 +1,27 @@
-
 .node__input::-webkit-outer-spin-button,
 .node__input::-webkit-inner-spin-button {
-    /* display: none; <- Crashes Chrome on hover */
-    -webkit-appearance: none;
-    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+	/* display: none; <- Crashes Chrome on hover */
+	-webkit-appearance: none;
+	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }
-.node__input[type=number], .node___textarea {
-    -moz-appearance:textfield; /* Firefox */
+.node__input[type="number"],
+.node___textarea {
+	-moz-appearance: textfield; /* Firefox */
+}
+
+/* nodes handles */
+.react-flow__node .react-flow__handle::before {
+	content: "";
+	position: absolute;
+	top: -3px;
+	left: -3px;
+	width: 6px;
+	height: 6px;
+	background-color: black;
+	border-radius: 50%;
+	opacity: 0;
+}
+/* Show handles on hover by adding before pseudo element */
+.react-flow__node:hover .react-flow__handle::before {
+	opacity: 1;
 }

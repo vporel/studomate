@@ -10,7 +10,7 @@ import Transition from "@/schemas/grafcet/transition.class";
 import { Connection, Dimensions, Node } from "@xyflow/react";
 import CustomEdge, { CustomEdgeType } from "../edges/CustomEdge";
 import ActionNode, { ActionNodeType } from "../nodes/ActionNode";
-import CommentNode from "../nodes/CommentNode";
+import CommentNode, { CommentNodeType } from "../nodes/CommentNode";
 import JunctionAndEndNode, { JunctionAndEndNodeType } from "../nodes/junctions/JunctionAndEndNode";
 import JunctionAndStartNode, { JunctionAndStartNodeType } from "../nodes/junctions/JunctionAndStartNode";
 import {} from "../nodes/junctions/JunctionNode";
@@ -32,7 +32,8 @@ export type GrafcetNode =
 	| TransitionNodeType
 	| StepReferralSourceNodeType
 	| StepReferralTargetNodeType
-	| JunctionNode; //List of all the node types
+	| JunctionNode //List of all the node types
+	| CommentNodeType;
 export type GrafcetEdge = CustomEdgeType; //List of all the edges types
 
 export const nodesDefaultDimensions: Record<GrafcetElementType, Dimensions> = {

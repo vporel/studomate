@@ -3,7 +3,7 @@
 import { ContextMenuItemType } from "@/lib/context-menu/context-menu";
 import ContextMenu from "@/lib/context-menu/ContextMenu";
 import useBooleanState from "@/lib/hooks/useBooleanState";
-import { useReactFlow, XYPosition } from "@xyflow/react";
+import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
@@ -23,17 +23,29 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 	const [element, setElement] = useState<GrafcetContextMenuElement>({ type: "pane" });
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
-	const { getNodes, getEdges } = useReactFlow();
-	const { addNode, deleteNode } = useGrafcetStore(
-		useShallow((state) => ({ addNode: state.addNode, deleteNode: state.deleteNode })),
-	);
+	const { addNodes, deleteNodes, getNodes, getEdges, deleteEdges, selectAllEdges, selectAllNodesAndEdges } =
+		useGrafcetStore(
+			useShallow((state) => ({
+				addNodes: state.addNodes,
+				deleteNodes: state.deleteNodes,
+				getNodes: state.getNodes,
+				getEdges: state.getEdges,
+				deleteEdges: state.deleteEdges,
+				selectAllEdges: state.selectAllEdges,
+				selectAllNodesAndEdges: state.selectAllNodesAndEdges,
+			})),
+		);
 	//Groups of items, the groups will be separated with dividers
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
 		if (element.type == "pane") {
-			return paneContextMenuItems(getNodes, getEdges, contextMenuEvents);
+			return paneContextMenuItems(getNodes, getEdges, {
+				selectAllEdges,
+				selectAllNodesAndEdges,
+			});
 		} else {
 			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNode, {
-				deleteNode,
+				deleteNodes,
+				deleteEdges,
 			});
 			if (element.type.includes("junction")) {
 				return [
@@ -43,7 +55,16 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 			}
 			return commonNodeItems;
 		}
-	}, [element, getNodes, getEdges, contextMenuEvents, deleteNode]);
+	}, [
+		element,
+		getNodes,
+		getEdges,
+		contextMenuEvents,
+		deleteNodes,
+		deleteEdges,
+		selectAllEdges,
+		selectAllNodesAndEdges,
+	]);
 
 	//Show the menu on 'show' event
 	useEffect(() => {

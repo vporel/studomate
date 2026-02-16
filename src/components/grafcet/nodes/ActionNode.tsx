@@ -6,7 +6,6 @@ import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useCallback, useEffect, type FC } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
-import { nodeStateEventsIn } from "./nodes-states-events";
 
 export type ActionNodeType = Node<ActionData> & { type: "action" };
 
@@ -26,34 +25,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 		});
 	}, [editingExpression, updateNodeData, id]);
 
-	// //Update the data when the node is resized
-	// useEffect(() => {
-	// 	updateNodeData(id, () => {
-	// 		const dataToChange: Partial<ActionData> = {};
-	// 		if (nodeWidth != 0) dataToChange.width = nodeWidth;
-	// 		if (nodeHeight != 0) dataToChange.height = nodeHeight;
-	// 		if (Object.keys(dataToChange).length !== 0) {
-	// 			elementsEvents.emit("update", {
-	// 				elements: [{ id, type: "action", data: dataToChange }],
-	// 			});
-	// 		}
-	// 		return dataToChange;
-	// 	});
-	// }, [id, nodeWidth, nodeHeight, updateNodeData, elementsEvents]);
-
 	//Listen the set-data event from the commands handlers to update the internal state
 	useEffect(() => {
-		const handler = (e: { nodeId: string; data: Partial<ActionData> }) => {
-			if (e.nodeId === id) {
-				if (e.data.expression !== undefined) setEditingExpression(e.data.expression);
-			}
-		};
-
-		nodeStateEventsIn.on("set-internal-data", handler);
-		return () => {
-			nodeStateEventsIn.off("set-internal-data", handler);
-		};
-	}, [id]);
+		if (!editing) setEditingExpression(data.expression);
+	}, [data, editing]);
 
 	return (
 		<>
@@ -61,6 +36,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 				isVisible={selected}
 				minWidth={Action.defaultDimensions.width}
 				minHeight={Action.defaultDimensions.height}
+				maxWidth={Action.defaultDimensions.width * 3}
 				maxHeight={Action.defaultDimensions.height * 2}
 			/>
 			<HandleWithConnectionsLimit

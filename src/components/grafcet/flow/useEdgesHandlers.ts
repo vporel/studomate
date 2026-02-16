@@ -1,13 +1,12 @@
 "use client";
 
-import { applyEdgeChanges, Connection, OnEdgesChange } from "@xyflow/react";
-import { Dispatch, SetStateAction, useCallback } from "react";
+import { Connection } from "@xyflow/react";
+import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetEdge } from "./grafcet-nodes-definitions";
 
-export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<GrafcetEdge[]>>): {
-	onEdgesChange: OnEdgesChange<GrafcetEdge>;
+export default function useEdgesHandlers(): {
 	onConnect: (params: Connection) => void;
 	onEdgesDelete: (deleted: GrafcetEdge[]) => void;
 } {
@@ -19,12 +18,6 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 	);
 
 	return {
-		onEdgesChange: useCallback(
-			(changes) => {
-				setEdges((eds) => applyEdgeChanges(changes, eds));
-			},
-			[setEdges],
-		),
 		onConnect: useCallback(
 			(connection: Connection) => {
 				onConnect(connection);
@@ -33,8 +26,7 @@ export default function useEdgesHandlers(setEdges: Dispatch<SetStateAction<Grafc
 		),
 		onEdgesDelete: useCallback(
 			(deleted: GrafcetEdge[]) => {
-				const ids = new Set(deleted.map((e) => e.id));
-				deleteEdges(Array.from(ids));
+				deleteEdges(Array.from(new Set(deleted.map((e) => e.id))));
 			},
 			[deleteEdges],
 		),

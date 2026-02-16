@@ -13,7 +13,7 @@ export default class GrafcetConnection {
 		id: string,
 		source: GrafcetConnectionIdentifier,
 		target: GrafcetConnectionIdentifier,
-		data: GrafcetConnectionData
+		data: GrafcetConnectionData,
 	) {
 		this.id = id;
 		this.source = source;
@@ -26,7 +26,7 @@ export default class GrafcetConnection {
 			this.id,
 			{ ...this.source },
 			{ ...this.target },
-			{ points: this.data.points.map((p) => [p[0], p[1]]) }
+			{ points: this.data?.points ? this.data.points.map((p) => [p[0], p[1]]) : [] },
 		);
 	}
 
@@ -37,9 +37,9 @@ export default class GrafcetConnection {
 				"",
 				{ type: "step", id: "", handleId: "" },
 				{ type: "step", id: "", handleId: "" },
-				{ points: [] }
+				{ points: [] },
 			),
-			jsonParsed
+			jsonParsed,
 		);
 	}
 }

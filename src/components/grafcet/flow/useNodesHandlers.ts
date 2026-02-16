@@ -1,27 +1,17 @@
 "use client";
 
-import { applyNodeChanges, NodeChange, OnNodesChange } from "@xyflow/react";
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetNode } from "./grafcet-nodes-definitions";
 
-export default function useNodesHandlers(setNodes: Dispatch<SetStateAction<GrafcetNode[]>>): {
-	onNodesChange: OnNodesChange<GrafcetNode>;
+export default function useNodesHandlers(): {
 	onNodesDelete: (deleted: GrafcetNode[]) => void;
-	onNodeDragStop: (event: any, node: GrafcetNode, nodes: GrafcetNode[]) => void;
 } {
-	const { deleteNodes, onNodesPositionsChange } = useGrafcetStore(
+	const { deleteNodes } = useGrafcetStore(
 		useShallow((state) => ({
 			deleteNodes: state.deleteNodes,
-			onNodesPositionsChange: state.onNodesPositionsChange,
 		})),
-	);
-	const onNodesChange = useCallback(
-		(changes: NodeChange<GrafcetNode>[]) => {
-			setNodes((nds) => applyNodeChanges(changes, nds));
-		},
-		[setNodes],
 	);
 
 	const onNodesDelete = useCallback(
@@ -31,19 +21,11 @@ export default function useNodesHandlers(setNodes: Dispatch<SetStateAction<Grafc
 		},
 		[deleteNodes],
 	);
-	const onNodeDragStop = useCallback(
-		(_: any, __: GrafcetNode, nodes: GrafcetNode[]) => {
-			onNodesPositionsChange(nodes.map((n) => n.id));
-		},
-		[onNodesPositionsChange],
-	);
 
 	return useMemo(
 		() => ({
-			onNodesChange,
 			onNodesDelete,
-			onNodeDragStop,
 		}),
-		[onNodesChange, onNodesDelete, onNodeDragStop],
+		[onNodesDelete],
 	);
 }

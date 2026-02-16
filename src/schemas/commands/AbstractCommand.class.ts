@@ -14,7 +14,6 @@ export default abstract class AbstractCommand<T, P> {
 	abstract getType(): string;
 
 	/**
-	 *
 	 * @param object
 	 * @return Tuple : The first element is the new object after executing the command, the second element indicates if the command was valid and executed.
 	 * An invalid command does not modify the object and is not added to the undo stack.

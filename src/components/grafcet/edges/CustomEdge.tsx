@@ -1,10 +1,9 @@
 import { getStraightPathFromPoints } from "@/lib/svg";
 import { Box, useTheme } from "@mui/material";
-import { Edge, useReactFlow, type EdgeProps } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { Edge, type EdgeProps } from "@xyflow/react";
+import { useEffect, useState } from "react";
 import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
 import useAddPointHandler from "./useAddPointHandler";
-import useEdgeStateEventsInHandlers from "./useEdgeStateEventsInHandlers";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
 
 export type CustomEdgeData = { points: [number, number][] };
@@ -20,48 +19,31 @@ const CustomEdge = ({
 	data,
 	interactionWidth,
 	selected,
-	source,
-	sourceHandleId,
-	target,
-	targetHandleId,
 }: EdgeProps<CustomEdgeType>) => {
 	const th = useTheme();
-	const { updateEdgeData, getInternalNode } = useReactFlow();
-	const sourceNode = useMemo(() => getInternalNode(source), [source, getInternalNode]);
-	const targetNode = useMemo(() => getInternalNode(target), [target, getInternalNode]);
 	const [points, setPoints] = useState<[number, number][]>(
 		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
 	);
 	const pathString = getStraightPathFromPoints(points);
 	const color = !selected ? "black" : th.palette.primary.main;
-	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(points, setPoints, id);
+	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(points, id);
 	const { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp } =
 		usePointPointerEventsHandlers(points, setPoints, setPointsForAdding, id);
 
 	//Update the points when the source position changes
 	useEffect(() => {
-		setPoints((pts) => {
-			const newPoints = [...pts];
+		setPoints((prevPoints) => {
+			const newPoints = [...prevPoints];
 			newPoints.splice(0, 1, [sourceX, sourceY]);
-			return newPoints;
-		});
-	}, [sourceX, sourceY]);
-
-	//Update the points when the target position changes
-	useEffect(() => {
-		setPoints((pts) => {
-			const newPoints = [...pts];
 			newPoints.splice(newPoints.length - 1, newPoints.length, [targetX, targetY]);
 			return newPoints;
 		});
-	}, [targetX, targetY]);
+	}, [sourceX, sourceY, targetX, targetY]);
 
-	//Update the edge data when the points changes
 	useEffect(() => {
-		updateEdgeData(id, { points });
-	}, [id, points, updateEdgeData]);
-
-	useEdgeStateEventsInHandlers(id, setPoints);
+		if (!data || !data.points) return;
+		setPoints(data.points);
+	}, [data]);
 
 	return (
 		<Box
@@ -81,6 +63,13 @@ const CustomEdge = ({
 			}}
 		>
 			<path d={pathString} fill="none" className={`react-flow__edge-path `} />
+			{/** Another path with bigger strokeWidth to make it easier to interact with the edge */}
+			<path
+				d={pathString}
+				fill="none"
+				className={`react-flow__edge-path `}
+				style={{ strokeWidth: 4, stroke: "transparent" }}
+			/>
 			{interactionWidth ? (
 				<path
 					d={pathString}

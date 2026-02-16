@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { GrafcetContextMenuNodeAction, useGrafcetContext } from "../../context/GrafcetContext";
+import { useGrafcetContext } from "../../context/GrafcetContext";
+import { GrafcetContextMenuNodeAction } from "../../context/context-menu-events";
 
 /**
  *
  * @returns selectedBranchIndex = -1 if no branch is selected
  */
 export default function useSelectedBars(
-	nodeId: string
+	nodeId: string,
 ): [pivotSelected: boolean, selectedBranchIndex: number, clearSelection: () => void] {
 	const { contextMenuEvents } = useGrafcetContext();
 	const [pivotSelected, setPivotSelected] = useState<boolean>(false);
@@ -34,7 +35,7 @@ export default function useSelectedBars(
 		return () => {
 			contextMenuEvents.off("node-action", handler);
 		};
-	}, [nodeId]);
+	}, [contextMenuEvents, nodeId]);
 
 	//Clear the selection when another part of the window is clicked
 	useEffect(() => {

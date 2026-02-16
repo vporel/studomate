@@ -12,7 +12,6 @@ export function getPointsForAdding(points: [number, number][]): [number, number]
 
 export default function useAddPointHandler(
 	points: [number, number][],
-	setPoints: React.Dispatch<React.SetStateAction<[number, number][]>>,
 	edgeId: string,
 ): {
 	pointsForAdding: [number, number][];
@@ -20,19 +19,19 @@ export default function useAddPointHandler(
 	addPoint: (index: number) => void;
 } {
 	const [pointsForAdding, setPointsForAdding] = useState<[number, number][]>(getPointsForAdding(points));
-	const updateConnectionData = useGrafcetStore((state) => state.updateConnectionData);
+	const updateEdgeData = useGrafcetStore((state) => state.updateEdgeData);
 
 	const addPoint = useCallback(
 		(index: number) => {
-			let newPoints: [number, number][] = [];
-			setPoints((pts) => {
-				newPoints = [...pts];
+			updateEdgeData(edgeId, (prevData) => {
+				const newPoints = [...prevData?.points];
 				newPoints.splice(index + 1, 0, pointsForAdding[index]);
-				return newPoints;
+				return {
+					points: newPoints,
+				};
 			});
-			updateConnectionData(edgeId, { points: newPoints });
 		},
-		[updateConnectionData, edgeId, pointsForAdding, setPoints],
+		[updateEdgeData, edgeId, pointsForAdding],
 	);
 
 	//Create the points for adding

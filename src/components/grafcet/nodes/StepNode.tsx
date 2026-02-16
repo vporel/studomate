@@ -7,7 +7,6 @@ import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { useCallback, useEffect, type FC } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
-import { nodeStateEventsIn } from "./nodes-states-events";
 
 export type StepNodeType = Node<StepData> & { type: "step" };
 
@@ -31,19 +30,9 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 		});
 	}, [editingNumber, updateNodeData, id]);
 
-	//Listen the set-data event from the commands handlers to update the internal state
 	useEffect(() => {
-		const handler = (e: { nodeId: string; data: Partial<StepData> }) => {
-			if (e.nodeId === id) {
-				if (e.data.number !== undefined) setEditingNumber(e.data.number + "");
-			}
-		};
-
-		nodeStateEventsIn.on("set-internal-data", handler);
-		return () => {
-			nodeStateEventsIn.off("set-internal-data", handler);
-		};
-	}, [id]);
+		if (!editing) setEditingNumber(data.number + "");
+	}, [data, editing]);
 
 	return (
 		<>

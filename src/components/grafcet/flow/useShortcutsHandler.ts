@@ -20,6 +20,10 @@ export default function useShortcutsHandler(): (e: React.KeyboardEvent) => void 
 	return useCallback(
 		(e: React.KeyboardEvent) => {
 			if (activeScope !== grafcetId) return;
+			const isInput =
+				(e.target as HTMLElement).tagName === "INPUT" ||
+				(e.target as HTMLElement).tagName === "TEXTAREA";
+			if (isInput) return; //Don't trigger shortcuts when the user is typing in an input or textarea
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
 					case "a": {

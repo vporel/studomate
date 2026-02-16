@@ -6,11 +6,12 @@ import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
 import { createElementId } from "@/schemas/schemas-helpers";
 import { createStore } from "zustand";
+import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetFlowData, PageData, ProjectStoreState } from "./project-store-types";
 
 const COMMANDS_STACK_SIZE = 100;
 
-type StoreSetFunction = (
+type ProjectStoreSetFunction = (
 	partial:
 		| ProjectStoreState
 		| Partial<ProjectStoreState>
@@ -27,7 +28,7 @@ function getInitialPagesData(project: Project | null): Record<string, PageData> 
 export const createProjectStore = () => {
 	const commandsStack: CommandsStack<Project> = new CommandsStack(COMMANDS_STACK_SIZE);
 
-	const _openProject = async (set: StoreSetFunction, project: Project) => {
+	const _openProject = async (set: ProjectStoreSetFunction, project: Project) => {
 		const initialPagesData = getInitialPagesData(project);
 		set(() => ({
 			project: project,
@@ -37,12 +38,12 @@ export const createProjectStore = () => {
 		}));
 	};
 
-	const _newProject = async (set: StoreSetFunction) => {
+	const _newProject = async (set: ProjectStoreSetFunction) => {
 		const newProject = new Project(createElementId(), DEFAULT_PROJECT_NAME, "");
 		_openProject(set, newProject);
 	};
 
-	const _closeProject = async (set: StoreSetFunction) => {
+	const _closeProject = async (set: ProjectStoreSetFunction) => {
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
@@ -154,9 +155,15 @@ export const createProjectStore = () => {
 		},
 
 		setActiveScope: (scope: string | null) => {
+			const previousScope = get().activeScope;
 			const pagesData = get().pagesData;
 			const scopeType = scope ? pagesData[scope]?.type || "project" : null;
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
+			//If the scope is a grafcet, set the focus on the grafcet flow
+			//PRevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
+			if (scope && previousScope !== scope && scopeType === "grafcet") {
+				focusFlow(scope);
+			}
 		},
 
 		//Grafcets
@@ -285,6 +292,7 @@ export const createProjectStore = () => {
 		setActivePage: (pageId: string) => {
 			const pagesOrder = get().pagesOrder;
 			if (!pagesOrder.includes(pageId)) throw new Error(`Page "${pageId}" not opened`);
+			get().setActiveScope(pageId);
 			set(() => ({ activePageId: pageId }));
 		},
 	}));

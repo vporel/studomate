@@ -26,7 +26,7 @@ export default function ProjectOpenModal() {
 
 	return (
 		<CustomModal open={openModalVisible} onClose={onClose} title="Ouvrir un projet" width={500}>
-			<ProjectsList reloadKey={open} onProjectClick={handleProjectClick} />
+			<ProjectsList reloadKey={openModalVisible} onProjectClick={handleProjectClick} />
 		</CustomModal>
 	);
 }

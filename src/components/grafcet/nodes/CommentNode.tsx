@@ -1,8 +1,9 @@
 "use client";
 import Comment, { CommentData } from "@/schemas/grafcet/Comment.class";
 import { useTheme } from "@mui/material";
-import { Node, NodeProps, NodeResizer, useReactFlow } from "@xyflow/react";
-import React, { useEffect, type FC } from "react";
+import { Node, NodeProps, NodeResizer } from "@xyflow/react";
+import React, { type FC } from "react";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 
 export type CommentNodeType = Node<CommentData> & { type: "comment" };
@@ -11,7 +12,7 @@ export type CommentNodeProps = NodeProps<CommentNodeType>;
 
 const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
-	const { updateNodeData } = useReactFlow();
+	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editing, setEditing] = React.useState(false);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -20,18 +21,8 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 		(newText: string) => {
 			updateNodeData(id, { ...data, text: newText });
 		},
-		[id, data, updateNodeData]
+		[id, data, updateNodeData],
 	);
-
-	//Update the width and the height when the node is resized
-	useEffect(() => {
-		updateNodeData(id, () => {
-			const dataToChange: Partial<CommentData> = {};
-			if (nodeWidth != 0) dataToChange.width = nodeWidth;
-			if (nodeHeight != 0) dataToChange.height = nodeHeight;
-			return dataToChange;
-		});
-	}, [id, nodeWidth, nodeHeight, updateNodeData]);
 
 	return (
 		<>
