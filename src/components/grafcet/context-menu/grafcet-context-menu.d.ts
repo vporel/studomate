@@ -1,5 +1,5 @@
 import { XYPosition } from "@xyflow/react";
-import { GrafcetEdge, GrafcetNode } from "../flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType, GrafcetNodeType } from "../flow/grafcet-nodes-definitions";
 
-export type GrafcetContextMenuElement = { type: "pane" } | GrafcetNode | GrafcetEdge;
+export type GrafcetContextMenuElement = { type: "pane" } | GrafcetNodeType | GrafcetEdgeType;
 export type GrafcetContextMenuProps = { element: GrafcetContextMenuElement; position: XYPosition };

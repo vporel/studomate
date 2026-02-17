@@ -1,4 +1,4 @@
-import { GrafcetEdge, GrafcetNode } from "@/components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType, GrafcetNodeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
@@ -11,8 +11,8 @@ import { ReactFlowInstance } from "@xyflow/react";
 
 export const commandUndo = (
 	rfInstance: ReactFlowInstance,
-	setNodes: (updater: (nodes: GrafcetNode[]) => any[]) => void,
-	setEdges: (updater: (edges: GrafcetEdge[]) => any[]) => void,
+	setNodes: (updater: (nodes: GrafcetNodeType[]) => any[]) => void,
+	setEdges: (updater: (edges: GrafcetEdgeType[]) => any[]) => void,
 	command: AbstractGrafcetCommand<Grafcet> | null,
 ) => {
 	if (!command) return;

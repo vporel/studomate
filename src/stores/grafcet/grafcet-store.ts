@@ -1,4 +1,4 @@
-import { GrafcetEdge, GrafcetNode } from "@/components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType, GrafcetNodeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import CommandsStack from "@/schemas/commands/CommandsStack.class";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
@@ -9,10 +9,16 @@ import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/utils/grafcet/gra
 import { addEdge, applyNodeChanges, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { createStore } from "zustand";
 import { commandRedo, commandUndo } from "./commands-undo-redo";
-import { getEdgesUpdateCommandsWhenNodesMovedOrResized, handleEdgeDataChange } from "./edges-management";
+import {
+	getEdgesUpdateCommandsWhenNodesMovedOrResized,
+	getInitialEdges,
+	handleEdgeDataChange,
+} from "./edges-management";
 import { focusFlow } from "./flow-management";
 import { GrafcetStoreSetFunction, GrafcetStoreState } from "./grafcet-store-types";
+import { junction_onNodeChange } from "./junction-node-management";
 import {
+	getInitialNodes,
 	getNodeDimensionsChangeCommands,
 	getNodePositionChangeCommands,
 	handleNodeDataChange,
@@ -26,7 +32,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 	const commandsStack: CommandsStack<Grafcet> = new CommandsStack<Grafcet>(COMMANDS_STACK_SIZE);
 
 	const getNodesUpdater = (set: GrafcetStoreSetFunction) => {
-		return (updater: (nodes: GrafcetNode[]) => any[]) => {
+		return (updater: (nodes: any[]) => any[]) => {
 			set((state) => {
 				const newNodes = updater(state.nodes!);
 				return { nodes: newNodes };
@@ -34,8 +40,20 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		};
 	};
 
+	const getNodeUpdater = (set: GrafcetStoreSetFunction) => {
+		return (nodeId: string, updater: (node: any) => any) => {
+			set((state) => {
+				const newNodes = state.nodes!.map((n) => {
+					if (n.id === nodeId) return { ...n, ...updater(n) };
+					return n;
+				});
+				return { nodes: newNodes };
+			});
+		};
+	};
+
 	const getEdgesUpdater = (set: GrafcetStoreSetFunction) => {
-		return (updater: (edges: GrafcetEdge[]) => any[]) => {
+		return (updater: (edges: any[]) => any[]) => {
 			set((state) => {
 				const newEdges = updater(state.edges!);
 				return { edges: newEdges };
@@ -47,17 +65,17 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		initialGrafcet: grafcet?.copy(), //Should never be modified, used as reference
 		grafcet: grafcet,
 		rfInstance: null,
-		nodes: [],
-		edges: [],
+		nodes: getInitialNodes(grafcet),
+		edges: getInitialEdges(grafcet),
 
 		setReactFlowInstance: (instance: ReactFlowInstance) => set({ rfInstance: instance }),
 
 		getNodes: () => {
 			const rfInstance = get().rfInstance;
-			return (rfInstance ? rfInstance.getNodes() : []) as GrafcetNode[];
+			return (rfInstance ? rfInstance.getNodes() : []) as GrafcetNodeType[];
 		},
 
-		addNodes: (newNodes: GrafcetNode[]) => {
+		addNodes: (newNodes: GrafcetNodeType[]) => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
 			const grafcet = get().grafcet;
@@ -84,6 +102,13 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		onNodesChange: (changes) => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
+			changes.forEach((change) => {
+				const node = get().nodes?.find((n) => n.id === (change as any).id);
+				if (!node) return;
+				if (node.type.includes("junction")) {
+					junction_onNodeChange(change, changes, get().nodes!, getNodeUpdater(set));
+				}
+			});
 			set(() => ({
 				nodes: applyNodeChanges(changes, get().nodes!),
 			}));
@@ -134,7 +159,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 
 		getEdges: () => {
 			const rfInstance = get().rfInstance;
-			return (rfInstance ? rfInstance.getEdges() : []) as GrafcetEdge[];
+			return (rfInstance ? rfInstance.getEdges() : []) as GrafcetEdgeType[];
 		},
 
 		onConnect: (connection: XYFlowConnection) => {
@@ -181,17 +206,14 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		selectAllEdges: () => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
-			const edges = get().edges;
-			set(() => ({ edges: edges.map((e) => ({ ...e, selected: true })) }));
+			set((state) => ({ edges: state.edges.map((e) => ({ ...e, selected: true })) }));
 		},
 
 		selectAllNodesAndEdges: () => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
-			const nodes = get().nodes;
-			const edges = get().edges;
-			set(() => ({ nodes: nodes.map((n) => ({ ...n, selected: true })) }));
-			set(() => ({ edges: edges.map((e) => ({ ...e, selected: true })) }));
+			set((state) => ({ nodes: state.nodes.map((n) => ({ ...n, selected: true })) }));
+			set((state) => ({ edges: state.edges.map((e) => ({ ...e, selected: true })) }));
 		},
 
 		executeOperation: (commands) => {

@@ -3,9 +3,9 @@ import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLi
 import Action, { ActionData } from "@/schemas/grafcet/Action.class";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import React, { useCallback, useEffect, type FC } from "react";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import React, { type FC } from "react";
 import GrafcetNode from "./GrafcetNode";
+import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type ActionNodeType = Node<ActionData> & { type: "action" };
 
@@ -14,21 +14,9 @@ export type ActionNodeProps = NodeProps<ActionNodeType>;
 const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-	const [editing, setEditing] = React.useState(false);
-	const [editingExpression, setEditingExpression] = React.useState(data.expression);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
-
-	const saveExpression = useCallback(() => {
-		updateNodeData(id, {
-			expression: editingExpression,
-		});
-	}, [editingExpression, updateNodeData, id]);
-
-	//Listen the set-data event from the commands handlers to update the internal state
-	useEffect(() => {
-		if (!editing) setEditingExpression(data.expression);
-	}, [data, editing]);
+	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression] =
+		useWithTextNodeValue(id, data, "expression", false);
 
 	return (
 		<>

@@ -32,6 +32,7 @@ export const createProjectStore = () => {
 		const initialPagesData = getInitialPagesData(project);
 		set(() => ({
 			project: project,
+			hasUnsavedChanges: false,
 			pagesData: initialPagesData,
 			pagesOrder: initialPagesData ? Object.keys(initialPagesData) : [],
 			activePageId: initialPagesData ? Object.keys(initialPagesData)[0] : null,
@@ -82,7 +83,6 @@ export const createProjectStore = () => {
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
 					_newProject(set);
-					set(() => ({ openModalVisible: true }));
 				},
 			}));
 		},
@@ -109,7 +109,6 @@ export const createProjectStore = () => {
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
 					_closeProject(set);
-					set(() => ({ openModalVisible: true }));
 				},
 			}));
 		},
@@ -120,7 +119,7 @@ export const createProjectStore = () => {
 			set(() => {
 				const newProject = project.copy();
 				newProject.name = newName;
-				return { project: newProject };
+				return { project: newProject, hasUnsavedChanges: true };
 			});
 		},
 
@@ -130,7 +129,7 @@ export const createProjectStore = () => {
 			set(() => {
 				const newProject = project.copy();
 				newProject.author = newAuthor;
-				return { project: newProject };
+				return { project: newProject, hasUnsavedChanges: true };
 			});
 		},
 

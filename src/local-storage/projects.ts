@@ -4,9 +4,7 @@ const LOCAL_STORAGE_PROJECTS_KEY = "studomate_projects_data";
 
 export function localStorageLoadProjects(): Project[] {
 	const projectsJSON = localStorage.getItem(LOCAL_STORAGE_PROJECTS_KEY);
-	if (!projectsJSON) {
-		return [];
-	}
+	if (!projectsJSON) return [];
 	try {
 		const projectsParsed = JSON.parse(projectsJSON);
 		return projectsParsed.map((projectJSON: string) => Project.createFromJSON(projectJSON));

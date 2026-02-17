@@ -7,7 +7,7 @@ import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
-import { GrafcetNode, JunctionNode } from "../flow/grafcet-nodes-definitions";
+import { GrafcetNodeType, JunctionNode } from "../flow/grafcet-nodes-definitions";
 import commonNodeContextMenuItems from "./common-node-context-menu-items";
 import { GrafcetContextMenuElement, GrafcetContextMenuProps } from "./grafcet-context-menu";
 import junctionContextMenuItems from "./junction-context-menu-items";
@@ -43,7 +43,7 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 				selectAllNodesAndEdges,
 			});
 		} else {
-			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNode, {
+			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, {
 				deleteNodes,
 				deleteEdges,
 			});

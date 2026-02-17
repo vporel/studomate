@@ -11,7 +11,7 @@ import StepReferralSource from "./StepReferralSource.class";
 import StepReferralTarget from "./StepReferralTarget.class";
 import Transition from "./transition.class";
 
-export const DEFAULT_GRAFCET_NAME = "Nouveau grafcet";
+export const DEFAULT_GRAFCET_NAME = "Sans titre";
 
 export type GrafcetFormat = {
 	type: "A4" | "A3";

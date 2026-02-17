@@ -6,7 +6,7 @@ import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { useGrafcetToolbarDnD } from "../toolbar/GrafcetToolbarDnDContext";
-import { GrafcetNode, NODES_DEFAULT_DATA, NODES_DEFAULT_DIMENSIONS } from "./grafcet-nodes-definitions";
+import { GrafcetNodeType, NODES_DEFAULT_DATA, NODES_DEFAULT_DIMENSIONS } from "./grafcet-nodes-definitions";
 
 export default function useToolDragOverHandlers(): [
 	handleToolDragOver: (e: React.DragEvent) => void,
@@ -33,7 +33,7 @@ export default function useToolDragOverHandlers(): [
 				type: toolType,
 				position,
 				data: NODES_DEFAULT_DATA[toolType],
-			} as GrafcetNode;
+			} as GrafcetNodeType;
 			addNodes([newNode]);
 		},
 		[toolType, screenToFlowPosition, addNodes],

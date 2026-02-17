@@ -1,4 +1,4 @@
-import Junction from "./junction.class";
+import Junction from "./Junction.class";
 
 export default class JunctionAndStart extends Junction {
 	copy(): JunctionAndStart {

@@ -2,9 +2,11 @@
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
 import Transition, { TransitionData } from "@/schemas/grafcet/transition.class";
 import { Box, useTheme } from "@mui/material";
-import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
+import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type TransitionNodeType = Node<TransitionData> & {
 	type: "transition";
@@ -14,17 +16,11 @@ export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
-	const { updateNodeData } = useReactFlow();
+	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-	const [editing, setEditing] = React.useState(false);
 	const borderColor = selected ? th.palette.primary.main : "black";
-
-	const onExpressionChange = React.useCallback(
-		(newExpression: string) => {
-			updateNodeData(id, { ...data, expression: newExpression });
-		},
-		[id, data, updateNodeData],
-	);
+	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression] =
+		useWithTextNodeValue(id, data, "expression", false);
 
 	return (
 		<>
@@ -84,8 +80,18 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 				<textarea
 					ref={textareaRef}
 					className="action_node__textarea"
-					value={data?.expression}
-					onChange={(e) => onExpressionChange(e.target.value)}
+					value={editingExpression}
+					onChange={(e) => setEditingExpression(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" || e.key === "Escape") {
+							//The save is done only on blur to avoid multiple saves when pressing enter
+							textareaRef.current?.blur();
+						}
+					}}
+					onBlur={() => {
+						setEditing(false);
+						saveExpression();
+					}}
 					rows={1}
 					style={{
 						position: "absolute",
@@ -100,7 +106,6 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						lineHeight: "1.2rem",
 						pointerEvents: !editing ? "none" : "all",
 					}}
-					onBlur={() => setEditing(false)}
 				/>
 			</GrafcetNode>
 		</>

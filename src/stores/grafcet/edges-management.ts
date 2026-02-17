@@ -1,4 +1,4 @@
-import { GrafcetEdge } from "@/components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import { deepObjectsComparison } from "@/lib/object";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/ConnectionsUpdateCommand.class";
@@ -6,12 +6,32 @@ import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { ReactFlowInstance } from "@xyflow/react";
 import { ConnectionMode, getEdgePosition } from "@xyflow/system";
 
+export const getInitialEdges = (grafcet: Grafcet): GrafcetEdgeType[] => {
+	return grafcet.connections.map((connection) => {
+		const sourceNode = grafcet.getElement(connection.source.type, connection.source.id);
+		const targetNode = grafcet.getElement(connection.target.type, connection.target.id);
+		if (!sourceNode || !targetNode)
+			console.error("Source or target node not found for connection " + connection.id);
+		return {
+			id: connection.id,
+			type: "custom-edge",
+			source: connection.source.id,
+			sourceHandle: connection.source.handleId,
+			target: connection.target.id,
+			targetHandle: connection.target.handleId,
+			data: connection.data,
+		} as GrafcetEdgeType;
+	});
+};
+
 export const handleEdgeDataChange = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
-	setEdges: (updater: (edges: GrafcetEdge[]) => any[]) => void,
+	setEdges: (updater: (edges: GrafcetEdgeType[]) => any[]) => void,
 	edgeId: string,
-	newData: Partial<GrafcetEdge["data"]> | ((prevData: GrafcetEdge["data"]) => Partial<GrafcetEdge["data"]>),
+	newData:
+		| Partial<GrafcetEdgeType["data"]>
+		| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 ): AbstractGrafcetCommand<any>[] => {
 	const edge = rfInstance.getEdge(edgeId);
 	if (!edge) throw new Error("Edge not found in the flow instance");
@@ -45,7 +65,7 @@ export const handleEdgeDataChange = (
 export const getEdgesUpdateCommandsWhenNodesMovedOrResized = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
-	setEdges: (updater: (edges: GrafcetEdge[]) => any[]) => void,
+	setEdges: (updater: (edges: GrafcetEdgeType[]) => any[]) => void,
 	nodesIds: string[],
 ): AbstractGrafcetCommand<any>[] => {
 	if (nodesIds.length === 0) return [];

@@ -3,10 +3,10 @@
 import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
-import { GrafcetNode } from "./grafcet-nodes-definitions";
+import { GrafcetNodeType } from "./grafcet-nodes-definitions";
 
 export default function useNodesHandlers(): {
-	onNodesDelete: (deleted: GrafcetNode[]) => void;
+	onNodesDelete: (deleted: GrafcetNodeType[]) => void;
 } {
 	const { deleteNodes } = useGrafcetStore(
 		useShallow((state) => ({
@@ -15,7 +15,7 @@ export default function useNodesHandlers(): {
 	);
 
 	const onNodesDelete = useCallback(
-		(deleted: GrafcetNode[]) => {
+		(deleted: GrafcetNodeType[]) => {
 			const deletedIds = deleted.map((n) => n.id);
 			deleteNodes(deletedIds);
 		},

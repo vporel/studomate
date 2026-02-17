@@ -1,4 +1,4 @@
-import { GrafcetNode } from "@/components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetNodeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import { deepObjectsComparison } from "@/lib/object";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/AbstractGrafcetCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
@@ -7,14 +7,42 @@ import ElementsRemoveCommand from "@/schemas/grafcet/commands/ElementsRemoveComm
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import GrafcetElement, { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
 import { ReactFlowInstance } from "@xyflow/react";
+
+export const getInitialNodes = (grafcet: Grafcet): GrafcetNodeType[] => {
+	const elementsByType: Record<string, GrafcetElement<any>[]> = {
+		step: grafcet.steps,
+		action: grafcet.actions,
+		transition: grafcet.transitions,
+		"step-referral-source": grafcet.stepsReferralsSources,
+		"step-referral-target": grafcet.stepsReferralsTargets,
+		"junction-and-start": grafcet.junctionsAndStarts,
+		"junction-and-end": grafcet.junctionsAndEnds,
+		"junction-or-start": grafcet.junctionsOrStarts,
+		"junction-or-end": grafcet.junctionsOrEnds,
+		comment: grafcet.comments,
+	};
+	const nodes: GrafcetNodeType[] = [];
+	(Object.keys(elementsByType) as GrafcetElementType[]).forEach((type) => {
+		const elements = elementsByType[type];
+		elements.forEach((element) => {
+			nodes.push({
+				id: element.id,
+				type,
+				data: element.data,
+				position: element.position,
+			} as GrafcetNodeType);
+		});
+	});
+	return nodes;
+};
 
 export const handleNodesAdd = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
 	setNodes: (updater: (nodes: any[]) => any[]) => void,
-	newNodes: GrafcetNode[],
+	newNodes: GrafcetNodeType[],
 ): AbstractGrafcetCommand<any>[] => {
 	const existingNodes = rfInstance.getNodes();
 	const nodesToAdd = newNodes.filter((n) => !existingNodes.find((en) => en.id === n.id));
@@ -47,7 +75,7 @@ export const handleNodesDelete = (
 	setEdges((eds) => eds.filter((e) => !connections.find((c) => c.id === e.id)));
 	const nodesToRemove = nodesIds
 		.map((id) => rfInstance.getNode(id))
-		.filter((n): n is GrafcetNode => !!n)
+		.filter((n): n is GrafcetNodeType => !!n)
 		.map((node) => ({
 			type: node.type,
 			id: node.id,
@@ -64,7 +92,9 @@ export const handleNodeDataChange = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
 	nodeId: string,
-	newData: Partial<GrafcetNode["data"]> | ((prevData: GrafcetNode["data"]) => Partial<GrafcetNode["data"]>),
+	newData:
+		| Partial<GrafcetNodeType["data"]>
+		| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
 ): AbstractGrafcetCommand<any>[] => {
 	const node = rfInstance.getNode(nodeId);
 	if (!node) return [];
@@ -104,7 +134,7 @@ export const getNodePositionChangeCommands = (
 	grafcet: Grafcet,
 	nodeId: string,
 ): AbstractGrafcetCommand<any>[] => {
-	const node = rfInstance.getNode(nodeId) as GrafcetNode;
+	const node = rfInstance.getNode(nodeId) as GrafcetNodeType;
 	if (!node) throw new Error("Node not found for id " + nodeId);
 	const grafcetElement = grafcet.getElement(node.type, node.id);
 	if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);
@@ -131,7 +161,7 @@ export const getNodeDimensionsChangeCommands = (
 	grafcet: Grafcet,
 	nodeId: string,
 ): AbstractGrafcetCommand<any>[] => {
-	const node = rfInstance.getNode(nodeId) as GrafcetNode;
+	const node = rfInstance.getNode(nodeId) as GrafcetNodeType;
 	if (!node) throw new Error("Node not found for id " + nodeId);
 	const grafcetElement = grafcet.getElement(node.type, node.id);
 	if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);

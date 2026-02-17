@@ -2,7 +2,7 @@ import AbstractCommand from "@/schemas/commands/AbstractCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { GrafcetConnectionData } from "@/schemas/grafcet/GrafcetConnection.class";
 import { NodeChange, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
-import { GrafcetEdge, GrafcetNode } from "../../components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType, GrafcetNodeType } from "../../components/grafcet/flow/grafcet-nodes-definitions";
 
 /**
  * The methods starting with "on" are meant to be used as event handlers for the ReactFlow component,
@@ -19,22 +19,22 @@ export interface GrafcetStoreState {
 	 * The nodes and edges lists are managed by the store
 	 */
 	rfInstance: ReactFlowInstance | null;
-	nodes: GrafcetNode[];
-	edges: GrafcetEdge[];
+	nodes: GrafcetNodeType[];
+	edges: GrafcetEdgeType[];
 
 	setReactFlowInstance: (instance: ReactFlowInstance) => void;
-	getNodes: () => GrafcetNode[];
-	addNodes: (newNodes: GrafcetNode[]) => void;
+	getNodes: () => GrafcetNodeType[];
+	addNodes: (newNodes: GrafcetNodeType[]) => void;
 	deleteNodes: (nodeIds: string[]) => void;
-	onNodesChange: (changes: NodeChange<GrafcetNode>[]) => void;
+	onNodesChange: (changes: NodeChange<GrafcetNodeType>[]) => void;
 	updateNodeData: (
 		nodeId: string,
 		newData:
-			| Partial<GrafcetNode["data"]>
-			| ((prevData: GrafcetNode["data"]) => Partial<GrafcetNode["data"]>),
+			| Partial<GrafcetNodeType["data"]>
+			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
 	) => void;
 
-	getEdges: () => GrafcetEdge[];
+	getEdges: () => GrafcetEdgeType[];
 	onConnect: (connection: XYFlowConnection) => void;
 	deleteEdges: (edgeIds: string[]) => void;
 

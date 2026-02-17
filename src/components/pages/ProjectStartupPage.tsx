@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_NAME, APP_SLOGAN } from "@/constants";
+import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/Grafcet.class";
 import { PageData } from "@/stores/project/project-store-types";
 import { Box, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";
 import InclinedAccountTree from "../icons/InclinedAccountTree";
@@ -36,7 +37,7 @@ const ProjectStartupPage = () => {
 						</Typography>
 						<MenuItem
 							onClick={() => {
-								newGrafcet("Sans titre", { type: "A4", orientation: "portrait" });
+								newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
 							}}
 						>
 							<ListItemIcon>

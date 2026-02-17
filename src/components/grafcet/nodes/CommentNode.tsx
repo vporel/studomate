@@ -5,6 +5,7 @@ import { Node, NodeProps, NodeResizer } from "@xyflow/react";
 import React, { type FC } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
+import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
@@ -14,13 +15,13 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 	const th = useTheme();
 	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-	const [editing, setEditing] = React.useState(false);
-	const [editingText, setEditingText] = React.useState(data.text);
 	const borderColor = selected ? th.palette.primary.main : "black";
-
-	const saveText = React.useCallback(() => {
-		updateNodeData(id, { text: editingText });
-	}, [id, editingText, updateNodeData]);
+	const [editingText, setEditingText, editing, setEditing, saveText] = useWithTextNodeValue(
+		id,
+		data,
+		"text",
+		false,
+	);
 
 	return (
 		<>

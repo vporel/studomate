@@ -4,9 +4,10 @@ import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLi
 import StepReferral from "@/schemas/grafcet/StepReferral.class";
 import { StepReferralSourceData } from "@/schemas/grafcet/StepReferralSource.class";
 import { Box, useTheme } from "@mui/material";
-import { Node, NodeProps, Position, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 import GrafcetNode from "./GrafcetNode";
+import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type StepReferralSourceNodeType = Node<StepReferralSourceData> & {
 	type: "step-referral-source";
@@ -16,10 +17,10 @@ export type StepReferralSourceNodeProps = NodeProps<StepReferralSourceNodeType>;
 
 const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
-	const { updateNodeData } = useReactFlow();
 	const inputRef = React.useRef<HTMLInputElement>(null);
-	const [editing, setEditing] = React.useState(false);
 	const borderColor = selected ? th.palette.primary.main : "black";
+	const [editingTargetStepNumber, setEditingTargetStepNumber, editing, setEditing, saveTargetStepNumber] =
+		useWithTextNodeValue(id, data, "targetStepNumber", true);
 
 	return (
 		<>
@@ -77,19 +78,20 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 					ref={inputRef}
 					className="node__input"
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
-					value={data.targetStepNumber}
+					value={editingTargetStepNumber}
+					onChange={(e) => setEditingTargetStepNumber(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) e.preventDefault();
+						if (e.key === "Enter" || e.key === "Escape") {
+							//The save is done only on blur to avoid multiple saves when pressing enter
+							inputRef.current?.blur();
+						} else if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) {
+							e.preventDefault();
+						}
 					}}
-					onChange={(e) =>
-						updateNodeData(id, {
-							...data,
-							destinationStepNumber:
-								e.target.value == "" || parseInt(e.target.value) < 0
-									? ""
-									: parseInt(e.target.value),
-						})
-					}
+					onBlur={() => {
+						setEditing(false);
+						saveTargetStepNumber();
+					}}
 					style={{
 						width: "100%",
 						textAlign: "center",
@@ -97,7 +99,6 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 						outline: "none",
 						pointerEvents: !editing ? "none" : "all",
 					}}
-					onBlur={() => setEditing(false)}
 				/>
 			</GrafcetNode>
 		</>

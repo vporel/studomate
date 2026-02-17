@@ -1,7 +1,7 @@
 "use client";
 
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
-import { JunctionData } from "@/schemas/grafcet/junction.class";
+import { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import { useCallback } from "react";
 import { useGrafcetStore } from "../../context/GrafcetContext";
@@ -31,6 +31,7 @@ export default function useBranchActions(
 				}
 			}
 			if (newBranchPosition % FLOW_GRID_CELL_WIDTH != 0)
+				//Align to the grid
 				newBranchPosition = newBranchPosition - (newBranchPosition % FLOW_GRID_CELL_WIDTH);
 			const newBranchesPositions = [...nodeData.branchesPositions];
 			newBranchesPositions.splice(buttonIndex, 0, newBranchPosition);

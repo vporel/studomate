@@ -4,9 +4,9 @@ import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLi
 import Step, { StepData } from "@/schemas/grafcet/Step.class";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
-import React, { useCallback, useEffect, type FC } from "react";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import React, { type FC } from "react";
 import GrafcetNode from "./GrafcetNode";
+import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type StepNodeType = Node<StepData> & { type: "step" };
 
@@ -15,24 +15,13 @@ export type StepNodeProps = NodeProps<StepNodeType>;
 const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
-	const [editing, setEditing] = React.useState(false);
-	const [editingNumber, setEditingNumber] = React.useState(data.number + "");
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
-
-	const saveNumber = useCallback(() => {
-		const number: number | "" =
-			editingNumber === "" || isNaN(parseInt(editingNumber)) || parseInt(editingNumber) < 0
-				? ""
-				: parseInt(editingNumber);
-		updateNodeData(id, {
-			number,
-		});
-	}, [editingNumber, updateNodeData, id]);
-
-	useEffect(() => {
-		if (!editing) setEditingNumber(data.number + "");
-	}, [data, editing]);
+	const [editingNumber, setEditingNumber, editing, setEditing, saveNumber] = useWithTextNodeValue(
+		id,
+		data,
+		"number",
+		true,
+	);
 
 	return (
 		<>

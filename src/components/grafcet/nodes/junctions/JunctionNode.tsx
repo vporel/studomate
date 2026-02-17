@@ -1,16 +1,17 @@
 "use client";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import HandleWithConnectionsLimit from "@/lib/react-flow/HandleWithConnectionsLimit";
-import Junction, { JunctionData } from "@/schemas/grafcet/junction.class";
+import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import Junction, { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
 import GrafcetNode from "../GrafcetNode";
-import useBarMoveHandler from "./useBarMoveHandler";
+import useBarsSelection from "./useBarsSelection";
 import useBranchActions from "./useBranchActions";
 import useBranchAddButtonsPositions from "./useBranchAddButtonsPositions";
-import useBranchesPositionsAdapter from "./useBranchesPositionsAdapter";
-import useSelectedBars from "./useSelectedBars";
+import useContextMenuEventsHandler from "./useContextMenuEventsHandler";
+import useKeyboardEventsHandler from "./useKeyboardEventsHandler";
 
 export type JunctionNodeType = Node<JunctionData>;
 
@@ -28,7 +29,6 @@ export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 const JunctionNode: FC<JunctionNodeProps> = ({
 	id,
 	type,
-	positionAbsoluteX,
 	data,
 	selected,
 	width: nodeWidth,
@@ -40,11 +40,26 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	const nodeHTMLElement = useRef<HTMLDivElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
-	const [pivotSelected, selectedBranchIndex] = useSelectedBars(id);
+	const {
+		pivotSelected,
+		selectedBranchIndex,
+		selectPivot,
+		selectBranch,
+		selectPreviousBranch,
+		selectNextBranch,
+		clearSelection,
+	} = useBarsSelection(data.branchesPositions.length);
 	const { add: onBranchAdd } = useBranchActions(id, data);
-	const handleKeyDown = useBarMoveHandler(id, pivotSelected, selectedBranchIndex);
+	const handleKeyDown = useKeyboardEventsHandler(
+		id,
+		pivotSelected,
+		selectedBranchIndex,
+		selectPreviousBranch,
+		selectNextBranch,
+		clearSelection,
+	);
 
-	useBranchesPositionsAdapter(id, nodeWidth, positionAbsoluteX);
+	useContextMenuEventsHandler(id, selectPivot, selectBranch);
 
 	//Snap to grid
 	useEffect(() => {
@@ -91,7 +106,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 			/>
 			<GrafcetNode
 				id={id}
-				type={type}
+				type={type as GrafcetElementType}
 				className={`junction-node ${className}`}
 				ref={nodeHTMLElement}
 				tabIndex={0}
@@ -101,12 +116,12 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 					display: "flex",
 					flexDirection: "column",
 					position: "relative",
-					".junction-node__branch__add-button": {
+					".junction-node__add-branch-button": {
 						visibility: "hidden",
 						opacity: 0,
 					},
 					"&:hover": {
-						".junction-node__branch__add-button": {
+						".junction-node__add-branch-button": {
 							visibility: "visible",
 							opacity: 1,
 						},

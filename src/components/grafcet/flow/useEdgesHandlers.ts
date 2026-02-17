@@ -4,11 +4,11 @@ import { Connection } from "@xyflow/react";
 import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
-import { GrafcetEdge } from "./grafcet-nodes-definitions";
+import { GrafcetEdgeType } from "./grafcet-nodes-definitions";
 
 export default function useEdgesHandlers(): {
 	onConnect: (params: Connection) => void;
-	onEdgesDelete: (deleted: GrafcetEdge[]) => void;
+	onEdgesDelete: (deleted: GrafcetEdgeType[]) => void;
 } {
 	const { onConnect, deleteEdges } = useGrafcetStore(
 		useShallow((state) => ({
@@ -25,7 +25,7 @@ export default function useEdgesHandlers(): {
 			[onConnect],
 		),
 		onEdgesDelete: useCallback(
-			(deleted: GrafcetEdge[]) => {
+			(deleted: GrafcetEdgeType[]) => {
 				deleteEdges(Array.from(new Set(deleted.map((e) => e.id))));
 			},
 			[deleteEdges],
