@@ -12,10 +12,12 @@ export default class Step extends GrafcetElement<StepData> {
 		height: 40,
 	};
 
-	static DEFAULT_DATA: StepData = {
-		number: "",
-		isInitial: false,
-	};
+	static generateDefaultData(): StepData {
+		return {
+			number: "",
+			isInitial: false,
+		};
+	}
 
 	/**
 	 *
@@ -31,6 +33,6 @@ export default class Step extends GrafcetElement<StepData> {
 
 	static createFromJSON(json: string): Step {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Step("", { ...Step.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(new Step("", { ...Step.generateDefaultData() }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

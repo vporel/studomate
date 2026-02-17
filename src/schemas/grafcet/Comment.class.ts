@@ -13,18 +13,23 @@ export default class Comment extends GrafcetElement<CommentData> {
 		height: 40,
 	};
 
-	static DEFAULT_DATA: CommentData = {
-		text: "Commentaire",
-		width: Comment.DEFAULT_DIMENSIONS.width,
-		height: Comment.DEFAULT_DIMENSIONS.height,
-	};
+	static generateDefaultData(): CommentData {
+		return {
+			text: "Commentaire",
+			width: Comment.DEFAULT_DIMENSIONS.width,
+			height: Comment.DEFAULT_DIMENSIONS.height,
+		};
+	}
 
 	copy(): Comment {
-		return new Comment(this.id, { ...this.data }, { ...this.position });
+		return Comment.createFromJSON(JSON.stringify(this));
 	}
 
 	static createFromJSON(json: string): Comment {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Comment("", { ...Comment.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(
+			new Comment("", { ...Comment.generateDefaultData() }, { x: 0, y: 0 }),
+			jsonParsed,
+		);
 	}
 }

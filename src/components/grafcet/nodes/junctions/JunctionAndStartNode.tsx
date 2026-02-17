@@ -18,17 +18,8 @@ const JunctionAndStartNode: FC<JunctionAndStartNodeProps> = (props) => {
 	const borderColor = selected ? th.palette.primary.main : "black";
 
 	return (
-		<JunctionNode
-			orientation="start"
-			className="junction-and-start-node"
-			{...props}
-		>
-			{({
-				branchAddButtonsPositions,
-				onBranchAdd,
-				selectedBranchIndex,
-				pivotSelected,
-			}) => (
+		<JunctionNode orientation="start" className="junction-and-start-node" {...props}>
+			{({ branchAddButtonsPositions, onBranchAdd, selectedBranchId, pivotSelected }) => (
 				<>
 					<Box
 						sx={{
@@ -65,12 +56,12 @@ const JunctionAndStartNode: FC<JunctionAndStartNodeProps> = (props) => {
 							position: "relative",
 						}}
 					>
-						{data.branchesPositions.map((pos, index) => (
+						{data.branchesOrder.map((branchId) => (
 							<JunctionNodeVerticalBar
-								key={index}
+								key={branchId}
 								color={borderColor}
-								left={pos}
-								selected={selectedBranchIndex == index}
+								left={data.branches[branchId]!.position}
+								selected={selectedBranchId === branchId}
 							/>
 						))}
 					</Box>

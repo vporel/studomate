@@ -1,6 +1,6 @@
 import { APP_VERSION } from "@/constants";
 import Grafcet, { GrafcetFormat } from "../grafcet/Grafcet.class";
-import { createElementId } from "../schemas-helpers";
+import { createRandomId } from "../schemas-helpers";
 import Variable from "../Variable.class";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
@@ -27,7 +27,7 @@ export default class Project {
 	}
 
 	addGrafcet(name: string, format: GrafcetFormat): Grafcet {
-		const grafcetId = createElementId();
+		const grafcetId = createRandomId();
 		this.grafcets[grafcetId] = new Grafcet(grafcetId, name, format);
 		this.touch();
 		return this.grafcets[grafcetId];

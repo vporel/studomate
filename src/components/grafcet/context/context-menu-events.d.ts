@@ -4,7 +4,7 @@ export type GrafcetContextMenuPaneAction = {};
 
 export type GrafcetContextMenuNodeAction = { nodeId: string } & (
 	| { type: "junction-select-pivot" }
-	| { type: "junction-select-branch"; branchIndex: number }
+	| { type: "junction-select-branch"; branchId: string }
 );
 
 export type GrafcetContextMenuEdgeAction = {};

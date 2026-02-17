@@ -11,9 +11,11 @@ export default class Transition extends GrafcetElement<TransitionData> {
 		height: 30,
 	};
 
-	static DEFAULT_DATA: TransitionData = {
-		expression: "",
-	};
+	static generateDefaultData(): TransitionData {
+		return {
+			expression: "",
+		};
+	}
 
 	/**
 	 *
@@ -33,6 +35,9 @@ export default class Transition extends GrafcetElement<TransitionData> {
 
 	static createFromJSON(json: string): Transition {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Transition("", { ...Transition.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(
+			new Transition("", { ...Transition.generateDefaultData() }, { x: 0, y: 0 }),
+			jsonParsed,
+		);
 	}
 }

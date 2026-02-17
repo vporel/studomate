@@ -125,8 +125,6 @@ export const commandRedo = (
 		);
 	} else if (command instanceof ConnectionsRemoveCommand) {
 		if (command.payload.length === 0) return;
-		rfInstance.setEdges((eds) =>
-			eds.filter((e) => command.payload.findIndex((c) => c.id === e.id) === -1),
-		);
+		setEdges((eds) => eds.filter((e) => command.payload.findIndex((c) => c.id === e.id) === -1));
 	}
 };

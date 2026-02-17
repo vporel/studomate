@@ -2,13 +2,13 @@ import Junction from "./Junction.class";
 
 export default class JunctionAndStart extends Junction {
 	copy(): JunctionAndStart {
-		return new JunctionAndStart(this.id, { ...this.data }, { ...this.position });
+		return JunctionAndStart.createFromJSON(JSON.stringify(this));
 	}
 
 	static createFromJSON(json: string): JunctionAndStart {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new JunctionAndStart("", { ...Junction.DEFAULT_DATA }, { x: 0, y: 0 }),
+			new JunctionAndStart("", { ...Junction.generateDefaultDataWithEmptyBranches() }, { x: 0, y: 0 }),
 			jsonParsed,
 		);
 	}

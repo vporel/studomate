@@ -95,6 +95,7 @@ export const handleNodeDataChange = (
 	newData:
 		| Partial<GrafcetNodeType["data"]>
 		| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
+	setNode: (nodeId: string, updater: (node: GrafcetNodeType) => GrafcetNodeType) => void,
 ): AbstractGrafcetCommand<any>[] => {
 	const node = rfInstance.getNode(nodeId);
 	if (!node) return [];
@@ -102,17 +103,12 @@ export const handleNodeDataChange = (
 		const prevData = node.data as any;
 		newData = newData(prevData);
 	}
-	rfInstance.setNodes((nds) =>
-		nds.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...newData } } : n)),
-	);
-	const grafcetNode = grafcet.getElement(node.type as GrafcetElementType, node.id);
-	if (!grafcetNode) return [];
-	const modifiedNode = {
-		...grafcetNode,
-		data: { ...grafcetNode.data, ...newData },
-	};
+	setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...newData } }) as GrafcetNodeType);
+	const grafcetElement = grafcet.getElement(node.type as GrafcetElementType, node.id);
+	if (!grafcetElement) return [];
+	const fullModifiedData = { ...grafcetElement.data, ...newData };
 	//Make sure the data is not the same as the previous one, to avoid creating unnecessary commands
-	if (deepObjectsComparison(grafcetNode.data, modifiedNode.data)) {
+	if (deepObjectsComparison(grafcetElement.data, fullModifiedData)) {
 		return [];
 	}
 	return [
@@ -120,10 +116,10 @@ export const handleNodeDataChange = (
 			{
 				id: node.id,
 				type: node.type as GrafcetElementType,
-				data: modifiedNode.data,
+				data: fullModifiedData,
 				position: node.position,
-				previousData: grafcetNode.data,
-				previousPosition: grafcetNode.position,
+				previousData: grafcetElement.data,
+				previousPosition: grafcetElement.position,
 			},
 		]),
 	];

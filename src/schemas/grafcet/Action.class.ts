@@ -13,11 +13,13 @@ export default class Action extends GrafcetElement<ActionData> {
 		height: 40,
 	};
 
-	static DEFAULT_DATA: ActionData = {
-		expression: "",
-		width: Action.DEFAULT_DIMENSIONS.width,
-		height: Action.DEFAULT_DIMENSIONS.height,
-	};
+	static generateDefaultData(): ActionData {
+		return {
+			expression: "",
+			width: Action.DEFAULT_DIMENSIONS.width,
+			height: Action.DEFAULT_DIMENSIONS.height,
+		};
+	}
 
 	/**
 	 *
@@ -30,11 +32,11 @@ export default class Action extends GrafcetElement<ActionData> {
 	}
 
 	copy(): Action {
-		return new Action(this.id, { ...this.data }, { ...this.position });
+		return Action.createFromJSON(JSON.stringify(this));
 	}
 
 	static createFromJSON(json: string): Action {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Action("", { ...Action.DEFAULT_DATA }, { x: 0, y: 0 }), jsonParsed);
+		return Object.assign(new Action("", { ...Action.generateDefaultData() }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

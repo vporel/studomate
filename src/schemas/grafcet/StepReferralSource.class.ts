@@ -5,9 +5,11 @@ export type StepReferralSourceData = StepReferralData & {
 };
 
 export default class StepReferralSource extends StepReferral<StepReferralSourceData> {
-	static DEFAULT_DATA: StepReferralSourceData = {
-		targetStepNumber: "",
-	};
+	static generateDefaultData(): StepReferralSourceData {
+		return {
+			targetStepNumber: "",
+		};
+	}
 
 	copy(): StepReferralSource {
 		return new StepReferralSource(this.id, { ...this.data }, { ...this.position });
@@ -16,7 +18,7 @@ export default class StepReferralSource extends StepReferral<StepReferralSourceD
 	static createFromJSON(json: string): StepReferralSource {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new StepReferralSource("", { ...StepReferralSource.DEFAULT_DATA }, { x: 0, y: 0 }),
+			new StepReferralSource("", { ...StepReferralSource.generateDefaultData() }, { x: 0, y: 0 }),
 			jsonParsed,
 		);
 	}

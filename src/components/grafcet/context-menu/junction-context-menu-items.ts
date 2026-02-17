@@ -27,13 +27,13 @@ export default function junctionContextMenuItems(
 			},
 			{
 				label: "Sélectionner une branche",
-				subItems: junction.data.branchesPositions.map((_, index) => ({
+				subItems: junction.data.branchesOrder.map((branchId, index) => ({
 					label: "Branche " + (index + 1),
 					onClick: () =>
 						contextMenuEvents.emit("node-action", {
 							nodeId: junction.id,
 							type: "junction-select-branch",
-							branchIndex: index,
+							branchId: branchId,
 						}),
 				})),
 			},

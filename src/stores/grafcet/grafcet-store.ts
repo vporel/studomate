@@ -3,8 +3,8 @@ import CommandsStack from "@/schemas/commands/CommandsStack.class";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemoveCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
-import GrafcetConnection, { GrafcetConnectionData } from "@/schemas/grafcet/GrafcetConnection.class";
-import { createElementId } from "@/schemas/schemas-helpers";
+import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
+import { createRandomId } from "@/schemas/schemas-helpers";
 import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/utils/grafcet/grafcet-utils";
 import { addEdge, applyNodeChanges, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { createStore } from "zustand";
@@ -153,7 +153,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
 			const grafcet = get().grafcet;
-			const commands = handleNodeDataChange(rfInstance, grafcet, nodeId, newData);
+			const commands = handleNodeDataChange(rfInstance, grafcet, nodeId, newData, getNodeUpdater(set));
 			get().executeOperation(commands);
 		},
 
@@ -165,7 +165,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		onConnect: (connection: XYFlowConnection) => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
-			const connectionId = createElementId();
+			const connectionId = createRandomId();
 			const edges = get().edges;
 			const grafcetConnection = grafcetConnectionFromXYFlowConnectionOrEdge(
 				rfInstance,
@@ -195,7 +195,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 			focusFlow(grafcet.id);
 		},
 
-		updateEdgeData: (edgeId: string, newData: Partial<GrafcetConnectionData>) => {
+		updateEdgeData: (edgeId: string, newData) => {
 			const rfInstance = get().rfInstance;
 			if (!rfInstance) return;
 			const grafcet = get().grafcet;

@@ -6,45 +6,49 @@ import { useCallback, useEffect, useState } from "react";
  *
  * @returns
  * pivotSelected is true if the pivot of the junction node is selected, false otherwise \
- * selectedBranchIndex = -1 if no branch is selected \
+ * selectedBranchId = -1 if no branch is selected \
  * selectPivot can be used to select the pivot of the junction node \
  * selectBranch can be used to select a branch by its index \
  * selectPreviousBranch can be used to select the previous branch, if any \
  * selectNextBranch can be used to select the next branch, if any \
  * clearSelection can be used to clear the selection of the pivot and the branches, for example when the user clicks outside of the node
  */
-export default function useBarsSelection(branchesCount: number): {
+export default function useBarsSelection(branchesOrder: string[]): {
 	pivotSelected: boolean;
-	selectedBranchIndex: number;
+	selectedBranchId: string | null;
 	selectPivot: () => void;
-	selectBranch: (branchIndex: number) => void;
+	selectBranch: (branchId: string) => void;
 	selectPreviousBranch: () => void;
 	selectNextBranch: () => void;
 	clearSelection: () => void;
 } {
 	const [pivotSelected, setPivotSelected] = useState<boolean>(false);
-	const [selectedBranchIndex, setSelectedBranchIndex] = useState<number>(-1);
+	const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 	const selectPivot = useCallback(() => {
-		setSelectedBranchIndex(-1);
+		setSelectedBranchId(null);
 		setPivotSelected(true);
 	}, []);
-	const selectBranch = useCallback((branchIndex: number) => {
+	const selectBranch = useCallback((branchId: string) => {
 		setPivotSelected(false);
-		setSelectedBranchIndex(branchIndex);
+		setSelectedBranchId(branchId);
 	}, []);
 	const selectPreviousBranch = useCallback(() => {
 		setPivotSelected(false);
-		setSelectedBranchIndex((prev) => (prev == -1 ? -1 : prev - 1 < 0 ? 0 : prev - 1));
-	}, []);
+		const currentIndex = selectedBranchId ? branchesOrder.findIndex((id) => id === selectedBranchId) : -1;
+		if (currentIndex > 0) {
+			setSelectedBranchId(branchesOrder[currentIndex - 1]);
+		}
+	}, [branchesOrder, selectedBranchId]);
 	const selectNextBranch = useCallback(() => {
 		setPivotSelected(false);
-		setSelectedBranchIndex((prev) =>
-			prev == -1 ? -1 : prev + 1 >= branchesCount ? branchesCount - 1 : prev + 1,
-		);
-	}, [branchesCount]);
+		const currentIndex = selectedBranchId ? branchesOrder.findIndex((id) => id === selectedBranchId) : -1;
+		if (currentIndex >= 0 && currentIndex < branchesOrder.length - 1) {
+			setSelectedBranchId(branchesOrder[currentIndex + 1]);
+		}
+	}, [branchesOrder, selectedBranchId]);
 	const clearSelection = useCallback(() => {
 		setPivotSelected(false);
-		setSelectedBranchIndex(-1);
+		setSelectedBranchId(null);
 	}, []);
 
 	//Clear the selection when another part of the window is clicked
@@ -60,7 +64,7 @@ export default function useBarsSelection(branchesCount: number): {
 
 	return {
 		pivotSelected,
-		selectedBranchIndex,
+		selectedBranchId,
 		selectPivot,
 		selectBranch,
 		selectPreviousBranch,

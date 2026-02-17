@@ -6,7 +6,7 @@ import Step from "@/schemas/grafcet/Step.class";
 import StepReferral from "@/schemas/grafcet/StepReferral.class";
 import StepReferralSource from "@/schemas/grafcet/StepReferralSource.class";
 import StepReferralTarget from "@/schemas/grafcet/StepReferralTarget.class";
-import Transition from "@/schemas/grafcet/transition.class";
+import Transition from "@/schemas/grafcet/Transition.class";
 import { Connection, Dimensions, Node } from "@xyflow/react";
 import CustomEdge, { CustomEdgeType } from "../edges/CustomEdge";
 import ActionNode, { ActionNodeType } from "../nodes/ActionNode";
@@ -48,17 +48,17 @@ export const NODES_DEFAULT_DIMENSIONS: Record<GrafcetElementType, Dimensions> = 
 	comment: Comment.DEFAULT_DIMENSIONS,
 };
 
-export const NODES_DEFAULT_DATA: Record<GrafcetElementType, any> = {
-	step: Step.DEFAULT_DATA,
-	action: Action.DEFAULT_DATA,
-	transition: Transition.DEFAULT_DATA,
-	"step-referral-source": StepReferralSource.DEFAULT_DATA,
-	"step-referral-target": StepReferralTarget.DEFAULT_DATA,
-	"junction-or-start": Junction.DEFAULT_DATA,
-	"junction-or-end": Junction.DEFAULT_DATA,
-	"junction-and-start": Junction.DEFAULT_DATA,
-	"junction-and-end": Junction.DEFAULT_DATA,
-	comment: Comment.DEFAULT_DATA,
+export const NODES_DEFAULT_DATA_GENERATORS: Record<GrafcetElementType, any> = {
+	step: Step.generateDefaultData,
+	action: Action.generateDefaultData,
+	transition: Transition.generateDefaultData,
+	"step-referral-source": StepReferralSource.generateDefaultData,
+	"step-referral-target": StepReferralTarget.generateDefaultData,
+	"junction-or-start": Junction.generateDefaultData,
+	"junction-or-end": Junction.generateDefaultData,
+	"junction-and-start": Junction.generateDefaultData,
+	"junction-and-end": Junction.generateDefaultData,
+	comment: Comment.generateDefaultData,
 };
 
 export const nodeTypes: Record<GrafcetElementType, any> = {

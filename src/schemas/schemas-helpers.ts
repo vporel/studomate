@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 
-export function createElementId() {
-	return uuidv4();
+export function createRandomId() {
+	return nanoid(15);
 }

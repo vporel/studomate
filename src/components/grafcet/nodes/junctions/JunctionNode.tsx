@@ -21,7 +21,7 @@ export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 	children: (props: {
 		branchAddButtonsPositions: number[]; //In pixels from the left of the node
 		onBranchAdd: (buttonIndex: number) => void;
-		selectedBranchIndex: number; //-1 if no one
+		selectedBranchId: string | null; //null if no one
 		pivotSelected: boolean;
 	}) => React.ReactNode;
 };
@@ -42,18 +42,18 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
 	const {
 		pivotSelected,
-		selectedBranchIndex,
+		selectedBranchId,
 		selectPivot,
 		selectBranch,
 		selectPreviousBranch,
 		selectNextBranch,
 		clearSelection,
-	} = useBarsSelection(data.branchesPositions.length);
+	} = useBarsSelection(data.branchesOrder);
 	const { add: onBranchAdd } = useBranchActions(id, data);
 	const handleKeyDown = useKeyboardEventsHandler(
 		id,
 		pivotSelected,
-		selectedBranchIndex,
+		selectedBranchId,
 		selectPreviousBranch,
 		selectNextBranch,
 		clearSelection,
@@ -67,9 +67,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	}, [data.width]);
 
 	useEffect(() => {
-		if ((pivotSelected || selectedBranchIndex != -1) && nodeHTMLElement.current)
+		if ((pivotSelected || selectedBranchId != null) && nodeHTMLElement.current)
 			nodeHTMLElement.current.focus();
-	}, [pivotSelected, selectedBranchIndex]);
+	}, [pivotSelected, selectedBranchId]);
 
 	return (
 		<>
@@ -79,15 +79,15 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 				minHeight={Junction.DEFAULT_DIMENSIONS.height}
 				maxHeight={Junction.DEFAULT_DIMENSIONS.height}
 			/>
-			{data.branchesPositions.map((pos, index) => (
+			{data.branchesOrder.map((branchId) => (
 				<HandleWithConnectionsLimit
-					key={index}
+					key={branchId}
 					limit={1}
-					id={"branch-" + (index + 1)}
+					id={branchId}
 					type={orientation == "start" ? "source" : "target"}
 					position={orientation == "start" ? Position.Bottom : Position.Top}
 					style={{
-						left: pos + "px",
+						left: data.branches[branchId]!.position + "px",
 						borderColor: borderColor,
 						backgroundColor: borderColor,
 					}}
@@ -132,7 +132,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 				{children({
 					branchAddButtonsPositions,
 					onBranchAdd,
-					selectedBranchIndex,
+					selectedBranchId,
 					pivotSelected,
 				})}
 			</GrafcetNode>

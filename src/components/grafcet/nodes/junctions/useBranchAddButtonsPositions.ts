@@ -8,28 +8,35 @@ export default function useBranchAddButtonsPositions(nodeData: JunctionData) {
 	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([]);
 	//Calculate the positions for the add branch buttons
 	useEffect(() => {
-		if (nodeData.branchesPositions.length == 0) {
+		if (nodeData.branchesOrder.length == 0) {
 			setBranchAddButtonsPositions([nodeData.width / 2]);
 			return;
 		}
 		const buttonsPositions = [];
-		if (nodeData.branchesPositions[0] <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH)
+		if (nodeData.branches[nodeData.branchesOrder[0]].position <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH)
 			buttonsPositions.push(-JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
-		else buttonsPositions.push(nodeData.branchesPositions[0] / 2);
-		for (let i = 1; i < nodeData.branchesPositions.length; i++) {
-			buttonsPositions.push((nodeData.branchesPositions[i - 1] + nodeData.branchesPositions[i]) / 2);
+		else buttonsPositions.push(nodeData.branches[nodeData.branchesOrder[0]].position / 2);
+		for (let i = 1; i < nodeData.branchesOrder.length; i++) {
+			buttonsPositions.push(
+				(nodeData.branches[nodeData.branchesOrder[i - 1]].position +
+					nodeData.branches[nodeData.branchesOrder[i]].position) /
+					2,
+			);
 		}
 		if (
-			nodeData.width - nodeData.branchesPositions[nodeData.branchesPositions.length - 1] <=
+			nodeData.width -
+				nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position <=
 			JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH
 		)
 			buttonsPositions.push(nodeData.width + JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
 		else
 			buttonsPositions.push(
-				(nodeData.branchesPositions[nodeData.branchesPositions.length - 1] + nodeData.width) / 2,
+				(nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position +
+					nodeData.width) /
+					2,
 			);
 		setBranchAddButtonsPositions(buttonsPositions);
-	}, [nodeData.width, nodeData.branchesPositions]);
+	}, [nodeData.width, nodeData.branchesOrder, nodeData.branches]);
 
 	return branchAddButtonsPositions;
 }

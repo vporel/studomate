@@ -9,7 +9,7 @@ import { useGrafcetStore } from "../../context/GrafcetContext";
 export default function useKeyboardEventsHandler(
 	nodeId: string,
 	pivotSelected: boolean,
-	selectedBranchIndex: number,
+	selectedBranchId: string | null,
 	selectPreviousBranch: () => void,
 	selectNextBranch: () => void,
 	clearSelection: () => void,
@@ -19,7 +19,7 @@ export default function useKeyboardEventsHandler(
 
 	return useCallback(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
-			if (!pivotSelected && selectedBranchIndex == -1) return;
+			if (!pivotSelected && selectedBranchId == null) return;
 			//If escape is pressed, clear the selection
 			if (e.key == "Escape") {
 				e.preventDefault();
@@ -49,17 +49,21 @@ export default function useKeyboardEventsHandler(
 							dataToChange.pivotPosition = newPosition;
 						}
 					}
-					if (selectedBranchIndex != -1) {
+					if (selectedBranchId != null) {
 						const newPosition =
-							prevData.branchesPositions[selectedBranchIndex] +
+							prevData.branches[selectedBranchId]!.position +
 							FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
 						if (
 							newPosition >= FLOW_GRID_CELL_WIDTH &&
 							newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH &&
-							!prevData.branchesPositions.includes(newPosition)
+							!prevData.branchesOrder.some((branchId) =>
+								branchId === selectedBranchId
+									? false
+									: prevData.branches[branchId]!.position === newPosition,
+							)
 						) {
-							dataToChange.branchesPositions = [...prevData.branchesPositions];
-							dataToChange.branchesPositions[selectedBranchIndex] = newPosition;
+							dataToChange.branches = { ...prevData.branches };
+							dataToChange.branches[selectedBranchId]!.position = newPosition;
 						}
 					}
 					return dataToChange;
@@ -73,7 +77,7 @@ export default function useKeyboardEventsHandler(
 			pivotSelected,
 			selectNextBranch,
 			selectPreviousBranch,
-			selectedBranchIndex,
+			selectedBranchId,
 			updateNodeData,
 			updatenodeInternals,
 		],

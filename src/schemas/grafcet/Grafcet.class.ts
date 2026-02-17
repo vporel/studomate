@@ -9,7 +9,7 @@ import JunctionOrStart from "./JunctionOrStart.class";
 import Step from "./Step.class";
 import StepReferralSource from "./StepReferralSource.class";
 import StepReferralTarget from "./StepReferralTarget.class";
-import Transition from "./transition.class";
+import Transition from "./Transition.class";
 
 export const DEFAULT_GRAFCET_NAME = "Sans titre";
 
@@ -106,7 +106,7 @@ export default class Grafcet {
 	addElements(elements: { type: GrafcetElementType; id: string; data: any; position: XYPosition }[]): void {
 		elements.forEach(({ type, id, data, position }) => {
 			const group = this.getElementGroup(type);
-			const element = new elementsSchemasClasses[type](id, data, position);
+			const element = new elementsSchemasClasses[type](id, structuredClone(data), position);
 			if (!group.find((e) => e.id === element.id)) {
 				group.push(element);
 			}
@@ -120,7 +120,7 @@ export default class Grafcet {
 			const group = this.getElementGroup(type);
 			const element = group.find((e) => e.id === id);
 			if (element) {
-				if (data) element.data = { ...element.data, ...data };
+				if (data) element.data = { ...element.data, ...structuredClone(data) };
 				if (position) element.position = position;
 			}
 		});

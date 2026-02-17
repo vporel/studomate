@@ -1,6 +1,5 @@
 import AbstractCommand from "@/schemas/commands/AbstractCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
-import { GrafcetConnectionData } from "@/schemas/grafcet/GrafcetConnection.class";
 import { NodeChange, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { GrafcetEdgeType, GrafcetNodeType } from "../../components/grafcet/flow/grafcet-nodes-definitions";
 
@@ -42,8 +41,8 @@ export interface GrafcetStoreState {
 	updateEdgeData: (
 		edgeId: string,
 		newData:
-			| Partial<GrafcetConnectionData>
-			| ((prevData: GrafcetConnectionData) => Partial<GrafcetConnectionData>),
+			| Partial<GrafcetEdgeType["data"]>
+			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 	) => void;
 
 	selectAllEdges: () => void;

@@ -27,7 +27,12 @@ export const junction_onNodeChange = (
 				...n.data,
 				width: nodeWidth ? nodeWidth : n.data.width,
 				pivotPosition: n.data.pivotPosition + positionDelta,
-				branchesPositions: n.data.branchesPositions.map((pos: number) => pos + positionDelta),
+				branches: Object.fromEntries(
+					Object.entries(n.data.branches).map(([branchId, branch]) => [
+						branchId,
+						{ ...branch, position: branch.position + positionDelta },
+					]),
+				),
 			},
 		}));
 	} else if (change.type == "dimensions") {

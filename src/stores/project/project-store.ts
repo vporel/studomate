@@ -4,7 +4,7 @@ import { localStorageGetProject, localStorageSaveProject } from "@/local-storage
 import CommandsStack from "@/schemas/commands/CommandsStack.class";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
-import { createElementId } from "@/schemas/schemas-helpers";
+import { createRandomId } from "@/schemas/schemas-helpers";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetFlowData, PageData, ProjectStoreState } from "./project-store-types";
@@ -40,7 +40,7 @@ export const createProjectStore = () => {
 	};
 
 	const _newProject = async (set: ProjectStoreSetFunction) => {
-		const newProject = new Project(createElementId(), DEFAULT_PROJECT_NAME, "");
+		const newProject = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
 		_openProject(set, newProject);
 	};
 
@@ -56,7 +56,7 @@ export const createProjectStore = () => {
 	};
 
 	return createStore<ProjectStoreState>((set, get) => ({
-		project: new Project(createElementId(), DEFAULT_PROJECT_NAME, ""),
+		project: new Project(createRandomId(), DEFAULT_PROJECT_NAME, ""),
 		hasUnsavedChanges: false,
 		unsavedChangesDialogVisible: false,
 		openModalVisible: false,
