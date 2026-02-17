@@ -105,8 +105,8 @@ export function GrafcetFlowContent() {
 					defaultEdgeOptions={{ type: "custom-edge" }}
 					connectionLineComponent={CustomConnectionLine}
 					isValidConnection={(connection) => validateConnection(connection as Connection, nodes)}
-					minZoom={0.5}
-					maxZoom={2}
+					minZoom={1}
+					maxZoom={2.5}
 					snapToGrid={true}
 					selectionOnDrag={true}
 					panOnDrag={false}

@@ -13,11 +13,6 @@ type PageData = {
 	title: string;
 };
 
-type GrafcetFlowData = {
-	nodes: GrafcetNode[];
-	edges: GrafcetEdge[];
-};
-
 export interface ProjectStoreState {
 	//Project
 	project: Project | null; //null when no project is opened
@@ -43,13 +38,10 @@ export interface ProjectStoreState {
 	setActiveScope: (scope: string | null) => void;
 
 	//Grafcets
-	_grafcetsFlowsData: Record<string, GrafcetFlowData>; //The data of the grafcet flows, indexed by grafcet id
 	newGrafcet: (name: string, format: GrafcetFormat) => void;
 	updateGrafcetData: (grafcet: Grafcet) => void;
 	deleteGrafcet: (grafcetId: string) => void;
 	renameGrafcet: (grafcetId: string, newName: string) => void;
-	updateGrafcetFlowData: (grafcetId: string, data: GrafcetFlowData) => void;
-	getGrafcetFlowData: (grafcetId: string) => GrafcetFlowData | undefined;
 	getGrafcet: (grafcetId: string) => Grafcet;
 
 	//Pages

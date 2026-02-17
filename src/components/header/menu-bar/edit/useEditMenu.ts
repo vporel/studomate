@@ -3,15 +3,10 @@
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { platformShortcut } from "@/lib/platform";
 import { useMemo } from "react";
-import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useEditMenu(): AppMenuType {
-	const { activeScopeType } = useProjectStore(
-		useShallow((state) => ({
-			activeScopeType: state.activeScopeType,
-		})),
-	);
+	const activeScopeType = useProjectStore((state) => state.activeScopeType);
 
 	return useMemo(
 		() => ({
@@ -44,6 +39,6 @@ export default function useEditMenu(): AppMenuType {
 				],
 			],
 		}),
-		[],
+		[activeScopeType],
 	);
 }

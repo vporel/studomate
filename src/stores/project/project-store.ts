@@ -7,7 +7,7 @@ import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
-import { GrafcetFlowData, PageData, ProjectStoreState } from "./project-store-types";
+import { PageData, ProjectStoreState } from "./project-store-types";
 
 const COMMANDS_STACK_SIZE = 100;
 
@@ -36,6 +36,7 @@ export const createProjectStore = () => {
 			pagesData: initialPagesData,
 			pagesOrder: initialPagesData ? Object.keys(initialPagesData) : [],
 			activePageId: initialPagesData ? Object.keys(initialPagesData)[0] : null,
+			activeScope: null,
 		}));
 	};
 
@@ -51,7 +52,7 @@ export const createProjectStore = () => {
 			pagesData: {},
 			pagesOrder: [],
 			activePageId: null,
-			_grafcetsFlowsData: {},
+			activeScope: null,
 		}));
 	};
 
@@ -157,6 +158,7 @@ export const createProjectStore = () => {
 			const previousScope = get().activeScope;
 			const pagesData = get().pagesData;
 			const scopeType = scope ? pagesData[scope]?.type || "project" : null;
+			console.log("Setting active scope to", scope, "of type", scopeType);
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
 			//If the scope is a grafcet, set the focus on the grafcet flow
 			//PRevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
@@ -221,18 +223,6 @@ export const createProjectStore = () => {
 			set(() => ({ project: newProject, hasUnsavedChanges: true }));
 		},
 
-		updateGrafcetFlowData: (grafcetId: string, data: GrafcetFlowData) => {
-			const grafcetsFlowsData = get()._grafcetsFlowsData;
-			const newGrafcetsFlowsData = structuredClone(grafcetsFlowsData);
-			newGrafcetsFlowsData[grafcetId] = data;
-			set(() => ({ _grafcetsFlowsData: newGrafcetsFlowsData }));
-		},
-
-		getGrafcetFlowData: (grafcetId: string) => {
-			const grafcetsFlowsData = get()._grafcetsFlowsData;
-			return grafcetsFlowsData[grafcetId];
-		},
-
 		getGrafcet: (grafcetId: string) => {
 			const project = get().project;
 			if (!project) throw new Error("No project opened");
@@ -257,7 +247,8 @@ export const createProjectStore = () => {
 			newPagesOrder.push(pageData.id);
 			const newPagesData = structuredClone(pagesData);
 			newPagesData[pageData.id] = pageData;
-			set(() => ({ pagesData: newPagesData, pagesOrder: newPagesOrder, activePageId: pageData.id }));
+			set(() => ({ pagesData: newPagesData, pagesOrder: newPagesOrder }));
+			get().setActivePage(pageData.id);
 		},
 
 		closePage: (pageId: string) => {
