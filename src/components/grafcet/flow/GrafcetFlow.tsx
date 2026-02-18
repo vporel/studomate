@@ -12,10 +12,14 @@ import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { GrafcetContextProvider, useGrafcetStore } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
-import { edgeTypes, nodeTypes, validateConnection } from "./grafcet-nodes-definitions";
+import {
+	edgeTypes,
+	GrafcetEdgeType,
+	GrafcetNodeType,
+	nodeTypes,
+	validateConnection,
+} from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
-import useEdgesHandlers from "./useEdgesHandlers";
-import useNodesHandlers from "./useNodesHandlers";
 import useShortcutsHandler from "./useShortcutsHandler";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
@@ -26,8 +30,6 @@ export function GrafcetFlowContent() {
 			setActiveScope: state.setActiveScope,
 		})),
 	);
-	const { onNodesDelete } = useNodesHandlers();
-	const { onConnect, onEdgesDelete } = useEdgesHandlers();
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
 	const handleShortcuts = useShortcutsHandler();
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
@@ -36,26 +38,16 @@ export function GrafcetFlowContent() {
 	const grafcetFormat = useGrafcetStore((state) => state.grafcet.format);
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
-	const { setReactFlowInstance, onNodesChange } = useGrafcetStore(
+	const { setReactFlowInstance, onNodesChange, deleteNodes, onConnect, deleteEdges } = useGrafcetStore(
 		useShallow((state) => ({
 			setReactFlowInstance: state.setReactFlowInstance,
 			onNodesChange: state.onNodesChange,
+			deleteNodes: state.deleteNodes,
+			onConnect: state.onConnect,
+			deleteEdges: state.deleteEdges,
 		})),
 	);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
-
-	//Share the grafcet data
-
-	// useEffect(() => {
-	// 	store?.subscribe((state) => {
-	// 		updatePageData(state.grafcet.id, {
-	// 			nodes: (state.rfInstance?.getNodes() || []) as GrafcetNode[],
-	// 			edges: (state.rfInstance?.getEdges() || []) as GrafcetEdge[],
-	// 		});
-	// 	});
-	// }, [store, updatePageData]);
-
-	//Context menu actions
 
 	return (
 		<Box
@@ -97,9 +89,13 @@ export function GrafcetFlowContent() {
 					edges={edges}
 					onInit={setReactFlowInstance as any}
 					onNodesChange={onNodesChange}
-					onNodesDelete={onNodesDelete}
+					onNodesDelete={(deleted: GrafcetNodeType[]) => {
+						deleteNodes(deleted.map((n) => n.id));
+					}}
 					onConnect={onConnect}
-					onEdgesDelete={onEdgesDelete}
+					onEdgesDelete={(deleted: GrafcetEdgeType[]) => {
+						deleteEdges(deleted.map((e) => e.id));
+					}}
 					nodeTypes={nodeTypes}
 					edgeTypes={edgeTypes}
 					defaultEdgeOptions={{ type: "custom-edge" }}
@@ -122,9 +118,7 @@ export function GrafcetFlowContent() {
 					onDragOver={handleToolDragOver}
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
-					onFocus={() => {
-						setActiveScope(grafcetId);
-					}}
+					onFocus={() => setActiveScope(grafcetId)}
 					onKeyDown={handleShortcuts}
 					onPaneContextMenu={onPaneContextMenu as any}
 					onNodeContextMenu={onNodeContextMenu}

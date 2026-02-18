@@ -8,7 +8,7 @@ import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateComm
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
 import GrafcetElement, { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { ReactFlowInstance } from "@xyflow/react";
+import { NodeDimensionChange, NodePositionChange, ReactFlowInstance } from "@xyflow/react";
 
 export const getInitialNodes = (grafcet: Grafcet): GrafcetNodeType[] => {
 	const elementsByType: Record<string, GrafcetElement<any>[]> = {
@@ -128,14 +128,15 @@ export const handleNodeDataChange = (
 export const getNodePositionChangeCommands = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
-	nodeId: string,
+	change: NodePositionChange,
 ): AbstractGrafcetCommand<any>[] => {
-	const node = rfInstance.getNode(nodeId) as GrafcetNodeType;
-	if (!node) throw new Error("Node not found for id " + nodeId);
+	if (change.dragging || !change.position) return []; //No position provided or the node is still being dragged, we will handle the position change on the next event when the dragging is finished
+	const node = rfInstance.getNode(change.id) as GrafcetNodeType;
+	if (!node) throw new Error("Node not found for id " + change.id);
 	const grafcetElement = grafcet.getElement(node.type, node.id);
 	if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);
 	//Make sure the position is not the same as the previous one, to avoid creating unnecessary commands
-	if (grafcetElement.position.x === node.position.x && grafcetElement.position.y === node.position.y) {
+	if (grafcetElement.position.x === change.position.x && grafcetElement.position.y === change.position.y) {
 		return [];
 	}
 	return [
@@ -144,7 +145,7 @@ export const getNodePositionChangeCommands = (
 				type: node.type,
 				id: node.id,
 				data: node.data,
-				position: node.position,
+				position: change.position,
 				previousData: node.data ? grafcetElement.data || {} : undefined,
 				previousPosition: node.position ? grafcetElement.position : undefined,
 			},
@@ -155,17 +156,17 @@ export const getNodePositionChangeCommands = (
 export const getNodeDimensionsChangeCommands = (
 	rfInstance: ReactFlowInstance,
 	grafcet: Grafcet,
-	nodeId: string,
+	change: NodeDimensionChange,
 ): AbstractGrafcetCommand<any>[] => {
-	const node = rfInstance.getNode(nodeId) as GrafcetNodeType;
-	if (!node) throw new Error("Node not found for id " + nodeId);
+	if (change.resizing || !change.dimensions) return []; //No dimensions provided or currently resizing (we will handle the change at the end of the resizing to avoid creating unnecessary commands during the resizing)
+	const node = rfInstance.getNode(change.id) as GrafcetNodeType;
+	if (!node) throw new Error("Node not found for id " + change.id);
 	const grafcetElement = grafcet.getElement(node.type, node.id);
 	if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);
-	//Make sur the dimensions are not the same as the previous ones, to avoid creating unnecessary commands
+	//Make sure the dimensions are not the same as the previous ones, to avoid creating unnecessary commands
 	if (
-		node.width === undefined ||
-		node.height === undefined ||
-		(grafcetElement.data.width === node.width && grafcetElement.data.height === node.height)
+		grafcetElement.data.width === change.dimensions.width &&
+		grafcetElement.data.height === change.dimensions.height
 	) {
 		return [];
 	}
@@ -174,7 +175,11 @@ export const getNodeDimensionsChangeCommands = (
 			{
 				type: node.type,
 				id: node.id,
-				data: { ...node.data, width: node.width, height: node.height } as any,
+				data: {
+					...node.data,
+					width: change.dimensions.width,
+					height: change.dimensions.height,
+				} as any,
 				position: node.position,
 				previousData: node.data ? grafcetElement.data || {} : undefined,
 				previousPosition: node.position

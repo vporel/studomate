@@ -123,15 +123,13 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 			changes.forEach((change) => {
 				switch (change.type) {
 					case "position": {
-						if (change.dragging) break;
-						const _commands = getNodePositionChangeCommands(rfInstance, grafcet, change.id);
+						const _commands = getNodePositionChangeCommands(rfInstance, grafcet, change);
 						commands.push(..._commands);
 						if (_commands.length > 0) nodesIdsToUpdateConnections.add(change.id);
 						break;
 					}
 					case "dimensions": {
-						if (change.resizing) break;
-						const _commands = getNodeDimensionsChangeCommands(rfInstance, grafcet, change.id);
+						const _commands = getNodeDimensionsChangeCommands(rfInstance, grafcet, change);
 						commands.push(..._commands);
 						if (_commands.length > 0) nodesIdsToUpdateConnections.add(change.id);
 						break;

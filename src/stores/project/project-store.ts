@@ -158,7 +158,6 @@ export const createProjectStore = () => {
 			const previousScope = get().activeScope;
 			const pagesData = get().pagesData;
 			const scopeType = scope ? pagesData[scope]?.type || "project" : null;
-			console.log("Setting active scope to", scope, "of type", scopeType);
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
 			//If the scope is a grafcet, set the focus on the grafcet flow
 			//PRevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
