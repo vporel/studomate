@@ -7,10 +7,7 @@ import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
 import GrafcetNode from "../GrafcetNode";
-import useBarsSelection from "./useBarsSelection";
-import useBranchActions from "./useBranchActions";
-import useBranchAddButtonsPositions from "./useBranchAddButtonsPositions";
-import useContextMenuEventsHandler from "./useContextMenuEventsHandler";
+import { JunctionNodeContextProvider, useJunctionNodeContext } from "./context/JunctionNodeContext";
 import useKeyboardEventsHandler from "./useKeyboardEventsHandler";
 
 export type JunctionNodeType = Node<JunctionData>;
@@ -18,15 +15,10 @@ export type JunctionNodeType = Node<JunctionData>;
 export type JunctionNodeProps = NodeProps<JunctionNodeType> & {
 	orientation: "start" | "end";
 	className?: string;
-	children: (props: {
-		branchAddButtonsPositions: number[]; //In pixels from the left of the node
-		onBranchAdd: (buttonIndex: number) => void;
-		selectedBranchId: string | null; //null if no one
-		pivotSelected: boolean;
-	}) => React.ReactNode;
+	children: React.ReactNode;
 };
 
-const JunctionNode: FC<JunctionNodeProps> = ({
+const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	id,
 	type,
 	data,
@@ -36,20 +28,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	className,
 	children,
 }) => {
-	const th = useTheme();
-	const nodeHTMLElement = useRef<HTMLDivElement>(null);
-	const borderColor = selected ? th.palette.primary.main : "black";
-	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
-	const {
-		pivotSelected,
-		selectedBranchId,
-		selectPivot,
-		selectBranch,
-		selectPreviousBranch,
-		selectNextBranch,
-		clearSelection,
-	} = useBarsSelection(data.branchesOrder);
-	const { add: onBranchAdd } = useBranchActions(id, data);
+	const { pivotSelected, selectedBranchId, selectPreviousBranch, selectNextBranch, clearSelection } =
+		useJunctionNodeContext();
+
 	const handleKeyDown = useKeyboardEventsHandler(
 		id,
 		pivotSelected,
@@ -59,7 +40,9 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 		clearSelection,
 	);
 
-	useContextMenuEventsHandler(id, selectPivot, selectBranch);
+	const th = useTheme();
+	const nodeHTMLElement = useRef<HTMLDivElement>(null);
+	const borderColor = selected ? th.palette.primary.main : "black";
 
 	//Snap to grid
 	useEffect(() => {
@@ -129,14 +112,19 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 				}}
 				onKeyDown={handleKeyDown}
 			>
-				{children({
-					branchAddButtonsPositions,
-					onBranchAdd,
-					selectedBranchId,
-					pivotSelected,
-				})}
+				{children}
 			</GrafcetNode>
 		</>
+	);
+};
+
+const JunctionNode: FC<JunctionNodeProps> = ({ id, data, children, ...props }) => {
+	return (
+		<JunctionNodeContextProvider id={id} data={data}>
+			<JunctionNodeContent id={id} data={data} {...props}>
+				{children}
+			</JunctionNodeContent>
+		</JunctionNodeContextProvider>
 	);
 };
 

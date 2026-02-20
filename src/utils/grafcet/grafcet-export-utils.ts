@@ -17,9 +17,8 @@ export const exportGrafcet = (grafcetId: string, fileName: string, format: Grafc
 	const padding = 10;
 	const pixelRatio = 5;
 	const scaledPadding = padding * pixelRatio;
-	const htmlElement = document.querySelector(
-		".grafcet-page#" + grafcetId + " .react-flow__viewport",
-	) as HTMLElement;
+	const grafcetElement = document.getElementById(grafcetId);
+	const htmlElement = grafcetElement?.querySelector(".react-flow__viewport") as HTMLElement;
 	domToImage
 		.toJpeg(htmlElement, {
 			width: dimensions.width * pixelRatio,

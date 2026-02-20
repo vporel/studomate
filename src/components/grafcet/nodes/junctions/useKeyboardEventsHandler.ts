@@ -38,7 +38,7 @@ export default function useKeyboardEventsHandler(
 					return;
 				}
 				updateNodeData(nodeId, (prevData) => {
-					prevData = prevData as JunctionData;
+					prevData = structuredClone(prevData) as JunctionData;
 					const dataToChange: Partial<JunctionData> = {};
 					if (pivotSelected) {
 						const newPosition = prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);

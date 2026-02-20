@@ -18,6 +18,10 @@ type GrafcetStoreValues = Pick<GrafcetStoreState, "hasCommandsToUndo" | "hasComm
 
 type GrafcetStoreActions = Pick<
 	GrafcetStoreState,
+	| "getZoom"
+	| "zoomIn"
+	| "zoomOut"
+	| "fitView"
 	| "selectAllNodesAndEdges"
 	| "copySelectedElements"
 	| "pasteCopiedElements"

@@ -2,7 +2,7 @@
 
 import { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { useEffect, useState } from "react";
-import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from "./JunctionNodeBranchAddButton";
+import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from "../JunctionNodeBranchAddButtons";
 
 export default function useBranchAddButtonsPositions(nodeData: JunctionData) {
 	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([]);

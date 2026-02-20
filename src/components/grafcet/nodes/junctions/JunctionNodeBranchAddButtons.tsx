@@ -1,6 +1,7 @@
 "use client";
 
 import { Box } from "@mui/material";
+import { useJunctionNodeContext } from "./context/JunctionNodeContext";
 
 export const JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH = 20;
 
@@ -43,4 +44,17 @@ const JunctionNodeBranchAddButton = ({
 	);
 };
 
-export default JunctionNodeBranchAddButton;
+const JunctionNodeBranchAddButtons = ({ top }: { top: number }) => {
+	const { branchAddButtonsPositions, onBranchAdd } = useJunctionNodeContext();
+
+	return branchAddButtonsPositions.map((pos, index) => (
+		<JunctionNodeBranchAddButton
+			key={index}
+			index={index}
+			position={{ top, left: pos }}
+			onClick={onBranchAdd}
+		/>
+	));
+};
+
+export default JunctionNodeBranchAddButtons;

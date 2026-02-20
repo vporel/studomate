@@ -24,6 +24,10 @@ export interface GrafcetStoreState {
 	hasCommandsToRedo: boolean;
 
 	setReactFlowInstance: (instance: ReactFlowInstance) => void;
+	getZoom: () => number;
+	zoomIn: () => void;
+	zoomOut: () => void;
+	fitView: () => void;
 	getNodes: () => GrafcetNodeType[];
 	addNodes: (newNodes: GrafcetNodeType[]) => void;
 	deleteNodes: (nodeIds: string[]) => void;

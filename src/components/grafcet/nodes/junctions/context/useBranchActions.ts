@@ -5,7 +5,7 @@ import { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import { useCallback } from "react";
-import { useGrafcetStore } from "../../context/GrafcetContext";
+import { useGrafcetStore } from "../../../context/GrafcetContext";
 
 export default function useBranchActions(
 	nodeId: string,

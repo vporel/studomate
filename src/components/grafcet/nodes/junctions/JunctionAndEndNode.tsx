@@ -3,7 +3,7 @@ import { Box, useTheme } from "@mui/material";
 import { NodeProps } from "@xyflow/react";
 import { type FC } from "react";
 import JunctionNode, { JunctionNodeType } from "./JunctionNode";
-import JunctionNodeBranchAddButton from "./JunctionNodeBranchAddButton";
+import JunctionNodeBranchAddButtons from "./JunctionNodeBranchAddButtons";
 import JunctionNodeVerticalBar from "./JunctionNodeVerticalBar";
 
 export type JunctionAndEndNodeType = JunctionNodeType & {
@@ -19,71 +19,56 @@ const JunctionAndEndNode: FC<JunctionAndEndNodeProps> = (props) => {
 
 	return (
 		<JunctionNode orientation="end" className="junction-and-end-node" {...props}>
-			{({ branchAddButtonsPositions, onBranchAdd, selectedBranchId, pivotSelected }) => (
-				<>
-					<Box
-						sx={{
-							width: "100%",
-							height: "13px",
-							position: "relative",
-						}}
-					>
-						{data.branchesOrder.map((branchId) => (
-							<JunctionNodeVerticalBar
-								key={branchId}
-								color={borderColor}
-								left={data.branches[branchId]!.position}
-								selected={selectedBranchId === branchId}
-							/>
-						))}
-					</Box>
-					<Box
-						sx={{
-							width: "100%",
-							height: "1px",
-							background: borderColor,
-						}}
+			<Box
+				sx={{
+					width: "100%",
+					height: "13px",
+					position: "relative",
+				}}
+			>
+				{data.branchesOrder.map((branchId) => (
+					<JunctionNodeVerticalBar
+						key={branchId}
+						color={borderColor}
+						left={data.branches[branchId]!.position}
+						pivot={false}
+						branchId={branchId}
 					/>
-					<Box
-						sx={{
-							width: "100%",
-							height: "1px",
-							background: borderColor,
-							marginTop: "3px",
-						}}
-					/>
-					<Box
-						sx={{
-							width: "100%",
-							height: "12px",
-							position: "relative",
-						}}
-					>
-						<JunctionNodeVerticalBar
-							color={borderColor}
-							left={data.pivotPosition}
-							selected={pivotSelected}
-						/>
-					</Box>
-					<Box
-						sx={{
-							marginLeft: data.pivotPosition + "px",
-							width: "1px",
-							height: "12px",
-							background: borderColor,
-						}}
-					/>
-					{/* Add branch buttons */}
-					{branchAddButtonsPositions.map((pos, index) => (
-						<JunctionNodeBranchAddButton
-							key={index}
-							index={index}
-							position={{ top: -10, left: pos }}
-							onClick={onBranchAdd}
-						/>
-					))}
-				</>
-			)}
+				))}
+			</Box>
+			<Box
+				sx={{
+					width: "100%",
+					height: "1px",
+					background: borderColor,
+				}}
+			/>
+			<Box
+				sx={{
+					width: "100%",
+					height: "1px",
+					background: borderColor,
+					marginTop: "3px",
+				}}
+			/>
+			<Box
+				sx={{
+					width: "100%",
+					height: "12px",
+					position: "relative",
+				}}
+			>
+				<JunctionNodeVerticalBar color={borderColor} left={data.pivotPosition} pivot={true} />
+			</Box>
+			<Box
+				sx={{
+					marginLeft: data.pivotPosition + "px",
+					width: "1px",
+					height: "12px",
+					background: borderColor,
+				}}
+			/>
+			<JunctionNodeBranchAddButtons top={-10} />
 		</JunctionNode>
 	);
 };

@@ -67,6 +67,10 @@ export const GrafcetContextProvider = ({
 		if (!storeRef.current) return;
 		const grafcetId = storeRef.current.getState().grafcet.id;
 		registerGrafcetStoreActions(grafcetId, {
+			getZoom: storeRef.current.getState().getZoom,
+			zoomIn: storeRef.current.getState().zoomIn,
+			zoomOut: storeRef.current.getState().zoomOut,
+			fitView: storeRef.current.getState().fitView,
 			selectAllNodesAndEdges: storeRef.current.getState().selectAllNodesAndEdges,
 			copySelectedElements: storeRef.current.getState().copySelectedElements,
 			pasteCopiedElements: storeRef.current.getState().pasteCopiedElements,

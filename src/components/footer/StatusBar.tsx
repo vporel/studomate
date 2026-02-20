@@ -5,12 +5,13 @@ import { formatDate } from "@/lib/date";
 import { Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
+import RightActions from "./RightActions";
 
 const StatusBar = () => {
-	const { projectAuthor, projectCreationDate } = useProjectStore(
+	const { projectAuthor, projectLastModificationDate } = useProjectStore(
 		useShallow((state) => ({
 			projectAuthor: state.project?.author,
-			projectCreationDate: state.project?.creationDate,
+			projectLastModificationDate: state.project?.lastModificationDate,
 		})),
 	);
 	return (
@@ -29,12 +30,14 @@ const StatusBar = () => {
 		>
 			<FlexBox centerVertical>
 				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
-					Auteur : {projectAuthor || "Inconnu"} | Date de création :{" "}
-					{projectCreationDate ? formatDate(projectCreationDate, "dd/MM/yyyy") : "/"}
+					Auteur : {projectAuthor || "Inconnu"} | Dernière modification :{" "}
+					{projectLastModificationDate
+						? formatDate(projectLastModificationDate, "dd/MM/yyyy HH:mm")
+						: "/"}
 				</Typography>
 			</FlexBox>
 
-			<FlexBox centerVertical gap={1}></FlexBox>
+			<RightActions />
 		</FlexBox>
 	);
 };

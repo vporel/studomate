@@ -77,7 +77,7 @@ export default class GrafcetElementsCommandsFactory {
 		newData:
 			| Partial<GrafcetNodeType["data"]>
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
-	): { commands: AbstractGrafcetCommand<any>[] } {
+	): { commands: AbstractGrafcetCommand<any>[]; nodeDataToUpdate?: GrafcetNodeType["data"] } {
 		const node = this.rfInstance.getNode(nodeId);
 		if (!node) return { commands: [] };
 		if (typeof newData === "function") {
@@ -103,7 +103,7 @@ export default class GrafcetElementsCommandsFactory {
 				]),
 			);
 		}
-		return { commands };
+		return { commands, nodeDataToUpdate: fullModifiedData };
 	}
 
 	onNodeChange(changes: NodeChange[]): {

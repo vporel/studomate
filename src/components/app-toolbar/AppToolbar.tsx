@@ -2,6 +2,7 @@
 
 import { Box, Divider } from "@mui/material";
 import React from "react";
+import HomeTool from "./HomeTool";
 import RedoTool from "./RedoTool";
 import SaveTool from "./SaveTool";
 import UndoTool from "./UndoTool";
@@ -22,6 +23,7 @@ const AppToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				...style,
 			}}
 		>
+			<HomeTool />
 			<SaveTool />
 			<Divider orientation="vertical" style={{ margin: "10px 0" }} />
 			<UndoTool />

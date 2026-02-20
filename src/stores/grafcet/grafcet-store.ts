@@ -94,6 +94,30 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 			_copyCutPasteManager.rfInstance = instance;
 		},
 
+		getZoom: () => {
+			const rfInstance = get().rfInstance;
+			if (!rfInstance) return 1;
+			return rfInstance.getZoom();
+		},
+
+		zoomIn: () => {
+			const rfInstance = get().rfInstance;
+			if (!rfInstance) return;
+			rfInstance.zoomIn();
+		},
+
+		zoomOut: () => {
+			const rfInstance = get().rfInstance;
+			if (!rfInstance) return;
+			rfInstance.zoomOut();
+		},
+
+		fitView: () => {
+			const rfInstance = get().rfInstance;
+			if (!rfInstance) return;
+			rfInstance.fitView();
+		},
+
 		getNodes: () => {
 			const rfInstance = get().rfInstance;
 			return (rfInstance ? rfInstance.getNodes() : []) as GrafcetNodeType[];
@@ -118,8 +142,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		},
 
 		onNodesChange: (changes) => {
-			const rfInstance = get().rfInstance;
-			if (!rfInstance) return;
+			if (!get().rfInstance) return;
 			changes.forEach((change) => {
 				const node = get().nodes?.find((n) => n.id === (change as any).id);
 				if (!node) return;
@@ -154,15 +177,14 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 
 		updateNodeData: (nodeId, newData) => {
 			if (!get().rfInstance) return;
-			const { commands } = _elementsCmdsFactory.onNodeDataChange(nodeId, newData);
+			const { commands, nodeDataToUpdate } = _elementsCmdsFactory.onNodeDataChange(nodeId, newData);
 			const setNode = _getNodeUpdater(set);
-			setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...newData } }) as GrafcetNodeType);
+			setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...nodeDataToUpdate } }) as GrafcetNodeType);
 			get().executeOperation(commands);
 		},
 
 		getEdges: () => {
-			const rfInstance = get().rfInstance;
-			return (rfInstance ? rfInstance.getEdges() : []) as GrafcetEdgeType[];
+			return get().edges;
 		},
 
 		addEdges: (newEdges: GrafcetEdgeType[]) => {
@@ -190,16 +212,14 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		},
 
 		onEdgesChange: (changes) => {
-			const rfInstance = get().rfInstance;
-			if (!rfInstance) return;
+			if (!get().rfInstance) return;
 			set(() => ({
 				edges: applyEdgeChanges(changes, get().edges!),
 			}));
 		},
 
 		deleteEdges: (edgeIds: string[]) => {
-			const rfInstance = get().rfInstance;
-			if (!rfInstance) return;
+			if (!get().rfInstance) return;
 			const grafcet = get().grafcet;
 			const edges = get().edges;
 			set(() => ({ edges: edges.filter((e) => !edgeIds.includes(e.id)) }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { Save as SaveIcon } from "@mui/icons-material";
+import { SaveOutlined as SaveIcon } from "@mui/icons-material";
 import { useProjectStore } from "../projects/ProjectContext";
 import AppTool from "./AppTool";
 

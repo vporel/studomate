@@ -15,6 +15,9 @@ import { edgeTypes, nodeTypes, validateConnection } from "./grafcet-nodes-defini
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
+export const GRAFCET_FLOW_MIN_ZOOM = 1;
+export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
+
 export function GrafcetFlowContent() {
 	const th = useTheme();
 	const { setActiveScope } = useProjectStore(
@@ -94,8 +97,8 @@ export function GrafcetFlowContent() {
 					defaultEdgeOptions={{ type: "custom-edge" }}
 					connectionLineComponent={CustomConnectionLine}
 					isValidConnection={(connection) => validateConnection(connection as Connection, nodes)}
-					minZoom={1}
-					maxZoom={2.5}
+					minZoom={GRAFCET_FLOW_MIN_ZOOM}
+					maxZoom={GRAFCET_FLOW_MAX_ZOOM}
 					snapToGrid={true}
 					selectionOnDrag={true}
 					panOnDrag={false}

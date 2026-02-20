@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useGrafcetContext } from "../../context/GrafcetContext";
-import { GrafcetContextMenuNodeAction } from "../../context/context-menu-events";
+import { useGrafcetContext } from "../../../context/GrafcetContext";
+import { GrafcetContextMenuNodeAction } from "../../../context/context-menu-events";
 
 export default function useContextMenuEventsHandler(
 	nodeId: string,
