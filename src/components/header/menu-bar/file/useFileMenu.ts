@@ -2,31 +2,21 @@
 
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { platformShortcut } from "@/lib/platform";
-import { exportGrafcet } from "@/utils/grafcet/grafcet-export-utils";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useFileMenu(): AppMenuType {
-	const {
-		setOpenModalVisible,
-		newProject,
-		closeProject,
-		saveProject,
-		activeScope,
-		activeScopeType,
-		getGrafcet,
-	} = useProjectStore(
-		useShallow((state) => ({
-			setOpenModalVisible: state.setOpenModalVisible,
-			newProject: state.newProject,
-			closeProject: state.closeProject,
-			saveProject: state.saveProject,
-			activeScope: state.activeScope,
-			activeScopeType: state.activeScopeType,
-			getGrafcet: state.getGrafcet,
-		})),
-	);
+	const { setOpenModalVisible, setExportModalVisible, newProject, closeProject, saveProject } =
+		useProjectStore(
+			useShallow((state) => ({
+				setOpenModalVisible: state.setOpenModalVisible,
+				setExportModalVisible: state.setExportModalVisible,
+				newProject: state.newProject,
+				closeProject: state.closeProject,
+				saveProject: state.saveProject,
+			})),
+		);
 
 	return useMemo(
 		() => ({
@@ -58,15 +48,7 @@ export default function useFileMenu(): AppMenuType {
 					{
 						label: "Exporter",
 						shortcut: platformShortcut("Ctrl+E", "Cmd+E"),
-						onClick: () => {
-							if (activeScopeType === "grafcet") {
-								const grafcet = getGrafcet(activeScope!);
-								if (grafcet) {
-									exportGrafcet(grafcet.id, grafcet.format);
-								}
-							}
-						},
-						disabled: activeScopeType !== "grafcet",
+						onClick: () => setExportModalVisible(true),
 					},
 				],
 				[
@@ -78,6 +60,6 @@ export default function useFileMenu(): AppMenuType {
 				],
 			],
 		}),
-		[newProject, saveProject, activeScopeType, closeProject, setOpenModalVisible],
+		[newProject, saveProject, closeProject, setOpenModalVisible, setExportModalVisible],
 	);
 }

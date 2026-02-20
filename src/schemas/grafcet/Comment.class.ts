@@ -1,10 +1,8 @@
 import { Dimensions } from "./Grafcet.class";
-import GrafcetElement from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
-export type CommentData = {
+export type CommentData = BaseData & {
 	text: string;
-	width: number;
-	height: number;
 };
 
 export default class Comment extends GrafcetElement<CommentData> {

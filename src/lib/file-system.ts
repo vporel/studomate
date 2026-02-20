@@ -1,10 +1,14 @@
 "use client";
 
-//A function like openSaveDialog but to open a file
-
+/**
+ *
+ * @param description
+ * @param accept
+ * @returns a file handle
+ */
 export async function openFileDialog(
 	description: string,
-	accept: { [key: string]: string[] }
+	accept: { [key: string]: string[] },
 ): Promise<FileSystemFileHandle | null> {
 	// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
 	if (typeof window === "undefined" || !window.showOpenFilePicker)
@@ -26,10 +30,29 @@ export async function openFileDialog(
 	}
 }
 
+export function openFileViaInput(accept: string): Promise<string | null> {
+	return new Promise((resolve) => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = accept;
+		input.onchange = async () => {
+			const file = input.files?.[0];
+			if (!file) return resolve(null);
+			try {
+				const text = await file.text();
+				resolve(text);
+			} catch (e) {
+				resolve(null);
+			}
+		};
+		input.click();
+	});
+}
+
 export async function openSaveDialog(
 	description: string,
 	accept: { [key: string]: string[] },
-	suggestedName?: string
+	suggestedName?: string,
 ): Promise<FileSystemFileHandle | null> {
 	// @ts-expect-error The showSaveFilePicker API is not yet fully supported in TypeScript's
 	if (typeof window === "undefined" || !window.showSaveFilePicker)

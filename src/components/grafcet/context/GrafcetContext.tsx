@@ -32,8 +32,18 @@ export const GrafcetContextProvider = ({
 		storeRef.current = createGrafcetStore(initialGrafcet);
 	}
 
-	const { updateGrafcetData } = useProjectStore(
-		useShallow((state) => ({ updateGrafcetData: state.updateGrafcetData })),
+	const {
+		updateGrafcetData,
+		setGrafcetStoreValues,
+		registerGrafcetStoreActions,
+		deleteGrafcetStoreActions,
+	} = useProjectStore(
+		useShallow((state) => ({
+			updateGrafcetData: state.updateGrafcetData,
+			registerGrafcetStoreActions: state.registerGrafcetStoreActions,
+			deleteGrafcetStoreActions: state.deleteGrafcetStoreActions,
+			setGrafcetStoreValues: state.setGrafcetStoreValues,
+		})),
 	);
 	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);
 
@@ -42,11 +52,31 @@ export const GrafcetContextProvider = ({
 		if (!storeRef.current) return;
 		const unsubscribe = storeRef.current.subscribe((state) => {
 			updateGrafcetData(state.grafcet);
+			setGrafcetStoreValues(state.grafcet.id, {
+				hasCommandsToUndo: state.hasCommandsToUndo,
+				hasCommandsToRedo: state.hasCommandsToRedo,
+			});
 		});
 		return () => {
 			unsubscribe();
 		};
-	}, [updateGrafcetData]);
+	}, [updateGrafcetData, setGrafcetStoreValues]);
+
+	//Register the store actions in the project store so they can be accessed from other components
+	useEffect(() => {
+		if (!storeRef.current) return;
+		const grafcetId = storeRef.current.getState().grafcet.id;
+		registerGrafcetStoreActions(grafcetId, {
+			selectAllNodesAndEdges: storeRef.current.getState().selectAllNodesAndEdges,
+			copySelectedElements: storeRef.current.getState().copySelectedElements,
+			pasteCopiedElements: storeRef.current.getState().pasteCopiedElements,
+			undoOperation: storeRef.current.getState().undoOperation,
+			redoOperation: storeRef.current.getState().redoOperation,
+		});
+		return () => {
+			deleteGrafcetStoreActions(grafcetId);
+		};
+	}, [registerGrafcetStoreActions, deleteGrafcetStoreActions]);
 
 	return (
 		<GrafcetContext.Provider

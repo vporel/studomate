@@ -1,6 +1,6 @@
 import AbstractCommand from "@/schemas/commands/AbstractCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
-import { NodeChange, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
+import { EdgeChange, NodeChange, ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { GrafcetEdgeType, GrafcetNodeType } from "../../components/grafcet/flow/grafcet-nodes-definitions";
 
 /**
@@ -20,6 +20,8 @@ export interface GrafcetStoreState {
 	rfInstance: ReactFlowInstance | null;
 	nodes: GrafcetNodeType[];
 	edges: GrafcetEdgeType[];
+	hasCommandsToUndo: boolean;
+	hasCommandsToRedo: boolean;
 
 	setReactFlowInstance: (instance: ReactFlowInstance) => void;
 	getNodes: () => GrafcetNodeType[];
@@ -34,9 +36,10 @@ export interface GrafcetStoreState {
 	) => void;
 
 	getEdges: () => GrafcetEdgeType[];
+	addEdges: (newEdges: GrafcetEdgeType[]) => void;
 	onConnect: (connection: XYFlowConnection) => void;
+	onEdgesChange: (changes: EdgeChange<GrafcetEdgeType>[]) => void;
 	deleteEdges: (edgeIds: string[]) => void;
-
 	//This function only update the schema
 	updateEdgeData: (
 		edgeId: string,
@@ -45,8 +48,18 @@ export interface GrafcetStoreState {
 			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 	) => void;
 
+	/**
+	 * Used when whe don't to have separate calls to add nodes and edges, for example when pasting elements, to avoid multiple updates of the grafcet state
+	 */
+	addNodesAndEdges: (newNodes: GrafcetNodeType[], newEdges: GrafcetEdgeType[]) => void; //Helper to add nodes and edges at the same time, for example when pasting elements
+	deleteNodesAndEdges: (nodeIds: string[], edgeIds: string[]) => void; //To delete nodes and edges at the same time, for example when deleting a selection
+
 	selectAllEdges: () => void;
 	selectAllNodesAndEdges: () => void;
+	deselectAllNodesAndEdges: () => void;
+
+	copySelectedElements: () => void;
+	pasteCopiedElements: (mousePosition?: { x: number; y: number }) => void;
 
 	//Operations stack management
 	/**

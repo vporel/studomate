@@ -8,6 +8,8 @@ export default class StepReferralTarget extends StepReferral<StepReferralTargetD
 	static generateDefaultData(): StepReferralTargetData {
 		return {
 			sourceStepNumber: "",
+			width: StepReferralTarget.DEFAULT_DIMENSIONS.width,
+			height: StepReferralTarget.DEFAULT_DIMENSIONS.height,
 		};
 	}
 

@@ -25,13 +25,13 @@ type ThemeContextType = {
 export const DEFAULT_THEME: Theme = {
 	light: {
 		primaryColor: "#1976d2",
-		secondaryColor: "#9c27b0",
+		secondaryColor: "#606060",
 		backgroundColor: "#ffffff",
 		textColor: "#000000",
 	},
 	dark: {
 		primaryColor: "#90caf9",
-		secondaryColor: "#ce93d8",
+		secondaryColor: "#c9c9c9",
 		backgroundColor: "#121212",
 		textColor: "#ffffff",
 	},
@@ -99,7 +99,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 					},
 				},
 			}),
-		[breakpoints, theme]
+		[breakpoints, theme],
 	);
 
 	return (

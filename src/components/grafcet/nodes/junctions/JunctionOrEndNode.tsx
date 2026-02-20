@@ -24,7 +24,7 @@ const JunctionOrEndNode: FC<JunctionOrEndNodeProps> = (props) => {
 					<Box
 						sx={{
 							width: "100%",
-							height: "13px",
+							height: "14px",
 							position: "relative",
 						}}
 					>
@@ -40,14 +40,14 @@ const JunctionOrEndNode: FC<JunctionOrEndNodeProps> = (props) => {
 					<Box
 						sx={{
 							width: "100%",
-							height: "1px",
+							height: "2px",
 							background: borderColor,
 						}}
 					/>
 					<Box
 						sx={{
 							width: "100%",
-							height: "13px",
+							height: "14px",
 							position: "relative",
 						}}
 					>

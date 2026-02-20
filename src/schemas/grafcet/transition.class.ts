@@ -1,7 +1,7 @@
 import { Dimensions } from "./Grafcet.class";
-import GrafcetElement from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
-export type TransitionData = {
+export type TransitionData = BaseData & {
 	expression: string;
 };
 
@@ -14,11 +14,12 @@ export default class Transition extends GrafcetElement<TransitionData> {
 	static generateDefaultData(): TransitionData {
 		return {
 			expression: "",
+			width: Transition.DEFAULT_DIMENSIONS.width,
+			height: Transition.DEFAULT_DIMENSIONS.height,
 		};
 	}
 
 	/**
-	 *
 	 * @returns null if there is no error
 	 */
 	validate(): string[] | null {

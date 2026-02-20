@@ -4,7 +4,43 @@ import FlexBox from "@/lib/boxes/FlexBox";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import AppToolbar from "../app-toolbar/AppToolbar";
 import { useProjectStore } from "../projects/ProjectContext";
+
+const UnsavedChangesIndicator = () => {
+	const { hasUnsavedChanges, saveProject, savingProject } = useProjectStore(
+		useShallow((state) => ({
+			hasUnsavedChanges: state.hasUnsavedChanges,
+			saveProject: state.saveProject,
+			savingProject: state.savingProject,
+		})),
+	);
+	return (
+		<FlexBox>
+			{hasUnsavedChanges && (
+				<Typography
+					color="error"
+					style={{
+						background: "rgba(255, 100, 0, 0.2)",
+						padding: "2px",
+						borderRadius: "5px",
+						fontSize: "0.8rem",
+						cursor: "pointer",
+						userSelect: "none",
+						opacity: savingProject ? 0.5 : 1,
+					}}
+					onClick={async () => {
+						if (savingProject) return;
+						await saveProject();
+					}}
+				>
+					Cliquez ici pour enregistrer.
+				</Typography>
+			)}
+			{savingProject && <CircularProgress size={15} />}
+		</FlexBox>
+	);
+};
 
 const TitleBar = () => {
 	const { projectName, hasUnsavedChanges, saveProject, savingProject } = useProjectStore(
@@ -35,8 +71,13 @@ const TitleBar = () => {
 				backgroundColor: "white",
 				paddingLeft: "5px",
 				gap: "10px",
+				justifyContent: "space-between",
 			}}
 		>
+			<FlexBox centerVertical sx={{ width: 350, gap: 1 }}>
+				<AppToolbar />
+				<UnsavedChangesIndicator />
+			</FlexBox>
 			<Box
 				ref={projectNameInputRef}
 				component="input"
@@ -52,32 +93,13 @@ const TitleBar = () => {
 					}
 				}}
 				sx={{
+					flex: 1,
 					fontWeight: "bold",
 					width: "250px",
+					textAlign: "center",
 				}}
 			/>
-
-			{hasUnsavedChanges && (
-				<Typography
-					color="error"
-					style={{
-						background: "rgba(255, 100, 0, 0.2)",
-						padding: "2px",
-						borderRadius: "5px",
-						fontSize: "0.8rem",
-						cursor: "pointer",
-						userSelect: "none",
-						opacity: savingProject ? 0.5 : 1,
-					}}
-					onClick={async () => {
-						if (savingProject) return;
-						await saveProject();
-					}}
-				>
-					Cliquez ici pour enregistrer.
-				</Typography>
-			)}
-			{savingProject && <CircularProgress size={15} />}
+			<Box sx={{ width: 350 }} />
 		</FlexBox>
 	);
 };

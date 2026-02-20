@@ -3,8 +3,9 @@ import { createProjectStore } from "@/stores/project/project-store";
 import { ProjectStoreState } from "@/stores/project/project-store-types";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import UnsavedChangesDialog from "../dialogs/UnsavedChangesDialog";
+import ExportModal from "./ExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
+import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
@@ -33,12 +34,24 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		};
 	}, []);
 
+	//Constantly update the mouse position in the store to be able to paste elements at the right position
+	useEffect(() => {
+		const handleMouseMove = (event: MouseEvent) => {
+			storeRef.current?.setState({ mousePosition: { x: event.clientX, y: event.clientY } });
+		};
+		window.addEventListener("mousemove", handleMouseMove);
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+		};
+	}, []);
+
 	return (
 		<ProjectContext.Provider value={storeRef.current}>
 			{children}
 			<ShortcutsHandler />
-			<UnsavedChangesDialog message="Voulez-vous enregistrer les modifications avant de quitter le projet ?" />
+			<UnsavedChangesDialog />
 			<ProjectOpenModal />
+			<ExportModal />
 		</ProjectContext.Provider>
 	);
 };

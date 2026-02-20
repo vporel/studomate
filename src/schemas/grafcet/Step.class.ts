@@ -1,7 +1,7 @@
 import { Dimensions } from "./Grafcet.class";
-import GrafcetElement from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
-export type StepData = {
+export type StepData = BaseData & {
 	number: number | "";
 	isInitial?: boolean;
 };
@@ -16,6 +16,8 @@ export default class Step extends GrafcetElement<StepData> {
 		return {
 			number: "",
 			isInitial: false,
+			width: Step.DEFAULT_DIMENSIONS.width,
+			height: Step.DEFAULT_DIMENSIONS.height,
 		};
 	}
 

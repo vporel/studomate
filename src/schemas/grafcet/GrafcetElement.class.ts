@@ -16,7 +16,12 @@ export const GRAFCET_ELEMENT_TYPES = [
 
 export type GrafcetElementType = (typeof GRAFCET_ELEMENT_TYPES)[number];
 
-export default abstract class GrafcetElement<DataType> {
+export type BaseData = {
+	width: number;
+	height: number;
+};
+
+export default abstract class GrafcetElement<DataType extends BaseData> {
 	id: string = "";
 	data: DataType;
 	position: XYPosition = { x: 0, y: 0 };

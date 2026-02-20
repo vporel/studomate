@@ -7,7 +7,7 @@ import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
-import { PageData, ProjectStoreState } from "./project-store-types";
+import { GrafcetStoreActions, GrafcetStoreValues, PageData, ProjectStoreState } from "./project-store-types";
 
 const COMMANDS_STACK_SIZE = 100;
 
@@ -60,7 +60,9 @@ export const createProjectStore = () => {
 		project: new Project(createRandomId(), DEFAULT_PROJECT_NAME, ""),
 		hasUnsavedChanges: false,
 		unsavedChangesDialogVisible: false,
+		unsavedChangesDialogMessage: null,
 		openModalVisible: false,
+		exportModalVisible: false,
 		onUnsavedChangesDialogCancel: null,
 		onUnsavedChangesDialogContinue: null,
 		savingProject: false,
@@ -81,6 +83,7 @@ export const createProjectStore = () => {
 			}
 			set(() => ({
 				unsavedChangesDialogVisible: true,
+				unsavedChangesDialogMessage: null,
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
 					_newProject(set);
@@ -107,6 +110,7 @@ export const createProjectStore = () => {
 			}
 			set(() => ({
 				unsavedChangesDialogVisible: true,
+				unsavedChangesDialogMessage: null,
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
 					_closeProject(set);
@@ -148,8 +152,27 @@ export const createProjectStore = () => {
 			} else {
 				set(() => ({
 					unsavedChangesDialogVisible: true,
+					unsavedChangesDialogMessage: null,
 					onUnsavedChangesDialogCancel: null,
 					onUnsavedChangesDialogContinue: () => set(() => ({ openModalVisible: true })),
+				}));
+			}
+		},
+
+		setExportModalVisible: (visible: boolean) => {
+			if (!visible) {
+				set(() => ({ exportModalVisible: false }));
+				return;
+			}
+			if (!get().hasUnsavedChanges) {
+				set(() => ({ exportModalVisible: true }));
+			} else {
+				set(() => ({
+					unsavedChangesDialogVisible: true,
+					unsavedChangesDialogMessage:
+						"Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant d'exporter ?",
+					onUnsavedChangesDialogCancel: null,
+					onUnsavedChangesDialogContinue: () => set(() => ({ exportModalVisible: true })),
 				}));
 			}
 		},
@@ -167,7 +190,49 @@ export const createProjectStore = () => {
 		},
 
 		//Grafcets
-		_grafcetsFlowsData: {},
+		grafcetsStoresValues: {},
+		grafcetsStoresActions: {},
+
+		getActiveGrafcetStoreValues: () => {
+			const activeScope = get().activeScope;
+			const activeScopeType = get().activeScopeType;
+			if (activeScopeType !== "grafcet" || !activeScope) return null;
+			return get().grafcetsStoresValues[activeScope] || null;
+		},
+
+		setGrafcetStoreValues: (grafcetId: string, values: GrafcetStoreValues) => {
+			set((state) => {
+				const newGrafcetsStoresValues = { ...state.grafcetsStoresValues };
+				newGrafcetsStoresValues[grafcetId] = {
+					...newGrafcetsStoresValues[grafcetId],
+					...values,
+				};
+				return { grafcetsStoresValues: newGrafcetsStoresValues };
+			});
+		},
+
+		registerGrafcetStoreActions: (grafcetId: string, actions: GrafcetStoreActions) => {
+			set((state) => {
+				const newGrafcetsStoresActions = { ...state.grafcetsStoresActions };
+				newGrafcetsStoresActions[grafcetId] = actions;
+				return { grafcetsStoresActions: newGrafcetsStoresActions };
+			});
+		},
+
+		getActiveGrafcetStoreActions: () => {
+			const activeScope = get().activeScope;
+			const activeScopeType = get().activeScopeType;
+			if (activeScopeType !== "grafcet" || !activeScope) return null;
+			return get().grafcetsStoresActions[activeScope] || null;
+		},
+
+		deleteGrafcetStoreActions: (grafcetId: string) => {
+			set((state) => {
+				const newGrafcetsStoresActions = { ...state.grafcetsStoresActions };
+				delete newGrafcetsStoresActions[grafcetId];
+				return { grafcetsStoresActions: newGrafcetsStoresActions };
+			});
+		},
 
 		newGrafcet: (name: string, format: GrafcetFormat) => {
 			const project = get().project;
@@ -284,5 +349,7 @@ export const createProjectStore = () => {
 			get().setActiveScope(pageId);
 			set(() => ({ activePageId: pageId }));
 		},
+
+		mousePosition: { x: 0, y: 0 },
 	}));
 };

@@ -1,7 +1,6 @@
 "use client";
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -10,17 +9,10 @@ import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
-import { GrafcetContextProvider, useGrafcetStore } from "../context/GrafcetContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
-import {
-	edgeTypes,
-	GrafcetEdgeType,
-	GrafcetNodeType,
-	nodeTypes,
-	validateConnection,
-} from "./grafcet-nodes-definitions";
+import { edgeTypes, nodeTypes, validateConnection } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
-import useShortcutsHandler from "./useShortcutsHandler";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
 export function GrafcetFlowContent() {
@@ -31,22 +23,22 @@ export function GrafcetFlowContent() {
 		})),
 	);
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
-	const handleShortcuts = useShortcutsHandler();
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
 	// const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
 	const grafcetFormat = useGrafcetStore((state) => state.grafcet.format);
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
-	const { setReactFlowInstance, onNodesChange, deleteNodes, onConnect, deleteEdges } = useGrafcetStore(
-		useShallow((state) => ({
-			setReactFlowInstance: state.setReactFlowInstance,
-			onNodesChange: state.onNodesChange,
-			deleteNodes: state.deleteNodes,
-			onConnect: state.onConnect,
-			deleteEdges: state.deleteEdges,
-		})),
-	);
+	const { setReactFlowInstance, onNodesChange, onEdgesChange, deleteNodesAndEdges, onConnect } =
+		useGrafcetStore(
+			useShallow((state) => ({
+				setReactFlowInstance: state.setReactFlowInstance,
+				onNodesChange: state.onNodesChange,
+				onEdgesChange: state.onEdgesChange,
+				deleteNodesAndEdges: state.deleteNodesAndEdges,
+				onConnect: state.onConnect,
+			})),
+		);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
 
 	return (
@@ -89,12 +81,13 @@ export function GrafcetFlowContent() {
 					edges={edges}
 					onInit={setReactFlowInstance as any}
 					onNodesChange={onNodesChange}
-					onNodesDelete={(deleted: GrafcetNodeType[]) => {
-						deleteNodes(deleted.map((n) => n.id));
-					}}
 					onConnect={onConnect}
-					onEdgesDelete={(deleted: GrafcetEdgeType[]) => {
-						deleteEdges(deleted.map((e) => e.id));
+					onEdgesChange={onEdgesChange}
+					onDelete={({ nodes, edges }) => {
+						deleteNodesAndEdges(
+							nodes.map((n) => n.id),
+							edges.map((e) => e.id),
+						);
 					}}
 					nodeTypes={nodeTypes}
 					edgeTypes={edgeTypes}
@@ -119,7 +112,6 @@ export function GrafcetFlowContent() {
 					onDrop={handleToolDrop}
 					tabIndex={0} //This attribute is necessary so that the flow can be focused with the mouse click
 					onFocus={() => setActiveScope(grafcetId)}
-					onKeyDown={handleShortcuts}
 					onPaneContextMenu={onPaneContextMenu as any}
 					onNodeContextMenu={onNodeContextMenu}
 					onEdgeContextMenu={onEdgeContextMenu}
@@ -136,12 +128,10 @@ export function GrafcetFlowContent() {
 	);
 }
 
-export default function GrafcetFlow({ initialGrafcet }: { initialGrafcet: Grafcet }) {
+export default function GrafcetFlow() {
 	return (
-		<GrafcetContextProvider initialGrafcet={initialGrafcet}>
-			<ReactFlowProvider>
-				<GrafcetFlowContent />
-			</ReactFlowProvider>
-		</GrafcetContextProvider>
+		<ReactFlowProvider>
+			<GrafcetFlowContent />
+		</ReactFlowProvider>
 	);
 }

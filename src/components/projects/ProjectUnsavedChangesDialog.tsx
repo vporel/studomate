@@ -8,13 +8,11 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
-import { useProjectStore } from "../projects/ProjectContext";
+import { useProjectStore } from "./ProjectContext";
 
 const UnsavedChangesDialog = ({
-	message,
 	buttonsProps,
 }: {
-	message: string;
 	buttonsProps?: {
 		cancel?: {
 			text?: string;
@@ -27,9 +25,10 @@ const UnsavedChangesDialog = ({
 		};
 	};
 }) => {
-	const { visible, setVisible, saveProject, onContinue, onCancel } = useProjectStore(
+	const { visible, message, setVisible, saveProject, onContinue, onCancel } = useProjectStore(
 		useShallow((state) => ({
 			visible: state.unsavedChangesDialogVisible,
+			message: state.unsavedChangesDialogMessage,
 			setVisible: state.setUnsavedChangesDialogVisible,
 			saveProject: state.saveProject,
 			onContinue: state.onUnsavedChangesDialogContinue,
@@ -73,14 +72,16 @@ const UnsavedChangesDialog = ({
 				<CloseIcon />
 			</IconButton>
 			<DialogContent dividers>
-				<Typography gutterBottom>{message}</Typography>
+				<Typography gutterBottom>
+					{message || "Voulez-vous enregistrer les modifications avant de quitter le projet ?"}
+				</Typography>
 			</DialogContent>
 			<DialogActions>
 				<Button autoFocus onClick={onSave}>
 					{buttonsProps?.save?.text || "Enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onContinueWithoutSaving}>
-					{buttonsProps?.continueWithoutSaving?.text || "Quitter sans enregistrer"}
+					{buttonsProps?.continueWithoutSaving?.text || "Continuer sans enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onClose}>
 					{buttonsProps?.cancel?.text || "Annuler"}

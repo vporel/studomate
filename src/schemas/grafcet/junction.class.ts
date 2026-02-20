@@ -1,15 +1,13 @@
 import { createRandomId } from "../schemas-helpers";
 import { Dimensions } from "./Grafcet.class";
-import GrafcetElement from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
 export type JunctionBranch = {
 	id: string;
 	position: number; //In pixels from the left of the node
 };
 
-export type JunctionData = {
-	width: number;
-	height: number;
+export type JunctionData = BaseData & {
 	pivotPosition: number; //In pixels from the left of the node
 	branches: Record<string, JunctionBranch>; //Map of branch id to branch data
 	branchesOrder: string[]; //List of branch ids in the order they are displayed (from left to right)

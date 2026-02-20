@@ -3,7 +3,13 @@ import { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import domToImage from "dom-to-image";
 
-export const exportGrafcet = (grafcetId: string, format: GrafcetFormat) => {
+/**
+ * Export a grafcet as an image (jpeg)
+ * @param grafcetId
+ * @param fileName
+ * @param format
+ */
+export const exportGrafcet = (grafcetId: string, fileName: string, format: GrafcetFormat) => {
 	const dimensions = getFlowDimensions(format);
 	// we calculate a transform for the nodes so that all nodes are visible
 	// we then overwrite the transform of the `.react-flow__viewport` element
@@ -28,5 +34,5 @@ export const exportGrafcet = (grafcetId: string, format: GrafcetFormat) => {
 			// 	return (typeof (node as any).className !== "string") || !(node as HTMLElement).className.split(" ").includes("react-flow__handle")
 			// }
 		})
-		.then((dataUrl) => downloadFromUrl(dataUrl, "flow.jpeg"));
+		.then((dataUrl) => downloadFromUrl(dataUrl, `${fileName}.jpeg`));
 };

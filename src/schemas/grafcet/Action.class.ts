@@ -1,10 +1,8 @@
 import { Dimensions } from "./Grafcet.class";
-import GrafcetElement from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
-export type ActionData = {
+export type ActionData = BaseData & {
 	expression: string;
-	width: number;
-	height: number;
 };
 
 export default class Action extends GrafcetElement<ActionData> {
