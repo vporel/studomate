@@ -63,6 +63,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 				<Box
 					sx={{
 						width: "1px",
+						marginLeft: "-0.5px",
 						height: "100%",
 						background: borderColor,
 						position: "relative",

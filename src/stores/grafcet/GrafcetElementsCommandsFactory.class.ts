@@ -115,12 +115,14 @@ export default class GrafcetElementsCommandsFactory {
 		changes.forEach((change) => {
 			switch (change.type) {
 				case "position":
-					commands.push(...this.getPositionChangeCommands(change).commands);
-					nodesIdsToUpdate.add(change.id);
+					const { commands: positionCommands } = this.getPositionChangeCommands(change);
+					commands.push(...positionCommands);
+					if (positionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
 				case "dimensions":
-					commands.push(...this.getDimensionsChangeCommands(change).commands);
-					nodesIdsToUpdate.add(change.id);
+					const { commands: dimensionCommands } = this.getDimensionsChangeCommands(change);
+					commands.push(...dimensionCommands);
+					if (dimensionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
 			}
 		});

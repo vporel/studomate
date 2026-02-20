@@ -58,6 +58,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 					},
 				},
 				typography: {
+					fontFamily: '"Poppins", system-ui, sans-serif',
 					h1: {
 						fontWeight: "bold",
 						fontSize: "3rem",

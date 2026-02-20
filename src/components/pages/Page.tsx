@@ -19,6 +19,7 @@ const Page = forwardRef<HTMLElement, PageComponentProps>(function Page({ childre
 			id={pageId}
 			ref={ref}
 			sx={{
+				flex: 1,
 				height: "100%",
 				backgroundColor: "rgb(235, 235, 235)",
 				...props.sx,
