@@ -46,7 +46,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 				}}
 			/>
 			<HandleWithConnectionsLimit
-				limit={1}
+				limit={4}
 				id="to-action"
 				type="source"
 				position={Position.Right}
@@ -61,8 +61,8 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 				sx={{
 					width: Step.DEFAULT_DIMENSIONS.width + "px",
 					height: Step.DEFAULT_DIMENSIONS.height + "px",
-					borderWidth: data.isInitial ? "4px" : "1px",
-					borderStyle: data.isInitial ? "double" : "solid",
+					borderWidth: data.initial ? "4px" : "1px",
+					borderStyle: data.initial ? "double" : "solid",
 					borderColor: borderColor,
 					borderRadius: "5px",
 					backgroundColor: "white",

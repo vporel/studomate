@@ -7,7 +7,7 @@ import StepReferral from "@/schemas/grafcet/StepReferral.class";
 import StepReferralSource from "@/schemas/grafcet/StepReferralSource.class";
 import StepReferralTarget from "@/schemas/grafcet/StepReferralTarget.class";
 import Transition from "@/schemas/grafcet/Transition.class";
-import { Connection, Dimensions, Node } from "@xyflow/react";
+import { Dimensions } from "@xyflow/react";
 import CustomEdge, { CustomEdgeType } from "../edges/CustomEdge";
 import ActionNode, { ActionNodeType } from "../nodes/ActionNode";
 import CommentNode, { CommentNodeType } from "../nodes/CommentNode";
@@ -77,25 +77,3 @@ export const nodeTypes: Record<GrafcetElementType, any> = {
 export const edgeTypes = {
 	"custom-edge": CustomEdge,
 };
-
-export function validateConnection(connection: Connection, nodes: Node[]): boolean {
-	const sourceType = nodes.find((n) => n.id == connection.source)!.type as GrafcetElementType;
-	const targetType = nodes.find((n) => n.id == connection.target)!.type as GrafcetElementType;
-
-	if (
-		sourceType == "step" &&
-		!["transition", "action", "junction-or-start", "junction-and-end"].includes(targetType)
-	)
-		return false;
-	if (
-		sourceType == "transition" &&
-		!["step", "junction-and-start", "junction-or-end", "step-referral-source"].includes(targetType)
-	)
-		return false;
-	if (sourceType == "junction-or-start" && !["transition"].includes(targetType)) return false;
-	if (sourceType == "junction-or-end" && !["step"].includes(targetType)) return false;
-	if (sourceType == "junction-and-start" && !["step"].includes(targetType)) return false;
-	if (sourceType == "junction-and-end" && !["transition"].includes(targetType)) return false;
-	if (sourceType == "step-referral-target" && !["step"].includes(targetType)) return false;
-	return true;
-}

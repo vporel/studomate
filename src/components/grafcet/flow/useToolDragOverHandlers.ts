@@ -16,7 +16,7 @@ export default function useToolDragOverHandlers(): [
 	handleToolDragOver: (e: React.DragEvent) => void,
 	handleToolDrop: (e: React.DragEvent) => void,
 ] {
-	const [toolType] = useGrafcetToolbarDnD();
+	const { type: toolType, extraData: toolExtraData } = useGrafcetToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const { addNodes } = useGrafcetStore(useShallow((state) => ({ addNodes: state.addNodes })));
 
@@ -36,11 +36,11 @@ export default function useToolDragOverHandlers(): [
 				id: createRandomId(),
 				type: toolType,
 				position,
-				data: NODES_DEFAULT_DATA_GENERATORS[toolType](),
+				data: NODES_DEFAULT_DATA_GENERATORS[toolType](toolExtraData),
 			} as GrafcetNodeType;
 			addNodes([newNode]);
 		},
-		[toolType, screenToFlowPosition, addNodes],
+		[toolType, screenToFlowPosition, addNodes, toolExtraData],
 	);
 
 	return [handleToolDragOver, handleToolDrop];

@@ -171,6 +171,7 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		updateNodeData: (nodeId, newData) => {
 			if (!get().rfInstance) return;
 			const { commands, nodeDataToUpdate } = _elementsCmdsFactory.onNodeDataChange(nodeId, newData);
+			if (!nodeDataToUpdate) return;
 			const setNode = _getNodeUpdater(set);
 			setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...nodeDataToUpdate } }) as GrafcetNodeType);
 			get().executeOperation(commands);

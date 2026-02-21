@@ -1,6 +1,7 @@
 "use client";
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
+import ConnectionsValidator from "@/stores/grafcet/ConnectionsValidator.class";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -11,7 +12,7 @@ import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
-import { edgeTypes, nodeTypes, validateConnection } from "./grafcet-nodes-definitions";
+import { edgeTypes, nodeTypes } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
@@ -42,6 +43,7 @@ export function GrafcetFlowContent() {
 				onConnect: state.onConnect,
 			})),
 		);
+	const rfInstance = useGrafcetStore((state) => state.rfInstance);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
 
 	return (
@@ -96,7 +98,10 @@ export function GrafcetFlowContent() {
 					edgeTypes={edgeTypes}
 					defaultEdgeOptions={{ type: "custom-edge" }}
 					connectionLineComponent={CustomConnectionLine}
-					isValidConnection={(connection) => validateConnection(connection as Connection, nodes)}
+					isValidConnection={(connection) => {
+						if (!rfInstance) return false;
+						return ConnectionsValidator.validateConnection(rfInstance, connection as Connection);
+					}}
 					minZoom={GRAFCET_FLOW_MIN_ZOOM}
 					maxZoom={GRAFCET_FLOW_MAX_ZOOM}
 					snapToGrid={true}

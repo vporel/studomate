@@ -3,7 +3,7 @@ import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 
 export type StepData = BaseData & {
 	number: number | "";
-	isInitial?: boolean;
+	initial?: boolean;
 };
 
 export default class Step extends GrafcetElement<StepData> {
@@ -12,10 +12,10 @@ export default class Step extends GrafcetElement<StepData> {
 		height: 40,
 	};
 
-	static generateDefaultData(): StepData {
+	static generateDefaultData(extraData?: { initial?: boolean }): StepData {
 		return {
 			number: "",
-			isInitial: false,
+			initial: extraData?.initial ?? false,
 			width: Step.DEFAULT_DIMENSIONS.width,
 			height: Step.DEFAULT_DIMENSIONS.height,
 		};

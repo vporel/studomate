@@ -24,12 +24,18 @@ export default class GrafcetElementsCommandsFactory {
 		nodesToAdd: GrafcetNodeType[];
 	} {
 		const existingNodes = this.rfInstance.getNodes();
-		const nodesToAdd = newNodes.filter((n) => !existingNodes.find((en) => en.id === n.id));
+		const nodesToAdd = newNodes.filter(
+			(n) =>
+				!existingNodes.find((en) => en.id === n.id) &&
+				(n.type !== "step" ||
+					!n.data.initial ||
+					!existingNodes.find((en) => en.type === "step" && en.data.initial)),
+		);
 		const commands = [];
 		if (nodesToAdd.length > 0) {
 			commands.push(
 				new ElementsAddCommand(
-					newNodes.map((node) => ({
+					nodesToAdd.map((node) => ({
 						type: node.type,
 						id: node.id,
 						data: node.data,
@@ -72,6 +78,22 @@ export default class GrafcetElementsCommandsFactory {
 		};
 	}
 
+	private allowNodeDataChange(nodeId: string, newData: any): boolean {
+		const nodes = this.rfInstance.getNodes();
+		const node = nodes.find((n) => n.id === nodeId);
+		//If the node is a step with initial true, we need to check if there is already another step with initial true
+		if (node?.type === "step") {
+			if (newData.initial)
+				return !nodes.some((n) => n.type === "step" && n.data.initial && n.id !== nodeId);
+			//We need to check is the number is not already used by another step
+			if (newData.number !== undefined)
+				return !nodes.some(
+					(n) => n.type === "step" && n.data.number === newData.number && n.id !== nodeId,
+				);
+		}
+		return true;
+	}
+
 	onNodeDataChange(
 		nodeId: string,
 		newData:
@@ -84,6 +106,7 @@ export default class GrafcetElementsCommandsFactory {
 			const prevData = node.data as any;
 			newData = newData(prevData);
 		}
+		if (!this.allowNodeDataChange(nodeId, newData)) return { commands: [] };
 		const grafcetElement = this.grafcet.getElement(node.type as GrafcetElementType, node.id);
 		if (!grafcetElement) return { commands: [] };
 		const fullModifiedData = { ...grafcetElement.data, ...newData };

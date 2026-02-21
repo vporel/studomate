@@ -29,6 +29,7 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				...style,
 			}}
 		>
+			<StepTool initial={true} />
 			<StepTool />
 			<ActionTool />
 			<TransitionTool />

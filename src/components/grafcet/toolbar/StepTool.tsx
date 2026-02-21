@@ -1,11 +1,16 @@
 "use client";
 
 import { Box } from "@mui/material";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetTool from "./GrafcetTool";
 
-const StepTool = ({ initial, disabled }: { initial?: boolean; disabled?: boolean }) => {
+const StepTool = ({ initial }: { initial?: boolean }) => {
+	const initialNodeExists = useGrafcetStore((state) =>
+		state.nodes.some((node) => node.type === "step" && node.data.initial),
+	);
+
 	return (
-		<GrafcetTool type="step" disabled={disabled}>
+		<GrafcetTool type="step" disabled={initial && initialNodeExists} extraData={{ initial }}>
 			<Box
 				style={{
 					width: "30px",

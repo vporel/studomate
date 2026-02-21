@@ -21,6 +21,9 @@ const buttonSx: SxProps<Theme> = {
 };
 
 const linkSx: SxProps<Theme> = {
+	"*": {
+		fontSize: "0.8rem",
+	},
 	"&:hover *": {
 		color: (th) => th.palette.primary.main,
 	},

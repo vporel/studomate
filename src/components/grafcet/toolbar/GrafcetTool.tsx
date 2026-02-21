@@ -6,15 +6,17 @@ import React from "react";
 import { useGrafcetToolbarDnD } from "./GrafcetToolbarDnDContext";
 
 const GrafcetTool = ({
-	disabled,
 	type,
+	extraData,
+	disabled,
 	children,
 }: {
-	disabled?: boolean;
 	type: GrafcetElementType;
+	extraData?: any;
+	disabled?: boolean;
 	children: React.ReactElement;
 }) => {
-	const [_, setType] = useGrafcetToolbarDnD();
+	const { setType, setExtraData } = useGrafcetToolbarDnD();
 
 	return (
 		<Box
@@ -37,6 +39,7 @@ const GrafcetTool = ({
 			draggable
 			onDragStart={(e) => {
 				setType(type);
+				setExtraData(extraData || null);
 				e.dataTransfer.effectAllowed = "move";
 			}}
 		>
