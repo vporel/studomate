@@ -11,7 +11,7 @@ export default class ElementsRemoveCommand extends AbstractGrafcetCommand<
 	}[]
 > {
 	getType(): string {
-		return "elements-remove";
+		return "grafcet-elements-remove";
 	}
 
 	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
@@ -19,7 +19,7 @@ export default class ElementsRemoveCommand extends AbstractGrafcetCommand<
 			this.payload.map((e) => ({
 				type: e.type,
 				id: e.id,
-			}))
+			})),
 		);
 		return [grafcet, true];
 	}
@@ -31,7 +31,7 @@ export default class ElementsRemoveCommand extends AbstractGrafcetCommand<
 				id: e.id,
 				data: e.data,
 				position: e.position,
-			}))
+			})),
 		);
 		return grafcet;
 	}

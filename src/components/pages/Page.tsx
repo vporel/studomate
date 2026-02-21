@@ -16,7 +16,7 @@ const Page = forwardRef<HTMLElement, PageComponentProps>(function Page({ childre
 	return (
 		<Box
 			{...props}
-			id={pageId}
+			id={`page-${pageId}`}
 			ref={ref}
 			sx={{
 				flex: 1,

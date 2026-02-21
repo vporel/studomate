@@ -10,7 +10,7 @@ export default class ConnectionsUpdateCommand extends AbstractGrafcetCommand<
 	}[]
 > {
 	getType(): string {
-		return "connections-update";
+		return "grafcet-connections-update";
 	}
 
 	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {

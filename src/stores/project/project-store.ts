@@ -1,22 +1,23 @@
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/components/pages/ProjectStartupPage";
 import { deepObjectsComparison } from "@/lib/object";
 import { localStorageGetProject, localStorageSaveProject } from "@/local-storage/projects";
-import CommandsStack from "@/schemas/commands/CommandsStack.class";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
+import { getStubProject } from "@/utils/project/project-utils";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
-import { GrafcetStoreActions, GrafcetStoreValues, PageData, ProjectStoreState } from "./project-store-types";
-
-const COMMANDS_STACK_SIZE = 100;
-
-type ProjectStoreSetFunction = (
-	partial:
-		| ProjectStoreState
-		| Partial<ProjectStoreState>
-		| ((partial: Partial<ProjectStoreState>) => ProjectStoreState | Partial<ProjectStoreState>),
-) => void;
+import CommandsStackManager from "./CommandsStackManager.class";
+import PagesManager from "./PagesManager.class";
+import {
+	GrafcetStoreActions,
+	GrafcetStoreValues,
+	PageData,
+	ProjectStoreSetFunction,
+	ProjectStoreState,
+	ScopeType,
+} from "./project-store-types";
+import VariablesManager from "./VariablesManager.class";
 
 function getInitialPagesData(project: Project | null): Record<string, PageData> {
 	const pagesData: Record<string, PageData> = {};
@@ -26,8 +27,6 @@ function getInitialPagesData(project: Project | null): Record<string, PageData> 
 }
 
 export const createProjectStore = () => {
-	const commandsStack: CommandsStack<Project> = new CommandsStack(COMMANDS_STACK_SIZE);
-
 	const _openProject = async (set: ProjectStoreSetFunction, project: Project) => {
 		const initialPagesData = getInitialPagesData(project);
 		set(() => ({
@@ -57,7 +56,7 @@ export const createProjectStore = () => {
 	};
 
 	return createStore<ProjectStoreState>((set, get) => ({
-		project: new Project(createRandomId(), DEFAULT_PROJECT_NAME, ""),
+		project: getStubProject(),
 		hasUnsavedChanges: false,
 		unsavedChangesDialogVisible: false,
 		unsavedChangesDialogMessage: null,
@@ -68,6 +67,9 @@ export const createProjectStore = () => {
 		savingProject: false,
 		activeScope: null,
 		activeScopeType: null,
+		commandsStackManager: new CommandsStackManager(set, get),
+		variablesManager: new VariablesManager(set, get),
+		pagesManager: new PagesManager(set, get),
 
 		openProject: async (projectId: string) => {
 			const project = localStorageGetProject(projectId);
@@ -180,16 +182,21 @@ export const createProjectStore = () => {
 		setActiveScope: (scope: string | null) => {
 			const previousScope = get().activeScope;
 			const pagesData = get().pagesData;
-			const scopeType = scope ? pagesData[scope]?.type || "project" : null;
+			let scopeType: ScopeType = "project";
+			if (scope && pagesData[scope]) {
+				if (pagesData[scope].type === "grafcet") {
+					scopeType = "grafcet";
+				}
+			}
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
 			//If the scope is a grafcet, set the focus on the grafcet flow
-			//PRevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
+			//Prevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
 			if (scope && previousScope !== scope && scopeType === "grafcet") {
 				focusFlow(scope);
 			}
 		},
 
-		//Grafcets
+		//=============== GRAFCETS ===============
 		grafcetsStoresValues: {},
 		grafcetsStoresActions: {},
 
@@ -350,6 +357,7 @@ export const createProjectStore = () => {
 			set(() => ({ activePageId: pageId }));
 		},
 
+		//=============== MISCELLANEOUS ===============
 		mousePosition: { x: 0, y: 0 },
 	}));
 };

@@ -1,12 +1,17 @@
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
 import { GrafcetStoreState } from "../grafcet/grafcet-store-types";
+import CommandsStackManager from "./CommandsStackManager.class";
+import VariablesManager from "./VariablesManager.class";
 
 type SimpleCallback = () => void;
 
-export type PageType = "project-startup" | "project-properties" | "grafcet";
+export type PageType = "project-startup" | "project-properties" | "grafcet" | "variables";
 
-export type ScopeType = "project" | PageType;
+/**
+ * The variables are managed in the project scope
+ */
+export type ScopeType = "project" | "grafcet";
 
 type PageData = {
 	id: string;
@@ -42,6 +47,9 @@ export interface ProjectStoreState {
 	savingProject: boolean;
 	activeScope: string | null; //The currently active scope (used for keyboard shortcuts). The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
 	activeScopeType: ScopeType | null;
+	commandsStackManager: CommandsStackManager;
+	variablesManager: VariablesManager;
+	pagesManager: PagesManager;
 
 	openProject: (projectId: string) => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	newProject: () => Promise<void>;
@@ -56,7 +64,7 @@ export interface ProjectStoreState {
 	setExportModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string | null) => void;
 
-	//Grafcets
+	//=============== GRAFCETS ===============
 	/**
 	 * The grafcet stores values, indexed by grafcetId, to be able to update some components that are out of the grafcet context
 	 */
@@ -79,7 +87,7 @@ export interface ProjectStoreState {
 	renameGrafcet: (grafcetId: string, newName: string) => void;
 	getGrafcet: (grafcetId: string) => Grafcet;
 
-	//Pages
+	//=============== PAGES ===============
 	pagesData: Record<string, PageData>;
 	pagesOrder: string[]; //The ids of the pages in the order they are displayed
 	activePageId: string | null; //The id of the currently active page, or null if no page is active
@@ -87,6 +95,15 @@ export interface ProjectStoreState {
 	closePage: (pageId: string) => void;
 	setActivePage: (pageId: string) => void;
 
-	//Miscellaneous
+	//=============== MISCELLANEOUS ===============
 	mousePosition: { x: number; y: number };
 }
+
+export type ProjectStoreSetFunction = (
+	partial:
+		| ProjectStoreState
+		| Partial<ProjectStoreState>
+		| ((partial: Partial<ProjectStoreState>) => ProjectStoreState | Partial<ProjectStoreState>),
+) => void;
+
+export type ProjectStoreGetFunction = () => ProjectStoreState;

@@ -20,7 +20,7 @@ export default class ElementsUpdateCommand extends AbstractGrafcetCommand<
 	}[]
 > {
 	getType(): string {
-		return "elements-update";
+		return "grafcet-elements-update";
 	}
 
 	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
@@ -30,7 +30,7 @@ export default class ElementsUpdateCommand extends AbstractGrafcetCommand<
 				id: e.id,
 				data: e.data,
 				position: e.position,
-			}))
+			})),
 		);
 		return [grafcet, true];
 	}
@@ -42,7 +42,7 @@ export default class ElementsUpdateCommand extends AbstractGrafcetCommand<
 				id: e.id,
 				data: e.previousData,
 				position: e.previousPosition,
-			}))
+			})),
 		);
 		return grafcet;
 	}

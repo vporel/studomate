@@ -79,13 +79,6 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		rfInstance: null,
 		nodes: NodesFactory.getInitialNodes(grafcet),
 		edges: EdgesFactory.getInitialEdges(grafcet),
-		/**
-		 * The values of hasCommandsToUndo and hasCommandsToRedo
-		 * are updated in the function _setGrafcet because that function
-		 * is directly related to the commands stack operations
-		 */
-		hasCommandsToUndo: false,
-		hasCommandsToRedo: false,
 
 		setReactFlowInstance: (instance: ReactFlowInstance) => {
 			set({ rfInstance: instance });
@@ -318,6 +311,14 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 			focusFlow(get().grafcet.id);
 		},
 
+		//=============== COMMANDS STACK ===============
+		/**
+		 * The values of hasCommandsToUndo and hasCommandsToRedo
+		 * are updated in the function _setGrafcet because that function
+		 * is directly related to the commands stack operations
+		 */
+		hasCommandsToUndo: false,
+		hasCommandsToRedo: false,
 		executeOperation: (commands) => {
 			if (!get().rfInstance) return;
 			if (!commands || commands.length === 0) return;

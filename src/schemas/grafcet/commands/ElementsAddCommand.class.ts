@@ -11,7 +11,7 @@ export default class ElementsAddCommand extends AbstractGrafcetCommand<
 	}[]
 > {
 	getType(): string {
-		return "elements-add";
+		return "grafcet-elements-add";
 	}
 
 	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
@@ -21,7 +21,7 @@ export default class ElementsAddCommand extends AbstractGrafcetCommand<
 				id: e.id,
 				data: e.data,
 				position: e.position,
-			}))
+			})),
 		);
 		return [grafcet, true];
 	}
@@ -31,7 +31,7 @@ export default class ElementsAddCommand extends AbstractGrafcetCommand<
 			this.payload.map((e) => ({
 				type: e.type,
 				id: e.id,
-			}))
+			})),
 		);
 		return grafcet;
 	}

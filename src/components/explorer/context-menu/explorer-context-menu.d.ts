@@ -1,4 +1,9 @@
-export type ExplorerContextMenuElement = { type: "pane" } | { type: "grafcet"; grafcetId: string };
+import { VariablesPageId } from "@/components/pages/VariablesPage";
+
+export type ExplorerContextMenuElement =
+	| { type: "pane" }
+	| { type: "grafcet"; grafcetId: string }
+	| { type: "variables"; variablesPageId: VariablesPageId };
 export type ExplorerContextMenuProps = {
 	visible: boolean;
 	element: ExplorerContextMenuElement;

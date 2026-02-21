@@ -9,6 +9,7 @@ import GrafcetPage from "./GrafcetPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
+import VariablesPage, { VariablesPageData } from "./VariablesPage";
 
 const NoPage = () => {
 	const commands = [
@@ -110,6 +111,8 @@ const PagesView = () => {
 								return <ProjectStartupPage key={id} />;
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
+							case "variables":
+								return <VariablesPage key={id} pageData={pageData as VariablesPageData} />;
 							case "grafcet":
 								return <GrafcetPage key={id} initialGrafcet={getGrafcet(id)} />;
 							default:

@@ -7,8 +7,12 @@ import { useShallow } from "zustand/shallow";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMenuItemType[][] {
-	const { deleteGrafcet, openPage } = useProjectStore(
-		useShallow((state) => ({ deleteGrafcet: state.deleteGrafcet, openPage: state.openPage })),
+	const { deleteGrafcet, openPage, getGrafcet } = useProjectStore(
+		useShallow((state) => ({
+			deleteGrafcet: state.deleteGrafcet,
+			openPage: state.openPage,
+			getGrafcet: state.getGrafcet,
+		})),
 	);
 
 	return useCallback(
@@ -18,7 +22,7 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 					{
 						label: "Ouvrir",
 						onClick: () => {
-							const grafcet = project?.grafcets[grafcetId];
+							const grafcet = getGrafcet(grafcetId);
 							if (grafcet) {
 								openPage({
 									id: grafcetId,
@@ -37,11 +41,15 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 					},
 					{
 						label: "Supprimer",
-						onClick: () => deleteGrafcet(grafcetId),
+						onClick: () => {
+							if (confirm("Êtes-vous sûr de vouloir supprimer ce grafcet ?")) {
+								deleteGrafcet(grafcetId);
+							}
+						},
 					},
 				],
 			];
 		},
-		[openPage, deleteGrafcet],
+		[openPage, deleteGrafcet, getGrafcet],
 	);
 }

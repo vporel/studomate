@@ -20,8 +20,6 @@ export interface GrafcetStoreState {
 	rfInstance: ReactFlowInstance | null;
 	nodes: GrafcetNodeType[];
 	edges: GrafcetEdgeType[];
-	hasCommandsToUndo: boolean;
-	hasCommandsToRedo: boolean;
 
 	setReactFlowInstance: (instance: ReactFlowInstance) => void;
 	getZoom: () => number;
@@ -65,11 +63,13 @@ export interface GrafcetStoreState {
 	copySelectedElements: () => void;
 	pasteCopiedElements: (mousePosition?: { x: number; y: number }) => void;
 
-	//Operations stack management
+	//=============== COMMANDS STACK ===============
+	hasCommandsToUndo: boolean;
+	hasCommandsToRedo: boolean;
 	/**
 	 * Execute a list of commands, add them to the stack and update the grafcet state
 	 */
-	executeOperation: (commands: AbstractCommand<Grafcet>[]) => void; // Executes a list of commands and adds them to the stack
+	executeOperation: (commands: AbstractCommand<Grafcet, any>[]) => void; // Executes a list of commands and adds them to the stack
 	/**
 	 * Undo the last operation (list of commands) and update the grafcet state
 	 */

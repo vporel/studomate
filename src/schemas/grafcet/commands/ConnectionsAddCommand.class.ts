@@ -4,7 +4,7 @@ import AbstractGrafcetCommand from "./AbstractGrafcetCommand.class";
 
 export default class ConnectionsAddCommand extends AbstractGrafcetCommand<GrafcetConnection[]> {
 	getType(): string {
-		return "connections-add";
+		return "grafcet-connections-add";
 	}
 
 	execute(grafcet: Grafcet): [grafcet: Grafcet, isCommandValid: boolean] {
@@ -14,7 +14,7 @@ export default class ConnectionsAddCommand extends AbstractGrafcetCommand<Grafce
 
 	cancel(grafcet: Grafcet): Grafcet {
 		grafcet.removeConnections(
-			this.payload.map((c) => ({ sourceId: c.source.id, targetId: c.target.id }))
+			this.payload.map((c) => ({ sourceId: c.source.id, targetId: c.target.id })),
 		);
 		return grafcet;
 	}

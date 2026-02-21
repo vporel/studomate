@@ -7,6 +7,7 @@ import React, { useRef } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import ExplorerGrafcetsItems from "./ExplorerGrafcetsItems";
 import ExplorerHeader from "./ExplorerHeader";
+import ExplorerVariablesItems from "./ExplorerVariablesItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
 import useExplorerContextMenu from "./useExplorerContextMenu";
 
@@ -52,7 +53,15 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<ExplorerHeader />
-			<SimpleTreeView defaultExpandedItems={["grafcets"]}>
+			<SimpleTreeView defaultExpandedItems={["variables", "grafcets"]}>
+				<CustomTreeItem
+					itemId="variables"
+					label="Variables"
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+				>
+					<ExplorerVariablesItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="grafcets"
 					label="Grafcets"

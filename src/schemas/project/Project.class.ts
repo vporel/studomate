@@ -1,7 +1,7 @@
 import { APP_VERSION } from "@/constants";
 import Grafcet, { GrafcetFormat } from "../grafcet/Grafcet.class";
 import { createRandomId } from "../schemas-helpers";
-import Variable from "../Variable.class";
+import Variable from "../variable/Variable.class";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
