@@ -10,7 +10,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const variablesManager = useProjectStore((state) => state.variablesManager);
 
 	return useMemo(
-		() => [
+		(): GridColDef[] => [
 			{
 				field: "mnemonic",
 				headerName: "Mnémonique",
@@ -33,12 +33,11 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				width: 100,
 				hideable: false,
 				editable: true,
-				preProcessEditCellProps: (params) => {
-					const errors = Variable.validateType(params.props.value, zones);
-					return { ...params.props, error: errors.length > 0 ? errors[0] : false };
-				},
-				renderEditCell: EditInputCell,
-				valueParser: (value) => (value ? value.trim().toUpperCase() : ""),
+				type: "singleSelect",
+				valueOptions: Variable.getValidTypesForZones(zones).map((type) => ({
+					value: type,
+					label: type,
+				})),
 			},
 			{
 				field: "address",

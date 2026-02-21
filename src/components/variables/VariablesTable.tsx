@@ -72,7 +72,10 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 					{ ...(newData as any), zone: chooseZone(zones, newData.type) },
 				]);
 			} else {
-				variablesManager.updateVariable(id.toString(), newData);
+				variablesManager.updateVariable(id.toString(), {
+					...newData,
+					zone: chooseZone(zones, newData.type),
+				});
 			}
 		},
 		[variablesManager, zones],
