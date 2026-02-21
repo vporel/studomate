@@ -17,11 +17,10 @@ export type PageTabProps = {
 
 const PageTab = ({ id, title, type }: PageTabProps) => {
 	const th = useTheme();
-	const { activePageId, setActivePage, closePage } = useProjectStore(
+	const pagesManager = useProjectStore((state) => state.pagesManager);
+	const { activePageId } = useProjectStore(
 		useShallow((state) => ({
 			activePageId: state.activePageId,
-			setActivePage: state.setActivePage,
-			closePage: state.closePage,
 		})),
 	);
 	const active = id === activePageId;
@@ -62,7 +61,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				},
 			}}
 			onClick={() => {
-				setActivePage(id);
+				pagesManager.setActivePage(id);
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -93,7 +92,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				}}
 				onClick={(e) => {
 					e.stopPropagation();
-					closePage(id);
+					pagesManager.closePage(id);
 				}}
 			>
 				<CloseIcon className="close-icon" sx={{ fontSize: "0.9rem", display: "block" }} />

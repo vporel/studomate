@@ -7,13 +7,14 @@ import AppTool from "./AppTool";
 
 const RedoTool = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const { projectCommandsStackManager, hasProjectCommandsToRedo, hasActiveGrafcetCommandsToRedo } =
 		useProjectStore(
 			useShallow((state) => ({
 				projectCommandsStackManager: state.commandsStackManager,
 				hasProjectCommandsToRedo: state.hasCommandsToRedo,
-				hasActiveGrafcetCommandsToRedo: state.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
+				hasActiveGrafcetCommandsToRedo:
+					state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
 			})),
 		);
 	return (
@@ -25,7 +26,7 @@ const RedoTool = () => {
 			}
 			onClick={() => {
 				if (activeScopeType === "grafcet") {
-					const actions = getActiveGrafcetStoreActions();
+					const actions = grafcetsManager.getActiveGrafcetStoreActions();
 					actions?.redoOperation();
 				} else if (activeScopeType === "project") {
 					projectCommandsStackManager.redoOperation();

@@ -83,10 +83,10 @@ const NoPage = () => {
 };
 
 const PagesView = () => {
-	const { pagesData, getGrafcet } = useProjectStore(
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const { pagesData } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
-			getGrafcet: state.getGrafcet,
 		})),
 	);
 
@@ -114,7 +114,9 @@ const PagesView = () => {
 							case "variables":
 								return <VariablesPage key={id} pageData={pageData as VariablesPageData} />;
 							case "grafcet":
-								return <GrafcetPage key={id} initialGrafcet={getGrafcet(id)} />;
+								return (
+									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getGrafcet(id)} />
+								);
 							default:
 								return null;
 						}

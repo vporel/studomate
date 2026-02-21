@@ -8,7 +8,8 @@ import { AppMenuType } from "../app-menu-bar";
 
 export default function useEditMenu(): AppMenuType {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+
 	const {
 		projectCommandsStackManager,
 		hasProjectCommandsToUndo,
@@ -20,8 +21,10 @@ export default function useEditMenu(): AppMenuType {
 			projectCommandsStackManager: state.commandsStackManager,
 			hasProjectCommandsToUndo: state.hasCommandsToUndo,
 			hasProjectCommandsToRedo: state.hasCommandsToRedo,
-			hasActiveGrafcetCommandsToUndo: state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
-			hasActiveGrafcetCommandsToRedo: state.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
+			hasActiveGrafcetCommandsToUndo:
+				state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
+			hasActiveGrafcetCommandsToRedo:
+				state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
 		})),
 	);
 
@@ -39,7 +42,7 @@ export default function useEditMenu(): AppMenuType {
 							(activeScopeType === "project" && !hasProjectCommandsToUndo),
 						onClick: () => {
 							if (activeScopeType === "grafcet") {
-								const actions = getActiveGrafcetStoreActions();
+								const actions = grafcetsManager.getActiveGrafcetStoreActions();
 								actions?.undoOperation();
 							} else if (activeScopeType === "project") {
 								projectCommandsStackManager.undoOperation();
@@ -54,7 +57,7 @@ export default function useEditMenu(): AppMenuType {
 							(activeScopeType === "project" && !hasProjectCommandsToRedo),
 						onClick: () => {
 							if (activeScopeType === "grafcet") {
-								const actions = getActiveGrafcetStoreActions();
+								const actions = grafcetsManager.getActiveGrafcetStoreActions();
 								actions?.redoOperation();
 							} else if (activeScopeType === "project") {
 								projectCommandsStackManager.redoOperation();
@@ -68,7 +71,7 @@ export default function useEditMenu(): AppMenuType {
 						shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
 						disabled: activeScopeType !== "grafcet",
 						onClick: () => {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.copySelectedElements();
 						},
 					},
@@ -77,7 +80,7 @@ export default function useEditMenu(): AppMenuType {
 						shortcut: platformShortcut("Ctrl+V", "Cmd+V"),
 						disabled: activeScopeType !== "grafcet",
 						onClick: () => {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.pasteCopiedElements();
 						},
 					},
@@ -90,7 +93,7 @@ export default function useEditMenu(): AppMenuType {
 			hasProjectCommandsToUndo,
 			hasActiveGrafcetCommandsToRedo,
 			hasProjectCommandsToRedo,
-			getActiveGrafcetStoreActions,
+			grafcetsManager,
 			projectCommandsStackManager,
 		],
 	);

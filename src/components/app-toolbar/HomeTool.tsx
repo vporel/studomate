@@ -6,13 +6,13 @@ import { useProjectStore } from "../projects/ProjectContext";
 import AppTool from "./AppTool";
 
 const HomeTool = () => {
-	const openPage = useProjectStore((state) => state.openPage);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
 		<AppTool
 			name="home"
 			onClick={() => {
-				openPage(PROJECT_STARTUP_PAGE_DATA);
+				pagesManager.openPage(PROJECT_STARTUP_PAGE_DATA);
 			}}
 		>
 			<HomeIcon />

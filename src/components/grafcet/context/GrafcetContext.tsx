@@ -6,7 +6,6 @@ import { GrafcetStoreState } from "@/stores/grafcet/grafcet-store-types";
 import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import { useShallow } from "zustand/shallow";
 import { GrafcetContextMenuEvents } from "./context-menu-events";
 
 type GrafcetContextType = {
@@ -32,27 +31,15 @@ export const GrafcetContextProvider = ({
 		storeRef.current = createGrafcetStore(initialGrafcet);
 	}
 
-	const {
-		updateGrafcetData,
-		setGrafcetStoreValues,
-		registerGrafcetStoreActions,
-		deleteGrafcetStoreActions,
-	} = useProjectStore(
-		useShallow((state) => ({
-			updateGrafcetData: state.updateGrafcetData,
-			registerGrafcetStoreActions: state.registerGrafcetStoreActions,
-			deleteGrafcetStoreActions: state.deleteGrafcetStoreActions,
-			setGrafcetStoreValues: state.setGrafcetStoreValues,
-		})),
-	);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const contextMenuEvents = useMemo(() => mitt<GrafcetContextMenuEvents>(), []);
 
 	//Listen to grafcet changes
 	useEffect(() => {
 		if (!storeRef.current) return;
 		const unsubscribe = storeRef.current.subscribe((state) => {
-			updateGrafcetData(state.grafcet);
-			setGrafcetStoreValues(state.grafcet.id, {
+			grafcetsManager.updateGrafcetData(state.grafcet);
+			grafcetsManager.setGrafcetStoreValues(state.grafcet.id, {
 				hasCommandsToUndo: state.hasCommandsToUndo,
 				hasCommandsToRedo: state.hasCommandsToRedo,
 			});
@@ -60,13 +47,13 @@ export const GrafcetContextProvider = ({
 		return () => {
 			unsubscribe();
 		};
-	}, [updateGrafcetData, setGrafcetStoreValues]);
+	}, [grafcetsManager]);
 
 	//Register the store actions in the project store so they can be accessed from other components
 	useEffect(() => {
 		if (!storeRef.current) return;
 		const grafcetId = storeRef.current.getState().grafcet.id;
-		registerGrafcetStoreActions(grafcetId, {
+		grafcetsManager.registerGrafcetStoreActions(grafcetId, {
 			getZoom: storeRef.current.getState().getZoom,
 			zoomIn: storeRef.current.getState().zoomIn,
 			zoomOut: storeRef.current.getState().zoomOut,
@@ -78,9 +65,9 @@ export const GrafcetContextProvider = ({
 			redoOperation: storeRef.current.getState().redoOperation,
 		});
 		return () => {
-			deleteGrafcetStoreActions(grafcetId);
+			grafcetsManager.deleteGrafcetStoreActions(grafcetId);
 		};
-	}, [registerGrafcetStoreActions, deleteGrafcetStoreActions]);
+	}, [grafcetsManager]);
 
 	return (
 		<GrafcetContext.Provider

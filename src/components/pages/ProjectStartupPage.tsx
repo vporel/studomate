@@ -21,7 +21,7 @@ export const PROJECT_STARTUP_PAGE_DATA: PageData = {
 function VariblesPagesList() {
 	const pagedsIds: VariablesPageId[] = ["input-variables", "output-variables", "memory-variables"];
 	const pagesData = pagedsIds.map((id) => getVariablesPageData(id));
-	const openPage = useProjectStore((state) => state.openPage);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
 		<>
@@ -32,7 +32,7 @@ function VariblesPagesList() {
 				<MenuItem
 					key={pageData.id}
 					onClick={() =>
-						openPage({
+						pagesManager.openPage({
 							id: pageData.id,
 							title: pageData.title,
 							type: "variables",
@@ -64,7 +64,7 @@ function GrafcetsList() {
 	for (const id of grafcetsIds) {
 		grafcets.push({ id, name: grafcetsNames[id] });
 	}
-	const openPage = useProjectStore((state) => state.openPage);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
 		<>
@@ -78,7 +78,9 @@ function GrafcetsList() {
 				Object.values(grafcets).map((grafcet) => (
 					<MenuItem
 						key={grafcet.id}
-						onClick={() => openPage({ id: grafcet.id, title: grafcet.name, type: "grafcet" })}
+						onClick={() =>
+							pagesManager.openPage({ id: grafcet.id, title: grafcet.name, type: "grafcet" })
+						}
 					>
 						<ListItemIcon>
 							<InclinedAccountTree />
@@ -91,7 +93,7 @@ function GrafcetsList() {
 }
 
 function Actions() {
-	const newGrafcet = useProjectStore((state) => state.newGrafcet);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	return (
 		<>
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1 }}>
@@ -99,7 +101,7 @@ function Actions() {
 			</Typography>
 			<MenuItem
 				onClick={() => {
-					newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
+					grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
 				}}
 			>
 				<ListItemIcon>

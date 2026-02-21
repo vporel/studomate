@@ -21,15 +21,17 @@ const ExplorerGrafcetItem = ({
 	styles: CustomTreeItemStyles;
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
-	const { renameGrafcet, openPage } = useProjectStore(
-		useShallow((state) => ({ renameGrafcet: state.renameGrafcet, openPage: state.openPage })),
-	);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
 	const [editingName, setEditingName] = useState(grafcetName);
 
 	const saveName = useCallback(() => {
-		renameGrafcet(grafcetId, editingName.trim() !== "" ? editingName.trim() : grafcetName);
-	}, [editingName, grafcetId, grafcetName, renameGrafcet]);
+		grafcetsManager.renameGrafcet(
+			grafcetId,
+			editingName.trim() !== "" ? editingName.trim() : grafcetName,
+		);
+	}, [editingName, grafcetId, grafcetName, grafcetsManager]);
 
 	useEffect(() => {
 		const handler = (e: ExplorerContextMenuEventsOutGrafcetRename) => {
@@ -50,7 +52,7 @@ const ExplorerGrafcetItem = ({
 			IconComponent={InclinedAccountTreeIcon}
 			styles={styles}
 			onClick={() =>
-				openPage({
+				pagesManager.openPage({
 					id: grafcetId,
 					type: "grafcet",
 					title: grafcetName,

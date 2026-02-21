@@ -6,12 +6,11 @@ import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
 export default function useShortcutsHandler() {
-	const { setOpenModalVisible, saveProject, newGrafcet, getActiveGrafcetStoreActions } = useProjectStore(
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const { setOpenModalVisible, saveProject } = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
 			saveProject: state.saveProject,
-			newGrafcet: state.newGrafcet,
-			getActiveGrafcetStoreActions: state.getActiveGrafcetStoreActions,
 		})),
 	);
 	const projectStore = useProjectContext();
@@ -39,7 +38,7 @@ export default function useShortcutsHandler() {
 					case "g": {
 						e.stopPropagation();
 						e.preventDefault();
-						newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
+						grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
 						break;
 					}
 					case "a": {
@@ -47,7 +46,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.selectAllNodesAndEdges();
 						}
 						break;
@@ -57,7 +56,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.undoOperation();
 						} else if (activeScopeType === "project") {
 							projectStore?.getState().commandsStackManager.undoOperation();
@@ -69,7 +68,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.redoOperation();
 						} else if (activeScopeType === "project") {
 							projectStore?.getState().commandsStackManager.redoOperation();
@@ -81,7 +80,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.copySelectedElements();
 						}
 						break;
@@ -91,7 +90,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = getActiveGrafcetStoreActions();
+							const actions = grafcetsManager.getActiveGrafcetStoreActions();
 							actions?.pasteCopiedElements(projectStore?.getState().mousePosition);
 						}
 						break;
@@ -103,5 +102,5 @@ export default function useShortcutsHandler() {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown as any);
 		};
-	}, [newGrafcet, setOpenModalVisible, saveProject, getActiveGrafcetStoreActions, projectStore]);
+	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager]);
 }

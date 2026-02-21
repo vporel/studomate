@@ -20,7 +20,7 @@ const ExplorerVariablesItem = ({
 	styles: CustomTreeItemStyles;
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
-	const openPage = useProjectStore((state) => state.openPage);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
 		<CustomTreeItem
@@ -28,7 +28,7 @@ const ExplorerVariablesItem = ({
 			label={label}
 			IconComponent={IconComponent}
 			styles={styles}
-			onClick={() => openPage(getVariablesPageData(id))}
+			onClick={() => pagesManager.openPage(getVariablesPageData(id))}
 			onContextMenu={(e) => {
 				e.preventDefault();
 				e.stopPropagation();

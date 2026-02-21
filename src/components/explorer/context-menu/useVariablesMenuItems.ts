@@ -4,16 +4,11 @@ import { getVariablesPageData, VariablesPageId } from "@/components/pages/Variab
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/lib/context-menu/context-menu";
 import { useCallback } from "react";
-import { useShallow } from "zustand/shallow";
 
 export default function useVariablesMenuItems(): (
 	variablesPageId: VariablesPageId,
 ) => ContextMenuItemType[][] {
-	const { openPage } = useProjectStore(
-		useShallow((state) => ({
-			openPage: state.openPage,
-		})),
-	);
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return useCallback(
 		(variablesPageId: VariablesPageId) => {
@@ -22,12 +17,12 @@ export default function useVariablesMenuItems(): (
 					{
 						label: "Ouvrir",
 						onClick: () => {
-							openPage(getVariablesPageData(variablesPageId));
+							pagesManager.openPage(getVariablesPageData(variablesPageId));
 						},
 					},
 				],
 			];
 		},
-		[openPage],
+		[pagesManager],
 	);
 }

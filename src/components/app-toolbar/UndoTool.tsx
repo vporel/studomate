@@ -7,13 +7,14 @@ import AppTool from "./AppTool";
 
 const UndoTool = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const { projectCommandsStackManager, hasProjectCommandsToUndo, hasActiveGrafcetCommandsToUndo } =
 		useProjectStore(
 			useShallow((state) => ({
 				projectCommandsStackManager: state.commandsStackManager,
 				hasProjectCommandsToUndo: state.hasCommandsToUndo,
-				hasActiveGrafcetCommandsToUndo: state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
+				hasActiveGrafcetCommandsToUndo:
+					state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
 			})),
 		);
 
@@ -26,7 +27,7 @@ const UndoTool = () => {
 			}
 			onClick={() => {
 				if (activeScopeType === "grafcet") {
-					const actions = getActiveGrafcetStoreActions();
+					const actions = grafcetsManager.getActiveGrafcetStoreActions();
 					actions?.undoOperation();
 				} else if (activeScopeType === "project") {
 					projectCommandsStackManager.undoOperation();

@@ -8,9 +8,9 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 const ZoomInAction = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const activeGrafcetZoom = useProjectStore((state) => {
-		const activeGrafcetStoreActions = state.getActiveGrafcetStoreActions();
+		const activeGrafcetStoreActions = state.grafcetsManager.getActiveGrafcetStoreActions();
 		return activeGrafcetStoreActions ? activeGrafcetStoreActions.getZoom() : null;
 	});
 
@@ -23,7 +23,7 @@ const ZoomInAction = () => {
 				activeGrafcetZoom >= GRAFCET_FLOW_MAX_ZOOM
 			}
 			onClick={() => {
-				const actions = getActiveGrafcetStoreActions();
+				const actions = grafcetsManager.getActiveGrafcetStoreActions();
 				actions?.zoomIn();
 			}}
 		>
@@ -34,9 +34,9 @@ const ZoomInAction = () => {
 
 const ZoomOutAction = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const activeGrafcetZoom = useProjectStore((state) => {
-		const activeGrafcetStoreActions = state.getActiveGrafcetStoreActions();
+		const activeGrafcetStoreActions = state.grafcetsManager.getActiveGrafcetStoreActions();
 		return activeGrafcetStoreActions ? activeGrafcetStoreActions.getZoom() : null;
 	});
 
@@ -49,7 +49,7 @@ const ZoomOutAction = () => {
 				activeGrafcetZoom <= GRAFCET_FLOW_MIN_ZOOM
 			}
 			onClick={() => {
-				const actions = getActiveGrafcetStoreActions();
+				const actions = grafcetsManager.getActiveGrafcetStoreActions();
 				actions?.zoomOut();
 			}}
 		>

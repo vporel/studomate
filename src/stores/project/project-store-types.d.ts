@@ -1,4 +1,3 @@
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import Project from "@/schemas/project/Project.class";
 import { GrafcetStoreState } from "../grafcet/grafcet-store-types";
 import CommandsStackManager from "./CommandsStackManager.class";
@@ -51,7 +50,6 @@ export interface ProjectStoreState {
 	hasCommandsToRedo: boolean;
 	commandsStackManager: CommandsStackManager;
 	variablesManager: VariablesManager;
-	pagesManager: PagesManager;
 
 	openProject: (projectId: string) => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	newProject: () => Promise<void>;
@@ -75,27 +73,13 @@ export interface ProjectStoreState {
 	 * The grafcet stores actions, indexed by grafcetId, to be able to call some grafcet store methods that are out of the grafcet context, for example to implement the project keyboard shortcuts
 	 */
 	grafcetsStoresActions: Record<string, GrafcetStoreActions>;
-	getActiveGrafcetStoreValues: () => GrafcetStoreValues | null; //Returns the grafcet store values of the currently active grafcet, or null if there is no active grafcet
-	setGrafcetStoreValues: (grafcetId: string, values: GrafcetStoreValues) => void;
-	/**
-	 * This method should be called one by the grafcet store to register its actions
-	 */
-	registerGrafcetStoreActions: (grafcetId: string, actions: GrafcetStoreActions) => void;
-	getActiveGrafcetStoreActions: () => GrafcetStoreActions | null; //Returns the grafcet store actions of the currently active grafcet, or null if there is no active grafcet
-	deleteGrafcetStoreActions: (grafcetId: string) => void; //To be called when a grafcet is deleted to clean up the store
-	newGrafcet: (name: string, format: GrafcetFormat) => void;
-	updateGrafcetData: (grafcet: Grafcet) => void;
-	deleteGrafcet: (grafcetId: string) => void;
-	renameGrafcet: (grafcetId: string, newName: string) => void;
-	getGrafcet: (grafcetId: string) => Grafcet;
+	grafcetsManager: GrafcetsManager;
 
 	//=============== PAGES ===============
 	pagesData: Record<string, PageData>;
 	pagesOrder: string[]; //The ids of the pages in the order they are displayed
 	activePageId: string | null; //The id of the currently active page, or null if no page is active
-	openPage: (pageData: PageData) => void;
-	closePage: (pageId: string) => void;
-	setActivePage: (pageId: string) => void;
+	pagesManager: PagesManager;
 
 	//=============== MISCELLANEOUS ===============
 	mousePosition: { x: number; y: number };
