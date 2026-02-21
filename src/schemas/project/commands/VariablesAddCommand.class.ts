@@ -1,10 +1,8 @@
-import Variable, { VariableUpdatableFields } from "@/schemas/variable/Variable.class";
+import Variable, { VariableUpdatableFieldsWithId } from "@/schemas/variable/Variable.class";
 import Project from "../Project.class";
 import AbstractProjectCommand from "./AbstractProjectCommand.class";
 
-export default class VariablesAddCommand extends AbstractProjectCommand<
-	({ id: string } & VariableUpdatableFields)[]
-> {
+export default class VariablesAddCommand extends AbstractProjectCommand<VariableUpdatableFieldsWithId[]> {
 	getType(): string {
 		return "variables-add";
 	}

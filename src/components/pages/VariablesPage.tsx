@@ -1,6 +1,6 @@
 "use client";
 
-import { VariableZone } from "@/schemas/variable/Variable.class";
+import Variable, { VariableZone } from "@/schemas/variable/Variable.class";
 import { PageData } from "@/stores/project/project-store-types";
 import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
@@ -45,8 +45,11 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 					width: "100%",
 				}}
 			>
-				<Typography variant="h2" sx={{ mb: 4 }}>
+				<Typography variant="h3" sx={{ mb: 1 }}>
 					{pageData.title}
+				</Typography>
+				<Typography variant="body1" sx={{ mb: 3 }}>
+					Types valides dans ce contexte : {Variable.getValidTypesForZones(zones).join(", ")}
 				</Typography>
 				<VariablesTable zones={zones} />
 			</Box>

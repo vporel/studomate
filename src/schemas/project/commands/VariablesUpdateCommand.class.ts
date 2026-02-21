@@ -6,7 +6,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 	{
 		id: string;
 		newData: Partial<VariableUpdatableFields>;
-		previousData: Partial<VariableUpdatableFields>;
+		oldData: Partial<VariableUpdatableFields>;
 	}[]
 > {
 	getType(): string {
@@ -26,7 +26,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		project.variables = project.variables.map((v) => {
 			const payload = this.payload.find((p) => p.id === v.id);
 			if (!payload) return v;
-			return v.update(payload.previousData);
+			return v.update(payload.oldData);
 		});
 		return project;
 	}

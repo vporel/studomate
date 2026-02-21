@@ -30,10 +30,10 @@ export function deepMerge<TargetType = any, SourceType = any>(
 /**
  * @description Extract an object from another object using a list of keys
  */
-export function objectFromProperties(keys: string[], sourceObject: any | undefined | null): object {
+export function extractFields<T = object>(keys: string[], sourceObject: any | undefined | null): T {
 	const extractedObject: any = {};
 	for (const key of keys) extractedObject[key] = sourceObject ? sourceObject[key] : "";
-	return extractedObject as object;
+	return extractedObject as T;
 }
 
 /**

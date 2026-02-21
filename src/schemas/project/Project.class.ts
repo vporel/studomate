@@ -49,6 +49,7 @@ export default class Project {
 
 	copy(): Project {
 		const newProject = Object.assign(new Project("", "", ""), this);
+		newProject.variables = this.variables.map((v) => v.copy());
 		for (const grafcetId in this.grafcets) {
 			newProject.grafcets[grafcetId] = this.grafcets[grafcetId].copy();
 		}
