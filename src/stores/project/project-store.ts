@@ -35,7 +35,8 @@ export const createProjectStore = () => {
 			pagesData: initialPagesData,
 			pagesOrder: initialPagesData ? Object.keys(initialPagesData) : [],
 			activePageId: initialPagesData ? Object.keys(initialPagesData)[0] : null,
-			activeScope: null,
+			activeScope: "project",
+			activeScopeType: "project",
 		}));
 	};
 
@@ -51,7 +52,8 @@ export const createProjectStore = () => {
 			pagesData: {},
 			pagesOrder: [],
 			activePageId: null,
-			activeScope: null,
+			activeScope: "project",
+			activeScopeType: "project",
 		}));
 	};
 
@@ -67,8 +69,10 @@ export const createProjectStore = () => {
 			onUnsavedChangesDialogCancel: null,
 			onUnsavedChangesDialogContinue: null,
 			savingProject: false,
-			activeScope: null,
-			activeScopeType: null,
+			activeScope: "project",
+			activeScopeType: "project",
+			hasCommandsToUndo: false,
+			hasCommandsToRedo: false,
 			commandsStackManager: commandsStackManager,
 			variablesManager: new VariablesManager(set, get, commandsStackManager),
 			pagesManager: new PagesManager(set, get),
@@ -181,7 +185,7 @@ export const createProjectStore = () => {
 				}
 			},
 
-			setActiveScope: (scope: string | null) => {
+			setActiveScope: (scope: string) => {
 				const previousScope = get().activeScope;
 				const pagesData = get().pagesData;
 				let scopeType: ScopeType = "project";

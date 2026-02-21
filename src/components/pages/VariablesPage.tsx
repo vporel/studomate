@@ -45,7 +45,7 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 					width: "100%",
 				}}
 			>
-				<Typography variant="h3" sx={{ mb: 1 }}>
+				<Typography variant="h3" sx={{ mb: 3 }}>
 					{pageData.title}
 				</Typography>
 				<VariablesTable zones={zones} />

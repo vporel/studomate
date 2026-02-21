@@ -59,6 +59,8 @@ export default function useShortcutsHandler() {
 						if (activeScopeType === "grafcet") {
 							const actions = getActiveGrafcetStoreActions();
 							actions?.undoOperation();
+						} else if (activeScopeType === "project") {
+							projectStore?.getState().commandsStackManager.undoOperation();
 						}
 						break;
 					}
@@ -69,6 +71,8 @@ export default function useShortcutsHandler() {
 						if (activeScopeType === "grafcet") {
 							const actions = getActiveGrafcetStoreActions();
 							actions?.redoOperation();
+						} else if (activeScopeType === "project") {
+							projectStore?.getState().commandsStackManager.redoOperation();
 						}
 						break;
 					}

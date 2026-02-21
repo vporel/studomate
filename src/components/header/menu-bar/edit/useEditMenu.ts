@@ -3,16 +3,26 @@
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { platformShortcut } from "@/lib/platform";
 import { useMemo } from "react";
+import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useEditMenu(): AppMenuType {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
 	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
-	const hasActiveGrafcetCommandsToUndo = useProjectStore(
-		(state) => state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
-	);
-	const hasActiveGrafcetCommandsToRedo = useProjectStore(
-		(state) => state.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
+	const {
+		projectCommandsStackManager,
+		hasProjectCommandsToUndo,
+		hasProjectCommandsToRedo,
+		hasActiveGrafcetCommandsToUndo,
+		hasActiveGrafcetCommandsToRedo,
+	} = useProjectStore(
+		useShallow((state) => ({
+			projectCommandsStackManager: state.commandsStackManager,
+			hasProjectCommandsToUndo: state.hasCommandsToUndo,
+			hasProjectCommandsToRedo: state.hasCommandsToRedo,
+			hasActiveGrafcetCommandsToUndo: state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
+			hasActiveGrafcetCommandsToRedo: state.getActiveGrafcetStoreValues()?.hasCommandsToRedo,
+		})),
 	);
 
 	return useMemo(
@@ -24,19 +34,31 @@ export default function useEditMenu(): AppMenuType {
 					{
 						label: "Annuler",
 						shortcut: platformShortcut("Ctrl+Z", "Cmd+Z"),
-						disabled: activeScopeType !== "grafcet" || !hasActiveGrafcetCommandsToUndo,
+						disabled:
+							(activeScopeType === "grafcet" && !hasActiveGrafcetCommandsToUndo) ||
+							(activeScopeType === "project" && !hasProjectCommandsToUndo),
 						onClick: () => {
-							const actions = getActiveGrafcetStoreActions();
-							actions?.undoOperation();
+							if (activeScopeType === "grafcet") {
+								const actions = getActiveGrafcetStoreActions();
+								actions?.undoOperation();
+							} else if (activeScopeType === "project") {
+								projectCommandsStackManager.undoOperation();
+							}
 						},
 					},
 					{
 						label: "Rétablir",
 						shortcut: platformShortcut("Ctrl+Y", "Cmd+Y"),
-						disabled: activeScopeType !== "grafcet" || !hasActiveGrafcetCommandsToRedo,
+						disabled:
+							(activeScopeType === "grafcet" && !hasActiveGrafcetCommandsToRedo) ||
+							(activeScopeType === "project" && !hasProjectCommandsToRedo),
 						onClick: () => {
-							const actions = getActiveGrafcetStoreActions();
-							actions?.redoOperation();
+							if (activeScopeType === "grafcet") {
+								const actions = getActiveGrafcetStoreActions();
+								actions?.redoOperation();
+							} else if (activeScopeType === "project") {
+								projectCommandsStackManager.redoOperation();
+							}
 						},
 					},
 				],
@@ -64,9 +86,12 @@ export default function useEditMenu(): AppMenuType {
 		}),
 		[
 			activeScopeType,
-			getActiveGrafcetStoreActions,
 			hasActiveGrafcetCommandsToUndo,
+			hasProjectCommandsToUndo,
 			hasActiveGrafcetCommandsToRedo,
+			hasProjectCommandsToRedo,
+			getActiveGrafcetStoreActions,
+			projectCommandsStackManager,
 		],
 	);
 }

@@ -45,8 +45,10 @@ export interface ProjectStoreState {
 	openModalVisible: boolean;
 	exportModalVisible: boolean;
 	savingProject: boolean;
-	activeScope: string | null; //The currently active scope (used for keyboard shortcuts). The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
-	activeScopeType: ScopeType | null;
+	activeScope: string; //The currently active scope (used for keyboard shortcuts). The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
+	activeScopeType: ScopeType;
+	hasCommandsToUndo: boolean;
+	hasCommandsToRedo: boolean;
 	commandsStackManager: CommandsStackManager;
 	variablesManager: VariablesManager;
 	pagesManager: PagesManager;
@@ -62,7 +64,7 @@ export interface ProjectStoreState {
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setOpenModalVisible: (visible: boolean) => void;
 	setExportModalVisible: (visible: boolean) => void;
-	setActiveScope: (scope: string | null) => void;
+	setActiveScope: (scope: string) => void;
 
 	//=============== GRAFCETS ===============
 	/**

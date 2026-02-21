@@ -1,23 +1,36 @@
 "use client";
 
 import { Undo as UndoIcon } from "@mui/icons-material";
+import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import AppTool from "./AppTool";
 
 const UndoTool = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
 	const getActiveGrafcetStoreActions = useProjectStore((state) => state.getActiveGrafcetStoreActions);
-	const hasActiveGrafcetCommandsToUndo = useProjectStore(
-		(state) => state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
-	);
+	const { projectCommandsStackManager, hasProjectCommandsToUndo, hasActiveGrafcetCommandsToUndo } =
+		useProjectStore(
+			useShallow((state) => ({
+				projectCommandsStackManager: state.commandsStackManager,
+				hasProjectCommandsToUndo: state.hasCommandsToUndo,
+				hasActiveGrafcetCommandsToUndo: state.getActiveGrafcetStoreValues()?.hasCommandsToUndo,
+			})),
+		);
 
 	return (
 		<AppTool
 			name="undo"
-			disabled={activeScopeType !== "grafcet" || !hasActiveGrafcetCommandsToUndo}
+			disabled={
+				(activeScopeType === "grafcet" && !hasActiveGrafcetCommandsToUndo) ||
+				(activeScopeType === "project" && !hasProjectCommandsToUndo)
+			}
 			onClick={() => {
-				const actions = getActiveGrafcetStoreActions();
-				actions?.undoOperation();
+				if (activeScopeType === "grafcet") {
+					const actions = getActiveGrafcetStoreActions();
+					actions?.undoOperation();
+				} else if (activeScopeType === "project") {
+					projectCommandsStackManager.undoOperation();
+				}
 			}}
 		>
 			<UndoIcon />

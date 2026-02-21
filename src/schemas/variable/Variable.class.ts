@@ -44,9 +44,9 @@ export default class Variable {
 		this.address = "";
 		this.comment = "";
 
-		const zoneTypeErrors = Variable.validateZoneType(this.zone, this.type);
-		if (zoneTypeErrors.length > 0) {
-			throw new Error(zoneTypeErrors.join(", "));
+		const errors = Variable.validate(this);
+		if (errors.length > 0) {
+			throw new Error(errors.join(", "));
 		}
 	}
 
@@ -68,12 +68,12 @@ export default class Variable {
 	}
 
 	copy(): Variable {
-		return Object.assign(new Variable("", "", "memory", "BOOL"), this);
+		return Object.assign(new Variable("id", "mnemonic", "memory", "BOOL"), this);
 	}
 
 	static createFromJSON(json: string): Variable {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Variable("", "", "memory", "BOOL"), jsonParsed);
+		return Object.assign(new Variable("id", "mnemonic", "memory", "BOOL"), jsonParsed);
 	}
 
 	static getValidTypesForZones(zones: VariableZone[]): VariableType[] {

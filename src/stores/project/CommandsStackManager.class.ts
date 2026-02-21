@@ -9,9 +9,6 @@ export default class CommandsStackManager {
 	private setProjectStore: ProjectStoreSetFunction;
 	private getProjectStore: ProjectStoreGetFunction;
 
-	hasCommandsToUndo: boolean = false;
-	hasCommandsToRedo: boolean = false;
-
 	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
 		this.setProjectStore = set;
 		this.getProjectStore = get;
@@ -24,24 +21,39 @@ export default class CommandsStackManager {
 		if (!commands || commands.length === 0) return;
 		console.log("Executing project operation with commands: ", commands);
 		const newProject = this.commandsStack.execute(commands, project.copy());
-		this.setProjectStore(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setProjectStore(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
+			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
+		}));
 	}
 
 	undoOperation(): void {
 		const project = this.getProjectStore().project;
 		if (!project) return;
-		const [newGrafcet, commands] = this.commandsStack.undo(project.copy());
+		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
-		this.setProjectStore(() => ({ grafcet: newGrafcet, hasUnsavedChanges: true }));
+		this.setProjectStore(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
+			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
+		}));
 		commands?.forEach((command) => this.commandUndo(command));
 	}
 
 	redoOperation(): void {
 		const project = this.getProjectStore().project;
 		if (!project) return;
-		const [newGrafcet, commands] = this.commandsStack.redo(project.copy());
+		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;
-		this.setProjectStore(() => ({ grafcet: newGrafcet, hasUnsavedChanges: true }));
+		this.setProjectStore(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
+			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
+		}));
 		commands?.forEach((command) => this.commandRedo(command));
 	}
 
