@@ -25,12 +25,7 @@ export default class Step extends GrafcetElement<StepData> {
 		super(id, "step", data, position);
 	}
 
-	/**
-	 * @returns null if there is no error
-	 */
-	validate(): string[] | null {
-		return null;
-	}
+	validateData(): void {}
 
 	copy(): Step {
 		return new Step(this.id, { ...this.data }, { ...this.position });

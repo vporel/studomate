@@ -17,7 +17,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression] =
+	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
 		useWithTextNodeValue(id, data, "expression", false);
 
 	return (
@@ -45,6 +45,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 			<GrafcetNode
 				id={id}
 				type="transition"
+				error={error}
 				sx={{
 					position: "relative",
 					width: Transition.DEFAULT_DIMENSIONS.width + "px",

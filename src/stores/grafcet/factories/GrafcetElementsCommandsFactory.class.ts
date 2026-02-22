@@ -7,6 +7,7 @@ import ElementsRemoveCommand from "@/schemas/grafcet/commands/ElementsRemoveComm
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
+import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 import ViewManager from "../managers/ViewManager";
 
@@ -78,27 +79,6 @@ export default class GrafcetElementsCommandsFactory {
 		};
 	}
 
-	private static allowNodeDataChange(
-		nodeId: string,
-		newData: any,
-		grafcet: Grafcet,
-		viewManager: ViewManager,
-	): boolean {
-		const nodes = viewManager.getNodes();
-		const node = nodes.find((n) => n.id === nodeId);
-		//If the node is a step with initial true, we need to check if there is already another step with initial true
-		if (node?.type === "step") {
-			if (newData.initial)
-				return !nodes.some((n) => n.type === "step" && n.data.initial && n.id !== nodeId);
-			//We need to check is the number is not already used by another step
-			if (newData.number !== undefined)
-				return !nodes.some(
-					(n) => n.type === "step" && n.data.number === newData.number && n.id !== nodeId,
-				);
-		}
-		return true;
-	}
-
 	static onNodeDataChange(
 		nodeId: string,
 		newData:
@@ -114,7 +94,7 @@ export default class GrafcetElementsCommandsFactory {
 			const prevData = grafcetElement.data as any;
 			newData = newData(prevData);
 		}
-		if (!GrafcetElementsCommandsFactory.allowNodeDataChange(nodeId, newData, grafcet, viewManager))
+		if (GrafcetElementsValidator.validateNewData(nodeId, newData, grafcet).length > 0)
 			return { commands: [] };
 		const fullModifiedData = { ...grafcetElement.data, ...newData };
 		const commands = [];

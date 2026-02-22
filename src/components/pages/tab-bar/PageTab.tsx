@@ -3,6 +3,7 @@
 import InclinedAccountTreeIcon from "@/components/icons/InclinedAccountTree";
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { PageType } from "@/stores/project/project-store-types";
+import { Segment as SegmentIcon } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import HomeIcon from "@mui/icons-material/Home";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -29,7 +30,9 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			? HomeIcon
 			: type === "project-properties"
 				? TuneIcon
-				: InclinedAccountTreeIcon;
+				: type === "grafcet"
+					? InclinedAccountTreeIcon
+					: SegmentIcon;
 
 	return (
 		<Box

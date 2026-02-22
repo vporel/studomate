@@ -16,7 +16,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingNumber, setEditingNumber, editing, setEditing, saveNumber] = useWithTextNodeValue(
+	const [editingNumber, setEditingNumber, editing, setEditing, saveNumber, error] = useWithTextNodeValue(
 		id,
 		data,
 		"number",
@@ -58,6 +58,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 			<GrafcetNode
 				id={id}
 				type="step"
+				error={error}
 				sx={{
 					width: Step.DEFAULT_DIMENSIONS.width + "px",
 					height: Step.DEFAULT_DIMENSIONS.height + "px",

@@ -1,7 +1,7 @@
 "use client";
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
-import GrafcetConnectionsValidator from "@/schemas/grafcet/GrafcetConnectionsValidator.class";
+import GrafcetConnectionsValidator from "@/schemas/grafcet/validators/GrafcetConnectionsValidator.class";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";

@@ -153,7 +153,7 @@ export default class Grafcet {
 			const group = this.getElementsByType(type);
 			const element = group.find((e) => e.id === id);
 			if (element) {
-				if (data) element.data = { ...element.data, ...structuredClone(data) };
+				if (data) element.updateData(data);
 				if (position) element.position = position;
 			}
 		});

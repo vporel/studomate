@@ -14,7 +14,7 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingText, setEditingText, editing, setEditing, saveText] = useWithTextNodeValue(
+	const [editingText, setEditingText, editing, setEditing, saveText, error] = useWithTextNodeValue(
 		id,
 		data,
 		"text",
@@ -31,6 +31,7 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 			<GrafcetNode
 				id={id}
 				type="comment"
+				error={error}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",

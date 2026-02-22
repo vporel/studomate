@@ -33,6 +33,19 @@ export default abstract class GrafcetElement<DataType extends BaseData> {
 		this.data = data;
 		this.position = position;
 	}
+	/**
+	 * @throws GrafcetElementValidationError if the data are not valid
+	 */
+
+	updateData(newData: Partial<DataType>): void {
+		this.data = structuredClone({ ...this.data, ...newData });
+		this.validateData();
+	}
+
+	/**
+	 * @throws GrafcetElementValidationError if the data are not valid
+	 */
+	abstract validateData(): void;
 
 	abstract copy(): GrafcetElement<DataType>;
 }

@@ -1,5 +1,6 @@
-import Grafcet, { XYPosition } from "../Grafcet.class";
+import Grafcet from "../Grafcet.class";
 import { GrafcetElementType } from "../GrafcetElement.class";
+import { XYPosition } from "../shared-types";
 import AbstractGrafcetCommand from "./AbstractGrafcetCommand.class";
 
 export default class ElementsRemoveCommand extends AbstractGrafcetCommand<

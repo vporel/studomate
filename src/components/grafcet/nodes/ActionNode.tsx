@@ -15,7 +15,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression] =
+	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
 		useWithTextNodeValue(id, data, "expression", false);
 
 	return (
@@ -40,6 +40,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 			<GrafcetNode
 				type="action"
 				id={id}
+				error={error}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
 					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",

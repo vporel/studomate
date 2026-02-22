@@ -14,6 +14,10 @@ export default class StepReferralSource extends StepReferral<StepReferralSourceD
 		};
 	}
 
+	validate(): string[] {
+		return [];
+	}
+
 	constructor(id: string, data: StepReferralSourceData, position: XYPosition) {
 		super(id, "step-referral-source", data, position);
 	}

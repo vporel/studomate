@@ -23,15 +23,7 @@ export default class Action extends GrafcetElement<ActionData> {
 		super(id, "action", data, position);
 	}
 
-	/**
-	 *
-	 * @returns null if there is no error
-	 */
-	validate(): string[] | null {
-		/* Expression */
-
-		return null;
-	}
+	validateData(): void {}
 
 	copy(): Action {
 		return Action.createFromJSON(JSON.stringify(this));

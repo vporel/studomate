@@ -23,15 +23,8 @@ export default class Transition extends GrafcetElement<TransitionData> {
 		super(id, "transition", data, position);
 	}
 
-	/**
-	 * @returns null if there is no error
-	 */
-	validate(): string[] | null {
-		/*
-            Expression
-        */
-
-		return null;
+	validate(): string[] {
+		return [];
 	}
 
 	copy(): Transition {

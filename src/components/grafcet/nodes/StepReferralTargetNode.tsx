@@ -19,8 +19,14 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingSourceStepNumber, setEditingSourceStepNumber, editing, setEditing, saveSourceStepNumber] =
-		useWithTextNodeValue(id, data, "sourceStepNumber", true);
+	const [
+		editingSourceStepNumber,
+		setEditingSourceStepNumber,
+		editing,
+		setEditing,
+		saveSourceStepNumber,
+		error,
+	] = useWithTextNodeValue(id, data, "sourceStepNumber", true);
 
 	return (
 		<>
@@ -37,6 +43,7 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 			<GrafcetNode
 				id={id}
 				type="step-referral-target"
+				error={error}
 				sx={{
 					width: StepReferral.DEFAULT_DIMENSIONS.width + "px",
 					display: "flex",

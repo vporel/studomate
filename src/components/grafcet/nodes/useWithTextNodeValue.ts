@@ -1,5 +1,6 @@
+import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 
 export default function useWithTextNodeValue(
 	nodeId: string,
@@ -8,28 +9,54 @@ export default function useWithTextNodeValue(
 	transformToNumberBeforeSave: boolean = false,
 ): [
 	value: string,
-	setValue: Dispatch<SetStateAction<string>>,
+	setValue: (newValue: string) => void,
 	editing: boolean,
 	setEditing: Dispatch<SetStateAction<boolean>>,
 	saveValue: () => void,
+	error: string | false,
 ] {
+	const { store } = useGrafcetContext();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const [value, setValue] = useState(data[valueProperty] + "");
+	const [value, _setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
+	const [error, setError] = useState<string | false>(false);
+	const transformValue = useCallback(
+		(v: string) => {
+			let transformedValue: any = v;
+			if (transformToNumberBeforeSave) {
+				transformedValue = v === "" || isNaN(parseInt(v)) || parseInt(v) < 0 ? "" : parseInt(v);
+			}
+			return transformedValue;
+		},
+		[transformToNumberBeforeSave],
+	);
 	const saveValue = useCallback(() => {
-		let valueToSave: any = value;
-		if (transformToNumberBeforeSave) {
-			valueToSave =
-				value === "" || isNaN(parseInt(value)) || parseInt(value) < 0 ? "" : parseInt(value);
-		}
 		workflowManager.updateNodeData(nodeId, {
-			[valueProperty]: valueToSave,
+			[valueProperty]: transformValue(value),
 		});
-	}, [value, workflowManager, nodeId, valueProperty, transformToNumberBeforeSave]);
+	}, [value, workflowManager, nodeId, valueProperty, transformValue]);
 
 	useEffect(() => {
-		if (!editing) setValue(data[valueProperty] + "");
+		if (!editing) {
+			_setValue(data[valueProperty] + "");
+			setError(false);
+		}
 	}, [data, editing, valueProperty]);
 
-	return [value, setValue, editing, setEditing, saveValue];
+	const setValue = useCallback(
+		(newValue: string) => {
+			_setValue(newValue);
+			//Check errors
+			const transformedValue = transformValue(newValue);
+			const errors = GrafcetElementsValidator.validateNewData(
+				nodeId,
+				{ [valueProperty]: transformedValue },
+				store!.getState().grafcet!,
+			);
+			setError(errors.length > 0 ? errors[0] : false);
+		},
+		[transformValue, nodeId, valueProperty, store],
+	);
+
+	return [value, setValue, editing, setEditing, saveValue, error];
 }
