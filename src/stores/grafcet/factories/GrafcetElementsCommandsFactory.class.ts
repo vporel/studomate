@@ -7,6 +7,7 @@ import ElementsRemoveCommand from "@/schemas/grafcet/commands/ElementsRemoveComm
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
+import StepsHelper from "@/schemas/grafcet/helpers/StepsHelper.class";
 import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 import ViewManager from "../managers/ViewManager";
@@ -21,13 +22,23 @@ export default class GrafcetElementsCommandsFactory {
 		nodesToAdd: GrafcetNodeType[];
 	} {
 		const existingNodes = viewManager.getNodes();
-		const nodesToAdd = newNodes.filter(
-			(n) =>
-				!existingNodes.find((en) => en.id === n.id) &&
-				(n.type !== "step" ||
-					!n.data.initial ||
-					!existingNodes.find((en) => en.type === "step" && en.data.initial)),
-		);
+		const nodesToAdd = newNodes
+			.filter(
+				(n) =>
+					!existingNodes.find((en) => en.id === n.id) &&
+					(n.type !== "step" ||
+						!n.data.initial ||
+						!existingNodes.find((en) => en.type === "step" && en.data.initial)),
+			)
+			.map((node) => {
+				if (node.type === "step") {
+					//If no number is provided for the step, we will assign it the next available number
+					if (node.data.number === undefined || node.data.number === "") {
+						node.data.number = StepsHelper.getNextAvailableNumber(grafcet);
+					}
+				}
+				return node;
+			});
 		const commands = [];
 		if (nodesToAdd.length > 0) {
 			commands.push(

@@ -121,13 +121,16 @@ export default class Grafcet {
 		return allElements;
 	}
 
-	getElementsByType(type: GrafcetElementType): GrafcetElement<any>[] {
+	getElementsByType<T extends GrafcetElement<any>>(type: GrafcetElementType): T[] {
 		const typeToElementsMap = this.getTypeToElementsMap();
-		return typeToElementsMap[type];
+		return typeToElementsMap[type] as T[];
 	}
 
-	getElementByIdAndType(id: string, type: GrafcetElementType): GrafcetElement<any> | undefined {
-		const group = this.getElementsByType(type);
+	getElementByIdAndType<T extends GrafcetElement<any>>(
+		id: string,
+		type: GrafcetElementType,
+	): T | undefined {
+		const group = this.getElementsByType<T>(type);
 		return group.find((e) => e.id === id);
 	}
 
