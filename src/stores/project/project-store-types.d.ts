@@ -1,7 +1,9 @@
 import Project from "@/schemas/project/Project.class";
 import { GrafcetStoreState } from "../grafcet/grafcet-store-types";
-import CommandsStackManager from "./CommandsStackManager.class";
-import VariablesManager from "./VariablesManager.class";
+import CommandsStackManager from "./managers/CommandsStackManager.class";
+import GrafcetsManager from "./managers/GrafcetsManager.class";
+import PagesManager from "./managers/PagesManager.class";
+import VariablesManager from "./managers/VariablesManager.class";
 
 type SimpleCallback = () => void;
 
@@ -20,18 +22,12 @@ type PageData = {
 
 type GrafcetStoreValues = Pick<GrafcetStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
 
-type GrafcetStoreActions = Pick<
+type GrafcetStoreManagers = Pick<
 	GrafcetStoreState,
-	| "getZoom"
-	| "zoomIn"
-	| "zoomOut"
-	| "fitView"
-	| "selectAllNodesAndEdges"
-	| "copySelectedElements"
-	| "pasteCopiedElements"
-	| "undoOperation"
-	| "redoOperation"
+	"viewManager" | "copyCutPasteManager" | "commandsStackManager"
 >;
+
+type GrafcetStoreActions = Pick<GrafcetStoreState, "selectAllNodesAndEdges">;
 
 export interface ProjectStoreState {
 	//Project
@@ -69,10 +65,8 @@ export interface ProjectStoreState {
 	 * The grafcet stores values, indexed by grafcetId, to be able to update some components that are out of the grafcet context
 	 */
 	grafcetsStoresValues: Record<string, ProjectGrafcetStoreValues>;
-	/**
-	 * The grafcet stores actions, indexed by grafcetId, to be able to call some grafcet store methods that are out of the grafcet context, for example to implement the project keyboard shortcuts
-	 */
-	grafcetsStoresActions: Record<string, GrafcetStoreActions>;
+	grafcetsStoresManagers: Record<string, ProjectGrafcetStoreManagers>; //The managers are used to call functions that are not pure actions, for example the copyCutPasteManager to copy and paste elements
+	grafcetsStoresActions: Record<string, GrafcetStoreActions>; //The actions directly exposed by the grafcets stores
 	grafcetsManager: GrafcetsManager;
 
 	//=============== PAGES ===============

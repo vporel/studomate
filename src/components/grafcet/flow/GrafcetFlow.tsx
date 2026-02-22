@@ -1,16 +1,16 @@
 "use client";
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
-import ConnectionsValidator from "@/stores/grafcet/ConnectionsValidator.class";
+import GrafcetConnectionsValidator from "@/schemas/grafcet/GrafcetConnectionsValidator.class";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
-import { Background, Connection, ReactFlow, ReactFlowProvider } from "@xyflow/react";
+import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
-import { useGrafcetStore } from "../context/GrafcetContext";
+import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import "./_grafcet-page.css";
 import { edgeTypes, nodeTypes } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
@@ -21,29 +21,16 @@ export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
 
 export function GrafcetFlowContent() {
 	const th = useTheme();
-	const { setActiveScope } = useProjectStore(
-		useShallow((state) => ({
-			setActiveScope: state.setActiveScope,
-		})),
-	);
+	const setActiveScope = useProjectStore((state) => state.setActiveScope);
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
 	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } = useContextMenuOpeningHandlers();
-	// const { store } = useGrafcetContext();
+	const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
 	const grafcetFormat = useGrafcetStore((state) => state.grafcet.format);
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
-	const { setReactFlowInstance, onNodesChange, onEdgesChange, deleteNodesAndEdges, onConnect } =
-		useGrafcetStore(
-			useShallow((state) => ({
-				setReactFlowInstance: state.setReactFlowInstance,
-				onNodesChange: state.onNodesChange,
-				onEdgesChange: state.onEdgesChange,
-				deleteNodesAndEdges: state.deleteNodesAndEdges,
-				onConnect: state.onConnect,
-			})),
-		);
-	const rfInstance = useGrafcetStore((state) => state.rfInstance);
+	const viewManager = useGrafcetStore((state) => state.viewManager);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
 
 	return (
@@ -84,12 +71,12 @@ export function GrafcetFlowContent() {
 				<ReactFlow
 					nodes={nodes}
 					edges={edges}
-					onInit={setReactFlowInstance as any}
-					onNodesChange={onNodesChange}
-					onConnect={onConnect}
-					onEdgesChange={onEdgesChange}
+					onInit={(instance) => viewManager.setReactFlowInstance(instance as any)}
+					onNodesChange={(changes) => workflowManager.handleNodesChange(changes)}
+					onConnect={(connection) => workflowManager.handleNewConnection(connection)}
+					onEdgesChange={(changes) => workflowManager.handleEdgesChange(changes)}
 					onDelete={({ nodes, edges }) => {
-						deleteNodesAndEdges(
+						workflowManager.deleteNodesAndEdges(
 							nodes.map((n) => n.id),
 							edges.map((e) => e.id),
 						);
@@ -99,8 +86,16 @@ export function GrafcetFlowContent() {
 					defaultEdgeOptions={{ type: "custom-edge" }}
 					connectionLineComponent={CustomConnectionLine}
 					isValidConnection={(connection) => {
-						if (!rfInstance) return false;
-						return ConnectionsValidator.validateConnection(rfInstance, connection as Connection);
+						if (!viewManager.rfInstance) return false;
+						return GrafcetConnectionsValidator.validateConnection(
+							{
+								sourceId: connection.source,
+								targetId: connection.target,
+								sourceHandleId: connection.sourceHandle || "",
+								targetHandleId: connection.targetHandle || "",
+							},
+							store!.getState().grafcet!,
+						);
 					}}
 					minZoom={GRAFCET_FLOW_MIN_ZOOM}
 					maxZoom={GRAFCET_FLOW_MAX_ZOOM}

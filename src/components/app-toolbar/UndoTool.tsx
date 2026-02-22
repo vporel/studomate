@@ -27,8 +27,9 @@ const UndoTool = () => {
 			}
 			onClick={() => {
 				if (activeScopeType === "grafcet") {
-					const actions = grafcetsManager.getActiveGrafcetStoreActions();
-					actions?.undoOperation();
+					const grafcetCommandsStackManager =
+						grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+					grafcetCommandsStackManager?.undoOperation();
 				} else if (activeScopeType === "project") {
 					projectCommandsStackManager.undoOperation();
 				}

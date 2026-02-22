@@ -4,8 +4,8 @@ import Grafcet from "@/schemas/grafcet/Grafcet.class";
 export default class EdgesFactory {
 	static getInitialEdges(grafcet: Grafcet): GrafcetEdgeType[] {
 		return grafcet.connections.map((connection) => {
-			const sourceNode = grafcet.getElement(connection.source.type, connection.source.id);
-			const targetNode = grafcet.getElement(connection.target.type, connection.target.id);
+			const sourceNode = grafcet.getElementByIdAndType(connection.source.id, connection.source.type);
+			const targetNode = grafcet.getElementByIdAndType(connection.target.id, connection.target.type);
 			if (!sourceNode || !targetNode)
 				console.error("Source or target node not found for connection " + connection.id);
 			return {

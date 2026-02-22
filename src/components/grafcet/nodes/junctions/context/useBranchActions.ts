@@ -11,7 +11,7 @@ export default function useBranchActions(
 	nodeId: string,
 	nodeData: JunctionData,
 ): { add: (buttonIndex: number) => void } {
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updateNodeInternals = useUpdateNodeInternals();
 
 	const add = useCallback(
@@ -44,14 +44,17 @@ export default function useBranchActions(
 			const newBranches = { ...nodeData.branches, [newBranch.id]: newBranch };
 			const newBranchesOrder = [...nodeData.branchesOrder];
 			newBranchesOrder.splice(buttonIndex, 0, newBranch.id);
-			updateNodeData(nodeId, { branches: newBranches, branchesOrder: newBranchesOrder });
+			workflowManager.updateNodeData(nodeId, {
+				branches: newBranches,
+				branchesOrder: newBranchesOrder,
+			});
 			updateNodeInternals(nodeId);
 		},
 		[
 			nodeData.branches,
 			nodeData.branchesOrder,
 			nodeData.width,
-			updateNodeData,
+			workflowManager,
 			nodeId,
 			updateNodeInternals,
 		],

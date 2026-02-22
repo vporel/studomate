@@ -53,19 +53,13 @@ export const GrafcetContextProvider = ({
 	useEffect(() => {
 		if (!storeRef.current) return;
 		const grafcetId = storeRef.current.getState().grafcet.id;
-		grafcetsManager.registerGrafcetStoreActions(grafcetId, {
-			getZoom: storeRef.current.getState().getZoom,
-			zoomIn: storeRef.current.getState().zoomIn,
-			zoomOut: storeRef.current.getState().zoomOut,
-			fitView: storeRef.current.getState().fitView,
-			selectAllNodesAndEdges: storeRef.current.getState().selectAllNodesAndEdges,
-			copySelectedElements: storeRef.current.getState().copySelectedElements,
-			pasteCopiedElements: storeRef.current.getState().pasteCopiedElements,
-			undoOperation: storeRef.current.getState().undoOperation,
-			redoOperation: storeRef.current.getState().redoOperation,
+		grafcetsManager.registerGrafcetStoreManager(grafcetId, {
+			viewManager: storeRef.current.getState().viewManager,
+			copyCutPasteManager: storeRef.current.getState().copyCutPasteManager,
+			commandsStackManager: storeRef.current.getState().commandsStackManager,
 		});
 		return () => {
-			grafcetsManager.deleteGrafcetStoreActions(grafcetId);
+			grafcetsManager.deleteGrafcetStoreManager(grafcetId);
 		};
 	}, [grafcetsManager]);
 

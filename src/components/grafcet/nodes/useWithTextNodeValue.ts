@@ -13,7 +13,7 @@ export default function useWithTextNodeValue(
 	setEditing: Dispatch<SetStateAction<boolean>>,
 	saveValue: () => void,
 ] {
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const [value, setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
 	const saveValue = useCallback(() => {
@@ -22,10 +22,10 @@ export default function useWithTextNodeValue(
 			valueToSave =
 				value === "" || isNaN(parseInt(value)) || parseInt(value) < 0 ? "" : parseInt(value);
 		}
-		updateNodeData(nodeId, {
+		workflowManager.updateNodeData(nodeId, {
 			[valueProperty]: valueToSave,
 		});
-	}, [value, updateNodeData, nodeId, valueProperty, transformToNumberBeforeSave]);
+	}, [value, workflowManager, nodeId, valueProperty, transformToNumberBeforeSave]);
 
 	useEffect(() => {
 		if (!editing) setValue(data[valueProperty] + "");

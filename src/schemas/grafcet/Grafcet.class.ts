@@ -10,21 +10,19 @@ import Step from "./Step.class";
 import StepReferralSource from "./StepReferralSource.class";
 import StepReferralTarget from "./StepReferralTarget.class";
 import Transition from "./Transition.class";
-
-export const DEFAULT_GRAFCET_NAME = "Sans titre";
+import { XYPosition } from "./shared-types";
 
 export type GrafcetFormat = {
 	type: "A4" | "A3";
 	orientation: "portrait" | "landscape";
 };
 
+export const DEFAULT_GRAFCET_NAME = "Sans titre";
+
 export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
 	type: "A4",
 	orientation: "portrait",
 };
-
-export type XYPosition = { x: number; y: number };
-export type Dimensions = { width: number; height: number };
 
 export const elementsSchemasClasses: Record<GrafcetElementType, any> = {
 	step: Step,
@@ -73,39 +71,74 @@ export default class Grafcet {
 		return null;
 	}
 
-	getElementGroup(type: GrafcetElementType) {
-		switch (type) {
-			case "step":
-				return this.steps;
-			case "action":
-				return this.actions;
-			case "transition":
-				return this.transitions;
-			case "step-referral-source":
-				return this.stepsReferralsSources;
-			case "step-referral-target":
-				return this.stepsReferralsTargets;
-			case "junction-and-start":
-				return this.junctionsAndStarts;
-			case "junction-and-end":
-				return this.junctionsAndEnds;
-			case "junction-or-start":
-				return this.junctionsOrStarts;
-			case "junction-or-end":
-				return this.junctionsOrEnds;
-			case "comment":
-				return this.comments;
-		}
+	/**
+	 * Get the connections that have the provided element id as source or target, regardless of the handle id
+	 * @param elementId
+	 * @returns
+	 */
+	getConnectionsByElementId(elementId: string): GrafcetConnection[] {
+		return this.connections.filter((c) => c.source.id === elementId || c.target.id === elementId);
 	}
 
-	getElement(type: GrafcetElementType, id: string): GrafcetElement<any> | undefined {
-		const group = this.getElementGroup(type);
+	getConnectionsByElementIdAndHandleId(elementId: string, handleId: string): GrafcetConnection[] {
+		return this.connections.filter(
+			(c) =>
+				(c.source.id === elementId && c.source.handleId === handleId) ||
+				(c.target.id === elementId && c.target.handleId === handleId),
+		);
+	}
+
+	/**
+	 * Get a map of all the elements of the grafcet, with their type as key, and the elements list as value
+	 * @returns
+	 */
+	getTypeToElementsMap(): Record<GrafcetElementType, GrafcetElement<any>[]> {
+		return {
+			step: this.steps,
+			action: this.actions,
+			transition: this.transitions,
+			"step-referral-source": this.stepsReferralsSources,
+			"step-referral-target": this.stepsReferralsTargets,
+			"junction-and-start": this.junctionsAndStarts,
+			"junction-and-end": this.junctionsAndEnds,
+			"junction-or-start": this.junctionsOrStarts,
+			"junction-or-end": this.junctionsOrEnds,
+			comment: this.comments,
+		};
+	}
+
+	/**
+	 * Get all the elements of the grafcet in a single list
+	 * @returns
+	 */
+	getAllElements(): GrafcetElement<any>[] {
+		const typeToElementsMap = this.getTypeToElementsMap();
+		let allElements: GrafcetElement<any>[] = [];
+		(Object.keys(typeToElementsMap) as GrafcetElementType[]).forEach((type) => {
+			const elements = typeToElementsMap[type];
+			allElements = allElements.concat(elements);
+		});
+		return allElements;
+	}
+
+	getElementsByType(type: GrafcetElementType): GrafcetElement<any>[] {
+		const typeToElementsMap = this.getTypeToElementsMap();
+		return typeToElementsMap[type];
+	}
+
+	getElementByIdAndType(id: string, type: GrafcetElementType): GrafcetElement<any> | undefined {
+		const group = this.getElementsByType(type);
 		return group.find((e) => e.id === id);
+	}
+
+	getElementById(id: string): GrafcetElement<any> | undefined {
+		const allElements = this.getAllElements();
+		return allElements.find((e) => e.id === id);
 	}
 
 	addElements(elements: { type: GrafcetElementType; id: string; data: any; position: XYPosition }[]): void {
 		elements.forEach(({ type, id, data, position }) => {
-			const group = this.getElementGroup(type);
+			const group = this.getElementsByType(type);
 			const element = new elementsSchemasClasses[type](id, structuredClone(data), position);
 			if (!group.find((e) => e.id === element.id)) {
 				group.push(element);
@@ -117,7 +150,7 @@ export default class Grafcet {
 		elements: { type: GrafcetElementType; id: string; data?: any; position?: XYPosition }[],
 	): void {
 		elements.forEach(({ type, id, data, position }) => {
-			const group = this.getElementGroup(type);
+			const group = this.getElementsByType(type);
 			const element = group.find((e) => e.id === id);
 			if (element) {
 				if (data) element.data = { ...element.data, ...structuredClone(data) };
@@ -128,7 +161,7 @@ export default class Grafcet {
 
 	removeElements(elements: { type: GrafcetElementType; id: string }[]): void {
 		elements.forEach(({ type, id }) => {
-			const group = this.getElementGroup(type);
+			const group = this.getElementsByType(type);
 			const index = group.findIndex((e) => e.id === id);
 			if (index !== -1) {
 				group.splice(index, 1);
@@ -150,8 +183,8 @@ export default class Grafcet {
 	addConnections(connections: GrafcetConnection[]): void {
 		// Check if connection elements exist, the source and the target
 		connections.forEach((connection) => {
-			const sourceExists = !!this.getElement(connection.source.type, connection.source.id);
-			const targetExists = !!this.getElement(connection.target.type, connection.target.id);
+			const sourceExists = !!this.getElementByIdAndType(connection.source.id, connection.source.type);
+			const targetExists = !!this.getElementByIdAndType(connection.target.id, connection.target.type);
 			if (!sourceExists) {
 				throw new Error(
 					`Connection 'source' element missing: type=${connection.source.type}, id=${connection.source.id}`,
@@ -174,6 +207,11 @@ export default class Grafcet {
 		});
 	}
 
+	/**
+	 * Replace the connections with the same source and target ids with the provided ones, if they exist.
+	 * If a connection doesn't exist, it will be ignored
+	 * @param connections
+	 */
 	updateConnections(connections: GrafcetConnection[]): void {
 		connections.forEach((connection) => {
 			const index = this.connections.findIndex(

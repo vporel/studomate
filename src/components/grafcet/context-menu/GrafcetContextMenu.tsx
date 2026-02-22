@@ -5,7 +5,6 @@ import ContextMenu from "@/lib/context-menu/ContextMenu";
 import useBooleanState from "@/lib/hooks/useBooleanState";
 import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
-import { useShallow } from "zustand/shallow";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetNodeType, JunctionNode } from "../flow/grafcet-nodes-definitions";
 import commonNodeContextMenuItems from "./common-node-context-menu-items";
@@ -23,30 +22,15 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 	const [element, setElement] = useState<GrafcetContextMenuElement>({ type: "pane" });
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
-	const { addNodes, deleteNodes, getNodes, getEdges, deleteEdges, selectAllEdges, selectAllNodesAndEdges } =
-		useGrafcetStore(
-			useShallow((state) => ({
-				addNodes: state.addNodes,
-				deleteNodes: state.deleteNodes,
-				getNodes: state.getNodes,
-				getEdges: state.getEdges,
-				deleteEdges: state.deleteEdges,
-				selectAllEdges: state.selectAllEdges,
-				selectAllNodesAndEdges: state.selectAllNodesAndEdges,
-			})),
-		);
+	const viewManager = useGrafcetStore((state) => state.viewManager);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
+
 	//Groups of items, the groups will be separated with dividers
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
 		if (element.type == "pane") {
-			return paneContextMenuItems(getNodes, getEdges, {
-				selectAllEdges,
-				selectAllNodesAndEdges,
-			});
+			return paneContextMenuItems(viewManager);
 		} else {
-			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, {
-				deleteNodes,
-				deleteEdges,
-			});
+			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, workflowManager);
 			if (element.type.includes("junction")) {
 				return [
 					...junctionContextMenuItems(element as JunctionNode, contextMenuEvents),
@@ -55,16 +39,7 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 			}
 			return commonNodeItems;
 		}
-	}, [
-		element,
-		getNodes,
-		getEdges,
-		contextMenuEvents,
-		deleteNodes,
-		deleteEdges,
-		selectAllEdges,
-		selectAllNodesAndEdges,
-	]);
+	}, [element, viewManager, workflowManager, contextMenuEvents]);
 
 	//Show the menu on 'show' event
 	useEffect(() => {

@@ -1,5 +1,5 @@
-import { Dimensions } from "./Grafcet.class";
 import GrafcetElement, { BaseData } from "./GrafcetElement.class";
+import { Dimensions, XYPosition } from "./shared-types";
 
 export type StepData = BaseData & {
 	number: number | "";
@@ -21,8 +21,11 @@ export default class Step extends GrafcetElement<StepData> {
 		};
 	}
 
+	constructor(id: string, data: StepData, position: XYPosition) {
+		super(id, "step", data, position);
+	}
+
 	/**
-	 *
 	 * @returns null if there is no error
 	 */
 	validate(): string[] | null {

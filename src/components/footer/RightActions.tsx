@@ -8,10 +8,12 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 const ZoomInAction = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const activeGrafcetViewManager = useProjectStore(
+		(state) => state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager,
+	);
 	const activeGrafcetZoom = useProjectStore((state) => {
-		const activeGrafcetStoreActions = state.grafcetsManager.getActiveGrafcetStoreActions();
-		return activeGrafcetStoreActions ? activeGrafcetStoreActions.getZoom() : null;
+		const grafcetViewManager = state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
+		return grafcetViewManager?.getZoom() ?? null;
 	});
 
 	return (
@@ -23,8 +25,7 @@ const ZoomInAction = () => {
 				activeGrafcetZoom >= GRAFCET_FLOW_MAX_ZOOM
 			}
 			onClick={() => {
-				const actions = grafcetsManager.getActiveGrafcetStoreActions();
-				actions?.zoomIn();
+				activeGrafcetViewManager?.zoomIn();
 			}}
 		>
 			<ZoomInIcon />
@@ -34,10 +35,12 @@ const ZoomInAction = () => {
 
 const ZoomOutAction = () => {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const activeGrafcetViewManager = useProjectStore(
+		(state) => state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager,
+	);
 	const activeGrafcetZoom = useProjectStore((state) => {
-		const activeGrafcetStoreActions = state.grafcetsManager.getActiveGrafcetStoreActions();
-		return activeGrafcetStoreActions ? activeGrafcetStoreActions.getZoom() : null;
+		const grafcetViewManager = state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
+		return grafcetViewManager?.getZoom() ?? null;
 	});
 
 	return (
@@ -49,8 +52,7 @@ const ZoomOutAction = () => {
 				activeGrafcetZoom <= GRAFCET_FLOW_MIN_ZOOM
 			}
 			onClick={() => {
-				const actions = grafcetsManager.getActiveGrafcetStoreActions();
-				actions?.zoomOut();
+				activeGrafcetViewManager?.zoomOut();
 			}}
 		>
 			<ZoomOutIcon />

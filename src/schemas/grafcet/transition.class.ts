@@ -1,5 +1,5 @@
-import { Dimensions } from "./Grafcet.class";
 import GrafcetElement, { BaseData } from "./GrafcetElement.class";
+import { Dimensions, XYPosition } from "./shared-types";
 
 export type TransitionData = BaseData & {
 	expression: string;
@@ -17,6 +17,10 @@ export default class Transition extends GrafcetElement<TransitionData> {
 			width: Transition.DEFAULT_DIMENSIONS.width,
 			height: Transition.DEFAULT_DIMENSIONS.height,
 		};
+	}
+
+	constructor(id: string, data: TransitionData, position: XYPosition) {
+		super(id, "transition", data, position);
 	}
 
 	/**

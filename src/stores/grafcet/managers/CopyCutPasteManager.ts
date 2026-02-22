@@ -1,45 +1,54 @@
 import { GrafcetEdgeType, GrafcetNodeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
-import { ReactFlowInstance } from "@xyflow/react";
+import { focusFlow } from "../flow-management";
+import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet-store-types";
 
 export default class CopyCutPasteManager {
-	rfInstance: ReactFlowInstance;
-	grafcet: Grafcet;
+	private setStoreState: GrafcetStoreSetFunction;
+	private getStoreState: GrafcetStoreGetFunction;
+	private clipboard: { nodes: GrafcetNodeType[]; edges: GrafcetEdgeType[] } | null;
 
-	copiedElements: { nodes: GrafcetNodeType[]; edges: GrafcetEdgeType[] } | null;
+	constructor(setStoreState: GrafcetStoreSetFunction, getStoreState: GrafcetStoreGetFunction) {
+		this.setStoreState = setStoreState;
+		this.getStoreState = getStoreState;
+		this.clipboard = null;
+	}
 
-	constructor(rfInstance: ReactFlowInstance, grafcet: Grafcet) {
-		this.rfInstance = rfInstance;
-		this.grafcet = grafcet;
-		this.copiedElements = null;
+	copySelectedElements() {
+		const nodes = this.getStoreState().nodes.filter((n) => n.selected);
+		const edges = this.getStoreState().edges.filter((e) => e.selected);
+		this.copyElements(nodes, edges);
 	}
 
 	copyElements(nodes: GrafcetNodeType[], edges: GrafcetEdgeType[]) {
 		if (nodes.length === 0 && edges.length === 0) return;
-		this.copiedElements = {
+		this.clipboard = {
 			nodes: structuredClone(nodes),
 			edges: structuredClone(edges),
 		};
 	}
 
 	pasteElements(mousePosition?: { x: number; y: number }): {
-		nodesToAdd: GrafcetNodeType[];
-		edgesToAdd: GrafcetEdgeType[];
+		addedNodes: GrafcetNodeType[];
+		addedEdges: GrafcetEdgeType[];
 	} {
-		if (!this.copiedElements) {
+		const rfInstance = this.getStoreState().viewManager.rfInstance;
+		const grafcet = this.getStoreState().grafcet;
+		const existingNodes = this.getStoreState().nodes;
+		const copiedElements = this.clipboard;
+		if (!rfInstance || !copiedElements) {
 			return {
-				nodesToAdd: [],
-				edgesToAdd: [],
+				addedNodes: [],
+				addedEdges: [],
 			};
 		}
-		//Unselect all nodes and edges before pasting
-		const flowMousePosition = !mousePosition ? null : this.rfInstance.screenToFlowPosition(mousePosition);
-		const flowDimensions = getFlowDimensions(this.grafcet.format);
+		this.getStoreState().viewManager.deselectAllNodesAndEdges();
+		const flowMousePosition = !mousePosition ? null : rfInstance.screenToFlowPosition(mousePosition);
+		const flowDimensions = getFlowDimensions(grafcet.format);
 		flowDimensions.width = Math.floor(flowDimensions.width);
 		flowDimensions.height = Math.floor(flowDimensions.height);
-		const nodesBounds = this.rfInstance.getNodesBounds(this.copiedElements.nodes);
+		const nodesBounds = rfInstance.getNodesBounds(copiedElements.nodes);
 		let offsetDueToMouse = null;
 		if (flowMousePosition && flowMousePosition.x >= 0 && flowMousePosition.y >= 0) {
 			offsetDueToMouse = {
@@ -58,7 +67,7 @@ export default class CopyCutPasteManager {
 		}
 		const nodesIdsMap: Record<string, string> = {}; //Map to keep track of the old node ids and the new node ids, to update the edges source and target
 		const nodesOffsetsMaps: Record<string, { x: number; y: number }> = {}; //Map to keep track of the nodes offsets, to update the edges points
-		const newNodes = structuredClone(this.copiedElements.nodes).map((node) => {
+		const newNodes = structuredClone(copiedElements.nodes).map((node) => {
 			const newNode = {
 				...node,
 				id: createRandomId(),
@@ -70,13 +79,9 @@ export default class CopyCutPasteManager {
 				};
 			} else {
 				while (
-					this.rfInstance
-						.getNodes()
-						.find(
-							(n) =>
-								n.position?.x === newNode.position?.x &&
-								n.position?.y === newNode.position?.y,
-						)
+					existingNodes.find(
+						(n) => n.position?.x === newNode.position?.x && n.position?.y === newNode.position?.y,
+					)
 				) {
 					newNode.position = {
 						x: newNode.position!.x + 10,
@@ -92,11 +97,11 @@ export default class CopyCutPasteManager {
 			return newNode;
 		});
 		//An edge can not be pasted if its source or target node is not pasted, so we filter the edges to paste
-		const newEdges = structuredClone(this.copiedElements.edges)
+		const newEdges = structuredClone(copiedElements.edges)
 			.filter(
 				(edge) =>
-					this.copiedElements!.nodes.find((node) => node.id === edge.source) &&
-					this.copiedElements!.nodes.find((node) => node.id === edge.target),
+					copiedElements!.nodes.find((node) => node.id === edge.source) &&
+					copiedElements!.nodes.find((node) => node.id === edge.target),
 			)
 			.map((edge) => {
 				const newSource = nodesIdsMap[edge.source];
@@ -132,9 +137,11 @@ export default class CopyCutPasteManager {
 				} as GrafcetEdgeType;
 			})
 			.filter((edge): edge is GrafcetEdgeType => edge !== null);
+		this.getStoreState().workflowManager.addNodesAndEdges(newNodes, newEdges);
+		focusFlow(grafcet.id);
 		return {
-			nodesToAdd: newNodes,
-			edgesToAdd: newEdges,
+			addedNodes: newNodes,
+			addedEdges: newEdges,
 		};
 	}
 }

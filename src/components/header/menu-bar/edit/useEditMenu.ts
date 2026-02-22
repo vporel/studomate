@@ -42,8 +42,9 @@ export default function useEditMenu(): AppMenuType {
 							(activeScopeType === "project" && !hasProjectCommandsToUndo),
 						onClick: () => {
 							if (activeScopeType === "grafcet") {
-								const actions = grafcetsManager.getActiveGrafcetStoreActions();
-								actions?.undoOperation();
+								const grafcetCommandsStackManager =
+									grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+								grafcetCommandsStackManager?.undoOperation();
 							} else if (activeScopeType === "project") {
 								projectCommandsStackManager.undoOperation();
 							}
@@ -57,8 +58,9 @@ export default function useEditMenu(): AppMenuType {
 							(activeScopeType === "project" && !hasProjectCommandsToRedo),
 						onClick: () => {
 							if (activeScopeType === "grafcet") {
-								const actions = grafcetsManager.getActiveGrafcetStoreActions();
-								actions?.redoOperation();
+								const grafcetCommandsStackManager =
+									grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+								grafcetCommandsStackManager?.redoOperation();
 							} else if (activeScopeType === "project") {
 								projectCommandsStackManager.redoOperation();
 							}
@@ -71,8 +73,9 @@ export default function useEditMenu(): AppMenuType {
 						shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
 						disabled: activeScopeType !== "grafcet",
 						onClick: () => {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.copySelectedElements();
+							const copyCutPasteManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.copySelectedElements();
 						},
 					},
 					{
@@ -80,8 +83,9 @@ export default function useEditMenu(): AppMenuType {
 						shortcut: platformShortcut("Ctrl+V", "Cmd+V"),
 						disabled: activeScopeType !== "grafcet",
 						onClick: () => {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.pasteCopiedElements();
+							const copyCutPasteManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.pasteElements();
 						},
 					},
 				],

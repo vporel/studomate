@@ -1,37 +1,37 @@
-import { PageData, ProjectStoreGetFunction, ProjectStoreSetFunction } from "./project-store-types";
+import { PageData, ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project-store-types";
 
 export default class PagesManager {
-	private setProjectStore: ProjectStoreSetFunction;
-	private getProjectStore: ProjectStoreGetFunction;
+	private setStoreState: ProjectStoreSetFunction;
+	private getStoreState: ProjectStoreGetFunction;
 
 	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
-		this.setProjectStore = set;
-		this.getProjectStore = get;
+		this.setStoreState = set;
+		this.getStoreState = get;
 	}
 
 	openPage(pageData: PageData): void {
-		const project = this.getProjectStore().project;
+		const project = this.getStoreState().project;
 		if (!project) return;
-		const pagesOrder = this.getProjectStore().pagesOrder;
-		const pagesData = this.getProjectStore().pagesData;
+		const pagesOrder = this.getStoreState().pagesOrder;
+		const pagesData = this.getStoreState().pagesData;
 		if (pagesOrder.includes(pageData.id)) {
-			this.setProjectStore(() => ({ activePageId: pageData.id }));
+			this.setStoreState(() => ({ activePageId: pageData.id }));
 			return;
 		}
 		const newPagesOrder = [...pagesOrder];
 		newPagesOrder.push(pageData.id);
 		const newPagesData = structuredClone(pagesData);
 		newPagesData[pageData.id] = pageData;
-		this.setProjectStore(() => ({ pagesData: newPagesData, pagesOrder: newPagesOrder }));
+		this.setStoreState(() => ({ pagesData: newPagesData, pagesOrder: newPagesOrder }));
 		this.setActivePage(pageData.id);
 	}
 
 	closePage(pageId: string): void {
-		const project = this.getProjectStore().project;
+		const project = this.getStoreState().project;
 		if (!project) return;
-		const pagesOrder = this.getProjectStore().pagesOrder;
-		const pagesData = this.getProjectStore().pagesData;
-		const activePageId = this.getProjectStore().activePageId;
+		const pagesOrder = this.getStoreState().pagesOrder;
+		const pagesData = this.getStoreState().pagesData;
+		const activePageId = this.getStoreState().activePageId;
 		if (!pagesOrder.includes(pageId)) return;
 		const newPagesData = structuredClone(pagesData);
 		delete newPagesData[pageId];
@@ -47,7 +47,7 @@ export default class PagesManager {
 				newActivePageId = newPagesOrder[indexInOld - 1];
 			}
 		}
-		this.setProjectStore(() => ({
+		this.setStoreState(() => ({
 			pagesOrder: newPagesOrder,
 			pagesData: newPagesData,
 			activePageId: newActivePageId,
@@ -55,9 +55,9 @@ export default class PagesManager {
 	}
 
 	setActivePage(pageId: string): void {
-		const pagesOrder = this.getProjectStore().pagesOrder;
+		const pagesOrder = this.getStoreState().pagesOrder;
 		if (!pagesOrder.includes(pageId)) throw new Error(`Page "${pageId}" not opened`);
-		this.getProjectStore().setActiveScope(pageId);
-		this.setProjectStore(() => ({ activePageId: pageId }));
+		this.getStoreState().setActiveScope(pageId);
+		this.setStoreState(() => ({ activePageId: pageId }));
 	}
 }

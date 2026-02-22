@@ -1,6 +1,11 @@
-import Junction from "./Junction.class";
+import Junction, { JunctionData } from "./Junction.class";
+import { XYPosition } from "./shared-types";
 
 export default class JunctionOrStart extends Junction {
+	constructor(id: string, data: JunctionData, position: XYPosition) {
+		super(id, "junction-or-start", data, position);
+	}
+
 	copy(): JunctionOrStart {
 		return JunctionOrStart.createFromJSON(JSON.stringify(this));
 	}

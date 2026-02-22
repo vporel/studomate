@@ -1,6 +1,6 @@
 import { createRandomId } from "../schemas-helpers";
-import { Dimensions } from "./Grafcet.class";
 import GrafcetElement, { BaseData } from "./GrafcetElement.class";
+import { Dimensions } from "./shared-types";
 
 export type JunctionBranch = {
 	id: string;

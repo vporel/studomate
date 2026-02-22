@@ -7,23 +7,19 @@ import ElementsRemoveCommand from "@/schemas/grafcet/commands/ElementsRemoveComm
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import { NodeChange, NodeDimensionChange, NodePositionChange, ReactFlowInstance } from "@xyflow/react";
+import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
+import ViewManager from "../managers/ViewManager";
 
 export default class GrafcetElementsCommandsFactory {
-	rfInstance: ReactFlowInstance;
-	grafcet: Grafcet;
-
-	constructor(rfInstance: ReactFlowInstance, grafcet: Grafcet) {
-		this.rfInstance = rfInstance;
-		this.grafcet = grafcet;
-	}
-
-	onNodesAdd(newNodes: GrafcetNodeType[]): {
+	static onNodesAdd(
+		newNodes: GrafcetNodeType[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesToAdd: GrafcetNodeType[];
 	} {
-		const existingNodes = this.rfInstance.getNodes();
+		const existingNodes = viewManager.getNodes();
 		const nodesToAdd = newNodes.filter(
 			(n) =>
 				!existingNodes.find((en) => en.id === n.id) &&
@@ -50,16 +46,20 @@ export default class GrafcetElementsCommandsFactory {
 		};
 	}
 
-	onNodesRemove(nodesIds: string[]): {
+	static onNodesRemove(
+		nodesIds: string[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesIdsToDelete: string[];
 		edgesIdsToDelete: string[];
 	} {
-		const connections: GrafcetConnection[] = this.grafcet.connections.filter(
+		const connections: GrafcetConnection[] = grafcet.connections.filter(
 			(c) => nodesIds.includes(c.source.id) || nodesIds.includes(c.target.id),
 		);
 		const nodesToRemove = nodesIds
-			.map((id) => this.rfInstance.getNode(id))
+			.map((id) => viewManager.getNode(id))
 			.filter((n): n is GrafcetNodeType => !!n)
 			.map((node) => ({
 				type: node.type,
@@ -78,8 +78,13 @@ export default class GrafcetElementsCommandsFactory {
 		};
 	}
 
-	private allowNodeDataChange(nodeId: string, newData: any): boolean {
-		const nodes = this.rfInstance.getNodes();
+	private static allowNodeDataChange(
+		nodeId: string,
+		newData: any,
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): boolean {
+		const nodes = viewManager.getNodes();
 		const node = nodes.find((n) => n.id === nodeId);
 		//If the node is a step with initial true, we need to check if there is already another step with initial true
 		if (node?.type === "step") {
@@ -94,21 +99,23 @@ export default class GrafcetElementsCommandsFactory {
 		return true;
 	}
 
-	onNodeDataChange(
+	static onNodeDataChange(
 		nodeId: string,
 		newData:
 			| Partial<GrafcetNodeType["data"]>
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
+
+		grafcet: Grafcet,
+		viewManager: ViewManager,
 	): { commands: AbstractGrafcetCommand<any>[]; nodeDataToUpdate?: GrafcetNodeType["data"] } {
-		const node = this.rfInstance.getNode(nodeId);
-		if (!node) return { commands: [] };
+		const grafcetElement = grafcet.getElementById(nodeId);
+		if (!grafcetElement) return { commands: [] };
 		if (typeof newData === "function") {
-			const prevData = node.data as any;
+			const prevData = grafcetElement.data as any;
 			newData = newData(prevData);
 		}
-		if (!this.allowNodeDataChange(nodeId, newData)) return { commands: [] };
-		const grafcetElement = this.grafcet.getElement(node.type as GrafcetElementType, node.id);
-		if (!grafcetElement) return { commands: [] };
+		if (!GrafcetElementsCommandsFactory.allowNodeDataChange(nodeId, newData, grafcet, viewManager))
+			return { commands: [] };
 		const fullModifiedData = { ...grafcetElement.data, ...newData };
 		const commands = [];
 		//Make sure the data is not the same as the previous one, to avoid creating unnecessary commands
@@ -116,10 +123,10 @@ export default class GrafcetElementsCommandsFactory {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
-						id: node.id,
-						type: node.type as GrafcetElementType,
+						id: nodeId,
+						type: grafcetElement.type,
 						data: fullModifiedData,
-						position: node.position,
+						position: grafcetElement.position,
 						previousData: grafcetElement.data,
 						previousPosition: grafcetElement.position,
 					}),
@@ -129,7 +136,11 @@ export default class GrafcetElementsCommandsFactory {
 		return { commands, nodeDataToUpdate: fullModifiedData };
 	}
 
-	onNodeChange(changes: NodeChange[]): {
+	static onNodeChange(
+		changes: NodeChange[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesIdsToUpdate: Set<string>;
 	} {
@@ -138,12 +149,14 @@ export default class GrafcetElementsCommandsFactory {
 		changes.forEach((change) => {
 			switch (change.type) {
 				case "position":
-					const { commands: positionCommands } = this.getPositionChangeCommands(change);
+					const { commands: positionCommands } =
+						GrafcetElementsCommandsFactory.getPositionChangeCommands(change, grafcet);
 					commands.push(...positionCommands);
 					if (positionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
 				case "dimensions":
-					const { commands: dimensionCommands } = this.getDimensionsChangeCommands(change);
+					const { commands: dimensionCommands } =
+						GrafcetElementsCommandsFactory.getDimensionsChangeCommands(change, grafcet);
 					commands.push(...dimensionCommands);
 					if (dimensionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
@@ -152,17 +165,18 @@ export default class GrafcetElementsCommandsFactory {
 		return { commands, nodesIdsToUpdate };
 	}
 
-	private getPositionChangeCommands(change: NodePositionChange): {
+	private static getPositionChangeCommands(
+		change: NodePositionChange,
+		grafcet: Grafcet,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 	} {
 		if (change.dragging || !change.position)
 			return {
 				commands: [], //No position provided or the node is still being dragged, we will handle the position change on the next event when the dragging is finished
 			};
-		const node = this.rfInstance.getNode(change.id) as GrafcetNodeType;
-		if (!node) throw new Error("Node not found for id " + change.id);
-		const grafcetElement = this.grafcet.getElement(node.type, node.id);
-		if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);
+		const grafcetElement = grafcet.getElementById(change.id);
+		if (!grafcetElement) throw new Error("Grafcet element not found for id " + change.id);
 		//Make sure the position is not the same as the previous one, to avoid creating unnecessary commands
 		const commands = [];
 		if (
@@ -172,12 +186,12 @@ export default class GrafcetElementsCommandsFactory {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
-						type: node.type,
-						id: node.id,
-						data: node.data,
+						type: grafcetElement.type,
+						id: grafcetElement.id,
+						data: grafcetElement.data,
 						position: change.position,
-						previousData: node.data ? grafcetElement.data || {} : undefined,
-						previousPosition: node.position ? grafcetElement.position : undefined,
+						previousData: grafcetElement.data ? grafcetElement.data || {} : undefined,
+						previousPosition: grafcetElement.position ? grafcetElement.position : undefined,
 					}),
 				]),
 			);
@@ -185,17 +199,18 @@ export default class GrafcetElementsCommandsFactory {
 		return { commands };
 	}
 
-	private getDimensionsChangeCommands(change: NodeDimensionChange): {
+	private static getDimensionsChangeCommands(
+		change: NodeDimensionChange,
+		grafcet: Grafcet,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 	} {
 		if (change.resizing || !change.dimensions)
 			return {
 				commands: [], //No dimensions provided or currently resizing (we will handle the change at the end of the resizing to avoid creating unnecessary commands during the resizing)
 			};
-		const node = this.rfInstance.getNode(change.id) as GrafcetNodeType;
-		if (!node) throw new Error("Node not found for id " + change.id);
-		const grafcetElement = this.grafcet.getElement(node.type, node.id);
-		if (!grafcetElement) throw new Error("Grafcet element not found for id " + node.id);
+		const grafcetElement = grafcet.getElementById(change.id);
+		if (!grafcetElement) throw new Error("Grafcet element not found for id " + change.id);
 		const commands = [];
 		//Make sure the dimensions are not the same as the previous ones, to avoid creating unnecessary commands
 		if (
@@ -205,21 +220,19 @@ export default class GrafcetElementsCommandsFactory {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
-						type: node.type,
-						id: node.id,
+						type: grafcetElement.type,
+						id: change.id,
 						data: {
-							...node.data,
+							...grafcetElement.data,
 							width: change.dimensions.width,
 							height: change.dimensions.height,
 						} as any,
-						position: node.position,
-						previousData: node.data ? grafcetElement.data || {} : undefined,
-						previousPosition: node.position
-							? grafcetElement.position || {
-									x: 0,
-									y: 0,
-								}
-							: undefined,
+						position: grafcetElement.position,
+						previousData: grafcetElement.data ? grafcetElement.data || {} : undefined,
+						previousPosition: grafcetElement.position || {
+							x: 0,
+							y: 0,
+						},
 					}),
 				]),
 			);

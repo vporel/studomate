@@ -12,7 +12,7 @@ export default function usePointPointerEventsHandlers(
 	edgeId: string,
 ) {
 	const { screenToFlowPosition } = useReactFlow();
-	const updateEdgeData = useGrafcetStore((state) => state.updateEdgeData);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 
 	const handlePointPointerDown = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
@@ -21,8 +21,8 @@ export default function usePointPointerEventsHandlers(
 			if (e.buttons === 2) {
 				//Right click
 				//Delete point on right click
-				updateEdgeData(edgeId, (prevData) => {
-					const prevPoints = prevData.points;
+				workflowManager.updateEdgeData(edgeId, (prevData) => {
+					const prevPoints = prevData?.points || [];
 					if (index > 0 && index < prevPoints.length - 1) {
 						const newPoints = [...prevPoints];
 						newPoints.splice(index, 1);
@@ -33,7 +33,7 @@ export default function usePointPointerEventsHandlers(
 				});
 			}
 		},
-		[setPointsForAdding, updateEdgeData, edgeId],
+		[setPointsForAdding, workflowManager, edgeId],
 	);
 
 	const handlePointPointerMove = useCallback(
@@ -53,9 +53,9 @@ export default function usePointPointerEventsHandlers(
 	const handlePointPointerUp = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
 			(e.target as SVGCircleElement).releasePointerCapture(e.pointerId);
-			updateEdgeData(edgeId, { points });
+			workflowManager.updateEdgeData(edgeId, { points });
 		},
-		[updateEdgeData, edgeId, points],
+		[workflowManager, edgeId, points],
 	);
 
 	return { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp };

@@ -14,7 +14,7 @@ export default function useKeyboardEventsHandler(
 	selectNextBranch: () => void,
 	clearSelection: () => void,
 ): (e: React.KeyboardEvent<HTMLDivElement>) => void {
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updatenodeInternals = useUpdateNodeInternals();
 
 	return useCallback(
@@ -37,7 +37,7 @@ export default function useKeyboardEventsHandler(
 					else selectNextBranch();
 					return;
 				}
-				updateNodeData(nodeId, (prevData) => {
+				workflowManager.updateNodeData(nodeId, (prevData) => {
 					prevData = structuredClone(prevData) as JunctionData;
 					const dataToChange: Partial<JunctionData> = {};
 					if (pivotSelected) {
@@ -78,7 +78,7 @@ export default function useKeyboardEventsHandler(
 			selectNextBranch,
 			selectPreviousBranch,
 			selectedBranchId,
-			updateNodeData,
+			workflowManager,
 			updatenodeInternals,
 		],
 	);

@@ -1,3 +1,4 @@
+import { XYPosition } from "./shared-types";
 import StepReferral, { StepReferralData } from "./StepReferral.class";
 
 export type StepReferralTargetData = StepReferralData & {
@@ -11,6 +12,10 @@ export default class StepReferralTarget extends StepReferral<StepReferralTargetD
 			width: StepReferralTarget.DEFAULT_DIMENSIONS.width,
 			height: StepReferralTarget.DEFAULT_DIMENSIONS.height,
 		};
+	}
+
+	constructor(id: string, data: StepReferralTargetData, position: XYPosition) {
+		super(id, "step-referral-target", data, position);
 	}
 
 	copy(): StepReferralTarget {

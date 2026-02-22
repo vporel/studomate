@@ -1,5 +1,5 @@
-import { Dimensions } from "./Grafcet.class";
 import GrafcetElement, { BaseData } from "./GrafcetElement.class";
+import { Dimensions, XYPosition } from "./shared-types";
 
 export type ActionData = BaseData & {
 	expression: string;
@@ -17,6 +17,10 @@ export default class Action extends GrafcetElement<ActionData> {
 			width: Action.DEFAULT_DIMENSIONS.width,
 			height: Action.DEFAULT_DIMENSIONS.height,
 		};
+	}
+
+	constructor(id: string, data: ActionData, position: XYPosition) {
+		super(id, "action", data, position);
 	}
 
 	/**

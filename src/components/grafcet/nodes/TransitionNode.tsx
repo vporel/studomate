@@ -4,7 +4,6 @@ import Transition, { TransitionData } from "@/schemas/grafcet/Transition.class";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
-import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -16,7 +15,6 @@ export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
-	const updateNodeData = useGrafcetStore((state) => state.updateNodeData);
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression] =

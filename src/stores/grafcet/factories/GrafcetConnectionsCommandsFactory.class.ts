@@ -7,30 +7,24 @@ import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/ConnectionsRemo
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/ConnectionsUpdateCommand.class";
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { ReactFlowInstance } from "@xyflow/react";
 import { ConnectionMode, getEdgePosition } from "@xyflow/system";
+import ViewManager from "../managers/ViewManager";
 
 export default class GrafcetConnectionsCommandsFactory {
-	rfInstance: ReactFlowInstance;
-	grafcet: Grafcet;
-
-	constructor(rfInstance: ReactFlowInstance, grafcet: Grafcet) {
-		this.rfInstance = rfInstance;
-		this.grafcet = grafcet;
-	}
-
 	/**
 	 * @param newEdges
 	 * @param nodes Needed to find the source and target nodes of the connections to add, to be able to create the corresponding data and commands
 	 */
-	onEdgesAdd(
+	static onEdgesAdd(
 		newEdges: GrafcetEdgeType[],
 		nodes: GrafcetNodeType[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgesToAdd: GrafcetEdgeType[];
 	} {
-		const existingEdges = this.rfInstance.getEdges();
+		const existingEdges = viewManager.getEdges();
 		const edgesToAdd = newEdges.filter((e) => !existingEdges.find((ee) => ee.id === e.id));
 		const commands = [];
 		const connectionsToAdd = newEdges
@@ -63,11 +57,15 @@ export default class GrafcetConnectionsCommandsFactory {
 		};
 	}
 
-	onEdgesRemove(edgesIds: string[]): {
+	static onEdgesRemove(
+		edgesIds: string[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgesIdsToDelete: string[];
 	} {
-		const connectionsToRemove = this.grafcet.connections.filter((c) => edgesIds.includes(c.id));
+		const connectionsToRemove = grafcet.connections.filter((c) => edgesIds.includes(c.id));
 		const commands = [];
 		if (connectionsToRemove.length > 0) {
 			commands.push(new ConnectionsRemoveCommand(connectionsToRemove.map((c) => c.copy())));
@@ -78,24 +76,26 @@ export default class GrafcetConnectionsCommandsFactory {
 		};
 	}
 
-	onEdgeDataChange(
+	static onEdgeDataChange(
 		setEdges: (updater: (edges: GrafcetEdgeType[]) => any[]) => void,
 		edgeId: string,
 		newData:
 			| Partial<GrafcetEdgeType["data"]>
 			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
+		grafcet: Grafcet,
+		viewManager: ViewManager,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgeDataToApply: Partial<CustomEdgeData>;
 	} {
-		const edge = this.rfInstance.getEdge(edgeId);
+		const edge = viewManager.getEdge(edgeId);
 		if (!edge) throw new Error("Edge not found in the flow instance");
 		if (typeof newData === "function") {
 			const prevData = edge.data as any;
 			newData = newData(prevData);
 		}
 		if (!newData || Object.keys(newData).length === 0) return { commands: [], edgeDataToApply: {} }; //No need to update if the new data is empty
-		const connection = this.grafcet.connections.find((c) => c.id === edgeId);
+		const connection = grafcet.connections.find((c) => c.id === edgeId);
 		if (!connection) throw new Error("Connection not found in the grafcet");
 		const modifiedConnection = connection.copy();
 		modifiedConnection.data = { ...modifiedConnection.data, ...newData };
@@ -121,17 +121,22 @@ export default class GrafcetConnectionsCommandsFactory {
 	 * Commands to execute when nodes are moved or resized,
 	 * to update the connections points accordingly
 	 */
-	onNodesMovedOrResized(nodesIds: string[]): {
+	static onNodesMovedOrResized(
+		nodesIds: string[],
+		grafcet: Grafcet,
+		viewManager: ViewManager,
+	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgesDataToApply: { edgeId: string; newData: GrafcetEdgeType["data"] }[];
 	} {
-		if (nodesIds.length === 0) return { commands: [], edgesDataToApply: [] };
-		const edgesDataToApply = this.grafcet.connections
+		const rfInstance = viewManager.rfInstance;
+		if (!rfInstance || nodesIds.length === 0) return { commands: [], edgesDataToApply: [] };
+		const edgesDataToApply = grafcet.connections
 			.filter((c) => nodesIds.includes(c.source.id) || nodesIds.includes(c.target.id))
 			.map((c) => c.copy())
 			.map((c) => {
-				const sourceNode = this.rfInstance.getInternalNode(c.source.id)!;
-				const targetNode = this.rfInstance.getInternalNode(c.target.id)!;
+				const sourceNode = rfInstance.getInternalNode(c.source.id)!;
+				const targetNode = rfInstance.getInternalNode(c.target.id)!;
 				const edgePosition = getEdgePosition({
 					id: c.id,
 					sourceNode: sourceNode,
@@ -155,7 +160,7 @@ export default class GrafcetConnectionsCommandsFactory {
 				};
 			})
 			.filter((e) => {
-				const connection = this.grafcet.connections.find((c) => c.id === e.edgeId);
+				const connection = grafcet.connections.find((c) => c.id === e.edgeId);
 				return connection && !deepObjectsComparison(e.newData, connection.data);
 			});
 		if (edgesDataToApply.length === 0) return { commands: [], edgesDataToApply: [] };
@@ -163,7 +168,7 @@ export default class GrafcetConnectionsCommandsFactory {
 			commands: [
 				new ConnectionsUpdateCommand(
 					edgesDataToApply.map((e) => {
-						const connection = this.grafcet.connections.find((c) => c.id === e.edgeId);
+						const connection = grafcet.connections.find((c) => c.id === e.edgeId);
 						return {
 							connection: new GrafcetConnection(
 								connection!.id,

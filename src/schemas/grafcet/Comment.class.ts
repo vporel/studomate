@@ -1,5 +1,5 @@
-import { Dimensions } from "./Grafcet.class";
 import GrafcetElement, { BaseData } from "./GrafcetElement.class";
+import { Dimensions, XYPosition } from "./shared-types";
 
 export type CommentData = BaseData & {
 	text: string;
@@ -17,6 +17,10 @@ export default class Comment extends GrafcetElement<CommentData> {
 			width: Comment.DEFAULT_DIMENSIONS.width,
 			height: Comment.DEFAULT_DIMENSIONS.height,
 		};
+	}
+
+	constructor(id: string, data: CommentData, position: XYPosition) {
+		super(id, "comment", data, position);
 	}
 
 	copy(): Comment {

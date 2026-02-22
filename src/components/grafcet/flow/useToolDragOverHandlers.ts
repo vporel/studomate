@@ -3,7 +3,6 @@
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
-import { useShallow } from "zustand/shallow";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { useGrafcetToolbarDnD } from "../toolbar/GrafcetToolbarDnDContext";
 import {
@@ -18,7 +17,7 @@ export default function useToolDragOverHandlers(): [
 ] {
 	const { type: toolType, extraData: toolExtraData } = useGrafcetToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
-	const { addNodes } = useGrafcetStore(useShallow((state) => ({ addNodes: state.addNodes })));
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 
 	const handleToolDragOver = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
@@ -38,9 +37,9 @@ export default function useToolDragOverHandlers(): [
 				position,
 				data: NODES_DEFAULT_DATA_GENERATORS[toolType](toolExtraData),
 			} as GrafcetNodeType;
-			addNodes([newNode]);
+			workflowManager.addNodes([newNode]);
 		},
-		[toolType, screenToFlowPosition, addNodes, toolExtraData],
+		[toolType, screenToFlowPosition, workflowManager, toolExtraData],
 	);
 
 	return [handleToolDragOver, handleToolDrop];

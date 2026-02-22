@@ -46,8 +46,9 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.selectAllNodesAndEdges();
+							const grafcetViewManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
+							grafcetViewManager?.selectAllNodesAndEdges();
 						}
 						break;
 					}
@@ -56,8 +57,9 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.undoOperation();
+							const grafcetCommandsStackManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+							grafcetCommandsStackManager?.undoOperation();
 						} else if (activeScopeType === "project") {
 							projectStore?.getState().commandsStackManager.undoOperation();
 						}
@@ -68,8 +70,9 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.redoOperation();
+							const grafcetCommandsStackManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+							grafcetCommandsStackManager?.redoOperation();
 						} else if (activeScopeType === "project") {
 							projectStore?.getState().commandsStackManager.redoOperation();
 						}
@@ -80,8 +83,9 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.copySelectedElements();
+							const copyCutPasteManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.copySelectedElements();
 						}
 						break;
 					}
@@ -90,8 +94,9 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
-							const actions = grafcetsManager.getActiveGrafcetStoreActions();
-							actions?.pasteCopiedElements(projectStore?.getState().mousePosition);
+							const copyCutPasteManager =
+								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.pasteElements(projectStore?.getState().mousePosition);
 						}
 						break;
 					}

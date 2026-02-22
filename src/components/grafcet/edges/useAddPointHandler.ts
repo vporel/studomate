@@ -19,19 +19,19 @@ export default function useAddPointHandler(
 	addPoint: (index: number) => void;
 } {
 	const [pointsForAdding, setPointsForAdding] = useState<[number, number][]>(getPointsForAdding(points));
-	const updateEdgeData = useGrafcetStore((state) => state.updateEdgeData);
+	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 
 	const addPoint = useCallback(
 		(index: number) => {
-			updateEdgeData(edgeId, (prevData) => {
-				const newPoints = [...prevData?.points];
+			workflowManager.updateEdgeData(edgeId, (prevData) => {
+				const newPoints = [...(prevData?.points || [])];
 				newPoints.splice(index + 1, 0, pointsForAdding[index]);
 				return {
 					points: newPoints,
 				};
 			});
 		},
-		[updateEdgeData, edgeId, pointsForAdding],
+		[workflowManager, edgeId, pointsForAdding],
 	);
 
 	//Create the points for adding
