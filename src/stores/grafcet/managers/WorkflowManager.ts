@@ -1,5 +1,6 @@
 import { GrafcetEdgeType, GrafcetNodeType } from "@/components/grafcet/flow/grafcet-nodes-definitions";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/ConnectionsAddCommand.class";
+import Project from "@/schemas/project/Project.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
 import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/utils/grafcet/grafcet-utils";
 import {
@@ -49,23 +50,31 @@ export default class WorkflowManager {
 		const grafcet = this.getStoreState().grafcet;
 		viewManager.throwErrorIfNotReady();
 		const nodes = this.getStoreState().nodes;
-		changes.forEach((change) => {
+		//We filter the changes
+		//The remove operation is handle by the method onNodesAndEdgesRemove
+		const changesToAccept = changes.filter((change) => change.type != "remove");
+		changesToAccept.forEach((change) => {
 			const node = nodes.find((n) => n.id === (change as any).id);
 			if (!node) return;
 			if (node.type.includes("junction")) {
-				junction_onNodeChange(change, changes, nodes, this.getNodeUpdater(this.setStoreState));
+				junction_onNodeChange(
+					change,
+					changesToAccept,
+					nodes,
+					this.getNodeUpdater(this.setStoreState),
+				);
 			}
 		});
 		this.setStoreState(() => ({
-			nodes: applyNodeChanges(changes, nodes),
+			nodes: applyNodeChanges(changesToAccept, nodes),
 		}));
 		//Execute commands on for some changes types
 		//The others types are handled by other methods
 		//If the changes contain a resizing change with resizing true
 		//we don't execute the position change command, because the position will be updated during the resizing and we want to avoid creating unnecessary commands
-		if (changes.some((c) => c.type === "dimensions" && c.resizing)) return;
+		if (changesToAccept.some((c) => c.type === "dimensions" && c.resizing)) return;
 		const { commands, nodesIdsToUpdate } = GrafcetElementsCommandsFactory.onNodeChange(
-			changes,
+			changesToAccept,
 			grafcet,
 			viewManager,
 		);
@@ -93,11 +102,19 @@ export default class WorkflowManager {
 		this.addNodesAndEdges(newNodes, []);
 	}
 
+	/**
+	 *
+	 * @param nodeId
+	 * @param newData
+	 * @param project The calling component should provide the project data in other to perform validations (using project variables for examble)
+	 * @returns
+	 */
 	updateNodeData(
 		nodeId: string,
 		newData:
 			| Partial<GrafcetNodeType["data"]>
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
+		project: Project,
 	): void {
 		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
@@ -107,6 +124,7 @@ export default class WorkflowManager {
 			newData,
 			grafcet,
 			viewManager,
+			project,
 		);
 		if (!nodeDataToUpdate) return;
 		const setNode = this.getNodeUpdater(this.setStoreState);
@@ -138,8 +156,11 @@ export default class WorkflowManager {
 	handleEdgesChange(changes: EdgeChange<GrafcetEdgeType>[]): void {
 		const viewManager = this.getStoreState().viewManager;
 		viewManager.throwErrorIfNotReady();
+		//We filter the changes
+		//The remove operation is handle by the method onNodesAndEdgesRemove
+		const changesToAccept = changes.filter((change) => change.type != "remove");
 		this.setStoreState(() => ({
-			edges: applyEdgeChanges(changes, this.getStoreState().edges!),
+			edges: applyEdgeChanges(changesToAccept, this.getStoreState().edges!),
 		}));
 	}
 

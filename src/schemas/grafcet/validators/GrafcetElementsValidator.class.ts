@@ -1,8 +1,16 @@
 import ElementValidationError from "../errors/ElementValidationError";
 import Grafcet from "../Grafcet.class";
+import { ElementProjectDataWhenValidating } from "../GrafcetElement.class";
 
 export default class GrafcetElementsValidator {
-	static validateNewData(elementId: string, newData: any, grafcet: Grafcet): string[] {
+	static validateNewData(
+		elementId: string,
+		newData: any,
+		grafcet: Grafcet,
+		options: {
+			projectData: ElementProjectDataWhenValidating;
+		},
+	): string[] {
 		const errors: string[] = [];
 		const allElements = grafcet.getAllElements();
 		const element = grafcet.getElementById(elementId);
@@ -10,7 +18,7 @@ export default class GrafcetElementsValidator {
 		const copiedElement = element.copy();
 		//Try to apply the new data to the copied element
 		try {
-			copiedElement.updateData(newData);
+			copiedElement.updateData(newData, { projectData: options.projectData });
 		} catch (e) {
 			if (e instanceof ElementValidationError) {
 				errors.push(...e.errors);

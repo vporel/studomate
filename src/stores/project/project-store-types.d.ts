@@ -47,6 +47,7 @@ export interface ProjectStoreState {
 	commandsStackManager: CommandsStackManager;
 	variablesManager: VariablesManager;
 
+	getProject: () => Project | null;
 	openProject: (projectId: string) => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	newProject: () => Promise<void>;
 	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled

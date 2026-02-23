@@ -1,6 +1,7 @@
 type ContextMenuItemBaseType = {
 	label: string;
 	shortcut?: string;
+	checked?: boolean;
 	onClick?: () => void;
 	disabled?: boolean;
 };

@@ -4,7 +4,7 @@ const routes = {
 	legalMentions: () => "/mentions-legales",
 	termsOfUse: () => "/conditions-d-utilisation",
 	privacyPolicy: () => "/politique-de-confidentialite",
-	help: () => "/aide",
+	userManual: () => "/manuel-utilisateur",
 	contact: () => "/contact",
 };
 

@@ -21,17 +21,18 @@ Ce fichier documente les règles et bonnes pratiques que l'assistant (Copilot) d
 
 - Préférer `userAgentData.platform` puis `navigator.userAgent` plutôt que `navigator.platform` (dépréciation).
 - Utiliser `z ustand` store via `createStore` et exposer les setters depuis le store pour ouvrir/fermer des modales.
- - Quand une modification est faite dans un hook (`useEffect`, `useCallback`, `useMemo`, etc.), vérifier que la liste des dépendances du hook est correcte et complète.
+- Quand une modification est faite dans un hook (`useEffect`, `useCallback`, `useMemo`, etc.), vérifier que la liste des dépendances du hook est correcte et complète.
 
 ## Librairies principales (extraites de `package.json`)
 
-- Framework / runtime : `next` (Next.js)
-- UI : `@mui/material`, `@mui/icons-material`, `@mui/x-tree-view`, `@emotion/react`, `@emotion/styled`
-- State : `zustand`
-- Utilitaires : `date-fns`, `mitt`, `nanoid`
-- DOM / images : `dom-to-image`, `html-to-image`
-- Feedback : `react-toastify`
-- React : `react`, `react-dom`
+- Framework / runtime : `next` — 15.5.2
+- UI : `@mui/material` — ^7.3.2, `@mui/icons-material` — ^7.3.2, `@mui/x-tree-view` — ^8.14.0, `@emotion/react` — ^11.14.0, `@emotion/styled` — ^11.14.1
+- State : `zustand` — ^5.0.11
+- Utilitaires : `date-fns` — ^4.1.0, `mitt` — ^3.0.1, `nanoid` — ^5.1.6
+- DOM / images : `dom-to-image` — ^2.6.0, `html-to-image` — ^1.11.13
+- Feedback : `react-toastify` — ^11.0.5
+- React : `react` — 19.1.0, `react-dom` — 19.1.0
+- Dev / tooling : `eslint` — ^9, `eslint-config-next` — 15.5.2, `typescript` — ^5
 
 ## Recommandations pour les IDs & exports
 

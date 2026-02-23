@@ -1,5 +1,6 @@
 "use client";
 
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
@@ -13,6 +14,7 @@ export default function useBranchActions(
 ): { add: (buttonIndex: number) => void } {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updateNodeInternals = useUpdateNodeInternals();
+	const getProject = useProjectStore((state) => state.getProject);
 
 	const add = useCallback(
 		(buttonIndex: number) => {
@@ -44,10 +46,14 @@ export default function useBranchActions(
 			const newBranches = { ...nodeData.branches, [newBranch.id]: newBranch };
 			const newBranchesOrder = [...nodeData.branchesOrder];
 			newBranchesOrder.splice(buttonIndex, 0, newBranch.id);
-			workflowManager.updateNodeData(nodeId, {
-				branches: newBranches,
-				branchesOrder: newBranchesOrder,
-			});
+			workflowManager.updateNodeData(
+				nodeId,
+				{
+					branches: newBranches,
+					branchesOrder: newBranchesOrder,
+				},
+				getProject()!,
+			);
 			updateNodeInternals(nodeId);
 		},
 		[
@@ -57,6 +63,7 @@ export default function useBranchActions(
 			workflowManager,
 			nodeId,
 			updateNodeInternals,
+			getProject,
 		],
 	);
 

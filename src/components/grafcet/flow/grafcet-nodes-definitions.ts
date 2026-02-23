@@ -20,7 +20,7 @@ import StepReferralSourceNode, { StepReferralSourceNodeType } from "../nodes/Ste
 import StepReferralTargetNode, { StepReferralTargetNodeType } from "../nodes/StepReferralTargetNode";
 import TransitionNode, { TransitionNodeType } from "../nodes/TransitionNode";
 
-export type JunctionNode =
+export type JunctionNodeType =
 	| JunctionOrStartNodeType
 	| JunctionOrEndNodeType
 	| JunctionAndStartNodeType
@@ -31,7 +31,7 @@ export type GrafcetNodeType =
 	| TransitionNodeType
 	| StepReferralSourceNodeType
 	| StepReferralTargetNodeType
-	| JunctionNode //List of all the node types
+	| JunctionNodeType //List of all the node types
 	| CommentNodeType;
 export type GrafcetEdgeType = CustomEdgeType; //List of all the edges types
 

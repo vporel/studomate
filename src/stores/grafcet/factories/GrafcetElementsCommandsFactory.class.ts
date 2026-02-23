@@ -9,6 +9,7 @@ import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
 import StepsHelper from "@/schemas/grafcet/helpers/StepsHelper.class";
 import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
+import Project from "@/schemas/project/Project.class";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 import ViewManager from "../managers/ViewManager";
 
@@ -98,15 +99,17 @@ export default class GrafcetElementsCommandsFactory {
 
 		grafcet: Grafcet,
 		viewManager: ViewManager,
+		project: Project,
 	): { commands: AbstractGrafcetCommand<any>[]; nodeDataToUpdate?: GrafcetNodeType["data"] } {
 		const grafcetElement = grafcet.getElementById(nodeId);
 		if (!grafcetElement) return { commands: [] };
-		if (typeof newData === "function") {
-			const prevData = grafcetElement.data as any;
-			newData = newData(prevData);
-		}
-		if (GrafcetElementsValidator.validateNewData(nodeId, newData, grafcet).length > 0)
-			return { commands: [] };
+		const prevData = grafcetElement.data as any;
+		if (typeof newData === "function") newData = newData(prevData);
+		newData = grafcetElement.fixNewDataConsistency(newData);
+		const validationErrors = GrafcetElementsValidator.validateNewData(nodeId, newData, grafcet, {
+			projectData: { variables: project.variables },
+		});
+		if (validationErrors.length > 0) return { commands: [] };
 		const fullModifiedData = { ...grafcetElement.data, ...newData };
 		const commands = [];
 		//Make sure the data is not the same as the previous one, to avoid creating unnecessary commands

@@ -1,6 +1,6 @@
 "use client";
 
-import { VariableType, VariableZone, ZONES_TO_TYPES_MAP } from "@/schemas/variable/Variable.class";
+import { VariableType, VariableZone, ZONES_TO_TYPES } from "@/schemas/variable/Variable.class";
 import { Box } from "@mui/material";
 import {
 	DataGrid,
@@ -17,8 +17,8 @@ import GridToolBar from "./GridToolBar";
 import useDataGridColumns from "./useDataGridColums";
 
 function chooseZone(zones: VariableZone[], type: VariableType): VariableZone {
-	for (const zone in ZONES_TO_TYPES_MAP) {
-		if (zones.includes(zone as VariableZone) && ZONES_TO_TYPES_MAP[zone as VariableZone].includes(type)) {
+	for (const zone in ZONES_TO_TYPES) {
+		if (zones.includes(zone as VariableZone) && ZONES_TO_TYPES[zone as VariableZone].includes(type)) {
 			return zone as VariableZone;
 		}
 	}

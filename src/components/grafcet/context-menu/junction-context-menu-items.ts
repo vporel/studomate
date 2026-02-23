@@ -2,10 +2,10 @@
 
 import { Emitter } from "mitt";
 import { GrafcetContextMenuEvents } from "../context/context-menu-events";
-import { JunctionNode } from "../flow/grafcet-nodes-definitions";
+import { JunctionNodeType } from "../flow/grafcet-nodes-definitions";
 
 export default function junctionContextMenuItems(
-	junction: JunctionNode,
+	junction: JunctionNodeType,
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>,
 ): {
 	label: string;

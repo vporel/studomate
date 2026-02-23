@@ -1,5 +1,6 @@
 "use client";
 
+import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import { JunctionData } from "@/schemas/grafcet/Junction.class";
 import { useUpdateNodeInternals } from "@xyflow/react";
@@ -16,6 +17,7 @@ export default function useKeyboardEventsHandler(
 ): (e: React.KeyboardEvent<HTMLDivElement>) => void {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updatenodeInternals = useUpdateNodeInternals();
+	const getProject = useProjectStore((state) => state.getProject);
 
 	return useCallback(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -37,37 +39,42 @@ export default function useKeyboardEventsHandler(
 					else selectNextBranch();
 					return;
 				}
-				workflowManager.updateNodeData(nodeId, (prevData) => {
-					prevData = structuredClone(prevData) as JunctionData;
-					const dataToChange: Partial<JunctionData> = {};
-					if (pivotSelected) {
-						const newPosition = prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
-						if (
-							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH
-						) {
-							dataToChange.pivotPosition = newPosition;
+				workflowManager.updateNodeData(
+					nodeId,
+					(prevData) => {
+						prevData = structuredClone(prevData) as JunctionData;
+						const dataToChange: Partial<JunctionData> = {};
+						if (pivotSelected) {
+							const newPosition =
+								prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
+							if (
+								newPosition >= FLOW_GRID_CELL_WIDTH &&
+								newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH
+							) {
+								dataToChange.pivotPosition = newPosition;
+							}
 						}
-					}
-					if (selectedBranchId != null) {
-						const newPosition =
-							prevData.branches[selectedBranchId]!.position +
-							FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
-						if (
-							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH &&
-							!prevData.branchesOrder.some((branchId) =>
-								branchId === selectedBranchId
-									? false
-									: prevData.branches[branchId]!.position === newPosition,
-							)
-						) {
-							dataToChange.branches = { ...prevData.branches };
-							dataToChange.branches[selectedBranchId]!.position = newPosition;
+						if (selectedBranchId != null) {
+							const newPosition =
+								prevData.branches[selectedBranchId]!.position +
+								FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
+							if (
+								newPosition >= FLOW_GRID_CELL_WIDTH &&
+								newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH &&
+								!prevData.branchesOrder.some((branchId) =>
+									branchId === selectedBranchId
+										? false
+										: prevData.branches[branchId]!.position === newPosition,
+								)
+							) {
+								dataToChange.branches = { ...prevData.branches };
+								dataToChange.branches[selectedBranchId]!.position = newPosition;
+							}
 						}
-					}
-					return dataToChange;
-				});
+						return dataToChange;
+					},
+					getProject()!,
+				);
 				updatenodeInternals(nodeId);
 			}
 		},
@@ -80,6 +87,7 @@ export default function useKeyboardEventsHandler(
 			selectedBranchId,
 			workflowManager,
 			updatenodeInternals,
+			getProject,
 		],
 	);
 }

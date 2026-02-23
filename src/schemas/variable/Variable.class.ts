@@ -15,7 +15,7 @@ export const VARIABLE_TYPES = [
 
 export type VariableType = (typeof VARIABLE_TYPES)[number];
 
-export const ZONES_TO_TYPES_MAP: Record<VariableZone, VariableType[]> = {
+export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 	"logic-input": ["BOOL"],
 	"logic-output": ["BOOL"],
 	"analog-input": ["INT", "WORD", "DWORD"],
@@ -79,7 +79,7 @@ export default class Variable {
 	static getValidTypesForZones(zones: VariableZone[]): VariableType[] {
 		const validTypes: VariableType[] = [];
 		zones.forEach((zone) => {
-			validTypes.push(...ZONES_TO_TYPES_MAP[zone]);
+			validTypes.push(...ZONES_TO_TYPES[zone]);
 		});
 		return [...new Set(validTypes)];
 	}
@@ -107,7 +107,7 @@ export default class Variable {
 
 	static validateZoneType(zone: VariableZone, type: VariableType): string[] {
 		const errors: string[] = [];
-		if (!ZONES_TO_TYPES_MAP[zone].includes(type))
+		if (!ZONES_TO_TYPES[zone].includes(type))
 			errors.push(`Le type ${type} n'est pas compatible avec la zone ${zone}`);
 		return errors;
 	}

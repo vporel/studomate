@@ -66,6 +66,7 @@ export const createProjectStore = () => {
 		commandsStackManager: new CommandsStackManager(set, get),
 		variablesManager: new VariablesManager(set, get),
 
+		getProject: () => get().project,
 		openProject: async (projectId: string) => {
 			const project = localStorageGetProject(projectId);
 			if (!project) return false;

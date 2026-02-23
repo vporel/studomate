@@ -22,7 +22,7 @@ const buttonSx: SxProps<Theme> = {
 
 const linkSx: SxProps<Theme> = {
 	"*": {
-		fontSize: "0.8rem",
+		fontSize: "12px",
 	},
 	"&:hover *": {
 		color: (th) => th.palette.primary.main,
@@ -103,8 +103,8 @@ const AppStartup = () => {
 						<Typography color="gray">Politique de confidentialité</Typography>
 					</Box>
 					|
-					<Box component={Link} href={routes.help()} sx={linkSx}>
-						<Typography color="gray">Aide</Typography>
+					<Box component={Link} href={routes.userManual()} sx={linkSx}>
+						<Typography color="gray">Manuel utilisateur</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.contact()} sx={linkSx}>

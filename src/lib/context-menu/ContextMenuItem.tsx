@@ -1,7 +1,9 @@
 "use client";
 
 import { ChevronRight as ChevronRightIcon } from "@mui/icons-material";
+import CheckIcon from "@mui/icons-material/Check";
 import { Box, MenuItem } from "@mui/material";
+import FlexBox from "../boxes/FlexBox";
 import { ContextMenuItemType } from "./context-menu";
 import ContextMenuSubItems from "./ContextMenuSubItems";
 
@@ -17,11 +19,25 @@ const ContextMenuItem = ({ item, hideMenu }: { item: ContextMenuItemType; hideMe
 				if (item.onClick) item.onClick();
 			}}
 			disabled={item.disabled}
-			className={`item`}
+			className="item"
+			sx={{
+				display: "flex",
+				justifyContent: "space-between",
+				alignItems: "center",
+				gap: "10px",
+				textAlign: "left",
+				position: "relative",
+				padding: "5px 20px 5px 0px",
+			}}
 		>
-			<Box component="span" className="label">
-				{item.label}
-			</Box>
+			<FlexBox centerVertical sx={{ gap: "5px" }}>
+				<FlexBox alignItems="center" justifyContent="end" width="25px">
+					{item.checked && <CheckIcon fontSize="small" sx={{ transform: "translateY(-2px)" }} />}
+				</FlexBox>
+				<Box component="span" className="label">
+					{item.label}
+				</Box>
+			</FlexBox>
 			<Box component="span" className="right-text">
 				{item.subItems && item.subItems.length > 0 ? <ChevronRightIcon /> : item.shortcut}
 			</Box>

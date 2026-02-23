@@ -1,3 +1,4 @@
+import { useProjectContext } from "@/components/projects/ProjectContext";
 import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
@@ -20,6 +21,7 @@ export default function useWithTextNodeValue(
 	const [value, _setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
 	const [error, setError] = useState<string | false>(false);
+	const projectStore = useProjectContext();
 	const transformValue = useCallback(
 		(v: string) => {
 			let transformedValue: any = v;
@@ -31,10 +33,14 @@ export default function useWithTextNodeValue(
 		[transformToNumberBeforeSave],
 	);
 	const saveValue = useCallback(() => {
-		workflowManager.updateNodeData(nodeId, {
-			[valueProperty]: transformValue(value),
-		});
-	}, [value, workflowManager, nodeId, valueProperty, transformValue]);
+		workflowManager.updateNodeData(
+			nodeId,
+			{
+				[valueProperty]: transformValue(value),
+			},
+			projectStore!.getState().project!,
+		);
+	}, [value, workflowManager, nodeId, valueProperty, transformValue, projectStore]);
 
 	useEffect(() => {
 		if (!editing) {
@@ -52,10 +58,13 @@ export default function useWithTextNodeValue(
 				nodeId,
 				{ [valueProperty]: transformedValue },
 				store!.getState().grafcet!,
+				{
+					projectData: { variables: projectStore!.getState().project!.variables },
+				},
 			);
 			setError(errors.length > 0 ? errors[0] : false);
 		},
-		[transformValue, nodeId, valueProperty, store],
+		[transformValue, nodeId, valueProperty, store, projectStore],
 	);
 
 	return [value, setValue, editing, setEditing, saveValue, error];

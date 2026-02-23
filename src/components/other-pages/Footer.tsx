@@ -13,8 +13,8 @@ const linkSx: SxProps<Theme> = {
 
 const Footer = () => {
 	return (
-		<Box component="footer" sx={{ background: "rgb(230, 230, 230)", p: 2 }}>
-			<Typography textAlign="center" color="black">
+		<Box component="footer" sx={{ background: "rgb(230, 230, 230)", px: 2, py: 7, minHeight: 100 }}>
+			<Typography textAlign="center" color="black" mb={2}>
 				Copyright © 2025 Studomate
 			</Typography>
 			<FlexBox center gap={1} justifyContent="center" mt={1}>
@@ -30,8 +30,8 @@ const Footer = () => {
 					<Typography color="gray">Politique de confidentialité</Typography>
 				</Box>
 				|
-				<Box component={Link} href={routes.help()} sx={linkSx}>
-					<Typography color="gray">Aide</Typography>
+				<Box component={Link} href={routes.userManual()} sx={linkSx}>
+					<Typography color="gray">Manuel utilisateur</Typography>
 				</Box>
 				|
 				<Box component={Link} href={routes.contact()} sx={linkSx}>

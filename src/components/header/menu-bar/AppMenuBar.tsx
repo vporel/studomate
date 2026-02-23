@@ -6,6 +6,7 @@ import { AppMenuType } from "./app-menu-bar";
 import AppMenu from "./AppMenu";
 import useEditMenu from "./edit/useEditMenu";
 import useFileMenu from "./file/useFileMenu";
+import useHelpMenu from "./help/useHelpMenu";
 import useProjectMenu from "./project/useProjectMenu";
 import useViewMenu from "./view/useViewMenu";
 
@@ -23,8 +24,9 @@ const MenuBar = () => {
 	const projectMenu = useProjectMenu();
 	const editMenu = useEditMenu();
 	const viewMenu = useViewMenu();
+	const helpMenu = useHelpMenu();
 
-	const menus: AppMenuType[] = [fileMenu, projectMenu, editMenu, viewMenu];
+	const menus: AppMenuType[] = [fileMenu, projectMenu, editMenu, viewMenu, helpMenu];
 
 	return (
 		<MenuList
