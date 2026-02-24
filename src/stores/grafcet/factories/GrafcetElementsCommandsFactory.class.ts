@@ -8,7 +8,7 @@ import ElementsUpdateCommand from "@/schemas/grafcet/commands/ElementsUpdateComm
 import Grafcet from "@/schemas/grafcet/Grafcet.class";
 import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
 import StepsHelper from "@/schemas/grafcet/helpers/StepsHelper.class";
-import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
+import ElementDataValidatorFactory from "@/schemas/grafcet/validators/ElementDataValidatorFactory";
 import Project from "@/schemas/project/Project.class";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 import ViewManager from "../managers/ViewManager";
@@ -106,7 +106,8 @@ export default class GrafcetElementsCommandsFactory {
 		const prevData = grafcetElement.data as any;
 		if (typeof newData === "function") newData = newData(prevData);
 		newData = grafcetElement.fixNewDataConsistency(newData);
-		const validationErrors = GrafcetElementsValidator.validateNewData(nodeId, newData, grafcet, {
+		const validator = ElementDataValidatorFactory.getValidatorForElementType(grafcetElement.type);
+		const validationErrors = validator.validateData(nodeId, newData, grafcet, {
 			projectData: { variables: project.variables },
 		});
 		if (validationErrors.length > 0) return { commands: [] };

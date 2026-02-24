@@ -26,7 +26,7 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 		setEditing,
 		saveSourceStepNumber,
 		error,
-	] = useWithTextNodeValue(id, data, "sourceStepNumber", true);
+	] = useWithTextNodeValue(id, "step-referral-target", data, "sourceStepNumber", true);
 
 	return (
 		<>

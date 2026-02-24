@@ -18,6 +18,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingNumber, setEditingNumber, editing, setEditing, saveNumber, error] = useWithTextNodeValue(
 		id,
+		"step",
 		data,
 		"number",
 		true,

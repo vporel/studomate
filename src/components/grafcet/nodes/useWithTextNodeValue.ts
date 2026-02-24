@@ -1,10 +1,12 @@
 import { useProjectContext } from "@/components/projects/ProjectContext";
-import GrafcetElementsValidator from "@/schemas/grafcet/validators/GrafcetElementsValidator.class";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import ElementDataValidatorFactory from "@/schemas/grafcet/validators/ElementDataValidatorFactory";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 
 export default function useWithTextNodeValue(
 	nodeId: string,
+	nodeType: GrafcetElementType,
 	data: any,
 	valueProperty: string,
 	transformToNumberBeforeSave: boolean = false,
@@ -22,6 +24,10 @@ export default function useWithTextNodeValue(
 	const [editing, setEditing] = useState(false);
 	const [error, setError] = useState<string | false>(false);
 	const projectStore = useProjectContext();
+	const validator = useMemo(
+		() => ElementDataValidatorFactory.getValidatorForElementType(nodeType),
+		[nodeType],
+	);
 	const transformValue = useCallback(
 		(v: string) => {
 			let transformedValue: any = v;
@@ -54,7 +60,7 @@ export default function useWithTextNodeValue(
 			_setValue(newValue);
 			//Check errors
 			const transformedValue = transformValue(newValue);
-			const errors = GrafcetElementsValidator.validateNewData(
+			const errors = validator.validateData(
 				nodeId,
 				{ [valueProperty]: transformedValue },
 				store!.getState().grafcet!,
@@ -64,7 +70,7 @@ export default function useWithTextNodeValue(
 			);
 			setError(errors.length > 0 ? errors[0] : false);
 		},
-		[transformValue, nodeId, valueProperty, store, projectStore],
+		[transformValue, nodeId, valueProperty, store, projectStore, validator],
 	);
 
 	return [value, setValue, editing, setEditing, saveValue, error];

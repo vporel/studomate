@@ -1,7 +1,7 @@
 import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
 import Grafcet from "../Grafcet.class";
 
-export default class GrafcetConnectionsValidator {
+export default class ConnectionsValidator {
 	static validateConnection(
 		connection: {
 			sourceId: string;

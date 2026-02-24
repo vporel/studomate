@@ -16,6 +16,7 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingText, setEditingText, editing, setEditing, saveText, error] = useWithTextNodeValue(
 		id,
+		"comment",
 		data,
 		"text",
 		false,

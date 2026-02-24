@@ -1,8 +1,5 @@
-import Variable from "../variable/Variable.class";
-import ElementValidationError from "./errors/ElementValidationError";
-import GrafcetElement, { BaseData, ElementValidateDataOptions } from "./GrafcetElement.class";
+import GrafcetElement, { BaseData } from "./GrafcetElement.class";
 import { Dimensions, XYPosition } from "./shared-types";
-import { ASSIGNMENT_OPERATOR } from "./symbols";
 
 export enum ActionType {
 	TEXT = "text",
@@ -104,62 +101,6 @@ export default class Action extends GrafcetElement<ActionData> {
 			};
 		}
 		return newData;
-	}
-
-	validateData(options?: ElementValidateDataOptions): void {
-		const errors: string[] = [];
-		if (!Action.isValidExecutionModeForType(this.data.type, this.data.executionMode)) {
-			errors.push(
-				`Mode d'exécution "${this.data.executionMode !== null ? ACTION_EXECUTION_MODE_LABELS[this.data.executionMode] : "null"}" incompatible avec le type d'action "${ACTION_TYPES_LABELS[this.data.type]}"`,
-			);
-		}
-		if (this.data.type !== ActionType.TEXT && options?.projectData) {
-			if (!options.projectData.variables)
-				console.warn(
-					"No variables provided in project data when validating action expression, skipping expression validation",
-				);
-			else {
-				errors.push(...this.getExpressionErrors(options.projectData.variables));
-			}
-		}
-		if (errors.length > 0) throw new ElementValidationError(this.id, errors);
-	}
-
-	private getExpressionErrors(projectVariables: Variable[]): string[] {
-		if (this.data.type === ActionType.TEXT) return [];
-		const errors: string[] = [];
-		const lines = this.data.expression
-			.split("\n")
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0);
-		const variablesMnemonics = projectVariables.map((v) => v.mnemonic);
-		lines.forEach((line) => {
-			//For variable assignment expressions, we check that the variable exists
-			const parts = line.split(ASSIGNMENT_OPERATOR).map((part) => part.trim());
-			if (this.data.type === ActionType.BOOLEAN_VARIABLE) {
-				if (parts.length !== 1) {
-					errors.push(
-						`Expression "${line}" invalide : assignation non autorisées pour le type 'Variable booléenne'`,
-					);
-					return;
-				}
-			} else {
-				if (parts.some((part) => part.length === 0)) {
-					errors.push(`Expression "${line}" invalide : assignation incomplète`);
-					return;
-				} else if (parts.length !== 2) {
-					errors.push(`Expression "${line}" invalide : format incorrect`);
-					return;
-				}
-			}
-			if (parts.length > 0) {
-				const mnemonicInExpression = parts[0];
-				if (!variablesMnemonics.includes(mnemonicInExpression)) {
-					errors.push(`La variable "${mnemonicInExpression}" n'existe pas dans le projet`);
-				}
-			}
-		});
-		return errors;
 	}
 
 	copy(): Action {

@@ -23,8 +23,6 @@ export default class Comment extends GrafcetElement<CommentData> {
 		super(id, "comment", data, position);
 	}
 
-	validateData(): void {}
-
 	copy(): Comment {
 		return Comment.createFromJSON(JSON.stringify(this));
 	}

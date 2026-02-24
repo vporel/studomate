@@ -6,8 +6,6 @@ export default class JunctionAndEnd extends Junction {
 		super(id, "junction-and-end", data, position);
 	}
 
-	validateData(): void {}
-
 	copy(): JunctionAndEnd {
 		return JunctionAndEnd.createFromJSON(JSON.stringify(this));
 	}

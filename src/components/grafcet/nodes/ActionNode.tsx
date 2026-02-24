@@ -21,7 +21,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
-		useWithTextNodeValue(id, data, "expression", false);
+		useWithTextNodeValue(id, "action", data, "expression", false);
 
 	return (
 		<>

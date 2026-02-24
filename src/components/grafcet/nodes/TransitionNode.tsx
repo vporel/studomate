@@ -18,7 +18,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
-		useWithTextNodeValue(id, data, "expression", false);
+		useWithTextNodeValue(id, "transition", data, "expression", false);
 
 	return (
 		<>

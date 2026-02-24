@@ -1,4 +1,3 @@
-import Variable from "../variable/Variable.class";
 import { XYPosition } from "./shared-types";
 
 //Export a constant of list of all the element types. This is used to avoid typos and have a single source of truth for the element types.
@@ -22,18 +21,6 @@ export type BaseData = {
 	height: number;
 };
 
-export type ElementProjectDataWhenValidating = {
-	variables: Variable[];
-};
-
-export type ElementUpdateDataOptions = {
-	projectData: ElementProjectDataWhenValidating;
-};
-
-export type ElementValidateDataOptions = {
-	projectData: ElementProjectDataWhenValidating;
-};
-
 export default abstract class GrafcetElement<DataType extends BaseData> {
 	id: string = "";
 	type: GrafcetElementType;
@@ -50,9 +37,8 @@ export default abstract class GrafcetElement<DataType extends BaseData> {
 	/**
 	 * @throws GrafcetElementValidationError if the data are not valid
 	 */
-	updateData(newData: Partial<DataType>, options?: ElementUpdateDataOptions): void {
+	updateData(newData: Partial<DataType>): void {
 		this.data = structuredClone({ ...this.data, ...newData });
-		this.validateData(options);
 	}
 
 	/**
@@ -66,11 +52,6 @@ export default abstract class GrafcetElement<DataType extends BaseData> {
 	fixNewDataConsistency(newData: Partial<DataType>): Partial<DataType> {
 		return newData;
 	}
-
-	/**
-	 * @throws GrafcetElementValidationError if the data are not valid
-	 */
-	abstract validateData(options?: ElementValidateDataOptions): void;
 
 	abstract copy(): GrafcetElement<DataType>;
 }
