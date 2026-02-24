@@ -2,14 +2,22 @@ import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/components
 import { localStorageGetProject, localStorageSaveProject } from "@/local-storage/projects";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
 import { createRandomId } from "@/schemas/schemas-helpers";
+import {
+	PageData,
+	ProjectStoreSetFunction,
+	ProjectStoreState,
+	ScopeType,
+} from "@/stores/project/project-store-types";
 import { getStubProject } from "@/utils/project/project-utils";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
 import CommandsStackManager from "./managers/CommandsStackManager.class";
 import GrafcetsManager from "./managers/GrafcetsManager.class";
+import ModeManager from "./managers/ModeManager.class";
 import PagesManager from "./managers/PagesManager.class";
+import SimulationManager from "./managers/SimulationManager.class";
 import VariablesManager from "./managers/VariablesManager.class";
-import { PageData, ProjectStoreSetFunction, ProjectStoreState, ScopeType } from "./project-store-types";
+import { ProjectMode } from "./ProjectMode.enum";
 
 function getInitialPagesData(project: Project | null): Record<string, PageData> {
 	const pagesData: Record<string, PageData> = {};
@@ -61,9 +69,6 @@ export const createProjectStore = () => {
 		savingProject: false,
 		activeScope: "project",
 		activeScopeType: "project",
-		hasCommandsToUndo: false,
-		hasCommandsToRedo: false,
-		commandsStackManager: new CommandsStackManager(set, get),
 		variablesManager: new VariablesManager(set, get),
 
 		getProject: () => get().project,
@@ -193,6 +198,19 @@ export const createProjectStore = () => {
 				focusFlow(scope);
 			}
 		},
+
+		//=============== MODE ===============
+		mode: ProjectMode.DESIGN,
+		modeManager: new ModeManager(set, get),
+
+		//=============== SIMULATION ===============
+		analysisOK: undefined,
+		simulationManager: new SimulationManager(set, get),
+
+		//=============== COMMANDS STACK ===============
+		hasCommandsToUndo: false,
+		hasCommandsToRedo: false,
+		commandsStackManager: new CommandsStackManager(set, get),
 
 		//=============== GRAFCETS ===============
 		grafcetsStoresValues: {},

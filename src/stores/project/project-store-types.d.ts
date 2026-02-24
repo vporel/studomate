@@ -2,8 +2,11 @@ import Project from "@/schemas/project/Project.class";
 import { GrafcetStoreState } from "../grafcet/grafcet-store-types";
 import CommandsStackManager from "./managers/CommandsStackManager.class";
 import GrafcetsManager from "./managers/GrafcetsManager.class";
+import ModeManager from "./managers/ModeManager.class";
 import PagesManager from "./managers/PagesManager.class";
+import SimulationManager from "./managers/SimulationManager.class";
 import VariablesManager from "./managers/VariablesManager.class";
+import { ProjectMode } from "./ProjectMode.enum";
 
 type SimpleCallback = () => void;
 
@@ -42,9 +45,6 @@ export interface ProjectStoreState {
 	savingProject: boolean;
 	activeScope: string; //The currently active scope (used for keyboard shortcuts). The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
 	activeScopeType: ScopeType;
-	hasCommandsToUndo: boolean;
-	hasCommandsToRedo: boolean;
-	commandsStackManager: CommandsStackManager;
 	variablesManager: VariablesManager;
 
 	getProject: () => Project | null;
@@ -60,6 +60,19 @@ export interface ProjectStoreState {
 	setOpenModalVisible: (visible: boolean) => void;
 	setExportModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string) => void;
+
+	//=============== MODE ===============
+	mode: ProjectMode;
+	modeManager: ModeManager;
+
+	//=============== SIMULATION ===============
+	analysisOK: boolean | undefined; //undefined when no analysis has been done, true if the last analysis was successful, false if it failed
+	simulationManager: SimulationManager;
+
+	//=============== COMMANDS ===============
+	hasCommandsToUndo: boolean;
+	hasCommandsToRedo: boolean;
+	commandsStackManager: CommandsStackManager;
 
 	//=============== GRAFCETS ===============
 	/**

@@ -1,4 +1,4 @@
-import { Environment } from "@/simulator/runtime/Environment.class";
+import { Environment } from "@/simulation/runtime/Environment.class";
 import { ASTNode, BinaryOperatorNode } from "../parser/AST";
 import IncompatibleOperandsTypesException from "./exceptions/IncompatibleOperandsTypesException.class";
 import InvalidAssignmentTargetException from "./exceptions/InvalidAssignmentTargetException.class";

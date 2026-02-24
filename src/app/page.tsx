@@ -5,7 +5,7 @@ import AppStartup from "@/components/AppStartup";
 import Explorer from "@/components/explorer/Explorer";
 import StatusBar from "@/components/footer/StatusBar";
 import AppMenuBar from "@/components/header/menu-bar/AppMenuBar";
-import TitleBar from "@/components/header/TitleBar";
+import TitleBar from "@/components/header/title-bar/TitleBar";
 import PagesView from "@/components/pages/PagesView";
 import { ProjectContextProvider, useProjectStore } from "@/components/projects/ProjectContext";
 import Pane from "@/lib/split-pane/Pane";
