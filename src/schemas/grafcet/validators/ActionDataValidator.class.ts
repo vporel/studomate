@@ -1,11 +1,10 @@
+import CompilerExceptionHelper from "@/bridge/compiler-exceptions.helper";
 import Variable from "@/schemas/variable/Variable.class";
-import ExceptionHelper from "@/simulation/interpreter/ExceptionHelper.class";
-import { Language } from "@/simulation/interpreter/lexer/Language.enum";
-import { Lexer } from "@/simulation/interpreter/lexer/Lexer.class";
-import Token from "@/simulation/interpreter/lexer/tokens/Token.interface";
-import Parser from "@/simulation/interpreter/parser/Parser.class";
-import SemanticAnalyser from "@/simulation/interpreter/semantic-analyzer/SemanticAnalyser.class";
-import { Environment } from "@/simulation/runtime/Environment.class";
+import { Environment } from "@/simulator/compiler/environment/environment";
+import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
+import SemanticAnalyser from "@/simulator/compiler/semantic-analyser/semantic-analyser";
 import Action, {
 	ACTION_EXECUTION_MODE_LABELS,
 	ACTION_TYPES_LABELS,
@@ -65,23 +64,15 @@ export default class ActionDataValidator extends ElementDataValidator<ActionData
 		projectVariables?: Variable[],
 	): string[] {
 		const errors: string[] = [];
-		let tokens: Token[] = [];
 		try {
-			tokens = this.lexer.tokenize(expression);
-		} catch (e) {
-			errors.push(ExceptionHelper.getUserFriendlyMessage(e));
-		}
-		if (fullValidation && tokens.length > 0) {
-			if (!projectVariables)
-				throw new Error("Project variables are required for full validation of action expressions");
-			const parser = new Parser(tokens);
-			let ASTNode = null;
-			try {
-				ASTNode = parser.parse();
-			} catch (e) {
-				errors.push(ExceptionHelper.getUserFriendlyMessage(e));
-			}
-			if (ASTNode) {
+			const tokens = this.lexer.tokenize(expression);
+			if (fullValidation && tokens.length > 0) {
+				if (!projectVariables)
+					throw new Error(
+						"Project variables are required for full validation of action expressions",
+					);
+				const parser = new Parser(tokens);
+				const ASTNode = parser.parse();
 				const semanticAnalyser = new SemanticAnalyser();
 				const env = new Environment(
 					projectVariables.map((v) => ({
@@ -91,12 +82,10 @@ export default class ActionDataValidator extends ElementDataValidator<ActionData
 						direction: v.getDirection(),
 					})),
 				);
-				try {
-					semanticAnalyser.analyse(ASTNode, env);
-				} catch (e) {
-					errors.push(ExceptionHelper.getUserFriendlyMessage(e));
-				}
+				semanticAnalyser.analyse(ASTNode, env);
 			}
+		} catch (e) {
+			errors.push(CompilerExceptionHelper.getUserFriendlyMessage(e));
 		}
 		return errors;
 	}

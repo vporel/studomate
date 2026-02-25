@@ -1,4 +1,4 @@
-import { APP_VERSION } from "@/constants";
+import { APP_VERSION } from "@/ui/constants";
 import Grafcet, { GrafcetFormat } from "../grafcet/Grafcet.class";
 import { createRandomId } from "../schemas-helpers";
 import Variable from "../variable/Variable.class";

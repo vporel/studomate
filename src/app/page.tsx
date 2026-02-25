@@ -1,15 +1,15 @@
 "use client";
 
-import { AppContextProvider, useAppContext } from "@/components/AppContext";
-import AppStartup from "@/components/AppStartup";
-import Explorer from "@/components/explorer/Explorer";
-import StatusBar from "@/components/footer/StatusBar";
-import AppMenuBar from "@/components/header/menu-bar/AppMenuBar";
-import TitleBar from "@/components/header/title-bar/TitleBar";
-import PagesView from "@/components/pages/PagesView";
-import { ProjectContextProvider, useProjectStore } from "@/components/projects/ProjectContext";
-import Pane from "@/lib/split-pane/Pane";
-import SplitPane from "@/lib/split-pane/SplitPane";
+import { AppContextProvider, useAppContext } from "@/ui/components/AppContext";
+import AppStartup from "@/ui/components/AppStartup";
+import Explorer from "@/ui/components/explorer/Explorer";
+import StatusBar from "@/ui/components/footer/StatusBar";
+import AppMenuBar from "@/ui/components/header/menu-bar/AppMenuBar";
+import TitleBar from "@/ui/components/header/title-bar/TitleBar";
+import PagesView from "@/ui/components/pages/PagesView";
+import { ProjectContextProvider, useProjectStore } from "@/ui/components/projects/ProjectContext";
+import Pane from "@/ui/lib/split-pane/Pane";
+import SplitPane from "@/ui/lib/split-pane/SplitPane";
 import { Box } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 

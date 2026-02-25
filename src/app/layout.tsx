@@ -1,5 +1,5 @@
-import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/constants";
-import { ThemeProvider } from "@/theme/ThemeContext";
+import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/ui/constants";
+import { ThemeProvider } from "@/ui/theme/ThemeContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
