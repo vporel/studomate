@@ -15,7 +15,8 @@ import CommandsStackManager from "./managers/CommandsStackManager.class";
 import GrafcetsManager from "./managers/GrafcetsManager.class";
 import ModeManager from "./managers/ModeManager.class";
 import PagesManager from "./managers/PagesManager.class";
-import SimulationManager from "./managers/SimulationManager.class";
+import Analyser from "./managers/simulation/Analyser.class";
+import SimulationManager from "./managers/simulation/SimulationManager.class";
 import VariablesManager from "./managers/VariablesManager.class";
 import { ProjectMode } from "./ProjectMode.enum";
 
@@ -205,6 +206,11 @@ export const createProjectStore = () => {
 
 		//=============== SIMULATION ===============
 		analysisOK: undefined,
+		analysisErrors: Analyser.getEmptyAnalysisErrors(),
+		analysisErrorsVisible: false,
+		setAnalysisErrorsVisible: (visible: boolean) => {
+			set(() => ({ analysisErrorsVisible: visible }));
+		},
 		simulationManager: new SimulationManager(set, get),
 
 		//=============== COMMANDS STACK ===============

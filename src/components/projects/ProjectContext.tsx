@@ -6,6 +6,7 @@ import { StoreApi, useStore } from "zustand";
 import ExportModal from "./ExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
+import AnalysisErrors from "./AnalysisErrors";
 import useShortcutsHandler from "./useShortcutsHandler";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
@@ -52,6 +53,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 			<UnsavedChangesDialog />
 			<ProjectOpenModal />
 			<ExportModal />
+			<AnalysisErrors />
 		</ProjectContext.Provider>
 	);
 };

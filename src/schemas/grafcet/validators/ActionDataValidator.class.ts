@@ -1,4 +1,11 @@
 import Variable from "@/schemas/variable/Variable.class";
+import ExceptionHelper from "@/simulation/interpreter/ExceptionHelper.class";
+import { Language } from "@/simulation/interpreter/lexer/Language.enum";
+import { Lexer } from "@/simulation/interpreter/lexer/Lexer.class";
+import Token from "@/simulation/interpreter/lexer/tokens/Token.interface";
+import Parser from "@/simulation/interpreter/parser/Parser.class";
+import SemanticAnalyser from "@/simulation/interpreter/semantic-analyzer/SemanticAnalyser.class";
+import { Environment } from "@/simulation/runtime/Environment.class";
 import Action, {
 	ACTION_EXECUTION_MODE_LABELS,
 	ACTION_TYPES_LABELS,
@@ -8,16 +15,16 @@ import Action, {
 import Grafcet from "../Grafcet.class";
 import { ASSIGNMENT_OPERATOR } from "../symbols";
 import ElementDataValidator from "./ElementDataValidator.class";
-import { NeededProjectDataWhenValidatingElement } from "./types";
+import { ElementValidateDataOptions } from "./types";
 
 export default class ActionDataValidator extends ElementDataValidator<ActionData> {
+	private lexer = new Lexer(Language.FR);
+
 	validateData(
 		elementId: string,
 		data: Partial<ActionData>,
 		grafcet: Grafcet,
-		options: {
-			projectData: NeededProjectDataWhenValidatingElement;
-		},
+		options: ElementValidateDataOptions,
 	): string[] {
 		const errors: string[] = [];
 		const element = grafcet.getElementByIdAndType<Action>(elementId, "action");
@@ -35,14 +42,66 @@ export default class ActionDataValidator extends ElementDataValidator<ActionData
 			const type = data.type || element.data.type;
 			if (type !== ActionType.TEXT) {
 				errors.push(
-					...this.getExpressionErrors(type, data.expression, options.projectData.variables),
+					...this.validateExpression(
+						data.expression,
+						options.fullValidation || false,
+						options.projectData.variables,
+					),
 				);
 			}
 		}
 		return errors;
 	}
 
-	private getExpressionErrors(
+	/**
+	 * We just make a lexical analysis
+	 * The syntax will be checked when the user asks for it or tries to run simulation
+	 * @param expression
+	 * @returns
+	 */
+	private validateExpression(
+		expression: string,
+		fullValidation: boolean,
+		projectVariables?: Variable[],
+	): string[] {
+		const errors: string[] = [];
+		let tokens: Token[] = [];
+		try {
+			tokens = this.lexer.tokenize(expression);
+		} catch (e) {
+			errors.push(ExceptionHelper.getUserFriendlyMessage(e));
+		}
+		if (fullValidation && tokens.length > 0) {
+			if (!projectVariables)
+				throw new Error("Project variables are required for full validation of action expressions");
+			const parser = new Parser(tokens);
+			let ASTNode = null;
+			try {
+				ASTNode = parser.parse();
+			} catch (e) {
+				errors.push(ExceptionHelper.getUserFriendlyMessage(e));
+			}
+			if (ASTNode) {
+				const semanticAnalyser = new SemanticAnalyser();
+				const env = new Environment(
+					projectVariables.map((v) => ({
+						id: v.id,
+						name: v.mnemonic,
+						type: v.getNativeType(),
+						direction: v.getDirection(),
+					})),
+				);
+				try {
+					semanticAnalyser.analyse(ASTNode, env);
+				} catch (e) {
+					errors.push(ExceptionHelper.getUserFriendlyMessage(e));
+				}
+			}
+		}
+		return errors;
+	}
+
+	private _getExpressionErrors(
 		type: ActionType,
 		expression: string,
 		projectVariables: Variable[],

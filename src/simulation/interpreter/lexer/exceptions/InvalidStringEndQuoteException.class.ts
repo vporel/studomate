@@ -1,6 +1,6 @@
 import LexerException from "./LexerException.class";
 
-export class InvalidStringEndQuoteException extends LexerException {
+export default class InvalidStringEndQuoteException extends LexerException {
 	private readonly quoteType: string;
 
 	constructor(quoteType: string, position: number) {

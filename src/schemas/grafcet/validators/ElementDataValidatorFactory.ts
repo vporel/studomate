@@ -21,7 +21,7 @@ export default class ElementDataValidatorFactory {
 		transition: new TransitionDataValidator(),
 	};
 
-	static getValidatorForElementType(elementType: GrafcetElementType) {
+	static getValidatorForElementType(elementType: GrafcetElementType): ElementDataValidator<any> {
 		const validator = this.validators[elementType as GrafcetElementType];
 		if (!validator) {
 			throw new Error(`No validator found for element type ${elementType}`);

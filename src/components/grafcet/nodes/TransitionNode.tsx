@@ -88,7 +88,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 							textareaRef.current?.blur();
 						}
 					}}
-					onBlur={() => {
+					onBlur={(e) => {
 						setEditing(false);
 						saveExpression();
 					}}

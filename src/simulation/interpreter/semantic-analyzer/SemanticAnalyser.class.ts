@@ -1,6 +1,7 @@
 import { Environment } from "@/simulation/runtime/Environment.class";
 import { ASTNode, BinaryOperatorNode } from "../parser/AST";
 import IncompatibleOperandsTypesException from "./exceptions/IncompatibleOperandsTypesException.class";
+import InputIdentifierAssignmentException from "./exceptions/InputIdentifierAssignmentException.class";
 import InvalidAssignmentTargetException from "./exceptions/InvalidAssignmentTargetException.class";
 import InvalidOperandTypeException from "./exceptions/InvalidOperandTypeException.class";
 import UnknownIdentifierException from "./exceptions/UnknownIdentifierException.class";
@@ -104,9 +105,14 @@ export default class SemanticAnalyser {
 				if (node.left.type !== "IDENTIFIER") {
 					throw new InvalidAssignmentTargetException(node);
 				}
-				// Check that the type of the right operand is compatible with the type of the variable being assigned to
 				const leftType_ = env.getVariableTypeByName(node.left.value);
 				const rightType_ = this.getNodePossibleResultType(node.right, env);
+				//Check that the variable being assigned to is not an IN variable
+				const variableDirection = env.getVariableDirectionByName(node.left.value);
+				if (variableDirection === "IN") {
+					throw new InputIdentifierAssignmentException(node);
+				}
+				// Check that the type of the right operand is compatible with the type of the variable being assigned to
 				if (leftType_ !== rightType_) {
 					throw new IncompatibleOperandsTypesException(":=", leftType_, rightType_, node);
 				}

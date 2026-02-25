@@ -2,6 +2,9 @@ import { GrafcetEdgeType, GrafcetNodeType } from "@/components/grafcet/flow/graf
 import { ReactFlowInstance } from "@xyflow/react";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet-store-types";
 
+export const GRAFCET_FLOW_MIN_ZOOM = 1;
+export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
+
 /**
  * Manage the grafcet flow
  * You should use the workflow manager to perform any operation that modify the grafcet schema (add/remove nodes or edges, or update the data of a node or an edge) to make sure that the grafcet state is always consistent and that the commands stack is properly updated

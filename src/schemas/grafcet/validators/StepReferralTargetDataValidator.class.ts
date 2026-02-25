@@ -1,16 +1,14 @@
 import Grafcet from "../Grafcet.class";
 import StepReferralTarget, { StepReferralTargetData } from "../StepReferralTarget.class";
 import ElementDataValidator from "./ElementDataValidator.class";
-import { NeededProjectDataWhenValidatingElement } from "./types";
+import { ElementValidateDataOptions } from "./types";
 
 export default class StepReferralTargetDataValidator extends ElementDataValidator<StepReferralTargetData> {
 	validateData(
 		elementId: string,
 		data: StepReferralTargetData,
 		grafcet: Grafcet,
-		options: {
-			projectData: NeededProjectDataWhenValidatingElement;
-		},
+		options: ElementValidateDataOptions,
 	): string[] {
 		const element = grafcet.getElementByIdAndType<StepReferralTarget>(elementId, "step-referral-target");
 		if (!element)

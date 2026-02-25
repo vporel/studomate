@@ -20,7 +20,7 @@ const GrafcetNode = forwardRef<HTMLElement, GrafcetNodeProps>(function GrafcetNo
 	return (
 		<ErrorTooltip open={!!error} title={error}>
 			<Box
-				id={id}
+				id={`grafcet-node-${id}`}
 				ref={ref}
 				className={`grafcet-node ${type + "-node"} ${className}`}
 				sx={{

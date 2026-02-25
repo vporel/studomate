@@ -1,16 +1,14 @@
 import Grafcet from "../Grafcet.class";
 import Step, { StepData } from "../Step.class";
 import ElementDataValidator from "./ElementDataValidator.class";
-import { NeededProjectDataWhenValidatingElement } from "./types";
+import { ElementValidateDataOptions } from "./types";
 
 export default class StepDataValidator extends ElementDataValidator<StepData> {
 	validateData(
 		elementId: string,
 		data: StepData,
 		grafcet: Grafcet,
-		options: {
-			projectData: NeededProjectDataWhenValidatingElement;
-		},
+		options: ElementValidateDataOptions,
 	): string[] {
 		const element = grafcet.getElementByIdAndType<Step>(elementId, "step");
 		if (!element) throw new Error(`Element of type "step" with id ${elementId} not found in grafcet`);

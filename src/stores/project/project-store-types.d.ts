@@ -4,7 +4,8 @@ import CommandsStackManager from "./managers/CommandsStackManager.class";
 import GrafcetsManager from "./managers/GrafcetsManager.class";
 import ModeManager from "./managers/ModeManager.class";
 import PagesManager from "./managers/PagesManager.class";
-import SimulationManager from "./managers/SimulationManager.class";
+import { AnalysisErrors } from "./managers/simulation/Analyser.class";
+import SimulationManager from "./managers/simulation/SimulationManager.class";
 import VariablesManager from "./managers/VariablesManager.class";
 import { ProjectMode } from "./ProjectMode.enum";
 
@@ -67,6 +68,9 @@ export interface ProjectStoreState {
 
 	//=============== SIMULATION ===============
 	analysisOK: boolean | undefined; //undefined when no analysis has been done, true if the last analysis was successful, false if it failed
+	analysisErrors: AnalysisErrors;
+	analysisErrorsVisible: boolean; // UI: whether the analysis errors panel is visible
+	setAnalysisErrorsVisible: (visible: boolean) => void;
 	simulationManager: SimulationManager;
 
 	//=============== COMMANDS ===============

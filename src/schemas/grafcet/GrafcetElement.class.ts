@@ -16,6 +16,19 @@ export const GRAFCET_ELEMENT_TYPES = [
 
 export type GrafcetElementType = (typeof GRAFCET_ELEMENT_TYPES)[number];
 
+export const GRAFCET_ELEMENT_LABELS: Record<GrafcetElementType, string> = {
+	step: "Étape",
+	transition: "Transition",
+	action: "Action",
+	"step-referral-source": "Source de référencement d'étape",
+	"step-referral-target": "Cible de référencement d'étape",
+	"junction-and-start": "Divergence en ET",
+	"junction-and-end": "Convergence en ET",
+	"junction-or-start": "Divergence en OU",
+	"junction-or-end": "Convergence en OU",
+	comment: "Commentaire",
+};
+
 export type BaseData = {
 	width: number;
 	height: number;
@@ -32,6 +45,10 @@ export default abstract class GrafcetElement<DataType extends BaseData> {
 		this.type = type;
 		this.data = data;
 		this.position = position;
+	}
+
+	getLabel(): string {
+		return GRAFCET_ELEMENT_LABELS[this.type] || "Label inconnu";
 	}
 
 	/**

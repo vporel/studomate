@@ -2,6 +2,7 @@
 import { useProjectStore } from "@/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/constants";
 import ConnectionsValidator from "@/schemas/grafcet/validators/ConnectionsValidator.class";
+import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "@/stores/grafcet/managers/ViewManager";
 import { getFlowDimensions } from "@/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -15,9 +16,6 @@ import "./_grafcet-page.css";
 import { edgeTypes, nodeTypes } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
-
-export const GRAFCET_FLOW_MIN_ZOOM = 1;
-export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
 
 export function GrafcetFlowContent() {
 	const th = useTheme();
@@ -36,7 +34,7 @@ export function GrafcetFlowContent() {
 	return (
 		<Box
 			className="grafcet-page"
-			id={grafcetId}
+			id={`grafcet-${grafcetId}`}
 			sx={{
 				padding: "25px",
 				width: "100%",

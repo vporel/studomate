@@ -1,5 +1,5 @@
 export type VariableZone = "logic-input" | "logic-output" | "analog-input" | "analog-output" | "memory";
-export type VariableDirection = "IN" | "OUT";
+export type VariableDirection = "IN" | "OUT" | "INOUT";
 export const VARIABLE_TYPES = [
 	"BOOL",
 	"INT",
@@ -21,6 +21,21 @@ export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 	"analog-input": ["INT", "WORD", "DWORD"],
 	"analog-output": ["INT", "WORD", "DWORD"],
 	memory: ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING"],
+};
+
+type NativeType = "number" | "boolean" | "string";
+
+export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
+	BOOL: "boolean",
+	INT: "number",
+	LONG: "number",
+	WORD: "number",
+	DWORD: "number",
+	REAL: "number",
+	STRING: "string",
+	TON: "number",
+	TOFF: "number",
+	TP: "number",
 };
 
 export const VARIABLE_UPDATABLE_FIELDS = ["mnemonic", "zone", "type", "address", "comment"] as const;
@@ -50,8 +65,12 @@ export default class Variable {
 		}
 	}
 
-	getDirection(): VariableDirection | null {
-		return this.zone.includes("input") ? "IN" : this.zone.includes("output") ? "OUT" : null;
+	getDirection(): VariableDirection {
+		return this.zone.includes("input") ? "IN" : this.zone.includes("output") ? "OUT" : "INOUT";
+	}
+
+	getNativeType(): NativeType {
+		return VARIABLE_TYPE_TO_NATIVE_TYPE[this.type];
 	}
 
 	update(updatedFields: Partial<VariableUpdatableFields>): Variable {

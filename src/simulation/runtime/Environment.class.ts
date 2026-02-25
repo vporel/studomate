@@ -1,6 +1,6 @@
 import UnknownVariableIdException from "./exceptions/UnknownVariableIdException.class";
 import UnknownVariableNameException from "./exceptions/UnknownVariableNameException.class";
-import Variable, { VariableType, VariableValue } from "./Variable.class";
+import Variable, { VariableDirection, VariableType, VariableValue } from "./Variable.class";
 
 export class Environment {
 	/**
@@ -8,8 +8,21 @@ export class Environment {
 	 */
 	private readonly variables = new Map<string, Variable>();
 
-	constructor(variables: Variable[]) {
-		for (const variable of variables) {
+	constructor(
+		variablesDefinitions: {
+			id: string;
+			name: string;
+			type: VariableType;
+			direction: VariableDirection;
+		}[],
+	) {
+		for (const variableDef of variablesDefinitions) {
+			const variable = new Variable(
+				variableDef.id,
+				variableDef.name,
+				variableDef.type,
+				variableDef.direction,
+			);
 			this.variables.set(variable.getId(), variable);
 		}
 	}
@@ -60,6 +73,14 @@ export class Environment {
 
 	getVariableTypeByName(name: string): VariableType {
 		return this.getVariableByName(name).getType();
+	}
+
+	getVariableDirectionById(id: string): VariableDirection {
+		return this.getVariableById(id).getDirection();
+	}
+
+	getVariableDirectionByName(name: string): VariableDirection {
+		return this.getVariableByName(name).getDirection();
 	}
 
 	getVariableValueById(id: string): VariableValue {

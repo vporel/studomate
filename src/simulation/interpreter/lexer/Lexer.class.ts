@@ -1,5 +1,5 @@
 import InvalidCharacterException from "./exceptions/InvalidCharacterException.class";
-import { InvalidStringEndQuoteException } from "./exceptions/InvalidStringEndQuoteException.class";
+import InvalidStringEndQuoteException from "./exceptions/InvalidStringEndQuoteException.class";
 import UnterminatedStringException from "./exceptions/UnterminatedStringException.class";
 import { Language } from "./Language.enum";
 import LexerHelper from "./LexerHelper.class";

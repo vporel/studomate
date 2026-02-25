@@ -1,70 +1,28 @@
 "use client";
 
 import FlexBox from "@/lib/boxes/FlexBox";
-import { ZoomIn as ZoomInIcon, ZoomOut as ZoomOutIcon } from "@mui/icons-material";
-import AppTool from "../app-toolbar/AppTool";
-import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "../grafcet/flow/GrafcetFlow";
+import { Button } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
 
-const ZoomInAction = () => {
-	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const activeGrafcetViewManager = useProjectStore(
-		(state) => state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager,
-	);
-	const activeGrafcetZoom = useProjectStore((state) => {
-		const grafcetViewManager = state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
-		return grafcetViewManager?.getZoom() ?? null;
-	});
-
-	return (
-		<AppTool
-			name="zoom-in"
-			disabled={
-				activeScopeType !== "grafcet" ||
-				activeGrafcetZoom === null ||
-				activeGrafcetZoom >= GRAFCET_FLOW_MAX_ZOOM
-			}
-			onClick={() => {
-				activeGrafcetViewManager?.zoomIn();
-			}}
-		>
-			<ZoomInIcon />
-		</AppTool>
-	);
-};
-
-const ZoomOutAction = () => {
-	const activeScopeType = useProjectStore((state) => state.activeScopeType);
-	const activeGrafcetViewManager = useProjectStore(
-		(state) => state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager,
-	);
-	const activeGrafcetZoom = useProjectStore((state) => {
-		const grafcetViewManager = state.grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
-		return grafcetViewManager?.getZoom() ?? null;
-	});
-
-	return (
-		<AppTool
-			name="zoom-out"
-			disabled={
-				activeScopeType !== "grafcet" ||
-				activeGrafcetZoom === null ||
-				activeGrafcetZoom <= GRAFCET_FLOW_MIN_ZOOM
-			}
-			onClick={() => {
-				activeGrafcetViewManager?.zoomOut();
-			}}
-		>
-			<ZoomOutIcon />
-		</AppTool>
-	);
-};
-
 const RightActions = () => {
+	const analysisOK = useProjectStore((state) => state.analysisOK);
+	const setAnalysisErrorsVisible = useProjectStore((state) => state.setAnalysisErrorsVisible);
+
 	return (
-		<FlexBox centerVertical gap={1}>
-			<ZoomInAction />
-			<ZoomOutAction />
+		<FlexBox centerVertical gap={1} sx={{ justifyContent: "flex-end" }}>
+			<Button
+				sx={{
+					color: analysisOK === undefined ? "black" : analysisOK ? "black" : "red",
+					fontWeight: "normal",
+					height: "100%",
+					py: "0",
+					px: "3px",
+					"&:hover": { backgroundColor: "rgb(230,230,230)" },
+				}}
+				onClick={() => setAnalysisErrorsVisible(true)}
+			>
+				{`Résultat d'analyse ${analysisOK === undefined ? "" : analysisOK ? "(OK)" : "(Erreurs)"}`}
+			</Button>
 		</FlexBox>
 	);
 };

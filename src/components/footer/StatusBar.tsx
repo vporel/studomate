@@ -21,7 +21,7 @@ const StatusBar = () => {
 			className="status-bar"
 			sx={{
 				width: "100%",
-				height: "25px",
+				height: "30px",
 				borderTop: "1px solid lightgray",
 				padding: "10px",
 				background: "white",

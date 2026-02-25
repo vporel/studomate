@@ -1,7 +1,7 @@
 import Grafcet from "../Grafcet.class";
 import { GrafcetElementType } from "../GrafcetElement.class";
 import ElementDataValidator from "./ElementDataValidator.class";
-import { NeededProjectDataWhenValidatingElement } from "./types";
+import { ElementValidateDataOptions } from "./types";
 
 /**
  * Default validator that doesn't perform any validation and returns an empty array of errors.
@@ -19,9 +19,7 @@ export default class DefaultElementDataValidator extends ElementDataValidator<an
 		elementId: string,
 		data: any,
 		grafcet: Grafcet,
-		options: {
-			projectData: NeededProjectDataWhenValidatingElement;
-		},
+		options: ElementValidateDataOptions,
 	): string[] {
 		const element = grafcet.getElementByIdAndType(elementId, this.elementType);
 		if (!element)

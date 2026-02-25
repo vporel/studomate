@@ -1,18 +1,21 @@
 import IllegalVariableValueTypeException from "./exceptions/IllegalVariableValueTypeException.class";
 
 export type VariableType = "number" | "string" | "boolean";
+export type VariableDirection = "IN" | "OUT" | "INOUT";
 export type VariableValue = number | string | boolean;
 
 export default class Variable {
 	private id: string;
 	private name: string;
 	private type: VariableType;
+	private direction: VariableDirection;
 	private value: VariableValue;
 
-	constructor(id: string, name: string, type: VariableType) {
+	constructor(id: string, name: string, type: VariableType, direction: VariableDirection) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
+		this.direction = direction;
 		switch (type) {
 			case "number":
 				this.value = 0;
@@ -36,6 +39,10 @@ export default class Variable {
 
 	getType(): VariableType {
 		return this.type;
+	}
+
+	getDirection(): VariableDirection {
+		return this.direction;
 	}
 
 	getValue(): VariableValue {
