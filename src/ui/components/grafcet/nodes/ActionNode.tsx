@@ -4,7 +4,7 @@ import Action, {
 	ActionData,
 	ActionExecutionMode,
 	ActionType,
-} from "@/schemas/grafcet/Action.class";
+} from "@/schemas/grafcet/action.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";

@@ -1,6 +1,6 @@
 "use client";
 
-import Project from "@/schemas/project/Project.class";
+import Project from "@/schemas/project/project.schema";
 import { localStorageDeleteProject, localStorageLoadProjects } from "@/ui/local-storage/projects";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {

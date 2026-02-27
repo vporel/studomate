@@ -1,7 +1,7 @@
 "use client";
 
 import AppTool from "@/ui/components/app-toolbar/AppTool";
-import { GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/ViewManager";
+import { GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";
 import { ZoomOut as ZoomOutIcon } from "@mui/icons-material";
 import { useGrafcetStore } from "../context/GrafcetContext";
 

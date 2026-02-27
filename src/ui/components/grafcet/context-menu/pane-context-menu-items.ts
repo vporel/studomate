@@ -1,7 +1,7 @@
 "use client";
 
 import { platformShortcut } from "@/ui/lib/platform";
-import ViewManager from "@/ui/stores/grafcet/managers/ViewManager";
+import ViewManager from "@/ui/stores/grafcet/managers/view.manager";
 
 export default function paneContextMenuItems(viewManager: ViewManager): {
 	label: string;

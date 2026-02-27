@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/Grafcet.class";
+import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
 import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { platformShortcut } from "@/ui/lib/platform";

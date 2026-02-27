@@ -1,6 +1,6 @@
 "use client";
 
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetContextProvider } from "../grafcet/context/GrafcetContext";
 import GrafcetFlow from "../grafcet/flow/GrafcetFlow";
 import GrafcetToolbar from "../grafcet/toolbar/GrafcetToolbar";

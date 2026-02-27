@@ -5,23 +5,24 @@ import { Button } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
 
 const RightActions = () => {
-	const analysisOK = useProjectStore((state) => state.analysisOK);
-	const setAnalysisErrorsVisible = useProjectStore((state) => state.setAnalysisErrorsVisible);
+	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
+	const analysisHasWarnings = useProjectStore((state) => state.analysisHasWarnings);
+	const setAnalysisResultVisible = useProjectStore((state) => state.setAnalysisResultVisible);
 
 	return (
 		<FlexBox centerVertical gap={1} sx={{ justifyContent: "flex-end" }}>
 			<Button
 				sx={{
-					color: analysisOK === undefined ? "black" : analysisOK ? "black" : "red",
+					color: analysisHasErrors ? "red" : analysisHasWarnings ? "orange" : "black",
 					fontWeight: "normal",
 					height: "100%",
 					py: "0",
 					px: "3px",
 					"&:hover": { backgroundColor: "rgb(230,230,230)" },
 				}}
-				onClick={() => setAnalysisErrorsVisible(true)}
+				onClick={() => setAnalysisResultVisible(true)}
 			>
-				{`Résultat d'analyse ${analysisOK === undefined ? "" : analysisOK ? "(OK)" : "(Erreurs)"}`}
+				{`Résultat d'analyse ${!analysisHasErrors && !analysisHasWarnings ? "(OK)" : analysisHasErrors ? "(Erreurs)" : "(Avertissements)"}`}
 			</Button>
 		</FlexBox>
 	);

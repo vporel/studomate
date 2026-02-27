@@ -4,6 +4,13 @@
  */
 
 /**
+ * @description Invert a record, the keys become values and the values become keys
+ */
+export function invertRecord<K extends string, V extends string>(record: Record<K, V>): Record<V, K> {
+	return Object.fromEntries(Object.entries(record).map(([k, v]) => [v, k])) as Record<V, K>;
+}
+
+/**
  * @description Merge two objects deeply, the source object will override the target object
  */
 export function deepMerge<TargetType = any, SourceType = any>(

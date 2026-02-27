@@ -4,13 +4,14 @@ import { Button } from "@mui/material";
 import { useMemo } from "react";
 
 const AnalyseButton = () => {
-	const analysisOK = useProjectStore((state) => state.analysisOK);
+	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
+	const analysisHasWarnings = useProjectStore((state) => state.analysisHasWarnings);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const color: string = useMemo(() => {
-		if (analysisOK === undefined) return "rgb(70,70,70)";
-		else if (analysisOK) return "green";
-		else return "red";
-	}, [analysisOK]);
+		if (analysisHasErrors) return "red";
+		else if (analysisHasWarnings) return "orange";
+		else return "rgb(70,70,70)";
+	}, [analysisHasErrors, analysisHasWarnings]);
 
 	return (
 		<Button

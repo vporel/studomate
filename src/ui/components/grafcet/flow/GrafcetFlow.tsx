@@ -1,8 +1,8 @@
 "use client";
-import ConnectionsValidator from "@/schemas/grafcet/validators/ConnectionsValidator.class";
+import ConnectionsValidator from "@/schemas/grafcet/validators/connections.validator";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
-import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/ViewManager";
+import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -85,7 +85,7 @@ export function GrafcetFlowContent() {
 					connectionLineComponent={CustomConnectionLine}
 					isValidConnection={(connection) => {
 						if (!viewManager.rfInstance) return false;
-						return ConnectionsValidator.validateConnection(
+						return ConnectionsValidator.validateNewConnection(
 							{
 								sourceId: connection.source,
 								targetId: connection.target,

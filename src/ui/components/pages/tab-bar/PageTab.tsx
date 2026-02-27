@@ -2,7 +2,7 @@
 
 import InclinedAccountTreeIcon from "@/ui/components/icons/InclinedAccountTree";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { PageType } from "@/ui/stores/project/project-store-types";
+import { PageType } from "@/ui/stores/project/project.store";
 import { Segment as SegmentIcon } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import HomeIcon from "@mui/icons-material/Home";

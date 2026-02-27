@@ -4,16 +4,14 @@ import {
 	ACTION_EXECUTION_MODE_LABELS,
 	ACTION_TYPES_LABELS,
 	ACTION_TYPES_TO_EXECUTION_MODES,
-} from "@/schemas/grafcet/Action.class";
-import Project from "@/schemas/project/Project.class";
+} from "@/schemas/grafcet/action.schema";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
-import WorkflowManager from "@/ui/stores/grafcet/managers/WorkflowManager";
+import WorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { ActionNodeType } from "../nodes/ActionNode";
 
 export default function actionContextMenuItems(
 	action: ActionNodeType,
 	workflowManager: WorkflowManager,
-	getProject: () => Project,
 ): ContextMenuItemType[][] {
 	const items: ContextMenuItemType[][] = [];
 	const part1: ContextMenuItemType[] = [
@@ -23,13 +21,9 @@ export default function actionContextMenuItems(
 				label: label,
 				checked: action.data.type === type,
 				onClick: () =>
-					workflowManager.updateNodeData(
-						action.id,
-						{
-							type: type as any,
-						},
-						getProject(),
-					),
+					workflowManager.updateNodeData(action.id, {
+						type: type as any,
+					}),
 			})),
 		},
 	];
@@ -43,13 +37,9 @@ export default function actionContextMenuItems(
 					label: label,
 					checked: action.data.executionMode === mode,
 					onClick: () =>
-						workflowManager.updateNodeData(
-							action.id,
-							{
-								executionMode: mode as any,
-							},
-							getProject(),
-						),
+						workflowManager.updateNodeData(action.id, {
+							executionMode: mode as any,
+						}),
 				})),
 		});
 	}

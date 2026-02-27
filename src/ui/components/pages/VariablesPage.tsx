@@ -1,7 +1,7 @@
 "use client";
 
-import { VariableZone } from "@/schemas/variable/Variable.class";
-import { PageData } from "@/ui/stores/project/project-store-types";
+import { VariableZone } from "@/schemas/variable/variable.schema";
+import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
 import VariablesTable from "../variables/VariablesTable";

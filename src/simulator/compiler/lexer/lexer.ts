@@ -1,3 +1,4 @@
+import { ARITHMETIC_OPERATORS, ArithmeticOperator } from "../shared/operators";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
 import InvalidStringEndQuoteException from "./exceptions/invalid-string-end-quote.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
@@ -5,11 +6,9 @@ import { Language } from "./language.enum";
 import LexerHelper from "./lexer.helper";
 import {
 	ARITHMETIC_OPERATOR_TOKENS_TYPES,
-	ARITHMETIC_OPERATORS,
-	ArithmeticOperator,
 	Token,
 	TokenType,
-} from "./tokens";
+} from "./tokens/tokens";
 
 export class Lexer {
 	language: Language;

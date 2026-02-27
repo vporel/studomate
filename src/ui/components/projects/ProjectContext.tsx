@@ -1,9 +1,8 @@
 "use client";
-import { createProjectStore } from "@/ui/stores/project/project-store";
-import { ProjectStoreState } from "@/ui/stores/project/project-store-types";
+import { createProjectStore, ProjectStoreState } from "@/ui/stores/project/project.store";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import AnalysisErrors from "./AnalysisErrors";
+import AnalysisResult from "./AnalysisResult";
 import ExportModal from "./ExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
@@ -53,7 +52,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 			<UnsavedChangesDialog />
 			<ProjectOpenModal />
 			<ExportModal />
-			<AnalysisErrors />
+			<AnalysisResult />
 		</ProjectContext.Provider>
 	);
 };

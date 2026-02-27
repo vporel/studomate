@@ -1,12 +1,12 @@
-import Action from "@/schemas/grafcet/Action.class";
-import Comment from "@/schemas/grafcet/Comment.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import Junction from "@/schemas/grafcet/Junction.class";
-import Step from "@/schemas/grafcet/Step.class";
-import StepReferral from "@/schemas/grafcet/StepReferral.class";
-import StepReferralSource from "@/schemas/grafcet/StepReferralSource.class";
-import StepReferralTarget from "@/schemas/grafcet/StepReferralTarget.class";
-import Transition from "@/schemas/grafcet/Transition.class";
+import Action from "@/schemas/grafcet/action.schema";
+import Comment from "@/schemas/grafcet/comment.schema";
+import { ElementType } from "@/schemas/grafcet/element.schema";
+import Junction from "@/schemas/grafcet/junction.schema";
+import StepReferralSource from "@/schemas/grafcet/step-referral-source.schema";
+import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
+import StepReferral from "@/schemas/grafcet/step-referral.schema";
+import Step from "@/schemas/grafcet/step.schema";
+import Transition from "@/schemas/grafcet/transition.schema";
 import { Dimensions } from "@xyflow/react";
 import CustomEdge, { CustomEdgeType } from "../edges/CustomEdge";
 import ActionNode, { ActionNodeType } from "../nodes/ActionNode";
@@ -35,7 +35,7 @@ export type GrafcetNodeType =
 	| CommentNodeType;
 export type GrafcetEdgeType = CustomEdgeType; //List of all the edges types
 
-export const NODES_DEFAULT_DIMENSIONS: Record<GrafcetElementType, Dimensions> = {
+export const NODES_DEFAULT_DIMENSIONS: Record<ElementType, Dimensions> = {
 	step: Step.DEFAULT_DIMENSIONS,
 	action: Action.DEFAULT_DIMENSIONS,
 	transition: Transition.DEFAULT_DIMENSIONS,
@@ -48,7 +48,7 @@ export const NODES_DEFAULT_DIMENSIONS: Record<GrafcetElementType, Dimensions> = 
 	comment: Comment.DEFAULT_DIMENSIONS,
 };
 
-export const NODES_DEFAULT_DATA_GENERATORS: Record<GrafcetElementType, any> = {
+export const NODES_DEFAULT_DATA_GENERATORS: Record<ElementType, any> = {
 	step: Step.generateDefaultData,
 	action: Action.generateDefaultData,
 	transition: Transition.generateDefaultData,
@@ -61,7 +61,7 @@ export const NODES_DEFAULT_DATA_GENERATORS: Record<GrafcetElementType, any> = {
 	comment: Comment.generateDefaultData,
 };
 
-export const nodeTypes: Record<GrafcetElementType, any> = {
+export const nodeTypes: Record<ElementType, any> = {
 	step: StepNode,
 	action: ActionNode,
 	transition: TransitionNode,

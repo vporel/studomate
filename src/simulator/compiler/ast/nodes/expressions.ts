@@ -1,3 +1,4 @@
+import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
 import { ASTNode } from "./ast-node";
 import { BaseNode } from "./base-node";
 
@@ -8,12 +9,6 @@ export interface UnaryExpressionNode extends BaseNode {
 	operator: UnaryExpressionOperator;
 	expr: ASTNode;
 }
-
-export const ARITHMETIC_OPERATORS = ["+", "-", "*", "/"] as const;
-export const COMPARISON_OPERATORS = ["=", "!=", "<", ">", "<=", ">="] as const;
-
-export type ArithmeticOperator = (typeof ARITHMETIC_OPERATORS)[number];
-export type ComparisonOperator = (typeof COMPARISON_OPERATORS)[number];
 
 export interface ArithmeticExpressionNode extends BaseNode {
 	type: "ARITHMETIC_EXPRESSION";
@@ -38,8 +33,8 @@ export interface LogicalExpressionNode extends BaseNode {
 	right: ASTNode;
 }
 
+export type BinaryExpressionNode = ArithmeticExpressionNode | ComparisonExpressionNode | LogicalExpressionNode;
+
 export type ExpressionNode =
 	| UnaryExpressionNode
-	| ArithmeticExpressionNode
-	| ComparisonExpressionNode
-	| LogicalExpressionNode;
+	| BinaryExpressionNode

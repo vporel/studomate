@@ -1,6 +1,6 @@
 "use client";
 
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import { ElementType } from "@/schemas/grafcet/element.schema";
 import { Box } from "@mui/material";
 import React from "react";
 import { useGrafcetToolbarDnD } from "./GrafcetToolbarDnDContext";
@@ -11,7 +11,7 @@ const GrafcetTool = ({
 	disabled,
 	children,
 }: {
-	type: GrafcetElementType;
+	type: ElementType;
 	extraData?: any;
 	disabled?: boolean;
 	children: React.ReactElement;

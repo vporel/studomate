@@ -1,5 +1,6 @@
-import { AssignNode, CompareNode } from "../../parser/AST";
-import { PossibleNodeResultType } from "../types";
+import { PossibleNodeResultType } from "../../ast/nodes/ast-node";
+import { ComparisonExpressionNode } from "../../ast/nodes/expressions";
+import { AssignStatementNode } from "../../ast/nodes/statements";
 import SemanticException from "./semantic.exception";
 
 export default class IncompatibleOperandsTypesException extends SemanticException {
@@ -11,7 +12,7 @@ export default class IncompatibleOperandsTypesException extends SemanticExceptio
 		operator: string,
 		leftType: PossibleNodeResultType,
 		rightType: PossibleNodeResultType,
-		originNode: CompareNode | AssignNode,
+		originNode: ComparisonExpressionNode | AssignStatementNode,
 	) {
 		super(
 			`Incompatible operand types for operator '${operator}': left operand is ${leftType}, right operand is ${rightType}`,

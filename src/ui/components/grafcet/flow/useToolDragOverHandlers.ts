@@ -1,6 +1,6 @@
 "use client";
 
-import { createRandomId } from "@/schemas/schemas-helpers";
+import { createRandomId } from "@/schemas/utils/ids";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";

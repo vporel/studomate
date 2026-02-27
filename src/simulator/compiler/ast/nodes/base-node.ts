@@ -1,4 +1,4 @@
 export interface BaseNode {
   type: string;
-  position: number;
+  position?: number;
 }

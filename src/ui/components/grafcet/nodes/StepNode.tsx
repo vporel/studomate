@@ -1,6 +1,6 @@
 "use client";
 import { range } from "@/lib/array";
-import Step, { StepData } from "@/schemas/grafcet/Step.class";
+import Step, { StepData } from "@/schemas/grafcet/step.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";

@@ -1,3 +1,4 @@
+import PLCRoutine from "./plc-routine";
 
 export type PLCVariableScope = "input"|"output"|"memory"
 export type PLCVariableType = "boolean" | "number" | "string";
@@ -49,8 +50,6 @@ export class PLCVariable {
   }
 }
 
-export type PLCProgram = (plc: PLC) => void
-
 export default class PLC {
   private inputImage: Record<string, PLCVariable> = {};
   private outputImage: Record<string, PLCVariable> = {};
@@ -59,11 +58,11 @@ export default class PLC {
   private memory: Record<string, PLCVariable> = {};
   private scanTimeMs: number;
   private cycleTimer: NodeJS.Timeout | null = null;
-  private program: PLCProgram;
+  private program: PLCRoutine[];
 
   constructor(config: {
     scanTimeMs: number, 
-    program: PLCProgram,
+    program: PLCRoutine[],
     inputVariables: {id: string, name: string, type: PLCVariableType}[],
     outputVariables: {id: string, name: string, type: PLCVariableType}[],
     memoryVariable: {id: string, name: string, type: PLCVariableType}[]
@@ -81,14 +80,49 @@ export default class PLC {
     })
   }
 
+  /**
+   * Returns read-only copies of all variables (input image, output image, memory).
+   * Callers cannot mutate PLC state through these copies.
+   */
+  public getVariablesSnapshot(): readonly PLCVariable[] {
+    return [
+      ...Object.values(this.inputImage),
+      ...Object.values(this.outputImage),
+      ...Object.values(this.memory),
+    ].map((v) => v.copy());
+  }
+
+  public setOutputImageValueById(id: string, value: PLCVariableValue): void {
+    const variable = this.getOutputImageVariableById(id);
+    variable.setValue(value);
+  }
+
+  private getOutputImageVariableById(id: string): PLCVariable {
+    const variable = this.outputImage[id];
+    if (!variable) throw new Error(`No output variable found with id ${id}`);
+    return variable;
+  }
+
+  public setMemoryValueById(id: string, value: PLCVariableValue): void {
+    const variable = this.getMemoryVariableById(id);
+    variable.setValue(value);
+  }
+
+  private getMemoryVariableById(id: string): PLCVariable {
+    const variable = this.memory[id];
+    if (!variable) throw new Error(`No memory variable found with id ${id}`);
+    return variable;
+  }
+
   //Physical Inputs/Outputs
   public setPhysicalInputValueById(id: string, value: PLCVariableValue): void {
     const input = this.getPhysicalInputById(id)
-
+    input.setValue(value)
   }
 
   public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {
     const input = this.getPhysicalInputByName(name)
+    input.setValue(value)
   }
 
   private getPhysicalInputById(id: string): PLCVariable{
@@ -116,9 +150,10 @@ export default class PLC {
       this.inputImage[id] = v.copy()
     })
   }
+
   private executeProgram(): void { 
-      this.program(this)
-   }
+    this.program.forEach(routine => routine.execute(this))
+  }
 
   private writeOutputs(): void { 
     Object.entries(this.outputImage).forEach(([id, v]) => {

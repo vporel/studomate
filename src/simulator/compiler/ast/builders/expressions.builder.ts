@@ -1,9 +1,8 @@
+import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
 import { ASTNode } from "../nodes/ast-node";
 import {
 	ArithmeticExpressionNode,
-	ArithmeticOperator,
 	ComparisonExpressionNode,
-	ComparisonOperator,
 	LogicalExpressionNode,
 	LogicalOperator,
 	UnaryExpressionNode,
@@ -14,7 +13,7 @@ export default class ExpressionsBuilder {
 	static buildUnaryExpressionNode(
 		operator: UnaryExpressionOperator,
 		expr: ASTNode,
-		position: number,
+		position?: number,
 	): UnaryExpressionNode {
 		return {
 			type: "UNARY_EXPRESSION",
@@ -28,7 +27,7 @@ export default class ExpressionsBuilder {
 		operator: ArithmeticOperator,
 		left: ASTNode,
 		right: ASTNode,
-		position: number,
+		position?: number,
 	): ArithmeticExpressionNode {
 		return {
 			type: "ARITHMETIC_EXPRESSION",
@@ -43,7 +42,7 @@ export default class ExpressionsBuilder {
 		operator: ComparisonOperator,
 		left: ASTNode,
 		right: ASTNode,
-		position: number,
+		position?: number,
 	): ComparisonExpressionNode {
 		return {
 			type: "COMPARISON_EXPRESSION",
@@ -58,7 +57,7 @@ export default class ExpressionsBuilder {
 		operator: LogicalOperator,
 		left: ASTNode,
 		right: ASTNode,
-		position: number,
+		position?: number,
 	): LogicalExpressionNode {
 		return {
 			type: "LOGICAL_EXPRESSION",
@@ -67,5 +66,20 @@ export default class ExpressionsBuilder {
 			right,
 			position,
 		};
+	}
+
+	static buildChainedLogicalExpressionNode(
+		operator: LogicalOperator,
+		expressions: ASTNode[],
+		position?: number,
+	): LogicalExpressionNode {
+		if (expressions.length < 2) {
+			throw new Error("At least two expressions are required for a chained logical expression.");
+		}
+		let currentExpr: ASTNode = expressions[0];
+		for (let i = 1; i < expressions.length; i++) {
+			currentExpr = this.buildLogicalExpressionNode(operator, currentExpr, expressions[i], position);
+		}
+		return currentExpr as LogicalExpressionNode;
 	}
 }

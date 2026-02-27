@@ -1,4 +1,4 @@
-import Project from "@/schemas/project/Project.class";
+import Project from "@/schemas/project/project.schema";
 
 const LOCAL_STORAGE_PROJECTS_KEY = "studomate_projects_data";
 

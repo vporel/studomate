@@ -2,7 +2,7 @@ import { ASTNode } from "../nodes/ast-node";
 import { AssignStatementNode } from "../nodes/statements";
 
 export default class StatementsBuilder {
-  static buildAssignStatementNode(left: ASTNode, right: ASTNode, position: number): AssignStatementNode {
+  static buildAssignStatementNode(left: ASTNode, right: ASTNode, position?: number): AssignStatementNode {
     return {
       type: "ASSIGN_STATEMENT",
       left,

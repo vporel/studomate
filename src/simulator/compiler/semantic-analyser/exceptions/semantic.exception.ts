@@ -1,4 +1,4 @@
-import { ASTNode } from "../../parser/AST";
+import { ASTNode } from "../../ast/nodes/ast-node";
 
 export default class SemanticException extends Error {
 	private readonly originNode: ASTNode;

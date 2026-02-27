@@ -1,6 +1,6 @@
 "use client";
 
-import { JunctionData } from "@/schemas/grafcet/Junction.class";
+import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { useEffect, useState } from "react";
 import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from "../JunctionNodeBranchAddButtons";
 

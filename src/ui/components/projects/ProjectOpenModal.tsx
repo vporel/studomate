@@ -1,6 +1,6 @@
 "use client";
 
-import Project from "@/schemas/project/Project.class";
+import Project from "@/schemas/project/project.schema";
 import { openFileDialog, openFileViaInput, readFile } from "@/ui/lib/file-system";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { localStorageSaveProject } from "@/ui/local-storage/projects";

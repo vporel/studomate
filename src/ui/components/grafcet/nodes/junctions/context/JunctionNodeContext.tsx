@@ -1,4 +1,4 @@
-import { JunctionData } from "@/schemas/grafcet/Junction.class";
+import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import useBarsSelection from "./useBarsSelection";
 import useBranchActions from "./useBranchActions";

@@ -1,8 +1,7 @@
 "use client";
-import Grafcet from "@/schemas/grafcet/Grafcet.class";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { createGrafcetStore } from "@/ui/stores/grafcet/grafcet-store";
-import { GrafcetStoreState } from "@/ui/stores/grafcet/grafcet-store-types";
+import { createGrafcetStore, GrafcetStoreState } from "@/ui/stores/grafcet/grafcet.store";
 import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 import { StoreApi, useStore } from "zustand";

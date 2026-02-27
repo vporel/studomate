@@ -1,5 +1,5 @@
 "use client";
-import Comment, { CommentData } from "@/schemas/grafcet/Comment.class";
+import Comment, { CommentData } from "@/schemas/grafcet/comment.schema";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer } from "@xyflow/react";
 import React, { type FC } from "react";

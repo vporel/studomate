@@ -1,13 +1,13 @@
 "use client";
 
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import { ElementType } from "@/schemas/grafcet/element.schema";
 import ErrorTooltip from "@/ui/lib/mui/tooltip/ErrorTooltip";
 import { Box, BoxProps } from "@mui/material";
 import { forwardRef, ReactNode } from "react";
 
 interface GrafcetNodeProps extends BoxProps {
 	id: string;
-	type: GrafcetElementType;
+	type: ElementType;
 	error?: string | false;
 	children: ReactNode;
 	className?: string;

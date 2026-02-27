@@ -1,6 +1,6 @@
-import { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
-import GrafcetConnection from "@/schemas/grafcet/GrafcetConnection.class";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
+import Connection from "@/schemas/grafcet//connection.schema";
+import { ElementType } from "@/schemas/grafcet/element.schema";
+import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { getConnectionLinePoints } from "@/ui/components/grafcet/connections-lines/CustomConnectionLine";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { PAPERS_SIZES } from "@/ui/constants";
@@ -12,7 +12,7 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	rfInstance: ReactFlowInstance,
 	connection: XYFlowConnection | GrafcetEdgeType,
 	connectionId: string,
-): GrafcetConnection | null {
+): Connection | null {
 	const sourceNode = rfInstance.getInternalNode(connection.source);
 	const targetNode = rfInstance.getInternalNode(connection.target);
 	if (!sourceNode || !targetNode) return null;
@@ -24,15 +24,15 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 		targetHandle: connection.targetHandle || null,
 		connectionMode: ConnectionMode.Strict,
 	});
-	return new GrafcetConnection(
+	return new Connection(
 		connectionId,
 		{
-			type: sourceNode.type as GrafcetElementType,
+			type: sourceNode.type as ElementType,
 			id: sourceNode.id,
 			handleId: connection.sourceHandle || "",
 		},
 		{
-			type: targetNode.type as GrafcetElementType,
+			type: targetNode.type as ElementType,
 			id: targetNode.id,
 			handleId: connection.targetHandle || "",
 		},

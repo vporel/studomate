@@ -1,4 +1,4 @@
-import Project from "@/schemas/project/Project.class";
+import Project from "@/schemas/project/project.schema";
 
 /**
  * Export a project in a JSON format

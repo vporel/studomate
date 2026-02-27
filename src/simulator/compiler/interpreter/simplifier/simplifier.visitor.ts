@@ -15,18 +15,23 @@ import { BaseVisitor } from "../../ast/visitors/base.visitor";
 import { DivisionByZeroException } from "../evaluator/exceptions/division-by-zero.exception";
 
 export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
+
 	protected visitIdentifierNode(node: IdentifierNode): ASTNode {
 		return node;
 	}
+
 	protected visitBooleanNode(node: BooleanNode): ASTNode {
 		return node;
 	}
+	
 	protected visitNumberNode(node: NumberNode): ASTNode {
 		return node;
 	}
+
 	protected visitStringNode(node: StringNode): ASTNode {
 		return node;
 	}
+
 	protected visitUnaryExpressionNode(node: UnaryExpressionNode): ASTNode {
 		switch (node.operator) {
 			case "NOT":
@@ -38,6 +43,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 				return { ...node, expr: simplifiedExpr };
 		}
 	}
+
 	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): ASTNode {
 		const simplifiedLeft = this.visit(node.left);
 		const simplifiedRight = this.visit(node.right);

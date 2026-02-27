@@ -1,6 +1,6 @@
 "use client";
 
-import { PageData } from "@/ui/stores/project/project-store-types";
+import { PageData } from "@/ui/stores/project/project.store";
 import { alpha, Box, Grid, Typography } from "@mui/material";
 import { useState } from "react";
 import { useShallow } from "zustand/shallow";

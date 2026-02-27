@@ -1,7 +1,7 @@
 "use client";
 
 import AppTool from "@/ui/components/app-toolbar/AppTool";
-import { GRAFCET_FLOW_MAX_ZOOM } from "@/ui/stores/grafcet/managers/ViewManager";
+import { GRAFCET_FLOW_MAX_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";
 import { ZoomIn as ZoomInIcon } from "@mui/icons-material";
 import { useGrafcetStore } from "../context/GrafcetContext";
 

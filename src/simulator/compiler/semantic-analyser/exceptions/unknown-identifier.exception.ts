@@ -1,4 +1,4 @@
-import { IdentifierNode } from "../../parser/AST";
+import { IdentifierNode } from "../../ast/nodes/identifiers";
 import SemanticException from "./semantic.exception";
 
 export default class UnknownIdentifierException extends SemanticException {

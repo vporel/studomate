@@ -1,12 +1,12 @@
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import ElementDataValidatorFactory from "@/schemas/grafcet/validators/ElementDataValidatorFactory";
+import ElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
+import { ElementType } from "@/schemas/grafcet/element.schema";
 import { useProjectContext } from "@/ui/components/projects/ProjectContext";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 
 export default function useWithTextNodeValue(
 	nodeId: string,
-	nodeType: GrafcetElementType,
+	nodeType: ElementType,
 	data: any,
 	valueProperty: string,
 	transformToNumberBeforeSave: boolean = false,
@@ -24,10 +24,7 @@ export default function useWithTextNodeValue(
 	const [editing, setEditing] = useState(false);
 	const [error, setError] = useState<string | false>(false);
 	const projectStore = useProjectContext();
-	const validator = useMemo(
-		() => ElementDataValidatorFactory.getValidatorForElementType(nodeType),
-		[nodeType],
-	);
+	const analyser = useMemo(() => ElementAnalyserFactory.getAnalyserForType(nodeType), [nodeType]);
 	const transformValue = useCallback(
 		(v: string) => {
 			let transformedValue: any = v;
@@ -39,14 +36,10 @@ export default function useWithTextNodeValue(
 		[transformToNumberBeforeSave],
 	);
 	const saveValue = useCallback(() => {
-		workflowManager.updateNodeData(
-			nodeId,
-			{
-				[valueProperty]: transformValue(value),
-			},
-			projectStore!.getState().project!,
-		);
-	}, [value, workflowManager, nodeId, valueProperty, transformValue, projectStore]);
+		workflowManager.updateNodeData(nodeId, {
+			[valueProperty]: transformValue(value),
+		});
+	}, [value, workflowManager, nodeId, valueProperty, transformValue]);
 
 	useEffect(() => {
 		if (!editing) {
@@ -60,17 +53,14 @@ export default function useWithTextNodeValue(
 			_setValue(newValue);
 			//Check errors
 			const transformedValue = transformValue(newValue);
-			const errors = validator.validateData(
-				nodeId,
-				{ [valueProperty]: transformedValue },
-				store!.getState().grafcet!,
-				{
-					projectData: { variables: projectStore!.getState().project!.variables },
-				},
-			);
-			setError(errors.length > 0 ? errors[0] : false);
+			const grafcet = store!.getState().grafcet!;
+			const elementCopy = grafcet.getElementById(nodeId)!.copy();
+			elementCopy.updateData({ [valueProperty]: transformedValue });
+			const issues = analyser.analyseIsolated(elementCopy, { allowEmptyContent: true });
+			const errors = issues.filter((issue) => issue.severity === "error");
+			setError(errors.length > 0 ? errors[0].message : false);
 		},
-		[transformValue, nodeId, valueProperty, store, projectStore, validator],
+		[transformValue, nodeId, valueProperty, store, analyser],
 	);
 
 	return [value, setValue, editing, setEditing, saveValue, error];

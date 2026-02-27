@@ -1,7 +1,7 @@
 "use client";
 import { range } from "@/lib/array";
-import StepReferral from "@/schemas/grafcet/StepReferral.class";
-import { StepReferralSourceData } from "@/schemas/grafcet/StepReferralSource.class";
+import { StepReferralSourceData } from "@/schemas/grafcet/step-referral-source.schema";
+import StepReferral from "@/schemas/grafcet/step-referral.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";

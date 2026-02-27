@@ -1,4 +1,4 @@
-import { GrafcetFormat } from "@/schemas/grafcet/Grafcet.class";
+import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { downloadFromUrl } from "@/ui/lib/utils";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import domToImage from "dom-to-image";

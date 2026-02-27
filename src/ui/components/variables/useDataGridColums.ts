@@ -1,6 +1,6 @@
 "use client";
 
-import Variable, { VariableZone } from "@/schemas/variable/Variable.class";
+import Variable, { VariableZone } from "@/schemas/variable/variable.schema";
 import { GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 import { useProjectStore } from "../projects/ProjectContext";

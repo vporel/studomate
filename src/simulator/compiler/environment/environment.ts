@@ -8,21 +8,8 @@ export class Environment {
 	 */
 	private readonly variables = new Map<string, EnvVariable>();
 
-	constructor(
-		variablesDefinitions: {
-			id: string;
-			name: string;
-			type: EnvVariableType;
-			direction: EnvVariableDirection;
-		}[],
-	) {
-		for (const variableDef of variablesDefinitions) {
-			const variable = new EnvVariable(
-				variableDef.id,
-				variableDef.name,
-				variableDef.type,
-				variableDef.direction,
-			);
+	constructor(variables: EnvVariable[]) {
+		for (const variable of variables) {
 			this.variables.set(variable.getId(), variable);
 		}
 	}

@@ -3,13 +3,13 @@ import IdentifiersBuilder from "../ast/builders/identifiers.builder";
 import LiteralsBuilder from "../ast/builders/literals.builder";
 import StatementsBuilder from "../ast/builders/statements.builder";
 import { ASTNode } from "../ast/nodes/ast-node";
-import { ArithmeticOperator, ComparisonOperator } from "../ast/nodes/expressions";
 import {
 	ARITHMETIC_OPERATOR_TOKENS_TYPES,
 	COMPARISON_OPERATOR_TOKENS_TYPES,
 	Token,
 	TokenType,
-} from "../lexer/tokens";
+} from "../lexer/tokens/tokens";
+import { ArithmeticOperator, ComparisonOperator } from "../shared/operators";
 import BadTokenTypeException from "./exceptions/bad-token-type.exception";
 import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";

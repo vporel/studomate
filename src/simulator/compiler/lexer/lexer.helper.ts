@@ -1,6 +1,6 @@
 import { Keyword } from "./keyword.enum";
 import { Language } from "./language.enum";
-import { TokenType } from "./tokens";
+import { TokenType } from "./tokens/tokens";
 
 export default class LexerHelper {
 	static isLetterOrUnderscore(char: string): boolean {

@@ -1,4 +1,4 @@
-import Variable from "@/schemas/variable/Variable.class";
+﻿import Variable from "@/schemas/variable/variable.schema";
 
 export type NeededProjectDataWhenValidatingElement = {
 	variables: Variable[];

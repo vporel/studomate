@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/Grafcet.class";
+import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
 import React, { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";

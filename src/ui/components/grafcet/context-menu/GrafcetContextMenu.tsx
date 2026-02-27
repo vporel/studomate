@@ -1,6 +1,5 @@
 "use client";
 
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
@@ -27,7 +26,6 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const getProject = useProjectStore((state) => state.getProject);
 
 	//Groups of items, the groups will be separated with dividers
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
@@ -38,7 +36,7 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, workflowManager);
 			if (element.type === "action") {
 				items.push(
-					...actionContextMenuItems(element as ActionNodeType, workflowManager, getProject as any),
+					...actionContextMenuItems(element as ActionNodeType, workflowManager),
 				);
 			}
 			if (element.type.includes("junction")) {
@@ -47,7 +45,7 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 			items.push(...commonNodeItems);
 		}
 		return items;
-	}, [element, viewManager, workflowManager, contextMenuEvents, getProject]);
+	}, [element, viewManager, workflowManager, contextMenuEvents]);
 
 	//Show the menu on 'show' event
 	useEffect(() => {

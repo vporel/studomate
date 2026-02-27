@@ -1,6 +1,6 @@
 "use client";
-import { GrafcetElementType } from "@/schemas/grafcet/GrafcetElement.class";
-import Junction, { JunctionData } from "@/schemas/grafcet/Junction.class";
+import { ElementType } from "@/schemas/grafcet/element.schema";
+import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
@@ -89,7 +89,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 			/>
 			<GrafcetNode
 				id={id}
-				type={type as GrafcetElementType}
+				type={type as ElementType}
 				className={`junction-node ${className}`}
 				ref={nodeHTMLElement}
 				tabIndex={0}

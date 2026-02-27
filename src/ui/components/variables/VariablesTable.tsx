@@ -1,6 +1,6 @@
 "use client";
 
-import { VariableType, VariableZone, ZONES_TO_TYPES } from "@/schemas/variable/Variable.class";
+import { VariableType, VariableZone, ZONES_TO_TYPES } from "@/schemas/variable/variable.schema";
 import { Box } from "@mui/material";
 import {
 	DataGrid,

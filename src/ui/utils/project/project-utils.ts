@@ -1,6 +1,6 @@
-import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/Project.class";
-import { createRandomId } from "@/schemas/schemas-helpers";
-import Variable from "@/schemas/variable/Variable.class";
+import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
+import { createRandomId } from "@/schemas/utils/ids";
+import Variable from "@/schemas/variable/variable.schema";
 
 export function getStubProject(): Project {
 	const project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
