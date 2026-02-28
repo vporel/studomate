@@ -1,4 +1,4 @@
-import { getStubProjectV2 } from "@/schemas/fixtures/stub-projects";
+import { getStubProjectCoffeeMachine } from "@/schemas/fixtures/stub-projects";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/schemas/utils/ids";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
@@ -36,7 +36,7 @@ export type GrafcetStoreValues = Pick<GrafcetStoreState, "hasCommandsToUndo" | "
 
 export type GrafcetStoreManagers = Pick<
 	GrafcetStoreState,
-	"viewManager" | "copyCutPasteManager" | "commandsStackManager"
+	"viewManager" | "copyCutPasteManager" | "commandsStackManager" | "workflowManager"
 >;
 
 export type PLCConfig = {
@@ -165,7 +165,7 @@ export const createProjectStore = () => {
 	};
 
 	return createStore<ProjectStoreState>((set, get) => ({
-		project: getStubProjectV2(),
+		project: getStubProjectCoffeeMachine(),
 		hasUnsavedChanges: false,
 		unsavedChangesDialogVisible: false,
 		unsavedChangesDialogMessage: null,

@@ -21,11 +21,13 @@ export default class CommandsStackManager {
 		this.commandsStack = new CommandsStack<Grafcet>(CommandsStackManager.COMMANDS_STACK_SIZE);
 	}
 
-	executeOperation(commands: AbstractGrafcetCommand<any>[]): void {
+	executeOperation(commands: AbstractGrafcetCommand<any>[], options?: { saveCommands?: boolean }): void {
 		this.getStoreState().viewManager.throwErrorIfNotReady();
 		if (!commands || commands.length === 0) return;
 		console.log("Executing grafcet operation with commands: ", commands);
-		const newGrafcet = this.commandsStack.execute(commands, this.getStoreState().grafcet.copy());
+		const newGrafcet = this.commandsStack.execute(commands, this.getStoreState().grafcet.copy(), {
+			saveCommands: options?.saveCommands,
+		});
 		this.setStoreState(() => ({
 			grafcet: newGrafcet,
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,

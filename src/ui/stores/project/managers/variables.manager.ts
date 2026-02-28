@@ -3,6 +3,9 @@ import VariablesCommandsFactory from "../factories/variables-commands.factory";
 import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 
+//Record of id => {oldMnemonic, newMnemonic}
+export type VariablesMnemonicsChanges = Record<string, { oldMnemonic: string; newMnemonic: string }>;
+
 export default class VariablesManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
@@ -48,15 +51,23 @@ export default class VariablesManager {
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 
-	updateVariable(variableId: string, data: Partial<VariableUpdatableFields>): void {
+	updateVariable(variableId: string, newData: Partial<VariableUpdatableFields>): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
 		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
 			console.warn("Cannot update variable in non-design mode");
 			return;
 		}
-		const { commands } = VariablesCommandsFactory.onUpdateVariable(project, variableId, data);
+		const { commands } = VariablesCommandsFactory.onUpdateVariable(project, variableId, newData);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
+		if (newData.mnemonic) {
+			const oldVariable = project.variables.find((v) => v.id === variableId);
+			if (!oldVariable) return;
+			const changes: VariablesMnemonicsChanges = {
+				[variableId]: { oldMnemonic: oldVariable.mnemonic, newMnemonic: newData.mnemonic },
+			};
+			this.onMnemonicsChanges(changes);
+		}
 	}
 
 	removeVariables(variablesIds: string[]): void {
@@ -68,5 +79,11 @@ export default class VariablesManager {
 		}
 		const { commands } = VariablesCommandsFactory.onRemoveVariable(project, variablesIds);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
+	}
+
+	onMnemonicsChanges(changes: VariablesMnemonicsChanges): void {
+		if (Object.keys(changes).length > 0) {
+			this.getStoreState().grafcetsManager.onVariablesMnemonicsChanges(changes);
+		}
 	}
 }

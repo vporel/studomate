@@ -1,4 +1,6 @@
+import { ActionData } from "@/schemas/grafcet/action.schema";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.command";
+import { TransitionData } from "@/schemas/grafcet/transition.schema";
 import { createRandomId } from "@/schemas/utils/ids";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/ui/utils/grafcet/grafcet-utils";
@@ -9,6 +11,7 @@ import {
 	NodeChange,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
+import { VariablesMnemonicsChanges } from "../../project/managers/variables.manager";
 import ConnectionsCommandsFactory from "../factories/connections-commands.factory";
 import ElementsCommandsFactory from "../factories/elements-commands.factory";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
@@ -113,6 +116,7 @@ export default class WorkflowManager {
 		newData:
 			| Partial<GrafcetNodeType["data"]>
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
+		options?: { saveCommands?: boolean },
 	): void {
 		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
@@ -126,7 +130,9 @@ export default class WorkflowManager {
 		if (!nodeDataToUpdate) return;
 		const setNode = this.getNodeUpdater(this.setStoreState);
 		setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...nodeDataToUpdate } }) as GrafcetNodeType);
-		this.getStoreState().commandsStackManager.executeOperation(commands);
+		this.getStoreState().commandsStackManager.executeOperation(commands, {
+			saveCommands: options?.saveCommands,
+		});
 	}
 
 	deleteNodes(nodesIds: string[]): void {
@@ -238,5 +244,43 @@ export default class WorkflowManager {
 			...commandsFromNodes,
 			...commandsFromEdges,
 		]);
+	}
+
+	onVariablesMnemonicsChanges(changes: VariablesMnemonicsChanges): void {
+		//Get all the nodes that can be impacted by the change (the ones that have in their data the mnemonic of a variable)
+		const nodesNewData: { id: string; newData: any }[] = this.getStoreState()
+			.nodes!.map((n) => {
+				if (n.type === "transition") {
+					const transitionData = n.data as TransitionData;
+					const expression = transitionData.expression;
+					const impacted =
+						expression &&
+						Object.values(changes).some(({ oldMnemonic }) => expression.includes(oldMnemonic));
+					if (!impacted) return null;
+					let newExpression = expression;
+					Object.values(changes).forEach(({ oldMnemonic, newMnemonic }) => {
+						newExpression = newExpression.split(oldMnemonic).join(newMnemonic);
+					});
+					return { id: n.id, newData: { expression: newExpression } };
+				} else if (n.type === "action") {
+					const actionData = n.data as ActionData;
+					const expression = actionData.expression;
+					const impacted =
+						expression &&
+						Object.values(changes).some(({ oldMnemonic }) => expression.includes(oldMnemonic));
+					if (!impacted) return null;
+					let newExpression = expression;
+					Object.values(changes).forEach(({ oldMnemonic, newMnemonic }) => {
+						newExpression = newExpression.split(oldMnemonic).join(newMnemonic);
+					});
+					return { id: n.id, newData: { expression: newExpression } };
+				}
+				return null;
+			})
+			.filter((n) => n !== null);
+		nodesNewData.forEach(({ id, newData }) => {
+			//We don't want to save a grafcet command as the variables changes are handled by the project
+			this.updateNodeData(id, newData, { saveCommands: false });
+		});
 	}
 }

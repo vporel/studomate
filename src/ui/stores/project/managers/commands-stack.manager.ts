@@ -1,8 +1,10 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
+import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
+import { VariablesMnemonicsChanges } from "./variables.manager";
 
 export default class CommandsStackManager {
 	private static COMMANDS_STACK_SIZE = 100;
@@ -51,7 +53,7 @@ export default class CommandsStackManager {
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
-		commands?.forEach((command) => this.commandUndo(command));
+		commands?.forEach((command) => this.onCommandUndo(command));
 	}
 
 	redoOperation(): void {
@@ -70,14 +72,35 @@ export default class CommandsStackManager {
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
-		commands?.forEach((command) => this.commandRedo(command));
+		commands?.forEach((command) => this.onCommandRedo(command));
 	}
 
-	private commandUndo(command: AbstractProjectCommand<any>): void {
-		//Nothing else to do yet
+	private onCommandUndo(command: AbstractProjectCommand<any>): void {
+		if (!command) return;
+		if (command instanceof VariablesUpdateCommand) {
+			const variablesUpdateCommand = command as VariablesUpdateCommand;
+			const changes: VariablesMnemonicsChanges = {};
+			variablesUpdateCommand.payload.forEach((v) => {
+				if (v.newData.mnemonic) {
+					//Reverse the old and new mnemonic compared because we are undoing the command
+					changes[v.id] = { oldMnemonic: v.newData.mnemonic!, newMnemonic: v.oldData.mnemonic! };
+				}
+			});
+			this.getStoreState().variablesManager.onMnemonicsChanges(changes);
+		}
 	}
 
-	private commandRedo(command: AbstractProjectCommand<any>): void {
-		//Nothing else to do yet
+	private onCommandRedo(command: AbstractProjectCommand<any>): void {
+		if (!command) return;
+		if (command instanceof VariablesUpdateCommand) {
+			const variablesUpdateCommand = command as VariablesUpdateCommand;
+			const changes: VariablesMnemonicsChanges = {};
+			variablesUpdateCommand.payload.forEach((v) => {
+				if (v.newData.mnemonic) {
+					changes[v.id] = { oldMnemonic: v.oldData.mnemonic!, newMnemonic: v.newData.mnemonic! };
+				}
+			});
+			this.getStoreState().variablesManager.onMnemonicsChanges(changes);
+		}
 	}
 }

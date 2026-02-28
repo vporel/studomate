@@ -56,6 +56,7 @@ export const GrafcetContextProvider = ({
 			viewManager: storeRef.current.getState().viewManager,
 			copyCutPasteManager: storeRef.current.getState().copyCutPasteManager,
 			commandsStackManager: storeRef.current.getState().commandsStackManager,
+			workflowManager: storeRef.current.getState().workflowManager,
 		});
 		return () => {
 			grafcetsManager.deleteGrafcetStoreManager(grafcetId);

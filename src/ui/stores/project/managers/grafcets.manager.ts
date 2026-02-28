@@ -7,6 +7,7 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
+import { VariablesMnemonicsChanges } from "./variables.manager";
 
 export default class GrafcetsManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -137,5 +138,15 @@ export default class GrafcetsManager {
 		if (!project) throw new Error("No project opened");
 		if (!project.grafcets[grafcetId]) throw new Error("Grafcet not found in project");
 		return project.grafcets[grafcetId];
+	}
+
+	onVariablesMnemonicsChanges(changes: VariablesMnemonicsChanges): void {
+		const project = this.getStoreState().project;
+		if (!project) return;
+		//Send the info to the workflow manager of each grafcet store
+		const grafcetsManagers = this.getStoreState().grafcetsStoresManagers;
+		Object.values(grafcetsManagers).forEach((managers) => {
+			managers.workflowManager.onVariablesMnemonicsChanges(changes);
+		});
 	}
 }
