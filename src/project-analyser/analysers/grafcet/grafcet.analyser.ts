@@ -9,16 +9,23 @@ export type GrafcetAnalysisResult = {
 	stepsVariables: Variable[];
 };
 
+export function getStepVariableId(grafcetId: string, stepNumber: number): string {
+	return `grafcet-${grafcetId}-step-${stepNumber}`;
+}
+
+export function getStepVariableMnemonic(stepNumber: number): string {
+	return `X${stepNumber}`;
+}
+
 export default class GrafcetAnalyser {
 	/**
 	 * Runs all isolated and contextual rules on every element of the grafcet.
 	 */
 	static analyse(grafcet: Grafcet, project: Project): GrafcetAnalysisResult {
-		const allElements = [...grafcet.steps, ...grafcet.transitions, ...grafcet.actions];
-
 		const stepsVariables = this.buildstepsVariables(grafcet, grafcet.id);
 		const allVariables = [...project.variables, ...stepsVariables];
-		const elementsIssues = allElements
+		const elementsIssues = grafcet
+			.getAllElements()
 			.flatMap((element) => {
 				const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
 				return [
@@ -54,7 +61,9 @@ export default class GrafcetAnalyser {
 				continue;
 			if (seen.has(n as number)) continue;
 			seen.add(n as number);
-			variables.push(new Variable(`grafcet-${grafcetId}-step-${n}`, `X${n}`, "memory", "BOOL"));
+			variables.push(
+				new Variable(getStepVariableId(grafcetId, n), getStepVariableMnemonic(n), "memory", "BOOL"),
+			);
 		}
 
 		return variables;

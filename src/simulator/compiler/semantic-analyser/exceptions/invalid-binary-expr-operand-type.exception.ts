@@ -1,4 +1,4 @@
-import { PossibleNodeResultType } from "../../ast/nodes/ast-node";
+import { ExpectedNodeResultType } from "../../ast/nodes/ast-node";
 import { BinaryExpressionNode } from "../../ast/nodes/expressions";
 import { OperationSide } from "../../shared/operators";
 import SemanticException from "./semantic.exception";
@@ -6,14 +6,14 @@ import SemanticException from "./semantic.exception";
 export default class InvalidBinaryExprOperandTypeException extends SemanticException {
 	private readonly operator: string;
 	private readonly side: OperationSide;
-	private readonly expectedType: PossibleNodeResultType;
-	private readonly actualType: PossibleNodeResultType;
+	private readonly expectedType: ExpectedNodeResultType;
+	private readonly actualType: ExpectedNodeResultType;
 
 	constructor(
 		operator: string,
 		side: OperationSide,
-		expectedType: PossibleNodeResultType,
-		actualType: PossibleNodeResultType,
+		expectedType: ExpectedNodeResultType,
+		actualType: ExpectedNodeResultType,
 		originNode: BinaryExpressionNode,
 	) {
 		super(
@@ -35,11 +35,11 @@ export default class InvalidBinaryExprOperandTypeException extends SemanticExcep
 		return this.side;
 	}
 
-	getExpectedType(): PossibleNodeResultType {
+	getExpectedType(): ExpectedNodeResultType {
 		return this.expectedType;
 	}
 
-	getActualType(): PossibleNodeResultType {
+	getActualType(): ExpectedNodeResultType {
 		return this.actualType;
 	}
 }

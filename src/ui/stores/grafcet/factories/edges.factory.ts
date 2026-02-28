@@ -12,9 +12,9 @@ export default class EdgesFactory {
 				id: connection.id,
 				type: "custom-edge",
 				source: connection.source.id,
-				sourceHandle: connection.source.handleId,
+				sourceHandle: connection.source.handle,
 				target: connection.target.id,
-				targetHandle: connection.target.handleId,
+				targetHandle: connection.target.handle,
 				data: connection.data,
 			} as GrafcetEdgeType;
 		});

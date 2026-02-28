@@ -37,12 +37,12 @@ export default class ConnectionsCommandsFactory {
 					{
 						id: edge.source,
 						type: sourceNode.type,
-						handleId: edge.sourceHandle || "",
+						handle: edge.sourceHandle || "",
 					},
 					{
 						id: edge.target,
 						type: targetNode.type,
-						handleId: edge.targetHandle || "",
+						handle: edge.targetHandle || "",
 					},
 					edge.data!,
 				);
@@ -141,8 +141,8 @@ export default class ConnectionsCommandsFactory {
 					id: c.id,
 					sourceNode: sourceNode,
 					targetNode: targetNode,
-					sourceHandle: c.source.handleId || null,
-					targetHandle: c.target.handleId || null,
+					sourceHandle: c.source.handle || null,
+					targetHandle: c.target.handle || null,
 					connectionMode: ConnectionMode.Strict,
 				});
 				const newPoints = [...(c.data?.points || [])];

@@ -29,12 +29,12 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 		{
 			type: sourceNode.type as ElementType,
 			id: sourceNode.id,
-			handleId: connection.sourceHandle || "",
+			handle: connection.sourceHandle || "",
 		},
 		{
 			type: targetNode.type as ElementType,
 			id: targetNode.id,
-			handleId: connection.targetHandle || "",
+			handle: connection.targetHandle || "",
 		},
 		(connection as GrafcetEdgeType).data || {
 			points: getConnectionLinePoints(

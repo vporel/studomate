@@ -3,6 +3,7 @@ import ConnectionsValidator from "@/schemas/grafcet/validators/connections.valid
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
@@ -30,6 +31,7 @@ export function GrafcetFlowContent() {
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
+	const projectMode = useProjectStore((state) => state.mode);
 
 	return (
 		<Box
@@ -70,6 +72,9 @@ export function GrafcetFlowContent() {
 					nodes={nodes}
 					edges={edges}
 					onInit={(instance) => viewManager.setReactFlowInstance(instance as any)}
+					nodesDraggable={projectMode === ProjectMode.DESIGN}
+					nodesConnectable={projectMode === ProjectMode.DESIGN}
+					elementsSelectable={projectMode === ProjectMode.DESIGN}
 					onNodesChange={(changes) => workflowManager.handleNodesChange(changes)}
 					onConnect={(connection) => workflowManager.handleNewConnection(connection)}
 					onEdgesChange={(changes) => workflowManager.handleEdgesChange(changes)}
@@ -89,8 +94,8 @@ export function GrafcetFlowContent() {
 							{
 								sourceId: connection.source,
 								targetId: connection.target,
-								sourceHandleId: connection.sourceHandle || "",
-								targetHandleId: connection.targetHandle || "",
+								sourceHandle: connection.sourceHandle || "",
+								targetHandle: connection.targetHandle || "",
 							},
 							store!.getState().grafcet!,
 						);

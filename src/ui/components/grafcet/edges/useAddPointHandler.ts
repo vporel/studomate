@@ -1,6 +1,8 @@
 "use client";
 
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import React, { useCallback, useEffect, useState } from "react";
+import { useProjectStore } from "../../projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 
 export function getPointsForAdding(points: [number, number][]): [number, number][] {
@@ -20,9 +22,11 @@ export default function useAddPointHandler(
 } {
 	const [pointsForAdding, setPointsForAdding] = useState<[number, number][]>(getPointsForAdding(points));
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
+	const projectMode = useProjectStore((state) => state.mode);
 
 	const addPoint = useCallback(
 		(index: number) => {
+			if (projectMode !== ProjectMode.DESIGN) return;
 			workflowManager.updateEdgeData(edgeId, (prevData) => {
 				const newPoints = [...(prevData?.points || [])];
 				newPoints.splice(index + 1, 0, pointsForAdding[index]);
@@ -31,7 +35,7 @@ export default function useAddPointHandler(
 				};
 			});
 		},
-		[workflowManager, edgeId, pointsForAdding],
+		[workflowManager, edgeId, pointsForAdding, projectMode],
 	);
 
 	//Create the points for adding

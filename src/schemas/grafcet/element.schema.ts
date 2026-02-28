@@ -11,7 +11,16 @@ export const GRAFCET_JUNCTION_OR_START_TYPE = "junction-or-start";
 export const GRAFCET_JUNCTION_OR_END_TYPE = "junction-or-end";
 export const GRAFCET_COMMENT_TYPE = "comment";
 
-//Export a constant of list of all the element types. This is used to avoid typos and have a single source of truth for the element types.
+export const JUNCTION_TYPES = [
+	GRAFCET_JUNCTION_AND_START_TYPE,
+	GRAFCET_JUNCTION_AND_END_TYPE,
+	GRAFCET_JUNCTION_OR_START_TYPE,
+	GRAFCET_JUNCTION_OR_END_TYPE,
+] as const;
+
+export type JunctionType = (typeof JUNCTION_TYPES)[number];
+
+//A list of all the element types. This is used to avoid typos and have a single source of truth for the element types.
 export const GRAFCET_ELEMENT_TYPES = [
 	GRAFCET_STEP_TYPE,
 	GRAFCET_TRANSITION_TYPE,
@@ -31,8 +40,8 @@ export const GRAFCET_ELEMENT_LABELS: Record<ElementType, string> = {
 	step: "Étape",
 	transition: "Transition",
 	action: "Action",
-	"step-referral-source": "Source de référencement d'étape",
-	"step-referral-target": "Cible de référencement d'étape",
+	"step-referral-source": "Tenant",
+	"step-referral-target": "Aboutissant",
 	"junction-and-start": "Divergence en ET",
 	"junction-and-end": "Convergence en ET",
 	"junction-or-start": "Divergence en OU",

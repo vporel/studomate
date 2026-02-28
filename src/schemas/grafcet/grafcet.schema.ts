@@ -1,6 +1,6 @@
 ﻿import Action from "./action.schema";
 import Comment from "./comment.schema";
-import Connection from "./connection.schema";
+import Connection, { HandleType } from "./connection.schema";
 import Element, { ElementType } from "./element.schema";
 import JunctionAndEnd from "./junction-and-end.schema";
 import JunctionAndStart from "./junction-and-start.schema";
@@ -80,12 +80,16 @@ export default class Grafcet {
 		return this.connections.filter((c) => c.source.id === elementId || c.target.id === elementId);
 	}
 
-	getConnectionsByElementIdAndHandleId(elementId: string, handleId: string): Connection[] {
+	getConnectionsByElementIdAndHandle(elementId: string, handle: string): Connection[] {
 		return this.connections.filter(
 			(c) =>
-				(c.source.id === elementId && c.source.handleId === handleId) ||
-				(c.target.id === elementId && c.target.handleId === handleId),
+				(c.source.id === elementId && c.source.handle === handle) ||
+				(c.target.id === elementId && c.target.handle === handle),
 		);
+	}
+
+	getConnectionsByElementIdAndHandleType(elementId: string, handleType: HandleType): Connection[] {
+		return this.connections.filter((c) => c[handleType].id === elementId);
 	}
 
 	/**
@@ -131,9 +135,9 @@ export default class Grafcet {
 		return group.find((e) => e.id === id);
 	}
 
-	getElementById(id: string): Element<any> | undefined {
+	getElementById<T extends Element<any>>(id: string): T | undefined {
 		const allElements = this.getAllElements();
-		return allElements.find((e) => e.id === id);
+		return allElements.find((e) => e.id === id) as T | undefined;
 	}
 
 	addElements(elements: { type: ElementType; id: string; data: any; position: XYPosition }[]): void {

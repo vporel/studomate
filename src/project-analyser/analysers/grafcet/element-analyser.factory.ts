@@ -2,6 +2,10 @@
 import ActionAnalyser from "./action.analyser";
 import DefaultElementAnalyser from "./default-element.analyser";
 import ElementAnalyser from "./element.analyser";
+import JunctionAndEndAnalyser from "./junction-and-end.analyser";
+import JunctionAndStartAnalyser from "./junction-and-start.analyser";
+import JunctionOrEndAnalyser from "./junction-or-end.analyser";
+import JunctionOrStartAnalyser from "./junction-or-start.analyser";
 import StepReferralSourceAnalyser from "./step-referral-source.analyser";
 import StepReferralTargetAnalyser from "./step-referral-target.analyser";
 import StepAnalyser from "./step.analyser";
@@ -11,10 +15,10 @@ export default class ElementAnalyserFactory {
 	private static ANALYSERS: Record<ElementType, ElementAnalyser<any>> = {
 		action: new ActionAnalyser(),
 		comment: new DefaultElementAnalyser("comment"),
-		"junction-and-end": new DefaultElementAnalyser("junction-and-end"),
-		"junction-and-start": new DefaultElementAnalyser("junction-and-start"),
-		"junction-or-end": new DefaultElementAnalyser("junction-or-end"),
-		"junction-or-start": new DefaultElementAnalyser("junction-or-start"),
+		"junction-and-end": new JunctionAndEndAnalyser(),
+		"junction-and-start": new JunctionAndStartAnalyser(),
+		"junction-or-end": new JunctionOrEndAnalyser(),
+		"junction-or-start": new JunctionOrStartAnalyser(),
 		step: new StepAnalyser(),
 		"step-referral-source": new StepReferralSourceAnalyser(),
 		"step-referral-target": new StepReferralTargetAnalyser(),

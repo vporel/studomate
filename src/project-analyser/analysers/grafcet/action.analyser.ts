@@ -1,8 +1,13 @@
 import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
-import Variable from "@/schemas/variable/variable.schema";
+import VariablesMapper from "@/bridge/variables.mapper";
+import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/compiler/environment/environment";
 import { Language } from "@/simulator/compiler/lexer/language.enum";
 import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
+import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
+import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
 import Action, { ActionType } from "../../../schemas/grafcet/action.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "../../project.analyser.issue";
@@ -13,9 +18,17 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 	 * Rules that apply to the action's own data, independently of the grafcet.
 	 */
 	analyseIsolated(action: Action): ProjectAnalyserIssue[] {
-		if (action.data.type === ActionType.TEXT) return [];
-		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
+		if (action.data.type === ActionType.TEXT) {
+			return [
+				new ProjectAnalyserIssue(
+					"warning",
+					source,
+					"Cette action est de type TEXTE, elle n'aura aucun effet à l'exécution. Si vous voulez exécuter une expression, changez son type.",
+				),
+			];
+		}
+		const issues: ProjectAnalyserIssue[] = [];
 
 		// Expression must not be empty for non-TEXT actions
 		if (!action.data.expression || action.data.expression.trim() === "") {
@@ -23,11 +36,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		} else {
 			try {
 				const lexer = new Lexer(Language.FR);
-				const lines = action.data.expression
-					.split("\n")
-					.map((line) => line.trim())
-					.filter((line) => line.length > 0);
-				lines.forEach((line) => {
+				action.getExpressionLines().forEach((line) => {
 					const parser = new Parser(lexer.tokenize(line));
 					const node = parser.parse();
 					if (action.data.type === ActionType.BOOLEAN_VARIABLE && node.type !== "IDENTIFIER") {
@@ -38,6 +47,29 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 								`Une action booléenne doit être une simple référence à une variable.`,
 							),
 						);
+					}
+					if (action.data.type === ActionType.NUMERIC_VARIABLE) {
+						if (node.type !== "ASSIGN_STATEMENT") {
+							issues.push(
+								new ProjectAnalyserIssue(
+									"error",
+									source,
+									`Une action sur variable numérique doit être une affectation (ex: Var := X + Y).`,
+								),
+							);
+						}
+					}
+
+					if (action.data.type === ActionType.STRING_VARIABLE) {
+						if (node.type !== "ASSIGN_STATEMENT") {
+							issues.push(
+								new ProjectAnalyserIssue(
+									"error",
+									source,
+									`Une action sur variable chaîne doit être une affectation (ex: Var := "Texte").`,
+								),
+							);
+						}
 					}
 				});
 			} catch (e) {
@@ -74,22 +106,61 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
 
-		const parentSteps = grafcet.connections.filter(
-			(c) => c.target.id === action.id && c.source.type === "step",
-		);
+		const step = ActionHelper.getStep(action.id, grafcet);
 
-		if (parentSteps.length === 0) {
+		if (!step) {
 			issues.push(
 				new ProjectAnalyserIssue("error", source, "L'action n'est connectée à aucune étape."),
 			);
-		} else if (parentSteps.length > 1) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					source,
-					`L'action est connectée à ${parentSteps.length} étapes. Une action ne peut être reliée qu'à une seule étape.`,
-				),
-			);
+		}
+
+		if (action.data.expression && action.data.expression.trim() !== "") {
+			try {
+				const lexer = new Lexer(Language.FR);
+				action.getExpressionLines().forEach((line) => {
+					const parser = new Parser(lexer.tokenize(line));
+					const node = parser.parse();
+					const env = new Environment(variables.map(VariablesMapper.schemaToEnv));
+					const semanticAnalyser = new SemanticAnalyserVisitor(env);
+					semanticAnalyser.visit(node);
+					const typeAnalyser = new TypeAnalyserVisitor(env);
+					if (node.type === "ASSIGN_STATEMENT") {
+						const assignedVariableType = typeAnalyser.visit(node.left);
+						if (
+							action.data.type === ActionType.NUMERIC_VARIABLE &&
+							assignedVariableType !== "number"
+						) {
+							issues.push(
+								new ProjectAnalyserIssue(
+									"error",
+									source,
+									`L'action est de type numérique mais la variable affectée est d'un type incompatible ${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]}`,
+								),
+							);
+						}
+						if (
+							action.data.type === ActionType.STRING_VARIABLE &&
+							assignedVariableType !== "string"
+						) {
+							issues.push(
+								new ProjectAnalyserIssue(
+									"error",
+									source,
+									`L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible ${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]}`,
+								),
+							);
+						}
+					}
+				});
+			} catch (e) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						source,
+						SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+					),
+				);
+			}
 		}
 
 		return issues;

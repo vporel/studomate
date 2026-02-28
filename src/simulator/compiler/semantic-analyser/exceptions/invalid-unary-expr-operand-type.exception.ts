@@ -1,22 +1,22 @@
-import { PossibleNodeResultType } from "../../ast/nodes/ast-node";
+import { ExpectedNodeResultType } from "../../ast/nodes/ast-node";
 import { UnaryExpressionNode } from "../../ast/nodes/expressions";
 import SemanticException from "./semantic.exception";
 
 export default class InvalidUnaryExprOperandTypeException extends SemanticException {
 	private readonly operator: string;
-	private readonly expectedType: PossibleNodeResultType;
-	private readonly actualType: PossibleNodeResultType;
+	private readonly expectedType: ExpectedNodeResultType;
+	private readonly actualType: ExpectedNodeResultType;
 
 	constructor(
 		operator: string,
-		expectedType: PossibleNodeResultType,
-		actualType: PossibleNodeResultType,
+		expectedType: ExpectedNodeResultType,
+		actualType: ExpectedNodeResultType,
 		originNode: UnaryExpressionNode,
 	) {
 		super(
 			`Invalid operand type for operator '${operator}' : expected ${expectedType}, got ${actualType}`,
 			originNode,
-			[originNode.expr]
+			[originNode.expr],
 		);
 		this.operator = operator;
 		this.expectedType = expectedType;
@@ -27,11 +27,11 @@ export default class InvalidUnaryExprOperandTypeException extends SemanticExcept
 		return this.operator;
 	}
 
-	getExpectedType(): PossibleNodeResultType {
+	getExpectedType(): ExpectedNodeResultType {
 		return this.expectedType;
 	}
 
-	getActualType(): PossibleNodeResultType {
+	getActualType(): ExpectedNodeResultType {
 		return this.actualType;
 	}
 }

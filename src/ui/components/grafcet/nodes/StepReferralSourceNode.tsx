@@ -1,11 +1,15 @@
 "use client";
 import { range } from "@/lib/array";
-import { StepReferralSourceData } from "@/schemas/grafcet/step-referral-source.schema";
+import {
+	STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
+	StepReferralSourceData,
+} from "@/schemas/grafcet/step-referral-source.schema";
 import StepReferral from "@/schemas/grafcet/step-referral.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
+
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -32,7 +36,7 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 		<>
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="from-step"
+				id={STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Top}
 				style={{

@@ -13,10 +13,10 @@
 .react-flow__node .react-flow__handle::before {
 	content: "";
 	position: absolute;
-	top: -3px;
-	left: -2.5px;
-	width: 6px;
-	height: 6px;
+	top: -4px;
+	left: -3px;
+	width: 8px;
+	height: 8px;
 	background-color: black;
 	border-radius: 50%;
 	opacity: 0;

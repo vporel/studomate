@@ -26,8 +26,9 @@ const RedoTool = () => {
 			}
 			onClick={() => {
 				if (activeScopeType === "grafcet") {
-					const actions = grafcetsManager.getActiveGrafcetStoreActions();
-					actions?.redoOperation();
+					const grafcetCommandsStackManager =
+						grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
+					grafcetCommandsStackManager?.redoOperation();
 				} else if (activeScopeType === "project") {
 					projectCommandsStackManager.redoOperation();
 				}

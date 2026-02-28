@@ -1,7 +1,9 @@
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
 import { useEffect, useState } from "react";
+import { useProjectStore } from "../../projects/ProjectContext";
 import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
 import useAddPointHandler from "./useAddPointHandler";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
@@ -24,11 +26,14 @@ const CustomEdge = ({
 	const [points, setPoints] = useState<[number, number][]>(
 		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
 	);
-	const pathString = getStraightPathFromPoints(points);
+	const pathString = getStraightPathFromPoints(
+		points.length > 0 ? points : getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
+	);
 	const color = !selected ? "black" : th.palette.primary.main;
 	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(points, id);
 	const { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp } =
 		usePointPointerEventsHandlers(points, setPoints, setPointsForAdding, id);
+	const projectMode = useProjectStore((state) => state.mode);
 
 	//Update the points when the source position changes
 	useEffect(() => {
@@ -54,12 +59,15 @@ const CustomEdge = ({
 					visibility: "hidden",
 					opacity: 0,
 				},
-				"&:hover": {
-					".react-flow__edge-path__point": {
-						visibility: "visible",
-						opacity: 1,
-					},
-				},
+				"&:hover":
+					projectMode === ProjectMode.DESIGN
+						? {
+								".react-flow__edge-path__point": {
+									visibility: "visible",
+									opacity: 1,
+								},
+							}
+						: {},
 			}}
 		>
 			<path d={pathString} fill="none" className={`react-flow__edge-path `} />

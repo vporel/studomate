@@ -1,6 +1,6 @@
 "use client";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
+import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
@@ -78,7 +78,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 			))}
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="pivot"
+				id={JUNCTION_HANDLE_PIVOT}
 				type={orientation == "start" ? "target" : "source"}
 				position={orientation == "start" ? Position.Top : Position.Bottom}
 				style={{

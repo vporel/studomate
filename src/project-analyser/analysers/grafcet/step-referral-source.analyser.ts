@@ -1,3 +1,4 @@
+import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-source.helper";
 import StepReferralSource from "@/schemas/grafcet/step-referral-source.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
@@ -55,14 +56,36 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step-referral-source" as const, sourceId: stepReferral.id };
-		//Check that the target step number exists in the grafcet
-		const targetStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.targetStepNumber);
-		if (!targetStep) {
+		//Check that the referred step number exists in the grafcet
+		const referredStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.targetStepNumber);
+		if (!referredStep) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
 					source,
 					`Aucune étape avec le numéro ${stepReferral.data.targetStepNumber} n'existe dans le grafcet.`,
+				),
+			);
+		}
+
+		if (StepReferralSourceHelper.hasPredecessor(stepReferral.id, grafcet)) {
+			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en amount.`));
+		}
+
+		//Check that the target step is not the same as the source step (no self-referral)
+		const directUniquePredecessorStep = StepReferralSourceHelper.getDirectUniquePredecessorStep(
+			stepReferral.id,
+			grafcet,
+		);
+		if (
+			directUniquePredecessorStep &&
+			directUniquePredecessorStep.data.number === stepReferral.data.targetStepNumber
+		) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					source,
+					`Le tenant ne peut pas référer l'étape dont il dépend directement.`,
 				),
 			);
 		}

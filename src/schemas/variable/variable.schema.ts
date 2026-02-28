@@ -25,6 +25,12 @@ export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 
 type NativeType = "number" | "boolean" | "string";
 
+export const NATIVE_TYPE_LABELS: Record<NativeType, string> = {
+	number: "nombre",
+	boolean: "booléen",
+	string: "chaîne de caractères",
+};
+
 export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 	BOOL: "boolean",
 	INT: "number",

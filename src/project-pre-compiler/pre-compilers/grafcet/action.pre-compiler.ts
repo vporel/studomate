@@ -1,8 +1,6 @@
-import Action, {
-	ACTION_HANDLES,
-	ActionExecutionMode,
-	ActionType,
-} from "../../../schemas/grafcet/action.schema";
+import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
+import Action, { ActionExecutionMode, ActionType } from "../../../schemas/grafcet/action.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import VariablesMapper from "../../../simulator/bridge/variables.mapper";
 import IdentifiersBuilder from "../../../simulator/compiler/ast/builders/identifiers.builder";
@@ -15,10 +13,9 @@ import { Language } from "../../../simulator/compiler/lexer/language.enum";
 import { Lexer } from "../../../simulator/compiler/lexer/lexer";
 import Parser from "../../../simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "../../../simulator/compiler/semantic-analyser/semantic-analyser.visitor";
-import { PLCVariable } from "../../../simulator/core/plc/plc";
 
 /**
- * A compiled action, split into three execution phases.
+ * A compiled action, split into three execution phasesList: PreCompiledActionPhases[] = [];.
  * The simulator decides which phase to run based on the step's lifecycle.
  *
  * - onActivation  : executed once when the step becomes active  (RISING_EDGE, SET, RESET)
@@ -26,9 +23,9 @@ import { PLCVariable } from "../../../simulator/core/plc/plc";
  * - onDeactivation: executed once when the step becomes inactive (FALLING_EDGE, CONTINUOUS boolean cleanup)
  */
 export type PreCompiledActionPhases = {
-	onActivation: ASTNode | null;
-	continuous: ASTNode | null;
-	onDeactivation: ASTNode | null;
+	onActivation: ASTNode[];
+	continuous: ASTNode[];
+	onDeactivation: ASTNode[];
 };
 
 /**
@@ -42,8 +39,8 @@ export type PreCompiledAction = {
 
 export default class ActionPreCompiler {
 	/**
-	 * Compiles an Action into its execution phases.
-	 * Returns `null` for TEXT actions (purely descriptive, no runtime effect).
+	 * Compiles an Action into its execution phasesList: PreCompiledActionPhases[] = [];.
+	 * Returns `null` for TEXT actions (purely descriptive, no runtime effect) or action without expression.
 	 *
 	 * @throws ProjectPreCompilerError if the expression is invalid.
 	 */
@@ -53,8 +50,13 @@ export default class ActionPreCompiler {
 		plcVariables: PLCVariable[],
 		language: Language,
 	): PreCompiledAction | null {
-		if (action.data.type === ActionType.TEXT) return null;
-		let phases: PreCompiledActionPhases;
+		if (
+			action.data.type === ActionType.TEXT ||
+			action.data.expression === undefined ||
+			action.data.expression.trim() === ""
+		)
+			return null;
+		let phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
 		if (action.data.type === ActionType.BOOLEAN_VARIABLE) {
 			phases = this.compileBooleanAction(action, plcVariables);
 		} else {
@@ -62,9 +64,7 @@ export default class ActionPreCompiler {
 		}
 		return {
 			phases,
-			stepId: grafcet
-				.getConnectionsByElementIdAndHandleId(action.id, ACTION_HANDLES.fromStep)
-				.map((c) => c.source.id)[0], //An action can only have one step as source, so we take the first id
+			stepId: ActionHelper.getStep(action.id, grafcet)!.id, //The analyser should have already verified that the action is connected to exactly one step
 		};
 	}
 
@@ -86,43 +86,43 @@ export default class ActionPreCompiler {
 		action: Action,
 		plcVariables: PLCVariable[],
 	): PreCompiledActionPhases {
-		const mnemonic = action.data.expression.trim();
 		const env = new Environment(plcVariables.map(VariablesMapper.plcToEnv));
-		const simplifier = new SimplifierVisitor();
+		const phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
+		action.getExpressionLines().forEach((mnemonic) => {
+			const simplifier = new SimplifierVisitor();
 
-		const buildValidated = (value: boolean): ASTNode => {
-			const node = StatementsBuilder.buildAssignStatementNode(
-				IdentifiersBuilder.buildIdentifierNode(mnemonic, 0),
-				LiteralsBuilder.buildBooleanNode(value, 0),
-				0,
-			);
-			new SemanticAnalyserVisitor(env).visit(node);
-			return simplifier.visit(node);
-		};
+			const buildValidated = (value: boolean): ASTNode => {
+				const node = StatementsBuilder.buildAssignStatementNode(
+					IdentifiersBuilder.buildIdentifierNode(mnemonic, 0),
+					LiteralsBuilder.buildBooleanNode(value, 0),
+					0,
+				);
+				new SemanticAnalyserVisitor(env).visit(node);
+				return simplifier.visit(node);
+			};
 
-		switch (action.data.executionMode) {
-			case ActionExecutionMode.SET:
-				return { onActivation: buildValidated(true), continuous: null, onDeactivation: null };
-
-			case ActionExecutionMode.RESET:
-				return { onActivation: buildValidated(false), continuous: null, onDeactivation: null };
-
-			case ActionExecutionMode.CONTINUOUS:
-				return {
-					onActivation: buildValidated(true),
-					continuous: null,
-					onDeactivation: buildValidated(false),
-				};
-
-			case ActionExecutionMode.RISING_EDGE:
-				return { onActivation: buildValidated(true), continuous: null, onDeactivation: null };
-
-			case ActionExecutionMode.FALLING_EDGE:
-				return { onActivation: null, continuous: null, onDeactivation: buildValidated(true) };
-
-			default:
-				return { onActivation: null, continuous: null, onDeactivation: null };
-		}
+			switch (action.data.executionMode) {
+				case ActionExecutionMode.SET:
+					phases.onActivation.push(buildValidated(true));
+					break;
+				case ActionExecutionMode.RESET:
+					phases.onActivation.push(buildValidated(false));
+					break;
+				case ActionExecutionMode.CONTINUOUS:
+					phases.onActivation.push(buildValidated(true));
+					phases.onDeactivation.push(buildValidated(false));
+					break;
+				case ActionExecutionMode.RISING_EDGE:
+					phases.onActivation.push(buildValidated(true));
+					break;
+				case ActionExecutionMode.FALLING_EDGE:
+					phases.onDeactivation.push(buildValidated(true));
+					break;
+				default:
+					break;
+			}
+		});
+		return phases;
 	}
 
 	// ─── Numeric / String variable actions ───────────────────────────────────
@@ -133,32 +133,38 @@ export default class ActionPreCompiler {
 	 *
 	 * | Mode         | onActivation | continuous | onDeactivation |
 	 * |--------------|--------------|------------|----------------|
-	 * | CONTINUOUS   | —            | routine    | —              |
-	 * | RISING_EDGE  | routine      | —          | —              |
-	 * | FALLING_EDGE | —            | —          | routine        |
+	 * | CONTINUOUS   | —            | node       | —              |
+	 * | RISING_EDGE  | node         | —          | —              |
+	 * | FALLING_EDGE | —            | —          | node           |
 	 */
 	private static compileExpressionAction(
 		action: Action,
 		plcVariables: PLCVariable[],
 		language: Language,
 	): PreCompiledActionPhases {
-		const expression = action.data.expression.trim();
 		const env = new Environment(plcVariables.map(VariablesMapper.plcToEnv));
-		const tokens = new Lexer(language).tokenize(expression);
-		const parsed = new Parser(tokens).parse();
-		new SemanticAnalyserVisitor(env).visit(parsed);
-		const simplified = new SimplifierVisitor().visit(parsed);
+		const phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
+		action.getExpressionLines().forEach((line) => {
+			const tokens = new Lexer(language).tokenize(line);
+			const parsed = new Parser(tokens).parse();
+			new SemanticAnalyserVisitor(env).visit(parsed);
+			const simplified = new SimplifierVisitor().visit(parsed);
 
-		switch (action.data.executionMode) {
-			case ActionExecutionMode.CONTINUOUS:
-				return { onActivation: null, continuous: simplified, onDeactivation: null };
-			case ActionExecutionMode.RISING_EDGE:
-				return { onActivation: simplified, continuous: null, onDeactivation: null };
-			case ActionExecutionMode.FALLING_EDGE:
-				return { onActivation: null, continuous: null, onDeactivation: simplified };
-			default:
-				//Should never happen due to frontend and calling method validation, but we put a default case to satisfy the return type
-				return { onActivation: null, continuous: null, onDeactivation: null };
-		}
+			switch (action.data.executionMode) {
+				case ActionExecutionMode.CONTINUOUS:
+					phases.continuous.push(simplified);
+					break;
+				case ActionExecutionMode.RISING_EDGE:
+					phases.onActivation.push(simplified);
+					break;
+				case ActionExecutionMode.FALLING_EDGE:
+					phases.onDeactivation.push(simplified);
+					break;
+				default:
+					//Should never happen due to frontend and calling method validation, but we put a default case to satisfy the return type
+					break;
+			}
+		});
+		return phases;
 	}
 }

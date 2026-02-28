@@ -1,15 +1,14 @@
-﻿import Project from "../schemas/project/project.schema";
-import { Language } from "../simulator/compiler/lexer/language.enum";
-import { ProjectAnalysisResult } from "../project-analyser/project.analyser";
-import ProjectPreCompilerError from "./project.pre-compiler.error";
-import VariableCompiler from "./pre-compilers/variable.pre-compiler";
-import GrafcetPreCompiler, { PreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
-import { PLCVariable } from "../simulator/core/plc/plc";
+﻿import PLCVariable from "@/simulator/core/plc/plc-variable";
+import Project from "../schemas/project/project.schema";
 import Variable from "../schemas/variable/variable.schema";
+import { Language } from "../simulator/compiler/lexer/language.enum";
+import GrafcetPreCompiler, { PreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
+import VariableCompiler from "./pre-compilers/variable.pre-compiler";
+import ProjectPreCompilerError from "./project.pre-compiler.error";
 
 export type PreCompiledProject = {
 	variables: PLCVariable[];
-	grafcets: Record<string, PreCompiledGrafcet>
+	grafcets: Record<string, PreCompiledGrafcet>;
 };
 
 export type ProjectPreCompilationResult = {
@@ -17,7 +16,7 @@ export type ProjectPreCompilationResult = {
 	result?: PreCompiledProject;
 };
 
-export default class ProjectCompiler {
+export default class ProjectPreCompiler {
 	/**
 	 * Compiles an entire project into a PreparedSimulation.
 	 *
@@ -28,7 +27,11 @@ export default class ProjectCompiler {
 	 * If any expression fails to compile, the result carries all collected
 	 * errors (compilation does not stop on first error).
 	 */
-	static preCompile(project: Project, stepsVariables: Variable[], language: Language = Language.FR): ProjectPreCompilationResult {
+	static preCompile(
+		project: Project,
+		stepsVariables: Variable[],
+		language: Language = Language.FR,
+	): ProjectPreCompilationResult {
 		const variables = VariableCompiler.compile([...project.variables, ...stepsVariables]);
 		const errors: ProjectPreCompilerError[] = [];
 		const grafcets: Record<string, PreCompiledGrafcet> = {};

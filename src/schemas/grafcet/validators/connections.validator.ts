@@ -1,41 +1,77 @@
-﻿import { ElementType } from "@/schemas/grafcet/element.schema";
+﻿import { ElementType, JUNCTION_TYPES, JunctionType } from "@/schemas/grafcet/element.schema";
+import { HANDLES_TO_TYPES_MAP } from "../builders/connection.builder";
 import Grafcet from "../grafcet.schema";
+import { JUNCTION_AND_END_HANDLE_BRANCH_TYPES } from "../junction-and-end.schema";
+import { JUNCTION_AND_START_HANDLE_BRANCH_TYPES } from "../junction-and-start.schema";
+import { JUNCTION_OR_END_HANDLE_BRANCH_TYPES } from "../junction-or-end.schema";
+import { JUNCTION_OR_START_HANDLE_BRANCH_TYPES } from "../junction-or-start.schema";
+import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
+
+const JUNCTIONS_BRANCHES_ALLOWED_TYPES: Record<JunctionType, readonly ElementType[]> = {
+	"junction-and-start": JUNCTION_AND_START_HANDLE_BRANCH_TYPES,
+	"junction-and-end": JUNCTION_AND_END_HANDLE_BRANCH_TYPES,
+	"junction-or-start": JUNCTION_OR_START_HANDLE_BRANCH_TYPES,
+	"junction-or-end": JUNCTION_OR_END_HANDLE_BRANCH_TYPES,
+};
 
 export default class ConnectionsValidator {
 	static validateNewConnection(
 		connection: {
 			sourceId: string;
 			targetId: string;
-			sourceHandleId: string;
-			targetHandleId: string;
+			sourceHandle: string;
+			targetHandle: string;
 		},
 		grafcet: Grafcet,
 	): boolean {
 		const sourceType = grafcet.getElementById(connection.sourceId)!.type as ElementType;
 		const targetType = grafcet.getElementById(connection.targetId)!.type as ElementType;
-		const targetElementConnections = grafcet.getConnectionsByElementIdAndHandleId(
-			connection.targetId,
-			connection.targetHandleId,
-		);
-
+		//Junctions branches case
 		if (
-			sourceType == "step" &&
-			!["transition", "action", "junction-or-start", "junction-and-end"].includes(targetType)
-		)
-			return false;
-		if (sourceType == "transition") {
-			if (targetType == "step") {
-				return targetElementConnections.length == 0; //A step can only have one incoming transition other possibilities are from junctions
-			} else if (
-				!["junction-and-start", "junction-or-end", "step-referral-source"].includes(targetType)
-			)
-				return false;
+			JUNCTION_TYPES.includes(sourceType as JunctionType) &&
+			connection.sourceHandle !== JUNCTION_HANDLE_PIVOT
+		) {
+			const allowedTypesForBranchHandle = JUNCTIONS_BRANCHES_ALLOWED_TYPES[sourceType as JunctionType];
+			if (allowedTypesForBranchHandle) {
+				return allowedTypesForBranchHandle.includes(targetType);
+			}
 		}
-		if (sourceType == "junction-or-start" && !["transition"].includes(targetType)) return false;
-		if (sourceType == "junction-or-end" && !["step"].includes(targetType)) return false;
-		if (sourceType == "junction-and-start" && !["step"].includes(targetType)) return false;
-		if (sourceType == "junction-and-end" && !["transition"].includes(targetType)) return false;
-		if (sourceType == "step-referral-target" && !["step"].includes(targetType)) return false;
-		return true;
+		if (
+			JUNCTION_TYPES.includes(targetType as JunctionType) &&
+			connection.targetHandle !== JUNCTION_HANDLE_PIVOT
+		) {
+			const allowedTypesForBranchHandle = JUNCTIONS_BRANCHES_ALLOWED_TYPES[targetType as JunctionType];
+			if (allowedTypesForBranchHandle) {
+				return allowedTypesForBranchHandle.includes(sourceType);
+			}
+		}
+
+		//Other cases
+		let handlesMapsCheck = true;
+		const sourceHandleToTypes = HANDLES_TO_TYPES_MAP[sourceType];
+		const targetHandleToTypes = HANDLES_TO_TYPES_MAP[targetType];
+		if (!sourceHandleToTypes || !targetHandleToTypes) return false; //One element type is not mapped
+		if (sourceHandleToTypes) {
+			const allowedTargetTypesForSourceHandle = sourceHandleToTypes[connection.sourceHandle];
+			if (allowedTargetTypesForSourceHandle) {
+				handlesMapsCheck = handlesMapsCheck && allowedTargetTypesForSourceHandle.includes(targetType);
+			}
+		}
+		if (targetHandleToTypes) {
+			const allowedSourceTypesForTargetHandle = targetHandleToTypes[connection.targetHandle];
+			if (allowedSourceTypesForTargetHandle) {
+				return handlesMapsCheck && allowedSourceTypesForTargetHandle.includes(sourceType);
+			}
+		}
+		//-- Complementary validation rules that are not covered by the handles to types map --
+		//Number of connections that targets a step
+		const targetElementConnections = grafcet.getConnectionsByElementIdAndHandle(
+			connection.targetId,
+			connection.targetHandle,
+		);
+		if (sourceType == "transition" && targetType == "step") {
+			return targetElementConnections.length == 0; //A step can only have one incoming transition other possibilities are from junctions
+		}
+		return false;
 	}
 }

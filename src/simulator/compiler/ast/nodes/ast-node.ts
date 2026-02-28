@@ -5,8 +5,3 @@ import { LiteralNode } from "./literals";
 import { StatementNode } from "./statements";
 
 export type ASTNode = IdentifierNode | LiteralNode | ExpressionNode | StatementNode | ControlNode;
-
-/**
- * void for control nodes
- */
-export type PossibleNodeResultType = "number" | "boolean" | "string" | "void";

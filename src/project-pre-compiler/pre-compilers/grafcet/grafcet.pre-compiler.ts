@@ -1,7 +1,7 @@
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import SimulatorExceptionsHelper from "../../../bridge/simulator-exceptions.helper";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import { Language } from "../../../simulator/compiler/lexer/language.enum";
-import { PLCVariable } from "../../../simulator/core/plc/plc";
 import ProjectPreCompilerError, {
 	ProjectPreCompilerErrorSourceBuilder,
 } from "../../project.pre-compiler.error";

@@ -11,12 +11,19 @@ import WorkflowManager from "./managers/workflow.manager";
 export interface GrafcetStoreState {
 	initialGrafcet?: Grafcet; //The initial grafcet, used as reference
 	grafcet: Grafcet;
+	//=============== VIEW ===============
 	nodes: GrafcetNodeType[];
 	edges: GrafcetEdgeType[];
-
+	/**
+	 * The ids of the currently highlighted nodes
+	 * Can be used to highlight the elements that have issues after an analysis
+	 */
+	highlightedNodesIds: string[];
+	highlightedEdgesIds: string[];
 	viewManager: ViewManager;
-	workflowManager: WorkflowManager;
 	copyCutPasteManager: CopyCutPasteManager;
+
+	workflowManager: WorkflowManager;
 
 	//=============== COMMANDS STACK ===============
 	hasCommandsToUndo: boolean;
@@ -37,12 +44,16 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 	return createStore<GrafcetStoreState>((set, get) => ({
 		initialGrafcet: grafcet?.copy(), //Should never be modified, used as reference
 		grafcet: grafcet,
+
+		//=============== VIEW ===============
 		nodes: NodesFactory.getInitialNodes(grafcet),
 		edges: EdgesFactory.getInitialEdges(grafcet),
-
+		highlightedNodesIds: [],
+		highlightedEdgesIds: [],
 		viewManager: new ViewManager(set, get),
-		workflowManager: new WorkflowManager(set, get),
 		copyCutPasteManager: new CopyCutPasteManager(set, get),
+
+		workflowManager: new WorkflowManager(set, get),
 
 		//=============== COMMANDS STACK ===============
 		hasCommandsToUndo: false,

@@ -1,15 +1,13 @@
+import VariablesMapper from "../../bridge/variables.mapper";
 import { ASTNode } from "../../compiler/ast/nodes/ast-node";
 import { Environment } from "../../compiler/environment/environment";
 import EvaluatorVisitor from "../../compiler/interpreter/evaluator/evaluator.visitor";
-import SimplifierVisitor from "../../compiler/interpreter/simplifier/simplifier.visitor";
-import SemanticAnalyserVisitor from "../../compiler/semantic-analyser/semantic-analyser.visitor";
-import VariablesMapper from "../../bridge/variables.mapper";
 import PLC from "./plc";
 
 /**
  * A ready-to-execute PLC routine.
  *
- * We assume that the routine has already been lexed, parsed semantically analysed, and simplified, 
+ * We assume that the routine has already been lexed, parsed semantically analysed, and simplified,
  * so it only contains nodes that are valid and can be directly evaluated.
  *
  * At runtime, execute() evaluates the stored nodes against the current

@@ -1,7 +1,9 @@
 "use client";
 
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
+import { useProjectStore } from "../../projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { getPointsForAdding } from "./useAddPointHandler";
 
@@ -13,10 +15,12 @@ export default function usePointPointerEventsHandlers(
 ) {
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
+	const projectMode = useProjectStore((state) => state.mode);
 
 	const handlePointPointerDown = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
 			e.stopPropagation();
+			if (projectMode !== ProjectMode.DESIGN) return;
 			(e.target as SVGCircleElement).setPointerCapture(e.pointerId);
 			if (e.buttons === 2) {
 				//Right click
@@ -33,7 +37,7 @@ export default function usePointPointerEventsHandlers(
 				});
 			}
 		},
-		[setPointsForAdding, workflowManager, edgeId],
+		[setPointsForAdding, workflowManager, edgeId, projectMode],
 	);
 
 	const handlePointPointerMove = useCallback(

@@ -1,9 +1,33 @@
-﻿import Element, { BaseData } from "./element.schema";
+﻿import Element, { BaseData, ElementType } from "./element.schema";
 import { Dimensions, XYPosition } from "./shared-types";
 
-export const GRAFCET_TRANSITION_HANDLES = {
-	fromStep: "from-step",
-	toStep: "to-step",
+export const TRANSITION_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
+export const TRANSITION_HANDLE_SOURCE_SUCCESSOR = "source:successor";
+
+export type TransitionHandle =
+	| typeof TRANSITION_HANDLE_TARGET_PREDECESSOR
+	| typeof TRANSITION_HANDLE_SOURCE_SUCCESSOR;
+
+export const TRANSITION_HANDLE_TARGET_PREDECESSOR_TYPES = [
+	"step",
+	"junction-and-end",
+	"junction-or-start",
+] as const satisfies readonly ElementType[];
+
+export type TransitionHandleTargetPredecessorType =
+	(typeof TRANSITION_HANDLE_TARGET_PREDECESSOR_TYPES)[number];
+
+export const TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES = [
+	"step",
+	"step-referral-source",
+	"junction-and-start",
+] as const satisfies readonly ElementType[];
+
+export type TransitionHandleSourceSuccessorType = (typeof TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];
+
+export const TRANSITION_HANDLES_TO_TYPES: Record<TransitionHandle, readonly ElementType[]> = {
+	[TRANSITION_HANDLE_TARGET_PREDECESSOR]: TRANSITION_HANDLE_TARGET_PREDECESSOR_TYPES,
+	[TRANSITION_HANDLE_SOURCE_SUCCESSOR]: TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES,
 };
 
 export type TransitionData = BaseData & {
@@ -26,6 +50,13 @@ export default class Transition extends Element<TransitionData> {
 
 	constructor(id: string, data: TransitionData, position: XYPosition) {
 		super(id, "transition", data, position);
+	}
+
+	/**
+	 * All the lines in the expression are joined to form one line
+	 */
+	getFullExpression(): string {
+		return this.data.expression.split("\n").join(" ");
 	}
 
 	validate(): string[] {

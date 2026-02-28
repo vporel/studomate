@@ -2,7 +2,7 @@
 
 import { useAppContext } from "@/ui/components/AppContext";
 import { useMemo } from "react";
-import { AppMenuType } from "../../app-menu-bar";
+import { AppMenuType } from "../app-menu-bar";
 
 export default function useViewMenu(): AppMenuType {
 	const { viewAppearance, setViewAppearance } = useAppContext();

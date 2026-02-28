@@ -1,17 +1,13 @@
-import { PLCVariable, PLCVariableType } from "../simulator/core/plc/plc";
+import PLCVariable, { PLCVariableType } from "../simulator/core/plc/plc-variable";
 
 const MEMO_PREFIX = "_GeneratedMemo_";
 
 /**
- * Generates synthetic BOOL memory variables for steps that need
- * edge detection (rising/falling) to execute onActivation / onDeactivation action phases.
+ * Generates synthetic memory variables
+ * Can be used for edge detection (rising/falling) to execute onActivation / onDeactivation action phases.
  *
  * Mnemonics are sequential integers starting from 0, skipping any that are already
  * taken (by user variables or previously generated variables).
- *
- * @param stepIds   IDs of the steps that need a memo variable
- * @param taken     Set of all already-used mnemonics (mutated in place to reserve new ones)
- * @returns Map from stepId → its generated PLCVariable
  */
 export default class MemoVariableGenerator {
 	static generate(type: PLCVariableType, taken: Set<string>): PLCVariable {

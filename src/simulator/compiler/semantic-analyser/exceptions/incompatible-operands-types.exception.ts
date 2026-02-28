@@ -1,17 +1,17 @@
-import { PossibleNodeResultType } from "../../ast/nodes/ast-node";
+import { ExpectedNodeResultType } from "../../ast/nodes/ast-node";
 import { ComparisonExpressionNode } from "../../ast/nodes/expressions";
 import { AssignStatementNode } from "../../ast/nodes/statements";
 import SemanticException from "./semantic.exception";
 
 export default class IncompatibleOperandsTypesException extends SemanticException {
 	private readonly operator: string;
-	private readonly leftType: PossibleNodeResultType;
-	private readonly rightType: PossibleNodeResultType;
+	private readonly leftType: ExpectedNodeResultType;
+	private readonly rightType: ExpectedNodeResultType;
 
 	constructor(
 		operator: string,
-		leftType: PossibleNodeResultType,
-		rightType: PossibleNodeResultType,
+		leftType: ExpectedNodeResultType,
+		rightType: ExpectedNodeResultType,
 		originNode: ComparisonExpressionNode | AssignStatementNode,
 	) {
 		super(
@@ -28,11 +28,11 @@ export default class IncompatibleOperandsTypesException extends SemanticExceptio
 		return this.operator;
 	}
 
-	getLeftType(): PossibleNodeResultType {
+	getLeftType(): ExpectedNodeResultType {
 		return this.leftType;
 	}
 
-	getRightType(): PossibleNodeResultType {
+	getRightType(): ExpectedNodeResultType {
 		return this.rightType;
 	}
 }

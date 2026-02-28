@@ -1,6 +1,7 @@
 "use client";
 
 import Variable, { VariableZone } from "@/schemas/variable/variable.schema";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -8,6 +9,7 @@ import EditInputCell from "./EditInputCell";
 
 export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const variablesManager = useProjectStore((state) => state.variablesManager);
+	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
 
 	return useMemo(
 		(): GridColDef[] => [
@@ -16,7 +18,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				headerName: "Mnémonique",
 				width: 250,
 				hideable: false,
-				editable: true,
+				editable: designing,
 				preProcessEditCellProps: (params) => {
 					const errors = Variable.validateMnemonic(params.props.value);
 					const existingVariableId = variablesManager.existsByMnemonic(params.props.value);
@@ -32,7 +34,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				headerName: "Type",
 				width: 100,
 				hideable: false,
-				editable: true,
+				editable: designing,
 				type: "singleSelect",
 				valueOptions: Variable.getValidTypesForZones(zones).map((type) => ({
 					value: type,
@@ -44,7 +46,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				headerName: "Adresse",
 				width: 100,
 				hideable: false,
-				editable: true,
+				editable: designing,
 				preProcessEditCellProps: (params) => {
 					const errors = Variable.validateAddress(params.props.value);
 					const existingVariableId = variablesManager.existsByAddress(params.props.value);
@@ -63,9 +65,9 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				headerName: "Commentaire",
 				flex: 1,
 				hideable: false,
-				editable: true,
+				editable: designing,
 			},
 		],
-		[variablesManager, zones],
+		[variablesManager, zones, designing],
 	);
 }

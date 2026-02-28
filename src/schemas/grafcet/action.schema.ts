@@ -1,8 +1,14 @@
-﻿import Element, { BaseData } from "./element.schema";
+﻿import Element, { BaseData, ElementType } from "./element.schema";
 import { Dimensions, XYPosition } from "./shared-types";
 
-export const ACTION_HANDLES = {
-	fromStep: "from-step",
+export const ACTION_HANDLE_TARGET_STEP = "target:step";
+
+export type ActionHandle = typeof ACTION_HANDLE_TARGET_STEP;
+
+export const ACTION_HANDLE_TARGET_STEP_TYPES = ["step"] as const satisfies readonly ElementType[];
+
+export const ACTION_HANDLES_TO_TYPES: Record<ActionHandle, readonly ElementType[]> = {
+	[ACTION_HANDLE_TARGET_STEP]: ACTION_HANDLE_TARGET_STEP_TYPES,
 };
 
 export enum ActionType {
@@ -105,6 +111,14 @@ export default class Action extends Element<ActionData> {
 			};
 		}
 		return newData;
+	}
+
+	getExpressionLines(): string[] {
+		if (!this.data.expression) return [];
+		return this.data.expression
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
 	}
 
 	copy(): Action {

@@ -11,7 +11,7 @@ const SIMULATION_MODE_BACKGROUND_COLOR = "orange";
 
 const ProjectModeSwitcher = () => {
 	const mode = useProjectStore(useShallow((state) => state.mode));
-	const modeManager = useProjectStore(useShallow((state) => state.modeManager));
+	const simulationManager = useProjectStore(useShallow((state) => state.simulationManager));
 	const [backgroundColor, setBackgroundColor] = useState(DESIGN_MODE_BACKGROUND_COLOR);
 
 	//Blink background color if in simulation mode, to make it more visible
@@ -36,9 +36,9 @@ const ProjectModeSwitcher = () => {
 			value={mode}
 			onChange={(e) => {
 				if (e.target.value === "DESIGN") {
-					modeManager.setDesignMode();
+					simulationManager.setDesignMode();
 				} else if (e.target.value === "SIMULATION") {
-					modeManager.setSimulationMode();
+					simulationManager.setSimulationMode();
 				}
 			}}
 			sx={{

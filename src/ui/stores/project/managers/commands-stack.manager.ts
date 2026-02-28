@@ -2,6 +2,7 @@ import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
+import { ProjectMode } from "../ProjectMode.enum";
 
 export default class CommandsStackManager {
 	private static COMMANDS_STACK_SIZE = 100;
@@ -18,6 +19,11 @@ export default class CommandsStackManager {
 	executeOperation(commands: AbstractProjectCommand<any>[]): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		const mode = this.getStoreState().mode;
+		if (mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot execute operation in non-design mode");
+			return;
+		}
 		if (!commands || commands.length === 0) return;
 		console.log("Executing project operation with commands: ", commands);
 		const newProject = this.commandsStack.execute(commands, project.copy());
@@ -32,6 +38,11 @@ export default class CommandsStackManager {
 	undoOperation(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		const mode = this.getStoreState().mode;
+		if (mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot undo operation in non-design mode");
+			return;
+		}
 		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
 		this.setStoreState(() => ({
@@ -46,6 +57,11 @@ export default class CommandsStackManager {
 	redoOperation(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		const mode = this.getStoreState().mode;
+		if (mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot redo operation in non-design mode");
+			return;
+		}
 		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;
 		this.setStoreState(() => ({
@@ -57,7 +73,11 @@ export default class CommandsStackManager {
 		commands?.forEach((command) => this.commandRedo(command));
 	}
 
-	private commandUndo(command: AbstractProjectCommand<any>): void {}
+	private commandUndo(command: AbstractProjectCommand<any>): void {
+		//Nothing else to do yet
+	}
 
-	private commandRedo(command: AbstractProjectCommand<any>): void {}
+	private commandRedo(command: AbstractProjectCommand<any>): void {
+		//Nothing else to do yet
+	}
 }

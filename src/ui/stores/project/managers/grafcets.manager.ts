@@ -1,12 +1,12 @@
 import { deepObjectsComparison } from "@/lib/object";
 import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import {
-	GrafcetStoreActions,
 	GrafcetStoreManagers,
 	GrafcetStoreValues,
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store";
+import { ProjectMode } from "../ProjectMode.enum";
 
 export default class GrafcetsManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -63,39 +63,15 @@ export default class GrafcetsManager {
 		return this.getStoreState().grafcetsStoresManagers[activeScope] || null;
 	}
 
-	/**
-	 * This method should be called once in the grafcet context
-	 * @param grafcetId
-	 * @param actions
-	 */
-	registerGrafcetStoreActions(grafcetId: string, actions: GrafcetStoreActions): void {
-		this.setStoreState((state) => {
-			const newGrafcetsStoresActions = { ...state.grafcetsStoresActions };
-			newGrafcetsStoresActions[grafcetId] = actions;
-			return { grafcetsStoresActions: newGrafcetsStoresActions };
-		});
-	}
-
-	getActiveGrafcetStoreActions(): GrafcetStoreActions | null {
-		const activeScope = this.getStoreState().activeScope;
-		const activeScopeType = this.getStoreState().activeScopeType;
-		if (activeScopeType !== "grafcet" || !activeScope) return null;
-		return this.getStoreState().grafcetsStoresActions[activeScope] || null;
-	}
-
-	deleteGrafcetStoreActions(grafcetId: string): void {
-		this.setStoreState((state) => {
-			const newGrafcetsStoresActions = { ...state.grafcetsStoresActions };
-			delete newGrafcetsStoresActions[grafcetId];
-			return { grafcetsStoresActions: newGrafcetsStoresActions };
-		});
-	}
-
 	newGrafcet(name: string, format: GrafcetFormat): Grafcet | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot create grafcet in non-design mode");
+			return null;
+		}
 		const newProject = project.copy();
-		const grafcet = newProject.addGrafcet(name, format);
+		const grafcet = newProject.createGrafcet(name, format);
 		this.getStoreState().pagesManager.openPage({
 			id: grafcet.id,
 			type: "grafcet",
@@ -108,6 +84,10 @@ export default class GrafcetsManager {
 	updateGrafcetData(grafcet: Grafcet): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot update grafcet in non-design mode");
+			return;
+		}
 		if (!project.grafcets[grafcet.id]) throw new Error("Grafcet not found in project");
 		if (!deepObjectsComparison(project.grafcets[grafcet.id], grafcet)) {
 			this.setStoreState(() => {
@@ -121,6 +101,10 @@ export default class GrafcetsManager {
 	deleteGrafcet(grafcetId: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot delete grafcet in non-design mode");
+			return;
+		}
 		if (!project.grafcets[grafcetId]) throw new Error("Grafcet not found in project");
 		const newProject = project.copy();
 		newProject.deleteGrafcet(grafcetId);
@@ -131,6 +115,10 @@ export default class GrafcetsManager {
 	renameGrafcet(grafcetId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot rename grafcet in non-design mode");
+			return;
+		}
 		if (!project.grafcets[grafcetId]) throw new Error("Grafcet not found in project");
 		const newProject = project.copy();
 		newProject.grafcets[grafcetId].name = newName;

@@ -5,6 +5,8 @@ import UnknownIdentifierException from "../simulator/compiler/semantic-analyser/
 
 import { DivisionByZeroException } from "../simulator/compiler/interpreter/evaluator/exceptions/division-by-zero.exception";
 
+import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
+import UnknownVariableNameException from "@/simulator/compiler/environment/exceptions/unknown-variable-name.exception";
 import InvalidCharacterException from "../simulator/compiler/lexer/exceptions/invalid-character.exception";
 import InvalidStringEndQuoteException from "../simulator/compiler/lexer/exceptions/invalid-string-end-quote.exception";
 import UnterminatedStringException from "../simulator/compiler/lexer/exceptions/unterminated-string.exception";
@@ -23,6 +25,7 @@ export default class SimulatorExceptionsHelper {
 	 */
 	static getUserFriendlyMessage(exception: unknown, lang: Lang = "FR"): string {
 		const handlers = [
+			this.getForEnvironmentException,
 			this.getForSemanticException,
 			this.getForInterpreterException,
 			this.getForParserException,
@@ -47,16 +50,7 @@ export default class SimulatorExceptionsHelper {
 
 	private static transformVariableType(type: string, lang: Lang): string {
 		if (lang === "EN") return type;
-		switch (type) {
-			case "number":
-				return "nombre";
-			case "string":
-				return "chaîne de caractères";
-			case "boolean":
-				return "booléen";
-			default:
-				return type;
-		}
+		return NATIVE_TYPE_LABELS[type as keyof typeof NATIVE_TYPE_LABELS] ?? type;
 	}
 
 	private static transformOperator(op: string, lang: Lang): string {
@@ -71,6 +65,15 @@ export default class SimulatorExceptionsHelper {
 			default:
 				return op;
 		}
+	}
+
+	private static getForEnvironmentException(exception: unknown, lang: Lang): string | null {
+		if (exception instanceof UnknownVariableNameException) {
+			return lang === "EN"
+				? `Unknown variable name: ${exception.getVariableName()}`
+				: `Variable inconnue : ${exception.getVariableName()}`;
+		}
+		return null;
 	}
 
 	private static getForSemanticException(exception: unknown, lang: Lang): string | null {

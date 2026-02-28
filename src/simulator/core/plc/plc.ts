@@ -1,183 +1,146 @@
 import PLCRoutine from "./plc-routine";
+import PLCVariable, { PLCVariableValue } from "./plc-variable";
 
-export type PLCVariableScope = "input"|"output"|"memory"
-export type PLCVariableType = "boolean" | "number" | "string";
-export type PLCVariableValue = boolean | number | string;
-
-export class PLCVariable {
-  private id: string;
-  private name: string;
-  private scope: PLCVariableScope;
-  private type: PLCVariableType;
-  private value: PLCVariableValue;
-
-  constructor(id: string, name: string, scope: PLCVariableScope, type: PLCVariableType){
-    this.id = id;
-    this.name = name;
-    this.scope = scope;
-    this.type = type;
-    if(scope !== "memory" && type === "string") throw new Error("A string variable is only allowed for the memory scope")
-    this.value = type === "boolean" ? false : (type === "number" ? 0 : "");
-  }
-
-  public getId(): string {
-    return this.id
-  }
-
-  public getName(): string {
-    return this.name
-  }
-
-  public getScope(): PLCVariableScope {
-    return this.scope
-  }
-
-  public getType(): PLCVariableType {
-    return this.type
-  }
-
-  public getValue(): PLCVariableValue {
-    return this.value
-  }
-
-  public setValue(value: PLCVariableValue): void {
-    if(typeof value !== this.type) throw new Error("The type of the value does not match the variable type")
-    this.value = value
-  }
-
-  public copy(): PLCVariable{
-    return Object.assign(new PLCVariable("", "", "input", "boolean"), this)
-  }
-}
+type PLCCallback = (plc: PLC) => void | undefined;
 
 export default class PLC {
-  private inputImage: Record<string, PLCVariable> = {};
-  private outputImage: Record<string, PLCVariable> = {};
-  private physicalInputs: Record<string, PLCVariable> = {};
-  private physicalOutputs: Record<string, PLCVariable> = {};
-  private memory: Record<string, PLCVariable> = {};
-  private scanTimeMs: number;
-  private cycleTimer: NodeJS.Timeout | null = null;
-  private program: PLCRoutine[];
+	private inputImage: Record<string, PLCVariable> = {};
+	private outputImage: Record<string, PLCVariable> = {};
+	private physicalInputs: Record<string, PLCVariable> = {};
+	private physicalOutputs: Record<string, PLCVariable> = {};
+	private memory: Record<string, PLCVariable> = {};
+	private scanTimeMs: number;
+	private cycleTimer: NodeJS.Timeout | null = null;
+	private program: PLCRoutine[];
+	private onPLCStart: PLCCallback = () => {};
+	private onPLCStop: PLCCallback = () => {};
+	private onCycleStart: PLCCallback = () => {};
+	private onCycleEnd: PLCCallback = () => {};
 
-  constructor(config: {
-    scanTimeMs: number, 
-    program: PLCRoutine[],
-    inputVariables: {id: string, name: string, type: PLCVariableType}[],
-    outputVariables: {id: string, name: string, type: PLCVariableType}[],
-    memoryVariable: {id: string, name: string, type: PLCVariableType}[]
-  }){
-    this.scanTimeMs = config.scanTimeMs;
-    this.program = config.program;
-    config.inputVariables.forEach(inputVar => {
-      this.physicalInputs[inputVar.id] = new PLCVariable(inputVar.id, inputVar.name, "input", inputVar.type)
-    })
-    config.outputVariables.forEach(outputVar => {
-      this.physicalInputs[outputVar.id] = new PLCVariable(outputVar.id, outputVar.name, "input", outputVar.type)
-    })
-    config.memoryVariable.forEach(memoryVar => {
-      this.physicalInputs[memoryVar.id] = new PLCVariable(memoryVar.id, memoryVar.name, "input", memoryVar.type)
-    })
-  }
+	constructor(config: {
+		scanTimeMs: number;
+		program: PLCRoutine[];
+		variables: PLCVariable[];
+		onPLCStart?: PLCCallback;
+		onPLCStop?: PLCCallback;
+		onCycleStart?: PLCCallback;
+		onCycleEnd?: PLCCallback;
+	}) {
+		this.scanTimeMs = config.scanTimeMs;
+		this.program = config.program;
+		if (config.onPLCStart) this.onPLCStart = config.onPLCStart;
+		if (config.onPLCStop) this.onPLCStop = config.onPLCStop;
+		if (config.onCycleStart) this.onCycleStart = config.onCycleStart;
+		if (config.onCycleEnd) this.onCycleEnd = config.onCycleEnd;
+		config.variables.forEach((variable) => {
+			const variableCopy = variable.copy();
+			if (variable.getScope() === "input") {
+				this.physicalInputs[variableCopy.getId()] = variableCopy;
+			} else if (variable.getScope() === "output") {
+				this.physicalOutputs[variableCopy.getId()] = variableCopy.copy();
+				//Initialize output image with initial variable values
+				this.outputImage[variableCopy.getId()] = variableCopy;
+			} else if (variable.getScope() === "memory") {
+				this.memory[variableCopy.getId()] = variableCopy;
+			}
+		});
+	}
 
-  /**
-   * Returns read-only copies of all variables (input image, output image, memory).
-   * Callers cannot mutate PLC state through these copies.
-   */
-  public getVariablesSnapshot(): readonly PLCVariable[] {
-    return [
-      ...Object.values(this.inputImage),
-      ...Object.values(this.outputImage),
-      ...Object.values(this.memory),
-    ].map((v) => v.copy());
-  }
+	/**
+	 * Returns read-only copies of all variables (input image, output image, memory).
+	 * Callers cannot mutate PLC state through these copies.
+	 */
+	public getVariablesSnapshot(): readonly PLCVariable[] {
+		return [
+			...Object.values(this.inputImage),
+			...Object.values(this.outputImage),
+			...Object.values(this.memory),
+		].map((v) => v.copy());
+	}
 
-  public setOutputImageValueById(id: string, value: PLCVariableValue): void {
-    const variable = this.getOutputImageVariableById(id);
-    variable.setValue(value);
-  }
+	public setOutputImageValueById(id: string, value: PLCVariableValue): void {
+		const variable = this.getOutputImageVariableById(id);
+		variable.setValue(value);
+	}
 
-  private getOutputImageVariableById(id: string): PLCVariable {
-    const variable = this.outputImage[id];
-    if (!variable) throw new Error(`No output variable found with id ${id}`);
-    return variable;
-  }
+	private getOutputImageVariableById(id: string): PLCVariable {
+		const variable = this.outputImage[id];
+		if (!variable) throw new Error(`No output variable found with id ${id}`);
+		return variable;
+	}
 
-  public setMemoryValueById(id: string, value: PLCVariableValue): void {
-    const variable = this.getMemoryVariableById(id);
-    variable.setValue(value);
-  }
+	public setMemoryValueById(id: string, value: PLCVariableValue): void {
+		const variable = this.getMemoryVariableById(id);
+		variable.setValue(value);
+	}
 
-  private getMemoryVariableById(id: string): PLCVariable {
-    const variable = this.memory[id];
-    if (!variable) throw new Error(`No memory variable found with id ${id}`);
-    return variable;
-  }
+	private getMemoryVariableById(id: string): PLCVariable {
+		const variable = this.memory[id];
+		if (!variable) throw new Error(`No memory variable found with id ${id}`);
+		return variable;
+	}
 
-  //Physical Inputs/Outputs
-  public setPhysicalInputValueById(id: string, value: PLCVariableValue): void {
-    const input = this.getPhysicalInputById(id)
-    input.setValue(value)
-  }
+	public setPhysicalInputValueById(id: string, value: PLCVariableValue): void {
+		const input = this.getPhysicalInputById(id);
+		input.setValue(value);
+	}
 
-  public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {
-    const input = this.getPhysicalInputByName(name)
-    input.setValue(value)
-  }
+	public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {
+		const input = this.getPhysicalInputByName(name);
+		input.setValue(value);
+	}
 
-  private getPhysicalInputById(id: string): PLCVariable{
-    const input = this.physicalInputs[id]
-    if(!input) throw new Error(`No input found with id ${id}`)
-    return input
-  }
+	private getPhysicalInputById(id: string): PLCVariable {
+		const input = this.physicalInputs[id];
+		if (!input) throw new Error(`No input found with id ${id}`);
+		return input;
+	}
 
-  private getPhysicalInputByName(name: string): PLCVariable{
-    const input = Object.values(this.physicalInputs).find(i => i.getName() === name);
-    if(!input) throw new Error(`No input found with name ${name}`)
-    return input
-  }
+	private getPhysicalInputByName(name: string): PLCVariable {
+		const input = Object.values(this.physicalInputs).find((i) => i.getName() === name);
+		if (!input) throw new Error(`No input found with name ${name}`);
+		return input;
+	}
 
-  //Scan cycle
-  private scan(): void {
-    this.readInputs()
-    this.executeProgram()
-    this.writeOutputs()
-    this.internalTasks()
-  }
+	//Scan cycle
+	private scan(): void {
+		if (this.onCycleStart) this.onCycleStart(this);
+		this.readInputs();
+		this.executeProgram();
+		this.writeOutputs();
+		this.internalTasks();
+		if (this.onCycleEnd) this.onCycleEnd(this);
+	}
 
-  private readInputs(): void {
-    Object.entries(this.physicalInputs).forEach(([id, v]) => {
-      this.inputImage[id] = v.copy()
-    })
-  }
+	private readInputs(): void {
+		Object.entries(this.physicalInputs).forEach(([id, v]) => {
+			this.inputImage[id] = v.copy();
+		});
+	}
 
-  private executeProgram(): void { 
-    this.program.forEach(routine => routine.execute(this))
-  }
+	private executeProgram(): void {
+		this.program.forEach((routine) => routine.execute(this));
+	}
 
-  private writeOutputs(): void { 
-    Object.entries(this.outputImage).forEach(([id, v]) => {
-      this.physicalOutputs[id] = v.copy()
-    })
-   }
-  private internalTasks(): void { 
-    
-   }
+	private writeOutputs(): void {
+		Object.entries(this.outputImage).forEach(([id, v]) => {
+			this.physicalOutputs[id] = v.copy();
+		});
+	}
+	private internalTasks(): void {}
 
-  // Exécution
-  public start(): void { 
-    
-    if (!this.cycleTimer) {
-      this.cycleTimer = setInterval(() => this.scan(), this.scanTimeMs);
-    }
-
-   }
-  public stop(): void { 
-    if (this.cycleTimer) {
-      clearInterval(this.cycleTimer);
-      this.cycleTimer = null;
-    }
-
-   }
-
+	// Exécution
+	public start(): void {
+		if (!this.cycleTimer) {
+			if (this.onPLCStart) this.onPLCStart(this);
+			this.cycleTimer = setInterval(() => this.scan(), this.scanTimeMs);
+		}
+	}
+	public stop(): void {
+		if (this.cycleTimer) {
+			clearInterval(this.cycleTimer);
+			this.cycleTimer = null;
+			if (this.onPLCStop) this.onPLCStop(this);
+		}
+	}
 }

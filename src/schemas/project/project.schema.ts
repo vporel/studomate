@@ -26,11 +26,18 @@ export default class Project {
 		this.grafcets = {};
 	}
 
-	addGrafcet(name: string, format: GrafcetFormat): Grafcet {
+	createGrafcet(name: string, format: GrafcetFormat): Grafcet {
 		const grafcetId = createRandomId();
 		this.grafcets[grafcetId] = new Grafcet(grafcetId, name, format);
 		this.touch();
 		return this.grafcets[grafcetId];
+	}
+
+	addGrafcet(grafcet: Grafcet): void {
+		if (this.grafcets[grafcet.id]) {
+			throw new Error(`Grafcet with id ${grafcet.id} already exists in the project.`);
+		}
+		this.grafcets[grafcet.id] = grafcet;
 	}
 
 	updateGrafcet(grafcetId: string, grafcet: Grafcet) {

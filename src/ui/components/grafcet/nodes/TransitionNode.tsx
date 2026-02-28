@@ -1,9 +1,15 @@
 "use client";
-import Transition, { TransitionData } from "@/schemas/grafcet/transition.schema";
+import Transition, {
+	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
+	TRANSITION_HANDLE_TARGET_PREDECESSOR,
+	TransitionData,
+} from "@/schemas/grafcet/transition.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
+
+import { useProjectStore } from "../../projects/ProjectContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -13,18 +19,27 @@ export type TransitionNodeType = Node<TransitionData> & {
 
 export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 
+const COLOR_IF_TRUE_IN_SIMULATOR = "darkorange";
+
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
 		useWithTextNodeValue(id, "transition", data, "expression", false);
+	const trueInSimulator = useProjectStore(
+		(state) => state.simulationManager.getEvaluableExpressionValue(id) === true,
+	);
+	const borderColor = trueInSimulator
+		? COLOR_IF_TRUE_IN_SIMULATOR
+		: selected
+			? th.palette.primary.main
+			: "black";
 
 	return (
 		<>
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="from-step"
+				id={TRANSITION_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Top}
 				style={{
@@ -34,7 +49,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 			/>
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="to-step"
+				id={TRANSITION_HANDLE_SOURCE_SUCCESSOR}
 				type="source"
 				position={Position.Bottom}
 				style={{
@@ -105,6 +120,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						padding: "0",
 						lineHeight: "1.2rem",
 						pointerEvents: !editing ? "none" : "all",
+						color: trueInSimulator ? COLOR_IF_TRUE_IN_SIMULATOR : "black",
 					}}
 				/>
 			</GrafcetNode>

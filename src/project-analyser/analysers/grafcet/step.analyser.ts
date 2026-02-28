@@ -1,3 +1,4 @@
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import Variable from "@/schemas/variable/variable.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import Step from "../../../schemas/grafcet/step.schema";
@@ -55,6 +56,15 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 					`Le numéro d'étape ${step.data.number} est utilisé par plusieurs étapes.`,
 				),
 			);
+		}
+
+		if (!StepHelper.hasPredecessor(step.id, grafcet) && step.data.initial !== true) {
+			//We allow only the initial step to have no predecessor, as it can can be activated through a step referral source
+			issues.push(new ProjectAnalyserIssue("error", source, "L'étape n'a aucun élément en amont."));
+		}
+
+		if (!StepHelper.hasSuccessor(step.id, grafcet)) {
+			issues.push(new ProjectAnalyserIssue("error", source, "L'étape n'a aucun élément en aval."));
 		}
 
 		return issues;

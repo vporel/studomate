@@ -1,13 +1,11 @@
-import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
+import { PreCompiledAction } from "../../../project-pre-compiler/pre-compilers/grafcet/action.pre-compiler";
+import { PreCompiledGrafcet } from "../../../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import ControlsBuilder from "../../../simulator/compiler/ast/builders/controls.builder";
 import ExpressionsBuilder from "../../../simulator/compiler/ast/builders/expressions.builder";
-import { PreCompiledGrafcet } from "../../../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
 import { IdentifierNode } from "../../../simulator/compiler/ast/nodes/identifiers";
-import { PreCompiledAction } from "../../../project-pre-compiler/pre-compilers/grafcet/action.pre-compiler";
-
 
 export default class ActionCompiler {
-
 	static compile(
 		actionId: string,
 		preCompiledAction: PreCompiledAction,
@@ -16,45 +14,27 @@ export default class ActionCompiler {
 	): ASTNode[] {
 		const nodes: ASTNode[] = [];
 		const stepNode = preCompiledGrafcet.steps[preCompiledAction.stepId].node;
-		
+
 		const phases = preCompiledAction.phases;
 		const risingEdgeCondition = ExpressionsBuilder.buildLogicalExpressionNode(
-			"AND", 
+			"AND",
 			ExpressionsBuilder.buildUnaryExpressionNode("NOT", stepMemosNodes.get(preCompiledAction.stepId)!), //Previous value of the step is false
-			stepNode //Current value of the step is true
-		)
+			stepNode, //Current value of the step is true
+		);
 		const fallingEdgeCondition = ExpressionsBuilder.buildLogicalExpressionNode(
 			"AND",
 			stepMemosNodes.get(preCompiledAction.stepId)!, //Previous value of the step is true
-			ExpressionsBuilder.buildUnaryExpressionNode("NOT", stepNode) //Current value of the step is false
-		)
+			ExpressionsBuilder.buildUnaryExpressionNode("NOT", stepNode), //Current value of the step is false
+		);
 		const continuousCondition = stepNode; //Current value of the step is true
-		if(phases.onActivation){
-			nodes.push(
-				ControlsBuilder.buildIfControlNode(
-					risingEdgeCondition,
-					[phases.onActivation],
-					null
-				)
-			);
+		if (phases.onActivation) {
+			nodes.push(ControlsBuilder.buildIfControlNode(risingEdgeCondition, phases.onActivation, null));
 		}
-		if(phases.onDeactivation){
-			nodes.push(
-				ControlsBuilder.buildIfControlNode(
-					fallingEdgeCondition,
-					[phases.onDeactivation],
-					null
-				)
-			);
+		if (phases.onDeactivation) {
+			nodes.push(ControlsBuilder.buildIfControlNode(fallingEdgeCondition, phases.onDeactivation, null));
 		}
-		if(phases.continuous){
-			nodes.push(
-				ControlsBuilder.buildIfControlNode(
-					continuousCondition,
-					[phases.continuous],
-					null
-				)
-			);
+		if (phases.continuous) {
+			nodes.push(ControlsBuilder.buildIfControlNode(continuousCondition, phases.continuous, null));
 		}
 		return nodes;
 	}

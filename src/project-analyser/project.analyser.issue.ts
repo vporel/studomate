@@ -7,7 +7,11 @@ export type ProjectAnalyserIssueSource = {
 		| "grafcet-transition"
 		| "grafcet-action"
 		| "grafcet-step-referral-source"
-		| "grafcet-step-referral-target";
+		| "grafcet-step-referral-target"
+		| "grafcet-junction-and-start"
+		| "grafcet-junction-and-end"
+		| "grafcet-junction-or-start"
+		| "grafcet-junction-or-end";
 	sourceId: string;
 	parentId?: string; // For issues on steps, transitions or actions, the ID of the parent grafcet
 };

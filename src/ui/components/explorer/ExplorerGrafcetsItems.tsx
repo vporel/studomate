@@ -1,5 +1,6 @@
 "use client";
 
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Typography } from "@mui/material";
 import { Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
@@ -25,6 +26,7 @@ const ExplorerGrafcetItem = ({
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
 	const [editingName, setEditingName] = useState(grafcetName);
+	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
 
 	const saveName = useCallback(() => {
 		grafcetsManager.renameGrafcet(
@@ -35,13 +37,14 @@ const ExplorerGrafcetItem = ({
 
 	useEffect(() => {
 		const handler = (e: ExplorerContextMenuEventsOutGrafcetRename) => {
+			if (!designing) return;
 			if (e.grafcetId === grafcetId) setLabelMode("edit");
 		};
 		explorerContextMenuEventsOut.on("grafcet-rename", handler);
 		return () => {
 			explorerContextMenuEventsOut.off("grafcet-rename", handler);
 		};
-	}, [grafcetId]);
+	}, [grafcetId, designing]);
 
 	return (
 		<CustomTreeItem
@@ -59,6 +62,7 @@ const ExplorerGrafcetItem = ({
 				})
 			}
 			onDoubleClick={() => {
+				if (!designing) return;
 				setLabelMode("edit");
 			}}
 			inputProps={{

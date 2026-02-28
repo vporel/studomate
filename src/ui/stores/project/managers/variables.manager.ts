@@ -1,6 +1,7 @@
 import { VariableUpdatableFields } from "@/schemas/variable/variable.schema";
 import VariablesCommandsFactory from "../factories/variables-commands.factory";
 import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
+import { ProjectMode } from "../ProjectMode.enum";
 
 export default class VariablesManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -39,6 +40,10 @@ export default class VariablesManager {
 	addVariables(data: VariableUpdatableFields[]): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot add variable in non-design mode");
+			return;
+		}
 		const { commands } = VariablesCommandsFactory.onAddVariable(project, data);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
@@ -46,6 +51,10 @@ export default class VariablesManager {
 	updateVariable(variableId: string, data: Partial<VariableUpdatableFields>): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot update variable in non-design mode");
+			return;
+		}
 		const { commands } = VariablesCommandsFactory.onUpdateVariable(project, variableId, data);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
@@ -53,6 +62,10 @@ export default class VariablesManager {
 	removeVariables(variablesIds: string[]): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn("Cannot remove variable in non-design mode");
+			return;
+		}
 		const { commands } = VariablesCommandsFactory.onRemoveVariable(project, variablesIds);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}

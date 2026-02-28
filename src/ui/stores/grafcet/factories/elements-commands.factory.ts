@@ -7,7 +7,7 @@ import ElementsAddCommand from "@/schemas/grafcet/commands/elements-add.command"
 import ElementsRemoveCommand from "@/schemas/grafcet/commands/elements-remove.command";
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import StepsHelper from "@/schemas/grafcet/helpers/steps.helper";
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 import ViewManager from "../managers/view.manager";
@@ -34,7 +34,7 @@ export default class ElementsCommandsFactory {
 				if (node.type === "step") {
 					//If no number is provided for the step, we will assign it the next available number
 					if (node.data.number === undefined || node.data.number === "") {
-						node.data.number = StepsHelper.getNextAvailableNumber(grafcet);
+						node.data.number = StepHelper.getNextAvailableNumber(grafcet);
 					}
 				}
 				return node;

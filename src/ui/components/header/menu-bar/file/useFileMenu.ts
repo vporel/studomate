@@ -2,9 +2,10 @@
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { platformShortcut } from "@/ui/lib/platform";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
-import { AppMenuType } from "../../app-menu-bar";
+import { AppMenuType } from "../app-menu-bar";
 
 export default function useFileMenu(): AppMenuType {
 	const { setOpenModalVisible, setExportModalVisible, newProject, closeProject, saveProject } =
@@ -17,6 +18,7 @@ export default function useFileMenu(): AppMenuType {
 				saveProject: state.saveProject,
 			})),
 		);
+	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
 
 	return useMemo(
 		() => ({
@@ -27,14 +29,22 @@ export default function useFileMenu(): AppMenuType {
 					{
 						label: "Nouveau projet",
 						// The shortcut Ctrl+N is reserved by the browser to open a new window so we don't use it
-						onClick: newProject,
+						disabled: !designing,
+						onClick: () => {
+							if (!designing) return;
+							newProject();
+						},
 					},
 				],
 				[
 					{
 						label: "Ouvrir projet",
 						shortcut: platformShortcut("Ctrl+O", "Cmd+O"),
-						onClick: () => setOpenModalVisible(true),
+						disabled: !designing,
+						onClick: () => {
+							if (!designing) return;
+							setOpenModalVisible(true);
+						},
 					},
 				],
 				[
@@ -48,18 +58,26 @@ export default function useFileMenu(): AppMenuType {
 					{
 						label: "Exporter",
 						shortcut: platformShortcut("Ctrl+E", "Cmd+E"),
-						onClick: () => setExportModalVisible(true),
+						disabled: !designing,
+						onClick: () => {
+							if (!designing) return;
+							setExportModalVisible(true);
+						},
 					},
 				],
 				[
 					{
 						label: "Fermer le projet",
 						shortcut: platformShortcut("Ctrl+F4", "Cmd+W"),
-						onClick: closeProject,
+						disabled: !designing,
+						onClick: () => {
+							if (!designing) return;
+							closeProject();
+						},
 					},
 				],
 			],
 		}),
-		[newProject, saveProject, closeProject, setOpenModalVisible, setExportModalVisible],
+		[newProject, saveProject, closeProject, setOpenModalVisible, setExportModalVisible, designing],
 	);
 }

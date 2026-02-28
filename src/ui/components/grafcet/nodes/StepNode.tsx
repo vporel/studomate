@@ -1,10 +1,19 @@
 "use client";
 import { range } from "@/lib/array";
-import Step, { StepData } from "@/schemas/grafcet/step.schema";
+import Step, {
+	STEP_HANDLE_SOURCE_ACTION,
+	STEP_HANDLE_SOURCE_SUCCESSOR,
+	STEP_HANDLE_TARGET_PREDECESSOR,
+	StepData,
+} from "@/schemas/grafcet/step.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
+
+import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
+import { useProjectStore } from "../../projects/ProjectContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -23,12 +32,18 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 		"number",
 		true,
 	);
+	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const activeInSimulation = useProjectStore(
+		(state) =>
+			state.simulationVariablesStates[getStepVariableId(grafcetId, data.number as number)]?.value ===
+			true,
+	);
 
 	return (
 		<>
 			<HandleWithConnectionsLimit
 				limit={10}
-				id="from-transition"
+				id={STEP_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Top}
 				style={{
@@ -38,7 +53,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 			/>
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="to-transition"
+				id={STEP_HANDLE_SOURCE_SUCCESSOR}
 				type="source"
 				position={Position.Bottom}
 				style={{
@@ -48,7 +63,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 			/>
 			<HandleWithConnectionsLimit
 				limit={4}
-				id="to-action"
+				id={STEP_HANDLE_SOURCE_ACTION}
 				type="source"
 				position={Position.Right}
 				style={{
@@ -67,10 +82,11 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					borderStyle: data.initial ? "double" : "solid",
 					borderColor: borderColor,
 					borderRadius: "5px",
-					backgroundColor: "white",
+					backgroundColor: activeInSimulation ? "primary.main" : "white",
+					color: activeInSimulation ? "white" : "black",
 					transition: "background .2s ease, borderColor .2s ease",
 					"&:hover": {
-						background: "#efefef",
+						backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
 					},
 					display: "flex",
 					justifyContent: "center",

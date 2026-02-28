@@ -1,5 +1,6 @@
 import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
 import VariablesMapper from "@/bridge/variables.mapper";
+import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/compiler/environment/environment";
 import { Language } from "@/simulator/compiler/lexer/language.enum";
@@ -10,9 +11,6 @@ import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import Transition from "../../../schemas/grafcet/transition.schema";
 import ProjectAnalyserIssue from "../../project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
-
-const UPSTREAM_TYPES = new Set(["step", "junction-or-start", "junction-and-end"]);
-const DOWNSTREAM_TYPES = new Set(["step", "junction-or-end", "junction-and-start", "step-referral-source"]);
 
 export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 	/**
@@ -39,8 +37,33 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 		}
 		try {
 			const lexer = new Lexer(Language.FR);
-			const parser = new Parser(lexer.tokenize(transition.data.expression));
-			parser.parse();
+			const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
+			const node = parser.parse();
+			if (
+				node.type !== "IDENTIFIER" &&
+				node.type !== "BOOLEAN_LITERAL" &&
+				node.type !== "UNARY_EXPRESSION" &&
+				node.type !== "LOGICAL_EXPRESSION" &&
+				node.type !== "COMPARISON_EXPRESSION"
+			) {
+				if (node.type === "NUMBER_LITERAL") {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							"Une transition ne peut pas être une constante numérique. Si vous voulez qu'elle soit toujours validée, utilisez plutôt la constante booléenne TRUE.",
+						),
+					);
+				} else {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							"Expression invalide. Une transition doit être une expression retournant un booléen.",
+						),
+					);
+				}
+			}
 		} catch (e) {
 			issues.push(
 				new ProjectAnalyserIssue(
@@ -65,37 +88,47 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-transition" as const, sourceId: transition.id };
 
-		const hasUpstream = grafcet.connections.some(
-			(c) => c.target.id === transition.id && UPSTREAM_TYPES.has(c.source.type),
-		);
-		const hasDownstream = grafcet.connections.some(
-			(c) => c.source.id === transition.id && DOWNSTREAM_TYPES.has(c.target.type),
-		);
-
-		if (!hasUpstream) {
+		if (!TransitionHelper.hasPredecessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "La transition n'a aucune étape en amont."),
+				new ProjectAnalyserIssue("error", source, "La transition n'a aucun élément en amont."),
 			);
 		}
-		if (!hasDownstream) {
-			issues.push(new ProjectAnalyserIssue("error", source, "La transition n'a aucune étape en aval."));
-		}
 
-		try {
-			const lexer = new Lexer(Language.FR);
-			const parser = new Parser(lexer.tokenize(transition.data.expression));
-			const semanticAnalyser = new SemanticAnalyserVisitor(
-				new Environment(variables.map(VariablesMapper.schemaToEnv)),
-			);
-			semanticAnalyser.visit(parser.parse());
-		} catch (e) {
+		if (!TransitionHelper.hasSuccessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					source,
-					SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
-				),
+				new ProjectAnalyserIssue("error", source, "La transition n'a aucun élément en aval."),
 			);
+		}
+		if (transition.data.expression && transition.data.expression.trim() !== "") {
+			try {
+				const lexer = new Lexer(Language.FR);
+				const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
+				const node = parser.parse();
+				const semanticAnalyser = new SemanticAnalyserVisitor(
+					new Environment(variables.map(VariablesMapper.schemaToEnv)),
+				);
+				semanticAnalyser.visit(node);
+				if (node.type === "IDENTIFIER") {
+					const variable = variables.find((v) => v.mnemonic === node.value);
+					if (variable!.type !== "BOOL") {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								source,
+								`La transition fait référence à la variable "${node.value}" qui n'est pas de type BOOL.`,
+							),
+						);
+					}
+				}
+			} catch (e) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						source,
+						SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+					),
+				);
+			}
 		}
 
 		return issues;

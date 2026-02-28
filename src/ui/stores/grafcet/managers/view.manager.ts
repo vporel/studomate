@@ -111,11 +111,54 @@ export default class ViewManager {
 		}));
 	}
 
+	selectNodesAndEdges(nodesIds: string[], edgesIds: string[], deselectOtherElements = false): void {
+		if (deselectOtherElements) {
+			this.setStoreState((state) => ({
+				nodes: state.nodes?.map((n) => ({ ...n, selected: nodesIds.includes(n.id) })),
+				edges: state.edges?.map((e) => ({ ...e, selected: edgesIds.includes(e.id) })),
+			}));
+			return;
+		} else {
+			this.setStoreState((state) => ({
+				nodes: state.nodes?.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: true } : n)),
+				edges: state.edges?.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: true } : e)),
+			}));
+		}
+	}
+
+	deselectNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
+		this.setStoreState((state) => ({
+			nodes: state.nodes?.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: false } : n)),
+			edges: state.edges?.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: false } : e)),
+		}));
+	}
+
 	deselectAllNodesAndEdges(): void {
 		this.setStoreState((state) => ({
 			nodes: state.nodes?.map((n) => ({ ...n, selected: false })),
 			edges: state.edges?.map((e) => ({ ...e, selected: false })),
 		}));
+	}
+
+	highlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
+		this.setStoreState((state) => ({
+			highlightedNodesIds: [...(state.highlightedNodesIds || []), ...nodesIds],
+			highlightedEdgesIds: [...(state.highlightedEdgesIds || []), ...edgesIds],
+		}));
+	}
+
+	unhighlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
+		this.setStoreState((state) => ({
+			highlightedNodesIds: state.highlightedNodesIds?.filter((id) => !nodesIds.includes(id)),
+			highlightedEdgesIds: state.highlightedEdgesIds?.filter((id) => !edgesIds.includes(id)),
+		}));
+	}
+
+	temporarilyHighlightNodesAndEdges(nodesIds: string[], edgesIds: string[], durationMs = 2000): void {
+		this.highlightNodesAndEdges(nodesIds, edgesIds);
+		setTimeout(() => {
+			this.unhighlightNodesAndEdges(nodesIds, edgesIds);
+		}, durationMs);
 	}
 
 	getZoom(): number {

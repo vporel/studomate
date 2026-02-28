@@ -2,6 +2,10 @@
 import Element, { BaseData } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
+export const JUNCTION_HANDLE_PIVOT = "pivot";
+
+export type JunctionHandle = typeof JUNCTION_HANDLE_PIVOT;
+
 export type JunctionBranch = {
 	id: string;
 	position: number; //In pixels from the left of the node

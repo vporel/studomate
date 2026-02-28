@@ -1,14 +1,19 @@
 "use client";
+import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import Action, {
 	ACTION_EXECUTION_MODE_LABELS,
+	ACTION_HANDLE_TARGET_STEP,
 	ActionData,
 	ActionExecutionMode,
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
+import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { type FC } from "react";
+import { useProjectStore } from "../../projects/ProjectContext";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -22,6 +27,17 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
 		useWithTextNodeValue(id, "action", data, "expression", false);
+	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+
+	const activeInSimulation = useProjectStore((state) => {
+		const grafcet = state.project!.grafcets[grafcetId];
+		if (!grafcet) return false;
+		const step = ActionHelper.getStep(id, grafcet);
+		if (!step || step.data.number === "") return false;
+		return (
+			state.simulationVariablesStates[getStepVariableId(grafcetId, step.data.number)]?.value === true
+		);
+	});
 
 	return (
 		<>
@@ -34,7 +50,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 			/>
 			<HandleWithConnectionsLimit
 				limit={1}
-				id="from-step"
+				id={ACTION_HANDLE_TARGET_STEP}
 				type="target"
 				position={Position.Left}
 				style={{
@@ -43,8 +59,8 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 				}}
 			/>
 			<GrafcetNode
-				type="action"
 				id={id}
+				type="action"
 				error={error}
 				sx={{
 					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
@@ -53,13 +69,14 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 					borderStyle: "solid",
 					borderColor: borderColor,
 					borderRadius: "5px",
-					backgroundColor: "white",
 					padding: "5px",
 					display: "flex",
 					alignItems: "center",
 					transition: "background .2s ease, borderColor .2s ease",
+					backgroundColor: activeInSimulation ? "primary.main" : "white",
+					color: activeInSimulation ? "white" : "black",
 					"&:hover": {
-						background: "#efefef",
+						backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
 					},
 				}}
 				onDoubleClick={() => {

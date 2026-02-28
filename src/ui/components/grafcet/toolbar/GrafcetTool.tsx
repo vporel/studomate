@@ -1,8 +1,10 @@
 "use client";
 
 import { ElementType } from "@/schemas/grafcet/element.schema";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
 import React from "react";
+import { useProjectStore } from "../../projects/ProjectContext";
 import { useGrafcetToolbarDnD } from "./GrafcetToolbarDnDContext";
 
 const GrafcetTool = ({
@@ -17,6 +19,8 @@ const GrafcetTool = ({
 	children: React.ReactElement;
 }) => {
 	const { setType, setExtraData } = useGrafcetToolbarDnD();
+	const mode = useProjectStore((state) => state.mode);
+	disabled = disabled || mode !== ProjectMode.DESIGN;
 
 	return (
 		<Box
@@ -36,7 +40,7 @@ const GrafcetTool = ({
 					background: "rgb(240, 240, 240)",
 				},
 			}}
-			draggable
+			draggable={!disabled}
 			onDragStart={(e) => {
 				setType(type);
 				setExtraData(extraData || null);

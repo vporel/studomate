@@ -1,20 +1,16 @@
 ﻿import { ElementType } from "./element.schema";
 
-export type ConnectionIdentifier = { type: ElementType; id: string; handleId: string };
+export type ConnectionSide = { type: ElementType; id: string; handle: string };
 export type ConnectionData = { points: [number, number][] };
+export type HandleType = "source" | "target";
 
 export default class Connection {
 	id: string;
-	source: ConnectionIdentifier;
-	target: ConnectionIdentifier;
+	source: ConnectionSide;
+	target: ConnectionSide;
 	data: ConnectionData;
 
-	constructor(
-		id: string,
-		source: ConnectionIdentifier,
-		target: ConnectionIdentifier,
-		data: ConnectionData,
-	) {
+	constructor(id: string, source: ConnectionSide, target: ConnectionSide, data: ConnectionData) {
 		this.id = id;
 		this.source = source;
 		this.target = target;
@@ -35,8 +31,8 @@ export default class Connection {
 		return Object.assign(
 			new Connection(
 				"",
-				{ type: "step", id: "", handleId: "" },
-				{ type: "step", id: "", handleId: "" },
+				{ type: "step", id: "", handle: "" },
+				{ type: "step", id: "", handle: "" },
 				{ points: [] },
 			),
 			jsonParsed,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { AppMenuType } from "../../app-menu-bar";
+import { AppMenuType } from "../app-menu-bar";
 
 export default function useHelpMenu(): AppMenuType {
 	return useMemo(

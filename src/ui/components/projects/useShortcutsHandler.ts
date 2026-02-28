@@ -1,6 +1,7 @@
 "use client";
 
 import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import React, { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
@@ -21,11 +22,15 @@ export default function useShortcutsHandler() {
 				(e.target as HTMLElement).tagName === "INPUT" ||
 				(e.target as HTMLElement).tagName === "TEXTAREA";
 			if (isInput) return; //Don't trigger shortcuts when the user is typing in an input or textarea
+			const projectMode = projectStore?.getState().mode;
+			const designing = projectMode === ProjectMode.DESIGN;
+
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
 					case "o": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						setOpenModalVisible(true);
 						break;
 					}
@@ -38,12 +43,14 @@ export default function useShortcutsHandler() {
 					case "g": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
 						break;
 					}
 					case "a": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const grafcetViewManager =
@@ -55,6 +62,7 @@ export default function useShortcutsHandler() {
 					case "z": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const grafcetCommandsStackManager =
@@ -68,6 +76,7 @@ export default function useShortcutsHandler() {
 					case "y": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const grafcetCommandsStackManager =
@@ -81,6 +90,7 @@ export default function useShortcutsHandler() {
 					case "c": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
@@ -92,6 +102,7 @@ export default function useShortcutsHandler() {
 					case "v": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =

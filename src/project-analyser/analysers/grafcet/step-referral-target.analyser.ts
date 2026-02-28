@@ -1,3 +1,4 @@
+import StepReferralTargetHelper from "@/schemas/grafcet/helpers/step-referral-target.helper";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
@@ -55,14 +56,28 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };
 
-		//Check that the target step number exists in the grafcet
-		const targetStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.sourceStepNumber);
-		if (!targetStep) {
+		//Check that the referred step number exists in the grafcet
+		const referredStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.sourceStepNumber);
+		if (!referredStep) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
 					source,
 					`Aucune étape avec le numéro ${stepReferral.data.sourceStepNumber} n'existe dans le grafcet.`,
+				),
+			);
+		}
+
+		if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
+			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en aval,`));
+		}
+
+		if (StepReferralTargetHelper.getStepReferralSource(stepReferral.id, grafcet)) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					source,
+					`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
 				),
 			);
 		}

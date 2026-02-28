@@ -3,6 +3,7 @@ import Comment, { CommentData } from "@/schemas/grafcet/comment.schema";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer } from "@xyflow/react";
 import React, { type FC } from "react";
+
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -10,7 +11,14 @@ export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
 export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
+const CommentNode: FC<CommentNodeProps> = ({
+	id,
+	data,
+	selected,
+	highlighted,
+	width: nodeWidth,
+	height: nodeHeight,
+}) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";

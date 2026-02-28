@@ -1,14 +1,14 @@
+import { getStubProjectV2 } from "@/schemas/fixtures/stub-projects";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/schemas/utils/ids";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import { localStorageGetProject, localStorageSaveProject } from "@/ui/local-storage/projects";
-import { getStubProject } from "@/ui/utils/project/project-utils";
+import { Language } from "@/ui/locales/locales";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
 import CommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
-import ModeManager from "./managers/mode.manager";
 import PagesManager from "./managers/pages.manager";
 import SimulationManager, {
 	AnalysisIssues,
@@ -26,18 +26,24 @@ export type PageType = "project-startup" | "project-properties" | "grafcet" | "v
  */
 export type ScopeType = "project" | "grafcet";
 
-type PageData = {
+export type PageData = {
 	id: string;
 	type: PageType;
 	title: string;
 };
 
-type GrafcetStoreValues = Pick<GrafcetStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
+export type GrafcetStoreValues = Pick<GrafcetStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
 
-type GrafcetStoreManagers = Pick<
+export type GrafcetStoreManagers = Pick<
 	GrafcetStoreState,
 	"viewManager" | "copyCutPasteManager" | "commandsStackManager"
 >;
+
+export type PLCConfig = {
+	scanTimeMs: number;
+};
+
+export type SimulationVariableState = { id: string; mnemonic: string; value: any };
 
 export interface ProjectStoreState {
 	//Project
@@ -68,17 +74,24 @@ export interface ProjectStoreState {
 	setExportModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string) => void;
 
-	//=============== MODE ===============
-	mode: ProjectMode;
-	modeManager: ModeManager;
+	//=============== INTERNATIONALIZATION ===============
+	language: Language;
 
 	//=============== SIMULATION ===============
+	mode: ProjectMode;
 	analysisHasErrors: boolean;
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;
 	analysisWarnings: AnalysisIssues;
 	analysisResultVisible: boolean; // UI: whether the analysis errors panel is visible
 	setAnalysisResultVisible: (visible: boolean) => void;
+	watchTablesVisible: boolean;
+	setWatchTablesVisible: (visible: boolean) => void;
+	plcConfig: PLCConfig;
+	/**
+	 * The current values of the variables during simulation, used to display them in the UI
+	 */
+	simulationVariablesStates: Record<string, SimulationVariableState>;
 	simulationManager: SimulationManager;
 
 	//=============== COMMANDS ===============
@@ -152,7 +165,7 @@ export const createProjectStore = () => {
 	};
 
 	return createStore<ProjectStoreState>((set, get) => ({
-		project: getStubProject(),
+		project: getStubProjectV2(),
 		hasUnsavedChanges: false,
 		unsavedChangesDialogVisible: false,
 		unsavedChangesDialogMessage: null,
@@ -293,11 +306,11 @@ export const createProjectStore = () => {
 			}
 		},
 
-		//=============== MODE ===============
-		mode: ProjectMode.DESIGN,
-		modeManager: new ModeManager(set, get),
+		//=============== INTERNATIONALIZATION ===============
+		language: Language.FR,
 
 		//=============== SIMULATION ===============
+		mode: ProjectMode.DESIGN,
 		analysisHasErrors: false,
 		analysisHasWarnings: false,
 		analysisErrors: emptyAnalysisIssues(),
@@ -306,6 +319,14 @@ export const createProjectStore = () => {
 		setAnalysisResultVisible: (visible: boolean) => {
 			set(() => ({ analysisResultVisible: visible }));
 		},
+		watchTablesVisible: false,
+		setWatchTablesVisible: (visible: boolean) => {
+			set(() => ({ watchTablesVisible: visible }));
+		},
+		plcConfig: {
+			scanTimeMs: 100,
+		},
+		simulationVariablesStates: {},
 		simulationManager: new SimulationManager(set, get),
 
 		//=============== COMMANDS STACK ===============
