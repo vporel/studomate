@@ -1,17 +1,6 @@
 export type VariableZone = "logic-input" | "logic-output" | "analog-input" | "analog-output" | "memory";
 export type VariableDirection = "IN" | "OUT" | "INOUT";
-export const VARIABLE_TYPES = [
-	"BOOL",
-	"INT",
-	"LONG",
-	"WORD",
-	"DWORD",
-	"REAL",
-	"STRING",
-	"TON",
-	"TOFF",
-	"TP",
-] as const;
+export const VARIABLE_TYPES = ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING"] as const;
 
 export type VariableType = (typeof VARIABLE_TYPES)[number];
 
@@ -39,9 +28,6 @@ export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 	DWORD: "number",
 	REAL: "number",
 	STRING: "string",
-	TON: "number",
-	TOFF: "number",
-	TP: "number",
 };
 
 export const VARIABLE_UPDATABLE_FIELDS = ["mnemonic", "zone", "type", "address", "comment"] as const;
@@ -141,7 +127,7 @@ export default class Variable {
 		const errors: string[] = [];
 		if (address.length == 0) return errors; // Address is optional
 		if (!/^%/.test(address)) errors.push("L'adresse doit commencer par le symbole %");
-		const addressRegex = /^%(E|I|Q|O|EA|IW|SA|QW|M|MW|MF|MD|T)[0-9]{1,5}(\.[0-9]){0,5}$/;
+		const addressRegex = /^%(E|I|Q|O|EA|IW|SA|QW|M|MW|MF|MD)[0-9]{1,5}(\.[0-9]){0,5}$/;
 		if (!address.match(addressRegex)) errors.push("L'adresse est invalide (Ex: %I0.0, %QW10, %MD100)");
 		return errors;
 	}

@@ -1,6 +1,6 @@
 import { ASTNode } from "../../ast/nodes/ast-node";
 
-export default class SemanticException extends Error {
+export default abstract class SemanticException extends Error {
 	private readonly originNode: ASTNode;
 	/**
 	 * The nodes that caused the semantic error. This can be useful for error reporting, as it allows to highlight the exact nodes that are responsible for the error.

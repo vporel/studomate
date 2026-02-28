@@ -1,3 +1,4 @@
+import { TimerNode } from "../../ast/nodes/blocks";
 import { IfControlNode } from "../../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -13,13 +14,16 @@ import { EnvVariableValue } from "../../environment/env-variable";
 import { Environment } from "../../environment/environment";
 import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
 import EvaluatorException from "./exceptions/evaluator.exception";
+import TimerEvaluator from "./timer.evaluator";
 
 export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	private env: Environment;
+	private timerEvaluator: TimerEvaluator;
 
 	constructor(environment: Environment) {
 		super();
 		this.env = environment;
+		this.timerEvaluator = new TimerEvaluator(environment, this);
 	}
 
 	protected visitIdentifierNode(node: IdentifierNode): EnvVariableValue {
@@ -113,5 +117,9 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 			lastValue = this.visit(statement);
 		}
 		return lastValue;
+	}
+
+	protected visitTimerBlockNode(node: TimerNode): EnvVariableValue {
+		return this.timerEvaluator.evaluate(node);
 	}
 }

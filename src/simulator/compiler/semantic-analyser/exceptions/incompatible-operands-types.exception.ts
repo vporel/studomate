@@ -1,6 +1,6 @@
-import { ExpectedNodeResultType } from "../../ast/nodes/ast-node";
 import { ComparisonExpressionNode } from "../../ast/nodes/expressions";
 import { AssignStatementNode } from "../../ast/nodes/statements";
+import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 
 export default class IncompatibleOperandsTypesException extends SemanticException {

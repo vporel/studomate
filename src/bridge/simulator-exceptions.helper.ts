@@ -7,6 +7,13 @@ import { DivisionByZeroException } from "../simulator/compiler/interpreter/evalu
 
 import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import UnknownVariableNameException from "@/simulator/compiler/environment/exceptions/unknown-variable-name.exception";
+import InvalidTimerElapsedTimeTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-elapsed-time-type.exception";
+import InvalidTimerInputTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-input-type.exception";
+import InvalidTimerLastInputNodeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-last-input-node.exception";
+import InvalidTimerLastInputTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-last-input-type.exception";
+import InvalidTimerOutputNodeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-output-node.exception";
+import InvalidTimerOutputTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-output-type.exception";
+import InvalidTimerPresetTimeTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-preset-time-type.exception";
 import InvalidCharacterException from "../simulator/compiler/lexer/exceptions/invalid-character.exception";
 import InvalidStringEndQuoteException from "../simulator/compiler/lexer/exceptions/invalid-string-end-quote.exception";
 import UnterminatedStringException from "../simulator/compiler/lexer/exceptions/unterminated-string.exception";
@@ -129,6 +136,61 @@ export default class SimulatorExceptionsHelper {
 			return lang === "EN"
 				? `Incompatible types for operator '${op}': left ${leftType}, right ${rightType}`
 				: `Types incompatibles pour l'opérateur '${op}' : gauche ${leftType}, droite ${rightType}`;
+		}
+
+		if (exception instanceof InvalidTimerInputTypeException) {
+			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid timer input type: the input of a timer block must be boolean (found ${actual})`
+				: `Type d'entrée de temporisation invalide : l'entrée d'un bloc de temporisation doit être un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidTimerLastInputNodeException) {
+			return lang === "EN"
+				? `Invalid timer last input node: the last input of a timer block must be an identifier`
+				: `Nœud de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être une variable`;
+		}
+
+		if (exception instanceof InvalidTimerLastInputTypeException) {
+			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid timer last input type: the last input of a timer block must be boolean (found ${actual})`
+				: `Type de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidTimerOutputNodeException) {
+			return lang === "EN"
+				? `Invalid timer output node: the output of a timer block must be an identifier`
+				: `Nœud de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit être une variable`;
+		}
+
+		if (exception instanceof InvalidTimerOutputTypeException) {
+			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid timer output type: the output of a timer block must be boolean (found ${actual})`
+				: `Type de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit retourner un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidTimerPresetTimeTypeException) {
+			const expected = SimulatorExceptionsHelper.transformVariableType(
+				exception.getExpectedType(),
+				lang,
+			);
+			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid timer preset time type: expected ${expected}, got ${actual}`
+				: `Type de temps préréglé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
+		}
+
+		if (exception instanceof InvalidTimerElapsedTimeTypeException) {
+			const expected = SimulatorExceptionsHelper.transformVariableType(
+				exception.getExpectedType(),
+				lang,
+			);
+			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid timer elapsed time type: expected ${expected}, got ${actual}`
+				: `Type de temps écoulé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
 		}
 
 		return null;

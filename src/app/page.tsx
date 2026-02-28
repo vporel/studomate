@@ -50,7 +50,7 @@ function AppComponent() {
 				</Box>
 			</Box>
 			<SplitPane split="vertical" sx={{ flex: 1, position: "relative", overflow: "hidden" }}>
-				<Pane initialSize={200} minSize={200} maxSize={400} visible={viewAppearance.explorer}>
+				<Pane initialSize={250} minSize={200} maxSize={400} visible={viewAppearance.explorer}>
 					<Explorer />
 				</Pane>
 				<Pane style={{ overflow: "hidden" }}>

@@ -1,4 +1,5 @@
 import { ASTNode } from "../nodes/ast-node";
+import { TimerNode } from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -33,17 +34,31 @@ export abstract class BaseVisitor<T> {
 				return this.visitAssignStatementNode(node);
 			case "IF_CONTROL":
 				return this.visitIfControlNode(node);
+			case "TIMER_BLOCK":
+				return this.visitTimerBlockNode(node);
 		}
 	}
 
+	// Identifier
 	protected abstract visitIdentifierNode(node: IdentifierNode): T;
+
+	// Literals
 	protected abstract visitBooleanNode(node: BooleanNode): T;
 	protected abstract visitNumberNode(node: NumberNode): T;
 	protected abstract visitStringNode(node: StringNode): T;
+
+	// Expressions
 	protected abstract visitUnaryExpressionNode(node: UnaryExpressionNode): T;
 	protected abstract visitArithmeticExpressionNode(node: ArithmeticExpressionNode): T;
 	protected abstract visitComparisonExpressionNode(node: ComparisonExpressionNode): T;
 	protected abstract visitLogicalExpressionNode(node: LogicalExpressionNode): T;
+
+	// Statements
 	protected abstract visitAssignStatementNode(node: AssignStatementNode): T;
+
+	// Controls
 	protected abstract visitIfControlNode(node: IfControlNode): T;
+
+	//Blocks
+	protected abstract visitTimerBlockNode(node: TimerNode): T;
 }

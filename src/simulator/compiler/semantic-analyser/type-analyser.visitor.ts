@@ -1,3 +1,4 @@
+import { TimerNode } from "../ast/nodes/blocks";
 import { IfControlNode } from "../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -62,5 +63,9 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 
 	protected visitIfControlNode(node: IfControlNode): ExpectedNodeResultType {
 		return "void";
+	}
+
+	protected visitTimerBlockNode(node: TimerNode): ExpectedNodeResultType {
+		return "boolean";
 	}
 }
