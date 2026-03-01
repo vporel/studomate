@@ -121,7 +121,9 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 					const parser = new Parser(lexer.tokenize(line));
 					const node = parser.parse();
 					const env = new Environment(variables.map(VariablesMapper.schemaToEnv));
-					const semanticAnalyser = new SemanticAnalyserVisitor(env);
+					const semanticAnalyser = new SemanticAnalyserVisitor(env, {
+						unauthorizedNodes: ["TIMER_BLOCK", "TIMER_STRING_DECLARATION"],
+					});
 					semanticAnalyser.visit(node);
 					const typeAnalyser = new TypeAnalyserVisitor(env);
 					if (node.type === "ASSIGN_STATEMENT") {
@@ -134,7 +136,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 								new ProjectAnalyserIssue(
 									"error",
 									source,
-									`L'action est de type numérique mais la variable affectée est d'un type incompatible ${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]}`,
+									`L'action est de type numérique mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
 								),
 							);
 						}
@@ -146,7 +148,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 								new ProjectAnalyserIssue(
 									"error",
 									source,
-									`L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible ${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]}`,
+									`L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
 								),
 							);
 						}

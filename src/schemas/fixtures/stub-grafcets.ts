@@ -30,7 +30,8 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 			type: ActionType.BOOLEAN_VARIABLE,
 			executionMode: ActionExecutionMode.CONTINUOUS,
 			expression: "DISTRIBUER_GOBELET",
-			...Action.DEFAULT_DIMENSIONS,
+			width: 200,
+			height: 40,
 		},
 		{ x: 200, y: 200 },
 	);
@@ -40,7 +41,8 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 			type: ActionType.BOOLEAN_VARIABLE,
 			executionMode: ActionExecutionMode.CONTINUOUS,
 			expression: "REMPLISSAGE",
-			...Action.DEFAULT_DIMENSIONS,
+			width: 200,
+			height: 40,
 		},
 		{ x: 200, y: 350 },
 	);

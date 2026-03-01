@@ -1,4 +1,5 @@
-import { TimerNode } from "../ast/nodes/blocks";
+import { ASTNode } from "../ast/nodes/ast-node";
+import { TimerNode, TimerStringDeclarationNode } from "../ast/nodes/blocks";
 import { IfControlNode } from "../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -24,17 +25,38 @@ import InvalidTimerOutputNodeException from "./exceptions/invalid-timer-output-n
 import InvalidTimerOutputTypeException from "./exceptions/invalid-timer-output-type.exception";
 import InvalidTimerPresetTimeTypeException from "./exceptions/invalid-timer-preset-time-type.exception";
 import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-expr-operand-type.exception";
+import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
-import TypeAnalyserVisitor from "./type-analyser.visitor";
+import TypeAnalyserVisitor, { ExpectedNodeResultType } from "./type-analyser.visitor";
+
+export type SemanticAnalyserOptions = {
+	/**
+	 * If specified, the visitor will throw an error if it encounters a node of one of the specified types
+	 */
+	unauthorizedNodes?: ASTNode["type"][];
+};
 
 export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	private env: Environment;
 	private typeAnalyser: TypeAnalyserVisitor;
+	private unauthorizedNodes: ASTNode["type"][];
 
-	constructor(environment: Environment) {
+	constructor(environment: Environment, options?: SemanticAnalyserOptions) {
 		super();
 		this.env = environment;
 		this.typeAnalyser = new TypeAnalyserVisitor(environment);
+		this.unauthorizedNodes = options?.unauthorizedNodes || [];
+	}
+
+	private checkUnauthorizedNode(node: ASTNode): void {
+		if (this.unauthorizedNodes.includes(node.type)) {
+			throw new UnauthorizedNodeException(node.type, node);
+		}
+	}
+
+	visit(node: ASTNode): void {
+		this.checkUnauthorizedNode(node);
+		super.visit(node);
 	}
 
 	protected visitIdentifierNode(node: IdentifierNode): void {
@@ -95,7 +117,12 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		const leftType = this.typeAnalyser.visit(node.left);
 		const rightType = this.typeAnalyser.visit(node.right);
 		if (leftType !== rightType) {
-			throw new IncompatibleOperandsTypesException(node.operator, leftType, rightType, node);
+			throw new IncompatibleOperandsTypesException(
+				node.operator,
+				leftType as ExpectedNodeResultType,
+				rightType as ExpectedNodeResultType,
+				node,
+			);
 		}
 		if (node.operator !== "=" && node.operator !== "!=") {
 			// For comparison operators other than equality and inequality, check that both operands are numbers
@@ -154,7 +181,12 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		const rightType = this.typeAnalyser.visit(node.right);
 		// Check that the type of the right operand is compatible with the type of the variable being assigned to
 		if (leftType !== rightType) {
-			throw new IncompatibleOperandsTypesException(":=", leftType, rightType, node);
+			throw new IncompatibleOperandsTypesException(
+				":=",
+				leftType as ExpectedNodeResultType,
+				rightType as ExpectedNodeResultType,
+				node,
+			);
 		}
 		this.visit(node.left);
 		this.visit(node.right);
@@ -176,29 +208,36 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	protected visitTimerBlockNode(node: TimerNode): void {
 		const inputType = this.typeAnalyser.visit(node.input);
 		if (inputType !== "boolean") {
-			throw new InvalidTimerInputTypeException(inputType, node);
+			throw new InvalidTimerInputTypeException(inputType as ExpectedNodeResultType, node);
 		}
 		if (node.lastInput.type !== "IDENTIFIER") {
 			throw new InvalidTimerLastInputNodeException(node);
 		}
 		const lastInputType = this.typeAnalyser.visit(node.lastInput);
 		if (lastInputType !== "boolean") {
-			throw new InvalidTimerLastInputTypeException(lastInputType, node);
+			throw new InvalidTimerLastInputTypeException(lastInputType as ExpectedNodeResultType, node);
 		}
 		if (node.output.type !== "IDENTIFIER") {
 			throw new InvalidTimerOutputNodeException(node);
 		}
 		const outputType = this.typeAnalyser.visit(node.output);
 		if (outputType !== "boolean") {
-			throw new InvalidTimerOutputTypeException(outputType, node);
+			throw new InvalidTimerOutputTypeException(outputType as ExpectedNodeResultType, node);
 		}
 		const presetTimeType = this.typeAnalyser.visit(node.presetTime);
 		if (presetTimeType !== "number") {
-			throw new InvalidTimerPresetTimeTypeException(presetTimeType, node);
+			throw new InvalidTimerPresetTimeTypeException(presetTimeType as ExpectedNodeResultType, node);
 		}
 		const elapsedTimeType = this.typeAnalyser.visit(node.elapsedTime);
 		if (elapsedTimeType !== "number") {
-			throw new InvalidTimerElapsedTimeTypeException(elapsedTimeType, node);
+			throw new InvalidTimerElapsedTimeTypeException(elapsedTimeType as ExpectedNodeResultType, node);
+		}
+	}
+
+	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): void {
+		const inputType = this.typeAnalyser.visit(node.input);
+		if (inputType !== "boolean") {
+			throw new InvalidTimerInputTypeException(inputType as ExpectedNodeResultType, node);
 		}
 	}
 }

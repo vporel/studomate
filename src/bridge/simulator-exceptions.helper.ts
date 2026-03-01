@@ -6,6 +6,7 @@ import UnknownIdentifierException from "../simulator/compiler/semantic-analyser/
 import { DivisionByZeroException } from "../simulator/compiler/interpreter/evaluator/exceptions/division-by-zero.exception";
 
 import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
 import UnknownVariableNameException from "@/simulator/compiler/environment/exceptions/unknown-variable-name.exception";
 import InvalidTimerElapsedTimeTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-elapsed-time-type.exception";
 import InvalidTimerInputTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-input-type.exception";
@@ -14,6 +15,7 @@ import InvalidTimerLastInputTypeException from "@/simulator/compiler/semantic-an
 import InvalidTimerOutputNodeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-output-node.exception";
 import InvalidTimerOutputTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-output-type.exception";
 import InvalidTimerPresetTimeTypeException from "@/simulator/compiler/semantic-analyser/exceptions/invalid-timer-preset-time-type.exception";
+import UnauthorizedNodeException from "@/simulator/compiler/semantic-analyser/exceptions/unauthorized-node.exception";
 import InvalidCharacterException from "../simulator/compiler/lexer/exceptions/invalid-character.exception";
 import InvalidStringEndQuoteException from "../simulator/compiler/lexer/exceptions/invalid-string-end-quote.exception";
 import UnterminatedStringException from "../simulator/compiler/lexer/exceptions/unterminated-string.exception";
@@ -25,6 +27,21 @@ import InvalidBinaryExprOperandTypeException from "../simulator/compiler/semanti
 import InvalidUnaryExprOperandTypeException from "../simulator/compiler/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
 
 type Lang = "FR" | "EN";
+
+const AST_NODE_TYPE_LABELS: Record<ASTNode["type"], string> = {
+	IDENTIFIER: "Variable",
+	BOOLEAN_LITERAL: "Booléen",
+	NUMBER_LITERAL: "Nombre",
+	STRING_LITERAL: "Chaîne de caractères",
+	UNARY_EXPRESSION: "Expression unaire",
+	COMPARISON_EXPRESSION: "Expression de comparaison",
+	LOGICAL_EXPRESSION: "Expression logique",
+	ARITHMETIC_EXPRESSION: "Expression arithmétique",
+	ASSIGN_STATEMENT: "Affectation",
+	TIMER_BLOCK: "Bloc de temporisation",
+	TIMER_STRING_DECLARATION: "Temporisation",
+	IF_CONTROL: "Contrôle conditionnel",
+};
 
 export default class SimulatorExceptionsHelper {
 	/**
@@ -84,6 +101,12 @@ export default class SimulatorExceptionsHelper {
 	}
 
 	private static getForSemanticException(exception: unknown, lang: Lang): string | null {
+		if (exception instanceof UnauthorizedNodeException) {
+			return lang === "EN"
+				? `Unauthorized node of type: ${AST_NODE_TYPE_LABELS[exception.getNodeType()]}`
+				: `Nœud non autorisé de type : ${exception.getNodeType()}`;
+		}
+
 		if (exception instanceof UnknownIdentifierException) {
 			return lang === "EN"
 				? `Unknown variable: ${exception.getIdentifier()}`
@@ -141,8 +164,8 @@ export default class SimulatorExceptionsHelper {
 		if (exception instanceof InvalidTimerInputTypeException) {
 			const actual = SimulatorExceptionsHelper.transformVariableType(exception.getActualType(), lang);
 			return lang === "EN"
-				? `Invalid timer input type: the input of a timer block must be boolean (found ${actual})`
-				: `Type d'entrée de temporisation invalide : l'entrée d'un bloc de temporisation doit être un booléen (trouvé ${actual})`;
+				? `Invalid timer input type: the input of a timer must be boolean (found ${actual})`
+				: `Type d'entrée de temporisation invalide : l'entrée d'une temporisation doit être un booléen (trouvé ${actual})`;
 		}
 
 		if (exception instanceof InvalidTimerLastInputNodeException) {

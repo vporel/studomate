@@ -83,7 +83,7 @@ export default abstract class Element<DataType extends BaseData> {
 	 * @param newData
 	 * @returns
 	 */
-	fixNewDataConsistency(newData: Partial<DataType>): Partial<DataType> {
+	fixNewDataConsistency(newData: Partial<DataType>, oldData: DataType): Partial<DataType> {
 		return newData;
 	}
 

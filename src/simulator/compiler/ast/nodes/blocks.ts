@@ -13,4 +13,16 @@ export interface TimerNode extends BaseNode {
 	output: ASTNode; //should be an identifier node referencing a boolean variable
 }
 
-export type BlockNode = TimerNode;
+/**
+ * A simple timer declaration using a string format like t1/X10/5s
+ * This node can not be directly evaluated, it's just a convenient way to declare timers with a simple syntax
+ * It could be transformed into a TimerNode during an intermediate compilation step
+ */
+export interface TimerStringDeclarationNode extends BaseNode {
+	type: "TIMER_STRING_DECLARATION";
+	name: string;
+	input: ASTNode; //should be of native type boolean
+	presetTime: number; //in ms
+}
+
+export type BlockNode = TimerNode | TimerStringDeclarationNode;

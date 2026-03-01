@@ -1,4 +1,4 @@
-import { TimerNode } from "../../ast/nodes/blocks";
+import { TimerNode, TimerStringDeclarationNode } from "../../ast/nodes/blocks";
 import { IfControlNode } from "../../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -61,7 +61,7 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 				return leftValue * rightValue;
 			case "/":
 				if (rightValue === 0) {
-					throw new DivisionByZeroException(leftValue, rightValue);
+					throw new DivisionByZeroException(leftValue, rightValue, node);
 				}
 				return leftValue / rightValue;
 		}
@@ -101,7 +101,7 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 
 	protected visitAssignStatementNode(node: AssignStatementNode): EnvVariableValue {
 		if (node.left.type !== "IDENTIFIER") {
-			throw new EvaluatorException("Left-hand side of assignment must be an identifier");
+			throw new EvaluatorException("Left-hand side of assignment must be an identifier", node);
 		}
 		const value = this.visit(node.right);
 		this.env.setVariableValueByName(node.left.value, value);
@@ -121,5 +121,9 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 
 	protected visitTimerBlockNode(node: TimerNode): EnvVariableValue {
 		return this.timerEvaluator.evaluate(node);
+	}
+
+	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): EnvVariableValue {
+		throw new EvaluatorException("Timer string declaration nodes should not be evaluated directly", node);
 	}
 }

@@ -1,4 +1,4 @@
-import { TimerNode } from "../ast/nodes/blocks";
+import { TimerNode, TimerStringDeclarationNode } from "../ast/nodes/blocks";
 import { IfControlNode } from "../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -17,16 +17,21 @@ import { Environment } from "../environment/environment";
  */
 export type ExpectedNodeResultType = "number" | "boolean" | "string" | "void";
 
-export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultType> {
-	private env: Environment;
+/**
+ * Used to infer the type of an expression, it can be used in different contexts like :
+ * If the environment is not set, the visitor could return "unknown" for nodes
+ * that it can't infer the type of, instead of throwing an error.
+ */
+export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultType | "unknown"> {
+	private env?: Environment;
 
-	constructor(environment: Environment) {
+	constructor(environment?: Environment) {
 		super();
 		this.env = environment;
 	}
 
-	protected visitIdentifierNode(node: IdentifierNode): ExpectedNodeResultType {
-		return this.env.getVariableTypeByName(node.value);
+	protected visitIdentifierNode(node: IdentifierNode): ExpectedNodeResultType | "unknown" {
+		return this.env?.getVariableTypeByName(node.value) ?? "unknown";
 	}
 
 	protected visitBooleanNode(node: BooleanNode): ExpectedNodeResultType {
@@ -57,7 +62,7 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 		return "boolean";
 	}
 
-	protected visitAssignStatementNode(node: AssignStatementNode): ExpectedNodeResultType {
+	protected visitAssignStatementNode(node: AssignStatementNode): ExpectedNodeResultType | "unknown" {
 		return this.visit(node.right);
 	}
 
@@ -66,6 +71,10 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 	}
 
 	protected visitTimerBlockNode(node: TimerNode): ExpectedNodeResultType {
+		return "boolean";
+	}
+
+	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 }

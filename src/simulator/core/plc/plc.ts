@@ -16,6 +16,7 @@ export default class PLC {
 	private onPLCStop: PLCCallback = () => {};
 	private onCycleStart: PLCCallback = () => {};
 	private onCycleEnd: PLCCallback = () => {};
+	private onCycleError: (error: Error) => void = () => {};
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -25,6 +26,7 @@ export default class PLC {
 		onPLCStop?: PLCCallback;
 		onCycleStart?: PLCCallback;
 		onCycleEnd?: PLCCallback;
+		onCycleError?: (error: Error) => void;
 	}) {
 		this.scanTimeMs = config.scanTimeMs;
 		this.program = config.program;
@@ -32,6 +34,7 @@ export default class PLC {
 		if (config.onPLCStop) this.onPLCStop = config.onPLCStop;
 		if (config.onCycleStart) this.onCycleStart = config.onCycleStart;
 		if (config.onCycleEnd) this.onCycleEnd = config.onCycleEnd;
+		if (config.onCycleError) this.onCycleError = config.onCycleError;
 		config.variables.forEach((variable) => {
 			const variableCopy = variable.copy();
 			if (variable.getScope() === "input") {
@@ -104,12 +107,19 @@ export default class PLC {
 
 	//Scan cycle
 	private scan(): void {
-		if (this.onCycleStart) this.onCycleStart(this);
-		this.readInputs();
-		this.executeProgram();
-		this.writeOutputs();
-		this.internalTasks();
-		if (this.onCycleEnd) this.onCycleEnd(this);
+		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
+		try {
+			this.readInputs();
+			this.executeProgram();
+			this.writeOutputs();
+			this.internalTasks();
+		} catch (e) {
+			this.stop();
+			console.error("Error during PLC cycle execution:", e);
+			this.executeCallback(() => this.onCycleError?.(e as Error), "Error in onCycleError callback:");
+			return;
+		}
+		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
 	}
 
 	private readInputs(): void {
@@ -141,6 +151,14 @@ export default class PLC {
 			clearInterval(this.cycleTimer);
 			this.cycleTimer = null;
 			if (this.onPLCStop) this.onPLCStop(this);
+		}
+	}
+
+	private executeCallback(callback?: PLCCallback, messageOnError?: string): void {
+		try {
+			if (callback) callback(this);
+		} catch (e) {
+			console.error(messageOnError || "Error during PLC callback execution:", e);
 		}
 	}
 }

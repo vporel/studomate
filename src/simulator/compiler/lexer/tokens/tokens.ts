@@ -18,7 +18,12 @@ export enum TokenType {
 	PLUS = "PLUS", // +
 	MINUS = "MINUS", // -
 	MUL = "MUL", // *
-	DIV = "DIV", // /
+
+	//Slash
+	SLASH = "SLASH", // Replaces the DIV token to avoid confusion for example in timer expressions (t1/X10/5s)
+
+	//Duration
+	DURATION = "DURATION", // 100ms, 2s, etc.
 
 	//Comparison operators
 	EQ = "EQ", // =
@@ -51,7 +56,7 @@ export const ARITHMETIC_OPERATOR_TOKENS_TYPES: Record<ArithmeticOperator, TokenT
 	"+": TokenType.PLUS,
 	"-": TokenType.MINUS,
 	"*": TokenType.MUL,
-	"/": TokenType.DIV,
+	"/": TokenType.SLASH,
 };
 
 export const COMPARISON_OPERATOR_TOKENS_TYPES: Record<ComparisonOperator, TokenType> = {

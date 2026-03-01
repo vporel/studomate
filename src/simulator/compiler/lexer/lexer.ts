@@ -4,11 +4,7 @@ import InvalidStringEndQuoteException from "./exceptions/invalid-string-end-quot
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
 import { Language } from "./language.enum";
 import LexerHelper from "./lexer.helper";
-import {
-	ARITHMETIC_OPERATOR_TOKENS_TYPES,
-	Token,
-	TokenType,
-} from "./tokens/tokens";
+import { ARITHMETIC_OPERATOR_TOKENS_TYPES, Token, TokenType } from "./tokens/tokens";
 
 export class Lexer {
 	language: Language;
@@ -114,7 +110,21 @@ export class Lexer {
 						position++;
 					}
 				}
-				tokens.push({ type: TokenType.NUMBER, value, position: start });
+				//Duration
+				const durationMatch = input.slice(position).match(/^(ms|s|m|h|d)/);
+				if (durationMatch) {
+					const unit = durationMatch[0];
+					tokens.push({
+						type: TokenType.DURATION,
+						value: value + unit,
+						position: start,
+					});
+					position += unit.length; // We move the position past the duration unit
+				} else {
+					//Otherwise, it's just a number
+					tokens.push({ type: TokenType.NUMBER, value, position: start });
+				}
+
 				continue;
 			}
 

@@ -1,3 +1,4 @@
+import BlocksBuilder from "../ast/builders/blocks.builder";
 import ExpressionsBuilder from "../ast/builders/expressions.builder";
 import IdentifiersBuilder from "../ast/builders/identifiers.builder";
 import LiteralsBuilder from "../ast/builders/literals.builder";
@@ -110,6 +111,9 @@ export default class Parser {
 		const token = this.current();
 
 		if (this.at(TokenType.IDENTIFIER)) {
+			if (this.isTimerPattern()) {
+				return this.parseTimerDefinition();
+			}
 			this.consume(TokenType.IDENTIFIER);
 			return IdentifiersBuilder.buildIdentifierNode(token.value, token.position);
 		}
@@ -143,6 +147,60 @@ export default class Parser {
 		}
 
 		throw new MissingPrimaryOrLeftParentheseException(token);
+	}
+
+	private isTimerPattern(): boolean {
+		const p = this.position;
+		// First verification : Identifier followed by /
+		if (
+			!(this.tokens[p]?.type === TokenType.IDENTIFIER && this.tokens[p + 1]?.type === TokenType.SLASH)
+		) {
+			return false;
+		}
+
+		// We seek a SLASH + DURATION later
+		// We limit the search (e.g., 10 tokens) to avoid scanning the entire array
+		for (let i = p + 2; i < p + 12 && i < this.tokens.length; i++) {
+			if (this.tokens[i].type === TokenType.SLASH && this.tokens[i + 1]?.type === TokenType.DURATION) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private parseTimerDefinition(): ASTNode {
+		const startPos = this.current().position;
+
+		const timerIdToken = this.consume(TokenType.IDENTIFIER);
+		this.consume(TokenType.SLASH);
+
+		// Extract the tokens of the expression
+		// until we find the SLASH + DURATION that ends the timer definition
+		const subTokens: Token[] = [];
+		while (!this.isEndOfTimerInput()) {
+			subTokens.push(this.tokens[this.position]);
+			this.position++;
+		}
+		// Add a fictitious EOF to ensure the sub-parser stops properly
+		subTokens.push({ type: TokenType.EOF, value: "", position: this.current().position });
+
+		// Parse the expression with a new instance of Parser
+		const subParser = new Parser(subTokens);
+		const inputExpr = subParser.parse();
+
+		this.consume(TokenType.SLASH);
+		const durationToken = this.consume(TokenType.DURATION);
+
+		return BlocksBuilder.buildTimerStringDeclarationNode(
+			timerIdToken.value,
+			inputExpr,
+			this.convertDurationToMs(durationToken.value),
+			startPos,
+		);
+	}
+
+	private isEndOfTimerInput(): boolean {
+		return this.at(TokenType.SLASH) && this.tokens[this.position + 1]?.type === TokenType.DURATION;
 	}
 
 	private current(): Token {
@@ -198,5 +256,25 @@ export default class Parser {
 			token.type,
 			token.position,
 		);
+	}
+
+	private convertDurationToMs(durationStr: string): number {
+		const value = parseFloat(durationStr);
+		const unit = durationStr.replace(/[0-9.]/g, "").toLowerCase();
+
+		switch (unit) {
+			case "ms":
+				return value;
+			case "s":
+				return value * 1000;
+			case "m":
+				return value * 60000;
+			case "h":
+				return value * 3600000;
+			case "d":
+				return value * 86400000;
+			default:
+				return value;
+		}
 	}
 }

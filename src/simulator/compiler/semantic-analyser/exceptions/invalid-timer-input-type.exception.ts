@@ -1,11 +1,11 @@
-import { TimerNode } from "../../ast/nodes/blocks";
+import { TimerNode, TimerStringDeclarationNode } from "../../ast/nodes/blocks";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import InvalidNodeTypeException from "./invalid-node-type.exception";
 
 export default class InvalidTimerInputTypeException extends InvalidNodeTypeException {
-	constructor(actualType: ExpectedNodeResultType, originNode: TimerNode) {
+	constructor(actualType: ExpectedNodeResultType, originNode: TimerNode | TimerStringDeclarationNode) {
 		super(
-			`Invalid timer input type: the input of a timer block must be boolean`,
+			`Invalid timer input type: the input of a timer must be boolean`,
 			"boolean",
 			actualType,
 			originNode,

@@ -1,7 +1,7 @@
 import ExpressionsBuilder from "../../ast/builders/expressions.builder";
 import LiteralsBuilder from "../../ast/builders/literals.builder";
 import { ASTNode } from "../../ast/nodes/ast-node";
-import { TimerNode } from "../../ast/nodes/blocks";
+import { TimerNode, TimerStringDeclarationNode } from "../../ast/nodes/blocks";
 import { IfControlNode } from "../../ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -62,7 +62,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 					break;
 				case "/":
 					if (simplifiedRight.value === 0) {
-						throw new DivisionByZeroException(simplifiedLeft.value, simplifiedRight.value);
+						throw new DivisionByZeroException(simplifiedLeft.value, simplifiedRight.value, node);
 					}
 					result = simplifiedLeft.value / simplifiedRight.value;
 					break;
@@ -173,6 +173,10 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	}
 
 	protected visitTimerBlockNode(node: TimerNode): ASTNode {
+		return node;
+	}
+
+	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ASTNode {
 		return node;
 	}
 }

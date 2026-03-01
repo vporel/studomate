@@ -27,12 +27,6 @@ export type PreCompiledStep = {
 };
 
 export default class StepPreCompiler {
-	/**
-	 * Compiles a Transition's expression into a ready-to-evaluate AST node.
-	 * An empty expression is compiled to `FALSE` (transition never triggered).
-	 *
-	 * @throws ProjectPreCompilerError if the expression is lexically, syntactically, or semantically invalid.
-	 */
 	static preCompile(step: Step, grafcet: Grafcet): PreCompiledStep {
 		const node = IdentifiersBuilder.buildIdentifierNode(
 			StepVariableGenerator.stepVariableMnemonic(step.data.number as number),

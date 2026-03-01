@@ -2,11 +2,14 @@ import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
 import VariablesMapper from "@/bridge/variables.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Variable from "@/schemas/variable/variable.schema";
+import { TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
+import FinderVisitor from "@/simulator/compiler/ast/visitors/finder.visitor";
 import { Environment } from "@/simulator/compiler/environment/environment";
 import { Language } from "@/simulator/compiler/lexer/language.enum";
 import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
+import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import Transition from "../../../schemas/grafcet/transition.schema";
 import ProjectAnalyserIssue from "../../project.analyser.issue";
@@ -39,13 +42,17 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 			const lexer = new Lexer(Language.FR);
 			const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
 			const node = parser.parse();
-			if (
-				node.type !== "IDENTIFIER" &&
-				node.type !== "BOOLEAN_LITERAL" &&
-				node.type !== "UNARY_EXPRESSION" &&
-				node.type !== "LOGICAL_EXPRESSION" &&
-				node.type !== "COMPARISON_EXPRESSION"
-			) {
+			const typeAnalyser = new TypeAnalyserVisitor();
+			if (node.type === "ASSIGN_STATEMENT") {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						source,
+						"Expression invalide : une transition ne peut pas être une affectation.",
+					),
+				);
+			}
+			if (node.type !== "IDENTIFIER" && typeAnalyser.visit(node) !== "boolean") {
 				if (node.type === "NUMBER_LITERAL") {
 					issues.push(
 						new ProjectAnalyserIssue(
@@ -59,7 +66,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 						new ProjectAnalyserIssue(
 							"error",
 							source,
-							"Expression invalide. Une transition doit être une expression retournant un booléen.",
+							"Expression invalide : une transition doit être une expression retournant un booléen.",
 						),
 					);
 				}
@@ -104,22 +111,37 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				const lexer = new Lexer(Language.FR);
 				const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
 				const node = parser.parse();
-				const semanticAnalyser = new SemanticAnalyserVisitor(
-					new Environment(variables.map(VariablesMapper.schemaToEnv)),
-				);
+				const env = new Environment(variables.map(VariablesMapper.schemaToEnv));
+				const semanticAnalyser = new SemanticAnalyserVisitor(env);
 				semanticAnalyser.visit(node);
+				const typeAnalyser = new TypeAnalyserVisitor(env);
+				const nodeType = typeAnalyser.visit(node);
 				if (node.type === "IDENTIFIER") {
-					const variable = variables.find((v) => v.mnemonic === node.value);
-					if (variable!.type !== "BOOL") {
+					if (nodeType !== "boolean") {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
 								source,
-								`La transition fait référence à la variable "${node.value}" qui n'est pas de type BOOL.`,
+								`La transition fait référence à la variable "${node.value}" qui n'est pas booléenne.`,
 							),
 						);
 					}
 				}
+				//Search for timer string declarations
+				const finder = new FinderVisitor<TimerStringDeclarationNode>("TIMER_STRING_DECLARATION");
+				const timerStringDeclarations = finder.visit(node);
+				//For each declaration, make sure the name doesn't conflict with an existing variable
+				timerStringDeclarations.forEach((decl) => {
+					if (env.existsVariableWithName(decl.name)) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								source,
+								`L'identifiant de temporisation "${decl.name}" entre en conflit avec une variable existante.`,
+							),
+						);
+					}
+				});
 			} catch (e) {
 				issues.push(
 					new ProjectAnalyserIssue(

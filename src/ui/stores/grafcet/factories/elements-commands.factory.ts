@@ -103,7 +103,7 @@ export default class ElementsCommandsFactory {
 		if (!element) return { commands: [] };
 		const prevData = element.data as any;
 		if (typeof newData === "function") newData = newData(prevData);
-		newData = element.fixNewDataConsistency(newData);
+		newData = element.fixNewDataConsistency(newData, prevData);
 		const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
 		const elementcopy = element.copy();
 		elementcopy.updateData(newData);

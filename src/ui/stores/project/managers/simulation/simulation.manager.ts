@@ -142,7 +142,6 @@ export default class SimulationManager {
 			return;
 		}
 		toast.success("Compilation terminée, lancement de la simulation...");
-		console.log("Compiled project:", projectCompilationResult.result);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -181,6 +180,10 @@ export default class SimulationManager {
 				this.setStoreState(() => ({
 					simulationVariablesStates: variablesState,
 				}));
+			},
+			onCycleError: (error) => {
+				toast.error(`Arrêt de la simulation. Erreur lors de l'exécution du cycle PLC.`);
+				this.setDesignMode();
 			},
 		});
 		return plc;
