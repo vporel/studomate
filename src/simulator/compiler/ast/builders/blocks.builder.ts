@@ -1,3 +1,4 @@
+import { createRandomId } from "@/simulator/utils/ids";
 import { ASTNode } from "../nodes/ast-node";
 import { TimerNode, TimerStringDeclarationNode, TimerType } from "../nodes/blocks";
 
@@ -12,6 +13,7 @@ export default class BlocksBuilder {
 		position?: number,
 	): TimerNode {
 		return {
+			id: createRandomId(),
 			type: "TIMER_BLOCK",
 			timerType,
 			input,
@@ -30,6 +32,7 @@ export default class BlocksBuilder {
 		position?: number,
 	): TimerStringDeclarationNode {
 		return {
+			id: createRandomId(),
 			type: "TIMER_STRING_DECLARATION",
 			name,
 			input,

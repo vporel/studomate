@@ -50,7 +50,7 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 
 	const transition0 = new Transition(
 		"transition-0",
-		{ expression: "BP_DEMARRER", ...Transition.DEFAULT_DIMENSIONS },
+		{ expression: "BP_DEMARRER OU t1/X0/3s", ...Transition.DEFAULT_DIMENSIONS },
 		{ x: 50, y: 125 },
 	);
 	const transition1 = new Transition(

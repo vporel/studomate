@@ -16,9 +16,9 @@ export default class StepCompiler {
 	): ASTNode[] {
 		const stepNode = preCompiledStep.node;
 		const branchesNodes = preCompiledStep.branches.map((branch) => {
-			const transitionNode = preCompiledGrafcet.transitions[branch.transitionId].node;
+			const transitionNode = preCompiledGrafcet.transitions.get(branch.transitionId)!.node;
 			const stepsBeforeTransitionNodes = branch.stepsIdsBeforeTransition.map(
-				(stepId) => preCompiledGrafcet.steps[stepId].node,
+				(stepId) => preCompiledGrafcet.steps.get(stepId)!.node,
 			);
 			return ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [
 				transitionNode,
@@ -26,7 +26,7 @@ export default class StepCompiler {
 			]);
 		});
 		const allBranchesStepsNodes = preCompiledStep.branches.flatMap((b) =>
-			b.stepsIdsBeforeTransition.map((s) => preCompiledGrafcet.steps[s].node),
+			b.stepsIdsBeforeTransition.map((stepId) => preCompiledGrafcet.steps.get(stepId)!.node),
 		);
 
 		return [

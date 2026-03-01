@@ -194,7 +194,11 @@ export default class SimulationManager {
 		const environment = new Environment(plcVariablesSnapshot.map(VariablesMapper.plcToEnv));
 		Object.entries(this.evaluableExpressions).forEach(([expressionId, expressionNode]) => {
 			try {
-				const evaluator = new EvaluatorVisitor(environment);
+				const evaluator = new EvaluatorVisitor(environment, {
+					timers: {
+						deltaTimeMs: this.getStoreState().plcConfig.scanTimeMs,
+					},
+				});
 				const value = evaluator.visit(expressionNode);
 				this.evaluableExpressionsValues[expressionId] = value;
 			} catch (e) {

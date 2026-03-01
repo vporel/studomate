@@ -47,7 +47,7 @@ export default class ActionPreCompiler {
 	static preCompile(
 		action: Action,
 		grafcet: Grafcet,
-		plcVariables: PLCVariable[],
+		variables: PLCVariable[],
 		language: Language,
 	): PreCompiledAction | null {
 		if (
@@ -58,9 +58,9 @@ export default class ActionPreCompiler {
 			return null;
 		let phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
 		if (action.data.type === ActionType.BOOLEAN_VARIABLE) {
-			phases = this.compileBooleanAction(action, plcVariables);
+			phases = this.compileBooleanAction(action, variables);
 		} else {
-			phases = this.compileExpressionAction(action, plcVariables, language);
+			phases = this.compileExpressionAction(action, variables, language);
 		}
 		return {
 			phases,

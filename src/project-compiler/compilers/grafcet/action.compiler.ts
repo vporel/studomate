@@ -13,7 +13,7 @@ export default class ActionCompiler {
 		stepMemosNodes: Map<string, IdentifierNode>,
 	): ASTNode[] {
 		const nodes: ASTNode[] = [];
-		const stepNode = preCompiledGrafcet.steps[preCompiledAction.stepId].node;
+		const stepNode = preCompiledGrafcet.steps.get(preCompiledAction.stepId)!.node;
 
 		const phases = preCompiledAction.phases;
 		const risingEdgeCondition = ExpressionsBuilder.buildLogicalExpressionNode(

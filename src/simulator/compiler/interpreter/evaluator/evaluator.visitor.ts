@@ -14,16 +14,22 @@ import { EnvVariableValue } from "../../environment/env-variable";
 import { Environment } from "../../environment/environment";
 import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
 import EvaluatorException from "./exceptions/evaluator.exception";
-import TimerEvaluator from "./timer.evaluator";
+import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";
+
+export type EvaluatorVisitorOptions = {
+	timers: TimerNodeEvaluatorOptions;
+};
 
 export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	private env: Environment;
-	private timerEvaluator: TimerEvaluator;
+	private timerEvaluator: TimerNodeEvaluator;
+	private options: EvaluatorVisitorOptions;
 
-	constructor(environment: Environment) {
+	constructor(environment: Environment, options: EvaluatorVisitorOptions) {
 		super();
 		this.env = environment;
-		this.timerEvaluator = new TimerEvaluator(environment, this);
+		this.timerEvaluator = new TimerNodeEvaluator(environment, this, options.timers);
+		this.options = options;
 	}
 
 	protected visitIdentifierNode(node: IdentifierNode): EnvVariableValue {

@@ -4,17 +4,26 @@ import { BaseVisitor } from "../../ast/visitors/base.visitor";
 import { EnvVariableValue } from "../../environment/env-variable";
 import { Environment } from "../../environment/environment";
 
-export default class TimerEvaluator {
+export type TimerNodeEvaluatorOptions = {
+	deltaTimeMs: number;
+};
+
+export default class TimerNodeEvaluator {
 	private env: Environment;
 	private visitor: BaseVisitor<EnvVariableValue>;
+	private options: TimerNodeEvaluatorOptions;
 
-	constructor(environment: Environment, visitor: BaseVisitor<EnvVariableValue>) {
+	constructor(
+		environment: Environment,
+		visitor: BaseVisitor<EnvVariableValue>,
+		options: TimerNodeEvaluatorOptions,
+	) {
 		this.env = environment;
 		this.visitor = visitor;
+		this.options = options;
 	}
 
 	/**
-	 * The time should be managed by a real timer so that elapsed time increases
 	 * @param node
 	 * @returns
 	 */
@@ -30,7 +39,8 @@ export default class TimerEvaluator {
 			case "TON":
 				if (risingEdge) {
 					this.env.setVariableValueByName((node.output as IdentifierNode).value, false);
-					return false;
+					outputValue = false;
+					break;
 				}
 				if (inputValue) {
 					if (elapsedTimeValue >= presetTimeValue) {
@@ -39,7 +49,7 @@ export default class TimerEvaluator {
 						outputValue = false;
 						this.env.setVariableValueByName(
 							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + 1,
+							elapsedTimeValue + this.options.deltaTimeMs,
 						);
 					}
 				} else {
@@ -50,7 +60,8 @@ export default class TimerEvaluator {
 			case "TOF":
 				if (fallingEdge) {
 					this.env.setVariableValueByName((node.output as IdentifierNode).value, true);
-					return true;
+					outputValue = true;
+					break;
 				}
 				if (!inputValue) {
 					if (elapsedTimeValue >= presetTimeValue) {
@@ -59,7 +70,7 @@ export default class TimerEvaluator {
 						outputValue = true;
 						this.env.setVariableValueByName(
 							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + 1,
+							elapsedTimeValue + this.options.deltaTimeMs,
 						);
 					}
 				} else {
@@ -70,7 +81,8 @@ export default class TimerEvaluator {
 			case "TP":
 				if (risingEdge) {
 					this.env.setVariableValueByName((node.output as IdentifierNode).value, true);
-					return true;
+					outputValue = true;
+					break;
 				}
 				if (inputValue) {
 					if (elapsedTimeValue >= presetTimeValue) {
@@ -79,7 +91,7 @@ export default class TimerEvaluator {
 						outputValue = true;
 						this.env.setVariableValueByName(
 							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + 1,
+							elapsedTimeValue + this.options.deltaTimeMs,
 						);
 					}
 				} else {
@@ -89,6 +101,7 @@ export default class TimerEvaluator {
 				break;
 		}
 		this.env.setVariableValueByName((node.output as IdentifierNode).value, outputValue);
+		this.env.setVariableValueByName((node.lastInput as IdentifierNode).value, inputValue);
 		return outputValue;
 	}
 }

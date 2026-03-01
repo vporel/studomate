@@ -1,3 +1,6 @@
+import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generator";
+import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
+import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import SimulatorExceptionsHelper from "../../../bridge/simulator-exceptions.helper";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
@@ -14,25 +17,41 @@ import TransitionPreCompiler, { PreCompiledTransition } from "./transition.pre-c
  * Keys are the original element ids from the schema.
  */
 export type PreCompiledGrafcet = {
-	steps: Record<string, PreCompiledStep>;
-	transitions: Record<string, PreCompiledTransition>;
-	actions: Record<string, PreCompiledAction | undefined>; //Some actions can be null if they are of type TEXT (purely descriptive, no runtime effect)
+	steps: Map<string, PreCompiledStep>;
+	stepsMemos: Map<
+		string,
+		{
+			variable: PLCVariable;
+			node: IdentifierNode;
+		}
+	>;
+	transitions: Map<string, PreCompiledTransition>;
+	actions: Map<string, PreCompiledAction | undefined>; //Some actions can be null if they are of type TEXT (purely descriptive, no runtime effect)
 };
 
 export default class GrafcetPreCompiler {
 	static preCompile(
 		grafcet: Grafcet,
-		plcVariables: PLCVariable[],
+		variables: PLCVariable[],
 		language: Language,
 		errors: ProjectPreCompilerError[],
 	): PreCompiledGrafcet {
-		const steps: PreCompiledGrafcet["steps"] = {};
-		const transitions: PreCompiledGrafcet["transitions"] = {};
-		const actions: PreCompiledGrafcet["actions"] = {};
+		const steps: PreCompiledGrafcet["steps"] = new Map();
+		const stepsMemos: PreCompiledGrafcet["stepsMemos"] = new Map();
+		const transitions: PreCompiledGrafcet["transitions"] = new Map();
+		const actions: PreCompiledGrafcet["actions"] = new Map();
 
+		const takenVariablesNames = new Set(variables.map((v) => v.getName()));
 		for (const step of grafcet.steps) {
 			try {
-				steps[step.id] = StepPreCompiler.preCompile(step, grafcet);
+				steps.set(step.id, StepPreCompiler.preCompile(step, grafcet));
+				const generatedMemoVar = MemoVariableGenerator.generate("boolean", takenVariablesNames);
+				stepsMemos.set(step.id, {
+					variable: generatedMemoVar,
+					node: IdentifiersBuilder.buildIdentifierNode(generatedMemoVar.getName()),
+				});
+				takenVariablesNames.add(generatedMemoVar.getName());
+				variables.push(generatedMemoVar);
 			} catch (e) {
 				const message =
 					SimulatorExceptionsHelper.getUserFriendlyMessage(
@@ -48,7 +67,10 @@ export default class GrafcetPreCompiler {
 
 		for (const transition of grafcet.transitions) {
 			try {
-				transitions[transition.id] = TransitionPreCompiler.preCompile(transition, grafcet, language);
+				transitions.set(
+					transition.id,
+					TransitionPreCompiler.preCompile(transition, grafcet, variables, language),
+				);
 			} catch (e) {
 				const message =
 					SimulatorExceptionsHelper.getUserFriendlyMessage(
@@ -64,9 +86,9 @@ export default class GrafcetPreCompiler {
 
 		for (const action of grafcet.actions) {
 			try {
-				const result = ActionPreCompiler.preCompile(action, grafcet, plcVariables, language);
+				const result = ActionPreCompiler.preCompile(action, grafcet, variables, language);
 				if (!result) continue;
-				actions[action.id] = result;
+				actions.set(action.id, result);
 			} catch (e) {
 				const message =
 					SimulatorExceptionsHelper.getUserFriendlyMessage(
@@ -80,6 +102,6 @@ export default class GrafcetPreCompiler {
 			}
 		}
 
-		return { steps, transitions, actions };
+		return { steps, stepsMemos, transitions, actions };
 	}
 }

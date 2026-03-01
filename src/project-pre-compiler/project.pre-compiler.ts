@@ -38,6 +38,7 @@ export default class ProjectPreCompiler {
 
 		for (const [grafcetId, grafcet] of Object.entries(project.grafcets)) {
 			grafcets[grafcetId] = GrafcetPreCompiler.preCompile(grafcet, variables, language, errors);
+			variables.push(...Object.values(grafcets[grafcetId].stepsMemos).map(({ variable }) => variable));
 		}
 
 		return { errors, result: { variables, grafcets } };

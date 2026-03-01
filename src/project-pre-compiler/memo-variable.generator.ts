@@ -10,9 +10,9 @@ const MEMO_PREFIX = "_GeneratedMemo_";
  * taken (by user variables or previously generated variables).
  */
 export default class MemoVariableGenerator {
-	static generate(type: PLCVariableType, taken: Set<string>): PLCVariable {
+	static generate(type: PLCVariableType, takenNames: Set<string>): PLCVariable {
 		let counter = 0;
-		while (taken.has(`${MEMO_PREFIX}${counter}`)) {
+		while (takenNames.has(`${MEMO_PREFIX}${counter}`)) {
 			counter++;
 		}
 		const name = `${MEMO_PREFIX}${counter}`;

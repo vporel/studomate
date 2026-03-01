@@ -5,7 +5,7 @@ import InvalidNodeTypeException from "./invalid-node-type.exception";
 export default class InvalidTimerElapsedTimeTypeException extends InvalidNodeTypeException {
 	constructor(actualType: ExpectedNodeResultType, originNode: TimerNode) {
 		super(
-			`Invalid timer elapsed time type: the elapsed time of a timer block must be a number`,
+			`Invalid timer elapsed time type: the elapsed time of a timer block must be a number (found ${actualType}).`,
 			"number",
 			actualType,
 			originNode,

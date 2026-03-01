@@ -1,3 +1,4 @@
+import { createRandomId } from "@/simulator/utils/ids";
 import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
 import { ASTNode } from "../nodes/ast-node";
 import {
@@ -16,6 +17,7 @@ export default class ExpressionsBuilder {
 		position?: number,
 	): UnaryExpressionNode {
 		return {
+			id: createRandomId(),
 			type: "UNARY_EXPRESSION",
 			operator,
 			expr,
@@ -30,6 +32,7 @@ export default class ExpressionsBuilder {
 		position?: number,
 	): ArithmeticExpressionNode {
 		return {
+			id: createRandomId(),
 			type: "ARITHMETIC_EXPRESSION",
 			operator,
 			left,
@@ -45,6 +48,7 @@ export default class ExpressionsBuilder {
 		position?: number,
 	): ComparisonExpressionNode {
 		return {
+			id: createRandomId(),
 			type: "COMPARISON_EXPRESSION",
 			operator,
 			left,
@@ -60,6 +64,7 @@ export default class ExpressionsBuilder {
 		position?: number,
 	): LogicalExpressionNode {
 		return {
+			id: createRandomId(),
 			type: "LOGICAL_EXPRESSION",
 			operator,
 			left,

@@ -1,37 +1,33 @@
+import ClockedRunnable from "../clocked-runnable";
+import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
 import PLCVariable, { PLCVariableValue } from "./plc-variable";
 
-type PLCCallback = (plc: PLC) => void | undefined;
-
-export default class PLC {
+export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
 	private outputImage: Record<string, PLCVariable> = {};
 	private physicalInputs: Record<string, PLCVariable> = {};
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
-	private scanTimeMs: number;
-	private cycleTimer: NodeJS.Timeout | null = null;
 	private program: PLCRoutine[];
-	private onPLCStart: PLCCallback = () => {};
-	private onPLCStop: PLCCallback = () => {};
-	private onCycleStart: PLCCallback = () => {};
-	private onCycleEnd: PLCCallback = () => {};
+	private onCycleStart: RunnableCallback<PLC> = () => {};
+	private onCycleEnd: RunnableCallback<PLC> = () => {};
 	private onCycleError: (error: Error) => void = () => {};
 
 	constructor(config: {
 		scanTimeMs: number;
 		program: PLCRoutine[];
 		variables: PLCVariable[];
-		onPLCStart?: PLCCallback;
-		onPLCStop?: PLCCallback;
-		onCycleStart?: PLCCallback;
-		onCycleEnd?: PLCCallback;
+		onPLCStart?: RunnableCallback<PLC>;
+		onPLCStop?: RunnableCallback<PLC>;
+		onCycleStart?: RunnableCallback<PLC>;
+		onCycleEnd?: RunnableCallback<PLC>;
 		onCycleError?: (error: Error) => void;
 	}) {
-		this.scanTimeMs = config.scanTimeMs;
+		super(config.scanTimeMs);
 		this.program = config.program;
-		if (config.onPLCStart) this.onPLCStart = config.onPLCStart;
-		if (config.onPLCStop) this.onPLCStop = config.onPLCStop;
+		if (config.onPLCStart) this.onStart = config.onPLCStart;
+		if (config.onPLCStop) this.onStop = config.onPLCStop;
 		if (config.onCycleStart) this.onCycleStart = config.onCycleStart;
 		if (config.onCycleEnd) this.onCycleEnd = config.onCycleEnd;
 		if (config.onCycleError) this.onCycleError = config.onCycleError;
@@ -105,8 +101,8 @@ export default class PLC {
 		return input;
 	}
 
-	//Scan cycle
-	private scan(): void {
+	//Cycle
+	protected tick(): void {
 		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
 		try {
 			this.readInputs();
@@ -138,27 +134,4 @@ export default class PLC {
 		});
 	}
 	private internalTasks(): void {}
-
-	// Exécution
-	public start(): void {
-		if (!this.cycleTimer) {
-			if (this.onPLCStart) this.onPLCStart(this);
-			this.cycleTimer = setInterval(() => this.scan(), this.scanTimeMs);
-		}
-	}
-	public stop(): void {
-		if (this.cycleTimer) {
-			clearInterval(this.cycleTimer);
-			this.cycleTimer = null;
-			if (this.onPLCStop) this.onPLCStop(this);
-		}
-	}
-
-	private executeCallback(callback?: PLCCallback, messageOnError?: string): void {
-		try {
-			if (callback) callback(this);
-		} catch (e) {
-			console.error(messageOnError || "Error during PLC callback execution:", e);
-		}
-	}
 }

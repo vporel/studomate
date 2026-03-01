@@ -28,7 +28,11 @@ export default class PLCRoutine {
 		const plcVariablesSnapshot = plc.getVariablesSnapshot();
 		const env = new Environment(plcVariablesSnapshot.map(VariablesMapper.plcToEnv));
 
-		const evaluator = new EvaluatorVisitor(env);
+		const evaluator = new EvaluatorVisitor(env, {
+			timers: {
+				deltaTimeMs: plc.getClockIntervalMs(),
+			},
+		});
 		for (const node of this.nodes) {
 			evaluator.visit(node);
 		}
