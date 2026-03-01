@@ -94,7 +94,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 				></Box>
 				<textarea
 					ref={textareaRef}
-					className="action_node__textarea"
+					className="node__input transition_node__textarea nodrag"
 					value={editingExpression}
 					onChange={(e) => setEditingExpression(e.target.value)}
 					onKeyDown={(e) => {

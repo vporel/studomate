@@ -87,7 +87,7 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 				></Box>
 				<input
 					ref={inputRef}
-					className="node__input"
+					className="node__input step_referral_source_node__input nodrag"
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
 					value={editingTargetStepNumber}
 					onChange={(e) => setEditingTargetStepNumber(e.target.value)}

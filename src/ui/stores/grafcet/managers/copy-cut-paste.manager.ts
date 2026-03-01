@@ -1,3 +1,4 @@
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { createRandomId } from "@/schemas/utils/ids";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
@@ -44,6 +45,9 @@ export default class CopyCutPasteManager {
 			};
 		}
 		this.getStoreState().viewManager.deselectAllNodesAndEdges();
+		//Calculate the offset to apply to the pasted elements position so they are pasted at the mouse position,
+		//or with an offset if the mouse position is not in the flow bounds,
+		//or with a default offset if the mouse position is not provided
 		const flowMousePosition = !mousePosition ? null : rfInstance.screenToFlowPosition(mousePosition);
 		const flowDimensions = getFlowDimensions(grafcet.format);
 		flowDimensions.width = Math.floor(flowDimensions.width);
@@ -72,6 +76,16 @@ export default class CopyCutPasteManager {
 				...node,
 				id: createRandomId(),
 			};
+			//If the node is a step, change the number to avoid duplicates with existing steps in the grafcet
+			if (newNode.type === "step") {
+				newNode.data.number = StepHelper.getNextAvailableNumber(grafcet);
+				//For a copy, if the step was initial we should past a non-initial step,
+				//because there can be only one initial step in a grafcet
+				//We first check if an initial step already exists in the grafcet
+				const initialStepExists = grafcet.steps.some((s) => s.data.initial);
+				newNode.data.initial = initialStepExists ? false : newNode.data.initial;
+			}
+
 			if (offsetDueToMouse) {
 				newNode.position = {
 					x: node.position!.x + offsetDueToMouse.x,
@@ -89,6 +103,10 @@ export default class CopyCutPasteManager {
 					};
 				}
 			}
+			//Center the node on the mouse position by applying an offset corresponding to half of the node dimensions
+			newNode.position!.x = newNode.position!.x - node.data.width / 2;
+			newNode.position!.y = newNode.position!.y - node.data.height / 2;
+			//Save the id mapping and the offset for the edges update
 			nodesIdsMap[node.id] = newNode.id;
 			nodesOffsetsMaps[node.id] = {
 				x: newNode.position!.x - node.position!.x,

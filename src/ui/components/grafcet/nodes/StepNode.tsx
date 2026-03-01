@@ -98,7 +98,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 			>
 				<input
 					ref={inputRef}
-					className="node__input"
+					className="node__input step_node__input nodrag"
 					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
 					value={editingNumber}
 					onChange={(e) => setEditingNumber(e.target.value)}

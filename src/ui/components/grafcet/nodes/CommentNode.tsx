@@ -11,14 +11,7 @@ export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
 export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const CommentNode: FC<CommentNodeProps> = ({
-	id,
-	data,
-	selected,
-	highlighted,
-	width: nodeWidth,
-	height: nodeHeight,
-}) => {
+const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -64,7 +57,7 @@ const CommentNode: FC<CommentNodeProps> = ({
 			>
 				<textarea
 					ref={textareaRef}
-					className="node__input comment_node__textarea"
+					className="node__input comment_node__textarea nodrag"
 					value={editingText}
 					onChange={(e) => setEditingText(e.target.value)}
 					rows={1}

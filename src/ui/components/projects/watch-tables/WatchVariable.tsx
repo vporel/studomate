@@ -3,7 +3,7 @@
 import Variable from "@/schemas/variable/variable.schema";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Language } from "@/ui/locales/locales";
-import { Box, FormControlLabel, Switch, TextField, Typography } from "@mui/material";
+import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../ProjectContext";
 
@@ -20,12 +20,14 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 	const nativeType = variable.getNativeType();
 
 	return (
-		<FlexBox key={variable.id} centerVertical sx={{ p: 1, mb: 1, gap: 2 }}>
+		<FlexBox key={variable.id} between centerVertical sx={{ p: 1, mb: 1, gap: 2 }}>
 			<Typography variant="subtitle2">{variable.mnemonic}</Typography>
-			<Typography sx={{ border: "1px solid gray", px: "3px", borderRadius: "5px", fontSize: ".7rem" }}>
-				{variable.type}
-			</Typography>
-			<Box sx={{ flexGrow: 1 }}>
+			<FlexBox centerVertical sx={{ width: "300px", gap: 1.5 }}>
+				<Typography
+					sx={{ border: "1px solid gray", px: "3px", borderRadius: "5px", fontSize: ".7rem" }}
+				>
+					{variable.type}
+				</Typography>
 				{nativeType === "boolean" ? (
 					variable.getDirection() === "OUT" ? (
 						<Typography color={value === true ? "primary.main" : "text.primary"}>
@@ -69,7 +71,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 						fullWidth
 					/>
 				)}
-			</Box>
+			</FlexBox>
 		</FlexBox>
 	);
 }

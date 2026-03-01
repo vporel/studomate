@@ -86,7 +86,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 			>
 				<textarea
 					ref={textareaRef}
-					className="node__input action_node__textarea"
+					className="node__input action_node__textarea nodrag"
 					value={editingExpression}
 					onChange={(e) => setEditingExpression(e.target.value)}
 					rows={1}
