@@ -103,11 +103,10 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		const simplifiedRight = this.visit(node.right);
 		//If both sides are boolean literals, we can simplify the AND operation
 		if (simplifiedLeft.type === "BOOLEAN_LITERAL" && simplifiedRight.type === "BOOLEAN_LITERAL") {
-			return {
-				type: "BOOLEAN_LITERAL",
-				value: simplifiedLeft.value && simplifiedRight.value,
-				position: node.position,
-			};
+			return LiteralsBuilder.buildBooleanNode(
+				simplifiedLeft.value && simplifiedRight.value,
+				node.position,
+			);
 		} else if (simplifiedLeft.type === "BOOLEAN_LITERAL") {
 			// If the left side is a boolean literal, we can simplify based on its value
 			if (simplifiedLeft.value) {
@@ -115,7 +114,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 				return simplifiedRight;
 			} else {
 				// false AND x simplifies to false
-				return { type: "BOOLEAN_LITERAL", value: false, position: node.position };
+				return LiteralsBuilder.buildBooleanNode(false, node.position);
 			}
 		} else if (simplifiedRight.type === "BOOLEAN_LITERAL") {
 			// If the right side is a boolean literal, we can simplify based on its value
@@ -124,7 +123,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 				return simplifiedLeft;
 			} else {
 				// x AND false simplifies to false
-				return { type: "BOOLEAN_LITERAL", value: false, position: node.position };
+				return LiteralsBuilder.buildBooleanNode(false, node.position);
 			}
 		}
 		return ExpressionsBuilder.buildLogicalExpressionNode(
@@ -140,16 +139,15 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		const simplifiedOrRight = this.visit(node.right);
 		// If both sides are boolean literals, we can simplify the OR operation
 		if (simplifiedOrLeft.type === "BOOLEAN_LITERAL" && simplifiedOrRight.type === "BOOLEAN_LITERAL") {
-			return {
-				type: "BOOLEAN_LITERAL",
-				value: simplifiedOrLeft.value || simplifiedOrRight.value,
-				position: node.position,
-			};
+			return LiteralsBuilder.buildBooleanNode(
+				simplifiedOrLeft.value || simplifiedOrRight.value,
+				node.position,
+			);
 		} else if (simplifiedOrLeft.type === "BOOLEAN_LITERAL") {
 			// If the left side is a boolean literal, we can simplify based on its value
 			if (simplifiedOrLeft.value) {
 				// true OR x simplifies to true
-				return { type: "BOOLEAN_LITERAL", value: true, position: node.position };
+				return LiteralsBuilder.buildBooleanNode(true, node.position);
 			} else {
 				// false OR x simplifies to x
 				return simplifiedOrRight;
@@ -158,7 +156,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 			// If the right side is a boolean literal, we can simplify based on its value
 			if (simplifiedOrRight.value) {
 				// x OR true simplifies to true
-				return { type: "BOOLEAN_LITERAL", value: true, position: node.position };
+				return LiteralsBuilder.buildBooleanNode(true, node.position);
 			} else {
 				// x OR false simplifies to x
 				return simplifiedOrLeft;

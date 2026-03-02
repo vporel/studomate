@@ -125,7 +125,7 @@ export default class SimulationManager {
 		// with the transition id as expression id
 		this.evaluableExpressions = {};
 		Object.values(projectPreCompilationResult.result!.grafcets).forEach((g) =>
-			Object.entries(g.transitions).forEach(([transitionId, transition]) => {
+			g.transitions.entries().forEach(([transitionId, transition]) => {
 				//We use the pre-compiled transition
 				//Which is already an analysed an simplified AST node
 				this.evaluableExpressions[transitionId] = transition.node;

@@ -44,6 +44,12 @@ Ce fichier documente les règles et bonnes pratiques que l'assistant (Copilot) d
 - Linting : `eslint` / `eslint-config-next`.
 - TypeScript est utilisé (`typescript`), faire attention aux types exportés depuis les stores.
 
+## Tests unitaires
+
+- Les tests unitaires Jest sont placés **à côté des fichiers concernés**, pas dans un dossier séparé `src/tests/`.
+- Nommer les fichiers de test : `nomDuFichier.test.ts` (ou `.test.tsx` pour les composants React).
+- Utiliser Jest avec `ts-jest` pour les tests TypeScript.
+
 ---
 
 Fichier généré automatiquement par l'assistant pour référencer les règles du projet.

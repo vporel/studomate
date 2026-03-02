@@ -19,9 +19,9 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 		{ number: 0, initial: true, ...Step.DEFAULT_DIMENSIONS },
 		{ x: 50, y: 50 },
 	);
-	const step1 = new Step("step-1", { number: 1, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 200 });
-	const step2 = new Step("step-2", { number: 2, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 350 });
-	const step3 = new Step("step-3", { number: 3, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 500 });
+	const step1 = new Step("step-1", { number: 1, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 150 });
+	const step2 = new Step("step-2", { number: 2, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 250 });
+	const step3 = new Step("step-3", { number: 3, ...Step.DEFAULT_DIMENSIONS }, { x: 50, y: 350 });
 	grafcet.steps.push(step0, step1, step2, step3);
 
 	const action0 = new Action(
@@ -33,7 +33,7 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 			width: 200,
 			height: 40,
 		},
-		{ x: 200, y: 200 },
+		{ x: 200, y: 150 },
 	);
 	const action1 = new Action(
 		"action-1",
@@ -44,29 +44,29 @@ export function getStubGrafcetCoffeMachine(): Grafcet {
 			width: 200,
 			height: 40,
 		},
-		{ x: 200, y: 350 },
+		{ x: 200, y: 250 },
 	);
 	grafcet.actions.push(action0, action1);
 
 	const transition0 = new Transition(
 		"transition-0",
-		{ expression: "BP_DEMARRER OU t1/X0/3s", ...Transition.DEFAULT_DIMENSIONS },
-		{ x: 50, y: 125 },
+		{ expression: "BP_DEMARRER", ...Transition.DEFAULT_DIMENSIONS },
+		{ x: 50, y: 100 },
 	);
 	const transition1 = new Transition(
 		"transition-1",
-		{ expression: "GOBELET_EN_POSITION", ...Transition.DEFAULT_DIMENSIONS },
-		{ x: 50, y: 275 },
+		{ expression: "GOBELET_EN_POSITION ET t1/X1/2s", ...Transition.DEFAULT_DIMENSIONS },
+		{ x: 50, y: 200 },
 	);
 	const transition2 = new Transition(
 		"transition-2",
 		{ expression: "NIVEAU_LIQUIDE >= 80", ...Transition.DEFAULT_DIMENSIONS },
-		{ x: 50, y: 425 },
+		{ x: 50, y: 300 },
 	);
 	const transition3 = new Transition(
 		"transition-3",
 		{ expression: "NON GOBELET_EN_POSITION", ...Transition.DEFAULT_DIMENSIONS },
-		{ x: 50, y: 575 },
+		{ x: 50, y: 400 },
 	);
 	grafcet.transitions.push(transition0, transition1, transition2, transition3);
 	grafcet.connections.push(

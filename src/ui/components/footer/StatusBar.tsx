@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDate } from "@/lib/date";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
@@ -30,10 +29,7 @@ const StatusBar = () => {
 		>
 			<FlexBox centerVertical>
 				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
-					Auteur : {projectAuthor || "Inconnu"} | Dernière modification :{" "}
-					{projectLastModificationDate
-						? formatDate(projectLastModificationDate, "dd/MM/yyyy HH:mm")
-						: "/"}
+					Auteur : {projectAuthor || "Inconnu"}
 				</Typography>
 			</FlexBox>
 

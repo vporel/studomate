@@ -76,10 +76,10 @@ export default class Parser {
 		return this.parseComparisonExpr();
 	}
 	private parseComparisonExpr(): ASTNode {
-		const left = this.parseArithmeticExpr();
+		const left = this.parseAddSubExpr();
 		if (this.atAnyComparisonOperator()) {
 			const token = this.consumeComparisonOperator();
-			const right = this.parseArithmeticExpr();
+			const right = this.parseAddSubExpr();
 			return ExpressionsBuilder.buildComparisonExpressionNode(
 				token.value as ComparisonOperator,
 				left,
@@ -91,19 +91,33 @@ export default class Parser {
 		return left;
 	}
 
-	private parseArithmeticExpr(): ASTNode {
-		const left = this.parsePrimary();
-		if (this.atAnyArithmeticOperator()) {
+	private parseAddSubExpr(): ASTNode {
+		let left = this.parseMulDivExpr();
+		while (this.at(TokenType.PLUS) || this.at(TokenType.MINUS)) {
 			const token = this.consumeArithmeticOperator();
-			const right = this.parsePrimary();
-			return ExpressionsBuilder.buildArithmeticExpressionNode(
+			const right = this.parseMulDivExpr();
+			left = ExpressionsBuilder.buildArithmeticExpressionNode(
 				token.value as ArithmeticOperator,
 				left,
 				right,
 				token.position,
 			);
 		}
+		return left;
+	}
 
+	private parseMulDivExpr(): ASTNode {
+		let left = this.parsePrimary();
+		while (this.at(TokenType.MUL) || this.at(TokenType.SLASH)) {
+			const token = this.consumeArithmeticOperator();
+			const right = this.parsePrimary();
+			left = ExpressionsBuilder.buildArithmeticExpressionNode(
+				token.value as ArithmeticOperator,
+				left,
+				right,
+				token.position,
+			);
+		}
 		return left;
 	}
 

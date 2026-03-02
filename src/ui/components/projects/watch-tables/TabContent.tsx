@@ -18,14 +18,14 @@ export default function TabContent({ variableDirection }: { variableDirection: V
 
 	return (
 		<Grid container spacing={2}>
-			<Grid size={{ xs: 12, md: 6 }}>
+			<Grid size={{ xs: 12, md: 6, lg: 4 }}>
 				<Box>
 					{left.map((v) => {
 						return <WatchVariable key={v.id} variable={v} />;
 					})}
 				</Box>
 			</Grid>
-			<Grid size={{ xs: 12, md: 6 }}>
+			<Grid size={{ xs: 12, md: 6, lg: 4 }}>
 				<Box>
 					{right.map((v) => {
 						return <WatchVariable key={v.id} variable={v} />;

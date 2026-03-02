@@ -19,8 +19,6 @@ export type TransitionNodeType = Node<TransitionData> & {
 
 export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 
-const COLOR_IF_TRUE_IN_SIMULATOR = "darkorange";
-
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -29,8 +27,9 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const trueInSimulator = useProjectStore(
 		(state) => state.simulationManager.getEvaluableExpressionValue(id) === true,
 	);
+	const colorIfTrueInSimulation = th.palette.primary.main;
 	const borderColor = trueInSimulator
-		? COLOR_IF_TRUE_IN_SIMULATOR
+		? colorIfTrueInSimulation
 		: selected
 			? th.palette.primary.main
 			: "black";
@@ -120,7 +119,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						padding: "0",
 						lineHeight: "1.2rem",
 						pointerEvents: !editing ? "none" : "all",
-						color: trueInSimulator ? COLOR_IF_TRUE_IN_SIMULATOR : "black",
+						color: trueInSimulator ? colorIfTrueInSimulation : "black",
 					}}
 				/>
 			</GrafcetNode>
