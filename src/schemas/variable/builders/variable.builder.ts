@@ -55,4 +55,29 @@ export default class VariableBuilder {
 		}
 		return variable;
 	}
+
+	// Static factory methods for common variable patterns
+	static buildLogicInput(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("logic-input").type("BOOL").build();
+	}
+
+	static buildLogicOutput(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("logic-output").type("BOOL").build();
+	}
+
+	static buildMemoryBool(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("memory").type("BOOL").build();
+	}
+
+	static buildMemoryInt(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("memory").type("INT").build();
+	}
+
+	static buildAnalogInput(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("analog-input").type("INT").build();
+	}
+
+	static buildAnalogOutput(id: string, mnemonic: string): Variable {
+		return new VariableBuilder().id(id).mnemonic(mnemonic).zone("analog-output").type("INT").build();
+	}
 }

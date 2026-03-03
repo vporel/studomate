@@ -1,0 +1,139 @@
+import ProjectAnalyser from "@/project-analyser/project.analyser";
+import ProjectCompiler, { CompiledProject } from "@/project-compiler/project.compiler";
+import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
+import Project from "@/schemas/project/project.schema";
+import { Language } from "@/simulator/compiler/lexer/language.enum";
+import PLC from "@/simulator/core/plc/plc";
+
+/**
+ * Helper functions for integration tests
+ */
+
+/**
+ * Runs the complete pipeline: Analysis → Pre-compilation → Compilation
+ * @param project Project to compile
+ * @param language Language for expressions (default FR)
+ * @returns Compiled project or null if errors occurred
+ */
+export function compileProject(project: Project, language: Language = Language.FR): CompiledProject | null {
+	const analysisResult = ProjectAnalyser.analyse(project);
+	if (analysisResult.issues.length > 0) {
+		return null;
+	}
+
+	const preCompilationResult = ProjectPreCompiler.preCompile(
+		project,
+		analysisResult.stepsVariables,
+		language,
+	);
+	if (preCompilationResult.errors.length > 0 || !preCompilationResult.result) {
+		return null;
+	}
+
+	const compilationResult = ProjectCompiler.compile(preCompilationResult.result);
+	if (compilationResult.errors.length > 0 || !compilationResult.result) {
+		return null;
+	}
+
+	return compilationResult.result;
+}
+
+/**
+ * Runs the complete pipeline and returns all intermediate results
+ */
+export function compilePipelineDetailed(project: Project, language: Language = Language.FR) {
+	const analysisResult = ProjectAnalyser.analyse(project);
+	const preCompilationResult = ProjectPreCompiler.preCompile(
+		project,
+		analysisResult.stepsVariables,
+		language,
+	);
+	const compilationResult = preCompilationResult.result
+		? ProjectCompiler.compile(preCompilationResult.result)
+		: { errors: [], result: undefined };
+
+	return {
+		analysis: analysisResult,
+		preCompilation: preCompilationResult,
+		compilation: compilationResult,
+	};
+}
+
+/**
+ * Creates a PLC from a compiled project
+ * @param compiled Compiled project
+ * @param scanTimeMs Scan time in milliseconds (default 100)
+ * @param callbacks Optional PLC lifecycle callbacks
+ * @returns PLC instance
+ */
+export function createPLC(
+	compiled: CompiledProject,
+	scanTimeMs: number = 100,
+	callbacks?: {
+		onCycleEnd?: (plc: PLC) => void;
+		onCycleError?: (error: Error) => void;
+	},
+): PLC {
+	return new PLC({
+		scanTimeMs,
+		program: compiled.routines,
+		variables: compiled.variables,
+		onCycleEnd: callbacks?.onCycleEnd,
+		onCycleError: callbacks?.onCycleError,
+	});
+}
+
+/**
+ * Compiles a project and creates a PLC
+ */
+export function compileToPLC(
+	project: Project,
+	scanTimeMs: number = 100,
+	language: Language = Language.FR,
+	callbacks?: {
+		onCycleEnd?: (plc: PLC) => void;
+		onCycleError?: (error: Error) => void;
+	},
+): PLC | null {
+	const compiled = compileProject(project, language);
+	if (!compiled) {
+		return null;
+	}
+	return createPLC(compiled, scanTimeMs, callbacks);
+}
+
+/**
+ * Waits for a specified number of milliseconds
+ */
+export function wait(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Runs a PLC for a specified number of cycles
+ * @param plc PLC instance
+ * @param cycles Number of cycles to run
+ * @param scanTimeMs Scan time per cycle
+ */
+export async function runPLCCycles(plc: PLC, cycles: number, scanTimeMs: number): Promise<void> {
+	plc.start();
+	await wait(cycles * scanTimeMs + 50); // Add 50ms buffer
+	plc.stop();
+}
+
+/**
+ * Gets a variable value by mnemonic from PLC snapshot
+ */
+export function getVariableValue(plc: PLC, mnemonic: string): any {
+	const snapshot = plc.getVariablesSnapshot();
+	const variable = snapshot.find((v) => v.getName() === mnemonic);
+	return variable?.getValue();
+}
+
+/**
+ * Asserts that a variable has the expected value
+ */
+export function expectVariableValue(plc: PLC, mnemonic: string, expectedValue: any): void {
+	const value = getVariableValue(plc, mnemonic);
+	expect(value).toBe(expectedValue);
+}

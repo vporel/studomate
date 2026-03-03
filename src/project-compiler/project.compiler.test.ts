@@ -52,6 +52,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: true,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -60,6 +61,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -101,6 +103,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: true,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -109,6 +112,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -152,6 +156,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: false,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: [] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -160,6 +165,7 @@ describe("ProjectCompiler", () => {
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: [] }],
+						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),

@@ -1,7 +1,6 @@
 ﻿import Grafcet from "../grafcet.schema";
 import StepReferralSource from "../step-referral-source.schema";
 import { STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR } from "../step-referral-target.schema";
-import StepReferralSourceHelper from "./step-referral-source.helper";
 
 export default class StepReferralTargetHelper {
 	/**
@@ -48,11 +47,9 @@ export default class StepReferralTargetHelper {
 		if (stepReferralTarget.data.sourceStepNumber === "") return null;
 		const targetStep = this.getTargetStep(stepReferralTargetId, grafcet);
 		if (!targetStep) return null;
-		const allStepReferralSources = grafcet.getElementsByType("step-referral-source");
+		const allStepReferralSources = grafcet.getElementsByType<StepReferralSource>("step-referral-source");
 		const stepReferralSource = allStepReferralSources.find(
-			(source) =>
-				StepReferralSourceHelper.getDirectUniquePredecessorStep(source.id, grafcet)?.data.number ===
-				targetStep.data.number,
+			(source) => source.data.targetStepNumber === targetStep.data.number,
 		);
 		return stepReferralSource || null;
 	}

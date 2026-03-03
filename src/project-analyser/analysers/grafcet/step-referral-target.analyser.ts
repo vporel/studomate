@@ -66,20 +66,23 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 					`Aucune étape avec le numéro ${stepReferral.data.sourceStepNumber} n'existe dans le grafcet.`,
 				),
 			);
-		}
-
-		if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
-			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en aval,`));
-		}
-
-		if (StepReferralTargetHelper.getStepReferralSource(stepReferral.id, grafcet)) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					source,
-					`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
-				),
+		} else {
+			if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
+				issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en aval,`));
+			}
+			const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
+				stepReferral.id,
+				grafcet,
 			);
+			if (!stepReferralSource) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						source,
+						`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
+					),
+				);
+			}
 		}
 
 		return issues;

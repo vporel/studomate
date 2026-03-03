@@ -48,8 +48,6 @@ export const ACTION_TYPES_TO_EXECUTION_MODES: Record<ActionType, ActionExecution
 	[ActionType.TEXT]: [], //No execution mode is compatible with text actions since they are purely descriptive and don't manipulate variables
 	[ActionType.BOOLEAN_VARIABLE]: [
 		ActionExecutionMode.CONTINUOUS,
-		ActionExecutionMode.RISING_EDGE,
-		ActionExecutionMode.FALLING_EDGE,
 		ActionExecutionMode.SET,
 		ActionExecutionMode.RESET,
 	],

@@ -18,7 +18,7 @@ export default class StepCompiler {
 		const branchesNodes = preCompiledStep.branches.map((branch) => {
 			const transitionNode = preCompiledGrafcet.transitions.get(branch.transitionId)!.node;
 			const stepsBeforeTransitionNodes = branch.stepsIdsBeforeTransition.map(
-				(stepId) => preCompiledGrafcet.steps.get(stepId)!.node,
+				(stepId) => stepMemosNodes.get(stepId)!,
 			);
 			return ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [
 				transitionNode,
@@ -29,11 +29,34 @@ export default class StepCompiler {
 			b.stepsIdsBeforeTransition.map((stepId) => preCompiledGrafcet.steps.get(stepId)!.node),
 		);
 
+		// OR divergence priority: the step activates only if no higher-priority branch is eligible.
+		// For each prior branch, build its condition and negate it.
+		const priorityExclusionNodes = preCompiledStep.orDivergencePriorityExclusions.map((excl) => {
+			const transitionNode = preCompiledGrafcet.transitions.get(excl.transitionId)!.node;
+			const stepsNodes = excl.stepsIdsBeforeTransition.map((sId) => stepMemosNodes.get(sId)!);
+			const priorBranchCondition = ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [
+				transitionNode,
+				...stepsNodes,
+			]);
+			return ExpressionsBuilder.buildUnaryExpressionNode("NOT", priorBranchCondition);
+		});
+
+		const baseCondition =
+			branchesNodes.length === 1
+				? branchesNodes[0]
+				: ExpressionsBuilder.buildChainedLogicalExpressionNode("OR", branchesNodes);
+
+		const activationCondition =
+			priorityExclusionNodes.length === 0
+				? baseCondition
+				: ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [
+						baseCondition,
+						...priorityExclusionNodes,
+					]);
+
 		return [
 			ControlsBuilder.buildIfControlNode(
-				branchesNodes.length === 1
-					? branchesNodes[0]
-					: ExpressionsBuilder.buildChainedLogicalExpressionNode("OR", branchesNodes),
+				activationCondition,
 				[
 					//Deactivate the steps in the branches
 					...allBranchesStepsNodes.map((s) =>

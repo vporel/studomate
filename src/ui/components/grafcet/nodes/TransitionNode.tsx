@@ -91,37 +91,55 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						},
 					}}
 				></Box>
-				<textarea
-					ref={textareaRef}
-					className="node__input transition_node__textarea nodrag"
-					value={editingExpression}
-					onChange={(e) => setEditingExpression(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" || e.key === "Escape") {
-							//The save is done only on blur to avoid multiple saves when pressing enter
-							textareaRef.current?.blur();
-						}
-					}}
-					onBlur={(e) => {
-						setEditing(false);
-						saveExpression();
-					}}
-					rows={1}
-					style={{
+				<Box
+					sx={{
 						position: "absolute",
 						left: "100%",
-						width: "300px",
-						border: "none",
-						outline: "none",
-						resize: "none",
-						boxSizing: "border-box",
-						overflow: "hidden",
-						padding: "0",
-						lineHeight: "1.2rem",
-						pointerEvents: !editing ? "none" : "all",
-						color: trueInSimulator ? colorIfTrueInSimulation : "black",
+						height: "100%",
+						width: "280px",
+						display: "flex",
+						alignItems: "center",
 					}}
-				/>
+				>
+					<textarea
+						ref={textareaRef}
+						className="node__input transition_node__textarea nodrag"
+						value={editingExpression}
+						onChange={(e) => {
+							setEditingExpression(e.target.value);
+							// Auto-resize: shrink first, then expand to fit content
+							e.target.style.height = "auto";
+							e.target.style.height = e.target.scrollHeight + "px";
+						}}
+						onKeyDown={(e) => {
+							if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
+								//The save is done only on blur to avoid multiple saves when pressing enter
+								textareaRef.current?.blur();
+							}
+						}}
+						onBlur={(e) => {
+							setEditing(false);
+							saveExpression();
+						}}
+						rows={1}
+						style={{
+							width: "100%",
+							height: "auto",
+							maxHeight: "100%",
+							border: "none",
+							outline: "none",
+							resize: "none",
+							boxSizing: "border-box",
+							overflowY: "auto",
+							padding: "0",
+							lineHeight: "1.2rem",
+							fontSize: "0.75rem",
+							pointerEvents: !editing ? "none" : "all",
+							color: trueInSimulator ? colorIfTrueInSimulation : "black",
+							background: "transparent",
+						}}
+					/>
+				</Box>
 			</GrafcetNode>
 		</>
 	);

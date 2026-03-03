@@ -107,11 +107,11 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 						outline: "none",
 						resize: "none",
 						boxSizing: "border-box",
-						overflow: "hidden",
 						padding: "0",
 						lineHeight: "1.1rem",
 						pointerEvents: !editing ? "none" : "all",
 						fontSize: "0.8rem",
+						overflowY: "auto",
 					}}
 				/>
 
@@ -164,6 +164,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 							top: "-15px",
 							right: "5px",
 							textAlign: "center",
+							color: "black",
 						}}
 					>
 						<Typography fontSize="0.8rem">

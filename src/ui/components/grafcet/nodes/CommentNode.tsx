@@ -83,6 +83,7 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 						lineHeight: "1rem",
 						pointerEvents: !editing ? "none" : "all",
 						fontSize: "0.8rem",
+						overflowY: "auto",
 					}}
 				/>
 			</GrafcetNode>

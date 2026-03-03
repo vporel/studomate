@@ -20,6 +20,7 @@ describe("StepCompiler", () => {
 						stepsIdsBeforeTransition: ["step-0"],
 					},
 				],
+				orDivergencePriorityExclusions: [],
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
@@ -30,6 +31,7 @@ describe("StepCompiler", () => {
 							node: previousStepNode,
 							initial: true,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
+							orDivergencePriorityExclusions: [],
 						},
 					],
 					["step-1", preCompiledStep],
@@ -57,6 +59,7 @@ describe("StepCompiler", () => {
 				node: stepNode,
 				initial: false,
 				branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
+				orDivergencePriorityExclusions: [],
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
@@ -67,6 +70,7 @@ describe("StepCompiler", () => {
 							node: step0Node,
 							initial: true,
 							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
+							orDivergencePriorityExclusions: [],
 						},
 					],
 					["step-1", preCompiledStep],

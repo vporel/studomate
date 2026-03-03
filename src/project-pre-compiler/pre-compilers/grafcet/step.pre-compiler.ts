@@ -24,6 +24,13 @@ export type PreCompiledStep = {
 	 * In a scenario, the transition and all the steps must be active at the same time (AND logic)
 	 */
 	branches: PreCompiledStepBranch[];
+	/**
+	 * Priority exclusion conditions for OR divergence branches.
+	 * When this step is part of an OR divergence, branches with a lower index (further left)
+	 * have priority. This list contains the activation conditions of all higher-priority branches.
+	 * The step will only activate if none of these conditions are true (mutual exclusion by order).
+	 */
+	orDivergencePriorityExclusions: PreCompiledStepBranch[];
 };
 
 export default class StepPreCompiler {
@@ -40,6 +47,7 @@ export default class StepPreCompiler {
 				transitionId: branch.transition.id,
 				stepsIdsBeforeTransition: branch.stepsBeforeTransition.map((s) => s.id),
 			})),
+			orDivergencePriorityExclusions: [],
 		};
 	}
 }

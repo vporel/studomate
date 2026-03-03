@@ -86,4 +86,66 @@ describe("VariableBuilder", () => {
 			new VariableBuilder().id("var-1").mnemonic("").build();
 		}).toThrow();
 	});
+
+	describe("Static factory methods", () => {
+		it("creates a logic input variable", () => {
+			const variable = VariableBuilder.buildLogicInput("var-1", "I0");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-1");
+			expect(variable.mnemonic).toBe("I0");
+			expect(variable.zone).toBe("logic-input");
+			expect(variable.type).toBe("BOOL");
+		});
+
+		it("creates a logic output variable", () => {
+			const variable = VariableBuilder.buildLogicOutput("var-2", "Q0");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-2");
+			expect(variable.mnemonic).toBe("Q0");
+			expect(variable.zone).toBe("logic-output");
+			expect(variable.type).toBe("BOOL");
+		});
+
+		it("creates a memory boolean variable", () => {
+			const variable = VariableBuilder.buildMemoryBool("var-3", "M0");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-3");
+			expect(variable.mnemonic).toBe("M0");
+			expect(variable.zone).toBe("memory");
+			expect(variable.type).toBe("BOOL");
+		});
+
+		it("creates a memory integer variable", () => {
+			const variable = VariableBuilder.buildMemoryInt("var-4", "Counter");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-4");
+			expect(variable.mnemonic).toBe("Counter");
+			expect(variable.zone).toBe("memory");
+			expect(variable.type).toBe("INT");
+		});
+
+		it("creates an analog input variable", () => {
+			const variable = VariableBuilder.buildAnalogInput("var-5", "AI0");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-5");
+			expect(variable.mnemonic).toBe("AI0");
+			expect(variable.zone).toBe("analog-input");
+			expect(variable.type).toBe("INT");
+		});
+
+		it("creates an analog output variable", () => {
+			const variable = VariableBuilder.buildAnalogOutput("var-6", "AO0");
+
+			expect(variable).toBeInstanceOf(Variable);
+			expect(variable.id).toBe("var-6");
+			expect(variable.mnemonic).toBe("AO0");
+			expect(variable.zone).toBe("analog-output");
+			expect(variable.type).toBe("INT");
+		});
+	});
 });
