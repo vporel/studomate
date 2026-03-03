@@ -26,7 +26,7 @@ export type PreCompiledGrafcet = {
 		}
 	>;
 	transitions: Map<string, PreCompiledTransition>;
-	actions: Map<string, PreCompiledAction | undefined>; //Some actions can be null if they are of type TEXT (purely descriptive, no runtime effect)
+	actions: Map<string, PreCompiledAction | undefined | null>; //Some actions can be null if they are of type TEXT (purely descriptive, no runtime effect)
 };
 
 export default class GrafcetPreCompiler {
