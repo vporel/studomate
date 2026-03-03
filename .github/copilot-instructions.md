@@ -11,6 +11,7 @@ Ce fichier documente les règles et bonnes pratiques que l'assistant (Copilot) d
 - Ne pas divulguer le nom du modèle à moins que l'utilisateur le demande explicitement.
 - Respecter les règles de formatage et les conventions du dépôt existant.
 - Pour les modifications de code : privilégier la précision et la sécurité, et exécuter les tests/builds si possible.
+- **Ne pas créer de fichiers `index.ts` dans les dossiers** pour ré-exporter les modules.
 
 ## Règles spécifiques au rendu final
 
@@ -49,6 +50,8 @@ Ce fichier documente les règles et bonnes pratiques que l'assistant (Copilot) d
 - Les tests unitaires Jest sont placés **à côté des fichiers concernés**, pas dans un dossier séparé `src/tests/`.
 - Nommer les fichiers de test : `nomDuFichier.test.ts` (ou `.test.tsx` pour les composants React).
 - Utiliser Jest avec `ts-jest` pour les tests TypeScript.
+- **Lors de l'écriture de tests, ne jamais modifier le code source**. Les tests doivent valider le code existant tel quel.
+- Si un problème est détecté dans le code source pendant l'écriture des tests, **remonter l'alerte à l'utilisateur** et attendre sa décision avant toute modification.
 
 ---
 

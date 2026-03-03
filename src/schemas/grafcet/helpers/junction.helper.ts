@@ -1,4 +1,5 @@
-﻿import Grafcet from "../grafcet.schema";
+﻿import { HandleType } from "../connection.schema";
+import Grafcet from "../grafcet.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 
 /**
@@ -18,7 +19,12 @@ export default class JunctionHelper {
 	 */
 	static areAllBranchesConnected(junctionId: string, grafcet: Grafcet): boolean {
 		const junction = grafcet.getElementById<Junction>(junctionId);
-		const connections = grafcet.getConnectionsByElementIdAndHandleType(junctionId, "target");
-		return connections.length === junction?.data.branchesOrder.length;
+		if (!junction) return false;
+
+		// For START junctions, branches are on the source side
+		// For END junctions, branches are on the target side
+		const handleType: HandleType = junction.type.endsWith("-start") ? "source" : "target";
+		const connections = grafcet.getConnectionsByElementIdAndHandleType(junctionId, handleType);
+		return connections.length === junction.data.branchesOrder.length;
 	}
 }

@@ -68,8 +68,8 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 			);
 		}
 
-		if (StepReferralSourceHelper.hasPredecessor(stepReferral.id, grafcet)) {
-			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en amount.`));
+		if (!StepReferralSourceHelper.hasPredecessor(stepReferral.id, grafcet)) {
+			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en amont.`));
 		}
 
 		//Check that the target step is not the same as the source step (no self-referral)
