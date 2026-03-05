@@ -2,6 +2,7 @@ export type ProjectAnalyserIssueSeverity = "error" | "warning";
 
 export type ProjectAnalyserIssueSource = {
 	sourceType:
+		| "project"
 		| "grafcet"
 		| "grafcet-step"
 		| "grafcet-transition"

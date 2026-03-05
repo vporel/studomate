@@ -1,4 +1,9 @@
+import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import JunctionAndEndBuilder from "@/schemas/grafcet/builders/junction-and-end.builder";
+import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
+import JunctionOrStartBuilder from "@/schemas/grafcet/builders/junction-or-start.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { Language } from "@/simulator/compiler/lexer/language.enum";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
@@ -175,6 +180,199 @@ describe("TransitionPreCompiler", () => {
 
 			expect(result.node).toBeDefined();
 			expect(result.node.type).toBe("COMPARISON_EXPRESSION");
+		});
+	});
+
+	describe("topology", () => {
+		it("resolves predecessor and successor steps for a simple step→transition→step chain", () => {
+			const step0 = new StepBuilder().id("step-0").number(0).initial(true).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const grafcet = new GrafcetBuilder()
+				.addStep(step0)
+				.addStep(step1)
+				.addTransition(trans1)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "step-0", "source:successor")
+						.target("transition", "trans-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "trans-1", "source:successor")
+						.target("step", "step-1", "target:predecessor")
+						.build(),
+				)
+				.build();
+
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+
+			expect(result.predecessorStepsIds).toEqual(["step-0"]);
+			expect(result.successorStepsIds).toEqual(["step-1"]);
+			expect(result.orPriorityExclusionTransitionIds).toEqual([]);
+		});
+
+		it("resolves multiple predecessor steps through an AND convergence (junction-and-end)", () => {
+			const step0 = new StepBuilder().id("step-0").number(0).initial(true).build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const jAndEnd = new JunctionAndEndBuilder().id("jae-1").build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const grafcet = new GrafcetBuilder()
+				.addStep(step0)
+				.addStep(step1)
+				.addStep(step2)
+				.addJunctionAndEnd(jAndEnd)
+				.addTransition(trans1)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "step-0", "source:successor")
+						.target("junction-and-end", "jae-1", "target")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "step-1", "source:successor")
+						.target("junction-and-end", "jae-1", "target")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("junction-and-end", "jae-1", "pivot")
+						.target("transition", "trans-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "trans-1", "source:successor")
+						.target("step", "step-2", "target:predecessor")
+						.build(),
+				)
+				.build();
+
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+
+			expect(result.predecessorStepsIds).toHaveLength(2);
+			expect(result.predecessorStepsIds).toContain("step-0");
+			expect(result.predecessorStepsIds).toContain("step-1");
+			expect(result.successorStepsIds).toEqual(["step-2"]);
+			expect(result.orPriorityExclusionTransitionIds).toEqual([]);
+		});
+
+		it("resolves multiple successor steps through an AND divergence (junction-and-start)", () => {
+			const step0 = new StepBuilder().id("step-0").number(0).initial(true).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const jAndStart = new JunctionAndStartBuilder().id("jas-1").nBranches(2).build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const [branch0Id, branch1Id] = jAndStart.data.branchesOrder;
+			const grafcet = new GrafcetBuilder()
+				.addStep(step0)
+				.addStep(step1)
+				.addStep(step2)
+				.addJunctionAndStart(jAndStart)
+				.addTransition(trans1)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "step-0", "source:successor")
+						.target("transition", "trans-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "trans-1", "source:successor")
+						.target("junction-and-start", "jas-1", "pivot")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("junction-and-start", "jas-1", branch0Id)
+						.target("step", "step-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("junction-and-start", "jas-1", branch1Id)
+						.target("step", "step-2", "target:predecessor")
+						.build(),
+				)
+				.build();
+
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+
+			expect(result.predecessorStepsIds).toEqual(["step-0"]);
+			expect(result.successorStepsIds).toHaveLength(2);
+			expect(result.successorStepsIds).toContain("step-1");
+			expect(result.successorStepsIds).toContain("step-2");
+			expect(result.orPriorityExclusionTransitionIds).toEqual([]);
+		});
+
+		it("computes orPriorityExclusionTransitionIds: first branch has none, second branch excludes first", () => {
+			const step0 = new StepBuilder().id("step-0").number(0).initial(true).build();
+			const jOrStart = new JunctionOrStartBuilder().id("jos-1").nBranches(2).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const trans2 = new TransitionBuilder().id("trans-2").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const [branch0Id, branch1Id] = jOrStart.data.branchesOrder;
+			const grafcet = new GrafcetBuilder()
+				.addStep(step0)
+				.addStep(step1)
+				.addStep(step2)
+				.addJunctionOrStart(jOrStart)
+				.addTransition(trans1)
+				.addTransition(trans2)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "step-0", "source:successor")
+						.target("junction-or-start", "jos-1", "pivot")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("junction-or-start", "jos-1", branch0Id)
+						.target("transition", "trans-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("junction-or-start", "jos-1", branch1Id)
+						.target("transition", "trans-2", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "trans-1", "source:successor")
+						.target("step", "step-1", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "trans-2", "source:successor")
+						.target("step", "step-2", "target:predecessor")
+						.build(),
+				)
+				.build();
+
+			const result1 = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+			const result2 = TransitionPreCompiler.preCompile(trans2, grafcet, variables, Language.FR);
+
+			// First branch: no exclusions
+			expect(result1.orPriorityExclusionTransitionIds).toEqual([]);
+			// Second branch: must exclude first branch transition
+			expect(result2.orPriorityExclusionTransitionIds).toEqual(["trans-1"]);
+		});
+
+		it("has empty predecessorStepsIds and successorStepsIds when transition is not connected", () => {
+			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const grafcet = new GrafcetBuilder().addTransition(trans1).build();
+
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+
+			expect(result.predecessorStepsIds).toEqual([]);
+			expect(result.successorStepsIds).toEqual([]);
+			expect(result.orPriorityExclusionTransitionIds).toEqual([]);
 		});
 	});
 });

@@ -1,11 +1,16 @@
-﻿import Grafcet from "../grafcet.schema";
+﻿import Connection from "../connection.schema";
+import Grafcet from "../grafcet.schema";
+import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 import Step from "../step.schema";
+import StepReferralSource from "../step-referral-source.schema";
 import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
+	TransitionHandleSourceSuccessorType,
 	TransitionHandleTargetPredecessorType,
 } from "../transition.schema";
 import JunctionAndEndHelper from "./junction-and-end.helper";
+import JunctionAndStartHelper from "./junction-and-start.helper";
 import JunctionOrStartHelper from "./junction-or-start.helper";
 
 export default class TransitionHelper {
@@ -47,6 +52,78 @@ export default class TransitionHelper {
 	}
 
 	/**
+	 * Returns the steps that will be activated when the transition fires.
+	 * Handles direct step connections and AND divergence (junction-and-start → multiple steps).
+	 * For step-referral-source, resolves the referenced step by its target number within this grafcet.
+	 */
+	static getSuccessorSteps(transitionId: string, grafcet: Grafcet): Step[] {
+		const connectionsFromTransition = grafcet.getConnectionsByElementIdAndHandle(
+			transitionId,
+			TRANSITION_HANDLE_SOURCE_SUCCESSOR,
+		);
+		const successorSteps: Step[] = [];
+		for (const connection of connectionsFromTransition) {
+			switch (connection.target.type as TransitionHandleSourceSuccessorType) {
+				case "step": {
+					const step = grafcet.getElementByIdAndType<Step>(connection.target.id, "step");
+					if (step) successorSteps.push(step);
+					break;
+				}
+				case "junction-and-start": {
+					const steps = JunctionAndStartHelper.getSuccessorSteps(connection.target.id, grafcet);
+					successorSteps.push(...steps);
+					break;
+				}
+				case "step-referral-source": {
+					// Resolve the referenced step by its number in the current grafcet
+					const referralSource = grafcet.getElementByIdAndType<StepReferralSource>(
+						connection.target.id,
+						"step-referral-source",
+					);
+					if (referralSource && referralSource.data.targetStepNumber !== "") {
+						const step = grafcet.steps.find(
+							(s) => s.data.number === referralSource.data.targetStepNumber,
+						);
+						if (step) successorSteps.push(step);
+					}
+					break;
+				}
+				case "junction-or-end": {
+					// OR convergence: the junction-or-end connects to the next step via its pivot handle
+					const pivotConns = grafcet.getConnectionsByElementIdAndHandle(
+						connection.target.id,
+						JUNCTION_HANDLE_PIVOT,
+					);
+					for (const pivotConn of pivotConns) {
+						if (pivotConn.source.id !== connection.target.id) continue;
+						if (pivotConn.target.type === "step") {
+							const step = grafcet.getElementByIdAndType<Step>(pivotConn.target.id, "step");
+							if (step) successorSteps.push(step);
+						} else if (pivotConn.target.type === "step-referral-source") {
+							const referralSource = grafcet.getElementByIdAndType<StepReferralSource>(
+								pivotConn.target.id,
+								"step-referral-source",
+							);
+							if (referralSource && referralSource.data.targetStepNumber !== "") {
+								const step = grafcet.steps.find(
+									(s) => s.data.number === referralSource.data.targetStepNumber,
+								);
+								if (step) successorSteps.push(step);
+							}
+						}
+					}
+					break;
+				}
+				default:
+					throw new Error(
+						`Unexpected target type ${connection.target.type} on handle ${TRANSITION_HANDLE_SOURCE_SUCCESSOR} of transition ${transitionId}`,
+					);
+			}
+		}
+		return successorSteps;
+	}
+
+	/**
 	 * Checks if the transition has a predecessor element (no orphan transition)
 	 */
 	static hasPredecessor(transitionId: string, grafcet: Grafcet): boolean {
@@ -58,13 +135,19 @@ export default class TransitionHelper {
 	}
 
 	/**
-	 * Checks if the transition has a successor element (no orphan transition)
+	 * Returns all direct successor connections from a transition
 	 */
-	static hasSuccessor(transitionId: string, grafcet: Grafcet): boolean {
-		const connectionsFromTransition = grafcet.getConnectionsByElementIdAndHandle(
+	static getSuccessors(transitionId: string, grafcet: Grafcet): Connection[] {
+		return grafcet.getConnectionsByElementIdAndHandle(
 			transitionId,
 			TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 		);
-		return connectionsFromTransition.length > 0;
+	}
+
+	/**
+	 * Checks if the transition has a successor element (no orphan transition)
+	 */
+	static hasSuccessor(transitionId: string, grafcet: Grafcet): boolean {
+		return TransitionHelper.getSuccessors(transitionId, grafcet).length > 0;
 	}
 }

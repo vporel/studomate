@@ -12,36 +12,25 @@ describe("GrafcetCompiler", () => {
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
 				steps: new Map([
-					[
-						"step-0",
-						{
-							node: step0Node,
-							initial: true,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
-					[
-						"step-1",
-						{
-							node: step1Node,
-							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
+					["step-0", { node: step0Node, initial: true }],
+					["step-1", { node: step1Node, initial: false }],
 				]),
 				stepsMemos: new Map([
+					["step-0", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") }],
+					["step-1", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") }],
+				]),
+				transitions: new Map([
 					[
-						"step-0",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") },
-					],
-					[
-						"step-1",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") },
+						"trans-1",
+						{
+							node: transitionNode,
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
 					],
 				]),
-				transitions: new Map([["trans-1", { node: transitionNode, timers: [] }]]),
 				actions: new Map(),
 			};
 
@@ -58,37 +47,24 @@ describe("GrafcetCompiler", () => {
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
 				steps: new Map([
-					[
-						"step-0",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X0"),
-							initial: true,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
-					[
-						"step-1",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X1"),
-							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
+					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
+					["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
 				]),
 				stepsMemos: new Map([
-					[
-						"step-0",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") },
-					],
-					[
-						"step-1",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") },
-					],
+					["step-0", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") }],
+					["step-1", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") }],
 				]),
 				transitions: new Map([
-					["trans-1", { node: LiteralsBuilder.buildBooleanNode(true), timers: [timer1] }],
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [timer1],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
 				]),
 				actions: new Map(),
 			};
@@ -102,30 +78,26 @@ describe("GrafcetCompiler", () => {
 		it("throws error if no initial step", () => {
 			const preCompiledGrafcet: PreCompiledGrafcet = {
 				steps: new Map([
-					[
-						"step-0",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X0"),
-							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
-					[
-						"step-1",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X1"),
-							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
+					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: false }],
+					["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
 				]),
 				transitions: new Map([
-					["trans-1", { node: LiteralsBuilder.buildBooleanNode(true), timers: [] }],
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
 				]),
 				actions: new Map(),
-				stepsMemos: new Map(),
+			stepsMemos: new Map([
+				["step-0", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") }],
+				["step-1", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") }],
+			]),
 			};
 
 			expect(() => GrafcetCompiler.compile(preCompiledGrafcet)).toThrow(
@@ -136,24 +108,22 @@ describe("GrafcetCompiler", () => {
 		it("throws error if less than 2 steps", () => {
 			const preCompiledGrafcet: PreCompiledGrafcet = {
 				steps: new Map([
-					[
-						"step-0",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X0"),
-							initial: true,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
-						},
-					],
+					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
 				]),
 				stepsMemos: new Map([
-					[
-						"step-0",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") },
-					],
+					["step-0", { variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") }],
 				]),
 				transitions: new Map([
-					["trans-1", { node: LiteralsBuilder.buildBooleanNode(true), timers: [] }],
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: [],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
 				]),
 				actions: new Map(),
 			};

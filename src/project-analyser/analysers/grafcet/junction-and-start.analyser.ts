@@ -44,7 +44,68 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 					"Certaines branches ne sont connectées à aucun élément.",
 				),
 			);
+		} else {
+			// All branches are connected — check that they all converge at the same junction-and-end
+			const branchIds = junctionAndStart.data.branchesOrder;
+			const jaePerBranch: (string | null)[] = [];
+			for (const branchId of branchIds) {
+				const conns = grafcet.getConnectionsByElementIdAndHandle(junctionAndStart.id, branchId);
+				if (conns.length === 0) break; // safety guard, already covered above
+				jaePerBranch.push(
+					JunctionAndStartAnalyser.forwardBfsJunctionAndEndId(conns[0].target.id, grafcet),
+				);
+			}
+
+			if (jaePerBranch.length === branchIds.length) {
+				const anyMissing = jaePerBranch.some((id) => id === null);
+				const distinct = new Set(jaePerBranch.filter((id): id is string => id !== null));
+				if (anyMissing || distinct.size !== 1) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							"La divergence en ET n'est pas fermée par une convergence en ET.",
+						),
+					);
+				} else {
+					// All branches reach the same junction-and-end — check branch count matches
+					const jaeId = [...distinct][0];
+					const jae = grafcet.junctionsAndEnds.find((j) => j.id === jaeId)!;
+					if (jae.data.branchesOrder.length !== branchIds.length) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								source,
+								"Le nombre de branches de la divergence en ET ne correspond pas à celui de la convergence en ET.",
+							),
+						);
+					}
+				}
+			}
 		}
+
 		return issues;
 	}
+
+	/**
+	 * Forward BFS from startId through the grafcet connection graph.
+	 * Returns the id of the first junction-and-end node reachable, or null.
+	 */
+	private static forwardBfsJunctionAndEndId(startId: string, grafcet: Grafcet): string | null {
+		const visited = new Set<string>();
+		const queue: string[] = [startId];
+		while (queue.length > 0) {
+			const current = queue.shift()!;
+			if (visited.has(current)) continue;
+			visited.add(current);
+			if (grafcet.junctionsAndEnds.some((j) => j.id === current)) return current;
+			for (const conn of grafcet.connections) {
+				if (conn.source.id === current && !visited.has(conn.target.id)) {
+					queue.push(conn.target.id);
+				}
+			}
+		}
+		return null;
+	}
 }
+

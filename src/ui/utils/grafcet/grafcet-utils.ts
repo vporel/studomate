@@ -1,12 +1,36 @@
 import Connection from "@/schemas/grafcet//connection.schema";
 import { ElementType } from "@/schemas/grafcet/element.schema";
 import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
-import { getConnectionLinePoints } from "@/ui/components/grafcet/connections-lines/CustomConnectionLine";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { PAPERS_SIZES } from "@/ui/constants";
 import { mmToPx } from "@/ui/lib/utils";
 import { ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
 import { ConnectionMode, getEdgePosition } from "@xyflow/system";
+
+const CONNECTION_LINE_Y_OFFSET = 20;
+
+export function getConnectionLinePoints(
+	fromX: number,
+	fromY: number,
+	toX: number,
+	toY: number,
+): [number, number][] {
+	const points: [number, number][] = [];
+	if (Math.abs(fromX - toX) < 5 && fromY > toY) {
+		const downY = fromY + CONNECTION_LINE_Y_OFFSET;
+		points.push([fromX, fromY]);
+		points.push([fromX, downY]);
+		const horizontalX = fromX - 40; //Start with a left shift (convention)
+		points.push([horizontalX, downY]);
+		points.push([horizontalX, toY - CONNECTION_LINE_Y_OFFSET]);
+		points.push([toX, toY - CONNECTION_LINE_Y_OFFSET]);
+		points.push([toX, toY]);
+	} else {
+		points.push([fromX, fromY]);
+		points.push([toX, toY]);
+	}
+	return points;
+}
 
 export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	rfInstance: ReactFlowInstance,

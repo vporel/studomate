@@ -252,5 +252,59 @@ describe("TransitionAnalyser", () => {
 			const conflictIssues = issues.filter((i) => i.message.includes("conflit"));
 			expect(conflictIssues).toHaveLength(0);
 		});
+
+		it("detects transition with multiple direct successors", () => {
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-2", "target:predecessor")
+				.build();
+			const c3 = new ConnectionBuilder()
+				.id("c3")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-3", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addTransition(transition)
+				.addConnections(c1, c2, c3)
+				.build();
+
+			const issues = analyser.analyseInContext(transition, grafcet, []);
+
+			const multiSuccessorIssue = issues.find((i) => i.message.includes("successeur direct"));
+			expect(multiSuccessorIssue).toBeDefined();
+			expect(multiSuccessorIssue?.severity).toBe("error");
+		});
+
+		it("accepts transition with exactly one direct successor", () => {
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-2", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addTransition(transition)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(transition, grafcet, []);
+
+			const multiSuccessorIssues = issues.filter((i) => i.message.includes("successeur direct"));
+			expect(multiSuccessorIssues).toHaveLength(0);
+		});
 	});
 });

@@ -182,5 +182,94 @@ describe("ProjectAnalyser", () => {
 			// Should not throw, variables are passed to analysers
 			expect(result).toBeDefined();
 		});
+
+		describe("checkDuplicateStepNumbers", () => {
+			it("detects the same step number in two different grafcets", () => {
+				const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+				const grafcet1 = new GrafcetBuilder().id("grafcet-1").name("G1").addStep(step1).build();
+
+				const step2 = new StepBuilder().id("step-2").number(1).initial().position(0, 0).build();
+				const grafcet2 = new GrafcetBuilder().id("grafcet-2").name("G2").addStep(step2).build();
+
+				const project = new ProjectBuilder()
+					.id("project-1")
+					.name("Test Project")
+					.author("Test Author")
+					.addGrafcets(grafcet1, grafcet2)
+					.build();
+				const result = ProjectAnalyser.analyse(project);
+
+				const dupIssues = result.issues.filter((i) =>
+					i.message.includes("unique") && i.message.includes("1"),
+				);
+				expect(dupIssues).toHaveLength(1);
+				expect(dupIssues[0].severity).toBe("error");
+				expect(dupIssues[0].source.sourceType).toBe("project");
+				expect(dupIssues[0].message).toContain('"G1"');
+				expect(dupIssues[0].message).toContain('"G2"');
+			});
+
+			it("flags all occurrences when three grafcets share the same step number", () => {
+				const step1 = new StepBuilder().id("step-1").number(5).initial().position(0, 0).build();
+				const step2 = new StepBuilder().id("step-2").number(5).initial().position(0, 0).build();
+				const step3 = new StepBuilder().id("step-3").number(5).initial().position(0, 0).build();
+				const grafcet1 = new GrafcetBuilder().id("grafcet-1").name("G1").addStep(step1).build();
+				const grafcet2 = new GrafcetBuilder().id("grafcet-2").name("G2").addStep(step2).build();
+				const grafcet3 = new GrafcetBuilder().id("grafcet-3").name("G3").addStep(step3).build();
+
+				const project = new ProjectBuilder()
+					.id("project-1")
+					.name("Test Project")
+					.author("Test Author")
+					.addGrafcets(grafcet1, grafcet2, grafcet3)
+					.build();
+				const result = ProjectAnalyser.analyse(project);
+
+				const dupIssues = result.issues.filter((i) => i.message.includes("unique"));
+				expect(dupIssues).toHaveLength(1);
+				expect(dupIssues[0].message).toContain('"G1"');
+				expect(dupIssues[0].message).toContain('"G2"');
+				expect(dupIssues[0].message).toContain('"G3"');
+			});
+
+			it("does not flag identical step numbers within the same grafcet (already handled by step analyser)", () => {
+				const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+				const step2 = new StepBuilder().id("step-2").number(1).position(0, 100).build();
+				const grafcet = new GrafcetBuilder()
+					.id("grafcet-1")
+					.name("G1")
+					.addSteps(step1, step2)
+					.build();
+
+				const project = new ProjectBuilder()
+					.id("project-1")
+					.name("Test Project")
+					.author("Test Author")
+					.addGrafcet(grafcet)
+					.build();
+				const result = ProjectAnalyser.analyse(project);
+
+				const dupIssues = result.issues.filter((i) => i.message.includes("unique"));
+				expect(dupIssues).toHaveLength(0);
+			});
+
+			it("does not flag when all step numbers are distinct across grafcets", () => {
+				const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+				const step2 = new StepBuilder().id("step-2").number(2).initial().position(0, 0).build();
+				const grafcet1 = new GrafcetBuilder().id("grafcet-1").name("G1").addStep(step1).build();
+				const grafcet2 = new GrafcetBuilder().id("grafcet-2").name("G2").addStep(step2).build();
+
+				const project = new ProjectBuilder()
+					.id("project-1")
+					.name("Test Project")
+					.author("Test Author")
+					.addGrafcets(grafcet1, grafcet2)
+					.build();
+				const result = ProjectAnalyser.analyse(project);
+
+				const dupIssues = result.issues.filter((i) => i.message.includes("unique"));
+				expect(dupIssues).toHaveLength(0);
+			});
+		});
 	});
 });

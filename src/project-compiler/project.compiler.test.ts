@@ -51,8 +51,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: true,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -60,8 +58,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -70,7 +66,16 @@ describe("ProjectCompiler", () => {
 					["step-1", { variable: memo1, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") }],
 				]),
 				transitions: new Map([
-					["trans-1", { node: LiteralsBuilder.buildBooleanNode(true), timers: [] }],
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
 				]),
 				actions: new Map(),
 			};
@@ -102,8 +107,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: true,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-1"] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -111,8 +114,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: ["step-0"] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -127,7 +128,16 @@ describe("ProjectCompiler", () => {
 					],
 				]),
 				transitions: new Map([
-					["trans-1", { node: LiteralsBuilder.buildBooleanNode(true), timers: [] }],
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
 				]),
 				actions: new Map(),
 			};
@@ -148,6 +158,7 @@ describe("ProjectCompiler", () => {
 		it("handles compilation errors gracefully", () => {
 			const var1 = new PLCVariable("var-1", "X0", "memory", "boolean");
 
+			// Neither step is initial → initializeSteps throws, which is caught as a compilation error
 			const preCompiledGrafcet: PreCompiledGrafcet = {
 				steps: new Map([
 					[
@@ -155,8 +166,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X0"),
 							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 					[
@@ -164,8 +173,6 @@ describe("ProjectCompiler", () => {
 						{
 							node: IdentifiersBuilder.buildIdentifierNode("X1"),
 							initial: false,
-							branches: [{ transitionId: "trans-1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),

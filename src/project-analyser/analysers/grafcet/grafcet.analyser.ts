@@ -38,7 +38,11 @@ export default class GrafcetAnalyser {
 				issue.source.parentId = grafcet.id;
 				return issue;
 			});
-		const issues = [...this.checkInitialStep(grafcet, grafcet.id), ...elementsIssues];
+		const issues = [
+			...this.checkInitialStep(grafcet, grafcet.id),
+			...this.checkConnectedComponents(grafcet),
+			...elementsIssues,
+		];
 
 		return {
 			issues,
@@ -84,5 +88,51 @@ export default class GrafcetAnalyser {
 			];
 		}
 		return [];
+	}
+
+	/**
+	 * Grafcet-level rule: the graph formed by all connections must be a single
+	 * connected component. Two disconnected sub-graphs mean two independent cycles
+	 * coexist inside the same grafcet, which is not allowed.
+	 * Elements with no connections are ignored (already reported by element analysers).
+	 */
+	private static checkConnectedComponents(grafcet: Grafcet): ProjectAnalyserIssue[] {
+		if (grafcet.connections.length === 0) return [];
+
+		// Build undirected adjacency map from connections
+		const adjacency = new Map<string, Set<string>>();
+		for (const connection of grafcet.connections) {
+			const a = connection.source.id;
+			const b = connection.target.id;
+			if (!adjacency.has(a)) adjacency.set(a, new Set());
+			if (!adjacency.has(b)) adjacency.set(b, new Set());
+			adjacency.get(a)!.add(b);
+			adjacency.get(b)!.add(a);
+		}
+
+		// BFS from the first node
+		const allNodes = [...adjacency.keys()];
+		const visited = new Set<string>();
+		const queue: string[] = [allNodes[0]];
+		visited.add(allNodes[0]);
+		while (queue.length > 0) {
+			const current = queue.shift()!;
+			for (const neighbor of adjacency.get(current)!) {
+				if (!visited.has(neighbor)) {
+					visited.add(neighbor);
+					queue.push(neighbor);
+				}
+			}
+		}
+
+		if (visited.size === allNodes.length) return [];
+
+		return [
+			new ProjectAnalyserIssue(
+				"error",
+				{ sourceType: "grafcet", sourceId: grafcet.id },
+				"Le grafcet contient plusieurs réseaux non connectés (plusieurs cycles distincts).",
+			),
+		];
 	}
 }

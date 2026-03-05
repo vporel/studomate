@@ -21,6 +21,7 @@ export const TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES = [
 	"step",
 	"step-referral-source",
 	"junction-and-start",
+	"junction-or-end",
 ] as const satisfies readonly ElementType[];
 
 export type TransitionHandleSourceSuccessorType = (typeof TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];

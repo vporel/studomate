@@ -106,6 +106,16 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				new ProjectAnalyserIssue("error", source, "La transition n'a aucun élément en aval."),
 			);
 		}
+
+		if (TransitionHelper.getSuccessors(transition.id, grafcet).length > 1) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					source,
+					"Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément.",
+				),
+			);
+		}
 		if (transition.data.expression && transition.data.expression.trim() !== "") {
 			try {
 				const lexer = new Lexer(Language.FR);

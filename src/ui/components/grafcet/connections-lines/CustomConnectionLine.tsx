@@ -1,43 +1,8 @@
 "use client";
 
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
+import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { ConnectionLineComponentProps } from "@xyflow/react";
-
-const CONNECTION_LINE_Y_OFFSET = 20;
-
-export function getConnectionLinePoints(
-	fromX: number,
-	fromY: number,
-	toX: number,
-	toY: number,
-): [number, number][] {
-	const points: [number, number][] = [];
-	if (Math.abs(fromX - toX) < 5 && fromY > toY) {
-		// Go down by 10 from source
-		const downY = fromY + CONNECTION_LINE_Y_OFFSET;
-		points.push([fromX, fromY]);
-		points.push([fromX, downY]);
-
-		// Go left or right depending on cursor position (using fromX as reference)
-		const horizontalX = fromX < toX ? fromX - 40 : fromX + 40;
-		points.push([horizontalX, downY]);
-
-		// Go up to target level
-		points.push([horizontalX, toY - CONNECTION_LINE_Y_OFFSET]);
-
-		// Go to horizontal center of target
-		points.push([toX, toY - CONNECTION_LINE_Y_OFFSET]);
-
-		// Finish at final position
-		points.push([toX, toY]);
-	} else {
-		// Default behavior for other cases
-		points.push([fromX, fromY]);
-		points.push([toX, toY]);
-	}
-
-	return points;
-}
 
 const CustomConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineComponentProps) => {
 	return (

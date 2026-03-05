@@ -31,8 +31,6 @@ describe("ActionCompiler", () => {
 						{
 							node: stepNode,
 							initial: false,
-							branches: [{ transitionId: "t1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -51,13 +49,13 @@ describe("ActionCompiler", () => {
 			);
 
 			expect(result).toHaveLength(3);
-expect(result[0].type).toBe("IF_CONTROL");
-const ifNode = result[0] as any;
-expect(ifNode.condition.type).toBe("LOGICAL_EXPRESSION");
-expect(ifNode.condition.operator).toBe("AND");
-});
+			expect(result[0].type).toBe("IF_CONTROL");
+			const ifNode = result[0] as any;
+			expect(ifNode.condition.type).toBe("LOGICAL_EXPRESSION");
+			expect(ifNode.condition.operator).toBe("AND");
+		});
 
-it("compiles action with continuous phase", () => {
+		it("compiles action with continuous phase", () => {
 			const stepNode = IdentifiersBuilder.buildIdentifierNode("X1");
 			const stepMemoNode = IdentifiersBuilder.buildIdentifierNode("_memo_1");
 			const assignNode = StatementsBuilder.buildAssignStatementNode(
@@ -81,8 +79,6 @@ it("compiles action with continuous phase", () => {
 						{
 							node: stepNode,
 							initial: false,
-							branches: [{ transitionId: "t1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -139,8 +135,6 @@ it("compiles action with continuous phase", () => {
 						{
 							node: stepNode,
 							initial: false,
-							branches: [{ transitionId: "t1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),
@@ -184,8 +178,6 @@ it("compiles action with continuous phase", () => {
 						{
 							node: stepNode,
 							initial: false,
-							branches: [{ transitionId: "t1", stepsIdsBeforeTransition: [] }],
-						orDivergencePriorityExclusions: [],
 						},
 					],
 				]),

@@ -4,9 +4,9 @@ import { Box, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
 import { useEffect, useState } from "react";
 import { useProjectStore } from "../../projects/ProjectContext";
-import { getConnectionLinePoints } from "../connections-lines/CustomConnectionLine";
 import useAddPointHandler from "./useAddPointHandler";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
+import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 
 export type CustomEdgeData = { points: [number, number][] };
 

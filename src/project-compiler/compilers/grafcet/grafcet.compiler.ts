@@ -6,7 +6,7 @@ import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
 import { PreCompiledGrafcet } from "../../../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
 import ActionCompiler from "./action.compiler";
-import StepCompiler from "./step.compiler";
+import TransitionCompiler from "./transition.compiler";
 
 export type CompiledGrafcet = {
 	nodes: ASTNode[];
@@ -20,11 +20,11 @@ export default class GrafcetCompiler {
 		);
 
 		const nodes: ASTNode[] = [
-			//Compile steps first, so actions can reference the step nodes to detect rising/falling edges
-			...preCompiledGrafcet.steps
+			//Compile transitions: each transition generates its activation/deactivation block
+			...preCompiledGrafcet.transitions
 				.entries()
-				.flatMap(([stepId, preCompiledStep]) =>
-					StepCompiler.compile(stepId, preCompiledStep, preCompiledGrafcet, stepMemosNodes),
+				.flatMap(([transitionId, preCompiledTransition]) =>
+					TransitionCompiler.compile(transitionId, preCompiledTransition, preCompiledGrafcet, stepMemosNodes),
 				),
 			//Compile actions
 			...preCompiledGrafcet.actions
