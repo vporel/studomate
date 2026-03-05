@@ -22,11 +22,13 @@ export type AnalysisGrafcetIssues = {
 };
 
 export type AnalysisIssues = {
+	project: string[];
 	grafcets: Record<string, AnalysisGrafcetIssues>;
 };
 
 export function emptyAnalysisIssues(): AnalysisIssues {
 	return {
+		project: [],
 		grafcets: {},
 	};
 }

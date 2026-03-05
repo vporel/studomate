@@ -22,7 +22,7 @@ export default class GrafcetAnalyser {
 	 * Runs all isolated and contextual rules on every element of the grafcet.
 	 */
 	static analyse(grafcet: Grafcet, project: Project): GrafcetAnalysisResult {
-		const stepsVariables = this.buildstepsVariables(grafcet, grafcet.id);
+		const stepsVariables = this.buildstepsVariables(grafcet);
 		const allVariables = [...project.variables, ...stepsVariables];
 		const elementsIssues = grafcet
 			.getAllElements()
@@ -39,7 +39,8 @@ export default class GrafcetAnalyser {
 				return issue;
 			});
 		const issues = [
-			...this.checkInitialStep(grafcet, grafcet.id),
+			...this.checkAtLeastTwoSteps(grafcet),
+			...this.checkInitialStep(grafcet),
 			...this.checkConnectedComponents(grafcet),
 			...elementsIssues,
 		];
@@ -55,7 +56,7 @@ export default class GrafcetAnalyser {
 	 * Mnemonic: X{stepNumber} — deduplicated by mnemonic so duplicate-number errors
 	 * don't produce duplicate variables.
 	 */
-	private static buildstepsVariables(grafcet: Grafcet, grafcetId: string): Variable[] {
+	private static buildstepsVariables(grafcet: Grafcet): Variable[] {
 		const seen = new Set<number>();
 		const variables: Variable[] = [];
 
@@ -66,23 +67,36 @@ export default class GrafcetAnalyser {
 			if (seen.has(n as number)) continue;
 			seen.add(n as number);
 			variables.push(
-				new Variable(getStepVariableId(grafcetId, n), getStepVariableMnemonic(n), "memory", "BOOL"),
+				new Variable(getStepVariableId(grafcet.id, n), getStepVariableMnemonic(n), "memory", "BOOL"),
 			);
 		}
 
 		return variables;
 	}
 
+	private static checkAtLeastTwoSteps(grafcet: Grafcet): ProjectAnalyserIssue[] {
+		if (grafcet.steps.length < 2) {
+			return [
+				new ProjectAnalyserIssue(
+					"error",
+					{ sourceType: "grafcet", sourceId: grafcet.id },
+					"Le grafcet doit contenir au moins deux étapes.",
+				),
+			];
+		}
+		return [];
+	}
+
 	/**
 	 * Grafcet-level rule: must contain at least one initial step.
 	 */
-	private static checkInitialStep(grafcet: Grafcet, grafcetId: string): ProjectAnalyserIssue[] {
+	private static checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		const hasInitialStep = grafcet.steps.some((s) => s.data.initial === true);
 		if (!hasInitialStep) {
 			return [
 				new ProjectAnalyserIssue(
 					"error",
-					{ sourceType: "grafcet", sourceId: grafcetId },
+					{ sourceType: "grafcet", sourceId: grafcet.id },
 					"Le grafcet ne contient aucune étape initiale.",
 				),
 			];

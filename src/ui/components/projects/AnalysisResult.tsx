@@ -67,7 +67,9 @@ function GrafcetIssues({
 			{issues.overall && issues.overall.length > 0 && (
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
-						{severity === "error" ? "Erreurs globales" : "Avertissements globaux"}
+						{severity === "error"
+							? "Erreurs globales au grafcet"
+							: "Avertissements globaux au grafcet"}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{issues.overall.map((msg: string, idx: number) => (
@@ -85,7 +87,9 @@ function GrafcetIssues({
 			{issues.elements && Object.keys(issues.elements).length > 0 && (
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
-						{severity === "error" ? "Erreurs éléments" : "Avertissements éléments"}
+						{severity === "error"
+							? "Erreurs des éléments du grafcet"
+							: "Avertissements des éléments du grafcet"}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{Object.entries(issues.elements).map(([elementId, msgs]) =>
@@ -178,7 +182,23 @@ export default function AnalysisResult() {
 				{(!analysisErrors || Object.keys(analysisErrors.grafcets).length === 0) && (
 					<Typography sx={{ p: 2 }}>{"Aucune erreur lors de l'analyse."}</Typography>
 				)}
-
+				{analysisErrors && analysisErrors.project && analysisErrors.project.length > 0 && (
+					<>
+						<Typography variant="subtitle2" sx={{ ml: 2 }}>
+							{"Erreurs globales au projet"}
+						</Typography>
+						<List dense sx={{ ml: 2 }}>
+							{analysisErrors.project.map((msg: string, idx: number) => (
+								<IssueListItem
+									key={`p-${idx}`}
+									message={msg}
+									severity="error"
+									onClick={() => onGoto("")}
+								/>
+							))}
+						</List>
+					</>
+				)}
 				{analysisErrors && Object.keys(analysisErrors.grafcets).length > 0 && (
 					<Box sx={{ px: 1, py: 1 }}>
 						{Object.entries(analysisErrors.grafcets).map(([grafcetId, grafcetErrors]) => (
@@ -202,6 +222,23 @@ export default function AnalysisResult() {
 				</Typography>
 				{(!analysisWarnings || Object.keys(analysisWarnings.grafcets).length === 0) && (
 					<Typography sx={{ p: 2 }}>{"Aucun avertissement."}</Typography>
+				)}
+				{analysisWarnings && analysisWarnings.project && analysisWarnings.project.length > 0 && (
+					<>
+						<Typography variant="subtitle2" sx={{ ml: 2 }}>
+							{"Avertissements globaux au projet"}
+						</Typography>
+						<List dense sx={{ ml: 2 }}>
+							{analysisWarnings.project.map((msg: string, idx: number) => (
+								<IssueListItem
+									key={`p-${idx}`}
+									message={msg}
+									severity="warning"
+									onClick={() => onGoto("")}
+								/>
+							))}
+						</List>
+					</>
 				)}
 				{analysisWarnings && Object.keys(analysisWarnings.grafcets).length > 0 && (
 					<Box sx={{ px: 1, py: 1 }}>

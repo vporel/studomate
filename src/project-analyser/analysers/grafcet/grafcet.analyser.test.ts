@@ -35,7 +35,8 @@ describe("GrafcetAnalyser", () => {
 	describe("analyse", () => {
 		it("returns no issues for valid grafcet with initial step", () => {
 			const step = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
-			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step, step2).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 			const result = GrafcetAnalyser.analyse(grafcet, project);
 
@@ -264,11 +265,7 @@ describe("GrafcetAnalyser", () => {
 
 		it("returns no connectivity error when grafcet has no connections at all", () => {
 			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
-			const grafcet = new GrafcetBuilder()
-				.id("grafcet-1")
-				.name("Test")
-				.addStep(step1)
-				.build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step1).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
 			const result = GrafcetAnalyser.analyse(grafcet, project);
@@ -277,6 +274,53 @@ describe("GrafcetAnalyser", () => {
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
 			);
 			expect(connectivityError).toBeUndefined();
+		});
+
+		it("detects grafcet with zero steps", () => {
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const twoStepsError = result.issues.find(
+				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
+			);
+			expect(twoStepsError).toBeDefined();
+			expect(twoStepsError?.severity).toBe("error");
+			expect(twoStepsError?.source.sourceId).toBe("grafcet-1");
+		});
+
+		it("detects grafcet with only one step", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step1).build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const twoStepsError = result.issues.find(
+				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
+			);
+			expect(twoStepsError).toBeDefined();
+			expect(twoStepsError?.severity).toBe("error");
+		});
+
+		it("returns no error for grafcet with more than one steps", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const step3 = new StepBuilder().id("step-3").number(3).position(0, 200).build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2, step3)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const twoStepsError = result.issues.find(
+				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
+			);
+			expect(twoStepsError).toBeUndefined();
 		});
 	});
 });

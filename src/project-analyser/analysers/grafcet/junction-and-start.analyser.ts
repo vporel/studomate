@@ -108,4 +108,3 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 		return null;
 	}
 }
-

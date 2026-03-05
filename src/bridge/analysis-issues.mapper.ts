@@ -7,6 +7,9 @@ import {
 export default class AnalysisIssuesMapper {
 	static analyserToApp(projectAnalyserIssues: ProjectAnalyserIssue[]): AnalysisIssues {
 		const result: AnalysisIssues = emptyAnalysisIssues();
+		result.project = projectAnalyserIssues
+			.filter((issue) => issue.source.sourceType === "project")
+			.map((issue) => issue.message);
 		projectAnalyserIssues.forEach((issue) => {
 			const grafcetId =
 				issue.source.sourceType === "grafcet" ? issue.source.sourceId : issue.source.parentId;
