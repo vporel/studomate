@@ -201,6 +201,7 @@ export default class ElementsCommandsFactory {
 			return {
 				commands: [], //No dimensions provided or currently resizing (we will handle the change at the end of the resizing to avoid creating unnecessary commands during the resizing)
 			};
+		console.log("dimensions pass");
 		const element = grafcet.getElementById(change.id);
 		if (!element) throw new Error("Grafcet element not found for id " + change.id);
 		const commands = [];

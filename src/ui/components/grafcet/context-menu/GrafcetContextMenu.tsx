@@ -35,12 +35,16 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 		} else {
 			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, workflowManager);
 			if (element.type === "action") {
-				items.push(
-					...actionContextMenuItems(element as ActionNodeType, workflowManager),
-				);
+				items.push(...actionContextMenuItems(element as ActionNodeType, workflowManager));
 			}
 			if (element.type.includes("junction")) {
-				items.push(...junctionContextMenuItems(element as JunctionNodeType, contextMenuEvents));
+				items.push(
+					...junctionContextMenuItems(
+						element as JunctionNodeType,
+						contextMenuEvents,
+						workflowManager,
+					),
+				);
 			}
 			items.push(...commonNodeItems);
 		}

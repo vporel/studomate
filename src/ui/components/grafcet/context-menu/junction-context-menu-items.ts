@@ -1,5 +1,6 @@
 "use client";
 
+import WorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { Emitter } from "mitt";
 import { GrafcetContextMenuEvents } from "../context/context-menu-events";
 import { JunctionNodeType } from "../flow/grafcet-nodes-definitions";
@@ -7,9 +8,11 @@ import { JunctionNodeType } from "../flow/grafcet-nodes-definitions";
 export default function junctionContextMenuItems(
 	junction: JunctionNodeType,
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>,
+	workflowManager: WorkflowManager,
 ): {
 	label: string;
 	onClick?: () => void;
+	disabled?: boolean;
 	subItems?: {
 		label: string;
 		onClick: () => void;
@@ -35,6 +38,14 @@ export default function junctionContextMenuItems(
 							type: "junction-select-branch",
 							branchId: branchId,
 						}),
+				})),
+			},
+			{
+				label: "Supprimer une branche",
+				disabled: junction.data.branchesOrder.length <= 2,
+				subItems: junction.data.branchesOrder.map((branchId, index) => ({
+					label: "Branche " + (index + 1),
+					onClick: () => workflowManager.deleteJunctionBranch(junction.id, branchId),
 				})),
 			},
 		],

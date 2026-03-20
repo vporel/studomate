@@ -21,11 +21,18 @@ export default function useKeyboardEventsHandler(
 		(e: React.KeyboardEvent<HTMLDivElement>) => {
 			if (!pivotSelected && selectedBranchId == null) return;
 			//If escape is pressed, clear the selection
-			if (e.key == "Escape") {
+			switch (e.key) {
+				case "Escape":
+					e.preventDefault();
+					e.stopPropagation();
+					clearSelection();
+					return;
+			}
+			if ((e.key === "Backspace" || e.key === "Delete") && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				e.stopPropagation();
-				clearSelection();
-				return;
+				if (pivotSelected || selectedBranchId == null) return;
+				workflowManager.deleteJunctionBranch(nodeId, selectedBranchId);
 			}
 			const toLeft = e.key == "ArrowLeft";
 			const toRight = e.key == "ArrowRight";
