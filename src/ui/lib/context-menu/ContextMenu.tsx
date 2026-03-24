@@ -5,7 +5,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ContextMenuItemType } from "./context-menu";
 import ContextMenuItem from "./ContextMenuItem";
 
-interface ContextMenuProps extends Omit<BoxProps, "position"> {
+interface ContextMenuProps extends Omit<BoxProps<"ul">, "position"> {
 	visible: boolean;
 	menuItems: ContextMenuItemType[][];
 	position: { x: number; y: number }; //pixels
@@ -24,7 +24,7 @@ const ContextMenu = ({
 	parentHeight,
 	...props
 }: ContextMenuProps) => {
-	const ref = useRef<HTMLDivElement | null>(null);
+	const ref = useRef<HTMLUListElement | null>(null);
 	const [positionShiftAxes, setPositionShiftAxes] = useState<null | "x" | "y" | "xy">(null);
 	const [internalPosition, setInternalPosition] = useState(position);
 	useLayoutEffect(() => {

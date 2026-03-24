@@ -1,3 +1,4 @@
+import MobileGuard from "@/ui/components/MobileGuard";
 import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/ui/constants";
 import { ThemeProvider } from "@/ui/theme/ThemeContext";
 import type { Metadata } from "next";
@@ -33,7 +34,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable}`}>
+			<body
+				className={`${geistSans.variable} ${geistMono.variable}`}
+				style={{ backgroundColor: "white" }}
+			>
 				<NextTopLoader
 					color={"gray"}
 					initialPosition={0.08}
@@ -45,8 +49,10 @@ export default function RootLayout({
 					speed={200}
 				/>
 				<ThemeProvider>
-					{children}
-					<ToastContainer position="bottom-right" />
+					<MobileGuard>
+						{children}
+						<ToastContainer position="bottom-right" />
+					</MobileGuard>
 				</ThemeProvider>
 			</body>
 		</html>

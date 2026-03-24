@@ -144,7 +144,6 @@ export default class SimulationManager {
 			return;
 		}
 		toast.success("Compilation terminée, lancement de la simulation...");
-		console.log("compiled project result:", projectCompilationResult.result);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);

@@ -14,19 +14,27 @@ type Section = {
 const SECTIONS: Section[] = [
 	{ id: "intro", label: "Introduction" },
 	{ id: "getting-started", label: "Démarrer" },
+	{ id: "projects", label: "Projets" },
+	{ id: "explorer", label: "Explorateur" },
+	{ id: "variables", label: "Variables" },
 	{
 		id: "grafcet",
 		label: "Grafcet",
 		children: [
+			{ id: "grafcet-canvas", label: "Canvas" },
 			{ id: "grafcet-steps", label: "Étapes" },
-			{ id: "grafcet-actions", label: "Actions" },
 			{ id: "grafcet-transitions", label: "Transitions" },
+			{ id: "grafcet-actions", label: "Actions" },
+			{ id: "grafcet-junctions", label: "Jonctions" },
+			{ id: "grafcet-referrals", label: "Renvois" },
+			{ id: "grafcet-comments", label: "Commentaires" },
+			{ id: "grafcet-connections", label: "Liaisons" },
 		],
 	},
-	{ id: "projects", label: "Projets" },
 	{ id: "toolbar", label: "Barre d'outils" },
-	{ id: "explorer", label: "Explorateur" },
-	{ id: "variables", label: "Variables" },
+	{ id: "simulation", label: "Simulation" },
+	{ id: "analysis", label: "Analyse" },
+	{ id: "shortcuts", label: "Raccourcis clavier" },
 ];
 
 export default function ManualNav({

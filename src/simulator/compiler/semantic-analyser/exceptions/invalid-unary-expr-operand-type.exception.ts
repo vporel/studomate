@@ -1,16 +1,16 @@
-import { ExpectedNodeResultType } from "../../ast/nodes/ast-node";
 import { UnaryExpressionNode } from "../../ast/nodes/expressions";
+import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 
 export default class InvalidUnaryExprOperandTypeException extends SemanticException {
 	private readonly operator: string;
 	private readonly expectedType: ExpectedNodeResultType;
-	private readonly actualType: ExpectedNodeResultType;
+	private readonly actualType: ExpectedNodeResultType | "unknown";
 
 	constructor(
 		operator: string,
 		expectedType: ExpectedNodeResultType,
-		actualType: ExpectedNodeResultType,
+		actualType: ExpectedNodeResultType | "unknown",
 		originNode: UnaryExpressionNode,
 	) {
 		super(
@@ -31,7 +31,7 @@ export default class InvalidUnaryExprOperandTypeException extends SemanticExcept
 		return this.expectedType;
 	}
 
-	getActualType(): ExpectedNodeResultType {
+	getActualType(): ExpectedNodeResultType | "unknown" {
 		return this.actualType;
 	}
 }

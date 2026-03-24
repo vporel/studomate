@@ -50,6 +50,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 			createTheme(
 				{
 					palette: {
+						mode: "light",
 						primary: {
 							main: theme.light.primaryColor,
 							light: theme.light.primaryColor,

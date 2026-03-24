@@ -21,9 +21,6 @@ const buttonSx: SxProps<Theme> = {
 };
 
 const linkSx: SxProps<Theme> = {
-	"*": {
-		fontSize: "12px",
-	},
 	"&:hover *": {
 		color: (th) => th.palette.primary.main,
 	},
@@ -88,27 +85,39 @@ const AppStartup = () => {
 				</Typography>
 				<FlexBox center gap={1} justifyContent="center" mt={1}>
 					<Box component={Link} href={routes.about()} sx={linkSx}>
-						<Typography color="gray">À propos</Typography>
+						<Typography color="gray" fontSize="12px">
+							À propos
+						</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.legalMentions()} sx={linkSx}>
-						<Typography color="gray">Mentions légales</Typography>
+						<Typography color="gray" fontSize="12px">
+							Mentions légales
+						</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.termsOfUse()} sx={linkSx}>
-						<Typography color="gray">Conditions d&apos;utilisation</Typography>
+						<Typography color="gray" fontSize="12px">
+							Conditions d&apos;utilisation
+						</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.privacyPolicy()} sx={linkSx}>
-						<Typography color="gray">Politique de confidentialité</Typography>
+						<Typography color="gray" fontSize="12px">
+							Politique de confidentialité
+						</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.userManual()} sx={linkSx}>
-						<Typography color="gray">Manuel utilisateur</Typography>
+						<Typography color="gray" fontSize="12px">
+							Manuel utilisateur
+						</Typography>
 					</Box>
 					|
 					<Box component={Link} href={routes.contact()} sx={linkSx}>
-						<Typography color="gray">Contact</Typography>
+						<Typography color="gray" fontSize="12px">
+							Contact
+						</Typography>
 					</Box>
 				</FlexBox>
 			</Box>

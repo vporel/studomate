@@ -1,5 +1,6 @@
 "use client";
 
+import routes from "@/app/routes";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
@@ -12,7 +13,9 @@ export default function useHelpMenu(): AppMenuType {
 				[
 					{
 						label: "Manuel utilisateur",
-						onClick: () => {},
+						onClick: () => {
+							window.open(routes.userManual(), "_blank", "noopener,noreferrer");
+						},
 					},
 				],
 			],

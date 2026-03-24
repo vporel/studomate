@@ -1,4 +1,4 @@
-import Token from "../../lexer/tokens/Token.interface";
+import { Token } from "../../lexer/tokens/tokens";
 import ParserException from "./parser.exception";
 
 export default class ParsingEndedBeforeEOFException extends ParserException {

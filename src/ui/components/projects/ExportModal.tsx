@@ -9,16 +9,15 @@ import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
 export default function ExportModal() {
-	const { exportModalVisible, setExportModalVisible, activeScope, activeScopeType, getGrafcet } =
-		useProjectStore(
-			useShallow((s) => ({
-				exportModalVisible: s.exportModalVisible,
-				setExportModalVisible: s.setExportModalVisible,
-				activeScope: s.activeScope,
-				activeScopeType: s.activeScopeType,
-				getGrafcet: s.getGrafcet,
-			})),
-		);
+	const { exportModalVisible, setExportModalVisible, activeScope, activeScopeType } = useProjectStore(
+		useShallow((s) => ({
+			exportModalVisible: s.exportModalVisible,
+			setExportModalVisible: s.setExportModalVisible,
+			activeScope: s.activeScope,
+			activeScopeType: s.activeScopeType,
+		})),
+	);
+	const grafcetsManager = useProjectStore((s) => s.grafcetsManager);
 	const projectStore = useProjectContext();
 
 	const [choice, setChoice] = useState<"grafcet" | "project" | null>(null);
@@ -37,12 +36,12 @@ export default function ExportModal() {
 				exportProject(project, fileName);
 			}
 		} else if (choice === "grafcet" && activeScopeType === "grafcet" && activeScope) {
-			const grafcet = getGrafcet(activeScope);
+			const grafcet = grafcetsManager.getGrafcet(activeScope);
 			const fileName = `${grafcet.name}${dateSuffix}`;
 			exportGrafcet(activeScope, fileName, grafcet.format);
 		}
 		onClose();
-	}, [choice, onClose, getGrafcet, activeScope, activeScopeType, projectStore, addDateToName]);
+	}, [choice, onClose, grafcetsManager, activeScope, activeScopeType, projectStore, addDateToName]);
 
 	return (
 		<CustomModal open={exportModalVisible} onClose={onClose} title="Exporter" width={500}>

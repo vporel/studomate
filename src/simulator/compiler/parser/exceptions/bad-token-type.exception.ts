@@ -1,4 +1,4 @@
-import { TokenType } from "../../lexer/tokens/TokenType.enum";
+import { TokenType } from "../../lexer/tokens/tokens";
 import ParserException from "./parser.exception";
 
 export default class BadTokenTypeException extends ParserException {

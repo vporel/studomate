@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "next build --turbopack",
+		"build": "next build --turbopack && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static",
 		"start": "next start",
 		"lint": "eslint . --ext .js,.jsx,.ts,.tsx --config eslint.config.mjs",
 		"test": "jest"

@@ -27,7 +27,7 @@ export default class CommandsStackManager {
 			return;
 		}
 		if (!commands || commands.length === 0) return;
-		console.log("Executing project operation with commands: ", commands);
+		//console.log("Executing project operation with commands: ", commands);
 		const newProject = this.commandsStack.execute(commands, project.copy());
 		this.setStoreState(() => ({
 			project: newProject,

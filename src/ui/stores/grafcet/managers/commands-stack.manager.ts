@@ -24,7 +24,7 @@ export default class CommandsStackManager {
 	executeOperation(commands: AbstractGrafcetCommand<any>[], options?: { saveCommands?: boolean }): void {
 		this.getStoreState().viewManager.throwErrorIfNotReady();
 		if (!commands || commands.length === 0) return;
-		console.log("Executing grafcet operation with commands: ", commands);
+		//console.log("Executing grafcet operation with commands: ", commands);
 		const newGrafcet = this.commandsStack.execute(commands, this.getStoreState().grafcet.copy(), {
 			saveCommands: options?.saveCommands,
 		});
