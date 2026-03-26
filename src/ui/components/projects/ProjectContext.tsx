@@ -7,7 +7,6 @@ import ExportModal from "./ExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
-import WatchTables from "./watch-tables/WatchTables";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
 
@@ -54,7 +53,6 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 			<ProjectOpenModal />
 			<ExportModal />
 			<AnalysisResult />
-			<WatchTables />
 		</ProjectContext.Provider>
 	);
 };

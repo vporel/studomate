@@ -1,7 +1,7 @@
 import MobileGuard from "@/ui/components/MobileGuard";
 import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/ui/constants";
 import { ThemeProvider } from "@/ui/theme/ThemeContext";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import { ToastContainer } from "react-toastify";
@@ -27,6 +27,10 @@ export const metadata: Metadata = {
 	creator: "Vivian NKOUANANG (vporel)",
 };
 
+export const viewport: Viewport = {
+	colorScheme: "light",
+};
+
 export default function RootLayout({
 	children,
 }: Readonly<{
@@ -34,10 +38,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body
-				className={`${geistSans.variable} ${geistMono.variable}`}
-				style={{ backgroundColor: "white" }}
-			>
+			<body className={`${geistSans.variable} ${geistMono.variable}`}>
 				<NextTopLoader
 					color={"gray"}
 					initialPosition={0.08}

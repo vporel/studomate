@@ -8,16 +8,20 @@ import AppMenuBar from "@/ui/components/header/menu-bar/AppMenuBar";
 import TitleBar from "@/ui/components/header/title-bar/TitleBar";
 import PagesView from "@/ui/components/pages/PagesView";
 import { ProjectContextProvider, useProjectStore } from "@/ui/components/projects/ProjectContext";
+import WatchTables from "@/ui/components/watch-tables/WatchTables";
 import Pane from "@/ui/lib/split-pane/Pane";
 import SplitPane from "@/ui/lib/split-pane/SplitPane";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 
 function AppComponent() {
 	const { viewAppearance } = useAppContext();
-	const { projectOpened } = useProjectStore(
+	const { projectOpened, watchTablesVisible, mode } = useProjectStore(
 		useShallow((state) => ({
 			projectOpened: !!state.project,
+			watchTablesVisible: state.watchTablesVisible,
+			mode: state.mode,
 		})),
 	);
 
@@ -55,6 +59,14 @@ function AppComponent() {
 				</Pane>
 				<Pane style={{ overflow: "hidden" }}>
 					<PagesView />
+				</Pane>
+				<Pane
+					initialSize={350}
+					minSize={300}
+					maxSize={600}
+					visible={watchTablesVisible && mode === ProjectMode.SIMULATION}
+				>
+					<WatchTables />
 				</Pane>
 			</SplitPane>
 			<StatusBar />

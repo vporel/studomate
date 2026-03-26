@@ -150,7 +150,7 @@ export default class SimulationManager {
 		this.plc.start();
 
 		//Set the mode
-		this.setStoreState(() => ({ mode: ProjectMode.SIMULATION }));
+		this.setStoreState(() => ({ mode: ProjectMode.SIMULATION, watchTablesVisible: true }));
 	}
 
 	private createPLC(projectCompilationResult: ProjectCompilationResult): PLC {
@@ -239,5 +239,16 @@ export default class SimulationManager {
 			throw new Error("PLC instance is not initialized");
 		}
 		this.plc.setPhysicalInputValueById(variableId, value);
+	}
+
+	public setMemoryValue(variableId: string, value: any): void {
+		const mode = this.getStoreState().mode;
+		if (mode !== ProjectMode.SIMULATION) {
+			throw new Error("Cannot set memory value when not in simulation mode");
+		}
+		if (!this.plc) {
+			throw new Error("PLC instance is not initialized");
+		}
+		this.plc.setMemoryValueById(variableId, value);
 	}
 }
