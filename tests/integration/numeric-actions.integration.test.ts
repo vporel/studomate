@@ -1,9 +1,9 @@
 import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
-import { GrafcetFactory } from "./utils/grafcet-factory";
-import { ProjectFactory } from "./utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "./utils/test-helpers";
-import { VariableFactory } from "./utils/variable-factory";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
+import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "@tests/utils/test-helpers";
+import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Numeric Actions Integration Tests", () => {
 	beforeEach(() => {
@@ -68,7 +68,7 @@ describe("Numeric Actions Integration Tests", () => {
 			const project = ProjectFactory.create([counter], [grafcet], "CONTINUOUS Counter");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -105,7 +105,7 @@ describe("Numeric Actions Integration Tests", () => {
 			const project = ProjectFactory.create([counter], [grafcet], "RISING_EDGE Counter");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},

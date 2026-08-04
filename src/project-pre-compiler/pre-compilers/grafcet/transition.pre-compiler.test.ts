@@ -5,7 +5,7 @@ import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-sta
 import JunctionOrStartBuilder from "@/schemas/grafcet/builders/junction-or-start.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import TransitionPreCompiler from "./transition.pre-compiler";
 
@@ -25,7 +25,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("E1 = VRAI").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node).toBeDefined();
 			expect(result.node.type).toBe("COMPARISON_EXPRESSION");
@@ -36,7 +36,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node.type).toBe("BOOLEAN_LITERAL");
 			expect(result.timers).toEqual([]);
@@ -46,7 +46,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("FAUX").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node.type).toBe("BOOLEAN_LITERAL");
 			expect(result.timers).toEqual([]);
@@ -59,7 +59,7 @@ describe("TransitionPreCompiler", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node.type).toBe("LOGICAL_EXPRESSION");
 			expect(result.timers).toEqual([]);
@@ -72,7 +72,7 @@ describe("TransitionPreCompiler", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node.type).toBe("LOGICAL_EXPRESSION");
 			expect(result.timers).toEqual([]);
@@ -82,7 +82,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("M2 > 10").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.node.type).toBe("COMPARISON_EXPRESSION");
 			expect(result.timers).toEqual([]);
@@ -92,7 +92,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("T1/E1/5s").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.timers).toHaveLength(1);
 			expect(result.timers[0].type).toBe("TIMER_BLOCK");
@@ -102,7 +102,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("T1/E1/500ms").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.timers).toHaveLength(1);
 			expect((result.timers[0].presetTime as any).value).toBe(500);
@@ -112,7 +112,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("T1/E1/1s").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			// The node should be a TIMER_BLOCK, not a TIMER_STRING_DECLARATION
 			expect(result.node.type).toBe("TIMER_BLOCK");
@@ -124,7 +124,7 @@ describe("TransitionPreCompiler", () => {
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 			const initialVariablesCount = variables.length;
 
-			TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			// Each timer requires 3 memo variables: lastInput, elapsedTime, output
 			expect(variables.length).toBe(initialVariablesCount + 3);
@@ -140,7 +140,7 @@ describe("TransitionPreCompiler", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			expect(result.timers).toHaveLength(2);
 			expect(result.node.type).toBe("LOGICAL_EXPRESSION");
@@ -152,7 +152,7 @@ describe("TransitionPreCompiler", () => {
 			variables.push(new PLCVariable("memo1", "_GeneratedMemo_0", "memory", "boolean"));
 			const initialCount = variables.length;
 
-			TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			// Should skip _GeneratedMemo_0 and start from _GeneratedMemo_1
 			expect(variables.length).toBe(initialCount + 3);
@@ -163,7 +163,7 @@ describe("TransitionPreCompiler", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI ET VRAI").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.FR);
 
 			// "VRAI ET VRAI" should be simplified to "VRAI"
 			expect(result.node.type).toBe("BOOLEAN_LITERAL");
@@ -172,11 +172,11 @@ describe("TransitionPreCompiler", () => {
 			}
 		});
 
-		it("works with English language", () => {
+		it("works with English dialect", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("E1 = TRUE").build();
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Language.EN);
+			const result = TransitionPreCompiler.preCompile(transition, grafcet, variables, Dialect.EN);
 
 			expect(result.node).toBeDefined();
 			expect(result.node.type).toBe("COMPARISON_EXPRESSION");
@@ -206,7 +206,7 @@ describe("TransitionPreCompiler", () => {
 				)
 				.build();
 
-			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Dialect.FR);
 
 			expect(result.predecessorStepsIds).toEqual(["step-0"]);
 			expect(result.successorStepsIds).toEqual(["step-1"]);
@@ -251,7 +251,7 @@ describe("TransitionPreCompiler", () => {
 				)
 				.build();
 
-			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Dialect.FR);
 
 			expect(result.predecessorStepsIds).toHaveLength(2);
 			expect(result.predecessorStepsIds).toContain("step-0");
@@ -299,7 +299,7 @@ describe("TransitionPreCompiler", () => {
 				)
 				.build();
 
-			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Dialect.FR);
 
 			expect(result.predecessorStepsIds).toEqual(["step-0"]);
 			expect(result.successorStepsIds).toHaveLength(2);
@@ -355,8 +355,8 @@ describe("TransitionPreCompiler", () => {
 				)
 				.build();
 
-			const result1 = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
-			const result2 = TransitionPreCompiler.preCompile(trans2, grafcet, variables, Language.FR);
+			const result1 = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Dialect.FR);
+			const result2 = TransitionPreCompiler.preCompile(trans2, grafcet, variables, Dialect.FR);
 
 			// First branch: no exclusions
 			expect(result1.orPriorityExclusionTransitionIds).toEqual([]);
@@ -368,7 +368,7 @@ describe("TransitionPreCompiler", () => {
 			const trans1 = new TransitionBuilder().id("trans-1").expression("VRAI").build();
 			const grafcet = new GrafcetBuilder().addTransition(trans1).build();
 
-			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Language.FR);
+			const result = TransitionPreCompiler.preCompile(trans1, grafcet, variables, Dialect.FR);
 
 			expect(result.predecessorStepsIds).toEqual([]);
 			expect(result.successorStepsIds).toEqual([]);

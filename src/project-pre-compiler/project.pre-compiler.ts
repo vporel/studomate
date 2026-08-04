@@ -1,14 +1,28 @@
 ﻿import PLCVariable from "@/simulator/core/plc/plc-variable";
 import Project from "../schemas/project/project.schema";
 import Variable from "../schemas/variable/variable.schema";
-import { Language } from "../simulator/compiler/lexer/language.enum";
-import GrafcetPreCompiler, { PreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
+import { Dialect } from "@/expression-language/dialect.enum";
+import Program, { ProgramType } from "../schemas/program/program.schema";
+import { PreCompiledProgram } from "./pre-compiled-program";
+import GrafcetPreCompiler from "./pre-compilers/grafcet/grafcet.pre-compiler";
 import VariableCompiler from "./pre-compilers/variable.pre-compiler";
 import ProjectPreCompilerError from "./project.pre-compiler.error";
 
 export type PreCompiledProject = {
 	variables: PLCVariable[];
-	grafcets: Record<string, PreCompiledGrafcet>;
+	programs: Record<string, PreCompiledProgram>;
+};
+
+/**
+ * Une entrée par notation. Chaque pré-compilateur alimente lui-même `variables` avec les
+ * variables qu'il génère.
+ */
+const PROGRAM_PRE_COMPILERS: Record<
+	ProgramType,
+	(program: any, variables: PLCVariable[], dialect: Dialect, errors: ProjectPreCompilerError[]) => PreCompiledProgram
+> = {
+	grafcet: (grafcet, variables, dialect, errors) =>
+		GrafcetPreCompiler.preCompile(grafcet, variables, dialect, errors),
 };
 
 export type ProjectPreCompilationResult = {
@@ -30,17 +44,21 @@ export default class ProjectPreCompiler {
 	static preCompile(
 		project: Project,
 		stepsVariables: Variable[],
-		language: Language = Language.FR,
+		dialect: Dialect = Dialect.FR,
 	): ProjectPreCompilationResult {
 		const variables = VariableCompiler.compile([...project.variables, ...stepsVariables]);
 		const errors: ProjectPreCompilerError[] = [];
-		const grafcets: Record<string, PreCompiledGrafcet> = {};
+		const programs: Record<string, PreCompiledProgram> = {};
 
-		for (const [grafcetId, grafcet] of Object.entries(project.grafcets)) {
-			grafcets[grafcetId] = GrafcetPreCompiler.preCompile(grafcet, variables, language, errors);
-			variables.push(...Object.values(grafcets[grafcetId].stepsMemos).map(({ variable }) => variable));
+		for (const [programId, program] of Object.entries(project.programs)) {
+			const preCompiler = PROGRAM_PRE_COMPILERS[(program as Program).type];
+			if (!preCompiler) {
+				console.error(`Aucun pré-compilateur pour la notation "${(program as Program).type}"`);
+				continue;
+			}
+			programs[programId] = preCompiler(program, variables, dialect, errors);
 		}
 
-		return { errors, result: { variables, grafcets } };
+		return { errors, result: { variables, programs } };
 	}
 }

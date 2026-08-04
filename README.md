@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Studomate
 
-## Getting Started
+[![CI](https://github.com/vporel/studomate/actions/workflows/ci.yml/badge.svg)](https://github.com/vporel/studomate/actions/workflows/ci.yml)
 
-First, run the development server:
+**Studomate** est un outil pédagogique dédié à l'automatisme : apprentissage, conception et simulation de logiques d'automatisme directement dans le navigateur.
+
+L'objectif est de rendre les concepts d'automatisme accessibles, visuels et actionnables — de l'introduction en classe à la mise en pratique individuelle. Le projet prend actuellement en charge le **GRAFCET**, avec l'ambition d'évoluer vers un simulateur plus large (autres notations comme le **Ladder**, nouvelles interfaces, etc.).
+
+## Fonctionnalités
+
+- **Édition graphique** de GRAFCET : étapes, transitions, actions, entrées/sorties virtuelles, temporisations, compteurs, variables analogiques.
+- **Simulation** en mode pas-à-pas, scan complet ou exécution continue, avec visualisation en temps réel des états actifs et des transitions évaluées.
+- **Analyse** du projet pour détecter les erreurs de structure avant simulation.
+- **Manuel utilisateur** intégré à l'application.
+
+## Feuille de route
+
+- Amélioration de l'éditeur (alignements, validations, ergonomie).
+- Tableaux de bord de simulation.
+- Comptes utilisateurs & sauvegarde cloud.
+- Ouverture à d'autres langages/notations d'automatisme (Ladder, etc.).
+
+Public visé : étudiants (BTS, IUT, écoles d'ingénieurs, universités), enseignants et formateurs en automatisme/électrotechnique, professionnels en reconversion ou remise à niveau.
+
+## Stack technique
+
+- [Next.js](https://nextjs.org) (App Router) + React 19 + TypeScript
+- [MUI](https://mui.com) pour l'interface
+- [React Flow (@xyflow/react)](https://reactflow.dev) pour l'éditeur graphique
+- [Zustand](https://github.com/pmndrs/zustand) pour la gestion d'état
+- Jest pour les tests
+
+## Démarrer en local
+
+Node 20 ou plus est requis.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000) dans le navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+## Contribuer
 
-To learn more about Next.js, take a look at the following resources:
+Les idées, retours et contributions sont les bienvenus. Ouvrez une issue ou une pull request.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Licence
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ce projet est sous licence [MIT](./LICENSE).

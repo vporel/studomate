@@ -2,7 +2,7 @@ import ProjectAnalyser from "@/project-analyser/project.analyser";
 import ProjectCompiler, { CompiledProject } from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import Project from "@/schemas/project/project.schema";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import PLC from "@/simulator/core/plc/plc";
 
 /**
@@ -12,10 +12,10 @@ import PLC from "@/simulator/core/plc/plc";
 /**
  * Runs the complete pipeline: Analysis → Pre-compilation → Compilation
  * @param project Project to compile
- * @param language Language for expressions (default FR)
+ * @param dialect Dialect for expressions (default FR)
  * @returns Compiled project or null if errors occurred
  */
-export function compileProject(project: Project, language: Language = Language.FR): CompiledProject | null {
+export function compileProject(project: Project, dialect: Dialect = Dialect.FR): CompiledProject | null {
 	const analysisResult = ProjectAnalyser.analyse(project);
 	if (analysisResult.issues.length > 0) {
 		return null;
@@ -24,7 +24,7 @@ export function compileProject(project: Project, language: Language = Language.F
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
 		analysisResult.stepsVariables,
-		language,
+		dialect,
 	);
 	if (preCompilationResult.errors.length > 0 || !preCompilationResult.result) {
 		return null;
@@ -41,12 +41,12 @@ export function compileProject(project: Project, language: Language = Language.F
 /**
  * Runs the complete pipeline and returns all intermediate results
  */
-export function compilePipelineDetailed(project: Project, language: Language = Language.FR) {
+export function compilePipelineDetailed(project: Project, dialect: Dialect = Dialect.FR) {
 	const analysisResult = ProjectAnalyser.analyse(project);
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
 		analysisResult.stepsVariables,
-		language,
+		dialect,
 	);
 	const compilationResult = preCompilationResult.result
 		? ProjectCompiler.compile(preCompilationResult.result)
@@ -89,13 +89,13 @@ export function createPLC(
 export function compileToPLC(
 	project: Project,
 	scanTimeMs: number = 100,
-	language: Language = Language.FR,
+	dialect: Dialect = Dialect.FR,
 	callbacks?: {
 		onCycleEnd?: (plc: PLC) => void;
 		onCycleError?: (error: Error) => void;
 	},
 ): PLC | null {
-	const compiled = compileProject(project, language);
+	const compiled = compileProject(project, dialect);
 	if (!compiled) {
 		return null;
 	}

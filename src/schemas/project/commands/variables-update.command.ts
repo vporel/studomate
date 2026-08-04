@@ -1,4 +1,4 @@
-﻿import { VariableUpdatableFields } from "@/schemas/variable/variable.schema";
+import { VariableUpdatableFields } from "@/schemas/variable/variable.schema";
 import Project from "../project.schema";
 import AbstractProjectCommand from "./abstract-project.command";
 
@@ -19,6 +19,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 			if (!payload) return v;
 			return v.update(payload.newData);
 		});
+		this.applyMnemonicRenames(project, "forward");
 		return [project, true];
 	}
 
@@ -28,6 +29,30 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 			if (!payload) return v;
 			return v.update(payload.oldData);
 		});
+		this.applyMnemonicRenames(project, "backward");
 		return project;
+	}
+
+	/**
+	 * Renaming a variable must rewrite every expression referencing it, in *all* the grafcets
+	 * of the project — not only the ones currently open in the editor.
+	 *
+	 * Doing it here rather than in a UI manager guarantees two things:
+	 * - it reaches every grafcet, since the command owns the whole project;
+	 * - undo is exactly symmetric by construction, instead of being replayed by hand.
+	 */
+	private applyMnemonicRenames(project: Project, direction: "forward" | "backward"): void {
+		const renames: Record<string, string> = {};
+		for (const { newData, oldData } of this.payload) {
+			const from = direction === "forward" ? oldData.mnemonic : newData.mnemonic;
+			const to = direction === "forward" ? newData.mnemonic : oldData.mnemonic;
+			if (!from || !to || from === to) continue;
+			renames[from] = to;
+		}
+		if (Object.keys(renames).length === 0) return;
+
+		Object.values(project.grafcets).forEach((grafcet) => {
+			grafcet.renameIdentifiersInExpressions(renames);
+		});
 	}
 }

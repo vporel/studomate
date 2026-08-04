@@ -1,6 +1,6 @@
 import EnvVariable from "../environment/env-variable";
 import { Environment } from "../environment/environment";
-import { Language } from "../lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../lexer/lexer";
 import Parser from "../parser/parser";
 import TypeAnalyserVisitor from "./type-analyser.visitor";
@@ -16,7 +16,7 @@ describe("TypeAnalyserVisitor", () => {
 		const varText = new EnvVariable("id3", "text", "string", "IN");
 		env = new Environment([varX, varFlag, varText]);
 		typeAnalyser = new TypeAnalyserVisitor(env);
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	const parseAndAnalyze = (expression: string) => {

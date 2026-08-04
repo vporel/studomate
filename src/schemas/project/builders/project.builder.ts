@@ -56,7 +56,7 @@ export default class ProjectBuilder {
 		const project = new Project(this._id, this._name, this._author);
 		project.variables = [...this._variables];
 		this._grafcets.forEach((grafcet) => {
-			project.addGrafcet(grafcet);
+			project.addProgram(grafcet);
 		});
 		return project;
 	}

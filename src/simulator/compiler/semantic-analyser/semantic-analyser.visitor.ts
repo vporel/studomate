@@ -63,15 +63,15 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (!this.env.existsVariableWithName(node.value)) throw new UnknownIdentifierException(node);
 	}
 
-	protected visitBooleanNode(node: BooleanNode): void {
+	protected visitBooleanNode(_node: BooleanNode): void {
 		// nothing to check for boolean literals
 	}
 
-	protected visitNumberNode(node: NumberNode): void {
+	protected visitNumberNode(_node: NumberNode): void {
 		// nothing to check for number literals
 	}
 
-	protected visitStringNode(node: StringNode): void {
+	protected visitStringNode(_node: StringNode): void {
 		// nothing to check for string literals
 	}
 

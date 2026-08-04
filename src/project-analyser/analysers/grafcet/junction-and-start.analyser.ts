@@ -10,13 +10,12 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
 	analyseIsolated(
-		junctionAndStart: JunctionAndStart,
-		options: ElementAnalyseIsolatedOptions = {},
+		_junctionAndStart: JunctionAndStart,
+		_options: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
-		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-junction-and-start" as const, sourceId: junctionAndStart.id };
-
-		return issues;
+		//Aucune règle isolée : la validité d'une jonction dépend entièrement de ses
+		//connexions, donc de son contexte (voir analyseInContext).
+		return [];
 	}
 
 	/**
@@ -25,7 +24,7 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 	analyseInContext(
 		junctionAndStart: JunctionAndStart,
 		grafcet: Grafcet,
-		variables: Variable[],
+		_variables: Variable[],
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-junction-and-start" as const, sourceId: junctionAndStart.id };

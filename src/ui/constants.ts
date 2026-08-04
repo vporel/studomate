@@ -1,8 +1,3 @@
-export const APP_NAME = "Studomate";
-export const APP_SLOGAN = "Créer, Simuler, Automatiser";
-export const APP_SHORT_DESCRIPTION = "Créez et simulez facilement avec une application intuitive.";
-export const APP_VERSION = "0.1.0";
-
 //Papers sizes in mm
 export const PAPERS_SIZES = {
 	A4_PORTRAIT: { width: 210, height: 297 },

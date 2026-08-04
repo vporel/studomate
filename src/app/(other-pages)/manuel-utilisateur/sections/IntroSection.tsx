@@ -1,4 +1,4 @@
-import { Box, Divider, Typography } from "@mui/material";
+import { Divider, Typography } from "@mui/material";
 
 export default function IntroSection() {
 	return (

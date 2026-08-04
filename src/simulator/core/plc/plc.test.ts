@@ -1,4 +1,4 @@
-import { Language } from "../../compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../compiler/lexer/lexer";
 import Parser from "../../compiler/parser/parser";
 import PLC from "./plc";
@@ -173,7 +173,7 @@ describe("PLC", () => {
 
 	describe("PLC cycle execution", () => {
 		it("executes program during cycle", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
@@ -196,7 +196,7 @@ describe("PLC", () => {
 		});
 
 		it("executes multiple cycles correctly", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
@@ -314,7 +314,7 @@ describe("PLC", () => {
 		});
 
 		it("writes output image to outputs at cycle end", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := 99");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();

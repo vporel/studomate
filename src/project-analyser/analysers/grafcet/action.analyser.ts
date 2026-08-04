@@ -1,9 +1,9 @@
 import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
-import VariablesMapper from "@/bridge/variables.mapper";
+import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/compiler/environment/environment";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
@@ -11,13 +11,16 @@ import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-ana
 import Action, { ActionType } from "../../../schemas/grafcet/action.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "../../project.analyser.issue";
-import ElementAnalyser from "./element.analyser";
+import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class ActionAnalyser extends ElementAnalyser<Action> {
 	/**
 	 * Rules that apply to the action's own data, independently of the grafcet.
 	 */
-	analyseIsolated(action: Action): ProjectAnalyserIssue[] {
+	analyseIsolated(
+		action: Action,
+		{ dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
+	): ProjectAnalyserIssue[] {
 		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
 		if (action.data.type === ActionType.TEXT) {
 			return [
@@ -35,7 +38,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 			issues.push(new ProjectAnalyserIssue("warning", source, "L'action n'a pas d'expression."));
 		} else {
 			try {
-				const lexer = new Lexer(Language.FR);
+				const lexer = new Lexer(dialect);
 				action.getExpressionLines().forEach((line) => {
 					const parser = new Parser(lexer.tokenize(line));
 					const node = parser.parse();
@@ -100,7 +103,12 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 	/**
 	 * Rules that require knowledge of the full grafcet.
 	 */
-	analyseInContext(action: Action, grafcet: Grafcet, variables: Variable[]): ProjectAnalyserIssue[] {
+	analyseInContext(
+		action: Action,
+		grafcet: Grafcet,
+		variables: Variable[],
+		dialect: Dialect = Dialect.FR,
+	): ProjectAnalyserIssue[] {
 		if (action.data.type === ActionType.TEXT) return [];
 
 		const issues: ProjectAnalyserIssue[] = [];
@@ -116,11 +124,11 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 
 		if (action.data.expression && action.data.expression.trim() !== "") {
 			try {
-				const lexer = new Lexer(Language.FR);
+				const lexer = new Lexer(dialect);
 				action.getExpressionLines().forEach((line) => {
 					const parser = new Parser(lexer.tokenize(line));
 					const node = parser.parse();
-					const env = new Environment(variables.map(VariablesMapper.schemaToEnv));
+					const env = new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
 					const semanticAnalyser = new SemanticAnalyserVisitor(env, {
 						unauthorizedNodes: ["TIMER_BLOCK", "TIMER_STRING_DECLARATION"],
 					});

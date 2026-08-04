@@ -2,11 +2,14 @@
 	"name": "studomate",
 	"version": "0.1.0",
 	"private": true,
+	"engines": {
+		"node": ">=20"
+	},
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"build": "next build --turbopack && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static",
 		"start": "next start",
-		"lint": "eslint . --ext .js,.jsx,.ts,.tsx --config eslint.config.mjs",
+		"lint": "eslint .",
 		"test": "jest"
 	},
 	"dependencies": {

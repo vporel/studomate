@@ -1,11 +1,11 @@
 import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
-import VariablesMapper from "@/bridge/variables.mapper";
+import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Variable from "@/schemas/variable/variable.schema";
 import { TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
 import FinderVisitor from "@/simulator/compiler/ast/visitors/finder.visitor";
 import { Environment } from "@/simulator/compiler/environment/environment";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
@@ -21,7 +21,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 	 */
 	analyseIsolated(
 		transition: Transition,
-		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
+		{ allowEmptyContent = false, dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-transition" as const, sourceId: transition.id };
@@ -39,7 +39,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 			return issues;
 		}
 		try {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(dialect);
 			const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
 			const node = parser.parse();
 			const typeAnalyser = new TypeAnalyserVisitor();
@@ -91,6 +91,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 		transition: Transition,
 		grafcet: Grafcet,
 		variables: Variable[],
+		dialect: Dialect = Dialect.FR,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-transition" as const, sourceId: transition.id };
@@ -118,10 +119,10 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 		}
 		if (transition.data.expression && transition.data.expression.trim() !== "") {
 			try {
-				const lexer = new Lexer(Language.FR);
+				const lexer = new Lexer(dialect);
 				const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
 				const node = parser.parse();
-				const env = new Environment(variables.map(VariablesMapper.schemaToEnv));
+				const env = new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
 				const semanticAnalyser = new SemanticAnalyserVisitor(env);
 				semanticAnalyser.visit(node);
 				const typeAnalyser = new TypeAnalyserVisitor(env);

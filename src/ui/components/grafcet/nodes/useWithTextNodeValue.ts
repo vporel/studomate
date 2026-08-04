@@ -1,6 +1,5 @@
 import ElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import { useProjectContext } from "@/ui/components/projects/ProjectContext";
 import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 
@@ -23,7 +22,6 @@ export default function useWithTextNodeValue(
 	const [value, _setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
 	const [error, setError] = useState<string | false>(false);
-	const projectStore = useProjectContext();
 	const analyser = useMemo(() => ElementAnalyserFactory.getAnalyserForType(nodeType), [nodeType]);
 	const transformValue = useCallback(
 		(v: string) => {

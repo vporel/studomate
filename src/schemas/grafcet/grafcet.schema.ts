@@ -1,4 +1,8 @@
-﻿import Action from "./action.schema";
+﻿import { Dialect } from "@/expression-language/dialect.enum";
+import Program, { ProgramType } from "@/schemas/program/program.schema";
+import IdentifierRenamer from "@/expression-language/identifier-renamer";
+import KeywordTranslator from "@/expression-language/keyword-translator";
+import Action, { ActionType } from "./action.schema";
 import Comment from "./comment.schema";
 import Connection, { HandleType } from "./connection.schema";
 import Element, { ElementType } from "./element.schema";
@@ -24,22 +28,44 @@ export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
 	orientation: "portrait",
 };
 
-export const elementsSchemasClasses: Record<ElementType, any> = {
-	step: Step,
-	action: Action,
-	transition: Transition,
-	"step-referral-source": StepReferralSource,
-	"step-referral-target": StepReferralTarget,
-	"junction-or-start": JunctionOrStart,
-	"junction-or-end": JunctionOrEnd,
-	"junction-and-start": JunctionAndStart,
-	"junction-and-end": JunctionAndEnd,
-	comment: Comment,
-};
+/**
+ * Classe de schéma et collection portant chaque type d'élément.
+ *
+ * **Source unique de vérité.** Cette table remplace cinq énumérations manuelles de la même
+ * liste (`elementsSchemasClasses`, `getTypeToElementsMap`, `copy`, `createFromJSON`, et la
+ * déclaration des champs), qu'il fallait tenir synchronisées à la main sans qu'aucune erreur
+ * ne soit détectée.
+ *
+ * Le `satisfies Record<ElementType, …>` la rend **exhaustive à la compilation** : ajouter un
+ * type d'élément sans l'inscrire ici ne compile plus.
+ */
+const ELEMENT_COLLECTIONS = {
+	step: { collection: "steps", schema: Step },
+	action: { collection: "actions", schema: Action },
+	transition: { collection: "transitions", schema: Transition },
+	"step-referral-source": { collection: "stepsReferralsSources", schema: StepReferralSource },
+	"step-referral-target": { collection: "stepsReferralsTargets", schema: StepReferralTarget },
+	"junction-and-start": { collection: "junctionsAndStarts", schema: JunctionAndStart },
+	"junction-and-end": { collection: "junctionsAndEnds", schema: JunctionAndEnd },
+	"junction-or-start": { collection: "junctionsOrStarts", schema: JunctionOrStart },
+	"junction-or-end": { collection: "junctionsOrEnds", schema: JunctionOrEnd },
+	comment: { collection: "comments", schema: Comment },
+} as const satisfies Record<
+	ElementType,
+	{ collection: string; schema: { createFromJSON(json: string): Element<any> } }
+>;
 
-export default class Grafcet {
-	id: string;
-	name: string;
+const ELEMENT_TYPES_ENTRIES = Object.entries(ELEMENT_COLLECTIONS) as [
+	ElementType,
+	(typeof ELEMENT_COLLECTIONS)[ElementType],
+][];
+
+export const elementsSchemasClasses: Record<ElementType, any> = Object.fromEntries(
+	ELEMENT_TYPES_ENTRIES.map(([type, { schema }]) => [type, schema]),
+) as Record<ElementType, any>;
+
+export default class Grafcet extends Program {
+	readonly type: ProgramType = "grafcet";
 	format: GrafcetFormat = { type: "A4", orientation: "portrait" };
 	steps: Step[] = [];
 	actions: Action[] = [];
@@ -54,8 +80,7 @@ export default class Grafcet {
 	connections: Connection[] = [];
 
 	constructor(id: string, name: string, format: GrafcetFormat) {
-		this.id = id;
-		this.name = name;
+		super(id, name);
 		this.format = format;
 	}
 
@@ -97,18 +122,17 @@ export default class Grafcet {
 	 * @returns
 	 */
 	getTypeToElementsMap(): Record<ElementType, Element<any>[]> {
-		return {
-			step: this.steps,
-			action: this.actions,
-			transition: this.transitions,
-			"step-referral-source": this.stepsReferralsSources,
-			"step-referral-target": this.stepsReferralsTargets,
-			"junction-and-start": this.junctionsAndStarts,
-			"junction-and-end": this.junctionsAndEnds,
-			"junction-or-start": this.junctionsOrStarts,
-			"junction-or-end": this.junctionsOrEnds,
-			comment: this.comments,
-		};
+		return Object.fromEntries(
+			ELEMENT_TYPES_ENTRIES.map(([type, { collection }]) => [type, this.getCollection(collection)]),
+		) as Record<ElementType, Element<any>[]>;
+	}
+
+	/**
+	 * Accès à la collection portant un type d'élément, sans passer par la construction d'une
+	 * table intermédiaire.
+	 */
+	private getCollection(collection: string): Element<any>[] {
+		return (this as unknown as Record<string, Element<any>[]>)[collection];
 	}
 
 	/**
@@ -116,18 +140,15 @@ export default class Grafcet {
 	 * @returns
 	 */
 	getAllElements(): Element<any>[] {
-		const typeToElementsMap = this.getTypeToElementsMap();
-		let allElements: Element<any>[] = [];
-		(Object.keys(typeToElementsMap) as ElementType[]).forEach((type) => {
-			const elements = typeToElementsMap[type];
-			allElements = allElements.concat(elements);
-		});
+		const allElements: Element<any>[] = [];
+		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
+			allElements.push(...this.getCollection(collection));
+		}
 		return allElements;
 	}
 
 	getElementsByType<T extends Element<any>>(type: ElementType): T[] {
-		const typeToElementsMap = this.getTypeToElementsMap();
-		return typeToElementsMap[type] as T[];
+		return this.getCollection(ELEMENT_COLLECTIONS[type].collection) as T[];
 	}
 
 	getElementByIdAndType<T extends Element<any>>(id: string, type: ElementType): T | undefined {
@@ -136,8 +157,14 @@ export default class Grafcet {
 	}
 
 	getElementById<T extends Element<any>>(id: string): T | undefined {
-		const allElements = this.getAllElements();
-		return allElements.find((e) => e.id === id) as T | undefined;
+		//On parcourt les collections sans les concaténer : cette méthode est appelée en boucle
+		//par les analyseurs et les helpers, l'allocation d'un tableau intermédiaire à chaque
+		//appel se payait cher
+		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
+			const found = this.getCollection(collection).find((e) => e.id === id);
+			if (found) return found as T;
+		}
+		return undefined;
 	}
 
 	addElements(elements: { type: ElementType; id: string; data: any; position: XYPosition }[]): void {
@@ -241,54 +268,75 @@ export default class Grafcet {
 		});
 	}
 
+	/**
+	 * Rewrites the identifiers used in every expression of the grafcet.
+	 * Used when variables are renamed, so that the expressions referencing them stay valid.
+	 *
+	 * Only expressions that are actually *code* are rewritten: a TEXT action holds free
+	 * descriptive text, not an expression, and must never be touched — renaming a variable
+	 * `moteur` must not turn the label "moteur en marche" into "pompe en marche".
+	 *
+	 * @param renames Map of old identifier name → new identifier name
+	 * @param dialect Dialect of the expressions, so that keywords are not mistaken for identifiers
+	 */
+	renameIdentifiersInExpressions(renames: Record<string, string>, dialect: Dialect = Dialect.FR): void {
+		if (Object.keys(renames).length === 0) return;
+
+		this.transitions.forEach((transition) => {
+			transition.data.expression = IdentifierRenamer.rename(
+				transition.data.expression,
+				renames,
+				dialect,
+			);
+		});
+
+		this.actions.forEach((action) => {
+			if (action.data.type === ActionType.TEXT) return;
+			action.data.expression = IdentifierRenamer.rename(action.data.expression, renames, dialect);
+		});
+	}
+
+	/**
+	 * Traduit les mots-clés des expressions d'un dialecte vers un autre.
+	 * Comme pour le renommage, une action TEXT porte du texte descriptif et non du code :
+	 * elle n'est jamais touchée.
+	 */
+	translateExpressionsKeywords(from: Dialect, to: Dialect): void {
+		this.transitions.forEach((transition) => {
+			transition.data.expression = KeywordTranslator.translate(transition.data.expression, from, to);
+		});
+		this.actions.forEach((action) => {
+			if (action.data.type === ActionType.TEXT) return;
+			action.data.expression = KeywordTranslator.translate(action.data.expression, from, to);
+		});
+	}
+
 	copy(): Grafcet {
 		const newGrafcet = Object.assign(new Grafcet(this.id, this.name, this.format), this);
-		newGrafcet.steps = this.steps.map((s) => s.copy());
-		newGrafcet.actions = this.actions.map((a) => a.copy());
-		newGrafcet.transitions = this.transitions.map((t) => t.copy());
-		newGrafcet.stepsReferralsSources = this.stepsReferralsSources.map((s) => s.copy());
-		newGrafcet.stepsReferralsTargets = this.stepsReferralsTargets.map((s) => s.copy());
-		newGrafcet.junctionsAndStarts = this.junctionsAndStarts.map((j) => j.copy());
-		newGrafcet.junctionsAndEnds = this.junctionsAndEnds.map((j) => j.copy());
-		newGrafcet.junctionsOrStarts = this.junctionsOrStarts.map((j) => j.copy());
-		newGrafcet.junctionsOrEnds = this.junctionsOrEnds.map((j) => j.copy());
-		newGrafcet.comments = this.comments.map((c) => c.copy());
+		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
+			newGrafcet.setCollection(
+				collection,
+				this.getCollection(collection).map((element) => element.copy()),
+			);
+		}
 		newGrafcet.connections = this.connections.map((c) => c.copy());
 		return newGrafcet;
+	}
+
+	private setCollection(collection: string, elements: Element<any>[]): void {
+		(this as unknown as Record<string, Element<any>[]>)[collection] = elements;
 	}
 
 	static createFromJSON(json: string): Grafcet {
 		const jsonParsed = JSON.parse(json);
 		const grafcet = Object.assign(new Grafcet("", "", DEFAULT_GRAFCET_FORMAT), jsonParsed);
-		grafcet.steps = (jsonParsed.steps ?? []).map((s: any) => Step.createFromJSON(JSON.stringify(s)));
-		grafcet.actions = (jsonParsed.actions ?? []).map((a: any) =>
-			Action.createFromJSON(JSON.stringify(a)),
-		);
-		grafcet.transitions = (jsonParsed.transitions ?? []).map((t: any) =>
-			Transition.createFromJSON(JSON.stringify(t)),
-		);
-		grafcet.stepsReferralsSources = (jsonParsed.stepsReferralsSources ?? []).map((s: any) =>
-			StepReferralSource.createFromJSON(JSON.stringify(s)),
-		);
-		grafcet.stepsReferralsTargets = (jsonParsed.stepsReferralsTargets ?? []).map((s: any) =>
-			StepReferralTarget.createFromJSON(JSON.stringify(s)),
-		);
-		grafcet.junctionsAndStarts = (jsonParsed.junctionsAndStarts ?? []).map((j: any) =>
-			JunctionAndStart.createFromJSON(JSON.stringify(j)),
-		);
-		grafcet.junctionsAndEnds = (jsonParsed.junctionsAndEnds ?? []).map((j: any) =>
-			JunctionAndEnd.createFromJSON(JSON.stringify(j)),
-		);
-		grafcet.junctionsOrStarts = (jsonParsed.junctionsOrStarts ?? []).map((j: any) =>
-			JunctionOrStart.createFromJSON(JSON.stringify(j)),
-		);
-		grafcet.junctionsOrEnds = (jsonParsed.junctionsOrEnds ?? []).map((j: any) =>
-			JunctionOrEnd.createFromJSON(JSON.stringify(j)),
-		);
-		grafcet.comments = (jsonParsed.comments ?? []).map((c: any) =>
-			Comment.createFromJSON(JSON.stringify(c)),
-		);
-		grafcet.connections = (jsonParsed.connections ?? []).map((c: any) =>
+		for (const [, { collection, schema }] of ELEMENT_TYPES_ENTRIES) {
+			grafcet.setCollection(
+				collection,
+				(jsonParsed[collection] ?? []).map((raw: unknown) => schema.createFromJSON(JSON.stringify(raw))),
+			);
+		}
+		grafcet.connections = (jsonParsed.connections ?? []).map((c: unknown) =>
 			Connection.createFromJSON(JSON.stringify(c)),
 		);
 		return grafcet;

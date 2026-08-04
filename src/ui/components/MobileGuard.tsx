@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME } from "@/ui/constants";
+import { APP_NAME } from "@/app-info";
 import { Box, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 

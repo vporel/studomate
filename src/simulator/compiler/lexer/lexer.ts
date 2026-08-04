@@ -2,15 +2,22 @@ import { ARITHMETIC_OPERATORS, ArithmeticOperator } from "../shared/operators";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
 import InvalidStringEndQuoteException from "./exceptions/invalid-string-end-quote.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
-import { Language } from "./language.enum";
+import {
+	isDigit,
+	isLetterOrUnderscore,
+	isLetterOrUnderscoreOrDigit,
+	isQuote,
+} from "@/expression-language/alphabet";
+import { getKeywordByString, getKeywordsStringsForDialect } from "@/expression-language/keywords";
+import { Dialect } from "@/expression-language/dialect.enum";
 import LexerHelper from "./lexer.helper";
 import { ARITHMETIC_OPERATOR_TOKENS_TYPES, Token, TokenType } from "./tokens/tokens";
 
 export class Lexer {
-	language: Language;
+	dialect: Dialect;
 
-	constructor(language: Language) {
-		this.language = language;
+	constructor(dialect: Dialect) {
+		this.dialect = dialect;
 	}
 
 	tokenize(input: string): Token[] {
@@ -89,12 +96,12 @@ export class Lexer {
 			}
 
 			//Numbers
-			if (LexerHelper.isDigit(char)) {
+			if (isDigit(char)) {
 				const start = position;
 				let value = char;
 				position++;
 				//Whole number part
-				while (position < input.length && LexerHelper.isDigit(input[position])) {
+				while (position < input.length && isDigit(input[position])) {
 					value += input[position];
 					position++;
 				}
@@ -102,10 +109,10 @@ export class Lexer {
 				if (position < input.length && input[position] === ".") {
 					value += ".";
 					position++;
-					if (position >= input.length || !LexerHelper.isDigit(input[position])) {
+					if (position >= input.length || !isDigit(input[position])) {
 						throw new InvalidCharacterException(input[position] || "end of input", position);
 					}
-					while (position < input.length && LexerHelper.isDigit(input[position])) {
+					while (position < input.length && isDigit(input[position])) {
 						value += input[position];
 						position++;
 					}
@@ -129,7 +136,7 @@ export class Lexer {
 			}
 
 			//Strings
-			if (LexerHelper.isQuote(char)) {
+			if (isQuote(char)) {
 				const quoteType = char;
 				const start = position;
 				let value = "";
@@ -152,17 +159,17 @@ export class Lexer {
 			}
 
 			//Identifiers and keywords
-			if (LexerHelper.isLetterOrUnderscore(char)) {
+			if (isLetterOrUnderscore(char)) {
 				const start = position;
 				let value = char;
 				position++;
-				while (position < input.length && LexerHelper.isLetterOrUnderscoreOrDigit(input[position])) {
+				while (position < input.length && isLetterOrUnderscoreOrDigit(input[position])) {
 					value += input[position];
 					position++;
 				}
-				const keywordsStrings = LexerHelper.getKeywordsStringsForLanguage(this.language);
+				const keywordsStrings = getKeywordsStringsForDialect(this.dialect);
 				if (keywordsStrings.includes(value.toUpperCase())) {
-					const keyword = LexerHelper.getKeywordByString(value, this.language);
+					const keyword = getKeywordByString(value, this.dialect);
 					if (keyword) {
 						const tokenType = LexerHelper.getTokenTypeForKeyword(keyword);
 						tokens.push({ type: tokenType, value, position: start });

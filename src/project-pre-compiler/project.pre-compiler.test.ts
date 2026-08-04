@@ -6,20 +6,28 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { PreCompiledProgram } from "./pre-compiled-program";
+import { isPreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
+import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectPreCompiler from "./project.pre-compiler";
+
+/** Rétrécit un programme pré-compilé vers sa forme GRAFCET, en échouant clairement sinon */
+function asGrafcet(program: PreCompiledProgram) {
+	if (!isPreCompiledGrafcet(program)) throw new Error(`Programme non GRAFCET : ${program?.type}`);
+	return program;
+}
 
 describe("ProjectPreCompiler", () => {
 	describe("preCompile", () => {
 		it("compiles an empty project", () => {
 			const project = new ProjectBuilder().build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
 			expect(result.result!.variables).toEqual([]);
-			expect(result.result!.grafcets).toEqual({});
+			expect(result.result!.programs).toEqual({});
 		});
 
 		it("compiles project variables", () => {
@@ -32,7 +40,7 @@ describe("ProjectPreCompiler", () => {
 			const var2 = new VariableBuilder().id("v2").mnemonic("M1").type("INT").zone("memory").build();
 			const project = new ProjectBuilder().addVariable(var1).addVariable(var2).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result!.variables).toHaveLength(2);
@@ -49,7 +57,7 @@ describe("ProjectPreCompiler", () => {
 				.build();
 			const project = new ProjectBuilder().build();
 
-			const result = ProjectPreCompiler.preCompile(project, [stepVar], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [stepVar], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result!.variables).toHaveLength(1);
@@ -66,7 +74,7 @@ describe("ProjectPreCompiler", () => {
 			const stepVar = new VariableBuilder().id("v2").mnemonic("X1").type("BOOL").zone("memory").build();
 			const project = new ProjectBuilder().addVariable(projectVar).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [stepVar], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [stepVar], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result!.variables).toHaveLength(2);
@@ -79,11 +87,11 @@ describe("ProjectPreCompiler", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").addStep(step).build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.grafcets).toHaveProperty("grafcet-1");
-			expect(result.result!.grafcets["grafcet-1"].steps.size).toBe(1);
+			expect(result.result!.programs).toHaveProperty("grafcet-1");
+			expect(asGrafcet(result.result!.programs["grafcet-1"]).steps.size).toBe(1);
 		});
 
 		it("compiles multiple grafcets", () => {
@@ -93,12 +101,12 @@ describe("ProjectPreCompiler", () => {
 			const grafcet2 = new GrafcetBuilder().id("grafcet-2").addStep(step2).build();
 			const project = new ProjectBuilder().addGrafcet(grafcet1).addGrafcet(grafcet2).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
-			expect(Object.keys(result.result!.grafcets)).toHaveLength(2);
-			expect(result.result!.grafcets["grafcet-1"]).toBeDefined();
-			expect(result.result!.grafcets["grafcet-2"]).toBeDefined();
+			expect(Object.keys(result.result!.programs)).toHaveLength(2);
+			expect(result.result!.programs["grafcet-1"]).toBeDefined();
+			expect(result.result!.programs["grafcet-2"]).toBeDefined();
 		});
 
 		it("adds step memo variables to the global variables list", () => {
@@ -106,7 +114,7 @@ describe("ProjectPreCompiler", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").addStep(step).build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			// Should have 1 memo variable (one for the step)
@@ -121,7 +129,7 @@ describe("ProjectPreCompiler", () => {
 			const grafcet2 = new GrafcetBuilder().id("grafcet-2").addStep(step2).build();
 			const project = new ProjectBuilder().addGrafcet(grafcet1).addGrafcet(grafcet2).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			// Should have 2 memo variables
@@ -143,7 +151,7 @@ describe("ProjectPreCompiler", () => {
 				.build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors.length).toBeGreaterThan(0);
 			expect(result.result).toBeDefined(); // Result is still provided even with errors
@@ -193,18 +201,18 @@ describe("ProjectPreCompiler", () => {
 				.build();
 			const project = new ProjectBuilder().addVariable(projectVar).addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [stepVar], Language.FR);
+			const result = ProjectPreCompiler.preCompile(project, [stepVar], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
 			// project var + step var + 2 memo vars (one per step)
 			expect(result.result!.variables.length).toBeGreaterThanOrEqual(3);
-			expect(result.result!.grafcets["grafcet-1"].steps.size).toBe(2);
-			expect(result.result!.grafcets["grafcet-1"].transitions.size).toBe(1);
-			expect(result.result!.grafcets["grafcet-1"].actions.size).toBe(1);
+			expect(asGrafcet(result.result!.programs["grafcet-1"]).steps.size).toBe(2);
+			expect(asGrafcet(result.result!.programs["grafcet-1"]).transitions.size).toBe(1);
+			expect(asGrafcet(result.result!.programs["grafcet-1"]).actions.size).toBe(1);
 		});
 
-		it("works with English language", () => {
+		it("works with English dialect", () => {
 			const step = new StepBuilder().id("step-1").number(1).build();
 			const transition = new TransitionBuilder().id("trans-1").expression("TRUE").build();
 			const grafcet = new GrafcetBuilder()
@@ -214,13 +222,13 @@ describe("ProjectPreCompiler", () => {
 				.build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, [], Language.EN);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.EN);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.grafcets["grafcet-1"].transitions.size).toBe(1);
+			expect(asGrafcet(result.result!.programs["grafcet-1"]).transitions.size).toBe(1);
 		});
 
-		it("defaults to French language when not specified", () => {
+		it("defaults to French dialect when not specified", () => {
 			const step = new StepBuilder().id("step-1").number(1).build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").addStep(step).build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();

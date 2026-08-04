@@ -55,7 +55,7 @@ export default function usePointPointerEventsHandlers(
 	);
 
 	const handlePointPointerUp = useCallback(
-		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
+		(e: React.PointerEvent<SVGCircleElement>, _index: number) => {
 			(e.target as SVGCircleElement).releasePointerCapture(e.pointerId);
 			workflowManager.updateEdgeData(edgeId, { points });
 		},

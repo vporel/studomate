@@ -25,6 +25,7 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-1",
@@ -73,6 +74,7 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-1",
@@ -129,6 +131,7 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-1",
@@ -172,6 +175,7 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-1",

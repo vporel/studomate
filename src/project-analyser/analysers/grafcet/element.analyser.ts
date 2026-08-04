@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import Element, { BaseData } from "../../../schemas/grafcet/element.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
@@ -9,6 +10,11 @@ export type ElementAnalyseIsolatedOptions = {
 	 * @default false
 	 */
 	allowEmptyContent?: boolean;
+	/**
+	 * Dialecte dans lequel les expressions de l'élément sont écrites.
+	 * @default Dialect.FR
+	 */
+	dialect?: Dialect;
 };
 
 export default abstract class ElementAnalyser<E extends Element<BaseData>> {
@@ -20,5 +26,14 @@ export default abstract class ElementAnalyser<E extends Element<BaseData>> {
 	/**
 	 * Rules that require knowledge of the grafcet and the project.
 	 */
-	abstract analyseInContext(element: E, grafcet: Grafcet, variables: Variable[]): ProjectAnalyserIssue[];
+	/**
+	 * @param dialect Dialecte des expressions. Les implémentations qui n'en ont pas besoin
+	 * peuvent l'omettre de leur signature.
+	 */
+	abstract analyseInContext(
+		element: E,
+		grafcet: Grafcet,
+		variables: Variable[],
+		dialect: Dialect,
+	): ProjectAnalyserIssue[];
 }

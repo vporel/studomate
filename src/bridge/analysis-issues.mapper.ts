@@ -1,8 +1,28 @@
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import {
-	AnalysisIssues,
-	emptyAnalysisIssues,
-} from "@/ui/stores/project/managers/simulation/simulation.manager";
+
+/**
+ * Problèmes d'analyse regroupés par grafcet, prêts à être affichés.
+ *
+ * Ce type est la **sortie de ce mapper**, sa place est donc ici. Il était déclaré dans un
+ * manager de store, ce qui obligeait le bridge à importer depuis la couche UI — soit
+ * exactement l'inverse du sens attendu.
+ */
+export type AnalysisGrafcetIssues = {
+	overall: string[];
+	elements: Record<string, string[]>;
+};
+
+export type AnalysisIssues = {
+	project: string[];
+	grafcets: Record<string, AnalysisGrafcetIssues>;
+};
+
+export function emptyAnalysisIssues(): AnalysisIssues {
+	return {
+		project: [],
+		grafcets: {},
+	};
+}
 
 export default class AnalysisIssuesMapper {
 	static analyserToApp(projectAnalyserIssues: ProjectAnalyserIssue[]): AnalysisIssues {

@@ -40,7 +40,7 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 	/**
 	 * Rules that require knowledge of the full grafcet.
 	 */
-	analyseInContext(step: Step, grafcet: Grafcet, variables: Variable[]): ProjectAnalyserIssue[] {
+	analyseInContext(step: Step, grafcet: Grafcet, _variables: Variable[]): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step" as const, sourceId: step.id };
 

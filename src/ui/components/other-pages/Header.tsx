@@ -1,7 +1,7 @@
 "use client";
 
 import routes from "@/app/routes";
-import { APP_NAME } from "@/ui/constants";
+import { APP_NAME } from "@/app-info";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Box, Button, Typography } from "@mui/material";
 import Link from "next/link";

@@ -1,7 +1,7 @@
 "use client";
 
 import Project from "@/schemas/project/project.schema";
-import { localStorageDeleteProject, localStorageLoadProjects } from "@/ui/local-storage/projects";
+import { useProjectStore } from "./ProjectContext";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
 	Box,
@@ -23,23 +23,24 @@ interface ProjectsListProps {
 export default function ProjectsList({ reloadKey, onProjectClick }: ProjectsListProps) {
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [loading, setLoading] = useState(true);
+	const projectRepository = useProjectStore((state) => state.projectRepository);
 
 	useEffect(() => {
 		setLoading(true);
 		try {
-			const loadedProjects = localStorageLoadProjects();
+			const loadedProjects = projectRepository.list();
 			setProjects(loadedProjects);
 		} catch (error) {
 			console.error("Erreur lors du chargement des projets:", error);
 		} finally {
 			setLoading(false);
 		}
-	}, [reloadKey]);
+	}, [reloadKey, projectRepository]);
 
 	const handleDeleteProject = (event: React.MouseEvent, projectId: string) => {
 		event.stopPropagation();
 		if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
-			localStorageDeleteProject(projectId);
+			projectRepository.delete(projectId);
 			setProjects((prevProjects) => prevProjects.filter((p) => p.id !== projectId));
 		}
 	};

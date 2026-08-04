@@ -1,14 +1,5 @@
 ﻿import AbstractCommand from "./abstract.command";
 
-export type CommandsStackExecuteOptions = {
-	/**
-	 * If false, allow the command stack to execute the commands without saving them in the undo stack.
-	 * This means that the executed commands won't be undoable/redoable.
-	 * @default true
-	 */
-	saveCommands?: boolean;
-};
-
 /**
  * Class representing a stack of commands.
  * It defines the structure for executing, undoing, redoing, and clearing commands.
@@ -25,7 +16,7 @@ export default class CommandsStack<T> {
 		this.undoLimit = undoLimit;
 	}
 
-	execute(commands: AbstractCommand<T, any>[], object: T, options?: CommandsStackExecuteOptions): T {
+	execute(commands: AbstractCommand<T, any>[], object: T): T {
 		const validCommands: AbstractCommand<T, any>[] = [];
 		for (const command of commands) {
 			const [result, isCommandValid] = command.execute(object);
@@ -33,12 +24,10 @@ export default class CommandsStack<T> {
 			validCommands.push(command);
 			object = result;
 		}
-		if (options?.saveCommands ?? true) {
-			this.commandsToUndo.push(validCommands);
-			this.commandsToRedo = [];
-			if (this.commandsToUndo.length > this.undoLimit) {
-				this.commandsToUndo.shift();
-			}
+		this.commandsToUndo.push(validCommands);
+		this.commandsToRedo = [];
+		if (this.commandsToUndo.length > this.undoLimit) {
+			this.commandsToUndo.shift();
 		}
 		return object;
 	}

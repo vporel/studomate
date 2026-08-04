@@ -100,7 +100,7 @@ export default class Action extends Element<ActionData> {
 	 * the execution mode to the first compatible one with the new type if the current execution mode is not compatible with the new type.
 	 * This way, we avoid leaving the action in an invalid state with incompatible type and execution mode.
 	 */
-	fixNewDataConsistency(newData: Partial<ActionData>, oldData: ActionData): Partial<ActionData> {
+	fixNewDataConsistency(newData: Partial<ActionData>, _oldData: ActionData): Partial<ActionData> {
 		if (newData.type) {
 			if (!Action.isValidExecutionModeForType(newData.type, this.data.executionMode)) {
 				const compatibleExecutionModes = ACTION_TYPES_TO_EXECUTION_MODES[newData.type];

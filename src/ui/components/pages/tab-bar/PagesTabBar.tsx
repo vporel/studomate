@@ -7,20 +7,25 @@ import { useShallow } from "zustand/shallow";
 import PageTab, { PageTabProps } from "./PageTab";
 
 const PagesTabBar = () => {
-	const { pagesData } = useProjectStore(
+	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
+			pagesOrder: state.pagesOrder,
 		})),
 	);
 
+	//L'ordre vient de `pagesOrder`, pas de l'ordre d'insertion des clés de `pagesData` :
+	//c'est ce qui rend l'ordre des onglets explicite et donc réordonnable
 	const tabsData: PageTabProps[] = useMemo(
 		() =>
-			Object.keys(pagesData).map((id) => ({
-				id,
-				title: pagesData[id].title,
-				type: pagesData[id].type,
-			})),
-		[pagesData],
+			pagesOrder
+				.filter((id) => !!pagesData[id])
+				.map((id) => ({
+					id,
+					title: pagesData[id].title,
+					type: pagesData[id].type,
+				})),
+		[pagesData, pagesOrder],
 	);
 
 	return (

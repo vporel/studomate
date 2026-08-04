@@ -1,7 +1,7 @@
 "use client";
 
 import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
-import { APP_NAME, APP_SLOGAN } from "@/ui/constants";
+import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
 import { Add as AddIcon, Segment as SegmentIcon } from "@mui/icons-material";
 import { Box, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";

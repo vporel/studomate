@@ -62,29 +62,13 @@ export default function useShortcutsHandler() {
 					case "z": {
 						e.stopPropagation();
 						e.preventDefault();
-						if (!designing) break;
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const grafcetCommandsStackManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
-							grafcetCommandsStackManager?.undoOperation();
-						} else if (activeScopeType === "project") {
-							projectStore?.getState().commandsStackManager.undoOperation();
-						}
+						projectStore?.getState().undoActiveScope();
 						break;
 					}
 					case "y": {
 						e.stopPropagation();
 						e.preventDefault();
-						if (!designing) break;
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const grafcetCommandsStackManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager;
-							grafcetCommandsStackManager?.redoOperation();
-						} else if (activeScopeType === "project") {
-							projectStore?.getState().commandsStackManager.redoOperation();
-						}
+						projectStore?.getState().redoActiveScope();
 						break;
 					}
 					case "c": {

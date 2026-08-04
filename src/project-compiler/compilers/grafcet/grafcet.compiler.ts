@@ -29,7 +29,7 @@ export default class GrafcetCompiler {
 			//Compile actions
 			...preCompiledGrafcet.actions
 				.entries()
-				.filter(([_, preCompiledAction]) => !!preCompiledAction) //Filter out TEXT actions, or actions with no expression
+				.filter(([, preCompiledAction]) => !!preCompiledAction) //Filter out TEXT actions, or actions with no expression
 				.flatMap(([actionId, preCompiledAction]) =>
 					ActionCompiler.compile(actionId, preCompiledAction!, preCompiledGrafcet, stepMemosNodes),
 				),

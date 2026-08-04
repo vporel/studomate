@@ -2,14 +2,14 @@ import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import Action, { ActionExecutionMode, ActionType } from "../../../schemas/grafcet/action.schema";
 import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import VariablesMapper from "../../../simulator/bridge/variables.mapper";
+import PlcVariablesMapper from "../../../simulator/bridge/variables.mapper";
 import IdentifiersBuilder from "../../../simulator/compiler/ast/builders/identifiers.builder";
 import LiteralsBuilder from "../../../simulator/compiler/ast/builders/literals.builder";
 import StatementsBuilder from "../../../simulator/compiler/ast/builders/statements.builder";
 import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
 import { Environment } from "../../../simulator/compiler/environment/environment";
 import SimplifierVisitor from "../../../simulator/compiler/interpreter/simplifier/simplifier.visitor";
-import { Language } from "../../../simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../../simulator/compiler/lexer/lexer";
 import Parser from "../../../simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "../../../simulator/compiler/semantic-analyser/semantic-analyser.visitor";
@@ -48,7 +48,7 @@ export default class ActionPreCompiler {
 		action: Action,
 		grafcet: Grafcet,
 		variables: PLCVariable[],
-		language: Language,
+		dialect: Dialect,
 	): PreCompiledAction | null {
 		if (
 			action.data.type === ActionType.TEXT ||
@@ -60,7 +60,7 @@ export default class ActionPreCompiler {
 		if (action.data.type === ActionType.BOOLEAN_VARIABLE) {
 			phases = this.compileBooleanAction(action, variables);
 		} else {
-			phases = this.compileExpressionAction(action, variables, language);
+			phases = this.compileExpressionAction(action, variables, dialect);
 		}
 		return {
 			phases,
@@ -86,7 +86,7 @@ export default class ActionPreCompiler {
 		action: Action,
 		plcVariables: PLCVariable[],
 	): PreCompiledActionPhases {
-		const env = new Environment(plcVariables.map(VariablesMapper.plcToEnv));
+		const env = new Environment(plcVariables.map(PlcVariablesMapper.plcToEnv));
 		const phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
 		action.getExpressionLines().forEach((mnemonic) => {
 			const simplifier = new SimplifierVisitor();
@@ -140,12 +140,12 @@ export default class ActionPreCompiler {
 	private static compileExpressionAction(
 		action: Action,
 		plcVariables: PLCVariable[],
-		language: Language,
+		dialect: Dialect,
 	): PreCompiledActionPhases {
-		const env = new Environment(plcVariables.map(VariablesMapper.plcToEnv));
+		const env = new Environment(plcVariables.map(PlcVariablesMapper.plcToEnv));
 		const phases: PreCompiledActionPhases = { onActivation: [], continuous: [], onDeactivation: [] };
 		action.getExpressionLines().forEach((line) => {
-			const tokens = new Lexer(language).tokenize(line);
+			const tokens = new Lexer(dialect).tokenize(line);
 			const parsed = new Parser(tokens).parse();
 			new SemanticAnalyserVisitor(env).visit(parsed);
 			const simplified = new SimplifierVisitor().visit(parsed);

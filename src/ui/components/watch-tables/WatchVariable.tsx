@@ -2,19 +2,20 @@
 
 import Variable from "@/schemas/variable/variable.schema";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { Language } from "@/ui/locales/locales";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 
-function getBooleanLabel(value: boolean | undefined, language: Language) {
+//VRAI/TRUE relève du vocabulaire du langage d'expression, pas de la langue de l'interface
+function getBooleanLabel(value: boolean | undefined, dialect: Dialect) {
 	if (value === undefined) return "-";
-	if (value) return language === Language.FR ? "VRAI" : "TRUE";
-	else return language === Language.FR ? "FAUX" : "FALSE";
+	if (value) return dialect === Dialect.FR ? "VRAI" : "TRUE";
+	else return dialect === Dialect.FR ? "FAUX" : "FALSE";
 }
 
 export default function WatchVariable({ variable }: { variable: Variable }) {
-	const language = useProjectStore((s) => s.language);
+	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const simulationManager = useProjectStore((s) => s.simulationManager);
 	const value = useProjectStore(useShallow((state) => state.simulationVariablesStates[variable.id]?.value));
 	const nativeType = variable.getNativeType();
@@ -49,7 +50,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 					{nativeType === "boolean" ? (
 						variable.getDirection() === "OUT" ? (
 							<Typography color={value === true ? "primary.main" : "text.primary"}>
-								{getBooleanLabel(value, language)}
+								{getBooleanLabel(value, dialect)}
 							</Typography>
 						) : (
 							<FormControlLabel
@@ -61,7 +62,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 										}}
 									/>
 								}
-								label={getBooleanLabel(value, language)}
+								label={getBooleanLabel(value, dialect)}
 							/>
 						)
 					) : variable.getDirection() === "OUT" ? (

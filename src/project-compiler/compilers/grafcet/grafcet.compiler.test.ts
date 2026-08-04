@@ -11,6 +11,7 @@ describe("GrafcetCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					["step-0", { node: step0Node, initial: true }],
 					["step-1", { node: step1Node, initial: false }],
@@ -46,6 +47,7 @@ describe("GrafcetCompiler", () => {
 			const timer1 = { type: "TIMER_BLOCK", timerType: "TON" } as any;
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
 					["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
@@ -77,6 +79,7 @@ describe("GrafcetCompiler", () => {
 
 		it("throws error if no initial step", () => {
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: false }],
 					["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
@@ -107,6 +110,7 @@ describe("GrafcetCompiler", () => {
 
 		it("throws error if less than 2 steps", () => {
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
 				]),

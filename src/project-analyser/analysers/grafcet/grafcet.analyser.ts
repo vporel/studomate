@@ -29,8 +29,11 @@ export default class GrafcetAnalyser {
 			.flatMap((element) => {
 				const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
 				return [
-					...analyser.analyseIsolated(element, { allowEmptyContent: false }),
-					...analyser.analyseInContext(element, grafcet, allVariables),
+					...analyser.analyseIsolated(element, {
+						allowEmptyContent: false,
+						dialect: project.dialect,
+					}),
+					...analyser.analyseInContext(element, grafcet, allVariables, project.dialect),
 				];
 			})
 			.map((issue) => {

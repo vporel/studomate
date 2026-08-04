@@ -13,7 +13,11 @@ function invertRecord<K extends string, V extends string>(record: Record<K, V>):
 
 const scopeToDirection = invertRecord(directionToScope);
 
-export default class VariablesMapper {
+/**
+ * Traduit entre l'**environnement** du compilateur et les variables du **PLC**.
+ * Voir aussi `SchemaVariablesMapper`, qui couvre l'amont de la chaîne (schéma → environnement).
+ */
+export default class PlcVariablesMapper {
 	static envToPlc(envVar: EnvVariable): PLCVariable {
 		const scope = directionToScope[envVar.getDirection()];
 		const plcVar = new PLCVariable(envVar.getId(), envVar.getName(), scope, envVar.getType());

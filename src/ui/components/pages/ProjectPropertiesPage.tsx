@@ -1,7 +1,8 @@
 "use client";
 
 import { PageData } from "@/ui/stores/project/project.store";
-import { alpha, Box, Grid, Typography } from "@mui/material";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { alpha, Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -62,14 +63,17 @@ const PropertyTextField = ({
 };
 
 const ProjectPropertiesPage = () => {
-	const { name, author, changeProjectName, changeProjectAuthor } = useProjectStore(
-		useShallow((state) => ({
-			name: state.project?.name ?? "",
-			author: state.project?.author ?? "",
-			changeProjectName: state.setProjectName,
-			changeProjectAuthor: state.setProjectAuthor,
-		})),
-	);
+	const { name, author, dialect, changeProjectName, changeProjectAuthor, changeProjectDialect } =
+		useProjectStore(
+			useShallow((state) => ({
+				name: state.project?.name ?? "",
+				author: state.project?.author ?? "",
+				dialect: state.project?.dialect ?? Dialect.FR,
+				changeProjectName: state.setProjectName,
+				changeProjectAuthor: state.setProjectAuthor,
+				changeProjectDialect: state.setProjectDialect,
+			})),
+		);
 
 	return (
 		<Page pageId={PROJECT_PROPERTIES_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>
@@ -88,6 +92,20 @@ const ProjectPropertiesPage = () => {
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyLabel label="Auteur" />
 						<PropertyTextField defaultValue={author} onSave={changeProjectAuthor} />
+					</Grid>
+					<Grid size={{ xs: 12, sm: 6 }}>
+						<PropertyLabel label="Langage des expressions" />
+						<TextField
+							select
+							fullWidth
+							size="small"
+							value={dialect}
+							onChange={(e) => changeProjectDialect(Number(e.target.value) as Dialect)}
+							helperText="Les expressions déjà écrites sont traduites automatiquement."
+						>
+							<MenuItem value={Dialect.FR}>Français — ET, OU, NON, VRAI, FAUX</MenuItem>
+							<MenuItem value={Dialect.EN}>Anglais — AND, OR, NOT, TRUE, FALSE</MenuItem>
+						</TextField>
 					</Grid>
 				</Grid>
 			</Box>

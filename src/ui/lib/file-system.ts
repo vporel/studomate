@@ -24,7 +24,7 @@ export async function openFileDialog(
 		};
 		// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
 		return (await window.showOpenFilePicker(options))[0];
-	} catch (err) {
+	} catch {
 		//Open cancelled or failed
 		return null;
 	}
@@ -41,7 +41,7 @@ export function openFileViaInput(accept: string): Promise<string | null> {
 			try {
 				const text = await file.text();
 				resolve(text);
-			} catch (e) {
+			} catch {
 				resolve(null);
 			}
 		};
@@ -69,7 +69,7 @@ export async function openSaveDialog(
 		};
 		// @ts-expect-error The showSaveFilePicker API is not yet fully supported in TypeScript's
 		return await window.showSaveFilePicker(options);
-	} catch (err) {
+	} catch {
 		//Save cancelled or failed
 		return null;
 	}

@@ -1,9 +1,9 @@
 "use client";
 
+import { parseProjectFromFile } from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
 import { openFileDialog, openFileViaInput, readFile } from "@/ui/lib/file-system";
 import CustomModal from "@/ui/lib/mui/CustomModal";
-import { localStorageSaveProject } from "@/ui/local-storage/projects";
 import { Box, Button, Divider } from "@mui/material";
 import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
@@ -11,6 +11,7 @@ import { useProjectStore } from "./ProjectContext";
 import ProjectsList from "./ProjectsList";
 
 export default function ProjectOpenModal() {
+	const projectRepository = useProjectStore((state) => state.projectRepository);
 	const { openProject, openModalVisible, setOpenModalVisible } = useProjectStore(
 		useShallow((state) => ({
 			openProject: state.openProject,
@@ -37,7 +38,7 @@ export default function ProjectOpenModal() {
 					"application/json": [".json"],
 				});
 				if (!handle) return;
-				const text = await readFile(handle);
+				text = await readFile(handle);
 			} catch (err: any) {
 				console.error("Failed to open file:", err);
 				alert(
@@ -50,7 +51,7 @@ export default function ProjectOpenModal() {
 		if (!text) return;
 		let project: Project;
 		try {
-			project = Project.createFromJSON(text);
+			project = parseProjectFromFile(text);
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
 			alert(
@@ -58,10 +59,14 @@ export default function ProjectOpenModal() {
 			);
 			return;
 		}
-		localStorageSaveProject(project);
+		const saveResult = projectRepository.save(project);
+		if (!saveResult.ok) {
+			alert("Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible.");
+			return;
+		}
 		await openProject(project.id);
 		onClose();
-	}, [openProject, onClose]);
+	}, [openProject, onClose, projectRepository]);
 
 	return (
 		<CustomModal open={openModalVisible} onClose={onClose} title="Ouvrir un projet" width={500}>

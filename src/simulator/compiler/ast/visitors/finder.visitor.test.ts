@@ -113,7 +113,11 @@ describe("FinderVisitor", () => {
 
 		it("returns empty array when no numbers found", () => {
 			const id = IdentifiersBuilder.buildIdentifierNode("x", 0);
+
 			const visitor = new FinderVisitor<NumberNode>("NUMBER_LITERAL");
+			const result = visitor.visit(id);
+
+			expect(result).toEqual([]);
 		});
 	});
 

@@ -1,3 +1,5 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { createStore } from "zustand";
 import { GrafcetEdgeType, GrafcetNodeType } from "../../components/grafcet/flow/grafcet-nodes-definitions";
@@ -9,6 +11,11 @@ import ViewManager from "./managers/view.manager";
 import WorkflowManager from "./managers/workflow.manager";
 
 export interface GrafcetStoreState {
+	/**
+	 * Dialecte des expressions, lu à la demande auprès du projet : le stocker en copie le
+	 * laisserait périmé si l'utilisateur change le dialecte du projet.
+	 */
+	getDialect: () => Dialect;
 	initialGrafcet?: Grafcet; //The initial grafcet, used as reference
 	grafcet: Grafcet;
 	//=============== VIEW ===============
@@ -40,8 +47,13 @@ export type GrafcetStoreSetFunction = (
 
 export type GrafcetStoreGetFunction = () => GrafcetStoreState;
 
-export const createGrafcetStore = (grafcet: Grafcet) => {
+export const createGrafcetStore = (
+	grafcet: Grafcet,
+	commandsStack: CommandsStack<Grafcet>,
+	getDialect: () => Dialect,
+) => {
 	return createStore<GrafcetStoreState>((set, get) => ({
+		getDialect,
 		initialGrafcet: grafcet?.copy(), //Should never be modified, used as reference
 		grafcet: grafcet,
 
@@ -56,8 +68,10 @@ export const createGrafcetStore = (grafcet: Grafcet) => {
 		workflowManager: new WorkflowManager(set, get),
 
 		//=============== COMMANDS STACK ===============
-		hasCommandsToUndo: false,
-		hasCommandsToRedo: false,
-		commandsStackManager: new CommandsStackManager(set, get),
+		//Read from the stack, not hardcoded: the history survives the page being closed,
+		//so reopening a grafcet must show the undo/redo buttons as still available
+		hasCommandsToUndo: commandsStack.commandsToUndo.length > 0,
+		hasCommandsToRedo: commandsStack.commandsToRedo.length > 0,
+		commandsStackManager: new CommandsStackManager(set, get, commandsStack),
 	}));
 };

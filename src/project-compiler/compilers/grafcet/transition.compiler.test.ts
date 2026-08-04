@@ -23,6 +23,7 @@ function makeGrafcet(
 	);
 	const transitionsMap = new Map(transitions.map(({ id, preCompiledTransition }) => [id, preCompiledTransition]));
 	const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 		steps: stepsMap,
 		stepsMemos,
 		transitions: transitionsMap,

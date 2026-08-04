@@ -3,9 +3,6 @@ import VariablesCommandsFactory from "../factories/variables-commands.factory";
 import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 
-//Record of id => {oldMnemonic, newMnemonic}
-export type VariablesMnemonicsChanges = Record<string, { oldMnemonic: string; newMnemonic: string }>;
-
 export default class VariablesManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
@@ -59,15 +56,10 @@ export default class VariablesManager {
 			return;
 		}
 		const { commands } = VariablesCommandsFactory.onUpdateVariable(project, variableId, newData);
+		//Renaming a mnemonic also rewrites the expressions of every grafcet: this is done
+		//inside VariablesUpdateCommand, so that it reaches the closed grafcets too and that
+		//undo stays symmetric
 		this.getStoreState().commandsStackManager.executeOperation(commands);
-		if (newData.mnemonic) {
-			const oldVariable = project.variables.find((v) => v.id === variableId);
-			if (!oldVariable) return;
-			const changes: VariablesMnemonicsChanges = {
-				[variableId]: { oldMnemonic: oldVariable.mnemonic, newMnemonic: newData.mnemonic },
-			};
-			this.onMnemonicsChanges(changes);
-		}
 	}
 
 	removeVariables(variablesIds: string[]): void {
@@ -79,11 +71,5 @@ export default class VariablesManager {
 		}
 		const { commands } = VariablesCommandsFactory.onRemoveVariable(project, variablesIds);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
-	}
-
-	onMnemonicsChanges(changes: VariablesMnemonicsChanges): void {
-		if (Object.keys(changes).length > 0) {
-			this.getStoreState().grafcetsManager.onVariablesMnemonicsChanges(changes);
-		}
 	}
 }

@@ -1,15 +1,15 @@
 import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
-import { GrafcetFactory } from "./utils/grafcet-factory";
-import { ProjectFactory } from "./utils/project-factory";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
 import {
 	compilePipelineDetailed,
 	compileToPLC,
 	expectVariableValue,
 	getVariableValue,
 	wait,
-} from "./utils/test-helpers";
-import { VariableFactory } from "./utils/variable-factory";
+} from "@tests/utils/test-helpers";
+import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Multi-Grafcet Integration Tests", () => {
 	beforeEach(() => {
@@ -94,7 +94,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([i0, i1, q0, q1], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -143,7 +143,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([i0, i1, q0, q1], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -192,7 +192,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([i0, i1, q0, q1], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -247,7 +247,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([q0, q1], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -291,7 +291,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([q0, q1], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -322,7 +322,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([], [g1, g2]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},

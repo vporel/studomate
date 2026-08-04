@@ -1,6 +1,6 @@
 import EnvVariable from "../environment/env-variable";
 import { Environment } from "../environment/environment";
-import { Language } from "../lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../lexer/lexer";
 import Parser from "../parser/parser";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
@@ -25,7 +25,7 @@ describe("SemanticAnalyserVisitor", () => {
 		const varBoolResult = new EnvVariable("id5", "boolResult", "boolean", "OUT");
 		env = new Environment([varX, varY, varFlag, varResult, varBoolResult]);
 		analyser = new SemanticAnalyserVisitor(env);
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	const parseAndCheck = (expression: string) => {

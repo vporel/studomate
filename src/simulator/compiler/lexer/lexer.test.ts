@@ -1,6 +1,6 @@
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
-import { Language } from "./language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "./lexer";
 import { TokenType } from "./tokens/tokens";
 
@@ -8,7 +8,7 @@ describe("Lexer", () => {
 	let lexer: Lexer;
 
 	beforeEach(() => {
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	describe("whitespace", () => {
@@ -84,28 +84,28 @@ describe("Lexer", () => {
 
 	describe("keywords", () => {
 		it("tokenizes French boolean keywords", () => {
-			const lexerFR = new Lexer(Language.FR);
+			const lexerFR = new Lexer(Dialect.FR);
 			expect(lexerFR.tokenize("VRAI")[0].type).toBe(TokenType.TRUE);
 			expect(lexerFR.tokenize("vrai")[0].type).toBe(TokenType.TRUE);
 			expect(lexerFR.tokenize("FAUX")[0].type).toBe(TokenType.FALSE);
 		});
 
 		it("tokenizes French logical operators", () => {
-			const lexerFR = new Lexer(Language.FR);
+			const lexerFR = new Lexer(Dialect.FR);
 			expect(lexerFR.tokenize("ET")[0].type).toBe(TokenType.AND);
 			expect(lexerFR.tokenize("OU")[0].type).toBe(TokenType.OR);
 			expect(lexerFR.tokenize("NON")[0].type).toBe(TokenType.NOT);
 		});
 
 		it("tokenizes English boolean keywords", () => {
-			const lexerEN = new Lexer(Language.EN);
+			const lexerEN = new Lexer(Dialect.EN);
 			expect(lexerEN.tokenize("TRUE")[0].type).toBe(TokenType.TRUE);
 			expect(lexerEN.tokenize("true")[0].type).toBe(TokenType.TRUE);
 			expect(lexerEN.tokenize("FALSE")[0].type).toBe(TokenType.FALSE);
 		});
 
 		it("tokenizes English logical operators", () => {
-			const lexerEN = new Lexer(Language.EN);
+			const lexerEN = new Lexer(Dialect.EN);
 			expect(lexerEN.tokenize("AND")[0].type).toBe(TokenType.AND);
 			expect(lexerEN.tokenize("OR")[0].type).toBe(TokenType.OR);
 			expect(lexerEN.tokenize("NOT")[0].type).toBe(TokenType.NOT);

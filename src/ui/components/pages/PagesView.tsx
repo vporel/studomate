@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME } from "@/ui/constants";
+import { APP_NAME } from "@/app-info";
 import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
@@ -84,9 +84,10 @@ const NoPage = () => {
 
 const PagesView = () => {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
-	const { pagesData } = useProjectStore(
+	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
+			pagesOrder: state.pagesOrder,
 		})),
 	);
 
@@ -100,12 +101,14 @@ const PagesView = () => {
 				position: "relative",
 			}}
 		>
-			{Object.entries(pagesData).length === 0 ? (
+			{pagesOrder.length === 0 ? (
 				<NoPage />
 			) : (
 				<Fragment>
 					<PagesTabBar />
-					{Object.entries(pagesData).map(([id, pageData]) => {
+					{pagesOrder.map((id) => {
+						const pageData = pagesData[id];
+						if (!pageData) return null;
 						switch (pageData.type) {
 							case "project-startup":
 								return <ProjectStartupPage key={id} />;

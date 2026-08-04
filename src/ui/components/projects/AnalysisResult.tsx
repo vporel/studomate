@@ -2,7 +2,7 @@
 
 import { ProjectAnalyserIssueSeverity } from "@/project-analyser/project.analyser.issue";
 import ResizableFixedBox from "@/ui/lib/mui/ResizableFixedBox";
-import { AnalysisGrafcetIssues } from "@/ui/stores/project/managers/simulation/simulation.manager";
+import { AnalysisGrafcetIssues } from "@/bridge/analysis-issues.mapper";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, Divider, IconButton, List, ListItem, Typography } from "@mui/material";
 import { useCallback } from "react";

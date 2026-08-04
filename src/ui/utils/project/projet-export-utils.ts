@@ -1,3 +1,4 @@
+import { serializeProjectToFile } from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
 
 /**
@@ -6,7 +7,7 @@ import Project from "@/schemas/project/project.schema";
  * @param fileName
  */
 export const exportProject = (project: Project, fileName: string) => {
-	const projectData = JSON.stringify(project, null, 2);
+	const projectData = serializeProjectToFile(project);
 	const blob = new Blob([projectData], { type: "application/json" });
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement("a");

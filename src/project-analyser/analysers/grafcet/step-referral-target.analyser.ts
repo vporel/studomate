@@ -52,7 +52,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 	analyseInContext(
 		stepReferral: StepReferralTarget,
 		grafcet: Grafcet,
-		variables: Variable[],
+		_variables: Variable[],
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };

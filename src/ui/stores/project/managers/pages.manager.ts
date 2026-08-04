@@ -15,7 +15,9 @@ export default class PagesManager {
 		const pagesOrder = this.getStoreState().pagesOrder;
 		const pagesData = this.getStoreState().pagesData;
 		if (pagesOrder.includes(pageData.id)) {
-			this.setStoreState(() => ({ activePageId: pageData.id }));
+			//Page déjà ouverte : on passe par setActivePage, sinon le scope actif (raccourcis
+			//clavier, annulation) resterait sur la page précédente
+			this.setActivePage(pageData.id);
 			return;
 		}
 		const newPagesOrder = [...pagesOrder];

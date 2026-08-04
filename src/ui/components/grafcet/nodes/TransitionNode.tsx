@@ -24,9 +24,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
 		useWithTextNodeValue(id, "transition", data, "expression", false);
-	const trueInSimulator = useProjectStore(
-		(state) => state.simulationManager.getEvaluableExpressionValue(id) === true,
-	);
+	const trueInSimulator = useProjectStore((state) => state.evaluableExpressionsValues[id] === true);
 	const colorIfTrueInSimulation = th.palette.primary.main;
 	const borderColor = trueInSimulator
 		? colorIfTrueInSimulation
@@ -117,7 +115,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 								textareaRef.current?.blur();
 							}
 						}}
-						onBlur={(e) => {
+						onBlur={() => {
 							setEditing(false);
 							saveExpression();
 						}}

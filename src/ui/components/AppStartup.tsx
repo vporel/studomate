@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME, APP_SHORT_DESCRIPTION, APP_SLOGAN } from "@/ui/constants";
+import { APP_NAME, APP_SHORT_DESCRIPTION, APP_SLOGAN } from "@/app-info";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { alpha, Box, Button, Divider, Grid, SxProps, Theme, Typography } from "@mui/material";
 import Link from "next/link";

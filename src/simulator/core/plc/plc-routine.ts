@@ -1,4 +1,4 @@
-import VariablesMapper from "../../bridge/variables.mapper";
+import PlcVariablesMapper from "../../bridge/variables.mapper";
 import { ASTNode } from "../../compiler/ast/nodes/ast-node";
 import { Environment } from "../../compiler/environment/environment";
 import EvaluatorVisitor from "../../compiler/interpreter/evaluator/evaluator.visitor";
@@ -26,7 +26,7 @@ export default class PLCRoutine {
 
 	execute(plc: PLC): void {
 		const plcVariablesSnapshot = plc.getVariablesSnapshot();
-		const env = new Environment(plcVariablesSnapshot.map(VariablesMapper.plcToEnv));
+		const env = new Environment(plcVariablesSnapshot.map(PlcVariablesMapper.plcToEnv));
 
 		const evaluator = new EvaluatorVisitor(env, {
 			timers: {

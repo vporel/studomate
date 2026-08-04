@@ -10,7 +10,7 @@ describe("ProjectCompiler", () => {
 		it("compiles an empty project", () => {
 			const preCompiledProject: PreCompiledProject = {
 				variables: [],
-				grafcets: {},
+				programs: {},
 			};
 
 			const result = ProjectCompiler.compile(preCompiledProject);
@@ -28,7 +28,7 @@ describe("ProjectCompiler", () => {
 
 			const preCompiledProject: PreCompiledProject = {
 				variables: [var1, var2],
-				grafcets: {},
+				programs: {},
 			};
 
 			const result = ProjectCompiler.compile(preCompiledProject);
@@ -45,6 +45,7 @@ describe("ProjectCompiler", () => {
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-0",
@@ -82,7 +83,7 @@ describe("ProjectCompiler", () => {
 
 			const preCompiledProject: PreCompiledProject = {
 				variables: [var1, var2, memo0, memo1],
-				grafcets: {
+				programs: {
 					"grafcet-1": preCompiledGrafcet,
 				},
 			};
@@ -101,6 +102,7 @@ describe("ProjectCompiler", () => {
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-0",
@@ -144,7 +146,7 @@ describe("ProjectCompiler", () => {
 
 			const preCompiledProject: PreCompiledProject = {
 				variables: [var1, var2, memo0, memo1],
-				grafcets: {
+				programs: {
 					"grafcet-1": preCompiledGrafcet,
 				},
 			};
@@ -160,6 +162,7 @@ describe("ProjectCompiler", () => {
 
 			// Neither step is initial → initializeSteps throws, which is caught as a compilation error
 			const preCompiledGrafcet: PreCompiledGrafcet = {
+		type: "grafcet",
 				steps: new Map([
 					[
 						"step-0",
@@ -192,7 +195,7 @@ describe("ProjectCompiler", () => {
 
 			const preCompiledProject: PreCompiledProject = {
 				variables: [var1],
-				grafcets: {
+				programs: {
 					"grafcet-1": preCompiledGrafcet,
 				},
 			};

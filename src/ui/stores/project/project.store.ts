@@ -1,22 +1,32 @@
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/schemas/utils/ids";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
-import { localStorageGetProject, localStorageSaveProject } from "@/ui/local-storage/projects";
-import { Language } from "@/ui/locales/locales";
+import { Dialect } from "@/expression-language/dialect.enum";
+import LocalStorageProjectRepository from "@/persistence/repositories/local-storage.project.repository";
+import ProjectRepository, { SaveFailureReason } from "@/persistence/repositories/project.repository";
+import { toast } from "react-toastify";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
 import CommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
 import PagesManager from "./managers/pages.manager";
-import SimulationManager, {
-	AnalysisIssues,
-	emptyAnalysisIssues,
-} from "./managers/simulation/simulation.manager";
+import { AnalysisIssues, emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import SimulationManager from "./managers/simulation/simulation.manager";
+import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
 import { ProjectMode } from "./ProjectMode.enum";
+import { performRedo, performUndo } from "./undo-redo";
 
 type SimpleCallback = () => void;
+
+const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
+	"quota-exceeded":
+		"Enregistrement impossible : l'espace de stockage du navigateur est plein. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+	unavailable:
+		"Enregistrement impossible : le stockage du navigateur est inaccessible (navigation privée ?). Exportez le projet dans un fichier.",
+	unknown: "Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+};
 
 export type PageType = "project-startup" | "project-properties" | "grafcet" | "variables";
 
@@ -55,6 +65,11 @@ export interface ProjectStoreState {
 	openModalVisible: boolean;
 	exportModalVisible: boolean;
 	savingProject: boolean;
+	/**
+	 * Accès au stockage. Dans le store pour rester substituable : la sauvegarde cloud de la
+	 * feuille de route viendra remplacer l'implémentation sans toucher au reste.
+	 */
+	projectRepository: ProjectRepository;
 	activeScope: string; //The currently active scope (used for keyboard shortcuts). The scope can be defined by an objectId (for example, the grafcetId of the currently active grafcet)
 	activeScopeType: ScopeType;
 	variablesManager: VariablesManager;
@@ -62,19 +77,17 @@ export interface ProjectStoreState {
 	getProject: () => Project | null;
 	openProject: (projectId: string) => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	newProject: () => Promise<void>;
-	saveProject: () => Promise<boolean | null>; // Returns true if saved, false if not saved (error), null if cancelled
+	saveProject: () => Promise<boolean>; // true si réellement enregistré
 	closeProject: () => void;
 
 	setProjectName: (newName: string) => void;
 	setProjectAuthor: (newAuthor: string) => void;
+	setProjectDialect: (dialect: Dialect) => void;
 
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setOpenModalVisible: (visible: boolean) => void;
 	setExportModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string) => void;
-
-	//=============== INTERNATIONALIZATION ===============
-	language: Language;
 
 	//=============== SIMULATION ===============
 	mode: ProjectMode;
@@ -91,12 +104,27 @@ export interface ProjectStoreState {
 	 * The current values of the variables during simulation, used to display them in the UI
 	 */
 	simulationVariablesStates: Record<string, SimulationVariableState>;
+	/**
+	 * Current values of the expressions watched during simulation (e.g. a transition's
+	 * receptivity), indexed by the id chosen when the expression was registered.
+	 *
+	 * Held here, in the reactive state, rather than in a private field mutated by the manager:
+	 * a Zustand selector only re-runs when the piece of state it reads actually changes. It
+	 * used to work only because `simulationVariablesStates` happened to change every cycle at
+	 * the same time — an accidental dependency that a future optimisation could silently break.
+	 */
+	evaluableExpressionsValues: Record<string, unknown>;
 	simulationManager: SimulationManager;
 
 	//=============== COMMANDS ===============
 	hasCommandsToUndo: boolean;
 	hasCommandsToRedo: boolean;
 	commandsStackManager: CommandsStackManager;
+	/**
+	 * Undo/redo on the active document. See `undo-redo.ts` for the scoping rule.
+	 */
+	undoActiveScope: () => void;
+	redoActiveScope: () => void;
 
 	//=============== GRAFCETS ===============
 	/**
@@ -125,7 +153,7 @@ export type ProjectStoreSetFunction = (
 
 export type ProjectStoreGetFunction = () => ProjectStoreState;
 
-function getInitialPagesData(project: Project | null): Record<string, PageData> {
+function getInitialPagesData(): Record<string, PageData> {
 	const pagesData: Record<string, PageData> = {};
 	pagesData[PROJECT_STARTUP_PAGE_ID] = PROJECT_STARTUP_PAGE_DATA;
 
@@ -133,8 +161,10 @@ function getInitialPagesData(project: Project | null): Record<string, PageData> 
 }
 
 export const createProjectStore = () => {
-	const _openProject = async (set: ProjectStoreSetFunction, project: Project) => {
-		const initialPagesData = getInitialPagesData(project);
+	const _openProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction, project: Project) => {
+		//The undo histories belong to the project being left
+		get().grafcetsManager.clearCommandsStacks();
+		const initialPagesData = getInitialPagesData();
 		set(() => ({
 			project: project,
 			hasUnsavedChanges: false,
@@ -146,12 +176,13 @@ export const createProjectStore = () => {
 		}));
 	};
 
-	const _newProject = async (set: ProjectStoreSetFunction) => {
+	const _newProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
 		const newProject = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
-		_openProject(set, newProject);
+		_openProject(set, get, newProject);
 	};
 
-	const _closeProject = async (set: ProjectStoreSetFunction) => {
+	const _closeProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
+		get().grafcetsManager.clearCommandsStacks();
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
@@ -173,21 +204,22 @@ export const createProjectStore = () => {
 		onUnsavedChangesDialogCancel: null,
 		onUnsavedChangesDialogContinue: null,
 		savingProject: false,
+		projectRepository: new LocalStorageProjectRepository(),
 		activeScope: "project",
 		activeScopeType: "project",
 		variablesManager: new VariablesManager(set, get),
 
 		getProject: () => get().project,
 		openProject: async (projectId: string) => {
-			const project = localStorageGetProject(projectId);
+			const project = get().projectRepository.get(projectId);
 			if (!project) return false;
-			await _openProject(set, project);
+			await _openProject(set, get, project);
 			return true;
 		},
 
 		newProject: async () => {
 			if (!get().hasUnsavedChanges) {
-				await _newProject(set);
+				await _newProject(set, get);
 				return;
 			}
 			set(() => ({
@@ -195,7 +227,7 @@ export const createProjectStore = () => {
 				unsavedChangesDialogMessage: null,
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
-					_newProject(set);
+					_newProject(set, get);
 				},
 			}));
 		},
@@ -206,15 +238,24 @@ export const createProjectStore = () => {
 			const newProject = project.copy();
 			newProject.touch(); //Update the project's last modified date
 			set(() => ({ savingProject: true }));
-			//Save the project in the local storage
-			localStorageSaveProject(newProject);
+
+			const result = get().projectRepository.save(newProject);
+			if (!result.ok) {
+				//Ne jamais annoncer un enregistrement qui n'a pas eu lieu : le projet reste
+				//marqué comme modifié pour que l'utilisateur puisse réessayer
+				set(() => ({ savingProject: false }));
+				toast.error(SAVE_FAILURE_MESSAGES[result.reason]);
+				console.error("Failed to save the project:", result.cause);
+				return false;
+			}
+
 			set(() => ({ project: newProject, hasUnsavedChanges: false, savingProject: false }));
 			return true;
 		},
 
 		closeProject: async () => {
 			if (!get().hasUnsavedChanges) {
-				_closeProject(set);
+				_closeProject(set, get);
 				return;
 			}
 			set(() => ({
@@ -222,7 +263,7 @@ export const createProjectStore = () => {
 				unsavedChangesDialogMessage: null,
 				onUnsavedChangesDialogCancel: null,
 				onUnsavedChangesDialogContinue: () => {
-					_closeProject(set);
+					_closeProject(set, get);
 				},
 			}));
 		},
@@ -247,6 +288,21 @@ export const createProjectStore = () => {
 				newProject.author = newAuthor;
 				return { project: newProject, hasUnsavedChanges: true };
 			});
+		},
+
+		setProjectDialect: (dialect: Dialect) => {
+			const project = get().project;
+			if (!project) return;
+			if (project.dialect === dialect) return;
+			set(() => {
+				const newProject = project.copy();
+				//Traduit les mots-clés des expressions existantes : sans quoi elles deviendraient
+				//illisibles dans le nouveau dialecte
+				newProject.setDialect(dialect);
+				return { project: newProject, hasUnsavedChanges: true };
+			});
+			//Les grafcets ouverts détiennent leur propre copie : ils doivent adopter la nouvelle
+			get().grafcetsManager.syncMountedStoresFromProject();
 		},
 
 		setUnsavedChangesDialogVisible: (visible: boolean) => {
@@ -305,9 +361,6 @@ export const createProjectStore = () => {
 			}
 		},
 
-		//=============== INTERNATIONALIZATION ===============
-		language: Language.FR,
-
 		//=============== SIMULATION ===============
 		mode: ProjectMode.DESIGN,
 		analysisHasErrors: false,
@@ -326,12 +379,15 @@ export const createProjectStore = () => {
 			scanTimeMs: 100,
 		},
 		simulationVariablesStates: {},
-		simulationManager: new SimulationManager(set, get),
+		evaluableExpressionsValues: {},
+		simulationManager: new SimulationManager(set, get, new ToastSimulationNotifier()),
 
 		//=============== COMMANDS STACK ===============
 		hasCommandsToUndo: false,
 		hasCommandsToRedo: false,
 		commandsStackManager: new CommandsStackManager(set, get),
+		undoActiveScope: () => performUndo(get()),
+		redoActiveScope: () => performRedo(get()),
 
 		//=============== GRAFCETS ===============
 		grafcetsStoresValues: {},
@@ -340,7 +396,7 @@ export const createProjectStore = () => {
 		grafcetsManager: new GrafcetsManager(set, get),
 
 		//=============== PAGES ===============
-		pagesData: getInitialPagesData(null),
+		pagesData: getInitialPagesData(),
 		pagesOrder: [PROJECT_STARTUP_PAGE_ID],
 		activePageId: PROJECT_STARTUP_PAGE_ID,
 		pagesManager: new PagesManager(set, get),

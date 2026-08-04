@@ -1,4 +1,4 @@
-import { Language } from "../../compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../compiler/lexer/lexer";
 import Parser from "../../compiler/parser/parser";
 import PLC from "./plc";
@@ -29,7 +29,7 @@ describe("PLCRoutine", () => {
 
 	describe("construction", () => {
 		it("creates routine with nodes", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
@@ -40,7 +40,7 @@ describe("PLCRoutine", () => {
 
 	describe("execution", () => {
 		it("executes simple assignment", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := 42");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
@@ -62,7 +62,7 @@ describe("PLCRoutine", () => {
 		});
 
 		it("executes arithmetic expression", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
@@ -85,7 +85,7 @@ describe("PLCRoutine", () => {
 		});
 
 		it("executes multiple statements", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const memoryVar = new PLCVariable("id3", "temp", "memory", "number");
 
 			const tokens1 = lexer.tokenize("temp := x + 5");
@@ -117,7 +117,7 @@ describe("PLCRoutine", () => {
 
 	describe("getNodes", () => {
 		it("returns readonly nodes array", () => {
-			const lexer = new Lexer(Language.FR);
+			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("result := 42");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();

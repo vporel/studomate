@@ -2,17 +2,11 @@
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Typography } from "@mui/material";
-import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import RightActions from "./RightActions";
 
 const StatusBar = () => {
-	const { projectAuthor, projectLastModificationDate } = useProjectStore(
-		useShallow((state) => ({
-			projectAuthor: state.project?.author,
-			projectLastModificationDate: state.project?.lastModificationDate,
-		})),
-	);
+	const projectAuthor = useProjectStore((state) => state.project?.author);
 	return (
 		<FlexBox
 			centerVertical

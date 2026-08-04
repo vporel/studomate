@@ -1,0 +1,11 @@
+/**
+ * Identité de l'application.
+ *
+ * Module neutre, sans aucune dépendance : il est lu aussi bien par l'interface que par le
+ * domaine (`Project` estampille la version qui l'a créé). Ces constantes vivaient dans
+ * `ui/constants`, ce qui forçait le domaine à importer depuis la couche interface.
+
+ */
+export const APP_NAME = "Studomate";
+export const APP_SLOGAN = "Créer, Simuler, Automatiser";
+export const APP_SHORT_DESCRIPTION = "Créez et simulez facilement avec une application intuitive.";

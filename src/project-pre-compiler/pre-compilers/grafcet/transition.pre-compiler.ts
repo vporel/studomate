@@ -14,7 +14,7 @@ import TransitionHelper from "../../../schemas/grafcet/helpers/transition.helper
 import Transition from "../../../schemas/grafcet/transition.schema";
 import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
 import SimplifierVisitor from "../../../simulator/compiler/interpreter/simplifier/simplifier.visitor";
-import { Language } from "../../../simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../../simulator/compiler/lexer/lexer";
 import Parser from "../../../simulator/compiler/parser/parser";
 
@@ -43,9 +43,9 @@ export default class TransitionPreCompiler {
 		transition: Transition,
 		grafcet: Grafcet,
 		variables: PLCVariable[],
-		language: Language,
+		dialect: Dialect,
 	): PreCompiledTransition {
-		const tokens = new Lexer(language).tokenize(transition.getFullExpression());
+		const tokens = new Lexer(dialect).tokenize(transition.getFullExpression());
 		const parsed = new Parser(tokens).parse();
 		//The semantic analysis should have already been done in the analyser, so we can skip it here and directly simplify the AST
 		let node = new SimplifierVisitor().visit(parsed);

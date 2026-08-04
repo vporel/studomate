@@ -1,8 +1,8 @@
-import { Language } from "@/simulator/compiler/lexer/language.enum";
-import { GrafcetFactory } from "./utils/grafcet-factory";
-import { ProjectFactory } from "./utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "./utils/test-helpers";
-import { VariableFactory } from "./utils/variable-factory";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("AND Junction Integration Tests", () => {
 	beforeEach(() => {
@@ -57,7 +57,7 @@ describe("AND Junction Integration Tests", () => {
 			const project = ProjectFactory.create([i0, q0, q1], [grafcet], "AND Both Branches");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -90,7 +90,7 @@ describe("AND Junction Integration Tests", () => {
 			const project = ProjectFactory.create([i0, q0, q1], [grafcet], "AND Convergence");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -129,7 +129,7 @@ describe("AND Junction Integration Tests", () => {
 			const project = ProjectFactory.create([i0, q0, q1], [grafcet], "AND Stable Step0");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -169,7 +169,7 @@ describe("AND Junction Integration Tests", () => {
 			const project = ProjectFactory.create([i0, q0, q1], [andGrafcet], "AND vs OR");
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},

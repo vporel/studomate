@@ -1,6 +1,6 @@
 import EnvVariable from "../../environment/env-variable";
 import { Environment } from "../../environment/environment";
-import { Language } from "../../lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../lexer/lexer";
 import Parser from "../../parser/parser";
 import EvaluatorVisitor from "./evaluator.visitor";
@@ -23,7 +23,7 @@ describe("EvaluatorVisitor", () => {
 
 		env = new Environment([varX, varY, varFlag, varResult]);
 		evaluator = new EvaluatorVisitor(env, { timers: { deltaTimeMs: 10 } });
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	const parseAndEvaluate = (expression: string) => {

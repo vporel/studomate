@@ -19,12 +19,11 @@ export default class ConnectionsCommandsFactory {
 		newEdges: GrafcetEdgeType[],
 		nodes: GrafcetNodeType[],
 		grafcet: Grafcet,
-		viewManager: ViewManager,
+		existingEdges: GrafcetEdgeType[],
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgesToAdd: GrafcetEdgeType[];
 	} {
-		const existingEdges = viewManager.getEdges();
 		const edgesToAdd = newEdges.filter((e) => !existingEdges.find((ee) => ee.id === e.id));
 		const commands = [];
 		const connectionsToAdd = newEdges
@@ -60,7 +59,6 @@ export default class ConnectionsCommandsFactory {
 	static onEdgesRemove(
 		edgesIds: string[],
 		grafcet: Grafcet,
-		viewManager: ViewManager,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgesIdsToDelete: string[];
@@ -83,13 +81,13 @@ export default class ConnectionsCommandsFactory {
 			| Partial<GrafcetEdgeType["data"]>
 			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 		grafcet: Grafcet,
-		viewManager: ViewManager,
+		existingEdges: GrafcetEdgeType[],
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		edgeDataToApply: Partial<CustomEdgeData>;
 	} {
-		const edge = viewManager.getEdge(edgeId);
-		if (!edge) throw new Error("Edge not found in the flow instance");
+		const edge = existingEdges.find((e) => e.id === edgeId);
+		if (!edge) throw new Error(`Edge not found: ${edgeId}`);
 		if (typeof newData === "function") {
 			const prevData = edge.data as any;
 			newData = newData(prevData);

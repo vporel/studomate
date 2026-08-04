@@ -1,9 +1,9 @@
 import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
-import { GrafcetFactory } from "./utils/grafcet-factory";
-import { ProjectFactory } from "./utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "./utils/test-helpers";
-import { VariableFactory } from "./utils/variable-factory";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Full Pipeline Integration Test", () => {
 	beforeEach(() => {
@@ -45,7 +45,7 @@ describe("Full Pipeline Integration Test", () => {
 
 			// 3. CREATE PLC AND SIMULATE
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -91,7 +91,7 @@ describe("Full Pipeline Integration Test", () => {
 
 			// Compile, create PLC with 10ms scan (fast cycles to avoid timer precision issues)
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleError: (e) => {
 					cycleError = e;
 				},
@@ -177,7 +177,7 @@ describe("Full Pipeline Integration Test", () => {
 			expect(pipeline.analysis.issues).toEqual([]);
 			expect(pipeline.analysis.stepsVariables).toHaveLength(4); // X0, X1, X10, X11
 			expect(pipeline.preCompilation.errors).toEqual([]);
-			expect(Object.keys(pipeline.preCompilation.result!.grafcets)).toHaveLength(2);
+			expect(Object.keys(pipeline.preCompilation.result!.programs)).toHaveLength(2);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result!.routines).toHaveLength(2); // One routine per grafcet
 

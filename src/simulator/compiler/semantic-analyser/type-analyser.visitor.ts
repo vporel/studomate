@@ -34,31 +34,31 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 		return this.env?.getVariableTypeByName(node.value) ?? "unknown";
 	}
 
-	protected visitBooleanNode(node: BooleanNode): ExpectedNodeResultType {
+	protected visitBooleanNode(_node: BooleanNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 
-	protected visitNumberNode(node: NumberNode): ExpectedNodeResultType {
+	protected visitNumberNode(_node: NumberNode): ExpectedNodeResultType {
 		return "number";
 	}
 
-	protected visitStringNode(node: StringNode): ExpectedNodeResultType {
+	protected visitStringNode(_node: StringNode): ExpectedNodeResultType {
 		return "string";
 	}
 
-	protected visitUnaryExpressionNode(node: UnaryExpressionNode): ExpectedNodeResultType {
+	protected visitUnaryExpressionNode(_node: UnaryExpressionNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 
-	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): ExpectedNodeResultType {
+	protected visitArithmeticExpressionNode(_node: ArithmeticExpressionNode): ExpectedNodeResultType {
 		return "number";
 	}
 
-	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): ExpectedNodeResultType {
+	protected visitComparisonExpressionNode(_node: ComparisonExpressionNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 
-	protected visitLogicalExpressionNode(node: LogicalExpressionNode): ExpectedNodeResultType {
+	protected visitLogicalExpressionNode(_node: LogicalExpressionNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 
@@ -66,15 +66,15 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 		return this.visit(node.right);
 	}
 
-	protected visitIfControlNode(node: IfControlNode): ExpectedNodeResultType {
+	protected visitIfControlNode(_node: IfControlNode): ExpectedNodeResultType {
 		return "void";
 	}
 
-	protected visitTimerBlockNode(node: TimerNode): ExpectedNodeResultType {
+	protected visitTimerBlockNode(_node: TimerNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ExpectedNodeResultType {
+	protected visitTimerStringDeclarationNode(_node: TimerStringDeclarationNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 }

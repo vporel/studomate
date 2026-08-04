@@ -1,4 +1,4 @@
-import { Language } from "../../lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../../lexer/lexer";
 import Parser from "../../parser/parser";
 import { DivisionByZeroException } from "../evaluator/exceptions/division-by-zero.exception";
@@ -10,7 +10,7 @@ describe("SimplifierVisitor", () => {
 
 	beforeEach(() => {
 		simplifier = new SimplifierVisitor();
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	const parseAndSimplify = (expression: string) => {

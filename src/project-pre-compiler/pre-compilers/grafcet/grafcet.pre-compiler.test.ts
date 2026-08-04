@@ -4,7 +4,7 @@ import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
-import { Language } from "@/simulator/compiler/lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import ProjectPreCompilerError from "../../project.pre-compiler.error";
 import GrafcetPreCompiler from "./grafcet.pre-compiler";
@@ -26,7 +26,7 @@ describe("GrafcetPreCompiler", () => {
 			const step = new StepBuilder().id("step-1").number(1).initial(true).build();
 			const grafcet = new GrafcetBuilder().addStep(step).build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.steps.size).toBe(1);
 			expect(result.steps.get("step-1")).toBeDefined();
@@ -57,7 +57,7 @@ describe("GrafcetPreCompiler", () => {
 				)
 				.build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.steps.size).toBe(2);
 			expect(result.transitions.size).toBe(1);
@@ -84,7 +84,7 @@ describe("GrafcetPreCompiler", () => {
 				)
 				.build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.actions.size).toBe(1);
 			expect(result.actions.get("action-1")).toBeDefined();
@@ -111,7 +111,7 @@ describe("GrafcetPreCompiler", () => {
 				)
 				.build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.actions.size).toBe(0);
 			expect(errors).toEqual([]);
@@ -123,7 +123,7 @@ describe("GrafcetPreCompiler", () => {
 			const grafcet = new GrafcetBuilder().addStep(step1).addStep(step2).build();
 			const initialVariableCount = variables.length;
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.stepsMemos.size).toBe(2);
 			expect(result.stepsMemos.get("step-1")).toBeDefined();
@@ -137,7 +137,7 @@ describe("GrafcetPreCompiler", () => {
 			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const grafcet = new GrafcetBuilder().addStep(step1).addStep(step2).build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			const memo1 = result.stepsMemos.get("step-1")!.variable;
 			const memo2 = result.stepsMemos.get("step-2")!.variable;
@@ -149,7 +149,7 @@ describe("GrafcetPreCompiler", () => {
 			const grafcet = new GrafcetBuilder().addStep(step).build();
 			const initialCount = variables.length;
 
-			GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(variables.length).toBe(initialCount + 1);
 			expect(variables[initialCount].getName()).toBe("_GeneratedMemo_0");
@@ -159,33 +159,18 @@ describe("GrafcetPreCompiler", () => {
 			const step = new StepBuilder().id("step-1").number(1).build();
 			const grafcet = new GrafcetBuilder().addStep(step).build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			const memo = result.stepsMemos.get("step-1")!;
 			expect(memo.node.type).toBe("IDENTIFIER");
 			expect(memo.node.value).toBe("_GeneratedMemo_0");
 		});
 
-		// Step compilation doesn't throw errors during pre-compilation
-		// Step validation is done during the analysis phase, not pre-compilation phase
-		it.skip("collects errors from step compilation", () => {
-			const step = new StepBuilder().id("step-1").build();
-			(step.data as any).number = undefined;
-			const grafcet = new GrafcetBuilder().addStep(step).build();
-
-			GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
-
-			expect(errors.length).toBeGreaterThan(0);
-			expect(errors[0]).toBeInstanceOf(ProjectPreCompilerError);
-			expect(errors[0].source.sourceType).toBe("grafcet-step");
-			expect(errors[0].source.sourceId).toBe("step-1");
-		});
-
 		it("collects errors from transition compilation", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("((").build(); // Invalid syntax
 			const grafcet = new GrafcetBuilder().addTransition(transition).build();
 
-			GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(errors.length).toBeGreaterThan(0);
 			expect(errors[0]).toBeInstanceOf(ProjectPreCompilerError);
@@ -212,7 +197,7 @@ describe("GrafcetPreCompiler", () => {
 				)
 				.build();
 
-			GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(errors.length).toBeGreaterThan(0);
 			expect(errors[0]).toBeInstanceOf(ProjectPreCompilerError);
@@ -220,33 +205,12 @@ describe("GrafcetPreCompiler", () => {
 			expect(errors[0].source.sourceId).toBe("action-1");
 		});
 
-		// Step compilation doesn't throw errors - validation is done during analysis phase
-		it.skip("continues compilation after encountering errors", () => {
-			const step1 = new StepBuilder().id("step-1").number(1).build();
-			const step2 = new StepBuilder().id("step-2").build();
-			(step2.data as any).number = undefined; // Will cause error
-			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
-			const grafcet = new GrafcetBuilder()
-				.addStep(step1)
-				.addStep(step2)
-				.addTransition(transition)
-				.build();
-
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
-
-			// step1 and transition should be compiled successfully
-			expect(result.steps.has("step-1")).toBe(true);
-			expect(result.transitions.has("trans-1")).toBe(true);
-			// step2 should have an error
-			expect(errors.length).toBeGreaterThan(0);
-		});
-
-		it("works with English language", () => {
+		it("works with English dialect", () => {
 			const step = new StepBuilder().id("step-1").number(1).build();
 			const transition = new TransitionBuilder().id("trans-1").expression("TRUE").build();
 			const grafcet = new GrafcetBuilder().addStep(step).addTransition(transition).build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.EN, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.EN, errors);
 
 			expect(result.transitions.get("trans-1")).toBeDefined();
 			expect(errors).toEqual([]);
@@ -287,7 +251,7 @@ describe("GrafcetPreCompiler", () => {
 				)
 				.build();
 
-			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Language.FR, errors);
+			const result = GrafcetPreCompiler.preCompile(grafcet, variables, Dialect.FR, errors);
 
 			expect(result.steps.size).toBe(2);
 			expect(result.stepsMemos.size).toBe(2);

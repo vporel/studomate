@@ -6,22 +6,21 @@ import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/connections-rem
 import ElementsAddCommand from "@/schemas/grafcet/commands/elements-add.command";
 import ElementsRemoveCommand from "@/schemas/grafcet/commands/elements-remove.command";
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
+import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
-import ViewManager from "../managers/view.manager";
 
 export default class ElementsCommandsFactory {
 	static onNodesAdd(
 		newNodes: GrafcetNodeType[],
 		grafcet: Grafcet,
-		viewManager: ViewManager,
+		existingNodes: GrafcetNodeType[],
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesToAdd: GrafcetNodeType[];
 	} {
-		const existingNodes = viewManager.getNodes();
 		const nodesToAdd = newNodes
 			.filter(
 				(n) =>
@@ -61,7 +60,7 @@ export default class ElementsCommandsFactory {
 	static onNodesRemove(
 		nodesIds: string[],
 		grafcet: Grafcet,
-		viewManager: ViewManager,
+		existingNodes: GrafcetNodeType[],
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesIdsToDelete: string[];
@@ -71,7 +70,7 @@ export default class ElementsCommandsFactory {
 			(c) => nodesIds.includes(c.source.id) || nodesIds.includes(c.target.id),
 		);
 		const nodesToRemove = nodesIds
-			.map((id) => viewManager.getNode(id))
+			.map((id) => existingNodes.find((n) => n.id === id))
 			.filter((n): n is GrafcetNodeType => !!n)
 			.map((node) => ({
 				type: node.type,
@@ -97,7 +96,7 @@ export default class ElementsCommandsFactory {
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
 
 		grafcet: Grafcet,
-		viewManager: ViewManager,
+		dialect: Dialect = Dialect.FR,
 	): { commands: AbstractGrafcetCommand<any>[]; nodeDataToUpdate?: GrafcetNodeType["data"] } {
 		const element = grafcet.getElementById(nodeId);
 		if (!element) return { commands: [] };
@@ -107,7 +106,10 @@ export default class ElementsCommandsFactory {
 		const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
 		const elementcopy = element.copy();
 		elementcopy.updateData(newData);
-		const issues = analyser.analyseIsolated(elementcopy, { allowEmptyContent: true });
+		const issues = analyser.analyseIsolated(elementcopy, {
+			allowEmptyContent: true,
+			dialect,
+		});
 		if (issues.filter((issue) => issue.severity === "error").length > 0) return { commands: [] };
 		const fullModifiedData = { ...element.data, ...newData };
 		const commands = [];
@@ -132,7 +134,6 @@ export default class ElementsCommandsFactory {
 	static onNodeChange(
 		changes: NodeChange[],
 		grafcet: Grafcet,
-		viewManager: ViewManager,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesIdsToUpdate: Set<string>;

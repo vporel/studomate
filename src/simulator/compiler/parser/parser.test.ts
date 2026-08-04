@@ -1,4 +1,4 @@
-import { Language } from "../lexer/language.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "../lexer/lexer";
 import { TokenType } from "../lexer/tokens/tokens";
 import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primary-or-left-parenthese.exception";
@@ -10,7 +10,7 @@ describe("Parser", () => {
 	let lexer: Lexer;
 
 	beforeEach(() => {
-		lexer = new Lexer(Language.FR);
+		lexer = new Lexer(Dialect.FR);
 	});
 
 	const parseExpression = (input: string) => {

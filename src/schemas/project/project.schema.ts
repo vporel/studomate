@@ -1,52 +1,124 @@
-﻿import { APP_VERSION } from "@/ui/constants";
+﻿import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
+import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "../utils/ids";
 import Variable from "../variable/variable.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
+/**
+ * Version de la **forme d'un projet**. À incrémenter quand la structure change, en ajoutant
+ * la migration correspondante.
+ *
+ * Déclarée ici, dans le schéma, et non dans la couche persistance : c'est le projet qui
+ * définit sa propre forme. La persistance la lit pour savoir quelles migrations appliquer —
+ * dépendance dans ce sens, jamais l'inverse.
+ *
+ * Portée **par chaque projet**, et non par le stockage : deux projets de versions différentes
+ * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
+ * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
+ */
+export const PROJECT_SCHEMA_VERSION = 1;
+
 export default class Project {
 	id: string;
-	appVersion: string;
+	schemaVersion: number;
 	name: string;
 	creationDate: Date;
 	lastModificationDate: Date;
 	author?: string;
+	/**
+	 * Dialecte dans lequel les expressions du projet sont écrites (`ET` ou `AND`).
+	 *
+	 * Propriété du **projet**, et non préférence de l'utilisateur : les expressions sont
+	 * stockées en texte, donc le dialecte qui les a écrites doit voyager avec elles. Sans
+	 * quoi un projet rédigé en anglais deviendrait illisible chez quelqu'un réglé en français.
+	 */
+	dialect: Dialect;
 	variables: Variable[];
-	grafcets: Record<string, Grafcet>;
+	/**
+	 * Les programmes du projet, toutes notations confondues. Le niveau projet ne connaît
+	 * que `Program` ; chaque notation garde ses spécificités chez elle.
+	 */
+	programs: Record<string, Program>;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;
-		this.appVersion = APP_VERSION;
+		this.schemaVersion = PROJECT_SCHEMA_VERSION;
 		this.name = name;
 		this.creationDate = new Date();
 		this.lastModificationDate = new Date();
 		this.author = author;
+		this.dialect = Dialect.FR;
 		this.variables = [];
-		this.grafcets = {};
+		this.programs = {};
+	}
+
+	//=============== PROGRAMMES, TOUTES NOTATIONS ===============
+
+	getProgram(programId: string): Program | undefined {
+		return this.programs[programId];
+	}
+
+	getProgramsOfType<T extends Program>(type: ProgramType): Record<string, T> {
+		const result: Record<string, T> = {};
+		for (const id in this.programs) {
+			if (this.programs[id].type === type) result[id] = this.programs[id] as T;
+		}
+		return result;
+	}
+
+	addProgram(program: Program): void {
+		if (this.programs[program.id]) {
+			throw new Error(`Program with id ${program.id} already exists in the project.`);
+		}
+		this.programs[program.id] = program;
+		this.touch();
+	}
+
+	updateProgram(programId: string, program: Program) {
+		this.programs[programId] = program;
+		this.touch();
+	}
+
+	deleteProgram(programId: string) {
+		delete this.programs[programId];
+		this.touch();
+	}
+
+	//=============== GRAFCET ===============
+	//Accesseurs typés, pour que le code propre au GRAFCET n'ait pas à transtyper partout
+
+	get grafcets(): Record<string, Grafcet> {
+		return this.getProgramsOfType<Grafcet>("grafcet");
+	}
+
+	getGrafcet(grafcetId: string): Grafcet | undefined {
+		const program = this.programs[grafcetId];
+		return program?.type === "grafcet" ? (program as Grafcet) : undefined;
 	}
 
 	createGrafcet(name: string, format: GrafcetFormat): Grafcet {
-		const grafcetId = createRandomId();
-		this.grafcets[grafcetId] = new Grafcet(grafcetId, name, format);
-		this.touch();
-		return this.grafcets[grafcetId];
+		const grafcet = new Grafcet(createRandomId(), name, format);
+		this.addProgram(grafcet);
+		return grafcet;
 	}
 
-	addGrafcet(grafcet: Grafcet): void {
-		if (this.grafcets[grafcet.id]) {
-			throw new Error(`Grafcet with id ${grafcet.id} already exists in the project.`);
-		}
-		this.grafcets[grafcet.id] = grafcet;
-	}
-
-	updateGrafcet(grafcetId: string, grafcet: Grafcet) {
-		this.grafcets[grafcetId] = grafcet;
-		this.touch();
-	}
-
-	deleteGrafcet(grafcetId: string) {
-		delete this.grafcets[grafcetId];
+	/**
+	 * Change le dialecte du projet en traduisant les mots-clés de toutes les expressions.
+	 *
+	 * Sans cette traduction, passer de FR à EN rendrait chaque `ET` méconnaissable : l'analyse
+	 * le prendrait pour un identifiant inconnu.
+	 */
+	setDialect(dialect: Dialect): void {
+		if (dialect === this.dialect) return;
+		const from = this.dialect;
+		Object.values(this.programs).forEach((program) => {
+			if (program.type === "grafcet") {
+				(program as Grafcet).translateExpressionsKeywords(from, dialect);
+			}
+		});
+		this.dialect = dialect;
 		this.touch();
 	}
 
@@ -57,8 +129,9 @@ export default class Project {
 	copy(): Project {
 		const newProject = Object.assign(new Project("", "", ""), this);
 		newProject.variables = this.variables.map((v) => v.copy());
-		for (const grafcetId in this.grafcets) {
-			newProject.grafcets[grafcetId] = this.grafcets[grafcetId].copy();
+		newProject.programs = {};
+		for (const programId in this.programs) {
+			newProject.programs[programId] = this.programs[programId].copy();
 		}
 		return newProject;
 	}
@@ -67,15 +140,23 @@ export default class Project {
 		const jsonParsed = JSON.parse(json);
 		const project = Object.assign(new Project("", "", ""), jsonParsed);
 		project.creationDate = new Date(jsonParsed.creationDate);
+		//Les projets antérieurs au dialecte configurable ont tous été écrits en français
+		project.dialect = jsonParsed.dialect ?? Dialect.FR;
 		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>
 			Variable.createFromJSON(JSON.stringify(v)),
 		);
-		const grafcets: Record<string, Grafcet> = {};
-		for (const grafcetId in jsonParsed.grafcets) {
-			grafcets[grafcetId] = Grafcet.createFromJSON(JSON.stringify(jsonParsed.grafcets[grafcetId]));
+		const programs: Record<string, Program> = {};
+		for (const programId in jsonParsed.programs) {
+			const raw = jsonParsed.programs[programId];
+			//Un seul type pour l'instant ; c'est ici que se branchera la prochaine notation
+			if (raw?.type === "grafcet") {
+				programs[programId] = Grafcet.createFromJSON(JSON.stringify(raw));
+			} else {
+				console.error(`Programme de type inconnu ignoré : ${raw?.type}`);
+			}
 		}
-		project.grafcets = grafcets;
+		project.programs = programs;
 		return project;
 	}
 }

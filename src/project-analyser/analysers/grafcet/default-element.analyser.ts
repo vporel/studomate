@@ -23,7 +23,7 @@ export default class DefaultElementAnalyser extends ElementAnalyser<Element<any>
 	analyseInContext(
 		_element: Element<any>,
 		_grafcet: Grafcet,
-		variables: Variable[],
+		_variables: Variable[],
 	): ProjectAnalyserIssue[] {
 		return [];
 	}

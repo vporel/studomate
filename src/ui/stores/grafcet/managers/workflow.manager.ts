@@ -1,8 +1,9 @@
-import { ActionData } from "@/schemas/grafcet/action.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import EdgesFactory from "../factories/edges.factory";
+import NodesFactory from "../factories/nodes.factory";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.command";
 import { JUNCTION_TYPES } from "@/schemas/grafcet/element.schema";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
-import { TransitionData } from "@/schemas/grafcet/transition.schema";
 import { createRandomId } from "@/schemas/utils/ids";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/ui/utils/grafcet/grafcet-utils";
@@ -13,7 +14,6 @@ import {
 	NodeChange,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
-import { VariablesMnemonicsChanges } from "../../project/managers/variables.manager";
 import ConnectionsCommandsFactory from "../factories/connections-commands.factory";
 import ElementsCommandsFactory from "../factories/elements-commands.factory";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
@@ -52,7 +52,6 @@ export default class WorkflowManager {
 	handleNodesChange(changes: NodeChange<GrafcetNodeType>[]): void {
 		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
-		viewManager.throwErrorIfNotReady();
 		//We filter the changes
 		//The remove operation is handle by the method onNodesAndEdgesRemove
 		const changesToAccept = changes.filter((change) => change.type != "remove");
@@ -72,11 +71,7 @@ export default class WorkflowManager {
 		//If the changes contain a resizing change with resizing true
 		//we don't execute the position change command, because the position will be updated during the resizing and we want to avoid creating unnecessary commands
 		if (changesToAccept.some((c) => c.type === "dimensions" && c.resizing)) return;
-		const { commands, nodesIdsToUpdate } = ElementsCommandsFactory.onNodeChange(
-			changesToAccept,
-			grafcet,
-			viewManager,
-		);
+		const { commands, nodesIdsToUpdate } = ElementsCommandsFactory.onNodeChange(changesToAccept, grafcet);
 		const { commands: edgesCommands, edgesDataToApply: edgesDataToUpdate } =
 			ConnectionsCommandsFactory.onNodesMovedOrResized(
 				Array.from(nodesIdsToUpdate),
@@ -113,30 +108,25 @@ export default class WorkflowManager {
 		newData:
 			| Partial<GrafcetNodeType["data"]>
 			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
-		options?: { saveCommands?: boolean; edgesToDelete?: string[] },
+		options?: { edgesToDelete?: string[] },
 	): void {
-		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
-		viewManager.throwErrorIfNotReady();
 		const { commands, nodeDataToUpdate } = ElementsCommandsFactory.onNodeDataChange(
 			nodeId,
 			newData,
 			grafcet,
-			viewManager,
+			this.getStoreState().getDialect(),
 		);
 		if (!nodeDataToUpdate) return;
 		if (options?.edgesToDelete) {
 			commands.push(
-				...ConnectionsCommandsFactory.onEdgesRemove(options.edgesToDelete, grafcet, viewManager)
-					.commands,
+				...ConnectionsCommandsFactory.onEdgesRemove(options.edgesToDelete, grafcet).commands,
 			);
 			this.getStoreState().viewManager.removeNodesAndEdges([], options.edgesToDelete);
 		}
 		const setNode = this.getNodeUpdater(this.setStoreState);
 		setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...nodeDataToUpdate } }) as GrafcetNodeType);
-		this.getStoreState().commandsStackManager.executeOperation(commands, {
-			saveCommands: options?.saveCommands,
-		});
+		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 
 	deleteNodes(nodesIds: string[]): void {
@@ -145,6 +135,8 @@ export default class WorkflowManager {
 
 	handleNewConnection(connection: XYFlowConnection): void {
 		const viewManager = this.getStoreState().viewManager;
+		//Seule opération de ce manager à déréférencer réellement l'instance React Flow
+		//(géométrie de la connexion). Elle ne peut venir que d'un geste sur le flow monté.
 		viewManager.throwErrorIfNotReady();
 		const connectionId = createRandomId();
 		const grafcetConnection = grafcetConnectionFromXYFlowConnectionOrEdge(
@@ -161,8 +153,6 @@ export default class WorkflowManager {
 	}
 
 	handleEdgesChange(changes: EdgeChange<GrafcetEdgeType>[]): void {
-		const viewManager = this.getStoreState().viewManager;
-		viewManager.throwErrorIfNotReady();
 		//We filter the changes
 		//The remove operation is handle by the method onNodesAndEdgesRemove
 		const changesToAccept = changes.filter((change) => change.type != "remove");
@@ -181,15 +171,13 @@ export default class WorkflowManager {
 			| Partial<GrafcetEdgeType["data"]>
 			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 	): void {
-		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
-		viewManager.throwErrorIfNotReady();
 		const { commands, edgeDataToApply: newDataToApply } = ConnectionsCommandsFactory.onEdgeDataChange(
 			this.getEdgesUpdater(this.setStoreState),
 			edgeId,
 			newData,
 			grafcet,
-			viewManager,
+			this.getStoreState().edges,
 		);
 		if (commands.length > 0) {
 			this.setStoreState(({ edges }) => ({
@@ -208,83 +196,61 @@ export default class WorkflowManager {
 	addNodesAndEdges(newNodes: GrafcetNodeType[], newEdges: GrafcetEdgeType[]): void {
 		const grafcet = this.getStoreState().grafcet;
 		const viewManager = this.getStoreState().viewManager;
-		viewManager.throwErrorIfNotReady();
 		const { commands: nodesCommands, nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
 			newNodes,
 			grafcet,
-			viewManager,
+			this.getStoreState().nodes,
 		);
 		const { commands: edgesCommands, edgesToAdd } = ConnectionsCommandsFactory.onEdgesAdd(
 			newEdges,
 			nodesToAdd,
 			grafcet,
-			viewManager,
+			this.getStoreState().edges,
 		);
 		viewManager.addNodesAndEdges(nodesToAdd, edgesToAdd);
 		this.getStoreState().commandsStackManager.executeOperation([...nodesCommands, ...edgesCommands]);
 	}
 
-	deleteNodesAndEdges(nodesIds: string[], edgesIds: string[], options?: { saveCommands?: boolean }): void {
+	deleteNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
 		const grafcet = this.getStoreState().grafcet;
 		const viewManager = this.getStoreState().viewManager;
-		viewManager.throwErrorIfNotReady();
 		const {
 			commands: commandsFromNodes,
 			nodesIdsToDelete,
 			edgesIdsToDelete: list1EdgesIdsToDelete,
-		} = ElementsCommandsFactory.onNodesRemove(nodesIds, grafcet, viewManager);
+		} = ElementsCommandsFactory.onNodesRemove(nodesIds, grafcet, this.getStoreState().nodes);
 		const { commands: commandsFromEdges, edgesIdsToDelete: list2EdgesIdsToDelete } =
 			ConnectionsCommandsFactory.onEdgesRemove(
 				edgesIds.filter((id) => !list1EdgesIdsToDelete.includes(id)),
 				grafcet,
-				viewManager,
 			);
 		viewManager.removeNodesAndEdges(nodesIdsToDelete, [
 			...list1EdgesIdsToDelete,
 			...list2EdgesIdsToDelete,
 		]);
-		this.getStoreState().commandsStackManager.executeOperation(
-			[...commandsFromNodes, ...commandsFromEdges],
-			{ saveCommands: options?.saveCommands },
-		);
+		this.getStoreState().commandsStackManager.executeOperation([
+			...commandsFromNodes,
+			...commandsFromEdges,
+		]);
 	}
 
-	onVariablesMnemonicsChanges(changes: VariablesMnemonicsChanges): void {
-		//Get all the nodes that can be impacted by the change (the ones that have in their data the mnemonic of a variable)
-		const nodesNewData: { id: string; newData: any }[] = this.getStoreState()
-			.nodes!.map((n) => {
-				if (n.type === "transition") {
-					const transitionData = n.data as TransitionData;
-					const expression = transitionData.expression;
-					const impacted =
-						expression &&
-						Object.values(changes).some(({ oldMnemonic }) => expression.includes(oldMnemonic));
-					if (!impacted) return null;
-					let newExpression = expression;
-					Object.values(changes).forEach(({ oldMnemonic, newMnemonic }) => {
-						newExpression = newExpression.split(oldMnemonic).join(newMnemonic);
-					});
-					return { id: n.id, newData: { expression: newExpression } };
-				} else if (n.type === "action") {
-					const actionData = n.data as ActionData;
-					const expression = actionData.expression;
-					const impacted =
-						expression &&
-						Object.values(changes).some(({ oldMnemonic }) => expression.includes(oldMnemonic));
-					if (!impacted) return null;
-					let newExpression = expression;
-					Object.values(changes).forEach(({ oldMnemonic, newMnemonic }) => {
-						newExpression = newExpression.split(oldMnemonic).join(newMnemonic);
-					});
-					return { id: n.id, newData: { expression: newExpression } };
-				}
-				return null;
-			})
-			.filter((n) => n !== null);
-		nodesNewData.forEach(({ id, newData }) => {
-			//We don't want to save a grafcet command as the variables changes are handled by the project
-			this.updateNodeData(id, newData, { saveCommands: false });
-		});
+
+	/**
+	 * Adopts a grafcet rewritten outside of this store, typically by a project-level command
+	 * (renaming a variable rewrites the expressions referencing it).
+	 *
+	 * Same mechanism as the commands stack: the view is recomputed from the grafcet, which
+	 * preserves the selection and the identity of the untouched nodes.
+	 *
+	 * No command is pushed on the grafcet stack: the operation is already undoable as a
+	 * whole through the project command that triggered it.
+	 */
+	adoptGrafcet(grafcet: Grafcet): void {
+		this.setStoreState((state) => ({
+			grafcet,
+			nodes: NodesFactory.syncNodes(state.nodes!, grafcet),
+			edges: EdgesFactory.syncEdges(state.edges!, grafcet),
+		}));
 	}
 
 	//Specific methods for junction management

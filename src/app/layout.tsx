@@ -1,5 +1,5 @@
 import MobileGuard from "@/ui/components/MobileGuard";
-import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/ui/constants";
+import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/app-info";
 import { ThemeProvider } from "@/ui/theme/ThemeContext";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

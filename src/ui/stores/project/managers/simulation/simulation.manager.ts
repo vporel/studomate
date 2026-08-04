@@ -1,37 +1,18 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
 import ProjectAnalyser, { ProjectAnalysisResult } from "@/project-analyser/project.analyser";
 import ProjectCompiler, { ProjectCompilationResult } from "@/project-compiler/project.compiler";
+import { isPreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
-import VariablesMapper from "@/simulator/bridge/variables.mapper";
 import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
-import { Environment } from "@/simulator/compiler/environment/environment";
-import EvaluatorVisitor from "@/simulator/compiler/interpreter/evaluator/evaluator.visitor";
 import PLC from "@/simulator/core/plc/plc";
-import PLCVariable from "@/simulator/core/plc/plc-variable";
-import { toast } from "react-toastify";
+import ExpressionsWatcher from "@/simulator/runtime/expressions-watcher";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 	SimulationVariableState,
 } from "../../project.store";
 import { ProjectMode } from "../../ProjectMode.enum";
-
-export type AnalysisGrafcetIssues = {
-	overall: string[];
-	elements: Record<string, string[]>;
-};
-
-export type AnalysisIssues = {
-	project: string[];
-	grafcets: Record<string, AnalysisGrafcetIssues>;
-};
-
-export function emptyAnalysisIssues(): AnalysisIssues {
-	return {
-		project: [],
-		grafcets: {},
-	};
-}
+import SimulationNotifier from "./simulation.notifier";
 
 export default class SimulationManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -40,24 +21,21 @@ export default class SimulationManager {
 	private plc: PLC | null = null;
 
 	/**
-	 * Any expression can be registered to be evaluated during simulation
-	 * This functionality will be used ot show for example if a transition expression is currently true or false
-	 * These expression are not evaluated in the simulator context, but in the simulation manager
-	 * The expressions are registered by the simulation manager
-	 * and the values can be retrieved in the UI using the expression id
-	 * For a transition, the expression id is the transition id
-	 * The value can be undefined if the plc has not started or if an error occurs during the evaluation
+	 * Expressions observées pendant la simulation, en marge du programme : sert par exemple à
+	 * montrer si la réceptivité d'une transition est vraie à cet instant.
 	 */
-	private evaluableExpressions: Record<string, ASTNode> = {};
+	private expressionsWatcher: ExpressionsWatcher | null = null;
 
-	/*
-	 * The value can be undefined if the plc has not started or if an error occurs during the evaluation
-	 */
-	private evaluableExpressionsValues: Record<string, any | undefined> = {};
+	private notifier: SimulationNotifier;
 
-	constructor(setStoreState: ProjectStoreSetFunction, getStoreState: ProjectStoreGetFunction) {
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+		notifier: SimulationNotifier,
+	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
+		this.notifier = notifier;
 	}
 
 	/**
@@ -74,17 +52,11 @@ export default class SimulationManager {
 		const errors = projectAnalysisResult.issues.filter((i) => i.severity === "error");
 		const warnings = projectAnalysisResult.issues.filter((i) => i.severity === "warning");
 
-		const pluralTotal = projectAnalysisResult.totalAnalysedElements > 1;
-		const pluralErrors = errors.length > 1;
-		const pluralWarnings = warnings.length > 1;
-		const toastFunction =
-			errors.length > 0 ? toast.error : warnings.length > 0 ? toast.warn : toast.success;
-
-		toastFunction(
-			`Analyse terminée : ${projectAnalysisResult.totalAnalysedElements} élément${pluralTotal ? "s" : ""} analysé${pluralTotal ? "s" : ""}, 
-				${errors.length === 0 ? "aucune" : errors.length} erreur${pluralErrors ? "s" : ""} et 
-				${warnings.length === 0 ? "aucun" : warnings.length} avertissement${pluralWarnings ? "s" : ""} trouvé${errors.length + warnings.length > 1 ? "s" : ""}.`,
-		);
+		this.notifier.analysisCompleted({
+			analysedElements: projectAnalysisResult.totalAnalysedElements,
+			errors: errors.length,
+			warnings: warnings.length,
+		});
 
 		this.setStoreState(() => ({
 			analysisHasErrors: errors.length > 0,
@@ -114,36 +86,44 @@ export default class SimulationManager {
 		const projectPreCompilationResult = ProjectPreCompiler.preCompile(
 			project,
 			projectAnalysisResult.stepsVariables,
+			project.dialect,
 		);
 		if (projectPreCompilationResult.errors.length > 0) {
-			toast.error(
-				`Impossible de lancer la simulation : ${projectPreCompilationResult.errors.length} erreur${projectPreCompilationResult.errors.length > 1 ? "s" : ""} lors de la pré-compilation.`,
-			);
+			this.notifier.simulationCouldNotStart({
+				step: "pre-compilation",
+				errorsCount: projectPreCompilationResult.errors.length,
+			});
 			console.error("Errors during project pre-compilation:", projectPreCompilationResult.errors);
 			return;
 		}
 
 		//We register each transition expression to be evaluated during simulation,
 		// with the transition id as expression id
-		this.evaluableExpressions = {};
-		Object.values(projectPreCompilationResult.result!.grafcets).forEach((g) =>
-			g.transitions.entries().forEach(([transitionId, transition]) => {
-				//We use the pre-compiled transition
-				//Which is already an analysed an simplified AST node
-				this.evaluableExpressions[transitionId] = transition.node;
-			}),
-		);
+		//Fonctionnalité propre au GRAFCET : afficher l'état des réceptivités. On ne s'intéresse
+		//donc qu'aux programmes de cette notation, sans supposer qu'il n'y en a pas d'autres.
+		const watchedExpressions = new Map<string, ASTNode>();
+		Object.values(projectPreCompilationResult.result!.programs)
+			.filter(isPreCompiledGrafcet)
+			.forEach((g) =>
+				g.transitions.entries().forEach(([transitionId, transition]) => {
+					//L'AST pré-compilé est déjà analysé et simplifié
+					watchedExpressions.set(transitionId, transition.node);
+				}),
+			);
+		this.expressionsWatcher = new ExpressionsWatcher(this.getStoreState().plcConfig.scanTimeMs);
+		this.expressionsWatcher.watch(watchedExpressions);
 
 		//Compile the project
 		const projectCompilationResult = ProjectCompiler.compile(projectPreCompilationResult.result!);
 		if (projectCompilationResult.errors.length > 0) {
-			toast.error(
-				`Impossible de lancer la simulation : ${projectCompilationResult.errors.length} erreur${projectCompilationResult.errors.length > 1 ? "s" : ""} lors de la compilation.`,
-			);
+			this.notifier.simulationCouldNotStart({
+				step: "compilation",
+				errorsCount: projectCompilationResult.errors.length,
+			});
 			console.error("Errors during project compilation:", projectCompilationResult.errors);
 			return;
 		}
-		toast.success("Compilation terminée, lancement de la simulation...");
+		this.notifier.simulationStarting();
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -178,40 +158,19 @@ export default class SimulationManager {
 						value: v.getValue(),
 					};
 				});
-				this.evaluationExpressions(variablesSnapshot);
+				this.expressionsWatcher?.evaluate(variablesSnapshot);
 				this.setStoreState(() => ({
 					simulationVariablesStates: variablesState,
+					evaluableExpressionsValues: this.expressionsWatcher?.getValuesSnapshot() ?? {},
 				}));
 			},
-			onCycleError: (error) => {
-				toast.error(`Arrêt de la simulation. Erreur lors de l'exécution du cycle PLC.`);
+			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
+			onCycleError: () => {
+				this.notifier.simulationCrashed();
 				this.setDesignMode();
 			},
 		});
 		return plc;
-	}
-
-	private evaluationExpressions(plcVariablesSnapshot: readonly PLCVariable[]): void {
-		//Create an environment with the current PLC variables values
-		const environment = new Environment(plcVariablesSnapshot.map(VariablesMapper.plcToEnv));
-		Object.entries(this.evaluableExpressions).forEach(([expressionId, expressionNode]) => {
-			try {
-				const evaluator = new EvaluatorVisitor(environment, {
-					timers: {
-						deltaTimeMs: this.getStoreState().plcConfig.scanTimeMs,
-					},
-				});
-				const value = evaluator.visit(expressionNode);
-				this.evaluableExpressionsValues[expressionId] = value;
-			} catch (e) {
-				this.evaluableExpressionsValues[expressionId] = undefined;
-				console.error(`Error evaluating expression ${expressionId}:`, e);
-			}
-		});
-	}
-
-	public getEvaluableExpressionValue(expressionId: string): any | undefined {
-		return this.evaluableExpressionsValues[expressionId];
 	}
 
 	private stopSimulation(): void {
@@ -224,10 +183,11 @@ export default class SimulationManager {
 		//Reset simulation variables states
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
+			evaluableExpressionsValues: {},
 		}));
 
-		//Reset evaluable expressions values
-		this.evaluableExpressionsValues = {};
+		this.expressionsWatcher?.clear();
+		this.expressionsWatcher = null;
 	}
 
 	public setPhysicalInputValue(variableId: string, value: any): void {

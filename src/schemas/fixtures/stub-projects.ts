@@ -28,6 +28,6 @@ export function getStubProjectCoffeeMachine(): Project {
 		new Variable(createRandomId(), "DISTRIBUER_GOBELET", "logic-output", "BOOL"),
 		new Variable(createRandomId(), "REMPLISSAGE", "logic-output", "BOOL"),
 	);
-	project.addGrafcet(getStubGrafcetCoffeMachine());
+	project.addProgram(getStubGrafcetCoffeMachine());
 	return project;
 }

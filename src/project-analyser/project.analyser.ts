@@ -1,4 +1,6 @@
 import Grafcet from "../schemas/grafcet/grafcet.schema";
+import { ProgramType } from "../schemas/program/program.schema";
+import ProgramAnalyser from "./program.analyser";
 import Project from "../schemas/project/project.schema";
 import Variable from "../schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
@@ -14,6 +16,23 @@ export type ProjectAnalysisResult = {
 	stepsVariables: Variable[];
 };
 
+/**
+ * Une entrée par notation. En ajouter une consiste à écrire son analyseur et à l'inscrire
+ * ici — rien d'autre ne change dans ce fichier.
+ */
+const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
+	grafcet: {
+		analyse: (grafcet: Grafcet, project: Project) => {
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+			return {
+				issues: result.issues,
+				generatedVariables: result.stepsVariables,
+				analysedElementsCount: grafcet.getAllElements().length,
+			};
+		},
+	},
+};
+
 export default class ProjectAnalyser {
 	/**
 	 * Analyses an entire project for structural and business rule violations.
@@ -25,23 +44,28 @@ export default class ProjectAnalyser {
 	 */
 	static analyse(project: Project): ProjectAnalysisResult {
 		const issues: ProjectAnalyserIssue[] = [];
-		const stepsVariablesByGrafcet = new Map<string, Variable[]>();
+		const generatedVariablesByProgram = new Map<string, Variable[]>();
 
 		let totalAnalysedElements = 0;
 
-		for (const grafcet of Object.values(project.grafcets)) {
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+		for (const program of Object.values(project.programs)) {
+			const analyser = PROGRAM_ANALYSERS[program.type];
+			if (!analyser) {
+				console.error(`Aucun analyseur pour la notation "${program.type}"`);
+				continue;
+			}
+			const result = analyser.analyse(program, project);
 			issues.push(...result.issues);
-			stepsVariablesByGrafcet.set(grafcet.id, result.stepsVariables);
-			totalAnalysedElements += grafcet.getAllElements().length;
+			generatedVariablesByProgram.set(program.id, result.generatedVariables);
+			totalAnalysedElements += result.analysedElementsCount;
 		}
 
-		issues.push(...this.checkDuplicateStepNumbers(stepsVariablesByGrafcet, project));
+		issues.push(...this.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
 
 		return {
 			totalAnalysedElements,
 			issues,
-			stepsVariables: [...stepsVariablesByGrafcet.values()].flatMap((vars) => vars),
+			stepsVariables: [...generatedVariablesByProgram.values()].flatMap((vars) => vars),
 		};
 	}
 
@@ -52,10 +76,10 @@ export default class ProjectAnalyser {
 	 * Emits one project-level issue per duplicated number, listing the involved grafcet names.
 	 */
 	private static checkDuplicateStepNumbers(
-		stepsVariablesByGrafcet: Map<string, Variable[]>,
+		generatedVariablesByProgram: Map<string, Variable[]>,
 		project: Project,
 	): ProjectAnalyserIssue[] {
-		const allMnemonics = [...stepsVariablesByGrafcet.values()].flatMap((vars) =>
+		const allMnemonics = [...generatedVariablesByProgram.values()].flatMap((vars) =>
 			vars.map((v) => v.mnemonic),
 		);
 
@@ -64,8 +88,8 @@ export default class ProjectAnalyser {
 
 		// Build mnemonic → grafcet names mapping
 		const mnemonicToGrafcetNames = new Map<string, string[]>();
-		for (const [grafcetId, vars] of stepsVariablesByGrafcet) {
-			const grafcetName = (project.grafcets as Record<string, Grafcet>)[grafcetId].name;
+		for (const [grafcetId, vars] of generatedVariablesByProgram) {
+			const grafcetName = project.getProgram(grafcetId)?.name ?? grafcetId;
 			for (const variable of vars) {
 				if (!mnemonicToGrafcetNames.has(variable.mnemonic))
 					mnemonicToGrafcetNames.set(variable.mnemonic, []);

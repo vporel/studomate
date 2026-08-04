@@ -1,8 +1,8 @@
-import { Language } from "@/simulator/compiler/lexer/language.enum";
-import { GrafcetFactory } from "./utils/grafcet-factory";
-import { ProjectFactory } from "./utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "./utils/test-helpers";
-import { VariableFactory } from "./utils/variable-factory";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
+import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "@tests/utils/test-helpers";
+import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("OR Junction Integration Tests", () => {
 	beforeEach(() => {
@@ -50,7 +50,7 @@ describe("OR Junction Integration Tests", () => {
 			let cycleError: Error | null = null;
 			let q0WasEverTrue = false;
 			let q1WasEverTrue = false;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleEnd: (p) => {
 					if (getVariableValue(p, "Q0")) q0WasEverTrue = true;
 					if (getVariableValue(p, "Q1")) q1WasEverTrue = true;
@@ -83,7 +83,7 @@ describe("OR Junction Integration Tests", () => {
 			let cycleError: Error | null = null;
 			let q0WasEverTrue = false;
 			let q1WasEverTrue = false;
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleEnd: (p) => {
 					if (getVariableValue(p, "Q0")) q0WasEverTrue = true;
 					if (getVariableValue(p, "Q1")) q1WasEverTrue = true;
@@ -118,7 +118,7 @@ describe("OR Junction Integration Tests", () => {
 			const phase = { current: 1 };
 			const fired = { p1Q0: false, p1Q1: false, p2Q0: false, p2Q1: false };
 
-			const plc = compileToPLC(project, 10, Language.FR, {
+			const plc = compileToPLC(project, 10, Dialect.FR, {
 				onCycleEnd: (p) => {
 					if (phase.current === 1) {
 						if (getVariableValue(p, "Q0")) fired.p1Q0 = true;
