@@ -1,3 +1,4 @@
+import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-source.helper";
 import StepReferralTargetHelper from "@/schemas/grafcet/helpers/step-referral-target.helper";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -82,6 +83,42 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 						`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
 					),
 				);
+			} else {
+				const predecessorSteps = StepReferralSourceHelper.getPredecessorSteps(
+					stepReferralSource.id,
+					grafcet,
+				);
+				if (predecessorSteps.length === 0) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							`Le tenant n'est précédé par aucune étape.`,
+						),
+					);
+					return issues;
+				}
+				if (predecessorSteps.length > 1) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							`Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.`,
+						),
+					);
+					return issues;
+				}
+				const sourceStep = predecessorSteps[0];
+
+				if (!sourceStep || sourceStep.data.number !== stepReferral.data.sourceStepNumber) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							source,
+							`L'étape source référencée ne correspond pas à l'étape liée au tenant.`,
+						),
+					);
+				}
 			}
 		}
 

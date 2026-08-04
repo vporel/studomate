@@ -2,7 +2,10 @@
 import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData, JunctionHandle } from "./junction.schema";
 import { XYPosition } from "./shared-types";
 
-export const JUNCTION_OR_END_HANDLE_PIVOT_TYPES = ["step"] as const satisfies readonly ElementType[];
+export const JUNCTION_OR_END_HANDLE_PIVOT_TYPES = [
+	"step",
+	"step-referral-source",
+] as const satisfies readonly ElementType[];
 
 export const JUNCTION_OR_END_HANDLES_TO_TYPES: Record<JunctionHandle, readonly ElementType[]> = {
 	[JUNCTION_HANDLE_PIVOT]: JUNCTION_OR_END_HANDLE_PIVOT_TYPES,

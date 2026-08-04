@@ -76,7 +76,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 						<li>{`Exemple : "capteur1 ET NON capteur2"`}</li>
-						<li>{`Réceptivité toujours vraie : "1" ou laisser vide`}</li>
+						<li>{`Réceptivité toujours vraie : écrire 'VRAI'`}</li>
 					</Typography>
 					<Typography mb={2}>
 						{`Pour modifier la réceptivité, double-cliquez sur la zone de texte de la transition. La syntaxe est vérifiée lors de l'analyse du projet.`}
@@ -114,8 +114,8 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						<li>{`Continue (C) — l'action s'exécute tant que l'étape est active.`}</li>
 						<li>{`Front montant (↗) — l'action s'exécute une seule fois au moment où l'étape devient active.`}</li>
 						<li>{`Front descendant (↘) — l'action s'exécute une seule fois au moment où l'étape devient inactive.`}</li>
-						<li>{`Set (S) — force la variable booléenne à TRUE (disponible uniquement pour les actions de type variable booléenne).`}</li>
-						<li>{`Reset (R) — force la variable booléenne à FALSE (disponible uniquement pour les actions de type variable booléenne).`}</li>
+						<li>{`Set (S) — force la variable booléenne à VRAI (disponible uniquement pour les actions de type variable booléenne).`}</li>
+						<li>{`Reset (R) — force la variable booléenne à FAUX (disponible uniquement pour les actions de type variable booléenne).`}</li>
 					</Typography>
 					<Typography mb={2}>
 						{`Le mode d'exécution se modifie via le clic droit → Mode d'exécution. Les modes disponibles dépendent du type de l'action.`}

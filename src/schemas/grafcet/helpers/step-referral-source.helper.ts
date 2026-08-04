@@ -1,9 +1,12 @@
 ﻿import Grafcet from "../grafcet.schema";
 import StepReferralSource, {
+	STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
 	StepReferralSourceHandleTargetPredecessorType,
 } from "../step-referral-source.schema";
 import Step, { STEP_HANDLE_TARGET_PREDECESSOR } from "../step.schema";
 import Transition from "../transition.schema";
+import JunctionOrEndHelper from "./junction-or-end.helper";
+import TransitionHelper from "./transition.helper";
 
 export default class StepReferralSourceHelper {
 	/**
@@ -29,7 +32,7 @@ export default class StepReferralSourceHelper {
 	static getPredecessorTransitions(stepReferralSourceId: string, grafcet: Grafcet): Transition[] {
 		const connectionsToStepReferralSource = grafcet.getConnectionsByElementIdAndHandle(
 			stepReferralSourceId,
-			STEP_HANDLE_TARGET_PREDECESSOR,
+			STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
 		);
 		const predecessorTransitions: Transition[] = [];
 		for (const connection of connectionsToStepReferralSource) {
@@ -67,7 +70,7 @@ export default class StepReferralSourceHelper {
 	static hasPredecessor(stepReferralSourceId: string, grafcet: Grafcet): boolean {
 		const connectionsToStepReferralSource = grafcet.getConnectionsByElementIdAndHandle(
 			stepReferralSourceId,
-			STEP_HANDLE_TARGET_PREDECESSOR,
+			STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
 		);
 		return connectionsToStepReferralSource.length > 0;
 	}
@@ -81,7 +84,7 @@ export default class StepReferralSourceHelper {
 	static getDirectUniquePredecessorStep(stepReferralSourceId: string, grafcet: Grafcet): Step | null {
 		const connectionsToStepReferralSource = grafcet.getConnectionsByElementIdAndHandle(
 			stepReferralSourceId,
-			STEP_HANDLE_TARGET_PREDECESSOR,
+			STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
 		);
 		if (connectionsToStepReferralSource.length !== 1) return null;
 		const connectionToStepReferralSource = connectionsToStepReferralSource[0];
@@ -99,5 +102,41 @@ export default class StepReferralSourceHelper {
 		if (connectionToTransition.source.type !== "step") return null;
 		const predecessorStep = grafcet.getElementByIdAndType<Step>(connectionToTransition.source.id, "step");
 		return predecessorStep || null;
+	}
+
+	static getPredecessorSteps(stepReferralSourceId: string, grafcet: Grafcet): Step[] {
+		const connectionsToStepReferralSource = grafcet.getConnectionsByElementIdAndHandle(
+			stepReferralSourceId,
+			STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
+		);
+		const predecessorSteps: Step[] = [];
+		for (const connection of connectionsToStepReferralSource) {
+			switch (connection.source.type as StepReferralSourceHandleTargetPredecessorType) {
+				case "transition": {
+					const transitionId = connection.source.id;
+					const steps = TransitionHelper.getPredecessorSteps(transitionId, grafcet);
+					predecessorSteps.push(...steps);
+					break;
+				}
+				case "junction-or-end": {
+					const junctionOrEndId = connection.source.id;
+					const transitions = JunctionOrEndHelper.getPredecessorTransitions(
+						junctionOrEndId,
+						grafcet,
+					);
+					for (const transition of transitions) {
+						const steps = TransitionHelper.getPredecessorSteps(transition.id, grafcet);
+						predecessorSteps.push(...steps);
+					}
+
+					break;
+				}
+				default:
+					throw new Error(
+						`Unexpected source type ${connection.source.type} on handle ${STEP_HANDLE_TARGET_PREDECESSOR} of step referral source ${stepReferralSourceId}`,
+					);
+			}
+		}
+		return predecessorSteps;
 	}
 }

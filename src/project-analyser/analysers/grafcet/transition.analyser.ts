@@ -58,7 +58,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 						new ProjectAnalyserIssue(
 							"error",
 							source,
-							"Une transition ne peut pas être une constante numérique. Si vous voulez qu'elle soit toujours validée, utilisez plutôt la constante booléenne TRUE.",
+							"Une transition ne peut pas être une constante numérique. Si vous voulez qu'elle soit toujours validée, utilisez plutôt la constante booléenne VRAI.",
 						),
 					);
 				} else {

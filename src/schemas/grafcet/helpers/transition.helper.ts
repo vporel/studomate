@@ -1,8 +1,8 @@
 ﻿import Connection from "../connection.schema";
 import Grafcet from "../grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
-import Step from "../step.schema";
 import StepReferralSource from "../step-referral-source.schema";
+import Step from "../step.schema";
 import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
@@ -138,10 +138,7 @@ export default class TransitionHelper {
 	 * Returns all direct successor connections from a transition
 	 */
 	static getSuccessors(transitionId: string, grafcet: Grafcet): Connection[] {
-		return grafcet.getConnectionsByElementIdAndHandle(
-			transitionId,
-			TRANSITION_HANDLE_SOURCE_SUCCESSOR,
-		);
+		return grafcet.getConnectionsByElementIdAndHandle(transitionId, TRANSITION_HANDLE_SOURCE_SUCCESSOR);
 	}
 
 	/**

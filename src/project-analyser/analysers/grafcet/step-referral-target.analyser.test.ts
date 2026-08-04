@@ -2,6 +2,7 @@ import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
+import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-source.helper";
 import StepReferralTargetAnalyser from "./step-referral-target.analyser";
 
 describe("StepReferralTargetAnalyser", () => {
@@ -64,6 +65,10 @@ describe("StepReferralTargetAnalyser", () => {
 	});
 
 	describe("analyseInContext", () => {
+		afterEach(() => {
+			jest.restoreAllMocks();
+		});
+
 		it("detects source step does not exist", () => {
 			const referral = new StepReferralTargetBuilder().id("referral-1").sourceStepNumber(99).build();
 			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
@@ -138,6 +143,46 @@ describe("StepReferralTargetAnalyser", () => {
 
 			// Should have minimal issues (depends on internal implementation)
 			expect(issues).toBeDefined();
+		});
+
+		it("signale une erreur si le tenant n'a aucun prédécesseur", () => {
+			const referral = new StepReferralTargetBuilder().id("referral-err").sourceStepNumber(1).build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const grafcet = new GrafcetBuilder().addStep(step1).addStepReferralTarget(referral).build();
+			(StepReferralSourceHelper.getPredecessorSteps as jest.Mock).mockReturnValue([]);
+			const issues = analyser.analyseInContext(referral, grafcet, []);
+			const noPred = issues.find((i) => i.message.includes("aucune étape"));
+			expect(noPred).toBeDefined();
+			expect(noPred?.severity).toBe("error");
+		});
+
+		it("signale une erreur si le tenant a plusieurs prédécesseurs", () => {
+			const referral = new StepReferralTargetBuilder().id("referral-multi").sourceStepNumber(1).build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const grafcet = new GrafcetBuilder()
+				.addSteps(step1, step2)
+				.addStepReferralTarget(referral)
+				.build();
+			(StepReferralSourceHelper.getPredecessorSteps as jest.Mock).mockReturnValue([step1, step2]);
+			const issues = analyser.analyseInContext(referral, grafcet, []);
+			const multiPred = issues.find((i) => i.message.includes("plusieurs étapes"));
+			expect(multiPred).toBeDefined();
+			expect(multiPred?.severity).toBe("error");
+		});
+
+		it("signale une erreur si le prédécesseur ne correspond pas à l'étape source", () => {
+			const referral = new StepReferralTargetBuilder()
+				.id("referral-mismatch")
+				.sourceStepNumber(42)
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).build();
+			const grafcet = new GrafcetBuilder().addStep(step1).addStepReferralTarget(referral).build();
+			(StepReferralSourceHelper.getPredecessorSteps as jest.Mock).mockReturnValue([step1]);
+			const issues = analyser.analyseInContext(referral, grafcet, []);
+			const mismatch = issues.find((i) => i.message.includes("ne correspond pas"));
+			expect(mismatch).toBeDefined();
+			expect(mismatch?.severity).toBe("error");
 		});
 	});
 });
