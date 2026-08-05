@@ -7,15 +7,14 @@ import { useGrafcetStore } from "../context/GrafcetContext";
 import { useGrafcetToolbarDnD } from "../toolbar/GrafcetToolbarDnDContext";
 import {
 	GrafcetNodeType,
-	NODES_DEFAULT_DATA_GENERATORS,
-	NODES_DEFAULT_DIMENSIONS,
+	GRAFCET_ELEMENTS_CONFIG,
 } from "./grafcet-nodes-definitions";
 
 export default function useToolDragOverHandlers(): [
 	handleToolDragOver: (e: React.DragEvent) => void,
 	handleToolDrop: (e: React.DragEvent) => void,
 ] {
-	const { type: toolType, extraData: toolExtraData } = useGrafcetToolbarDnD();
+	const { draggedElement } = useGrafcetToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 
@@ -27,19 +26,21 @@ export default function useToolDragOverHandlers(): [
 	const handleToolDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault();
-			if (!toolType) return;
+			if (!draggedElement) return;
+			const { type } = draggedElement;
+			const elementClass = GRAFCET_ELEMENTS_CONFIG[type].elementClass;
 			const position = screenToFlowPosition({ x: e.pageX, y: e.pageY });
-			position.x = position.x - NODES_DEFAULT_DIMENSIONS[toolType].width / 2;
-			position.y = position.y - NODES_DEFAULT_DIMENSIONS[toolType].height / 2;
+			position.x = position.x - elementClass.DEFAULT_DIMENSIONS.width / 2;
+			position.y = position.y - elementClass.DEFAULT_DIMENSIONS.height / 2;
 			const newNode = {
 				id: createRandomId(),
-				type: toolType,
+				type,
 				position,
-				data: NODES_DEFAULT_DATA_GENERATORS[toolType](toolExtraData),
+				data: elementClass.generateDefaultData(type === "step" ? draggedElement.extraData : undefined),
 			} as GrafcetNodeType;
 			workflowManager.addNodes([newNode]);
 		},
-		[toolType, screenToFlowPosition, workflowManager, toolExtraData],
+		[draggedElement, screenToFlowPosition, workflowManager],
 	);
 
 	return [handleToolDragOver, handleToolDrop];

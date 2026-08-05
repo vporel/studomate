@@ -39,6 +39,14 @@ npx tsc --noEmit # vérification des types
 CI GitHub Actions : ces quatre commandes tournent sur Node 20 et 22 à chaque push/PR vers
 `main` et `develop`.
 
+**Cadence de vérification pendant une tâche à plusieurs étapes** : ne pas relancer `npx tsc
+--noEmit`/`npm run lint`/la suite complète `npm test` après chaque petite étape — ça ralentit
+inutilement. Les lancer à la fin de la tâche (ou les suggérer en cours de route si une étape
+est vraiment risquée). Exception : un changement touchant un très grand nombre de fichiers
+(renommage d'imports, etc.) justifie une passe complète immédiate. En cours de tâche, ne
+lancer que les tests créés ou affectés par le changement en cours
+(`npx jest chemin/du/fichier.test.ts`), jamais la suite entière.
+
 ## Versions
 
 Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 20 et 22).
@@ -87,8 +95,22 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   n'importe quel composant (raccourcis clavier, menus).
 - **Dépendances de hooks** (`useEffect`, `useCallback`, `useMemo`) : vérifier qu'elles sont
   complètes après toute modification touchant leur corps.
+- **`box-sizing`** : déjà réglé sur `border-box` globalement pour tous les éléments
+  (`src/app/globals.css`, sélecteur `*`) — ne jamais le redéclarer dans un `sx` ou un style
+  composant.
 - Changements minimaux et ciblés ; respecter le style existant (tabulations, pas de point-virgule
   final superflu, etc. — voir les fichiers voisins).
+- **Commentaires** : jamais l'historique d'une décision (alternatives essayées, "avant/après",
+  justification d'un choix déjà pris) — ça appartient à la conversation ou au message de commit,
+  pas au code, et ça rote au premier refactor. Un commentaire n'a de valeur que s'il documente
+  une contrainte ou un invariant non trivial que le code seul ne montre pas. Pas de commentaire
+  qui reformule ce qu'un nom de variable/fonction bien choisi dit déjà — si le code se lit tout
+  seul, un commentaire à côté est du bruit, pas de la documentation. Dans le doute, préférer le
+  composant UI qui consomme la valeur (là où le "pourquoi" a un contexte visuel) plutôt que le
+  schéma/domaine (souvent trop générique pour justifier une explication locale).
+- **Vérification visuelle d'un changement UI** : ne pas lancer automatiquement l'extension de
+  navigateur (`claude-in-chrome`) ni supposer que l'utilisateur ne vérifiera pas lui-même —
+  demander s'il préfère vérifier visuellement de son côté ou que ce soit fait ici.
 
 ## Tests et bugs découverts en testant
 

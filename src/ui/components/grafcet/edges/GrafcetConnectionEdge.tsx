@@ -1,27 +1,28 @@
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
 import { useEffect, useState } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useAddPointHandler from "./useAddPointHandler";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
-import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 
-export type CustomEdgeData = { points: [number, number][] };
+export type GrafcetConnectionEdgeData = { points: [number, number][] };
 
-export type CustomEdgeType = Edge<CustomEdgeData> & { type: "custom-edge" };
+export type GrafcetConnectionEdgeType = Edge<GrafcetConnectionEdgeData> & { type: "grafcet-connection" };
 
-const CustomEdge = ({
+const GrafcetConnectionEdge = ({
 	id,
 	sourceX,
 	sourceY,
 	targetX,
 	targetY,
 	data,
-	interactionWidth,
+	interactionWidth = EDGE_INTERACTION_WIDTH,
 	selected,
-}: EdgeProps<CustomEdgeType>) => {
+}: EdgeProps<GrafcetConnectionEdgeType>) => {
 	const th = useTheme();
 	const [points, setPoints] = useState<[number, number][]>(
 		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
@@ -71,13 +72,6 @@ const CustomEdge = ({
 			}}
 		>
 			<path d={pathString} fill="none" className={`react-flow__edge-path `} />
-			{/** Another path with bigger strokeWidth to make it easier to interact with the edge */}
-			<path
-				d={pathString}
-				fill="none"
-				className={`react-flow__edge-path `}
-				style={{ strokeWidth: 4, stroke: "transparent" }}
-			/>
 			{interactionWidth ? (
 				<path
 					d={pathString}
@@ -140,4 +134,4 @@ const CustomEdge = ({
 	);
 };
 
-export default CustomEdge;
+export default GrafcetConnectionEdge;

@@ -1,4 +1,4 @@
-﻿import Connection from "../connection.schema";
+import Connection from "../connection.schema";
 import Grafcet from "../grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 import StepReferralSource from "../step-referral-source.schema";
@@ -27,10 +27,11 @@ export default class TransitionHelper {
 		const predecessorSteps: Step[] = [];
 		for (const connection of connectionsToTransition) {
 			switch (connection.source.type as TransitionHandleTargetPredecessorType) {
-				case "step":
-					const step = grafcet.getElementByIdAndType(connection.source.id, "step");
+				case "step": {
+					const step = grafcet.getElementByIdAndType<Step>(connection.source.id, "step");
 					if (step) predecessorSteps.push(step);
 					break;
+				}
 				case "junction-and-end":
 					const steps = JunctionAndEndHelper.getPredecessorSteps(connection.source.id, grafcet);
 					predecessorSteps.push(...steps);

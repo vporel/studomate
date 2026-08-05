@@ -12,7 +12,11 @@ export type ProjectAnalyserIssueSource = {
 		| "grafcet-junction-and-start"
 		| "grafcet-junction-and-end"
 		| "grafcet-junction-or-start"
-		| "grafcet-junction-or-end";
+		| "grafcet-junction-or-end"
+		| "ladder"
+		| "ladder-network"
+		| "ladder-contact"
+		| "ladder-coil";
 	sourceId: string;
 	parentId?: string; // For issues on steps, transitions or actions, the ID of the parent grafcet
 };
@@ -77,6 +81,15 @@ export const PROJECT_ANALYSER_ISSUE_CODES = [
 	"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
 	"STEP_REFERRAL_SOURCE_MISMATCH",
+
+	"NETWORK_NO_COIL",
+	"CONTACT_VARIABLE_UNDECLARED",
+	"CONTACT_VARIABLE_NOT_BOOLEAN",
+	"COIL_VARIABLE_UNDECLARED",
+	"COIL_VARIABLE_NOT_BOOLEAN",
+	"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+	"ELEMENT_NO_PREDECESSOR",
+	"COIL_VARIABLE_IS_INPUT",
 ] as const;
 
 export type ProjectAnalyserIssueCode = (typeof PROJECT_ANALYSER_ISSUE_CODES)[number];

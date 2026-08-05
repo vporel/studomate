@@ -16,8 +16,14 @@ jest.mock("@xyflow/react", () => ({
 	useReactFlow: jest.fn(),
 }))
 jest.mock("./grafcet-nodes-definitions", () => ({
-	NODES_DEFAULT_DIMENSIONS: { step: { width: 100, height: 60 } },
-	NODES_DEFAULT_DATA_GENERATORS: { step: jest.fn((extraData) => ({ generated: true, extraData })) },
+	GRAFCET_ELEMENTS_CONFIG: {
+		step: {
+			elementClass: {
+				DEFAULT_DIMENSIONS: { width: 100, height: 60 },
+				generateDefaultData: jest.fn((extraData) => ({ generated: true, extraData })),
+			},
+		},
+	},
 }))
 
 function fakeDragEvent(pageX: number, pageY: number) {
@@ -36,15 +42,15 @@ describe("useToolDragOverHandlers", () => {
 
 	afterEach(() => jest.clearAllMocks())
 
-	function setup(toolType: string | null, extraData: unknown = null) {
+	function setup(draggedElement: { type: string; extraData?: unknown } | null) {
 		;(useGrafcetStore as jest.Mock).mockImplementation(selectorImplementation({ workflowManager }))
-		;(useGrafcetToolbarDnD as jest.Mock).mockReturnValue({ type: toolType, extraData })
+		;(useGrafcetToolbarDnD as jest.Mock).mockReturnValue({ draggedElement })
 		;(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition })
 		return renderHook(() => useToolDragOverHandlers())
 	}
 
 	it("marks the drag-over as a move and prevents default", () => {
-		const { result } = setup("step")
+		const { result } = setup({ type: "step" })
 		const [handleToolDragOver] = result.current
 		const event = fakeDragEvent(0, 0)
 
@@ -55,7 +61,7 @@ describe("useToolDragOverHandlers", () => {
 	})
 
 	it("adds a node centered on the drop position", () => {
-		const { result } = setup("step", { some: "data" })
+		const { result } = setup({ type: "step", extraData: { some: "data" } })
 		const [, handleToolDrop] = result.current
 		const event = fakeDragEvent(150, 130)
 

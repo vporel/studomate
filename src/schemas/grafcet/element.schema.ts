@@ -1,4 +1,5 @@
 import { XYPosition } from "./shared-types";
+import SharedElement from "../shared/element.schema";
 
 export const GRAFCET_STEP_TYPE = "step";
 export const GRAFCET_TRANSITION_TYPE = "transition";
@@ -54,15 +55,22 @@ export type BaseData = {
 	height: number;
 };
 
-export default abstract class Element<DataType extends BaseData> {
+import { Dimensions } from "@xyflow/react";
+
+export interface ElementConstructor<T extends Element<any>> {
+	new (id: string, data: any, position: XYPosition): T;
+	generateDefaultData(extraData?: any): any;
+	DEFAULT_DIMENSIONS: Dimensions;
+}
+
+export default abstract class Element<DataType extends BaseData> implements SharedElement<ElementType, DataType, XYPosition> {
 	id: string = "";
-	type: ElementType;
+	abstract readonly type: ElementType;
 	data: DataType;
 	position: XYPosition = { x: 0, y: 0 };
 
-	constructor(id: string, type: ElementType, data: DataType, position: XYPosition) {
+	constructor(id: string, data: DataType, position: XYPosition) {
 		this.id = id;
-		this.type = type;
 		this.data = data;
 		this.position = position;
 	}
@@ -87,5 +95,18 @@ export default abstract class Element<DataType extends BaseData> {
 		return newData;
 	}
 
-	abstract copy(): Element<DataType>;
+	copy(): this {
+		return (this.constructor as any).createFromJSON(JSON.stringify(this)) as this;
+	}
+
+	static createFromJSON<T extends Element<any>>(
+		this: ElementConstructor<T>,
+		json: string,
+	): T {
+		const jsonParsed = JSON.parse(json);
+		return Object.assign(
+			new this("", { ...this.generateDefaultData() }, { x: 0, y: 0 }),
+			jsonParsed,
+		);
+	}
 }

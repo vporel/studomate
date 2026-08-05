@@ -2,24 +2,18 @@
 import { ElementType } from "@/schemas/grafcet/element.schema";
 import React, { createContext, Dispatch, SetStateAction, useContext, useMemo, useState } from "react";
 
+export type DraggedGrafcetElement = { type: "step"; extraData: { initial?: boolean } } | { type: Exclude<ElementType, "step"> };
+
 const GrafcetToolbarDnDContext = createContext<{
-	type: ElementType | null;
-	setType: Dispatch<SetStateAction<ElementType | null>>;
-	extraData: any | null;
-	setExtraData: Dispatch<SetStateAction<any>>;
-}>({ type: null, setType: () => {}, extraData: null, setExtraData: () => {} });
+	draggedElement: DraggedGrafcetElement | null;
+	setDraggedElement: Dispatch<SetStateAction<DraggedGrafcetElement | null>>;
+}>({ draggedElement: null, setDraggedElement: () => {} });
 
 export const GrafcetToolbarDnDProvider = ({ children }: { children: React.ReactNode }) => {
-	const [type, setType] = useState<ElementType | null>(null);
-	const [extraData, setExtraData] = useState<any>(null);
+	const [draggedElement, setDraggedElement] = useState<DraggedGrafcetElement | null>(null);
 
 	return (
-		<GrafcetToolbarDnDContext.Provider
-			value={useMemo(
-				() => ({ type, setType, extraData, setExtraData }),
-				[type, setType, extraData, setExtraData],
-			)}
-		>
+		<GrafcetToolbarDnDContext.Provider value={useMemo(() => ({ draggedElement, setDraggedElement }), [draggedElement])}>
 			{children}
 		</GrafcetToolbarDnDContext.Provider>
 	);

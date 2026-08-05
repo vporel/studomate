@@ -1,4 +1,4 @@
-﻿import { ACTION_HANDLE_TARGET_STEP } from "../action.schema";
+import { ACTION_HANDLE_TARGET_STEP } from "../action.schema";
 import Grafcet from "../grafcet.schema";
 import Step from "../step.schema";
 
@@ -23,7 +23,7 @@ export default class ActionHelper {
 				`An action should only be connected to a step. Found a ${connection.source.type}`,
 			);
 		}
-		const step = grafcet.getElementByIdAndType(connection.source.id, "step");
+		const step = grafcet.getElementByIdAndType<Step>(connection.source.id, "step");
 		return step || null;
 	}
 }

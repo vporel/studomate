@@ -1,0 +1,143 @@
+"use client";
+
+import ResizableFixedBox from "@/ui/lib/mui/ResizableFixedBox";
+import CloseIcon from "@mui/icons-material/Close";
+import { Box, Divider, IconButton, Typography } from "@mui/material";
+import { useCallback } from "react";
+import { useProjectStore } from "../ProjectContext";
+
+function Header({ onClose }: { onClose: () => void }) {
+	return (
+		<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+			<Typography variant="h6">{"Résultats de l'analyse"}</Typography>
+			<IconButton onClick={onClose} size="small" aria-label="close-analysis-errors">
+				<CloseIcon />
+			</IconButton>
+		</Box>
+	);
+}
+
+import SeveritySection from "./SeveritySection";
+
+export default function AnalysisResult() {
+	const analysisResultVisible = useProjectStore((s) => s.ui.analysisResultVisible);
+	const setAnalysisResultVisible = useProjectStore((s) => s.setAnalysisResultVisible);
+	const analysisErrors = useProjectStore((s) => s.analysisErrors);
+	const analysisWarnings = useProjectStore((s) => s.analysisWarnings);
+
+	const project = useProjectStore((s) => s.project);
+	const grafcetsManager = useProjectStore((s) => s.grafcetsManager);
+	const laddersManager = useProjectStore((s) => s.laddersManager);
+	const pagesManager = useProjectStore((s) => s.pagesManager);
+
+	// `project.getGrafcet`/`getLadder` sont nullable (contrairement aux méthodes homonymes des
+	// managers, qui lèvent) : un id de programme absent (grafcet supprimé entre-temps, etc.) ne
+	// doit jamais faire planter le panneau, juste afficher "Nom inconnu".
+	const getGrafcetName = useCallback(
+		(grafcetId: string) => project?.getGrafcet(grafcetId)?.name ?? "Nom inconnu",
+		[project],
+	);
+	const getLadderName = useCallback(
+		(ladderId: string) => project?.getLadder(ladderId)?.name ?? "Nom inconnu",
+		[project],
+	);
+
+	const getGrafcetElementLabel = useCallback(
+		(grafcetId: string, elementId: string) =>
+			project?.getGrafcet(grafcetId)?.getElementById(elementId)?.getLabel() ?? "",
+		[project],
+	);
+	const getLadderElementLabel = useCallback(
+		(ladderId: string, elementId: string) => {
+			const located = project?.getLadder(ladderId)?.findElement(elementId);
+			if (!located || located.element.type === "railTerminal") return "";
+			return located.element.type === "contact"
+				? `Contact ${located.element.data.variable}`
+				: `Bobine ${located.element.data.variable}`;
+		},
+		[project],
+	);
+
+	const onClose = () => {
+		setAnalysisResultVisible(false);
+	};
+
+	const onGotoProgram = useCallback(
+		(programId: string, programType: "grafcet" | "ladder", elementId?: string) => {
+			const name = programType === "grafcet" ? getGrafcetName(programId) : getLadderName(programId);
+			pagesManager.openPage({
+				type: programType,
+				id: programId,
+				title: name,
+			});
+
+			if (elementId) {
+				setTimeout(() => {
+					const managers =
+						programType === "grafcet"
+							? grafcetsManager.getActiveGrafcetStoreManagers()
+							: laddersManager.getActiveLadderStoreManagers();
+					if (!managers) return;
+					managers.viewManager.temporarilyHighlightNodesAndEdges([elementId], [], 3000);
+				}, 100);
+			}
+		},
+		[getGrafcetName, getLadderName, grafcetsManager, laddersManager, pagesManager],
+	);
+
+	if (!analysisResultVisible) return null;
+
+	const hasErrorProgramIssues =
+		analysisErrors &&
+		(Object.keys(analysisErrors.grafcets).length > 0 || Object.keys(analysisErrors.ladders).length > 0);
+	const hasWarningProgramIssues =
+		analysisWarnings &&
+		(Object.keys(analysisWarnings.grafcets).length > 0 ||
+			Object.keys(analysisWarnings.ladders).length > 0);
+
+	return (
+		<ResizableFixedBox
+			position="bottom"
+			initialSize={350}
+			offset={30}
+			contentContainerProps={{
+				sx: {
+					px: 2,
+					py: 1,
+					display: "flex",
+					flexDirection: "column",
+				},
+			}}
+		>
+			<Header onClose={onClose} />
+			<Divider sx={{ my: 1 }} />
+			<Box sx={{ overflow: "auto", flex: 1 }}>
+				<SeveritySection
+					title="Erreurs"
+					severity="error"
+					issues={analysisErrors}
+					hasProgramIssues={hasErrorProgramIssues}
+					getGrafcetName={getGrafcetName}
+					getGrafcetElementLabel={getGrafcetElementLabel}
+					getLadderName={getLadderName}
+					getLadderElementLabel={getLadderElementLabel}
+					onGotoProgram={onGotoProgram}
+				/>
+
+				<Divider sx={{ my: 1 }} />
+
+				<SeveritySection
+					title="Avertissements"
+					severity="warning"
+					issues={analysisWarnings}
+					hasProgramIssues={hasWarningProgramIssues}
+					getGrafcetName={getGrafcetName}
+					getGrafcetElementLabel={getGrafcetElementLabel}
+					getLadderName={getLadderName}
+					getLadderElementLabel={getLadderElementLabel}
+					onGotoProgram={onGotoProgram}
+				/>
+			</Box>
+		</ResizableFixedBox>
+	);
+}

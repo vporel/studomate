@@ -3,6 +3,7 @@ import { VariablesPageId } from "@/ui/components/pages/VariablesPage";
 export type ExplorerContextMenuElement =
 	| { type: "pane" }
 	| { type: "grafcet"; grafcetId: string }
+	| { type: "ladder"; ladderId: string }
 	| { type: "variables"; variablesPageId: VariablesPageId };
 export type ExplorerContextMenuProps = {
 	visible: boolean;

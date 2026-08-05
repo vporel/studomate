@@ -4,12 +4,13 @@
  * Adding one means adding its schema, its pipeline (analyse / pre-compile / compile) and
  * its editor — but nothing in the project model or in the pipeline entry points.
  */
-export const PROGRAM_TYPES = ["grafcet"] as const;
+export const PROGRAM_TYPES = ["grafcet", "ladder"] as const;
 
 export type ProgramType = (typeof PROGRAM_TYPES)[number];
 
 export const PROGRAM_TYPE_LABELS: Record<ProgramType, string> = {
 	grafcet: "Grafcet",
+	ladder: "Ladder",
 };
 
 /**
@@ -21,8 +22,8 @@ export const PROGRAM_TYPE_LABELS: Record<ProgramType, string> = {
  *
  * The temptation would be to hoist "elements", "connections" or a common editing interface
  * up here. That would be designing from a single example: a Ladder program has no elements
- * and no connections, it has rungs. Such an abstraction can only be drawn honestly once a
- * second notation actually exists.
+ * and no connections, it has sections holding networks. Such an abstraction can only be drawn
+ * honestly once a second notation actually exists.
  */
 export default abstract class Program {
 	id: string;

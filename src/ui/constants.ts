@@ -7,3 +7,8 @@ export const PAPERS_SIZES = {
 };
 
 export const FLOW_GRID_CELL_WIDTH = 10;
+
+/** Largeur de la zone de clic invisible autour d'une connexion (GRAFCET et Ladder) — plus large
+ * que le trait visible pour ne pas avoir à viser au pixel près. Commune aux deux modules pour
+ * qu'une même politique de tolérance s'applique partout, pas un réglage par composant d'edge. */
+export const EDGE_INTERACTION_WIDTH = 10;

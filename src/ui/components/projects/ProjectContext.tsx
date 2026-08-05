@@ -1,9 +1,10 @@
 "use client";
 import { createProjectStore, ProjectStoreState } from "@/ui/stores/project/project.store";
 import { setLastMousePosition } from "@/ui/lib/mouse-position";
+import { getProjectIdFromUrl, setProjectIdInUrl } from "@/ui/lib/project-url";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import AnalysisResult from "./AnalysisResult";
+import AnalysisResult from "./analysis-result/AnalysisResult";
 import ExportModal from "./ExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
@@ -44,6 +45,18 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		return () => {
 			window.removeEventListener("mousemove", handleMouseMove);
 		};
+	}, []);
+
+	//Rouvre le projet dont l'id voyage dans l'URL (voir project-url.ts) : sans quoi recharger
+	//la page perdrait le projet en cours, celui-ci n'existant qu'en mémoire dans le store.
+	useEffect(() => {
+		const projectId = getProjectIdFromUrl();
+		if (!projectId) return;
+		const reopen = async () => {
+			const opened = await storeRef.current!.getState().openProject(projectId);
+			if (!opened) setProjectIdInUrl(null);
+		};
+		void reopen();
 	}, []);
 
 	return (

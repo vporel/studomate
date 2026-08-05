@@ -1,9 +1,11 @@
 import Grafcet from "../schemas/grafcet/grafcet.schema";
+import Ladder from "../schemas/ladder/ladder.schema";
 import { ProgramType } from "../schemas/program/program.schema";
 import ProgramAnalyser from "./program.analyser";
 import Project from "../schemas/project/project.schema";
 import Variable from "../schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
+import LadderAnalyser from "./analysers/ladder/ladder.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
 
 export type ProjectAnalysisResult = {
@@ -28,6 +30,16 @@ const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
 				issues: result.issues,
 				generatedVariables: result.stepsVariables,
 				analysedElementsCount: grafcet.getAllElements().length,
+			};
+		},
+	},
+	ladder: {
+		analyse: (ladder: Ladder, project: Project) => {
+			const result = LadderAnalyser.analyse(ladder, project);
+			return {
+				issues: result.issues,
+				generatedVariables: result.edgeMemoryVariables,
+				analysedElementsCount: LadderAnalyser.countLeaves(ladder),
 			};
 		},
 	},

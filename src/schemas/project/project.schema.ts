@@ -1,5 +1,6 @@
 ﻿import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
+import Ladder from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "../utils/ids";
 import Variable from "../variable/variable.schema";
@@ -104,11 +105,33 @@ export default class Project {
 		return grafcet;
 	}
 
+	//=============== LADDER ===============
+	//Accesseurs typés, pour que le code propre au Ladder n'ait pas à transtyper partout
+
+	get ladders(): Record<string, Ladder> {
+		return this.getProgramsOfType<Ladder>("ladder");
+	}
+
+	getLadder(ladderId: string): Ladder | undefined {
+		const program = this.programs[ladderId];
+		return program?.type === "ladder" ? (program as Ladder) : undefined;
+	}
+
+	createLadder(name: string): Ladder {
+		const ladder = new Ladder(createRandomId(), name);
+		this.addProgram(ladder);
+		return ladder;
+	}
+
 	/**
 	 * Change le dialecte du projet en traduisant les mots-clés de toutes les expressions.
 	 *
 	 * Sans cette traduction, passer de FR à EN rendrait chaque `ET` méconnaissable : l'analyse
 	 * le prendrait pour un identifiant inconnu.
+	 *
+	 * Le Ladder n'est pas concerné : ses contacts/bobines référencent une variable par simple
+	 * mnémonique, sans expression textuelle à traduire. Il le sera quand un bloc à expression
+	 * (type "Operate") existera.
 	 */
 	setDialect(dialect: Dialect): void {
 		if (dialect === this.dialect) return;
@@ -149,9 +172,10 @@ export default class Project {
 		const programs: Record<string, Program> = {};
 		for (const programId in jsonParsed.programs) {
 			const raw = jsonParsed.programs[programId];
-			//Un seul type pour l'instant ; c'est ici que se branchera la prochaine notation
 			if (raw?.type === "grafcet") {
 				programs[programId] = Grafcet.createFromJSON(JSON.stringify(raw));
+			} else if (raw?.type === "ladder") {
+				programs[programId] = Ladder.createFromJSON(JSON.stringify(raw));
 			} else {
 				console.error(`Programme de type inconnu ignoré : ${raw?.type}`);
 			}

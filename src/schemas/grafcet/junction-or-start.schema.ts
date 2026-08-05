@@ -1,8 +1,7 @@
-﻿import { ElementType } from "./element.schema";
+import { ElementType } from "./element.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData, JunctionHandle } from "./junction.schema";
-import { XYPosition } from "./shared-types";
 
-export const JUNCTION_OR_START_HANDLE_PIVOT_TYPES = ["step"] as const satisfies readonly ElementType[];
+export const JUNCTION_OR_START_HANDLE_PIVOT_TYPES = ["transition"] as const satisfies readonly ElementType[];
 
 export const JUNCTION_OR_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonly ElementType[]> = {
 	[JUNCTION_HANDLE_PIVOT]: JUNCTION_OR_START_HANDLE_PIVOT_TYPES,
@@ -17,19 +16,9 @@ export const JUNCTION_OR_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonly
 export const JUNCTION_OR_START_HANDLE_BRANCH_TYPES = ["transition"] as const satisfies readonly ElementType[];
 
 export default class JunctionOrStart extends Junction {
-	constructor(id: string, data: JunctionData, position: XYPosition) {
-		super(id, "junction-or-start", data, position);
-	}
+	readonly type = "junction-or-start";
 
-	copy(): JunctionOrStart {
-		return JunctionOrStart.createFromJSON(JSON.stringify(this));
-	}
-
-	static createFromJSON(json: string): JunctionOrStart {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new JunctionOrStart("", { ...Junction.generateDefaultDataWithEmptyBranches() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
+	static generateDefaultData(): JunctionData {
+		return Junction.generateDefaultDataWithEmptyBranches();
 	}
 }

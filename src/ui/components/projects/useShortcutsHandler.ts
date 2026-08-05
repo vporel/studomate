@@ -1,6 +1,7 @@
 "use client";
 
 import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
+import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import React, { useEffect } from "react";
@@ -9,6 +10,7 @@ import { useProjectContext, useProjectStore } from "./ProjectContext";
 
 export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const { setOpenModalVisible, saveProject } = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
@@ -48,6 +50,13 @@ export default function useShortcutsHandler() {
 						grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
 						break;
 					}
+					case "l": {
+						e.stopPropagation();
+						e.preventDefault();
+						if (!designing) break;
+						laddersManager.newLadder(DEFAULT_LADDER_NAME);
+						break;
+					}
 					case "a": {
 						e.stopPropagation();
 						e.preventDefault();
@@ -75,11 +84,14 @@ export default function useShortcutsHandler() {
 					case "c": {
 						e.stopPropagation();
 						e.preventDefault();
-						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
 								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.copySelectedElements();
+						} else if (activeScopeType === "ladder") {
+							const copyCutPasteManager =
+								laddersManager.getActiveLadderStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
 						}
 						break;
@@ -87,11 +99,14 @@ export default function useShortcutsHandler() {
 					case "v": {
 						e.stopPropagation();
 						e.preventDefault();
-						if (!designing) break;
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
 								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.pasteElements(getLastMousePosition());
+						} else if (activeScopeType === "ladder") {
+							const copyCutPasteManager =
+								laddersManager.getActiveLadderStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements(getLastMousePosition());
 						}
 						break;
@@ -103,5 +118,5 @@ export default function useShortcutsHandler() {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown as any);
 		};
-	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager]);
+	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager, laddersManager]);
 }

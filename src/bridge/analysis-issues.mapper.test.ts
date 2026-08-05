@@ -3,7 +3,7 @@ import AnalysisIssuesMapper, { emptyAnalysisIssues } from "./analysis-issues.map
 
 describe("emptyAnalysisIssues", () => {
 	it("returns an empty structure", () => {
-		expect(emptyAnalysisIssues()).toEqual({ project: [], grafcets: {} });
+		expect(emptyAnalysisIssues()).toEqual({ project: [], grafcets: {}, ladders: {} });
 	});
 });
 
@@ -22,6 +22,7 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 		const result = AnalysisIssuesMapper.analyserToApp([issue]);
 		expect(result.project).toEqual(["Numéro d'étape dupliqué"]);
 		expect(result.grafcets).toEqual({});
+		expect(result.ladders).toEqual({});
 	});
 
 	it("routes grafcet-level issues to that grafcet's overall bucket", () => {
@@ -36,6 +37,7 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 			overall: ["Aucune étape initiale"],
 			elements: {},
 		});
+		expect(result.ladders).toEqual({});
 	});
 
 	it("routes element-level issues to the element bucket of their parent grafcet", () => {
@@ -84,5 +86,35 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 		expect(Object.keys(result.grafcets).sort()).toEqual(["grafcet-1", "grafcet-2"]);
 		expect(result.grafcets["grafcet-1"].overall).toEqual(["Erreur grafcet 1"]);
 		expect(result.grafcets["grafcet-2"].overall).toEqual(["Erreur grafcet 2"]);
+	});
+
+	it("routes ladder-level issues to that ladder's overall bucket, never into grafcets", () => {
+		const issue = new ProjectAnalyserIssue(
+			"warning",
+			"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			{ sourceType: "ladder", sourceId: "ladder-1" },
+			"Variable pilotée deux fois",
+		);
+		const result = AnalysisIssuesMapper.analyserToApp([issue]);
+		expect(result.ladders["ladder-1"]).toEqual({
+			overall: ["Variable pilotée deux fois"],
+			elements: {},
+		});
+		expect(result.grafcets).toEqual({});
+	});
+
+	it("routes ladder element-level issues (contact/coil) to the element bucket of their parent ladder", () => {
+		const issue = new ProjectAnalyserIssue(
+			"error",
+			"ELEMENT_NO_PREDECESSOR",
+			{ sourceType: "ladder-contact", sourceId: "contact-1", parentId: "ladder-1" },
+			"Cet élément n'est relié à aucun élément précédent.",
+		);
+		const result = AnalysisIssuesMapper.analyserToApp([issue]);
+		expect(result.ladders["ladder-1"]).toEqual({
+			overall: [],
+			elements: { "contact-1": ["Cet élément n'est relié à aucun élément précédent."] },
+		});
+		expect(result.grafcets).toEqual({});
 	});
 });

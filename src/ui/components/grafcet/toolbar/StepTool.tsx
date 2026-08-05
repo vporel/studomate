@@ -10,7 +10,7 @@ const StepTool = ({ initial }: { initial?: boolean }) => {
 	);
 
 	return (
-		<GrafcetTool type="step" disabled={initial && initialNodeExists} extraData={{ initial }}>
+		<GrafcetTool element={{ type: "step", extraData: { initial } }} disabled={initial && initialNodeExists}>
 			<Box
 				style={{
 					width: "30px",

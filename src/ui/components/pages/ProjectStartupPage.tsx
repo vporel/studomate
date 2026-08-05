@@ -1,13 +1,15 @@
 "use client";
 
 import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
+import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
 import { Add as AddIcon, Segment as SegmentIcon } from "@mui/icons-material";
 import { Box, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";
-import { useShallow } from "zustand/shallow";
 import InclinedAccountTree from "../icons/InclinedAccountTree";
+import LadderIcon from "../icons/LadderIcon";
 import { useProjectStore } from "../projects/ProjectContext";
+import useProjectPrograms from "../projects/useProjectPrograms";
 import Page from "./Page";
 import { getVariablesPageData, VariablesPageId } from "./VariablesPage";
 
@@ -49,51 +51,36 @@ function VariblesPagesList() {
 	);
 }
 
-function GrafcetsList() {
-	const grafcetsIds = useProjectStore(
-		useShallow((state) => (state.project ? Object.keys(state.project.grafcets) : [])),
-	);
-	const grafcetsNames = useProjectStore(
-		useShallow((state) =>
-			state.project
-				? Object.fromEntries(Object.values(state.project.grafcets).map((g) => [g.id, g.name]))
-				: {},
-		),
-	);
-	const grafcets: { id: string; name: string }[] = [];
-	for (const id of grafcetsIds) {
-		grafcets.push({ id, name: grafcetsNames[id] });
-	}
+function ProgramsList() {
+	const programs = useProjectPrograms();
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
 		<>
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1, mt: 2 }}>
-				Grafcets
+				Programmes
 			</Typography>
-			{grafcets.length === 0 && (
-				<Typography color="rgb(80, 80, 80)">Vous n&apos;avez pas encore de grafcet.</Typography>
+			{programs.length === 0 && (
+				<Typography color="rgb(80, 80, 80)">Vous n&apos;avez pas encore de programme.</Typography>
 			)}
-			{grafcets &&
-				Object.values(grafcets).map((grafcet) => (
-					<MenuItem
-						key={grafcet.id}
-						onClick={() =>
-							pagesManager.openPage({ id: grafcet.id, title: grafcet.name, type: "grafcet" })
-						}
-					>
-						<ListItemIcon>
-							<InclinedAccountTree />
-						</ListItemIcon>
-						<ListItemText>{grafcet.name}</ListItemText>
-					</MenuItem>
-				))}
+			{programs.map((program) => (
+				<MenuItem
+					key={program.id}
+					onClick={() =>
+						pagesManager.openPage({ id: program.id, title: program.name, type: program.type })
+					}
+				>
+					<ListItemIcon>{program.type === "grafcet" ? <InclinedAccountTree /> : <LadderIcon />}</ListItemIcon>
+					<ListItemText>{program.name}</ListItemText>
+				</MenuItem>
+			))}
 		</>
 	);
 }
 
 function Actions() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
 	return (
 		<>
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1 }}>
@@ -108,6 +95,16 @@ function Actions() {
 					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
 				</ListItemIcon>
 				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>Nouveau grafcet</ListItemText>
+			</MenuItem>
+			<MenuItem
+				onClick={() => {
+					laddersManager.newLadder(DEFAULT_LADDER_NAME);
+				}}
+			>
+				<ListItemIcon>
+					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
+				</ListItemIcon>
+				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>Nouveau ladder</ListItemText>
 			</MenuItem>
 		</>
 	);
@@ -130,7 +127,7 @@ const ProjectStartupPage = () => {
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<VariblesPagesList />
 						<Divider />
-						<GrafcetsList />
+						<ProgramsList />
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<Actions />

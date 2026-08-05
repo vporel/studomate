@@ -1,11 +1,13 @@
-﻿import Element, { BaseData } from "./element.schema";
-import { Dimensions, XYPosition } from "./shared-types";
+import Element, { BaseData } from "./element.schema";
+import { Dimensions } from "./shared-types";
 
 export type CommentData = BaseData & {
 	text: string;
 };
 
 export default class Comment extends Element<CommentData> {
+	readonly type = "comment";
+
 	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 150,
 		height: 40,
@@ -19,19 +21,5 @@ export default class Comment extends Element<CommentData> {
 		};
 	}
 
-	constructor(id: string, data: CommentData, position: XYPosition) {
-		super(id, "comment", data, position);
-	}
 
-	copy(): Comment {
-		return Comment.createFromJSON(JSON.stringify(this));
-	}
-
-	static createFromJSON(json: string): Comment {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new Comment("", { ...Comment.generateDefaultData() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
-	}
 }

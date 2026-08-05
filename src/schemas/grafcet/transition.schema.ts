@@ -1,5 +1,5 @@
-﻿import Element, { BaseData, ElementType } from "./element.schema";
-import { Dimensions, XYPosition } from "./shared-types";
+import Element, { BaseData, ElementType } from "./element.schema";
+import { Dimensions } from "./shared-types";
 
 export const TRANSITION_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
 export const TRANSITION_HANDLE_SOURCE_SUCCESSOR = "source:successor";
@@ -36,6 +36,8 @@ export type TransitionData = BaseData & {
 };
 
 export default class Transition extends Element<TransitionData> {
+	readonly type = "transition";
+
 	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 40,
 		height: 30,
@@ -49,10 +51,6 @@ export default class Transition extends Element<TransitionData> {
 		};
 	}
 
-	constructor(id: string, data: TransitionData, position: XYPosition) {
-		super(id, "transition", data, position);
-	}
-
 	/**
 	 * All the lines in the expression are joined to form one line
 	 */
@@ -64,15 +62,5 @@ export default class Transition extends Element<TransitionData> {
 		return [];
 	}
 
-	copy(): Transition {
-		return new Transition(this.id, { ...this.data }, { ...this.position });
-	}
 
-	static createFromJSON(json: string): Transition {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new Transition("", { ...Transition.generateDefaultData() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
-	}
 }

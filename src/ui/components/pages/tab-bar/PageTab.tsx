@@ -1,6 +1,7 @@
 "use client";
 
 import InclinedAccountTreeIcon from "@/ui/components/icons/InclinedAccountTree";
+import LadderIcon from "@/ui/components/icons/LadderIcon";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { PageType } from "@/ui/stores/project/project.store";
 import { Segment as SegmentIcon } from "@mui/icons-material";
@@ -32,7 +33,9 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				? TuneIcon
 				: type === "grafcet"
 					? InclinedAccountTreeIcon
-					: SegmentIcon;
+					: type === "ladder"
+						? LadderIcon
+						: SegmentIcon;
 
 	return (
 		<Box

@@ -6,6 +6,7 @@ import mitt from "mitt";
 import { ExplorerContextMenuProps } from "./explorer-context-menu";
 import { ExplorerContextMenuEventsOut } from "./explorer-context-menu-events";
 import useGrafcetMenuItems from "./useGrafcetMenuItems";
+import useLadderMenuItems from "./useLadderMenuItems";
 import usePaneMenuItems from "./usePaneMenuItems";
 import useVariablesMenuItems from "./useVariablesMenuItems";
 
@@ -26,6 +27,7 @@ const ExplorerContextMenu = ({
 }: ExplorerContextMenuProps) => {
 	const paneMenuItems = usePaneMenuItems();
 	const grafcetMenuItems = useGrafcetMenuItems();
+	const ladderMenuItems = useLadderMenuItems();
 	const variablesMenuItems = useVariablesMenuItems();
 
 	let menuItems: ContextMenuItemType[][] = [];
@@ -33,6 +35,8 @@ const ExplorerContextMenu = ({
 		menuItems = paneMenuItems();
 	} else if (element.type == "grafcet") {
 		menuItems = grafcetMenuItems(element.grafcetId);
+	} else if (element.type == "ladder") {
+		menuItems = ladderMenuItems(element.ladderId);
 	} else if (element.type == "variables") {
 		menuItems = variablesMenuItems(element.variablesPageId);
 	}

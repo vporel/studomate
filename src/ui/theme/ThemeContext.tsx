@@ -3,12 +3,22 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
 import { frFR } from "@mui/x-data-grid/locales";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
+declare module "@mui/material/styles" {
+	interface Palette {
+		energized: Palette["primary"];
+	}
+	interface PaletteOptions {
+		energized?: PaletteOptions["primary"];
+	}
+}
+
 type Theme = {
 	light: {
 		primaryColor: string;
 		secondaryColor: string;
 		backgroundColor: string;
 		textColor: string;
+		energizedColor: string;
 	};
 };
 
@@ -25,6 +35,7 @@ export const DEFAULT_THEME: Theme = {
 		//surfaces "papier" (palette.background.paper, valeur par défaut de MUI)
 		backgroundColor: "rgb(235, 235, 235)",
 		textColor: "#000000",
+		energizedColor: "#00d800",
 	},
 };
 const ThemeContext = createContext<ThemeContextType>({
@@ -51,6 +62,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 						},
 						background: {
 							default: theme.light.backgroundColor,
+						},
+						energized: {
+							main: theme.light.energizedColor,
+							light: theme.light.energizedColor,
+							dark: theme.light.energizedColor,
+							contrastText: "#fff",
 						},
 					},
 					typography: {

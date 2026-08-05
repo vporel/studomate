@@ -1,12 +1,11 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
-import AbstractGrafcetCommand from "@/schemas/grafcet/commands/abstract-grafcet.command";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import AbstractCommandsStackManager from "@/ui/stores/shared/abstract-commands-stack.manager";
 import EdgesFactory from "../factories/edges.factory";
 import NodesFactory from "../factories/nodes.factory";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
 
-export default class CommandsStackManager {
-	private commandsStack: CommandsStack<Grafcet>;
+export default class CommandsStackManager extends AbstractCommandsStackManager<Grafcet> {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 
@@ -19,27 +18,13 @@ export default class CommandsStackManager {
 		getStoreState: GrafcetStoreGetFunction,
 		commandsStack: CommandsStack<Grafcet>,
 	) {
+		super(commandsStack);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
-		this.commandsStack = commandsStack;
 	}
 
-	executeOperation(commands: AbstractGrafcetCommand<any>[]): void {
-		if (!commands || commands.length === 0) return;
-		const newGrafcet = this.commandsStack.execute(commands, this.getStoreState().grafcet.copy());
-		this.applyGrafcet(newGrafcet);
-	}
-
-	undoOperation(): void {
-		const [newGrafcet, commands] = this.commandsStack.undo(this.getStoreState().grafcet.copy());
-		if (!commands) return;
-		this.applyGrafcet(newGrafcet);
-	}
-
-	redoOperation(): void {
-		const [newGrafcet, commands] = this.commandsStack.redo(this.getStoreState().grafcet.copy());
-		if (!commands) return;
-		this.applyGrafcet(newGrafcet);
+	protected getDomain(): Grafcet {
+		return this.getStoreState().grafcet.copy();
 	}
 
 	/**
@@ -55,7 +40,7 @@ export default class CommandsStackManager {
 	 * Recomputing removes the whole class of problem: undo, redo and execute all go through
 	 * the same path, and a new command type needs no view code at all.
 	 */
-	private applyGrafcet(grafcet: Grafcet): void {
+	protected applyDomain(grafcet: Grafcet): void {
 		this.setStoreState((state) => ({
 			grafcet,
 			nodes: NodesFactory.syncNodes(state.nodes!, grafcet),

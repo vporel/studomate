@@ -1,6 +1,5 @@
-﻿import { ElementType } from "./element.schema";
+import { ElementType } from "./element.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData, JunctionHandle } from "./junction.schema";
-import { XYPosition } from "./shared-types";
 
 export const JUNCTION_AND_START_HANDLE_PIVOT_TYPES = ["transition"] as const satisfies readonly ElementType[];
 
@@ -17,19 +16,9 @@ export const JUNCTION_AND_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonl
 export const JUNCTION_AND_START_HANDLE_BRANCH_TYPES = ["step"] as const satisfies readonly ElementType[];
 
 export default class JunctionAndStart extends Junction {
-	constructor(id: string, data: JunctionData, position: XYPosition) {
-		super(id, "junction-and-start", data, position);
-	}
+	readonly type = "junction-and-start";
 
-	copy(): JunctionAndStart {
-		return JunctionAndStart.createFromJSON(JSON.stringify(this));
-	}
-
-	static createFromJSON(json: string): JunctionAndStart {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new JunctionAndStart("", { ...Junction.generateDefaultDataWithEmptyBranches() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
+	static generateDefaultData(): JunctionData {
+		return Junction.generateDefaultDataWithEmptyBranches();
 	}
 }

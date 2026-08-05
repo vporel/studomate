@@ -5,6 +5,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import Program, { ProgramType } from "../schemas/program/program.schema";
 import { PreCompiledProgram } from "./pre-compiled-program";
 import GrafcetPreCompiler from "./pre-compilers/grafcet/grafcet.pre-compiler";
+import LadderPreCompiler from "./pre-compilers/ladder/ladder.pre-compiler";
 import VariableCompiler from "./pre-compilers/variable.pre-compiler";
 import ProjectPreCompilerError from "./project.pre-compiler.error";
 
@@ -23,6 +24,8 @@ const PROGRAM_PRE_COMPILERS: Record<
 > = {
 	grafcet: (grafcet, variables, dialect, errors) =>
 		GrafcetPreCompiler.preCompile(grafcet, variables, dialect, errors),
+	ladder: (ladder, variables, dialect, errors) =>
+		LadderPreCompiler.preCompile(ladder, variables, dialect, errors),
 };
 
 export type ProjectPreCompilationResult = {

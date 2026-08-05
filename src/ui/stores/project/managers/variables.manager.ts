@@ -20,7 +20,7 @@ export default class VariablesManager {
 	existsByMnemonic(mnemonic: string): string | false {
 		const project = this.getStoreState().project;
 		if (!project) return false;
-		const variable = project.variables.find((v) => v.mnemonic.toLowerCase() === mnemonic.toLowerCase());
+		const variable = project.variables.find((v) => v.mnemonic === mnemonic);
 		return variable ? variable.id : false;
 	}
 

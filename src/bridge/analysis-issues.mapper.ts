@@ -1,26 +1,28 @@
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
 /**
- * Problèmes d'analyse regroupés par grafcet, prêts à être affichés.
+ * Problèmes d'analyse regroupés par programme (GRAFCET ou Ladder), prêts à être affichés.
  *
  * Ce type est la **sortie de ce mapper**, sa place est donc ici. Il était déclaré dans un
  * manager de store, ce qui obligeait le bridge à importer depuis la couche UI — soit
  * exactement l'inverse du sens attendu.
  */
-export type AnalysisGrafcetIssues = {
+export type AnalysisProgramIssues = {
 	overall: string[];
 	elements: Record<string, string[]>;
 };
 
 export type AnalysisIssues = {
 	project: string[];
-	grafcets: Record<string, AnalysisGrafcetIssues>;
+	grafcets: Record<string, AnalysisProgramIssues>;
+	ladders: Record<string, AnalysisProgramIssues>;
 };
 
 export function emptyAnalysisIssues(): AnalysisIssues {
 	return {
 		project: [],
 		grafcets: {},
+		ladders: {},
 	};
 }
 
@@ -30,24 +32,30 @@ export default class AnalysisIssuesMapper {
 		result.project = projectAnalyserIssues
 			.filter((issue) => issue.source.sourceType === "project")
 			.map((issue) => issue.message);
+
 		projectAnalyserIssues.forEach((issue) => {
-			const grafcetId =
-				issue.source.sourceType === "grafcet" ? issue.source.sourceId : issue.source.parentId;
-			const elementId = issue.source.sourceType !== "grafcet" ? issue.source.sourceId : null;
-			if (grafcetId) {
-				if (!result.grafcets[grafcetId]) {
-					result.grafcets[grafcetId] = { overall: [], elements: {} };
-				}
-				if (elementId) {
-					if (!result.grafcets[grafcetId].elements[elementId]) {
-						result.grafcets[grafcetId].elements[elementId] = [];
-					}
-					result.grafcets[grafcetId].elements[elementId].push(issue.message);
-				} else {
-					result.grafcets[grafcetId].overall.push(issue.message);
-				}
+			const { sourceType, sourceId, parentId } = issue.source;
+			if (sourceType === "project") return;
+
+			// "grafcet"/"ladder" sont les programmes eux-mêmes (sourceId = leur id, un problème
+			// global) ; tout le reste ("grafcet-step", "ladder-contact"...) est un élément dont
+			// `parentId` porte l'id du programme — jamais l'inverse, un id de ladder ne doit
+			// jamais atterrir dans le seau des grafcets (et réciproquement), sans quoi la
+			// résolution du nom du programme échoue côté UI.
+			const isProgramItself = sourceType === "grafcet" || sourceType === "ladder";
+			const programId = isProgramItself ? sourceId : parentId;
+			if (!programId) return;
+			const bucket = sourceType === "ladder" || sourceType.startsWith("ladder-") ? result.ladders : result.grafcets;
+
+			if (!bucket[programId]) bucket[programId] = { overall: [], elements: {} };
+			if (isProgramItself) {
+				bucket[programId].overall.push(issue.message);
+			} else {
+				if (!bucket[programId].elements[sourceId]) bucket[programId].elements[sourceId] = [];
+				bucket[programId].elements[sourceId].push(issue.message);
 			}
 		});
+
 		return result;
 	}
 }

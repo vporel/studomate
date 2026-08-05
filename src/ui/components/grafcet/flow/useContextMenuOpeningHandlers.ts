@@ -1,56 +1,35 @@
 "use client";
 
-import { useReactFlow } from "@xyflow/react";
 import React, { useCallback } from "react";
+import useFlowContextMenu from "@/ui/lib/hooks/useFlowContextMenu";
 import { useGrafcetContext } from "../context/GrafcetContext";
 
 export default function useContextMenuOpeningHandlers(): {
-	onPaneContextMenu: (e: React.MouseEvent) => void;
-	onNodeContextMenu: (e: React.MouseEvent, node: any) => void;
-	onEdgeContextMenu: (e: React.MouseEvent, edge: any) => void;
+	onPaneContextMenu: (e: React.MouseEvent | MouseEvent) => void;
+	onNodeContextMenu: (e: React.MouseEvent | MouseEvent, node: any) => void;
+	onEdgeContextMenu: (e: React.MouseEvent | MouseEvent, edge: any) => void;
 } {
-	const { screenToFlowPosition } = useReactFlow();
 	const { contextMenuEvents } = useGrafcetContext();
+	const { openContextMenu } = useFlowContextMenu(contextMenuEvents);
 
 	return {
 		onPaneContextMenu: useCallback(
-			(e: React.MouseEvent) => {
-				e.preventDefault();
-				contextMenuEvents.emit("show", {
-					element: { type: "pane" },
-					position: screenToFlowPosition({
-						x: e.pageX,
-						y: e.pageY,
-					}),
-				});
+			(e: React.MouseEvent | MouseEvent) => {
+				openContextMenu(e, { type: "pane" });
 			},
-			[contextMenuEvents, screenToFlowPosition]
+			[openContextMenu]
 		),
 		onNodeContextMenu: useCallback(
-			(e: React.MouseEvent, node: any) => {
-				e.preventDefault();
-				contextMenuEvents.emit("show", {
-					element: node,
-					position: screenToFlowPosition({
-						x: e.pageX,
-						y: e.pageY,
-					}),
-				});
+			(e: React.MouseEvent | MouseEvent, node: any) => {
+				openContextMenu(e, node);
 			},
-			[contextMenuEvents, screenToFlowPosition]
+			[openContextMenu]
 		),
 		onEdgeContextMenu: useCallback(
-			(e: React.MouseEvent, edge: any) => {
-				e.preventDefault();
-				contextMenuEvents.emit("show", {
-					element: edge,
-					position: screenToFlowPosition({
-						x: e.pageX,
-						y: e.pageY,
-					}),
-				});
+			(e: React.MouseEvent | MouseEvent, edge: any) => {
+				openContextMenu(e, edge);
 			},
-			[contextMenuEvents, screenToFlowPosition]
+			[openContextMenu]
 		),
 	};
 }

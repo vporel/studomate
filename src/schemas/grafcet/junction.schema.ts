@@ -1,5 +1,5 @@
-﻿import { createRandomId } from "../utils/ids";
-import Element, { BaseData } from "./element.schema";
+import { createRandomId } from "../utils/ids";
+import Element, { BaseData, JunctionType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
 export const JUNCTION_HANDLE_PIVOT = "pivot";
@@ -18,6 +18,8 @@ export type JunctionData = BaseData & {
 };
 
 export default abstract class Junction extends Element<JunctionData> {
+	abstract readonly type: JunctionType;
+
 	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 200,
 		height: 30,

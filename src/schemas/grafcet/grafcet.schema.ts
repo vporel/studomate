@@ -1,4 +1,4 @@
-﻿import { Dialect } from "@/expression-language/dialect.enum";
+import { Dialect } from "@/expression-language/dialect.enum";
 import Program, { ProgramType } from "@/schemas/program/program.schema";
 import IdentifierRenamer from "@/expression-language/identifier-renamer";
 import KeywordTranslator from "@/expression-language/keyword-translator";
@@ -52,7 +52,7 @@ const ELEMENT_COLLECTIONS = {
 	comment: { collection: "comments", schema: Comment },
 } as const satisfies Record<
 	ElementType,
-	{ collection: string; schema: { createFromJSON(json: string): Element<any> } }
+	{ collection: string; schema: any }
 >;
 
 const ELEMENT_TYPES_ENTRIES = Object.entries(ELEMENT_COLLECTIONS) as [
@@ -321,7 +321,7 @@ export default class Grafcet extends Program {
 		for (const [, { collection, schema }] of ELEMENT_TYPES_ENTRIES) {
 			grafcet.setCollection(
 				collection,
-				(jsonParsed[collection] ?? []).map((raw: unknown) => schema.createFromJSON(JSON.stringify(raw))),
+				(jsonParsed[collection] ?? []).map((raw: unknown) => (schema as any).createFromJSON(JSON.stringify(raw))),
 			);
 		}
 		grafcet.connections = (jsonParsed.connections ?? []).map((c: unknown) =>

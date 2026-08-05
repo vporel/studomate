@@ -8,14 +8,17 @@ import { toast } from "react-toastify";
 import { createStore } from "zustand";
 import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
+import { LadderStoreState } from "../ladder/ladder.store";
 import CommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
+import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import { AnalysisIssues, emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
 import { ProjectMode } from "./ProjectMode.enum";
+import { setProjectIdInUrl } from "@/ui/lib/project-url";
 import { performRedo, performUndo } from "./undo-redo";
 
 type SimpleCallback = () => void;
@@ -28,12 +31,12 @@ const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
 	unknown: "Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 };
 
-export type PageType = "project-startup" | "project-properties" | "grafcet" | "variables";
+export type PageType = "project-startup" | "project-properties" | "grafcet" | "ladder" | "variables";
 
 /**
  * The variables are managed in the project scope
  */
-export type ScopeType = "project" | "grafcet";
+export type ScopeType = "project" | "grafcet" | "ladder";
 
 export type PageData = {
 	id: string;
@@ -47,6 +50,10 @@ export type GrafcetStoreManagers = Pick<
 	GrafcetStoreState,
 	"viewManager" | "copyCutPasteManager" | "commandsStackManager" | "workflowManager"
 >;
+
+export type LadderStoreValues = Pick<LadderStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
+
+export type LadderStoreManagers = Pick<LadderStoreState, "commandsStackManager" | "viewManager" | "copyCutPasteManager">;
 
 export type PLCConfig = {
 	scanTimeMs: number;
@@ -145,6 +152,11 @@ export interface ProjectStoreState {
 	grafcetsStoresManagers: Record<string, GrafcetStoreManagers>; //The managers are used to call functions that are not pure actions, for example the copyCutPasteManager to copy and paste elements
 	grafcetsManager: GrafcetsManager;
 
+	//=============== LADDERS ===============
+	laddersStoresValues: Record<string, LadderStoreValues>;
+	laddersStoresManagers: Record<string, LadderStoreManagers>;
+	laddersManager: LaddersManager;
+
 	//=============== PAGES ===============
 	pagesData: Record<string, PageData>;
 	pagesOrder: string[]; //The ids of the pages in the order they are displayed
@@ -172,6 +184,7 @@ export const createProjectStore = () => {
 	const _openProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction, project: Project) => {
 		//The undo histories belong to the project being left
 		get().grafcetsManager.clearCommandsStacks();
+		get().laddersManager.clearCommandsStacks();
 		const initialPagesData = getInitialPagesData();
 		set(() => ({
 			project: project,
@@ -182,6 +195,8 @@ export const createProjectStore = () => {
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
+		//Pour qu'un rechargement de la page rouvre le même projet, voir ProjectContextProvider
+		setProjectIdInUrl(project.id);
 	};
 
 	const _newProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
@@ -191,6 +206,7 @@ export const createProjectStore = () => {
 
 	const _closeProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
 		get().grafcetsManager.clearCommandsStacks();
+		get().laddersManager.clearCommandsStacks();
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
@@ -200,6 +216,7 @@ export const createProjectStore = () => {
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
+		setProjectIdInUrl(null);
 	};
 
 	return createStore<ProjectStoreState>((set, get) => ({
@@ -377,6 +394,8 @@ export const createProjectStore = () => {
 			if (scope && pagesData[scope]) {
 				if (pagesData[scope].type === "grafcet") {
 					scopeType = "grafcet";
+				} else if (pagesData[scope].type === "ladder") {
+					scopeType = "ladder";
 				}
 			}
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
@@ -417,6 +436,11 @@ export const createProjectStore = () => {
 		grafcetsStoresValues: {},
 		grafcetsStoresManagers: {},
 		grafcetsManager: new GrafcetsManager(set, get),
+
+		//=============== LADDERS ===============
+		laddersStoresValues: {},
+		laddersStoresManagers: {},
+		laddersManager: new LaddersManager(set, get),
 
 		//=============== PAGES ===============
 		pagesData: getInitialPagesData(),

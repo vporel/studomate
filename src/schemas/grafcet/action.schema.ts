@@ -1,5 +1,5 @@
-﻿import Element, { BaseData, ElementType } from "./element.schema";
-import { Dimensions, XYPosition } from "./shared-types";
+import Element, { BaseData, ElementType } from "./element.schema";
+import { Dimensions } from "./shared-types";
 
 export const ACTION_HANDLE_TARGET_STEP = "target:step";
 
@@ -76,6 +76,8 @@ export type ActionData = BaseData & {
 };
 
 export default class Action extends Element<ActionData> {
+	readonly type = "action";
+
 	static DEFAULT_DIMENSIONS: Dimensions = {
 		width: 100,
 		height: 40,
@@ -89,10 +91,6 @@ export default class Action extends Element<ActionData> {
 			type: ActionType.TEXT,
 			executionMode: null,
 		};
-	}
-
-	constructor(id: string, data: ActionData, position: XYPosition) {
-		super(id, "action", data, position);
 	}
 
 	/**
@@ -130,17 +128,10 @@ export default class Action extends Element<ActionData> {
 			.filter((line) => line.length > 0);
 	}
 
-	copy(): Action {
-		return Action.createFromJSON(JSON.stringify(this));
-	}
+
 
 	static isValidExecutionModeForType(type: ActionType, executionMode: ActionExecutionMode | null): boolean {
 		if (executionMode === null) return ACTION_TYPES_TO_EXECUTION_MODES[type].length === 0; //If execution mode is null, then the type must be one that doesn't require an execution mode
 		return ACTION_TYPES_TO_EXECUTION_MODES[type].includes(executionMode);
-	}
-
-	static createFromJSON(json: string): Action {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(new Action("", { ...Action.generateDefaultData() }, { x: 0, y: 0 }), jsonParsed);
 	}
 }

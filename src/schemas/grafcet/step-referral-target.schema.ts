@@ -1,5 +1,4 @@
-﻿import { ElementType } from "./element.schema";
-import { XYPosition } from "./shared-types";
+import { ElementType } from "./element.schema";
 import StepReferral, { StepReferralData } from "./step-referral.schema";
 
 export const STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR = "source:successor";
@@ -32,19 +31,5 @@ export default class StepReferralTarget extends StepReferral<StepReferralTargetD
 		};
 	}
 
-	constructor(id: string, data: StepReferralTargetData, position: XYPosition) {
-		super(id, "step-referral-target", data, position);
-	}
-
-	copy(): StepReferralTarget {
-		return new StepReferralTarget(this.id, { ...this.data }, { ...this.position });
-	}
-
-	static createFromJSON(json: string): StepReferralTarget {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new StepReferralTarget("", { ...StepReferralTarget.generateDefaultData() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
-	}
+	readonly type = "step-referral-target";
 }

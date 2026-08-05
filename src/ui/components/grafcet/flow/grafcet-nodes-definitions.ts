@@ -1,14 +1,16 @@
 import Action from "@/schemas/grafcet/action.schema";
 import Comment from "@/schemas/grafcet/comment.schema";
-import { ElementType } from "@/schemas/grafcet/element.schema";
-import Junction from "@/schemas/grafcet/junction.schema";
+import { ElementType, ElementConstructor } from "@/schemas/grafcet/element.schema";
+import JunctionOrStart from "@/schemas/grafcet/junction-or-start.schema";
+import JunctionOrEnd from "@/schemas/grafcet/junction-or-end.schema";
+import JunctionAndStart from "@/schemas/grafcet/junction-and-start.schema";
+import JunctionAndEnd from "@/schemas/grafcet/junction-and-end.schema";
 import StepReferralSource from "@/schemas/grafcet/step-referral-source.schema";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
-import StepReferral from "@/schemas/grafcet/step-referral.schema";
 import Step from "@/schemas/grafcet/step.schema";
 import Transition from "@/schemas/grafcet/transition.schema";
-import { Dimensions } from "@xyflow/react";
-import CustomEdge, { CustomEdgeType } from "../edges/CustomEdge";
+
+import GrafcetConnectionEdge, { GrafcetConnectionEdgeType } from "../edges/GrafcetConnectionEdge";
 import ActionNode, { ActionNodeType } from "../nodes/ActionNode";
 import CommentNode, { CommentNodeType } from "../nodes/CommentNode";
 import JunctionAndEndNode, { JunctionAndEndNodeType } from "../nodes/junctions/JunctionAndEndNode";
@@ -33,47 +35,25 @@ export type GrafcetNodeType =
 	| StepReferralTargetNodeType
 	| JunctionNodeType //List of all the node types
 	| CommentNodeType;
-export type GrafcetEdgeType = CustomEdgeType; //List of all the edges types
+export type GrafcetEdgeType = GrafcetConnectionEdgeType; //List of all the edges types
 
-export const NODES_DEFAULT_DIMENSIONS: Record<ElementType, Dimensions> = {
-	step: Step.DEFAULT_DIMENSIONS,
-	action: Action.DEFAULT_DIMENSIONS,
-	transition: Transition.DEFAULT_DIMENSIONS,
-	"step-referral-source": StepReferral.DEFAULT_DIMENSIONS,
-	"step-referral-target": StepReferral.DEFAULT_DIMENSIONS,
-	"junction-or-start": Junction.DEFAULT_DIMENSIONS,
-	"junction-or-end": Junction.DEFAULT_DIMENSIONS,
-	"junction-and-start": Junction.DEFAULT_DIMENSIONS,
-	"junction-and-end": Junction.DEFAULT_DIMENSIONS,
-	comment: Comment.DEFAULT_DIMENSIONS,
+export const GRAFCET_ELEMENTS_CONFIG: Record<ElementType, { elementClass: ElementConstructor<any>; nodeType: any }> = {
+	step: { elementClass: Step, nodeType: StepNode },
+	action: { elementClass: Action, nodeType: ActionNode },
+	transition: { elementClass: Transition, nodeType: TransitionNode },
+	"step-referral-source": { elementClass: StepReferralSource, nodeType: StepReferralSourceNode },
+	"step-referral-target": { elementClass: StepReferralTarget, nodeType: StepReferralTargetNode },
+	"junction-or-start": { elementClass: JunctionOrStart, nodeType: JunctionOrStartNode },
+	"junction-or-end": { elementClass: JunctionOrEnd, nodeType: JunctionOrEndNode },
+	"junction-and-start": { elementClass: JunctionAndStart, nodeType: JunctionAndStartNode },
+	"junction-and-end": { elementClass: JunctionAndEnd, nodeType: JunctionAndEndNode },
+	comment: { elementClass: Comment, nodeType: CommentNode },
 };
 
-export const NODES_DEFAULT_DATA_GENERATORS: Record<ElementType, any> = {
-	step: Step.generateDefaultData,
-	action: Action.generateDefaultData,
-	transition: Transition.generateDefaultData,
-	"step-referral-source": StepReferralSource.generateDefaultData,
-	"step-referral-target": StepReferralTarget.generateDefaultData,
-	"junction-or-start": Junction.generateDefaultData,
-	"junction-or-end": Junction.generateDefaultData,
-	"junction-and-start": Junction.generateDefaultData,
-	"junction-and-end": Junction.generateDefaultData,
-	comment: Comment.generateDefaultData,
-};
-
-export const nodeTypes: Record<ElementType, any> = {
-	step: StepNode,
-	action: ActionNode,
-	transition: TransitionNode,
-	"step-referral-source": StepReferralSourceNode,
-	"step-referral-target": StepReferralTargetNode,
-	"junction-or-start": JunctionOrStartNode,
-	"junction-or-end": JunctionOrEndNode,
-	"junction-and-start": JunctionAndStartNode,
-	"junction-and-end": JunctionAndEndNode,
-	comment: CommentNode,
-};
+export const nodeTypes = Object.fromEntries(
+	Object.entries(GRAFCET_ELEMENTS_CONFIG).map(([type, config]) => [type, config.nodeType])
+);
 
 export const edgeTypes = {
-	"custom-edge": CustomEdge,
+	"grafcet-connection": GrafcetConnectionEdge,
 };

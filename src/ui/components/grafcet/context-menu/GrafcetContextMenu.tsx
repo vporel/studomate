@@ -9,7 +9,7 @@ import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { GrafcetNodeType, JunctionNodeType } from "../flow/grafcet-nodes-definitions";
 import { ActionNodeType } from "../nodes/ActionNode";
 import actionContextMenuItems from "./action-context-menu-items";
-import commonNodeContextMenuItems from "./common-node-context-menu-items";
+import defaultContextMenuItems from "./default-context-menu-items";
 import { GrafcetContextMenuElement, GrafcetContextMenuProps } from "./grafcet-context-menu";
 import junctionContextMenuItems from "./junction-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
@@ -33,7 +33,7 @@ const GrafcetContextMenu = ({ flowDimensions }: { flowDimensions: { width: numbe
 		if (element.type == "pane") {
 			items.push(...paneContextMenuItems(viewManager));
 		} else {
-			const commonNodeItems = commonNodeContextMenuItems(element as GrafcetNodeType, workflowManager);
+			const commonNodeItems = defaultContextMenuItems(element as GrafcetNodeType, workflowManager);
 			if (element.type === "action") {
 				items.push(...actionContextMenuItems(element as ActionNodeType, workflowManager));
 			}

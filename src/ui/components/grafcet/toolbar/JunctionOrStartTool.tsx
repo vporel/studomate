@@ -5,7 +5,7 @@ import GrafcetTool from "./GrafcetTool";
 
 const JunctionOrStartTool = ({ disabled }: { disabled?: boolean }) => {
 	return (
-		<GrafcetTool type="junction-or-start" disabled={disabled}>
+		<GrafcetTool element={{ type: "junction-or-start" }} disabled={disabled}>
 			<Box
 				sx={{
 					width: "40px",

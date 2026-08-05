@@ -5,7 +5,7 @@ import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.co
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/connections-remove.command";
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/connections-update.command";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import { CustomEdgeData } from "@/ui/components/grafcet/edges/CustomEdge";
+import { GrafcetConnectionEdgeData } from "@/ui/components/grafcet/edges/GrafcetConnectionEdge";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { ConnectionMode, getEdgePosition } from "@xyflow/system";
 import ViewManager from "../managers/view.manager";
@@ -83,7 +83,7 @@ export default class ConnectionsCommandsFactory {
 		existingEdges: GrafcetEdgeType[],
 	): {
 		commands: AbstractGrafcetCommand<any>[];
-		edgeDataToApply: Partial<CustomEdgeData>;
+		edgeDataToApply: Partial<GrafcetConnectionEdgeData>;
 	} {
 		const edge = existingEdges.find((e) => e.id === edgeId);
 		if (!edge) throw new Error(`Edge not found: ${edgeId}`);

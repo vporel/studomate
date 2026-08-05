@@ -9,9 +9,9 @@ import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
-import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
+import GrafcetConnectionLine from "../edges/GrafcetConnectionLine";
 import { edgeTypes, nodeTypes } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
@@ -90,8 +90,8 @@ export function GrafcetFlowContent() {
 					}}
 					nodeTypes={nodeTypes}
 					edgeTypes={edgeTypes}
-					defaultEdgeOptions={{ type: "custom-edge" }}
-					connectionLineComponent={CustomConnectionLine}
+					defaultEdgeOptions={{ type: "grafcet-connection" }}
+					connectionLineComponent={GrafcetConnectionLine}
 					isValidConnection={(connection) => {
 						if (!viewManager.rfInstance) return false;
 						return ConnectionsValidator.validateNewConnection(

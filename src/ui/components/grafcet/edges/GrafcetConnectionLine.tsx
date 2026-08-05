@@ -4,7 +4,7 @@ import { getStraightPathFromPoints } from "@/ui/lib/svg";
 import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { ConnectionLineComponentProps } from "@xyflow/react";
 
-const CustomConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineComponentProps) => {
+const GrafcetConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineComponentProps) => {
 	return (
 		<g>
 			<path
@@ -19,4 +19,4 @@ const CustomConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineComponen
 	);
 };
 
-export default CustomConnectionLine;
+export default GrafcetConnectionLine;

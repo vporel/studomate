@@ -6,6 +6,7 @@ import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import GrafcetPage from "./GrafcetPage";
+import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
@@ -84,6 +85,7 @@ const NoPage = () => {
 
 const PagesView = () => {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
@@ -120,6 +122,8 @@ const PagesView = () => {
 								return (
 									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getGrafcet(id)} />
 								);
+							case "ladder":
+								return <LadderPage key={id} initialLadder={laddersManager.getLadder(id)} />;
 							default:
 								return null;
 						}

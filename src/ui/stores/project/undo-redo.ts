@@ -19,6 +19,9 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 	if (state.activeScopeType === "grafcet") {
 		return state.grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager ?? null;
 	}
+	if (state.activeScopeType === "ladder") {
+		return state.laddersManager.getActiveLadderStoreManagers()?.commandsStackManager ?? null;
+	}
 	return state.commandsStackManager;
 }
 
@@ -27,6 +30,9 @@ export function canUndoActiveScope(state: ProjectStoreState): boolean {
 	if (state.activeScopeType === "grafcet") {
 		return state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToUndo ?? false;
 	}
+	if (state.activeScopeType === "ladder") {
+		return state.laddersManager.getActiveLadderStoreValues()?.hasCommandsToUndo ?? false;
+	}
 	return state.hasCommandsToUndo;
 }
 
@@ -34,6 +40,9 @@ export function canRedoActiveScope(state: ProjectStoreState): boolean {
 	if (state.mode !== ProjectMode.DESIGN) return false;
 	if (state.activeScopeType === "grafcet") {
 		return state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToRedo ?? false;
+	}
+	if (state.activeScopeType === "ladder") {
+		return state.laddersManager.getActiveLadderStoreValues()?.hasCommandsToRedo ?? false;
 	}
 	return state.hasCommandsToRedo;
 }
