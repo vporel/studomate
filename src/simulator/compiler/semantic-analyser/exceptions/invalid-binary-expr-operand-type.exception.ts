@@ -1,5 +1,5 @@
-import { BinaryExpressionNode } from "../../ast/nodes/expressions";
-import { OperationSide } from "../../shared/operators";
+import { BinaryExpressionNode } from "@/simulator/compiler/ast/nodes/expressions";
+import { OperationSide } from "@/simulator/compiler/shared/operators";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 

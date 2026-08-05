@@ -1,6 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "../../compiler/lexer/lexer";
-import Parser from "../../compiler/parser/parser";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
 import PLC from "./plc";
 import PLCRoutine from "./plc-routine";
 import PLCVariable from "./plc-variable";

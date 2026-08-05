@@ -7,6 +7,7 @@ import mitt, { Emitter } from "mitt";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
 import { GrafcetContextMenuEvents } from "./context-menu-events";
+import { syncGrafcetToProject } from "./grafcet-project-sync";
 
 type GrafcetContextType = {
 	contextMenuEvents: Emitter<GrafcetContextMenuEvents>;
@@ -43,13 +44,7 @@ export const GrafcetContextProvider = ({
 	//Listen to grafcet changes
 	useEffect(() => {
 		if (!storeRef.current) return;
-		const unsubscribe = storeRef.current.subscribe((state) => {
-			grafcetsManager.updateGrafcetData(state.grafcet);
-			grafcetsManager.setGrafcetStoreValues(state.grafcet.id, {
-				hasCommandsToUndo: state.hasCommandsToUndo,
-				hasCommandsToRedo: state.hasCommandsToRedo,
-			});
-		});
+		const unsubscribe = syncGrafcetToProject(storeRef.current, grafcetsManager);
 		return () => {
 			unsubscribe();
 		};
@@ -66,6 +61,7 @@ export const GrafcetContextProvider = ({
 			workflowManager: storeRef.current.getState().workflowManager,
 		});
 		return () => {
+			storeRef.current?.getState().viewManager.dispose();
 			grafcetsManager.deleteGrafcetStoreManager(grafcetId);
 		};
 	}, [grafcetsManager]);

@@ -1,17 +1,17 @@
-import { TimerNode, TimerStringDeclarationNode } from "../../ast/nodes/blocks";
-import { IfControlNode } from "../../ast/nodes/controls";
+import { TimerNode, TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
+import { IfControlNode } from "@/simulator/compiler/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
-} from "../../ast/nodes/expressions";
-import { IdentifierNode } from "../../ast/nodes/identifiers";
-import { BooleanNode, NumberNode, StringNode } from "../../ast/nodes/literals";
-import { AssignStatementNode } from "../../ast/nodes/statements";
-import { BaseVisitor } from "../../ast/visitors/base.visitor";
-import { EnvVariableValue } from "../../environment/env-variable";
-import { Environment } from "../../environment/environment";
+} from "@/simulator/compiler/ast/nodes/expressions";
+import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import { BooleanNode, NumberNode, StringNode } from "@/simulator/compiler/ast/nodes/literals";
+import { AssignStatementNode } from "@/simulator/compiler/ast/nodes/statements";
+import { BaseVisitor } from "@/simulator/compiler/ast/visitors/base.visitor";
+import { EnvVariableValue } from "@/simulator/compiler/environment/env-variable";
+import { Environment } from "@/simulator/compiler/environment/environment";
 import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
 import EvaluatorException from "./exceptions/evaluator.exception";
 import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";

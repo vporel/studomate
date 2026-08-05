@@ -4,7 +4,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
 const DESIGN_MODE_BACKGROUND_COLOR = "lightgray";
 const SIMULATION_MODE_BACKGROUND_COLOR = "orange";

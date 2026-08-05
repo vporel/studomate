@@ -1,12 +1,12 @@
 import TimerNodeEvaluator from "./timer-node.evaluator";
-import { Environment } from "../../environment/environment";
-import EnvVariable from "../../environment/env-variable";
-import { TimerNode } from "../../ast/nodes/blocks";
-import { IdentifierNode } from "../../ast/nodes/identifiers";
-import IdentifiersBuilder from "../../ast/builders/identifiers.builder";
-import BlocksBuilder from "../../ast/builders/blocks.builder";
-import { BaseVisitor } from "../../ast/visitors/base.visitor";
-import { EnvVariableValue } from "../../environment/env-variable";
+import { Environment } from "@/simulator/compiler/environment/environment";
+import EnvVariable from "@/simulator/compiler/environment/env-variable";
+import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
+import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
+import BlocksBuilder from "@/simulator/compiler/ast/builders/blocks.builder";
+import { BaseVisitor } from "@/simulator/compiler/ast/visitors/base.visitor";
+import { EnvVariableValue } from "@/simulator/compiler/environment/env-variable";
 
 class MockVisitor extends BaseVisitor<EnvVariableValue> {
 	private env: Environment;

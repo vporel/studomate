@@ -1,8 +1,8 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import Variable from "@/schemas/variable/variable.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import Step from "../../../schemas/grafcet/step.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Step from "@/schemas/grafcet/step.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class StepAnalyser extends ElementAnalyser<Step> {

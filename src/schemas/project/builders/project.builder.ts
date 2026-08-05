@@ -1,5 +1,5 @@
-import Grafcet from "../../grafcet/grafcet.schema";
-import Variable from "../../variable/variable.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import Project from "../project.schema";
 
 export default class ProjectBuilder {

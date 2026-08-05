@@ -3,7 +3,7 @@
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { CircularProgress, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
 const UnsavedChangesIndicator = () => {
 	const { hasUnsavedChanges, saveProject, savingProject } = useProjectStore(

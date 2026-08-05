@@ -2,8 +2,8 @@ import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-so
 import StepReferralTargetHelper from "@/schemas/grafcet/helpers/step-referral-target.helper";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class StepReferralTargetAnalyser extends ElementAnalyser<StepReferralTarget> {

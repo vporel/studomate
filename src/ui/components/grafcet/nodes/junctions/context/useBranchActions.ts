@@ -5,7 +5,7 @@ import { createRandomId } from "@/schemas/utils/ids";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import { useCallback } from "react";
-import { useGrafcetStore } from "../../../context/GrafcetContext";
+import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
 
 export default function useBranchActions(
 	nodeId: string,

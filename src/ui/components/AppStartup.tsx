@@ -5,7 +5,7 @@ import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { alpha, Box, Button, Divider, Grid, SxProps, Theme, Typography } from "@mui/material";
 import Link from "next/link";
 import { useShallow } from "zustand/shallow";
-import routes from "../../app/routes";
+import routes from "@/app/routes";
 import { useProjectStore } from "./projects/ProjectContext";
 
 const buttonSx: SxProps<Theme> = {
@@ -35,7 +35,10 @@ const AppStartup = () => {
 	);
 
 	return (
-		<FlexBox center sx={{ background: "rgb(235, 235, 235)", height: "100vh" }}>
+		<FlexBox
+			center
+			sx={{ background: (th: Theme) => th.palette.background.default, height: "100vh" }}
+		>
 			<Box
 				sx={{
 					width: "800px",

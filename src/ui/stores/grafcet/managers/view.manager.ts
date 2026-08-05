@@ -6,15 +6,27 @@ export const GRAFCET_FLOW_MIN_ZOOM = 1;
 export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
 
 /**
- * Manage the grafcet flow
- * You should use the workflow manager to perform any operation that modify the grafcet schema (add/remove nodes or edges, or update the data of a node or an edge) to make sure that the grafcet state is always consistent and that the commands stack is properly updated
- * It also provides some helper methods to select/deselect nodes and edges, and to zoom in/out or fit the view
+ * Aspects de la vue qui ne relèvent pas du domaine : sélection, surlignage, zoom, et
+ * l'instance React Flow elle-même.
+ *
+ * Ne modifie jamais `nodes`/`edges` pour refléter un changement du grafcet — c'est le rôle de
+ * `WorkflowManager`, qui passe par le `CommandsStackManager` pour que la vue soit recalculée
+ * depuis le domaine (`NodesFactory.syncNodes`, `EdgesFactory.syncEdges`), jamais patchée à la
+ * main.
  */
 export default class ViewManager {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 
 	rfInstance: ReactFlowInstance | null = null;
+
+	/**
+	 * Minuteries de surlignage temporaire en attente. Suivies pour pouvoir les annuler à la
+	 * fermeture de la page : sans ça, un `setTimeout` en attente continuait de déclencher un
+	 * `setStoreState` après que le store ait été abandonné, sur une instance de `ViewManager`
+	 * que plus personne ne lit.
+	 */
+	private pendingHighlightTimeouts = new Set<ReturnType<typeof setTimeout>>();
 
 	constructor(setStoreState: GrafcetStoreSetFunction, getStoreState: GrafcetStoreGetFunction) {
 		this.setStoreState = setStoreState;
@@ -34,70 +46,12 @@ export default class ViewManager {
 		this.rfInstance = instance;
 	}
 
-	/**
-	 * Only one method to prevent multiple updates of the flow state
-	 * It is possible to provide only newNodes or newEdges if we only want to add one of the two
-	 * The null or empty array will be ignored
-	 * @param newNodes
-	 * @param newEdges
-	 */
-	addNodesAndEdges(newNodes: GrafcetNodeType[] | null, newEdges: GrafcetEdgeType[] | null): void {
-		if (!newNodes?.length && !newEdges?.length) return;
-		if (newNodes?.length && !newEdges?.length) {
-			this.setStoreState((state) => ({
-				nodes: [...state.nodes!, ...newNodes!],
-			}));
-		} else if (!newNodes?.length && newEdges?.length) {
-			this.setStoreState((state) => ({
-				edges: [...state.edges!, ...newEdges!],
-			}));
-		} else {
-			this.setStoreState((state) => ({
-				nodes: [...state.nodes!, ...newNodes!],
-				edges: [...state.edges!, ...newEdges!],
-			}));
-		}
-	}
-
 	getNodes(): GrafcetNodeType[] {
 		return this.getStoreState().nodes!;
 	}
 
-	getNode(nodeId: string): GrafcetNodeType | undefined {
-		return this.getStoreState().nodes!.find((n) => n.id === nodeId);
-	}
-
 	getEdges(): GrafcetEdgeType[] {
 		return this.getStoreState().edges!;
-	}
-
-	getEdge(edgeId: string): GrafcetEdgeType | undefined {
-		return this.getStoreState().edges!.find((e) => e.id === edgeId);
-	}
-
-	/**
-	 * Only one method to prevent multiple updates of the flow state
-	 * It is possible to provide only nodeIds or edgeIds if we only want to remove one of the two
-	 * The null or empty array will be ignored
-	 * @param nodeIds
-	 * @param edgeIds
-	 */
-	removeNodesAndEdges(nodeIds: string[] | null, edgeIds: string[] | null): void {
-		if (!nodeIds?.length && !edgeIds?.length) return;
-		if (nodeIds?.length && !edgeIds?.length) {
-			this.setStoreState((state) => ({
-				nodes: state.nodes!.filter((n) => !nodeIds!.includes(n.id)),
-			}));
-		} else if (!nodeIds?.length && edgeIds?.length) {
-			this.setStoreState((state) => ({
-				edges: state.edges?.filter((e) => !edgeIds!.includes(e.id)),
-			}));
-		} else {
-			this.setStoreState((state) => ({
-				nodes: state.nodes?.filter((n) => !nodeIds!.includes(n.id)),
-				edges: state.edges?.filter((e) => !edgeIds!.includes(e.id)),
-			}));
-		}
 	}
 
 	selectAllEdges(): void {
@@ -156,9 +110,20 @@ export default class ViewManager {
 
 	temporarilyHighlightNodesAndEdges(nodesIds: string[], edgesIds: string[], durationMs = 2000): void {
 		this.highlightNodesAndEdges(nodesIds, edgesIds);
-		setTimeout(() => {
+		const timeout = setTimeout(() => {
+			this.pendingHighlightTimeouts.delete(timeout);
 			this.unhighlightNodesAndEdges(nodesIds, edgesIds);
 		}, durationMs);
+		this.pendingHighlightTimeouts.add(timeout);
+	}
+
+	/**
+	 * Annule les surlignages temporaires encore en attente. À appeler à la fermeture de la
+	 * page du grafcet, avant d'abandonner ce `ViewManager`.
+	 */
+	dispose(): void {
+		this.pendingHighlightTimeouts.forEach((timeout) => clearTimeout(timeout));
+		this.pendingHighlightTimeouts.clear();
 	}
 
 	getZoom(): number {

@@ -1,7 +1,7 @@
 import Project from "@/schemas/project/project.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import Variable from "../../../schemas/variable/variable.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Variable from "@/schemas/variable/variable.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {

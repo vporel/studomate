@@ -12,7 +12,7 @@ import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnection
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { type FC } from "react";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";

@@ -2,8 +2,8 @@ import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { wait } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
-import { ProjectStoreState } from "../../project.store";
-import { ProjectMode } from "../../ProjectMode.enum";
+import { ProjectStoreState } from "@/ui/stores/project/project.store";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 

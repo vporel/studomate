@@ -391,7 +391,6 @@ export const createProjectStore = () => {
 
 		//=============== GRAFCETS ===============
 		grafcetsStoresValues: {},
-		grafcetsStoresActions: {},
 		grafcetsStoresManagers: {},
 		grafcetsManager: new GrafcetsManager(set, get),
 

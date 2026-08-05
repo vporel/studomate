@@ -1,4 +1,4 @@
-import { ControlNode } from "../../ast/nodes/controls";
+import { ControlNode } from "@/simulator/compiler/ast/nodes/controls";
 import SemanticException from "./semantic.exception";
 
 export default class InvalidControlConditionTypeException extends SemanticException {

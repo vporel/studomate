@@ -1,8 +1,8 @@
-import { TimerNode } from "../../ast/nodes/blocks";
-import { IdentifierNode } from "../../ast/nodes/identifiers";
-import { BaseVisitor } from "../../ast/visitors/base.visitor";
-import { EnvVariableValue } from "../../environment/env-variable";
-import { Environment } from "../../environment/environment";
+import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
+import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import { BaseVisitor } from "@/simulator/compiler/ast/visitors/base.visitor";
+import { EnvVariableValue } from "@/simulator/compiler/environment/env-variable";
+import { Environment } from "@/simulator/compiler/environment/environment";
 
 export type TimerNodeEvaluatorOptions = {
 	deltaTimeMs: number;

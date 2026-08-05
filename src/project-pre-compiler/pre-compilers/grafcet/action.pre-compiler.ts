@@ -1,18 +1,18 @@
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import Action, { ActionExecutionMode, ActionType } from "../../../schemas/grafcet/action.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import PlcVariablesMapper from "../../../simulator/bridge/variables.mapper";
-import IdentifiersBuilder from "../../../simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "../../../simulator/compiler/ast/builders/literals.builder";
-import StatementsBuilder from "../../../simulator/compiler/ast/builders/statements.builder";
-import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
-import { Environment } from "../../../simulator/compiler/environment/environment";
-import SimplifierVisitor from "../../../simulator/compiler/interpreter/simplifier/simplifier.visitor";
+import Action, { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import PlcVariablesMapper from "@/simulator/bridge/variables.mapper";
+import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
+import StatementsBuilder from "@/simulator/compiler/ast/builders/statements.builder";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import { Environment } from "@/simulator/compiler/environment/environment";
+import SimplifierVisitor from "@/simulator/compiler/interpreter/simplifier/simplifier.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "../../../simulator/compiler/lexer/lexer";
-import Parser from "../../../simulator/compiler/parser/parser";
-import SemanticAnalyserVisitor from "../../../simulator/compiler/semantic-analyser/semantic-analyser.visitor";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
+import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
 
 /**
  * A compiled action, split into three execution phasesList: PreCompiledActionPhases[] = [];.

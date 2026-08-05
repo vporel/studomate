@@ -1,4 +1,4 @@
-import { ASTNode } from "../../ast/nodes/ast-node";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
 import SemanticException from "./semantic.exception";
 
 export default class UnauthorizedNodeException extends SemanticException {

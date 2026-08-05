@@ -10,8 +10,8 @@ import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 	SimulationVariableState,
-} from "../../project.store";
-import { ProjectMode } from "../../ProjectMode.enum";
+} from "@/ui/stores/project/project.store";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import SimulationNotifier from "./simulation.notifier";
 
 export default class SimulationManager {

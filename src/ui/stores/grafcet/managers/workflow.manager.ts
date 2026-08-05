@@ -28,40 +28,24 @@ export default class WorkflowManager {
 		this.getStoreState = getStoreState;
 	}
 
-	private getNodeUpdater(set: GrafcetStoreSetFunction) {
-		return (nodeId: string, updater: (node: any) => any) => {
-			set((state) => {
-				const newNodes = state.nodes!.map((n) => {
-					if (n.id === nodeId) return { ...n, ...updater(n) };
-					return n;
-				});
-				return { nodes: newNodes };
-			});
-		};
-	}
-
-	private getEdgesUpdater(set: GrafcetStoreSetFunction) {
-		return (updater: (edges: any[]) => any[]) => {
-			set((state) => {
-				const newEdges = updater(state.edges!);
-				return { edges: newEdges };
-			});
-		};
-	}
-
 	handleNodesChange(changes: NodeChange<GrafcetNodeType>[]): void {
 		const viewManager = this.getStoreState().viewManager;
 		const grafcet = this.getStoreState().grafcet;
 		//We filter the changes
 		//The remove operation is handle by the method onNodesAndEdgesRemove
 		const changesToAccept = changes.filter((change) => change.type != "remove");
-		let newNodes = structuredClone(this.getStoreState().nodes)!;
+		//Copie superficielle du tableau : seul le nœud jonction réellement modifié est cloné
+		//ci-dessous, les autres gardent leur identité. Un structuredClone de tout le tableau ici
+		//coûtait cher à chaque frame d'un glisser-déposer, pour un résultat qu'applyNodeChanges
+		//(ligne suivante) recalcule de toute façon de manière immuable.
+		let newNodes = [...this.getStoreState().nodes!];
 		changesToAccept.forEach((change) => {
-			const node = newNodes.find((n) => n.id === (change as any).id);
-			if (!node) return;
-			if (node.type.includes("junction")) {
+			const index = newNodes.findIndex((n) => n.id === (change as any).id);
+			if (index === -1) return;
+			const node = newNodes[index];
+			if (JUNCTION_TYPES.includes(node.type as (typeof JUNCTION_TYPES)[number])) {
 				const newData = junction_onNodePositionOrDimensionsChange(change, changesToAccept, newNodes);
-				newNodes.find((n) => n.id === node.id)!.data = newData;
+				newNodes[index] = { ...node, data: newData } as GrafcetNodeType;
 			}
 		});
 		newNodes = applyNodeChanges(changesToAccept, newNodes);
@@ -122,10 +106,7 @@ export default class WorkflowManager {
 			commands.push(
 				...ConnectionsCommandsFactory.onEdgesRemove(options.edgesToDelete, grafcet).commands,
 			);
-			this.getStoreState().viewManager.removeNodesAndEdges([], options.edgesToDelete);
 		}
-		const setNode = this.getNodeUpdater(this.setStoreState);
-		setNode(nodeId, (n) => ({ ...n, data: { ...n.data, ...nodeDataToUpdate } }) as GrafcetNodeType);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 
@@ -144,9 +125,6 @@ export default class WorkflowManager {
 			connection,
 			connectionId,
 		)!;
-		viewManager.addNodesAndEdges(null, [
-			{ ...connection, type: "custom-edge", id: connectionId, data: grafcetConnection.data },
-		]);
 		this.getStoreState().commandsStackManager.executeOperation([
 			new ConnectionsAddCommand([grafcetConnection]),
 		]);
@@ -172,20 +150,12 @@ export default class WorkflowManager {
 			| ((prevData: GrafcetEdgeType["data"]) => Partial<GrafcetEdgeType["data"]>),
 	): void {
 		const grafcet = this.getStoreState().grafcet;
-		const { commands, edgeDataToApply: newDataToApply } = ConnectionsCommandsFactory.onEdgeDataChange(
-			this.getEdgesUpdater(this.setStoreState),
+		const { commands } = ConnectionsCommandsFactory.onEdgeDataChange(
 			edgeId,
 			newData,
 			grafcet,
 			this.getStoreState().edges,
 		);
-		if (commands.length > 0) {
-			this.setStoreState(({ edges }) => ({
-				edges: edges!.map((e) =>
-					e.id === edgeId ? { ...e, data: { ...e.data, ...(newDataToApply as any) } } : e,
-				),
-			}));
-		}
 		this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 
@@ -195,39 +165,28 @@ export default class WorkflowManager {
 
 	addNodesAndEdges(newNodes: GrafcetNodeType[], newEdges: GrafcetEdgeType[]): void {
 		const grafcet = this.getStoreState().grafcet;
-		const viewManager = this.getStoreState().viewManager;
 		const { commands: nodesCommands, nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
 			newNodes,
 			grafcet,
 			this.getStoreState().nodes,
 		);
-		const { commands: edgesCommands, edgesToAdd } = ConnectionsCommandsFactory.onEdgesAdd(
+		const { commands: edgesCommands } = ConnectionsCommandsFactory.onEdgesAdd(
 			newEdges,
 			nodesToAdd,
 			grafcet,
 			this.getStoreState().edges,
 		);
-		viewManager.addNodesAndEdges(nodesToAdd, edgesToAdd);
 		this.getStoreState().commandsStackManager.executeOperation([...nodesCommands, ...edgesCommands]);
 	}
 
 	deleteNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
 		const grafcet = this.getStoreState().grafcet;
-		const viewManager = this.getStoreState().viewManager;
-		const {
-			commands: commandsFromNodes,
-			nodesIdsToDelete,
-			edgesIdsToDelete: list1EdgesIdsToDelete,
-		} = ElementsCommandsFactory.onNodesRemove(nodesIds, grafcet, this.getStoreState().nodes);
-		const { commands: commandsFromEdges, edgesIdsToDelete: list2EdgesIdsToDelete } =
-			ConnectionsCommandsFactory.onEdgesRemove(
-				edgesIds.filter((id) => !list1EdgesIdsToDelete.includes(id)),
-				grafcet,
-			);
-		viewManager.removeNodesAndEdges(nodesIdsToDelete, [
-			...list1EdgesIdsToDelete,
-			...list2EdgesIdsToDelete,
-		]);
+		const { commands: commandsFromNodes, edgesIdsToDelete: list1EdgesIdsToDelete } =
+			ElementsCommandsFactory.onNodesRemove(nodesIds, grafcet, this.getStoreState().nodes);
+		const { commands: commandsFromEdges } = ConnectionsCommandsFactory.onEdgesRemove(
+			edgesIds.filter((id) => !list1EdgesIdsToDelete.includes(id)),
+			grafcet,
+		);
 		this.getStoreState().commandsStackManager.executeOperation([
 			...commandsFromNodes,
 			...commandsFromEdges,

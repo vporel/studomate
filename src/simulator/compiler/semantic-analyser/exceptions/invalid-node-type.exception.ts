@@ -1,4 +1,4 @@
-import { ASTNode } from "../../ast/nodes/ast-node";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 

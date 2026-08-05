@@ -1,7 +1,7 @@
 "use client";
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import AppToolbar from "../../app-toolbar/AppToolbar";
+import AppToolbar from "@/ui/components/app-toolbar/AppToolbar";
 import AnalyseButton from "./AnalyseButton";
 import ProjectModeSwitcher from "./ProjectModeSwitcher";
 import ProjectNameInput from "./ProjectNameInput";

@@ -8,15 +8,15 @@ import ReplacerVisitor, {
 	ReplacerVisitorReplacement,
 } from "@/simulator/compiler/ast/visitors/replacer.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import JunctionOrStartHelper from "../../../schemas/grafcet/helpers/junction-or-start.helper";
-import TransitionHelper from "../../../schemas/grafcet/helpers/transition.helper";
-import Transition from "../../../schemas/grafcet/transition.schema";
-import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
-import SimplifierVisitor from "../../../simulator/compiler/interpreter/simplifier/simplifier.visitor";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import JunctionOrStartHelper from "@/schemas/grafcet/helpers/junction-or-start.helper";
+import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
+import Transition from "@/schemas/grafcet/transition.schema";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import SimplifierVisitor from "@/simulator/compiler/interpreter/simplifier/simplifier.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "../../../simulator/compiler/lexer/lexer";
-import Parser from "../../../simulator/compiler/parser/parser";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
 
 export type PreCompiledTransition = {
 	node: ASTNode;

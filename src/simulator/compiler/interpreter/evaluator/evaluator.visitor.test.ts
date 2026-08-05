@@ -1,8 +1,8 @@
-import EnvVariable from "../../environment/env-variable";
-import { Environment } from "../../environment/environment";
+import EnvVariable from "@/simulator/compiler/environment/env-variable";
+import { Environment } from "@/simulator/compiler/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "../../lexer/lexer";
-import Parser from "../../parser/parser";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
 import EvaluatorVisitor from "./evaluator.visitor";
 import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
 import EvaluatorException from "./exceptions/evaluator.exception";

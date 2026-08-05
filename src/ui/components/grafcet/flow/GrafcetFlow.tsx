@@ -43,7 +43,7 @@ export function GrafcetFlowContent() {
 				height: "100%",
 				overflowX: "hidden",
 				overflowY: "auto",
-				background: "rgb(235, 235, 235)",
+				background: th.palette.background.default,
 				position: "relative",
 			}}
 		>

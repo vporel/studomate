@@ -1,5 +1,5 @@
-import Variable, { VariableType, VariableZone } from "../../schemas/variable/variable.schema";
-import PLCVariable, { PLCVariableScope, PLCVariableType } from "../../simulator/core/plc/plc-variable";
+import Variable, { VariableType, VariableZone } from "@/schemas/variable/variable.schema";
+import PLCVariable, { PLCVariableScope, PLCVariableType } from "@/simulator/core/plc/plc-variable";
 
 const ZONE_TO_SCOPE: Record<VariableZone, PLCVariableScope> = {
 	"logic-input": "input",

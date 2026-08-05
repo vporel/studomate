@@ -1,4 +1,4 @@
-import { AssignStatementNode } from "../../ast/nodes/statements";
+import { AssignStatementNode } from "@/simulator/compiler/ast/nodes/statements";
 import SemanticException from "./semantic.exception";
 
 export default class InvalidAssignmentTargetException extends SemanticException {

@@ -1,8 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
-import Element, { BaseData } from "../../../schemas/grafcet/element.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Element, { BaseData } from "@/schemas/grafcet/element.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
 export type ElementAnalyseIsolatedOptions = {
 	/**

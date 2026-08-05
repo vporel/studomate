@@ -1,4 +1,4 @@
-import { UnaryExpressionNode } from "../../ast/nodes/expressions";
+import { UnaryExpressionNode } from "@/simulator/compiler/ast/nodes/expressions";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 

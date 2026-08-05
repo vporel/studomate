@@ -3,7 +3,7 @@
 import { Box } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
 const ProjectNameInput = () => {
 	const { projectName, changeProjectName } = useProjectStore(

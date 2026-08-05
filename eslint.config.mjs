@@ -32,6 +32,22 @@ const eslintConfig = [
 					caughtErrorsIgnorePattern: "^_",
 				},
 			],
+			// Un import qui remonte de plusieurs niveaux (`../../...`) doit passer par l'alias
+			// `@/...` : sa cible ne dépend plus de l'emplacement du fichier qui importe, et il
+			// ne peut plus coexister avec un alias pointant vers la même chose dans un même
+			// fichier. Un seul niveau (`../sibling`) reste autorisé, pour les modules d'un même
+			// dossier de fonctionnalité.
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["../../*"],
+							message: "Utilisez l'alias @/... plutôt qu'un import relatif remontant de plusieurs niveaux.",
+						},
+					],
+				},
+			],
 		},
 	},
 	// Les fichiers de configuration à la racine sont en CommonJS

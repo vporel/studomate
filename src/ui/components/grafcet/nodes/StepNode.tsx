@@ -12,7 +12,7 @@ import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";

@@ -1,6 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "../../lexer/lexer";
-import Parser from "../../parser/parser";
+import { Lexer } from "@/simulator/compiler/lexer/lexer";
+import Parser from "@/simulator/compiler/parser/parser";
 import { DivisionByZeroException } from "../evaluator/exceptions/division-by-zero.exception";
 import SimplifierVisitor from "./simplifier.visitor";
 

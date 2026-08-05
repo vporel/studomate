@@ -2,7 +2,7 @@
 
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import React, { useCallback, useEffect, useState } from "react";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 
 export function getPointsForAdding(points: [number, number][]): [number, number][] {

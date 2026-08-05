@@ -6,7 +6,7 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import ProjectPreCompilerError from "../../project.pre-compiler.error";
+import ProjectPreCompilerError from "@/project-pre-compiler/project.pre-compiler.error";
 import GrafcetPreCompiler from "./grafcet.pre-compiler";
 
 describe("GrafcetPreCompiler", () => {

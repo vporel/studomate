@@ -1,5 +1,5 @@
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
-import VariableBuilder from "../../variable/builders/variable.builder";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import Project from "../project.schema";
 import ProjectBuilder from "./project.builder";
 

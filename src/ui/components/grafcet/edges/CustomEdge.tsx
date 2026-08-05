@@ -3,7 +3,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
 import { useEffect, useState } from "react";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useAddPointHandler from "./useAddPointHandler";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
 import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";

@@ -4,7 +4,7 @@ import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import React, { useCallback } from "react";
-import { useGrafcetStore } from "../../context/GrafcetContext";
+import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
 
 export default function useKeyboardEventsHandler(
 	nodeId: string,

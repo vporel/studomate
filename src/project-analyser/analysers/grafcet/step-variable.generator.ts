@@ -1,4 +1,4 @@
-import Variable from "../../../schemas/variable/variable.schema";
+import Variable from "@/schemas/variable/variable.schema";
 
 export default class StepVariableGenerator {
 

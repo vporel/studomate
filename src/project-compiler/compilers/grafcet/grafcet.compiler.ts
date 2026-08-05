@@ -3,8 +3,8 @@ import ExpressionsBuilder from "@/simulator/compiler/ast/builders/expressions.bu
 import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
 import StatementsBuilder from "@/simulator/compiler/ast/builders/statements.builder";
 import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
-import { PreCompiledGrafcet } from "../../../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import { ASTNode } from "../../../simulator/compiler/ast/nodes/ast-node";
+import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
 import ActionCompiler from "./action.compiler";
 import TransitionCompiler from "./transition.compiler";
 

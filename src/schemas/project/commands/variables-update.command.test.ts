@@ -3,7 +3,7 @@ import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import Project from "../project.schema";
-import Variable from "../../variable/variable.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import VariablesUpdateCommand from "./variables-update.command";
 
 /**

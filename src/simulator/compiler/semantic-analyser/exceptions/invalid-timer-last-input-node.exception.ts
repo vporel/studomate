@@ -1,4 +1,4 @@
-import { TimerNode } from "../../ast/nodes/blocks";
+import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
 import SemanticException from "./semantic.exception";
 
 export default class InvalidTimerLastInputNodeException extends SemanticException {

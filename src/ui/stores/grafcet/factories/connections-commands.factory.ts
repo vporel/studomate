@@ -75,7 +75,6 @@ export default class ConnectionsCommandsFactory {
 	}
 
 	static onEdgeDataChange(
-		setEdges: (updater: (edges: GrafcetEdgeType[]) => any[]) => void,
 		edgeId: string,
 		newData:
 			| Partial<GrafcetEdgeType["data"]>

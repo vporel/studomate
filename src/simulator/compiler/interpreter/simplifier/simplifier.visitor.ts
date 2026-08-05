@@ -1,18 +1,18 @@
-import ExpressionsBuilder from "../../ast/builders/expressions.builder";
-import LiteralsBuilder from "../../ast/builders/literals.builder";
-import { ASTNode } from "../../ast/nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../../ast/nodes/blocks";
-import { IfControlNode } from "../../ast/nodes/controls";
+import ExpressionsBuilder from "@/simulator/compiler/ast/builders/expressions.builder";
+import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import { TimerNode, TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
+import { IfControlNode } from "@/simulator/compiler/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
-} from "../../ast/nodes/expressions";
-import { IdentifierNode } from "../../ast/nodes/identifiers";
-import { BooleanNode, NumberNode, StringNode } from "../../ast/nodes/literals";
-import { AssignStatementNode } from "../../ast/nodes/statements";
-import { BaseVisitor } from "../../ast/visitors/base.visitor";
+} from "@/simulator/compiler/ast/nodes/expressions";
+import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import { BooleanNode, NumberNode, StringNode } from "@/simulator/compiler/ast/nodes/literals";
+import { AssignStatementNode } from "@/simulator/compiler/ast/nodes/statements";
+import { BaseVisitor } from "@/simulator/compiler/ast/visitors/base.visitor";
 import { DivisionByZeroException } from "../evaluator/exceptions/division-by-zero.exception";
 
 export default class SimplifierVisitor extends BaseVisitor<ASTNode> {

@@ -85,18 +85,6 @@ export default class Grafcet extends Program {
 	}
 
 	/**
-	 *
-	 * @returns The keys are the steps' ids, the values are the ids of the steps and transition(s) necessary to activate the designated step
-	 */
-	getStepsActivationConditions(): Record<string, string[]> {
-		return {};
-	}
-
-	validate(): string[] | null {
-		return null;
-	}
-
-	/**
 	 * Get the connections that have the provided element id as source or target, regardless of the handle id
 	 * @param elementId
 	 * @returns

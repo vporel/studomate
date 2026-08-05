@@ -1,8 +1,8 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import JunctionOrStart from "@/schemas/grafcet/junction-or-start.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrStart> {

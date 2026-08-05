@@ -1,4 +1,4 @@
-import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
+import { ArithmeticOperator, ComparisonOperator } from "@/simulator/compiler/shared/operators";
 import { ASTNode } from "./ast-node";
 import { BaseNode } from "./base-node";
 

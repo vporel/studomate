@@ -1,7 +1,7 @@
-import PlcVariablesMapper from "../../bridge/variables.mapper";
-import { ASTNode } from "../../compiler/ast/nodes/ast-node";
-import { Environment } from "../../compiler/environment/environment";
-import EvaluatorVisitor from "../../compiler/interpreter/evaluator/evaluator.visitor";
+import PlcVariablesMapper from "@/simulator/bridge/variables.mapper";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import { Environment } from "@/simulator/compiler/environment/environment";
+import EvaluatorVisitor from "@/simulator/compiler/interpreter/evaluator/evaluator.visitor";
 import PLC from "./plc";
 
 /**

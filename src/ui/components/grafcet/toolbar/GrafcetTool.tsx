@@ -4,7 +4,7 @@ import { ElementType } from "@/schemas/grafcet/element.schema";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
 import React from "react";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetToolbarDnD } from "./GrafcetToolbarDnDContext";
 
 const GrafcetTool = ({

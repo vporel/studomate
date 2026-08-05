@@ -8,9 +8,9 @@ import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
 import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
-import Action, { ActionType } from "../../../schemas/grafcet/action.schema";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Action, { ActionType } from "@/schemas/grafcet/action.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class ActionAnalyser extends ElementAnalyser<Action> {

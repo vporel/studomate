@@ -1,4 +1,4 @@
-import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
+import { ArithmeticOperator, ComparisonOperator } from "@/simulator/compiler/shared/operators";
 
 export interface Token {
 	type: TokenType;

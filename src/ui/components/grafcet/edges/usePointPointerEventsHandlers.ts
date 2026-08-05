@@ -3,7 +3,7 @@
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { getPointsForAdding } from "./useAddPointHandler";
 

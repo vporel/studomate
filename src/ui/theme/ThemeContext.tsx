@@ -10,12 +10,6 @@ type Theme = {
 		backgroundColor: string;
 		textColor: string;
 	};
-	dark: {
-		primaryColor: string;
-		secondaryColor: string;
-		backgroundColor: string;
-		textColor: string;
-	};
 };
 
 type ThemeContextType = {
@@ -27,14 +21,10 @@ export const DEFAULT_THEME: Theme = {
 	light: {
 		primaryColor: "#1976d2",
 		secondaryColor: "#606060",
-		backgroundColor: "#ffffff",
+		//Fond des pages (canvas du grafcet, écran d'accueil...), par opposition au blanc des
+		//surfaces "papier" (palette.background.paper, valeur par défaut de MUI)
+		backgroundColor: "rgb(235, 235, 235)",
 		textColor: "#000000",
-	},
-	dark: {
-		primaryColor: "#90caf9",
-		secondaryColor: "#c9c9c9",
-		backgroundColor: "#121212",
-		textColor: "#ffffff",
 	},
 };
 const ThemeContext = createContext<ThemeContextType>({
@@ -58,6 +48,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 						secondary: {
 							main: theme.light.secondaryColor,
 							light: theme.light.secondaryColor,
+						},
+						background: {
+							default: theme.light.backgroundColor,
 						},
 					},
 					typography: {

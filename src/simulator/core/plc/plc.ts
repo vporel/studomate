@@ -108,7 +108,6 @@ export default class PLC extends ClockedRunnable {
 			this.readInputs();
 			this.executeProgram();
 			this.writeOutputs();
-			this.internalTasks();
 		} catch (e) {
 			this.stop();
 			console.error("Error during PLC cycle execution:", e);
@@ -133,5 +132,4 @@ export default class PLC extends ClockedRunnable {
 			this.physicalOutputs[id] = v.copy();
 		});
 	}
-	private internalTasks(): void {}
 }

@@ -1,5 +1,5 @@
 import { createRandomId } from "@/simulator/utils/ids";
-import { ArithmeticOperator, ComparisonOperator } from "../../shared/operators";
+import { ArithmeticOperator, ComparisonOperator } from "@/simulator/compiler/shared/operators";
 import { ASTNode } from "../nodes/ast-node";
 import {
 	ArithmeticExpressionNode,

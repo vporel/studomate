@@ -9,7 +9,7 @@ import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
-import { useProjectStore } from "../../projects/ProjectContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 

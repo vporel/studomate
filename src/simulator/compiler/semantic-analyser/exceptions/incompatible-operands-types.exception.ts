@@ -1,5 +1,5 @@
-import { ComparisonExpressionNode } from "../../ast/nodes/expressions";
-import { AssignStatementNode } from "../../ast/nodes/statements";
+import { ComparisonExpressionNode } from "@/simulator/compiler/ast/nodes/expressions";
+import { AssignStatementNode } from "@/simulator/compiler/ast/nodes/statements";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import SemanticException from "./semantic.exception";
 

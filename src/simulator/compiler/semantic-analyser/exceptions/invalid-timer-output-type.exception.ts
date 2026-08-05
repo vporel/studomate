@@ -1,4 +1,4 @@
-import { TimerNode } from "../../ast/nodes/blocks";
+import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
 import InvalidNodeTypeException from "./invalid-node-type.exception";
 

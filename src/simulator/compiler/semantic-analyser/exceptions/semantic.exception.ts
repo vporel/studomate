@@ -1,4 +1,4 @@
-import { ASTNode } from "../../ast/nodes/ast-node";
+import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
 
 export default abstract class SemanticException extends Error {
 	private readonly originNode: ASTNode;

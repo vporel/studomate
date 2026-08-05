@@ -2,7 +2,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { createStore } from "zustand";
-import { GrafcetEdgeType, GrafcetNodeType } from "../../components/grafcet/flow/grafcet-nodes-definitions";
+import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import EdgesFactory from "./factories/edges.factory";
 import NodesFactory from "./factories/nodes.factory";
 import CommandsStackManager from "./managers/commands-stack.manager";

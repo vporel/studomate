@@ -3,12 +3,12 @@ import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program"
 import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
 import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import SimulatorExceptionsHelper from "../../../bridge/simulator-exceptions.helper";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
+import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectPreCompilerError, {
 	ProjectPreCompilerErrorSourceBuilder,
-} from "../../project.pre-compiler.error";
+} from "@/project-pre-compiler/project.pre-compiler.error";
 import ActionPreCompiler, { PreCompiledAction } from "./action.pre-compiler";
 import StepPreCompiler, { PreCompiledStep } from "./step.pre-compiler";
 import TransitionPreCompiler, { PreCompiledTransition } from "./transition.pre-compiler";

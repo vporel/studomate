@@ -10,9 +10,9 @@ import { Lexer } from "@/simulator/compiler/lexer/lexer";
 import Parser from "@/simulator/compiler/parser/parser";
 import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
 import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
-import Grafcet from "../../../schemas/grafcet/grafcet.schema";
-import Transition from "../../../schemas/grafcet/transition.schema";
-import ProjectAnalyserIssue from "../../project.analyser.issue";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Transition from "@/schemas/grafcet/transition.schema";
+import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
 
 export default class TransitionAnalyser extends ElementAnalyser<Transition> {
