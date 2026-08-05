@@ -12,7 +12,7 @@ export default function usePaneMenuItems(): () => ContextMenuItemType[][] {
 			[
 				{
 					label: "Masquer l'explorateur",
-					onClick: () => setViewAppearance((v) => ({ ...v, showExplorer: false })),
+					onClick: () => setViewAppearance((v) => ({ ...v, explorer: false })),
 				},
 			],
 		];

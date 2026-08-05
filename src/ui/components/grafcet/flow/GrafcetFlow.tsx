@@ -7,16 +7,17 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, useTheme } from "@mui/material";
 import { Background, ReactFlow, ReactFlowProvider } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import CustomConnectionLine from "../connections-lines/CustomConnectionLine";
 import GrafcetContextMenu from "../context-menu/GrafcetContextMenu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
-import "./_grafcet-page.css";
 import { edgeTypes, nodeTypes } from "./grafcet-nodes-definitions";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
+
+import "@xyflow/react/dist/style.css";
+import "./_grafcet-page.css";
 
 export function GrafcetFlowContent() {
 	const th = useTheme();
