@@ -5,11 +5,13 @@ describe("ProjectAnalyserIssue", () => {
 		it("creates an error issue", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
+				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "grafcet-1" },
 				"Test error message",
 			);
 
 			expect(issue.severity).toBe("error");
+			expect(issue.code).toBe("GRAFCET_NO_INITIAL_STEP");
 			expect(issue.source.sourceType).toBe("grafcet");
 			expect(issue.source.sourceId).toBe("grafcet-1");
 			expect(issue.message).toBe("Test error message");
@@ -18,11 +20,13 @@ describe("ProjectAnalyserIssue", () => {
 		it("creates a warning issue", () => {
 			const issue = new ProjectAnalyserIssue(
 				"warning",
+				"ACTION_EMPTY_EXPRESSION",
 				{ sourceType: "grafcet-step", sourceId: "step-1" },
 				"Test warning message",
 			);
 
 			expect(issue.severity).toBe("warning");
+			expect(issue.code).toBe("ACTION_EMPTY_EXPRESSION");
 			expect(issue.source.sourceType).toBe("grafcet-step");
 			expect(issue.source.sourceId).toBe("step-1");
 			expect(issue.message).toBe("Test warning message");
@@ -31,6 +35,7 @@ describe("ProjectAnalyserIssue", () => {
 		it("creates issue with parent ID", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
+				"TRANSITION_EMPTY_EXPRESSION",
 				{ sourceType: "grafcet-transition", sourceId: "transition-1", parentId: "grafcet-1" },
 				"Test message with parent",
 			);
@@ -57,6 +62,7 @@ describe("ProjectAnalyserIssue", () => {
 			sourceTypes.forEach((sourceType) => {
 				const issue = new ProjectAnalyserIssue(
 					"error",
+					"GRAFCET_NO_INITIAL_STEP",
 					{ sourceType, sourceId: "test-id" },
 					"Test message",
 				);
@@ -69,6 +75,7 @@ describe("ProjectAnalyserIssue", () => {
 		it("supports error severity", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
+				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "test" },
 				"Error",
 			);
@@ -78,6 +85,7 @@ describe("ProjectAnalyserIssue", () => {
 		it("supports warning severity", () => {
 			const issue = new ProjectAnalyserIssue(
 				"warning",
+				"ACTION_EMPTY_EXPRESSION",
 				{ sourceType: "grafcet", sourceId: "test" },
 				"Warning",
 			);
@@ -90,6 +98,7 @@ describe("ProjectAnalyserIssue", () => {
 			const message = "Le grafcet ne contient aucune étape initiale.";
 			const issue = new ProjectAnalyserIssue(
 				"error",
+				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "test" },
 				message,
 			);
@@ -100,6 +109,7 @@ describe("ProjectAnalyserIssue", () => {
 			const message = "Line 1\nLine 2\nLine 3";
 			const issue = new ProjectAnalyserIssue(
 				"error",
+				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "test" },
 				message,
 			);
@@ -107,7 +117,12 @@ describe("ProjectAnalyserIssue", () => {
 		});
 
 		it("handles empty message", () => {
-			const issue = new ProjectAnalyserIssue("error", { sourceType: "grafcet", sourceId: "test" }, "");
+			const issue = new ProjectAnalyserIssue(
+				"error",
+				"GRAFCET_NO_INITIAL_STEP",
+				{ sourceType: "grafcet", sourceId: "test" },
+				"",
+			);
 			expect(issue.message).toBe("");
 		});
 	});

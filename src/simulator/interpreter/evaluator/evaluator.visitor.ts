@@ -1,0 +1,135 @@
+import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import { IfControlNode } from "@/expression-language/ast/nodes/controls";
+import {
+	ArithmeticExpressionNode,
+	ComparisonExpressionNode,
+	LogicalExpressionNode,
+	UnaryExpressionNode,
+} from "@/expression-language/ast/nodes/expressions";
+import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
+import { BooleanNode, NumberNode, StringNode } from "@/expression-language/ast/nodes/literals";
+import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
+import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
+import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variable";
+import { Environment } from "@/simulator/interpreter/environment/environment";
+import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
+import EvaluatorException from "./exceptions/evaluator.exception";
+import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";
+
+export type EvaluatorVisitorOptions = {
+	timers: TimerNodeEvaluatorOptions;
+};
+
+export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
+	private env: Environment;
+	private timerEvaluator: TimerNodeEvaluator;
+	private options: EvaluatorVisitorOptions;
+
+	constructor(environment: Environment, options: EvaluatorVisitorOptions) {
+		super();
+		this.env = environment;
+		this.timerEvaluator = new TimerNodeEvaluator(environment, this, options.timers);
+		this.options = options;
+	}
+
+	protected visitIdentifierNode(node: IdentifierNode): EnvVariableValue {
+		return this.env.getVariableValueByName(node.value);
+	}
+
+	protected visitBooleanNode(node: BooleanNode): EnvVariableValue {
+		return node.value;
+	}
+
+	protected visitNumberNode(node: NumberNode): EnvVariableValue {
+		return node.value;
+	}
+
+	protected visitStringNode(node: StringNode): EnvVariableValue {
+		return node.value;
+	}
+
+	protected visitUnaryExpressionNode(node: UnaryExpressionNode): EnvVariableValue {
+		switch (node.operator) {
+			case "NOT":
+				return !this.visit(node.expr);
+		}
+	}
+
+	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): EnvVariableValue {
+		const leftValue = this.visit(node.left) as number;
+		const rightValue = this.visit(node.right) as number;
+		switch (node.operator) {
+			case "+":
+				return leftValue + rightValue;
+			case "-":
+				return leftValue - rightValue;
+			case "*":
+				return leftValue * rightValue;
+			case "/":
+				if (rightValue === 0) {
+					throw new DivisionByZeroException(leftValue, rightValue, node);
+				}
+				return leftValue / rightValue;
+		}
+	}
+
+	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): EnvVariableValue {
+		const leftValue = this.visit(node.left) as number;
+		const rightValue = this.visit(node.right) as number;
+		switch (node.operator) {
+			case "=":
+				return leftValue === rightValue;
+			case "!=":
+				return leftValue !== rightValue;
+			case "<":
+				return leftValue < rightValue;
+			case "<=":
+				return leftValue <= rightValue;
+			case ">":
+				return leftValue > rightValue;
+			case ">=":
+				return leftValue >= rightValue;
+		}
+	}
+
+	protected visitLogicalExpressionNode(node: LogicalExpressionNode): EnvVariableValue {
+		const leftValue = this.visit(node.left) as boolean;
+		const rightValue = this.visit(node.right) as boolean;
+		switch (node.operator) {
+			case "AND":
+				//Use double negation to ensure the result is a boolean
+				return !!(leftValue && rightValue);
+			case "OR":
+				//Use double negation to ensure the result is a boolean
+				return !!(leftValue || rightValue);
+		}
+	}
+
+	protected visitAssignStatementNode(node: AssignStatementNode): EnvVariableValue {
+		if (node.left.type !== "IDENTIFIER") {
+			throw new EvaluatorException("Left-hand side of assignment must be an identifier", node);
+		}
+		const value = this.visit(node.right);
+		this.env.setVariableValueByName(node.left.value, value);
+		return value;
+	}
+
+	protected visitIfControlNode(node: IfControlNode): EnvVariableValue {
+		const conditionValue = this.visit(node.condition) as boolean;
+		const branchToExecute = conditionValue ? node.trueBranch : node.falseBranch;
+		if (!branchToExecute) return 0;
+		let lastValue: EnvVariableValue = false;
+		for (const statement of branchToExecute) {
+			lastValue = this.visit(statement);
+		}
+		return lastValue;
+	}
+
+	protected visitTimerBlockNode(node: TimerNode): EnvVariableValue {
+		return this.timerEvaluator.evaluate(node);
+	}
+
+	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): EnvVariableValue {
+		throw new EvaluatorException("Timer string declaration nodes should not be evaluated directly", node);
+	}
+}

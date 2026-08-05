@@ -110,7 +110,7 @@ function GrafcetIssues({
 }
 
 export default function AnalysisResult() {
-	const analysisResultVisible = useProjectStore((s) => s.analysisResultVisible);
+	const analysisResultVisible = useProjectStore((s) => s.ui.analysisResultVisible);
 	const setAnalysisResultVisible = useProjectStore((s) => s.setAnalysisResultVisible);
 	const analysisErrors = useProjectStore((s) => s.analysisErrors);
 	const analysisWarnings = useProjectStore((s) => s.analysisWarnings);

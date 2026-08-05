@@ -54,16 +54,29 @@ export type PLCConfig = {
 
 export type SimulationVariableState = { id: string; mnemonic: string; value: any };
 
-export interface ProjectStoreState {
-	//Project
-	project: Project | null; //null when no project is opened
-	hasUnsavedChanges: boolean;
+/**
+ * Pure UI state: nothing here has business meaning on its own, it only reflects what's
+ * currently shown on screen (dialogs, panels). Kept as one nested object rather than split
+ * into its own store: the managers below already read/write it in the same `set()` calls as
+ * business fields (e.g. `SimulationManager` opens the watch tables and switches to simulation
+ * mode together), so a separate store would just move the mixing elsewhere.
+ */
+export interface ProjectUiState {
 	unsavedChangesDialogVisible: boolean;
 	unsavedChangesDialogMessage: string | null;
 	onUnsavedChangesDialogCancel: SimpleCallback | null;
 	onUnsavedChangesDialogContinue: SimpleCallback | null;
 	openModalVisible: boolean;
 	exportModalVisible: boolean;
+	analysisResultVisible: boolean; // whether the analysis errors panel is visible
+	watchTablesVisible: boolean;
+}
+
+export interface ProjectStoreState {
+	//Project
+	project: Project | null; //null when no project is opened
+	hasUnsavedChanges: boolean;
+	ui: ProjectUiState;
 	savingProject: boolean;
 	/**
 	 * Accès au stockage. Dans le store pour rester substituable : la sauvegarde cloud de la
@@ -78,7 +91,7 @@ export interface ProjectStoreState {
 	openProject: (projectId: string) => Promise<boolean>; // Returns true if a project was opened, false if cancelled or failed
 	newProject: () => Promise<void>;
 	saveProject: () => Promise<boolean>; // true si réellement enregistré
-	closeProject: () => void;
+	closeProject: () => Promise<void>;
 
 	setProjectName: (newName: string) => void;
 	setProjectAuthor: (newAuthor: string) => void;
@@ -95,9 +108,7 @@ export interface ProjectStoreState {
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;
 	analysisWarnings: AnalysisIssues;
-	analysisResultVisible: boolean; // UI: whether the analysis errors panel is visible
 	setAnalysisResultVisible: (visible: boolean) => void;
-	watchTablesVisible: boolean;
 	setWatchTablesVisible: (visible: boolean) => void;
 	plcConfig: PLCConfig;
 	/**
@@ -139,16 +150,13 @@ export interface ProjectStoreState {
 	pagesOrder: string[]; //The ids of the pages in the order they are displayed
 	activePageId: string | null; //The id of the currently active page, or null if no page is active
 	pagesManager: PagesManager;
-
-	//=============== MISCELLANEOUS ===============
-	mousePosition: { x: number; y: number };
 }
 
 export type ProjectStoreSetFunction = (
 	partial:
 		| ProjectStoreState
 		| Partial<ProjectStoreState>
-		| ((partial: Partial<ProjectStoreState>) => ProjectStoreState | Partial<ProjectStoreState>),
+		| ((state: ProjectStoreState) => ProjectStoreState | Partial<ProjectStoreState>),
 ) => void;
 
 export type ProjectStoreGetFunction = () => ProjectStoreState;
@@ -178,7 +186,7 @@ export const createProjectStore = () => {
 
 	const _newProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
 		const newProject = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
-		_openProject(set, get, newProject);
+		await _openProject(set, get, newProject);
 	};
 
 	const _closeProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
@@ -197,12 +205,16 @@ export const createProjectStore = () => {
 	return createStore<ProjectStoreState>((set, get) => ({
 		project: null,
 		hasUnsavedChanges: false,
-		unsavedChangesDialogVisible: false,
-		unsavedChangesDialogMessage: null,
-		openModalVisible: false,
-		exportModalVisible: false,
-		onUnsavedChangesDialogCancel: null,
-		onUnsavedChangesDialogContinue: null,
+		ui: {
+			unsavedChangesDialogVisible: false,
+			unsavedChangesDialogMessage: null,
+			onUnsavedChangesDialogCancel: null,
+			onUnsavedChangesDialogContinue: null,
+			openModalVisible: false,
+			exportModalVisible: false,
+			analysisResultVisible: false,
+			watchTablesVisible: false,
+		},
 		savingProject: false,
 		projectRepository: new LocalStorageProjectRepository(),
 		activeScope: "project",
@@ -222,12 +234,15 @@ export const createProjectStore = () => {
 				await _newProject(set, get);
 				return;
 			}
-			set(() => ({
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					_newProject(set, get);
+			set((state) => ({
+				ui: {
+					...state.ui,
+					unsavedChangesDialogVisible: true,
+					unsavedChangesDialogMessage: null,
+					onUnsavedChangesDialogCancel: null,
+					onUnsavedChangesDialogContinue: () => {
+						void _newProject(set, get);
+					},
 				},
 			}));
 		},
@@ -255,15 +270,18 @@ export const createProjectStore = () => {
 
 		closeProject: async () => {
 			if (!get().hasUnsavedChanges) {
-				_closeProject(set, get);
+				await _closeProject(set, get);
 				return;
 			}
-			set(() => ({
-				unsavedChangesDialogVisible: true,
-				unsavedChangesDialogMessage: null,
-				onUnsavedChangesDialogCancel: null,
-				onUnsavedChangesDialogContinue: () => {
-					_closeProject(set, get);
+			set((state) => ({
+				ui: {
+					...state.ui,
+					unsavedChangesDialogVisible: true,
+					unsavedChangesDialogMessage: null,
+					onUnsavedChangesDialogCancel: null,
+					onUnsavedChangesDialogContinue: () => {
+						void _closeProject(set, get);
+					},
 				},
 			}));
 		},
@@ -306,40 +324,48 @@ export const createProjectStore = () => {
 		},
 
 		setUnsavedChangesDialogVisible: (visible: boolean) => {
-			set(() => ({ unsavedChangesDialogVisible: visible }));
+			set((state) => ({ ui: { ...state.ui, unsavedChangesDialogVisible: visible } }));
 		},
 
 		setOpenModalVisible: (visible: boolean) => {
 			if (!visible) {
-				set(() => ({ openModalVisible: false }));
+				set((state) => ({ ui: { ...state.ui, openModalVisible: false } }));
 				return;
 			}
 			if (!get().hasUnsavedChanges) {
-				set(() => ({ openModalVisible: true }));
+				set((state) => ({ ui: { ...state.ui, openModalVisible: true } }));
 			} else {
-				set(() => ({
-					unsavedChangesDialogVisible: true,
-					unsavedChangesDialogMessage: null,
-					onUnsavedChangesDialogCancel: null,
-					onUnsavedChangesDialogContinue: () => set(() => ({ openModalVisible: true })),
+				set((state) => ({
+					ui: {
+						...state.ui,
+						unsavedChangesDialogVisible: true,
+						unsavedChangesDialogMessage: null,
+						onUnsavedChangesDialogCancel: null,
+						onUnsavedChangesDialogContinue: () =>
+							set((state) => ({ ui: { ...state.ui, openModalVisible: true } })),
+					},
 				}));
 			}
 		},
 
 		setExportModalVisible: (visible: boolean) => {
 			if (!visible) {
-				set(() => ({ exportModalVisible: false }));
+				set((state) => ({ ui: { ...state.ui, exportModalVisible: false } }));
 				return;
 			}
 			if (!get().hasUnsavedChanges) {
-				set(() => ({ exportModalVisible: true }));
+				set((state) => ({ ui: { ...state.ui, exportModalVisible: true } }));
 			} else {
-				set(() => ({
-					unsavedChangesDialogVisible: true,
-					unsavedChangesDialogMessage:
-						"Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant d'exporter ?",
-					onUnsavedChangesDialogCancel: null,
-					onUnsavedChangesDialogContinue: () => set(() => ({ exportModalVisible: true })),
+				set((state) => ({
+					ui: {
+						...state.ui,
+						unsavedChangesDialogVisible: true,
+						unsavedChangesDialogMessage:
+							"Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant d'exporter ?",
+						onUnsavedChangesDialogCancel: null,
+						onUnsavedChangesDialogContinue: () =>
+							set((state) => ({ ui: { ...state.ui, exportModalVisible: true } })),
+					},
 				}));
 			}
 		},
@@ -367,13 +393,11 @@ export const createProjectStore = () => {
 		analysisHasWarnings: false,
 		analysisErrors: emptyAnalysisIssues(),
 		analysisWarnings: emptyAnalysisIssues(),
-		analysisResultVisible: false,
 		setAnalysisResultVisible: (visible: boolean) => {
-			set(() => ({ analysisResultVisible: visible }));
+			set((state) => ({ ui: { ...state.ui, analysisResultVisible: visible } }));
 		},
-		watchTablesVisible: false,
 		setWatchTablesVisible: (visible: boolean) => {
-			set(() => ({ watchTablesVisible: visible }));
+			set((state) => ({ ui: { ...state.ui, watchTablesVisible: visible } }));
 		},
 		plcConfig: {
 			scanTimeMs: 100,
@@ -399,8 +423,5 @@ export const createProjectStore = () => {
 		pagesOrder: [PROJECT_STARTUP_PAGE_ID],
 		activePageId: PROJECT_STARTUP_PAGE_ID,
 		pagesManager: new PagesManager(set, get),
-
-		//=============== MISCELLANEOUS ===============
-		mousePosition: { x: 0, y: 0 },
 	}));
 };

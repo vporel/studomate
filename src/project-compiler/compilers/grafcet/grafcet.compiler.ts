@@ -1,10 +1,10 @@
-import ControlsBuilder from "@/simulator/compiler/ast/builders/controls.builder";
-import ExpressionsBuilder from "@/simulator/compiler/ast/builders/expressions.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
-import StatementsBuilder from "@/simulator/compiler/ast/builders/statements.builder";
-import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
+import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import ActionCompiler from "./action.compiler";
 import TransitionCompiler from "./transition.compiler";
 

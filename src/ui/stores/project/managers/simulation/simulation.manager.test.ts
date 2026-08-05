@@ -25,14 +25,13 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		project,
 		mode: ProjectMode.DESIGN,
 		plcConfig: { scanTimeMs: 10 },
-		watchTablesVisible: false,
+		ui: { watchTablesVisible: false, analysisResultVisible: false },
 		simulationVariablesStates: {},
 		evaluableExpressionsValues: {},
 		analysisHasErrors: false,
 		analysisHasWarnings: false,
 		analysisErrors: { project: [], grafcets: {} },
 		analysisWarnings: { project: [], grafcets: {} },
-		analysisResultVisible: false,
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {

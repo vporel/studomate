@@ -2,6 +2,7 @@ import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { downloadFromUrl } from "@/ui/lib/utils";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import domToImage from "dom-to-image";
+import { toast } from "react-toastify";
 
 /**
  * Export a grafcet as an image (jpeg)
@@ -33,5 +34,9 @@ export const exportGrafcet = (grafcetId: string, fileName: string, format: Grafc
 			// 	return (typeof (node as any).className !== "string") || !(node as HTMLElement).className.split(" ").includes("react-flow__handle")
 			// }
 		})
-		.then((dataUrl) => downloadFromUrl(dataUrl, `${fileName}.jpeg`));
+		.then((dataUrl) => downloadFromUrl(dataUrl, `${fileName}.jpeg`))
+		.catch((e: unknown) => {
+			console.error("Failed to export grafcet as image:", e);
+			toast.error("L'export du grafcet en image a échoué.");
+		});
 };

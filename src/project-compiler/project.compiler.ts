@@ -1,8 +1,8 @@
-﻿import PlcVariablesMapper from "@/simulator/bridge/variables.mapper";
-import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
-import { TimerNode } from "@/simulator/compiler/ast/nodes/blocks";
-import { Environment } from "@/simulator/compiler/environment/environment";
-import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
+﻿import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { Environment } from "@/simulator/interpreter/environment/environment";
+import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import { PreCompiledGrafcet } from "../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import { PreCompiledProject } from "../project-pre-compiler/project.pre-compiler";

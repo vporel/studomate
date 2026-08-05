@@ -3,7 +3,7 @@ import ProjectAnalyser, { ProjectAnalysisResult } from "@/project-analyser/proje
 import ProjectCompiler, { ProjectCompilationResult } from "@/project-compiler/project.compiler";
 import { isPreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
-import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import PLC from "@/simulator/core/plc/plc";
 import ExpressionsWatcher from "@/simulator/runtime/expressions-watcher";
 import {
@@ -58,12 +58,12 @@ export default class SimulationManager {
 			warnings: warnings.length,
 		});
 
-		this.setStoreState(() => ({
+		this.setStoreState((state) => ({
 			analysisHasErrors: errors.length > 0,
 			analysisHasWarnings: warnings.length > 0,
 			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors),
 			analysisWarnings: AnalysisIssuesMapper.analyserToApp(warnings),
-			analysisResultVisible: errors.length > 0 || warnings.length > 0,
+			ui: { ...state.ui, analysisResultVisible: errors.length > 0 || warnings.length > 0 },
 		}));
 
 		return { ok: errors.length === 0, projectAnalysisResult };
@@ -130,7 +130,10 @@ export default class SimulationManager {
 		this.plc.start();
 
 		//Set the mode
-		this.setStoreState(() => ({ mode: ProjectMode.SIMULATION, watchTablesVisible: true }));
+		this.setStoreState((state) => ({
+			mode: ProjectMode.SIMULATION,
+			ui: { ...state.ui, watchTablesVisible: true },
+		}));
 	}
 
 	private createPLC(projectCompilationResult: ProjectCompilationResult): PLC {

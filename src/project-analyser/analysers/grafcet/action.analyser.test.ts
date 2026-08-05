@@ -250,6 +250,39 @@ describe("ActionAnalyser", () => {
 			expect(typeIssues).toHaveLength(0);
 		});
 
+		it("detects a constant division by zero", () => {
+			const intVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("counter")
+				.zone("memory")
+				.type("INT")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("counter := 1 / 0")
+				.type(ActionType.NUMERIC_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+
+			const divisionIssue = issues.find((i) => i.message.includes("Division par zéro"));
+			expect(divisionIssue).toBeDefined();
+			expect(divisionIssue?.severity).toBe("error");
+		});
+
 		it("validates variable types in string assignment", () => {
 			const intVar = new VariableBuilder()
 				.id("var-1")

@@ -1,15 +1,16 @@
-import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
+import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Variable from "@/schemas/variable/variable.schema";
-import { TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
-import FinderVisitor from "@/simulator/compiler/ast/visitors/finder.visitor";
-import { Environment } from "@/simulator/compiler/environment/environment";
+import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/simulator/compiler/lexer/lexer";
-import Parser from "@/simulator/compiler/parser/parser";
-import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
-import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
+import { Lexer } from "@/expression-language/lexer/lexer";
+import Parser from "@/expression-language/parser/parser";
+import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
+import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
+import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Transition from "@/schemas/grafcet/transition.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
@@ -31,6 +32,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"TRANSITION_EMPTY_EXPRESSION",
 						source,
 						"La transition n'a pas d'expression. Elle ne pourra jamais être franchie.",
 					),
@@ -47,6 +49,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"TRANSITION_ASSIGNMENT_NOT_ALLOWED",
 						source,
 						"Expression invalide : une transition ne peut pas être une affectation.",
 					),
@@ -57,6 +60,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
 							source,
 							"Une transition ne peut pas être une constante numérique. Si vous voulez qu'elle soit toujours validée, utilisez plutôt la constante booléenne VRAI.",
 						),
@@ -65,6 +69,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"TRANSITION_EXPRESSION_NOT_BOOLEAN",
 							source,
 							"Expression invalide : une transition doit être une expression retournant un booléen.",
 						),
@@ -75,8 +80,9 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"TRANSITION_INVALID_EXPRESSION",
 					source,
-					SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
 				),
 			);
 		}
@@ -98,13 +104,23 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 
 		if (!TransitionHelper.hasPredecessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "La transition n'a aucun élément en amont."),
+				new ProjectAnalyserIssue(
+					"error",
+					"TRANSITION_NO_PREDECESSOR",
+					source,
+					"La transition n'a aucun élément en amont.",
+				),
 			);
 		}
 
 		if (!TransitionHelper.hasSuccessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "La transition n'a aucun élément en aval."),
+				new ProjectAnalyserIssue(
+					"error",
+					"TRANSITION_NO_SUCCESSOR",
+					source,
+					"La transition n'a aucun élément en aval.",
+				),
 			);
 		}
 
@@ -112,6 +128,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"TRANSITION_MULTIPLE_SUCCESSORS",
 					source,
 					"Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément.",
 				),
@@ -125,6 +142,10 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				const env = new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
 				const semanticAnalyser = new SemanticAnalyserVisitor(env);
 				semanticAnalyser.visit(node);
+				//Folds constant sub-expressions to catch errors only detectable once computed (e.g.
+				//a literal division by zero) — the pre-compiler runs the same simplification, and any
+				//error surfacing only there instead of here would mean this analyser is incomplete.
+				new SimplifierVisitor().visit(node);
 				const typeAnalyser = new TypeAnalyserVisitor(env);
 				const nodeType = typeAnalyser.visit(node);
 				if (node.type === "IDENTIFIER") {
@@ -132,6 +153,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
+								"TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE",
 								source,
 								`La transition fait référence à la variable "${node.value}" qui n'est pas booléenne.`,
 							),
@@ -147,6 +169,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
+								"TRANSITION_TIMER_NAME_CONFLICT",
 								source,
 								`L'identifiant de temporisation "${decl.name}" entre en conflit avec une variable existante.`,
 							),
@@ -157,8 +180,9 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"TRANSITION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
 					),
 				);
 			}

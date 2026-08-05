@@ -1,7 +1,7 @@
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import ProjectCompiler from "./project.compiler";
 

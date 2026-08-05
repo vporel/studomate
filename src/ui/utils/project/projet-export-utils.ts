@@ -14,5 +14,7 @@ export const exportProject = (project: Project, fileName: string) => {
 	a.href = url;
 	a.download = `${fileName}.json`;
 	a.click();
-	URL.revokeObjectURL(url);
+	//Différé : le téléchargement n'a pas forcément démarré au retour de click() (ex. boîte de
+	//dialogue "Enregistrer sous"), un revoke immédiat peut l'annuler.
+	setTimeout(() => URL.revokeObjectURL(url), 10_000);
 };

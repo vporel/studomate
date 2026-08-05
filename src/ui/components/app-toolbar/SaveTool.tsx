@@ -9,7 +9,7 @@ const SaveTool = () => {
 	const saveProject = useProjectStore((state) => state.saveProject);
 
 	return (
-		<AppTool name="save" disabled={!hasUnsavedChanges} onClick={saveProject}>
+		<AppTool name="save" disabled={!hasUnsavedChanges} onClick={() => void saveProject()}>
 			<SaveIcon />
 		</AppTool>
 	);

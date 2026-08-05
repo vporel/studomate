@@ -32,7 +32,7 @@ export default function useFileMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							newProject();
+							void newProject();
 						},
 					},
 				],
@@ -72,7 +72,7 @@ export default function useFileMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							closeProject();
+							void closeProject();
 						},
 					},
 				],

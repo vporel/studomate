@@ -1,5 +1,5 @@
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { ReactFlowInstance } from "@xyflow/react";
+import { ReactFlowInstance, Viewport } from "@xyflow/react";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
 
 export const GRAFCET_FLOW_MIN_ZOOM = 1;
@@ -44,6 +44,14 @@ export default class ViewManager {
 
 	setReactFlowInstance(instance: ReactFlowInstance): void {
 		this.rfInstance = instance;
+	}
+
+	getViewport(): Viewport | null {
+		return this.getStoreState().viewport;
+	}
+
+	setViewport(viewport: Viewport): void {
+		this.setStoreState({ viewport });
 	}
 
 	getNodes(): GrafcetNodeType[] {
@@ -133,16 +141,16 @@ export default class ViewManager {
 
 	zoomIn(): void {
 		if (!this.rfInstance) return;
-		this.rfInstance.zoomIn();
+		void this.rfInstance.zoomIn();
 	}
 
 	zoomOut(): void {
 		if (!this.rfInstance) return;
-		this.rfInstance.zoomOut();
+		void this.rfInstance.zoomOut();
 	}
 
 	fitView() {
 		if (!this.rfInstance) return;
-		this.rfInstance.fitView();
+		void this.rfInstance.fitView();
 	}
 }

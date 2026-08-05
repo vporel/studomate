@@ -1,5 +1,6 @@
 "use client";
 import { createProjectStore, ProjectStoreState } from "@/ui/stores/project/project.store";
+import { setLastMousePosition } from "@/ui/lib/mouse-position";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
 import AnalysisResult from "./AnalysisResult";
@@ -34,10 +35,10 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		};
 	}, []);
 
-	//Constantly update the mouse position in the store to be able to paste elements at the right position
+	//Constantly track the mouse position to be able to paste elements at the right position
 	useEffect(() => {
 		const handleMouseMove = (event: MouseEvent) => {
-			storeRef.current?.setState({ mousePosition: { x: event.clientX, y: event.clientY } });
+			setLastMousePosition(event.clientX, event.clientY);
 		};
 		window.addEventListener("mousemove", handleMouseMove);
 		return () => {

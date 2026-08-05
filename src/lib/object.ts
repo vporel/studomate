@@ -23,7 +23,11 @@ export function deepMerge<TargetType = any, SourceType = any>(
 	const _source: any = source;
 	for (const key in _source) {
 		if ((target as object).hasOwnProperty(key) || !options?.onlyExistingKeys) {
-			if (typeof _source[key] === "object" && !Array.isArray(_source[key])) {
+			if (
+				typeof _source[key] === "object" &&
+				_source[key] !== null &&
+				!Array.isArray(_source[key])
+			) {
 				if (!_target[key]) _target[key] = {};
 				deepMerge(_target[key], _source[key]);
 			} else {

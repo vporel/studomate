@@ -26,6 +26,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"STEP_REFERRAL_NUMBER_EMPTY",
 						source,
 						"Le numéro de l'étape source est vide, liaison non fonctionnelle.",
 					),
@@ -37,6 +38,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
 					"Le numéro de l'étape doit être un entier positif.",
 				),
@@ -63,13 +65,21 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 					source,
 					`Aucune étape avec le numéro ${stepReferral.data.sourceStepNumber} n'existe dans le grafcet.`,
 				),
 			);
 		} else {
 			if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
-				issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en aval,`));
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
+						source,
+						`Connexion manquante en aval,`,
+					),
+				);
 			}
 			const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
 				stepReferral.id,
@@ -79,6 +89,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"STEP_REFERRAL_NO_UPSTREAM_TENANT",
 						source,
 						`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
 					),
@@ -92,6 +103,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
 							source,
 							`Le tenant n'est précédé par aucune étape.`,
 						),
@@ -102,6 +114,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
 							source,
 							`Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.`,
 						),
@@ -114,6 +127,7 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"STEP_REFERRAL_SOURCE_MISMATCH",
 							source,
 							`L'étape source référencée ne correspond pas à l'étape liée au tenant.`,
 						),

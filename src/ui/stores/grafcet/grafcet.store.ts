@@ -1,6 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import { Viewport } from "@xyflow/react";
 import { createStore } from "zustand";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import EdgesFactory from "./factories/edges.factory";
@@ -27,6 +28,12 @@ export interface GrafcetStoreState {
 	 */
 	highlightedNodesIds: string[];
 	highlightedEdgesIds: string[];
+	/**
+	 * Dernier viewport (position + zoom) connu de React Flow. Restauré via `defaultViewport` au
+	 * remontage : la page est démontée quand elle n'est pas l'onglet actif (voir `GrafcetPage`),
+	 * ce qui réinitialiserait sinon le cadrage à chaque changement d'onglet.
+	 */
+	viewport: Viewport | null;
 	viewManager: ViewManager;
 	copyCutPasteManager: CopyCutPasteManager;
 
@@ -62,6 +69,7 @@ export const createGrafcetStore = (
 		edges: EdgesFactory.getInitialEdges(grafcet),
 		highlightedNodesIds: [],
 		highlightedEdgesIds: [],
+		viewport: null,
 		viewManager: new ViewManager(set, get),
 		copyCutPasteManager: new CopyCutPasteManager(set, get),
 

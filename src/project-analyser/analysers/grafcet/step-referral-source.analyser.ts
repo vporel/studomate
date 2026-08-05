@@ -26,6 +26,7 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"STEP_REFERRAL_NUMBER_EMPTY",
 						source,
 						"Le numéro de l'étape cible est vide, liaison non fonctionnelle.",
 					),
@@ -37,6 +38,7 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
 					"Le numéro de l'étape doit être un entier positif.",
 				),
@@ -62,6 +64,7 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 					source,
 					`Aucune étape avec le numéro ${stepReferral.data.targetStepNumber} n'existe dans le grafcet.`,
 				),
@@ -69,7 +72,14 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 		}
 
 		if (!StepReferralSourceHelper.hasPredecessor(stepReferral.id, grafcet)) {
-			issues.push(new ProjectAnalyserIssue("error", source, `Connexion manquante en amont.`));
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"STEP_REFERRAL_SOURCE_MISSING_UPSTREAM_CONNECTION",
+					source,
+					`Connexion manquante en amont.`,
+				),
+			);
 		}
 
 		//Check that the target step is not the same as the source step (no self-referral)
@@ -84,6 +94,7 @@ export default class StepReferralSourceAnalyser extends ElementAnalyser<StepRefe
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_REFERRAL_SELF_REFERENCE",
 					source,
 					`Le tenant ne peut pas référer l'étape dont il dépend directement.`,
 				),

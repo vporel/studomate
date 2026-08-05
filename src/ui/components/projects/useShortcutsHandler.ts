@@ -1,6 +1,7 @@
 "use client";
 
 import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
+import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import React, { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
@@ -37,7 +38,7 @@ export default function useShortcutsHandler() {
 					case "s": {
 						e.stopPropagation();
 						e.preventDefault();
-						saveProject();
+						void saveProject();
 						break;
 					}
 					case "g": {
@@ -91,7 +92,7 @@ export default function useShortcutsHandler() {
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
 								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.pasteElements(projectStore?.getState().mousePosition);
+							copyCutPasteManager?.pasteElements(getLastMousePosition());
 						}
 						break;
 					}

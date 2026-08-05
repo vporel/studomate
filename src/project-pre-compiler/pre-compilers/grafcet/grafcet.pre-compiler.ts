@@ -1,9 +1,9 @@
 import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generator";
 import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
+import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectPreCompilerError, {
@@ -65,7 +65,7 @@ export default class GrafcetPreCompiler {
 				variables.push(generatedMemoVar);
 			} catch (e) {
 				const message =
-					SimulatorExceptionsHelper.getUserFriendlyMessage(
+					SimulatorExceptionsMapper.getUserFriendlyMessage(
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);
@@ -84,7 +84,7 @@ export default class GrafcetPreCompiler {
 				);
 			} catch (e) {
 				const message =
-					SimulatorExceptionsHelper.getUserFriendlyMessage(
+					SimulatorExceptionsMapper.getUserFriendlyMessage(
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);
@@ -102,7 +102,7 @@ export default class GrafcetPreCompiler {
 				actions.set(action.id, result);
 			} catch (e) {
 				const message =
-					SimulatorExceptionsHelper.getUserFriendlyMessage(
+					SimulatorExceptionsMapper.getUserFriendlyMessage(
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);

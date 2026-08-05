@@ -82,6 +82,7 @@ export default class GrafcetAnalyser {
 			return [
 				new ProjectAnalyserIssue(
 					"error",
+					"GRAFCET_TOO_FEW_STEPS",
 					{ sourceType: "grafcet", sourceId: grafcet.id },
 					"Le grafcet doit contenir au moins deux étapes.",
 				),
@@ -91,16 +92,31 @@ export default class GrafcetAnalyser {
 	}
 
 	/**
-	 * Grafcet-level rule: must contain at least one initial step.
+	 * Grafcet-level rule: must contain exactly one initial step.
+	 *
+	 * The compiler assumes exactly one (`GrafcetCompiler.initializeSteps` throws otherwise) —
+	 * this rule must catch both the zero and the multiple case at analysis time, so that error
+	 * never leaks to compilation.
 	 */
 	private static checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
-		const hasInitialStep = grafcet.steps.some((s) => s.data.initial === true);
-		if (!hasInitialStep) {
+		const initialStepsCount = grafcet.steps.filter((s) => s.data.initial === true).length;
+		if (initialStepsCount === 0) {
 			return [
 				new ProjectAnalyserIssue(
 					"error",
+					"GRAFCET_NO_INITIAL_STEP",
 					{ sourceType: "grafcet", sourceId: grafcet.id },
 					"Le grafcet ne contient aucune étape initiale.",
+				),
+			];
+		}
+		if (initialStepsCount > 1) {
+			return [
+				new ProjectAnalyserIssue(
+					"error",
+					"GRAFCET_MULTIPLE_INITIAL_STEPS",
+					{ sourceType: "grafcet", sourceId: grafcet.id },
+					`Le grafcet contient ${initialStepsCount} étapes initiales. Une seule étape initiale est autorisée.`,
 				),
 			];
 		}
@@ -147,6 +163,7 @@ export default class GrafcetAnalyser {
 		return [
 			new ProjectAnalyserIssue(
 				"error",
+				"GRAFCET_DISCONNECTED_COMPONENTS",
 				{ sourceType: "grafcet", sourceId: grafcet.id },
 				"Le grafcet contient plusieurs réseaux non connectés (plusieurs cycles distincts).",
 			),

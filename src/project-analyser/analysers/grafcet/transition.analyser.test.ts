@@ -253,6 +253,17 @@ describe("TransitionAnalyser", () => {
 			expect(conflictIssues).toHaveLength(0);
 		});
 
+		it("detects a constant division by zero", () => {
+			const transition = new TransitionBuilder().id("trans-1").expression("(1 / 0) = 5").build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").addTransition(transition).build();
+
+			const issues = analyser.analyseInContext(transition, grafcet, []);
+
+			const divisionIssue = issues.find((i) => i.message.includes("Division par zéro"));
+			expect(divisionIssue).toBeDefined();
+			expect(divisionIssue?.severity).toBe("error");
+		});
+
 		it("detects transition with multiple direct successors", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
 			const c1 = new ConnectionBuilder()

@@ -27,12 +27,12 @@ const UnsavedChangesDialog = ({
 }) => {
 	const { visible, message, setVisible, saveProject, onContinue, onCancel } = useProjectStore(
 		useShallow((state) => ({
-			visible: state.unsavedChangesDialogVisible,
-			message: state.unsavedChangesDialogMessage,
+			visible: state.ui.unsavedChangesDialogVisible,
+			message: state.ui.unsavedChangesDialogMessage,
 			setVisible: state.setUnsavedChangesDialogVisible,
 			saveProject: state.saveProject,
-			onContinue: state.onUnsavedChangesDialogContinue,
-			onCancel: state.onUnsavedChangesDialogCancel,
+			onContinue: state.ui.onUnsavedChangesDialogContinue,
+			onCancel: state.ui.onUnsavedChangesDialogCancel,
 		})),
 	);
 
@@ -77,7 +77,7 @@ const UnsavedChangesDialog = ({
 				</Typography>
 			</DialogContent>
 			<DialogActions>
-				<Button autoFocus onClick={onSave}>
+				<Button autoFocus onClick={() => void onSave()}>
 					{buttonsProps?.save?.text || "Enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onContinueWithoutSaving}>

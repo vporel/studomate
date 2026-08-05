@@ -20,7 +20,7 @@ function AppComponent() {
 	const { projectOpened, watchTablesVisible, mode } = useProjectStore(
 		useShallow((state) => ({
 			projectOpened: !!state.project,
-			watchTablesVisible: state.watchTablesVisible,
+			watchTablesVisible: state.ui.watchTablesVisible,
 			mode: state.mode,
 		})),
 	);

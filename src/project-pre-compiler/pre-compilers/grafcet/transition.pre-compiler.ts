@@ -1,22 +1,22 @@
-﻿import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generator";
-import BlocksBuilder from "@/simulator/compiler/ast/builders/blocks.builder";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
-import { TimerNode, TimerStringDeclarationNode } from "@/simulator/compiler/ast/nodes/blocks";
-import FinderVisitor from "@/simulator/compiler/ast/visitors/finder.visitor";
+import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generator";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import ReplacerVisitor, {
 	ReplacerVisitorReplacement,
-} from "@/simulator/compiler/ast/visitors/replacer.visitor";
+} from "@/expression-language/ast/visitors/replacer.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import JunctionOrStartHelper from "@/schemas/grafcet/helpers/junction-or-start.helper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Transition from "@/schemas/grafcet/transition.schema";
-import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
-import SimplifierVisitor from "@/simulator/compiler/interpreter/simplifier/simplifier.visitor";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/simulator/compiler/lexer/lexer";
-import Parser from "@/simulator/compiler/parser/parser";
+import { Lexer } from "@/expression-language/lexer/lexer";
+import Parser from "@/expression-language/parser/parser";
 
 export type PreCompiledTransition = {
 	node: ASTNode;

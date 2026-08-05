@@ -1,13 +1,14 @@
-import SimulatorExceptionsHelper from "@/bridge/simulator-exceptions.helper";
+import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
-import { Environment } from "@/simulator/compiler/environment/environment";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/simulator/compiler/lexer/lexer";
-import Parser from "@/simulator/compiler/parser/parser";
-import SemanticAnalyserVisitor from "@/simulator/compiler/semantic-analyser/semantic-analyser.visitor";
-import TypeAnalyserVisitor from "@/simulator/compiler/semantic-analyser/type-analyser.visitor";
+import { Lexer } from "@/expression-language/lexer/lexer";
+import Parser from "@/expression-language/parser/parser";
+import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
+import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
+import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
 import Action, { ActionType } from "@/schemas/grafcet/action.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
@@ -26,6 +27,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 			return [
 				new ProjectAnalyserIssue(
 					"warning",
+					"ACTION_TEXT_TYPE_NO_EFFECT",
 					source,
 					"Cette action est de type TEXTE, elle n'aura aucun effet à l'exécution. Si vous voulez exécuter une expression, changez son type.",
 				),
@@ -35,7 +37,14 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 
 		// Expression must not be empty for non-TEXT actions
 		if (!action.data.expression || action.data.expression.trim() === "") {
-			issues.push(new ProjectAnalyserIssue("warning", source, "L'action n'a pas d'expression."));
+			issues.push(
+				new ProjectAnalyserIssue(
+					"warning",
+					"ACTION_EMPTY_EXPRESSION",
+					source,
+					"L'action n'a pas d'expression.",
+				),
+			);
 		} else {
 			try {
 				const lexer = new Lexer(dialect);
@@ -46,6 +55,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
+								"ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 								source,
 								`Une action booléenne doit être une simple référence à une variable.`,
 							),
@@ -56,6 +66,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 							issues.push(
 								new ProjectAnalyserIssue(
 									"error",
+									"ACTION_NUMERIC_MUST_BE_ASSIGNMENT",
 									source,
 									`Une action sur variable numérique doit être une affectation (ex: Var := X + Y).`,
 								),
@@ -68,6 +79,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 							issues.push(
 								new ProjectAnalyserIssue(
 									"error",
+									"ACTION_STRING_MUST_BE_ASSIGNMENT",
 									source,
 									`Une action sur variable chaîne doit être une affectation (ex: Var := "Texte").`,
 								),
@@ -79,8 +91,9 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"ACTION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
 					),
 				);
 			}
@@ -91,6 +104,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"ACTION_INCOMPATIBLE_EXECUTION_MODE",
 					source,
 					`Le mode d'exécution "${action.data.executionMode}" est incompatible avec le type d'action "${action.data.type}".`,
 				),
@@ -118,7 +132,12 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 
 		if (!step) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "L'action n'est connectée à aucune étape."),
+				new ProjectAnalyserIssue(
+					"error",
+					"ACTION_NOT_CONNECTED_TO_STEP",
+					source,
+					"L'action n'est connectée à aucune étape.",
+				),
 			);
 		}
 
@@ -133,6 +152,10 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 						unauthorizedNodes: ["TIMER_BLOCK", "TIMER_STRING_DECLARATION"],
 					});
 					semanticAnalyser.visit(node);
+					//Folds constant sub-expressions to catch errors only detectable once computed (e.g.
+					//a literal division by zero) — the pre-compiler runs the same simplification, and any
+					//error surfacing only there instead of here would mean this analyser is incomplete.
+					new SimplifierVisitor().visit(node);
 					const typeAnalyser = new TypeAnalyserVisitor(env);
 					if (node.type === "ASSIGN_STATEMENT") {
 						const assignedVariableType = typeAnalyser.visit(node.left);
@@ -143,6 +166,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 							issues.push(
 								new ProjectAnalyserIssue(
 									"error",
+									"ACTION_NUMERIC_TYPE_MISMATCH",
 									source,
 									`L'action est de type numérique mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
 								),
@@ -155,6 +179,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 							issues.push(
 								new ProjectAnalyserIssue(
 									"error",
+									"ACTION_STRING_TYPE_MISMATCH",
 									source,
 									`L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
 								),
@@ -166,8 +191,9 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
+						"ACTION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsHelper.getUserFriendlyMessage(e, "FR"),
+						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
 					),
 				);
 			}

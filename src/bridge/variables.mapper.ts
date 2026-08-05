@@ -1,5 +1,5 @@
 import Variable from "@/schemas/variable/variable.schema";
-import EnvVariable from "@/simulator/compiler/environment/env-variable";
+import EnvVariable from "@/simulator/interpreter/environment/env-variable";
 
 /**
  * Traduit une variable du **schéma** (modèle métier) vers l'**environnement** du compilateur.

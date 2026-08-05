@@ -105,6 +105,7 @@ export default class ProjectAnalyser {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 					{ sourceType: "project", sourceId: project.id },
 					`Le numéro d'étape ${stepNumber} est utilisé dans plusieurs grafcets du projet : ${names}. Chaque numéro d'étape doit être unique à l'échelle du projet.`,
 				),

@@ -45,3 +45,20 @@ describe("ViewManager.temporarilyHighlightNodesAndEdges", () => {
 		expect(() => store.getState().viewManager.dispose()).not.toThrow();
 	});
 });
+
+describe("ViewManager viewport persistence", () => {
+	it("has no viewport before one is ever set", () => {
+		const store = buildStore();
+		expect(store.getState().viewManager.getViewport()).toBeNull();
+	});
+
+	it("stores and returns the last viewport set", () => {
+		const store = buildStore();
+		const viewport = { x: 10, y: 20, zoom: 1.5 };
+
+		store.getState().viewManager.setViewport(viewport);
+
+		expect(store.getState().viewManager.getViewport()).toEqual(viewport);
+		expect(store.getState().viewport).toEqual(viewport);
+	});
+});

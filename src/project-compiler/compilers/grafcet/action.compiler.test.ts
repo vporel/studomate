@@ -1,8 +1,8 @@
 import { PreCompiledAction } from "@/project-pre-compiler/pre-compilers/grafcet/action.pre-compiler";
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
-import StatementsBuilder from "@/simulator/compiler/ast/builders/statements.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import ActionCompiler from "./action.compiler";
 
 describe("ActionCompiler", () => {

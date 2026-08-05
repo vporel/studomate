@@ -1,6 +1,6 @@
-import ExpressionsBuilder from "@/simulator/compiler/ast/builders/expressions.builder";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import ExpressionsWatcher from "./expressions-watcher";
 

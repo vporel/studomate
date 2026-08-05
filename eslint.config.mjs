@@ -20,7 +20,9 @@ const eslintConfig = [
 	{
 		rules: {
 			"@typescript-eslint/no-explicit-any": "off",
-			"@typescript-eslint/no-empty-object-type": "off",
+			// console.error/warn sont la stratégie de journalisation actuelle (analysers,
+			// repositories, managers...) ; seul console.log (oublis de debug) est visé.
+			"no-console": ["error", { allow: ["warn", "error"] }],
 			// Un paramètre imposé par une signature (visiteur, classe abstraite...) ne peut pas
 			// être supprimé sans casser le contrat : on le préfixe par `_` pour marquer
 			// explicitement qu'il est inutilisé ici, tout en gardant la signature lisible.
@@ -55,6 +57,21 @@ const eslintConfig = [
 		files: ["*.js", "*.mjs", "*.cjs"],
 		rules: {
 			"@typescript-eslint/no-require-imports": "off",
+		},
+	},
+	// Règles nécessitant les informations de type (project service) : limitées aux fichiers
+	// TS/TSX du projet, les fichiers de config (*.mjs, *.js) n'en font pas partie.
+	{
+		files: ["**/*.ts", "**/*.tsx"],
+		languageOptions: {
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: __dirname,
+			},
+		},
+		rules: {
+			"@typescript-eslint/no-floating-promises": "error",
+			"@typescript-eslint/no-misused-promises": "error",
 		},
 	},
 ];

@@ -41,8 +41,10 @@ export default class CommandsStack<T> {
 		const commands = this.commandsToUndo.pop();
 		if (!commands) return [object, null];
 		this.commandsToRedo.push(commands);
-		for (const command of commands) {
-			object = command.cancel(object);
+		//Ordre inverse de l'exécution : si B dépend de A, annuler A avant B produirait un état
+		//incohérent.
+		for (let i = commands.length - 1; i >= 0; i--) {
+			object = commands[i].cancel(object);
 		}
 		return [object, commands];
 	}

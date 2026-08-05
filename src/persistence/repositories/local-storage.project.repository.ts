@@ -14,6 +14,12 @@ const STORAGE_KEY = "studomate_projects_data";
  *
  * Ce qui est versionné, en revanche, c'est la **forme d'un projet** — et cette version est
  * portée par le projet lui-même, donc partagée par tous les supports.
+ *
+ * **Une seule clé pour tous les projets, volontairement.** Studomate est un outil pédagogique :
+ * peu de projets par utilisateur, chacun de petite taille (un grafcet tient en quelques Ko de
+ * JSON). Une clé par projet résoudrait un problème de passage à l'échelle que ce
+ * contexte n'a pas. Si ça change (gros volumes, sauvegarde cloud...), c'est cette classe seule
+ * qu'il faudra remplacer — voir la remarque sur la disposition du stockage ci-dessus.
  */
 export default class LocalStorageProjectRepository implements ProjectRepository {
 	list(): Project[] {

@@ -1,9 +1,9 @@
 import { PreCompiledAction } from "@/project-pre-compiler/pre-compilers/grafcet/action.pre-compiler";
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import ControlsBuilder from "@/simulator/compiler/ast/builders/controls.builder";
-import ExpressionsBuilder from "@/simulator/compiler/ast/builders/expressions.builder";
-import { ASTNode } from "@/simulator/compiler/ast/nodes/ast-node";
-import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 
 export default class ActionCompiler {
 	static compile(

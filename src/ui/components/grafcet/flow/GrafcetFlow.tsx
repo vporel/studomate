@@ -30,6 +30,7 @@ export function GrafcetFlowContent() {
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
 	const viewManager = useGrafcetStore((state) => state.viewManager);
+	const viewport = useGrafcetStore((state) => state.viewport);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const flowDimensions = useMemo(() => getFlowDimensions(grafcetFormat), [grafcetFormat]);
 	const projectMode = useProjectStore((state) => state.mode);
@@ -73,6 +74,8 @@ export function GrafcetFlowContent() {
 					nodes={nodes}
 					edges={edges}
 					onInit={(instance) => viewManager.setReactFlowInstance(instance as any)}
+					defaultViewport={viewport ?? undefined}
+					onMoveEnd={(_, nextViewport) => viewManager.setViewport(nextViewport)}
 					nodesDraggable={projectMode === ProjectMode.DESIGN}
 					nodesConnectable={projectMode === ProjectMode.DESIGN}
 					elementsSelectable={projectMode === ProjectMode.DESIGN}

@@ -3,11 +3,13 @@
  */
 import { renderHook } from "@testing-library/react"
 import { useProjectContext, useProjectStore } from "@/ui/components/projects/ProjectContext"
+import { getLastMousePosition } from "@/ui/lib/mouse-position"
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum"
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks"
 import useShortcutsHandler from "./useShortcutsHandler"
 
 jest.mock("@/ui/components/projects/ProjectContext")
+jest.mock("@/ui/lib/mouse-position")
 
 function dispatchShortcut(key: string, target: Element = document.body) {
 	const event = new KeyboardEvent("keydown", { key, ctrlKey: true, bubbles: true, cancelable: true })
@@ -38,12 +40,12 @@ describe("useShortcutsHandler", () => {
 			grafcetsManager,
 			undoActiveScope,
 			redoActiveScope,
-			mousePosition: { x: 1, y: 2 },
 		}
 		;(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({ grafcetsManager, setOpenModalVisible, saveProject }),
 		)
 		;(useProjectContext as jest.Mock).mockReturnValue(fakeStoreApi(state))
+		;(getLastMousePosition as jest.Mock).mockReturnValue({ x: 1, y: 2 })
 		return renderHook(() => useShortcutsHandler())
 	}
 

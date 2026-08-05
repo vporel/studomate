@@ -1,7 +1,7 @@
 import StepVariableGenerator from "@/project-analyser/analysers/grafcet/step-variable.generator";
 import Step from "@/schemas/grafcet/step.schema";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import { IdentifierNode } from "@/simulator/compiler/ast/nodes/identifiers";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 
 export type PreCompiledStep = {
 	node: IdentifierNode;

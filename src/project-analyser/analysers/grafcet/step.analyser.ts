@@ -19,7 +19,12 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 		if (step.data.number === "" || step.data.number === null || step.data.number === undefined) {
 			if (!allowEmptyContent) {
 				issues.push(
-					new ProjectAnalyserIssue("error", source, "Le numéro de l'étape n'est pas défini."),
+					new ProjectAnalyserIssue(
+						"error",
+						"STEP_NUMBER_MISSING",
+						source,
+						"Le numéro de l'étape n'est pas défini.",
+					),
 				);
 			}
 			return issues;
@@ -28,6 +33,7 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
 					"Le numéro de l'étape doit être un entier positif.",
 				),
@@ -52,6 +58,7 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"STEP_NUMBER_DUPLICATE",
 					source,
 					`Le numéro d'étape ${step.data.number} est utilisé par plusieurs étapes.`,
 				),
@@ -60,11 +67,25 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 
 		if (!StepHelper.hasPredecessor(step.id, grafcet) && step.data.initial !== true) {
 			//We allow only the initial step to have no predecessor, as it can can be activated through a step referral source
-			issues.push(new ProjectAnalyserIssue("error", source, "L'étape n'a aucun élément en amont."));
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"STEP_NO_PREDECESSOR",
+					source,
+					"L'étape n'a aucun élément en amont.",
+				),
+			);
 		}
 
 		if (!StepHelper.hasSuccessor(step.id, grafcet)) {
-			issues.push(new ProjectAnalyserIssue("error", source, "L'étape n'a aucun élément en aval."));
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"STEP_NO_SUCCESSOR",
+					source,
+					"L'étape n'a aucun élément en aval.",
+				),
+			);
 		}
 
 		return issues;

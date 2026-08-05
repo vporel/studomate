@@ -121,7 +121,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 						textAlign: "center",
 						border: "none",
 						outline: "none",
-						boxSizing: "border-box",
+						borderRadius: "5px",
 						padding: 0,
 						pointerEvents: !editing ? "none" : "all",
 					}}

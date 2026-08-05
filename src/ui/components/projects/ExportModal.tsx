@@ -11,7 +11,7 @@ import { useProjectContext, useProjectStore } from "./ProjectContext";
 export default function ExportModal() {
 	const { exportModalVisible, setExportModalVisible, activeScope, activeScopeType } = useProjectStore(
 		useShallow((s) => ({
-			exportModalVisible: s.exportModalVisible,
+			exportModalVisible: s.ui.exportModalVisible,
 			setExportModalVisible: s.setExportModalVisible,
 			activeScope: s.activeScope,
 			activeScopeType: s.activeScopeType,

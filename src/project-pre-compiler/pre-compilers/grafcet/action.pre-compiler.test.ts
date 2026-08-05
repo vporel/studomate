@@ -387,8 +387,8 @@ describe("ActionPreCompiler", () => {
 				expect(result!.phases.continuous).toHaveLength(1);
 				const assignNode = result!.phases.continuous[0];
 				if (assignNode.type === "ASSIGN_STATEMENT") {
-					// Arithmetic expressions are kept as-is (not simplified during pre-compilation)
-					expect(assignNode.right.type).toBe("ARITHMETIC_EXPRESSION");
+					expect(assignNode.right.type).toBe("NUMBER_LITERAL");
+					expect((assignNode.right as { value: number }).value).toBe(10);
 				}
 			});
 		});

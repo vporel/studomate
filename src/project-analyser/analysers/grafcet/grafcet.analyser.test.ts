@@ -183,6 +183,19 @@ describe("GrafcetAnalyser", () => {
 			expect(initialStepError).toBeDefined();
 		});
 
+		it("detects multiple initial steps", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).initial().position(0, 100).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step1, step2).build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const initialStepError = result.issues.find((i) => i.message.includes("étape initiale"));
+			expect(initialStepError).toBeDefined();
+			expect(initialStepError?.severity).toBe("error");
+		});
+
 		it("returns no connectivity error for a single connected chain", () => {
 			// step-1 →[trans-1]→ step-2
 			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();

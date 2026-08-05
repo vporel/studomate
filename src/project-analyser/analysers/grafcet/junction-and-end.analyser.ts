@@ -31,7 +31,12 @@ export default class JunctionAndEndAnalyser extends ElementAnalyser<JunctionAndE
 
 		if (!JunctionHelper.isPivotConnected(junctionAndEnd.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "Le pivot n'est connecté à aucun élément."),
+				new ProjectAnalyserIssue(
+					"error",
+					"JUNCTION_PIVOT_NOT_CONNECTED",
+					source,
+					"Le pivot n'est connecté à aucun élément.",
+				),
 			);
 		}
 
@@ -39,6 +44,7 @@ export default class JunctionAndEndAnalyser extends ElementAnalyser<JunctionAndE
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"JUNCTION_BRANCH_NOT_CONNECTED",
 					source,
 					"Certaines branches ne sont connectées à aucun élément.",
 				),
@@ -62,6 +68,7 @@ export default class JunctionAndEndAnalyser extends ElementAnalyser<JunctionAndE
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
+							"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
 							source,
 							"La convergence en ET ne provient pas d'une divergence en ET.",
 						),
@@ -74,6 +81,7 @@ export default class JunctionAndEndAnalyser extends ElementAnalyser<JunctionAndE
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
+								"JUNCTION_AND_BRANCH_COUNT_MISMATCH",
 								source,
 								"Le nombre de branches de la convergence en ET ne correspond pas à celui de la divergence en ET.",
 							),

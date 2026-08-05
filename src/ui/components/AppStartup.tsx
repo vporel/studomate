@@ -72,7 +72,7 @@ const AppStartup = () => {
 				</FlexBox>
 				<Grid container spacing={2} mt={4}>
 					<Grid size={{ xs: 12, md: 6 }}>
-						<Button fullWidth sx={buttonSx} onClick={newProject}>
+						<Button fullWidth sx={buttonSx} onClick={() => void newProject()}>
 							Créer un <br /> nouveau projet
 						</Button>
 					</Grid>

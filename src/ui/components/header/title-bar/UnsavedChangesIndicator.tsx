@@ -27,9 +27,9 @@ const UnsavedChangesIndicator = () => {
 						userSelect: "none",
 						opacity: savingProject ? 0.5 : 1,
 					}}
-					onClick={async () => {
+					onClick={() => {
 						if (savingProject) return;
-						await saveProject();
+						void saveProject();
 					}}
 				>
 					Cliquez ici pour enregistrer

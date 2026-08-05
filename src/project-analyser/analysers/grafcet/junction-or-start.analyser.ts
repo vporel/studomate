@@ -31,7 +31,12 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 
 		if (!JunctionHelper.isPivotConnected(junctionOrStart.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue("error", source, "Le pivot n'est connecté à aucun élément."),
+				new ProjectAnalyserIssue(
+					"error",
+					"JUNCTION_PIVOT_NOT_CONNECTED",
+					source,
+					"Le pivot n'est connecté à aucun élément.",
+				),
 			);
 		}
 
@@ -39,6 +44,7 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
+					"JUNCTION_BRANCH_NOT_CONNECTED",
 					source,
 					"Certaines branches ne sont connectées à aucun élément.",
 				),

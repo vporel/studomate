@@ -15,7 +15,7 @@ export default function ProjectOpenModal() {
 	const { openProject, openModalVisible, setOpenModalVisible } = useProjectStore(
 		useShallow((state) => ({
 			openProject: state.openProject,
-			openModalVisible: state.openModalVisible,
+			openModalVisible: state.ui.openModalVisible,
 			setOpenModalVisible: state.setOpenModalVisible,
 		})),
 	);
@@ -25,7 +25,7 @@ export default function ProjectOpenModal() {
 	}, [setOpenModalVisible]);
 
 	const handleProjectClick = (projectId: string) => {
-		openProject(projectId);
+		void openProject(projectId);
 		onClose();
 	};
 
@@ -71,7 +71,7 @@ export default function ProjectOpenModal() {
 	return (
 		<CustomModal open={openModalVisible} onClose={onClose} title="Ouvrir un projet" width={500}>
 			<Box>
-				<Button variant="outlined" onClick={onFromFileBtnClick}>
+				<Button variant="outlined" onClick={() => void onFromFileBtnClick()}>
 					Ouvrir depuis un fichier...
 				</Button>
 			</Box>

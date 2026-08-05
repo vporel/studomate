@@ -1,6 +1,6 @@
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import IdentifiersBuilder from "@/simulator/compiler/ast/builders/identifiers.builder";
-import LiteralsBuilder from "@/simulator/compiler/ast/builders/literals.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import GrafcetCompiler from "./grafcet.compiler";
 
 describe("GrafcetCompiler", () => {
