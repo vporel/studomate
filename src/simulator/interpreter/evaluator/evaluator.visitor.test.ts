@@ -4,8 +4,8 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
 import EvaluatorVisitor from "./evaluator.visitor";
-import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
-import EvaluatorException from "./exceptions/evaluator.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
+import EvaluatorException from "@/expression-language/interpreter/exceptions/evaluator.exception";
 
 describe("EvaluatorVisitor", () => {
 	let env: Environment;

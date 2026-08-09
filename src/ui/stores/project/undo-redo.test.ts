@@ -23,11 +23,11 @@ function makeState(overrides: {
 		hasCommandsToRedo: overrides.hasCommandsToRedo ?? false,
 		commandsStackManager: projectStack,
 		grafcetsManager: {
-			getActiveGrafcetStoreValues: () => ({
+			getActiveStoreValues: () => ({
 				hasCommandsToUndo: overrides.grafcetUndo ?? false,
 				hasCommandsToRedo: overrides.grafcetRedo ?? false,
 			}),
-			getActiveGrafcetStoreManagers: () =>
+			getActiveStoreManagers: () =>
 				overrides.grafcetManagerMissing ? null : { commandsStackManager: grafcetStack },
 		},
 	} as unknown as ProjectStoreState;

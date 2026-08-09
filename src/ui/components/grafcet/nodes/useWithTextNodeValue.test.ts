@@ -69,7 +69,7 @@ describe("useWithTextNodeValue", () => {
 		act(() => result.current[1]("-1"))
 
 		const [, , , , , error] = result.current
-		expect(error).toBe("Le numéro de l'étape doit être un entier positif.")
+		expect(error).toBe("Le numéro de l'étape doit être un entier positif ou nul.")
 	})
 
 	it("saves the transformed value to the store", () => {

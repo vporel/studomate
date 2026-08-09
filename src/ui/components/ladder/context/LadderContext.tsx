@@ -45,21 +45,24 @@ export const LadderContextProvider = ({
 	useEffect(() => {
 		if (!storeRef.current) return;
 		const ladderId = storeRef.current.getState().ladder.id;
-		laddersManager.registerLadderStoreManager(ladderId, {
+		laddersManager.registerStoreManager(ladderId, {
 			commandsStackManager: storeRef.current.getState().commandsStackManager,
 			viewManager: storeRef.current.getState().viewManager,
 			copyCutPasteManager: storeRef.current.getState().copyCutPasteManager,
+			workflowManager: storeRef.current.getState().workflowManager,
 		});
 		return () => {
-			laddersManager.deleteLadderStoreManager(ladderId);
+			storeRef.current?.getState().viewManager.dispose();
+			laddersManager.deleteStoreManager(ladderId);
 		};
 	}, [laddersManager]);
 
-	return (
-		<LadderContext.Provider value={{ contextMenuEvents, store: storeRef.current }}>
-			{children}
-		</LadderContext.Provider>
+	const contextValue = useMemo(
+		() => ({ contextMenuEvents, store: storeRef.current }),
+		[contextMenuEvents],
 	);
+
+	return <LadderContext.Provider value={contextValue}>{children}</LadderContext.Provider>;
 };
 
 export const useLadderContext = () => useContext(LadderContext);

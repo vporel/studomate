@@ -18,7 +18,7 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 					{
 						label: "Ouvrir",
 						onClick: () => {
-							const grafcet = grafcetsManager.getGrafcet(grafcetId);
+							const grafcet = grafcetsManager.getProgramOrThrow(grafcetId);
 							if (grafcet) {
 								pagesManager.openPage({
 									id: grafcetId,
@@ -41,7 +41,7 @@ export default function useGrafcetMenuItems(): (grafcetId: string) => ContextMen
 						disabled: !designing,
 						onClick: () => {
 							if (confirm("Êtes-vous sûr de vouloir supprimer ce grafcet ?")) {
-								grafcetsManager.deleteGrafcet(grafcetId);
+								grafcetsManager.deleteProgramById(grafcetId);
 							}
 						},
 					},

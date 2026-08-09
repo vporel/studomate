@@ -27,20 +27,22 @@ export default function ProjectsList({ reloadKey, onProjectClick }: ProjectsList
 
 	useEffect(() => {
 		setLoading(true);
-		try {
-			const loadedProjects = projectRepository.list();
-			setProjects(loadedProjects);
-		} catch (error) {
-			console.error("Erreur lors du chargement des projets:", error);
-		} finally {
-			setLoading(false);
-		}
+		void (async () => {
+			try {
+				const loadedProjects = await projectRepository.list();
+				setProjects(loadedProjects);
+			} catch (error) {
+				console.error("Erreur lors du chargement des projets:", error);
+			} finally {
+				setLoading(false);
+			}
+		})();
 	}, [reloadKey, projectRepository]);
 
-	const handleDeleteProject = (event: React.MouseEvent, projectId: string) => {
+	const handleDeleteProject = async (event: React.MouseEvent, projectId: string) => {
 		event.stopPropagation();
 		if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
-			projectRepository.delete(projectId);
+			await projectRepository.delete(projectId);
 			setProjects((prevProjects) => prevProjects.filter((p) => p.id !== projectId));
 		}
 	};
@@ -65,7 +67,7 @@ export default function ProjectsList({ reloadKey, onProjectClick }: ProjectsList
 								<IconButton
 									edge="end"
 									aria-label="delete"
-									onClick={(e) => handleDeleteProject(e, project.id)}
+									onClick={(e) => void handleDeleteProject(e, project.id)}
 								>
 									<DeleteIcon />
 								</IconButton>

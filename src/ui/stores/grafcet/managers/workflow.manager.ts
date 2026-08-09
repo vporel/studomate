@@ -4,7 +4,7 @@ import NodesFactory from "../factories/nodes.factory";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.command";
 import { JUNCTION_TYPES } from "@/schemas/grafcet/element.schema";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/ui/utils/grafcet/grafcet-utils";
 import {
@@ -12,12 +12,13 @@ import {
 	applyNodeChanges,
 	EdgeChange,
 	NodeChange,
+	NodeDimensionChange,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
+import { JunctionNodeType } from "@/ui/components/grafcet/nodes/junctions/JunctionNode";
 import ConnectionsCommandsFactory from "../factories/connections-commands.factory";
 import ElementsCommandsFactory from "../factories/elements-commands.factory";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
-import { junction_onNodeChange as junction_onNodePositionOrDimensionsChange } from "../junction-node-management";
 
 export default class WorkflowManager {
 	private setStoreState: GrafcetStoreSetFunction;
@@ -34,17 +35,16 @@ export default class WorkflowManager {
 		//We filter the changes
 		//The remove operation is handle by the method onNodesAndEdgesRemove
 		const changesToAccept = changes.filter((change) => change.type != "remove");
-		//Copie superficielle du tableau : seul le nœud jonction réellement modifié est cloné
-		//ci-dessous, les autres gardent leur identité. Un structuredClone de tout le tableau ici
-		//coûtait cher à chaque frame d'un glisser-déposer, pour un résultat qu'applyNodeChanges
-		//(ligne suivante) recalcule de toute façon de manière immuable.
-		let newNodes = [...this.getStoreState().nodes!];
+		//Copie superficielle : seul le nœud jonction réellement modifié est cloné ci-dessous, les
+		//autres gardent leur identité. Appelée à chaque frame d'un glisser-déposer : ne pas
+		//structuredClone tout le tableau ici.
+		let newNodes = [...this.getStoreState().nodes];
 		changesToAccept.forEach((change) => {
 			const index = newNodes.findIndex((n) => n.id === (change as any).id);
 			if (index === -1) return;
 			const node = newNodes[index];
 			if (JUNCTION_TYPES.includes(node.type as (typeof JUNCTION_TYPES)[number])) {
-				const newData = junction_onNodePositionOrDimensionsChange(change, changesToAccept, newNodes);
+				const newData = this.resolveJunctionNodePositionOrDimensionsChange(change, changesToAccept, newNodes);
 				newNodes[index] = { ...node, data: newData } as GrafcetNodeType;
 			}
 		});
@@ -64,7 +64,7 @@ export default class WorkflowManager {
 			);
 		if (edgesDataToUpdate.length > 0) {
 			this.setStoreState(({ edges }) => ({
-				edges: edges?.map((e) => {
+				edges: edges.map((e) => {
 					const edgeToUpdate = edgesDataToUpdate.find((edu) => edu.edgeId === e.id);
 					if (edgeToUpdate && edgeToUpdate.newData)
 						return { ...e, data: { ...e.data, ...edgeToUpdate.newData } };
@@ -135,7 +135,7 @@ export default class WorkflowManager {
 		//The remove operation is handle by the method onNodesAndEdgesRemove
 		const changesToAccept = changes.filter((change) => change.type != "remove");
 		this.setStoreState(() => ({
-			edges: applyEdgeChanges(changesToAccept, this.getStoreState().edges!),
+			edges: applyEdgeChanges(changesToAccept, this.getStoreState().edges),
 		}));
 	}
 
@@ -207,8 +207,8 @@ export default class WorkflowManager {
 	adoptGrafcet(grafcet: Grafcet): void {
 		this.setStoreState((state) => ({
 			grafcet,
-			nodes: NodesFactory.syncNodes(state.nodes!, grafcet),
-			edges: EdgesFactory.syncEdges(state.edges!, grafcet),
+			nodes: NodesFactory.syncNodes(state.nodes, grafcet),
+			edges: EdgesFactory.syncEdges(state.edges, grafcet),
 		}));
 	}
 
@@ -233,5 +233,50 @@ export default class WorkflowManager {
 				edgesToDelete: connectionsToDelete.map((c) => c.id),
 			},
 		);
+	}
+
+	/**
+	 * Une jonction garde ses branches à une position relative constante par rapport au nœud :
+	 * un déplacement ou redimensionnement doit donc aussi translater le pivot et les branches,
+	 * pas seulement la position du nœud lui-même.
+	 */
+	private resolveJunctionNodePositionOrDimensionsChange(
+		change: NodeChange,
+		changes: NodeChange[], //The other changes of the same batch
+		nodes: GrafcetNodeType[],
+	): JunctionData {
+		const node = nodes.find((n) => n.id === (change as any).id) as JunctionNodeType | undefined;
+		if (!node) throw new Error(`Junction node not found for id ${(change as any).id}`);
+		if (!node.type!.includes("junction")) return node.data;
+		const dimensionsChange: NodeDimensionChange = changes.find(
+			(c) => (c as any).id === (change as any).id && c.type === "dimensions",
+		) as NodeDimensionChange;
+		if (change.type == "position") {
+			if (!dimensionsChange) return node.data;
+			//If the position of a junction node is changed
+			//and there is also a change of dimensions for the same node,
+			//we update the position of the bars in order to keep them in the same relative position to the node position, because during the resizing, the position of the node is updated before the dimensions are updated, so if we don't do this, the bars will be in the wrong position during the resizing
+			//Update the branches positions, the pivot position and the node width according to the new position of the node
+			const positionDelta = node.position.x! - change.position!.x;
+			const nodeWidth = dimensionsChange.dimensions?.width;
+			return {
+				...node.data,
+				width: nodeWidth ? nodeWidth : node.data.width,
+				pivotPosition: node.data.pivotPosition + positionDelta,
+				branches: Object.fromEntries(
+					Object.entries(node.data.branches).map(([branchId, branch]) => [
+						branchId,
+						{ ...branch, position: branch.position + positionDelta },
+					]),
+				),
+			};
+		} else if (change.type == "dimensions") {
+			const nodeWidth = dimensionsChange.dimensions?.width;
+			return {
+				...node.data,
+				width: nodeWidth ? nodeWidth : node.data.width,
+			};
+		}
+		return node.data;
 	}
 }

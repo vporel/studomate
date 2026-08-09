@@ -7,14 +7,18 @@ import {
 	compileToPLC,
 	expectVariableValue,
 	getVariableValue,
-	wait,
 } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Multi-Grafcet Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	// ──────────────────────────────────────────────────────────────
@@ -105,7 +109,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.setPhysicalInputValueByName("I1", false);
 			plc!.start();
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 
 			expectVariableValue(plc!, "Q0", true);
@@ -154,7 +158,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			plc!.setPhysicalInputValueByName("I0", false);
 			plc!.setPhysicalInputValueByName("I1", true);
 			plc!.start();
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 
 			expectVariableValue(plc!, "Q0", false);
@@ -202,7 +206,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.setPhysicalInputValueByName("I1", true);
 			plc!.start();
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 
 			expectVariableValue(plc!, "Q0", true);
@@ -259,7 +263,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			expectVariableValue(plc!, "Q1", false);
 
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -299,7 +303,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			expect(plc).not.toBeNull();
 
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -330,7 +334,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			expect(plc).not.toBeNull();
 
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 

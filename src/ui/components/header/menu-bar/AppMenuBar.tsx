@@ -39,7 +39,6 @@ const MenuBar = () => {
 				gap: "8px",
 				padding: "0px",
 				background: "white",
-				boxSizing: "border-box",
 			}}
 		>
 			{menus.map((menu) => (

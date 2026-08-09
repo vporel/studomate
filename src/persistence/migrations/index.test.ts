@@ -1,5 +1,6 @@
 import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
-import { isFromNewerVersion, migrateProject, UNVERSIONED } from "./index";
+import { UNVERSIONED } from "./migration";
+import { isFromNewerVersion, migrateProject } from "./index";
 
 describe("migrateProject", () => {
 	it("amène un projet non versionné à la version courante", () => {

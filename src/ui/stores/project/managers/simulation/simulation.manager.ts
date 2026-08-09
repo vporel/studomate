@@ -75,6 +75,8 @@ export default class SimulationManager {
 	}
 
 	setSimulationMode() {
+		if (this.plc) this.stopSimulation();
+
 		const project = this.getStoreState().project;
 		if (!project) return;
 
@@ -97,6 +99,18 @@ export default class SimulationManager {
 			return;
 		}
 
+		//Compile the project
+		const projectCompilationResult = ProjectCompiler.compile(projectPreCompilationResult.result!);
+		if (projectCompilationResult.errors.length > 0) {
+			this.notifier.simulationCouldNotStart({
+				step: "compilation",
+				errorsCount: projectCompilationResult.errors.length,
+			});
+			console.error("Errors during project compilation:", projectCompilationResult.errors);
+			return;
+		}
+		this.notifier.simulationStarting();
+
 		//We register each transition expression to be evaluated during simulation,
 		// with the transition id as expression id
 		//Fonctionnalité propre au GRAFCET : afficher l'état des réceptivités. On ne s'intéresse
@@ -112,18 +126,6 @@ export default class SimulationManager {
 			);
 		this.expressionsWatcher = new ExpressionsWatcher(this.getStoreState().plcConfig.scanTimeMs);
 		this.expressionsWatcher.watch(watchedExpressions);
-
-		//Compile the project
-		const projectCompilationResult = ProjectCompiler.compile(projectPreCompilationResult.result!);
-		if (projectCompilationResult.errors.length > 0) {
-			this.notifier.simulationCouldNotStart({
-				step: "compilation",
-				errorsCount: projectCompilationResult.errors.length,
-			});
-			console.error("Errors during project compilation:", projectCompilationResult.errors);
-			return;
-		}
-		this.notifier.simulationStarting();
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);

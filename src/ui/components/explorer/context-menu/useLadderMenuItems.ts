@@ -18,7 +18,7 @@ export default function useLadderMenuItems(): (ladderId: string) => ContextMenuI
 					{
 						label: "Ouvrir",
 						onClick: () => {
-							const ladder = laddersManager.getLadder(ladderId);
+							const ladder = laddersManager.getProgramOrThrow(ladderId);
 							if (ladder) {
 								pagesManager.openPage({
 									id: ladderId,
@@ -41,7 +41,7 @@ export default function useLadderMenuItems(): (ladderId: string) => ContextMenuI
 						disabled: !designing,
 						onClick: () => {
 							if (confirm("Êtes-vous sûr de vouloir supprimer ce ladder ?")) {
-								laddersManager.deleteLadder(ladderId);
+								laddersManager.deleteProgramById(ladderId);
 							}
 						},
 					},

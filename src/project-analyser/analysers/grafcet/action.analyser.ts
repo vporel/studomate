@@ -1,6 +1,7 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -9,7 +10,7 @@ import Parser from "@/expression-language/parser/parser";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
-import Action, { ActionType } from "@/schemas/grafcet/action.schema";
+import Action, { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
@@ -23,16 +24,9 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		{ dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
 		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
-		if (action.data.type === ActionType.TEXT) {
-			return [
-				new ProjectAnalyserIssue(
-					"warning",
-					"ACTION_TEXT_TYPE_NO_EFFECT",
-					source,
-					"Cette action est de type TEXTE, elle n'aura aucun effet à l'exécution. Si vous voulez exécuter une expression, changez son type.",
-				),
-			];
-		}
+		// Une action TEXTE (description littérale, niveau 1 de spécification GRAFCET, ex :
+		// "serrer la pièce") est une forme normale et attendue, pas une erreur ni un oubli.
+		if (action.data.type === ActionType.TEXT) return [];
 		const issues: ProjectAnalyserIssue[] = [];
 
 		// Expression must not be empty for non-TEXT actions
@@ -128,7 +122,15 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
 
-		const step = ActionHelper.getStep(action.id, grafcet);
+		// Une connexion structurellement invalide (type inattendu) est déjà relevée par la
+		// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
+		// pas rompre le contrat "l'analyse ne lève jamais".
+		let step = null;
+		try {
+			step = ActionHelper.getStep(action.id, grafcet);
+		} catch {
+			return issues;
+		}
 
 		if (!step) {
 			issues.push(
@@ -140,6 +142,11 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 				),
 			);
 		}
+
+		// Uniquement pour les actions booléennes (référence directe à la variable) : pour
+		// NUMERIC_VARIABLE/STRING_VARIABLE, une affectation vers une variable IN ou d'un type
+		// incompatible est déjà interceptée plus haut par SemanticAnalyserVisitor.
+		let writtenVariableName: string | null = null;
 
 		if (action.data.expression && action.data.expression.trim() !== "") {
 			try {
@@ -157,6 +164,9 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 					//error surfacing only there instead of here would mean this analyser is incomplete.
 					new SimplifierVisitor().visit(node);
 					const typeAnalyser = new TypeAnalyserVisitor(env);
+					if (action.data.type === ActionType.BOOLEAN_VARIABLE && node.type === "IDENTIFIER") {
+						writtenVariableName = node.value;
+					}
 					if (node.type === "ASSIGN_STATEMENT") {
 						const assignedVariableType = typeAnalyser.visit(node.left);
 						if (
@@ -194,6 +204,75 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 						"ACTION_INVALID_EXPRESSION",
 						source,
 						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+					),
+				);
+			}
+		}
+
+		if (writtenVariableName) {
+			const writtenVariable = variables.find((v) => v.mnemonic === writtenVariableName);
+			if (writtenVariable?.getDirection() === "IN") {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"ACTION_VARIABLE_IS_INPUT",
+						source,
+						`L'action ne peut pas modifier la variable "${writtenVariableName}" car c'est une variable d'entrée.`,
+					),
+				);
+			}
+
+			const stepVariableMnemonics = new Set(
+				grafcet.steps
+					.filter((s) => Number.isInteger(s.data.number) && (s.data.number as number) >= 0)
+					.map((s) => StepHelper.getStepVariableMnemonic(s.data.number as number)),
+			);
+			if (stepVariableMnemonics.has(writtenVariableName)) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"ACTION_STEP_VARIABLE_READONLY",
+						source,
+						`L'action ne peut pas modifier "${writtenVariableName}" : c'est une variable d'étape générée automatiquement, en lecture seule.`,
+					),
+				);
+			}
+		}
+
+		if (
+			step &&
+			writtenVariableName &&
+			action.data.type === ActionType.BOOLEAN_VARIABLE &&
+			(action.data.executionMode === ActionExecutionMode.SET ||
+				action.data.executionMode === ActionExecutionMode.RESET)
+		) {
+			const opposedMode =
+				action.data.executionMode === ActionExecutionMode.SET
+					? ActionExecutionMode.RESET
+					: ActionExecutionMode.SET;
+			// Une connexion structurellement invalide chez une action sœur est déjà relevée par
+			// GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne pas rompre le contrat
+			// "l'analyse ne lève jamais".
+			let siblingActions: Action[] = [];
+			try {
+				siblingActions = StepHelper.getActions(step.id, grafcet) as Action[];
+			} catch {
+				siblingActions = [];
+			}
+			const hasConflict = siblingActions.some(
+				(sibling) =>
+					sibling.id !== action.id &&
+					sibling.data.type === ActionType.BOOLEAN_VARIABLE &&
+					sibling.data.executionMode === opposedMode &&
+					sibling.getExpressionLines()[0] === writtenVariableName,
+			);
+			if (hasConflict) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"ACTION_SET_RESET_CONFLICT_SAME_STEP",
+						source,
+						`Cette étape porte à la fois une action SET et une action RESET sur la variable "${writtenVariableName}" : comportement contradictoire au même cycle.`,
 					),
 				);
 			}

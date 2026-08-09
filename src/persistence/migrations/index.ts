@@ -2,9 +2,6 @@ import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
 import { ProjectMigration, UNVERSIONED } from "./migration";
 import v0ToV1 from "./v0-to-v1";
 
-export { UNVERSIONED } from "./migration";
-export type { ProjectMigration } from "./migration";
-
 /**
  * Les migrations, dans l'ordre. Ajouter un saut de version consiste à ajouter un fichier et
  * une ligne ici, puis à incrémenter `PROJECT_SCHEMA_VERSION` dans le schéma du projet.

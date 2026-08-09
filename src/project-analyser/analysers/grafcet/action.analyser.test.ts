@@ -10,7 +10,8 @@ describe("ActionAnalyser", () => {
 	const analyser = new ActionAnalyser();
 
 	describe("analyseIsolated", () => {
-		it("returns warning for TEXT action", () => {
+		it("returns no issues for TEXT action", () => {
+			// Description littérale (niveau 1 GRAFCET), forme normale et attendue.
 			const action = new ActionBuilder()
 				.id("action-1")
 				.expression("Some text")
@@ -19,9 +20,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			expect(issues).toHaveLength(1);
-			expect(issues[0].severity).toBe("warning");
-			expect(issues[0].message).toContain("type TEXTE");
+			expect(issues).toHaveLength(0);
 		});
 
 		it("detects empty expression for non-TEXT action", () => {
@@ -186,6 +185,27 @@ describe("ActionAnalyser", () => {
 			expect(connectionIssue?.severity).toBe("error");
 		});
 
+		it("does not throw when the action is connected to a non-step element", () => {
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("sensor")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const connection = new ConnectionBuilder()
+				.id("c1")
+				.source("transition", "trans-1", "source:successor")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addAction(action)
+				.addConnections(connection)
+				.build();
+
+			expect(() => analyser.analyseInContext(action, grafcet, [])).not.toThrow();
+		});
+
 		it("validates variable types in numeric assignment", () => {
 			const boolVar = new VariableBuilder()
 				.id("var-1")
@@ -313,6 +333,221 @@ describe("ActionAnalyser", () => {
 
 			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
 			expect(typeIssue).toBeDefined();
+		});
+
+		it("detects a boolean action writing to an input variable", () => {
+			const inputVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("sensor")
+				.zone("logic-input")
+				.type("BOOL")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("sensor")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(action, grafcet, [inputVar]);
+
+			const inputIssue = issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT");
+			expect(inputIssue).toBeDefined();
+			expect(inputIssue?.severity).toBe("error");
+		});
+
+		it("rejects a numeric action assigning to an input variable (already caught upstream)", () => {
+			// SemanticAnalyserVisitor lève déjà sur une affectation vers une variable IN ; le
+			// message générique ACTION_INVALID_EXPRESSION suffit, ACTION_VARIABLE_IS_INPUT est
+			// réservé aux actions booléennes (référence directe, jamais interceptée en amont).
+			const inputVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("counter")
+				.zone("analog-input")
+				.type("INT")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("counter := 5")
+				.type(ActionType.NUMERIC_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(action, grafcet, [inputVar]);
+
+			expect(issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION")).toBeDefined();
+			expect(issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT")).toBeUndefined();
+		});
+
+		it("accepts a boolean action writing to a memory variable", () => {
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(action, grafcet, [memoryVar]);
+
+			expect(issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT")).toBeUndefined();
+		});
+
+		it("detects a boolean action writing to a step variable X{n}", () => {
+			const x1 = new VariableBuilder().id("x1").mnemonic("X1").zone("memory").type("BOOL").build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("X1")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-2", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(action, grafcet, [x1]);
+
+			const readonlyIssue = issues.find((i) => i.code === "ACTION_STEP_VARIABLE_READONLY");
+			expect(readonlyIssue).toBeDefined();
+			expect(readonlyIssue?.severity).toBe("error");
+		});
+
+		it("detects a SET/RESET conflict on the same step for the same variable", () => {
+			const setAction = new ActionBuilder()
+				.id("action-set")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const resetAction = new ActionBuilder()
+				.id("action-reset")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.RESET)
+				.build();
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-set", "target:step")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-reset", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addActions(setAction, resetAction)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(setAction, grafcet, [memoryVar]);
+
+			const conflictIssue = issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP");
+			expect(conflictIssue).toBeDefined();
+			expect(conflictIssue?.severity).toBe("error");
+		});
+
+		it("accepts SET and RESET on the same variable from different steps", () => {
+			const setAction = new ActionBuilder()
+				.id("action-set")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const resetAction = new ActionBuilder()
+				.id("action-reset")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.RESET)
+				.build();
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-set", "target:step")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("step", "step-2", "source:action")
+				.target("action", "action-reset", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addActions(setAction, resetAction)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(setAction, grafcet, [memoryVar]);
+
+			expect(issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP")).toBeUndefined();
 		});
 	});
 });

@@ -54,7 +54,7 @@ export const GrafcetContextProvider = ({
 	useEffect(() => {
 		if (!storeRef.current) return;
 		const grafcetId = storeRef.current.getState().grafcet.id;
-		grafcetsManager.registerGrafcetStoreManager(grafcetId, {
+		grafcetsManager.registerStoreManager(grafcetId, {
 			viewManager: storeRef.current.getState().viewManager,
 			copyCutPasteManager: storeRef.current.getState().copyCutPasteManager,
 			commandsStackManager: storeRef.current.getState().commandsStackManager,
@@ -62,20 +62,16 @@ export const GrafcetContextProvider = ({
 		});
 		return () => {
 			storeRef.current?.getState().viewManager.dispose();
-			grafcetsManager.deleteGrafcetStoreManager(grafcetId);
+			grafcetsManager.deleteStoreManager(grafcetId);
 		};
 	}, [grafcetsManager]);
 
-	return (
-		<GrafcetContext.Provider
-			value={{
-				contextMenuEvents,
-				store: storeRef.current,
-			}}
-		>
-			{children}
-		</GrafcetContext.Provider>
+	const contextValue = useMemo(
+		() => ({ contextMenuEvents, store: storeRef.current }),
+		[contextMenuEvents],
 	);
+
+	return <GrafcetContext.Provider value={contextValue}>{children}</GrafcetContext.Provider>;
 };
 
 export const useGrafcetContext = () => useContext(GrafcetContext);

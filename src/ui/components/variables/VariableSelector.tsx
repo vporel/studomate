@@ -255,6 +255,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 					inputRef={inputRef}
 					variant="standard"
 					placeholder="?"
+					inputProps={{ ...params.inputProps, "data-variable-status": status ?? undefined }}
 					// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
 					// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au
 					// clic — un `slotProps.input` à côté les aurait purement et simplement écrasés.

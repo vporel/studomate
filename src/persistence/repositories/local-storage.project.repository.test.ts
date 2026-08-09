@@ -38,11 +38,11 @@ describe("LocalStorageProjectRepository", () => {
 
 	describe("lecture d'un stockage hérité", () => {
 		// Le cas réel : un projet enregistré avant le versionnement
-		it("relit un projet écrit par l'ancienne version", () => {
+		it("relit un projet écrit par l'ancienne version", async () => {
 			const original = newProject("p1", "Projet enseignante");
 			store.set(STORAGE_KEY, legacyStoredValue([JSON.parse(JSON.stringify(original))]));
 
-			const projects = new LocalStorageProjectRepository().list();
+			const projects = await new LocalStorageProjectRepository().list();
 
 			expect(projects).toHaveLength(1);
 			expect(projects[0]).toBeInstanceOf(Project);
@@ -50,11 +50,11 @@ describe("LocalStorageProjectRepository", () => {
 			expect(projects[0].name).toBe("Projet enseignante");
 		});
 
-		it("écrit la disposition courante lors du prochain enregistrement", () => {
+		it("écrit la disposition courante lors du prochain enregistrement", async () => {
 			store.set(STORAGE_KEY, legacyStoredValue([JSON.parse(JSON.stringify(newProject("p1", "A")))]));
 			const repo = new LocalStorageProjectRepository();
 
-			repo.save(newProject("p2", "B"));
+			await repo.save(newProject("p2", "B"));
 
 			const persisted = JSON.parse(store.get(STORAGE_KEY)!);
 			expect(Array.isArray(persisted)).toBe(true);
@@ -63,57 +63,57 @@ describe("LocalStorageProjectRepository", () => {
 	});
 
 	describe("aller-retour", () => {
-		it("enregistre puis relit un projet", () => {
+		it("enregistre puis relit un projet", async () => {
 			const repo = new LocalStorageProjectRepository();
 
-			expect(repo.save(newProject("p1", "Mon projet"))).toEqual({ ok: true });
-			expect(repo.get("p1")?.name).toBe("Mon projet");
+			expect(await repo.save(newProject("p1", "Mon projet"))).toEqual({ ok: true });
+			expect((await repo.get("p1"))?.name).toBe("Mon projet");
 		});
 
-		it("remplace un projet existant au lieu de le dupliquer", () => {
+		it("remplace un projet existant au lieu de le dupliquer", async () => {
 			const repo = new LocalStorageProjectRepository();
-			repo.save(newProject("p1", "Avant"));
-			repo.save(newProject("p1", "Après"));
+			await repo.save(newProject("p1", "Avant"));
+			await repo.save(newProject("p1", "Après"));
 
-			expect(repo.list()).toHaveLength(1);
-			expect(repo.get("p1")?.name).toBe("Après");
+			expect(await repo.list()).toHaveLength(1);
+			expect((await repo.get("p1"))?.name).toBe("Après");
 		});
 
-		it("supprime un projet", () => {
+		it("supprime un projet", async () => {
 			const repo = new LocalStorageProjectRepository();
-			repo.save(newProject("p1", "A"));
-			repo.save(newProject("p2", "B"));
+			await repo.save(newProject("p1", "A"));
+			await repo.save(newProject("p2", "B"));
 
-			repo.delete("p1");
+			await repo.delete("p1");
 
-			expect(repo.list().map((p) => p.id)).toEqual(["p2"]);
+			expect((await repo.list()).map((p) => p.id)).toEqual(["p2"]);
 		});
 
-		it("retourne null pour un projet inconnu", () => {
-			expect(new LocalStorageProjectRepository().get("inexistant")).toBeNull();
+		it("retourne null pour un projet inconnu", async () => {
+			expect(await new LocalStorageProjectRepository().get("inexistant")).toBeNull();
 		});
 	});
 
 	describe("échec de sauvegarde", () => {
 		// L'ancien code laissait passer l'exception et affichait « enregistré »
-		it("signale un dépassement de quota au lieu de lever", () => {
+		it("signale un dépassement de quota au lieu de lever", async () => {
 			installLocalStorage(() => {
 				const e = new DOMException("quota", "QuotaExceededError");
 				throw e;
 			});
 
-			const result = new LocalStorageProjectRepository().save(newProject("p1", "A"));
+			const result = await new LocalStorageProjectRepository().save(newProject("p1", "A"));
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.reason).toBe("quota-exceeded");
 		});
 
-		it("signale une cause inconnue sans lever", () => {
+		it("signale une cause inconnue sans lever", async () => {
 			installLocalStorage(() => {
 				throw new Error("panne");
 			});
 
-			const result = new LocalStorageProjectRepository().save(newProject("p1", "A"));
+			const result = await new LocalStorageProjectRepository().save(newProject("p1", "A"));
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.reason).toBe("unknown");
@@ -126,7 +126,7 @@ describe("LocalStorageProjectRepository", () => {
 	 * stockage.
 	 */
 	describe("cohabitation de versions", () => {
-		it("ouvre les projets qu'elle comprend et ignore ceux qui la dépassent", () => {
+		it("ouvre les projets qu'elle comprend et ignore ceux qui la dépassent", async () => {
 			store.set(
 				STORAGE_KEY,
 				JSON.stringify([
@@ -135,17 +135,17 @@ describe("LocalStorageProjectRepository", () => {
 				]),
 			);
 
-			const projects = new LocalStorageProjectRepository().list();
+			const projects = await new LocalStorageProjectRepository().list();
 
 			expect(projects.map((p) => p.id)).toEqual(["ancien"]);
 		});
 
-		it("ne réécrit pas un projet trop récent lorsqu'elle en enregistre un autre", () => {
+		it("ne réécrit pas un projet trop récent lorsqu'elle en enregistre un autre", async () => {
 			const futur = { id: "futur", name: "V2", schemaVersion: PROJECT_SCHEMA_VERSION + 1, extra: 42 };
 			store.set(STORAGE_KEY, JSON.stringify([futur]));
 			const repo = new LocalStorageProjectRepository();
 
-			repo.save(newProject("p1", "Nouveau"));
+			await repo.save(newProject("p1", "Nouveau"));
 
 			const persisted = JSON.parse(store.get(STORAGE_KEY)!);
 			expect(persisted.find((p: any) => p.id === "futur")).toEqual(futur);
@@ -153,22 +153,21 @@ describe("LocalStorageProjectRepository", () => {
 	});
 
 	describe("validation à la lecture", () => {
-		it("ignore une entrée sans identifiant valide", () => {
+		it("ignore une entrée sans identifiant valide", async () => {
 			store.set(
 				STORAGE_KEY,
 				JSON.stringify([{ name: "sans id" }, JSON.parse(JSON.stringify(newProject("p1", "Bon")))]),
 			);
 
-			const projects = new LocalStorageProjectRepository().list();
+			const projects = await new LocalStorageProjectRepository().list();
 
 			expect(projects.map((p) => p.id)).toEqual(["p1"]);
 		});
 
-		it("ne lève pas sur un stockage corrompu", () => {
+		it("ne lève pas sur un stockage corrompu", async () => {
 			store.set(STORAGE_KEY, "{ ceci n'est pas du JSON");
 
-			expect(() => new LocalStorageProjectRepository().list()).not.toThrow();
-			expect(new LocalStorageProjectRepository().list()).toEqual([]);
+			await expect(new LocalStorageProjectRepository().list()).resolves.toEqual([]);
 		});
 	});
 });

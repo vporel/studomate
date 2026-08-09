@@ -1,4 +1,5 @@
 import { GRAFCET_ELEMENT_TYPES } from "./element.schema";
+import Connection from "./connection.schema";
 import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "./grafcet.schema";
 
 /**
@@ -88,6 +89,15 @@ describe("Grafcet — table des collections d'éléments", () => {
 
 			expect(copie.getElementById("step-1")!.position).not.toEqual({ x: 999, y: 999 });
 		});
+
+		it("isole la copie de l'original sur le format", () => {
+			const original = grafcetWithOneElementOfEachType();
+			const copie = original.copy();
+
+			copie.format.orientation = "landscape";
+
+			expect(original.format.orientation).not.toBe("landscape");
+		});
 	});
 
 	describe("createFromJSON", () => {
@@ -117,6 +127,121 @@ describe("Grafcet — table des collections d'éléments", () => {
 
 			expect(restitué.getAllElements()).toEqual([]);
 			expect(restitué.connections).toEqual([]);
+		});
+	});
+
+	describe("removeElements", () => {
+		it("supprime l'élément et retire en cascade les connexions qui le référencent", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			grafcet.addConnections([
+				new Connection(
+					"c1",
+					{ type: "step", id: "step-1", handle: "s" },
+					{ type: "transition", id: "transition-1", handle: "t" },
+				),
+			]);
+
+			grafcet.removeElements([{ type: "step", id: "step-1" }]);
+
+			expect(grafcet.getElementById("step-1")).toBeUndefined();
+			expect(grafcet.connections).toEqual([]);
+		});
+
+		it("ignore un identifiant inconnu sans lever", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+
+			expect(() => grafcet.removeElements([{ type: "step", id: "inexistant" }])).not.toThrow();
+			expect(grafcet.getElementsByType("step")).toHaveLength(1);
+		});
+	});
+
+	describe("addConnections", () => {
+		it("lève quand l'élément source est manquant", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			const connection = new Connection(
+				"c1",
+				{ type: "step", id: "inexistant", handle: "s" },
+				{ type: "transition", id: "transition-1", handle: "t" },
+			);
+
+			expect(() => grafcet.addConnections([connection])).toThrow(/source/);
+		});
+
+		it("lève quand l'élément cible est manquant", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			const connection = new Connection(
+				"c1",
+				{ type: "step", id: "step-1", handle: "s" },
+				{ type: "transition", id: "inexistant", handle: "t" },
+			);
+
+			expect(() => grafcet.addConnections([connection])).toThrow(/target/);
+		});
+
+		it("n'ajoute pas de doublon pour une connexion source/cible déjà existante", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			const connection = new Connection(
+				"c1",
+				{ type: "step", id: "step-1", handle: "s" },
+				{ type: "transition", id: "transition-1", handle: "t" },
+			);
+
+			grafcet.addConnections([connection]);
+			grafcet.addConnections([connection]);
+
+			expect(grafcet.connections).toHaveLength(1);
+		});
+	});
+
+	describe("updateConnections", () => {
+		it("remplace la connexion de même source/cible", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			const original = new Connection(
+				"c1",
+				{ type: "step", id: "step-1", handle: "s" },
+				{ type: "transition", id: "transition-1", handle: "t" },
+				{ points: [] },
+			);
+			grafcet.addConnections([original]);
+
+			const updated = new Connection(
+				"c1",
+				{ type: "step", id: "step-1", handle: "s" },
+				{ type: "transition", id: "transition-1", handle: "t" },
+				{ points: [[1, 2]] },
+			);
+			grafcet.updateConnections([updated]);
+
+			expect(grafcet.getConnection("step-1", "transition-1")?.data.points).toEqual([[1, 2]]);
+		});
+
+		it("ignore une connexion dont la paire source/cible n'existe pas", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			const inconnue = new Connection(
+				"c1",
+				{ type: "step", id: "step-1", handle: "s" },
+				{ type: "transition", id: "transition-1", handle: "t" },
+			);
+
+			expect(() => grafcet.updateConnections([inconnue])).not.toThrow();
+			expect(grafcet.connections).toEqual([]);
+		});
+	});
+
+	describe("removeConnections", () => {
+		it("retire la connexion correspondant à la paire source/cible", () => {
+			const grafcet = grafcetWithOneElementOfEachType();
+			grafcet.addConnections([
+				new Connection(
+					"c1",
+					{ type: "step", id: "step-1", handle: "s" },
+					{ type: "transition", id: "transition-1", handle: "t" },
+				),
+			]);
+
+			grafcet.removeConnections([{ sourceId: "step-1", targetId: "transition-1" }]);
+
+			expect(grafcet.connections).toEqual([]);
 		});
 	});
 });

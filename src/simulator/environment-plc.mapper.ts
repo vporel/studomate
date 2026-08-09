@@ -1,15 +1,12 @@
-import EnvVariable, { EnvVariableDirection } from "./interpreter/environment/env-variable";
+import { invertRecord } from "@/lib/object";
 import PLCVariable, { PLCVariableScope } from "./core/plc/plc-variable";
+import EnvVariable, { EnvVariableDirection } from "./interpreter/environment/env-variable";
 
 const directionToScope: Record<EnvVariableDirection, PLCVariableScope> = {
 	IN: "input",
 	OUT: "output",
 	INOUT: "memory",
 };
-
-function invertRecord<K extends string, V extends string>(record: Record<K, V>): Record<V, K> {
-	return Object.fromEntries(Object.entries(record).map(([k, v]) => [v, k])) as Record<V, K>;
-}
 
 const scopeToDirection = invertRecord(directionToScope);
 

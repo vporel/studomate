@@ -30,21 +30,14 @@ export default class CommandsStackManager extends AbstractCommandsStackManager<G
 	/**
 	 * Adopts the grafcet produced by the commands stack, and realigns the view on it.
 	 *
-	 * The view is *recomputed* from the grafcet rather than patched by hand. It used to be
-	 * mirrored command type by command type, in two ~60-line `instanceof` chains — one for
-	 * undo, one for redo — which had to know how to reverse each command's effect on the
-	 * nodes and edges. Any asymmetry between the two was a silent bug, and there was one:
-	 * undoing a connection removal rebuilt the edge without its `targetHandle` nor its
-	 * `data`.
-	 *
-	 * Recomputing removes the whole class of problem: undo, redo and execute all go through
-	 * the same path, and a new command type needs no view code at all.
+	 * The view is *recomputed* from the grafcet rather than patched by hand: undo, redo and
+	 * execute all go through the same path, and a new command type needs no view code at all.
 	 */
 	protected applyDomain(grafcet: Grafcet): void {
 		this.setStoreState((state) => ({
 			grafcet,
-			nodes: NodesFactory.syncNodes(state.nodes!, grafcet),
-			edges: EdgesFactory.syncEdges(state.edges!, grafcet),
+			nodes: NodesFactory.syncNodes(state.nodes, grafcet),
+			edges: EdgesFactory.syncEdges(state.edges, grafcet),
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));

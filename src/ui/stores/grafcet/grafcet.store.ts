@@ -49,7 +49,7 @@ export type GrafcetStoreSetFunction = (
 	partial:
 		| GrafcetStoreState
 		| Partial<GrafcetStoreState>
-		| ((partial: Partial<GrafcetStoreState>) => GrafcetStoreState | Partial<GrafcetStoreState>),
+		| ((state: GrafcetStoreState) => GrafcetStoreState | Partial<GrafcetStoreState>),
 ) => void;
 
 export type GrafcetStoreGetFunction = () => GrafcetStoreState;

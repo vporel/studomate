@@ -16,8 +16,8 @@ import { explorerContextMenuEventsOut } from "./ExplorerContextMenu"
 
 describe("useGrafcetMenuItems", () => {
 	const grafcetsManager = {
-		getGrafcet: jest.fn(),
-		deleteGrafcet: jest.fn(),
+		getProgramOrThrow: jest.fn(),
+		deleteProgramById: jest.fn(),
 	}
 	const pagesManager = { openPage: jest.fn() }
 
@@ -31,7 +31,7 @@ describe("useGrafcetMenuItems", () => {
 	afterEach(() => jest.clearAllMocks())
 
 	it("opens the page for the given grafcet", () => {
-		grafcetsManager.getGrafcet.mockReturnValue({ name: "Grafcet 1" })
+		grafcetsManager.getProgramOrThrow.mockReturnValue({ name: "Grafcet 1" })
 		const { result } = setup(ProjectMode.DESIGN)
 
 		act(() => result.current("g1")[0][0].onClick?.())
@@ -44,7 +44,7 @@ describe("useGrafcetMenuItems", () => {
 	})
 
 	it("does not open a page when the grafcet no longer exists", () => {
-		grafcetsManager.getGrafcet.mockReturnValue(undefined)
+		grafcetsManager.getProgramOrThrow.mockReturnValue(undefined)
 		const { result } = setup(ProjectMode.DESIGN)
 
 		act(() => result.current("g1")[0][0].onClick?.())
@@ -78,7 +78,7 @@ describe("useGrafcetMenuItems", () => {
 
 		act(() => result.current("g1")[1][1].onClick?.())
 
-		expect(grafcetsManager.deleteGrafcet).toHaveBeenCalledWith("g1")
+		expect(grafcetsManager.deleteProgramById).toHaveBeenCalledWith("g1")
 		confirmSpy.mockRestore()
 	})
 
@@ -88,7 +88,7 @@ describe("useGrafcetMenuItems", () => {
 
 		act(() => result.current("g1")[1][1].onClick?.())
 
-		expect(grafcetsManager.deleteGrafcet).not.toHaveBeenCalled()
+		expect(grafcetsManager.deleteProgramById).not.toHaveBeenCalled()
 		confirmSpy.mockRestore()
 	})
 })

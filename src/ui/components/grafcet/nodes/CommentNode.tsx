@@ -77,7 +77,6 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 						border: "none",
 						outline: "none",
 						resize: "none",
-						boxSizing: "border-box",
 						overflow: "hidden",
 						padding: "0",
 						lineHeight: "1rem",

@@ -16,8 +16,8 @@ import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 describe("useLadderMenuItems", () => {
 	const laddersManager = {
-		getLadder: jest.fn(),
-		deleteLadder: jest.fn(),
+		getProgramOrThrow: jest.fn(),
+		deleteProgramById: jest.fn(),
 	};
 	const pagesManager = { openPage: jest.fn() };
 
@@ -31,7 +31,7 @@ describe("useLadderMenuItems", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("opens the page for the given ladder", () => {
-		laddersManager.getLadder.mockReturnValue({ name: "Ladder 1" });
+		laddersManager.getProgramOrThrow.mockReturnValue({ name: "Ladder 1" });
 		const { result } = setup(ProjectMode.DESIGN);
 
 		act(() => result.current("l1")[0][0].onClick?.());
@@ -44,7 +44,7 @@ describe("useLadderMenuItems", () => {
 	});
 
 	it("does not open a page when the ladder no longer exists", () => {
-		laddersManager.getLadder.mockReturnValue(undefined);
+		laddersManager.getProgramOrThrow.mockReturnValue(undefined);
 		const { result } = setup(ProjectMode.DESIGN);
 
 		act(() => result.current("l1")[0][0].onClick?.());
@@ -78,7 +78,7 @@ describe("useLadderMenuItems", () => {
 
 		act(() => result.current("l1")[1][1].onClick?.());
 
-		expect(laddersManager.deleteLadder).toHaveBeenCalledWith("l1");
+		expect(laddersManager.deleteProgramById).toHaveBeenCalledWith("l1");
 		confirmSpy.mockRestore();
 	});
 
@@ -88,7 +88,7 @@ describe("useLadderMenuItems", () => {
 
 		act(() => result.current("l1")[1][1].onClick?.());
 
-		expect(laddersManager.deleteLadder).not.toHaveBeenCalled();
+		expect(laddersManager.deleteProgramById).not.toHaveBeenCalled();
 		confirmSpy.mockRestore();
 	});
 });

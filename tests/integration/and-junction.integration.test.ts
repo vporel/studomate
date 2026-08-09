@@ -1,13 +1,18 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("AND Junction Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Divergence ET : pipeline compilation", () => {
@@ -67,7 +72,7 @@ describe("AND Junction Integration Tests", () => {
 			// I0=TRUE → divergence fires, both step1 + step2 active, convergence blocked (NON I0=FALSE)
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			// Both X1 and X2 must be active at the same time (AND semantics)
@@ -100,14 +105,14 @@ describe("AND Junction Integration Tests", () => {
 			// Phase 1: I0=TRUE → both branches active
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X1", true);
 			expectVariableValue(plc!, "X2", true);
 
 			// Phase 2: I0=FALSE → trans-conv = NON I0 = TRUE, X1 AND X2 both active → convergence fires
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 
 			// Step0 re-activates, both branches deactivate (CONTINUOUS cleanup)
@@ -139,7 +144,7 @@ describe("AND Junction Integration Tests", () => {
 			// I0=FALSE: trans-div = FALSE → step0 stays active, branches never activate
 			plc!.setPhysicalInputValueByName("I0", false);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			expectVariableValue(plc!, "X0", true);
@@ -178,7 +183,7 @@ describe("AND Junction Integration Tests", () => {
 
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 

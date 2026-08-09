@@ -2,7 +2,7 @@
 import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
 import Ladder from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
-import { createRandomId } from "../utils/ids";
+import { createRandomId } from "@/ids";
 import Variable from "../variable/variable.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";

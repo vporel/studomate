@@ -1,11 +1,9 @@
-import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import type ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
 /**
  * Problèmes d'analyse regroupés par programme (GRAFCET ou Ladder), prêts à être affichés.
  *
- * Ce type est la **sortie de ce mapper**, sa place est donc ici. Il était déclaré dans un
- * manager de store, ce qui obligeait le bridge à importer depuis la couche UI — soit
- * exactement l'inverse du sens attendu.
+ * Ce type est la **sortie de ce mapper**, sa place est donc ici.
  */
 export type AnalysisProgramIssues = {
 	overall: string[];

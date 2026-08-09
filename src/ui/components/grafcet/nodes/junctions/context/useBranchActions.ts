@@ -1,7 +1,7 @@
 "use client";
 
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import { useCallback } from "react";

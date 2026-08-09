@@ -1,7 +1,11 @@
 import { deepObjectsComparison } from "@/lib/object";
+import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
 import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
+import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
+import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
 import { GridPosition } from "@/schemas/ladder/element.schema";
+import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
@@ -12,6 +16,8 @@ import {
 } from "@/ui/utils/ladder/ladder-flow-builder";
 import { initialConnectionPoints, pushConnectionBend } from "@/ui/utils/ladder/ladder-connection-path";
 import { applyEdgeChanges, applyNodeChanges, EdgeChange, NodeChange, NodePositionChange, Edge } from "@xyflow/react";
+import LadderEdgesFactory from "../factories/edges.factory";
+import LadderNodesFactory from "../factories/nodes.factory";
 import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
 
 /**
@@ -80,8 +86,8 @@ export default class LadderWorkflowManager {
 		}
 
 		this.setStoreState((s) => ({
-			nodesBySectionId: { ...s.nodesBySectionId!, [sectionId]: newNodes },
-			edgesBySectionId: { ...s.edgesBySectionId!, [sectionId]: newEdges },
+			nodesBySectionId: { ...s.nodesBySectionId, [sectionId]: newNodes },
+			edgesBySectionId: { ...s.edgesBySectionId, [sectionId]: newEdges },
 		}));
 		if (commands.length > 0) state.commandsStackManager.executeOperation(commands);
 	}
@@ -90,7 +96,7 @@ export default class LadderWorkflowManager {
 		const state = this.getStoreState();
 		const edges = state.edgesBySectionId[sectionId] ?? [];
 		const newEdges = applyEdgeChanges(changes, edges);
-		this.setStoreState((s) => ({ edgesBySectionId: { ...s.edgesBySectionId!, [sectionId]: newEdges } }));
+		this.setStoreState((s) => ({ edgesBySectionId: { ...s.edgesBySectionId, [sectionId]: newEdges } }));
 	}
 
 	/** Accroche chaque frame (pas seulement la dernière) à la grille de colonnes/lignes réelle —
@@ -188,22 +194,22 @@ export default class LadderWorkflowManager {
 	// ── Helpers de sélection (utilisés par le pane context menu) ──────────────
 
 	getNodes(sectionId: string): LadderNodeType[] {
-		return this.getStoreState().nodesBySectionId?.[sectionId] ?? [];
+		return this.getStoreState().nodesBySectionId[sectionId] ?? [];
 	}
 
 	getEdges(sectionId: string): Edge[] {
-		return this.getStoreState().edgesBySectionId?.[sectionId] ?? [];
+		return this.getStoreState().edgesBySectionId[sectionId] ?? [];
 	}
 
 	selectAllNodesAndEdges(sectionId: string): void {
 		this.setStoreState((state) => ({
 			nodesBySectionId: {
 				...(state.nodesBySectionId || {}),
-				[sectionId]: (state.nodesBySectionId?.[sectionId] ?? []).map((n) => ({ ...n, selected: true })),
+				[sectionId]: (state.nodesBySectionId[sectionId] ?? []).map((n) => ({ ...n, selected: true })),
 			},
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId?.[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
+				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
 			},
 		}));
 	}
@@ -212,8 +218,82 @@ export default class LadderWorkflowManager {
 		this.setStoreState((state) => ({
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId?.[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
+				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
 			},
 		}));
+	}
+
+	/**
+	 * Sélectionne tout dans la dernière section sur laquelle l'utilisateur a interagi
+	 * (`activeSectionId`, alimentée au clic dans une section) : à la différence du GRAFCET, un
+	 * Ladder a plusieurs sections indépendantes, donc « tout sélectionner » n'a de sens que
+	 * relativement à l'une d'elles.
+	 */
+	selectAllInActiveSection(): void {
+		const sectionId = this.getStoreState().activeSectionId;
+		if (!sectionId) return;
+		this.selectAllNodesAndEdges(sectionId);
+	}
+
+	/**
+	 * Adopts a ladder rewritten outside of this store, typically by a project-level command
+	 * (renaming a variable rewrites the contacts/coils referencing it). Miroir de
+	 * `WorkflowManager.adoptGrafcet` côté GRAFCET.
+	 *
+	 * No command is pushed on the ladder stack: the operation is already undoable as a whole
+	 * through the project command that triggered it.
+	 */
+	adoptLadder(ladder: Ladder): void {
+		this.setStoreState((state) => ({
+			ladder,
+			nodesBySectionId: Object.fromEntries(
+				ladder.sections.map((section) => [
+					section.id,
+					LadderNodesFactory.syncNodes(state.nodesBySectionId[section.id] ?? [], section),
+				]),
+			),
+			edgesBySectionId: Object.fromEntries(
+				ladder.sections.map((section) => [
+					section.id,
+					LadderEdgesFactory.syncEdges(state.edgesBySectionId[section.id] ?? [], section),
+				]),
+			),
+		}));
+	}
+
+	/**
+	 * Supprime des éléments (et, en cascade, les connexions qui les touchent) et des connexions
+	 * isolées d'une section. Partagée par `useLadderDeleteHandler` (touche Suppr, menu
+	 * contextuel) et par le couper (Ctrl+X) : la cascade élément → connexions ne doit exister
+	 * qu'à un seul endroit.
+	 */
+	deleteElements(sectionId: string, elementIds: string[], edgeIds: string[] = []): void {
+		const section = this.getStoreState().ladder.getSection(sectionId);
+		if (!section) return;
+		const removedElementIds = new Set(elementIds.filter((id) => section.getElement(id)));
+		const commands: AbstractLadderCommand<any>[] = [];
+
+		if (removedElementIds.size > 0) {
+			const elements = [...removedElementIds].map((id) => ({
+				sectionId: section.id,
+				element: section.getElement(id)!,
+			}));
+			const touchedConnections = section.connections
+				.filter((c) => removedElementIds.has(c.source.id) || removedElementIds.has(c.target.id))
+				.map((connection) => ({ sectionId: section.id, connection }));
+			commands.push(new ElementsRemoveCommand({ elements, connections: touchedConnections }));
+		}
+
+		//Connexions supprimées isolément (aucune de leurs extrémités n'est déjà couverte par la
+		//cascade d'ElementsRemoveCommand ci-dessus).
+		const standaloneConnections = edgeIds
+			.map((id) => section.connections.find((c) => c.id === id))
+			.filter((c): c is NonNullable<typeof c> => !!c)
+			.filter((c) => !removedElementIds.has(c.source.id) && !removedElementIds.has(c.target.id));
+		if (standaloneConnections.length > 0) {
+			commands.push(new ConnectionsRemoveCommand({ sectionId: section.id, connections: standaloneConnections }));
+		}
+
+		if (commands.length > 0) this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 }

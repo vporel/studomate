@@ -1,10 +1,4 @@
-import {
-	deepMerge,
-	deepObjectsComparison,
-	extractFields,
-	getKeysDeepJoined,
-	invertRecord,
-} from "./object";
+import { deepObjectsComparison, extractFields, invertRecord } from "./object";
 
 describe("invertRecord", () => {
 	it("swaps keys and values", () => {
@@ -14,45 +8,6 @@ describe("invertRecord", () => {
 
 	it("handles an empty record", () => {
 		expect(invertRecord({})).toEqual({});
-	});
-});
-
-describe("deepMerge", () => {
-	it("overrides target keys with source keys", () => {
-		expect(deepMerge({ a: 1, b: 2 }, { b: 3 })).toEqual({ a: 1, b: 3 });
-	});
-
-	it("merges nested objects recursively instead of replacing them wholesale", () => {
-		const target = { user: { name: "Alice", age: 30 } };
-		const source = { user: { age: 31 } };
-		expect(deepMerge(target, source)).toEqual({ user: { name: "Alice", age: 31 } });
-	});
-
-	it("creates missing nested objects on the target", () => {
-		const target: { user?: { age: number } } = {};
-		expect(deepMerge(target, { user: { age: 20 } })).toEqual({ user: { age: 20 } });
-	});
-
-	it("replaces arrays wholesale instead of merging them element-wise", () => {
-		expect(deepMerge({ items: [1, 2, 3] }, { items: [4] })).toEqual({ items: [4] });
-	});
-
-	it("returns the target unchanged when source is falsy", () => {
-		const target = { a: 1 };
-		expect(deepMerge(target, null)).toBe(target);
-		expect(deepMerge(target, undefined)).toBe(target);
-	});
-
-	it("only overrides keys already present on the target when onlyExistingKeys is set", () => {
-		const target: { a: number; b?: number } = { a: 1 };
-		expect(deepMerge(target, { a: 2, b: 3 }, { onlyExistingKeys: true })).toEqual({ a: 2 });
-	});
-
-	// `typeof null === "object"` en JavaScript : sans garde explicite, une valeur `null` dans la
-	// source serait traitée comme un objet à fusionner plutôt qu'une valeur à affecter telle quelle.
-	it("assigns a null source value as-is instead of merging into it", () => {
-		expect(deepMerge({} as { a?: unknown }, { a: null })).toEqual({ a: null });
-		expect(deepMerge({ a: { x: 1 } }, { a: null })).toEqual({ a: null });
 	});
 });
 
@@ -68,24 +23,6 @@ describe("extractFields", () => {
 	});
 });
 
-describe("getKeysDeepJoined", () => {
-	it("lists top-level keys", () => {
-		expect(getKeysDeepJoined({ a: 1, b: 2 })).toEqual(["a", "b"]);
-	});
-
-	it("joins nested keys with the separator", () => {
-		expect(getKeysDeepJoined({ a: { b: 1, c: 2 } })).toEqual(["a.b", "a.c"]);
-	});
-
-	it("supports a custom separator", () => {
-		expect(getKeysDeepJoined({ a: { b: 1 } }, "/")).toEqual(["a/b"]);
-	});
-
-	it("treats null values as leaves rather than recursing into them", () => {
-		expect(getKeysDeepJoined({ a: null })).toEqual(["a"]);
-	});
-});
-
 describe("deepObjectsComparison", () => {
 	it("returns true for deeply equal objects", () => {
 		expect(deepObjectsComparison({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toBe(true);
@@ -95,7 +32,48 @@ describe("deepObjectsComparison", () => {
 		expect(deepObjectsComparison({ a: 1 }, { a: 2 })).toBe(false);
 	});
 
-	it("is sensitive to key order (JSON.stringify-based comparison)", () => {
-		expect(deepObjectsComparison({ a: 1, b: 2 }, { b: 2, a: 1 })).toBe(false);
+	it("is insensitive to key order", () => {
+		expect(deepObjectsComparison({ a: 1, b: 2 }, { b: 2, a: 1 })).toBe(true);
+	});
+
+	it("treats NaN as equal to itself", () => {
+		expect(deepObjectsComparison({ a: NaN }, { a: NaN })).toBe(true);
+		expect(deepObjectsComparison({ a: NaN }, { a: 1 })).toBe(false);
+	});
+
+	it("compares arrays element by element, order-sensitively", () => {
+		expect(deepObjectsComparison([1, 2, 3], [1, 2, 3])).toBe(true);
+		expect(deepObjectsComparison([1, 2, 3], [3, 2, 1])).toBe(false);
+		expect(deepObjectsComparison([1, 2], [1, 2, 3])).toBe(false);
+	});
+
+	it("does not consider an array equal to an object with the same entries", () => {
+		expect(deepObjectsComparison([1, 2], { 0: 1, 1: 2 })).toBe(false);
+	});
+
+	it("treats an explicit undefined value as different from a missing key", () => {
+		expect(deepObjectsComparison({ a: undefined }, {})).toBe(false);
+	});
+
+	it("compares deeply nested structures", () => {
+		const a = { steps: { s1: { data: { branches: { b1: { position: 1 } } } } } };
+		const b = { steps: { s1: { data: { branches: { b1: { position: 1 } } } } } };
+		const c = { steps: { s1: { data: { branches: { b1: { position: 2 } } } } } };
+		expect(deepObjectsComparison(a, b)).toBe(true);
+		expect(deepObjectsComparison(a, c)).toBe(false);
+	});
+
+	it("returns true for the same reference without traversing it", () => {
+		const shared = { a: 1 };
+		expect(deepObjectsComparison(shared, shared)).toBe(true);
+	});
+
+	it("returns false when only one side is null", () => {
+		expect(deepObjectsComparison(null, { a: 1 })).toBe(false);
+		expect(deepObjectsComparison({ a: 1 }, null)).toBe(false);
+	});
+
+	it("returns true for two nulls", () => {
+		expect(deepObjectsComparison(null, null)).toBe(true);
 	});
 });

@@ -39,6 +39,7 @@ export function GrafcetFlowContent() {
 		<Box
 			className="grafcet-page"
 			id={`grafcet-${grafcetId}`}
+			ref={(el: HTMLElement | null) => viewManager.setContainerElement(el)}
 			sx={{
 				padding: "25px",
 				width: "100%",
@@ -55,7 +56,6 @@ export function GrafcetFlowContent() {
 					height: flowDimensions.height + "px",
 					border: "1px solid lightgray",
 					backgroundClip: "content-box",
-					boxSizing: "border-box",
 					marginLeft: "50%",
 					transform: "translate(-50%, 0)",
 					".react-flow__pane": {

@@ -1,5 +1,5 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
-import JunctionOrEnd from "@/schemas/grafcet/junction-or-end.schema";
+import JunctionOrEnd, { JUNCTION_OR_END_HANDLE_BRANCH_TYPES } from "@/schemas/grafcet/junction-or-end.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
@@ -40,6 +40,17 @@ export default class JunctionOrEndAnalyser extends ElementAnalyser<JunctionOrEnd
 			);
 		}
 
+		if (junctionOrEnd.data.branchesOrder.length < 2) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"JUNCTION_OR_MIN_BRANCHES",
+					source,
+					"Une convergence en OU doit avoir au moins deux branches.",
+				),
+			);
+		}
+
 		if (!JunctionHelper.areAllBranchesConnected(junctionOrEnd.id, grafcet)) {
 			issues.push(
 				new ProjectAnalyserIssue(
@@ -49,6 +60,22 @@ export default class JunctionOrEndAnalyser extends ElementAnalyser<JunctionOrEnd
 					"Certaines branches ne sont connectées à aucun élément.",
 				),
 			);
+			return issues;
+		}
+
+		for (const branchId of junctionOrEnd.data.branchesOrder) {
+			const conns = grafcet.getConnectionsByElementIdAndHandle(junctionOrEnd.id, branchId);
+			if (conns.length === 0) continue; // safety guard, already covered above
+			if (!JUNCTION_OR_END_HANDLE_BRANCH_TYPES.includes(conns[0].source.type as "transition")) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"JUNCTION_OR_END_BRANCH_NOT_TRANSITION",
+						source,
+						"Une convergence en OU doit provenir de transitions.",
+					),
+				);
+			}
 		}
 
 		return issues;

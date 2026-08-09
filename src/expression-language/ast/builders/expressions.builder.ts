@@ -1,4 +1,4 @@
-import { createRandomId } from "@/simulator/utils/ids";
+import { createRandomId } from "@/ids";
 import { ArithmeticOperator, ComparisonOperator } from "@/expression-language/operators";
 import { ASTNode } from "../nodes/ast-node";
 import {

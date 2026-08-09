@@ -75,8 +75,8 @@ export default function AnalysisResult() {
 				setTimeout(() => {
 					const managers =
 						programType === "grafcet"
-							? grafcetsManager.getActiveGrafcetStoreManagers()
-							: laddersManager.getActiveLadderStoreManagers();
+							? grafcetsManager.getActiveStoreManagers()
+							: laddersManager.getActiveStoreManagers();
 					if (!managers) return;
 					managers.viewManager.temporarilyHighlightNodesAndEdges([elementId], [], 3000);
 				}, 100);

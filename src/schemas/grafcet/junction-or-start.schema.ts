@@ -1,7 +1,7 @@
 import { ElementType } from "./element.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData, JunctionHandle } from "./junction.schema";
 
-export const JUNCTION_OR_START_HANDLE_PIVOT_TYPES = ["transition"] as const satisfies readonly ElementType[];
+export const JUNCTION_OR_START_HANDLE_PIVOT_TYPES = ["step"] as const satisfies readonly ElementType[];
 
 export const JUNCTION_OR_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonly ElementType[]> = {
 	[JUNCTION_HANDLE_PIVOT]: JUNCTION_OR_START_HANDLE_PIVOT_TYPES,

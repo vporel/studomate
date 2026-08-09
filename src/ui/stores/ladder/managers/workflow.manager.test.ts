@@ -1,5 +1,7 @@
 import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
+import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
+import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
 import Connection from "@/schemas/ladder/connection.schema";
 import {
 	createCoilElement,
@@ -268,12 +270,100 @@ describe("LadderWorkflowManager", () => {
 	it("patche edgesBySectionId via applyEdgeChanges", () => {
 		const section = new Section("s1", "S");
 		const { workflowManager, getState } = setup(section);
+		const edge = { id: "e1", source: "n1", target: "n2", selected: false } as any;
+		getState().edgesBySectionId[section.id].push(edge);
 
 		workflowManager.handleEdgesChange(section.id, [{ type: "select", id: "e1", selected: true } as any]);
 
-		// edgesBySectionId part d'un tableau vide dans ce test : applyEdgeChanges sur "select"
-		// d'une arête absente ne fait rien — on vérifie juste que ça ne casse pas et reste un
-		// tableau.
-		expect(Array.isArray(getState().edgesBySectionId[section.id])).toBe(true);
+		expect(getState().edgesBySectionId[section.id].find((e) => e.id === "e1")!.selected).toBe(true);
+	});
+
+	describe("deleteElements", () => {
+		it("retire un élément et les connexions qui le touchent", () => {
+			const section = new Section("s1", "S");
+			const railTerminal = createRailTerminalElement(0);
+			const contact = createContactElement("A", "NO", 0, 0);
+			const coil = createCoilElement("Q1", "normal", 0, 1);
+			section.elements = [railTerminal, contact, coil];
+			const connection = new Connection("c1", { id: railTerminal.id, type: "contact", handle: "source" }, { id: contact.id, type: "coil", handle: "target" });
+			section.connections = [connection, new Connection("c2", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })];
+			const { workflowManager } = setup(section);
+
+			workflowManager.deleteElements(section.id, [contact.id]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands).toHaveLength(1);
+			const [command] = commands;
+			expect(command).toBeInstanceOf(ElementsRemoveCommand);
+			expect(command.payload.elements).toEqual([{ sectionId: section.id, element: contact }]);
+			expect(command.payload.connections.map((c: any) => c.connection.id).sort()).toEqual(["c1", "c2"]);
+		});
+
+		it("ignore les nœuds virtuels (bornes d'alimentation non persistées)", () => {
+			const section = new Section("s1", "S");
+			const { workflowManager } = setup(section);
+
+			workflowManager.deleteElements(section.id, ["virtual-rail-0"]);
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+
+		it("retire une connexion isolée via ConnectionsRemoveCommand", () => {
+			const section = new Section("s1", "S");
+			const contact = createContactElement("A", "NO", 0, 0);
+			const coil = createCoilElement("Q1", "normal", 0, 1);
+			section.elements = [contact, coil];
+			const connection = new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" });
+			section.connections = [connection];
+			const { workflowManager } = setup(section);
+
+			workflowManager.deleteElements(section.id, [], ["c1"]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands).toHaveLength(1);
+			const [command] = commands;
+			expect(command).toBeInstanceOf(ConnectionsRemoveCommand);
+			expect(command.payload).toEqual({ sectionId: section.id, connections: [connection] });
+		});
+
+		it("ne dispatche rien si rien n'est à retirer", () => {
+			const section = new Section("s1", "S");
+			const { workflowManager } = setup(section);
+
+			workflowManager.deleteElements(section.id, [], []);
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+
+		it("ne fait rien pour une section inconnue", () => {
+			const section = new Section("s1", "S");
+			const { workflowManager } = setup(section);
+
+			workflowManager.deleteElements("unknown-section", ["some-id"]);
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("adoptLadder", () => {
+		it("préserve l'identité des nœuds non touchés par le nouveau ladder", () => {
+			const section = new Section("s1", "S");
+			const contact = createContactElement("A", "NO", 0, 0);
+			const coil = createCoilElement("Q1", "normal", 0, 1);
+			section.elements = [contact, coil];
+			const { workflowManager, getState } = setup(section);
+			const contactNodeBefore = getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!;
+
+			const adopted = getState().ladder.copy();
+			const adoptedContact = adopted.sections[0].elements.find((e) => e.id === coil.id)!;
+			(adoptedContact.data as any).variable = "Q2";
+			workflowManager.adoptLadder(adopted);
+
+			const contactNodeAfter = getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!;
+			expect(contactNodeAfter).toBe(contactNodeBefore);
+			expect(getState().ladder).toBe(adopted);
+		});
 	});
 });

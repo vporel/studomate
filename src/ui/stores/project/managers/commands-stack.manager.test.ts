@@ -20,6 +20,7 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 		hasCommandsToUndo: false,
 		hasCommandsToRedo: false,
 		grafcetsManager: { syncMountedStoresFromProject: jest.fn() },
+		laddersManager: { syncMountedStoresFromProject: jest.fn() },
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -44,13 +45,14 @@ describe("CommandsStackManager (project)", () => {
 
 		// Mécanisme construit en §2.2 : un grafcet ouvert détient sa propre copie et doit
 		// adopter le résultat de la commande, sinon il écraserait le renommage à la prochaine
-		// synchronisation.
-		it("resynchronise les stores grafcet montés", () => {
+		// synchronisation. Même mécanisme côté ladder (voir Ladder.renameVariableReferences).
+		it("resynchronise les stores grafcet et ladder montés", () => {
 			const { get, manager } = makeStore();
 
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 
 			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
 		});
 
 		it("refuse d'exécuter hors du mode conception", () => {
@@ -86,14 +88,16 @@ describe("CommandsStackManager (project)", () => {
 			expect(get().hasCommandsToRedo).toBe(true);
 		});
 
-		it("resynchronise les stores grafcet montés", () => {
+		it("resynchronise les stores grafcet et ladder montés", () => {
 			const { get, manager } = makeStore();
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 			(get().grafcetsManager.syncMountedStoresFromProject as jest.Mock).mockClear();
+			(get().laddersManager.syncMountedStoresFromProject as jest.Mock).mockClear();
 
 			manager.undoOperation();
 
 			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
 		});
 
 		it("ne fait rien s'il n'y a rien à annuler", () => {
@@ -127,15 +131,17 @@ describe("CommandsStackManager (project)", () => {
 			expect(get().hasCommandsToRedo).toBe(false);
 		});
 
-		it("resynchronise les stores grafcet montés", () => {
+		it("resynchronise les stores grafcet et ladder montés", () => {
 			const { get, manager } = makeStore();
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 			manager.undoOperation();
 			(get().grafcetsManager.syncMountedStoresFromProject as jest.Mock).mockClear();
+			(get().laddersManager.syncMountedStoresFromProject as jest.Mock).mockClear();
 
 			manager.redoOperation();
 
 			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
 		});
 	});
 

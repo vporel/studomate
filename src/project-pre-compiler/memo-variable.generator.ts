@@ -1,4 +1,4 @@
-import PLCVariable, { PLCVariableType } from "../simulator/core/plc/plc-variable";
+import PLCVariable, { PLCVariableType } from "@/simulator/core/plc/plc-variable";
 
 const MEMO_PREFIX = "_GeneratedMemo_";
 

@@ -7,7 +7,7 @@ import { ContactMode } from "@/schemas/ladder/element.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
+import { DEFAULT_THEME, ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import ContactNode, { ContactNodeType } from "./ContactNode";
 
@@ -111,7 +111,7 @@ describe("ContactNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "#00d800");
+			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.energizedColor);
 		});
 
 		it("pas de couleur 'energized' si la variable de simulation est à false", () => {
@@ -127,7 +127,7 @@ describe("ContactNode", () => {
 		it("couleur 'primary' quand sélectionné", () => {
 			setup({ selected: true, simulationVariablesStates: {} });
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "#1976d2");
+			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
 		});
 
 		it("la sélection l'emporte sur l'état 'energized'", () => {
@@ -137,7 +137,7 @@ describe("ContactNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "#1976d2");
+			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
 		});
 	});
 

@@ -23,26 +23,36 @@ describe("useShortcutsHandler", () => {
 	const undoActiveScope = jest.fn()
 	const redoActiveScope = jest.fn()
 	const selectAllNodesAndEdges = jest.fn()
+	const selectAllInActiveSection = jest.fn()
 	const copySelectedElements = jest.fn()
 	const pasteElements = jest.fn()
+	const cutSelectedElements = jest.fn()
 
-	function setup(mode: ProjectMode, activeScopeType: "grafcet" | "variables" = "grafcet") {
+	function setup(mode: ProjectMode, activeScopeType: "grafcet" | "ladder" | "variables" = "grafcet") {
 		const grafcetsManager = {
 			newGrafcet,
-			getActiveGrafcetStoreManagers: jest.fn(() => ({
+			getActiveStoreManagers: jest.fn(() => ({
 				viewManager: { selectAllNodesAndEdges },
-				copyCutPasteManager: { copySelectedElements, pasteElements },
+				copyCutPasteManager: { copySelectedElements, pasteElements, cutSelectedElements },
+			})),
+		}
+		const laddersManager = {
+			newLadder: jest.fn(),
+			getActiveStoreManagers: jest.fn(() => ({
+				workflowManager: { selectAllInActiveSection },
+				copyCutPasteManager: { copySelectedElements, pasteElements, cutSelectedElements },
 			})),
 		}
 		const state = {
 			mode,
 			activeScopeType,
 			grafcetsManager,
+			laddersManager,
 			undoActiveScope,
 			redoActiveScope,
 		}
 		;(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ grafcetsManager, setOpenModalVisible, saveProject }),
+			selectorImplementation({ grafcetsManager, laddersManager, setOpenModalVisible, saveProject }),
 		)
 		;(useProjectContext as jest.Mock).mockReturnValue(fakeStoreApi(state))
 		;(getLastMousePosition as jest.Mock).mockReturnValue({ x: 1, y: 2 })
@@ -81,10 +91,17 @@ describe("useShortcutsHandler", () => {
 		expect(selectAllNodesAndEdges).toHaveBeenCalled()
 	})
 
-	it("does not select nodes on Ctrl+A outside a grafcet scope", () => {
+	it("does not select nodes on Ctrl+A outside a grafcet or ladder scope", () => {
 		setup(ProjectMode.DESIGN, "variables")
 		dispatchShortcut("a")
 		expect(selectAllNodesAndEdges).not.toHaveBeenCalled()
+		expect(selectAllInActiveSection).not.toHaveBeenCalled()
+	})
+
+	it("selects all in the active section on Ctrl+A while designing a ladder", () => {
+		setup(ProjectMode.DESIGN, "ladder")
+		dispatchShortcut("a")
+		expect(selectAllInActiveSection).toHaveBeenCalled()
 	})
 
 	it("undoes and redoes regardless of mode", () => {
@@ -101,6 +118,26 @@ describe("useShortcutsHandler", () => {
 		dispatchShortcut("v")
 		expect(copySelectedElements).toHaveBeenCalled()
 		expect(pasteElements).toHaveBeenCalledWith({ x: 1, y: 2 })
+	})
+
+	it("copies and pastes selected elements while designing a ladder", () => {
+		setup(ProjectMode.DESIGN, "ladder")
+		dispatchShortcut("c")
+		dispatchShortcut("v")
+		expect(copySelectedElements).toHaveBeenCalled()
+		expect(pasteElements).toHaveBeenCalledWith({ x: 1, y: 2 })
+	})
+
+	it("cuts selected elements on Ctrl+X for a grafcet", () => {
+		setup(ProjectMode.DESIGN, "grafcet")
+		dispatchShortcut("x")
+		expect(cutSelectedElements).toHaveBeenCalled()
+	})
+
+	it("cuts selected elements on Ctrl+X for a ladder", () => {
+		setup(ProjectMode.DESIGN, "ladder")
+		dispatchShortcut("x")
+		expect(cutSelectedElements).toHaveBeenCalled()
 	})
 
 	it("ignores shortcuts typed inside an input", () => {

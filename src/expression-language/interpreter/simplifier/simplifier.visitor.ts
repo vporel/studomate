@@ -14,7 +14,7 @@ import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import { BooleanNode, NumberNode, StringNode } from "@/expression-language/ast/nodes/literals";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
-import { DivisionByZeroException } from "@/simulator/interpreter/evaluator/exceptions/division-by-zero.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 
 export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	protected visitIdentifierNode(node: IdentifierNode): ASTNode {

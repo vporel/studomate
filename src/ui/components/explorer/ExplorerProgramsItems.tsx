@@ -52,9 +52,9 @@ const ExplorerProgramItem = ({
 	const saveName = useCallback(() => {
 		const trimmed = editingName.trim() !== "" ? editingName.trim() : programName;
 		if (programType === "grafcet") {
-			grafcetsManager.renameGrafcet(programId, trimmed);
+			grafcetsManager.renameProgramById(programId, trimmed);
 		} else {
-			laddersManager.renameLadder(programId, trimmed);
+			laddersManager.renameProgramById(programId, trimmed);
 		}
 	}, [editingName, programId, programName, programType, grafcetsManager, laddersManager]);
 

@@ -1,4 +1,4 @@
-import { createRandomId } from "../utils/ids";
+import { createRandomId } from "@/ids";
 import Element, { BaseData, JunctionType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 

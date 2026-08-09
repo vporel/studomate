@@ -18,8 +18,11 @@ src/project-analyser/  analyse d'un projet (règles métier, jamais ne lève : c
 src/project-pre-compiler/  lexe/parse/analyse/simplifie les expressions une fois pour toutes
 src/project-compiler/  produit le programme exécutable (PLCRoutine[]) à partir du pré-compilé
 src/simulator/          lexer/parser/interpréteur du langage d'expression + moteur PLC
+src/bridge/             mappers entre le domaine/l'analyse et l'UI (exceptions, variables, issues)
+src/lib/                utilitaires neutres (array, date, object), sans dépendance de domaine
 src/persistence/        migrations de schéma + repositories (localStorage aujourd'hui)
 src/ui/                 Next.js (App Router) + stores zustand + composants MUI
+src/app-info.ts         identité de l'application (nom, slogan...), module racine neutre
 ```
 
 Le sens des dépendances va de haut en bas dans cette liste : le domaine ne dépend jamais de
@@ -65,13 +68,13 @@ Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 20 et 22)
 | `zustand` | ^5.0.11 | État (stores créés via `createStore`, pas le hook `create` — voir `src/ui/stores/*/[project\|grafcet].store.ts`) |
 | `date-fns` | ^4.1.0 | Dates |
 | `mitt` | ^3.0.1 | Bus d'événements (menus contextuels du grafcet) |
-| `nanoid` | ^3.3.7 | Identifiants courts — toujours via `createRandomId()` (`src/schemas/utils/ids.ts`), jamais `nanoid` en direct |
-| `dom-to-image` / `html-to-image` | ^2.6.0 / ^1.11.13 | Export image du grafcet |
+| `nanoid` | ^5.1.16 | Identifiants courts — toujours via `createRandomId()` (`src/ids.ts`), jamais `nanoid` en direct |
+| `dom-to-image` | ^2.6.0 | Export image du grafcet |
+| `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Réordonnancement des sections Ladder |
 | `react-toastify` | ^11.0.5 | Notifications |
 | `nextjs-toploader` | ^3.9.17 | Barre de progression de navigation |
 
-Dev/CI : `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6,
-`tailwindcss` ^4 (config Next par défaut, non utilisé pour les composants MUI).
+Dev/CI : `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6.
 
 Toujours vérifier `package.json` avant de citer une version : ce tableau se périme au premier
 `npm update`.
@@ -108,6 +111,9 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   seul, un commentaire à côté est du bruit, pas de la documentation. Dans le doute, préférer le
   composant UI qui consomme la valeur (là où le "pourquoi" a un contexte visuel) plutôt que le
   schéma/domaine (souvent trop générique pour justifier une explication locale).
+- **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
+  anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
+  écrire en français tout nouveau commentaire.
 - **Vérification visuelle d'un changement UI** : ne pas lancer automatiquement l'extension de
   navigateur (`claude-in-chrome`) ni supposer que l'utilisateur ne vérifiera pas lui-même —
   demander s'il préfère vérifier visuellement de son côté ou que ce soit fait ici.

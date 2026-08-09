@@ -4,7 +4,7 @@ import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/
 import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
@@ -20,7 +20,7 @@ export default function useShortcutsHandler() {
 	const projectStore = useProjectContext();
 
 	useEffect(() => {
-		const handleKeyDown = (e: React.KeyboardEvent) => {
+		const handleKeyDown = (e: KeyboardEvent) => {
 			const isInput =
 				(e.target as HTMLElement).tagName === "INPUT" ||
 				(e.target as HTMLElement).tagName === "TEXTAREA";
@@ -64,8 +64,12 @@ export default function useShortcutsHandler() {
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const grafcetViewManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.viewManager;
+								grafcetsManager.getActiveStoreManagers()?.viewManager;
 							grafcetViewManager?.selectAllNodesAndEdges();
+						} else if (activeScopeType === "ladder") {
+							const ladderWorkflowManager =
+								laddersManager.getActiveStoreManagers()?.workflowManager;
+							ladderWorkflowManager?.selectAllInActiveSection();
 						}
 						break;
 					}
@@ -87,11 +91,11 @@ export default function useShortcutsHandler() {
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
 						} else if (activeScopeType === "ladder") {
 							const copyCutPasteManager =
-								laddersManager.getActiveLadderStoreManagers()?.copyCutPasteManager;
+								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
 						}
 						break;
@@ -102,21 +106,36 @@ export default function useShortcutsHandler() {
 						const activeScopeType = projectStore?.getState().activeScopeType;
 						if (activeScopeType === "grafcet") {
 							const copyCutPasteManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements(getLastMousePosition());
 						} else if (activeScopeType === "ladder") {
 							const copyCutPasteManager =
-								laddersManager.getActiveLadderStoreManagers()?.copyCutPasteManager;
+								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements(getLastMousePosition());
+						}
+						break;
+					}
+					case "x": {
+						e.stopPropagation();
+						e.preventDefault();
+						const activeScopeType = projectStore?.getState().activeScopeType;
+						if (activeScopeType === "grafcet") {
+							const copyCutPasteManager =
+								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.cutSelectedElements();
+						} else if (activeScopeType === "ladder") {
+							const copyCutPasteManager =
+								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
+							copyCutPasteManager?.cutSelectedElements();
 						}
 						break;
 					}
 				}
 			}
 		};
-		document.addEventListener("keydown", handleKeyDown as any);
+		document.addEventListener("keydown", handleKeyDown);
 		return () => {
-			document.removeEventListener("keydown", handleKeyDown as any);
+			document.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager, laddersManager]);
 }

@@ -10,8 +10,8 @@ import { syncGrafcetToProject } from "./grafcet-project-sync";
 
 function fakeGrafcetsManager() {
 	return {
-		updateGrafcetData: jest.fn(),
-		setGrafcetStoreValues: jest.fn(),
+		updateProgramData: jest.fn(),
+		setStoreValues: jest.fn(),
 	} as unknown as GrafcetsManager;
 }
 
@@ -34,7 +34,7 @@ describe("syncGrafcetToProject", () => {
 
 		store.getState().viewManager.selectNodesAndEdges(["step-1"], []);
 
-		expect(grafcetsManager.updateGrafcetData).not.toHaveBeenCalled();
+		expect(grafcetsManager.updateProgramData).not.toHaveBeenCalled();
 		unsubscribe();
 	});
 
@@ -55,20 +55,41 @@ describe("syncGrafcetToProject", () => {
 			]),
 		]);
 
-		expect(grafcetsManager.updateGrafcetData).toHaveBeenCalledTimes(1);
+		expect(grafcetsManager.updateProgramData).toHaveBeenCalledTimes(1);
 		unsubscribe();
 	});
 
-	it("répercute toujours les compteurs d'annulation, même sans changement du grafcet", () => {
+	it("ne répercute pas les compteurs d'annulation quand ils n'ont pas changé", () => {
 		const store = buildStore();
 		const grafcetsManager = fakeGrafcetsManager();
 		const unsubscribe = syncGrafcetToProject(store, grafcetsManager);
 
 		store.getState().viewManager.selectNodesAndEdges(["step-1"], []);
 
-		expect(grafcetsManager.setGrafcetStoreValues).toHaveBeenCalledWith(
+		expect(grafcetsManager.setStoreValues).not.toHaveBeenCalled();
+		unsubscribe();
+	});
+
+	it("répercute les compteurs d'annulation quand ils changent", () => {
+		const store = buildStore();
+		const grafcetsManager = fakeGrafcetsManager();
+		const unsubscribe = syncGrafcetToProject(store, grafcetsManager);
+		const element = store.getState().grafcet.getElementById("step-1")!;
+
+		store.getState().commandsStackManager.executeOperation([
+			new ElementsUpdateCommand([
+				{
+					id: "step-1",
+					type: "step",
+					data: { ...element.data, number: 2 },
+					previousData: element.data,
+				},
+			]),
+		]);
+
+		expect(grafcetsManager.setStoreValues).toHaveBeenCalledWith(
 			"g1",
-			expect.objectContaining({ hasCommandsToUndo: expect.any(Boolean) }),
+			expect.objectContaining({ hasCommandsToUndo: true }),
 		);
 		unsubscribe();
 	});
@@ -81,6 +102,6 @@ describe("syncGrafcetToProject", () => {
 
 		store.getState().viewManager.selectNodesAndEdges(["step-1"], []);
 
-		expect(grafcetsManager.setGrafcetStoreValues).not.toHaveBeenCalled();
+		expect(grafcetsManager.setStoreValues).not.toHaveBeenCalled();
 	});
 });

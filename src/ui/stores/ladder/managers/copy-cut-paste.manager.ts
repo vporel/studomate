@@ -1,12 +1,12 @@
 import { LadderElement } from "@/schemas/ladder/element.schema";
 import Connection from "@/schemas/ladder/connection.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
-import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH, POWER_RAIL_OFFSET, LADDER_MAX_COLS, PositionedLeaf } from "@/ui/utils/ladder/ladder-flow-builder";
+import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH, POWER_RAIL_OFFSET, LADDER_MAX_COLS } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeSectionLayout } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
@@ -56,6 +56,20 @@ export default class CopyCutPasteManager {
 		});
 
 		this.copyElements(elements, connections);
+	}
+
+	cutSelectedElements(): void {
+		this.copySelectedElements();
+		const state = this.getStoreState();
+
+		Object.entries(state.nodesBySectionId).forEach(([sectionId, nodes]) => {
+			const selectedNodeIds = nodes.filter((n) => n.selected).map((n) => n.id);
+			const selectedEdgeIds = (state.edgesBySectionId[sectionId] || [])
+				.filter((e) => e.selected)
+				.map((e) => e.id);
+			if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0) return;
+			state.workflowManager.deleteElements(sectionId, selectedNodeIds, selectedEdgeIds);
+		});
 	}
 
 	copyElements(elements: LadderElement[], connections: Connection[]): void {

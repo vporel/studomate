@@ -11,14 +11,23 @@ export function syncLadderToProject(
 	laddersManager: LaddersManager,
 ): () => void {
 	let lastLadder = store.getState().ladder;
+	let lastHasCommandsToUndo = store.getState().hasCommandsToUndo;
+	let lastHasCommandsToRedo = store.getState().hasCommandsToRedo;
 	return store.subscribe((state) => {
 		if (state.ladder !== lastLadder) {
 			lastLadder = state.ladder;
-			laddersManager.updateLadderData(state.ladder);
+			laddersManager.updateProgramData(state.ladder);
 		}
-		laddersManager.setLadderStoreValues(state.ladder.id, {
-			hasCommandsToUndo: state.hasCommandsToUndo,
-			hasCommandsToRedo: state.hasCommandsToRedo,
-		});
+		if (
+			state.hasCommandsToUndo !== lastHasCommandsToUndo ||
+			state.hasCommandsToRedo !== lastHasCommandsToRedo
+		) {
+			lastHasCommandsToUndo = state.hasCommandsToUndo;
+			lastHasCommandsToRedo = state.hasCommandsToRedo;
+			laddersManager.setStoreValues(state.ladder.id, {
+				hasCommandsToUndo: state.hasCommandsToUndo,
+				hasCommandsToRedo: state.hasCommandsToRedo,
+			});
+		}
 	});
 }

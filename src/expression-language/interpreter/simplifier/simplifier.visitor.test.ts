@@ -1,7 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
-import { DivisionByZeroException } from "@/simulator/interpreter/evaluator/exceptions/division-by-zero.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import SimplifierVisitor from "./simplifier.visitor";
 
 describe("SimplifierVisitor", () => {

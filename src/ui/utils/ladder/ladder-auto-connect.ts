@@ -1,7 +1,7 @@
 import Connection from "@/schemas/ladder/connection.schema";
 import { LadderElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { findCellCrossings, initialConnectionPoints } from "./ladder-connection-path";
 import { resolveDropTarget } from "./ladder-drop-target";
 import { PositionedLeaf } from "./ladder-flow-builder";

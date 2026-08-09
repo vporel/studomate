@@ -1,4 +1,4 @@
-import { createRandomId } from "../utils/ids";
+import { createRandomId } from "@/ids";
 import SharedElement from "../shared/element.schema";
 
 export const LADDER_ELEMENT_KINDS = ["contact", "coil", "railTerminal"] as const;

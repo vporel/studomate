@@ -1,5 +1,5 @@
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import Variable from "@/schemas/variable/variable.schema";
 import { getStubGrafcetCoffeMachine } from "./stub-grafcets";
 

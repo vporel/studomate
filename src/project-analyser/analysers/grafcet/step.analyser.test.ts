@@ -1,6 +1,7 @@
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
+import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import StepAnalyser from "./step.analyser";
 
 describe("StepAnalyser", () => {
@@ -74,15 +75,22 @@ describe("StepAnalyser", () => {
 		it("returns no issues for valid step in complete sequence", () => {
 			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
 			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").position(0, 50).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
 				.target("step", "step-2", "target:predecessor")
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
 				.addSteps(step1, step2)
-				.addConnection(c1)
+				.addTransition(transition)
+				.addConnections(c1, c2)
 				.build();
 
 			const issues = analyser.analyseInContext(step1, grafcet, []);
@@ -129,12 +137,18 @@ describe("StepAnalyser", () => {
 
 		it("allows initial step without predecessor", () => {
 			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
-				.target("step", "step-2", "target:predecessor")
+				.target("transition", "trans-1", "target:predecessor")
 				.build();
-			const grafcet = new GrafcetBuilder().id("grafcet-1").addStep(step).addConnection(c1).build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addTransition(transition)
+				.addConnection(c1)
+				.build();
 
 			const issues = analyser.analyseInContext(step, grafcet, []);
 

@@ -131,6 +131,26 @@ describe("StepReferralTargetAnalyser", () => {
 			expect(notExistIssues).toHaveLength(0);
 		});
 
+		it("does not throw when the referral target's successor is not a step", () => {
+			const referral = new StepReferralTargetBuilder().id("referral-1").sourceStepNumber(1).build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const transition = new TransitionBuilder().id("transition-1").build();
+			const connection = new ConnectionBuilder()
+				.id("c1")
+				.source("step-referral-target", "referral-1", STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR)
+				.target("transition", "transition-1", TRANSITION_HANDLE_TARGET_PREDECESSOR)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step1)
+				.addTransition(transition)
+				.addStepReferralTarget(referral)
+				.addConnection(connection)
+				.build();
+
+			expect(() => analyser.analyseInContext(referral, grafcet, [])).not.toThrow();
+		});
+
 		it("detects when referral target has no successor step", () => {
 			const referral = new StepReferralTargetBuilder().id("referral-1").sourceStepNumber(1).build();
 			const step1 = new StepBuilder().id("step-1").number(1).initial().build();

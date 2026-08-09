@@ -1,4 +1,4 @@
-import { createRandomId } from "@/simulator/utils/ids";
+import { createRandomId } from "@/ids";
 import { ASTNode } from "../nodes/ast-node";
 import { TimerNode, TimerStringDeclarationNode, TimerType } from "../nodes/blocks";
 

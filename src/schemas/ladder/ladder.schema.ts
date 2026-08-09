@@ -1,5 +1,5 @@
 import Program, { ProgramType } from "../program/program.schema";
-import { createRandomId } from "../utils/ids";
+import { createRandomId } from "@/ids";
 import Connection, { ConnectionData } from "./connection.schema";
 import { CoilData, ContactData, GridPosition, LadderElement } from "./element.schema";
 import Section from "./section.schema";
@@ -214,6 +214,26 @@ export default class Ladder extends Program {
 		return this.sections.flatMap((section) =>
 			section.connections.map((connection) => ({ sectionId: section.id, connection })),
 		);
+	}
+
+	/**
+	 * Used when variables are renamed, so that the contacts/coils referencing them stay valid.
+	 * Contrairement aux expressions GRAFCET, `variable` n'est pas du code à parser : c'est le
+	 * mnémonique référencé tel quel, donc une simple substitution suffit.
+	 *
+	 * @param renames Map of old mnemonic → new mnemonic
+	 */
+	renameVariableReferences(renames: Record<string, string>): void {
+		if (Object.keys(renames).length === 0) return;
+
+		this.sections.forEach((section) => {
+			section.elements.forEach((element) => {
+				if (element.type !== "contact" && element.type !== "coil") return;
+				const data = element.data as ContactData | CoilData;
+				const newName = renames[data.variable];
+				if (newName) data.variable = newName;
+			});
+		});
 	}
 
 	copy(): Ladder {

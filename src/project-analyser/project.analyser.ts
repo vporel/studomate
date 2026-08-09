@@ -1,9 +1,9 @@
-import Grafcet from "../schemas/grafcet/grafcet.schema";
-import Ladder from "../schemas/ladder/ladder.schema";
-import { ProgramType } from "../schemas/program/program.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Ladder from "@/schemas/ladder/ladder.schema";
+import { ProgramType } from "@/schemas/program/program.schema";
 import ProgramAnalyser from "./program.analyser";
-import Project from "../schemas/project/project.schema";
-import Variable from "../schemas/variable/variable.schema";
+import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
 import LadderAnalyser from "./analysers/ladder/ladder.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
@@ -63,7 +63,14 @@ export default class ProjectAnalyser {
 		for (const program of Object.values(project.programs)) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) {
-				console.error(`Aucun analyseur pour la notation "${program.type}"`);
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"PROJECT_MISSING_ANALYSER_FOR_NOTATION",
+						{ sourceType: "project", sourceId: project.id },
+						`Aucun analyseur disponible pour la notation "${program.type}" (programme "${program.name}"). Ce programme n'a pas été analysé.`,
+					),
+				);
 				continue;
 			}
 			const result = analyser.analyse(program, project);

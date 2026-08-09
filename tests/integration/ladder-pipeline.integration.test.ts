@@ -2,9 +2,9 @@ import Connection from "@/schemas/ladder/connection.schema";
 import { createContactElement, createCoilElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 /** Pose une borne d'alimentation, un contact et une bobine reliés en série, dans la section donnée. */
@@ -21,8 +21,13 @@ function wireContactToCoil(ladder: Ladder, section: Section, contactParams: Para
 
 describe("Ladder Pipeline Integration Test", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Complete workflow: Analysis → Pre-compilation → Compilation → Simulation", () => {
@@ -53,12 +58,12 @@ describe("Ladder Pipeline Integration Test", () => {
 
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", true);
 
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", false); // bobine normale : suit la condition à chaque cycle
@@ -87,19 +92,19 @@ describe("Ladder Pipeline Integration Test", () => {
 			// Impulsion sur I0 : Q0 se verrouille à vrai
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", true);
 
 			// I0 repasse à faux : Q0 reste verrouillé (bobine set, pas normale)
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", true);
 
 			// Impulsion sur I1 : Q0 se déverrouille
 			plc!.setPhysicalInputValueByName("I1", true);
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", false);
@@ -128,12 +133,12 @@ describe("Ladder Pipeline Integration Test", () => {
 
 			plc!.start();
 			plc!.setPhysicalInputValueByName("I0", true);
-			await wait(15); // le temps d'un seul cycle : le front est détecté
+			await jest.advanceTimersByTimeAsync(15); // le temps d'un seul cycle : le front est détecté
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", true);
 
 			// I0 reste à vrai, mais ce n'est plus un front : Q0 doit retomber
-			await wait(100);
+			await jest.advanceTimersByTimeAsync(100);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "Q0", false);

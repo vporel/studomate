@@ -31,13 +31,8 @@ export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
 /**
  * Classe de schéma et collection portant chaque type d'élément.
  *
- * **Source unique de vérité.** Cette table remplace cinq énumérations manuelles de la même
- * liste (`elementsSchemasClasses`, `getTypeToElementsMap`, `copy`, `createFromJSON`, et la
- * déclaration des champs), qu'il fallait tenir synchronisées à la main sans qu'aucune erreur
- * ne soit détectée.
- *
- * Le `satisfies Record<ElementType, …>` la rend **exhaustive à la compilation** : ajouter un
- * type d'élément sans l'inscrire ici ne compile plus.
+ * **Source unique de vérité.** Le `satisfies Record<ElementType, …>` la rend **exhaustive à
+ * la compilation** : ajouter un type d'élément sans l'inscrire ici ne compile plus.
  */
 const ELEMENT_COLLECTIONS = {
 	step: { collection: "steps", schema: Step },
@@ -145,9 +140,8 @@ export default class Grafcet extends Program {
 	}
 
 	getElementById<T extends Element<any>>(id: string): T | undefined {
-		//On parcourt les collections sans les concaténer : cette méthode est appelée en boucle
-		//par les analyseurs et les helpers, l'allocation d'un tableau intermédiaire à chaque
-		//appel se payait cher
+		//Appelée en boucle par les analyseurs et les helpers : ne pas allouer de tableau
+		//intermédiaire en concaténant les collections
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
 			const found = this.getCollection(collection).find((e) => e.id === id);
 			if (found) return found as T;
@@ -301,6 +295,7 @@ export default class Grafcet extends Program {
 
 	copy(): Grafcet {
 		const newGrafcet = Object.assign(new Grafcet(this.id, this.name, this.format), this);
+		newGrafcet.format = { ...this.format };
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
 			newGrafcet.setCollection(
 				collection,

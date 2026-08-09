@@ -14,6 +14,13 @@ import TransitionHelper from "./transition.helper";
 
 export default class StepHelper {
 	/**
+	 * Mnémonique de la variable synthétique X{n} associée à une étape numérotée n.
+	 */
+	static getStepVariableMnemonic(stepNumber: number): string {
+		return `X${stepNumber}`;
+	}
+
+	/**
 	 * Get the next available number for a step in the grafcet
 	 * It will return the number after the max number used by the steps in the grafcet
 	 * @param grafcet

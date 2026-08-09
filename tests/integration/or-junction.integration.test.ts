@@ -1,13 +1,18 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, getVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("OR Junction Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Divergence OU : pipeline compilation", () => {
@@ -64,7 +69,7 @@ describe("OR Junction Integration Tests", () => {
 			// I0=TRUE → branch1 eligible, branch2 (NON I0 = FALSE) never eligible
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(400);
+			await jest.advanceTimersByTimeAsync(400);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -97,7 +102,7 @@ describe("OR Junction Integration Tests", () => {
 			// I0=FALSE → branch2 eligible, branch1 (I0 = FALSE) never eligible
 			plc!.setPhysicalInputValueByName("I0", false);
 			plc!.start();
-			await wait(400);
+			await jest.advanceTimersByTimeAsync(400);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -137,13 +142,13 @@ describe("OR Junction Integration Tests", () => {
 			// Phase 1: I0=TRUE → only branch1 eligible
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			// Switch to phase 2: I0=FALSE → only branch2 eligible
 			phase.current = 2;
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 

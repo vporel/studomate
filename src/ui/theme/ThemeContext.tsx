@@ -118,8 +118,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 		[breakpoints, theme],
 	);
 
+	const contextValue = useMemo(() => ({ theme, setTheme }), [theme]);
+
 	return (
-		<ThemeContext.Provider value={{ theme, setTheme }}>
+		<ThemeContext.Provider value={contextValue}>
 			<MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
 		</ThemeContext.Provider>
 	);

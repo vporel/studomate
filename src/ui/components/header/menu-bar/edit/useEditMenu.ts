@@ -44,7 +44,7 @@ export default function useEditMenu(): AppMenuType {
 						onClick: () => {
 							if (!designing) return;
 							const copyCutPasteManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
 						},
 					},
@@ -55,7 +55,7 @@ export default function useEditMenu(): AppMenuType {
 						onClick: () => {
 							if (!designing) return;
 							const copyCutPasteManager =
-								grafcetsManager.getActiveGrafcetStoreManagers()?.copyCutPasteManager;
+								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements();
 						},
 					},

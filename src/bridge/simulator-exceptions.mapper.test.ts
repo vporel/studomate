@@ -5,14 +5,14 @@ import StatementsBuilder from "@/expression-language/ast/builders/statements.bui
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import InvalidCharacterException from "@/expression-language/lexer/exceptions/invalid-character.exception";
-import InvalidStringEndQuoteException from "@/expression-language/lexer/exceptions/invalid-string-end-quote.exception";
+import InvalidKeywordException from "@/expression-language/lexer/exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "@/expression-language/lexer/exceptions/unterminated-string.exception";
 import BadTokenTypeException from "@/expression-language/parser/exceptions/bad-token-type.exception";
 import MissingPrimaryOrLeftParentheseException from "@/expression-language/parser/exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "@/expression-language/parser/exceptions/missing-right-parenthese.exception";
 import ParsingEndedBeforeEOFException from "@/expression-language/parser/exceptions/parsing-ended-before-eof.exception";
 import UnknownVariableNameException from "@/simulator/interpreter/environment/exceptions/unknown-variable-name.exception";
-import { DivisionByZeroException } from "@/simulator/interpreter/evaluator/exceptions/division-by-zero.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import IncompatibleOperandsTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
 import InputIdentifierAssignmentException from "@/simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
@@ -231,11 +231,9 @@ describe("SimulatorExceptionsMapper", () => {
 			);
 		});
 
-		it("maps InvalidStringEndQuoteException", () => {
-			const e = new InvalidStringEndQuoteException('"', 6);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toContain(
-				"Guillemet de fin invalide",
-			);
+		it("maps InvalidKeywordException", () => {
+			const e = new InvalidKeywordException("SI", 6);
+			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toContain("Mot-clé invalide");
 		});
 
 		it("maps UnterminatedStringException", () => {

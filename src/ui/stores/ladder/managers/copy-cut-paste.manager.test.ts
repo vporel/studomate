@@ -2,7 +2,8 @@
  * @jest-environment jsdom
  */
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
-import { createContactElement } from "@/schemas/ladder/element.schema";
+import Connection from "@/schemas/ladder/connection.schema";
+import { createContactElement, createCoilElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
@@ -116,6 +117,66 @@ describe("CopyCutPasteManager (ladder)", () => {
 
 			const original = store.getState().ladder.getSection("s1")!.getElement(contactId);
 			expect(original).toMatchObject({ position: { row: 0, col: 3 }, data: { variable: "Capteur", mode: "NO" } });
+		});
+	});
+
+	describe("collage réel avec connexion interne à la sélection", () => {
+		it("recrée la connexion entre les deux éléments copiés, avec de nouveaux ids", () => {
+			const contact = createContactElement("Capteur", "NO", 0, 0);
+			const coil = createCoilElement("Sortie", "normal", 0, 1);
+			const connection = new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{ points: [[0, 0]] },
+			);
+			const section = new Section("s1", "Section", "", [contact, coil], [connection]);
+			const ladder = new Ladder("l1", "TestLadder", [section]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			stubElementsFromPoint("s1");
+			const flowPosition = { x: POWER_RAIL_OFFSET + 5 * GRID_CELL_WIDTH, y: 5 * GRID_CELL_HEIGHT };
+			store.getState().viewManager.registerInstance("s1", fakeRfInstance(flowPosition));
+
+			store.getState().copyCutPasteManager.copyElements([contact, coil], [connection]);
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			const pastedSection = store.getState().ladder.getSection("s1")!;
+			expect(pastedSection.connections).toHaveLength(2); // l'originale + la copiée
+			const pastedConnection = pastedSection.connections.find((c) => c.id !== "c1")!;
+			expect(pastedConnection).toBeDefined();
+			const pastedElementIds = pastedSection.elements
+				.filter((e) => e.id !== contact.id && e.id !== coil.id)
+				.map((e) => e.id);
+			expect(pastedElementIds).toContain(pastedConnection.source.id);
+			expect(pastedElementIds).toContain(pastedConnection.target.id);
+		});
+	});
+
+	describe("cutSelectedElements", () => {
+		it("copie puis retire l'élément sélectionné de la section", () => {
+			const { store, contactId } = buildStore();
+			selectNode(store, "s1", contactId);
+
+			store.getState().copyCutPasteManager.cutSelectedElements();
+
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(0);
+			stubElementsFromPoint("s1");
+			store.getState().viewManager.registerInstance("s1", fakeRfInstance({ x: 0, y: 0 }));
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+			expect(
+				store
+					.getState()
+					.ladder.getSection("s1")!
+					.elements.some((e) => e.type === "contact"),
+			).toBe(true);
+		});
+
+		it("ne fait rien quand rien n'est sélectionné", () => {
+			const { store } = buildStore();
+
+			store.getState().copyCutPasteManager.cutSelectedElements();
+
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
 		});
 	});
 });

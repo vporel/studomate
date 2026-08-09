@@ -10,7 +10,7 @@ function Header({ onClose }: { onClose: () => void }) {
 	return (
 		<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 			<Typography variant="h6">{"Tables de visualisation"}</Typography>
-			<IconButton onClick={onClose} size="small" aria-label="close-analysis-errors">
+			<IconButton onClick={onClose} size="small" aria-label="close-watch-tables">
 				<CloseIcon />
 			</IconButton>
 		</Box>

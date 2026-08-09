@@ -15,6 +15,7 @@ module.exports = {
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/src/$1",
 		"^@tests/(.*)$": "<rootDir>/tests/$1",
+		"\\.css$": "<rootDir>/tests/utils/cssStub.js",
 	},
 	// Seuils fixés avec une marge sous la couverture mesurée (statements 77.96 %, branches 60 %,
 	// functions 70.67 %, lines 79.92 % au 2026-08-05) : assez bas pour ne pas casser la CI au

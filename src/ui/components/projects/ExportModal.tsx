@@ -2,7 +2,7 @@
 
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { exportGrafcet } from "@/ui/utils/grafcet/grafcet-export-utils";
-import { exportProject } from "@/ui/utils/project/projet-export-utils";
+import { exportProject } from "@/ui/utils/project/project-export-utils";
 import { Button, Divider, Typography } from "@mui/material";
 import { useCallback, useState } from "react";
 import { useShallow } from "zustand/shallow";
@@ -36,7 +36,7 @@ export default function ExportModal() {
 				exportProject(project, fileName);
 			}
 		} else if (choice === "grafcet" && activeScopeType === "grafcet" && activeScope) {
-			const grafcet = grafcetsManager.getGrafcet(activeScope);
+			const grafcet = grafcetsManager.getProgramOrThrow(activeScope);
 			const fileName = `${grafcet.name}${dateSuffix}`;
 			exportGrafcet(activeScope, fileName, grafcet.format);
 		}

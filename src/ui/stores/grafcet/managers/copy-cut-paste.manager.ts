@@ -1,8 +1,7 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
-import { focusFlow } from "../flow-management";
 import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
 
 export default class CopyCutPasteManager {
@@ -20,6 +19,17 @@ export default class CopyCutPasteManager {
 		const nodes = this.getStoreState().nodes.filter((n) => n.selected);
 		const edges = this.getStoreState().edges.filter((e) => e.selected);
 		this.copyElements(nodes, edges);
+	}
+
+	cutSelectedElements(): void {
+		const nodes = this.getStoreState().nodes.filter((n) => n.selected);
+		const edges = this.getStoreState().edges.filter((e) => e.selected);
+		if (nodes.length === 0 && edges.length === 0) return;
+		this.copyElements(nodes, edges);
+		this.getStoreState().workflowManager.deleteNodesAndEdges(
+			nodes.map((n) => n.id),
+			edges.map((e) => e.id),
+		);
 	}
 
 	copyElements(nodes: GrafcetNodeType[], edges: GrafcetEdgeType[]) {
@@ -156,7 +166,7 @@ export default class CopyCutPasteManager {
 			})
 			.filter((edge): edge is GrafcetEdgeType => edge !== null);
 		this.getStoreState().workflowManager.addNodesAndEdges(newNodes, newEdges);
-		focusFlow(grafcet.id);
+		this.getStoreState().viewManager.focus();
 		return {
 			addedNodes: newNodes,
 			addedEdges: newEdges,

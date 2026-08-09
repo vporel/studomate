@@ -41,15 +41,14 @@ export default abstract class AbstractNodesFactory<
 
 	protected abstract getDomainElements(source: TSource): TDomain[];
 
+	/**
+	 * Met à jour un nœud existant via `syncNodeDataAndPosition`, pour conserver la priorité de
+	 * la vue pendant un geste (glisser-déposer).
+	 */
 	protected syncNode(prevNode: TNode, domain: TDomain): TNode {
 		const built = this.buildNode(domain);
 		return this.syncNodeDataAndPosition(prevNode, built.data, built.position) as TNode;
 	}
-
-	/**
-	 * Met à jour un nœud existant. Devrait utiliser `syncNodeDataAndPosition` pour
-	 * conserver la priorité de la vue pendant un geste (glisser-déposer).
-	 */
 
 	protected abstract buildNode(domain: TDomain): TNode;
 

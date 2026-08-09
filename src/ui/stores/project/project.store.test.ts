@@ -1,6 +1,11 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
+import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
+import { toast } from "react-toastify";
 import { createProjectStore } from "./project.store";
+
+jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
 describe("createProjectStore", () => {
 	beforeEach(() => {
@@ -128,13 +133,116 @@ describe("createProjectStore", () => {
 
 			expect(result).toBe(true);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
-			expect(store.getState().projectRepository.get(store.getState().project!.id)).not.toBeNull();
+			expect(await store.getState().projectRepository.get(store.getState().project!.id)).not.toBeNull();
+		});
+
+		it("expose savingProject à true le temps de la sauvegarde", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			store.getState().setProjectName("Projet en cours de sauvegarde");
+
+			const savePromise = store.getState().saveProject();
+
+			expect(store.getState().savingProject).toBe(true);
+			await savePromise;
+			expect(store.getState().savingProject).toBe(false);
 		});
 
 		it("does nothing when there is no open project", async () => {
 			const store = createProjectStore();
 			const result = await store.getState().saveProject();
 			expect(result).toBe(false);
+		});
+
+		it("quand le repository échoue : retourne false, garde hasUnsavedChanges, et affiche un toast d'erreur", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			store.getState().setProjectName("Projet non sauvegardable");
+			jest.spyOn(store.getState().projectRepository, "save").mockResolvedValue({
+				ok: false,
+				reason: "unknown",
+				cause: new Error("boom"),
+			});
+
+			const result = await store.getState().saveProject();
+
+			expect(result).toBe(false);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(store.getState().savingProject).toBe(false);
+			expect(toast.error).toHaveBeenCalled();
+		});
+	});
+
+	describe("setProjectDialect", () => {
+		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			const grafcet = store.getState().grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+			const syncSpy = jest.spyOn(store.getState().grafcetsManager, "syncMountedStoresFromProject");
+
+			store.getState().setProjectDialect(Dialect.EN);
+
+			expect(store.getState().project!.dialect).toBe(Dialect.EN);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(syncSpy).toHaveBeenCalled();
+			expect(store.getState().project!.getGrafcet(grafcet.id)).toBeDefined();
+		});
+
+		it("ne fait rien quand le dialecte demandé est déjà le dialecte courant", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			const currentDialect = store.getState().project!.dialect;
+			const projectBefore = store.getState().project;
+
+			store.getState().setProjectDialect(currentDialect);
+
+			expect(store.getState().project).toBe(projectBefore);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+	});
+
+	describe("setActiveScope", () => {
+		it("déduit activeScopeType depuis le type de page (grafcet)", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			const grafcet = store.getState().grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+
+			store.getState().setActiveScope(grafcet.id);
+
+			expect(store.getState().activeScope).toBe(grafcet.id);
+			expect(store.getState().activeScopeType).toBe("grafcet");
+		});
+
+		it("retombe sur le scope 'project' pour un scope sans page associée", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+
+			store.getState().setActiveScope("inexistant");
+
+			expect(store.getState().activeScopeType).toBe("project");
+		});
+
+		it("ne re-focalise pas le flow quand le scope demandé est déjà le scope actif", async () => {
+			const store = createProjectStore();
+			await store.getState().newProject();
+			const grafcetA = store.getState().grafcetsManager.newGrafcet("A", DEFAULT_GRAFCET_FORMAT)!;
+			const grafcetB = store.getState().grafcetsManager.newGrafcet("B", DEFAULT_GRAFCET_FORMAT)!;
+			const focusA = jest.fn();
+			const focusB = jest.fn();
+			store.getState().grafcetsManager.registerStoreManager(grafcetA.id, {
+				viewManager: { focus: focusA } as any,
+			} as any);
+			store.getState().grafcetsManager.registerStoreManager(grafcetB.id, {
+				viewManager: { focus: focusB } as any,
+			} as any);
+			store.getState().setActiveScope(grafcetA.id);
+			focusA.mockClear();
+
+			store.getState().setActiveScope(grafcetA.id);
+			expect(focusA).not.toHaveBeenCalled();
+
+			store.getState().setActiveScope(grafcetB.id);
+			expect(focusB).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -171,7 +279,7 @@ describe("createProjectStore", () => {
 		it("opens a previously saved project", async () => {
 			const store = createProjectStore();
 			const project = new Project("known-id", "Projet existant", "Author");
-			store.getState().projectRepository.save(project);
+			await store.getState().projectRepository.save(project);
 
 			const result = await store.getState().openProject("known-id");
 

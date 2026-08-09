@@ -6,23 +6,36 @@ import React from "react";
 const AppTool = ({
 	disabled,
 	name,
+	label,
 	onClick,
 	children,
 }: {
 	disabled?: boolean;
 	name: string;
+	label?: string;
 	onClick?: () => void;
 	children: React.ReactElement;
 }) => {
+	const activate = () => {
+		if (!disabled && onClick) {
+			onClick();
+		}
+	};
+
 	return (
 		<Box
+			role="button"
+			aria-label={label}
+			aria-disabled={disabled}
 			tabIndex={0}
 			className={`app-toolbar__tool app-toolbar__${name} ${
 				disabled ? " app-toolbar__tool--disabled" : ""
 			}`}
-			onClick={() => {
-				if (!disabled && onClick) {
-					onClick();
+			onClick={activate}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					activate();
 				}
 			}}
 			sx={{

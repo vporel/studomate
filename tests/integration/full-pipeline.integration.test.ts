@@ -2,14 +2,19 @@ import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Full Pipeline Integration Test", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		// Reset factories before each test
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Complete workflow: Analysis → Pre-compilation → Compilation → Simulation", () => {
@@ -59,7 +64,7 @@ describe("Full Pipeline Integration Test", () => {
 
 			// Run many cycles (10ms scan × 50 cycles minimum in 600ms)
 			plc!.start();
-			await wait(600);
+			await jest.advanceTimersByTimeAsync(600);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -103,7 +108,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.start();
 
 			// After many cycles, step 0 should be active, Q0=false
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);
@@ -113,7 +118,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.setPhysicalInputValueByName("I0", true);
 
 			// After many cycles, step 1 should be active and CONTINUOUS action fires Q0=true
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", false);
 			expectVariableValue(plc!, "X1", true);
@@ -123,7 +128,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.setPhysicalInputValueByName("I0", false);
 
 			// After many cycles, step 0 active again, Q0=false (CONTINUOUS falling edge fired)
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);

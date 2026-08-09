@@ -34,11 +34,11 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 	}
 
 	/**
-	 * Renaming a variable must rewrite every expression referencing it, in *all* the grafcets
-	 * of the project — not only the ones currently open in the editor.
+	 * Renaming a variable must rewrite every expression/reference to it, in *all* the grafcets
+	 * and ladders of the project — not only the ones currently open in the editor.
 	 *
 	 * Doing it here rather than in a UI manager guarantees two things:
-	 * - it reaches every grafcet, since the command owns the whole project;
+	 * - it reaches every program, since the command owns the whole project;
 	 * - undo is exactly symmetric by construction, instead of being replayed by hand.
 	 */
 	private applyMnemonicRenames(project: Project, direction: "forward" | "backward"): void {
@@ -53,6 +53,9 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 
 		Object.values(project.grafcets).forEach((grafcet) => {
 			grafcet.renameIdentifiersInExpressions(renames);
+		});
+		Object.values(project.ladders).forEach((ladder) => {
+			ladder.renameVariableReferences(renames);
 		});
 	}
 }

@@ -127,7 +127,6 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 							border: "none",
 							outline: "none",
 							resize: "none",
-							boxSizing: "border-box",
 							overflowY: "auto",
 							padding: "0",
 							lineHeight: "1.2rem",

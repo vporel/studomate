@@ -1,4 +1,4 @@
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import JunctionOrStart from "../junction-or-start.schema";
 import { JunctionData } from "../junction.schema";
 import { XYPosition } from "../shared-types";

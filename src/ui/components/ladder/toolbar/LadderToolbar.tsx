@@ -2,7 +2,7 @@
 
 import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
 import { DEFAULT_SECTION_TITLE } from "@/schemas/ladder/ladder.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import AddIcon from "@mui/icons-material/Add";

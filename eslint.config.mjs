@@ -47,6 +47,22 @@ const eslintConfig = [
 							group: ["../../*"],
 							message: "Utilisez l'alias @/... plutôt qu'un import relatif remontant de plusieurs niveaux.",
 						},
+						{
+							group: [
+								"../schemas/*",
+								"../expression-language/*",
+								"../project-analyser/*",
+								"../project-pre-compiler/*",
+								"../project-compiler/*",
+								"../simulator/*",
+								"../persistence/*",
+								"../ui/*",
+								"../bridge/*",
+								"../lib/*",
+							],
+							message:
+								"Utilisez l'alias @/... plutôt qu'un import relatif traversant une frontière de module.",
+						},
 					],
 				},
 			],

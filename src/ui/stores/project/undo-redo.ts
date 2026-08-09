@@ -7,9 +7,7 @@ import { ProjectMode } from "./ProjectMode.enum";
  * project. Each grafcet therefore has its own history, and the project has one of its own
  * for what does not belong to a grafcet (variables, project properties).
  *
- * These helpers are the single place where that arbitration happens. It used to be copied
- * in four files (edit menu, keyboard shortcuts, undo button, redo button), each free to
- * drift from the others.
+ * These helpers are the single place where that arbitration happens.
  *
  * They take the state rather than being hooks, so that they serve both the components and
  * the imperative keyboard handler.
@@ -17,10 +15,10 @@ import { ProjectMode } from "./ProjectMode.enum";
 
 function activeCommandsStackManager(state: ProjectStoreState) {
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveGrafcetStoreManagers()?.commandsStackManager ?? null;
+		return state.grafcetsManager.getActiveStoreManagers()?.commandsStackManager ?? null;
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveLadderStoreManagers()?.commandsStackManager ?? null;
+		return state.laddersManager.getActiveStoreManagers()?.commandsStackManager ?? null;
 	}
 	return state.commandsStackManager;
 }
@@ -28,10 +26,10 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 export function canUndoActiveScope(state: ProjectStoreState): boolean {
 	if (state.mode !== ProjectMode.DESIGN) return false;
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToUndo ?? false;
+		return state.grafcetsManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveLadderStoreValues()?.hasCommandsToUndo ?? false;
+		return state.laddersManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
 	}
 	return state.hasCommandsToUndo;
 }
@@ -39,10 +37,10 @@ export function canUndoActiveScope(state: ProjectStoreState): boolean {
 export function canRedoActiveScope(state: ProjectStoreState): boolean {
 	if (state.mode !== ProjectMode.DESIGN) return false;
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveGrafcetStoreValues()?.hasCommandsToRedo ?? false;
+		return state.grafcetsManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveLadderStoreValues()?.hasCommandsToRedo ?? false;
+		return state.laddersManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
 	}
 	return state.hasCommandsToRedo;
 }

@@ -7,8 +7,8 @@ import { syncLadderToProject } from "./ladder-project-sync";
 
 function fakeLaddersManager() {
 	return {
-		updateLadderData: jest.fn(),
-		setLadderStoreValues: jest.fn(),
+		updateProgramData: jest.fn(),
+		setStoreValues: jest.fn(),
 	} as unknown as LaddersManager;
 }
 
@@ -27,11 +27,11 @@ describe("syncLadderToProject", () => {
 			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
 		]);
 
-		expect(laddersManager.updateLadderData).toHaveBeenCalledTimes(1);
+		expect(laddersManager.updateProgramData).toHaveBeenCalledTimes(1);
 		unsubscribe();
 	});
 
-	it("répercute toujours les compteurs d'annulation", () => {
+	it("répercute les compteurs d'annulation quand ils changent", () => {
 		const store = buildStore();
 		const laddersManager = fakeLaddersManager();
 		const unsubscribe = syncLadderToProject(store, laddersManager);
@@ -40,10 +40,21 @@ describe("syncLadderToProject", () => {
 			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
 		]);
 
-		expect(laddersManager.setLadderStoreValues).toHaveBeenCalledWith(
+		expect(laddersManager.setStoreValues).toHaveBeenCalledWith(
 			"l1",
 			expect.objectContaining({ hasCommandsToUndo: true }),
 		);
+		unsubscribe();
+	});
+
+	it("ne répercute pas les compteurs d'annulation quand ils n'ont pas changé", () => {
+		const store = buildStore();
+		const laddersManager = fakeLaddersManager();
+		const unsubscribe = syncLadderToProject(store, laddersManager);
+
+		store.getState().viewManager.zoomIn();
+
+		expect(laddersManager.setStoreValues).not.toHaveBeenCalled();
 		unsubscribe();
 	});
 
@@ -57,6 +68,6 @@ describe("syncLadderToProject", () => {
 			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
 		]);
 
-		expect(laddersManager.updateLadderData).not.toHaveBeenCalled();
+		expect(laddersManager.updateProgramData).not.toHaveBeenCalled();
 	});
 });

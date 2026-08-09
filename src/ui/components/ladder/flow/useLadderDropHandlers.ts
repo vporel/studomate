@@ -1,19 +1,12 @@
 "use client";
 
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
-import Connection from "@/schemas/ladder/connection.schema";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import {
-	createContactElement,
-	createCoilElement,
-	createRailTerminalElement,
-	LadderElement,
-} from "@/schemas/ladder/element.schema";
+import { createContactElement, createCoilElement, LadderElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { createRandomId } from "@/schemas/utils/ids";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";

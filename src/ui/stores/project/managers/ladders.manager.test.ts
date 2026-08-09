@@ -84,11 +84,11 @@ describe("LaddersManager", () => {
 		});
 	});
 
-	describe("deleteLadder", () => {
+	describe("deleteProgramById (ladder)", () => {
 		it("lève une erreur si le ladder n'existe pas", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.deleteLadder("inexistant")).toThrow();
+			expect(() => manager.deleteProgramById("inexistant")).toThrow();
 		});
 
 		it("retire le ladder du projet, ferme sa page et jette son historique", () => {
@@ -96,7 +96,7 @@ describe("LaddersManager", () => {
 			const { manager, getState } = makeManager({ project });
 			manager.getCommandsStack(ladderId); // instancie une pile à jeter
 
-			manager.deleteLadder(ladderId);
+			manager.deleteProgramById(ladderId);
 
 			expect(getState().project!.getLadder(ladderId)).toBeUndefined();
 			expect(getState().pagesManager.closePage).toHaveBeenCalledWith(ladderId);
@@ -107,13 +107,13 @@ describe("LaddersManager", () => {
 			const { project, ladderId } = projectWithLadder();
 			const { manager, getState } = makeManager({ project, mode: ProjectMode.SIMULATION });
 
-			manager.deleteLadder(ladderId);
+			manager.deleteProgramById(ladderId);
 
 			expect(getState().project!.getLadder(ladderId)).toBeDefined();
 		});
 	});
 
-	describe("renameLadder", () => {
+	describe("renameProgramById (ladder)", () => {
 		it("renomme le ladder et le titre de sa page si elle est ouverte", () => {
 			const { project, ladderId } = projectWithLadder();
 			const { manager, getState } = makeManager({
@@ -121,7 +121,7 @@ describe("LaddersManager", () => {
 				pagesData: { [ladderId]: { id: ladderId, type: "ladder", title: "L1" } },
 			});
 
-			manager.renameLadder(ladderId, "Nouveau nom");
+			manager.renameProgramById(ladderId, "Nouveau nom");
 
 			expect(getState().project!.getLadder(ladderId)!.name).toBe("Nouveau nom");
 			expect(getState().pagesData[ladderId].title).toBe("Nouveau nom");
@@ -130,7 +130,7 @@ describe("LaddersManager", () => {
 		it("lève une erreur si le ladder n'existe pas", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.renameLadder("inexistant", "X")).toThrow();
+			expect(() => manager.renameProgramById("inexistant", "X")).toThrow();
 		});
 	});
 
@@ -138,29 +138,29 @@ describe("LaddersManager", () => {
 		it("lève une erreur si aucun projet n'est ouvert", () => {
 			const { manager } = makeManager({ project: null });
 
-			expect(() => manager.getLadder("l1")).toThrow();
+			expect(() => manager.getProgramOrThrow("l1")).toThrow();
 		});
 
 		it("lève une erreur si le ladder n'existe pas dans le projet", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.getLadder("inexistant")).toThrow();
+			expect(() => manager.getProgramOrThrow("inexistant")).toThrow();
 		});
 
 		it("retourne le ladder demandé", () => {
 			const { project, ladderId } = projectWithLadder();
 			const { manager } = makeManager({ project });
 
-			expect(manager.getLadder(ladderId).id).toBe(ladderId);
+			expect(manager.getProgramOrThrow(ladderId).id).toBe(ladderId);
 		});
 	});
 
-	describe("getActiveLadderStoreValues / getActiveLadderStoreManagers", () => {
+	describe("getActiveStoreValues / getActiveStoreManagers (ladder)", () => {
 		it("retourne null si le scope actif n'est pas un ladder", () => {
 			const { manager } = makeManager({ activeScopeType: "project" });
 
-			expect(manager.getActiveLadderStoreValues()).toBeNull();
-			expect(manager.getActiveLadderStoreManagers()).toBeNull();
+			expect(manager.getActiveStoreValues()).toBeNull();
+			expect(manager.getActiveStoreManagers()).toBeNull();
 		});
 
 		it("retourne les valeurs/managers du ladder actif", () => {
@@ -173,21 +173,69 @@ describe("LaddersManager", () => {
 				laddersStoresManagers: { l1: managers },
 			});
 
-			expect(manager.getActiveLadderStoreValues()).toBe(values);
-			expect(manager.getActiveLadderStoreManagers()).toBe(managers);
+			expect(manager.getActiveStoreValues()).toBe(values);
+			expect(manager.getActiveStoreManagers()).toBe(managers);
 		});
 	});
 
-	describe("registerLadderStoreManager / deleteLadderStoreManager", () => {
+	describe("registerStoreManager / deleteStoreManager (ladder)", () => {
 		it("enregistre puis retire le manager d'un ladder", () => {
 			const { manager, getState } = makeManager({});
 			const managers = { commandsStackManager: {} } as any;
 
-			manager.registerLadderStoreManager("l1", managers);
+			manager.registerStoreManager("l1", managers);
 			expect(getState().laddersStoresManagers.l1).toBe(managers);
 
-			manager.deleteLadderStoreManager("l1");
+			manager.deleteStoreManager("l1");
 			expect(getState().laddersStoresManagers.l1).toBeUndefined();
+		});
+	});
+
+	// Régression : un renommage de variable réécrit les ladders du projet (voir
+	// VariablesUpdateCommand), mais un ladder monté possède sa propre copie et la repousse dans
+	// le projet — sans cette resynchronisation, elle écraserait le résultat du renommage.
+	describe("syncMountedStoresFromProject", () => {
+		it("fait adopter par les stores montés le ladder à jour du projet", () => {
+			const { project, ladderId } = projectWithLadder();
+			const adoptLadder = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "ladder",
+				activeScope: ladderId,
+				laddersStoresManagers: { [ladderId]: { workflowManager: { adoptLadder } } },
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptLadder).toHaveBeenCalledTimes(1);
+			const [adopted] = adoptLadder.mock.calls[0];
+			expect(adopted.id).toBe(ladderId);
+			expect(adopted).not.toBe(project.getLadder(ladderId)); //une copie, jamais l'instance du projet
+		});
+
+		it("ignore un store monté dont le ladder n'existe plus dans le projet", () => {
+			const { project } = projectWithLadder();
+			const adoptLadder = jest.fn();
+			const { manager } = makeManager({
+				project,
+				laddersStoresManagers: { "ladder-fermé": { workflowManager: { adoptLadder } } },
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptLadder).not.toHaveBeenCalled();
+		});
+
+		it("ne fait rien sans projet ouvert", () => {
+			const adoptLadder = jest.fn();
+			const { manager } = makeManager({
+				project: null,
+				laddersStoresManagers: { l1: { workflowManager: { adoptLadder } } },
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptLadder).not.toHaveBeenCalled();
 		});
 	});
 });

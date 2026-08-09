@@ -6,7 +6,7 @@ import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { initialConnectionPoints } from "@/ui/utils/ladder/ladder-connection-path";
 import { parseVirtualRailRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Connection as XYFlowConnection } from "@xyflow/react";

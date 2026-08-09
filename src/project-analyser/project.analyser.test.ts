@@ -20,6 +20,26 @@ describe("ProjectAnalyser", () => {
 			expect(result.stepsVariables).toEqual([]);
 		});
 
+		it("reports an issue for a program whose notation has no analyser, instead of failing silently", () => {
+			const project = new ProjectBuilder()
+				.id("project-1")
+				.name("Test Project")
+				.author("Test Author")
+				.build();
+			// Simule un programme d'une notation future/inconnue (fichier importé, migration
+			// incomplète...) : rien ne construit ça normalement via l'API publique.
+			project.programs["unknown-1"] = { id: "unknown-1", name: "Mystère", type: "unknown" } as any;
+
+			const result = ProjectAnalyser.analyse(project);
+
+			const missingAnalyserIssue = result.issues.find(
+				(issue) => issue.code === "PROJECT_MISSING_ANALYSER_FOR_NOTATION",
+			);
+			expect(missingAnalyserIssue).toBeDefined();
+			expect(missingAnalyserIssue?.severity).toBe("error");
+			expect(missingAnalyserIssue?.message).toContain("Mystère");
+		});
+
 		it("analyses single grafcet with valid initial step", () => {
 			const step = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test Grafcet").addStep(step).build();

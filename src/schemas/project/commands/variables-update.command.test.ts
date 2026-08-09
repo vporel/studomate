@@ -2,14 +2,17 @@ import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
+import { createContactElement } from "@/schemas/ladder/element.schema";
+import Ladder from "@/schemas/ladder/ladder.schema";
+import Section from "@/schemas/ladder/section.schema";
 import Project from "../project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import VariablesUpdateCommand from "./variables-update.command";
 
 /**
- * Builds a project holding two grafcets, both referencing the variable `moteur`.
+ * Builds a project holding two grafcets and a ladder, all referencing the variable `moteur`.
  * Neither is "open": at this level there is no such notion, which is precisely the point —
- * the rename must reach every grafcet of the project.
+ * the rename must reach every program of the project.
  */
 function buildProject() {
 	const project = new Project("p1", "Projet", "");
@@ -25,8 +28,13 @@ function buildProject() {
 		.addTransition(new TransitionBuilder().id("t-b").expression("NON moteur").build())
 		.build();
 
+	const contact = createContactElement("moteur", "NO", 0, 0);
+	const section = new Section("s1", "Section", "", [contact]);
+	const ladder = new Ladder("l-a", "Ladder", [section]);
+
 	project.addProgram(grafcetA);
 	project.addProgram(grafcetB);
+	project.addProgram(ladder);
 	return project;
 }
 
@@ -86,6 +94,26 @@ describe("VariablesUpdateCommand", () => {
 			const [project] = command.execute(buildProject());
 
 			expect(project.grafcets["g-a"].transitions[0].data.expression).toBe("moteur ET capteur");
+		});
+	});
+
+	// Régression : ContactData/CoilData référencent la variable par mnémonique en texte, tout
+	// comme les expressions GRAFCET — le renommage doit les atteindre aussi.
+	describe("propagation aux contacts/bobines des ladders", () => {
+		it("réécrit la référence des contacts/bobines de TOUS les ladders du projet", () => {
+			const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+
+			const [contact] = project.ladders["l-a"].sections[0].elements;
+			expect(contact.data).toEqual(expect.objectContaining({ variable: "pompe" }));
+		});
+
+		it("restaure la référence des contacts/bobines à l'annulation", () => {
+			const command = renameCommand("moteur", "pompe");
+			const [project] = command.execute(buildProject());
+			const restored = command.cancel(project);
+
+			const [contact] = restored.ladders["l-a"].sections[0].elements;
+			expect(contact.data).toEqual(expect.objectContaining({ variable: "moteur" }));
 		});
 	});
 

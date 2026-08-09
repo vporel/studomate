@@ -125,14 +125,17 @@ export default class TransitionHelper {
 	}
 
 	/**
+	 * Returns all direct predecessor connections of a transition
+	 */
+	static getPredecessors(transitionId: string, grafcet: Grafcet): Connection[] {
+		return grafcet.getConnectionsByElementIdAndHandle(transitionId, TRANSITION_HANDLE_TARGET_PREDECESSOR);
+	}
+
+	/**
 	 * Checks if the transition has a predecessor element (no orphan transition)
 	 */
 	static hasPredecessor(transitionId: string, grafcet: Grafcet): boolean {
-		const connectionsToTransition = grafcet.getConnectionsByElementIdAndHandle(
-			transitionId,
-			TRANSITION_HANDLE_TARGET_PREDECESSOR,
-		);
-		return connectionsToTransition.length > 0;
+		return TransitionHelper.getPredecessors(transitionId, grafcet).length > 0;
 	}
 
 	/**

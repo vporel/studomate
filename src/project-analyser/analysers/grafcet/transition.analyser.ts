@@ -134,6 +134,17 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				),
 			);
 		}
+
+		if (TransitionHelper.getPredecessors(transition.id, grafcet).length > 1) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"TRANSITION_MULTIPLE_PREDECESSORS",
+					source,
+					"Une transition ne peut avoir qu'un seul prédécesseur direct. Utilisez une convergence en ET pour synchroniser plusieurs étapes.",
+				),
+			);
+		}
 		if (transition.data.expression && transition.data.expression.trim() !== "") {
 			try {
 				const lexer = new Lexer(dialect);

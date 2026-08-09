@@ -16,13 +16,17 @@ export type SaveResult = { ok: true } | { ok: false; reason: SaveFailureReason; 
  * L'interface existe pour que le store ne dépende pas d'une implémentation : la feuille de
  * route prévoit une sauvegarde cloud, qui viendra s'y substituer sans toucher au store.
  *
- * `save` retourne un résultat au lieu de lever : un échec de sauvegarde est un cas
- * fonctionnel normal (stockage plein, navigation privée) que l'interface doit pouvoir
- * annoncer honnêtement à l'utilisateur, pas une exception à avaler.
+ * Toutes les méthodes sont asynchrones, y compris pour l'implémentation localStorage
+ * (synchrone en interne) : un futur repository réellement distant n'aura ainsi pas à changer
+ * cette interface, ni les appelants.
+ *
+ * `save`/`delete` retournent un résultat au lieu de lever : un échec est un cas fonctionnel
+ * normal (stockage plein, navigation privée, réseau) que l'interface doit pouvoir annoncer
+ * honnêtement à l'utilisateur, pas une exception à avaler.
  */
 export default interface ProjectRepository {
-	list(): Project[];
-	get(projectId: string): Project | null;
-	save(project: Project): SaveResult;
-	delete(projectId: string): SaveResult;
+	list(): Promise<Project[]>;
+	get(projectId: string): Promise<Project | null>;
+	save(project: Project): Promise<SaveResult>;
+	delete(projectId: string): Promise<SaveResult>;
 }

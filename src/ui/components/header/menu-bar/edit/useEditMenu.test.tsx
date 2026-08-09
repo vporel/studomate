@@ -15,10 +15,10 @@ describe("useEditMenu", () => {
 	const copySelectedElements = jest.fn()
 	const pasteElements = jest.fn()
 	const grafcetsManager = {
-		getActiveGrafcetStoreManagers: jest.fn(() => ({
+		getActiveStoreManagers: jest.fn(() => ({
 			copyCutPasteManager: { copySelectedElements, pasteElements },
 		})),
-		getActiveGrafcetStoreValues: jest.fn(() => ({
+		getActiveStoreValues: jest.fn(() => ({
 			hasCommandsToUndo: true,
 			hasCommandsToRedo: true,
 		})),
@@ -32,7 +32,7 @@ describe("useEditMenu", () => {
 			hasCommandsToRedo: boolean
 		}> = {},
 	) {
-		grafcetsManager.getActiveGrafcetStoreValues.mockReturnValue({
+		grafcetsManager.getActiveStoreValues.mockReturnValue({
 			hasCommandsToUndo: overrides.hasCommandsToUndo ?? true,
 			hasCommandsToRedo: overrides.hasCommandsToRedo ?? true,
 		})

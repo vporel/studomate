@@ -1,6 +1,7 @@
 import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { ReactFlowInstance, Viewport } from "@xyflow/react";
-import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
+import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
+import { GrafcetStoreGetFunction, GrafcetStoreSetFunction, GrafcetStoreState } from "../grafcet.store";
 
 export const GRAFCET_FLOW_MIN_ZOOM = 1;
 export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
@@ -14,23 +15,70 @@ export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
  * depuis le domaine (`NodesFactory.syncNodes`, `EdgesFactory.syncEdges`), jamais patchée à la
  * main.
  */
-export default class ViewManager {
+export default class ViewManager extends AbstractHighlightingViewManager<GrafcetStoreState> {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 
 	rfInstance: ReactFlowInstance | null = null;
 
 	/**
-	 * Minuteries de surlignage temporaire en attente. Suivies pour pouvoir les annuler à la
-	 * fermeture de la page : sans ça, un `setTimeout` en attente continuait de déclencher un
-	 * `setStoreState` après que le store ait été abandonné, sur une instance de `ViewManager`
-	 * que plus personne ne lit.
+	 * Élément racine de la page du grafcet dans le DOM, tenu à jour par `GrafcetFlow` via un
+	 * `ref` — source de vérité pour `focus()`, plutôt qu'une reconstruction d'id en chaîne
+	 * (`document.getElementById(\`grafcet-${id}\`)`) qui se désynchroniserait silencieusement du
+	 * composant si son id venait à changer.
 	 */
-	private pendingHighlightTimeouts = new Set<ReturnType<typeof setTimeout>>();
+	private containerElement: HTMLElement | null = null;
+
+	/** Sondage de visibilité en attente pour `focus()` — voir sa documentation. */
+	private pendingFocusFrame: { cancel: () => void } | null = null;
+
+	private static readonly FOCUS_MAX_FRAMES = 30; //~0.5s à 60fps : large marge au-dessus d'un simple re-rendu React
 
 	constructor(setStoreState: GrafcetStoreSetFunction, getStoreState: GrafcetStoreGetFunction) {
+		super(setStoreState);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
+	}
+
+	setContainerElement(el: HTMLElement | null): void {
+		this.containerElement = el;
+	}
+
+	/**
+	 * Focalise le flow une fois que sa page est réellement visible.
+	 *
+	 * Appelée juste après que le store projet ait basculé `activePageId` (voir `Page.tsx`,
+	 * `display: none → flex`), avant que React n'ait re-rendu — un `.focus()` synchrone ici
+	 * échouerait silencieusement sur un élément encore caché. Sonde `offsetParent` (`null` tant
+	 * que `display:none`) au fil des frames plutôt que de parier sur un délai fixe : la
+	 * condition de sortie de la boucle sert aussi de revérification — si le scope actif a
+	 * changé entre-temps, l'élément est repassé à `display:none` et n'est jamais focalisé.
+	 * Abandonne après un nombre borné de frames plutôt que de sonder indéfiniment.
+	 */
+	focus(): void {
+		this.pendingFocusFrame?.cancel();
+
+		let rafId: number;
+		let frame = 0;
+
+		const tryFocus = () => {
+			const flowElement = this.containerElement?.querySelector<HTMLElement>(".react-flow");
+			if (flowElement && flowElement.offsetParent !== null) {
+				flowElement.focus({ preventScroll: true });
+				this.pendingFocusFrame = null;
+				return;
+			}
+			frame++;
+			if (frame >= ViewManager.FOCUS_MAX_FRAMES) {
+				if (!this.containerElement) console.warn("ViewManager.focus: containerElement not set");
+				this.pendingFocusFrame = null;
+				return;
+			}
+			rafId = requestAnimationFrame(tryFocus);
+		};
+
+		rafId = requestAnimationFrame(tryFocus);
+		this.pendingFocusFrame = { cancel: () => cancelAnimationFrame(rafId) };
 	}
 
 	/**
@@ -55,83 +103,61 @@ export default class ViewManager {
 	}
 
 	getNodes(): GrafcetNodeType[] {
-		return this.getStoreState().nodes!;
+		return this.getStoreState().nodes;
 	}
 
 	getEdges(): GrafcetEdgeType[] {
-		return this.getStoreState().edges!;
+		return this.getStoreState().edges;
 	}
 
 	selectAllEdges(): void {
-		this.setStoreState((state) => ({ edges: state.edges?.map((e) => ({ ...e, selected: true })) }));
+		this.setStoreState((state) => ({ edges: state.edges.map((e) => ({ ...e, selected: true })) }));
 	}
 
 	selectAllNodesAndEdges(): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes?.map((n) => ({ ...n, selected: true })),
-			edges: state.edges?.map((e) => ({ ...e, selected: true })),
+			nodes: state.nodes.map((n) => ({ ...n, selected: true })),
+			edges: state.edges.map((e) => ({ ...e, selected: true })),
 		}));
 	}
 
 	selectNodesAndEdges(nodesIds: string[], edgesIds: string[], deselectOtherElements = false): void {
 		if (deselectOtherElements) {
 			this.setStoreState((state) => ({
-				nodes: state.nodes?.map((n) => ({ ...n, selected: nodesIds.includes(n.id) })),
-				edges: state.edges?.map((e) => ({ ...e, selected: edgesIds.includes(e.id) })),
+				nodes: state.nodes.map((n) => ({ ...n, selected: nodesIds.includes(n.id) })),
+				edges: state.edges.map((e) => ({ ...e, selected: edgesIds.includes(e.id) })),
 			}));
 			return;
 		} else {
 			this.setStoreState((state) => ({
-				nodes: state.nodes?.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: true } : n)),
-				edges: state.edges?.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: true } : e)),
+				nodes: state.nodes.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: true } : n)),
+				edges: state.edges.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: true } : e)),
 			}));
 		}
 	}
 
 	deselectNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes?.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: false } : n)),
-			edges: state.edges?.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: false } : e)),
+			nodes: state.nodes.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: false } : n)),
+			edges: state.edges.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: false } : e)),
 		}));
 	}
 
 	deselectAllNodesAndEdges(): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes?.map((n) => ({ ...n, selected: false })),
-			edges: state.edges?.map((e) => ({ ...e, selected: false })),
+			nodes: state.nodes.map((n) => ({ ...n, selected: false })),
+			edges: state.edges.map((e) => ({ ...e, selected: false })),
 		}));
-	}
-
-	highlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setStoreState((state) => ({
-			highlightedNodesIds: [...(state.highlightedNodesIds || []), ...nodesIds],
-			highlightedEdgesIds: [...(state.highlightedEdgesIds || []), ...edgesIds],
-		}));
-	}
-
-	unhighlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setStoreState((state) => ({
-			highlightedNodesIds: state.highlightedNodesIds?.filter((id) => !nodesIds.includes(id)),
-			highlightedEdgesIds: state.highlightedEdgesIds?.filter((id) => !edgesIds.includes(id)),
-		}));
-	}
-
-	temporarilyHighlightNodesAndEdges(nodesIds: string[], edgesIds: string[], durationMs = 2000): void {
-		this.highlightNodesAndEdges(nodesIds, edgesIds);
-		const timeout = setTimeout(() => {
-			this.pendingHighlightTimeouts.delete(timeout);
-			this.unhighlightNodesAndEdges(nodesIds, edgesIds);
-		}, durationMs);
-		this.pendingHighlightTimeouts.add(timeout);
 	}
 
 	/**
-	 * Annule les surlignages temporaires encore en attente. À appeler à la fermeture de la
-	 * page du grafcet, avant d'abandonner ce `ViewManager`.
+	 * Annule les surlignages temporaires et le sondage de focus encore en attente. À appeler à
+	 * la fermeture de la page du grafcet, avant d'abandonner ce `ViewManager`.
 	 */
 	dispose(): void {
-		this.pendingHighlightTimeouts.forEach((timeout) => clearTimeout(timeout));
-		this.pendingHighlightTimeouts.clear();
+		this.disposeHighlights();
+		this.pendingFocusFrame?.cancel();
+		this.pendingFocusFrame = null;
 	}
 
 	getZoom(): number {

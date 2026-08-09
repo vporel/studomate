@@ -40,7 +40,7 @@ export type LadderStoreSetFunction = (
 	partial:
 		| LadderStoreState
 		| Partial<LadderStoreState>
-		| ((partial: Partial<LadderStoreState>) => LadderStoreState | Partial<LadderStoreState>),
+		| ((state: LadderStoreState) => LadderStoreState | Partial<LadderStoreState>),
 ) => void;
 
 export type LadderStoreGetFunction = () => LadderStoreState;

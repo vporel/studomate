@@ -95,20 +95,33 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 	}
 
 	/**
-	 * Forward BFS from startId through the grafcet connection graph.
-	 * Returns the id of the first junction-and-end node reachable, or null.
+	 * Forward BFS from startId through the grafcet connection graph, à la profondeur
+	 * d'imbrication ET près : une JunctionAndStart croisée en chemin ouvre un niveau, la
+	 * JunctionAndEnd qui la referme ne compte pas comme la fermeture recherchée.
+	 * Returns the id of the junction-and-end node that closes the starting divergence, or null.
 	 */
 	private static forwardBfsJunctionAndEndId(startId: string, grafcet: Grafcet): string | null {
 		const visited = new Set<string>();
-		const queue: string[] = [startId];
+		const queue: { id: string; depth: number }[] = [{ id: startId, depth: 0 }];
 		while (queue.length > 0) {
-			const current = queue.shift()!;
+			const { id: current, depth } = queue.shift()!;
 			if (visited.has(current)) continue;
 			visited.add(current);
-			if (grafcet.junctionsAndEnds.some((j) => j.id === current)) return current;
+
+			if (grafcet.junctionsAndEnds.some((j) => j.id === current)) {
+				if (depth === 0) return current;
+				for (const conn of grafcet.connections) {
+					if (conn.source.id === current && !visited.has(conn.target.id)) {
+						queue.push({ id: conn.target.id, depth: depth - 1 });
+					}
+				}
+				continue;
+			}
+
+			const nextDepth = grafcet.junctionsAndStarts.some((j) => j.id === current) ? depth + 1 : depth;
 			for (const conn of grafcet.connections) {
 				if (conn.source.id === current && !visited.has(conn.target.id)) {
-					queue.push(conn.target.id);
+					queue.push({ id: conn.target.id, depth: nextDepth });
 				}
 			}
 		}

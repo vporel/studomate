@@ -59,7 +59,7 @@ export default function ProjectOpenModal() {
 			);
 			return;
 		}
-		const saveResult = projectRepository.save(project);
+		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
 			alert("Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible.");
 			return;

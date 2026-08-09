@@ -27,6 +27,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 	//Show a browser dialog when the user tries to close the tab or refresh the page with unsaved changes
 	useEffect(() => {
 		const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+			if (!storeRef.current?.getState().hasUnsavedChanges) return;
 			e.preventDefault();
 		};
 

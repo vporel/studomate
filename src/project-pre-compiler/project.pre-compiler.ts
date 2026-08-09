@@ -1,8 +1,8 @@
 ﻿import PLCVariable from "@/simulator/core/plc/plc-variable";
-import Project from "../schemas/project/project.schema";
-import Variable from "../schemas/variable/variable.schema";
+import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
-import Program, { ProgramType } from "../schemas/program/program.schema";
+import Program, { ProgramType } from "@/schemas/program/program.schema";
 import { PreCompiledProgram } from "./pre-compiled-program";
 import GrafcetPreCompiler from "./pre-compilers/grafcet/grafcet.pre-compiler";
 import LadderPreCompiler from "./pre-compilers/ladder/ladder.pre-compiler";

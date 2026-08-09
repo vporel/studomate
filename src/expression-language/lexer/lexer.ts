@@ -1,6 +1,6 @@
 import { ARITHMETIC_OPERATORS, ArithmeticOperator } from "../operators";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
-import InvalidStringEndQuoteException from "./exceptions/invalid-string-end-quote.exception";
+import InvalidKeywordException from "./exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
 import {
 	isDigit,
@@ -147,15 +147,10 @@ export class Lexer {
 				}
 				if (position >= input.length) {
 					throw new UnterminatedStringException(quoteType, start);
-				} else {
-					if (input[position] === quoteType) {
-						position++;
-						tokens.push({ type: TokenType.STRING, value, position: start });
-						continue;
-					} else {
-						throw new InvalidStringEndQuoteException(input[position], position);
-					}
 				}
+				position++;
+				tokens.push({ type: TokenType.STRING, value, position: start });
+				continue;
 			}
 
 			//Identifiers and keywords
@@ -175,6 +170,7 @@ export class Lexer {
 						tokens.push({ type: tokenType, value, position: start });
 						continue;
 					}
+					throw new InvalidKeywordException(value, start);
 				} else {
 					tokens.push({ type: TokenType.IDENTIFIER, value, position: start });
 				}

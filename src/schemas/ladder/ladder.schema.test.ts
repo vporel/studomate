@@ -172,6 +172,45 @@ describe("Ladder", () => {
 		});
 		});
 
+	describe("renameVariableReferences", () => {
+		it("réécrit la variable référencée par les contacts et bobines de toutes les sections", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section1] = ladder.sections;
+			const section2 = ladder.createSection("B");
+			const contact = createContactElement("moteur", "NO", 0, 0);
+			const coil = createCoilElement("moteur", "normal", 0, 1);
+			ladder.addElements(section1.id, [contact]);
+			ladder.addElements(section2.id, [coil]);
+
+			ladder.renameVariableReferences({ moteur: "pompe" });
+
+			expect(contact.data.variable).toBe("pompe");
+			expect(coil.data.variable).toBe("pompe");
+		});
+
+		it("ne touche pas les éléments référençant une autre variable", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const contact = createContactElement("capteur", "NO", 0, 0);
+			ladder.addElements(section.id, [contact]);
+
+			ladder.renameVariableReferences({ moteur: "pompe" });
+
+			expect(contact.data.variable).toBe("capteur");
+		});
+
+		it("ne fait rien pour un renommage vide", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const contact = createContactElement("moteur", "NO", 0, 0);
+			ladder.addElements(section.id, [contact]);
+
+			ladder.renameVariableReferences({});
+
+			expect(contact.data.variable).toBe("moteur");
+		});
+	});
+
 	describe("createFromJSON", () => {
 		it("reconstruit un ladder identique après un aller-retour JSON", () => {
 			const ladder = new Ladder("l1", "Mon ladder");

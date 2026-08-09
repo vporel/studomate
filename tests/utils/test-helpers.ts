@@ -103,25 +103,6 @@ export function compileToPLC(
 }
 
 /**
- * Waits for a specified number of milliseconds
- */
-export function wait(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Runs a PLC for a specified number of cycles
- * @param plc PLC instance
- * @param cycles Number of cycles to run
- * @param scanTimeMs Scan time per cycle
- */
-export async function runPLCCycles(plc: PLC, cycles: number, scanTimeMs: number): Promise<void> {
-	plc.start();
-	await wait(cycles * scanTimeMs + 50); // Add 50ms buffer
-	plc.stop();
-}
-
-/**
  * Gets a variable value by mnemonic from PLC snapshot
  */
 export function getVariableValue(plc: PLC, mnemonic: string): any {

@@ -4,7 +4,7 @@ import VariablesAddCommand from "@/schemas/project/commands/variables-add.comman
 import VariablesRemoveCommand from "@/schemas/project/commands/variables-remove.command";
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Project from "@/schemas/project/project.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import {
 	VARIABLE_UPDATABLE_FIELDS,
 	VariableUpdatableFields,

@@ -24,11 +24,6 @@ jest.mock("../grafcet/flow/GrafcetFlow", () => {
 		return <div>flow</div>;
 	};
 });
-jest.mock("./Page", () => {
-	return function PageMock({ children }: { children: React.ReactNode }) {
-		return <div>{children}</div>;
-	};
-});
 
 describe("GrafcetPage", () => {
 	const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
@@ -40,18 +35,14 @@ describe("GrafcetPage", () => {
 
 	afterEach(() => jest.clearAllMocks());
 
-	it("mounts GrafcetFlow when this page is the active tab", () => {
+	it("shows the page when this page is the active tab", () => {
 		setup("grafcet-1");
-		expect(screen.getByText("flow")).toBeInTheDocument();
+		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle({ display: "flex" });
 	});
 
-	it("does not mount GrafcetFlow when another tab is active", () => {
+	it("hides the page, without unmounting GrafcetFlow or the toolbar, when another tab is active", () => {
 		setup("some-other-page");
-		expect(screen.queryByText("flow")).not.toBeInTheDocument();
-	});
-
-	it("keeps the toolbar mounted regardless of which tab is active", () => {
-		setup("some-other-page");
+		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle({ display: "none" });
 		expect(screen.getByText("toolbar")).toBeInTheDocument();
 	});
 });

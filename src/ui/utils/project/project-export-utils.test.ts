@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
-import { createRandomId } from "@/schemas/utils/ids";
-import { exportProject } from "./projet-export-utils";
+import { createRandomId } from "@/ids";
+import { exportProject } from "./project-export-utils";
 
 describe("exportProject", () => {
 	let createObjectURL: jest.Mock;

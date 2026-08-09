@@ -2,13 +2,18 @@ import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, getVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Numeric Actions Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Pipeline compilation avec action numérique", () => {
@@ -76,7 +81,7 @@ describe("Numeric Actions Integration Tests", () => {
 			expect(plc).not.toBeNull();
 
 			plc!.start();
-			await wait(400);
+			await jest.advanceTimersByTimeAsync(400);
 			plc!.stop();
 
 			if (cycleError) throw cycleError;
@@ -116,7 +121,7 @@ describe("Numeric Actions Integration Tests", () => {
 			plc!.start();
 			const scanMs = 10;
 			const runMs = 300;
-			await wait(runMs);
+			await jest.advanceTimersByTimeAsync(runMs);
 			plc!.stop();
 
 			if (cycleError) throw cycleError;

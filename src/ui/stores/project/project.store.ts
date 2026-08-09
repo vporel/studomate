@@ -1,12 +1,11 @@
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import { Dialect } from "@/expression-language/dialect.enum";
 import LocalStorageProjectRepository from "@/persistence/repositories/local-storage.project.repository";
 import ProjectRepository, { SaveFailureReason } from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
 import { createStore } from "zustand";
-import { focusFlow } from "../grafcet/flow-management";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
 import { LadderStoreState } from "../ladder/ladder.store";
 import CommandsStackManager from "./managers/commands-stack.manager";
@@ -53,7 +52,10 @@ export type GrafcetStoreManagers = Pick<
 
 export type LadderStoreValues = Pick<LadderStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
 
-export type LadderStoreManagers = Pick<LadderStoreState, "commandsStackManager" | "viewManager" | "copyCutPasteManager">;
+export type LadderStoreManagers = Pick<
+	LadderStoreState,
+	"commandsStackManager" | "viewManager" | "copyCutPasteManager" | "workflowManager"
+>;
 
 export type PLCConfig = {
 	scanTimeMs: number;
@@ -127,9 +129,7 @@ export interface ProjectStoreState {
 	 * receptivity), indexed by the id chosen when the expression was registered.
 	 *
 	 * Held here, in the reactive state, rather than in a private field mutated by the manager:
-	 * a Zustand selector only re-runs when the piece of state it reads actually changes. It
-	 * used to work only because `simulationVariablesStates` happened to change every cycle at
-	 * the same time — an accidental dependency that a future optimisation could silently break.
+	 * a Zustand selector only re-runs when the piece of state it reads actually changes.
 	 */
 	evaluableExpressionsValues: Record<string, unknown>;
 	simulationManager: SimulationManager;
@@ -190,8 +190,8 @@ export const createProjectStore = () => {
 			project: project,
 			hasUnsavedChanges: false,
 			pagesData: initialPagesData,
-			pagesOrder: initialPagesData ? Object.keys(initialPagesData) : [],
-			activePageId: initialPagesData ? Object.keys(initialPagesData)[0] : null,
+			pagesOrder: Object.keys(initialPagesData),
+			activePageId: Object.keys(initialPagesData)[0],
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
@@ -240,7 +240,7 @@ export const createProjectStore = () => {
 
 		getProject: () => get().project,
 		openProject: async (projectId: string) => {
-			const project = get().projectRepository.get(projectId);
+			const project = await get().projectRepository.get(projectId);
 			if (!project) return false;
 			await _openProject(set, get, project);
 			return true;
@@ -271,7 +271,7 @@ export const createProjectStore = () => {
 			newProject.touch(); //Update the project's last modified date
 			set(() => ({ savingProject: true }));
 
-			const result = get().projectRepository.save(newProject);
+			const result = await get().projectRepository.save(newProject);
 			if (!result.ok) {
 				//Ne jamais annoncer un enregistrement qui n'a pas eu lieu : le projet reste
 				//marqué comme modifié pour que l'utilisateur puisse réessayer
@@ -402,7 +402,7 @@ export const createProjectStore = () => {
 			//If the scope is a grafcet, set the focus on the grafcet flow
 			//Prevent the focus change if the scope didn't change, to avoid issues with the grafcet flow shortcuts when the user clicks on the flow while it's already active
 			if (scope && previousScope !== scope && scopeType === "grafcet") {
-				focusFlow(scope);
+				get().grafcetsManager.getActiveStoreManagers()?.viewManager.focus();
 			}
 		},
 

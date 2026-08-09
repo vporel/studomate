@@ -4,12 +4,12 @@ import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import { PreCompiledGrafcet } from "../project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import { PreCompiledLadder } from "../project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
-import { PreCompiledProject } from "../project-pre-compiler/project.pre-compiler";
-import PLCRoutine from "../simulator/core/plc/plc-routine";
-import { ProgramType } from "../schemas/program/program.schema";
-import { PreCompiledProgram } from "../project-pre-compiler/pre-compiled-program";
+import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import { PreCompiledLadder } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
+import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
+import PLCRoutine from "@/simulator/core/plc/plc-routine";
+import { ProgramType } from "@/schemas/program/program.schema";
+import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
 import GrafcetCompiler from "./compilers/grafcet/grafcet.compiler";
 import LadderCompiler from "./compilers/ladder/ladder.compiler";
 

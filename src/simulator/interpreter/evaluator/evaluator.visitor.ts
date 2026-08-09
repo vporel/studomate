@@ -12,8 +12,8 @@ import { AssignStatementNode } from "@/expression-language/ast/nodes/statements"
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variable";
 import { Environment } from "@/simulator/interpreter/environment/environment";
-import { DivisionByZeroException } from "./exceptions/division-by-zero.exception";
-import EvaluatorException from "./exceptions/evaluator.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
+import EvaluatorException from "@/expression-language/interpreter/exceptions/evaluator.exception";
 import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";
 
 export type EvaluatorVisitorOptions = {

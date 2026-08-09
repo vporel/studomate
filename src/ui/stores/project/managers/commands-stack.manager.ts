@@ -33,9 +33,10 @@ export default class CommandsStackManager {
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
-		//A project command can rewrite the grafcets themselves (renaming a variable rewrites
-		//the expressions referencing it), so the mounted grafcet stores must adopt the result
+		//A project command can rewrite the grafcets/ladders themselves (renaming a variable
+		//rewrites the expressions/references to it), so the mounted stores must adopt the result
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
+		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 	}
 
 	undoOperation(): void {
@@ -55,6 +56,7 @@ export default class CommandsStackManager {
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
+		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 	}
 
 	redoOperation(): void {
@@ -74,6 +76,7 @@ export default class CommandsStackManager {
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
+		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 	}
 
 

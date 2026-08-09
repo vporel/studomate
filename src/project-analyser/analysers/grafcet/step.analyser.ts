@@ -35,7 +35,7 @@ export default class StepAnalyser extends ElementAnalyser<Step> {
 					"error",
 					"STEP_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
-					"Le numéro de l'étape doit être un entier positif.",
+					"Le numéro de l'étape doit être un entier positif ou nul.",
 				),
 			);
 		}

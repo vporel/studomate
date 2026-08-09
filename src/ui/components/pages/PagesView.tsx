@@ -120,10 +120,10 @@ const PagesView = () => {
 								return <VariablesPage key={id} pageData={pageData as VariablesPageData} />;
 							case "grafcet":
 								return (
-									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getGrafcet(id)} />
+									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getProgramOrThrow(id)} />
 								);
 							case "ladder":
-								return <LadderPage key={id} initialLadder={laddersManager.getLadder(id)} />;
+								return <LadderPage key={id} initialLadder={laddersManager.getProgramOrThrow(id)} />;
 							default:
 								return null;
 						}

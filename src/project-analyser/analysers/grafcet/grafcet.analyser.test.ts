@@ -172,6 +172,53 @@ describe("GrafcetAnalyser", () => {
 			expect(result).toBeDefined();
 		});
 
+		it("detects a project variable colliding with a step variable X{n}", () => {
+			const conflictingVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("X1")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step1, step2).build();
+			const project = new ProjectBuilder()
+				.id("project-1")
+				.name("Test")
+				.author("Author")
+				.addVariable(conflictingVar)
+				.build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const conflictIssue = result.issues.find((i) => i.code === "GRAFCET_STEP_VARIABLE_NAME_CONFLICT");
+			expect(conflictIssue).toBeDefined();
+			expect(conflictIssue?.severity).toBe("error");
+			expect(conflictIssue?.message).toContain("X1");
+		});
+
+		it("returns no name-conflict issue when project variables don't collide with X{n}", () => {
+			const projectVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("MyVar")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step1, step2).build();
+			const project = new ProjectBuilder()
+				.id("project-1")
+				.name("Test")
+				.author("Author")
+				.addVariable(projectVar)
+				.build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			expect(result.issues.find((i) => i.code === "GRAFCET_STEP_VARIABLE_NAME_CONFLICT")).toBeUndefined();
+		});
+
 		it("handles empty grafcet", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
@@ -226,6 +273,197 @@ describe("GrafcetAnalyser", () => {
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
 			);
 			expect(connectivityError).toBeUndefined();
+		});
+
+		it("detects a step unreachable from the initial step, even in an undirected-connected grafcet", () => {
+			// Main cycle: step-1 (initial) →[trans-1]→ step-2 →[trans-2]→ step-1
+			// step-3 →[trans-3]→ step-2 : connects step-3 to the graph, but nothing routes FROM
+			// step-1 TO step-3 — connexe en non orienté, mais step-3 n'est jamais atteint.
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const step3 = new StepBuilder().id("step-3").number(3).position(400, 200).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("E1").position(0, 100).build();
+			const trans2 = new TransitionBuilder().id("trans-2").expression("E2").position(0, 300).build();
+			const trans3 = new TransitionBuilder().id("trans-3").expression("E3").position(400, 100).build();
+			const conns = [
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:successor")
+					.target("transition", "trans-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c2")
+					.source("transition", "trans-1", "source:successor")
+					.target("step", "step-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c3")
+					.source("step", "step-2", "source:successor")
+					.target("transition", "trans-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c4")
+					.source("transition", "trans-2", "source:successor")
+					.target("step", "step-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c5")
+					.source("step", "step-3", "source:successor")
+					.target("transition", "trans-3", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c6")
+					.source("transition", "trans-3", "source:successor")
+					.target("step", "step-2", "target:predecessor")
+					.build(),
+			];
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2, step3)
+				.addTransitions(trans1, trans2, trans3)
+				.addConnections(...conns)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const unreachableError = result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS");
+			expect(unreachableError).toBeDefined();
+			expect(unreachableError?.severity).toBe("error");
+			expect(unreachableError?.message).toContain("3");
+		});
+
+		it("detects a dead-end branch with no path back to a cycle", () => {
+			// Main cycle: step-1 (initial) →[trans-1]→ step-2 →[trans-2]→ step-1
+			// Dead-end branch off the cycle: step-2 →[trans-3]→ step-3 (terminal, no way back)
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const step3 = new StepBuilder().id("step-3").number(3).position(400, 200).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("E1").position(0, 100).build();
+			const trans2 = new TransitionBuilder().id("trans-2").expression("E2").position(0, 300).build();
+			const trans3 = new TransitionBuilder().id("trans-3").expression("E3").position(400, 100).build();
+			const conns = [
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:successor")
+					.target("transition", "trans-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c2")
+					.source("transition", "trans-1", "source:successor")
+					.target("step", "step-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c3")
+					.source("step", "step-2", "source:successor")
+					.target("transition", "trans-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c4")
+					.source("transition", "trans-2", "source:successor")
+					.target("step", "step-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c5")
+					.source("step", "step-2", "source:successor")
+					.target("transition", "trans-3", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c6")
+					.source("transition", "trans-3", "source:successor")
+					.target("step", "step-3", "target:predecessor")
+					.build(),
+			];
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2, step3)
+				.addTransitions(trans1, trans2, trans3)
+				.addConnections(...conns)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const deadEndWarning = result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS");
+			expect(deadEndWarning).toBeDefined();
+			expect(deadEndWarning?.severity).toBe("warning");
+			expect(deadEndWarning?.message).toContain("3");
+		});
+
+		it("returns no dead-end warning for a purely linear grafcet with no cycle at all", () => {
+			// step-1 (initial) →[trans-1]→ step-2, no loop back : process linéaire volontaire.
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("E1").position(0, 100).build();
+			const conns = [
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:successor")
+					.target("transition", "trans-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c2")
+					.source("transition", "trans-1", "source:successor")
+					.target("step", "step-2", "target:predecessor")
+					.build(),
+			];
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2)
+				.addTransition(trans1)
+				.addConnections(...conns)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			expect(result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS")).toBeUndefined();
+			expect(result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS")).toBeUndefined();
+		});
+
+		it("returns no directed-reachability issues for a normal cyclic grafcet", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("E1").position(0, 100).build();
+			const trans2 = new TransitionBuilder().id("trans-2").expression("E2").position(0, 300).build();
+			const conns = [
+				new ConnectionBuilder()
+					.id("c1")
+					.source("step", "step-1", "source:successor")
+					.target("transition", "trans-1", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c2")
+					.source("transition", "trans-1", "source:successor")
+					.target("step", "step-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c3")
+					.source("step", "step-2", "source:successor")
+					.target("transition", "trans-2", "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id("c4")
+					.source("transition", "trans-2", "source:successor")
+					.target("step", "step-1", "target:predecessor")
+					.build(),
+			];
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2)
+				.addTransitions(trans1, trans2)
+				.addConnections(...conns)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			expect(result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS")).toBeUndefined();
+			expect(result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS")).toBeUndefined();
 		});
 
 		it("detects two disconnected cycles in the same grafcet", () => {
@@ -287,6 +525,85 @@ describe("GrafcetAnalyser", () => {
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
 			);
 			expect(connectivityError).toBeUndefined();
+		});
+
+		it("returns no connection-type error for a valid chain", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const trans1 = new TransitionBuilder().id("trans-1").expression("E1").position(0, 100).build();
+			const conn1 = new ConnectionBuilder()
+				.id("conn-1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const conn2 = new ConnectionBuilder()
+				.id("conn-2")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-2", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2)
+				.addTransition(trans1)
+				.addConnections(conn1, conn2)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const connectionTypeError = result.issues.find(
+				(i) => i.code === "GRAFCET_CONNECTION_INVALID_TYPE" || i.code === "GRAFCET_CONNECTION_DANGLING_ELEMENT",
+			);
+			expect(connectionTypeError).toBeUndefined();
+		});
+
+		it("detects a connection between two incompatible element types", () => {
+			// step-1 → step-2 directement : viole l'alternance étape–transition
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const conn = new ConnectionBuilder()
+				.id("conn-1")
+				.source("step", "step-1", "source:successor")
+				.target("step", "step-2", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2)
+				.addConnections(conn)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const connectionTypeError = result.issues.find((i) => i.code === "GRAFCET_CONNECTION_INVALID_TYPE");
+			expect(connectionTypeError).toBeDefined();
+			expect(connectionTypeError?.severity).toBe("error");
+			expect(connectionTypeError?.source.sourceId).toBe("grafcet-1");
+		});
+
+		it("detects a connection referencing a nonexistent element", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 200).build();
+			const conn = new ConnectionBuilder()
+				.id("conn-1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-ghost", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("Test")
+				.addSteps(step1, step2)
+				.addConnections(conn)
+				.build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			const result = GrafcetAnalyser.analyse(grafcet, project);
+
+			const danglingError = result.issues.find((i) => i.code === "GRAFCET_CONNECTION_DANGLING_ELEMENT");
+			expect(danglingError).toBeDefined();
+			expect(danglingError?.severity).toBe("error");
 		});
 
 		it("detects grafcet with zero steps", () => {

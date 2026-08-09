@@ -1,4 +1,5 @@
-import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
+import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
+import { LadderStoreGetFunction, LadderStoreSetFunction, LadderStoreState } from "../ladder.store";
 
 export const LADDER_FLOW_MIN_ZOOM = 1;
 export const LADDER_FLOW_MAX_ZOOM = 2.5;
@@ -25,7 +26,7 @@ const ZOOM_STEP_FACTOR = 1.2;
  * enregistrée ici est resynchronisée impérativement (`zoomTo`) à chaque changement, qu'il vienne
  * des boutons de la toolbar ou d'un Ctrl+molette sur l'une des sections.
  */
-export default class ViewManager {
+export default class ViewManager extends AbstractHighlightingViewManager<LadderStoreState> {
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
 	private instances = new Map<string, ZoomableInstance>();
@@ -38,9 +39,8 @@ export default class ViewManager {
 	 */
 	private pendingProgrammaticMoves = 0;
 
-	private pendingHighlightTimeouts = new Set<ReturnType<typeof setTimeout>>();
-
 	constructor(setStoreState: LadderStoreSetFunction, getStoreState: LadderStoreGetFunction) {
+		super(setStoreState);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}
@@ -122,31 +122,7 @@ export default class ViewManager {
 		this.applyZoom(this.getZoom() / ZOOM_STEP_FACTOR);
 	}
 
-	highlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setStoreState((state) => ({
-			highlightedNodesIds: [...(state.highlightedNodesIds || []), ...nodesIds],
-			highlightedEdgesIds: [...(state.highlightedEdgesIds || []), ...edgesIds],
-		}));
-	}
-
-	unhighlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setStoreState((state) => ({
-			highlightedNodesIds: state.highlightedNodesIds?.filter((id) => !nodesIds.includes(id)),
-			highlightedEdgesIds: state.highlightedEdgesIds?.filter((id) => !edgesIds.includes(id)),
-		}));
-	}
-
-	temporarilyHighlightNodesAndEdges(nodesIds: string[], edgesIds: string[], durationMs = 2000): void {
-		this.highlightNodesAndEdges(nodesIds, edgesIds);
-		const timeout = setTimeout(() => {
-			this.pendingHighlightTimeouts.delete(timeout);
-			this.unhighlightNodesAndEdges(nodesIds, edgesIds);
-		}, durationMs);
-		this.pendingHighlightTimeouts.add(timeout);
-	}
-
 	dispose(): void {
-		this.pendingHighlightTimeouts.forEach((timeout) => clearTimeout(timeout));
-		this.pendingHighlightTimeouts.clear();
+		this.disposeHighlights();
 	}
 }

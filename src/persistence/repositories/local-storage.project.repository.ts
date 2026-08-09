@@ -21,18 +21,24 @@ const STORAGE_KEY = "studomate_projects_data";
  * contexte n'a pas. Si ça change (gros volumes, sauvegarde cloud...), c'est cette classe seule
  * qu'il faudra remplacer — voir la remarque sur la disposition du stockage ci-dessus.
  */
+/**
+ * Chaque méthode est `async` bien que le stockage soit synchrone : simule la latence d'un futur
+ * backend distant (cloud) sans lui, pour que l'interface `ProjectRepository` — et l'indicateur
+ * `savingProject` qui en dépend — n'ait pas à changer le jour où ce repository ira réellement
+ * sur le réseau.
+ */
 export default class LocalStorageProjectRepository implements ProjectRepository {
-	list(): Project[] {
+	async list(): Promise<Project[]> {
 		return this.readRawProjects()
 			.map((raw) => this.toProject(raw))
 			.filter((p): p is Project => p !== null);
 	}
 
-	get(projectId: string): Project | null {
-		return this.list().find((p) => p.id === projectId) ?? null;
+	async get(projectId: string): Promise<Project | null> {
+		return (await this.list()).find((p) => p.id === projectId) ?? null;
 	}
 
-	save(project: Project): SaveResult {
+	async save(project: Project): Promise<SaveResult> {
 		const raws = this.readRawProjects();
 		const serialized = JSON.parse(JSON.stringify(project));
 		const index = raws.findIndex((p) => p?.id === project.id);
@@ -41,7 +47,7 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		return this.write(raws);
 	}
 
-	delete(projectId: string): SaveResult {
+	async delete(projectId: string): Promise<SaveResult> {
 		return this.write(this.readRawProjects().filter((p) => p?.id !== projectId));
 	}
 

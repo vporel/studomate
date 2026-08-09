@@ -57,7 +57,7 @@ describe("WatchTables", () => {
 
 	it("calls setWatchTablesVisible(false) when closed", () => {
 		setup();
-		fireEvent.click(screen.getByLabelText("close-analysis-errors"));
+		fireEvent.click(screen.getByLabelText("close-watch-tables"));
 		expect(setWatchTablesVisible).toHaveBeenCalledWith(false);
 	});
 });

@@ -1,4 +1,4 @@
-import { createRandomId } from "@/simulator/utils/ids";
+import { createRandomId } from "@/ids";
 
 describe("createRandomId", () => {
 	it("returns a string of length 15", () => {

@@ -85,11 +85,11 @@ describe("GrafcetsManager", () => {
 		});
 	});
 
-	describe("deleteGrafcet", () => {
+	describe("deleteProgramById (grafcet)", () => {
 		it("lève une erreur si le grafcet n'existe pas", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.deleteGrafcet("inexistant")).toThrow();
+			expect(() => manager.deleteProgramById("inexistant")).toThrow();
 		});
 
 		it("retire le grafcet du projet, ferme sa page et jette son historique", () => {
@@ -97,7 +97,7 @@ describe("GrafcetsManager", () => {
 			const { manager, getState } = makeManager({ project });
 			manager.getCommandsStack(grafcetId); // instancie une pile à jeter
 
-			manager.deleteGrafcet(grafcetId);
+			manager.deleteProgramById(grafcetId);
 
 			expect(getState().project!.getGrafcet(grafcetId)).toBeUndefined();
 			expect(getState().pagesManager.closePage).toHaveBeenCalledWith(grafcetId);
@@ -108,13 +108,13 @@ describe("GrafcetsManager", () => {
 			const { project, grafcetId } = projectWithGrafcet();
 			const { manager, getState } = makeManager({ project, mode: ProjectMode.SIMULATION });
 
-			manager.deleteGrafcet(grafcetId);
+			manager.deleteProgramById(grafcetId);
 
 			expect(getState().project!.getGrafcet(grafcetId)).toBeDefined();
 		});
 	});
 
-	describe("renameGrafcet", () => {
+	describe("renameProgramById (grafcet)", () => {
 		it("renomme le grafcet et le titre de sa page si elle est ouverte", () => {
 			const { project, grafcetId } = projectWithGrafcet();
 			const { manager, getState } = makeManager({
@@ -122,7 +122,7 @@ describe("GrafcetsManager", () => {
 				pagesData: { [grafcetId]: { id: grafcetId, type: "grafcet", title: "G1" } },
 			});
 
-			manager.renameGrafcet(grafcetId, "Nouveau nom");
+			manager.renameProgramById(grafcetId, "Nouveau nom");
 
 			expect(getState().project!.getGrafcet(grafcetId)!.name).toBe("Nouveau nom");
 			expect(getState().pagesData[grafcetId].title).toBe("Nouveau nom");
@@ -131,7 +131,7 @@ describe("GrafcetsManager", () => {
 		it("lève une erreur si le grafcet n'existe pas", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.renameGrafcet("inexistant", "X")).toThrow();
+			expect(() => manager.renameProgramById("inexistant", "X")).toThrow();
 		});
 	});
 
@@ -139,29 +139,29 @@ describe("GrafcetsManager", () => {
 		it("lève une erreur si aucun projet n'est ouvert", () => {
 			const { manager } = makeManager({ project: null });
 
-			expect(() => manager.getGrafcet("g1")).toThrow();
+			expect(() => manager.getProgramOrThrow("g1")).toThrow();
 		});
 
 		it("lève une erreur si le grafcet n'existe pas dans le projet", () => {
 			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
 
-			expect(() => manager.getGrafcet("inexistant")).toThrow();
+			expect(() => manager.getProgramOrThrow("inexistant")).toThrow();
 		});
 
 		it("retourne le grafcet demandé", () => {
 			const { project, grafcetId } = projectWithGrafcet();
 			const { manager } = makeManager({ project });
 
-			expect(manager.getGrafcet(grafcetId).id).toBe(grafcetId);
+			expect(manager.getProgramOrThrow(grafcetId).id).toBe(grafcetId);
 		});
 	});
 
-	describe("getActiveGrafcetStoreValues / getActiveGrafcetStoreManagers", () => {
+	describe("getActiveStoreValues / getActiveStoreManagers (grafcet)", () => {
 		it("retourne null si le scope actif n'est pas un grafcet", () => {
 			const { manager } = makeManager({ activeScopeType: "project" });
 
-			expect(manager.getActiveGrafcetStoreValues()).toBeNull();
-			expect(manager.getActiveGrafcetStoreManagers()).toBeNull();
+			expect(manager.getActiveStoreValues()).toBeNull();
+			expect(manager.getActiveStoreManagers()).toBeNull();
 		});
 
 		it("retourne les valeurs/managers du grafcet actif", () => {
@@ -174,20 +174,20 @@ describe("GrafcetsManager", () => {
 				grafcetsStoresManagers: { g1: managers },
 			});
 
-			expect(manager.getActiveGrafcetStoreValues()).toBe(values);
-			expect(manager.getActiveGrafcetStoreManagers()).toBe(managers);
+			expect(manager.getActiveStoreValues()).toBe(values);
+			expect(manager.getActiveStoreManagers()).toBe(managers);
 		});
 	});
 
-	describe("registerGrafcetStoreManager / deleteGrafcetStoreManager", () => {
+	describe("registerStoreManager / deleteStoreManager (grafcet)", () => {
 		it("enregistre puis retire le manager d'un grafcet", () => {
 			const { manager, getState } = makeManager({});
 			const managers = { commandsStackManager: {} } as any;
 
-			manager.registerGrafcetStoreManager("g1", managers);
+			manager.registerStoreManager("g1", managers);
 			expect(getState().grafcetsStoresManagers.g1).toBe(managers);
 
-			manager.deleteGrafcetStoreManager("g1");
+			manager.deleteStoreManager("g1");
 			expect(getState().grafcetsStoresManagers.g1).toBeUndefined();
 		});
 	});

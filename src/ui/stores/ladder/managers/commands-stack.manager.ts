@@ -43,13 +43,13 @@ export default class CommandsStackManager extends AbstractCommandsStackManager<L
 			nodesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderNodesFactory.syncNodes(state.nodesBySectionId![section.id] ?? [], section),
+					LadderNodesFactory.syncNodes(state.nodesBySectionId[section.id] ?? [], section),
 				]),
 			),
 			edgesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderEdgesFactory.syncEdges(state.edgesBySectionId![section.id] ?? [], section),
+					LadderEdgesFactory.syncEdges(state.edgesBySectionId[section.id] ?? [], section),
 				]),
 			),
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,

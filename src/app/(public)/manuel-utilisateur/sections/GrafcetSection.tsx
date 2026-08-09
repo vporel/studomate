@@ -58,6 +58,9 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					<Typography mb={2}>
 						{`Pour modifier le nom ou le numéro d'une étape, double-cliquez sur le champ correspondant. En simulation, les étapes actives sont mises en évidence visuellement.`}
 					</Typography>
+					<Typography mb={2}>
+						{`Limite actuelle : un grafcet ne peut avoir qu'une seule étape initiale. La norme autorise une situation initiale composée de plusieurs étapes actives simultanément (par exemple une par branche d'un parallélisme) ; Studomate ne le permet pas encore.`}
+					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}

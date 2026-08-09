@@ -71,68 +71,75 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 				),
 			);
 		} else {
-			if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
-						source,
-						`Connexion manquante en aval,`,
-					),
-				);
-			}
-			const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
-				stepReferral.id,
-				grafcet,
-			);
-			if (!stepReferralSource) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_NO_UPSTREAM_TENANT",
-						source,
-						`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
-					),
-				);
-			} else {
-				const predecessorSteps = StepReferralSourceHelper.getPredecessorSteps(
-					stepReferralSource.id,
+			// Une connexion structurellement invalide (type inattendu) est déjà relevée par la
+			// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
+			// pas rompre le contrat "l'analyse ne lève jamais".
+			try {
+				if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							"STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
+							source,
+							`Connexion manquante en aval,`,
+						),
+					);
+				}
+				const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
+					stepReferral.id,
 					grafcet,
 				);
-				if (predecessorSteps.length === 0) {
+				if (!stepReferralSource) {
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
-							"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
+							"STEP_REFERRAL_NO_UPSTREAM_TENANT",
 							source,
-							`Le tenant n'est précédé par aucune étape.`,
+							`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
 						),
 					);
-					return issues;
-				}
-				if (predecessorSteps.length > 1) {
-					issues.push(
-						new ProjectAnalyserIssue(
-							"error",
-							"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
-							source,
-							`Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.`,
-						),
+				} else {
+					const predecessorSteps = StepReferralSourceHelper.getPredecessorSteps(
+						stepReferralSource.id,
+						grafcet,
 					);
-					return issues;
-				}
-				const sourceStep = predecessorSteps[0];
+					if (predecessorSteps.length === 0) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
+								source,
+								`Le tenant n'est précédé par aucune étape.`,
+							),
+						);
+						return issues;
+					}
+					if (predecessorSteps.length > 1) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
+								source,
+								`Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.`,
+							),
+						);
+						return issues;
+					}
+					const sourceStep = predecessorSteps[0];
 
-				if (!sourceStep || sourceStep.data.number !== stepReferral.data.sourceStepNumber) {
-					issues.push(
-						new ProjectAnalyserIssue(
-							"error",
-							"STEP_REFERRAL_SOURCE_MISMATCH",
-							source,
-							`L'étape source référencée ne correspond pas à l'étape liée au tenant.`,
-						),
-					);
+					if (!sourceStep || sourceStep.data.number !== stepReferral.data.sourceStepNumber) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_SOURCE_MISMATCH",
+								source,
+								`L'étape source référencée ne correspond pas à l'étape liée au tenant.`,
+							),
+						);
+					}
 				}
+			} catch {
+				return issues;
 			}
 		}
 

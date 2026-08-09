@@ -2,58 +2,50 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react"
-import { useReactFlow } from "@xyflow/react"
 import { useGrafcetContext } from "../context/GrafcetContext"
+import useFlowContextMenu from "@/ui/lib/hooks/useFlowContextMenu"
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers"
 
 jest.mock("../context/GrafcetContext")
-jest.mock("@xyflow/react", () => ({
-	useReactFlow: jest.fn(),
-}))
-
-function fakeMouseEvent(pageX: number, pageY: number) {
-	return { preventDefault: jest.fn(), pageX, pageY } as any
-}
+jest.mock("@/ui/lib/hooks/useFlowContextMenu")
 
 describe("useContextMenuOpeningHandlers", () => {
-	const emit = jest.fn()
-	const screenToFlowPosition = jest.fn(({ x, y }) => ({ x: x + 1, y: y + 1 }))
+	const openContextMenu = jest.fn()
+	const contextMenuEvents = {}
 
 	beforeEach(() => {
-		;(useGrafcetContext as jest.Mock).mockReturnValue({ contextMenuEvents: { emit } })
-		;(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition })
+		;(useGrafcetContext as jest.Mock).mockReturnValue({ contextMenuEvents })
+		;(useFlowContextMenu as jest.Mock).mockReturnValue({ openContextMenu })
 	})
 
 	afterEach(() => jest.clearAllMocks())
 
-	it("emits a show event for the pane", () => {
+	it("delegates pane context menu opening with a pane element", () => {
 		const { result } = renderHook(() => useContextMenuOpeningHandlers())
-		const event = fakeMouseEvent(10, 20)
+		const event = {} as any
 
 		act(() => result.current.onPaneContextMenu(event))
 
-		expect(event.preventDefault).toHaveBeenCalled()
-		expect(emit).toHaveBeenCalledWith("show", {
-			element: { type: "pane" },
-			position: { x: 11, y: 21 },
-		})
+		expect(openContextMenu).toHaveBeenCalledWith(event, { type: "pane" })
 	})
 
-	it("emits a show event for a node", () => {
+	it("delegates node context menu opening with the node", () => {
 		const { result } = renderHook(() => useContextMenuOpeningHandlers())
+		const event = {} as any
 		const node = { id: "n1" }
 
-		act(() => result.current.onNodeContextMenu(fakeMouseEvent(5, 5), node))
+		act(() => result.current.onNodeContextMenu(event, node))
 
-		expect(emit).toHaveBeenCalledWith("show", { element: node, position: { x: 6, y: 6 } })
+		expect(openContextMenu).toHaveBeenCalledWith(event, node)
 	})
 
-	it("emits a show event for an edge", () => {
+	it("delegates edge context menu opening with the edge", () => {
 		const { result } = renderHook(() => useContextMenuOpeningHandlers())
+		const event = {} as any
 		const edge = { id: "e1" }
 
-		act(() => result.current.onEdgeContextMenu(fakeMouseEvent(5, 5), edge))
+		act(() => result.current.onEdgeContextMenu(event, edge))
 
-		expect(emit).toHaveBeenCalledWith("show", { element: edge, position: { x: 6, y: 6 } })
+		expect(openContextMenu).toHaveBeenCalledWith(event, edge)
 	})
 })

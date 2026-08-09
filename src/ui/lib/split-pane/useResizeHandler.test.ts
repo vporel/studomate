@@ -89,6 +89,23 @@ describe("useResizeHandler", () => {
 		expect(setSizes).not.toHaveBeenCalled()
 	})
 
+	it("stops listening for mouse movement after unmount mid-drag", () => {
+		const ref = createRef({ width: 1000, height: 1000 })
+		const children = [fakePane({}), fakePane({})]
+		const setSizes = jest.fn()
+		const { result, unmount } = renderHook(() => useResizeHandler(ref, true, [50, 50], setSizes, children))
+
+		act(() => {
+			result.current(0, fakeMouseDownEvent(100, 0))
+		})
+		unmount()
+		act(() => {
+			document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 0 }))
+		})
+
+		expect(setSizes).not.toHaveBeenCalled()
+	})
+
 	it("uses vertical mouse movement when split horizontally", () => {
 		const ref = createRef({ width: 1000, height: 1000 })
 		const children = [fakePane({}), fakePane({})]

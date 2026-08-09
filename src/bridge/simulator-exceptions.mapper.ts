@@ -1,9 +1,9 @@
-import IncompatibleOperandsTypesException from "../simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
-import InputIdentifierAssignmentException from "../simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
-import InvalidAssignmentTargetException from "../simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
-import UnknownIdentifierException from "../simulator/interpreter/semantic-analyser/exceptions/unknown-identifier.exception";
+import IncompatibleOperandsTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
+import InputIdentifierAssignmentException from "@/simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
+import InvalidAssignmentTargetException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
+import UnknownIdentifierException from "@/simulator/interpreter/semantic-analyser/exceptions/unknown-identifier.exception";
 
-import { DivisionByZeroException } from "../simulator/interpreter/evaluator/exceptions/division-by-zero.exception";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 
 import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
@@ -16,15 +16,15 @@ import InvalidTimerOutputNodeException from "@/simulator/interpreter/semantic-an
 import InvalidTimerOutputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-output-type.exception";
 import InvalidTimerPresetTimeTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-preset-time-type.exception";
 import UnauthorizedNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/unauthorized-node.exception";
-import InvalidCharacterException from "../expression-language/lexer/exceptions/invalid-character.exception";
-import InvalidStringEndQuoteException from "../expression-language/lexer/exceptions/invalid-string-end-quote.exception";
-import UnterminatedStringException from "../expression-language/lexer/exceptions/unterminated-string.exception";
-import BadTokenTypeException from "../expression-language/parser/exceptions/bad-token-type.exception";
-import MissingPrimaryOrLeftParentheseException from "../expression-language/parser/exceptions/missing-primary-or-left-parenthese.exception";
-import MissingRightParentheseException from "../expression-language/parser/exceptions/missing-right-parenthese.exception";
-import ParsingEndedBeforeEOFException from "../expression-language/parser/exceptions/parsing-ended-before-eof.exception";
-import InvalidBinaryExprOperandTypeException from "../simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
-import InvalidUnaryExprOperandTypeException from "../simulator/interpreter/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
+import InvalidCharacterException from "@/expression-language/lexer/exceptions/invalid-character.exception";
+import InvalidKeywordException from "@/expression-language/lexer/exceptions/invalid-keyword.exception";
+import UnterminatedStringException from "@/expression-language/lexer/exceptions/unterminated-string.exception";
+import BadTokenTypeException from "@/expression-language/parser/exceptions/bad-token-type.exception";
+import MissingPrimaryOrLeftParentheseException from "@/expression-language/parser/exceptions/missing-primary-or-left-parenthese.exception";
+import MissingRightParentheseException from "@/expression-language/parser/exceptions/missing-right-parenthese.exception";
+import ParsingEndedBeforeEOFException from "@/expression-language/parser/exceptions/parsing-ended-before-eof.exception";
+import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
+import InvalidUnaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
 
 type Lang = "FR" | "EN";
 
@@ -274,12 +274,12 @@ export default class SimulatorExceptionsMapper {
 				: `Caractère inattendu '${char}' à la position ${pos}`;
 		}
 
-		if (exception instanceof InvalidStringEndQuoteException) {
-			const quote = exception.getQuoteType ? exception.getQuoteType() : "?";
+		if (exception instanceof InvalidKeywordException) {
+			const keyword = exception.getKeyword ? exception.getKeyword() : "?";
 			const pos = exception.getPosition ? exception.getPosition() : "?";
 			return lang === "EN"
-				? `Invalid end quote '${quote}' for string at position ${pos}`
-				: `Guillemet de fin invalide '${quote}' pour la chaîne à la position ${pos}`;
+				? `Invalid keyword '${keyword}' at position ${pos}`
+				: `Mot-clé invalide '${keyword}' à la position ${pos}`;
 		}
 
 		if (exception instanceof UnterminatedStringException) {

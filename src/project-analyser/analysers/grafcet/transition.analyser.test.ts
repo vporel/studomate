@@ -1,4 +1,5 @@
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
@@ -102,6 +103,8 @@ describe("TransitionAnalyser", () => {
 	describe("analyseInContext", () => {
 		it("returns no issues for valid transition in complete sequence", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -114,6 +117,7 @@ describe("TransitionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
+				.addSteps(step1, step2)
 				.addTransition(transition)
 				.addConnections(c1, c2)
 				.build();
@@ -168,6 +172,8 @@ describe("TransitionAnalyser", () => {
 				.type("BOOL")
 				.build();
 			const transition = new TransitionBuilder().id("trans-1").expression("sensor").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -180,6 +186,7 @@ describe("TransitionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
+				.addSteps(step1, step2)
 				.addTransition(transition)
 				.addConnections(c1, c2)
 				.build();
@@ -231,6 +238,8 @@ describe("TransitionAnalyser", () => {
 
 		it("allows timer declarations without conflicts", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("T1/VRAI/5s").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -243,6 +252,7 @@ describe("TransitionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
+				.addSteps(step1, step2)
 				.addTransition(transition)
 				.addConnections(c1, c2)
 				.build();
@@ -266,6 +276,9 @@ describe("TransitionAnalyser", () => {
 
 		it("detects transition with multiple direct successors", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const step3 = new StepBuilder().id("step-3").number(3).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -283,6 +296,7 @@ describe("TransitionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
+				.addSteps(step1, step2, step3)
 				.addTransition(transition)
 				.addConnections(c1, c2, c3)
 				.build();
@@ -296,6 +310,8 @@ describe("TransitionAnalyser", () => {
 
 		it("accepts transition with exactly one direct successor", () => {
 			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -308,6 +324,7 @@ describe("TransitionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
+				.addSteps(step1, step2)
 				.addTransition(transition)
 				.addConnections(c1, c2)
 				.build();
@@ -316,6 +333,67 @@ describe("TransitionAnalyser", () => {
 
 			const multiSuccessorIssues = issues.filter((i) => i.message.includes("successeur direct"));
 			expect(multiSuccessorIssues).toHaveLength(0);
+		});
+
+		it("detects transition with multiple direct predecessors", () => {
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const step3 = new StepBuilder().id("step-3").number(3).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("step", "step-2", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c3 = new ConnectionBuilder()
+				.id("c3")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-3", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2, step3)
+				.addTransition(transition)
+				.addConnections(c1, c2, c3)
+				.build();
+
+			const issues = analyser.analyseInContext(transition, grafcet, []);
+
+			const multiPredecessorIssue = issues.find((i) => i.message.includes("prédécesseur direct"));
+			expect(multiPredecessorIssue).toBeDefined();
+			expect(multiPredecessorIssue?.severity).toBe("error");
+		});
+
+		it("accepts transition with exactly one direct predecessor", () => {
+			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
+				.target("step", "step-2", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addTransition(transition)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(transition, grafcet, []);
+
+			const multiPredecessorIssues = issues.filter((i) => i.message.includes("prédécesseur direct"));
+			expect(multiPredecessorIssues).toHaveLength(0);
 		});
 	});
 });
