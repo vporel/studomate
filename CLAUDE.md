@@ -114,9 +114,12 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
 - **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
   anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
   écrire en français tout nouveau commentaire.
-- **Vérification visuelle d'un changement UI** : ne pas lancer automatiquement l'extension de
-  navigateur (`claude-in-chrome`) ni supposer que l'utilisateur ne vérifiera pas lui-même —
-  demander s'il préfère vérifier visuellement de son côté ou que ce soit fait ici.
+- **Vérification visuelle d'un changement UI** : ne jamais proposer ou demander de vérifier
+  visuellement dans le navigateur après un changement UI, et ne pas lancer automatiquement
+  l'extension de navigateur (`claude-in-chrome`) de sa propre initiative. C'est à
+  l'utilisateur de le demander s'il le souhaite. Exception : suggérer `claude-in-chrome`
+  quand on tourne en rond (ex. plusieurs tentatives de correction d'un bug qui échouent) et
+  qu'une vérification visuelle permettrait de sortir de la boucle.
 
 ## Tests et bugs découverts en testant
 

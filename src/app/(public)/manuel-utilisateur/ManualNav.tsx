@@ -4,38 +4,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-
-type Section = {
-	id: string;
-	label: string;
-	children?: { id: string; label: string }[];
-};
-
-const SECTIONS: Section[] = [
-	{ id: "intro", label: "Introduction" },
-	{ id: "getting-started", label: "Démarrer" },
-	{ id: "projects", label: "Projets" },
-	{ id: "explorer", label: "Explorateur" },
-	{ id: "variables", label: "Variables" },
-	{
-		id: "grafcet",
-		label: "Grafcet",
-		children: [
-			{ id: "grafcet-canvas", label: "Canvas" },
-			{ id: "grafcet-steps", label: "Étapes" },
-			{ id: "grafcet-transitions", label: "Transitions" },
-			{ id: "grafcet-actions", label: "Actions" },
-			{ id: "grafcet-junctions", label: "Jonctions" },
-			{ id: "grafcet-referrals", label: "Renvois" },
-			{ id: "grafcet-comments", label: "Commentaires" },
-			{ id: "grafcet-connections", label: "Liaisons" },
-		],
-	},
-	{ id: "toolbar", label: "Barre d'outils" },
-	{ id: "simulation", label: "Simulation" },
-	{ id: "analysis", label: "Analyse" },
-	{ id: "shortcuts", label: "Raccourcis clavier" },
-];
+import { MANUAL_SECTIONS } from "./manual-sections";
 
 export default function ManualNav({
 	selected,
@@ -47,19 +16,19 @@ export default function ManualNav({
 	const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
 	useEffect(() => {
-		// expand parent when a child is selected
-		if (selected?.startsWith("grafcet")) {
-			setOpenMap((m) => ({ ...m, grafcet: true }));
-		}
+		if (!selected) return;
+		// Déplie le parent dont un enfant est sélectionné (ex : lien direct vers une sous-section).
+		const parent = MANUAL_SECTIONS.find((s) => s.children?.some((c) => c.id === selected));
+		if (parent) setOpenMap((m) => ({ ...m, [parent.id]: true }));
 	}, [selected]);
 
 	return (
-		<Box sx={{ width: 260, pr: 2 }}>
+		<Box sx={{ width: "100%", pr: 2 }}>
 			<Typography variant="h6" gutterBottom>
 				Plan du manuel
 			</Typography>
 			<List disablePadding>
-				{SECTIONS.map((s) => {
+				{MANUAL_SECTIONS.map((s) => {
 					const hasChildren = Array.isArray(s.children) && s.children.length > 0;
 					const isOpen = Boolean(openMap[s.id]);
 

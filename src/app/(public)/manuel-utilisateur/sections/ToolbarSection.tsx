@@ -7,7 +7,7 @@ export default function ToolbarSection() {
 				{`Barre d'outils`}
 			</Typography>
 			<Typography mb={2}>
-				{`La barre d'outils est divisée en deux zones : les actions générales (haut gauche) et les outils de création Grafcet (haut, spécifiques à un grafcet ouvert).`}
+				{`La barre d'outils est divisée en deux zones : les actions générales (haut gauche) et les outils de création (haut, spécifiques au type de programme ouvert — Grafcet ou Ladder).`}
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
@@ -56,6 +56,21 @@ export default function ToolbarSection() {
 			</Typography>
 			<Typography mb={2}>
 				{`Les boutons Zoom + et Zoom − permettent d'ajuster le niveau de zoom du canvas.`}
+			</Typography>
+			<Divider sx={{ my: 2 }} />
+			<Typography variant="h4" mb={2}>
+				{`Outils de création Ladder`}
+			</Typography>
+			<Typography mb={2}>
+				{`Lorsqu'un ladder est ouvert, sa propre barre d'outils apparaît sous la barre d'outils générale. Faites glisser l'outil choisi sur un réseau pour créer l'élément correspondant :`}
+			</Typography>
+			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+				<li>{`Contact NO, NF, P (front montant) et N (front descendant)`}</li>
+				<li>{`Bobine normale, Set et Reset`}</li>
+				<li>{`Bouton "Section" — ajoute un nouveau réseau au ladder`}</li>
+			</Typography>
+			<Typography mb={2}>
+				{`Voir la section Ladder pour le détail de ces éléments.`}
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 		</section>

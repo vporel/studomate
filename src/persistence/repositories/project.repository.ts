@@ -4,9 +4,10 @@ import Project from "@/schemas/project/project.schema";
  * Raison pour laquelle une sauvegarde a échoué.
  * - `quota-exceeded` : le stockage est plein (limite ~5 Mo en localStorage)
  * - `unavailable`    : le stockage est inaccessible (navigation privée, permissions)
+ * - `network`        : le serveur distant est injoignable, ou la session a expiré
  * - `unknown`        : autre chose
  */
-export type SaveFailureReason = "quota-exceeded" | "unavailable" | "unknown";
+export type SaveFailureReason = "quota-exceeded" | "unavailable" | "network" | "unknown";
 
 export type SaveResult = { ok: true } | { ok: false; reason: SaveFailureReason; cause?: unknown };
 

@@ -14,7 +14,7 @@ import { useLadderStore } from "../context/LadderContext";
 import { useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useLadderDropHandlers from "./useLadderDropHandlers";
-import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH, POWER_RAIL_OFFSET } from "@/ui/utils/ladder/ladder-flow-builder";
+import { colToX, GRID_CELL_HEIGHT, GRID_CELL_WIDTH, rowToY } from "@/ui/utils/ladder/ladder-flow-builder";
 
 jest.mock("../context/LadderContext", () => ({
 	useLadderStore: jest.fn(),
@@ -85,8 +85,8 @@ describe("useLadderDropHandlers", () => {
 
 		// Un point dans la moitié basse/droite de la cellule (row=2, col=1) doit rester dans
 		// cette cellule, pas basculer sur la cellule diagonale suivante (row=3, col=2).
-		const x = POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH + GRID_CELL_WIDTH * 0.9;
-		const y = 2 * GRID_CELL_HEIGHT + GRID_CELL_HEIGHT * 0.9;
+		const x = colToX(1) + GRID_CELL_WIDTH * 0.9;
+		const y = rowToY(2) + GRID_CELL_HEIGHT * 0.9;
 
 		act(() => handleDrop(fakeDragEvent(x, y)));
 
@@ -116,8 +116,8 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "coil", mode: "normal" });
 		const [, handleDrop] = result.current;
 
-		const x = POWER_RAIL_OFFSET + 2 * GRID_CELL_WIDTH;
-		const y = 0;
+		const x = colToX(2);
+		const y = rowToY(0);
 
 		act(() => handleDrop(fakeDragEvent(x, y)));
 
@@ -139,7 +139,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(0), rowToY(0))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -170,7 +170,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "contact", mode: "NF" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -206,7 +206,7 @@ describe("useLadderDropHandlers", () => {
 
 		// Cellule (1,1) : le segment vertical de la connexion (sortie de la colonne 0) longe son
 		// bord gauche — voir ladder-connection-path.test.ts.
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 1 * GRID_CELL_HEIGHT)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -234,7 +234,7 @@ describe("useLadderDropHandlers", () => {
 		const [, handleDrop] = result.current;
 
 		// Cellule (1,1) : le segment vertical (sortie de la colonne 1) longe son bord droit.
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 1 * GRID_CELL_HEIGHT)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -258,7 +258,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "coil", mode: "normal" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 1 * GRID_CELL_HEIGHT)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -285,7 +285,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 1 * GRID_CELL_HEIGHT)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -314,7 +314,7 @@ describe("useLadderDropHandlers", () => {
 
 		// Coude à la colonne source (0), donc le segment horizontal sur la ligne cible (2) va de
 		// la colonne 0 à la colonne 4 — traverse la cellule (2,2).
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 2 * GRID_CELL_WIDTH, 2 * GRID_CELL_HEIGHT)));
+		act(() => handleDrop(fakeDragEvent(colToX(2), rowToY(2))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -343,7 +343,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 2 * GRID_CELL_WIDTH, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(2), rowToY(0))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -357,7 +357,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, [], { type: "contact", mode: "NF" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -378,7 +378,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, [], { type: "contact", mode: "NO" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
 
 		expect(executeOperation).not.toHaveBeenCalled();
 	});
@@ -390,7 +390,7 @@ describe("useLadderDropHandlers", () => {
 		const { result } = setup(section, [], { type: "contact", mode: "NO" });
 		const [, handleDrop] = result.current;
 
-		act(() => handleDrop(fakeDragEvent(POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, 0)));
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
 
 		expect(executeOperation).not.toHaveBeenCalled();
 	});

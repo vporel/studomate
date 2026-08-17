@@ -11,7 +11,7 @@ import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
 import { DraggedLadderElement, useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
-import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH, PositionedLeaf, POWER_RAIL_OFFSET } from "@/ui/utils/ladder/ladder-flow-builder";
+import { PositionedLeaf, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 
 function createDraggedElement(draggedElement: DraggedLadderElement, row: number, col: number): LadderElement {
@@ -58,8 +58,8 @@ export default function useLadderDropHandlers(
 			// notre propre accrochage explicite (Math.floor ci-dessous), qui, lui, retombe
 			// toujours sur la cellule réellement visée.
 			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY }, { snapToGrid: false });
-			const dropRow = Math.floor(position.y / GRID_CELL_HEIGHT);
-			const dropCol = Math.floor((position.x - POWER_RAIL_OFFSET) / GRID_CELL_WIDTH);
+			const dropRow = Math.floor(yToRow(position.y));
+			const dropCol = Math.floor(xToCol(position.x));
 
 			// Cellule déjà occupée : refuse le dépôt, sauf si l'élément qui s'y trouve est du même
 			// genre que celui déposé — auquel cas on change juste son mode (ex. contact NO -> NF),

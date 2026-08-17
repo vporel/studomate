@@ -13,10 +13,20 @@ describe("useEditMenu", () => {
 	const undo = jest.fn()
 	const redo = jest.fn()
 	const copySelectedElements = jest.fn()
+	const cutSelectedElements = jest.fn()
 	const pasteElements = jest.fn()
 	const grafcetsManager = {
 		getActiveStoreManagers: jest.fn(() => ({
-			copyCutPasteManager: { copySelectedElements, pasteElements },
+			copyCutPasteManager: { copySelectedElements, cutSelectedElements, pasteElements },
+		})),
+		getActiveStoreValues: jest.fn(() => ({
+			hasCommandsToUndo: true,
+			hasCommandsToRedo: true,
+		})),
+	}
+	const laddersManager = {
+		getActiveStoreManagers: jest.fn(() => ({
+			copyCutPasteManager: { copySelectedElements, cutSelectedElements, pasteElements },
 		})),
 		getActiveStoreValues: jest.fn(() => ({
 			hasCommandsToUndo: true,
@@ -39,6 +49,7 @@ describe("useEditMenu", () => {
 		const state = {
 			activeScopeType: "grafcet",
 			grafcetsManager,
+			laddersManager,
 			mode: ProjectMode.DESIGN,
 			hasCommandsToUndo: true,
 			hasCommandsToRedo: true,
@@ -52,11 +63,11 @@ describe("useEditMenu", () => {
 
 	afterEach(() => jest.clearAllMocks())
 
-	it("exposes undo, redo, copy and paste", () => {
+	it("exposes undo, redo, copy, cut and paste", () => {
 		const { result } = setup()
 		expect(result.current.id).toBe("edit")
 		expect(result.current.items[0].map((i) => i.label)).toEqual(["Annuler", "Rétablir"])
-		expect(result.current.items[1].map((i) => i.label)).toEqual(["Copier", "Coller"])
+		expect(result.current.items[1].map((i) => i.label)).toEqual(["Copier", "Couper", "Coller"])
 	})
 
 	it("disables undo/redo based on the active scope history", () => {
@@ -73,23 +84,45 @@ describe("useEditMenu", () => {
 		expect(redo).toHaveBeenCalled()
 	})
 
-	it("disables copy/paste when not editing a grafcet", () => {
+	it("disables copy/cut/paste when not editing a grafcet or a ladder", () => {
 		const { result } = setup({ activeScopeType: "variables" })
 		expect(result.current.items[1][0].disabled).toBe(true)
 		expect(result.current.items[1][1].disabled).toBe(true)
+		expect(result.current.items[1][2].disabled).toBe(true)
 	})
 
-	it("disables copy/paste outside design mode", () => {
+	it("enables copy/cut/paste when editing a ladder", () => {
+		const { result } = setup({ activeScopeType: "ladder" })
+		expect(result.current.items[1][0].disabled).toBe(false)
+		expect(result.current.items[1][1].disabled).toBe(false)
+		expect(result.current.items[1][2].disabled).toBe(false)
+	})
+
+	it("disables copy/cut/paste outside design mode", () => {
 		const { result } = setup({ mode: ProjectMode.SIMULATION })
 		expect(result.current.items[1][0].disabled).toBe(true)
 		expect(result.current.items[1][1].disabled).toBe(true)
+		expect(result.current.items[1][2].disabled).toBe(true)
 	})
 
-	it("copies and pastes the selected elements", () => {
+	it("copies, cuts and pastes the selected elements of the active grafcet", () => {
 		const { result } = setup()
 		act(() => result.current.items[1][0].onClick?.())
 		act(() => result.current.items[1][1].onClick?.())
+		act(() => result.current.items[1][2].onClick?.())
 		expect(copySelectedElements).toHaveBeenCalled()
+		expect(cutSelectedElements).toHaveBeenCalled()
+		expect(pasteElements).toHaveBeenCalled()
+	})
+
+	it("copies, cuts and pastes the selected elements of the active ladder", () => {
+		const { result } = setup({ activeScopeType: "ladder" })
+		act(() => result.current.items[1][0].onClick?.())
+		act(() => result.current.items[1][1].onClick?.())
+		act(() => result.current.items[1][2].onClick?.())
+		expect(laddersManager.getActiveStoreManagers).toHaveBeenCalled()
+		expect(copySelectedElements).toHaveBeenCalled()
+		expect(cutSelectedElements).toHaveBeenCalled()
 		expect(pasteElements).toHaveBeenCalled()
 	})
 })

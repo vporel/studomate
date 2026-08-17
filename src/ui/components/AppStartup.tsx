@@ -6,6 +6,7 @@ import { alpha, Box, Button, Divider, Grid, SxProps, Theme, Typography } from "@
 import Link from "next/link";
 import { useShallow } from "zustand/shallow";
 import routes from "@/app/routes";
+import AccountStatus from "./auth/AccountStatus";
 import { useProjectStore } from "./projects/ProjectContext";
 
 const buttonSx: SxProps<Theme> = {
@@ -47,6 +48,9 @@ const AppStartup = () => {
 					boxShadow: "1px 1px 5px rgba(0,0,0,0.2)",
 				}}
 			>
+				<FlexBox justifyContent="flex-end" mb={1}>
+					<AccountStatus />
+				</FlexBox>
 				<FlexBox centerVertical gap={2.5}>
 					<Box
 						component="img"

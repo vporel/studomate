@@ -22,9 +22,9 @@ export default function ExplorerSection() {
 				<li>{`Sorties analogiques — variables numériques de sortie (INT, WORD, DWORD)`}</li>
 				<li>{`Mémoires — variables internes (tous types)`}</li>
 			</Typography>
-			<Typography mb={1}>{`Grafcets :`}</Typography>
+			<Typography mb={1}>{`Programmes :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`Liste de tous les grafcets du projet`}</li>
+				<li>{`Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
@@ -32,9 +32,9 @@ export default function ExplorerSection() {
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Cliquer sur une section de variables : ouvre la page de gestion de ces variables`}</li>
-				<li>{`Cliquer sur un grafcet : ouvre l'onglet de ce grafcet`}</li>
-				<li>{`Double-cliquer sur le nom d'un grafcet : édition inline du nom`}</li>
-				<li>{`Clic droit sur un grafcet → Ouvrir, Renommer (F2), Supprimer`}</li>
+				<li>{`Cliquer sur un grafcet ou un ladder : ouvre son onglet`}</li>
+				<li>{`Double-cliquer sur le nom d'un programme : édition inline du nom`}</li>
+				<li>{`Clic droit sur un programme → Ouvrir, Renommer (F2), Supprimer`}</li>
 				<li>{`Clic droit sur zone vide → Masquer l'explorateur`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />

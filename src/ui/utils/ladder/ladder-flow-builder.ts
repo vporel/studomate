@@ -11,6 +11,16 @@ export const LADDER_FLOW_COL_WIDTH = GRID_CELL_WIDTH; // 60px
 /** Hauteur d'une ligne de réseau = 1 cellule. */
 export const LADDER_FLOW_ROW_HEIGHT = GRID_CELL_HEIGHT; // 45px
 
+/** Décalage vertical de la ligne 0 par rapport à l'origine du monde React Flow. Sans lui, la
+ * ligne 0 est exactement à y=0 et l'étiquette au-dessus de son contact/bobine (`top: -10px`,
+ * voir `ContactNode`/`CoilNode`) sort du wrapper `.react-flow`, dont l'`overflow: hidden`
+ * (posé en inline style par la librairie, pas surchargeable en CSS) la coupe alors. Une demi-
+ * cellule suffit à loger l'étiquette sans laisser une ligne entière de vide ; n'étant plus un
+ * multiple exact de la taille de cellule, le fond en pointillés doit être explicitement recalé
+ * sur cette valeur (`backgroundPosition`, voir `LadderSection`) au lieu de compter sur la
+ * périodicité du motif. */
+export const LADDER_FLOW_TOP_OFFSET = GRID_CELL_HEIGHT / 2;
+
 /** Nombre maximum de colonnes du ladder. */
 export const LADDER_MAX_COLS = 18;
 
@@ -19,6 +29,27 @@ export const LADDER_MAX_COLS = 18;
 export const RAIL_LANE_WIDTH = 10;
 /** Abscisse où commence la colonne 0 des éléments (contact/coil). */
 export const POWER_RAIL_OFFSET = RAIL_LANE_WIDTH;
+
+/**
+ * Conversions ligne/colonne (grille logique) ↔ pixels (monde React Flow) — seul point de
+ * vérité pour `LADDER_FLOW_TOP_OFFSET`/`POWER_RAIL_OFFSET` : tout site qui construit ou lit
+ * une position doit passer par ces fonctions plutôt que refaire le calcul, pour qu'un futur
+ * changement de l'un ou l'autre décalage n'ait qu'un seul endroit à corriger. L'arrondi
+ * (`Math.round`/`Math.floor` selon le site : accrochage au plus proche vs dépôt dans la
+ * cellule survolée) reste au call site, ces fonctions ne font que le décalage/l'échelle.
+ */
+export function rowToY(row: number): number {
+	return LADDER_FLOW_TOP_OFFSET + row * LADDER_FLOW_ROW_HEIGHT;
+}
+export function yToRow(y: number): number {
+	return (y - LADDER_FLOW_TOP_OFFSET) / LADDER_FLOW_ROW_HEIGHT;
+}
+export function colToX(col: number): number {
+	return POWER_RAIL_OFFSET + col * LADDER_FLOW_COL_WIDTH;
+}
+export function xToCol(x: number): number {
+	return (x - POWER_RAIL_OFFSET) / LADDER_FLOW_COL_WIDTH;
+}
 
 /** Type d'edge des connexions du Ladder — voir `LadderConnectionEdge`. */
 export const LADDER_CONNECTION_EDGE_TYPE = "ladder-connection";
@@ -100,7 +131,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 				// Toujours à l'extrême gauche (largeur RAIL_LANE_WIDTH) : ce n'est pas une colonne
 				// d'éléments, `element.position.col` (RAIL_TERMINAL_COL) n'est qu'un marqueur
 				// logique d'ordre, jamais traduit en pixels — cohérent avec `draggable: false`.
-				position: { x: 0, y: element.position.row * LADDER_FLOW_ROW_HEIGHT },
+				position: { x: 0, y: rowToY(element.position.row) },
 				data: { virtual: false },
 				selectable: false,
 				draggable: false,
@@ -110,8 +141,8 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 			id: element.id,
 			type: element.type,
 			position: {
-				x: POWER_RAIL_OFFSET + element.position.col * LADDER_FLOW_COL_WIDTH,
-				y: element.position.row * LADDER_FLOW_ROW_HEIGHT,
+				x: colToX(element.position.col),
+				y: rowToY(element.position.row),
 			},
 			data: { variable: element.data.variable, mode: element.data.mode },
 		} as LadderNodeType;
@@ -130,7 +161,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 		nodes.push({
 			id: virtualRailId(row),
 			type: "railTerminal",
-			position: { x: 0, y: row * LADDER_FLOW_ROW_HEIGHT },
+			position: { x: 0, y: rowToY(row) },
 			data: { virtual: true },
 			selectable: false,
 			draggable: false,

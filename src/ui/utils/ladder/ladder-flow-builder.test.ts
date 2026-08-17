@@ -4,10 +4,10 @@ import Section from "@/schemas/ladder/section.schema";
 import {
 	buildTargetEdges,
 	buildTargetNodes,
+	colToX,
 	computeSectionLayout,
-	GRID_CELL_WIDTH,
 	LADDER_CONNECTION_EDGE_TYPE,
-	POWER_RAIL_OFFSET,
+	rowToY,
 } from "./ladder-flow-builder";
 
 describe("buildTargetNodes / buildTargetEdges", () => {
@@ -18,7 +18,7 @@ describe("buildTargetNodes / buildTargetEdges", () => {
 			{
 				id: "virtual-rail-0",
 				type: "railTerminal",
-				position: { x: 0, y: 0 },
+				position: { x: 0, y: rowToY(0) },
 				data: { virtual: true },
 				selectable: false,
 				draggable: false,
@@ -39,10 +39,10 @@ describe("buildTargetNodes / buildTargetEdges", () => {
 		const contactNode = nodes.find((n) => n.id === contact.id)!;
 		expect(contactNode.type).toBe("contact");
 		expect(contactNode.data).toEqual({ variable: "A", mode: "NO" });
-		expect(contactNode.position).toEqual({ x: POWER_RAIL_OFFSET + 0 * GRID_CELL_WIDTH, y: 0 * 45 });
+		expect(contactNode.position).toEqual({ x: colToX(0), y: rowToY(0) });
 
 		const coilNode = nodes.find((n) => n.id === coil.id)!;
-		expect(coilNode.position).toEqual({ x: POWER_RAIL_OFFSET + 1 * GRID_CELL_WIDTH, y: 0 * 45 });
+		expect(coilNode.position).toEqual({ x: colToX(1), y: rowToY(0) });
 
 		expect(buildTargetEdges(section)).toEqual([
 			{ id: "c1", source: contact.id, sourceHandle: "source", target: coil.id, targetHandle: "target", type: LADDER_CONNECTION_EDGE_TYPE, data: { points: [] } },

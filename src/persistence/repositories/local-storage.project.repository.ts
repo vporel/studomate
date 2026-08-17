@@ -1,5 +1,5 @@
 import Project from "@/schemas/project/project.schema";
-import { isFromNewerVersion, migrateProject } from "../migrations";
+import { deserializeProject } from "../project-deserialization";
 import ProjectRepository, { SaveFailureReason, SaveResult } from "./project.repository";
 
 const STORAGE_KEY = "studomate_projects_data";
@@ -30,7 +30,7 @@ const STORAGE_KEY = "studomate_projects_data";
 export default class LocalStorageProjectRepository implements ProjectRepository {
 	async list(): Promise<Project[]> {
 		return this.readRawProjects()
-			.map((raw) => this.toProject(raw))
+			.map((raw) => deserializeProject(raw))
 			.filter((p): p is Project => p !== null);
 	}
 
@@ -103,28 +103,5 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		}
 		if (typeof localStorage === "undefined") return "unavailable";
 		return "unknown";
-	}
-
-	/**
-	 * Reconstruit un projet, en migrant sa forme si besoin et en refusant ce qui n'est pas
-	 * lisible plutôt que de produire un objet incohérent.
-	 */
-	private toProject(raw: Record<string, any>): Project | null {
-		if (typeof raw.id !== "string" || raw.id === "") {
-			console.error("Projet sans identifiant valide ignoré");
-			return null;
-		}
-		if (isFromNewerVersion(raw)) {
-			//Laissé intact : une version ancienne ne doit pas réécrire ce qu'elle ne comprend pas
-			console.warn(`Projet "${raw.id}" enregistré par une version plus récente, ignoré`);
-			return null;
-		}
-		try {
-			const { project } = migrateProject(raw);
-			return Project.createFromJSON(JSON.stringify(project));
-		} catch (e) {
-			console.error(`Projet "${raw.id}" illisible, ignoré :`, e);
-			return null;
-		}
 	}
 }

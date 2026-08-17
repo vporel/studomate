@@ -6,7 +6,7 @@ import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
-import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH, POWER_RAIL_OFFSET, LADDER_MAX_COLS } from "@/ui/utils/ladder/ladder-flow-builder";
+import { LADDER_MAX_COLS, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeSectionLayout } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
@@ -99,8 +99,8 @@ export default class CopyCutPasteManager {
 		const flowPos = rfInstance.screenToFlowPosition({ x: mousePosition.x, y: mousePosition.y });
 		
 		// Convertir en cellule de départ
-		const startRow = Math.max(0, Math.floor(flowPos.y / GRID_CELL_HEIGHT));
-		const startCol = Math.max(0, Math.floor((flowPos.x - POWER_RAIL_OFFSET) / GRID_CELL_WIDTH));
+		const startRow = Math.max(0, Math.floor(yToRow(flowPos.y)));
+		const startCol = Math.max(0, Math.floor(xToCol(flowPos.x)));
 
 		// Bounding box des éléments copiés
 		const minRow = Math.min(...this.clipboard.elements.map(e => e.position.row));

@@ -78,11 +78,15 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						{`La réceptivité est une expression booléenne saisie dans le champ de la transition. Elle peut faire référence à des variables du projet, à des constantes, ou à des combinaisons logiques (ET, OU, NON).`}
 					</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+						<li>{`Mots-clés logiques : ET, OU, NON, VRAI, FAUX (dialecte Français) ou AND, OR, NOT, TRUE, FALSE (dialecte Anglais, voir Projets → Propriétés du projet)`}</li>
+						<li>{`Opérateurs de comparaison : =, !=, <, >, <=, >=`}</li>
+						<li>{`Opérateurs arithmétiques : +, -, *, /`}</li>
 						<li>{`Exemple : "capteur1 ET NON capteur2"`}</li>
+						<li>{`Exemple avec comparaison : "niveauCuve >= 80"`}</li>
 						<li>{`Réceptivité toujours vraie : écrire 'VRAI'`}</li>
 					</Typography>
 					<Typography mb={2}>
-						{`Pour modifier la réceptivité, double-cliquez sur la zone de texte de la transition. La syntaxe est vérifiée lors de l'analyse du projet.`}
+						{`Pour modifier la réceptivité, double-cliquez sur la zone de texte de la transition. La syntaxe est vérifiée lors de l'analyse du projet. Une transition doit être une expression booléenne : une affectation (:=) ou une constante numérique seule ne sont pas acceptées.`}
 					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

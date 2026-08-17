@@ -8,12 +8,7 @@ import { GridPosition } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
-import {
-	GRID_CELL_HEIGHT,
-	GRID_CELL_WIDTH,
-	parseVirtualRailRow,
-	POWER_RAIL_OFFSET,
-} from "@/ui/utils/ladder/ladder-flow-builder";
+import { colToX, parseVirtualRailRow, rowToY, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { initialConnectionPoints, pushConnectionBend } from "@/ui/utils/ladder/ladder-connection-path";
 import { applyEdgeChanges, applyNodeChanges, EdgeChange, NodeChange, NodePositionChange, Edge } from "@xyflow/react";
 import LadderEdgesFactory from "../factories/edges.factory";
@@ -108,9 +103,9 @@ export default class LadderWorkflowManager {
 	 * l'horizontal où une colonne fait 60px contre 45px pour une ligne déjà bien alignée. */
 	private snapPositionChange(change: NodeChange<LadderNodeType>): NodeChange<LadderNodeType> {
 		if (change.type !== "position" || !change.position) return change;
-		const row = Math.round(change.position.y / GRID_CELL_HEIGHT);
-		const col = Math.round((change.position.x - POWER_RAIL_OFFSET) / GRID_CELL_WIDTH);
-		return { ...change, position: { x: POWER_RAIL_OFFSET + col * GRID_CELL_WIDTH, y: row * GRID_CELL_HEIGHT } };
+		const row = Math.round(yToRow(change.position.y));
+		const col = Math.round(xToCol(change.position.x));
+		return { ...change, position: { x: colToX(col), y: rowToY(row) } };
 	}
 
 	/** Dernière frame d'un glisser (`dragging: false`) ou relâchement d'une flèche directionnelle
@@ -131,8 +126,8 @@ export default class LadderWorkflowManager {
 	): { elementId: string; newPosition: GridPosition } | null {
 		if (parseVirtualRailRow(elementId) !== null) return null;
 		if (!section.getElement(elementId)) return null;
-		const row = Math.round(position.y / GRID_CELL_HEIGHT);
-		const col = Math.round((position.x - POWER_RAIL_OFFSET) / GRID_CELL_WIDTH);
+		const row = Math.round(yToRow(position.y));
+		const col = Math.round(xToCol(position.x));
 		return { elementId, newPosition: { row, col } };
 	}
 

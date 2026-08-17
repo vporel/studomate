@@ -20,7 +20,9 @@ function setup({
 	reloadKey = 0,
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ projectRepository: { list: () => list, delete: deleteFn } }),
+		selectorImplementation({
+			projectRepository: { list: () => list, delete: deleteFn, locationOf: () => "local" },
+		}),
 	);
 
 	const utils = render(<ProjectsList reloadKey={reloadKey} onProjectClick={onProjectClick} />);

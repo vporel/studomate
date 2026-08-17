@@ -14,11 +14,11 @@ export default function ShortcutsSection() {
 				{`Fichier`}
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`Ctrl+N — Nouveau projet`}</li>
+				<li>{`Nouveau projet — aucun raccourci (Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre)`}</li>
 				<li>{`Ctrl+O — Ouvrir projet`}</li>
 				<li>{`Ctrl+S — Enregistrer`}</li>
 				<li>{`Ctrl+E — Exporter`}</li>
-				<li>{`Ctrl+F4 — Fermer le projet`}</li>
+				<li>{`Ctrl+F4 (Windows/Linux) ou Cmd+W (macOS) — Fermer le projet`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
@@ -26,6 +26,7 @@ export default function ShortcutsSection() {
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Ctrl+G — Nouveau grafcet`}</li>
+				<li>{`Ctrl+L — Nouveau ladder`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
@@ -34,16 +35,17 @@ export default function ShortcutsSection() {
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Ctrl+Z — Annuler`}</li>
 				<li>{`Ctrl+Y — Rétablir`}</li>
-				<li>{`Ctrl+C — Copier (mode Grafcet uniquement)`}</li>
-				<li>{`Ctrl+V — Coller (mode Grafcet uniquement)`}</li>
-				<li>{`Ctrl+A — Sélectionner tout (canvas uniquement)`}</li>
+				<li>{`Ctrl+C — Copier (canvas Grafcet ou Ladder actif)`}</li>
+				<li>{`Ctrl+V — Coller (canvas Grafcet ou Ladder actif)`}</li>
+				<li>{`Ctrl+X — Couper (canvas Grafcet ou Ladder actif)`}</li>
+				<li>{`Ctrl+A — Sélectionner tout (canvas Grafcet ou Ladder actif)`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
 				{`Explorateur`}
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`F2 — Renommer le grafcet sélectionné`}</li>
+				<li>{`F2 — Renommer le grafcet ou le ladder sélectionné`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>

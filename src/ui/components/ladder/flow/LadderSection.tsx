@@ -13,6 +13,7 @@ import {
 	computeSectionLayout,
 	GRID_CELL_HEIGHT,
 	GRID_CELL_WIDTH,
+	LADDER_FLOW_TOP_OFFSET,
 	parseVirtualRailRow,
 	RAIL_LANE_WIDTH,
 } from "@/ui/utils/ladder/ladder-flow-builder";
@@ -154,9 +155,12 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 							backgroundColor: "white",
 							backgroundImage: `radial-gradient(circle at 0 0, rgba(0,0,0,0.45) 1.5px, transparent 1.5px)`,
 							backgroundSize: `${GRID_CELL_WIDTH}px ${GRID_CELL_HEIGHT}px`,
-							// Décalé de RAIL_LANE_WIDTH : la colonne 0 des éléments ne commence plus à 0
-							// (la lane du rail, désormais étroite, précède) — voir POWER_RAIL_OFFSET.
-							backgroundPosition: `${RAIL_LANE_WIDTH}px 0`,
+							// Décalé de RAIL_LANE_WIDTH en x (colonne 0 des éléments, voir POWER_RAIL_OFFSET)
+							// et de LADDER_FLOW_TOP_OFFSET en y (ligne 0 des éléments) — ce dernier n'étant
+							// plus un multiple exact de GRID_CELL_HEIGHT, la périodicité du motif ne suffit
+							// plus à garder les points alignés sur les lignes réelles, il faut ce recalage
+							// explicite.
+							backgroundPosition: `${RAIL_LANE_WIDTH}px ${LADDER_FLOW_TOP_OFFSET}px`,
 							borderLeft: "2px solid black",
 							".react-flow__pane": { cursor: "default" },
 							".react-flow__renderer": { background: "transparent" },

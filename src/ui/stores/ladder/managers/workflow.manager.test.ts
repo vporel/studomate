@@ -10,7 +10,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { GRID_CELL_HEIGHT, POWER_RAIL_OFFSET, virtualRailId } from "@/ui/utils/ladder/ladder-flow-builder";
+import { GRID_CELL_HEIGHT, LADDER_FLOW_TOP_OFFSET, POWER_RAIL_OFFSET, virtualRailId } from "@/ui/utils/ladder/ladder-flow-builder";
 import LadderNodesFactory from "../factories/nodes.factory";
 import LadderWorkflowManager from "./workflow.manager";
 
@@ -68,7 +68,7 @@ describe("LadderWorkflowManager", () => {
 		section.elements = [contact];
 		const { workflowManager } = setup(section);
 		const newX = POWER_RAIL_OFFSET + 2 * 60;
-		const newY = 1 * GRID_CELL_HEIGHT;
+		const newY = LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT;
 
 		workflowManager.handleNodesChange(section.id, [
 			{ type: "position", id: contact.id, position: { x: newX, y: newY }, dragging: false } as any,
@@ -111,7 +111,7 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 2 * 60, y: 1 * GRID_CELL_HEIGHT },
+				position: { x: POWER_RAIL_OFFSET + 2 * 60, y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT },
 				dragging: false,
 			} as any,
 		]);
@@ -145,7 +145,7 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: coil.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: 1 * GRID_CELL_HEIGHT },
+				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT },
 				dragging: false,
 			} as any,
 		]);
@@ -185,7 +185,7 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: 0 * GRID_CELL_HEIGHT },
+				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
 				dragging: false,
 			} as any,
 		]);
@@ -226,7 +226,7 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: 0 * GRID_CELL_HEIGHT },
+				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
 				dragging: false,
 			} as any,
 		]);
@@ -258,7 +258,7 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 1 * 60, y: 2 * GRID_CELL_HEIGHT },
+				position: { x: POWER_RAIL_OFFSET + 1 * 60, y: LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT },
 				dragging: false,
 			} as any,
 		]);

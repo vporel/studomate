@@ -2,7 +2,7 @@ import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema"
 import { createRandomId } from "@/ids";
 import { PROJECT_STARTUP_PAGE_DATA, PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import { Dialect } from "@/expression-language/dialect.enum";
-import LocalStorageProjectRepository from "@/persistence/repositories/local-storage.project.repository";
+import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import ProjectRepository, { SaveFailureReason } from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
 import { createStore } from "zustand";
@@ -27,6 +27,8 @@ const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
 		"Enregistrement impossible : l'espace de stockage du navigateur est plein. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 	unavailable:
 		"Enregistrement impossible : le stockage du navigateur est inaccessible (navigation privée ?). Exportez le projet dans un fichier.",
+	network:
+		"Enregistrement dans le cloud impossible : vérifiez votre connexion et que vous êtes bien connecté. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 	unknown: "Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 };
 
@@ -233,7 +235,7 @@ export const createProjectStore = () => {
 			watchTablesVisible: false,
 		},
 		savingProject: false,
-		projectRepository: new LocalStorageProjectRepository(),
+		projectRepository: new HybridProjectRepository(),
 		activeScope: "project",
 		activeScopeType: "project",
 		variablesManager: new VariablesManager(set, get),

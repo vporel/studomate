@@ -14,7 +14,7 @@ export default function GettingStartedSection() {
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Cliquer sur "Nouveau projet" pour créer un projet vide.`}</li>
-				<li>{`Utiliser le menu Fichier → Nouveau projet (Ctrl+N).`}</li>
+				<li>{`Utiliser le menu Fichier → Nouveau projet (aucun raccourci clavier : Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre).`}</li>
 			</Typography>
 			<Typography mb={2}>
 				{`Un nouveau projet est créé avec un grafcet vide. Vous pouvez définir le nom du projet et l'auteur via le menu Projet → Propriétés.`}
@@ -40,10 +40,17 @@ export default function GettingStartedSection() {
 			<Typography mb={1}>{`L'interface est divisée en plusieurs zones :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Barre de menus (haut) : Fichier, Projet, Édition, Vue, Aide`}</li>
-				<li>{`Barre d'outils (haut) : Accès rapide aux actions courantes et outils de création Grafcet`}</li>
-				<li>{`Explorateur (gauche) : Arborescence des variables et grafcets du projet`}</li>
-				<li>{`Zone principale (centre) : Onglets des pages ouvertes (grafcets, variables, propriétés)`}</li>
+				<li>{`Barre d'outils (haut) : Accès rapide aux actions courantes et outils de création Grafcet ou Ladder`}</li>
+				<li>{`Explorateur (gauche) : Arborescence des variables, grafcets et ladders du projet`}</li>
+				<li>{`Zone principale (centre) : Onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.`}</li>
 				<li>{`Panneau inférieur : Tables de surveillance (simulation) et résultats d'analyse`}</li>
+			</Typography>
+			<Divider sx={{ my: 2 }} />
+			<Typography variant="h4" mb={2}>
+				{`Menu Aide`}
+			</Typography>
+			<Typography mb={2}>
+				{`Aide → Manuel utilisateur ouvre ce manuel dans un nouvel onglet. C'est pour l'instant la seule entrée de ce menu.`}
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 		</section>

@@ -10,17 +10,26 @@ import { AppMenuType } from "../app-menu-bar";
 export default function useEditMenu(): AppMenuType {
 	const activeScopeType = useProjectStore((state) => state.activeScopeType);
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
 	const canUndo = useProjectStore(canUndoActiveScope);
 	const canRedo = useProjectStore(canRedoActiveScope);
 	const undo = useProjectStore((state) => state.undoActiveScope);
 	const redo = useProjectStore((state) => state.redoActiveScope);
 
+	return useMemo(() => {
+		// Copier/Couper/Coller existent aussi bien pour un grafcet que pour un ladder (voir
+		// useShortcutsHandler, qui applique déjà les deux) : le menu doit refléter les deux, pas
+		// seulement le grafcet.
+		const isCopyCutPasteScope = activeScopeType === "grafcet" || activeScopeType === "ladder";
+		const getCopyCutPasteManager = () => {
+			const manager = activeScopeType === "ladder" ? laddersManager : grafcetsManager;
+			return manager.getActiveStoreManagers()?.copyCutPasteManager;
+		};
 
-	return useMemo(
-		() => ({
+		return {
 			id: "edit",
-			label: "Edition",
+			label: "Édition",
 			items: [
 				[
 					{
@@ -40,28 +49,32 @@ export default function useEditMenu(): AppMenuType {
 					{
 						label: "Copier",
 						shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
-						disabled: !designing || activeScopeType !== "grafcet",
+						disabled: !designing || !isCopyCutPasteScope,
 						onClick: () => {
 							if (!designing) return;
-							const copyCutPasteManager =
-								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.copySelectedElements();
+							getCopyCutPasteManager()?.copySelectedElements();
+						},
+					},
+					{
+						label: "Couper",
+						shortcut: platformShortcut("Ctrl+X", "Cmd+X"),
+						disabled: !designing || !isCopyCutPasteScope,
+						onClick: () => {
+							if (!designing) return;
+							getCopyCutPasteManager()?.cutSelectedElements();
 						},
 					},
 					{
 						label: "Coller",
 						shortcut: platformShortcut("Ctrl+V", "Cmd+V"),
-						disabled: !designing || activeScopeType !== "grafcet",
+						disabled: !designing || !isCopyCutPasteScope,
 						onClick: () => {
 							if (!designing) return;
-							const copyCutPasteManager =
-								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.pasteElements();
+							getCopyCutPasteManager()?.pasteElements();
 						},
 					},
 				],
 			],
-		}),
-		[activeScopeType, grafcetsManager, designing, canUndo, canRedo, undo, redo],
-	);
+		};
+	}, [activeScopeType, grafcetsManager, laddersManager, designing, canUndo, canRedo, undo, redo]);
 }

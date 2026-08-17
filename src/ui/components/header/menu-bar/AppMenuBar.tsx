@@ -1,5 +1,8 @@
 "use client";
 
+import AnalyseButton from "@/ui/components/header/title-bar/AnalyseButton";
+import ProjectModeSwitcher from "@/ui/components/header/title-bar/ProjectModeSwitcher";
+import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { MenuList } from "@mui/material";
 import { useCallback, useState } from "react";
 import { AppMenuType } from "./app-menu-bar";
@@ -29,28 +32,33 @@ const MenuBar = () => {
 	const menus: AppMenuType[] = [fileMenu, projectMenu, editMenu, viewMenu, helpMenu];
 
 	return (
-		<MenuList
-			className="menu-bar"
-			sx={{
-				width: "100%",
-				height: "30px",
-				display: "flex",
-				alignItems: "center",
-				gap: "8px",
-				padding: "0px",
-				background: "white",
-			}}
-		>
-			{menus.map((menu) => (
-				<AppMenu
-					key={menu.id}
-					menu={menu}
-					onActivate={onActivate}
-					onDeactivate={onDeactivate}
-					activeMenuId={activeMenuId}
-				/>
-			))}
-		</MenuList>
+		<FlexBox centerVertical sx={{ width: "100%", justifyContent: "space-between" }}>
+			<MenuList
+				className="menu-bar"
+				sx={{
+					height: "30px",
+					display: "flex",
+					alignItems: "center",
+					gap: "8px",
+					padding: "0px",
+					background: "white",
+				}}
+			>
+				{menus.map((menu) => (
+					<AppMenu
+						key={menu.id}
+						menu={menu}
+						onActivate={onActivate}
+						onDeactivate={onDeactivate}
+						activeMenuId={activeMenuId}
+					/>
+				))}
+			</MenuList>
+			<FlexBox centerVertical sx={{ gap: 1, px: 1 }}>
+				<AnalyseButton />
+				<ProjectModeSwitcher />
+			</FlexBox>
+		</FlexBox>
 	);
 };
 
