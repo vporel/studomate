@@ -20,7 +20,7 @@ describe("useProjectPrograms", () => {
 		expect(result.current).toEqual([]);
 	});
 
-	it("returns a sorted list of grafcets and ladders", () => {
+	it("sorts by type first (ladder before grafcet), then by name", () => {
 		const mockState = {
 			project: {
 				grafcets: {
@@ -39,11 +39,11 @@ describe("useProjectPrograms", () => {
 		);
 
 		const { result } = renderHook(() => useProjectPrograms());
-		
+
 		expect(result.current).toEqual([
-			{ id: "g2", name: "Apple", type: "grafcet" },
 			{ id: "l2", name: "Banana", type: "ladder" },
 			{ id: "l1", name: "Mango", type: "ladder" },
+			{ id: "g2", name: "Apple", type: "grafcet" },
 			{ id: "g1", name: "Zebra", type: "grafcet" },
 		]);
 	});

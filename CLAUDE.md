@@ -121,6 +121,14 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   quand on tourne en rond (ex. plusieurs tentatives de correction d'un bug qui échouent) et
   qu'une vérification visuelle permettrait de sortir de la boucle.
 
+## Modification du schéma et migrations
+
+Toute modification de `src/schemas/` qui change la forme des données persistées (ajout/retrait/
+renommage de champ, changement de structure...) doit s'accompagner d'une migration dans
+`src/persistence/migrations/`. Avant d'en créer une, demander au développeur s'il faut modifier
+la dernière migration existante (par exemple si elle n'a pas encore été déployée en production)
+ou en créer une nouvelle version.
+
 ## Tests et bugs découverts en testant
 
 Si un test écrit pour vérifier un comportement révèle que le code source est en tort, ne pas

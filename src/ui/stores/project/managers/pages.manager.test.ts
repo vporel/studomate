@@ -1,12 +1,25 @@
 import { PageData, ProjectStoreState } from "../project.store";
 import PagesManager from "./pages.manager";
 
+const mockSetPagesSession = jest.fn();
+const mockSetActivePageIdInUrl = jest.fn();
+
+jest.mock("@/ui/lib/pages-session-storage", () => ({
+	setPagesSession: (...args: unknown[]) => mockSetPagesSession(...args),
+}));
+jest.mock("@/ui/lib/pages-url", () => ({
+	setActivePageIdInUrl: (...args: unknown[]) => mockSetActivePageIdInUrl(...args),
+}));
+
 /**
  * Ces tests tournent sans zustand ni React : le manager ne reçoit qu'un `get`/`set`.
  */
-function makeManager(initial: { pagesOrder?: string[]; pagesData?: Record<string, PageData>; activePageId?: string | null }) {
+function makeManager(
+	initial: { pagesOrder?: string[]; pagesData?: Record<string, PageData>; activePageId?: string | null },
+	projectId: string | null = "p1",
+) {
 	let state = {
-		project: {},
+		project: projectId ? { id: projectId } : null,
 		pagesOrder: initial.pagesOrder ?? [],
 		pagesData: initial.pagesData ?? {},
 		activePageId: initial.activePageId ?? null,
@@ -27,6 +40,8 @@ function page(id: string): PageData {
 }
 
 describe("PagesManager", () => {
+	afterEach(() => jest.clearAllMocks());
+
 	describe("openPage", () => {
 		it("ajoute la page en fin d'ordre et l'active", () => {
 			const { manager, getState } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
@@ -139,6 +154,52 @@ describe("PagesManager", () => {
 			const { manager } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
 
 			expect(() => manager.setActivePage("inexistante")).toThrow();
+		});
+	});
+
+	describe("persistance de la session (localStorage + URL)", () => {
+		it("openPage enregistre la session et pose activePage dans l'URL", () => {
+			const { manager } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
+
+			manager.openPage(page("b"));
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", { pagesOrder: ["a", "b"], activePageId: "b" });
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("b");
+		});
+
+		it("closePage enregistre la session même quand la page active ne change pas", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+			});
+
+			manager.closePage("b");
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", { pagesOrder: ["a"], activePageId: "a" });
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("a");
+		});
+
+		it("setActivePage enregistre la session", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+			});
+
+			manager.setActivePage("b");
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", { pagesOrder: ["a", "b"], activePageId: "b" });
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("b");
+		});
+
+		it("ne persiste rien sans projet ouvert", () => {
+			const { manager } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } }, null);
+
+			manager.closePage("a");
+
+			expect(mockSetPagesSession).not.toHaveBeenCalled();
+			expect(mockSetActivePageIdInUrl).not.toHaveBeenCalled();
 		});
 	});
 });

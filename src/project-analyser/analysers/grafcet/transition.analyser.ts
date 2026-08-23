@@ -1,10 +1,8 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import Variable from "@/schemas/variable/variable.schema";
 import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
-import { Environment } from "@/simulator/interpreter/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
@@ -15,6 +13,7 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Transition from "@/schemas/grafcet/transition.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import { buildEnvironmentCached } from "./build-environment.helper";
 
 export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 	/**
@@ -150,7 +149,7 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				const lexer = new Lexer(dialect);
 				const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
 				const node = parser.parse();
-				const env = new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
+				const env = buildEnvironmentCached(variables);
 				const semanticAnalyser = new SemanticAnalyserVisitor(env);
 				semanticAnalyser.visit(node);
 				//Folds constant sub-expressions to catch errors only detectable once computed (e.g.

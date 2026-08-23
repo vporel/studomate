@@ -5,6 +5,8 @@ import { useShallow } from "zustand/shallow";
 
 export type ProjectProgram = { id: string; name: string; type: "grafcet" | "ladder" };
 
+const PROGRAM_TYPE_ORDER: Record<ProjectProgram["type"], number> = { ladder: 0, grafcet: 1 };
+
 /**
  * Retourne la liste fusionnée et triée des grafcets et ladders du projet.
  *
@@ -37,5 +39,8 @@ export default function useProjectPrograms(): ProjectProgram[] {
 	return [
 		...grafcetsIds.map((id) => ({ id, name: grafcetsNames[id], type: "grafcet" as const })),
 		...laddersIds.map((id) => ({ id, name: laddersNames[id], type: "ladder" as const })),
-	].sort((a, b) => a.name.localeCompare(b.name));
+	].sort(
+		(a, b) =>
+			PROGRAM_TYPE_ORDER[a.type] - PROGRAM_TYPE_ORDER[b.type] || a.name.localeCompare(b.name),
+	);
 }

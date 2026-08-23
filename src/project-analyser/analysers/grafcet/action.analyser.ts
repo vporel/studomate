@@ -1,9 +1,7 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
-import { Environment } from "@/simulator/interpreter/environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
@@ -14,6 +12,7 @@ import Action, { ActionExecutionMode, ActionType } from "@/schemas/grafcet/actio
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import { buildEnvironmentCached } from "./build-environment.helper";
 
 export default class ActionAnalyser extends ElementAnalyser<Action> {
 	/**
@@ -154,7 +153,7 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 				action.getExpressionLines().forEach((line) => {
 					const parser = new Parser(lexer.tokenize(line));
 					const node = parser.parse();
-					const env = new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
+					const env = buildEnvironmentCached(variables);
 					const semanticAnalyser = new SemanticAnalyserVisitor(env, {
 						unauthorizedNodes: ["TIMER_BLOCK", "TIMER_STRING_DECLARATION"],
 					});

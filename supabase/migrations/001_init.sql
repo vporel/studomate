@@ -5,7 +5,8 @@
 -- l'application qui sait migrer une forme ancienne, jamais le SQL.
 
 create table if not exists projects (
-  id uuid primary key,
+  -- text, pas uuid : les ids de Studomate sont générés par nanoid (voir src/ids.ts), pas des UUID
+  id text primary key,
   owner_id uuid not null references auth.users(id) on delete cascade,
   data jsonb not null,
   updated_at timestamptz not null default now()

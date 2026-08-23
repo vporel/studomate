@@ -1,8 +1,11 @@
 /** @jest-environment jsdom */
 import { Dialect } from "@/expression-language/dialect.enum";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
+import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
 import { toast } from "react-toastify";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
+import { setPagesSession } from "@/ui/lib/pages-session-storage";
+import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { createProjectStore } from "./project.store";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
@@ -286,6 +289,67 @@ describe("createProjectStore", () => {
 			expect(result).toBe(true);
 			expect(store.getState().project?.id).toBe("known-id");
 			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+
+		describe("restauration des onglets ouverts", () => {
+			afterEach(() => {
+				window.history.replaceState(null, "", "/");
+			});
+
+			it("sans session ni URL, garde la page de démarrage par défaut", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "Author");
+				await store.getState().projectRepository.save(project);
+
+				await store.getState().openProject("p1");
+
+				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID]);
+				expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
+			});
+
+			it("rouvre les onglets et la page active mémorisés en session (localStorage)", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "Author");
+				const grafcet = new Grafcet("g1", "Mon grafcet", DEFAULT_GRAFCET_FORMAT);
+				project.addProgram(grafcet);
+				await store.getState().projectRepository.save(project);
+				setPagesSession("p1", { pagesOrder: [PROJECT_STARTUP_PAGE_ID, "g1"], activePageId: "g1" });
+
+				await store.getState().openProject("p1");
+
+				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID, "g1"]);
+				expect(store.getState().activePageId).toBe("g1");
+				expect(store.getState().pagesData["g1"]).toMatchObject({ type: "grafcet", title: "Mon grafcet" });
+			});
+
+			it("priorise la page active de l'URL (lien partagé) sur celle de la session", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "Author");
+				const grafcetA = new Grafcet("gA", "A", DEFAULT_GRAFCET_FORMAT);
+				const grafcetB = new Grafcet("gB", "B", DEFAULT_GRAFCET_FORMAT);
+				project.addProgram(grafcetA);
+				project.addProgram(grafcetB);
+				await store.getState().projectRepository.save(project);
+				setPagesSession("p1", { pagesOrder: ["gA", "gB"], activePageId: "gA" });
+				setActivePageIdInUrl("gB");
+
+				await store.getState().openProject("p1");
+
+				expect(store.getState().pagesOrder).toEqual(["gA", "gB"]);
+				expect(store.getState().activePageId).toBe("gB");
+			});
+
+			it("ignore les ids de session qui ne correspondent plus à rien et retombe sur la page de démarrage", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "Author");
+				await store.getState().projectRepository.save(project);
+				setPagesSession("p1", { pagesOrder: ["programme-supprime"], activePageId: "programme-supprime" });
+
+				await store.getState().openProject("p1");
+
+				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID]);
+				expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
+			});
 		});
 	});
 });

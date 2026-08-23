@@ -38,7 +38,7 @@ export default function ExportModal() {
 		} else if (choice === "grafcet" && activeScopeType === "grafcet" && activeScope) {
 			const grafcet = grafcetsManager.getProgramOrThrow(activeScope);
 			const fileName = `${grafcet.name}${dateSuffix}`;
-			exportGrafcet(activeScope, fileName, grafcet.format);
+			void exportGrafcet(activeScope, fileName, grafcet.format);
 		}
 		onClose();
 	}, [choice, onClose, grafcetsManager, activeScope, activeScopeType, projectStore, addDateToName]);

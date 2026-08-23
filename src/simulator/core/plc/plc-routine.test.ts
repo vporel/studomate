@@ -1,6 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
+import EnvVariable from "@/simulator/interpreter/environment/env-variable";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import PLC from "./plc";
 import PLCRoutine from "./plc-routine";
 import PLCVariable from "./plc-variable";
@@ -112,6 +114,45 @@ describe("PLCRoutine", () => {
 			const snapshot = plc.getVariablesSnapshot();
 			const resultVar = snapshot.find((v) => v.getName() === "result");
 			expect(resultVar?.getValue()).toBe(30); // (10 + 5) * 2
+		});
+	});
+
+	describe("execute", () => {
+		it("evaluates its nodes against the given environment, mutating it directly", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("result := x + 5");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const env = new Environment([
+				new EnvVariable("id1", "x", "number", "IN"),
+				new EnvVariable("id2", "result", "number", "OUT"),
+			]);
+			env.setVariableValueById("id1", 10);
+
+			routine.execute(env, 100);
+
+			expect(env.getVariableValueById("id2")).toBe(15);
+		});
+
+		it("lets a later routine see the writes of an earlier one sharing the same environment", () => {
+			const parse = (expression: string) =>
+				new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse();
+			const routine1 = new PLCRoutine([parse("temp := x + 5")]);
+			const routine2 = new PLCRoutine([parse("result := temp * 2")]);
+
+			const env = new Environment([
+				new EnvVariable("id1", "x", "number", "IN"),
+				new EnvVariable("id2", "result", "number", "OUT"),
+				new EnvVariable("id3", "temp", "number", "INOUT"),
+			]);
+			env.setVariableValueById("id1", 10);
+
+			routine1.execute(env, 100);
+			routine2.execute(env, 100);
+
+			expect(env.getVariableValueById("id2")).toBe(30); // (10 + 5) * 2
 		});
 	});
 

@@ -29,7 +29,7 @@ function makeGrafcet(
 		transitions: transitionsMap,
 		actions: new Map(),
 	};
-	const memos = new Map(stepsMemos.entries().map(([id, { node }]) => [id, node]));
+	const memos = new Map(Array.from(stepsMemos.entries()).map(([id, { node }]) => [id, node]));
 	return { preCompiledGrafcet, memos };
 }
 

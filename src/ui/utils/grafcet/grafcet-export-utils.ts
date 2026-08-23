@@ -1,7 +1,6 @@
 import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { downloadFromUrl } from "@/ui/lib/utils";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
-import domToImage from "dom-to-image";
 import { toast } from "react-toastify";
 
 /**
@@ -10,7 +9,8 @@ import { toast } from "react-toastify";
  * @param fileName
  * @param format
  */
-export const exportGrafcet = (grafcetId: string, fileName: string, format: GrafcetFormat) => {
+export const exportGrafcet = async (grafcetId: string, fileName: string, format: GrafcetFormat) => {
+	const domToImage = (await import("dom-to-image")).default;
 	const dimensions = getFlowDimensions(format);
 	// we calculate a transform for the nodes so that all nodes are visible
 	// we then overwrite the transform of the `.react-flow__viewport` element

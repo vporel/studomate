@@ -119,7 +119,7 @@ export default class SimulationManager {
 		Object.values(projectPreCompilationResult.result!.programs)
 			.filter(isPreCompiledGrafcet)
 			.forEach((g) =>
-				g.transitions.entries().forEach(([transitionId, transition]) => {
+				g.transitions.forEach((transition, transitionId) => {
 					//L'AST pré-compilé est déjà analysé et simplifié
 					watchedExpressions.set(transitionId, transition.node);
 				}),

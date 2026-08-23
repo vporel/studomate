@@ -46,6 +46,8 @@ export default class PLCVariable {
 	}
 
 	public copy(): PLCVariable {
-		return Object.assign(new PLCVariable("", "", "input", "boolean"), this);
+		const copy = new PLCVariable(this.id, this.name, this.scope, this.type);
+		copy.value = this.value;
+		return copy;
 	}
 }

@@ -1,3 +1,5 @@
+import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
 import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
@@ -124,7 +126,23 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	private executeProgram(): void {
-		this.program.forEach((routine) => routine.execute(this));
+		const plcVariablesSnapshot = this.getVariablesSnapshot();
+		const env = new Environment(plcVariablesSnapshot.map(PlcVariablesMapper.plcToEnv));
+		const deltaTimeMs = this.getClockIntervalMs();
+
+		for (const routine of this.program) {
+			routine.execute(env, deltaTimeMs);
+		}
+
+		for (const variable of plcVariablesSnapshot) {
+			const id = variable.getId();
+			const value = env.getVariableValueById(id);
+			if (variable.getScope() === "output") {
+				this.setOutputImageValueById(id, value);
+			} else if (variable.getScope() === "memory") {
+				this.setMemoryValueById(id, value);
+			}
+		}
 	}
 
 	private writeOutputs(): void {
