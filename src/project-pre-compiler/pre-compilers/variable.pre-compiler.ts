@@ -10,8 +10,8 @@ const ZONE_TO_SCOPE: Record<VariableZone, PLCVariableScope> = {
 };
 
 /**
- * Maps a project VariableType to a PLCVariableType.
- * Timer types (TON, TOFF, TP) are not directly simulatable as primitive values: undefined → skipped.
+ * Maps a project VariableType to a PLCVariableType. TIME est stockée en ms, native "number"
+ * (voir `VARIABLE_TYPE_TO_NATIVE_TYPE`) — même mapping que les autres types numériques.
  */
 const VARIABLE_TYPE_TO_PLC_TYPE: Partial<Record<VariableType, PLCVariableType>> = {
 	BOOL: "boolean",
@@ -21,12 +21,12 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<Record<VariableType, PLCVariableType>> 
 	DWORD: "number",
 	REAL: "number",
 	STRING: "string",
+	TIME: "number",
 };
 
 export default class VariableCompiler {
 	/**
 	 * Converts all project-level variables to PLCVariables.
-	 * Variables with unsupported types (TON, TOFF, TP) are silently skipped.
 	 */
 	static compile(variables: Variable[]): PLCVariable[] {
 		const result: PLCVariable[] = [];

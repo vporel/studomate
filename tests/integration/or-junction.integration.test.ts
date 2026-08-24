@@ -30,7 +30,7 @@ describe("OR Junction Integration Tests", () => {
 
 			expect(pipeline.analysis.issues).toHaveLength(0);
 			// X0, X1, X2 step variables
-			expect(pipeline.analysis.stepsVariables).toHaveLength(3);
+			expect(pipeline.analysis.generatedVariables).toHaveLength(3);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();

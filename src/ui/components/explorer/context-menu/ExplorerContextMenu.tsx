@@ -5,6 +5,7 @@ import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import mitt from "mitt";
 import { ExplorerContextMenuProps } from "./explorer-context-menu";
 import { ExplorerContextMenuEventsOut } from "./explorer-context-menu-events";
+import useBlockInstanceMenuItems from "./useBlockInstanceMenuItems";
 import useGrafcetMenuItems from "./useGrafcetMenuItems";
 import useLadderMenuItems from "./useLadderMenuItems";
 import usePaneMenuItems from "./usePaneMenuItems";
@@ -29,6 +30,7 @@ const ExplorerContextMenu = ({
 	const grafcetMenuItems = useGrafcetMenuItems();
 	const ladderMenuItems = useLadderMenuItems();
 	const variablesMenuItems = useVariablesMenuItems();
+	const blockInstanceMenuItems = useBlockInstanceMenuItems();
 
 	let menuItems: ContextMenuItemType[][] = [];
 	if (element.type == "pane") {
@@ -39,6 +41,8 @@ const ExplorerContextMenu = ({
 		menuItems = ladderMenuItems(element.ladderId);
 	} else if (element.type == "variables") {
 		menuItems = variablesMenuItems(element.variablesPageId);
+	} else if (element.type == "block-instance") {
+		menuItems = blockInstanceMenuItems(element.ladderId, element.elementId);
 	}
 
 	return (

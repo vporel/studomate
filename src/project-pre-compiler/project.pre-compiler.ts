@@ -1,4 +1,4 @@
-﻿import PLCVariable from "@/simulator/core/plc/plc-variable";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";

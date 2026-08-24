@@ -1,9 +1,12 @@
 import { Dialect } from "@/expression-language/dialect.enum";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
+import { parseTimeLiteral } from "@/expression-language/time-literal";
 import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
 import ProjectPreCompilerError, {
 	ProjectPreCompilerErrorSourceBuilder,
@@ -16,6 +19,7 @@ import { BLOCK_PORT_LABELS, BlockElement } from "@/schemas/ladder/block.schema";
 import Connection from "@/schemas/ladder/connection.schema";
 import Ladder, { LadderRole } from "@/schemas/ladder/ladder.schema";
 import { CoilMode, ContactElement, LadderElement } from "@/schemas/ladder/element.schema";
+import { getTimerBlockVariableMnemonics } from "@/schemas/function-blocks/timer.schema";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 
 export type PreCompiledCoilAssignment = {
@@ -39,7 +43,16 @@ export type PreCompiledBlockPortAssignment = {
 	value: ASTNode;
 };
 
-export type PreCompiledLadderAssignment = PreCompiledCoilAssignment | PreCompiledBlockPortAssignment;
+/** Un `TimerNode` par bloc `"timer"`, embarqué tel quel parmi les autres instructions (voir
+ * `LadderCompiler.compileAssignment`) : il est évalué pour ses effets de bord (écrit `lastInput`,
+ * `elapsedTime`/`ET` et `output`/`Q` dans l'environnement) exactement comme `TimerNodeEvaluator`
+ * le fait déjà côté GRAFCET. */
+export type PreCompiledTimerAssignment = { kind: "timer"; blockId: string; node: TimerNode };
+
+export type PreCompiledLadderAssignment =
+	| PreCompiledCoilAssignment
+	| PreCompiledBlockPortAssignment
+	| PreCompiledTimerAssignment;
 
 export type PreCompiledEdgeMemoUpdate = {
 	contactId: string;
@@ -61,9 +74,10 @@ export type PreCompiledBlockCall = {
 /**
  * Tout le pré-compilé d'un ladder : une affectation par bobine et par port de bloc (dans l'ordre
  * de lecture du réseau, voir `PreCompiledBlockPortAssignment`), une mise à jour de variable
- * mémoire par contact P/N, et un appel par bloc `"user-program"`. `role` voyage jusqu'au
- * compilateur, qui l'utilise pour savoir si ce ladder est le point d'entrée (le Main) ou un
- * ladder appelé.
+ * mémoire par contact P/N, un appel par bloc `"user-program"`, et un `TimerNode` par bloc
+ * `"timer"` (voir `buildTimerNode`) — évalué par `TimerNodeEvaluator` comme tout autre timer du
+ * projet (même mécanisme que côté GRAFCET). `role` voyage jusqu'au compilateur, qui l'utilise
+ * pour savoir si ce ladder est le point d'entrée (le Main) ou un ladder appelé.
  */
 export type PreCompiledLadder = {
 	type: "ladder";
@@ -71,6 +85,7 @@ export type PreCompiledLadder = {
 	assignments: PreCompiledLadderAssignment[];
 	edgeMemoUpdates: PreCompiledEdgeMemoUpdate[];
 	blockCalls: PreCompiledBlockCall[];
+	timers: TimerNode[];
 };
 
 /**
@@ -109,10 +124,14 @@ function buildContactExpressionNode(contact: ContactElement): ASTNode {
 			);
 }
 
-function buildBlockAssignments(
-	block: BlockElement,
-	reach: ASTNode | null,
-): { assignments: PreCompiledBlockPortAssignment[]; call: PreCompiledBlockCall; propagated: ASTNode } {
+type BuiltBlockAssignments = {
+	assignments: PreCompiledLadderAssignment[];
+	call: PreCompiledBlockCall | null;
+	propagated: ASTNode;
+};
+
+function buildUserProgramBlockAssignments(block: BlockElement, reach: ASTNode | null): BuiltBlockAssignments {
+	if (block.data.blockType !== "user-program") throw new Error("Bloc non user-program");
 	const ports = BLOCK_PORT_LABELS[block.data.blockType];
 	const enMnemonic = getBlockPortVariableMnemonic(block.id, ports.input);
 	const enoMnemonic = getBlockPortVariableMnemonic(block.id, ports.output);
@@ -126,12 +145,70 @@ function buildBlockAssignments(
 				value: reach ?? LiteralsBuilder.buildBooleanNode(true),
 			},
 			// ENO d'un appel de programme utilisateur vaut toujours vrai : le bloc ne bloque jamais
-			// le rail, seul EN gate l'appel (voir la conversation d'origine).
+			// le rail, seul EN gate l'appel.
 			{ kind: "blockPort", blockId: block.id, mnemonic: enoMnemonic, value: LiteralsBuilder.buildBooleanNode(true) },
 		],
 		call: { blockId: block.id, programId: block.data.params.programId, enMnemonic },
 		propagated: IdentifiersBuilder.buildIdentifierNode(enoMnemonic),
 	};
+}
+
+/** `pt` est soit une constante `T#...` (littéral en ms), soit le mnémonique d'une variable
+ * existante, dont la valeur est déjà en ms qu'elle soit TIME ou numérique. */
+function buildPresetTimeNode(pt: string): ASTNode {
+	const literalMs = parseTimeLiteral(pt);
+	if (literalMs !== null) return LiteralsBuilder.buildNumberNode(literalMs);
+	return IdentifiersBuilder.buildIdentifierNode(pt);
+}
+
+/**
+ * Un bloc `"timer"` n'appelle rien : il matérialise un `TimerNode` (voir `PreCompiledTimerAssignment`)
+ * référençant directement les variables générées à partir de sa config (`<Nom>.IN/.Q/.ET`, voir
+ * `createTimerBlockVariables`), plus une variable cachée pour la détection de front
+ * (`getBlockPortVariableMnemonic(block.id, "lastInput")`, générée par `LadderAnalyser`). Si la
+ * pinoche ET référence une variable, sa valeur y est recopiée juste après, dans le même ordre.
+ */
+function buildTimerBlockAssignments(block: BlockElement, reach: ASTNode | null): BuiltBlockAssignments {
+	if (block.data.blockType !== "timer") throw new Error("Bloc non timer");
+	const { name, timerType, pt, et } = block.data.params;
+	const mnemonics = getTimerBlockVariableMnemonics(name);
+	const lastInputMnemonic = getBlockPortVariableMnemonic(block.id, "lastInput");
+
+	const assignments: PreCompiledLadderAssignment[] = [
+		{
+			kind: "blockPort",
+			blockId: block.id,
+			mnemonic: mnemonics.IN,
+			value: reach ?? LiteralsBuilder.buildBooleanNode(true),
+		},
+		{
+			kind: "timer",
+			blockId: block.id,
+			node: BlocksBuilder.buildTimerNode(
+				timerType,
+				IdentifiersBuilder.buildIdentifierNode(mnemonics.IN),
+				IdentifiersBuilder.buildIdentifierNode(lastInputMnemonic),
+				buildPresetTimeNode(pt),
+				IdentifiersBuilder.buildIdentifierNode(mnemonics.ET),
+				IdentifiersBuilder.buildIdentifierNode(mnemonics.Q),
+			),
+		},
+	];
+	if (et) {
+		assignments.push({
+			kind: "blockPort",
+			blockId: block.id,
+			mnemonic: et,
+			value: IdentifiersBuilder.buildIdentifierNode(mnemonics.ET),
+		});
+	}
+
+	return { assignments, call: null, propagated: IdentifiersBuilder.buildIdentifierNode(mnemonics.Q) };
+}
+
+function buildBlockAssignments(block: BlockElement, reach: ASTNode | null): BuiltBlockAssignments {
+	if (block.data.blockType === "user-program") return buildUserProgramBlockAssignments(block, reach);
+	return buildTimerBlockAssignments(block, reach);
 }
 
 /**
@@ -225,6 +302,10 @@ export default class LadderPreCompiler {
 			}
 		}
 
-		return { type: "ladder", role: ladder.role, assignments, edgeMemoUpdates, blockCalls };
+		const timers = assignments
+			.filter((assignment): assignment is PreCompiledTimerAssignment => assignment.kind === "timer")
+			.map((assignment) => assignment.node);
+
+		return { type: "ladder", role: ladder.role, assignments, edgeMemoUpdates, blockCalls, timers };
 	}
 }

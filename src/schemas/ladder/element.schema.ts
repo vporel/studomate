@@ -1,4 +1,6 @@
 import { createRandomId } from "@/ids";
+import { getBlockHeightInCells } from "../function-blocks/function-block.schema";
+import { TIMER_PORT_SPECS } from "../function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
 import { BlockElement } from "./block.schema";
 
@@ -54,6 +56,19 @@ export const LADDER_ELEMENT_WIDTHS: Record<LadderElementKind, number> = {
 
 export function getElementWidth(element: LadderElement): number {
 	return LADDER_ELEMENT_WIDTHS[element.type];
+}
+
+/**
+ * Hauteur en cellules de grille (entière — la grille ne réserve qu'en cellules pleines, voir
+ * `getBlockHeightInCells`) — 1 pour tous sauf un bloc dont la famille a plus d'une ligne de pins :
+ * un bloc timer, par exemple, en occupe 2 (IN/Q sur la première ligne, PT/ET sur la seconde,
+ * décalée d'un demi-cellule seulement — voir `BlockNode`). Pas de table `LADDER_ELEMENT_HEIGHTS`
+ * comme pour la largeur : la hauteur dépend des ports propres à la famille du bloc, pas seulement
+ * du genre d'élément.
+ */
+export function getElementHeight(element: LadderElement): number {
+	if (element.type === "block" && element.data.blockType === "timer") return getBlockHeightInCells(TIMER_PORT_SPECS);
+	return 1;
 }
 
 export function createContactElement(variable: string, mode: ContactMode, row: number, col: number): ContactElement {

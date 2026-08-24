@@ -4,6 +4,7 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import LadderElementAnalyser from "./element.analyser";
+import TimerBlockAnalyser from "./timer-block.analyser";
 
 export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 	analyseIsolated(_element: BlockElement): ProjectAnalyserIssue[] {
@@ -13,10 +14,14 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 	analyseInContext(
 		element: BlockElement,
 		ladder: Ladder,
-		_variablesByMnemonic: Map<string, Variable>,
+		variablesByMnemonic: Map<string, Variable>,
 		project: Project,
 	): ProjectAnalyserIssue[] {
 		const source = { sourceType: "ladder-block", sourceId: element.id, parentId: ladder.id } as const;
+		if (element.data.blockType === "timer") {
+			return TimerBlockAnalyser.analyse(element, source, variablesByMnemonic);
+		}
+		if (element.data.blockType !== "user-program") return [];
 		const { programId } = element.data.params;
 		const issues: ProjectAnalyserIssue[] = [];
 
@@ -56,7 +61,7 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 
 		const duplicateCount = ladder
 			.getAllElements()
-			.filter((el) => el.type === "block" && el.data.params.programId === programId).length;
+			.filter((el) => el.type === "block" && el.data.blockType === "user-program" && el.data.params.programId === programId).length;
 		if (duplicateCount > 1) {
 			issues.push(
 				new ProjectAnalyserIssue(

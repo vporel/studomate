@@ -39,8 +39,8 @@ describe("Multi-Grafcet Integration Tests", () => {
 
 			expect(pipeline.analysis.issues).toEqual([]);
 			// 4 step variables: X0, X1 (G1) + X10, X11 (G2)
-			expect(pipeline.analysis.stepsVariables).toHaveLength(4);
-			expect(pipeline.analysis.stepsVariables.map((v) => v.mnemonic)).toEqual(
+			expect(pipeline.analysis.generatedVariables).toHaveLength(4);
+			expect(pipeline.analysis.generatedVariables.map((v) => v.mnemonic)).toEqual(
 				expect.arrayContaining(["X0", "X1", "X10", "X11"]),
 			);
 			expect(pipeline.preCompilation.errors).toEqual([]);
@@ -57,7 +57,7 @@ describe("Multi-Grafcet Integration Tests", () => {
 			const project = ProjectFactory.create([], [g1, g2]);
 			const pipeline = compilePipelineDetailed(project);
 
-			const mnemonics = pipeline.analysis.stepsVariables.map((v) => v.mnemonic);
+			const mnemonics = pipeline.analysis.generatedVariables.map((v) => v.mnemonic);
 			// No duplicates across grafcets
 			expect(new Set(mnemonics).size).toBe(mnemonics.length);
 		});

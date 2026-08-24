@@ -98,7 +98,8 @@ export default class CopyCutPasteManager {
 		const flowPos = rfInstance.screenToFlowPosition({ x: mousePosition.x, y: mousePosition.y });
 		
 		// Convertir en cellule de départ
-		const startRow = Math.max(0, Math.floor(yToRow(flowPos.y)));
+		const { rowHeightsInCells } = computeSectionLayout(section);
+		const startRow = Math.max(0, Math.floor(yToRow(flowPos.y, rowHeightsInCells)));
 		const startCol = Math.max(0, Math.floor(xToCol(flowPos.x)));
 
 		// Bounding box des éléments copiés

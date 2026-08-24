@@ -6,10 +6,11 @@ import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector, { VariableSelectorHandle } from "@/ui/components/variables/VariableSelector";
 import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH } from "@/ui/utils/ladder/ladder-flow-builder";
-import { Box, useTheme, alpha } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { useRef } from "react";
 import CoilSymbol from "./CoilSymbol";
+import { getHighlightOverlaySx } from "./node-highlight";
 
 export type CoilNodeData = { variable: string; mode: CoilMode };
 export type CoilNodeType = Node<CoilNodeData> & { type: "coil" };
@@ -50,27 +51,7 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 				alignItems: "center",
 				justifyContent: "center",
 				position: "relative",
-				...(highlighted
-					? {
-							"&::before": {
-								content: '""',
-								position: "absolute",
-								top: "12px",
-								left: "0",
-								right: "0",
-								bottom: "12px",
-								border: "4px solid",
-								borderColor: th.palette.primary.main,
-								borderRadius: "4px",
-								animation: "ladder-node-blink 1s infinite linear",
-							},
-							"@keyframes ladder-node-blink": {
-								"0%": { borderColor: th.palette.primary.main },
-								"50%": { borderColor: alpha(th.palette.primary.main, 0.25) },
-								"100%": { borderColor: th.palette.primary.main },
-							},
-						}
-					: {}),
+				...getHighlightOverlaySx(highlighted, th),
 			}}
 		>
 			<Handle id="target" type="target" position={Position.Left} />

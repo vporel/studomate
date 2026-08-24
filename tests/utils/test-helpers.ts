@@ -23,7 +23,7 @@ export function compileProject(project: Project, dialect: Dialect = Dialect.FR):
 
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
-		analysisResult.stepsVariables,
+		analysisResult.generatedVariables,
 		dialect,
 	);
 	if (preCompilationResult.errors.length > 0 || !preCompilationResult.result) {
@@ -45,7 +45,7 @@ export function compilePipelineDetailed(project: Project, dialect: Dialect = Dia
 	const analysisResult = ProjectAnalyser.analyse(project);
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
-		analysisResult.stepsVariables,
+		analysisResult.generatedVariables,
 		dialect,
 	);
 	const compilationResult = preCompilationResult.result

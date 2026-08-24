@@ -15,6 +15,7 @@ function setup({
 	variables = [] as Variable[],
 	typeFilter,
 	excludeDirection,
+	acceptsTimeLiteral,
 	cols,
 	onCommit = jest.fn(),
 	ref,
@@ -23,6 +24,7 @@ function setup({
 	variables?: Variable[];
 	typeFilter?: Variable["type"][];
 	excludeDirection?: "IN" | "OUT" | "INOUT";
+	acceptsTimeLiteral?: boolean;
 	cols?: ("address" | "mnemonic" | "type" | "scope")[];
 	onCommit?: (next: string) => void;
 	ref?: React.Ref<VariableSelectorHandle>;
@@ -37,6 +39,7 @@ function setup({
 			onCommit={onCommit}
 			typeFilter={typeFilter}
 			excludeDirection={excludeDirection}
+			acceptsTimeLiteral={acceptsTimeLiteral}
 			cols={cols}
 			ref={ref}
 		/>,
@@ -87,6 +90,16 @@ describe("VariableSelector — statut affiché", () => {
 		});
 		expect(input()).toHaveAttribute("data-variable-status", "ok");
 	});
+
+	it("ok : une constante TIME (T#...) n'est jamais signalée non déclarée, si acceptsTimeLiteral", () => {
+		setup({ value: "T#5s", variables: [], acceptsTimeLiteral: true });
+		expect(input()).toHaveAttribute("data-variable-status", "ok");
+	});
+
+	it("undeclared : une constante TIME reste non déclarée sans acceptsTimeLiteral", () => {
+		setup({ value: "T#5s", variables: [] });
+		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
+	});
 });
 
 describe("VariableSelector — suggestions", () => {
@@ -103,6 +116,18 @@ describe("VariableSelector — suggestions", () => {
 		expect(screen.getByText("Bonne")).toBeInTheDocument();
 		expect(screen.queryByText("MauvaisType")).not.toBeInTheDocument();
 		expect(screen.queryByText("MauvaiseDirection")).not.toBeInTheDocument();
+	});
+
+	it("n'affiche aucun popup de suggestions quand rien ne correspond au texte saisi", () => {
+		const variables = [new Variable("v1", "Bonne", "memory", "BOOL")];
+		setup({ value: "", variables });
+
+		fireEvent.focus(input());
+		expect(screen.getByText("Bonne")).toBeInTheDocument();
+
+		fireEvent.change(input(), { target: { value: "T#5s" } });
+		expect(screen.queryByText("Bonne")).not.toBeInTheDocument();
+		expect(screen.queryByText("Mnémonique")).not.toBeInTheDocument();
 	});
 });
 

@@ -5,6 +5,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Box, Divider, IconButton, Typography } from "@mui/material";
 import { useCallback } from "react";
 import { useProjectStore } from "../ProjectContext";
+import useGotoProgram from "../useGotoProgram";
 
 function Header({ onClose }: { onClose: () => void }) {
 	return (
@@ -26,9 +27,6 @@ export default function AnalysisResult() {
 	const analysisWarnings = useProjectStore((s) => s.analysisWarnings);
 
 	const project = useProjectStore((s) => s.project);
-	const grafcetsManager = useProjectStore((s) => s.grafcetsManager);
-	const laddersManager = useProjectStore((s) => s.laddersManager);
-	const pagesManager = useProjectStore((s) => s.pagesManager);
 
 	// `project.getGrafcet`/`getLadder` sont nullable (contrairement aux méthodes homonymes des
 	// managers, qui lèvent) : un id de programme absent (grafcet supprimé entre-temps, etc.) ne
@@ -62,28 +60,7 @@ export default function AnalysisResult() {
 		setAnalysisResultVisible(false);
 	};
 
-	const onGotoProgram = useCallback(
-		(programId: string, programType: "grafcet" | "ladder", elementId?: string) => {
-			const name = programType === "grafcet" ? getGrafcetName(programId) : getLadderName(programId);
-			pagesManager.openPage({
-				type: programType,
-				id: programId,
-				title: name,
-			});
-
-			if (elementId) {
-				setTimeout(() => {
-					const managers =
-						programType === "grafcet"
-							? grafcetsManager.getActiveStoreManagers()
-							: laddersManager.getActiveStoreManagers();
-					if (!managers) return;
-					managers.viewManager.temporarilyHighlightNodesAndEdges([elementId], [], 3000);
-				}, 100);
-			}
-		},
-		[getGrafcetName, getLadderName, grafcetsManager, laddersManager, pagesManager],
-	);
+	const onGotoProgram = useGotoProgram();
 
 	if (!analysisResultVisible) return null;
 

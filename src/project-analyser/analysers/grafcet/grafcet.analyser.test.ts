@@ -7,6 +7,8 @@ import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import GrafcetAnalyser, { getStepVariableId, getStepVariableMnemonic } from "./grafcet.analyser";
 
 describe("GrafcetAnalyser", () => {
+	const grafcetAnalyser = new GrafcetAnalyser();
+
 	describe("getStepVariableId", () => {
 		it("generates step variable ID", () => {
 			const id = getStepVariableId("grafcet-1", 5);
@@ -38,7 +40,7 @@ describe("GrafcetAnalyser", () => {
 			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step, step2).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const errors = result.issues.filter((i) => i.severity === "error");
 			// Step will have errors about no predecessor/successor, but no grafcet-level errors
@@ -50,7 +52,7 @@ describe("GrafcetAnalyser", () => {
 			const step = new StepBuilder().id("step-1").number(1).initial(false).position(0, 0).build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const initialStepError = result.issues.find(
 				(issue) => issue.source.sourceType === "grafcet" && issue.message.includes("étape initiale"),
@@ -69,7 +71,7 @@ describe("GrafcetAnalyser", () => {
 				.addSteps(step1, step2, step3)
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.stepsVariables).toHaveLength(3);
 			expect(result.stepsVariables[0].mnemonic).toBe("X1");
@@ -93,7 +95,7 @@ describe("GrafcetAnalyser", () => {
 				.addSteps(step1, step2, step3)
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.stepsVariables).toHaveLength(0);
 		});
@@ -108,7 +110,7 @@ describe("GrafcetAnalyser", () => {
 				.addSteps(step1, step2, step3)
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			// Only one X1 variable despite 3 steps with number 1
 			expect(result.stepsVariables).toHaveLength(1);
@@ -119,7 +121,7 @@ describe("GrafcetAnalyser", () => {
 			const step = new StepBuilder().id("step-1").number("").initial().position(0, 0).build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const elementIssues = result.issues.filter((i) => i.source.sourceType !== "grafcet");
 			expect(elementIssues.length).toBeGreaterThan(0);
@@ -138,7 +140,7 @@ describe("GrafcetAnalyser", () => {
 				.addTransition(transition)
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			// Should have issues from both step and transition
 			const stepIssues = result.issues.filter((i) => i.source.sourceType === "grafcet-step");
@@ -167,7 +169,7 @@ describe("GrafcetAnalyser", () => {
 				.addVariable(projectVar)
 				.build();
 			// This should not throw - analysers receive both project vars and step vars
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result).toBeDefined();
 		});
@@ -189,7 +191,7 @@ describe("GrafcetAnalyser", () => {
 				.addVariable(conflictingVar)
 				.build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const conflictIssue = result.issues.find((i) => i.code === "GRAFCET_STEP_VARIABLE_NAME_CONFLICT");
 			expect(conflictIssue).toBeDefined();
@@ -214,7 +216,7 @@ describe("GrafcetAnalyser", () => {
 				.addVariable(projectVar)
 				.build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.issues.find((i) => i.code === "GRAFCET_STEP_VARIABLE_NAME_CONFLICT")).toBeUndefined();
 		});
@@ -222,7 +224,7 @@ describe("GrafcetAnalyser", () => {
 		it("handles empty grafcet", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.stepsVariables).toEqual([]);
 			// Should have error about missing initial step
@@ -236,7 +238,7 @@ describe("GrafcetAnalyser", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addSteps(step1, step2).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const initialStepError = result.issues.find((i) => i.message.includes("étape initiale"));
 			expect(initialStepError).toBeDefined();
@@ -267,7 +269,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const connectivityError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
@@ -326,7 +328,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const unreachableError = result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS");
 			expect(unreachableError).toBeDefined();
@@ -384,7 +386,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const deadEndWarning = result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS");
 			expect(deadEndWarning).toBeDefined();
@@ -418,7 +420,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS")).toBeUndefined();
 			expect(result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS")).toBeUndefined();
@@ -460,7 +462,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			expect(result.issues.find((i) => i.code === "GRAFCET_DEAD_END_STEPS")).toBeUndefined();
 			expect(result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS")).toBeUndefined();
@@ -504,7 +506,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const connectivityError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
@@ -519,7 +521,7 @@ describe("GrafcetAnalyser", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step1).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const connectivityError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("réseaux non connectés"),
@@ -550,7 +552,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const connectionTypeError = result.issues.find(
 				(i) => i.code === "GRAFCET_CONNECTION_INVALID_TYPE" || i.code === "GRAFCET_CONNECTION_DANGLING_ELEMENT",
@@ -575,7 +577,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const connectionTypeError = result.issues.find((i) => i.code === "GRAFCET_CONNECTION_INVALID_TYPE");
 			expect(connectionTypeError).toBeDefined();
@@ -599,7 +601,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const danglingError = result.issues.find((i) => i.code === "GRAFCET_CONNECTION_DANGLING_ELEMENT");
 			expect(danglingError).toBeDefined();
@@ -610,7 +612,7 @@ describe("GrafcetAnalyser", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const twoStepsError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
@@ -625,7 +627,7 @@ describe("GrafcetAnalyser", () => {
 			const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").addStep(step1).build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const twoStepsError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
@@ -645,12 +647,25 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
 
-			const result = GrafcetAnalyser.analyse(grafcet, project);
+			const result = grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]);
 
 			const twoStepsError = result.issues.find(
 				(i) => i.source.sourceType === "grafcet" && i.message.includes("au moins deux étapes"),
 			);
 			expect(twoStepsError).toBeUndefined();
+		});
+	});
+
+	describe("generateVariables", () => {
+		it("renvoie exactement ce que analyse() retourne dans stepsVariables", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
+			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const grafcet = new GrafcetBuilder().id("grafcet-1").name("G").addSteps(step1, step2).build();
+			const project = new ProjectBuilder().id("project-1").name("Test").author("Author").build();
+
+			expect(grafcetAnalyser.generateVariables(grafcet)).toEqual(
+				grafcetAnalyser.analyse(grafcet, project, [...project.variables, ...grafcetAnalyser.generateVariables(grafcet)]).stepsVariables,
+			);
 		});
 	});
 });

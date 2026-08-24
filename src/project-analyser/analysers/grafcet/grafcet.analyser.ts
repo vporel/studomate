@@ -3,12 +3,14 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import ConnectionsValidator from "@/schemas/grafcet/validators/connections.validator";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
+import ProgramAnalyser from "@/project-analyser/program.analyser";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import ElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {
 	issues: ProjectAnalyserIssue[];
 	stepsVariables: Variable[];
+	analysedElementsCount: number;
 };
 
 export function getStepVariableId(grafcetId: string, stepNumber: number): string {
@@ -19,13 +21,28 @@ export function getStepVariableMnemonic(stepNumber: number): string {
 	return StepHelper.getStepVariableMnemonic(stepNumber);
 }
 
-export default class GrafcetAnalyser {
+export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
+	/**
+	 * Les variables d'étape synthétiques générées par ce grafcet (`X{n}`) — voir
+	 * `ProgramAnalyser.generateVariables`. Pur, ne dépend que du grafcet : `ProjectAnalyser`
+	 * l'appelle pour TOUS les programmes avant d'analyser quiconque, pour que chaque programme
+	 * puisse voir ce que les autres génèrent.
+	 */
+	generateVariables(grafcet: Grafcet): Variable[] {
+		return this.buildstepsVariables(grafcet);
+	}
+
 	/**
 	 * Runs all isolated and contextual rules on every element of the grafcet.
+	 *
+	 * `allVariables` : l'ensemble complet à résoudre — `project.variables` plus les variables
+	 * générées par TOUS les programmes du projet, y compris ce grafcet (voir
+	 * `ProgramAnalyser.analyse`/`generateVariables`).
 	 */
-	static analyse(grafcet: Grafcet, project: Project): GrafcetAnalysisResult {
-		const stepsVariables = this.buildstepsVariables(grafcet);
-		const allVariables = [...project.variables, ...stepsVariables];
+	analyse(grafcet: Grafcet, project: Project, allVariables: Variable[]): GrafcetAnalysisResult {
+		// Propre à ce grafcet, indépendant de `allVariables` : sert au conflit de nom
+		// (`checkStepVariableNameConflicts`) et reste exposé dans le résultat.
+		const stepsVariables = this.generateVariables(grafcet);
 		const elementsIssues = grafcet
 			.getAllElements()
 			.flatMap((element) => {
@@ -56,7 +73,58 @@ export default class GrafcetAnalyser {
 		return {
 			issues,
 			stepsVariables,
+			analysedElementsCount: grafcet.getAllElements().length,
 		};
+	}
+
+	/**
+	 * Cross-grafcet rule: a step number must be unique across all grafcets of a project. Statique
+	 * (et pas une méthode d'instance) : porte sur l'ensemble des programmes du projet, pas sur un
+	 * seul grafcet — appelée une fois par `ProjectAnalyser`, pas par grafcet.
+	 *
+	 * Uses the already-computed generatedVariablesByProgram (one mnemonic = one valid unique
+	 * number per grafcet), filtré aux seuls grafcets du projet (le même map contient aussi les
+	 * variables générées par les ladders). Detection: total mnemonic count vs Set size — if they
+	 * differ, duplicates exist across grafcets. Emits one project-level issue per duplicated
+	 * number, listing the involved grafcet names.
+	 */
+	static checkDuplicateStepNumbers(
+		generatedVariablesByProgram: Map<string, Variable[]>,
+		project: Project,
+	): ProjectAnalyserIssue[] {
+		const grafcetVariablesByProgram = new Map(
+			[...generatedVariablesByProgram].filter(([programId]) => project.getGrafcet(programId) !== undefined),
+		);
+		const allMnemonics = [...grafcetVariablesByProgram.values()].flatMap((vars) => vars.map((v) => v.mnemonic));
+
+		// Quick exit: no cross-grafcet duplicates
+		if (new Set(allMnemonics).size === allMnemonics.length) return [];
+
+		// Build mnemonic → grafcet names mapping
+		const mnemonicToGrafcetNames = new Map<string, string[]>();
+		for (const [grafcetId, vars] of grafcetVariablesByProgram) {
+			const grafcetName = project.getProgram(grafcetId)?.name ?? grafcetId;
+			for (const variable of vars) {
+				if (!mnemonicToGrafcetNames.has(variable.mnemonic)) mnemonicToGrafcetNames.set(variable.mnemonic, []);
+				mnemonicToGrafcetNames.get(variable.mnemonic)!.push(grafcetName);
+			}
+		}
+
+		const issues: ProjectAnalyserIssue[] = [];
+		for (const [mnemonic, grafcetNames] of mnemonicToGrafcetNames) {
+			if (grafcetNames.length < 2) continue;
+			const stepNumber = parseInt(mnemonic.slice(1)); // X{n} → n
+			const names = grafcetNames.map((n) => `"${n}"`).join(", ");
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+					{ sourceType: "project", sourceId: project.id },
+					`Le numéro d'étape ${stepNumber} est utilisé dans plusieurs grafcets du projet : ${names}. Chaque numéro d'étape doit être unique à l'échelle du projet.`,
+				),
+			);
+		}
+		return issues;
 	}
 
 	/**
@@ -64,7 +132,7 @@ export default class GrafcetAnalyser {
 	 * Mnemonic: X{stepNumber} — deduplicated by mnemonic so duplicate-number errors
 	 * don't produce duplicate variables.
 	 */
-	private static buildstepsVariables(grafcet: Grafcet): Variable[] {
+	private buildstepsVariables(grafcet: Grafcet): Variable[] {
 		const seen = new Set<number>();
 		const variables: Variable[] = [];
 
@@ -88,7 +156,7 @@ export default class GrafcetAnalyser {
 	 * (`TRANSITION_TIMER_NAME_CONFLICT`). An unchecked collision here silently shadows one of
 	 * the two variables in every expression of the grafcet.
 	 */
-	private static checkStepVariableNameConflicts(
+	private checkStepVariableNameConflicts(
 		grafcet: Grafcet,
 		project: Project,
 		stepsVariables: Variable[],
@@ -107,7 +175,7 @@ export default class GrafcetAnalyser {
 			);
 	}
 
-	private static checkAtLeastTwoSteps(grafcet: Grafcet): ProjectAnalyserIssue[] {
+	private checkAtLeastTwoSteps(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (grafcet.steps.length < 2) {
 			return [
 				new ProjectAnalyserIssue(
@@ -131,7 +199,7 @@ export default class GrafcetAnalyser {
 	 * utilisateur (section Grafcet › Étapes). Cette règle doit catcher les deux cas (zéro et
 	 * plusieurs) à l'analyse, pour que l'erreur ne fuite jamais jusqu'à la compilation.
 	 */
-	private static checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
+	private checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		const initialStepsCount = grafcet.steps.filter((s) => s.data.initial === true).length;
 		if (initialStepsCount === 0) {
 			return [
@@ -162,7 +230,7 @@ export default class GrafcetAnalyser {
 	 * coexist inside the same grafcet, which is not allowed.
 	 * Elements with no connections are ignored (already reported by element analysers).
 	 */
-	private static checkConnectedComponents(grafcet: Grafcet): ProjectAnalyserIssue[] {
+	private checkConnectedComponents(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (grafcet.connections.length === 0) return [];
 
 		// Build undirected adjacency map from connections
@@ -209,7 +277,7 @@ export default class GrafcetAnalyser {
 	 * n'est sinon appelé qu'au tracé à la souris (`GrafcetFlow.tsx`) : un grafcet importé,
 	 * migré ou construit par script n'est donc jamais revalidé sans cette règle.
 	 */
-	private static checkConnectionTypes(grafcet: Grafcet): ProjectAnalyserIssue[] {
+	private checkConnectionTypes(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet" as const, sourceId: grafcet.id };
 
@@ -257,7 +325,7 @@ export default class GrafcetAnalyser {
 	 * or branches with no directed path back to any cycle (permanent dead end once entered).
 	 * Both need a directed traversal to detect.
 	 */
-	private static checkDirectedReachability(grafcet: Grafcet): ProjectAnalyserIssue[] {
+	private checkDirectedReachability(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (grafcet.connections.length === 0) return [];
 		const initialStepIds = grafcet.steps.filter((s) => s.data.initial === true).map((s) => s.id);
 		if (initialStepIds.length === 0) return []; // Already reported by checkInitialStep
@@ -332,7 +400,7 @@ export default class GrafcetAnalyser {
 	 * Breadth-first traversal of a directed adjacency map, starting from the given node ids.
 	 * Returns the set of visited nodes (including the start ids).
 	 */
-	private static bfs(startIds: string[], adjacency: Map<string, Set<string>>): Set<string> {
+	private bfs(startIds: string[], adjacency: Map<string, Set<string>>): Set<string> {
 		const visited = new Set<string>(startIds);
 		const queue = [...startIds];
 		while (queue.length > 0) {

@@ -87,7 +87,7 @@ export default class SimulationManager {
 		//Pre compile the project
 		const projectPreCompilationResult = ProjectPreCompiler.preCompile(
 			project,
-			projectAnalysisResult.stepsVariables,
+			projectAnalysisResult.generatedVariables,
 			project.dialect,
 		);
 		if (projectPreCompilationResult.errors.length > 0) {

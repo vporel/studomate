@@ -27,6 +27,18 @@ describe("Variable", () => {
 		it("accepte un mnémonique valide avec underscore et chiffres", () => {
 			expect(Variable.validateMnemonic("A_1")).toEqual([]);
 		});
+
+		it("rejette un point sans ownerBlock", () => {
+			expect(Variable.validateMnemonic("Tempo1.IN")).not.toEqual([]);
+		});
+
+		it("accepte un seul point avec ownerBlock", () => {
+			expect(Variable.validateMnemonic("Tempo1.IN", true)).toEqual([]);
+		});
+
+		it("rejette deux points avec ownerBlock", () => {
+			expect(Variable.validateMnemonic("Tempo1.IN.PT", true)).not.toEqual([]);
+		});
 	});
 
 	describe("validateAddress", () => {
@@ -147,6 +159,24 @@ describe("Variable", () => {
 
 		it("rejette un type incompatible avec les zones fournies", () => {
 			expect(Variable.validateType("INT", ["logic-input"])).not.toEqual([]);
+		});
+
+		it("accepte TIME uniquement en zone memory", () => {
+			expect(Variable.validateType("TIME", ["memory"])).toEqual([]);
+			expect(Variable.validateType("TIME", ["logic-input"])).not.toEqual([]);
+		});
+	});
+
+	describe("ownerBlock", () => {
+		it("crée une variable de bloc avec un mnémonique pointé", () => {
+			const variable = new Variable("id", "Tempo1.PT", "memory", "TIME", { id: "block1" });
+			expect(variable.ownerBlock).toEqual({ id: "block1" });
+			expect(variable.type).toBe("TIME");
+		});
+
+		it("n'a pas d'ownerBlock par défaut", () => {
+			const variable = new Variable("id", "M", "memory", "BOOL");
+			expect(variable.ownerBlock).toBeUndefined();
 		});
 	});
 });

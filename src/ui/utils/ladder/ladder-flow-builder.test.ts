@@ -1,13 +1,18 @@
 import Connection from "@/schemas/ladder/connection.schema";
-import { createCoilElement, createContactElement } from "@/schemas/ladder/element.schema";
+import { createCoilElement, createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
 import Section from "@/schemas/ladder/section.schema";
 import {
 	buildTargetEdges,
 	buildTargetNodes,
 	colToX,
+	computeRowHeightsInCells,
 	computeSectionLayout,
+	GRID_CELL_HEIGHT,
 	LADDER_CONNECTION_EDGE_TYPE,
+	LADDER_FLOW_TOP_OFFSET,
 	rowToY,
+	yToRow,
 } from "./ladder-flow-builder";
 
 describe("buildTargetNodes / buildTargetEdges", () => {
@@ -66,6 +71,50 @@ describe("buildTargetNodes / buildTargetEdges", () => {
 		const nodeA = nodes.find((n) => n.id === contactA.id)!;
 		const nodeB = nodes.find((n) => n.id === contactB.id)!;
 		expect(nodeA.position.y).not.toBe(nodeB.position.y);
+	});
+});
+
+describe("hauteur de ligne variable (bloc timer)", () => {
+	function sectionWithTimerAtRow0AndCoilAtRow1(): Section {
+		const section = new Section("s1", "Section 1");
+		const rail0 = createRailTerminalElement(0);
+		const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
+		const rail1 = createRailTerminalElement(1);
+		const coil = createCoilElement("Q1", "normal", 1, 0);
+		section.elements = [rail0, block, rail1, coil];
+		return section;
+	}
+
+	it("computeRowHeightsInCells vaut 2 pour la ligne d'un bloc timer, 1 ailleurs", () => {
+		const section = sectionWithTimerAtRow0AndCoilAtRow1();
+
+		const heights = computeRowHeightsInCells(section);
+
+		expect(heights.get(0)).toBe(2);
+		expect(heights.get(1)).toBe(1);
+	});
+
+	it("rowToY pousse la ligne suivante de 2 cellules quand la précédente contient un bloc timer", () => {
+		const heights = computeRowHeightsInCells(sectionWithTimerAtRow0AndCoilAtRow1());
+
+		expect(rowToY(0, heights)).toBe(LADDER_FLOW_TOP_OFFSET);
+		expect(rowToY(1, heights)).toBe(LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT);
+	});
+
+	it("yToRow reconnaît la ligne 1 même déplacée par la hauteur de la ligne 0", () => {
+		const heights = computeRowHeightsInCells(sectionWithTimerAtRow0AndCoilAtRow1());
+
+		const yOfRow1 = LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT + 5;
+		expect(Math.floor(yToRow(yOfRow1, heights))).toBe(1);
+	});
+
+	it("buildTargetNodes positionne la ligne 1 plus bas quand la ligne 0 contient un bloc timer", () => {
+		const section = sectionWithTimerAtRow0AndCoilAtRow1();
+
+		const nodes = buildTargetNodes(section);
+		const coilNode = nodes.find((n) => n.type === "coil")!;
+
+		expect(coilNode.position.y).toBe(LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT);
 	});
 });
 

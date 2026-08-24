@@ -1,5 +1,6 @@
 "use client";
 
+import { isTimeLiteral } from "@/expression-language/time-literal";
 import Variable, { VariableDirection, VariableType } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { Autocomplete, Box, Paper, PaperProps, SxProps, TextField, Theme, useTheme } from "@mui/material";
@@ -73,9 +74,13 @@ function computeStatus(
 	variables: { mnemonic: string; type: VariableType; getDirection(): VariableDirection }[],
 	typeFilter?: VariableType[],
 	excludeDirection?: VariableDirection,
+	acceptsTimeLiteral?: boolean,
 ): SelectorStatus {
 	const trimmed = mnemonic.trim();
 	if (!trimmed) return null;
+	// Une constante TIME (`T#...`) n'est jamais une variable déclarée — sa validité de format
+	// est du ressort de l'analyseur (`TimerBlockAnalyser`), pas de ce composant.
+	if (acceptsTimeLiteral && isTimeLiteral(trimmed)) return "ok";
 	const match = variables.find((v) => v.mnemonic === trimmed);
 	if (!match) return "undeclared";
 	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
@@ -91,12 +96,17 @@ interface VariableSelectorProps {
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
 	 * `"IN"` pour une bobine de ladder, voir `COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
 	excludeDirection?: VariableDirection;
+	/** Accepte, en plus d'un nom de variable, une constante TIME (`T#...`) — voir
+	 * `BlockPortSpec.acceptsTimeLiteral`. Une telle constante n'est jamais signalée comme
+	 * mnémonique non déclaré. */
+	acceptsTimeLiteral?: boolean;
 	/** Restreint les colonnes affichées dans le popup de suggestions — non fourni : les quatre.
 	 * `mnemonic` reste toujours affichée, quel que soit `cols` : c'est la valeur éditée, sans
 	 * elle le tableau ne permet plus d'identifier quelle ligne on choisit. */
 	cols?: VariableColumn[];
 	className?: string;
 	sx?: SxProps<Theme>;
+	baseInputSx?: SxProps<Theme>;
 }
 
 /** Permet à un parent (ex : double-clic n'importe où sur un nœud Ladder) de donner le focus au
@@ -121,7 +131,7 @@ function columnsGridTemplate(columns: VariableColumn[]): string {
  * manuelle, source d'un décalage visuel à chaque bascule.
  */
 const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProps>(function VariableSelector(
-	{ value, onCommit, typeFilter, excludeDirection, cols, className, sx },
+	{ value, onCommit, typeFilter, excludeDirection, acceptsTimeLiteral, cols, className, sx, baseInputSx },
 	ref,
 ) {
 	const th = useTheme();
@@ -142,7 +152,10 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	// le temps de repeindre correctement la zone élargie.
 	useEffect(() => {
 		setWidthPx(
-			Math.max(MIN_WIDTH_PX, measureTextWidthPx(editingValue || "?", `0.7rem ${th.typography.fontFamily}`) + 24),
+			Math.max(
+				MIN_WIDTH_PX,
+				measureTextWidthPx(editingValue || "?", `0.7rem ${th.typography.fontFamily}`) + 24,
+			),
 		);
 	}, [editingValue, th.typography.fontFamily]);
 
@@ -161,6 +174,14 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 		[variables, typeFilter, excludeDirection],
 	);
 
+	// Calculé ici (pas seulement dans `filterOptions`) pour aussi piloter l'affichage du popup :
+	// sans ce filtrage explicite, MUI ouvrirait un popup vide (juste l'en-tête des colonnes) le
+	// temps de taper une constante ne correspondant à aucune variable, ce qui a l'air d'un bug.
+	const needle = editingValue.trim().toLowerCase();
+	const filteredSuggestions = needle
+		? suggestions.filter((s) => s.mnemonic.toLowerCase().includes(needle))
+		: suggestions;
+
 	const save = () => {
 		const trimmed = editingValue.trim();
 		if (trimmed && trimmed !== value) {
@@ -170,7 +191,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 		}
 	};
 
-	const status = computeStatus(editingValue, variables, typeFilter, excludeDirection);
+	const status = computeStatus(editingValue, variables, typeFilter, excludeDirection, acceptsTimeLiteral);
 	const statusColor = status && status !== "ok" ? th.palette.error.main : undefined;
 
 	const gridTemplateColumns = columnsGridTemplate(activeColumns);
@@ -189,11 +210,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 			// liée à sa notion de "valeur sélectionnée" — qu'on n'utilise pas, `editingValue` est
 			// notre seule source de vérité). On filtre nous-mêmes sur `editingValue` pour un
 			// comportement prévisible : toujours filtré par ce qui est effectivement affiché.
-			filterOptions={(options) => {
-				const needle = editingValue.trim().toLowerCase();
-				if (!needle) return options;
-				return options.filter((option) => option.mnemonic.toLowerCase().includes(needle));
-			}}
+			filterOptions={() => filteredSuggestions}
 			className={className}
 			disableClearable
 			forcePopupIcon={false}
@@ -203,26 +220,32 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 				},
 			}}
 			slots={{
-				paper: ({ children, ...paperProps }: PaperProps) => (
-					<Paper {...paperProps}>
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns,
-								px: 1,
-								py: 0.5,
-								borderBottom: `1px solid ${th.palette.divider}`,
-								fontWeight: 700,
-								fontSize: "0.75rem",
-							}}
-						>
-							{activeColumns.map((c) => (
-								<span key={c}>{COLUMNS[c].label}</span>
-							))}
-						</Box>
-						{children}
-					</Paper>
-				),
+				// `null` plutôt qu'un `Paper` vide (juste l'en-tête des colonnes) quand rien ne
+				// correspond — sinon un bloc de suggestions apparaît en permanence pendant la saisie
+				// d'une constante libre (ex. `T#5s`), qui ne correspond jamais à une variable.
+				paper:
+					filteredSuggestions.length === 0
+						? () => null
+						: ({ children, ...paperProps }: PaperProps) => (
+								<Paper {...paperProps}>
+									<Box
+										sx={{
+											display: "grid",
+											gridTemplateColumns,
+											px: 1,
+											py: 0.5,
+											borderBottom: `1px solid ${th.palette.divider}`,
+											fontWeight: 700,
+											fontSize: "0.75rem",
+										}}
+									>
+										{activeColumns.map((c) => (
+											<span key={c}>{COLUMNS[c].label}</span>
+										))}
+									</Box>
+									{children}
+								</Paper>
+							),
 			}}
 			renderOption={(props, option) => {
 				// `.MuiAutocomplete-option` porte son propre padding par défaut, différent de
@@ -285,6 +308,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 								fontSize: "0.7rem",
 								cursor: "text",
 								textOverflow: "clip !important",
+								...(baseInputSx ?? {}),
 							},
 						},
 						...(Array.isArray(sx) ? sx : [sx]),

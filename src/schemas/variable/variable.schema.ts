@@ -1,6 +1,6 @@
 export type VariableZone = "logic-input" | "logic-output" | "analog-input" | "analog-output" | "memory";
 export type VariableDirection = "IN" | "OUT" | "INOUT";
-export const VARIABLE_TYPES = ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING"] as const;
+export const VARIABLE_TYPES = ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING", "TIME"] as const;
 
 export type VariableType = (typeof VARIABLE_TYPES)[number];
 
@@ -9,7 +9,7 @@ export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 	"logic-output": ["BOOL"],
 	"analog-input": ["INT", "WORD", "DWORD"],
 	"analog-output": ["INT", "WORD", "DWORD"],
-	memory: ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING"],
+	memory: ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING", "TIME"],
 };
 
 type NativeType = "number" | "boolean" | "string";
@@ -28,6 +28,7 @@ export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 	DWORD: "number",
 	REAL: "number",
 	STRING: "string",
+	TIME: "number",
 };
 
 export const VARIABLE_UPDATABLE_FIELDS = ["mnemonic", "zone", "type", "address", "comment"] as const;
@@ -35,6 +36,11 @@ export const VARIABLE_UPDATABLE_FIELDS = ["mnemonic", "zone", "type", "address",
 export type VariableUpdatableFields = Pick<Variable, (typeof VARIABLE_UPDATABLE_FIELDS)[number]>;
 
 export type VariableUpdatableFieldsWithId = VariableUpdatableFields & { id: string };
+
+/** Référence vers le bloc système (voir `Project.blocks`) propriétaire d'une variable générée
+ * automatiquement (ex. `Tempo1.PT`) — absent pour une variable créée normalement par l'utilisateur. */
+export type VariableOwnerBlock = { id: string };
+
 export default class Variable {
 	id: string;
 	mnemonic: string;
@@ -42,14 +48,22 @@ export default class Variable {
 	type: VariableType;
 	address?: string;
 	comment?: string;
+	ownerBlock?: VariableOwnerBlock;
 
-	constructor(id: string, mnemonic: string, zone: VariableZone, type: VariableType) {
+	constructor(
+		id: string,
+		mnemonic: string,
+		zone: VariableZone,
+		type: VariableType,
+		ownerBlock?: VariableOwnerBlock,
+	) {
 		this.id = id;
 		this.mnemonic = mnemonic;
 		this.zone = zone;
 		this.type = type.toUpperCase() as VariableType;
 		this.address = "";
 		this.comment = "";
+		this.ownerBlock = ownerBlock;
 
 		const errors = Variable.validate(this);
 		if (errors.length > 0) {
@@ -95,13 +109,23 @@ export default class Variable {
 		return [...new Set(validTypes)];
 	}
 
-	static validateMnemonic(mnemonic: string): string[] {
+	/**
+	 * `hasOwnerBlock` autorise un unique point (ex. `Tempo1.PT`) : réservé aux variables générées
+	 * pour un bloc système (voir `Variable.ownerBlock`), jamais à un mnémonique saisi par
+	 * l'utilisateur.
+	 */
+	static validateMnemonic(mnemonic: string, hasOwnerBlock: boolean = false): string[] {
 		const errors: string[] = [];
 		if (mnemonic.length == 0) errors.push("Le mnémonique ne peut pas être vide");
 		if (mnemonic.length > 32) errors.push("Le mnémonique doit faire moins de 32 caractères");
 		if (!/^[a-zA-Z]/.test(mnemonic)) errors.push("Le mnémonique doit commencer par une lettre");
-		if (!/^[a-zA-Z0-9_]+$/.test(mnemonic))
-			errors.push("Le mnémonique ne peut contenir que des lettres, chiffres et underscores");
+		const allowedPattern = hasOwnerBlock ? /^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+$/ : /^[a-zA-Z0-9_]+$/;
+		if (!allowedPattern.test(mnemonic))
+			errors.push(
+				hasOwnerBlock
+					? "Le mnémonique d'une variable de bloc doit être 'NomDuBloc.NomDuPort'"
+					: "Le mnémonique ne peut contenir que des lettres, chiffres et underscores",
+			);
 		return errors;
 	}
 
@@ -134,7 +158,7 @@ export default class Variable {
 
 	static validate(variable: Variable): string[] {
 		const errors: string[] = [];
-		errors.push(...Variable.validateMnemonic(variable.mnemonic));
+		errors.push(...Variable.validateMnemonic(variable.mnemonic, variable.ownerBlock !== undefined));
 		errors.push(...Variable.validateZoneType(variable.zone, variable.type));
 		if (variable.address && variable.address != "") {
 			errors.push(...Variable.validateAddress(variable.address));

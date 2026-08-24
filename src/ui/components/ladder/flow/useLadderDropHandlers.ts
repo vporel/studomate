@@ -8,13 +8,15 @@ import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.comma
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement, getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
+import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
 import { DraggedLadderElement, useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
-import { PositionedLeaf, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
+import { computeRowHeightsInCells, PositionedLeaf, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
+import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 
 function createToolElement(draggedElement: DraggedLadderElement, row: number, col: number): LadderElement {
 	return draggedElement.type === "contact"
@@ -36,12 +38,17 @@ function findOccupant(section: Section, row: number, colStart: number, colEnd: n
 
 /**
  * Résout et dispatche l'insertion d'un élément déposé sur le canevas : la position est accrochée
- * à la grille (`resolveDropTarget`) et devient exactement celle de l'élément posé. Deux sources
- * de dépose bien distinctes, sans mécanisme commun (voir `LADDER_PROGRAM_DRAG_MIME_TYPE`) :
+ * à la grille (`resolveDropTarget`) et devient exactement celle de l'élément posé. Trois sources
+ * de dépose bien distinctes, sans mécanisme commun :
  * - un outil de la toolbar (contact/bobine), porté par `useLadderToolbarDnD` (contexte React,
  *   source et cible partagent `LadderToolbarDnDProvider`) ;
  * - un programme glissé depuis le menu de l'explorateur (bloc "appel de programme"), porté par
- *   `DataTransfer` natif — explorateur et éditeur ladder ne partagent aucun contexte React.
+ *   `DataTransfer` natif (`LADDER_PROGRAM_DRAG_MIME_TYPE`) — explorateur et éditeur ladder ne
+ *   partagent aucun contexte React ;
+ * - un bloc système glissé depuis la section "Blocs systèmes" de l'explorateur (jamais un outil
+ *   de toolbar), porté par `DataTransfer` de la même façon (`LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE`)
+ *   — mais dont le dépose n'insère rien directement : il ouvre `pendingSystemBlockCreation`, qui
+ *   ne dispatche qu'à la validation de sa fenêtre de configuration.
  */
 export default function useLadderDropHandlers(
 	section: Section,
@@ -50,6 +57,7 @@ export default function useLadderDropHandlers(
 	const { draggedElement } = useLadderToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
 	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const setPendingSystemBlockCreation = useLadderStore((state) => state.setPendingSystemBlockCreation);
 
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
@@ -58,7 +66,8 @@ export default function useLadderDropHandlers(
 			// restreint par sécurité) : seul `.types` l'est, d'où ce test plutôt qu'une lecture.
 			e.preventDefault();
 			const draggingProgramRef = e.dataTransfer.types.includes(LADDER_PROGRAM_DRAG_MIME_TYPE);
-			e.dataTransfer.dropEffect = draggedElement || draggingProgramRef ? "copy" : "none";
+			const draggingSystemBlock = e.dataTransfer.types.includes(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE);
+			e.dataTransfer.dropEffect = draggedElement || draggingProgramRef || draggingSystemBlock ? "copy" : "none";
 		},
 		[draggedElement],
 	);
@@ -67,7 +76,8 @@ export default function useLadderDropHandlers(
 		(e: React.DragEvent) => {
 			e.preventDefault();
 			const programId = e.dataTransfer.getData(LADDER_PROGRAM_DRAG_MIME_TYPE);
-			if (!programId && !draggedElement) return;
+			const systemBlockType = e.dataTransfer.getData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE);
+			if (!programId && !systemBlockType && !draggedElement) return;
 
 			// screenToFlowPosition attend des coordonnées viewport (clientX/clientY), pas
 			// document (pageX/pageY) — sensibles au défilement de la page, qui décale tout calcul
@@ -80,7 +90,7 @@ export default function useLadderDropHandlers(
 			// notre propre accrochage explicite (Math.floor ci-dessous), qui, lui, retombe
 			// toujours sur la cellule réellement visée.
 			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY }, { snapToGrid: false });
-			const dropRow = Math.floor(yToRow(position.y));
+			const dropRow = Math.floor(yToRow(position.y, computeRowHeightsInCells(section)));
 			const dropCol = Math.floor(xToCol(position.x));
 
 			if (programId) {
@@ -91,6 +101,15 @@ export default function useLadderDropHandlers(
 				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
 				const newElement = createUserProgramBlockElement(programId, dropRow, dropCol);
 				dispatchInsertion(newElement);
+				return;
+			}
+
+			if (systemBlockType === "timer") {
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				setPendingSystemBlockCreation({
+					blockType: "timer",
+					insert: (params) => dispatchInsertion(createTimerBlockElement(params, dropRow, dropCol)),
+				});
 				return;
 			}
 
@@ -152,7 +171,7 @@ export default function useLadderDropHandlers(
 				commandsStackManager.executeOperation(commands);
 			}
 		},
-		[draggedElement, screenToFlowPosition, leafPositions, section, commandsStackManager],
+		[draggedElement, screenToFlowPosition, leafPositions, section, commandsStackManager, setPendingSystemBlockCreation],
 	);
 
 	return [handleDragOver, handleDrop];

@@ -5,8 +5,13 @@ import ProjectPreCompilerError from "@/project-pre-compiler/project.pre-compiler
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
 import { createSectionWith, wireInParallel, wireInSeries } from "@tests/utils/ladder-factory";
-import LadderPreCompiler, { PreCompiledCoilAssignment, PreCompiledLadder } from "./ladder.pre-compiler";
+import LadderPreCompiler, {
+	PreCompiledCoilAssignment,
+	PreCompiledLadder,
+	PreCompiledTimerAssignment,
+} from "./ladder.pre-compiler";
 
 /** Les assignations de bobines, dans l'ordre — helper pour ne pas répéter le filtre partout. */
 function coilAssignments(result: PreCompiledLadder): PreCompiledCoilAssignment[] {
@@ -241,6 +246,97 @@ describe("LadderPreCompiler", () => {
 			expect(result.blockCalls).toEqual([
 				{ blockId: block.id, programId: "prog1", enMnemonic: getBlockPortVariableMnemonic(block.id, "EN") },
 			]);
+		});
+	});
+
+	describe("blocs timer", () => {
+		function timerAssignment(result: PreCompiledLadder): PreCompiledTimerAssignment {
+			const found = result.assignments.find((a): a is PreCompiledTimerAssignment => a.kind === "timer");
+			if (!found) throw new Error("Aucun TimerNode trouvé");
+			return found;
+		}
+
+		it("matérialise IN depuis reach et un TimerNode référençant les variables générées", () => {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 2);
+			const section = createSectionWith([rail, contactA, block], wireInSeries([rail, contactA, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const inAssignment = result.assignments.find(
+				(a) => a.kind === "blockPort" && a.mnemonic === "Tempo1.IN",
+			) as any;
+			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+
+			const timer = timerAssignment(result);
+			expect(timer.node.timerType).toBe("TON");
+			expect(describeNode(timer.node.input as ASTNode)).toBe("Tempo1.IN");
+			expect(describeNode(timer.node.elapsedTime as ASTNode)).toBe("Tempo1.ET");
+			expect(describeNode(timer.node.output as ASTNode)).toBe("Tempo1.Q");
+			expect(timer.node.presetTime).toMatchObject({ type: "NUMBER_LITERAL", value: 5000 });
+		});
+
+		it("résout PT comme identifiant quand ce n'est pas une constante T#", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TOF", pt: "MaConsigne" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(describeNode(timerAssignment(result).node.presetTime as ASTNode)).toBe("MaConsigne");
+		});
+
+		it("recopie ET vers la variable du pin ET quand elle est renseignée, après le TimerNode", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TP", pt: "T#1s", et: "SortieET" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(result.assignments.map((a) => a.kind)).toEqual(["blockPort", "timer", "blockPort"]);
+			const etCopy = result.assignments[2] as any;
+			expect(etCopy.mnemonic).toBe("SortieET");
+			expect(describeNode(etCopy.value)).toBe("Tempo1.ET");
+		});
+
+		it("ne recopie pas ET quand le pin est vide", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#1s" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(result.assignments.map((a) => a.kind)).toEqual(["blockPort", "timer"]);
+		});
+
+		it("propage Q aux éléments suivants sur la même ligne", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#1s" }, 0, 1);
+			const coil = createCoilElement("Q", "normal", 0, 2);
+			const section = createSectionWith([rail, block, coil], wireInSeries([rail, block, coil]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const coilAssignment = coilAssignments(result)[0];
+			expect(describeNode(coilAssignment.condition)).toBe("Tempo1.Q");
+		});
+
+		it("expose les TimerNode générés dans `timers`", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#1s" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(result.timers).toHaveLength(1);
+			expect(result.timers[0].type).toBe("TIMER_BLOCK");
 		});
 	});
 });

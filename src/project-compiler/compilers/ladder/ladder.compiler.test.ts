@@ -12,6 +12,7 @@ describe("LadderCompiler", () => {
 			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "normal", condition }],
 			edgeMemoUpdates: [],
 			blockCalls: [],
+			timers: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -33,6 +34,7 @@ describe("LadderCompiler", () => {
 			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "set", condition }],
 			edgeMemoUpdates: [],
 			blockCalls: [],
+			timers: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -60,6 +62,7 @@ describe("LadderCompiler", () => {
 			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "reset", condition }],
 			edgeMemoUpdates: [],
 			blockCalls: [],
+			timers: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -105,6 +108,7 @@ describe("LadderCompiler", () => {
 				},
 			],
 			blockCalls: [],
+			timers: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -123,6 +127,7 @@ describe("LadderCompiler", () => {
 			assignments: [],
 			edgeMemoUpdates: [],
 			blockCalls: [],
+			timers: [],
 		};
 
 		const { timers } = LadderCompiler.compile(preCompiled);
@@ -138,6 +143,7 @@ describe("LadderCompiler", () => {
 			assignments: [{ kind: "blockPort", blockId: "b1", mnemonic: "b1_EN", value }],
 			edgeMemoUpdates: [],
 			blockCalls: [{ blockId: "b1", programId: "prog1", enMnemonic: "b1_EN" }],
+			timers: [],
 		};
 
 		const { nodes, calls } = LadderCompiler.compile(preCompiled);

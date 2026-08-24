@@ -4,11 +4,19 @@ import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
+import { TimerBlockParams } from "@/schemas/ladder/block.schema";
 import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
-import { colToX, parseVirtualRailRow, rowToY, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	colToX,
+	computeRowHeightsInCells,
+	parseVirtualRailRow,
+	rowToY,
+	xToCol,
+	yToRow,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { initialConnectionPoints, pushConnectionBend } from "@/ui/utils/ladder/ladder-connection-path";
 import { applyEdgeChanges, applyNodeChanges, EdgeChange, NodeChange, NodePositionChange, Edge } from "@xyflow/react";
 import LadderEdgesFactory from "../factories/edges.factory";
@@ -31,24 +39,28 @@ export default class LadderWorkflowManager {
 	}
 
 	handleNodesChange(sectionId: string, changes: NodeChange<LadderNodeType>[]): void {
+		const state = this.getStoreState();
+		const section = state.ladder.getSection(sectionId);
+		const rowHeightsInCells = section ? computeRowHeightsInCells(section) : new Map<number, number>();
+
 		// La suppression passe exclusivement par `useLadderDeleteHandler`
 		// (ElementsRemoveCommand/ConnectionsRemoveCommand) : un changement "remove" ici patcherait
 		// le tableau en double, en course avec la resynchronisation que cette commande déclenche
 		// déjà (voir `CommandsStackManager.applyLadder`).
-		const changesToApply = changes.filter((change) => change.type !== "remove").map((change) => this.snapPositionChange(change));
+		const changesToApply = changes
+			.filter((change) => change.type !== "remove")
+			.map((change) => this.snapPositionChange(change, rowHeightsInCells));
 
-		const state = this.getStoreState();
 		const nodes = state.nodesBySectionId[sectionId] ?? [];
 		const newNodes = applyNodeChanges<LadderNodeType>(changesToApply, nodes);
 
-		const section = state.ladder.getSection(sectionId);
 		let newEdges = state.edgesBySectionId[sectionId] ?? [];
 		const commands: (ElementUpdateCommand | ConnectionUpdateCommand)[] = [];
 
 		if (section) {
 			for (const change of changesToApply) {
 				if (change.type !== "position" || !change.position) continue;
-				const resolved = this.resolveMovedElement(section, change.id, change.position);
+				const resolved = this.resolveMovedElement(section, change.id, change.position, rowHeightsInCells);
 				if (!resolved) continue;
 
 				// Aperçu en direct du coude poussé, à CHAQUE frame (pas seulement la dernière) : sans
@@ -101,11 +113,14 @@ export default class LadderWorkflowManager {
 	 * le geste (`RAIL_LANE_WIDTH`) et corrige brusquement en fin de geste vers la colonne la plus
 	 * proche (calculée ici même, voir `buildPositionCommand`) — un décalage visible, surtout à
 	 * l'horizontal où une colonne fait 60px contre 45px pour une ligne déjà bien alignée. */
-	private snapPositionChange(change: NodeChange<LadderNodeType>): NodeChange<LadderNodeType> {
+	private snapPositionChange(
+		change: NodeChange<LadderNodeType>,
+		rowHeightsInCells: Map<number, number>,
+	): NodeChange<LadderNodeType> {
 		if (change.type !== "position" || !change.position) return change;
-		const row = Math.round(yToRow(change.position.y));
+		const row = Math.round(yToRow(change.position.y, rowHeightsInCells));
 		const col = Math.round(xToCol(change.position.x));
-		return { ...change, position: { x: colToX(col), y: rowToY(row) } };
+		return { ...change, position: { x: colToX(col), y: rowToY(row, rowHeightsInCells) } };
 	}
 
 	/** Dernière frame d'un glisser (`dragging: false`) ou relâchement d'une flèche directionnelle
@@ -123,10 +138,11 @@ export default class LadderWorkflowManager {
 		section: Section,
 		elementId: string,
 		position: { x: number; y: number },
+		rowHeightsInCells: Map<number, number>,
 	): { elementId: string; newPosition: GridPosition } | null {
 		if (parseVirtualRailRow(elementId) !== null) return null;
 		if (!section.getElement(elementId)) return null;
-		const row = Math.round(yToRow(position.y));
+		const row = Math.round(yToRow(position.y, rowHeightsInCells));
 		const col = Math.round(xToCol(position.x));
 		return { elementId, newPosition: { row, col } };
 	}
@@ -299,5 +315,15 @@ export default class LadderWorkflowManager {
 		}
 
 		if (commands.length > 0) this.getStoreState().commandsStackManager.executeOperation(commands);
+	}
+
+	/**
+	 * Ouvre la fenêtre de configuration d'un bloc système existant, préremplie — déclenché par le
+	 * double-clic sur le bloc dans le canevas ou par "Paramétrer" dans le menu contextuel de
+	 * l'explorateur (voir `useBlockInstanceMenuItems`), qui appelle cette méthode une fois la page
+	 * du ladder ciblé devenue active.
+	 */
+	openSystemBlockEditor(elementId: string, initial: TimerBlockParams): void {
+		this.setStoreState({ pendingSystemBlockEdit: { blockType: "timer", elementId, initial } });
 	}
 }

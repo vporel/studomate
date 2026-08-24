@@ -4,7 +4,8 @@ export type ExplorerContextMenuElement =
 	| { type: "pane" }
 	| { type: "grafcet"; grafcetId: string }
 	| { type: "ladder"; ladderId: string }
-	| { type: "variables"; variablesPageId: VariablesPageId };
+	| { type: "variables"; variablesPageId: VariablesPageId }
+	| { type: "block-instance"; ladderId: string; elementId: string };
 export type ExplorerContextMenuProps = {
 	visible: boolean;
 	element: ExplorerContextMenuElement;

@@ -37,6 +37,15 @@ describe("VariableCompiler", () => {
 			});
 		});
 
+		it("compiles a TIME variable to number PLCVariable", () => {
+			const variable = new VariableBuilder().id("var-1").mnemonic("Tempo1ET").type("TIME").zone("memory").build();
+
+			const result = VariableCompiler.compile([variable]);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].getType()).toBe("number");
+		});
+
 		it("compiles a STRING variable to string PLCVariable", () => {
 			const variable = new VariableBuilder()
 				.id("var-1")

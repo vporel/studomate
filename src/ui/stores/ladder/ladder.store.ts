@@ -1,6 +1,7 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import { PendingSystemBlockCreation, PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { Edge } from "@xyflow/react";
 import { createStore } from "zustand";
 import LadderEdgesFactory from "./factories/edges.factory";
@@ -34,6 +35,23 @@ export interface LadderStoreState {
 
 	highlightedNodesIds: string[];
 	highlightedEdgesIds: string[];
+
+	/**
+	 * Un bloc système (glissé depuis la section "Blocs systèmes" de l'explorateur, jamais un
+	 * outil de la toolbar) se pose en deux temps : le dépose ouvre d'abord une fenêtre demandant
+	 * sa config (nom, variante...), qui n'insère l'élément qu'à la validation. `insert` referme
+	 * sur la section/position ciblées par le dépose et dispatche la commande d'insertion (+
+	 * connexions auto) exactement comme un dépose immédiat — voir `useLadderDropHandlers`.
+	 */
+	pendingSystemBlockCreation: PendingSystemBlockCreation | null;
+	setPendingSystemBlockCreation: (pending: PendingSystemBlockCreation | null) => void;
+
+	/**
+	 * Édition d'un bloc système existant en attente de validation, ouverte par double-clic sur le
+	 * bloc dans le canevas — voir `PendingSystemBlockEdit`.
+	 */
+	pendingSystemBlockEdit: PendingSystemBlockEdit | null;
+	setPendingSystemBlockEdit: (pending: PendingSystemBlockEdit | null) => void;
 }
 
 export type LadderStoreSetFunction = (
@@ -77,5 +95,11 @@ export const createLadderStore = (ladder: Ladder, commandsStack: CommandsStack<L
 
 		highlightedNodesIds: [],
 		highlightedEdgesIds: [],
+
+		pendingSystemBlockCreation: null,
+		setPendingSystemBlockCreation: (pending) => set({ pendingSystemBlockCreation: pending }),
+
+		pendingSystemBlockEdit: null,
+		setPendingSystemBlockEdit: (pending) => set({ pendingSystemBlockEdit: pending }),
 	}));
 };

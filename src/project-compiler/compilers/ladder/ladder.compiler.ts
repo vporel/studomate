@@ -39,10 +39,14 @@ export default class LadderCompiler {
 			condition: IdentifiersBuilder.buildIdentifierNode(call.enMnemonic),
 		}));
 
-		return { nodes, timers: [], calls };
+		return { nodes, timers: preCompiledLadder.timers, calls };
 	}
 
+	/** Un `TimerNode` est embarqué tel quel parmi les instructions : il n'a pas besoin d'être
+	 * enveloppé dans une affectation, `PLCRoutine.execute` l'évalue directement pour ses effets
+	 * de bord (voir `PreCompiledTimerAssignment`). */
 	private static compileAssignment(assignment: PreCompiledLadderAssignment): ASTNode {
+		if (assignment.kind === "timer") return assignment.node;
 		if (assignment.kind === "blockPort") {
 			return StatementsBuilder.buildAssignStatementNode(
 				IdentifiersBuilder.buildIdentifierNode(assignment.mnemonic),

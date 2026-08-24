@@ -78,8 +78,11 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 		[viewManager, section.id],
 	);
 
-	const { totalRows, leafPositions } = useMemo(() => computeSectionLayout(section), [section]);
-	const flowDimensions = useMemo(() => computeLadderFlowDimensions(totalRows), [totalRows]);
+	const { totalRows, leafPositions, rowHeightsInCells } = useMemo(() => computeSectionLayout(section), [section]);
+	const flowDimensions = useMemo(
+		() => computeLadderFlowDimensions(totalRows, rowHeightsInCells),
+		[totalRows, rowHeightsInCells],
+	);
 
 	const [handleDragOver, handleDrop] = useLadderDropHandlers(section, leafPositions);
 	const handleNodesChange = useCallback(

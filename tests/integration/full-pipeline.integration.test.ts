@@ -42,7 +42,7 @@ describe("Full Pipeline Integration Test", () => {
 			const pipeline = compilePipelineDetailed(project);
 
 			expect(pipeline.analysis.issues).toEqual([]);
-			expect(pipeline.analysis.stepsVariables).toHaveLength(2); // X0, X1
+			expect(pipeline.analysis.generatedVariables).toHaveLength(2); // X0, X1
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
@@ -181,7 +181,7 @@ describe("Full Pipeline Integration Test", () => {
 			const pipeline = compilePipelineDetailed(project);
 
 			expect(pipeline.analysis.issues).toEqual([]);
-			expect(pipeline.analysis.stepsVariables).toHaveLength(4); // X0, X1, X10, X11
+			expect(pipeline.analysis.generatedVariables).toHaveLength(4); // X0, X1, X10, X11
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			// +1 pour le Main, toujours présent (voir Project.createMain).
 			expect(Object.keys(pipeline.preCompilation.result!.programs)).toHaveLength(3);

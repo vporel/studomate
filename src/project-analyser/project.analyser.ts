@@ -1,6 +1,3 @@
-import { BlockElement, UserProgramBlockParams } from "@/schemas/ladder/block.schema";
-import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import Ladder from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import ProgramAnalyser from "./program.analyser";
 import Project from "@/schemas/project/project.schema";
@@ -13,37 +10,22 @@ export type ProjectAnalysisResult = {
 	totalAnalysedElements: number;
 	issues: ProjectAnalyserIssue[];
 	/**
-	 * Synthetic BOOL memory variables generated for each step with a valid number.
-	 * Mnemonic pattern: X{stepNumber} — available for use in transition/action expressions.
+	 * Toutes les variables synthétiques générées par tous les programmes du projet — les `X{n}`
+	 * d'étape en GRAFCET, mais aussi les variables de bloc en Ladder (`<Nom>.IN/.Q/.ET` d'un bloc
+	 * tempo, mémoire de front, ports EN/ENO...). Ne contient PAS `project.variables` : à fusionner
+	 * par l'appelant (voir `ProjectPreCompiler.preCompile`, qui attend exactement ça).
 	 */
-	stepsVariables: Variable[];
+	generatedVariables: Variable[];
 };
 
 /**
- * Une entrée par notation. En ajouter une consiste à écrire son analyseur et à l'inscrire
- * ici — rien d'autre ne change dans ce fichier.
+ * Une entrée par notation, chaque analyseur implémentant directement `ProgramAnalyser` — en
+ * ajouter une consiste à écrire son analyseur et à l'inscrire ici, rien d'autre ne change dans
+ * ce fichier.
  */
 const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
-	grafcet: {
-		analyse: (grafcet: Grafcet, project: Project) => {
-			const result = GrafcetAnalyser.analyse(grafcet, project);
-			return {
-				issues: result.issues,
-				generatedVariables: result.stepsVariables,
-				analysedElementsCount: grafcet.getAllElements().length,
-			};
-		},
-	},
-	ladder: {
-		analyse: (ladder: Ladder, project: Project) => {
-			const result = LadderAnalyser.analyse(ladder, project);
-			return {
-				issues: result.issues,
-				generatedVariables: result.generatedVariables,
-				analysedElementsCount: LadderAnalyser.countLeaves(ladder),
-			};
-		},
-	},
+	grafcet: new GrafcetAnalyser(),
+	ladder: new LadderAnalyser(),
 };
 
 export default class ProjectAnalyser {
@@ -61,6 +43,19 @@ export default class ProjectAnalyser {
 
 		let totalAnalysedElements = 0;
 
+		// Première passe : génère les variables synthétiques de chaque programme (X{n} d'étape,
+		// `<Nom>.IN/.Q/.ET` d'un bloc tempo...), sans encore rien analyser — un programme ne peut
+		// valider ses propres références qu'après avoir vu ce que TOUS les autres génèrent (voir
+		// `ProgramAnalyser.generateVariables`).
+		for (const program of Object.values(project.programs)) {
+			const analyser = PROGRAM_ANALYSERS[program.type];
+			if (!analyser) continue;
+			generatedVariablesByProgram.set(program.id, analyser.generateVariables(program));
+		}
+		const allVariables = [...project.variables, ...[...generatedVariablesByProgram.values()].flat()];
+
+		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des
+		// variables du projet (les siennes propres et celles de tous les autres).
 		for (const program of Object.values(project.programs)) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) {
@@ -74,179 +69,23 @@ export default class ProjectAnalyser {
 				);
 				continue;
 			}
-			const result = analyser.analyse(program, project);
+			const result = analyser.analyse(program, project, allVariables);
 			issues.push(...result.issues);
-			generatedVariablesByProgram.set(program.id, result.generatedVariables);
 			totalAnalysedElements += result.analysedElementsCount;
 		}
 
-		issues.push(...this.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
-		issues.push(...this.checkMainUniqueness(project));
-		issues.push(...this.checkOrphanLadders(project));
-		issues.push(...this.checkCallCycles(project));
+		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette
+		// notation (voir `GrafcetAnalyser.checkDuplicateStepNumbers`,
+		// `LadderAnalyser.checkMainUniqueness`/`checkOrphanLadders`/`checkCallCycles`).
+		issues.push(...GrafcetAnalyser.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
+		issues.push(...LadderAnalyser.checkMainUniqueness(project));
+		issues.push(...LadderAnalyser.checkOrphanLadders(project));
+		issues.push(...LadderAnalyser.checkCallCycles(project));
 
 		return {
 			totalAnalysedElements,
 			issues,
-			stepsVariables: [...generatedVariablesByProgram.values()].flatMap((vars) => vars),
+			generatedVariables: [...generatedVariablesByProgram.values()].flatMap((vars) => vars),
 		};
-	}
-
-	/**
-	 * Cross-grafcet rule: a step number must be unique across all grafcets of a project.
-	 * Uses the already-computed stepsVariables (one mnemonic = one valid unique number per grafcet).
-	 * Detection: total mnemonic count vs Set size — if they differ, duplicates exist across grafcets.
-	 * Emits one project-level issue per duplicated number, listing the involved grafcet names.
-	 */
-	private static checkDuplicateStepNumbers(
-		generatedVariablesByProgram: Map<string, Variable[]>,
-		project: Project,
-	): ProjectAnalyserIssue[] {
-		const allMnemonics = [...generatedVariablesByProgram.values()].flatMap((vars) =>
-			vars.map((v) => v.mnemonic),
-		);
-
-		// Quick exit: no cross-grafcet duplicates
-		if (new Set(allMnemonics).size === allMnemonics.length) return [];
-
-		// Build mnemonic → grafcet names mapping
-		const mnemonicToGrafcetNames = new Map<string, string[]>();
-		for (const [grafcetId, vars] of generatedVariablesByProgram) {
-			const grafcetName = project.getProgram(grafcetId)?.name ?? grafcetId;
-			for (const variable of vars) {
-				if (!mnemonicToGrafcetNames.has(variable.mnemonic))
-					mnemonicToGrafcetNames.set(variable.mnemonic, []);
-				mnemonicToGrafcetNames.get(variable.mnemonic)!.push(grafcetName);
-			}
-		}
-
-		const issues: ProjectAnalyserIssue[] = [];
-		for (const [mnemonic, grafcetNames] of mnemonicToGrafcetNames) {
-			if (grafcetNames.length < 2) continue;
-			const stepNumber = parseInt(mnemonic.slice(1)); // X{n} → n
-			const names = grafcetNames.map((n) => `"${n}"`).join(", ");
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
-					{ sourceType: "project", sourceId: project.id },
-					`Le numéro d'étape ${stepNumber} est utilisé dans plusieurs grafcets du projet : ${names}. Chaque numéro d'étape doit être unique à l'échelle du projet.`,
-				),
-			);
-		}
-		return issues;
-	}
-
-	/** Défense en profondeur : garanti par `Project.createMain`/`deleteProgram`, sauf projet importé/édité à la main. */
-	private static checkMainUniqueness(project: Project): ProjectAnalyserIssue[] {
-		const mains = Object.values(project.ladders).filter((ladder) => ladder.role === "main");
-		if (mains.length === 1) return [];
-		if (mains.length === 0) {
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"PROJECT_MISSING_MAIN",
-					{ sourceType: "project", sourceId: project.id },
-					"Le projet ne porte aucun programme Main.",
-				),
-			];
-		}
-		return [
-			new ProjectAnalyserIssue(
-				"error",
-				"PROJECT_MULTIPLE_MAINS",
-				{ sourceType: "project", sourceId: project.id },
-				`Le projet porte ${mains.length} programmes Main, il ne devrait en porter qu'un seul.`,
-			),
-		];
-	}
-
-	/**
-	 * Pour chaque ladder, la liste des `programId` référencés par ses blocs `"user-program"` — les
-	 * références vers un id qui n'est pas un ladder du projet sont ignorées ici (déjà signalées
-	 * par `BlockAnalyser`).
-	 */
-	private static buildBlockReferenceGraph(project: Project): Map<string, string[]> {
-		const graph = new Map<string, string[]>();
-		for (const ladder of Object.values(project.ladders)) {
-			const targets = ladder
-				.getAllElements()
-				.filter(
-					(element): element is BlockElement =>
-						element.type === "block" && element.data.blockType === "user-program",
-				)
-				.map((element) => (element.data.params as UserProgramBlockParams).programId)
-				.filter((programId) => project.getLadder(programId) !== undefined);
-			graph.set(ladder.id, targets);
-		}
-		return graph;
-	}
-
-	/**
-	 * Un ladder qui n'est référencé par aucun bloc, nulle part dans le projet (ni le Main ni un
-	 * autre ladder), ne s'exécute jamais — voir `checkCallCycles` pour le mécanisme d'appel.
-	 * Volontairement pas de calcul d'atteignabilité transitive depuis le Main : ce n'est qu'un
-	 * signal, à l'utilisateur de repérer une erreur d'assemblage.
-	 */
-	private static checkOrphanLadders(project: Project): ProjectAnalyserIssue[] {
-		const graph = this.buildBlockReferenceGraph(project);
-		const referencedIds = new Set(Array.from(graph.values()).flat());
-
-		const issues: ProjectAnalyserIssue[] = [];
-		for (const ladder of Object.values(project.ladders)) {
-			if (ladder.role === "main" || referencedIds.has(ladder.id)) continue;
-			issues.push(
-				new ProjectAnalyserIssue(
-					"warning",
-					"LADDER_NOT_REFERENCED",
-					{ sourceType: "ladder", sourceId: ladder.id },
-					`Le ladder "${ladder.name}" n'est référencé par aucun bloc du projet : il ne s'exécutera pas.`,
-				),
-			);
-		}
-		return issues;
-	}
-
-	/**
-	 * Un ladder peut référencer un autre ladder via un bloc `"user-program"`, formant un graphe
-	 * d'appels — jamais de cycle autorisé (y compris l'auto-référence), sous peine de boucle
-	 * infinie à l'exécution. Détection classique par coloriage (blanc/gris/noir) : un arc vers un
-	 * noeud "gris" (en cours de visite) referme un cycle.
-	 */
-	private static checkCallCycles(project: Project): ProjectAnalyserIssue[] {
-		const graph = this.buildBlockReferenceGraph(project);
-		const state = new Map<string, "visiting" | "done">();
-		const reportedCycles = new Set<string>();
-		const issues: ProjectAnalyserIssue[] = [];
-
-		const visit = (ladderId: string, path: string[]) => {
-			state.set(ladderId, "visiting");
-			for (const targetId of graph.get(ladderId) ?? []) {
-				if (state.get(targetId) === "visiting") {
-					const cycle = [...path.slice(path.indexOf(targetId)), targetId];
-					const key = [...new Set(cycle)].sort().join(">");
-					if (reportedCycles.has(key)) continue;
-					reportedCycles.add(key);
-					const names = cycle.map((id) => project.getProgram(id)?.name ?? id).join(" → ");
-					issues.push(
-						new ProjectAnalyserIssue(
-							"error",
-							"BLOCK_PROGRAM_CALL_CYCLE",
-							{ sourceType: "project", sourceId: project.id },
-							`Cycle d'appels entre ladders détecté : ${names}.`,
-						),
-					);
-					continue;
-				}
-				if (!state.has(targetId)) visit(targetId, [...path, targetId]);
-			}
-			state.set(ladderId, "done");
-		};
-
-		for (const ladderId of graph.keys()) {
-			if (!state.has(ladderId)) visit(ladderId, [ladderId]);
-		}
-
-		return issues;
 	}
 }

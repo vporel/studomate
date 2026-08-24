@@ -7,9 +7,12 @@ import React, { useRef } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import ExplorerHeader from "./ExplorerHeader";
 import ExplorerProgramsItems from "./ExplorerProgramsItems";
+import ExplorerSystemBlockInstancesItems from "./ExplorerSystemBlockInstancesItems";
+import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
 import useExplorerContextMenu from "./useExplorerContextMenu";
+import { useProjectStore } from "../projects/ProjectContext";
 
 export const treeItemStyles: CustomTreeItemStyles = {
 	root: {
@@ -29,6 +32,9 @@ export const treeItemStyles: CustomTreeItemStyles = {
 
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 	const explorerRef = useRef<HTMLDivElement>(null);
+	const hasSystemBlockInstances = useProjectStore(
+		(state) => (state.project?.getAllTimerBlockElements().length ?? 0) > 0,
+	);
 	const {
 		visible: contextMenuVisible,
 		element: contextMenuElement,
@@ -69,6 +75,24 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 					styles={treeItemStyles}
 				>
 					<ExplorerProgramsItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+				</CustomTreeItem>
+				{hasSystemBlockInstances && (
+					<CustomTreeItem
+						itemId="system-block-instances"
+						label="Instances de blocs"
+						IconComponent={FolderIcon}
+						styles={treeItemStyles}
+					>
+						<ExplorerSystemBlockInstancesItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					</CustomTreeItem>
+				)}
+				<CustomTreeItem
+					itemId="system-blocks"
+					label="Blocs systèmes"
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+				>
+					<ExplorerSystemBlocksItems styles={treeItemStyles} />
 				</CustomTreeItem>
 			</SimpleTreeView>
 			{explorerRef.current && (

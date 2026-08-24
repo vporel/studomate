@@ -115,6 +115,10 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   `useCallback`) — son comportement est connu de quiconque connaît la librairie, ce n'est pas une
   règle métier de ce fichier. Un commentaire à cet endroit ne se justifie que pour une règle
   métier propre au fichier (pourquoi CE sélecteur a besoin de cette protection ici).
+  Jamais de renvoi du type « voir la conversation d'origine »/« voir plus haut »/« comme discuté » :
+  le commentaire doit être compréhensible seul, sans accès à l'historique de la conversation qui a
+  produit le code — écrire directement la contrainte ou l'invariant, pas une référence à une
+  discussion externe au fichier.
 - **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
   anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
   écrire en français tout nouveau commentaire.

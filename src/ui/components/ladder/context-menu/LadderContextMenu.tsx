@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
 import { LadderContextMenuElement, LadderContextMenuProps } from "./ladder-context-menu";
+import blockContextMenuItems from "./block-context-menu-items";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -31,7 +32,10 @@ const LadderContextMenu = ({
 		if (element.type === "pane") {
 			return paneContextMenuItems(workflowManager, sectionId);
 		}
-		return nodeOrEdgeContextMenuItems(element, handleDelete);
+		const items: ContextMenuItemType[][] = [];
+		if (element.type === "block") items.push(...blockContextMenuItems(element, workflowManager));
+		items.push(...nodeOrEdgeContextMenuItems(element, handleDelete));
+		return items;
 	}, [element, workflowManager, sectionId, handleDelete]);
 
 	useEffect(() => {

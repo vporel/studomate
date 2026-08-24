@@ -2,7 +2,11 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
+import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import ProjectAnalyser from "./project.analyser";
 
 describe("ProjectAnalyser", () => {
@@ -17,7 +21,7 @@ describe("ProjectAnalyser", () => {
 
 			expect(result.totalAnalysedElements).toBe(0);
 			expect(result.issues).toEqual([]);
-			expect(result.stepsVariables).toEqual([]);
+			expect(result.generatedVariables).toEqual([]);
 		});
 
 		it("reports an issue for a program whose notation has no analyser, instead of failing silently", () => {
@@ -52,8 +56,8 @@ describe("ProjectAnalyser", () => {
 			const result = ProjectAnalyser.analyse(project);
 
 			expect(result.totalAnalysedElements).toBe(1);
-			expect(result.stepsVariables).toHaveLength(1);
-			expect(result.stepsVariables[0].mnemonic).toBe("X1");
+			expect(result.generatedVariables).toHaveLength(1);
+			expect(result.generatedVariables[0].mnemonic).toBe("X1");
 		});
 
 		it("detects missing initial step in grafcet", () => {
@@ -125,8 +129,8 @@ describe("ProjectAnalyser", () => {
 				.build();
 			const result = ProjectAnalyser.analyse(project);
 
-			expect(result.stepsVariables).toHaveLength(4);
-			const mnemonics = result.stepsVariables.map((v) => v.mnemonic);
+			expect(result.generatedVariables).toHaveLength(4);
+			const mnemonics = result.generatedVariables.map((v) => v.mnemonic);
 			expect(mnemonics).toContain("X1");
 			expect(mnemonics).toContain("X2");
 			expect(mnemonics).toContain("X10");
@@ -289,6 +293,44 @@ describe("ProjectAnalyser", () => {
 
 				const dupIssues = result.issues.filter((i) => i.message.includes("unique"));
 				expect(dupIssues).toHaveLength(0);
+			});
+		});
+
+		describe("visibilité cross-programmes des variables générées", () => {
+			it("un contact d'un ladder peut référencer la variable Q générée par un bloc tempo d'un AUTRE ladder", () => {
+				const project = new Project("p1", "Projet", "");
+				const ladderWithTimer = project.createLadder("L1");
+				const timerBlock = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
+				ladderWithTimer.addElements(ladderWithTimer.sections[0].id, [timerBlock]);
+
+				const otherLadder = project.createLadder("L2");
+				const rail = createRailTerminalElement(0);
+				const contact = createContactElement("Tempo1.Q", "NO", 0, 1);
+				const section = createSectionWith([rail, contact], wireInSeries([rail, contact]));
+				otherLadder.sections = [section];
+
+				const result = ProjectAnalyser.analyse(project);
+
+				expect(result.issues.map((i) => i.code)).not.toContain("CONTACT_VARIABLE_UNDECLARED");
+			});
+
+			it("l'ordre d'itération des programmes n'a pas d'importance : le référençant peut être analysé avant le générateur", () => {
+				const project = new Project("p1", "Projet", "");
+				// Créé (donc itéré) EN PREMIER : référence une variable qu'un ladder créé après générera.
+				const referencingLadder = project.createLadder("L1");
+				const rail = createRailTerminalElement(0);
+				const contact = createContactElement("Tempo1.Q", "NO", 0, 1);
+				const section = createSectionWith([rail, contact], wireInSeries([rail, contact]));
+				referencingLadder.sections = [section];
+
+				// Créé (donc itéré) EN SECOND : génère la variable référencée ci-dessus.
+				const ladderWithTimer = project.createLadder("L2");
+				const timerBlock = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
+				ladderWithTimer.addElements(ladderWithTimer.sections[0].id, [timerBlock]);
+
+				const result = ProjectAnalyser.analyse(project);
+
+				expect(result.issues.map((i) => i.code)).not.toContain("CONTACT_VARIABLE_UNDECLARED");
 			});
 		});
 	});
