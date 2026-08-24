@@ -1,6 +1,6 @@
 ﻿import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
@@ -26,6 +26,7 @@ export type CompiledProject = {
 	routines: PLCRoutine[];
 	routinesById: Record<string, PLCRoutine>;
 	timers: TimerNode[];
+	counters: CounterNode[];
 };
 
 export type ProjectCompilationResult = {
@@ -39,9 +40,20 @@ export type ProjectCompilationResult = {
  */
 const PROGRAM_COMPILERS: Record<
 	ProgramType,
-	(preCompiled: PreCompiledProgram) => { nodes: ASTNode[]; timers: TimerNode[]; calls: PLCRoutineCall[] }
+	(preCompiled: PreCompiledProgram) => {
+		nodes: ASTNode[];
+		timers: TimerNode[];
+		counters: CounterNode[];
+		calls: PLCRoutineCall[];
+	}
 > = {
-	grafcet: (preCompiled) => ({ ...GrafcetCompiler.compile(preCompiled as PreCompiledGrafcet), calls: [] }),
+	// GRAFCET ne supporte pas encore de bloc "counter" ni "user-program" : toujours vide,
+	// contrairement à Ladder.
+	grafcet: (preCompiled) => ({
+		...GrafcetCompiler.compile(preCompiled as PreCompiledGrafcet),
+		counters: [],
+		calls: [],
+	}),
 	ladder: (preCompiled) => LadderCompiler.compile(preCompiled as PreCompiledLadder),
 };
 
@@ -57,6 +69,7 @@ export default class ProjectCompiler {
 	static compile(preCompiledProject: PreCompiledProject): ProjectCompilationResult {
 		try {
 			const timers: TimerNode[] = [];
+			const counters: CounterNode[] = [];
 			const routinesById: Record<string, PLCRoutine> = {};
 			let mainProgramId: string | null = null;
 
@@ -69,6 +82,7 @@ export default class ProjectCompiler {
 				}
 				const compiled = compiler(preCompiledProgram);
 				timers.push(...compiled.timers);
+				counters.push(...compiled.counters);
 				routinesById[programId] = new PLCRoutine(compiled.nodes, compiled.calls);
 				if (preCompiledProgram.type === "ladder" && (preCompiledProgram as PreCompiledLadder).role === "main") {
 					mainProgramId = programId;
@@ -101,6 +115,7 @@ export default class ProjectCompiler {
 					routines,
 					routinesById,
 					timers,
+					counters,
 				},
 			};
 		} catch (e) {

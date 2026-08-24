@@ -74,13 +74,12 @@ export default class ProjectAnalyser {
 			totalAnalysedElements += result.analysedElementsCount;
 		}
 
-		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette
-		// notation (voir `GrafcetAnalyser.checkDuplicateStepNumbers`,
-		// `LadderAnalyser.checkMainUniqueness`/`checkOrphanLadders`/`checkCallCycles`).
+		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette notation.
 		issues.push(...GrafcetAnalyser.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
 		issues.push(...LadderAnalyser.checkMainUniqueness(project));
 		issues.push(...LadderAnalyser.checkOrphanLadders(project));
 		issues.push(...LadderAnalyser.checkCallCycles(project));
+		issues.push(...LadderAnalyser.checkBlockNameConflicts(project));
 
 		return {
 			totalAnalysedElements,

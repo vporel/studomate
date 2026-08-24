@@ -1,5 +1,6 @@
 "use client";
 
+import { isNumberLiteral } from "@/expression-language/number-literal";
 import { isTimeLiteral } from "@/expression-language/time-literal";
 import Variable, { VariableDirection, VariableType } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -75,12 +76,15 @@ function computeStatus(
 	typeFilter?: VariableType[],
 	excludeDirection?: VariableDirection,
 	acceptsTimeLiteral?: boolean,
+	acceptsNumberLiteral?: boolean,
 ): SelectorStatus {
 	const trimmed = mnemonic.trim();
 	if (!trimmed) return null;
-	// Une constante TIME (`T#...`) n'est jamais une variable déclarée — sa validité de format
-	// est du ressort de l'analyseur (`TimerBlockAnalyser`), pas de ce composant.
+	// Une constante TIME (`T#...`) ou un littéral numérique n'est jamais une variable déclarée —
+	// sa validité de format est du ressort de l'analyseur (`TimerBlockAnalyser`/
+	// `CounterBlockAnalyser`), pas de ce composant.
 	if (acceptsTimeLiteral && isTimeLiteral(trimmed)) return "ok";
+	if (acceptsNumberLiteral && isNumberLiteral(trimmed)) return "ok";
 	const match = variables.find((v) => v.mnemonic === trimmed);
 	if (!match) return "undeclared";
 	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
@@ -100,6 +104,9 @@ interface VariableSelectorProps {
 	 * `BlockPortSpec.acceptsTimeLiteral`. Une telle constante n'est jamais signalée comme
 	 * mnémonique non déclaré. */
 	acceptsTimeLiteral?: boolean;
+	/** Accepte, en plus d'un nom de variable, un littéral numérique brut — voir
+	 * `BlockPortSpec.acceptsNumberLiteral`. */
+	acceptsNumberLiteral?: boolean;
 	/** Restreint les colonnes affichées dans le popup de suggestions — non fourni : les quatre.
 	 * `mnemonic` reste toujours affichée, quel que soit `cols` : c'est la valeur éditée, sans
 	 * elle le tableau ne permet plus d'identifier quelle ligne on choisit. */
@@ -131,7 +138,18 @@ function columnsGridTemplate(columns: VariableColumn[]): string {
  * manuelle, source d'un décalage visuel à chaque bascule.
  */
 const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProps>(function VariableSelector(
-	{ value, onCommit, typeFilter, excludeDirection, acceptsTimeLiteral, cols, className, sx, baseInputSx },
+	{
+		value,
+		onCommit,
+		typeFilter,
+		excludeDirection,
+		acceptsTimeLiteral,
+		acceptsNumberLiteral,
+		cols,
+		className,
+		sx,
+		baseInputSx,
+	},
 	ref,
 ) {
 	const th = useTheme();
@@ -191,7 +209,14 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 		}
 	};
 
-	const status = computeStatus(editingValue, variables, typeFilter, excludeDirection, acceptsTimeLiteral);
+	const status = computeStatus(
+		editingValue,
+		variables,
+		typeFilter,
+		excludeDirection,
+		acceptsTimeLiteral,
+		acceptsNumberLiteral,
+	);
 	const statusColor = status && status !== "ok" ? th.palette.error.main : undefined;
 
 	const gridTemplateColumns = columnsGridTemplate(activeColumns);

@@ -1,4 +1,4 @@
-import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -14,6 +14,7 @@ import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variab
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import EvaluatorException from "@/expression-language/interpreter/exceptions/evaluator.exception";
+import CounterNodeEvaluator from "./counter-node.evaluator";
 import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";
 
 export type EvaluatorVisitorOptions = {
@@ -23,12 +24,14 @@ export type EvaluatorVisitorOptions = {
 export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	private env: Environment;
 	private timerEvaluator: TimerNodeEvaluator;
+	private counterEvaluator: CounterNodeEvaluator;
 	private options: EvaluatorVisitorOptions;
 
 	constructor(environment: Environment, options: EvaluatorVisitorOptions) {
 		super();
 		this.env = environment;
 		this.timerEvaluator = new TimerNodeEvaluator(environment, this, options.timers);
+		this.counterEvaluator = new CounterNodeEvaluator(environment, this);
 		this.options = options;
 	}
 
@@ -131,5 +134,9 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 
 	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): EnvVariableValue {
 		throw new EvaluatorException("Timer string declaration nodes should not be evaluated directly", node);
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): EnvVariableValue {
+		return this.counterEvaluator.evaluate(node);
 	}
 }

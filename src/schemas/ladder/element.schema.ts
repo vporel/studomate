@@ -1,4 +1,5 @@
 import { createRandomId } from "@/ids";
+import { getCounterPortSpecs } from "../function-blocks/counter.schema";
 import { getBlockHeightInCells } from "../function-blocks/function-block.schema";
 import { TIMER_PORT_SPECS } from "../function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
@@ -64,10 +65,13 @@ export function getElementWidth(element: LadderElement): number {
  * un bloc timer, par exemple, en occupe 2 (IN/Q sur la première ligne, PT/ET sur la seconde,
  * décalée d'un demi-cellule seulement — voir `BlockNode`). Pas de table `LADDER_ELEMENT_HEIGHTS`
  * comme pour la largeur : la hauteur dépend des ports propres à la famille du bloc, pas seulement
- * du genre d'élément.
+ * du genre d'élément. Un bloc `"compare"` n'a pas de `BlockPortSpec` (voir `CompareBlockParams`) :
+ * comme `"user-program"`, il n'a que sa ligne structurelle et occupe donc 1 cellule.
  */
 export function getElementHeight(element: LadderElement): number {
-	if (element.type === "block" && element.data.blockType === "timer") return getBlockHeightInCells(TIMER_PORT_SPECS);
+	if (element.type !== "block") return 1;
+	if (element.data.blockType === "timer") return getBlockHeightInCells(TIMER_PORT_SPECS);
+	if (element.data.blockType === "counter") return getBlockHeightInCells(getCounterPortSpecs(element.data.params.counterType));
 	return 1;
 }
 

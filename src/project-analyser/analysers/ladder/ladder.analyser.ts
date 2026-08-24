@@ -3,7 +3,9 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import LadderElementAnalyserFactory from "./element-analyser.factory";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import { createTimerBlockVariables } from "@/schemas/function-blocks/timer.schema";
+import { createCounterBlockVariables, getCounterBlockParams } from "@/schemas/function-blocks/counter.schema";
+import { createTimerBlockVariables, getTimerBlockParams } from "@/schemas/function-blocks/timer.schema";
+import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import ProgramAnalyser from "@/project-analyser/program.analyser";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
@@ -58,6 +60,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 			...this.buildBlockPortVariables(ladder),
 			...this.buildTimerLastInputVariables(ladder),
 			...this.buildTimerExposedVariables(ladder),
+			...this.buildCounterExposedVariables(ladder),
 		];
 	}
 
@@ -69,7 +72,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	analyse(ladder: Ladder, project: Project, allVariables: Variable[]): LadderAnalysisResult {
 		const variablesByMnemonic = new Map(allVariables.map((v) => [v.mnemonic, v]));
 
-		const issues: ProjectAnalyserIssue[] = [];
+		const issues: ProjectAnalyserIssue[] = [...this.checkConnectionColumnOrder(ladder)];
 		for (const element of ladder.getAllElements()) {
 			const analyser = LadderElementAnalyserFactory.getAnalyser(element.type);
 			if (analyser) {
@@ -83,6 +86,36 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 
 	countLeaves(ladder: Ladder): number {
 		return ladder.getAllElements().length;
+	}
+
+	/**
+	 * Défense en profondeur : la cible d'une connexion doit rester à une colonne au moins égale à
+	 * celle de sa source, garanti par `ConnectionsAddCommand`/`isConnectionAllowed` à la création
+	 * d'une connexion et par `LadderWorkflowManager.isPositionValidForConnections` quand un élément
+	 * connecté est ensuite déplacé — mais jamais revérifié pour un projet importé/édité à la main.
+	 * `computeNetworkAssignments` du pré-compilateur trie les éléments par colonne croissante et
+	 * suppose la source déjà traitée avant sa cible.
+	 */
+	private checkConnectionColumnOrder(ladder: Ladder): ProjectAnalyserIssue[] {
+		const issues: ProjectAnalyserIssue[] = [];
+		for (const section of ladder.sections) {
+			for (const connection of section.connections) {
+				const source = section.getElement(connection.source.id);
+				const target = section.getElement(connection.target.id);
+				if (!source || !target) continue;
+				if (target.position.col < source.position.col) {
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							"LADDER_CONNECTION_INVALID_ORDER",
+							{ sourceType: "ladder-network", sourceId: section.id, parentId: ladder.id },
+							"Une connexion relie un élément à un autre situé dans une colonne antérieure.",
+						),
+					);
+				}
+			}
+		}
+		return issues;
 	}
 
 	/**
@@ -111,6 +144,59 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 				`Le projet porte ${mains.length} programmes Main, il ne devrait en porter qu'un seul.`,
 			),
 		];
+	}
+
+	/**
+	 * Un nom de bloc tempo/compteur partage son espace de noms avec les mnémoniques de variable
+	 * (voir `Project.isNameTaken`) — cette vérification côté UI n'empêche pas une collision dans un
+	 * projet importé/édité à la main. Deux blocs de même nom généreraient des variables au même
+	 * mnémonique (`<Nom>.IN`...), l'une écrasant l'autre silencieusement dans
+	 * `variablesByMnemonic` (voir `analyse`). Statique : porte sur l'ensemble des ladders du projet.
+	 * Un nom vide est ignoré ici : déjà signalé par `BLOCK_TIMER_PT_EMPTY`/`BLOCK_COUNTER_CONTROL_EMPTY`
+	 * ou l'absence de nom n'a pas de sens à comparer entre blocs.
+	 */
+	static checkBlockNameConflicts(project: Project): ProjectAnalyserIssue[] {
+		const namedBlocks = [
+			...project.getAllTimerBlockElements().map(({ ladder, element }) => ({
+				ladder,
+				element,
+				name: getTimerBlockParams(element)?.name ?? "",
+			})),
+			...project.getAllCounterBlockElements().map(({ ladder, element }) => ({
+				ladder,
+				element,
+				name: getCounterBlockParams(element)?.name ?? "",
+			})),
+		].filter((block) => block.name !== "");
+
+		const projectMnemonics = new Set(project.variables.map((v) => v.mnemonic));
+		const issues: ProjectAnalyserIssue[] = [];
+		const namesSeen = new Set<string>();
+
+		for (const block of namedBlocks) {
+			const source = { sourceType: "ladder-block", sourceId: block.element.id, parentId: block.ladder.id } as const;
+			if (projectMnemonics.has(block.name)) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"BLOCK_NAME_VARIABLE_CONFLICT",
+						source,
+						`Le nom "${block.name}" de ce bloc entre en conflit avec une variable existante du même nom.`,
+					),
+				);
+			} else if (namesSeen.has(block.name)) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"BLOCK_NAME_DUPLICATE",
+						source,
+						`Le nom "${block.name}" de ce bloc est déjà utilisé par un autre bloc du projet.`,
+					),
+				);
+			}
+			namesSeen.add(block.name);
+		}
+		return issues;
 	}
 
 	/**
@@ -227,14 +313,16 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 
 	/**
 	 * Deux variables mémoire BOOL (entrée/sortie d'alimentation) par bloc — noms pris dans
-	 * `BLOCK_PORT_LABELS[blockType]`. Un bloc `"timer"` en est exclu : ses ports IN/Q sont déjà
-	 * de vraies `Variable` générées à partir de sa config (`<Nom>.IN`/`<Nom>.Q`, voir
-	 * `buildTimerExposedVariables`), pas des variables cachées propres à ce mécanisme.
+	 * `BLOCK_PORT_LABELS[blockType]`. Un bloc `"timer"`/`"counter"` en est exclu : ses ports
+	 * structurels sont déjà de vraies `Variable` générées à partir de sa config
+	 * (`buildTimerExposedVariables`/`buildCounterExposedVariables`), pas des variables cachées
+	 * propres à ce mécanisme.
 	 */
 	private buildBlockPortVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType === "timer") continue;
+			if (element.type !== "block" || element.data.blockType === "timer" || element.data.blockType === "counter")
+				continue;
 			const ports = BLOCK_PORT_LABELS[element.data.blockType];
 			for (const portName of [ports.input, ports.output]) {
 				variables.push(
@@ -274,13 +362,36 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	/**
 	 * Les variables IN/Q/ET exposées d'un bloc timer (`<Nom>.IN`, `.Q`, `.ET`) — voir
 	 * `createTimerBlockVariables`. Jamais persistées dans `project.variables` : générées ici à
-	 * partir de la config embarquée dans l'élément, elles disparaissent avec lui.
+	 * partir de la config embarquée dans l'élément, elles disparaissent avec lui. Un nom de bloc
+	 * invalide est ignoré ici (le constructeur `Variable` lèverait sinon) : `TimerBlockAnalyser`
+	 * signale l'erreur à l'utilisateur, cette méthode tourne avant toute analyse et ne doit jamais
+	 * lever.
 	 */
 	private buildTimerExposedVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
 			if (element.type !== "block" || element.data.blockType !== "timer") continue;
+			if (validateBlockName(element.data.params.name).length > 0) continue;
 			variables.push(...createTimerBlockVariables(element.id, element.data.params.name));
+		}
+		return variables;
+	}
+
+	/**
+	 * Les variables pulsion/Q/CV exposées d'un bloc compteur — voir `createCounterBlockVariables`.
+	 * Jamais persistées dans `project.variables` : générées ici à partir de la config embarquée
+	 * dans l'élément, elles disparaissent avec lui. Contrairement au timer, aucune variable
+	 * mémoire cachée de détection de front n'est nécessaire (`input`/`control` évalués en
+	 * niveau, voir `CounterNodeEvaluator`).
+	 */
+	private buildCounterExposedVariables(ladder: Ladder): Variable[] {
+		const variables: Variable[] = [];
+		for (const element of ladder.getAllElements()) {
+			if (element.type !== "block" || element.data.blockType !== "counter") continue;
+			if (validateBlockName(element.data.params.name).length > 0) continue;
+			variables.push(
+				...createCounterBlockVariables(element.id, element.data.params.name, element.data.params.counterType),
+			);
 		}
 		return variables;
 	}

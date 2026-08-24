@@ -3,6 +3,11 @@ import { Environment } from "../environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
@@ -164,6 +169,28 @@ describe("SemanticAnalyserVisitor", () => {
 
 		it("accepts boolean timer input", () => {
 			expect(() => parseAndCheck("timer1/flag/5s")).not.toThrow();
+		});
+	});
+
+	describe("timer block nodes", () => {
+		function buildTimerNode(elapsedTime: ASTNode = IdentifiersBuilder.buildIdentifierNode("result")) {
+			return BlocksBuilder.buildTimerNode(
+				"TON",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				elapsedTime,
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+		}
+
+		it("accepts an identifier for elapsedTime", () => {
+			expect(() => analyser.visit(buildTimerNode())).not.toThrow();
+		});
+
+		it("throws InvalidTimerElapsedTimeNodeException when elapsedTime is not an identifier", () => {
+			const node = buildTimerNode(LiteralsBuilder.buildNumberNode(5));
+			expect(() => analyser.visit(node)).toThrow(InvalidTimerElapsedTimeNodeException);
 		});
 	});
 

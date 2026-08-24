@@ -1,5 +1,6 @@
 import { createCoilElement, createContactElement, getElementHeight } from "./element.schema";
-import { createUserProgramBlockElement } from "./block.schema";
+import { createCompareBlockElement, createUserProgramBlockElement } from "./block.schema";
+import { createCounterBlockElement } from "../function-blocks/counter.schema";
 import { createTimerBlockElement } from "../function-blocks/timer.schema";
 
 describe("ladder element factories", () => {
@@ -40,6 +41,16 @@ describe("ladder element factories", () => {
 		it("vaut 2 pour un bloc timer", () => {
 			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
 			expect(getElementHeight(block)).toBe(2);
+		});
+
+		it("vaut 2 pour un bloc compteur", () => {
+			const block = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 0, 0);
+			expect(getElementHeight(block)).toBe(2);
+		});
+
+		it("vaut 1 pour un bloc compare (pas de pinoche paramètre)", () => {
+			const block = createCompareBlockElement({ expression: "A > B" }, 0, 0);
+			expect(getElementHeight(block)).toBe(1);
 		});
 	});
 });

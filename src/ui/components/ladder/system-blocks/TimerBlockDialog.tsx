@@ -1,13 +1,13 @@
 "use client";
 
-import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import { TIMER_TYPES, TimerType } from "@/schemas/function-blocks/timer.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { Button, MenuItem, TextField } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useBlockNameField } from "./useBlockNameField";
+import { useSystemBlockDialog } from "./useSystemBlockDialog";
 
 const TIMER_TYPE_LABELS: Record<TimerType, string> = {
 	TON: "TON — retard à l'enclenchement",
@@ -23,19 +23,12 @@ const TIMER_TYPE_LABELS: Record<TimerType, string> = {
  * Les deux états sont mutuellement exclusifs (un seul bloc système géré à la fois).
  */
 export default function TimerBlockDialog() {
-	const pendingCreation = useLadderStore((state) => state.pendingSystemBlockCreation);
-	const setPendingSystemBlockCreation = useLadderStore((state) => state.setPendingSystemBlockCreation);
-	const pendingEdit = useLadderStore((state) => state.pendingSystemBlockEdit);
-	const setPendingSystemBlockEdit = useLadderStore((state) => state.setPendingSystemBlockEdit);
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const { pendingCreation, pendingEdit, creating, editing, open, close, commandsStackManager } =
+		useSystemBlockDialog("timer");
 	const project = useProjectStore((state) => state.project);
 
 	const [name, setName] = useState("");
 	const [timerType, setTimerType] = useState<TimerType>("TON");
-
-	const creating = pendingCreation?.blockType === "timer";
-	const editing = pendingEdit?.blockType === "timer";
-	const open = creating || editing;
 
 	useEffect(() => {
 		if (pendingEdit?.blockType === "timer") {
@@ -45,31 +38,24 @@ export default function TimerBlockDialog() {
 	}, [pendingEdit]);
 
 	const onClose = useCallback(() => {
-		setPendingSystemBlockCreation(null);
-		setPendingSystemBlockEdit(null);
+		close();
 		setName("");
 		setTimerType("TON");
-	}, [setPendingSystemBlockCreation, setPendingSystemBlockEdit]);
+	}, [close]);
 
-	const nameErrors = useMemo(() => {
-		if (name === "") return [];
-		// En édition, le nom courant du bloc occupe déjà cet emplacement dans l'espace de noms —
-		// ce n'est un conflit que s'il coïncide avec une *autre* variable/bloc.
-		if (editing && name === pendingEdit.initial.name) return [];
-		const errors = validateBlockName(name);
-		if (errors.length === 0 && project?.isNameTaken(name)) {
-			errors.push("Ce nom est déjà utilisé par une variable ou un autre bloc du projet.");
-		}
-		return errors;
-	}, [name, project, editing, pendingEdit]);
+	const nameErrors = useBlockNameField(
+		name,
+		editing && pendingEdit?.blockType === "timer" ? pendingEdit.initial.name : undefined,
+		project,
+	);
 
 	const canSubmit = name !== "" && nameErrors.length === 0;
 
 	const onSubmit = useCallback(() => {
 		if (!canSubmit) return;
-		if (creating && pendingCreation) {
+		if (creating && pendingCreation?.blockType === "timer") {
 			pendingCreation.insert({ name, timerType, pt: "" });
-		} else if (editing && pendingEdit) {
+		} else if (editing && pendingEdit?.blockType === "timer") {
 			commandsStackManager.executeOperation([
 				new ElementUpdateCommand({
 					elementId: pendingEdit.elementId,

@@ -4,7 +4,8 @@ import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
-import { TimerBlockParams } from "@/schemas/ladder/block.schema";
+import { AssignBlockParams, CompareBlockParams, CounterBlockParams, TimerBlockParams } from "@/schemas/ladder/block.schema";
+import { PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
@@ -49,7 +50,8 @@ export default class LadderWorkflowManager {
 		// déjà (voir `CommandsStackManager.applyLadder`).
 		const changesToApply = changes
 			.filter((change) => change.type !== "remove")
-			.map((change) => this.snapPositionChange(change, rowHeightsInCells));
+			.map((change) => this.snapPositionChange(change, rowHeightsInCells))
+			.map((change) => (section ? this.revertInvalidFinishedMove(change, section, rowHeightsInCells) : change));
 
 		const nodes = state.nodesBySectionId[sectionId] ?? [];
 		const newNodes = applyNodeChanges<LadderNodeType>(changesToApply, nodes);
@@ -128,6 +130,49 @@ export default class LadderWorkflowManager {
 	 * intermédiaire (`dragging: true`), pour ne pas dispatcher une commande à chaque pixel. */
 	private isFinishedPositionChange(change: NodeChange): change is NodePositionChange {
 		return change.type === "position" && change.dragging !== true && !!change.position;
+	}
+
+	/**
+	 * Un glisser peut inverser l'ordre colonne d'un élément déjà connecté par rapport à un voisin,
+	 * ce que `ConnectionsAddCommand`/`isConnectionAllowed` (cible strictement à droite de la
+	 * source) n'a l'occasion de garantir qu'à la création d'une connexion, jamais quand un élément
+	 * connecté bouge ensuite — voir `computeNetworkAssignments` du pré-compilateur, qui trie les
+	 * éléments par colonne croissante et suppose la source déjà traitée avant sa cible. Une même
+	 * colonne pour les deux (le nœud déplacé "rattrape" son voisin, un cas de glisser normal et
+	 * testé) reste tolérée : seule une inversion franche casserait ce tri.
+	 */
+	private isPositionValidForConnections(section: Section, elementId: string, newPosition: GridPosition): boolean {
+		for (const connection of section.connections) {
+			if (connection.source.id === elementId) {
+				const target = section.getElement(connection.target.id);
+				if (target && target.position.col < newPosition.col) return false;
+			}
+			if (connection.target.id === elementId) {
+				const source = section.getElement(connection.source.id);
+				if (source && newPosition.col < source.position.col) return false;
+			}
+		}
+		return true;
+	}
+
+	/** Ramène à sa position d'origine la dernière frame d'un glisser qui violerait l'ordre de
+	 * colonnes d'une connexion existante (voir `isPositionValidForConnections`) — les frames
+	 * intermédiaires (`dragging: true`) restent libres, pour ne pas saccader le geste tant qu'il
+	 * n'est pas relâché. */
+	private revertInvalidFinishedMove(
+		change: NodeChange<LadderNodeType>,
+		section: Section,
+		rowHeightsInCells: Map<number, number>,
+	): NodeChange<LadderNodeType> {
+		if (!this.isFinishedPositionChange(change) || !change.position) return change;
+		const resolved = this.resolveMovedElement(section, change.id, change.position, rowHeightsInCells);
+		if (!resolved) return change;
+		if (this.isPositionValidForConnections(section, resolved.elementId, resolved.newPosition)) return change;
+		const element = section.getElement(resolved.elementId)!;
+		return {
+			...change,
+			position: { x: colToX(element.position.col), y: rowToY(element.position.row, rowHeightsInCells) },
+		};
 	}
 
 	/** Résout un `NodeChange` en élément du domaine + position en grille — `null` pour une borne
@@ -323,7 +368,20 @@ export default class LadderWorkflowManager {
 	 * l'explorateur (voir `useBlockInstanceMenuItems`), qui appelle cette méthode une fois la page
 	 * du ladder ciblé devenue active.
 	 */
-	openSystemBlockEditor(elementId: string, initial: TimerBlockParams): void {
-		this.setStoreState({ pendingSystemBlockEdit: { blockType: "timer", elementId, initial } });
+	// `CompareBlockParams`/`AssignBlockParams` ont la même forme (`{ expression }`) : `blockType`
+	// doit être fourni explicitement par l'appelant plutôt que déduit de la présence d'un champ
+	// (comme `timerType`/`counterType` le permettent pour timer/counter).
+	openSystemBlockEditor(elementId: string, blockType: "timer", initial: TimerBlockParams): void;
+	openSystemBlockEditor(elementId: string, blockType: "counter", initial: CounterBlockParams): void;
+	openSystemBlockEditor(elementId: string, blockType: "compare", initial: CompareBlockParams): void;
+	openSystemBlockEditor(elementId: string, blockType: "assign", initial: AssignBlockParams): void;
+	openSystemBlockEditor(
+		elementId: string,
+		blockType: PendingSystemBlockEdit["blockType"],
+		initial: TimerBlockParams | CounterBlockParams | CompareBlockParams | AssignBlockParams,
+	): void {
+		this.setStoreState({
+			pendingSystemBlockEdit: { blockType, elementId, initial } as PendingSystemBlockEdit,
+		});
 	}
 }

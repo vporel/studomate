@@ -1,5 +1,5 @@
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -17,6 +17,14 @@ import InputIdentifierAssignmentException from "./exceptions/input-identifier-as
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
 import InvalidBinaryExprOperandTypeException from "./exceptions/invalid-binary-expr-operand-type.exception";
 import InvalidControlConditionTypeException from "./exceptions/invalid-control-condition-type.exception";
+import InvalidCounterControlTypeException from "./exceptions/invalid-counter-control-type.exception";
+import InvalidCounterCurrentValueNodeException from "./exceptions/invalid-counter-current-value-node.exception";
+import InvalidCounterCurrentValueTypeException from "./exceptions/invalid-counter-current-value-type.exception";
+import InvalidCounterInputTypeException from "./exceptions/invalid-counter-input-type.exception";
+import InvalidCounterOutputNodeException from "./exceptions/invalid-counter-output-node.exception";
+import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-output-type.exception";
+import InvalidCounterPresetValueTypeException from "./exceptions/invalid-counter-preset-value-type.exception";
+import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
 import InvalidTimerElapsedTimeTypeException from "./exceptions/invalid-timer-elapsed-time-type.exception";
 import InvalidTimerInputTypeException from "./exceptions/invalid-timer-input-type.exception";
 import InvalidTimerLastInputNodeException from "./exceptions/invalid-timer-last-input-node.exception";
@@ -228,6 +236,9 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (presetTimeType !== "number") {
 			throw new InvalidTimerPresetTimeTypeException(presetTimeType as ExpectedNodeResultType, node);
 		}
+		if (node.elapsedTime.type !== "IDENTIFIER") {
+			throw new InvalidTimerElapsedTimeNodeException(node);
+		}
 		const elapsedTimeType = this.typeAnalyser.visit(node.elapsedTime);
 		if (elapsedTimeType !== "number") {
 			throw new InvalidTimerElapsedTimeTypeException(elapsedTimeType as ExpectedNodeResultType, node);
@@ -238,6 +249,35 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		const inputType = this.typeAnalyser.visit(node.input);
 		if (inputType !== "boolean") {
 			throw new InvalidTimerInputTypeException(inputType as ExpectedNodeResultType, node);
+		}
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): void {
+		const inputType = this.typeAnalyser.visit(node.input);
+		if (inputType !== "boolean") {
+			throw new InvalidCounterInputTypeException(inputType as ExpectedNodeResultType, node);
+		}
+		const controlType = this.typeAnalyser.visit(node.control);
+		if (controlType !== "boolean") {
+			throw new InvalidCounterControlTypeException(controlType as ExpectedNodeResultType, node);
+		}
+		if (node.currentValue.type !== "IDENTIFIER") {
+			throw new InvalidCounterCurrentValueNodeException(node);
+		}
+		const currentValueType = this.typeAnalyser.visit(node.currentValue);
+		if (currentValueType !== "number") {
+			throw new InvalidCounterCurrentValueTypeException(currentValueType as ExpectedNodeResultType, node);
+		}
+		if (node.output.type !== "IDENTIFIER") {
+			throw new InvalidCounterOutputNodeException(node);
+		}
+		const outputType = this.typeAnalyser.visit(node.output);
+		if (outputType !== "boolean") {
+			throw new InvalidCounterOutputTypeException(outputType as ExpectedNodeResultType, node);
+		}
+		const presetValueType = this.typeAnalyser.visit(node.presetValue);
+		if (presetValueType !== "number") {
+			throw new InvalidCounterPresetValueTypeException(presetValueType as ExpectedNodeResultType, node);
 		}
 	}
 }

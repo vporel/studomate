@@ -18,6 +18,10 @@ export type BlockPortKind = "structural" | "parameter";
  * `acceptsTimeLiteral` : `true` si la pinoche accepte, en plus d'un nom de variable, une
  * constante TIME façon IEC 61131-3 (`T#...`, voir `time-literal.ts`) — seul PT d'un timer
  * aujourd'hui (voir `TimerBlockAnalyser`) ; ET référence toujours une variable.
+ *
+ * `acceptsNumberLiteral` : `true` si la pinoche accepte, en plus d'un nom de variable, un
+ * littéral numérique brut (voir `number-literal.ts`) — seul PV d'un compteur aujourd'hui (voir
+ * `CounterBlockAnalyser`).
  */
 export type BlockPortSpec = {
 	suffix: string;
@@ -26,6 +30,7 @@ export type BlockPortSpec = {
 	direction: "input" | "output";
 	generatesVariable: boolean;
 	acceptsTimeLiteral?: boolean;
+	acceptsNumberLiteral?: boolean;
 };
 
 /** Les mnémoniques plats générés pour un bloc nommé `name`, un par port de `portSpecs` dont

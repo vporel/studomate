@@ -1,5 +1,5 @@
 import { ASTNode } from "../nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -38,6 +38,8 @@ export abstract class BaseVisitor<T> {
 				return this.visitTimerBlockNode(node);
 			case "TIMER_STRING_DECLARATION":
 				return this.visitTimerStringDeclarationNode(node);
+			case "COUNTER_BLOCK":
+				return this.visitCounterBlockNode(node);
 		}
 	}
 
@@ -64,4 +66,5 @@ export abstract class BaseVisitor<T> {
 	//Blocks
 	protected abstract visitTimerBlockNode(node: TimerNode): T;
 	protected abstract visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): T;
+	protected abstract visitCounterBlockNode(node: CounterNode): T;
 }

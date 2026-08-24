@@ -33,7 +33,9 @@ export const treeItemStyles: CustomTreeItemStyles = {
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 	const explorerRef = useRef<HTMLDivElement>(null);
 	const hasSystemBlockInstances = useProjectStore(
-		(state) => (state.project?.getAllTimerBlockElements().length ?? 0) > 0,
+		(state) =>
+			(state.project?.getAllTimerBlockElements().length ?? 0) > 0 ||
+			(state.project?.getAllCounterBlockElements().length ?? 0) > 0,
 	);
 	const {
 		visible: contextMenuVisible,

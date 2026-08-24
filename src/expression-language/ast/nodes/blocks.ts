@@ -25,4 +25,24 @@ export interface TimerStringDeclarationNode extends BaseNode {
 	presetTime: number; //in ms
 }
 
-export type BlockNode = TimerNode | TimerStringDeclarationNode;
+export type CounterType = "CTU" | "CTD";
+
+/**
+ * CTU (compte vers le haut, `input`/`control` = `CU`/`R`) ou CTD (compte vers le bas,
+ * `input`/`control` = `CD`/`LD`) — les deux variantes partagent la même forme de nœud, seul le
+ * sens du comptage et la cible de `control` diffèrent (`CounterNodeEvaluator`). `input` et
+ * `control` sont évalués en niveau (pas de détection de front, contrairement à `TimerNode`) :
+ * `control` vrai est prioritaire sur `input` et fige `currentValue` à sa valeur cible (`0` pour
+ * CTU, `presetValue` pour CTD) le temps qu'il reste vrai.
+ */
+export interface CounterNode extends BaseNode {
+	type: "COUNTER_BLOCK";
+	counterType: CounterType;
+	input: ASTNode; //should be of native type boolean
+	control: ASTNode; //should be of native type boolean
+	presetValue: ASTNode; //should be of native type number
+	currentValue: ASTNode; //should be an identifier node referencing a numeric variable
+	output: ASTNode; //should be an identifier node referencing a boolean variable
+}
+
+export type BlockNode = TimerNode | TimerStringDeclarationNode | CounterNode;

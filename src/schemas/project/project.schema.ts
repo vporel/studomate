@@ -4,6 +4,7 @@ import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
 import Variable from "../variable/variable.schema";
+import { getCounterBlockParams } from "../function-blocks/counter.schema";
 import { getTimerBlockParams } from "../function-blocks/timer.schema";
 import { BlockElement } from "../ladder/block.schema";
 
@@ -164,11 +165,30 @@ export default class Project {
 		);
 	}
 
+	/**
+	 * Tous les blocs compteur du projet, tous ladders confondus — même principe que
+	 * `getAllTimerBlockElements`.
+	 */
+	getAllCounterBlockElements(): { ladder: Ladder; element: BlockElement }[] {
+		return Object.values(this.ladders).flatMap((ladder) =>
+			ladder
+				.getAllElements()
+				.filter(
+					(element): element is BlockElement =>
+						element.type === "block" && element.data.blockType === "counter",
+				)
+				.map((element) => ({ ladder, element })),
+		);
+	}
+
 	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être
 	 * unique parmi les deux. */
 	isNameTaken(name: string): boolean {
 		if (this.variables.some((variable) => variable.mnemonic === name)) return true;
-		return this.getAllTimerBlockElements().some(({ element }) => getTimerBlockParams(element)?.name === name);
+		if (this.getAllTimerBlockElements().some(({ element }) => getTimerBlockParams(element)?.name === name)) {
+			return true;
+		}
+		return this.getAllCounterBlockElements().some(({ element }) => getCounterBlockParams(element)?.name === name);
 	}
 
 	/**

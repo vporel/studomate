@@ -3,8 +3,10 @@ import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
 import { isTimeLiteral, parseTimeLiteral } from "@/expression-language/time-literal";
+import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import { BlockElement } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import { resolveFunctionBlockPin } from "./function-block-pin.resolver";
 
 type PinCodes = {
 	empty?: ProjectAnalyserIssueCode;
@@ -26,9 +28,19 @@ export default class TimerBlockAnalyser {
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "timer") return [];
-		const { pt, et } = element.data.params;
+		const { name, pt, et } = element.data.params;
 
 		const issues: ProjectAnalyserIssue[] = [];
+		if (validateBlockName(name).length > 0) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"BLOCK_TIMER_NAME_INVALID",
+					source,
+					`Le nom "${name}" de ce bloc tempo n'est pas valide.`,
+				),
+			);
+		}
 		issues.push(
 			...this.validatePin(pt, "PT", true, source, variablesByMnemonic, {
 				empty: "BLOCK_TIMER_PT_EMPTY",
@@ -58,19 +70,27 @@ export default class TimerBlockAnalyser {
 		variablesByMnemonic: Map<string, Variable>,
 		codes: PinCodes,
 	): ProjectAnalyserIssue[] {
-		if (!pin) {
-			if (!codes.empty) return []; // ET est optionnel
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					codes.empty,
-					source,
-					`La pinoche ${pinName} de ce bloc tempo doit être renseignée.`,
-				),
-			];
-		}
-		if (acceptsTimeLiteral && isTimeLiteral(pin)) {
-			if (parseTimeLiteral(pin) === null && codes.invalidConstant) {
+		const resolution = resolveFunctionBlockPin(
+			pin,
+			variablesByMnemonic,
+			"number",
+			acceptsTimeLiteral ? { isLiteralSyntax: isTimeLiteral, isLiteralValid: (p) => parseTimeLiteral(p) !== null } : undefined,
+		);
+		switch (resolution.kind) {
+			case "empty":
+				if (!codes.empty) return []; // ET est optionnel
+				return [
+					new ProjectAnalyserIssue(
+						"error",
+						codes.empty,
+						source,
+						`La pinoche ${pinName} de ce bloc tempo doit être renseignée.`,
+					),
+				];
+			case "literal":
+				return [];
+			case "invalid-constant":
+				if (!codes.invalidConstant) return [];
 				return [
 					new ProjectAnalyserIssue(
 						"error",
@@ -79,31 +99,26 @@ export default class TimerBlockAnalyser {
 						`"${pin}" n'est pas une constante TIME valide (ex. T#5s, T#1h30m).`,
 					),
 				];
-			}
-			return [];
+			case "undeclared":
+				return [
+					new ProjectAnalyserIssue(
+						"error",
+						codes.undeclaredVariable,
+						source,
+						`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo n'existe pas.`,
+					),
+				];
+			case "invalid-type":
+				return [
+					new ProjectAnalyserIssue(
+						"error",
+						codes.invalidType,
+						source,
+						`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo doit être numérique ou TIME.`,
+					),
+				];
+			case "ok":
+				return [];
 		}
-
-		const variable = variablesByMnemonic.get(pin);
-		if (!variable) {
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					codes.undeclaredVariable,
-					source,
-					`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo n'existe pas.`,
-				),
-			];
-		}
-		if (variable.getNativeType() !== "number") {
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					codes.invalidType,
-					source,
-					`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo doit être numérique ou TIME.`,
-				),
-			];
-		}
-		return [];
 	}
 }

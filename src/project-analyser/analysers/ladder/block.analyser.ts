@@ -3,6 +3,9 @@ import { BlockElement } from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import AssignBlockAnalyser from "./assign-block.analyser";
+import CompareBlockAnalyser from "./compare-block.analyser";
+import CounterBlockAnalyser from "./counter-block.analyser";
 import LadderElementAnalyser from "./element.analyser";
 import TimerBlockAnalyser from "./timer-block.analyser";
 
@@ -20,6 +23,15 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 		const source = { sourceType: "ladder-block", sourceId: element.id, parentId: ladder.id } as const;
 		if (element.data.blockType === "timer") {
 			return TimerBlockAnalyser.analyse(element, source, variablesByMnemonic);
+		}
+		if (element.data.blockType === "counter") {
+			return CounterBlockAnalyser.analyse(element, source, variablesByMnemonic);
+		}
+		if (element.data.blockType === "compare") {
+			return CompareBlockAnalyser.analyse(element, source, project.dialect, variablesByMnemonic);
+		}
+		if (element.data.blockType === "assign") {
+			return AssignBlockAnalyser.analyse(element, source, project.dialect, variablesByMnemonic);
 		}
 		if (element.data.blockType !== "user-program") return [];
 		const { programId } = element.data.params;

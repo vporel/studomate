@@ -1,5 +1,5 @@
 import { ASTNode } from "../nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -85,5 +85,14 @@ export default class FinderVisitor<T extends ASTNode = ASTNode> extends BaseVisi
 
 	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): T[] {
 		return this.visit(node.input).concat(node.type === this.typeToFind ? [node as T] : []);
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): T[] {
+		return this.visit(node.input)
+			.concat(this.visit(node.control))
+			.concat(this.visit(node.presetValue))
+			.concat(this.visit(node.currentValue))
+			.concat(this.visit(node.output))
+			.concat(node.type === this.typeToFind ? [node as T] : []);
 	}
 }

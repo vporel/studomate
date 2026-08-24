@@ -1,5 +1,5 @@
 import { ASTNode } from "../nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -132,6 +132,19 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		return {
 			...node,
 			input: this.visit(node.input),
+		};
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): ASTNode {
+		const replacement = this.replacements.find((r) => r.predicate(node));
+		if (replacement) return replacement.replacement;
+		return {
+			...node,
+			input: this.visit(node.input),
+			control: this.visit(node.control),
+			presetValue: this.visit(node.presetValue),
+			currentValue: this.visit(node.currentValue),
+			output: this.visit(node.output),
 		};
 	}
 }

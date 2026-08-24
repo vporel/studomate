@@ -1,8 +1,10 @@
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -104,7 +106,15 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	}
 
 	protected visitIfControlNode(node: IfControlNode): ASTNode {
-		return node;
+		const simplifiedCondition = this.visit(node.condition);
+		const simplifiedTrueBranch = node.trueBranch.map((stmt) => this.visit(stmt));
+		const simplifiedFalseBranch = node.falseBranch ? node.falseBranch.map((stmt) => this.visit(stmt)) : null;
+		return ControlsBuilder.buildIfControlNode(
+			simplifiedCondition,
+			simplifiedTrueBranch,
+			simplifiedFalseBranch,
+			node.position,
+		);
 	}
 
 	private simplifyAndExpr(node: LogicalExpressionNode): ASTNode {
@@ -180,10 +190,35 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	}
 
 	protected visitTimerBlockNode(node: TimerNode): ASTNode {
-		return node;
+		return BlocksBuilder.buildTimerNode(
+			node.timerType,
+			this.visit(node.input),
+			this.visit(node.lastInput),
+			this.visit(node.presetTime),
+			this.visit(node.elapsedTime),
+			this.visit(node.output),
+			node.position,
+		);
 	}
 
 	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ASTNode {
-		return node;
+		return BlocksBuilder.buildTimerStringDeclarationNode(
+			node.name,
+			this.visit(node.input),
+			node.presetTime,
+			node.position,
+		);
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): ASTNode {
+		return BlocksBuilder.buildCounterNode(
+			node.counterType,
+			this.visit(node.input),
+			this.visit(node.control),
+			this.visit(node.presetValue),
+			this.visit(node.currentValue),
+			this.visit(node.output),
+			node.position,
+		);
 	}
 }

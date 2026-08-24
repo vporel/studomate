@@ -5,9 +5,14 @@ import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.com
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import {
+	createAssignBlockElement,
+	createCompareBlockElement,
+	createUserProgramBlockElement,
+} from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement, getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
+import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
@@ -109,6 +114,33 @@ export default function useLadderDropHandlers(
 				setPendingSystemBlockCreation({
 					blockType: "timer",
 					insert: (params) => dispatchInsertion(createTimerBlockElement(params, dropRow, dropCol)),
+				});
+				return;
+			}
+
+			if (systemBlockType === "counter") {
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				setPendingSystemBlockCreation({
+					blockType: "counter",
+					insert: (params) => dispatchInsertion(createCounterBlockElement(params, dropRow, dropCol)),
+				});
+				return;
+			}
+
+			if (systemBlockType === "compare") {
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				setPendingSystemBlockCreation({
+					blockType: "compare",
+					insert: (params) => dispatchInsertion(createCompareBlockElement(params, dropRow, dropCol)),
+				});
+				return;
+			}
+
+			if (systemBlockType === "assign") {
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				setPendingSystemBlockCreation({
+					blockType: "assign",
+					insert: (params) => dispatchInsertion(createAssignBlockElement(params, dropRow, dropCol)),
 				});
 				return;
 			}

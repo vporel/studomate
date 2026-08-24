@@ -8,6 +8,13 @@ import { DivisionByZeroException } from "@/expression-language/interpreter/excep
 import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import UnknownVariableNameException from "@/simulator/interpreter/environment/exceptions/unknown-variable-name.exception";
+import InvalidCounterControlTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-control-type.exception";
+import InvalidCounterCurrentValueNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-current-value-node.exception";
+import InvalidCounterCurrentValueTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-current-value-type.exception";
+import InvalidCounterInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-input-type.exception";
+import InvalidCounterOutputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-node.exception";
+import InvalidCounterOutputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-type.exception";
+import InvalidCounterPresetValueTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-preset-value-type.exception";
 import InvalidTimerElapsedTimeTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-elapsed-time-type.exception";
 import InvalidTimerInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-input-type.exception";
 import InvalidTimerLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-last-input-node.exception";
@@ -40,6 +47,7 @@ const AST_NODE_TYPE_LABELS: Record<ASTNode["type"], string> = {
 	ASSIGN_STATEMENT: "Affectation",
 	TIMER_BLOCK: "Bloc de temporisation",
 	TIMER_STRING_DECLARATION: "Temporisation",
+	COUNTER_BLOCK: "Bloc compteur",
 	IF_CONTROL: "Contrôle conditionnel",
 };
 
@@ -214,6 +222,54 @@ export default class SimulatorExceptionsMapper {
 			return lang === "EN"
 				? `Invalid timer elapsed time type: expected ${expected}, got ${actual}`
 				: `Type de temps écoulé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
+		}
+
+		if (exception instanceof InvalidCounterInputTypeException) {
+			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid counter input type: the input of a counter must be boolean (found ${actual})`
+				: `Type d'entrée de compteur invalide : l'entrée d'un compteur doit être un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidCounterControlTypeException) {
+			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid counter control type: the control (R/LD) of a counter must be boolean (found ${actual})`
+				: `Type de contrôle de compteur invalide : le contrôle (R/LD) d'un compteur doit être un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidCounterCurrentValueNodeException) {
+			return lang === "EN"
+				? `Invalid counter current value node: the current value (CV) of a counter block must be an identifier`
+				: `Nœud de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être une variable`;
+		}
+
+		if (exception instanceof InvalidCounterCurrentValueTypeException) {
+			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid counter current value type: the current value (CV) of a counter block must be a number (found ${actual})`
+				: `Type de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être numérique (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidCounterOutputNodeException) {
+			return lang === "EN"
+				? `Invalid counter output node: the output of a counter block must be an identifier`
+				: `Nœud de sortie de compteur invalide : la sortie d'un bloc compteur doit être une variable`;
+		}
+
+		if (exception instanceof InvalidCounterOutputTypeException) {
+			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid counter output type: the output of a counter block must be boolean (found ${actual})`
+				: `Type de sortie de compteur invalide : la sortie d'un bloc compteur doit retourner un booléen (trouvé ${actual})`;
+		}
+
+		if (exception instanceof InvalidCounterPresetValueTypeException) {
+			const expected = SimulatorExceptionsMapper.transformVariableType(exception.getExpectedType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			return lang === "EN"
+				? `Invalid counter preset value type: expected ${expected}, got ${actual}`
+				: `Type de valeur préréglée de compteur invalide : attendu ${expected}, obtenu ${actual}`;
 		}
 
 		return null;

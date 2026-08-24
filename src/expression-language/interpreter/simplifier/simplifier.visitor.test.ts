@@ -2,7 +2,19 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import SimplifierVisitor from "./simplifier.visitor";
+
+/** `5 + 3`, comme AST — pour tester le repliement de constante dans un nœud composite sans
+ * dépendre du texte source (ces nœuds ne s'écrivent jamais directement en expression). */
+function foldableAddition() {
+	return ExpressionsBuilder.buildArithmeticExpressionNode("+", LiteralsBuilder.buildNumberNode(5), LiteralsBuilder.buildNumberNode(3));
+}
 
 describe("SimplifierVisitor", () => {
 	let simplifier: SimplifierVisitor;
@@ -207,6 +219,74 @@ describe("SimplifierVisitor", () => {
 
 		it("throws when the right side folds down to a division by zero", () => {
 			expect(() => parseAndSimplify("x := 10 / 0")).toThrow(DivisionByZeroException);
+		});
+	});
+
+	describe("if control nodes", () => {
+		it("simplifies a constant condition and a constant statement in each branch", () => {
+			const node = ControlsBuilder.buildIfControlNode(
+				foldableAddition(),
+				[StatementsBuilder.buildAssignStatementNode(IdentifiersBuilder.buildIdentifierNode("x"), foldableAddition())],
+				[StatementsBuilder.buildAssignStatementNode(IdentifiersBuilder.buildIdentifierNode("y"), foldableAddition())],
+			);
+
+			const result = simplifier.visit(node) as any;
+
+			expect(result.condition.type).toBe("NUMBER_LITERAL");
+			expect(result.condition.value).toBe(8);
+			expect(result.trueBranch[0].right.value).toBe(8);
+			expect(result.falseBranch[0].right.value).toBe(8);
+		});
+
+		it("throws when a branch statement folds down to a division by zero", () => {
+			const node = ControlsBuilder.buildIfControlNode(
+				LiteralsBuilder.buildBooleanNode(true),
+				[
+					StatementsBuilder.buildAssignStatementNode(
+						IdentifiersBuilder.buildIdentifierNode("x"),
+						ExpressionsBuilder.buildArithmeticExpressionNode("/", LiteralsBuilder.buildNumberNode(10), LiteralsBuilder.buildNumberNode(0)),
+					),
+				],
+				null,
+			);
+
+			expect(() => simplifier.visit(node)).toThrow(DivisionByZeroException);
+		});
+	});
+
+	describe("timer block nodes", () => {
+		it("simplifies a constant presetTime", () => {
+			const node = BlocksBuilder.buildTimerNode(
+				"TON",
+				IdentifiersBuilder.buildIdentifierNode("in"),
+				IdentifiersBuilder.buildIdentifierNode("lastIn"),
+				foldableAddition(),
+				IdentifiersBuilder.buildIdentifierNode("et"),
+				IdentifiersBuilder.buildIdentifierNode("q"),
+			);
+
+			const result = simplifier.visit(node) as any;
+
+			expect(result.presetTime.type).toBe("NUMBER_LITERAL");
+			expect(result.presetTime.value).toBe(8);
+		});
+	});
+
+	describe("counter block nodes", () => {
+		it("simplifies a constant presetValue", () => {
+			const node = BlocksBuilder.buildCounterNode(
+				"CTU",
+				IdentifiersBuilder.buildIdentifierNode("in"),
+				IdentifiersBuilder.buildIdentifierNode("ctrl"),
+				foldableAddition(),
+				IdentifiersBuilder.buildIdentifierNode("cv"),
+				IdentifiersBuilder.buildIdentifierNode("q"),
+			);
+
+			const result = simplifier.visit(node) as any;
+
+			expect(result.presetValue.type).toBe("NUMBER_LITERAL");
+			expect(result.presetValue.value).toBe(8);
 		});
 	});
 });

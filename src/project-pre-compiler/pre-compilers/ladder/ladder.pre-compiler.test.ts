@@ -2,7 +2,11 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { getBlockPortVariableMnemonic, getContactMemoryVariableMnemonic } from "@/project-analyser/analysers/ladder/ladder.analyser";
 import ProjectPreCompilerError from "@/project-pre-compiler/project.pre-compiler.error";
-import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import {
+	createAssignBlockElement,
+	createCompareBlockElement,
+	createUserProgramBlockElement,
+} from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
@@ -29,6 +33,16 @@ function describeNode(node: ASTNode): string {
 			return `${node.operator} ${describeNode(node.expr)}`;
 		case "LOGICAL_EXPRESSION":
 			return `(${describeNode(node.left)} ${node.operator} ${describeNode(node.right)})`;
+		case "NUMBER_LITERAL":
+			return String(node.value);
+		case "COMPARISON_EXPRESSION":
+			return `(${describeNode(node.left)} ${node.operator} ${describeNode(node.right)})`;
+		case "ARITHMETIC_EXPRESSION":
+			return `(${describeNode(node.left)} ${node.operator} ${describeNode(node.right)})`;
+		case "ASSIGN_STATEMENT":
+			return `${describeNode(node.left)} := ${describeNode(node.right)}`;
+		case "IF_CONTROL":
+			return `IF ${describeNode(node.condition)} THEN [${node.trueBranch.map(describeNode).join(", ")}]`;
 		default:
 			throw new Error(`Nœud inattendu dans un ladder pré-compilé : ${node.type}`);
 	}
@@ -189,6 +203,20 @@ describe("LadderPreCompiler", () => {
 		expect(result.edgeMemoUpdates.map((u) => u.contactId).sort()).toEqual([contactN.id, contactP.id].sort());
 	});
 
+	it("collecte une erreur claire (pas un crash) quand une connexion viole l'ordre de colonnes", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("A", "NO", 0, 3);
+		const coil = createCoilElement("Q", "normal", 0, 1);
+		const section = createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil]));
+		const ladder = new Ladder("l1", "L", [section]);
+
+		const { errors } = preCompile(ladder);
+
+		expect(errors).toHaveLength(1);
+		expect(errors[0]).toBeInstanceOf(ProjectPreCompilerError);
+		expect(errors[0].message).toContain("Ordre de colonnes invalide");
+	});
+
 	describe("blocs", () => {
 		it("matérialise EN depuis reach, et ENO toujours vrai pour un appel de programme utilisateur", () => {
 			const rail = createRailTerminalElement(0);
@@ -337,6 +365,110 @@ describe("LadderPreCompiler", () => {
 
 			expect(result.timers).toHaveLength(1);
 			expect(result.timers[0].type).toBe("TIMER_BLOCK");
+		});
+	});
+
+	describe("blocs compare", () => {
+		it("matérialise IN depuis reach, et Q = IN ET l'expression", () => {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createCompareBlockElement({ expression: "X > Y" }, 0, 2);
+			const section = createSectionWith([rail, contactA, block], wireInSeries([rail, contactA, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const inMnemonic = getBlockPortVariableMnemonic(block.id, "IN");
+			const qMnemonic = getBlockPortVariableMnemonic(block.id, "Q");
+
+			const blockPortAssignments = result.assignments.filter((a) => a.kind === "blockPort") as any[];
+			expect(blockPortAssignments).toHaveLength(2);
+
+			const inAssignment = blockPortAssignments.find((a) => a.mnemonic === inMnemonic)!;
+			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+
+			const qAssignment = blockPortAssignments.find((a) => a.mnemonic === qMnemonic)!;
+			expect(describeNode(qAssignment.value)).toBe(`(${inMnemonic} AND (X > Y))`);
+		});
+
+		it("propage Q aux éléments suivants sur la même ligne", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCompareBlockElement({ expression: "X > Y" }, 0, 1);
+			const coil = createCoilElement("Q", "normal", 0, 2);
+			const section = createSectionWith([rail, block, coil], wireInSeries([rail, block, coil]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const qMnemonic = getBlockPortVariableMnemonic(block.id, "Q");
+			const coilAssignment = coilAssignments(result)[0];
+			expect(describeNode(coilAssignment.condition)).toBe(qMnemonic);
+		});
+
+		it("ne produit ni TimerNode ni CounterNode", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCompareBlockElement({ expression: "X > Y" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(result.timers).toEqual([]);
+			expect(result.counters).toEqual([]);
+			expect(result.assignments.every((a) => a.kind === "blockPort")).toBe(true);
+		});
+	});
+
+	describe("blocs assign", () => {
+		it("matérialise EN depuis reach, et un IfControlNode qui exécute l'affectation quand EN est vrai", () => {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createAssignBlockElement({ expression: "X := Y" }, 0, 2);
+			const section = createSectionWith([rail, contactA, block], wireInSeries([rail, contactA, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const enMnemonic = getBlockPortVariableMnemonic(block.id, "EN");
+			const enoMnemonic = getBlockPortVariableMnemonic(block.id, "ENO");
+
+			const blockPortAssignments = result.assignments.filter((a) => a.kind === "blockPort") as any[];
+			expect(blockPortAssignments).toHaveLength(2);
+
+			const enAssignment = blockPortAssignments.find((a) => a.mnemonic === enMnemonic)!;
+			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
+
+			const enoAssignment = blockPortAssignments.find((a) => a.mnemonic === enoMnemonic)!;
+			expect(describeNode(enoAssignment.value)).toBe("true");
+
+			const assignAssignment = result.assignments.find((a) => a.kind === "assign") as any;
+			expect(describeNode(assignAssignment.node)).toBe(`IF ${enMnemonic} THEN [X := Y]`);
+		});
+
+		it("propage ENO (toujours vrai) aux éléments suivants sur la même ligne", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createAssignBlockElement({ expression: "X := Y" }, 0, 1);
+			const coil = createCoilElement("Q", "normal", 0, 2);
+			const section = createSectionWith([rail, block, coil], wireInSeries([rail, block, coil]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const enoMnemonic = getBlockPortVariableMnemonic(block.id, "ENO");
+			const coilAssignment = coilAssignments(result)[0];
+			expect(describeNode(coilAssignment.condition)).toBe(enoMnemonic);
+		});
+
+		it("ne produit ni TimerNode ni CounterNode", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createAssignBlockElement({ expression: "X := Y" }, 0, 1);
+			const section = createSectionWith([rail, block], wireInSeries([rail, block]));
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			expect(result.timers).toEqual([]);
+			expect(result.counters).toEqual([]);
 		});
 	});
 });

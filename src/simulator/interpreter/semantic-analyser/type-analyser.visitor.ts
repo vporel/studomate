@@ -1,4 +1,4 @@
-import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -75,6 +75,10 @@ export default class TypeAnalyserVisitor extends BaseVisitor<ExpectedNodeResultT
 	}
 
 	protected visitTimerStringDeclarationNode(_node: TimerStringDeclarationNode): ExpectedNodeResultType {
+		return "boolean";
+	}
+
+	protected visitCounterBlockNode(_node: CounterNode): ExpectedNodeResultType {
 		return "boolean";
 	}
 }

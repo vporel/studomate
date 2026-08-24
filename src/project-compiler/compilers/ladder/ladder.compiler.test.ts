@@ -1,5 +1,8 @@
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { PreCompiledLadder } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
 import LadderCompiler from "./ladder.compiler";
 
@@ -13,6 +16,7 @@ describe("LadderCompiler", () => {
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
+			counters: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -35,6 +39,7 @@ describe("LadderCompiler", () => {
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
+			counters: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -63,6 +68,7 @@ describe("LadderCompiler", () => {
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
+			counters: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -109,6 +115,7 @@ describe("LadderCompiler", () => {
 			],
 			blockCalls: [],
 			timers: [],
+			counters: [],
 		};
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
@@ -128,6 +135,7 @@ describe("LadderCompiler", () => {
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
+			counters: [],
 		};
 
 		const { timers } = LadderCompiler.compile(preCompiled);
@@ -144,6 +152,7 @@ describe("LadderCompiler", () => {
 			edgeMemoUpdates: [],
 			blockCalls: [{ blockId: "b1", programId: "prog1", enMnemonic: "b1_EN" }],
 			timers: [],
+			counters: [],
 		};
 
 		const { nodes, calls } = LadderCompiler.compile(preCompiled);
@@ -157,5 +166,77 @@ describe("LadderCompiler", () => {
 		expect(calls).toMatchObject([
 			{ programId: "prog1", condition: { type: "IDENTIFIER", value: "b1_EN" } },
 		]);
+	});
+
+	it("embarque un TimerNode tel quel parmi les instructions, et le propage dans `timers`", () => {
+		const timerNode = BlocksBuilder.buildTimerNode(
+			"TON",
+			IdentifiersBuilder.buildIdentifierNode("Tempo1.IN"),
+			IdentifiersBuilder.buildIdentifierNode("lastIn"),
+			LiteralsBuilder.buildNumberNode(5000),
+			IdentifiersBuilder.buildIdentifierNode("Tempo1.ET"),
+			IdentifiersBuilder.buildIdentifierNode("Tempo1.Q"),
+		);
+		const preCompiled: PreCompiledLadder = {
+			type: "ladder",
+			role: "standard",
+			assignments: [{ kind: "timer", blockId: "b1", node: timerNode }],
+			edgeMemoUpdates: [],
+			blockCalls: [],
+			timers: [timerNode],
+			counters: [],
+		};
+
+		const { nodes, timers } = LadderCompiler.compile(preCompiled);
+
+		expect(nodes).toEqual([timerNode]);
+		expect(timers).toEqual([timerNode]);
+	});
+
+	it("embarque un CounterNode tel quel parmi les instructions, et le propage dans `counters`", () => {
+		const counterNode = BlocksBuilder.buildCounterNode(
+			"CTU",
+			IdentifiersBuilder.buildIdentifierNode("Compteur1.IN"),
+			IdentifiersBuilder.buildIdentifierNode("Compteur1.RLD"),
+			LiteralsBuilder.buildNumberNode(10),
+			IdentifiersBuilder.buildIdentifierNode("cv"),
+			IdentifiersBuilder.buildIdentifierNode("Compteur1.Q"),
+		);
+		const preCompiled: PreCompiledLadder = {
+			type: "ladder",
+			role: "standard",
+			assignments: [{ kind: "counter", blockId: "b1", node: counterNode }],
+			edgeMemoUpdates: [],
+			blockCalls: [],
+			timers: [],
+			counters: [counterNode],
+		};
+
+		const { nodes, counters } = LadderCompiler.compile(preCompiled);
+
+		expect(nodes).toEqual([counterNode]);
+		expect(counters).toEqual([counterNode]);
+	});
+
+	it("embarque l'IfControlNode d'un bloc assign tel quel parmi les instructions", () => {
+		const ifNode = ControlsBuilder.buildIfControlNode(IdentifiersBuilder.buildIdentifierNode("EN"), [
+			StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				LiteralsBuilder.buildNumberNode(1),
+			),
+		], null);
+		const preCompiled: PreCompiledLadder = {
+			type: "ladder",
+			role: "standard",
+			assignments: [{ kind: "assign", blockId: "b1", node: ifNode }],
+			edgeMemoUpdates: [],
+			blockCalls: [],
+			timers: [],
+			counters: [],
+		};
+
+		const { nodes } = LadderCompiler.compile(preCompiled);
+
+		expect(nodes).toEqual([ifNode]);
 	});
 });

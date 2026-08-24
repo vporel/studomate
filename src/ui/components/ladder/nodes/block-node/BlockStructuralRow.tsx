@@ -1,25 +1,21 @@
 "use client";
 
-import { Box, Theme, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { PIN_ROW_HEIGHT } from "./dimensions";
 
 /**
  * La ligne structurelle d'un bloc — toujours présente, toujours la première (voir
  * `getBlockPinRowCount`) : le nom du bloc/programme référencé, et ses ports câblés sur le rail
- * (`EN`/`ENO` pour un appel de programme, `IN`/`Q` pour un timer).
+ * (`EN`/`ENO` pour un appel de programme, `IN`/`Q` pour un timer/compteur).
  */
 export default function BlockStructuralRow({
 	label,
 	inputLabel,
 	outputLabel,
-	selected,
-	th,
 }: {
 	label: string;
 	inputLabel: string;
 	outputLabel: string;
-	selected: boolean;
-	th: Theme;
 }) {
 	return (
 		<Box

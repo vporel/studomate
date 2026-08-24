@@ -92,4 +92,12 @@ describe("TimerBlockAnalyser", () => {
 
 		expect(issues.map((i) => i.code)).toEqual(["BLOCK_TIMER_ET_UNDECLARED_VARIABLE"]);
 	});
+
+	it("signale BLOCK_TIMER_NAME_INVALID quand le nom du bloc est invalide", () => {
+		const element = createTimerBlockElement({ name: "1Tempo", timerType: "TON", pt: "T#5s" }, 0, 0);
+
+		const issues = TimerBlockAnalyser.analyse(element, source, variablesMap());
+
+		expect(issues.map((i) => i.code)).toEqual(["BLOCK_TIMER_NAME_INVALID"]);
+	});
 });

@@ -4,6 +4,7 @@ import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
 } from "@/schemas/function-blocks/function-block.schema";
+import { getCounterPortSpecs } from "@/schemas/function-blocks/counter.schema";
 import { TIMER_PORT_SPECS } from "@/schemas/function-blocks/timer.schema";
 import { BLOCK_PORT_LABELS, BlockData } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
@@ -30,40 +31,74 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockNodeType>) => {
 				? state.project?.ladders[data.params.programId]?.name
 				: undefined,
 		) ?? "";
-	const label = data.blockType === "user-program" ? programName : data.params.name;
+	const label =
+		data.blockType === "user-program"
+			? programName
+			: data.blockType === "compare"
+				? "Compare"
+				: data.blockType === "assign"
+					? "Assign"
+					: data.params.name;
 	const highlighted = useLadderStore((state) => state.highlightedNodesIds?.includes(id));
 	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 
-	const ports = BLOCK_PORT_LABELS[data.blockType];
-	const portSpecs = data.blockType === "timer" ? TIMER_PORT_SPECS : [];
-	const height = (data.blockType === "timer" ? getBlockHeightInCellUnits(portSpecs) : 1) * GRID_CELL_HEIGHT;
+	// Seul le compteur a des ports structurels dépendant de sa variante (IN/R pour CTU, CD/LD pour
+	// CTD) — `BLOCK_PORT_LABELS["counter"]` ne porte que le défaut CTU.
+	const ports =
+		data.blockType === "counter" && data.params.counterType === "CTD"
+			? { input: "CD", output: "Q" }
+			: BLOCK_PORT_LABELS[data.blockType];
+	const portSpecs =
+		data.blockType === "timer"
+			? TIMER_PORT_SPECS
+			: data.blockType === "counter"
+				? getCounterPortSpecs(data.params.counterType)
+				: [];
+	const height = getBlockHeightInCellUnits(portSpecs) * GRID_CELL_HEIGHT;
 	const parameterRows = getParameterPinRows(portSpecs);
 
-	// Seul le timer a des pinoches paramètres pour l'instant — la valeur/l'écriture restent donc
-	// spécifiques à ses champs `pt`/`et`, contrairement à la mise en page (générique, voir
-	// `ParamPinRow`).
+	// La valeur/l'écriture restent spécifiques aux champs concrets de chaque famille (`pt`/`et`
+	// pour un timer, `control`/`pv`/`cv` pour un compteur), contrairement à la mise en page
+	// (générique, voir `ParamPinRow`).
 	const getParamValue = (suffix: string): string => {
-		if (data.blockType !== "timer") return "";
-		return suffix === "PT" ? data.params.pt : (data.params.et ?? "");
+		if (data.blockType === "timer") return suffix === "PT" ? data.params.pt : (data.params.et ?? "");
+		if (data.blockType === "counter") {
+			if (suffix === "PV") return data.params.pv;
+			if (suffix === "CV") return data.params.cv ?? "";
+			return data.params.control;
+		}
+		return "";
 	};
 	const commitParam = (suffix: string, value: string) => {
-		if (data.blockType !== "timer") return;
-		const changes = suffix === "PT" ? { pt: value } : { et: value };
-		commandsStackManager.executeOperation([
-			new ElementUpdateCommand({
-				elementId: id,
-				changes: { data: { params: { ...data.params, ...changes } } },
-				previousChanges: { data: { params: data.params } },
-			}),
-		]);
+		if (data.blockType === "timer") {
+			const changes = suffix === "PT" ? { pt: value } : { et: value };
+			commandsStackManager.executeOperation([
+				new ElementUpdateCommand({
+					elementId: id,
+					changes: { data: { params: { ...data.params, ...changes } } },
+					previousChanges: { data: { params: data.params } },
+				}),
+			]);
+		} else if (data.blockType === "counter") {
+			const changes = suffix === "PV" ? { pv: value } : suffix === "CV" ? { cv: value } : { control: value };
+			commandsStackManager.executeOperation([
+				new ElementUpdateCommand({
+					elementId: id,
+					changes: { data: { params: { ...data.params, ...changes } } },
+					previousChanges: { data: { params: data.params } },
+				}),
+			]);
+		}
 	};
 
 	return (
 		<Box
 			onDoubleClick={() => {
-				if (data.blockType !== "timer") return;
-				workflowManager.openSystemBlockEditor(id, data.params);
+				if (data.blockType === "timer") workflowManager.openSystemBlockEditor(id, "timer", data.params);
+				else if (data.blockType === "counter") workflowManager.openSystemBlockEditor(id, "counter", data.params);
+				else if (data.blockType === "compare") workflowManager.openSystemBlockEditor(id, "compare", data.params);
+				else if (data.blockType === "assign") workflowManager.openSystemBlockEditor(id, "assign", data.params);
 			}}
 			sx={{
 				width: BLOCK_NODE_DIMENSIONS.width,
@@ -85,13 +120,7 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockNodeType>) => {
 					marginTop: "6.5px",
 				}}
 			/>
-			<BlockStructuralRow
-				label={label}
-				inputLabel={ports.input}
-				outputLabel={ports.output}
-				selected={selected}
-				th={th}
-			/>
+			<BlockStructuralRow label={label} inputLabel={ports.input} outputLabel={ports.output} />
 			{parameterRows.map((row, index) => (
 				<ParamPinRow
 					// Décalage d'un demi-`GRID_CELL_HEIGHT` par ligne depuis le haut de la première

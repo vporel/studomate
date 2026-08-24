@@ -63,6 +63,10 @@ class MockVisitor extends BaseVisitor<EnvVariableValue> {
 	protected visitTimerStringDeclarationNode(): EnvVariableValue {
 		return false;
 	}
+
+	protected visitCounterBlockNode(): EnvVariableValue {
+		return false;
+	}
 }
 
 describe("TimerNodeEvaluator", () => {

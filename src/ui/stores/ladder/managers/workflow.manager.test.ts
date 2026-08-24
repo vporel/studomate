@@ -267,6 +267,32 @@ describe("LadderWorkflowManager", () => {
 		expect(commands).toHaveLength(1); // pas de ConnectionUpdateCommand : les points sont laissés intacts
 	});
 
+	it("refuse un glisser qui inverserait l'ordre colonne d'une connexion existante (revient à la position d'origine)", () => {
+		const section = new Section("s1", "S");
+		const contact = createContactElement("A", "NO", 0, 1);
+		const coil = createCoilElement("Q1", "normal", 0, 3);
+		section.elements = [contact, coil];
+		section.connections = [
+			new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }, {
+				points: [],
+			}),
+		];
+		const { workflowManager, getState } = setup(section);
+
+		workflowManager.handleNodesChange(section.id, [
+			{
+				type: "position",
+				id: coil.id,
+				position: { x: POWER_RAIL_OFFSET + 0 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
+				dragging: false,
+			} as any,
+		]);
+
+		expect(executeOperation).not.toHaveBeenCalled();
+		const coilNode = getState().nodesBySectionId[section.id].find((n: any) => n.id === coil.id)!;
+		expect(coilNode.position).toEqual({ x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT });
+	});
+
 	it("patche edgesBySectionId via applyEdgeChanges", () => {
 		const section = new Section("s1", "S");
 		const { workflowManager, getState } = setup(section);
