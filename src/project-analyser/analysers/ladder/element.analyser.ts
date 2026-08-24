@@ -1,6 +1,7 @@
 import Variable from "@/schemas/variable/variable.schema";
 import { LadderElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "@/schemas/project/project.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
 export default abstract class LadderElementAnalyser<E extends LadderElement> {
@@ -10,11 +11,13 @@ export default abstract class LadderElementAnalyser<E extends LadderElement> {
 	abstract analyseIsolated(element: E): ProjectAnalyserIssue[];
 
 	/**
-	 * Rules that require knowledge of the ladder and the project variables.
+	 * Rules that require knowledge of the ladder, the project variables, and — for an element
+	 * referencing another program (ex. un bloc `"user-program"`) — the project itself.
 	 */
 	abstract analyseInContext(
 		element: E,
 		ladder: Ladder,
 		variablesByMnemonic: Map<string, Variable>,
+		project: Project,
 	): ProjectAnalyserIssue[];
 }

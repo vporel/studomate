@@ -1,5 +1,5 @@
 import Connection from "@/schemas/ladder/connection.schema";
-import { GridPosition } from "@/schemas/ladder/element.schema";
+import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 
 /**
@@ -34,9 +34,13 @@ export type PathSegment =
  * la même colonne — leurs poignées ne coïncident jamais, la sortie étant au bord droit et
  * l'entrée au bord gauche).
  */
-export function initialConnectionPoints(source: GridPosition, target: GridPosition): [number, number][] {
+export function initialConnectionPoints(
+	source: GridPosition,
+	target: GridPosition,
+	sourceWidth: number = 1,
+): [number, number][] {
 	if (source.row === target.row) return [];
-	const bendQuarterCol = colRightEdge(source.col);
+	const bendQuarterCol = colRightEdge(source.col + sourceWidth - 1);
 	return [
 		[rowCenter(source.row), bendQuarterCol],
 		[rowCenter(target.row), bendQuarterCol],
@@ -57,6 +61,7 @@ export function pushConnectionBend(
 	movedSide: "source" | "target",
 	source: GridPosition,
 	target: GridPosition,
+	sourceWidth: number = 1,
 ): [number, number][] {
 	if (points.length === 0 || source.row === target.row) return points;
 	let colA = points[0][1];
@@ -64,7 +69,7 @@ export function pushConnectionBend(
 	const wasSingleBend = colA === colB;
 
 	if (movedSide === "source") {
-		const sourceExitCol = colRightEdge(source.col);
+		const sourceExitCol = colRightEdge(source.col + sourceWidth - 1);
 		if (sourceExitCol > colA) {
 			colA = sourceExitCol;
 			if (wasSingleBend || colA > colB) colB = colA;
@@ -101,9 +106,11 @@ export function computeConnectionSegments(
 	source: GridPosition,
 	target: GridPosition,
 	points: [number, number][] = [],
+	sourceWidth: number = 1,
 ): PathSegment[] {
 	const sameRow = source.row === target.row;
-	const rawBendPoints = sameRow ? [] : points.length > 0 ? points : initialConnectionPoints(source, target);
+	const rawBendPoints =
+		sameRow ? [] : points.length > 0 ? points : initialConnectionPoints(source, target, sourceWidth);
 	// Un seul coude géré pour l'instant (voir le commentaire de la fonction) : toujours 0 ou 2
 	// points, respectivement adjacents à la source et à la cible.
 	const bendPoints: [number, number][] = rawBendPoints.map(([, quarterCol], i) => [
@@ -111,7 +118,7 @@ export function computeConnectionSegments(
 		quarterCol,
 	]);
 	const vertices: [number, number][] = [
-		[rowCenter(source.row), colRightEdge(source.col)],
+		[rowCenter(source.row), colRightEdge(source.col + sourceWidth - 1)],
 		...bendPoints,
 		[rowCenter(target.row), colLeftEdge(target.col)],
 	];
@@ -177,7 +184,7 @@ export function findCellCrossings(section: Section, row: number, col: number): C
 		const target = section.getElement(connection.target.id);
 		if (!source || !target) continue;
 		const touch = classifyCellTouch(
-			computeConnectionSegments(source.position, target.position, connection.data.points),
+			computeConnectionSegments(source.position, target.position, connection.data.points, getElementWidth(source)),
 			row,
 			col,
 		);

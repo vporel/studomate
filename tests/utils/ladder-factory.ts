@@ -1,5 +1,8 @@
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import Connection from "@/schemas/ladder/connection.schema";
 import { LadderElement } from "@/schemas/ladder/element.schema";
+import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
 
@@ -43,4 +46,15 @@ export function wireInParallel(from: LadderElement, branches: LadderElement[], t
 		connections.push(connect(from, branch), connect(branch, to));
 	}
 	return connections;
+}
+
+/**
+ * Ajoute au Main du projet un bloc appelant `ladder`, pour qu'un ladder standard construit dans
+ * un test s'exécute réellement (voir `Ladder.role` : un ladder non référencé par le Main est
+ * inactif). Le bloc n'a pas besoin d'être câblé au rail : sans connexion entrante, son port `EN`
+ * retombe sur `true` par défaut (même repli que pour une bobine orpheline).
+ */
+export function wireLadderIntoMain(project: Project, ladder: Ladder): void {
+	const [section] = project.main.sections;
+	project.main.addElements(section.id, [createUserProgramBlockElement(ladder.id, 0, 0)]);
 }

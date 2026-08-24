@@ -9,12 +9,14 @@ import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.com
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import Connection from "@/schemas/ladder/connection.schema";
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "../context/LadderContext";
 import { useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useLadderDropHandlers from "./useLadderDropHandlers";
 import { colToX, GRID_CELL_HEIGHT, GRID_CELL_WIDTH, rowToY } from "@/ui/utils/ladder/ladder-flow-builder";
+import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 
 jest.mock("../context/LadderContext", () => ({
 	useLadderStore: jest.fn(),
@@ -29,7 +31,7 @@ jest.mock("@xyflow/react", () => ({
 function fakeDragEvent(clientX: number, clientY: number) {
 	return {
 		preventDefault: jest.fn(),
-		dataTransfer: { dropEffect: "" },
+		dataTransfer: { dropEffect: "", getData: () => "", types: [] as string[] },
 		// screenToFlowPosition attend clientX/clientY (coordonnées viewport) — pageX/pageY
 		// (coordonnées document, sensibles au défilement de la page) donnaient un mauvais calcul
 		// de cellule au lâcher. On fixe volontairement pageX/pageY à des valeurs différentes pour
@@ -39,6 +41,14 @@ function fakeDragEvent(clientX: number, clientY: number) {
 		pageX: clientX + 1000,
 		pageY: clientY + 1000,
 	} as any;
+}
+
+/** Dépose d'un programme glissé depuis le menu de l'explorateur (voir `LADDER_PROGRAM_DRAG_MIME_TYPE`). */
+function fakeProgramDragEvent(clientX: number, clientY: number, programId: string) {
+	const event = fakeDragEvent(clientX, clientY);
+	event.dataTransfer.getData = (type: string) => (type === LADDER_PROGRAM_DRAG_MIME_TYPE ? programId : "");
+	event.dataTransfer.types = [LADDER_PROGRAM_DRAG_MIME_TYPE];
+	return event;
 }
 
 describe("useLadderDropHandlers", () => {
@@ -391,6 +401,46 @@ describe("useLadderDropHandlers", () => {
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
+
+		expect(executeOperation).not.toHaveBeenCalled();
+	});
+
+	it("dépose un bloc référençant le programme glissé depuis le menu de l'explorateur", () => {
+		const section = new Section("s1", "S");
+		const { result } = setup(section, [], null);
+		const [, handleDrop] = result.current;
+
+		act(() => handleDrop(fakeProgramDragEvent(colToX(1), rowToY(0), "prog1")));
+
+		expect(executeOperation).toHaveBeenCalledTimes(1);
+		const [commands] = executeOperation.mock.calls[0];
+		const [addCommand] = commands;
+		expect(addCommand).toBeInstanceOf(ElementsAddCommand);
+		expect(addCommand.payload.elements[0]).toMatchObject({
+			type: "block",
+			position: { row: 0, col: 1 },
+			data: { blockType: "user-program", params: { programId: "prog1" } },
+		});
+	});
+
+	it("marque le dragover comme une copie pour un programme glissé depuis l'explorateur, même sans outil de toolbar actif", () => {
+		const { result } = setup(new Section("s1", "S"), [], null);
+		const [handleDragOver] = result.current;
+		const event = fakeProgramDragEvent(0, 0, "prog1");
+
+		act(() => handleDragOver(event));
+
+		expect(event.dataTransfer.dropEffect).toBe("copy");
+	});
+
+	it("refuse le dépôt d'un programme sur une cellule déjà occupée", () => {
+		const section = new Section("s1", "S");
+		const existing = createUserProgramBlockElement("prog1", 0, 1);
+		section.elements = [existing];
+		const { result } = setup(section, [], null);
+		const [, handleDrop] = result.current;
+
+		act(() => handleDrop(fakeProgramDragEvent(colToX(1), rowToY(0), "prog2")));
 
 		expect(executeOperation).not.toHaveBeenCalled();
 	});

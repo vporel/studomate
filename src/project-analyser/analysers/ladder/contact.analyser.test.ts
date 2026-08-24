@@ -2,6 +2,7 @@ import { createCoilElement, createContactElement, createRailTerminalElement } fr
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import ContactAnalyser from "./contact.analyser";
 
@@ -22,7 +23,7 @@ describe("ContactAnalyser", () => {
 			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap());
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(), ProjectFactory.createEmpty());
 
 		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_UNDECLARED");
 	});
@@ -36,7 +37,7 @@ describe("ContactAnalyser", () => {
 			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a));
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
 
 		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_NOT_BOOLEAN");
 	});
@@ -47,7 +48,7 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 1);
 		const ladder = new Ladder("l1", "L", [createSectionWith([rail, contact], wireInSeries([rail, contact]))]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a));
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
 
 		const issue = issues.find((i) => i.code === "NETWORK_NO_COIL");
 		expect(issue).toBeDefined();
@@ -60,7 +61,7 @@ describe("ContactAnalyser", () => {
 		const coil = createCoilElement("Q", "normal", 0, 1);
 		const ladder = new Ladder("l1", "L", [createSectionWith([contact, coil], wireInSeries([contact, coil]))]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a));
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
 
 		expect(issues.map((i) => i.code)).toContain("ELEMENT_NO_PREDECESSOR");
 	});
@@ -70,7 +71,7 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([contact])]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a));
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
 
 		expect(issues.map((i) => i.code).sort()).toEqual(["ELEMENT_NO_PREDECESSOR", "NETWORK_NO_COIL"]);
 	});
@@ -85,7 +86,7 @@ describe("ContactAnalyser", () => {
 			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a, q));
+		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a, q), ProjectFactory.createEmpty());
 
 		expect(issues).toEqual([]);
 	});

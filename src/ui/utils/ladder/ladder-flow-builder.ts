@@ -137,6 +137,14 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 				draggable: false,
 			} as LadderNodeType;
 		}
+		if (element.type === "block") {
+			return {
+				id: element.id,
+				type: "block",
+				position: { x: colToX(element.position.col), y: rowToY(element.position.row) },
+				data: element.data,
+			} as LadderNodeType;
+		}
 		return {
 			id: element.id,
 			type: element.type,

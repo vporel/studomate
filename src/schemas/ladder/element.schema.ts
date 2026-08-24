@@ -1,7 +1,8 @@
 import { createRandomId } from "@/ids";
 import SharedElement from "../shared/element.schema";
+import { BlockElement } from "./block.schema";
 
-export const LADDER_ELEMENT_KINDS = ["contact", "coil", "railTerminal"] as const;
+export const LADDER_ELEMENT_KINDS = ["contact", "coil", "railTerminal", "block"] as const;
 
 export type LadderElementKind = (typeof LADDER_ELEMENT_KINDS)[number];
 
@@ -40,7 +41,20 @@ export type RailTerminalElement = SharedElement<"railTerminal", RailTerminalData
  * sortantes) est toujours un OU, une convergence (plusieurs connexions entrantes) aussi, un
  * enchaînement simple est l'ET implicite.
  */
-export type LadderElement = ContactElement | CoilElement | RailTerminalElement;
+export type LadderElement = ContactElement | CoilElement | RailTerminalElement | BlockElement;
+
+/** Largeur en colonnes de grille occupées par un élément — 1 pour tous sauf `block`, qui en
+ * occupe 2 (entrée/sortie visuellement distinctes, voir `BlockNode`). */
+export const LADDER_ELEMENT_WIDTHS: Record<LadderElementKind, number> = {
+	contact: 1,
+	coil: 1,
+	railTerminal: 1,
+	block: 2,
+};
+
+export function getElementWidth(element: LadderElement): number {
+	return LADDER_ELEMENT_WIDTHS[element.type];
+}
 
 export function createContactElement(variable: string, mode: ContactMode, row: number, col: number): ContactElement {
 	return { id: createRandomId(), type: "contact", data: { variable, mode }, position: { row, col } };

@@ -27,7 +27,9 @@ describe("ProjectPreCompiler", () => {
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
 			expect(result.result!.variables).toEqual([]);
-			expect(result.result!.programs).toEqual({});
+			// Un projet porte toujours un Main (voir Project.createMain) — seul programme ici.
+			expect(Object.values(result.result!.programs)).toHaveLength(1);
+			expect(Object.values(result.result!.programs)[0]).toMatchObject({ type: "ladder", role: "main" });
 		});
 
 		it("compiles project variables", () => {
@@ -104,7 +106,8 @@ describe("ProjectPreCompiler", () => {
 			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
-			expect(Object.keys(result.result!.programs)).toHaveLength(2);
+			// +1 pour le Main, toujours présent (voir Project.createMain).
+			expect(Object.keys(result.result!.programs)).toHaveLength(3);
 			expect(result.result!.programs["grafcet-1"]).toBeDefined();
 			expect(result.result!.programs["grafcet-2"]).toBeDefined();
 		});

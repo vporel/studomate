@@ -16,7 +16,8 @@ export type ProjectAnalyserIssueSource = {
 		| "ladder"
 		| "ladder-network"
 		| "ladder-contact"
-		| "ladder-coil";
+		| "ladder-coil"
+		| "ladder-block";
 	sourceId: string;
 	parentId?: string; // For issues on steps, transitions or actions, the ID of the parent grafcet
 };
@@ -32,6 +33,9 @@ export type ProjectAnalyserIssueSource = {
 export const PROJECT_ANALYSER_ISSUE_CODES = [
 	"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 	"PROJECT_MISSING_ANALYSER_FOR_NOTATION",
+	"PROJECT_MISSING_MAIN",
+	"PROJECT_MULTIPLE_MAINS",
+	"LADDER_NOT_REFERENCED",
 
 	"GRAFCET_TOO_FEW_STEPS",
 	"GRAFCET_NO_INITIAL_STEP",
@@ -103,6 +107,12 @@ export const PROJECT_ANALYSER_ISSUE_CODES = [
 	"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 	"ELEMENT_NO_PREDECESSOR",
 	"COIL_VARIABLE_IS_INPUT",
+
+	"BLOCK_PROGRAM_UNDECLARED",
+	"BLOCK_PROGRAM_NOT_LADDER",
+	"BLOCK_PROGRAM_IS_MAIN",
+	"BLOCK_PROGRAM_DUPLICATE_REFERENCE",
+	"BLOCK_PROGRAM_CALL_CYCLE",
 ] as const;
 
 export type ProjectAnalyserIssueCode = (typeof PROJECT_ANALYSER_ISSUE_CODES)[number];

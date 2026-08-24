@@ -4,7 +4,7 @@ import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.com
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import Connection from "@/schemas/ladder/connection.schema";
-import { createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import { createRailTerminalElement, getElementWidth } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
 import { initialConnectionPoints } from "@/ui/utils/ladder/ladder-connection-path";
@@ -49,7 +49,11 @@ export default function useLadderConnectHandler(section: Section): (connection: 
 							// `initialConnectionPoints`).
 							points:
 								sourcePosition && targetPosition
-									? initialConnectionPoints(sourcePosition, targetPosition)
+									? initialConnectionPoints(
+											sourcePosition,
+											targetPosition,
+											sourceElement ? getElementWidth(sourceElement) : 1,
+										)
 									: [],
 						}),
 					],

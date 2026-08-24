@@ -1,6 +1,6 @@
 ﻿import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
-import Ladder from "../ladder/ladder.schema";
+import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
 import Variable from "../variable/variable.schema";
@@ -53,6 +53,8 @@ export default class Project {
 		this.dialect = Dialect.FR;
 		this.variables = [];
 		this.programs = {};
+		// Chaque projet porte toujours un Main — voir `createMain`.
+		this.createMain();
 	}
 
 	//=============== PROGRAMMES, TOUTES NOTATIONS ===============
@@ -82,7 +84,10 @@ export default class Project {
 		this.touch();
 	}
 
+	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
 	deleteProgram(programId: string) {
+		const program = this.programs[programId];
+		if (program instanceof Ladder && program.role === "main") return;
 		delete this.programs[programId];
 		this.touch();
 	}
@@ -121,6 +126,25 @@ export default class Project {
 		const ladder = new Ladder(createRandomId(), name);
 		this.addProgram(ladder);
 		return ladder;
+	}
+
+	//=============== MAIN ===============
+	//Le Main est un ladder de rôle "main" — voir `Ladder.role`. Un projet en porte toujours
+	//exactement un : créé par le constructeur, sa suppression est refusée par `deleteProgram`.
+
+	/** Le programme Main du projet — invariant garanti par le constructeur/`deleteProgram`. */
+	get main(): Ladder {
+		const found = Object.values(this.ladders).find((ladder) => ladder.role === "main");
+		if (!found) throw new Error("Project has no Main program — invariant violated.");
+		return found;
+	}
+
+	createMain(name: string = DEFAULT_MAIN_NAME): Ladder {
+		const existing = Object.values(this.ladders).find((ladder) => ladder.role === "main");
+		if (existing) throw new Error("A project can only have one Main program.");
+		const main = new Ladder(createRandomId(), name, undefined, "main");
+		this.addProgram(main);
+		return main;
 	}
 
 	/**

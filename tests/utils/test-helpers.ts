@@ -77,6 +77,7 @@ export function createPLC(
 	return new PLC({
 		scanTimeMs,
 		program: compiled.routines,
+		routinesById: compiled.routinesById,
 		variables: compiled.variables,
 		onCycleEnd: callbacks?.onCycleEnd,
 		onCycleError: callbacks?.onCycleError,

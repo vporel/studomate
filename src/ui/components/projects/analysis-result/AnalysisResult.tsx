@@ -51,9 +51,9 @@ export default function AnalysisResult() {
 		(ladderId: string, elementId: string) => {
 			const located = project?.getLadder(ladderId)?.findElement(elementId);
 			if (!located || located.element.type === "railTerminal") return "";
-			return located.element.type === "contact"
-				? `Contact ${located.element.data.variable}`
-				: `Bobine ${located.element.data.variable}`;
+			if (located.element.type === "contact") return `Contact ${located.element.data.variable}`;
+			if (located.element.type === "coil") return `Bobine ${located.element.data.variable}`;
+			return "Bloc";
 		},
 		[project],
 	);

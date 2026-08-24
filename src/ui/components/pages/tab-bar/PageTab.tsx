@@ -2,6 +2,7 @@
 
 import InclinedAccountTreeIcon from "@/ui/components/icons/InclinedAccountTree";
 import LadderIcon from "@/ui/components/icons/LadderIcon";
+import LadderMainIcon from "@/ui/components/icons/LadderMainIcon";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { PageType } from "@/ui/stores/project/project.store";
 import { Segment as SegmentIcon } from "@mui/icons-material";
@@ -25,6 +26,9 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			activePageId: state.activePageId,
 		})),
 	);
+	// Le Main a sa propre icône dans l'onglet, comme dans l'explorateur (voir `getProgramIcon`
+	// d'`ExplorerProgramsItems`) : l'id de page d'un ladder est son id de programme.
+	const isMain = useProjectStore((state) => type === "ladder" && state.project?.ladders[id]?.role === "main");
 	const active = id === activePageId;
 	const TypeIconComponent =
 		type === "project-startup"
@@ -34,7 +38,9 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				: type === "grafcet"
 					? InclinedAccountTreeIcon
 					: type === "ladder"
-						? LadderIcon
+						? isMain
+							? LadderMainIcon
+							: LadderIcon
 						: SegmentIcon;
 
 	return (

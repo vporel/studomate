@@ -47,4 +47,25 @@ describe("useProjectPrograms", () => {
 			{ id: "g1", name: "Zebra", type: "grafcet" },
 		]);
 	});
+
+	it("place le Main avant les ladders standards, quel que soit son nom", () => {
+		const mockState = {
+			project: {
+				grafcets: {},
+				ladders: {
+					l1: { id: "l1", name: "Zebra", role: "standard" },
+					l2: { id: "l2", name: "Main", role: "main" },
+					l3: { id: "l3", name: "Apple", role: "standard" },
+				},
+			},
+		};
+
+		(useProjectStore as unknown as jest.Mock).mockImplementation((selector: any) =>
+			selector(mockState)
+		);
+
+		const { result } = renderHook(() => useProjectPrograms());
+
+		expect(result.current.map((p) => p.id)).toEqual(["l2", "l3", "l1"]);
+	});
 });

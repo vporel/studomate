@@ -1,5 +1,5 @@
 import Connection from "@/schemas/ladder/connection.schema";
-import { LadderElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import { LadderElement, createRailTerminalElement, getElementWidth } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
 import { findCellCrossings, initialConnectionPoints } from "./ladder-connection-path";
@@ -36,14 +36,26 @@ export function computeAutoConnectionsForElements(
 					createRandomId(),
 					{ id: sourceElement.id, type: sourceElement.type as any, handle: "source" },
 					{ id: newElement.id, type: newElement.type as any, handle: "target" },
-					{ points: initialConnectionPoints(sourceElement.position, newElement.position) },
+					{
+						points: initialConnectionPoints(
+							sourceElement.position,
+							newElement.position,
+							getElementWidth(sourceElement),
+						),
+					},
 				);
 			const connectionFrom = (targetElement: LadderElement) =>
 				new Connection(
 					createRandomId(),
 					{ id: newElement.id, type: newElement.type as any, handle: "source" },
 					{ id: targetElement.id, type: targetElement.type as any, handle: "target" },
-					{ points: initialConnectionPoints(newElement.position, targetElement.position) },
+					{
+						points: initialConnectionPoints(
+							newElement.position,
+							targetElement.position,
+							getElementWidth(newElement),
+						),
+					},
 				);
 
 			if (crossings.through) {
@@ -88,7 +100,7 @@ export function computeAutoConnectionsForElements(
 					leftSource =
 						section.getLeftNeighbor(dropRow, dropCol) ||
 						elementsToPlace.find(
-							(e) => e.position.row === dropRow && e.position.col === dropCol - 1,
+							(e) => e.position.row === dropRow && e.position.col + getElementWidth(e) === dropCol,
 						) ||
 						null;
 				}
@@ -100,16 +112,25 @@ export function computeAutoConnectionsForElements(
 						createRandomId(),
 						{ id: leftSource.id, type: leftSource.type as any, handle: "source" },
 						{ id: newElement.id, type: newElement.type as any, handle: "target" },
-						{ points: initialConnectionPoints(leftSource.position, newElement.position) },
+						{
+							points: initialConnectionPoints(
+								leftSource.position,
+								newElement.position,
+								getElementWidth(leftSource),
+							),
+						},
 					),
 				);
 			}
 
 			// 2. Voisin de droite
 			if (newElement.type !== "coil") {
+				const newElementWidth = getElementWidth(newElement);
 				const rightNeighbor =
-					section.getRightNeighbor(dropRow, dropCol) ||
-					elementsToPlace.find((e) => e.position.row === dropRow && e.position.col === dropCol + 1);
+					section.getRightNeighbor(dropRow, dropCol, newElementWidth) ||
+					elementsToPlace.find(
+						(e) => e.position.row === dropRow && e.position.col === dropCol + newElementWidth,
+					);
 
 				if (rightNeighbor) {
 					connectionsToAdd.push(
@@ -117,7 +138,7 @@ export function computeAutoConnectionsForElements(
 							createRandomId(),
 							{ id: newElement.id, type: newElement.type as any, handle: "source" },
 							{ id: rightNeighbor.id, type: rightNeighbor.type as any, handle: "target" },
-							{ points: initialConnectionPoints(newElement.position, rightNeighbor.position) },
+							{ points: initialConnectionPoints(newElement.position, rightNeighbor.position, newElementWidth) },
 						),
 					);
 				}

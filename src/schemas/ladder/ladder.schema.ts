@@ -1,5 +1,6 @@
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
+import { BlockData } from "./block.schema";
 import Connection, { ConnectionData } from "./connection.schema";
 import { CoilData, ContactData, GridPosition, LadderElement } from "./element.schema";
 import Section from "./section.schema";
@@ -8,12 +9,28 @@ export const DEFAULT_LADDER_NAME = "Sans titre";
 
 export const DEFAULT_SECTION_TITLE = "";
 
+/**
+ * `"standard"` : ladder de logique combinatoire ordinaire. `"main"` : ladder spécial, unique par
+ * projet (voir `Project.createMain`), dans lequel des blocs `"user-program"` définissent l'ordre
+ * d'exécution des autres ladders — extensible à d'autres rôles plus tard (ex. ladder
+ * conditionnel) sans multiplier les `ProgramType`.
+ */
+export const LADDER_ROLES = ["standard", "main"] as const;
+
+export type LadderRole = (typeof LADDER_ROLES)[number];
+
+export const DEFAULT_LADDER_ROLE: LadderRole = "standard";
+
+export const DEFAULT_MAIN_NAME = "Main";
+
 export default class Ladder extends Program {
 	readonly type: ProgramType = "ladder";
+	role: LadderRole;
 	sections: Section[];
 
-	constructor(id: string, name: string, sections?: Section[]) {
+	constructor(id: string, name: string, sections?: Section[], role: LadderRole = DEFAULT_LADDER_ROLE) {
 		super(id, name);
+		this.role = role;
 		// Un ladder porte toujours au moins une section.
 		this.sections = sections ?? [new Section(createRandomId(), DEFAULT_SECTION_TITLE)];
 	}
@@ -96,7 +113,7 @@ export default class Ladder extends Program {
 
 	updateElement(
 		elementId: string,
-		changes: { data?: Partial<ContactData | CoilData>; position?: Partial<GridPosition> },
+		changes: { data?: Partial<ContactData | CoilData | BlockData>; position?: Partial<GridPosition> },
 	): void {
 		const located = this.findElement(elementId);
 		if (!located || located.element.type === "railTerminal") return;
@@ -241,12 +258,14 @@ export default class Ladder extends Program {
 			this.id,
 			this.name,
 			this.sections.map((section) => section.copy()),
+			this.role,
 		);
 	}
 
 	static createFromJSON(json: string): Ladder {
 		const jsonParsed = JSON.parse(json);
 		const ladder = Object.assign(new Ladder("", ""), jsonParsed);
+		ladder.role = jsonParsed.role ?? DEFAULT_LADDER_ROLE;
 		ladder.sections = (jsonParsed.sections ?? []).map((raw: unknown) =>
 			Section.createFromJSON(JSON.stringify(raw)),
 		);

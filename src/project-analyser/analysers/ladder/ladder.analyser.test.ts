@@ -1,10 +1,11 @@
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import { createContactElement, createCoilElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
-import LadderAnalyser, { getContactMemoryVariableMnemonic } from "./ladder.analyser";
+import LadderAnalyser, { getBlockPortVariableMnemonic, getContactMemoryVariableMnemonic } from "./ladder.analyser";
 
 describe("LadderAnalyser", () => {
 	beforeEach(() => {
@@ -32,15 +33,15 @@ describe("LadderAnalyser", () => {
 				VariableFactory.createMemoryBool("Q2"),
 			]);
 
-			const { edgeMemoryVariables } = LadderAnalyser.analyse(ladder, project);
+			const { generatedVariables } = LadderAnalyser.analyse(ladder, project);
 
-			expect(edgeMemoryVariables).toHaveLength(2);
-			expect(edgeMemoryVariables.every((v) => v.zone === "memory" && v.type === "BOOL")).toBe(true);
-			for (const variable of edgeMemoryVariables) {
+			expect(generatedVariables).toHaveLength(2);
+			expect(generatedVariables.every((v) => v.zone === "memory" && v.type === "BOOL")).toBe(true);
+			for (const variable of generatedVariables) {
 				expect(Variable.validateMnemonic(variable.mnemonic)).toEqual([]);
 				expect(variable.mnemonic).not.toContain("-");
 			}
-			expect(edgeMemoryVariables.map((v) => v.mnemonic).sort()).toEqual(
+			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
 				[getContactMemoryVariableMnemonic(contactP.id), getContactMemoryVariableMnemonic(contactN.id)].sort(),
 			);
 		});
@@ -57,9 +58,9 @@ describe("LadderAnalyser", () => {
 				VariableFactory.createMemoryBool("Q"),
 			]);
 
-			const { edgeMemoryVariables } = LadderAnalyser.analyse(ladder, project);
+			const { generatedVariables } = LadderAnalyser.analyse(ladder, project);
 
-			expect(edgeMemoryVariables).toEqual([]);
+			expect(generatedVariables).toEqual([]);
 		});
 
 		it("rend les variables mémoire de front visibles des analyseurs d'élément (pas de CONTACT_VARIABLE_UNDECLARED)", () => {
@@ -77,6 +78,24 @@ describe("LadderAnalyser", () => {
 			const { issues } = LadderAnalyser.analyse(ladder, project);
 
 			expect(issues.map((i) => i.code)).not.toContain("CONTACT_VARIABLE_UNDECLARED");
+		});
+	});
+
+	describe("buildBlockPortVariables (via analyse)", () => {
+		it("crée deux variables memory/BOOL (EN, ENO) par bloc", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createUserProgramBlockElement("prog1", 0, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith([rail, block], wireInSeries([rail, block])),
+			]);
+			const project = ProjectFactory.createEmpty();
+
+			const { generatedVariables } = LadderAnalyser.analyse(ladder, project);
+
+			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
+				[getBlockPortVariableMnemonic(block.id, "EN"), getBlockPortVariableMnemonic(block.id, "ENO")].sort(),
+			);
+			expect(generatedVariables.every((v) => v.zone === "memory" && v.type === "BOOL")).toBe(true);
 		});
 	});
 

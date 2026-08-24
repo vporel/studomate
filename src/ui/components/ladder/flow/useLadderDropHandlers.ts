@@ -5,7 +5,8 @@ import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.com
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import { createContactElement, createCoilElement, LadderElement } from "@/schemas/ladder/element.schema";
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import { createContactElement, createCoilElement, getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
@@ -13,16 +14,34 @@ import { useLadderStore } from "../context/LadderContext";
 import { DraggedLadderElement, useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
 import { PositionedLeaf, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
+import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 
-function createDraggedElement(draggedElement: DraggedLadderElement, row: number, col: number): LadderElement {
+function createToolElement(draggedElement: DraggedLadderElement, row: number, col: number): LadderElement {
 	return draggedElement.type === "contact"
 		? createContactElement("", draggedElement.mode, row, col)
 		: createCoilElement("", draggedElement.mode, row, col);
 }
 
+/** Élément existant dont l'empreinte (largeur en colonnes, voir `getElementWidth`) chevauche
+ * `[colStart, colEnd]` sur `row` — un `block` occupant 2 colonnes doit bloquer un dépôt visant
+ * sa seconde cellule autant que la première. */
+function findOccupant(section: Section, row: number, colStart: number, colEnd: number): LadderElement | undefined {
+	return section.elements.find((element) => {
+		if (element.position.row !== row) return false;
+		const elementStart = element.position.col;
+		const elementEnd = elementStart + getElementWidth(element) - 1;
+		return elementStart <= colEnd && elementEnd >= colStart;
+	});
+}
+
 /**
- * Résout et dispatche l'insertion d'un contact/bobine déposé sur le canevas : la position est
- * accrochée à la grille (`resolveDropTarget`) et devient exactement celle de l'élément posé.
+ * Résout et dispatche l'insertion d'un élément déposé sur le canevas : la position est accrochée
+ * à la grille (`resolveDropTarget`) et devient exactement celle de l'élément posé. Deux sources
+ * de dépose bien distinctes, sans mécanisme commun (voir `LADDER_PROGRAM_DRAG_MIME_TYPE`) :
+ * - un outil de la toolbar (contact/bobine), porté par `useLadderToolbarDnD` (contexte React,
+ *   source et cible partagent `LadderToolbarDnDProvider`) ;
+ * - un programme glissé depuis le menu de l'explorateur (bloc "appel de programme"), porté par
+ *   `DataTransfer` natif — explorateur et éditeur ladder ne partagent aucun contexte React.
  */
 export default function useLadderDropHandlers(
 	section: Section,
@@ -35,9 +54,11 @@ export default function useLadderDropHandlers(
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
 			// Toujours appeler preventDefault : draggedElement peut encore être null au premier
-			// dragover (timing React).
+			// dragover (timing React). e.dataTransfer.getData n'est pas lisible au dragover (accès
+			// restreint par sécurité) : seul `.types` l'est, d'où ce test plutôt qu'une lecture.
 			e.preventDefault();
-			e.dataTransfer.dropEffect = draggedElement ? "copy" : "none";
+			const draggingProgramRef = e.dataTransfer.types.includes(LADDER_PROGRAM_DRAG_MIME_TYPE);
+			e.dataTransfer.dropEffect = draggedElement || draggingProgramRef ? "copy" : "none";
 		},
 		[draggedElement],
 	);
@@ -45,7 +66,8 @@ export default function useLadderDropHandlers(
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault();
-			if (!draggedElement) return;
+			const programId = e.dataTransfer.getData(LADDER_PROGRAM_DRAG_MIME_TYPE);
+			if (!programId && !draggedElement) return;
 
 			// screenToFlowPosition attend des coordonnées viewport (clientX/clientY), pas
 			// document (pageX/pageY) — sensibles au défilement de la page, qui décale tout calcul
@@ -61,15 +83,27 @@ export default function useLadderDropHandlers(
 			const dropRow = Math.floor(yToRow(position.y));
 			const dropCol = Math.floor(xToCol(position.x));
 
+			if (programId) {
+				// Un bloc occupe 2 colonnes (voir `getElementWidth`) : les deux cellules doivent être
+				// libres. Une référence de programme n'a pas de "mode" à faire tourner comme un
+				// contact/une bobine : cellule(s) déjà occupée(s), rien à changer, quel que soit
+				// l'occupant.
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				const newElement = createUserProgramBlockElement(programId, dropRow, dropCol);
+				dispatchInsertion(newElement);
+				return;
+			}
+
+			if (!draggedElement) return;
+
+			const occupant = findOccupant(section, dropRow, dropCol, dropCol);
+
 			// Cellule déjà occupée : refuse le dépôt, sauf si l'élément qui s'y trouve est du même
 			// genre que celui déposé — auquel cas on change juste son mode (ex. contact NO -> NF),
 			// la variable et les connexions restant inchangées. Le switch (plutôt qu'un simple
 			// `occupant.type !== draggedElement.type`) est exhaustif sur
 			// `DraggedLadderElement` : un nouveau genre d'outil déposable ne compile plus tant que
 			// son comportement de remplacement n'a pas été décidé ici.
-			const occupant = section.elements.find(
-				(element) => element.position.row === dropRow && element.position.col === dropCol,
-			);
 			if (occupant) {
 				switch (draggedElement.type) {
 					case "contact":
@@ -92,27 +126,31 @@ export default function useLadderDropHandlers(
 				}
 			}
 
-			const newElement = createDraggedElement(draggedElement, dropRow, dropCol);
+			dispatchInsertion(createToolElement(draggedElement, dropRow, dropCol));
 
-			const { elementsToAdd, connectionsToAdd, connectionsToRemove } = computeAutoConnectionsForElements(
-				section,
-				[newElement],
-				leafPositions
-			);
+			function dispatchInsertion(newElement: LadderElement) {
+				const { elementsToAdd, connectionsToAdd, connectionsToRemove } = computeAutoConnectionsForElements(
+					section,
+					[newElement],
+					leafPositions,
+				);
 
-			const commands: AbstractLadderCommand<any>[] = [
-				new ElementsAddCommand({ sectionId: section.id, elements: elementsToAdd }),
-			];
+				const commands: AbstractLadderCommand<any>[] = [
+					new ElementsAddCommand({ sectionId: section.id, elements: elementsToAdd }),
+				];
 
-			if (connectionsToAdd.length > 0) {
-				commands.push(new ConnectionsAddCommand({ sectionId: section.id, connections: connectionsToAdd }));
+				if (connectionsToAdd.length > 0) {
+					commands.push(new ConnectionsAddCommand({ sectionId: section.id, connections: connectionsToAdd }));
+				}
+
+				if (connectionsToRemove.length > 0) {
+					commands.push(
+						new ConnectionsRemoveCommand({ sectionId: section.id, connections: connectionsToRemove }),
+					);
+				}
+
+				commandsStackManager.executeOperation(commands);
 			}
-			
-			if (connectionsToRemove.length > 0) {
-				commands.push(new ConnectionsRemoveCommand({ sectionId: section.id, connections: connectionsToRemove }));
-			}
-
-			commandsStackManager.executeOperation(commands);
 		},
 		[draggedElement, screenToFlowPosition, leafPositions, section, commandsStackManager],
 	);

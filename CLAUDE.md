@@ -110,7 +110,11 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   qui reformule ce qu'un nom de variable/fonction bien choisi dit déjà — si le code se lit tout
   seul, un commentaire à côté est du bruit, pas de la documentation. Dans le doute, préférer le
   composant UI qui consomme la valeur (là où le "pourquoi" a un contexte visuel) plutôt que le
-  schéma/domaine (souvent trop générique pour justifier une explication locale).
+  schéma/domaine (souvent trop générique pour justifier une explication locale). En particulier,
+  ne jamais expliquer au point d'appel ce que fait un hook générique (ex. `useShallow`,
+  `useCallback`) — son comportement est connu de quiconque connaît la librairie, ce n'est pas une
+  règle métier de ce fichier. Un commentaire à cet endroit ne se justifie que pour une règle
+  métier propre au fichier (pourquoi CE sélecteur a besoin de cette protection ici).
 - **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
   anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
   écrire en français tout nouveau commentaire.
@@ -128,6 +132,13 @@ renommage de champ, changement de structure...) doit s'accompagner d'une migrati
 `src/persistence/migrations/`. Avant d'en créer une, demander au développeur s'il faut modifier
 la dernière migration existante (par exemple si elle n'a pas encore été déployée en production)
 ou en créer une nouvelle version.
+
+## Ambiguïté d'une demande
+
+En cas de doute sur ce que l'utilisateur demande précisément (mécanisme d'interaction visé,
+périmètre exact, etc.), demander une précision plutôt que deviner et implémenter — même pour un
+détail qui semble mineur. Une implémentation dans la mauvaise direction coûte plus cher à défaire
+qu'une question posée à l'avance.
 
 ## Tests et bugs découverts en testant
 

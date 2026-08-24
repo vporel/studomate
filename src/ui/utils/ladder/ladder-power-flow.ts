@@ -23,6 +23,7 @@ export function computeEnergizedEdges(
 		if (!element) return false;
 		if (element.type === "railTerminal") return true; // Le rail est la source, il laisse toujours passer
 		if (element.type === "coil") return false; // Une bobine est un puits, elle ne transmet pas le courant
+		if (element.type === "block") return true; // Un bloc relaie toujours son alimentation (ENO = EN)
 
 		const contact = element;
 		const variable = contact.data.variable;

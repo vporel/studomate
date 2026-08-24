@@ -1,6 +1,7 @@
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import { ContactElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import LadderElementAnalyser from "./element.analyser";
 
@@ -13,6 +14,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 		element: ContactElement,
 		ladder: Ladder,
 		variablesByMnemonic: Map<string, Variable>,
+		_project: Project,
 	): ProjectAnalyserIssue[] {
 		const source = { sourceType: "ladder-contact", sourceId: element.id, parentId: ladder.id } as const;
 		const variable = variablesByMnemonic.get(element.data.variable);

@@ -17,7 +17,7 @@ describe("Project — intégration Ladder", () => {
 		project.createGrafcet("Mon grafcet", { type: "A4", orientation: "portrait" });
 		const ladder = project.createLadder("Mon ladder");
 
-		expect(Object.keys(project.ladders)).toEqual([ladder.id]);
+		expect(Object.keys(project.ladders).sort()).toEqual([ladder.id, project.main.id].sort());
 		expect(Object.keys(project.grafcets)).toHaveLength(1);
 	});
 

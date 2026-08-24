@@ -7,28 +7,49 @@ import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
 	PreCompiledCoilAssignment,
 	PreCompiledLadder,
+	PreCompiledLadderAssignment,
 } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
+
+export type CompiledLadderCall = { programId: string; condition: ASTNode };
 
 export type CompiledLadder = {
 	nodes: ASTNode[];
 	timers: TimerNode[];
+	calls: CompiledLadderCall[];
 };
 
 export default class LadderCompiler {
 	/**
-	 * Une instruction par bobine, puis une instruction par mise à jour de variable mémoire de
-	 * contact P/N. L'ordre des bobines suit l'ordre d'aplatissement des sections/réseaux (déjà
-	 * garanti par `LadderPreCompiler`) — sémantique de scan séquentielle à effet immédiat.
+	 * Une instruction par bobine/port de bloc (dans l'ordre déjà garanti par `LadderPreCompiler`,
+	 * impératif pour les ports de bloc — voir `PreCompiledBlockPortAssignment`), puis une par mise
+	 * à jour de variable mémoire de contact P/N. Les appels de bloc (`calls`) ne sont pas des
+	 * `ASTNode` : ce sont des instructions au niveau `PLCRoutine`, exécutées après les `nodes`,
+	 * chacune invoquant la routine d'un autre programme si la variable mémoire de son port `EN`
+	 * (déjà affectée parmi les `nodes`) est vraie — voir `PLCRoutine.execute`.
 	 */
 	static compile(preCompiledLadder: PreCompiledLadder): CompiledLadder {
 		const nodes: ASTNode[] = [
-			...preCompiledLadder.coilAssignments.map((assignment) => this.compileCoilAssignment(assignment)),
+			...preCompiledLadder.assignments.map((assignment) => this.compileAssignment(assignment)),
 			...preCompiledLadder.edgeMemoUpdates.map((update) =>
 				StatementsBuilder.buildAssignStatementNode(update.memoIdentifier, update.sourceIdentifier),
 			),
 		];
+		const calls: CompiledLadderCall[] = preCompiledLadder.blockCalls.map((call) => ({
+			programId: call.programId,
+			condition: IdentifiersBuilder.buildIdentifierNode(call.enMnemonic),
+		}));
 
-		return { nodes, timers: [] };
+		return { nodes, timers: [], calls };
+	}
+
+	private static compileAssignment(assignment: PreCompiledLadderAssignment): ASTNode {
+		if (assignment.kind === "blockPort") {
+			return StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode(assignment.mnemonic),
+				assignment.value,
+			);
+		}
+		return this.compileCoilAssignment(assignment);
 	}
 
 	private static compileCoilAssignment(assignment: PreCompiledCoilAssignment): ASTNode {

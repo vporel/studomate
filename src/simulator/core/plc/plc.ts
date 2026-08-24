@@ -12,6 +12,15 @@ export default class PLC extends ClockedRunnable {
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
 	private program: PLCRoutine[];
+	/**
+	 * Registre de **toutes** les routines compilées, y compris celles jamais scannées
+	 * directement (un ladder standard, appelé par un bloc `"user-program"` seulement). Ne peut
+	 * pas être déduit de `program` : `program` ne contient que les routines de premier niveau
+	 * (grafcets + Main), volontairement — un ladder appelé n'y figure jamais, donc il faut ce
+	 * registre séparé pour que `PLCRoutine.execute` puisse le retrouver par `programId` au moment
+	 * de l'appel. Voir `CompiledProject.routinesById`.
+	 */
+	private routinesById: Record<string, PLCRoutine>;
 	private onCycleStart: RunnableCallback<PLC> = () => {};
 	private onCycleEnd: RunnableCallback<PLC> = () => {};
 	private onCycleError: (error: Error) => void = () => {};
@@ -19,6 +28,7 @@ export default class PLC extends ClockedRunnable {
 	constructor(config: {
 		scanTimeMs: number;
 		program: PLCRoutine[];
+		routinesById?: Record<string, PLCRoutine>;
 		variables: PLCVariable[];
 		onPLCStart?: RunnableCallback<PLC>;
 		onPLCStop?: RunnableCallback<PLC>;
@@ -28,6 +38,7 @@ export default class PLC extends ClockedRunnable {
 	}) {
 		super(config.scanTimeMs);
 		this.program = config.program;
+		this.routinesById = config.routinesById ?? {};
 		if (config.onPLCStart) this.onStart = config.onPLCStart;
 		if (config.onPLCStop) this.onStop = config.onPLCStop;
 		if (config.onCycleStart) this.onCycleStart = config.onCycleStart;
@@ -131,7 +142,7 @@ export default class PLC extends ClockedRunnable {
 		const deltaTimeMs = this.getClockIntervalMs();
 
 		for (const routine of this.program) {
-			routine.execute(env, deltaTimeMs);
+			routine.execute(env, deltaTimeMs, this.routinesById);
 		}
 
 		for (const variable of plcVariablesSnapshot) {

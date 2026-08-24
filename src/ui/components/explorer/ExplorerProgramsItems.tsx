@@ -1,11 +1,13 @@
 "use client";
 
+import { LadderRole } from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Typography } from "@mui/material";
 import { ElementType, Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
 import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
 import LadderIcon from "../icons/LadderIcon";
+import LadderMainIcon from "../icons/LadderMainIcon";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
@@ -15,6 +17,7 @@ import {
 	ExplorerContextMenuEventsOutLadderRename,
 } from "./context-menu/explorer-context-menu-events";
 import { explorerContextMenuEventsOut } from "./context-menu/ExplorerContextMenu";
+import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 
 /**
  * Icône par type de programme — un grafcet et un ladder partagent le même dossier
@@ -25,6 +28,12 @@ const PROGRAM_ICONS: Record<ProgramType, ElementType> = {
 	ladder: LadderIcon,
 };
 
+/** Le Main a sa propre icône, quel que soit son nom — c'est le point d'entrée de l'exécution. */
+function getProgramIcon(programType: ProgramType, programRole?: LadderRole): ElementType {
+	if (programType === "ladder" && programRole === "main") return LadderMainIcon;
+	return PROGRAM_ICONS[programType];
+}
+
 type RenameEvent =
 	| ExplorerContextMenuEventsOutGrafcetRename
 	| ExplorerContextMenuEventsOutLadderRename;
@@ -33,12 +42,14 @@ const ExplorerProgramItem = ({
 	programId,
 	programName,
 	programType,
+	programRole,
 	styles,
 	onContextMenu,
 }: {
 	programId: string;
 	programName: string;
 	programType: ProgramType;
+	programRole?: LadderRole;
 	styles: CustomTreeItemStyles;
 	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
 }) => {
@@ -76,14 +87,31 @@ const ExplorerProgramItem = ({
 			? { type: "grafcet", grafcetId: programId }
 			: { type: "ladder", ladderId: programId };
 
+	// Un ladder standard peut être référencé par un bloc "appel de programme" (voir BlockNode) :
+	// glisser-déposer depuis ce menu vers le canevas d'un ladder. Le Main ne peut pas être appelé
+	// (BlockAnalyser le refuserait) et un grafcet n'est pas une cible valide — ni l'un ni l'autre
+	// n'est donc glissable. Désactivé aussi pendant l'édition du nom, pour permettre la sélection
+	// de texte dans le champ sans déclencher un glisser.
+	const draggableAsProgramRef =
+		designing && programType === "ladder" && programRole !== "main" && labelMode !== "edit";
+
 	return (
 		<CustomTreeItem
 			key={programId}
 			itemId={programId}
 			label={programName}
 			labelMode={labelMode}
-			IconComponent={PROGRAM_ICONS[programType]}
+			IconComponent={getProgramIcon(programType, programRole)}
 			styles={styles}
+			draggable={draggableAsProgramRef}
+			onDragStart={
+				draggableAsProgramRef
+					? (e) => {
+							e.dataTransfer.setData(LADDER_PROGRAM_DRAG_MIME_TYPE, programId);
+							e.dataTransfer.effectAllowed = "copy";
+						}
+					: undefined
+			}
 			onClick={() =>
 				pagesManager.openPage({
 					id: programId,
@@ -146,6 +174,7 @@ const ExplorerProgramsItems = ({
 						programId={program.id}
 						programName={program.name}
 						programType={program.type}
+						programRole={program.role}
 						styles={styles}
 						onContextMenu={onContextMenu}
 					/>

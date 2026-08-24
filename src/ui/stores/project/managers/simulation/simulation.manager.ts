@@ -152,6 +152,7 @@ export default class SimulationManager {
 		const plc = new PLC({
 			scanTimeMs,
 			program: projectCompilationResult.result!.routines,
+			routinesById: projectCompilationResult.result!.routinesById,
 			variables: projectCompilationResult.result!.variables,
 			onCycleEnd: (plcInstance) => {
 				const variablesSnapshot = plcInstance.getVariablesSnapshot();

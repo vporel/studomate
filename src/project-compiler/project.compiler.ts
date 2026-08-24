@@ -7,19 +7,24 @@ import PLCVariable from "@/simulator/core/plc/plc-variable";
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import { PreCompiledLadder } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
-import PLCRoutine from "@/simulator/core/plc/plc-routine";
+import PLCRoutine, { PLCRoutineCall } from "@/simulator/core/plc/plc-routine";
 import { ProgramType } from "@/schemas/program/program.schema";
 import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
 import GrafcetCompiler from "./compilers/grafcet/grafcet.compiler";
 import LadderCompiler from "./compilers/ladder/ladder.compiler";
 
 /**
- * - variables : all PLCVariables needed at runtime (user + steps Xi + generated memos)
- * - routine   : a single flat PLCRoutine that drives one full scan cycle across all grafcets
+ * - variables    : all PLCVariables needed at runtime (user + steps Xi + generated memos)
+ * - routines     : les routines scannées directement à chaque cycle — tous les grafcets, et
+ *                  seulement le Main parmi les ladders (voir `routinesById` pour les autres)
+ * - routinesById : toutes les routines compilées, y compris les ladders appelés par un bloc
+ *                  `"user-program"` mais jamais scannés directement — registre consommé par
+ *                  `PLCRoutine.execute` pour résoudre un appel par `programId`
  */
 export type CompiledProject = {
 	variables: PLCVariable[];
 	routines: PLCRoutine[];
+	routinesById: Record<string, PLCRoutine>;
 	timers: TimerNode[];
 };
 
@@ -34,43 +39,59 @@ export type ProjectCompilationResult = {
  */
 const PROGRAM_COMPILERS: Record<
 	ProgramType,
-	(preCompiled: PreCompiledProgram) => { nodes: ASTNode[]; timers: TimerNode[] }
+	(preCompiled: PreCompiledProgram) => { nodes: ASTNode[]; timers: TimerNode[]; calls: PLCRoutineCall[] }
 > = {
-	grafcet: (preCompiled) => GrafcetCompiler.compile(preCompiled as PreCompiledGrafcet),
+	grafcet: (preCompiled) => ({ ...GrafcetCompiler.compile(preCompiled as PreCompiledGrafcet), calls: [] }),
 	ladder: (preCompiled) => LadderCompiler.compile(preCompiled as PreCompiledLadder),
 };
 
 export default class ProjectCompiler {
 	/**
 	 * Converts a PreCompiledProject into a CompiledProject, ready to be executed by the simulator.
+	 *
+	 * Chaque programme (grafcet ou ladder) devient une `PLCRoutine`, indexée dans `routinesById`.
+	 * Seuls les grafcets et le Main du projet (le seul ladder qui soit un point d'entrée — voir
+	 * `Ladder.role`) sont scannés directement (`routines`) ; un ladder standard ne s'exécute que
+	 * si un bloc `"user-program"`, quelque part, l'appelle avec son `EN` vrai ce balayage.
 	 */
 	static compile(preCompiledProject: PreCompiledProject): ProjectCompilationResult {
 		try {
 			const timers: TimerNode[] = [];
-			// Build routine nodes for all grafcets
-			const programsNodes = Object.values(preCompiledProject.programs)
-				.map((preCompiledProgram) => {
-					if (!preCompiledProgram) return [];
-					const compiler = PROGRAM_COMPILERS[preCompiledProgram.type];
-					if (!compiler) {
-						console.error(`Aucun compilateur pour la notation "${preCompiledProgram.type}"`);
-						return [];
-					}
-					const compiled = compiler(preCompiledProgram);
-					timers.push(...compiled.timers);
-					return compiled.nodes;
-				})
-				.filter((r) => r.length > 0);
-			const routines: PLCRoutine[] = [...programsNodes.map((nodes) => new PLCRoutine(nodes))];
+			const routinesById: Record<string, PLCRoutine> = {};
+			let mainProgramId: string | null = null;
 
-			//Perform a semantic check on all the routines
+			for (const [programId, preCompiledProgram] of Object.entries(preCompiledProject.programs)) {
+				if (!preCompiledProgram) continue;
+				const compiler = PROGRAM_COMPILERS[preCompiledProgram.type];
+				if (!compiler) {
+					console.error(`Aucun compilateur pour la notation "${preCompiledProgram.type}"`);
+					continue;
+				}
+				const compiled = compiler(preCompiledProgram);
+				timers.push(...compiled.timers);
+				routinesById[programId] = new PLCRoutine(compiled.nodes, compiled.calls);
+				if (preCompiledProgram.type === "ladder" && (preCompiledProgram as PreCompiledLadder).role === "main") {
+					mainProgramId = programId;
+				}
+			}
+
+			const routines: PLCRoutine[] = [
+				...Object.entries(preCompiledProject.programs)
+					.filter(([, program]) => program?.type === "grafcet")
+					.map(([programId]) => routinesById[programId]),
+				...(mainProgramId ? [routinesById[mainProgramId]] : []),
+			];
+
+			//Perform a semantic check on all the routines (y compris celles appelées, pas seulement
+			//les scannées directement) et leurs conditions d'appel.
 			//No error is caught here, as we assume the pre-compilation step should have caught all possible errors and produced a clean AST.
 			//If an error is thrown here, it means there's a bug in the pre-compiler/compiler.
 			const semanticAnalyser = new SemanticAnalyserVisitor(
 				new Environment(preCompiledProject.variables.map(PlcVariablesMapper.plcToEnv)),
 			);
-			routines.forEach((routine) => {
+			Object.values(routinesById).forEach((routine) => {
 				routine.getNodes().forEach((node) => semanticAnalyser.visit(node));
+				routine.getCalls().forEach((call) => semanticAnalyser.visit(call.condition));
 			});
 
 			return {
@@ -78,6 +99,7 @@ export default class ProjectCompiler {
 				result: {
 					variables: preCompiledProject.variables,
 					routines,
+					routinesById,
 					timers,
 				},
 			};

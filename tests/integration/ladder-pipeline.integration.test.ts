@@ -6,6 +6,7 @@ import { createRandomId } from "@/ids";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
+import { wireLadderIntoMain } from "@tests/utils/ladder-factory";
 
 /** Pose une borne d'alimentation, un contact et une bobine reliés en série, dans la section donnée. */
 function wireContactToCoil(ladder: Ladder, section: Section, contactParams: Parameters<typeof createContactElement>, coilParams: Parameters<typeof createCoilElement>) {
@@ -37,6 +38,7 @@ describe("Ladder Pipeline Integration Test", () => {
 
 			const project = ProjectFactory.createWithVariables([inputVar, outputVar]);
 			const ladder = project.createLadder("Ladder 1");
+			wireLadderIntoMain(project, ladder);
 			const [section] = ladder.sections;
 			wireContactToCoil(ladder, section, ["I0", "NO", 0, 0], ["Q0", "normal", 0, 1]);
 
@@ -44,6 +46,7 @@ describe("Ladder Pipeline Integration Test", () => {
 			expect(pipeline.analysis.issues).toEqual([]);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
+			// Un seul routine de premier niveau : le Main (qui appelle "Ladder 1" via un bloc).
 			expect(pipeline.compilation.result!.routines).toHaveLength(1);
 
 			let cycleError: Error | null = null;
@@ -76,6 +79,7 @@ describe("Ladder Pipeline Integration Test", () => {
 
 			const project = ProjectFactory.createWithVariables([setInput, resetInput, outputVar]);
 			const ladder = project.createLadder("Ladder 1");
+			wireLadderIntoMain(project, ladder);
 			const [sectionA] = ladder.sections;
 			const sectionB = ladder.createSection("Section B");
 			wireContactToCoil(ladder, sectionA, ["I0", "NO", 0, 0], ["Q0", "set", 0, 1]);
@@ -116,6 +120,7 @@ describe("Ladder Pipeline Integration Test", () => {
 
 			const project = ProjectFactory.createWithVariables([inputVar, outputVar]);
 			const ladder = project.createLadder("Ladder 1");
+			wireLadderIntoMain(project, ladder);
 			const [section] = ladder.sections;
 			wireContactToCoil(ladder, section, ["I0", "P", 0, 0], ["Q0", "normal", 0, 1]);
 

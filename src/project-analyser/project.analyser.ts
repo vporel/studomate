@@ -1,3 +1,4 @@
+import { BlockElement, UserProgramBlockParams } from "@/schemas/ladder/block.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
@@ -38,7 +39,7 @@ const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
 			const result = LadderAnalyser.analyse(ladder, project);
 			return {
 				issues: result.issues,
-				generatedVariables: result.edgeMemoryVariables,
+				generatedVariables: result.generatedVariables,
 				analysedElementsCount: LadderAnalyser.countLeaves(ladder),
 			};
 		},
@@ -80,6 +81,9 @@ export default class ProjectAnalyser {
 		}
 
 		issues.push(...this.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
+		issues.push(...this.checkMainUniqueness(project));
+		issues.push(...this.checkOrphanLadders(project));
+		issues.push(...this.checkCallCycles(project));
 
 		return {
 			totalAnalysedElements,
@@ -130,6 +134,119 @@ export default class ProjectAnalyser {
 				),
 			);
 		}
+		return issues;
+	}
+
+	/** Défense en profondeur : garanti par `Project.createMain`/`deleteProgram`, sauf projet importé/édité à la main. */
+	private static checkMainUniqueness(project: Project): ProjectAnalyserIssue[] {
+		const mains = Object.values(project.ladders).filter((ladder) => ladder.role === "main");
+		if (mains.length === 1) return [];
+		if (mains.length === 0) {
+			return [
+				new ProjectAnalyserIssue(
+					"error",
+					"PROJECT_MISSING_MAIN",
+					{ sourceType: "project", sourceId: project.id },
+					"Le projet ne porte aucun programme Main.",
+				),
+			];
+		}
+		return [
+			new ProjectAnalyserIssue(
+				"error",
+				"PROJECT_MULTIPLE_MAINS",
+				{ sourceType: "project", sourceId: project.id },
+				`Le projet porte ${mains.length} programmes Main, il ne devrait en porter qu'un seul.`,
+			),
+		];
+	}
+
+	/**
+	 * Pour chaque ladder, la liste des `programId` référencés par ses blocs `"user-program"` — les
+	 * références vers un id qui n'est pas un ladder du projet sont ignorées ici (déjà signalées
+	 * par `BlockAnalyser`).
+	 */
+	private static buildBlockReferenceGraph(project: Project): Map<string, string[]> {
+		const graph = new Map<string, string[]>();
+		for (const ladder of Object.values(project.ladders)) {
+			const targets = ladder
+				.getAllElements()
+				.filter(
+					(element): element is BlockElement =>
+						element.type === "block" && element.data.blockType === "user-program",
+				)
+				.map((element) => (element.data.params as UserProgramBlockParams).programId)
+				.filter((programId) => project.getLadder(programId) !== undefined);
+			graph.set(ladder.id, targets);
+		}
+		return graph;
+	}
+
+	/**
+	 * Un ladder qui n'est référencé par aucun bloc, nulle part dans le projet (ni le Main ni un
+	 * autre ladder), ne s'exécute jamais — voir `checkCallCycles` pour le mécanisme d'appel.
+	 * Volontairement pas de calcul d'atteignabilité transitive depuis le Main : ce n'est qu'un
+	 * signal, à l'utilisateur de repérer une erreur d'assemblage.
+	 */
+	private static checkOrphanLadders(project: Project): ProjectAnalyserIssue[] {
+		const graph = this.buildBlockReferenceGraph(project);
+		const referencedIds = new Set(Array.from(graph.values()).flat());
+
+		const issues: ProjectAnalyserIssue[] = [];
+		for (const ladder of Object.values(project.ladders)) {
+			if (ladder.role === "main" || referencedIds.has(ladder.id)) continue;
+			issues.push(
+				new ProjectAnalyserIssue(
+					"warning",
+					"LADDER_NOT_REFERENCED",
+					{ sourceType: "ladder", sourceId: ladder.id },
+					`Le ladder "${ladder.name}" n'est référencé par aucun bloc du projet : il ne s'exécutera pas.`,
+				),
+			);
+		}
+		return issues;
+	}
+
+	/**
+	 * Un ladder peut référencer un autre ladder via un bloc `"user-program"`, formant un graphe
+	 * d'appels — jamais de cycle autorisé (y compris l'auto-référence), sous peine de boucle
+	 * infinie à l'exécution. Détection classique par coloriage (blanc/gris/noir) : un arc vers un
+	 * noeud "gris" (en cours de visite) referme un cycle.
+	 */
+	private static checkCallCycles(project: Project): ProjectAnalyserIssue[] {
+		const graph = this.buildBlockReferenceGraph(project);
+		const state = new Map<string, "visiting" | "done">();
+		const reportedCycles = new Set<string>();
+		const issues: ProjectAnalyserIssue[] = [];
+
+		const visit = (ladderId: string, path: string[]) => {
+			state.set(ladderId, "visiting");
+			for (const targetId of graph.get(ladderId) ?? []) {
+				if (state.get(targetId) === "visiting") {
+					const cycle = [...path.slice(path.indexOf(targetId)), targetId];
+					const key = [...new Set(cycle)].sort().join(">");
+					if (reportedCycles.has(key)) continue;
+					reportedCycles.add(key);
+					const names = cycle.map((id) => project.getProgram(id)?.name ?? id).join(" → ");
+					issues.push(
+						new ProjectAnalyserIssue(
+							"error",
+							"BLOCK_PROGRAM_CALL_CYCLE",
+							{ sourceType: "project", sourceId: project.id },
+							`Cycle d'appels entre ladders détecté : ${names}.`,
+						),
+					);
+					continue;
+				}
+				if (!state.has(targetId)) visit(targetId, [...path, targetId]);
+			}
+			state.set(ladderId, "done");
+		};
+
+		for (const ladderId of graph.keys()) {
+			if (!state.has(ladderId)) visit(ladderId, [ladderId]);
+		}
+
 		return issues;
 	}
 }

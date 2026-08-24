@@ -4,7 +4,7 @@ import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
-import { GridPosition } from "@/schemas/ladder/element.schema";
+import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
@@ -159,6 +159,8 @@ export default class LadderWorkflowManager {
 		newPosition: GridPosition,
 	): { connectionId: string; newPoints: [number, number][]; previousPoints: [number, number][] }[] {
 		const updates: { connectionId: string; newPoints: [number, number][]; previousPoints: [number, number][] }[] = [];
+		const movedElement = section.getElement(elementId);
+		if (!movedElement) return updates;
 		for (const connection of section.connections) {
 			const isSource = connection.source.id === elementId;
 			const isTarget = connection.target.id === elementId;
@@ -168,16 +170,23 @@ export default class LadderWorkflowManager {
 
 			const sourcePos = isSource ? newPosition : other.position;
 			const targetPos = isSource ? other.position : newPosition;
+			const sourceWidth = getElementWidth(isSource ? movedElement : other);
 
 			const previousPoints = connection.data.points;
 			let newPoints: [number, number][];
 			if (previousPoints.length === 0) {
 				if (sourcePos.row === targetPos.row) continue;
-				newPoints = initialConnectionPoints(sourcePos, targetPos);
+				newPoints = initialConnectionPoints(sourcePos, targetPos, sourceWidth);
 			} else if (sourcePos.row === targetPos.row) {
 				continue;
 			} else {
-				newPoints = pushConnectionBend(previousPoints, isSource ? "source" : "target", sourcePos, targetPos);
+				newPoints = pushConnectionBend(
+					previousPoints,
+					isSource ? "source" : "target",
+					sourcePos,
+					targetPos,
+					sourceWidth,
+				);
 			}
 
 			if (deepObjectsComparison(newPoints, previousPoints)) continue;

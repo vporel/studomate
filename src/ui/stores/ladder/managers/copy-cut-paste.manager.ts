@@ -1,4 +1,4 @@
-import { LadderElement } from "@/schemas/ladder/element.schema";
+import { getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createRandomId } from "@/ids";
 import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
@@ -6,8 +6,7 @@ import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
-import { LADDER_MAX_COLS, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
-import { computeSectionLayout } from "@/ui/utils/ladder/ladder-flow-builder";
+import { computeSectionLayout, LADDER_MAX_COLS, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
 
@@ -124,10 +123,11 @@ export default class CopyCutPasteManager {
 
 		let offsetRow = startRow - minRow;
 
-		// Gestion des collisions
+		// Gestion des collisions — chevauchement d'empreinte (largeur, voir `getElementWidth`), pas
+		// une simple égalité de colonne : un `block` colle occupe 2 colonnes.
 		const { leafPositions } = computeSectionLayout(section);
 		let collision = true;
-		
+
 		while (collision) {
 			collision = false;
 			let maxRowInCollision = -1;
@@ -135,12 +135,18 @@ export default class CopyCutPasteManager {
 			for (const copiedEl of this.clipboard.elements) {
 				const r = copiedEl.position.row + offsetRow;
 				const c = copiedEl.position.col + offsetCol;
-				
-				const occupant = leafPositions.find(l => l.row === r && l.col === c);
+				const cEnd = c + getElementWidth(copiedEl) - 1;
+
+				const occupant = section.elements.find((el) => {
+					if (el.position.row !== r) return false;
+					const elStart = el.position.col;
+					const elEnd = elStart + getElementWidth(el) - 1;
+					return elStart <= cEnd && elEnd >= c;
+				});
 				if (occupant) {
 					collision = true;
-					if (occupant.row > maxRowInCollision) {
-						maxRowInCollision = occupant.row;
+					if (occupant.position.row > maxRowInCollision) {
+						maxRowInCollision = occupant.position.row;
 					}
 				}
 			}

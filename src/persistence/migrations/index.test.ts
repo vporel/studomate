@@ -10,8 +10,34 @@ describe("migrateProject", () => {
 
 		expect(from).toBe(UNVERSIONED);
 		expect(project.schemaVersion).toBe(PROJECT_SCHEMA_VERSION);
-		expect(project.programs).toEqual({ g1: { id: "g1", type: "grafcet" } });
+		expect(project.programs.g1).toEqual({ id: "g1", type: "grafcet" });
 		expect(project.grafcets).toBeUndefined();
+	});
+
+	it("ajoute un programme Main si aucun n'existe déjà", () => {
+		const ancien = { id: "p1", name: "A", grafcets: { g1: { id: "g1" } } };
+
+		const { project } = migrateProject(ancien);
+
+		const mains = Object.values(project.programs as Record<string, any>).filter(
+			(p: any) => p.type === "ladder" && p.role === "main",
+		);
+		expect(mains).toHaveLength(1);
+	});
+
+	it("n'ajoute pas de second Main si un programme Main existe déjà", () => {
+		const ancien = {
+			id: "p1",
+			name: "A",
+			programs: { m1: { id: "m1", type: "ladder", role: "main", sections: [] } },
+		};
+
+		const { project } = migrateProject(ancien);
+
+		const mains = Object.values(project.programs as Record<string, any>).filter(
+			(p: any) => p.type === "ladder" && p.role === "main",
+		);
+		expect(mains).toHaveLength(1);
 	});
 
 	it("laisse intact un projet déjà à jour", () => {

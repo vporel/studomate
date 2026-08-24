@@ -9,6 +9,14 @@ describe("Ladder", () => {
 		expect(ladder.sections).toHaveLength(1);
 	});
 
+	it("a le rôle 'standard' par défaut, sauf si spécifié autrement", () => {
+		const ladder = new Ladder("l1", "Mon ladder");
+		expect(ladder.role).toBe("standard");
+
+		const main = new Ladder("l2", "Main", undefined, "main");
+		expect(main.role).toBe("main");
+	});
+
 	describe("sections", () => {
 		it("createSection ajoute une section, getSection la retrouve", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
@@ -170,7 +178,12 @@ describe("Ladder", () => {
 			expect(copiedSection.connections[0]).not.toBe(section.connections[0]);
 			expect(copiedSection.connections).toEqual(section.connections);
 		});
+
+		it("préserve le rôle du ladder", () => {
+			const main = new Ladder("l1", "Main", undefined, "main");
+			expect(main.copy().role).toBe("main");
 		});
+	});
 
 	describe("renameVariableReferences", () => {
 		it("réécrit la variable référencée par les contacts et bobines de toutes les sections", () => {
@@ -239,6 +252,14 @@ describe("Ladder", () => {
 
 			expect(restored.sections[0].elements).toEqual([]);
 			expect(restored.sections[0].connections).toEqual([]);
+		});
+
+		it("préserve le rôle, et retombe sur 'standard' si absent du JSON", () => {
+			const main = new Ladder("l1", "Main", undefined, "main");
+			expect(Ladder.createFromJSON(JSON.stringify(main)).role).toBe("main");
+
+			const legacyJSON = JSON.stringify({ id: "l2", name: "Ancien ladder", type: "ladder", sections: [] });
+			expect(Ladder.createFromJSON(legacyJSON).role).toBe("standard");
 		});
 	});
 });
