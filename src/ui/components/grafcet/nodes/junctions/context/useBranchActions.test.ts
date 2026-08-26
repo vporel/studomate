@@ -15,7 +15,6 @@ jest.mock("@xyflow/react", () => ({
 
 function makeNodeData(overrides: Partial<JunctionData>): JunctionData {
 	return {
-		width: 200,
 		pivotPosition: 100,
 		branches: {},
 		branchesOrder: [],
@@ -36,8 +35,8 @@ describe("useBranchActions", () => {
 	afterEach(() => jest.clearAllMocks())
 
 	it("adds a centered branch when there are none yet", () => {
-		const nodeData = makeNodeData({ width: 200 })
-		const { result } = renderHook(() => useBranchActions("node-1", nodeData))
+		const nodeData = makeNodeData({})
+		const { result } = renderHook(() => useBranchActions("node-1", nodeData, 200))
 
 		act(() => result.current.add(0))
 
@@ -52,11 +51,10 @@ describe("useBranchActions", () => {
 
 	it("inserts a branch between two existing branches", () => {
 		const nodeData = makeNodeData({
-			width: 200,
 			branches: { a: { id: "a", position: 60 }, b: { id: "b", position: 140 } },
 			branchesOrder: ["a", "b"],
 		})
-		const { result } = renderHook(() => useBranchActions("node-1", nodeData))
+		const { result } = renderHook(() => useBranchActions("node-1", nodeData, 200))
 
 		act(() => result.current.add(1))
 
@@ -67,11 +65,10 @@ describe("useBranchActions", () => {
 
 	it("adds a branch before the first one", () => {
 		const nodeData = makeNodeData({
-			width: 200,
 			branches: { a: { id: "a", position: 60 } },
 			branchesOrder: ["a"],
 		})
-		const { result } = renderHook(() => useBranchActions("node-1", nodeData))
+		const { result } = renderHook(() => useBranchActions("node-1", nodeData, 200))
 
 		act(() => result.current.add(0))
 
@@ -82,11 +79,10 @@ describe("useBranchActions", () => {
 
 	it("adds a branch after the last one", () => {
 		const nodeData = makeNodeData({
-			width: 200,
 			branches: { a: { id: "a", position: 60 } },
 			branchesOrder: ["a"],
 		})
-		const { result } = renderHook(() => useBranchActions("node-1", nodeData))
+		const { result } = renderHook(() => useBranchActions("node-1", nodeData, 200))
 
 		act(() => result.current.add(1))
 
@@ -97,11 +93,10 @@ describe("useBranchActions", () => {
 
 	it("aligns the new branch position to the grid", () => {
 		const nodeData = makeNodeData({
-			width: 205,
 			branches: {},
 			branchesOrder: [],
 		})
-		const { result } = renderHook(() => useBranchActions("node-1", nodeData))
+		const { result } = renderHook(() => useBranchActions("node-1", nodeData, 205))
 
 		act(() => result.current.add(0))
 

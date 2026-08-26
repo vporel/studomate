@@ -5,7 +5,7 @@ describe("ElementsRemoveCommand", () => {
 	function grafcetWithOneStep(): Grafcet {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		grafcet.addElements([
-			{ type: "step", id: "step-1", data: { width: 10, height: 10 }, position: { x: 0, y: 0 } },
+			{ type: "step", id: "step-1", data: {}, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
 		]);
 		return grafcet;
 	}
@@ -13,7 +13,7 @@ describe("ElementsRemoveCommand", () => {
 	it("retire les éléments, et l'annulation les restaure", () => {
 		const grafcet = grafcetWithOneStep();
 		const command = new ElementsRemoveCommand([
-			{ type: "step", id: "step-1", data: { width: 10, height: 10 }, position: { x: 0, y: 0 } },
+			{ type: "step", id: "step-1", data: {}, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
 		]);
 
 		const [, isValid] = command.execute(grafcet);
@@ -30,7 +30,7 @@ describe("ElementsRemoveCommand", () => {
 		const grafcet = grafcetWithOneStep();
 		const before = JSON.stringify(grafcet);
 		const command = new ElementsRemoveCommand([
-			{ type: "step", id: "step-1", data: { width: 10, height: 10 }, position: { x: 0, y: 0 } },
+			{ type: "step", id: "step-1", data: {}, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
 		]);
 
 		command.execute(grafcet);

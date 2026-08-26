@@ -1,13 +1,12 @@
 "use client";
 
-import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
-import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
-import { Add as AddIcon, Segment as SegmentIcon } from "@mui/icons-material";
+import { Add as AddIcon } from "@mui/icons-material";
 import { Box, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";
 import InclinedAccountTree from "../icons/InclinedAccountTree";
 import LadderIcon from "../icons/LadderIcon";
+import VariablesIcon from "../icons/VariablesIcon";
 import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
 import Page from "./Page";
@@ -42,7 +41,7 @@ function VariblesPagesList() {
 					}
 				>
 					<ListItemIcon>
-						<SegmentIcon />
+						<VariablesIcon />
 					</ListItemIcon>
 					<ListItemText>{pageData.title}</ListItemText>
 				</MenuItem>
@@ -88,7 +87,7 @@ function Actions() {
 			</Typography>
 			<MenuItem
 				onClick={() => {
-					grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
+					grafcetsManager.newGrafcet();
 				}}
 			>
 				<ListItemIcon>
@@ -98,7 +97,7 @@ function Actions() {
 			</MenuItem>
 			<MenuItem
 				onClick={() => {
-					laddersManager.newLadder(DEFAULT_LADDER_NAME);
+					laddersManager.newLadder();
 				}}
 			>
 				<ListItemIcon>

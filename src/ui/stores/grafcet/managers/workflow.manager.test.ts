@@ -13,7 +13,7 @@ function node(id: string, overrides: Partial<GrafcetNodeType["data"]> = {}): Gra
 		id,
 		type: "step",
 		position: { x: 0, y: 0 },
-		data: { number: "", initial: false, width: 40, height: 40, ...overrides },
+		data: { number: "", initial: false, ...overrides },
 	} as any;
 }
 
@@ -90,13 +90,19 @@ describe("WorkflowManager.handleNodesChange — identité des nœuds", () => {
 
 		store.getState().workflowManager.handleNodesChange([
 			{ id: "junction-1", type: "position", position: { x: 80, y: 100 }, dragging: true },
-			{ id: "junction-1", type: "dimensions", dimensions: { width: 220, height: 30 }, resizing: true },
+			{
+				id: "junction-1",
+				type: "dimensions",
+				dimensions: { width: 220, height: 30 },
+				resizing: true,
+				setAttributes: true,
+			},
 		]);
 
 		const junctionAfter = store.getState().nodes.find((n) => n.id === "junction-1")! as any;
 		const delta = 100 - 80; //node.position.x (avant) - change.position.x
 		expect(junctionAfter.data.pivotPosition).toBe(pivotBefore + delta);
-		expect(junctionAfter.data.width).toBe(220);
+		expect(junctionAfter.width).toBe(220);
 		const branchPositionsAfter = Object.values(junctionAfter.data.branches).map((b: any) => b.position);
 		expect(branchPositionsAfter).toEqual(branchPositionsBefore.map((p: any) => p + delta));
 	});
@@ -107,11 +113,17 @@ describe("WorkflowManager.handleNodesChange — identité des nœuds", () => {
 		const pivotBefore = junctionBefore.data.pivotPosition;
 
 		store.getState().workflowManager.handleNodesChange([
-			{ id: "junction-1", type: "dimensions", dimensions: { width: 250, height: 30 }, resizing: true },
+			{
+				id: "junction-1",
+				type: "dimensions",
+				dimensions: { width: 250, height: 30 },
+				resizing: true,
+				setAttributes: true,
+			},
 		]);
 
 		const junctionAfter = store.getState().nodes.find((n) => n.id === "junction-1")! as any;
-		expect(junctionAfter.data.width).toBe(250);
+		expect(junctionAfter.width).toBe(250);
 		expect(junctionAfter.data.pivotPosition).toBe(pivotBefore);
 	});
 });

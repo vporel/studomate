@@ -9,7 +9,7 @@ import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.co
 import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import { GRAFCET_ELEMENTS_CONFIG, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
 
 export default class ElementsCommandsFactory {
@@ -47,6 +47,11 @@ export default class ElementsCommandsFactory {
 						id: node.id,
 						data: node.data,
 						position: node.position,
+						size: {
+							width: node.width ?? GRAFCET_ELEMENTS_CONFIG[node.type].elementClass.DEFAULT_DIMENSIONS.width,
+							height:
+								node.height ?? GRAFCET_ELEMENTS_CONFIG[node.type].elementClass.DEFAULT_DIMENSIONS.height,
+						},
 					})),
 				),
 			);
@@ -77,6 +82,7 @@ export default class ElementsCommandsFactory {
 				id: node.id,
 				data: node.data,
 				position: node.position,
+				size: grafcet.getElementById(node.id)!.size,
 			}));
 
 		const commands: AbstractGrafcetCommand<any>[] = [];
@@ -207,25 +213,16 @@ export default class ElementsCommandsFactory {
 		const commands = [];
 		//Make sure the dimensions are not the same as the previous ones, to avoid creating unnecessary commands
 		if (
-			element.data.width !== change.dimensions.width ||
-			element.data.height !== change.dimensions.height
+			element.size.width !== change.dimensions.width ||
+			element.size.height !== change.dimensions.height
 		) {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
 						type: element.type,
 						id: change.id,
-						data: {
-							...element.data,
-							width: change.dimensions.width,
-							height: change.dimensions.height,
-						} as any,
-						position: element.position,
-						previousData: element.data ? element.data || {} : undefined,
-						previousPosition: element.position || {
-							x: 0,
-							y: 0,
-						},
+						size: { width: change.dimensions.width, height: change.dimensions.height },
+						previousSize: element.size,
 					}),
 				]),
 			);

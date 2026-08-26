@@ -1,10 +1,11 @@
 import Action, { ActionData, ActionExecutionMode, ActionType } from "../action.schema";
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 
 export default class ActionBuilder {
 	private _id: string;
 	private _data: ActionData;
 	private _position: XYPosition;
+	private _size: Dimensions;
 
 	constructor() {
 		this._id = "";
@@ -12,10 +13,9 @@ export default class ActionBuilder {
 			expression: "",
 			type: ActionType.TEXT,
 			executionMode: null,
-			width: Action.DEFAULT_DIMENSIONS.width,
-			height: Action.DEFAULT_DIMENSIONS.height,
 		};
 		this._position = { x: 0, y: 0 };
+		this._size = { ...Action.DEFAULT_DIMENSIONS };
 	}
 
 	id(id: string): ActionBuilder {
@@ -39,8 +39,7 @@ export default class ActionBuilder {
 	}
 
 	dimensions(width: number, height: number): ActionBuilder {
-		this._data.width = width;
-		this._data.height = height;
+		this._size = { width, height };
 		return this;
 	}
 
@@ -50,6 +49,6 @@ export default class ActionBuilder {
 	}
 
 	build(): Action {
-		return new Action(this._id, { ...this._data }, { ...this._position });
+		return new Action(this._id, { ...this._data }, { ...this._position }, { ...this._size });
 	}
 }

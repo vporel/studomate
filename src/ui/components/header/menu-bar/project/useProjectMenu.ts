@@ -1,7 +1,5 @@
 "use client";
 
-import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
-import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { platformShortcut } from "@/ui/lib/platform";
@@ -27,7 +25,7 @@ export default function useProjectMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
+							grafcetsManager.newGrafcet();
 						},
 					},
 					{
@@ -36,7 +34,7 @@ export default function useProjectMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							laddersManager.newLadder(DEFAULT_LADDER_NAME);
+							laddersManager.newLadder();
 						},
 					},
 				],

@@ -1,6 +1,6 @@
 "use client";
 
-import FolderIcon from "@mui/icons-material/Folder";
+import FolderIcon from "@/ui/components/icons/FolderIcon";
 import { Box } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view";
 import React, { useRef } from "react";
@@ -10,6 +10,7 @@ import ExplorerProgramsItems from "./ExplorerProgramsItems";
 import ExplorerSystemBlockInstancesItems from "./ExplorerSystemBlockInstancesItems";
 import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
+import ExplorerHmiItems from "./ExplorerHmiItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
 import useExplorerContextMenu from "./useExplorerContextMenu";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -61,7 +62,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<ExplorerHeader />
-			<SimpleTreeView defaultExpandedItems={["variables", "programs"]}>
+			<SimpleTreeView defaultExpandedItems={["variables", "programs", "hmi"]}>
 				<CustomTreeItem
 					itemId="variables"
 					label="Variables"
@@ -75,6 +76,11 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 					label="Programmes"
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
+					onContextMenu={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						openContextMenu(e, { type: "programs-folder" });
+					}}
 				>
 					<ExplorerProgramsItems styles={treeItemStyles} onContextMenu={openContextMenu} />
 				</CustomTreeItem>
@@ -95,6 +101,19 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 					styles={treeItemStyles}
 				>
 					<ExplorerSystemBlocksItems styles={treeItemStyles} />
+				</CustomTreeItem>
+				<CustomTreeItem
+					itemId="hmi"
+					label="Interfaces HMI"
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+					onContextMenu={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						openContextMenu(e, { type: "hmi-folder" });
+					}}
+				>
+					<ExplorerHmiItems styles={treeItemStyles} onContextMenu={openContextMenu} />
 				</CustomTreeItem>
 			</SimpleTreeView>
 			{explorerRef.current && (

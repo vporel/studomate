@@ -4,21 +4,21 @@
 
 **Studomate** est un outil pédagogique dédié à l'automatisme : apprentissage, conception et simulation de logiques d'automatisme directement dans le navigateur.
 
-L'objectif est de rendre les concepts d'automatisme accessibles, visuels et actionnables — de l'introduction en classe à la mise en pratique individuelle. Le projet prend actuellement en charge le **GRAFCET**, avec l'ambition d'évoluer vers un simulateur plus large (autres notations comme le **Ladder**, nouvelles interfaces, etc.).
+L'objectif est de rendre les concepts d'automatisme accessibles, visuels et actionnables — de l'introduction en classe à la mise en pratique individuelle. Le projet prend actuellement en charge le **GRAFCET** et le **Ladder**, et permet de concevoir des interfaces **HMI**.
 
 ## Fonctionnalités
 
-- **Édition graphique** de GRAFCET : étapes, transitions, actions, entrées/sorties virtuelles, temporisations, compteurs, variables analogiques.
-- **Simulation** en mode pas-à-pas, scan complet ou exécution continue, avec visualisation en temps réel des états actifs et des transitions évaluées.
+- **Édition graphique multi-langages** : GRAFCET et Ladder (étapes, transitions, contacts, bobines, temporisations, compteurs...).
+- **Création d'interfaces HMI** : Concevez des interfaces homme-machine interactives pour piloter et visualiser le système.
+- **Simulation et Visualisation** : Exécution en mode pas-à-pas ou continu, avec visualisation en temps réel des états, des transitions, et des variables en direct.
 - **Analyse** du projet pour détecter les erreurs de structure avant simulation.
 - **Manuel utilisateur** intégré à l'application.
 
 ## Feuille de route
 
 - Amélioration de l'éditeur (alignements, validations, ergonomie).
-- Tableaux de bord de simulation.
-- Comptes utilisateurs & sauvegarde cloud.
-- Ouverture à d'autres langages/notations d'automatisme (Ladder, etc.).
+- Tableaux de bord de simulation avancés.
+- Ouverture à d'autres langages/notations d'automatisme.
 
 Public visé : étudiants (BTS, IUT, écoles d'ingénieurs, universités), enseignants et formateurs en automatisme/électrotechnique, professionnels en reconversion ou remise à niveau.
 

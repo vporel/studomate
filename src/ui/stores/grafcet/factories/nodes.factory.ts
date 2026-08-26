@@ -23,6 +23,8 @@ class NodesFactory extends AbstractNodesFactory<GrafcetNodeType, Grafcet, Grafce
 			type: domain.type,
 			data: domain.element.data,
 			position: domain.element.position,
+			width: domain.element.size.width,
+			height: domain.element.size.height,
 		} as GrafcetNodeType;
 	}
 }

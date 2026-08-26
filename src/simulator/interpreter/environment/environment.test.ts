@@ -96,4 +96,35 @@ describe("Environment", () => {
 			expect(env.getVariableValueByName("varA")).toBe(200);
 		});
 	});
+
+	describe("forçage de variables", () => {
+		it("setVariableValueById est ignoré pour une variable forcée", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			forcedEnv.setVariableValueById("id1", 999);
+			expect(forcedEnv.getVariableValueById("id1")).toBe(42);
+		});
+
+		it("setVariableValueByName est ignoré pour une variable forcée", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			forcedEnv.setVariableValueByName("varA", 999);
+			expect(forcedEnv.getVariableValueByName("varA")).toBe(42);
+		});
+
+		it("les lectures restent possibles sur une variable forcée", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			expect(forcedEnv.getVariableValueById("id1")).toBe(42);
+			expect(forcedEnv.getVariableValueByName("varA")).toBe(42);
+		});
+
+		it("une variable non forcée reste modifiable", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			forcedEnv.setVariableValueById("id2", false);
+			expect(forcedEnv.getVariableValueById("id2")).toBe(false);
+		});
+
+		it("sans forcedVariableIds, le comportement est identique à avant", () => {
+			env.setVariableValueById("id1", 100);
+			expect(env.getVariableValueById("id1")).toBe(100);
+		});
+	});
 });

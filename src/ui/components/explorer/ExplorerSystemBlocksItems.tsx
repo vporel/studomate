@@ -2,10 +2,10 @@
 
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
-import ArrowRightAltOutlinedIcon from "@mui/icons-material/ArrowRightAltOutlined";
-import CompareArrowsOutlinedIcon from "@mui/icons-material/CompareArrowsOutlined";
-import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
-import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
+import AssignBlockIcon from "@/ui/components/icons/AssignBlockIcon";
+import CompareBlockIcon from "@/ui/components/icons/CompareBlockIcon";
+import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
+import TimerBlockIcon from "@/ui/components/icons/TimerBlockIcon";
 import { Fragment } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -24,7 +24,7 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 			<CustomTreeItem
 				itemId="system-block-timer"
 				label="Temporisation"
-				IconComponent={TimerOutlinedIcon}
+				IconComponent={TimerBlockIcon}
 				styles={styles}
 				draggable={designing}
 				onDragStart={
@@ -39,7 +39,7 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 			<CustomTreeItem
 				itemId="system-block-counter"
 				label="Compteur"
-				IconComponent={NumbersOutlinedIcon}
+				IconComponent={CounterBlockIcon}
 				styles={styles}
 				draggable={designing}
 				onDragStart={
@@ -54,7 +54,7 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 			<CustomTreeItem
 				itemId="system-block-compare"
 				label="Comparaison"
-				IconComponent={CompareArrowsOutlinedIcon}
+				IconComponent={CompareBlockIcon}
 				styles={styles}
 				draggable={designing}
 				onDragStart={
@@ -69,7 +69,7 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 			<CustomTreeItem
 				itemId="system-block-assign"
 				label="Affectation"
-				IconComponent={ArrowRightAltOutlinedIcon}
+				IconComponent={AssignBlockIcon}
 				styles={styles}
 				draggable={designing}
 				onDragStart={

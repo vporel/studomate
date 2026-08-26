@@ -1,8 +1,15 @@
 import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import { ContextMenuItemBaseType, ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import actionContextMenuItems from "./action-context-menu-items";
 
 function fakeAction(type: ActionType, executionMode: ActionExecutionMode | null = null): any {
 	return { id: "action-1", data: { type, executionMode } };
+}
+
+// Ce menu ne pose jamais de séparateur dans ses sous-menus — sans risque de renvoyer un
+// `ContextMenuDividerType` ici, contrairement au type général `ContextMenuSubItemType`.
+function subItemsOf(item: ContextMenuItemType): ContextMenuItemBaseType[] {
+	return item.subItems as ContextMenuItemBaseType[];
 }
 
 describe("actionContextMenuItems", () => {
@@ -11,7 +18,7 @@ describe("actionContextMenuItems", () => {
 
 		const [[typeItem]] = actionContextMenuItems(fakeAction(ActionType.BOOLEAN_VARIABLE), workflowManager);
 
-		const checkedSubItem = typeItem.subItems!.find((s) => s.checked);
+		const checkedSubItem = subItemsOf(typeItem).find((s) => s.checked);
 		expect(checkedSubItem!.label).toBe("Variable booléene");
 	});
 
@@ -19,7 +26,7 @@ describe("actionContextMenuItems", () => {
 		const workflowManager = { updateNodeData: jest.fn() } as any;
 		const [[typeItem]] = actionContextMenuItems(fakeAction(ActionType.TEXT), workflowManager);
 
-		const numericOption = typeItem.subItems!.find((s) => s.label === "Variable numérique")!;
+		const numericOption = subItemsOf(typeItem).find((s) => s.label === "Variable numérique")!;
 		numericOption.onClick!();
 
 		expect(workflowManager.updateNodeData).toHaveBeenCalledWith("action-1", {
@@ -44,9 +51,9 @@ describe("actionContextMenuItems", () => {
 		);
 
 		const modeItem = part1.find((item) => item.label === "Mode d'exécution")!;
-		const labels = modeItem.subItems!.map((s) => s.label);
+		const labels = subItemsOf(modeItem).map((s) => s.label);
 		expect(labels).toEqual(["Continue", "Set", "Reset"]);
-		expect(modeItem.subItems!.find((s) => s.label === "Set")!.checked).toBe(true);
+		expect(subItemsOf(modeItem).find((s) => s.label === "Set")!.checked).toBe(true);
 	});
 
 	it("appelle updateNodeData avec le nouveau mode d'exécution au clic", () => {
@@ -57,7 +64,7 @@ describe("actionContextMenuItems", () => {
 		);
 
 		const modeItem = part1.find((item) => item.label === "Mode d'exécution")!;
-		modeItem.subItems!.find((s) => s.label === "Reset")!.onClick!();
+		subItemsOf(modeItem).find((s) => s.label === "Reset")!.onClick!();
 
 		expect(workflowManager.updateNodeData).toHaveBeenCalledWith("action-1", {
 			executionMode: ActionExecutionMode.RESET,

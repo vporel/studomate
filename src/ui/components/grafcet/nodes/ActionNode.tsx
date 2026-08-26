@@ -21,7 +21,7 @@ export type ActionNodeType = Node<ActionData> & { type: "action" };
 
 export type ActionNodeProps = NodeProps<ActionNodeType>;
 
-const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
+const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -63,8 +63,8 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 				type="action"
 				error={error}
 				sx={{
-					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
-					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
+					width: (width ?? Action.DEFAULT_DIMENSIONS.width) + "px",
+					height: (height ?? Action.DEFAULT_DIMENSIONS.height) + "px",
 					borderWidth: data.type === ActionType.TEXT ? "1px" : "2px",
 					borderStyle: "solid",
 					borderColor: borderColor,

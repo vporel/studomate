@@ -41,3 +41,26 @@ describe("Project — intégration Ladder", () => {
 		expect(project.dialect).toBe(Dialect.EN);
 	});
 });
+
+describe("Project.nextProgramName", () => {
+	it("génère Label_1 quand aucun programme ne porte ce nom", () => {
+		const project = new Project("p1", "Projet", "");
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_1");
+	});
+
+	it("avance au premier numéro libre", () => {
+		const project = new Project("p1", "Projet", "");
+		project.createLadder("Ladder_1");
+		project.createLadder("Ladder_2");
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_3");
+	});
+
+	it("partage le même espace de noms entre ladders et grafcets", () => {
+		const project = new Project("p1", "Projet", "");
+		project.createGrafcet("Ladder_1", { type: "A4", orientation: "portrait" });
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_2");
+	});
+});

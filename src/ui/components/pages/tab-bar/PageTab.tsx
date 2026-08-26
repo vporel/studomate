@@ -3,14 +3,30 @@
 import InclinedAccountTreeIcon from "@/ui/components/icons/InclinedAccountTree";
 import LadderIcon from "@/ui/components/icons/LadderIcon";
 import LadderMainIcon from "@/ui/components/icons/LadderMainIcon";
+import ProjectStartupIcon from "@/ui/components/icons/ProjectStartupIcon";
+import ProjectPropertiesIcon from "@/ui/components/icons/ProjectPropertiesIcon";
+import VariablesIcon from "@/ui/components/icons/VariablesIcon";
+import HmiIcon from "@/ui/components/icons/HmiIcon";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { PageType } from "@/ui/stores/project/project.store";
-import { Segment as SegmentIcon } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-import HomeIcon from "@mui/icons-material/Home";
-import TuneIcon from "@mui/icons-material/Tune";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
+import { ElementType } from "react";
 import { useShallow } from "zustand/shallow";
+
+/**
+ * Icône par type d'onglet — un `Record` exhaustif sur `Exclude<PageType, "ladder">` (le ladder
+ * a sa propre icône selon qu'il est le Main) : ajouter un `PageType` sans l'y référencer est une
+ * erreur de compilation, pas un onglet silencieusement affiché avec la mauvaise icône.
+ */
+const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
+	"project-startup": ProjectStartupIcon,
+	"project-properties": ProjectPropertiesIcon,
+	grafcet: InclinedAccountTreeIcon,
+	variables: VariablesIcon,
+	hmi: HmiIcon,
+	"hmi-simulation": HmiIcon,
+};
 
 export type PageTabProps = {
 	id: string;
@@ -30,18 +46,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 	// d'`ExplorerProgramsItems`) : l'id de page d'un ladder est son id de programme.
 	const isMain = useProjectStore((state) => type === "ladder" && state.project?.ladders[id]?.role === "main");
 	const active = id === activePageId;
-	const TypeIconComponent =
-		type === "project-startup"
-			? HomeIcon
-			: type === "project-properties"
-				? TuneIcon
-				: type === "grafcet"
-					? InclinedAccountTreeIcon
-					: type === "ladder"
-						? isMain
-							? LadderMainIcon
-							: LadderIcon
-						: SegmentIcon;
+	const TypeIconComponent = type === "ladder" ? (isMain ? LadderMainIcon : LadderIcon) : TYPE_ICONS[type];
 
 	return (
 		<Box
@@ -88,27 +93,31 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 					{title}
 				</Typography>
 			</Box>
-			<IconButton
-				className="page__tab__button-icon"
-				sx={{
-					opacity: active ? 1 : 0,
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					padding: "3px",
-					borderRadius: "5px",
-					color: !active ? th.palette.text.primary : "white",
-					":hover": {
-						background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
-					},
-				}}
-				onClick={(e) => {
-					e.stopPropagation();
-					pagesManager.closePage(id);
-				}}
-			>
-				<CloseIcon className="close-icon" sx={{ fontSize: "0.9rem", display: "block" }} />
-			</IconButton>
+			{/* La "Simulation HMI" est un onglet unique, réouvert via le bouton de la bottom bar
+			(voir `RightActions`) — jamais fermable, pour rester à portée en un clic. */}
+			{type !== "hmi-simulation" && (
+				<IconButton
+					className="page__tab__button-icon"
+					sx={{
+						opacity: active ? 1 : 0,
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						padding: "3px",
+						borderRadius: "5px",
+						color: !active ? th.palette.text.primary : "white",
+						":hover": {
+							background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
+						},
+					}}
+					onClick={(e) => {
+						e.stopPropagation();
+						pagesManager.closePage(id);
+					}}
+				>
+					<CloseIcon className="close-icon" sx={{ fontSize: "0.9rem", display: "block" }} />
+				</IconButton>
+			)}
 		</Box>
 	);
 };

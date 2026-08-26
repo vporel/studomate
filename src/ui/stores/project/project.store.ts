@@ -9,16 +9,19 @@ import ProjectRepository, { SaveFailureReason } from "@/persistence/repositories
 import { toast } from "react-toastify";
 import { createStore } from "zustand";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
+import { HmiStoreState } from "../hmi/hmi.store";
 import { LadderStoreState } from "../ladder/ladder.store";
 import CommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
+import HmiManager from "./managers/hmi.manager";
 import { AnalysisIssues, emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
 import { ProjectMode } from "./ProjectMode.enum";
+import { SimulationMode } from "./SimulationMode.enum";
 import { setProjectIdInUrl } from "@/ui/lib/project-url";
 import { getActivePageIdFromUrl, setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { getPagesSession } from "@/ui/lib/pages-session-storage";
@@ -36,12 +39,19 @@ const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
 	unknown: "Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 };
 
-export type PageType = "project-startup" | "project-properties" | "grafcet" | "ladder" | "variables";
+export type PageType =
+	| "project-startup"
+	| "project-properties"
+	| "grafcet"
+	| "ladder"
+	| "variables"
+	| "hmi"
+	| "hmi-simulation";
 
 /**
  * The variables are managed in the project scope
  */
-export type ScopeType = "project" | "grafcet" | "ladder";
+export type ScopeType = "project" | "grafcet" | "ladder" | "hmi";
 
 export type PageData = {
 	id: string;
@@ -61,6 +71,13 @@ export type LadderStoreValues = Pick<LadderStoreState, "hasCommandsToUndo" | "ha
 export type LadderStoreManagers = Pick<
 	LadderStoreState,
 	"commandsStackManager" | "viewManager" | "copyCutPasteManager" | "workflowManager"
+>;
+
+export type HmiStoreValues = Pick<HmiStoreState, "hasCommandsToUndo" | "hasCommandsToRedo">;
+
+export type HmiStoreManagers = Pick<
+	HmiStoreState,
+	"commandsStackManager" | "copyCutPasteManager" | "selectAllWidgets" | "removeSelectedWidgets"
 >;
 
 export type PLCConfig = {
@@ -83,6 +100,7 @@ export interface ProjectUiState {
 	onUnsavedChangesDialogContinue: SimpleCallback | null;
 	openModalVisible: boolean;
 	exportModalVisible: boolean;
+	pdfExportModalVisible: boolean;
 	analysisResultVisible: boolean; // whether the analysis errors panel is visible
 	watchTablesVisible: boolean;
 }
@@ -115,10 +133,13 @@ export interface ProjectStoreState {
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setOpenModalVisible: (visible: boolean) => void;
 	setExportModalVisible: (visible: boolean) => void;
+	setPdfExportModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string) => void;
 
 	//=============== SIMULATION ===============
 	mode: ProjectMode;
+	simulationPaused: boolean;
+	simulationMode: SimulationMode;
 	analysisHasErrors: boolean;
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;
@@ -138,6 +159,12 @@ export interface ProjectStoreState {
 	 * a Zustand selector only re-runs when the piece of state it reads actually changes.
 	 */
 	evaluableExpressionsValues: Record<string, unknown>;
+	/**
+	 * Variables actuellement forcées pendant la simulation : id de variable → valeur imposée.
+	 * Miroir réactif de la table de forçage du PLC, pour permettre à l'UI de savoir quelles
+	 * variables sont forcées sans interroger le PLC directement.
+	 */
+	forcedVariables: Record<string, unknown>;
 	simulationManager: SimulationManager;
 
 	//=============== COMMANDS ===============
@@ -162,6 +189,16 @@ export interface ProjectStoreState {
 	laddersStoresValues: Record<string, LadderStoreValues>;
 	laddersStoresManagers: Record<string, LadderStoreManagers>;
 	laddersManager: LaddersManager;
+
+	//=============== HMI ===============
+	hmiStoresValues: Record<string, HmiStoreValues>;
+	hmiStoresManagers: Record<string, HmiStoreManagers>;
+	hmiManager: HmiManager;
+	/** Page HMI actuellement affichée par l'onglet "Simulation HMI" (voir
+	 * `HmiSimulationPageView`), `null` si cet onglet n'est pas ouvert. Distinct de `activePageId` :
+	 * la navigation entre pages HMI en simulation (voir `HmiManager.navigateHmiSimulation`) ne
+	 * touche pas au système d'onglets de conception. */
+	hmiSimulationActivePageId: string | null;
 
 	//=============== PAGES ===============
 	pagesData: Record<string, PageData>;
@@ -199,8 +236,10 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 	if (pageId === PROJECT_PROPERTIES_PAGE_ID) return PROJECT_PROPERTIES_PAGE_DATA;
 	if ((VARIABLES_PAGE_IDS as string[]).includes(pageId)) return getVariablesPageData(pageId as VariablesPageId);
 	const program = project.getProgram(pageId);
-	if (!program) return null;
-	return { id: program.id, title: program.name, type: program.type };
+	if (program) return { id: program.id, title: program.name, type: program.type };
+	const hmiPage = project.getHmiPage(pageId);
+	if (hmiPage) return { id: hmiPage.id, title: hmiPage.name, type: "hmi" };
+	return null;
 }
 
 /**
@@ -253,6 +292,7 @@ export const createProjectStore = () => {
 		//The undo histories belong to the project being left
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
+		get().hmiManager.clearCommandsStacks();
 		const initialPagesData = getInitialPagesData();
 		set(() => ({
 			project: project,
@@ -278,6 +318,7 @@ export const createProjectStore = () => {
 	const _closeProject = async (set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) => {
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
+		get().hmiManager.clearCommandsStacks();
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
@@ -301,6 +342,7 @@ export const createProjectStore = () => {
 			onUnsavedChangesDialogContinue: null,
 			openModalVisible: false,
 			exportModalVisible: false,
+			pdfExportModalVisible: false,
 			analysisResultVisible: false,
 			watchTablesVisible: false,
 		},
@@ -462,6 +504,10 @@ export const createProjectStore = () => {
 			}
 		},
 
+		setPdfExportModalVisible: (visible: boolean) => {
+			set((state) => ({ ui: { ...state.ui, pdfExportModalVisible: visible } }));
+		},
+
 		setActiveScope: (scope: string) => {
 			const previousScope = get().activeScope;
 			const pagesData = get().pagesData;
@@ -471,6 +517,8 @@ export const createProjectStore = () => {
 					scopeType = "grafcet";
 				} else if (pagesData[scope].type === "ladder") {
 					scopeType = "ladder";
+				} else if (pagesData[scope].type === "hmi") {
+					scopeType = "hmi";
 				}
 			}
 			set(() => ({ activeScope: scope, activeScopeType: scopeType }));
@@ -483,6 +531,8 @@ export const createProjectStore = () => {
 
 		//=============== SIMULATION ===============
 		mode: ProjectMode.DESIGN,
+		simulationPaused: false,
+		simulationMode: SimulationManager.getPersistedSimulationMode(),
 		analysisHasErrors: false,
 		analysisHasWarnings: false,
 		analysisErrors: emptyAnalysisIssues(),
@@ -498,6 +548,7 @@ export const createProjectStore = () => {
 		},
 		simulationVariablesStates: {},
 		evaluableExpressionsValues: {},
+		forcedVariables: {},
 		simulationManager: new SimulationManager(set, get, new ToastSimulationNotifier()),
 
 		//=============== COMMANDS STACK ===============
@@ -516,6 +567,12 @@ export const createProjectStore = () => {
 		laddersStoresValues: {},
 		laddersStoresManagers: {},
 		laddersManager: new LaddersManager(set, get),
+
+		//=============== HMI ===============
+		hmiStoresValues: {},
+		hmiStoresManagers: {},
+		hmiManager: new HmiManager(set, get),
+		hmiSimulationActivePageId: null,
 
 		//=============== PAGES ===============
 		pagesData: getInitialPagesData(),

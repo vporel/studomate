@@ -83,6 +83,17 @@ describe("GrafcetsManager", () => {
 			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({ id: grafcet!.id, type: "grafcet", title: "G1" });
 			expect(getState().hasUnsavedChanges).toBe(true);
 		});
+
+		it("génère un nom unique au format Grafcet_N et le format par défaut quand rien n'est fourni", () => {
+			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+
+			const first = manager.newGrafcet();
+			const second = manager.newGrafcet();
+
+			expect(first!.name).toBe("Grafcet_1");
+			expect(second!.name).toBe("Grafcet_2");
+			expect(first!.format).toEqual(DEFAULT_GRAFCET_FORMAT);
+		});
 	});
 
 	describe("deleteProgramById (grafcet)", () => {

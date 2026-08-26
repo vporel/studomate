@@ -12,7 +12,10 @@ import {
 	SimulationVariableState,
 } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import SimulationNotifier from "./simulation.notifier";
+
+const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
 
 export default class SimulationManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -38,11 +41,22 @@ export default class SimulationManager {
 		this.notifier = notifier;
 	}
 
+	static getPersistedSimulationMode(): SimulationMode {
+		if (typeof window === "undefined") return SimulationMode.CONTINUOUS;
+		const stored = localStorage.getItem(SIMULATION_MODE_STORAGE_KEY);
+		if (stored === SimulationMode.STEP_BY_STEP) return SimulationMode.STEP_BY_STEP;
+		return SimulationMode.CONTINUOUS;
+	}
+
 	/**
-	 *
+	 * @param showOnWarningsOnly Ouvre le panneau de résultats dès qu'il y a des avertissements,
+	 * même sans erreur — vrai pour un clic sur "Analyser" (l'utilisateur veut voir le résultat
+	 * dans tous les cas), faux pour la réanalyse automatique à l'entrée en simulation (voir
+	 * `setSimulationMode`) : des avertissements n'empêchent pas de simuler, ça n'a donc pas à
+	 * interrompre l'utilisateur. Une erreur ouvre le panneau dans les deux cas.
 	 * @returns true if no error
 	 */
-	analyze(): {
+	analyze(showOnWarningsOnly = true): {
 		ok: boolean;
 		projectAnalysisResult: ProjectAnalysisResult | null;
 	} {
@@ -63,7 +77,10 @@ export default class SimulationManager {
 			analysisHasWarnings: warnings.length > 0,
 			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors),
 			analysisWarnings: AnalysisIssuesMapper.analyserToApp(warnings),
-			ui: { ...state.ui, analysisResultVisible: errors.length > 0 || warnings.length > 0 },
+			ui: {
+				...state.ui,
+				analysisResultVisible: errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
+			},
 		}));
 
 		return { ok: errors.length === 0, projectAnalysisResult };
@@ -71,6 +88,7 @@ export default class SimulationManager {
 
 	setDesignMode() {
 		this.stopSimulation();
+		this.getStoreState().hmiManager.closeHmiSimulationPage();
 		this.setStoreState(() => ({ mode: ProjectMode.DESIGN }));
 	}
 
@@ -81,7 +99,7 @@ export default class SimulationManager {
 		if (!project) return;
 
 		//Reanalyze project when switching to simulation mode
-		const { ok: analysisOK, projectAnalysisResult } = this.analyze();
+		const { ok: analysisOK, projectAnalysisResult } = this.analyze(false);
 		if (!analysisOK || !projectAnalysisResult) return;
 
 		//Pre compile the project
@@ -131,11 +149,55 @@ export default class SimulationManager {
 		this.plc = this.createPLC(projectCompilationResult);
 		this.plc.start();
 
+		//En mode pas-à-pas, on passe immédiatement en pause : aucun cycle ne s'exécute
+		//avant que l'utilisateur ne clique "Avancer d'un cycle".
+		const simulationMode = this.getStoreState().simulationMode;
+		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
+		if (startPaused) {
+			this.plc.pause();
+		}
+
 		//Set the mode
-		this.setStoreState((state) => ({
+		this.setStoreState(() => ({
 			mode: ProjectMode.SIMULATION,
-			ui: { ...state.ui, watchTablesVisible: true },
+			simulationPaused: startPaused,
 		}));
+		this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
+	}
+
+	pauseSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.pause();
+		this.setStoreState(() => ({ simulationPaused: true }));
+	}
+
+	resumeSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.resume();
+		this.setStoreState(() => ({ simulationPaused: false }));
+	}
+
+	stepSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.stepOnce();
+	}
+
+	setPlcSimulationMode(mode: SimulationMode): void {
+		if (typeof window !== "undefined") {
+			localStorage.setItem(SIMULATION_MODE_STORAGE_KEY, mode);
+		}
+		this.setStoreState(() => ({ simulationMode: mode }));
+
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+
+		if (mode === SimulationMode.STEP_BY_STEP && !this.plc?.isPaused()) {
+			this.pauseSimulation();
+		} else if (mode === SimulationMode.CONTINUOUS && this.plc?.isPaused()) {
+			this.resumeSimulation();
+		}
 	}
 
 	private createPLC(projectCompilationResult: ProjectCompilationResult): PLC {
@@ -180,8 +242,9 @@ export default class SimulationManager {
 	}
 
 	private stopSimulation(): void {
-		//Stop the PLC if it is running
+		//Stop the PLC if it is running or paused
 		if (this.plc) {
+			this.plc.releaseAllVariables();
 			this.plc.stop();
 			this.plc = null;
 		}
@@ -190,6 +253,8 @@ export default class SimulationManager {
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
 			evaluableExpressionsValues: {},
+			simulationPaused: false,
+			forcedVariables: {},
 		}));
 
 		this.expressionsWatcher?.clear();
@@ -216,5 +281,23 @@ export default class SimulationManager {
 			throw new Error("PLC instance is not initialized");
 		}
 		this.plc.setMemoryValueById(variableId, value);
+	}
+
+	public forceVariable(variableId: string, value: any): void {
+		if (!this.plc) return;
+		this.plc.forceVariable(variableId, value);
+		this.setStoreState((state) => ({
+			forcedVariables: { ...state.forcedVariables, [variableId]: value },
+		}));
+	}
+
+	public releaseVariable(variableId: string): void {
+		if (!this.plc) return;
+		this.plc.releaseVariable(variableId);
+		this.setStoreState((state) => {
+			const next = { ...state.forcedVariables };
+			delete next[variableId];
+			return { forcedVariables: next };
+		});
 	}
 }

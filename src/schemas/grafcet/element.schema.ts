@@ -50,29 +50,26 @@ export const GRAFCET_ELEMENT_LABELS: Record<ElementType, string> = {
 	comment: "Commentaire",
 };
 
-export type BaseData = {
-	width: number;
-	height: number;
-};
-
-import { Dimensions } from "@xyflow/react";
+import { Dimensions } from "./shared-types";
 
 export interface ElementConstructor<T extends Element<any>> {
-	new (id: string, data: any, position: XYPosition): T;
+	new (id: string, data: any, position: XYPosition, size: Dimensions): T;
 	generateDefaultData(extraData?: any): any;
 	DEFAULT_DIMENSIONS: Dimensions;
 }
 
-export default abstract class Element<DataType extends BaseData> implements SharedElement<ElementType, DataType, XYPosition> {
+export default abstract class Element<DataType> implements SharedElement<ElementType, DataType, XYPosition> {
 	id: string = "";
 	abstract readonly type: ElementType;
 	data: DataType;
 	position: XYPosition = { x: 0, y: 0 };
+	size: Dimensions;
 
-	constructor(id: string, data: DataType, position: XYPosition) {
+	constructor(id: string, data: DataType, position: XYPosition, size: Dimensions) {
 		this.id = id;
 		this.data = data;
 		this.position = position;
+		this.size = size;
 	}
 
 	getLabel(): string {
@@ -81,6 +78,10 @@ export default abstract class Element<DataType extends BaseData> implements Shar
 
 	updateData(newData: Partial<DataType>): void {
 		this.data = structuredClone({ ...this.data, ...newData });
+	}
+
+	updateSize(newSize: Partial<Dimensions>): void {
+		this.size = structuredClone({ ...this.size, ...newSize });
 	}
 
 	/**
@@ -105,7 +106,7 @@ export default abstract class Element<DataType extends BaseData> implements Shar
 	): T {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new this("", { ...this.generateDefaultData() }, { x: 0, y: 0 }),
+			new this("", { ...this.generateDefaultData() }, { x: 0, y: 0 }, { ...this.DEFAULT_DIMENSIONS }),
 			jsonParsed,
 		);
 	}

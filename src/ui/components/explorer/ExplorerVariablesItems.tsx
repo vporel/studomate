@@ -1,6 +1,6 @@
 "use client";
 
-import { Segment as SegmentIcon } from "@mui/icons-material";
+import VariablesIcon from "../icons/VariablesIcon";
 import { ElementType, Fragment, MouseEvent } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { getVariablesPageData, VariablesPageId } from "../pages/VariablesPage";
@@ -50,16 +50,16 @@ const ExplorerVariablesItems = ({
 		label: string;
 		IconComponent?: ElementType;
 	}[] = [
-		{ id: "input-variables", label: "Entrées", IconComponent: SegmentIcon },
+		{ id: "input-variables", label: "Entrées", IconComponent: VariablesIcon },
 		{
 			id: "output-variables",
 			label: "Sorties",
-			IconComponent: SegmentIcon,
+			IconComponent: VariablesIcon,
 		},
 		{
 			id: "memory-variables",
 			label: "Mémoires",
-			IconComponent: SegmentIcon,
+			IconComponent: VariablesIcon,
 		},
 	];
 

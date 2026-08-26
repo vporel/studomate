@@ -6,6 +6,7 @@ import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
 import AnalysisResult from "./analysis-result/AnalysisResult";
 import ExportModal from "./ExportModal";
+import PdfExportModal from "../pdf/PdfExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
@@ -67,6 +68,7 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 			<UnsavedChangesDialog />
 			<ProjectOpenModal />
 			<ExportModal />
+			<PdfExportModal />
 			<AnalysisResult />
 		</ProjectContext.Provider>
 	);

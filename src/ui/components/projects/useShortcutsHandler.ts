@@ -1,7 +1,5 @@
 "use client";
 
-import { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME } from "@/schemas/grafcet/grafcet.schema";
-import { DEFAULT_LADDER_NAME } from "@/schemas/ladder/ladder.schema";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useEffect } from "react";
@@ -11,6 +9,7 @@ import { useProjectContext, useProjectStore } from "./ProjectContext";
 export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const { setOpenModalVisible, saveProject } = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
@@ -47,14 +46,14 @@ export default function useShortcutsHandler() {
 						e.stopPropagation();
 						e.preventDefault();
 						if (!designing) break;
-						grafcetsManager.newGrafcet(DEFAULT_GRAFCET_NAME, DEFAULT_GRAFCET_FORMAT);
+						grafcetsManager.newGrafcet();
 						break;
 					}
 					case "l": {
 						e.stopPropagation();
 						e.preventDefault();
 						if (!designing) break;
-						laddersManager.newLadder(DEFAULT_LADDER_NAME);
+						laddersManager.newLadder();
 						break;
 					}
 					case "a": {
@@ -70,6 +69,8 @@ export default function useShortcutsHandler() {
 							const ladderWorkflowManager =
 								laddersManager.getActiveStoreManagers()?.workflowManager;
 							ladderWorkflowManager?.selectAllInActiveSection();
+						} else if (activeScopeType === "hmi") {
+							hmiManager.getActiveStoreManagers()?.selectAllWidgets();
 						}
 						break;
 					}
@@ -97,6 +98,8 @@ export default function useShortcutsHandler() {
 							const copyCutPasteManager =
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
+						} else if (activeScopeType === "hmi") {
+							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.copySelectedWidgets();
 						}
 						break;
 					}
@@ -112,6 +115,8 @@ export default function useShortcutsHandler() {
 							const copyCutPasteManager =
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements(getLastMousePosition());
+						} else if (activeScopeType === "hmi") {
+							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.pasteWidgets();
 						}
 						break;
 					}
@@ -127,9 +132,19 @@ export default function useShortcutsHandler() {
 							const copyCutPasteManager =
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.cutSelectedElements();
+						} else if (activeScopeType === "hmi") {
+							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.cutSelectedWidgets();
 						}
 						break;
 					}
+				}
+			} else if ((e.key === "Delete" || e.key === "Backspace") && designing) {
+				//Le grafcet/ladder gèrent leur propre suppression (React Flow, deleteKeyCode) :
+				//seul le canvas HMI (une simple <div>, pas de mécanisme natif) en a besoin ici.
+				if (projectStore?.getState().activeScopeType === "hmi") {
+					e.stopPropagation();
+					e.preventDefault();
+					hmiManager.getActiveStoreManagers()?.removeSelectedWidgets();
 				}
 			}
 		};
@@ -137,5 +152,5 @@ export default function useShortcutsHandler() {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager, laddersManager]);
+	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager, laddersManager, hmiManager]);
 }

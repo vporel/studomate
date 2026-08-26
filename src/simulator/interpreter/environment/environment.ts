@@ -14,7 +14,11 @@ export class Environment {
 	 */
 	private readonly variablesByName = new Map<string, EnvVariable>();
 
-	constructor(variables: EnvVariable[]) {
+	/** Ids des variables dont la valeur est imposée : tout write est ignoré silencieusement. */
+	private readonly forcedVariableIds: ReadonlySet<string>;
+
+	constructor(variables: EnvVariable[], forcedVariableIds: ReadonlySet<string> = new Set()) {
+		this.forcedVariableIds = forcedVariableIds;
 		for (const variable of variables) {
 			this.variables.set(variable.getId(), variable);
 			this.variablesByName.set(variable.getName(), variable);
@@ -85,12 +89,14 @@ export class Environment {
 	}
 
 	setVariableValueById(id: string, value: EnvVariableValue): void {
+		if (this.forcedVariableIds.has(id)) return;
 		const variable = this.getVariableById(id);
 		variable.setValue(value);
 	}
 
 	setVariableValueByName(name: string, value: EnvVariableValue): void {
 		const variable = this.getVariableByName(name);
+		if (this.forcedVariableIds.has(variable.getId())) return;
 		variable.setValue(value);
 	}
 }

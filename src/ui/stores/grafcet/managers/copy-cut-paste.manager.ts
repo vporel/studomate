@@ -114,8 +114,8 @@ export default class CopyCutPasteManager {
 				}
 			}
 			//Center the node on the mouse position by applying an offset corresponding to half of the node dimensions
-			newNode.position!.x = newNode.position!.x - node.data.width / 2;
-			newNode.position!.y = newNode.position!.y - node.data.height / 2;
+			newNode.position!.x = newNode.position!.x - node.width! / 2;
+			newNode.position!.y = newNode.position!.y - node.height! / 2;
 			//Save the id mapping and the offset for the edges update
 			nodesIdsMap[node.id] = newNode.id;
 			nodesOffsetsMaps[node.id] = {

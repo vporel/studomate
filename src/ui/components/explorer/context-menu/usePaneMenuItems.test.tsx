@@ -5,27 +5,32 @@ import { act, renderHook } from "@testing-library/react"
 import { AppContextProvider, useAppContext } from "@/ui/components/AppContext"
 import usePaneMenuItems from "./usePaneMenuItems"
 
-function useHarness() {
-	const getItems = usePaneMenuItems()
-	const { viewAppearance } = useAppContext()
-	return { items: getItems(), viewAppearance }
-}
-
 describe("usePaneMenuItems", () => {
-	it("returns a menu item to hide the explorer", () => {
-		const { result } = renderHook(() => useHarness(), { wrapper: AppContextProvider })
-		expect(result.current.items).toHaveLength(1)
-		expect(result.current.items[0]).toHaveLength(1)
-		expect(result.current.items[0][0].label).toBe("Masquer l'explorateur")
+	function setup() {
+		return renderHook(
+			() => ({ items: usePaneMenuItems(), appContext: useAppContext() }),
+			{ wrapper: AppContextProvider },
+		)
+	}
+
+	it("contient un seul groupe d'items", () => {
+		const { result } = setup()
+
+		expect(result.current.items()).toHaveLength(1)
 	})
 
-	it("hides the explorer when clicked", () => {
-		const { result } = renderHook(() => useHarness(), { wrapper: AppContextProvider })
+	it("expose un item 'Masquer l'explorateur'", () => {
+		const { result } = setup()
+		const items = result.current.items()
 
-		expect(result.current.viewAppearance.explorer).toBe(true)
+		expect(items[0][0].label).toBe("Masquer l'explorateur")
+	})
 
-		act(() => result.current.items[0][0].onClick?.())
+	it("masque l'explorateur au clic", () => {
+		const { result } = setup()
 
-		expect(result.current.viewAppearance.explorer).toBe(false)
+		act(() => result.current.items()[0][0].onClick?.())
+
+		expect(result.current.appContext.viewAppearance.explorer).toBe(false)
 	})
 })

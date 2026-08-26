@@ -6,7 +6,7 @@ describe("ConnectionsUpdateCommand", () => {
 	function grafcetWithConnection(): { grafcet: Grafcet; connection: Connection } {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		grafcet.addElements([
-			{ type: "step", id: "step-1", data: { number: "0", width: 10, height: 10 }, position: { x: 0, y: 0 } },
+			{ type: "step", id: "step-1", data: { number: "0" }, position: { x: 0, y: 0 } },
 			{ type: "transition", id: "trans-1", data: {}, position: { x: 0, y: 50 } },
 		]);
 		const connection = new Connection(

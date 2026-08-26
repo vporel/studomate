@@ -26,6 +26,8 @@
 		"@xyflow/react": "^12.8.4",
 		"date-fns": "^4.1.0",
 		"dom-to-image": "^2.6.0",
+		"html2pdf.js": "^0.14.0",
+		"jspdf": "^4.2.1",
 		"mitt": "^3.0.1",
 		"nanoid": "^5.1.16",
 		"next": "15.5.2",

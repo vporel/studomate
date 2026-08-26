@@ -10,7 +10,7 @@ import JunctionAndEnd from "./junction-and-end.schema";
 import JunctionAndStart from "./junction-and-start.schema";
 import JunctionOrEnd from "./junction-or-end.schema";
 import JunctionOrStart from "./junction-or-start.schema";
-import { XYPosition } from "./shared-types";
+import { Dimensions, XYPosition } from "./shared-types";
 import StepReferralSource from "./step-referral-source.schema";
 import StepReferralTarget from "./step-referral-target.schema";
 import Step from "./step.schema";
@@ -21,7 +21,13 @@ export type GrafcetFormat = {
 	orientation: "portrait" | "landscape";
 };
 
+/** Nom par défaut d'un GRAFCET construit sans nom explicite (voir `GrafcetBuilder`) — distinct de
+ * `GRAFCET_NAME_LABEL`, propre à la création d'un nouveau GRAFCET depuis l'UI. */
 export const DEFAULT_GRAFCET_NAME = "Sans titre";
+
+/** Base du nom auto-généré ("Grafcet_1", "Grafcet_2"...) à la création — voir
+ * `Project.nextProgramName`. */
+export const GRAFCET_NAME_LABEL = "Grafcet";
 
 export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
 	type: "A4",
@@ -149,23 +155,40 @@ export default class Grafcet extends Program {
 		return undefined;
 	}
 
-	addElements(elements: { type: ElementType; id: string; data: any; position: XYPosition }[]): void {
-		elements.forEach(({ type, id, data, position }) => {
+	addElements(
+		elements: { type: ElementType; id: string; data: any; position: XYPosition; size?: Dimensions }[],
+	): void {
+		elements.forEach(({ type, id, data, position, size }) => {
 			const group = this.getElementsByType(type);
-			const element = new elementsSchemasClasses[type](id, structuredClone(data), position);
+			const elementClass = elementsSchemasClasses[type];
+			const element = new elementClass(
+				id,
+				structuredClone(data),
+				position,
+				structuredClone(size ?? elementClass.DEFAULT_DIMENSIONS),
+			);
 			if (!group.find((e) => e.id === element.id)) {
 				group.push(element);
 			}
 		});
 	}
 
-	updateElements(elements: { type: ElementType; id: string; data?: any; position?: XYPosition }[]): void {
-		elements.forEach(({ type, id, data, position }) => {
+	updateElements(
+		elements: {
+			type: ElementType;
+			id: string;
+			data?: any;
+			position?: XYPosition;
+			size?: Dimensions;
+		}[],
+	): void {
+		elements.forEach(({ type, id, data, position, size }) => {
 			const group = this.getElementsByType(type);
 			const element = group.find((e) => e.id === id);
 			if (element) {
 				if (data) element.updateData(data);
 				if (position) element.position = position;
+				if (size) element.updateSize(size);
 			}
 		});
 	}

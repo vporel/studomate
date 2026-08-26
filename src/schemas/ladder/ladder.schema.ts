@@ -5,7 +5,9 @@ import Connection, { ConnectionData } from "./connection.schema";
 import { CoilData, ContactData, GridPosition, LadderElement } from "./element.schema";
 import Section from "./section.schema";
 
-export const DEFAULT_LADDER_NAME = "Sans titre";
+/** Base du nom auto-généré ("Ladder_1", "Ladder_2"...) à la création — voir
+ * `Project.nextProgramName`. */
+export const LADDER_NAME_LABEL = "Ladder";
 
 export const DEFAULT_SECTION_TITLE = "";
 

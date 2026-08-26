@@ -4,12 +4,12 @@ import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { useEffect, useState } from "react";
 import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from "../JunctionNodeBranchAddButtons";
 
-export default function useBranchAddButtonsPositions(nodeData: JunctionData) {
+export default function useBranchAddButtonsPositions(nodeData: JunctionData, width: number) {
 	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([]);
 	//Calculate the positions for the add branch buttons
 	useEffect(() => {
 		if (nodeData.branchesOrder.length == 0) {
-			setBranchAddButtonsPositions([nodeData.width / 2]);
+			setBranchAddButtonsPositions([width / 2]);
 			return;
 		}
 		const buttonsPositions = [];
@@ -24,19 +24,19 @@ export default function useBranchAddButtonsPositions(nodeData: JunctionData) {
 			);
 		}
 		if (
-			nodeData.width -
+			width -
 				nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position <=
 			JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH
 		)
-			buttonsPositions.push(nodeData.width + JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
+			buttonsPositions.push(width + JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
 		else
 			buttonsPositions.push(
 				(nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position +
-					nodeData.width) /
+					width) /
 					2,
 			);
 		setBranchAddButtonsPositions(buttonsPositions);
-	}, [nodeData.width, nodeData.branchesOrder, nodeData.branches]);
+	}, [width, nodeData.branchesOrder, nodeData.branches]);
 
 	return branchAddButtonsPositions;
 }

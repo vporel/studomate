@@ -8,11 +8,12 @@ import { useShallow } from "zustand/shallow";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useFileMenu(): AppMenuType {
-	const { setOpenModalVisible, setExportModalVisible, newProject, closeProject, saveProject } =
+	const { setOpenModalVisible, setExportModalVisible, setPdfExportModalVisible, newProject, closeProject, saveProject } =
 		useProjectStore(
 			useShallow((state) => ({
 				setOpenModalVisible: state.setOpenModalVisible,
 				setExportModalVisible: state.setExportModalVisible,
+				setPdfExportModalVisible: state.setPdfExportModalVisible,
 				newProject: state.newProject,
 				closeProject: state.closeProject,
 				saveProject: state.saveProject,
@@ -54,17 +55,27 @@ export default function useFileMenu(): AppMenuType {
 						onClick: saveProject,
 					},
 				],
-				[
-					{
-						label: "Exporter",
-						shortcut: platformShortcut("Ctrl+E", "Cmd+E"),
-						disabled: !designing,
-						onClick: () => {
-							if (!designing) return;
-							setExportModalVisible(true);
-						},
+			[
+				{
+					label: "Exporter",
+					shortcut: platformShortcut("Ctrl+E", "Cmd+E"),
+					disabled: !designing,
+					onClick: () => {
+						if (!designing) return;
+						setExportModalVisible(true);
 					},
-				],
+				},
+			],
+			[
+				{
+					label: "Exporter en PDF",
+					disabled: !designing,
+					onClick: () => {
+						if (!designing) return;
+						setPdfExportModalVisible(true);
+					},
+				},
+			],
 				[
 					{
 						label: "Fermer le projet",
@@ -78,6 +89,6 @@ export default function useFileMenu(): AppMenuType {
 				],
 			],
 		}),
-		[newProject, saveProject, closeProject, setOpenModalVisible, setExportModalVisible, designing],
+		[newProject, saveProject, closeProject, setOpenModalVisible, setExportModalVisible, setPdfExportModalVisible, designing],
 	);
 }

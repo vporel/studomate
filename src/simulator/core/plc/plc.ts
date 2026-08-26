@@ -11,6 +11,8 @@ export default class PLC extends ClockedRunnable {
 	private physicalInputs: Record<string, PLCVariable> = {};
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
+	/** Table de forçage : id de variable → valeur imposée, indépendante du scope. */
+	private forcedVariables: Map<string, PLCVariableValue> = new Map();
 	private program: PLCRoutine[];
 	/**
 	 * Registre de **toutes** les routines compilées, y compris celles jamais scannées
@@ -114,10 +116,31 @@ export default class PLC extends ClockedRunnable {
 		return input;
 	}
 
+	public forceVariable(id: string, value: PLCVariableValue): void {
+		this.forcedVariables.set(id, value);
+	}
+
+	public releaseVariable(id: string): void {
+		this.forcedVariables.delete(id);
+	}
+
+	public releaseAllVariables(): void {
+		this.forcedVariables.clear();
+	}
+
+	public getForcedVariables(): ReadonlyMap<string, PLCVariableValue> {
+		return this.forcedVariables;
+	}
+
+	public stepOnce(): void {
+		this.tickOnce();
+	}
+
 	//Cycle
 	protected tick(): void {
 		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
 		try {
+			this.applyForcedVariables();
 			this.readInputs();
 			this.executeProgram();
 			this.writeOutputs();
@@ -130,6 +153,18 @@ export default class PLC extends ClockedRunnable {
 		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
 	}
 
+	private applyForcedVariables(): void {
+		this.forcedVariables.forEach((value, id) => {
+			if (this.physicalInputs[id]) {
+				this.physicalInputs[id].setValue(value);
+			} else if (this.outputImage[id]) {
+				this.outputImage[id].setValue(value);
+			} else if (this.memory[id]) {
+				this.memory[id].setValue(value);
+			}
+		});
+	}
+
 	private readInputs(): void {
 		Object.entries(this.physicalInputs).forEach(([id, v]) => {
 			this.inputImage[id] = v.copy();
@@ -138,7 +173,8 @@ export default class PLC extends ClockedRunnable {
 
 	private executeProgram(): void {
 		const plcVariablesSnapshot = this.getVariablesSnapshot();
-		const env = new Environment(plcVariablesSnapshot.map(PlcVariablesMapper.plcToEnv));
+		const forcedIds = new Set(this.forcedVariables.keys());
+		const env = new Environment(plcVariablesSnapshot.map(PlcVariablesMapper.plcToEnv), forcedIds);
 		const deltaTimeMs = this.getClockIntervalMs();
 
 		for (const routine of this.program) {

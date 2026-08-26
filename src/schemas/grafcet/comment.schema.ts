@@ -1,7 +1,7 @@
-import Element, { BaseData } from "./element.schema";
+import Element from "./element.schema";
 import { Dimensions } from "./shared-types";
 
-export type CommentData = BaseData & {
+export type CommentData = {
 	text: string;
 };
 
@@ -16,8 +16,6 @@ export default class Comment extends Element<CommentData> {
 	static generateDefaultData(): CommentData {
 		return {
 			text: "Commentaire",
-			width: Comment.DEFAULT_DIMENSIONS.width,
-			height: Comment.DEFAULT_DIMENSIONS.height,
 		};
 	}
 

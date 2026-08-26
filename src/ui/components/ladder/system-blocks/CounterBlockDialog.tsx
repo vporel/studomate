@@ -89,6 +89,7 @@ export default function CounterBlockDialog() {
 				<TextField
 					label="Nom"
 					autoFocus
+					slotProps={{ inputLabel: { shrink: true } }}
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					error={nameErrors.length > 0}

@@ -2,6 +2,8 @@
 
 import AnalyseButton from "@/ui/components/header/title-bar/AnalyseButton";
 import ProjectModeSwitcher from "@/ui/components/header/title-bar/ProjectModeSwitcher";
+import SimulationModeSelect from "@/ui/components/header/title-bar/SimulationModeSelect";
+import SimulationControls from "@/ui/components/header/title-bar/SimulationControls";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { MenuList } from "@mui/material";
 import { useCallback, useState } from "react";
@@ -57,6 +59,8 @@ const MenuBar = () => {
 			<FlexBox centerVertical sx={{ gap: 1, px: 1 }}>
 				<AnalyseButton />
 				<ProjectModeSwitcher />
+				<SimulationModeSelect />
+				<SimulationControls />
 			</FlexBox>
 		</FlexBox>
 	);

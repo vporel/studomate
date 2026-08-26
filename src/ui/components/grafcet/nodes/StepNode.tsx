@@ -8,6 +8,7 @@ import Step, {
 } from "@/schemas/grafcet/step.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
+import LockIcon from "@mui/icons-material/Lock";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
@@ -33,11 +34,12 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 		true,
 	);
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const stepVariableId = getStepVariableId(grafcetId, data.number as number);
 	const activeInSimulation = useProjectStore(
-		(state) =>
-			state.simulationVariablesStates[getStepVariableId(grafcetId, data.number as number)]?.value ===
-			true,
+		(state) => state.simulationVariablesStates[stepVariableId]?.value === true,
 	);
+	const forcedValue = useProjectStore((state) => state.forcedVariables[stepVariableId]);
+	const isForced = forcedValue !== undefined;
 
 	return (
 		<>
@@ -80,7 +82,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					height: Step.DEFAULT_DIMENSIONS.height + "px",
 					borderWidth: data.initial ? "4px" : "1px",
 					borderStyle: data.initial ? "double" : "solid",
-					borderColor: borderColor,
+					borderColor: isForced ? "warning.main" : borderColor,
 					borderRadius: "5px",
 					backgroundColor: activeInSimulation ? "primary.main" : "white",
 					color: activeInSimulation ? "white" : "black",
@@ -90,12 +92,25 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 					},
 					display: "flex",
 					justifyContent: "center",
+					position: "relative",
 				}}
 				onDoubleClick={() => {
 					setEditing(true);
 					inputRef.current?.focus();
 				}}
 			>
+				{isForced && (
+					<LockIcon
+						sx={{
+							position: "absolute",
+							top: 1,
+							right: 2,
+							fontSize: "10px",
+							color: activeInSimulation ? "white" : "warning.main",
+							pointerEvents: "none",
+						}}
+					/>
+				)}
 				<input
 					ref={inputRef}
 					className="node__input step_node__input nodrag"

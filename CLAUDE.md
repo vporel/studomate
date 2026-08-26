@@ -118,7 +118,12 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   Jamais de renvoi du type « voir la conversation d'origine »/« voir plus haut »/« comme discuté » :
   le commentaire doit être compréhensible seul, sans accès à l'historique de la conversation qui a
   produit le code — écrire directement la contrainte ou l'invariant, pas une référence à une
-  discussion externe au fichier.
+  discussion externe au fichier. Cas récurrent à surveiller : un commentaire de tête de
+  fichier/composant ne doit jamais motiver son existence par contraste avec une alternative non
+  retenue (« plutôt que de réduire le composant réel », « au lieu de X », « on aurait pu Y mais... »).
+  Ce risque est le plus fort à la création d'un nouveau fichier, où le réflexe est de justifier
+  pourquoi ce fichier existe plutôt que de le laisser parler de lui-même. Décrire uniquement ce que
+  fait le code, jamais pourquoi il existe par rapport à une autre option — même formulé positivement.
 - **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
   anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
   écrire en français tout nouveau commentaire.

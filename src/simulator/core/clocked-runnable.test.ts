@@ -140,6 +140,80 @@ describe("ClockedRunnable", () => {
 		});
 	});
 
+	describe("pause/resume", () => {
+		it("pause fige la boucle sans déclencher onStop", () => {
+			const onStopSpy = jest.fn();
+			testRunnable.setOnStop(onStopSpy);
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			expect(testRunnable.tickCount).toBe(1);
+
+			testRunnable.pause();
+			expect(testRunnable.isPaused()).toBe(true);
+			expect(testRunnable.isRunning()).toBe(false);
+			expect(onStopSpy).not.toHaveBeenCalled();
+
+			jest.advanceTimersByTime(300);
+			expect(testRunnable.tickCount).toBe(1); // aucun tick supplémentaire
+		});
+
+		it("resume reprend la boucle après pause", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			testRunnable.pause();
+
+			testRunnable.resume();
+			expect(testRunnable.isPaused()).toBe(false);
+			expect(testRunnable.isRunning()).toBe(true);
+
+			jest.advanceTimersByTime(200);
+			expect(testRunnable.tickCount).toBe(3); // 1 avant pause + 2 après resume
+		});
+
+		it("start est sans effet sur un runnable en pause", () => {
+			const onStartSpy = jest.fn();
+			testRunnable.start();
+			testRunnable.pause();
+			testRunnable.setOnStart(onStartSpy);
+
+			testRunnable.start(); // ne doit pas redémarrer
+			expect(onStartSpy).not.toHaveBeenCalled();
+			expect(testRunnable.isPaused()).toBe(true);
+		});
+
+		it("stop réinitialise l'état de pause", () => {
+			const onStopSpy = jest.fn();
+			testRunnable.setOnStop(onStopSpy);
+			testRunnable.start();
+			testRunnable.pause();
+			testRunnable.stop();
+
+			expect(testRunnable.isPaused()).toBe(false);
+			expect(testRunnable.isRunning()).toBe(false);
+			expect(onStopSpy).not.toHaveBeenCalled(); // stop sur timer=null ne fire pas onStop
+		});
+
+		it("aucun tick automatique ne se produit pendant la pause", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			expect(testRunnable.tickCount).toBe(1);
+
+			testRunnable.pause();
+			jest.advanceTimersByTime(200);
+			expect(testRunnable.tickCount).toBe(1);
+		});
+
+		it("pause sans start préalable est sans effet", () => {
+			testRunnable.pause();
+			expect(testRunnable.isPaused()).toBe(false);
+		});
+
+		it("resume sans pause préalable est sans effet", () => {
+			testRunnable.resume();
+			expect(testRunnable.isRunning()).toBe(false);
+		});
+	});
+
 	describe("different clock intervals", () => {
 		it("works with different clock intervals", () => {
 			const fastRunnable = new TestClockedRunnable(50);

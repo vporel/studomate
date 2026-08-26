@@ -159,7 +159,7 @@ describe("NodesFactory.syncNodes", () => {
 			const grafcet = grafcetWithSteps(1);
 			const prev = NodesFactory.syncNodes([], grafcet);
 			grafcet.addElements([
-				{ type: "step", id: "step-2", data: { number: 2, width: 10, height: 10 }, position: { x: 0, y: 0 } },
+				{ type: "step", id: "step-2", data: { number: 2 }, position: { x: 0, y: 0 } },
 			]);
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
@@ -193,7 +193,7 @@ describe("NodesFactory.syncNodes", () => {
 				{ id: "step-1", type: "step", data: {}, position: { x: 0, y: 0 } },
 			] as unknown as GrafcetNodeType[];
 			grafcet.addElements([
-				{ type: "step", id: "step-9", data: { number: 9, width: 10, height: 10 }, position: { x: 0, y: 0 } },
+				{ type: "step", id: "step-9", data: { number: 9 }, position: { x: 0, y: 0 } },
 			]);
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);

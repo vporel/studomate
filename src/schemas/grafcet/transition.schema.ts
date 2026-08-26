@@ -1,4 +1,4 @@
-import Element, { BaseData, ElementType } from "./element.schema";
+import Element, { ElementType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
 export const TRANSITION_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
@@ -31,7 +31,7 @@ export const TRANSITION_HANDLES_TO_TYPES: Record<TransitionHandle, readonly Elem
 	[TRANSITION_HANDLE_SOURCE_SUCCESSOR]: TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES,
 };
 
-export type TransitionData = BaseData & {
+export type TransitionData = {
 	expression: string;
 };
 
@@ -46,8 +46,6 @@ export default class Transition extends Element<TransitionData> {
 	static generateDefaultData(): TransitionData {
 		return {
 			expression: "",
-			width: Transition.DEFAULT_DIMENSIONS.width,
-			height: Transition.DEFAULT_DIMENSIONS.height,
 		};
 	}
 

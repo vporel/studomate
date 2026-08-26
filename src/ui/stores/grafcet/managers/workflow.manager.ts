@@ -247,36 +247,25 @@ export default class WorkflowManager {
 	): JunctionData {
 		const node = nodes.find((n) => n.id === (change as any).id) as JunctionNodeType | undefined;
 		if (!node) throw new Error(`Junction node not found for id ${(change as any).id}`);
-		if (!node.type!.includes("junction")) return node.data;
+		if (!node.type!.includes("junction") || change.type !== "position") return node.data;
 		const dimensionsChange: NodeDimensionChange = changes.find(
 			(c) => (c as any).id === (change as any).id && c.type === "dimensions",
 		) as NodeDimensionChange;
-		if (change.type == "position") {
-			if (!dimensionsChange) return node.data;
-			//If the position of a junction node is changed
-			//and there is also a change of dimensions for the same node,
-			//we update the position of the bars in order to keep them in the same relative position to the node position, because during the resizing, the position of the node is updated before the dimensions are updated, so if we don't do this, the bars will be in the wrong position during the resizing
-			//Update the branches positions, the pivot position and the node width according to the new position of the node
-			const positionDelta = node.position.x! - change.position!.x;
-			const nodeWidth = dimensionsChange.dimensions?.width;
-			return {
-				...node.data,
-				width: nodeWidth ? nodeWidth : node.data.width,
-				pivotPosition: node.data.pivotPosition + positionDelta,
-				branches: Object.fromEntries(
-					Object.entries(node.data.branches).map(([branchId, branch]) => [
-						branchId,
-						{ ...branch, position: branch.position + positionDelta },
-					]),
-				),
-			};
-		} else if (change.type == "dimensions") {
-			const nodeWidth = dimensionsChange.dimensions?.width;
-			return {
-				...node.data,
-				width: nodeWidth ? nodeWidth : node.data.width,
-			};
-		}
-		return node.data;
+		if (!dimensionsChange) return node.data;
+		//If the position of a junction node is changed
+		//and there is also a change of dimensions for the same node,
+		//we update the position of the bars in order to keep them in the same relative position to the node position, because during the resizing, the position of the node is updated before the dimensions are updated, so if we don't do this, the bars will be in the wrong position during the resizing
+		//Update the branches positions and the pivot position according to the new position of the node
+		const positionDelta = node.position.x! - change.position!.x;
+		return {
+			...node.data,
+			pivotPosition: node.data.pivotPosition + positionDelta,
+			branches: Object.fromEntries(
+				Object.entries(node.data.branches).map(([branchId, branch]) => [
+					branchId,
+					{ ...branch, position: branch.position + positionDelta },
+				]),
+			),
+		};
 	}
 }

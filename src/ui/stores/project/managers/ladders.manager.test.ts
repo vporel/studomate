@@ -82,6 +82,16 @@ describe("LaddersManager", () => {
 			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({ id: ladder!.id, type: "ladder", title: "L1" });
 			expect(getState().hasUnsavedChanges).toBe(true);
 		});
+
+		it("génère un nom unique au format Ladder_N quand aucun nom n'est fourni", () => {
+			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+
+			const first = manager.newLadder();
+			const second = manager.newLadder();
+
+			expect(first!.name).toBe("Ladder_1");
+			expect(second!.name).toBe("Ladder_2");
+		});
 	});
 
 	describe("deleteProgramById (ladder)", () => {

@@ -294,6 +294,238 @@ describe("PLC", () => {
 		});
 	});
 
+	describe("pause / resume / stepOnce", () => {
+		it("pause fige le PLC sans réinitialiser les variables", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(200); // 2 cycles
+			plc.pause();
+			expect(plc.isPaused()).toBe(true);
+			expect(plc.isRunning()).toBe(false);
+
+			jest.advanceTimersByTime(300); // aucun cycle supplémentaire
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(2);
+		});
+
+		it("resume reprend l'exécution après pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.pause();
+			plc.resume();
+			expect(plc.isPaused()).toBe(false);
+			expect(plc.isRunning()).toBe(true);
+
+			jest.advanceTimersByTime(200);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(3);
+		});
+
+		it("stepOnce exécute exactement un cycle quand le PLC est en pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			plc.pause();
+			plc.stepOnce();
+			plc.stepOnce();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(2);
+		});
+
+		it("stepOnce est sans effet si le PLC n'est pas en pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.stepOnce(); // pas démarré, pas en pause → no-op
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(0);
+		});
+
+		it("stepOnce déclenche onCycleEnd", () => {
+			const onCycleEndSpy = jest.fn();
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [],
+				onCycleEnd: onCycleEndSpy,
+			});
+
+			plc.start();
+			plc.pause();
+			plc.stepOnce();
+
+			expect(onCycleEndSpy).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("forçage de variables", () => {
+		it("forceVariable impose la valeur d'une entrée physique à chaque cycle", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar],
+			});
+
+			plc.setPhysicalInputValueById("id1", 10);
+			plc.forceVariable("id1", 99);
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const input = snapshot.find((v) => v.getId() === "id1");
+			expect(input?.getValue()).toBe(99);
+		});
+
+		it("forceVariable empêche le programme d'écraser une variable mémoire", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 42);
+			plc.start();
+			jest.advanceTimersByTime(300); // 3 cycles
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(42);
+		});
+
+		it("forceVariable sur une sortie prend le dessus sur le programme", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("result := 99");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [outputVar],
+			});
+
+			plc.forceVariable("id2", 7);
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const result = snapshot.find((v) => v.getName() === "result");
+			expect(result?.getValue()).toBe(7);
+		});
+
+		it("releaseVariable restaure le comportement normal dès le cycle suivant", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 10);
+			plc.start();
+			jest.advanceTimersByTime(100); // cycle 1 : forcé à 10
+			plc.releaseVariable("id3");
+			jest.advanceTimersByTime(100); // cycle 2 : count = 10 + 1 = 11
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(11);
+		});
+
+		it("releaseAllVariables efface tous les forçages", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 55);
+			expect(plc.getForcedVariables().size).toBe(1);
+			plc.releaseAllVariables();
+			expect(plc.getForcedVariables().size).toBe(0);
+		});
+
+		it("getForcedVariables reflète l'état courant de la table de forçage", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [memoryVar, outputVar],
+			});
+
+			plc.forceVariable("id3", true);
+			plc.forceVariable("id2", 5);
+			expect(plc.getForcedVariables().get("id3")).toBe(true);
+			expect(plc.getForcedVariables().get("id2")).toBe(5);
+			plc.releaseVariable("id3");
+			expect(plc.getForcedVariables().has("id3")).toBe(false);
+		});
+	});
+
 	describe("input/output image synchronization", () => {
 		it("reads inputs to input image at cycle start", () => {
 			const plc = new PLC({

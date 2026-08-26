@@ -63,10 +63,10 @@ function setup({
 
 	const props = {
 		id: "action-1",
-		data: { expression, type, executionMode, width: 100, height: 40 },
+		data: { expression, type, executionMode },
 		selected: false,
-		width: 0,
-		height: 0,
+		width: 100,
+		height: 40,
 		type: "action",
 		position: { x: 0, y: 0 },
 		dragging: false,

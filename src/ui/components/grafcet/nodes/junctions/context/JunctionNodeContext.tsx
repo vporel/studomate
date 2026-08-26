@@ -32,10 +32,12 @@ const JunctionNodeContext = createContext<JunctionNodeContextType>({
 export const JunctionNodeContextProvider = ({
 	id,
 	data,
+	width,
 	children,
 }: {
 	id: string;
 	data: JunctionData;
+	width: number;
 	children: ReactNode;
 }) => {
 	const {
@@ -47,8 +49,8 @@ export const JunctionNodeContextProvider = ({
 		selectNextBranch,
 		clearSelection,
 	} = useBarsSelection(data.branchesOrder);
-	const { add: onBranchAdd } = useBranchActions(id, data);
-	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
+	const { add: onBranchAdd } = useBranchActions(id, data, width);
+	const branchAddButtonsPositions = useBranchAddButtonsPositions(data, width);
 
 	useContextMenuEventsHandler(id, selectPivot, selectBranch);
 

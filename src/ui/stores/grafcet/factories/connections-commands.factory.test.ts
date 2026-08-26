@@ -17,7 +17,7 @@ jest.mock("@xyflow/system", () => {
 });
 
 function node(id: string): GrafcetNodeType {
-	return { id, type: "step", position: { x: 0, y: 0 }, data: { number: 1, initial: true, width: 40, height: 40 } } as any;
+	return { id, type: "step", position: { x: 0, y: 0 }, data: { number: 1, initial: true }, width: 40, height: 40 } as any;
 }
 
 function edge(id: string, source: string, target: string, points: [number, number][] = [[0, 0]]): GrafcetEdgeType {

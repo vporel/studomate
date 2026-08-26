@@ -18,7 +18,7 @@ function grafcetWithOneElementOfEachType(): Grafcet {
 			{
 				type,
 				id: `${type}-1`,
-				data: { width: 10, height: 10 },
+				data: {},
 				position: { x: index, y: index },
 			},
 		]);

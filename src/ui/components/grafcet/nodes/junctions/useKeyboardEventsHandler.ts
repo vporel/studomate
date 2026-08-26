@@ -13,6 +13,7 @@ export default function useKeyboardEventsHandler(
 	selectPreviousBranch: () => void,
 	selectNextBranch: () => void,
 	clearSelection: () => void,
+	width: number,
 ): (e: React.KeyboardEvent<HTMLDivElement>) => void {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updatenodeInternals = useUpdateNodeInternals();
@@ -51,7 +52,7 @@ export default function useKeyboardEventsHandler(
 						const newPosition = prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
 						if (
 							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH
+							newPosition <= width - FLOW_GRID_CELL_WIDTH
 						) {
 							dataToChange.pivotPosition = newPosition;
 						}
@@ -62,7 +63,7 @@ export default function useKeyboardEventsHandler(
 							FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
 						if (
 							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= prevData.width - FLOW_GRID_CELL_WIDTH &&
+							newPosition <= width - FLOW_GRID_CELL_WIDTH &&
 							!prevData.branchesOrder.some((branchId) =>
 								branchId === selectedBranchId
 									? false
@@ -87,6 +88,7 @@ export default function useKeyboardEventsHandler(
 			selectedBranchId,
 			workflowManager,
 			updatenodeInternals,
+			width,
 		],
 	);
 }

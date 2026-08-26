@@ -11,6 +11,8 @@ import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 import VariablesPage, { VariablesPageData } from "./VariablesPage";
+import HmiPageView from "../hmi/HmiPageView";
+import HmiSimulationPageView from "../hmi/HmiSimulationPageView";
 
 const NoPage = () => {
 	const commands = [
@@ -86,6 +88,7 @@ const NoPage = () => {
 const PagesView = () => {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
@@ -124,6 +127,10 @@ const PagesView = () => {
 								);
 							case "ladder":
 								return <LadderPage key={id} initialLadder={laddersManager.getProgramOrThrow(id)} />;
+							case "hmi":
+								return <HmiPageView key={id} initialHmiPage={hmiManager.getHmiPageOrThrow(id)} />;
+							case "hmi-simulation":
+								return <HmiSimulationPageView key={id} />;
 							default:
 								return null;
 						}

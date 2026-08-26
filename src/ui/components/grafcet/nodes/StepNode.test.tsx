@@ -41,12 +41,12 @@ function setup({
 		}),
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ simulationVariablesStates }),
+		selectorImplementation({ simulationVariablesStates, forcedVariables: {} }),
 	);
 
 	const props = {
 		id: "step-1",
-		data: { number, initial, width: 40, height: 40 },
+		data: { number, initial },
 		selected,
 		type: "step",
 		position: { x: 0, y: 0 },

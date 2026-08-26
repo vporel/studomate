@@ -1,20 +1,20 @@
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 import Step, { StepData } from "../step.schema";
 
 export default class StepBuilder {
 	private _id: string;
 	private _data: StepData;
 	private _position: XYPosition;
+	private _size: Dimensions;
 
 	constructor() {
 		this._id = "";
 		this._data = {
 			number: "",
 			initial: false,
-			width: Step.DEFAULT_DIMENSIONS.width,
-			height: Step.DEFAULT_DIMENSIONS.height,
 		};
 		this._position = { x: 0, y: 0 };
+		this._size = { ...Step.DEFAULT_DIMENSIONS };
 	}
 
 	id(id: string): StepBuilder {
@@ -33,8 +33,7 @@ export default class StepBuilder {
 	}
 
 	dimensions(width: number, height: number): StepBuilder {
-		this._data.width = width;
-		this._data.height = height;
+		this._size = { width, height };
 		return this;
 	}
 
@@ -44,6 +43,6 @@ export default class StepBuilder {
 	}
 
 	build(): Step {
-		return new Step(this._id, { ...this._data }, { ...this._position });
+		return new Step(this._id, { ...this._data }, { ...this._position }, { ...this._size });
 	}
 }

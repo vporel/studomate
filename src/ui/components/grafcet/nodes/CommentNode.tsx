@@ -11,7 +11,7 @@ export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
 export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
+const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width, height }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -35,8 +35,8 @@ const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width: nodeWidt
 				type="comment"
 				error={error}
 				sx={{
-					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
-					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
+					width: (width ?? Comment.DEFAULT_DIMENSIONS.width) + "px",
+					height: (height ?? Comment.DEFAULT_DIMENSIONS.height) + "px",
 					borderWidth: "1px",
 					borderStyle: "dashed",
 					borderColor: borderColor,

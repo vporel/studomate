@@ -1,10 +1,8 @@
 "use client";
 
-import { isNumberLiteral } from "@/expression-language/number-literal";
-import { isTimeLiteral } from "@/expression-language/time-literal";
 import Variable, { VariableDirection, VariableType } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { Autocomplete, Box, Paper, PaperProps, SxProps, TextField, Theme, useTheme } from "@mui/material";
+import { Autocomplete, SxProps, TextField, Theme, useTheme } from "@mui/material";
 import {
 	FocusEvent as ReactFocusEvent,
 	KeyboardEvent as ReactKeyboardEvent,
@@ -16,85 +14,22 @@ import {
 	useState,
 } from "react";
 import { useShallow } from "zustand/shallow";
-
-type SelectorStatus = "undeclared" | "wrong-type" | "excluded-direction" | "ok" | null;
-
-type VariableColumn = "address" | "mnemonic" | "type" | "scope";
-
-// Pas de libellé pour "address" : sans texte à faire tenir, la colonne peut rester étroite
-// sans être coupée ni forcer l'en-tête à s'élargir.
-const COLUMNS: Record<VariableColumn, { label: string; width: number }> = {
-	address: { label: "", width: 40 },
-	mnemonic: { label: "Mnémonique", width: 180 },
-	type: { label: "Type", width: 60 },
-	scope: { label: "Scope", width: 70 },
-};
-
-const ALL_COLUMNS = Object.keys(COLUMNS) as VariableColumn[];
-
-const MIN_WIDTH_PX = 44;
-
-let measureCanvas: HTMLCanvasElement | null = null;
-
-/**
- * `.MuiAutocomplete-input` a `width: 0` en dur côté MUI (il grandit par flex-grow dans son
- * parent) : l'attribut natif `size` et un `width: auto` en CSS n'ont donc aucune prise sur lui.
- * Seule la racine du champ (le `TextField`) répond à un `width` explicite — on le calcule ici en
- * mesurant le texte réellement affiché, plutôt que de deviner une largeur fixe.
- */
-function measureTextWidthPx(text: string, font: string): number {
-	if (typeof document === "undefined") return 0;
-	measureCanvas ??= document.createElement("canvas");
-	const ctx = measureCanvas.getContext("2d");
-	if (!ctx) return 0;
-	ctx.font = font;
-	return ctx.measureText(text).width;
-}
-
-const DIRECTION_LABELS: Record<VariableDirection, string> = {
-	IN: "Entrée",
-	OUT: "Sortie",
-	INOUT: "Mémoire",
-};
-
-function cellValue(variable: Variable, column: VariableColumn): string {
-	switch (column) {
-		case "address":
-			return variable.address || "—";
-		case "mnemonic":
-			return variable.mnemonic;
-		case "type":
-			return variable.type;
-		case "scope":
-			return DIRECTION_LABELS[variable.getDirection()];
-	}
-}
-
-function computeStatus(
-	mnemonic: string,
-	variables: { mnemonic: string; type: VariableType; getDirection(): VariableDirection }[],
-	typeFilter?: VariableType[],
-	excludeDirection?: VariableDirection,
-	acceptsTimeLiteral?: boolean,
-	acceptsNumberLiteral?: boolean,
-): SelectorStatus {
-	const trimmed = mnemonic.trim();
-	if (!trimmed) return null;
-	// Une constante TIME (`T#...`) ou un littéral numérique n'est jamais une variable déclarée —
-	// sa validité de format est du ressort de l'analyseur (`TimerBlockAnalyser`/
-	// `CounterBlockAnalyser`), pas de ce composant.
-	if (acceptsTimeLiteral && isTimeLiteral(trimmed)) return "ok";
-	if (acceptsNumberLiteral && isNumberLiteral(trimmed)) return "ok";
-	const match = variables.find((v) => v.mnemonic === trimmed);
-	if (!match) return "undeclared";
-	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
-	if (excludeDirection && match.getDirection() === excludeDirection) return "excluded-direction";
-	return "ok";
-}
+import {
+	ALL_COLUMNS,
+	COLUMNS,
+	computeStatus,
+	inputWidthPx,
+	VariableColumn,
+} from "./variable-selector-utils";
+import { makeVariableSelectorPaper, VariableSelectorOption } from "./VariableSelectorPopup";
 
 interface VariableSelectorProps {
 	value: string;
 	onCommit: (next: string) => void;
+	/** Libellé flottant façon `TextField` classique (bordure, label en haut) — non fourni : rendu
+	 * compact et épuré (sans bordure), pour une édition inline (ex : nœud Ladder, voir la
+	 * documentation du composant). */
+	label?: string;
 	/** Restreint les suggestions et le statut valide à ces types — non fourni : tous les types. */
 	typeFilter?: VariableType[];
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
@@ -122,10 +57,6 @@ export interface VariableSelectorHandle {
 	startEditing: () => void;
 }
 
-function columnsGridTemplate(columns: VariableColumn[]): string {
-	return columns.map((c) => `${COLUMNS[c].width}px`).join(" ");
-}
-
 /**
  * Champ d'édition d'un mnémonique de variable, avec autocomplétion (texte libre toujours
  * possible) et un signal visuel si le mnémonique ne correspond à aucune variable déclarée, à
@@ -141,6 +72,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	{
 		value,
 		onCommit,
+		label,
 		typeFilter,
 		excludeDirection,
 		acceptsTimeLiteral,
@@ -156,7 +88,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	const variables = useProjectStore(useShallow((s) => s.project?.variables ?? []));
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [editingValue, setEditingValue] = useState(value);
-	const [widthPx, setWidthPx] = useState(MIN_WIDTH_PX);
+	const [widthPx, setWidthPx] = useState(44);
 
 	useImperativeHandle(ref, () => ({ startEditing: () => inputRef.current?.focus() }), []);
 
@@ -169,12 +101,7 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	// reste invisible tant qu'on ne déplace pas le curseur) — un cycle de rendu séparé lui laisse
 	// le temps de repeindre correctement la zone élargie.
 	useEffect(() => {
-		setWidthPx(
-			Math.max(
-				MIN_WIDTH_PX,
-				measureTextWidthPx(editingValue || "?", `0.7rem ${th.typography.fontFamily}`) + 24,
-			),
-		);
+		setWidthPx(inputWidthPx(editingValue, `0.7rem ${th.typography.fontFamily}`));
 	}, [editingValue, th.typography.fontFamily]);
 
 	const activeColumns = useMemo(
@@ -219,7 +146,6 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	);
 	const statusColor = status && status !== "ok" ? th.palette.error.main : undefined;
 
-	const gridTemplateColumns = columnsGridTemplate(activeColumns);
 	return (
 		<Autocomplete
 			freeSolo
@@ -244,70 +170,32 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 					style: { width: activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16 },
 				},
 			}}
-			slots={{
-				// `null` plutôt qu'un `Paper` vide (juste l'en-tête des colonnes) quand rien ne
-				// correspond — sinon un bloc de suggestions apparaît en permanence pendant la saisie
-				// d'une constante libre (ex. `T#5s`), qui ne correspond jamais à une variable.
-				paper:
-					filteredSuggestions.length === 0
-						? () => null
-						: ({ children, ...paperProps }: PaperProps) => (
-								<Paper {...paperProps}>
-									<Box
-										sx={{
-											display: "grid",
-											gridTemplateColumns,
-											px: 1,
-											py: 0.5,
-											borderBottom: `1px solid ${th.palette.divider}`,
-											fontWeight: 700,
-											fontSize: "0.75rem",
-										}}
-									>
-										{activeColumns.map((c) => (
-											<span key={c}>{COLUMNS[c].label}</span>
-										))}
-									</Box>
-									{children}
-								</Paper>
-							),
-			}}
-			renderOption={(props, option) => {
-				// `.MuiAutocomplete-option` porte son propre padding par défaut, différent de
-				// celui de l'en-tête ci-dessus — sans le neutraliser ici, les cellules se
-				// décalent par rapport aux titres de colonnes. Le style inline l'emporte sur
-				// la classe, px/py restent donc les seuls responsables de l'alignement.
-				const { key, style, ...optionProps } = props;
-				return (
-					<li key={key} {...optionProps} style={{ ...style, padding: 0 }}>
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns,
-								width: "100%",
-								px: 1,
-								py: 0.5,
-								fontSize: "0.8rem",
-							}}
-						>
-							{activeColumns.map((c) => (
-								<span key={c}>{cellValue(option, c)}</span>
-							))}
-						</Box>
-					</li>
-				);
-			}}
+			slots={{ paper: makeVariableSelectorPaper(activeColumns, filteredSuggestions) }}
+			renderOption={(props, option) => (
+				<VariableSelectorOption
+					key={(option as Variable).id}
+					optionProps={props}
+					option={option as Variable}
+					activeColumns={activeColumns}
+				/>
+			)}
 			renderInput={(params) => (
 				<TextField
 					{...params}
 					inputRef={inputRef}
-					variant="standard"
-					placeholder="?"
+					variant={label ? "outlined" : "standard"}
+					label={label}
+					placeholder={label ? undefined : "?"}
 					inputProps={{ ...params.inputProps, "data-variable-status": status ?? undefined }}
 					// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
 					// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au
 					// clic — un `slotProps.input` à côté les aurait purement et simplement écrasés.
-					slotProps={{ input: { ...params.InputProps, disableUnderline: true } }}
+					slotProps={{
+						input: label ? params.InputProps : { ...params.InputProps, disableUnderline: true },
+						// Label toujours en haut, comme les autres champs du panneau de propriétés — pas
+						// seulement au focus/à la saisie (comportement par défaut de `InputLabel`).
+						inputLabel: label ? { shrink: true } : undefined,
+					}}
 					// `params.inputProps` porte les handlers réels d'Autocomplete (ouverture au focus,
 					// navigation clavier de la liste, etc.) — les remplacer purement et simplement au
 					// niveau du `TextField` les casse. On les rappelle explicitement avant d'ajouter
@@ -325,22 +213,26 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 							// `!important` : `.MuiInputBase-inputSizeSmall` (ajoutée par `size="small"`) a
 							// la même spécificité qu'une classe générée par `sx` et gagne parfois
 							// l'arbitrage, laissant du padding/un `text-overflow: ellipsis` par défaut qui
-							// tronquait le texte au lieu de laisser le champ s'élargir.
-							"& .MuiInputBase-input": {
-								color: statusColor,
-								padding: "0 !important",
-								textAlign: "center",
-								fontSize: "0.7rem",
-								cursor: "text",
-								textOverflow: "clip !important",
-								...(baseInputSx ?? {}),
-							},
+							// tronquait le texte au lieu de laisser le champ s'élargir — non pertinent en
+							// apparence bordée, qui garde le padding standard d'un `TextField` outlined.
+							"& .MuiInputBase-input": label
+								? { color: statusColor, cursor: "text", ...(baseInputSx ?? {}) }
+								: {
+										color: statusColor,
+										padding: "0 !important",
+										textAlign: "center",
+										fontSize: "0.7rem",
+										cursor: "text",
+										textOverflow: "clip !important",
+										...(baseInputSx ?? {}),
+									},
 						},
 						...(Array.isArray(sx) ? sx : [sx]),
 						// L'emporte sur un `width` fixe passé par l'appelant (ex : compact dans un nœud
 						// Ladder) : le champ doit pouvoir s'élargir avec le texte (voir
-						// `measureTextWidthPx` — le pourquoi d'un calcul plutôt qu'un `auto`).
-						{ width: widthPx },
+						// `inputWidthPx` — le pourquoi d'un calcul plutôt qu'un `auto`). Non pertinent en
+						// apparence bordée, où la largeur vient normalement de l'appelant (`sx`).
+						...(label ? [] : [{ width: widthPx }]),
 					]}
 				/>
 			)}

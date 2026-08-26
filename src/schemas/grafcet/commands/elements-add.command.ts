@@ -1,6 +1,6 @@
 ﻿import { ElementType } from "../element.schema";
 import Grafcet from "../grafcet.schema";
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 import AbstractGrafcetCommand from "./abstract-grafcet.command";
 
 export default class ElementsAddCommand extends AbstractGrafcetCommand<
@@ -9,6 +9,7 @@ export default class ElementsAddCommand extends AbstractGrafcetCommand<
 		id: string;
 		data: any;
 		position: XYPosition;
+		size: Dimensions;
 	}[]
 > {
 	getType(): string {
@@ -22,6 +23,7 @@ export default class ElementsAddCommand extends AbstractGrafcetCommand<
 				id: e.id,
 				data: e.data,
 				position: e.position,
+				size: e.size,
 			})),
 		);
 		return [grafcet, true];

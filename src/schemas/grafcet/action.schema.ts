@@ -1,4 +1,4 @@
-import Element, { BaseData, ElementType } from "./element.schema";
+import Element, { ElementType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
 export const ACTION_HANDLE_TARGET_STEP = "target:step";
@@ -69,7 +69,7 @@ export type ActionAssignment = {
 	stored: boolean;
 };
 
-export type ActionData = BaseData & {
+export type ActionData = {
 	expression: string;
 	type: ActionType;
 	executionMode: ActionExecutionMode | null;
@@ -85,8 +85,6 @@ export default class Action extends Element<ActionData> {
 
 	static generateDefaultData(): ActionData {
 		return {
-			width: Action.DEFAULT_DIMENSIONS.width,
-			height: Action.DEFAULT_DIMENSIONS.height,
 			expression: "",
 			type: ActionType.TEXT,
 			executionMode: null,

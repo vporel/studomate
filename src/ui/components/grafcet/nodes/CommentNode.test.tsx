@@ -25,10 +25,10 @@ function setup({ text = "Un commentaire", updateNodeData = jest.fn() } = {}) {
 
 	const props = {
 		id: "comment-1",
-		data: { text, width: 150, height: 60 },
+		data: { text },
 		selected: false,
-		width: 0,
-		height: 0,
+		width: 150,
+		height: 60,
 		type: "comment",
 		position: { x: 0, y: 0 },
 		dragging: false,

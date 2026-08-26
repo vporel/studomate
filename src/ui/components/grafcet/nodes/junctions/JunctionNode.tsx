@@ -28,6 +28,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	className,
 	children,
 }) => {
+	const width = nodeWidth ?? Junction.DEFAULT_DIMENSIONS.width;
 	const { pivotSelected, selectedBranchId, selectPreviousBranch, selectNextBranch, clearSelection } =
 		useJunctionNodeContext();
 
@@ -38,6 +39,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 		selectPreviousBranch,
 		selectNextBranch,
 		clearSelection,
+		width,
 	);
 
 	const th = useTheme();
@@ -46,8 +48,8 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 
 	//Snap to grid
 	useEffect(() => {
-		if (data.width % FLOW_GRID_CELL_WIDTH !== 0) throw new Error("The width does not snap the grid");
-	}, [data.width]);
+		if (width % FLOW_GRID_CELL_WIDTH !== 0) throw new Error("The width does not snap the grid");
+	}, [width]);
 
 	useEffect(() => {
 		if ((pivotSelected || selectedBranchId != null) && nodeHTMLElement.current)
@@ -94,7 +96,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 				ref={nodeHTMLElement}
 				tabIndex={0}
 				sx={{
-					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
+					width: width + "px",
 					height: Junction.DEFAULT_DIMENSIONS.height + "px",
 					display: "flex",
 					flexDirection: "column",
@@ -118,10 +120,10 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	);
 };
 
-const JunctionNode: FC<JunctionNodeProps> = ({ id, data, children, ...props }) => {
+const JunctionNode: FC<JunctionNodeProps> = ({ id, data, width, children, ...props }) => {
 	return (
-		<JunctionNodeContextProvider id={id} data={data}>
-			<JunctionNodeContent id={id} data={data} {...props}>
+		<JunctionNodeContextProvider id={id} data={data} width={width ?? Junction.DEFAULT_DIMENSIONS.width}>
+			<JunctionNodeContent id={id} data={data} width={width} {...props}>
 				{children}
 			</JunctionNodeContent>
 		</JunctionNodeContextProvider>

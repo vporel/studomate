@@ -1,6 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
-import Element, { BaseData } from "@/schemas/grafcet/element.schema";
+import Element from "@/schemas/grafcet/element.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
@@ -17,7 +17,7 @@ export type ElementAnalyseIsolatedOptions = {
 	dialect?: Dialect;
 };
 
-export default abstract class ElementAnalyser<E extends Element<BaseData>> {
+export default abstract class ElementAnalyser<E extends Element<any>> {
 	/**
 	 * Rules that apply to the element's own data, independently of the grafcet.
 	 */

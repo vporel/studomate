@@ -52,6 +52,7 @@ export default function AssignBlockDialog() {
 				<TextField
 					label="Expression"
 					autoFocus
+					slotProps={{ inputLabel: { shrink: true } }}
 					value={expression}
 					onChange={(e) => setExpression(e.target.value)}
 					onKeyDown={(e) => {

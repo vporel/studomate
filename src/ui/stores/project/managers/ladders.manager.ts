@@ -1,4 +1,4 @@
-import Ladder from "@/schemas/ladder/ladder.schema";
+import Ladder, { LADDER_NAME_LABEL } from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import {
@@ -41,7 +41,12 @@ export default class LaddersManager extends AbstractProgramsManager<Ladder, Ladd
 		managers.workflowManager.adoptLadder(program);
 	}
 
-	newLadder(name: string): Ladder | null {
-		return this.createProgram(name, (project) => project.createLadder(name));
+	/** @param name Absent : auto-généré au format "Ladder_N", unique parmi les programmes du
+	 * projet (voir `Project.nextProgramName`). */
+	newLadder(name?: string): Ladder | null {
+		const project = this.getStoreState().project;
+		if (!project) return null;
+		const resolvedName = name ?? project.nextProgramName(LADDER_NAME_LABEL);
+		return this.createProgram(resolvedName, (p) => p.createLadder(resolvedName));
 	}
 }

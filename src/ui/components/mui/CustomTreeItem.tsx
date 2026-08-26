@@ -25,6 +25,9 @@ interface CustomTreeItemProps
 	extends Omit<UseTreeItemParameters, "rootRef">,
 		Omit<React.HTMLAttributes<HTMLLIElement>, "onFocus"> {
 	IconComponent?: React.ElementType;
+	/** Contenu affiché à droite du libellé, poussé en bout de ligne (ex. un tag "Principale" —
+	 * voir `ExplorerHmiItems`). */
+	trailing?: React.ReactNode;
 	labelMode?: "normal" | "edit";
 	inputProps?: {
 		value?: string;
@@ -47,6 +50,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 		disabled,
 		children,
 		IconComponent,
+		trailing,
 		inputProps,
 		styles,
 		...other
@@ -106,6 +110,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 								}}
 							/>
 						)}
+						{labelMode === "normal" && trailing}
 					</Box>
 				</TreeItemContent>
 				{children && <TreeItemGroupTransition {...getGroupTransitionProps()} />}

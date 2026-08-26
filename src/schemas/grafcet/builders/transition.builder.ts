@@ -1,19 +1,19 @@
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 import Transition, { TransitionData } from "../transition.schema";
 
 export default class TransitionBuilder {
 	private _id: string;
 	private _data: TransitionData;
 	private _position: XYPosition;
+	private _size: Dimensions;
 
 	constructor() {
 		this._id = "";
 		this._data = {
 			expression: "",
-			width: Transition.DEFAULT_DIMENSIONS.width,
-			height: Transition.DEFAULT_DIMENSIONS.height,
 		};
 		this._position = { x: 0, y: 0 };
+		this._size = { ...Transition.DEFAULT_DIMENSIONS };
 	}
 
 	id(id: string): TransitionBuilder {
@@ -27,8 +27,7 @@ export default class TransitionBuilder {
 	}
 
 	dimensions(width: number, height: number): TransitionBuilder {
-		this._data.width = width;
-		this._data.height = height;
+		this._size = { width, height };
 		return this;
 	}
 
@@ -38,6 +37,6 @@ export default class TransitionBuilder {
 	}
 
 	build(): Transition {
-		return new Transition(this._id, { ...this._data }, { ...this._position });
+		return new Transition(this._id, { ...this._data }, { ...this._position }, { ...this._size });
 	}
 }

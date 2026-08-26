@@ -11,6 +11,8 @@ const RightActions = () => {
 	const setAnalysisResultVisible = useProjectStore((state) => state.setAnalysisResultVisible);
 	const setWatchTablesVisible = useProjectStore((state) => state.setWatchTablesVisible);
 	const mode = useProjectStore((state) => state.mode);
+	const hmiManager = useProjectStore((state) => state.hmiManager);
+	const hasHmiPages = useProjectStore((state) => Object.keys(state.project?.hmiPages ?? {}).length > 0);
 
 	return (
 		<FlexBox centerVertical gap={1} sx={{ justifyContent: "flex-end" }}>
@@ -26,6 +28,20 @@ const RightActions = () => {
 					onClick={() => setWatchTablesVisible(true)}
 				>
 					{`Tables de visualisation`}
+				</Button>
+			)}
+			{mode === ProjectMode.SIMULATION && hasHmiPages && (
+				<Button
+					sx={{
+						fontWeight: "normal",
+						height: "100%",
+						py: "0",
+						px: "3px",
+						"&:hover": { backgroundColor: "rgb(230,230,230)" },
+					}}
+					onClick={() => hmiManager.openHmiSimulationPageIfAny()}
+				>
+					{`Simulation HMI`}
 				</Button>
 			)}
 			<Button

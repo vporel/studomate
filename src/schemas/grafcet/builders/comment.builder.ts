@@ -1,19 +1,19 @@
 import Comment, { CommentData } from "../comment.schema";
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 
 export default class CommentBuilder {
 	private _id: string;
 	private _data: CommentData;
 	private _position: XYPosition;
+	private _size: Dimensions;
 
 	constructor() {
 		this._id = "";
 		this._data = {
 			text: "",
-			width: Comment.DEFAULT_DIMENSIONS.width,
-			height: Comment.DEFAULT_DIMENSIONS.height,
 		};
 		this._position = { x: 0, y: 0 };
+		this._size = { ...Comment.DEFAULT_DIMENSIONS };
 	}
 
 	id(id: string): CommentBuilder {
@@ -27,8 +27,7 @@ export default class CommentBuilder {
 	}
 
 	dimensions(width: number, height: number): CommentBuilder {
-		this._data.width = width;
-		this._data.height = height;
+		this._size = { width, height };
 		return this;
 	}
 
@@ -38,6 +37,6 @@ export default class CommentBuilder {
 	}
 
 	build(): Comment {
-		return new Comment(this._id, { ...this._data }, { ...this._position });
+		return new Comment(this._id, { ...this._data }, { ...this._position }, { ...this._size });
 	}
 }

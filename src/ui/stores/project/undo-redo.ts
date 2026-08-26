@@ -20,6 +20,9 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 	if (state.activeScopeType === "ladder") {
 		return state.laddersManager.getActiveStoreManagers()?.commandsStackManager ?? null;
 	}
+	if (state.activeScopeType === "hmi") {
+		return state.hmiManager.getActiveStoreManagers()?.commandsStackManager ?? null;
+	}
 	return state.commandsStackManager;
 }
 
@@ -31,6 +34,9 @@ export function canUndoActiveScope(state: ProjectStoreState): boolean {
 	if (state.activeScopeType === "ladder") {
 		return state.laddersManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
 	}
+	if (state.activeScopeType === "hmi") {
+		return state.hmiManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
+	}
 	return state.hasCommandsToUndo;
 }
 
@@ -41,6 +47,9 @@ export function canRedoActiveScope(state: ProjectStoreState): boolean {
 	}
 	if (state.activeScopeType === "ladder") {
 		return state.laddersManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
+	}
+	if (state.activeScopeType === "hmi") {
+		return state.hmiManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
 	}
 	return state.hasCommandsToRedo;
 }

@@ -10,6 +10,7 @@ import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext"
 export default function useBranchActions(
 	nodeId: string,
 	nodeData: JunctionData,
+	width: number,
 ): { add: (buttonIndex: number) => void } {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updateNodeInternals = useUpdateNodeInternals();
@@ -17,7 +18,7 @@ export default function useBranchActions(
 	const add = useCallback(
 		(buttonIndex: number) => {
 			let newBranchPosition = 0;
-			if (nodeData.branchesOrder.length == 0) newBranchPosition = nodeData.width / 2;
+			if (nodeData.branchesOrder.length == 0) newBranchPosition = width / 2;
 			else {
 				if (buttonIndex == 0)
 					newBranchPosition = nodeData.branches[nodeData.branchesOrder[0]]!.position / 2;
@@ -25,7 +26,7 @@ export default function useBranchActions(
 					newBranchPosition =
 						(nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]]!
 							.position +
-							nodeData.width) /
+							width) /
 						2;
 				else {
 					newBranchPosition =
@@ -53,7 +54,7 @@ export default function useBranchActions(
 		[
 			nodeData.branches,
 			nodeData.branchesOrder,
-			nodeData.width,
+			width,
 			workflowManager,
 			nodeId,
 			updateNodeInternals,

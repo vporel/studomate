@@ -37,6 +37,8 @@ export default function useToolDragOverHandlers(): [
 				type,
 				position,
 				data: elementClass.generateDefaultData(type === "step" ? draggedElement.extraData : undefined),
+				width: elementClass.DEFAULT_DIMENSIONS.width,
+				height: elementClass.DEFAULT_DIMENSIONS.height,
 			} as GrafcetNodeType;
 			workflowManager.addNodes([newNode]);
 		},

@@ -11,8 +11,8 @@ describe("ActionBuilder", () => {
 		expect(action.data.expression).toBe("");
 		expect(action.data.type).toBe(ActionType.TEXT);
 		expect(action.data.executionMode).toBeNull();
-		expect(action.data.width).toBe(Action.DEFAULT_DIMENSIONS.width);
-		expect(action.data.height).toBe(Action.DEFAULT_DIMENSIONS.height);
+		expect(action.size.width).toBe(Action.DEFAULT_DIMENSIONS.width);
+		expect(action.size.height).toBe(Action.DEFAULT_DIMENSIONS.height);
 		expect(action.position).toEqual({ x: 0, y: 0 });
 	});
 
@@ -37,8 +37,8 @@ describe("ActionBuilder", () => {
 	it("builds an action with custom dimensions", () => {
 		const action = new ActionBuilder().id("action-1").dimensions(120, 60).build();
 
-		expect(action.data.width).toBe(120);
-		expect(action.data.height).toBe(60);
+		expect(action.size.width).toBe(120);
+		expect(action.size.height).toBe(60);
 	});
 
 	it("builds an action with custom position", () => {
@@ -61,8 +61,8 @@ describe("ActionBuilder", () => {
 		expect(action.data.expression).toBe("counter = counter + 1");
 		expect(action.data.type).toBe(ActionType.NUMERIC_VARIABLE);
 		expect(action.data.executionMode).toBe(ActionExecutionMode.CONTINUOUS);
-		expect(action.data.width).toBe(150);
-		expect(action.data.height).toBe(70);
+		expect(action.size.width).toBe(150);
+		expect(action.size.height).toBe(70);
 		expect(action.position).toEqual({ x: 100, y: 200 });
 	});
 

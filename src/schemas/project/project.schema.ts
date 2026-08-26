@@ -3,10 +3,12 @@ import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
 import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
+import { nextAvailableName } from "@/lib/naming";
 import Variable from "../variable/variable.schema";
 import { getCounterBlockParams } from "../function-blocks/counter.schema";
 import { getTimerBlockParams } from "../function-blocks/timer.schema";
 import { BlockElement } from "../ladder/block.schema";
+import HmiPage from "../hmi/hmi-page.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
@@ -45,6 +47,8 @@ export default class Project {
 	 * que `Program` ; chaque notation garde ses spécificités chez elle.
 	 */
 	programs: Record<string, Program>;
+	/** Pages HMI du projet, indexées par id. */
+	hmiPages: Record<string, HmiPage>;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;
@@ -56,6 +60,7 @@ export default class Project {
 		this.dialect = Dialect.FR;
 		this.variables = [];
 		this.programs = {};
+		this.hmiPages = {};
 		// Chaque projet porte toujours un Main — voir `createMain`.
 		this.createMain();
 	}
@@ -85,6 +90,13 @@ export default class Project {
 	updateProgram(programId: string, program: Program) {
 		this.programs[programId] = program;
 		this.touch();
+	}
+
+	/** Nom auto-généré au format "Label_N" pour un nouveau programme — unique parmi tous les
+	 * programmes du projet, indépendamment de leur type (ladders et grafcets partagent le même
+	 * dossier dans l'explorateur, donc le même espace de noms). */
+	nextProgramName(label: string): string {
+		return nextAvailableName(label, Object.values(this.programs).map((program) => program.name));
 	}
 
 	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
@@ -131,9 +143,54 @@ export default class Project {
 		return ladder;
 	}
 
+	//=============== HMI ===============
+
+	getHmiPage(hmiPageId: string): HmiPage | undefined {
+		return this.hmiPages[hmiPageId];
+	}
+
+	/** Même principe que `nextProgramName`, pour une nouvelle page HMI. */
+	nextHmiPageName(label: string): string {
+		return nextAvailableName(label, Object.values(this.hmiPages).map((page) => page.name));
+	}
+
+	createHmiPage(name: string): HmiPage {
+		// La toute première page HMI du projet devient automatiquement la page principale (voir
+		// `HmiPage.isMain`) — sans ça, aucune page n'en porterait tant que l'utilisateur n'ouvre pas
+		// le panel de propriétés pour en désigner une.
+		const isMain = Object.keys(this.hmiPages).length === 0;
+		const page = HmiPage.create(name, isMain);
+		this.hmiPages[page.id] = page;
+		this.touch();
+		return page;
+	}
+
+	updateHmiPage(hmiPageId: string, page: HmiPage): void {
+		this.hmiPages[hmiPageId] = page;
+		this.touch();
+	}
+
+	deleteHmiPage(hmiPageId: string): void {
+		delete this.hmiPages[hmiPageId];
+		this.touch();
+	}
+
+	/** Page affichée par défaut par la vue simulation HMI (voir `HmiSimulationPageView`) — celle
+	 * marquée `isMain`, ou la première du projet si aucune ne l'est encore (ex. projet migré avant
+	 * l'introduction de ce champ, voir `v0-to-v1`). */
+	getMainHmiPage(): HmiPage | undefined {
+		return Object.values(this.hmiPages).find((page) => page.isMain) ?? Object.values(this.hmiPages)[0];
+	}
+
+	/** Une seule page principale à la fois : les autres perdent le statut. */
+	setMainHmiPage(hmiPageId: string): void {
+		for (const id in this.hmiPages) {
+			this.hmiPages[id].isMain = id === hmiPageId;
+		}
+		this.touch();
+	}
+
 	//=============== MAIN ===============
-	//Le Main est un ladder de rôle "main" — voir `Ladder.role`. Un projet en porte toujours
-	//exactement un : créé par le constructeur, sa suppression est refusée par `deleteProgram`.
 
 	/** Le programme Main du projet — invariant garanti par le constructeur/`deleteProgram`. */
 	get main(): Ladder {
@@ -224,6 +281,10 @@ export default class Project {
 		for (const programId in this.programs) {
 			newProject.programs[programId] = this.programs[programId].copy();
 		}
+		newProject.hmiPages = {};
+		for (const hmiPageId in this.hmiPages) {
+			newProject.hmiPages[hmiPageId] = this.hmiPages[hmiPageId].copy();
+		}
 		return newProject;
 	}
 
@@ -249,6 +310,11 @@ export default class Project {
 			}
 		}
 		project.programs = programs;
+		const hmiPages: Record<string, HmiPage> = {};
+		for (const hmiPageId in jsonParsed.hmiPages ?? {}) {
+			hmiPages[hmiPageId] = HmiPage.createFromJSON(JSON.stringify(jsonParsed.hmiPages[hmiPageId]));
+		}
+		project.hmiPages = hmiPages;
 		return project;
 	}
 }

@@ -29,7 +29,7 @@ function setup({ targetStepNumber = 3 as number | "", updateNodeData = jest.fn()
 
 	const props = {
 		id: "ref-1",
-		data: { targetStepNumber, width: 40, height: 40 },
+		data: { targetStepNumber },
 		selected: false,
 		type: "step-referral-source",
 		position: { x: 0, y: 0 },

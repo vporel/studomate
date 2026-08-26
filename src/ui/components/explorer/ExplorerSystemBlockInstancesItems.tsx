@@ -2,8 +2,8 @@
 
 import { getCounterBlockParams } from "@/schemas/function-blocks/counter.schema";
 import { getTimerBlockParams } from "@/schemas/function-blocks/timer.schema";
-import NumbersOutlinedIcon from "@mui/icons-material/NumbersOutlined";
-import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
+import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
+import TimerBlockIcon from "@/ui/components/icons/TimerBlockIcon";
 import { ElementType, Fragment, MouseEvent } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -31,12 +31,12 @@ const ExplorerSystemBlockInstancesItems = ({
 
 	const timerInstances = (project?.getAllTimerBlockElements() ?? []).flatMap(({ ladder, element }) => {
 		const params = getTimerBlockParams(element);
-		return params ? [{ ladder, element, name: params.name, IconComponent: TimerOutlinedIcon as ElementType }] : [];
+		return params ? [{ ladder, element, name: params.name, IconComponent: TimerBlockIcon as ElementType }] : [];
 	});
 	const counterInstances = (project?.getAllCounterBlockElements() ?? []).flatMap(({ ladder, element }) => {
 		const params = getCounterBlockParams(element);
 		return params
-			? [{ ladder, element, name: params.name, IconComponent: NumbersOutlinedIcon as ElementType }]
+			? [{ ladder, element, name: params.name, IconComponent: CounterBlockIcon as ElementType }]
 			: [];
 	});
 	const instances = [...timerInstances, ...counterInstances];

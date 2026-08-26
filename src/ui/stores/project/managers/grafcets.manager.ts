@@ -1,4 +1,4 @@
-import Grafcet, { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
+import Grafcet, { DEFAULT_GRAFCET_FORMAT, GRAFCET_NAME_LABEL, GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import {
@@ -41,7 +41,12 @@ export default class GrafcetsManager extends AbstractProgramsManager<Grafcet, Gr
 		managers.workflowManager.adoptGrafcet(program);
 	}
 
-	newGrafcet(name: string, format: GrafcetFormat): Grafcet | null {
-		return this.createProgram(name, (project) => project.createGrafcet(name, format));
+	/** @param name Absent : auto-généré au format "Grafcet_N", unique parmi les programmes du
+	 * projet (voir `Project.nextProgramName`). */
+	newGrafcet(name?: string, format: GrafcetFormat = DEFAULT_GRAFCET_FORMAT): Grafcet | null {
+		const project = this.getStoreState().project;
+		if (!project) return null;
+		const resolvedName = name ?? project.nextProgramName(GRAFCET_NAME_LABEL);
+		return this.createProgram(resolvedName, (p) => p.createGrafcet(resolvedName, format));
 	}
 }

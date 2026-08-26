@@ -1,19 +1,19 @@
-import { XYPosition } from "../shared-types";
+import { Dimensions, XYPosition } from "../shared-types";
 import StepReferralSource, { StepReferralSourceData } from "../step-referral-source.schema";
 
 export default class StepReferralSourceBuilder {
 	private _id: string;
 	private _data: StepReferralSourceData;
 	private _position: XYPosition;
+	private _size: Dimensions;
 
 	constructor() {
 		this._id = "";
 		this._data = {
 			targetStepNumber: "",
-			width: 40,
-			height: 40,
 		};
 		this._position = { x: 0, y: 0 };
+		this._size = { ...StepReferralSource.DEFAULT_DIMENSIONS };
 	}
 
 	id(id: string): StepReferralSourceBuilder {
@@ -27,8 +27,7 @@ export default class StepReferralSourceBuilder {
 	}
 
 	dimensions(width: number, height: number): StepReferralSourceBuilder {
-		this._data.width = width;
-		this._data.height = height;
+		this._size = { width, height };
 		return this;
 	}
 
@@ -38,6 +37,6 @@ export default class StepReferralSourceBuilder {
 	}
 
 	build(): StepReferralSource {
-		return new StepReferralSource(this._id, { ...this._data }, { ...this._position });
+		return new StepReferralSource(this._id, { ...this._data }, { ...this._position }, { ...this._size });
 	}
 }

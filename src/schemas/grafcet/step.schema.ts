@@ -1,4 +1,4 @@
-import Element, { BaseData, ElementType } from "./element.schema";
+import Element, { ElementType } from "./element.schema";
 import { Dimensions } from "./shared-types";
 
 export const STEP_HANDLE_TARGET_PREDECESSOR = "target:predecessor";
@@ -38,7 +38,7 @@ export const STEP_HANDLES_TO_TYPES: Record<StepHandle, readonly ElementType[]> =
 	[STEP_HANDLE_SOURCE_ACTION]: STEP_HANDLE_SOURCE_ACTION_TYPES,
 };
 
-export type StepData = BaseData & {
+export type StepData = {
 	number: number | "";
 	initial?: boolean;
 };
@@ -55,8 +55,6 @@ export default class Step extends Element<StepData> {
 		return {
 			number: "",
 			initial: extraData?.initial ?? false,
-			width: Step.DEFAULT_DIMENSIONS.width,
-			height: Step.DEFAULT_DIMENSIONS.height,
 		};
 	}
 

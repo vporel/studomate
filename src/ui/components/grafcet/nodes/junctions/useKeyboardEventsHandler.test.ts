@@ -41,7 +41,7 @@ describe("useKeyboardEventsHandler", () => {
 
 	afterEach(() => jest.clearAllMocks())
 
-	function setup(pivotSelected: boolean, selectedBranchId: string | null) {
+	function setup(pivotSelected: boolean, selectedBranchId: string | null, width = 200) {
 		const { result } = renderHook(() =>
 			useKeyboardEventsHandler(
 				"node-1",
@@ -50,6 +50,7 @@ describe("useKeyboardEventsHandler", () => {
 				selectPreviousBranch,
 				selectNextBranch,
 				clearSelection,
+				width,
 			),
 		)
 		return result.current
@@ -114,8 +115,6 @@ describe("useKeyboardEventsHandler", () => {
 		expect(updateNodeData).toHaveBeenCalledWith("node-1", expect.any(Function))
 		const updater = updateNodeData.mock.calls[0][1]
 		const prevData: JunctionData = {
-			width: 200,
-			height: 100,
 			pivotPosition: 100,
 			branches: {},
 			branchesOrder: [],
@@ -129,8 +128,6 @@ describe("useKeyboardEventsHandler", () => {
 		act(() => handler(fakeKeyboardEvent("ArrowLeft")))
 		const updater = updateNodeData.mock.calls[0][1]
 		const prevData: JunctionData = {
-			width: 200,
-			height: 100,
 			pivotPosition: 10,
 			branches: {},
 			branchesOrder: [],
@@ -143,8 +140,6 @@ describe("useKeyboardEventsHandler", () => {
 		act(() => handler(fakeKeyboardEvent("ArrowRight")))
 		const updater = updateNodeData.mock.calls[0][1]
 		const prevData: JunctionData = {
-			width: 200,
-			height: 100,
 			pivotPosition: 100,
 			branches: { b1: { id: "b1", position: 50 }, b2: { id: "b2", position: 60 } },
 			branchesOrder: ["b1", "b2"],
