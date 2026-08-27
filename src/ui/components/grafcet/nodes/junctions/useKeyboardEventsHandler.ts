@@ -29,7 +29,10 @@ export default function useKeyboardEventsHandler(
 					clearSelection();
 					return;
 			}
-			if ((e.key === "Backspace" || e.key === "Delete") && (e.ctrlKey || e.metaKey)) {
+			if (
+				(e.key === "Backspace" || e.key === "Delete") &&
+				(e.ctrlKey || e.metaKey)
+			) {
 				e.preventDefault();
 				e.stopPropagation();
 				if (pivotSelected || selectedBranchId == null) return;
@@ -49,7 +52,8 @@ export default function useKeyboardEventsHandler(
 					prevData = structuredClone(prevData) as JunctionData;
 					const dataToChange: Partial<JunctionData> = {};
 					if (pivotSelected) {
-						const newPosition = prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
+						const newPosition =
+							prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
 						if (
 							newPosition >= FLOW_GRID_CELL_WIDTH &&
 							newPosition <= width - FLOW_GRID_CELL_WIDTH

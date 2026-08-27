@@ -6,7 +6,9 @@ import { platformShortcut } from "@/ui/lib/platform";
 import { useCallback } from "react";
 
 export default function useHmiPaneMenuItems(): () => ContextMenuItemType[][] {
-	const widgetsCount = useHmiStore((s) => s.hmiPage.widgets.length);
+	const widgetsCount = useHmiStore(
+		(s) => Object.keys(s.hmiPage.widgets).length,
+	);
 	const selectAllWidgets = useHmiStore((s) => s.selectAllWidgets);
 	const copyCutPasteManager = useHmiStore((s) => s.copyCutPasteManager);
 

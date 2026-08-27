@@ -27,7 +27,8 @@ function setup({
 		selectorImplementation({
 			project: { dialect },
 			simulationManager: { setPhysicalInputValue, setMemoryValue },
-			simulationVariablesStates: value === undefined ? {} : { [variable.id]: { value } },
+			simulationVariablesStates:
+				value === undefined ? {} : { [variable.id]: { value } },
 		}),
 	);
 	render(<WatchVariable variable={variable} />);
@@ -36,13 +37,21 @@ function setup({
 
 describe("WatchVariable — variables booléennes", () => {
 	it("affiche VRAI/FAUX (dialecte FR) pour une sortie, sans contrôle éditable", () => {
-		setup({ variable: new Variable("v1", "Q0", "logic-output", "BOOL"), value: true, dialect: Dialect.FR });
+		setup({
+			variable: new Variable("v1", "Q0", "logic-output", "BOOL"),
+			value: true,
+			dialect: Dialect.FR,
+		});
 		expect(screen.getByText("VRAI")).toBeInTheDocument();
 		expect(screen.queryByRole("switch")).not.toBeInTheDocument();
 	});
 
 	it("affiche TRUE/FALSE (dialecte EN) pour une sortie", () => {
-		setup({ variable: new Variable("v1", "Q0", "logic-output", "BOOL"), value: false, dialect: Dialect.EN });
+		setup({
+			variable: new Variable("v1", "Q0", "logic-output", "BOOL"),
+			value: false,
+			dialect: Dialect.EN,
+		});
 		expect(screen.getByText("FALSE")).toBeInTheDocument();
 	});
 
@@ -78,7 +87,10 @@ describe("WatchVariable — variables booléennes", () => {
 
 describe("WatchVariable — variables non booléennes", () => {
 	it("affiche la valeur en lecture seule pour une sortie", () => {
-		setup({ variable: new Variable("v1", "AQ0", "analog-output", "INT"), value: 42 });
+		setup({
+			variable: new Variable("v1", "AQ0", "analog-output", "INT"),
+			value: 42,
+		});
 		expect(screen.getByText("42")).toBeInTheDocument();
 		expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
 	});
@@ -89,7 +101,9 @@ describe("WatchVariable — variables non booléennes", () => {
 			value: 0,
 		});
 
-		fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "7" } });
+		fireEvent.change(screen.getByRole("spinbutton"), {
+			target: { value: "7" },
+		});
 
 		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", 7);
 	});
@@ -100,15 +114,24 @@ describe("WatchVariable — variables non booléennes", () => {
 			value: 0,
 		});
 
-		fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "3.5" } });
+		fireEvent.change(screen.getByRole("spinbutton"), {
+			target: { value: "3.5" },
+		});
 
 		expect(setMemoryValue).toHaveBeenCalledWith("v1", 3.5);
 	});
 
 	it("empêche la saisie de '.' pour une variable numérique non REAL", () => {
-		setup({ variable: new Variable("v1", "AI0", "analog-input", "INT"), value: 0 });
+		setup({
+			variable: new Variable("v1", "AI0", "analog-input", "INT"),
+			value: 0,
+		});
 		const input = screen.getByRole("spinbutton");
-		const event = new KeyboardEvent("keydown", { key: ".", bubbles: true, cancelable: true });
+		const event = new KeyboardEvent("keydown", {
+			key: ".",
+			bubbles: true,
+			cancelable: true,
+		});
 		const prevented = !input.dispatchEvent(event);
 		expect(prevented).toBe(true);
 	});

@@ -25,7 +25,8 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-1",
@@ -35,7 +36,9 @@ describe("ActionCompiler", () => {
 						},
 					],
 				]),
-				stepsMemos: new Map([["step-1", { variable: {} as any, node: stepMemoNode }]]),
+				stepsMemos: new Map([
+					["step-1", { variable: {} as any, node: stepMemoNode }],
+				]),
 				transitions: new Map(),
 				actions: new Map([["action-1", preCompiledAction]]),
 			};
@@ -74,7 +77,8 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-1",
@@ -131,7 +135,8 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-1",
@@ -141,7 +146,9 @@ describe("ActionCompiler", () => {
 						},
 					],
 				]),
-				stepsMemos: new Map([["step-1", { variable: {} as any, node: stepMemoNode }]]),
+				stepsMemos: new Map([
+					["step-1", { variable: {} as any, node: stepMemoNode }],
+				]),
 				transitions: new Map(),
 				actions: new Map([["action-1", preCompiledAction]]),
 			};
@@ -175,7 +182,8 @@ describe("ActionCompiler", () => {
 			};
 
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-1",

@@ -1,27 +1,38 @@
 "use client";
 
-import { BlockPortSpec } from "@/schemas/function-blocks/function-block.schema";
-import { VARIABLE_TYPE_TO_NATIVE_TYPE, VariableType } from "@/schemas/variable/variable.schema";
-import VariableSelector, { VariableSelectorHandle } from "@/ui/components/variables/VariableSelector";
+import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
+import {
+	VARIABLE_TYPES,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
+import VariableSelector, {
+	VariableSelectorHandle,
+} from "@/ui/components/variables/VariableSelector";
 import { Box, Typography } from "@mui/material";
 import { Fragment, useRef } from "react";
 
 /** PT/ET/PV/CV (et tout futur paramètre numérique) référencent une variable native "nombre" —
  * TIME est stockée en ms, donc au même titre qu'un entier/réel classique. */
-const NUMERIC_VARIABLE_TYPES = (Object.keys(VARIABLE_TYPE_TO_NATIVE_TYPE) as VariableType[]).filter(
-	(type) => VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "number",
-);
+const NUMERIC_VARIABLE_TYPES = (
+	Object.keys(VARIABLE_TYPE_TO_NATIVE_TYPE) as VariableType[]
+).filter((type) => VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "number");
 
 /** Le contrôle (R/LD) d'un compteur référence une variable native "booléen". */
-const BOOLEAN_VARIABLE_TYPES = (Object.keys(VARIABLE_TYPE_TO_NATIVE_TYPE) as VariableType[]).filter(
-	(type) => VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "boolean",
-);
+const BOOLEAN_VARIABLE_TYPES = (
+	Object.keys(VARIABLE_TYPE_TO_NATIVE_TYPE) as VariableType[]
+).filter((type) => VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "boolean");
 
 /** Les suggestions de variables d'un pin sont restreintes à son type natif, pas à son
  * `VariableType` exact — un PV numérique accepte n'importe quel type numérique, pas seulement
- * `INT` (comme PT accepte TIME aussi bien qu'un entier). */
+ * `INT` (comme PT accepte TIME aussi bien qu'un entier). Un pin `type: "ANY"` (IN1/IN2 d'un
+ * compare) n'impose aucune restriction : la contrainte d'égalité des deux types est vérifiée par
+ * l'analyseur. */
 function getTypeFilter(spec: BlockPortSpec): VariableType[] {
-	return VARIABLE_TYPE_TO_NATIVE_TYPE[spec.type] === "boolean" ? BOOLEAN_VARIABLE_TYPES : NUMERIC_VARIABLE_TYPES;
+	if (spec.type === "ANY") return [...VARIABLE_TYPES];
+	return VARIABLE_TYPE_TO_NATIVE_TYPE[spec.type] === "boolean"
+		? BOOLEAN_VARIABLE_TYPES
+		: NUMERIC_VARIABLE_TYPES;
 }
 
 /**
@@ -48,7 +59,11 @@ export default function ParamPin({
 	const label = (
 		<Typography
 			noWrap
-			sx={{ fontSize: 9, cursor: "text", [side === "left" ? "pl" : "pr"]: "2px" }}
+			sx={{
+				fontSize: 9,
+				cursor: "text",
+				[side === "left" ? "pl" : "pr"]: "2px",
+			}}
 			onDoubleClick={(e) => {
 				e.stopPropagation();
 				selectorRef.current?.startEditing();
@@ -64,8 +79,8 @@ export default function ParamPin({
 			value={value}
 			onCommit={onCommit}
 			typeFilter={getTypeFilter(spec)}
-			acceptsTimeLiteral={spec.acceptsTimeLiteral}
-			acceptsNumberLiteral={spec.acceptsNumberLiteral}
+			acceptedLiterals={spec.acceptedLiterals}
+			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
 			className="nodrag"
 			sx={{
 				position: "absolute",

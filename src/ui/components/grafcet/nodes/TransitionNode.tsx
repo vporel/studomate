@@ -10,6 +10,7 @@ import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -22,9 +23,18 @@ export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
-		useWithTextNodeValue(id, "transition", data, "expression", false);
-	const trueInSimulator = useProjectStore((state) => state.evaluableExpressionsValues[id] === true);
+	const [
+		editingExpression,
+		setEditingExpression,
+		editing,
+		setEditing,
+		saveExpression,
+		error,
+	] = useWithTextNodeValue(id, "transition", data, "expression", false);
+	const pageVisible = usePageVisible();
+	const trueInSimulator = useProjectStore(
+		(state) => pageVisible && state.evaluableExpressionsValues[id] === true,
+	);
 	const colorIfTrueInSimulation = th.palette.primary.main;
 	const borderColor = trueInSimulator
 		? colorIfTrueInSimulation

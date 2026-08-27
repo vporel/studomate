@@ -20,7 +20,11 @@ function buildStore() {
 		.id("g1")
 		.addStep(new StepBuilder().id("step-1").number(1).position(0, 0).build())
 		.build();
-	return createGrafcetStore(grafcet, new CommandsStack<Grafcet>(100), () => Dialect.FR);
+	return createGrafcetStore(
+		grafcet,
+		new CommandsStack<Grafcet>(100),
+		() => Dialect.FR,
+	);
 }
 
 describe("syncGrafcetToProject", () => {

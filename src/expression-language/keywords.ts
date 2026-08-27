@@ -32,7 +32,10 @@ export function getKeywordsStringsForDialect(dialect: Dialect): string[] {
 	return Object.values(KEYWORDS_BY_DIALECT[dialect]);
 }
 
-export function getKeywordByString(value: string, dialect: Dialect): Keyword | null {
+export function getKeywordByString(
+	value: string,
+	dialect: Dialect,
+): Keyword | null {
 	const keywordsForDialect = KEYWORDS_BY_DIALECT[dialect];
 	for (const [keyword, keywordString] of Object.entries(keywordsForDialect)) {
 		if (keywordString.toUpperCase() === value.toUpperCase()) {

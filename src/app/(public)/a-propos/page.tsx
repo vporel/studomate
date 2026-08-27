@@ -15,10 +15,12 @@ export default function About() {
 				Mission
 			</Typography>
 			<Typography textAlign="justify">
-				<strong>Studomate</strong> est un outil pédagogique dédié à l’<strong>automatisme</strong> :
-				apprentissage, conception et simulation. <br />
-				Notre objectif : rendre les concepts d’automatisme accessibles, visuels et actionnables — de
-				l’introduction en classe à la mise en pratique individuelle.
+				<strong>Studomate</strong> est un outil pédagogique dédié à l’
+				<strong>automatisme</strong> : apprentissage, conception et simulation.{" "}
+				<br />
+				Notre objectif : rendre les concepts d’automatisme accessibles, visuels
+				et actionnables — de l’introduction en classe à la mise en pratique
+				individuelle.
 			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
@@ -26,15 +28,17 @@ export default function About() {
 			</Typography>
 			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
 				<li>
-					<strong>Édition et simulation : </strong> Logiques d’automatisme (séquences, transitions,
-					I/O virtuelles, temporisations, compteurs, analogiques).
+					<strong>Édition et simulation : </strong> Logiques d’automatisme
+					(séquences, transitions, I/O virtuelles, temporisations, compteurs,
+					analogiques).
 				</li>
 				<li>
-					<strong>Visualisation claire :</strong> états actifs, transitions évaluées, sorties et
-					effets externes.
+					<strong>Visualisation claire :</strong> états actifs, transitions
+					évaluées, sorties et effets externes.
 				</li>
 				<li>
-					<strong>Modes d’apprentissage :</strong> pas-à-pas, scan complet et exécution continue.
+					<strong>Modes d’apprentissage :</strong> pas-à-pas, scan complet et
+					exécution continue.
 				</li>
 			</Box>
 
@@ -43,16 +47,17 @@ export default function About() {
 			</Typography>
 			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
 				<li>
-					<strong>Compréhension guidée :</strong> des enchaînements logiques et de la causalité{" "}
-					<br />
+					<strong>Compréhension guidée :</strong> des enchaînements logiques et
+					de la causalité <br />
 					(entrées → transitions → étapes → actions → sorties).
 				</li>
 				<li>
-					<strong>Apprentissage par l’essai :</strong> tester, corriger, retenir.
+					<strong>Apprentissage par l’essai :</strong> tester, corriger,
+					retenir.
 				</li>
 				<li>
-					<strong>Usage mixte :</strong> démonstrations en cours, exercices à la maison, corrections
-					collaboratives.
+					<strong>Usage mixte :</strong> démonstrations en cours, exercices à la
+					maison, corrections collaboratives.
 				</li>
 			</Box>
 
@@ -69,8 +74,13 @@ export default function About() {
 				Feuille de route (extraits)
 			</Typography>
 			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
-				<li>Amélioration de l’éditeur (alignements, validations, ergonomie).</li>
-				<li>Intégration de variables d’entrées/sorties et tableaux de bord de simulation.</li>
+				<li>
+					Amélioration de l’éditeur (alignements, validations, ergonomie).
+				</li>
+				<li>
+					Intégration de variables d’entrées/sorties et tableaux de bord de
+					simulation.
+				</li>
 				<li>Comptes utilisateurs & sauvegarde cloud.</li>
 				<li>Ouverture à d’autres langages/notations d’automatisme.</li>
 			</Box>

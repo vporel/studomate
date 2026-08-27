@@ -2,24 +2,29 @@
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import React from "react";
-import { DraggedLadderElement, useLadderToolbarDnD } from "./LadderToolbarDnDContext";
+import {
+	DraggedLadderElement,
+	useLadderToolbarDnD,
+} from "./LadderToolbarDnDContext";
 
 const LadderTool = ({
 	element,
 	disabled,
+	label,
 	children,
 }: {
 	element: DraggedLadderElement;
 	disabled?: boolean;
+	label?: string;
 	children: React.ReactElement;
 }) => {
 	const { setDraggedElement } = useLadderToolbarDnD();
 	const mode = useProjectStore((state) => state.mode);
 	disabled = disabled || mode !== ProjectMode.DESIGN;
 
-	return (
+	const tool = (
 		<Box
 			sx={{
 				width: 45,
@@ -44,6 +49,14 @@ const LadderTool = ({
 		>
 			{children}
 		</Box>
+	);
+
+	if (!label) return tool;
+
+	return (
+		<Tooltip title={label} placement="bottom" arrow>
+			{tool}
+		</Tooltip>
 	);
 };
 

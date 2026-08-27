@@ -1,10 +1,23 @@
 "use client";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { useProjectContext, useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { createGrafcetStore, GrafcetStoreState } from "@/ui/stores/grafcet/grafcet.store";
+import {
+	useProjectContext,
+	useProjectStore,
+} from "@/ui/components/projects/ProjectContext";
+import {
+	createGrafcetStore,
+	GrafcetStoreState,
+} from "@/ui/stores/grafcet/grafcet.store";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
+import {
+	createContext,
+	ReactNode,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { StoreApi, useStore } from "zustand";
 import { GrafcetContextMenuEvents } from "./context-menu-events";
 import { syncGrafcetToProject } from "./grafcet-project-sync";
@@ -71,7 +84,11 @@ export const GrafcetContextProvider = ({
 		[contextMenuEvents],
 	);
 
-	return <GrafcetContext.Provider value={contextValue}>{children}</GrafcetContext.Provider>;
+	return (
+		<GrafcetContext.Provider value={contextValue}>
+			{children}
+		</GrafcetContext.Provider>
+	);
 };
 
 export const useGrafcetContext = () => useContext(GrafcetContext);
@@ -79,7 +96,9 @@ export const useGrafcetContext = () => useContext(GrafcetContext);
 export function useGrafcetStore<T>(selector: (state: GrafcetStoreState) => T) {
 	const { store } = useGrafcetContext();
 	if (!store) {
-		throw new Error("useGrafcetStore must be used within a GrafcetContextProvider");
+		throw new Error(
+			"useGrafcetStore must be used within a GrafcetContextProvider",
+		);
 	}
 	return useStore(store, selector);
 }

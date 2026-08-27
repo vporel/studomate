@@ -12,8 +12,14 @@ import LadderToolbar from "./LadderToolbar";
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("../context/LadderContext");
 
-function setup({ mode = ProjectMode.DESIGN, executeOperation = jest.fn(), zoom = 1 } = {}) {
-	(useProjectStore as unknown as jest.Mock).mockImplementation(selectorImplementation({ mode }));
+function setup({
+	mode = ProjectMode.DESIGN,
+	executeOperation = jest.fn(),
+	zoom = 1,
+} = {}) {
+	(useProjectStore as unknown as jest.Mock).mockImplementation(
+		selectorImplementation({ mode }),
+	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
@@ -31,7 +37,9 @@ describe("LadderToolbar", () => {
 		setup();
 
 		expect(document.querySelector(".app-toolbar__zoom-in")).toBeInTheDocument();
-		expect(document.querySelector(".app-toolbar__zoom-out")).toBeInTheDocument();
+		expect(
+			document.querySelector(".app-toolbar__zoom-out"),
+		).toBeInTheDocument();
 		expect(screen.getByText("Section")).toBeInTheDocument();
 	});
 

@@ -73,14 +73,19 @@ export default class IdentifierRenamer {
 		dialect: Dialect = Dialect.FR,
 	): boolean {
 		if (!expression || identifiers.length === 0) return false;
-		return this.scanIdentifiers(expression, dialect).some((o) => identifiers.includes(o.name));
+		return this.scanIdentifiers(expression, dialect).some((o) =>
+			identifiers.includes(o.name),
+		);
 	}
 
 	/**
 	 * Locates every identifier occurrence in the expression.
 	 * Never throws: unrecognised characters are simply skipped.
 	 */
-	private static scanIdentifiers(expression: string, dialect: Dialect): IdentifierOccurrence[] {
+	private static scanIdentifiers(
+		expression: string,
+		dialect: Dialect,
+	): IdentifierOccurrence[] {
 		const keywords = getKeywordsStringsForDialect(dialect);
 		const occurrences: IdentifierOccurrence[] = [];
 		let position = 0;
@@ -93,7 +98,8 @@ export default class IdentifierRenamer {
 			if (isQuote(char)) {
 				const quote = char;
 				position++;
-				while (position < expression.length && expression[position] !== quote) position++;
+				while (position < expression.length && expression[position] !== quote)
+					position++;
 				position++; //closing quote (or past the end, harmless)
 				continue;
 			}

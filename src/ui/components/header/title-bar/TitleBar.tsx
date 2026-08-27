@@ -24,7 +24,10 @@ const TitleBar = () => {
 				<UnsavedChangesIndicator />
 			</FlexBox>
 			<ProjectNameInput />
-			<FlexBox centerVertical sx={{ width: 350, justifyContent: "flex-end", px: 1, gap: 1 }}>
+			<FlexBox
+				centerVertical
+				sx={{ width: 350, justifyContent: "flex-end", px: 1, gap: 1 }}
+			>
 				<AccountStatus />
 			</FlexBox>
 		</FlexBox>

@@ -1,18 +1,27 @@
-import ViewManager, { LADDER_FLOW_MAX_ZOOM, LADDER_FLOW_MIN_ZOOM } from "./view.manager";
+import LadderViewManager, {
+	LADDER_FLOW_MAX_ZOOM,
+	LADDER_FLOW_MIN_ZOOM,
+} from "./view.manager";
 
-describe("ViewManager", () => {
+describe("LadderViewManager", () => {
 	function setup(initialZoom = 1) {
 		let state = { zoom: initialZoom };
 		const setStoreState = jest.fn((partial: Partial<typeof state>) => {
 			state = { ...state, ...partial };
 		});
 		const getStoreState = jest.fn(() => state as any);
-		const viewManager = new ViewManager(setStoreState as any, getStoreState as any);
+		const viewManager = new LadderViewManager(
+			setStoreState as any,
+			getStoreState as any,
+		);
 		return { viewManager, setStoreState, getStoreState };
 	}
 
 	function fakeInstance() {
-		return { setViewport: jest.fn().mockResolvedValue(true), screenToFlowPosition: jest.fn() };
+		return {
+			setViewport: jest.fn().mockResolvedValue(true),
+			screenToFlowPosition: jest.fn(),
+		};
 	}
 
 	it("zoomIn augmente le zoom d'un facteur 1.2 et repositionne x/y à 0 sur toutes les sections", () => {
@@ -25,8 +34,16 @@ describe("ViewManager", () => {
 		viewManager.zoomIn();
 
 		expect(getStoreState().zoom).toBeCloseTo(1.2);
-		expect(a.setViewport).toHaveBeenCalledWith({ x: 0, y: 0, zoom: expect.closeTo(1.2) });
-		expect(b.setViewport).toHaveBeenCalledWith({ x: 0, y: 0, zoom: expect.closeTo(1.2) });
+		expect(a.setViewport).toHaveBeenCalledWith({
+			x: 0,
+			y: 0,
+			zoom: expect.closeTo(1.2),
+		});
+		expect(b.setViewport).toHaveBeenCalledWith({
+			x: 0,
+			y: 0,
+			zoom: expect.closeTo(1.2),
+		});
 	});
 
 	it("zoomOut ne descend pas sous LADDER_FLOW_MIN_ZOOM", () => {
@@ -57,7 +74,11 @@ describe("ViewManager", () => {
 
 		viewManager.syncFromInstance(LADDER_FLOW_MIN_ZOOM);
 
-		expect(a.setViewport).toHaveBeenCalledWith({ x: 0, y: 0, zoom: LADDER_FLOW_MIN_ZOOM });
+		expect(a.setViewport).toHaveBeenCalledWith({
+			x: 0,
+			y: 0,
+			zoom: LADDER_FLOW_MIN_ZOOM,
+		});
 	});
 
 	// Régression : `setViewport` déclenche lui-même `onMoveEnd` côté React Flow (transition de

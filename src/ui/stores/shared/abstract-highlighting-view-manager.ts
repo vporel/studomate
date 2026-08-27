@@ -4,36 +4,64 @@ export interface HighlightableStoreState {
 }
 
 /**
- * Factorise le surlignage temporaire, identique entre le `ViewManager` du GRAFCET (une instance
- * React Flow) et celui du Ladder (N sections synchronisées) — seule la façon dont chacun gère le
- * reste de la vue diverge réellement.
+ * Factorise le surlignage temporaire, identique entre le `GrafcetViewManager` (une instance
+ * React Flow) et le `LadderViewManager` (N sections synchronisées) — seule la façon dont chacun
+ * gère le reste de la vue diverge réellement.
  */
-export default abstract class AbstractHighlightingViewManager<TState extends HighlightableStoreState> {
+export default abstract class AbstractHighlightingViewManager<
+	TState extends HighlightableStoreState,
+> {
 	/**
 	 * Minuteries de surlignage temporaire en attente. Suivies pour pouvoir les annuler à la
 	 * fermeture de la page : sans ça, un `setTimeout` en attente continuait de déclencher un
-	 * `setStoreState` après que le store ait été abandonné, sur une instance de `ViewManager`
-	 * que plus personne ne lit.
+	 * `setStoreState` après que le store ait été abandonné, sur une instance de vue que plus
+	 * personne ne lit.
 	 */
 	private pendingHighlightTimeouts = new Set<ReturnType<typeof setTimeout>>();
 
-	constructor(private setHighlightState: (updater: (state: TState) => Partial<TState>) => void) {}
+	constructor(
+		private setHighlightState: (
+			updater: (state: TState) => Partial<TState>,
+		) => void,
+	) {}
 
 	highlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setHighlightState((state) => ({
-			highlightedNodesIds: [...(state.highlightedNodesIds || []), ...nodesIds],
-			highlightedEdgesIds: [...(state.highlightedEdgesIds || []), ...edgesIds],
-		} as Partial<TState>));
+		this.setHighlightState(
+			(state) =>
+				({
+					highlightedNodesIds: [
+						...(state.highlightedNodesIds || []),
+						...nodesIds,
+					],
+					highlightedEdgesIds: [
+						...(state.highlightedEdgesIds || []),
+						...edgesIds,
+					],
+				}) as Partial<TState>,
+		);
 	}
 
 	unhighlightNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
-		this.setHighlightState((state) => ({
-			highlightedNodesIds: state.highlightedNodesIds?.filter((id) => !nodesIds.includes(id)),
-			highlightedEdgesIds: state.highlightedEdgesIds?.filter((id) => !edgesIds.includes(id)),
-		} as Partial<TState>));
+		const nodesToRemove = new Set(nodesIds);
+		const edgesToRemove = new Set(edgesIds);
+		this.setHighlightState(
+			(state) =>
+				({
+					highlightedNodesIds: state.highlightedNodesIds?.filter(
+						(id) => !nodesToRemove.has(id),
+					),
+					highlightedEdgesIds: state.highlightedEdgesIds?.filter(
+						(id) => !edgesToRemove.has(id),
+					),
+				}) as Partial<TState>,
+		);
 	}
 
-	temporarilyHighlightNodesAndEdges(nodesIds: string[], edgesIds: string[], durationMs = 2000): void {
+	temporarilyHighlightNodesAndEdges(
+		nodesIds: string[],
+		edgesIds: string[],
+		durationMs = 2000,
+	): void {
 		this.highlightNodesAndEdges(nodesIds, edgesIds);
 		const timeout = setTimeout(() => {
 			this.pendingHighlightTimeouts.delete(timeout);
@@ -44,7 +72,7 @@ export default abstract class AbstractHighlightingViewManager<TState extends Hig
 
 	/**
 	 * Annule les surlignages temporaires encore en attente. À appeler à la fermeture de la page,
-	 * avant d'abandonner ce `ViewManager` — les sous-classes l'appellent depuis leur propre
+	 * avant d'abandonner cette instance de vue — les sous-classes l'appellent depuis leur propre
 	 * `dispose()`, qui a d'autres ressources à libérer en plus de celle-ci.
 	 */
 	protected disposeHighlights(): void {

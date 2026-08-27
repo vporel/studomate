@@ -6,12 +6,12 @@ import {
 	ACTION_TYPES_TO_EXECUTION_MODES,
 } from "@/schemas/grafcet/action.schema";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
-import WorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
+import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { ActionNodeType } from "../nodes/ActionNode";
 
 export default function actionContextMenuItems(
 	action: ActionNodeType,
-	workflowManager: WorkflowManager,
+	workflowManager: GrafcetWorkflowManager,
 ): ContextMenuItemType[][] {
 	const items: ContextMenuItemType[][] = [];
 	const part1: ContextMenuItemType[] = [

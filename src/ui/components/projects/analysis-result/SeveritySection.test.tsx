@@ -5,7 +5,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import SeveritySection from "./SeveritySection";
 
-function baseProps(overrides: Partial<Parameters<typeof SeveritySection>[0]> = {}) {
+function baseProps(
+	overrides: Partial<Parameters<typeof SeveritySection>[0]> = {},
+) {
 	return {
 		title: "Erreurs",
 		severity: "error" as const,
@@ -23,11 +25,17 @@ function baseProps(overrides: Partial<Parameters<typeof SeveritySection>[0]> = {
 describe("SeveritySection", () => {
 	it("affiche 'Aucune erreur' pour la sévérité error sans aucune issue", () => {
 		render(<SeveritySection {...baseProps({ severity: "error" })} />);
-		expect(screen.getByText("Aucune erreur lors de l'analyse.")).toBeInTheDocument();
+		expect(
+			screen.getByText("Aucune erreur lors de l'analyse."),
+		).toBeInTheDocument();
 	});
 
 	it("affiche 'Aucun avertissement' pour la sévérité warning sans aucune issue", () => {
-		render(<SeveritySection {...baseProps({ severity: "warning", title: "Avertissements" })} />);
+		render(
+			<SeveritySection
+				{...baseProps({ severity: "warning", title: "Avertissements" })}
+			/>,
+		);
 		expect(screen.getByText("Aucun avertissement.")).toBeInTheDocument();
 	});
 
@@ -55,7 +63,9 @@ describe("SeveritySection", () => {
 				{...baseProps({
 					issues: {
 						...emptyAnalysisIssues(),
-						grafcets: { g1: { overall: [], elements: { "step-1": ["Étape orpheline"] } } },
+						grafcets: {
+							g1: { overall: [], elements: { "step-1": ["Étape orpheline"] } },
+						},
 					},
 					hasProgramIssues: true,
 					onGotoProgram,
@@ -75,7 +85,9 @@ describe("SeveritySection", () => {
 				{...baseProps({
 					issues: {
 						...emptyAnalysisIssues(),
-						ladders: { l1: { overall: [], elements: { "coil-1": ["Bobine dupliquée"] } } },
+						ladders: {
+							l1: { overall: [], elements: { "coil-1": ["Bobine dupliquée"] } },
+						},
 					},
 					hasProgramIssues: true,
 					onGotoProgram,
@@ -92,11 +104,16 @@ describe("SeveritySection", () => {
 		render(
 			<SeveritySection
 				{...baseProps({
-					issues: { ...emptyAnalysisIssues(), project: ["Deux étapes portent le même numéro"] },
+					issues: {
+						...emptyAnalysisIssues(),
+						project: ["Deux étapes portent le même numéro"],
+					},
 				})}
 			/>,
 		);
 		expect(screen.getByText("Erreurs globales au projet")).toBeInTheDocument();
-		expect(screen.getByText("Deux étapes portent le même numéro")).toBeInTheDocument();
+		expect(
+			screen.getByText("Deux étapes portent le même numéro"),
+		).toBeInTheDocument();
 	});
 });

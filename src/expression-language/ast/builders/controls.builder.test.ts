@@ -25,7 +25,12 @@ describe("ControlsBuilder", () => {
 				),
 			];
 
-			const node = ControlsBuilder.buildIfControlNode(condition, trueBranch, falseBranch, 0);
+			const node = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				falseBranch,
+				0,
+			);
 
 			expect(node.type).toBe("IF_CONTROL");
 			expect(node.condition).toBe(condition);
@@ -44,7 +49,12 @@ describe("ControlsBuilder", () => {
 				),
 			];
 
-			const node = ControlsBuilder.buildIfControlNode(condition, trueBranch, null, 0);
+			const node = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				null,
+				0,
+			);
 
 			expect(node.condition).toBe(condition);
 			expect(node.trueBranch).toBe(trueBranch);
@@ -56,7 +66,11 @@ describe("ControlsBuilder", () => {
 			const trueBranch: any[] = [];
 			const falseBranch: any[] = [];
 
-			const node = ControlsBuilder.buildIfControlNode(condition, trueBranch, falseBranch);
+			const node = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				falseBranch,
+			);
 
 			expect(node.trueBranch).toEqual([]);
 			expect(node.falseBranch).toEqual([]);
@@ -81,7 +95,11 @@ describe("ControlsBuilder", () => {
 				),
 			];
 
-			const node = ControlsBuilder.buildIfControlNode(condition, trueBranch, falseBranch);
+			const node = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				falseBranch,
+			);
 
 			expect(node.trueBranch.length).toBe(2);
 			expect(node.falseBranch?.length).toBe(1);
@@ -91,7 +109,11 @@ describe("ControlsBuilder", () => {
 			const condition = LiteralsBuilder.buildBooleanNode(true, 0);
 			const trueBranch: any[] = [];
 
-			const node = ControlsBuilder.buildIfControlNode(condition, trueBranch, null);
+			const node = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				null,
+			);
 
 			expect(node.position).toBeUndefined();
 		});
@@ -99,8 +121,16 @@ describe("ControlsBuilder", () => {
 		it("generates unique IDs for each node", () => {
 			const condition = LiteralsBuilder.buildBooleanNode(true, 0);
 			const trueBranch: any[] = [];
-			const node1 = ControlsBuilder.buildIfControlNode(condition, trueBranch, null);
-			const node2 = ControlsBuilder.buildIfControlNode(condition, trueBranch, null);
+			const node1 = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				null,
+			);
+			const node2 = ControlsBuilder.buildIfControlNode(
+				condition,
+				trueBranch,
+				null,
+			);
 
 			expect(node1.id).not.toBe(node2.id);
 		});

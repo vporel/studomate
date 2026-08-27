@@ -27,15 +27,24 @@ describe("pages-session-storage", () => {
 	it("enregistre puis relit la session d'un projet", () => {
 		setPagesSession("p1", { pagesOrder: ["a", "b"], activePageId: "b" });
 
-		expect(getPagesSession("p1")).toEqual({ pagesOrder: ["a", "b"], activePageId: "b" });
+		expect(getPagesSession("p1")).toEqual({
+			pagesOrder: ["a", "b"],
+			activePageId: "b",
+		});
 	});
 
 	it("isole les sessions de deux projets différents", () => {
 		setPagesSession("p1", { pagesOrder: ["a"], activePageId: "a" });
 		setPagesSession("p2", { pagesOrder: ["x", "y"], activePageId: "x" });
 
-		expect(getPagesSession("p1")).toEqual({ pagesOrder: ["a"], activePageId: "a" });
-		expect(getPagesSession("p2")).toEqual({ pagesOrder: ["x", "y"], activePageId: "x" });
+		expect(getPagesSession("p1")).toEqual({
+			pagesOrder: ["a"],
+			activePageId: "a",
+		});
+		expect(getPagesSession("p2")).toEqual({
+			pagesOrder: ["x", "y"],
+			activePageId: "x",
+		});
 	});
 
 	it("ne lève pas sur une entrée corrompue, et la traite comme absente", () => {
@@ -45,7 +54,10 @@ describe("pages-session-storage", () => {
 	});
 
 	it("ne lève pas sur une entrée dont pagesOrder n'est pas un tableau", () => {
-		store.set("studomate_session_pages_p1", JSON.stringify({ activePageId: "a" }));
+		store.set(
+			"studomate_session_pages_p1",
+			JSON.stringify({ activePageId: "a" }),
+		);
 
 		expect(getPagesSession("p1")).toBeNull();
 	});

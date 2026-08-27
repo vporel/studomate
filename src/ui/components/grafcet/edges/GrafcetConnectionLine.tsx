@@ -4,7 +4,12 @@ import { getStraightPathFromPoints } from "@/ui/lib/svg";
 import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { ConnectionLineComponentProps } from "@xyflow/react";
 
-const GrafcetConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineComponentProps) => {
+const GrafcetConnectionLine = ({
+	fromX,
+	fromY,
+	toX,
+	toY,
+}: ConnectionLineComponentProps) => {
 	return (
 		<g>
 			<path
@@ -12,9 +17,18 @@ const GrafcetConnectionLine = ({ fromX, fromY, toX, toY }: ConnectionLineCompone
 				stroke="black"
 				strokeWidth={1.5}
 				className="animated"
-				d={getStraightPathFromPoints(getConnectionLinePoints(fromX, fromY, toX, toY))}
+				d={getStraightPathFromPoints(
+					getConnectionLinePoints(fromX, fromY, toX, toY),
+				)}
 			/>
-			<circle cx={toX} cy={toY} fill="#fff" r={3} stroke="black" strokeWidth={1.5} />
+			<circle
+				cx={toX}
+				cy={toY}
+				fill="#fff"
+				r={3}
+				stroke="black"
+				strokeWidth={1.5}
+			/>
 		</g>
 	);
 };

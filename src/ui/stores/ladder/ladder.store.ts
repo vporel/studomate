@@ -1,15 +1,18 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
-import { PendingSystemBlockCreation, PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
+import {
+	PendingSystemBlockCreation,
+	PendingSystemBlockEdit,
+} from "@/ui/utils/ladder/ladder-system-block-drag";
 import { Edge } from "@xyflow/react";
 import { createStore } from "zustand";
 import LadderEdgesFactory from "./factories/edges.factory";
 import LadderNodesFactory from "./factories/nodes.factory";
-import CommandsStackManager from "./managers/commands-stack.manager";
-import ViewManager from "./managers/view.manager";
+import LadderCommandsStackManager from "./managers/commands-stack.manager";
+import LadderViewManager from "./managers/view.manager";
 import LadderWorkflowManager from "./managers/workflow.manager";
-import CopyCutPasteManager from "./managers/copy-cut-paste.manager";
+import LadderCopyCutPasteManager from "./managers/copy-cut-paste.manager";
 
 export interface LadderStoreState {
 	initialLadder?: Ladder; //Should never be modified, used as reference
@@ -26,12 +29,12 @@ export interface LadderStoreState {
 	//=============== COMMANDS STACK ===============
 	hasCommandsToUndo: boolean;
 	hasCommandsToRedo: boolean;
-	commandsStackManager: CommandsStackManager;
-	copyCutPasteManager: CopyCutPasteManager;
+	commandsStackManager: LadderCommandsStackManager;
+	copyCutPasteManager: LadderCopyCutPasteManager;
 
 	//=============== VIEW (zoom partagé par toutes les sections) ===============
 	zoom: number;
-	viewManager: ViewManager;
+	viewManager: LadderViewManager;
 
 	highlightedNodesIds: string[];
 	highlightedEdgesIds: string[];
@@ -44,7 +47,9 @@ export interface LadderStoreState {
 	 * connexions auto) exactement comme un dépose immédiat — voir `useLadderDropHandlers`.
 	 */
 	pendingSystemBlockCreation: PendingSystemBlockCreation | null;
-	setPendingSystemBlockCreation: (pending: PendingSystemBlockCreation | null) => void;
+	setPendingSystemBlockCreation: (
+		pending: PendingSystemBlockCreation | null,
+	) => void;
 
 	/**
 	 * Édition d'un bloc système existant en attente de validation, ouverte par double-clic sur le
@@ -58,22 +63,33 @@ export type LadderStoreSetFunction = (
 	partial:
 		| LadderStoreState
 		| Partial<LadderStoreState>
-		| ((state: LadderStoreState) => LadderStoreState | Partial<LadderStoreState>),
+		| ((
+				state: LadderStoreState,
+		  ) => LadderStoreState | Partial<LadderStoreState>),
 ) => void;
 
 export type LadderStoreGetFunction = () => LadderStoreState;
 
-export const createLadderStore = (ladder: Ladder, commandsStack: CommandsStack<Ladder>) => {
+export const createLadderStore = (
+	ladder: Ladder,
+	commandsStack: CommandsStack<Ladder>,
+) => {
 	return createStore<LadderStoreState>((set, get) => ({
 		initialLadder: ladder?.copy(),
 		ladder,
 
 		//=============== VIEW (canevas) ===============
 		nodesBySectionId: Object.fromEntries(
-			ladder.sections.map((section) => [section.id, LadderNodesFactory.getInitialNodes(section)]),
+			ladder.sections.map((section) => [
+				section.id,
+				LadderNodesFactory.getInitialNodes(section),
+			]),
 		),
 		edgesBySectionId: Object.fromEntries(
-			ladder.sections.map((section) => [section.id, LadderEdgesFactory.getInitialEdges(section)]),
+			ladder.sections.map((section) => [
+				section.id,
+				LadderEdgesFactory.getInitialEdges(section),
+			]),
 		),
 		workflowManager: new LadderWorkflowManager(set, get),
 
@@ -86,20 +102,26 @@ export const createLadderStore = (ladder: Ladder, commandsStack: CommandsStack<L
 		//encore disponibles.
 		hasCommandsToUndo: commandsStack.commandsToUndo.length > 0,
 		hasCommandsToRedo: commandsStack.commandsToRedo.length > 0,
-		commandsStackManager: new CommandsStackManager(set, get, commandsStack),
-		copyCutPasteManager: new CopyCutPasteManager(set, get),
+		commandsStackManager: new LadderCommandsStackManager(
+			set,
+			get,
+			commandsStack,
+		),
+		copyCutPasteManager: new LadderCopyCutPasteManager(set, get),
 
 		//=============== VIEW (zoom) ===============
 		zoom: 1,
-		viewManager: new ViewManager(set, get),
+		viewManager: new LadderViewManager(set, get),
 
 		highlightedNodesIds: [],
 		highlightedEdgesIds: [],
 
 		pendingSystemBlockCreation: null,
-		setPendingSystemBlockCreation: (pending) => set({ pendingSystemBlockCreation: pending }),
+		setPendingSystemBlockCreation: (pending) =>
+			set({ pendingSystemBlockCreation: pending }),
 
 		pendingSystemBlockEdit: null,
-		setPendingSystemBlockEdit: (pending) => set({ pendingSystemBlockEdit: pending }),
+		setPendingSystemBlockEdit: (pending) =>
+			set({ pendingSystemBlockEdit: pending }),
 	}));
 };

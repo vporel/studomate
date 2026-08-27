@@ -13,7 +13,8 @@ export default class ConnectionsRemoveCommand extends AbstractLadderCommand<{
 	sectionId: string;
 	connections: Connection[];
 }> {
-	private sweptRailTerminals: { sectionId: string; element: LadderElement }[] = [];
+	private sweptRailTerminals: { sectionId: string; element: LadderElement }[] =
+		[];
 
 	getType(): string {
 		return "ladder-connections-remove";
@@ -23,7 +24,10 @@ export default class ConnectionsRemoveCommand extends AbstractLadderCommand<{
 		if (this.payload.connections.length === 0) return [ladder, false];
 		this.sweptRailTerminals = ladder.removeConnections(
 			this.payload.sectionId,
-			this.payload.connections.map((c) => ({ sourceId: c.source.id, targetId: c.target.id })),
+			this.payload.connections.map((c) => ({
+				sourceId: c.source.id,
+				targetId: c.target.id,
+			})),
 		);
 		return [ladder, true];
 	}

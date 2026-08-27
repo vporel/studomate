@@ -1,9 +1,16 @@
 import Project from "@/schemas/project/project.schema";
+import { createRandomId } from "@/ids";
 import { deserializeProject } from "../project-deserialization";
 import { supabase } from "./supabase-client";
-import ProjectRepository, { SaveFailureReason, SaveResult } from "./project.repository";
+import ProjectRepository, {
+	SaveFailureReason,
+	SaveResult,
+	ShareableProjectRepository,
+	ShareResult,
+} from "./project.repository";
 
 const TABLE = "projects";
+const SHARES_TABLE = "project_shares";
 
 /**
  * Stockage des projets dans Supabase (table `projects`, colonne `data` en jsonb).
@@ -14,7 +21,9 @@ const TABLE = "projects";
  * Comme `LocalStorageProjectRepository`, le projet est stocké tel quel (JSON versionné) et
  * migré à la lecture — jamais en base, cf. `deserializeProject`.
  */
-export default class SupabaseProjectRepository implements ProjectRepository {
+export default class SupabaseProjectRepository
+	implements ProjectRepository, ShareableProjectRepository
+{
 	async list(): Promise<Project[]> {
 		const { data, error } = await supabase.from(TABLE).select("data");
 		if (error) {
@@ -27,7 +36,11 @@ export default class SupabaseProjectRepository implements ProjectRepository {
 	}
 
 	async get(projectId: string): Promise<Project | null> {
-		const { data, error } = await supabase.from(TABLE).select("data").eq("id", projectId).maybeSingle();
+		const { data, error } = await supabase
+			.from(TABLE)
+			.select("data")
+			.eq("id", projectId)
+			.maybeSingle();
 		if (error || !data) return null;
 		return deserializeProject(data.data as Record<string, any>);
 	}
@@ -45,13 +58,54 @@ export default class SupabaseProjectRepository implements ProjectRepository {
 			data: serialized,
 			updated_at: new Date().toISOString(),
 		});
-		if (error) return { ok: false, reason: this.failureReason(error), cause: error };
+		if (error)
+			return { ok: false, reason: this.failureReason(error), cause: error };
 		return { ok: true };
 	}
 
 	async delete(projectId: string): Promise<SaveResult> {
 		const { error } = await supabase.from(TABLE).delete().eq("id", projectId);
-		if (error) return { ok: false, reason: this.failureReason(error), cause: error };
+		if (error)
+			return { ok: false, reason: this.failureReason(error), cause: error };
+		return { ok: true };
+	}
+
+	async getByShareToken(token: string): Promise<Project | null> {
+		const { data, error } = await supabase
+			.from(SHARES_TABLE)
+			.select("project_id")
+			.eq("token", token)
+			.maybeSingle();
+		if (error || !data) return null;
+		return this.get(data.project_id as string);
+	}
+
+	async getShareToken(projectId: string): Promise<string | null> {
+		const { data, error } = await supabase
+			.from(SHARES_TABLE)
+			.select("token")
+			.eq("project_id", projectId)
+			.maybeSingle();
+		if (error || !data) return null;
+		return data.token as string;
+	}
+
+	async createShareToken(projectId: string): Promise<ShareResult> {
+		const token = createRandomId();
+		const { error } = await supabase
+			.from(SHARES_TABLE)
+			.insert({ token, project_id: projectId });
+		if (error)
+			return { ok: false, message: "Impossible de créer le lien de partage." };
+		return { ok: true, token };
+	}
+
+	async deleteShareToken(projectId: string): Promise<SaveResult> {
+		const { error } = await supabase
+			.from(SHARES_TABLE)
+			.delete()
+			.eq("project_id", projectId);
+		if (error) return { ok: false, reason: "network", cause: error };
 		return { ok: true };
 	}
 

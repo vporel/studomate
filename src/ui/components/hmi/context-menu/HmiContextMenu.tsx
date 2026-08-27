@@ -6,11 +6,19 @@ import { HmiContextMenuProps } from "./hmi-context-menu";
 import useHmiPaneMenuItems from "./useHmiPaneMenuItems";
 import useHmiWidgetMenuItems from "./useHmiWidgetMenuItems";
 
-const HmiContextMenu = ({ visible, element, position, onClose, canvasWidth, canvasHeight }: HmiContextMenuProps) => {
+const HmiContextMenu = ({
+	visible,
+	element,
+	position,
+	onClose,
+	canvasWidth,
+	canvasHeight,
+}: HmiContextMenuProps) => {
 	const paneMenuItems = useHmiPaneMenuItems();
 	const widgetMenuItems = useHmiWidgetMenuItems();
 
-	const menuItems: ContextMenuItemType[][] = element.type === "widget" ? widgetMenuItems() : paneMenuItems();
+	const menuItems: ContextMenuItemType[][] =
+		element.type === "widget" ? widgetMenuItems() : paneMenuItems();
 
 	return (
 		<ContextMenu

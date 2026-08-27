@@ -24,19 +24,42 @@ const ExplorerSystemBlockInstancesItems = ({
 	onContextMenu,
 }: {
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const project = useProjectStore((state) => state.project);
 	const onGotoProgram = useGotoProgram();
 
-	const timerInstances = (project?.getAllTimerBlockElements() ?? []).flatMap(({ ladder, element }) => {
-		const params = getTimerBlockParams(element);
-		return params ? [{ ladder, element, name: params.name, IconComponent: TimerBlockIcon as ElementType }] : [];
-	});
-	const counterInstances = (project?.getAllCounterBlockElements() ?? []).flatMap(({ ladder, element }) => {
+	const timerInstances = (project?.getAllTimerBlockElements() ?? []).flatMap(
+		({ ladder, element }) => {
+			const params = getTimerBlockParams(element);
+			return params
+				? [
+						{
+							ladder,
+							element,
+							name: params.name,
+							IconComponent: TimerBlockIcon as ElementType,
+						},
+					]
+				: [];
+		},
+	);
+	const counterInstances = (
+		project?.getAllCounterBlockElements() ?? []
+	).flatMap(({ ladder, element }) => {
 		const params = getCounterBlockParams(element);
 		return params
-			? [{ ladder, element, name: params.name, IconComponent: CounterBlockIcon as ElementType }]
+			? [
+					{
+						ladder,
+						element,
+						name: params.name,
+						IconComponent: CounterBlockIcon as ElementType,
+					},
+				]
 			: [];
 	});
 	const instances = [...timerInstances, ...counterInstances];
@@ -54,7 +77,11 @@ const ExplorerSystemBlockInstancesItems = ({
 					onContextMenu={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						onContextMenu(e, { type: "block-instance", ladderId: ladder.id, elementId: element.id });
+						onContextMenu(e, {
+							type: "block-instance",
+							ladderId: ladder.id,
+							elementId: element.id,
+						});
 					}}
 				/>
 			))}

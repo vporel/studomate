@@ -13,7 +13,10 @@ const linkSx: SxProps<Theme> = {
 
 const Footer = () => {
 	return (
-		<Box component="footer" sx={{ background: "rgb(230, 230, 230)", px: 2, py: 7, minHeight: 100 }}>
+		<Box
+			component="footer"
+			sx={{ background: "rgb(230, 230, 230)", px: 2, py: 7, minHeight: 100 }}
+		>
 			<Typography textAlign="center" color="black" mb={2}>
 				Copyright © 2025 Studomate
 			</Typography>

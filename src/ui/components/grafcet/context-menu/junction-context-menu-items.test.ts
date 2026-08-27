@@ -31,7 +31,11 @@ describe("junctionContextMenuItems", () => {
 			workflowManager,
 		);
 
-		expect(selectBranchItem.subItems!.map((s) => s.label)).toEqual(["Branche 1", "Branche 2", "Branche 3"]);
+		expect(selectBranchItem.subItems!.map((s) => s.label)).toEqual([
+			"Branche 1",
+			"Branche 2",
+			"Branche 3",
+		]);
 		selectBranchItem.subItems![1].onClick();
 
 		expect(contextMenuEvents.emit).toHaveBeenCalledWith("node-action", {
@@ -65,6 +69,9 @@ describe("junctionContextMenuItems", () => {
 		expect(deleteBranchItem.disabled).toBe(false);
 		deleteBranchItem.subItems![2].onClick();
 
-		expect(workflowManager.deleteJunctionBranch).toHaveBeenCalledWith("junction-1", "b3");
+		expect(workflowManager.deleteJunctionBranch).toHaveBeenCalledWith(
+			"junction-1",
+			"b3",
+		);
 	});
 });

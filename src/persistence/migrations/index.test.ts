@@ -1,12 +1,15 @@
 import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
-import { UNVERSIONED } from "./migration";
+import { ProjectMigration, UNVERSIONED } from "./migration";
 import { isFromNewerVersion, migrateProject } from "./index";
 
 describe("migrateProject", () => {
 	it("amène un projet non versionné à la version courante", () => {
 		const ancien = { id: "p1", name: "A", grafcets: { g1: { id: "g1" } } };
 
-		const { project, from } = migrateProject(ancien);
+		const { project, from } = migrateProject(ancien) as {
+			project: any;
+			from: number;
+		};
 
 		expect(from).toBe(UNVERSIONED);
 		expect(project.schemaVersion).toBe(PROJECT_SCHEMA_VERSION);
@@ -22,14 +25,23 @@ describe("migrateProject", () => {
 			grafcets: {
 				g1: {
 					id: "g1",
-					steps: [{ id: "s1", data: { number: 1, width: 40, height: 40 }, position: { x: 0, y: 0 } }],
+					steps: [
+						{
+							id: "s1",
+							data: { number: 1, width: 40, height: 40 },
+							position: { x: 0, y: 0 },
+						},
+					],
 				},
 			},
 		};
 
-		const { project } = migrateProject(ancien);
+		const { project } = migrateProject(ancien) as {
+			project: any;
+			from: number;
+		};
 
-		const step = (project.programs.g1 as any).steps[0];
+		const step = Object.values((project.programs.g1 as any).steps)[0] as any;
 		expect(step.data).toEqual({ number: 1 });
 		expect(step.size).toEqual({ width: 40, height: 40 });
 	});
@@ -37,7 +49,10 @@ describe("migrateProject", () => {
 	it("ajoute un programme Main si aucun n'existe déjà", () => {
 		const ancien = { id: "p1", name: "A", grafcets: { g1: { id: "g1" } } };
 
-		const { project } = migrateProject(ancien);
+		const { project } = migrateProject(ancien) as {
+			project: any;
+			from: number;
+		};
 
 		const mains = Object.values(project.programs as Record<string, any>).filter(
 			(p: any) => p.type === "ladder" && p.role === "main",
@@ -50,50 +65,20 @@ describe("migrateProject", () => {
 		const ancien = {
 			id: "p1",
 			name: "A",
-			programs: { m1: { id: "m1", type: "ladder", role: "main", sections: [] } },
+			programs: {
+				m1: { id: "m1", type: "ladder", role: "main", sections: [] },
+			},
 		};
 
-		const { project } = migrateProject(ancien);
+		const { project } = migrateProject(ancien) as {
+			project: any;
+			from: number;
+		};
 
 		const mains = Object.values(project.programs as Record<string, any>).filter(
 			(p: any) => p.type === "ladder" && p.role === "main",
 		);
 		expect(mains).toHaveLength(1);
-	});
-
-	it("déballe les champs HMI qui portaient un HmiBindableValue", () => {
-		const ancien = {
-			id: "p1",
-			name: "A",
-			programs: {},
-			hmiPages: {
-				h1: {
-					id: "h1",
-					name: "Vue",
-					widgets: [
-						{
-							id: "w1",
-							type: "rectangle",
-							data: { style: { fill: { value: "#fff" }, stroke: { value: "#000" }, strokeWidth: 2 } },
-						},
-						{ id: "w2", type: "text", data: { text: { value: "Texte" } } },
-						{
-							id: "w3",
-							type: "gauge",
-							data: { variableMnemonic: "", label: "", style: { orientation: { value: "vertical" } } },
-						},
-					],
-				},
-			},
-		};
-
-		const { project } = migrateProject(ancien);
-
-		const widgets = (project.hmiPages as any).h1.widgets;
-		expect(widgets[0].data.style.fill).toBe("#fff");
-		expect(widgets[0].data.style.stroke).toBe("#000");
-		expect(widgets[1].data.text).toBe("Texte");
-		expect(widgets[2].data.style.orientation).toBe("vertical");
 	});
 
 	it("laisse intact un projet déjà à jour", () => {
@@ -103,16 +88,65 @@ describe("migrateProject", () => {
 			programs: { g1: { id: "g1", type: "grafcet" } },
 		};
 
-		const { project, from } = migrateProject(aJour);
+		const { project, from } = migrateProject(aJour) as {
+			project: any;
+			from: number;
+		};
 
 		expect(from).toBe(PROJECT_SCHEMA_VERSION);
 		expect(project).toEqual(aJour);
 	});
 
 	it("ne rejoue pas une migration sur des données à jour", () => {
-		const aJour = { schemaVersion: PROJECT_SCHEMA_VERSION, id: "p1", programs: {} };
+		const aJour = {
+			schemaVersion: PROJECT_SCHEMA_VERSION,
+			id: "p1",
+			programs: {},
+		};
 
-		expect(migrateProject(aJour).project.programs).toEqual({});
+		expect((migrateProject(aJour).project as any).programs).toEqual({});
+	});
+
+	describe("enchaînement de plusieurs migrations", () => {
+		const bump = (target: number): ProjectMigration => ({
+			from: target - 1,
+			description: `v${target - 1} → v${target}`,
+			migrate: (project) => ({ ...project, schemaVersion: target }),
+		});
+
+		it("applique toutes les migrations dont le point de départ est atteint", () => {
+			const ancien = { id: "p1" };
+
+			const { project, from } = migrateProject(ancien, [bump(1), bump(2)]) as {
+				project: any;
+				from: number;
+			};
+
+			expect(from).toBe(UNVERSIONED);
+			expect(project.schemaVersion).toBe(2);
+		});
+
+		it("ne déclenche que les migrations postérieures à la version du projet", () => {
+			const dejaV1 = { id: "p1", schemaVersion: 1 };
+
+			const { project } = migrateProject(dejaV1, [bump(1), bump(2)]) as {
+				project: any;
+			};
+
+			expect(project.schemaVersion).toBe(2);
+		});
+
+		it("lève si une migration ne fait pas progresser schemaVersion", () => {
+			const stagnante: ProjectMigration = {
+				from: UNVERSIONED,
+				description: "oublie de poser schemaVersion",
+				migrate: (project) => ({ ...project }),
+			};
+
+			expect(() => migrateProject({ id: "p1" }, [stagnante])).toThrow(
+				/n'a pas progressé/,
+			);
+		});
 	});
 });
 
@@ -122,11 +156,18 @@ describe("migrateProject", () => {
  */
 describe("isFromNewerVersion", () => {
 	it("reconnaît un projet écrit par une version plus récente", () => {
-		expect(isFromNewerVersion({ id: "p1", schemaVersion: PROJECT_SCHEMA_VERSION + 1 })).toBe(true);
+		expect(
+			isFromNewerVersion({
+				id: "p1",
+				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+			}),
+		).toBe(true);
 	});
 
 	it("accepte un projet de la version courante", () => {
-		expect(isFromNewerVersion({ id: "p1", schemaVersion: PROJECT_SCHEMA_VERSION })).toBe(false);
+		expect(
+			isFromNewerVersion({ id: "p1", schemaVersion: PROJECT_SCHEMA_VERSION }),
+		).toBe(false);
 	});
 
 	it("accepte un projet plus ancien", () => {

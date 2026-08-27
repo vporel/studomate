@@ -67,24 +67,35 @@ describe("LaddersManager", () => {
 		});
 
 		it("refuse la création hors mode DESIGN", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur"), mode: ProjectMode.SIMULATION });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
 
 			expect(manager.newLadder("L1")).toBeNull();
 		});
 
 		it("crée le ladder, ouvre sa page et marque le projet comme modifié", () => {
-			const { manager, getState } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager, getState } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			const ladder = manager.newLadder("L1");
 
 			expect(ladder).not.toBeNull();
 			expect(getState().project!.getLadder(ladder!.id)).toBeDefined();
-			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({ id: ladder!.id, type: "ladder", title: "L1" });
+			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({
+				id: ladder!.id,
+				type: "ladder",
+				title: "L1",
+			});
 			expect(getState().hasUnsavedChanges).toBe(true);
 		});
 
 		it("génère un nom unique au format Ladder_N quand aucun nom n'est fourni", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			const first = manager.newLadder();
 			const second = manager.newLadder();
@@ -96,7 +107,9 @@ describe("LaddersManager", () => {
 
 	describe("deleteProgramById (ladder)", () => {
 		it("lève une erreur si le ladder n'existe pas", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.deleteProgramById("inexistant")).toThrow();
 		});
@@ -115,7 +128,10 @@ describe("LaddersManager", () => {
 
 		it("ne fait rien hors mode DESIGN", () => {
 			const { project, ladderId } = projectWithLadder();
-			const { manager, getState } = makeManager({ project, mode: ProjectMode.SIMULATION });
+			const { manager, getState } = makeManager({
+				project,
+				mode: ProjectMode.SIMULATION,
+			});
 
 			manager.deleteProgramById(ladderId);
 
@@ -128,7 +144,9 @@ describe("LaddersManager", () => {
 			const { project, ladderId } = projectWithLadder();
 			const { manager, getState } = makeManager({
 				project,
-				pagesData: { [ladderId]: { id: ladderId, type: "ladder", title: "L1" } },
+				pagesData: {
+					[ladderId]: { id: ladderId, type: "ladder", title: "L1" },
+				},
 			});
 
 			manager.renameProgramById(ladderId, "Nouveau nom");
@@ -138,7 +156,9 @@ describe("LaddersManager", () => {
 		});
 
 		it("lève une erreur si le ladder n'existe pas", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.renameProgramById("inexistant", "X")).toThrow();
 		});
@@ -152,7 +172,9 @@ describe("LaddersManager", () => {
 		});
 
 		it("lève une erreur si le ladder n'existe pas dans le projet", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.getProgramOrThrow("inexistant")).toThrow();
 		});
@@ -205,14 +227,21 @@ describe("LaddersManager", () => {
 	// VariablesUpdateCommand), mais un ladder monté possède sa propre copie et la repousse dans
 	// le projet — sans cette resynchronisation, elle écraserait le résultat du renommage.
 	describe("syncMountedStoresFromProject", () => {
-		it("fait adopter par les stores montés le ladder à jour du projet", () => {
+		it("fait adopter par les stores montés le ladder à jour du projet quand leur copie est périmée", () => {
 			const { project, ladderId } = projectWithLadder();
+			// Le store monté détient une version périmée (autre nom) → doit être resynchronisé.
+			const staleLadder = project.getLadder(ladderId)!.copy();
+			staleLadder.name = "périmé";
 			const adoptLadder = jest.fn();
 			const { manager } = makeManager({
 				project,
 				activeScopeType: "ladder",
 				activeScope: ladderId,
-				laddersStoresManagers: { [ladderId]: { workflowManager: { adoptLadder } } },
+				laddersStoresManagers: {
+					[ladderId]: {
+						workflowManager: { adoptLadder, getLadder: () => staleLadder },
+					},
+				},
 			});
 
 			manager.syncMountedStoresFromProject();
@@ -223,12 +252,38 @@ describe("LaddersManager", () => {
 			expect(adopted).not.toBe(project.getLadder(ladderId)); //une copie, jamais l'instance du projet
 		});
 
+		it("ne resynchronise pas un store dont la copie est déjà identique à celle du projet", () => {
+			const { project, ladderId } = projectWithLadder();
+			const adoptLadder = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "ladder",
+				activeScope: ladderId,
+				laddersStoresManagers: {
+					[ladderId]: {
+						workflowManager: {
+							adoptLadder,
+							getLadder: () => project.getLadder(ladderId)!.copy(),
+						},
+					},
+				},
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptLadder).not.toHaveBeenCalled();
+		});
+
 		it("ignore un store monté dont le ladder n'existe plus dans le projet", () => {
 			const { project } = projectWithLadder();
 			const adoptLadder = jest.fn();
 			const { manager } = makeManager({
 				project,
-				laddersStoresManagers: { "ladder-fermé": { workflowManager: { adoptLadder } } },
+				laddersStoresManagers: {
+					"ladder-fermé": {
+						workflowManager: { adoptLadder, getLadder: () => undefined },
+					},
+				},
 			});
 
 			manager.syncMountedStoresFromProject();
@@ -240,7 +295,9 @@ describe("LaddersManager", () => {
 			const adoptLadder = jest.fn();
 			const { manager } = makeManager({
 				project: null,
-				laddersStoresManagers: { l1: { workflowManager: { adoptLadder } } },
+				laddersStoresManagers: {
+					l1: { workflowManager: { adoptLadder, getLadder: () => undefined } },
+				},
 			});
 
 			manager.syncMountedStoresFromProject();

@@ -1,5 +1,15 @@
-import { createCoilElement, createContactElement, getElementHeight } from "./element.schema";
-import { createCompareBlockElement, createUserProgramBlockElement } from "./block.schema";
+import {
+	createCoilElement,
+	createContactElement,
+	getElementHeight,
+	getElementWidth,
+} from "./element.schema";
+import {
+	createArithmeticBlockElement,
+	createAssignBlockElement,
+	createCompareBlockElement,
+	createUserProgramBlockElement,
+} from "./block.schema";
 import { createCounterBlockElement } from "../function-blocks/counter.schema";
 import { createTimerBlockElement } from "../function-blocks/timer.schema";
 
@@ -35,22 +45,53 @@ describe("ladder element factories", () => {
 		it("vaut 1 pour un contact, une bobine ou un bloc user-program", () => {
 			expect(getElementHeight(createContactElement("A", "NO", 0, 0))).toBe(1);
 			expect(getElementHeight(createCoilElement("Q1", "normal", 0, 0))).toBe(1);
-			expect(getElementHeight(createUserProgramBlockElement("prog1", 0, 0))).toBe(1);
+			expect(
+				getElementHeight(createUserProgramBlockElement("prog1", 0, 0)),
+			).toBe(1);
 		});
 
 		it("vaut 2 pour un bloc timer", () => {
-			const block = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
+			const block = createTimerBlockElement(
+				{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
 			expect(getElementHeight(block)).toBe(2);
 		});
 
 		it("vaut 2 pour un bloc compteur", () => {
-			const block = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 0, 0);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+				0,
+				0,
+			);
 			expect(getElementHeight(block)).toBe(2);
 		});
 
-		it("vaut 1 pour un bloc compare (pas de pinoche paramètre)", () => {
-			const block = createCompareBlockElement({ expression: "A > B" }, 0, 0);
+		it("vaut 1 pour un bloc compare (case de la taille d'un contact)", () => {
+			const block = createCompareBlockElement(0, 0);
 			expect(getElementHeight(block)).toBe(1);
+		});
+
+		it("vaut 2 pour un bloc assign ou arithmetic (rangée de pinoches)", () => {
+			expect(getElementHeight(createAssignBlockElement(0, 0))).toBe(2);
+			expect(getElementHeight(createArithmeticBlockElement(0, 0))).toBe(2);
+		});
+	});
+
+	describe("getElementWidth", () => {
+		it("vaut 1 pour un contact, une bobine ou un bloc compare", () => {
+			expect(getElementWidth(createContactElement("A", "NO", 0, 0))).toBe(1);
+			expect(getElementWidth(createCoilElement("Q1", "normal", 0, 0))).toBe(1);
+			expect(getElementWidth(createCompareBlockElement(0, 0))).toBe(1);
+		});
+
+		it("vaut 2 pour un bloc user-program, assign ou arithmetic", () => {
+			expect(
+				getElementWidth(createUserProgramBlockElement("prog1", 0, 0)),
+			).toBe(2);
+			expect(getElementWidth(createAssignBlockElement(0, 0))).toBe(2);
+			expect(getElementWidth(createArithmeticBlockElement(0, 0))).toBe(2);
 		});
 	});
 });

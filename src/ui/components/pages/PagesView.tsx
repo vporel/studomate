@@ -40,7 +40,12 @@ const NoPage = () => {
 					gap: 2,
 				}}
 			>
-				<Box component="img" src="/images/icon.png" alt="No page" sx={{ width: "100px" }} />
+				<Box
+					component="img"
+					src="/images/icon.png"
+					alt="No page"
+					sx={{ width: "100px" }}
+				/>
 				<Typography
 					variant="h2"
 					sx={{
@@ -54,11 +59,21 @@ const NoPage = () => {
 					{APP_NAME}
 				</Typography>
 				{commands.map(({ label, shortcut }) => (
-					<Box key={label} sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+					<Box
+						key={label}
+						sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+					>
 						<Typography textAlign="right" sx={{ width: "250px" }}>
 							{label}{" "}
 						</Typography>
-						<Box sx={{ display: "flex", gap: 0.5, width: "200px", alignItems: "center" }}>
+						<Box
+							sx={{
+								display: "flex",
+								gap: 0.5,
+								width: "200px",
+								alignItems: "center",
+							}}
+						>
 							{shortcut.map((el, index) => {
 								return (
 									<Fragment key={el}>
@@ -120,15 +135,33 @@ const PagesView = () => {
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
 							case "variables":
-								return <VariablesPage key={id} pageData={pageData as VariablesPageData} />;
+								return (
+									<VariablesPage
+										key={id}
+										pageData={pageData as VariablesPageData}
+									/>
+								);
 							case "grafcet":
 								return (
-									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getProgramOrThrow(id)} />
+									<GrafcetPage
+										key={id}
+										initialGrafcet={grafcetsManager.getProgramOrThrow(id)}
+									/>
 								);
 							case "ladder":
-								return <LadderPage key={id} initialLadder={laddersManager.getProgramOrThrow(id)} />;
+								return (
+									<LadderPage
+										key={id}
+										initialLadder={laddersManager.getProgramOrThrow(id)}
+									/>
+								);
 							case "hmi":
-								return <HmiPageView key={id} initialHmiPage={hmiManager.getHmiPageOrThrow(id)} />;
+								return (
+									<HmiPageView
+										key={id}
+										initialHmiPage={hmiManager.getHmiPageOrThrow(id)}
+									/>
+								);
 							case "hmi-simulation":
 								return <HmiSimulationPageView key={id} />;
 							default:

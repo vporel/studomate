@@ -1,7 +1,7 @@
-﻿import { ElementType } from "@/schemas/grafcet/element.schema";
+import { ElementType } from "@/schemas/grafcet/element.schema";
 import ActionAnalyser from "./action.analyser";
 import DefaultElementAnalyser from "./default-element.analyser";
-import ElementAnalyser from "./element.analyser";
+import GrafcetElementAnalyser from "./element.analyser";
 import JunctionAndEndAnalyser from "./junction-and-end.analyser";
 import JunctionAndStartAnalyser from "./junction-and-start.analyser";
 import JunctionOrEndAnalyser from "./junction-or-end.analyser";
@@ -11,8 +11,11 @@ import StepReferralTargetAnalyser from "./step-referral-target.analyser";
 import StepAnalyser from "./step.analyser";
 import TransitionAnalyser from "./transition.analyser";
 
-export default class ElementAnalyserFactory {
-	private static ANALYSERS: Record<ElementType, ElementAnalyser<any>> = {
+export default class GrafcetElementAnalyserFactory {
+	private static readonly ANALYSERS: Record<
+		ElementType,
+		GrafcetElementAnalyser<any>
+	> = {
 		action: new ActionAnalyser(),
 		comment: new DefaultElementAnalyser("comment"),
 		"junction-and-end": new JunctionAndEndAnalyser(),
@@ -25,11 +28,9 @@ export default class ElementAnalyserFactory {
 		transition: new TransitionAnalyser(),
 	};
 
-	static getAnalyserForType(elementType: ElementType): ElementAnalyser<any> {
-		const analyser = this.ANALYSERS[elementType as ElementType];
-		if (!analyser) {
-			throw new Error(`No analyser found for element type ${elementType}`);
-		}
-		return analyser;
+	static getAnalyser(
+		elementType: ElementType,
+	): GrafcetElementAnalyser<any> | null {
+		return this.ANALYSERS[elementType] ?? null;
 	}
 }

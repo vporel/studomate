@@ -16,7 +16,9 @@ export function deserializeProject(raw: Record<string, any>): Project | null {
 	}
 	if (isFromNewerVersion(raw)) {
 		//Laissé intact : une version ancienne ne doit pas réécrire ce qu'elle ne comprend pas
-		console.warn(`Projet "${raw.id}" enregistré par une version plus récente, ignoré`);
+		console.warn(
+			`Projet "${raw.id}" enregistré par une version plus récente, ignoré`,
+		);
 		return null;
 	}
 	try {

@@ -2,7 +2,10 @@ import defaultContextMenuItems from "./default-context-menu-items";
 
 describe("defaultContextMenuItems", () => {
 	it("supprime une arête (connexion) via deleteEdges", () => {
-		const workflowManager = { deleteEdges: jest.fn(), deleteNodes: jest.fn() } as any;
+		const workflowManager = {
+			deleteEdges: jest.fn(),
+			deleteNodes: jest.fn(),
+		} as any;
 		const element = { type: "grafcet-connection", id: "e1" } as any;
 
 		const [[deleteItem]] = defaultContextMenuItems(element, workflowManager);
@@ -13,7 +16,10 @@ describe("defaultContextMenuItems", () => {
 	});
 
 	it("supprime un nœud (élément du grafcet) via deleteNodes", () => {
-		const workflowManager = { deleteEdges: jest.fn(), deleteNodes: jest.fn() } as any;
+		const workflowManager = {
+			deleteEdges: jest.fn(),
+			deleteNodes: jest.fn(),
+		} as any;
 		const element = { type: "step", id: "step-1" } as any;
 
 		const [[deleteItem]] = defaultContextMenuItems(element, workflowManager);
@@ -24,7 +30,10 @@ describe("defaultContextMenuItems", () => {
 	});
 
 	it("ne supprime rien pour un type d'élément inconnu", () => {
-		const workflowManager = { deleteEdges: jest.fn(), deleteNodes: jest.fn() } as any;
+		const workflowManager = {
+			deleteEdges: jest.fn(),
+			deleteNodes: jest.fn(),
+		} as any;
 		const element = { type: "unknown-type", id: "x1" } as any;
 
 		const [[deleteItem]] = defaultContextMenuItems(element, workflowManager);

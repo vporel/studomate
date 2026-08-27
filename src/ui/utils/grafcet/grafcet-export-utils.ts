@@ -9,7 +9,11 @@ import { toast } from "react-toastify";
  * @param fileName
  * @param format
  */
-export const exportGrafcet = async (grafcetId: string, fileName: string, format: GrafcetFormat) => {
+export const exportGrafcet = async (
+	grafcetId: string,
+	fileName: string,
+	format: GrafcetFormat,
+) => {
 	const domToImage = (await import("dom-to-image")).default;
 	const dimensions = getFlowDimensions(format);
 	// we calculate a transform for the nodes so that all nodes are visible
@@ -19,7 +23,9 @@ export const exportGrafcet = async (grafcetId: string, fileName: string, format:
 	const pixelRatio = 5;
 	const scaledPadding = padding * pixelRatio;
 	const grafcetElement = document.getElementById(grafcetId);
-	const htmlElement = grafcetElement?.querySelector(".react-flow__viewport") as HTMLElement;
+	const htmlElement = grafcetElement?.querySelector(
+		".react-flow__viewport",
+	) as HTMLElement;
 	domToImage
 		.toJpeg(htmlElement, {
 			width: dimensions.width * pixelRatio,

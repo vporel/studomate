@@ -8,7 +8,10 @@ import { HmiStoreState } from "@/ui/stores/hmi/hmi.store";
  *
  * @returns La fonction de désabonnement.
  */
-export function syncHmiPageToProject(store: StoreApi<HmiStoreState>, hmiManager: HmiManager): () => void {
+export function syncHmiPageToProject(
+	store: StoreApi<HmiStoreState>,
+	hmiManager: HmiManager,
+): () => void {
 	let lastHmiPage = store.getState().hmiPage;
 	let lastHasCommandsToUndo = store.getState().hasCommandsToUndo;
 	let lastHasCommandsToRedo = store.getState().hasCommandsToRedo;

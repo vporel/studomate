@@ -1,8 +1,19 @@
 "use client";
 
-import Variable, { VariableDirection, VariableType } from "@/schemas/variable/variable.schema";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { LiteralKind } from "@/expression-language/literals/kind";
+import Variable, {
+	VariableDirection,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { Autocomplete, SxProps, TextField, Theme, useTheme } from "@mui/material";
+import {
+	Autocomplete,
+	SxProps,
+	TextField,
+	Theme,
+	useTheme,
+} from "@mui/material";
 import {
 	FocusEvent as ReactFocusEvent,
 	KeyboardEvent as ReactKeyboardEvent,
@@ -21,7 +32,10 @@ import {
 	inputWidthPx,
 	VariableColumn,
 } from "./variable-selector-utils";
-import { makeVariableSelectorPaper, VariableSelectorOption } from "./VariableSelectorPopup";
+import {
+	makeVariableSelectorPaper,
+	VariableSelectorOption,
+} from "./VariableSelectorPopup";
 
 interface VariableSelectorProps {
 	value: string;
@@ -35,13 +49,10 @@ interface VariableSelectorProps {
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
 	 * `"IN"` pour une bobine de ladder, voir `COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
 	excludeDirection?: VariableDirection;
-	/** Accepte, en plus d'un nom de variable, une constante TIME (`T#...`) — voir
-	 * `BlockPortSpec.acceptsTimeLiteral`. Une telle constante n'est jamais signalée comme
-	 * mnémonique non déclaré. */
-	acceptsTimeLiteral?: boolean;
-	/** Accepte, en plus d'un nom de variable, un littéral numérique brut — voir
-	 * `BlockPortSpec.acceptsNumberLiteral`. */
-	acceptsNumberLiteral?: boolean;
+	/** Formes de littéral acceptées en plus d'un nom de variable (voir
+	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé
+	 * comme mnémonique non déclaré. */
+	acceptedLiterals?: LiteralKind[];
 	/** Restreint les colonnes affichées dans le popup de suggestions — non fourni : les quatre.
 	 * `mnemonic` reste toujours affichée, quel que soit `cols` : c'est la valeur éditée, sans
 	 * elle le tableau ne permet plus d'identifier quelle ligne on choisit. */
@@ -68,15 +79,17 @@ export interface VariableSelectorHandle {
  * deux rendus séparés obligeaient à garder leur police et leur hauteur en synchronisation
  * manuelle, source d'un décalage visuel à chaque bascule.
  */
-const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProps>(function VariableSelector(
+const VariableSelector = forwardRef<
+	VariableSelectorHandle,
+	VariableSelectorProps
+>(function VariableSelector(
 	{
 		value,
 		onCommit,
 		label,
 		typeFilter,
 		excludeDirection,
-		acceptsTimeLiteral,
-		acceptsNumberLiteral,
+		acceptedLiterals,
 		cols,
 		className,
 		sx,
@@ -85,12 +98,19 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	ref,
 ) {
 	const th = useTheme();
-	const variables = useProjectStore(useShallow((s) => s.project?.variables ?? []));
+	const variables = useProjectStore(
+		useShallow((s) => s.project?.variables ?? []),
+	);
+	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [editingValue, setEditingValue] = useState(value);
 	const [widthPx, setWidthPx] = useState(44);
 
-	useImperativeHandle(ref, () => ({ startEditing: () => inputRef.current?.focus() }), []);
+	useImperativeHandle(
+		ref,
+		() => ({ startEditing: () => inputRef.current?.focus() }),
+		[],
+	);
 
 	useEffect(() => {
 		setEditingValue(value);
@@ -101,11 +121,14 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 	// reste invisible tant qu'on ne déplace pas le curseur) — un cycle de rendu séparé lui laisse
 	// le temps de repeindre correctement la zone élargie.
 	useEffect(() => {
-		setWidthPx(inputWidthPx(editingValue, `0.7rem ${th.typography.fontFamily}`));
+		setWidthPx(
+			inputWidthPx(editingValue, `0.7rem ${th.typography.fontFamily}`),
+		);
 	}, [editingValue, th.typography.fontFamily]);
 
 	const activeColumns = useMemo(
-		() => ALL_COLUMNS.filter((c) => c === "mnemonic" || !cols || cols.includes(c)),
+		() =>
+			ALL_COLUMNS.filter((c) => c === "mnemonic" || !cols || cols.includes(c)),
 		[cols],
 	);
 
@@ -141,10 +164,11 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 		variables,
 		typeFilter,
 		excludeDirection,
-		acceptsTimeLiteral,
-		acceptsNumberLiteral,
+		acceptedLiterals,
+		dialect,
 	);
-	const statusColor = status && status !== "ok" ? th.palette.error.main : undefined;
+	const statusColor =
+		status && status !== "ok" ? th.palette.error.main : undefined;
 
 	return (
 		<Autocomplete
@@ -152,7 +176,9 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 			openOnFocus
 			size="small"
 			options={suggestions}
-			getOptionLabel={(option) => (typeof option === "string" ? option : option.mnemonic)}
+			getOptionLabel={(option) =>
+				typeof option === "string" ? option : option.mnemonic
+			}
 			inputValue={editingValue}
 			onInputChange={(_, newValue) => setEditingValue(newValue)}
 			// Filtrage maison plutôt que celui par défaut d'Autocomplete : ce dernier, dès qu'une
@@ -167,10 +193,15 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 			forcePopupIcon={false}
 			slotProps={{
 				popper: {
-					style: { width: activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16 },
+					style: {
+						width:
+							activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16,
+					},
 				},
 			}}
-			slots={{ paper: makeVariableSelectorPaper(activeColumns, filteredSuggestions) }}
+			slots={{
+				paper: makeVariableSelectorPaper(activeColumns, filteredSuggestions),
+			}}
 			renderOption={(props, option) => (
 				<VariableSelectorOption
 					key={(option as Variable).id}
@@ -186,12 +217,17 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 					variant={label ? "outlined" : "standard"}
 					label={label}
 					placeholder={label ? undefined : "?"}
-					inputProps={{ ...params.inputProps, "data-variable-status": status ?? undefined }}
+					inputProps={{
+						...params.inputProps,
+						"data-variable-status": status ?? undefined,
+					}}
 					// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
 					// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au
 					// clic — un `slotProps.input` à côté les aurait purement et simplement écrasés.
 					slotProps={{
-						input: label ? params.InputProps : { ...params.InputProps, disableUnderline: true },
+						input: label
+							? params.InputProps
+							: { ...params.InputProps, disableUnderline: true },
 						// Label toujours en haut, comme les autres champs du panneau de propriétés — pas
 						// seulement au focus/à la saisie (comportement par défaut de `InputLabel`).
 						inputLabel: label ? { shrink: true } : undefined,
@@ -205,8 +241,11 @@ const VariableSelector = forwardRef<VariableSelectorHandle, VariableSelectorProp
 						save();
 					}}
 					onKeyDown={(e) => {
-						params.inputProps.onKeyDown?.(e as unknown as ReactKeyboardEvent<HTMLInputElement>);
-						if (e.key === "Enter" || e.key === "Escape") inputRef.current?.blur();
+						params.inputProps.onKeyDown?.(
+							e as unknown as ReactKeyboardEvent<HTMLInputElement>,
+						);
+						if (e.key === "Enter" || e.key === "Escape")
+							inputRef.current?.blur();
 					}}
 					sx={[
 						{

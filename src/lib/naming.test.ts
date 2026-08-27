@@ -6,7 +6,9 @@ describe("nextAvailableName", () => {
 	});
 
 	it("avance au premier numéro libre", () => {
-		expect(nextAvailableName("Ladder", ["Ladder_1", "Ladder_2"])).toBe("Ladder_3");
+		expect(nextAvailableName("Ladder", ["Ladder_1", "Ladder_2"])).toBe(
+			"Ladder_3",
+		);
 	});
 
 	it("ignore les trous de numérotation", () => {

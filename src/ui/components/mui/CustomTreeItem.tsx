@@ -11,7 +11,10 @@ import {
 } from "@mui/x-tree-view/TreeItem";
 import { TreeItemIcon } from "@mui/x-tree-view/TreeItemIcon";
 import { TreeItemProvider } from "@mui/x-tree-view/TreeItemProvider";
-import { useTreeItem, UseTreeItemParameters } from "@mui/x-tree-view/useTreeItem";
+import {
+	useTreeItem,
+	UseTreeItemParameters,
+} from "@mui/x-tree-view/useTreeItem";
 import * as React from "react";
 
 export type CustomTreeItemStyles = {
@@ -22,7 +25,8 @@ export type CustomTreeItemStyles = {
 };
 
 interface CustomTreeItemProps
-	extends Omit<UseTreeItemParameters, "rootRef">,
+	extends
+		Omit<UseTreeItemParameters, "rootRef">,
 		Omit<React.HTMLAttributes<HTMLLIElement>, "onFocus"> {
 	IconComponent?: React.ElementType;
 	/** Contenu affiché à droite du libellé, poussé en bout de ligne (ex. un tag "Principale" —
@@ -40,7 +44,7 @@ interface CustomTreeItemProps
 
 const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 	props: CustomTreeItemProps,
-	ref: React.Ref<HTMLLIElement>
+	ref: React.Ref<HTMLLIElement>,
 ) {
 	const {
 		id,
@@ -83,7 +87,9 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 						<TreeItemIcon status={status} />
 					</TreeItemIconContainer>
 					<TreeItemCheckbox {...getCheckboxProps()} />
-					<Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1 }}>
+					<Box
+						sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1 }}
+					>
 						{IconComponent && <IconComponent sx={styles?.icon} />}
 						{labelMode === "normal" ? (
 							<TreeItemLabel {...getLabelProps()} sx={styles?.label} />

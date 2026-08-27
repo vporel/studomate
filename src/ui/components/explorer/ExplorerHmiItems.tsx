@@ -22,16 +22,22 @@ const ExplorerHmiItem = ({
 	hmiPageName: string;
 	isMain: boolean;
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
 	const [editingName, setEditingName] = useState(hmiPageName);
 
 	const saveName = useCallback(() => {
-		const trimmed = editingName.trim() !== "" ? editingName.trim() : hmiPageName;
+		const trimmed =
+			editingName.trim() !== "" ? editingName.trim() : hmiPageName;
 		hmiManager.renameHmiPage(hmiPageId, trimmed);
 	}, [editingName, hmiPageId, hmiPageName, hmiManager]);
 
@@ -58,12 +64,23 @@ const ExplorerHmiItem = ({
 						size="small"
 						color="primary"
 						variant="outlined"
-						sx={{ ml: "auto", height: "18px", fontSize: "0.65rem", "& .MuiChip-label": { px: "6px" } }}
+						sx={{
+							ml: "auto",
+							height: "18px",
+							fontSize: "0.65rem",
+							"& .MuiChip-label": { px: "6px" },
+						}}
 					/>
 				)
 			}
 			styles={styles}
-			onClick={() => pagesManager.openPage({ id: hmiPageId, type: "hmi", title: hmiPageName })}
+			onClick={() =>
+				pagesManager.openPage({
+					id: hmiPageId,
+					type: "hmi",
+					title: hmiPageName,
+				})
+			}
 			onDoubleClick={() => {
 				if (!designing) return;
 				setLabelMode("edit");
@@ -96,27 +113,38 @@ const ExplorerHmiItems = ({
 	onContextMenu,
 }: {
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	// `useShallow` sur des sélecteurs à valeurs primitives (ids, noms) pour éviter les
 	// re-rendus infinis : un sélecteur retournant des objets reconstruits à chaque appel
 	// ferait systématiquement échouer la comparaison superficielle de Zustand.
 	const hmiPagesIds = useProjectStore(
-		useShallow((state) => (state.project ? Object.keys(state.project.hmiPages) : [])),
+		useShallow((state) =>
+			state.project ? Object.keys(state.project.hmiPages) : [],
+		),
 	);
 	const hmiPagesNames = useProjectStore(
 		useShallow((state) =>
 			state.project
-				? Object.fromEntries(Object.values(state.project.hmiPages).map((p) => [p.id, p.name]))
+				? Object.fromEntries(
+						Object.values(state.project.hmiPages).map((p) => [p.id, p.name]),
+					)
 				: {},
 		),
 	);
-	const mainHmiPageId = useProjectStore((state) => state.project?.getMainHmiPage()?.id);
+	const mainHmiPageId = useProjectStore(
+		(state) => state.project?.getMainHmiPage()?.id,
+	);
 
 	return (
 		<Fragment>
 			{hmiPagesIds.length === 0 ? (
-				<Typography sx={{ padding: "3px 0 3px 33px", color: "gray", fontSize: "0.8rem" }}>
+				<Typography
+					sx={{ padding: "3px 0 3px 33px", color: "gray", fontSize: "0.8rem" }}
+				>
 					Aucune page HMI
 				</Typography>
 			) : (

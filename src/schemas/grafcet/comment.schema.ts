@@ -18,6 +18,4 @@ export default class Comment extends Element<CommentData> {
 			text: "Commentaire",
 		};
 	}
-
-
 }

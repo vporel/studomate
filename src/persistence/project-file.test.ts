@@ -26,7 +26,7 @@ describe("fichier de projet", () => {
 			expect(relu.name).toBe("Projet");
 			expect(relu.author).toBe("Enseignante");
 			expect(Object.keys(relu.grafcets)).toEqual(["g1"]);
-			expect(relu.grafcets.g1.steps).toHaveLength(1);
+			expect(Object.keys(relu.grafcets.g1.steps)).toHaveLength(1);
 		});
 
 		it("porte la version de schéma dans le projet lui-même", () => {
@@ -47,7 +47,9 @@ describe("fichier de projet", () => {
 			id: "p1",
 			name: "Projet de l'enseignante",
 			variables: [],
-			grafcets: { g1: { id: "g1", name: "Grafcet 1", steps: [], connections: [] } },
+			grafcets: {
+				g1: { id: "g1", name: "Grafcet 1", steps: [], connections: [] },
+			},
 		});
 
 		it("s'importe sans échouer", () => {
@@ -74,17 +76,26 @@ describe("fichier de projet", () => {
 		});
 
 		it("refuse un contenu qui n'est pas un objet", () => {
-			expect(() => parseProjectFromFile("42")).toThrow("ne contient pas un projet");
-			expect(() => parseProjectFromFile("null")).toThrow("ne contient pas un projet");
+			expect(() => parseProjectFromFile("42")).toThrow(
+				"ne contient pas un projet",
+			);
+			expect(() => parseProjectFromFile("null")).toThrow(
+				"ne contient pas un projet",
+			);
 		});
 
 		it("refuse un tableau", () => {
-			expect(() => parseProjectFromFile("[]")).toThrow("ne contient pas un projet");
+			expect(() => parseProjectFromFile("[]")).toThrow(
+				"ne contient pas un projet",
+			);
 		});
 
 		// Scénario deux versions en parallèle : ne pas interpréter à moitié, ni réécrire
 		it("refuse un projet écrit par une version plus récente", () => {
-			const futur = JSON.stringify({ id: "p1", schemaVersion: PROJECT_SCHEMA_VERSION + 1 });
+			const futur = JSON.stringify({
+				id: "p1",
+				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+			});
 
 			expect(() => parseProjectFromFile(futur)).toThrow("version plus récente");
 		});

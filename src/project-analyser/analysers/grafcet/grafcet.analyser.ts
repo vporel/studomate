@@ -2,10 +2,18 @@ import Project from "@/schemas/project/project.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import ConnectionsValidator from "@/schemas/grafcet/validators/connections.validator";
+import Connection from "@/schemas/grafcet/connection.schema";
+import Element, { ElementType } from "@/schemas/grafcet/element.schema";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import ProgramAnalyser from "@/project-analyser/program.analyser";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyserFactory from "./element-analyser.factory";
+import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
+import { Dialect } from "@/expression-language/dialect.enum";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
+import { Environment } from "@/simulator/interpreter/environment/environment";
+import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import GrafcetElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {
 	issues: ProjectAnalyserIssue[];
@@ -13,7 +21,10 @@ export type GrafcetAnalysisResult = {
 	analysedElementsCount: number;
 };
 
-export function getStepVariableId(grafcetId: string, stepNumber: number): string {
+export function getStepVariableId(
+	grafcetId: string,
+	stepNumber: number,
+): string {
 	return `grafcet-${grafcetId}-step-${stepNumber}`;
 }
 
@@ -39,20 +50,37 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * générées par TOUS les programmes du projet, y compris ce grafcet (voir
 	 * `ProgramAnalyser.analyse`/`generateVariables`).
 	 */
-	analyse(grafcet: Grafcet, project: Project, allVariables: Variable[]): GrafcetAnalysisResult {
+	analyse(
+		grafcet: Grafcet,
+		project: Project,
+		allVariables: Variable[],
+	): GrafcetAnalysisResult {
 		// Propre à ce grafcet, indépendant de `allVariables` : sert au conflit de nom
 		// (`checkStepVariableNameConflicts`) et reste exposé dans le résultat.
 		const stepsVariables = this.generateVariables(grafcet);
+		// Construit une seule fois pour tout le grafcet : `analyseInContext` reçoit l'`Environment`
+		// et non la liste, pour qu'il soit structurellement impossible de le reconstruire par élément.
+		const environment = new Environment(
+			allVariables.map(SchemaVariablesMapper.schemaToEnv),
+		);
 		const elementsIssues = grafcet
 			.getAllElements()
 			.flatMap((element) => {
-				const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
+				const analyser = GrafcetElementAnalyserFactory.getAnalyser(
+					element.type,
+				);
+				if (!analyser) return [];
 				return [
 					...analyser.analyseIsolated(element, {
 						allowEmptyContent: false,
 						dialect: project.dialect,
 					}),
-					...analyser.analyseInContext(element, grafcet, allVariables, project.dialect),
+					...analyser.analyseInContext(
+						element,
+						grafcet,
+						environment,
+						project.dialect,
+					),
 				];
 			})
 			.map((issue) => {
@@ -67,6 +95,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			...this.checkConnectionTypes(grafcet),
 			...this.checkDirectedReachability(grafcet),
 			...this.checkStepVariableNameConflicts(grafcet, project, stepsVariables),
+			...this.checkDuplicateTimerNames(grafcet, project.dialect),
 			...elementsIssues,
 		];
 
@@ -93,9 +122,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		project: Project,
 	): ProjectAnalyserIssue[] {
 		const grafcetVariablesByProgram = new Map(
-			[...generatedVariablesByProgram].filter(([programId]) => project.getGrafcet(programId) !== undefined),
+			[...generatedVariablesByProgram].filter(
+				([programId]) => project.getGrafcet(programId) !== undefined,
+			),
 		);
-		const allMnemonics = [...grafcetVariablesByProgram.values()].flatMap((vars) => vars.map((v) => v.mnemonic));
+		const allMnemonics = [...grafcetVariablesByProgram.values()].flatMap(
+			(vars) => vars.map((v) => v.mnemonic),
+		);
 
 		// Quick exit: no cross-grafcet duplicates
 		if (new Set(allMnemonics).size === allMnemonics.length) return [];
@@ -105,7 +138,8 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		for (const [grafcetId, vars] of grafcetVariablesByProgram) {
 			const grafcetName = project.getProgram(grafcetId)?.name ?? grafcetId;
 			for (const variable of vars) {
-				if (!mnemonicToGrafcetNames.has(variable.mnemonic)) mnemonicToGrafcetNames.set(variable.mnemonic, []);
+				if (!mnemonicToGrafcetNames.has(variable.mnemonic))
+					mnemonicToGrafcetNames.set(variable.mnemonic, []);
 				mnemonicToGrafcetNames.get(variable.mnemonic)!.push(grafcetName);
 			}
 		}
@@ -136,14 +170,25 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const seen = new Set<number>();
 		const variables: Variable[] = [];
 
-		for (const step of grafcet.steps) {
+		for (const step of Object.values(grafcet.steps)) {
 			const n = step.data.number;
-			if (n === null || n === undefined || n === "" || !Number.isInteger(n) || (n as number) < 0)
+			if (
+				n === null ||
+				n === undefined ||
+				n === "" ||
+				!Number.isInteger(n) ||
+				(n as number) < 0
+			)
 				continue;
 			if (seen.has(n as number)) continue;
 			seen.add(n as number);
 			variables.push(
-				new Variable(getStepVariableId(grafcet.id, n), getStepVariableMnemonic(n), "memory", "BOOL"),
+				new Variable(
+					getStepVariableId(grafcet.id, n),
+					getStepVariableMnemonic(n),
+					"memory",
+					"BOOL",
+				),
 			);
 		}
 
@@ -176,7 +221,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	}
 
 	private checkAtLeastTwoSteps(grafcet: Grafcet): ProjectAnalyserIssue[] {
-		if (grafcet.steps.length < 2) {
+		if (Object.keys(grafcet.steps).length < 2) {
 			return [
 				new ProjectAnalyserIssue(
 					"error",
@@ -200,7 +245,9 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * plusieurs) à l'analyse, pour que l'erreur ne fuite jamais jusqu'à la compilation.
 	 */
 	private checkInitialStep(grafcet: Grafcet): ProjectAnalyserIssue[] {
-		const initialStepsCount = grafcet.steps.filter((s) => s.data.initial === true).length;
+		const initialStepsCount = Object.values(grafcet.steps).filter(
+			(s) => s.data.initial === true,
+		).length;
 		if (initialStepsCount === 0) {
 			return [
 				new ProjectAnalyserIssue(
@@ -222,6 +269,53 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			];
 		}
 		return [];
+	}
+
+	/**
+	 * Règle grafcet : l'identifiant d'une temporisation courte (`t1` dans `t1/X1/5s`) doit être
+	 * unique au sein du grafcet. Il n'a aucune portée propre — le pré-compilateur génère un
+	 * accumulateur distinct par occurrence (voir `TransitionPreCompiler`) — mais deux
+	 * temporisations qui partagent un identifiant trahissent presque toujours une faute de
+	 * saisie. La règle s'arrête au grafcet : le même identifiant peut resservir dans un autre
+	 * grafcet du projet.
+	 */
+	private checkDuplicateTimerNames(
+		grafcet: Grafcet,
+		dialect: Dialect,
+	): ProjectAnalyserIssue[] {
+		const nameCounts = new Map<string, number>();
+		for (const transition of Object.values(grafcet.transitions)) {
+			const expression = transition.getFullExpression().trim();
+			if (expression === "") continue;
+			let declarations: TimerStringDeclarationNode[];
+			try {
+				const { ast: node } = parseExpressionCached(expression, dialect);
+				declarations = new FinderVisitor<TimerStringDeclarationNode>(
+					"TIMER_STRING_DECLARATION",
+				).visit(node);
+			} catch {
+				// Expression invalide : déjà signalée par `TransitionAnalyser`, on l'ignore ici.
+				continue;
+			}
+			for (const declaration of declarations) {
+				nameCounts.set(
+					declaration.name,
+					(nameCounts.get(declaration.name) ?? 0) + 1,
+				);
+			}
+		}
+
+		return [...nameCounts]
+			.filter(([, count]) => count > 1)
+			.map(
+				([name]) =>
+					new ProjectAnalyserIssue(
+						"error",
+						"GRAFCET_DUPLICATE_TIMER_NAME",
+						{ sourceType: "grafcet", sourceId: grafcet.id },
+						`L'identifiant de temporisation "${name}" est utilisé pour plusieurs temporisations de ce grafcet. Chaque temporisation doit avoir un identifiant unique au sein du grafcet.`,
+					),
+			);
 	}
 
 	/**
@@ -281,9 +375,38 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet" as const, sourceId: grafcet.id };
 
+		// Index construits une fois : sans eux, chaque connexion refait des `.find`/`.filter`
+		// linéaires (ici et dans `ConnectionsValidator`), soit O(connexions²).
+		const elementById = new Map<string, Element<any>>();
+		for (const element of grafcet.getAllElements())
+			elementById.set(element.id, element);
+		const elementTypeById = new Map<string, ElementType>();
+		const connectionsByElementId = new Map<string, Connection[]>();
+		for (const [id, element] of elementById)
+			elementTypeById.set(id, element.type as ElementType);
 		for (const connection of grafcet.connections) {
-			const sourceElement = grafcet.getElementByIdAndType(connection.source.id, connection.source.type);
-			const targetElement = grafcet.getElementByIdAndType(connection.target.id, connection.target.type);
+			for (const endId of new Set([
+				connection.source.id,
+				connection.target.id,
+			])) {
+				const list = connectionsByElementId.get(endId);
+				if (list) list.push(connection);
+				else connectionsByElementId.set(endId, [connection]);
+			}
+		}
+		const validationIndex = { elementTypeById, connectionsByElementId };
+
+		for (const connection of grafcet.connections) {
+			const sourceCandidate = elementById.get(connection.source.id);
+			const targetCandidate = elementById.get(connection.target.id);
+			const sourceElement =
+				sourceCandidate?.type === connection.source.type
+					? sourceCandidate
+					: undefined;
+			const targetElement =
+				targetCandidate?.type === connection.target.type
+					? targetCandidate
+					: undefined;
 			if (!sourceElement || !targetElement) {
 				issues.push(
 					new ProjectAnalyserIssue(
@@ -303,6 +426,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 					targetHandle: connection.target.handle,
 				},
 				grafcet,
+				validationIndex,
 			);
 			if (!isValid) {
 				issues.push(
@@ -327,12 +451,15 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 */
 	private checkDirectedReachability(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (grafcet.connections.length === 0) return [];
-		const initialStepIds = grafcet.steps.filter((s) => s.data.initial === true).map((s) => s.id);
+		const initialStepIds = Object.values(grafcet.steps)
+			.filter((s) => s.data.initial === true)
+			.map((s) => s.id);
 		if (initialStepIds.length === 0) return []; // Already reported by checkInitialStep
 
 		const forward = new Map<string, Set<string>>();
 		for (const connection of grafcet.connections) {
-			if (!forward.has(connection.source.id)) forward.set(connection.source.id, new Set());
+			if (!forward.has(connection.source.id))
+				forward.set(connection.source.id, new Set());
 			forward.get(connection.source.id)!.add(connection.target.id);
 		}
 
@@ -341,8 +468,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet" as const, sourceId: grafcet.id };
 
-		const unreachableSteps = grafcet.steps.filter(
-			(s) => !reachableFromInitial.has(s.id) && grafcet.getConnectionsByElementId(s.id).length > 0,
+		const unreachableSteps = Object.values(grafcet.steps).filter(
+			(s) =>
+				!reachableFromInitial.has(s.id) &&
+				grafcet.getConnectionsByElementId(s.id).length > 0,
 		);
 		if (unreachableSteps.length > 0) {
 			issues.push(
@@ -355,30 +484,21 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			);
 		}
 
-		// A node is "on a cycle" if it can reach itself by following at least one edge.
-		const isOnCycle = (nodeId: string): boolean => {
-			const visited = new Set<string>();
-			const queue = [...(forward.get(nodeId) ?? [])];
-			while (queue.length > 0) {
-				const current = queue.shift()!;
-				if (current === nodeId) return true;
-				if (visited.has(current)) continue;
-				visited.add(current);
-				for (const next of forward.get(current) ?? []) queue.push(next);
-			}
-			return false;
-		};
-		const cyclicNodeIds = [...reachableFromInitial].filter(isOnCycle);
+		const cyclicNodes = this.computeCyclicNodeIds(forward);
+		const cyclicNodeIds = [...reachableFromInitial].filter((id) =>
+			cyclicNodes.has(id),
+		);
 
 		if (cyclicNodeIds.length > 0) {
 			const backward = new Map<string, Set<string>>();
 			for (const connection of grafcet.connections) {
-				if (!backward.has(connection.target.id)) backward.set(connection.target.id, new Set());
+				if (!backward.has(connection.target.id))
+					backward.set(connection.target.id, new Set());
 				backward.get(connection.target.id)!.add(connection.source.id);
 			}
 			const canReachCycle = this.bfs(cyclicNodeIds, backward);
 
-			const deadEndSteps = grafcet.steps.filter(
+			const deadEndSteps = Object.values(grafcet.steps).filter(
 				(s) => reachableFromInitial.has(s.id) && !canReachCycle.has(s.id),
 			);
 			if (deadEndSteps.length > 0) {
@@ -400,12 +520,15 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * Breadth-first traversal of a directed adjacency map, starting from the given node ids.
 	 * Returns the set of visited nodes (including the start ids).
 	 */
-	private bfs(startIds: string[], adjacency: Map<string, Set<string>>): Set<string> {
+	private bfs(
+		startIds: string[],
+		adjacency: Map<string, Set<string>>,
+	): Set<string> {
 		const visited = new Set<string>(startIds);
 		const queue = [...startIds];
-		while (queue.length > 0) {
-			const current = queue.shift()!;
-			for (const next of adjacency.get(current) ?? []) {
+		// Index de tête plutôt que `queue.shift()` (O(n)) : la file reste O(1) par élément.
+		for (let head = 0; head < queue.length; head++) {
+			for (const next of adjacency.get(queue[head]) ?? []) {
 				if (!visited.has(next)) {
 					visited.add(next);
 					queue.push(next);
@@ -413,5 +536,60 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			}
 		}
 		return visited;
+	}
+
+	/**
+	 * Ids de tous les nœuds appartenant à un cycle du graphe orienté `forward`, en une seule
+	 * passe (Tarjan) : un nœud est sur un cycle si sa composante fortement connexe compte au
+	 * moins deux nœuds, ou s'il porte une arête vers lui-même.
+	 */
+	private computeCyclicNodeIds(forward: Map<string, Set<string>>): Set<string> {
+		const nodes = new Set<string>();
+		for (const [from, tos] of forward) {
+			nodes.add(from);
+			for (const to of tos) nodes.add(to);
+		}
+
+		let nextIndex = 0;
+		const index = new Map<string, number>();
+		const lowlink = new Map<string, number>();
+		const onStack = new Set<string>();
+		const stack: string[] = [];
+		const cyclic = new Set<string>();
+
+		const strongConnect = (v: string): void => {
+			index.set(v, nextIndex);
+			lowlink.set(v, nextIndex);
+			nextIndex++;
+			stack.push(v);
+			onStack.add(v);
+
+			for (const w of forward.get(v) ?? []) {
+				if (w === v) cyclic.add(v);
+				if (!index.has(w)) {
+					strongConnect(w);
+					lowlink.set(v, Math.min(lowlink.get(v)!, lowlink.get(w)!));
+				} else if (onStack.has(w)) {
+					lowlink.set(v, Math.min(lowlink.get(v)!, index.get(w)!));
+				}
+			}
+
+			if (lowlink.get(v) === index.get(v)) {
+				const component: string[] = [];
+				let w: string;
+				do {
+					w = stack.pop()!;
+					onStack.delete(w);
+					component.push(w);
+				} while (w !== v);
+				if (component.length > 1) for (const id of component) cyclic.add(id);
+			}
+		};
+
+		for (const node of nodes) {
+			if (!index.has(node)) strongConnect(node);
+		}
+
+		return cyclic;
 	}
 }

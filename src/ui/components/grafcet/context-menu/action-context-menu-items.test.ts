@@ -1,8 +1,17 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
-import { ContextMenuItemBaseType, ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
+import {
+	ContextMenuItemBaseType,
+	ContextMenuItemType,
+} from "@/ui/lib/context-menu/context-menu";
 import actionContextMenuItems from "./action-context-menu-items";
 
-function fakeAction(type: ActionType, executionMode: ActionExecutionMode | null = null): any {
+function fakeAction(
+	type: ActionType,
+	executionMode: ActionExecutionMode | null = null,
+): any {
 	return { id: "action-1", data: { type, executionMode } };
 }
 
@@ -16,7 +25,10 @@ describe("actionContextMenuItems", () => {
 	it("marque comme coché le type courant de l'action", () => {
 		const workflowManager = { updateNodeData: jest.fn() } as any;
 
-		const [[typeItem]] = actionContextMenuItems(fakeAction(ActionType.BOOLEAN_VARIABLE), workflowManager);
+		const [[typeItem]] = actionContextMenuItems(
+			fakeAction(ActionType.BOOLEAN_VARIABLE),
+			workflowManager,
+		);
 
 		const checkedSubItem = subItemsOf(typeItem).find((s) => s.checked);
 		expect(checkedSubItem!.label).toBe("Variable booléene");
@@ -24,9 +36,14 @@ describe("actionContextMenuItems", () => {
 
 	it("appelle updateNodeData avec le nouveau type au clic sur une option de type", () => {
 		const workflowManager = { updateNodeData: jest.fn() } as any;
-		const [[typeItem]] = actionContextMenuItems(fakeAction(ActionType.TEXT), workflowManager);
+		const [[typeItem]] = actionContextMenuItems(
+			fakeAction(ActionType.TEXT),
+			workflowManager,
+		);
 
-		const numericOption = subItemsOf(typeItem).find((s) => s.label === "Variable numérique")!;
+		const numericOption = subItemsOf(typeItem).find(
+			(s) => s.label === "Variable numérique",
+		)!;
 		numericOption.onClick!();
 
 		expect(workflowManager.updateNodeData).toHaveBeenCalledWith("action-1", {
@@ -37,7 +54,10 @@ describe("actionContextMenuItems", () => {
 	it("n'affiche pas de sous-menu 'Mode d'exécution' pour une action TEXTE", () => {
 		const workflowManager = { updateNodeData: jest.fn() } as any;
 
-		const [part1] = actionContextMenuItems(fakeAction(ActionType.TEXT), workflowManager);
+		const [part1] = actionContextMenuItems(
+			fakeAction(ActionType.TEXT),
+			workflowManager,
+		);
 
 		expect(part1.some((item) => item.label === "Mode d'exécution")).toBe(false);
 	});
@@ -53,7 +73,9 @@ describe("actionContextMenuItems", () => {
 		const modeItem = part1.find((item) => item.label === "Mode d'exécution")!;
 		const labels = subItemsOf(modeItem).map((s) => s.label);
 		expect(labels).toEqual(["Continue", "Set", "Reset"]);
-		expect(subItemsOf(modeItem).find((s) => s.label === "Set")!.checked).toBe(true);
+		expect(subItemsOf(modeItem).find((s) => s.label === "Set")!.checked).toBe(
+			true,
+		);
 	});
 
 	it("appelle updateNodeData avec le nouveau mode d'exécution au clic", () => {

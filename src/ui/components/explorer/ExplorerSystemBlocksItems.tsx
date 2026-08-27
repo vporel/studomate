@@ -2,6 +2,7 @@
 
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
+import ArithmeticBlockIcon from "@/ui/components/icons/ArithmeticBlockIcon";
 import AssignBlockIcon from "@/ui/components/icons/AssignBlockIcon";
 import CompareBlockIcon from "@/ui/components/icons/CompareBlockIcon";
 import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
@@ -12,12 +13,18 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 /**
  * Palette des blocs système disponibles — tempo, compteur, compare et affectation. Glisser une
- * entrée vers le canevas d'un ladder ouvre la fenêtre de configuration du bloc correspondant (voir
- * `useLadderDropHandlers`/`TimerBlockDialog`/`CounterBlockDialog`/`CompareBlockDialog`/
- * `AssignBlockDialog`), qui seule dispatche l'insertion.
+ * entrée vers le canevas d'un ladder ouvre la fenêtre de configuration du bloc correspondant
+ * (tempo/compteur/affectation), ou insère directement un bloc compare vide — voir
+ * `useLadderDropHandlers`.
  */
-const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles }) => {
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+const ExplorerSystemBlocksItems = ({
+	styles,
+}: {
+	styles: CustomTreeItemStyles;
+}) => {
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 
 	return (
 		<Fragment>
@@ -30,7 +37,10 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 				onDragStart={
 					designing
 						? (e) => {
-								e.dataTransfer.setData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE, "timer");
+								e.dataTransfer.setData(
+									LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+									"timer",
+								);
 								e.dataTransfer.effectAllowed = "copy";
 							}
 						: undefined
@@ -45,7 +55,10 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 				onDragStart={
 					designing
 						? (e) => {
-								e.dataTransfer.setData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE, "counter");
+								e.dataTransfer.setData(
+									LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+									"counter",
+								);
 								e.dataTransfer.effectAllowed = "copy";
 							}
 						: undefined
@@ -60,7 +73,10 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 				onDragStart={
 					designing
 						? (e) => {
-								e.dataTransfer.setData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE, "compare");
+								e.dataTransfer.setData(
+									LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+									"compare",
+								);
 								e.dataTransfer.effectAllowed = "copy";
 							}
 						: undefined
@@ -75,7 +91,28 @@ const ExplorerSystemBlocksItems = ({ styles }: { styles: CustomTreeItemStyles })
 				onDragStart={
 					designing
 						? (e) => {
-								e.dataTransfer.setData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE, "assign");
+								e.dataTransfer.setData(
+									LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+									"assign",
+								);
+								e.dataTransfer.effectAllowed = "copy";
+							}
+						: undefined
+				}
+			/>
+			<CustomTreeItem
+				itemId="system-block-arithmetic"
+				label="Calcul"
+				IconComponent={ArithmeticBlockIcon}
+				styles={styles}
+				draggable={designing}
+				onDragStart={
+					designing
+						? (e) => {
+								e.dataTransfer.setData(
+									LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+									"arithmetic",
+								);
 								e.dataTransfer.effectAllowed = "copy";
 							}
 						: undefined

@@ -41,18 +41,30 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 		// désactivé) pour une sélection multiple, contrairement à "déjà au premier/arrière-plan"
 		// ci-dessous, qui reste visible mais grisé.
 		if (selectedWidgetIds.length === 1) {
-			const widget = widgets.find((w) => w.id === selectedWidgetIds[0]);
+			const widget = widgets[selectedWidgetIds[0]];
 			if (widget) {
-				const isBackmost = widgets.every((w) => w.stackOrder >= widget.stackOrder);
-				const isFrontmost = widgets.every((w) => w.stackOrder <= widget.stackOrder);
+				const isBackmost = Object.values(widgets).every(
+					(w) => w.stackOrder >= widget.stackOrder,
+				);
+				const isFrontmost = Object.values(widgets).every(
+					(w) => w.stackOrder <= widget.stackOrder,
+				);
 				items.push([
-					{ label: "Avancer", onClick: () => bringForward(widget.id), disabled: isFrontmost },
+					{
+						label: "Avancer",
+						onClick: () => bringForward(widget.id),
+						disabled: isFrontmost,
+					},
 					{
 						label: "Mettre au premier plan",
 						onClick: () => bringToFront(widget.id),
 						disabled: isFrontmost,
 					},
-					{ label: "Reculer", onClick: () => sendBackward(widget.id), disabled: isBackmost },
+					{
+						label: "Reculer",
+						onClick: () => sendBackward(widget.id),
+						disabled: isBackmost,
+					},
 					{
 						label: "Mettre en arrière-plan",
 						onClick: () => sendToBack(widget.id),
@@ -69,13 +81,25 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 				{
 					label: "Alignement",
 					subItems: [
-						{ label: "Vers le haut", onClick: () => alignSelectedWidgets("top") },
-						{ label: "Vers le bas", onClick: () => alignSelectedWidgets("bottom") },
-						{ label: "Au centre vertical", onClick: () => alignSelectedWidgets("center-vertical") },
+						{
+							label: "Vers le haut",
+							onClick: () => alignSelectedWidgets("top"),
+						},
+						{
+							label: "Vers le bas",
+							onClick: () => alignSelectedWidgets("bottom"),
+						},
+						{
+							label: "Au centre vertical",
+							onClick: () => alignSelectedWidgets("center-vertical"),
+						},
 						{ divider: true },
 						{ label: "À gauche", onClick: () => alignSelectedWidgets("left") },
 						{ label: "À droite", onClick: () => alignSelectedWidgets("right") },
-						{ label: "Au centre horizontal", onClick: () => alignSelectedWidgets("center-horizontal") },
+						{
+							label: "Au centre horizontal",
+							onClick: () => alignSelectedWidgets("center-horizontal"),
+						},
 					],
 				},
 			]);

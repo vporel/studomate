@@ -16,7 +16,11 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 		variablesByMnemonic: Map<string, Variable>,
 		_project: Project,
 	): ProjectAnalyserIssue[] {
-		const source = { sourceType: "ladder-contact", sourceId: element.id, parentId: ladder.id } as const;
+		const source = {
+			sourceType: "ladder-contact",
+			sourceId: element.id,
+			parentId: ladder.id,
+		} as const;
 		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
@@ -40,8 +44,12 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			);
 		}
 
-		const connections = ladder.getAllConnections().map(({ connection }) => connection);
-		if (!connections.some((connection) => connection.source.id === element.id)) {
+		const connections = ladder
+			.getAllConnections()
+			.map(({ connection }) => connection);
+		if (
+			!connections.some((connection) => connection.source.id === element.id)
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"warning",
@@ -51,7 +59,9 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 				),
 			);
 		}
-		if (!connections.some((connection) => connection.target.id === element.id)) {
+		if (
+			!connections.some((connection) => connection.target.id === element.id)
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

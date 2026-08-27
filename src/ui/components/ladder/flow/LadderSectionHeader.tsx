@@ -3,12 +3,21 @@
 import SectionRemoveCommand from "@/schemas/ladder/commands/section-remove.command";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
-import { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core";
+import {
+	DraggableAttributes,
+	DraggableSyntheticListeners,
+} from "@dnd-kit/core";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Box, IconButton, InputBase, Typography, useTheme } from "@mui/material";
+import {
+	Box,
+	IconButton,
+	InputBase,
+	Typography,
+	useTheme,
+} from "@mui/material";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
 
@@ -32,7 +41,9 @@ export default function LadderSectionHeader({
 	dragHandleListeners,
 }: LadderSectionHeaderProps) {
 	const th = useTheme();
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 	// Un ladder porte toujours au moins une section (voir SectionRemoveCommand.execute) : le
 	// bouton se désactive plutôt que de dispatcher une commande qu'on sait invalide.
 	const sectionsCount = useLadderStore((state) => state.ladder.sections.length);
@@ -74,7 +85,10 @@ export default function LadderSectionHeader({
 				px: 1,
 				py: 0.5,
 				borderRadius: collapsed ? "6px" : "6px 6px 0 0",
-				background: th.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+				background:
+					th.palette.mode === "dark"
+						? "rgba(255,255,255,0.05)"
+						: "rgba(0,0,0,0.04)",
 				borderBottom: collapsed ? `1px solid ${th.palette.divider}` : "none",
 				border: `1px solid ${th.palette.divider}`,
 				userSelect: "none",
@@ -93,7 +107,10 @@ export default function LadderSectionHeader({
 				aria-label="Réordonner la section"
 				aria-disabled={sectionsCount <= 1}
 			>
-				<DragIndicatorIcon fontSize="small" sx={{ color: th.palette.text.secondary }} />
+				<DragIndicatorIcon
+					fontSize="small"
+					sx={{ color: th.palette.text.secondary }}
+				/>
 			</Box>
 
 			<IconButton
@@ -102,10 +119,17 @@ export default function LadderSectionHeader({
 				sx={{ p: 0.25 }}
 				aria-label={collapsed ? "Déplier la section" : "Replier la section"}
 			>
-				{collapsed ? <ChevronRightIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+				{collapsed ? (
+					<ChevronRightIcon fontSize="small" />
+				) : (
+					<ExpandMoreIcon fontSize="small" />
+				)}
 			</IconButton>
 
-			<Typography component="span" sx={{ fontWeight: 700, fontSize: "0.9rem", flexShrink: 0 }}>
+			<Typography
+				component="span"
+				sx={{ fontWeight: 700, fontSize: "0.9rem", flexShrink: 0 }}
+			>
 				Section {index + 1} :
 			</Typography>
 

@@ -2,7 +2,9 @@
 
 import { Container, Divider, Grid, Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
-import ManualContentIndex, { ManualContentIndex as ManualContentIndexType } from "./ManualContentIndex";
+import ManualContentIndex, {
+	ManualContentIndex as ManualContentIndexType,
+} from "./ManualContentIndex";
 import ManualNav from "./ManualNav";
 import ManualSearch from "./ManualSearch";
 import ManualSections from "./ManualSections";
@@ -14,7 +16,8 @@ export default function UserManual() {
 	const [contentIndex, setContentIndex] = useState<ManualContentIndexType>({});
 
 	useEffect(() => {
-		const sectionFromHash = () => window.location.hash.slice(1) || DEFAULT_SECTION;
+		const sectionFromHash = () =>
+			window.location.hash.slice(1) || DEFAULT_SECTION;
 		setSelected(sectionFromHash());
 		// Suit le retour/avance du navigateur, en plus des clics gérés par handleSelect.
 		const onHashChange = () => setSelected(sectionFromHash());

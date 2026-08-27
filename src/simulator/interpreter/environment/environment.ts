@@ -1,4 +1,8 @@
-import EnvVariable, { EnvVariableDirection, EnvVariableType, EnvVariableValue } from "./env-variable";
+import EnvVariable, {
+	EnvVariableDirection,
+	EnvVariableType,
+	EnvVariableValue,
+} from "./env-variable";
 import UnknownVariableIdException from "./exceptions/unknown-variable-id.exception";
 import UnknownVariableNameException from "./exceptions/unknown-variable-name.exception";
 
@@ -15,14 +19,29 @@ export class Environment {
 	private readonly variablesByName = new Map<string, EnvVariable>();
 
 	/** Ids des variables dont la valeur est imposée : tout write est ignoré silencieusement. */
-	private readonly forcedVariableIds: ReadonlySet<string>;
+	private forcedVariableIds: ReadonlySet<string>;
 
-	constructor(variables: EnvVariable[], forcedVariableIds: ReadonlySet<string> = new Set()) {
+	constructor(
+		variables: EnvVariable[],
+		forcedVariableIds: ReadonlySet<string> = new Set(),
+	) {
 		this.forcedVariableIds = forcedVariableIds;
 		for (const variable of variables) {
 			this.variables.set(variable.getId(), variable);
 			this.variablesByName.set(variable.getName(), variable);
 		}
+	}
+
+	/** Remplace la table de forçage — un même environnement est réutilisé de cycle en cycle
+	 * alors que l'ensemble des variables forcées, lui, change. */
+	setForcedVariableIds(forcedVariableIds: ReadonlySet<string>): void {
+		this.forcedVariableIds = forcedVariableIds;
+	}
+
+	/** Charge la valeur courante d'une variable en début de cycle, sans passer par le garde de
+	 * forçage : les images du PLC portent déjà la valeur imposée. Le contrôle de type reste fait. */
+	hydrateVariableValue(id: string, value: EnvVariableValue): void {
+		this.getVariableById(id).setValue(value);
 	}
 
 	private getVariableById(id: string): EnvVariable {
@@ -41,27 +60,11 @@ export class Environment {
 	}
 
 	existsVariableWithId(id: string): boolean {
-		try {
-			this.getVariableById(id);
-			return true;
-		} catch (e) {
-			if (e instanceof UnknownVariableIdException) {
-				return false;
-			}
-			throw e;
-		}
+		return this.variables.has(id);
 	}
 
 	existsVariableWithName(name: string): boolean {
-		try {
-			this.getVariableByName(name);
-			return true;
-		} catch (e) {
-			if (e instanceof UnknownVariableNameException) {
-				return false;
-			}
-			throw e;
-		}
+		return this.variablesByName.has(name);
 	}
 
 	getVariableTypeById(id: string): EnvVariableType {

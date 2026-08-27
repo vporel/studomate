@@ -12,14 +12,15 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { createStore } from "zustand";
 import { snapToGrid } from "@/ui/components/hmi/view/constants";
-import CommandsStackManager from "./managers/commands-stack.manager";
-import CopyCutPasteManager from "./managers/copy-cut-paste.manager";
+import HmiCommandsStackManager from "./managers/commands-stack.manager";
+import HmiCopyCutPasteManager from "./managers/copy-cut-paste.manager";
 
 /** Alignement d'une sélection de widgets (voir `HmiStoreState.alignSelectedWidgets`) — "top"/
  * "bottom" alignent les bords sur le widget le plus haut/bas de la sélection, "left"/"right" de
  * même sur le widget le plus à gauche/droite ; "center-vertical"/"center-horizontal" centrent
  * chaque widget sur le milieu de l'étendue totale de la sélection dans cet axe. */
-export type HmiWidgetAlignment = "top" | "bottom" | "center-vertical" | "left" | "right" | "center-horizontal";
+export type HmiWidgetAlignment =
+	"top" | "bottom" | "center-vertical" | "left" | "right" | "center-horizontal";
 
 export interface HmiStoreState {
 	hmiPage: HmiPage;
@@ -98,19 +99,25 @@ export interface HmiStoreState {
 	 * `rfInstance.screenToFlowPosition` pour le grafcet/ladder. Enregistré par `HmiCanvas`, qui
 	 * seul connaît son élément DOM et le zoom courant.
 	 */
-	screenToCanvasPosition: ((clientX: number, clientY: number) => HmiWidgetPosition | null) | null;
-	setScreenToCanvasPosition: (fn: HmiStoreState["screenToCanvasPosition"]) => void;
+	screenToCanvasPosition:
+		((clientX: number, clientY: number) => HmiWidgetPosition | null) | null;
+	setScreenToCanvasPosition: (
+		fn: HmiStoreState["screenToCanvasPosition"],
+	) => void;
 
-	copyCutPasteManager: CopyCutPasteManager;
+	copyCutPasteManager: HmiCopyCutPasteManager;
 
 	//=============== COMMANDS STACK ===============
 	hasCommandsToUndo: boolean;
 	hasCommandsToRedo: boolean;
-	commandsStackManager: CommandsStackManager;
+	commandsStackManager: HmiCommandsStackManager;
 }
 
 export type HmiStoreSetFunction = (
-	partial: HmiStoreState | Partial<HmiStoreState> | ((state: HmiStoreState) => HmiStoreState | Partial<HmiStoreState>),
+	partial:
+		| HmiStoreState
+		| Partial<HmiStoreState>
+		| ((state: HmiStoreState) => HmiStoreState | Partial<HmiStoreState>),
 ) => void;
 
 export type HmiStoreGetFunction = () => HmiStoreState;
@@ -139,12 +146,16 @@ function widgetRemoveCommand(widget: HmiWidget): WidgetRemoveCommand {
 	});
 }
 
-export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsStack<HmiPage>) =>
+export const createHmiStore = (
+	initialHmiPage: HmiPage,
+	commandsStack: CommandsStack<HmiPage>,
+) =>
 	createStore<HmiStoreState>((set, get) => ({
 		hmiPage: initialHmiPage,
 		selectedWidgetIds: [],
 
-		selectWidget: (widgetId) => set(() => ({ selectedWidgetIds: widgetId ? [widgetId] : [] })),
+		selectWidget: (widgetId) =>
+			set(() => ({ selectedWidgetIds: widgetId ? [widgetId] : [] })),
 
 		toggleWidgetSelection: (widgetId) =>
 			set((state) => ({
@@ -155,22 +166,35 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 
 		setSelection: (widgetIds) => set(() => ({ selectedWidgetIds: widgetIds })),
 
-		selectAllWidgets: () => set((state) => ({ selectedWidgetIds: state.hmiPage.widgets.map((w) => w.id) })),
+		selectAllWidgets: () =>
+			set((state) => ({
+				selectedWidgetIds: Object.values(state.hmiPage.widgets).map(
+					(w) => w.id,
+				),
+			})),
 
 		clearSelection: () => set(() => ({ selectedWidgetIds: [] })),
 
 		addWidget: (type, x, y, sizeOverride, dataOverride) => {
 			const { widgets } = get().hmiPage;
-			const stackOrder = HmiWidget.nextStackOrder(widgets);
-			const name = HmiWidget.nextName(type, widgets);
-			const widget = HmiWidget.create(type, x, y, sizeOverride, dataOverride, stackOrder, name);
+			const stackOrder = HmiWidget.nextStackOrder(Object.values(widgets));
+			const name = HmiWidget.nextName(type, Object.values(widgets));
+			const widget = HmiWidget.create(
+				type,
+				x,
+				y,
+				sizeOverride,
+				dataOverride,
+				stackOrder,
+				name,
+			);
 			get().commandsStackManager.executeOperation([widgetAddCommand(widget)]);
 			set(() => ({ selectedWidgetIds: [widget.id] }));
 			return widget;
 		},
 
 		updateWidget: (widgetId, partial) => {
-			const widget = get().hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = get().hmiPage.widgets[widgetId];
 			if (!widget) return;
 			// Un nom vide ou déjà pris par un autre widget de la page est ignoré (voir
 			// `HmiWidgetBase.name` — unicité par page) : ni renommé, ni mis en pile.
@@ -178,9 +202,16 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 			const nameIsValid =
 				name !== undefined &&
 				name !== "" &&
-				!get().hmiPage.widgets.some((w) => w.id !== widgetId && w.name === name);
+				!Object.values(get().hmiPage.widgets).some(
+					(w) => w.id !== widgetId && w.name === name,
+				);
 			// Un renommage invalide, seul champ demandé, ne doit pas empiler une commande à vide.
-			if (partial.name !== undefined && !nameIsValid && Object.keys(partial).length === 1) return;
+			if (
+				partial.name !== undefined &&
+				!nameIsValid &&
+				Object.keys(partial).length === 1
+			)
+				return;
 			// Snapshot générique champ par champ pour `previousData` : `partial.data` peut porter des
 			// champs propres à n'importe quel type de widget (`min`, `behavior`, `style`...), pas
 			// seulement ceux communs à tous (`keyof HmiWidgetData`, union discriminée, ne donnerait
@@ -198,13 +229,19 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 					name: nameIsValid ? name : undefined,
 					previousName: nameIsValid ? widget.name : undefined,
 					position: partial.position,
-					previousPosition: partial.position !== undefined ? { ...widget.position } : undefined,
+					previousPosition:
+						partial.position !== undefined ? { ...widget.position } : undefined,
 					size: partial.size,
-					previousSize: partial.size !== undefined ? { ...widget.size } : undefined,
+					previousSize:
+						partial.size !== undefined ? { ...widget.size } : undefined,
 					stackOrder: partial.stackOrder,
-					previousStackOrder: partial.stackOrder !== undefined ? widget.stackOrder : undefined,
+					previousStackOrder:
+						partial.stackOrder !== undefined ? widget.stackOrder : undefined,
 					data: partial.data,
-					previousData: partial.data !== undefined ? (previousData as Partial<HmiWidgetData>) : undefined,
+					previousData:
+						partial.data !== undefined
+							? (previousData as Partial<HmiWidgetData>)
+							: undefined,
 				}),
 			]);
 		},
@@ -213,34 +250,50 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 			if (dx === 0 && dy === 0) return;
 			const { hmiPage } = get();
 			const commands = widgetIds.flatMap((widgetId) => {
-				const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+				const widget = hmiPage.widgets[widgetId];
 				if (!widget) return [];
 				const previousPosition = { ...widget.position };
-				const position = { x: previousPosition.x + dx, y: previousPosition.y + dy };
-				return [new WidgetUpdateCommand({ widgetId, position, previousPosition })];
+				const position = {
+					x: previousPosition.x + dx,
+					y: previousPosition.y + dy,
+				};
+				return [
+					new WidgetUpdateCommand({ widgetId, position, previousPosition }),
+				];
 			});
 			get().commandsStackManager.executeOperation(commands);
 		},
 
 		alignSelectedWidgets: (alignment) => {
 			const { selectedWidgetIds, hmiPage } = get();
-			const widgets = hmiPage.widgets.filter((w) => selectedWidgetIds.includes(w.id));
+			const widgets = Object.values(hmiPage.widgets).filter((w) =>
+				selectedWidgetIds.includes(w.id),
+			);
 			if (widgets.length < 2) return;
 
-			const isHorizontal = alignment === "left" || alignment === "right" || alignment === "center-horizontal";
-			const coordOf = (w: HmiWidget) => (isHorizontal ? w.position.x : w.position.y);
-			const sizeOf = (w: HmiWidget) => (isHorizontal ? w.size.width : w.size.height);
+			const isHorizontal =
+				alignment === "left" ||
+				alignment === "right" ||
+				alignment === "center-horizontal";
+			const coordOf = (w: HmiWidget) =>
+				isHorizontal ? w.position.x : w.position.y;
+			const sizeOf = (w: HmiWidget) =>
+				isHorizontal ? w.size.width : w.size.height;
 
 			// "Le plus haut/bas" (ou "à gauche/droite") désigne un seul widget de la sélection (celui
 			// de plus petit/plus grand coordonnée sur cet axe), pas la borne de leur boîte
 			// englobante — voir la demande d'origine. Même raisonnement sur les deux axes, juste
 			// x/largeur au lieu de y/hauteur.
-			const startWidget = widgets.reduce((min, w) => (coordOf(w) < coordOf(min) ? w : min));
-			const endWidget = widgets.reduce((max, w) => (coordOf(w) > coordOf(max) ? w : max));
+			const startWidget = Object.values(widgets).reduce((min, w) =>
+				coordOf(w) < coordOf(min) ? w : min,
+			);
+			const endWidget = Object.values(widgets).reduce((max, w) =>
+				coordOf(w) > coordOf(max) ? w : max,
+			);
 			const startCoord = coordOf(startWidget);
 			const endEdge = coordOf(endWidget) + sizeOf(endWidget);
 
-			const commands = widgets.map((widget) => {
+			const commands = Object.values(widgets).map((widget) => {
 				const previousPosition = { ...widget.position };
 				const rawCoord =
 					alignment === "top" || alignment === "left"
@@ -249,8 +302,14 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 							? endEdge - sizeOf(widget)
 							: (startCoord + endEdge) / 2 - sizeOf(widget) / 2;
 				const coord = snapToGrid(rawCoord);
-				const position = isHorizontal ? { x: coord, y: previousPosition.y } : { x: previousPosition.x, y: coord };
-				return new WidgetUpdateCommand({ widgetId: widget.id, position, previousPosition });
+				const position = isHorizontal
+					? { x: coord, y: previousPosition.y }
+					: { x: previousPosition.x, y: coord };
+				return new WidgetUpdateCommand({
+					widgetId: widget.id,
+					position,
+					previousPosition,
+				});
 			});
 			get().commandsStackManager.executeOperation(commands);
 		},
@@ -259,7 +318,7 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 			const { selectedWidgetIds, hmiPage } = get();
 			if (selectedWidgetIds.length === 0) return;
 			const commands = selectedWidgetIds.flatMap((id) => {
-				const widget = hmiPage.widgets.find((w) => w.id === id);
+				const widget = hmiPage.widgets[id];
 				return widget ? [widgetRemoveCommand(widget)] : [];
 			});
 			get().commandsStackManager.executeOperation(commands);
@@ -268,9 +327,9 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 
 		bringForward: (widgetId) => {
 			const { hmiPage } = get();
-			const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = hmiPage.widgets[widgetId];
 			if (!widget) return;
-			const above = hmiPage.widgets
+			const above = Object.values(hmiPage.widgets)
 				.filter((w) => w.stackOrder > widget.stackOrder)
 				.sort((a, b) => a.stackOrder - b.stackOrder)[0];
 			if (!above) return;
@@ -290,9 +349,9 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 
 		sendBackward: (widgetId) => {
 			const { hmiPage } = get();
-			const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = hmiPage.widgets[widgetId];
 			if (!widget) return;
-			const below = hmiPage.widgets
+			const below = Object.values(hmiPage.widgets)
 				.filter((w) => w.stackOrder < widget.stackOrder)
 				.sort((a, b) => b.stackOrder - a.stackOrder)[0];
 			if (!below) return;
@@ -312,11 +371,15 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 
 		bringToFront: (widgetId) => {
 			const { hmiPage } = get();
-			const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = hmiPage.widgets[widgetId];
 			if (!widget) return;
-			const above = hmiPage.widgets.filter((w) => w.stackOrder > widget.stackOrder);
+			const above = Object.values(hmiPage.widgets).filter(
+				(w) => w.stackOrder > widget.stackOrder,
+			);
 			if (above.length === 0) return;
-			const maxStackOrder = Math.max(...hmiPage.widgets.map((w) => w.stackOrder));
+			const maxStackOrder = Math.max(
+				...Object.values(hmiPage.widgets).map((w) => w.stackOrder),
+			);
 			get().commandsStackManager.executeOperation([
 				new WidgetUpdateCommand({
 					widgetId: widget.id,
@@ -336,12 +399,18 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 
 		sendToBack: (widgetId) => {
 			const { hmiPage } = get();
-			const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = hmiPage.widgets[widgetId];
 			if (!widget) return;
-			const below = hmiPage.widgets.filter((w) => w.stackOrder < widget.stackOrder);
+			const below = Object.values(hmiPage.widgets).filter(
+				(w) => w.stackOrder < widget.stackOrder,
+			);
 			if (below.length === 0) return;
 			get().commandsStackManager.executeOperation([
-				new WidgetUpdateCommand({ widgetId: widget.id, stackOrder: 0, previousStackOrder: widget.stackOrder }),
+				new WidgetUpdateCommand({
+					widgetId: widget.id,
+					stackOrder: 0,
+					previousStackOrder: widget.stackOrder,
+				}),
 				...below.map(
 					(w) =>
 						new WidgetUpdateCommand({
@@ -364,14 +433,15 @@ export const createHmiStore = (initialHmiPage: HmiPage, commandsStack: CommandsS
 		closeEventsPane: () => set(() => ({ eventsPaneVisible: false })),
 
 		screenToCanvasPosition: null,
-		setScreenToCanvasPosition: (fn) => set(() => ({ screenToCanvasPosition: fn })),
+		setScreenToCanvasPosition: (fn) =>
+			set(() => ({ screenToCanvasPosition: fn })),
 
-		copyCutPasteManager: new CopyCutPasteManager(set, get),
+		copyCutPasteManager: new HmiCopyCutPasteManager(set, get),
 
 		//=============== COMMANDS STACK ===============
 		//Lu depuis la pile, pas figé à false : l'historique survit à la fermeture de la page, donc
 		//rouvrir une page HMI doit montrer les boutons annuler/rétablir toujours disponibles.
 		hasCommandsToUndo: commandsStack.commandsToUndo.length > 0,
 		hasCommandsToRedo: commandsStack.commandsToRedo.length > 0,
-		commandsStackManager: new CommandsStackManager(set, get, commandsStack),
+		commandsStackManager: new HmiCommandsStackManager(set, get, commandsStack),
 	}));

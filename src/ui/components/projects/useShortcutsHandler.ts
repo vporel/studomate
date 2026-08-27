@@ -10,12 +10,14 @@ export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const hmiManager = useProjectStore((state) => state.hmiManager);
-	const { setOpenModalVisible, saveProject } = useProjectStore(
-		useShallow((state) => ({
-			setOpenModalVisible: state.setOpenModalVisible,
-			saveProject: state.saveProject,
-		})),
-	);
+	const { setOpenModalVisible, saveProject, setSaveAsModalVisible } =
+		useProjectStore(
+			useShallow((state) => ({
+				setOpenModalVisible: state.setOpenModalVisible,
+				saveProject: state.saveProject,
+				setSaveAsModalVisible: state.setSaveAsModalVisible,
+			})),
+		);
 	const projectStore = useProjectContext();
 
 	useEffect(() => {
@@ -39,7 +41,11 @@ export default function useShortcutsHandler() {
 					case "s": {
 						e.stopPropagation();
 						e.preventDefault();
-						void saveProject();
+						if (e.shiftKey) {
+							setSaveAsModalVisible(true);
+						} else {
+							void saveProject();
+						}
 						break;
 					}
 					case "g": {
@@ -99,7 +105,9 @@ export default function useShortcutsHandler() {
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.copySelectedElements();
 						} else if (activeScopeType === "hmi") {
-							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.copySelectedWidgets();
+							hmiManager
+								.getActiveStoreManagers()
+								?.copyCutPasteManager.copySelectedWidgets();
 						}
 						break;
 					}
@@ -116,7 +124,9 @@ export default function useShortcutsHandler() {
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.pasteElements(getLastMousePosition());
 						} else if (activeScopeType === "hmi") {
-							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.pasteWidgets();
+							hmiManager
+								.getActiveStoreManagers()
+								?.copyCutPasteManager.pasteWidgets();
 						}
 						break;
 					}
@@ -133,7 +143,9 @@ export default function useShortcutsHandler() {
 								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
 							copyCutPasteManager?.cutSelectedElements();
 						} else if (activeScopeType === "hmi") {
-							hmiManager.getActiveStoreManagers()?.copyCutPasteManager.cutSelectedWidgets();
+							hmiManager
+								.getActiveStoreManagers()
+								?.copyCutPasteManager.cutSelectedWidgets();
 						}
 						break;
 					}
@@ -152,5 +164,13 @@ export default function useShortcutsHandler() {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [setOpenModalVisible, saveProject, projectStore, grafcetsManager, laddersManager, hmiManager]);
+	}, [
+		setOpenModalVisible,
+		saveProject,
+		setSaveAsModalVisible,
+		projectStore,
+		grafcetsManager,
+		laddersManager,
+		hmiManager,
+	]);
 }

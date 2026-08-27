@@ -15,6 +15,10 @@ export interface HmiWidgetComponentProps<TData = HmiWidgetBaseData> {
 	value?: boolean | number;
 	/** Mode édition : widget sélectionné. */
 	selected?: boolean;
+	/** `true` uniquement sur la page « Simulation HMI » : les animations pilotées par variable
+	 * (voir `useHmiStyleAnimation`) y sont actives. Sur les pages de conception elles restent
+	 * inertes, même si une simulation tourne en arrière-plan. */
+	animationsEnabled?: boolean;
 	/** Aperçu compact (toolbar) : masque le libellé. */
 	hideLabel?: boolean;
 	/** Mode édition : clic de sélection. */

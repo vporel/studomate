@@ -10,10 +10,16 @@ const HmiObjectsPanel = () => {
 	const selectedWidgetIds = useHmiStore((s) => s.selectedWidgetIds);
 	const selectWidget = useHmiStore((s) => s.selectWidget);
 
-	const sortedWidgets = [...widgets].sort((a, b) => b.stackOrder - a.stackOrder);
+	const sortedWidgets = Object.values(widgets).sort(
+		(a, b) => b.stackOrder - a.stackOrder,
+	);
 
 	if (sortedWidgets.length === 0) {
-		return <Typography sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}>Aucun objet.</Typography>;
+		return (
+			<Typography sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}>
+				Aucun objet.
+			</Typography>
+		);
 	}
 
 	return (
@@ -33,8 +39,14 @@ const HmiObjectsPanel = () => {
 							whiteSpace: "nowrap",
 							overflow: "hidden",
 							textOverflow: "ellipsis",
-							backgroundColor: selected ? "rgba(25, 118, 210, 0.12)" : "transparent",
-							"&:hover": { backgroundColor: selected ? "rgba(25, 118, 210, 0.18)" : "rgba(0, 0, 0, 0.04)" },
+							backgroundColor: selected
+								? "rgba(25, 118, 210, 0.12)"
+								: "transparent",
+							"&:hover": {
+								backgroundColor: selected
+									? "rgba(25, 118, 210, 0.18)"
+									: "rgba(0, 0, 0, 0.04)",
+							},
 						}}
 					>
 						{widget.name}

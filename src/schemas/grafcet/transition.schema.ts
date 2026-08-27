@@ -24,11 +24,17 @@ export const TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES = [
 	"junction-or-end",
 ] as const satisfies readonly ElementType[];
 
-export type TransitionHandleSourceSuccessorType = (typeof TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];
+export type TransitionHandleSourceSuccessorType =
+	(typeof TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];
 
-export const TRANSITION_HANDLES_TO_TYPES: Record<TransitionHandle, readonly ElementType[]> = {
-	[TRANSITION_HANDLE_TARGET_PREDECESSOR]: TRANSITION_HANDLE_TARGET_PREDECESSOR_TYPES,
-	[TRANSITION_HANDLE_SOURCE_SUCCESSOR]: TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES,
+export const TRANSITION_HANDLES_TO_TYPES: Record<
+	TransitionHandle,
+	readonly ElementType[]
+> = {
+	[TRANSITION_HANDLE_TARGET_PREDECESSOR]:
+		TRANSITION_HANDLE_TARGET_PREDECESSOR_TYPES,
+	[TRANSITION_HANDLE_SOURCE_SUCCESSOR]:
+		TRANSITION_HANDLE_SOURCE_SUCCESSOR_TYPES,
 };
 
 export type TransitionData = {
@@ -59,6 +65,4 @@ export default class Transition extends Element<TransitionData> {
 	validate(): string[] {
 		return [];
 	}
-
-
 }

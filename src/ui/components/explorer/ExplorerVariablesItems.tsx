@@ -18,7 +18,10 @@ const ExplorerVariablesItem = ({
 	label: string;
 	IconComponent?: ElementType;
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
@@ -43,7 +46,10 @@ const ExplorerVariablesItems = ({
 	onContextMenu,
 }: {
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const variablesTypes: {
 		id: VariablesPageId;

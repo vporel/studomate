@@ -20,7 +20,13 @@ interface HmiCanvasSidebarSectionProps {
 
 /** Bloc repliable de la colonne latérale du canvas HMI (voir `HmiCanvas`) — un titre avec une
  * icône de repli à droite, et son contenu en dessous quand déplié. */
-const HmiCanvasSidebarSection = ({ title, children, fillRemainingSpace, collapsed, onToggle }: HmiCanvasSidebarSectionProps) => {
+const HmiCanvasSidebarSection = ({
+	title,
+	children,
+	fillRemainingSpace,
+	collapsed,
+	onToggle,
+}: HmiCanvasSidebarSectionProps) => {
 	return (
 		<Box
 			sx={{
@@ -33,15 +39,33 @@ const HmiCanvasSidebarSection = ({ title, children, fillRemainingSpace, collapse
 				borderRadius: 1,
 			}}
 		>
-			<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 1.5, py: 1 }}>
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "space-between",
+					px: 1.5,
+					py: 1,
+				}}
+			>
 				<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
 					{title}
 				</Typography>
-				<IconButton size="small" onClick={onToggle} aria-label={collapsed ? `Déplier ${title}` : `Replier ${title}`}>
-					{collapsed ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
+				<IconButton
+					size="small"
+					onClick={onToggle}
+					aria-label={collapsed ? `Déplier ${title}` : `Replier ${title}`}
+				>
+					{collapsed ? (
+						<ExpandMoreIcon fontSize="small" />
+					) : (
+						<ExpandLessIcon fontSize="small" />
+					)}
 				</IconButton>
 			</Box>
-			{!collapsed && <Box sx={{ minHeight: 0, overflow: "auto" }}>{children}</Box>}
+			{!collapsed && (
+				<Box sx={{ minHeight: 0, overflow: "auto" }}>{children}</Box>
+			)}
 		</Box>
 	);
 };

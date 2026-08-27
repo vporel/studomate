@@ -9,7 +9,10 @@ import Page from "./Page";
 
 const GrafcetPage = ({ initialGrafcet }: { initialGrafcet: Grafcet }) => {
 	return (
-		<Page pageId={initialGrafcet.id} sx={{ flexDirection: "column", paddingBottom: 4 }}>
+		<Page
+			pageId={initialGrafcet.id}
+			sx={{ flexDirection: "column", paddingBottom: 4 }}
+		>
 			<GrafcetContextProvider initialGrafcet={initialGrafcet}>
 				<GrafcetToolbarDnDProvider>
 					<GrafcetToolbar />

@@ -18,7 +18,9 @@ export function useBlockNameField(
 		if (name === initialName) return [];
 		const errors = validateBlockName(name);
 		if (errors.length === 0 && project?.isNameTaken(name)) {
-			errors.push("Ce nom est déjà utilisé par une variable ou un autre bloc du projet.");
+			errors.push(
+				"Ce nom est déjà utilisé par une variable ou un autre bloc du projet.",
+			);
 		}
 		return errors;
 	}, [name, initialName, project]);

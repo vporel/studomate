@@ -13,8 +13,8 @@ describe("useProjectPrograms", () => {
 	});
 
 	it("returns an empty array when there is no project", () => {
-		(useProjectStore as unknown as jest.Mock).mockImplementation((selector: any) =>
-			selector({ project: null })
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			(selector: any) => selector({ project: null }),
 		);
 		const { result } = renderHook(() => useProjectPrograms());
 		expect(result.current).toEqual([]);
@@ -34,8 +34,8 @@ describe("useProjectPrograms", () => {
 			},
 		};
 
-		(useProjectStore as unknown as jest.Mock).mockImplementation((selector: any) =>
-			selector(mockState)
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			(selector: any) => selector(mockState),
 		);
 
 		const { result } = renderHook(() => useProjectPrograms());
@@ -60,8 +60,8 @@ describe("useProjectPrograms", () => {
 			},
 		};
 
-		(useProjectStore as unknown as jest.Mock).mockImplementation((selector: any) =>
-			selector(mockState)
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			(selector: any) => selector(mockState),
 		);
 
 		const { result } = renderHook(() => useProjectPrograms());

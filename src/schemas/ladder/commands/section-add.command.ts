@@ -13,7 +13,11 @@ export default class SectionAddCommand extends AbstractLadderCommand<{
 
 	execute(ladder: Ladder): [ladder: Ladder, isCommandValid: boolean] {
 		if (ladder.getSection(this.payload.sectionId)) return [ladder, false];
-		const section = new Section(this.payload.sectionId, this.payload.title, this.payload.description);
+		const section = new Section(
+			this.payload.sectionId,
+			this.payload.title,
+			this.payload.description,
+		);
 		ladder.sections.push(section);
 		return [ladder, true];
 	}

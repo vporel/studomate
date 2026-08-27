@@ -13,7 +13,11 @@ import SimplifierVisitor from "./simplifier.visitor";
 /** `5 + 3`, comme AST — pour tester le repliement de constante dans un nœud composite sans
  * dépendre du texte source (ces nœuds ne s'écrivent jamais directement en expression). */
 function foldableAddition() {
-	return ExpressionsBuilder.buildArithmeticExpressionNode("+", LiteralsBuilder.buildNumberNode(5), LiteralsBuilder.buildNumberNode(3));
+	return ExpressionsBuilder.buildArithmeticExpressionNode(
+		"+",
+		LiteralsBuilder.buildNumberNode(5),
+		LiteralsBuilder.buildNumberNode(3),
+	);
 }
 
 describe("SimplifierVisitor", () => {
@@ -200,7 +204,9 @@ describe("SimplifierVisitor", () => {
 		});
 
 		it("throws when a side folds down to a division by zero", () => {
-			expect(() => parseAndSimplify("(10 / 0) > x")).toThrow(DivisionByZeroException);
+			expect(() => parseAndSimplify("(10 / 0) > x")).toThrow(
+				DivisionByZeroException,
+			);
 		});
 	});
 
@@ -218,7 +224,9 @@ describe("SimplifierVisitor", () => {
 		});
 
 		it("throws when the right side folds down to a division by zero", () => {
-			expect(() => parseAndSimplify("x := 10 / 0")).toThrow(DivisionByZeroException);
+			expect(() => parseAndSimplify("x := 10 / 0")).toThrow(
+				DivisionByZeroException,
+			);
 		});
 	});
 
@@ -226,8 +234,18 @@ describe("SimplifierVisitor", () => {
 		it("simplifies a constant condition and a constant statement in each branch", () => {
 			const node = ControlsBuilder.buildIfControlNode(
 				foldableAddition(),
-				[StatementsBuilder.buildAssignStatementNode(IdentifiersBuilder.buildIdentifierNode("x"), foldableAddition())],
-				[StatementsBuilder.buildAssignStatementNode(IdentifiersBuilder.buildIdentifierNode("y"), foldableAddition())],
+				[
+					StatementsBuilder.buildAssignStatementNode(
+						IdentifiersBuilder.buildIdentifierNode("x"),
+						foldableAddition(),
+					),
+				],
+				[
+					StatementsBuilder.buildAssignStatementNode(
+						IdentifiersBuilder.buildIdentifierNode("y"),
+						foldableAddition(),
+					),
+				],
 			);
 
 			const result = simplifier.visit(node) as any;
@@ -244,7 +262,11 @@ describe("SimplifierVisitor", () => {
 				[
 					StatementsBuilder.buildAssignStatementNode(
 						IdentifiersBuilder.buildIdentifierNode("x"),
-						ExpressionsBuilder.buildArithmeticExpressionNode("/", LiteralsBuilder.buildNumberNode(10), LiteralsBuilder.buildNumberNode(0)),
+						ExpressionsBuilder.buildArithmeticExpressionNode(
+							"/",
+							LiteralsBuilder.buildNumberNode(10),
+							LiteralsBuilder.buildNumberNode(0),
+						),
 					),
 				],
 				null,

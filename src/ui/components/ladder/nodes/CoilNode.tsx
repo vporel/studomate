@@ -4,8 +4,14 @@ import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.comma
 import { CoilMode } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import VariableSelector, { VariableSelectorHandle } from "@/ui/components/variables/VariableSelector";
-import { GRID_CELL_HEIGHT, GRID_CELL_WIDTH } from "@/ui/utils/ladder/ladder-flow-builder";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
+import VariableSelector, {
+	VariableSelectorHandle,
+} from "@/ui/components/variables/VariableSelector";
+import {
+	GRID_CELL_HEIGHT,
+	GRID_CELL_WIDTH,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { useRef } from "react";
@@ -16,18 +22,28 @@ export type CoilNodeData = { variable: string; mode: CoilMode };
 export type CoilNodeType = Node<CoilNodeData> & { type: "coil" };
 
 /** Dimensions d'une bobine = 1 cellule de grille. Exportée pour les tests et le layout. */
-export const COIL_NODE_DIMENSIONS = { width: GRID_CELL_WIDTH, height: GRID_CELL_HEIGHT };
+export const COIL_NODE_DIMENSIONS = {
+	width: GRID_CELL_WIDTH,
+	height: GRID_CELL_HEIGHT,
+};
 
 const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 	const { variable, mode } = data;
 	const th = useTheme();
-	const energized = useProjectStore((state) =>
-		Object.values(state.simulationVariablesStates).some(
-			(v) => v.mnemonic === variable && v.value === true,
-		),
+	const pageVisible = usePageVisible();
+	const energized = useProjectStore(
+		(state) =>
+			pageVisible &&
+			Object.values(state.simulationVariablesStates).some(
+				(v) => v.mnemonic === variable && v.value === true,
+			),
 	);
-	const highlighted = useLadderStore((state) => state.highlightedNodesIds?.includes(id));
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const highlighted = useLadderStore((state) =>
+		state.highlightedNodesIds?.includes(id),
+	);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 	const variableSelectorRef = useRef<VariableSelectorHandle>(null);
 
 	const handleCommitVariable = (next: string) => {
@@ -74,7 +90,13 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 			<Box sx={{ width: "100%", height: 20 }}>
 				<CoilSymbol
 					mode={mode}
-					color={selected ? th.palette.primary.main : energized ? th.palette.energized.main : "black"}
+					color={
+						selected
+							? th.palette.primary.main
+							: energized
+								? th.palette.energized.main
+								: "black"
+					}
 				/>
 			</Box>
 		</Box>

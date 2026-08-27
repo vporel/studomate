@@ -9,7 +9,13 @@ module.exports = {
 		// nanoid ships ESM-only from v5 — also transform it (and stop ignoring it in
 		// node_modules) instead of the CommonJS-transpiled test build hitting `require()`
 		// on its `import` syntax.
-		"^.+\\.(t|j)sx?$": ["ts-jest", { tsconfig: { jsx: "react-jsx", allowJs: true } }],
+		// `isolatedModules: true` : transpile-only, pas de type-check pendant les tests — la
+		// couverture de types reste assurée par `npx tsc --noEmit` en CI. Le projet respecte
+		// déjà les contraintes d'`isolatedModules` (activé dans `tsconfig.json`).
+		"^.+\\.(t|j)sx?$": [
+			"ts-jest",
+			{ isolatedModules: true, tsconfig: { jsx: "react-jsx", allowJs: true } },
+		],
 	},
 	transformIgnorePatterns: ["/node_modules/(?!nanoid/)"],
 	moduleNameMapper: {
@@ -17,14 +23,14 @@ module.exports = {
 		"^@tests/(.*)$": "<rootDir>/tests/$1",
 		"\\.css$": "<rootDir>/tests/utils/cssStub.js",
 	},
-	// Seuils fixés avec une marge sous la couverture mesurée (statements 77.96 %, branches 60 %,
-	// functions 70.67 %, lines 79.92 % au 2026-08-05) : assez bas pour ne pas casser la CI au
-	// premier fichier importé par un nouveau test (la couverture ne compte que les fichiers
+	// Seuils volontairement placés sous la couverture réelle : assez bas pour ne pas casser la
+	// CI au premier fichier tiré par un nouveau test (la couverture ne compte que les fichiers
 	// réellement requis par un test), assez haut pour alerter sur une vraie régression.
+	// Chiffres de référence : `npm test -- --coverage`.
 	coverageThreshold: {
 		global: {
 			statements: 75,
-			branches: 55,
+			branches: 65,
 			functions: 65,
 			lines: 78,
 		},

@@ -14,7 +14,9 @@ describe("invertRecord", () => {
 describe("extractFields", () => {
 	it("extracts only the requested keys", () => {
 		const source = { a: 1, b: 2, c: 3 };
-		expect(extractFields<{ a: number; c: number }>(["a", "c"], source)).toEqual({ a: 1, c: 3 });
+		expect(extractFields<{ a: number; c: number }>(["a", "c"], source)).toEqual(
+			{ a: 1, c: 3 },
+		);
 	});
 
 	it("uses an empty string for missing keys when the source is null or undefined", () => {
@@ -25,7 +27,9 @@ describe("extractFields", () => {
 
 describe("deepObjectsComparison", () => {
 	it("returns true for deeply equal objects", () => {
-		expect(deepObjectsComparison({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toBe(true);
+		expect(
+			deepObjectsComparison({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } }),
+		).toBe(true);
 	});
 
 	it("returns false for different objects", () => {
@@ -56,9 +60,15 @@ describe("deepObjectsComparison", () => {
 	});
 
 	it("compares deeply nested structures", () => {
-		const a = { steps: { s1: { data: { branches: { b1: { position: 1 } } } } } };
-		const b = { steps: { s1: { data: { branches: { b1: { position: 1 } } } } } };
-		const c = { steps: { s1: { data: { branches: { b1: { position: 2 } } } } } };
+		const a = {
+			steps: { s1: { data: { branches: { b1: { position: 1 } } } } },
+		};
+		const b = {
+			steps: { s1: { data: { branches: { b1: { position: 1 } } } } },
+		};
+		const c = {
+			steps: { s1: { data: { branches: { b1: { position: 2 } } } } },
+		};
 		expect(deepObjectsComparison(a, b)).toBe(true);
 		expect(deepObjectsComparison(a, c)).toBe(false);
 	});

@@ -17,7 +17,8 @@ export default class ElementsRemoveCommand extends AbstractLadderCommand<{
 	elements: { sectionId: string; element: LadderElement }[];
 	connections: { sectionId: string; connection: Connection }[];
 }> {
-	private sweptRailTerminals: { sectionId: string; element: LadderElement }[] = [];
+	private sweptRailTerminals: { sectionId: string; element: LadderElement }[] =
+		[];
 
 	getType(): string {
 		return "ladder-elements-remove";
@@ -25,7 +26,9 @@ export default class ElementsRemoveCommand extends AbstractLadderCommand<{
 
 	execute(ladder: Ladder): [ladder: Ladder, isCommandValid: boolean] {
 		if (this.payload.elements.length === 0) return [ladder, false];
-		this.sweptRailTerminals = ladder.removeElements(this.payload.elements.map(({ element }) => element.id));
+		this.sweptRailTerminals = ladder.removeElements(
+			this.payload.elements.map(({ element }) => element.id),
+		);
 		return [ladder, true];
 	}
 

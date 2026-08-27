@@ -1,7 +1,7 @@
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
-import { isNumberLiteral } from "@/expression-language/number-literal";
+import { isNumberLiteral } from "@/expression-language/literals/number";
 import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import { BlockElement } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -37,7 +37,10 @@ export default class CounterBlockAnalyser {
 				),
 			);
 		}
-		if (cv) issues.push(...this.validateCurrentValuePin(cv, source, variablesByMnemonic));
+		if (cv)
+			issues.push(
+				...this.validateCurrentValuePin(cv, source, variablesByMnemonic),
+			);
 		return issues;
 	}
 
@@ -46,7 +49,11 @@ export default class CounterBlockAnalyser {
 		source: ProjectAnalyserIssueSource,
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
-		const resolution = resolveFunctionBlockPin(pin, variablesByMnemonic, "boolean");
+		const resolution = resolveFunctionBlockPin(
+			pin,
+			variablesByMnemonic,
+			"boolean",
+		);
 		switch (resolution.kind) {
 			case "empty":
 				return [
@@ -130,7 +137,13 @@ export default class CounterBlockAnalyser {
 		source: ProjectAnalyserIssueSource,
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
-		const resolution = resolveFunctionBlockPin(pin, variablesByMnemonic, "number", undefined, ["TIME"]);
+		const resolution = resolveFunctionBlockPin(
+			pin,
+			variablesByMnemonic,
+			"number",
+			undefined,
+			["TIME"],
+		);
 		switch (resolution.kind) {
 			case "undeclared":
 				return [

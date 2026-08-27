@@ -5,6 +5,7 @@ const mockAuthGetUser = jest.fn();
 const mockFrom = jest.fn();
 
 jest.mock("./supabase-client", () => ({
+	isSupabaseConfigured: true,
 	supabase: {
 		auth: {
 			getSession: (...args: any[]) => mockGetSession(...args),
@@ -40,7 +41,8 @@ function resolved(result: { data?: any; error?: any }) {
 		maybeSingle: () => resolved(result),
 		upsert: () => resolved(result),
 		delete: () => resolved(result),
-		then: (resolve: any, reject: any) => Promise.resolve(result).then(resolve, reject),
+		then: (resolve: any, reject: any) =>
+			Promise.resolve(result).then(resolve, reject),
 	};
 	return builder;
 }
@@ -59,7 +61,9 @@ describe("HybridProjectRepository", () => {
 	beforeEach(() => {
 		store = installLocalStorage();
 		mockGetSession.mockReset().mockResolvedValue({ data: { session: null } });
-		mockAuthGetUser.mockReset().mockResolvedValue({ data: { user: { id: "u1" } } });
+		mockAuthGetUser
+			.mockReset()
+			.mockResolvedValue({ data: { user: { id: "u1" } } });
 		mockFrom.mockReset().mockReturnValue(resolved({ data: [], error: null }));
 	});
 
@@ -71,7 +75,12 @@ describe("HybridProjectRepository", () => {
 	});
 
 	it("ne mélange pas le cloud à la liste tant que personne n'est connecté", async () => {
-		mockFrom.mockReturnValue(resolved({ data: [{ data: rawOf(newProject("cloud1", "C")) }], error: null }));
+		mockFrom.mockReturnValue(
+			resolved({
+				data: [{ data: rawOf(newProject("cloud1", "C")) }],
+				error: null,
+			}),
+		);
 		const repo = new HybridProjectRepository();
 		await repo.save(newProject("p1", "A"));
 
@@ -79,17 +88,32 @@ describe("HybridProjectRepository", () => {
 	});
 
 	it("fusionne local et cloud pour un utilisateur connecté", async () => {
-		mockGetSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
-		mockFrom.mockReturnValue(resolved({ data: [{ data: rawOf(newProject("cloud1", "C")) }], error: null }));
+		mockGetSession.mockResolvedValue({
+			data: { session: { user: { id: "u1" } } },
+		});
+		mockFrom.mockReturnValue(
+			resolved({
+				data: [{ data: rawOf(newProject("cloud1", "C")) }],
+				error: null,
+			}),
+		);
 		const repo = new HybridProjectRepository();
 		await repo.save(newProject("p1", "A"));
 
-		expect((await repo.list()).map((p) => p.id).sort()).toEqual(["cloud1", "p1"]);
+		expect((await repo.list()).map((p) => p.id).sort()).toEqual([
+			"cloud1",
+			"p1",
+		]);
 	});
 
 	it("route get/save vers le cloud pour un projet déjà indexé comme tel", async () => {
 		store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
-		mockFrom.mockReturnValue(resolved({ data: { data: rawOf(newProject("p1", "Cloud")) }, error: null }));
+		mockFrom.mockReturnValue(
+			resolved({
+				data: { data: rawOf(newProject("p1", "Cloud")) },
+				error: null,
+			}),
+		);
 
 		const project = await new HybridProjectRepository().get("p1");
 
@@ -119,7 +143,134 @@ describe("HybridProjectRepository", () => {
 			const result = await repo.moveToCloud(project);
 
 			expect(result.ok).toBe(false);
-			expect(await new LocalStorageProjectRepository().get("p1")).not.toBeNull();
+			expect(
+				await new LocalStorageProjectRepository().get("p1"),
+			).not.toBeNull();
+		});
+
+		it("réussit et n'introduit pas de doublon si le nettoyage local échoue", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [{ data: rawOf(newProject("p1", "A")) }],
+					error: null,
+				}),
+			);
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const repo = new HybridProjectRepository();
+			const project = newProject("p1", "A");
+			await repo.save(project);
+
+			// La suppression locale (write sur STORAGE_KEY) échoue ; l'index cloud reste modifiable.
+			const realSetItem = (globalThis as any).localStorage.setItem;
+			(globalThis as any).localStorage.setItem = (k: string, v: string) => {
+				if (k === "studomate_projects_data") throw new Error("quota");
+				realSetItem(k, v);
+			};
+
+			const result = await repo.moveToCloud(project);
+			(globalThis as any).localStorage.setItem = realSetItem;
+
+			expect(result).toEqual({ ok: true });
+			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+			expect(warn).toHaveBeenCalled();
+			warn.mockRestore();
+		});
+
+		it("échoue sans supprimer le local si l'index ne peut pas être écrit", async () => {
+			mockFrom.mockReturnValue(resolved({ error: null }));
+			const error = jest.spyOn(console, "error").mockImplementation(() => {});
+			const repo = new HybridProjectRepository();
+			const project = newProject("p1", "A");
+			await repo.save(project);
+
+			const realSetItem = (globalThis as any).localStorage.setItem;
+			(globalThis as any).localStorage.setItem = (k: string, v: string) => {
+				if (k === CLOUD_INDEX_KEY) throw new Error("quota");
+				realSetItem(k, v);
+			};
+
+			const result = await repo.moveToCloud(project);
+			(globalThis as any).localStorage.setItem = realSetItem;
+
+			expect(result).toEqual({ ok: false, reason: "unavailable" });
+			expect(
+				await new LocalStorageProjectRepository().get("p1"),
+			).not.toBeNull();
+			error.mockRestore();
+		});
+	});
+
+	describe("moveToLocal", () => {
+		it("réussit et n'introduit pas de doublon si la suppression cloud échoue", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const error = jest.spyOn(console, "error").mockImplementation(() => {});
+			// save local OK, mais la suppression cloud renvoie une erreur ; list() cloud ne renvoie rien
+			mockFrom.mockReturnValue(
+				resolved({ data: [], error: { message: "boom" } }),
+			);
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.moveToLocal(newProject("p1", "A"));
+
+			expect(result).toEqual({ ok: true });
+			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+			expect(warn).toHaveBeenCalled();
+			warn.mockRestore();
+			error.mockRestore();
+		});
+
+		it("échoue sans supprimer le cloud si l'index ne peut pas être écrit", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
+			const error = jest.spyOn(console, "error").mockImplementation(() => {});
+			const deleteSpy = jest.fn(() => resolved({ data: [], error: null }));
+			mockFrom.mockReturnValue({
+				...resolved({ data: [], error: null }),
+				delete: deleteSpy,
+			});
+			const repo = new HybridProjectRepository();
+
+			const realSetItem = (globalThis as any).localStorage.setItem;
+			(globalThis as any).localStorage.setItem = (k: string, v: string) => {
+				if (k === CLOUD_INDEX_KEY) throw new Error("quota");
+				realSetItem(k, v);
+			};
+
+			const result = await repo.moveToLocal(newProject("p1", "A"));
+			(globalThis as any).localStorage.setItem = realSetItem;
+
+			expect(result).toEqual({ ok: false, reason: "unavailable" });
+			expect(deleteSpy).not.toHaveBeenCalled();
+			expect(JSON.parse(store.get(CLOUD_INDEX_KEY)!)).toEqual(["p1"]);
+			error.mockRestore();
+		});
+	});
+
+	describe("list", () => {
+		it("écarte du volet local un projet présent dans l'index cloud", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [{ data: rawOf(newProject("p1", "A")) }],
+					error: null,
+				}),
+			);
+			const repo = new HybridProjectRepository();
+			await repo.save(newProject("p1", "A")); // encore présent en local
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
+
+			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
 		});
 	});
 

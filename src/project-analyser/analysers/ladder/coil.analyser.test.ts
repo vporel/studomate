@@ -1,4 +1,8 @@
-import { createCoilElement, createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import {
+	createCoilElement,
+	createContactElement,
+	createRailTerminalElement,
+} from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
@@ -18,9 +22,16 @@ describe("CoilAnalyser", () => {
 	it("signale COIL_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
 		const rail = createRailTerminalElement(0);
 		const coil = createCoilElement("Q", "normal", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([rail, coil], wireInSeries([rail, coil]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
 
-		const issues = analyser.analyseInContext(coil, ladder, variablesMap(), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_UNDECLARED");
 	});
@@ -29,9 +40,16 @@ describe("CoilAnalyser", () => {
 		const rail = createRailTerminalElement(0);
 		const q = VariableFactory.createMemoryInt("Q");
 		const coil = createCoilElement("Q", "normal", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([rail, coil], wireInSeries([rail, coil]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
 
-		const issues = analyser.analyseInContext(coil, ladder, variablesMap(q), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(q),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_NOT_BOOLEAN");
 	});
@@ -40,9 +58,16 @@ describe("CoilAnalyser", () => {
 		const rail = createRailTerminalElement(0);
 		const i0 = VariableFactory.createLogicInput("I0");
 		const coil = createCoilElement("I0", "normal", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([rail, coil], wireInSeries([rail, coil]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
 
-		const issues = analyser.analyseInContext(coil, ladder, variablesMap(i0), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(i0),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_IS_INPUT");
 	});
@@ -52,7 +77,12 @@ describe("CoilAnalyser", () => {
 		const coil = createCoilElement("Q", "normal", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([coil])]);
 
-		const issues = analyser.analyseInContext(coil, ladder, variablesMap(q), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(q),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("ELEMENT_NO_PREDECESSOR");
 	});
@@ -71,12 +101,28 @@ describe("CoilAnalyser", () => {
 		]);
 		const variables = variablesMap(q);
 
-		const issuesCoil1 = analyser.analyseInContext(coil1, ladder, variables, ProjectFactory.createEmpty());
-		const issuesCoil2 = analyser.analyseInContext(coil2, ladder, variables, ProjectFactory.createEmpty());
+		const issuesCoil1 = analyser.analyseInContext(
+			coil1,
+			ladder,
+			variables,
+			ProjectFactory.createEmpty(),
+		);
+		const issuesCoil2 = analyser.analyseInContext(
+			coil2,
+			ladder,
+			variables,
+			ProjectFactory.createEmpty(),
+		);
 
-		expect(issuesCoil1.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT")).toHaveLength(1);
-		expect(issuesCoil2.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT")).toHaveLength(1);
-		const duplicateIssue = issuesCoil1.find((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT")!;
+		expect(
+			issuesCoil1.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT"),
+		).toHaveLength(1);
+		expect(
+			issuesCoil2.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT"),
+		).toHaveLength(1);
+		const duplicateIssue = issuesCoil1.find(
+			(i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+		)!;
 		expect(duplicateIssue.severity).toBe("warning");
 		expect(duplicateIssue.message).toContain("2");
 	});
@@ -90,26 +136,54 @@ describe("CoilAnalyser", () => {
 		const ladder = new Ladder("l1", "L", [
 			createSectionWith(
 				[rail1, setCoil, rail2, resetCoil],
-				[...wireInSeries([rail1, setCoil]), ...wireInSeries([rail2, resetCoil])],
+				[
+					...wireInSeries([rail1, setCoil]),
+					...wireInSeries([rail2, resetCoil]),
+				],
 			),
 		]);
 		const variables = variablesMap(q);
 
-		const issuesSet = analyser.analyseInContext(setCoil, ladder, variables, ProjectFactory.createEmpty());
-		const issuesReset = analyser.analyseInContext(resetCoil, ladder, variables, ProjectFactory.createEmpty());
+		const issuesSet = analyser.analyseInContext(
+			setCoil,
+			ladder,
+			variables,
+			ProjectFactory.createEmpty(),
+		);
+		const issuesReset = analyser.analyseInContext(
+			resetCoil,
+			ladder,
+			variables,
+			ProjectFactory.createEmpty(),
+		);
 
-		expect(issuesSet.map((i) => i.code)).not.toContain("COIL_DUPLICATE_NORMAL_ASSIGNMENT");
-		expect(issuesReset.map((i) => i.code)).not.toContain("COIL_DUPLICATE_NORMAL_ASSIGNMENT");
+		expect(issuesSet.map((i) => i.code)).not.toContain(
+			"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+		);
+		expect(issuesReset.map((i) => i.code)).not.toContain(
+			"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+		);
 	});
 
 	it("porte la source ladder-coil, avec l'id de la bobine et le parentId du ladder", () => {
 		const rail = createRailTerminalElement(0);
 		const coil = createCoilElement("Q", "normal", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([rail, coil], wireInSeries([rail, coil]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
 
-		const [issue] = analyser.analyseInContext(coil, ladder, variablesMap(), ProjectFactory.createEmpty());
+		const [issue] = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(),
+			ProjectFactory.createEmpty(),
+		);
 
-		expect(issue.source).toEqual({ sourceType: "ladder-coil", sourceId: coil.id, parentId: "l1" });
+		expect(issue.source).toEqual({
+			sourceType: "ladder-coil",
+			sourceId: coil.id,
+			parentId: "l1",
+		});
 	});
 
 	it("n'émet aucune issue pour une bobine valide, unique, correctement câblée", () => {
@@ -118,11 +192,19 @@ describe("CoilAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
 		const ladder = new Ladder("l1", "L", [
-			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
+			createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			),
 		]);
 		const a = VariableFactory.createLogicInput("A");
 
-		const issues = analyser.analyseInContext(coil, ladder, variablesMap(q, a), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesMap(q, a),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues).toEqual([]);
 	});

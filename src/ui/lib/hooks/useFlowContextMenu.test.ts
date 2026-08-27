@@ -27,8 +27,12 @@ describe("useFlowContextMenu", () => {
 		const { result } = renderHook(() => useFlowContextMenu(contextMenuEvents));
 
 		const preventDefault = jest.fn();
-		const event = { clientX: 10, clientY: 20, preventDefault } as unknown as MouseEvent;
-		
+		const event = {
+			clientX: 10,
+			clientY: 20,
+			preventDefault,
+		} as unknown as MouseEvent;
+
 		act(() => {
 			result.current.openContextMenu(event, { id: "element1" });
 		});
@@ -43,9 +47,15 @@ describe("useFlowContextMenu", () => {
 
 	it("opens context menu when guard allows it", () => {
 		const canOpen = jest.fn().mockReturnValue(true);
-		const { result } = renderHook(() => useFlowContextMenu(contextMenuEvents, canOpen));
+		const { result } = renderHook(() =>
+			useFlowContextMenu(contextMenuEvents, canOpen),
+		);
 
-		const event = { clientX: 0, clientY: 0, preventDefault: jest.fn() } as unknown as MouseEvent;
+		const event = {
+			clientX: 0,
+			clientY: 0,
+			preventDefault: jest.fn(),
+		} as unknown as MouseEvent;
 		act(() => result.current.openContextMenu(event, { id: "element1" }));
 
 		expect(canOpen).toHaveBeenCalledWith({ id: "element1" });
@@ -54,9 +64,15 @@ describe("useFlowContextMenu", () => {
 
 	it("does not open context menu when guard prevents it", () => {
 		const canOpen = jest.fn().mockReturnValue(false);
-		const { result } = renderHook(() => useFlowContextMenu(contextMenuEvents, canOpen));
+		const { result } = renderHook(() =>
+			useFlowContextMenu(contextMenuEvents, canOpen),
+		);
 
-		const event = { clientX: 0, clientY: 0, preventDefault: jest.fn() } as unknown as MouseEvent;
+		const event = {
+			clientX: 0,
+			clientY: 0,
+			preventDefault: jest.fn(),
+		} as unknown as MouseEvent;
 		act(() => result.current.openContextMenu(event, { id: "element1" }));
 
 		expect(canOpen).toHaveBeenCalledWith({ id: "element1" });

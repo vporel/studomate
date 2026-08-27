@@ -7,7 +7,9 @@ import { useCallback } from "react";
 
 export default function useHmiFolderMenuItems(): () => ContextMenuItemType[][] {
 	const hmiManager = useProjectStore((state) => state.hmiManager);
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 
 	return useCallback(() => {
 		return [

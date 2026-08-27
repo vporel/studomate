@@ -26,8 +26,12 @@ function setup(virtual: boolean) {
 
 describe("RailTerminalNode", () => {
 	it("distingue visuellement (classe CSS différente) une borne virtuelle d'une borne réelle", () => {
-		const virtualBar = setup(true).container.querySelectorAll("div")[1] as HTMLElement;
-		const realBar = setup(false).container.querySelectorAll("div")[1] as HTMLElement;
+		const virtualBar = setup(true).container.querySelectorAll(
+			"div",
+		)[1] as HTMLElement;
+		const realBar = setup(false).container.querySelectorAll(
+			"div",
+		)[1] as HTMLElement;
 
 		expect(virtualBar.className).not.toBe(realBar.className);
 	});

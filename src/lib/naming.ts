@@ -4,7 +4,10 @@
  * "Label_2" seul existant -> "Label_1", pas "Label_3") : chaque appelant ne garantit l'unicité
  * que dans son propre espace de noms (ex. widgets d'une page HMI, programmes d'un projet).
  */
-export function nextAvailableName(label: string, existingNames: string[]): string {
+export function nextAvailableName(
+	label: string,
+	existingNames: string[],
+): string {
 	const existing = new Set(existingNames);
 	let n = 1;
 	while (existing.has(`${label}_${n}`)) n++;

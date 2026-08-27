@@ -20,7 +20,10 @@ describe("Ladder", () => {
 	describe("sections", () => {
 		it("createSection ajoute une section, getSection la retrouve", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
-			const section = ladder.createSection("Départ moteur", "Commande principale");
+			const section = ladder.createSection(
+				"Départ moteur",
+				"Commande principale",
+			);
 
 			expect(ladder.sections).toHaveLength(2);
 			expect(ladder.getSection(section.id)).toBe(section);
@@ -66,7 +69,11 @@ describe("Ladder", () => {
 
 			ladder.reorderSections([third.id, first.id]);
 
-			expect(ladder.sections.map((s) => s.id)).toEqual([third.id, first.id, second.id]);
+			expect(ladder.sections.map((s) => s.id)).toEqual([
+				third.id,
+				first.id,
+				second.id,
+			]);
 		});
 	});
 
@@ -79,7 +86,10 @@ describe("Ladder", () => {
 			ladder.addElements(section.id, [contact]);
 
 			expect(section.elements).toEqual([contact]);
-			expect(ladder.findElement(contact.id)).toEqual({ section, element: contact });
+			expect(ladder.findElement(contact.id)).toEqual({
+				section,
+				element: contact,
+			});
 		});
 
 		it("updateElement met à jour variable/mode d'un élément existant", () => {
@@ -100,7 +110,13 @@ describe("Ladder", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
-			ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })]);
+			ladder.addConnections(section.id, [
+				new Connection(
+					"c1",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			]);
 
 			ladder.removeElements([contact.id]);
 
@@ -129,10 +145,18 @@ describe("Ladder", () => {
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
 
-			ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })]);
+			ladder.addConnections(section.id, [
+				new Connection(
+					"c1",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			]);
 			expect(section.connections.map((c) => c.id)).toEqual(["c1"]);
 
-			ladder.removeConnections(section.id, [{ sourceId: contact.id, targetId: coil.id }]);
+			ladder.removeConnections(section.id, [
+				{ sourceId: contact.id, targetId: coil.id },
+			]);
 			expect(section.connections).toEqual([]);
 		});
 
@@ -142,7 +166,15 @@ describe("Ladder", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			ladder.addElements(section.id, [contact]);
 
-			expect(() => ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: "missing", type: "coil", handle: "target" })])).toThrow();
+			expect(() =>
+				ladder.addConnections(section.id, [
+					new Connection(
+						"c1",
+						{ id: contact.id, type: "contact", handle: "source" },
+						{ id: "missing", type: "coil", handle: "target" },
+					),
+				]),
+			).toThrow();
 		});
 
 		it("getAllConnections aplatit les connexions de toutes les sections, avec leur sectionId", () => {
@@ -151,10 +183,19 @@ describe("Ladder", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
-			ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })]);
+			ladder.addConnections(section.id, [
+				new Connection(
+					"c1",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			]);
 
 			expect(ladder.getAllConnections()).toEqual([
-				{ sectionId: section.id, connection: expect.objectContaining({ id: "c1" }) },
+				{
+					sectionId: section.id,
+					connection: expect.objectContaining({ id: "c1" }),
+				},
 			]);
 		});
 	});
@@ -166,7 +207,13 @@ describe("Ladder", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
-			ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })]);
+			ladder.addConnections(section.id, [
+				new Connection(
+					"c1",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			]);
 
 			const copy = ladder.copy();
 			const copiedSection = copy.sections[0];
@@ -231,7 +278,13 @@ describe("Ladder", () => {
 			const contact = createContactElement("A", "NF", 0, 0);
 			const coil = createCoilElement("Q1", "set", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
-			ladder.addConnections(section.id, [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })]);
+			ladder.addConnections(section.id, [
+				new Connection(
+					"c1",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			]);
 			ladder.createSection("Autre section", "Description libre");
 
 			const restored = Ladder.createFromJSON(JSON.stringify(ladder));
@@ -258,7 +311,12 @@ describe("Ladder", () => {
 			const main = new Ladder("l1", "Main", undefined, "main");
 			expect(Ladder.createFromJSON(JSON.stringify(main)).role).toBe("main");
 
-			const legacyJSON = JSON.stringify({ id: "l2", name: "Ancien ladder", type: "ladder", sections: [] });
+			const legacyJSON = JSON.stringify({
+				id: "l2",
+				name: "Ancien ladder",
+				type: "ladder",
+				sections: [],
+			});
 			expect(Ladder.createFromJSON(legacyJSON).role).toBe("standard");
 		});
 	});

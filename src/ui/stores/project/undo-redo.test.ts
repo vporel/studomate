@@ -1,6 +1,11 @@
 import { ProjectStoreState } from "./project.store";
 import { ProjectMode } from "./ProjectMode.enum";
-import { canRedoActiveScope, canUndoActiveScope, performRedo, performUndo } from "./undo-redo";
+import {
+	canRedoActiveScope,
+	canUndoActiveScope,
+	performRedo,
+	performUndo,
+} from "./undo-redo";
 
 /**
  * Ces tests tournent sans store zustand ni React : les helpers prennent l'état en argument.
@@ -28,7 +33,9 @@ function makeState(overrides: {
 				hasCommandsToRedo: overrides.grafcetRedo ?? false,
 			}),
 			getActiveStoreManagers: () =>
-				overrides.grafcetManagerMissing ? null : { commandsStackManager: grafcetStack },
+				overrides.grafcetManagerMissing
+					? null
+					: { commandsStackManager: grafcetStack },
 		},
 	} as unknown as ProjectStoreState;
 	return { state, projectStack, grafcetStack };
@@ -37,7 +44,10 @@ function makeState(overrides: {
 describe("undo-redo — arbitrage de portée", () => {
 	describe("portée projet", () => {
 		it("autorise l'annulation quand le projet a de quoi annuler", () => {
-			const { state } = makeState({ activeScopeType: "project", hasCommandsToUndo: true });
+			const { state } = makeState({
+				activeScopeType: "project",
+				hasCommandsToUndo: true,
+			});
 			expect(canUndoActiveScope(state)).toBe(true);
 		});
 
@@ -123,7 +133,10 @@ describe("undo-redo — arbitrage de portée", () => {
 
 	describe("rétablir", () => {
 		it("suit la même règle de portée que l'annulation", () => {
-			const { state, grafcetStack } = makeState({ activeScopeType: "grafcet", grafcetRedo: true });
+			const { state, grafcetStack } = makeState({
+				activeScopeType: "grafcet",
+				grafcetRedo: true,
+			});
 
 			expect(canRedoActiveScope(state)).toBe(true);
 			performRedo(state);

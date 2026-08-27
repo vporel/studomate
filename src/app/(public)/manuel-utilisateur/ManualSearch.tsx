@@ -40,7 +40,10 @@ function buildSnippet(text: string, query: string): string | undefined {
 }
 
 /** Découpe un texte en segments pour mettre en gras la portion correspondant à la requête. */
-function highlightSegments(text: string, query: string): { text: string; match: boolean }[] {
+function highlightSegments(
+	text: string,
+	query: string,
+): { text: string; match: boolean }[] {
 	if (!query) return [{ text, match: false }];
 	const at = text.toLowerCase().indexOf(query.toLowerCase());
 	if (at === -1) return [{ text, match: false }];
@@ -84,7 +87,8 @@ export default function ManualSearch({
 			const text = contentIndex[section.id];
 			if (text) {
 				const snippet = buildSnippet(text, trimmed);
-				if (snippet) byContent.push({ ...section, snippet, matchedInLabel: false });
+				if (snippet)
+					byContent.push({ ...section, snippet, matchedInLabel: false });
 			}
 		}
 
@@ -141,7 +145,10 @@ export default function ManualSearch({
 						) : (
 							<List disablePadding>
 								{results.map((result) => (
-									<ListItemButton key={result.id} onClick={() => handleSelect(result.id)}>
+									<ListItemButton
+										key={result.id}
+										onClick={() => handleSelect(result.id)}
+									>
 										<ListItemText
 											primary={
 												result.parentLabel
@@ -151,17 +158,18 @@ export default function ManualSearch({
 											secondary={
 												result.snippet ? (
 													<Fragment>
-														{highlightSegments(result.snippet, query.trim()).map(
-															(segment, i) => (
-																<Box
-																	key={i}
-																	component="span"
-																	sx={{ fontWeight: segment.match ? 700 : 400 }}
-																>
-																	{segment.text}
-																</Box>
-															),
-														)}
+														{highlightSegments(
+															result.snippet,
+															query.trim(),
+														).map((segment, i) => (
+															<Box
+																key={i}
+																component="span"
+																sx={{ fontWeight: segment.match ? 700 : 400 }}
+															>
+																{segment.text}
+															</Box>
+														))}
 													</Fragment>
 												) : undefined
 											}

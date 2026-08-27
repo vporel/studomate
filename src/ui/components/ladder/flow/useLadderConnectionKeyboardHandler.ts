@@ -15,12 +15,16 @@ import { LadderConnectionEdgeType } from "../edges/LadderConnectionEdge";
  * vertical à déplacer).
  */
 export default function useLadderConnectionKeyboardHandler(edges: Edge[]) {
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 
 	return useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-			const selectedEdges = edges.filter((edge) => edge.selected && edge.type === LADDER_CONNECTION_EDGE_TYPE);
+			const selectedEdges = edges.filter(
+				(edge) => edge.selected && edge.type === LADDER_CONNECTION_EDGE_TYPE,
+			);
 			if (selectedEdges.length !== 1) return;
 			const edge = selectedEdges[0] as LadderConnectionEdgeType;
 			const points = edge.data?.points ?? [];
@@ -32,7 +36,10 @@ export default function useLadderConnectionKeyboardHandler(edges: Edge[]) {
 			// Un pas = un quart de cellule (voir `CELL_SUBDIVISIONS`), même granularité que le snap du
 			// glisser.
 			const delta = e.key === "ArrowLeft" ? -1 : 1;
-			const newPoints: [number, number][] = points.map(([row, col]) => [row, col + delta]);
+			const newPoints: [number, number][] = points.map(([row, col]) => [
+				row,
+				col + delta,
+			]);
 
 			commandsStackManager.executeOperation([
 				new ConnectionUpdateCommand({

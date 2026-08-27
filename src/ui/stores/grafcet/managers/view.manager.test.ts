@@ -13,7 +13,11 @@ function buildStore() {
 		.addStep(new StepBuilder().id("step-1").number(1).position(0, 0).build())
 		.addStep(new StepBuilder().id("step-2").number(2).position(0, 100).build())
 		.build();
-	return createGrafcetStore(grafcet, new CommandsStack<Grafcet>(100), () => Dialect.FR);
+	return createGrafcetStore(
+		grafcet,
+		new CommandsStack<Grafcet>(100),
+		() => Dialect.FR,
+	);
 }
 
 function fakeRfInstance(zoom: number) {
@@ -25,14 +29,16 @@ function fakeRfInstance(zoom: number) {
 	} as any;
 }
 
-describe("ViewManager.temporarilyHighlightNodesAndEdges", () => {
+describe("GrafcetViewManager.temporarilyHighlightNodesAndEdges", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
 
 	it("surligne immédiatement, puis retire le surlignage après le délai", () => {
 		const store = buildStore();
 
-		store.getState().viewManager.temporarilyHighlightNodesAndEdges(["step-1"], []);
+		store
+			.getState()
+			.viewManager.temporarilyHighlightNodesAndEdges(["step-1"], []);
 		expect(store.getState().highlightedNodesIds).toEqual(["step-1"]);
 
 		jest.advanceTimersByTime(2000);
@@ -43,7 +49,9 @@ describe("ViewManager.temporarilyHighlightNodesAndEdges", () => {
 	// un store abandonné après la fermeture de la page du grafcet.
 	it("n'agit plus sur le store après dispose()", () => {
 		const store = buildStore();
-		store.getState().viewManager.temporarilyHighlightNodesAndEdges(["step-1"], []);
+		store
+			.getState()
+			.viewManager.temporarilyHighlightNodesAndEdges(["step-1"], []);
 
 		store.getState().viewManager.dispose();
 		jest.advanceTimersByTime(2000);
@@ -59,7 +67,7 @@ describe("ViewManager.temporarilyHighlightNodesAndEdges", () => {
 	});
 });
 
-describe("ViewManager viewport persistence", () => {
+describe("GrafcetViewManager viewport persistence", () => {
 	it("has no viewport before one is ever set", () => {
 		const store = buildStore();
 		expect(store.getState().viewManager.getViewport()).toBeNull();
@@ -76,7 +84,7 @@ describe("ViewManager viewport persistence", () => {
 	});
 });
 
-describe("ViewManager — instance React Flow", () => {
+describe("GrafcetViewManager — instance React Flow", () => {
 	it("lève tant que l'instance React Flow n'est pas fournie", () => {
 		const store = buildStore();
 		expect(() => store.getState().viewManager.throwErrorIfNotReady()).toThrow();
@@ -85,7 +93,9 @@ describe("ViewManager — instance React Flow", () => {
 	it("ne lève plus une fois l'instance fournie", () => {
 		const store = buildStore();
 		store.getState().viewManager.setReactFlowInstance(fakeRfInstance(1));
-		expect(() => store.getState().viewManager.throwErrorIfNotReady()).not.toThrow();
+		expect(() =>
+			store.getState().viewManager.throwErrorIfNotReady(),
+		).not.toThrow();
 	});
 
 	it("getZoom renvoie 1 par défaut sans instance", () => {
@@ -123,10 +133,15 @@ describe("ViewManager — instance React Flow", () => {
 	});
 });
 
-describe("ViewManager — sélection", () => {
+describe("GrafcetViewManager — sélection", () => {
 	it("getNodes/getEdges renvoient l'état courant du store", () => {
 		const store = buildStore();
-		expect(store.getState().viewManager.getNodes().map((n) => n.id)).toEqual(["step-1", "step-2"]);
+		expect(
+			store
+				.getState()
+				.viewManager.getNodes()
+				.map((n) => n.id),
+		).toEqual(["step-1", "step-2"]);
 		expect(store.getState().viewManager.getEdges()).toEqual([]);
 	});
 
@@ -145,7 +160,9 @@ describe("ViewManager — sélection", () => {
 	it("selectNodesAndEdges ajoute à la sélection existante par défaut", () => {
 		const store = buildStore();
 		store.setState((s) => ({
-			nodes: s.nodes.map((n) => (n.id === "step-1" ? { ...n, selected: true } : n)),
+			nodes: s.nodes.map((n) =>
+				n.id === "step-1" ? { ...n, selected: true } : n,
+			),
 		}));
 
 		store.getState().viewManager.selectNodesAndEdges(["step-2"], []);
@@ -160,7 +177,9 @@ describe("ViewManager — sélection", () => {
 	it("selectNodesAndEdges avec deselectOtherElements désélectionne le reste", () => {
 		const store = buildStore();
 		store.setState((s) => ({
-			nodes: s.nodes.map((n) => (n.id === "step-1" ? { ...n, selected: true } : n)),
+			nodes: s.nodes.map((n) =>
+				n.id === "step-1" ? { ...n, selected: true } : n,
+			),
 		}));
 
 		store.getState().viewManager.selectNodesAndEdges(["step-2"], [], true);
@@ -219,13 +238,16 @@ function buildFlowElement(visible: boolean) {
 	const container = document.createElement("div");
 	const flow = document.createElement("div");
 	flow.className = "react-flow";
-	Object.defineProperty(flow, "offsetParent", { value: visible ? document.body : null, configurable: true });
+	Object.defineProperty(flow, "offsetParent", {
+		value: visible ? document.body : null,
+		configurable: true,
+	});
 	flow.focus = jest.fn();
 	container.appendChild(flow);
 	return { container, flow };
 }
 
-describe("ViewManager.focus", () => {
+describe("GrafcetViewManager.focus", () => {
 	afterEach(() => jest.restoreAllMocks());
 
 	it("focalise immédiatement quand l'élément est déjà visible", () => {
@@ -250,7 +272,10 @@ describe("ViewManager.focus", () => {
 		raf.flush(); // 1ère frame : encore caché (display:none)
 		expect(flow.focus).not.toHaveBeenCalled();
 
-		Object.defineProperty(flow, "offsetParent", { value: document.body, configurable: true });
+		Object.defineProperty(flow, "offsetParent", {
+			value: document.body,
+			configurable: true,
+		});
 		raf.flush(); // 2e frame : React a re-rendu, l'élément est visible
 
 		expect(flow.focus).toHaveBeenCalledWith({ preventScroll: true });
@@ -291,7 +316,10 @@ describe("ViewManager.focus", () => {
 
 		store.getState().viewManager.focus();
 		store.getState().viewManager.dispose();
-		Object.defineProperty(flow, "offsetParent", { value: document.body, configurable: true });
+		Object.defineProperty(flow, "offsetParent", {
+			value: document.body,
+			configurable: true,
+		});
 		raf.flush();
 
 		expect(flow.focus).not.toHaveBeenCalled();

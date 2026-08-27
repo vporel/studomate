@@ -109,7 +109,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 						button: {
 							textTransform: "none",
 							"&.btn-rounded": { borderRadius: "20px" },
-							"&.grow": { borderRadius: "30px", padding: "10px 30px", fontSize: 15 },
+							"&.grow": {
+								borderRadius: "30px",
+								padding: "10px 30px",
+								fontSize: 15,
+							},
 						},
 					},
 				},

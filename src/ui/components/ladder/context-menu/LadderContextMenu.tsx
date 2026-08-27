@@ -8,7 +8,10 @@ import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
-import { LadderContextMenuElement, LadderContextMenuProps } from "./ladder-context-menu";
+import {
+	LadderContextMenuElement,
+	LadderContextMenuProps,
+} from "./ladder-context-menu";
 import blockContextMenuItems from "./block-context-menu-items";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
@@ -24,7 +27,9 @@ const LadderContextMenu = ({
 }) => {
 	const { contextMenuEvents } = useLadderContext();
 	const workflowManager = useLadderStore((state) => state.workflowManager);
-	const [element, setElement] = useState<LadderContextMenuElement>({ type: "pane" });
+	const [element, setElement] = useState<LadderContextMenuElement>({
+		type: "pane",
+	});
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
 
@@ -33,7 +38,8 @@ const LadderContextMenu = ({
 			return paneContextMenuItems(workflowManager, sectionId);
 		}
 		const items: ContextMenuItemType[][] = [];
-		if (element.type === "block") items.push(...blockContextMenuItems(element, workflowManager));
+		if (element.type === "block")
+			items.push(...blockContextMenuItems(element, workflowManager));
 		items.push(...nodeOrEdgeContextMenuItems(element, handleDelete));
 		return items;
 	}, [element, workflowManager, sectionId, handleDelete]);

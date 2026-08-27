@@ -20,7 +20,12 @@ export type PreCompiledProject = {
  */
 const PROGRAM_PRE_COMPILERS: Record<
 	ProgramType,
-	(program: any, variables: PLCVariable[], dialect: Dialect, errors: ProjectPreCompilerError[]) => PreCompiledProgram
+	(
+		program: any,
+		variables: PLCVariable[],
+		dialect: Dialect,
+		errors: ProjectPreCompilerError[],
+	) => PreCompiledProgram
 > = {
 	grafcet: (grafcet, variables, dialect, errors) =>
 		GrafcetPreCompiler.preCompile(grafcet, variables, dialect, errors),
@@ -49,14 +54,19 @@ export default class ProjectPreCompiler {
 		stepsVariables: Variable[],
 		dialect: Dialect = Dialect.FR,
 	): ProjectPreCompilationResult {
-		const variables = VariableCompiler.compile([...project.variables, ...stepsVariables]);
+		const variables = VariableCompiler.compile([
+			...project.variables,
+			...stepsVariables,
+		]);
 		const errors: ProjectPreCompilerError[] = [];
 		const programs: Record<string, PreCompiledProgram> = {};
 
 		for (const [programId, program] of Object.entries(project.programs)) {
 			const preCompiler = PROGRAM_PRE_COMPILERS[(program as Program).type];
 			if (!preCompiler) {
-				console.error(`Aucun pré-compilateur pour la notation "${(program as Program).type}"`);
+				console.error(
+					`Aucun pré-compilateur pour la notation "${(program as Program).type}"`,
+				);
 				continue;
 			}
 			programs[programId] = preCompiler(program, variables, dialect, errors);

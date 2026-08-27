@@ -1,4 +1,6 @@
 import Ladder from "@/schemas/ladder/ladder.schema";
+import Connection from "@/schemas/ladder/connection.schema";
+import { LadderElement } from "@/schemas/ladder/element.schema";
 import { SimulationVariableState } from "@/ui/stores/project/project.store";
 import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 
@@ -14,20 +16,33 @@ export function computeEnergizedEdges(
 		return lastEnergizedEdges;
 	}
 
-	const energizedEdges = new Set<string>();
-	const connections = ladder.getAllConnections().map((c) => c.connection);
+	// Index construits une fois pour ce calcul (l'appelant, un composant par connexion, retombe
+	// sur le cache mono-entrée pour les suivantes du même rendu).
+	const elementsById = new Map<string, LadderElement>();
+	for (const element of ladder.getAllElements()) {
+		elementsById.set(element.id, element);
+	}
+	const connectionsBySource = new Map<string, Connection[]>();
+	for (const { connection } of ladder.getAllConnections()) {
+		const list = connectionsBySource.get(connection.source.id);
+		if (list) list.push(connection);
+		else connectionsBySource.set(connection.source.id, [connection]);
+	}
+	const valueByMnemonic = new Map<string, unknown>();
+	for (const state of Object.values(variablesState)) {
+		valueByMnemonic.set(state.mnemonic, state.value);
+	}
 
-	// Étape 1 : Identifier quels nœuds laissent passer le courant (logique interne validée)
+	// Étape 1 : quels nœuds laissent passer le courant (logique interne validée)
 	const passesPower = (nodeId: string): boolean => {
-		const element = ladder.findElement(nodeId)?.element;
+		const element = elementsById.get(nodeId);
 		if (!element) return false;
 		if (element.type === "railTerminal") return true; // Le rail est la source, il laisse toujours passer
 		if (element.type === "coil") return false; // Une bobine est un puits, elle ne transmet pas le courant
 		if (element.type === "block") return true; // Un bloc relaie toujours son alimentation (ENO = EN)
 
 		const contact = element;
-		const variable = contact.data.variable;
-		const state = Object.values(variablesState).find((v) => v.mnemonic === variable)?.value;
+		const state = valueByMnemonic.get(contact.data.variable);
 
 		switch (contact.data.mode) {
 			case "NO":
@@ -48,30 +63,23 @@ export function computeEnergizedEdges(
 		return false;
 	};
 
-	// Étape 2 : Parcours en largeur (BFS) depuis les rails d'alimentation
-	const queue: string[] = []; // File des IDs des nœuds qui REÇOIVENT du courant
-
-	// Trouver toutes les sources (railTerminal)
-	for (const element of ladder.getAllElements()) {
-		if (element.type === "railTerminal") {
-			queue.push(element.id);
-		}
+	// Étape 2 : parcours en largeur depuis les rails d'alimentation. `head` avance sur `queue`
+	// plutôt qu'un `queue.shift()` en O(n).
+	const energizedEdges = new Set<string>();
+	const queue: string[] = [];
+	for (const element of elementsById.values()) {
+		if (element.type === "railTerminal") queue.push(element.id);
 	}
-
 	const visitedNodes = new Set<string>();
 
-	while (queue.length > 0) {
-		const currentNodeId = queue.shift()!;
+	for (let head = 0; head < queue.length; head++) {
+		const currentNodeId = queue[head];
 		if (visitedNodes.has(currentNodeId)) continue;
 		visitedNodes.add(currentNodeId);
 
-		// Si le courant arrive au nœud et qu'il le laisse passer, alors ses arêtes sortantes s'allument
 		if (passesPower(currentNodeId)) {
-			// Trouver toutes les arêtes sortantes de ce nœud
-			const outgoingConnections = connections.filter((c) => c.source.id === currentNodeId);
-			for (const connection of outgoingConnections) {
+			for (const connection of connectionsBySource.get(currentNodeId) ?? []) {
 				energizedEdges.add(connection.id);
-				// Le nœud cible reçoit donc du courant, on l'ajoute à la file
 				queue.push(connection.target.id);
 			}
 		}

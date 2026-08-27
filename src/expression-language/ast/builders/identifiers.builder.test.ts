@@ -24,7 +24,10 @@ describe("IdentifiersBuilder", () => {
 		});
 
 		it("creates identifier node with underscores", () => {
-			const node = IdentifiersBuilder.buildIdentifierNode("my_variable_name", 15);
+			const node = IdentifiersBuilder.buildIdentifierNode(
+				"my_variable_name",
+				15,
+			);
 
 			expect(node.value).toBe("my_variable_name");
 		});

@@ -1,8 +1,10 @@
 import { Dialect } from "./dialect.enum";
 import KeywordTranslator from "./keyword-translator";
 
-const frToEn = (e: string) => KeywordTranslator.translate(e, Dialect.FR, Dialect.EN);
-const enToFr = (e: string) => KeywordTranslator.translate(e, Dialect.EN, Dialect.FR);
+const frToEn = (e: string) =>
+	KeywordTranslator.translate(e, Dialect.FR, Dialect.EN);
+const enToFr = (e: string) =>
+	KeywordTranslator.translate(e, Dialect.EN, Dialect.FR);
 
 describe("KeywordTranslator", () => {
 	describe("traduction des mots-clés", () => {
@@ -25,7 +27,9 @@ describe("KeywordTranslator", () => {
 		});
 
 		it("laisse l'expression intacte si les dialectes sont identiques", () => {
-			expect(KeywordTranslator.translate("a ET b", Dialect.FR, Dialect.FR)).toBe("a ET b");
+			expect(
+				KeywordTranslator.translate("a ET b", Dialect.FR, Dialect.FR),
+			).toBe("a ET b");
 		});
 
 		it("laisse intacte une expression sans mot-clé", () => {
@@ -35,7 +39,9 @@ describe("KeywordTranslator", () => {
 
 	describe("ce qui ne doit pas être traduit", () => {
 		it("ignore le contenu des chaînes", () => {
-			expect(frToEn('msg := "moteur ET pompe"')).toBe('msg := "moteur ET pompe"');
+			expect(frToEn('msg := "moteur ET pompe"')).toBe(
+				'msg := "moteur ET pompe"',
+			);
 		});
 
 		it("ignore un identifiant dont le mot-clé est un préfixe", () => {

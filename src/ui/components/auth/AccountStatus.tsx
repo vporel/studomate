@@ -1,8 +1,20 @@
 "use client";
 
-import { useAuthStore } from "@/ui/stores/auth/auth.store";
-import { KeyboardArrowDown as ArrowDownIcon } from "@mui/icons-material";
-import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
+import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
+import {
+	getAnonymousPseudo,
+	isAnonymousUser,
+	useAuthStore,
+} from "@/ui/stores/auth/auth.store";
+import ArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import {
+	Box,
+	Button,
+	Menu,
+	MenuItem,
+	Tooltip,
+	Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import AuthModal from "./AuthModal";
@@ -21,21 +33,27 @@ export default function AccountStatus() {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
 	useEffect(() => {
-		void init();
+		if (isSupabaseConfigured) void init();
 	}, [init]);
 
-	if (loading) return null;
+	if (!isSupabaseConfigured || loading) return null;
 
 	if (!user) {
 		return (
 			<Box>
-				<Button size="small" onClick={() => setAuthModalVisible(true)}>
-					Se connecter
-				</Button>
+				<Tooltip title="Connectez-vous pour associer vos projets à votre compte">
+					<Button size="small" onClick={() => setAuthModalVisible(true)}>
+						Se connecter
+					</Button>
+				</Tooltip>
 				<AuthModal />
 			</Box>
 		);
 	}
+
+	const displayName = isAnonymousUser(user)
+		? getAnonymousPseudo(user)
+		: user.email;
 
 	return (
 		<Box>
@@ -46,11 +64,20 @@ export default function AccountStatus() {
 				endIcon={<ArrowDownIcon fontSize="small" />}
 				sx={{ textTransform: "none" }}
 			>
-				<Typography fontSize="0.85rem" color="text.secondary" noWrap maxWidth={180}>
-					{user.email}
+				<Typography
+					fontSize="0.85rem"
+					color="text.secondary"
+					noWrap
+					maxWidth={180}
+				>
+					{displayName}
 				</Typography>
 			</Button>
-			<Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={() => setAnchorEl(null)}
+			>
 				<MenuItem
 					onClick={() => {
 						setAnchorEl(null);

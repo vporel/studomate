@@ -1,4 +1,4 @@
-﻿import { ElementType } from "../element.schema";
+import { ElementType } from "../element.schema";
 import Grafcet from "../grafcet.schema";
 import { Dimensions, XYPosition } from "../shared-types";
 import AbstractGrafcetCommand from "./abstract-grafcet.command";

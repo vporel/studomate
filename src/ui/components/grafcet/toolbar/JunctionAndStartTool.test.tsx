@@ -22,7 +22,11 @@ describe("JunctionAndStartTool", () => {
 			</GrafcetToolbarDnDProvider>,
 		);
 
-		expect(document.querySelector(".grafcet-toolbar__junction-and-start")).toBeInTheDocument();
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__junction-and-start"),
+		).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
 	});
 });

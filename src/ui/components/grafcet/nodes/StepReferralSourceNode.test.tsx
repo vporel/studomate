@@ -6,7 +6,9 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
-import StepReferralSourceNode, { StepReferralSourceNodeType } from "./StepReferralSourceNode";
+import StepReferralSourceNode, {
+	StepReferralSourceNodeType,
+} from "./StepReferralSourceNode";
 
 jest.mock("../context/GrafcetContext");
 jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
@@ -14,17 +16,29 @@ jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 	default: () => null,
 }));
 
-function setup({ targetStepNumber = 3 as number | "", updateNodeData = jest.fn() } = {}) {
+function setup({
+	targetStepNumber = 3 as number | "",
+	updateNodeData = jest.fn(),
+} = {}) {
 	const referral = new StepReferralSourceBuilder()
 		.id("ref-1")
 		.targetStepNumber(targetStepNumber)
 		.position(0, 0)
 		.build();
-	const grafcet = new GrafcetBuilder().id("g1").addStepReferralSource(referral).build();
+	const grafcet = new GrafcetBuilder()
+		.id("g1")
+		.addStepReferralSource(referral)
+		.build();
 
-	(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+	(useGrafcetContext as jest.Mock).mockReturnValue({
+		store: fakeStoreApi({ grafcet }),
+	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ grafcet, workflowManager: { updateNodeData }, highlightedNodesIds: [] }),
+		selectorImplementation({
+			grafcet,
+			workflowManager: { updateNodeData },
+			highlightedNodesIds: [],
+		}),
 	);
 
 	const props = {
@@ -43,7 +57,9 @@ function setup({ targetStepNumber = 3 as number | "", updateNodeData = jest.fn()
 }
 
 function numberInput(): HTMLInputElement {
-	return document.querySelector(".step_referral_source_node__input") as HTMLInputElement;
+	return document.querySelector(
+		".step_referral_source_node__input",
+	) as HTMLInputElement;
 }
 
 describe("StepReferralSourceNode", () => {
@@ -54,12 +70,16 @@ describe("StepReferralSourceNode", () => {
 
 	it("édite le numéro cible au double-clic puis dispatche la commande de mise à jour au blur", () => {
 		const { updateNodeData } = setup({ targetStepNumber: 1 });
-		fireEvent.doubleClick(document.querySelector(".grafcet-step-referral-source-node")!);
+		fireEvent.doubleClick(
+			document.querySelector(".grafcet-step-referral-source-node")!,
+		);
 		const input = numberInput();
 
 		fireEvent.change(input, { target: { value: "9" } });
 		fireEvent.blur(input);
 
-		expect(updateNodeData).toHaveBeenCalledWith("ref-1", { targetStepNumber: 9 });
+		expect(updateNodeData).toHaveBeenCalledWith("ref-1", {
+			targetStepNumber: 9,
+		});
 	});
 });

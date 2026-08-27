@@ -6,8 +6,14 @@ import { InputBase } from "@mui/material";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
 
-export default function LadderSectionDescription({ section }: { section: Section }) {
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+export default function LadderSectionDescription({
+	section,
+}: {
+	section: Section;
+}) {
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 
 	const handleBlur = useCallback(
 		(e: React.FocusEvent<HTMLTextAreaElement>) => {

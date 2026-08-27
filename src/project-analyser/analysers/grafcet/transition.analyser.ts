@@ -1,32 +1,41 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
-import Variable from "@/schemas/variable/variable.schema";
 import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Transition from "@/schemas/grafcet/transition.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
-import { buildEnvironmentCached } from "./build-environment.helper";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class TransitionAnalyser extends ElementAnalyser<Transition> {
+export default class TransitionAnalyser extends GrafcetElementAnalyser<Transition> {
 	/**
 	 * Rules that apply to the transition's own data, independently of the grafcet.
 	 */
 	analyseIsolated(
 		transition: Transition,
-		{ allowEmptyContent = false, dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
+		{
+			allowEmptyContent = false,
+			dialect = Dialect.FR,
+		}: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-transition" as const, sourceId: transition.id };
+		const source = {
+			sourceType: "grafcet-transition" as const,
+			sourceId: transition.id,
+		};
 
-		if (!transition.data.expression || transition.data.expression.trim() === "") {
+		if (
+			!transition.data.expression ||
+			transition.data.expression.trim() === ""
+		) {
 			if (!allowEmptyContent) {
 				issues.push(
 					new ProjectAnalyserIssue(
@@ -40,9 +49,10 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 			return issues;
 		}
 		try {
-			const lexer = new Lexer(dialect);
-			const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
-			const node = parser.parse();
+			const { ast: node } = parseExpressionCached(
+				transition.getFullExpression(),
+				dialect,
+			);
 			const typeAnalyser = new TypeAnalyserVisitor();
 			if (node.type === "ASSIGN_STATEMENT") {
 				issues.push(
@@ -54,7 +64,10 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 					),
 				);
 			}
-			if (node.type !== "IDENTIFIER" && typeAnalyser.visit(node) !== "boolean") {
+			if (
+				node.type !== "IDENTIFIER" &&
+				typeAnalyser.visit(node) !== "boolean"
+			) {
 				if (node.type === "NUMBER_LITERAL") {
 					issues.push(
 						new ProjectAnalyserIssue(
@@ -95,11 +108,14 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 	analyseInContext(
 		transition: Transition,
 		grafcet: Grafcet,
-		variables: Variable[],
+		env: Environment,
 		dialect: Dialect = Dialect.FR,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-transition" as const, sourceId: transition.id };
+		const source = {
+			sourceType: "grafcet-transition" as const,
+			sourceId: transition.id,
+		};
 
 		if (!TransitionHelper.hasPredecessor(transition.id, grafcet)) {
 			issues.push(
@@ -144,12 +160,15 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 				),
 			);
 		}
-		if (transition.data.expression && transition.data.expression.trim() !== "") {
+		if (
+			transition.data.expression &&
+			transition.data.expression.trim() !== ""
+		) {
 			try {
-				const lexer = new Lexer(dialect);
-				const parser = new Parser(lexer.tokenize(transition.getFullExpression()));
-				const node = parser.parse();
-				const env = buildEnvironmentCached(variables);
+				const { ast: node } = parseExpressionCached(
+					transition.getFullExpression(),
+					dialect,
+				);
 				const semanticAnalyser = new SemanticAnalyserVisitor(env);
 				semanticAnalyser.visit(node);
 				//Folds constant sub-expressions to catch errors only detectable once computed (e.g.
@@ -171,7 +190,9 @@ export default class TransitionAnalyser extends ElementAnalyser<Transition> {
 					}
 				}
 				//Search for timer string declarations
-				const finder = new FinderVisitor<TimerStringDeclarationNode>("TIMER_STRING_DECLARATION");
+				const finder = new FinderVisitor<TimerStringDeclarationNode>(
+					"TIMER_STRING_DECLARATION",
+				);
 				const timerStringDeclarations = finder.visit(node);
 				//For each declaration, make sure the name doesn't conflict with an existing variable
 				timerStringDeclarations.forEach((decl) => {

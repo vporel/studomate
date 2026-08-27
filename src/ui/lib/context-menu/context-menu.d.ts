@@ -11,7 +11,8 @@ export type ContextMenuItemBaseType = {
  * pour les groupes de premier niveau. */
 export type ContextMenuDividerType = { divider: true };
 
-export type ContextMenuSubItemType = ContextMenuItemBaseType | ContextMenuDividerType;
+export type ContextMenuSubItemType =
+	ContextMenuItemBaseType | ContextMenuDividerType;
 
 export type ContextMenuItemType = ContextMenuItemBaseType & {
 	subItems?: ContextMenuSubItemType[];

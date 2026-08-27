@@ -1,5 +1,7 @@
 /** @jest-environment jsdom */
-import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
+import Project, {
+	DEFAULT_PROJECT_NAME,
+} from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import { exportProject } from "./project-export-utils";
 
@@ -14,7 +16,9 @@ describe("exportProject", () => {
 		revokeObjectURL = jest.fn();
 		URL.createObjectURL = createObjectURL;
 		URL.revokeObjectURL = revokeObjectURL;
-		clickSpy = jest.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+		clickSpy = jest
+			.spyOn(HTMLAnchorElement.prototype, "click")
+			.mockImplementation(() => {});
 	});
 
 	afterEach(() => {

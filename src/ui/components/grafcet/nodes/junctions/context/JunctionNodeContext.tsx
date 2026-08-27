@@ -79,7 +79,11 @@ export const JunctionNodeContextProvider = ({
 		],
 	);
 
-	return <JunctionNodeContext.Provider value={contextValue}>{children}</JunctionNodeContext.Provider>;
+	return (
+		<JunctionNodeContext.Provider value={contextValue}>
+			{children}
+		</JunctionNodeContext.Provider>
+	);
 };
 
 export const useJunctionNodeContext = () => useContext(JunctionNodeContext);

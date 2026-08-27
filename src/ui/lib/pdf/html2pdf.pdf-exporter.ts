@@ -6,7 +6,8 @@ export class Html2PdfExporter implements PdfExporter {
 
 		// Construit un conteneur HTML structuré : une div par section, chacune dimensionnée A4
 		const wrapper = document.createElement("div");
-		wrapper.style.cssText = "position:absolute;left:-9999px;top:0;background:white;";
+		wrapper.style.cssText =
+			"position:absolute;left:-9999px;top:0;background:white;";
 
 		for (let i = 0; i < sections.length; i++) {
 			const section = sections[i];

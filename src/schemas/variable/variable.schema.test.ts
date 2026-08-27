@@ -83,20 +83,36 @@ describe("Variable", () => {
 			["logic-output", "OUT"],
 			["analog-output", "OUT"],
 			["memory", "INOUT"],
-		] as [VariableZone, string][])("zone %s → direction %s", (zone, expected) => {
-			const variable = new Variable("id", "M", zone, ZONES_TO_TYPES[zone][0]);
-			expect(variable.getDirection()).toBe(expected);
-		});
+		] as [VariableZone, string][])(
+			"zone %s → direction %s",
+			(zone, expected) => {
+				const variable = new Variable("id", "M", zone, ZONES_TO_TYPES[zone][0]);
+				expect(variable.getDirection()).toBe(expected);
+			},
+		);
 	});
 
 	describe("update", () => {
 		it("normalise le type en majuscules et trime l'adresse", () => {
 			const variable = new Variable("id", "M", "memory", "BOOL");
 
-			variable.update({ type: "bool" as Variable["type"], address: " %I0.0 " });
+			const updated = variable.update({
+				type: "bool" as Variable["type"],
+				address: " %I0.0 ",
+			});
 
-			expect(variable.type).toBe("BOOL");
-			expect(variable.address).toBe("%I0.0");
+			expect(updated.type).toBe("BOOL");
+			expect(updated.address).toBe("%I0.0");
+		});
+
+		it("retourne une nouvelle instance sans muter l'original", () => {
+			const variable = new Variable("id", "M", "memory", "BOOL");
+
+			const updated = variable.update({ mnemonic: "AUTRE" });
+
+			expect(updated).not.toBe(variable);
+			expect(updated.mnemonic).toBe("AUTRE");
+			expect(variable.mnemonic).toBe("M");
 		});
 
 		it("lève sans muter l'instance quand le résultat serait invalide", () => {
@@ -144,7 +160,9 @@ describe("Variable", () => {
 
 	describe("getValidTypesForZones", () => {
 		it("agrège sans doublon les types valides de plusieurs zones", () => {
-			expect(Variable.getValidTypesForZones(["logic-input", "logic-output"])).toEqual(["BOOL"]);
+			expect(
+				Variable.getValidTypesForZones(["logic-input", "logic-output"]),
+			).toEqual(["BOOL"]);
 		});
 	});
 
@@ -169,7 +187,9 @@ describe("Variable", () => {
 
 	describe("ownerBlock", () => {
 		it("crée une variable de bloc avec un mnémonique pointé", () => {
-			const variable = new Variable("id", "Tempo1.PT", "memory", "TIME", { id: "block1" });
+			const variable = new Variable("id", "Tempo1.PT", "memory", "TIME", {
+				id: "block1",
+			});
 			expect(variable.ownerBlock).toEqual({ id: "block1" });
 			expect(variable.type).toBe("TIME");
 		});

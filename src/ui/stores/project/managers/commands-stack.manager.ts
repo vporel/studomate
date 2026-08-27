@@ -1,19 +1,27 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
 import Project from "@/schemas/project/project.schema";
-import { ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
+import {
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+} from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 
-export default class CommandsStackManager {
+export default class ProjectCommandsStackManager {
 	private static COMMANDS_STACK_SIZE = 100;
 	private commandsStack: CommandsStack<Project>;
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
 
-	constructor(setStoreState: ProjectStoreSetFunction, getStoreState: ProjectStoreGetFunction) {
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
-		this.commandsStack = new CommandsStack<Project>(CommandsStackManager.COMMANDS_STACK_SIZE);
+		this.commandsStack = new CommandsStack<Project>(
+			ProjectCommandsStackManager.COMMANDS_STACK_SIZE,
+		);
 	}
 
 	executeOperation(commands: AbstractProjectCommand<any>[]): void {
@@ -78,6 +86,4 @@ export default class CommandsStackManager {
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 	}
-
-
 }

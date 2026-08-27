@@ -1,14 +1,16 @@
 import Element, { ElementType } from "@/schemas/grafcet/element.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser from "./element.analyser";
+import GrafcetElementAnalyser from "./element.analyser";
 
 /**
  * Default analyser that performs no validation and returns an empty list of issues.
  * Used for element types that don't require specific analysis logic.
  */
-export default class DefaultElementAnalyser extends ElementAnalyser<Element<any>> {
+export default class DefaultElementAnalyser extends GrafcetElementAnalyser<
+	Element<any>
+> {
 	elementType: ElementType;
 
 	constructor(elementType: ElementType) {
@@ -23,7 +25,7 @@ export default class DefaultElementAnalyser extends ElementAnalyser<Element<any>
 	analyseInContext(
 		_element: Element<any>,
 		_grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 	): ProjectAnalyserIssue[] {
 		return [];
 	}

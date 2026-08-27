@@ -22,7 +22,11 @@ describe("StepReferralTargetTool", () => {
 			</GrafcetToolbarDnDProvider>,
 		);
 
-		expect(document.querySelector(".grafcet-toolbar__step-referral-target")).toBeInTheDocument();
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__step-referral-target"),
+		).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
 	});
 });

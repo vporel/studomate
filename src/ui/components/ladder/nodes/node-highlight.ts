@@ -2,10 +2,13 @@ import { alpha, SxProps, Theme } from "@mui/material";
 
 /**
  * Halo clignotant partagé par tous les nœuds du ladder (contact, bobine, bloc) pour matérialiser
- * `highlightedNodesIds` (voir `ViewManager.temporarilyHighlightNodesAndEdges`) — un `::before`
+ * `highlightedNodesIds` (voir `LadderViewManager.temporarilyHighlightNodesAndEdges`) — un `::before`
  * plutôt qu'une bordure directe pour ne pas décaler la mise en page du nœud pendant l'animation.
  */
-export function getHighlightOverlaySx(highlighted: boolean | undefined, th: Theme): SxProps {
+export function getHighlightOverlaySx(
+	highlighted: boolean | undefined,
+	th: Theme,
+): SxProps {
 	if (!highlighted) return {};
 	return {
 		"&::before": {

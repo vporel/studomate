@@ -15,7 +15,7 @@ function setup({
 	variables = [] as Variable[],
 	typeFilter,
 	excludeDirection,
-	acceptsTimeLiteral,
+	acceptedLiterals,
 	cols,
 	onCommit = jest.fn(),
 	ref,
@@ -24,7 +24,7 @@ function setup({
 	variables?: Variable[];
 	typeFilter?: Variable["type"][];
 	excludeDirection?: "IN" | "OUT" | "INOUT";
-	acceptsTimeLiteral?: boolean;
+	acceptedLiterals?: import("@/expression-language/literals/kind").LiteralKind[];
 	cols?: ("address" | "mnemonic" | "type" | "scope")[];
 	onCommit?: (next: string) => void;
 	ref?: React.Ref<VariableSelectorHandle>;
@@ -39,7 +39,7 @@ function setup({
 			onCommit={onCommit}
 			typeFilter={typeFilter}
 			excludeDirection={excludeDirection}
-			acceptsTimeLiteral={acceptsTimeLiteral}
+			acceptedLiterals={acceptedLiterals}
 			cols={cols}
 			ref={ref}
 		/>,
@@ -59,7 +59,10 @@ describe("VariableSelector — statut affiché", () => {
 	});
 
 	it("undeclared : le mnémonique ne correspond à aucune variable connue", () => {
-		setup({ value: "INCONNUE", variables: [new Variable("v1", "A", "memory", "BOOL")] });
+		setup({
+			value: "INCONNUE",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+		});
 		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
 	});
 
@@ -78,7 +81,10 @@ describe("VariableSelector — statut affiché", () => {
 			variables: [new Variable("v1", "A", "logic-input", "BOOL")],
 			excludeDirection: "IN",
 		});
-		expect(input()).toHaveAttribute("data-variable-status", "excluded-direction");
+		expect(input()).toHaveAttribute(
+			"data-variable-status",
+			"excluded-direction",
+		);
 	});
 
 	it("ok : la variable existe, respecte le typeFilter et n'a pas la direction exclue", () => {
@@ -91,12 +97,12 @@ describe("VariableSelector — statut affiché", () => {
 		expect(input()).toHaveAttribute("data-variable-status", "ok");
 	});
 
-	it("ok : une constante TIME (T#...) n'est jamais signalée non déclarée, si acceptsTimeLiteral", () => {
-		setup({ value: "T#5s", variables: [], acceptsTimeLiteral: true });
+	it("ok : une constante TIME (T#...) n'est jamais signalée non déclarée, si 'time' est accepté", () => {
+		setup({ value: "T#5s", variables: [], acceptedLiterals: ["time"] });
 		expect(input()).toHaveAttribute("data-variable-status", "ok");
 	});
 
-	it("undeclared : une constante TIME reste non déclarée sans acceptsTimeLiteral", () => {
+	it("undeclared : une constante TIME reste non déclarée si 'time' n'est pas accepté", () => {
 		setup({ value: "T#5s", variables: [] });
 		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
 	});
@@ -109,7 +115,12 @@ describe("VariableSelector — suggestions", () => {
 			new Variable("v2", "MauvaisType", "memory", "INT"),
 			new Variable("v3", "MauvaiseDirection", "logic-input", "BOOL"),
 		];
-		setup({ value: "", variables, typeFilter: ["BOOL"], excludeDirection: "IN" });
+		setup({
+			value: "",
+			variables,
+			typeFilter: ["BOOL"],
+			excludeDirection: "IN",
+		});
 
 		fireEvent.focus(input());
 

@@ -1,6 +1,10 @@
 import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { setPagesSession } from "@/ui/lib/pages-session-storage";
-import { PageData, ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
+import {
+	PageData,
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+} from "../project.store";
 
 export default class PagesManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -26,7 +30,10 @@ export default class PagesManager {
 		newPagesOrder.push(pageData.id);
 		const newPagesData = structuredClone(pagesData);
 		newPagesData[pageData.id] = pageData;
-		this.setStoreState(() => ({ pagesData: newPagesData, pagesOrder: newPagesOrder }));
+		this.setStoreState(() => ({
+			pagesData: newPagesData,
+			pagesOrder: newPagesOrder,
+		}));
 		this.setActivePage(pageData.id);
 	}
 
@@ -59,9 +66,23 @@ export default class PagesManager {
 		this.persistSession();
 	}
 
+	/** Réordonne les onglets. `orderedPageIds` doit être une permutation exacte de `pagesOrder`
+	 * (mêmes ids, même cardinalité) — sinon l'appel est ignoré. */
+	reorderPages(orderedPageIds: string[]): void {
+		const pagesOrder = this.getStoreState().pagesOrder;
+		if (
+			orderedPageIds.length !== pagesOrder.length ||
+			!orderedPageIds.every((id) => pagesOrder.includes(id))
+		)
+			return;
+		this.setStoreState(() => ({ pagesOrder: orderedPageIds }));
+		this.persistSession();
+	}
+
 	setActivePage(pageId: string): void {
 		const pagesOrder = this.getStoreState().pagesOrder;
-		if (!pagesOrder.includes(pageId)) throw new Error(`Page "${pageId}" not opened`);
+		if (!pagesOrder.includes(pageId))
+			throw new Error(`Page "${pageId}" not opened`);
 		this.getStoreState().setActiveScope(pageId);
 		this.setStoreState(() => ({ activePageId: pageId }));
 		this.persistSession();

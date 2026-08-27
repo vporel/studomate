@@ -32,9 +32,14 @@ describe("GrafcetFlow", () => {
 		const grafcet = new GrafcetBuilder().id("g1").build();
 
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ mode: ProjectMode.DESIGN, setActiveScope: jest.fn() }),
+			selectorImplementation({
+				mode: ProjectMode.DESIGN,
+				setActiveScope: jest.fn(),
+			}),
 		);
-		(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+		(useGrafcetContext as jest.Mock).mockReturnValue({
+			store: fakeStoreApi({ grafcet }),
+		});
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				grafcet,

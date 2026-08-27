@@ -3,7 +3,10 @@
  */
 import { renderHook } from "@testing-library/react";
 import Section from "@/schemas/ladder/section.schema";
-import { createContactElement, createCoilElement } from "@/schemas/ladder/element.schema";
+import {
+	createContactElement,
+	createCoilElement,
+} from "@/schemas/ladder/element.schema";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import { virtualRailId } from "@/ui/utils/ladder/ladder-flow-builder";
@@ -22,7 +25,9 @@ describe("useLadderConnectHandler", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	function setup(section: Section) {
-		(useLadderStore as jest.Mock).mockImplementation(selectorImplementation({ commandsStackManager }));
+		(useLadderStore as jest.Mock).mockImplementation(
+			selectorImplementation({ commandsStackManager }),
+		);
 		return renderHook(() => useLadderConnectHandler(section));
 	}
 
@@ -33,7 +38,12 @@ describe("useLadderConnectHandler", () => {
 		section.elements = [contact, coil];
 		const { result } = setup(section);
 
-		result.current({ source: contact.id, target: coil.id, sourceHandle: null, targetHandle: null });
+		result.current({
+			source: contact.id,
+			target: coil.id,
+			sourceHandle: null,
+			targetHandle: null,
+		});
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -52,7 +62,12 @@ describe("useLadderConnectHandler", () => {
 		section.elements = [contact];
 		const { result } = setup(section);
 
-		result.current({ source: virtualRailId(2), target: contact.id, sourceHandle: null, targetHandle: null });
+		result.current({
+			source: virtualRailId(2),
+			target: contact.id,
+			sourceHandle: null,
+			targetHandle: null,
+		});
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -61,8 +76,14 @@ describe("useLadderConnectHandler", () => {
 		expect(addCommand).toBeInstanceOf(ElementsAddCommand);
 		expect(addCommand.payload.elements).toHaveLength(1);
 		const [railTerminal] = addCommand.payload.elements;
-		expect(railTerminal).toMatchObject({ type: "railTerminal", position: { row: 2 } });
+		expect(railTerminal).toMatchObject({
+			type: "railTerminal",
+			position: { row: 2 },
+		});
 		expect(connectCommand).toBeInstanceOf(ConnectionsAddCommand);
-		expect(connectCommand.payload.connections[0]).toMatchObject({ source: { id: railTerminal.id }, target: { id: contact.id } });
+		expect(connectCommand.payload.connections[0]).toMatchObject({
+			source: { id: railTerminal.id },
+			target: { id: contact.id },
+		});
 	});
 });

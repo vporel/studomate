@@ -27,16 +27,25 @@ describe("paneContextMenuItems (Ladder)", () => {
 	});
 
 	it("désactive 'Sélectionner les liaisons' sans arête, l'active sinon", () => {
-		const [, withoutEdges] = paneContextMenuItems(fakeWorkflowManager([{ id: "n1" }], []), "s1")[0];
+		const [, withoutEdges] = paneContextMenuItems(
+			fakeWorkflowManager([{ id: "n1" }], []),
+			"s1",
+		)[0];
 		expect(withoutEdges.disabled).toBe(true);
 
-		const [, withEdges] = paneContextMenuItems(fakeWorkflowManager([{ id: "n1" }], [{ id: "e1" }]), "s1")[0];
+		const [, withEdges] = paneContextMenuItems(
+			fakeWorkflowManager([{ id: "n1" }], [{ id: "e1" }]),
+			"s1",
+		)[0];
 		expect(withEdges.disabled).toBe(false);
 	});
 
 	it("délègue à selectAllNodesAndEdges / selectAllEdges pour la bonne section, au clic", () => {
 		const workflowManager = fakeWorkflowManager([{ id: "n1" }], [{ id: "e1" }]);
-		const [[selectAllItem, selectEdgesItem]] = paneContextMenuItems(workflowManager, "s1");
+		const [[selectAllItem, selectEdgesItem]] = paneContextMenuItems(
+			workflowManager,
+			"s1",
+		);
 
 		selectAllItem.onClick();
 		selectEdgesItem.onClick();

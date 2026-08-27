@@ -47,7 +47,14 @@ export default function BlockStructuralRow({
 			>
 				{label}
 			</Typography>
-			<Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 9, px: "4px" }}>
+			<Box
+				sx={{
+					display: "flex",
+					justifyContent: "space-between",
+					fontSize: 9,
+					px: "4px",
+				}}
+			>
 				<span>{inputLabel}</span>
 				<span>{outputLabel}</span>
 			</Box>

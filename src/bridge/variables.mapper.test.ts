@@ -19,13 +19,23 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 	});
 
 	it("maps an input zone to the IN direction", () => {
-		const variable = new VariableBuilder().zone("logic-input").type("BOOL").build();
-		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe("IN");
+		const variable = new VariableBuilder()
+			.zone("logic-input")
+			.type("BOOL")
+			.build();
+		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe(
+			"IN",
+		);
 	});
 
 	it("maps an output zone to the OUT direction", () => {
-		const variable = new VariableBuilder().zone("logic-output").type("BOOL").build();
-		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe("OUT");
+		const variable = new VariableBuilder()
+			.zone("logic-output")
+			.type("BOOL")
+			.build();
+		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe(
+			"OUT",
+		);
 	});
 
 	it("initialises the environment variable with the type's default value", () => {
@@ -35,7 +45,10 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 		const intVar = new VariableBuilder().zone("memory").type("INT").build();
 		expect(SchemaVariablesMapper.schemaToEnv(intVar).getValue()).toBe(0);
 
-		const stringVar = new VariableBuilder().zone("memory").type("STRING").build();
+		const stringVar = new VariableBuilder()
+			.zone("memory")
+			.type("STRING")
+			.build();
 		expect(SchemaVariablesMapper.schemaToEnv(stringVar).getValue()).toBe("");
 	});
 });

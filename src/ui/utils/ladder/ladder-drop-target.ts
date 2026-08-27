@@ -10,9 +10,20 @@ export type DropTarget = { row: number; col: number; sourceId: string | null };
  * d'une connexion existante (même ligne ou pas) est traitée séparément, en amont, par
  * `findCellCrossings` — ceci ne gère que le repli "rien ne croise cette cellule".
  */
-export function resolveDropTarget(leaves: PositionedLeaf[], dropRow: number, dropCol: number): DropTarget {
-	const before = leaves.filter((leaf) => leaf.row === dropRow && leaf.col < dropCol);
-	const source = before.length > 0 ? before.reduce((closest, leaf) => (leaf.col > closest.col ? leaf : closest)) : null;
+export function resolveDropTarget(
+	leaves: PositionedLeaf[],
+	dropRow: number,
+	dropCol: number,
+): DropTarget {
+	const before = leaves.filter(
+		(leaf) => leaf.row === dropRow && leaf.col < dropCol,
+	);
+	const source =
+		before.length > 0
+			? before.reduce((closest, leaf) =>
+					leaf.col > closest.col ? leaf : closest,
+				)
+			: null;
 
 	return { row: dropRow, col: dropCol, sourceId: source ? source.id : null };
 }

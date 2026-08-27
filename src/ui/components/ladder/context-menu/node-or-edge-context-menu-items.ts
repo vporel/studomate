@@ -15,9 +15,15 @@ export default function nodeOrEdgeContextMenuItems(
 				label: "Supprimer",
 				onClick: () => {
 					if (element.type === LADDER_CONNECTION_EDGE_TYPE) {
-						handleDelete({ nodes: [], edges: [{ id: (element as Edge).id } as Edge] });
+						handleDelete({
+							nodes: [],
+							edges: [{ id: (element as Edge).id } as Edge],
+						});
 					} else if (element.type !== "pane") {
-						handleDelete({ nodes: [{ id: (element as Node).id } as Node], edges: [] });
+						handleDelete({
+							nodes: [{ id: (element as Node).id } as Node],
+							edges: [],
+						});
 					}
 				},
 			},

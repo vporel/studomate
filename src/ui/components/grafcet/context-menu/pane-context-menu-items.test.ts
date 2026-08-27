@@ -34,15 +34,20 @@ describe("paneContextMenuItems", () => {
 
 		expect(selectEdgesItem.disabled).toBe(true);
 
-		const viewManagerWithEdges = fakeViewManager([{ id: "n1" }], [{ id: "e1" }]);
-		const [, selectEdgesItemActive] = paneContextMenuItems(viewManagerWithEdges)[0];
+		const viewManagerWithEdges = fakeViewManager(
+			[{ id: "n1" }],
+			[{ id: "e1" }],
+		);
+		const [, selectEdgesItemActive] =
+			paneContextMenuItems(viewManagerWithEdges)[0];
 
 		expect(selectEdgesItemActive.disabled).toBe(false);
 	});
 
 	it("délègue à selectAllNodesAndEdges / selectAllEdges au clic", () => {
 		const viewManager = fakeViewManager([{ id: "n1" }], [{ id: "e1" }]);
-		const [[selectAllItem, selectEdgesItem]] = paneContextMenuItems(viewManager);
+		const [[selectAllItem, selectEdgesItem]] =
+			paneContextMenuItems(viewManager);
 
 		selectAllItem.onClick();
 		selectEdgesItem.onClick();

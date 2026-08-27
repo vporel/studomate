@@ -55,7 +55,8 @@ const HmiWidgetItem = ({
 	const size = previewSize ?? widget.size;
 	// Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" à écrire en
 	// simulation — voir `RectangleData`/`EllipseData`/`TextData`.
-	const boundMnemonic = "variableMnemonic" in widget.data ? widget.data.variableMnemonic : null;
+	const boundMnemonic =
+		"variableMnemonic" in widget.data ? widget.data.variableMnemonic : null;
 
 	return (
 		<Box
@@ -64,8 +65,14 @@ const HmiWidgetItem = ({
 			onContextMenu={onContextMenu}
 			sx={{
 				position: "absolute",
-				left: widget.position.x + (previewOffset?.dx ?? 0) + (animationOffset?.dx ?? 0),
-				top: widget.position.y + (previewOffset?.dy ?? 0) + (animationOffset?.dy ?? 0),
+				left:
+					widget.position.x +
+					(previewOffset?.dx ?? 0) +
+					(animationOffset?.dx ?? 0),
+				top:
+					widget.position.y +
+					(previewOffset?.dy ?? 0) +
+					(animationOffset?.dy ?? 0),
 				width: size.width,
 				height: size.height,
 				zIndex: widget.stackOrder + HMI_WIDGET_ZINDEX_OFFSET,
@@ -76,11 +83,18 @@ const HmiWidgetItem = ({
 			<Component
 				data={widget.data}
 				value={value}
+				animationsEnabled={isSimulation}
 				selected={isSelected && !isSimulation}
 				onValueChange={
-					isSimulation && boundMnemonic !== null ? (v) => onSetVariableValue(boundMnemonic, v) : undefined
+					isSimulation && boundMnemonic !== null
+						? (v) => onSetVariableValue(boundMnemonic, v)
+						: undefined
 				}
-				onTrigger={isSimulation ? (eventName) => onTriggerEvent(widget.id, eventName) : undefined}
+				onTrigger={
+					isSimulation
+						? (eventName) => onTriggerEvent(widget.id, eventName)
+						: undefined
+				}
 			/>
 			{showResizeHandle && !isSimulation && (
 				<Box

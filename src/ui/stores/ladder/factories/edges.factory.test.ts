@@ -1,5 +1,8 @@
 import Connection from "@/schemas/ladder/connection.schema";
-import { createCoilElement, createContactElement } from "@/schemas/ladder/element.schema";
+import {
+	createCoilElement,
+	createContactElement,
+} from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import LadderEdgesFactory from "./edges.factory";
 
@@ -9,7 +12,13 @@ describe("LadderEdgesFactory.syncEdges", () => {
 		const contact = createContactElement("A", "NO", 0, 0);
 		const coil = createCoilElement("Q1", "normal", 0, 1);
 		section.elements = [contact, coil];
-		section.connections = [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })];
+		section.connections = [
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+			),
+		];
 		return { section, contact, coil };
 	}
 
@@ -23,7 +32,10 @@ describe("LadderEdgesFactory.syncEdges", () => {
 
 	it("conserve l'identité et la sélection d'une arête inchangée", () => {
 		const { section } = sectionWithConnection();
-		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({ ...e, selected: true }));
+		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({
+			...e,
+			selected: true,
+		}));
 
 		const edges = LadderEdgesFactory.syncEdges(prev, section);
 
@@ -33,10 +45,17 @@ describe("LadderEdgesFactory.syncEdges", () => {
 
 	it("met à jour source/target depuis le domaine sans casser la sélection", () => {
 		const { section, coil } = sectionWithConnection();
-		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({ ...e, selected: true }));
+		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({
+			...e,
+			selected: true,
+		}));
 		const otherContact = createContactElement("B", "NO", 0, 0);
 		section.elements.push(otherContact);
-		section.connections[0] = new Connection("c1", { id: otherContact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" });
+		section.connections[0] = new Connection(
+			"c1",
+			{ id: otherContact.id, type: "contact", handle: "source" },
+			{ id: coil.id, type: "coil", handle: "target" },
+		);
 
 		const edges = LadderEdgesFactory.syncEdges(prev, section);
 
@@ -46,7 +65,10 @@ describe("LadderEdgesFactory.syncEdges", () => {
 
 	it("met à jour data.points depuis le domaine (déplacement d'un segment) sans casser la sélection", () => {
 		const { section } = sectionWithConnection();
-		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({ ...e, selected: true }));
+		const prev = LadderEdgesFactory.syncEdges([], section).map((e) => ({
+			...e,
+			selected: true,
+		}));
 		section.connections[0].data.points = [
 			[1, 10],
 			[5, 10],
@@ -67,7 +89,13 @@ describe("LadderEdgesFactory.syncEdges", () => {
 	it("retire une arête dont la connexion a disparu, ajoute les nouvelles", () => {
 		const { section } = sectionWithConnection();
 		const prev = LadderEdgesFactory.syncEdges([], section);
-		section.connections = [new Connection("c2", { id: section.elements[0].id, type: "contact", handle: "source" }, { id: section.elements[1].id, type: "coil", handle: "target" })];
+		section.connections = [
+			new Connection(
+				"c2",
+				{ id: section.elements[0].id, type: "contact", handle: "source" },
+				{ id: section.elements[1].id, type: "coil", handle: "target" },
+			),
+		];
 
 		const edges = LadderEdgesFactory.syncEdges(prev, section);
 

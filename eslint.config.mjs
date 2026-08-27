@@ -20,6 +20,7 @@ const eslintConfig = [
 	{
 		rules: {
 			"@typescript-eslint/no-explicit-any": "off",
+			"unicode-bom": ["error", "never"],
 			// console.error/warn sont la stratégie de journalisation actuelle (analysers,
 			// repositories, managers...) ; seul console.log (oublis de debug) est visé.
 			"no-console": ["error", { allow: ["warn", "error"] }],
@@ -42,6 +43,13 @@ const eslintConfig = [
 			"no-restricted-imports": [
 				"error",
 				{
+					paths: [
+						{
+							name: "@mui/icons-material",
+							message:
+								"Importez chaque icône par son chemin direct (@mui/icons-material/Nom) : le barrel ralentit la compilation dev/HMR.",
+						},
+					],
 					patterns: [
 						{
 							group: ["../../*"],

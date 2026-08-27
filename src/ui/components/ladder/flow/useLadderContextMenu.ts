@@ -11,7 +11,10 @@ import { useLadderContext } from "../context/LadderContext";
  * Gestionnaire d'ouverture du menu contextuel — émet les événements show/hide
  * via le bus mitt de LadderContext, calqué sur useContextMenuOpeningHandlers du grafcet.
  */
-export default function useLadderContextMenu(section: Section, mode: ProjectMode) {
+export default function useLadderContextMenu(
+	section: Section,
+	mode: ProjectMode,
+) {
 	const { contextMenuEvents } = useLadderContext();
 	const { openContextMenu, closeContextMenu } = useFlowContextMenu<any>(
 		contextMenuEvents,
@@ -19,33 +22,43 @@ export default function useLadderContextMenu(section: Section, mode: ProjectMode
 			(element: any) => {
 				if (element.type === "pane") return true;
 				if (mode !== ProjectMode.DESIGN) return false;
-				if (element.id && "position" in element && !section.getElement(element.id)) return false; // is Node
+				if (
+					element.id &&
+					"position" in element &&
+					!section.getElement(element.id)
+				)
+					return false; // is Node
 				return true;
 			},
-			[mode, section]
-		)
+			[mode, section],
+		),
 	);
 
 	const openNodeContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent, node: Node) => {
 			openContextMenu(event, node);
 		},
-		[openContextMenu]
+		[openContextMenu],
 	);
 
 	const openEdgeContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent, edge: Edge) => {
 			openContextMenu(event, edge);
 		},
-		[openContextMenu]
+		[openContextMenu],
 	);
 
 	const openPaneContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent) => {
 			openContextMenu(event, { type: "pane" });
 		},
-		[openContextMenu]
+		[openContextMenu],
 	);
 
-	return { openNodeContextMenu, openEdgeContextMenu, openPaneContextMenu, closeContextMenu };
+	return {
+		openNodeContextMenu,
+		openEdgeContextMenu,
+		openPaneContextMenu,
+		closeContextMenu,
+	};
 }

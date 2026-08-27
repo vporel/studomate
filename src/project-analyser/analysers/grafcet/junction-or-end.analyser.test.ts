@@ -1,3 +1,4 @@
+import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
@@ -9,7 +10,10 @@ describe("JunctionOrEndAnalyser", () => {
 
 	describe("analyseIsolated", () => {
 		it("returns no issues for valid junction", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(2).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
 
 			const issues = analyser.analyseIsolated(junction);
 
@@ -17,7 +21,10 @@ describe("JunctionOrEndAnalyser", () => {
 		});
 
 		it("handles junction with multiple branches", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(5).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(5)
+				.build();
 
 			const issues = analyser.analyseIsolated(junction);
 
@@ -27,10 +34,20 @@ describe("JunctionOrEndAnalyser", () => {
 
 	describe("analyseInContext", () => {
 		it("detects pivot not connected", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(2).build();
-			const grafcet = new GrafcetBuilder().id("grafcet-1").addJunctionOrEnd(junction).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addJunctionOrEnd(junction)
+				.build();
 
-			const issues = analyser.analyseInContext(junction, grafcet, []);
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
 
 			const pivotIssue = issues.find((i) => i.message.includes("pivot"));
 			expect(pivotIssue).toBeDefined();
@@ -38,7 +55,10 @@ describe("JunctionOrEndAnalyser", () => {
 		});
 
 		it("detects branches not all connected", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(3).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(3)
+				.build();
 			const connection = new ConnectionBuilder()
 				.id("c1")
 				.source("junction-or-end", "junction-1", "source:pivot")
@@ -50,7 +70,11 @@ describe("JunctionOrEndAnalyser", () => {
 				.addConnection(connection)
 				.build();
 
-			const issues = analyser.analyseInContext(junction, grafcet, []);
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
 
 			const branchIssue = issues.find((i) => i.message.includes("branches"));
 			expect(branchIssue).toBeDefined();
@@ -58,10 +82,19 @@ describe("JunctionOrEndAnalyser", () => {
 		});
 
 		it("returns no issues when all connections are valid", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(2).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
 			const branchIds = junction.data.branchesOrder;
-			const trans1 = new TransitionBuilder().id("trans-2").expression("Btn1").build();
-			const trans2 = new TransitionBuilder().id("trans-3").expression("NON Btn1").build();
+			const trans1 = new TransitionBuilder()
+				.id("trans-2")
+				.expression("Btn1")
+				.build();
+			const trans2 = new TransitionBuilder()
+				.id("trans-3")
+				.expression("NON Btn1")
+				.build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("junction-or-end", "junction-1", "pivot")
@@ -84,15 +117,25 @@ describe("JunctionOrEndAnalyser", () => {
 				.addConnections(c1, c2, c3)
 				.build();
 
-			const issues = analyser.analyseInContext(junction, grafcet, []);
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
 
 			expect(issues).toHaveLength(0);
 		});
 
 		it("detects a branch not connected to a transition", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(2).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(2)
+				.build();
 			const branchIds = junction.data.branchesOrder;
-			const trans1 = new TransitionBuilder().id("trans-2").expression("Btn1").build();
+			const trans1 = new TransitionBuilder()
+				.id("trans-2")
+				.expression("Btn1")
+				.build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("junction-or-end", "junction-1", "pivot")
@@ -115,20 +158,38 @@ describe("JunctionOrEndAnalyser", () => {
 				.addConnections(c1, c2, c3)
 				.build();
 
-			const issues = analyser.analyseInContext(junction, grafcet, []);
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const typeIssue = issues.find((i) => i.code === "JUNCTION_OR_END_BRANCH_NOT_TRANSITION");
+			const typeIssue = issues.find(
+				(i) => i.code === "JUNCTION_OR_END_BRANCH_NOT_TRANSITION",
+			);
 			expect(typeIssue).toBeDefined();
 			expect(typeIssue?.severity).toBe("error");
 		});
 
 		it("detects fewer than two branches", () => {
-			const junction = new JunctionOrEndBuilder().id("junction-1").nBranches(1).build();
-			const grafcet = new GrafcetBuilder().id("grafcet-1").addJunctionOrEnd(junction).build();
+			const junction = new JunctionOrEndBuilder()
+				.id("junction-1")
+				.nBranches(1)
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addJunctionOrEnd(junction)
+				.build();
 
-			const issues = analyser.analyseInContext(junction, grafcet, []);
+			const issues = analyser.analyseInContext(
+				junction,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const minBranchesIssue = issues.find((i) => i.code === "JUNCTION_OR_MIN_BRANCHES");
+			const minBranchesIssue = issues.find(
+				(i) => i.code === "JUNCTION_OR_MIN_BRANCHES",
+			);
 			expect(minBranchesIssue).toBeDefined();
 			expect(minBranchesIssue?.severity).toBe("error");
 		});

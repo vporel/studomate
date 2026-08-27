@@ -5,18 +5,32 @@ import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, IconButton, MenuItem, TextField, Typography } from "@mui/material";
+import {
+	Box,
+	Button,
+	IconButton,
+	MenuItem,
+	TextField,
+	Typography,
+} from "@mui/material";
 
 /** Événements exposés par type de widget — absent (ou liste vide) pour un type qui n'en déclenche
  * aucun. Sert aussi à décider si le bloc "Événements" doit s'afficher pour le widget sélectionné
  * (voir `HmiCanvas`). */
-export const HMI_WIDGET_EVENTS: Partial<Record<HmiWidget["type"], { name: string; label: string }[]>> = {
+export const HMI_WIDGET_EVENTS: Partial<
+	Record<HmiWidget["type"], { name: string; label: string }[]>
+> = {
 	"push-button": [{ name: "onPress", label: "Bouton pressé" }],
 };
 
-const HMI_ACTION_TYPES: { value: HmiAction["type"]; label: string }[] = [{ value: "navigate-to-page", label: "Changer de page" }];
+const HMI_ACTION_TYPES: { value: HmiAction["type"]; label: string }[] = [
+	{ value: "navigate-to-page", label: "Changer de page" },
+];
 
-function defaultAction(type: HmiAction["type"], targetHmiPageId: string): HmiAction {
+function defaultAction(
+	type: HmiAction["type"],
+	targetHmiPageId: string,
+): HmiAction {
 	switch (type) {
 		case "navigate-to-page":
 			return { type: "navigate-to-page", targetHmiPageId };
@@ -33,10 +47,16 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 
 	// `events` n'existe pas forcément encore sur `widget.data` (absent tant qu'aucune action n'a
 	// été ajoutée) — `HMI_WIDGET_EVENTS[widget.type]` garantit déjà que ce type de widget le porte.
-	const widgetEvents = (widget.data as { events?: Record<string, HmiAction[]> }).events;
+	const widgetEvents = (widget.data as { events?: Record<string, HmiAction[]> })
+		.events;
 
 	const setActions = (eventName: string, actions: HmiAction[]) => {
-		updateWidget(widget.id, { data: { ...widget.data, events: { ...widgetEvents, [eventName]: actions } } });
+		updateWidget(widget.id, {
+			data: {
+				...widget.data,
+				events: { ...widgetEvents, [eventName]: actions },
+			},
+		});
 	};
 
 	return (
@@ -44,17 +64,28 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 			{events.map(({ name, label }) => {
 				const actions = widgetEvents?.[name] ?? [];
 				return (
-					<Box key={name} sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-						<Typography sx={{ fontSize: "0.8rem", fontWeight: 600 }}>{label}</Typography>
+					<Box
+						key={name}
+						sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+					>
+						<Typography sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
+							{label}
+						</Typography>
 						{actions.map((action: HmiAction, index: number) => (
-							<Box key={index} sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+							<Box
+								key={index}
+								sx={{ display: "flex", gap: 1, alignItems: "center" }}
+							>
 								<TextField
 									select
 									size="small"
 									value={action.type}
 									onChange={(e) => {
 										const next = [...actions];
-										next[index] = defaultAction(e.target.value as HmiAction["type"], hmiPages[0]?.id ?? "");
+										next[index] = defaultAction(
+											e.target.value as HmiAction["type"],
+											hmiPages[0]?.id ?? "",
+										);
 										setActions(name, next);
 									}}
 									sx={{ flex: 1 }}
@@ -73,7 +104,10 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 										value={action.targetHmiPageId}
 										onChange={(e) => {
 											const next = [...actions];
-											next[index] = { ...action, targetHmiPageId: e.target.value };
+											next[index] = {
+												...action,
+												targetHmiPageId: e.target.value,
+											};
 											setActions(name, next);
 										}}
 										sx={{ flex: 1 }}
@@ -87,7 +121,12 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 								)}
 								<IconButton
 									size="small"
-									onClick={() => setActions(name, actions.filter((_: HmiAction, i: number) => i !== index))}
+									onClick={() =>
+										setActions(
+											name,
+											actions.filter((_: HmiAction, i: number) => i !== index),
+										)
+									}
 								>
 									<DeleteIcon fontSize="small" />
 								</IconButton>
@@ -96,7 +135,12 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 						<Button
 							size="small"
 							startIcon={<AddIcon />}
-							onClick={() => setActions(name, [...actions, defaultAction("navigate-to-page", hmiPages[0]?.id ?? "")])}
+							onClick={() =>
+								setActions(name, [
+									...actions,
+									defaultAction("navigate-to-page", hmiPages[0]?.id ?? ""),
+								])
+							}
 							sx={{ alignSelf: "flex-start" }}
 						>
 							Ajouter une action

@@ -45,7 +45,10 @@ export default function ProgramIssues({
 	getElementLabel: (elementId: string) => string;
 	onGoto: (elementId?: string) => void;
 }) {
-	if (!issues.overall && (!issues.elements || Object.keys(issues.elements).length === 0)) {
+	if (
+		!issues.overall &&
+		(!issues.elements || Object.keys(issues.elements).length === 0)
+	) {
 		return null;
 	}
 	const programKindLower = programKind.toLowerCase();

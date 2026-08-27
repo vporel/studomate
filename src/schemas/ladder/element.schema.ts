@@ -1,11 +1,21 @@
 import { createRandomId } from "@/ids";
 import { getCounterPortSpecs } from "../function-blocks/counter.schema";
-import { getBlockHeightInCells } from "../function-blocks/function-block.schema";
 import { TIMER_PORT_SPECS } from "../function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
-import { BlockElement } from "./block.schema";
+import { getBlockHeightInCells } from "./block-port.schema";
+import {
+	ARITHMETIC_PORT_SPECS,
+	ASSIGN_PORT_SPECS,
+	BlockData,
+	BlockElement,
+} from "./block.schema";
 
-export const LADDER_ELEMENT_KINDS = ["contact", "coil", "railTerminal", "block"] as const;
+export const LADDER_ELEMENT_KINDS = [
+	"contact",
+	"coil",
+	"railTerminal",
+	"block",
+] as const;
 
 export type LadderElementKind = (typeof LADDER_ELEMENT_KINDS)[number];
 
@@ -24,7 +34,19 @@ export type ContactData = { variable: string; mode: ContactMode };
 export type CoilData = { variable: string; mode: CoilMode };
 export type RailTerminalData = Record<string, never>;
 
-export type ContactElement = SharedElement<"contact", ContactData, GridPosition>;
+/** Modifications partielles applicables à `element.data` via `Ladder.updateElement` /
+ * `ElementUpdateCommand`. Pour un bloc, `params` est l'union de toutes les formes de params —
+ * l'appelant fournit une forme concrète, le merge est un simple `Object.assign` au runtime. */
+export type LadderElementDataChanges =
+	| Partial<ContactData>
+	| Partial<CoilData>
+	| { blockType?: BlockData["blockType"]; params?: BlockData["params"] };
+
+export type ContactElement = SharedElement<
+	"contact",
+	ContactData,
+	GridPosition
+>;
 export type CoilElement = SharedElement<"coil", CoilData, GridPosition>;
 
 /** Lane fixe du rail d'alimentation — un `railTerminal` n'est jamais déplacé horizontalement. */
@@ -35,7 +57,11 @@ export const RAIL_TERMINAL_COL = -1;
  * dans `Section.elements` que s'il relie effectivement au moins un élément (voir
  * `Ladder.pruneOrphanedRailTerminals`) — jamais posé "par défaut" sur toutes les lignes.
  */
-export type RailTerminalElement = SharedElement<"railTerminal", RailTerminalData, GridPosition>;
+export type RailTerminalElement = SharedElement<
+	"railTerminal",
+	RailTerminalData,
+	GridPosition
+>;
 
 /**
  * Un élément posé sur la grille d'une section (contact, bobine ou borne d'alimentation). La
@@ -44,10 +70,12 @@ export type RailTerminalElement = SharedElement<"railTerminal", RailTerminalData
  * sortantes) est toujours un OU, une convergence (plusieurs connexions entrantes) aussi, un
  * enchaînement simple est l'ET implicite.
  */
-export type LadderElement = ContactElement | CoilElement | RailTerminalElement | BlockElement;
+export type LadderElement =
+	ContactElement | CoilElement | RailTerminalElement | BlockElement;
 
 /** Largeur en colonnes de grille occupées par un élément — 1 pour tous sauf `block`, qui en
- * occupe 2 (entrée/sortie visuellement distinctes, voir `BlockNode`). */
+ * occupe 2 (entrée/sortie visuellement distinctes, voir `BlockNode`). Exception : un bloc
+ * `"compare"` n'occupe qu'1 colonne (rendu façon contact, voir `CompareBlockNode`). */
 export const LADDER_ELEMENT_WIDTHS: Record<LadderElementKind, number> = {
 	contact: 1,
 	coil: 1,
@@ -56,6 +84,7 @@ export const LADDER_ELEMENT_WIDTHS: Record<LadderElementKind, number> = {
 };
 
 export function getElementWidth(element: LadderElement): number {
+	if (element.type === "block" && element.data.blockType === "compare") return 1;
 	return LADDER_ELEMENT_WIDTHS[element.type];
 }
 
@@ -65,24 +94,57 @@ export function getElementWidth(element: LadderElement): number {
  * un bloc timer, par exemple, en occupe 2 (IN/Q sur la première ligne, PT/ET sur la seconde,
  * décalée d'un demi-cellule seulement — voir `BlockNode`). Pas de table `LADDER_ELEMENT_HEIGHTS`
  * comme pour la largeur : la hauteur dépend des ports propres à la famille du bloc, pas seulement
- * du genre d'élément. Un bloc `"compare"` n'a pas de `BlockPortSpec` (voir `CompareBlockParams`) :
- * comme `"user-program"`, il n'a que sa ligne structurelle et occupe donc 1 cellule.
+ * du genre d'élément. Un bloc `"compare"` occupe 1 cellule (comme un contact) : sa boîte ne
+ * contient que l'opérateur, IN1/IN2 débordent au-dessus et en dessous (voir `CompareBlockNode`).
  */
 export function getElementHeight(element: LadderElement): number {
 	if (element.type !== "block") return 1;
-	if (element.data.blockType === "timer") return getBlockHeightInCells(TIMER_PORT_SPECS);
-	if (element.data.blockType === "counter") return getBlockHeightInCells(getCounterPortSpecs(element.data.params.counterType));
+	if (element.data.blockType === "timer")
+		return getBlockHeightInCells(TIMER_PORT_SPECS);
+	if (element.data.blockType === "counter")
+		return getBlockHeightInCells(
+			getCounterPortSpecs(element.data.params.counterType),
+		);
+	if (element.data.blockType === "assign")
+		return getBlockHeightInCells(ASSIGN_PORT_SPECS);
+	if (element.data.blockType === "arithmetic")
+		return getBlockHeightInCells(ARITHMETIC_PORT_SPECS);
 	return 1;
 }
 
-export function createContactElement(variable: string, mode: ContactMode, row: number, col: number): ContactElement {
-	return { id: createRandomId(), type: "contact", data: { variable, mode }, position: { row, col } };
+export function createContactElement(
+	variable: string,
+	mode: ContactMode,
+	row: number,
+	col: number,
+): ContactElement {
+	return {
+		id: createRandomId(),
+		type: "contact",
+		data: { variable, mode },
+		position: { row, col },
+	};
 }
 
-export function createCoilElement(variable: string, mode: CoilMode, row: number, col: number): CoilElement {
-	return { id: createRandomId(), type: "coil", data: { variable, mode }, position: { row, col } };
+export function createCoilElement(
+	variable: string,
+	mode: CoilMode,
+	row: number,
+	col: number,
+): CoilElement {
+	return {
+		id: createRandomId(),
+		type: "coil",
+		data: { variable, mode },
+		position: { row, col },
+	};
 }
 
 export function createRailTerminalElement(row: number): RailTerminalElement {
-	return { id: createRandomId(), type: "railTerminal", data: {}, position: { row, col: RAIL_TERMINAL_COL } };
+	return {
+		id: createRandomId(),
+		type: "railTerminal",
+		data: {},
+		position: { row, col: RAIL_TERMINAL_COL },
+	};
 }

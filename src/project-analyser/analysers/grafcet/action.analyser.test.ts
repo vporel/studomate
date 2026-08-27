@@ -1,4 +1,8 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import { analyserEnvironment } from "@tests/utils/test-helpers";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
@@ -33,7 +37,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const emptyExprIssue = issues.find((i) => i.message.includes("pas d'expression"));
+			const emptyExprIssue = issues.find((i) =>
+				i.message.includes("pas d'expression"),
+			);
 			expect(emptyExprIssue).toBeDefined();
 			expect(emptyExprIssue?.severity).toBe("warning");
 		});
@@ -48,7 +54,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const identifierIssue = issues.find((i) => i.message.includes("simple référence"));
+			const identifierIssue = issues.find((i) =>
+				i.message.includes("simple référence"),
+			);
 			expect(identifierIssue).toBeDefined();
 			expect(identifierIssue?.severity).toBe("error");
 		});
@@ -63,7 +71,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const identifierIssues = issues.filter((i) => i.message.includes("simple référence"));
+			const identifierIssues = issues.filter((i) =>
+				i.message.includes("simple référence"),
+			);
 			expect(identifierIssues).toHaveLength(0);
 		});
 
@@ -92,7 +102,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssues = issues.filter((i) => i.message.includes("affectation"));
+			const assignIssues = issues.filter((i) =>
+				i.message.includes("affectation"),
+			);
 			expect(assignIssues).toHaveLength(0);
 		});
 
@@ -121,7 +133,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssues = issues.filter((i) => i.message.includes("affectation"));
+			const assignIssues = issues.filter((i) =>
+				i.message.includes("affectation"),
+			);
 			expect(assignIssues).toHaveLength(0);
 		});
 
@@ -135,7 +149,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const modeIssue = issues.find((i) => i.message.includes("mode d'exécution"));
+			const modeIssue = issues.find((i) =>
+				i.message.includes("mode d'exécution"),
+			);
 			expect(modeIssue).toBeDefined();
 			expect(modeIssue?.severity).toBe("error");
 		});
@@ -164,7 +180,11 @@ describe("ActionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").build();
 
-			const issues = analyser.analyseInContext(action, grafcet, []);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment(),
+			);
 
 			expect(issues).toHaveLength(0);
 		});
@@ -178,9 +198,15 @@ describe("ActionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").build();
 
-			const issues = analyser.analyseInContext(action, grafcet, []);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const connectionIssue = issues.find((i) => i.message.includes("connectée à aucune étape"));
+			const connectionIssue = issues.find((i) =>
+				i.message.includes("connectée à aucune étape"),
+			);
 			expect(connectionIssue).toBeDefined();
 			expect(connectionIssue?.severity).toBe("error");
 		});
@@ -203,7 +229,9 @@ describe("ActionAnalyser", () => {
 				.addConnections(connection)
 				.build();
 
-			expect(() => analyser.analyseInContext(action, grafcet, [])).not.toThrow();
+			expect(() =>
+				analyser.analyseInContext(action, grafcet, analyserEnvironment()),
+			).not.toThrow();
 		});
 
 		it("validates variable types in numeric assignment", () => {
@@ -232,7 +260,11 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [boolVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([boolVar]),
+			);
 
 			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
 			expect(typeIssue).toBeDefined();
@@ -264,9 +296,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
-			const typeIssues = issues.filter((i) => i.message.includes("incompatible"));
+			const typeIssues = issues.filter((i) =>
+				i.message.includes("incompatible"),
+			);
 			expect(typeIssues).toHaveLength(0);
 		});
 
@@ -296,9 +334,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
-			const divisionIssue = issues.find((i) => i.message.includes("Division par zéro"));
+			const divisionIssue = issues.find((i) =>
+				i.message.includes("Division par zéro"),
+			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
 		});
@@ -329,7 +373,11 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
 			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
 			expect(typeIssue).toBeDefined();
@@ -361,9 +409,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [inputVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([inputVar]),
+			);
 
-			const inputIssue = issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT");
+			const inputIssue = issues.find(
+				(i) => i.code === "ACTION_VARIABLE_IS_INPUT",
+			);
 			expect(inputIssue).toBeDefined();
 			expect(inputIssue?.severity).toBe("error");
 		});
@@ -397,10 +451,18 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [inputVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([inputVar]),
+			);
 
-			expect(issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION")).toBeDefined();
-			expect(issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT")).toBeUndefined();
+			expect(
+				issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION"),
+			).toBeDefined();
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT"),
+			).toBeUndefined();
 		});
 
 		it("accepts a boolean action writing to a memory variable", () => {
@@ -429,13 +491,24 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [memoryVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
 
-			expect(issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT")).toBeUndefined();
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT"),
+			).toBeUndefined();
 		});
 
 		it("detects a boolean action writing to a step variable X{n}", () => {
-			const x1 = new VariableBuilder().id("x1").mnemonic("X1").zone("memory").type("BOOL").build();
+			const x1 = new VariableBuilder()
+				.id("x1")
+				.mnemonic("X1")
+				.zone("memory")
+				.type("BOOL")
+				.build();
 			const action = new ActionBuilder()
 				.id("action-1")
 				.expression("X1")
@@ -456,9 +529,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [x1]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([x1]),
+			);
 
-			const readonlyIssue = issues.find((i) => i.code === "ACTION_STEP_VARIABLE_READONLY");
+			const readonlyIssue = issues.find(
+				(i) => i.code === "ACTION_STEP_VARIABLE_READONLY",
+			);
 			expect(readonlyIssue).toBeDefined();
 			expect(readonlyIssue?.severity).toBe("error");
 		});
@@ -500,9 +579,15 @@ describe("ActionAnalyser", () => {
 				.addConnections(c1, c2)
 				.build();
 
-			const issues = analyser.analyseInContext(setAction, grafcet, [memoryVar]);
+			const issues = analyser.analyseInContext(
+				setAction,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
 
-			const conflictIssue = issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP");
+			const conflictIssue = issues.find(
+				(i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP",
+			);
 			expect(conflictIssue).toBeDefined();
 			expect(conflictIssue?.severity).toBe("error");
 		});
@@ -545,9 +630,15 @@ describe("ActionAnalyser", () => {
 				.addConnections(c1, c2)
 				.build();
 
-			const issues = analyser.analyseInContext(setAction, grafcet, [memoryVar]);
+			const issues = analyser.analyseInContext(
+				setAction,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
 
-			expect(issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP")).toBeUndefined();
+			expect(
+				issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP"),
+			).toBeUndefined();
 		});
 	});
 });

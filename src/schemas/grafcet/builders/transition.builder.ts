@@ -37,6 +37,11 @@ export default class TransitionBuilder {
 	}
 
 	build(): Transition {
-		return new Transition(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new Transition(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

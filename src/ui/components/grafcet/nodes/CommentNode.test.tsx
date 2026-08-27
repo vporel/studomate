@@ -11,10 +11,16 @@ import CommentNode, { CommentNodeType } from "./CommentNode";
 jest.mock("../context/GrafcetContext");
 
 function setup({ text = "Un commentaire", updateNodeData = jest.fn() } = {}) {
-	const comment = new CommentBuilder().id("comment-1").text(text).position(0, 0).build();
+	const comment = new CommentBuilder()
+		.id("comment-1")
+		.text(text)
+		.position(0, 0)
+		.build();
 	const grafcet = new GrafcetBuilder().id("g1").addComment(comment).build();
 
-	(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+	(useGrafcetContext as jest.Mock).mockReturnValue({
+		store: fakeStoreApi({ grafcet }),
+	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			grafcet,
@@ -42,7 +48,9 @@ function setup({ text = "Un commentaire", updateNodeData = jest.fn() } = {}) {
 }
 
 function textarea(): HTMLTextAreaElement {
-	return document.querySelector(".comment_node__textarea") as HTMLTextAreaElement;
+	return document.querySelector(
+		".comment_node__textarea",
+	) as HTMLTextAreaElement;
 }
 
 describe("CommentNode", () => {

@@ -37,6 +37,11 @@ export default class CommentBuilder {
 	}
 
 	build(): Comment {
-		return new Comment(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new Comment(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

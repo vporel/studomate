@@ -23,6 +23,10 @@ export default class TimerNodeEvaluator {
 		this.options = options;
 	}
 
+	setEnvironment(environment: Environment): void {
+		this.env = environment;
+	}
+
 	/**
 	 * @param node
 	 * @returns
@@ -38,7 +42,10 @@ export default class TimerNodeEvaluator {
 		switch (node.timerType) {
 			case "TON":
 				if (risingEdge) {
-					this.env.setVariableValueByName((node.output as IdentifierNode).value, false);
+					this.env.setVariableValueByName(
+						(node.output as IdentifierNode).value,
+						false,
+					);
 					outputValue = false;
 					break;
 				}
@@ -53,13 +60,19 @@ export default class TimerNodeEvaluator {
 						);
 					}
 				} else {
-					this.env.setVariableValueByName((node.elapsedTime as IdentifierNode).value, 0);
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						0,
+					);
 					outputValue = false;
 				}
 				break;
 			case "TOF":
 				if (fallingEdge) {
-					this.env.setVariableValueByName((node.output as IdentifierNode).value, true);
+					this.env.setVariableValueByName(
+						(node.output as IdentifierNode).value,
+						true,
+					);
 					outputValue = true;
 					break;
 				}
@@ -74,13 +87,19 @@ export default class TimerNodeEvaluator {
 						);
 					}
 				} else {
-					this.env.setVariableValueByName((node.elapsedTime as IdentifierNode).value, 0);
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						0,
+					);
 					outputValue = true;
 				}
 				break;
 			case "TP":
 				if (risingEdge) {
-					this.env.setVariableValueByName((node.output as IdentifierNode).value, true);
+					this.env.setVariableValueByName(
+						(node.output as IdentifierNode).value,
+						true,
+					);
 					outputValue = true;
 					break;
 				}
@@ -95,13 +114,22 @@ export default class TimerNodeEvaluator {
 						);
 					}
 				} else {
-					this.env.setVariableValueByName((node.elapsedTime as IdentifierNode).value, 0);
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						0,
+					);
 					outputValue = false;
 				}
 				break;
 		}
-		this.env.setVariableValueByName((node.output as IdentifierNode).value, outputValue);
-		this.env.setVariableValueByName((node.lastInput as IdentifierNode).value, inputValue);
+		this.env.setVariableValueByName(
+			(node.output as IdentifierNode).value,
+			outputValue,
+		);
+		this.env.setVariableValueByName(
+			(node.lastInput as IdentifierNode).value,
+			inputValue,
+		);
 		return outputValue;
 	}
 }

@@ -1,4 +1,9 @@
-import { GaugeData, HMI_WIDGET_DEFINITIONS, HmiWidget, HmiWidgetType } from "./hmi-widget.schema";
+import {
+	GaugeData,
+	HMI_WIDGET_DEFINITIONS,
+	HmiWidget,
+	HmiWidgetType,
+} from "./hmi-widget.schema";
 
 const ALL_TYPES: HmiWidgetType[] = [
 	"push-button",
@@ -21,12 +26,12 @@ describe("HmiWidget.create", () => {
 		expect(w.position).toEqual({ x: 40, y: 80 });
 	});
 
-	it("initialise variableMnemonic et label à vide pour tous les types", () => {
+	it("initialise variableMnemonic à vide et label au libellé par défaut du type", () => {
 		ALL_TYPES.forEach((type) => {
 			const w = HmiWidget.create(type, 0, 0);
 			const data = w.data as { variableMnemonic: string; label: string };
 			expect(data.variableMnemonic).toBe("");
-			expect(data.label).toBe("");
+			expect(data.label).toBe(HMI_WIDGET_DEFINITIONS[type].defaultLabel);
 		});
 	});
 
@@ -73,7 +78,8 @@ describe("HmiWidget.create", () => {
 	it("initialise fill/stroke pour rectangle et ellipse", () => {
 		(["rectangle", "ellipse"] as const).forEach((type) => {
 			const w = HmiWidget.create(type, 0, 0);
-			if (w.type !== "rectangle" && w.type !== "ellipse") throw new Error("unreachable");
+			if (w.type !== "rectangle" && w.type !== "ellipse")
+				throw new Error("unreachable");
 			expect(typeof w.data.style.fill).toBe("string");
 			expect(typeof w.data.style.stroke).toBe("string");
 		});
@@ -97,7 +103,13 @@ describe("HmiWidget.create", () => {
 	});
 
 	it("applique dataOverride par-dessus les données par défaut du type", () => {
-		const w = HmiWidget.create("ellipse", 0, 0, { width: 40, height: 40 }, { lockAspectRatio: true });
+		const w = HmiWidget.create(
+			"ellipse",
+			0,
+			0,
+			{ width: 40, height: 40 },
+			{ lockAspectRatio: true },
+		);
 		if (w.type !== "ellipse") throw new Error("unreachable");
 		expect(w.data.lockAspectRatio).toBe(true);
 		expect(w.data.style.fill).toBe("#e0e0e0");
@@ -136,19 +148,47 @@ describe("HmiWidget.nextName", () => {
 
 	it("avance au premier numéro libre", () => {
 		const widgets = [
-			HmiWidget.create("rectangle", 0, 0, undefined, undefined, 0, "Rectangle_1"),
-			HmiWidget.create("rectangle", 0, 0, undefined, undefined, 0, "Rectangle_2"),
+			HmiWidget.create(
+				"rectangle",
+				0,
+				0,
+				undefined,
+				undefined,
+				0,
+				"Rectangle_1",
+			),
+			HmiWidget.create(
+				"rectangle",
+				0,
+				0,
+				undefined,
+				undefined,
+				0,
+				"Rectangle_2",
+			),
 		];
 		expect(HmiWidget.nextName("rectangle", widgets)).toBe("Rectangle_3");
 	});
 
 	it("ignore les trous de numérotation (widget renommé/supprimé)", () => {
-		const widgets = [HmiWidget.create("rectangle", 0, 0, undefined, undefined, 0, "Rectangle_2")];
+		const widgets = [
+			HmiWidget.create(
+				"rectangle",
+				0,
+				0,
+				undefined,
+				undefined,
+				0,
+				"Rectangle_2",
+			),
+		];
 		expect(HmiWidget.nextName("rectangle", widgets)).toBe("Rectangle_1");
 	});
 
 	it("ne considère que les widgets du même type pour la numérotation", () => {
-		const widgets = [HmiWidget.create("ellipse", 0, 0, undefined, undefined, 0, "Ellipse_1")];
+		const widgets = [
+			HmiWidget.create("ellipse", 0, 0, undefined, undefined, 0, "Ellipse_1"),
+		];
 		expect(HmiWidget.nextName("rectangle", widgets)).toBe("Rectangle_1");
 	});
 });
@@ -160,7 +200,15 @@ describe("HmiWidget.create - name", () => {
 	});
 
 	it("utilise le nom fourni", () => {
-		const w = HmiWidget.create("gauge", 0, 0, undefined, undefined, 0, "Ma jauge");
+		const w = HmiWidget.create(
+			"gauge",
+			0,
+			0,
+			undefined,
+			undefined,
+			0,
+			"Ma jauge",
+		);
 		expect(w.name).toBe("Ma jauge");
 	});
 });
@@ -177,7 +225,9 @@ describe("HmiWidget.getResizeAspectRatio", () => {
 	});
 
 	it("retourne 1 pour une ellipse verrouillée (cercle)", () => {
-		const w = HmiWidget.create("ellipse", 0, 0, undefined, { lockAspectRatio: true });
+		const w = HmiWidget.create("ellipse", 0, 0, undefined, {
+			lockAspectRatio: true,
+		});
 		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);
 	});
 });
@@ -274,7 +324,8 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 
 	it("un widget avec aspectRatio a une taille par défaut et minimale cohérentes avec ce ratio", () => {
 		ALL_TYPES.forEach((type) => {
-			const { defaultSize, minSize, aspectRatio } = HMI_WIDGET_DEFINITIONS[type];
+			const { defaultSize, minSize, aspectRatio } =
+				HMI_WIDGET_DEFINITIONS[type];
 			if (aspectRatio === undefined || !minSize) return;
 			expect(defaultSize.width / defaultSize.height).toBeCloseTo(aspectRatio);
 			expect(minSize.width / minSize.height).toBeCloseTo(aspectRatio);
@@ -282,16 +333,24 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 	});
 
 	it("les widgets booléens n'acceptent que BOOL", () => {
-		(["push-button", "indicator", "toggle-switch"] as HmiWidgetType[]).forEach((type) => {
-			expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).toEqual(["BOOL"]);
-		});
+		(["push-button", "indicator", "toggle-switch"] as HmiWidgetType[]).forEach(
+			(type) => {
+				expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).toEqual(["BOOL"]);
+			},
+		);
 	});
 
 	it("les widgets numériques n'acceptent pas BOOL", () => {
-		(["numeric-display", "gauge", "numeric-input"] as HmiWidgetType[]).forEach((type) => {
-			expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).not.toContain("BOOL");
-			expect(HMI_WIDGET_DEFINITIONS[type].variableTypes.length).toBeGreaterThan(0);
-		});
+		(["numeric-display", "gauge", "numeric-input"] as HmiWidgetType[]).forEach(
+			(type) => {
+				expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).not.toContain(
+					"BOOL",
+				);
+				expect(
+					HMI_WIDGET_DEFINITIONS[type].variableTypes.length,
+				).toBeGreaterThan(0);
+			},
+		);
 	});
 
 	it("les formes n'ont pas de variable principale", () => {

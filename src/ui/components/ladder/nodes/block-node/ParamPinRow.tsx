@@ -1,6 +1,6 @@
 "use client";
 
-import { BlockPortSpec } from "@/schemas/function-blocks/function-block.schema";
+import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
 import { Box } from "@mui/material";
 import ParamPin from "./ParamPin";
 import { PIN_ROW_HEIGHT } from "./dimensions";

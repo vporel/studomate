@@ -50,9 +50,15 @@ export default class ProjectAnalyser {
 		for (const program of Object.values(project.programs)) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) continue;
-			generatedVariablesByProgram.set(program.id, analyser.generateVariables(program));
+			generatedVariablesByProgram.set(
+				program.id,
+				analyser.generateVariables(program),
+			);
 		}
-		const allVariables = [...project.variables, ...[...generatedVariablesByProgram.values()].flat()];
+		const allVariables = [
+			...project.variables,
+			...[...generatedVariablesByProgram.values()].flat(),
+		];
 
 		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des
 		// variables du projet (les siennes propres et celles de tous les autres).
@@ -75,7 +81,12 @@ export default class ProjectAnalyser {
 		}
 
 		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette notation.
-		issues.push(...GrafcetAnalyser.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
+		issues.push(
+			...GrafcetAnalyser.checkDuplicateStepNumbers(
+				generatedVariablesByProgram,
+				project,
+			),
+		);
 		issues.push(...LadderAnalyser.checkMainUniqueness(project));
 		issues.push(...LadderAnalyser.checkOrphanLadders(project));
 		issues.push(...LadderAnalyser.checkCallCycles(project));
@@ -84,7 +95,9 @@ export default class ProjectAnalyser {
 		return {
 			totalAnalysedElements,
 			issues,
-			generatedVariables: [...generatedVariablesByProgram.values()].flatMap((vars) => vars),
+			generatedVariables: [...generatedVariablesByProgram.values()].flatMap(
+				(vars) => vars,
+			),
 		};
 	}
 }

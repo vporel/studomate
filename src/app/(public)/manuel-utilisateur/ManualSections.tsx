@@ -6,6 +6,7 @@ import ExplorerSection from "./sections/ExplorerSection";
 import GettingStartedSection from "./sections/GettingStartedSection";
 import GrafcetSection from "./sections/GrafcetSection";
 import IntroSection from "./sections/IntroSection";
+import HmiSection from "./sections/HmiSection";
 import LadderSection from "./sections/LadderSection";
 import ProjectsSection from "./sections/ProjectsSection";
 import ShortcutsSection from "./sections/ShortcutsSection";
@@ -24,11 +25,20 @@ export default function ManualSections({ selected }: { selected: string }) {
 			{selected === "projects" && <ProjectsSection />}
 			{selected === "explorer" && <ExplorerSection />}
 			{selected === "variables" && <VariablesSection />}
-			{isSectionOrChild(selected, "grafcet") && <GrafcetSection selected={selected} />}
-			{isSectionOrChild(selected, "ladder") && <LadderSection selected={selected} />}
+			{isSectionOrChild(selected, "grafcet") && (
+				<GrafcetSection selected={selected} />
+			)}
+			{isSectionOrChild(selected, "ladder") && (
+				<LadderSection selected={selected} />
+			)}
 			{selected === "toolbar" && <ToolbarSection />}
-			{isSectionOrChild(selected, "simulation") && <SimulationSection selected={selected} />}
-			{isSectionOrChild(selected, "analysis") && <AnalysisSection selected={selected} />}
+			{isSectionOrChild(selected, "hmi") && <HmiSection selected={selected} />}
+			{isSectionOrChild(selected, "simulation") && (
+				<SimulationSection selected={selected} />
+			)}
+			{isSectionOrChild(selected, "analysis") && (
+				<AnalysisSection selected={selected} />
+			)}
 			{selected === "shortcuts" && <ShortcutsSection />}
 		</Box>
 	);

@@ -5,8 +5,16 @@ import { Box } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 import useHmiStyleAnimation from "./useHmiStyleAnimation";
 
-const Ellipse = ({ data, selected, onClick }: HmiWidgetComponentProps<EllipseData>) => {
-	const animated = useHmiStyleAnimation(data.animations?.style);
+const Ellipse = ({
+	data,
+	selected,
+	onClick,
+	animationsEnabled,
+}: HmiWidgetComponentProps<EllipseData>) => {
+	const animated = useHmiStyleAnimation(
+		data.animations?.style,
+		animationsEnabled ?? false,
+	);
 	const fill = animated.fill ?? data.style.fill;
 	const stroke = animated.stroke ?? data.style.stroke;
 

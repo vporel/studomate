@@ -4,7 +4,10 @@
 import { render } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
-import { useGrafcetContext, useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import {
+	useGrafcetContext,
+	useGrafcetStore,
+} from "@/ui/components/grafcet/context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import JunctionOrEndNode, { JunctionOrEndNodeType } from "./JunctionOrEndNode";
 
@@ -16,7 +19,10 @@ jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 
 describe("JunctionOrEndNode", () => {
 	it("se rend sans planter", () => {
-		const junction = new JunctionOrEndBuilder().id("junction-1").position(0, 0).build();
+		const junction = new JunctionOrEndBuilder()
+			.id("junction-1")
+			.position(0, 0)
+			.build();
 		(useGrafcetContext as jest.Mock).mockReturnValue({
 			contextMenuEvents: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
 		});
@@ -42,6 +48,8 @@ describe("JunctionOrEndNode", () => {
 			</ReactFlowProvider>,
 		);
 
-		expect(container.querySelector(".junction-or-end-node")).toBeInTheDocument();
+		expect(
+			container.querySelector(".junction-or-end-node"),
+		).toBeInTheDocument();
 	});
 });

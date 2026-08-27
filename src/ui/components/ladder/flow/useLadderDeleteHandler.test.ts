@@ -18,16 +18,25 @@ describe("useLadderDeleteHandler", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	function setup(section: Section) {
-		(useLadderStore as jest.Mock).mockImplementation(selectorImplementation({ workflowManager }));
+		(useLadderStore as jest.Mock).mockImplementation(
+			selectorImplementation({ workflowManager }),
+		);
 		return renderHook(() => useLadderDeleteHandler(section));
 	}
 
-	it("délègue au WorkflowManager avec les ids des nœuds et arêtes supprimés", () => {
+	it("délègue au LadderWorkflowManager avec les ids des nœuds et arêtes supprimés", () => {
 		const section = new Section("s1", "S");
 		const { result } = setup(section);
 
-		result.current({ nodes: [{ id: "n1" } as any, { id: "n2" } as any], edges: [{ id: "e1" } as any] });
+		result.current({
+			nodes: [{ id: "n1" } as any, { id: "n2" } as any],
+			edges: [{ id: "e1" } as any],
+		});
 
-		expect(deleteElements).toHaveBeenCalledWith(section.id, ["n1", "n2"], ["e1"]);
+		expect(deleteElements).toHaveBeenCalledWith(
+			section.id,
+			["n1", "n2"],
+			["e1"],
+		);
 	});
 });

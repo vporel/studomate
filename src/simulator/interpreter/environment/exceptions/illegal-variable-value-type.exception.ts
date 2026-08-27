@@ -6,7 +6,12 @@ export default class IllegalVariableValueTypeException extends EnvironmentExcept
 	private readonly expectedType: string;
 	private readonly actualType: string;
 
-	constructor(variableId: string, variableName: string, expectedType: string, actualType: string) {
+	constructor(
+		variableId: string,
+		variableName: string,
+		expectedType: string,
+		actualType: string,
+	) {
 		super(
 			`Variable ${variableName} (id: ${variableId}) expected a value of type ${expectedType} but got ${actualType}`,
 		);

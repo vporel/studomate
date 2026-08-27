@@ -3,7 +3,9 @@
 import { MouseEvent, RefObject, useCallback, useState } from "react";
 import { HmiContextMenuElement } from "./hmi-context-menu";
 
-export default function useHmiContextMenu(canvasRef: RefObject<HTMLElement | null>): {
+export default function useHmiContextMenu(
+	canvasRef: RefObject<HTMLElement | null>,
+): {
 	visible: boolean;
 	element: HmiContextMenuElement;
 	position: { x: number; y: number };
@@ -11,8 +13,13 @@ export default function useHmiContextMenu(canvasRef: RefObject<HTMLElement | nul
 	closeContextMenu: () => void;
 } {
 	const [visible, setVisible] = useState(false);
-	const [element, setElement] = useState<HmiContextMenuElement>({ type: "pane" });
-	const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+	const [element, setElement] = useState<HmiContextMenuElement>({
+		type: "pane",
+	});
+	const [position, setPosition] = useState<{ x: number; y: number }>({
+		x: 0,
+		y: 0,
+	});
 
 	return {
 		visible,

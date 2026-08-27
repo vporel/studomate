@@ -64,6 +64,11 @@ export default class JunctionAndEndBuilder {
 	}
 
 	build(): JunctionAndEnd {
-		return new JunctionAndEnd(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new JunctionAndEnd(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

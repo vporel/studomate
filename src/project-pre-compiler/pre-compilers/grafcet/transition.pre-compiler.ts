@@ -2,7 +2,10 @@ import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generato
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
-import { TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import {
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "@/expression-language/ast/nodes/blocks";
 import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import ReplacerVisitor, {
 	ReplacerVisitorReplacement,
@@ -15,8 +18,7 @@ import Transition from "@/schemas/grafcet/transition.schema";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 
 export type PreCompiledTransition = {
 	node: ASTNode;
@@ -45,27 +47,36 @@ export default class TransitionPreCompiler {
 		variables: PLCVariable[],
 		dialect: Dialect,
 	): PreCompiledTransition {
-		const tokens = new Lexer(dialect).tokenize(transition.getFullExpression());
-		const parsed = new Parser(tokens).parse();
+		const { ast: parsed } = parseExpressionCached(
+			transition.getFullExpression(),
+			dialect,
+		);
 		//The semantic analysis should have already been done in the analyser, so we can skip it here and directly simplify the AST
 		let node = new SimplifierVisitor().visit(parsed);
 		const timersDeclarations = new FinderVisitor<TimerStringDeclarationNode>(
 			"TIMER_STRING_DECLARATION",
 		).visit(node);
-		const timers = this.preCompileTimersFromDeclarations(timersDeclarations, variables);
-		const replacements: ReplacerVisitorReplacement[] = timersDeclarations.map((decl, index) => ({
-			predicate: (n) => n.id === decl.id,
-			replacement: timers[index],
-		}));
+		const timers = this.preCompileTimersFromDeclarations(
+			timersDeclarations,
+			variables,
+		);
+		const replacements: ReplacerVisitorReplacement[] = timersDeclarations.map(
+			(decl, index) => ({
+				predicate: (n) => n.id === decl.id,
+				replacement: timers[index],
+			}),
+		);
 		const replacer = new ReplacerVisitor(replacements);
 		node = replacer.visit(node);
 
-		const predecessorStepsIds = TransitionHelper.getPredecessorSteps(transition.id, grafcet).map(
-			(s) => s.id,
-		);
-		const successorStepsIds = TransitionHelper.getSuccessorSteps(transition.id, grafcet).map(
-			(s) => s.id,
-		);
+		const predecessorStepsIds = TransitionHelper.getPredecessorSteps(
+			transition.id,
+			grafcet,
+		).map((s) => s.id);
+		const successorStepsIds = TransitionHelper.getSuccessorSteps(
+			transition.id,
+			grafcet,
+		).map((s) => s.id);
 		const orPriorityExclusionTransitionIds = this.computeOrPriorityExclusions(
 			transition.id,
 			grafcet,
@@ -85,14 +96,20 @@ export default class TransitionPreCompiler {
 	 * Uses the branch order from JunctionOrStart: leftmost branch (index 0) has highest priority.
 	 * A transition at index i must NOT fire if any transition at index < i is simultaneously true.
 	 */
-	private static computeOrPriorityExclusions(transitionId: string, grafcet: Grafcet): string[] {
+	private static computeOrPriorityExclusions(
+		transitionId: string,
+		grafcet: Grafcet,
+	): string[] {
 		const exclusions: string[] = [];
-		for (const junctionOrStart of grafcet.junctionsOrStarts) {
-			const orderedTransitions = JunctionOrStartHelper.getSuccessorTransitionsByBranchOrder(
-				junctionOrStart.id,
-				grafcet,
+		for (const junctionOrStart of Object.values(grafcet.junctionsOrStarts)) {
+			const orderedTransitions =
+				JunctionOrStartHelper.getSuccessorTransitionsByBranchOrder(
+					junctionOrStart.id,
+					grafcet,
+				);
+			const transitionIndex = orderedTransitions.findIndex(
+				(t) => t?.id === transitionId,
 			);
-			const transitionIndex = orderedTransitions.findIndex((t) => t?.id === transitionId);
 			if (transitionIndex <= 0) continue; // not in this divergence, or already first (no exclusions)
 			const priorIds = orderedTransitions
 				.slice(0, transitionIndex)
@@ -110,11 +127,20 @@ export default class TransitionPreCompiler {
 		const timers: TimerNode[] = [];
 		const takenVariablesNames = new Set(variables.map((v) => v.getName()));
 		for (const decl of declarations) {
-			const lastInputVariable = MemoVariableGenerator.generate("boolean", takenVariablesNames);
+			const lastInputVariable = MemoVariableGenerator.generate(
+				"boolean",
+				takenVariablesNames,
+			);
 			takenVariablesNames.add(lastInputVariable.getName());
-			const elapsedTimeVariable = MemoVariableGenerator.generate("number", takenVariablesNames);
+			const elapsedTimeVariable = MemoVariableGenerator.generate(
+				"number",
+				takenVariablesNames,
+			);
 			takenVariablesNames.add(elapsedTimeVariable.getName());
-			const outputVariable = MemoVariableGenerator.generate("boolean", takenVariablesNames);
+			const outputVariable = MemoVariableGenerator.generate(
+				"boolean",
+				takenVariablesNames,
+			);
 			takenVariablesNames.add(outputVariable.getName());
 			variables.push(lastInputVariable, elapsedTimeVariable, outputVariable);
 			timers.push(

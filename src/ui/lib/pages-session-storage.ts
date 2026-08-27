@@ -1,4 +1,7 @@
-export type PagesSession = { pagesOrder: string[]; activePageId: string | null };
+export type PagesSession = {
+	pagesOrder: string[];
+	activePageId: string | null;
+};
 
 const SESSION_KEY_PREFIX = "studomate_session_pages_";
 
@@ -16,16 +19,25 @@ export function getPagesSession(projectId: string): PagesSession | null {
 		if (!raw) return null;
 		const parsed = JSON.parse(raw);
 		if (!Array.isArray(parsed?.pagesOrder)) return null;
-		return { pagesOrder: parsed.pagesOrder, activePageId: parsed.activePageId ?? null };
+		return {
+			pagesOrder: parsed.pagesOrder,
+			activePageId: parsed.activePageId ?? null,
+		};
 	} catch {
 		return null;
 	}
 }
 
-export function setPagesSession(projectId: string, session: PagesSession): void {
+export function setPagesSession(
+	projectId: string,
+	session: PagesSession,
+): void {
 	if (typeof localStorage === "undefined") return;
 	try {
-		localStorage.setItem(SESSION_KEY_PREFIX + projectId, JSON.stringify(session));
+		localStorage.setItem(
+			SESSION_KEY_PREFIX + projectId,
+			JSON.stringify(session),
+		);
 	} catch {
 		//Best-effort : perdre l'état de session n'est jamais grave, pas la peine de remonter l'échec
 	}

@@ -15,9 +15,16 @@ export default class CounterNodeEvaluator {
 	private env: Environment;
 	private visitor: BaseVisitor<EnvVariableValue>;
 
-	constructor(environment: Environment, visitor: BaseVisitor<EnvVariableValue>) {
+	constructor(
+		environment: Environment,
+		visitor: BaseVisitor<EnvVariableValue>,
+	) {
 		this.env = environment;
 		this.visitor = visitor;
+	}
+
+	setEnvironment(environment: Environment): void {
+		this.env = environment;
 	}
 
 	evaluate(node: CounterNode): EnvVariableValue {
@@ -30,15 +37,24 @@ export default class CounterNodeEvaluator {
 		if (controlValue) {
 			nextCurrentValue = node.counterType === "CTU" ? 0 : presetValueValue;
 		} else if (inputValue) {
-			nextCurrentValue = node.counterType === "CTU" ? currentValueValue + 1 : currentValueValue - 1;
+			nextCurrentValue =
+				node.counterType === "CTU"
+					? currentValueValue + 1
+					: currentValueValue - 1;
 		} else {
 			nextCurrentValue = currentValueValue;
 		}
 
 		const outputValue = nextCurrentValue >= presetValueValue;
 
-		this.env.setVariableValueByName((node.currentValue as IdentifierNode).value, nextCurrentValue);
-		this.env.setVariableValueByName((node.output as IdentifierNode).value, outputValue);
+		this.env.setVariableValueByName(
+			(node.currentValue as IdentifierNode).value,
+			nextCurrentValue,
+		);
+		this.env.setVariableValueByName(
+			(node.output as IdentifierNode).value,
+			outputValue,
+		);
 		return outputValue;
 	}
 }

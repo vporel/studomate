@@ -6,12 +6,17 @@ import { GrafcetContextProvider } from "@/ui/components/grafcet/context/GrafcetC
 import GrafcetFlow from "@/ui/components/grafcet/flow/GrafcetFlow";
 import { LadderContextProvider } from "@/ui/components/ladder/context/LadderContext";
 import LadderFlow from "@/ui/components/ladder/flow/LadderFlow";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+	forwardRef,
+	useEffect,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import { createPortal } from "react-dom";
 
 export type OffscreenProgram =
-	| { type: "grafcet"; program: Grafcet }
-	| { type: "ladder"; program: Ladder };
+	{ type: "grafcet"; program: Grafcet } | { type: "ladder"; program: Ladder };
 
 export interface OffscreenProgramRendererHandle {
 	/** Retourne l'élément DOM racine du programme demandé, ou null s'il n'est pas monté. */
@@ -41,7 +46,11 @@ const OffscreenProgramRenderer = forwardRef<
 
 	useImperativeHandle(ref, () => ({
 		getElement(programId: string): HTMLElement | null {
-			return containerRef.current?.querySelector(`[data-offscreen-id="${programId}"]`) ?? null;
+			return (
+				containerRef.current?.querySelector(
+					`[data-offscreen-id="${programId}"]`,
+				) ?? null
+			);
 		},
 	}));
 
@@ -105,7 +114,9 @@ function OffscreenGrafcet({
 
 		const poll = () => {
 			if (readyFired.current) return;
-			const viewport = wrapperRef.current?.querySelector(".react-flow__viewport") as HTMLElement | null;
+			const viewport = wrapperRef.current?.querySelector(
+				".react-flow__viewport",
+			) as HTMLElement | null;
 			if (viewport) {
 				readyFired.current = true;
 				onReady(grafcet.id, wrapperRef.current!);
@@ -149,7 +160,9 @@ function OffscreenLadder({
 		const poll = () => {
 			if (readyFired.current) return;
 			// LadderFlow utilise un ReactFlowProvider par section — on vérifie le premier viewport
-			const viewport = wrapperRef.current?.querySelector(".react-flow__viewport") as HTMLElement | null;
+			const viewport = wrapperRef.current?.querySelector(
+				".react-flow__viewport",
+			) as HTMLElement | null;
 			if (viewport) {
 				readyFired.current = true;
 				onReady(ladder.id, wrapperRef.current!);

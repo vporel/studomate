@@ -45,9 +45,9 @@ describe("Multi-Grafcet Integration Tests", () => {
 			);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
-			// One routine per grafcet
-			// +1 pour le Main, toujours présent et scanné (voir Project.createMain).
-			expect(pipeline.compilation.result!.routines).toHaveLength(3);
+			// Une routine par grafcet (2) + le Main (voir Project.createMain) + la routine
+			// d'observation des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(4);
 		});
 
 		it("step variables of each grafcet are properly isolated (no duplicates)", () => {

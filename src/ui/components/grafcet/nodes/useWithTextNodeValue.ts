@@ -1,6 +1,13 @@
-import ElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
+import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
+import {
+	Dispatch,
+	SetStateAction,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 
 export default function useWithTextNodeValue(
@@ -22,12 +29,16 @@ export default function useWithTextNodeValue(
 	const [value, _setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
 	const [error, setError] = useState<string | false>(false);
-	const analyser = useMemo(() => ElementAnalyserFactory.getAnalyserForType(nodeType), [nodeType]);
+	const analyser = useMemo(
+		() => GrafcetElementAnalyserFactory.getAnalyser(nodeType),
+		[nodeType],
+	);
 	const transformValue = useCallback(
 		(v: string) => {
 			let transformedValue: any = v;
 			if (transformToNumberBeforeSave) {
-				transformedValue = v === "" || isNaN(parseInt(v)) || parseInt(v) < 0 ? "" : parseInt(v);
+				transformedValue =
+					v === "" || isNaN(parseInt(v)) || parseInt(v) < 0 ? "" : parseInt(v);
 			}
 			return transformedValue;
 		},
@@ -54,7 +65,9 @@ export default function useWithTextNodeValue(
 			const grafcet = store!.getState().grafcet!;
 			const elementCopy = grafcet.getElementById(nodeId)!.copy();
 			elementCopy.updateData({ [valueProperty]: transformedValue });
-			const issues = analyser.analyseIsolated(elementCopy, { allowEmptyContent: true });
+			const issues =
+				analyser?.analyseIsolated(elementCopy, { allowEmptyContent: true }) ??
+				[];
 			const errors = issues.filter((issue) => issue.severity === "error");
 			setError(errors.length > 0 ? errors[0].message : false);
 		},

@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeOutlined as HomeIcon } from "@mui/icons-material";
+import HomeIcon from "@mui/icons-material/HomeOutlined";
 import { PROJECT_STARTUP_PAGE_DATA } from "../pages/ProjectStartupPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import AppTool from "./AppTool";

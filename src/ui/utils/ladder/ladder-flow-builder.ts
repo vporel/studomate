@@ -38,11 +38,16 @@ export const POWER_RAIL_OFFSET = RAIL_LANE_WIDTH;
  * (positionnés en haut de l'espace ainsi agrandi). Une ligne absente de la map (aucun élément, ou
  * au-delà du contenu actuel) vaut 1 cellule — voir `rowToY`/`yToRow`.
  */
-export function computeRowHeightsInCells(section: Section): Map<number, number> {
+export function computeRowHeightsInCells(
+	section: Section,
+): Map<number, number> {
 	const heights = new Map<number, number>();
 	for (const element of section.elements) {
 		const row = element.position.row;
-		heights.set(row, Math.max(heights.get(row) ?? 1, getElementHeight(element)));
+		heights.set(
+			row,
+			Math.max(heights.get(row) ?? 1, getElementHeight(element)),
+		);
 	}
 	return heights;
 }
@@ -58,21 +63,29 @@ export function computeRowHeightsInCells(section: Section): Map<number, number> 
  * `rowHeightsInCells` (voir `computeRowHeightsInCells`) rend la hauteur de ligne non uniforme :
  * omis (grille uniforme), toute ligne vaut 1 cellule.
  */
-export function rowToY(row: number, rowHeightsInCells: Map<number, number> = new Map()): number {
+export function rowToY(
+	row: number,
+	rowHeightsInCells: Map<number, number> = new Map(),
+): number {
 	let y = LADDER_FLOW_TOP_OFFSET;
 	for (let r = 0; r < row; r++) {
 		y += (rowHeightsInCells.get(r) ?? 1) * LADDER_FLOW_ROW_HEIGHT;
 	}
 	return y;
 }
-export function yToRow(y: number, rowHeightsInCells: Map<number, number> = new Map()): number {
+export function yToRow(
+	y: number,
+	rowHeightsInCells: Map<number, number> = new Map(),
+): number {
 	let cumulativeY = LADDER_FLOW_TOP_OFFSET;
 	let row = 0;
 	// Borne défensive : une position hors de tout contenu raisonnable (souris hors du canevas)
 	// ne doit pas boucler indéfiniment.
 	while (row < 100_000) {
-		const rowHeightPx = (rowHeightsInCells.get(row) ?? 1) * LADDER_FLOW_ROW_HEIGHT;
-		if (y < cumulativeY + rowHeightPx) return row + (y - cumulativeY) / rowHeightPx;
+		const rowHeightPx =
+			(rowHeightsInCells.get(row) ?? 1) * LADDER_FLOW_ROW_HEIGHT;
+		if (y < cumulativeY + rowHeightPx)
+			return row + (y - cumulativeY) / rowHeightPx;
 		cumulativeY += rowHeightPx;
 		row++;
 	}
@@ -95,8 +108,17 @@ export const LADDER_CONNECTION_EDGE_TYPE = "ladder-connection";
  * `LadderConnectionLine` (aperçu pendant le tracé manuel d'une connexion, qui n'a jamais de
  * `points`), pour que les deux rendus se ressemblent.
  */
-export function getConnectionLinePoints(fromX: number, fromY: number, toX: number, toY: number): [number, number][] {
-	if (fromY === toY) return [[fromX, fromY], [toX, toY]];
+export function getConnectionLinePoints(
+	fromX: number,
+	fromY: number,
+	toX: number,
+	toY: number,
+): [number, number][] {
+	if (fromY === toY)
+		return [
+			[fromX, fromY],
+			[toX, toY],
+		];
 	const midX = (fromX + toX) / 2;
 	return [
 		[fromX, fromY],
@@ -145,9 +167,20 @@ export function computeSectionLayout(section: Section): {
 		row: element.position.row,
 		col: element.position.col,
 	}));
-	const totalRows = Math.max(1, ...section.elements.map((element) => element.position.row + 1));
-	const maxCol = section.elements.reduce((max, element) => Math.max(max, element.position.col), 0);
-	return { totalRows, maxCol, leafPositions, rowHeightsInCells: computeRowHeightsInCells(section) };
+	const totalRows = Math.max(
+		1,
+		...section.elements.map((element) => element.position.row + 1),
+	);
+	const maxCol = section.elements.reduce(
+		(max, element) => Math.max(max, element.position.col),
+		0,
+	);
+	return {
+		totalRows,
+		maxCol,
+		leafPositions,
+		rowHeightsInCells: computeRowHeightsInCells(section),
+	};
 }
 
 /**
@@ -177,7 +210,10 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 			return {
 				id: element.id,
 				type: "block",
-				position: { x: colToX(element.position.col), y: rowToY(element.position.row, rowHeightsInCells) },
+				position: {
+					x: colToX(element.position.col),
+					y: rowToY(element.position.row, rowHeightsInCells),
+				},
 				data: element.data,
 			} as LadderNodeType;
 		}

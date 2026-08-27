@@ -40,7 +40,10 @@ describe("LocalStorageProjectRepository", () => {
 		// Le cas réel : un projet enregistré avant le versionnement
 		it("relit un projet écrit par l'ancienne version", async () => {
 			const original = newProject("p1", "Projet enseignante");
-			store.set(STORAGE_KEY, legacyStoredValue([JSON.parse(JSON.stringify(original))]));
+			store.set(
+				STORAGE_KEY,
+				legacyStoredValue([JSON.parse(JSON.stringify(original))]),
+			);
 
 			const projects = await new LocalStorageProjectRepository().list();
 
@@ -51,7 +54,10 @@ describe("LocalStorageProjectRepository", () => {
 		});
 
 		it("écrit la disposition courante lors du prochain enregistrement", async () => {
-			store.set(STORAGE_KEY, legacyStoredValue([JSON.parse(JSON.stringify(newProject("p1", "A")))]));
+			store.set(
+				STORAGE_KEY,
+				legacyStoredValue([JSON.parse(JSON.stringify(newProject("p1", "A")))]),
+			);
 			const repo = new LocalStorageProjectRepository();
 
 			await repo.save(newProject("p2", "B"));
@@ -66,7 +72,9 @@ describe("LocalStorageProjectRepository", () => {
 		it("enregistre puis relit un projet", async () => {
 			const repo = new LocalStorageProjectRepository();
 
-			expect(await repo.save(newProject("p1", "Mon projet"))).toEqual({ ok: true });
+			expect(await repo.save(newProject("p1", "Mon projet"))).toEqual({
+				ok: true,
+			});
 			expect((await repo.get("p1"))?.name).toBe("Mon projet");
 		});
 
@@ -90,7 +98,28 @@ describe("LocalStorageProjectRepository", () => {
 		});
 
 		it("retourne null pour un projet inconnu", async () => {
-			expect(await new LocalStorageProjectRepository().get("inexistant")).toBeNull();
+			expect(
+				await new LocalStorageProjectRepository().get("inexistant"),
+			).toBeNull();
+		});
+
+		it("renvoie le projet demandé sans toucher aux autres entrées, même illisibles", async () => {
+			store.set(
+				STORAGE_KEY,
+				JSON.stringify([
+					{ name: "sans id" },
+					{
+						id: "futur",
+						name: "V2",
+						schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+					},
+					JSON.parse(JSON.stringify(newProject("p1", "Bon"))),
+				]),
+			);
+
+			const project = await new LocalStorageProjectRepository().get("p1");
+
+			expect(project?.name).toBe("Bon");
 		});
 	});
 
@@ -102,7 +131,9 @@ describe("LocalStorageProjectRepository", () => {
 				throw e;
 			});
 
-			const result = await new LocalStorageProjectRepository().save(newProject("p1", "A"));
+			const result = await new LocalStorageProjectRepository().save(
+				newProject("p1", "A"),
+			);
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.reason).toBe("quota-exceeded");
@@ -113,7 +144,9 @@ describe("LocalStorageProjectRepository", () => {
 				throw new Error("panne");
 			});
 
-			const result = await new LocalStorageProjectRepository().save(newProject("p1", "A"));
+			const result = await new LocalStorageProjectRepository().save(
+				newProject("p1", "A"),
+			);
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.reason).toBe("unknown");
@@ -131,7 +164,11 @@ describe("LocalStorageProjectRepository", () => {
 				STORAGE_KEY,
 				JSON.stringify([
 					JSON.parse(JSON.stringify(newProject("ancien", "Lisible"))),
-					{ id: "futur", name: "Écrit par une v2", schemaVersion: PROJECT_SCHEMA_VERSION + 1 },
+					{
+						id: "futur",
+						name: "Écrit par une v2",
+						schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+					},
 				]),
 			);
 
@@ -141,7 +178,12 @@ describe("LocalStorageProjectRepository", () => {
 		});
 
 		it("ne réécrit pas un projet trop récent lorsqu'elle en enregistre un autre", async () => {
-			const futur = { id: "futur", name: "V2", schemaVersion: PROJECT_SCHEMA_VERSION + 1, extra: 42 };
+			const futur = {
+				id: "futur",
+				name: "V2",
+				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+				extra: 42,
+			};
 			store.set(STORAGE_KEY, JSON.stringify([futur]));
 			const repo = new LocalStorageProjectRepository();
 
@@ -156,7 +198,10 @@ describe("LocalStorageProjectRepository", () => {
 		it("ignore une entrée sans identifiant valide", async () => {
 			store.set(
 				STORAGE_KEY,
-				JSON.stringify([{ name: "sans id" }, JSON.parse(JSON.stringify(newProject("p1", "Bon")))]),
+				JSON.stringify([
+					{ name: "sans id" },
+					JSON.parse(JSON.stringify(newProject("p1", "Bon"))),
+				]),
 			);
 
 			const projects = await new LocalStorageProjectRepository().list();
@@ -167,7 +212,9 @@ describe("LocalStorageProjectRepository", () => {
 		it("ne lève pas sur un stockage corrompu", async () => {
 			store.set(STORAGE_KEY, "{ ceci n'est pas du JSON");
 
-			await expect(new LocalStorageProjectRepository().list()).resolves.toEqual([]);
+			await expect(new LocalStorageProjectRepository().list()).resolves.toEqual(
+				[],
+			);
 		});
 	});
 });

@@ -5,4 +5,5 @@
  * le passage par `DataTransfer` natif plutôt que par un contexte, à la différence des outils de
  * la toolbar (contact/bobine).
  */
-export const LADDER_PROGRAM_DRAG_MIME_TYPE = "application/x-studomate-ladder-program-id";
+export const LADDER_PROGRAM_DRAG_MIME_TYPE =
+	"application/x-studomate-ladder-program-id";

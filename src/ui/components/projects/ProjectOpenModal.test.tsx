@@ -4,7 +4,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
 import { parseProjectFromFile } from "@/persistence/project-file";
-import { openFileDialog, openFileViaInput, readFile } from "@/ui/lib/file-system";
+import {
+	openFileDialog,
+	openFileViaInput,
+	readFile,
+} from "@/ui/lib/file-system";
 import { useProjectStore } from "./ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import ProjectOpenModal from "./ProjectOpenModal";
@@ -108,7 +112,9 @@ describe("ProjectOpenModal", () => {
 			(openFileDialog as jest.Mock).mockResolvedValue({});
 			(readFile as jest.Mock).mockResolvedValue('{"id":"p1"}');
 			(parseProjectFromFile as jest.Mock).mockReturnValue(project);
-			const { openProject } = setup({ save: jest.fn().mockResolvedValue({ ok: false }) });
+			const { openProject } = setup({
+				save: jest.fn().mockResolvedValue({ ok: false }),
+			});
 
 			fireEvent.click(screen.getByText("Ouvrir depuis un fichier..."));
 			await waitFor(() => expect(alertSpy).toHaveBeenCalled());

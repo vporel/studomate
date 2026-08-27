@@ -36,10 +36,9 @@ export default function ManualContentIndex({
 			index[el.id] = (el.textContent ?? "").replace(/\s+/g, " ").trim();
 		});
 		onReady(index);
-		// onReady n'est volontairement pas dans les dépendances : le contenu des sections est
-		// statique, cet index ne doit être construit qu'une seule fois au montage.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		// Effet unique au montage : `onReady` est un setter d'état (stable), le contenu des
+		// sections est statique.
+	}, [onReady]);
 
 	return (
 		<Box ref={containerRef} aria-hidden sx={{ display: "none" }}>

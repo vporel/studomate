@@ -1,4 +1,10 @@
-import { MouseEvent, ReactElement, useCallback, useEffect, useRef } from "react";
+import {
+	MouseEvent,
+	ReactElement,
+	useCallback,
+	useEffect,
+	useRef,
+} from "react";
 import { PaneProps } from "./split-pane";
 import { parseSize } from "./useInitialSizesCalculator";
 
@@ -7,7 +13,7 @@ export default function useResizeHandler(
 	isHorizontal: boolean,
 	sizes: number[],
 	setSizes: (sizes: number[]) => void,
-	children: ReactElement<PaneProps>[]
+	children: ReactElement<PaneProps>[],
 ) {
 	//Écouteurs d'un glisser en cours, à retirer si le composant est démonté avant le mouseup
 	//(changement d'onglet, fermeture de page) : sans ça, ils survivent et continuent d'appeler
@@ -37,11 +43,23 @@ export default function useResizeHandler(
 
 				const newSizes = [...startSizes];
 
-				const leftMin = parseSize(children[index].props.minSize ?? 0, containerSize);
-				const rightMin = parseSize(children[index + 1].props.minSize ?? 0, containerSize);
+				const leftMin = parseSize(
+					children[index].props.minSize ?? 0,
+					containerSize,
+				);
+				const rightMin = parseSize(
+					children[index + 1].props.minSize ?? 0,
+					containerSize,
+				);
 
-				const leftMax = parseSize(children[index].props.maxSize ?? Infinity, containerSize);
-				const rightMax = parseSize(children[index + 1].props.maxSize ?? Infinity, containerSize);
+				const leftMax = parseSize(
+					children[index].props.maxSize ?? Infinity,
+					containerSize,
+				);
+				const rightMax = parseSize(
+					children[index + 1].props.maxSize ?? Infinity,
+					containerSize,
+				);
 
 				const leftPx = startSizes[index] + deltaPercent;
 				const rightPx = startSizes[index + 1] - deltaPercent;
@@ -64,6 +82,6 @@ export default function useResizeHandler(
 			document.addEventListener("mouseup", onMouseUp);
 			activeDragCleanupRef.current = onMouseUp;
 		},
-		[containerRef, isHorizontal, sizes, setSizes, children]
+		[containerRef, isHorizontal, sizes, setSizes, children],
 	);
 }

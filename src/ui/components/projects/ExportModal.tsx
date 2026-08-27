@@ -9,7 +9,12 @@ import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
 export default function ExportModal() {
-	const { exportModalVisible, setExportModalVisible, activeScope, activeScopeType } = useProjectStore(
+	const {
+		exportModalVisible,
+		setExportModalVisible,
+		activeScope,
+		activeScopeType,
+	} = useProjectStore(
 		useShallow((s) => ({
 			exportModalVisible: s.ui.exportModalVisible,
 			setExportModalVisible: s.setExportModalVisible,
@@ -28,23 +33,42 @@ export default function ExportModal() {
 	}, [setExportModalVisible]);
 
 	const onExport = useCallback(() => {
-		const dateSuffix = addDateToName ? `-${new Date().toISOString().slice(0, 10)}` : "";
+		const dateSuffix = addDateToName
+			? `-${new Date().toISOString().slice(0, 10)}`
+			: "";
 		if (choice === "project") {
 			const project = projectStore?.getState().project;
 			if (project) {
 				const fileName = `${project.name}${dateSuffix}`;
 				exportProject(project, fileName);
 			}
-		} else if (choice === "grafcet" && activeScopeType === "grafcet" && activeScope) {
+		} else if (
+			choice === "grafcet" &&
+			activeScopeType === "grafcet" &&
+			activeScope
+		) {
 			const grafcet = grafcetsManager.getProgramOrThrow(activeScope);
 			const fileName = `${grafcet.name}${dateSuffix}`;
 			void exportGrafcet(activeScope, fileName, grafcet.format);
 		}
 		onClose();
-	}, [choice, onClose, grafcetsManager, activeScope, activeScopeType, projectStore, addDateToName]);
+	}, [
+		choice,
+		onClose,
+		grafcetsManager,
+		activeScope,
+		activeScopeType,
+		projectStore,
+		addDateToName,
+	]);
 
 	return (
-		<CustomModal open={exportModalVisible} onClose={onClose} title="Exporter" width={500}>
+		<CustomModal
+			open={exportModalVisible}
+			onClose={onClose}
+			title="Exporter"
+			width={500}
+		>
 			<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 				<div>
 					<label style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -70,7 +94,10 @@ export default function ExportModal() {
 						/>
 						<Typography
 							sx={{
-								color: activeScopeType !== "grafcet" ? "text.disabled" : "text.primary",
+								color:
+									activeScopeType !== "grafcet"
+										? "text.disabled"
+										: "text.primary",
 							}}
 						>
 							Exporter le grafcet actif
@@ -90,7 +117,11 @@ export default function ExportModal() {
 				</div>
 
 				<div style={{ display: "flex", justifyContent: "flex-end" }}>
-					<Button variant="contained" onClick={onExport} disabled={choice === null}>
+					<Button
+						variant="contained"
+						onClick={onExport}
+						disabled={choice === null}
+					>
 						Exporter
 					</Button>
 				</div>

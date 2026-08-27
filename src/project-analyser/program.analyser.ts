@@ -30,5 +30,9 @@ export type ProgramAnalysisResult = {
  */
 export default interface ProgramAnalyser<P extends Program = Program> {
 	generateVariables(program: P): Variable[];
-	analyse(program: P, project: Project, allVariables: Variable[]): ProgramAnalysisResult;
+	analyse(
+		program: P,
+		project: Project,
+		allVariables: Variable[],
+	): ProgramAnalysisResult;
 }

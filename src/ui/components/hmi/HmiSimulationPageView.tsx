@@ -22,20 +22,34 @@ import HmiPageView from "./HmiPageView";
 const HmiSimulationPageView = () => {
 	const project = useProjectStore((s) => s.project);
 	const activeHmiPageId = useProjectStore((s) => s.hmiSimulationActivePageId);
-	const hmiPage = activeHmiPageId ? project?.getHmiPage(activeHmiPageId) : undefined;
+	const hmiPage = activeHmiPageId
+		? project?.getHmiPage(activeHmiPageId)
+		: undefined;
 
 	// Pas de page à afficher (onglet ouvert sans page HMI résolue) : un seul `Page` porte la
 	// visibilité de l'onglet ici — `HmiPageView` en fournit déjà un (via `HmiPageContent`) dans
 	// l'autre branche, les imbriquer tous les deux doublonnerait le contrôle de visibilité.
 	if (!hmiPage) {
 		return (
-			<Page pageId={HMI_SIMULATION_PAGE_ID} sx={{ justifyContent: "center", alignItems: "center" }}>
-				<Typography sx={{ color: "text.secondary" }}>Aucune page HMI à afficher.</Typography>
+			<Page
+				pageId={HMI_SIMULATION_PAGE_ID}
+				sx={{ justifyContent: "center", alignItems: "center" }}
+			>
+				<Typography sx={{ color: "text.secondary" }}>
+					Aucune page HMI à afficher.
+				</Typography>
 			</Page>
 		);
 	}
 
-	return <HmiPageView key={hmiPage.id} initialHmiPage={hmiPage} tabPageId={HMI_SIMULATION_PAGE_ID} isSimulation />;
+	return (
+		<HmiPageView
+			key={hmiPage.id}
+			initialHmiPage={hmiPage}
+			tabPageId={HMI_SIMULATION_PAGE_ID}
+			isSimulation
+		/>
+	);
 };
 
 export default HmiSimulationPageView;

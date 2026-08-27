@@ -3,16 +3,26 @@
 import { MouseEvent, RefObject, useCallback, useState } from "react";
 import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
 
-export default function useExplorerContextMenu(explorerRef: RefObject<HTMLDivElement | null>): {
+export default function useExplorerContextMenu(
+	explorerRef: RefObject<HTMLDivElement | null>,
+): {
 	visible: boolean;
 	element: ExplorerContextMenuElement;
 	position: { x: number; y: number };
-	openContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	openContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 	closeContextMenu: () => void;
 } {
 	const [visible, setVisible] = useState(false);
-	const [element, setElement] = useState<ExplorerContextMenuElement>({ type: "pane" });
-	const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+	const [element, setElement] = useState<ExplorerContextMenuElement>({
+		type: "pane",
+	});
+	const [position, setPosition] = useState<{ x: number; y: number }>({
+		x: 0,
+		y: 0,
+	});
 
 	return {
 		visible,
@@ -27,7 +37,7 @@ export default function useExplorerContextMenu(explorerRef: RefObject<HTMLDivEle
 					y: event.clientY - explorerRef.current!.getBoundingClientRect().top,
 				});
 			},
-			[explorerRef]
+			[explorerRef],
 		),
 		closeContextMenu: useCallback(() => {
 			setVisible(false);

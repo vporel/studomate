@@ -15,8 +15,23 @@ const GaugeSymbol = () => (
 			px: "3px",
 		}}
 	>
-		<Box sx={{ width: "100%", height: 8, backgroundColor: "#ddd", borderRadius: 4, overflow: "hidden" }}>
-			<Box sx={{ width: "40%", height: "100%", backgroundColor: "#1976d2", borderRadius: 4 }} />
+		<Box
+			sx={{
+				width: "100%",
+				height: 8,
+				backgroundColor: "#ddd",
+				borderRadius: 4,
+				overflow: "hidden",
+			}}
+		>
+			<Box
+				sx={{
+					width: "40%",
+					height: "100%",
+					backgroundColor: "#1976d2",
+					borderRadius: 4,
+				}}
+			/>
 		</Box>
 	</Box>
 );

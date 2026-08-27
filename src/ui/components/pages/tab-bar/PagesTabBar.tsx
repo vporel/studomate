@@ -1,12 +1,26 @@
 "use client";
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import {
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	horizontalListSortingStrategy,
+	SortableContext,
+} from "@dnd-kit/sortable";
 import { Box } from "@mui/material";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import PageTab, { PageTabProps } from "./PageTab";
 
 const PagesTabBar = () => {
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
@@ -28,6 +42,28 @@ const PagesTabBar = () => {
 		[pagesData, pagesOrder],
 	);
 
+	// Distance minimale avant d'activer le drag : sans elle, un simple clic sur un onglet
+	// (qui l'active) déclencherait un reorder involontaire.
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+	);
+
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			const { active, over } = event;
+			if (!over || active.id === over.id) return;
+			const ids = tabsData.map((tab) => tab.id);
+			pagesManager.reorderPages(
+				arrayMove(
+					ids,
+					ids.indexOf(active.id as string),
+					ids.indexOf(over.id as string),
+				),
+			);
+		},
+		[tabsData, pagesManager],
+	);
+
 	return (
 		<Box
 			className="pages__tab-bar"
@@ -40,9 +76,20 @@ const PagesTabBar = () => {
 				backgroundColor: "white",
 			}}
 		>
-			{tabsData?.map((tabData) => (
-				<PageTab key={tabData.id} {...tabData} />
-			))}
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragEnd={handleDragEnd}
+			>
+				<SortableContext
+					items={tabsData.map((tab) => tab.id)}
+					strategy={horizontalListSortingStrategy}
+				>
+					{tabsData.map((tabData) => (
+						<PageTab key={tabData.id} {...tabData} />
+					))}
+				</SortableContext>
+			</DndContext>
 		</Box>
 	);
 };

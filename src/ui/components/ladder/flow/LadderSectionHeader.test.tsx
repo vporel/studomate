@@ -70,7 +70,9 @@ describe("LadderSectionHeader — édition du titre", () => {
 
 	it("commit le titre sur Entrée (perd le focus)", () => {
 		const { executeOperation } = setup({ title: "Avant" });
-		const input = screen.getByLabelText("Titre de la section") as HTMLInputElement;
+		const input = screen.getByLabelText(
+			"Titre de la section",
+		) as HTMLInputElement;
 		act(() => input.focus());
 
 		fireEvent.change(input, { target: { value: "Après" } });
@@ -81,7 +83,9 @@ describe("LadderSectionHeader — édition du titre", () => {
 
 	it("annule la saisie sur Échap (revient au titre d'origine, aucune commande dispatchée)", () => {
 		const { executeOperation } = setup({ title: "Original" });
-		const input = screen.getByLabelText("Titre de la section") as HTMLInputElement;
+		const input = screen.getByLabelText(
+			"Titre de la section",
+		) as HTMLInputElement;
 		act(() => input.focus());
 
 		fireEvent.change(input, { target: { value: "Modifié" } });
@@ -101,20 +105,29 @@ describe("LadderSectionHeader — suppression et réordonnancement", () => {
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
 		expect(commands[0]).toBeInstanceOf(SectionRemoveCommand);
-		expect(commands[0].payload).toMatchObject({ sectionId: section.id, index: 2 });
+		expect(commands[0].payload).toMatchObject({
+			sectionId: section.id,
+			index: 2,
+		});
 	});
 
 	it("désactive Supprimer et la poignée de réordonnancement quand c'est la seule section du ladder", () => {
 		setup({ sectionsCount: 1 });
 
 		expect(screen.getByLabelText("Supprimer la section")).toBeDisabled();
-		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute("aria-disabled", "true");
+		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute(
+			"aria-disabled",
+			"true",
+		);
 	});
 
 	it("active Supprimer et la poignée de réordonnancement dès qu'il y a plusieurs sections", () => {
 		setup({ sectionsCount: 2 });
 
 		expect(screen.getByLabelText("Supprimer la section")).not.toBeDisabled();
-		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute("aria-disabled", "false");
+		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute(
+			"aria-disabled",
+			"false",
+		);
 	});
 });

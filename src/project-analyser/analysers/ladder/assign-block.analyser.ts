@@ -1,11 +1,7 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import AllowedNodeTypesVisitor from "@/expression-language/ast/visitors/allowed-node-types.visitor";
-import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
@@ -13,30 +9,18 @@ import { BlockElement } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
-
-/** Seuls ces types de nœud sont autorisés dans l'expression d'un bloc assign — l'affectation
- * elle-même (exactement une, voir `analyse`), tout opérande/opérateur ordinaire (identifiants,
- * littéraux, arithmétique, comparaison, logique, NON), jamais un bloc timer/compteur/temporisation
- * ni un contrôle conditionnel. Liste blanche (voir `AllowedNodeTypesVisitor`) : un type de nœud
- * ajouté plus tard au langage est exclu par défaut tant qu'il n'est pas ajouté ici explicitement. */
-const ALLOWED_NODE_TYPES: ASTNode["type"][] = [
-	"IDENTIFIER",
-	"BOOLEAN_LITERAL",
-	"NUMBER_LITERAL",
-	"STRING_LITERAL",
-	"UNARY_EXPRESSION",
-	"ARITHMETIC_EXPRESSION",
-	"COMPARISON_EXPRESSION",
-	"LOGICAL_EXPRESSION",
-	"ASSIGN_STATEMENT",
-];
+import {
+	OPERAND_NODE_TYPES,
+	issue,
+	parseIdentifierNode,
+	parseOperandNode,
+} from "./block-operand";
 
 /**
- * Validation propre à un bloc `"assign"` — voir `AssignBlockParams`. Contrairement à
- * `CompareBlockAnalyser`, aucune contrainte de type final (l'affectation peut cibler une variable
- * de n'importe quel type) : seule compte la présence d'exactement une affectation, dans le
- * sous-ensemble autorisé de la grammaire. Appelé par `BlockAnalyser`, qui dispatche par
- * `blockType`.
+ * Validation propre à un bloc `"assign"` — voir `AssignBlockParams`. `out` doit être un
+ * mnémonique de variable (pas un littéral, pas une expression), `in` un opérande simple
+ * (identifiant ou littéral). Le contrôle « `out` est déclarée, inscriptible, et de type
+ * compatible avec `in` » est délégué à `SemanticAnalyserVisitor` sur l'AST `out := in`.
  */
 export default class AssignBlockAnalyser {
 	static analyse(
@@ -46,72 +30,66 @@ export default class AssignBlockAnalyser {
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "assign") return [];
-		const { expression } = element.data.params;
+		const { in: inRaw, out: outRaw } = element.data.params;
 
-		if (!expression || expression.trim() === "") {
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_ASSIGN_EXPRESSION_EMPTY",
+		const issues: ProjectAnalyserIssue[] = [];
+		if (!inRaw || inRaw.trim() === "")
+			issues.push(
+				issue(
+					"BLOCK_ASSIGN_IN_EMPTY",
 					source,
-					"L'expression de ce bloc d'affectation doit être renseignée.",
+					"La pinoche IN de ce bloc d'affectation doit être renseignée.",
 				),
-			];
-		}
+			);
+		if (!outRaw || outRaw.trim() === "")
+			issues.push(
+				issue(
+					"BLOCK_ASSIGN_OUT_EMPTY",
+					source,
+					"La pinoche OUT de ce bloc d'affectation doit être renseignée.",
+				),
+			);
+		if (issues.length > 0) return issues;
 
 		try {
-			const node = new Parser(new Lexer(dialect).tokenize(expression)).parse();
-
-			if (node.type !== "ASSIGN_STATEMENT") {
+			const target = parseIdentifierNode(outRaw, dialect);
+			if (!target)
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_ASSIGN_NOT_AN_ASSIGNMENT",
+					issue(
+						"BLOCK_ASSIGN_OUT_NOT_A_VARIABLE",
 						source,
-						`Expression invalide : ce bloc doit contenir une affectation (ex. "A := B").`,
+						"La pinoche OUT doit être un mnémonique de variable.",
 					),
 				];
-			}
 
-			const assignmentCount = new FinderVisitor("ASSIGN_STATEMENT").visit(node).length;
-			if (assignmentCount > 1) {
+			const value = parseOperandNode(inRaw, dialect, OPERAND_NODE_TYPES);
+			if (!value)
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_ASSIGN_MULTIPLE_ASSIGNMENTS",
+					issue(
+						"BLOCK_ASSIGN_IN_NOT_ALLOWED",
 						source,
-						"Expression invalide : ce bloc ne peut contenir qu'une seule affectation.",
+						"La pinoche IN doit contenir une variable ou une valeur, pas une expression.",
 					),
 				];
-			}
-
-			const violation = new AllowedNodeTypesVisitor(ALLOWED_NODE_TYPES).visit(node)[0];
-			if (violation) {
-				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_ASSIGN_OPERATOR_NOT_ALLOWED",
-						source,
-						"Expression invalide : ce bloc ne peut pas contenir de bloc timer/compteur.",
-					),
-				];
-			}
 
 			const env = new Environment(
-				Array.from(variablesByMnemonic.values()).map(SchemaVariablesMapper.schemaToEnv),
+				Array.from(variablesByMnemonic.values()).map(
+					SchemaVariablesMapper.schemaToEnv,
+				),
 			);
-			new SemanticAnalyserVisitor(env).visit(node);
+			new SemanticAnalyserVisitor(env).visit(
+				StatementsBuilder.buildAssignStatementNode(target, value),
+			);
 		} catch (e) {
 			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_ASSIGN_INVALID_EXPRESSION",
+				issue(
+					"BLOCK_ASSIGN_INVALID",
 					source,
 					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
 				),
 			];
 		}
 
-		return [];
+		return issues;
 	}
 }

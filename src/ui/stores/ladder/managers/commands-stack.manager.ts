@@ -3,9 +3,12 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import AbstractCommandsStackManager from "@/ui/stores/shared/abstract-commands-stack.manager";
 import LadderEdgesFactory from "../factories/edges.factory";
 import LadderNodesFactory from "../factories/nodes.factory";
-import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
+import {
+	LadderStoreGetFunction,
+	LadderStoreSetFunction,
+} from "../ladder.store";
 
-export default class CommandsStackManager extends AbstractCommandsStackManager<Ladder> {
+export default class LadderCommandsStackManager extends AbstractCommandsStackManager<Ladder> {
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
 
@@ -31,7 +34,7 @@ export default class CommandsStackManager extends AbstractCommandsStackManager<L
 	 * Adopte le ladder produit par la pile de commandes, et réaligne la vue dessus.
 	 *
 	 * La vue est *recalculée* à partir du ladder plutôt que patchée à la main — même principe
-	 * que le GRAFCET (`WorkflowManager`/`CommandsStackManager`) : exécuter, annuler et rétablir
+	 * que le GRAFCET (`GrafcetWorkflowManager`/`LadderCommandsStackManager`) : exécuter, annuler et rétablir
 	 * passent tous par le même chemin, sans code de vue spécifique à chaque type de commande.
 	 * Chaque section garde son propre tableau `nodes`/`edges` (un flow indépendant par section,
 	 * contrairement au GRAFCET) ; une section supprimée disparaît naturellement de ces deux maps
@@ -43,13 +46,19 @@ export default class CommandsStackManager extends AbstractCommandsStackManager<L
 			nodesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderNodesFactory.syncNodes(state.nodesBySectionId[section.id] ?? [], section),
+					LadderNodesFactory.syncNodes(
+						state.nodesBySectionId[section.id] ?? [],
+						section,
+					),
 				]),
 			),
 			edgesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderEdgesFactory.syncEdges(state.edgesBySectionId[section.id] ?? [], section),
+					LadderEdgesFactory.syncEdges(
+						state.edgesBySectionId[section.id] ?? [],
+						section,
+					),
 				]),
 			),
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,

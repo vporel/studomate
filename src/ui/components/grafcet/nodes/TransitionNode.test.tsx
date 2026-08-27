@@ -27,10 +27,18 @@ function setup({
 } = {}) {
 	const grafcet = new GrafcetBuilder()
 		.id("g1")
-		.addTransition(new TransitionBuilder().id("trans-1").expression(expression).position(0, 0).build())
+		.addTransition(
+			new TransitionBuilder()
+				.id("trans-1")
+				.expression(expression)
+				.position(0, 0)
+				.build(),
+		)
 		.build();
 
-	(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+	(useGrafcetContext as jest.Mock).mockReturnValue({
+		store: fakeStoreApi({ grafcet }),
+	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			grafcet,
@@ -59,7 +67,9 @@ function setup({
 }
 
 function expressionTextarea(): HTMLTextAreaElement {
-	return document.querySelector(".transition_node__textarea") as HTMLTextAreaElement;
+	return document.querySelector(
+		".transition_node__textarea",
+	) as HTMLTextAreaElement;
 }
 
 describe("TransitionNode", () => {
@@ -70,12 +80,16 @@ describe("TransitionNode", () => {
 
 	it("porte la classe 'highlighted' quand la transition fait partie de highlightedNodesIds", () => {
 		setup({ highlightedNodesIds: ["trans-1"] });
-		expect(document.querySelector(".grafcet-transition-node")).toHaveClass("highlighted");
+		expect(document.querySelector(".grafcet-transition-node")).toHaveClass(
+			"highlighted",
+		);
 	});
 
 	it("ne porte pas la classe 'highlighted' sinon", () => {
 		setup({ highlightedNodesIds: ["autre"] });
-		expect(document.querySelector(".grafcet-transition-node")).not.toHaveClass("highlighted");
+		expect(document.querySelector(".grafcet-transition-node")).not.toHaveClass(
+			"highlighted",
+		);
 	});
 
 	it("colore la réceptivité en couleur primaire quand elle est vraie pendant la simulation", () => {
@@ -96,6 +110,8 @@ describe("TransitionNode", () => {
 		fireEvent.change(textarea, { target: { value: "I1" } });
 		fireEvent.blur(textarea);
 
-		expect(updateNodeData).toHaveBeenCalledWith("trans-1", { expression: "I1" });
+		expect(updateNodeData).toHaveBeenCalledWith("trans-1", {
+			expression: "I1",
+		});
 	});
 });

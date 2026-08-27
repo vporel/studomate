@@ -3,7 +3,11 @@ import type { BlockElement, TimerBlockParams } from "../ladder/block.schema";
 import type { GridPosition } from "../ladder/element.schema";
 import Variable from "../variable/variable.schema";
 import VariableBuilder from "../variable/builders/variable.builder";
-import { BlockPortSpec, getBlockVariableMnemonics } from "./function-block.schema";
+import {
+	BlockPortSpec,
+	requireConcreteType,
+} from "../ladder/block-port.schema";
+import { getBlockVariableMnemonics } from "./function-block.schema";
 
 /** Les trois variantes de bloc timer — TON (retard à l'enclenchement), TOF (retard au
  * déclenchement), TP (impulsion calibrée). Chaque variante a son propre logigramme interne, mais
@@ -19,47 +23,76 @@ export type TimerType = (typeof TIMER_TYPES)[number];
  * `BlockPortSpec.generatesVariable`.
  */
 export const TIMER_PORT_SPECS: BlockPortSpec[] = [
-	{ suffix: "IN", type: "BOOL", kind: "structural", direction: "input", generatesVariable: true },
-	{ suffix: "Q", type: "BOOL", kind: "structural", direction: "output", generatesVariable: true },
+	{
+		suffix: "IN",
+		type: "BOOL",
+		kind: "structural",
+		direction: "input",
+		generatesVariable: true,
+	},
+	{
+		suffix: "Q",
+		type: "BOOL",
+		kind: "structural",
+		direction: "output",
+		generatesVariable: true,
+	},
 	{
 		suffix: "PT",
 		type: "TIME",
 		kind: "parameter",
 		direction: "input",
 		generatesVariable: false,
-		acceptsTimeLiteral: true,
+		acceptedLiterals: ["time"],
 	},
-	{ suffix: "ET", type: "TIME", kind: "parameter", direction: "output", generatesVariable: true },
+	{
+		suffix: "ET",
+		type: "TIME",
+		kind: "parameter",
+		direction: "output",
+		generatesVariable: true,
+	},
 ];
 
 /** Les mnémoniques plats générés pour un bloc timer nommé `name` (`IN`, `Q`, `ET` — pas `PT`, voir
  * `TIMER_PORT_SPECS`). */
-export function getTimerBlockVariableMnemonics(name: string): Record<string, string> {
+export function getTimerBlockVariableMnemonics(
+	name: string,
+): Record<string, string> {
 	return getBlockVariableMnemonics(name, TIMER_PORT_SPECS);
 }
 
 /** La configuration d'un bloc timer vit directement dans `BlockElement.data.params` — cet
  * accesseur évite de répéter le rétrécissement de type partout où on doit la lire. */
-export function getTimerBlockParams(element: BlockElement): TimerBlockParams | null {
+export function getTimerBlockParams(
+	element: BlockElement,
+): TimerBlockParams | null {
 	return element.data.blockType === "timer" ? element.data.params : null;
 }
 
 /** Les `Variable` exposées d'un bloc timer (IN/Q/ET — voir `TIMER_PORT_SPECS`), générées à
  * l'analyse à partir de ses éléments (voir `LadderAnalyser`), jamais persistées dans
  * `project.variables` : elles disparaissent avec le `BlockElement`, sans commande de cascade. */
-export function createTimerBlockVariables(elementId: string, name: string): Variable[] {
+export function createTimerBlockVariables(
+	elementId: string,
+	name: string,
+): Variable[] {
 	return TIMER_PORT_SPECS.filter((spec) => spec.generatesVariable).map((spec) =>
 		new VariableBuilder()
 			.id(`${elementId}-${spec.suffix}`)
 			.mnemonic(`${name}.${spec.suffix}`)
 			.zone("memory")
-			.type(spec.type)
+			.type(requireConcreteType(spec))
 			.ownerBlock({ id: elementId })
 			.build(),
 	);
 }
 
-export function createTimerBlockElement(params: TimerBlockParams, row: number, col: number): BlockElement {
+export function createTimerBlockElement(
+	params: TimerBlockParams,
+	row: number,
+	col: number,
+): BlockElement {
 	return {
 		id: createRandomId(),
 		type: "block",

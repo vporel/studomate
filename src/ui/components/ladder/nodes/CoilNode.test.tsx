@@ -7,7 +7,10 @@ import { CoilMode } from "@/schemas/ladder/element.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { DEFAULT_THEME, ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
+import {
+	DEFAULT_THEME,
+	ThemeProvider as AppThemeProvider,
+} from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import CoilNode, { CoilNodeType } from "./CoilNode";
 
@@ -27,7 +30,10 @@ function setup({
 	variable = "S1",
 	mode = "normal" as CoilMode,
 	selected = false,
-	simulationVariablesStates = {} as Record<string, { mnemonic: string; value: boolean }>,
+	simulationVariablesStates = {} as Record<
+		string,
+		{ mnemonic: string; value: boolean }
+	>,
 	highlightedNodesIds = [] as string[],
 	projectVariables = [] as Variable[],
 	executeOperation = jest.fn(),
@@ -101,7 +107,10 @@ describe("CoilNode", () => {
 		it("noire par défaut (ni sélectionnée, ni sous tension)", () => {
 			setup({ selected: false, simulationVariablesStates: {} });
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "black");
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
 		});
 
 		it("couleur 'energized' quand une variable de simulation correspondante est à true", () => {
@@ -111,7 +120,10 @@ describe("CoilNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "S1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.energizedColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.energizedColor,
+			);
 		});
 
 		it("pas de couleur 'energized' si la variable de simulation est à false", () => {
@@ -121,13 +133,19 @@ describe("CoilNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "S1", value: false } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "black");
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
 		});
 
 		it("couleur 'primary' quand sélectionnée", () => {
 			setup({ selected: true, simulationVariablesStates: {} });
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.primaryColor,
+			);
 		});
 
 		it("la sélection l'emporte sur l'état 'energized'", () => {
@@ -137,7 +155,10 @@ describe("CoilNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "S1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.primaryColor,
+			);
 		});
 	});
 

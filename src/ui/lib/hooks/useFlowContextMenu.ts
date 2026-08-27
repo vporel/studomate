@@ -4,8 +4,6 @@ import { Emitter } from "mitt";
 import React, { useCallback } from "react";
 import { useReactFlow } from "@xyflow/react";
 
-
-
 /**
  * Factorise le pattern commun d'ouverture du menu contextuel dans les flows ReactFlow :
  * traduit les coordonnées du clic (clientX/Y) en position flow via `screenToFlowPosition`,

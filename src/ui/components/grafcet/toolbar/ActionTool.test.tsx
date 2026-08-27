@@ -22,7 +22,11 @@ describe("ActionTool", () => {
 			</GrafcetToolbarDnDProvider>,
 		);
 
-		expect(document.querySelector(".grafcet-toolbar__action")).toBeInTheDocument();
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__action"),
+		).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
 	});
 });

@@ -2,8 +2,6 @@ import type ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue
 
 /**
  * Problèmes d'analyse regroupés par programme (GRAFCET ou Ladder), prêts à être affichés.
- *
- * Ce type est la **sortie de ce mapper**, sa place est donc ici.
  */
 export type AnalysisProgramIssues = {
 	overall: string[];
@@ -25,7 +23,9 @@ export function emptyAnalysisIssues(): AnalysisIssues {
 }
 
 export default class AnalysisIssuesMapper {
-	static analyserToApp(projectAnalyserIssues: ProjectAnalyserIssue[]): AnalysisIssues {
+	static analyserToApp(
+		projectAnalyserIssues: ProjectAnalyserIssue[],
+	): AnalysisIssues {
 		const result: AnalysisIssues = emptyAnalysisIssues();
 		result.project = projectAnalyserIssues
 			.filter((issue) => issue.source.sourceType === "project")
@@ -40,16 +40,21 @@ export default class AnalysisIssuesMapper {
 			// `parentId` porte l'id du programme — jamais l'inverse, un id de ladder ne doit
 			// jamais atterrir dans le seau des grafcets (et réciproquement), sans quoi la
 			// résolution du nom du programme échoue côté UI.
-			const isProgramItself = sourceType === "grafcet" || sourceType === "ladder";
+			const isProgramItself =
+				sourceType === "grafcet" || sourceType === "ladder";
 			const programId = isProgramItself ? sourceId : parentId;
 			if (!programId) return;
-			const bucket = sourceType === "ladder" || sourceType.startsWith("ladder-") ? result.ladders : result.grafcets;
+			const bucket =
+				sourceType === "ladder" || sourceType.startsWith("ladder-")
+					? result.ladders
+					: result.grafcets;
 
 			if (!bucket[programId]) bucket[programId] = { overall: [], elements: {} };
 			if (isProgramItself) {
 				bucket[programId].overall.push(issue.message);
 			} else {
-				if (!bucket[programId].elements[sourceId]) bucket[programId].elements[sourceId] = [];
+				if (!bucket[programId].elements[sourceId])
+					bucket[programId].elements[sourceId] = [];
 				bucket[programId].elements[sourceId].push(issue.message);
 			}
 		});

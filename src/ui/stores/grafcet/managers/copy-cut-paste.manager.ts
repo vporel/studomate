@@ -1,18 +1,30 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { createRandomId } from "@/ids";
-import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import {
+	GrafcetEdgeType,
+	GrafcetNodeType,
+} from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
-import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
+import {
+	GrafcetStoreGetFunction,
+	GrafcetStoreSetFunction,
+} from "../grafcet.store";
+import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
-export default class CopyCutPasteManager {
+export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteManager<{
+	nodes: GrafcetNodeType[];
+	edges: GrafcetEdgeType[];
+}> {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
-	private clipboard: { nodes: GrafcetNodeType[]; edges: GrafcetEdgeType[] } | null;
 
-	constructor(setStoreState: GrafcetStoreSetFunction, getStoreState: GrafcetStoreGetFunction) {
+	constructor(
+		setStoreState: GrafcetStoreSetFunction,
+		getStoreState: GrafcetStoreGetFunction,
+	) {
+		super();
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
-		this.clipboard = null;
 	}
 
 	copySelectedElements() {
@@ -21,11 +33,16 @@ export default class CopyCutPasteManager {
 		this.copyElements(nodes, edges);
 	}
 
-	cutSelectedElements(): void {
+	protected isSelectionEmpty(): boolean {
+		return (
+			!this.getStoreState().nodes.some((n) => n.selected) &&
+			!this.getStoreState().edges.some((e) => e.selected)
+		);
+	}
+
+	protected deleteSelectedElements(): void {
 		const nodes = this.getStoreState().nodes.filter((n) => n.selected);
 		const edges = this.getStoreState().edges.filter((e) => e.selected);
-		if (nodes.length === 0 && edges.length === 0) return;
-		this.copyElements(nodes, edges);
 		this.getStoreState().workflowManager.deleteNodesAndEdges(
 			nodes.map((n) => n.id),
 			edges.map((e) => e.id),
@@ -58,25 +75,43 @@ export default class CopyCutPasteManager {
 		//Calculate the offset to apply to the pasted elements position so they are pasted at the mouse position,
 		//or with an offset if the mouse position is not in the flow bounds,
 		//or with a default offset if the mouse position is not provided
-		const flowMousePosition = !mousePosition ? null : rfInstance.screenToFlowPosition(mousePosition);
+		const flowMousePosition = !mousePosition
+			? null
+			: rfInstance.screenToFlowPosition(mousePosition);
 		const flowDimensions = getFlowDimensions(grafcet.format);
 		flowDimensions.width = Math.floor(flowDimensions.width);
 		flowDimensions.height = Math.floor(flowDimensions.height);
 		const nodesBounds = rfInstance.getNodesBounds(copiedElements.nodes);
 		let offsetDueToMouse = null;
-		if (flowMousePosition && flowMousePosition.x >= 0 && flowMousePosition.y >= 0) {
+		if (
+			flowMousePosition &&
+			flowMousePosition.x >= 0 &&
+			flowMousePosition.y >= 0
+		) {
 			offsetDueToMouse = {
 				x: flowMousePosition.x - nodesBounds.x,
 				y: flowMousePosition.y - nodesBounds.y,
 			};
 			//Using the bounds width and height, and the flowDimensions, make sure the pasted elements are not out of the flow bounds
-			if (offsetDueToMouse.x + nodesBounds.x + nodesBounds.width > flowDimensions.width) {
+			if (
+				offsetDueToMouse.x + nodesBounds.x + nodesBounds.width >
+				flowDimensions.width
+			) {
 				offsetDueToMouse.x -=
-					offsetDueToMouse.x + nodesBounds.x + nodesBounds.width - flowDimensions.width;
+					offsetDueToMouse.x +
+					nodesBounds.x +
+					nodesBounds.width -
+					flowDimensions.width;
 			}
-			if (offsetDueToMouse.y + nodesBounds.y + nodesBounds.height > flowDimensions.height) {
+			if (
+				offsetDueToMouse.y + nodesBounds.y + nodesBounds.height >
+				flowDimensions.height
+			) {
 				offsetDueToMouse.y -=
-					offsetDueToMouse.y + nodesBounds.y + nodesBounds.height - flowDimensions.height;
+					offsetDueToMouse.y +
+					nodesBounds.y +
+					nodesBounds.height -
+					flowDimensions.height;
 			}
 		}
 		const nodesIdsMap: Record<string, string> = {}; //Map to keep track of the old node ids and the new node ids, to update the edges source and target
@@ -92,7 +127,9 @@ export default class CopyCutPasteManager {
 				//For a copy, if the step was initial we should past a non-initial step,
 				//because there can be only one initial step in a grafcet
 				//We first check if an initial step already exists in the grafcet
-				const initialStepExists = grafcet.steps.some((s) => s.data.initial);
+				const initialStepExists = Object.values(grafcet.steps).some(
+					(s) => s.data.initial,
+				);
 				newNode.data.initial = initialStepExists ? false : newNode.data.initial;
 			}
 
@@ -104,7 +141,9 @@ export default class CopyCutPasteManager {
 			} else {
 				while (
 					existingNodes.find(
-						(n) => n.position?.x === newNode.position?.x && n.position?.y === newNode.position?.y,
+						(n) =>
+							n.position?.x === newNode.position?.x &&
+							n.position?.y === newNode.position?.y,
 					)
 				) {
 					newNode.position = {
@@ -138,22 +177,15 @@ export default class CopyCutPasteManager {
 					console.error("Source or target node not found for edge " + edge.id);
 					return null;
 				}
-				const oldPoints = edge.data!.points;
-				const newPoints = oldPoints.map((p) => [
-					p[0] + (offsetDueToMouse?.x || 0),
-					p[1] + (offsetDueToMouse?.y || 0),
-				]);
-				//Update the first and last point of the edge to be connected to the new source and target nodes position
-				const newFirstPoint = [
-					oldPoints[0][0] + nodesOffsetsMaps[edge.source].x,
-					oldPoints[0][1] + nodesOffsetsMaps[edge.source].y,
-				];
-				const newLastPoint = [
-					oldPoints[oldPoints.length - 1][0] + nodesOffsetsMaps[edge.target].x,
-					oldPoints[oldPoints.length - 1][1] + nodesOffsetsMaps[edge.target].y,
-				];
-				newPoints.splice(0, 1, newFirstPoint);
-				newPoints.splice(newPoints.length - 1, newPoints.length, newLastPoint);
+				//`data.points` ne porte que les coudes intermédiaires : ils suivent le décalage
+				//de collage, les extrémités sont dérivées des nouveaux nœuds au rendu.
+				const newPoints = (edge.data?.points ?? []).map(
+					(p) =>
+						[
+							p[0] + (offsetDueToMouse?.x ?? nodesOffsetsMaps[edge.source].x),
+							p[1] + (offsetDueToMouse?.y ?? nodesOffsetsMaps[edge.source].y),
+						] as [number, number],
+				);
 				return {
 					...edge,
 					id: createRandomId(),

@@ -9,10 +9,14 @@ import GrafcetPage from "./GrafcetPage";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("../grafcet/context/GrafcetContext", () => ({
-	GrafcetContextProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	GrafcetContextProvider: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 }));
 jest.mock("../grafcet/toolbar/GrafcetToolbarDnDContext", () => ({
-	GrafcetToolbarDnDProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	GrafcetToolbarDnDProvider: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 }));
 jest.mock("../grafcet/toolbar/GrafcetToolbar", () => {
 	return function GrafcetToolbarMock() {
@@ -29,7 +33,9 @@ describe("GrafcetPage", () => {
 	const grafcet = new GrafcetBuilder().id("grafcet-1").name("Test").build();
 
 	function setup(activePageId: string | null) {
-		(useProjectStore as jest.Mock).mockImplementation(selectorImplementation({ activePageId }));
+		(useProjectStore as jest.Mock).mockImplementation(
+			selectorImplementation({ activePageId }),
+		);
 		return render(<GrafcetPage initialGrafcet={grafcet} />);
 	}
 
@@ -37,12 +43,16 @@ describe("GrafcetPage", () => {
 
 	it("shows the page when this page is the active tab", () => {
 		setup("grafcet-1");
-		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle({ display: "flex" });
+		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle(
+			{ display: "flex" },
+		);
 	});
 
 	it("hides the page, without unmounting GrafcetFlow or the toolbar, when another tab is active", () => {
 		setup("some-other-page");
-		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle({ display: "none" });
+		expect(screen.getByText("flow").closest(`#page-${grafcet.id}`)).toHaveStyle(
+			{ display: "none" },
+		);
 		expect(screen.getByText("toolbar")).toBeInTheDocument();
 	});
 });

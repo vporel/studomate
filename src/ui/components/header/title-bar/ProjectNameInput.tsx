@@ -13,10 +13,15 @@ const ProjectNameInput = () => {
 		})),
 	);
 	const projectNameInputRef = useRef<HTMLInputElement>(null);
-	const [editingProjectName, setEditingProjectName] = useState<string>(projectName);
+	const [editingProjectName, setEditingProjectName] =
+		useState<string>(projectName);
 
 	const saveProjectName = useCallback(() => {
-		changeProjectName(editingProjectName.trim() !== "" ? editingProjectName.trim() : projectName);
+		changeProjectName(
+			editingProjectName.trim() !== ""
+				? editingProjectName.trim()
+				: projectName,
+		);
 	}, [editingProjectName, projectName, changeProjectName]);
 
 	useEffect(() => {

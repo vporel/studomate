@@ -3,32 +3,34 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 import React from "react";
 
 /**
- * Outil de dépose pour un bloc système (compare, assign) — même geste que `LadderTool`
+ * Outil de dépose pour un bloc système (compare, assign, arithmetic) — même geste que `LadderTool`
  * (glisser-déposer une icône vers le canevas), mais porte le glissement en `DataTransfer` natif
  * plutôt que par le contexte React `LadderToolbarDnDContext` : c'est le même mécanisme que la
  * section "Blocs systèmes" de l'explorateur (voir `ExplorerSystemBlocksItems`), pour que
- * `useLadderDropHandlers` déclenche exactement le même comportement (ouverture de la fenêtre de
- * configuration avant insertion) quelle que soit la source du glisser-déposer.
+ * `useLadderDropHandlers` déclenche exactement le même comportement (insertion directe d'un bloc
+ * vide, configuré ensuite sur le canevas) quelle que soit la source du glisser-déposer.
  */
 const LadderSystemBlockTool = ({
 	blockType,
 	width = 45,
 	disabled,
+	label,
 	children,
 }: {
-	blockType: "compare" | "assign";
+	blockType: "compare" | "assign" | "arithmetic";
 	width?: number;
 	disabled?: boolean;
+	label?: string;
 	children: React.ReactElement;
 }) => {
 	const mode = useProjectStore((state) => state.mode);
 	disabled = disabled || mode !== ProjectMode.DESIGN;
 
-	return (
+	const tool = (
 		<Box
 			sx={{
 				width,
@@ -52,6 +54,14 @@ const LadderSystemBlockTool = ({
 		>
 			{children}
 		</Box>
+	);
+
+	if (!label) return tool;
+
+	return (
+		<Tooltip title={label} placement="bottom" arrow>
+			{tool}
+		</Tooltip>
 	);
 };
 

@@ -1,9 +1,19 @@
 "use client";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { createLadderStore, LadderStoreState } from "@/ui/stores/ladder/ladder.store";
+import {
+	createLadderStore,
+	LadderStoreState,
+} from "@/ui/stores/ladder/ladder.store";
 import mitt, { Emitter } from "mitt";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
+import {
+	createContext,
+	ReactNode,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { StoreApi, useStore } from "zustand";
 import { LadderContextMenuEvents } from "./context-menu-events";
 import { syncLadderToProject } from "./ladder-project-sync";
@@ -30,7 +40,10 @@ export const LadderContextProvider = ({
 
 	if (!storeRef.current) {
 		//The undo history is owned by the project, so that closing this page does not lose it
-		storeRef.current = createLadderStore(initialLadder, laddersManager.getCommandsStack(initialLadder.id));
+		storeRef.current = createLadderStore(
+			initialLadder,
+			laddersManager.getCommandsStack(initialLadder.id),
+		);
 	}
 	const contextMenuEvents = useMemo(() => mitt<LadderContextMenuEvents>(), []);
 
@@ -62,7 +75,11 @@ export const LadderContextProvider = ({
 		[contextMenuEvents],
 	);
 
-	return <LadderContext.Provider value={contextValue}>{children}</LadderContext.Provider>;
+	return (
+		<LadderContext.Provider value={contextValue}>
+			{children}
+		</LadderContext.Provider>
+	);
 };
 
 export const useLadderContext = () => useContext(LadderContext);
@@ -70,7 +87,9 @@ export const useLadderContext = () => useContext(LadderContext);
 export function useLadderStore<T>(selector: (state: LadderStoreState) => T) {
 	const { store } = useLadderContext();
 	if (!store) {
-		throw new Error("useLadderStore must be used within a LadderContextProvider");
+		throw new Error(
+			"useLadderStore must be used within a LadderContextProvider",
+		);
 	}
 	return useStore(store, selector);
 }

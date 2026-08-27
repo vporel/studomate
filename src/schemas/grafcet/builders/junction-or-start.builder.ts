@@ -53,6 +53,23 @@ export default class JunctionOrStartBuilder {
 		return this;
 	}
 
+	/** Positionne chaque branche (offset en px le long de la barre), dans l'ordre de `branchesOrder`. */
+	branchesPositions(...positions: number[]): JunctionOrStartBuilder {
+		const order = this._data.branchesOrder;
+		if (positions.length !== order.length) {
+			throw new Error(
+				`branchesPositions attend ${order.length} valeur(s), ${positions.length} reçue(s).`,
+			);
+		}
+		order.forEach((branchId, i) => {
+			this._data.branches[branchId] = {
+				...this._data.branches[branchId],
+				position: positions[i],
+			};
+		});
+		return this;
+	}
+
 	pivotPosition(position: number): JunctionOrStartBuilder {
 		this._data.pivotPosition = position;
 		return this;
@@ -64,6 +81,11 @@ export default class JunctionOrStartBuilder {
 	}
 
 	build(): JunctionOrStart {
-		return new JunctionOrStart(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new JunctionOrStart(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

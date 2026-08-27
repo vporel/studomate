@@ -1,9 +1,9 @@
 "use client";
 
 import { platformShortcut } from "@/ui/lib/platform";
-import ViewManager from "@/ui/stores/grafcet/managers/view.manager";
+import GrafcetViewManager from "@/ui/stores/grafcet/managers/view.manager";
 
-export default function paneContextMenuItems(viewManager: ViewManager): {
+export default function paneContextMenuItems(viewManager: GrafcetViewManager): {
 	label: string;
 	shortcut?: string;
 	onClick: () => void;

@@ -8,9 +8,19 @@ import TabContent from "./TabContent";
 
 function Header({ onClose }: { onClose: () => void }) {
 	return (
-		<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+		<Box
+			sx={{
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "space-between",
+			}}
+		>
 			<Typography variant="h6">{"Tables de visualisation"}</Typography>
-			<IconButton onClick={onClose} size="small" aria-label="close-watch-tables">
+			<IconButton
+				onClick={onClose}
+				size="small"
+				aria-label="close-watch-tables"
+			>
 				<CloseIcon />
 			</IconButton>
 		</Box>
@@ -29,7 +39,11 @@ export default function WatchTables() {
 		<Box p={1}>
 			<Header onClose={onClose} />
 			<Divider sx={{ mt: 0.5, mb: 1 }} />
-			<Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ height: 30, minHeight: 0 }}>
+			<Tabs
+				value={tab}
+				onChange={(_, v) => setTab(v)}
+				sx={{ height: 30, minHeight: 0 }}
+			>
 				<Tab label="Entrées" sx={{ minHeight: 0, pt: 0.3 }} />
 				<Tab label="Sorties" sx={{ minHeight: 0, pt: 0.3 }} />
 				<Tab label="Mémoires" sx={{ minHeight: 0, pt: 0.3 }} />

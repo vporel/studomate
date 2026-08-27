@@ -27,7 +27,12 @@ describe("SemanticAnalyserVisitor", () => {
 		const varY = new EnvVariable("id2", "y", "number", "INOUT");
 		const varFlag = new EnvVariable("id3", "flag", "boolean", "IN");
 		const varResult = new EnvVariable("id4", "result", "number", "OUT");
-		const varBoolResult = new EnvVariable("id5", "boolResult", "boolean", "OUT");
+		const varBoolResult = new EnvVariable(
+			"id5",
+			"boolResult",
+			"boolean",
+			"OUT",
+		);
 		env = new Environment([varX, varY, varFlag, varResult, varBoolResult]);
 		analyser = new SemanticAnalyserVisitor(env);
 		lexer = new Lexer(Dialect.FR);
@@ -73,37 +78,51 @@ describe("SemanticAnalyserVisitor", () => {
 
 	describe("unknown identifiers", () => {
 		it("throws on unknown identifier", () => {
-			expect(() => parseAndCheck("unknownVar")).toThrow(UnknownIdentifierException);
+			expect(() => parseAndCheck("unknownVar")).toThrow(
+				UnknownIdentifierException,
+			);
 		});
 	});
 
 	describe("unary expressions", () => {
 		it("throws on NOT with non-boolean operand", () => {
-			expect(() => parseAndCheck("NON x")).toThrow(InvalidUnaryExprOperandTypeException);
+			expect(() => parseAndCheck("NON x")).toThrow(
+				InvalidUnaryExprOperandTypeException,
+			);
 		});
 	});
 
 	describe("arithmetic expressions", () => {
 		it("throws on arithmetic with non-number left operand", () => {
-			expect(() => parseAndCheck("flag + 5")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag + 5")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on arithmetic with non-number right operand", () => {
-			expect(() => parseAndCheck("5 + flag")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("5 + flag")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on arithmetic with both non-number operands", () => {
-			expect(() => parseAndCheck("flag + VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag + VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 	});
 
 	describe("comparison expressions", () => {
 		it("throws on incompatible types", () => {
-			expect(() => parseAndCheck("x = flag")).toThrow(IncompatibleOperandsTypesException);
+			expect(() => parseAndCheck("x = flag")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
 		});
 
 		it("throws on non-number with ordered comparison", () => {
-			expect(() => parseAndCheck("flag < VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag < VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("accepts equality/inequality with same types", () => {
@@ -114,15 +133,21 @@ describe("SemanticAnalyserVisitor", () => {
 
 	describe("logical expressions", () => {
 		it("throws on AND with non-boolean left operand", () => {
-			expect(() => parseAndCheck("x ET VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("x ET VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on AND with non-boolean right operand", () => {
-			expect(() => parseAndCheck("VRAI ET x")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("VRAI ET x")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on OR with non-boolean operands", () => {
-			expect(() => parseAndCheck("x OU y")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("x OU y")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 	});
 
@@ -131,17 +156,27 @@ describe("SemanticAnalyserVisitor", () => {
 			const tokens = lexer.tokenize("5 := x");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			expect(() => analyser.visit(ast)).toThrow(InvalidAssignmentTargetException);
+			expect(() => analyser.visit(ast)).toThrow(
+				InvalidAssignmentTargetException,
+			);
 		});
 
 		it("throws on input variable assignment", () => {
-			expect(() => parseAndCheck("x := 10")).toThrow(InputIdentifierAssignmentException);
-			expect(() => parseAndCheck("flag := VRAI")).toThrow(InputIdentifierAssignmentException);
+			expect(() => parseAndCheck("x := 10")).toThrow(
+				InputIdentifierAssignmentException,
+			);
+			expect(() => parseAndCheck("flag := VRAI")).toThrow(
+				InputIdentifierAssignmentException,
+			);
 		});
 
 		it("throws on type mismatch in assignment", () => {
-			expect(() => parseAndCheck("result := VRAI")).toThrow(IncompatibleOperandsTypesException);
-			expect(() => parseAndCheck("boolResult := 42")).toThrow(IncompatibleOperandsTypesException);
+			expect(() => parseAndCheck("result := VRAI")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
+			expect(() => parseAndCheck("boolResult := 42")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
 		});
 
 		it("accepts assignment to OUT and INOUT variables", () => {
@@ -158,7 +193,9 @@ describe("SemanticAnalyserVisitor", () => {
 			const tokens = lexer.tokenize("42");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			expect(() => restrictedAnalyser.visit(ast)).toThrow(UnauthorizedNodeException);
+			expect(() => restrictedAnalyser.visit(ast)).toThrow(
+				UnauthorizedNodeException,
+			);
 		});
 	});
 
@@ -173,7 +210,9 @@ describe("SemanticAnalyserVisitor", () => {
 	});
 
 	describe("timer block nodes", () => {
-		function buildTimerNode(elapsedTime: ASTNode = IdentifiersBuilder.buildIdentifierNode("result")) {
+		function buildTimerNode(
+			elapsedTime: ASTNode = IdentifiersBuilder.buildIdentifierNode("result"),
+		) {
 			return BlocksBuilder.buildTimerNode(
 				"TON",
 				IdentifiersBuilder.buildIdentifierNode("flag"),
@@ -190,7 +229,9 @@ describe("SemanticAnalyserVisitor", () => {
 
 		it("throws InvalidTimerElapsedTimeNodeException when elapsedTime is not an identifier", () => {
 			const node = buildTimerNode(LiteralsBuilder.buildNumberNode(5));
-			expect(() => analyser.visit(node)).toThrow(InvalidTimerElapsedTimeNodeException);
+			expect(() => analyser.visit(node)).toThrow(
+				InvalidTimerElapsedTimeNodeException,
+			);
 		});
 	});
 

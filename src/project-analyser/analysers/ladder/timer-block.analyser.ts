@@ -2,7 +2,10 @@ import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueCode,
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
-import { isTimeLiteral, parseTimeLiteral } from "@/expression-language/time-literal";
+import {
+	isTimeLiteral,
+	parseTimeLiteral,
+} from "@/expression-language/literals/time";
 import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import { BlockElement } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -74,7 +77,12 @@ export default class TimerBlockAnalyser {
 			pin,
 			variablesByMnemonic,
 			"number",
-			acceptsTimeLiteral ? { isLiteralSyntax: isTimeLiteral, isLiteralValid: (p) => parseTimeLiteral(p) !== null } : undefined,
+			acceptsTimeLiteral
+				? {
+						isLiteralSyntax: isTimeLiteral,
+						isLiteralValid: (p) => parseTimeLiteral(p) !== null,
+					}
+				: undefined,
 		);
 		switch (resolution.kind) {
 			case "empty":

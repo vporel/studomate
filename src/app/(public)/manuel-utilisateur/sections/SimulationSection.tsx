@@ -9,7 +9,7 @@ export default function SimulationSection({ selected }: { selected: string }) {
 				{`Simulation`}
 			</Typography>
 			<Typography mb={2}>
-				{`Le mode Simulation permet d'exécuter le grafcet comme un automate programmable (PLC) avec évaluation en temps réel des réceptivités et des actions.`}
+				{`Le mode Simulation exécute le projet comme un automate programmable (PLC) : les ladders sont compilés en routines exécutées à chaque cycle, le grafcet évalue ses réceptivités et déclenche ses actions, et les interfaces HMI deviennent interactives.`}
 			</Typography>
 
 			{(!isChild || selected === "simulation-start") && (
@@ -29,6 +29,16 @@ export default function SimulationSection({ selected }: { selected: string }) {
 					<Typography mb={2}>
 						{`Si des erreurs sont détectées lors de l'analyse, la simulation ne démarrera pas.`}
 					</Typography>
+					<Typography mb={2}>
+						{`Deux modes d'exécution sont disponibles dans le sélecteur à côté du sélecteur de mode :`}
+					</Typography>
+					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+						<li>{`Continu — le cycle PLC tourne automatiquement à intervalle régulier (100 ms). Un bouton Pause suspend l'exécution ; Reprendre la relance.`}</li>
+						<li>{`Pas-à-pas — le cycle PLC n'avance que d'un cran à chaque clic sur le bouton "Étape". Utile pour observer précisément le comportement cycle par cycle.`}</li>
+					</Typography>
+					<Typography mb={2}>
+						{`Les temporisations suivent le temps réel écoulé, y compris en pas-à-pas : si vous laissez passer deux secondes entre deux clics sur "Étape", une temporisation de 2 s arrivera à échéance au clic suivant — inutile de cliquer autant de fois qu'il y a de cycles. Les temporisations ne se figent que dans un seul cas : le mode continu mis en pause. Elles reprennent alors là où elles s'étaient arrêtées, la durée de la pause n'étant pas comptée.`}
+					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}
@@ -39,11 +49,13 @@ export default function SimulationSection({ selected }: { selected: string }) {
 						{`Pendant la simulation`}
 					</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-						<li>{`Les étapes actives sont mises en évidence sur le canvas.`}</li>
+						<li>{`Les étapes actives sont mises en évidence sur le canvas grafcet.`}</li>
 						<li>{`Les réceptivités des transitions sont évaluées à chaque cycle.`}</li>
 						<li>{`Les actions des étapes actives sont appliquées.`}</li>
+						<li>{`Les contacts, bobines et liaisons énergisés sont mis en évidence dans les éditeurs ladder.`}</li>
 						<li>{`Les valeurs des variables sont mises à jour en temps réel.`}</li>
-						<li>{`Le canvas est en lecture seule : l'édition du grafcet est désactivée.`}</li>
+						<li>{`Les éditeurs grafcet et ladder sont en lecture seule.`}</li>
+						<li>{`L'onglet "Simulation HMI" s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI).`}</li>
 					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
@@ -63,7 +75,7 @@ export default function SimulationSection({ selected }: { selected: string }) {
 						<li>{`Mémoires — valeurs actuelles des variables mémoire`}</li>
 					</Typography>
 					<Typography mb={2}>
-						{`Les valeurs se mettent à jour après chaque cycle PLC. Vous pouvez modifier les valeurs des variables d'entrée directement depuis la table de surveillance pour simuler des signaux externes.`}
+						{`Les valeurs se mettent à jour après chaque cycle PLC. Vous pouvez modifier directement les valeurs des variables d'entrée et mémoire depuis la table pour simuler des signaux externes ou forcer un état interne. Les sorties sont affichées en lecture seule.`}
 					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

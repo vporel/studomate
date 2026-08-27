@@ -5,7 +5,13 @@ describe("ElementsAddCommand", () => {
 	it("ajoute les éléments, et l'annulation les retire", () => {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		const command = new ElementsAddCommand([
-			{ type: "step", id: "step-1", data: {}, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
+			{
+				type: "step",
+				id: "step-1",
+				data: {},
+				position: { x: 0, y: 0 },
+				size: { width: 10, height: 10 },
+			},
 		]);
 
 		const [, isValid] = command.execute(grafcet);
@@ -22,7 +28,13 @@ describe("ElementsAddCommand", () => {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		const before = JSON.stringify(grafcet);
 		const command = new ElementsAddCommand([
-			{ type: "step", id: "step-1", data: {}, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
+			{
+				type: "step",
+				id: "step-1",
+				data: {},
+				position: { x: 0, y: 0 },
+				size: { width: 10, height: 10 },
+			},
 		]);
 
 		command.execute(grafcet);

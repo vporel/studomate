@@ -22,7 +22,10 @@ export const HmiContextProvider = ({
 	if (!storeRef.current) {
 		//L'historique d'annulation est porté par le projet, pour ne pas le perdre à la fermeture
 		//de cette page (voir HmiManager.getCommandsStack).
-		storeRef.current = createHmiStore(initialHmiPage, hmiManager.getCommandsStack(initialHmiPage.id));
+		storeRef.current = createHmiStore(
+			initialHmiPage,
+			hmiManager.getCommandsStack(initialHmiPage.id),
+		);
 	}
 
 	useEffect(() => {
@@ -47,11 +50,16 @@ export const HmiContextProvider = ({
 		};
 	}, [hmiManager]);
 
-	return <HmiContext.Provider value={storeRef.current}>{children}</HmiContext.Provider>;
+	return (
+		<HmiContext.Provider value={storeRef.current}>
+			{children}
+		</HmiContext.Provider>
+	);
 };
 
 export function useHmiStore<T>(selector: (state: HmiStoreState) => T): T {
 	const store = useContext(HmiContext);
-	if (!store) throw new Error("useHmiStore doit être utilisé dans HmiContextProvider");
+	if (!store)
+		throw new Error("useHmiStore doit être utilisé dans HmiContextProvider");
 	return useStore(store, selector);
 }

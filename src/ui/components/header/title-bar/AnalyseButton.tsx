@@ -1,11 +1,13 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { Rule as AnalyseIcon } from "@mui/icons-material";
+import AnalyseIcon from "@mui/icons-material/Rule";
 import { Button } from "@mui/material";
 import { useMemo } from "react";
 
 const AnalyseButton = () => {
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
-	const analysisHasWarnings = useProjectStore((state) => state.analysisHasWarnings);
+	const analysisHasWarnings = useProjectStore(
+		(state) => state.analysisHasWarnings,
+	);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const color: string = useMemo(() => {
 		if (analysisHasErrors) return "red";

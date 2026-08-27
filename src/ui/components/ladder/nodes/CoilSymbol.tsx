@@ -13,7 +13,13 @@ const COIL_MODE_LABELS: Record<CoilMode, string> = {
  * Symbole visuel d'une bobine, sans les Handles React Flow ni le label — réutilisé par
  * `CoilNode` (canevas) et `CoilTool` (icône de la toolbar).
  */
-const CoilSymbol = ({ mode, color = "black" }: { mode: CoilMode; color?: string }) => {
+const CoilSymbol = ({
+	mode,
+	color = "black",
+}: {
+	mode: CoilMode;
+	color?: string;
+}) => {
 	return (
 		<Box
 			sx={{

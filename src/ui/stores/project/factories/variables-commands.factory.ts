@@ -21,7 +21,9 @@ export default class VariablesCommandsFactory {
 	} {
 		const variablesToAdd = data
 			.filter(
-				(d) => d.mnemonic.trim() != "" && !project.variables.some((v) => d.mnemonic === v.mnemonic),
+				(d) =>
+					d.mnemonic.trim() != "" &&
+					!project.variables.some((v) => d.mnemonic === v.mnemonic),
 			)
 			.map((d) => ({ ...d, id: createRandomId() }));
 		const commands = [];
@@ -75,7 +77,10 @@ export default class VariablesCommandsFactory {
 		const variablesToRemove = project.variables
 			.filter((v) => variableIds.includes(v.id))
 			.map((v) =>
-				extractFields<VariableUpdatableFieldsWithId>([...VARIABLE_UPDATABLE_FIELDS, "id"], v),
+				extractFields<VariableUpdatableFieldsWithId>(
+					[...VARIABLE_UPDATABLE_FIELDS, "id"],
+					v,
+				),
 			);
 		const commands: AbstractProjectCommand<any>[] = [];
 		if (variablesToRemove.length > 0) {

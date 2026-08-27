@@ -1,6 +1,9 @@
 "use client";
 
-import { getVariablesPageData, VariablesPageId } from "@/ui/components/pages/VariablesPage";
+import {
+	getVariablesPageData,
+	VariablesPageId,
+} from "@/ui/components/pages/VariablesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { useCallback } from "react";

@@ -23,8 +23,15 @@ const TIMER_TYPE_LABELS: Record<TimerType, string> = {
  * Les deux états sont mutuellement exclusifs (un seul bloc système géré à la fois).
  */
 export default function TimerBlockDialog() {
-	const { pendingCreation, pendingEdit, creating, editing, open, close, commandsStackManager } =
-		useSystemBlockDialog("timer");
+	const {
+		pendingCreation,
+		pendingEdit,
+		creating,
+		editing,
+		open,
+		close,
+		commandsStackManager,
+	} = useSystemBlockDialog("timer");
 	const project = useProjectStore((state) => state.project);
 
 	const [name, setName] = useState("");
@@ -45,7 +52,9 @@ export default function TimerBlockDialog() {
 
 	const nameErrors = useBlockNameField(
 		name,
-		editing && pendingEdit?.blockType === "timer" ? pendingEdit.initial.name : undefined,
+		editing && pendingEdit?.blockType === "timer"
+			? pendingEdit.initial.name
+			: undefined,
 		project,
 	);
 
@@ -59,7 +68,9 @@ export default function TimerBlockDialog() {
 			commandsStackManager.executeOperation([
 				new ElementUpdateCommand({
 					elementId: pendingEdit.elementId,
-					changes: { data: { params: { ...pendingEdit.initial, name, timerType } } },
+					changes: {
+						data: { params: { ...pendingEdit.initial, name, timerType } },
+					},
 					previousChanges: { data: { params: pendingEdit.initial } },
 				}),
 			]);

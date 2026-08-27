@@ -1,5 +1,7 @@
 import { Dimensions, XYPosition } from "../shared-types";
-import StepReferralTarget, { StepReferralTargetData } from "../step-referral-target.schema";
+import StepReferralTarget, {
+	StepReferralTargetData,
+} from "../step-referral-target.schema";
 
 export default class StepReferralTargetBuilder {
 	private _id: string;
@@ -37,6 +39,11 @@ export default class StepReferralTargetBuilder {
 	}
 
 	build(): StepReferralTarget {
-		return new StepReferralTarget(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new StepReferralTarget(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

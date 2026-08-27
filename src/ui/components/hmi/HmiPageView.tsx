@@ -26,7 +26,11 @@ const HmiPageView = ({
 }) => (
 	<HmiContextProvider initialHmiPage={initialHmiPage}>
 		<HmiWidgetDnDProvider>
-			<HmiPageContent hmiPageId={initialHmiPage.id} tabPageId={tabPageId} isSimulation={isSimulation} />
+			<HmiPageContent
+				hmiPageId={initialHmiPage.id}
+				tabPageId={tabPageId}
+				isSimulation={isSimulation}
+			/>
 		</HmiWidgetDnDProvider>
 	</HmiContextProvider>
 );

@@ -11,7 +11,12 @@ export default class EnvVariable {
 	private direction: EnvVariableDirection;
 	private value: EnvVariableValue;
 
-	constructor(id: string, name: string, type: EnvVariableType, direction: EnvVariableDirection) {
+	constructor(
+		id: string,
+		name: string,
+		type: EnvVariableType,
+		direction: EnvVariableDirection,
+	) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
@@ -52,7 +57,12 @@ export default class EnvVariable {
 	setValue(value: EnvVariableValue): void {
 		const valueType = typeof value;
 		if (valueType !== this.type) {
-			throw new IllegalVariableValueTypeException(this.id, this.name, this.type, valueType);
+			throw new IllegalVariableValueTypeException(
+				this.id,
+				this.name,
+				this.type,
+				valueType,
+			);
 		}
 		this.value = value;
 	}

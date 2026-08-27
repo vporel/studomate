@@ -3,9 +3,12 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import AbstractCommandsStackManager from "@/ui/stores/shared/abstract-commands-stack.manager";
 import EdgesFactory from "../factories/edges.factory";
 import NodesFactory from "../factories/nodes.factory";
-import { GrafcetStoreGetFunction, GrafcetStoreSetFunction } from "../grafcet.store";
+import {
+	GrafcetStoreGetFunction,
+	GrafcetStoreSetFunction,
+} from "../grafcet.store";
 
-export default class CommandsStackManager extends AbstractCommandsStackManager<Grafcet> {
+export default class GrafcetCommandsStackManager extends AbstractCommandsStackManager<Grafcet> {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 

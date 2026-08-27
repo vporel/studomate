@@ -1,4 +1,5 @@
-export type HmiContextMenuElement = { type: "pane" } | { type: "widget"; widgetId: string };
+export type HmiContextMenuElement =
+	{ type: "pane" } | { type: "widget"; widgetId: string };
 
 export type HmiContextMenuProps = {
 	visible: boolean;

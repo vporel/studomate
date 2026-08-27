@@ -1,11 +1,15 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
-import JunctionOrEnd, { JUNCTION_OR_END_HANDLE_BRANCH_TYPES } from "@/schemas/grafcet/junction-or-end.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import JunctionOrEnd, {
+	JUNCTION_OR_END_HANDLE_BRANCH_TYPES,
+} from "@/schemas/grafcet/junction-or-end.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class JunctionOrEndAnalyser extends ElementAnalyser<JunctionOrEnd> {
+export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<JunctionOrEnd> {
 	/**
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
@@ -24,10 +28,13 @@ export default class JunctionOrEndAnalyser extends ElementAnalyser<JunctionOrEnd
 	analyseInContext(
 		junctionOrEnd: JunctionOrEnd,
 		grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-junction-or-end" as const, sourceId: junctionOrEnd.id };
+		const source = {
+			sourceType: "grafcet-junction-or-end" as const,
+			sourceId: junctionOrEnd.id,
+		};
 
 		if (!JunctionHelper.isPivotConnected(junctionOrEnd.id, grafcet)) {
 			issues.push(
@@ -64,9 +71,16 @@ export default class JunctionOrEndAnalyser extends ElementAnalyser<JunctionOrEnd
 		}
 
 		for (const branchId of junctionOrEnd.data.branchesOrder) {
-			const conns = grafcet.getConnectionsByElementIdAndHandle(junctionOrEnd.id, branchId);
+			const conns = grafcet.getConnectionsByElementIdAndHandle(
+				junctionOrEnd.id,
+				branchId,
+			);
 			if (conns.length === 0) continue; // safety guard, already covered above
-			if (!JUNCTION_OR_END_HANDLE_BRANCH_TYPES.includes(conns[0].source.type as "transition")) {
+			if (
+				!JUNCTION_OR_END_HANDLE_BRANCH_TYPES.includes(
+					conns[0].source.type as "transition",
+				)
+			) {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",

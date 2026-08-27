@@ -1,4 +1,8 @@
-import { HmiWidgetData, HmiWidgetPosition, HmiWidgetSize } from "../hmi-widget.schema";
+import {
+	HmiWidgetData,
+	HmiWidgetPosition,
+	HmiWidgetSize,
+} from "../hmi-widget.schema";
 import HmiPage from "../hmi-page.schema";
 import AbstractHmiCommand from "./abstract-hmi.command";
 

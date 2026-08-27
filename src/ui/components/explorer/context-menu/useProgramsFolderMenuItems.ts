@@ -8,7 +8,9 @@ import { useCallback } from "react";
 export default function useProgramsFolderMenuItems(): () => ContextMenuItemType[][] {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 
 	return useCallback(() => {
 		return [

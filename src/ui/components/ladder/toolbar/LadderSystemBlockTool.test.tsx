@@ -10,11 +10,21 @@ import LadderSystemBlockTool from "./LadderSystemBlockTool";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
-function setup({ mode = ProjectMode.DESIGN, disabled = false } = {}) {
-	(useProjectStore as unknown as jest.Mock).mockImplementation(selectorImplementation({ mode }));
+function setup({
+	mode = ProjectMode.DESIGN,
+	disabled = false,
+	label,
+}: { mode?: ProjectMode; disabled?: boolean; label?: string } = {}) {
+	(useProjectStore as unknown as jest.Mock).mockImplementation(
+		selectorImplementation({ mode }),
+	);
 
 	render(
-		<LadderSystemBlockTool blockType="compare" disabled={disabled}>
+		<LadderSystemBlockTool
+			blockType="compare"
+			disabled={disabled}
+			label={label}
+		>
 			<span>contenu</span>
 		</LadderSystemBlockTool>,
 	);
@@ -42,11 +52,34 @@ describe("LadderSystemBlockTool", () => {
 
 	it("porte le blockType en DataTransfer natif au dragstart, comme le glisser depuis l'explorateur", () => {
 		setup();
-		const dataTransfer = { effectAllowed: "", setData: jest.fn() } as unknown as DataTransfer;
+		const dataTransfer = {
+			effectAllowed: "",
+			setData: jest.fn(),
+		} as unknown as DataTransfer;
 
 		fireEvent.dragStart(tool(), { dataTransfer });
 
 		expect(dataTransfer.effectAllowed).toBe("copy");
-		expect(dataTransfer.setData).toHaveBeenCalledWith(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE, "compare");
+		expect(dataTransfer.setData).toHaveBeenCalledWith(
+			LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+			"compare",
+		);
+	});
+
+	describe("tooltip", () => {
+		it("affiche le tooltip au survol quand label est fourni", async () => {
+			setup({ label: "Bloc Compare — compare deux valeurs" });
+
+			fireEvent.mouseOver(tool());
+
+			expect(await screen.findByRole("tooltip")).toHaveTextContent(
+				"Bloc Compare — compare deux valeurs",
+			);
+		});
+
+		it("n'affiche pas de tooltip quand label est absent", () => {
+			setup();
+			expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+		});
 	});
 });

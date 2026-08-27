@@ -1,7 +1,7 @@
 "use client";
 
 import { canUndoActiveScope } from "@/ui/stores/project/undo-redo";
-import { Undo as UndoIcon } from "@mui/icons-material";
+import UndoIcon from "@mui/icons-material/Undo";
 import { useProjectStore } from "../projects/ProjectContext";
 import AppTool from "./AppTool";
 

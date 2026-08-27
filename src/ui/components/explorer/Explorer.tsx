@@ -3,7 +3,7 @@
 import FolderIcon from "@/ui/components/icons/FolderIcon";
 import { Box } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view";
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import ExplorerHeader from "./ExplorerHeader";
 import ExplorerProgramsItems from "./ExplorerProgramsItems";
@@ -33,10 +33,12 @@ export const treeItemStyles: CustomTreeItemStyles = {
 
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 	const explorerRef = useRef<HTMLDivElement>(null);
-	const hasSystemBlockInstances = useProjectStore(
-		(state) =>
-			(state.project?.getAllTimerBlockElements().length ?? 0) > 0 ||
-			(state.project?.getAllCounterBlockElements().length ?? 0) > 0,
+	const project = useProjectStore((state) => state.project);
+	const hasSystemBlockInstances = useMemo(
+		() =>
+			(project?.getAllTimerBlockElements().length ?? 0) > 0 ||
+			(project?.getAllCounterBlockElements().length ?? 0) > 0,
+		[project],
 	);
 	const {
 		visible: contextMenuVisible,
@@ -69,7 +71,10 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 				>
-					<ExplorerVariablesItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					<ExplorerVariablesItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
 				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="programs"
@@ -82,7 +87,10 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 						openContextMenu(e, { type: "programs-folder" });
 					}}
 				>
-					<ExplorerProgramsItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					<ExplorerProgramsItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
 				</CustomTreeItem>
 				{hasSystemBlockInstances && (
 					<CustomTreeItem
@@ -91,7 +99,10 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 						IconComponent={FolderIcon}
 						styles={treeItemStyles}
 					>
-						<ExplorerSystemBlockInstancesItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+						<ExplorerSystemBlockInstancesItems
+							styles={treeItemStyles}
+							onContextMenu={openContextMenu}
+						/>
 					</CustomTreeItem>
 				)}
 				<CustomTreeItem
@@ -113,7 +124,10 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 						openContextMenu(e, { type: "hmi-folder" });
 					}}
 				>
-					<ExplorerHmiItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					<ExplorerHmiItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
 				</CustomTreeItem>
 			</SimpleTreeView>
 			{explorerRef.current && (

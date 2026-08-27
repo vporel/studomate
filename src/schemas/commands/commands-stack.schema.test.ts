@@ -49,13 +49,19 @@ describe("CommandsStack", () => {
 	describe("execute", () => {
 		it("applies all valid commands in order and returns the resulting object", () => {
 			const stack = new CommandsStack<Counter>();
-			const result = stack.execute([new AddCommand(5), new MultiplyCommand(2)], { value: 0 });
+			const result = stack.execute(
+				[new AddCommand(5), new MultiplyCommand(2)],
+				{ value: 0 },
+			);
 			expect(result).toEqual({ value: 10 });
 		});
 
 		it("discards invalid commands without applying them", () => {
 			const stack = new CommandsStack<Counter>();
-			const result = stack.execute([new AddCommand(5), new InvalidCommand(99)], { value: 0 });
+			const result = stack.execute(
+				[new AddCommand(5), new InvalidCommand(99)],
+				{ value: 0 },
+			);
 			expect(result).toEqual({ value: 5 });
 		});
 
@@ -74,7 +80,10 @@ describe("CommandsStack", () => {
 			// Add(5) then Multiply(2) on 0 → 10. Undoing forward (Add.cancel then Multiply.cancel)
 			// would produce (10 - 5) / 2 = 2.5 instead of the correct 0.
 			const stack = new CommandsStack<Counter>();
-			const afterExecute = stack.execute([new AddCommand(5), new MultiplyCommand(2)], { value: 0 });
+			const afterExecute = stack.execute(
+				[new AddCommand(5), new MultiplyCommand(2)],
+				{ value: 0 },
+			);
 			expect(afterExecute).toEqual({ value: 10 });
 
 			const [afterUndo] = stack.undo(afterExecute);
@@ -101,7 +110,10 @@ describe("CommandsStack", () => {
 	describe("redo", () => {
 		it("re-executes the batch in original order", () => {
 			const stack = new CommandsStack<Counter>();
-			const afterExecute = stack.execute([new AddCommand(5), new MultiplyCommand(2)], { value: 0 });
+			const afterExecute = stack.execute(
+				[new AddCommand(5), new MultiplyCommand(2)],
+				{ value: 0 },
+			);
 			const [afterUndo] = stack.undo(afterExecute);
 			const [afterRedo] = stack.redo(afterUndo);
 			expect(afterRedo).toEqual({ value: 10 });

@@ -26,12 +26,16 @@ describe("WidgetRemoveCommand", () => {
 
 		command.execute(page);
 
-		expect(page.widgets).toHaveLength(0);
+		expect(Object.keys(page.widgets)).toHaveLength(0);
 
 		command.cancel(page);
 
-		expect(page.widgets).toHaveLength(1);
-		expect(page.widgets[0]).toMatchObject({ id: widget.id, type: "indicator", data: { label: "Voyant 1" } });
+		expect(Object.keys(page.widgets)).toHaveLength(1);
+		expect(Object.values(page.widgets)[0]).toMatchObject({
+			id: widget.id,
+			type: "indicator",
+			data: { label: "Voyant 1" },
+		});
 	});
 
 	it("round-trip execute→cancel laisse la page inchangée", () => {

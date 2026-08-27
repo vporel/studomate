@@ -11,7 +11,9 @@ describe("LadderNodesFactory.syncNodes", () => {
 
 			const nodes = LadderNodesFactory.syncNodes([], section);
 
-			expect(nodes.map((n) => n.id).sort()).toEqual(["virtual-rail-0", contact.id].sort());
+			expect(nodes.map((n) => n.id).sort()).toEqual(
+				["virtual-rail-0", contact.id].sort(),
+			);
 		});
 
 		it("getInitialNodes est le cas particulier d'une vue vide", () => {
@@ -28,7 +30,10 @@ describe("LadderNodesFactory.syncNodes", () => {
 		it("conserve la sélection quand l'élément ne change pas", () => {
 			const section = new Section("s1", "S");
 			section.elements = [createContactElement("A", "NO", 0, 0)];
-			const prev = LadderNodesFactory.syncNodes([], section).map((n) => ({ ...n, selected: true }));
+			const prev = LadderNodesFactory.syncNodes([], section).map((n) => ({
+				...n,
+				selected: true,
+			}));
 
 			const nodes = LadderNodesFactory.syncNodes(prev, section);
 
@@ -49,14 +54,19 @@ describe("LadderNodesFactory.syncNodes", () => {
 			const section = new Section("s1", "S");
 			const contact = createContactElement("A", "NO", 0, 0);
 			section.elements = [contact];
-			const prev = LadderNodesFactory.syncNodes([], section).map((n) => ({ ...n, selected: true }));
+			const prev = LadderNodesFactory.syncNodes([], section).map((n) => ({
+				...n,
+				selected: true,
+			}));
 			contact.position.col = 3;
 
 			const nodes = LadderNodesFactory.syncNodes(prev, section);
 
 			const contactNode = nodes.find((n) => n.id === contact.id)!;
 			expect(contactNode.selected).toBe(true);
-			expect(contactNode.position.x).not.toBe(prev.find((n) => n.id === contact.id)!.position.x);
+			expect(contactNode.position.x).not.toBe(
+				prev.find((n) => n.id === contact.id)!.position.x,
+			);
 		});
 
 		it("garde la position de la vue (pas celle du domaine) pendant un glisser en cours", () => {
@@ -64,13 +74,18 @@ describe("LadderNodesFactory.syncNodes", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			section.elements = [contact];
 			const prev = LadderNodesFactory.syncNodes([], section).map((n) =>
-				n.id === contact.id ? { ...n, position: { x: 999, y: 999 }, dragging: true } : n,
+				n.id === contact.id
+					? { ...n, position: { x: 999, y: 999 }, dragging: true }
+					: n,
 			);
 			contact.position.col = 3; // le domaine "avance" pendant que la vue est encore en geste
 
 			const nodes = LadderNodesFactory.syncNodes(prev, section);
 
-			expect(nodes.find((n) => n.id === contact.id)!.position).toEqual({ x: 999, y: 999 });
+			expect(nodes.find((n) => n.id === contact.id)!.position).toEqual({
+				x: 999,
+				y: 999,
+			});
 		});
 	});
 
@@ -97,7 +112,9 @@ describe("LadderNodesFactory.syncNodes", () => {
 
 			const nodes = LadderNodesFactory.syncNodes(prev, section);
 
-			expect(nodes.find((n) => n.id === contactA.id)).toBe(prev.find((n) => n.id === contactA.id));
+			expect(nodes.find((n) => n.id === contactA.id)).toBe(
+				prev.find((n) => n.id === contactA.id),
+			);
 			expect(nodes.find((n) => n.id === contactB.id)).toBeDefined();
 		});
 	});

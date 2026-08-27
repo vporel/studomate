@@ -1,17 +1,22 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
-import JunctionOrStart, { JUNCTION_OR_START_HANDLE_BRANCH_TYPES } from "@/schemas/grafcet/junction-or-start.schema";
+import JunctionOrStart, {
+	JUNCTION_OR_START_HANDLE_BRANCH_TYPES,
+} from "@/schemas/grafcet/junction-or-start.schema";
 import Transition from "@/schemas/grafcet/transition.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue, { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
+import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueSource,
+} from "@/project-analyser/project.analyser.issue";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrStart> {
+export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<JunctionOrStart> {
 	/**
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
@@ -30,11 +35,14 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 	analyseInContext(
 		junctionOrStart: JunctionOrStart,
 		grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 		dialect: Dialect = Dialect.FR,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-junction-or-start" as const, sourceId: junctionOrStart.id };
+		const source = {
+			sourceType: "grafcet-junction-or-start" as const,
+			sourceId: junctionOrStart.id,
+		};
 
 		if (!JunctionHelper.isPivotConnected(junctionOrStart.id, grafcet)) {
 			issues.push(
@@ -74,10 +82,17 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 		// transitions, puis que les réceptivités atteintes sont mutuellement exclusives.
 		const branchTransitions: Transition[] = [];
 		for (const branchId of junctionOrStart.data.branchesOrder) {
-			const conns = grafcet.getConnectionsByElementIdAndHandle(junctionOrStart.id, branchId);
+			const conns = grafcet.getConnectionsByElementIdAndHandle(
+				junctionOrStart.id,
+				branchId,
+			);
 			if (conns.length === 0) continue; // safety guard, already covered above
 			const target = conns[0].target;
-			if (!JUNCTION_OR_START_HANDLE_BRANCH_TYPES.includes(target.type as "transition")) {
+			if (
+				!JUNCTION_OR_START_HANDLE_BRANCH_TYPES.includes(
+					target.type as "transition",
+				)
+			) {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
@@ -88,11 +103,20 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 				);
 				continue;
 			}
-			const transition = grafcet.getElementByIdAndType<Transition>(target.id, "transition");
+			const transition = grafcet.getElementByIdAndType<Transition>(
+				target.id,
+				"transition",
+			);
 			if (transition) branchTransitions.push(transition);
 		}
 
-		issues.push(...JunctionOrStartAnalyser.checkExclusivity(branchTransitions, source, dialect));
+		issues.push(
+			...JunctionOrStartAnalyser.checkExclusivity(
+				branchTransitions,
+				source,
+				dialect,
+			),
+		);
 
 		return issues;
 	}
@@ -116,19 +140,32 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 				const expression = transition.getFullExpression().trim();
 				if (!expression) return null;
 				try {
-					const lexer = new Lexer(dialect);
-					const parser = new Parser(lexer.tokenize(expression));
-					return { transition, expression, node: parser.parse() };
+					return {
+						transition,
+						expression,
+						node: parseExpressionCached(expression, dialect).ast,
+					};
 				} catch {
 					return null; // Erreur de syntaxe déjà relevée par TransitionAnalyser
 				}
 			})
-			.filter((entry): entry is { transition: Transition; expression: string; node: ASTNode } => entry !== null);
+			.filter(
+				(
+					entry,
+				): entry is {
+					transition: Transition;
+					expression: string;
+					node: ASTNode;
+				} => entry !== null,
+			);
 
 		const isConstantTrue = (node: ASTNode): boolean => {
 			try {
 				const simplified = new SimplifierVisitor().visit(node);
-				return simplified.type === "BOOLEAN_LITERAL" && (simplified as { value: boolean }).value === true;
+				return (
+					simplified.type === "BOOLEAN_LITERAL" &&
+					(simplified as { value: boolean }).value === true
+				);
 			} catch {
 				return false;
 			}
@@ -139,7 +176,9 @@ export default class JunctionOrStartAnalyser extends ElementAnalyser<JunctionOrS
 				const a = parsed[i];
 				const b = parsed[j];
 				const notExclusive =
-					a.expression === b.expression || isConstantTrue(a.node) || isConstantTrue(b.node);
+					a.expression === b.expression ||
+					isConstantTrue(a.node) ||
+					isConstantTrue(b.node);
 
 				if (notExclusive) {
 					issues.push(

@@ -13,12 +13,17 @@ export default class ActionCompiler {
 		stepMemosNodes: Map<string, IdentifierNode>,
 	): ASTNode[] {
 		const nodes: ASTNode[] = [];
-		const stepNode = preCompiledGrafcet.steps.get(preCompiledAction.stepId)!.node;
+		const stepNode = preCompiledGrafcet.steps.get(
+			preCompiledAction.stepId,
+		)!.node;
 
 		const phases = preCompiledAction.phases;
 		const risingEdgeCondition = ExpressionsBuilder.buildLogicalExpressionNode(
 			"AND",
-			ExpressionsBuilder.buildUnaryExpressionNode("NOT", stepMemosNodes.get(preCompiledAction.stepId)!), //Previous value of the step is false
+			ExpressionsBuilder.buildUnaryExpressionNode(
+				"NOT",
+				stepMemosNodes.get(preCompiledAction.stepId)!,
+			), //Previous value of the step is false
 			stepNode, //Current value of the step is true
 		);
 		const fallingEdgeCondition = ExpressionsBuilder.buildLogicalExpressionNode(
@@ -28,13 +33,31 @@ export default class ActionCompiler {
 		);
 		const continuousCondition = stepNode; //Current value of the step is true
 		if (phases.onActivation) {
-			nodes.push(ControlsBuilder.buildIfControlNode(risingEdgeCondition, phases.onActivation, null));
+			nodes.push(
+				ControlsBuilder.buildIfControlNode(
+					risingEdgeCondition,
+					phases.onActivation,
+					null,
+				),
+			);
 		}
 		if (phases.onDeactivation) {
-			nodes.push(ControlsBuilder.buildIfControlNode(fallingEdgeCondition, phases.onDeactivation, null));
+			nodes.push(
+				ControlsBuilder.buildIfControlNode(
+					fallingEdgeCondition,
+					phases.onDeactivation,
+					null,
+				),
+			);
 		}
 		if (phases.continuous) {
-			nodes.push(ControlsBuilder.buildIfControlNode(continuousCondition, phases.continuous, null));
+			nodes.push(
+				ControlsBuilder.buildIfControlNode(
+					continuousCondition,
+					phases.continuous,
+					null,
+				),
+			);
 		}
 		return nodes;
 	}

@@ -58,14 +58,23 @@ export interface ElementConstructor<T extends Element<any>> {
 	DEFAULT_DIMENSIONS: Dimensions;
 }
 
-export default abstract class Element<DataType> implements SharedElement<ElementType, DataType, XYPosition> {
+export default abstract class Element<DataType> implements SharedElement<
+	ElementType,
+	DataType,
+	XYPosition
+> {
 	id: string = "";
 	abstract readonly type: ElementType;
 	data: DataType;
 	position: XYPosition = { x: 0, y: 0 };
 	size: Dimensions;
 
-	constructor(id: string, data: DataType, position: XYPosition, size: Dimensions) {
+	constructor(
+		id: string,
+		data: DataType,
+		position: XYPosition,
+		size: Dimensions,
+	) {
 		this.id = id;
 		this.data = data;
 		this.position = position;
@@ -92,12 +101,17 @@ export default abstract class Element<DataType> implements SharedElement<Element
 	 * @param newData
 	 * @returns
 	 */
-	fixNewDataConsistency(newData: Partial<DataType>, _oldData: DataType): Partial<DataType> {
+	fixNewDataConsistency(
+		newData: Partial<DataType>,
+		_oldData: DataType,
+	): Partial<DataType> {
 		return newData;
 	}
 
 	copy(): this {
-		return (this.constructor as any).createFromJSON(JSON.stringify(this)) as this;
+		return (this.constructor as any).createFromJSON(
+			JSON.stringify(this),
+		) as this;
 	}
 
 	static createFromJSON<T extends Element<any>>(
@@ -106,7 +120,12 @@ export default abstract class Element<DataType> implements SharedElement<Element
 	): T {
 		const jsonParsed = JSON.parse(json);
 		return Object.assign(
-			new this("", { ...this.generateDefaultData() }, { x: 0, y: 0 }, { ...this.DEFAULT_DIMENSIONS }),
+			new this(
+				"",
+				{ ...this.generateDefaultData() },
+				{ x: 0, y: 0 },
+				{ ...this.DEFAULT_DIMENSIONS },
+			),
 			jsonParsed,
 		);
 	}

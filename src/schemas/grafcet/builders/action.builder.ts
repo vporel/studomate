@@ -1,4 +1,8 @@
-import Action, { ActionData, ActionExecutionMode, ActionType } from "../action.schema";
+import Action, {
+	ActionData,
+	ActionExecutionMode,
+	ActionType,
+} from "../action.schema";
 import { Dimensions, XYPosition } from "../shared-types";
 
 export default class ActionBuilder {
@@ -43,12 +47,22 @@ export default class ActionBuilder {
 		return this;
 	}
 
+	width(width: number): ActionBuilder {
+		this._size = { ...this._size, width };
+		return this;
+	}
+
 	position(x: number, y: number): ActionBuilder {
 		this._position = { x, y };
 		return this;
 	}
 
 	build(): Action {
-		return new Action(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new Action(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

@@ -52,7 +52,8 @@ const AppMenu = ({
 					fontSize: "0.85rem",
 					height: "100%",
 					borderRadius: "6px",
-					backgroundColor: activeMenuId === menu.id ? "rgb(240,240,240)" : "transparent",
+					backgroundColor:
+						activeMenuId === menu.id ? "rgb(240,240,240)" : "transparent",
 				}}
 				onClick={(e) => {
 					onActivate(menu.id);
@@ -79,7 +80,10 @@ const AppMenu = ({
 				{menu.items.map((group, groupIndex) => (
 					<Box
 						key={groupIndex}
-						sx={{ borderTop: groupIndex > 0 ? "1px solid rgb(240, 240, 240)" : "none" }}
+						sx={{
+							borderTop:
+								groupIndex > 0 ? "1px solid rgb(240, 240, 240)" : "none",
+						}}
 					>
 						{group.map((item, itemIndex) => (
 							<MenuItem
@@ -100,7 +104,11 @@ const AppMenu = ({
 								}}
 							>
 								<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-									<FlexBox alignItems="center" justifyContent="end" width="30px">
+									<FlexBox
+										alignItems="center"
+										justifyContent="end"
+										width="30px"
+									>
 										{item.checked && (
 											<CheckIcon
 												fontSize="small"
@@ -112,7 +120,10 @@ const AppMenu = ({
 										{item.label}
 									</Typography>
 								</Box>
-								<Typography variant="body2" sx={{ color: "gray", fontSize: "0.75rem" }}>
+								<Typography
+									variant="body2"
+									sx={{ color: "gray", fontSize: "0.75rem" }}
+								>
 									{item.shortcut && `${item.shortcut}`}
 								</Typography>
 							</MenuItem>

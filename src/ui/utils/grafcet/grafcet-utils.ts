@@ -4,8 +4,10 @@ import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { PAPERS_SIZES } from "@/ui/constants";
 import { mmToPx } from "@/ui/lib/utils";
-import { ReactFlowInstance, Connection as XYFlowConnection } from "@xyflow/react";
-import { ConnectionMode, getEdgePosition } from "@xyflow/system";
+import {
+	ReactFlowInstance,
+	Connection as XYFlowConnection,
+} from "@xyflow/react";
 
 const CONNECTION_LINE_Y_OFFSET = 20;
 
@@ -40,14 +42,6 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	const sourceNode = rfInstance.getInternalNode(connection.source);
 	const targetNode = rfInstance.getInternalNode(connection.target);
 	if (!sourceNode || !targetNode) return null;
-	const edgePosition = getEdgePosition({
-		id: connectionId,
-		sourceNode: sourceNode,
-		targetNode: targetNode,
-		sourceHandle: connection.sourceHandle || null,
-		targetHandle: connection.targetHandle || null,
-		connectionMode: ConnectionMode.Strict,
-	});
 	return new Connection(
 		connectionId,
 		{
@@ -60,14 +54,9 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 			id: targetNode.id,
 			handle: connection.targetHandle || "",
 		},
-		(connection as GrafcetEdgeType).data || {
-			points: getConnectionLinePoints(
-				edgePosition!.sourceX,
-				edgePosition!.sourceY,
-				edgePosition!.targetX,
-				edgePosition!.targetY,
-			),
-		},
+		//`data.points` ne porte que les coudes intermédiaires : une nouvelle connexion n'en a
+		//aucun, son tracé est dérivé des handles au rendu (`getConnectionLinePoints`).
+		(connection as GrafcetEdgeType).data || { points: [] },
 	);
 }
 

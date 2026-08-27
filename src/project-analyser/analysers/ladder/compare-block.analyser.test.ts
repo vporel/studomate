@@ -1,95 +1,109 @@
-import { createCompareBlockElement } from "@/schemas/ladder/block.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
+import {
+	CompareBlockParams,
+	createCompareBlockElement,
+} from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import CompareBlockAnalyser from "./compare-block.analyser";
 
 describe("CompareBlockAnalyser", () => {
-	const source: ProjectAnalyserIssueSource = { sourceType: "ladder-block", sourceId: "b1" };
+	const source: ProjectAnalyserIssueSource = {
+		sourceType: "ladder-block",
+		sourceId: "b1",
+	};
 
 	function variablesMap(...variables: Variable[]): Map<string, Variable> {
 		return new Map(variables.map((v) => [v.mnemonic, v]));
 	}
 
-	it("signale BLOCK_COMPARE_EXPRESSION_EMPTY quand l'expression est vide", () => {
-		const element = createCompareBlockElement({ expression: "" }, 0, 0);
+	function analyse(
+		params: CompareBlockParams,
+		...variables: Variable[]
+	): string[] {
+		const element = createCompareBlockElement(0, 0, params);
+		return CompareBlockAnalyser.analyse(
+			element,
+			source,
+			Dialect.FR,
+			variablesMap(...variables),
+		).map((i) => i.code);
+	}
 
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap());
+	it("signale les deux pinoches vides", () => {
+		expect(analyse({ in1: "", in2: "", operator: "=" })).toEqual([
+			"BLOCK_COMPARE_IN1_EMPTY",
+			"BLOCK_COMPARE_IN2_EMPTY",
+		]);
+	});
 
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_EXPRESSION_EMPTY"]);
+	it("signale BLOCK_COMPARE_OPERATOR_INVALID pour un opérateur hors liste", () => {
+		expect(
+			analyse({ in1: "A", in2: "B", operator: "<>" as never }),
+		).toContain("BLOCK_COMPARE_OPERATOR_INVALID");
 	});
 
 	it("accepte une comparaison de variables numériques", () => {
-		const element = createCompareBlockElement({ expression: "A > B" }, 0, 0);
 		const a = new Variable("v1", "A", "memory", "INT");
 		const b = new Variable("v2", "B", "memory", "INT");
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(a, b));
-
-		expect(issues).toEqual([]);
+		expect(analyse({ in1: "A", in2: "B", operator: ">" }, a, b)).toEqual([]);
 	});
 
-	it("accepte une expression arithmétique combinée à une comparaison", () => {
-		const element = createCompareBlockElement({ expression: "A + 1 > B" }, 0, 0);
+	it("accepte une variable comparée à un littéral numérique", () => {
+		const a = new Variable("v1", "A", "memory", "INT");
+		expect(analyse({ in1: "A", in2: "5", operator: ">=" }, a)).toEqual([]);
+	});
+
+	it("accepte une expression arithmétique sur une pinoche", () => {
 		const a = new Variable("v1", "A", "memory", "INT");
 		const b = new Variable("v2", "B", "memory", "INT");
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(a, b));
-
-		expect(issues).toEqual([]);
+		expect(analyse({ in1: "A + 1", in2: "B", operator: ">" }, a, b)).toEqual(
+			[],
+		);
 	});
 
-	it("signale BLOCK_COMPARE_ASSIGNMENT_NOT_ALLOWED quand l'expression est une affectation", () => {
-		const element = createCompareBlockElement({ expression: "A := B" }, 0, 0);
+	it("signale BLOCK_COMPARE_INPUT_NOT_ALLOWED pour une pinoche contenant une comparaison", () => {
+		const vars = ["A", "B"].map(
+			(name, i) => new Variable(`v${i}`, name, "memory", "INT"),
+		);
+		expect(
+			analyse({ in1: "A > B", in2: "B", operator: "=" }, ...vars),
+		).toEqual(["BLOCK_COMPARE_INPUT_NOT_ALLOWED"]);
+	});
+
+	it("signale BLOCK_COMPARE_INPUT_NOT_ALLOWED pour une affectation", () => {
 		const a = new Variable("v1", "A", "memory", "BOOL");
 		const b = new Variable("v2", "B", "memory", "BOOL");
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(a, b));
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_ASSIGNMENT_NOT_ALLOWED"]);
+		expect(
+			analyse({ in1: "A := B", in2: "B", operator: "=" }, a, b),
+		).toEqual(["BLOCK_COMPARE_INPUT_NOT_ALLOWED"]);
 	});
 
-	it("signale BLOCK_COMPARE_OPERATOR_NOT_ALLOWED pour un opérateur logique (ET/OU)", () => {
-		const element = createCompareBlockElement({ expression: "A > B ET C > D" }, 0, 0);
-		const vars = ["A", "B", "C", "D"].map((name, i) => new Variable(`v${i}`, name, "memory", "INT"));
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(...vars));
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_OPERATOR_NOT_ALLOWED"]);
-	});
-
-	it("signale BLOCK_COMPARE_OPERATOR_NOT_ALLOWED pour un NON (opérateur unaire)", () => {
-		const element = createCompareBlockElement({ expression: "NON A" }, 0, 0);
-		const a = new Variable("v1", "A", "memory", "BOOL");
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(a));
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_OPERATOR_NOT_ALLOWED"]);
-	});
-
-	it("signale BLOCK_COMPARE_EXPRESSION_NOT_BOOLEAN quand l'expression n'est pas booléenne", () => {
-		const element = createCompareBlockElement({ expression: "A + B" }, 0, 0);
+	it("signale BLOCK_COMPARE_INVALID_EXPRESSION quand les deux pinoches n'ont pas le même type", () => {
 		const a = new Variable("v1", "A", "memory", "INT");
-		const b = new Variable("v2", "B", "memory", "INT");
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap(a, b));
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_EXPRESSION_NOT_BOOLEAN"]);
+		const b = new Variable("v2", "B", "memory", "BOOL");
+		expect(analyse({ in1: "A", in2: "B", operator: "=" }, a, b)).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
 	});
 
-	it("signale BLOCK_COMPARE_INVALID_EXPRESSION pour une erreur de syntaxe", () => {
-		const element = createCompareBlockElement({ expression: "A >" }, 0, 0);
-
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap());
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_INVALID_EXPRESSION"]);
+	it("signale BLOCK_COMPARE_INVALID_EXPRESSION pour un ordre (<) sur des booléens", () => {
+		const a = new Variable("v1", "A", "memory", "BOOL");
+		const b = new Variable("v2", "B", "memory", "BOOL");
+		expect(analyse({ in1: "A", in2: "B", operator: "<" }, a, b)).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
 	});
 
 	it("signale BLOCK_COMPARE_INVALID_EXPRESSION pour une variable inconnue", () => {
-		const element = createCompareBlockElement({ expression: "Inconnue > 5" }, 0, 0);
+		expect(analyse({ in1: "Inconnue", in2: "5", operator: ">" })).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
+	});
 
-		const issues = CompareBlockAnalyser.analyse(element, source, Dialect.FR, variablesMap());
-
-		expect(issues.map((i) => i.code)).toEqual(["BLOCK_COMPARE_INVALID_EXPRESSION"]);
+	it("signale BLOCK_COMPARE_INVALID_EXPRESSION pour une syntaxe invalide sur une pinoche", () => {
+		expect(analyse({ in1: "A +", in2: "B", operator: ">" })).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
 	});
 });

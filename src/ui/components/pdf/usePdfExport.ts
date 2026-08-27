@@ -8,8 +8,7 @@ import { useCallback, useRef, useState } from "react";
 import { OffscreenProgram } from "../pdf/OffscreenProgramRenderer";
 
 export type PdfExportProgramConfig =
-	| { type: "grafcet"; program: Grafcet }
-	| { type: "ladder"; program: Ladder };
+	{ type: "grafcet"; program: Grafcet } | { type: "ladder"; program: Ladder };
 
 export type PdfExportState =
 	| { status: "idle" }
@@ -22,15 +21,31 @@ export interface UsePdfExportResult {
 	exportState: PdfExportState;
 	offscreenPrograms: OffscreenProgram[];
 	onProgramReady: (programId: string, element: HTMLElement) => void;
-	startExport: (programs: PdfExportProgramConfig[], filename: string) => Promise<void>;
+	startExport: (
+		programs: PdfExportProgramConfig[],
+		filename: string,
+	) => Promise<void>;
 	reset: () => void;
 }
 
-export function usePdfExport(): UsePdfExportResult {
-	const [exportState, setExportState] = useState<PdfExportState>({ status: "idle" });
-	const [offscreenPrograms, setOffscreenPrograms] = useState<OffscreenProgram[]>([]);
+/** Rend la main au thread de rendu le temps de deux frames : la première laisse React
+ * committer, la seconde garantit qu'un paint a eu lieu (barre de progression, démontage). */
+const nextFrame = () =>
+	new Promise<void>((resolve) =>
+		requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+	);
 
-	const resolversRef = useRef<Map<string, (el: HTMLElement) => void>>(new Map());
+export function usePdfExport(): UsePdfExportResult {
+	const [exportState, setExportState] = useState<PdfExportState>({
+		status: "idle",
+	});
+	const [offscreenPrograms, setOffscreenPrograms] = useState<
+		OffscreenProgram[]
+	>([]);
+
+	const resolversRef = useRef<Map<string, (el: HTMLElement) => void>>(
+		new Map(),
+	);
 
 	const reset = useCallback(() => {
 		setExportState({ status: "idle" });
@@ -38,44 +53,53 @@ export function usePdfExport(): UsePdfExportResult {
 		resolversRef.current.clear();
 	}, []);
 
-	const onProgramReady = useCallback((programId: string, element: HTMLElement) => {
-		const resolve = resolversRef.current.get(programId);
-		if (resolve) {
-			resolve(element);
-			resolversRef.current.delete(programId);
-		}
-	}, []);
+	const onProgramReady = useCallback(
+		(programId: string, element: HTMLElement) => {
+			const resolve = resolversRef.current.get(programId);
+			if (resolve) {
+				resolve(element);
+				resolversRef.current.delete(programId);
+			}
+		},
+		[],
+	);
 
 	const startExport = useCallback(
 		async (programs: PdfExportProgramConfig[], filename: string) => {
 			if (programs.length === 0) return;
 
 			const total = programs.length;
-			setExportState({ status: "rendering", current: 0, total, label: "Montage en cours…" });
+			setExportState({
+				status: "rendering",
+				current: 0,
+				total,
+				label: "Montage en cours…",
+			});
 
-			const elementPromises = programs.map((config, index) =>
-				new Promise<{ config: PdfExportProgramConfig; element: HTMLElement }>((resolve) => {
-					resolversRef.current.set(config.program.id, (el) => {
-						setExportState({ status: "rendering", current: index + 1, total, label: config.program.name });
-						resolve({ config, element: el });
-					});
-				}),
-			);
-
-			setOffscreenPrograms(programs as OffscreenProgram[]);
-
-			let rendered: { config: PdfExportProgramConfig; element: HTMLElement }[];
-			try {
-				rendered = await Promise.all(elementPromises);
-			} catch {
-				setExportState({ status: "error", message: "Le rendu des programmes a échoué." });
-				return;
-			}
-
+			// Un seul programme monté hors-écran à la fois : monter les N ensemble ferait tourner
+			// N éditeurs React Flow en parallèle et rasteriser en rafale, ce qui gèle l'UI.
 			const sections: PdfExportSection[] = [];
-			for (let i = 0; i < rendered.length; i++) {
-				const { config, element } = rendered[i];
-				setExportState({ status: "capturing", current: i + 1, total, label: config.program.name });
+			for (let i = 0; i < programs.length; i++) {
+				const config = programs[i];
+				setExportState({
+					status: "rendering",
+					current: i + 1,
+					total,
+					label: config.program.name,
+				});
+
+				const element = await new Promise<HTMLElement>((resolve) => {
+					resolversRef.current.set(config.program.id, resolve);
+					setOffscreenPrograms([config as OffscreenProgram]);
+				});
+
+				setExportState({
+					status: "capturing",
+					current: i + 1,
+					total,
+					label: config.program.name,
+				});
+				await nextFrame();
 				const domToImage = (await import("dom-to-image")).default;
 				try {
 					const dataUrl = await domToImage.toPng(element, {
@@ -96,16 +120,26 @@ export function usePdfExport(): UsePdfExportResult {
 						orientation: config.type === "ladder" ? "landscape" : "portrait",
 					});
 				} catch {
-					setExportState({ status: "error", message: `La capture de "${config.program.name}" a échoué.` });
+					setExportState({
+						status: "error",
+						message: `La capture de "${config.program.name}" a échoué.`,
+					});
+					setOffscreenPrograms([]);
 					return;
 				}
+
+				setOffscreenPrograms([]);
+				await nextFrame();
 			}
 
 			setExportState({ status: "assembling" });
 			try {
 				await new JsPdfExporter().export(sections, filename);
 			} catch {
-				setExportState({ status: "error", message: "La génération du PDF a échoué." });
+				setExportState({
+					status: "error",
+					message: "La génération du PDF a échoué.",
+				});
 				return;
 			}
 

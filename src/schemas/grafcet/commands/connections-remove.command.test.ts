@@ -3,11 +3,24 @@ import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
 import ConnectionsRemoveCommand from "./connections-remove.command";
 
 describe("ConnectionsRemoveCommand", () => {
-	function grafcetWithConnection(): { grafcet: Grafcet; connection: Connection } {
+	function grafcetWithConnection(): {
+		grafcet: Grafcet;
+		connection: Connection;
+	} {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		grafcet.addElements([
-			{ type: "step", id: "step-1", data: { number: "0" }, position: { x: 0, y: 0 } },
-			{ type: "transition", id: "trans-1", data: {}, position: { x: 0, y: 50 } },
+			{
+				type: "step",
+				id: "step-1",
+				data: { number: "0" },
+				position: { x: 0, y: 0 },
+			},
+			{
+				type: "transition",
+				id: "trans-1",
+				data: {},
+				position: { x: 0, y: 50 },
+			},
 		]);
 		const connection = new Connection(
 			"c1",

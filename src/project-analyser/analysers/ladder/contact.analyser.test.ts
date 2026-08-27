@@ -1,4 +1,8 @@
-import { createCoilElement, createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import {
+	createCoilElement,
+	createContactElement,
+	createRailTerminalElement,
+} from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
@@ -20,10 +24,18 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
 		const ladder = new Ladder("l1", "L", [
-			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
+			createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_UNDECLARED");
 	});
@@ -34,10 +46,18 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
 		const ladder = new Ladder("l1", "L", [
-			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
+			createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(a),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_NOT_BOOLEAN");
 	});
@@ -46,9 +66,16 @@ describe("ContactAnalyser", () => {
 		const rail = createRailTerminalElement(0);
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([rail, contact], wireInSeries([rail, contact]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, contact], wireInSeries([rail, contact])),
+		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(a),
+			ProjectFactory.createEmpty(),
+		);
 
 		const issue = issues.find((i) => i.code === "NETWORK_NO_COIL");
 		expect(issue).toBeDefined();
@@ -59,9 +86,16 @@ describe("ContactAnalyser", () => {
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 0);
 		const coil = createCoilElement("Q", "normal", 0, 1);
-		const ladder = new Ladder("l1", "L", [createSectionWith([contact, coil], wireInSeries([contact, coil]))]);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([contact, coil], wireInSeries([contact, coil])),
+		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(a),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues.map((i) => i.code)).toContain("ELEMENT_NO_PREDECESSOR");
 	});
@@ -71,9 +105,17 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([contact])]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(a),
+			ProjectFactory.createEmpty(),
+		);
 
-		expect(issues.map((i) => i.code).sort()).toEqual(["ELEMENT_NO_PREDECESSOR", "NETWORK_NO_COIL"]);
+		expect(issues.map((i) => i.code).sort()).toEqual([
+			"ELEMENT_NO_PREDECESSOR",
+			"NETWORK_NO_COIL",
+		]);
 	});
 
 	it("n'émet aucune issue pour un contact valide, correctement câblé", () => {
@@ -83,10 +125,18 @@ describe("ContactAnalyser", () => {
 		const contact = createContactElement("A", "NO", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
 		const ladder = new Ladder("l1", "L", [
-			createSectionWith([rail, contact, coil], wireInSeries([rail, contact, coil])),
+			createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			),
 		]);
 
-		const issues = analyser.analyseInContext(contact, ladder, variablesMap(a, q), ProjectFactory.createEmpty());
+		const issues = analyser.analyseInContext(
+			contact,
+			ladder,
+			variablesMap(a, q),
+			ProjectFactory.createEmpty(),
+		);
 
 		expect(issues).toEqual([]);
 	});

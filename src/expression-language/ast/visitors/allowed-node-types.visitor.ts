@@ -1,5 +1,9 @@
 import { ASTNode } from "../nodes/ast-node";
-import { CounterNode, TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import {
+	CounterNode,
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -51,26 +55,40 @@ export default class AllowedNodeTypesVisitor extends BaseVisitor<ASTNode[]> {
 		return this.visit(node.expr).concat(this.checkSelf(node));
 	}
 
-	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): ASTNode[] {
-		return this.visit(node.left).concat(this.visit(node.right)).concat(this.checkSelf(node));
+	protected visitArithmeticExpressionNode(
+		node: ArithmeticExpressionNode,
+	): ASTNode[] {
+		return this.visit(node.left)
+			.concat(this.visit(node.right))
+			.concat(this.checkSelf(node));
 	}
 
-	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): ASTNode[] {
-		return this.visit(node.left).concat(this.visit(node.right)).concat(this.checkSelf(node));
+	protected visitComparisonExpressionNode(
+		node: ComparisonExpressionNode,
+	): ASTNode[] {
+		return this.visit(node.left)
+			.concat(this.visit(node.right))
+			.concat(this.checkSelf(node));
 	}
 
 	protected visitLogicalExpressionNode(node: LogicalExpressionNode): ASTNode[] {
-		return this.visit(node.left).concat(this.visit(node.right)).concat(this.checkSelf(node));
+		return this.visit(node.left)
+			.concat(this.visit(node.right))
+			.concat(this.checkSelf(node));
 	}
 
 	protected visitAssignStatementNode(node: AssignStatementNode): ASTNode[] {
-		return this.visit(node.left).concat(this.visit(node.right)).concat(this.checkSelf(node));
+		return this.visit(node.left)
+			.concat(this.visit(node.right))
+			.concat(this.checkSelf(node));
 	}
 
 	protected visitIfControlNode(node: IfControlNode): ASTNode[] {
 		return this.visit(node.condition)
 			.concat(node.trueBranch.flatMap((n) => this.visit(n)))
-			.concat(node.falseBranch ? node.falseBranch.flatMap((n) => this.visit(n)) : [])
+			.concat(
+				node.falseBranch ? node.falseBranch.flatMap((n) => this.visit(n)) : [],
+			)
 			.concat(this.checkSelf(node));
 	}
 
@@ -83,7 +101,9 @@ export default class AllowedNodeTypesVisitor extends BaseVisitor<ASTNode[]> {
 			.concat(this.checkSelf(node));
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ASTNode[] {
+	protected visitTimerStringDeclarationNode(
+		node: TimerStringDeclarationNode,
+	): ASTNode[] {
 		return this.visit(node.input).concat(this.checkSelf(node));
 	}
 

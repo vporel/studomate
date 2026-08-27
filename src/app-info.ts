@@ -6,4 +6,5 @@
  */
 export const APP_NAME = "Studomate";
 export const APP_SLOGAN = "Créer, Simuler, Automatiser";
-export const APP_SHORT_DESCRIPTION = "Créez et simulez facilement avec une application intuitive.";
+export const APP_SHORT_DESCRIPTION =
+	"Concevez et simulez des automatismes GRAFCET et Ladder directement dans votre navigateur.";

@@ -12,7 +12,15 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "normal", condition }],
+			assignments: [
+				{
+					kind: "coil",
+					coilId: "c1",
+					variable: "Q",
+					mode: "normal",
+					condition,
+				},
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
@@ -35,7 +43,9 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "set", condition }],
+			assignments: [
+				{ kind: "coil", coilId: "c1", variable: "Q", mode: "set", condition },
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
@@ -64,7 +74,9 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "coil", coilId: "c1", variable: "Q", mode: "reset", condition }],
+			assignments: [
+				{ kind: "coil", coilId: "c1", variable: "Q", mode: "reset", condition },
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
@@ -120,7 +132,11 @@ describe("LadderCompiler", () => {
 
 		const { nodes } = LadderCompiler.compile(preCompiled);
 
-		expect(nodes.map((n) => n.type)).toEqual(["ASSIGN_STATEMENT", "ASSIGN_STATEMENT", "ASSIGN_STATEMENT"]);
+		expect(nodes.map((n) => n.type)).toEqual([
+			"ASSIGN_STATEMENT",
+			"ASSIGN_STATEMENT",
+			"ASSIGN_STATEMENT",
+		]);
 		expect(nodes[2]).toMatchObject({
 			left: { type: "IDENTIFIER", value: "EDGE_e1" },
 			right: { type: "IDENTIFIER", value: "A" },
@@ -148,7 +164,9 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "main",
-			assignments: [{ kind: "blockPort", blockId: "b1", mnemonic: "b1_EN", value }],
+			assignments: [
+				{ kind: "blockPort", blockId: "b1", mnemonic: "b1_EN", value },
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [{ blockId: "b1", programId: "prog1", enMnemonic: "b1_EN" }],
 			timers: [],
@@ -219,12 +237,16 @@ describe("LadderCompiler", () => {
 	});
 
 	it("embarque l'IfControlNode d'un bloc assign tel quel parmi les instructions", () => {
-		const ifNode = ControlsBuilder.buildIfControlNode(IdentifiersBuilder.buildIdentifierNode("EN"), [
-			StatementsBuilder.buildAssignStatementNode(
-				IdentifiersBuilder.buildIdentifierNode("x"),
-				LiteralsBuilder.buildNumberNode(1),
-			),
-		], null);
+		const ifNode = ControlsBuilder.buildIfControlNode(
+			IdentifiersBuilder.buildIdentifierNode("EN"),
+			[
+				StatementsBuilder.buildAssignStatementNode(
+					IdentifiersBuilder.buildIdentifierNode("x"),
+					LiteralsBuilder.buildNumberNode(1),
+				),
+			],
+			null,
+		);
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",

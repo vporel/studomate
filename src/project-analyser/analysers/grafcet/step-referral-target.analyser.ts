@@ -1,12 +1,14 @@
 import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-source.helper";
 import StepReferralTargetHelper from "@/schemas/grafcet/helpers/step-referral-target.helper";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class StepReferralTargetAnalyser extends ElementAnalyser<StepReferralTarget> {
+export default class StepReferralTargetAnalyser extends GrafcetElementAnalyser<StepReferralTarget> {
 	/**
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
@@ -15,7 +17,10 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };
+		const source = {
+			sourceType: "grafcet-step-referral-target" as const,
+			sourceId: stepReferral.id,
+		};
 
 		if (
 			stepReferral.data.sourceStepNumber === "" ||
@@ -34,7 +39,10 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 			}
 			return issues;
 		}
-		if (!Number.isInteger(stepReferral.data.sourceStepNumber) || stepReferral.data.sourceStepNumber < 0) {
+		if (
+			!Number.isInteger(stepReferral.data.sourceStepNumber) ||
+			stepReferral.data.sourceStepNumber < 0
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
@@ -54,13 +62,18 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 	analyseInContext(
 		stepReferral: StepReferralTarget,
 		grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };
+		const source = {
+			sourceType: "grafcet-step-referral-target" as const,
+			sourceId: stepReferral.id,
+		};
 
 		//Check that the referred step number exists in the grafcet
-		const referredStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.sourceStepNumber);
+		const referredStep = Object.values(grafcet.steps).find(
+			(s) => s.data.number === stepReferral.data.sourceStepNumber,
+		);
 		if (!referredStep) {
 			issues.push(
 				new ProjectAnalyserIssue(
@@ -85,10 +98,11 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 						),
 					);
 				}
-				const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
-					stepReferral.id,
-					grafcet,
-				);
+				const stepReferralSource =
+					StepReferralTargetHelper.getStepReferralSource(
+						stepReferral.id,
+						grafcet,
+					);
 				if (!stepReferralSource) {
 					issues.push(
 						new ProjectAnalyserIssue(
@@ -127,7 +141,10 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 					}
 					const sourceStep = predecessorSteps[0];
 
-					if (!sourceStep || sourceStep.data.number !== stepReferral.data.sourceStepNumber) {
+					if (
+						!sourceStep ||
+						sourceStep.data.number !== stepReferral.data.sourceStepNumber
+					) {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",

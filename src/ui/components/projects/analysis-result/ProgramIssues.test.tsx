@@ -41,13 +41,18 @@ describe("ProgramIssues", () => {
 				programKind="Grafcet"
 				programId="g1"
 				programName="Grafcet 1"
-				issues={{ overall: [], elements: { "step-1": ["Problème sur l'étape"] } }}
+				issues={{
+					overall: [],
+					elements: { "step-1": ["Problème sur l'étape"] },
+				}}
 				severity="error"
 				getElementLabel={(id) => `Étape ${id}`}
 				onGoto={() => {}}
 			/>,
 		);
-		expect(screen.getByText("[Étape step-1] Problème sur l'étape")).toBeInTheDocument();
+		expect(
+			screen.getByText("[Étape step-1] Problème sur l'étape"),
+		).toBeInTheDocument();
 	});
 
 	it("appelle onGoto avec l'id de l'élément au clic sur une issue d'élément", () => {
@@ -100,7 +105,11 @@ describe("ProgramIssues", () => {
 				onGoto={() => {}}
 			/>,
 		);
-		expect(screen.getByText("Avertissements globaux au ladder")).toBeInTheDocument();
-		expect(screen.getByText("Avertissements des éléments du ladder")).toBeInTheDocument();
+		expect(
+			screen.getByText("Avertissements globaux au ladder"),
+		).toBeInTheDocument();
+		expect(
+			screen.getByText("Avertissements des éléments du ladder"),
+		).toBeInTheDocument();
 	});
 });

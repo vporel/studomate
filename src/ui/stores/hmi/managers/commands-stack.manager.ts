@@ -3,7 +3,7 @@ import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import AbstractCommandsStackManager from "@/ui/stores/shared/abstract-commands-stack.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";
 
-export default class CommandsStackManager extends AbstractCommandsStackManager<HmiPage> {
+export default class HmiCommandsStackManager extends AbstractCommandsStackManager<HmiPage> {
 	private setStoreState: HmiStoreSetFunction;
 	private getStoreState: HmiStoreGetFunction;
 
@@ -11,7 +11,11 @@ export default class CommandsStackManager extends AbstractCommandsStackManager<H
 	 * La pile est fournie par le projet, pas créée ici : elle doit survivre à ce store, abandonné
 	 * à la fermeture de la page HMI (voir `HmiManager.getCommandsStack`).
 	 */
-	constructor(setStoreState: HmiStoreSetFunction, getStoreState: HmiStoreGetFunction, commandsStack: CommandsStack<HmiPage>) {
+	constructor(
+		setStoreState: HmiStoreSetFunction,
+		getStoreState: HmiStoreGetFunction,
+		commandsStack: CommandsStack<HmiPage>,
+	) {
 		super(commandsStack);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;

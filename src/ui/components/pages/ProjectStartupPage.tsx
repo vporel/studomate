@@ -2,8 +2,16 @@
 
 import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
-import { Add as AddIcon } from "@mui/icons-material";
-import { Box, Divider, Grid, ListItemIcon, ListItemText, MenuItem, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import {
+	Box,
+	Divider,
+	Grid,
+	ListItemIcon,
+	ListItemText,
+	MenuItem,
+	Typography,
+} from "@mui/material";
 import InclinedAccountTree from "../icons/InclinedAccountTree";
 import LadderIcon from "../icons/LadderIcon";
 import VariablesIcon from "../icons/VariablesIcon";
@@ -20,7 +28,11 @@ export const PROJECT_STARTUP_PAGE_DATA: PageData = {
 };
 
 function VariblesPagesList() {
-	const pagedsIds: VariablesPageId[] = ["input-variables", "output-variables", "memory-variables"];
+	const pagedsIds: VariablesPageId[] = [
+		"input-variables",
+		"output-variables",
+		"memory-variables",
+	];
 	const pagesData = pagedsIds.map((id) => getVariablesPageData(id));
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
@@ -56,20 +68,36 @@ function ProgramsList() {
 
 	return (
 		<>
-			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1, mt: 2 }}>
+			<Typography
+				variant="h4"
+				color="rgb(80, 80, 80)"
+				sx={{ marginBottom: 1, mt: 2 }}
+			>
 				Programmes
 			</Typography>
 			{programs.length === 0 && (
-				<Typography color="rgb(80, 80, 80)">Vous n&apos;avez pas encore de programme.</Typography>
+				<Typography color="rgb(80, 80, 80)">
+					Vous n&apos;avez pas encore de programme.
+				</Typography>
 			)}
 			{programs.map((program) => (
 				<MenuItem
 					key={program.id}
 					onClick={() =>
-						pagesManager.openPage({ id: program.id, title: program.name, type: program.type })
+						pagesManager.openPage({
+							id: program.id,
+							title: program.name,
+							type: program.type,
+						})
 					}
 				>
-					<ListItemIcon>{program.type === "grafcet" ? <InclinedAccountTree /> : <LadderIcon />}</ListItemIcon>
+					<ListItemIcon>
+						{program.type === "grafcet" ? (
+							<InclinedAccountTree />
+						) : (
+							<LadderIcon />
+						)}
+					</ListItemIcon>
 					<ListItemText>{program.name}</ListItemText>
 				</MenuItem>
 			))}
@@ -93,7 +121,9 @@ function Actions() {
 				<ListItemIcon>
 					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
 				</ListItemIcon>
-				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>Nouveau grafcet</ListItemText>
+				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
+					Nouveau grafcet
+				</ListItemText>
 			</MenuItem>
 			<MenuItem
 				onClick={() => {
@@ -103,7 +133,9 @@ function Actions() {
 				<ListItemIcon>
 					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
 				</ListItemIcon>
-				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>Nouveau ladder</ListItemText>
+				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
+					Nouveau ladder
+				</ListItemText>
 			</MenuItem>
 		</>
 	);
@@ -111,7 +143,10 @@ function Actions() {
 
 const ProjectStartupPage = () => {
 	return (
-		<Page pageId={PROJECT_STARTUP_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>
+		<Page
+			pageId={PROJECT_STARTUP_PAGE_ID}
+			sx={{ justifyContent: "center", alignItems: "start" }}
+		>
 			<Box
 				sx={{
 					padding: "4rem 1rem",

@@ -43,19 +43,35 @@ export default function useBlockInstanceMenuItems(): (
 					{
 						label: "Paramétrer",
 						onClick: () => {
-							const element = project?.getLadder(ladderId)?.findElement(elementId)?.element;
-							const timerParams = element?.type === "block" ? getTimerBlockParams(element) : null;
-							const counterParams = element?.type === "block" ? getCounterBlockParams(element) : null;
+							const element = project
+								?.getLadder(ladderId)
+								?.findElement(elementId)?.element;
+							const timerParams =
+								element?.type === "block" ? getTimerBlockParams(element) : null;
+							const counterParams =
+								element?.type === "block"
+									? getCounterBlockParams(element)
+									: null;
 							if (!timerParams && !counterParams) return;
 
 							onGotoProgram(ladderId, "ladder");
 							let attempts = 0;
 							const tryOpenEditor = () => {
-								const workflowManager = laddersManager.getActiveStoreManagers()?.workflowManager;
+								const workflowManager =
+									laddersManager.getActiveStoreManagers()?.workflowManager;
 								if (workflowManager) {
-									if (timerParams) workflowManager.openSystemBlockEditor(elementId, "timer", timerParams);
+									if (timerParams)
+										workflowManager.openSystemBlockEditor(
+											elementId,
+											"timer",
+											timerParams,
+										);
 									else if (counterParams)
-										workflowManager.openSystemBlockEditor(elementId, "counter", counterParams);
+										workflowManager.openSystemBlockEditor(
+											elementId,
+											"counter",
+											counterParams,
+										);
 									return;
 								}
 								attempts += 1;

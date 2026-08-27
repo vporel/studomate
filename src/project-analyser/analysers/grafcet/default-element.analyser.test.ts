@@ -1,3 +1,4 @@
+import { analyserEnvironment } from "@tests/utils/test-helpers";
 import CommentBuilder from "@/schemas/grafcet/builders/comment.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import DefaultElementAnalyser from "./default-element.analyser";
@@ -7,7 +8,10 @@ describe("DefaultElementAnalyser", () => {
 
 	describe("analyseIsolated", () => {
 		it("returns empty issues array for any element", () => {
-			const comment = new CommentBuilder().id("comment1").text("Test comment").build();
+			const comment = new CommentBuilder()
+				.id("comment1")
+				.text("Test comment")
+				.build();
 
 			const issues = analyser.analyseIsolated(comment);
 			expect(issues).toEqual([]);
@@ -35,23 +39,44 @@ describe("DefaultElementAnalyser", () => {
 		const grafcet = new GrafcetBuilder().build();
 
 		it("returns empty issues array for any element", () => {
-			const comment = new CommentBuilder().id("comment1").text("Test comment").build();
+			const comment = new CommentBuilder()
+				.id("comment1")
+				.text("Test comment")
+				.build();
 
-			const issues = analyser.analyseInContext(comment, grafcet, []);
+			const issues = analyser.analyseInContext(
+				comment,
+				grafcet,
+				analyserEnvironment(),
+			);
 			expect(issues).toEqual([]);
 		});
 
 		it("returns empty issues array regardless of connections", () => {
-			const comment = new CommentBuilder().id("comment1").text("Test comment").build();
+			const comment = new CommentBuilder()
+				.id("comment1")
+				.text("Test comment")
+				.build();
 
-			const issues = analyser.analyseInContext(comment, grafcet, []);
+			const issues = analyser.analyseInContext(
+				comment,
+				grafcet,
+				analyserEnvironment(),
+			);
 			expect(issues).toEqual([]);
 		});
 
 		it("returns empty issues array regardless of variables", () => {
-			const comment = new CommentBuilder().id("comment1").text("Test comment").build();
+			const comment = new CommentBuilder()
+				.id("comment1")
+				.text("Test comment")
+				.build();
 
-			const issues = analyser.analyseInContext(comment, grafcet, []);
+			const issues = analyser.analyseInContext(
+				comment,
+				grafcet,
+				analyserEnvironment(),
+			);
 			expect(issues).toEqual([]);
 		});
 	});

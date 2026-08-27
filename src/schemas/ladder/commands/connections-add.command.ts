@@ -13,7 +13,11 @@ import AbstractLadderCommand from "./abstract-ladder.command";
  *   strictement à droite de la source (`col` croissante), ce qui rend un cycle structurellement
  *   impossible sans avoir besoin de le détecter après coup.
  */
-export function isConnectionAllowed(section: Section, sourceId: string, targetId: string): boolean {
+export function isConnectionAllowed(
+	section: Section,
+	sourceId: string,
+	targetId: string,
+): boolean {
 	const source = section.getElement(sourceId);
 	const target = section.getElement(targetId);
 	if (!source || !target || source.type === "coil") return false;
@@ -38,7 +42,14 @@ export default class ConnectionsAddCommand extends AbstractLadderCommand<{
 		const section = ladder.getSection(this.payload.sectionId);
 		if (!section) return [ladder, false];
 		for (const connection of this.payload.connections) {
-			if (!isConnectionAllowed(section, connection.source.id, connection.target.id)) return [ladder, false];
+			if (
+				!isConnectionAllowed(
+					section,
+					connection.source.id,
+					connection.target.id,
+				)
+			)
+				return [ladder, false];
 		}
 		ladder.addConnections(
 			this.payload.sectionId,
@@ -50,7 +61,10 @@ export default class ConnectionsAddCommand extends AbstractLadderCommand<{
 	cancel(ladder: Ladder): Ladder {
 		ladder.removeConnections(
 			this.payload.sectionId,
-			this.payload.connections.map((c) => ({ sourceId: c.source.id, targetId: c.target.id })),
+			this.payload.connections.map((c) => ({
+				sourceId: c.source.id,
+				targetId: c.target.id,
+			})),
 		);
 		return ladder;
 	}

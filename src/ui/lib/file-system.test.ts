@@ -1,7 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { openFileDialog, openFileViaInput, openSaveDialog, readFile, writeFile } from "./file-system";
+import {
+	openFileDialog,
+	openFileViaInput,
+	openSaveDialog,
+	readFile,
+	writeFile,
+} from "./file-system";
 
 describe("openFileDialog", () => {
 	afterEach(() => {
@@ -9,22 +15,30 @@ describe("openFileDialog", () => {
 	});
 
 	it("lève quand l'API File System Access n'est pas supportée", async () => {
-		await expect(openFileDialog("JSON", { "application/json": [".json"] })).rejects.toThrow();
+		await expect(
+			openFileDialog("JSON", { "application/json": [".json"] }),
+		).rejects.toThrow();
 	});
 
 	it("renvoie le premier handle sélectionné", async () => {
 		const handle = { name: "projet.json" } as any;
 		(window as any).showOpenFilePicker = jest.fn().mockResolvedValue([handle]);
 
-		const result = await openFileDialog("JSON", { "application/json": [".json"] });
+		const result = await openFileDialog("JSON", {
+			"application/json": [".json"],
+		});
 
 		expect(result).toBe(handle);
 	});
 
 	it("renvoie null quand la sélection est annulée (rejet de la promesse native)", async () => {
-		(window as any).showOpenFilePicker = jest.fn().mockRejectedValue(new Error("cancelled"));
+		(window as any).showOpenFilePicker = jest
+			.fn()
+			.mockRejectedValue(new Error("cancelled"));
 
-		const result = await openFileDialog("JSON", { "application/json": [".json"] });
+		const result = await openFileDialog("JSON", {
+			"application/json": [".json"],
+		});
 
 		expect(result).toBeNull();
 	});
@@ -36,14 +50,20 @@ describe("openSaveDialog", () => {
 	});
 
 	it("lève quand l'API File System Access n'est pas supportée", async () => {
-		await expect(openSaveDialog("JSON", { "application/json": [".json"] })).rejects.toThrow();
+		await expect(
+			openSaveDialog("JSON", { "application/json": [".json"] }),
+		).rejects.toThrow();
 	});
 
 	it("renvoie le handle choisi pour l'enregistrement", async () => {
 		const handle = { name: "projet.json" } as any;
 		(window as any).showSaveFilePicker = jest.fn().mockResolvedValue(handle);
 
-		const result = await openSaveDialog("JSON", { "application/json": [".json"] }, "projet.json");
+		const result = await openSaveDialog(
+			"JSON",
+			{ "application/json": [".json"] },
+			"projet.json",
+		);
 
 		expect(result).toBe(handle);
 		expect((window as any).showSaveFilePicker).toHaveBeenCalledWith(
@@ -52,9 +72,13 @@ describe("openSaveDialog", () => {
 	});
 
 	it("renvoie null quand l'enregistrement est annulé", async () => {
-		(window as any).showSaveFilePicker = jest.fn().mockRejectedValue(new Error("cancelled"));
+		(window as any).showSaveFilePicker = jest
+			.fn()
+			.mockRejectedValue(new Error("cancelled"));
 
-		const result = await openSaveDialog("JSON", { "application/json": [".json"] });
+		const result = await openSaveDialog("JSON", {
+			"application/json": [".json"],
+		});
 
 		expect(result).toBeNull();
 	});
@@ -66,7 +90,9 @@ describe("readFile", () => {
 	});
 
 	it("renvoie le contenu texte du fichier", async () => {
-		const fileHandle = { getFile: async () => ({ text: async () => "contenu" }) } as any;
+		const fileHandle = {
+			getFile: async () => ({ text: async () => "contenu" }),
+		} as any;
 
 		const content = await readFile(fileHandle);
 
@@ -94,7 +120,9 @@ describe("writeFile", () => {
 	it("écrit l'objet sérialisé en JSON puis referme le flux", async () => {
 		const write = jest.fn();
 		const close = jest.fn();
-		const fileHandle = { createWritable: async () => ({ write, close }) } as any;
+		const fileHandle = {
+			createWritable: async () => ({ write, close }),
+		} as any;
 
 		await writeFile({ a: 1 }, fileHandle);
 
@@ -156,7 +184,9 @@ describe("openFileViaInput", () => {
 
 	it("porte le filtre 'accept' fourni", () => {
 		const { getInput } = interceptCreatedInput();
-		jest.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+		jest
+			.spyOn(HTMLInputElement.prototype, "click")
+			.mockImplementation(() => {});
 
 		void openFileViaInput(".json,.txt");
 

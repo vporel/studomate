@@ -25,7 +25,9 @@ const ContextMenu = ({
 	...props
 }: ContextMenuProps) => {
 	const ref = useRef<HTMLUListElement | null>(null);
-	const [positionShiftAxes, setPositionShiftAxes] = useState<null | "x" | "y" | "xy">(null);
+	const [positionShiftAxes, setPositionShiftAxes] = useState<
+		null | "x" | "y" | "xy"
+	>(null);
 	const [internalPosition, setInternalPosition] = useState(position);
 	useLayoutEffect(() => {
 		if (!ref.current) return;
@@ -103,7 +105,9 @@ const ContextMenu = ({
 						minWidth: "160px",
 						minHeight: "20px",
 						border: "1px solid lightgray",
-						borderRadius: !positionShiftAxes?.includes("x") ? "0 5px 5px 0" : "5px 0 0 5px",
+						borderRadius: !positionShiftAxes?.includes("x")
+							? "0 5px 5px 0"
+							: "5px 0 0 5px",
 						opacity: 0,
 						visibility: "hidden",
 					},
@@ -112,9 +116,15 @@ const ContextMenu = ({
 				{menuItems.map((group, index) => (
 					<Fragment key={index}>
 						{group.map((item) => (
-							<ContextMenuItem key={item.label} item={item} hideMenu={onClose!} />
+							<ContextMenuItem
+								key={item.label}
+								item={item}
+								hideMenu={onClose!}
+							/>
 						))}
-						{index < menuItems.length - 1 && <Divider sx={{ my: "4px!important" }} />}
+						{index < menuItems.length - 1 && (
+							<Divider sx={{ my: "4px!important" }} />
+						)}
 					</Fragment>
 				))}
 			</Box>

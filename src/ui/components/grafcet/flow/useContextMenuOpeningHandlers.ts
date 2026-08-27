@@ -17,19 +17,19 @@ export default function useContextMenuOpeningHandlers(): {
 			(e: React.MouseEvent | MouseEvent) => {
 				openContextMenu(e, { type: "pane" });
 			},
-			[openContextMenu]
+			[openContextMenu],
 		),
 		onNodeContextMenu: useCallback(
 			(e: React.MouseEvent | MouseEvent, node: any) => {
 				openContextMenu(e, node);
 			},
-			[openContextMenu]
+			[openContextMenu],
 		),
 		onEdgeContextMenu: useCallback(
 			(e: React.MouseEvent | MouseEvent, edge: any) => {
 				openContextMenu(e, edge);
 			},
-			[openContextMenu]
+			[openContextMenu],
 		),
 	};
 }

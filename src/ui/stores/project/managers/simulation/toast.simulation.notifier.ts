@@ -1,8 +1,15 @@
 import { toast } from "react-toastify";
-import SimulationNotifier, { AnalysisSummary, SimulationFailure } from "./simulation.notifier";
+import SimulationNotifier, {
+	AnalysisSummary,
+	SimulationFailure,
+} from "./simulation.notifier";
 
 /** Accord en nombre, pour éviter « 1 erreurs ». */
-function plural(count: number, singular: string, plural_: string = singular + "s"): string {
+function plural(
+	count: number,
+	singular: string,
+	plural_: string = singular + "s",
+): string {
 	return count > 1 ? plural_ : singular;
 }
 
@@ -11,7 +18,11 @@ function plural(count: number, singular: string, plural_: string = singular + "s
  * l'utilisateur pour la simulation.
  */
 export default class ToastSimulationNotifier implements SimulationNotifier {
-	analysisCompleted({ analysedElements, errors, warnings }: AnalysisSummary): void {
+	analysisCompleted({
+		analysedElements,
+		errors,
+		warnings,
+	}: AnalysisSummary): void {
 		const message =
 			`Analyse terminée : ${analysedElements} ${plural(analysedElements, "élément")} ` +
 			`${plural(analysedElements, "analysé")}, ` +
@@ -29,13 +40,16 @@ export default class ToastSimulationNotifier implements SimulationNotifier {
 	}
 
 	simulationCouldNotStart({ step, errorsCount }: SimulationFailure): void {
-		const étape = step === "pre-compilation" ? "la pré-compilation" : "la compilation";
+		const étape =
+			step === "pre-compilation" ? "la pré-compilation" : "la compilation";
 		toast.error(
 			`Impossible de lancer la simulation : ${errorsCount} ${plural(errorsCount, "erreur")} lors de ${étape}.`,
 		);
 	}
 
 	simulationCrashed(): void {
-		toast.error("Arrêt de la simulation. Erreur lors de l'exécution du cycle automate.");
+		toast.error(
+			"Arrêt de la simulation. Erreur lors de l'exécution du cycle automate.",
+		);
 	}
 }

@@ -1,7 +1,7 @@
 import { ElementType } from "@/schemas/grafcet/element.schema";
 import ActionAnalyser from "./action.analyser";
 import DefaultElementAnalyser from "./default-element.analyser";
-import ElementAnalyserFactory from "./element-analyser.factory";
+import GrafcetElementAnalyserFactory from "./element-analyser.factory";
 import JunctionAndEndAnalyser from "./junction-and-end.analyser";
 import JunctionAndStartAnalyser from "./junction-and-start.analyser";
 import JunctionOrEndAnalyser from "./junction-or-end.analyser";
@@ -11,61 +11,69 @@ import StepReferralTargetAnalyser from "./step-referral-target.analyser";
 import StepAnalyser from "./step.analyser";
 import TransitionAnalyser from "./transition.analyser";
 
-describe("ElementAnalyserFactory", () => {
-	describe("getAnalyserForType", () => {
+describe("GrafcetElementAnalyserFactory", () => {
+	describe("getAnalyser", () => {
 		it("returns StepAnalyser for step type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("step");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser("step");
 			expect(analyser).toBeInstanceOf(StepAnalyser);
 		});
 
 		it("returns ActionAnalyser for action type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("action");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser("action");
 			expect(analyser).toBeInstanceOf(ActionAnalyser);
 		});
 
 		it("returns TransitionAnalyser for transition type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("transition");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser("transition");
 			expect(analyser).toBeInstanceOf(TransitionAnalyser);
 		});
 
 		it("returns StepReferralSourceAnalyser for step-referral-source type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("step-referral-source");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser(
+				"step-referral-source",
+			);
 			expect(analyser).toBeInstanceOf(StepReferralSourceAnalyser);
 		});
 
 		it("returns StepReferralTargetAnalyser for step-referral-target type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("step-referral-target");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser(
+				"step-referral-target",
+			);
 			expect(analyser).toBeInstanceOf(StepReferralTargetAnalyser);
 		});
 
 		it("returns JunctionAndStartAnalyser for junction-and-start type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("junction-and-start");
+			const analyser =
+				GrafcetElementAnalyserFactory.getAnalyser("junction-and-start");
 			expect(analyser).toBeInstanceOf(JunctionAndStartAnalyser);
 		});
 
 		it("returns JunctionAndEndAnalyser for junction-and-end type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("junction-and-end");
+			const analyser =
+				GrafcetElementAnalyserFactory.getAnalyser("junction-and-end");
 			expect(analyser).toBeInstanceOf(JunctionAndEndAnalyser);
 		});
 
 		it("returns JunctionOrStartAnalyser for junction-or-start type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("junction-or-start");
+			const analyser =
+				GrafcetElementAnalyserFactory.getAnalyser("junction-or-start");
 			expect(analyser).toBeInstanceOf(JunctionOrStartAnalyser);
 		});
 
 		it("returns JunctionOrEndAnalyser for junction-or-end type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("junction-or-end");
+			const analyser =
+				GrafcetElementAnalyserFactory.getAnalyser("junction-or-end");
 			expect(analyser).toBeInstanceOf(JunctionOrEndAnalyser);
 		});
 
 		it("returns DefaultElementAnalyser for comment type", () => {
-			const analyser = ElementAnalyserFactory.getAnalyserForType("comment");
+			const analyser = GrafcetElementAnalyserFactory.getAnalyser("comment");
 			expect(analyser).toBeInstanceOf(DefaultElementAnalyser);
 		});
 
 		it("returns same analyser instance for same type", () => {
-			const analyser1 = ElementAnalyserFactory.getAnalyserForType("step");
-			const analyser2 = ElementAnalyserFactory.getAnalyserForType("step");
+			const analyser1 = GrafcetElementAnalyserFactory.getAnalyser("step");
+			const analyser2 = GrafcetElementAnalyserFactory.getAnalyser("step");
 			expect(analyser1).toBe(analyser2);
 		});
 
@@ -84,11 +92,10 @@ describe("ElementAnalyserFactory", () => {
 			];
 
 			allTypes.forEach((type) => {
-				expect(() => ElementAnalyserFactory.getAnalyserForType(type)).not.toThrow();
-				const analyser = ElementAnalyserFactory.getAnalyserForType(type);
-				expect(analyser).toBeDefined();
-				expect(analyser.analyseIsolated).toBeDefined();
-				expect(analyser.analyseInContext).toBeDefined();
+				const analyser = GrafcetElementAnalyserFactory.getAnalyser(type);
+				expect(analyser).not.toBeNull();
+				expect(analyser!.analyseIsolated).toBeDefined();
+				expect(analyser!.analyseInContext).toBeDefined();
 			});
 		});
 	});

@@ -1,43 +1,60 @@
-import { getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
+import {
+	getElementWidth,
+	LadderElement,
+} from "@/schemas/ladder/element.schema";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createRandomId } from "@/ids";
-import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
+import {
+	LadderStoreGetFunction,
+	LadderStoreSetFunction,
+} from "../ladder.store";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
-import { computeSectionLayout, LADDER_MAX_COLS, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	computeSectionLayout,
+	LADDER_MAX_COLS,
+	xToCol,
+	yToRow,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
+import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
-export default class CopyCutPasteManager {
+export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManager<{
+	elements: LadderElement[];
+	connections: Connection[];
+}> {
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
-	private clipboard: { elements: LadderElement[]; connections: Connection[] } | null;
 
-	constructor(setStoreState: LadderStoreSetFunction, getStoreState: LadderStoreGetFunction) {
+	constructor(
+		setStoreState: LadderStoreSetFunction,
+		getStoreState: LadderStoreGetFunction,
+	) {
+		super();
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
-		this.clipboard = null;
 	}
 
 	copySelectedElements(): void {
 		const state = this.getStoreState();
 		const ladder = state.ladder;
-		
+
 		// Find selected elements and connections
 		const elements: LadderElement[] = [];
 		const connections: Connection[] = [];
 		const nodesIdsToCopy = new Set<string>();
 
 		Object.entries(state.nodesBySectionId).forEach(([sectionId, nodes]) => {
-			const selectedNodes = nodes.filter(n => n.selected);
+			const selectedNodes = nodes.filter((n) => n.selected);
 			if (selectedNodes.length === 0) return;
-			
+
 			const section = ladder.getSection(sectionId);
 			if (!section) return;
 
-			selectedNodes.forEach(node => {
+			selectedNodes.forEach((node) => {
 				const el = section.getElement(node.id);
 				if (el && el.type !== "railTerminal") {
 					elements.push(el);
@@ -46,19 +63,35 @@ export default class CopyCutPasteManager {
 			});
 
 			const sectionEdges = state.edgesBySectionId[sectionId] || [];
-			sectionEdges.filter(e => e.selected).forEach(edge => {
-				const conn = section.connections.find(c => c.id === edge.id);
-				if (conn && nodesIdsToCopy.has(conn.source.id) && nodesIdsToCopy.has(conn.target.id)) {
-					connections.push(conn);
-				}
-			});
+			sectionEdges
+				.filter((e) => e.selected)
+				.forEach((edge) => {
+					const conn = section.connections.find((c) => c.id === edge.id);
+					if (
+						conn &&
+						nodesIdsToCopy.has(conn.source.id) &&
+						nodesIdsToCopy.has(conn.target.id)
+					) {
+						connections.push(conn);
+					}
+				});
 		});
 
 		this.copyElements(elements, connections);
 	}
 
-	cutSelectedElements(): void {
-		this.copySelectedElements();
+	protected isSelectionEmpty(): boolean {
+		const state = this.getStoreState();
+		const hasSelectedNode = Object.values(state.nodesBySectionId).some(
+			(nodes) => nodes.some((n) => n.selected),
+		);
+		const hasSelectedEdge = Object.values(state.edgesBySectionId).some(
+			(edges) => edges.some((e) => e.selected),
+		);
+		return !hasSelectedNode && !hasSelectedEdge;
+	}
+
+	protected deleteSelectedElements(): void {
 		const state = this.getStoreState();
 
 		Object.entries(state.nodesBySectionId).forEach(([sectionId, nodes]) => {
@@ -67,7 +100,11 @@ export default class CopyCutPasteManager {
 				.filter((e) => e.selected)
 				.map((e) => e.id);
 			if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0) return;
-			state.workflowManager.deleteElements(sectionId, selectedNodeIds, selectedEdgeIds);
+			state.workflowManager.deleteElements(
+				sectionId,
+				selectedNodeIds,
+				selectedEdgeIds,
+			);
 		});
 	}
 
@@ -84,10 +121,15 @@ export default class CopyCutPasteManager {
 		if (!mousePosition) return;
 
 		// Trouver la section sous le curseur
-		const domElements = document.elementsFromPoint(mousePosition.x, mousePosition.y);
-		const sectionElement = domElements.find((el) => el.getAttribute("data-section-id"));
+		const domElements = document.elementsFromPoint(
+			mousePosition.x,
+			mousePosition.y,
+		);
+		const sectionElement = domElements.find((el) =>
+			el.getAttribute("data-section-id"),
+		);
 		if (!sectionElement) return;
-		
+
 		const sectionId = sectionElement.getAttribute("data-section-id")!;
 		const state = this.getStoreState();
 		const section = state.ladder.getSection(sectionId);
@@ -95,26 +137,38 @@ export default class CopyCutPasteManager {
 		if (!section || !rfInstance) return;
 
 		// Convertir la position souris en coordonnées de flow
-		const flowPos = rfInstance.screenToFlowPosition({ x: mousePosition.x, y: mousePosition.y });
-		
+		const flowPos = rfInstance.screenToFlowPosition({
+			x: mousePosition.x,
+			y: mousePosition.y,
+		});
+
 		// Convertir en cellule de départ
 		const { rowHeightsInCells } = computeSectionLayout(section);
-		const startRow = Math.max(0, Math.floor(yToRow(flowPos.y, rowHeightsInCells)));
+		const startRow = Math.max(
+			0,
+			Math.floor(yToRow(flowPos.y, rowHeightsInCells)),
+		);
 		const startCol = Math.max(0, Math.floor(xToCol(flowPos.x)));
 
 		// Bounding box des éléments copiés
-		const minRow = Math.min(...this.clipboard.elements.map(e => e.position.row));
-		const minCol = Math.min(...this.clipboard.elements.map(e => e.position.col));
-		const maxCol = Math.max(...this.clipboard.elements.map(e => e.position.col));
-		
+		const minRow = Math.min(
+			...this.clipboard.elements.map((e) => e.position.row),
+		);
+		const minCol = Math.min(
+			...this.clipboard.elements.map((e) => e.position.col),
+		);
+		const maxCol = Math.max(
+			...this.clipboard.elements.map((e) => e.position.col),
+		);
+
 		const width = maxCol - minCol + 1;
-		
+
 		// Décalage pour rester dans les limites (ex: LADDER_MAX_COLS si défini, ici on décale à gauche si besoin)
 		// Le ladder n'a pas de max strict, mais on peut vérifier si on veut rester dans une certaine limite,
 		// sinon on applique un offset normal.
 		let offsetCol = startCol - minCol;
 		let finalStartCol = startCol;
-		
+
 		// Si on a une limite arbitraire de 10 colonnes :
 		const SECTION_MAX_COLS = LADDER_MAX_COLS;
 		if (finalStartCol + width > SECTION_MAX_COLS) {
@@ -161,7 +215,7 @@ export default class CopyCutPasteManager {
 
 		// Création des nouveaux éléments
 		const idMap = new Map<string, string>();
-		const newElements = this.clipboard.elements.map(el => {
+		const newElements = this.clipboard.elements.map((el) => {
 			const newId = createRandomId();
 			idMap.set(el.id, newId);
 			return {
@@ -170,35 +224,53 @@ export default class CopyCutPasteManager {
 				position: {
 					row: el.position.row + offsetRow,
 					col: el.position.col + offsetCol,
-				}
+				},
 			} as LadderElement;
 		});
 
 		// Création des nouvelles connexions
-		const newConnections = this.clipboard.connections.map(conn => {
-			const sourceId = idMap.get(conn.source.id);
-			const targetId = idMap.get(conn.target.id);
-			if (!sourceId || !targetId) return null;
+		const newConnections = this.clipboard.connections
+			.map((conn) => {
+				const sourceId = idMap.get(conn.source.id);
+				const targetId = idMap.get(conn.target.id);
+				if (!sourceId || !targetId) return null;
 
-			const newPoints = conn.data.points.map(p => [
-				p[0] + offsetRow * CELL_SUBDIVISIONS,
-				p[1] + offsetCol * CELL_SUBDIVISIONS,
-			] as [number, number]);
+				const newPoints = conn.data.points.map(
+					(p) =>
+						[
+							p[0] + offsetRow * CELL_SUBDIVISIONS,
+							p[1] + offsetCol * CELL_SUBDIVISIONS,
+						] as [number, number],
+				);
 
-			return new Connection(
-				createRandomId(),
-				{ id: sourceId, type: conn.source.type as any, handle: conn.source.handle },
-				{ id: targetId, type: conn.target.type as any, handle: conn.target.handle },
-				{ points: newPoints }
-			);
-		}).filter(c => c !== null) as Connection[];
+				return new Connection(
+					createRandomId(),
+					{
+						id: sourceId,
+						type: conn.source.type as any,
+						handle: conn.source.handle,
+					},
+					{
+						id: targetId,
+						type: conn.target.type as any,
+						handle: conn.target.handle,
+					},
+					{ points: newPoints },
+				);
+			})
+			.filter((c) => c !== null) as Connection[];
 
 		// Application des règles de dépôt pour les nouveaux éléments collés
 		const {
 			elementsToAdd: finalElements,
 			connectionsToAdd: autoConnections,
-			connectionsToRemove: autoRemoves
-		} = computeAutoConnectionsForElements(section, newElements, leafPositions, true);
+			connectionsToRemove: autoRemoves,
+		} = computeAutoConnectionsForElements(
+			section,
+			newElements,
+			leafPositions,
+			true,
+		);
 
 		const finalConnections = [...newConnections, ...autoConnections];
 
@@ -207,10 +279,17 @@ export default class CopyCutPasteManager {
 			new ElementsAddCommand({ sectionId, elements: finalElements }),
 		];
 		if (finalConnections.length > 0) {
-			commands.push(new ConnectionsAddCommand({ sectionId, connections: finalConnections as Connection[] }));
+			commands.push(
+				new ConnectionsAddCommand({
+					sectionId,
+					connections: finalConnections as Connection[],
+				}),
+			);
 		}
 		if (autoRemoves.length > 0) {
-			commands.push(new ConnectionsRemoveCommand({ sectionId, connections: autoRemoves }));
+			commands.push(
+				new ConnectionsRemoveCommand({ sectionId, connections: autoRemoves }),
+			);
 		}
 
 		state.commandsStackManager.executeOperation(commands);

@@ -4,7 +4,14 @@ import { LadderRole } from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Typography } from "@mui/material";
-import { ElementType, Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
+import {
+	ElementType,
+	Fragment,
+	MouseEvent,
+	useCallback,
+	useEffect,
+	useState,
+} from "react";
 import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
 import LadderIcon from "../icons/LadderIcon";
 import LadderMainIcon from "../icons/LadderMainIcon";
@@ -29,7 +36,10 @@ const PROGRAM_ICONS: Record<ProgramType, ElementType> = {
 };
 
 /** Le Main a sa propre icône, quel que soit son nom — c'est le point d'entrée de l'exécution. */
-function getProgramIcon(programType: ProgramType, programRole?: LadderRole): ElementType {
+function getProgramIcon(
+	programType: ProgramType,
+	programRole?: LadderRole,
+): ElementType {
 	if (programType === "ladder" && programRole === "main") return LadderMainIcon;
 	return PROGRAM_ICONS[programType];
 }
@@ -51,26 +61,40 @@ const ExplorerProgramItem = ({
 	programType: ProgramType;
 	programRole?: LadderRole;
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
 	const [editingName, setEditingName] = useState(programName);
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 
 	const saveName = useCallback(() => {
-		const trimmed = editingName.trim() !== "" ? editingName.trim() : programName;
+		const trimmed =
+			editingName.trim() !== "" ? editingName.trim() : programName;
 		if (programType === "grafcet") {
 			grafcetsManager.renameProgramById(programId, trimmed);
 		} else {
 			laddersManager.renameProgramById(programId, trimmed);
 		}
-	}, [editingName, programId, programName, programType, grafcetsManager, laddersManager]);
+	}, [
+		editingName,
+		programId,
+		programName,
+		programType,
+		grafcetsManager,
+		laddersManager,
+	]);
 
 	useEffect(() => {
-		const renameEvent = programType === "grafcet" ? "grafcet-rename" : "ladder-rename";
+		const renameEvent =
+			programType === "grafcet" ? "grafcet-rename" : "ladder-rename";
 		const handler = (e: RenameEvent) => {
 			if (!designing) return;
 			const id = "grafcetId" in e ? e.grafcetId : e.ladderId;
@@ -93,7 +117,10 @@ const ExplorerProgramItem = ({
 	// n'est donc glissable. Désactivé aussi pendant l'édition du nom, pour permettre la sélection
 	// de texte dans le champ sans déclencher un glisser.
 	const draggableAsProgramRef =
-		designing && programType === "ladder" && programRole !== "main" && labelMode !== "edit";
+		designing &&
+		programType === "ladder" &&
+		programRole !== "main" &&
+		labelMode !== "edit";
 
 	return (
 		<CustomTreeItem
@@ -151,7 +178,10 @@ const ExplorerProgramsItems = ({
 	onContextMenu,
 }: {
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const programs = useProjectPrograms();
 

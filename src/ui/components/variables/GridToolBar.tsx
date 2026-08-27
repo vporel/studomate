@@ -36,15 +36,17 @@ const StyledQuickFilter = styled(QuickFilter)({
 	alignItems: "center",
 });
 
-const StyledToolbarButton = styled(ToolbarButton)<{ ownerState: OwnerState }>(({ theme, ownerState }) => ({
-	gridArea: "1 / 1",
-	width: "min-content",
-	height: "min-content",
-	zIndex: 1,
-	opacity: ownerState.expanded ? 0 : 1,
-	pointerEvents: ownerState.expanded ? "none" : "auto",
-	transition: theme.transitions.create(["opacity"]),
-}));
+const StyledToolbarButton = styled(ToolbarButton)<{ ownerState: OwnerState }>(
+	({ theme, ownerState }) => ({
+		gridArea: "1 / 1",
+		width: "min-content",
+		height: "min-content",
+		zIndex: 1,
+		opacity: ownerState.expanded ? 0 : 1,
+		pointerEvents: ownerState.expanded ? "none" : "auto",
+		transition: theme.transitions.create(["opacity"]),
+	}),
+);
 
 const StyledTextField = styled(TextField)<{
 	ownerState: OwnerState;
@@ -56,7 +58,11 @@ const StyledTextField = styled(TextField)<{
 	transition: theme.transitions.create(["width", "opacity"]),
 }));
 
-export default function GridToolBar({ rowSelectionModel }: { rowSelectionModel: GridRowSelectionModel }) {
+export default function GridToolBar({
+	rowSelectionModel,
+}: {
+	rowSelectionModel: GridRowSelectionModel;
+}) {
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
@@ -79,7 +85,11 @@ export default function GridToolBar({ rowSelectionModel }: { rowSelectionModel: 
 				<FilterPanelTrigger
 					render={(props, state) => (
 						<ToolbarButton {...props} color="default">
-							<Badge badgeContent={state.filterCount} color="primary" variant="dot">
+							<Badge
+								badgeContent={state.filterCount}
+								color="primary"
+								variant="dot"
+							>
 								<FilterListIcon fontSize="small" />
 							</Badge>
 						</ToolbarButton>
@@ -87,7 +97,12 @@ export default function GridToolBar({ rowSelectionModel }: { rowSelectionModel: 
 				/>
 			</Tooltip>
 
-			<Divider orientation="vertical" variant="middle" flexItem sx={{ mx: 0.5 }} />
+			<Divider
+				orientation="vertical"
+				variant="middle"
+				flexItem
+				sx={{ mx: 0.5 }}
+			/>
 
 			<Tooltip title="Exporter">
 				<ToolbarButton
@@ -115,10 +130,16 @@ export default function GridToolBar({ rowSelectionModel }: { rowSelectionModel: 
 					},
 				}}
 			>
-				<ExportPrint render={<MenuItem />} onClick={() => setExportMenuOpen(false)}>
+				<ExportPrint
+					render={<MenuItem />}
+					onClick={() => setExportMenuOpen(false)}
+				>
 					Imprimer
 				</ExportPrint>
-				<ExportCsv render={<MenuItem />} onClick={() => setExportMenuOpen(false)}>
+				<ExportCsv
+					render={<MenuItem />}
+					onClick={() => setExportMenuOpen(false)}
+				>
 					Exporter en CSV
 				</ExportCsv>
 			</Menu>

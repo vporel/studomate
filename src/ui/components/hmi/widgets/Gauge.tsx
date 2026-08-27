@@ -4,7 +4,13 @@ import { GaugeData } from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography, useTheme } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 
-const Gauge = ({ data, value, selected, hideLabel, onClick }: HmiWidgetComponentProps<GaugeData>) => {
+const Gauge = ({
+	data,
+	value,
+	selected,
+	hideLabel,
+	onClick,
+}: HmiWidgetComponentProps<GaugeData>) => {
 	const th = useTheme();
 	const numValue = typeof value === "number" ? value : 0;
 	const min = data.min ?? 0;
@@ -58,7 +64,9 @@ const Gauge = ({ data, value, selected, hideLabel, onClick }: HmiWidgetComponent
 					{numValue}
 				</Typography>
 				{/* En vertical, le max est en haut et le min en bas (thermomètre) */}
-				<Typography sx={{ fontSize: "0.6rem", color: "#888" }}>{vertical ? max : min}</Typography>
+				<Typography sx={{ fontSize: "0.6rem", color: "#888" }}>
+					{vertical ? max : min}
+				</Typography>
 				{/* Barre de progression */}
 				<Box
 					sx={
@@ -101,25 +109,27 @@ const Gauge = ({ data, value, selected, hideLabel, onClick }: HmiWidgetComponent
 						}
 					/>
 				</Box>
-				<Typography sx={{ fontSize: "0.6rem", color: "#888" }}>{vertical ? min : max}</Typography>
+				<Typography sx={{ fontSize: "0.6rem", color: "#888" }}>
+					{vertical ? min : max}
+				</Typography>
 			</Box>
-			{!hideLabel && (
+			{!hideLabel && data.label && (
 				<Typography
 					sx={{
 						position: "absolute",
 						top: "100%",
-						left: 0,
-						width: "100%",
+						left: "50%",
+						transform: "translateX(-50%)",
+						width: "max-content",
+						maxWidth: "none",
 						mt: 0.5,
 						fontSize: "0.7rem",
 						color: "#333",
 						textAlign: "center",
 						whiteSpace: "nowrap",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
 					}}
 				>
-					{data.label || "Jauge"}
+					{data.label}
 				</Typography>
 			)}
 		</Box>

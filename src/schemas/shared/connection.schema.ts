@@ -1,4 +1,8 @@
-export type ConnectionSide<TKind = string> = { type: TKind; id: string; handle: string };
+export type ConnectionSide<TKind = string> = {
+	type: TKind;
+	id: string;
+	handle: string;
+};
 export type ConnectionData = { points: [number, number][] };
 export type HandleType = "source" | "target";
 
@@ -25,7 +29,11 @@ export default class Connection<TKind = string> {
 			this.id,
 			{ ...this.source },
 			{ ...this.target },
-			{ points: this.data?.points ? this.data.points.map((p) => [p[0], p[1]]) : [] },
+			{
+				points: this.data?.points
+					? this.data.points.map((p) => [p[0], p[1]])
+					: [],
+			},
 		);
 	}
 

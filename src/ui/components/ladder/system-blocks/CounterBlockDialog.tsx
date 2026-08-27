@@ -1,6 +1,9 @@
 "use client";
 
-import { COUNTER_TYPES, CounterType } from "@/schemas/function-blocks/counter.schema";
+import {
+	COUNTER_TYPES,
+	CounterType,
+} from "@/schemas/function-blocks/counter.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";
@@ -24,8 +27,15 @@ const COUNTER_TYPE_LABELS: Record<CounterType, string> = {
  * (voir `ParamPinRow`), comme PT/ET pour un timer.
  */
 export default function CounterBlockDialog() {
-	const { pendingCreation, pendingEdit, creating, editing, open, close, commandsStackManager } =
-		useSystemBlockDialog("counter");
+	const {
+		pendingCreation,
+		pendingEdit,
+		creating,
+		editing,
+		open,
+		close,
+		commandsStackManager,
+	} = useSystemBlockDialog("counter");
 	const project = useProjectStore((state) => state.project);
 
 	const [name, setName] = useState("");
@@ -46,7 +56,9 @@ export default function CounterBlockDialog() {
 
 	const nameErrors = useBlockNameField(
 		name,
-		editing && pendingEdit?.blockType === "counter" ? pendingEdit.initial.name : undefined,
+		editing && pendingEdit?.blockType === "counter"
+			? pendingEdit.initial.name
+			: undefined,
 		project,
 	);
 
@@ -60,7 +72,9 @@ export default function CounterBlockDialog() {
 			commandsStackManager.executeOperation([
 				new ElementUpdateCommand({
 					elementId: pendingEdit.elementId,
-					changes: { data: { params: { ...pendingEdit.initial, name, counterType } } },
+					changes: {
+						data: { params: { ...pendingEdit.initial, name, counterType } },
+					},
 					previousChanges: { data: { params: pendingEdit.initial } },
 				}),
 			]);
@@ -111,9 +125,9 @@ export default function CounterBlockDialog() {
 					))}
 				</TextField>
 				<Typography variant="caption" color="text.secondary">
-					Contrairement à une temporisation, ce compteur évalue son entrée à chaque cycle (pas de
-					détection de front) : il compte tant que celle-ci reste vraie, sans stopper à la valeur de
-					consigne.
+					Contrairement à une temporisation, ce compteur évalue son entrée à
+					chaque cycle (pas de détection de front) : il compte tant que celle-ci
+					reste vraie, sans stopper à la valeur de consigne.
 				</Typography>
 				<div style={{ display: "flex", justifyContent: "flex-end" }}>
 					<Button variant="contained" onClick={onSubmit} disabled={!canSubmit}>

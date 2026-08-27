@@ -13,13 +13,25 @@ import Section from "@/schemas/ladder/section.schema";
  * aucun cas particulier à coder pour elle.
  */
 export const CELL_SUBDIVISIONS = 4;
-const rowCenter = (row: number) => row * CELL_SUBDIVISIONS + CELL_SUBDIVISIONS / 2;
+const rowCenter = (row: number) =>
+	row * CELL_SUBDIVISIONS + CELL_SUBDIVISIONS / 2;
 const colLeftEdge = (col: number) => col * CELL_SUBDIVISIONS;
-const colRightEdge = (col: number) => col * CELL_SUBDIVISIONS + CELL_SUBDIVISIONS;
+const colRightEdge = (col: number) =>
+	col * CELL_SUBDIVISIONS + CELL_SUBDIVISIONS;
 
 export type PathSegment =
-	| { orientation: "horizontal"; quarterRow: number; quarterColA: number; quarterColB: number }
-	| { orientation: "vertical"; quarterCol: number; quarterRowA: number; quarterRowB: number };
+	| {
+			orientation: "horizontal";
+			quarterRow: number;
+			quarterColA: number;
+			quarterColB: number;
+	  }
+	| {
+			orientation: "vertical";
+			quarterCol: number;
+			quarterRowA: number;
+			quarterRowB: number;
+	  };
 
 /**
  * Coude par défaut d'une connexion, calculé **une seule fois** — à la création (voir les
@@ -109,14 +121,19 @@ export function computeConnectionSegments(
 	sourceWidth: number = 1,
 ): PathSegment[] {
 	const sameRow = source.row === target.row;
-	const rawBendPoints =
-		sameRow ? [] : points.length > 0 ? points : initialConnectionPoints(source, target, sourceWidth);
+	const rawBendPoints = sameRow
+		? []
+		: points.length > 0
+			? points
+			: initialConnectionPoints(source, target, sourceWidth);
 	// Un seul coude géré pour l'instant (voir le commentaire de la fonction) : toujours 0 ou 2
 	// points, respectivement adjacents à la source et à la cible.
-	const bendPoints: [number, number][] = rawBendPoints.map(([, quarterCol], i) => [
-		i === 0 ? rowCenter(source.row) : rowCenter(target.row),
-		quarterCol,
-	]);
+	const bendPoints: [number, number][] = rawBendPoints.map(
+		([, quarterCol], i) => [
+			i === 0 ? rowCenter(source.row) : rowCenter(target.row),
+			quarterCol,
+		],
+	);
 	const vertices: [number, number][] = [
 		[rowCenter(source.row), colRightEdge(source.col + sourceWidth - 1)],
 		...bendPoints,
@@ -129,8 +146,19 @@ export function computeConnectionSegments(
 		const [rowB, colB] = vertices[i + 1];
 		if (rowA === rowB && colA === colB) continue; // segment nul (coude confondu avec un bout)
 		if (rowA === rowB)
-			segments.push({ orientation: "horizontal", quarterRow: rowA, quarterColA: colA, quarterColB: colB });
-		else segments.push({ orientation: "vertical", quarterCol: colA, quarterRowA: rowA, quarterRowB: rowB });
+			segments.push({
+				orientation: "horizontal",
+				quarterRow: rowA,
+				quarterColA: colA,
+				quarterColB: colB,
+			});
+		else
+			segments.push({
+				orientation: "vertical",
+				quarterCol: colA,
+				quarterRowA: rowA,
+				quarterRowB: rowB,
+			});
 	}
 	return segments;
 }
@@ -150,7 +178,11 @@ function between(value: number, a: number, b: number): boolean {
  */
 export type CellTouch = "through" | "left" | "right" | null;
 
-export function classifyCellTouch(segments: PathSegment[], row: number, col: number): CellTouch {
+export function classifyCellTouch(
+	segments: PathSegment[],
+	row: number,
+	col: number,
+): CellTouch {
 	const cellRowCenter = rowCenter(row);
 	const cellLeft = colLeftEdge(col);
 	const cellRight = colRightEdge(col);
@@ -164,7 +196,8 @@ export function classifyCellTouch(segments: PathSegment[], row: number, col: num
 				return "through";
 			}
 		} else {
-			if (!between(cellRowCenter, segment.quarterRowA, segment.quarterRowB)) continue;
+			if (!between(cellRowCenter, segment.quarterRowA, segment.quarterRowB))
+				continue;
 			if (segment.quarterCol === cellLeft) return "left";
 			if (segment.quarterCol === cellRight) return "right";
 		}
@@ -175,20 +208,34 @@ export function classifyCellTouch(segments: PathSegment[], row: number, col: num
 /** Les connexions dont le tracé touche une cellule vide donnée, par type de contact — voir
  * `CellTouch`. Une seule connexion retenue par type (le premier match), un chevauchement de
  * plusieurs connexions sur la même frontière n'est pas géré ici. */
-export type CellCrossings = { through?: Connection; left?: Connection; right?: Connection };
+export type CellCrossings = {
+	through?: Connection;
+	left?: Connection;
+	right?: Connection;
+};
 
-export function findCellCrossings(section: Section, row: number, col: number): CellCrossings {
+export function findCellCrossings(
+	section: Section,
+	row: number,
+	col: number,
+): CellCrossings {
 	const crossings: CellCrossings = {};
 	for (const connection of section.connections) {
 		const source = section.getElement(connection.source.id);
 		const target = section.getElement(connection.target.id);
 		if (!source || !target) continue;
 		const touch = classifyCellTouch(
-			computeConnectionSegments(source.position, target.position, connection.data.points, getElementWidth(source)),
+			computeConnectionSegments(
+				source.position,
+				target.position,
+				connection.data.points,
+				getElementWidth(source),
+			),
 			row,
 			col,
 		);
-		if (touch === "through" && !crossings.through) crossings.through = connection;
+		if (touch === "through" && !crossings.through)
+			crossings.through = connection;
 		if (touch === "left" && !crossings.left) crossings.left = connection;
 		if (touch === "right" && !crossings.right) crossings.right = connection;
 	}

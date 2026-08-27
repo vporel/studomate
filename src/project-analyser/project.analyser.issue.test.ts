@@ -36,7 +36,11 @@ describe("ProjectAnalyserIssue", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
 				"TRANSITION_EMPTY_EXPRESSION",
-				{ sourceType: "grafcet-transition", sourceId: "transition-1", parentId: "grafcet-1" },
+				{
+					sourceType: "grafcet-transition",
+					sourceId: "transition-1",
+					parentId: "grafcet-1",
+				},
 				"Test message with parent",
 			);
 

@@ -2,7 +2,11 @@
 
 import { parseProjectFromFile } from "@/persistence/project-file";
 import Project from "@/schemas/project/project.schema";
-import { openFileDialog, openFileViaInput, readFile } from "@/ui/lib/file-system";
+import {
+	openFileDialog,
+	openFileViaInput,
+	readFile,
+} from "@/ui/lib/file-system";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { Box, Button, Divider } from "@mui/material";
 import { useCallback } from "react";
@@ -12,13 +16,14 @@ import ProjectsList from "./ProjectsList";
 
 export default function ProjectOpenModal() {
 	const projectRepository = useProjectStore((state) => state.projectRepository);
-	const { openProject, openModalVisible, setOpenModalVisible } = useProjectStore(
-		useShallow((state) => ({
-			openProject: state.openProject,
-			openModalVisible: state.ui.openModalVisible,
-			setOpenModalVisible: state.setOpenModalVisible,
-		})),
-	);
+	const { openProject, openModalVisible, setOpenModalVisible } =
+		useProjectStore(
+			useShallow((state) => ({
+				openProject: state.openProject,
+				openModalVisible: state.ui.openModalVisible,
+				setOpenModalVisible: state.setOpenModalVisible,
+			})),
+		);
 
 	const onClose = useCallback(() => {
 		setOpenModalVisible(false);
@@ -31,7 +36,6 @@ export default function ProjectOpenModal() {
 
 	const onFromFileBtnClick = useCallback(async () => {
 		let text: string | null = null;
-		// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
 		if (typeof window !== "undefined" && window.showOpenFilePicker) {
 			try {
 				const handle = await openFileDialog("Fichiers JSON", {
@@ -61,7 +65,9 @@ export default function ProjectOpenModal() {
 		}
 		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
-			alert("Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible.");
+			alert(
+				"Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible.",
+			);
 			return;
 		}
 		await openProject(project.id);
@@ -69,14 +75,22 @@ export default function ProjectOpenModal() {
 	}, [openProject, onClose, projectRepository]);
 
 	return (
-		<CustomModal open={openModalVisible} onClose={onClose} title="Ouvrir un projet" width={500}>
+		<CustomModal
+			open={openModalVisible}
+			onClose={onClose}
+			title="Ouvrir un projet"
+			width={500}
+		>
 			<Box>
 				<Button variant="outlined" onClick={() => void onFromFileBtnClick()}>
 					Ouvrir depuis un fichier...
 				</Button>
 			</Box>
 			<Divider sx={{ mt: 2, mb: 0 }} />
-			<ProjectsList reloadKey={openModalVisible} onProjectClick={handleProjectClick} />
+			<ProjectsList
+				reloadKey={openModalVisible}
+				onProjectClick={handleProjectClick}
+			/>
 		</CustomModal>
 	);
 }

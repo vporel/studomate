@@ -3,6 +3,7 @@ import { BlockElement } from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import ArithmeticBlockAnalyser from "./arithmetic-block.analyser";
 import AssignBlockAnalyser from "./assign-block.analyser";
 import CompareBlockAnalyser from "./compare-block.analyser";
 import CounterBlockAnalyser from "./counter-block.analyser";
@@ -20,7 +21,11 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 		variablesByMnemonic: Map<string, Variable>,
 		project: Project,
 	): ProjectAnalyserIssue[] {
-		const source = { sourceType: "ladder-block", sourceId: element.id, parentId: ladder.id } as const;
+		const source = {
+			sourceType: "ladder-block",
+			sourceId: element.id,
+			parentId: ladder.id,
+		} as const;
 		if (element.data.blockType === "timer") {
 			return TimerBlockAnalyser.analyse(element, source, variablesByMnemonic);
 		}
@@ -28,10 +33,28 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 			return CounterBlockAnalyser.analyse(element, source, variablesByMnemonic);
 		}
 		if (element.data.blockType === "compare") {
-			return CompareBlockAnalyser.analyse(element, source, project.dialect, variablesByMnemonic);
+			return CompareBlockAnalyser.analyse(
+				element,
+				source,
+				project.dialect,
+				variablesByMnemonic,
+			);
 		}
 		if (element.data.blockType === "assign") {
-			return AssignBlockAnalyser.analyse(element, source, project.dialect, variablesByMnemonic);
+			return AssignBlockAnalyser.analyse(
+				element,
+				source,
+				project.dialect,
+				variablesByMnemonic,
+			);
+		}
+		if (element.data.blockType === "arithmetic") {
+			return ArithmeticBlockAnalyser.analyse(
+				element,
+				source,
+				project.dialect,
+				variablesByMnemonic,
+			);
 		}
 		if (element.data.blockType !== "user-program") return [];
 		const { programId } = element.data.params;
@@ -73,7 +96,12 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 
 		const duplicateCount = ladder
 			.getAllElements()
-			.filter((el) => el.type === "block" && el.data.blockType === "user-program" && el.data.params.programId === programId).length;
+			.filter(
+				(el) =>
+					el.type === "block" &&
+					el.data.blockType === "user-program" &&
+					el.data.params.programId === programId,
+			).length;
 		if (duplicateCount > 1) {
 			issues.push(
 				new ProjectAnalyserIssue(

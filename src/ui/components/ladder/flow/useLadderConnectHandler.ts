@@ -4,7 +4,10 @@ import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.com
 import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import Connection from "@/schemas/ladder/connection.schema";
-import { createRailTerminalElement, getElementWidth } from "@/schemas/ladder/element.schema";
+import {
+	createRailTerminalElement,
+	getElementWidth,
+} from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
 import { initialConnectionPoints } from "@/ui/utils/ladder/ladder-connection-path";
@@ -23,39 +26,64 @@ import { useLadderStore } from "../context/LadderContext";
  * dépôt en colonne 0, réutilisée ici pour qu'un tracé manuel puisse aussi relier un élément déjà
  * posé (orphelin) au rail.
  */
-export default function useLadderConnectHandler(section: Section): (connection: XYFlowConnection) => void {
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+export default function useLadderConnectHandler(
+	section: Section,
+): (connection: XYFlowConnection) => void {
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 
 	return useCallback(
 		(connection: XYFlowConnection) => {
 			const virtualRow = parseVirtualRailRow(connection.source);
-			const railTerminal = virtualRow !== null ? createRailTerminalElement(virtualRow) : null;
+			const railTerminal =
+				virtualRow !== null ? createRailTerminalElement(virtualRow) : null;
 			const sourceId = railTerminal ? railTerminal.id : connection.source;
-			const sourcePosition = railTerminal ? railTerminal.position : section.getElement(sourceId)?.position;
+			const sourcePosition = railTerminal
+				? railTerminal.position
+				: section.getElement(sourceId)?.position;
 			const targetPosition = section.getElement(connection.target)?.position;
 
 			const sourceElement = railTerminal || section.getElement(sourceId);
 			const targetElement = section.getElement(connection.target);
 			const commands: AbstractLadderCommand<any>[] = [];
 			if (railTerminal) {
-				commands.push(new ElementsAddCommand({ sectionId: section.id, elements: [railTerminal] }));
+				commands.push(
+					new ElementsAddCommand({
+						sectionId: section.id,
+						elements: [railTerminal],
+					}),
+				);
 			}
 			commands.push(
 				new ConnectionsAddCommand({
 					sectionId: section.id,
 					connections: [
-						new Connection(createRandomId(), { id: sourceId, type: sourceElement?.type as any || "contact", handle: connection.sourceHandle || "source" }, { id: connection.target, type: targetElement?.type as any || "coil", handle: connection.targetHandle || "target" }, {
-							// Matérialisé une seule fois, ici — jamais recalculé ensuite (voir
-							// `initialConnectionPoints`).
-							points:
-								sourcePosition && targetPosition
-									? initialConnectionPoints(
-											sourcePosition,
-											targetPosition,
-											sourceElement ? getElementWidth(sourceElement) : 1,
-										)
-									: [],
-						}),
+						new Connection(
+							createRandomId(),
+							{
+								id: sourceId,
+								type: (sourceElement?.type as any) || "contact",
+								handle: connection.sourceHandle || "source",
+							},
+							{
+								id: connection.target,
+								type: (targetElement?.type as any) || "coil",
+								handle: connection.targetHandle || "target",
+							},
+							{
+								// Matérialisé une seule fois, ici — jamais recalculé ensuite (voir
+								// `initialConnectionPoints`).
+								points:
+									sourcePosition && targetPosition
+										? initialConnectionPoints(
+												sourcePosition,
+												targetPosition,
+												sourceElement ? getElementWidth(sourceElement) : 1,
+											)
+										: [],
+							},
+						),
 					],
 				}),
 			);

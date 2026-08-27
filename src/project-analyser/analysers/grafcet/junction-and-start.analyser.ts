@@ -1,11 +1,13 @@
 import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import JunctionAndStart from "@/schemas/grafcet/junction-and-start.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAndStart> {
+export default class JunctionAndStartAnalyser extends GrafcetElementAnalyser<JunctionAndStart> {
 	/**
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
@@ -24,10 +26,13 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 	analyseInContext(
 		junctionAndStart: JunctionAndStart,
 		grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-junction-and-start" as const, sourceId: junctionAndStart.id };
+		const source = {
+			sourceType: "grafcet-junction-and-start" as const,
+			sourceId: junctionAndStart.id,
+		};
 
 		if (!JunctionHelper.isPivotConnected(junctionAndStart.id, grafcet)) {
 			issues.push(
@@ -54,16 +59,24 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 			const branchIds = junctionAndStart.data.branchesOrder;
 			const jaePerBranch: (string | null)[] = [];
 			for (const branchId of branchIds) {
-				const conns = grafcet.getConnectionsByElementIdAndHandle(junctionAndStart.id, branchId);
+				const conns = grafcet.getConnectionsByElementIdAndHandle(
+					junctionAndStart.id,
+					branchId,
+				);
 				if (conns.length === 0) break; // safety guard, already covered above
 				jaePerBranch.push(
-					JunctionAndStartAnalyser.forwardBfsJunctionAndEndId(conns[0].target.id, grafcet),
+					JunctionAndStartAnalyser.forwardBfsJunctionAndEndId(
+						conns[0].target.id,
+						grafcet,
+					),
 				);
 			}
 
 			if (jaePerBranch.length === branchIds.length) {
 				const anyMissing = jaePerBranch.some((id) => id === null);
-				const distinct = new Set(jaePerBranch.filter((id): id is string => id !== null));
+				const distinct = new Set(
+					jaePerBranch.filter((id): id is string => id !== null),
+				);
 				if (anyMissing || distinct.size !== 1) {
 					issues.push(
 						new ProjectAnalyserIssue(
@@ -76,7 +89,7 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 				} else {
 					// All branches reach the same junction-and-end — check branch count matches
 					const jaeId = [...distinct][0];
-					const jae = grafcet.junctionsAndEnds.find((j) => j.id === jaeId)!;
+					const jae = grafcet.junctionsAndEnds[jaeId]!;
 					if (jae.data.branchesOrder.length !== branchIds.length) {
 						issues.push(
 							new ProjectAnalyserIssue(
@@ -100,7 +113,10 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 	 * JunctionAndEnd qui la referme ne compte pas comme la fermeture recherchée.
 	 * Returns the id of the junction-and-end node that closes the starting divergence, or null.
 	 */
-	private static forwardBfsJunctionAndEndId(startId: string, grafcet: Grafcet): string | null {
+	private static forwardBfsJunctionAndEndId(
+		startId: string,
+		grafcet: Grafcet,
+	): string | null {
 		const visited = new Set<string>();
 		const queue: { id: string; depth: number }[] = [{ id: startId, depth: 0 }];
 		while (queue.length > 0) {
@@ -108,7 +124,7 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 			if (visited.has(current)) continue;
 			visited.add(current);
 
-			if (grafcet.junctionsAndEnds.some((j) => j.id === current)) {
+			if (grafcet.junctionsAndEnds[current]) {
 				if (depth === 0) return current;
 				for (const conn of grafcet.connections) {
 					if (conn.source.id === current && !visited.has(conn.target.id)) {
@@ -118,7 +134,7 @@ export default class JunctionAndStartAnalyser extends ElementAnalyser<JunctionAn
 				continue;
 			}
 
-			const nextDepth = grafcet.junctionsAndStarts.some((j) => j.id === current) ? depth + 1 : depth;
+			const nextDepth = grafcet.junctionsAndStarts[current] ? depth + 1 : depth;
 			for (const conn of grafcet.connections) {
 				if (conn.source.id === current && !visited.has(conn.target.id)) {
 					queue.push({ id: conn.target.id, depth: nextDepth });

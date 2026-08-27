@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
+import {
+	createContext,
+	Dispatch,
+	SetStateAction,
+	useContext,
+	useState,
+} from "react";
 
 export type ViewAppearance = {
 	explorer: boolean;
@@ -18,13 +24,19 @@ const AppContext = createContext<ContextType>({
 	setViewAppearance: () => {},
 });
 
-export function AppContextProvider({ children }: { children: React.ReactNode }) {
+export function AppContextProvider({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
 	const [viewAppearance, setViewAppearance] = useState<ViewAppearance>({
 		explorer: true,
 	});
 
 	return (
-		<AppContext.Provider value={{ viewAppearance, setViewAppearance }}>{children}</AppContext.Provider>
+		<AppContext.Provider value={{ viewAppearance, setViewAppearance }}>
+			{children}
+		</AppContext.Provider>
 	);
 }
 

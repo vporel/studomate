@@ -4,7 +4,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { DndContext } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { createContactElement } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -33,8 +36,9 @@ function setup({
 	highlightedNodesIds = [] as string[],
 	section = new Section("s1", "Ma section", ""),
 } = {}) {
-
-	(useProjectStore as unknown as jest.Mock).mockImplementation(selectorImplementation({ mode }));
+	(useProjectStore as unknown as jest.Mock).mockImplementation(
+		selectorImplementation({ mode }),
+	);
 	(useLadderContext as jest.Mock).mockReturnValue({
 		contextMenuEvents: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
 	});
@@ -47,7 +51,10 @@ function setup({
 				syncFromInstance: jest.fn(),
 			},
 			zoom: 1,
-			workflowManager: { handleNodesChange: jest.fn(), handleEdgesChange: jest.fn() },
+			workflowManager: {
+				handleNodesChange: jest.fn(),
+				handleEdgesChange: jest.fn(),
+			},
 			nodesBySectionId: { s1: [] },
 			edgesBySectionId: { s1: [] },
 			highlightedNodesIds,
@@ -57,10 +64,13 @@ function setup({
 		}),
 	);
 
-const rendered = render(
+	const rendered = render(
 		<ReactFlowProvider>
 			<DndContext>
-				<SortableContext items={[section.id]} strategy={verticalListSortingStrategy}>
+				<SortableContext
+					items={[section.id]}
+					strategy={verticalListSortingStrategy}
+				>
 					<LadderSection section={section} index={0} />
 				</SortableContext>
 			</DndContext>
@@ -79,7 +89,10 @@ const rendered = render(
 						syncFromInstance: jest.fn(),
 					},
 					zoom: 1,
-					workflowManager: { handleNodesChange: jest.fn(), handleEdgesChange: jest.fn() },
+					workflowManager: {
+						handleNodesChange: jest.fn(),
+						handleEdgesChange: jest.fn(),
+					},
 					nodesBySectionId: { s1: [] },
 					edgesBySectionId: { s1: [] },
 					highlightedNodesIds: nextHighlightedNodesIds,
@@ -91,7 +104,10 @@ const rendered = render(
 			rendered.rerender(
 				<ReactFlowProvider>
 					<DndContext>
-						<SortableContext items={[section.id]} strategy={verticalListSortingStrategy}>
+						<SortableContext
+							items={[section.id]}
+							strategy={verticalListSortingStrategy}
+						>
 							<LadderSection section={section} index={0} />
 						</SortableContext>
 					</DndContext>
@@ -104,7 +120,9 @@ const rendered = render(
 describe("LadderSection", () => {
 	it("se rend sans planter, avec la section identifiée par son id", () => {
 		const { container } = setup();
-		expect(container.querySelector('[data-section-id="s1"]')).toBeInTheDocument();
+		expect(
+			container.querySelector('[data-section-id="s1"]'),
+		).toBeInTheDocument();
 	});
 
 	it("replie/déplie le contenu au clic sur le bouton de repli de l'en-tête", () => {

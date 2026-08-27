@@ -33,6 +33,9 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					<Typography mb={2}>
 						{`Les éléments se positionnent sur une grille pour faciliter l'alignement. En mode Simulation, le canvas passe en lecture seule.`}
 					</Typography>
+					<Typography mb={2}>
+						{`Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante — y compris les sélections multi-éléments. Les éléments collés sont placés légèrement décalés par rapport aux originaux.`}
+					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}
@@ -57,6 +60,9 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>
 						{`Pour modifier le nom ou le numéro d'une étape, double-cliquez sur le champ correspondant. En simulation, les étapes actives sont mises en évidence visuellement.`}
+					</Typography>
+					<Typography mb={2}>
+						{`Via le clic droit sur une étape, vous pouvez la définir comme étape initiale — utile pour changer l'étape initiale d'un grafcet existant sans recréer l'étape.`}
 					</Typography>
 					<Typography mb={2}>
 						{`Limite actuelle : un grafcet ne peut avoir qu'une seule étape initiale. La norme autorise une situation initiale composée de plusieurs étapes actives simultanément (par exemple une par branche d'un parallélisme) ; Studomate ne le permet pas encore.`}
@@ -215,6 +221,10 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						<li>{`Jonction divergence → Branche → Étape ou Transition`}</li>
 						<li>{`Étape ou Transition → Branche → Jonction convergence`}</li>
 						<li>{`Étape → Action`}</li>
+					</Typography>
+					<Typography variant="h5" mb={1}>{`Points de passage`}</Typography>
+					<Typography mb={2}>
+						{`Cliquez sur une liaison pour ajouter un point de passage ; faites-le glisser pour modifier le tracé. Cela permet de contourner d'autres éléments ou d'améliorer la lisibilité du diagramme.`}
 					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

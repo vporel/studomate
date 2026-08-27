@@ -14,10 +14,15 @@ describe("Project — intégration Ladder", () => {
 
 	it("ne mélange pas grafcets et ladders dans les accesseurs typés", () => {
 		const project = new Project("p1", "Projet", "");
-		project.createGrafcet("Mon grafcet", { type: "A4", orientation: "portrait" });
+		project.createGrafcet("Mon grafcet", {
+			type: "A4",
+			orientation: "portrait",
+		});
 		const ladder = project.createLadder("Mon ladder");
 
-		expect(Object.keys(project.ladders).sort()).toEqual([ladder.id, project.main.id].sort());
+		expect(Object.keys(project.ladders).sort()).toEqual(
+			[ladder.id, project.main.id].sort(),
+		);
 		expect(Object.keys(project.grafcets)).toHaveLength(1);
 	});
 

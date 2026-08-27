@@ -33,7 +33,7 @@ describe("Project — intégration HMI", () => {
 		const updated = page.copy();
 		updated.name = "Vue modifiée";
 
-		project.updateHmiPage(page.id, updated);
+		project.updateHmiPage(updated);
 
 		expect(project.getHmiPage(page.id)!.name).toBe("Vue modifiée");
 	});
@@ -47,7 +47,7 @@ describe("Project — intégration HMI", () => {
 			const copy = project.copy();
 
 			expect(copy.hmiPages[page.id]).toBeDefined();
-			expect(copy.hmiPages[page.id].widgets).toHaveLength(1);
+			expect(Object.keys(copy.hmiPages[page.id].widgets)).toHaveLength(1);
 		});
 
 		it("les pages copiées sont indépendantes de l'original", () => {
@@ -70,7 +70,7 @@ describe("Project — intégration HMI", () => {
 			const restored = Project.createFromJSON(JSON.stringify(project));
 
 			expect(restored.getHmiPage(page.id)).toBeInstanceOf(HmiPage);
-			expect(restored.getHmiPage(page.id)!.widgets).toHaveLength(1);
+			expect(Object.keys(restored.getHmiPage(page.id)!.widgets)).toHaveLength(1);
 		});
 
 		it("tolère l'absence du champ hmiPages (projets antérieurs)", () => {

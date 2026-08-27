@@ -1,5 +1,9 @@
 import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
-import { LadderStoreGetFunction, LadderStoreSetFunction, LadderStoreState } from "../ladder.store";
+import {
+	LadderStoreGetFunction,
+	LadderStoreSetFunction,
+	LadderStoreState,
+} from "../ladder.store";
 
 export const LADDER_FLOW_MIN_ZOOM = 1;
 export const LADDER_FLOW_MAX_ZOOM = 2.5;
@@ -11,7 +15,10 @@ export interface ZoomableInstance {
 		viewport: { x: number; y: number; zoom: number },
 		options?: { duration?: number },
 	) => Promise<boolean>;
-	screenToFlowPosition: (clientPosition: { x: number; y: number }) => { x: number; y: number };
+	screenToFlowPosition: (clientPosition: { x: number; y: number }) => {
+		x: number;
+		y: number;
+	};
 }
 
 /** Facteur de pas d'un clic sur zoom in/out — même valeur que celle utilisée en interne par
@@ -26,7 +33,7 @@ const ZOOM_STEP_FACTOR = 1.2;
  * enregistrée ici est resynchronisée impérativement (`zoomTo`) à chaque changement, qu'il vienne
  * des boutons de la toolbar ou d'un Ctrl+molette sur l'une des sections.
  */
-export default class ViewManager extends AbstractHighlightingViewManager<LadderStoreState> {
+export default class LadderViewManager extends AbstractHighlightingViewManager<LadderStoreState> {
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
 	private instances = new Map<string, ZoomableInstance>();
@@ -39,7 +46,10 @@ export default class ViewManager extends AbstractHighlightingViewManager<LadderS
 	 */
 	private pendingProgrammaticMoves = 0;
 
-	constructor(setStoreState: LadderStoreSetFunction, getStoreState: LadderStoreGetFunction) {
+	constructor(
+		setStoreState: LadderStoreSetFunction,
+		getStoreState: LadderStoreGetFunction,
+	) {
 		super(setStoreState);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
@@ -93,7 +103,10 @@ export default class ViewManager extends AbstractHighlightingViewManager<LadderS
 
 	/** Applique `zoom` (borné) au store et le répercute sur toutes les sections enregistrées. */
 	private applyZoom(zoom: number): void {
-		const clamped = Math.min(LADDER_FLOW_MAX_ZOOM, Math.max(LADDER_FLOW_MIN_ZOOM, zoom));
+		const clamped = Math.min(
+			LADDER_FLOW_MAX_ZOOM,
+			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
+		);
 		if (clamped === this.getStoreState().zoom) return;
 		this.setStoreState({ zoom: clamped });
 		this.pinAllViewports(clamped);
@@ -109,7 +122,10 @@ export default class ViewManager extends AbstractHighlightingViewManager<LadderS
 	 */
 	syncFromInstance(zoom: number): void {
 		if (this.pendingProgrammaticMoves > 0) return;
-		const clamped = Math.min(LADDER_FLOW_MAX_ZOOM, Math.max(LADDER_FLOW_MIN_ZOOM, zoom));
+		const clamped = Math.min(
+			LADDER_FLOW_MAX_ZOOM,
+			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
+		);
 		this.setStoreState({ zoom: clamped });
 		this.pinAllViewports(clamped);
 	}

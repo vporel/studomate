@@ -29,18 +29,24 @@ function grafcetWithOneElementOfEachType(): Grafcet {
 describe("Grafcet — table des collections d'éléments", () => {
 	describe("getTypeToElementsMap", () => {
 		it("couvre tous les types déclarés", () => {
-			const map = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT).getTypeToElementsMap();
+			const map = new Grafcet(
+				"g1",
+				"G",
+				DEFAULT_GRAFCET_FORMAT,
+			).getTypeToElementsMap();
 
-			expect(Object.keys(map).sort()).toEqual([...GRAFCET_ELEMENT_TYPES].sort());
+			expect(Object.keys(map).sort()).toEqual(
+				[...GRAFCET_ELEMENT_TYPES].sort(),
+			);
 		});
 
-		it("expose la collection réellement portée par le grafcet", () => {
+		it("expose les éléments réellement portés par le grafcet (par type, en tableau)", () => {
 			const grafcet = grafcetWithOneElementOfEachType();
 			const map = grafcet.getTypeToElementsMap();
 
-			// La collection retournée est bien celle du grafcet, pas une copie
-			expect(map.step).toBe(grafcet.steps);
-			expect(map.comment).toBe(grafcet.comments);
+			expect(map.step).toEqual(Object.values(grafcet.steps));
+			expect(map.step[0]).toBe(Object.values(grafcet.steps)[0]);
+			expect(map.comment).toEqual(Object.values(grafcet.comments));
 		});
 	});
 
@@ -56,7 +62,9 @@ describe("Grafcet — table des collections d'éléments", () => {
 		});
 
 		it("retourne undefined pour un identifiant inconnu", () => {
-			expect(grafcetWithOneElementOfEachType().getElementById("inexistant")).toBeUndefined();
+			expect(
+				grafcetWithOneElementOfEachType().getElementById("inexistant"),
+			).toBeUndefined();
 		});
 
 		it("getAllElements rassemble un élément par type", () => {
@@ -87,7 +95,10 @@ describe("Grafcet — table des collections d'éléments", () => {
 
 			original.getElementById("step-1")!.position = { x: 999, y: 999 };
 
-			expect(copie.getElementById("step-1")!.position).not.toEqual({ x: 999, y: 999 });
+			expect(copie.getElementById("step-1")!.position).not.toEqual({
+				x: 999,
+				y: 999,
+			});
 		});
 
 		it("isole la copie de l'original sur le format", () => {
@@ -123,7 +134,9 @@ describe("Grafcet — table des collections d'éléments", () => {
 		});
 
 		it("tolère un grafcet dont les collections sont absentes", () => {
-			const restitué = Grafcet.createFromJSON(JSON.stringify({ id: "g1", name: "G" }));
+			const restitué = Grafcet.createFromJSON(
+				JSON.stringify({ id: "g1", name: "G" }),
+			);
 
 			expect(restitué.getAllElements()).toEqual([]);
 			expect(restitué.connections).toEqual([]);
@@ -150,7 +163,9 @@ describe("Grafcet — table des collections d'éléments", () => {
 		it("ignore un identifiant inconnu sans lever", () => {
 			const grafcet = grafcetWithOneElementOfEachType();
 
-			expect(() => grafcet.removeElements([{ type: "step", id: "inexistant" }])).not.toThrow();
+			expect(() =>
+				grafcet.removeElements([{ type: "step", id: "inexistant" }]),
+			).not.toThrow();
 			expect(grafcet.getElementsByType("step")).toHaveLength(1);
 		});
 	});
@@ -212,7 +227,9 @@ describe("Grafcet — table des collections d'éléments", () => {
 			);
 			grafcet.updateConnections([updated]);
 
-			expect(grafcet.getConnection("step-1", "transition-1")?.data.points).toEqual([[1, 2]]);
+			expect(
+				grafcet.getConnection("step-1", "transition-1")?.data.points,
+			).toEqual([[1, 2]]);
 		});
 
 		it("ignore une connexion dont la paire source/cible n'existe pas", () => {
@@ -239,7 +256,9 @@ describe("Grafcet — table des collections d'éléments", () => {
 				),
 			]);
 
-			grafcet.removeConnections([{ sourceId: "step-1", targetId: "transition-1" }]);
+			grafcet.removeConnections([
+				{ sourceId: "step-1", targetId: "transition-1" },
+			]);
 
 			expect(grafcet.connections).toEqual([]);
 		});

@@ -14,9 +14,12 @@ import useFileMenu from "./file/useFileMenu";
 import useHelpMenu from "./help/useHelpMenu";
 import useProjectMenu from "./project/useProjectMenu";
 import useViewMenu from "./view/useViewMenu";
+import ShortcutsModal from "./help/ShortcutsModal";
 
 const MenuBar = () => {
 	const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+	const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
 	const onActivate = useCallback((menuId: string) => {
 		setActiveMenuId((current) => (current === menuId ? null : menuId));
 	}, []);
@@ -25,16 +28,27 @@ const MenuBar = () => {
 		setActiveMenuId(null);
 	}, []);
 
+	const onShortcutsOpen = useCallback(() => setShortcutsOpen(true), []);
+
 	const fileMenu = useFileMenu();
 	const projectMenu = useProjectMenu();
 	const editMenu = useEditMenu();
 	const viewMenu = useViewMenu();
-	const helpMenu = useHelpMenu();
+	const helpMenu = useHelpMenu(onShortcutsOpen);
 
-	const menus: AppMenuType[] = [fileMenu, projectMenu, editMenu, viewMenu, helpMenu];
+	const menus: AppMenuType[] = [
+		fileMenu,
+		projectMenu,
+		editMenu,
+		viewMenu,
+		helpMenu,
+	];
 
 	return (
-		<FlexBox centerVertical sx={{ width: "100%", justifyContent: "space-between" }}>
+		<FlexBox
+			centerVertical
+			sx={{ width: "100%", justifyContent: "space-between" }}
+		>
 			<MenuList
 				className="menu-bar"
 				sx={{
@@ -62,6 +76,10 @@ const MenuBar = () => {
 				<SimulationModeSelect />
 				<SimulationControls />
 			</FlexBox>
+			<ShortcutsModal
+				open={shortcutsOpen}
+				onClose={() => setShortcutsOpen(false)}
+			/>
 		</FlexBox>
 	);
 };

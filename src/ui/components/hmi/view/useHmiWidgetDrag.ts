@@ -1,7 +1,10 @@
 "use client";
 
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
-import { HMI_CANVAS_HEIGHT, HMI_CANVAS_WIDTH } from "@/schemas/hmi/hmi-page.schema";
+import {
+	HMI_CANVAS_HEIGHT,
+	HMI_CANVAS_WIDTH,
+} from "@/schemas/hmi/hmi-page.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useRef } from "react";
 import { snapToGrid } from "./constants";
@@ -19,7 +22,10 @@ export interface HmiDragPreview {
  * `onPreviewChange` à `HmiCanvas`, pour ne pas remplir la pile d'annulation d'une commande par
  * frame de glissement (voir `useHmiWidgetResize`, même principe).
  */
-export default function useHmiWidgetDrag(zoom: number, onPreviewChange: (preview: HmiDragPreview | null) => void) {
+export default function useHmiWidgetDrag(
+	zoom: number,
+	onPreviewChange: (preview: HmiDragPreview | null) => void,
+) {
 	const moveWidgets = useHmiStore((s) => s.moveWidgets);
 
 	const dragState = useRef<{
@@ -49,18 +55,30 @@ export default function useHmiWidgetDrag(zoom: number, onPreviewChange: (preview
 			maxY,
 		};
 
-		const clampedDelta = (clientX: number, clientY: number, drag: NonNullable<typeof dragState.current>) => {
+		const clampedDelta = (
+			clientX: number,
+			clientY: number,
+			drag: NonNullable<typeof dragState.current>,
+		) => {
 			const rawDx = (clientX - drag.startMouseX) / zoom;
 			const rawDy = (clientY - drag.startMouseY) / zoom;
-			const dx = snapToGrid(Math.max(-drag.minX, Math.min(HMI_CANVAS_WIDTH - drag.maxX, rawDx)));
-			const dy = snapToGrid(Math.max(-drag.minY, Math.min(HMI_CANVAS_HEIGHT - drag.maxY, rawDy)));
+			const dx = snapToGrid(
+				Math.max(-drag.minX, Math.min(HMI_CANVAS_WIDTH - drag.maxX, rawDx)),
+			);
+			const dy = snapToGrid(
+				Math.max(-drag.minY, Math.min(HMI_CANVAS_HEIGHT - drag.maxY, rawDy)),
+			);
 			return { dx, dy };
 		};
 
 		const onMouseMove = (moveEvent: MouseEvent) => {
 			const drag = dragState.current;
 			if (!drag) return;
-			const { dx, dy } = clampedDelta(moveEvent.clientX, moveEvent.clientY, drag);
+			const { dx, dy } = clampedDelta(
+				moveEvent.clientX,
+				moveEvent.clientY,
+				drag,
+			);
 			onPreviewChange({ widgetIds: drag.widgetIds, dx, dy });
 		};
 

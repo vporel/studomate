@@ -4,7 +4,6 @@ import Variable from "@/schemas/variable/variable.schema";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
-import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 
 //VRAI/TRUE relève du vocabulaire du langage d'expression, pas de la langue de l'interface
@@ -17,7 +16,9 @@ function getBooleanLabel(value: boolean | undefined, dialect: Dialect) {
 export default function WatchVariable({ variable }: { variable: Variable }) {
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const simulationManager = useProjectStore((s) => s.simulationManager);
-	const value = useProjectStore(useShallow((state) => state.simulationVariablesStates[variable.id]?.value));
+	const value = useProjectStore(
+		(state) => state.simulationVariablesStates[variable.id]?.value,
+	);
 	const nativeType = variable.getNativeType();
 
 	const changeValue = (newValue: any) => {
@@ -49,7 +50,9 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 				<FlexBox centerVertical centerHorizontal sx={{ width: "100px" }}>
 					{nativeType === "boolean" ? (
 						variable.getDirection() === "OUT" ? (
-							<Typography color={value === true ? "primary.main" : "text.primary"}>
+							<Typography
+								color={value === true ? "primary.main" : "text.primary"}
+							>
 								{getBooleanLabel(value, dialect)}
 							</Typography>
 						) : (
@@ -74,7 +77,9 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 							value={value === undefined ? "" : String(value)}
 							onChange={(e) => {
 								let newValue =
-									nativeType === "number" ? Number(e.target.value) : e.target.value;
+									nativeType === "number"
+										? Number(e.target.value)
+										: e.target.value;
 								if (nativeType === "number" && variable.type !== "REAL")
 									newValue = parseInt(newValue.toString(), 10);
 								changeValue(newValue);

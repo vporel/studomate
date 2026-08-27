@@ -2,7 +2,13 @@
 
 import { NumericInputData } from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography } from "@mui/material";
-import { ChangeEvent, FocusEvent, KeyboardEvent, useEffect, useState } from "react";
+import {
+	ChangeEvent,
+	FocusEvent,
+	KeyboardEvent,
+	useEffect,
+	useState,
+} from "react";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 
 const NumericInput = ({
@@ -24,7 +30,9 @@ const NumericInput = ({
 		setText(String(numValue));
 	}, [numValue]);
 
-	const commit = (e: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>) => {
+	const commit = (
+		e: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
+	) => {
 		const parsed = Number(e.currentTarget.value);
 		const next = Number.isFinite(parsed) ? clamp(parsed) : numValue;
 		setText(String(next));
@@ -80,23 +88,23 @@ const NumericInput = ({
 					},
 				}}
 			/>
-			{!hideLabel && (
+			{!hideLabel && data.label && (
 				<Typography
 					sx={{
 						position: "absolute",
 						top: "100%",
-						left: 0,
-						width: "100%",
+						left: "50%",
+						transform: "translateX(-50%)",
+						width: "max-content",
+						maxWidth: "none",
 						mt: 0.5,
 						fontSize: "0.7rem",
 						color: "#333",
 						textAlign: "center",
 						whiteSpace: "nowrap",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
 					}}
 				>
-					{data.label || "Saisie"}
+					{data.label}
 				</Typography>
 			)}
 		</Box>

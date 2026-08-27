@@ -1,13 +1,19 @@
 "use client";
 
-import { ChevronRight as ChevronRightIcon } from "@mui/icons-material";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckIcon from "@mui/icons-material/Check";
 import { Box, MenuItem } from "@mui/material";
 import FlexBox from "../boxes/FlexBox";
 import { ContextMenuItemType } from "./context-menu";
 import ContextMenuSubItems from "./ContextMenuSubItems";
 
-const ContextMenuItem = ({ item, hideMenu }: { item: ContextMenuItemType; hideMenu: () => void }) => {
+const ContextMenuItem = ({
+	item,
+	hideMenu,
+}: {
+	item: ContextMenuItemType;
+	hideMenu: () => void;
+}) => {
 	return (
 		<MenuItem
 			key={item.label}
@@ -32,16 +38,27 @@ const ContextMenuItem = ({ item, hideMenu }: { item: ContextMenuItemType; hideMe
 		>
 			<FlexBox centerVertical sx={{ gap: "5px" }}>
 				<FlexBox alignItems="center" justifyContent="end" width="25px">
-					{item.checked && <CheckIcon fontSize="small" sx={{ transform: "translateY(-2px)" }} />}
+					{item.checked && (
+						<CheckIcon
+							fontSize="small"
+							sx={{ transform: "translateY(-2px)" }}
+						/>
+					)}
 				</FlexBox>
 				<Box component="span" className="label">
 					{item.label}
 				</Box>
 			</FlexBox>
 			<Box component="span" className="right-text">
-				{item.subItems && item.subItems.length > 0 ? <ChevronRightIcon /> : item.shortcut}
+				{item.subItems && item.subItems.length > 0 ? (
+					<ChevronRightIcon />
+				) : (
+					item.shortcut
+				)}
 			</Box>
-			{item.subItems && <ContextMenuSubItems subItems={item.subItems} hideMenu={hideMenu} />}
+			{item.subItems && (
+				<ContextMenuSubItems subItems={item.subItems} hideMenu={hideMenu} />
+			)}
 		</MenuItem>
 	);
 };

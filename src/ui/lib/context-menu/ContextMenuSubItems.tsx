@@ -33,7 +33,10 @@ const ContextMenuSubItems = ({
 						<FlexBox centerVertical sx={{ gap: "5px" }}>
 							<FlexBox alignItems="center" justifyContent="end" width="15px">
 								{subItem.checked && (
-									<CheckIcon fontSize="small" sx={{ transform: "translateY(-2px)" }} />
+									<CheckIcon
+										fontSize="small"
+										sx={{ transform: "translateY(-2px)" }}
+									/>
 								)}
 							</FlexBox>
 							<Box component="span" className="label">

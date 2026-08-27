@@ -2,7 +2,10 @@ import Project from "@/schemas/project/project.schema";
 import { ProjectStoreState } from "../project.store";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
 
-function makeManager(initial: { project?: Project | null; hmiSimulationActivePageId?: string | null }) {
+function makeManager(initial: {
+	project?: Project | null;
+	hmiSimulationActivePageId?: string | null;
+}) {
 	let state = {
 		project: initial.project ?? null,
 		hmiSimulationActivePageId: initial.hmiSimulationActivePageId ?? null,
@@ -65,12 +68,17 @@ describe("HmiManager", () => {
 		it("ferme l'onglet et efface la page affichée", () => {
 			const project = new Project("p1", "Projet", "");
 			const page = project.createHmiPage("Vue 1");
-			const { manager, getState } = makeManager({ project, hmiSimulationActivePageId: page.id });
+			const { manager, getState } = makeManager({
+				project,
+				hmiSimulationActivePageId: page.id,
+			});
 
 			manager.closeHmiSimulationPage();
 
 			expect(getState().hmiSimulationActivePageId).toBeNull();
-			expect(getState().pagesManager.closePage).toHaveBeenCalledWith(HMI_SIMULATION_PAGE_ID);
+			expect(getState().pagesManager.closePage).toHaveBeenCalledWith(
+				HMI_SIMULATION_PAGE_ID,
+			);
 		});
 	});
 
@@ -79,7 +87,10 @@ describe("HmiManager", () => {
 			const project = new Project("p1", "Projet", "");
 			const page = project.createHmiPage("Vue 1");
 			const target = project.createHmiPage("Vue 2");
-			const { manager, getState } = makeManager({ project, hmiSimulationActivePageId: page.id });
+			const { manager, getState } = makeManager({
+				project,
+				hmiSimulationActivePageId: page.id,
+			});
 
 			manager.navigateHmiSimulation(target.id);
 

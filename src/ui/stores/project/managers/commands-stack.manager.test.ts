@@ -3,10 +3,12 @@ import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.
 import Variable from "@/schemas/variable/variable.schema";
 import { ProjectStoreState } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
-import CommandsStackManager from "./commands-stack.manager";
+import ProjectCommandsStackManager from "./commands-stack.manager";
 
 function renameCommand(from: string, to: string) {
-	return new VariablesUpdateCommand([{ id: "v1", newData: { mnemonic: to }, oldData: { mnemonic: from } }]);
+	return new VariablesUpdateCommand([
+		{ id: "v1", newData: { mnemonic: to }, oldData: { mnemonic: from } },
+	]);
 }
 
 function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
@@ -28,10 +30,10 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 		state = { ...state, ...patch } as ProjectStoreState;
 	};
 	const get = () => state;
-	return { get, set, manager: new CommandsStackManager(set, get) };
+	return { get, set, manager: new ProjectCommandsStackManager(set, get) };
 }
 
-describe("CommandsStackManager (project)", () => {
+describe("ProjectCommandsStackManager (project)", () => {
 	describe("executeOperation", () => {
 		it("applique la commande et marque le projet modifié", () => {
 			const { get, manager } = makeStore();
@@ -51,8 +53,12 @@ describe("CommandsStackManager (project)", () => {
 
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 
-			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
-			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
+			expect(
+				get().laddersManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
 		});
 
 		it("refuse d'exécuter hors du mode conception", () => {
@@ -62,7 +68,9 @@ describe("CommandsStackManager (project)", () => {
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 
 			expect(get().project).toBe(before);
-			expect(get().grafcetsManager.syncMountedStoresFromProject).not.toHaveBeenCalled();
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).not.toHaveBeenCalled();
 		});
 
 		it("ne fait rien pour une liste de commandes vide", () => {
@@ -72,7 +80,9 @@ describe("CommandsStackManager (project)", () => {
 			manager.executeOperation([]);
 
 			expect(get().project).toBe(before);
-			expect(get().grafcetsManager.syncMountedStoresFromProject).not.toHaveBeenCalled();
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).not.toHaveBeenCalled();
 		});
 	});
 
@@ -91,13 +101,21 @@ describe("CommandsStackManager (project)", () => {
 		it("resynchronise les stores grafcet et ladder montés", () => {
 			const { get, manager } = makeStore();
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
-			(get().grafcetsManager.syncMountedStoresFromProject as jest.Mock).mockClear();
-			(get().laddersManager.syncMountedStoresFromProject as jest.Mock).mockClear();
+			(
+				get().grafcetsManager.syncMountedStoresFromProject as jest.Mock
+			).mockClear();
+			(
+				get().laddersManager.syncMountedStoresFromProject as jest.Mock
+			).mockClear();
 
 			manager.undoOperation();
 
-			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
-			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
+			expect(
+				get().laddersManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
 		});
 
 		it("ne fait rien s'il n'y a rien à annuler", () => {
@@ -105,7 +123,9 @@ describe("CommandsStackManager (project)", () => {
 
 			manager.undoOperation();
 
-			expect(get().grafcetsManager.syncMountedStoresFromProject).not.toHaveBeenCalled();
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).not.toHaveBeenCalled();
 		});
 
 		it("refuse d'annuler hors du mode conception", () => {
@@ -135,13 +155,21 @@ describe("CommandsStackManager (project)", () => {
 			const { get, manager } = makeStore();
 			manager.executeOperation([renameCommand("moteur", "pompe")]);
 			manager.undoOperation();
-			(get().grafcetsManager.syncMountedStoresFromProject as jest.Mock).mockClear();
-			(get().laddersManager.syncMountedStoresFromProject as jest.Mock).mockClear();
+			(
+				get().grafcetsManager.syncMountedStoresFromProject as jest.Mock
+			).mockClear();
+			(
+				get().laddersManager.syncMountedStoresFromProject as jest.Mock
+			).mockClear();
 
 			manager.redoOperation();
 
-			expect(get().grafcetsManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
-			expect(get().laddersManager.syncMountedStoresFromProject).toHaveBeenCalledTimes(1);
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
+			expect(
+				get().laddersManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(1);
 		});
 	});
 

@@ -4,10 +4,22 @@ import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import PLC from "@/simulator/core/plc/plc";
+import Variable from "@/schemas/variable/variable.schema";
+import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
  * Helper functions for integration tests
  */
+
+/**
+ * Construit l'`Environment` attendu par `GrafcetElementAnalyser.analyseInContext` à partir
+ * d'une liste de variables de schéma — équivalent de ce que `GrafcetAnalyser.analyse`
+ * construit une fois par grafcet.
+ */
+export function analyserEnvironment(variables: Variable[] = []): Environment {
+	return new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
+}
 
 /**
  * Runs the complete pipeline: Analysis → Pre-compilation → Compilation

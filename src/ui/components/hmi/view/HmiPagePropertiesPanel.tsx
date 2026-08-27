@@ -9,7 +9,9 @@ import { Box, Button, Typography } from "@mui/material";
  * projet, une mutation qu'un store borné à une seule page ne peut pas porter lui-même. */
 const HmiPagePropertiesPanel = ({ hmiPageId }: { hmiPageId: string }) => {
 	const hmiManager = useProjectStore((s) => s.hmiManager);
-	const isMain = useProjectStore((s) => s.project?.getHmiPage(hmiPageId)?.isMain ?? false);
+	const isMain = useProjectStore(
+		(s) => s.project?.getHmiPage(hmiPageId)?.isMain ?? false,
+	);
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 1.5 }}>

@@ -1,13 +1,19 @@
 "use client";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData } from "@/schemas/grafcet/junction.schema";
+import Junction, {
+	JUNCTION_HANDLE_PIVOT,
+	JunctionData,
+} from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
 import GrafcetNode from "../GrafcetNode";
-import { JunctionNodeContextProvider, useJunctionNodeContext } from "./context/JunctionNodeContext";
+import {
+	JunctionNodeContextProvider,
+	useJunctionNodeContext,
+} from "./context/JunctionNodeContext";
 import useKeyboardEventsHandler from "./useKeyboardEventsHandler";
 
 export type JunctionNodeType = Node<JunctionData>;
@@ -29,8 +35,13 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	children,
 }) => {
 	const width = nodeWidth ?? Junction.DEFAULT_DIMENSIONS.width;
-	const { pivotSelected, selectedBranchId, selectPreviousBranch, selectNextBranch, clearSelection } =
-		useJunctionNodeContext();
+	const {
+		pivotSelected,
+		selectedBranchId,
+		selectPreviousBranch,
+		selectNextBranch,
+		clearSelection,
+	} = useJunctionNodeContext();
 
 	const handleKeyDown = useKeyboardEventsHandler(
 		id,
@@ -48,7 +59,8 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 
 	//Snap to grid
 	useEffect(() => {
-		if (width % FLOW_GRID_CELL_WIDTH !== 0) throw new Error("The width does not snap the grid");
+		if (width % FLOW_GRID_CELL_WIDTH !== 0)
+			throw new Error("The width does not snap the grid");
 	}, [width]);
 
 	useEffect(() => {
@@ -120,9 +132,19 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	);
 };
 
-const JunctionNode: FC<JunctionNodeProps> = ({ id, data, width, children, ...props }) => {
+const JunctionNode: FC<JunctionNodeProps> = ({
+	id,
+	data,
+	width,
+	children,
+	...props
+}) => {
 	return (
-		<JunctionNodeContextProvider id={id} data={data} width={width ?? Junction.DEFAULT_DIMENSIONS.width}>
+		<JunctionNodeContextProvider
+			id={id}
+			data={data}
+			width={width ?? Junction.DEFAULT_DIMENSIONS.width}
+		>
 			<JunctionNodeContent id={id} data={data} width={width} {...props}>
 				{children}
 			</JunctionNodeContent>

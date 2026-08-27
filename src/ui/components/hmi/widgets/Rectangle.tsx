@@ -5,8 +5,16 @@ import { Box } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 import useHmiStyleAnimation from "./useHmiStyleAnimation";
 
-const Rectangle = ({ data, selected, onClick }: HmiWidgetComponentProps<RectangleData>) => {
-	const animated = useHmiStyleAnimation(data.animations?.style);
+const Rectangle = ({
+	data,
+	selected,
+	onClick,
+	animationsEnabled,
+}: HmiWidgetComponentProps<RectangleData>) => {
+	const animated = useHmiStyleAnimation(
+		data.animations?.style,
+		animationsEnabled ?? false,
+	);
 	const fill = animated.fill ?? data.style.fill;
 	const stroke = animated.stroke ?? data.style.stroke;
 

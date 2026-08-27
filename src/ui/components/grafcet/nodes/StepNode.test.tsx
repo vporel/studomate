@@ -6,6 +6,8 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
+import PageVisibilityContext from "@/ui/components/pages/page-visibility-context";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import StepNode, { StepNodeType } from "./StepNode";
 
@@ -24,15 +26,28 @@ function setup({
 	initial = false,
 	selected = false,
 	highlightedNodesIds = [] as string[],
-	simulationVariablesStates = {} as Record<string, { mnemonic: string; value: boolean }>,
+	simulationVariablesStates = {} as Record<
+		string,
+		{ mnemonic: string; value: boolean }
+	>,
 	updateNodeData = jest.fn(),
+	pageVisible = true,
 } = {}) {
 	const grafcet = new GrafcetBuilder()
 		.id("g1")
-		.addStep(new StepBuilder().id("step-1").number(number).initial(initial).position(0, 0).build())
+		.addStep(
+			new StepBuilder()
+				.id("step-1")
+				.number(number)
+				.initial(initial)
+				.position(0, 0)
+				.build(),
+		)
 		.build();
 
-	(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+	(useGrafcetContext as jest.Mock).mockReturnValue({
+		store: fakeStoreApi({ grafcet }),
+	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			grafcet,
@@ -55,7 +70,11 @@ function setup({
 		isConnectable: true,
 	} as unknown as StepNodeType & { id: string };
 
-	render(<StepNode {...(props as any)} />);
+	render(
+		<PageVisibilityContext.Provider value={pageVisible}>
+			<StepNode {...(props as any)} />
+		</PageVisibilityContext.Provider>,
+	);
 
 	return { updateNodeData };
 }
@@ -88,12 +107,41 @@ describe("StepNode", () => {
 
 	it("porte la classe 'highlighted' quand l'étape fait partie de highlightedNodesIds", () => {
 		setup({ highlightedNodesIds: ["step-1"] });
-		expect(document.querySelector(".grafcet-step-node")).toHaveClass("highlighted");
+		expect(document.querySelector(".grafcet-step-node")).toHaveClass(
+			"highlighted",
+		);
 	});
 
 	it("ne porte pas la classe 'highlighted' sinon", () => {
 		setup({ highlightedNodesIds: ["autre-etape"] });
-		expect(document.querySelector(".grafcet-step-node")).not.toHaveClass("highlighted");
+		expect(document.querySelector(".grafcet-step-node")).not.toHaveClass(
+			"highlighted",
+		);
+	});
+
+	it("prend la couleur d'étape active quand sa variable est vraie en simulation et la page visible", () => {
+		setup({
+			number: 1,
+			simulationVariablesStates: {
+				[getStepVariableId("g1", 1)]: { mnemonic: "X1", value: true },
+			},
+		});
+		expect(document.querySelector(".grafcet-step-node")).not.toHaveStyle({
+			backgroundColor: "rgb(255, 255, 255)",
+		});
+	});
+
+	it("ignore l'état de simulation quand sa page n'est pas l'onglet actif (bailout PageVisibilityContext)", () => {
+		setup({
+			number: 1,
+			pageVisible: false,
+			simulationVariablesStates: {
+				[getStepVariableId("g1", 1)]: { mnemonic: "X1", value: true },
+			},
+		});
+		expect(document.querySelector(".grafcet-step-node")).toHaveStyle({
+			backgroundColor: "rgb(255, 255, 255)",
+		});
 	});
 
 	it("édite le numéro au double-clic puis dispatche la commande de mise à jour au blur", () => {

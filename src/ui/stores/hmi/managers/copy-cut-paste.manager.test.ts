@@ -7,7 +7,7 @@ function buildStore() {
 	return createHmiStore(page, new CommandsStack<HmiPage>(100));
 }
 
-describe("CopyCutPasteManager", () => {
+describe("HmiCopyCutPasteManager", () => {
 	describe("copySelectedWidgets / pasteWidgets", () => {
 		it("ne fait rien si rien n'est sélectionné", () => {
 			const store = buildStore();
@@ -17,7 +17,7 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			expect(store.getState().hmiPage.widgets).toHaveLength(1);
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
 
 		it("colle une copie du widget sélectionné, décalée, et la sélectionne", () => {
@@ -28,7 +28,7 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			const widgets = store.getState().hmiPage.widgets;
+			const widgets = Object.values(store.getState().hmiPage.widgets);
 			expect(widgets).toHaveLength(2);
 			const pasted = widgets.find((w) => w.id !== original.id)!;
 			expect(pasted.type).toBe("push-button");
@@ -43,12 +43,16 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 
 			store.getState().copyCutPasteManager.pasteWidgets();
-			const firstPaste = store.getState().hmiPage.widgets.find((w) => w.id !== original.id)!;
+			const firstPaste = Object.values(store.getState().hmiPage.widgets).find(
+				(w) => w.id !== original.id,
+			)!;
 
 			store.getState().copyCutPasteManager.pasteWidgets();
-			const widgets = store.getState().hmiPage.widgets;
+			const widgets = Object.values(store.getState().hmiPage.widgets);
 			expect(widgets).toHaveLength(3);
-			const secondPaste = widgets.find((w) => w.id !== original.id && w.id !== firstPaste.id)!;
+			const secondPaste = widgets.find(
+				(w) => w.id !== original.id && w.id !== firstPaste.id,
+			)!;
 			expect(secondPaste.position).not.toEqual(firstPaste.position);
 		});
 
@@ -59,10 +63,10 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 
 			store.getState().copyCutPasteManager.pasteWidgets();
-			expect(store.getState().hmiPage.widgets).toHaveLength(2);
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(2);
 
 			store.getState().commandsStackManager.undoOperation();
-			expect(store.getState().hmiPage.widgets).toHaveLength(1);
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
 	});
 
@@ -76,7 +80,9 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			const pasted = store.getState().hmiPage.widgets.find((w) => w.id !== original.id && w.type === "push-button")!;
+			const pasted = Object.values(store.getState().hmiPage.widgets).find(
+				(w) => w.id !== original.id && w.type === "push-button",
+			)!;
 			expect(pasted.stackOrder).toBe(2);
 		});
 
@@ -99,9 +105,15 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			const widgets = store.getState().hmiPage.widgets;
+			const widgets = Object.values(store.getState().hmiPage.widgets);
 			const pastedFrom = (original: { type: string }) =>
-				widgets.find((w) => w.type === original.type && w.id !== w5.id && w.id !== w9.id && w.id !== w10.id)!;
+				widgets.find(
+					(w) =>
+						w.type === original.type &&
+						w.id !== w5.id &&
+						w.id !== w9.id &&
+						w.id !== w10.id,
+				)!;
 			expect(pastedFrom(w5).stackOrder).toBe(21);
 			expect(pastedFrom(w9).stackOrder).toBe(22);
 			expect(pastedFrom(w10).stackOrder).toBe(23);
@@ -118,9 +130,8 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.copySelectedWidgets();
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			const pastedNames = store
-				.getState()
-				.hmiPage.widgets.filter((w) => w.id !== w1.id && w.id !== w2.id)
+			const pastedNames = Object.values(store.getState().hmiPage.widgets)
+				.filter((w) => w.id !== w1.id && w.id !== w2.id)
 				.map((w) => w.name)
 				.sort();
 			expect(pastedNames).toEqual(["Rectangle_3", "Rectangle_4"]);
@@ -135,11 +146,13 @@ describe("CopyCutPasteManager", () => {
 
 			store.getState().copyCutPasteManager.cutSelectedWidgets();
 
-			expect(store.getState().hmiPage.widgets).toHaveLength(0);
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(0);
 
 			store.getState().copyCutPasteManager.pasteWidgets();
-			expect(store.getState().hmiPage.widgets).toHaveLength(1);
-			expect(store.getState().hmiPage.widgets[0].type).toBe("push-button");
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
+			expect(Object.values(store.getState().hmiPage.widgets)[0].type).toBe(
+				"push-button",
+			);
 		});
 
 		it("ne fait rien si rien n'est sélectionné", () => {
@@ -149,7 +162,7 @@ describe("CopyCutPasteManager", () => {
 
 			store.getState().copyCutPasteManager.cutSelectedWidgets();
 
-			expect(store.getState().hmiPage.widgets).toHaveLength(1);
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
 	});
 
@@ -163,7 +176,9 @@ describe("CopyCutPasteManager", () => {
 
 			store.getState().copyCutPasteManager.pasteWidgets();
 
-			const pasted = store.getState().hmiPage.widgets.find((w) => w.id !== original.id)!;
+			const pasted = Object.values(store.getState().hmiPage.widgets).find(
+				(w) => w.id !== original.id,
+			)!;
 			const centerX = pasted.position.x + pasted.size.width / 2;
 			const centerY = pasted.position.y + pasted.size.height / 2;
 			expect(centerX).toBe(400);

@@ -50,7 +50,11 @@ const JunctionOrEndNode: FC<JunctionOrEndNodeProps> = (props) => {
 					position: "relative",
 				}}
 			>
-				<JunctionNodeVerticalBar color={borderColor} left={data.pivotPosition} pivot={true} />
+				<JunctionNodeVerticalBar
+					color={borderColor}
+					left={data.pivotPosition}
+					pivot={true}
+				/>
 			</Box>
 			<JunctionNodeBranchAddButtons top={-10} />
 		</JunctionNode>

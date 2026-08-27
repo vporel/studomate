@@ -10,10 +10,17 @@ import {
 } from "../project.store";
 import AbstractProgramsManager from "./abstract-programs.manager";
 
-export default class LaddersManager extends AbstractProgramsManager<Ladder, LadderStoreValues, LadderStoreManagers> {
+export default class LaddersManager extends AbstractProgramsManager<
+	Ladder,
+	LadderStoreValues,
+	LadderStoreManagers
+> {
 	protected readonly programType: ProgramType = "ladder";
 
-	constructor(setStoreState: ProjectStoreSetFunction, getStoreState: ProjectStoreGetFunction) {
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+	) {
 		super(setStoreState, getStoreState);
 	}
 
@@ -21,24 +28,38 @@ export default class LaddersManager extends AbstractProgramsManager<Ladder, Ladd
 		return project.getLadder(id);
 	}
 
-	protected getStoresValues(state: ProjectStoreState): Record<string, LadderStoreValues> {
+	protected getStoresValues(
+		state: ProjectStoreState,
+	): Record<string, LadderStoreValues> {
 		return state.laddersStoresValues;
 	}
 
-	protected setStoresValues(values: Record<string, LadderStoreValues>): Partial<ProjectStoreState> {
+	protected setStoresValues(
+		values: Record<string, LadderStoreValues>,
+	): Partial<ProjectStoreState> {
 		return { laddersStoresValues: values };
 	}
 
-	protected getStoresManagers(state: ProjectStoreState): Record<string, LadderStoreManagers> {
+	protected getStoresManagers(
+		state: ProjectStoreState,
+	): Record<string, LadderStoreManagers> {
 		return state.laddersStoresManagers;
 	}
 
-	protected setStoresManagers(managers: Record<string, LadderStoreManagers>): Partial<ProjectStoreState> {
+	protected setStoresManagers(
+		managers: Record<string, LadderStoreManagers>,
+	): Partial<ProjectStoreState> {
 		return { laddersStoresManagers: managers };
 	}
 
 	protected adoptProgram(managers: LadderStoreManagers, program: Ladder): void {
 		managers.workflowManager.adoptLadder(program);
+	}
+
+	protected getAdoptedProgram(
+		managers: LadderStoreManagers,
+	): Ladder | undefined {
+		return managers.workflowManager.getLadder();
 	}
 
 	/** @param name Absent : auto-généré au format "Ladder_N", unique parmi les programmes du
@@ -47,6 +68,8 @@ export default class LaddersManager extends AbstractProgramsManager<Ladder, Ladd
 		const project = this.getStoreState().project;
 		if (!project) return null;
 		const resolvedName = name ?? project.nextProgramName(LADDER_NAME_LABEL);
-		return this.createProgram(resolvedName, (p) => p.createLadder(resolvedName));
+		return this.createProgram(resolvedName, (p) =>
+			p.createLadder(resolvedName),
+		);
 	}
 }

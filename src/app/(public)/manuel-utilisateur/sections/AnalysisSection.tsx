@@ -38,11 +38,14 @@ export default function AnalysisSection({ selected }: { selected: string }) {
 						{`Types de vérifications`}
 					</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-						<li>{`Structure du grafcet : liaisons manquantes, étapes isolées, transitions sans réceptivité`}</li>
-						<li>{`Structure du ladder : réseaux et connexions invalides`}</li>
-						<li>{`Expressions : syntaxe des réceptivités et des actions`}</li>
-						<li>{`Variables : références à des variables inexistantes, types incompatibles`}</li>
-						<li>{`Jonctions : validité des branches et connexions`}</li>
+						<li>{`Cohérence du projet : ladder Main absent ou en double, ladder non appelé par le Main, numéros d'étapes en doublon entre grafcets`}</li>
+						<li>{`Structure du grafcet : étape initiale absente ou multiple, étapes inaccessibles ou sans successeur, liaisons invalides ou manquantes`}</li>
+						<li>{`Renvois (tenant / aboutissant) : étape référencée inexistante, renvoi sans connexion, références circulaires`}</li>
+						<li>{`Structure du ladder : réseaux sans bobine, connexions invalides`}</li>
+						<li>{`Blocs système : nom manquant ou en doublon, paramètres (PT, PV, contrôle, ET/CV) absents, de type incorrect ou référençant une variable inexistante`}</li>
+						<li>{`Expressions : syntaxe des réceptivités et des actions (transitions, actions grafcet, blocs comparaison et affectation)`}</li>
+						<li>{`Variables : références à des variables inexistantes, types incompatibles, affectation à une variable d'entrée`}</li>
+						<li>{`Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante`}</li>
 					</Typography>
 					<Typography mb={2}>
 						{`Cliquez sur un problème dans la liste pour naviguer vers l'élément concerné, dans le grafcet ou le ladder correspondant.`}
@@ -56,7 +59,9 @@ export default function AnalysisSection({ selected }: { selected: string }) {
 					<Typography variant="h3" mb={2}>
 						{`Exemples de messages`}
 					</Typography>
-					<Typography mb={1}>{`Quelques messages fréquents et leur cause :`}</Typography>
+					<Typography
+						mb={1}
+					>{`Quelques messages fréquents et leur cause :`}</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 						<li>{`"La transition n'a pas d'expression. Elle ne pourra jamais être franchie." — le champ de réceptivité est vide.`}</li>
 						<li>{`"Expression invalide : une transition doit être une expression retournant un booléen." — la réceptivité contient par exemple un calcul numérique au lieu d'une condition logique.`}</li>

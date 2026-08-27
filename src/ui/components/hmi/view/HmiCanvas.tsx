@@ -1,13 +1,27 @@
 "use client";
 
-import { HMI_CANVAS_HEIGHT, HMI_CANVAS_WIDTH } from "@/schemas/hmi/hmi-page.schema";
-import { HmiAction, HmiWidget, HmiWidgetSize } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	HMI_CANVAS_HEIGHT,
+	HMI_CANVAS_WIDTH,
+} from "@/schemas/hmi/hmi-page.schema";
+import {
+	HmiAction,
+	HmiWidget,
+	HmiWidgetSize,
+} from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
 import useHmiContextMenu from "@/ui/components/hmi/context-menu/useHmiContextMenu";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { Box, Typography } from "@mui/material";
-import { MouseEvent as ReactMouseEvent, useCallback, useEffect, useRef, useState, WheelEvent as ReactWheelEvent } from "react";
+import {
+	MouseEvent as ReactMouseEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	WheelEvent as ReactWheelEvent,
+} from "react";
 import { clampZoom, SNAP_GRID, ZOOM_STEP } from "./constants";
 import { executeHmiAction } from "./hmi-action.executor";
 import { resolvePositionAnimationOffset } from "./hmi-position-animation";
@@ -35,14 +49,20 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const selectWidget = useHmiStore((s) => s.selectWidget);
 	const setSelection = useHmiStore((s) => s.setSelection);
 	const clearSelection = useHmiStore((s) => s.clearSelection);
-	const setScreenToCanvasPosition = useHmiStore((s) => s.setScreenToCanvasPosition);
-	const simulationVariablesStates = useProjectStore((s) => s.simulationVariablesStates);
+	const setScreenToCanvasPosition = useHmiStore(
+		(s) => s.setScreenToCanvasPosition,
+	);
+	const simulationVariablesStates = useProjectStore(
+		(s) => s.simulationVariablesStates,
+	);
 	const simulationManager = useProjectStore((s) => s.simulationManager);
 	const hmiManager = useProjectStore((s) => s.hmiManager);
 	const project = useProjectStore((s) => s.project);
 
 	const [dragPreview, setDragPreview] = useState<HmiDragPreview | null>(null);
-	const [resizePreview, setResizePreview] = useState<HmiWidgetSize | null>(null);
+	const [resizePreview, setResizePreview] = useState<HmiWidgetSize | null>(
+		null,
+	);
 	const [marqueeRect, setMarqueeRect] = useState<HmiMarqueeRect | null>(null);
 
 	const startDrag = useHmiWidgetDrag(zoom, setDragPreview);
@@ -57,25 +77,39 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const startMarqueeSelect = useHmiMarqueeSelect(
 		canvasWrapperRef,
 		zoom,
-		hmiPage.widgets,
+		Object.values(hmiPage.widgets),
 		(ids) => {
 			suppressNextCanvasClickRef.current = true;
 			setSelection(ids);
 		},
 		setMarqueeRect,
 	);
-	const { visible: contextMenuVisible, element: contextMenuElement, position: contextMenuPosition, openContextMenu, closeContextMenu } =
-		useHmiContextMenu(canvasWrapperRef);
+	const {
+		visible: contextMenuVisible,
+		element: contextMenuElement,
+		position: contextMenuPosition,
+		openContextMenu,
+		closeContextMenu,
+	} = useHmiContextMenu(canvasWrapperRef);
 
-	// Convertisseur écran -> canvas pour le collage au curseur (voir CopyCutPasteManager),
+	// Convertisseur écran -> canvas pour le collage au curseur (voir HmiCopyCutPasteManager),
 	// équivalent HMI de `rfInstance.screenToFlowPosition`. Recalculé à chaque changement de zoom.
 	useEffect(() => {
 		setScreenToCanvasPosition((clientX, clientY) => {
 			const el = canvasWrapperRef.current;
 			if (!el) return null;
 			const rect = el.getBoundingClientRect();
-			if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
-			return { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom };
+			if (
+				clientX < rect.left ||
+				clientX > rect.right ||
+				clientY < rect.top ||
+				clientY > rect.bottom
+			)
+				return null;
+			return {
+				x: (clientX - rect.left) / zoom,
+				y: (clientY - rect.top) / zoom,
+			};
 		});
 	}, [zoom, setScreenToCanvasPosition]);
 
@@ -91,7 +125,9 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const getVariableValue = useCallback(
 		(mnemonic: string): unknown => {
 			if (!mnemonic) return undefined;
-			const entry = Object.values(simulationVariablesStates).find((s) => s.mnemonic === mnemonic);
+			const entry = Object.values(simulationVariablesStates).find(
+				(s) => s.mnemonic === mnemonic,
+			);
 			return entry?.value;
 		},
 		[simulationVariablesStates],
@@ -118,7 +154,9 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	 * `resolvePositionAnimationOffset`). */
 	const getPositionAnimationOffset = useCallback(
 		(widget: HmiWidget): { dx: number; dy: number } | undefined =>
-			isSimulation ? resolvePositionAnimationOffset(widget, getVariableValue) : undefined,
+			isSimulation
+				? resolvePositionAnimationOffset(widget, getVariableValue)
+				: undefined,
 		[isSimulation, getVariableValue],
 	);
 
@@ -126,9 +164,10 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	 * peut être absent de `widget.data` tant qu'aucune action n'y a été ajoutée. */
 	const triggerWidgetEvent = useCallback(
 		(widgetId: string, eventName: string) => {
-			const widget = hmiPage.widgets.find((w) => w.id === widgetId);
+			const widget = hmiPage.widgets[widgetId];
 			if (!widget) return;
-			const actions = (widget.data as { events?: Record<string, HmiAction[]> }).events?.[eventName];
+			const actions = (widget.data as { events?: Record<string, HmiAction[]> })
+				.events?.[eventName];
 			actions?.forEach((action) => executeHmiAction(action, hmiManager));
 		},
 		[hmiPage.widgets, hmiManager],
@@ -181,15 +220,22 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 				: [widget.id];
 		setSelection(nextSelection);
 		if (nextSelection.length === 0) return;
-		const group = hmiPage.widgets.filter((w) => nextSelection.includes(w.id));
+		const group = Object.values(hmiPage.widgets).filter((w) =>
+			nextSelection.includes(w.id),
+		);
 		startDrag(e, group);
 	};
 
-	const selectedWidgets = hmiPage.widgets.filter((w) => selectedWidgetIds.includes(w.id));
-	const soleSelectedWidget = selectedWidgets.length === 1 ? selectedWidgets[0] : null;
+	const selectedWidgets = Object.values(hmiPage.widgets).filter((w) =>
+		selectedWidgetIds.includes(w.id),
+	);
+	const soleSelectedWidget =
+		selectedWidgets.length === 1 ? selectedWidgets[0] : null;
 
 	// Un seul bloc de la colonne latérale déplié à la fois (voir `HmiCanvasSidebarSection`).
-	const [expandedSection, setExpandedSection] = useState<"properties" | "objects">("properties");
+	const [expandedSection, setExpandedSection] = useState<
+		"properties" | "objects"
+	>("properties");
 
 	return (
 		<Box
@@ -237,26 +283,38 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 						transform: `scale(${zoom})`,
 					}}
 				>
-					{hmiPage.widgets.map((widget) => {
+					{Object.values(hmiPage.widgets).map((widget) => {
 						const isSelected = selectedWidgetIds.includes(widget.id);
-						// Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" — voir
+						// Hors simulation (page de conception), les widgets restent statiques même si une
+						// simulation tourne : on ne lit pas l'état du simulateur. Une forme (rectangle,
+						// ellipse, texte) n'a de toute façon pas de variable "principale" — voir
 						// `RectangleData`/`EllipseData`/`TextData`.
-						const rawValue = "variableMnemonic" in widget.data ? getVariableValue(widget.data.variableMnemonic) : undefined;
-						const value: boolean | number = typeof rawValue === "number" ? rawValue : Boolean(rawValue);
+						const rawValue =
+							isSimulation && "variableMnemonic" in widget.data
+								? getVariableValue(widget.data.variableMnemonic)
+								: undefined;
+						const value: boolean | number =
+							typeof rawValue === "number" ? rawValue : Boolean(rawValue);
 						return (
 							<HmiWidgetItem
 								key={widget.id}
 								widget={widget}
 								isSelected={isSelected}
 								isSimulation={isSimulation}
-								showResizeHandle={isSelected && soleSelectedWidget?.id === widget.id}
+								showResizeHandle={
+									isSelected && soleSelectedWidget?.id === widget.id
+								}
 								value={value}
 								previewOffset={
 									isSelected && dragPreview?.widgetIds.includes(widget.id)
 										? { dx: dragPreview.dx, dy: dragPreview.dy }
 										: undefined
 								}
-								previewSize={soleSelectedWidget?.id === widget.id ? (resizePreview ?? undefined) : undefined}
+								previewSize={
+									soleSelectedWidget?.id === widget.id
+										? (resizePreview ?? undefined)
+										: undefined
+								}
 								animationOffset={getPositionAnimationOffset(widget)}
 								onSetVariableValue={setVariableValue}
 								onTriggerEvent={triggerWidgetEvent}
@@ -318,7 +376,9 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 						{soleSelectedWidget ? (
 							<HmiWidgetPropertiesPanel widget={soleSelectedWidget} />
 						) : selectedWidgets.length > 1 ? (
-							<Typography sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}>
+							<Typography
+								sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}
+							>
 								{selectedWidgets.length} widgets sélectionnés.
 							</Typography>
 						) : (
@@ -336,8 +396,12 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 				</Box>
 			)}
 
-			{soleSelectedWidget && <HmiWidgetEventsPane widget={soleSelectedWidget} />}
-			{soleSelectedWidget && <HmiWidgetAnimationsPane widget={soleSelectedWidget} />}
+			{soleSelectedWidget && (
+				<HmiWidgetEventsPane widget={soleSelectedWidget} />
+			)}
+			{soleSelectedWidget && (
+				<HmiWidgetAnimationsPane widget={soleSelectedWidget} />
+			)}
 		</Box>
 	);
 };

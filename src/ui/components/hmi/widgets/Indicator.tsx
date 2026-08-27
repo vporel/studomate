@@ -1,11 +1,24 @@
 "use client";
 
-import { IndicatorData } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	DEFAULT_INDICATOR_OFF_COLOR,
+	DEFAULT_INDICATOR_ON_COLOR,
+	IndicatorData,
+} from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 
-const Indicator = ({ data, value, selected, hideLabel, onClick }: HmiWidgetComponentProps<IndicatorData>) => {
+const Indicator = ({
+	data,
+	value,
+	selected,
+	hideLabel,
+	onClick,
+}: HmiWidgetComponentProps<IndicatorData>) => {
 	const active = Boolean(value);
+	const onColor = data.onColor ?? DEFAULT_INDICATOR_ON_COLOR;
+	const offColor = data.offColor ?? DEFAULT_INDICATOR_OFF_COLOR;
 
 	return (
 		// `size` ne dimensionne que le voyant (le dessin) : le libellé est positionné en absolu
@@ -26,28 +39,28 @@ const Indicator = ({ data, value, selected, hideLabel, onClick }: HmiWidgetCompo
 					height: "100%",
 					borderRadius: "50%",
 					border: selected ? "2px solid #1976d2" : "2px solid #555",
-					backgroundColor: active ? "#4caf50" : "#bdbdbd",
-					boxShadow: active ? "0 0 10px 3px rgba(76,175,80,0.6)" : "none",
+					backgroundColor: active ? onColor : offColor,
+					boxShadow: active ? `0 0 10px 3px ${alpha(onColor, 0.6)}` : "none",
 					transition: "background-color 0.1s, box-shadow 0.1s",
 				}}
 			/>
-			{!hideLabel && (
+			{!hideLabel && data.label && (
 				<Typography
 					sx={{
 						position: "absolute",
 						top: "100%",
-						left: 0,
-						width: "100%",
+						left: "50%",
+						transform: "translateX(-50%)",
+						width: "max-content",
+						maxWidth: "none",
 						mt: 0.5,
 						fontSize: "0.7rem",
 						color: "#333",
 						textAlign: "center",
 						whiteSpace: "nowrap",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
 					}}
 				>
-					{data.label || "Voyant"}
+					{data.label}
 				</Typography>
 			)}
 		</Box>

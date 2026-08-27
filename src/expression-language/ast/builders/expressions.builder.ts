@@ -1,5 +1,8 @@
 import { createRandomId } from "@/ids";
-import { ArithmeticOperator, ComparisonOperator } from "@/expression-language/operators";
+import {
+	ArithmeticOperator,
+	ComparisonOperator,
+} from "@/expression-language/operators";
 import { ASTNode } from "../nodes/ast-node";
 import {
 	ArithmeticExpressionNode,
@@ -79,11 +82,18 @@ export default class ExpressionsBuilder {
 		position?: number,
 	): LogicalExpressionNode {
 		if (expressions.length < 2) {
-			throw new Error("At least two expressions are required for a chained logical expression.");
+			throw new Error(
+				"At least two expressions are required for a chained logical expression.",
+			);
 		}
 		let currentExpr: ASTNode = expressions[0];
 		for (let i = 1; i < expressions.length; i++) {
-			currentExpr = this.buildLogicalExpressionNode(operator, currentExpr, expressions[i], position);
+			currentExpr = this.buildLogicalExpressionNode(
+				operator,
+				currentExpr,
+				expressions[i],
+				position,
+			);
 		}
 		return currentExpr as LogicalExpressionNode;
 	}

@@ -16,7 +16,11 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 		variablesByMnemonic: Map<string, Variable>,
 		_project: Project,
 	): ProjectAnalyserIssue[] {
-		const source = { sourceType: "ladder-coil", sourceId: element.id, parentId: ladder.id } as const;
+		const source = {
+			sourceType: "ladder-coil",
+			sourceId: element.id,
+			parentId: ladder.id,
+		} as const;
 		const variable = variablesByMnemonic.get(element.data.variable);
 		const issues: ProjectAnalyserIssue[] = [];
 
@@ -52,8 +56,12 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 			}
 		}
 
-		const connections = ladder.getAllConnections().map(({ connection }) => connection);
-		if (!connections.some((connection) => connection.target.id === element.id)) {
+		const connections = ladder
+			.getAllConnections()
+			.map(({ connection }) => connection);
+		if (
+			!connections.some((connection) => connection.target.id === element.id)
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
@@ -65,12 +73,14 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 		}
 
 		if (element.data.mode === "normal") {
-			const sameVariableCoilsCount = ladder.getAllElements().filter(
-				(el) =>
-					el.type === "coil" &&
-					el.data.mode === "normal" &&
-					el.data.variable === element.data.variable,
-			).length;
+			const sameVariableCoilsCount = ladder
+				.getAllElements()
+				.filter(
+					(el) =>
+						el.type === "coil" &&
+						el.data.mode === "normal" &&
+						el.data.variable === element.data.variable,
+				).length;
 			if (sameVariableCoilsCount > 1) {
 				issues.push(
 					new ProjectAnalyserIssue(

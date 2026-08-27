@@ -46,8 +46,8 @@ describe("Full Pipeline Integration Test", () => {
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			// +1 pour le Main, toujours présent et scanné (voir Project.createMain).
-			expect(pipeline.compilation.result!.routines).toHaveLength(2);
+			// 1 grafcet + le Main (voir Project.createMain) + la routine d'observation des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(3);
 
 			// 3. CREATE PLC AND SIMULATE
 			let cycleError: Error | null = null;
@@ -186,7 +186,7 @@ describe("Full Pipeline Integration Test", () => {
 			// +1 pour le Main, toujours présent (voir Project.createMain).
 			expect(Object.keys(pipeline.preCompilation.result!.programs)).toHaveLength(3);
 			expect(pipeline.compilation.errors).toEqual([]);
-			expect(pipeline.compilation.result!.routines).toHaveLength(3); // Un routine par grafcet + le Main
+			expect(pipeline.compilation.result!.routines).toHaveLength(4); // 2 grafcets + le Main + la routine d'observation des réceptivités
 
 			// Variables should include: M0, X0, X1, X10, X11, and memos
 			expect(pipeline.compilation.result!.variables.length).toBeGreaterThanOrEqual(5);

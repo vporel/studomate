@@ -3,9 +3,12 @@ import { getElementWidth, LadderElement } from "./element.schema";
 
 function copyElement(element: LadderElement): LadderElement {
 	const position = { ...element.position };
-	if (element.type === "contact") return { ...element, data: { ...element.data }, position };
-	if (element.type === "coil") return { ...element, data: { ...element.data }, position };
-	if (element.type === "block") return { ...element, data: { ...element.data }, position };
+	if (element.type === "contact")
+		return { ...element, data: { ...element.data }, position };
+	if (element.type === "coil")
+		return { ...element, data: { ...element.data }, position };
+	if (element.type === "block")
+		return { ...element, data: { ...element.data }, position };
 	return { ...element, data: { ...element.data }, position };
 }
 
@@ -42,14 +45,23 @@ export default class Section {
 	 * colonnes : son bord droit, celui qui touche `col`, est à `position.col + 2`, pas `+ 1`). */
 	getLeftNeighbor(row: number, col: number): LadderElement | undefined {
 		return this.elements.find(
-			(element) => element.position.row === row && element.position.col + getElementWidth(element) === col,
+			(element) =>
+				element.position.row === row &&
+				element.position.col + getElementWidth(element) === col,
 		);
 	}
 
 	/** Voisin de droite de l'élément (existant ou en cours de dépose) occupant `col`..`col + width -
 	 * 1` — `width` par défaut à 1 (contact/bobine), passer 2 pour un `block`. */
-	getRightNeighbor(row: number, col: number, width: number = 1): LadderElement | undefined {
-		return this.elements.find((element) => element.position.row === row && element.position.col === col + width);
+	getRightNeighbor(
+		row: number,
+		col: number,
+		width: number = 1,
+	): LadderElement | undefined {
+		return this.elements.find(
+			(element) =>
+				element.position.row === row && element.position.col === col + width,
+		);
 	}
 
 	copy(): Section {

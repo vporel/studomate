@@ -8,11 +8,12 @@ import Action, {
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { type FC } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
@@ -21,21 +22,37 @@ export type ActionNodeType = Node<ActionData> & { type: "action" };
 
 export type ActionNodeProps = NodeProps<ActionNodeType>;
 
-const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) => {
+const ActionNode: FC<ActionNodeProps> = ({
+	id,
+	data,
+	selected,
+	width,
+	height,
+}) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
-		useWithTextNodeValue(id, "action", data, "expression", false);
+	const [
+		editingExpression,
+		setEditingExpression,
+		editing,
+		setEditing,
+		saveExpression,
+		error,
+	] = useWithTextNodeValue(id, "action", data, "expression", false);
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const pageVisible = usePageVisible();
 
 	const activeInSimulation = useProjectStore((state) => {
+		if (!pageVisible) return false;
 		const grafcet = state.project!.grafcets[grafcetId];
 		if (!grafcet) return false;
 		const step = ActionHelper.getStep(id, grafcet);
 		if (!step || step.data.number === "") return false;
 		return (
-			state.simulationVariablesStates[getStepVariableId(grafcetId, step.data.number)]?.value === true
+			state.simulationVariablesStates[
+				getStepVariableId(grafcetId, step.data.number)
+			]?.value === true
 		);
 	});
 
@@ -73,7 +90,9 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) 
 					display: "flex",
 					alignItems: "center",
 					transition: "background .2s ease, borderColor .2s ease",
-					backgroundColor: activeInSimulation ? "primary.main" : "white",
+					backgroundColor: activeInSimulation
+						? th.palette.primary.main
+						: "white",
 					color: activeInSimulation ? "white" : "black",
 					"&:hover": {
 						backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
@@ -107,6 +126,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) 
 						outline: "none",
 						resize: "none",
 						padding: "0",
+						backgroundColor: activeInSimulation
+							? th.palette.primary.main
+							: "white",
+						color: activeInSimulation ? "white" : "black",
 						lineHeight: "1.1rem",
 						pointerEvents: !editing ? "none" : "all",
 						fontSize: "0.8rem",
@@ -136,7 +159,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) 
 									data.executionMode === ActionExecutionMode.FALLING_EDGE
 										? "rotate(-35deg)"
 										: "rotate(35deg)",
-								top: data.executionMode === ActionExecutionMode.FALLING_EDGE ? "7px" : "-1px",
+								top:
+									data.executionMode === ActionExecutionMode.FALLING_EDGE
+										? "7px"
+										: "-1px",
 								left: "-2px",
 							},
 							"&::after": {
@@ -144,7 +170,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width, height }) 
 									data.executionMode === ActionExecutionMode.FALLING_EDGE
 										? "rotate(35deg)"
 										: "rotate(-35deg)",
-								top: data.executionMode === ActionExecutionMode.FALLING_EDGE ? "7px" : "-1px",
+								top:
+									data.executionMode === ActionExecutionMode.FALLING_EDGE
+										? "7px"
+										: "-1px",
 								left: "2px",
 							},
 						}}

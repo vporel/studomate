@@ -25,16 +25,17 @@ const UnsavedChangesDialog = ({
 		};
 	};
 }) => {
-	const { visible, message, setVisible, saveProject, onContinue, onCancel } = useProjectStore(
-		useShallow((state) => ({
-			visible: state.ui.unsavedChangesDialogVisible,
-			message: state.ui.unsavedChangesDialogMessage,
-			setVisible: state.setUnsavedChangesDialogVisible,
-			saveProject: state.saveProject,
-			onContinue: state.ui.onUnsavedChangesDialogContinue,
-			onCancel: state.ui.onUnsavedChangesDialogCancel,
-		})),
-	);
+	const { visible, message, setVisible, saveProject, onContinue, onCancel } =
+		useProjectStore(
+			useShallow((state) => ({
+				visible: state.ui.unsavedChangesDialogVisible,
+				message: state.ui.unsavedChangesDialogMessage,
+				setVisible: state.setUnsavedChangesDialogVisible,
+				saveProject: state.saveProject,
+				onContinue: state.ui.onUnsavedChangesDialogContinue,
+				onCancel: state.ui.onUnsavedChangesDialogCancel,
+			})),
+		);
 
 	const onClose = useCallback(() => {
 		setVisible(false);
@@ -73,7 +74,8 @@ const UnsavedChangesDialog = ({
 			</IconButton>
 			<DialogContent dividers>
 				<Typography gutterBottom>
-					{message || "Voulez-vous enregistrer les modifications avant de quitter le projet ?"}
+					{message ||
+						"Voulez-vous enregistrer les modifications avant de quitter le projet ?"}
 				</Typography>
 			</DialogContent>
 			<DialogActions>
@@ -81,7 +83,8 @@ const UnsavedChangesDialog = ({
 					{buttonsProps?.save?.text || "Enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onContinueWithoutSaving}>
-					{buttonsProps?.continueWithoutSaving?.text || "Continuer sans enregistrer"}
+					{buttonsProps?.continueWithoutSaving?.text ||
+						"Continuer sans enregistrer"}
 				</Button>
 				<Button autoFocus onClick={onClose}>
 					{buttonsProps?.cancel?.text || "Annuler"}

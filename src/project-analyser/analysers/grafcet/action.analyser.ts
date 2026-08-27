@@ -1,20 +1,24 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import Variable, { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
+import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simplifier.visitor";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
-import Action, { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import Action, {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
-import { buildEnvironmentCached } from "./build-environment.helper";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class ActionAnalyser extends ElementAnalyser<Action> {
+export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 	/**
 	 * Rules that apply to the action's own data, independently of the grafcet.
 	 */
@@ -22,7 +26,10 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		action: Action,
 		{ dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
-		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
+		const source = {
+			sourceType: "grafcet-action" as const,
+			sourceId: action.id,
+		};
 		// Une action TEXTE (description littérale, niveau 1 de spécification GRAFCET, ex :
 		// "serrer la pièce") est une forme normale et attendue, pas une erreur ni un oubli.
 		if (action.data.type === ActionType.TEXT) return [];
@@ -40,11 +47,12 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 			);
 		} else {
 			try {
-				const lexer = new Lexer(dialect);
 				action.getExpressionLines().forEach((line) => {
-					const parser = new Parser(lexer.tokenize(line));
-					const node = parser.parse();
-					if (action.data.type === ActionType.BOOLEAN_VARIABLE && node.type !== "IDENTIFIER") {
+					const { ast: node } = parseExpressionCached(line, dialect);
+					if (
+						action.data.type === ActionType.BOOLEAN_VARIABLE &&
+						node.type !== "IDENTIFIER"
+					) {
 						issues.push(
 							new ProjectAnalyserIssue(
 								"error",
@@ -93,7 +101,12 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		}
 
 		// ExecutionMode must be set and compatible with the action type
-		if (!Action.isValidExecutionModeForType(action.data.type, action.data.executionMode)) {
+		if (
+			!Action.isValidExecutionModeForType(
+				action.data.type,
+				action.data.executionMode,
+			)
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
@@ -113,13 +126,16 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 	analyseInContext(
 		action: Action,
 		grafcet: Grafcet,
-		variables: Variable[],
+		env: Environment,
 		dialect: Dialect = Dialect.FR,
 	): ProjectAnalyserIssue[] {
 		if (action.data.type === ActionType.TEXT) return [];
 
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-action" as const, sourceId: action.id };
+		const source = {
+			sourceType: "grafcet-action" as const,
+			sourceId: action.id,
+		};
 
 		// Une connexion structurellement invalide (type inattendu) est déjà relevée par la
 		// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
@@ -149,11 +165,8 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 
 		if (action.data.expression && action.data.expression.trim() !== "") {
 			try {
-				const lexer = new Lexer(dialect);
 				action.getExpressionLines().forEach((line) => {
-					const parser = new Parser(lexer.tokenize(line));
-					const node = parser.parse();
-					const env = buildEnvironmentCached(variables);
+					const { ast: node } = parseExpressionCached(line, dialect);
 					const semanticAnalyser = new SemanticAnalyserVisitor(env, {
 						unauthorizedNodes: ["TIMER_BLOCK", "TIMER_STRING_DECLARATION"],
 					});
@@ -163,7 +176,10 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 					//error surfacing only there instead of here would mean this analyser is incomplete.
 					new SimplifierVisitor().visit(node);
 					const typeAnalyser = new TypeAnalyserVisitor(env);
-					if (action.data.type === ActionType.BOOLEAN_VARIABLE && node.type === "IDENTIFIER") {
+					if (
+						action.data.type === ActionType.BOOLEAN_VARIABLE &&
+						node.type === "IDENTIFIER"
+					) {
 						writtenVariableName = node.value;
 					}
 					if (node.type === "ASSIGN_STATEMENT") {
@@ -209,8 +225,10 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 		}
 
 		if (writtenVariableName) {
-			const writtenVariable = variables.find((v) => v.mnemonic === writtenVariableName);
-			if (writtenVariable?.getDirection() === "IN") {
+			if (
+				env.existsVariableWithName(writtenVariableName) &&
+				env.getVariableDirectionByName(writtenVariableName) === "IN"
+			) {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
@@ -222,9 +240,14 @@ export default class ActionAnalyser extends ElementAnalyser<Action> {
 			}
 
 			const stepVariableMnemonics = new Set(
-				grafcet.steps
-					.filter((s) => Number.isInteger(s.data.number) && (s.data.number as number) >= 0)
-					.map((s) => StepHelper.getStepVariableMnemonic(s.data.number as number)),
+				Object.values(grafcet.steps)
+					.filter(
+						(s) =>
+							Number.isInteger(s.data.number) && (s.data.number as number) >= 0,
+					)
+					.map((s) =>
+						StepHelper.getStepVariableMnemonic(s.data.number as number),
+					),
 			);
 			if (stepVariableMnemonics.has(writtenVariableName)) {
 				issues.push(

@@ -1,8 +1,15 @@
 import { deepObjectsComparison } from "@/lib/object";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
-import Program, { PROGRAM_TYPE_LABELS, ProgramType } from "@/schemas/program/program.schema";
+import Program, {
+	PROGRAM_TYPE_LABELS,
+	ProgramType,
+} from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
-import { ProjectStoreGetFunction, ProjectStoreSetFunction, ProjectStoreState } from "../project.store";
+import {
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+	ProjectStoreState,
+} from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 
 const COMMANDS_STACK_SIZE = 100;
@@ -35,17 +42,35 @@ export default abstract class AbstractProgramsManager<
 
 	protected abstract readonly programType: ProgramType;
 
-	constructor(setStoreState: ProjectStoreSetFunction, getStoreState: ProjectStoreGetFunction) {
+	constructor(
+		setStoreState: ProjectStoreSetFunction,
+		getStoreState: ProjectStoreGetFunction,
+	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}
 
-	protected abstract getProgram(project: Project, id: string): TProgram | undefined;
-	protected abstract getStoresValues(state: ProjectStoreState): Record<string, TValues>;
-	protected abstract setStoresValues(values: Record<string, TValues>): Partial<ProjectStoreState>;
-	protected abstract getStoresManagers(state: ProjectStoreState): Record<string, TManagers>;
-	protected abstract setStoresManagers(managers: Record<string, TManagers>): Partial<ProjectStoreState>;
+	protected abstract getProgram(
+		project: Project,
+		id: string,
+	): TProgram | undefined;
+	protected abstract getStoresValues(
+		state: ProjectStoreState,
+	): Record<string, TValues>;
+	protected abstract setStoresValues(
+		values: Record<string, TValues>,
+	): Partial<ProjectStoreState>;
+	protected abstract getStoresManagers(
+		state: ProjectStoreState,
+	): Record<string, TManagers>;
+	protected abstract setStoresManagers(
+		managers: Record<string, TManagers>,
+	): Partial<ProjectStoreState>;
 	protected abstract adoptProgram(managers: TManagers, program: TProgram): void;
+	/** Le programme actuellement détenu par le store monté (pour éviter une resynchro inutile). */
+	protected abstract getAdoptedProgram(
+		managers: TManagers,
+	): TProgram | undefined;
 
 	getCommandsStack(programId: string): CommandsStack<TProgram> {
 		let stack = this.commandsStacks.get(programId);
@@ -107,6 +132,10 @@ export default abstract class AbstractProgramsManager<
 	 * page est fermée sont déjà à jour, le projet les détenant directement. Mais un store monté
 	 * possède sa propre copie et la repousse dans le projet : sans cette resynchronisation, il
 	 * écraserait le résultat de la commande avec sa version périmée.
+	 *
+	 * Seuls les stores dont le programme a réellement changé sont resynchronisés : une commande
+	 * projet ne réécrit qu'une partie des programmes (souvent aucun), inutile de cloner et de
+	 * réaligner la vue des autres.
 	 */
 	syncMountedStoresFromProject(): void {
 		const project = this.getStoreState().project;
@@ -115,12 +144,17 @@ export default abstract class AbstractProgramsManager<
 		Object.entries(managers).forEach(([programId, manager]) => {
 			const program = this.getProgram(project, programId);
 			if (!program) return;
+			const adopted = this.getAdoptedProgram(manager);
+			if (adopted && deepObjectsComparison(adopted, program)) return;
 			//Une copie, pour que le store et le projet ne partagent jamais la même instance
 			this.adoptProgram(manager, program.copy() as TProgram);
 		});
 	}
 
-	protected createProgram(name: string, create: (project: Project) => TProgram): TProgram | null {
+	protected createProgram(
+		name: string,
+		create: (project: Project) => TProgram,
+	): TProgram | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
 		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
@@ -134,7 +168,10 @@ export default abstract class AbstractProgramsManager<
 			type: this.programType,
 			title: program.name,
 		});
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 		return program;
 	}
 
@@ -146,13 +183,15 @@ export default abstract class AbstractProgramsManager<
 			return;
 		}
 		const existing = this.getProgram(project, program.id);
-		if (!existing) throw new Error(`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`);
+		if (!existing)
+			throw new Error(
+				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
+			);
 		if (!deepObjectsComparison(existing, program)) {
-			this.setStoreState(() => {
-				const newProject = project.copy();
-				newProject.updateProgram(program.id, program);
-				return { project: newProject, hasUnsavedChanges: true };
-			});
+			this.setStoreState(() => ({
+				project: project.copyWithProgram(program),
+				hasUnsavedChanges: true,
+			}));
 		}
 	}
 
@@ -164,13 +203,18 @@ export default abstract class AbstractProgramsManager<
 			return;
 		}
 		if (!this.getProgram(project, programId)) {
-			throw new Error(`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`);
+			throw new Error(
+				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
+			);
 		}
 		const newProject = project.copy();
 		newProject.deleteProgram(programId);
 		this.commandsStacks.delete(programId);
 		this.getStoreState().pagesManager.closePage(programId);
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 	}
 
 	renameProgramById(programId: string, newName: string): void {
@@ -181,7 +225,9 @@ export default abstract class AbstractProgramsManager<
 			return;
 		}
 		if (!this.getProgram(project, programId)) {
-			throw new Error(`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`);
+			throw new Error(
+				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
+			);
 		}
 		const newProject = project.copy();
 		//getProgram rend explicite que l'on modifie l'instance, et non un objet temporaire
@@ -192,14 +238,20 @@ export default abstract class AbstractProgramsManager<
 			newPagesData[programId].title = newName;
 			this.setStoreState(() => ({ pagesData: newPagesData }));
 		}
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 	}
 
 	getProgramOrThrow(programId: string): TProgram {
 		const project = this.getStoreState().project;
 		if (!project) throw new Error("No project opened");
 		const program = this.getProgram(project, programId);
-		if (!program) throw new Error(`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`);
+		if (!program)
+			throw new Error(
+				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
+			);
 		return program;
 	}
 }

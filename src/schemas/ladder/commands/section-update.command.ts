@@ -15,9 +15,13 @@ export default class SectionUpdateCommand extends AbstractLadderCommand<{
 	execute(ladder: Ladder): [ladder: Ladder, isCommandValid: boolean] {
 		const section = ladder.getSection(this.payload.sectionId);
 		if (!section) return [ladder, false];
-		if (this.payload.title !== undefined) ladder.renameSection(this.payload.sectionId, this.payload.title);
+		if (this.payload.title !== undefined)
+			ladder.renameSection(this.payload.sectionId, this.payload.title);
 		if (this.payload.description !== undefined) {
-			ladder.setSectionDescription(this.payload.sectionId, this.payload.description);
+			ladder.setSectionDescription(
+				this.payload.sectionId,
+				this.payload.description,
+			);
 		}
 		return [ladder, true];
 	}
@@ -27,7 +31,10 @@ export default class SectionUpdateCommand extends AbstractLadderCommand<{
 			ladder.renameSection(this.payload.sectionId, this.payload.previousTitle);
 		}
 		if (this.payload.previousDescription !== undefined) {
-			ladder.setSectionDescription(this.payload.sectionId, this.payload.previousDescription);
+			ladder.setSectionDescription(
+				this.payload.sectionId,
+				this.payload.previousDescription,
+			);
 		}
 		return ladder;
 	}

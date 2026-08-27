@@ -50,12 +50,19 @@ describe("getFlowDimensions", () => {
 		["A4", "landscape", PAPERS_SIZES.A4_LANDSCAPE],
 		["A3", "portrait", PAPERS_SIZES.A3_PORTRAIT],
 		["A3", "landscape", PAPERS_SIZES.A3_LANDSCAPE],
-	] as [GrafcetFormat["type"], GrafcetFormat["orientation"], { width: number; height: number }][])(
+	] as [
+		GrafcetFormat["type"],
+		GrafcetFormat["orientation"],
+		{ width: number; height: number },
+	][])(
 		"%s %s → dimensions converties en pixels",
 		(type, orientation, expected) => {
 			const dimensions = getFlowDimensions({ type, orientation });
 
-			expect(dimensions).toEqual({ width: mmToPx(expected.width), height: mmToPx(expected.height) });
+			expect(dimensions).toEqual({
+				width: mmToPx(expected.width),
+				height: mmToPx(expected.height),
+			});
 		},
 	);
 });

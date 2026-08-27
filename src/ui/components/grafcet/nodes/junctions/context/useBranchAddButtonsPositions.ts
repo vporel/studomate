@@ -4,8 +4,13 @@ import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { useEffect, useState } from "react";
 import { JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH } from "../JunctionNodeBranchAddButtons";
 
-export default function useBranchAddButtonsPositions(nodeData: JunctionData, width: number) {
-	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<number[]>([]);
+export default function useBranchAddButtonsPositions(
+	nodeData: JunctionData,
+	width: number,
+) {
+	const [branchAddButtonsPositions, setBranchAddButtonsPositions] = useState<
+		number[]
+	>([]);
 	//Calculate the positions for the add branch buttons
 	useEffect(() => {
 		if (nodeData.branchesOrder.length == 0) {
@@ -13,9 +18,15 @@ export default function useBranchAddButtonsPositions(nodeData: JunctionData, wid
 			return;
 		}
 		const buttonsPositions = [];
-		if (nodeData.branches[nodeData.branchesOrder[0]].position <= JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH)
+		if (
+			nodeData.branches[nodeData.branchesOrder[0]].position <=
+			JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH
+		)
 			buttonsPositions.push(-JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
-		else buttonsPositions.push(nodeData.branches[nodeData.branchesOrder[0]].position / 2);
+		else
+			buttonsPositions.push(
+				nodeData.branches[nodeData.branchesOrder[0]].position / 2,
+			);
 		for (let i = 1; i < nodeData.branchesOrder.length; i++) {
 			buttonsPositions.push(
 				(nodeData.branches[nodeData.branchesOrder[i - 1]].position +
@@ -25,13 +36,17 @@ export default function useBranchAddButtonsPositions(nodeData: JunctionData, wid
 		}
 		if (
 			width -
-				nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position <=
+				nodeData.branches[
+					nodeData.branchesOrder[nodeData.branchesOrder.length - 1]
+				].position <=
 			JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH
 		)
 			buttonsPositions.push(width + JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH / 2);
 		else
 			buttonsPositions.push(
-				(nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]].position +
+				(nodeData.branches[
+					nodeData.branchesOrder[nodeData.branchesOrder.length - 1]
+				].position +
 					width) /
 					2,
 			);

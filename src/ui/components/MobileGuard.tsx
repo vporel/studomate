@@ -26,7 +26,12 @@ const MobileGuard = ({ children }: { children: React.ReactNode }) => {
 				textAlign="center"
 				bgcolor="rgb(235, 235, 235)"
 			>
-				<Box component="img" src="/images/icon.png" alt="Logo" sx={{ width: 80, mb: 2 }} />
+				<Box
+					component="img"
+					src="/images/icon.png"
+					alt="Logo"
+					sx={{ width: 80, mb: 2 }}
+				/>
 				<Typography variant="h3" fontWeight="bold" gutterBottom>
 					{APP_NAME}
 				</Typography>
@@ -34,8 +39,8 @@ const MobileGuard = ({ children }: { children: React.ReactNode }) => {
 					Application desktop uniquement
 				</Typography>
 				<Typography color="text.secondary" sx={{ maxWidth: 320 }}>
-					Cette application est disponible uniquement sur desktop. Veuillez y accéder depuis un
-					ordinateur.
+					Cette application est disponible uniquement sur desktop. Veuillez y
+					accéder depuis un ordinateur.
 				</Typography>
 			</Box>
 		);

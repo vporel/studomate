@@ -4,9 +4,14 @@
 import { render } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import JunctionAndEndBuilder from "@/schemas/grafcet/builders/junction-and-end.builder";
-import { useGrafcetContext, useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import {
+	useGrafcetContext,
+	useGrafcetStore,
+} from "@/ui/components/grafcet/context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import JunctionAndEndNode, { JunctionAndEndNodeType } from "./JunctionAndEndNode";
+import JunctionAndEndNode, {
+	JunctionAndEndNodeType,
+} from "./JunctionAndEndNode";
 
 jest.mock("@/ui/components/grafcet/context/GrafcetContext");
 jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
@@ -16,7 +21,10 @@ jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 
 describe("JunctionAndEndNode", () => {
 	it("se rend sans planter", () => {
-		const junction = new JunctionAndEndBuilder().id("junction-1").position(0, 0).build();
+		const junction = new JunctionAndEndBuilder()
+			.id("junction-1")
+			.position(0, 0)
+			.build();
 		(useGrafcetContext as jest.Mock).mockReturnValue({
 			contextMenuEvents: { on: jest.fn(), off: jest.fn(), emit: jest.fn() },
 		});
@@ -42,6 +50,8 @@ describe("JunctionAndEndNode", () => {
 			</ReactFlowProvider>,
 		);
 
-		expect(container.querySelector(".junction-and-end-node")).toBeInTheDocument();
+		expect(
+			container.querySelector(".junction-and-end-node"),
+		).toBeInTheDocument();
 	});
 });

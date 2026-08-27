@@ -6,7 +6,10 @@ import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
@@ -24,10 +27,18 @@ function setup({
 	type = ActionType.NUMERIC_VARIABLE,
 	executionMode = null as ActionExecutionMode | null,
 	stepNumber = 1 as number | "",
-	simulationVariablesStates = {} as Record<string, { mnemonic: string; value: boolean }>,
+	simulationVariablesStates = {} as Record<
+		string,
+		{ mnemonic: string; value: boolean }
+	>,
 	updateNodeData = jest.fn(),
 } = {}) {
-	const step = new StepBuilder().id("step-1").number(stepNumber).initial().position(0, 0).build();
+	const step = new StepBuilder()
+		.id("step-1")
+		.number(stepNumber)
+		.initial()
+		.position(0, 0)
+		.build();
 	const action = new ActionBuilder()
 		.id("action-1")
 		.expression(expression)
@@ -46,7 +57,9 @@ function setup({
 		.addConnection(connection)
 		.build();
 
-	(useGrafcetContext as jest.Mock).mockReturnValue({ store: fakeStoreApi({ grafcet }) });
+	(useGrafcetContext as jest.Mock).mockReturnValue({
+		store: fakeStoreApi({ grafcet }),
+	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			grafcet,
@@ -80,7 +93,9 @@ function setup({
 }
 
 function expressionTextarea(): HTMLTextAreaElement {
-	return document.querySelector(".action_node__textarea") as HTMLTextAreaElement;
+	return document.querySelector(
+		".action_node__textarea",
+	) as HTMLTextAreaElement;
 }
 
 describe("ActionNode", () => {
@@ -97,29 +112,49 @@ describe("ActionNode", () => {
 		fireEvent.change(textarea, { target: { value: "B" } });
 		fireEvent.blur(textarea);
 
-		expect(updateNodeData).toHaveBeenCalledWith("action-1", { expression: "B" });
+		expect(updateNodeData).toHaveBeenCalledWith("action-1", {
+			expression: "B",
+		});
 	});
 
 	it("affiche le badge 'S' pour une action SET", () => {
-		setup({ type: ActionType.BOOLEAN_VARIABLE, executionMode: ActionExecutionMode.SET, expression: "Q0" });
-		expect(document.querySelector(".grafcet-action-node")!.textContent).toContain("S");
+		setup({
+			type: ActionType.BOOLEAN_VARIABLE,
+			executionMode: ActionExecutionMode.SET,
+			expression: "Q0",
+		});
+		expect(
+			document.querySelector(".grafcet-action-node")!.textContent,
+		).toContain("S");
 	});
 
 	it("affiche le badge 'R' pour une action RESET", () => {
-		setup({ type: ActionType.BOOLEAN_VARIABLE, executionMode: ActionExecutionMode.RESET, expression: "Q0" });
-		expect(document.querySelector(".grafcet-action-node")!.textContent).toContain("R");
+		setup({
+			type: ActionType.BOOLEAN_VARIABLE,
+			executionMode: ActionExecutionMode.RESET,
+			expression: "Q0",
+		});
+		expect(
+			document.querySelector(".grafcet-action-node")!.textContent,
+		).toContain("R");
 	});
 
 	it("s'illumine (fond couleur primaire) quand l'étape porteuse est active en simulation", () => {
 		setup({
 			stepNumber: 1,
-			simulationVariablesStates: { "grafcet-g1-step-1": { mnemonic: "X1", value: true } },
+			simulationVariablesStates: {
+				"grafcet-g1-step-1": { mnemonic: "X1", value: true },
+			},
 		});
-		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({ color: "rgb(255, 255, 255)" });
+		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({
+			color: "rgb(255, 255, 255)",
+		});
 	});
 
 	it("reste en noir quand l'étape porteuse n'est pas active", () => {
 		setup({ stepNumber: 1, simulationVariablesStates: {} });
-		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({ color: "rgb(0, 0, 0)" });
+		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({
+			color: "rgb(0, 0, 0)",
+		});
 	});
 });

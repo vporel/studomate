@@ -9,9 +9,19 @@ import useGotoProgram from "../useGotoProgram";
 
 function Header({ onClose }: { onClose: () => void }) {
 	return (
-		<Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+		<Box
+			sx={{
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "space-between",
+			}}
+		>
 			<Typography variant="h6">{"Résultats de l'analyse"}</Typography>
-			<IconButton onClick={onClose} size="small" aria-label="close-analysis-errors">
+			<IconButton
+				onClick={onClose}
+				size="small"
+				aria-label="close-analysis-errors"
+			>
 				<CloseIcon />
 			</IconButton>
 		</Box>
@@ -21,8 +31,12 @@ function Header({ onClose }: { onClose: () => void }) {
 import SeveritySection from "./SeveritySection";
 
 export default function AnalysisResult() {
-	const analysisResultVisible = useProjectStore((s) => s.ui.analysisResultVisible);
-	const setAnalysisResultVisible = useProjectStore((s) => s.setAnalysisResultVisible);
+	const analysisResultVisible = useProjectStore(
+		(s) => s.ui.analysisResultVisible,
+	);
+	const setAnalysisResultVisible = useProjectStore(
+		(s) => s.setAnalysisResultVisible,
+	);
 	const analysisErrors = useProjectStore((s) => s.analysisErrors);
 	const analysisWarnings = useProjectStore((s) => s.analysisWarnings);
 
@@ -32,7 +46,8 @@ export default function AnalysisResult() {
 	// managers, qui lèvent) : un id de programme absent (grafcet supprimé entre-temps, etc.) ne
 	// doit jamais faire planter le panneau, juste afficher "Nom inconnu".
 	const getGrafcetName = useCallback(
-		(grafcetId: string) => project?.getGrafcet(grafcetId)?.name ?? "Nom inconnu",
+		(grafcetId: string) =>
+			project?.getGrafcet(grafcetId)?.name ?? "Nom inconnu",
 		[project],
 	);
 	const getLadderName = useCallback(
@@ -42,15 +57,18 @@ export default function AnalysisResult() {
 
 	const getGrafcetElementLabel = useCallback(
 		(grafcetId: string, elementId: string) =>
-			project?.getGrafcet(grafcetId)?.getElementById(elementId)?.getLabel() ?? "",
+			project?.getGrafcet(grafcetId)?.getElementById(elementId)?.getLabel() ??
+			"",
 		[project],
 	);
 	const getLadderElementLabel = useCallback(
 		(ladderId: string, elementId: string) => {
 			const located = project?.getLadder(ladderId)?.findElement(elementId);
 			if (!located || located.element.type === "railTerminal") return "";
-			if (located.element.type === "contact") return `Contact ${located.element.data.variable}`;
-			if (located.element.type === "coil") return `Bobine ${located.element.data.variable}`;
+			if (located.element.type === "contact")
+				return `Contact ${located.element.data.variable}`;
+			if (located.element.type === "coil")
+				return `Bobine ${located.element.data.variable}`;
 			return "Bloc";
 		},
 		[project],
@@ -66,7 +84,8 @@ export default function AnalysisResult() {
 
 	const hasErrorProgramIssues =
 		analysisErrors &&
-		(Object.keys(analysisErrors.grafcets).length > 0 || Object.keys(analysisErrors.ladders).length > 0);
+		(Object.keys(analysisErrors.grafcets).length > 0 ||
+			Object.keys(analysisErrors.ladders).length > 0);
 	const hasWarningProgramIssues =
 		analysisWarnings &&
 		(Object.keys(analysisWarnings.grafcets).length > 0 ||

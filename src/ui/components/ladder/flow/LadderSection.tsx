@@ -20,14 +20,26 @@ import {
 import { computeLadderFlowDimensions } from "@/ui/utils/ladder/ladder-flow-dimensions";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Box, Collapse, useTheme } from "@mui/material";
-import { EdgeChange, NodeChange, ReactFlow } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Box, Collapse, SxProps, Theme } from "@mui/material";
+import {
+	EdgeChange,
+	IsValidConnection,
+	NodeChange,
+	OnMove,
+	ReactFlow,
+	Viewport,
+} from "@xyflow/react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useLadderStore } from "../context/LadderContext";
 import LadderConnectionLine from "../edges/LadderConnectionLine";
 import LadderSectionDescription from "./LadderSectionDescription";
 import LadderSectionHeader from "./LadderSectionHeader";
-import { edgeTypes, LadderNodeType, nodeTypes } from "./ladder-nodes-definitions";
+import {
+	edgeTypes,
+	LadderNodeType,
+	nodeTypes,
+} from "./ladder-nodes-definitions";
 import useLadderConnectHandler from "./useLadderConnectHandler";
 import useLadderConnectionKeyboardHandler from "./useLadderConnectionKeyboardHandler";
 import useLadderContextMenu from "./useLadderContextMenu";
@@ -45,27 +57,72 @@ interface LadderSectionProps {
 
 const FLOW_MARGIN = 10;
 
-export default function LadderSection({ section, index }: LadderSectionProps) {
-	const th = useTheme();
+const SECTION_FLOW_SX: SxProps<Theme> = {
+	width: "100%",
+	height: "100%",
+	// Fond CSS : aligné au pixel près sur la grille (60×45).
+	// Le <Background> de ReactFlow a un offset interne non contrôlable ;
+	// le CSS backgroundSize garantit un alignement parfait puisque
+	// le viewport est fixe à (0,0) (pas de pan/zoom).
+	backgroundColor: "white",
+	backgroundImage: `radial-gradient(circle at 0 0, rgba(0,0,0,0.45) 1.5px, transparent 1.5px)`,
+	backgroundSize: `${GRID_CELL_WIDTH}px ${GRID_CELL_HEIGHT}px`,
+	// Décalé de RAIL_LANE_WIDTH en x (colonne 0 des éléments, voir POWER_RAIL_OFFSET)
+	// et de LADDER_FLOW_TOP_OFFSET en y (ligne 0 des éléments) — ce dernier n'étant
+	// plus un multiple exact de GRID_CELL_HEIGHT, la périodicité du motif ne suffit
+	// plus à garder les points alignés sur les lignes réelles, il faut ce recalage
+	// explicite.
+	backgroundPosition: `${RAIL_LANE_WIDTH}px ${LADDER_FLOW_TOP_OFFSET}px`,
+	borderLeft: "2px solid black",
+	".react-flow__pane": { cursor: "default" },
+	".react-flow__renderer": { background: "transparent" },
+	// strokeLinecap "round" : deux éléments adjacents (le cas le plus courant) ont
+	// leurs bornes exactement superposées (voir `LadderConnectionEdge`, offset: 0),
+	// donc un tracé de longueur nulle — sans arrondi, un tel tracé ne peint et
+	// n'intercepte RIEN (linecap "butt" par défaut), rendant la connexion à la
+	// fois invisible et impossible à sélectionner. L'arrondi la fait peindre (et
+	// intercepter les clics) comme un point, y compris à longueur nulle.
+	".react-flow__edge-path": {
+		stroke: "black",
+		strokeWidth: 1.5,
+		strokeLinecap: "round",
+	},
+	".react-flow__edge-interaction": { strokeLinecap: "round" },
+	".react-flow__edge.selected .react-flow__edge-path, .react-flow__edge.selectable:focus .react-flow__edge-path":
+		{ stroke: (th: Theme) => th.palette.primary.main },
+};
+
+function LadderSection({ section, index }: LadderSectionProps) {
 	const viewManager = useLadderStore((state) => state.viewManager);
 	const zoom = useLadderStore((state) => state.zoom);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
-	const nodes = useLadderStore((state) => state.nodesBySectionId[section.id] ?? []);
-	const edges = useLadderStore((state) => state.edgesBySectionId[section.id] ?? []);
+	const nodes = useLadderStore(
+		(state) => state.nodesBySectionId[section.id] ?? EMPTY_ARRAY,
+	);
+	const edges = useLadderStore(
+		(state) => state.edgesBySectionId[section.id] ?? EMPTY_ARRAY,
+	);
 	const mode = useProjectStore((state) => state.mode);
 	const [collapsed, setCollapsed] = useState(false);
-	const highlightedNodesIds = useLadderStore((state) => state.highlightedNodesIds);
-	const setActiveSectionId = useLadderStore((state) => state.setActiveSectionId);
+	const hasHighlightedNode = useLadderStore((state) =>
+		(state.highlightedNodesIds ?? EMPTY_ARRAY).some(
+			(id) => section.getElement(id) !== undefined,
+		),
+	);
+	const setActiveSectionId = useLadderStore(
+		(state) => state.setActiveSectionId,
+	);
 
 	useEffect(() => {
-		if (!highlightedNodesIds || highlightedNodesIds.length === 0) return;
-		const hasHighlightedNode = highlightedNodesIds.some((id) => section.getElement(id) !== undefined);
 		if (hasHighlightedNode) {
 			setCollapsed(false);
 		}
-	}, [highlightedNodesIds, section]);
+	}, [hasHighlightedNode]);
 
-	useEffect(() => () => viewManager.unregisterInstance(section.id), [viewManager, section.id]);
+	useEffect(
+		() => () => viewManager.unregisterInstance(section.id),
+		[viewManager, section.id],
+	);
 	const handleInit = useCallback(
 		(instance: ZoomableInstance) => {
 			viewManager.registerInstance(section.id, instance);
@@ -78,24 +135,61 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 		[viewManager, section.id],
 	);
 
-	const { totalRows, leafPositions, rowHeightsInCells } = useMemo(() => computeSectionLayout(section), [section]);
+	const { totalRows, leafPositions, rowHeightsInCells } = useMemo(
+		() => computeSectionLayout(section),
+		[section],
+	);
 	const flowDimensions = useMemo(
 		() => computeLadderFlowDimensions(totalRows, rowHeightsInCells),
 		[totalRows, rowHeightsInCells],
 	);
 
-	const [handleDragOver, handleDrop] = useLadderDropHandlers(section, leafPositions);
+	const [handleDragOver, handleDrop] = useLadderDropHandlers(
+		section,
+		leafPositions,
+	);
 	const handleNodesChange = useCallback(
-		(changes: NodeChange<LadderNodeType>[]) => workflowManager.handleNodesChange(section.id, changes),
+		(changes: NodeChange<LadderNodeType>[]) =>
+			workflowManager.handleNodesChange(section.id, changes),
 		[workflowManager, section.id],
 	);
 	const handleEdgesChange = useCallback(
-		(changes: EdgeChange[]) => workflowManager.handleEdgesChange(section.id, changes),
+		(changes: EdgeChange[]) =>
+			workflowManager.handleEdgesChange(section.id, changes),
 		[workflowManager, section.id],
 	);
 	const handleConnect = useLadderConnectHandler(section);
 	const handleDelete = useLadderDeleteHandler(section);
 	const handleConnectionKeyDown = useLadderConnectionKeyboardHandler(edges);
+	const handleMoveEnd = useCallback<OnMove>(
+		(_, viewport) => viewManager.syncFromInstance(viewport.zoom),
+		[viewManager],
+	);
+	const isValidConnection = useCallback<IsValidConnection>(
+		(connection) => {
+			// Depuis une borne d'alimentation virtuelle (ligne sans borne réelle) : seule
+			// l'existence et la nature de la cible comptent, la borne sera matérialisée à
+			// la connexion (voir useLadderConnectHandler) — pas encore dans le schéma pour
+			// qu'isConnectionAllowed puisse la trouver.
+			if (parseVirtualRailRow(connection.source) !== null) {
+				const target = section.getElement(connection.target);
+				return !!target && target.type !== "railTerminal";
+			}
+			return isConnectionAllowed(section, connection.source, connection.target);
+		},
+		[section],
+	);
+	const extent = useMemo<[[number, number], [number, number]]>(
+		() => [
+			[0, 0],
+			[flowDimensions.width - 2, flowDimensions.height - 2],
+		],
+		[flowDimensions],
+	);
+	const defaultViewport = useMemo<Viewport>(
+		() => ({ x: 0, y: 0, zoom }),
+		[zoom],
+	);
 	const {
 		openNodeContextMenu,
 		openEdgeContextMenu,
@@ -103,7 +197,14 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 		closeContextMenu,
 	} = useLadderContextMenu(section, mode);
 
-	const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+	const {
+		setNodeRef,
+		attributes,
+		listeners,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({
 		id: section.id,
 	});
 
@@ -113,11 +214,14 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 			data-section-id={section.id}
 			onPointerDownCapture={() => setActiveSectionId(section.id)}
 			sx={{
-				width: flowDimensions.width + (FLOW_MARGIN * 2 + RAIL_LANE_WIDTH * 2) + "px",
+				width:
+					flowDimensions.width + (FLOW_MARGIN * 2 + RAIL_LANE_WIDTH * 2) + "px",
 				marginLeft: "50%",
 				// translate(-50%, 0) centre la section ; le déplacement dnd-kit (CSS.Transform) se
 				// compose par-dessus, sinon il écraserait le centrage.
-				transform: [`translate(-50%, 0)`, CSS.Transform.toString(transform)].filter(Boolean).join(" "),
+				transform: [`translate(-50%, 0)`, CSS.Transform.toString(transform)]
+					.filter(Boolean)
+					.join(" "),
 				transition,
 				marginBottom: "16px",
 				opacity: isDragging ? 0.5 : 1,
@@ -134,7 +238,11 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 			/>
 
 			{/* ── Contenu repliable : description puis ReactFlow de la section ── */}
-			<Collapse in={!collapsed} unmountOnExit={false} sx={{ background: "white" }}>
+			<Collapse
+				in={!collapsed}
+				unmountOnExit={false}
+				sx={{ background: "white" }}
+			>
 				<LadderSectionDescription section={section} />
 				<Box
 					sx={{
@@ -146,43 +254,7 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 						py: 1,
 					}}
 				>
-					<Box
-						onKeyDown={handleConnectionKeyDown}
-						sx={{
-							width: "100%",
-							height: "100%",
-							// Fond CSS : aligné au pixel près sur la grille (60×45).
-							// Le <Background> de ReactFlow a un offset interne non contrôlable ;
-							// le CSS backgroundSize garantit un alignement parfait puisque
-							// le viewport est fixe à (0,0) (pas de pan/zoom).
-							backgroundColor: "white",
-							backgroundImage: `radial-gradient(circle at 0 0, rgba(0,0,0,0.45) 1.5px, transparent 1.5px)`,
-							backgroundSize: `${GRID_CELL_WIDTH}px ${GRID_CELL_HEIGHT}px`,
-							// Décalé de RAIL_LANE_WIDTH en x (colonne 0 des éléments, voir POWER_RAIL_OFFSET)
-							// et de LADDER_FLOW_TOP_OFFSET en y (ligne 0 des éléments) — ce dernier n'étant
-							// plus un multiple exact de GRID_CELL_HEIGHT, la périodicité du motif ne suffit
-							// plus à garder les points alignés sur les lignes réelles, il faut ce recalage
-							// explicite.
-							backgroundPosition: `${RAIL_LANE_WIDTH}px ${LADDER_FLOW_TOP_OFFSET}px`,
-							borderLeft: "2px solid black",
-							".react-flow__pane": { cursor: "default" },
-							".react-flow__renderer": { background: "transparent" },
-							// strokeLinecap "round" : deux éléments adjacents (le cas le plus courant) ont
-							// leurs bornes exactement superposées (voir `LadderConnectionEdge`, offset: 0),
-							// donc un tracé de longueur nulle — sans arrondi, un tel tracé ne peint et
-							// n'intercepte RIEN (linecap "butt" par défaut), rendant la connexion à la
-							// fois invisible et impossible à sélectionner. L'arrondi la fait peindre (et
-							// intercepter les clics) comme un point, y compris à longueur nulle.
-							".react-flow__edge-path": {
-								stroke: "black",
-								strokeWidth: 1.5,
-								strokeLinecap: "round",
-							},
-							".react-flow__edge-interaction": { strokeLinecap: "round" },
-							".react-flow__edge.selected .react-flow__edge-path, .react-flow__edge.selectable:focus .react-flow__edge-path":
-								{ stroke: th.palette.primary.main },
-						}}
-					>
+					<Box onKeyDown={handleConnectionKeyDown} sx={SECTION_FLOW_SX}>
 						<ReactFlow
 							nodes={nodes}
 							edges={edges}
@@ -195,24 +267,14 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 							onEdgesChange={handleEdgesChange}
 							onConnect={handleConnect}
 							connectionLineComponent={LadderConnectionLine}
-							isValidConnection={(connection) => {
-								// Depuis une borne d'alimentation virtuelle (ligne sans borne réelle) : seule
-								// l'existence et la nature de la cible comptent, la borne sera matérialisée à
-								// la connexion (voir useLadderConnectHandler) — pas encore dans le schéma pour
-								// qu'isConnectionAllowed puisse la trouver.
-								if (parseVirtualRailRow(connection.source) !== null) {
-									const target = section.getElement(connection.target);
-									return !!target && target.type !== "railTerminal";
-								}
-								return isConnectionAllowed(section, connection.source, connection.target);
-							}}
+							isValidConnection={isValidConnection}
 							onDelete={handleDelete}
 							onNodeContextMenu={openNodeContextMenu}
 							onEdgeContextMenu={openEdgeContextMenu}
 							onPaneClick={closeContextMenu}
 							onPaneContextMenu={openPaneContextMenu}
 							onMoveStart={closeContextMenu}
-							onMoveEnd={(_, viewport) => viewManager.syncFromInstance(viewport.zoom)}
+							onMoveEnd={handleMoveEnd}
 							onInit={handleInit}
 							panOnDrag={false}
 							selectionOnDrag={true}
@@ -226,15 +288,9 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 							zoomOnDoubleClick={false}
 							minZoom={LADDER_FLOW_MIN_ZOOM}
 							maxZoom={LADDER_FLOW_MAX_ZOOM}
-							translateExtent={[
-								[0, 0],
-								[flowDimensions.width - 2, flowDimensions.height - 2],
-							]}
-							nodeExtent={[
-								[0, 0],
-								[flowDimensions.width - 2, flowDimensions.height - 2],
-							]}
-							defaultViewport={{ x: 0, y: 0, zoom }}
+							translateExtent={extent}
+							nodeExtent={extent}
+							defaultViewport={defaultViewport}
 							fitView={false}
 							onDragOver={handleDragOver}
 							onDrop={handleDrop}
@@ -251,3 +307,5 @@ export default function LadderSection({ section, index }: LadderSectionProps) {
 		</Box>
 	);
 }
+
+export default memo(LadderSection);

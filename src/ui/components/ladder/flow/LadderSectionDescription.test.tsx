@@ -20,7 +20,9 @@ function setup(description = "", executeOperation = jest.fn()) {
 }
 
 function textarea(): HTMLTextAreaElement {
-	return screen.getByLabelText("Description de la section") as HTMLTextAreaElement;
+	return screen.getByLabelText(
+		"Description de la section",
+	) as HTMLTextAreaElement;
 }
 
 describe("LadderSectionDescription", () => {

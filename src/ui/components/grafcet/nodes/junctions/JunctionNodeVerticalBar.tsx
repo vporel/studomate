@@ -13,8 +13,10 @@ const JunctionNodeVerticalBar = ({
 	pivot: boolean;
 	branchId?: string;
 }) => {
-	const { pivotSelected, selectedBranchId, selectBranch, selectPivot } = useJunctionNodeContext();
-	const selected = (pivot && pivotSelected) || (!pivot && selectedBranchId === branchId);
+	const { pivotSelected, selectedBranchId, selectBranch, selectPivot } =
+		useJunctionNodeContext();
+	const selected =
+		(pivot && pivotSelected) || (!pivot && selectedBranchId === branchId);
 
 	return (
 		<>

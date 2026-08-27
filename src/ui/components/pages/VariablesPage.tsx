@@ -7,7 +7,8 @@ import { useMemo } from "react";
 import VariablesTable from "../variables/VariablesTable";
 import Page from "./Page";
 
-export type VariablesPageId = "input-variables" | "output-variables" | "memory-variables";
+export type VariablesPageId =
+	"input-variables" | "output-variables" | "memory-variables";
 
 export type VariablesPageData = Omit<PageData, "id"> & { id: VariablesPageId };
 
@@ -38,7 +39,10 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 	}, [pageData.id]);
 
 	return (
-		<Page pageId={pageData.id} sx={{ justifyContent: "center", alignItems: "start" }}>
+		<Page
+			pageId={pageData.id}
+			sx={{ justifyContent: "center", alignItems: "start" }}
+		>
 			<Box
 				sx={{
 					padding: "3rem 3rem",

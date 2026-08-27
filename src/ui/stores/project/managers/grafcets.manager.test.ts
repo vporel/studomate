@@ -68,24 +68,35 @@ describe("GrafcetsManager", () => {
 		});
 
 		it("refuse la création hors mode DESIGN", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur"), mode: ProjectMode.SIMULATION });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				mode: ProjectMode.SIMULATION,
+			});
 
 			expect(manager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)).toBeNull();
 		});
 
 		it("crée le grafcet, ouvre sa page et marque le projet comme modifié", () => {
-			const { manager, getState } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager, getState } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			const grafcet = manager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT);
 
 			expect(grafcet).not.toBeNull();
 			expect(getState().project!.getGrafcet(grafcet!.id)).toBeDefined();
-			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({ id: grafcet!.id, type: "grafcet", title: "G1" });
+			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({
+				id: grafcet!.id,
+				type: "grafcet",
+				title: "G1",
+			});
 			expect(getState().hasUnsavedChanges).toBe(true);
 		});
 
 		it("génère un nom unique au format Grafcet_N et le format par défaut quand rien n'est fourni", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			const first = manager.newGrafcet();
 			const second = manager.newGrafcet();
@@ -98,7 +109,9 @@ describe("GrafcetsManager", () => {
 
 	describe("deleteProgramById (grafcet)", () => {
 		it("lève une erreur si le grafcet n'existe pas", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.deleteProgramById("inexistant")).toThrow();
 		});
@@ -117,7 +130,10 @@ describe("GrafcetsManager", () => {
 
 		it("ne fait rien hors mode DESIGN", () => {
 			const { project, grafcetId } = projectWithGrafcet();
-			const { manager, getState } = makeManager({ project, mode: ProjectMode.SIMULATION });
+			const { manager, getState } = makeManager({
+				project,
+				mode: ProjectMode.SIMULATION,
+			});
 
 			manager.deleteProgramById(grafcetId);
 
@@ -130,17 +146,23 @@ describe("GrafcetsManager", () => {
 			const { project, grafcetId } = projectWithGrafcet();
 			const { manager, getState } = makeManager({
 				project,
-				pagesData: { [grafcetId]: { id: grafcetId, type: "grafcet", title: "G1" } },
+				pagesData: {
+					[grafcetId]: { id: grafcetId, type: "grafcet", title: "G1" },
+				},
 			});
 
 			manager.renameProgramById(grafcetId, "Nouveau nom");
 
-			expect(getState().project!.getGrafcet(grafcetId)!.name).toBe("Nouveau nom");
+			expect(getState().project!.getGrafcet(grafcetId)!.name).toBe(
+				"Nouveau nom",
+			);
 			expect(getState().pagesData[grafcetId].title).toBe("Nouveau nom");
 		});
 
 		it("lève une erreur si le grafcet n'existe pas", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.renameProgramById("inexistant", "X")).toThrow();
 		});
@@ -154,7 +176,9 @@ describe("GrafcetsManager", () => {
 		});
 
 		it("lève une erreur si le grafcet n'existe pas dans le projet", () => {
-			const { manager } = makeManager({ project: new Project("p1", "Projet", "auteur") });
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
 
 			expect(() => manager.getProgramOrThrow("inexistant")).toThrow();
 		});
@@ -200,6 +224,57 @@ describe("GrafcetsManager", () => {
 
 			manager.deleteStoreManager("g1");
 			expect(getState().grafcetsStoresManagers.g1).toBeUndefined();
+		});
+	});
+
+	// Régression : un renommage de variable réécrit les grafcets du projet (voir
+	// VariablesUpdateCommand) ; un grafcet monté doit adopter le résultat, mais seulement s'il
+	// a réellement changé.
+	describe("syncMountedStoresFromProject", () => {
+		it("fait adopter par les stores montés le grafcet du projet quand leur copie est périmée", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const staleGrafcet = project.getGrafcet(grafcetId)!.copy();
+			staleGrafcet.name = "périmé";
+			const adoptGrafcet = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "grafcet",
+				activeScope: grafcetId,
+				grafcetsStoresManagers: {
+					[grafcetId]: {
+						workflowManager: { adoptGrafcet, getGrafcet: () => staleGrafcet },
+					},
+				},
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptGrafcet).toHaveBeenCalledTimes(1);
+			const [adopted] = adoptGrafcet.mock.calls[0];
+			expect(adopted.id).toBe(grafcetId);
+			expect(adopted).not.toBe(project.getGrafcet(grafcetId));
+		});
+
+		it("ne resynchronise pas un store dont la copie est déjà identique à celle du projet", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const adoptGrafcet = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "grafcet",
+				activeScope: grafcetId,
+				grafcetsStoresManagers: {
+					[grafcetId]: {
+						workflowManager: {
+							adoptGrafcet,
+							getGrafcet: () => project.getGrafcet(grafcetId)!.copy(),
+						},
+					},
+				},
+			});
+
+			manager.syncMountedStoresFromProject();
+
+			expect(adoptGrafcet).not.toHaveBeenCalled();
 		});
 	});
 });

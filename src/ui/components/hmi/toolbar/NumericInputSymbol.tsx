@@ -15,7 +15,16 @@ const NumericInputSymbol = () => (
 			backgroundColor: "#fff",
 		}}
 	>
-		<Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: "#333", lineHeight: 1 }}>0</Typography>
+		<Typography
+			sx={{
+				fontSize: "0.75rem",
+				fontWeight: 700,
+				color: "#333",
+				lineHeight: 1,
+			}}
+		>
+			0
+		</Typography>
 	</Box>
 );
 

@@ -10,7 +10,11 @@ describe("ElementsRemoveCommand", () => {
 		const contact = createContactElement("A", "NO", 0, 0);
 		const coil = createCoilElement("Q1", "normal", 0, 1);
 		ladder.addElements(section.id, [contact, coil]);
-		const connection = new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" });
+		const connection = new Connection(
+			"c1",
+			{ id: contact.id, type: "contact", handle: "source" },
+			{ id: coil.id, type: "coil", handle: "target" },
+		);
 		ladder.addConnections(section.id, [connection]);
 
 		const command = new ElementsRemoveCommand({
@@ -29,7 +33,10 @@ describe("ElementsRemoveCommand", () => {
 
 	it("échoue si aucun élément n'est fourni", () => {
 		const ladder = new Ladder("l1", "L");
-		const command = new ElementsRemoveCommand({ elements: [], connections: [] });
+		const command = new ElementsRemoveCommand({
+			elements: [],
+			connections: [],
+		});
 		expect(command.execute(ladder)[1]).toBe(false);
 	});
 });

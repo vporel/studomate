@@ -12,21 +12,37 @@ jest.mock("@/ui/components/projects/ProjectContext");
 
 describe("WatchTables", () => {
 	const setWatchTablesVisible = jest.fn();
-	const inputVar = new VariableBuilder().id("in-1").mnemonic("E1").zone("logic-input").type("BOOL").build();
+	const inputVar = new VariableBuilder()
+		.id("in-1")
+		.mnemonic("E1")
+		.zone("logic-input")
+		.type("BOOL")
+		.build();
 	const outputVar = new VariableBuilder()
 		.id("out-1")
 		.mnemonic("S1")
 		.zone("logic-output")
 		.type("BOOL")
 		.build();
-	const memoryVar = new VariableBuilder().id("mem-1").mnemonic("M1").zone("memory").type("INT").build();
+	const memoryVar = new VariableBuilder()
+		.id("mem-1")
+		.mnemonic("M1")
+		.zone("memory")
+		.type("INT")
+		.build();
 
 	function setup() {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({
 				setWatchTablesVisible,
-				project: { variables: [inputVar, outputVar, memoryVar], dialect: Dialect.FR },
-				simulationManager: { setPhysicalInputValue: jest.fn(), setMemoryValue: jest.fn() },
+				project: {
+					variables: [inputVar, outputVar, memoryVar],
+					dialect: Dialect.FR,
+				},
+				simulationManager: {
+					setPhysicalInputValue: jest.fn(),
+					setMemoryValue: jest.fn(),
+				},
 				simulationVariablesStates: {},
 			}),
 		);

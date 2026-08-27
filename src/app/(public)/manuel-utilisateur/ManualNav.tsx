@@ -2,7 +2,14 @@
 
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import {
+	Box,
+	List,
+	ListItemButton,
+	ListItemIcon,
+	ListItemText,
+	Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { MANUAL_SECTIONS } from "./manual-sections";
 
@@ -18,7 +25,9 @@ export default function ManualNav({
 	useEffect(() => {
 		if (!selected) return;
 		// Déplie le parent dont un enfant est sélectionné (ex : lien direct vers une sous-section).
-		const parent = MANUAL_SECTIONS.find((s) => s.children?.some((c) => c.id === selected));
+		const parent = MANUAL_SECTIONS.find((s) =>
+			s.children?.some((c) => c.id === selected),
+		);
 		if (parent) setOpenMap((m) => ({ ...m, [parent.id]: true }));
 	}, [selected]);
 
@@ -29,7 +38,8 @@ export default function ManualNav({
 			</Typography>
 			<List disablePadding>
 				{MANUAL_SECTIONS.map((s) => {
-					const hasChildren = Array.isArray(s.children) && s.children.length > 0;
+					const hasChildren =
+						Array.isArray(s.children) && s.children.length > 0;
 					const isOpen = Boolean(openMap[s.id]);
 
 					return (
@@ -41,7 +51,8 @@ export default function ManualNav({
 								onClick={(e) => {
 									e.preventDefault();
 									onSelect?.(s.id);
-									if (hasChildren) setOpenMap((m) => ({ ...m, [s.id]: !m[s.id] }));
+									if (hasChildren)
+										setOpenMap((m) => ({ ...m, [s.id]: !m[s.id] }));
 								}}
 							>
 								<ListItemText primary={s.label} />

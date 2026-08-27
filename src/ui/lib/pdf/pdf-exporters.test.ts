@@ -5,7 +5,10 @@ import { JsPdfExporter } from "./jspdf.pdf-exporter";
 import { Html2PdfExporter } from "./html2pdf.pdf-exporter";
 import { PdfExportSection } from "./pdf-exporter";
 
-function makeSection(label: string, orientation: "portrait" | "landscape" = "portrait"): PdfExportSection {
+function makeSection(
+	label: string,
+	orientation: "portrait" | "landscape" = "portrait",
+): PdfExportSection {
 	const el = document.createElement("div");
 	el.style.width = "200px";
 	el.style.height = "100px";

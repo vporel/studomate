@@ -28,12 +28,18 @@ export default class TransitionHelper {
 		for (const connection of connectionsToTransition) {
 			switch (connection.source.type as TransitionHandleTargetPredecessorType) {
 				case "step": {
-					const step = grafcet.getElementByIdAndType<Step>(connection.source.id, "step");
+					const step = grafcet.getElementByIdAndType<Step>(
+						connection.source.id,
+						"step",
+					);
 					if (step) predecessorSteps.push(step);
 					break;
 				}
 				case "junction-and-end":
-					const steps = JunctionAndEndHelper.getPredecessorSteps(connection.source.id, grafcet);
+					const steps = JunctionAndEndHelper.getPredecessorSteps(
+						connection.source.id,
+						grafcet,
+					);
 					predecessorSteps.push(...steps);
 					break;
 				case "junction-or-start":
@@ -58,31 +64,39 @@ export default class TransitionHelper {
 	 * For step-referral-source, resolves the referenced step by its target number within this grafcet.
 	 */
 	static getSuccessorSteps(transitionId: string, grafcet: Grafcet): Step[] {
-		const connectionsFromTransition = grafcet.getConnectionsByElementIdAndHandle(
-			transitionId,
-			TRANSITION_HANDLE_SOURCE_SUCCESSOR,
-		);
+		const connectionsFromTransition =
+			grafcet.getConnectionsByElementIdAndHandle(
+				transitionId,
+				TRANSITION_HANDLE_SOURCE_SUCCESSOR,
+			);
 		const successorSteps: Step[] = [];
 		for (const connection of connectionsFromTransition) {
 			switch (connection.target.type as TransitionHandleSourceSuccessorType) {
 				case "step": {
-					const step = grafcet.getElementByIdAndType<Step>(connection.target.id, "step");
+					const step = grafcet.getElementByIdAndType<Step>(
+						connection.target.id,
+						"step",
+					);
 					if (step) successorSteps.push(step);
 					break;
 				}
 				case "junction-and-start": {
-					const steps = JunctionAndStartHelper.getSuccessorSteps(connection.target.id, grafcet);
+					const steps = JunctionAndStartHelper.getSuccessorSteps(
+						connection.target.id,
+						grafcet,
+					);
 					successorSteps.push(...steps);
 					break;
 				}
 				case "step-referral-source": {
 					// Resolve the referenced step by its number in the current grafcet
-					const referralSource = grafcet.getElementByIdAndType<StepReferralSource>(
-						connection.target.id,
-						"step-referral-source",
-					);
+					const referralSource =
+						grafcet.getElementByIdAndType<StepReferralSource>(
+							connection.target.id,
+							"step-referral-source",
+						);
 					if (referralSource && referralSource.data.targetStepNumber !== "") {
-						const step = grafcet.steps.find(
+						const step = Object.values(grafcet.steps).find(
 							(s) => s.data.number === referralSource.data.targetStepNumber,
 						);
 						if (step) successorSteps.push(step);
@@ -98,15 +112,22 @@ export default class TransitionHelper {
 					for (const pivotConn of pivotConns) {
 						if (pivotConn.source.id !== connection.target.id) continue;
 						if (pivotConn.target.type === "step") {
-							const step = grafcet.getElementByIdAndType<Step>(pivotConn.target.id, "step");
+							const step = grafcet.getElementByIdAndType<Step>(
+								pivotConn.target.id,
+								"step",
+							);
 							if (step) successorSteps.push(step);
 						} else if (pivotConn.target.type === "step-referral-source") {
-							const referralSource = grafcet.getElementByIdAndType<StepReferralSource>(
-								pivotConn.target.id,
-								"step-referral-source",
-							);
-							if (referralSource && referralSource.data.targetStepNumber !== "") {
-								const step = grafcet.steps.find(
+							const referralSource =
+								grafcet.getElementByIdAndType<StepReferralSource>(
+									pivotConn.target.id,
+									"step-referral-source",
+								);
+							if (
+								referralSource &&
+								referralSource.data.targetStepNumber !== ""
+							) {
+								const step = Object.values(grafcet.steps).find(
 									(s) => s.data.number === referralSource.data.targetStepNumber,
 								);
 								if (step) successorSteps.push(step);
@@ -128,7 +149,10 @@ export default class TransitionHelper {
 	 * Returns all direct predecessor connections of a transition
 	 */
 	static getPredecessors(transitionId: string, grafcet: Grafcet): Connection[] {
-		return grafcet.getConnectionsByElementIdAndHandle(transitionId, TRANSITION_HANDLE_TARGET_PREDECESSOR);
+		return grafcet.getConnectionsByElementIdAndHandle(
+			transitionId,
+			TRANSITION_HANDLE_TARGET_PREDECESSOR,
+		);
 	}
 
 	/**
@@ -142,7 +166,10 @@ export default class TransitionHelper {
 	 * Returns all direct successor connections from a transition
 	 */
 	static getSuccessors(transitionId: string, grafcet: Grafcet): Connection[] {
-		return grafcet.getConnectionsByElementIdAndHandle(transitionId, TRANSITION_HANDLE_SOURCE_SUCCESSOR);
+		return grafcet.getConnectionsByElementIdAndHandle(
+			transitionId,
+			TRANSITION_HANDLE_SOURCE_SUCCESSOR,
+		);
 	}
 
 	/**

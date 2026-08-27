@@ -9,7 +9,9 @@ import useHmiStyleAnimation from "./useHmiStyleAnimation";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
-function mockSimulationVariablesStates(states: Record<string, { id: string; mnemonic: string; value: unknown }>) {
+function mockSimulationVariablesStates(
+	states: Record<string, { id: string; mnemonic: string; value: unknown }>,
+) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ simulationVariablesStates: states }),
 	);
@@ -18,7 +20,21 @@ function mockSimulationVariablesStates(states: Record<string, { id: string; mnem
 describe("useHmiStyleAnimation", () => {
 	it("retourne un objet vide si aucune animation n'est fournie", () => {
 		mockSimulationVariablesStates({});
-		const { result } = renderHook(() => useHmiStyleAnimation<"fill">(undefined));
+		const { result } = renderHook(() =>
+			useHmiStyleAnimation<"fill">(undefined, true),
+		);
+		expect(result.current).toEqual({});
+	});
+
+	it("retourne un objet vide quand enabled est faux, même si une ligne correspond", () => {
+		mockSimulationVariablesStates({
+			v1: { id: "v1", mnemonic: "CPT", value: 2 },
+		});
+		const animation: HmiStyleAnimation<"fill"> = {
+			variableMnemonic: "CPT",
+			rows: [{ value: 2, properties: { fill: "#f00" } }],
+		};
+		const { result } = renderHook(() => useHmiStyleAnimation(animation, false));
 		expect(result.current).toEqual({});
 	});
 
@@ -28,12 +44,14 @@ describe("useHmiStyleAnimation", () => {
 			variableMnemonic: "CPT",
 			rows: [{ value: 0, properties: { fill: "#fff" } }],
 		};
-		const { result } = renderHook(() => useHmiStyleAnimation(animation));
+		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
 		expect(result.current).toEqual({});
 	});
 
 	it("retourne les propriétés de la ligne dont la valeur correspond exactement à la variable", () => {
-		mockSimulationVariablesStates({ v1: { id: "v1", mnemonic: "CPT", value: 2 } });
+		mockSimulationVariablesStates({
+			v1: { id: "v1", mnemonic: "CPT", value: 2 },
+		});
 		const animation: HmiStyleAnimation<"fill"> = {
 			variableMnemonic: "CPT",
 			rows: [
@@ -41,22 +59,26 @@ describe("useHmiStyleAnimation", () => {
 				{ value: 2, properties: { fill: "#f00" } },
 			],
 		};
-		const { result } = renderHook(() => useHmiStyleAnimation(animation));
+		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
 		expect(result.current).toEqual({ fill: "#f00" });
 	});
 
 	it("retourne un objet vide si aucune ligne ne correspond exactement", () => {
-		mockSimulationVariablesStates({ v1: { id: "v1", mnemonic: "CPT", value: 5 } });
+		mockSimulationVariablesStates({
+			v1: { id: "v1", mnemonic: "CPT", value: 5 },
+		});
 		const animation: HmiStyleAnimation<"fill"> = {
 			variableMnemonic: "CPT",
 			rows: [{ value: 0, properties: { fill: "#fff" } }],
 		};
-		const { result } = renderHook(() => useHmiStyleAnimation(animation));
+		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
 		expect(result.current).toEqual({});
 	});
 
 	it("compare une variable booléenne comme 0/1", () => {
-		mockSimulationVariablesStates({ v1: { id: "v1", mnemonic: "MARCHE", value: true } });
+		mockSimulationVariablesStates({
+			v1: { id: "v1", mnemonic: "MARCHE", value: true },
+		});
 		const animation: HmiStyleAnimation<"fill"> = {
 			variableMnemonic: "MARCHE",
 			rows: [
@@ -64,7 +86,7 @@ describe("useHmiStyleAnimation", () => {
 				{ value: 1, properties: { fill: "#0f0" } },
 			],
 		};
-		const { result } = renderHook(() => useHmiStyleAnimation(animation));
+		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
 		expect(result.current).toEqual({ fill: "#0f0" });
 	});
 });

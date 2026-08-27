@@ -4,7 +4,11 @@ import { deepObjectsComparison } from "@/lib/object";
 /**
  * Classe abstraite factorisant l'algorithme de réconciliation React Flow pour les arêtes.
  */
-export default abstract class AbstractEdgesFactory<TEdge extends Edge, TSource, TDomain extends { id: string }> {
+export default abstract class AbstractEdgesFactory<
+	TEdge extends Edge,
+	TSource,
+	TDomain extends { id: string },
+> {
 	getInitialEdges(source: TSource): TEdge[] {
 		return this.syncEdges([], source);
 	}

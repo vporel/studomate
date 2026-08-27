@@ -4,7 +4,10 @@ import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
-import { AssignBlockParams, CompareBlockParams, CounterBlockParams, TimerBlockParams } from "@/schemas/ladder/block.schema";
+import {
+	CounterBlockParams,
+	TimerBlockParams,
+} from "@/schemas/ladder/block.schema";
 import { PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
 import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
@@ -18,15 +21,28 @@ import {
 	xToCol,
 	yToRow,
 } from "@/ui/utils/ladder/ladder-flow-builder";
-import { initialConnectionPoints, pushConnectionBend } from "@/ui/utils/ladder/ladder-connection-path";
-import { applyEdgeChanges, applyNodeChanges, EdgeChange, NodeChange, NodePositionChange, Edge } from "@xyflow/react";
+import {
+	initialConnectionPoints,
+	pushConnectionBend,
+} from "@/ui/utils/ladder/ladder-connection-path";
+import {
+	applyEdgeChanges,
+	applyNodeChanges,
+	EdgeChange,
+	NodeChange,
+	NodePositionChange,
+	Edge,
+} from "@xyflow/react";
 import LadderEdgesFactory from "../factories/edges.factory";
 import LadderNodesFactory from "../factories/nodes.factory";
-import { LadderStoreGetFunction, LadderStoreSetFunction } from "../ladder.store";
+import {
+	LadderStoreGetFunction,
+	LadderStoreSetFunction,
+} from "../ladder.store";
 
 /**
- * Patche `nodesBySectionId`/`edgesBySectionId` directement (comme le `WorkflowManager` du
- * GRAFCET patche `nodes`/`edges`), au lieu de les redériver du domaine à chaque rendu : le
+ * Patche `nodesBySectionId`/`edgesBySectionId` directement (comme le `GrafcetWorkflowManager`
+ * patche `nodes`/`edges`), au lieu de les redériver du domaine à chaque rendu : le
  * retour visuel "en direct" pendant un glisser ou une flèche directionnelle vient alors
  * gratuitement d'`applyNodeChanges`, sans overlay ni réconciliation séparée.
  */
@@ -34,24 +50,36 @@ export default class LadderWorkflowManager {
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
 
-	constructor(setStoreState: LadderStoreSetFunction, getStoreState: LadderStoreGetFunction) {
+	constructor(
+		setStoreState: LadderStoreSetFunction,
+		getStoreState: LadderStoreGetFunction,
+	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}
 
-	handleNodesChange(sectionId: string, changes: NodeChange<LadderNodeType>[]): void {
+	handleNodesChange(
+		sectionId: string,
+		changes: NodeChange<LadderNodeType>[],
+	): void {
 		const state = this.getStoreState();
 		const section = state.ladder.getSection(sectionId);
-		const rowHeightsInCells = section ? computeRowHeightsInCells(section) : new Map<number, number>();
+		const rowHeightsInCells = section
+			? computeRowHeightsInCells(section)
+			: new Map<number, number>();
 
 		// La suppression passe exclusivement par `useLadderDeleteHandler`
 		// (ElementsRemoveCommand/ConnectionsRemoveCommand) : un changement "remove" ici patcherait
 		// le tableau en double, en course avec la resynchronisation que cette commande déclenche
-		// déjà (voir `CommandsStackManager.applyLadder`).
+		// déjà (voir `LadderCommandsStackManager.applyLadder`).
 		const changesToApply = changes
 			.filter((change) => change.type !== "remove")
 			.map((change) => this.snapPositionChange(change, rowHeightsInCells))
-			.map((change) => (section ? this.revertInvalidFinishedMove(change, section, rowHeightsInCells) : change));
+			.map((change) =>
+				section
+					? this.revertInvalidFinishedMove(change, section, rowHeightsInCells)
+					: change,
+			);
 
 		const nodes = state.nodesBySectionId[sectionId] ?? [];
 		const newNodes = applyNodeChanges<LadderNodeType>(changesToApply, nodes);
@@ -62,18 +90,29 @@ export default class LadderWorkflowManager {
 		if (section) {
 			for (const change of changesToApply) {
 				if (change.type !== "position" || !change.position) continue;
-				const resolved = this.resolveMovedElement(section, change.id, change.position, rowHeightsInCells);
+				const resolved = this.resolveMovedElement(
+					section,
+					change.id,
+					change.position,
+					rowHeightsInCells,
+				);
 				if (!resolved) continue;
 
 				// Aperçu en direct du coude poussé, à CHAQUE frame (pas seulement la dernière) : sans
 				// ça, `points` ne change qu'au relâchement (voir plus bas) et le tracé reste figé
 				// pendant tout le geste — le nœud déplacé semble alors passer au travers du segment
 				// vertical au lieu de le pousser, qui ne "rattrape" le nœud qu'à la fin.
-				const bendUpdates = this.computeConnectionBendUpdates(section, resolved.elementId, resolved.newPosition);
+				const bendUpdates = this.computeConnectionBendUpdates(
+					section,
+					resolved.elementId,
+					resolved.newPosition,
+				);
 				if (bendUpdates.length > 0) {
 					newEdges = newEdges.map((edge) => {
 						const update = bendUpdates.find((u) => u.connectionId === edge.id);
-						return update ? { ...edge, data: { ...edge.data, points: update.newPoints } } : edge;
+						return update
+							? { ...edge, data: { ...edge.data, points: update.newPoints } }
+							: edge;
 					});
 				}
 
@@ -87,7 +126,9 @@ export default class LadderWorkflowManager {
 							new ConnectionUpdateCommand({
 								connectionId: u.connectionId,
 								changes: { points: u.newPoints },
-								previousChanges: { points: u.previousPoints.map(([r, c]) => [r, c]) },
+								previousChanges: {
+									points: u.previousPoints.map(([r, c]) => [r, c]),
+								},
 							}),
 					),
 				);
@@ -98,14 +139,17 @@ export default class LadderWorkflowManager {
 			nodesBySectionId: { ...s.nodesBySectionId, [sectionId]: newNodes },
 			edgesBySectionId: { ...s.edgesBySectionId, [sectionId]: newEdges },
 		}));
-		if (commands.length > 0) state.commandsStackManager.executeOperation(commands);
+		if (commands.length > 0)
+			state.commandsStackManager.executeOperation(commands);
 	}
 
 	handleEdgesChange(sectionId: string, changes: EdgeChange[]): void {
 		const state = this.getStoreState();
 		const edges = state.edgesBySectionId[sectionId] ?? [];
 		const newEdges = applyEdgeChanges(changes, edges);
-		this.setStoreState((s) => ({ edgesBySectionId: { ...s.edgesBySectionId, [sectionId]: newEdges } }));
+		this.setStoreState((s) => ({
+			edgesBySectionId: { ...s.edgesBySectionId, [sectionId]: newEdges },
+		}));
 	}
 
 	/** Accroche chaque frame (pas seulement la dernière) à la grille de colonnes/lignes réelle —
@@ -122,14 +166,23 @@ export default class LadderWorkflowManager {
 		if (change.type !== "position" || !change.position) return change;
 		const row = Math.round(yToRow(change.position.y, rowHeightsInCells));
 		const col = Math.round(xToCol(change.position.x));
-		return { ...change, position: { x: colToX(col), y: rowToY(row, rowHeightsInCells) } };
+		return {
+			...change,
+			position: { x: colToX(col), y: rowToY(row, rowHeightsInCells) },
+		};
 	}
 
 	/** Dernière frame d'un glisser (`dragging: false`) ou relâchement d'une flèche directionnelle
 	 * (`dragging` alors `undefined` — voir `useMoveSelectedNodes` de la lib) : jamais une frame
 	 * intermédiaire (`dragging: true`), pour ne pas dispatcher une commande à chaque pixel. */
-	private isFinishedPositionChange(change: NodeChange): change is NodePositionChange {
-		return change.type === "position" && change.dragging !== true && !!change.position;
+	private isFinishedPositionChange(
+		change: NodeChange,
+	): change is NodePositionChange {
+		return (
+			change.type === "position" &&
+			change.dragging !== true &&
+			!!change.position
+		);
 	}
 
 	/**
@@ -141,7 +194,11 @@ export default class LadderWorkflowManager {
 	 * colonne pour les deux (le nœud déplacé "rattrape" son voisin, un cas de glisser normal et
 	 * testé) reste tolérée : seule une inversion franche casserait ce tri.
 	 */
-	private isPositionValidForConnections(section: Section, elementId: string, newPosition: GridPosition): boolean {
+	private isPositionValidForConnections(
+		section: Section,
+		elementId: string,
+		newPosition: GridPosition,
+	): boolean {
 		for (const connection of section.connections) {
 			if (connection.source.id === elementId) {
 				const target = section.getElement(connection.target.id);
@@ -164,14 +221,30 @@ export default class LadderWorkflowManager {
 		section: Section,
 		rowHeightsInCells: Map<number, number>,
 	): NodeChange<LadderNodeType> {
-		if (!this.isFinishedPositionChange(change) || !change.position) return change;
-		const resolved = this.resolveMovedElement(section, change.id, change.position, rowHeightsInCells);
+		if (!this.isFinishedPositionChange(change) || !change.position)
+			return change;
+		const resolved = this.resolveMovedElement(
+			section,
+			change.id,
+			change.position,
+			rowHeightsInCells,
+		);
 		if (!resolved) return change;
-		if (this.isPositionValidForConnections(section, resolved.elementId, resolved.newPosition)) return change;
+		if (
+			this.isPositionValidForConnections(
+				section,
+				resolved.elementId,
+				resolved.newPosition,
+			)
+		)
+			return change;
 		const element = section.getElement(resolved.elementId)!;
 		return {
 			...change,
-			position: { x: colToX(element.position.col), y: rowToY(element.position.row, rowHeightsInCells) },
+			position: {
+				x: colToX(element.position.col),
+				y: rowToY(element.position.row, rowHeightsInCells),
+			},
 		};
 	}
 
@@ -197,13 +270,18 @@ export default class LadderWorkflowManager {
 		resolved: { elementId: string; newPosition: GridPosition },
 	): ElementUpdateCommand | null {
 		const element = section.getElement(resolved.elementId)!;
-		if (resolved.newPosition.row === element.position.row && resolved.newPosition.col === element.position.col) {
+		if (
+			resolved.newPosition.row === element.position.row &&
+			resolved.newPosition.col === element.position.col
+		) {
 			return null;
 		}
 		return new ElementUpdateCommand({
 			elementId: element.id,
 			changes: { position: resolved.newPosition },
-			previousChanges: { position: { row: element.position.row, col: element.position.col } },
+			previousChanges: {
+				position: { row: element.position.row, col: element.position.col },
+			},
 		});
 	}
 
@@ -218,15 +296,25 @@ export default class LadderWorkflowManager {
 		section: Section,
 		elementId: string,
 		newPosition: GridPosition,
-	): { connectionId: string; newPoints: [number, number][]; previousPoints: [number, number][] }[] {
-		const updates: { connectionId: string; newPoints: [number, number][]; previousPoints: [number, number][] }[] = [];
+	): {
+		connectionId: string;
+		newPoints: [number, number][];
+		previousPoints: [number, number][];
+	}[] {
+		const updates: {
+			connectionId: string;
+			newPoints: [number, number][];
+			previousPoints: [number, number][];
+		}[] = [];
 		const movedElement = section.getElement(elementId);
 		if (!movedElement) return updates;
 		for (const connection of section.connections) {
 			const isSource = connection.source.id === elementId;
 			const isTarget = connection.target.id === elementId;
 			if (!isSource && !isTarget) continue;
-			const other = section.getElement(isSource ? connection.target.id : connection.source.id);
+			const other = section.getElement(
+				isSource ? connection.target.id : connection.source.id,
+			);
 			if (!other) continue;
 
 			const sourcePos = isSource ? newPosition : other.position;
@@ -270,11 +358,17 @@ export default class LadderWorkflowManager {
 		this.setStoreState((state) => ({
 			nodesBySectionId: {
 				...(state.nodesBySectionId || {}),
-				[sectionId]: (state.nodesBySectionId[sectionId] ?? []).map((n) => ({ ...n, selected: true })),
+				[sectionId]: (state.nodesBySectionId[sectionId] ?? []).map((n) => ({
+					...n,
+					selected: true,
+				})),
 			},
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
+				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({
+					...e,
+					selected: true,
+				})),
 			},
 		}));
 	}
@@ -283,7 +377,10 @@ export default class LadderWorkflowManager {
 		this.setStoreState((state) => ({
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({ ...e, selected: true })),
+				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({
+					...e,
+					selected: true,
+				})),
 			},
 		}));
 	}
@@ -303,24 +400,35 @@ export default class LadderWorkflowManager {
 	/**
 	 * Adopts a ladder rewritten outside of this store, typically by a project-level command
 	 * (renaming a variable rewrites the contacts/coils referencing it). Miroir de
-	 * `WorkflowManager.adoptGrafcet` côté GRAFCET.
+	 * `GrafcetWorkflowManager.adoptGrafcet` côté GRAFCET.
 	 *
 	 * No command is pushed on the ladder stack: the operation is already undoable as a whole
 	 * through the project command that triggered it.
 	 */
+	/** Le ladder actuellement détenu par ce store. */
+	getLadder(): Ladder {
+		return this.getStoreState().ladder;
+	}
+
 	adoptLadder(ladder: Ladder): void {
 		this.setStoreState((state) => ({
 			ladder,
 			nodesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderNodesFactory.syncNodes(state.nodesBySectionId[section.id] ?? [], section),
+					LadderNodesFactory.syncNodes(
+						state.nodesBySectionId[section.id] ?? [],
+						section,
+					),
 				]),
 			),
 			edgesBySectionId: Object.fromEntries(
 				ladder.sections.map((section) => [
 					section.id,
-					LadderEdgesFactory.syncEdges(state.edgesBySectionId[section.id] ?? [], section),
+					LadderEdgesFactory.syncEdges(
+						state.edgesBySectionId[section.id] ?? [],
+						section,
+					),
 				]),
 			),
 		}));
@@ -332,10 +440,16 @@ export default class LadderWorkflowManager {
 	 * contextuel) et par le couper (Ctrl+X) : la cascade élément → connexions ne doit exister
 	 * qu'à un seul endroit.
 	 */
-	deleteElements(sectionId: string, elementIds: string[], edgeIds: string[] = []): void {
+	deleteElements(
+		sectionId: string,
+		elementIds: string[],
+		edgeIds: string[] = [],
+	): void {
 		const section = this.getStoreState().ladder.getSection(sectionId);
 		if (!section) return;
-		const removedElementIds = new Set(elementIds.filter((id) => section.getElement(id)));
+		const removedElementIds = new Set(
+			elementIds.filter((id) => section.getElement(id)),
+		);
 		const commands: AbstractLadderCommand<any>[] = [];
 
 		if (removedElementIds.size > 0) {
@@ -344,9 +458,18 @@ export default class LadderWorkflowManager {
 				element: section.getElement(id)!,
 			}));
 			const touchedConnections = section.connections
-				.filter((c) => removedElementIds.has(c.source.id) || removedElementIds.has(c.target.id))
+				.filter(
+					(c) =>
+						removedElementIds.has(c.source.id) ||
+						removedElementIds.has(c.target.id),
+				)
 				.map((connection) => ({ sectionId: section.id, connection }));
-			commands.push(new ElementsRemoveCommand({ elements, connections: touchedConnections }));
+			commands.push(
+				new ElementsRemoveCommand({
+					elements,
+					connections: touchedConnections,
+				}),
+			);
 		}
 
 		//Connexions supprimées isolément (aucune de leurs extrémités n'est déjà couverte par la
@@ -354,12 +477,22 @@ export default class LadderWorkflowManager {
 		const standaloneConnections = edgeIds
 			.map((id) => section.connections.find((c) => c.id === id))
 			.filter((c): c is NonNullable<typeof c> => !!c)
-			.filter((c) => !removedElementIds.has(c.source.id) && !removedElementIds.has(c.target.id));
+			.filter(
+				(c) =>
+					!removedElementIds.has(c.source.id) &&
+					!removedElementIds.has(c.target.id),
+			);
 		if (standaloneConnections.length > 0) {
-			commands.push(new ConnectionsRemoveCommand({ sectionId: section.id, connections: standaloneConnections }));
+			commands.push(
+				new ConnectionsRemoveCommand({
+					sectionId: section.id,
+					connections: standaloneConnections,
+				}),
+			);
 		}
 
-		if (commands.length > 0) this.getStoreState().commandsStackManager.executeOperation(commands);
+		if (commands.length > 0)
+			this.getStoreState().commandsStackManager.executeOperation(commands);
 	}
 
 	/**
@@ -368,20 +501,30 @@ export default class LadderWorkflowManager {
 	 * l'explorateur (voir `useBlockInstanceMenuItems`), qui appelle cette méthode une fois la page
 	 * du ladder ciblé devenue active.
 	 */
-	// `CompareBlockParams`/`AssignBlockParams` ont la même forme (`{ expression }`) : `blockType`
-	// doit être fourni explicitement par l'appelant plutôt que déduit de la présence d'un champ
-	// (comme `timerType`/`counterType` le permettent pour timer/counter).
-	openSystemBlockEditor(elementId: string, blockType: "timer", initial: TimerBlockParams): void;
-	openSystemBlockEditor(elementId: string, blockType: "counter", initial: CounterBlockParams): void;
-	openSystemBlockEditor(elementId: string, blockType: "compare", initial: CompareBlockParams): void;
-	openSystemBlockEditor(elementId: string, blockType: "assign", initial: AssignBlockParams): void;
+	// `blockType` doit être fourni explicitement par l'appelant plutôt que déduit de la présence
+	// d'un champ (comme `timerType`/`counterType` le permettent pour timer/counter). Les blocs
+	// `"compare"`/`"assign"`/`"arithmetic"` n'ont pas de fenêtre : ils se configurent sur le canevas.
+	openSystemBlockEditor(
+		elementId: string,
+		blockType: "timer",
+		initial: TimerBlockParams,
+	): void;
+	openSystemBlockEditor(
+		elementId: string,
+		blockType: "counter",
+		initial: CounterBlockParams,
+	): void;
 	openSystemBlockEditor(
 		elementId: string,
 		blockType: PendingSystemBlockEdit["blockType"],
-		initial: TimerBlockParams | CounterBlockParams | CompareBlockParams | AssignBlockParams,
+		initial: TimerBlockParams | CounterBlockParams,
 	): void {
 		this.setStoreState({
-			pendingSystemBlockEdit: { blockType, elementId, initial } as PendingSystemBlockEdit,
+			pendingSystemBlockEdit: {
+				blockType,
+				elementId,
+				initial,
+			} as PendingSystemBlockEdit,
 		});
 	}
 }

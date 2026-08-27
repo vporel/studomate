@@ -45,7 +45,11 @@ describe("ElementUpdateCommand", () => {
 
 	it("échoue si l'élément n'existe pas", () => {
 		const ladder = new Ladder("l1", "L");
-		const command = new ElementUpdateCommand({ elementId: "missing", changes: {}, previousChanges: {} });
+		const command = new ElementUpdateCommand({
+			elementId: "missing",
+			changes: {},
+			previousChanges: {},
+		});
 		expect(command.execute(ladder)[1]).toBe(false);
 	});
 });

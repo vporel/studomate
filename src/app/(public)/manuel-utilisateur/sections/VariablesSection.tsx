@@ -32,6 +32,7 @@ export default function VariablesSection() {
 				<li>{`DWORD — entier non signé 32 bits, disponible pour les analogiques et mémoires`}</li>
 				<li>{`REAL — nombre flottant, disponible dans les mémoires`}</li>
 				<li>{`STRING — chaîne de caractères, disponible dans les mémoires`}</li>
+				<li>{`TIME — durée (ex. T#5s), disponible dans les mémoires — utilisé notamment pour les temporisations`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>
@@ -50,6 +51,12 @@ export default function VariablesSection() {
 			</Typography>
 			<Typography mb={2}>
 				{`Depuis la page Variables (accessible via l'explorateur ou le menu), vous pouvez ajouter, modifier et supprimer des variables. La modification et la suppression sont désactivées en mode Simulation.`}
+			</Typography>
+			<Typography mb={2}>
+				{`Renommer le mnémonique d'une variable met à jour automatiquement toutes les expressions qui l'utilisent dans les grafcets et les ladders du projet.`}
+			</Typography>
+			<Typography mb={2}>
+				{`La barre d'outils de la table permet également d'exporter la liste des variables (CSV) ou de l'imprimer.`}
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 		</section>

@@ -41,10 +41,14 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 	 * - it reaches every program, since the command owns the whole project;
 	 * - undo is exactly symmetric by construction, instead of being replayed by hand.
 	 */
-	private applyMnemonicRenames(project: Project, direction: "forward" | "backward"): void {
+	private applyMnemonicRenames(
+		project: Project,
+		direction: "forward" | "backward",
+	): void {
 		const renames: Record<string, string> = {};
 		for (const { newData, oldData } of this.payload) {
-			const from = direction === "forward" ? oldData.mnemonic : newData.mnemonic;
+			const from =
+				direction === "forward" ? oldData.mnemonic : newData.mnemonic;
 			const to = direction === "forward" ? newData.mnemonic : oldData.mnemonic;
 			if (!from || !to || from === to) continue;
 			renames[from] = to;

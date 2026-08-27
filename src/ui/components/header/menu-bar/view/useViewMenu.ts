@@ -17,7 +17,10 @@ export default function useViewMenu(): AppMenuType {
 						label: "Explorateur",
 						checked: viewAppearance.explorer,
 						onClick: () =>
-							setViewAppearance({ ...viewAppearance, explorer: !viewAppearance.explorer }),
+							setViewAppearance({
+								...viewAppearance,
+								explorer: !viewAppearance.explorer,
+							}),
 					},
 				],
 			],

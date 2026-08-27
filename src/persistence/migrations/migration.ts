@@ -11,7 +11,7 @@
 export type ProjectMigration = {
 	from: number;
 	description: string;
-	migrate: (project: Record<string, any>) => Record<string, any>;
+	migrate: (project: Record<string, unknown>) => Record<string, unknown>;
 };
 
 /** Projet écrit avant l'introduction du versionnement, reconnu à l'absence de `schemaVersion`. */

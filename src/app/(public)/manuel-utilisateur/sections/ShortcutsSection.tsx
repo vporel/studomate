@@ -17,6 +17,7 @@ export default function ShortcutsSection() {
 				<li>{`Nouveau projet — aucun raccourci (Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre)`}</li>
 				<li>{`Ctrl+O — Ouvrir projet`}</li>
 				<li>{`Ctrl+S — Enregistrer`}</li>
+				<li>{`Ctrl+Shift+S — Enregistrer sous (crée une copie du projet sous un nouveau nom)`}</li>
 				<li>{`Ctrl+E — Exporter`}</li>
 				<li>{`Ctrl+F4 (Windows/Linux) ou Cmd+W (macOS) — Fermer le projet`}</li>
 			</Typography>
@@ -35,10 +36,11 @@ export default function ShortcutsSection() {
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Ctrl+Z — Annuler`}</li>
 				<li>{`Ctrl+Y — Rétablir`}</li>
-				<li>{`Ctrl+C — Copier (canvas Grafcet ou Ladder actif)`}</li>
-				<li>{`Ctrl+V — Coller (canvas Grafcet ou Ladder actif)`}</li>
-				<li>{`Ctrl+X — Couper (canvas Grafcet ou Ladder actif)`}</li>
-				<li>{`Ctrl+A — Sélectionner tout (canvas Grafcet ou Ladder actif)`}</li>
+				<li>{`Ctrl+C — Copier (canvas Grafcet, Ladder ou HMI actif)`}</li>
+				<li>{`Ctrl+V — Coller (canvas Grafcet, Ladder ou HMI actif)`}</li>
+				<li>{`Ctrl+X — Couper (canvas Grafcet, Ladder ou HMI actif)`}</li>
+				<li>{`Ctrl+A — Sélectionner tout (canvas Grafcet, Ladder ou HMI actif)`}</li>
+				<li>{`Suppr ou Retour arrière — Supprimer la sélection (canvas HMI actif)`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>

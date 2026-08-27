@@ -24,7 +24,13 @@ const Letter = ({ letter }: { letter: string }) => {
  * Symbole visuel d'un contact, sans les Handles React Flow ni le label — réutilisé par
  * `ContactNode` (canevas) et `ContactTool` (icône de la toolbar).
  */
-const ContactSymbol = ({ mode, color = "black" }: { mode: ContactMode; color?: string }) => {
+const ContactSymbol = ({
+	mode,
+	color = "black",
+}: {
+	mode: ContactMode;
+	color?: string;
+}) => {
 	return (
 		<Box sx={{ position: "relative", width: "100%", height: "100%" }}>
 			<Box
@@ -32,7 +38,7 @@ const ContactSymbol = ({ mode, color = "black" }: { mode: ContactMode; color?: s
 					position: "absolute",
 					left: "0%",
 					top: "calc(50% - 1px)",
-					width: "30%",
+					width: "25%",
 					height: "2px",
 					background: color,
 				}}
@@ -62,7 +68,7 @@ const ContactSymbol = ({ mode, color = "black" }: { mode: ContactMode; color?: s
 					position: "absolute",
 					right: 0,
 					top: "calc(50% - 1px)",
-					width: "30%",
+					width: "25%",
 					height: "2px",
 					background: color,
 				}}

@@ -1,4 +1,4 @@
-﻿import Grafcet from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 
 /**
@@ -9,7 +9,10 @@ export default class JunctionHelper {
 	 * Checks if the junction pivot is connected to an element
 	 */
 	static isPivotConnected(junctionId: string, grafcet: Grafcet): boolean {
-		const connections = grafcet.getConnectionsByElementIdAndHandle(junctionId, JUNCTION_HANDLE_PIVOT);
+		const connections = grafcet.getConnectionsByElementIdAndHandle(
+			junctionId,
+			JUNCTION_HANDLE_PIVOT,
+		);
 		return connections.length > 0;
 	}
 
@@ -18,12 +21,17 @@ export default class JunctionHelper {
 	 * comparison would miss two connections stacked on the same branch while another branch
 	 * stays empty, and would still count a stale connection left on a since-removed branch.
 	 */
-	static areAllBranchesConnected(junctionId: string, grafcet: Grafcet): boolean {
+	static areAllBranchesConnected(
+		junctionId: string,
+		grafcet: Grafcet,
+	): boolean {
 		const junction = grafcet.getElementById<Junction>(junctionId);
 		if (!junction) return false;
 
 		return junction.data.branchesOrder.every(
-			(branchId) => grafcet.getConnectionsByElementIdAndHandle(junctionId, branchId).length === 1,
+			(branchId) =>
+				grafcet.getConnectionsByElementIdAndHandle(junctionId, branchId)
+					.length === 1,
 		);
 	}
 }

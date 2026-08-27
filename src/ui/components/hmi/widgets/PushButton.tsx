@@ -45,7 +45,9 @@ const PushButton = ({
 				borderRadius: "6px",
 				border: selected ? "2px solid #1976d2" : "2px solid #555",
 				backgroundColor: active ? "#1976d2" : "#e0e0e0",
-				boxShadow: active ? "inset 0 3px 6px rgba(0,0,0,0.3)" : "0 3px 6px rgba(0,0,0,0.2)",
+				boxShadow: active
+					? "inset 0 3px 6px rgba(0,0,0,0.3)"
+					: "0 3px 6px rgba(0,0,0,0.2)",
 				transition: "background-color 0.05s",
 				cursor: onValueChange ? "pointer" : "default",
 				userSelect: "none",
@@ -55,7 +57,7 @@ const PushButton = ({
 			onMouseUp={handleRelease}
 			onMouseLeave={handleRelease}
 		>
-			{!hideLabel && (
+			{!hideLabel && data.label && (
 				<Typography
 					sx={{
 						fontSize: "0.8rem",
@@ -69,7 +71,7 @@ const PushButton = ({
 						maxWidth: "100%",
 					}}
 				>
-					{data.label || "BP"}
+					{data.label}
 				</Typography>
 			)}
 		</Box>

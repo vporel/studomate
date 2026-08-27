@@ -42,7 +42,11 @@ export default class Parser {
 		if (this.at(TokenType.ASSIGN)) {
 			const token = this.consume(TokenType.ASSIGN);
 			const right = this.parseOrExpr();
-			return StatementsBuilder.buildAssignStatementNode(left, right, token.position);
+			return StatementsBuilder.buildAssignStatementNode(
+				left,
+				right,
+				token.position,
+			);
 		}
 		return left;
 	}
@@ -52,7 +56,12 @@ export default class Parser {
 		while (this.at(TokenType.OR)) {
 			this.consume(TokenType.OR);
 			const right = this.parseAndExpr();
-			left = ExpressionsBuilder.buildLogicalExpressionNode("OR", left, right, this.current().position);
+			left = ExpressionsBuilder.buildLogicalExpressionNode(
+				"OR",
+				left,
+				right,
+				this.current().position,
+			);
 		}
 		return left;
 	}
@@ -62,7 +71,12 @@ export default class Parser {
 		while (this.at(TokenType.AND)) {
 			this.consume(TokenType.AND);
 			const right = this.parseNotExpr();
-			left = ExpressionsBuilder.buildLogicalExpressionNode("AND", left, right, this.current().position);
+			left = ExpressionsBuilder.buildLogicalExpressionNode(
+				"AND",
+				left,
+				right,
+				this.current().position,
+			);
 		}
 		return left;
 	}
@@ -71,7 +85,11 @@ export default class Parser {
 		if (this.at(TokenType.NOT)) {
 			const tok = this.consume(TokenType.NOT);
 			const expr = this.parseNotExpr();
-			return ExpressionsBuilder.buildUnaryExpressionNode("NOT", expr, tok.position);
+			return ExpressionsBuilder.buildUnaryExpressionNode(
+				"NOT",
+				expr,
+				tok.position,
+			);
 		}
 		return this.parseComparisonExpr();
 	}
@@ -129,17 +147,26 @@ export default class Parser {
 				return this.parseTimerDefinition();
 			}
 			this.consume(TokenType.IDENTIFIER);
-			return IdentifiersBuilder.buildIdentifierNode(token.value, token.position);
+			return IdentifiersBuilder.buildIdentifierNode(
+				token.value,
+				token.position,
+			);
 		}
 
 		if (this.at(TokenType.TRUE) || this.at(TokenType.FALSE)) {
 			this.consume(this.current().type);
-			return LiteralsBuilder.buildBooleanNode(token.type === TokenType.TRUE, token.position);
+			return LiteralsBuilder.buildBooleanNode(
+				token.type === TokenType.TRUE,
+				token.position,
+			);
 		}
 
 		if (this.at(TokenType.NUMBER)) {
 			this.consume(TokenType.NUMBER);
-			return LiteralsBuilder.buildNumberNode(parseFloat(token.value), token.position);
+			return LiteralsBuilder.buildNumberNode(
+				parseFloat(token.value),
+				token.position,
+			);
 		}
 
 		if (this.at(TokenType.STRING)) {
@@ -154,7 +181,10 @@ export default class Parser {
 			// Then we expect a right parenthese, if not it's an error
 			if (!this.at(TokenType.RPAREN)) {
 				const t = this.current();
-				throw new MissingRightParentheseException(t.position, t.type === TokenType.EOF);
+				throw new MissingRightParentheseException(
+					t.position,
+					t.type === TokenType.EOF,
+				);
 			}
 			this.consume(TokenType.RPAREN);
 			return expr;
@@ -166,16 +196,20 @@ export default class Parser {
 	private isTimerPattern(): boolean {
 		const p = this.position;
 		// First verification : Identifier followed by /
-		if (
-			!(this.tokens[p]?.type === TokenType.IDENTIFIER && this.tokens[p + 1]?.type === TokenType.SLASH)
-		) {
+		if (!(
+			this.tokens[p]?.type === TokenType.IDENTIFIER &&
+			this.tokens[p + 1]?.type === TokenType.SLASH
+		)) {
 			return false;
 		}
 
 		// We seek a SLASH + DURATION later
 		// We limit the search (e.g., 10 tokens) to avoid scanning the entire array
 		for (let i = p + 2; i < p + 12 && i < this.tokens.length; i++) {
-			if (this.tokens[i].type === TokenType.SLASH && this.tokens[i + 1]?.type === TokenType.DURATION) {
+			if (
+				this.tokens[i].type === TokenType.SLASH &&
+				this.tokens[i + 1]?.type === TokenType.DURATION
+			) {
 				return true;
 			}
 		}
@@ -196,7 +230,11 @@ export default class Parser {
 			this.position++;
 		}
 		// Add a fictitious EOF to ensure the sub-parser stops properly
-		subTokens.push({ type: TokenType.EOF, value: "", position: this.current().position });
+		subTokens.push({
+			type: TokenType.EOF,
+			value: "",
+			position: this.current().position,
+		});
 
 		// Parse the expression with a new instance of Parser
 		const subParser = new Parser(subTokens);
@@ -214,7 +252,10 @@ export default class Parser {
 	}
 
 	private isEndOfTimerInput(): boolean {
-		return this.at(TokenType.SLASH) && this.tokens[this.position + 1]?.type === TokenType.DURATION;
+		return (
+			this.at(TokenType.SLASH) &&
+			this.tokens[this.position + 1]?.type === TokenType.DURATION
+		);
 	}
 
 	private current(): Token {
@@ -246,7 +287,9 @@ export default class Parser {
 
 	private consumeComparisonOperator(): Token {
 		const token = this.current();
-		const operatorEntry = Object.values(COMPARISON_OPERATOR_TOKENS_TYPES).find((t) => t === token.type);
+		const operatorEntry = Object.values(COMPARISON_OPERATOR_TOKENS_TYPES).find(
+			(t) => t === token.type,
+		);
 		if (operatorEntry) {
 			this.position++;
 			return token;
@@ -260,7 +303,9 @@ export default class Parser {
 
 	private consumeArithmeticOperator(): Token {
 		const token = this.current();
-		const operatorEntry = Object.values(ARITHMETIC_OPERATOR_TOKENS_TYPES).find((t) => t === token.type);
+		const operatorEntry = Object.values(ARITHMETIC_OPERATOR_TOKENS_TYPES).find(
+			(t) => t === token.type,
+		);
 		if (operatorEntry) {
 			this.position++;
 			return token;

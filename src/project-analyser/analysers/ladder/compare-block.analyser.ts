@@ -1,39 +1,36 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import AllowedNodeTypesVisitor from "@/expression-language/ast/visitors/allowed-node-types.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { Lexer } from "@/expression-language/lexer/lexer";
-import Parser from "@/expression-language/parser/parser";
+import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueCode,
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
-import { BlockElement } from "@/schemas/ladder/block.schema";
+import { BlockElement, COMPARE_OPERATORS } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
-import TypeAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/type-analyser.visitor";
 
-/** Seuls ces types de nœud sont autorisés dans l'expression d'un bloc compare — opérateurs
- * arithmétiques et de comparaison, identifiants et littéraux ; jamais l'affectation, un opérateur
- * logique (ET/OU/NON), ou un bloc timer/compteur. Liste blanche (voir `AllowedNodeTypesVisitor`) :
- * un type de nœud ajouté plus tard au langage est exclu par défaut tant qu'il n'est pas ajouté ici
- * explicitement. */
-const ALLOWED_NODE_TYPES: ASTNode["type"][] = [
+/** Une pinoche IN1/IN2 d'un bloc compare est un opérande simple : un identifiant, un littéral, ou
+ * au plus une expression arithmétique. Jamais de comparaison imbriquée, d'opérateur logique ni
+ * d'affectation — liste blanche (voir `AllowedNodeTypesVisitor`). */
+const ALLOWED_OPERAND_NODE_TYPES: ASTNode["type"][] = [
 	"IDENTIFIER",
 	"BOOLEAN_LITERAL",
 	"NUMBER_LITERAL",
 	"STRING_LITERAL",
 	"ARITHMETIC_EXPRESSION",
-	"COMPARISON_EXPRESSION",
 ];
 
 /**
- * Validation propre à un bloc `"compare"` — voir `CompareBlockParams`. Contrairement à
- * PT/PV, l'expression n'est jamais découpée en littéral/variable : elle est lexée/parsée comme une
- * expression ordinaire (même pipeline que `TransitionAnalyser`), doit rester dans le sous-ensemble
- * arithmétique/comparaison (voir `ALLOWED_NODE_TYPES`), et son type final doit être booléen.
- * Appelé par `BlockAnalyser`, qui dispatche par `blockType`.
+ * Validation propre à un bloc `"compare"` — voir `CompareBlockParams`. Les deux pinoches IN1/IN2
+ * sont lexées/parsées comme des opérandes, puis combinées en `IN1 <operator> IN2` et passées à
+ * `SemanticAnalyserVisitor`, qui garantit déjà : identifiants déclarés, opérandes de même type,
+ * et opérandes numériques pour `<`/`<=`/`>`/`>=`. Appelé par `BlockAnalyser`, qui dispatche par
+ * `blockType`.
  */
 export default class CompareBlockAnalyser {
 	static analyse(
@@ -43,63 +40,54 @@ export default class CompareBlockAnalyser {
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "compare") return [];
-		const { expression } = element.data.params;
+		const { in1, in2, operator } = element.data.params;
 
-		if (!expression || expression.trim() === "") {
-			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_COMPARE_EXPRESSION_EMPTY",
+		const issues: ProjectAnalyserIssue[] = [];
+		if (!in1 || in1.trim() === "")
+			issues.push(
+				this.issue(
+					"BLOCK_COMPARE_IN1_EMPTY",
 					source,
-					"L'expression de ce bloc de comparaison doit être renseignée.",
+					"La pinoche IN1 de ce bloc de comparaison doit être renseignée.",
 				),
-			];
-		}
+			);
+		if (!in2 || in2.trim() === "")
+			issues.push(
+				this.issue(
+					"BLOCK_COMPARE_IN2_EMPTY",
+					source,
+					"La pinoche IN2 de ce bloc de comparaison doit être renseignée.",
+				),
+			);
+		if (!COMPARE_OPERATORS.includes(operator))
+			issues.push(
+				this.issue(
+					"BLOCK_COMPARE_OPERATOR_INVALID",
+					source,
+					`"${operator}" n'est pas un opérateur de comparaison valide.`,
+				),
+			);
+		if (issues.length > 0) return issues;
 
 		try {
-			const node = new Parser(new Lexer(dialect).tokenize(expression)).parse();
+			const left = this.parseOperand(in1, dialect, "IN1", source, issues);
+			const right = this.parseOperand(in2, dialect, "IN2", source, issues);
+			if (issues.length > 0 || !left || !right) return issues;
 
-			const violation = new AllowedNodeTypesVisitor(ALLOWED_NODE_TYPES).visit(node)[0];
-			if (violation?.type === "ASSIGN_STATEMENT") {
-				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_COMPARE_ASSIGNMENT_NOT_ALLOWED",
-						source,
-						"Expression invalide : ce bloc ne peut pas contenir d'affectation.",
-					),
-				];
-			}
-			if (violation) {
-				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_COMPARE_OPERATOR_NOT_ALLOWED",
-						source,
-						"Expression invalide : seules les opérations arithmétiques et de comparaison sont autorisées.",
-					),
-				];
-			}
-
-			const env = new Environment(
-				Array.from(variablesByMnemonic.values()).map(SchemaVariablesMapper.schemaToEnv),
+			const comparison = ExpressionsBuilder.buildComparisonExpressionNode(
+				operator,
+				left,
+				right,
 			);
-			new SemanticAnalyserVisitor(env).visit(node);
-			const resultType = new TypeAnalyserVisitor(env).visit(node);
-			if (resultType !== "boolean") {
-				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_COMPARE_EXPRESSION_NOT_BOOLEAN",
-						source,
-						"Expression invalide : ce bloc doit retourner un booléen.",
-					),
-				];
-			}
+			const env = new Environment(
+				Array.from(variablesByMnemonic.values()).map(
+					SchemaVariablesMapper.schemaToEnv,
+				),
+			);
+			new SemanticAnalyserVisitor(env).visit(comparison);
 		} catch (e) {
 			return [
-				new ProjectAnalyserIssue(
-					"error",
+				this.issue(
 					"BLOCK_COMPARE_INVALID_EXPRESSION",
 					source,
 					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
@@ -107,6 +95,35 @@ export default class CompareBlockAnalyser {
 			];
 		}
 
-		return [];
+		return issues;
+	}
+
+	private static parseOperand(
+		raw: string,
+		dialect: Dialect,
+		pinName: "IN1" | "IN2",
+		source: ProjectAnalyserIssueSource,
+		issues: ProjectAnalyserIssue[],
+	): ASTNode | null {
+		const { ast } = parseExpressionCached(raw, dialect);
+		if (new AllowedNodeTypesVisitor(ALLOWED_OPERAND_NODE_TYPES).visit(ast)[0]) {
+			issues.push(
+				this.issue(
+					"BLOCK_COMPARE_INPUT_NOT_ALLOWED",
+					source,
+					`La pinoche ${pinName} doit contenir une variable ou une valeur, pas une expression complexe.`,
+				),
+			);
+			return null;
+		}
+		return ast;
+	}
+
+	private static issue(
+		code: ProjectAnalyserIssueCode,
+		source: ProjectAnalyserIssueSource,
+		message: string,
+	): ProjectAnalyserIssue {
+		return new ProjectAnalyserIssue("error", code, source, message);
 	}
 }

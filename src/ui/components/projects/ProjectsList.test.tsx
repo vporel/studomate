@@ -11,6 +11,14 @@ import ProjectsList from "./ProjectsList";
 jest.mock("./ProjectContext");
 jest.mock("@/ui/stores/auth/auth.store");
 
+let mockSupabaseConfigured = true;
+jest.mock("@/persistence/repositories/supabase-client", () => ({
+	get isSupabaseConfigured() {
+		return mockSupabaseConfigured;
+	},
+	supabase: {},
+}));
+
 function project(id: string, name: string): Project {
 	return new Project(id, name, "");
 }
@@ -38,22 +46,52 @@ function setup({
 		}),
 	);
 	(useAuthStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ user: authenticated ? {} : null, setAuthModalVisible: setAuthModalVisibleFn }),
+		selectorImplementation({
+			user: authenticated ? {} : null,
+			setAuthModalVisible: setAuthModalVisibleFn,
+		}),
 	);
 
-	const utils = render(<ProjectsList reloadKey={reloadKey} onProjectClick={onProjectClick} />);
-	return { ...utils, deleteFn, moveToCloudFn, moveToLocalFn, setAuthModalVisibleFn, onProjectClick };
+	const utils = render(
+		<ProjectsList reloadKey={reloadKey} onProjectClick={onProjectClick} />,
+	);
+	return {
+		...utils,
+		deleteFn,
+		moveToCloudFn,
+		moveToLocalFn,
+		setAuthModalVisibleFn,
+		onProjectClick,
+	};
 }
 
 describe("ProjectsList", () => {
+	beforeEach(() => {
+		mockSupabaseConfigured = true;
+	});
+
+	it("masque l'onglet Cloud quand le cloud n'est pas configuré", async () => {
+		mockSupabaseConfigured = false;
+		setup({ list: [project("p1", "Projet A")] });
+		await waitFor(() => screen.getByText("Projet A"));
+
+		expect(
+			screen.queryByRole("tab", { name: "Cloud" }),
+		).not.toBeInTheDocument();
+	});
+
 	it("affiche 'Aucun projet enregistré' quand la liste locale est vide", async () => {
 		setup({ list: [] });
-		await waitFor(() => expect(screen.getByText("Aucun projet enregistré")).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByText("Aucun projet enregistré")).toBeInTheDocument(),
+		);
 	});
 
 	it("liste les projets locaux renvoyés par le repository, dans l'onglet Local par défaut", async () => {
 		setup({ list: [project("p1", "Projet A"), project("p2", "Projet B")] });
-		await waitFor(() => expect(screen.getByText("Projet A")).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByText("Projet A")).toBeInTheDocument(),
+		);
 		expect(screen.getByText("Projet B")).toBeInTheDocument();
 	});
 
@@ -62,7 +100,9 @@ describe("ProjectsList", () => {
 			list: [project("p1", "Projet local"), project("p2", "Projet cloud")],
 			locationOf: (id) => (id === "p2" ? "cloud" : "local"),
 		});
-		await waitFor(() => expect(screen.getByText("Projet local")).toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.getByText("Projet local")).toBeInTheDocument(),
+		);
 		expect(screen.queryByText("Projet cloud")).not.toBeInTheDocument();
 	});
 
@@ -86,7 +126,9 @@ describe("ProjectsList", () => {
 
 		fireEvent.click(screen.getByRole("tab", { name: "Cloud" }));
 
-		expect(screen.getByRole("button", { name: "Se connecter" })).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Se connecter" }),
+		).toBeInTheDocument();
 	});
 
 	it("ouvre la modale d'authentification au clic sur 'Se connecter'", async () => {
@@ -115,7 +157,9 @@ describe("ProjectsList", () => {
 		fireEvent.click(screen.getByLabelText("delete"));
 
 		expect(deleteFn).toHaveBeenCalledWith("p1");
-		await waitFor(() => expect(screen.queryByText("Projet A")).not.toBeInTheDocument());
+		await waitFor(() =>
+			expect(screen.queryByText("Projet A")).not.toBeInTheDocument(),
+		);
 		confirmSpy.mockRestore();
 	});
 
@@ -143,7 +187,10 @@ describe("ProjectsList", () => {
 	});
 
 	it("envoie le projet vers le cloud depuis l'onglet Local, une fois connecté", async () => {
-		const { moveToCloudFn } = setup({ list: [project("p1", "Projet A")], authenticated: true });
+		const { moveToCloudFn } = setup({
+			list: [project("p1", "Projet A")],
+			authenticated: true,
+		});
 		await waitFor(() => screen.getByText("Projet A"));
 
 		fireEvent.click(screen.getByLabelText("envoyer vers le cloud"));
@@ -155,7 +202,9 @@ describe("ProjectsList", () => {
 		setup({ list: [project("p1", "Projet A")], authenticated: false });
 		await waitFor(() => screen.getByText("Projet A"));
 
-		expect(screen.queryByLabelText("envoyer vers le cloud")).not.toBeInTheDocument();
+		expect(
+			screen.queryByLabelText("envoyer vers le cloud"),
+		).not.toBeInTheDocument();
 	});
 
 	it("rapatrie le projet en local depuis l'onglet Cloud", async () => {

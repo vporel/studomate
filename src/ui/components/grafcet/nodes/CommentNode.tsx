@@ -11,17 +11,18 @@ export type CommentNodeType = Node<CommentData> & { type: "comment" };
 
 export type CommentNodeProps = NodeProps<CommentNodeType>;
 
-const CommentNode: FC<CommentNodeProps> = ({ id, data, selected, width, height }) => {
+const CommentNode: FC<CommentNodeProps> = ({
+	id,
+	data,
+	selected,
+	width,
+	height,
+}) => {
 	const th = useTheme();
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingText, setEditingText, editing, setEditing, saveText, error] = useWithTextNodeValue(
-		id,
-		"comment",
-		data,
-		"text",
-		false,
-	);
+	const [editingText, setEditingText, editing, setEditing, saveText, error] =
+		useWithTextNodeValue(id, "comment", data, "text", false);
 
 	return (
 		<>

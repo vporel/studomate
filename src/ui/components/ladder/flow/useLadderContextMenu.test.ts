@@ -39,8 +39,15 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() => useLadderContextMenu(section, ProjectMode.SIMULATION));
-		act(() => result.current.openNodeContextMenu(fakeMouseEvent(10, 20), { id: contact.id, position: { x: 0, y: 0 } } as any));
+		const { result } = renderHook(() =>
+			useLadderContextMenu(section, ProjectMode.SIMULATION),
+		);
+		act(() =>
+			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
+				id: contact.id,
+				position: { x: 0, y: 0 },
+			} as any),
+		);
 
 		expect(showSpy).not.toHaveBeenCalled();
 	});
@@ -50,8 +57,15 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() => useLadderContextMenu(section, ProjectMode.DESIGN));
-		act(() => result.current.openNodeContextMenu(fakeMouseEvent(10, 20), { id: "virtual-rail-0", position: { x: 0, y: 0 } } as any));
+		const { result } = renderHook(() =>
+			useLadderContextMenu(section, ProjectMode.DESIGN),
+		);
+		act(() =>
+			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
+				id: "virtual-rail-0",
+				position: { x: 0, y: 0 },
+			} as any),
+		);
 
 		expect(showSpy).not.toHaveBeenCalled();
 	});
@@ -63,11 +77,20 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() => useLadderContextMenu(section, ProjectMode.DESIGN));
-		act(() => result.current.openNodeContextMenu(fakeMouseEvent(10, 20), { id: contact.id, position: { x: 0, y: 0 } } as any));
+		const { result } = renderHook(() =>
+			useLadderContextMenu(section, ProjectMode.DESIGN),
+		);
+		act(() =>
+			result.current.openNodeContextMenu(fakeMouseEvent(10, 20), {
+				id: contact.id,
+				position: { x: 0, y: 0 },
+			} as any),
+		);
 
 		expect(showSpy).toHaveBeenCalledWith(
-			expect.objectContaining({ element: expect.objectContaining({ id: contact.id }) }),
+			expect.objectContaining({
+				element: expect.objectContaining({ id: contact.id }),
+			}),
 		);
 	});
 
@@ -76,11 +99,19 @@ describe("useLadderContextMenu", () => {
 		const showSpy = jest.fn();
 		mockContextMenuEvents.on("show", showSpy);
 
-		const { result } = renderHook(() => useLadderContextMenu(section, ProjectMode.DESIGN));
-		act(() => result.current.openEdgeContextMenu(fakeMouseEvent(5, 6), { id: "c1" } as any));
+		const { result } = renderHook(() =>
+			useLadderContextMenu(section, ProjectMode.DESIGN),
+		);
+		act(() =>
+			result.current.openEdgeContextMenu(fakeMouseEvent(5, 6), {
+				id: "c1",
+			} as any),
+		);
 
 		expect(showSpy).toHaveBeenCalledWith(
-			expect.objectContaining({ element: expect.objectContaining({ id: "c1" }) }),
+			expect.objectContaining({
+				element: expect.objectContaining({ id: "c1" }),
+			}),
 		);
 	});
 
@@ -89,7 +120,9 @@ describe("useLadderContextMenu", () => {
 		const hideSpy = jest.fn();
 		mockContextMenuEvents.on("hide", hideSpy);
 
-		const { result } = renderHook(() => useLadderContextMenu(section, ProjectMode.DESIGN));
+		const { result } = renderHook(() =>
+			useLadderContextMenu(section, ProjectMode.DESIGN),
+		);
 		act(() => result.current.closeContextMenu());
 
 		expect(hideSpy).toHaveBeenCalled();

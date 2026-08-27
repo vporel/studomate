@@ -1,7 +1,12 @@
 import { deepObjectsComparison } from "@/lib/object";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import HmiPage, { HMI_PAGE_NAME_LABEL } from "@/schemas/hmi/hmi-page.schema";
-import { HmiStoreManagers, HmiStoreValues, ProjectStoreGetFunction, ProjectStoreSetFunction } from "../project.store";
+import {
+	HmiStoreManagers,
+	HmiStoreValues,
+	ProjectStoreGetFunction,
+	ProjectStoreSetFunction,
+} from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 
 const COMMANDS_STACK_SIZE = 100;
@@ -56,7 +61,10 @@ export default class HmiManager {
 
 	setStoreValues(hmiPageId: string, values: HmiStoreValues): void {
 		this.setStoreState((state) => ({
-			hmiStoresValues: { ...state.hmiStoresValues, [hmiPageId]: { ...state.hmiStoresValues[hmiPageId], ...values } },
+			hmiStoresValues: {
+				...state.hmiStoresValues,
+				[hmiPageId]: { ...state.hmiStoresValues[hmiPageId], ...values },
+			},
 		}));
 	}
 
@@ -83,8 +91,15 @@ export default class HmiManager {
 		const resolvedName = name ?? project.nextHmiPageName(HMI_PAGE_NAME_LABEL);
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
-		this.getStoreState().pagesManager.openPage({ id: page.id, type: "hmi", title: page.name });
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.getStoreState().pagesManager.openPage({
+			id: page.id,
+			type: "hmi",
+			title: page.name,
+		});
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 		return page;
 	}
 
@@ -96,7 +111,10 @@ export default class HmiManager {
 		newProject.deleteHmiPage(hmiPageId);
 		this.commandsStacks.delete(hmiPageId);
 		this.getStoreState().pagesManager.closePage(hmiPageId);
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 	}
 
 	renameHmiPage(hmiPageId: string, newName: string): void {
@@ -113,7 +131,10 @@ export default class HmiManager {
 			newPagesData[hmiPageId].title = newName;
 			this.setStoreState(() => ({ pagesData: newPagesData }));
 		}
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 	}
 
 	/** Une seule page principale à la fois dans tout le projet (voir `Project.setMainHmiPage`) —
@@ -124,7 +145,10 @@ export default class HmiManager {
 		if (!project) return;
 		const newProject = project.copy();
 		newProject.setMainHmiPage(hmiPageId);
-		this.setStoreState(() => ({ project: newProject, hasUnsavedChanges: true }));
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
 	}
 
 	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir

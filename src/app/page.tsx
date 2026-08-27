@@ -1,77 +1,40 @@
 "use client";
 
-import { AppContextProvider, useAppContext } from "@/ui/components/AppContext";
+import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
-import Explorer from "@/ui/components/explorer/Explorer";
-import StatusBar from "@/ui/components/footer/StatusBar";
-import AppMenuBar from "@/ui/components/header/menu-bar/AppMenuBar";
-import TitleBar from "@/ui/components/header/title-bar/TitleBar";
-import PagesView from "@/ui/components/pages/PagesView";
-import { ProjectContextProvider, useProjectStore } from "@/ui/components/projects/ProjectContext";
-import WatchTables from "@/ui/components/watch-tables/WatchTables";
-import Pane from "@/ui/lib/split-pane/Pane";
-import SplitPane from "@/ui/lib/split-pane/SplitPane";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { Box } from "@mui/material";
-import { useShallow } from "zustand/shallow";
+import {
+	ProjectContextProvider,
+	useProjectStore,
+} from "@/ui/components/projects/ProjectContext";
+import { Box, CircularProgress } from "@mui/material";
+import dynamic from "next/dynamic";
+
+// Charge l'éditeur (React Flow, DataGrid, TreeView) uniquement à l'ouverture d'un projet :
+// l'écran de démarrage n'embarque pas ces librairies.
+const AppShell = dynamic(() => import("@/ui/components/AppShell"), {
+	ssr: false,
+	loading: () => (
+		<Box
+			sx={{
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				height: "100vh",
+			}}
+		>
+			<CircularProgress />
+		</Box>
+	),
+});
 
 function AppComponent() {
-	const { viewAppearance } = useAppContext();
-	const { projectOpened, watchTablesVisible, mode } = useProjectStore(
-		useShallow((state) => ({
-			projectOpened: !!state.project,
-			watchTablesVisible: state.ui.watchTablesVisible,
-			mode: state.mode,
-		})),
-	);
+	const projectOpened = useProjectStore((state) => !!state.project);
 
 	if (!projectOpened) {
 		return <AppStartup />;
 	}
 
-	return (
-		<Box
-			sx={{
-				display: "flex",
-				flexDirection: "column",
-				height: "100vh",
-				overflow: "hidden",
-			}}
-		>
-			<Box
-				sx={{
-					width: "100%",
-					flexShrink: 0,
-					display: "flex",
-					alignItems: "center",
-					borderBottom: "1px solid lightgray",
-				}}
-			>
-				<Box component="img" src="/images/icon.png" sx={{ width: "50px", margin: "10px" }} />
-				<Box sx={{ flex: 1, paddingTop: "5px" }}>
-					<TitleBar />
-					<AppMenuBar />
-				</Box>
-			</Box>
-			<SplitPane split="vertical" sx={{ flex: 1, position: "relative", overflow: "hidden" }}>
-				<Pane initialSize={250} minSize={200} maxSize={400} visible={viewAppearance.explorer}>
-					<Explorer />
-				</Pane>
-				<Pane style={{ overflow: "hidden" }}>
-					<PagesView />
-				</Pane>
-				<Pane
-					initialSize={350}
-					minSize={300}
-					maxSize={600}
-					visible={watchTablesVisible && mode === ProjectMode.SIMULATION}
-				>
-					<WatchTables />
-				</Pane>
-			</SplitPane>
-			<StatusBar />
-		</Box>
-	);
+	return <AppShell />;
 }
 
 export default function App() {

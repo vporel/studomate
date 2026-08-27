@@ -30,17 +30,23 @@ function Handle({
 				height: vertical ? 3 : "100%",
 				cursor: vertical ? "row-resize" : "col-resize",
 				top: boxPosition === "bottom" ? 0 : boxPosition === "top" ? "auto" : 0,
-				bottom: boxPosition === "top" ? 0 : boxPosition === "bottom" ? "auto" : 0,
+				bottom:
+					boxPosition === "top" ? 0 : boxPosition === "bottom" ? "auto" : 0,
 				left: boxPosition === "right" ? 0 : boxPosition === "left" ? "auto" : 0,
-				right: boxPosition === "left" ? 0 : boxPosition === "right" ? "auto" : 0,
+				right:
+					boxPosition === "left" ? 0 : boxPosition === "right" ? "auto" : 0,
 				marginTop: boxPosition === "top" ? "-3px" : 0,
 				marginBottom: boxPosition === "bottom" ? "-3px" : 0,
 				marginLeft: boxPosition === "left" ? "-3px" : 0,
 				marginRight: boxPosition === "right" ? "-3px" : 0,
-				borderBottom: boxPosition === "top" ? "1px solid rgba(0,0,0,0.2)" : "none",
-				borderTop: boxPosition === "bottom" ? "1px solid rgba(0,0,0,0.2)" : "none",
-				borderRight: boxPosition === "left" ? "1px solid rgba(0,0,0,0.2)" : "none",
-				borderLeft: boxPosition === "right" ? "1px solid rgba(0,0,0,0.2)" : "none",
+				borderBottom:
+					boxPosition === "top" ? "1px solid rgba(0,0,0,0.2)" : "none",
+				borderTop:
+					boxPosition === "bottom" ? "1px solid rgba(0,0,0,0.2)" : "none",
+				borderRight:
+					boxPosition === "left" ? "1px solid rgba(0,0,0,0.2)" : "none",
+				borderLeft:
+					boxPosition === "right" ? "1px solid rgba(0,0,0,0.2)" : "none",
 				position: "absolute",
 				zIndex: 100,
 			}}
@@ -59,7 +65,12 @@ export default function ResizableFixedBox({
 }: Props) {
 	const vertical = position === "top" || position === "bottom";
 	const [size, setSize] = useState(initialSize);
-	const startRef = useRef<{ x: number; w: number; y: number; h: number } | null>(null);
+	const startRef = useRef<{
+		x: number;
+		w: number;
+		y: number;
+		h: number;
+	} | null>(null);
 	const onMouseDown = (e: React.MouseEvent) => {
 		startRef.current = { x: e.clientX, w: size, y: e.clientY, h: size };
 		const onMove = (ev: MouseEvent) =>
@@ -68,12 +79,14 @@ export default function ResizableFixedBox({
 					? Math.max(
 							minSize,
 							startRef.current!.h -
-								(ev.clientY - startRef.current!.y) * (position === "top" ? -1 : 1),
+								(ev.clientY - startRef.current!.y) *
+									(position === "top" ? -1 : 1),
 						)
 					: Math.max(
 							minSize,
 							startRef.current!.w -
-								(ev.clientX - startRef.current!.x) * (position === "left" ? -1 : 1),
+								(ev.clientX - startRef.current!.x) *
+									(position === "left" ? -1 : 1),
 						),
 			);
 		const onUp = () => {
@@ -91,7 +104,8 @@ export default function ResizableFixedBox({
 				position: "fixed",
 				zIndex: 1000,
 				top: position === "top" ? offset : position === "bottom" ? "auto" : 0,
-				bottom: position === "bottom" ? offset : position === "top" ? "auto" : 0,
+				bottom:
+					position === "bottom" ? offset : position === "top" ? "auto" : 0,
 				left: position === "left" ? offset : position === "right" ? "auto" : 0,
 				right: position === "right" ? offset : position === "left" ? "auto" : 0,
 				width: vertical ? "100%" : size,

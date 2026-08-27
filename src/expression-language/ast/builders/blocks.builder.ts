@@ -1,6 +1,12 @@
 import { createRandomId } from "@/ids";
 import { ASTNode } from "../nodes/ast-node";
-import { CounterNode, CounterType, TimerNode, TimerStringDeclarationNode, TimerType } from "../nodes/blocks";
+import {
+	CounterNode,
+	CounterType,
+	TimerNode,
+	TimerStringDeclarationNode,
+	TimerType,
+} from "../nodes/blocks";
 
 export default class BlocksBuilder {
 	static buildTimerNode(

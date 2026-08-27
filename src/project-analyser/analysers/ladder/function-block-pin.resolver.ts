@@ -1,4 +1,7 @@
-import Variable, { NativeType, VariableType } from "@/schemas/variable/variable.schema";
+import Variable, {
+	NativeType,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 
 /** Reconnaît la syntaxe d'un littéral accepté par une pinoche (ex. `isTimeLiteral`), et sépare la
  * reconnaissance de la validité (ex. `T#abc` a la syntaxe d'une constante TIME mais n'en est pas
@@ -37,11 +40,15 @@ export function resolveFunctionBlockPin(
 ): PinResolution {
 	if (!pin) return { kind: "empty" };
 	if (literal && literal.isLiteralSyntax(pin)) {
-		return literal.isLiteralValid(pin) ? { kind: "literal" } : { kind: "invalid-constant" };
+		return literal.isLiteralValid(pin)
+			? { kind: "literal" }
+			: { kind: "invalid-constant" };
 	}
 	const variable = variablesByMnemonic.get(pin);
 	if (!variable) return { kind: "undeclared" };
-	if (variable.getNativeType() !== expectedNativeType) return { kind: "invalid-type", variable };
-	if (excludedVariableTypes?.includes(variable.type)) return { kind: "invalid-type", variable };
+	if (variable.getNativeType() !== expectedNativeType)
+		return { kind: "invalid-type", variable };
+	if (excludedVariableTypes?.includes(variable.type))
+		return { kind: "invalid-type", variable };
 	return { kind: "ok", variable };
 }

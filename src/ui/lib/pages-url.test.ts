@@ -26,7 +26,9 @@ describe("pages-url", () => {
 	it("ne modifie pas le reste de l'URL, dont projectId", () => {
 		window.history.replaceState(null, "", "/?projectId=proj1");
 		setActivePageIdInUrl("p1");
-		expect(new URLSearchParams(window.location.search).get("projectId")).toBe("proj1");
+		expect(new URLSearchParams(window.location.search).get("projectId")).toBe(
+			"proj1",
+		);
 		expect(getActivePageIdFromUrl()).toBe("p1");
 	});
 });

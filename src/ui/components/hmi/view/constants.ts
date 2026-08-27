@@ -1,4 +1,8 @@
-import { HmiWidgetData, HmiWidgetSize, HmiWidgetType } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	HmiWidgetData,
+	HmiWidgetSize,
+	HmiWidgetType,
+} from "@/schemas/hmi/hmi-widget.schema";
 
 export const SNAP_GRID = 10; // px — grille magnétique
 

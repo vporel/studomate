@@ -12,17 +12,24 @@ jest.mock("@/ui/components/projects/useGotoProgram");
 
 describe("useBlockInstanceMenuItems", () => {
 	const onGotoProgram = jest.fn();
-	const timerElement = createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#5s" }, 0, 0);
+	const timerElement = createTimerBlockElement(
+		{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+		0,
+		0,
+	);
 
 	function setup(getActiveStoreManagers: jest.Mock) {
 		(useGotoProgram as unknown as jest.Mock).mockReturnValue(onGotoProgram);
-		(useProjectStore as unknown as jest.Mock).mockImplementation((selector: any) =>
-			selector({
-				project: {
-					getLadder: () => ({ findElement: () => ({ element: timerElement }) }),
-				},
-				laddersManager: { getActiveStoreManagers },
-			}),
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			(selector: any) =>
+				selector({
+					project: {
+						getLadder: () => ({
+							findElement: () => ({ element: timerElement }),
+						}),
+					},
+					laddersManager: { getActiveStoreManagers },
+				}),
 		);
 		const { result } = renderHook(() => useBlockInstanceMenuItems());
 		return result.current("l1", timerElement.id);
@@ -36,14 +43,20 @@ describe("useBlockInstanceMenuItems", () => {
 
 	it("ouvre immédiatement l'éditeur si le manager est déjà actif au premier essai", () => {
 		const openSystemBlockEditor = jest.fn();
-		const getActiveStoreManagers = jest.fn(() => ({ workflowManager: { openSystemBlockEditor } }));
+		const getActiveStoreManagers = jest.fn(() => ({
+			workflowManager: { openSystemBlockEditor },
+		}));
 		const items = setup(getActiveStoreManagers);
 
 		items[1][0].onClick!();
 		jest.advanceTimersByTime(20);
 
 		expect(onGotoProgram).toHaveBeenCalledWith("l1", "ladder");
-		expect(openSystemBlockEditor).toHaveBeenCalledWith(timerElement.id, "timer", timerElement.data.params);
+		expect(openSystemBlockEditor).toHaveBeenCalledWith(
+			timerElement.id,
+			"timer",
+			timerElement.data.params,
+		);
 	});
 
 	it("réessaie tant que le manager n'est pas encore actif, puis ouvre l'éditeur", () => {
@@ -51,14 +64,20 @@ describe("useBlockInstanceMenuItems", () => {
 		let callCount = 0;
 		const getActiveStoreManagers = jest.fn(() => {
 			callCount += 1;
-			return callCount < 4 ? null : { workflowManager: { openSystemBlockEditor } };
+			return callCount < 4
+				? null
+				: { workflowManager: { openSystemBlockEditor } };
 		});
 		const items = setup(getActiveStoreManagers);
 
 		items[1][0].onClick!();
 		jest.advanceTimersByTime(200);
 
-		expect(openSystemBlockEditor).toHaveBeenCalledWith(timerElement.id, "timer", timerElement.data.params);
+		expect(openSystemBlockEditor).toHaveBeenCalledWith(
+			timerElement.id,
+			"timer",
+			timerElement.data.params,
+		);
 	});
 
 	it("abandonne sans planter si le manager ne devient jamais actif", () => {

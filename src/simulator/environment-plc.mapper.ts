@@ -1,6 +1,8 @@
 import { invertRecord } from "@/lib/object";
 import PLCVariable, { PLCVariableScope } from "./core/plc/plc-variable";
-import EnvVariable, { EnvVariableDirection } from "./interpreter/environment/env-variable";
+import EnvVariable, {
+	EnvVariableDirection,
+} from "./interpreter/environment/env-variable";
 
 const directionToScope: Record<EnvVariableDirection, PLCVariableScope> = {
 	IN: "input",
@@ -17,14 +19,24 @@ const scopeToDirection = invertRecord(directionToScope);
 export default class PlcVariablesMapper {
 	static envToPlc(envVar: EnvVariable): PLCVariable {
 		const scope = directionToScope[envVar.getDirection()];
-		const plcVar = new PLCVariable(envVar.getId(), envVar.getName(), scope, envVar.getType());
+		const plcVar = new PLCVariable(
+			envVar.getId(),
+			envVar.getName(),
+			scope,
+			envVar.getType(),
+		);
 		plcVar.setValue(envVar.getValue());
 		return plcVar;
 	}
 
 	static plcToEnv(plcVar: PLCVariable): EnvVariable {
 		const direction = scopeToDirection[plcVar.getScope()];
-		const envVar = new EnvVariable(plcVar.getId(), plcVar.getName(), plcVar.getType(), direction);
+		const envVar = new EnvVariable(
+			plcVar.getId(),
+			plcVar.getName(),
+			plcVar.getType(),
+			direction,
+		);
 		envVar.setValue(plcVar.getValue());
 		return envVar;
 	}

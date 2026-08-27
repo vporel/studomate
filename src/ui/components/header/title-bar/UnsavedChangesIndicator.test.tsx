@@ -27,7 +27,9 @@ describe("UnsavedChangesIndicator", () => {
 
 	it("shows the prompt when there are unsaved changes", () => {
 		setup(true, false);
-		expect(screen.getByText("Cliquez ici pour enregistrer")).toBeInTheDocument();
+		expect(
+			screen.getByText("Cliquez ici pour enregistrer"),
+		).toBeInTheDocument();
 	});
 
 	it("triggers saveProject when clicked", () => {

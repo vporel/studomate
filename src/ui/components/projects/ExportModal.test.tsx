@@ -20,7 +20,9 @@ function setup({
 	getProgramOrThrow = jest.fn(),
 	project = new Project("p1", "Mon projet", ""),
 } = {}) {
-	(useProjectContext as jest.Mock).mockReturnValue({ getState: () => ({ project }) });
+	(useProjectContext as jest.Mock).mockReturnValue({
+		getState: () => ({ project }),
+	});
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			ui: { exportModalVisible: true },
@@ -76,12 +78,20 @@ describe("ExportModal", () => {
 
 	it("exporte le grafcet actif quand ce choix est sélectionné", () => {
 		const grafcet = { name: "Grafcet 1", format: {} };
-		const { getProgramOrThrow } = setup({ activeScopeType: "grafcet", activeScope: "g1", getProgramOrThrow: jest.fn(() => grafcet) });
+		const { getProgramOrThrow } = setup({
+			activeScopeType: "grafcet",
+			activeScope: "g1",
+			getProgramOrThrow: jest.fn(() => grafcet),
+		});
 
 		fireEvent.click(screen.getByDisplayValue("grafcet"));
 		fireEvent.click(screen.getByText("Exporter", { selector: "button" }));
 
 		expect(getProgramOrThrow).toHaveBeenCalledWith("g1");
-		expect(exportGrafcet).toHaveBeenCalledWith("g1", "Grafcet 1", grafcet.format);
+		expect(exportGrafcet).toHaveBeenCalledWith(
+			"g1",
+			"Grafcet 1",
+			grafcet.format,
+		);
 	});
 });

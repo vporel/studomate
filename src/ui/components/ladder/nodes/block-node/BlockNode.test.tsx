@@ -7,14 +7,21 @@ import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import BlockNode, { BLOCK_NODE_DIMENSIONS, BlockNodeData, BlockNodeType } from "./BlockNode";
+import BlockNode, {
+	BLOCK_NODE_DIMENSIONS,
+	BlockNodeData,
+	BlockNodeType,
+} from "./BlockNode";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/components/ladder/context/LadderContext");
 
 function setup({
 	programId = "ladder-1",
-	ladders = { "ladder-1": { name: "Convoyeur" } } as Record<string, { name: string }>,
+	ladders = { "ladder-1": { name: "Convoyeur" } } as Record<
+		string,
+		{ name: string }
+	>,
 	highlightedNodesIds = [] as string[],
 	data,
 	executeOperation = jest.fn(),
@@ -47,7 +54,7 @@ function setup({
 		isConnectable: true,
 	} as unknown as BlockNodeType & { id: string };
 
-	render(
+	const { container } = render(
 		<AppThemeProvider>
 			<ReactFlowProvider>
 				<BlockNode {...(props as any)} />
@@ -55,14 +62,17 @@ function setup({
 		</AppThemeProvider>,
 	);
 
-	return { executeOperation };
+	return { executeOperation, container };
 }
 
 describe("BlockNode", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("affiche le nom du programme référencé", () => {
-		setup({ programId: "ladder-1", ladders: { "ladder-1": { name: "Convoyeur" } } });
+		setup({
+			programId: "ladder-1",
+			ladders: { "ladder-1": { name: "Convoyeur" } },
+		});
 
 		expect(screen.getByText("Convoyeur")).toBeInTheDocument();
 	});
@@ -75,14 +85,60 @@ describe("BlockNode", () => {
 	});
 
 	it("n'affiche rien si le programme référencé n'existe plus", () => {
-		setup({ programId: "orphan", ladders: { "ladder-1": { name: "Convoyeur" } } });
+		setup({
+			programId: "orphan",
+			ladders: { "ladder-1": { name: "Convoyeur" } },
+		});
 
 		expect(screen.queryByText("Convoyeur")).not.toBeInTheDocument();
 	});
 
 	it("occupe 2 cellules de grille horizontalement", () => {
-		const { GRID_CELL_WIDTH } = jest.requireActual("@/ui/utils/ladder/ladder-flow-builder");
+		const { GRID_CELL_WIDTH } = jest.requireActual(
+			"@/ui/utils/ladder/ladder-flow-builder",
+		);
 		expect(BLOCK_NODE_DIMENSIONS.width).toBe(GRID_CELL_WIDTH * 2);
+	});
+
+	describe("blocs assign / arithmetic", () => {
+		it("affiche les libellés EN/ENO et IN/OUT d'un bloc assign", () => {
+			setup({
+				data: { blockType: "assign", params: { out: "sortie", in: "entree" } },
+			});
+
+			expect(screen.getByText("EN")).toBeInTheDocument();
+			expect(screen.getByText("ENO")).toBeInTheDocument();
+			expect(screen.getByText("IN")).toBeInTheDocument();
+			expect(screen.getByText("OUT")).toBeInTheDocument();
+			expect(screen.getByDisplayValue("sortie")).toBeInTheDocument();
+			expect(screen.getByDisplayValue("entree")).toBeInTheDocument();
+		});
+
+		it("affiche IN1/IN2/OUT et l'opérateur d'un bloc arithmetic", () => {
+			setup({
+				data: {
+					blockType: "arithmetic",
+					params: { in1: "a", in2: "b", out: "c", operator: "*" },
+				},
+			});
+
+			expect(screen.getByText("IN1")).toBeInTheDocument();
+			expect(screen.getByText("IN2")).toBeInTheDocument();
+			expect(screen.getByText("OUT")).toBeInTheDocument();
+			expect(screen.getByText("*")).toBeInTheDocument();
+		});
+
+		it("sont rendus sur 2 cellules de grille de large", () => {
+			const { GRID_CELL_WIDTH } = jest.requireActual(
+				"@/ui/utils/ladder/ladder-flow-builder",
+			);
+			const { container } = setup({
+				data: { blockType: "assign", params: { out: "A", in: "1" } },
+			});
+			expect(container.firstChild).toHaveStyle({
+				width: `${GRID_CELL_WIDTH * 2}px`,
+			});
+		});
 	});
 
 	describe("bloc timer", () => {
@@ -129,8 +185,12 @@ describe("BlockNode", () => {
 			expect(executeOperation).toHaveBeenCalledTimes(1);
 			const [command] = executeOperation.mock.calls[0][0];
 			expect(command.payload.elementId).toBe("block-1");
-			expect(command.payload.changes.data.params).toMatchObject({ pt: "T#10s" });
-			expect(command.payload.previousChanges.data.params).toMatchObject({ pt: "T#5s" });
+			expect(command.payload.changes.data.params).toMatchObject({
+				pt: "T#10s",
+			});
+			expect(command.payload.previousChanges.data.params).toMatchObject({
+				pt: "T#5s",
+			});
 		});
 
 		it("ne dispatche rien si la valeur n'a pas changé", () => {

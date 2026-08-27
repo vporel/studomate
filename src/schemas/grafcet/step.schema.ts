@@ -17,7 +17,8 @@ export const STEP_HANDLE_TARGET_PREDECESSOR_TYPES = [
 	"junction-or-end",
 ] as const satisfies readonly ElementType[];
 
-export type StepHandleTargetPredecessorType = (typeof STEP_HANDLE_TARGET_PREDECESSOR_TYPES)[number];
+export type StepHandleTargetPredecessorType =
+	(typeof STEP_HANDLE_TARGET_PREDECESSOR_TYPES)[number];
 
 export const STEP_HANDLE_SOURCE_SUCCESSOR_TYPES = [
 	"transition",
@@ -26,17 +27,22 @@ export const STEP_HANDLE_SOURCE_SUCCESSOR_TYPES = [
 	"junction-or-start",
 ] as const satisfies readonly ElementType[];
 
-export type StepHandleSourceSuccessorType = (typeof STEP_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];
+export type StepHandleSourceSuccessorType =
+	(typeof STEP_HANDLE_SOURCE_SUCCESSOR_TYPES)[number];
 
-export const STEP_HANDLE_SOURCE_ACTION_TYPES = ["action"] as const satisfies readonly ElementType[];
+export const STEP_HANDLE_SOURCE_ACTION_TYPES = [
+	"action",
+] as const satisfies readonly ElementType[];
 
-export type StepHandleSourceActionType = (typeof STEP_HANDLE_SOURCE_ACTION_TYPES)[number];
+export type StepHandleSourceActionType =
+	(typeof STEP_HANDLE_SOURCE_ACTION_TYPES)[number];
 
-export const STEP_HANDLES_TO_TYPES: Record<StepHandle, readonly ElementType[]> = {
-	[STEP_HANDLE_TARGET_PREDECESSOR]: STEP_HANDLE_TARGET_PREDECESSOR_TYPES,
-	[STEP_HANDLE_SOURCE_SUCCESSOR]: STEP_HANDLE_SOURCE_SUCCESSOR_TYPES,
-	[STEP_HANDLE_SOURCE_ACTION]: STEP_HANDLE_SOURCE_ACTION_TYPES,
-};
+export const STEP_HANDLES_TO_TYPES: Record<StepHandle, readonly ElementType[]> =
+	{
+		[STEP_HANDLE_TARGET_PREDECESSOR]: STEP_HANDLE_TARGET_PREDECESSOR_TYPES,
+		[STEP_HANDLE_SOURCE_SUCCESSOR]: STEP_HANDLE_SOURCE_SUCCESSOR_TYPES,
+		[STEP_HANDLE_SOURCE_ACTION]: STEP_HANDLE_SOURCE_ACTION_TYPES,
+	};
 
 export type StepData = {
 	number: number | "";
@@ -57,6 +63,4 @@ export default class Step extends Element<StepData> {
 			initial: extraData?.initial ?? false,
 		};
 	}
-
-
 }

@@ -1,6 +1,10 @@
 "use client";
 
-import { VariableType, VariableZone, ZONES_TO_TYPES } from "@/schemas/variable/variable.schema";
+import {
+	VariableType,
+	VariableZone,
+	ZONES_TO_TYPES,
+} from "@/schemas/variable/variable.schema";
 import { Box } from "@mui/material";
 import {
 	DataGrid,
@@ -12,29 +16,37 @@ import {
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
 import GridToolBar from "./GridToolBar";
 import useDataGridColumns from "./useDataGridColums";
 
 function chooseZone(zones: VariableZone[], type: VariableType): VariableZone {
 	for (const zone in ZONES_TO_TYPES) {
-		if (zones.includes(zone as VariableZone) && ZONES_TO_TYPES[zone as VariableZone].includes(type)) {
+		if (
+			zones.includes(zone as VariableZone) &&
+			ZONES_TO_TYPES[zone as VariableZone].includes(type)
+		) {
 			return zone as VariableZone;
 		}
 	}
-	throw new Error(`No zone found for type ${type} in zones ${zones.join(", ")}`);
+	throw new Error(
+		`No zone found for type ${type} in zones ${zones.join(", ")}`,
+	);
 }
 
 const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 	if (zones.length === 0) throw new Error("At least one zone must be provided");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const projectVariables = useProjectStore(useShallow((state) => state.project?.variables || []));
+	const projectVariables = useProjectStore(
+		useShallow((state) => state.project?.variables ?? EMPTY_ARRAY),
+	);
 
 	const dataGridColumns = useDataGridColumns(zones);
 
 	const dataGrdiRows: GridRowsProp = useMemo(() => {
 		const rows = projectVariables
-			.filter((v) => zones.includes(v.zone))
+			.filter((v) => zones.includes(v.zone) && !v.ownerBlock)
 			.map((v) => ({
 				id: v.id,
 				mnemonic: v.mnemonic,
@@ -61,7 +73,10 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 			const oldValues = params.row;
 			const updatedValues: Record<string, any> = {};
 			Object.keys(params.row).forEach((field) => {
-				const rowUpdatedValues = apiRef.current!.getRowWithUpdatedValues(params.id, field);
+				const rowUpdatedValues = apiRef.current!.getRowWithUpdatedValues(
+					params.id,
+					field,
+				);
 				if (!rowUpdatedValues) return;
 				updatedValues[field] = rowUpdatedValues[field];
 			});
@@ -81,10 +96,11 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 		[variablesManager, zones],
 	);
 
-	const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({
-		type: "include",
-		ids: new Set<GridRowId>([]),
-	});
+	const [rowSelectionModel, setRowSelectionModel] =
+		useState<GridRowSelectionModel>({
+			type: "include",
+			ids: new Set<GridRowId>([]),
+		});
 
 	return (
 		<Box
@@ -114,9 +130,13 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 				onRowEditStop={onRowEditStop}
 				checkboxSelection
 				disableRowSelectionOnClick
-				isRowSelectable={(params) => params.row.mnemonic && params.row.mnemonic.trim() !== ""}
+				isRowSelectable={(params) =>
+					params.row.mnemonic && params.row.mnemonic.trim() !== ""
+				}
 				rowSelectionModel={rowSelectionModel}
-				onRowSelectionModelChange={(rowSelectionModel) => setRowSelectionModel(rowSelectionModel)}
+				onRowSelectionModelChange={(rowSelectionModel) =>
+					setRowSelectionModel(rowSelectionModel)
+				}
 				showToolbar
 				slots={{
 					toolbar: () => <GridToolBar rowSelectionModel={rowSelectionModel} />,

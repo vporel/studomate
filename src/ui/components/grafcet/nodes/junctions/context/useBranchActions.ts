@@ -21,23 +21,28 @@ export default function useBranchActions(
 			if (nodeData.branchesOrder.length == 0) newBranchPosition = width / 2;
 			else {
 				if (buttonIndex == 0)
-					newBranchPosition = nodeData.branches[nodeData.branchesOrder[0]]!.position / 2;
+					newBranchPosition =
+						nodeData.branches[nodeData.branchesOrder[0]]!.position / 2;
 				else if (buttonIndex == nodeData.branchesOrder.length)
 					newBranchPosition =
-						(nodeData.branches[nodeData.branchesOrder[nodeData.branchesOrder.length - 1]]!
-							.position +
+						(nodeData.branches[
+							nodeData.branchesOrder[nodeData.branchesOrder.length - 1]
+						]!.position +
 							width) /
 						2;
 				else {
 					newBranchPosition =
-						(nodeData.branches[nodeData.branchesOrder[buttonIndex - 1]]!.position +
-							nodeData.branches[nodeData.branchesOrder[buttonIndex]]!.position) /
+						(nodeData.branches[nodeData.branchesOrder[buttonIndex - 1]]!
+							.position +
+							nodeData.branches[nodeData.branchesOrder[buttonIndex]]!
+								.position) /
 						2;
 				}
 			}
 			if (newBranchPosition % FLOW_GRID_CELL_WIDTH != 0)
 				//Align to the grid
-				newBranchPosition = newBranchPosition - (newBranchPosition % FLOW_GRID_CELL_WIDTH);
+				newBranchPosition =
+					newBranchPosition - (newBranchPosition % FLOW_GRID_CELL_WIDTH);
 			const newBranch = {
 				id: createRandomId(),
 				position: newBranchPosition,

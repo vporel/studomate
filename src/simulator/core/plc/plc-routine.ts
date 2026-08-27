@@ -27,6 +27,8 @@ export type PLCRoutineCall = { programId: string; condition: ASTNode };
 export default class PLCRoutine {
 	private readonly nodes: ASTNode[];
 	private readonly calls: PLCRoutineCall[];
+	/** Réutilisé de cycle en cycle : seuls `env` et `deltaTimeMs` changent (voir `execute`). */
+	private evaluator: EvaluatorVisitor | null = null;
 
 	constructor(nodes: ASTNode[], calls: PLCRoutineCall[] = []) {
 		this.nodes = nodes;
@@ -41,12 +43,18 @@ export default class PLCRoutine {
 		return this.calls;
 	}
 
-	execute(env: Environment, deltaTimeMs: number, routinesById: Record<string, PLCRoutine> = {}): void {
-		const evaluator = new EvaluatorVisitor(env, {
-			timers: {
-				deltaTimeMs,
-			},
-		});
+	execute(
+		env: Environment,
+		deltaTimeMs: number,
+		routinesById: Record<string, PLCRoutine> = {},
+	): void {
+		if (!this.evaluator) {
+			this.evaluator = new EvaluatorVisitor(env, { timers: { deltaTimeMs } });
+		} else {
+			this.evaluator.setEnvironment(env);
+			this.evaluator.setDeltaTimeMs(deltaTimeMs);
+		}
+		const evaluator = this.evaluator;
 		for (const node of this.nodes) {
 			evaluator.visit(node);
 		}

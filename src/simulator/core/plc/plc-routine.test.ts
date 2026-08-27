@@ -136,6 +136,29 @@ describe("PLCRoutine", () => {
 			expect(env.getVariableValueById("id2")).toBe(15);
 		});
 
+		it("réutilise le même évaluateur d'un appel à l'autre en suivant l'environnement fourni", () => {
+			const routine = new PLCRoutine([
+				new Parser(new Lexer(Dialect.FR).tokenize("result := x + 5")).parse(),
+			]);
+			const makeEnv = (x: number) => {
+				const env = new Environment([
+					new EnvVariable("id1", "x", "number", "IN"),
+					new EnvVariable("id2", "result", "number", "OUT"),
+				]);
+				env.setVariableValueById("id1", x);
+				return env;
+			};
+
+			const env1 = makeEnv(10);
+			routine.execute(env1, 100);
+			expect(env1.getVariableValueById("id2")).toBe(15);
+
+			const env2 = makeEnv(1);
+			routine.execute(env2, 100);
+			expect(env2.getVariableValueById("id2")).toBe(6);
+			expect(env1.getVariableValueById("id2")).toBe(15); // le premier env n'est plus touché
+		});
+
 		it("lets a later routine see the writes of an earlier one sharing the same environment", () => {
 			const parse = (expression: string) =>
 				new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse();

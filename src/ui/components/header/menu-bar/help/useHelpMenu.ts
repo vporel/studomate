@@ -4,7 +4,7 @@ import routes from "@/app/routes";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
-export default function useHelpMenu(): AppMenuType {
+export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 	return useMemo(
 		() => ({
 			id: "help",
@@ -17,9 +17,13 @@ export default function useHelpMenu(): AppMenuType {
 							window.open(routes.userManual(), "_blank", "noopener,noreferrer");
 						},
 					},
+					{
+						label: "Raccourcis clavier",
+						onClick: onShortcutsOpen,
+					},
 				],
 			],
 		}),
-		[],
+		[onShortcutsOpen],
 	);
 }

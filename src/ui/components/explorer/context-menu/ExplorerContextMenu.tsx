@@ -14,7 +14,8 @@ import useHmiFolderMenuItems from "./useHmiFolderMenuItems";
 import useVariablesMenuItems from "./useVariablesMenuItems";
 import useHmiMenuItems from "./useHmiMenuItems";
 
-export const explorerContextMenuEventsOut = mitt<ExplorerContextMenuEventsOut>();
+export const explorerContextMenuEventsOut =
+	mitt<ExplorerContextMenuEventsOut>();
 
 /**
  *

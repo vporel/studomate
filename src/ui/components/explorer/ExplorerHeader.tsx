@@ -21,7 +21,9 @@ const ExplorerHeader = () => {
 			<IconButton
 				size="small"
 				sx={{ padding: "2px" }}
-				onClick={() => setViewAppearance((prev) => ({ ...prev, explorer: false }))}
+				onClick={() =>
+					setViewAppearance((prev) => ({ ...prev, explorer: false }))
+				}
 			>
 				<CloseIcon fontSize="small" />
 			</IconButton>

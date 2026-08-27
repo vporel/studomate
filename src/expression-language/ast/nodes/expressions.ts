@@ -1,4 +1,7 @@
-import { ArithmeticOperator, ComparisonOperator } from "@/expression-language/operators";
+import {
+	ArithmeticOperator,
+	ComparisonOperator,
+} from "@/expression-language/operators";
 import { ASTNode } from "./ast-node";
 import { BaseNode } from "./base-node";
 
@@ -33,8 +36,7 @@ export interface LogicalExpressionNode extends BaseNode {
 	right: ASTNode;
 }
 
-export type BinaryExpressionNode = ArithmeticExpressionNode | ComparisonExpressionNode | LogicalExpressionNode;
+export type BinaryExpressionNode =
+	ArithmeticExpressionNode | ComparisonExpressionNode | LogicalExpressionNode;
 
-export type ExpressionNode =
-	| UnaryExpressionNode
-	| BinaryExpressionNode
+export type ExpressionNode = UnaryExpressionNode | BinaryExpressionNode;

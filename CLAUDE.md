@@ -8,6 +8,32 @@ Instructions pour tout assistant IA travaillant sur ce dépôt.
 de logiques d'automatisme (GRAFCET aujourd'hui, ouverture prévue à d'autres notations comme
 le Ladder). Voir `README.md` pour la présentation complète.
 
+### Échelle du projet — proportionner les optimisations
+
+Les projets manipulés sont petits : grafcets de quelques dizaines d'éléments, quelques
+programmes, quelques dizaines de variables, poignée de projets en `localStorage`. Une opération
+en O(n²) sur ces tailles, c'est quelques milliers d'opérations — imperceptible.
+
+Ne pas proposer (ni implémenter sur simple suggestion d'un audit) des mécanismes de cache
+invalidé par hash/compteur de mutation, de mémoïsation inter-passes, de dédup de recalcul entre
+« Analyser » et « Simuler », etc. : le gain est nul à cette échelle et le coût est une machine à
+états d'invalidation qui devient une source de bugs subtils. Les optimisations qui se paient
+**par cycle de simulation** (boucle PLC) ou **par frappe** (édition) peuvent se justifier ;
+celles qui se paient **une fois par action utilisateur explicite** (ouvrir un projet, lancer une
+analyse, entrer en simulation, exporter) ne se justifient quasiment jamais. En cas de doute,
+mesurer avant de complexifier.
+
+**Compilation de l'AST d'expression en closures JS / résolution des identifiants par slot** :
+écartée. Le gain (3–10× sur le coût d'évaluation des expressions, technique standard des moteurs
+de règles) est imperceptible à cette échelle — après élimination des allocations par cycle
+(`Environment` du PLC construit une fois, `EvaluatorVisitor` réutilisé par routine), il ne reste
+qu'un peu de CPU sur de très petits AST. Le coût est réel : l'AST cesse d'être une IR-donnée
+neutre (partagée par le simplifieur, le replacer, le finder, l'analyseur sémantique et
+l'évaluateur ; sérialisable, inspectable, gelable en dev) pour devenir un graphe de fonctions lié
+au runtime JS. **Piste à rouvrir uniquement** sur un problème de performance de simulation
+*mesuré* (boucle PLC à scan très court sur un gros projet) : commencer par la résolution par slot
+(séparable, ne couple pas au JS) avant d'envisager les closures.
+
 ## Architecture, en bref
 
 ```
@@ -20,7 +46,7 @@ src/project-compiler/  produit le programme exécutable (PLCRoutine[]) à partir
 src/simulator/          lexer/parser/interpréteur du langage d'expression + moteur PLC
 src/bridge/             mappers entre le domaine/l'analyse et l'UI (exceptions, variables, issues)
 src/lib/                utilitaires neutres (array, date, object), sans dépendance de domaine
-src/persistence/        migrations de schéma + repositories (localStorage aujourd'hui)
+src/persistence/        migrations de schéma + repositories (localStorage, cloud Supabase, hybride) + tokens de partage
 src/ui/                 Next.js (App Router) + stores zustand + composants MUI
 src/app-info.ts         identité de l'application (nom, slogan...), module racine neutre
 ```
@@ -28,6 +54,26 @@ src/app-info.ts         identité de l'application (nom, slogan...), module raci
 Le sens des dépendances va de haut en bas dans cette liste : le domaine ne dépend jamais de
 l'UI. Un projet a un `dialect` (FR/EN) qui voyage avec lui — ce n'est pas une préférence
 d'interface, c'est une propriété des expressions qu'il contient.
+
+`src/bridge/` ne contient que des mappers dont l'UI est un des deux bouts (domaine/analyse ↔
+UI). Un mapper entre deux couches internes reste dans la couche concernée — `PlcVariablesMapper`
+(environnement ↔ PLC) vit dans `src/simulator/`. Exception assumée : `SchemaVariablesMapper`
+(schéma → environnement) est dans `src/bridge/` alors que ses seuls consommateurs sont dans
+`src/project-analyser/` ; à déplacer vers `src/project-analyser/` si on y retouche.
+
+### Comptes & stockage cloud
+
+`src/persistence/repositories/` fournit trois implémentations de `ProjectRepository` :
+`local-storage` (défaut, hors ligne), `supabase` (cloud : table `projects` + RLS),
+`hybrid` (bascule local/cloud selon l'authentification). L'auth (Supabase, `src/ui/stores/auth/`)
+gère inscription, connexion, comptes anonymes (pseudo + mot de passe), reset password. Le
+partage d'un projet passe par un token d'URL (`ShareableProjectRepository`, `?share=` géré
+dans `src/ui/lib/project-url.ts`). Le monitoring d'erreurs est branché via Sentry
+(`sentry.{client,server,edge}.config.ts` à la racine).
+
+Cette couche est consommée par l'UI ; elle ne remonte jamais dans le domaine (`src/schemas/`).
+Variables d'environnement : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` pour le
+cloud, `NEXT_PUBLIC_SENTRY_DSN` pour le monitoring. Sans elles, l'app reste en local-only.
 
 ## Commandes
 
@@ -70,9 +116,12 @@ Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 20 et 22)
 | `mitt` | ^3.0.1 | Bus d'événements (menus contextuels du grafcet) |
 | `nanoid` | ^5.1.16 | Identifiants courts — toujours via `createRandomId()` (`src/ids.ts`), jamais `nanoid` en direct |
 | `dom-to-image` | ^2.6.0 | Export image du grafcet |
+| `jspdf` / `html2pdf.js` | ^4.2.1 / ^0.14.0 | Export PDF (manuel, projet) |
 | `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Réordonnancement des sections Ladder |
 | `react-toastify` | ^11.0.5 | Notifications |
 | `nextjs-toploader` | ^3.9.17 | Barre de progression de navigation |
+| `@supabase/supabase-js` | ^2.112.3 | Auth + stockage cloud des projets (`src/persistence/repositories/supabase*`) |
+| `@sentry/nextjs` | ^8 | Monitoring d'erreurs (`sentry.{client,server,edge}.config.ts` à la racine) |
 
 Dev/CI : `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6.
 
@@ -87,10 +136,22 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
 - **Pas de fichiers `index.ts` de ré-export** (barrel files). `src/persistence/migrations/index.ts`
   n'est pas une exception à cette règle : il contient la logique d'enchaînement des
   migrations, pas une ré-export.
+- **Fichiers `*.d.ts`** : `src/types/` ne contient que les shims `declare module` de paquets tiers
+  non typés (ex. `html2pdf.d.ts`). Tout autre `.d.ts` est un fichier de types ordinaire
+  co-localisé avec le module ou la feature qu'il décrit (`src/ui/lib/context-menu/context-menu.d.ts`,
+  `src/schemas/grafcet/shared-types.d.ts`...) — pas un candidat pour `src/types/`.
+- **`export default` assumé** pour la classe/valeur principale d'un fichier (schémas, commandes,
+  mappers, repositories, analysers...). Convention en place dans tout le dépôt : un fichier = une
+  entité principale exportée par défaut, les types/constantes annexes en exports nommés. Ne pas
+  introduire d'export nommé pour l'entité principale d'un nouveau fichier de ce type.
 - **Tests** : co-localisés à côté du fichier testé (`nomDuFichier.test.ts`), pas dans un
   dossier séparé — à l'exception de `tests/integration/` (tests de bout en bout du pipeline
   analyse → compilation → simulation) et `tests/utils/` (fabriques et utilitaires partagés
   entre tests, importables via `@tests/utils/...`).
+- **Environnement de test** : `testEnvironment` global est `node` (`jest.config.js`). Tout fichier de
+  test qui touche au DOM — `@testing-library/react`, `@testing-library/dom`, `renderHook`, `react-dom`,
+  ou un accès direct à `document`/`window` — doit déclarer `/** @jest-environment jsdom */` en tête de
+  fichier, sinon il échoue (`document is not defined`) ou, pire, teste à côté.
 - **Détection de plateforme** : préférer `navigator.userAgentData.platform` avec repli sur
   `navigator.userAgent`, jamais `navigator.platform` (dépréciée) — voir `src/ui/lib/platform.ts`.
 - **Modales** : leur visibilité vit dans le store zustand concerné (`openModalVisible`,
@@ -142,6 +203,37 @@ renommage de champ, changement de structure...) doit s'accompagner d'une migrati
 la dernière migration existante (par exemple si elle n'a pas encore été déployée en production)
 ou en créer une nouvelle version.
 
+## Cache de parsing des expressions (`parseExpressionCached`)
+
+L'analyseur et le pré-compilateur lexent/parsent chaque expression via
+`parseExpressionCached(expression, dialect)` (`src/expression-language/parse-expression-cached.ts`),
+qui mémoïse `{ tokens, ast }` par paire (expression, dialecte). **L'AST rendu est partagé entre
+tous les appelants.**
+
+Invariant à préserver : **aucun code ne doit muter un nœud d'AST en place** (`node.x = ...`,
+`Object.assign(node, ...)`, `node.trueBranch.push(...)`, etc.). Tous les visiteurs qui
+transforment un arbre (`SimplifierVisitor`, `ReplacerVisitor`...) en reconstruisent un neuf
+(`{ ...node, left: ... }` / builders) et ne touchent jamais l'entrée — tout nouveau visiteur ou
+analyseur doit faire pareil. Hors production, l'AST caché est gelé récursivement
+(`Object.freeze`), donc une mutation accidentelle lève un `TypeError` immédiatement en dev/test ;
+ne pas contourner ce gel (pas de `structuredClone` défensif au point d'appel — corriger le
+consommateur fautif pour qu'il soit pur).
+
+Un visiteur ou une passe qui aurait réellement besoin d'un arbre mutable doit repartir d'un
+`new Lexer(dialect).tokenize(...)` / `new Parser(...).parse()` explicite, hors du cache.
+
+## Templates de projets (`src/templates/`)
+
+Les templates sont des projets pré-configurés proposés à la création d'un nouveau projet
+(variables, pages HMI, widgets). Chaque template vit dans `src/templates/xxx.template.ts`
+et est enregistré dans `src/templates/index.ts`.
+
+**Maintenance :** les templates ne passent pas par le pipeline de migration. Si
+`PROJECT_SCHEMA_VERSION` est incrémenté suite à un changement de schéma, vérifier que les
+données produites par chaque fonction `createXxxProject()` sont conformes au nouveau schéma
+et les mettre à jour si nécessaire. Ne pas oublier de tester la création d'un projet depuis
+chaque template après une migration.
+
 ## Ambiguïté d'une demande
 
 En cas de doute sur ce que l'utilisateur demande précisément (mécanisme d'interaction visé,
@@ -150,6 +242,13 @@ détail qui semble mineur. Une implémentation dans la mauvaise direction coûte
 qu'une question posée à l'avance.
 
 ## Tests et bugs découverts en testant
+
+Toute logique nouvelle ou modifiée (fonction, branche, règle métier, comportement de
+composant) doit s'accompagner de tests dédiés — créés à côté du fichier concerné
+(`nomDuFichier.test.ts`) ou ajoutés à un test existant. Lancer la suite existante ne suffit
+pas : à chaque fichier créé ou modifié, se demander explicitement quels cas ce changement
+introduit et les couvrir. Seul un changement sans logique propre (renommage, déplacement,
+type pur) peut s'en dispenser.
 
 Si un test écrit pour vérifier un comportement révèle que le code source est en tort, ne pas
 réécrire le test pour qu'il « passe » sur un comportement cassé. Signaler clairement ce qui a

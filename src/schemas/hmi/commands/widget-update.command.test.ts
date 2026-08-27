@@ -21,11 +21,11 @@ describe("WidgetUpdateCommand", () => {
 
 		command.execute(page);
 
-		expect(page.widgets[0].position).toEqual({ x: 100, y: 200 });
+		expect(Object.values(page.widgets)[0].position).toEqual({ x: 100, y: 200 });
 
 		command.cancel(page);
 
-		expect(page.widgets[0].position).toEqual({ x: 10, y: 20 });
+		expect(Object.values(page.widgets)[0].position).toEqual({ x: 10, y: 20 });
 	});
 
 	it("applique la nouvelle taille, et l'annulation restaure la précédente", () => {
@@ -38,11 +38,14 @@ describe("WidgetUpdateCommand", () => {
 
 		command.execute(page);
 
-		expect(page.widgets[0].size).toEqual({ width: 150, height: 80 });
+		expect(Object.values(page.widgets)[0].size).toEqual({
+			width: 150,
+			height: 80,
+		});
 
 		command.cancel(page);
 
-		expect(page.widgets[0].size).toEqual(widget.size);
+		expect(Object.values(page.widgets)[0].size).toEqual(widget.size);
 	});
 
 	it("applique les nouvelles données, et l'annulation restaure les précédentes", () => {
@@ -55,11 +58,15 @@ describe("WidgetUpdateCommand", () => {
 
 		command.execute(page);
 
-		expect((page.widgets[0].data as { label: string }).label).toBe("Nouveau");
+		expect(
+			(Object.values(page.widgets)[0].data as { label: string }).label,
+		).toBe("Nouveau");
 
 		command.cancel(page);
 
-		expect((page.widgets[0].data as { label: string }).label).toBe(widget.data.label);
+		expect(
+			(Object.values(page.widgets)[0].data as { label: string }).label,
+		).toBe(widget.data.label);
 	});
 
 	it("round-trip execute→cancel laisse la page inchangée", () => {

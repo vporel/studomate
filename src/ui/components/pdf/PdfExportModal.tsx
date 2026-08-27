@@ -13,37 +13,49 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import OffscreenProgramRenderer from "./OffscreenProgramRenderer";
 import { PdfExportProgramConfig, usePdfExport } from "./usePdfExport";
 
 export default function PdfExportModal() {
-	const { pdfExportModalVisible, setPdfExportModalVisible, project } = useProjectStore(
-		useShallow((s) => ({
-			pdfExportModalVisible: s.ui.pdfExportModalVisible,
-			setPdfExportModalVisible: s.setPdfExportModalVisible,
-			project: s.project,
-		})),
-	);
+	const { pdfExportModalVisible, setPdfExportModalVisible, project } =
+		useProjectStore(
+			useShallow((s) => ({
+				pdfExportModalVisible: s.ui.pdfExportModalVisible,
+				setPdfExportModalVisible: s.setPdfExportModalVisible,
+				project: s.project,
+			})),
+		);
 
-	const grafcets: Grafcet[] = project ? Object.values(project.grafcets) : [];
-	const ladders: Ladder[] = project ? Object.values(project.ladders) : [];
+	const grafcets: Grafcet[] = useMemo(
+		() => (project ? Object.values(project.grafcets) : []),
+		[project],
+	);
+	const ladders: Ladder[] = useMemo(
+		() => (project ? Object.values(project.ladders) : []),
+		[project],
+	);
 
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [filename, setFilename] = useState("");
 
 	// Initialise la sélection et le nom quand la modale s'ouvre
 	useEffect(() => {
-		if (!pdfExportModalVisible) return;
-		setSelectedIds(new Set([...grafcets.map((g) => g.id), ...ladders.map((l) => l.id)]));
-		setFilename(project?.name ?? "export");
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [pdfExportModalVisible]);
+		if (!pdfExportModalVisible || !project) return;
+		const ids = [
+			...Object.values(project.grafcets),
+			...Object.values(project.ladders),
+		].map((p) => p.id);
+		setSelectedIds(new Set(ids));
+		setFilename(project.name);
+	}, [pdfExportModalVisible, project]);
 
-	const { exportState, offscreenPrograms, onProgramReady, startExport, reset } = usePdfExport();
-	const isExporting = exportState.status !== "idle" && exportState.status !== "error";
+	const { exportState, offscreenPrograms, onProgramReady, startExport, reset } =
+		usePdfExport();
+	const isExporting =
+		exportState.status !== "idle" && exportState.status !== "error";
 
 	const toggleId = useCallback((id: string) => {
 		setSelectedIds((prev) => {
@@ -131,7 +143,10 @@ export default function PdfExportModal() {
 						))}
 
 						{ladders.length > 0 && (
-							<Typography variant="subtitle2" sx={{ mt: 1, mb: 0.5, fontWeight: 600 }}>
+							<Typography
+								variant="subtitle2"
+								sx={{ mt: 1, mb: 0.5, fontWeight: 600 }}
+							>
 								Ladders
 							</Typography>
 						)}
@@ -164,7 +179,11 @@ export default function PdfExportModal() {
 					{/* Barre de progression */}
 					{isExporting && (
 						<Box>
-							<LinearProgress variant="determinate" value={progressValue} sx={{ mb: 0.5 }} />
+							<LinearProgress
+								variant="determinate"
+								value={progressValue}
+								sx={{ mb: 0.5 }}
+							/>
 							<Typography variant="caption" color="text.secondary">
 								{progressLabel}
 							</Typography>

@@ -1,4 +1,4 @@
-﻿import Grafcet from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import Step, {
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -62,15 +62,17 @@ export default class StepHelper {
 					if (transition) transitions.push(transition);
 					break;
 				case "step-referral-target":
-					const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
-						connection.source.id,
-						grafcet,
-					);
-					if (stepReferralSource) {
-						const transitions_ = StepReferralSourceHelper.getPredecessorTransitions(
-							stepReferralSource.id,
+					const stepReferralSource =
+						StepReferralTargetHelper.getStepReferralSource(
+							connection.source.id,
 							grafcet,
 						);
+					if (stepReferralSource) {
+						const transitions_ =
+							StepReferralSourceHelper.getPredecessorTransitions(
+								stepReferralSource.id,
+								grafcet,
+							);
 						transitions.push(...transitions_);
 					}
 					break;
@@ -95,7 +97,10 @@ export default class StepHelper {
 			}
 		}
 		return transitions.map((transition) => {
-			const stepsBeforeTransition = TransitionHelper.getPredecessorSteps(transition.id, grafcet);
+			const stepsBeforeTransition = TransitionHelper.getPredecessorSteps(
+				transition.id,
+				grafcet,
+			);
 			return { transition, stepsBeforeTransition };
 		});
 	}
@@ -137,7 +142,10 @@ export default class StepHelper {
 					`Unexpected target type ${connection.target.type} on handle ${STEP_HANDLE_SOURCE_ACTION} of step ${stepId}`,
 				);
 			}
-			const action = grafcet.getElementByIdAndType(connection.target.id, "action");
+			const action = grafcet.getElementByIdAndType(
+				connection.target.id,
+				"action",
+			);
 			if (action) actions.push(action);
 		}
 		return actions;

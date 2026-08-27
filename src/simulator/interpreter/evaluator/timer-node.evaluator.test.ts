@@ -76,10 +76,25 @@ describe("TimerNodeEvaluator", () => {
 
 	beforeEach(() => {
 		const input = new EnvVariable("id_input", "input", "boolean", "IN");
-		const lastInput = new EnvVariable("id_lastInput", "lastInput", "boolean", "INOUT");
+		const lastInput = new EnvVariable(
+			"id_lastInput",
+			"lastInput",
+			"boolean",
+			"INOUT",
+		);
 		const output = new EnvVariable("id_output", "output", "boolean", "OUT");
-		const presetTime = new EnvVariable("id_presetTime", "presetTime", "number", "IN");
-		const elapsedTime = new EnvVariable("id_elapsedTime", "elapsedTime", "number", "INOUT");
+		const presetTime = new EnvVariable(
+			"id_presetTime",
+			"presetTime",
+			"number",
+			"IN",
+		);
+		const elapsedTime = new EnvVariable(
+			"id_elapsedTime",
+			"elapsedTime",
+			"number",
+			"INOUT",
+		);
 
 		input.setValue(false);
 		lastInput.setValue(false);
@@ -99,7 +114,7 @@ describe("TimerNodeEvaluator", () => {
 			IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
 			IdentifiersBuilder.buildIdentifierNode("presetTime", 0),
 			IdentifiersBuilder.buildIdentifierNode("elapsedTime", 0),
-			IdentifiersBuilder.buildIdentifierNode("output", 0)
+			IdentifiersBuilder.buildIdentifierNode("output", 0),
 		);
 	};
 
@@ -107,9 +122,9 @@ describe("TimerNodeEvaluator", () => {
 		it("starts timing on rising edge", () => {
 			const timer = createTimerNode("TON");
 			env.setVariableValueByName("input", true);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false); // Not yet timed out
 			expect(env.getVariableValueByName("output")).toBe(false);
 			expect(env.getVariableValueByName("lastInput")).toBe(true);
@@ -120,9 +135,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 100);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(true);
 			expect(env.getVariableValueByName("output")).toBe(true);
 		});
@@ -132,9 +147,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			evaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("elapsedTime")).toBe(60);
 		});
 
@@ -142,9 +157,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TON");
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
 		});
@@ -154,9 +169,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", false); // Rising edge
 			env.setVariableValueByName("output", true); // Was previously true
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false);
 			expect(env.getVariableValueByName("output")).toBe(false);
 		});
@@ -167,9 +182,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("lastInput", true); // Falling edge
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(true);
 			expect(env.getVariableValueByName("output")).toBe(true);
 		});
@@ -179,9 +194,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("lastInput", false);
 			env.setVariableValueByName("elapsedTime", 100);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false);
 		});
 
@@ -190,9 +205,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("lastInput", false);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			evaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("elapsedTime")).toBe(60);
 		});
 
@@ -200,9 +215,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(true);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
 		});
@@ -211,9 +226,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(true);
 		});
 	});
@@ -223,9 +238,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TP");
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", false); // Rising edge
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(true);
 			expect(env.getVariableValueByName("output")).toBe(true);
 		});
@@ -235,9 +250,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 100);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false);
 		});
 
@@ -246,9 +261,9 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			evaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("elapsedTime")).toBe(60);
 		});
 
@@ -256,28 +271,28 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TP");
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("elapsedTime", 50);
-			
+
 			const result = evaluator.evaluate(timer);
-			
+
 			expect(result).toBe(false);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
 		});
 
 		it("completes pulse even if input stays true", () => {
 			const timer = createTimerNode("TP");
-			
+
 			// Rising edge
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", false);
 			let result = evaluator.evaluate(timer);
 			expect(result).toBe(true);
-			
+
 			// Continue with input true but elapsedTime < presetTime
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 50);
 			result = evaluator.evaluate(timer);
 			expect(result).toBe(true);
-			
+
 			// After preset time
 			env.setVariableValueByName("elapsedTime", 100);
 			result = evaluator.evaluate(timer);
@@ -290,9 +305,9 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TON");
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", false);
-			
+
 			evaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("lastInput")).toBe(true);
 		});
 
@@ -300,24 +315,26 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("lastInput", true);
-			
+
 			evaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("lastInput")).toBe(false);
 		});
 	});
 
 	describe("timing accuracy", () => {
 		it("uses deltaTimeMs for timing increments", () => {
-			const customEvaluator = new TimerNodeEvaluator(env, visitor, { deltaTimeMs: 25 });
+			const customEvaluator = new TimerNodeEvaluator(env, visitor, {
+				deltaTimeMs: 25,
+			});
 			const timer = createTimerNode("TON");
-			
+
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
 			env.setVariableValueByName("elapsedTime", 0);
-			
+
 			customEvaluator.evaluate(timer);
-			
+
 			expect(env.getVariableValueByName("elapsedTime")).toBe(25);
 		});
 	});

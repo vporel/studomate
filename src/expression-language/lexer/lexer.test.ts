@@ -27,7 +27,10 @@ describe("Lexer", () => {
 
 		it("tokenizes decimals", () => {
 			const tokens = lexer.tokenize("3.14");
-			expect(tokens[0]).toMatchObject({ type: TokenType.NUMBER, value: "3.14" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.NUMBER,
+				value: "3.14",
+			});
 		});
 
 		it("throws on invalid decimal format", () => {
@@ -38,7 +41,10 @@ describe("Lexer", () => {
 	describe("durations", () => {
 		it("tokenizes durations with ms unit", () => {
 			const tokens = lexer.tokenize("100ms");
-			expect(tokens[0]).toMatchObject({ type: TokenType.DURATION, value: "100ms" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.DURATION,
+				value: "100ms",
+			});
 		});
 
 		it("tokenizes durations with s, m, h, d units", () => {
@@ -50,35 +56,52 @@ describe("Lexer", () => {
 
 		it("tokenizes decimal durations", () => {
 			const tokens = lexer.tokenize("2.5s");
-			expect(tokens[0]).toMatchObject({ type: TokenType.DURATION, value: "2.5s" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.DURATION,
+				value: "2.5s",
+			});
 		});
 	});
 
 	describe("strings", () => {
 		it("tokenizes double-quoted strings", () => {
 			const tokens = lexer.tokenize('"hello"');
-			expect(tokens[0]).toMatchObject({ type: TokenType.STRING, value: "hello" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.STRING,
+				value: "hello",
+			});
 		});
 
 		it("tokenizes single-quoted strings", () => {
 			const tokens = lexer.tokenize("'world'");
-			expect(tokens[0]).toMatchObject({ type: TokenType.STRING, value: "world" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.STRING,
+				value: "world",
+			});
 		});
 
 		it("throws on unterminated string", () => {
-			expect(() => lexer.tokenize('"unterminated')).toThrow(UnterminatedStringException);
+			expect(() => lexer.tokenize('"unterminated')).toThrow(
+				UnterminatedStringException,
+			);
 		});
 	});
 
 	describe("identifiers", () => {
 		it("tokenizes identifiers", () => {
 			const tokens = lexer.tokenize("my_var123");
-			expect(tokens[0]).toMatchObject({ type: TokenType.IDENTIFIER, value: "my_var123" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.IDENTIFIER,
+				value: "my_var123",
+			});
 		});
 
 		it("tokenizes identifiers starting with underscore", () => {
 			const tokens = lexer.tokenize("_private");
-			expect(tokens[0]).toMatchObject({ type: TokenType.IDENTIFIER, value: "_private" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.IDENTIFIER,
+				value: "_private",
+			});
 		});
 	});
 
@@ -193,7 +216,9 @@ describe("Lexer", () => {
 
 	describe("error handling", () => {
 		it("throws on invalid character", () => {
-			expect(() => lexer.tokenize("@invalid")).toThrow(InvalidCharacterException);
+			expect(() => lexer.tokenize("@invalid")).toThrow(
+				InvalidCharacterException,
+			);
 		});
 	});
 

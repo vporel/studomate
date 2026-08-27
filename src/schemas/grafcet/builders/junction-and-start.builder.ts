@@ -64,6 +64,11 @@ export default class JunctionAndStartBuilder {
 	}
 
 	build(): JunctionAndStart {
-		return new JunctionAndStart(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new JunctionAndStart(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

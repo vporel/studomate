@@ -21,12 +21,16 @@ function renameCommand(newTitle: string, previousTitle: string) {
 	});
 }
 
-describe("CommandsStackManager (ladder)", () => {
+describe("LadderCommandsStackManager (ladder)", () => {
 	describe("executeOperation", () => {
 		it("applique la commande au ladder et active l'annulation", () => {
 			const store = buildStore();
 
-			store.getState().commandsStackManager.executeOperation([renameCommand("Section Renommée", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("Section Renommée", "Section Initiale"),
+				]);
 
 			const state = store.getState();
 			expect(state.ladder.getSection("s1")!.title).toBe("Section Renommée");
@@ -48,7 +52,11 @@ describe("CommandsStackManager (ladder)", () => {
 	describe("undoOperation", () => {
 		it("restaure l'état exact d'avant la commande", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renameCommand("Section Renommée", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("Section Renommée", "Section Initiale"),
+				]);
 
 			store.getState().commandsStackManager.undoOperation();
 
@@ -71,7 +79,11 @@ describe("CommandsStackManager (ladder)", () => {
 	describe("redoOperation", () => {
 		it("réapplique la commande annulée", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renameCommand("Section Renommée", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("Section Renommée", "Section Initiale"),
+				]);
 			store.getState().commandsStackManager.undoOperation();
 
 			store.getState().commandsStackManager.redoOperation();
@@ -93,10 +105,18 @@ describe("CommandsStackManager (ladder)", () => {
 
 		it("vide la pile de rétablissement après une nouvelle commande", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renameCommand("V2", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("V2", "Section Initiale"),
+				]);
 			store.getState().commandsStackManager.undoOperation();
 
-			store.getState().commandsStackManager.executeOperation([renameCommand("V3", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("V3", "Section Initiale"),
+				]);
 
 			expect(store.getState().hasCommandsToRedo).toBe(false);
 		});
@@ -105,7 +125,11 @@ describe("CommandsStackManager (ladder)", () => {
 	describe("cycle complet", () => {
 		it("exécuter → annuler → rétablir redonne le même résultat", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renameCommand("Section Renommée", "Section Initiale")]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([
+					renameCommand("Section Renommée", "Section Initiale"),
+				]);
 			const afterExecute = store.getState().ladder.getSection("s1")!.title;
 
 			store.getState().commandsStackManager.undoOperation();

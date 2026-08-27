@@ -23,7 +23,11 @@ describe("FinderVisitor", () => {
 		it("finds multiple identifier nodes in expression", () => {
 			const id1 = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const id2 = IdentifiersBuilder.buildIdentifierNode("y", 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
 
 			const visitor = new FinderVisitor<IdentifierNode>("IDENTIFIER");
 			const result = visitor.visit(expr);
@@ -38,8 +42,16 @@ describe("FinderVisitor", () => {
 			const id2 = IdentifiersBuilder.buildIdentifierNode("b", 5);
 			const id3 = IdentifiersBuilder.buildIdentifierNode("c", 10);
 
-			const expr1 = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
-			const expr2 = ExpressionsBuilder.buildArithmeticExpressionNode("*", expr1, id3);
+			const expr1 = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
+			const expr2 = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				expr1,
+				id3,
+			);
 
 			const visitor = new FinderVisitor<IdentifierNode>("IDENTIFIER");
 			const result = visitor.visit(expr2);
@@ -55,7 +67,10 @@ describe("FinderVisitor", () => {
 			const leftId = IdentifiersBuilder.buildIdentifierNode("x", 5);
 			const rightId = IdentifiersBuilder.buildIdentifierNode("y", 10);
 
-			const assign = StatementsBuilder.buildAssignStatementNode(leftId, rightId);
+			const assign = StatementsBuilder.buildAssignStatementNode(
+				leftId,
+				rightId,
+			);
 			const ifNode = ControlsBuilder.buildIfControlNode(condId, [assign], null);
 
 			const visitor = new FinderVisitor<IdentifierNode>("IDENTIFIER");
@@ -81,7 +96,11 @@ describe("FinderVisitor", () => {
 		it("finds number nodes in arithmetic expression", () => {
 			const num1 = LiteralsBuilder.buildNumberNode(5, 0);
 			const num2 = LiteralsBuilder.buildNumberNode(10, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
 
 			const visitor = new FinderVisitor<NumberNode>("NUMBER_LITERAL");
 			const result = visitor.visit(expr);
@@ -97,9 +116,21 @@ describe("FinderVisitor", () => {
 			const num3 = LiteralsBuilder.buildNumberNode(3, 10);
 			const num4 = LiteralsBuilder.buildNumberNode(4, 15);
 
-			const expr1 = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
-			const expr2 = ExpressionsBuilder.buildArithmeticExpressionNode("*", num3, num4);
-			const finalExpr = ExpressionsBuilder.buildArithmeticExpressionNode("-", expr1, expr2);
+			const expr1 = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
+			const expr2 = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				num3,
+				num4,
+			);
+			const finalExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"-",
+				expr1,
+				expr2,
+			);
 
 			const visitor = new FinderVisitor<NumberNode>("NUMBER_LITERAL");
 			const result = visitor.visit(finalExpr);
@@ -125,9 +156,15 @@ describe("FinderVisitor", () => {
 		it("finds arithmetic expression nodes", () => {
 			const num1 = LiteralsBuilder.buildNumberNode(5, 0);
 			const num2 = LiteralsBuilder.buildNumberNode(10, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
 
-			const visitor = new FinderVisitor<ArithmeticExpressionNode>("ARITHMETIC_EXPRESSION");
+			const visitor = new FinderVisitor<ArithmeticExpressionNode>(
+				"ARITHMETIC_EXPRESSION",
+			);
 			const result = visitor.visit(expr);
 
 			expect(result).toHaveLength(1);
@@ -139,10 +176,20 @@ describe("FinderVisitor", () => {
 			const num2 = LiteralsBuilder.buildNumberNode(2, 5);
 			const num3 = LiteralsBuilder.buildNumberNode(3, 10);
 
-			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
-			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("*", innerExpr, num3);
+			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
+			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				innerExpr,
+				num3,
+			);
 
-			const visitor = new FinderVisitor<ArithmeticExpressionNode>("ARITHMETIC_EXPRESSION");
+			const visitor = new FinderVisitor<ArithmeticExpressionNode>(
+				"ARITHMETIC_EXPRESSION",
+			);
 			const result = visitor.visit(outerExpr);
 
 			expect(result).toHaveLength(2);
@@ -169,7 +216,11 @@ describe("FinderVisitor", () => {
 			const left = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const num1 = LiteralsBuilder.buildNumberNode(5, 5);
 			const num2 = LiteralsBuilder.buildNumberNode(3, 10);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
 			const assign = StatementsBuilder.buildAssignStatementNode(left, expr);
 
 			const visitor = new FinderVisitor<NumberNode>("NUMBER_LITERAL");
@@ -189,9 +240,19 @@ describe("FinderVisitor", () => {
 			const num1 = LiteralsBuilder.buildNumberNode(1, 15);
 			const num2 = LiteralsBuilder.buildNumberNode(2, 20);
 
-			const trueAssign = StatementsBuilder.buildAssignStatementNode(trueId, num1);
-			const falseAssign = StatementsBuilder.buildAssignStatementNode(falseId, num2);
-			const ifNode = ControlsBuilder.buildIfControlNode(condId, [trueAssign], [falseAssign]);
+			const trueAssign = StatementsBuilder.buildAssignStatementNode(
+				trueId,
+				num1,
+			);
+			const falseAssign = StatementsBuilder.buildAssignStatementNode(
+				falseId,
+				num2,
+			);
+			const ifNode = ControlsBuilder.buildIfControlNode(
+				condId,
+				[trueAssign],
+				[falseAssign],
+			);
 
 			const visitor = new FinderVisitor<IdentifierNode>("IDENTIFIER");
 			const result = visitor.visit(ifNode);
@@ -232,7 +293,11 @@ describe("FinderVisitor", () => {
 
 		it("finds number in timer string declaration", () => {
 			const input = IdentifiersBuilder.buildIdentifierNode("trigger", 0);
-			const timer = BlocksBuilder.buildTimerStringDeclarationNode("myTimer", input, 1500);
+			const timer = BlocksBuilder.buildTimerStringDeclarationNode(
+				"myTimer",
+				input,
+				1500,
+			);
 
 			const visitor = new FinderVisitor<IdentifierNode>("IDENTIFIER");
 			const result = visitor.visit(timer);

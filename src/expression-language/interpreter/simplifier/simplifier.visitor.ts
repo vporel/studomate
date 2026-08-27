@@ -4,7 +4,11 @@ import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.b
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import {
+	CounterNode,
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -13,7 +17,11 @@ import {
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
 import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
-import { BooleanNode, NumberNode, StringNode } from "@/expression-language/ast/nodes/literals";
+import {
+	BooleanNode,
+	NumberNode,
+	StringNode,
+} from "@/expression-language/ast/nodes/literals";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
@@ -41,17 +49,25 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 				const simplifiedExpr = this.visit(node.expr);
 				// If the inner expression is a boolean literal, we can simplify the NOT operation
 				if (simplifiedExpr.type === "BOOLEAN_LITERAL") {
-					return LiteralsBuilder.buildBooleanNode(!simplifiedExpr.value, node.position);
+					return LiteralsBuilder.buildBooleanNode(
+						!simplifiedExpr.value,
+						node.position,
+					);
 				}
 				return { ...node, expr: simplifiedExpr };
 		}
 	}
 
-	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): ASTNode {
+	protected visitArithmeticExpressionNode(
+		node: ArithmeticExpressionNode,
+	): ASTNode {
 		const simplifiedLeft = this.visit(node.left);
 		const simplifiedRight = this.visit(node.right);
 		// If both sides are number literals, we can simplify the arithmetic operation
-		if (simplifiedLeft.type === "NUMBER_LITERAL" && simplifiedRight.type === "NUMBER_LITERAL") {
+		if (
+			simplifiedLeft.type === "NUMBER_LITERAL" &&
+			simplifiedRight.type === "NUMBER_LITERAL"
+		) {
 			let result: number;
 			switch (node.operator) {
 				case "+":
@@ -65,7 +81,11 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 					break;
 				case "/":
 					if (simplifiedRight.value === 0) {
-						throw new DivisionByZeroException(simplifiedLeft.value, simplifiedRight.value, node);
+						throw new DivisionByZeroException(
+							simplifiedLeft.value,
+							simplifiedRight.value,
+							node,
+						);
 					}
 					result = simplifiedLeft.value / simplifiedRight.value;
 					break;
@@ -80,7 +100,9 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		);
 	}
 
-	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): ASTNode {
+	protected visitComparisonExpressionNode(
+		node: ComparisonExpressionNode,
+	): ASTNode {
 		const simplifiedLeft = this.visit(node.left);
 		const simplifiedRight = this.visit(node.right);
 		return ExpressionsBuilder.buildComparisonExpressionNode(
@@ -102,13 +124,21 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 
 	protected visitAssignStatementNode(node: AssignStatementNode): ASTNode {
 		const simplifiedRight = this.visit(node.right);
-		return StatementsBuilder.buildAssignStatementNode(node.left, simplifiedRight, node.position);
+		return StatementsBuilder.buildAssignStatementNode(
+			node.left,
+			simplifiedRight,
+			node.position,
+		);
 	}
 
 	protected visitIfControlNode(node: IfControlNode): ASTNode {
 		const simplifiedCondition = this.visit(node.condition);
-		const simplifiedTrueBranch = node.trueBranch.map((stmt) => this.visit(stmt));
-		const simplifiedFalseBranch = node.falseBranch ? node.falseBranch.map((stmt) => this.visit(stmt)) : null;
+		const simplifiedTrueBranch = node.trueBranch.map((stmt) =>
+			this.visit(stmt),
+		);
+		const simplifiedFalseBranch = node.falseBranch
+			? node.falseBranch.map((stmt) => this.visit(stmt))
+			: null;
 		return ControlsBuilder.buildIfControlNode(
 			simplifiedCondition,
 			simplifiedTrueBranch,
@@ -121,7 +151,10 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		const simplifiedLeft = this.visit(node.left);
 		const simplifiedRight = this.visit(node.right);
 		//If both sides are boolean literals, we can simplify the AND operation
-		if (simplifiedLeft.type === "BOOLEAN_LITERAL" && simplifiedRight.type === "BOOLEAN_LITERAL") {
+		if (
+			simplifiedLeft.type === "BOOLEAN_LITERAL" &&
+			simplifiedRight.type === "BOOLEAN_LITERAL"
+		) {
 			return LiteralsBuilder.buildBooleanNode(
 				simplifiedLeft.value && simplifiedRight.value,
 				node.position,
@@ -157,7 +190,10 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		const simplifiedOrLeft = this.visit(node.left);
 		const simplifiedOrRight = this.visit(node.right);
 		// If both sides are boolean literals, we can simplify the OR operation
-		if (simplifiedOrLeft.type === "BOOLEAN_LITERAL" && simplifiedOrRight.type === "BOOLEAN_LITERAL") {
+		if (
+			simplifiedOrLeft.type === "BOOLEAN_LITERAL" &&
+			simplifiedOrRight.type === "BOOLEAN_LITERAL"
+		) {
 			return LiteralsBuilder.buildBooleanNode(
 				simplifiedOrLeft.value || simplifiedOrRight.value,
 				node.position,
@@ -201,7 +237,9 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		);
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ASTNode {
+	protected visitTimerStringDeclarationNode(
+		node: TimerStringDeclarationNode,
+	): ASTNode {
 		return BlocksBuilder.buildTimerStringDeclarationNode(
 			node.name,
 			this.visit(node.input),

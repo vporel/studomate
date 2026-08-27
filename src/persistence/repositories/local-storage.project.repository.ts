@@ -1,6 +1,9 @@
 import Project from "@/schemas/project/project.schema";
 import { deserializeProject } from "../project-deserialization";
-import ProjectRepository, { SaveFailureReason, SaveResult } from "./project.repository";
+import ProjectRepository, {
+	SaveFailureReason,
+	SaveResult,
+} from "./project.repository";
 
 const STORAGE_KEY = "studomate_projects_data";
 
@@ -35,12 +38,15 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 	}
 
 	async get(projectId: string): Promise<Project | null> {
-		return (await this.list()).find((p) => p.id === projectId) ?? null;
+		const raw = this.readRawProjects().find((p) => p?.id === projectId);
+		return raw ? deserializeProject(raw) : null;
 	}
 
 	async save(project: Project): Promise<SaveResult> {
 		const raws = this.readRawProjects();
-		const serialized = JSON.parse(JSON.stringify(project));
+		//`write` re-sérialise tout le tableau : inutile de cloner le projet par JSON ici, une
+		//copie de surface suffit à en détacher le prototype de classe.
+		const serialized = { ...project };
 		const index = raws.findIndex((p) => p?.id === project.id);
 		if (index === -1) raws.push(serialized);
 		else raws[index] = serialized;
@@ -48,7 +54,9 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 	}
 
 	async delete(projectId: string): Promise<SaveResult> {
-		return this.write(this.readRawProjects().filter((p) => p?.id !== projectId));
+		return this.write(
+			this.readRawProjects().filter((p) => p?.id !== projectId),
+		);
 	}
 
 	/**
@@ -97,7 +105,11 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 	private failureReason(e: unknown): SaveFailureReason {
 		if (typeof DOMException !== "undefined" && e instanceof DOMException) {
 			//Firefox et Chrome ne s'accordent pas sur le nom, et Chrome utilise le code 22
-			if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22) {
+			if (
+				e.name === "QuotaExceededError" ||
+				e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+				e.code === 22
+			) {
 				return "quota-exceeded";
 			}
 		}

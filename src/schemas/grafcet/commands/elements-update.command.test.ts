@@ -5,7 +5,13 @@ describe("ElementsUpdateCommand", () => {
 	function grafcetWithOneStep(): Grafcet {
 		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
 		grafcet.addElements([
-			{ type: "step", id: "step-1", data: { number: "0" }, position: { x: 0, y: 0 }, size: { width: 10, height: 10 } },
+			{
+				type: "step",
+				id: "step-1",
+				data: { number: "0" },
+				position: { x: 0, y: 0 },
+				size: { width: 10, height: 10 },
+			},
 		]);
 		return grafcet;
 	}

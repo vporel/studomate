@@ -1,4 +1,7 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
@@ -20,12 +23,16 @@ function buildProject() {
 
 	const grafcetA = new GrafcetBuilder()
 		.id("g-a")
-		.addTransition(new TransitionBuilder().id("t-a").expression("moteur ET capteur").build())
+		.addTransition(
+			new TransitionBuilder().id("t-a").expression("moteur ET capteur").build(),
+		)
 		.build();
 
 	const grafcetB = new GrafcetBuilder()
 		.id("g-b")
-		.addTransition(new TransitionBuilder().id("t-b").expression("NON moteur").build())
+		.addTransition(
+			new TransitionBuilder().id("t-b").expression("NON moteur").build(),
+		)
 		.build();
 
 	const contact = createContactElement("moteur", "NO", 0, 0);
@@ -47,7 +54,9 @@ function renameCommand(from: string, to: string) {
 describe("VariablesUpdateCommand", () => {
 	describe("mise à jour de la variable", () => {
 		it("applique le nouveau mnémonique", () => {
-			const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+			const [project] = renameCommand("moteur", "pompe").execute(
+				buildProject(),
+			);
 			expect(project.variables[0].mnemonic).toBe("pompe");
 		});
 
@@ -62,10 +71,16 @@ describe("VariablesUpdateCommand", () => {
 	// Régression §2.2 : le renommage ne touchait que les grafcets dont l'onglet était ouvert
 	describe("propagation aux expressions", () => {
 		it("réécrit les expressions de TOUS les grafcets du projet", () => {
-			const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+			const [project] = renameCommand("moteur", "pompe").execute(
+				buildProject(),
+			);
 
-			expect(project.grafcets["g-a"].transitions[0].data.expression).toBe("pompe ET capteur");
-			expect(project.grafcets["g-b"].transitions[0].data.expression).toBe("NON pompe");
+			expect(
+				Object.values(project.grafcets["g-a"].transitions)[0].data.expression,
+			).toBe("pompe ET capteur");
+			expect(
+				Object.values(project.grafcets["g-b"].transitions)[0].data.expression,
+			).toBe("NON pompe");
 		});
 
 		it("restaure les expressions de tous les grafcets à l'annulation", () => {
@@ -73,27 +88,40 @@ describe("VariablesUpdateCommand", () => {
 			const [project] = command.execute(buildProject());
 			const restored = command.cancel(project);
 
-			expect(restored.grafcets["g-a"].transitions[0].data.expression).toBe("moteur ET capteur");
-			expect(restored.grafcets["g-b"].transitions[0].data.expression).toBe("NON moteur");
+			expect(
+				Object.values(restored.grafcets["g-a"].transitions)[0].data.expression,
+			).toBe("moteur ET capteur");
+			expect(
+				Object.values(restored.grafcets["g-b"].transitions)[0].data.expression,
+			).toBe("NON moteur");
 		});
 
 		it("execute puis cancel puis execute redonne le même résultat", () => {
 			const command = renameCommand("moteur", "pompe");
 			const [first] = command.execute(buildProject());
-			const expression = first.grafcets["g-a"].transitions[0].data.expression;
+			const expression = Object.values(first.grafcets["g-a"].transitions)[0]
+				.data.expression;
 
 			const [again] = command.execute(command.cancel(first));
 
-			expect(again.grafcets["g-a"].transitions[0].data.expression).toBe(expression);
+			expect(
+				Object.values(again.grafcets["g-a"].transitions)[0].data.expression,
+			).toBe(expression);
 		});
 
 		it("ne touche pas les expressions quand le mnémonique ne change pas", () => {
 			const command = new VariablesUpdateCommand([
-				{ id: "v1", newData: { comment: "un commentaire" }, oldData: { comment: "" } },
+				{
+					id: "v1",
+					newData: { comment: "un commentaire" },
+					oldData: { comment: "" },
+				},
 			]);
 			const [project] = command.execute(buildProject());
 
-			expect(project.grafcets["g-a"].transitions[0].data.expression).toBe("moteur ET capteur");
+			expect(
+				Object.values(project.grafcets["g-a"].transitions)[0].data.expression,
+			).toBe("moteur ET capteur");
 		});
 	});
 
@@ -101,10 +129,14 @@ describe("VariablesUpdateCommand", () => {
 	// comme les expressions GRAFCET — le renommage doit les atteindre aussi.
 	describe("propagation aux contacts/bobines des ladders", () => {
 		it("réécrit la référence des contacts/bobines de TOUS les ladders du projet", () => {
-			const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+			const [project] = renameCommand("moteur", "pompe").execute(
+				buildProject(),
+			);
 
 			const [contact] = project.ladders["l-a"].sections[0].elements;
-			expect(contact.data).toEqual(expect.objectContaining({ variable: "pompe" }));
+			expect(contact.data).toEqual(
+				expect.objectContaining({ variable: "pompe" }),
+			);
 		});
 
 		it("restaure la référence des contacts/bobines à l'annulation", () => {
@@ -113,7 +145,9 @@ describe("VariablesUpdateCommand", () => {
 			const restored = command.cancel(project);
 
 			const [contact] = restored.ladders["l-a"].sections[0].elements;
-			expect(contact.data).toEqual(expect.objectContaining({ variable: "moteur" }));
+			expect(contact.data).toEqual(
+				expect.objectContaining({ variable: "moteur" }),
+			);
 		});
 	});
 
@@ -121,33 +155,35 @@ describe("VariablesUpdateCommand", () => {
 	describe("actions de type TEXT", () => {
 		it("ne réécrit pas le texte descriptif d'une action TEXT", () => {
 			const project = buildProject();
-			project.grafcets["g-a"].actions.push(
-				new ActionBuilder()
-					.id("a-text")
-					.type(ActionType.TEXT)
-					.expression("moteur en marche")
-					.build(),
-			);
+			const textAction = new ActionBuilder()
+				.id("a-text")
+				.type(ActionType.TEXT)
+				.expression("moteur en marche")
+				.build();
+			project.grafcets["g-a"].actions[textAction.id] = textAction;
 
 			const [updated] = renameCommand("moteur", "pompe").execute(project);
 
-			expect(updated.grafcets["g-a"].actions[0].data.expression).toBe("moteur en marche");
+			expect(
+				Object.values(updated.grafcets["g-a"].actions)[0].data.expression,
+			).toBe("moteur en marche");
 		});
 
 		it("réécrit bien l'expression d'une action non TEXT", () => {
 			const project = buildProject();
-			project.grafcets["g-a"].actions.push(
-				new ActionBuilder()
-					.id("a-bool")
-					.type(ActionType.BOOLEAN_VARIABLE)
-					.executionMode(ActionExecutionMode.SET)
-					.expression("moteur")
-					.build(),
-			);
+			const boolAction = new ActionBuilder()
+				.id("a-bool")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.expression("moteur")
+				.build();
+			project.grafcets["g-a"].actions[boolAction.id] = boolAction;
 
 			const [updated] = renameCommand("moteur", "pompe").execute(project);
 
-			expect(updated.grafcets["g-a"].actions[0].data.expression).toBe("pompe");
+			expect(
+				Object.values(updated.grafcets["g-a"].actions)[0].data.expression,
+			).toBe("pompe");
 		});
 	});
 });

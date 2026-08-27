@@ -21,7 +21,10 @@ import ToggleSwitch from "./ToggleSwitch";
  * n'importe quel widget sans switch. C'est `HmiWidgetItem` qui garantit que chaque composant ne
  * reçoit jamais que le `data` correspondant à son propre type.
  */
-export const HMI_WIDGET_COMPONENTS: Record<HmiWidgetType, ComponentType<HmiWidgetComponentProps<any>>> = {
+export const HMI_WIDGET_COMPONENTS: Record<
+	HmiWidgetType,
+	ComponentType<HmiWidgetComponentProps<any>>
+> = {
 	"push-button": PushButton,
 	indicator: Indicator,
 	"toggle-switch": ToggleSwitch,

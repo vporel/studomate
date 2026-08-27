@@ -9,7 +9,11 @@ import useLadderMenuItems from "./useLadderMenuItems";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("./ExplorerContextMenu", () => ({
-	explorerContextMenuEventsOut: { emit: jest.fn(), on: jest.fn(), off: jest.fn() },
+	explorerContextMenuEventsOut: {
+		emit: jest.fn(),
+		on: jest.fn(),
+		off: jest.fn(),
+	},
 }));
 
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
@@ -69,7 +73,10 @@ describe("useLadderMenuItems", () => {
 	it("emits a rename event", () => {
 		const { result } = setup(ProjectMode.DESIGN);
 		act(() => result.current("l1")[1][0].onClick?.());
-		expect(explorerContextMenuEventsOut.emit).toHaveBeenCalledWith("ladder-rename", { ladderId: "l1" });
+		expect(explorerContextMenuEventsOut.emit).toHaveBeenCalledWith(
+			"ladder-rename",
+			{ ladderId: "l1" },
+		);
 	});
 
 	it("deletes the ladder after confirmation", () => {

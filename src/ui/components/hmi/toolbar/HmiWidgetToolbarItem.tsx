@@ -1,6 +1,10 @@
 "use client";
 
-import { HMI_WIDGET_DEFINITIONS, HmiWidgetData, HmiWidgetType } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	HMI_WIDGET_DEFINITIONS,
+	HmiWidgetData,
+	HmiWidgetType,
+} from "@/schemas/hmi/hmi-widget.schema";
 import { HmiWidgetTool } from "@/ui/components/hmi/view/constants";
 import { HMI_WIDGET_COMPONENTS } from "@/ui/components/hmi/widgets/hmi-widget-components";
 import { Box, Tooltip } from "@mui/material";
@@ -37,7 +41,12 @@ const PREVIEW_DATA: Record<HmiWidgetType, HmiWidgetData> = {
 	"push-button": { variableMnemonic: "", label: "BP" },
 	indicator: { variableMnemonic: "", label: "" },
 	"toggle-switch": { variableMnemonic: "", label: "" },
-	"numeric-display": { variableMnemonic: "", label: "", unit: "", decimalPlaces: 0 },
+	"numeric-display": {
+		variableMnemonic: "",
+		label: "",
+		unit: "",
+		decimalPlaces: 0,
+	},
 	gauge: { variableMnemonic: "", label: "", min: 0, max: 100 },
 	"numeric-input": { variableMnemonic: "", label: "", min: 0, max: 100 },
 	rectangle: { style: { fill: "#e0e0e0", stroke: "#555555", strokeWidth: 2 } },
@@ -68,7 +77,10 @@ interface HmiWidgetToolbarItemProps {
  * natif : palette et canvas HMI partagent le même contexte React (voir `HmiWidgetDnDProvider`
  * dans `HmiPageView`).
  */
-const HmiWidgetToolbarItem = ({ tool, disabled }: HmiWidgetToolbarItemProps) => {
+const HmiWidgetToolbarItem = ({
+	tool,
+	disabled,
+}: HmiWidgetToolbarItemProps) => {
 	const { type } = tool;
 	const { setDraggedTool } = useHmiWidgetDnD();
 	const label = tool.label ?? HMI_WIDGET_DEFINITIONS[type].label;

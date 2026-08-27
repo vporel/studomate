@@ -10,9 +10,10 @@ export async function openFileDialog(
 	description: string,
 	accept: { [key: string]: string[] },
 ): Promise<FileSystemFileHandle | null> {
-	// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
 	if (typeof window === "undefined" || !window.showOpenFilePicker)
-		throw new Error("The File System Access API is not supported in this browser.");
+		throw new Error(
+			"The File System Access API is not supported in this browser.",
+		);
 	try {
 		const options = {
 			types: [
@@ -22,7 +23,6 @@ export async function openFileDialog(
 				},
 			],
 		};
-		// @ts-expect-error The showOpenFilePicker API is not yet fully supported in TypeScript's
 		return (await window.showOpenFilePicker(options))[0];
 	} catch {
 		//Open cancelled or failed
@@ -54,9 +54,10 @@ export async function openSaveDialog(
 	accept: { [key: string]: string[] },
 	suggestedName?: string,
 ): Promise<FileSystemFileHandle | null> {
-	// @ts-expect-error The showSaveFilePicker API is not yet fully supported in TypeScript's
 	if (typeof window === "undefined" || !window.showSaveFilePicker)
-		throw new Error("The File System Access API is not supported in this browser.");
+		throw new Error(
+			"The File System Access API is not supported in this browser.",
+		);
 	try {
 		const options = {
 			suggestedName: suggestedName || "",
@@ -67,7 +68,6 @@ export async function openSaveDialog(
 				},
 			],
 		};
-		// @ts-expect-error The showSaveFilePicker API is not yet fully supported in TypeScript's
 		return await window.showSaveFilePicker(options);
 	} catch {
 		//Save cancelled or failed
@@ -80,7 +80,9 @@ export async function openSaveDialog(
  * @param fileHandle The file handle to read from
  * @returns The contents of the file as a string
  */
-export async function readFile(fileHandle: FileSystemFileHandle): Promise<string> {
+export async function readFile(
+	fileHandle: FileSystemFileHandle,
+): Promise<string> {
 	if (!fileHandle) throw new Error("No file handle provided");
 	try {
 		const file = await fileHandle.getFile();
@@ -96,7 +98,10 @@ export async function readFile(fileHandle: FileSystemFileHandle): Promise<string
  * @param object
  * @param fileHandle
  */
-export async function writeFile(object: object, fileHandle: FileSystemFileHandle) {
+export async function writeFile(
+	object: object,
+	fileHandle: FileSystemFileHandle,
+) {
 	if (!fileHandle) throw new Error("No file handle provided");
 	try {
 		const writable = await fileHandle.createWritable();

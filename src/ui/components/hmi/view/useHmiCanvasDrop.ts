@@ -1,6 +1,9 @@
 "use client";
 
-import { HMI_CANVAS_HEIGHT, HMI_CANVAS_WIDTH } from "@/schemas/hmi/hmi-page.schema";
+import {
+	HMI_CANVAS_HEIGHT,
+	HMI_CANVAS_WIDTH,
+} from "@/schemas/hmi/hmi-page.schema";
 import { HMI_WIDGET_DEFINITIONS } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useHmiWidgetDnD } from "@/ui/components/hmi/toolbar/HmiWidgetDnDContext";
@@ -15,7 +18,10 @@ import { snapToGrid } from "./constants";
 export default function useHmiCanvasDrop(
 	zoom: number,
 	isSimulation: boolean,
-): [onDragOver: (e: ReactDragEvent<HTMLDivElement>) => void, onDrop: (e: ReactDragEvent<HTMLDivElement>) => void] {
+): [
+	onDragOver: (e: ReactDragEvent<HTMLDivElement>) => void,
+	onDrop: (e: ReactDragEvent<HTMLDivElement>) => void,
+] {
 	const addWidget = useHmiStore((s) => s.addWidget);
 	const { draggedTool } = useHmiWidgetDnD();
 
@@ -31,10 +37,28 @@ export default function useHmiCanvasDrop(
 		const rect = e.currentTarget.getBoundingClientRect();
 		const rawX = (e.clientX - rect.left) / zoom;
 		const rawY = (e.clientY - rect.top) / zoom;
-		const size = draggedTool.sizeOverride ?? HMI_WIDGET_DEFINITIONS[draggedTool.type].defaultSize;
-		const x = snapToGrid(Math.max(0, Math.min(HMI_CANVAS_WIDTH - size.width, rawX - size.width / 2)));
-		const y = snapToGrid(Math.max(0, Math.min(HMI_CANVAS_HEIGHT - size.height, rawY - size.height / 2)));
-		addWidget(draggedTool.type, x, y, draggedTool.sizeOverride, draggedTool.dataOverride);
+		const size =
+			draggedTool.sizeOverride ??
+			HMI_WIDGET_DEFINITIONS[draggedTool.type].defaultSize;
+		const x = snapToGrid(
+			Math.max(
+				0,
+				Math.min(HMI_CANVAS_WIDTH - size.width, rawX - size.width / 2),
+			),
+		);
+		const y = snapToGrid(
+			Math.max(
+				0,
+				Math.min(HMI_CANVAS_HEIGHT - size.height, rawY - size.height / 2),
+			),
+		);
+		addWidget(
+			draggedTool.type,
+			x,
+			y,
+			draggedTool.sizeOverride,
+			draggedTool.dataOverride,
+		);
 	};
 
 	return [onDragOver, onDrop];

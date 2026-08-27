@@ -9,7 +9,12 @@ export default class PLCVariable {
 	private type: PLCVariableType;
 	private value: PLCVariableValue;
 
-	constructor(id: string, name: string, scope: PLCVariableScope, type: PLCVariableType) {
+	constructor(
+		id: string,
+		name: string,
+		scope: PLCVariableScope,
+		type: PLCVariableType,
+	) {
 		this.id = id;
 		this.name = name;
 		this.scope = scope;

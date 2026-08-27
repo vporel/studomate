@@ -8,7 +8,10 @@ describe("ElementsAddCommand", () => {
 		const [section] = ladder.sections;
 		const contact = createContactElement("A", "NO", 0, 0);
 
-		const command = new ElementsAddCommand({ sectionId: section.id, elements: [contact] });
+		const command = new ElementsAddCommand({
+			sectionId: section.id,
+			elements: [contact],
+		});
 		command.execute(ladder);
 
 		expect(section.elements).toEqual([contact]);
@@ -19,7 +22,10 @@ describe("ElementsAddCommand", () => {
 
 	it("échoue si la section n'existe pas", () => {
 		const ladder = new Ladder("l1", "L");
-		const command = new ElementsAddCommand({ sectionId: "missing", elements: [createContactElement("A", "NO", 0, 0)] });
+		const command = new ElementsAddCommand({
+			sectionId: "missing",
+			elements: [createContactElement("A", "NO", 0, 0)],
+		});
 		expect(command.execute(ladder)[1]).toBe(false);
 	});
 });

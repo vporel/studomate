@@ -1,4 +1,7 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -36,7 +39,10 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		analysisHasWarnings: false,
 		analysisErrors: { project: [], grafcets: {} },
 		analysisWarnings: { project: [], grafcets: {} },
-		hmiManager: { openHmiSimulationPageIfAny: jest.fn(), closeHmiSimulationPage: jest.fn() },
+		hmiManager: {
+			openHmiSimulationPageIfAny: jest.fn(),
+			closeHmiSimulationPage: jest.fn(),
+		},
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -74,6 +80,14 @@ describe("SimulationManager", () => {
 			await jest.advanceTimersByTimeAsync(60);
 
 			expect(get().evaluableExpressionsValues[transitionId]).toBeDefined();
+
+			//Les variables de mémoire qui portent l'état des réceptivités ne fuient pas dans les
+			//variables de simulation : ici I0 + X0 + X1 + 2 mémos d'étape = 5 au plus, jamais les
+			//2 variables d'observation en plus.
+			expect(
+				Object.keys(get().simulationVariablesStates).length,
+			).toBeLessThanOrEqual(5);
+
 			manager.setDesignMode();
 		});
 
@@ -115,7 +129,11 @@ describe("SimulationManager", () => {
 	describe("analyze()", () => {
 		function projectWithOneErrorAndOneWarning() {
 			// Erreur : variable non déclarée dans la condition de la transition.
-			const grafcet = GrafcetFactory.createSimpleCycle("g1", "UNDEFINED_VAR", "VRAI");
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"g1",
+				"UNDEFINED_VAR",
+				"VRAI",
+			);
 			// Avertissement : une action sans expression n'a aucun effet.
 			const action = new ActionBuilder()
 				.id("a-empty")
@@ -123,7 +141,7 @@ describe("SimulationManager", () => {
 				.executionMode(ActionExecutionMode.SET)
 				.expression("")
 				.build();
-			grafcet.actions.push(action);
+			grafcet.actions[action.id] = action;
 			grafcet.connections.push(
 				new ConnectionBuilder()
 					.id("a-empty-conn")
@@ -192,7 +210,7 @@ describe("SimulationManager", () => {
 				.executionMode(ActionExecutionMode.SET)
 				.expression("")
 				.build();
-			grafcet.actions.push(action);
+			grafcet.actions[action.id] = action;
 			grafcet.connections.push(
 				new ConnectionBuilder()
 					.id("a-empty-conn")
@@ -326,6 +344,68 @@ describe("SimulationManager", () => {
 			expect(notifier.simulationCrashed).toHaveBeenCalled();
 			expect(get().mode).toBe(ProjectMode.DESIGN);
 			expect(get().simulationVariablesStates).toEqual({});
+		});
+	});
+
+	describe("publishCycleState — publication différentielle", () => {
+		/** Grafcet figé : les deux réceptivités sont fausses, aucune variable ne bouge après
+		 *  l'activation de l'étape initiale. */
+		function frozenProject() {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "FAUX", "FAUX");
+			return ProjectFactory.createWithGrafcets([grafcet]);
+		}
+
+		function recordingStore(project: ReturnType<typeof ProjectFactory.create>) {
+			const base = makeStore(project);
+			const patches: Array<Record<string, unknown>> = [];
+			const set = (partial: any) => {
+				const patch =
+					typeof partial === "function" ? partial(base.get()) : partial;
+				patches.push(patch);
+				base.set(partial);
+			};
+			return { get: base.get, set, patches };
+		}
+
+		const varPatches = (patches: Array<Record<string, unknown>>) =>
+			patches.filter((p) => "simulationVariablesStates" in p);
+
+		it("ne republie simulationVariablesStates que lorsqu'une valeur change", async () => {
+			const { get, set, patches } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(40); // stabilisation
+			const countAfterSettle = varPatches(patches).length;
+			expect(countAfterSettle).toBeGreaterThan(0);
+
+			await jest.advanceTimersByTimeAsync(150); // ~15 cycles, état figé
+			expect(varPatches(patches).length).toBe(countAfterSettle);
+
+			manager.setDesignMode();
+		});
+
+		it("republie l'état complet au redémarrage (référence de diff réinitialisée)", async () => {
+			const { get, set, patches } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+			const allVarIds = Object.keys(get().simulationVariablesStates);
+			expect(allVarIds.length).toBeGreaterThan(0);
+
+			manager.setDesignMode();
+			patches.length = 0;
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(40);
+
+			const firstRepublish = varPatches(patches)[0]
+				.simulationVariablesStates as Record<string, unknown>;
+			// Toutes les variables sont republiées d'un coup, pas seulement un delta.
+			expect(Object.keys(firstRepublish).sort()).toEqual(allVarIds.sort());
+
+			manager.setDesignMode();
 		});
 	});
 });

@@ -20,12 +20,15 @@ describe("WidgetAddCommand", () => {
 
 		command.execute(page);
 
-		expect(page.widgets).toHaveLength(1);
-		expect(page.widgets[0]).toMatchObject({ id: "w1", type: "push-button" });
+		expect(Object.keys(page.widgets)).toHaveLength(1);
+		expect(Object.values(page.widgets)[0]).toMatchObject({
+			id: "w1",
+			type: "push-button",
+		});
 
 		command.cancel(page);
 
-		expect(page.widgets).toHaveLength(0);
+		expect(Object.keys(page.widgets)).toHaveLength(0);
 	});
 
 	it("round-trip execute→cancel laisse la page inchangée", () => {

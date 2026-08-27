@@ -33,8 +33,8 @@ describe("AND Junction Integration Tests", () => {
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			// +1 pour le Main, toujours présent et scanné (voir Project.createMain).
-			expect(pipeline.compilation.result!.routines).toHaveLength(2);
+			// 1 grafcet + le Main (voir Project.createMain) + la routine d'observation des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(3);
 		});
 
 		it("compiles without actions on branches", () => {

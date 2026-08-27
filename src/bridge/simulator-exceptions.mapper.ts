@@ -15,6 +15,8 @@ import InvalidCounterInputTypeException from "@/simulator/interpreter/semantic-a
 import InvalidCounterOutputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-node.exception";
 import InvalidCounterOutputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-type.exception";
 import InvalidCounterPresetValueTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-preset-value-type.exception";
+import InvalidControlConditionTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-control-condition-type.exception";
+import InvalidTimerElapsedTimeNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-elapsed-time-node.exception";
 import InvalidTimerElapsedTimeTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-elapsed-time-type.exception";
 import InvalidTimerInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-input-type.exception";
 import InvalidTimerLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-timer-last-input-node.exception";
@@ -99,7 +101,10 @@ export default class SimulatorExceptionsMapper {
 		}
 	}
 
-	private static getForEnvironmentException(exception: unknown, lang: Lang): string | null {
+	private static getForEnvironmentException(
+		exception: unknown,
+		lang: Lang,
+	): string | null {
 		if (exception instanceof UnknownVariableNameException) {
 			return lang === "EN"
 				? `Unknown variable name: ${exception.getVariableName()}`
@@ -108,7 +113,10 @@ export default class SimulatorExceptionsMapper {
 		return null;
 	}
 
-	private static getForSemanticException(exception: unknown, lang: Lang): string | null {
+	private static getForSemanticException(
+		exception: unknown,
+		lang: Lang,
+	): string | null {
 		if (exception instanceof UnauthorizedNodeException) {
 			return lang === "EN"
 				? `Unauthorized node of type: ${AST_NODE_TYPE_LABELS[exception.getNodeType()]}`
@@ -122,25 +130,37 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof InvalidUnaryExprOperandTypeException) {
-			const op = SimulatorExceptionsMapper.transformOperator(exception.getOperator(), lang);
+			const op = SimulatorExceptionsMapper.transformOperator(
+				exception.getOperator(),
+				lang,
+			);
 			const expected = SimulatorExceptionsMapper.transformVariableType(
 				exception.getExpectedType(),
 				lang,
 			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid type for operator '${op}': expected ${expected}, got ${actual}`
 				: `Type invalide pour l'opérateur '${op}' : attendu ${expected}, obtenu ${actual}`;
 		}
 
 		if (exception instanceof InvalidBinaryExprOperandTypeException) {
-			const op = SimulatorExceptionsMapper.transformOperator(exception.getOperator(), lang);
+			const op = SimulatorExceptionsMapper.transformOperator(
+				exception.getOperator(),
+				lang,
+			);
 			const side = exception.getSide();
 			const expected = SimulatorExceptionsMapper.transformVariableType(
 				exception.getExpectedType(),
 				lang,
 			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			if (lang === "EN") {
 				return `Invalid type for operator '${op}' on the ${side} side: expected ${expected}, got ${actual}`;
 			}
@@ -161,16 +181,28 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof IncompatibleOperandsTypesException) {
-			const op = SimulatorExceptionsMapper.transformOperator(exception.getOperator(), lang);
-			const leftType = SimulatorExceptionsMapper.transformVariableType(exception.getLeftType(), lang);
-			const rightType = SimulatorExceptionsMapper.transformVariableType(exception.getRightType(), lang);
+			const op = SimulatorExceptionsMapper.transformOperator(
+				exception.getOperator(),
+				lang,
+			);
+			const leftType = SimulatorExceptionsMapper.transformVariableType(
+				exception.getLeftType(),
+				lang,
+			);
+			const rightType = SimulatorExceptionsMapper.transformVariableType(
+				exception.getRightType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Incompatible types for operator '${op}': left ${leftType}, right ${rightType}`
 				: `Types incompatibles pour l'opérateur '${op}' : gauche ${leftType}, droite ${rightType}`;
 		}
 
 		if (exception instanceof InvalidTimerInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid timer input type: the input of a timer must be boolean (found ${actual})`
 				: `Type d'entrée de temporisation invalide : l'entrée d'une temporisation doit être un booléen (trouvé ${actual})`;
@@ -183,7 +215,10 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof InvalidTimerLastInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid timer last input type: the last input of a timer block must be boolean (found ${actual})`
 				: `Type de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être un booléen (trouvé ${actual})`;
@@ -196,7 +231,10 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof InvalidTimerOutputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid timer output type: the output of a timer block must be boolean (found ${actual})`
 				: `Type de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit retourner un booléen (trouvé ${actual})`;
@@ -207,10 +245,19 @@ export default class SimulatorExceptionsMapper {
 				exception.getExpectedType(),
 				lang,
 			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid timer preset time type: expected ${expected}, got ${actual}`
 				: `Type de temps préréglé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
+		}
+
+		if (exception instanceof InvalidTimerElapsedTimeNodeException) {
+			return lang === "EN"
+				? `Invalid timer elapsed time node: the elapsed time of a timer block must be an identifier`
+				: `Nœud de temps écoulé de temporisation invalide : le temps écoulé d'un bloc de temporisation doit être une variable`;
 		}
 
 		if (exception instanceof InvalidTimerElapsedTimeTypeException) {
@@ -218,21 +265,36 @@ export default class SimulatorExceptionsMapper {
 				exception.getExpectedType(),
 				lang,
 			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid timer elapsed time type: expected ${expected}, got ${actual}`
 				: `Type de temps écoulé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
 		}
 
+		if (exception instanceof InvalidControlConditionTypeException) {
+			return lang === "EN"
+				? `Invalid control condition type: the condition of a control structure must be boolean`
+				: `Type de condition invalide : la condition d'une structure de contrôle doit être un booléen`;
+		}
+
 		if (exception instanceof InvalidCounterInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid counter input type: the input of a counter must be boolean (found ${actual})`
 				: `Type d'entrée de compteur invalide : l'entrée d'un compteur doit être un booléen (trouvé ${actual})`;
 		}
 
 		if (exception instanceof InvalidCounterControlTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid counter control type: the control (R/LD) of a counter must be boolean (found ${actual})`
 				: `Type de contrôle de compteur invalide : le contrôle (R/LD) d'un compteur doit être un booléen (trouvé ${actual})`;
@@ -245,7 +307,10 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof InvalidCounterCurrentValueTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid counter current value type: the current value (CV) of a counter block must be a number (found ${actual})`
 				: `Type de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être numérique (trouvé ${actual})`;
@@ -258,15 +323,24 @@ export default class SimulatorExceptionsMapper {
 		}
 
 		if (exception instanceof InvalidCounterOutputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid counter output type: the output of a counter block must be boolean (found ${actual})`
 				: `Type de sortie de compteur invalide : la sortie d'un bloc compteur doit retourner un booléen (trouvé ${actual})`;
 		}
 
 		if (exception instanceof InvalidCounterPresetValueTypeException) {
-			const expected = SimulatorExceptionsMapper.transformVariableType(exception.getExpectedType(), lang);
-			const actual = SimulatorExceptionsMapper.transformVariableType(exception.getActualType(), lang);
+			const expected = SimulatorExceptionsMapper.transformVariableType(
+				exception.getExpectedType(),
+				lang,
+			);
+			const actual = SimulatorExceptionsMapper.transformVariableType(
+				exception.getActualType(),
+				lang,
+			);
 			return lang === "EN"
 				? `Invalid counter preset value type: expected ${expected}, got ${actual}`
 				: `Type de valeur préréglée de compteur invalide : attendu ${expected}, obtenu ${actual}`;
@@ -275,7 +349,10 @@ export default class SimulatorExceptionsMapper {
 		return null;
 	}
 
-	private static getForInterpreterException(exception: unknown, lang: Lang): string | null {
+	private static getForInterpreterException(
+		exception: unknown,
+		lang: Lang,
+	): string | null {
 		if (exception instanceof DivisionByZeroException) {
 			return lang === "EN"
 				? `Division by zero: ${exception.getLeft()} / ${exception.getRight()}`
@@ -284,7 +361,10 @@ export default class SimulatorExceptionsMapper {
 		return null;
 	}
 
-	private static getForParserException(exception: unknown, lang: Lang): string | null {
+	private static getForParserException(
+		exception: unknown,
+		lang: Lang,
+	): string | null {
 		if (exception instanceof ParsingEndedBeforeEOFException) {
 			const token = (exception as any).getToken();
 			const pos = token ? token.position : exception.getPosition?.() || "?";
@@ -321,7 +401,10 @@ export default class SimulatorExceptionsMapper {
 		return null;
 	}
 
-	private static getForLexerException(exception: unknown, lang: Lang): string | null {
+	private static getForLexerException(
+		exception: unknown,
+		lang: Lang,
+	): string | null {
 		if (exception instanceof InvalidCharacterException) {
 			const char = exception.getChar ? exception.getChar() : "?";
 			const pos = exception.getPosition ? exception.getPosition() : "?";

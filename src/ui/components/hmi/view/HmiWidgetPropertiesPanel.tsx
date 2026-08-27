@@ -1,6 +1,8 @@
 "use client";
 
 import {
+	DEFAULT_INDICATOR_OFF_COLOR,
+	DEFAULT_INDICATOR_ON_COLOR,
 	HMI_WIDGET_DEFINITIONS,
 	HmiGaugeOrientation,
 	HmiPushButtonBehavior,
@@ -12,21 +14,33 @@ import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import BoltIcon from "@mui/icons-material/Bolt";
 import TuneIcon from "@mui/icons-material/Tune";
-import { Box, Button, Checkbox, FormControlLabel, MenuItem, TextField } from "@mui/material";
+import {
+	Box,
+	Button,
+	Checkbox,
+	FormControlLabel,
+	MenuItem,
+	TextField,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { HMI_WIDGET_EVENTS } from "./HmiWidgetEventsPanel";
 
 /** Widgets dont l'interaction en simulation écrit dans la variable liée (voir
  * `HmiWidgetItem`/`HmiCanvas.setVariableValue`) — les autres (indicator, numeric-display, gauge)
  * ne font que la lire. */
-const WRITABLE_WIDGET_TYPES = new Set<HmiWidgetType>(["push-button", "toggle-switch", "numeric-input"]);
+const WRITABLE_WIDGET_TYPES = new Set<HmiWidgetType>([
+	"push-button",
+	"toggle-switch",
+	"numeric-input",
+]);
 
-const PUSH_BUTTON_BEHAVIORS: { value: HmiPushButtonBehavior; label: string }[] = [
-	{ value: "momentary", label: "Impulsionnel (maintien momentané)" },
-	{ value: "set", label: "SET (mise à 1)" },
-	{ value: "reset", label: "RESET (mise à 0)" },
-	{ value: "toggle", label: "Bascule (inversion)" },
-];
+const PUSH_BUTTON_BEHAVIORS: { value: HmiPushButtonBehavior; label: string }[] =
+	[
+		{ value: "momentary", label: "Impulsionnel (maintien momentané)" },
+		{ value: "set", label: "SET (mise à 1)" },
+		{ value: "reset", label: "RESET (mise à 0)" },
+		{ value: "toggle", label: "Bascule (inversion)" },
+	];
 
 const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
@@ -37,7 +51,9 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 	const typeFilter = HMI_WIDGET_DEFINITIONS[widget.type].variableTypes;
 	// Un widget qui écrit dans la variable liée en simulation (voir `HmiCanvas.setVariableValue`)
 	// ne peut pas cibler une sortie : sa valeur est calculée par le programme, pas pilotable.
-	const excludeDirection = WRITABLE_WIDGET_TYPES.has(widget.type) ? "OUT" : undefined;
+	const excludeDirection = WRITABLE_WIDGET_TYPES.has(widget.type)
+		? "OUT"
+		: undefined;
 
 	// Champ local plutôt que directement lié à `widget.name` : un nom vide ou en doublon est
 	// silencieusement ignoré par le store (voir `HmiStoreState.updateWidget`), il ne faut donc pas
@@ -45,7 +61,9 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 	const [nameInput, setNameInput] = useState(widget.name);
 	useEffect(() => setNameInput(widget.name), [widget.id, widget.name]);
 
-	const nameConflicts = widgets.some((w) => w.id !== widget.id && w.name === nameInput.trim());
+	const nameConflicts = Object.values(widgets).some(
+		(w) => w.id !== widget.id && w.name === nameInput.trim(),
+	);
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 1.5 }}>
@@ -65,32 +83,75 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					}
 					updateWidget(widget.id, { name: nameInput });
 				}}
-				sx={{ "& .MuiInputBase-input": { color: nameConflicts ? "error.main" : undefined } }}
+				sx={{
+					"& .MuiInputBase-input": {
+						color: nameConflicts ? "error.main" : undefined,
+					},
+				}}
 			/>
 			{/* Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" — voir
 			`RectangleData`/`EllipseData`/`TextData`. */}
-			{widget.type !== "rectangle" && widget.type !== "ellipse" && widget.type !== "text" && (
-				<>
+			{widget.type !== "rectangle" &&
+				widget.type !== "ellipse" &&
+				widget.type !== "text" && (
+					<>
+						<TextField
+							label="Libellé"
+							size="small"
+							slotProps={{ inputLabel: { shrink: true } }}
+							value={widget.data.label}
+							onChange={(e) =>
+								updateWidget(widget.id, {
+									data: { ...widget.data, label: e.target.value },
+								})
+							}
+						/>
+						<VariableSelector
+							label="Variable liée"
+							value={widget.data.variableMnemonic}
+							onCommit={(mnemonic) =>
+								updateWidget(widget.id, {
+									data: { ...widget.data, variableMnemonic: mnemonic },
+								})
+							}
+							typeFilter={typeFilter}
+							excludeDirection={excludeDirection}
+							cols={["mnemonic", "address", "scope"]}
+							sx={{ width: "100% !important" }}
+							baseInputSx={{ fontSize: "0.85rem !important" }}
+						/>
+					</>
+				)}
+
+			{widget.type === "indicator" && (
+				<Box sx={{ display: "flex", gap: 1 }}>
 					<TextField
-						label="Libellé"
+						label="Couleur (allumé)"
 						size="small"
+						type="color"
 						slotProps={{ inputLabel: { shrink: true } }}
-						value={widget.data.label}
-						onChange={(e) => updateWidget(widget.id, { data: { ...widget.data, label: e.target.value } })}
-					/>
-					<VariableSelector
-						label="Variable liée"
-						value={widget.data.variableMnemonic}
-						onCommit={(mnemonic) =>
-							updateWidget(widget.id, { data: { ...widget.data, variableMnemonic: mnemonic } })
+						value={widget.data.onColor ?? DEFAULT_INDICATOR_ON_COLOR}
+						onChange={(e) =>
+							updateWidget(widget.id, {
+								data: { ...widget.data, onColor: e.target.value },
+							})
 						}
-						typeFilter={typeFilter}
-						excludeDirection={excludeDirection}
-						cols={["mnemonic", "address", "scope"]}
-						sx={{ width: "100% !important" }}
-						baseInputSx={{ fontSize: "0.85rem !important" }}
+						sx={{ flex: 1 }}
 					/>
-				</>
+					<TextField
+						label="Couleur (éteint)"
+						size="small"
+						type="color"
+						slotProps={{ inputLabel: { shrink: true } }}
+						value={widget.data.offColor ?? DEFAULT_INDICATOR_OFF_COLOR}
+						onChange={(e) =>
+							updateWidget(widget.id, {
+								data: { ...widget.data, offColor: e.target.value },
+							})
+						}
+						sx={{ flex: 1 }}
+					/>
+				</Box>
 			)}
 
 			{widget.type === "push-button" && (
@@ -101,7 +162,10 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					value={widget.data.behavior ?? "momentary"}
 					onChange={(e) =>
 						updateWidget(widget.id, {
-							data: { ...widget.data, behavior: e.target.value as HmiPushButtonBehavior },
+							data: {
+								...widget.data,
+								behavior: e.target.value as HmiPushButtonBehavior,
+							},
 						})
 					}
 				>
@@ -126,7 +190,10 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					onChange={(e) => {
 						const orientation = e.target.value as HmiGaugeOrientation;
 						updateWidget(widget.id, {
-							data: { ...widget.data, style: { ...widget.data.style, orientation } },
+							data: {
+								...widget.data,
+								style: { ...widget.data.style, orientation },
+							},
 							size: { width: widget.size.height, height: widget.size.width },
 						});
 					}}
@@ -144,7 +211,9 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 						type="number"
 						value={widget.data.min ?? 0}
 						onChange={(e) =>
-							updateWidget(widget.id, { data: { ...widget.data, min: Number(e.target.value) } })
+							updateWidget(widget.id, {
+								data: { ...widget.data, min: Number(e.target.value) },
+							})
 						}
 						sx={{ flex: 1 }}
 					/>
@@ -154,7 +223,9 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 						type="number"
 						value={widget.data.max ?? 100}
 						onChange={(e) =>
-							updateWidget(widget.id, { data: { ...widget.data, max: Number(e.target.value) } })
+							updateWidget(widget.id, {
+								data: { ...widget.data, max: Number(e.target.value) },
+							})
 						}
 						sx={{ flex: 1 }}
 					/>
@@ -167,7 +238,11 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					size="small"
 					slotProps={{ inputLabel: { shrink: true } }}
 					value={widget.data.unit ?? ""}
-					onChange={(e) => updateWidget(widget.id, { data: { ...widget.data, unit: e.target.value } })}
+					onChange={(e) =>
+						updateWidget(widget.id, {
+							data: { ...widget.data, unit: e.target.value },
+						})
+					}
 				/>
 			)}
 
@@ -180,7 +255,10 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					value={widget.data.decimalPlaces ?? 0}
 					onChange={(e) =>
 						updateWidget(widget.id, {
-							data: { ...widget.data, decimalPlaces: Math.max(0, Math.min(6, Number(e.target.value))) },
+							data: {
+								...widget.data,
+								decimalPlaces: Math.max(0, Math.min(6, Number(e.target.value))),
+							},
 						})
 					}
 				/>
@@ -196,7 +274,10 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 							value={widget.data.style.fill}
 							onChange={(e) =>
 								updateWidget(widget.id, {
-									data: { ...widget.data, style: { ...widget.data.style, fill: e.target.value } },
+									data: {
+										...widget.data,
+										style: { ...widget.data.style, fill: e.target.value },
+									},
 								})
 							}
 							sx={{ flex: 1 }}
@@ -208,7 +289,10 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 							value={widget.data.style.stroke}
 							onChange={(e) =>
 								updateWidget(widget.id, {
-									data: { ...widget.data, style: { ...widget.data.style, stroke: e.target.value } },
+									data: {
+										...widget.data,
+										style: { ...widget.data.style, stroke: e.target.value },
+									},
 								})
 							}
 							sx={{ flex: 1 }}
@@ -222,7 +306,13 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 						value={widget.data.style.strokeWidth ?? 0}
 						onChange={(e) =>
 							updateWidget(widget.id, {
-								data: { ...widget.data, style: { ...widget.data.style, strokeWidth: Math.max(0, Number(e.target.value)) } },
+								data: {
+									...widget.data,
+									style: {
+										...widget.data.style,
+										strokeWidth: Math.max(0, Number(e.target.value)),
+									},
+								},
 							})
 						}
 					/>
@@ -238,7 +328,13 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					value={widget.data.style.borderRadius ?? 0}
 					onChange={(e) =>
 						updateWidget(widget.id, {
-							data: { ...widget.data, style: { ...widget.data.style, borderRadius: Math.max(0, Number(e.target.value)) } },
+							data: {
+								...widget.data,
+								style: {
+									...widget.data.style,
+									borderRadius: Math.max(0, Number(e.target.value)),
+								},
+							},
 						})
 					}
 				/>
@@ -251,7 +347,9 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 							size="small"
 							checked={widget.data.lockAspectRatio ?? false}
 							onChange={(e) =>
-								updateWidget(widget.id, { data: { ...widget.data, lockAspectRatio: e.target.checked } })
+								updateWidget(widget.id, {
+									data: { ...widget.data, lockAspectRatio: e.target.checked },
+								})
 							}
 						/>
 					}
@@ -267,7 +365,11 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 						multiline
 						minRows={2}
 						value={widget.data.text}
-						onChange={(e) => updateWidget(widget.id, { data: { ...widget.data, text: e.target.value } })}
+						onChange={(e) =>
+							updateWidget(widget.id, {
+								data: { ...widget.data, text: e.target.value },
+							})
+						}
 					/>
 					<Box sx={{ display: "flex", gap: 1 }}>
 						<TextField
@@ -278,7 +380,13 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 							value={widget.data.style?.fontSize ?? 14}
 							onChange={(e) =>
 								updateWidget(widget.id, {
-									data: { ...widget.data, style: { ...widget.data.style, fontSize: Math.max(1, Number(e.target.value)) } },
+									data: {
+										...widget.data,
+										style: {
+											...widget.data.style,
+											fontSize: Math.max(1, Number(e.target.value)),
+										},
+									},
 								})
 							}
 							sx={{ flex: 1 }}
@@ -289,7 +397,12 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 							type="color"
 							value={widget.data.style?.color ?? "#333333"}
 							onChange={(e) =>
-								updateWidget(widget.id, { data: { ...widget.data, style: { ...widget.data.style, color: e.target.value } } })
+								updateWidget(widget.id, {
+									data: {
+										...widget.data,
+										style: { ...widget.data.style, color: e.target.value },
+									},
+								})
 							}
 							sx={{ flex: 1 }}
 						/>
@@ -301,7 +414,13 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 						value={widget.data.style?.align ?? "center"}
 						onChange={(e) =>
 							updateWidget(widget.id, {
-								data: { ...widget.data, style: { ...widget.data.style, align: e.target.value as HmiTextAlign } },
+								data: {
+									...widget.data,
+									style: {
+										...widget.data.style,
+										align: e.target.value as HmiTextAlign,
+									},
+								},
 							})
 						}
 					>
@@ -314,11 +433,21 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 
 			<Box sx={{ display: "flex", gap: 1 }}>
 				{HMI_WIDGET_EVENTS[widget.type] && (
-					<Button size="small" startIcon={<BoltIcon />} onClick={openEventsPane} sx={{ flex: 1 }}>
+					<Button
+						size="small"
+						startIcon={<BoltIcon />}
+						onClick={openEventsPane}
+						sx={{ flex: 1 }}
+					>
 						Événements
 					</Button>
 				)}
-				<Button size="small" startIcon={<TuneIcon />} onClick={openAnimationsPane} sx={{ flex: 1 }}>
+				<Button
+					size="small"
+					startIcon={<TuneIcon />}
+					onClick={openAnimationsPane}
+					sx={{ flex: 1 }}
+				>
 					Animations
 				</Button>
 			</Box>

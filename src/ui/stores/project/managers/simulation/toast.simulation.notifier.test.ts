@@ -19,17 +19,29 @@ describe("ToastSimulationNotifier", () => {
 
 	describe("niveau du message selon le résultat", () => {
 		it("erreur quand il y a des erreurs", () => {
-			notifier.analysisCompleted({ analysedElements: 5, errors: 2, warnings: 0 });
+			notifier.analysisCompleted({
+				analysedElements: 5,
+				errors: 2,
+				warnings: 0,
+			});
 			expect(toastCalls[0].level).toBe("error");
 		});
 
 		it("avertissement quand il n'y a que des avertissements", () => {
-			notifier.analysisCompleted({ analysedElements: 5, errors: 0, warnings: 3 });
+			notifier.analysisCompleted({
+				analysedElements: 5,
+				errors: 0,
+				warnings: 3,
+			});
 			expect(toastCalls[0].level).toBe("warn");
 		});
 
 		it("succès quand tout va bien", () => {
-			notifier.analysisCompleted({ analysedElements: 5, errors: 0, warnings: 0 });
+			notifier.analysisCompleted({
+				analysedElements: 5,
+				errors: 0,
+				warnings: 0,
+			});
 			expect(toastCalls[0].level).toBe("success");
 		});
 	});
@@ -37,7 +49,11 @@ describe("ToastSimulationNotifier", () => {
 	// L'ancienne formulation produisait « 1 erreurs »
 	describe("accord en nombre", () => {
 		it("reste au singulier pour une seule occurrence", () => {
-			notifier.analysisCompleted({ analysedElements: 1, errors: 1, warnings: 1 });
+			notifier.analysisCompleted({
+				analysedElements: 1,
+				errors: 1,
+				warnings: 1,
+			});
 
 			expect(toastCalls[0].message).toContain("1 élément analysé");
 			expect(toastCalls[0].message).toContain("1 erreur ");
@@ -45,7 +61,11 @@ describe("ToastSimulationNotifier", () => {
 		});
 
 		it("passe au pluriel au-delà", () => {
-			notifier.analysisCompleted({ analysedElements: 4, errors: 2, warnings: 3 });
+			notifier.analysisCompleted({
+				analysedElements: 4,
+				errors: 2,
+				warnings: 3,
+			});
 
 			expect(toastCalls[0].message).toContain("4 éléments analysés");
 			expect(toastCalls[0].message).toContain("2 erreurs");
@@ -53,7 +73,11 @@ describe("ToastSimulationNotifier", () => {
 		});
 
 		it("dit « aucune » plutôt que zéro", () => {
-			notifier.analysisCompleted({ analysedElements: 3, errors: 0, warnings: 0 });
+			notifier.analysisCompleted({
+				analysedElements: 3,
+				errors: 0,
+				warnings: 0,
+			});
 
 			expect(toastCalls[0].message).toContain("aucune erreur");
 			expect(toastCalls[0].message).toContain("aucun avertissement");
@@ -62,7 +86,10 @@ describe("ToastSimulationNotifier", () => {
 
 	describe("échec de démarrage", () => {
 		it("nomme l'étape en cause", () => {
-			notifier.simulationCouldNotStart({ step: "pre-compilation", errorsCount: 1 });
+			notifier.simulationCouldNotStart({
+				step: "pre-compilation",
+				errorsCount: 1,
+			});
 			expect(toastCalls[0].message).toContain("pré-compilation");
 
 			notifier.simulationCouldNotStart({ step: "compilation", errorsCount: 1 });

@@ -4,7 +4,10 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Box } from "@mui/material";
 import React from "react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { DraggedGrafcetElement, useGrafcetToolbarDnD } from "./GrafcetToolbarDnDContext";
+import {
+	DraggedGrafcetElement,
+	useGrafcetToolbarDnD,
+} from "./GrafcetToolbarDnDContext";
 
 const GrafcetTool = ({
 	element,

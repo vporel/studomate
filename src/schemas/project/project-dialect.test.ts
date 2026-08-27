@@ -1,5 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
@@ -10,7 +13,9 @@ function projectWithExpressions() {
 	project.addProgram(
 		new GrafcetBuilder()
 			.id("g1")
-			.addTransition(new TransitionBuilder().id("t1").expression("Btn1 ET NON Btn2").build())
+			.addTransition(
+				new TransitionBuilder().id("t1").expression("Btn1 ET NON Btn2").build(),
+			)
 			.addAction(
 				new ActionBuilder()
 					.id("a1")
@@ -20,7 +25,11 @@ function projectWithExpressions() {
 					.build(),
 			)
 			.addAction(
-				new ActionBuilder().id("a-text").type(ActionType.TEXT).expression("Moteur ET pompe").build(),
+				new ActionBuilder()
+					.id("a-text")
+					.type(ActionType.TEXT)
+					.expression("Moteur ET pompe")
+					.build(),
 			)
 			.build(),
 	);
@@ -43,7 +52,9 @@ describe("Project — dialecte des expressions", () => {
 
 	// Un projet écrit avant que le dialecte soit configurable était forcément en français
 	it("retombe sur le français quand le JSON n'a pas de dialecte", () => {
-		const relu = Project.createFromJSON(JSON.stringify({ id: "p1", name: "Ancien" }));
+		const relu = Project.createFromJSON(
+			JSON.stringify({ id: "p1", name: "Ancien" }),
+		);
 
 		expect(relu.dialect).toBe(Dialect.FR);
 	});
@@ -54,7 +65,9 @@ describe("Project — dialecte des expressions", () => {
 
 			project.setDialect(Dialect.EN);
 
-			expect(project.grafcets.g1.transitions[0].data.expression).toBe("Btn1 AND NOT Btn2");
+			expect(
+				Object.values(project.grafcets.g1.transitions)[0].data.expression,
+			).toBe("Btn1 AND NOT Btn2");
 		});
 
 		it("laisse les identifiants intacts", () => {
@@ -62,7 +75,9 @@ describe("Project — dialecte des expressions", () => {
 
 			project.setDialect(Dialect.EN);
 
-			expect(project.grafcets.g1.actions[0].data.expression).toBe("Moteur");
+			expect(
+				Object.values(project.grafcets.g1.actions)[0].data.expression,
+			).toBe("Moteur");
 		});
 
 		// Une action TEXT porte du texte descriptif, pas du code
@@ -71,18 +86,23 @@ describe("Project — dialecte des expressions", () => {
 
 			project.setDialect(Dialect.EN);
 
-			const texte = project.grafcets.g1.actions.find((a) => a.id === "a-text")!;
+			const texte = Object.values(project.grafcets.g1.actions).find(
+				(a) => a.id === "a-text",
+			)!;
 			expect(texte.data.expression).toBe("Moteur ET pompe");
 		});
 
 		it("est réversible", () => {
 			const project = projectWithExpressions();
-			const avant = project.grafcets.g1.transitions[0].data.expression;
+			const avant = Object.values(project.grafcets.g1.transitions)[0].data
+				.expression;
 
 			project.setDialect(Dialect.EN);
 			project.setDialect(Dialect.FR);
 
-			expect(project.grafcets.g1.transitions[0].data.expression).toBe(avant);
+			expect(
+				Object.values(project.grafcets.g1.transitions)[0].data.expression,
+			).toBe(avant);
 		});
 
 		it("ne fait rien si le dialecte est déjà celui demandé", () => {
@@ -90,7 +110,9 @@ describe("Project — dialecte des expressions", () => {
 
 			project.setDialect(Dialect.FR);
 
-			expect(project.grafcets.g1.transitions[0].data.expression).toBe("Btn1 ET NON Btn2");
+			expect(
+				Object.values(project.grafcets.g1.transitions)[0].data.expression,
+			).toBe("Btn1 ET NON Btn2");
 		});
 	});
 });

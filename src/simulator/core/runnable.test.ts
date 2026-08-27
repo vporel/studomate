@@ -16,7 +16,10 @@ class TestRunnable extends Runnable {
 	}
 
 	// Expose protected method for testing
-	public testExecuteCallback(callback?: (runnable: this) => void, messageOnError?: string): void {
+	public testExecuteCallback(
+		callback?: (runnable: this) => void,
+		messageOnError?: string,
+	): void {
 		this.executeCallback(callback, messageOnError);
 	}
 }
@@ -54,7 +57,10 @@ describe("Runnable", () => {
 				throw new Error("Test error");
 			};
 			testRunnable.testExecuteCallback(errorCallback, "Custom error message");
-			expect(consoleSpy).toHaveBeenCalledWith("Custom error message", expect.any(Error));
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Custom error message",
+				expect.any(Error),
+			);
 			consoleSpy.mockRestore();
 		});
 

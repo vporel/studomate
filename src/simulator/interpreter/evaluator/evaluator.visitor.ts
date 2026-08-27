@@ -1,4 +1,8 @@
-import { CounterNode, TimerNode, TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
+import {
+	CounterNode,
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "@/expression-language/ast/nodes/blocks";
 import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -7,7 +11,11 @@ import {
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
 import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
-import { BooleanNode, NumberNode, StringNode } from "@/expression-language/ast/nodes/literals";
+import {
+	BooleanNode,
+	NumberNode,
+	StringNode,
+} from "@/expression-language/ast/nodes/literals";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variable";
@@ -15,7 +23,9 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import EvaluatorException from "@/expression-language/interpreter/exceptions/evaluator.exception";
 import CounterNodeEvaluator from "./counter-node.evaluator";
-import TimerNodeEvaluator, { TimerNodeEvaluatorOptions } from "./timer-node.evaluator";
+import TimerNodeEvaluator, {
+	TimerNodeEvaluatorOptions,
+} from "./timer-node.evaluator";
 
 export type EvaluatorVisitorOptions = {
 	timers: TimerNodeEvaluatorOptions;
@@ -30,9 +40,25 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	constructor(environment: Environment, options: EvaluatorVisitorOptions) {
 		super();
 		this.env = environment;
-		this.timerEvaluator = new TimerNodeEvaluator(environment, this, options.timers);
+		this.timerEvaluator = new TimerNodeEvaluator(
+			environment,
+			this,
+			options.timers,
+		);
 		this.counterEvaluator = new CounterNodeEvaluator(environment, this);
 		this.options = options;
+	}
+
+	/** Rebranche l'évaluateur (et ses sous-évaluateurs) sur un autre environnement — permet à
+	 * `PLCRoutine` de réutiliser la même instance de cycle en cycle plutôt que d'en recréer une. */
+	setEnvironment(environment: Environment): void {
+		this.env = environment;
+		this.timerEvaluator.setEnvironment(environment);
+		this.counterEvaluator.setEnvironment(environment);
+	}
+
+	setDeltaTimeMs(deltaTimeMs: number): void {
+		this.options.timers.deltaTimeMs = deltaTimeMs;
 	}
 
 	protected visitIdentifierNode(node: IdentifierNode): EnvVariableValue {
@@ -51,14 +77,18 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		return node.value;
 	}
 
-	protected visitUnaryExpressionNode(node: UnaryExpressionNode): EnvVariableValue {
+	protected visitUnaryExpressionNode(
+		node: UnaryExpressionNode,
+	): EnvVariableValue {
 		switch (node.operator) {
 			case "NOT":
 				return !this.visit(node.expr);
 		}
 	}
 
-	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): EnvVariableValue {
+	protected visitArithmeticExpressionNode(
+		node: ArithmeticExpressionNode,
+	): EnvVariableValue {
 		const leftValue = this.visit(node.left) as number;
 		const rightValue = this.visit(node.right) as number;
 		switch (node.operator) {
@@ -76,7 +106,9 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		}
 	}
 
-	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): EnvVariableValue {
+	protected visitComparisonExpressionNode(
+		node: ComparisonExpressionNode,
+	): EnvVariableValue {
 		const leftValue = this.visit(node.left) as number;
 		const rightValue = this.visit(node.right) as number;
 		switch (node.operator) {
@@ -95,7 +127,9 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		}
 	}
 
-	protected visitLogicalExpressionNode(node: LogicalExpressionNode): EnvVariableValue {
+	protected visitLogicalExpressionNode(
+		node: LogicalExpressionNode,
+	): EnvVariableValue {
 		const leftValue = this.visit(node.left) as boolean;
 		const rightValue = this.visit(node.right) as boolean;
 		switch (node.operator) {
@@ -108,9 +142,14 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		}
 	}
 
-	protected visitAssignStatementNode(node: AssignStatementNode): EnvVariableValue {
+	protected visitAssignStatementNode(
+		node: AssignStatementNode,
+	): EnvVariableValue {
 		if (node.left.type !== "IDENTIFIER") {
-			throw new EvaluatorException("Left-hand side of assignment must be an identifier", node);
+			throw new EvaluatorException(
+				"Left-hand side of assignment must be an identifier",
+				node,
+			);
 		}
 		const value = this.visit(node.right);
 		this.env.setVariableValueByName(node.left.value, value);
@@ -132,8 +171,13 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		return this.timerEvaluator.evaluate(node);
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): EnvVariableValue {
-		throw new EvaluatorException("Timer string declaration nodes should not be evaluated directly", node);
+	protected visitTimerStringDeclarationNode(
+		node: TimerStringDeclarationNode,
+	): EnvVariableValue {
+		throw new EvaluatorException(
+			"Timer string declaration nodes should not be evaluated directly",
+			node,
+		);
 	}
 
 	protected visitCounterBlockNode(node: CounterNode): EnvVariableValue {

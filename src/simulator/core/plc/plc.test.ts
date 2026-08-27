@@ -526,6 +526,75 @@ describe("PLC", () => {
 		});
 	});
 
+	describe("réutilisation de l'environnement entre cycles", () => {
+		it("enchaîne un grand nombre de cycles sans dérive de valeur", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100 * 50);
+			plc.stop();
+
+			const count = plc.getVariablesSnapshot().find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(50);
+		});
+
+		it("propage une entrée physique vers une sortie à chaque cycle", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("result := x + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [inputVar, outputVar],
+			});
+
+			plc.start();
+			plc.setPhysicalInputValueById("id1", 3);
+			jest.advanceTimersByTime(100);
+			plc.setPhysicalInputValueById("id1", 8);
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const result = plc.getVariablesSnapshot().find((v) => v.getName() === "result");
+			expect(result?.getValue()).toBe(9);
+		});
+
+		it("gère une variable mémoire booléenne (contrôle de type à l'hydratation)", () => {
+			const boolMemory = new PLCVariable("id4", "flag", "memory", "boolean");
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("flag := NON flag");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [boolMemory],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const flag = plc.getVariablesSnapshot().find((v) => v.getName() === "flag");
+			expect(flag?.getValue()).toBe(true);
+		});
+	});
+
 	describe("input/output image synchronization", () => {
 		it("reads inputs to input image at cycle start", () => {
 			const plc = new PLC({

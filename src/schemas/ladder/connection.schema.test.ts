@@ -2,7 +2,12 @@ import Connection from "./connection.schema";
 
 describe("Connection", () => {
 	it("copy() clone en profondeur les points du tracé", () => {
-		const connection = new Connection("c1", { id: "a", type: "contact", handle: "source" }, { id: "b", type: "coil", handle: "target" }, { points: [[10, 20]] });
+		const connection = new Connection(
+			"c1",
+			{ id: "a", type: "contact", handle: "source" },
+			{ id: "b", type: "coil", handle: "target" },
+			{ points: [[10, 20]] },
+		);
 
 		const copy = connection.copy();
 
@@ -12,7 +17,12 @@ describe("Connection", () => {
 	});
 
 	it("createFromJSON reconstruit une connexion identique après un aller-retour", () => {
-		const connection = new Connection("c1", { id: "a", type: "contact", handle: "source" }, { id: "b", type: "coil", handle: "target" }, { points: [[1, 2]] });
+		const connection = new Connection(
+			"c1",
+			{ id: "a", type: "contact", handle: "source" },
+			{ id: "b", type: "coil", handle: "target" },
+			{ points: [[1, 2]] },
+		);
 
 		const restored = Connection.createFromJSON(JSON.stringify(connection));
 
@@ -21,7 +31,11 @@ describe("Connection", () => {
 	});
 
 	it("data.points est vide par défaut (rendu en ligne droite)", () => {
-		const connection = new Connection("c1", { id: "a", type: "contact", handle: "source" }, { id: "b", type: "coil", handle: "target" });
+		const connection = new Connection(
+			"c1",
+			{ id: "a", type: "contact", handle: "source" },
+			{ id: "b", type: "coil", handle: "target" },
+		);
 		expect(connection.data.points).toEqual([]);
 	});
 });

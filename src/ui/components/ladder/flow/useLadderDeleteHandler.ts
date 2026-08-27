@@ -8,7 +8,7 @@ import { useLadderStore } from "../context/LadderContext";
 /**
  * Dispatche la suppression des nœuds/arêtes sélectionnés (touche Suppr ou menu contextuel). Les
  * bornes d'alimentation virtuelles (non persistées) sont filtrées : `section.getElement` échoue
- * dessus — la cascade elle-même vit dans `WorkflowManager.deleteElements`, partagée avec le
+ * dessus — la cascade elle-même vit dans `LadderWorkflowManager.deleteElements`, partagée avec le
  * couper (Ctrl+X).
  */
 export default function useLadderDeleteHandler(section: Section): OnDelete {

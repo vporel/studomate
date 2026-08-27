@@ -1,15 +1,23 @@
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import AnalysisIssuesMapper, { emptyAnalysisIssues } from "./analysis-issues.mapper";
+import AnalysisIssuesMapper, {
+	emptyAnalysisIssues,
+} from "./analysis-issues.mapper";
 
 describe("emptyAnalysisIssues", () => {
 	it("returns an empty structure", () => {
-		expect(emptyAnalysisIssues()).toEqual({ project: [], grafcets: {}, ladders: {} });
+		expect(emptyAnalysisIssues()).toEqual({
+			project: [],
+			grafcets: {},
+			ladders: {},
+		});
 	});
 });
 
 describe("AnalysisIssuesMapper.analyserToApp", () => {
 	it("returns an empty structure for no issues", () => {
-		expect(AnalysisIssuesMapper.analyserToApp([])).toEqual(emptyAnalysisIssues());
+		expect(AnalysisIssuesMapper.analyserToApp([])).toEqual(
+			emptyAnalysisIssues(),
+		);
 	});
 
 	it("routes project-level issues to the project bucket", () => {
@@ -55,10 +63,24 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 	});
 
 	it("accumulates multiple messages for the same element", () => {
-		const source = { sourceType: "grafcet-step" as const, sourceId: "step-1", parentId: "grafcet-1" };
+		const source = {
+			sourceType: "grafcet-step" as const,
+			sourceId: "step-1",
+			parentId: "grafcet-1",
+		};
 		const issues = [
-			new ProjectAnalyserIssue("error", "STEP_NO_SUCCESSOR", source, "Aucun élément en aval"),
-			new ProjectAnalyserIssue("error", "STEP_NO_PREDECESSOR", source, "Aucun élément en amont"),
+			new ProjectAnalyserIssue(
+				"error",
+				"STEP_NO_SUCCESSOR",
+				source,
+				"Aucun élément en aval",
+			),
+			new ProjectAnalyserIssue(
+				"error",
+				"STEP_NO_PREDECESSOR",
+				source,
+				"Aucun élément en amont",
+			),
 		];
 		const result = AnalysisIssuesMapper.analyserToApp(issues);
 		expect(result.grafcets["grafcet-1"].elements["step-1"]).toEqual([
@@ -83,7 +105,10 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 			),
 		];
 		const result = AnalysisIssuesMapper.analyserToApp(issues);
-		expect(Object.keys(result.grafcets).sort()).toEqual(["grafcet-1", "grafcet-2"]);
+		expect(Object.keys(result.grafcets).sort()).toEqual([
+			"grafcet-1",
+			"grafcet-2",
+		]);
 		expect(result.grafcets["grafcet-1"].overall).toEqual(["Erreur grafcet 1"]);
 		expect(result.grafcets["grafcet-2"].overall).toEqual(["Erreur grafcet 2"]);
 	});
@@ -107,13 +132,19 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 		const issue = new ProjectAnalyserIssue(
 			"error",
 			"ELEMENT_NO_PREDECESSOR",
-			{ sourceType: "ladder-contact", sourceId: "contact-1", parentId: "ladder-1" },
+			{
+				sourceType: "ladder-contact",
+				sourceId: "contact-1",
+				parentId: "ladder-1",
+			},
 			"Cet élément n'est relié à aucun élément précédent.",
 		);
 		const result = AnalysisIssuesMapper.analyserToApp([issue]);
 		expect(result.ladders["ladder-1"]).toEqual({
 			overall: [],
-			elements: { "contact-1": ["Cet élément n'est relié à aucun élément précédent."] },
+			elements: {
+				"contact-1": ["Cet élément n'est relié à aucun élément précédent."],
+			},
 		});
 		expect(result.grafcets).toEqual({});
 	});

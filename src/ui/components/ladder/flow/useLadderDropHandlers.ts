@@ -6,24 +6,42 @@ import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remo
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import {
+	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
-import { createContactElement, createCoilElement, getElementWidth, LadderElement } from "@/schemas/ladder/element.schema";
+import {
+	createContactElement,
+	createCoilElement,
+	getElementWidth,
+	LadderElement,
+} from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
-import { DraggedLadderElement, useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
-import { computeRowHeightsInCells, PositionedLeaf, xToCol, yToRow } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	DraggedLadderElement,
+	useLadderToolbarDnD,
+} from "../toolbar/LadderToolbarDnDContext";
+import {
+	computeRowHeightsInCells,
+	PositionedLeaf,
+	xToCol,
+	yToRow,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
 
-function createToolElement(draggedElement: DraggedLadderElement, row: number, col: number): LadderElement {
+function createToolElement(
+	draggedElement: DraggedLadderElement,
+	row: number,
+	col: number,
+): LadderElement {
 	return draggedElement.type === "contact"
 		? createContactElement("", draggedElement.mode, row, col)
 		: createCoilElement("", draggedElement.mode, row, col);
@@ -32,7 +50,12 @@ function createToolElement(draggedElement: DraggedLadderElement, row: number, co
 /** Élément existant dont l'empreinte (largeur en colonnes, voir `getElementWidth`) chevauche
  * `[colStart, colEnd]` sur `row` — un `block` occupant 2 colonnes doit bloquer un dépôt visant
  * sa seconde cellule autant que la première. */
-function findOccupant(section: Section, row: number, colStart: number, colEnd: number): LadderElement | undefined {
+function findOccupant(
+	section: Section,
+	row: number,
+	colStart: number,
+	colEnd: number,
+): LadderElement | undefined {
 	return section.elements.find((element) => {
 		if (element.position.row !== row) return false;
 		const elementStart = element.position.col;
@@ -58,11 +81,18 @@ function findOccupant(section: Section, row: number, colStart: number, colEnd: n
 export default function useLadderDropHandlers(
 	section: Section,
 	leafPositions: PositionedLeaf[],
-): [handleDragOver: (e: React.DragEvent) => void, handleDrop: (e: React.DragEvent) => void] {
+): [
+	handleDragOver: (e: React.DragEvent) => void,
+	handleDrop: (e: React.DragEvent) => void,
+] {
 	const { draggedElement } = useLadderToolbarDnD();
 	const { screenToFlowPosition } = useReactFlow();
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
-	const setPendingSystemBlockCreation = useLadderStore((state) => state.setPendingSystemBlockCreation);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
+	const setPendingSystemBlockCreation = useLadderStore(
+		(state) => state.setPendingSystemBlockCreation,
+	);
 
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
@@ -70,9 +100,16 @@ export default function useLadderDropHandlers(
 			// dragover (timing React). e.dataTransfer.getData n'est pas lisible au dragover (accès
 			// restreint par sécurité) : seul `.types` l'est, d'où ce test plutôt qu'une lecture.
 			e.preventDefault();
-			const draggingProgramRef = e.dataTransfer.types.includes(LADDER_PROGRAM_DRAG_MIME_TYPE);
-			const draggingSystemBlock = e.dataTransfer.types.includes(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE);
-			e.dataTransfer.dropEffect = draggedElement || draggingProgramRef || draggingSystemBlock ? "copy" : "none";
+			const draggingProgramRef = e.dataTransfer.types.includes(
+				LADDER_PROGRAM_DRAG_MIME_TYPE,
+			);
+			const draggingSystemBlock = e.dataTransfer.types.includes(
+				LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+			);
+			e.dataTransfer.dropEffect =
+				draggedElement || draggingProgramRef || draggingSystemBlock
+					? "copy"
+					: "none";
 		},
 		[draggedElement],
 	);
@@ -81,7 +118,9 @@ export default function useLadderDropHandlers(
 		(e: React.DragEvent) => {
 			e.preventDefault();
 			const programId = e.dataTransfer.getData(LADDER_PROGRAM_DRAG_MIME_TYPE);
-			const systemBlockType = e.dataTransfer.getData(LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE);
+			const systemBlockType = e.dataTransfer.getData(
+				LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE,
+			);
 			if (!programId && !systemBlockType && !draggedElement) return;
 
 			// screenToFlowPosition attend des coordonnées viewport (clientX/clientY), pas
@@ -94,8 +133,13 @@ export default function useLadderDropHandlers(
 			// diagonale suivante dès que le curseur dépassait le milieu d'une cellule. On garde
 			// notre propre accrochage explicite (Math.floor ci-dessous), qui, lui, retombe
 			// toujours sur la cellule réellement visée.
-			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY }, { snapToGrid: false });
-			const dropRow = Math.floor(yToRow(position.y, computeRowHeightsInCells(section)));
+			const position = screenToFlowPosition(
+				{ x: e.clientX, y: e.clientY },
+				{ snapToGrid: false },
+			);
+			const dropRow = Math.floor(
+				yToRow(position.y, computeRowHeightsInCells(section)),
+			);
 			const dropCol = Math.floor(xToCol(position.x));
 
 			if (programId) {
@@ -104,7 +148,11 @@ export default function useLadderDropHandlers(
 				// contact/une bobine : cellule(s) déjà occupée(s), rien à changer, quel que soit
 				// l'occupant.
 				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
-				const newElement = createUserProgramBlockElement(programId, dropRow, dropCol);
+				const newElement = createUserProgramBlockElement(
+					programId,
+					dropRow,
+					dropCol,
+				);
 				dispatchInsertion(newElement);
 				return;
 			}
@@ -113,7 +161,10 @@ export default function useLadderDropHandlers(
 				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
 				setPendingSystemBlockCreation({
 					blockType: "timer",
-					insert: (params) => dispatchInsertion(createTimerBlockElement(params, dropRow, dropCol)),
+					insert: (params) =>
+						dispatchInsertion(
+							createTimerBlockElement(params, dropRow, dropCol),
+						),
 				});
 				return;
 			}
@@ -122,26 +173,33 @@ export default function useLadderDropHandlers(
 				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
 				setPendingSystemBlockCreation({
 					blockType: "counter",
-					insert: (params) => dispatchInsertion(createCounterBlockElement(params, dropRow, dropCol)),
+					insert: (params) =>
+						dispatchInsertion(
+							createCounterBlockElement(params, dropRow, dropCol),
+						),
 				});
 				return;
 			}
 
 			if (systemBlockType === "compare") {
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
-				setPendingSystemBlockCreation({
-					blockType: "compare",
-					insert: (params) => dispatchInsertion(createCompareBlockElement(params, dropRow, dropCol)),
-				});
+				// Un bloc `"compare"` occupe 1 colonne (comme un contact, voir `getElementWidth`) et
+				// n'a pas de fenêtre : on insère un bloc vide, configuré ensuite sur le canevas.
+				if (findOccupant(section, dropRow, dropCol, dropCol)) return;
+				dispatchInsertion(createCompareBlockElement(dropRow, dropCol));
 				return;
 			}
 
+			// `"assign"` et `"arithmetic"` occupent 2 colonnes (défaut d'un bloc) et n'ont pas de
+			// fenêtre : on insère un bloc vide, configuré ensuite sur le canevas.
 			if (systemBlockType === "assign") {
 				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
-				setPendingSystemBlockCreation({
-					blockType: "assign",
-					insert: (params) => dispatchInsertion(createAssignBlockElement(params, dropRow, dropCol)),
-				});
+				dispatchInsertion(createAssignBlockElement(dropRow, dropCol));
+				return;
+			}
+
+			if (systemBlockType === "arithmetic") {
+				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				dispatchInsertion(createArithmeticBlockElement(dropRow, dropCol));
 				return;
 			}
 
@@ -180,30 +238,49 @@ export default function useLadderDropHandlers(
 			dispatchInsertion(createToolElement(draggedElement, dropRow, dropCol));
 
 			function dispatchInsertion(newElement: LadderElement) {
-				const { elementsToAdd, connectionsToAdd, connectionsToRemove } = computeAutoConnectionsForElements(
-					section,
-					[newElement],
-					leafPositions,
-				);
+				const { elementsToAdd, connectionsToAdd, connectionsToRemove } =
+					computeAutoConnectionsForElements(
+						section,
+						[newElement],
+						leafPositions,
+					);
 
 				const commands: AbstractLadderCommand<any>[] = [
-					new ElementsAddCommand({ sectionId: section.id, elements: elementsToAdd }),
+					new ElementsAddCommand({
+						sectionId: section.id,
+						elements: elementsToAdd,
+					}),
 				];
 
 				if (connectionsToAdd.length > 0) {
-					commands.push(new ConnectionsAddCommand({ sectionId: section.id, connections: connectionsToAdd }));
+					commands.push(
+						new ConnectionsAddCommand({
+							sectionId: section.id,
+							connections: connectionsToAdd,
+						}),
+					);
 				}
 
 				if (connectionsToRemove.length > 0) {
 					commands.push(
-						new ConnectionsRemoveCommand({ sectionId: section.id, connections: connectionsToRemove }),
+						new ConnectionsRemoveCommand({
+							sectionId: section.id,
+							connections: connectionsToRemove,
+						}),
 					);
 				}
 
 				commandsStackManager.executeOperation(commands);
 			}
 		},
-		[draggedElement, screenToFlowPosition, leafPositions, section, commandsStackManager, setPendingSystemBlockCreation],
+		[
+			draggedElement,
+			screenToFlowPosition,
+			leafPositions,
+			section,
+			commandsStackManager,
+			setPendingSystemBlockCreation,
+		],
 	);
 
 	return [handleDragOver, handleDrop];

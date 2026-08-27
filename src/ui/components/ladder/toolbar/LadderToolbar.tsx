@@ -45,7 +45,9 @@ const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
  * "Blocs systèmes" de l'explorateur — même comportement (ouverture de la popup avant insertion).
  */
 const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 	const mode = useProjectStore((state) => state.mode);
 
 	const addSection = () => {
@@ -74,34 +76,70 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
-				<LadderTool element={{ type: "contact", mode: "NO" }}>
+				<LadderTool
+					element={{ type: "contact", mode: "NO" }}
+					label="Contact normalement ouvert (NO)"
+				>
 					<ContactSymbol mode="NO" />
 				</LadderTool>
-				<LadderTool element={{ type: "contact", mode: "NF" }}>
+				<LadderTool
+					element={{ type: "contact", mode: "NF" }}
+					label="Contact normalement fermé (NF)"
+				>
 					<ContactSymbol mode="NF" />
 				</LadderTool>
-				<LadderTool element={{ type: "contact", mode: "P" }}>
+				<LadderTool
+					element={{ type: "contact", mode: "P" }}
+					label="Contact détection front montant (P)"
+				>
 					<ContactSymbol mode="P" />
 				</LadderTool>
-				<LadderTool element={{ type: "contact", mode: "N" }}>
+				<LadderTool
+					element={{ type: "contact", mode: "N" }}
+					label="Contact détection front descendant (N)"
+				>
 					<ContactSymbol mode="N" />
 				</LadderTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
-				<LadderTool element={{ type: "coil", mode: "normal" }}>
+				<LadderTool
+					element={{ type: "coil", mode: "normal" }}
+					label="Bobine normale"
+				>
 					<CoilSymbol mode="normal" />
 				</LadderTool>
-				<LadderTool element={{ type: "coil", mode: "set" }}>
+				<LadderTool
+					element={{ type: "coil", mode: "set" }}
+					label="Bobine Set (mémorisation à 1)"
+				>
 					<CoilSymbol mode="set" />
 				</LadderTool>
-				<LadderTool element={{ type: "coil", mode: "reset" }}>
+				<LadderTool
+					element={{ type: "coil", mode: "reset" }}
+					label="Bobine Reset (mémorisation à 0)"
+				>
 					<CoilSymbol mode="reset" />
 				</LadderTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
-				<LadderSystemBlockTool blockType="compare" width={68}>
+				<LadderSystemBlockTool
+					blockType="compare"
+					width={68}
+					label="Bloc Compare — compare deux valeurs"
+				>
 					<SystemBlockToolLabel>COMPARE</SystemBlockToolLabel>
 				</LadderSystemBlockTool>
-				<LadderSystemBlockTool blockType="assign" width={54}>
+				<LadderSystemBlockTool
+					blockType="assign"
+					width={54}
+					label="Bloc Assign — affecte une valeur à une variable"
+				>
 					<SystemBlockToolLabel>ASSIGN</SystemBlockToolLabel>
+				</LadderSystemBlockTool>
+				<LadderSystemBlockTool
+					blockType="arithmetic"
+					width={44}
+					label="Bloc Calc — opération arithmétique (out := in1 op in2)"
+				>
+					<SystemBlockToolLabel>CALC</SystemBlockToolLabel>
 				</LadderSystemBlockTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<Button

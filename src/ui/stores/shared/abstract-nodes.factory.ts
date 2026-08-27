@@ -47,7 +47,11 @@ export default abstract class AbstractNodesFactory<
 	 */
 	protected syncNode(prevNode: TNode, domain: TDomain): TNode {
 		const built = this.buildNode(domain);
-		return this.syncNodeDataAndPosition(prevNode, built.data, built.position) as TNode;
+		return this.syncNodeDataAndPosition(
+			prevNode,
+			built.data,
+			built.position,
+		) as TNode;
 	}
 
 	protected abstract buildNode(domain: TDomain): TNode;
@@ -62,11 +66,14 @@ export default abstract class AbstractNodesFactory<
 		newData: any,
 		newPosition: { x: number; y: number },
 	): TNode {
-		const position = this.isNodeInGesture(prevNode) ? prevNode.position : newPosition;
-		const sameData = deepObjectsComparison(newData, prevNode.data);
-		const samePosition = position.x === prevNode.position.x && position.y === prevNode.position.y;
+		const position = this.isNodeInGesture(prevNode)
+			? prevNode.position
+			: newPosition;
+		const samePosition =
+			position.x === prevNode.position.x && position.y === prevNode.position.y;
 
-		if (sameData && samePosition) return prevNode;
+		if (!samePosition) return { ...prevNode, data: newData, position } as TNode;
+		if (deepObjectsComparison(newData, prevNode.data)) return prevNode;
 		return { ...prevNode, data: newData, position } as TNode;
 	}
 }

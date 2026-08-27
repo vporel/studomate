@@ -29,20 +29,29 @@ function fakeRfInstance() {
 function buildStore() {
 	const grafcet = new GrafcetBuilder()
 		.id("g1")
-		.addStep(new StepBuilder().id("step-1").number(1).initial().position(0, 0).build())
+		.addStep(
+			new StepBuilder().id("step-1").number(1).initial().position(0, 0).build(),
+		)
 		.build();
-	const store = createGrafcetStore(grafcet, new CommandsStack<Grafcet>(100), () => Dialect.FR);
+	const store = createGrafcetStore(
+		grafcet,
+		new CommandsStack<Grafcet>(100),
+		() => Dialect.FR,
+	);
 	store.getState().viewManager.rfInstance = fakeRfInstance();
 	return store;
 }
 
 function selectStep(store: ReturnType<typeof buildStore>) {
 	store.setState((state) => ({
-		nodes: state.nodes.map((n) => ({ ...n, selected: n.id === "step-1" })) as GrafcetNodeType[],
+		nodes: state.nodes.map((n) => ({
+			...n,
+			selected: n.id === "step-1",
+		})) as GrafcetNodeType[],
 	}));
 }
 
-describe("CopyCutPasteManager", () => {
+describe("GrafcetCopyCutPasteManager", () => {
 	describe("copySelectedElements / pasteElements", () => {
 		it("ne colle rien si le presse-papiers est vide", () => {
 			const store = buildStore();
@@ -57,7 +66,9 @@ describe("CopyCutPasteManager", () => {
 			selectStep(store);
 			store.getState().copyCutPasteManager.copySelectedElements();
 
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect(addedNodes).toHaveLength(1);
 			expect(addedNodes[0].id).not.toBe("step-1");
@@ -68,9 +79,13 @@ describe("CopyCutPasteManager", () => {
 			selectStep(store);
 			store.getState().copyCutPasteManager.copySelectedElements();
 
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
-			expect(store.getState().nodes.some((n) => n.id === addedNodes[0].id)).toBe(true);
+			expect(
+				store.getState().nodes.some((n) => n.id === addedNodes[0].id),
+			).toBe(true);
 		});
 
 		// Invariant du domaine : une seule étape initiale par grafcet. Sans cette règle, coller
@@ -80,7 +95,9 @@ describe("CopyCutPasteManager", () => {
 			selectStep(store); // step-1 est initiale
 			store.getState().copyCutPasteManager.copySelectedElements();
 
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect((addedNodes[0].data as StepData).initial).toBe(false);
 		});
@@ -90,7 +107,9 @@ describe("CopyCutPasteManager", () => {
 			selectStep(store);
 			store.getState().copyCutPasteManager.copySelectedElements();
 
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect((addedNodes[0].data as StepData).number).not.toBe(1);
 		});
@@ -111,7 +130,9 @@ describe("CopyCutPasteManager", () => {
 			const store = buildStore();
 
 			store.getState().copyCutPasteManager.copySelectedElements();
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect(addedNodes).toHaveLength(0);
 		});
@@ -130,11 +151,24 @@ describe("CopyCutPasteManager", () => {
 				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("g1")
-				.addStep(new StepBuilder().id("step-1").number(1).initial().position(0, 0).build())
-				.addStep(new StepBuilder().id("step-2").number(2).position(0, 100).build())
+				.addStep(
+					new StepBuilder()
+						.id("step-1")
+						.number(1)
+						.initial()
+						.position(0, 0)
+						.build(),
+				)
+				.addStep(
+					new StepBuilder().id("step-2").number(2).position(0, 100).build(),
+				)
 				.addConnection(connection)
 				.build();
-			const store = createGrafcetStore(grafcet, new CommandsStack<Grafcet>(100), () => Dialect.FR);
+			const store = createGrafcetStore(
+				grafcet,
+				new CommandsStack<Grafcet>(100),
+				() => Dialect.FR,
+			);
 			store.getState().viewManager.rfInstance = fakeRfInstance();
 			return store;
 		}
@@ -144,7 +178,9 @@ describe("CopyCutPasteManager", () => {
 			const { nodes, edges } = store.getState();
 			store.getState().copyCutPasteManager.copyElements(nodes, edges);
 
-			const { addedNodes, addedEdges } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes, addedEdges } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect(addedEdges).toHaveLength(1);
 			expect(addedEdges[0].id).not.toBe("e1");
@@ -160,7 +196,9 @@ describe("CopyCutPasteManager", () => {
 			// Presse-papiers volontairement incohérent : l'arête référence step-2, non copié.
 			store.getState().copyCutPasteManager.copyElements(step1Only, edges);
 
-			const { addedEdges } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedEdges } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 
 			expect(addedEdges).toHaveLength(0);
 		});
@@ -170,10 +208,14 @@ describe("CopyCutPasteManager", () => {
 			const { nodes, edges } = store.getState();
 			store.getState().copyCutPasteManager.copyElements(nodes, edges);
 
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements({ x: 500, y: 500 });
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements({ x: 500, y: 500 });
 
 			const originalStep1 = nodes.find((n) => n.id === "step-1")!;
-			const pastedStep1 = addedNodes.find((n) => (n.data as StepData).number !== 1) ?? addedNodes[0];
+			const pastedStep1 =
+				addedNodes.find((n) => (n.data as StepData).number !== 1) ??
+				addedNodes[0];
 			expect(pastedStep1.position).not.toEqual(originalStep1.position);
 		});
 	});
@@ -186,7 +228,9 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.cutSelectedElements();
 
 			expect(store.getState().nodes.some((n) => n.id === "step-1")).toBe(false);
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 			expect(addedNodes).toHaveLength(1);
 		});
 
@@ -196,7 +240,9 @@ describe("CopyCutPasteManager", () => {
 			store.getState().copyCutPasteManager.cutSelectedElements();
 
 			expect(store.getState().nodes).toHaveLength(1);
-			const { addedNodes } = store.getState().copyCutPasteManager.pasteElements();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
 			expect(addedNodes).toHaveLength(0);
 		});
 	});

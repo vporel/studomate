@@ -21,7 +21,11 @@ export default function SeveritySection({
 	getGrafcetElementLabel: (id: string, elId: string) => string;
 	getLadderName: (id: string) => string;
 	getLadderElementLabel: (id: string, elId: string) => string;
-	onGotoProgram: (progId: string, progType: "grafcet" | "ladder", elId?: string) => void;
+	onGotoProgram: (
+		progId: string,
+		progType: "grafcet" | "ladder",
+		elId?: string,
+	) => void;
 }) {
 	const isError = severity === "error";
 	return (
@@ -29,17 +33,25 @@ export default function SeveritySection({
 			<Typography variant="h5">{">> " + title}</Typography>
 			{!hasProgramIssues && issues.project.length === 0 && (
 				<Typography sx={{ p: 2 }}>
-					{isError ? "Aucune erreur lors de l'analyse." : "Aucun avertissement."}
+					{isError
+						? "Aucune erreur lors de l'analyse."
+						: "Aucun avertissement."}
 				</Typography>
 			)}
 			{issues.project.length > 0 && (
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
-						{isError ? "Erreurs globales au projet" : "Avertissements globaux au projet"}
+						{isError
+							? "Erreurs globales au projet"
+							: "Avertissements globaux au projet"}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{issues.project.map((msg: string, idx: number) => (
-							<IssueListItem key={`p-${idx}`} message={msg} severity={severity} />
+							<IssueListItem
+								key={`p-${idx}`}
+								message={msg}
+								severity={severity}
+							/>
 						))}
 					</List>
 				</>
@@ -54,8 +66,12 @@ export default function SeveritySection({
 							programName={getGrafcetName(grafcetId)}
 							issues={progIssues}
 							severity={severity}
-							getElementLabel={(elementId) => getGrafcetElementLabel(grafcetId, elementId)}
-							onGoto={(elementId) => onGotoProgram(grafcetId, "grafcet", elementId)}
+							getElementLabel={(elementId) =>
+								getGrafcetElementLabel(grafcetId, elementId)
+							}
+							onGoto={(elementId) =>
+								onGotoProgram(grafcetId, "grafcet", elementId)
+							}
 						/>
 					))}
 				</Box>
@@ -70,8 +86,12 @@ export default function SeveritySection({
 							programName={getLadderName(ladderId)}
 							issues={progIssues}
 							severity={severity}
-							getElementLabel={(elementId) => getLadderElementLabel(ladderId, elementId)}
-							onGoto={(elementId) => onGotoProgram(ladderId, "ladder", elementId)}
+							getElementLabel={(elementId) =>
+								getLadderElementLabel(ladderId, elementId)
+							}
+							onGoto={(elementId) =>
+								onGotoProgram(ladderId, "ladder", elementId)
+							}
 						/>
 					))}
 				</Box>

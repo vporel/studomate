@@ -1,8 +1,13 @@
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
-import { BlockData } from "./block.schema";
 import Connection, { ConnectionData } from "./connection.schema";
-import { CoilData, ContactData, GridPosition, LadderElement } from "./element.schema";
+import {
+	CoilData,
+	ContactData,
+	GridPosition,
+	LadderElement,
+	LadderElementDataChanges,
+} from "./element.schema";
 import Section from "./section.schema";
 
 /** Base du nom auto-généré ("Ladder_1", "Ladder_2"...) à la création — voir
@@ -28,13 +33,25 @@ export const DEFAULT_MAIN_NAME = "Main";
 export default class Ladder extends Program {
 	readonly type: ProgramType = "ladder";
 	role: LadderRole;
+	/**
+	 * Tableau et non `Record` (contrairement aux collections de `Grafcet` / `HmiPage`) : ici
+	 * **l'ordre est la donnée** — c'est l'ordre d'affichage et d'exécution des sections, que
+	 * l'utilisateur réordonne (drag & drop). Un `Record` ne le garantirait pas.
+	 */
 	sections: Section[];
 
-	constructor(id: string, name: string, sections?: Section[], role: LadderRole = DEFAULT_LADDER_ROLE) {
+	constructor(
+		id: string,
+		name: string,
+		sections?: Section[],
+		role: LadderRole = DEFAULT_LADDER_ROLE,
+	) {
 		super(id, name);
 		this.role = role;
 		// Un ladder porte toujours au moins une section.
-		this.sections = sections ?? [new Section(createRandomId(), DEFAULT_SECTION_TITLE)];
+		this.sections = sections ?? [
+			new Section(createRandomId(), DEFAULT_SECTION_TITLE),
+		];
 	}
 
 	//=============== SECTIONS ===============
@@ -43,7 +60,10 @@ export default class Ladder extends Program {
 		return this.sections.find((section) => section.id === sectionId);
 	}
 
-	createSection(title: string = DEFAULT_SECTION_TITLE, description: string = ""): Section {
+	createSection(
+		title: string = DEFAULT_SECTION_TITLE,
+		description: string = "",
+	): Section {
 		const section = new Section(createRandomId(), title, description);
 		this.sections.push(section);
 		return section;
@@ -65,12 +85,16 @@ export default class Ladder extends Program {
 	 */
 	deleteSection(sectionId: string): void {
 		if (this.sections.length <= 1) return;
-		const index = this.sections.findIndex((section) => section.id === sectionId);
+		const index = this.sections.findIndex(
+			(section) => section.id === sectionId,
+		);
 		if (index !== -1) this.sections.splice(index, 1);
 	}
 
 	reorderSections(orderedSectionIds: string[]): void {
-		const bySectionId = new Map(this.sections.map((section) => [section.id, section]));
+		const bySectionId = new Map(
+			this.sections.map((section) => [section.id, section]),
+		);
 		const reordered = orderedSectionIds
 			.map((id) => bySectionId.get(id))
 			.filter((section): section is Section => section !== undefined);
@@ -83,7 +107,9 @@ export default class Ladder extends Program {
 
 	//=============== ÉLÉMENTS / CONNEXIONS ===============
 
-	findElement(elementId: string): { section: Section; element: LadderElement } | undefined {
+	findElement(
+		elementId: string,
+	): { section: Section; element: LadderElement } | undefined {
 		for (const section of this.sections) {
 			const element = section.getElement(elementId);
 			if (element) return { section, element };
@@ -91,7 +117,9 @@ export default class Ladder extends Program {
 		return undefined;
 	}
 
-	findConnection(connectionId: string): { section: Section; connection: Connection } | undefined {
+	findConnection(
+		connectionId: string,
+	): { section: Section; connection: Connection } | undefined {
 		for (const section of this.sections) {
 			const connection = section.connections.find((c) => c.id === connectionId);
 			if (connection) return { section, connection };
@@ -101,7 +129,10 @@ export default class Ladder extends Program {
 
 	/** Le tracé d'une connexion (`data.points`) — jamais sa source/cible, qui passent par
 	 * `ConnectionsAddCommand`/`ConnectionsRemoveCommand`. */
-	updateConnectionData(connectionId: string, changes: Partial<ConnectionData>): void {
+	updateConnectionData(
+		connectionId: string,
+		changes: Partial<ConnectionData>,
+	): void {
 		const located = this.findConnection(connectionId);
 		if (!located) return;
 		Object.assign(located.connection.data, changes);
@@ -115,12 +146,16 @@ export default class Ladder extends Program {
 
 	updateElement(
 		elementId: string,
-		changes: { data?: Partial<ContactData | CoilData | BlockData>; position?: Partial<GridPosition> },
+		changes: {
+			data?: LadderElementDataChanges;
+			position?: Partial<GridPosition>;
+		},
 	): void {
 		const located = this.findElement(elementId);
 		if (!located || located.element.type === "railTerminal") return;
 		if (changes.data) Object.assign(located.element.data, changes.data);
-		if (changes.position) Object.assign(located.element.position, changes.position);
+		if (changes.position)
+			Object.assign(located.element.position, changes.position);
 	}
 
 	/**
@@ -130,15 +165,21 @@ export default class Ladder extends Program {
 	 * `pruneOrphanedRailTerminals`), et la renvoie pour que l'appelant puisse la restaurer à
 	 * l'annulation.
 	 */
-	removeElements(elementIds: string[]): { sectionId: string; element: LadderElement }[] {
+	removeElements(
+		elementIds: string[],
+	): { sectionId: string; element: LadderElement }[] {
 		const affectedSections = new Set<Section>();
 		for (const elementId of elementIds) {
 			const located = this.findElement(elementId);
 			if (!located) continue;
-			const index = located.section.elements.findIndex((element) => element.id === elementId);
+			const index = located.section.elements.findIndex(
+				(element) => element.id === elementId,
+			);
 			if (index !== -1) located.section.elements.splice(index, 1);
 			located.section.connections = located.section.connections.filter(
-				(connection) => connection.source.id !== elementId && connection.target.id !== elementId,
+				(connection) =>
+					connection.source.id !== elementId &&
+					connection.target.id !== elementId,
 			);
 			affectedSections.add(located.section);
 		}
@@ -159,17 +200,25 @@ export default class Ladder extends Program {
 			const source = section.getElement(connection.source.id);
 			const target = section.getElement(connection.target.id);
 			if (!source) {
-				throw new Error(`Connection 'source' element missing: id=${connection.source.id}`);
+				throw new Error(
+					`Connection 'source' element missing: id=${connection.source.id}`,
+				);
 			}
 			if (!target) {
-				throw new Error(`Connection 'target' element missing: id=${connection.target.id}`);
+				throw new Error(
+					`Connection 'target' element missing: id=${connection.target.id}`,
+				);
 			}
 			if (target.type === "railTerminal") {
-				throw new Error(`Connection 'target' cannot be a rail terminal: id=${connection.target.id}`);
+				throw new Error(
+					`Connection 'target' cannot be a rail terminal: id=${connection.target.id}`,
+				);
 			}
 			if (
 				!section.connections.find(
-					(c) => c.source.id === connection.source.id && c.target.id === connection.target.id,
+					(c) =>
+						c.source.id === connection.source.id &&
+						c.target.id === connection.target.id,
 				)
 			) {
 				section.connections.push(connection);
@@ -210,7 +259,9 @@ export default class Ladder extends Program {
 			const orphaned = section.elements.filter(
 				(element) =>
 					element.type === "railTerminal" &&
-					!section.connections.some((connection) => connection.source.id === element.id),
+					!section.connections.some(
+						(connection) => connection.source.id === element.id,
+					),
 			);
 			for (const element of orphaned) {
 				const index = section.elements.findIndex((e) => e.id === element.id);
@@ -231,7 +282,10 @@ export default class Ladder extends Program {
 
 	getAllConnections(): { sectionId: string; connection: Connection }[] {
 		return this.sections.flatMap((section) =>
-			section.connections.map((connection) => ({ sectionId: section.id, connection })),
+			section.connections.map((connection) => ({
+				sectionId: section.id,
+				connection,
+			})),
 		);
 	}
 

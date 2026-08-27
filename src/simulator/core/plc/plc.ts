@@ -9,6 +9,9 @@ export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
 	private outputImage: Record<string, PLCVariable> = {};
 	private physicalInputs: Record<string, PLCVariable> = {};
+	/** Nom → id d'entrée physique. Construit une fois : l'ensemble des E/S est figé à la
+	 * création du PLC, cet index n'a donc jamais à être invalidé. */
+	private physicalInputIdsByName = new Map<string, string>();
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
 	/** Table de forçage : id de variable → valeur imposée, indépendante du scope. */
@@ -26,6 +29,12 @@ export default class PLC extends ClockedRunnable {
 	private onCycleStart: RunnableCallback<PLC> = () => {};
 	private onCycleEnd: RunnableCallback<PLC> = () => {};
 	private onCycleError: (error: Error) => void = () => {};
+	/**
+	 * Environnement d'exécution construit **une seule fois** : ses `Map` id→var et name→var, et
+	 * les `EnvVariable` qu'elles contiennent, sont réutilisées de cycle en cycle. Chaque cycle se
+	 * contente d'y recopier les valeurs courantes des images puis de les relire.
+	 */
+	private readonly environment: Environment;
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -50,6 +59,8 @@ export default class PLC extends ClockedRunnable {
 			const variableCopy = variable.copy();
 			if (variable.getScope() === "input") {
 				this.physicalInputs[variableCopy.getId()] = variableCopy;
+				this.physicalInputIdsByName.set(variableCopy.getName(), variableCopy.getId());
+				this.inputImage[variableCopy.getId()] = variableCopy.copy();
 			} else if (variable.getScope() === "output") {
 				this.physicalOutputs[variableCopy.getId()] = variableCopy.copy();
 				//Initialize output image with initial variable values
@@ -58,6 +69,14 @@ export default class PLC extends ClockedRunnable {
 				this.memory[variableCopy.getId()] = variableCopy;
 			}
 		});
+
+		this.environment = new Environment(
+			[
+				...Object.values(this.inputImage),
+				...Object.values(this.outputImage),
+				...Object.values(this.memory),
+			].map(PlcVariablesMapper.plcToEnv),
+		);
 	}
 
 	/**
@@ -111,7 +130,8 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	private getPhysicalInputByName(name: string): PLCVariable {
-		const input = Object.values(this.physicalInputs).find((i) => i.getName() === name);
+		const id = this.physicalInputIdsByName.get(name);
+		const input = id !== undefined ? this.physicalInputs[id] : undefined;
 		if (!input) throw new Error(`No input found with name ${name}`);
 		return input;
 	}
@@ -147,7 +167,10 @@ export default class PLC extends ClockedRunnable {
 		} catch (e) {
 			this.stop();
 			console.error("Error during PLC cycle execution:", e);
-			this.executeCallback(() => this.onCycleError?.(e as Error), "Error in onCycleError callback:");
+			this.executeCallback(
+				() => this.onCycleError?.(e as Error),
+				"Error in onCycleError callback:",
+			);
 			return;
 		}
 		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
@@ -167,34 +190,42 @@ export default class PLC extends ClockedRunnable {
 
 	private readInputs(): void {
 		Object.entries(this.physicalInputs).forEach(([id, v]) => {
-			this.inputImage[id] = v.copy();
+			this.inputImage[id].setValue(v.getValue());
 		});
 	}
 
 	private executeProgram(): void {
-		const plcVariablesSnapshot = this.getVariablesSnapshot();
-		const forcedIds = new Set(this.forcedVariables.keys());
-		const env = new Environment(plcVariablesSnapshot.map(PlcVariablesMapper.plcToEnv), forcedIds);
-		const deltaTimeMs = this.getClockIntervalMs();
-
-		for (const routine of this.program) {
-			routine.execute(env, deltaTimeMs, this.routinesById);
+		this.environment.setForcedVariableIds(new Set(this.forcedVariables.keys()));
+		for (const [id, v] of Object.entries(this.inputImage)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
+		}
+		for (const [id, v] of Object.entries(this.outputImage)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
+		}
+		for (const [id, v] of Object.entries(this.memory)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
 		}
 
-		for (const variable of plcVariablesSnapshot) {
-			const id = variable.getId();
-			const value = env.getVariableValueById(id);
-			if (variable.getScope() === "output") {
-				this.setOutputImageValueById(id, value);
-			} else if (variable.getScope() === "memory") {
-				this.setMemoryValueById(id, value);
-			}
+		const deltaTimeMs = this.consumeElapsedMs();
+
+		for (const routine of this.program) {
+			routine.execute(this.environment, deltaTimeMs, this.routinesById);
+		}
+
+		for (const id of Object.keys(this.outputImage)) {
+			this.setOutputImageValueById(
+				id,
+				this.environment.getVariableValueById(id),
+			);
+		}
+		for (const id of Object.keys(this.memory)) {
+			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
 		}
 	}
 
 	private writeOutputs(): void {
 		Object.entries(this.outputImage).forEach(([id, v]) => {
-			this.physicalOutputs[id] = v.copy();
+			this.physicalOutputs[id].setValue(v.getValue());
 		});
 	}
 }

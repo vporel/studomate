@@ -1,9 +1,14 @@
 import Ladder from "../ladder.schema";
-import { BlockData } from "../block.schema";
-import { CoilData, ContactData, GridPosition } from "../element.schema";
+import {
+	GridPosition,
+	LadderElementDataChanges,
+} from "../element.schema";
 import AbstractLadderCommand from "./abstract-ladder.command";
 
-type ElementChanges = { data?: Partial<ContactData | CoilData | BlockData>; position?: Partial<GridPosition> };
+type ElementChanges = {
+	data?: LadderElementDataChanges;
+	position?: Partial<GridPosition>;
+};
 
 export default class ElementUpdateCommand extends AbstractLadderCommand<{
 	elementId: string;

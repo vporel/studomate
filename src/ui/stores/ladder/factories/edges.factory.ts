@@ -8,8 +8,6 @@ class LadderEdgesFactory extends AbstractEdgesFactory<Edge, Section, Edge> {
 		return buildTargetEdges(section);
 	}
 
-
-
 	protected buildEdge(domain: Edge): Edge {
 		return domain;
 	}

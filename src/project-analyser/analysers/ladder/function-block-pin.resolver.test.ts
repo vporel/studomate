@@ -7,16 +7,22 @@ describe("resolveFunctionBlockPin", () => {
 	}
 
 	it("résout 'empty' pour une pinoche vide", () => {
-		expect(resolveFunctionBlockPin("", variablesMap(), "number")).toEqual({ kind: "empty" });
+		expect(resolveFunctionBlockPin("", variablesMap(), "number")).toEqual({
+			kind: "empty",
+		});
 	});
 
 	it("résout 'undeclared' pour une variable inconnue", () => {
-		expect(resolveFunctionBlockPin("Inconnue", variablesMap(), "number")).toEqual({ kind: "undeclared" });
+		expect(
+			resolveFunctionBlockPin("Inconnue", variablesMap(), "number"),
+		).toEqual({ kind: "undeclared" });
 	});
 
 	it("résout 'ok' pour une variable déclarée du bon type natif", () => {
 		const variable = new Variable("v1", "MaVar", "memory", "INT");
-		expect(resolveFunctionBlockPin("MaVar", variablesMap(variable), "number")).toEqual({
+		expect(
+			resolveFunctionBlockPin("MaVar", variablesMap(variable), "number"),
+		).toEqual({
 			kind: "ok",
 			variable,
 		});
@@ -24,7 +30,9 @@ describe("resolveFunctionBlockPin", () => {
 
 	it("résout 'invalid-type' pour une variable déclarée du mauvais type natif", () => {
 		const variable = new Variable("v1", "MaVar", "memory", "BOOL");
-		expect(resolveFunctionBlockPin("MaVar", variablesMap(variable), "number")).toEqual({
+		expect(
+			resolveFunctionBlockPin("MaVar", variablesMap(variable), "number"),
+		).toEqual({
 			kind: "invalid-type",
 			variable,
 		});
@@ -39,10 +47,15 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("résout 'invalid-constant' quand la syntaxe est reconnue mais la valeur invalide", () => {
-		const resolution = resolveFunctionBlockPin("T#abc", variablesMap(), "number", {
-			isLiteralSyntax: () => true,
-			isLiteralValid: () => false,
-		});
+		const resolution = resolveFunctionBlockPin(
+			"T#abc",
+			variablesMap(),
+			"number",
+			{
+				isLiteralSyntax: () => true,
+				isLiteralValid: () => false,
+			},
+		);
 		expect(resolution).toEqual({ kind: "invalid-constant" });
 	});
 
@@ -60,16 +73,27 @@ describe("resolveFunctionBlockPin", () => {
 
 	it("n'exclut pas un VariableType hors de la liste d'exclusion", () => {
 		const variable = new Variable("v1", "MaVar", "memory", "INT");
-		const resolution = resolveFunctionBlockPin("MaVar", variablesMap(variable), "number", undefined, ["TIME"]);
+		const resolution = resolveFunctionBlockPin(
+			"MaVar",
+			variablesMap(variable),
+			"number",
+			undefined,
+			["TIME"],
+		);
 		expect(resolution).toEqual({ kind: "ok", variable });
 	});
 
 	it("retombe sur la résolution de variable quand le pin n'a pas la syntaxe d'un littéral", () => {
 		const variable = new Variable("v1", "MaVar", "memory", "INT");
-		const resolution = resolveFunctionBlockPin("MaVar", variablesMap(variable), "number", {
-			isLiteralSyntax: () => false,
-			isLiteralValid: () => true,
-		});
+		const resolution = resolveFunctionBlockPin(
+			"MaVar",
+			variablesMap(variable),
+			"number",
+			{
+				isLiteralSyntax: () => false,
+				isLiteralValid: () => true,
+			},
+		);
 		expect(resolution).toEqual({ kind: "ok", variable });
 	});
 });

@@ -14,7 +14,11 @@ export default function useGotoProgram() {
 	const pagesManager = useProjectStore((s) => s.pagesManager);
 
 	return useCallback(
-		(programId: string, programType: "grafcet" | "ladder", elementId?: string) => {
+		(
+			programId: string,
+			programType: "grafcet" | "ladder",
+			elementId?: string,
+		) => {
 			const name =
 				programType === "grafcet"
 					? (project?.getGrafcet(programId)?.name ?? "Nom inconnu")
@@ -32,7 +36,11 @@ export default function useGotoProgram() {
 							? grafcetsManager.getActiveStoreManagers()
 							: laddersManager.getActiveStoreManagers();
 					if (!managers) return;
-					managers.viewManager.temporarilyHighlightNodesAndEdges([elementId], [], 3000);
+					managers.viewManager.temporarilyHighlightNodesAndEdges(
+						[elementId],
+						[],
+						3000,
+					);
 				}, 100);
 			}
 		},

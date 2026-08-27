@@ -8,9 +8,17 @@ describe("AllowedNodeTypesVisitor", () => {
 	it("ne trouve aucune violation quand tous les nœuds sont autorisés", () => {
 		const left = IdentifiersBuilder.buildIdentifierNode("A");
 		const right = LiteralsBuilder.buildNumberNode(5);
-		const expr = ExpressionsBuilder.buildComparisonExpressionNode(">", left, right);
+		const expr = ExpressionsBuilder.buildComparisonExpressionNode(
+			">",
+			left,
+			right,
+		);
 
-		const visitor = new AllowedNodeTypesVisitor(["IDENTIFIER", "NUMBER_LITERAL", "COMPARISON_EXPRESSION"]);
+		const visitor = new AllowedNodeTypesVisitor([
+			"IDENTIFIER",
+			"NUMBER_LITERAL",
+			"COMPARISON_EXPRESSION",
+		]);
 
 		expect(visitor.visit(expr)).toEqual([]);
 	});
@@ -19,9 +27,17 @@ describe("AllowedNodeTypesVisitor", () => {
 		const a = IdentifiersBuilder.buildIdentifierNode("A");
 		const b = IdentifiersBuilder.buildIdentifierNode("B");
 		const logical = ExpressionsBuilder.buildLogicalExpressionNode("AND", a, b);
-		const comparison = ExpressionsBuilder.buildComparisonExpressionNode(">", logical, LiteralsBuilder.buildNumberNode(0));
+		const comparison = ExpressionsBuilder.buildComparisonExpressionNode(
+			">",
+			logical,
+			LiteralsBuilder.buildNumberNode(0),
+		);
 
-		const visitor = new AllowedNodeTypesVisitor(["IDENTIFIER", "NUMBER_LITERAL", "COMPARISON_EXPRESSION"]);
+		const visitor = new AllowedNodeTypesVisitor([
+			"IDENTIFIER",
+			"NUMBER_LITERAL",
+			"COMPARISON_EXPRESSION",
+		]);
 		const violations = visitor.visit(comparison);
 
 		expect(violations).toHaveLength(1);

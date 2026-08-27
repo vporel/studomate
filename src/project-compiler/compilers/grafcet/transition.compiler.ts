@@ -23,7 +23,8 @@ export default class TransitionCompiler {
 
 		// A transition with no upstream or downstream has no effect in this compilation unit
 		// (can happen with step-referral-source pointing to another grafcet)
-		if (predecessorStepsIds.length === 0 || successorStepsIds.length === 0) return [];
+		if (predecessorStepsIds.length === 0 || successorStepsIds.length === 0)
+			return [];
 
 		// Predecessor steps: use MEMOS (values frozen before this cycle's activation pass)
 		// This ensures a step activated earlier in the same cycle cannot immediately re-fire
@@ -38,12 +39,20 @@ export default class TransitionCompiler {
 
 		// OR priority exclusions: NOT(T_prior) using the cycle-current transition value
 		// (transitions evaluate PLC signals directly, no memo concept applies)
-		const priorityExclusionNodes = orPriorityExclusionTransitionIds.map((tId) => {
-			const priorTransitionNode = preCompiledGrafcet.transitions.get(tId)?.node;
-			if (!priorTransitionNode)
-				throw new Error(`No pre-compiled node found for prior transition ${tId}`);
-			return ExpressionsBuilder.buildUnaryExpressionNode("NOT", priorTransitionNode);
-		});
+		const priorityExclusionNodes = orPriorityExclusionTransitionIds.map(
+			(tId) => {
+				const priorTransitionNode =
+					preCompiledGrafcet.transitions.get(tId)?.node;
+				if (!priorTransitionNode)
+					throw new Error(
+						`No pre-compiled node found for prior transition ${tId}`,
+					);
+				return ExpressionsBuilder.buildUnaryExpressionNode(
+					"NOT",
+					priorTransitionNode,
+				);
+			},
+		);
 
 		// Full activation condition: T AND memo(pred...) AND NOT(prior...)
 		const conditionParts: ASTNode[] = [
@@ -56,7 +65,10 @@ export default class TransitionCompiler {
 		// Deactivate predecessor steps (write to the live step node, not the memo)
 		const deactivateNodes = predecessorStepsIds.map((id) => {
 			const stepNode = preCompiledGrafcet.steps.get(id)?.node;
-			if (!stepNode) throw new Error(`No pre-compiled node found for predecessor step ${id}`);
+			if (!stepNode)
+				throw new Error(
+					`No pre-compiled node found for predecessor step ${id}`,
+				);
 			return StatementsBuilder.buildAssignStatementNode(
 				stepNode,
 				LiteralsBuilder.buildBooleanNode(false),
@@ -66,7 +78,8 @@ export default class TransitionCompiler {
 		// Activate successor steps
 		const activateNodes = successorStepsIds.map((id) => {
 			const stepNode = preCompiledGrafcet.steps.get(id)?.node;
-			if (!stepNode) throw new Error(`No pre-compiled node found for successor step ${id}`);
+			if (!stepNode)
+				throw new Error(`No pre-compiled node found for successor step ${id}`);
 			return StatementsBuilder.buildAssignStatementNode(
 				stepNode,
 				LiteralsBuilder.buildBooleanNode(true),

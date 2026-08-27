@@ -8,10 +8,17 @@ import {
 	isLetterOrUnderscoreOrDigit,
 	isQuote,
 } from "@/expression-language/alphabet";
-import { getKeywordByString, getKeywordsStringsForDialect } from "@/expression-language/keywords";
+import {
+	getKeywordByString,
+	getKeywordsStringsForDialect,
+} from "@/expression-language/keywords";
 import { Dialect } from "@/expression-language/dialect.enum";
 import LexerHelper from "./lexer.helper";
-import { ARITHMETIC_OPERATOR_TOKENS_TYPES, Token, TokenType } from "../tokens/tokens";
+import {
+	ARITHMETIC_OPERATOR_TOKENS_TYPES,
+	Token,
+	TokenType,
+} from "../tokens/tokens";
 
 export class Lexer {
 	dialect: Dialect;
@@ -110,7 +117,10 @@ export class Lexer {
 					value += ".";
 					position++;
 					if (position >= input.length || !isDigit(input[position])) {
-						throw new InvalidCharacterException(input[position] || "end of input", position);
+						throw new InvalidCharacterException(
+							input[position] || "end of input",
+							position,
+						);
 					}
 					while (position < input.length && isDigit(input[position])) {
 						value += input[position];
@@ -158,7 +168,10 @@ export class Lexer {
 				const start = position;
 				let value = char;
 				position++;
-				while (position < input.length && isLetterOrUnderscoreOrDigit(input[position])) {
+				while (
+					position < input.length &&
+					isLetterOrUnderscoreOrDigit(input[position])
+				) {
 					value += input[position];
 					position++;
 				}

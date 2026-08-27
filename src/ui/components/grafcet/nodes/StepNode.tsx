@@ -1,5 +1,4 @@
 "use client";
-import { range } from "@/lib/array";
 import Step, {
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -7,13 +6,14 @@ import Step, {
 	StepData,
 } from "@/schemas/grafcet/step.schema";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
-import { useTheme } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
+import { SxProps, Theme, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
-import React, { type FC } from "react";
+import React, { type FC, useMemo } from "react";
 
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
@@ -22,24 +22,74 @@ export type StepNodeType = Node<StepData> & { type: "step" };
 
 export type StepNodeProps = NodeProps<StepNodeType>;
 
+const STEP_NODE_SX: SxProps<Theme> = {
+	width: Step.DEFAULT_DIMENSIONS.width + "px",
+	height: Step.DEFAULT_DIMENSIONS.height + "px",
+	borderRadius: "5px",
+	transition: "background .2s ease, borderColor .2s ease",
+	display: "flex",
+	justifyContent: "center",
+	position: "relative",
+};
+
 const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingNumber, setEditingNumber, editing, setEditing, saveNumber, error] = useWithTextNodeValue(
-		id,
-		"step",
-		data,
-		"number",
-		true,
-	);
+	const [
+		editingNumber,
+		setEditingNumber,
+		editing,
+		setEditing,
+		saveNumber,
+		error,
+	] = useWithTextNodeValue(id, "step", data, "number", true);
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
-	const stepVariableId = getStepVariableId(grafcetId, data.number as number);
-	const activeInSimulation = useProjectStore(
-		(state) => state.simulationVariablesStates[stepVariableId]?.value === true,
+	const pageVisible = usePageVisible();
+	const stepVariableId = useMemo(
+		() => getStepVariableId(grafcetId, data.number as number),
+		[grafcetId, data.number],
 	);
-	const forcedValue = useProjectStore((state) => state.forcedVariables[stepVariableId]);
+	const activeInSimulation = useProjectStore(
+		(state) =>
+			pageVisible &&
+			state.simulationVariablesStates[stepVariableId]?.value === true,
+	);
+	const forcedValue = useProjectStore((state) =>
+		pageVisible ? state.forcedVariables[stepVariableId] : undefined,
+	);
 	const isForced = forcedValue !== undefined;
+
+	const nodeSx = useMemo<SxProps<Theme>>(
+		() => ({
+			...STEP_NODE_SX,
+			borderWidth: data.initial ? "4px" : "1px",
+			borderStyle: data.initial ? "double" : "solid",
+			borderColor: isForced ? "warning.main" : borderColor,
+			backgroundColor: activeInSimulation ? th.palette.primary.main : "white",
+			color: activeInSimulation ? "white" : "black",
+			"&:hover": {
+				backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
+			},
+		}),
+		[data.initial, isForced, borderColor, activeInSimulation, th],
+	);
+
+	const inputStyle = useMemo<React.CSSProperties>(
+		() => ({
+			width: "100%",
+			height: "100%",
+			textAlign: "center",
+			border: "none",
+			outline: "none",
+			borderRadius: "5px",
+			backgroundColor: activeInSimulation ? th.palette.primary.main : "white",
+			color: activeInSimulation ? "white" : "black",
+			padding: 0,
+			pointerEvents: !editing ? "none" : "all",
+		}),
+		[activeInSimulation, editing, th],
+	);
 
 	return (
 		<>
@@ -77,23 +127,7 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 				id={id}
 				type="step"
 				error={error}
-				sx={{
-					width: Step.DEFAULT_DIMENSIONS.width + "px",
-					height: Step.DEFAULT_DIMENSIONS.height + "px",
-					borderWidth: data.initial ? "4px" : "1px",
-					borderStyle: data.initial ? "double" : "solid",
-					borderColor: isForced ? "warning.main" : borderColor,
-					borderRadius: "5px",
-					backgroundColor: activeInSimulation ? "primary.main" : "white",
-					color: activeInSimulation ? "white" : "black",
-					transition: "background .2s ease, borderColor .2s ease",
-					"&:hover": {
-						backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
-					},
-					display: "flex",
-					justifyContent: "center",
-					position: "relative",
-				}}
+				sx={nodeSx}
 				onDoubleClick={() => {
 					setEditing(true);
 					inputRef.current?.focus();
@@ -122,24 +156,14 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 							//The save is done only on blur to avoid multiple saves when pressing enter
 							inputRef.current?.blur();
 						} else {
-							if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key)))
-								e.preventDefault();
+							if (e.key.length === 1 && !/^\d$/.test(e.key)) e.preventDefault();
 						}
 					}}
 					onBlur={() => {
 						setEditing(false);
 						saveNumber();
 					}}
-					style={{
-						width: "100%",
-						height: "100%",
-						textAlign: "center",
-						border: "none",
-						outline: "none",
-						borderRadius: "5px",
-						padding: 0,
-						pointerEvents: !editing ? "none" : "all",
-					}}
+					style={inputStyle}
 				/>
 			</GrafcetNode>
 		</>

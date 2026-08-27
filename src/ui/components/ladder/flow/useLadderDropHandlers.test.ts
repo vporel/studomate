@@ -10,12 +10,20 @@ import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.comma
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
-import { createContactElement, createCoilElement } from "@/schemas/ladder/element.schema";
+import {
+	createContactElement,
+	createCoilElement,
+} from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "../context/LadderContext";
 import { useLadderToolbarDnD } from "../toolbar/LadderToolbarDnDContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useLadderDropHandlers from "./useLadderDropHandlers";
-import { colToX, GRID_CELL_HEIGHT, GRID_CELL_WIDTH, rowToY } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	colToX,
+	GRID_CELL_HEIGHT,
+	GRID_CELL_WIDTH,
+	rowToY,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { LADDER_PROGRAM_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-program-drag";
 
 jest.mock("../context/LadderContext", () => ({
@@ -44,9 +52,14 @@ function fakeDragEvent(clientX: number, clientY: number) {
 }
 
 /** Dépose d'un programme glissé depuis le menu de l'explorateur (voir `LADDER_PROGRAM_DRAG_MIME_TYPE`). */
-function fakeProgramDragEvent(clientX: number, clientY: number, programId: string) {
+function fakeProgramDragEvent(
+	clientX: number,
+	clientY: number,
+	programId: string,
+) {
 	const event = fakeDragEvent(clientX, clientY);
-	event.dataTransfer.getData = (type: string) => (type === LADDER_PROGRAM_DRAG_MIME_TYPE ? programId : "");
+	event.dataTransfer.getData = (type: string) =>
+		type === LADDER_PROGRAM_DRAG_MIME_TYPE ? programId : "";
 	event.dataTransfer.types = [LADDER_PROGRAM_DRAG_MIME_TYPE];
 	return event;
 }
@@ -61,15 +74,24 @@ describe("useLadderDropHandlers", () => {
 
 	afterEach(() => jest.clearAllMocks());
 
-	function setup(section: Section, leafPositions: { id: string; row: number; col: number }[], draggedElement: unknown) {
-		(useLadderStore as jest.Mock).mockImplementation(selectorImplementation({ commandsStackManager }));
+	function setup(
+		section: Section,
+		leafPositions: { id: string; row: number; col: number }[],
+		draggedElement: unknown,
+	) {
+		(useLadderStore as jest.Mock).mockImplementation(
+			selectorImplementation({ commandsStackManager }),
+		);
 		(useLadderToolbarDnD as jest.Mock).mockReturnValue({ draggedElement });
 		(useReactFlow as jest.Mock).mockReturnValue({ screenToFlowPosition });
 		return renderHook(() => useLadderDropHandlers(section, leafPositions));
 	}
 
 	it("marque le dragover comme une copie tant qu'un élément est en cours de glisser, et prévient le comportement par défaut", () => {
-		const { result } = setup(new Section("s1", "S"), [], { type: "contact", mode: "NO" });
+		const { result } = setup(new Section("s1", "S"), [], {
+			type: "contact",
+			mode: "NO",
+		});
 		const [handleDragOver] = result.current;
 		const event = fakeDragEvent(0, 0);
 
@@ -104,7 +126,9 @@ describe("useLadderDropHandlers", () => {
 		// <ReactFlow> du composant (arrondi au plus proche, pas au sol) — il faut l'en exempter
 		// explicitement pour ce calcul, sinon un dépôt en fin de cellule bascule sur la cellule
 		// diagonale suivante avant même notre propre Math.floor.
-		expect(screenToFlowPosition).toHaveBeenCalledWith(expect.anything(), { snapToGrid: false });
+		expect(screenToFlowPosition).toHaveBeenCalledWith(expect.anything(), {
+			snapToGrid: false,
+		});
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -123,7 +147,10 @@ describe("useLadderDropHandlers", () => {
 		existing.id = "existing";
 		section.elements = [existing];
 		const leafPositions = [{ id: "existing", row: 0, col: 0 }];
-		const { result } = setup(section, leafPositions, { type: "coil", mode: "normal" });
+		const { result } = setup(section, leafPositions, {
+			type: "coil",
+			mode: "normal",
+		});
 		const [, handleDrop] = result.current;
 
 		const x = colToX(2);
@@ -146,7 +173,10 @@ describe("useLadderDropHandlers", () => {
 	it("matérialise et connecte une borne d'alimentation si le dépôt est en colonne 0 sans rien avant", () => {
 		const section = new Section("s1", "S");
 		const leafPositions = [{ id: "other-row", row: 5, col: 0 }];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(0), rowToY(0))));
@@ -158,7 +188,10 @@ describe("useLadderDropHandlers", () => {
 		expect(addCommand).toBeInstanceOf(ElementsAddCommand);
 		expect(addCommand.payload.elements).toHaveLength(2);
 		const [railTerminal, newElement] = addCommand.payload.elements;
-		expect(railTerminal).toMatchObject({ type: "railTerminal", position: { row: 0 } });
+		expect(railTerminal).toMatchObject({
+			type: "railTerminal",
+			position: { row: 0 },
+		});
 		expect(connectCommand).toBeInstanceOf(ConnectionsAddCommand);
 		expect(connectCommand.payload.connections[0]).toMatchObject({
 			source: { id: railTerminal.id },
@@ -171,13 +204,20 @@ describe("useLadderDropHandlers", () => {
 		const left = createContactElement("A", "NO", 0, 0);
 		const right = createCoilElement("Q1", "normal", 0, 3);
 		section.elements = [left, right];
-		const existingConnection = new Connection("c1", { id: left.id, type: left.type, handle: "source" }, { id: right.id, type: right.type, handle: "target" });
+		const existingConnection = new Connection(
+			"c1",
+			{ id: left.id, type: left.type, handle: "source" },
+			{ id: right.id, type: right.type, handle: "target" },
+		);
 		section.connections = [existingConnection];
 		const leafPositions = [
 			{ id: left.id, row: 0, col: 0 },
 			{ id: right.id, row: 0, col: 3 },
 		];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NF" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NF",
+		});
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
@@ -205,13 +245,20 @@ describe("useLadderDropHandlers", () => {
 		const source = createContactElement("A", "NO", 0, 0);
 		const target = createCoilElement("Q1", "normal", 3, 2);
 		section.elements = [source, target];
-		const connection = new Connection("c1", { id: source.id, type: source.type, handle: "source" }, { id: target.id, type: target.type, handle: "target" });
+		const connection = new Connection(
+			"c1",
+			{ id: source.id, type: source.type, handle: "source" },
+			{ id: target.id, type: target.type, handle: "target" },
+		);
 		section.connections = [connection];
 		const leafPositions = [
 			{ id: source.id, row: 0, col: 0 },
 			{ id: target.id, row: 3, col: 2 },
 		];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		// Cellule (1,1) : le segment vertical de la connexion (sortie de la colonne 0) longe son
@@ -224,10 +271,15 @@ describe("useLadderDropHandlers", () => {
 		const [addCommand, connectCommand] = commands;
 		expect(connectCommand).toBeInstanceOf(ConnectionsAddCommand);
 		expect(connectCommand.payload.connections).toMatchObject([
-			{ source: { id: source.id }, target: { id: addCommand.payload.elements[0].id } },
+			{
+				source: { id: source.id },
+				target: { id: addCommand.payload.elements[0].id },
+			},
 		]);
 		// Aucune suppression : la connexion existante reste intacte, ce n'est pas un split.
-		expect(commands.find((c: any) => c instanceof ConnectionsRemoveCommand)).toBeUndefined();
+		expect(
+			commands.find((c: any) => c instanceof ConnectionsRemoveCommand),
+		).toBeUndefined();
 	});
 
 	it("branchement parallèle vers la cible quand un segment vertical longe la cellule par la droite", () => {
@@ -235,12 +287,21 @@ describe("useLadderDropHandlers", () => {
 		const source = createContactElement("A", "NO", 2, 1);
 		const target = createContactElement("B", "NO", 0, 4);
 		section.elements = [source, target];
-		section.connections = [new Connection("c1", { id: source.id, type: source.type, handle: "source" }, { id: target.id, type: target.type, handle: "target" })];
+		section.connections = [
+			new Connection(
+				"c1",
+				{ id: source.id, type: source.type, handle: "source" },
+				{ id: target.id, type: target.type, handle: "target" },
+			),
+		];
 		const leafPositions = [
 			{ id: source.id, row: 2, col: 1 },
 			{ id: target.id, row: 0, col: 4 },
 		];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		// Cellule (1,1) : le segment vertical (sortie de la colonne 1) longe son bord droit.
@@ -251,7 +312,10 @@ describe("useLadderDropHandlers", () => {
 		const [addCommand, connectCommand] = commands;
 		expect(connectCommand).toBeInstanceOf(ConnectionsAddCommand);
 		expect(connectCommand.payload.connections).toMatchObject([
-			{ source: { id: addCommand.payload.elements[0].id }, target: { id: target.id } },
+			{
+				source: { id: addCommand.payload.elements[0].id },
+				target: { id: target.id },
+			},
 		]);
 	});
 
@@ -260,12 +324,21 @@ describe("useLadderDropHandlers", () => {
 		const source = createContactElement("A", "NO", 2, 1);
 		const target = createContactElement("B", "NO", 0, 4);
 		section.elements = [source, target];
-		section.connections = [new Connection("c1", { id: source.id, type: source.type, handle: "source" }, { id: target.id, type: target.type, handle: "target" })];
+		section.connections = [
+			new Connection(
+				"c1",
+				{ id: source.id, type: source.type, handle: "source" },
+				{ id: target.id, type: target.type, handle: "target" },
+			),
+		];
 		const leafPositions = [
 			{ id: source.id, row: 2, col: 1 },
 			{ id: target.id, row: 0, col: 4 },
 		];
-		const { result } = setup(section, leafPositions, { type: "coil", mode: "normal" });
+		const { result } = setup(section, leafPositions, {
+			type: "coil",
+			mode: "normal",
+		});
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
@@ -283,8 +356,16 @@ describe("useLadderDropHandlers", () => {
 		const rightSource = createContactElement("B", "NO", 2, 1);
 		const rightTarget = createContactElement("C", "NO", 0, 4);
 		section.elements = [leftSource, leftTarget, rightSource, rightTarget];
-		const leftConnection = new Connection("c-left", { id: leftSource.id, type: leftSource.type, handle: "source" }, { id: leftTarget.id, type: leftTarget.type, handle: "target" });
-		const rightConnection = new Connection("c-right", { id: rightSource.id, type: rightSource.type, handle: "source" }, { id: rightTarget.id, type: rightTarget.type, handle: "target" });
+		const leftConnection = new Connection(
+			"c-left",
+			{ id: leftSource.id, type: leftSource.type, handle: "source" },
+			{ id: leftTarget.id, type: leftTarget.type, handle: "target" },
+		);
+		const rightConnection = new Connection(
+			"c-right",
+			{ id: rightSource.id, type: rightSource.type, handle: "source" },
+			{ id: rightTarget.id, type: rightTarget.type, handle: "target" },
+		);
 		section.connections = [leftConnection, rightConnection];
 		const leafPositions = [
 			{ id: leftSource.id, row: 0, col: 0 },
@@ -292,7 +373,10 @@ describe("useLadderDropHandlers", () => {
 			{ id: rightSource.id, row: 2, col: 1 },
 			{ id: rightTarget.id, row: 0, col: 4 },
 		];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
@@ -305,7 +389,9 @@ describe("useLadderDropHandlers", () => {
 			{ source: { id: leftSource.id }, target: { id: newElementId } },
 			{ source: { id: newElementId }, target: { id: rightTarget.id } },
 		]);
-		expect(commands.find((c: any) => c instanceof ConnectionsRemoveCommand)).toBeUndefined();
+		expect(
+			commands.find((c: any) => c instanceof ConnectionsRemoveCommand),
+		).toBeUndefined();
 	});
 
 	it("insère l'élément quand un segment horizontal inter-lignes traverse la cellule (pas seulement sur la même ligne)", () => {
@@ -313,13 +399,20 @@ describe("useLadderDropHandlers", () => {
 		const source = createContactElement("A", "NO", 0, 0);
 		const target = createCoilElement("Q1", "normal", 2, 4);
 		section.elements = [source, target];
-		const existingConnection = new Connection("c1", { id: source.id, type: source.type, handle: "source" }, { id: target.id, type: target.type, handle: "target" });
+		const existingConnection = new Connection(
+			"c1",
+			{ id: source.id, type: source.type, handle: "source" },
+			{ id: target.id, type: target.type, handle: "target" },
+		);
 		section.connections = [existingConnection];
 		const leafPositions = [
 			{ id: source.id, row: 0, col: 0 },
 			{ id: target.id, row: 2, col: 4 },
 		];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		// Coude à la colonne source (0), donc le segment horizontal sur la ligne cible (2) va de
@@ -350,7 +443,10 @@ describe("useLadderDropHandlers", () => {
 	it("ne connecte rien si aucun élément ne précède sur la même ligne hors colonne 0", () => {
 		const section = new Section("s1", "S");
 		const leafPositions = [{ id: "other-row", row: 5, col: 0 }];
-		const { result } = setup(section, leafPositions, { type: "contact", mode: "NO" });
+		const { result } = setup(section, leafPositions, {
+			type: "contact",
+			mode: "NO",
+		});
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(2), rowToY(0))));

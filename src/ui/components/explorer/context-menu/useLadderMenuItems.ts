@@ -6,10 +6,14 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
-export default function useLadderMenuItems(): (ladderId: string) => ContextMenuItemType[][] {
+export default function useLadderMenuItems(): (
+	ladderId: string,
+) => ContextMenuItemType[][] {
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
-	const designing = useProjectStore((state) => state.mode === ProjectMode.DESIGN);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
 
 	return useCallback(
 		(ladderId: string) => {
@@ -33,7 +37,8 @@ export default function useLadderMenuItems(): (ladderId: string) => ContextMenuI
 					{
 						label: "Renommer",
 						disabled: !designing,
-						onClick: () => explorerContextMenuEventsOut.emit("ladder-rename", { ladderId }),
+						onClick: () =>
+							explorerContextMenuEventsOut.emit("ladder-rename", { ladderId }),
 						shortcut: "F2",
 					},
 					{

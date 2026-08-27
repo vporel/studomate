@@ -3,15 +3,22 @@ import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
-import { Box, useTheme } from "@mui/material";
+import { Box, SxProps, Theme, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import GrafcetConnectionEdgePoint from "./GrafcetConnectionEdgePoint";
 import useAddPointHandler from "./useAddPointHandler";
 import usePointPointerEventsHandlers from "./usePointPointerEventsHandlers";
 
 export type GrafcetConnectionEdgeData = { points: [number, number][] };
 
-export type GrafcetConnectionEdgeType = Edge<GrafcetConnectionEdgeData> & { type: "grafcet-connection" };
+export type GrafcetConnectionEdgeType = Edge<GrafcetConnectionEdgeData> & {
+	type: "grafcet-connection";
+};
+
+const samePoints = (a: [number, number][], b: [number, number][]) =>
+	a.length === b.length &&
+	a.every((p, i) => p[0] === b[i][0] && p[1] === b[i][1]);
 
 const GrafcetConnectionEdge = ({
 	id,
@@ -24,53 +31,64 @@ const GrafcetConnectionEdge = ({
 	selected,
 }: EdgeProps<GrafcetConnectionEdgeType>) => {
 	const th = useTheme();
-	const [points, setPoints] = useState<[number, number][]>(
-		data?.points ?? getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
+	// `data.points` ne porte que les coudes intermédiaires (coordonnées flow). Les extrémités
+	// sont toujours celles, live, des handles (`sourceX/Y`, `targetX/Y`) — jamais stockées.
+	// Même modèle que `LadderConnectionEdge`. L'état local ne sert qu'au geste de déplacement
+	// d'un coude, committé dans le domaine au relâchement.
+	const [points, setPoints] = useState<[number, number][]>(data?.points ?? []);
+	const vertices = useMemo(
+		() =>
+			points.length > 0
+				? ([[sourceX, sourceY], ...points, [targetX, targetY]] as [
+						number,
+						number,
+					][])
+				: getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
+		[points, sourceX, sourceY, targetX, targetY],
 	);
-	const pathString = getStraightPathFromPoints(
-		points.length > 0 ? points : getConnectionLinePoints(sourceX, sourceY, targetX, targetY),
+	const pathString = useMemo(
+		() => getStraightPathFromPoints(vertices),
+		[vertices],
 	);
-	const color = !selected ? "black" : th.palette.primary.main;
-	const { pointsForAdding, setPointsForAdding, addPoint } = useAddPointHandler(points, id);
-	const { handlePointPointerDown, handlePointPointerMove, handlePointPointerUp } =
-		usePointPointerEventsHandlers(points, setPoints, setPointsForAdding, id);
+	const color = useMemo(
+		() => (!selected ? "black" : th.palette.primary.main),
+		[selected, th],
+	);
+	const { pointsForAdding, addPoint } = useAddPointHandler(vertices, id);
+	const {
+		handlePointPointerDown,
+		handlePointPointerMove,
+		handlePointPointerUp,
+	} = usePointPointerEventsHandlers(points, setPoints, id);
 	const projectMode = useProjectStore((state) => state.mode);
-
-	//Update the points when the source position changes
-	useEffect(() => {
-		setPoints((prevPoints) => {
-			const newPoints = [...prevPoints];
-			newPoints.splice(0, 1, [sourceX, sourceY]);
-			newPoints.splice(newPoints.length - 1, newPoints.length, [targetX, targetY]);
-			return newPoints;
-		});
-	}, [sourceX, sourceY, targetX, targetY]);
 
 	useEffect(() => {
 		if (!data || !data.points) return;
-		setPoints(data.points);
+		setPoints((prev) => (samePoints(prev, data.points) ? prev : data.points));
 	}, [data]);
 
+	const containerSx = useMemo<SxProps<Theme>>(
+		() => ({
+			pointerEvents: "all",
+			".react-flow__edge-path__point": {
+				visibility: "hidden",
+				opacity: 0,
+			},
+			"&:hover":
+				projectMode === ProjectMode.DESIGN
+					? {
+							".react-flow__edge-path__point": {
+								visibility: "visible",
+								opacity: 1,
+							},
+						}
+					: {},
+		}),
+		[projectMode],
+	);
+
 	return (
-		<Box
-			component="g"
-			sx={{
-				pointerEvents: "all",
-				".react-flow__edge-path__point": {
-					visibility: "hidden",
-					opacity: 0,
-				},
-				"&:hover":
-					projectMode === ProjectMode.DESIGN
-						? {
-								".react-flow__edge-path__point": {
-									visibility: "visible",
-									opacity: 1,
-								},
-							}
-						: {},
-			}}
-		>
+		<Box component="g" sx={containerSx}>
 			<path d={pathString} fill="none" className={`react-flow__edge-path `} />
 			{interactionWidth ? (
 				<path
@@ -81,54 +99,29 @@ const GrafcetConnectionEdge = ({
 					className="react-flow__edge-interaction"
 				/>
 			) : null}
-			{points.map(
-				(p, index) =>
-					index != 0 &&
-					index != points.length - 1 && (
-						<g key={index}>
-							<circle
-								className="react-flow__edge-path__point"
-								key={index}
-								cx={p[0]}
-								cy={p[1]}
-								r={3}
-								fill={color}
-								stroke={color}
-								strokeWidth={1.5}
-							/>
-							<circle
-								className="react-flow__edge-path__point"
-								cx={p[0]}
-								cy={p[1]}
-								r={6}
-								fill="transparent"
-								onPointerDown={(e) => handlePointPointerDown(e, index)}
-								onPointerMove={(e) => handlePointPointerMove(e, index)}
-								onPointerUp={(e) => handlePointPointerUp(e, index)}
-							/>
-						</g>
-					),
-			)}
+			{points.map((p, index) => (
+				<GrafcetConnectionEdgePoint
+					key={`move-${index}`}
+					index={index}
+					x={p[0]}
+					y={p[1]}
+					color={color}
+					mode="move"
+					onPointerDown={handlePointPointerDown}
+					onPointerMove={handlePointPointerMove}
+					onPointerUp={handlePointPointerUp}
+				/>
+			))}
 			{pointsForAdding.map((p, index) => (
-				<g key={index}>
-					<circle
-						className="react-flow__edge-path__point"
-						cx={p[0]}
-						cy={p[1]}
-						r={3}
-						fill="#fff"
-						stroke={color}
-						strokeWidth={1.5}
-					/>
-					<circle
-						className="react-flow__edge-path__point"
-						cx={p[0]}
-						cy={p[1]}
-						r={6}
-						fill="transparent"
-						onClick={() => addPoint(index)}
-					/>
-				</g>
+				<GrafcetConnectionEdgePoint
+					key={`add-${index}`}
+					index={index}
+					x={p[0]}
+					y={p[1]}
+					color={color}
+					mode="add"
+					onAdd={addPoint}
+				/>
 			))}
 		</Box>
 	);

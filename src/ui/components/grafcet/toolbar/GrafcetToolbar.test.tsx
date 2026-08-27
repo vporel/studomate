@@ -20,7 +20,11 @@ describe("GrafcetToolbar", () => {
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				nodes: [],
-				viewManager: { getZoom: () => 1, zoomIn: jest.fn(), zoomOut: jest.fn() },
+				viewManager: {
+					getZoom: () => 1,
+					zoomIn: jest.fn(),
+					zoomOut: jest.fn(),
+				},
 			}),
 		);
 
@@ -43,9 +47,13 @@ describe("GrafcetToolbar", () => {
 			"comment",
 		];
 		expectedClasses.forEach((cls) => {
-			expect(document.querySelector(`.grafcet-toolbar__${cls}`)).toBeInTheDocument();
+			expect(
+				document.querySelector(`.grafcet-toolbar__${cls}`),
+			).toBeInTheDocument();
 		});
 		expect(document.querySelector(".app-toolbar__zoom-in")).toBeInTheDocument();
-		expect(document.querySelector(".app-toolbar__zoom-out")).toBeInTheDocument();
+		expect(
+			document.querySelector(".app-toolbar__zoom-out"),
+		).toBeInTheDocument();
 	});
 });

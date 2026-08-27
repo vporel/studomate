@@ -15,13 +15,20 @@ export default class ConnectionUpdateCommand extends AbstractLadderCommand<{
 	}
 
 	execute(ladder: Ladder): [ladder: Ladder, isCommandValid: boolean] {
-		if (!ladder.findConnection(this.payload.connectionId)) return [ladder, false];
-		ladder.updateConnectionData(this.payload.connectionId, this.payload.changes);
+		if (!ladder.findConnection(this.payload.connectionId))
+			return [ladder, false];
+		ladder.updateConnectionData(
+			this.payload.connectionId,
+			this.payload.changes,
+		);
 		return [ladder, true];
 	}
 
 	cancel(ladder: Ladder): Ladder {
-		ladder.updateConnectionData(this.payload.connectionId, this.payload.previousChanges);
+		ladder.updateConnectionData(
+			this.payload.connectionId,
+			this.payload.previousChanges,
+		);
 		return ladder;
 	}
 }

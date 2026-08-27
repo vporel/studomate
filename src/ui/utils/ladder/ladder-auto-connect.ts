@@ -1,8 +1,15 @@
 import Connection from "@/schemas/ladder/connection.schema";
-import { LadderElement, createRailTerminalElement, getElementWidth } from "@/schemas/ladder/element.schema";
+import {
+	LadderElement,
+	createRailTerminalElement,
+	getElementWidth,
+} from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
-import { findCellCrossings, initialConnectionPoints } from "./ladder-connection-path";
+import {
+	findCellCrossings,
+	initialConnectionPoints,
+} from "./ladder-connection-path";
 import { resolveDropTarget } from "./ladder-drop-target";
 import { PositionedLeaf } from "./ladder-flow-builder";
 
@@ -11,7 +18,11 @@ export function computeAutoConnectionsForElements(
 	elementsToPlace: LadderElement[],
 	leafPositions: PositionedLeaf[],
 	isPaste: boolean = false,
-): { elementsToAdd: LadderElement[]; connectionsToAdd: Connection[]; connectionsToRemove: Connection[] } {
+): {
+	elementsToAdd: LadderElement[];
+	connectionsToAdd: Connection[];
+	connectionsToRemove: Connection[];
+} {
 	const newRailsToAdd: LadderElement[] = [];
 	const connectionsToAdd: Connection[] = [];
 	const connectionsToRemove: Connection[] = [];
@@ -34,7 +45,11 @@ export function computeAutoConnectionsForElements(
 			const connectionTo = (sourceElement: LadderElement) =>
 				new Connection(
 					createRandomId(),
-					{ id: sourceElement.id, type: sourceElement.type as any, handle: "source" },
+					{
+						id: sourceElement.id,
+						type: sourceElement.type as any,
+						handle: "source",
+					},
 					{ id: newElement.id, type: newElement.type as any, handle: "target" },
 					{
 						points: initialConnectionPoints(
@@ -48,7 +63,11 @@ export function computeAutoConnectionsForElements(
 				new Connection(
 					createRandomId(),
 					{ id: newElement.id, type: newElement.type as any, handle: "source" },
-					{ id: targetElement.id, type: targetElement.type as any, handle: "target" },
+					{
+						id: targetElement.id,
+						type: targetElement.type as any,
+						handle: "target",
+					},
 					{
 						points: initialConnectionPoints(
 							newElement.position,
@@ -65,7 +84,8 @@ export function computeAutoConnectionsForElements(
 				if (throughTarget) connectionsToAdd.push(connectionFrom(throughTarget));
 				connectionsToRemove.push(crossings.through);
 			} else {
-				const leftSource = crossings.left && section.getElement(crossings.left.source.id);
+				const leftSource =
+					crossings.left && section.getElement(crossings.left.source.id);
 				if (leftSource) connectionsToAdd.push(connectionTo(leftSource));
 
 				const rightTarget =
@@ -81,7 +101,9 @@ export function computeAutoConnectionsForElements(
 				// Connexion automatique au rail d'alimentation
 				let rail =
 					addedRails.get(dropRow) ||
-					section.elements.find((e) => e.type === "railTerminal" && e.position.row === dropRow);
+					section.elements.find(
+						(e) => e.type === "railTerminal" && e.position.row === dropRow,
+					);
 				if (!rail) {
 					rail = createRailTerminalElement(dropRow);
 					addedRails.set(dropRow, rail);
@@ -100,7 +122,9 @@ export function computeAutoConnectionsForElements(
 					leftSource =
 						section.getLeftNeighbor(dropRow, dropCol) ||
 						elementsToPlace.find(
-							(e) => e.position.row === dropRow && e.position.col + getElementWidth(e) === dropCol,
+							(e) =>
+								e.position.row === dropRow &&
+								e.position.col + getElementWidth(e) === dropCol,
 						) ||
 						null;
 				}
@@ -110,8 +134,16 @@ export function computeAutoConnectionsForElements(
 				connectionsToAdd.push(
 					new Connection(
 						createRandomId(),
-						{ id: leftSource.id, type: leftSource.type as any, handle: "source" },
-						{ id: newElement.id, type: newElement.type as any, handle: "target" },
+						{
+							id: leftSource.id,
+							type: leftSource.type as any,
+							handle: "source",
+						},
+						{
+							id: newElement.id,
+							type: newElement.type as any,
+							handle: "target",
+						},
 						{
 							points: initialConnectionPoints(
 								leftSource.position,
@@ -129,16 +161,32 @@ export function computeAutoConnectionsForElements(
 				const rightNeighbor =
 					section.getRightNeighbor(dropRow, dropCol, newElementWidth) ||
 					elementsToPlace.find(
-						(e) => e.position.row === dropRow && e.position.col === dropCol + newElementWidth,
+						(e) =>
+							e.position.row === dropRow &&
+							e.position.col === dropCol + newElementWidth,
 					);
 
 				if (rightNeighbor) {
 					connectionsToAdd.push(
 						new Connection(
 							createRandomId(),
-							{ id: newElement.id, type: newElement.type as any, handle: "source" },
-							{ id: rightNeighbor.id, type: rightNeighbor.type as any, handle: "target" },
-							{ points: initialConnectionPoints(newElement.position, rightNeighbor.position, newElementWidth) },
+							{
+								id: newElement.id,
+								type: newElement.type as any,
+								handle: "source",
+							},
+							{
+								id: rightNeighbor.id,
+								type: rightNeighbor.type as any,
+								handle: "target",
+							},
+							{
+								points: initialConnectionPoints(
+									newElement.position,
+									rightNeighbor.position,
+									newElementWidth,
+								),
+							},
 						),
 					);
 				}
@@ -146,5 +194,9 @@ export function computeAutoConnectionsForElements(
 		}
 	}
 
-	return { elementsToAdd: [...newRailsToAdd, ...elementsToPlace], connectionsToAdd, connectionsToRemove };
+	return {
+		elementsToAdd: [...newRailsToAdd, ...elementsToPlace],
+		connectionsToAdd,
+		connectionsToRemove,
+	};
 }

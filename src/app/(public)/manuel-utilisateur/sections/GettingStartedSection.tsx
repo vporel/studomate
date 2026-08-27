@@ -37,7 +37,9 @@ export default function GettingStartedSection() {
 			<Typography variant="h4" mb={2}>
 				{`Interface principale`}
 			</Typography>
-			<Typography mb={1}>{`L'interface est divisée en plusieurs zones :`}</Typography>
+			<Typography
+				mb={1}
+			>{`L'interface est divisée en plusieurs zones :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Barre de menus (haut) : Fichier, Projet, Édition, Vue, Aide`}</li>
 				<li>{`Barre d'outils (haut) : Accès rapide aux actions courantes et outils de création Grafcet ou Ladder`}</li>

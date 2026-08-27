@@ -6,16 +6,24 @@
 /**
  * @description Invert a record, the keys become values and the values become keys
  */
-export function invertRecord<K extends string, V extends string>(record: Record<K, V>): Record<V, K> {
-	return Object.fromEntries(Object.entries(record).map(([k, v]) => [v, k])) as Record<V, K>;
+export function invertRecord<K extends string, V extends string>(
+	record: Record<K, V>,
+): Record<V, K> {
+	return Object.fromEntries(
+		Object.entries(record).map(([k, v]) => [v, k]),
+	) as Record<V, K>;
 }
 
 /**
  * @description Extract an object from another object using a list of keys
  */
-export function extractFields<T = object>(keys: string[], sourceObject: any | undefined | null): T {
+export function extractFields<T = object>(
+	keys: string[],
+	sourceObject: any | undefined | null,
+): T {
 	const extractedObject: any = {};
-	for (const key of keys) extractedObject[key] = sourceObject ? sourceObject[key] : "";
+	for (const key of keys)
+		extractedObject[key] = sourceObject ? sourceObject[key] : "";
 	return extractedObject as T;
 }
 
@@ -29,18 +37,26 @@ export function extractFields<T = object>(keys: string[], sourceObject: any | un
  */
 export function deepObjectsComparison(obj1: any, obj2: any): boolean {
 	if (obj1 === obj2) return true;
-	if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 === null || obj2 === null) {
+	if (
+		typeof obj1 !== "object" ||
+		typeof obj2 !== "object" ||
+		obj1 === null ||
+		obj2 === null
+	) {
 		return Number.isNaN(obj1) && Number.isNaN(obj2);
 	}
 	if (Array.isArray(obj1) !== Array.isArray(obj2)) return false;
 	if (Array.isArray(obj1)) {
 		if (obj1.length !== obj2.length) return false;
-		return obj1.every((value, index) => deepObjectsComparison(value, obj2[index]));
+		return obj1.every((value, index) =>
+			deepObjectsComparison(value, obj2[index]),
+		);
 	}
 	const keys1 = Object.keys(obj1);
 	const keys2 = Object.keys(obj2);
 	if (keys1.length !== keys2.length) return false;
 	return keys1.every(
-		(key) => Object.hasOwn(obj2, key) && deepObjectsComparison(obj1[key], obj2[key]),
+		(key) =>
+			Object.hasOwn(obj2, key) && deepObjectsComparison(obj1[key], obj2[key]),
 	);
 }

@@ -6,7 +6,9 @@ import LiteralsBuilder from "../builders/literals.builder";
 import StatementsBuilder from "../builders/statements.builder";
 import { IdentifierNode } from "../nodes/identifiers";
 import { NumberNode } from "../nodes/literals";
-import ReplacerVisitor, { ReplacerVisitorReplacement } from "./replacer.visitor";
+import ReplacerVisitor, {
+	ReplacerVisitorReplacement,
+} from "./replacer.visitor";
 
 describe("ReplacerVisitor", () => {
 	describe("replacing identifier nodes", () => {
@@ -16,7 +18,8 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "x",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "x",
 					replacement,
 				},
 			];
@@ -31,11 +34,16 @@ describe("ReplacerVisitor", () => {
 			const oldId = IdentifiersBuilder.buildIdentifierNode("old", 0);
 			const newId = IdentifiersBuilder.buildIdentifierNode("new", 0);
 			const number = LiteralsBuilder.buildNumberNode(5, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", oldId, number);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				oldId,
+				number,
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "old",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "old",
 					replacement: newId,
 				},
 			];
@@ -53,15 +61,21 @@ describe("ReplacerVisitor", () => {
 			const id2 = IdentifiersBuilder.buildIdentifierNode("b", 5);
 			const newId1 = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const newId2 = IdentifiersBuilder.buildIdentifierNode("y", 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "a",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "a",
 					replacement: newId1,
 				},
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "b",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "b",
 					replacement: newId2,
 				},
 			];
@@ -79,7 +93,8 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "z",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "z",
 					replacement,
 				},
 			];
@@ -98,14 +113,15 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 42,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 42,
 					replacement: newNum,
 				},
 			];
-			
+
 			const visitor = new ReplacerVisitor(replacements);
 			const result = visitor.visit(oldNum);
-			
+
 			expect(result).toBe(newNum);
 		});
 
@@ -113,18 +129,23 @@ describe("ReplacerVisitor", () => {
 			const num1 = LiteralsBuilder.buildNumberNode(5, 0);
 			const num2 = LiteralsBuilder.buildNumberNode(10, 5);
 			const newNum = LiteralsBuilder.buildNumberNode(20, 0);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
-			
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
+
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 10,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 10,
 					replacement: newNum,
 				},
 			];
-			
+
 			const visitor = new ReplacerVisitor(replacements);
 			const result = visitor.visit(expr);
-			
+
 			expect((result as any).left).toBe(num1);
 			expect((result as any).right).toBe(newNum);
 		});
@@ -134,22 +155,28 @@ describe("ReplacerVisitor", () => {
 			const num2 = LiteralsBuilder.buildNumberNode(2, 5);
 			const newNum1 = LiteralsBuilder.buildNumberNode(10, 0);
 			const newNum2 = LiteralsBuilder.buildNumberNode(20, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("*", num1, num2);
-			
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				num1,
+				num2,
+			);
+
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 1,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 1,
 					replacement: newNum1,
 				},
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 2,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 2,
 					replacement: newNum2,
 				},
 			];
-			
+
 			const visitor = new ReplacerVisitor(replacements);
 			const result = visitor.visit(expr);
-			
+
 			expect((result as any).left).toBe(newNum1);
 			expect((result as any).right).toBe(newNum2);
 		});
@@ -162,12 +189,21 @@ describe("ReplacerVisitor", () => {
 			const id3 = IdentifiersBuilder.buildIdentifierNode("z", 10);
 			const newId = IdentifiersBuilder.buildIdentifierNode("replaced", 0);
 
-			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
-			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("*", innerExpr, id3);
+			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
+			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				innerExpr,
+				id3,
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "y",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "y",
 					replacement: newId,
 				},
 			];
@@ -187,12 +223,21 @@ describe("ReplacerVisitor", () => {
 			const num3 = LiteralsBuilder.buildNumberNode(10, 10);
 			const newNum = LiteralsBuilder.buildNumberNode(99, 0);
 
-			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
-			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("-", innerExpr, num3);
+			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
+			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"-",
+				innerExpr,
+				num3,
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 5,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 5,
 					replacement: newNum,
 				},
 			];
@@ -217,7 +262,8 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "y",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "y",
 					replacement: newRight,
 				},
 			];
@@ -234,12 +280,17 @@ describe("ReplacerVisitor", () => {
 			const num1 = LiteralsBuilder.buildNumberNode(10, 5);
 			const num2 = LiteralsBuilder.buildNumberNode(20, 10);
 			const newNum = LiteralsBuilder.buildNumberNode(30, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", num1, num2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				num1,
+				num2,
+			);
 			const assign = StatementsBuilder.buildAssignStatementNode(left, expr);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 10,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 10,
 					replacement: newNum,
 				},
 			];
@@ -261,11 +312,16 @@ describe("ReplacerVisitor", () => {
 				IdentifiersBuilder.buildIdentifierNode("x", 5),
 				LiteralsBuilder.buildNumberNode(1, 10),
 			);
-			const ifNode = ControlsBuilder.buildIfControlNode(oldCond, [assign], null);
+			const ifNode = ControlsBuilder.buildIfControlNode(
+				oldCond,
+				[assign],
+				null,
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "flag",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "flag",
 					replacement: newCond,
 				},
 			];
@@ -284,9 +340,19 @@ describe("ReplacerVisitor", () => {
 			const num2 = LiteralsBuilder.buildNumberNode(2, 20);
 			const newNum = LiteralsBuilder.buildNumberNode(99, 0);
 
-			const trueAssign = StatementsBuilder.buildAssignStatementNode(trueId, num1);
-			const falseAssign = StatementsBuilder.buildAssignStatementNode(falseId, num2);
-			const ifNode = ControlsBuilder.buildIfControlNode(cond, [trueAssign], [falseAssign]);
+			const trueAssign = StatementsBuilder.buildAssignStatementNode(
+				trueId,
+				num1,
+			);
+			const falseAssign = StatementsBuilder.buildAssignStatementNode(
+				falseId,
+				num2,
+			);
+			const ifNode = ControlsBuilder.buildIfControlNode(
+				cond,
+				[trueAssign],
+				[falseAssign],
+			);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
@@ -325,7 +391,8 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "IDENTIFIER" && (n as IdentifierNode).value === "start",
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "start",
 					replacement: newInput,
 				},
 			];
@@ -356,7 +423,8 @@ describe("ReplacerVisitor", () => {
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 1000,
+					predicate: (n) =>
+						n.type === "NUMBER_LITERAL" && (n as NumberNode).value === 1000,
 					replacement: newPreset,
 				},
 			];
@@ -372,7 +440,11 @@ describe("ReplacerVisitor", () => {
 		it("loses children when expression is replaced", () => {
 			const id1 = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const id2 = IdentifiersBuilder.buildIdentifierNode("y", 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
 			const replacement = LiteralsBuilder.buildNumberNode(42, 0);
 
 			const replacements: ReplacerVisitorReplacement[] = [
@@ -394,13 +466,22 @@ describe("ReplacerVisitor", () => {
 			const id1 = IdentifiersBuilder.buildIdentifierNode("a", 0);
 			const id2 = IdentifiersBuilder.buildIdentifierNode("b", 5);
 			const id3 = IdentifiersBuilder.buildIdentifierNode("c", 10);
-			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
-			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode("*", innerExpr, id3);
+			const innerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
+			const outerExpr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				innerExpr,
+				id3,
+			);
 			const replacement = LiteralsBuilder.buildNumberNode(999, 0);
 
 			const replacements: ReplacerVisitorReplacement[] = [
 				{
-					predicate: (n) => n.type === "ARITHMETIC_EXPRESSION" && (n as any).operator === "*",
+					predicate: (n) =>
+						n.type === "ARITHMETIC_EXPRESSION" && (n as any).operator === "*",
 					replacement,
 				},
 			];
@@ -418,7 +499,11 @@ describe("ReplacerVisitor", () => {
 		it("returns original tree when no replacements provided", () => {
 			const id1 = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const id2 = IdentifiersBuilder.buildIdentifierNode("y", 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id1, id2);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id1,
+				id2,
+			);
 
 			const visitor = new ReplacerVisitor([]);
 			const result = visitor.visit(expr);
@@ -430,7 +515,11 @@ describe("ReplacerVisitor", () => {
 		it("returns original tree when no predicates match", () => {
 			const id = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const num = LiteralsBuilder.buildNumberNode(5, 5);
-			const expr = ExpressionsBuilder.buildArithmeticExpressionNode("+", id, num);
+			const expr = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				id,
+				num,
+			);
 			const replacement = LiteralsBuilder.buildBooleanNode(true, 0);
 
 			const replacements: ReplacerVisitorReplacement[] = [

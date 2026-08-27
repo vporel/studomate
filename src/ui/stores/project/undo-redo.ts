@@ -15,13 +15,21 @@ import { ProjectMode } from "./ProjectMode.enum";
 
 function activeCommandsStackManager(state: ProjectStoreState) {
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveStoreManagers()?.commandsStackManager ?? null;
+		return (
+			state.grafcetsManager.getActiveStoreManagers()?.commandsStackManager ??
+			null
+		);
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveStoreManagers()?.commandsStackManager ?? null;
+		return (
+			state.laddersManager.getActiveStoreManagers()?.commandsStackManager ??
+			null
+		);
 	}
 	if (state.activeScopeType === "hmi") {
-		return state.hmiManager.getActiveStoreManagers()?.commandsStackManager ?? null;
+		return (
+			state.hmiManager.getActiveStoreManagers()?.commandsStackManager ?? null
+		);
 	}
 	return state.commandsStackManager;
 }
@@ -29,10 +37,14 @@ function activeCommandsStackManager(state: ProjectStoreState) {
 export function canUndoActiveScope(state: ProjectStoreState): boolean {
 	if (state.mode !== ProjectMode.DESIGN) return false;
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
+		return (
+			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToUndo ?? false
+		);
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
+		return (
+			state.laddersManager.getActiveStoreValues()?.hasCommandsToUndo ?? false
+		);
 	}
 	if (state.activeScopeType === "hmi") {
 		return state.hmiManager.getActiveStoreValues()?.hasCommandsToUndo ?? false;
@@ -43,10 +55,14 @@ export function canUndoActiveScope(state: ProjectStoreState): boolean {
 export function canRedoActiveScope(state: ProjectStoreState): boolean {
 	if (state.mode !== ProjectMode.DESIGN) return false;
 	if (state.activeScopeType === "grafcet") {
-		return state.grafcetsManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
+		return (
+			state.grafcetsManager.getActiveStoreValues()?.hasCommandsToRedo ?? false
+		);
 	}
 	if (state.activeScopeType === "ladder") {
-		return state.laddersManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;
+		return (
+			state.laddersManager.getActiveStoreValues()?.hasCommandsToRedo ?? false
+		);
 	}
 	if (state.activeScopeType === "hmi") {
 		return state.hmiManager.getActiveStoreValues()?.hasCommandsToRedo ?? false;

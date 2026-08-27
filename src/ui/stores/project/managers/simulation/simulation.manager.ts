@@ -1,11 +1,13 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
-import ProjectAnalyser, { ProjectAnalysisResult } from "@/project-analyser/project.analyser";
-import ProjectCompiler, { ProjectCompilationResult } from "@/project-compiler/project.compiler";
-import { isPreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import ProjectAnalyser, {
+	ProjectAnalysisResult,
+} from "@/project-analyser/project.analyser";
+import ProjectCompiler, {
+	ProjectCompilationResult,
+} from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import PLC from "@/simulator/core/plc/plc";
-import ExpressionsWatcher from "@/simulator/runtime/expressions-watcher";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -24,10 +26,19 @@ export default class SimulationManager {
 	private plc: PLC | null = null;
 
 	/**
-	 * Expressions observées pendant la simulation, en marge du programme : sert par exemple à
-	 * montrer si la réceptivité d'une transition est vraie à cet instant.
+	 * Id de variable de mémoire (portant l'état d'une réceptivité observée) → id de la transition
+	 * correspondante. Construite depuis `CompiledProject.evaluableExpressionVariableIds` au
+	 * démarrage : `publishCycleState` s'en sert pour aiguiller la valeur de ces variables vers
+	 * `evaluableExpressionsValues[transitionId]` et les exclure de `simulationVariablesStates`.
 	 */
-	private expressionsWatcher: ExpressionsWatcher | null = null;
+	private observationVariableToSource: Map<string, string> = new Map();
+
+	/**
+	 * Dernières valeurs publiées dans le store (par id de variable / d'expression observée), pour
+	 * ne republier à chaque cycle que ce qui a changé. `null` tant qu'aucun cycle n'a été publié.
+	 */
+	private lastPublishedValues: Map<string, unknown> | null = null;
+	private lastPublishedExprValues: Map<string, unknown> | null = null;
 
 	private notifier: SimulationNotifier;
 
@@ -44,7 +55,8 @@ export default class SimulationManager {
 	static getPersistedSimulationMode(): SimulationMode {
 		if (typeof window === "undefined") return SimulationMode.CONTINUOUS;
 		const stored = localStorage.getItem(SIMULATION_MODE_STORAGE_KEY);
-		if (stored === SimulationMode.STEP_BY_STEP) return SimulationMode.STEP_BY_STEP;
+		if (stored === SimulationMode.STEP_BY_STEP)
+			return SimulationMode.STEP_BY_STEP;
 		return SimulationMode.CONTINUOUS;
 	}
 
@@ -63,8 +75,12 @@ export default class SimulationManager {
 		const project = this.getStoreState().project;
 		if (!project) return { ok: false, projectAnalysisResult: null };
 		const projectAnalysisResult = ProjectAnalyser.analyse(project);
-		const errors = projectAnalysisResult.issues.filter((i) => i.severity === "error");
-		const warnings = projectAnalysisResult.issues.filter((i) => i.severity === "warning");
+		const errors = projectAnalysisResult.issues.filter(
+			(i) => i.severity === "error",
+		);
+		const warnings = projectAnalysisResult.issues.filter(
+			(i) => i.severity === "warning",
+		);
 
 		this.notifier.analysisCompleted({
 			analysedElements: projectAnalysisResult.totalAnalysedElements,
@@ -79,7 +95,8 @@ export default class SimulationManager {
 			analysisWarnings: AnalysisIssuesMapper.analyserToApp(warnings),
 			ui: {
 				...state.ui,
-				analysisResultVisible: errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
+				analysisResultVisible:
+					errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
 			},
 		}));
 
@@ -113,37 +130,38 @@ export default class SimulationManager {
 				step: "pre-compilation",
 				errorsCount: projectPreCompilationResult.errors.length,
 			});
-			console.error("Errors during project pre-compilation:", projectPreCompilationResult.errors);
+			console.error(
+				"Errors during project pre-compilation:",
+				projectPreCompilationResult.errors,
+			);
 			return;
 		}
 
 		//Compile the project
-		const projectCompilationResult = ProjectCompiler.compile(projectPreCompilationResult.result!);
+		const projectCompilationResult = ProjectCompiler.compile(
+			projectPreCompilationResult.result!,
+		);
 		if (projectCompilationResult.errors.length > 0) {
 			this.notifier.simulationCouldNotStart({
 				step: "compilation",
 				errorsCount: projectCompilationResult.errors.length,
 			});
-			console.error("Errors during project compilation:", projectCompilationResult.errors);
+			console.error(
+				"Errors during project compilation:",
+				projectCompilationResult.errors,
+			);
 			return;
 		}
 		this.notifier.simulationStarting();
 
-		//We register each transition expression to be evaluated during simulation,
-		// with the transition id as expression id
-		//Fonctionnalité propre au GRAFCET : afficher l'état des réceptivités. On ne s'intéresse
-		//donc qu'aux programmes de cette notation, sans supposer qu'il n'y en a pas d'autres.
-		const watchedExpressions = new Map<string, ASTNode>();
-		Object.values(projectPreCompilationResult.result!.programs)
-			.filter(isPreCompiledGrafcet)
-			.forEach((g) =>
-				g.transitions.forEach((transition, transitionId) => {
-					//L'AST pré-compilé est déjà analysé et simplifié
-					watchedExpressions.set(transitionId, transition.node);
-				}),
-			);
-		this.expressionsWatcher = new ExpressionsWatcher(this.getStoreState().plcConfig.scanTimeMs);
-		this.expressionsWatcher.watch(watchedExpressions);
+		//État des réceptivités (surlignage des transitions franchissables) : la routine
+		//d'observation compilée écrit ces valeurs dans des variables de mémoire, on retient
+		//juste l'association variable → transition pour la publication.
+		this.observationVariableToSource = new Map(
+			Object.entries(
+				projectCompilationResult.result!.evaluableExpressionVariableIds,
+			).map(([sourceId, variableId]) => [variableId, sourceId]),
+		);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -204,8 +222,13 @@ export default class SimulationManager {
 		if (!projectCompilationResult.result) {
 			throw new Error("No compiled project result provided");
 		}
-		if (!projectCompilationResult.result.routines || !projectCompilationResult.result.variables) {
-			throw new Error("Compiled project result must include routines and variables");
+		if (
+			!projectCompilationResult.result.routines ||
+			!projectCompilationResult.result.variables
+		) {
+			throw new Error(
+				"Compiled project result must include routines and variables",
+			);
 		}
 		const scanTimeMs = this.getStoreState().plcConfig.scanTimeMs;
 		if (!scanTimeMs || scanTimeMs <= 0) {
@@ -217,20 +240,7 @@ export default class SimulationManager {
 			routinesById: projectCompilationResult.result!.routinesById,
 			variables: projectCompilationResult.result!.variables,
 			onCycleEnd: (plcInstance) => {
-				const variablesSnapshot = plcInstance.getVariablesSnapshot();
-				const variablesState: Record<string, SimulationVariableState> = {};
-				variablesSnapshot.forEach((v) => {
-					variablesState[v.getId()] = {
-						id: v.getId(),
-						mnemonic: v.getName(),
-						value: v.getValue(),
-					};
-				});
-				this.expressionsWatcher?.evaluate(variablesSnapshot);
-				this.setStoreState(() => ({
-					simulationVariablesStates: variablesState,
-					evaluableExpressionsValues: this.expressionsWatcher?.getValuesSnapshot() ?? {},
-				}));
+				this.publishCycleState(plcInstance.getVariablesSnapshot());
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
 			onCycleError: () => {
@@ -239,6 +249,69 @@ export default class SimulationManager {
 			},
 		});
 		return plc;
+	}
+
+	/**
+	 * Publie dans le store uniquement les variables (et réceptivités observées) dont la valeur a
+	 * changé depuis le cycle précédent. En régime établi peu de bits basculent par cycle : les
+	 * abonnés dont la variable n'a pas bougé ne sont pas réveillés, et si rien n'a changé le
+	 * store n'est pas touché du tout.
+	 */
+	private publishCycleState(variablesSnapshot: readonly PLCVariable[]): void {
+		if (!this.lastPublishedValues) this.lastPublishedValues = new Map();
+		if (!this.lastPublishedExprValues) this.lastPublishedExprValues = new Map();
+
+		const changedVariables: Record<string, SimulationVariableState> = {};
+		const changedExprValues: Record<string, unknown> = {};
+		for (const v of variablesSnapshot) {
+			const id = v.getId();
+			const value = v.getValue();
+
+			const sourceId = this.observationVariableToSource.get(id);
+			if (sourceId !== undefined) {
+				//Variable d'observation d'une réceptivité : n'apparaît pas dans les variables de
+				//simulation, sa valeur alimente l'état des expressions évaluables.
+				if (
+					!this.lastPublishedExprValues.has(sourceId) ||
+					!Object.is(this.lastPublishedExprValues.get(sourceId), value)
+				) {
+					changedExprValues[sourceId] = value;
+					this.lastPublishedExprValues.set(sourceId, value);
+				}
+				continue;
+			}
+
+			if (
+				!this.lastPublishedValues.has(id) ||
+				!Object.is(this.lastPublishedValues.get(id), value)
+			) {
+				changedVariables[id] = { id, mnemonic: v.getName(), value };
+				this.lastPublishedValues.set(id, value);
+			}
+		}
+
+		const hasVarChanges = Object.keys(changedVariables).length > 0;
+		const hasExprChanges = Object.keys(changedExprValues).length > 0;
+		if (!hasVarChanges && !hasExprChanges) return;
+
+		this.setStoreState((state) => ({
+			...(hasVarChanges
+				? {
+						simulationVariablesStates: {
+							...state.simulationVariablesStates,
+							...changedVariables,
+						},
+					}
+				: {}),
+			...(hasExprChanges
+				? {
+						evaluableExpressionsValues: {
+							...state.evaluableExpressionsValues,
+							...changedExprValues,
+						},
+					}
+				: {}),
+		}));
 	}
 
 	private stopSimulation(): void {
@@ -250,6 +323,8 @@ export default class SimulationManager {
 		}
 
 		//Reset simulation variables states
+		this.lastPublishedValues = null;
+		this.lastPublishedExprValues = null;
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
 			evaluableExpressionsValues: {},
@@ -257,14 +332,15 @@ export default class SimulationManager {
 			forcedVariables: {},
 		}));
 
-		this.expressionsWatcher?.clear();
-		this.expressionsWatcher = null;
+		this.observationVariableToSource = new Map();
 	}
 
 	public setPhysicalInputValue(variableId: string, value: any): void {
 		const mode = this.getStoreState().mode;
 		if (mode !== ProjectMode.SIMULATION) {
-			throw new Error("Cannot set physical input value when not in simulation mode");
+			throw new Error(
+				"Cannot set physical input value when not in simulation mode",
+			);
 		}
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");

@@ -1,5 +1,11 @@
-import { Close as CloseIcon } from "@mui/icons-material";
-import { Box, BoxProps, IconButton, Modal as MuiModal, Typography } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import {
+	Box,
+	BoxProps,
+	IconButton,
+	Modal as MuiModal,
+	Typography,
+} from "@mui/material";
 import { useEffect } from "react";
 
 /**
@@ -43,8 +49,14 @@ export default function CustomModal({
 					top: "50%",
 					left: "50%",
 					transform: "translate(-50%, -50%)",
-					width: width ?? { xs: fullscreenOnMobile ? "100%" : "90%", md: "auto" },
-					height: height ?? { xs: fullscreenOnMobile ? "100%" : "auto", md: "auto" },
+					width: width ?? {
+						xs: fullscreenOnMobile ? "100%" : "90%",
+						md: "auto",
+					},
+					height: height ?? {
+						xs: fullscreenOnMobile ? "100%" : "auto",
+						md: "auto",
+					},
 					...sx,
 				}}
 				{...props}
@@ -53,12 +65,15 @@ export default function CustomModal({
 					<Box
 						display="flex"
 						justifyContent="space-between"
-						alignItems={{ xs: fullscreenOnMobile ? "start" : "center", md: "center" }}
+						alignItems={{
+							xs: fullscreenOnMobile ? "start" : "center",
+							md: "center",
+						}}
 						mb={2}
 					>
 						<Typography variant="h3">{title}</Typography>
 						{closeButton && (
-							<IconButton onClick={onClose}>
+							<IconButton onClick={onClose} aria-label="Fermer">
 								<CloseIcon sx={{ width: 25, height: 25 }} />
 							</IconButton>
 						)}

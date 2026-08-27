@@ -34,14 +34,18 @@ export default function useBarsSelection(branchesOrder: string[]): {
 	}, []);
 	const selectPreviousBranch = useCallback(() => {
 		setPivotSelected(false);
-		const currentIndex = selectedBranchId ? branchesOrder.findIndex((id) => id === selectedBranchId) : -1;
+		const currentIndex = selectedBranchId
+			? branchesOrder.findIndex((id) => id === selectedBranchId)
+			: -1;
 		if (currentIndex > 0) {
 			setSelectedBranchId(branchesOrder[currentIndex - 1]);
 		}
 	}, [branchesOrder, selectedBranchId]);
 	const selectNextBranch = useCallback(() => {
 		setPivotSelected(false);
-		const currentIndex = selectedBranchId ? branchesOrder.findIndex((id) => id === selectedBranchId) : -1;
+		const currentIndex = selectedBranchId
+			? branchesOrder.findIndex((id) => id === selectedBranchId)
+			: -1;
 		if (currentIndex >= 0 && currentIndex < branchesOrder.length - 1) {
 			setSelectedBranchId(branchesOrder[currentIndex + 1]);
 		}

@@ -13,7 +13,11 @@ export class JsPdfExporter implements PdfExporter {
 			import("dom-to-image").then((m) => m.default),
 		]);
 
-		const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+		const doc = new jsPDF({
+			orientation: "portrait",
+			unit: "mm",
+			format: "a4",
+		});
 		let firstPage = true;
 
 		for (const section of sections) {
@@ -43,7 +47,17 @@ export class JsPdfExporter implements PdfExporter {
 
 			if (isLandscape) {
 				// Image pivotée à 90° : on la place en mode portrait mais tournée
-				doc.addImage(dataUrl, "PNG", 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM, undefined, "FAST", 90);
+				doc.addImage(
+					dataUrl,
+					"PNG",
+					0,
+					0,
+					A4_WIDTH_MM,
+					A4_HEIGHT_MM,
+					undefined,
+					"FAST",
+					90,
+				);
 			} else {
 				doc.addImage(dataUrl, "PNG", 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
 			}

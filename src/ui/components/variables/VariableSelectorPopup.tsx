@@ -3,19 +3,30 @@
 import Variable from "@/schemas/variable/variable.schema";
 import { Box, Paper, PaperProps } from "@mui/material";
 import { useTheme } from "@mui/material";
-import { cellValue, COLUMNS, columnsGridTemplate, VariableColumn } from "./variable-selector-utils";
+import {
+	cellValue,
+	COLUMNS,
+	columnsGridTemplate,
+	VariableColumn,
+} from "./variable-selector-utils";
 
 /**
  * Paper personnalisé injecté dans l'Autocomplete : ajoute une ligne d'en-tête de colonnes
  * au-dessus des suggestions. Rendu nul quand la liste est vide pour éviter d'afficher
  * un bloc vide (juste l'en-tête) pendant la saisie d'une constante libre (ex. `T#5s`).
  */
-export function makeVariableSelectorPaper(activeColumns: VariableColumn[], filteredSuggestions: Variable[]) {
+export function makeVariableSelectorPaper(
+	activeColumns: VariableColumn[],
+	filteredSuggestions: Variable[],
+) {
 	if (filteredSuggestions.length === 0) return () => null;
 
 	const gridTemplateColumns = columnsGridTemplate(activeColumns);
 
-	return function VariableSelectorPaper({ children, ...paperProps }: PaperProps) {
+	return function VariableSelectorPaper({
+		children,
+		...paperProps
+	}: PaperProps) {
 		const th = useTheme();
 		return (
 			<Paper {...paperProps}>
@@ -47,7 +58,11 @@ interface VariableSelectorOptionProps {
 }
 
 /** Rendu d'une option individuelle dans la liste de suggestions. */
-export const VariableSelectorOption = ({ optionProps, option, activeColumns }: VariableSelectorOptionProps) => {
+export const VariableSelectorOption = ({
+	optionProps,
+	option,
+	activeColumns,
+}: VariableSelectorOptionProps) => {
 	const gridTemplateColumns = columnsGridTemplate(activeColumns);
 	const { key, style, ...rest } = optionProps;
 	return (

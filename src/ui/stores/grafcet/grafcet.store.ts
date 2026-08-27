@@ -3,13 +3,16 @@ import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Viewport } from "@xyflow/react";
 import { createStore } from "zustand";
-import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import {
+	GrafcetEdgeType,
+	GrafcetNodeType,
+} from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import EdgesFactory from "./factories/edges.factory";
 import NodesFactory from "./factories/nodes.factory";
-import CommandsStackManager from "./managers/commands-stack.manager";
-import CopyCutPasteManager from "./managers/copy-cut-paste.manager";
-import ViewManager from "./managers/view.manager";
-import WorkflowManager from "./managers/workflow.manager";
+import GrafcetCommandsStackManager from "./managers/commands-stack.manager";
+import GrafcetCopyCutPasteManager from "./managers/copy-cut-paste.manager";
+import GrafcetViewManager from "./managers/view.manager";
+import GrafcetWorkflowManager from "./managers/workflow.manager";
 
 export interface GrafcetStoreState {
 	/**
@@ -34,22 +37,24 @@ export interface GrafcetStoreState {
 	 * ce qui réinitialiserait sinon le cadrage à chaque changement d'onglet.
 	 */
 	viewport: Viewport | null;
-	viewManager: ViewManager;
-	copyCutPasteManager: CopyCutPasteManager;
+	viewManager: GrafcetViewManager;
+	copyCutPasteManager: GrafcetCopyCutPasteManager;
 
-	workflowManager: WorkflowManager;
+	workflowManager: GrafcetWorkflowManager;
 
 	//=============== COMMANDS STACK ===============
 	hasCommandsToUndo: boolean;
 	hasCommandsToRedo: boolean;
-	commandsStackManager: CommandsStackManager;
+	commandsStackManager: GrafcetCommandsStackManager;
 }
 
 export type GrafcetStoreSetFunction = (
 	partial:
 		| GrafcetStoreState
 		| Partial<GrafcetStoreState>
-		| ((state: GrafcetStoreState) => GrafcetStoreState | Partial<GrafcetStoreState>),
+		| ((
+				state: GrafcetStoreState,
+		  ) => GrafcetStoreState | Partial<GrafcetStoreState>),
 ) => void;
 
 export type GrafcetStoreGetFunction = () => GrafcetStoreState;
@@ -70,16 +75,20 @@ export const createGrafcetStore = (
 		highlightedNodesIds: [],
 		highlightedEdgesIds: [],
 		viewport: null,
-		viewManager: new ViewManager(set, get),
-		copyCutPasteManager: new CopyCutPasteManager(set, get),
+		viewManager: new GrafcetViewManager(set, get),
+		copyCutPasteManager: new GrafcetCopyCutPasteManager(set, get),
 
-		workflowManager: new WorkflowManager(set, get),
+		workflowManager: new GrafcetWorkflowManager(set, get),
 
 		//=============== COMMANDS STACK ===============
 		//Read from the stack, not hardcoded: the history survives the page being closed,
 		//so reopening a grafcet must show the undo/redo buttons as still available
 		hasCommandsToUndo: commandsStack.commandsToUndo.length > 0,
 		hasCommandsToRedo: commandsStack.commandsToRedo.length > 0,
-		commandsStackManager: new CommandsStackManager(set, get, commandsStack),
+		commandsStackManager: new GrafcetCommandsStackManager(
+			set,
+			get,
+			commandsStack,
+		),
 	}));
 };

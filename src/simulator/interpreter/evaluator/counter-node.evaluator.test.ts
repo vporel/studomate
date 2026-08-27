@@ -77,8 +77,18 @@ describe("CounterNodeEvaluator", () => {
 	beforeEach(() => {
 		const input = new EnvVariable("id_input", "input", "boolean", "IN");
 		const control = new EnvVariable("id_control", "control", "boolean", "IN");
-		const presetValue = new EnvVariable("id_presetValue", "presetValue", "number", "IN");
-		const currentValue = new EnvVariable("id_currentValue", "currentValue", "number", "INOUT");
+		const presetValue = new EnvVariable(
+			"id_presetValue",
+			"presetValue",
+			"number",
+			"IN",
+		);
+		const currentValue = new EnvVariable(
+			"id_currentValue",
+			"currentValue",
+			"number",
+			"INOUT",
+		);
 		const output = new EnvVariable("id_output", "output", "boolean", "OUT");
 
 		input.setValue(false);

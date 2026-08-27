@@ -2,7 +2,10 @@
  * @jest-environment jsdom
  */
 import { fireEvent, render, screen } from "@testing-library/react";
-import { AnalysisIssues, emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import {
+	AnalysisIssues,
+	emptyAnalysisIssues,
+} from "@/bridge/analysis-issues.mapper";
 import { useProjectStore } from "../ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import AnalysisResult from "./AnalysisResult";
@@ -29,7 +32,10 @@ function setup({
 			analysisErrors,
 			analysisWarnings,
 			project: {
-				getGrafcet: (id: string) => (id === "g1" ? { name: "Grafcet 1", getElementById: () => null } : null),
+				getGrafcet: (id: string) =>
+					id === "g1"
+						? { name: "Grafcet 1", getElementById: () => null }
+						: null,
 				getLadder: () => null,
 			},
 			grafcetsManager: { getActiveStoreManagers: () => null },
@@ -51,12 +57,19 @@ describe("AnalysisResult", () => {
 
 	it("affiche 'aucune erreur' et 'aucun avertissement' pour un projet sans issue", () => {
 		setup();
-		expect(screen.getByText("Aucune erreur lors de l'analyse.")).toBeInTheDocument();
+		expect(
+			screen.getByText("Aucune erreur lors de l'analyse."),
+		).toBeInTheDocument();
 		expect(screen.getByText("Aucun avertissement.")).toBeInTheDocument();
 	});
 
 	it("affiche les erreurs globales au projet dans la section Erreurs", () => {
-		setup({ analysisErrors: { ...emptyAnalysisIssues(), project: ["Erreur globale X"] } });
+		setup({
+			analysisErrors: {
+				...emptyAnalysisIssues(),
+				project: ["Erreur globale X"],
+			},
+		});
 		expect(screen.getByText("Erreur globale X")).toBeInTheDocument();
 	});
 
@@ -64,10 +77,14 @@ describe("AnalysisResult", () => {
 		setup({
 			analysisWarnings: {
 				...emptyAnalysisIssues(),
-				grafcets: { g1: { overall: ["Avertissement global au grafcet"], elements: {} } },
+				grafcets: {
+					g1: { overall: ["Avertissement global au grafcet"], elements: {} },
+				},
 			},
 		});
-		expect(screen.getByText("Avertissement global au grafcet")).toBeInTheDocument();
+		expect(
+			screen.getByText("Avertissement global au grafcet"),
+		).toBeInTheDocument();
 		expect(screen.getByText("Grafcet : Grafcet 1")).toBeInTheDocument();
 	});
 
@@ -83,7 +100,11 @@ describe("AnalysisResult", () => {
 
 		fireEvent.click(screen.getByText("Boom"));
 
-		expect(openPage).toHaveBeenCalledWith({ type: "grafcet", id: "g1", title: "Grafcet 1" });
+		expect(openPage).toHaveBeenCalledWith({
+			type: "grafcet",
+			id: "g1",
+			title: "Grafcet 1",
+		});
 	});
 
 	it("ferme le panneau au clic sur le bouton de fermeture", () => {

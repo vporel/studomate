@@ -212,7 +212,9 @@ describe("Parser", () => {
 		});
 
 		it("throws on missing right parenthesis", () => {
-			expect(() => parseExpression("(5 + 3")).toThrow(MissingRightParentheseException);
+			expect(() => parseExpression("(5 + 3")).toThrow(
+				MissingRightParentheseException,
+			);
 		});
 
 		it("affects precedence with parentheses", () => {
@@ -256,7 +258,9 @@ describe("Parser", () => {
 				{ type: TokenType.EOF, value: "", position: 1 },
 			];
 			const parser = new Parser(tokens);
-			expect(() => parser.parse()).toThrow(MissingPrimaryOrLeftParentheseException);
+			expect(() => parser.parse()).toThrow(
+				MissingPrimaryOrLeftParentheseException,
+			);
 		});
 
 		it("throws when parsing doesn't consume all tokens", () => {

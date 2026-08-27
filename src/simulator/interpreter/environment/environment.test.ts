@@ -43,7 +43,9 @@ describe("Environment", () => {
 		});
 
 		it("throws on unknown id", () => {
-			expect(() => env.getVariableTypeById("unknown")).toThrow(UnknownVariableIdException);
+			expect(() => env.getVariableTypeById("unknown")).toThrow(
+				UnknownVariableIdException,
+			);
 		});
 	});
 
@@ -54,7 +56,9 @@ describe("Environment", () => {
 		});
 
 		it("throws on unknown name", () => {
-			expect(() => env.getVariableTypeByName("unknown")).toThrow(UnknownVariableNameException);
+			expect(() => env.getVariableTypeByName("unknown")).toThrow(
+				UnknownVariableNameException,
+			);
 		});
 	});
 
@@ -125,6 +129,37 @@ describe("Environment", () => {
 		it("sans forcedVariableIds, le comportement est identique à avant", () => {
 			env.setVariableValueById("id1", 100);
 			expect(env.getVariableValueById("id1")).toBe(100);
+		});
+
+		it("setForcedVariableIds applique une nouvelle table de forçage", () => {
+			env.setForcedVariableIds(new Set(["id1"]));
+			env.setVariableValueById("id1", 100);
+			expect(env.getVariableValueById("id1")).toBe(42);
+		});
+
+		it("setForcedVariableIds peut relâcher une variable auparavant forcée", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			forcedEnv.setForcedVariableIds(new Set());
+			forcedEnv.setVariableValueById("id1", 100);
+			expect(forcedEnv.getVariableValueById("id1")).toBe(100);
+		});
+	});
+
+	describe("hydrateVariableValue", () => {
+		it("écrit la valeur même sur une variable forcée", () => {
+			const forcedEnv = new Environment([var1, var2], new Set(["id1"]));
+			forcedEnv.hydrateVariableValue("id1", 7);
+			expect(forcedEnv.getVariableValueById("id1")).toBe(7);
+		});
+
+		it("conserve le contrôle de type", () => {
+			expect(() => env.hydrateVariableValue("id1", "nope" as any)).toThrow();
+		});
+
+		it("lève sur un id inconnu", () => {
+			expect(() => env.hydrateVariableValue("unknown", 1)).toThrow(
+				UnknownVariableIdException,
+			);
 		});
 	});
 });

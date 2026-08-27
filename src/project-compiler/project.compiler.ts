@@ -1,4 +1,4 @@
-﻿import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
+import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { Environment } from "@/simulator/interpreter/environment/environment";
@@ -8,6 +8,8 @@ import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet
 import { PreCompiledLadder } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
 import PLCRoutine, { PLCRoutineCall } from "@/simulator/core/plc/plc-routine";
+import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import { ProgramType } from "@/schemas/program/program.schema";
 import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
 import GrafcetCompiler from "./compilers/grafcet/grafcet.compiler";
@@ -27,6 +29,12 @@ export type CompiledProject = {
 	routinesById: Record<string, PLCRoutine>;
 	timers: TimerNode[];
 	counters: CounterNode[];
+	/**
+	 * Id d'élément observable (transition GRAFCET) → id de la variable de mémoire qui porte
+	 * l'état de sa réceptivité. Alimentée par la routine d'observation ajoutée en fin de
+	 * `routines`. L'UI lit ces valeurs pour surligner les transitions franchissables.
+	 */
+	evaluableExpressionVariableIds: Record<string, string>;
 };
 
 export type ProjectCompilationResult = {
@@ -54,7 +62,8 @@ const PROGRAM_COMPILERS: Record<
 		counters: [],
 		calls: [],
 	}),
-	ladder: (preCompiled) => LadderCompiler.compile(preCompiled as PreCompiledLadder),
+	ladder: (preCompiled) =>
+		LadderCompiler.compile(preCompiled as PreCompiledLadder),
 };
 
 export default class ProjectCompiler {
@@ -66,25 +75,37 @@ export default class ProjectCompiler {
 	 * `Ladder.role`) sont scannés directement (`routines`) ; un ladder standard ne s'exécute que
 	 * si un bloc `"user-program"`, quelque part, l'appelle avec son `EN` vrai ce balayage.
 	 */
-	static compile(preCompiledProject: PreCompiledProject): ProjectCompilationResult {
+	static compile(
+		preCompiledProject: PreCompiledProject,
+	): ProjectCompilationResult {
 		try {
 			const timers: TimerNode[] = [];
 			const counters: CounterNode[] = [];
 			const routinesById: Record<string, PLCRoutine> = {};
 			let mainProgramId: string | null = null;
 
-			for (const [programId, preCompiledProgram] of Object.entries(preCompiledProject.programs)) {
+			for (const [programId, preCompiledProgram] of Object.entries(
+				preCompiledProject.programs,
+			)) {
 				if (!preCompiledProgram) continue;
 				const compiler = PROGRAM_COMPILERS[preCompiledProgram.type];
 				if (!compiler) {
-					console.error(`Aucun compilateur pour la notation "${preCompiledProgram.type}"`);
+					console.error(
+						`Aucun compilateur pour la notation "${preCompiledProgram.type}"`,
+					);
 					continue;
 				}
 				const compiled = compiler(preCompiledProgram);
 				timers.push(...compiled.timers);
 				counters.push(...compiled.counters);
-				routinesById[programId] = new PLCRoutine(compiled.nodes, compiled.calls);
-				if (preCompiledProgram.type === "ladder" && (preCompiledProgram as PreCompiledLadder).role === "main") {
+				routinesById[programId] = new PLCRoutine(
+					compiled.nodes,
+					compiled.calls,
+				);
+				if (
+					preCompiledProgram.type === "ladder" &&
+					(preCompiledProgram as PreCompiledLadder).role === "main"
+				) {
 					mainProgramId = programId;
 				}
 			}
@@ -96,17 +117,51 @@ export default class ProjectCompiler {
 				...(mainProgramId ? [routinesById[mainProgramId]] : []),
 			];
 
+			//Routine d'observation : une affectation par transition GRAFCET, `varRéceptivité := <réceptivité>`.
+			//Ajoutée en dernier pour que toutes les routines réelles aient tourné avant (état des
+			//étapes final, sorties de tempo à jour — voir `transitionObservations`).
+			const evaluableExpressionVariableIds: Record<string, string> = {};
+			const observationNodes: ASTNode[] = [];
+			for (const preCompiledProgram of Object.values(
+				preCompiledProject.programs,
+			)) {
+				if (preCompiledProgram?.type !== "grafcet") continue;
+				for (const [sourceId, observation] of (
+					preCompiledProgram as PreCompiledGrafcet
+				).transitionObservations) {
+					evaluableExpressionVariableIds[sourceId] =
+						observation.variable.getId();
+					observationNodes.push(
+						StatementsBuilder.buildAssignStatementNode(
+							IdentifiersBuilder.buildIdentifierNode(
+								observation.variable.getName(),
+							),
+							observation.node,
+						),
+					);
+				}
+			}
+			const observationRoutine = new PLCRoutine(observationNodes);
+			if (observationNodes.length > 0) routines.push(observationRoutine);
+
 			//Perform a semantic check on all the routines (y compris celles appelées, pas seulement
 			//les scannées directement) et leurs conditions d'appel.
 			//No error is caught here, as we assume the pre-compilation step should have caught all possible errors and produced a clean AST.
 			//If an error is thrown here, it means there's a bug in the pre-compiler/compiler.
 			const semanticAnalyser = new SemanticAnalyserVisitor(
-				new Environment(preCompiledProject.variables.map(PlcVariablesMapper.plcToEnv)),
+				new Environment(
+					preCompiledProject.variables.map(PlcVariablesMapper.plcToEnv),
+				),
 			);
 			Object.values(routinesById).forEach((routine) => {
 				routine.getNodes().forEach((node) => semanticAnalyser.visit(node));
-				routine.getCalls().forEach((call) => semanticAnalyser.visit(call.condition));
+				routine
+					.getCalls()
+					.forEach((call) => semanticAnalyser.visit(call.condition));
 			});
+			observationRoutine
+				.getNodes()
+				.forEach((node) => semanticAnalyser.visit(node));
 
 			return {
 				errors: [],
@@ -116,6 +171,7 @@ export default class ProjectCompiler {
 					routinesById,
 					timers,
 					counters,
+					evaluableExpressionVariableIds,
 				},
 			};
 		} catch (e) {

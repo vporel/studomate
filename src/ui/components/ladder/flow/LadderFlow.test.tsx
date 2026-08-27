@@ -44,7 +44,9 @@ describe("LadderFlow", () => {
 
 		render(<LadderFlow />);
 
-		const rendered = screen.getAllByTestId("ladder-section").map((el) => el.textContent);
+		const rendered = screen
+			.getAllByTestId("ladder-section")
+			.map((el) => el.textContent);
 		expect(rendered).toEqual(["0:s1", "1:s2"]);
 	});
 
@@ -62,10 +64,17 @@ describe("LadderFlow", () => {
 	});
 
 	it("dispatche SectionReorderCommand avec le nouvel ordre au dépôt", () => {
-		const sections = [new Section("s1", "A", ""), new Section("s2", "B", ""), new Section("s3", "C", "")];
+		const sections = [
+			new Section("s1", "A", ""),
+			new Section("s2", "B", ""),
+			new Section("s3", "C", ""),
+		];
 		const executeOperation = jest.fn();
 		(useLadderStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ ladder: { sections }, commandsStackManager: { executeOperation } }),
+			selectorImplementation({
+				ladder: { sections },
+				commandsStackManager: { executeOperation },
+			}),
 		);
 		render(<LadderFlow />);
 
@@ -84,7 +93,10 @@ describe("LadderFlow", () => {
 		const sections = [new Section("s1", "A", "")];
 		const executeOperation = jest.fn();
 		(useLadderStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ ladder: { sections }, commandsStackManager: { executeOperation } }),
+			selectorImplementation({
+				ladder: { sections },
+				commandsStackManager: { executeOperation },
+			}),
 		);
 		render(<LadderFlow />);
 

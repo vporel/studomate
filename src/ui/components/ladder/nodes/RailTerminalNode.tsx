@@ -1,14 +1,22 @@
 "use client";
 
-import { GRID_CELL_HEIGHT, RAIL_LANE_WIDTH } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	GRID_CELL_HEIGHT,
+	RAIL_LANE_WIDTH,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 
 export type RailTerminalNodeData = { virtual: boolean };
-export type RailTerminalNodeType = Node<RailTerminalNodeData> & { type: "railTerminal" };
+export type RailTerminalNodeType = Node<RailTerminalNodeData> & {
+	type: "railTerminal";
+};
 
 /** Un simple stub visuel, pas une colonne d'éléments — voir `RAIL_LANE_WIDTH`. */
-export const RAIL_TERMINAL_NODE_DIMENSIONS = { width: RAIL_LANE_WIDTH, height: GRID_CELL_HEIGHT };
+export const RAIL_TERMINAL_NODE_DIMENSIONS = {
+	width: RAIL_LANE_WIDTH,
+	height: GRID_CELL_HEIGHT,
+};
 
 /**
  * Stub horizontal reliant la barre d'alimentation (bordure gauche du flow) au premier élément

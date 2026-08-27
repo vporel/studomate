@@ -36,7 +36,9 @@ export default function useToolDragOverHandlers(): [
 				id: createRandomId(),
 				type,
 				position,
-				data: elementClass.generateDefaultData(type === "step" ? draggedElement.extraData : undefined),
+				data: elementClass.generateDefaultData(
+					type === "step" ? draggedElement.extraData : undefined,
+				),
 				width: elementClass.DEFAULT_DIMENSIONS.width,
 				height: elementClass.DEFAULT_DIMENSIONS.height,
 			} as GrafcetNodeType;

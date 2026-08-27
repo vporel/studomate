@@ -1,7 +1,14 @@
-import { GrafcetEdgeType, GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import {
+	GrafcetEdgeType,
+	GrafcetNodeType,
+} from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { ReactFlowInstance, Viewport } from "@xyflow/react";
 import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
-import { GrafcetStoreGetFunction, GrafcetStoreSetFunction, GrafcetStoreState } from "../grafcet.store";
+import {
+	GrafcetStoreGetFunction,
+	GrafcetStoreSetFunction,
+	GrafcetStoreState,
+} from "../grafcet.store";
 
 export const GRAFCET_FLOW_MIN_ZOOM = 1;
 export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
@@ -11,11 +18,11 @@ export const GRAFCET_FLOW_MAX_ZOOM = 2.5;
  * l'instance React Flow elle-même.
  *
  * Ne modifie jamais `nodes`/`edges` pour refléter un changement du grafcet — c'est le rôle de
- * `WorkflowManager`, qui passe par le `CommandsStackManager` pour que la vue soit recalculée
+ * `GrafcetWorkflowManager`, qui passe par le `GrafcetCommandsStackManager` pour que la vue soit recalculée
  * depuis le domaine (`NodesFactory.syncNodes`, `EdgesFactory.syncEdges`), jamais patchée à la
  * main.
  */
-export default class ViewManager extends AbstractHighlightingViewManager<GrafcetStoreState> {
+export default class GrafcetViewManager extends AbstractHighlightingViewManager<GrafcetStoreState> {
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 
@@ -34,7 +41,10 @@ export default class ViewManager extends AbstractHighlightingViewManager<Grafcet
 
 	private static readonly FOCUS_MAX_FRAMES = 30; //~0.5s à 60fps : large marge au-dessus d'un simple re-rendu React
 
-	constructor(setStoreState: GrafcetStoreSetFunction, getStoreState: GrafcetStoreGetFunction) {
+	constructor(
+		setStoreState: GrafcetStoreSetFunction,
+		getStoreState: GrafcetStoreGetFunction,
+	) {
 		super(setStoreState);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
@@ -62,15 +72,17 @@ export default class ViewManager extends AbstractHighlightingViewManager<Grafcet
 		let frame = 0;
 
 		const tryFocus = () => {
-			const flowElement = this.containerElement?.querySelector<HTMLElement>(".react-flow");
+			const flowElement =
+				this.containerElement?.querySelector<HTMLElement>(".react-flow");
 			if (flowElement && flowElement.offsetParent !== null) {
 				flowElement.focus({ preventScroll: true });
 				this.pendingFocusFrame = null;
 				return;
 			}
 			frame++;
-			if (frame >= ViewManager.FOCUS_MAX_FRAMES) {
-				if (!this.containerElement) console.warn("ViewManager.focus: containerElement not set");
+			if (frame >= GrafcetViewManager.FOCUS_MAX_FRAMES) {
+				if (!this.containerElement)
+					console.warn("GrafcetViewManager.focus: containerElement not set");
 				this.pendingFocusFrame = null;
 				return;
 			}
@@ -86,7 +98,9 @@ export default class ViewManager extends AbstractHighlightingViewManager<Grafcet
 	 */
 	throwErrorIfNotReady(): void {
 		if (this.rfInstance === null) {
-			throw new Error("ViewManager is not ready. ReactFlow instance is not set.");
+			throw new Error(
+				"GrafcetViewManager is not ready. ReactFlow instance is not set.",
+			);
 		}
 	}
 
@@ -111,48 +125,78 @@ export default class ViewManager extends AbstractHighlightingViewManager<Grafcet
 	}
 
 	selectAllEdges(): void {
-		this.setStoreState((state) => ({ edges: state.edges.map((e) => ({ ...e, selected: true })) }));
+		this.setStoreState((state) => ({
+			edges: state.edges.map((e) =>
+				e.selected ? e : { ...e, selected: true },
+			),
+		}));
 	}
 
 	selectAllNodesAndEdges(): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes.map((n) => ({ ...n, selected: true })),
-			edges: state.edges.map((e) => ({ ...e, selected: true })),
+			nodes: state.nodes.map((n) =>
+				n.selected ? n : { ...n, selected: true },
+			),
+			edges: state.edges.map((e) =>
+				e.selected ? e : { ...e, selected: true },
+			),
 		}));
 	}
 
-	selectNodesAndEdges(nodesIds: string[], edgesIds: string[], deselectOtherElements = false): void {
+	selectNodesAndEdges(
+		nodesIds: string[],
+		edgesIds: string[],
+		deselectOtherElements = false,
+	): void {
 		if (deselectOtherElements) {
 			this.setStoreState((state) => ({
-				nodes: state.nodes.map((n) => ({ ...n, selected: nodesIds.includes(n.id) })),
-				edges: state.edges.map((e) => ({ ...e, selected: edgesIds.includes(e.id) })),
+				nodes: state.nodes.map((n) => {
+					const selected = nodesIds.includes(n.id);
+					return n.selected === selected ? n : { ...n, selected };
+				}),
+				edges: state.edges.map((e) => {
+					const selected = edgesIds.includes(e.id);
+					return e.selected === selected ? e : { ...e, selected };
+				}),
 			}));
 			return;
 		} else {
 			this.setStoreState((state) => ({
-				nodes: state.nodes.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: true } : n)),
-				edges: state.edges.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: true } : e)),
+				nodes: state.nodes.map((n) =>
+					nodesIds.includes(n.id) ? { ...n, selected: true } : n,
+				),
+				edges: state.edges.map((e) =>
+					edgesIds.includes(e.id) ? { ...e, selected: true } : e,
+				),
 			}));
 		}
 	}
 
 	deselectNodesAndEdges(nodesIds: string[], edgesIds: string[]): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes.map((n) => (nodesIds.includes(n.id) ? { ...n, selected: false } : n)),
-			edges: state.edges.map((e) => (edgesIds.includes(e.id) ? { ...e, selected: false } : e)),
+			nodes: state.nodes.map((n) =>
+				nodesIds.includes(n.id) ? { ...n, selected: false } : n,
+			),
+			edges: state.edges.map((e) =>
+				edgesIds.includes(e.id) ? { ...e, selected: false } : e,
+			),
 		}));
 	}
 
 	deselectAllNodesAndEdges(): void {
 		this.setStoreState((state) => ({
-			nodes: state.nodes.map((n) => ({ ...n, selected: false })),
-			edges: state.edges.map((e) => ({ ...e, selected: false })),
+			nodes: state.nodes.map((n) =>
+				n.selected ? { ...n, selected: false } : n,
+			),
+			edges: state.edges.map((e) =>
+				e.selected ? { ...e, selected: false } : e,
+			),
 		}));
 	}
 
 	/**
 	 * Annule les surlignages temporaires et le sondage de focus encore en attente. À appeler à
-	 * la fermeture de la page du grafcet, avant d'abandonner ce `ViewManager`.
+	 * la fermeture de la page du grafcet, avant d'abandonner ce `GrafcetViewManager`.
 	 */
 	dispose(): void {
 		this.disposeHighlights();

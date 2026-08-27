@@ -13,9 +13,10 @@ describe("VariablesCommandsFactory", () => {
 		it("crée une commande d'ajout pour chaque variable valide, avec un id généré", () => {
 			const project = new Project("p1", "Projet", "auteur");
 
-			const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(project, [
-				{ mnemonic: "Capteur", zone: "logic-input", type: "BOOL" } as any,
-			]);
+			const { commands, variablesToAdd } =
+				VariablesCommandsFactory.onAddVariable(project, [
+					{ mnemonic: "Capteur", zone: "logic-input", type: "BOOL" } as any,
+				]);
 
 			expect(commands).toHaveLength(1);
 			expect(variablesToAdd).toHaveLength(1);
@@ -26,9 +27,10 @@ describe("VariablesCommandsFactory", () => {
 		it("écarte les mnémoniques vides", () => {
 			const project = new Project("p1", "Projet", "auteur");
 
-			const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(project, [
-				{ mnemonic: "   ", zone: "logic-input", type: "BOOL" } as any,
-			]);
+			const { commands, variablesToAdd } =
+				VariablesCommandsFactory.onAddVariable(project, [
+					{ mnemonic: "   ", zone: "logic-input", type: "BOOL" } as any,
+				]);
 
 			expect(commands).toHaveLength(0);
 			expect(variablesToAdd).toHaveLength(0);
@@ -37,9 +39,10 @@ describe("VariablesCommandsFactory", () => {
 		it("écarte un mnémonique déjà utilisé dans le projet", () => {
 			const project = projectWithVariable();
 
-			const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(project, [
-				{ mnemonic: "Moteur", zone: "logic-output", type: "BOOL" } as any,
-			]);
+			const { commands, variablesToAdd } =
+				VariablesCommandsFactory.onAddVariable(project, [
+					{ mnemonic: "Moteur", zone: "logic-output", type: "BOOL" } as any,
+				]);
 
 			expect(commands).toHaveLength(0);
 			expect(variablesToAdd).toHaveLength(0);
@@ -48,7 +51,9 @@ describe("VariablesCommandsFactory", () => {
 		it("ne crée aucune commande si toutes les variables sont écartées", () => {
 			const project = new Project("p1", "Projet", "auteur");
 
-			const { commands } = VariablesCommandsFactory.onAddVariable(project, [{ mnemonic: "", zone: "memory", type: "BOOL" } as any]);
+			const { commands } = VariablesCommandsFactory.onAddVariable(project, [
+				{ mnemonic: "", zone: "memory", type: "BOOL" } as any,
+			]);
 
 			expect(commands).toHaveLength(0);
 		});
@@ -58,7 +63,11 @@ describe("VariablesCommandsFactory", () => {
 		it("ne fait rien si la variable n'existe pas dans le projet", () => {
 			const project = projectWithVariable();
 
-			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "inexistante", { mnemonic: "X" });
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(
+				project,
+				"inexistante",
+				{ mnemonic: "X" },
+			);
 
 			expect(commands).toHaveLength(0);
 		});
@@ -66,7 +75,11 @@ describe("VariablesCommandsFactory", () => {
 		it("crée une commande de mise à jour quand la donnée change réellement", () => {
 			const project = projectWithVariable();
 
-			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", { mnemonic: "Autre" });
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(
+				project,
+				"v1",
+				{ mnemonic: "Autre" },
+			);
 
 			expect(commands).toHaveLength(1);
 		});
@@ -74,7 +87,11 @@ describe("VariablesCommandsFactory", () => {
 		it("ne crée aucune commande si la donnée est identique à l'existante", () => {
 			const project = projectWithVariable();
 
-			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", { mnemonic: "Moteur" });
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(
+				project,
+				"v1",
+				{ mnemonic: "Moteur" },
+			);
 
 			expect(commands).toHaveLength(0);
 		});
@@ -84,7 +101,8 @@ describe("VariablesCommandsFactory", () => {
 		it("crée une commande de suppression pour les variables trouvées", () => {
 			const project = projectWithVariable();
 
-			const { commands, variablesToRemove } = VariablesCommandsFactory.onRemoveVariable(project, ["v1"]);
+			const { commands, variablesToRemove } =
+				VariablesCommandsFactory.onRemoveVariable(project, ["v1"]);
 
 			expect(commands).toHaveLength(1);
 			expect(variablesToRemove).toHaveLength(1);
@@ -94,7 +112,8 @@ describe("VariablesCommandsFactory", () => {
 		it("ne crée aucune commande si aucun id ne correspond", () => {
 			const project = projectWithVariable();
 
-			const { commands, variablesToRemove } = VariablesCommandsFactory.onRemoveVariable(project, ["inexistante"]);
+			const { commands, variablesToRemove } =
+				VariablesCommandsFactory.onRemoveVariable(project, ["inexistante"]);
 
 			expect(commands).toHaveLength(0);
 			expect(variablesToRemove).toHaveLength(0);

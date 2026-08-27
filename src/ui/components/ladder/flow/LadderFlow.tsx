@@ -1,8 +1,19 @@
 "use client";
 
 import SectionReorderCommand from "@/schemas/ladder/commands/section-reorder.command";
-import { closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	SortableContext,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Box, useTheme } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCallback } from "react";
@@ -15,10 +26,14 @@ import "./_ladder-page.css";
 function LadderFlowContent() {
 	const th = useTheme();
 	const sections = useLadderStore((state) => state.ladder.sections);
-	const commandsStackManager = useLadderStore((state) => state.commandsStackManager);
+	const commandsStackManager = useLadderStore(
+		(state) => state.commandsStackManager,
+	);
 	// Distance minimale avant d'activer le drag : sans elle, un simple clic sur la poignée
 	// (ou un drag démarré ailleurs dans le header) déclencherait un reorder involontaire.
-	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+	);
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
@@ -28,10 +43,17 @@ function LadderFlowContent() {
 			const previousOrderedSectionIds = sections.map((section) => section.id);
 			const oldIndex = previousOrderedSectionIds.indexOf(active.id as string);
 			const newIndex = previousOrderedSectionIds.indexOf(over.id as string);
-			const orderedSectionIds = arrayMove(previousOrderedSectionIds, oldIndex, newIndex);
+			const orderedSectionIds = arrayMove(
+				previousOrderedSectionIds,
+				oldIndex,
+				newIndex,
+			);
 
 			commandsStackManager.executeOperation([
-				new SectionReorderCommand({ orderedSectionIds, previousOrderedSectionIds }),
+				new SectionReorderCommand({
+					orderedSectionIds,
+					previousOrderedSectionIds,
+				}),
 			]);
 		},
 		[sections, commandsStackManager],
@@ -53,8 +75,15 @@ function LadderFlowContent() {
 				alignItems: "stretch",
 			}}
 		>
-			<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-				<SortableContext items={sections.map((section) => section.id)} strategy={verticalListSortingStrategy}>
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragEnd={handleDragEnd}
+			>
+				<SortableContext
+					items={sections.map((section) => section.id)}
+					strategy={verticalListSortingStrategy}
+				>
 					{sections.map((section, index) => (
 						// Chaque section a son propre ReactFlowProvider pour isoler les instances
 						<ReactFlowProvider key={section.id}>

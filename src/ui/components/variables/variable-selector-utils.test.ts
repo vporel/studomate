@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import {
 	cellValue,
@@ -39,19 +40,38 @@ describe("computeStatus", () => {
 	it("retourne excluded-direction quand la direction est exclue", () => {
 		const variables = [boolInput("capteur")];
 
-		expect(computeStatus("capteur", variables, undefined, "IN")).toBe("excluded-direction");
+		expect(computeStatus("capteur", variables, undefined, "IN")).toBe(
+			"excluded-direction",
+		);
 	});
 
-	it("retourne ok pour une constante TIME si acceptsTimeLiteral", () => {
-		expect(computeStatus("T#5s", [], undefined, undefined, true)).toBe("ok");
+	it("retourne ok pour une constante TIME si 'time' est accepté", () => {
+		expect(computeStatus("T#5s", [], undefined, undefined, ["time"])).toBe("ok");
 	});
 
-	it("retourne undeclared pour T# si acceptsTimeLiteral est false", () => {
-		expect(computeStatus("T#5s", [], undefined, undefined, false)).toBe("undeclared");
+	it("retourne undeclared pour T# si 'time' n'est pas accepté", () => {
+		expect(computeStatus("T#5s", [], undefined, undefined, ["number"])).toBe(
+			"undeclared",
+		);
 	});
 
-	it("retourne ok pour un littéral numérique si acceptsNumberLiteral", () => {
-		expect(computeStatus("42", [], undefined, undefined, false, true)).toBe("ok");
+	it("retourne ok pour un littéral numérique si 'number' est accepté", () => {
+		expect(computeStatus("42", [], undefined, undefined, ["number"])).toBe("ok");
+	});
+
+	it("retourne ok pour un littéral booléen selon le dialecte", () => {
+		expect(
+			computeStatus("vrai", [], undefined, undefined, ["boolean"], Dialect.FR),
+		).toBe("ok");
+		expect(
+			computeStatus("vrai", [], undefined, undefined, ["boolean"], Dialect.EN),
+		).toBe("undeclared");
+	});
+
+	it("retourne ok pour un littéral chaîne si 'string' est accepté", () => {
+		expect(
+			computeStatus('"abc"', [], undefined, undefined, ["string"]),
+		).toBe("ok");
 	});
 });
 
@@ -82,9 +102,15 @@ describe("cellValue", () => {
 	});
 
 	it("retourne le libellé de direction", () => {
-		expect(cellValue(new Variable("v1", "a", "logic-input", "BOOL"), "scope")).toBe("Entrée");
-		expect(cellValue(new Variable("v2", "b", "logic-output", "BOOL"), "scope")).toBe("Sortie");
-		expect(cellValue(new Variable("v3", "c", "memory", "BOOL"), "scope")).toBe("Mémoire");
+		expect(
+			cellValue(new Variable("v1", "a", "logic-input", "BOOL"), "scope"),
+		).toBe("Entrée");
+		expect(
+			cellValue(new Variable("v2", "b", "logic-output", "BOOL"), "scope"),
+		).toBe("Sortie");
+		expect(cellValue(new Variable("v3", "c", "memory", "BOOL"), "scope")).toBe(
+			"Mémoire",
+		);
 	});
 });
 

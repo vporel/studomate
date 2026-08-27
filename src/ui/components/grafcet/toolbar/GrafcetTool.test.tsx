@@ -11,11 +11,16 @@ import { GrafcetToolbarDnDProvider } from "./GrafcetToolbarDnDContext";
 jest.mock("@/ui/components/projects/ProjectContext");
 
 function setup({ mode = ProjectMode.DESIGN, disabled = false } = {}) {
-	(useProjectStore as unknown as jest.Mock).mockImplementation(selectorImplementation({ mode }));
+	(useProjectStore as unknown as jest.Mock).mockImplementation(
+		selectorImplementation({ mode }),
+	);
 
 	render(
 		<GrafcetToolbarDnDProvider>
-			<GrafcetTool element={{ type: "step", extraData: {} }} disabled={disabled}>
+			<GrafcetTool
+				element={{ type: "step", extraData: {} }}
+				disabled={disabled}
+			>
 				<span>contenu</span>
 			</GrafcetTool>
 		</GrafcetToolbarDnDProvider>,
@@ -25,30 +30,37 @@ function setup({ mode = ProjectMode.DESIGN, disabled = false } = {}) {
 describe("GrafcetTool", () => {
 	it("porte une classe reflétant le type de l'élément", () => {
 		setup();
-		expect(document.querySelector(".grafcet-toolbar__step")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__step"),
+		).toBeInTheDocument();
 	});
 
 	it("est activé en mode DESIGN", () => {
 		setup({ mode: ProjectMode.DESIGN });
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).not.toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).not.toBeInTheDocument();
 	});
 
 	it("se désactive hors du mode DESIGN, quel que soit `disabled`", () => {
 		setup({ mode: ProjectMode.SIMULATION, disabled: false });
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
 	});
 
 	it("se désactive quand `disabled` est explicitement vrai", () => {
 		setup({ mode: ProjectMode.DESIGN, disabled: true });
-		expect(document.querySelector(".grafcet-toolbar__tool--disabled")).toBeInTheDocument();
+		expect(
+			document.querySelector(".grafcet-toolbar__tool--disabled"),
+		).toBeInTheDocument();
 	});
 
 	it("n'est pas draggable quand désactivé", () => {
 		setup({ disabled: true });
-		expect(screen.getByText("contenu").closest(".grafcet-toolbar__tool")).toHaveAttribute(
-			"draggable",
-			"false",
-		);
+		expect(
+			screen.getByText("contenu").closest(".grafcet-toolbar__tool"),
+		).toHaveAttribute("draggable", "false");
 	});
 
 	it("est draggable quand activé, et prépare le transfert au dragstart", () => {

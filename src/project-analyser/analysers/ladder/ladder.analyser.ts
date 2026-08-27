@@ -1,10 +1,20 @@
-import { BLOCK_PORT_LABELS, BlockElement, UserProgramBlockParams } from "@/schemas/ladder/block.schema";
+import {
+	BLOCK_PORT_LABELS,
+	BlockElement,
+	UserProgramBlockParams,
+} from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import LadderElementAnalyserFactory from "./element-analyser.factory";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import { createCounterBlockVariables, getCounterBlockParams } from "@/schemas/function-blocks/counter.schema";
-import { createTimerBlockVariables, getTimerBlockParams } from "@/schemas/function-blocks/timer.schema";
+import {
+	createCounterBlockVariables,
+	getCounterBlockParams,
+} from "@/schemas/function-blocks/counter.schema";
+import {
+	createTimerBlockVariables,
+	getTimerBlockParams,
+} from "@/schemas/function-blocks/timer.schema";
 import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import ProgramAnalyser from "@/project-analyser/program.analyser";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
@@ -14,7 +24,10 @@ export type LadderAnalysisResult = {
 	analysedElementsCount: number;
 };
 
-export function getContactMemoryVariableId(ladderId: string, contactId: string): string {
+export function getContactMemoryVariableId(
+	ladderId: string,
+	contactId: string,
+): string {
 	return `ladder-${ladderId}-edge-${contactId}`;
 }
 
@@ -28,7 +41,11 @@ export function getContactMemoryVariableMnemonic(contactId: string): string {
 }
 
 /** `portName` est le nom déclaré par `BLOCK_PORTS` (`"EN"`, `"ENO"`, et plus tard `"PT"`, `"ET"`...). */
-export function getBlockPortVariableId(ladderId: string, blockId: string, portName: string): string {
+export function getBlockPortVariableId(
+	ladderId: string,
+	blockId: string,
+	portName: string,
+): string {
 	return `ladder-${ladderId}-block-${blockId}-${portName}`;
 }
 
@@ -39,7 +56,10 @@ export function getBlockPortVariableId(ladderId: string, blockId: string, portNa
  * (l'AST référençant un port de bloc est construit directement par le pré-compilateur, jamais
  * parsé).
  */
-export function getBlockPortVariableMnemonic(blockId: string, portName: string): string {
+export function getBlockPortVariableMnemonic(
+	blockId: string,
+	portName: string,
+): string {
 	return `BLOCK_${blockId.replace(/-/g, "")}_${portName}`;
 }
 
@@ -69,15 +89,30 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * générées par TOUS les programmes du projet, y compris ce ladder (voir
 	 * `ProgramAnalyser.analyse`/`generateVariables`).
 	 */
-	analyse(ladder: Ladder, project: Project, allVariables: Variable[]): LadderAnalysisResult {
-		const variablesByMnemonic = new Map(allVariables.map((v) => [v.mnemonic, v]));
+	analyse(
+		ladder: Ladder,
+		project: Project,
+		allVariables: Variable[],
+	): LadderAnalysisResult {
+		const variablesByMnemonic = new Map(
+			allVariables.map((v) => [v.mnemonic, v]),
+		);
 
-		const issues: ProjectAnalyserIssue[] = [...this.checkConnectionColumnOrder(ladder)];
+		const issues: ProjectAnalyserIssue[] = [
+			...this.checkConnectionColumnOrder(ladder),
+		];
 		for (const element of ladder.getAllElements()) {
 			const analyser = LadderElementAnalyserFactory.getAnalyser(element.type);
 			if (analyser) {
 				issues.push(...analyser.analyseIsolated(element));
-				issues.push(...analyser.analyseInContext(element, ladder, variablesByMnemonic, project));
+				issues.push(
+					...analyser.analyseInContext(
+						element,
+						ladder,
+						variablesByMnemonic,
+						project,
+					),
+				);
 			}
 		}
 
@@ -108,7 +143,11 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 						new ProjectAnalyserIssue(
 							"error",
 							"LADDER_CONNECTION_INVALID_ORDER",
-							{ sourceType: "ladder-network", sourceId: section.id, parentId: ladder.id },
+							{
+								sourceType: "ladder-network",
+								sourceId: section.id,
+								parentId: ladder.id,
+							},
 							"Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 						),
 					);
@@ -124,7 +163,9 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * ladders du projet, pas sur un seul — appelée une fois par `ProjectAnalyser`.
 	 */
 	static checkMainUniqueness(project: Project): ProjectAnalyserIssue[] {
-		const mains = Object.values(project.ladders).filter((ladder) => ladder.role === "main");
+		const mains = Object.values(project.ladders).filter(
+			(ladder) => ladder.role === "main",
+		);
 		if (mains.length === 1) return [];
 		if (mains.length === 0) {
 			return [
@@ -174,7 +215,11 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		const namesSeen = new Set<string>();
 
 		for (const block of namedBlocks) {
-			const source = { sourceType: "ladder-block", sourceId: block.element.id, parentId: block.ladder.id } as const;
+			const source = {
+				sourceType: "ladder-block",
+				sourceId: block.element.id,
+				parentId: block.ladder.id,
+			} as const;
 			if (projectMnemonics.has(block.name)) {
 				issues.push(
 					new ProjectAnalyserIssue(
@@ -204,16 +249,22 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * références vers un id qui n'est pas un ladder du projet sont ignorées ici (déjà signalées
 	 * par `BlockAnalyser`).
 	 */
-	private static buildBlockReferenceGraph(project: Project): Map<string, string[]> {
+	private static buildBlockReferenceGraph(
+		project: Project,
+	): Map<string, string[]> {
 		const graph = new Map<string, string[]>();
 		for (const ladder of Object.values(project.ladders)) {
 			const targets = ladder
 				.getAllElements()
 				.filter(
 					(element): element is BlockElement =>
-						element.type === "block" && element.data.blockType === "user-program",
+						element.type === "block" &&
+						element.data.blockType === "user-program",
 				)
-				.map((element) => (element.data.params as UserProgramBlockParams).programId)
+				.map(
+					(element) =>
+						(element.data.params as UserProgramBlockParams).programId,
+				)
 				.filter((programId) => project.getLadder(programId) !== undefined);
 			graph.set(ladder.id, targets);
 		}
@@ -267,7 +318,9 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 					const key = [...new Set(cycle)].sort().join(">");
 					if (reportedCycles.has(key)) continue;
 					reportedCycles.add(key);
-					const names = cycle.map((id) => project.getProgram(id)?.name ?? id).join(" → ");
+					const names = cycle
+						.map((id) => project.getProgram(id)?.name ?? id)
+						.join(" → ");
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
@@ -297,7 +350,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	private buildEdgeMemoryVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type === "contact" && (element.data.mode === "P" || element.data.mode === "N")) {
+			if (
+				element.type === "contact" &&
+				(element.data.mode === "P" || element.data.mode === "N")
+			) {
 				variables.push(
 					new Variable(
 						getContactMemoryVariableId(ladder.id, element.id),
@@ -321,7 +377,11 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	private buildBlockPortVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType === "timer" || element.data.blockType === "counter")
+			if (
+				element.type !== "block" ||
+				element.data.blockType === "timer" ||
+				element.data.blockType === "counter"
+			)
 				continue;
 			const ports = BLOCK_PORT_LABELS[element.data.blockType];
 			for (const portName of [ports.input, ports.output]) {
@@ -346,7 +406,8 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	private buildTimerLastInputVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType !== "timer") continue;
+			if (element.type !== "block" || element.data.blockType !== "timer")
+				continue;
 			variables.push(
 				new Variable(
 					getBlockPortVariableId(ladder.id, element.id, "lastInput"),
@@ -370,9 +431,12 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	private buildTimerExposedVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType !== "timer") continue;
+			if (element.type !== "block" || element.data.blockType !== "timer")
+				continue;
 			if (validateBlockName(element.data.params.name).length > 0) continue;
-			variables.push(...createTimerBlockVariables(element.id, element.data.params.name));
+			variables.push(
+				...createTimerBlockVariables(element.id, element.data.params.name),
+			);
 		}
 		return variables;
 	}
@@ -387,10 +451,15 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	private buildCounterExposedVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType !== "counter") continue;
+			if (element.type !== "block" || element.data.blockType !== "counter")
+				continue;
 			if (validateBlockName(element.data.params.name).length > 0) continue;
 			variables.push(
-				...createCounterBlockVariables(element.id, element.data.params.name, element.data.params.counterType),
+				...createCounterBlockVariables(
+					element.id,
+					element.data.params.name,
+					element.data.params.counterType,
+				),
 			);
 		}
 		return variables;

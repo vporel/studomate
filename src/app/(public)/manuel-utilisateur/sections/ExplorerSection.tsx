@@ -13,7 +13,9 @@ export default function ExplorerSection() {
 			<Typography variant="h4" mb={2}>
 				{`Structure de l'explorateur`}
 			</Typography>
-			<Typography mb={1}>{`L'explorateur est organisé en deux sections principales :`}</Typography>
+			<Typography
+				mb={1}
+			>{`L'explorateur est organisé en cinq sections :`}</Typography>
 			<Typography mb={1}>{`Variables :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Entrées logiques — variables booléennes d'entrée`}</li>
@@ -24,7 +26,19 @@ export default function ExplorerSection() {
 			</Typography>
 			<Typography mb={1}>{`Programmes :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type`}</li>
+				<li>{`Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type.`}</li>
+			</Typography>
+			<Typography mb={1}>{`Instances de blocs :`}</Typography>
+			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+				<li>{`Apparaît uniquement lorsque le projet contient au moins un bloc temporisateur ou compteur. Liste toutes les instances nommées, avec un menu contextuel permettant de les configurer ou d'accéder au ladder qui les contient.`}</li>
+			</Typography>
+			<Typography mb={1}>{`Blocs systèmes :`}</Typography>
+			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+				<li>{`Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer.`}</li>
+			</Typography>
+			<Typography mb={1}>{`Interfaces HMI :`}</Typography>
+			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
+				<li>{`Liste de toutes les pages HMI du projet. La page principale est identifiée par le badge "Principale". Clic droit sur le dossier : créer une nouvelle page. Clic droit sur une page : Ouvrir, Renommer (F2), Supprimer.`}</li>
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>

@@ -2,6 +2,8 @@ import MemoVariableGenerator from "@/project-pre-compiler/memo-variable.generato
 import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import ReplacerVisitor from "@/expression-language/ast/visitors/replacer.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
@@ -11,7 +13,9 @@ import ProjectPreCompilerError, {
 } from "@/project-pre-compiler/project.pre-compiler.error";
 import ActionPreCompiler, { PreCompiledAction } from "./action.pre-compiler";
 import StepPreCompiler, { PreCompiledStep } from "./step.pre-compiler";
-import TransitionPreCompiler, { PreCompiledTransition } from "./transition.pre-compiler";
+import TransitionPreCompiler, {
+	PreCompiledTransition,
+} from "./transition.pre-compiler";
 
 /**
  * All compiled artifacts of a single Grafcet.
@@ -29,6 +33,14 @@ export type PreCompiledGrafcet = {
 	>;
 	transitions: Map<string, PreCompiledTransition>;
 	actions: Map<string, PreCompiledAction | undefined | null>; //Some actions can be null if they are of type TEXT (purely descriptive, no runtime effect)
+	/**
+	 * Une variable de mémoire booléenne par transition, destinée à porter l'état de la
+	 * réceptivité **seule** (indépendamment de l'activité des étapes amont) pour l'affichage.
+	 * `node` est la réceptivité pré-compilée où chaque `TimerNode` est remplacé par une lecture
+	 * de sa variable de sortie : la logique de franchissement a déjà fait avancer la tempo ce
+	 * cycle-ci, l'observation ne fait que lire le résultat (pas de double avance).
+	 */
+	transitionObservations: Map<string, { variable: PLCVariable; node: ASTNode }>;
 };
 
 /**
@@ -36,7 +48,9 @@ export type PreCompiledGrafcet = {
  * C'est la notation qui fournit son garde de type : le niveau projet n'a pas à connaître
  * la forme du pré-compilé.
  */
-export function isPreCompiledGrafcet(program: PreCompiledProgram): program is PreCompiledGrafcet {
+export function isPreCompiledGrafcet(
+	program: PreCompiledProgram,
+): program is PreCompiledGrafcet {
 	return program.type === "grafcet";
 }
 
@@ -53,13 +67,18 @@ export default class GrafcetPreCompiler {
 		const actions: PreCompiledGrafcet["actions"] = new Map();
 
 		const takenVariablesNames = new Set(variables.map((v) => v.getName()));
-		for (const step of grafcet.steps) {
+		for (const step of Object.values(grafcet.steps)) {
 			try {
 				steps.set(step.id, StepPreCompiler.preCompile(step));
-				const generatedMemoVar = MemoVariableGenerator.generate("boolean", takenVariablesNames);
+				const generatedMemoVar = MemoVariableGenerator.generate(
+					"boolean",
+					takenVariablesNames,
+				);
 				stepsMemos.set(step.id, {
 					variable: generatedMemoVar,
-					node: IdentifiersBuilder.buildIdentifierNode(generatedMemoVar.getName()),
+					node: IdentifiersBuilder.buildIdentifierNode(
+						generatedMemoVar.getName(),
+					),
 				});
 				takenVariablesNames.add(generatedMemoVar.getName());
 				variables.push(generatedMemoVar);
@@ -69,18 +88,27 @@ export default class GrafcetPreCompiler {
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);
-				const source = ProjectPreCompilerErrorSourceBuilder.buildStepSource(step.id);
+				const source = ProjectPreCompilerErrorSourceBuilder.buildStepSource(
+					step.id,
+				);
 				errors.push(
-					e instanceof ProjectPreCompilerError ? e : new ProjectPreCompilerError(source, message),
+					e instanceof ProjectPreCompilerError
+						? e
+						: new ProjectPreCompilerError(source, message),
 				);
 			}
 		}
 
-		for (const transition of grafcet.transitions) {
+		for (const transition of Object.values(grafcet.transitions)) {
 			try {
 				transitions.set(
 					transition.id,
-					TransitionPreCompiler.preCompile(transition, grafcet, variables, dialect),
+					TransitionPreCompiler.preCompile(
+						transition,
+						grafcet,
+						variables,
+						dialect,
+					),
 				);
 			} catch (e) {
 				const message =
@@ -88,16 +116,26 @@ export default class GrafcetPreCompiler {
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);
-				const source = ProjectPreCompilerErrorSourceBuilder.buildTransitionSource(transition.id);
+				const source =
+					ProjectPreCompilerErrorSourceBuilder.buildTransitionSource(
+						transition.id,
+					);
 				errors.push(
-					e instanceof ProjectPreCompilerError ? e : new ProjectPreCompilerError(source, message),
+					e instanceof ProjectPreCompilerError
+						? e
+						: new ProjectPreCompilerError(source, message),
 				);
 			}
 		}
 
-		for (const action of grafcet.actions) {
+		for (const action of Object.values(grafcet.actions)) {
 			try {
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, dialect);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					dialect,
+				);
 				if (!result) continue;
 				actions.set(action.id, result);
 			} catch (e) {
@@ -106,13 +144,52 @@ export default class GrafcetPreCompiler {
 						e,
 						dialect === Dialect.EN ? "EN" : "FR",
 					) || String(e);
-				const source = ProjectPreCompilerErrorSourceBuilder.buildActionSource(action.id);
+				const source = ProjectPreCompilerErrorSourceBuilder.buildActionSource(
+					action.id,
+				);
 				errors.push(
-					e instanceof ProjectPreCompilerError ? e : new ProjectPreCompilerError(source, message),
+					e instanceof ProjectPreCompilerError
+						? e
+						: new ProjectPreCompilerError(source, message),
 				);
 			}
 		}
 
-		return { type: "grafcet", steps, stepsMemos, transitions, actions };
+		const transitionObservations: PreCompiledGrafcet["transitionObservations"] =
+			new Map();
+		//Reconstruit l'ensemble des noms pris : `TransitionPreCompiler` a poussé ses propres
+		//mémos de tempo dans `variables` sans les ajouter à `takenVariablesNames`.
+		const takenObservationNames = new Set(variables.map((v) => v.getName()));
+		for (const [transitionId, preCompiledTransition] of transitions) {
+			const observationVar = MemoVariableGenerator.generate(
+				"boolean",
+				takenObservationNames,
+			);
+			takenObservationNames.add(observationVar.getName());
+			variables.push(observationVar);
+			const replacer = new ReplacerVisitor(
+				preCompiledTransition.timers.map((timer) => ({
+					predicate: (node: ASTNode) => node.id === timer.id,
+					replacement: timer.output,
+				})),
+			);
+			const node =
+				preCompiledTransition.timers.length > 0
+					? replacer.visit(preCompiledTransition.node)
+					: preCompiledTransition.node;
+			transitionObservations.set(transitionId, {
+				variable: observationVar,
+				node,
+			});
+		}
+
+		return {
+			type: "grafcet",
+			steps,
+			stepsMemos,
+			transitions,
+			actions,
+			transitionObservations,
+		};
 	}
 }

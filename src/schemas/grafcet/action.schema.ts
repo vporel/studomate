@@ -5,9 +5,14 @@ export const ACTION_HANDLE_TARGET_STEP = "target:step";
 
 export type ActionHandle = typeof ACTION_HANDLE_TARGET_STEP;
 
-export const ACTION_HANDLE_TARGET_STEP_TYPES = ["step"] as const satisfies readonly ElementType[];
+export const ACTION_HANDLE_TARGET_STEP_TYPES = [
+	"step",
+] as const satisfies readonly ElementType[];
 
-export const ACTION_HANDLES_TO_TYPES: Record<ActionHandle, readonly ElementType[]> = {
+export const ACTION_HANDLES_TO_TYPES: Record<
+	ActionHandle,
+	readonly ElementType[]
+> = {
 	[ACTION_HANDLE_TARGET_STEP]: ACTION_HANDLE_TARGET_STEP_TYPES,
 };
 
@@ -33,18 +38,22 @@ export enum ActionExecutionMode {
 	RESET = "reset", //Set a boolean variable to false
 }
 
-export const ACTION_EXECUTION_MODE_LABELS: Record<ActionExecutionMode, string> = {
-	[ActionExecutionMode.CONTINUOUS]: "Continue",
-	[ActionExecutionMode.RISING_EDGE]: "Front montant",
-	[ActionExecutionMode.FALLING_EDGE]: "Front descendant",
-	[ActionExecutionMode.SET]: "Set",
-	[ActionExecutionMode.RESET]: "Reset",
-};
+export const ACTION_EXECUTION_MODE_LABELS: Record<ActionExecutionMode, string> =
+	{
+		[ActionExecutionMode.CONTINUOUS]: "Continue",
+		[ActionExecutionMode.RISING_EDGE]: "Front montant",
+		[ActionExecutionMode.FALLING_EDGE]: "Front descendant",
+		[ActionExecutionMode.SET]: "Set",
+		[ActionExecutionMode.RESET]: "Reset",
+	};
 
 /**
  * Defines which execution modes are compatible with each action type. For example, SET and RESET modes are only compatible with BOOLEAN actions.
  */
-export const ACTION_TYPES_TO_EXECUTION_MODES: Record<ActionType, ActionExecutionMode[]> = {
+export const ACTION_TYPES_TO_EXECUTION_MODES: Record<
+	ActionType,
+	ActionExecutionMode[]
+> = {
 	[ActionType.TEXT]: [], //No execution mode is compatible with text actions since they are purely descriptive and don't manipulate variables
 	[ActionType.BOOLEAN_VARIABLE]: [
 		ActionExecutionMode.CONTINUOUS,
@@ -86,8 +95,8 @@ export default class Action extends Element<ActionData> {
 	static generateDefaultData(): ActionData {
 		return {
 			expression: "",
-			type: ActionType.TEXT,
-			executionMode: null,
+			type: ActionType.BOOLEAN_VARIABLE,
+			executionMode: ActionExecutionMode.CONTINUOUS,
 		};
 	}
 
@@ -96,13 +105,25 @@ export default class Action extends Element<ActionData> {
 	 * the execution mode to the first compatible one with the new type if the current execution mode is not compatible with the new type.
 	 * This way, we avoid leaving the action in an invalid state with incompatible type and execution mode.
 	 */
-	fixNewDataConsistency(newData: Partial<ActionData>, _oldData: ActionData): Partial<ActionData> {
+	fixNewDataConsistency(
+		newData: Partial<ActionData>,
+		_oldData: ActionData,
+	): Partial<ActionData> {
 		if (newData.type) {
-			if (!Action.isValidExecutionModeForType(newData.type, this.data.executionMode)) {
-				const compatibleExecutionModes = ACTION_TYPES_TO_EXECUTION_MODES[newData.type];
+			if (
+				!Action.isValidExecutionModeForType(
+					newData.type,
+					this.data.executionMode,
+				)
+			) {
+				const compatibleExecutionModes =
+					ACTION_TYPES_TO_EXECUTION_MODES[newData.type];
 				newData = {
 					...newData,
-					executionMode: compatibleExecutionModes.length > 0 ? compatibleExecutionModes[0] : null,
+					executionMode:
+						compatibleExecutionModes.length > 0
+							? compatibleExecutionModes[0]
+							: null,
 				};
 			}
 			if (newData.type !== ActionType.TEXT) {
@@ -126,10 +147,12 @@ export default class Action extends Element<ActionData> {
 			.filter((line) => line.length > 0);
 	}
 
-
-
-	static isValidExecutionModeForType(type: ActionType, executionMode: ActionExecutionMode | null): boolean {
-		if (executionMode === null) return ACTION_TYPES_TO_EXECUTION_MODES[type].length === 0; //If execution mode is null, then the type must be one that doesn't require an execution mode
+	static isValidExecutionModeForType(
+		type: ActionType,
+		executionMode: ActionExecutionMode | null,
+	): boolean {
+		if (executionMode === null)
+			return ACTION_TYPES_TO_EXECUTION_MODES[type].length === 0; //If execution mode is null, then the type must be one that doesn't require an execution mode
 		return ACTION_TYPES_TO_EXECUTION_MODES[type].includes(executionMode);
 	}
 }

@@ -1,14 +1,24 @@
 /** @jest-environment jsdom */
 import { Dialect } from "@/expression-language/dialect.enum";
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
-import Project, { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
+import Grafcet, {
+	DEFAULT_GRAFCET_FORMAT,
+} from "@/schemas/grafcet/grafcet.schema";
+import Project, {
+	DEFAULT_PROJECT_NAME,
+} from "@/schemas/project/project.schema";
 import { toast } from "react-toastify";
 import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import { setPagesSession } from "@/ui/lib/pages-session-storage";
 import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { createProjectStore } from "./project.store";
+import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
+
+/** Ouvre un projet vierge : `newProject()` n'ouvre plus que la modale, c'est `newProjectFromTemplate(null)` qui crée réellement. */
+async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
+	await store.getState().newProjectFromTemplate(null);
+}
 
 describe("createProjectStore", () => {
 	beforeEach(() => {
@@ -22,40 +32,50 @@ describe("createProjectStore", () => {
 	});
 
 	describe("newProject", () => {
-		it("opens a new project directly when there are no unsaved changes", async () => {
+		it("opens the new-project modal when there are no unsaved changes", async () => {
 			const store = createProjectStore();
 			await store.getState().newProject();
-			expect(store.getState().project).not.toBeNull();
-			expect(store.getState().project?.name).toBe(DEFAULT_PROJECT_NAME);
-			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(store.getState().ui.newProjectModalVisible).toBe(true);
+			expect(store.getState().project).toBeNull();
 		});
 
 		it("asks for confirmation instead when there are unsaved changes", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
 			await store.getState().newProject();
 
-			// The new project isn't opened yet, the confirmation dialog is shown instead
+			// The modal isn't opened yet, the confirmation dialog is shown instead
 			expect(store.getState().ui.unsavedChangesDialogVisible).toBe(true);
+			expect(store.getState().ui.newProjectModalVisible).toBe(false);
 			expect(store.getState().hasUnsavedChanges).toBe(true);
 		});
 
-		it("opens the new project once the pending confirmation is continued", async () => {
+		it("opens the new-project modal once the pending confirmation is continued", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
-			const firstProjectId = store.getState().project!.id;
+			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
 			await store.getState().newProject();
 			store.getState().ui.onUnsavedChangesDialogContinue?.();
-			// The continuation is itself async; let its microtask settle.
-			await Promise.resolve();
 			await Promise.resolve();
 
-			expect(store.getState().project!.id).not.toBe(firstProjectId);
+			expect(store.getState().ui.newProjectModalVisible).toBe(true);
+		});
+	});
+
+	describe("newProjectFromTemplate", () => {
+		it("opens a blank project and closes the modal when the template id is null", async () => {
+			const store = createProjectStore();
+			store.getState().setNewProjectModalVisible(true);
+
+			await store.getState().newProjectFromTemplate(null);
+
+			expect(store.getState().project).not.toBeNull();
+			expect(store.getState().project?.name).toBe(DEFAULT_PROJECT_NAME);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(store.getState().ui.newProjectModalVisible).toBe(false);
 		});
 	});
 
@@ -68,7 +88,10 @@ describe("createProjectStore", () => {
 
 		it("can always be closed regardless of unsaved changes", () => {
 			const store = createProjectStore();
-			store.setState({ hasUnsavedChanges: true, ui: { ...store.getState().ui, openModalVisible: true } });
+			store.setState({
+				hasUnsavedChanges: true,
+				ui: { ...store.getState().ui, openModalVisible: true },
+			});
 			store.getState().setOpenModalVisible(false);
 			expect(store.getState().ui.openModalVisible).toBe(false);
 		});
@@ -95,14 +118,16 @@ describe("createProjectStore", () => {
 			store.getState().setExportModalVisible(true);
 			expect(store.getState().ui.exportModalVisible).toBe(false);
 			expect(store.getState().ui.unsavedChangesDialogVisible).toBe(true);
-			expect(store.getState().ui.unsavedChangesDialogMessage).toContain("exporter");
+			expect(store.getState().ui.unsavedChangesDialogMessage).toContain(
+				"exporter",
+			);
 		});
 	});
 
 	describe("setProjectName / setProjectAuthor", () => {
 		it("updates the project name and marks unsaved changes", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 
 			store.getState().setProjectName("Mon projet");
 
@@ -112,14 +137,14 @@ describe("createProjectStore", () => {
 
 		it("does not mark unsaved changes when the name doesn't actually change", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.getState().setProjectName(store.getState().project!.name);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
 		});
 
 		it("updates the project author and marks unsaved changes", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.getState().setProjectAuthor("Alice");
 			expect(store.getState().project?.author).toBe("Alice");
 			expect(store.getState().hasUnsavedChanges).toBe(true);
@@ -129,19 +154,23 @@ describe("createProjectStore", () => {
 	describe("saveProject", () => {
 		it("persists the project and clears hasUnsavedChanges", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.getState().setProjectName("Projet à sauvegarder");
 
 			const result = await store.getState().saveProject();
 
 			expect(result).toBe(true);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
-			expect(await store.getState().projectRepository.get(store.getState().project!.id)).not.toBeNull();
+			expect(
+				await store
+					.getState()
+					.projectRepository.get(store.getState().project!.id),
+			).not.toBeNull();
 		});
 
 		it("expose savingProject à true le temps de la sauvegarde", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.getState().setProjectName("Projet en cours de sauvegarde");
 
 			const savePromise = store.getState().saveProject();
@@ -159,7 +188,7 @@ describe("createProjectStore", () => {
 
 		it("quand le repository échoue : retourne false, garde hasUnsavedChanges, et affiche un toast d'erreur", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.getState().setProjectName("Projet non sauvegardable");
 			jest.spyOn(store.getState().projectRepository, "save").mockResolvedValue({
 				ok: false,
@@ -179,9 +208,14 @@ describe("createProjectStore", () => {
 	describe("setProjectDialect", () => {
 		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
-			const grafcet = store.getState().grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
-			const syncSpy = jest.spyOn(store.getState().grafcetsManager, "syncMountedStoresFromProject");
+			await openBlankProject(store);
+			const grafcet = store
+				.getState()
+				.grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+			const syncSpy = jest.spyOn(
+				store.getState().grafcetsManager,
+				"syncMountedStoresFromProject",
+			);
 
 			store.getState().setProjectDialect(Dialect.EN);
 
@@ -193,7 +227,7 @@ describe("createProjectStore", () => {
 
 		it("ne fait rien quand le dialecte demandé est déjà le dialecte courant", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			const currentDialect = store.getState().project!.dialect;
 			const projectBefore = store.getState().project;
 
@@ -207,8 +241,10 @@ describe("createProjectStore", () => {
 	describe("setActiveScope", () => {
 		it("déduit activeScopeType depuis le type de page (grafcet)", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
-			const grafcet = store.getState().grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+			await openBlankProject(store);
+			const grafcet = store
+				.getState()
+				.grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
 
 			store.getState().setActiveScope(grafcet.id);
 
@@ -218,7 +254,7 @@ describe("createProjectStore", () => {
 
 		it("retombe sur le scope 'project' pour un scope sans page associée", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 
 			store.getState().setActiveScope("inexistant");
 
@@ -227,9 +263,13 @@ describe("createProjectStore", () => {
 
 		it("ne re-focalise pas le flow quand le scope demandé est déjà le scope actif", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
-			const grafcetA = store.getState().grafcetsManager.newGrafcet("A", DEFAULT_GRAFCET_FORMAT)!;
-			const grafcetB = store.getState().grafcetsManager.newGrafcet("B", DEFAULT_GRAFCET_FORMAT)!;
+			await openBlankProject(store);
+			const grafcetA = store
+				.getState()
+				.grafcetsManager.newGrafcet("A", DEFAULT_GRAFCET_FORMAT)!;
+			const grafcetB = store
+				.getState()
+				.grafcetsManager.newGrafcet("B", DEFAULT_GRAFCET_FORMAT)!;
 			const focusA = jest.fn();
 			const focusB = jest.fn();
 			store.getState().grafcetsManager.registerStoreManager(grafcetA.id, {
@@ -252,7 +292,7 @@ describe("createProjectStore", () => {
 	describe("closeProject", () => {
 		it("closes directly when there are no unsaved changes", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 
 			await store.getState().closeProject();
 
@@ -261,7 +301,7 @@ describe("createProjectStore", () => {
 
 		it("asks for confirmation when there are unsaved changes", async () => {
 			const store = createProjectStore();
-			await store.getState().newProject();
+			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
 			await store.getState().closeProject();
@@ -310,16 +350,29 @@ describe("createProjectStore", () => {
 			it("rouvre les onglets et la page active mémorisés en session (localStorage)", async () => {
 				const store = createProjectStore();
 				const project = new Project("p1", "Projet", "Author");
-				const grafcet = new Grafcet("g1", "Mon grafcet", DEFAULT_GRAFCET_FORMAT);
+				const grafcet = new Grafcet(
+					"g1",
+					"Mon grafcet",
+					DEFAULT_GRAFCET_FORMAT,
+				);
 				project.addProgram(grafcet);
 				await store.getState().projectRepository.save(project);
-				setPagesSession("p1", { pagesOrder: [PROJECT_STARTUP_PAGE_ID, "g1"], activePageId: "g1" });
+				setPagesSession("p1", {
+					pagesOrder: [PROJECT_STARTUP_PAGE_ID, "g1"],
+					activePageId: "g1",
+				});
 
 				await store.getState().openProject("p1");
 
-				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID, "g1"]);
+				expect(store.getState().pagesOrder).toEqual([
+					PROJECT_STARTUP_PAGE_ID,
+					"g1",
+				]);
 				expect(store.getState().activePageId).toBe("g1");
-				expect(store.getState().pagesData["g1"]).toMatchObject({ type: "grafcet", title: "Mon grafcet" });
+				expect(store.getState().pagesData["g1"]).toMatchObject({
+					type: "grafcet",
+					title: "Mon grafcet",
+				});
 			});
 
 			it("priorise la page active de l'URL (lien partagé) sur celle de la session", async () => {
@@ -343,13 +396,169 @@ describe("createProjectStore", () => {
 				const store = createProjectStore();
 				const project = new Project("p1", "Projet", "Author");
 				await store.getState().projectRepository.save(project);
-				setPagesSession("p1", { pagesOrder: ["programme-supprime"], activePageId: "programme-supprime" });
+				setPagesSession("p1", {
+					pagesOrder: ["programme-supprime"],
+					activePageId: "programme-supprime",
+				});
 
 				await store.getState().openProject("p1");
 
 				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID]);
 				expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
 			});
+		});
+	});
+
+	describe("saveProject — projet partagé (lecture seule)", () => {
+		it("ouvre la modale Save As au lieu d'enregistrer", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ isSharedProject: true, hasUnsavedChanges: true });
+
+			const result = await store.getState().saveProject();
+
+			expect(result).toBe(false);
+			expect(store.getState().ui.saveAsModalVisible).toBe(true);
+		});
+	});
+
+	describe("shareProject / unshareProject", () => {
+		it("ne fait rien si aucun projet n'est ouvert", async () => {
+			const store = createProjectStore();
+			await expect(store.getState().shareProject()).resolves.not.toThrow();
+		});
+
+		it("ne fait rien si le repository n'est pas partageable (localStorage)", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			// HybridProjectRepository n'implémente pas ShareableProjectRepository
+			await expect(store.getState().shareProject()).resolves.not.toThrow();
+			expect(store.getState().shareToken).toBeNull();
+		});
+	});
+
+	describe("resolveDraftConflict", () => {
+		it("ne fait rien si la modale n'est pas active", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			await expect(
+				store.getState().resolveDraftConflict("draft"),
+			).resolves.not.toThrow();
+		});
+
+		it("supprime le brouillon et ferme la modale quand le choix est 'real'", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Projet", "");
+			await store.getState().projectRepository.save(project);
+			store.setState({
+				project,
+				ui: {
+					...store.getState().ui,
+					draftConflictModal: {
+						visible: true,
+						projectId: "p1",
+						draftData: JSON.stringify(project),
+					},
+				},
+			});
+
+			await store.getState().resolveDraftConflict("real");
+
+			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
+		});
+
+		it("ouvre le brouillon et marque hasUnsavedChanges quand le choix est 'draft'", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Projet", "");
+			const draftData = JSON.stringify(project);
+			store.setState({
+				project,
+				ui: {
+					...store.getState().ui,
+					draftConflictModal: { visible: true, projectId: "p1", draftData },
+				},
+			});
+
+			await store.getState().resolveDraftConflict("draft");
+
+			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(store.getState().project?.id).toBe("p1");
+		});
+
+		it("affiche un toast et ferme la modale si le brouillon est corrompu", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Projet", "");
+			store.setState({
+				project,
+				ui: {
+					...store.getState().ui,
+					draftConflictModal: {
+						visible: true,
+						projectId: "p1",
+						draftData: "{ invalide",
+					},
+				},
+			});
+
+			await store.getState().resolveDraftConflict("draft");
+
+			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
+			const { toast } = await import("react-toastify");
+			expect(toast.error).toHaveBeenCalled();
+		});
+	});
+
+	describe("abandon des modifications (« continuer sans enregistrer »)", () => {
+		async function openProjectWithDraft(
+			store: ReturnType<typeof createProjectStore>,
+		) {
+			await openBlankProject(store);
+			const projectId = store.getState().project!.id;
+			store.setState({ hasUnsavedChanges: true });
+			saveDraft(projectId, "brouillon", JSON.stringify({ id: projectId }));
+			return projectId;
+		}
+
+		it("supprime le brouillon quand on continue depuis newProject", async () => {
+			const store = createProjectStore();
+			const projectId = await openProjectWithDraft(store);
+
+			await store.getState().newProject();
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+
+			expect(getDraft(projectId)).toBeNull();
+		});
+
+		it("supprime le brouillon quand on continue depuis closeProject", async () => {
+			const store = createProjectStore();
+			const projectId = await openProjectWithDraft(store);
+
+			await store.getState().closeProject();
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+			await Promise.resolve();
+
+			expect(getDraft(projectId)).toBeNull();
+		});
+
+		it("supprime le brouillon quand on continue depuis setOpenModalVisible", async () => {
+			const store = createProjectStore();
+			const projectId = await openProjectWithDraft(store);
+
+			store.getState().setOpenModalVisible(true);
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+
+			expect(getDraft(projectId)).toBeNull();
+		});
+
+		it("conserve le brouillon pour l'export (le projet reste ouvert)", async () => {
+			const store = createProjectStore();
+			const projectId = await openProjectWithDraft(store);
+
+			store.getState().setExportModalVisible(true);
+			store.getState().ui.onUnsavedChangesDialogContinue?.();
+
+			expect(getDraft(projectId)).not.toBeNull();
 		});
 	});
 });

@@ -19,8 +19,12 @@ describe("getCounterPortSpecs", () => {
 
 	it("PV accepte un littéral numérique, pas le contrôle", () => {
 		const specs = getCounterPortSpecs("CTU");
-		expect(specs.find((s) => s.suffix === "PV")?.acceptsNumberLiteral).toBe(true);
-		expect(specs.find((s) => s.suffix === "R")?.acceptsNumberLiteral).toBeUndefined();
+		expect(specs.find((s) => s.suffix === "PV")?.acceptedLiterals).toEqual([
+			"number",
+		]);
+		expect(
+			specs.find((s) => s.suffix === "R")?.acceptedLiterals,
+		).toBeUndefined();
 	});
 });
 
@@ -43,7 +47,11 @@ describe("createCounterBlockVariables", () => {
 	it("génère les variables pulsion/Q (BOOL) et CV (INT), rattachées au bloc", () => {
 		const variables = createCounterBlockVariables("el1", "Compteur1", "CTU");
 
-		expect(variables.map((v) => v.mnemonic)).toEqual(["Compteur1.IN", "Compteur1.Q", "Compteur1.CV"]);
+		expect(variables.map((v) => v.mnemonic)).toEqual([
+			"Compteur1.IN",
+			"Compteur1.Q",
+			"Compteur1.CV",
+		]);
 		expect(variables.map((v) => v.type)).toEqual(["BOOL", "BOOL", "INT"]);
 		expect(variables.every((v) => v.ownerBlock?.id === "el1")).toBe(true);
 	});
@@ -51,7 +59,11 @@ describe("createCounterBlockVariables", () => {
 
 describe("createCounterBlockElement", () => {
 	it("pose un bloc compteur à la position donnée, avec sa config dans data.params", () => {
-		const block = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 2, 3);
+		const block = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+			2,
+			3,
+		);
 
 		expect(block.type).toBe("block");
 		expect(block.data).toEqual({
@@ -63,8 +75,16 @@ describe("createCounterBlockElement", () => {
 	});
 
 	it("chaque bloc créé a un id distinct", () => {
-		const a = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 0, 0);
-		const b = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 0, 0);
+		const a = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+			0,
+			0,
+		);
+		const b = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+			0,
+			0,
+		);
 		expect(a.id).not.toBe(b.id);
 	});
 });
@@ -72,7 +92,13 @@ describe("createCounterBlockElement", () => {
 describe("getCounterBlockParams", () => {
 	it("renvoie la config d'un bloc compteur", () => {
 		const block = createCounterBlockElement(
-			{ name: "Compteur1", counterType: "CTD", control: "LD", pv: "5", cv: "Sortie" },
+			{
+				name: "Compteur1",
+				counterType: "CTD",
+				control: "LD",
+				pv: "5",
+				cv: "Sortie",
+			},
 			0,
 			0,
 		);
@@ -87,7 +113,11 @@ describe("getCounterBlockParams", () => {
 	});
 
 	it("renvoie null pour un bloc d'un autre type", () => {
-		const block = createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" }, 0, 0);
+		const block = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+			0,
+			0,
+		);
 		block.data = { blockType: "user-program", params: { programId: "prog1" } };
 
 		expect(getCounterBlockParams(block)).toBeNull();

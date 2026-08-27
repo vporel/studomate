@@ -9,6 +9,8 @@ import VariablesIcon from "@/ui/components/icons/VariablesIcon";
 import HmiIcon from "@/ui/components/icons/HmiIcon";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { PageType } from "@/ui/stores/project/project.store";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
 import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
 import { ElementType } from "react";
@@ -44,15 +46,33 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 	);
 	// Le Main a sa propre icône dans l'onglet, comme dans l'explorateur (voir `getProgramIcon`
 	// d'`ExplorerProgramsItems`) : l'id de page d'un ladder est son id de programme.
-	const isMain = useProjectStore((state) => type === "ladder" && state.project?.ladders[id]?.role === "main");
+	const isMain = useProjectStore(
+		(state) => type === "ladder" && state.project?.ladders[id]?.role === "main",
+	);
 	const active = id === activePageId;
-	const TypeIconComponent = type === "ladder" ? (isMain ? LadderMainIcon : LadderIcon) : TYPE_ICONS[type];
+	const TypeIconComponent =
+		type === "ladder"
+			? isMain
+				? LadderMainIcon
+				: LadderIcon
+			: TYPE_ICONS[type];
+
+	const {
+		setNodeRef,
+		attributes,
+		listeners,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id });
 
 	return (
 		<Box
-			tabIndex={0}
+			ref={setNodeRef}
 			className="pages__tab"
 			data-page-id={id}
+			{...attributes}
+			{...listeners}
 			sx={{
 				height: "100%",
 				width: "fit-content",
@@ -63,15 +83,24 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				gap: "10px",
 				cursor: "pointer",
 				userSelect: "none",
-				transition: "all .2s ease",
+				transform: CSS.Transform.toString(transform),
+				transition: [transition, "background-color .2s ease", "color .2s ease"]
+					.filter(Boolean)
+					.join(", "),
+				opacity: isDragging ? 0.5 : 1,
+				zIndex: isDragging ? 1 : "auto",
 				position: "relative",
 				backgroundColor: !active ? "white" : alpha(th.palette.primary.main, 1),
 				color: !active ? th.palette.text.primary : "white",
 				borderRight: "1px solid rgba(0, 0, 0, 0.1)",
 				":hover": {
-					backgroundColor: !active ? "#dfdfdf" : alpha(th.palette.primary.main, 1),
+					backgroundColor: !active
+						? "#dfdfdf"
+						: alpha(th.palette.primary.main, 1),
 					color: !active ? th.palette.text.primary : "white",
-					".page__tab__type-icon": { color: !active ? th.palette.primary.main : "white" },
+					".page__tab__type-icon": {
+						color: !active ? th.palette.primary.main : "white",
+					},
 					".page__tab__button-icon": { opacity: 1 },
 					".circle-icon": { display: "none" },
 					".close-icon": { display: "block" },
@@ -110,12 +139,16 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 							background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
 						},
 					}}
+					onPointerDown={(e) => e.stopPropagation()}
 					onClick={(e) => {
 						e.stopPropagation();
 						pagesManager.closePage(id);
 					}}
 				>
-					<CloseIcon className="close-icon" sx={{ fontSize: "0.9rem", display: "block" }} />
+					<CloseIcon
+						className="close-icon"
+						sx={{ fontSize: "0.9rem", display: "block" }}
+					/>
 				</IconButton>
 			)}
 		</Box>

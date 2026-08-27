@@ -29,25 +29,43 @@ export default class LadderCompiler {
 	 */
 	static compile(preCompiledLadder: PreCompiledLadder): CompiledLadder {
 		const nodes: ASTNode[] = [
-			...preCompiledLadder.assignments.map((assignment) => this.compileAssignment(assignment)),
+			...preCompiledLadder.assignments.map((assignment) =>
+				this.compileAssignment(assignment),
+			),
 			...preCompiledLadder.edgeMemoUpdates.map((update) =>
-				StatementsBuilder.buildAssignStatementNode(update.memoIdentifier, update.sourceIdentifier),
+				StatementsBuilder.buildAssignStatementNode(
+					update.memoIdentifier,
+					update.sourceIdentifier,
+				),
 			),
 		];
-		const calls: PLCRoutineCall[] = preCompiledLadder.blockCalls.map((call) => ({
-			programId: call.programId,
-			condition: IdentifiersBuilder.buildIdentifierNode(call.enMnemonic),
-		}));
+		const calls: PLCRoutineCall[] = preCompiledLadder.blockCalls.map(
+			(call) => ({
+				programId: call.programId,
+				condition: IdentifiersBuilder.buildIdentifierNode(call.enMnemonic),
+			}),
+		);
 
-		return { nodes, timers: preCompiledLadder.timers, counters: preCompiledLadder.counters, calls };
+		return {
+			nodes,
+			timers: preCompiledLadder.timers,
+			counters: preCompiledLadder.counters,
+			calls,
+		};
 	}
 
 	/** Un `TimerNode`/`CounterNode`/`IfControlNode` (bloc assign) est embarqué tel quel parmi les
 	 * instructions : il n'a pas besoin d'être enveloppé dans une affectation, `PLCRoutine.execute`
 	 * l'évalue directement pour ses effets de bord (voir
 	 * `PreCompiledTimerAssignment`/`PreCompiledCounterAssignment`/`PreCompiledAssignBlockAssignment`). */
-	private static compileAssignment(assignment: PreCompiledLadderAssignment): ASTNode {
-		if (assignment.kind === "timer" || assignment.kind === "counter" || assignment.kind === "assign") {
+	private static compileAssignment(
+		assignment: PreCompiledLadderAssignment,
+	): ASTNode {
+		if (
+			assignment.kind === "timer" ||
+			assignment.kind === "counter" ||
+			assignment.kind === "assign"
+		) {
 			return assignment.node;
 		}
 		if (assignment.kind === "blockPort") {
@@ -59,11 +77,18 @@ export default class LadderCompiler {
 		return this.compileCoilAssignment(assignment);
 	}
 
-	private static compileCoilAssignment(assignment: PreCompiledCoilAssignment): ASTNode {
-		const coilIdentifier = IdentifiersBuilder.buildIdentifierNode(assignment.variable);
+	private static compileCoilAssignment(
+		assignment: PreCompiledCoilAssignment,
+	): ASTNode {
+		const coilIdentifier = IdentifiersBuilder.buildIdentifierNode(
+			assignment.variable,
+		);
 
 		if (assignment.mode === "normal") {
-			return StatementsBuilder.buildAssignStatementNode(coilIdentifier, assignment.condition);
+			return StatementsBuilder.buildAssignStatementNode(
+				coilIdentifier,
+				assignment.condition,
+			);
 		}
 
 		// set/reset : latch — n'assigne que quand la condition est vraie, ne force jamais l'inverse

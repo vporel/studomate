@@ -9,7 +9,15 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { Box, Divider, Typography } from "@mui/material";
 import { useState } from "react";
-import { clampZoom, HMI_SHAPE_TOOLS, HMI_WIDGET_TOOLS, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "./constants";
+import {
+	clampZoom,
+	HMI_SHAPE_TOOLS,
+	HMI_WIDGET_TOOLS,
+	ZOOM_DEFAULT,
+	ZOOM_MAX,
+	ZOOM_MIN,
+	ZOOM_STEP,
+} from "./constants";
 import HmiCanvas from "./HmiCanvas";
 
 interface HmiPageContentProps {
@@ -25,7 +33,11 @@ interface HmiPageContentProps {
 	isSimulation?: boolean;
 }
 
-const HmiPageContent = ({ hmiPageId, tabPageId, isSimulation = false }: HmiPageContentProps) => {
+const HmiPageContent = ({
+	hmiPageId,
+	tabPageId,
+	isSimulation = false,
+}: HmiPageContentProps) => {
 	const [zoom, setZoom] = useState(ZOOM_DEFAULT);
 
 	return (
@@ -48,11 +60,17 @@ const HmiPageContent = ({ hmiPageId, tabPageId, isSimulation = false }: HmiPageC
 					{!isSimulation && (
 						<>
 							{HMI_WIDGET_TOOLS.map((tool) => (
-								<HmiWidgetToolbarItem key={tool.label ?? tool.type} tool={tool} />
+								<HmiWidgetToolbarItem
+									key={tool.label ?? tool.type}
+									tool={tool}
+								/>
 							))}
 							<Divider orientation="vertical" style={{ margin: "5px" }} />
 							{HMI_SHAPE_TOOLS.map((tool) => (
-								<HmiWidgetToolbarItem key={tool.label ?? tool.type} tool={tool} />
+								<HmiWidgetToolbarItem
+									key={tool.label ?? tool.type}
+									tool={tool}
+								/>
 							))}
 						</>
 					)}
@@ -100,8 +118,19 @@ const HmiPageContent = ({ hmiPageId, tabPageId, isSimulation = false }: HmiPageC
 				</FlexBox>
 			</FlexBox>
 
-			<Box sx={{ flex: 1, overflow: "auto", backgroundColor: "rgb(235,235,235)", p: 2 }}>
-				<HmiCanvas isSimulation={isSimulation} zoom={zoom} onZoomChange={setZoom} />
+			<Box
+				sx={{
+					flex: 1,
+					overflow: "auto",
+					backgroundColor: "rgb(235,235,235)",
+					p: 2,
+				}}
+			>
+				<HmiCanvas
+					isSimulation={isSimulation}
+					zoom={zoom}
+					onZoomChange={setZoom}
+				/>
 			</Box>
 		</Page>
 	);

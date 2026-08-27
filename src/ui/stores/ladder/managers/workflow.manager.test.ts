@@ -10,7 +10,12 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { GRID_CELL_HEIGHT, LADDER_FLOW_TOP_OFFSET, POWER_RAIL_OFFSET, virtualRailId } from "@/ui/utils/ladder/ladder-flow-builder";
+import {
+	GRID_CELL_HEIGHT,
+	LADDER_FLOW_TOP_OFFSET,
+	POWER_RAIL_OFFSET,
+	virtualRailId,
+} from "@/ui/utils/ladder/ladder-flow-builder";
 import LadderNodesFactory from "../factories/nodes.factory";
 import LadderWorkflowManager from "./workflow.manager";
 
@@ -24,15 +29,23 @@ describe("LadderWorkflowManager", () => {
 		const ladder = new Ladder("l1", "L", [section]);
 		let state = {
 			ladder,
-			nodesBySectionId: { [section.id]: LadderNodesFactory.getInitialNodes(section) },
+			nodesBySectionId: {
+				[section.id]: LadderNodesFactory.getInitialNodes(section),
+			},
 			edgesBySectionId: { [section.id]: [] as any[] },
 			commandsStackManager: commandsStackManager as any,
 		};
 		const setStoreState = jest.fn((partial: any) => {
-			state = { ...state, ...(typeof partial === "function" ? partial(state) : partial) };
+			state = {
+				...state,
+				...(typeof partial === "function" ? partial(state) : partial),
+			};
 		});
 		const getStoreState = jest.fn(() => state as any);
-		const workflowManager = new LadderWorkflowManager(setStoreState as any, getStoreState as any);
+		const workflowManager = new LadderWorkflowManager(
+			setStoreState as any,
+			getStoreState as any,
+		);
 		return { workflowManager, getState: () => state };
 	}
 
@@ -46,7 +59,10 @@ describe("LadderWorkflowManager", () => {
 			{ type: "select", id: contact.id, selected: true } as any,
 		]);
 
-		expect(getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!.selected).toBe(true);
+		expect(
+			getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!
+				.selected,
+		).toBe(true);
 	});
 
 	it("ne dispatche pas de commande pour une frame de glisser intermédiaire (dragging: true)", () => {
@@ -56,7 +72,12 @@ describe("LadderWorkflowManager", () => {
 		const { workflowManager } = setup(section);
 
 		workflowManager.handleNodesChange(section.id, [
-			{ type: "position", id: contact.id, position: { x: 999, y: 999 }, dragging: true } as any,
+			{
+				type: "position",
+				id: contact.id,
+				position: { x: 999, y: 999 },
+				dragging: true,
+			} as any,
 		]);
 
 		expect(executeOperation).not.toHaveBeenCalled();
@@ -71,7 +92,12 @@ describe("LadderWorkflowManager", () => {
 		const newY = LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT;
 
 		workflowManager.handleNodesChange(section.id, [
-			{ type: "position", id: contact.id, position: { x: newX, y: newY }, dragging: false } as any,
+			{
+				type: "position",
+				id: contact.id,
+				position: { x: newX, y: newY },
+				dragging: false,
+			} as any,
 		]);
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -111,7 +137,10 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 2 * 60, y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 2 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
@@ -127,7 +156,9 @@ describe("LadderWorkflowManager", () => {
 		const { workflowManager, getState } = setup(section);
 		const before = getState().nodesBySectionId[section.id];
 
-		workflowManager.handleNodesChange(section.id, [{ type: "remove", id: contact.id } as any]);
+		workflowManager.handleNodesChange(section.id, [
+			{ type: "remove", id: contact.id } as any,
+		]);
 
 		expect(getState().nodesBySectionId[section.id]).toEqual(before);
 		expect(executeOperation).not.toHaveBeenCalled();
@@ -138,14 +169,23 @@ describe("LadderWorkflowManager", () => {
 		const contact = createContactElement("A", "NO", 0, 0);
 		const coil = createCoilElement("Q1", "normal", 0, 3);
 		section.elements = [contact, coil];
-		section.connections = [new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })];
+		section.connections = [
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+			),
+		];
 		const { workflowManager } = setup(section);
 
 		workflowManager.handleNodesChange(section.id, [
 			{
 				type: "position",
 				id: coil.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 3 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
@@ -172,12 +212,17 @@ describe("LadderWorkflowManager", () => {
 		const coil = createCoilElement("Q1", "normal", 2, 3);
 		section.elements = [contact, coil];
 		section.connections = [
-			new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }, {
-				points: [
-					[2, 8],
-					[10, 8],
-				],
-			}),
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{
+					points: [
+						[2, 8],
+						[10, 8],
+					],
+				},
+			),
 		];
 		const { workflowManager } = setup(section);
 
@@ -185,7 +230,10 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 3 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
@@ -212,13 +260,23 @@ describe("LadderWorkflowManager", () => {
 			[26, 4],
 		];
 		section.connections = [
-			new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }, {
-				points: [
-					[2, 8],
-					[10, 8],
-				],
-			}),
-			new Connection("c2", { id: otherContact.id, type: "contact", handle: "source" }, { id: otherCoil.id, type: "coil", handle: "target" }, { points: untouchedPoints }),
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{
+					points: [
+						[2, 8],
+						[10, 8],
+					],
+				},
+			),
+			new Connection(
+				"c2",
+				{ id: otherContact.id, type: "contact", handle: "source" },
+				{ id: otherCoil.id, type: "coil", handle: "target" },
+				{ points: untouchedPoints },
+			),
 		];
 		const { workflowManager } = setup(section);
 
@@ -226,16 +284,22 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 3 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
 
 		const [commands] = executeOperation.mock.calls[0];
-		expect(commands.filter((c: any) => c instanceof ConnectionUpdateCommand)).toHaveLength(1);
-		expect(commands.find((c: any) => c instanceof ConnectionUpdateCommand).payload.connectionId).toBe(
-			"c1",
-		);
+		expect(
+			commands.filter((c: any) => c instanceof ConnectionUpdateCommand),
+		).toHaveLength(1);
+		expect(
+			commands.find((c: any) => c instanceof ConnectionUpdateCommand).payload
+				.connectionId,
+		).toBe("c1");
 		expect(section.connections[1].data.points).toEqual(untouchedPoints);
 	});
 
@@ -245,12 +309,17 @@ describe("LadderWorkflowManager", () => {
 		const coil = createCoilElement("Q1", "normal", 2, 3);
 		section.elements = [contact, coil];
 		section.connections = [
-			new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }, {
-				points: [
-					[2, 8],
-					[10, 8],
-				],
-			}),
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{
+					points: [
+						[2, 8],
+						[10, 8],
+					],
+				},
+			),
 		];
 		const { workflowManager } = setup(section);
 
@@ -258,7 +327,10 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: contact.id,
-				position: { x: POWER_RAIL_OFFSET + 1 * 60, y: LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 1 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
@@ -273,9 +345,14 @@ describe("LadderWorkflowManager", () => {
 		const coil = createCoilElement("Q1", "normal", 0, 3);
 		section.elements = [contact, coil];
 		section.connections = [
-			new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }, {
-				points: [],
-			}),
+			new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{
+					points: [],
+				},
+			),
 		];
 		const { workflowManager, getState } = setup(section);
 
@@ -283,25 +360,43 @@ describe("LadderWorkflowManager", () => {
 			{
 				type: "position",
 				id: coil.id,
-				position: { x: POWER_RAIL_OFFSET + 0 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT },
+				position: {
+					x: POWER_RAIL_OFFSET + 0 * 60,
+					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
+				},
 				dragging: false,
 			} as any,
 		]);
 
 		expect(executeOperation).not.toHaveBeenCalled();
-		const coilNode = getState().nodesBySectionId[section.id].find((n: any) => n.id === coil.id)!;
-		expect(coilNode.position).toEqual({ x: POWER_RAIL_OFFSET + 3 * 60, y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT });
+		const coilNode = getState().nodesBySectionId[section.id].find(
+			(n: any) => n.id === coil.id,
+		)!;
+		expect(coilNode.position).toEqual({
+			x: POWER_RAIL_OFFSET + 3 * 60,
+			y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
+		});
 	});
 
 	it("patche edgesBySectionId via applyEdgeChanges", () => {
 		const section = new Section("s1", "S");
 		const { workflowManager, getState } = setup(section);
-		const edge = { id: "e1", source: "n1", target: "n2", selected: false } as any;
+		const edge = {
+			id: "e1",
+			source: "n1",
+			target: "n2",
+			selected: false,
+		} as any;
 		getState().edgesBySectionId[section.id].push(edge);
 
-		workflowManager.handleEdgesChange(section.id, [{ type: "select", id: "e1", selected: true } as any]);
+		workflowManager.handleEdgesChange(section.id, [
+			{ type: "select", id: "e1", selected: true } as any,
+		]);
 
-		expect(getState().edgesBySectionId[section.id].find((e) => e.id === "e1")!.selected).toBe(true);
+		expect(
+			getState().edgesBySectionId[section.id].find((e) => e.id === "e1")!
+				.selected,
+		).toBe(true);
 	});
 
 	describe("deleteElements", () => {
@@ -311,8 +406,19 @@ describe("LadderWorkflowManager", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			section.elements = [railTerminal, contact, coil];
-			const connection = new Connection("c1", { id: railTerminal.id, type: "contact", handle: "source" }, { id: contact.id, type: "coil", handle: "target" });
-			section.connections = [connection, new Connection("c2", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" })];
+			const connection = new Connection(
+				"c1",
+				{ id: railTerminal.id, type: "contact", handle: "source" },
+				{ id: contact.id, type: "coil", handle: "target" },
+			);
+			section.connections = [
+				connection,
+				new Connection(
+					"c2",
+					{ id: contact.id, type: "contact", handle: "source" },
+					{ id: coil.id, type: "coil", handle: "target" },
+				),
+			];
 			const { workflowManager } = setup(section);
 
 			workflowManager.deleteElements(section.id, [contact.id]);
@@ -322,8 +428,12 @@ describe("LadderWorkflowManager", () => {
 			expect(commands).toHaveLength(1);
 			const [command] = commands;
 			expect(command).toBeInstanceOf(ElementsRemoveCommand);
-			expect(command.payload.elements).toEqual([{ sectionId: section.id, element: contact }]);
-			expect(command.payload.connections.map((c: any) => c.connection.id).sort()).toEqual(["c1", "c2"]);
+			expect(command.payload.elements).toEqual([
+				{ sectionId: section.id, element: contact },
+			]);
+			expect(
+				command.payload.connections.map((c: any) => c.connection.id).sort(),
+			).toEqual(["c1", "c2"]);
 		});
 
 		it("ignore les nœuds virtuels (bornes d'alimentation non persistées)", () => {
@@ -340,7 +450,11 @@ describe("LadderWorkflowManager", () => {
 			const contact = createContactElement("A", "NO", 0, 0);
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			section.elements = [contact, coil];
-			const connection = new Connection("c1", { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" });
+			const connection = new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+			);
 			section.connections = [connection];
 			const { workflowManager } = setup(section);
 
@@ -351,7 +465,10 @@ describe("LadderWorkflowManager", () => {
 			expect(commands).toHaveLength(1);
 			const [command] = commands;
 			expect(command).toBeInstanceOf(ConnectionsRemoveCommand);
-			expect(command.payload).toEqual({ sectionId: section.id, connections: [connection] });
+			expect(command.payload).toEqual({
+				sectionId: section.id,
+				connections: [connection],
+			});
 		});
 
 		it("ne dispatche rien si rien n'est à retirer", () => {
@@ -380,14 +497,20 @@ describe("LadderWorkflowManager", () => {
 			const coil = createCoilElement("Q1", "normal", 0, 1);
 			section.elements = [contact, coil];
 			const { workflowManager, getState } = setup(section);
-			const contactNodeBefore = getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!;
+			const contactNodeBefore = getState().nodesBySectionId[section.id].find(
+				(n) => n.id === contact.id,
+			)!;
 
 			const adopted = getState().ladder.copy();
-			const adoptedContact = adopted.sections[0].elements.find((e) => e.id === coil.id)!;
+			const adoptedContact = adopted.sections[0].elements.find(
+				(e) => e.id === coil.id,
+			)!;
 			(adoptedContact.data as any).variable = "Q2";
 			workflowManager.adoptLadder(adopted);
 
-			const contactNodeAfter = getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!;
+			const contactNodeAfter = getState().nodesBySectionId[section.id].find(
+				(n) => n.id === contact.id,
+			)!;
 			expect(contactNodeAfter).toBe(contactNodeBefore);
 			expect(getState().ladder).toBe(adopted);
 		});

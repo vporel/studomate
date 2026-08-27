@@ -9,7 +9,10 @@ describe("nodeOrEdgeContextMenuItems", () => {
 		const [[deleteItem]] = nodeOrEdgeContextMenuItems(edge, handleDelete);
 		deleteItem.onClick!();
 
-		expect(handleDelete).toHaveBeenCalledWith({ nodes: [], edges: [{ id: "e1" }] });
+		expect(handleDelete).toHaveBeenCalledWith({
+			nodes: [],
+			edges: [{ id: "e1" }],
+		});
 	});
 
 	it("supprime un nœud via handleDelete({ nodes: [...] })", () => {
@@ -19,7 +22,10 @@ describe("nodeOrEdgeContextMenuItems", () => {
 		const [[deleteItem]] = nodeOrEdgeContextMenuItems(node, handleDelete);
 		deleteItem.onClick!();
 
-		expect(handleDelete).toHaveBeenCalledWith({ nodes: [{ id: "contact-1" }], edges: [] });
+		expect(handleDelete).toHaveBeenCalledWith({
+			nodes: [{ id: "contact-1" }],
+			edges: [],
+		});
 	});
 
 	it("ne supprime rien pour l'élément 'pane'", () => {

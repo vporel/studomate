@@ -19,12 +19,18 @@ describe("useLadderConnectionKeyboardHandler", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	function setup(edges: any[]) {
-		(useLadderStore as jest.Mock).mockImplementation(selectorImplementation({ commandsStackManager }));
+		(useLadderStore as jest.Mock).mockImplementation(
+			selectorImplementation({ commandsStackManager }),
+		);
 		return renderHook(() => useLadderConnectionKeyboardHandler(edges));
 	}
 
 	function keyEvent(key: string) {
-		return { key, preventDefault: jest.fn(), stopPropagation: jest.fn() } as any;
+		return {
+			key,
+			preventDefault: jest.fn(),
+			stopPropagation: jest.fn(),
+		} as any;
 	}
 
 	it("déplace le coude vers la droite (un quart de cellule) et dispatche ConnectionUpdateCommand", () => {
@@ -95,7 +101,17 @@ describe("useLadderConnectionKeyboardHandler", () => {
 
 	it("ignore une touche autre que gauche/droite", () => {
 		const edges = [
-			{ id: "c1", type: LADDER_CONNECTION_EDGE_TYPE, selected: true, data: { points: [[1, 4], [5, 4]] } },
+			{
+				id: "c1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: true,
+				data: {
+					points: [
+						[1, 4],
+						[5, 4],
+					],
+				},
+			},
 		];
 		const { result } = setup(edges);
 
@@ -105,7 +121,14 @@ describe("useLadderConnectionKeyboardHandler", () => {
 	});
 
 	it("ignore une connexion même-ligne (points vide, aucun segment vertical)", () => {
-		const edges = [{ id: "c1", type: LADDER_CONNECTION_EDGE_TYPE, selected: true, data: { points: [] } }];
+		const edges = [
+			{
+				id: "c1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: true,
+				data: { points: [] },
+			},
+		];
 		const { result } = setup(edges);
 
 		result.current(keyEvent("ArrowRight"));
@@ -115,7 +138,17 @@ describe("useLadderConnectionKeyboardHandler", () => {
 
 	it("ignore si aucune arête sélectionnée", () => {
 		const edges = [
-			{ id: "c1", type: LADDER_CONNECTION_EDGE_TYPE, selected: false, data: { points: [[1, 4], [5, 4]] } },
+			{
+				id: "c1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: false,
+				data: {
+					points: [
+						[1, 4],
+						[5, 4],
+					],
+				},
+			},
 		];
 		const { result } = setup(edges);
 
@@ -126,8 +159,28 @@ describe("useLadderConnectionKeyboardHandler", () => {
 
 	it("ignore si plusieurs arêtes sont sélectionnées (ambigu)", () => {
 		const edges = [
-			{ id: "c1", type: LADDER_CONNECTION_EDGE_TYPE, selected: true, data: { points: [[1, 4], [5, 4]] } },
-			{ id: "c2", type: LADDER_CONNECTION_EDGE_TYPE, selected: true, data: { points: [[1, 8], [5, 8]] } },
+			{
+				id: "c1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: true,
+				data: {
+					points: [
+						[1, 4],
+						[5, 4],
+					],
+				},
+			},
+			{
+				id: "c2",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: true,
+				data: {
+					points: [
+						[1, 8],
+						[5, 8],
+					],
+				},
+			},
 		];
 		const { result } = setup(edges);
 

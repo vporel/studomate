@@ -1,5 +1,9 @@
 export type ManualSubSection = { id: string; label: string };
-export type ManualSection = { id: string; label: string; children?: ManualSubSection[] };
+export type ManualSection = {
+	id: string;
+	label: string;
+	children?: ManualSubSection[];
+};
 
 export const MANUAL_SECTIONS: ManualSection[] = [
 	{ id: "intro", label: "Introduction" },
@@ -28,10 +32,24 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 			{ id: "ladder-sections", label: "Réseaux" },
 			{ id: "ladder-contacts", label: "Contacts" },
 			{ id: "ladder-coils", label: "Bobines" },
+			{ id: "ladder-blocks", label: "Blocs" },
 			{ id: "ladder-connections", label: "Connexions" },
 		],
 	},
 	{ id: "toolbar", label: "Barre d'outils" },
+	{
+		id: "hmi",
+		label: "Interfaces HMI",
+		children: [
+			{ id: "hmi-pages", label: "Pages HMI" },
+			{ id: "hmi-canvas", label: "Canvas" },
+			{ id: "hmi-widgets", label: "Widgets" },
+			{ id: "hmi-properties", label: "Propriétés" },
+			{ id: "hmi-animations", label: "Animations" },
+			{ id: "hmi-events", label: "Événements" },
+			{ id: "hmi-simulation", label: "Simulation HMI" },
+		],
+	},
 	{
 		id: "simulation",
 		label: "Simulation",
@@ -70,7 +88,11 @@ export function flattenManualSections(): FlatManualSection[] {
 		const hasChildren = (section.children?.length ?? 0) > 0;
 		flat.push({ id: section.id, label: section.label, hasChildren });
 		for (const child of section.children ?? []) {
-			flat.push({ id: child.id, label: child.label, parentLabel: section.label });
+			flat.push({
+				id: child.id,
+				label: child.label,
+				parentLabel: section.label,
+			});
 		}
 	}
 	return flat;

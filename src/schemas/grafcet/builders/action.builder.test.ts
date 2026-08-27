@@ -17,28 +17,47 @@ describe("ActionBuilder", () => {
 	});
 
 	it("builds an action with custom expression", () => {
-		const action = new ActionBuilder().id("action-1").expression("x = 10").build();
+		const action = new ActionBuilder()
+			.id("action-1")
+			.expression("x = 10")
+			.build();
 
 		expect(action.data.expression).toBe("x = 10");
 	});
 
 	it("builds an action with custom type", () => {
-		const action = new ActionBuilder().id("action-1").type(ActionType.BOOLEAN_VARIABLE).build();
+		const action = new ActionBuilder()
+			.id("action-1")
+			.type(ActionType.BOOLEAN_VARIABLE)
+			.build();
 
 		expect(action.data.type).toBe(ActionType.BOOLEAN_VARIABLE);
 	});
 
 	it("builds an action with custom execution mode", () => {
-		const action = new ActionBuilder().id("action-1").executionMode(ActionExecutionMode.SET).build();
+		const action = new ActionBuilder()
+			.id("action-1")
+			.executionMode(ActionExecutionMode.SET)
+			.build();
 
 		expect(action.data.executionMode).toBe(ActionExecutionMode.SET);
 	});
 
 	it("builds an action with custom dimensions", () => {
-		const action = new ActionBuilder().id("action-1").dimensions(120, 60).build();
+		const action = new ActionBuilder()
+			.id("action-1")
+			.dimensions(120, 60)
+			.build();
 
 		expect(action.size.width).toBe(120);
 		expect(action.size.height).toBe(60);
+	});
+
+	it("builds an action with a custom width, keeping the default height", () => {
+		const action = new ActionBuilder().id("action-1").width(180).build();
+
+		expect(action.size.width).toBe(180);
+		expect(action.size.height).toBe(Action.DEFAULT_DIMENSIONS.height);
 	});
 
 	it("builds an action with custom position", () => {
@@ -74,8 +93,14 @@ describe("ActionBuilder", () => {
 	});
 
 	it("builds multiple actions independently", () => {
-		const action1 = new ActionBuilder().id("action-1").expression("expr1").build();
-		const action2 = new ActionBuilder().id("action-2").expression("expr2").build();
+		const action1 = new ActionBuilder()
+			.id("action-1")
+			.expression("expr1")
+			.build();
+		const action2 = new ActionBuilder()
+			.id("action-2")
+			.expression("expr2")
+			.build();
 
 		expect(action1.id).toBe("action-1");
 		expect(action1.data.expression).toBe("expr1");

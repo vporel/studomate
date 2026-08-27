@@ -43,6 +43,11 @@ export default class StepBuilder {
 	}
 
 	build(): Step {
-		return new Step(this._id, { ...this._data }, { ...this._position }, { ...this._size });
+		return new Step(
+			this._id,
+			{ ...this._data },
+			{ ...this._position },
+			{ ...this._size },
+		);
 	}
 }

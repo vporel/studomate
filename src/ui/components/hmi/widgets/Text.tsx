@@ -5,10 +5,22 @@ import { Box } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 import useHmiStyleAnimation from "./useHmiStyleAnimation";
 
-const ALIGN_TO_JUSTIFY = { left: "flex-start", center: "center", right: "flex-end" } as const;
+const ALIGN_TO_JUSTIFY = {
+	left: "flex-start",
+	center: "center",
+	right: "flex-end",
+} as const;
 
-const Text = ({ data, selected, onClick }: HmiWidgetComponentProps<TextData>) => {
-	const animated = useHmiStyleAnimation(data.animations?.style);
+const Text = ({
+	data,
+	selected,
+	onClick,
+	animationsEnabled,
+}: HmiWidgetComponentProps<TextData>) => {
+	const animated = useHmiStyleAnimation(
+		data.animations?.style,
+		animationsEnabled ?? false,
+	);
 	const text = animated.text ?? data.text;
 	const align = data.style?.align ?? "center";
 

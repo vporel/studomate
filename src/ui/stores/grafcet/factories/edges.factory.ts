@@ -3,12 +3,14 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractEdgesFactory from "@/ui/stores/shared/abstract-edges.factory";
 
-class EdgesFactory extends AbstractEdgesFactory<GrafcetEdgeType, Grafcet, Connection> {
+class EdgesFactory extends AbstractEdgesFactory<
+	GrafcetEdgeType,
+	Grafcet,
+	Connection
+> {
 	protected getDomainElements(grafcet: Grafcet): Connection[] {
 		return grafcet.connections;
 	}
-
-
 
 	protected buildEdge(connection: Connection): GrafcetEdgeType {
 		return {

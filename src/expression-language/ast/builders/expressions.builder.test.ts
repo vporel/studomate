@@ -20,7 +20,12 @@ describe("ExpressionsBuilder", () => {
 		it("creates addition expression node", () => {
 			const left = LiteralsBuilder.buildNumberNode(5, 0);
 			const right = LiteralsBuilder.buildNumberNode(3, 2);
-			const node = ExpressionsBuilder.buildArithmeticExpressionNode("+", left, right, 0);
+			const node = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"+",
+				left,
+				right,
+				0,
+			);
 
 			expect(node.type).toBe("ARITHMETIC_EXPRESSION");
 			expect(node.operator).toBe("+");
@@ -32,7 +37,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates subtraction expression node", () => {
 			const left = LiteralsBuilder.buildNumberNode(10, 0);
 			const right = LiteralsBuilder.buildNumberNode(4, 2);
-			const node = ExpressionsBuilder.buildArithmeticExpressionNode("-", left, right);
+			const node = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"-",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("-");
 		});
@@ -40,7 +49,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates multiplication expression node", () => {
 			const left = LiteralsBuilder.buildNumberNode(6, 0);
 			const right = LiteralsBuilder.buildNumberNode(7, 2);
-			const node = ExpressionsBuilder.buildArithmeticExpressionNode("*", left, right);
+			const node = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"*",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("*");
 		});
@@ -48,7 +61,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates division expression node", () => {
 			const left = LiteralsBuilder.buildNumberNode(20, 0);
 			const right = LiteralsBuilder.buildNumberNode(4, 2);
-			const node = ExpressionsBuilder.buildArithmeticExpressionNode("/", left, right);
+			const node = ExpressionsBuilder.buildArithmeticExpressionNode(
+				"/",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("/");
 		});
@@ -58,7 +75,12 @@ describe("ExpressionsBuilder", () => {
 		it("creates equality comparison node", () => {
 			const left = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const right = LiteralsBuilder.buildNumberNode(10, 5);
-			const node = ExpressionsBuilder.buildComparisonExpressionNode("=", left, right, 0);
+			const node = ExpressionsBuilder.buildComparisonExpressionNode(
+				"=",
+				left,
+				right,
+				0,
+			);
 
 			expect(node.type).toBe("COMPARISON_EXPRESSION");
 			expect(node.operator).toBe("=");
@@ -69,7 +91,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates inequality comparison node", () => {
 			const left = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const right = LiteralsBuilder.buildNumberNode(5, 5);
-			const node = ExpressionsBuilder.buildComparisonExpressionNode("!=", left, right);
+			const node = ExpressionsBuilder.buildComparisonExpressionNode(
+				"!=",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("!=");
 		});
@@ -77,7 +103,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates less than comparison node", () => {
 			const left = IdentifiersBuilder.buildIdentifierNode("y", 0);
 			const right = IdentifiersBuilder.buildIdentifierNode("x", 5);
-			const node = ExpressionsBuilder.buildComparisonExpressionNode("<", left, right);
+			const node = ExpressionsBuilder.buildComparisonExpressionNode(
+				"<",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("<");
 		});
@@ -85,7 +115,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates greater than or equal comparison node", () => {
 			const left = IdentifiersBuilder.buildIdentifierNode("x", 0);
 			const right = LiteralsBuilder.buildNumberNode(10, 5);
-			const node = ExpressionsBuilder.buildComparisonExpressionNode(">=", left, right);
+			const node = ExpressionsBuilder.buildComparisonExpressionNode(
+				">=",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe(">=");
 		});
@@ -95,7 +129,12 @@ describe("ExpressionsBuilder", () => {
 		it("creates AND expression node", () => {
 			const left = LiteralsBuilder.buildBooleanNode(true, 0);
 			const right = LiteralsBuilder.buildBooleanNode(false, 5);
-			const node = ExpressionsBuilder.buildLogicalExpressionNode("AND", left, right, 0);
+			const node = ExpressionsBuilder.buildLogicalExpressionNode(
+				"AND",
+				left,
+				right,
+				0,
+			);
 
 			expect(node.type).toBe("LOGICAL_EXPRESSION");
 			expect(node.operator).toBe("AND");
@@ -106,7 +145,11 @@ describe("ExpressionsBuilder", () => {
 		it("creates OR expression node", () => {
 			const left = LiteralsBuilder.buildBooleanNode(true, 0);
 			const right = LiteralsBuilder.buildBooleanNode(false, 5);
-			const node = ExpressionsBuilder.buildLogicalExpressionNode("OR", left, right);
+			const node = ExpressionsBuilder.buildLogicalExpressionNode(
+				"OR",
+				left,
+				right,
+			);
 
 			expect(node.operator).toBe("OR");
 		});
@@ -135,7 +178,10 @@ describe("ExpressionsBuilder", () => {
 			const expr1 = LiteralsBuilder.buildBooleanNode(true, 0);
 			const expr2 = LiteralsBuilder.buildBooleanNode(false, 5);
 
-			const node = ExpressionsBuilder.buildChainedLogicalExpressionNode("OR", [expr1, expr2]);
+			const node = ExpressionsBuilder.buildChainedLogicalExpressionNode("OR", [
+				expr1,
+				expr2,
+			]);
 
 			expect(node.operator).toBe("OR");
 			expect(node.left).toBe(expr1);
@@ -145,15 +191,15 @@ describe("ExpressionsBuilder", () => {
 		it("throws on single expression", () => {
 			const expr1 = LiteralsBuilder.buildBooleanNode(true, 0);
 
-			expect(() => ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [expr1])).toThrow(
-				"At least two expressions are required",
-			);
+			expect(() =>
+				ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [expr1]),
+			).toThrow("At least two expressions are required");
 		});
 
 		it("throws on empty expressions", () => {
-			expect(() => ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", [])).toThrow(
-				"At least two expressions are required",
-			);
+			expect(() =>
+				ExpressionsBuilder.buildChainedLogicalExpressionNode("AND", []),
+			).toThrow("At least two expressions are required");
 		});
 
 		it("chains four expressions correctly", () => {

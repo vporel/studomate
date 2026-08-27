@@ -7,7 +7,11 @@ import { ContactMode } from "@/schemas/ladder/element.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { DEFAULT_THEME, ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
+import PageVisibilityContext from "@/ui/components/pages/page-visibility-context";
+import {
+	DEFAULT_THEME,
+	ThemeProvider as AppThemeProvider,
+} from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import ContactNode, { ContactNodeType } from "./ContactNode";
 
@@ -27,10 +31,14 @@ function setup({
 	variable = "E1",
 	mode = "NO" as ContactMode,
 	selected = false,
-	simulationVariablesStates = {} as Record<string, { mnemonic: string; value: boolean }>,
+	simulationVariablesStates = {} as Record<
+		string,
+		{ mnemonic: string; value: boolean }
+	>,
 	highlightedNodesIds = [] as string[],
 	projectVariables = [] as Variable[],
 	executeOperation = jest.fn(),
+	pageVisible = true,
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -59,7 +67,9 @@ function setup({
 	render(
 		<AppThemeProvider>
 			<ReactFlowProvider>
-				<ContactNode {...(props as any)} />
+				<PageVisibilityContext.Provider value={pageVisible}>
+					<ContactNode {...(props as any)} />
+				</PageVisibilityContext.Provider>
 			</ReactFlowProvider>
 		</AppThemeProvider>,
 	);
@@ -101,7 +111,10 @@ describe("ContactNode", () => {
 		it("noire par défaut (ni sélectionné, ni sous tension)", () => {
 			setup({ selected: false, simulationVariablesStates: {} });
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "black");
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
 		});
 
 		it("couleur 'energized' quand une variable de simulation correspondante est à true", () => {
@@ -111,7 +124,23 @@ describe("ContactNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.energizedColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.energizedColor,
+			);
+		});
+
+		it("pas de couleur 'energized' quand la page n'est pas l'onglet actif (bailout PageVisibilityContext)", () => {
+			setup({
+				variable: "E1",
+				pageVisible: false,
+				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
+			});
+
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
 		});
 
 		it("pas de couleur 'energized' si la variable de simulation est à false", () => {
@@ -121,13 +150,19 @@ describe("ContactNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "E1", value: false } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", "black");
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
 		});
 
 		it("couleur 'primary' quand sélectionné", () => {
 			setup({ selected: true, simulationVariablesStates: {} });
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.primaryColor,
+			);
 		});
 
 		it("la sélection l'emporte sur l'état 'energized'", () => {
@@ -137,7 +172,10 @@ describe("ContactNode", () => {
 				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
 			});
 
-			expect(screen.getByTestId("symbol")).toHaveAttribute("data-color", DEFAULT_THEME.light.primaryColor);
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.primaryColor,
+			);
 		});
 	});
 
@@ -181,7 +219,9 @@ describe("ContactNode", () => {
 		it("accepte un mnémonique qui ne correspond à aucune variable déclarée du projet", () => {
 			const { executeOperation } = setup({
 				variable: "E1",
-				projectVariables: [new Variable("v1", "AutreVariable", "logic-input", "BOOL")],
+				projectVariables: [
+					new Variable("v1", "AutreVariable", "logic-input", "BOOL"),
+				],
 			});
 
 			const input = screen.getByRole("combobox");

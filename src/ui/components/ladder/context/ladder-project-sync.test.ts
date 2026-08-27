@@ -23,9 +23,11 @@ describe("syncLadderToProject", () => {
 		const laddersManager = fakeLaddersManager();
 		const unsubscribe = syncLadderToProject(store, laddersManager);
 
-		store.getState().commandsStackManager.executeOperation([
-			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-		]);
+		store
+			.getState()
+			.commandsStackManager.executeOperation([
+				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
+			]);
 
 		expect(laddersManager.updateProgramData).toHaveBeenCalledTimes(1);
 		unsubscribe();
@@ -36,9 +38,11 @@ describe("syncLadderToProject", () => {
 		const laddersManager = fakeLaddersManager();
 		const unsubscribe = syncLadderToProject(store, laddersManager);
 
-		store.getState().commandsStackManager.executeOperation([
-			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-		]);
+		store
+			.getState()
+			.commandsStackManager.executeOperation([
+				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
+			]);
 
 		expect(laddersManager.setStoreValues).toHaveBeenCalledWith(
 			"l1",
@@ -64,9 +68,11 @@ describe("syncLadderToProject", () => {
 		const unsubscribe = syncLadderToProject(store, laddersManager);
 		unsubscribe();
 
-		store.getState().commandsStackManager.executeOperation([
-			new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-		]);
+		store
+			.getState()
+			.commandsStackManager.executeOperation([
+				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
+			]);
 
 		expect(laddersManager.updateProgramData).not.toHaveBeenCalled();
 	});

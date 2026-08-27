@@ -19,7 +19,11 @@ export type StepReferralSourceNodeType = Node<StepReferralSourceData> & {
 
 export type StepReferralSourceNodeProps = NodeProps<StepReferralSourceNodeType>;
 
-const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, selected }) => {
+const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({
+	id,
+	data,
+	selected,
+}) => {
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -30,7 +34,13 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 		setEditing,
 		saveTargetStepNumber,
 		error,
-	] = useWithTextNodeValue(id, "step-referral-source", data, "targetStepNumber", true);
+	] = useWithTextNodeValue(
+		id,
+		"step-referral-source",
+		data,
+		"targetStepNumber",
+		true,
+	);
 
 	return (
 		<>
@@ -95,7 +105,10 @@ const StepReferralSourceNode: FC<StepReferralSourceNodeProps> = ({ id, data, sel
 						if (e.key === "Enter" || e.key === "Escape") {
 							//The save is done only on blur to avoid multiple saves when pressing enter
 							inputRef.current?.blur();
-						} else if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key))) {
+						} else if (
+							e.key.length == 1 &&
+							!range(0, 10).includes(parseInt(e.key))
+						) {
 							e.preventDefault();
 						}
 					}}

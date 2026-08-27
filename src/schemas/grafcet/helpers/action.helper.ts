@@ -23,7 +23,10 @@ export default class ActionHelper {
 				`An action should only be connected to a step. Found a ${connection.source.type}`,
 			);
 		}
-		const step = grafcet.getElementByIdAndType<Step>(connection.source.id, "step");
+		const step = grafcet.getElementByIdAndType<Step>(
+			connection.source.id,
+			"step",
+		);
 		return step || null;
 	}
 }

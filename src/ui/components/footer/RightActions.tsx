@@ -7,12 +7,20 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 const RightActions = () => {
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
-	const analysisHasWarnings = useProjectStore((state) => state.analysisHasWarnings);
-	const setAnalysisResultVisible = useProjectStore((state) => state.setAnalysisResultVisible);
-	const setWatchTablesVisible = useProjectStore((state) => state.setWatchTablesVisible);
+	const analysisHasWarnings = useProjectStore(
+		(state) => state.analysisHasWarnings,
+	);
+	const setAnalysisResultVisible = useProjectStore(
+		(state) => state.setAnalysisResultVisible,
+	);
+	const setWatchTablesVisible = useProjectStore(
+		(state) => state.setWatchTablesVisible,
+	);
 	const mode = useProjectStore((state) => state.mode);
 	const hmiManager = useProjectStore((state) => state.hmiManager);
-	const hasHmiPages = useProjectStore((state) => Object.keys(state.project?.hmiPages ?? {}).length > 0);
+	const hasHmiPages = useProjectStore(
+		(state) => Object.keys(state.project?.hmiPages ?? {}).length > 0,
+	);
 
 	return (
 		<FlexBox centerVertical gap={1} sx={{ justifyContent: "flex-end" }}>
@@ -46,7 +54,11 @@ const RightActions = () => {
 			)}
 			<Button
 				sx={{
-					color: analysisHasErrors ? "red" : analysisHasWarnings ? "orange" : "black",
+					color: analysisHasErrors
+						? "red"
+						: analysisHasWarnings
+							? "orange"
+							: "black",
 					fontWeight: "normal",
 					height: "100%",
 					py: "0",
