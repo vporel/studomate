@@ -15,6 +15,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 	nodes: GrafcetNodeType[];
 	edges: GrafcetEdgeType[];
 }> {
+	protected readonly scope = "grafcet" as const;
 	private setStoreState: GrafcetStoreSetFunction;
 	private getStoreState: GrafcetStoreGetFunction;
 
@@ -51,10 +52,10 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 
 	copyElements(nodes: GrafcetNodeType[], edges: GrafcetEdgeType[]) {
 		if (nodes.length === 0 && edges.length === 0) return;
-		this.clipboard = {
+		this.writeClipboard({
 			nodes: structuredClone(nodes),
 			edges: structuredClone(edges),
-		};
+		});
 	}
 
 	pasteElements(mousePosition?: { x: number; y: number }): {
@@ -64,7 +65,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 		const rfInstance = this.getStoreState().viewManager.rfInstance;
 		const grafcet = this.getStoreState().grafcet;
 		const existingNodes = this.getStoreState().nodes;
-		const copiedElements = this.clipboard;
+		const copiedElements = this.readClipboard();
 		if (!rfInstance || !copiedElements) {
 			return {
 				addedNodes: [],

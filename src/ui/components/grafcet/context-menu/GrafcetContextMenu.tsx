@@ -8,6 +8,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
 	GrafcetNodeType,
@@ -43,8 +44,16 @@ const GrafcetContextMenu = ({
 	});
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
+	const [screenPosition, setScreenPosition] = useState<XYPosition>({
+		x: 0,
+		y: 0,
+	});
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
+	const copyCutPasteManager = useGrafcetStore(
+		(state) => state.copyCutPasteManager,
+	);
+	const canPaste = useClipboardStore((s) => s.entry?.scope === "grafcet");
 	const grafcet = useGrafcetStore((state) => state.grafcet);
 	const grafcetId = grafcet.id;
 	const inSimulation = useProjectStore(
@@ -57,7 +66,14 @@ const GrafcetContextMenu = ({
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
 		const items: ContextMenuItemType[][] = [];
 		if (element.type == "pane") {
-			items.push(...paneContextMenuItems(viewManager));
+			items.push(
+				...paneContextMenuItems(
+					viewManager,
+					copyCutPasteManager,
+					screenPosition,
+					canPaste,
+				),
+			);
 		} else {
 			if (element.type === "step") {
 				const stepVariableId = getStepVariableId(
@@ -87,6 +103,7 @@ const GrafcetContextMenu = ({
 			const commonNodeItems = defaultContextMenuItems(
 				element as GrafcetNodeType,
 				workflowManager,
+				copyCutPasteManager,
 			);
 			if (element.type === "action") {
 				items.push(
@@ -111,6 +128,9 @@ const GrafcetContextMenu = ({
 		element,
 		viewManager,
 		workflowManager,
+		copyCutPasteManager,
+		canPaste,
+		screenPosition,
 		contextMenuEvents,
 		inSimulation,
 		grafcet,
@@ -124,6 +144,7 @@ const GrafcetContextMenu = ({
 		const showMenu = (props: GrafcetContextMenuProps) => {
 			setElement(props.element);
 			setPosition(props.position);
+			setScreenPosition(props.screenPosition);
 			show();
 		};
 		contextMenuEvents.on("show", showMenu);

@@ -6,6 +6,7 @@ import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
+import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
 import {
@@ -27,27 +28,52 @@ const LadderContextMenu = ({
 }) => {
 	const { contextMenuEvents } = useLadderContext();
 	const workflowManager = useLadderStore((state) => state.workflowManager);
+	const copyCutPasteManager = useLadderStore(
+		(state) => state.copyCutPasteManager,
+	);
+	const canPaste = useClipboardStore((s) => s.entry?.scope === "ladder");
 	const [element, setElement] = useState<LadderContextMenuElement>({
 		type: "pane",
 	});
 	const [visible, show, hide] = useBooleanState(false);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
+	const [screenPosition, setScreenPosition] = useState<XYPosition>({
+		x: 0,
+		y: 0,
+	});
 
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
 		if (element.type === "pane") {
-			return paneContextMenuItems(workflowManager, sectionId);
+			return paneContextMenuItems(
+				workflowManager,
+				sectionId,
+				copyCutPasteManager,
+				screenPosition,
+				canPaste,
+			);
 		}
 		const items: ContextMenuItemType[][] = [];
 		if (element.type === "block")
 			items.push(...blockContextMenuItems(element, workflowManager));
-		items.push(...nodeOrEdgeContextMenuItems(element, handleDelete));
+		items.push(
+			...nodeOrEdgeContextMenuItems(element, handleDelete, copyCutPasteManager),
+		);
 		return items;
-	}, [element, workflowManager, sectionId, handleDelete]);
+	}, [
+		element,
+		workflowManager,
+		copyCutPasteManager,
+		canPaste,
+		screenPosition,
+		sectionId,
+		handleDelete,
+	]);
 
 	useEffect(() => {
 		const showMenu = (props: LadderContextMenuProps) => {
 			setElement(props.element);
 			setPosition(props.position);
+			setScreenPosition(props.screenPosition);
 			show();
 		};
 		contextMenuEvents.on("show", showMenu);

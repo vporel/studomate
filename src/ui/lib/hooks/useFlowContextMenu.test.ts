@@ -42,6 +42,7 @@ describe("useFlowContextMenu", () => {
 		expect(mockEmit).toHaveBeenCalledWith("show", {
 			element: { id: "element1" },
 			position: { x: 100, y: 200 },
+			screenPosition: { x: 10, y: 20 },
 		});
 	});
 

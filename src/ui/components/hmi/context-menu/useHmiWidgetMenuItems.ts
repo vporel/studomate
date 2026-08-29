@@ -27,12 +27,12 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 				{
 					label: "Copier",
 					shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
-					onClick: () => copyCutPasteManager.copySelectedWidgets(),
+					onClick: () => copyCutPasteManager.copySelectedElements(),
 				},
 				{
 					label: "Couper",
 					shortcut: platformShortcut("Ctrl+X", "Cmd+X"),
-					onClick: () => copyCutPasteManager.cutSelectedWidgets(),
+					onClick: () => copyCutPasteManager.cutSelectedElements(),
 				},
 			],
 		];

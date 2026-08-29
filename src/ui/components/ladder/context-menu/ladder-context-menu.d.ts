@@ -13,4 +13,5 @@ export type LadderContextMenuElement =
 export type LadderContextMenuProps = {
 	element: LadderContextMenuElement;
 	position: XYPosition;
+	screenPosition: XYPosition;
 };

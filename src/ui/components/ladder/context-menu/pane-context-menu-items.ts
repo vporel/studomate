@@ -1,11 +1,15 @@
 "use client";
 
 import { platformShortcut } from "@/ui/lib/platform";
+import LadderCopyCutPasteManager from "@/ui/stores/ladder/managers/copy-cut-paste.manager";
 import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager";
 
 export default function paneContextMenuItems(
 	workflowManager: LadderWorkflowManager,
 	sectionId: string,
+	copyCutPasteManager: LadderCopyCutPasteManager,
+	screenPosition: { x: number; y: number },
+	canPaste: boolean,
 ): {
 	label: string;
 	shortcut?: string;
@@ -26,6 +30,14 @@ export default function paneContextMenuItems(
 				label: "Sélectionner les liaisons",
 				onClick: () => workflowManager.selectAllEdges(sectionId),
 				disabled: edges.length === 0,
+			},
+		],
+		[
+			{
+				label: "Coller",
+				shortcut: platformShortcut("Ctrl + V", "Cmd + V"),
+				onClick: () => copyCutPasteManager.pasteElements(screenPosition),
+				disabled: !canPaste,
 			},
 		],
 	];

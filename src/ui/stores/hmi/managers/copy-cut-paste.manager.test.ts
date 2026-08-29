@@ -1,5 +1,9 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
+import {
+	clearClipboard,
+	setClipboardEntry,
+} from "@/ui/stores/shared/clipboard.store";
 import { createHmiStore } from "../hmi.store";
 
 function buildStore() {
@@ -8,14 +12,16 @@ function buildStore() {
 }
 
 describe("HmiCopyCutPasteManager", () => {
-	describe("copySelectedWidgets / pasteWidgets", () => {
+	beforeEach(() => clearClipboard());
+
+	describe("copySelectedElements / pasteElements", () => {
 		it("ne fait rien si rien n'est sélectionné", () => {
 			const store = buildStore();
 			store.getState().addWidget("push-button", 0, 0);
 			store.getState().clearSelection();
 
-			store.getState().copyCutPasteManager.copySelectedWidgets();
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
@@ -25,8 +31,8 @@ describe("HmiCopyCutPasteManager", () => {
 			const original = store.getState().addWidget("push-button", 10, 20);
 			store.getState().selectWidget(original.id);
 
-			store.getState().copyCutPasteManager.copySelectedWidgets();
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			const widgets = Object.values(store.getState().hmiPage.widgets);
 			expect(widgets).toHaveLength(2);
@@ -40,14 +46,14 @@ describe("HmiCopyCutPasteManager", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("indicator", 10, 20);
 			store.getState().selectWidget(original.id);
-			store.getState().copyCutPasteManager.copySelectedWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
 
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.pasteElements();
 			const firstPaste = Object.values(store.getState().hmiPage.widgets).find(
 				(w) => w.id !== original.id,
 			)!;
 
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.pasteElements();
 			const widgets = Object.values(store.getState().hmiPage.widgets);
 			expect(widgets).toHaveLength(3);
 			const secondPaste = widgets.find(
@@ -60,9 +66,9 @@ describe("HmiCopyCutPasteManager", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("push-button", 10, 20);
 			store.getState().selectWidget(original.id);
-			store.getState().copyCutPasteManager.copySelectedWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
 
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.pasteElements();
 			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(2);
 
 			store.getState().commandsStackManager.undoOperation();
@@ -70,15 +76,15 @@ describe("HmiCopyCutPasteManager", () => {
 		});
 	});
 
-	describe("pasteWidgets - stackOrder", () => {
+	describe("pasteElements - stackOrder", () => {
 		it("place le widget collé au premier plan", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("push-button", 10, 20);
 			store.getState().addWidget("indicator", 50, 50); // stackOrder 1, le plus haut
 			store.getState().selectWidget(original.id);
 
-			store.getState().copyCutPasteManager.copySelectedWidgets();
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			const pasted = Object.values(store.getState().hmiPage.widgets).find(
 				(w) => w.id !== original.id && w.type === "push-button",
@@ -102,8 +108,8 @@ describe("HmiCopyCutPasteManager", () => {
 
 			// Ordre de sélection volontairement différent de l'ordre par stackOrder.
 			store.getState().setSelection([w10.id, w5.id, w9.id]);
-			store.getState().copyCutPasteManager.copySelectedWidgets();
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			const widgets = Object.values(store.getState().hmiPage.widgets);
 			const pastedFrom = (original: { type: string }) =>
@@ -120,15 +126,15 @@ describe("HmiCopyCutPasteManager", () => {
 		});
 	});
 
-	describe("pasteWidgets - name", () => {
+	describe("pasteElements - name", () => {
 		it("attribue un nouveau nom unique à chaque widget collé, plutôt que de garder celui de l'original", () => {
 			const store = buildStore();
 			const w1 = store.getState().addWidget("rectangle", 0, 0);
 			const w2 = store.getState().addWidget("rectangle", 0, 0);
 			store.getState().setSelection([w1.id, w2.id]);
 
-			store.getState().copyCutPasteManager.copySelectedWidgets();
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			const pastedNames = Object.values(store.getState().hmiPage.widgets)
 				.filter((w) => w.id !== w1.id && w.id !== w2.id)
@@ -138,17 +144,17 @@ describe("HmiCopyCutPasteManager", () => {
 		});
 	});
 
-	describe("cutSelectedWidgets", () => {
+	describe("cutSelectedElements", () => {
 		it("copie puis retire les widgets sélectionnés", () => {
 			const store = buildStore();
 			const w1 = store.getState().addWidget("push-button", 0, 0);
 			store.getState().selectWidget(w1.id);
 
-			store.getState().copyCutPasteManager.cutSelectedWidgets();
+			store.getState().copyCutPasteManager.cutSelectedElements();
 
 			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(0);
 
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.pasteElements();
 			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 			expect(Object.values(store.getState().hmiPage.widgets)[0].type).toBe(
 				"push-button",
@@ -160,21 +166,21 @@ describe("HmiCopyCutPasteManager", () => {
 			store.getState().addWidget("push-button", 0, 0);
 			store.getState().clearSelection();
 
-			store.getState().copyCutPasteManager.cutSelectedWidgets();
+			store.getState().copyCutPasteManager.cutSelectedElements();
 
 			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
 	});
 
-	describe("pasteWidgets avec position du curseur", () => {
+	describe("pasteElements avec position du curseur", () => {
 		it("centre le collage sur la position convertie par screenToCanvasPosition quand disponible", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("push-button", 0, 0);
 			store.getState().selectWidget(original.id);
-			store.getState().copyCutPasteManager.copySelectedWidgets();
+			store.getState().copyCutPasteManager.copySelectedElements();
 			store.getState().setScreenToCanvasPosition(() => ({ x: 400, y: 300 }));
 
-			store.getState().copyCutPasteManager.pasteWidgets();
+			store.getState().copyCutPasteManager.pasteElements();
 
 			const pasted = Object.values(store.getState().hmiPage.widgets).find(
 				(w) => w.id !== original.id,
@@ -183,6 +189,52 @@ describe("HmiCopyCutPasteManager", () => {
 			const centerY = pasted.position.y + pasted.size.height / 2;
 			expect(centerX).toBe(400);
 			expect(centerY).toBe(300);
+		});
+	});
+
+	describe("presse-papiers partagé entre pages", () => {
+		it("colle dans une autre page HMI ce qui a été copié dans la première", () => {
+			const pageA = createHmiStore(
+				HmiPage.create("Vue A"),
+				new CommandsStack<HmiPage>(100),
+			);
+			const pageB = createHmiStore(
+				HmiPage.create("Vue B"),
+				new CommandsStack<HmiPage>(100),
+			);
+			const original = pageA.getState().addWidget("push-button", 10, 20);
+			pageA.getState().selectWidget(original.id);
+			pageA.getState().copyCutPasteManager.copySelectedElements();
+
+			pageB.getState().copyCutPasteManager.pasteElements();
+
+			const widgetsB = Object.values(pageB.getState().hmiPage.widgets);
+			expect(widgetsB).toHaveLength(1);
+			expect(widgetsB[0].type).toBe("push-button");
+			expect(Object.values(pageA.getState().hmiPage.widgets)).toHaveLength(1);
+		});
+
+		it("ne colle rien si le presse-papiers vient d'un autre type de page", () => {
+			const store = buildStore();
+			store.getState().addWidget("push-button", 0, 0);
+			// Presse-papiers rempli par une autre couche (grafcet).
+			setClipboardEntry({ scope: "grafcet", data: { nodes: [], edges: [] } });
+
+			store.getState().copyCutPasteManager.pasteElements();
+
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
+		});
+
+		it("ne colle rien après vidage du presse-papiers (changement de projet)", () => {
+			const store = buildStore();
+			const original = store.getState().addWidget("push-button", 0, 0);
+			store.getState().selectWidget(original.id);
+			store.getState().copyCutPasteManager.copySelectedElements();
+
+			clearClipboard();
+			store.getState().copyCutPasteManager.pasteElements();
+
+			expect(Object.values(store.getState().hmiPage.widgets)).toHaveLength(1);
 		});
 	});
 });

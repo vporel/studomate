@@ -25,6 +25,9 @@ export default function useFlowContextMenu<TElement>(
 			contextMenuEvents.emit("show", {
 				element,
 				position: screenToFlowPosition({ x: event.clientX, y: event.clientY }),
+				//Coordonnées écran brutes : le collage (grafcet/ladder) en a besoin tel quel
+				//(`elementsFromPoint`, `rfInstance.screenToFlowPosition`).
+				screenPosition: { x: event.clientX, y: event.clientY },
 			});
 		},
 		[contextMenuEvents, screenToFlowPosition, canOpen],

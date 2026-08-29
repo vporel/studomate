@@ -1,9 +1,15 @@
 "use client";
 
 import { platformShortcut } from "@/ui/lib/platform";
+import GrafcetCopyCutPasteManager from "@/ui/stores/grafcet/managers/copy-cut-paste.manager";
 import GrafcetViewManager from "@/ui/stores/grafcet/managers/view.manager";
 
-export default function paneContextMenuItems(viewManager: GrafcetViewManager): {
+export default function paneContextMenuItems(
+	viewManager: GrafcetViewManager,
+	copyCutPasteManager: GrafcetCopyCutPasteManager,
+	screenPosition: { x: number; y: number },
+	canPaste: boolean,
+): {
 	label: string;
 	shortcut?: string;
 	onClick: () => void;
@@ -23,6 +29,14 @@ export default function paneContextMenuItems(viewManager: GrafcetViewManager): {
 				label: "Sélectionner les liaisons",
 				onClick: () => viewManager.selectAllEdges(),
 				disabled: edges.length == 0,
+			},
+		],
+		[
+			{
+				label: "Coller",
+				shortcut: platformShortcut("Ctrl + V", "Cmd + V"),
+				onClick: () => copyCutPasteManager.pasteElements(screenPosition),
+				disabled: !canPaste,
 			},
 		],
 		[

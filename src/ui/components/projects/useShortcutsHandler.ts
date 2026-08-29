@@ -1,8 +1,11 @@
 "use client";
 
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
+import { getClipboardEntry } from "@/ui/stores/shared/clipboard.store";
+import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
@@ -21,6 +24,11 @@ export default function useShortcutsHandler() {
 	const projectStore = useProjectContext();
 
 	useEffect(() => {
+		const getActiveCopyCutPasteManager = () =>
+			projectStore
+				? activeCopyCutPasteManager(projectStore.getState())
+				: null;
+
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const isInput =
 				(e.target as HTMLElement).tagName === "INPUT" ||
@@ -95,58 +103,35 @@ export default function useShortcutsHandler() {
 					case "c": {
 						e.stopPropagation();
 						e.preventDefault();
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const copyCutPasteManager =
-								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.copySelectedElements();
-						} else if (activeScopeType === "ladder") {
-							const copyCutPasteManager =
-								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.copySelectedElements();
-						} else if (activeScopeType === "hmi") {
-							hmiManager
-								.getActiveStoreManagers()
-								?.copyCutPasteManager.copySelectedWidgets();
-						}
+						getActiveCopyCutPasteManager()?.copySelectedElements();
 						break;
 					}
 					case "v": {
 						e.stopPropagation();
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const copyCutPasteManager =
-								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.pasteElements(getLastMousePosition());
-						} else if (activeScopeType === "ladder") {
-							const copyCutPasteManager =
-								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.pasteElements(getLastMousePosition());
-						} else if (activeScopeType === "hmi") {
-							hmiManager
-								.getActiveStoreManagers()
-								?.copyCutPasteManager.pasteWidgets();
+						const entry = getClipboardEntry();
+						if (
+							entry &&
+							(activeScopeType === "grafcet" ||
+								activeScopeType === "ladder" ||
+								activeScopeType === "hmi") &&
+							entry.scope !== activeScopeType
+						) {
+							toast.error(
+								"Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page.",
+							);
+							break;
 						}
+						getActiveCopyCutPasteManager()?.pasteElements(
+							getLastMousePosition(),
+						);
 						break;
 					}
 					case "x": {
 						e.stopPropagation();
 						e.preventDefault();
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const copyCutPasteManager =
-								grafcetsManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.cutSelectedElements();
-						} else if (activeScopeType === "ladder") {
-							const copyCutPasteManager =
-								laddersManager.getActiveStoreManagers()?.copyCutPasteManager;
-							copyCutPasteManager?.cutSelectedElements();
-						} else if (activeScopeType === "hmi") {
-							hmiManager
-								.getActiveStoreManagers()
-								?.copyCutPasteManager.cutSelectedWidgets();
-						}
+						getActiveCopyCutPasteManager()?.cutSelectedElements();
 						break;
 					}
 				}

@@ -1,13 +1,27 @@
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 
+const fakeCopyCutPasteManager = () =>
+	({
+		copySelectedElements: jest.fn(),
+		cutSelectedElements: jest.fn(),
+	}) as any;
+
+function deleteItemFor(element: any, handleDelete: jest.Mock) {
+	const [, [deleteItem]] = nodeOrEdgeContextMenuItems(
+		element,
+		handleDelete,
+		fakeCopyCutPasteManager(),
+	);
+	return deleteItem;
+}
+
 describe("nodeOrEdgeContextMenuItems", () => {
 	it("supprime une arête via handleDelete({ edges: [...] })", () => {
 		const handleDelete = jest.fn();
 		const edge = { id: "e1", type: LADDER_CONNECTION_EDGE_TYPE } as any;
 
-		const [[deleteItem]] = nodeOrEdgeContextMenuItems(edge, handleDelete);
-		deleteItem.onClick!();
+		deleteItemFor(edge, handleDelete).onClick!();
 
 		expect(handleDelete).toHaveBeenCalledWith({
 			nodes: [],
@@ -19,8 +33,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 		const handleDelete = jest.fn();
 		const node = { id: "contact-1", type: "contact" } as any;
 
-		const [[deleteItem]] = nodeOrEdgeContextMenuItems(node, handleDelete);
-		deleteItem.onClick!();
+		deleteItemFor(node, handleDelete).onClick!();
 
 		expect(handleDelete).toHaveBeenCalledWith({
 			nodes: [{ id: "contact-1" }],
@@ -30,11 +43,24 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 	it("ne supprime rien pour l'élément 'pane'", () => {
 		const handleDelete = jest.fn();
-		const pane = { type: "pane" } as any;
 
-		const [[deleteItem]] = nodeOrEdgeContextMenuItems(pane, handleDelete);
-		deleteItem.onClick!();
+		deleteItemFor({ type: "pane" } as any, handleDelete).onClick!();
 
 		expect(handleDelete).not.toHaveBeenCalled();
+	});
+
+	it("délègue Copier / Couper au gestionnaire copier-coller", () => {
+		const ccp = fakeCopyCutPasteManager();
+		const [[copyItem, cutItem]] = nodeOrEdgeContextMenuItems(
+			{ id: "contact-1", type: "contact" } as any,
+			jest.fn(),
+			ccp,
+		);
+
+		copyItem.onClick!();
+		cutItem.onClick!();
+
+		expect(ccp.copySelectedElements).toHaveBeenCalled();
+		expect(ccp.cutSelectedElements).toHaveBeenCalled();
 	});
 });

@@ -6,55 +6,63 @@ import WidgetAddCommand from "@/schemas/hmi/commands/widget-add.command";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { createRandomId } from "@/ids";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
+import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";
 
 /** Repli quand le curseur n'est pas au-dessus du canvas (ex. collage déclenché depuis un menu
  * ailleurs à l'écran) : décale d'un pas fixe pour ne jamais empiler sur les originaux. */
 const PASTE_FALLBACK_OFFSET = 20;
 
-export default class HmiCopyCutPasteManager {
+export default class HmiCopyCutPasteManager extends AbstractCopyCutPasteManager<{
+	widgets: HmiWidget[];
+}> {
+	protected readonly scope = "hmi" as const;
 	private setStoreState: HmiStoreSetFunction;
 	private getStoreState: HmiStoreGetFunction;
-	private clipboard: HmiWidget[] | null = null;
 
 	constructor(
 		setStoreState: HmiStoreSetFunction,
 		getStoreState: HmiStoreGetFunction,
 	) {
+		super();
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}
 
-	copySelectedWidgets(): void {
+	copySelectedElements(): void {
 		const { hmiPage, selectedWidgetIds } = this.getStoreState();
 		const widgets = Object.values(hmiPage.widgets).filter((w) =>
 			selectedWidgetIds.includes(w.id),
 		);
 		if (widgets.length === 0) return;
-		this.clipboard = Object.values(widgets).map((w) => w.copy());
+		this.writeClipboard({ widgets: widgets.map((w) => w.copy()) });
 	}
 
-	cutSelectedWidgets(): void {
-		if (this.getStoreState().selectedWidgetIds.length === 0) return;
-		this.copySelectedWidgets();
+	protected isSelectionEmpty(): boolean {
+		return this.getStoreState().selectedWidgetIds.length === 0;
+	}
+
+	protected deleteSelectedElements(): void {
 		this.getStoreState().removeSelectedWidgets();
 	}
 
 	/** Colle sous le curseur quand il survole le canvas (comme le grafcet/ladder), sinon avec un
 	 * décalage fixe depuis la position d'origine. */
-	pasteWidgets(): void {
-		if (!this.clipboard || this.clipboard.length === 0) return;
+	pasteElements(mousePosition?: { x: number; y: number }): void {
+		const clipboard = this.readClipboard();
+		if (!clipboard || clipboard.widgets.length === 0) return;
+		const widgets = clipboard.widgets;
 
-		const boundsLeft = Math.min(...this.clipboard.map((w) => w.position.x));
-		const boundsTop = Math.min(...this.clipboard.map((w) => w.position.y));
+		const boundsLeft = Math.min(...widgets.map((w) => w.position.x));
+		const boundsTop = Math.min(...widgets.map((w) => w.position.y));
 		const boundsRight = Math.max(
-			...this.clipboard.map((w) => w.position.x + w.size.width),
+			...widgets.map((w) => w.position.x + w.size.width),
 		);
 		const boundsBottom = Math.max(
-			...this.clipboard.map((w) => w.position.y + w.size.height),
+			...widgets.map((w) => w.position.y + w.size.height),
 		);
 
-		const cursor = getLastMousePosition();
+		const cursor = mousePosition ?? getLastMousePosition();
 		const cursorCanvasPosition =
 			this.getStoreState().screenToCanvasPosition?.(cursor.x, cursor.y) ?? null;
 
@@ -88,7 +96,7 @@ export default class HmiCopyCutPasteManager {
 			Object.values(this.getStoreState().hmiPage.widgets),
 		);
 		const stackOrderByOriginalId = new Map(
-			[...this.clipboard]
+			[...widgets]
 				.sort((a, b) => a.stackOrder - b.stackOrder)
 				.map((widget, i) => [widget.id, baseStackOrder + i] as const),
 		);
@@ -97,7 +105,7 @@ export default class HmiCopyCutPasteManager {
 		// `HmiWidgetBase.name`) — accumule au fil du collage pour que deux widgets du même type
 		// collés ensemble ne reçoivent pas le même nom.
 		const namingContext = Object.values(this.getStoreState().hmiPage.widgets);
-		const newWidgets = this.clipboard.map((widget) => {
+		const newWidgets = widgets.map((widget) => {
 			const x = Math.max(
 				0,
 				Math.min(HMI_CANVAS_WIDTH - widget.size.width, widget.position.x + dx),
@@ -143,6 +151,6 @@ export default class HmiCopyCutPasteManager {
 		}));
 		//Coller à nouveau décale depuis la position déjà collée, pas depuis l'original — sans quoi
 		//des collages répétés au même endroit du canvas s'empileraient exactement.
-		this.clipboard = newWidgets;
+		this.writeClipboard({ widgets: newWidgets });
 	}
 }

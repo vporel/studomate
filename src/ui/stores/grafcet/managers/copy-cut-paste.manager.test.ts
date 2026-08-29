@@ -9,6 +9,10 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import {
+	clearClipboard,
+	setClipboardEntry,
+} from "@/ui/stores/shared/clipboard.store";
 import { createGrafcetStore } from "../grafcet.store";
 
 /**
@@ -52,6 +56,8 @@ function selectStep(store: ReturnType<typeof buildStore>) {
 }
 
 describe("GrafcetCopyCutPasteManager", () => {
+	beforeEach(() => clearClipboard());
+
 	describe("copySelectedElements / pasteElements", () => {
 		it("ne colle rien si le presse-papiers est vide", () => {
 			const store = buildStore();
@@ -217,6 +223,56 @@ describe("GrafcetCopyCutPasteManager", () => {
 				addedNodes.find((n) => (n.data as StepData).number !== 1) ??
 				addedNodes[0];
 			expect(pastedStep1.position).not.toEqual(originalStep1.position);
+		});
+	});
+
+	describe("presse-papiers partagé entre pages", () => {
+		it("colle dans un autre grafcet ce qui a été copié dans le premier", () => {
+			const storeA = buildStore();
+			selectStep(storeA);
+			storeA.getState().copyCutPasteManager.copySelectedElements();
+
+			const grafcetB = new GrafcetBuilder().id("g2").build();
+			const storeB = createGrafcetStore(
+				grafcetB,
+				new CommandsStack<Grafcet>(100),
+				() => Dialect.FR,
+			);
+			storeB.getState().viewManager.rfInstance = fakeRfInstance();
+
+			const { addedNodes } = storeB
+				.getState()
+				.copyCutPasteManager.pasteElements();
+
+			expect(addedNodes).toHaveLength(1);
+			expect(storeB.getState().nodes.some((n) => n.id === addedNodes[0].id)).toBe(
+				true,
+			);
+			expect(storeA.getState().nodes).toHaveLength(1);
+		});
+
+		it("ne colle rien si le presse-papiers vient d'un autre type de page", () => {
+			const store = buildStore();
+			setClipboardEntry({ scope: "ladder", data: { elements: [], connections: [] } });
+
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
+
+			expect(addedNodes).toHaveLength(0);
+		});
+
+		it("ne colle rien après vidage du presse-papiers (changement de projet)", () => {
+			const store = buildStore();
+			selectStep(store);
+			store.getState().copyCutPasteManager.copySelectedElements();
+
+			clearClipboard();
+			const { addedNodes } = store
+				.getState()
+				.copyCutPasteManager.pasteElements();
+
+			expect(addedNodes).toHaveLength(0);
 		});
 	});
 

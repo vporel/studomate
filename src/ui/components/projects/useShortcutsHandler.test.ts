@@ -8,11 +8,17 @@ import {
 } from "@/ui/components/projects/ProjectContext";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import {
+	clearClipboard,
+	setClipboardEntry,
+} from "@/ui/stores/shared/clipboard.store";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
+import { toast } from "react-toastify";
 import useShortcutsHandler from "./useShortcutsHandler";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/lib/mouse-position");
+jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
 function dispatchShortcut(
 	key: string,
@@ -90,6 +96,7 @@ describe("useShortcutsHandler", () => {
 		return renderHook(() => useShortcutsHandler());
 	}
 
+	beforeEach(() => clearClipboard());
 	afterEach(() => jest.clearAllMocks());
 
 	it("opens the open-project modal on Ctrl+O while designing", () => {
@@ -171,6 +178,16 @@ describe("useShortcutsHandler", () => {
 		dispatchShortcut("v");
 		expect(copySelectedElements).toHaveBeenCalled();
 		expect(pasteElements).toHaveBeenCalledWith({ x: 1, y: 2 });
+	});
+
+	it("shows a toast and does not paste when the clipboard holds another page type", () => {
+		setup(ProjectMode.DESIGN, "grafcet");
+		setClipboardEntry({ scope: "ladder", data: {} });
+
+		dispatchShortcut("v");
+
+		expect(pasteElements).not.toHaveBeenCalled();
+		expect(toast.error).toHaveBeenCalled();
 	});
 
 	it("cuts selected elements on Ctrl+X for a grafcet", () => {

@@ -11,6 +11,10 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
+	clearClipboard,
+	setClipboardEntry,
+} from "@/ui/stores/shared/clipboard.store";
+import {
 	GRID_CELL_HEIGHT,
 	GRID_CELL_WIDTH,
 	POWER_RAIL_OFFSET,
@@ -54,6 +58,8 @@ function stubElementsFromPoint(sectionId: string) {
 }
 
 describe("LadderCopyCutPasteManager (ladder)", () => {
+	beforeEach(() => clearClipboard());
+
 	describe("copySelectedElements / pasteElements", () => {
 		it("ne colle rien si le presse-papiers est vide", () => {
 			const { store } = buildStore();
@@ -199,6 +205,63 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 				.map((e) => e.id);
 			expect(pastedElementIds).toContain(pastedConnection.source.id);
 			expect(pastedElementIds).toContain(pastedConnection.target.id);
+		});
+	});
+
+	describe("presse-papiers partagé entre pages", () => {
+		it("colle dans un autre ladder ce qui a été copié dans le premier", () => {
+			const { store: storeA, contactId } = buildStore();
+			selectNode(storeA, "s1", contactId);
+			storeA.getState().copyCutPasteManager.copySelectedElements();
+
+			const sectionB = new Section("s2", "Section B", "", []);
+			const ladderB = new Ladder("l2", "LadderB", [sectionB]);
+			const storeB = createLadderStore(ladderB, new CommandsStack<Ladder>(100));
+			stubElementsFromPoint("s2");
+			storeB
+				.getState()
+				.viewManager.registerInstance(
+					"s2",
+					fakeRfInstance({
+						x: POWER_RAIL_OFFSET + 3 * GRID_CELL_WIDTH,
+						y: 5 * GRID_CELL_HEIGHT,
+					}),
+				);
+
+			storeB.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			expect(
+				storeB.getState().ladder.getSection("s2")!.elements.length,
+			).toBeGreaterThan(0);
+			expect(storeA.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+		});
+
+		it("ne colle rien si le presse-papiers vient d'un autre type de page", () => {
+			const { store } = buildStore();
+			stubElementsFromPoint("s1");
+			store
+				.getState()
+				.viewManager.registerInstance("s1", fakeRfInstance({ x: 0, y: 0 }));
+			setClipboardEntry({ scope: "grafcet", data: { nodes: [], edges: [] } });
+
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+		});
+
+		it("ne colle rien après vidage du presse-papiers (changement de projet)", () => {
+			const { store, contactId } = buildStore();
+			stubElementsFromPoint("s1");
+			store
+				.getState()
+				.viewManager.registerInstance("s1", fakeRfInstance({ x: 0, y: 0 }));
+			selectNode(store, "s1", contactId);
+			store.getState().copyCutPasteManager.copySelectedElements();
+
+			clearClipboard();
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
 		});
 	});
 

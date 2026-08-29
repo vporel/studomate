@@ -9,4 +9,5 @@ export type GrafcetContextMenuElement =
 export type GrafcetContextMenuProps = {
 	element: GrafcetContextMenuElement;
 	position: XYPosition;
+	screenPosition: XYPosition;
 };

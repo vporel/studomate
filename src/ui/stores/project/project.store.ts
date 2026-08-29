@@ -51,6 +51,7 @@ import {
 } from "@/ui/lib/pages-url";
 import { getPagesSession } from "@/ui/lib/pages-session-storage";
 import { performRedo, performUndo } from "./undo-redo";
+import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
 import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
 
 type SimpleCallback = () => void;
@@ -388,6 +389,9 @@ export const createProjectStore = () => {
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
 		get().hmiManager.clearCommandsStacks();
+		//Le presse-papiers aussi : ses éléments référencent des variables par id, sans validité
+		//dans un autre projet.
+		clearClipboard();
 		const initialPagesData = getInitialPagesData();
 		set(() => ({
 			project: project,

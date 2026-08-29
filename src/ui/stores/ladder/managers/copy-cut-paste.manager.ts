@@ -26,6 +26,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	elements: LadderElement[];
 	connections: Connection[];
 }> {
+	protected readonly scope = "ladder" as const;
 	private setStoreState: LadderStoreSetFunction;
 	private getStoreState: LadderStoreGetFunction;
 
@@ -110,14 +111,15 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 
 	copyElements(elements: LadderElement[], connections: Connection[]): void {
 		if (elements.length === 0 && connections.length === 0) return;
-		this.clipboard = {
+		this.writeClipboard({
 			elements: structuredClone(elements),
 			connections: structuredClone(connections),
-		};
+		});
 	}
 
 	pasteElements(mousePosition?: { x: number; y: number }): void {
-		if (!this.clipboard || this.clipboard.elements.length === 0) return;
+		const clipboard = this.readClipboard();
+		if (!clipboard || clipboard.elements.length === 0) return;
 		if (!mousePosition) return;
 
 		// Trouver la section sous le curseur
@@ -152,13 +154,13 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 
 		// Bounding box des éléments copiés
 		const minRow = Math.min(
-			...this.clipboard.elements.map((e) => e.position.row),
+			...clipboard.elements.map((e) => e.position.row),
 		);
 		const minCol = Math.min(
-			...this.clipboard.elements.map((e) => e.position.col),
+			...clipboard.elements.map((e) => e.position.col),
 		);
 		const maxCol = Math.max(
-			...this.clipboard.elements.map((e) => e.position.col),
+			...clipboard.elements.map((e) => e.position.col),
 		);
 
 		const width = maxCol - minCol + 1;
@@ -187,7 +189,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			collision = false;
 			let maxRowInCollision = -1;
 
-			for (const copiedEl of this.clipboard.elements) {
+			for (const copiedEl of clipboard.elements) {
 				const r = copiedEl.position.row + offsetRow;
 				const c = copiedEl.position.col + offsetCol;
 				const cEnd = c + getElementWidth(copiedEl) - 1;
@@ -215,7 +217,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 
 		// Création des nouveaux éléments
 		const idMap = new Map<string, string>();
-		const newElements = this.clipboard.elements.map((el) => {
+		const newElements = clipboard.elements.map((el) => {
 			const newId = createRandomId();
 			idMap.set(el.id, newId);
 			return {
@@ -229,7 +231,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		});
 
 		// Création des nouvelles connexions
-		const newConnections = this.clipboard.connections
+		const newConnections = clipboard.connections
 			.map((conn) => {
 				const sourceId = idMap.get(conn.source.id);
 				const targetId = idMap.get(conn.target.id);
