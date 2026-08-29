@@ -1,4 +1,4 @@
-import { BlockPortSpec } from "../ladder/block-port.schema";
+import { BlockPortSpec } from "../block-port.schema";
 import {
 	getBlockVariableMnemonics,
 	validateBlockName,

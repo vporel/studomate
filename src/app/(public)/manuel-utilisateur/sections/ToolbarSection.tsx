@@ -67,6 +67,7 @@ export default function ToolbarSection() {
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
 				<li>{`Contact NO, NF, P (front montant) et N (front descendant)`}</li>
 				<li>{`Bobine normale, Set et Reset`}</li>
+				<li>{`Blocs Comparaison, Affectation et Calcul (les autres blocs systèmes se glissent depuis l'explorateur)`}</li>
 				<li>{`Bouton "Section" — ajoute un nouveau réseau au ladder`}</li>
 			</Typography>
 			<Typography mb={2}>

@@ -4,7 +4,7 @@
 import { renderHook } from "@testing-library/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useGotoProgram from "@/ui/components/projects/useGotoProgram";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import useBlockInstanceMenuItems from "./useBlockInstanceMenuItems";
 
 jest.mock("@/ui/components/projects/ProjectContext");

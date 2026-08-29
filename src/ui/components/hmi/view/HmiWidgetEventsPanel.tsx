@@ -2,6 +2,7 @@
 
 import { HmiAction, HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -13,15 +14,6 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-
-/** Événements exposés par type de widget — absent (ou liste vide) pour un type qui n'en déclenche
- * aucun. Sert aussi à décider si le bloc "Événements" doit s'afficher pour le widget sélectionné
- * (voir `HmiCanvas`). */
-export const HMI_WIDGET_EVENTS: Partial<
-	Record<HmiWidget["type"], { name: string; label: string }[]>
-> = {
-	"push-button": [{ name: "onPress", label: "Bouton pressé" }],
-};
 
 const HMI_ACTION_TYPES: { value: HmiAction["type"]; label: string }[] = [
 	{ value: "navigate-to-page", label: "Changer de page" },
@@ -42,11 +34,11 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 	const project = useProjectStore((s) => s.project);
 	const hmiPages = Object.values(project?.hmiPages ?? {});
 
-	const events = HMI_WIDGET_EVENTS[widget.type];
-	if (!events) return null;
+	const events = HMI_WIDGET_UI[widget.type].events;
+	if (events.length === 0) return null;
 
 	// `events` n'existe pas forcément encore sur `widget.data` (absent tant qu'aucune action n'a
-	// été ajoutée) — `HMI_WIDGET_EVENTS[widget.type]` garantit déjà que ce type de widget le porte.
+	// été ajoutée) — `HMI_WIDGET_UI[widget.type].events` garantit déjà que ce type de widget le porte.
 	const widgetEvents = (widget.data as { events?: Record<string, HmiAction[]> })
 		.events;
 

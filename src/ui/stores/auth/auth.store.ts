@@ -23,6 +23,8 @@ export type AuthStoreState = {
 	loading: boolean;
 	ui: {
 		authModalVisible: boolean;
+		/** Phrase de contexte affichée en tête de la modale (ex. « Connectez-vous pour partager »). */
+		authModalPrompt: string | null;
 	};
 	init: () => Promise<void>;
 	signUp: (email: string, password: string) => Promise<AuthResult>;
@@ -31,7 +33,7 @@ export type AuthStoreState = {
 	signInAnonymous: (pseudo: string, password: string) => Promise<AuthResult>;
 	resetPassword: (email: string) => Promise<AuthResult>;
 	signOut: () => Promise<void>;
-	setAuthModalVisible: (visible: boolean) => void;
+	setAuthModalVisible: (visible: boolean, prompt?: string) => void;
 };
 
 /**
@@ -100,6 +102,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 	loading: true,
 	ui: {
 		authModalVisible: false,
+		authModalPrompt: null,
 	},
 
 	init: async () => {
@@ -181,8 +184,14 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 		set({ user: null });
 	},
 
-	setAuthModalVisible: (visible) =>
-		set((state) => ({ ui: { ...state.ui, authModalVisible: visible } })),
+	setAuthModalVisible: (visible, prompt) =>
+		set((state) => ({
+			ui: {
+				...state.ui,
+				authModalVisible: visible,
+				authModalPrompt: visible ? (prompt ?? null) : null,
+			},
+		})),
 }));
 
 export function useAuthStore<T>(selector: (state: AuthStoreState) => T) {

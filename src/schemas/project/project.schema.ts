@@ -5,8 +5,8 @@ import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
 import { nextAvailableName } from "@/lib/naming";
 import Variable from "../variable/variable.schema";
-import { getCounterBlockParams } from "../function-blocks/counter.schema";
-import { getTimerBlockParams } from "../function-blocks/timer.schema";
+import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema";
+import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
 import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
 

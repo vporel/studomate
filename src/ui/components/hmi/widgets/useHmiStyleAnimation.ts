@@ -20,7 +20,7 @@ export default function useHmiStyleAnimation<TProps extends string>(
 	);
 	if (!enabled || !animation) return {};
 	const entry = Object.values(simulationVariablesStates).find(
-		(s) => s.mnemonic === animation.variableMnemonic,
+		(s) => s.mnemonic === animation.variable,
 	);
 	if (!entry) return {};
 	const currentValue =

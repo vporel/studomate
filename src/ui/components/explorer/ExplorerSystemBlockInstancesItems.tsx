@@ -1,7 +1,7 @@
 "use client";
 
-import { getCounterBlockParams } from "@/schemas/function-blocks/counter.schema";
-import { getTimerBlockParams } from "@/schemas/function-blocks/timer.schema";
+import { getCounterBlockParams } from "@/schemas/ladder/function-blocks/counter.schema";
+import { getTimerBlockParams } from "@/schemas/ladder/function-blocks/timer.schema";
 import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
 import TimerBlockIcon from "@/ui/components/icons/TimerBlockIcon";
 import { ElementType, Fragment, MouseEvent } from "react";

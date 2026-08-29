@@ -1,7 +1,7 @@
 "use client";
 
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import { CoilMode } from "@/schemas/ladder/element.schema";
+import { CoilType } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
@@ -18,7 +18,7 @@ import { useRef } from "react";
 import CoilSymbol from "./CoilSymbol";
 import { getHighlightOverlaySx } from "./node-highlight";
 
-export type CoilNodeData = { variable: string; mode: CoilMode };
+export type CoilNodeData = { variable: string; type: CoilType };
 export type CoilNodeType = Node<CoilNodeData> & { type: "coil" };
 
 /** Dimensions d'une bobine = 1 cellule de grille. Exportée pour les tests et le layout. */
@@ -28,7 +28,7 @@ export const COIL_NODE_DIMENSIONS = {
 };
 
 const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
-	const { variable, mode } = data;
+	const { variable, type } = data;
 	const th = useTheme();
 	const pageVisible = usePageVisible();
 	const energized = useProjectStore(
@@ -89,7 +89,7 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 			</Box>
 			<Box sx={{ width: "100%", height: 20 }}>
 				<CoilSymbol
-					mode={mode}
+					type={type}
 					color={
 						selected
 							? th.palette.primary.main

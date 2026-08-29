@@ -5,8 +5,8 @@ import {
 	createAssignBlockElement,
 	createCompareBlockElement,
 } from "@/schemas/ladder/block.schema";
-import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { createRandomId } from "@/ids";

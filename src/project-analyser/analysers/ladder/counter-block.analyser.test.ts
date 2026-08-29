@@ -1,4 +1,4 @@
-import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
 import Variable from "@/schemas/variable/variable.schema";
 import CounterBlockAnalyser from "./counter-block.analyser";

@@ -4,7 +4,7 @@ import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createContactElement,
 	createRailTerminalElement,

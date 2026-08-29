@@ -290,8 +290,8 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 						// ellipse, texte) n'a de toute façon pas de variable "principale" — voir
 						// `RectangleData`/`EllipseData`/`TextData`.
 						const rawValue =
-							isSimulation && "variableMnemonic" in widget.data
-								? getVariableValue(widget.data.variableMnemonic)
+							isSimulation && "variable" in widget.data
+								? getVariableValue(widget.data.variable)
 								: undefined;
 						const value: boolean | number =
 							typeof rawValue === "number" ? rawValue : Boolean(rawValue);

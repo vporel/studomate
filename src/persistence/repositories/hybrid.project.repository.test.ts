@@ -17,6 +17,7 @@ jest.mock("./supabase-client", () => ({
 
 import HybridProjectRepository from "./hybrid.project.repository";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
+import { isShareable } from "./project.repository";
 
 const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
 
@@ -281,6 +282,40 @@ describe("HybridProjectRepository", () => {
 
 			expect(await repo.delete("p1")).toEqual({ ok: true });
 			expect(await repo.get("p1")).toBeNull();
+		});
+	});
+
+	describe("partage (délégué au cloud)", () => {
+		it("est reconnu comme ShareableProjectRepository", () => {
+			expect(isShareable(new HybridProjectRepository())).toBe(true);
+		});
+
+		it("createShareToken insère une ligne de partage et renvoie le token", async () => {
+			mockFrom.mockReturnValue({
+				insert: () => Promise.resolve({ error: null }),
+			});
+			const result = await new HybridProjectRepository().createShareToken("p1");
+
+			expect(result.ok).toBe(true);
+			expect(mockFrom).toHaveBeenCalledWith("project_shares");
+		});
+
+		it("getShareToken renvoie le token existant", async () => {
+			mockFrom.mockReturnValue(
+				resolved({ data: { token: "tok-1" }, error: null }),
+			);
+
+			expect(await new HybridProjectRepository().getShareToken("p1")).toBe(
+				"tok-1",
+			);
+		});
+
+		it("deleteShareToken supprime la ligne de partage", async () => {
+			mockFrom.mockReturnValue(resolved({ error: null }));
+
+			expect(
+				await new HybridProjectRepository().deleteShareToken("p1"),
+			).toEqual({ ok: true });
 		});
 	});
 });

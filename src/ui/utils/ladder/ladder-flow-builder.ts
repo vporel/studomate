@@ -224,7 +224,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 				x: colToX(element.position.col),
 				y: rowToY(element.position.row, rowHeightsInCells),
 			},
-			data: { variable: element.data.variable, mode: element.data.mode },
+			data: { variable: element.data.variable, type: element.data.type },
 		} as LadderNodeType;
 	});
 

@@ -11,6 +11,7 @@ import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPag
 import { setPagesSession } from "@/ui/lib/pages-session-storage";
 import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { createProjectStore } from "./project.store";
+import { authStore } from "@/ui/stores/auth/auth.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
@@ -423,17 +424,80 @@ describe("createProjectStore", () => {
 	});
 
 	describe("shareProject / unshareProject", () => {
+		afterEach(() => {
+			authStore.setState({
+				user: null,
+				ui: { authModalVisible: false, authModalPrompt: null },
+			});
+		});
+
 		it("ne fait rien si aucun projet n'est ouvert", async () => {
 			const store = createProjectStore();
 			await expect(store.getState().shareProject()).resolves.not.toThrow();
 		});
 
-		it("ne fait rien si le repository n'est pas partageable (localStorage)", async () => {
+		it("ouvre la modale de connexion quand l'utilisateur n'est pas connecté", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
-			// HybridProjectRepository n'implémente pas ShareableProjectRepository
-			await expect(store.getState().shareProject()).resolves.not.toThrow();
-			expect(store.getState().shareToken).toBeNull();
+
+			await store.getState().shareProject();
+
+			expect(authStore.getState().ui.authModalVisible).toBe(true);
+			expect(authStore.getState().ui.authModalPrompt).toMatch(/partager/i);
+			expect(store.getState().pendingShareAfterAuth).toBe(true);
+		});
+
+		it("reprend le partage automatiquement après connexion (projet local → modale cloud)", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			await store.getState().shareProject();
+
+			authStore.setState({
+				user: { id: "u1" } as never,
+				ui: { authModalVisible: false, authModalPrompt: null },
+			});
+			await Promise.resolve();
+
+			expect(store.getState().pendingShareAfterAuth).toBe(false);
+			expect(store.getState().ui.shareRequiresCloudModalVisible).toBe(true);
+		});
+
+		it("abandonne la reprise si la modale de connexion se ferme sans connexion", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			await store.getState().shareProject();
+
+			authStore.getState().setAuthModalVisible(false);
+
+			expect(store.getState().pendingShareAfterAuth).toBe(false);
+			expect(store.getState().ui.shareRequiresCloudModalVisible).toBe(false);
+		});
+
+		it("connecté + projet local : ouvre la modale « envoyer dans le cloud »", async () => {
+			authStore.setState({ user: { id: "u1" } as never });
+			const store = createProjectStore();
+			await openBlankProject(store);
+
+			await store.getState().shareProject();
+
+			expect(store.getState().ui.shareRequiresCloudModalVisible).toBe(true);
+			expect(store.getState().ui.shareModalVisible).toBe(false);
+		});
+
+		it("moveToCloudAndShare : toast d'erreur si l'envoi cloud échoue", async () => {
+			authStore.setState({ user: { id: "u1" } as never });
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setShareRequiresCloudModalVisible(true);
+			jest
+				.spyOn(store.getState().projectRepository as never, "moveToCloud")
+				.mockResolvedValue({ ok: false, reason: "network" } as never);
+
+			await store.getState().moveToCloudAndShare();
+
+			expect(toast.error).toHaveBeenCalled();
+			// La modale reste ouverte pour permettre une nouvelle tentative
+			expect(store.getState().ui.shareRequiresCloudModalVisible).toBe(true);
 		});
 	});
 

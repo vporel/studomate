@@ -22,6 +22,7 @@ import ProjectRepository, {
 	isShareable,
 } from "@/persistence/repositories/project.repository";
 import SupabaseProjectRepository from "@/persistence/repositories/supabase.project.repository";
+import { authStore } from "@/ui/stores/auth/auth.store";
 import { toast } from "react-toastify";
 import { createStore } from "zustand";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
@@ -154,6 +155,7 @@ export interface ProjectUiState {
 	pdfExportModalVisible: boolean;
 	saveAsModalVisible: boolean;
 	shareModalVisible: boolean;
+	shareRequiresCloudModalVisible: boolean;
 	analysisResultVisible: boolean;
 	watchTablesVisible: boolean;
 	draftConflictModal: {
@@ -204,13 +206,20 @@ export interface ProjectStoreState {
 	setPdfExportModalVisible: (visible: boolean) => void;
 	setSaveAsModalVisible: (visible: boolean) => void;
 	setShareModalVisible: (visible: boolean) => void;
+	setShareRequiresCloudModalVisible: (visible: boolean) => void;
 	setActiveScope: (scope: string) => void;
 
 	/** True si le projet courant a été ouvert via un token de partage (lecture seule). */
 	isSharedProject: boolean;
 	/** Token de partage du projet courant (si le propriétaire l'a partagé), null sinon. */
 	shareToken: string | null;
+	/**
+	 * True entre le clic sur « Partager » d'un utilisateur non connecté et l'issue de la modale
+	 * de connexion : si la connexion réussit, le partage reprend automatiquement.
+	 */
+	pendingShareAfterAuth: boolean;
 	shareProject: () => Promise<void>;
+	moveToCloudAndShare: () => Promise<void>;
 	unshareProject: () => Promise<void>;
 	resolveDraftConflict: (choice: "draft" | "real") => Promise<void>;
 
@@ -475,6 +484,7 @@ export const createProjectStore = () => {
 			pdfExportModalVisible: false,
 			saveAsModalVisible: false,
 			shareModalVisible: false,
+			shareRequiresCloudModalVisible: false,
 			analysisResultVisible: false,
 			watchTablesVisible: false,
 			draftConflictModal: { visible: false, projectId: null, draftData: null },
@@ -483,6 +493,7 @@ export const createProjectStore = () => {
 		projectRepository: new HybridProjectRepository(),
 		isSharedProject: false,
 		shareToken: null,
+		pendingShareAfterAuth: false,
 		activeScope: "project",
 		activeScopeType: "project",
 		variablesManager: new VariablesManager(set, get),
@@ -761,6 +772,12 @@ export const createProjectStore = () => {
 			set((state) => ({ ui: { ...state.ui, shareModalVisible: visible } }));
 		},
 
+		setShareRequiresCloudModalVisible: (visible: boolean) => {
+			set((state) => ({
+				ui: { ...state.ui, shareRequiresCloudModalVisible: visible },
+			}));
+		},
+
 		startAutoSave: () => {
 			if (autoSaveTimer !== null) return;
 			autoSaveTimer = setInterval(() => {
@@ -781,6 +798,39 @@ export const createProjectStore = () => {
 			if (!project) return;
 			const repo = get().projectRepository;
 			if (!isShareable(repo)) return;
+
+			// Non connecté : on ouvre la modale de connexion et on reprend le partage dès
+			// qu'une session s'ouvre. Si la modale se ferme sans connexion, on abandonne.
+			if (!authStore.getState().user) {
+				if (get().pendingShareAfterAuth) return;
+				set({ pendingShareAfterAuth: true });
+				const unsubscribe = authStore.subscribe((authState) => {
+					if (authState.user) {
+						unsubscribe();
+						set({ pendingShareAfterAuth: false });
+						void get().shareProject();
+					} else if (!authState.ui.authModalVisible) {
+						unsubscribe();
+						set({ pendingShareAfterAuth: false });
+					}
+				});
+				authStore
+					.getState()
+					.setAuthModalVisible(true, "Connectez-vous pour partager ce projet.");
+				return;
+			}
+
+			// Connecté mais projet stocké en local : il doit d'abord passer dans le cloud.
+			if (
+				repo instanceof HybridProjectRepository &&
+				repo.locationOf(project.id) === "local"
+			) {
+				set((state) => ({
+					ui: { ...state.ui, shareRequiresCloudModalVisible: true },
+				}));
+				return;
+			}
+
 			// Vérifie si un token existe déjà
 			const existing = await repo.getShareToken(project.id);
 			if (existing) {
@@ -795,6 +845,24 @@ export const createProjectStore = () => {
 			}
 			set(() => ({ shareToken: result.token }));
 			set((state) => ({ ui: { ...state.ui, shareModalVisible: true } }));
+		},
+
+		moveToCloudAndShare: async () => {
+			const project = get().project;
+			if (!project) return;
+			const repo = get().projectRepository;
+			if (!(repo instanceof HybridProjectRepository)) return;
+			const result = await repo.moveToCloud(project);
+			if (!result.ok) {
+				toast.error(
+					"Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+				);
+				return;
+			}
+			set((state) => ({
+				ui: { ...state.ui, shareRequiresCloudModalVisible: false },
+			}));
+			await get().shareProject();
 		},
 
 		unshareProject: async () => {

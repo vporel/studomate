@@ -1,7 +1,7 @@
 "use client";
 
 import { HmiWidget, HmiWidgetSize } from "@/schemas/hmi/hmi-widget.schema";
-import { HMI_WIDGET_COMPONENTS } from "@/ui/components/hmi/widgets/hmi-widget-components";
+import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
 import { MouseEvent as ReactMouseEvent } from "react";
 import { HMI_WIDGET_ZINDEX_OFFSET } from "./constants";
@@ -34,7 +34,7 @@ interface HmiWidgetItemProps {
 }
 
 /** Un widget posé sur le canvas : son wrapper positionné (drag, sélection), son rendu — délégué
- * au composant associé à `widget.type` via `HMI_WIDGET_COMPONENTS` — et sa poignée de
+ * au composant associé à `widget.type` via `HMI_WIDGET_UI` — et sa poignée de
  * redimensionnement quand il est seul sélectionné. */
 const HmiWidgetItem = ({
 	widget,
@@ -51,12 +51,12 @@ const HmiWidgetItem = ({
 	onResizeStart,
 	onContextMenu,
 }: HmiWidgetItemProps) => {
-	const Component = HMI_WIDGET_COMPONENTS[widget.type];
+	const Component = HMI_WIDGET_UI[widget.type].component;
 	const size = previewSize ?? widget.size;
 	// Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" à écrire en
 	// simulation — voir `RectangleData`/`EllipseData`/`TextData`.
 	const boundMnemonic =
-		"variableMnemonic" in widget.data ? widget.data.variableMnemonic : null;
+		"variable" in widget.data ? widget.data.variable : null;
 
 	return (
 		<Box

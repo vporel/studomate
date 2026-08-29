@@ -1,6 +1,6 @@
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
-import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import {
 	createContactElement,
 	createCoilElement,

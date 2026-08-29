@@ -24,8 +24,8 @@ describe("resolvePositionAnimationOffset", () => {
 			...widget.data,
 			animations: {
 				position: {
-					xVariableMnemonic: "X_OFFSET",
-					yVariableMnemonic: "Y_OFFSET",
+					xVariable: "X_OFFSET",
+					yVariable: "Y_OFFSET",
 				},
 			},
 		};
@@ -41,7 +41,7 @@ describe("resolvePositionAnimationOffset", () => {
 		const widget = HmiWidget.create("push-button", 0, 0);
 		widget.data = {
 			...widget.data,
-			animations: { position: { xVariableMnemonic: "INCONNUE" } },
+			animations: { position: { xVariable: "INCONNUE" } },
 		};
 		expect(resolvePositionAnimationOffset(widget, () => undefined)).toEqual({
 			dx: 0,

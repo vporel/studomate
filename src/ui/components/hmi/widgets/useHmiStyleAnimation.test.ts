@@ -31,7 +31,7 @@ describe("useHmiStyleAnimation", () => {
 			v1: { id: "v1", mnemonic: "CPT", value: 2 },
 		});
 		const animation: HmiStyleAnimation<"fill"> = {
-			variableMnemonic: "CPT",
+			variable: "CPT",
 			rows: [{ value: 2, properties: { fill: "#f00" } }],
 		};
 		const { result } = renderHook(() => useHmiStyleAnimation(animation, false));
@@ -41,7 +41,7 @@ describe("useHmiStyleAnimation", () => {
 	it("retourne un objet vide si la variable pilote est introuvable", () => {
 		mockSimulationVariablesStates({});
 		const animation: HmiStyleAnimation<"fill"> = {
-			variableMnemonic: "CPT",
+			variable: "CPT",
 			rows: [{ value: 0, properties: { fill: "#fff" } }],
 		};
 		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
@@ -53,7 +53,7 @@ describe("useHmiStyleAnimation", () => {
 			v1: { id: "v1", mnemonic: "CPT", value: 2 },
 		});
 		const animation: HmiStyleAnimation<"fill"> = {
-			variableMnemonic: "CPT",
+			variable: "CPT",
 			rows: [
 				{ value: 0, properties: { fill: "#fff" } },
 				{ value: 2, properties: { fill: "#f00" } },
@@ -68,7 +68,7 @@ describe("useHmiStyleAnimation", () => {
 			v1: { id: "v1", mnemonic: "CPT", value: 5 },
 		});
 		const animation: HmiStyleAnimation<"fill"> = {
-			variableMnemonic: "CPT",
+			variable: "CPT",
 			rows: [{ value: 0, properties: { fill: "#fff" } }],
 		};
 		const { result } = renderHook(() => useHmiStyleAnimation(animation, true));
@@ -80,7 +80,7 @@ describe("useHmiStyleAnimation", () => {
 			v1: { id: "v1", mnemonic: "MARCHE", value: true },
 		});
 		const animation: HmiStyleAnimation<"fill"> = {
-			variableMnemonic: "MARCHE",
+			variable: "MARCHE",
 			rows: [
 				{ value: 0, properties: { fill: "#fff" } },
 				{ value: 1, properties: { fill: "#0f0" } },

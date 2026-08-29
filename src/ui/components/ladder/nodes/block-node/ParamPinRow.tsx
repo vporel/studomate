@@ -1,7 +1,7 @@
 "use client";
 
-import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
 import { Box } from "@mui/material";
+import { ParameterPinRow } from "./block-node-layout";
 import ParamPin from "./ParamPin";
 import { PIN_ROW_HEIGHT } from "./dimensions";
 
@@ -17,7 +17,7 @@ export default function ParamPinRow({
 	onCommit,
 }: {
 	top: number;
-	row: { input?: BlockPortSpec; output?: BlockPortSpec };
+	row: ParameterPinRow;
 	getValue: (suffix: string) => string;
 	onCommit: (suffix: string, value: string) => void;
 }) {

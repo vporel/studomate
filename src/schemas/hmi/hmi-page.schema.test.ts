@@ -68,7 +68,7 @@ describe("HmiPage", () => {
 			const updated = page.widgets[w1.id]!;
 			if (updated.type !== "push-button") throw new Error("unreachable");
 			expect(updated.data.label).toBe("BP1");
-			expect(updated.data.variableMnemonic).toBe("");
+			expect(updated.data.variable).toBe("");
 		});
 
 		it("ignore un id inexistant", () => {

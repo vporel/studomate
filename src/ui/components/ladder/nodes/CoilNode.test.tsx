@@ -3,7 +3,7 @@
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { CoilMode } from "@/schemas/ladder/element.schema";
+import { CoilType } from "@/schemas/ladder/element.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -17,18 +17,18 @@ import CoilNode, { CoilNodeType } from "./CoilNode";
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/components/ladder/context/LadderContext");
 
-// La couleur/le mode passés au symbole sont la vraie logique à couvrir ici — le rendu visuel du
+// La couleur/le type passés au symbole sont la vraie logique à couvrir ici — le rendu visuel du
 // symbole lui-même (lettre, traits) est la responsabilité de `CoilSymbol`, pas de ce test.
 jest.mock("./CoilSymbol", () => ({
 	__esModule: true,
-	default: ({ mode, color }: { mode: string; color: string }) => (
-		<div data-testid="symbol" data-mode={mode} data-color={color} />
+	default: ({ type, color }: { type: string; color: string }) => (
+		<div data-testid="symbol" data-type={type} data-color={color} />
 	),
 }));
 
 function setup({
 	variable = "S1",
-	mode = "normal" as CoilMode,
+	type = "normal" as CoilType,
 	selected = false,
 	simulationVariablesStates = {} as Record<
 		string,
@@ -53,7 +53,7 @@ function setup({
 
 	const props = {
 		id: "coil-1",
-		data: { variable, mode },
+		data: { variable, type },
 		selected,
 		type: "coil",
 		position: { x: 0, y: 0 },
@@ -97,10 +97,10 @@ describe("CoilNode", () => {
 		expect(screen.getByRole("combobox")).toHaveFocus();
 	});
 
-	it("transmet le mode de la bobine au symbole", () => {
-		setup({ mode: "set" });
+	it("transmet le type de la bobine au symbole", () => {
+		setup({ type: "set" });
 
-		expect(screen.getByTestId("symbol")).toHaveAttribute("data-mode", "set");
+		expect(screen.getByTestId("symbol")).toHaveAttribute("data-type", "set");
 	});
 
 	describe("couleur transmise au symbole", () => {

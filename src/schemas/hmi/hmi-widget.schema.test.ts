@@ -26,12 +26,28 @@ describe("HmiWidget.create", () => {
 		expect(w.position).toEqual({ x: 40, y: 80 });
 	});
 
-	it("initialise variableMnemonic à vide et label au libellé par défaut du type", () => {
+	it("initialise variable à vide et label au libellé par défaut du type", () => {
 		ALL_TYPES.forEach((type) => {
 			const w = HmiWidget.create(type, 0, 0);
-			const data = w.data as { variableMnemonic: string; label: string };
-			expect(data.variableMnemonic).toBe("");
-			expect(data.label).toBe(HMI_WIDGET_DEFINITIONS[type].defaultLabel);
+			const data = w.data as { variable: string; label: string };
+			const defaultData = HMI_WIDGET_DEFINITIONS[type].defaultData as {
+				variable: string;
+				label: string;
+			};
+			expect(data.variable).toBe("");
+			expect(data.label).toBe(defaultData.label);
+		});
+	});
+
+	it("retourne une copie profonde des données par défaut (pas la référence partagée)", () => {
+		const a = HmiWidget.create("gauge", 0, 0);
+		const b = HmiWidget.create("gauge", 0, 0);
+		if (a.type !== "gauge" || b.type !== "gauge")
+			throw new Error("unreachable");
+		a.data.style!.orientation = "vertical";
+		expect(b.data.style?.orientation).toBe("horizontal");
+		expect(HMI_WIDGET_DEFINITIONS.gauge.defaultData).toMatchObject({
+			style: { orientation: "horizontal" },
 		});
 	});
 
@@ -278,7 +294,7 @@ describe("HmiWidget.createFromJSON", () => {
 		const w = HmiWidget.createFromJSON(raw);
 		if (w.type !== "indicator") throw new Error("unreachable");
 		expect(w.position).toEqual({ x: 0, y: 0 });
-		expect(w.data.variableMnemonic).toBe("");
+		expect(w.data.variable).toBe("");
 	});
 
 	// Un projet sauvegardé avant l'ajout du redimensionnement n'a pas de champ `size`.
@@ -332,30 +348,67 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 		});
 	});
 
-	it("les widgets booléens n'acceptent que BOOL", () => {
+	it("les widgets booléens ne lient que des variables BOOL", () => {
 		(["push-button", "indicator", "toggle-switch"] as HmiWidgetType[]).forEach(
 			(type) => {
-				expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).toEqual(["BOOL"]);
+				expect(HMI_WIDGET_DEFINITIONS[type].variableBinding?.types).toEqual([
+					"BOOL",
+				]);
 			},
 		);
 	});
 
-	it("les widgets numériques n'acceptent pas BOOL", () => {
+	it("les widgets numériques ne lient pas de variable BOOL", () => {
 		(["numeric-display", "gauge", "numeric-input"] as HmiWidgetType[]).forEach(
 			(type) => {
-				expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).not.toContain(
-					"BOOL",
-				);
-				expect(
-					HMI_WIDGET_DEFINITIONS[type].variableTypes.length,
-				).toBeGreaterThan(0);
+				const types = HMI_WIDGET_DEFINITIONS[type].variableBinding?.types ?? [];
+				expect(types).not.toContain("BOOL");
+				expect(types.length).toBeGreaterThan(0);
 			},
 		);
 	});
 
-	it("les formes n'ont pas de variable principale", () => {
+	it("les formes n'ont pas de liaison à une variable", () => {
 		(["rectangle", "ellipse", "text"] as HmiWidgetType[]).forEach((type) => {
-			expect(HMI_WIDGET_DEFINITIONS[type].variableTypes).toEqual([]);
+			expect(HMI_WIDGET_DEFINITIONS[type].variableBinding).toBeNull();
 		});
+	});
+
+	const ALL_9: HmiWidgetType[] = [
+		...ALL_TYPES,
+		"rectangle",
+		"ellipse",
+		"text",
+	];
+
+	it("kind cohérent avec variableBinding (shape => null, interactive => liaison non vide)", () => {
+		ALL_9.forEach((type) => {
+			const def = HMI_WIDGET_DEFINITIONS[type];
+			if (def.kind === "shape") {
+				expect(def.variableBinding).toBeNull();
+			} else {
+				expect(def.variableBinding?.types.length ?? 0).toBeGreaterThan(0);
+			}
+		});
+	});
+
+	it("une forme n'a pas de variable dans ses données par défaut", () => {
+		ALL_9.forEach((type) => {
+			const def = HMI_WIDGET_DEFINITIONS[type];
+			if (def.kind === "shape") {
+				expect("variable" in def.defaultData).toBe(false);
+			} else {
+				expect("variable" in def.defaultData).toBe(true);
+			}
+		});
+	});
+
+	it("seuls le bouton, l'interrupteur et la saisie écrivent dans leur variable", () => {
+		const writers = ALL_9.filter(
+			(t) => HMI_WIDGET_DEFINITIONS[t].variableBinding?.writes,
+		);
+		expect(writers.sort()).toEqual(
+			["numeric-input", "push-button", "toggle-switch"].sort(),
+		);
 	});
 });

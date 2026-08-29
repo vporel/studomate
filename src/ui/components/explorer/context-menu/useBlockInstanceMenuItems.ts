@@ -1,7 +1,7 @@
 "use client";
 
-import { getCounterBlockParams } from "@/schemas/function-blocks/counter.schema";
-import { getTimerBlockParams } from "@/schemas/function-blocks/timer.schema";
+import { getCounterBlockParams } from "@/schemas/ladder/function-blocks/counter.schema";
+import { getTimerBlockParams } from "@/schemas/ladder/function-blocks/timer.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useGotoProgram from "@/ui/components/projects/useGotoProgram";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";

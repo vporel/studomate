@@ -44,7 +44,7 @@ export function computeEnergizedEdges(
 		const contact = element;
 		const state = valueByMnemonic.get(contact.data.variable);
 
-		switch (contact.data.mode) {
+		switch (contact.data.type) {
 			case "NO":
 				return state === true;
 			case "NF":

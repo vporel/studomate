@@ -11,15 +11,15 @@ describe("ElementUpdateCommand", () => {
 
 		const command = new ElementUpdateCommand({
 			elementId: contact.id,
-			changes: { data: { mode: "NF", variable: "B" } },
-			previousChanges: { data: { mode: "NO", variable: "A" } },
+			changes: { data: { type: "NF", variable: "B" } },
+			previousChanges: { data: { type: "NO", variable: "A" } },
 		});
 		command.execute(ladder);
-		expect(contact.data.mode).toBe("NF");
+		expect(contact.data.type).toBe("NF");
 		expect(contact.data.variable).toBe("B");
 
 		command.cancel(ladder);
-		expect(contact.data.mode).toBe("NO");
+		expect(contact.data.type).toBe("NO");
 		expect(contact.data.variable).toBe("A");
 	});
 

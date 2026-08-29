@@ -92,16 +92,16 @@ describe("Ladder", () => {
 			});
 		});
 
-		it("updateElement met à jour variable/mode d'un élément existant", () => {
+		it("updateElement met à jour variable/type d'un élément existant", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
 			const [section] = ladder.sections;
 			const contact = createContactElement("A", "NO", 0, 0);
 			ladder.addElements(section.id, [contact]);
 
-			ladder.updateElement(contact.id, { data: { variable: "B", mode: "NF" } });
+			ladder.updateElement(contact.id, { data: { variable: "B", type: "NF" } });
 
 			expect(contact.data.variable).toBe("B");
-			expect(contact.data.mode).toBe("NF");
+			expect(contact.data.type).toBe("NF");
 		});
 
 		it("removeElements retire les éléments et, en cascade, toute connexion qui les touche", () => {

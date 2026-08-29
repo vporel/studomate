@@ -198,7 +198,14 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "timer", blockId: "b1", node: timerNode }],
+			assignments: [
+				{
+					kind: "embeddedNode",
+					simRole: "timer",
+					blockId: "b1",
+					node: timerNode,
+				},
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [timerNode],
@@ -223,7 +230,14 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "counter", blockId: "b1", node: counterNode }],
+			assignments: [
+				{
+					kind: "embeddedNode",
+					simRole: "counter",
+					blockId: "b1",
+					node: counterNode,
+				},
+			],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],
@@ -250,7 +264,7 @@ describe("LadderCompiler", () => {
 		const preCompiled: PreCompiledLadder = {
 			type: "ladder",
 			role: "standard",
-			assignments: [{ kind: "assign", blockId: "b1", node: ifNode }],
+			assignments: [{ kind: "embeddedNode", blockId: "b1", node: ifNode }],
 			edgeMemoUpdates: [],
 			blockCalls: [],
 			timers: [],

@@ -1,12 +1,12 @@
 import { createRandomId } from "@/ids";
-import type { BlockElement, TimerBlockParams } from "../ladder/block.schema";
-import type { GridPosition } from "../ladder/element.schema";
-import Variable from "../variable/variable.schema";
-import VariableBuilder from "../variable/builders/variable.builder";
+import type { BlockElement, TimerBlockParams } from "../block.schema";
+import type { GridPosition } from "../element.schema";
+import Variable from "@/schemas/variable/variable.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import {
 	BlockPortSpec,
 	requireConcreteType,
-} from "../ladder/block-port.schema";
+} from "../block-port.schema";
 import { getBlockVariableMnemonics } from "./function-block.schema";
 
 /** Les trois variantes de bloc timer — TON (retard à l'enclenchement), TOF (retard au
@@ -86,6 +86,22 @@ export function createTimerBlockVariables(
 			.ownerBlock({ id: elementId })
 			.build(),
 	);
+}
+
+/**
+ * Lecture/écriture d'une pinoche paramètre d'un bloc timer par son suffixe (`PT`/`ET`) —
+ * consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches générique de `BoxBlockNode`.
+ */
+export function readTimerParam(params: TimerBlockParams, suffix: string): string {
+	return suffix === "PT" ? params.pt : (params.et ?? "");
+}
+
+export function writeTimerParam(
+	params: TimerBlockParams,
+	suffix: string,
+	value: string,
+): TimerBlockParams {
+	return suffix === "PT" ? { ...params, pt: value } : { ...params, et: value };
 }
 
 export function createTimerBlockElement(

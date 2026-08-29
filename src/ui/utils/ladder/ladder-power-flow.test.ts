@@ -24,7 +24,7 @@ describe("computeEnergizedEdges", () => {
 			{
 				id: "coil1",
 				type: "coil",
-				data: { variable: "Q1", mode: "normal" },
+				data: { variable: "Q1", type: "normal" },
 				position: { row: 0, col: 1 },
 			},
 		]);
@@ -53,13 +53,13 @@ describe("computeEnergizedEdges", () => {
 			{
 				id: "contact1",
 				type: "contact",
-				data: { variable: "I1", mode: "NO" },
+				data: { variable: "I1", type: "NO" },
 				position: { row: 0, col: 1 },
 			},
 			{
 				id: "coil1",
 				type: "coil",
-				data: { variable: "Q1", mode: "normal" },
+				data: { variable: "Q1", type: "normal" },
 				position: { row: 0, col: 2 },
 			},
 		]);
@@ -100,7 +100,7 @@ describe("computeEnergizedEdges", () => {
 			{
 				id: "contact1",
 				type: "contact",
-				data: { variable: "I1", mode: "NF" },
+				data: { variable: "I1", type: "NF" },
 				position: { row: 0, col: 1 },
 			},
 		]);
@@ -108,7 +108,7 @@ describe("computeEnergizedEdges", () => {
 			{
 				id: "coil1",
 				type: "coil",
-				data: { variable: "Q1", mode: "normal" },
+				data: { variable: "Q1", type: "normal" },
 				position: { row: 0, col: 2 },
 			},
 		]);
@@ -148,13 +148,13 @@ describe("computeEnergizedEdges", () => {
 			{
 				id: "contact1",
 				type: "contact",
-				data: { variable: "I1", mode: "P" },
+				data: { variable: "I1", type: "P" },
 				position: { row: 0, col: 1 },
 			},
 			{
 				id: "coil1",
 				type: "coil",
-				data: { variable: "Q1", mode: "normal" },
+				data: { variable: "Q1", type: "normal" },
 				position: { row: 0, col: 2 },
 			},
 		]);
@@ -198,7 +198,7 @@ describe("computeEnergizedEdges", () => {
 	it("réutilise le résultat mémoïsé tant que ladder et état gardent leur référence", () => {
 		ladder.addElements(sectionId, [
 			{ id: "rail1", type: "railTerminal", data: {}, position: { row: 0, col: 0 } },
-			{ id: "coil1", type: "coil", data: { variable: "Q1", mode: "normal" }, position: { row: 0, col: 1 } },
+			{ id: "coil1", type: "coil", data: { variable: "Q1", type: "normal" }, position: { row: 0, col: 1 } },
 		]);
 		ladder.addConnections(sectionId, [
 			new Connection(
@@ -225,13 +225,13 @@ describe("computeEnergizedEdges", () => {
 				{
 					id: `contact-${suffix}`,
 					type: "contact",
-					data: { variable: `I-${suffix}`, mode: "NO" },
+					data: { variable: `I-${suffix}`, type: "NO" },
 					position: { row: 0, col: 1 },
 				},
 				{
 					id: `coil-${suffix}`,
 					type: "coil",
-					data: { variable: `Q-${suffix}`, mode: "normal" },
+					data: { variable: `Q-${suffix}`, type: "normal" },
 					position: { row: 0, col: 2 },
 				},
 			]);

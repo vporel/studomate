@@ -80,6 +80,21 @@ describe("drilling.template", () => {
 			}
 		});
 
+		it("câble le bloc du Main au rail d'alimentation", () => {
+			const [mainSection] = project.main.sections;
+			const block = mainSection.elements.find((e) => e.type === "block");
+			const rail = mainSection.elements.find(
+				(e) => e.type === "railTerminal",
+			);
+			expect(block).toBeDefined();
+			expect(rail).toBeDefined();
+			expect(
+				mainSection.connections.some(
+					(c) => c.source.id === rail!.id && c.target.id === block!.id,
+				),
+			).toBe(true);
+		});
+
 		it("passe l'analyse sans erreur (le modèle seul, sans commande, est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");

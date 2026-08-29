@@ -1,22 +1,11 @@
 "use client";
 
-import { getCounterPortSpecs } from "@/schemas/function-blocks/counter.schema";
-import { TIMER_PORT_SPECS } from "@/schemas/function-blocks/timer.schema";
 import {
-	getBlockHeightInCellUnits,
-	getParameterPinRows,
-} from "@/schemas/ladder/block-port.schema";
-import {
-	ARITHMETIC_BLOCK_OPERATORS,
-	ARITHMETIC_PORT_SPECS,
-	ArithmeticBlockParams,
-	ASSIGN_PORT_SPECS,
-	AssignBlockParams,
-	BLOCK_PORT_LABELS,
-	BlockData,
-	CounterBlockParams,
-	TimerBlockParams,
-} from "@/schemas/ladder/block.schema";
+	BLOCK_DEFINITIONS,
+	resolvePortSpecs,
+	resolveStructuralPorts,
+} from "@/schemas/ladder/block-definition";
+import { BlockData } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -24,6 +13,10 @@ import { GRID_CELL_HEIGHT } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { getHighlightOverlaySx } from "../node-highlight";
+import {
+	getBlockHeightInCellUnits,
+	getParameterPinRows,
+} from "./block-node-layout";
 import BlockStructuralRow from "./BlockStructuralRow";
 import CompareBlockNode from "./CompareBlockNode";
 import { BLOCK_NODE_DIMENSIONS, PIN_ROW_HEIGHT } from "./dimensions";
@@ -36,8 +29,8 @@ export type BlockNodeType = Node<BlockNodeData> & { type: "block" };
 export { BLOCK_NODE_DIMENSIONS };
 
 const BlockNode = ({ id, data, selected }: NodeProps<BlockNodeType>) => {
-	// Le bloc compare a un rendu propre (boîte contact-like : IN1 / opérateur / IN2), sans rien
-	// de la mise en page « ligne structurelle + pinoches » ci-dessous.
+	// Une famille en `render: "custom"` a un rendu propre, hors de la mise en page « boîte + ligne
+	// structurelle + pinoches » de `BoxBlockNode` (compare : boîte contact-like IN1 / opérateur / IN2).
 	if (data.blockType === "compare")
 		return <CompareBlockNode id={id} data={data} selected={selected} />;
 
@@ -58,20 +51,22 @@ const BoxBlockNode = ({
 	selected: boolean;
 }) => {
 	const th = useTheme();
+	const def = BLOCK_DEFINITIONS[data.blockType];
 	const programName =
 		useProjectStore((state) =>
 			data.blockType === "user-program"
 				? state.project?.ladders[data.params.programId]?.name
 				: undefined,
 		) ?? "";
+	// `user-program` n'a pas de libellé fixe : c'est le nom du programme référencé (résolu dans le
+	// store). Toute autre famille tire son libellé de `BLOCK_DEFINITIONS` (fixe) ou de son nom.
 	const label =
-		data.blockType === "user-program"
+		def.staticLabel ??
+		(data.blockType === "user-program"
 			? programName
 			: data.blockType === "timer" || data.blockType === "counter"
 				? data.params.name
-				: data.blockType === "assign"
-					? "Assign"
-					: "Calc";
+				: "");
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
@@ -80,52 +75,12 @@ const BoxBlockNode = ({
 	);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 
-	// Seul le compteur a des ports structurels dépendant de sa variante (IN/R pour CTU, CD/LD pour
-	// CTD) — `BLOCK_PORT_LABELS["counter"]` ne porte que le défaut CTU.
-	const ports =
-		data.blockType === "counter" && data.params.counterType === "CTD"
-			? { input: "CD", output: "Q" }
-			: BLOCK_PORT_LABELS[data.blockType];
-	const portSpecs =
-		data.blockType === "timer"
-			? TIMER_PORT_SPECS
-			: data.blockType === "counter"
-				? getCounterPortSpecs(data.params.counterType)
-				: data.blockType === "assign"
-					? ASSIGN_PORT_SPECS
-					: data.blockType === "arithmetic"
-						? ARITHMETIC_PORT_SPECS
-						: [];
+	const ports = resolveStructuralPorts(data);
+	const portSpecs = resolvePortSpecs(data);
 	const height = getBlockHeightInCellUnits(portSpecs) * GRID_CELL_HEIGHT;
 	const parameterRows = getParameterPinRows(portSpecs);
 
-	// La valeur/l'écriture restent spécifiques aux champs concrets de chaque famille (`pt`/`et`
-	// pour un timer, `in`/`out` pour un assign…), contrairement à la mise en page (générique, voir
-	// `ParamPinRow`).
-	const getParamValue = (suffix: string): string => {
-		if (data.blockType === "timer")
-			return suffix === "PT" ? data.params.pt : (data.params.et ?? "");
-		if (data.blockType === "counter") {
-			if (suffix === "PV") return data.params.pv;
-			if (suffix === "CV") return data.params.cv ?? "";
-			return data.params.control;
-		}
-		if (data.blockType === "assign")
-			return suffix === "IN" ? data.params.in : data.params.out;
-		if (data.blockType === "arithmetic") {
-			if (suffix === "IN1") return data.params.in1;
-			if (suffix === "IN2") return data.params.in2;
-			return data.params.out;
-		}
-		return "";
-	};
-	const applyParams = (
-		params:
-			| TimerBlockParams
-			| CounterBlockParams
-			| AssignBlockParams
-			| ArithmeticBlockParams,
-	) =>
+	const runUpdate = (params: BlockData["params"]) =>
 		commandsStackManager.executeOperation([
 			new ElementUpdateCommand({
 				elementId: id,
@@ -133,36 +88,6 @@ const BoxBlockNode = ({
 				previousChanges: { data: { params: data.params } },
 			}),
 		]);
-	const commitParam = (suffix: string, value: string) => {
-		if (data.blockType === "timer")
-			applyParams({
-				...data.params,
-				...(suffix === "PT" ? { pt: value } : { et: value }),
-			});
-		else if (data.blockType === "counter")
-			applyParams({
-				...data.params,
-				...(suffix === "PV"
-					? { pv: value }
-					: suffix === "CV"
-						? { cv: value }
-						: { control: value }),
-			});
-		else if (data.blockType === "assign")
-			applyParams({
-				...data.params,
-				...(suffix === "IN" ? { in: value } : { out: value }),
-			});
-		else if (data.blockType === "arithmetic")
-			applyParams({
-				...data.params,
-				...(suffix === "IN1"
-					? { in1: value }
-					: suffix === "IN2"
-						? { in2: value }
-						: { out: value }),
-			});
-	};
 
 	return (
 		<Box
@@ -214,26 +139,28 @@ const BoxBlockNode = ({
 					key={row.input?.suffix ?? row.output?.suffix ?? index}
 					top={(GRID_CELL_HEIGHT / 2) * (index + 1)}
 					row={row}
-					getValue={getParamValue}
-					onCommit={commitParam}
+					getValue={(suffix) => def.readParam(data.params, suffix)}
+					onCommit={(suffix, value) =>
+						runUpdate(def.writeParam(data.params, suffix, value))
+					}
 				/>
 			))}
-			{data.blockType === "arithmetic" && (
+			{def.operator && (
 				<Box
 					sx={{
 						position: "absolute",
 						left: "50%",
 						transform: "translateX(-50%)",
-						top: GRID_CELL_HEIGHT,
+						top: "10%",
 					}}
 				>
 					<OperatorSelect
-						value={data.params.operator}
+						value={def.operator.read(data.params)}
 						onChange={(operator) =>
-						applyParams({ ...data.params, operator })
-					}
-						operators={ARITHMETIC_BLOCK_OPERATORS}
-						ariaLabel="Opérateur arithmétique"
+							runUpdate(def.operator!.write(data.params, operator))
+						}
+						operators={def.operator.values}
+						ariaLabel="Opérateur du bloc"
 					/>
 				</Box>
 			)}

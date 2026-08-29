@@ -85,10 +85,10 @@ export default function LadderSection({ selected }: { selected: string }) {
 						{`Blocs`}
 					</Typography>
 					<Typography mb={2}>
-						{`Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Ils sont disponibles dans la section "Blocs systèmes" de l'explorateur : faites glisser un bloc vers le canvas pour l'insérer — une fenêtre de configuration s'ouvre automatiquement.`}
+						{`Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section "Blocs systèmes" de l'explorateur vers le canvas d'un ladder, ou — pour la Comparaison, l'Affectation et le Calcul — depuis l'outil dédié de la barre d'outils ladder.`}
 					</Typography>
 					<Typography mb={2}>
-						{`Pour reconfigurer un bloc existant : double-cliquez dessus ou clic droit → Configurer.`}
+						{`La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation et le Calcul sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les pinoches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc.`}
 					</Typography>
 					<Typography variant="h5" mb={1}>{`Temporisation`}</Typography>
 					<Typography mb={2}>
@@ -115,11 +115,15 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography variant="h5" mb={1}>{`Comparaison`}</Typography>
 					<Typography mb={2}>
-						{`Évalue une expression de comparaison (ex. "vitesse >= 100") et transmet l'alimentation si le résultat est vrai. S'insère dans un réseau comme un contact. L'expression se saisit par double-clic ou clic droit → Configurer.`}
+						{`Compare deux valeurs IN1 et IN2 selon un opérateur (=, !=, <, >, <=, >=) et transmet l'alimentation si le résultat est vrai. S'insère dans un réseau comme un contact. IN1 et IN2 se renseignent sur les pinoches (variable ou constante) ; l'opérateur se choisit dans le menu qui s'ouvre au clic sur le bloc.`}
 					</Typography>
 					<Typography variant="h5" mb={1}>{`Affectation`}</Typography>
 					<Typography mb={2}>
-						{`Évalue une expression d'affectation (ex. "compteur := compteur + 1") lorsque le circuit qui l'alimente est vrai. S'insère en fin de réseau comme une bobine. L'expression se saisit par double-clic ou clic droit → Configurer.`}
+						{`Affecte une valeur à une variable (out := in) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. L'opérande in (variable ou constante) et la variable de destination out se renseignent sur les pinoches du bloc.`}
+					</Typography>
+					<Typography variant="h5" mb={1}>{`Calcul`}</Typography>
+					<Typography mb={2}>
+						{`Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.`}
 					</Typography>
 					<Typography variant="h5" mb={1}>{`Appel de programme`}</Typography>
 					<Typography mb={2}>

@@ -1,7 +1,7 @@
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import AllowedNodeTypesVisitor from "@/expression-language/ast/visitors/allowed-node-types.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
@@ -48,7 +48,7 @@ export default class CompareBlockAnalyser {
 				this.issue(
 					"BLOCK_COMPARE_IN1_EMPTY",
 					source,
-					"La pinoche IN1 de ce bloc de comparaison doit être renseignée.",
+					"Le paramètre IN1 doit être renseignée.",
 				),
 			);
 		if (!in2 || in2.trim() === "")
@@ -56,7 +56,7 @@ export default class CompareBlockAnalyser {
 				this.issue(
 					"BLOCK_COMPARE_IN2_EMPTY",
 					source,
-					"La pinoche IN2 de ce bloc de comparaison doit être renseignée.",
+					"Le paramètre IN2 doit être renseignée.",
 				),
 			);
 		if (!COMPARE_OPERATORS.includes(operator))
@@ -111,7 +111,7 @@ export default class CompareBlockAnalyser {
 				this.issue(
 					"BLOCK_COMPARE_INPUT_NOT_ALLOWED",
 					source,
-					`La pinoche ${pinName} doit contenir une variable ou une valeur, pas une expression complexe.`,
+					`Le paramètre ${pinName} doit contenir une variable ou une valeur, pas une expression complexe.`,
 				),
 			);
 			return null;

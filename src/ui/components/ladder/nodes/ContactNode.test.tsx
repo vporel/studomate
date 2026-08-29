@@ -3,7 +3,7 @@
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { ContactMode } from "@/schemas/ladder/element.schema";
+import { ContactType } from "@/schemas/ladder/element.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -18,18 +18,18 @@ import ContactNode, { ContactNodeType } from "./ContactNode";
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("@/ui/components/ladder/context/LadderContext");
 
-// La couleur/le mode passés au symbole sont la vraie logique à couvrir ici — le rendu visuel du
+// La couleur/le type passés au symbole sont la vraie logique à couvrir ici — le rendu visuel du
 // symbole lui-même (traits, lettres) est la responsabilité de `ContactSymbol`, pas de ce test.
 jest.mock("./ContactSymbol", () => ({
 	__esModule: true,
-	default: ({ mode, color }: { mode: string; color: string }) => (
-		<div data-testid="symbol" data-mode={mode} data-color={color} />
+	default: ({ type, color }: { type: string; color: string }) => (
+		<div data-testid="symbol" data-type={type} data-color={color} />
 	),
 }));
 
 function setup({
 	variable = "E1",
-	mode = "NO" as ContactMode,
+	type = "NO" as ContactType,
 	selected = false,
 	simulationVariablesStates = {} as Record<
 		string,
@@ -55,7 +55,7 @@ function setup({
 
 	const props = {
 		id: "contact-1",
-		data: { variable, mode },
+		data: { variable, type },
 		selected,
 		type: "contact",
 		position: { x: 0, y: 0 },
@@ -101,10 +101,10 @@ describe("ContactNode", () => {
 		expect(screen.getByRole("combobox")).toHaveFocus();
 	});
 
-	it("transmet le mode du contact au symbole", () => {
-		setup({ mode: "P" });
+	it("transmet le type du contact au symbole", () => {
+		setup({ type: "P" });
 
-		expect(screen.getByTestId("symbol")).toHaveAttribute("data-mode", "P");
+		expect(screen.getByTestId("symbol")).toHaveAttribute("data-type", "P");
 	});
 
 	describe("couleur transmise au symbole", () => {

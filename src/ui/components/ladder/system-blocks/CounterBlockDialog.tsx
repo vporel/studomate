@@ -3,7 +3,7 @@
 import {
 	COUNTER_TYPES,
 	CounterType,
-} from "@/schemas/function-blocks/counter.schema";
+} from "@/schemas/ladder/function-blocks/counter.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";

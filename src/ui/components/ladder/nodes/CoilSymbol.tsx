@@ -1,9 +1,9 @@
 "use client";
 
-import { CoilMode } from "@/schemas/ladder/element.schema";
+import { CoilType } from "@/schemas/ladder/element.schema";
 import { Box } from "@mui/material";
 
-const COIL_MODE_LABELS: Record<CoilMode, string> = {
+const COIL_TYPE_LABELS: Record<CoilType, string> = {
 	normal: "",
 	set: "S",
 	reset: "R",
@@ -14,10 +14,10 @@ const COIL_MODE_LABELS: Record<CoilMode, string> = {
  * `CoilNode` (canevas) et `CoilTool` (icône de la toolbar).
  */
 const CoilSymbol = ({
-	mode,
+	type,
 	color = "black",
 }: {
-	mode: CoilMode;
+	type: CoilType;
 	color?: string;
 }) => {
 	return (
@@ -34,7 +34,7 @@ const CoilSymbol = ({
 				color,
 			}}
 		>
-			{COIL_MODE_LABELS[mode]}
+			{COIL_TYPE_LABELS[type]}
 			<Box
 				sx={{
 					position: "absolute",

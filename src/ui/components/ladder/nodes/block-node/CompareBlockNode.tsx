@@ -22,8 +22,8 @@ import OperatorSelect from "./OperatorSelect";
  * l'opérateur (menu au clic) ; IN1 et IN2 sont positionnés en absolu au-dessus et en dessous,
  * hors de la case. N'utilise pas la mise en page « boîte + ligne structurelle + pinoches » de
  * `BlockNode` (timer/counter/assign/user-program) — `BlockNode` aiguille ici selon `blockType`.
- * Les ports structurels IN/Q restent portés par le modèle (voir `BLOCK_PORT_LABELS`) et câblés
- * sur le rail via les deux `Handle`, mais ne sont plus affichés.
+ * Les ports structurels IN/Q restent portés par le modèle (voir `COMPARE_PORT_SPECS` /
+ * `resolveStructuralPorts`) et câblés sur le rail via les deux `Handle`, mais ne sont plus affichés.
  */
 export default function CompareBlockNode({
 	id,

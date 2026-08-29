@@ -1,4 +1,4 @@
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import Project from "./project.schema";
 

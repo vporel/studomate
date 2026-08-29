@@ -1,5 +1,5 @@
 "use client";
-import { CoilMode, ContactMode } from "@/schemas/ladder/element.schema";
+import { CoilType, ContactType } from "@/schemas/ladder/element.schema";
 import React, {
 	createContext,
 	Dispatch,
@@ -10,7 +10,8 @@ import React, {
 } from "react";
 
 export type DraggedLadderElement =
-	{ type: "contact"; mode: ContactMode } | { type: "coil"; mode: CoilMode };
+	| { kind: "contact"; type: ContactType }
+	| { kind: "coil"; type: CoilType };
 
 const LadderToolbarDnDContext = createContext<{
 	draggedElement: DraggedLadderElement | null;

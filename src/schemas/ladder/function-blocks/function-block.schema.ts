@@ -1,5 +1,5 @@
-import { BlockPortSpec } from "../ladder/block-port.schema";
-import Variable from "../variable/variable.schema";
+import { BlockPortSpec } from "../block-port.schema";
+import Variable from "@/schemas/variable/variable.schema";
 
 /** Les mnémoniques plats générés pour un bloc nommé `name`, un par port de `portSpecs` dont
  * `generatesVariable` est vrai (ex. `Tempo1.IN`). */

@@ -5,8 +5,8 @@ import {
 	COMPARISON_OPERATORS,
 	ComparisonOperator,
 } from "@/expression-language/operators";
-import type { CounterType } from "../function-blocks/counter.schema";
-import type { TimerType } from "../function-blocks/timer.schema";
+import type { CounterType } from "./function-blocks/counter.schema";
+import type { TimerType } from "./function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
 import type { BlockPortSpec } from "./block-port.schema";
 import type { GridPosition } from "./element.schema";
@@ -16,9 +16,9 @@ import type { GridPosition } from "./element.schema";
  * `"timer"`/`"counter"` : leurs variantes (TON/TOF/TP, CTU/CTD) partagent le même mécanisme, ce
  * qui vit comme paramètre (`timerType`/`counterType`) sur leurs params plutôt que comme des
  * entrées distinctes ici. Contrairement au timer, les ports structurels d'un compteur dépendent
- * de sa variante (voir `getCounterPortSpecs`) — `BLOCK_PORT_LABELS["counter"]` n'en porte donc
- * qu'un défaut (CTU), à ignorer au profit de `getCounterPortSpecs` partout où la variante réelle
- * est connue (voir `BlockNode`). `"compare"` n'est pas non plus une famille "function block" façon
+ * de sa variante (voir `getCounterPortSpecs`) : `resolveStructuralPorts` en dérive les noms des
+ * ports d'alimentation partout où la variante réelle est connue. `"compare"` n'est pas non plus
+ * une famille "function block" façon
  * timer/counter : il n'a pas de nom et ne génère aucune variable exposée `<Nom>.Port` — juste ses
  * deux ports structurels génériques (comme `"user-program"`) et deux pinoches d'entrée IN1/IN2
  * `type: "ANY"` (voir `CompareBlockParams`). `"assign"` (`out := in`, gaté par `EN`) et
@@ -37,23 +37,14 @@ export const BLOCK_TYPES = [
 
 export type BlockType = (typeof BLOCK_TYPES)[number];
 
-export type BlockPortLabels = { input: string; output: string };
-
 /**
- * Tout bloc a exactement deux ports d'alimentation structurels — une entrée et une sortie,
- * câblées sur le rail comme un contact. Leurs noms par défaut sont `EN`/`ENO`, personnalisables
- * par type de bloc (`IN`/`Q` pour un bloc timer).
- * Tout autre port propre à un type de bloc (`PT`/`ET` d'un bloc timer) est une "block variable"
- * — pas câblée sur le rail, prédéfinie par le type de bloc, non concernée par ce mécanisme.
+ * Noms des deux ports d'alimentation structurels d'un bloc (entrée / sortie, câblés sur le rail
+ * comme un contact) — `EN`/`ENO` par défaut, `IN`/`Q` pour un timer/compteur/compare, `CD`/`Q`
+ * pour un compteur CTD. Dérivés des specs de ports par `resolveStructuralPorts`
+ * (`block-definition.ts`). Tout autre port propre à une famille (`PT`/`ET` d'un timer) n'est pas
+ * câblé sur le rail et n'est pas concerné par ce type.
  */
-export const BLOCK_PORT_LABELS: Record<BlockType, BlockPortLabels> = {
-	"user-program": { input: "EN", output: "ENO" },
-	timer: { input: "IN", output: "Q" },
-	counter: { input: "IN", output: "Q" },
-	compare: { input: "IN", output: "Q" },
-	assign: { input: "EN", output: "ENO" },
-	arithmetic: { input: "EN", output: "ENO" },
-};
+export type BlockPortLabels = { input: string; output: string };
 
 export type UserProgramBlockParams = { programId: string };
 
@@ -147,6 +138,25 @@ export type ArithmeticBlockParams = {
 	operator: ArithmeticOperator;
 };
 
+/** Ports structurels d'un bloc `"compare"` : IN/Q câblés sur le rail. IN1/IN2 ne sont pas des
+ * pinoches paramètre au sens `BlockPortSpec` — `CompareBlockNode` les rend lui-même. */
+export const COMPARE_PORT_SPECS: BlockPortSpec[] = [
+	{
+		suffix: "IN",
+		type: "BOOL",
+		kind: "structural",
+		direction: "input",
+		generatesVariable: true,
+	},
+	{
+		suffix: "Q",
+		type: "BOOL",
+		kind: "structural",
+		direction: "output",
+		generatesVariable: true,
+	},
+];
+
 const EN_ENO_PORT_SPECS: BlockPortSpec[] = [
 	{
 		suffix: "EN",
@@ -213,6 +223,9 @@ export const ARITHMETIC_PORT_SPECS: BlockPortSpec[] = [
 		excludeInputVariable: true,
 	},
 ];
+
+/** Ports structurels d'un bloc `"user-program"` : EN/ENO uniquement (pas de pinoche paramètre). */
+export const USER_PROGRAM_PORT_SPECS: BlockPortSpec[] = [...EN_ENO_PORT_SPECS];
 
 export type BlockData =
 	| { blockType: "user-program"; params: UserProgramBlockParams }
@@ -300,4 +313,40 @@ export function getArithmeticBlockParams(
 	element: BlockElement,
 ): ArithmeticBlockParams | null {
 	return element.data.blockType === "arithmetic" ? element.data.params : null;
+}
+
+/**
+ * Lecture/écriture d'une pinoche paramètre d'un bloc `"assign"` par son suffixe (`IN`/`OUT`) —
+ * consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches générique de `BoxBlockNode`.
+ */
+export function readAssignParam(params: AssignBlockParams, suffix: string): string {
+	return suffix === "IN" ? params.in : params.out;
+}
+
+export function writeAssignParam(
+	params: AssignBlockParams,
+	suffix: string,
+	value: string,
+): AssignBlockParams {
+	return suffix === "IN" ? { ...params, in: value } : { ...params, out: value };
+}
+
+/** Idem pour un bloc `"arithmetic"` (`IN1`/`IN2`/`OUT`). */
+export function readArithmeticParam(
+	params: ArithmeticBlockParams,
+	suffix: string,
+): string {
+	if (suffix === "IN1") return params.in1;
+	if (suffix === "IN2") return params.in2;
+	return params.out;
+}
+
+export function writeArithmeticParam(
+	params: ArithmeticBlockParams,
+	suffix: string,
+	value: string,
+): ArithmeticBlockParams {
+	if (suffix === "IN1") return { ...params, in1: value };
+	if (suffix === "IN2") return { ...params, in2: value };
+	return { ...params, out: value };
 }

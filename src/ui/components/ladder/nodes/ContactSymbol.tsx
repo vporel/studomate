@@ -1,6 +1,6 @@
 "use client";
 
-import { ContactMode } from "@/schemas/ladder/element.schema";
+import { ContactType } from "@/schemas/ladder/element.schema";
 import { Box } from "@mui/material";
 
 const Letter = ({ letter }: { letter: string }) => {
@@ -25,10 +25,10 @@ const Letter = ({ letter }: { letter: string }) => {
  * `ContactNode` (canevas) et `ContactTool` (icône de la toolbar).
  */
 const ContactSymbol = ({
-	mode,
+	type,
 	color = "black",
 }: {
-	mode: ContactMode;
+	type: ContactType;
 	color?: string;
 }) => {
 	return (
@@ -73,7 +73,7 @@ const ContactSymbol = ({
 					background: color,
 				}}
 			/>
-			{mode === "NF" && (
+			{type === "NF" && (
 				<Box
 					sx={{
 						position: "absolute",
@@ -86,8 +86,8 @@ const ContactSymbol = ({
 					}}
 				/>
 			)}
-			{mode === "P" && <Letter letter="P" />}
-			{mode === "N" && <Letter letter="N" />}
+			{type === "P" && <Letter letter="P" />}
+			{type === "N" && <Letter letter="N" />}
 		</Box>
 	);
 };

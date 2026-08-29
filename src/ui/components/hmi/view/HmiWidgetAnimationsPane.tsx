@@ -4,9 +4,14 @@ import {
 	HmiStyleAnimationRow,
 	HmiWidget,
 	HmiWidgetAnimations,
+	HmiWidgetData,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { VariableType } from "@/schemas/variable/variable.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import {
+	HMI_WIDGET_UI,
+	HmiAnimatableStyleProp,
+} from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import AddIcon from "@mui/icons-material/Add";
@@ -38,24 +43,7 @@ const STYLE_VARIABLE_TYPES: VariableType[] = [
 	...NUMERIC_VARIABLE_TYPES,
 ];
 
-/** Propriétés de style animables par type de widget — absent (ou liste vide) pour un type sans
- * onglet "Style" (voir `HmiWidgetAnimationsPane`). */
-export const HMI_WIDGET_ANIMATABLE_STYLE_PROPS: Partial<
-	Record<
-		HmiWidget["type"],
-		{ name: string; label: string; inputType: "color" | "text" }[]
-	>
-> = {
-	rectangle: [
-		{ name: "fill", label: "Remplissage", inputType: "color" },
-		{ name: "stroke", label: "Contour", inputType: "color" },
-	],
-	ellipse: [
-		{ name: "fill", label: "Remplissage", inputType: "color" },
-		{ name: "stroke", label: "Contour", inputType: "color" },
-	],
-	text: [{ name: "text", label: "Texte", inputType: "text" }],
-};
+type StyleProp = HmiAnimatableStyleProp<HmiWidgetData>;
 
 const cellStyle: CSSProperties = {
 	border: "1px solid #e0e0e0",
@@ -67,23 +55,12 @@ const headerCellStyle: CSSProperties = {
 	fontWeight: 600,
 };
 
-/** Valeur statique actuelle d'une propriété animable — sert de valeur de départ à une nouvelle
- * ligne de la table tant que l'utilisateur ne l'a pas encore modifiée pour cette ligne. */
-function getStaticPropertyValue(widget: HmiWidget, propName: string): string {
-	if (widget.type === "rectangle" || widget.type === "ellipse") {
-		if (propName === "fill") return widget.data.style.fill;
-		if (propName === "stroke") return widget.data.style.stroke;
-	}
-	if (widget.type === "text" && propName === "text") return widget.data.text;
-	return "";
-}
-
 function defaultRowProperties(
 	widget: HmiWidget,
-	styleProps: { name: string }[],
+	styleProps: StyleProp[],
 ): Partial<Record<string, string>> {
 	return Object.fromEntries(
-		styleProps.map((p) => [p.name, getStaticPropertyValue(widget, p.name)]),
+		styleProps.map((p) => [p.name, p.staticValue(widget.data)]),
 	);
 }
 
@@ -95,7 +72,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 	const position = animations?.position;
 
 	const setPosition = (
-		patch: Partial<{ xVariableMnemonic: string; yVariableMnemonic: string }>,
+		patch: Partial<{ xVariable: string; yVariable: string }>,
 	) => {
 		updateWidget(widget.id, {
 			data: {
@@ -106,7 +83,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 	};
 
 	const reset = () =>
-		setPosition({ xVariableMnemonic: "", yVariableMnemonic: "" });
+		setPosition({ xVariable: "", yVariable: "" });
 
 	return (
 		<Box
@@ -114,8 +91,8 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 		>
 			<VariableSelector
 				label="Décalage X"
-				value={position?.xVariableMnemonic ?? ""}
-				onCommit={(mnemonic) => setPosition({ xVariableMnemonic: mnemonic })}
+				value={position?.xVariable ?? ""}
+				onCommit={(mnemonic) => setPosition({ xVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
@@ -123,8 +100,8 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 			/>
 			<VariableSelector
 				label="Décalage Y"
-				value={position?.yVariableMnemonic ?? ""}
-				onCommit={(mnemonic) => setPosition({ yVariableMnemonic: mnemonic })}
+				value={position?.yVariable ?? ""}
+				onCommit={(mnemonic) => setPosition({ yVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
@@ -147,7 +124,7 @@ const StyleTab = ({
 	styleProps,
 }: {
 	widget: HmiWidget;
-	styleProps: { name: string; label: string; inputType: "color" | "text" }[];
+	styleProps: StyleProp[];
 }) => {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const project = useProjectStore((s) => s.project);
@@ -157,7 +134,7 @@ const StyleTab = ({
 	).animations;
 	const style = animations?.style;
 	const styleVariable = project?.variables.find(
-		(v) => v.mnemonic === style?.variableMnemonic,
+		(v) => v.mnemonic === style?.variable,
 	);
 	const isBoolStyle = styleVariable?.getNativeType() === "boolean";
 
@@ -193,7 +170,7 @@ const StyleTab = ({
 				...widget.data,
 				animations: {
 					...animations,
-					style: { variableMnemonic: mnemonic, rows },
+					style: { variable: mnemonic, rows },
 				},
 			},
 		});
@@ -221,7 +198,7 @@ const StyleTab = ({
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
 			<VariableSelector
 				label="Variable"
-				value={style?.variableMnemonic ?? ""}
+				value={style?.variable ?? ""}
 				onCommit={handleVariableChange}
 				typeFilter={STYLE_VARIABLE_TYPES}
 				cols={["mnemonic", "address", "scope"]}
@@ -275,8 +252,7 @@ const StyleTab = ({
 												type={p.inputType}
 												size="small"
 												value={
-													row.properties[p.name] ??
-													getStaticPropertyValue(widget, p.name)
+													row.properties[p.name] ?? p.staticValue(widget.data)
 												}
 												onChange={(e) =>
 													setStyle(
@@ -352,7 +328,9 @@ const StyleTab = ({
 const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 	const visible = useHmiStore((s) => s.animationsPaneVisible);
 	const close = useHmiStore((s) => s.closeAnimationsPane);
-	const styleProps = HMI_WIDGET_ANIMATABLE_STYLE_PROPS[widget.type];
+	const styleProps = HMI_WIDGET_UI[widget.type]
+		.animatableStyleProps as StyleProp[];
+	const hasStyleTab = styleProps.length > 0;
 	const [activeTab, setActiveTab] = useState<"position" | "style">("position");
 
 	useEffect(() => {
@@ -403,7 +381,7 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 							value="position"
 							sx={{ alignItems: "flex-start" }}
 						/>
-						{styleProps && (
+						{hasStyleTab && (
 							<Tab
 								label="Style"
 								value="style"
@@ -413,7 +391,7 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 					</Tabs>
 					<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: 2 }}>
 						{activeTab === "position" && <PositionTab widget={widget} />}
-						{activeTab === "style" && styleProps && (
+						{activeTab === "style" && hasStyleTab && (
 							<StyleTab widget={widget} styleProps={styleProps} />
 						)}
 					</Box>

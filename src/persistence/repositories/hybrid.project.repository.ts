@@ -2,7 +2,11 @@ import Project from "@/schemas/project/project.schema";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
 import { isSupabaseConfigured, supabase } from "./supabase-client";
-import ProjectRepository, { SaveResult } from "./project.repository";
+import ProjectRepository, {
+	SaveResult,
+	ShareableProjectRepository,
+	ShareResult,
+} from "./project.repository";
 
 const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
 
@@ -16,7 +20,9 @@ const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
  * Un projet absent de l'index est considéré local : c'est le comportement par défaut pour un
  * nouveau projet, inchangé par rapport à avant l'ajout du cloud.
  */
-export default class HybridProjectRepository implements ProjectRepository {
+export default class HybridProjectRepository
+	implements ProjectRepository, ShareableProjectRepository
+{
 	private readonly local = new LocalStorageProjectRepository();
 	private readonly cloud = new SupabaseProjectRepository();
 
@@ -84,6 +90,24 @@ export default class HybridProjectRepository implements ProjectRepository {
 			"cloud",
 		);
 		return result;
+	}
+
+	// Le partage n'existe que pour les projets cloud : le token porte sur une ligne `project_id`
+	// de la base. L'appelant vérifie `locationOf` avant d'appeler `createShareToken`.
+	getByShareToken(token: string): Promise<Project | null> {
+		return this.cloud.getByShareToken(token);
+	}
+
+	getShareToken(projectId: string): Promise<string | null> {
+		return this.cloud.getShareToken(projectId);
+	}
+
+	createShareToken(projectId: string): Promise<ShareResult> {
+		return this.cloud.createShareToken(projectId);
+	}
+
+	deleteShareToken(projectId: string): Promise<SaveResult> {
+		return this.cloud.deleteShareToken(projectId);
 	}
 
 	/**

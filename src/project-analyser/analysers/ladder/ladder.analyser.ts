@@ -1,5 +1,8 @@
 import {
-	BLOCK_PORT_LABELS,
+	BLOCK_DEFINITIONS,
+	resolveStructuralPorts,
+} from "@/schemas/ladder/block-definition";
+import {
 	BlockElement,
 	UserProgramBlockParams,
 } from "@/schemas/ladder/block.schema";
@@ -10,12 +13,12 @@ import Variable from "@/schemas/variable/variable.schema";
 import {
 	createCounterBlockVariables,
 	getCounterBlockParams,
-} from "@/schemas/function-blocks/counter.schema";
+} from "@/schemas/ladder/function-blocks/counter.schema";
 import {
 	createTimerBlockVariables,
 	getTimerBlockParams,
-} from "@/schemas/function-blocks/timer.schema";
-import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
+} from "@/schemas/ladder/function-blocks/timer.schema";
+import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import ProgramAnalyser from "@/project-analyser/program.analyser";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 
@@ -352,7 +355,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		for (const element of ladder.getAllElements()) {
 			if (
 				element.type === "contact" &&
-				(element.data.mode === "P" || element.data.mode === "N")
+				(element.data.type === "P" || element.data.type === "N")
 			) {
 				variables.push(
 					new Variable(
@@ -369,21 +372,20 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 
 	/**
 	 * Deux variables mémoire BOOL (entrée/sortie d'alimentation) par bloc — noms pris dans
-	 * `BLOCK_PORT_LABELS[blockType]`. Un bloc `"timer"`/`"counter"` en est exclu : ses ports
-	 * structurels sont déjà de vraies `Variable` générées à partir de sa config
-	 * (`buildTimerExposedVariables`/`buildCounterExposedVariables`), pas des variables cachées
-	 * propres à ce mécanisme.
+	 * `resolveStructuralPorts`. Un bloc dont `portsAreExposedVariables` est vrai (timer, compteur)
+	 * en est exclu : ses ports structurels sont déjà de vraies `Variable` générées à partir de sa
+	 * config (`buildTimerExposedVariables`/`buildCounterExposedVariables`), pas des variables
+	 * cachées propres à ce mécanisme.
 	 */
 	private buildBlockPortVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
 			if (
 				element.type !== "block" ||
-				element.data.blockType === "timer" ||
-				element.data.blockType === "counter"
+				BLOCK_DEFINITIONS[element.data.blockType].portsAreExposedVariables
 			)
 				continue;
-			const ports = BLOCK_PORT_LABELS[element.data.blockType];
+			const ports = resolveStructuralPorts(element.data);
 			for (const portName of [ports.input, ports.output]) {
 				variables.push(
 					new Variable(

@@ -51,11 +51,12 @@ export function requireConcreteType(spec: BlockPortSpec): VariableType {
 }
 
 /**
- * Hauteur du nœud, en lignes de pins — jamais un nombre codé en dur par famille : une ligne
+ * Nombre de lignes de pins d'un bloc — jamais un nombre codé en dur par famille : une ligne
  * structurelle toujours présente (EN/ENO, IN/Q...), plus une ligne par rangée de paramètres
- * (ex. PT à gauche/ET à droite pour un timer partagent une seule ligne). Une famille avec
- * plusieurs rangées de paramètres empilées à gauche/à droite (ex. un futur bloc à 3 entrées
- * paramètres et 1 sortie) obtiendrait `1 + 3 = 4` sans rien changer ici.
+ * (ex. PT à gauche/ET à droite pour un timer partagent une seule ligne). Une famille à 3 entrées
+ * paramètres et 1 sortie donnerait `1 + 3 = 4` sans rien changer ici. Base de l'empreinte du
+ * bloc sur la grille (`getBlockHeightInCells`) et de la hauteur de rendu du nœud (voir
+ * `block-node-layout` côté UI).
  */
 export function getBlockPinRowCount(portSpecs: BlockPortSpec[]): number {
 	const parameterPorts = portSpecs.filter((spec) => spec.kind === "parameter");
@@ -69,45 +70,10 @@ export function getBlockPinRowCount(portSpecs: BlockPortSpec[]): number {
 }
 
 /**
- * Hauteur précise du nœud, en unités de cellule — la première ligne de pins occupe une cellule
- * pleine, chaque ligne suivante ne décale son point de départ que d'un demi-cellule (pas une
- * cellule entière) : `1 + (nombre de lignes - 1) * 0.5`. Valeur non arrondie, pour le rendu CSS
- * du nœud lui-même — voir `getBlockHeightInCells` pour la réservation dans la grille (entière).
- */
-export function getBlockHeightInCellUnits(portSpecs: BlockPortSpec[]): number {
-	return 1 + (getBlockPinRowCount(portSpecs) - 1) * 0.5;
-}
-
-/**
- * Nombre de cellules de grille à réserver pour ce bloc — la grille (`computeRowHeightsInCells`)
- * ne travaille qu'en cellules entières, d'où l'arrondi au-dessus de `getBlockHeightInCellUnits`.
+ * Empreinte d'un bloc sur la grille d'une section, en cellules entières (la grille ne réserve
+ * qu'en cellules pleines, voir `computeRowHeightsInCells`) : `ceil((lignes de pins + 1) / 2)` —
+ * les lignes après la première sont mi-hauteur. 1 ligne → 1 cellule, 2-3 → 2, 4-5 → 3.
  */
 export function getBlockHeightInCells(portSpecs: BlockPortSpec[]): number {
-	return Math.ceil(getBlockHeightInCellUnits(portSpecs));
-}
-
-/** Une ligne de pins paramètres affichable — une entrée à gauche, une sortie à droite, l'une des
- * deux pouvant être absente (voir `getParameterPinRows`). */
-export type ParameterPinRow = { input?: BlockPortSpec; output?: BlockPortSpec };
-
-/**
- * Regroupe les ports `kind: "parameter"` en lignes affichables : la n-ième entrée paramètre
- * partage sa ligne avec la n-ième sortie paramètre (PT/ET d'un timer, par exemple, forment une
- * seule ligne). Même comptage de lignes que `getBlockPinRowCount`, dont c'est la contrepartie
- * pour le rendu — jamais de rendu codé en dur par famille dans `BlockNode`.
- */
-export function getParameterPinRows(
-	portSpecs: BlockPortSpec[],
-): ParameterPinRow[] {
-	const inputs = portSpecs.filter(
-		(spec) => spec.kind === "parameter" && spec.direction === "input",
-	);
-	const outputs = portSpecs.filter(
-		(spec) => spec.kind === "parameter" && spec.direction === "output",
-	);
-	const rowCount = Math.max(inputs.length, outputs.length);
-	return Array.from({ length: rowCount }, (_, i) => ({
-		input: inputs[i],
-		output: outputs[i],
-	}));
+	return Math.ceil((getBlockPinRowCount(portSpecs) + 1) / 2);
 }

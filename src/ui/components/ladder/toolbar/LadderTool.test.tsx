@@ -22,7 +22,7 @@ function setup({
 	render(
 		<LadderToolbarDnDProvider>
 			<LadderTool
-				element={{ type: "contact", mode: "NO" }}
+				element={{ kind: "contact", type: "NO" }}
 				disabled={disabled}
 				label={label}
 			>

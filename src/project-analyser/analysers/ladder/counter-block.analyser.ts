@@ -1,9 +1,9 @@
+import { isNumberLiteral } from "@/expression-language/literals/number";
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
-import { isNumberLiteral } from "@/expression-language/literals/number";
-import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
 import { BlockElement } from "@/schemas/ladder/block.schema";
+import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { resolveFunctionBlockPin } from "./function-block-pin.resolver";
 
@@ -33,7 +33,7 @@ export default class CounterBlockAnalyser {
 					"error",
 					"BLOCK_COUNTER_NAME_INVALID",
 					source,
-					`Le nom "${name}" de ce bloc compteur n'est pas valide.`,
+					`Le nom "${name}" de ce bloc n'est pas valide.`,
 				),
 			);
 		}
@@ -61,7 +61,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_EMPTY",
 						source,
-						"La pinoche de remise à zéro/chargement (R/LD) de ce bloc compteur doit être renseignée.",
+						"Le paramètre de remise à zéro/chargement (R/LD) doit être renseignée.",
 					),
 				];
 			case "undeclared":
@@ -70,7 +70,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par la pinoche de remise à zéro/chargement (R/LD) de ce bloc compteur n'existe pas.`,
+						`La variable "${pin}" référencée par le paramètre de remise à zéro/chargement (R/LD) n'existe pas.`,
 					),
 				];
 			case "invalid-type":
@@ -79,7 +79,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par la pinoche de remise à zéro/chargement (R/LD) de ce bloc compteur doit être booléenne.`,
+						`La variable "${pin}" référencée par le paramètre de remise à zéro/chargement (R/LD) doit être booléenne.`,
 					),
 				];
 			default:
@@ -106,7 +106,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_PV_EMPTY",
 						source,
-						"La pinoche PV de ce bloc compteur doit être renseignée.",
+						"Le paramètre PV de ce bloc doit être renseignée.",
 					),
 				];
 			case "undeclared":
@@ -115,7 +115,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_PV_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par la pinoche PV de ce bloc compteur n'existe pas.`,
+						`La variable "${pin}" référencée par le paramètre PV de ce bloc n'existe pas.`,
 					),
 				];
 			case "invalid-type":
@@ -124,7 +124,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_PV_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par la pinoche PV de ce bloc compteur doit être numérique.`,
+						`La variable "${pin}" référencée par le paramètre PV de ce bloc doit être numérique.`,
 					),
 				];
 			default:
@@ -151,7 +151,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CV_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par la pinoche CV de ce bloc compteur n'existe pas.`,
+						`La variable "${pin}" référencée par le paramètre CV de ce bloc n'existe pas.`,
 					),
 				];
 			case "invalid-type":
@@ -160,7 +160,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CV_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par la pinoche CV de ce bloc compteur doit être numérique.`,
+						`La variable "${pin}" référencée par le paramètre CV de ce bloc doit être numérique.`,
 					),
 				];
 			default:

@@ -156,7 +156,7 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 				.getElement(contactId);
 			expect(original).toMatchObject({
 				position: { row: 0, col: 3 },
-				data: { variable: "Capteur", mode: "NO" },
+				data: { variable: "Capteur", type: "NO" },
 			});
 		});
 	});

@@ -5,12 +5,9 @@ import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.com
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementsAddCommand from "@/schemas/ladder/commands/elements-add.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import {
-	createArithmeticBlockElement,
-	createAssignBlockElement,
-	createCompareBlockElement,
-	createUserProgramBlockElement,
-} from "@/schemas/ladder/block.schema";
+import { BLOCK_DEFINITIONS } from "@/schemas/ladder/block-definition";
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import {
 	createContactElement,
 	createCoilElement,
@@ -18,8 +15,8 @@ import {
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { createCounterBlockElement } from "@/schemas/function-blocks/counter.schema";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
 import { useLadderStore } from "../context/LadderContext";
@@ -42,9 +39,9 @@ function createToolElement(
 	row: number,
 	col: number,
 ): LadderElement {
-	return draggedElement.type === "contact"
-		? createContactElement("", draggedElement.mode, row, col)
-		: createCoilElement("", draggedElement.mode, row, col);
+	return draggedElement.kind === "contact"
+		? createContactElement("", draggedElement.type, row, col)
+		: createCoilElement("", draggedElement.type, row, col);
 }
 
 /** Élément existant dont l'empreinte (largeur en colonnes, voir `getElementWidth`) chevauche
@@ -181,25 +178,26 @@ export default function useLadderDropHandlers(
 				return;
 			}
 
-			if (systemBlockType === "compare") {
-				// Un bloc `"compare"` occupe 1 colonne (comme un contact, voir `getElementWidth`) et
-				// n'a pas de fenêtre : on insère un bloc vide, configuré ensuite sur le canevas.
-				if (findOccupant(section, dropRow, dropCol, dropCol)) return;
-				dispatchInsertion(createCompareBlockElement(dropRow, dropCol));
-				return;
-			}
-
-			// `"assign"` et `"arithmetic"` occupent 2 colonnes (défaut d'un bloc) et n'ont pas de
-			// fenêtre : on insère un bloc vide, configuré ensuite sur le canevas.
-			if (systemBlockType === "assign") {
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
-				dispatchInsertion(createAssignBlockElement(dropRow, dropCol));
-				return;
-			}
-
-			if (systemBlockType === "arithmetic") {
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
-				dispatchInsertion(createArithmeticBlockElement(dropRow, dropCol));
+			// Blocs système sans fenêtre (compare, assign, arithmetic) : on insère un bloc vide,
+			// configuré ensuite sur le canevas. Largeur (1 ou 2 colonnes) et fabrique viennent de
+			// `BLOCK_DEFINITIONS`.
+			const directInsertEntry = SYSTEM_BLOCK_CATALOG.find(
+				(entry) =>
+					entry.blockType === systemBlockType &&
+					entry.interaction === "direct-insert",
+			);
+			if (directInsertEntry) {
+				const def = BLOCK_DEFINITIONS[directInsertEntry.blockType];
+				if (
+					findOccupant(
+						section,
+						dropRow,
+						dropCol,
+						dropCol + def.widthInColumns - 1,
+					)
+				)
+					return;
+				dispatchInsertion(def.createElement(dropRow, dropCol));
 				return;
 			}
 
@@ -208,22 +206,22 @@ export default function useLadderDropHandlers(
 			const occupant = findOccupant(section, dropRow, dropCol, dropCol);
 
 			// Cellule déjà occupée : refuse le dépôt, sauf si l'élément qui s'y trouve est du même
-			// genre que celui déposé — auquel cas on change juste son mode (ex. contact NO -> NF),
+			// genre que celui déposé — auquel cas on change juste son type (ex. contact NO -> NF),
 			// la variable et les connexions restant inchangées. Le switch (plutôt qu'un simple
-			// `occupant.type !== draggedElement.type`) est exhaustif sur
+			// `occupant.type !== draggedElement.kind`) est exhaustif sur
 			// `DraggedLadderElement` : un nouveau genre d'outil déposable ne compile plus tant que
 			// son comportement de remplacement n'a pas été décidé ici.
 			if (occupant) {
-				switch (draggedElement.type) {
+				switch (draggedElement.kind) {
 					case "contact":
 					case "coil": {
-						if (occupant.type !== draggedElement.type) return;
-						if (occupant.data.mode === draggedElement.mode) return;
+						if (occupant.type !== draggedElement.kind) return;
+						if (occupant.data.type === draggedElement.type) return;
 						commandsStackManager.executeOperation([
 							new ElementUpdateCommand({
 								elementId: occupant.id,
-								changes: { data: { mode: draggedElement.mode } },
-								previousChanges: { data: { mode: occupant.data.mode } },
+								changes: { data: { type: draggedElement.type } },
+								previousChanges: { data: { type: occupant.data.type } },
 							}),
 						]);
 						return;

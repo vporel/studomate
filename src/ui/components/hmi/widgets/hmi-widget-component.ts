@@ -4,7 +4,7 @@ import { HmiWidgetBaseData } from "@/schemas/hmi/hmi-widget.schema";
  * Interface commune à tous les composants de widget HMI, générique sur son `data` — chacun
  * pioche dans `data` les champs propres à son type (voir `GaugeData`, `PushButtonData`...) plutôt
  * que de les recevoir un par un. Permet à `HmiWidgetItem` de rendre n'importe quel widget via un
- * mapping type -> composant (voir `HMI_WIDGET_COMPONENTS` dans `hmi-widget-components.ts`), sans
+ * mapping type -> composant (voir `HMI_WIDGET_UI` dans `hmi-widget-ui.ts`), sans
  * switch par type. `TData` n'est pas contraint à `HmiWidgetBaseData` : une forme (rectangle,
  * ellipse, texte) n'a pas de variable "principale" (voir `RectangleData`).
  */

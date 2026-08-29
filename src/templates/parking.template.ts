@@ -99,7 +99,7 @@ function buildParkingPage(): HmiPage {
 					},
 					animations: {
 						style: {
-							variableMnemonic: "places",
+							variable: "places",
 							rows: Array.from({ length: CAPACITE - i }, (_, k) => ({
 								value: i + 1 + k,
 								properties: EMPLACEMENT_OCCUPE,
@@ -129,7 +129,7 @@ function buildParkingPage(): HmiPage {
 				},
 				animations: {
 					style: {
-						variableMnemonic: "barriere",
+						variable: "barriere",
 						rows: [
 							{
 								value: 0,
@@ -157,7 +157,7 @@ function buildParkingPage(): HmiPage {
 			colX,
 			120,
 			{ width: 220, height: 44 },
-			{ variableMnemonic: "dem_entree", label: "Demande entrée" },
+			{ variable: "dem_entree", label: "Demande entrée" },
 			stack++,
 			"BP entrée",
 		),
@@ -168,7 +168,7 @@ function buildParkingPage(): HmiPage {
 			colX,
 			180,
 			{ width: 220, height: 44 },
-			{ variableMnemonic: "dem_sortie", label: "Demande sortie" },
+			{ variable: "dem_sortie", label: "Demande sortie" },
 			stack++,
 			"BP sortie",
 		),
@@ -179,7 +179,7 @@ function buildParkingPage(): HmiPage {
 			colX,
 			240,
 			{ width: 220, height: 44 },
-			{ variableMnemonic: "passage", label: "Véhicule passé" },
+			{ variable: "passage", label: "Véhicule passé" },
 			stack++,
 			"BP passage",
 		),
@@ -191,7 +191,7 @@ function buildParkingPage(): HmiPage {
 			colX,
 			320,
 			{ width: 40, height: 40 },
-			{ variableMnemonic: "barriere", label: "Barrière ouverte" },
+			{ variable: "barriere", label: "Barrière ouverte" },
 			stack++,
 			"Voyant barrière",
 		),
@@ -202,7 +202,7 @@ function buildParkingPage(): HmiPage {
 			colX + 150,
 			320,
 			{ width: 40, height: 40 },
-			{ variableMnemonic: "complet", label: "Parking complet" },
+			{ variable: "complet", label: "Parking complet" },
 			stack++,
 			"Voyant complet",
 		),
@@ -215,7 +215,7 @@ function buildParkingPage(): HmiPage {
 			400,
 			{ width: 220, height: 44 },
 			{
-				variableMnemonic: "places",
+				variable: "places",
 				label: "Places occupées",
 				unit: `/ ${CAPACITE}`,
 				decimalPlaces: 0,
@@ -231,7 +231,7 @@ function buildParkingPage(): HmiPage {
 			470,
 			{ width: 220, height: 40 },
 			{
-				variableMnemonic: "places",
+				variable: "places",
 				label: "Occupation",
 				min: 0,
 				max: CAPACITE,

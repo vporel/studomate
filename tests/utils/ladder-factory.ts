@@ -1,6 +1,9 @@
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import Connection from "@/schemas/ladder/connection.schema";
-import { LadderElement } from "@/schemas/ladder/element.schema";
+import {
+	LadderElement,
+	createRailTerminalElement,
+} from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
@@ -51,10 +54,13 @@ export function wireInParallel(from: LadderElement, branches: LadderElement[], t
 /**
  * Ajoute au Main du projet un bloc appelant `ladder`, pour qu'un ladder standard construit dans
  * un test s'exécute réellement (voir `Ladder.role` : un ladder non référencé par le Main est
- * inactif). Le bloc n'a pas besoin d'être câblé au rail : sans connexion entrante, son port `EN`
- * retombe sur `true` par défaut (même repli que pour une bobine orpheline).
+ * inactif). Le bloc est câblé au rail d'alimentation, comme l'auto-connexion le ferait à la
+ * dépose dans l'éditeur.
  */
 export function wireLadderIntoMain(project: Project, ladder: Ladder): void {
 	const [section] = project.main.sections;
-	project.main.addElements(section.id, [createUserProgramBlockElement(ladder.id, 0, 0)]);
+	const rail = createRailTerminalElement(0);
+	const block = createUserProgramBlockElement(ladder.id, 0, 0);
+	project.main.addElements(section.id, [rail, block]);
+	project.main.addConnections(section.id, wireInSeries([rail, block]));
 }

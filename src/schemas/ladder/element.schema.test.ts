@@ -10,8 +10,8 @@ import {
 	createCompareBlockElement,
 	createUserProgramBlockElement,
 } from "./block.schema";
-import { createCounterBlockElement } from "../function-blocks/counter.schema";
-import { createTimerBlockElement } from "../function-blocks/timer.schema";
+import { createCounterBlockElement } from "./function-blocks/counter.schema";
+import { createTimerBlockElement } from "./function-blocks/timer.schema";
 
 describe("ladder element factories", () => {
 	it("createContactElement pose un contact à la position donnée", () => {
@@ -19,7 +19,7 @@ describe("ladder element factories", () => {
 
 		expect(contact.type).toBe("contact");
 		expect(contact.data.variable).toBe("A");
-		expect(contact.data.mode).toBe("NF");
+		expect(contact.data.type).toBe("NF");
 		expect(contact.position.row).toBe(2);
 		expect(contact.position.col).toBe(3);
 		expect(contact.id).toBeTruthy();
@@ -30,7 +30,7 @@ describe("ladder element factories", () => {
 
 		expect(coil.type).toBe("coil");
 		expect(coil.data.variable).toBe("Q1");
-		expect(coil.data.mode).toBe("set");
+		expect(coil.data.type).toBe("set");
 		expect(coil.position.row).toBe(1);
 		expect(coil.position.col).toBe(0);
 	});

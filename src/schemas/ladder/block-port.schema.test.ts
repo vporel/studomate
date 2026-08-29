@@ -1,9 +1,7 @@
 import {
 	BlockPortSpec,
-	getBlockHeightInCellUnits,
 	getBlockHeightInCells,
 	getBlockPinRowCount,
-	getParameterPinRows,
 	requireConcreteType,
 } from "./block-port.schema";
 
@@ -133,7 +131,7 @@ describe("getBlockPinRowCount", () => {
 	});
 });
 
-describe("getBlockHeightInCellUnits / getBlockHeightInCells", () => {
+describe("getBlockHeightInCells", () => {
 	const structuralOnly: BlockPortSpec[] = [
 		{
 			suffix: "EN",
@@ -211,94 +209,15 @@ describe("getBlockHeightInCellUnits / getBlockHeightInCells", () => {
 		},
 	];
 
-	it("une seule ligne de pins : 1 cellule pleine, pas d'arrondi nécessaire", () => {
-		expect(getBlockHeightInCellUnits(structuralOnly)).toBe(1);
+	it("une seule ligne de pins : 1 cellule", () => {
 		expect(getBlockHeightInCells(structuralOnly)).toBe(1);
 	});
 
-	it("deux lignes de pins (timer) : 1.5 cellule précisément, arrondi à 2 pour la grille", () => {
-		expect(getBlockHeightInCellUnits(timerLike)).toBe(1.5);
+	it("deux lignes de pins (timer) : 2 cellules", () => {
 		expect(getBlockHeightInCells(timerLike)).toBe(2);
 	});
 
-	it("trois lignes de pins : 2 cellules précisément, pas d'arrondi supplémentaire", () => {
-		expect(getBlockHeightInCellUnits(threeRows)).toBe(2);
+	it("trois lignes de pins : 2 cellules", () => {
 		expect(getBlockHeightInCells(threeRows)).toBe(2);
-	});
-});
-
-describe("getParameterPinRows", () => {
-	it("associe l'entrée et la sortie paramètres de même rang sur une seule ligne", () => {
-		const pt: BlockPortSpec = {
-			suffix: "PT",
-			type: "TIME",
-			kind: "parameter",
-			direction: "input",
-			generatesVariable: false,
-		};
-		const et: BlockPortSpec = {
-			suffix: "ET",
-			type: "TIME",
-			kind: "parameter",
-			direction: "output",
-			generatesVariable: true,
-		};
-		const portSpecs: BlockPortSpec[] = [
-			{
-				suffix: "IN",
-				type: "BOOL",
-				kind: "structural",
-				direction: "input",
-				generatesVariable: true,
-			},
-			{
-				suffix: "Q",
-				type: "BOOL",
-				kind: "structural",
-				direction: "output",
-				generatesVariable: true,
-			},
-			pt,
-			et,
-		];
-
-		expect(getParameterPinRows(portSpecs)).toEqual([{ input: pt, output: et }]);
-	});
-
-	it("laisse un côté vide quand les comptes d'entrées/sorties paramètres diffèrent", () => {
-		const p1: BlockPortSpec = {
-			suffix: "P1",
-			type: "TIME",
-			kind: "parameter",
-			direction: "input",
-			generatesVariable: false,
-		};
-		const p2: BlockPortSpec = {
-			suffix: "P2",
-			type: "TIME",
-			kind: "parameter",
-			direction: "input",
-			generatesVariable: false,
-		};
-		const portSpecs: BlockPortSpec[] = [p1, p2];
-
-		expect(getParameterPinRows(portSpecs)).toEqual([
-			{ input: p1, output: undefined },
-			{ input: p2, output: undefined },
-		]);
-	});
-
-	it("renvoie un tableau vide sans port paramètre", () => {
-		const portSpecs: BlockPortSpec[] = [
-			{
-				suffix: "EN",
-				type: "BOOL",
-				kind: "structural",
-				direction: "input",
-				generatesVariable: true,
-			},
-		];
-
-		expect(getParameterPinRows(portSpecs)).toEqual([]);
 	});
 });

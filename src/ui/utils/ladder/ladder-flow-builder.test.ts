@@ -4,7 +4,7 @@ import {
 	createContactElement,
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Section from "@/schemas/ladder/section.schema";
 import {
 	buildTargetEdges,
@@ -53,7 +53,7 @@ describe("buildTargetNodes / buildTargetEdges", () => {
 
 		const contactNode = nodes.find((n) => n.id === contact.id)!;
 		expect(contactNode.type).toBe("contact");
-		expect(contactNode.data).toEqual({ variable: "A", mode: "NO" });
+		expect(contactNode.data).toEqual({ variable: "A", type: "NO" });
 		expect(contactNode.position).toEqual({ x: colToX(0), y: rowToY(0) });
 
 		const coilNode = nodes.find((n) => n.id === coil.id)!;

@@ -34,32 +34,6 @@ export interface HmiWidgetTool {
 	previewWidth?: number;
 }
 
-/** Outils "widgets" (interactifs, liés à une variable), dans cet ordre — le libellé de chacun
- * vient par défaut de `HMI_WIDGET_DEFINITIONS`, seule source pour tout ce qui décrit un type de
- * widget. Séparé de `HMI_SHAPE_TOOLS` par un séparateur dans la toolbar (voir `HmiPageContent`). */
-export const HMI_WIDGET_TOOLS: HmiWidgetTool[] = [
-	{ type: "push-button" },
-	{ type: "toggle-switch" },
-	{ type: "indicator" },
-	{ type: "numeric-display" },
-	{ type: "gauge" },
-	{ type: "numeric-input" },
-];
-
-/** Outils "formes" (purement visuelles), dans cet ordre. */
-export const HMI_SHAPE_TOOLS: HmiWidgetTool[] = [
-	{ type: "text" },
-	{ type: "rectangle" },
-	{
-		type: "ellipse",
-		label: "Cercle",
-		sizeOverride: { width: 40, height: 40 },
-		dataOverride: { lockAspectRatio: true },
-		previewWidth: 24,
-	},
-	{ type: "ellipse", label: "Ellipse" },
-];
-
 export function snapToGrid(value: number): number {
 	return Math.round(value / SNAP_GRID) * SNAP_GRID;
 }

@@ -277,6 +277,11 @@ function LadderSection({ section, index }: LadderSectionProps) {
 							onMoveEnd={handleMoveEnd}
 							onInit={handleInit}
 							panOnDrag={false}
+							// Le viewport du Ladder est verrouillé à (0,0) (voir `LadderViewManager`) :
+							// laisser React Flow faire défiler le viewport quand un glisser de nœud
+							// approche un bord décalerait tout le contenu (dont les stubs de rail) par
+							// rapport à la barre CSS statique du rail, sans jamais revenir à zéro.
+							autoPanOnNodeDrag={false}
 							selectionOnDrag={true}
 							// Pas de snapToGrid/snapGrid natif : ses multiples partent de l'origine (0,0),
 							// incompatibles avec le décalage de POWER_RAIL_OFFSET sur les colonnes réelles

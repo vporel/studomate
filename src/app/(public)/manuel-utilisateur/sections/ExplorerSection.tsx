@@ -34,7 +34,7 @@ export default function ExplorerSection() {
 			</Typography>
 			<Typography mb={1}>{`Blocs systèmes :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer.`}</li>
+				<li>{`Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer.`}</li>
 			</Typography>
 			<Typography mb={1}>{`Interfaces HMI :`}</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>

@@ -1,5 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import { TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
@@ -17,7 +18,7 @@ import {
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createSectionWith,
 	wireInParallel,
@@ -25,8 +26,8 @@ import {
 } from "@tests/utils/ladder-factory";
 import LadderPreCompiler, {
 	PreCompiledCoilAssignment,
+	PreCompiledEmbeddedNodeAssignment,
 	PreCompiledLadder,
-	PreCompiledTimerAssignment,
 } from "./ladder.pre-compiler";
 
 /** Les assignations de bobines, dans l'ordre — helper pour ne pas répéter le filtre partout. */
@@ -242,6 +243,33 @@ describe("LadderPreCompiler", () => {
 		]);
 	});
 
+	it("ordonne les réseaux d'une section par ligne d'apparition, pas colonne par colonne", () => {
+		// Rung du haut (ligne 0) : bobine en colonne 3. Rung du bas (ligne 1) : bobine en colonne 1.
+		// Un tri colonne-major placerait Bas avant Haut ; l'ordre attendu suit la ligne.
+		const railHaut = createRailTerminalElement(0);
+		const contactHaut = createContactElement("A", "NO", 0, 1);
+		const contactHaut2 = createContactElement("B", "NO", 0, 2);
+		const coilHaut = createCoilElement("QHaut", "normal", 0, 3);
+		const railBas = createRailTerminalElement(1);
+		const coilBas = createCoilElement("QBas", "normal", 1, 1);
+		const section = createSectionWith(
+			[railHaut, contactHaut, contactHaut2, coilHaut, railBas, coilBas],
+			[
+				...wireInSeries([railHaut, contactHaut, contactHaut2, coilHaut]),
+				...wireInSeries([railBas, coilBas]),
+			],
+		);
+		const ladder = new Ladder("l1", "L", [section]);
+
+		const { result, errors } = preCompile(ladder);
+
+		expect(errors).toEqual([]);
+		expect(coilAssignments(result).map((a) => a.variable)).toEqual([
+			"QHaut",
+			"QBas",
+		]);
+	});
+
 	it("un edgeMemoUpdate par contact P/N, aucun pour NO/NF", () => {
 		const rail = createRailTerminalElement(0);
 		const contactNO = createContactElement("A", "NO", 0, 1);
@@ -374,14 +402,15 @@ describe("LadderPreCompiler", () => {
 	});
 
 	describe("blocs timer", () => {
-		function timerAssignment(
-			result: PreCompiledLadder,
-		): PreCompiledTimerAssignment {
+		function timerAssignment(result: PreCompiledLadder): {
+			node: TimerNode;
+		} {
 			const found = result.assignments.find(
-				(a): a is PreCompiledTimerAssignment => a.kind === "timer",
+				(a): a is PreCompiledEmbeddedNodeAssignment =>
+					a.kind === "embeddedNode" && a.simRole === "timer",
 			);
 			if (!found) throw new Error("Aucun TimerNode trouvé");
-			return found;
+			return { node: found.node as TimerNode };
 		}
 
 		it("matérialise IN depuis reach et un TimerNode référençant les variables générées", () => {
@@ -453,7 +482,7 @@ describe("LadderPreCompiler", () => {
 
 			expect(result.assignments.map((a) => a.kind)).toEqual([
 				"blockPort",
-				"timer",
+				"embeddedNode",
 				"blockPort",
 			]);
 			const etCopy = result.assignments[2] as any;
@@ -478,7 +507,7 @@ describe("LadderPreCompiler", () => {
 
 			expect(result.assignments.map((a) => a.kind)).toEqual([
 				"blockPort",
-				"timer",
+				"embeddedNode",
 			]);
 		});
 
@@ -624,7 +653,7 @@ describe("LadderPreCompiler", () => {
 			expect(describeNode(enoAssignment.value)).toBe("true");
 
 			const assignAssignment = result.assignments.find(
-				(a) => a.kind === "assign",
+				(a) => a.kind === "embeddedNode",
 			) as any;
 			expect(describeNode(assignAssignment.node)).toBe(
 				`IF ${enMnemonic} THEN [X := Y]`,
@@ -689,7 +718,7 @@ describe("LadderPreCompiler", () => {
 			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
 
 			const assignAssignment = result.assignments.find(
-				(a) => a.kind === "assign",
+				(a) => a.kind === "embeddedNode",
 			) as any;
 			expect(describeNode(assignAssignment.node)).toBe(
 				`IF ${enMnemonic} THEN [Z := (X + Y)]`,

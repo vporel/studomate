@@ -10,9 +10,11 @@ import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { Box, Divider, Typography } from "@mui/material";
 import { useState } from "react";
 import {
-	clampZoom,
 	HMI_SHAPE_TOOLS,
 	HMI_WIDGET_TOOLS,
+} from "@/ui/components/hmi/toolbar/hmi-widget-tools";
+import {
+	clampZoom,
 	ZOOM_DEFAULT,
 	ZOOM_MAX,
 	ZOOM_MIN,

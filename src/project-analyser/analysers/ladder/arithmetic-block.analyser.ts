@@ -42,7 +42,7 @@ export default class ArithmeticBlockAnalyser {
 				issue(
 					"BLOCK_ARITHMETIC_IN1_EMPTY",
 					source,
-					"La pinoche IN1 de ce bloc arithmétique doit être renseignée.",
+					"Le paramètre IN1 doit être renseignée.",
 				),
 			);
 		if (!in2 || in2.trim() === "")
@@ -50,7 +50,7 @@ export default class ArithmeticBlockAnalyser {
 				issue(
 					"BLOCK_ARITHMETIC_IN2_EMPTY",
 					source,
-					"La pinoche IN2 de ce bloc arithmétique doit être renseignée.",
+					"Le paramètre IN2 doit être renseignée.",
 				),
 			);
 		if (!out || out.trim() === "")
@@ -58,7 +58,7 @@ export default class ArithmeticBlockAnalyser {
 				issue(
 					"BLOCK_ARITHMETIC_OUT_EMPTY",
 					source,
-					"La pinoche OUT de ce bloc arithmétique doit être renseignée.",
+					"Le paramètre OUT doit être renseignée.",
 				),
 			);
 		if (!ARITHMETIC_BLOCK_OPERATORS.includes(operator))
@@ -78,7 +78,7 @@ export default class ArithmeticBlockAnalyser {
 					issue(
 						"BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE",
 						source,
-						"La pinoche OUT doit être un mnémonique de variable.",
+						"Le paramètre OUT doit être un mnémonique de variable.",
 					),
 				];
 

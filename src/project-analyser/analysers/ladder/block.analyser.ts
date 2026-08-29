@@ -1,5 +1,7 @@
-import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import { BlockElement } from "@/schemas/ladder/block.schema";
+import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueSource,
+} from "@/project-analyser/project.analyser.issue";
+import { BlockElement, BlockType } from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -9,6 +11,57 @@ import CompareBlockAnalyser from "./compare-block.analyser";
 import CounterBlockAnalyser from "./counter-block.analyser";
 import LadderElementAnalyser from "./element.analyser";
 import TimerBlockAnalyser from "./timer-block.analyser";
+import UserProgramBlockAnalyser from "./user-program-block.analyser";
+
+type BlockAnalysisContext = {
+	source: ProjectAnalyserIssueSource;
+	ladder: Ladder;
+	variablesByMnemonic: Map<string, Variable>;
+	project: Project;
+};
+
+/**
+ * Une entrée par famille de bloc — délègue à l'analyser dédié de la famille (règles métier
+ * propres, jamais fusionnées ici). `Record<BlockType, …>` casse le build tant qu'une famille
+ * manque.
+ */
+const BLOCK_ANALYSERS: Record<
+	BlockType,
+	(element: BlockElement, ctx: BlockAnalysisContext) => ProjectAnalyserIssue[]
+> = {
+	timer: (element, ctx) =>
+		TimerBlockAnalyser.analyse(element, ctx.source, ctx.variablesByMnemonic),
+	counter: (element, ctx) =>
+		CounterBlockAnalyser.analyse(element, ctx.source, ctx.variablesByMnemonic),
+	compare: (element, ctx) =>
+		CompareBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.project.dialect,
+			ctx.variablesByMnemonic,
+		),
+	assign: (element, ctx) =>
+		AssignBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.project.dialect,
+			ctx.variablesByMnemonic,
+		),
+	arithmetic: (element, ctx) =>
+		ArithmeticBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.project.dialect,
+			ctx.variablesByMnemonic,
+		),
+	"user-program": (element, ctx) =>
+		UserProgramBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.ladder,
+			ctx.project,
+		),
+};
 
 export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 	analyseIsolated(_element: BlockElement): ProjectAnalyserIssue[] {
@@ -26,89 +79,23 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 			sourceId: element.id,
 			parentId: ladder.id,
 		} as const;
-		if (element.data.blockType === "timer") {
-			return TimerBlockAnalyser.analyse(element, source, variablesByMnemonic);
-		}
-		if (element.data.blockType === "counter") {
-			return CounterBlockAnalyser.analyse(element, source, variablesByMnemonic);
-		}
-		if (element.data.blockType === "compare") {
-			return CompareBlockAnalyser.analyse(
-				element,
-				source,
-				project.dialect,
-				variablesByMnemonic,
-			);
-		}
-		if (element.data.blockType === "assign") {
-			return AssignBlockAnalyser.analyse(
-				element,
-				source,
-				project.dialect,
-				variablesByMnemonic,
-			);
-		}
-		if (element.data.blockType === "arithmetic") {
-			return ArithmeticBlockAnalyser.analyse(
-				element,
-				source,
-				project.dialect,
-				variablesByMnemonic,
-			);
-		}
-		if (element.data.blockType !== "user-program") return [];
-		const { programId } = element.data.params;
-		const issues: ProjectAnalyserIssue[] = [];
+		const issues = BLOCK_ANALYSERS[element.data.blockType](element, {
+			source,
+			ladder,
+			variablesByMnemonic,
+			project,
+		});
 
-		const referenced = project.getProgram(programId);
-		if (!referenced) {
+		const hasPredecessor = ladder
+			.getAllConnections()
+			.some(({ connection }) => connection.target.id === element.id);
+		if (!hasPredecessor) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
-					"BLOCK_PROGRAM_UNDECLARED",
+					"ELEMENT_NO_PREDECESSOR",
 					source,
-					"Le programme référencé par ce bloc n'existe pas dans le projet.",
-				),
-			);
-			return issues;
-		}
-		if (referenced.type !== "ladder") {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_NOT_LADDER",
-					source,
-					`Le programme "${referenced.name}" référencé par ce bloc n'est pas un ladder.`,
-				),
-			);
-			return issues;
-		}
-		if ((referenced as Ladder).role === "main") {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_PROGRAM_IS_MAIN",
-					source,
-					`Le programme "${referenced.name}" est le Main du projet : il ne peut pas être appelé par un bloc.`,
-				),
-			);
-		}
-
-		const duplicateCount = ladder
-			.getAllElements()
-			.filter(
-				(el) =>
-					el.type === "block" &&
-					el.data.blockType === "user-program" &&
-					el.data.params.programId === programId,
-			).length;
-		if (duplicateCount > 1) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"warning",
-					"BLOCK_PROGRAM_DUPLICATE_REFERENCE",
-					source,
-					`Le programme "${referenced.name}" est référencé par plusieurs blocs de ce Main.`,
+					"Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
 				),
 			);
 		}

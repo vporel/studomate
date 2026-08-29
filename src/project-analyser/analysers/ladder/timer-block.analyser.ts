@@ -1,13 +1,13 @@
-import ProjectAnalyserIssue, {
-	ProjectAnalyserIssueCode,
-	ProjectAnalyserIssueSource,
-} from "@/project-analyser/project.analyser.issue";
 import {
 	isTimeLiteral,
 	parseTimeLiteral,
 } from "@/expression-language/literals/time";
-import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
+import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueCode,
+	ProjectAnalyserIssueSource,
+} from "@/project-analyser/project.analyser.issue";
 import { BlockElement } from "@/schemas/ladder/block.schema";
+import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { resolveFunctionBlockPin } from "./function-block-pin.resolver";
 
@@ -63,7 +63,7 @@ export default class TimerBlockAnalyser {
 		return issues;
 	}
 
-	/** `pin` est le contenu brut de la pinoche PT (constante `T#...` ou variable) ou ET (toujours
+	/** `pin` est le contenu brut de le paramètre PT (constante `T#...` ou variable) ou ET (toujours
 	 * une variable, jamais de constante). */
 	private static validatePin(
 		pin: string,
@@ -92,7 +92,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.empty,
 						source,
-						`La pinoche ${pinName} de ce bloc tempo doit être renseignée.`,
+						`Le paramètre ${pinName} de ce bloc doit être renseignée.`,
 					),
 				];
 			case "literal":
@@ -113,7 +113,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.undeclaredVariable,
 						source,
-						`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo n'existe pas.`,
+						`La variable "${pin}" référencée par le paramètre ${pinName} de ce bloc n'existe pas.`,
 					),
 				];
 			case "invalid-type":
@@ -122,7 +122,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.invalidType,
 						source,
-						`La variable "${pin}" référencée par la pinoche ${pinName} de ce bloc tempo doit être numérique ou TIME.`,
+						`La variable "${pin}" référencée par le paramètre ${pinName} de ce bloc doit être numérique ou TIME.`,
 					),
 				];
 			case "ok":

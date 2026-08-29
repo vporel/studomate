@@ -1,4 +1,18 @@
+import {
+	HMI_WIDGET_DEFINITIONS,
+	HmiWidgetKind,
+	HmiWidgetType,
+} from "@/schemas/hmi/hmi-widget.schema";
+import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Divider, Typography } from "@mui/material";
+
+const WIDGET_TYPES = Object.keys(HMI_WIDGET_DEFINITIONS) as HmiWidgetType[];
+
+function widgetTypesByKind(kind: HmiWidgetKind): HmiWidgetType[] {
+	return WIDGET_TYPES.filter(
+		(type) => HMI_WIDGET_DEFINITIONS[type].kind === kind,
+	).sort((a, b) => HMI_WIDGET_UI[a].paletteOrder - HMI_WIDGET_UI[b].paletteOrder);
+}
 
 export default function HmiSection({ selected }: { selected: string }) {
 	const isChild = selected.startsWith("hmi-");
@@ -81,28 +95,25 @@ export default function HmiSection({ selected }: { selected: string }) {
 						{`Widgets`}
 					</Typography>
 					<Typography mb={2}>
-						{`Neuf types de widgets sont disponibles, répartis en deux groupes dans la palette.`}
+						{`${WIDGET_TYPES.length} types de widgets sont disponibles, répartis en deux groupes dans la palette.`}
 					</Typography>
 					<Typography
 						variant="h5"
 						mb={1}
 					>{`Widgets interactifs (liés à une variable)`}</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-						<li>{`Bouton poussoir — commande une variable BOOL. Comportements configurables : maintien momentané (la variable passe à 1 tant que le bouton est enfoncé), SET (force à 1), RESET (force à 0), bascule (inverse la valeur à chaque appui).`}</li>
-						<li>{`Interrupteur — lit et inverse une variable BOOL au clic.`}</li>
-						<li>{`Voyant — affiche l'état d'une variable BOOL (éteint = gris, allumé = vert).`}</li>
-						<li>{`Affichage numérique — affiche la valeur d'une variable numérique. Options : unité (suffixe textuel) et nombre de décimales.`}</li>
-						<li>{`Jauge — barre de progression liée à une variable numérique. Options : min, max et orientation (horizontal / vertical).`}</li>
-						<li>{`Saisie numérique — champ de saisie lié à une variable numérique. En simulation, saisir une valeur et valider par Entrée ou en cliquant ailleurs l'écrit dans la variable. Options : min et max.`}</li>
+						{widgetTypesByKind("interactive").map((type) => (
+							<li key={type}>{HMI_WIDGET_UI[type].manualDescription}</li>
+						))}
 					</Typography>
 					<Typography
 						variant="h5"
 						mb={1}
 					>{`Formes (purement visuelles)`}</Typography>
 					<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-						<li>{`Rectangle — forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.`}</li>
-						<li>{`Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour, case à cocher "Cercle" pour contraindre le ratio 1:1.`}</li>
-						<li>{`Texte — texte libre. Options : contenu, taille de police, couleur, alignement (gauche / centré / droite).`}</li>
+						{widgetTypesByKind("shape").map((type) => (
+							<li key={type}>{HMI_WIDGET_UI[type].manualDescription}</li>
+						))}
 					</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

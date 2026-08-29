@@ -1,6 +1,6 @@
 "use client";
 
-import { TIMER_TYPES, TimerType } from "@/schemas/function-blocks/timer.schema";
+import { TIMER_TYPES, TimerType } from "@/schemas/ladder/function-blocks/timer.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";

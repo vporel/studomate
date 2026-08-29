@@ -1,7 +1,7 @@
 "use client";
 
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import { ContactMode } from "@/schemas/ladder/element.schema";
+import { ContactType } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -18,7 +18,7 @@ import { useRef } from "react";
 import ContactSymbol from "./ContactSymbol";
 import { getHighlightOverlaySx } from "./node-highlight";
 
-export type ContactNodeData = { variable: string; mode: ContactMode };
+export type ContactNodeData = { variable: string; type: ContactType };
 export type ContactNodeType = Node<ContactNodeData> & { type: "contact" };
 
 /** Dimensions d'un contact = 1 cellule de grille. Exporté pour les tests et le layout. */
@@ -28,7 +28,7 @@ export const CONTACT_NODE_DIMENSIONS = {
 };
 
 const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
-	const { variable, mode } = data;
+	const { variable, type } = data;
 	const th = useTheme();
 	const pageVisible = usePageVisible();
 	const energized = useProjectStore(
@@ -89,7 +89,7 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 			</Box>
 			<Box sx={{ width: "100%", height: 20 }}>
 				<ContactSymbol
-					mode={mode}
+					type={type}
 					color={
 						selected
 							? th.palette.primary.main

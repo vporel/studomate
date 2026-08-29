@@ -14,11 +14,11 @@ export function resolvePositionAnimationOffset(
 		widget.data as { animations?: { position?: HmiPositionAnimation } }
 	).animations?.position;
 	if (!position) return undefined;
-	const dx = position.xVariableMnemonic
-		? Number(getVariableValue(position.xVariableMnemonic) ?? 0)
+	const dx = position.xVariable
+		? Number(getVariableValue(position.xVariable) ?? 0)
 		: 0;
-	const dy = position.yVariableMnemonic
-		? Number(getVariableValue(position.yVariableMnemonic) ?? 0)
+	const dy = position.yVariable
+		? Number(getVariableValue(position.yVariable) ?? 0)
 		: 0;
 	return { dx, dy };
 }

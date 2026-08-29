@@ -72,13 +72,13 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 			);
 		}
 
-		if (element.data.mode === "normal") {
+		if (element.data.type === "normal") {
 			const sameVariableCoilsCount = ladder
 				.getAllElements()
 				.filter(
 					(el) =>
 						el.type === "coil" &&
-						el.data.mode === "normal" &&
+						el.data.type === "normal" &&
 						el.data.variable === element.data.variable,
 				).length;
 			if (sameVariableCoilsCount > 1) {

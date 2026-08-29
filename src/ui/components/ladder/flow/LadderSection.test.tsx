@@ -23,6 +23,18 @@ jest.mock("../context-menu/LadderContextMenu", () => ({
 	default: () => null,
 }));
 
+const reactFlowProps: Record<string, unknown>[] = [];
+jest.mock("@xyflow/react", () => {
+	const actual = jest.requireActual("@xyflow/react");
+	return {
+		...actual,
+		ReactFlow: (props: Record<string, unknown>) => {
+			reactFlowProps.push(props);
+			return null;
+		},
+	};
+});
+
 // jsdom n'implémente pas ResizeObserver ; React Flow s'en sert pour mesurer le viewport au montage.
 class ResizeObserverStub {
 	observe() {}
@@ -118,6 +130,18 @@ function setup({
 }
 
 describe("LadderSection", () => {
+	beforeEach(() => {
+		reactFlowProps.length = 0;
+	});
+
+	it("désactive l'auto-pan de React Flow pendant un glisser de nœud (viewport verrouillé à 0,0)", () => {
+		setup();
+		expect(reactFlowProps.at(-1)).toMatchObject({
+			panOnDrag: false,
+			autoPanOnNodeDrag: false,
+		});
+	});
+
 	it("se rend sans planter, avec la section identifiée par son id", () => {
 		const { container } = setup();
 		expect(

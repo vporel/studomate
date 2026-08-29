@@ -11,13 +11,14 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useLadderStore } from "../context/LadderContext";
 import CoilSymbol from "../nodes/CoilSymbol";
 import ContactSymbol from "../nodes/ContactSymbol";
+import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import LadderSystemBlockTool from "./LadderSystemBlockTool";
 import LadderTool from "./LadderTool";
 import ZoomInTool from "./ZoomInTool";
 import ZoomOutTool from "./ZoomOutTool";
 
-/** Icône des outils "bloc système" (compare, assign) : un rectangle avec le nom du bloc, faute
- * de symbole graphique dédié comme pour un contact/une bobine. */
+/** Icône des outils "bloc système" (compare, assign, arithmetic) : un rectangle avec le nom du
+ * bloc, faute de symbole graphique dédié comme pour un contact/une bobine. */
 const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
 	<Box
 		sx={{
@@ -36,13 +37,14 @@ const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 /**
- * Outils de dépose (contact NO/NF/P/N, bobine normal/set/reset, compare, assign) : on drague
- * l'icône, on la lâche sur le canevas — la cible (insertion, branche parallèle, nouveau réseau)
- * est résolue par accrochage à la grille, pas de zone de dépôt dédiée. Un réseau ne peut pas être
- * vide : il n'existe qu'à partir du moment où un premier élément y est déposé, d'où l'absence de
- * bouton dédié pour en créer un. Compare/assign sont des blocs système (voir
- * `LadderSystemBlockTool`) : une deuxième façon de les poser, en plus du glisser-déposer depuis
- * "Blocs systèmes" de l'explorateur — même comportement (ouverture de la popup avant insertion).
+ * Outils de dépose (contact NO/NF/P/N, bobine normal/set/reset, compare, assign, arithmetic) :
+ * on drague l'icône, on la lâche sur le canevas — la cible (insertion, branche parallèle, nouveau
+ * réseau) est résolue par accrochage à la grille, pas de zone de dépôt dédiée. Un réseau ne peut
+ * pas être vide : il n'existe qu'à partir du moment où un premier élément y est déposé, d'où
+ * l'absence de bouton dédié pour en créer un. Compare/assign/arithmetic sont des blocs système
+ * (voir `LadderSystemBlockTool`) : une deuxième façon de les poser, en plus du glisser-déposer
+ * depuis "Blocs systèmes" de l'explorateur — même comportement (insertion d'un bloc vide,
+ * configuré ensuite sur le canevas).
  */
 const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	const commandsStackManager = useLadderStore(
@@ -77,70 +79,59 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 		>
 			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
 				<LadderTool
-					element={{ type: "contact", mode: "NO" }}
+					element={{ kind: "contact", type: "NO" }}
 					label="Contact normalement ouvert (NO)"
 				>
-					<ContactSymbol mode="NO" />
+					<ContactSymbol type="NO" />
 				</LadderTool>
 				<LadderTool
-					element={{ type: "contact", mode: "NF" }}
+					element={{ kind: "contact", type: "NF" }}
 					label="Contact normalement fermé (NF)"
 				>
-					<ContactSymbol mode="NF" />
+					<ContactSymbol type="NF" />
 				</LadderTool>
 				<LadderTool
-					element={{ type: "contact", mode: "P" }}
+					element={{ kind: "contact", type: "P" }}
 					label="Contact détection front montant (P)"
 				>
-					<ContactSymbol mode="P" />
+					<ContactSymbol type="P" />
 				</LadderTool>
 				<LadderTool
-					element={{ type: "contact", mode: "N" }}
+					element={{ kind: "contact", type: "N" }}
 					label="Contact détection front descendant (N)"
 				>
-					<ContactSymbol mode="N" />
+					<ContactSymbol type="N" />
 				</LadderTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<LadderTool
-					element={{ type: "coil", mode: "normal" }}
+					element={{ kind: "coil", type: "normal" }}
 					label="Bobine normale"
 				>
-					<CoilSymbol mode="normal" />
+					<CoilSymbol type="normal" />
 				</LadderTool>
 				<LadderTool
-					element={{ type: "coil", mode: "set" }}
+					element={{ kind: "coil", type: "set" }}
 					label="Bobine Set (mémorisation à 1)"
 				>
-					<CoilSymbol mode="set" />
+					<CoilSymbol type="set" />
 				</LadderTool>
 				<LadderTool
-					element={{ type: "coil", mode: "reset" }}
+					element={{ kind: "coil", type: "reset" }}
 					label="Bobine Reset (mémorisation à 0)"
 				>
-					<CoilSymbol mode="reset" />
+					<CoilSymbol type="reset" />
 				</LadderTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
-				<LadderSystemBlockTool
-					blockType="compare"
-					width={68}
-					label="Bloc Compare — compare deux valeurs"
-				>
-					<SystemBlockToolLabel>COMPARE</SystemBlockToolLabel>
-				</LadderSystemBlockTool>
-				<LadderSystemBlockTool
-					blockType="assign"
-					width={54}
-					label="Bloc Assign — affecte une valeur à une variable"
-				>
-					<SystemBlockToolLabel>ASSIGN</SystemBlockToolLabel>
-				</LadderSystemBlockTool>
-				<LadderSystemBlockTool
-					blockType="arithmetic"
-					width={44}
-					label="Bloc Calc — opération arithmétique (out := in1 op in2)"
-				>
-					<SystemBlockToolLabel>CALC</SystemBlockToolLabel>
-				</LadderSystemBlockTool>
+				{SYSTEM_BLOCK_CATALOG.filter((entry) => entry.toolbar).map((entry) => (
+					<LadderSystemBlockTool
+						key={entry.blockType}
+						blockType={entry.blockType}
+						width={entry.toolbar!.width}
+						label={entry.toolbar!.label}
+					>
+						<SystemBlockToolLabel>{entry.toolbar!.symbol}</SystemBlockToolLabel>
+					</LadderSystemBlockTool>
+				))}
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<Button
 					size="small"

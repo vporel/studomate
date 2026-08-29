@@ -34,7 +34,7 @@ describe("traffic-light.template", () => {
 			);
 			expect(indicators).toHaveLength(3);
 			const animatedMnemonics = indicators.map(
-				(w) => (w.data as any).variableMnemonic,
+				(w) => (w.data as any).variable,
 			);
 			expect(animatedMnemonics).toEqual(
 				expect.arrayContaining(["rouge", "orange", "vert"]),

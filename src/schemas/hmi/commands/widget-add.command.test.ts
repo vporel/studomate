@@ -10,7 +10,7 @@ describe("WidgetAddCommand", () => {
 			position: { x: 10, y: 20 },
 			size: { width: 90, height: 40 },
 			stackOrder: 0,
-			data: { variableMnemonic: "", label: "BP1" },
+			data: { variable: "", label: "BP1" },
 		};
 	}
 

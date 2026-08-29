@@ -9,7 +9,11 @@ import {
 	TimerBlockParams,
 } from "@/schemas/ladder/block.schema";
 import { PendingSystemBlockEdit } from "@/ui/utils/ladder/ladder-system-block-drag";
-import { getElementWidth, GridPosition } from "@/schemas/ladder/element.schema";
+import {
+	ContactType,
+	getElementWidth,
+	GridPosition,
+} from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
@@ -493,6 +497,29 @@ export default class LadderWorkflowManager {
 
 		if (commands.length > 0)
 			this.getStoreState().commandsStackManager.executeOperation(commands);
+	}
+
+	/**
+	 * Change le type d'un contact (NO/NF/P/N) sans toucher à sa variable ni à ses connexions —
+	 * déclenché par le sous-menu « Type » du menu contextuel. Sans effet si l'élément n'est pas un
+	 * contact ou porte déjà ce type.
+	 */
+	setContactType(
+		sectionId: string,
+		elementId: string,
+		type: ContactType,
+	): void {
+		const section = this.getStoreState().ladder.getSection(sectionId);
+		const element = section?.getElement(elementId);
+		if (!element || element.type !== "contact" || element.data.type === type)
+			return;
+		this.getStoreState().commandsStackManager.executeOperation([
+			new ElementUpdateCommand({
+				elementId,
+				changes: { data: { type } },
+				previousChanges: { data: { type: element.data.type } },
+			}),
+		]);
 	}
 
 	/**

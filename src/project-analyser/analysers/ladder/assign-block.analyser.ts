@@ -38,7 +38,7 @@ export default class AssignBlockAnalyser {
 				issue(
 					"BLOCK_ASSIGN_IN_EMPTY",
 					source,
-					"La pinoche IN de ce bloc d'affectation doit être renseignée.",
+					"Le paramètre IN doit être renseignée.",
 				),
 			);
 		if (!outRaw || outRaw.trim() === "")
@@ -46,7 +46,7 @@ export default class AssignBlockAnalyser {
 				issue(
 					"BLOCK_ASSIGN_OUT_EMPTY",
 					source,
-					"La pinoche OUT de ce bloc d'affectation doit être renseignée.",
+					"Le paramètre OUT doit être renseignée.",
 				),
 			);
 		if (issues.length > 0) return issues;
@@ -58,7 +58,7 @@ export default class AssignBlockAnalyser {
 					issue(
 						"BLOCK_ASSIGN_OUT_NOT_A_VARIABLE",
 						source,
-						"La pinoche OUT doit être un mnémonique de variable.",
+						"Le paramètre OUT doit être un mnémonique de variable.",
 					),
 				];
 
@@ -68,7 +68,7 @@ export default class AssignBlockAnalyser {
 					issue(
 						"BLOCK_ASSIGN_IN_NOT_ALLOWED",
 						source,
-						"La pinoche IN doit contenir une variable ou une valeur, pas une expression.",
+						"Le paramètre IN doit contenir une variable ou une valeur, pas une expression.",
 					),
 				];
 

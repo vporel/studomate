@@ -56,7 +56,13 @@ const LadderContextMenu = ({
 		if (element.type === "block")
 			items.push(...blockContextMenuItems(element, workflowManager));
 		items.push(
-			...nodeOrEdgeContextMenuItems(element, handleDelete, copyCutPasteManager),
+			...nodeOrEdgeContextMenuItems(
+				element,
+				sectionId,
+				handleDelete,
+				copyCutPasteManager,
+				workflowManager,
+			),
 		);
 		return items;
 	}, [

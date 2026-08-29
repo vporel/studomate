@@ -1,5 +1,6 @@
 "use client";
 
+import { SystemBlockType } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE } from "@/ui/utils/ladder/ladder-system-block-drag";
@@ -21,7 +22,7 @@ const LadderSystemBlockTool = ({
 	label,
 	children,
 }: {
-	blockType: "compare" | "assign" | "arithmetic";
+	blockType: SystemBlockType;
 	width?: number;
 	disabled?: boolean;
 	label?: string;

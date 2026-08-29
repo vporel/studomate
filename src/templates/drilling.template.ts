@@ -232,9 +232,9 @@ function buildDrillingPage(): HmiPage {
 					borderRadius: 2,
 				},
 				animations: {
-					position: { yVariableMnemonic: "position" },
+					position: { yVariable: "position" },
 					style: {
-						variableMnemonic: "broche",
+						variable: "broche",
 						rows: [
 							{ value: 0, properties: { fill: "#eeeeee", stroke: "#9e9e9e" } },
 							{ value: 1, properties: { fill: "#fff59d", stroke: "#f9a825" } },
@@ -254,7 +254,7 @@ function buildDrillingPage(): HmiPage {
 			140,
 			120,
 			{ width: 200, height: 44 },
-			{ variableMnemonic: "dcy", label: "Départ cycle" },
+			{ variable: "dcy", label: "Départ cycle" },
 			stack++,
 			"BP départ",
 		),
@@ -275,7 +275,7 @@ function buildDrillingPage(): HmiPage {
 				160,
 				200 + i * 64,
 				{ width: 36, height: 36 },
-				{ variableMnemonic: mnemonic, label },
+				{ variable: mnemonic, label },
 				stack++,
 				`Voyant ${mnemonic}`,
 			),
@@ -309,9 +309,10 @@ export function createDrillingProject(): Project {
 	const operativePart = buildOperativePartLadder();
 	project.addProgram(operativePart);
 	const [mainSection] = project.main.sections;
-	project.main.addElements(mainSection.id, [
-		createUserProgramBlockElement(operativePart.id, 0, 0),
-	]);
+	const mainRail = createRailTerminalElement(0);
+	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
+	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
+	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
 
 	const page = buildDrillingPage();
 	project.hmiPages[page.id] = page;

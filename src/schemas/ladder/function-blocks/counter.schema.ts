@@ -1,12 +1,9 @@
 import { createRandomId } from "@/ids";
-import type { BlockElement, CounterBlockParams } from "../ladder/block.schema";
-import type { GridPosition } from "../ladder/element.schema";
-import Variable from "../variable/variable.schema";
-import VariableBuilder from "../variable/builders/variable.builder";
-import {
-	BlockPortSpec,
-	requireConcreteType,
-} from "../ladder/block-port.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import Variable from "@/schemas/variable/variable.schema";
+import { BlockPortSpec, requireConcreteType } from "../block-port.schema";
+import type { BlockElement, CounterBlockParams } from "../block.schema";
+import type { GridPosition } from "../element.schema";
 import { getBlockVariableMnemonics } from "./function-block.schema";
 
 /** Les deux variantes de bloc compteur — CTU (compte vers le haut) et CTD (compte vers le bas).
@@ -47,6 +44,7 @@ export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
 			kind: "parameter",
 			direction: "input",
 			generatesVariable: false,
+			acceptedLiterals: ["boolean"],
 		},
 		{
 			suffix: "PV",
@@ -102,6 +100,30 @@ export function createCounterBlockVariables(
 				.ownerBlock({ id: elementId })
 				.build(),
 		);
+}
+
+/**
+ * Lecture/écriture d'une pinoche paramètre d'un bloc compteur par son suffixe (`PV`/`CV`, ou le
+ * port de contrôle `R`/`LD`) — consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches
+ * générique de `BoxBlockNode`.
+ */
+export function readCounterParam(
+	params: CounterBlockParams,
+	suffix: string,
+): string {
+	if (suffix === "PV") return params.pv;
+	if (suffix === "CV") return params.cv ?? "";
+	return params.control;
+}
+
+export function writeCounterParam(
+	params: CounterBlockParams,
+	suffix: string,
+	value: string,
+): CounterBlockParams {
+	if (suffix === "PV") return { ...params, pv: value };
+	if (suffix === "CV") return { ...params, cv: value };
+	return { ...params, control: value };
 }
 
 export function createCounterBlockElement(

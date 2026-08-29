@@ -20,6 +20,7 @@ export default function AuthModal() {
 	const {
 		user,
 		authModalVisible,
+		authModalPrompt,
 		setAuthModalVisible,
 		signIn,
 		signUp,
@@ -30,6 +31,7 @@ export default function AuthModal() {
 		useShallow((state) => ({
 			user: state.user,
 			authModalVisible: state.ui.authModalVisible,
+			authModalPrompt: state.ui.authModalPrompt,
 			setAuthModalVisible: state.setAuthModalVisible,
 			signIn: state.signIn,
 			signUp: state.signUp,
@@ -123,6 +125,11 @@ export default function AuthModal() {
 			title={title}
 			width={440}
 		>
+			{authModalPrompt && (
+				<Alert severity="info" sx={{ mb: 2 }}>
+					{authModalPrompt}
+				</Alert>
+			)}
 			{screen === "signIn" && (
 				<Box
 					component="form"

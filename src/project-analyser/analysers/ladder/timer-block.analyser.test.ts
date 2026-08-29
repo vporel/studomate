@@ -1,4 +1,4 @@
-import { createTimerBlockElement } from "@/schemas/function-blocks/timer.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
 import Variable from "@/schemas/variable/variable.schema";
 import TimerBlockAnalyser from "./timer-block.analyser";

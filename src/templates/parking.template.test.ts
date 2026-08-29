@@ -59,7 +59,7 @@ describe("parking.template", () => {
 			expect(emplacements).toHaveLength(4);
 			emplacements.forEach((w, i) => {
 				const rows = w.data.animations?.style?.rows ?? [];
-				expect(w.data.animations?.style?.variableMnemonic).toBe("places");
+				expect(w.data.animations?.style?.variable).toBe("places");
 				expect(rows.map((r) => r.value)).toEqual(
 					Array.from({ length: 4 - i }, (_, k) => i + 1 + k),
 				);

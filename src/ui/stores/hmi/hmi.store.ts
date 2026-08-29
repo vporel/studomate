@@ -215,7 +215,7 @@ export const createHmiStore = (
 			// Snapshot générique champ par champ pour `previousData` : `partial.data` peut porter des
 			// champs propres à n'importe quel type de widget (`min`, `behavior`, `style`...), pas
 			// seulement ceux communs à tous (`keyof HmiWidgetData`, union discriminée, ne donnerait
-			// que l'intersection — `variableMnemonic`/`label`).
+			// que l'intersection — `variable`/`label`).
 			const previousData: Record<string, unknown> = {};
 			if (partial.data) {
 				const currentData = widget.data as Record<string, unknown>;

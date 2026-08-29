@@ -89,8 +89,8 @@ describe("useLadderDropHandlers", () => {
 
 	it("marque le dragover comme une copie tant qu'un élément est en cours de glisser, et prévient le comportement par défaut", () => {
 		const { result } = setup(new Section("s1", "S"), [], {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [handleDragOver] = result.current;
 		const event = fakeDragEvent(0, 0);
@@ -112,7 +112,7 @@ describe("useLadderDropHandlers", () => {
 
 	it("place l'élément exactement dans la cellule visée, y compris depuis sa moitié basse/droite", () => {
 		const section = new Section("s1", "S");
-		const { result } = setup(section, [], { type: "contact", mode: "NO" });
+		const { result } = setup(section, [], { kind: "contact", type: "NO" });
 		const [, handleDrop] = result.current;
 
 		// Un point dans la moitié basse/droite de la cellule (row=2, col=1) doit rester dans
@@ -137,7 +137,7 @@ describe("useLadderDropHandlers", () => {
 		expect(addCommand).toBeInstanceOf(ElementsAddCommand);
 		expect(addCommand.payload.elements[0]).toMatchObject({
 			position: { row: 2, col: 1 },
-			data: { variable: "", mode: "NO" },
+			data: { variable: "", type: "NO" },
 		});
 	});
 
@@ -148,8 +148,8 @@ describe("useLadderDropHandlers", () => {
 		section.elements = [existing];
 		const leafPositions = [{ id: "existing", row: 0, col: 0 }];
 		const { result } = setup(section, leafPositions, {
-			type: "coil",
-			mode: "normal",
+			kind: "coil",
+			type: "normal",
 		});
 		const [, handleDrop] = result.current;
 
@@ -174,8 +174,8 @@ describe("useLadderDropHandlers", () => {
 		const section = new Section("s1", "S");
 		const leafPositions = [{ id: "other-row", row: 5, col: 0 }];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -215,8 +215,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: right.id, row: 0, col: 3 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NF",
+			kind: "contact",
+			type: "NF",
 		});
 		const [, handleDrop] = result.current;
 
@@ -256,8 +256,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: target.id, row: 3, col: 2 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -299,8 +299,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: target.id, row: 0, col: 4 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -336,8 +336,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: target.id, row: 0, col: 4 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "coil",
-			mode: "normal",
+			kind: "coil",
+			type: "normal",
 		});
 		const [, handleDrop] = result.current;
 
@@ -374,8 +374,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: rightTarget.id, row: 0, col: 4 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -410,8 +410,8 @@ describe("useLadderDropHandlers", () => {
 			{ id: target.id, row: 2, col: 4 },
 		];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -444,8 +444,8 @@ describe("useLadderDropHandlers", () => {
 		const section = new Section("s1", "S");
 		const leafPositions = [{ id: "other-row", row: 5, col: 0 }];
 		const { result } = setup(section, leafPositions, {
-			type: "contact",
-			mode: "NO",
+			kind: "contact",
+			type: "NO",
 		});
 		const [, handleDrop] = result.current;
 
@@ -460,7 +460,7 @@ describe("useLadderDropHandlers", () => {
 		const section = new Section("s1", "S");
 		const existing = createContactElement("A", "NO", 0, 1);
 		section.elements = [existing];
-		const { result } = setup(section, [], { type: "contact", mode: "NF" });
+		const { result } = setup(section, [], { kind: "contact", type: "NF" });
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
@@ -472,8 +472,8 @@ describe("useLadderDropHandlers", () => {
 		expect(command).toBeInstanceOf(ElementUpdateCommand);
 		expect(command.payload).toMatchObject({
 			elementId: existing.id,
-			changes: { data: { mode: "NF" } },
-			previousChanges: { data: { mode: "NO" } },
+			changes: { data: { type: "NF" } },
+			previousChanges: { data: { type: "NO" } },
 		});
 	});
 
@@ -481,7 +481,7 @@ describe("useLadderDropHandlers", () => {
 		const section = new Section("s1", "S");
 		const existing = createContactElement("A", "NO", 0, 1);
 		section.elements = [existing];
-		const { result } = setup(section, [], { type: "contact", mode: "NO" });
+		const { result } = setup(section, [], { kind: "contact", type: "NO" });
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));
@@ -493,7 +493,7 @@ describe("useLadderDropHandlers", () => {
 		const section = new Section("s1", "S");
 		const existing = createCoilElement("Q1", "normal", 0, 1);
 		section.elements = [existing];
-		const { result } = setup(section, [], { type: "contact", mode: "NO" });
+		const { result } = setup(section, [], { kind: "contact", type: "NO" });
 		const [, handleDrop] = result.current;
 
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0))));

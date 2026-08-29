@@ -63,7 +63,7 @@ function indicatorData(
 	colorOff: string,
 ): IndicatorData {
 	return {
-		variableMnemonic: mnemonic,
+		variable: mnemonic,
 		label: "",
 		onColor: colorOn,
 		offColor: colorOff,

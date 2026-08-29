@@ -25,6 +25,7 @@ import PdfExportModal from "../pdf/PdfExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import SaveAsModal from "./SaveAsModal";
 import ShareProjectModal from "./ShareProjectModal";
+import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
 import DraftRecoveryDialog from "./DraftRecoveryDialog";
 import DraftConflictDialog from "./DraftConflictDialog";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
@@ -129,6 +130,7 @@ export const ProjectContextProvider = ({
 			<PdfExportModal />
 			<SaveAsModal />
 			<ShareProjectModal />
+			<ShareRequiresCloudModal />
 			<AnalysisResult />
 			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
 			<DraftConflictDialog />

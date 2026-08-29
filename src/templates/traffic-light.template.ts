@@ -106,7 +106,7 @@ export function createTrafficLightProject(): Project {
 		yRouge,
 		VOYANT_SIZE,
 		{
-			variableMnemonic: "rouge",
+			variable: "rouge",
 			label: "",
 			onColor: "#ff2020",
 			offColor: "#4a1010",
@@ -124,7 +124,7 @@ export function createTrafficLightProject(): Project {
 		yOrange,
 		VOYANT_SIZE,
 		{
-			variableMnemonic: "orange",
+			variable: "orange",
 			label: "",
 			onColor: "#ff9900",
 			offColor: "#4a3010",
@@ -142,7 +142,7 @@ export function createTrafficLightProject(): Project {
 		yVert,
 		VOYANT_SIZE,
 		{
-			variableMnemonic: "vert",
+			variable: "vert",
 			label: "",
 			onColor: "#20dd20",
 			offColor: "#0a3010",

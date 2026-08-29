@@ -1,14 +1,10 @@
 import { createRandomId } from "@/ids";
-import { getCounterPortSpecs } from "../function-blocks/counter.schema";
-import { TIMER_PORT_SPECS } from "../function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
-import { getBlockHeightInCells } from "./block-port.schema";
 import {
-	ARITHMETIC_PORT_SPECS,
-	ASSIGN_PORT_SPECS,
-	BlockData,
-	BlockElement,
-} from "./block.schema";
+	getBlockElementHeight,
+	getBlockElementWidth,
+} from "./block-definition";
+import { BlockData, BlockElement } from "./block.schema";
 
 export const LADDER_ELEMENT_KINDS = [
 	"contact",
@@ -19,19 +15,19 @@ export const LADDER_ELEMENT_KINDS = [
 
 export type LadderElementKind = (typeof LADDER_ELEMENT_KINDS)[number];
 
-export const CONTACT_MODES = ["NO", "NF", "P", "N"] as const;
+export const CONTACT_TYPES = ["NO", "NF", "P", "N"] as const;
 
-export type ContactMode = (typeof CONTACT_MODES)[number];
+export type ContactType = (typeof CONTACT_TYPES)[number];
 
-export const COIL_MODES = ["normal", "set", "reset"] as const;
+export const COIL_TYPES = ["normal", "set", "reset"] as const;
 
-export type CoilMode = (typeof COIL_MODES)[number];
+export type CoilType = (typeof COIL_TYPES)[number];
 
 /** Position sur la grille d'une section — pas de pixels, contrairement au GRAFCET. */
 export type GridPosition = { row: number; col: number };
 
-export type ContactData = { variable: string; mode: ContactMode };
-export type CoilData = { variable: string; mode: CoilMode };
+export type ContactData = { variable: string; type: ContactType };
+export type CoilData = { variable: string; type: CoilType };
 export type RailTerminalData = Record<string, never>;
 
 /** Modifications partielles applicables à `element.data` via `Ladder.updateElement` /
@@ -73,69 +69,57 @@ export type RailTerminalElement = SharedElement<
 export type LadderElement =
 	ContactElement | CoilElement | RailTerminalElement | BlockElement;
 
-/** Largeur en colonnes de grille occupées par un élément — 1 pour tous sauf `block`, qui en
- * occupe 2 (entrée/sortie visuellement distinctes, voir `BlockNode`). Exception : un bloc
- * `"compare"` n'occupe qu'1 colonne (rendu façon contact, voir `CompareBlockNode`). */
-export const LADDER_ELEMENT_WIDTHS: Record<LadderElementKind, number> = {
+/** Largeur en colonnes de grille occupées par un élément non-bloc — toujours 1. La largeur d'un
+ * bloc dépend de sa famille (voir `BLOCK_DEFINITIONS`), résolue par `getElementWidth`. */
+export const LADDER_ELEMENT_WIDTHS: Record<
+	Exclude<LadderElementKind, "block">,
+	number
+> = {
 	contact: 1,
 	coil: 1,
 	railTerminal: 1,
-	block: 2,
 };
 
 export function getElementWidth(element: LadderElement): number {
-	if (element.type === "block" && element.data.blockType === "compare") return 1;
+	if (element.type === "block") return getBlockElementWidth(element.data);
 	return LADDER_ELEMENT_WIDTHS[element.type];
 }
 
 /**
- * Hauteur en cellules de grille (entière — la grille ne réserve qu'en cellules pleines, voir
- * `getBlockHeightInCells`) — 1 pour tous sauf un bloc dont la famille a plus d'une ligne de pins :
- * un bloc timer, par exemple, en occupe 2 (IN/Q sur la première ligne, PT/ET sur la seconde,
- * décalée d'un demi-cellule seulement — voir `BlockNode`). Pas de table `LADDER_ELEMENT_HEIGHTS`
- * comme pour la largeur : la hauteur dépend des ports propres à la famille du bloc, pas seulement
- * du genre d'élément. Un bloc `"compare"` occupe 1 cellule (comme un contact) : sa boîte ne
- * contient que l'opérateur, IN1/IN2 débordent au-dessus et en dessous (voir `CompareBlockNode`).
+ * Hauteur en cellules de grille (entière — la grille ne réserve qu'en cellules pleines) — 1 pour
+ * tout élément non-bloc. Pour un bloc, dérivée des specs de ports de sa famille (voir
+ * `getBlockElementHeight` / `getBlockHeightInCells`) : un bloc timer en occupe 2 (IN/Q puis
+ * PT/ET), un bloc compare 1 (comme un contact).
  */
 export function getElementHeight(element: LadderElement): number {
 	if (element.type !== "block") return 1;
-	if (element.data.blockType === "timer")
-		return getBlockHeightInCells(TIMER_PORT_SPECS);
-	if (element.data.blockType === "counter")
-		return getBlockHeightInCells(
-			getCounterPortSpecs(element.data.params.counterType),
-		);
-	if (element.data.blockType === "assign")
-		return getBlockHeightInCells(ASSIGN_PORT_SPECS);
-	if (element.data.blockType === "arithmetic")
-		return getBlockHeightInCells(ARITHMETIC_PORT_SPECS);
-	return 1;
+	return getBlockElementHeight(element.data);
 }
 
 export function createContactElement(
 	variable: string,
-	mode: ContactMode,
+	type: ContactType,
 	row: number,
 	col: number,
 ): ContactElement {
 	return {
 		id: createRandomId(),
 		type: "contact",
-		data: { variable, mode },
+		data: { variable, type },
 		position: { row, col },
 	};
 }
 
 export function createCoilElement(
 	variable: string,
-	mode: CoilMode,
+	type: CoilType,
 	row: number,
 	col: number,
 ): CoilElement {
 	return {
 		id: createRandomId(),
 		type: "coil",
-		data: { variable, mode },
+		data: { variable, type },
 		position: { row, col },
 	};
 }

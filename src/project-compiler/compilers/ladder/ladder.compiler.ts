@@ -54,18 +54,14 @@ export default class LadderCompiler {
 		};
 	}
 
-	/** Un `TimerNode`/`CounterNode`/`IfControlNode` (bloc assign) est embarqué tel quel parmi les
-	 * instructions : il n'a pas besoin d'être enveloppé dans une affectation, `PLCRoutine.execute`
-	 * l'évalue directement pour ses effets de bord (voir
-	 * `PreCompiledTimerAssignment`/`PreCompiledCounterAssignment`/`PreCompiledAssignBlockAssignment`). */
+	/** Un nœud matérialisé par un bloc (`TimerNode`/`CounterNode` d'un timer/compteur, `IfControlNode`
+	 * d'un assign/arithmetic) est embarqué tel quel parmi les instructions : il n'a pas besoin d'être
+	 * enveloppé dans une affectation, `PLCRoutine.execute` l'évalue directement pour ses effets de
+	 * bord (voir `PreCompiledEmbeddedNodeAssignment`). */
 	private static compileAssignment(
 		assignment: PreCompiledLadderAssignment,
 	): ASTNode {
-		if (
-			assignment.kind === "timer" ||
-			assignment.kind === "counter" ||
-			assignment.kind === "assign"
-		) {
+		if (assignment.kind === "embeddedNode") {
 			return assignment.node;
 		}
 		if (assignment.kind === "blockPort") {

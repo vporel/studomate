@@ -36,7 +36,7 @@ export default interface ProjectRepository {
 
 /**
  * Extension du repository pour les projets cloud partageables.
- * Implémentée uniquement par `SupabaseProjectRepository`.
+ * Implémentée par `SupabaseProjectRepository` et `HybridProjectRepository` (qui délègue au cloud).
  */
 export interface ShareableProjectRepository extends ProjectRepository {
 	getByShareToken(token: string): Promise<Project | null>;

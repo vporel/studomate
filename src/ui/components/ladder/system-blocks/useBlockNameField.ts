@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import Project from "@/schemas/project/project.schema";
-import { validateBlockName } from "@/schemas/function-blocks/function-block.schema";
+import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 
 /**
  * Erreurs de validation du champ nom d'un bloc tempo/compteur — identique pour les deux familles

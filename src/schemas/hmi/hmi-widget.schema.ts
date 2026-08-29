@@ -41,14 +41,14 @@ export type HmiWidgetEvents<TEventName extends string> = Partial<
 >;
 
 /** Seul événement exposé par un push-button pour l'instant — déclenché à l'appui, indépendamment
- * de `behavior`/`variableMnemonic` (un bouton peut déclencher des actions sans variable liée). */
+ * de `behavior`/`variable` (un bouton peut déclencher des actions sans variable liée). */
 export type HmiPushButtonEventName = "onPress";
 
 /** Décalage de position piloté par des variables numériques, ajouté directement (sans mise à
  * l'échelle) aux coordonnées de base du widget — `x`/`y` indépendants l'un de l'autre. */
 export type HmiPositionAnimation = {
-	xVariableMnemonic?: string;
-	yVariableMnemonic?: string;
+	xVariable?: string;
+	yVariable?: string;
 };
 
 /** Une ligne de la table d'animation de style : `value` est la valeur de variable qui déclenche
@@ -63,7 +63,7 @@ export type HmiStyleAnimationRow<TProps extends string> = {
 /** Animation de style d'un widget : une seule variable (BOOL ou numérique) pilote en une fois
  * toutes les propriétés animables du type. */
 export type HmiStyleAnimation<TProps extends string> = {
-	variableMnemonic: string;
+	variable: string;
 	rows: HmiStyleAnimationRow<TProps>[];
 };
 
@@ -74,14 +74,32 @@ export type HmiWidgetAnimations<TStyleProps extends string = never> = {
 	style?: HmiStyleAnimation<TStyleProps>;
 };
 
+/** Classement d'un widget pour la palette et le manuel — `interactive` (widgets liés à une
+ * variable) vs `shape` (formes purement visuelles, voir `RectangleData`). Indépendant de
+ * `variableBinding` : un widget interactif reste `interactive` même sans variable renseignée. */
+export type HmiWidgetKind = "interactive" | "shape";
+
+/** Liaison d'un type de widget à une variable — `null` pour une forme (aucune variable). Pose la
+ * question « ce type se lie-t-il à une variable ? » explicitement, plutôt que par des drapeaux à
+ * plat. Passera à un tableau le jour où un widget se liera à plusieurs variables. */
+export type HmiWidgetVariableBinding = {
+	/** Types de variables autorisés dans le `VariableSelector` du panneau de propriétés. */
+	types: VariableType[];
+	/** `true` = l'interaction en simulation écrit dans la variable (bouton, interrupteur, saisie),
+	 * ce qui exclut les variables de direction `OUT` du sélecteur ; `false` = lecture seule. */
+	writes: boolean;
+};
+
 export type HmiWidgetDefinition = {
-	/** Libellé affiché dans la palette/toolbar et son infobulle. */
+	/** Classement palette/manuel (voir `HmiWidgetKind`). */
+	kind: HmiWidgetKind;
+	/** `data` initial à la création — source unique, consommée par `generateDefaultData`. */
+	defaultData: HmiWidgetData;
+	/** Liaison à une variable, ou `null` (forme). */
+	variableBinding: HmiWidgetVariableBinding | null;
+	/** Libellé affiché dans la palette/toolbar et son infobulle. Distinct du libellé pré-rempli
+	 * dans `data.label` (voir `defaultData`), qui est plus court. */
 	label: string;
-	/** Libellé pré-rempli dans `data.label` à la création (voir `generateDefaultData`), pour ne
-	 * jamais laisser le champ "Libellé" du panel de propriétés vide. Absent pour les widgets sans
-	 * libellé (formes, texte — voir `HmiWidgetBaseData`). Distinct de `label`, qui nomme l'outil
-	 * dans la palette et peut être plus long. */
-	defaultLabel?: string;
 	/** Dimensions par défaut à la création, en pixels. */
 	defaultSize: HmiWidgetSize;
 	/** Dimensions minimales, en pixels — bornes du redimensionnement. Absent pour un widget dont
@@ -91,83 +109,13 @@ export type HmiWidgetDefinition = {
 	/** Ratio largeur/hauteur imposé au redimensionnement (ex. 1 pour un widget carré) —
 	 * absent si le widget se redimensionne librement dans les deux dimensions. */
 	aspectRatio?: number;
-	/** Types de variables autorisés (pour le VariableSelector dans le panel de propriétés). */
-	variableTypes: VariableType[];
-};
-
-/** Définition de chaque type de widget HMI — une seule source pour tout ce qui en dépend
- * (taille par défaut, taille minimale, types de variable compatibles, libellé). */
-export const HMI_WIDGET_DEFINITIONS: Record<
-	HmiWidgetType,
-	HmiWidgetDefinition
-> = {
-	"push-button": {
-		label: "Bouton poussoir",
-		defaultLabel: "BP",
-		defaultSize: { width: 90, height: 40 },
-		minSize: { width: 80, height: 30 },
-		variableTypes: ["BOOL"],
-	},
-	indicator: {
-		label: "Voyant",
-		defaultLabel: "Voyant",
-		defaultSize: { width: 40, height: 40 },
-		minSize: { width: 30, height: 30 },
-		aspectRatio: 1,
-		variableTypes: ["BOOL"],
-	},
-	"toggle-switch": {
-		label: "Interrupteur",
-		defaultLabel: "Interrupteur",
-		defaultSize: { width: 90, height: 40 },
-		minSize: { width: 80, height: 30 },
-		variableTypes: ["BOOL"],
-	},
-	"numeric-display": {
-		label: "Affichage numérique",
-		defaultLabel: "Affichage",
-		defaultSize: { width: 100, height: 40 },
-		minSize: { width: 80, height: 30 },
-		variableTypes: ["INT", "WORD", "DWORD", "REAL"],
-	},
-	gauge: {
-		label: "Jauge",
-		defaultLabel: "Jauge",
-		defaultSize: { width: 120, height: 40 },
-		variableTypes: ["INT", "WORD", "DWORD", "REAL"],
-	},
-	"numeric-input": {
-		label: "Saisie numérique",
-		defaultLabel: "Saisie",
-		defaultSize: { width: 100, height: 40 },
-		minSize: { width: 80, height: 30 },
-		variableTypes: ["INT", "WORD", "DWORD", "REAL"],
-	},
-	rectangle: {
-		label: "Rectangle",
-		defaultSize: { width: 120, height: 80 },
-		minSize: { width: 20, height: 20 },
-		variableTypes: [],
-	},
-	ellipse: {
-		label: "Ellipse",
-		defaultSize: { width: 100, height: 70 },
-		minSize: { width: 20, height: 20 },
-		variableTypes: [],
-	},
-	text: {
-		label: "Texte",
-		defaultSize: { width: 120, height: 30 },
-		minSize: { width: 20, height: 15 },
-		variableTypes: [],
-	},
 };
 
 /** Champs communs à tous les widgets — chaque type ajoute les siens (voir plus bas), plutôt
  * qu'un sac commun de champs optionnels valides seulement pour certains types. */
 export type HmiWidgetBaseData = {
 	/** Mnémonique de la variable liée, ou chaîne vide si non liée. */
-	variableMnemonic: string;
+	variable: string;
 	/** Libellé affiché sous le widget. */
 	label: string;
 };
@@ -253,6 +201,119 @@ export type TextData = {
 		align?: HmiTextAlign;
 	};
 	animations?: HmiWidgetAnimations<"text">;
+};
+
+/** Définition de chaque type de widget HMI — une seule source pour tout ce qui en dépend côté
+ * domaine (classement, données initiales, liaison variable, tailles, libellé). Les métadonnées
+ * d'affichage (aperçu palette, descripteurs de champs, ordre) vivent dans `HMI_WIDGET_UI`
+ * (`src/ui`). */
+const NUMERIC_VARIABLE_TYPES: VariableType[] = ["INT", "WORD", "DWORD", "REAL"];
+
+export const HMI_WIDGET_DEFINITIONS: Record<
+	HmiWidgetType,
+	HmiWidgetDefinition
+> = {
+	"push-button": {
+		kind: "interactive",
+		variableBinding: { types: ["BOOL"], writes: true },
+		defaultData: { variable: "", label: "BP", behavior: "momentary" },
+		label: "Bouton poussoir",
+		defaultSize: { width: 90, height: 40 },
+		minSize: { width: 80, height: 30 },
+	},
+	indicator: {
+		kind: "interactive",
+		variableBinding: { types: ["BOOL"], writes: false },
+		defaultData: {
+			variable: "",
+			label: "Voyant",
+			onColor: DEFAULT_INDICATOR_ON_COLOR,
+			offColor: DEFAULT_INDICATOR_OFF_COLOR,
+		},
+		label: "Voyant",
+		defaultSize: { width: 40, height: 40 },
+		minSize: { width: 30, height: 30 },
+		aspectRatio: 1,
+	},
+	"toggle-switch": {
+		kind: "interactive",
+		variableBinding: { types: ["BOOL"], writes: true },
+		defaultData: { variable: "", label: "Interrupteur" },
+		label: "Interrupteur",
+		defaultSize: { width: 90, height: 40 },
+		minSize: { width: 80, height: 30 },
+	},
+	"numeric-display": {
+		kind: "interactive",
+		variableBinding: { types: NUMERIC_VARIABLE_TYPES, writes: false },
+		defaultData: {
+			variable: "",
+			label: "Affichage",
+			unit: "",
+			decimalPlaces: 0,
+		},
+		label: "Affichage numérique",
+		defaultSize: { width: 100, height: 40 },
+		minSize: { width: 80, height: 30 },
+	},
+	gauge: {
+		kind: "interactive",
+		variableBinding: { types: NUMERIC_VARIABLE_TYPES, writes: false },
+		defaultData: {
+			variable: "",
+			label: "Jauge",
+			min: 0,
+			max: 100,
+			style: { orientation: "horizontal" },
+		},
+		label: "Jauge",
+		defaultSize: { width: 120, height: 40 },
+	},
+	"numeric-input": {
+		kind: "interactive",
+		variableBinding: { types: NUMERIC_VARIABLE_TYPES, writes: true },
+		defaultData: { variable: "", label: "Saisie", min: 0, max: 100 },
+		label: "Saisie numérique",
+		defaultSize: { width: 100, height: 40 },
+		minSize: { width: 80, height: 30 },
+	},
+	rectangle: {
+		kind: "shape",
+		variableBinding: null,
+		defaultData: {
+			style: {
+				fill: "#e0e0e0",
+				stroke: "#555555",
+				strokeWidth: 2,
+				borderRadius: 0,
+			},
+		},
+		label: "Rectangle",
+		defaultSize: { width: 120, height: 80 },
+		minSize: { width: 20, height: 20 },
+	},
+	ellipse: {
+		kind: "shape",
+		variableBinding: null,
+		defaultData: {
+			style: { fill: "#e0e0e0", stroke: "#555555", strokeWidth: 2 },
+			lockAspectRatio: false,
+		},
+		label: "Ellipse",
+		defaultSize: { width: 100, height: 70 },
+		minSize: { width: 20, height: 20 },
+	},
+	text: {
+		kind: "shape",
+		variableBinding: null,
+		defaultData: {
+			text: "Texte",
+			style: { fontSize: 14, color: "#333333", align: "center" },
+		},
+		label: "Texte",
+		defaultSize: { width: 120, height: 30 },
+		minSize: { width: 20, height: 15 },
+	},
 };
 
 abstract class HmiWidgetBase<DataType> {
@@ -356,52 +417,32 @@ export type HmiWidget =
 export type HmiWidgetData = HmiWidget["data"];
 
 function generateDefaultData(type: HmiWidgetType): HmiWidgetData {
-	const label = HMI_WIDGET_DEFINITIONS[type].defaultLabel ?? "";
-	switch (type) {
-		case "push-button":
-			return { variableMnemonic: "", label, behavior: "momentary" };
-		case "gauge":
-			return {
-				variableMnemonic: "",
-				label,
-				min: 0,
-				max: 100,
-				style: { orientation: "horizontal" },
-			};
-		case "numeric-input":
-			return { variableMnemonic: "", label, min: 0, max: 100 };
-		case "numeric-display":
-			return { variableMnemonic: "", label, unit: "", decimalPlaces: 0 };
-		case "indicator":
-			return {
-				variableMnemonic: "",
-				label,
-				onColor: DEFAULT_INDICATOR_ON_COLOR,
-				offColor: DEFAULT_INDICATOR_OFF_COLOR,
-			};
-		case "toggle-switch":
-			return { variableMnemonic: "", label };
-		case "rectangle":
-			return {
-				style: {
-					fill: "#e0e0e0",
-					stroke: "#555555",
-					strokeWidth: 2,
-					borderRadius: 0,
-				},
-			};
-		case "ellipse":
-			return {
-				style: { fill: "#e0e0e0", stroke: "#555555", strokeWidth: 2 },
-				lockAspectRatio: false,
-			};
-		case "text":
-			return {
-				text: "Texte",
-				style: { fontSize: 14, color: "#333333", align: "center" },
-			};
-	}
+	return structuredClone(HMI_WIDGET_DEFINITIONS[type].defaultData);
 }
+
+type HmiWidgetCtor = new (
+	id: string,
+	name: string,
+	position: HmiWidgetPosition,
+	size: HmiWidgetSize,
+	stackOrder: number,
+	data: never,
+) => HmiWidget;
+
+/** Constructeur de chaque type de widget — `Record` exhaustif : TS casse si un type est oublié.
+ * Les 9 classes restent nécessaires pour le rétrécissement de l'union discriminée (voir
+ * `HmiWidget`). */
+const WIDGET_CONSTRUCTORS: Record<HmiWidgetType, HmiWidgetCtor> = {
+	"push-button": PushButtonWidget,
+	indicator: IndicatorWidget,
+	"toggle-switch": ToggleSwitchWidget,
+	"numeric-display": NumericDisplayWidget,
+	gauge: GaugeWidget,
+	"numeric-input": NumericInputWidget,
+	rectangle: RectangleWidget,
+	ellipse: EllipseWidget,
+	text: TextWidget,
+};
 
 /** Instancie un widget par son type — dispatch générique utilisé par la création (toolbar), le
  * copier/coller et le rejeu des commandes annuler/rétablir, qui ne connaissent le type qu'à
@@ -415,89 +456,14 @@ function createInstance(
 	stackOrder: number,
 	data: HmiWidgetData,
 ): HmiWidget {
-	switch (type) {
-		case "push-button":
-			return new PushButtonWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as PushButtonData,
-			);
-		case "indicator":
-			return new IndicatorWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as IndicatorData,
-			);
-		case "toggle-switch":
-			return new ToggleSwitchWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as ToggleSwitchData,
-			);
-		case "numeric-display":
-			return new NumericDisplayWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as NumericDisplayData,
-			);
-		case "gauge":
-			return new GaugeWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as GaugeData,
-			);
-		case "numeric-input":
-			return new NumericInputWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as NumericInputData,
-			);
-		case "rectangle":
-			return new RectangleWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as RectangleData,
-			);
-		case "ellipse":
-			return new EllipseWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as EllipseData,
-			);
-		case "text":
-			return new TextWidget(
-				id,
-				name,
-				position,
-				size,
-				stackOrder,
-				data as TextData,
-			);
-	}
+	return new WIDGET_CONSTRUCTORS[type](
+		id,
+		name,
+		position,
+		size,
+		stackOrder,
+		data as never,
+	);
 }
 
 /**
@@ -564,7 +530,7 @@ function createFromJSON(json: string): HmiWidget {
 		raw.position ?? { x: 0, y: 0 },
 		raw.size ?? { ...HMI_WIDGET_DEFINITIONS[type].defaultSize },
 		raw.stackOrder ?? 0,
-		raw.data ?? { variableMnemonic: "", label: "" },
+		raw.data ?? { variable: "", label: "" },
 	);
 }
 
