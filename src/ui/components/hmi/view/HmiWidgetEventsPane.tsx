@@ -3,7 +3,7 @@
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, IconButton, Modal, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Modal, Paper, Tooltip, Typography } from "@mui/material";
 import HmiWidgetEventsPanel from "./HmiWidgetEventsPanel";
 
 /** Pane flottant affichant les événements du widget sélectionné — même principe que
@@ -41,9 +41,11 @@ const HmiWidgetEventsPane = ({ widget }: { widget: HmiWidget }) => {
 					}}
 				>
 					<Typography variant="h6">Événements | {widget.name}</Typography>
-					<IconButton size="small" onClick={close} aria-label="Fermer">
-						<CloseIcon fontSize="small" />
-					</IconButton>
+					<Tooltip title="Fermer">
+						<IconButton size="small" onClick={close} aria-label="Fermer">
+							<CloseIcon fontSize="small" />
+						</IconButton>
+					</Tooltip>
 				</Box>
 				<Box sx={{ overflow: "auto" }}>
 					<HmiWidgetEventsPanel widget={widget} />

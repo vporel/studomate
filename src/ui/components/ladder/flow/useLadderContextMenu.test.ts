@@ -89,6 +89,7 @@ describe("useLadderContextMenu", () => {
 
 		expect(showSpy).toHaveBeenCalledWith(
 			expect.objectContaining({
+				sectionId: "s1",
 				element: expect.objectContaining({ id: contact.id }),
 			}),
 		);

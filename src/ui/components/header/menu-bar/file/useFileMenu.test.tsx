@@ -24,9 +24,7 @@ describe("useFileMenu", () => {
 			setExportModalVisible,
 			setPdfExportModalVisible,
 			setSaveAsModalVisible,
-			newProject,
-			closeProject,
-			saveProject,
+			lifecycleManager: { newProject, closeProject, saveProject },
 			mode,
 		};
 		(useProjectStore as jest.Mock).mockImplementation(

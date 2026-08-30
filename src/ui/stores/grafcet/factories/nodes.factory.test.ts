@@ -164,6 +164,24 @@ describe("NodesFactory.syncNodes", () => {
 		});
 	});
 
+	describe("libellé accessible (ariaLabel)", () => {
+		it("pose un ariaLabel descriptif à la construction", () => {
+			const nodes = NodesFactory.syncNodes([], grafcetWithSteps(3));
+
+			expect(nodes[0].ariaLabel).toBe("Étape 3");
+		});
+
+		it("rafraîchit l'ariaLabel quand les données changent", () => {
+			const grafcet = grafcetWithSteps(1);
+			const prev = NodesFactory.syncNodes([], grafcet);
+			Object.values(grafcet.steps)[0].data.number = 42;
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet);
+
+			expect(nodes[0].ariaLabel).toBe("Étape 42");
+		});
+	});
+
 	describe("ajouts et suppressions", () => {
 		it("ajoute un nœud pour un nouvel élément", () => {
 			const grafcet = grafcetWithSteps(1);

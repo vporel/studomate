@@ -393,7 +393,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewValue: 0,
 		paletteOrder: 3,
 		manualDescription:
-			'Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour, case à cocher "Cercle" pour contraindre le ratio 1:1.',
+			'Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case "Lier largeur et hauteur" (section Dimensions) fige le ratio courant.',
 		animatableStyleProps: [
 			{
 				name: "fill",
@@ -437,12 +437,6 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 					...data,
 					style: { ...data.style, strokeWidth: value },
 				}),
-			},
-			{
-				kind: "checkbox",
-				label: "Cercle (largeur/hauteur identiques)",
-				get: (data) => data.lockAspectRatio ?? false,
-				set: (data, value) => ({ ...data, lockAspectRatio: value }),
 			},
 		],
 	},

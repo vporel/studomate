@@ -17,14 +17,14 @@ describe("getCounterPortSpecs", () => {
 		expect(specs.map((s) => s.suffix)).toEqual(["CD", "Q", "LD", "PV", "CV"]);
 	});
 
-	it("PV accepte un littéral numérique, pas le contrôle", () => {
+	it("PV accepte un littéral numérique, le contrôle un littéral booléen", () => {
 		const specs = getCounterPortSpecs("CTU");
 		expect(specs.find((s) => s.suffix === "PV")?.acceptedLiterals).toEqual([
 			"number",
 		]);
-		expect(
-			specs.find((s) => s.suffix === "R")?.acceptedLiterals,
-		).toBeUndefined();
+		expect(specs.find((s) => s.suffix === "R")?.acceptedLiterals).toEqual([
+			"boolean",
+		]);
 	});
 });
 

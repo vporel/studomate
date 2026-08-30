@@ -6,6 +6,15 @@ import {
 
 export const SNAP_GRID = 10; // px — grille magnétique
 
+/** Plancher appliqué quand le type de widget ne définit pas de `minSize` (ex. gauge : sa taille
+ * stockée reste "comme si horizontal" quelle que soit son orientation affichée, voir
+ * `HmiWidgetPropertiesPanel` — une seule taille minimale n'aurait pas de sens). Suffisant pour
+ * qu'un widget reste manipulable (visible, attrapable), sans prétendre borner un rendu correct. */
+export const HMI_WIDGET_DEFAULT_MIN_SIZE: HmiWidgetSize = {
+	width: 30,
+	height: 30,
+};
+
 /** Décalage appliqué au `stackOrder` d'un widget (voir `HmiWidgetBase.stackOrder`) pour obtenir
  * son `z-index` CSS de rendu — réserve la plage 0-99 à des éléments du canvas qui ne sont pas
  * des widgets mais doivent rester en dessous (ex. grille, sélection). Purement un détail

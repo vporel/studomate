@@ -43,7 +43,7 @@ const NoPage = () => {
 				<Box
 					component="img"
 					src="/images/icon.png"
-					alt="No page"
+					alt=""
 					sx={{ width: "100px" }}
 				/>
 				<Typography

@@ -7,6 +7,10 @@ import {
 	createContactElement,
 	createCoilElement,
 } from "@/schemas/ladder/element.schema";
+import {
+	createTimerBlockElement,
+	getTimerBlockParams,
+} from "@/schemas/ladder/function-blocks/timer.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
@@ -161,6 +165,38 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 		});
 	});
 
+	describe("collage d'un bloc à instance nommée", () => {
+		it("suffixe le nom du bloc timer collé pour ne pas dupliquer l'instance d'origine", () => {
+			const timer = createTimerBlockElement(
+				{ name: "Tempo", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
+			const section = new Section("s1", "Section", "", [timer]);
+			const ladder = new Ladder("l1", "TestLadder", [section]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			stubElementsFromPoint("s1");
+			store.getState().viewManager.registerInstance(
+				"s1",
+				fakeRfInstance({
+					x: POWER_RAIL_OFFSET + 5 * GRID_CELL_WIDTH,
+					y: 5 * GRID_CELL_HEIGHT,
+				}),
+			);
+
+			store.getState().copyCutPasteManager.copyElements([timer], []);
+			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
+
+			const elements = store.getState().ladder.getSection("s1")!.elements;
+			expect(elements).toHaveLength(2);
+			const pasted = elements.find(
+				(e) => e.id !== timer.id,
+			)! as typeof timer;
+			expect(getTimerBlockParams(pasted)?.name).toBe("Tempo_2");
+			expect(getTimerBlockParams(timer)?.name).toBe("Tempo");
+		});
+	});
+
 	describe("collage réel avec connexion interne à la sélection", () => {
 		it("recrée la connexion entre les deux éléments copiés, avec de nouveaux ids", () => {
 			const contact = createContactElement("Capteur", "NO", 0, 0);
@@ -262,6 +298,343 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
 
 			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+		});
+	});
+
+	describe("duplicateSection", () => {
+		function buildMultiSectionStore() {
+			const contact = createContactElement("Capteur", "NO", 0, 0);
+			const coil = createCoilElement("Sortie", "normal", 0, 1);
+			const connection = new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{ points: [[0, 0]] },
+			);
+			const s1 = new Section("s1", "Départ moteur", "commande principale", [
+				contact,
+				coil,
+			], [connection]);
+			const s2 = new Section("s2", "Arrêt", "", []);
+			const ladder = new Ladder("l1", "TestLadder", [s1, s2]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			return { store, contact, coil };
+		}
+
+		it("insère la copie juste sous l'originale, avec même titre et description", () => {
+			const { store } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const sections = store.getState().ladder.sections;
+			expect(sections).toHaveLength(3);
+			expect(sections[0].id).toBe("s1");
+			expect(sections[2].id).toBe("s2");
+			const copy = sections[1];
+			expect(copy.id).not.toBe("s1");
+			expect(copy.title).toBe("Départ moteur");
+			expect(copy.description).toBe("commande principale");
+		});
+
+		it("recrée les éléments et connexions avec de nouveaux identifiants", () => {
+			const { store, contact, coil } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const copy = store.getState().ladder.sections[1];
+			expect(copy.elements).toHaveLength(2);
+			expect(copy.elements.map((e) => e.id)).not.toContain(contact.id);
+			expect(copy.elements.map((e) => e.id)).not.toContain(coil.id);
+			expect(copy.connections).toHaveLength(1);
+			const conn = copy.connections[0];
+			expect(conn.id).not.toBe("c1");
+			expect(copy.elements.map((e) => e.id)).toEqual(
+				expect.arrayContaining([conn.source.id, conn.target.id]),
+			);
+		});
+
+		it("suffixe le nom des blocs timer pour ne pas dupliquer l'instance", () => {
+			const timer = createTimerBlockElement(
+				{ name: "Tempo", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
+			const s1 = new Section("s1", "Section", "", [timer]);
+			const ladder = new Ladder("l1", "TestLadder", [s1]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const copy = store.getState().ladder.sections[1];
+			expect(getTimerBlockParams(copy.elements[0] as typeof timer)?.name).toBe(
+				"Tempo_2",
+			);
+			expect(getTimerBlockParams(timer)?.name).toBe("Tempo");
+		});
+
+		it("ne modifie pas la section d'origine", () => {
+			const { store, contact } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+
+			const original = store.getState().ladder.getSection("s1")!;
+			expect(original.elements).toHaveLength(2);
+			expect(original.getElement(contact.id)).toBeDefined();
+			expect(original.connections[0].id).toBe("c1");
+		});
+
+		it("est annulable d'un bloc", () => {
+			const { store } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("s1");
+			store.getState().commandsStackManager.undoOperation();
+
+			const sections = store.getState().ladder.sections;
+			expect(sections.map((s) => s.id)).toEqual(["s1", "s2"]);
+		});
+
+		it("ne fait rien pour une section inconnue", () => {
+			const { store } = buildMultiSectionStore();
+
+			store.getState().copyCutPasteManager.duplicateSection("nope");
+
+			expect(store.getState().ladder.sections).toHaveLength(2);
+		});
+	});
+
+	describe("copySections / pasteSections", () => {
+		function buildMultiSectionStore() {
+			const contact = createContactElement("Capteur", "NO", 0, 0);
+			const coil = createCoilElement("Sortie", "normal", 0, 1);
+			const connection = new Connection(
+				"c1",
+				{ id: contact.id, type: "contact", handle: "source" },
+				{ id: coil.id, type: "coil", handle: "target" },
+				{ points: [[0, 0]] },
+			);
+			const s1 = new Section(
+				"s1",
+				"Départ moteur",
+				"commande principale",
+				[contact, coil],
+				[connection],
+			);
+			const s2 = new Section("s2", "Arrêt", "", []);
+			const s3 = new Section("s3", "Sécurité", "", []);
+			const ladder = new Ladder("l1", "TestLadder", [s1, s2, s3]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			return { store, contact, coil };
+		}
+
+		it("copySelectedElements délègue à copySections quand des sections sont sélectionnées", () => {
+			const { store } = buildMultiSectionStore();
+			store.getState().setSelectedSectionIds(["s1"]);
+
+			store.getState().copyCutPasteManager.copySelectedElements();
+
+			store.getState().setActiveSectionId("s2");
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const sections = store.getState().ladder.sections;
+			expect(sections).toHaveLength(4);
+			expect(sections.map((s) => s.id)).toEqual([
+				"s1",
+				"s2",
+				expect.any(String),
+				"s3",
+			]);
+			expect(sections[2].title).toBe("Départ moteur");
+			expect(sections[2].elements).toHaveLength(2);
+		});
+
+		it("colle la section juste sous la section active", () => {
+			const { store } = buildMultiSectionStore();
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+			store.getState().setActiveSectionId("s2");
+
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const sections = store.getState().ladder.sections;
+			expect(sections.map((s) => s.id)).toEqual([
+				"s1",
+				"s2",
+				expect.any(String),
+				"s3",
+			]);
+			expect(sections[2].id).not.toBe("s1");
+		});
+
+		it("colle la section tout en bas quand aucune section n'est active", () => {
+			const { store } = buildMultiSectionStore();
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const sections = store.getState().ladder.sections;
+			expect(sections.map((s) => s.id).slice(0, 3)).toEqual(["s1", "s2", "s3"]);
+			expect(sections).toHaveLength(4);
+			expect(sections[3].title).toBe("Départ moteur");
+		});
+
+		it("recrée éléments et connexions avec de nouveaux identifiants", () => {
+			const { store, contact, coil } = buildMultiSectionStore();
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const pasted = store.getState().ladder.sections[3];
+			expect(pasted.elements.map((e) => e.id)).not.toContain(contact.id);
+			expect(pasted.elements.map((e) => e.id)).not.toContain(coil.id);
+			expect(pasted.connections).toHaveLength(1);
+			expect(pasted.connections[0].id).not.toBe("c1");
+			expect(pasted.elements.map((e) => e.id)).toEqual(
+				expect.arrayContaining([
+					pasted.connections[0].source.id,
+					pasted.connections[0].target.id,
+				]),
+			);
+		});
+
+		it("suffixe le nom des blocs pour rester une instance unique dans le ladder cible", () => {
+			const timer = createTimerBlockElement(
+				{ name: "Tempo", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
+			const s1 = new Section("s1", "Section", "", [timer]);
+			const ladder = new Ladder("l1", "TestLadder", [s1]);
+			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const pasted = store.getState().ladder.sections[1];
+			expect(
+				getTimerBlockParams(pasted.elements[0] as typeof timer)?.name,
+			).toBe("Tempo_2");
+			expect(getTimerBlockParams(timer)?.name).toBe("Tempo");
+		});
+
+		it("colle dans un autre ladder la section copiée dans le premier", () => {
+			const { store: storeA } = buildMultiSectionStore();
+			storeA.getState().copyCutPasteManager.copySections(["s1"]);
+
+			const ladderB = new Ladder("l2", "LadderB", [
+				new Section("b1", "Base", "", []),
+			]);
+			const storeB = createLadderStore(ladderB, new CommandsStack<Ladder>(100));
+
+			storeB.getState().copyCutPasteManager.pasteElements();
+
+			expect(storeB.getState().ladder.sections).toHaveLength(2);
+			expect(storeB.getState().ladder.sections[1].title).toBe("Départ moteur");
+			expect(storeA.getState().ladder.sections).toHaveLength(3);
+		});
+
+		it("le collage de section est annulable d'un bloc", () => {
+			const { store } = buildMultiSectionStore();
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+			store.getState().setActiveSectionId("s1");
+
+			store.getState().copyCutPasteManager.pasteElements();
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(store.getState().ladder.sections.map((s) => s.id)).toEqual([
+				"s1",
+				"s2",
+				"s3",
+			]);
+		});
+
+		it("ne modifie pas la section source", () => {
+			const { store, contact } = buildMultiSectionStore();
+			store.getState().copyCutPasteManager.copySections(["s1"]);
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const source = store.getState().ladder.getSection("s1")!;
+			expect(source.elements).toHaveLength(2);
+			expect(source.getElement(contact.id)).toBeDefined();
+			expect(source.connections[0].id).toBe("c1");
+		});
+
+		describe("sélection multiple", () => {
+			it("copie les sections dans l'ordre du ladder quel que soit l'ordre des ids", () => {
+				const { store } = buildMultiSectionStore();
+				store.getState().copyCutPasteManager.copySections(["s3", "s1"]);
+				store.getState().setActiveSectionId("s2");
+
+				store.getState().copyCutPasteManager.pasteElements();
+
+				const sections = store.getState().ladder.sections;
+				expect(sections.map((s) => s.id)).toEqual([
+					"s1",
+					"s2",
+					expect.any(String),
+					expect.any(String),
+					"s3",
+				]);
+				expect(sections[2].title).toBe("Départ moteur");
+				expect(sections[3].title).toBe("Sécurité");
+			});
+
+			it("colle le bloc tout en bas quand aucune section n'est active", () => {
+				const { store } = buildMultiSectionStore();
+				store.getState().copyCutPasteManager.copySections(["s1", "s2"]);
+
+				store.getState().copyCutPasteManager.pasteElements();
+
+				const sections = store.getState().ladder.sections;
+				expect(sections).toHaveLength(5);
+				expect(sections.map((s) => s.title).slice(3)).toEqual([
+					"Départ moteur",
+					"Arrêt",
+				]);
+			});
+
+			it("accumule le suffixage des noms de blocs entre sections collées", () => {
+				const s1 = new Section("s1", "A", "", [
+					createTimerBlockElement(
+						{ name: "Tempo", timerType: "TON", pt: "T#5s" },
+						0,
+						0,
+					),
+				]);
+				const s2 = new Section("s2", "B", "", [
+					createTimerBlockElement(
+						{ name: "Tempo", timerType: "TON", pt: "T#5s" },
+						0,
+						0,
+					),
+				]);
+				const ladder = new Ladder("l1", "TestLadder", [s1, s2]);
+				const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+
+				store.getState().copyCutPasteManager.copySections(["s1", "s2"]);
+				store.getState().copyCutPasteManager.pasteElements();
+
+				const names = store
+					.getState()
+					.ladder.getAllElements()
+					.map((el) => getTimerBlockParams(el as any)?.name)
+					.filter(Boolean)
+					.sort();
+				expect(names).toEqual(["Tempo", "Tempo", "Tempo_2", "Tempo_3"]);
+			});
+
+			it("le collage multi-sections est annulable d'un bloc", () => {
+				const { store } = buildMultiSectionStore();
+				store.getState().copyCutPasteManager.copySections(["s1", "s3"]);
+				store.getState().setActiveSectionId("s1");
+
+				store.getState().copyCutPasteManager.pasteElements();
+				store.getState().commandsStackManager.undoOperation();
+
+				expect(store.getState().ladder.sections.map((s) => s.id)).toEqual([
+					"s1",
+					"s2",
+					"s3",
+				]);
+			});
 		});
 	});
 

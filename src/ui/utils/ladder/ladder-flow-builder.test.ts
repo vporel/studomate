@@ -9,9 +9,12 @@ import Section from "@/schemas/ladder/section.schema";
 import {
 	buildTargetEdges,
 	buildTargetNodes,
+	cellRectsOverlap,
 	colToX,
-	computeRowHeightsInCells,
 	computeSectionLayout,
+	elementAtCell,
+	elementFootprint,
+	findFootprintCollision,
 	GRID_CELL_HEIGHT,
 	LADDER_CONNECTION_EDGE_TYPE,
 	LADDER_FLOW_TOP_OFFSET,
@@ -100,7 +103,7 @@ describe("buildTargetNodes / buildTargetEdges", () => {
 	});
 });
 
-describe("hauteur de ligne variable (bloc timer)", () => {
+describe("grille uniforme + empreinte multi-cellules (bloc timer)", () => {
 	function sectionWithTimerAtRow0AndCoilAtRow1(): Section {
 		const section = new Section("s1", "Section 1");
 		const rail0 = createRailTerminalElement(0);
@@ -110,49 +113,85 @@ describe("hauteur de ligne variable (bloc timer)", () => {
 			0,
 		);
 		const rail1 = createRailTerminalElement(1);
-		const coil = createCoilElement("Q1", "normal", 1, 0);
+		const coil = createCoilElement("Q1", "normal", 1, 4);
 		section.elements = [rail0, block, rail1, coil];
 		return section;
 	}
 
-	it("computeRowHeightsInCells vaut 2 pour la ligne d'un bloc timer, 1 ailleurs", () => {
+	it("rowToY/yToRow restent linéaires malgré un bloc de 2 cellules de haut", () => {
+		expect(rowToY(0)).toBe(LADDER_FLOW_TOP_OFFSET);
+		expect(rowToY(1)).toBe(LADDER_FLOW_TOP_OFFSET + GRID_CELL_HEIGHT);
+		expect(Math.floor(yToRow(rowToY(1) + 5))).toBe(1);
+	});
+
+	it("elementFootprint d'un bloc timer couvre 2 colonnes et 2 lignes", () => {
+		const section = sectionWithTimerAtRow0AndCoilAtRow1();
+		const block = section.elements.find((e) => e.type === "block")!;
+
+		expect(elementFootprint(block)).toEqual({
+			row: 0,
+			col: 0,
+			width: 2,
+			height: 2,
+		});
+	});
+
+	it("la 2e ligne d'un bloc bloque un dépôt sur ses colonnes mais pas à côté", () => {
 		const section = sectionWithTimerAtRow0AndCoilAtRow1();
 
-		const heights = computeRowHeightsInCells(section);
-
-		expect(heights.get(0)).toBe(2);
-		expect(heights.get(1)).toBe(1);
+		// (1,0) et (1,1) = 2e ligne du bloc → occupées
+		expect(elementAtCell(section, 1, 0)?.type).toBe("block");
+		expect(elementAtCell(section, 1, 1)?.type).toBe("block");
+		// (1,2) = même ligne, hors des colonnes du bloc → libre
+		expect(elementAtCell(section, 1, 2)).toBeUndefined();
 	});
 
-	it("rowToY pousse la ligne suivante de 2 cellules quand la précédente contient un bloc timer", () => {
-		const heights = computeRowHeightsInCells(
-			sectionWithTimerAtRow0AndCoilAtRow1(),
-		);
-
-		expect(rowToY(0, heights)).toBe(LADDER_FLOW_TOP_OFFSET);
-		expect(rowToY(1, heights)).toBe(
-			LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT,
-		);
+	it("cellRectsOverlap détecte un chevauchement d'une seule cellule", () => {
+		expect(
+			cellRectsOverlap(
+				{ row: 0, col: 0, width: 2, height: 2 },
+				{ row: 1, col: 1, width: 1, height: 1 },
+			),
+		).toBe(true);
+		expect(
+			cellRectsOverlap(
+				{ row: 0, col: 0, width: 2, height: 2 },
+				{ row: 1, col: 2, width: 1, height: 1 },
+			),
+		).toBe(false);
 	});
 
-	it("yToRow reconnaît la ligne 1 même déplacée par la hauteur de la ligne 0", () => {
-		const heights = computeRowHeightsInCells(
-			sectionWithTimerAtRow0AndCoilAtRow1(),
-		);
+	it("findFootprintCollision ignore l'élément passé à ignoreId", () => {
+		const section = sectionWithTimerAtRow0AndCoilAtRow1();
+		const block = section.elements.find((e) => e.type === "block")!;
 
-		const yOfRow1 = LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT + 5;
-		expect(Math.floor(yToRow(yOfRow1, heights))).toBe(1);
+		expect(
+			findFootprintCollision(section, elementFootprint(block)),
+		).toBe(block);
+		expect(
+			findFootprintCollision(section, elementFootprint(block), block.id),
+		).toBeUndefined();
 	});
 
-	it("buildTargetNodes positionne la ligne 1 plus bas quand la ligne 0 contient un bloc timer", () => {
+	it("buildTargetNodes place la ligne 1 à une cellule de la ligne 0, bloc ou pas", () => {
 		const section = sectionWithTimerAtRow0AndCoilAtRow1();
 
-		const nodes = buildTargetNodes(section);
-		const coilNode = nodes.find((n) => n.type === "coil")!;
+		const coilNode = buildTargetNodes(section).find((n) => n.type === "coil")!;
 
-		expect(coilNode.position.y).toBe(
-			LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT,
-		);
+		expect(coilNode.position.y).toBe(LADDER_FLOW_TOP_OFFSET + GRID_CELL_HEIGHT);
+	});
+
+	it("computeSectionLayout compte les lignes traversées par un bloc dans totalRows", () => {
+		const section = new Section("s1", "Section 1");
+		section.elements = [
+			createTimerBlockElement(
+				{ name: "T", timerType: "TON", pt: "T#5s" },
+				2,
+				0,
+			),
+		];
+
+		expect(computeSectionLayout(section).totalRows).toBe(4);
 	});
 });
 

@@ -8,3 +8,4 @@ export const APP_NAME = "Studomate";
 export const APP_SLOGAN = "Créer, Simuler, Automatiser";
 export const APP_SHORT_DESCRIPTION =
 	"Concevez et simulez des automatismes GRAFCET et Ladder directement dans votre navigateur.";
+export const APP_REPO_URL = "https://github.com/vporel/studomate";

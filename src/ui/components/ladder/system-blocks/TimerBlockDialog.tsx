@@ -18,9 +18,11 @@ const TIMER_TYPE_LABELS: Record<TimerType, string> = {
 /**
  * Fenêtre de configuration d'un bloc tempo, en création comme en édition : ouverte par
  * `useLadderDropHandlers` au dépose depuis la section "Blocs systèmes" de l'explorateur
- * (`pendingSystemBlockCreation`, n'insère l'élément qu'à la validation), ou par double-clic sur
- * un bloc existant du canevas (`pendingSystemBlockEdit`, préremplie avec ses valeurs actuelles).
- * Les deux états sont mutuellement exclusifs (un seul bloc système géré à la fois).
+ * (`pendingSystemBlockCreation`, n'insère l'élément qu'à la validation), ou par l'entrée
+ * "Paramétrer" du menu contextuel d'une instance dans l'explorateur (`pendingSystemBlockEdit`,
+ * préremplie avec ses valeurs actuelles). Sur le canevas, nom et variante d'un bloc existant
+ * s'éditent en place (voir `BlockNameField` / `inlineSelect`). Les deux états sont mutuellement
+ * exclusifs (un seul bloc système géré à la fois).
  */
 export default function TimerBlockDialog() {
 	const {

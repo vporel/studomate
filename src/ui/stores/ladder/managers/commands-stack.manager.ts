@@ -38,31 +38,46 @@ export default class LadderCommandsStackManager extends AbstractCommandsStackMan
 	 * passent tous par le même chemin, sans code de vue spécifique à chaque type de commande.
 	 * Chaque section garde son propre tableau `nodes`/`edges` (un flow indépendant par section,
 	 * contrairement au GRAFCET) ; une section supprimée disparaît naturellement de ces deux maps
-	 * puisqu'on ne les reconstruit qu'à partir de `ladder.sections`.
+	 * puisqu'on ne les reconstruit qu'à partir de `ladder.sections`. Les références de vue à une
+	 * section (`activeSectionId`, `selectedSectionIds`) sont élaguées si la section a disparu.
 	 */
 	protected applyDomain(ladder: Ladder): void {
-		this.setStoreState((state) => ({
-			ladder,
-			nodesBySectionId: Object.fromEntries(
-				ladder.sections.map((section) => [
-					section.id,
-					LadderNodesFactory.syncNodes(
-						state.nodesBySectionId[section.id] ?? [],
-						section,
-					),
-				]),
-			),
-			edgesBySectionId: Object.fromEntries(
-				ladder.sections.map((section) => [
-					section.id,
-					LadderEdgesFactory.syncEdges(
-						state.edgesBySectionId[section.id] ?? [],
-						section,
-					),
-				]),
-			),
-			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
-			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
-		}));
+		this.setStoreState((state) => {
+			const sectionIds = new Set(ladder.sections.map((s) => s.id));
+			const prunedSelected = state.selectedSectionIds.filter((id) =>
+				sectionIds.has(id),
+			);
+			return {
+				ladder,
+				nodesBySectionId: Object.fromEntries(
+					ladder.sections.map((section) => [
+						section.id,
+						LadderNodesFactory.syncNodes(
+							state.nodesBySectionId[section.id] ?? [],
+							section,
+						),
+					]),
+				),
+				edgesBySectionId: Object.fromEntries(
+					ladder.sections.map((section) => [
+						section.id,
+						LadderEdgesFactory.syncEdges(
+							state.edgesBySectionId[section.id] ?? [],
+							section,
+						),
+					]),
+				),
+				activeSectionId:
+					state.activeSectionId && sectionIds.has(state.activeSectionId)
+						? state.activeSectionId
+						: null,
+				selectedSectionIds:
+					prunedSelected.length === state.selectedSectionIds.length
+						? state.selectedSectionIds
+						: prunedSelected,
+				hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
+				hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
+			};
+		});
 	}
 }

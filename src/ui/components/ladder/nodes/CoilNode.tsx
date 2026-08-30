@@ -3,8 +3,8 @@
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { CoilType } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector, {
 	VariableSelectorHandle,
 } from "@/ui/components/variables/VariableSelector";
@@ -74,7 +74,7 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 			<Box
 				sx={{
 					position: "absolute",
-					top: "-10px",
+					top: "-7px",
 				}}
 			>
 				{/* Pas de typeFilter/excludeDirection : outil pédagogique, l'utilisateur doit pouvoir

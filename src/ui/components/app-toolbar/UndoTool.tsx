@@ -10,7 +10,7 @@ const UndoTool = () => {
 	const undo = useProjectStore((state) => state.undoActiveScope);
 
 	return (
-		<AppTool name="undo" disabled={!canUndo} onClick={undo}>
+		<AppTool name="undo" label="Annuler" disabled={!canUndo} onClick={undo}>
 			<UndoIcon />
 		</AppTool>
 	);

@@ -48,6 +48,35 @@ function setup({
 	return { onCommit };
 }
 
+describe("VariableSelector — validation différée", () => {
+	it("commite la saisie en cours au démontage", () => {
+		const onCommit = jest.fn();
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ project: { variables: [] } }),
+		);
+		const { unmount } = render(
+			<VariableSelector value="" onCommit={onCommit} />,
+		);
+		fireEvent.change(screen.getByRole("combobox"), {
+			target: { value: "Capteur" },
+		});
+		unmount();
+		expect(onCommit).toHaveBeenCalledWith("Capteur");
+	});
+
+	it("ne commite rien au démontage sans saisie en cours", () => {
+		const onCommit = jest.fn();
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ project: { variables: [] } }),
+		);
+		const { unmount } = render(
+			<VariableSelector value="X1" onCommit={onCommit} />,
+		);
+		unmount();
+		expect(onCommit).not.toHaveBeenCalled();
+	});
+});
+
 function input(): HTMLInputElement {
 	return screen.getByRole("combobox") as HTMLInputElement;
 }

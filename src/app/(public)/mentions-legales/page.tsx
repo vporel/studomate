@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function LegalMentions() {
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<Typography variant="h2" color="primary" gutterBottom>
+			<Typography variant="h2" component="h1" color="primary" gutterBottom>
 				Mentions légales
 			</Typography>
 			<Typography>Dernière mise à jour : 13/10/2024</Typography>

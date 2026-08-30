@@ -5,6 +5,7 @@ import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
+import SectionRemoveCommand from "@/schemas/ladder/commands/section-remove.command";
 import { createLadderStore } from "../ladder.store";
 
 function buildStore() {
@@ -119,6 +120,70 @@ describe("LadderCommandsStackManager (ladder)", () => {
 				]);
 
 			expect(store.getState().hasCommandsToRedo).toBe(false);
+		});
+	});
+
+	describe("élagage des références de vue à une section supprimée", () => {
+		function buildTwoSectionStore() {
+			const ladder = new Ladder("l1", "TestLadder", [
+				new Section("s1", "A"),
+				new Section("s2", "B"),
+			]);
+			return createLadderStore(ladder, new CommandsStack<Ladder>(100));
+		}
+
+		function removeS2() {
+			return new SectionRemoveCommand({
+				sectionId: "s2",
+				title: "B",
+				description: "",
+				elements: [],
+				connections: [],
+				index: 1,
+			});
+		}
+
+		it("remet activeSectionId à null si la section active est supprimée", () => {
+			const store = buildTwoSectionStore();
+			store.getState().setActiveSectionId("s2");
+
+			store.getState().commandsStackManager.executeOperation([removeS2()]);
+
+			expect(store.getState().activeSectionId).toBeNull();
+		});
+
+		it("garde activeSectionId si une autre section est supprimée", () => {
+			const store = buildTwoSectionStore();
+			store.getState().setActiveSectionId("s1");
+
+			store.getState().commandsStackManager.executeOperation([removeS2()]);
+
+			expect(store.getState().activeSectionId).toBe("s1");
+		});
+
+		it("retire de selectedSectionIds les sections supprimées, garde les autres", () => {
+			const store = buildTwoSectionStore();
+			store.getState().setSelectedSectionIds(["s1", "s2"]);
+
+			store.getState().commandsStackManager.executeOperation([removeS2()]);
+
+			expect(store.getState().selectedSectionIds).toEqual(["s1"]);
+		});
+
+		it("restaure la section à l'annulation sans réintroduire la sélection", () => {
+			const store = buildTwoSectionStore();
+			store.getState().setSelectedSectionIds(["s2"]);
+			store.getState().setActiveSectionId("s2");
+
+			store.getState().commandsStackManager.executeOperation([removeS2()]);
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(store.getState().ladder.sections.map((s) => s.id)).toEqual([
+				"s1",
+				"s2",
+			]);
+			expect(store.getState().selectedSectionIds).toEqual([]);
+			expect(store.getState().activeSectionId).toBeNull();
 		});
 	});
 

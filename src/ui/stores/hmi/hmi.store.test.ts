@@ -139,6 +139,53 @@ describe("hmi.store", () => {
 		});
 	});
 
+	describe("moveSelectedWidgets", () => {
+		it("déplace la sélection du delta demandé, commande annulable", () => {
+			const store = buildStore();
+			const w1 = store.getState().addWidget("push-button", 30, 30);
+			const w2 = store.getState().addWidget("indicator", 100, 100);
+			store.getState().setSelection([w1.id, w2.id]);
+
+			store.getState().moveSelectedWidgets(10, 0);
+
+			expect(store.getState().hmiPage.widgets[w1.id]!.position).toEqual({
+				x: 40,
+				y: 30,
+			});
+			expect(store.getState().hmiPage.widgets[w2.id]!.position).toEqual({
+				x: 110,
+				y: 100,
+			});
+			expect(store.getState().hasCommandsToUndo).toBe(true);
+		});
+
+		it("borne au bord du canvas (le groupe ne sort pas)", () => {
+			const store = buildStore();
+			const w1 = store.getState().addWidget("push-button", 0, 30);
+			store.getState().setSelection([w1.id]);
+
+			store.getState().moveSelectedWidgets(-10, 30);
+
+			expect(store.getState().hmiPage.widgets[w1.id]!.position).toEqual({
+				x: 0,
+				y: 60,
+			});
+		});
+
+		it("ne fait rien sans sélection", () => {
+			const store = buildStore();
+			const w1 = store.getState().addWidget("push-button", 0, 0);
+			store.getState().clearSelection();
+			const positionBefore = { ...store.getState().hmiPage.widgets[w1.id]!.position };
+
+			store.getState().moveSelectedWidgets(10, 10);
+
+			expect(store.getState().hmiPage.widgets[w1.id]!.position).toEqual(
+				positionBefore,
+			);
+		});
+	});
+
 	describe("alignSelectedWidgets", () => {
 		function twoWidgetsAtDifferentHeights(
 			store: ReturnType<typeof buildStore>,

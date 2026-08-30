@@ -12,7 +12,14 @@ import { PageType } from "@/ui/stores/project/project.store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
-import { alpha, Box, IconButton, Typography, useTheme } from "@mui/material";
+import {
+	alpha,
+	Box,
+	IconButton,
+	Tooltip,
+	Typography,
+	useTheme,
+} from "@mui/material";
 import { ElementType } from "react";
 import { useShallow } from "zustand/shallow";
 
@@ -64,13 +71,14 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id });
+	} = useSortable({ id, attributes: { role: "tab" } });
 
 	return (
 		<Box
 			ref={setNodeRef}
 			className="pages__tab"
 			data-page-id={id}
+			aria-selected={active}
 			{...attributes}
 			{...listeners}
 			sx={{
@@ -109,6 +117,12 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			onClick={() => {
 				pagesManager.setActivePage(id);
 			}}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					pagesManager.setActivePage(id);
+				}
+			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
 				<TypeIconComponent
@@ -125,31 +139,34 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			{/* La "Simulation HMI" est un onglet unique, réouvert via le bouton de la bottom bar
 			(voir `RightActions`) — jamais fermable, pour rester à portée en un clic. */}
 			{type !== "hmi-simulation" && (
-				<IconButton
-					className="page__tab__button-icon"
-					sx={{
-						opacity: active ? 1 : 0,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						padding: "3px",
-						borderRadius: "5px",
-						color: !active ? th.palette.text.primary : "white",
-						":hover": {
-							background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
-						},
-					}}
-					onPointerDown={(e) => e.stopPropagation()}
-					onClick={(e) => {
-						e.stopPropagation();
-						pagesManager.closePage(id);
-					}}
-				>
-					<CloseIcon
-						className="close-icon"
-						sx={{ fontSize: "0.9rem", display: "block" }}
-					/>
-				</IconButton>
+				<Tooltip title="Fermer">
+					<IconButton
+						className="page__tab__button-icon"
+						aria-label="Fermer l'onglet"
+						sx={{
+							opacity: active ? 1 : 0,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							padding: "3px",
+							borderRadius: "5px",
+							color: !active ? th.palette.text.primary : "white",
+							":hover": {
+								background: !active ? "#cfcfcf" : "rgba(255, 255, 255, 0.2)",
+							},
+						}}
+						onPointerDown={(e) => e.stopPropagation()}
+						onClick={(e) => {
+							e.stopPropagation();
+							pagesManager.closePage(id);
+						}}
+					>
+						<CloseIcon
+							className="close-icon"
+							sx={{ fontSize: "0.9rem", display: "block" }}
+						/>
+					</IconButton>
+				</Tooltip>
 			)}
 		</Box>
 	);

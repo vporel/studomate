@@ -5,7 +5,7 @@ import { Box, Container, Divider, Typography } from "@mui/material";
 export default function Contact() {
 	return (
 		<Container maxWidth="md" sx={{ my: 4, minHeight: "70vh" }}>
-			<Typography variant="h2" color="primary" gutterBottom>
+			<Typography variant="h2" component="h1" color="primary" gutterBottom>
 				Contactez-nous!
 			</Typography>
 			<Divider sx={{ my: 2 }} />

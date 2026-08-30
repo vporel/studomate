@@ -15,11 +15,11 @@ export default function useProjectMenu(): AppMenuType {
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
-	const { isSharedProject, shareProject, setShareModalVisible } =
+	const { isSharedProject, sharingManager, setShareModalVisible } =
 		useProjectStore(
 			useShallow((state) => ({
 				isSharedProject: state.isSharedProject,
-				shareProject: state.shareProject,
+				sharingManager: state.sharingManager,
 				setShareModalVisible: state.setShareModalVisible,
 			})),
 		);
@@ -61,7 +61,7 @@ export default function useProjectMenu(): AppMenuType {
 						disabled: isSharedProject,
 						onClick: () => {
 							if (isSharedProject) return;
-							void shareProject();
+							void sharingManager.shareProject();
 						},
 					},
 					...(isSharedProject
@@ -81,7 +81,7 @@ export default function useProjectMenu(): AppMenuType {
 			pageManager,
 			designing,
 			isSharedProject,
-			shareProject,
+			sharingManager,
 			setShareModalVisible,
 		],
 	);

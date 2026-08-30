@@ -7,94 +7,178 @@ import {
 import {
 	HMI_WIDGET_DEFINITIONS,
 	HmiWidget,
+	HmiWidgetPosition,
 	HmiWidgetSize,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useRef } from "react";
-import { snapToGrid } from "./constants";
+import { HMI_WIDGET_DEFAULT_MIN_SIZE, snapToGrid } from "./constants";
 
-/** Plancher appliqué quand le type de widget ne définit pas de `minSize` (ex. gauge : sa taille
- * stockée reste "comme si horizontal" quelle que soit son orientation affichée, voir
- * `HmiWidgetPropertiesPanel` — une seule taille minimale n'aurait donc pas de sens). Suffisant pour
- * qu'un widget reste manipulable (visible, attrapable), sans prétendre borner un rendu correct. */
-const DEFAULT_MIN_SIZE: HmiWidgetSize = { width: 30, height: 30 };
+/** Poignée de redimensionnement : un point cardinal. `n`/`s`/`e`/`w` déplacent un seul bord, les
+ * coins (`ne`, `nw`, `se`, `sw`) deux à la fois. Un bord non cité dans la direction reste ancré. */
+export type HmiResizeDirection =
+	| "n"
+	| "s"
+	| "e"
+	| "w"
+	| "ne"
+	| "nw"
+	| "se"
+	| "sw";
+
+/** Rectangle d'un widget pendant un redimensionnement en cours (position + taille) : `position`
+ * change dès qu'un bord haut/gauche bouge, l'aperçu doit donc porter les deux. */
+export interface HmiWidgetRect {
+	position: HmiWidgetPosition;
+	size: HmiWidgetSize;
+}
 
 /**
- * Redimensionnement d'un widget par sa poignée, borné par sa taille minimale
- * (`HMI_WIDGET_DEFINITIONS`) et par les limites du canvas. Quand un ratio largeur/hauteur
- * s'applique (`HmiWidget.getResizeAspectRatio` — imposé par le type, ex. voyant carré, ou choisi
- * par l'utilisateur pour une ellipse, voir `EllipseData.lockAspectRatio`), le redimensionnement
- * n'a plus qu'un seul degré de liberté : l'axe où la souris se déplace le plus pilote, l'autre
- * dimension en découle.
+ * Nouveau rectangle d'un widget redimensionné par la poignée `direction`, la souris ayant bougé de
+ * `(dx, dy)` px canvas depuis le début du geste. Le bord (ou coin) opposé à la poignée reste fixe :
+ * une poignée nord ou ouest fait donc bouger `position` autant que `size`. Borné par `minSize` et
+ * par les limites du canvas.
+ *
+ * Avec `aspectRatio` (largeur/hauteur imposé par le type — voyant carré — ou choisi pour une
+ * ellipse, voir `HmiWidget.getResizeAspectRatio`), un seul degré de liberté subsiste : pour un
+ * coin, l'axe où la souris se déplace le plus pilote ; pour un bord, ce bord pilote ; l'autre
+ * dimension en découle, ancrée sur le même coin.
+ */
+export function resizeRect(params: {
+	direction: HmiResizeDirection;
+	start: { x: number; y: number; width: number; height: number };
+	dx: number;
+	dy: number;
+	minSize: HmiWidgetSize;
+	aspectRatio?: number;
+}): HmiWidgetRect {
+	const { direction, start, dx, dy, minSize, aspectRatio } = params;
+	const movesLeft = direction.includes("w");
+	const movesRight = direction.includes("e");
+	const movesTop = direction.includes("n");
+	const movesBottom = direction.includes("s");
+
+	const right = start.x + start.width;
+	const bottom = start.y + start.height;
+	// Marge disponible du côté du canvas vers lequel le bord mobile progresse.
+	const roomX = movesLeft ? right : HMI_CANVAS_WIDTH - start.x;
+	const roomY = movesTop ? bottom : HMI_CANVAS_HEIGHT - start.y;
+
+	if (aspectRatio) {
+		const minSide = Math.max(minSize.width, minSize.height * aspectRatio);
+		const maxSide = Math.min(roomX, roomY * aspectRatio);
+		const widthDelta = movesLeft ? -dx : dx;
+		const heightDelta = movesTop ? -dy : dy;
+		const hasHorizontal = movesLeft || movesRight;
+		const hasVertical = movesTop || movesBottom;
+		const drivenByWidth =
+			hasHorizontal && (!hasVertical || Math.abs(dx) >= Math.abs(dy));
+		const rawSide = drivenByWidth
+			? start.width + widthDelta
+			: (start.height + heightDelta) * aspectRatio;
+		const width = snapToGrid(Math.max(minSide, Math.min(maxSide, rawSide)));
+		const height = width / aspectRatio;
+		return {
+			size: { width, height },
+			position: {
+				x: movesLeft ? right - width : start.x,
+				y: movesTop ? bottom - height : start.y,
+			},
+		};
+	}
+
+	let x = start.x;
+	let width = start.width;
+	if (movesRight) {
+		width = snapToGrid(
+			Math.max(minSize.width, Math.min(roomX, start.width + dx)),
+		);
+	} else if (movesLeft) {
+		x = snapToGrid(
+			Math.max(0, Math.min(right - minSize.width, start.x + dx)),
+		);
+		width = right - x;
+	}
+
+	let y = start.y;
+	let height = start.height;
+	if (movesBottom) {
+		height = snapToGrid(
+			Math.max(minSize.height, Math.min(roomY, start.height + dy)),
+		);
+	} else if (movesTop) {
+		y = snapToGrid(
+			Math.max(0, Math.min(bottom - minSize.height, start.y + dy)),
+		);
+		height = bottom - y;
+	}
+
+	return { position: { x, y }, size: { width, height } };
+}
+
+/**
+ * Redimensionnement d'un widget par l'une de ses huit poignées.
  *
  * Comme `useHmiWidgetDrag`, ne touche le store qu'une seule fois au relâchement (`updateWidget`)
- * — les tailles intermédiaires ne sont qu'un aperçu visuel local (`onPreviewChange`), pour ne
+ * — les rectangles intermédiaires ne sont qu'un aperçu visuel local (`onPreviewChange`), pour ne
  * pas remplir la pile d'annulation d'une commande par frame de redimensionnement.
  */
 export default function useHmiWidgetResize(
 	zoom: number,
-	onPreviewChange: (size: HmiWidgetSize | null) => void,
+	onPreviewChange: (rect: HmiWidgetRect | null) => void,
 ) {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 
 	const resizeState = useRef<{
 		widgetId: string;
+		direction: HmiResizeDirection;
 		startMouseX: number;
 		startMouseY: number;
-		startWidth: number;
-		startHeight: number;
+		start: { x: number; y: number; width: number; height: number };
+		minSize: HmiWidgetSize;
+		aspectRatio?: number;
 	} | null>(null);
 
-	return (e: ReactMouseEvent, widget: HmiWidget) => {
-		const { minSize = DEFAULT_MIN_SIZE } = HMI_WIDGET_DEFINITIONS[widget.type];
-		const aspectRatio = HmiWidget.getResizeAspectRatio(widget);
+	return (
+		e: ReactMouseEvent,
+		widget: HmiWidget,
+		direction: HmiResizeDirection,
+	) => {
+		const { minSize = HMI_WIDGET_DEFAULT_MIN_SIZE } =
+			HMI_WIDGET_DEFINITIONS[widget.type];
 		resizeState.current = {
 			widgetId: widget.id,
+			direction,
 			startMouseX: e.clientX,
 			startMouseY: e.clientY,
-			startWidth: widget.size.width,
-			startHeight: widget.size.height,
+			start: {
+				x: widget.position.x,
+				y: widget.position.y,
+				width: widget.size.width,
+				height: widget.size.height,
+			},
+			minSize,
+			aspectRatio: HmiWidget.getResizeAspectRatio(widget),
 		};
 
-		const clampedSize = (
+		const rectAt = (
 			clientX: number,
 			clientY: number,
 			resize: NonNullable<typeof resizeState.current>,
-		) => {
-			const dx = (clientX - resize.startMouseX) / zoom;
-			const dy = (clientY - resize.startMouseY) / zoom;
-			const maxWidth = HMI_CANVAS_WIDTH - widget.position.x;
-			const maxHeight = HMI_CANVAS_HEIGHT - widget.position.y;
-
-			if (aspectRatio) {
-				const minSide = Math.max(minSize.width, minSize.height * aspectRatio);
-				const maxSide = Math.min(maxWidth, maxHeight * aspectRatio);
-				const rawSide =
-					Math.abs(dx) >= Math.abs(dy)
-						? resize.startWidth + dx
-						: (resize.startHeight + dy) * aspectRatio;
-				const side = snapToGrid(Math.max(minSide, Math.min(maxSide, rawSide)));
-				return { width: side, height: side / aspectRatio };
-			}
-			return {
-				width: snapToGrid(
-					Math.max(minSize.width, Math.min(maxWidth, resize.startWidth + dx)),
-				),
-				height: snapToGrid(
-					Math.max(
-						minSize.height,
-						Math.min(maxHeight, resize.startHeight + dy),
-					),
-				),
-			};
-		};
+		) =>
+			resizeRect({
+				direction: resize.direction,
+				start: resize.start,
+				dx: (clientX - resize.startMouseX) / zoom,
+				dy: (clientY - resize.startMouseY) / zoom,
+				minSize: resize.minSize,
+				aspectRatio: resize.aspectRatio,
+			});
 
 		const onMouseMove = (moveEvent: MouseEvent) => {
 			const resize = resizeState.current;
 			if (!resize) return;
-			onPreviewChange(
-				clampedSize(moveEvent.clientX, moveEvent.clientY, resize),
-			);
+			onPreviewChange(rectAt(moveEvent.clientX, moveEvent.clientY, resize));
 		};
 		const onMouseUp = (upEvent: MouseEvent) => {
 			const resize = resizeState.current;
@@ -103,9 +187,12 @@ export default function useHmiWidgetResize(
 			window.removeEventListener("mouseup", onMouseUp);
 			onPreviewChange(null);
 			if (!resize) return;
-			updateWidget(resize.widgetId, {
-				size: clampedSize(upEvent.clientX, upEvent.clientY, resize),
-			});
+			const { position, size } = rectAt(
+				upEvent.clientX,
+				upEvent.clientY,
+				resize,
+			);
+			updateWidget(resize.widgetId, { position, size });
 		};
 		window.addEventListener("mousemove", onMouseMove);
 		window.addEventListener("mouseup", onMouseUp);

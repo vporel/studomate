@@ -1,7 +1,7 @@
 "use client";
 
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { useAppContext } from "../AppContext";
 
 const ExplorerHeader = () => {
@@ -18,15 +18,18 @@ const ExplorerHeader = () => {
 			}}
 		>
 			<Typography sx={{ fontSize: "0.8rem" }}>EXPLORATEUR</Typography>
-			<IconButton
-				size="small"
-				sx={{ padding: "2px" }}
-				onClick={() =>
-					setViewAppearance((prev) => ({ ...prev, explorer: false }))
-				}
-			>
-				<CloseIcon fontSize="small" />
-			</IconButton>
+			<Tooltip title="Fermer">
+				<IconButton
+					size="small"
+					sx={{ padding: "2px" }}
+					onClick={() =>
+						setViewAppearance((prev) => ({ ...prev, explorer: false }))
+					}
+					aria-label="Fermer l'explorateur"
+				>
+					<CloseIcon fontSize="small" />
+				</IconButton>
+			</Tooltip>
 		</Box>
 	);
 };

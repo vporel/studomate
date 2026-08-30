@@ -11,7 +11,6 @@ import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/syste
 import {
 	createContactElement,
 	createCoilElement,
-	getElementWidth,
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
@@ -25,7 +24,9 @@ import {
 	useLadderToolbarDnD,
 } from "../toolbar/LadderToolbarDnDContext";
 import {
-	computeRowHeightsInCells,
+	elementAtCell,
+	elementFootprint,
+	findFootprintCollision,
 	PositionedLeaf,
 	xToCol,
 	yToRow,
@@ -44,21 +45,27 @@ function createToolElement(
 		: createCoilElement("", draggedElement.type, row, col);
 }
 
-/** Élément existant dont l'empreinte (largeur en colonnes, voir `getElementWidth`) chevauche
- * `[colStart, colEnd]` sur `row` — un `block` occupant 2 colonnes doit bloquer un dépôt visant
- * sa seconde cellule autant que la première. */
-function findOccupant(
+/** Vrai si le rectangle de cellules `col..col+width-1` × `row..row+height-1` chevauche
+ * l'empreinte d'un élément existant — un bloc occupant 2 colonnes et 2 lignes bloque un dépôt
+ * visant n'importe laquelle de ses 4 cellules, mais laisse libres les cellules voisines des
+ * lignes qu'il traverse. */
+function rectCollides(
 	section: Section,
 	row: number,
-	colStart: number,
-	colEnd: number,
-): LadderElement | undefined {
-	return section.elements.find((element) => {
-		if (element.position.row !== row) return false;
-		const elementStart = element.position.col;
-		const elementEnd = elementStart + getElementWidth(element) - 1;
-		return elementStart <= colEnd && elementEnd >= colStart;
-	});
+	col: number,
+	width: number,
+	height: number,
+): boolean {
+	return (
+		findFootprintCollision(section, { row, col, width, height }) !== undefined
+	);
+}
+
+/** Vrai si l'empreinte de `element` chevauche celle d'un élément déjà présent dans la section. */
+function collidesWith(section: Section, element: LadderElement): boolean {
+	return (
+		findFootprintCollision(section, elementFootprint(element)) !== undefined
+	);
 }
 
 /**
@@ -134,28 +141,27 @@ export default function useLadderDropHandlers(
 				{ x: e.clientX, y: e.clientY },
 				{ snapToGrid: false },
 			);
-			const dropRow = Math.floor(
-				yToRow(position.y, computeRowHeightsInCells(section)),
-			);
+			const dropRow = Math.floor(yToRow(position.y));
 			const dropCol = Math.floor(xToCol(position.x));
 
 			if (programId) {
-				// Un bloc occupe 2 colonnes (voir `getElementWidth`) : les deux cellules doivent être
-				// libres. Une référence de programme n'a pas de "mode" à faire tourner comme un
-				// contact/une bobine : cellule(s) déjà occupée(s), rien à changer, quel que soit
-				// l'occupant.
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
 				const newElement = createUserProgramBlockElement(
 					programId,
 					dropRow,
 					dropCol,
 				);
+				// Toutes les cellules de l'empreinte du bloc doivent être libres. Une référence de
+				// programme n'a pas de "mode" à faire tourner comme un contact/une bobine : cellule(s)
+				// déjà occupée(s), rien à changer, quel que soit l'occupant.
+				if (collidesWith(section, newElement)) return;
 				dispatchInsertion(newElement);
 				return;
 			}
 
+			// Timer/counter occupent toujours 2 colonnes × 2 lignes (voir `getElementWidth`/
+			// `getElementHeight`) : on vérifie l'empreinte avant d'ouvrir la fenêtre de configuration.
 			if (systemBlockType === "timer") {
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				if (rectCollides(section, dropRow, dropCol, 2, 2)) return;
 				setPendingSystemBlockCreation({
 					blockType: "timer",
 					insert: (params) =>
@@ -167,7 +173,7 @@ export default function useLadderDropHandlers(
 			}
 
 			if (systemBlockType === "counter") {
-				if (findOccupant(section, dropRow, dropCol, dropCol + 1)) return;
+				if (rectCollides(section, dropRow, dropCol, 2, 2)) return;
 				setPendingSystemBlockCreation({
 					blockType: "counter",
 					insert: (params) =>
@@ -179,8 +185,7 @@ export default function useLadderDropHandlers(
 			}
 
 			// Blocs système sans fenêtre (compare, assign, arithmetic) : on insère un bloc vide,
-			// configuré ensuite sur le canevas. Largeur (1 ou 2 colonnes) et fabrique viennent de
-			// `BLOCK_DEFINITIONS`.
+			// configuré ensuite sur le canevas.
 			const directInsertEntry = SYSTEM_BLOCK_CATALOG.find(
 				(entry) =>
 					entry.blockType === systemBlockType &&
@@ -188,22 +193,15 @@ export default function useLadderDropHandlers(
 			);
 			if (directInsertEntry) {
 				const def = BLOCK_DEFINITIONS[directInsertEntry.blockType];
-				if (
-					findOccupant(
-						section,
-						dropRow,
-						dropCol,
-						dropCol + def.widthInColumns - 1,
-					)
-				)
-					return;
-				dispatchInsertion(def.createElement(dropRow, dropCol));
+				const newElement = def.createElement(dropRow, dropCol);
+				if (collidesWith(section, newElement)) return;
+				dispatchInsertion(newElement);
 				return;
 			}
 
 			if (!draggedElement) return;
 
-			const occupant = findOccupant(section, dropRow, dropCol, dropCol);
+			const occupant = elementAtCell(section, dropRow, dropCol);
 
 			// Cellule déjà occupée : refuse le dépôt, sauf si l'élément qui s'y trouve est du même
 			// genre que celui déposé — auquel cas on change juste son type (ex. contact NO -> NF),

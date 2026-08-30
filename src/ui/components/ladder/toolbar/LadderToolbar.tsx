@@ -14,8 +14,6 @@ import ContactSymbol from "../nodes/ContactSymbol";
 import { SYSTEM_BLOCK_CATALOG } from "@/ui/components/ladder/system-blocks/system-block-catalog";
 import LadderSystemBlockTool from "./LadderSystemBlockTool";
 import LadderTool from "./LadderTool";
-import ZoomInTool from "./ZoomInTool";
-import ZoomOutTool from "./ZoomOutTool";
 
 /** Icône des outils "bloc système" (compare, assign, arithmetic) : un rectangle avec le nom du
  * bloc, faute de symbole graphique dédié comme pour un contact/une bobine. */
@@ -141,10 +139,6 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				>
 					Section
 				</Button>
-			</FlexBox>
-			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
-				<ZoomInTool />
-				<ZoomOutTool />
 			</FlexBox>
 		</FlexBox>
 	);

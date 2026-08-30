@@ -4,9 +4,10 @@ import {
 	BoxProps,
 	IconButton,
 	Modal as MuiModal,
+	Tooltip,
 	Typography,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 
 /**
  * Mui modal with a predefined style
@@ -32,6 +33,8 @@ export default function CustomModal({
 	height?: number | string;
 	fullscreenOnMobile?: boolean;
 }) {
+	const titleId = useId();
+
 	useEffect(() => {
 		document.body.style.overflowY = open ? "hidden" : "auto";
 	}, [open]);
@@ -39,6 +42,9 @@ export default function CustomModal({
 	return (
 		<MuiModal open={open} onClose={onClose}>
 			<Box
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby={title ? titleId : undefined}
 				sx={{
 					outline: "none",
 					background: "white",
@@ -71,11 +77,15 @@ export default function CustomModal({
 						}}
 						mb={2}
 					>
-						<Typography variant="h3">{title}</Typography>
+						<Typography variant="h3" id={titleId}>
+							{title}
+						</Typography>
 						{closeButton && (
-							<IconButton onClick={onClose} aria-label="Fermer">
-								<CloseIcon sx={{ width: 25, height: 25 }} />
-							</IconButton>
+							<Tooltip title="Fermer">
+								<IconButton onClick={onClose} aria-label="Fermer">
+									<CloseIcon sx={{ width: 25, height: 25 }} />
+								</IconButton>
+							</Tooltip>
 						)}
 					</Box>
 				)}

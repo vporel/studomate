@@ -25,7 +25,7 @@ export type PendingSystemBlockCreation =
 
 /**
  * État d'une édition de bloc système en attente de validation (voir `LadderStoreState.
- * pendingSystemBlockEdit`), ouverte par double-clic sur un bloc existant dans le canevas —
+ * pendingSystemBlockEdit`), ouverte depuis le menu contextuel d'une instance dans l'explorateur —
  * `initial` porte les valeurs actuelles pour préremplir la fenêtre, `elementId` cible l'élément
  * à modifier via `ElementUpdateCommand`. Mêmes familles que ci-dessus.
  */

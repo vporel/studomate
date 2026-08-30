@@ -30,7 +30,7 @@ export default function OperatorSelect<T extends string>({
 			disableUnderline
 			inputProps={{ "aria-label": ariaLabel }}
 			sx={{
-				fontSize: 15,
+				fontSize: 14,
 				lineHeight: 1,
 				"& .MuiSelect-icon": { display: "none" },
 				"& .MuiSelect-select": {

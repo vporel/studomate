@@ -56,7 +56,9 @@ describe("syncLadderToProject", () => {
 		const laddersManager = fakeLaddersManager();
 		const unsubscribe = syncLadderToProject(store, laddersManager);
 
-		store.getState().viewManager.zoomIn();
+		store
+			.getState()
+			.viewManager.zoomIn(store.getState().ladder.sections[0].id);
 
 		expect(laddersManager.setStoreValues).not.toHaveBeenCalled();
 		unsubscribe();

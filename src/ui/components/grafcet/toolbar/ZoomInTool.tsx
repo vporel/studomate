@@ -14,6 +14,7 @@ const ZoomInTool = () => {
 	return (
 		<AppTool
 			name="zoom-in"
+			label="Zoom avant"
 			disabled={
 				activeGrafcetZoom === null || activeGrafcetZoom >= GRAFCET_FLOW_MAX_ZOOM
 			}

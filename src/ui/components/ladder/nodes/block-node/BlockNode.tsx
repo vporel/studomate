@@ -17,6 +17,7 @@ import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
 } from "./block-node-layout";
+import BlockNameField from "./BlockNameField";
 import BlockStructuralRow from "./BlockStructuralRow";
 import CompareBlockNode from "./CompareBlockNode";
 import { BLOCK_NODE_DIMENSIONS, PIN_ROW_HEIGHT } from "./dimensions";
@@ -59,21 +60,17 @@ const BoxBlockNode = ({
 				: undefined,
 		) ?? "";
 	// `user-program` n'a pas de libellé fixe : c'est le nom du programme référencé (résolu dans le
-	// store). Toute autre famille tire son libellé de `BLOCK_DEFINITIONS` (fixe) ou de son nom.
+	// store). Timer/compteur portent leur nom dans un champ éditable (`labelSlot`). Toute autre
+	// famille tire son libellé de `BLOCK_DEFINITIONS` (fixe).
 	const label =
 		def.staticLabel ??
-		(data.blockType === "user-program"
-			? programName
-			: data.blockType === "timer" || data.blockType === "counter"
-				? data.params.name
-				: "");
+		(data.blockType === "user-program" ? programName : "");
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
-	const workflowManager = useLadderStore((state) => state.workflowManager);
 
 	const ports = resolveStructuralPorts(data);
 	const portSpecs = resolvePortSpecs(data);
@@ -91,12 +88,6 @@ const BoxBlockNode = ({
 
 	return (
 		<Box
-			onDoubleClick={() => {
-				if (data.blockType === "timer")
-					workflowManager.openSystemBlockEditor(id, "timer", data.params);
-				else if (data.blockType === "counter")
-					workflowManager.openSystemBlockEditor(id, "counter", data.params);
-			}}
 			sx={{
 				width: BLOCK_NODE_DIMENSIONS.width,
 				height,
@@ -129,6 +120,14 @@ const BoxBlockNode = ({
 			/>
 			<BlockStructuralRow
 				label={label}
+				labelSlot={
+					data.blockType === "timer" || data.blockType === "counter" ? (
+						<BlockNameField
+							value={data.params.name}
+							onCommit={(name) => runUpdate({ ...data.params, name })}
+						/>
+					) : undefined
+				}
 				inputLabel={ports.input}
 				outputLabel={ports.output}
 			/>
@@ -145,7 +144,7 @@ const BoxBlockNode = ({
 					}
 				/>
 			))}
-			{def.operator && (
+			{def.inlineSelect && (
 				<Box
 					sx={{
 						position: "absolute",
@@ -155,12 +154,12 @@ const BoxBlockNode = ({
 					}}
 				>
 					<OperatorSelect
-						value={def.operator.read(data.params)}
-						onChange={(operator) =>
-							runUpdate(def.operator!.write(data.params, operator))
+						value={def.inlineSelect.read(data.params)}
+						onChange={(value) =>
+							runUpdate(def.inlineSelect!.write(data.params, value))
 						}
-						operators={def.operator.values}
-						ariaLabel="Opérateur du bloc"
+						operators={def.inlineSelect.values}
+						ariaLabel={def.inlineSelect.ariaLabel}
 					/>
 				</Box>
 			)}

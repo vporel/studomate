@@ -147,10 +147,46 @@ describe("BlockNode", () => {
 			params: { name: "Tempo1", timerType: "TON", pt: "T#5s", et: "Sortie" },
 		};
 
+		it("affiche le sélecteur de variante, positionné sur la valeur courante", () => {
+			setup({ data: timerData });
+
+			expect(
+				screen.getByRole("combobox", {
+					name: "Variante de la temporisation",
+				}),
+			).toHaveTextContent("TON");
+		});
+
+		it("édite le nom en place et dispatche ElementUpdateCommand au commit", () => {
+			const { executeOperation } = setup({ data: timerData });
+
+			const input = screen.getByLabelText("Nom du bloc");
+			fireEvent.change(input, { target: { value: "Tempo2" } });
+			fireEvent.keyDown(input, { key: "Enter" });
+			fireEvent.blur(input);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [command] = executeOperation.mock.calls[0][0];
+			expect(command.payload.changes.data.params).toMatchObject({
+				name: "Tempo2",
+			});
+		});
+
+		it("restaure l'ancien nom si le champ est vidé au commit", () => {
+			const { executeOperation } = setup({ data: timerData });
+
+			const input = screen.getByLabelText("Nom du bloc");
+			fireEvent.change(input, { target: { value: "" } });
+			fireEvent.blur(input);
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(input).toHaveValue("Tempo1");
+		});
+
 		it("affiche le nom du bloc, les libellés IN/Q et les libellés PT/ET (toujours visibles)", () => {
 			setup({ data: timerData });
 
-			expect(screen.getByText("Tempo1")).toBeInTheDocument();
+			expect(screen.getByDisplayValue("Tempo1")).toBeInTheDocument();
 			expect(screen.getByText("IN")).toBeInTheDocument();
 			expect(screen.getByText("Q")).toBeInTheDocument();
 			expect(screen.getByText("PT")).toBeInTheDocument();

@@ -42,6 +42,45 @@ describe("HmiCopyCutPasteManager", () => {
 			expect(store.getState().selectedWidgetIds).toEqual([pasted.id]);
 		});
 
+		it("colle sur la grille même quand le curseur tombe entre deux mailles", () => {
+			const store = buildStore();
+			const original = store.getState().addWidget("push-button", 100, 100);
+			store.getState().selectWidget(original.id);
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store
+				.getState()
+				.setScreenToCanvasPosition(() => ({ x: 313, y: 247 }));
+
+			store
+				.getState()
+				.copyCutPasteManager.pasteElements({ x: 0, y: 0 });
+
+			const pasted = Object.values(store.getState().hmiPage.widgets).find(
+				(w) => w.id !== original.id,
+			)!;
+			expect(pasted.position.x % 10).toBe(0);
+			expect(pasted.position.y % 10).toBe(0);
+		});
+
+		it("colle sur la grille même si l'original a été placé hors grille (panneau Propriétés)", () => {
+			const store = buildStore();
+			const original = store.getState().addWidget("push-button", 100, 100);
+			// Saisie manuelle dans le panneau Propriétés : pas d'accrochage à la grille.
+			store
+				.getState()
+				.updateWidget(original.id, { position: { x: 103, y: 107 } });
+			store.getState().selectWidget(original.id);
+			store.getState().copyCutPasteManager.copySelectedElements();
+
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const pasted = Object.values(store.getState().hmiPage.widgets).find(
+				(w) => w.id !== original.id,
+			)!;
+			expect(pasted.position.x % 10).toBe(0);
+			expect(pasted.position.y % 10).toBe(0);
+		});
+
 		it("coller plusieurs fois décale à chaque fois depuis le dernier collage", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("indicator", 10, 20);
@@ -142,6 +181,21 @@ describe("HmiCopyCutPasteManager", () => {
 				.sort();
 			expect(pastedNames).toEqual(["Rectangle_3", "Rectangle_4"]);
 		});
+
+		it("suffixe le nom de l'original plutôt que de repartir du label du type", () => {
+			const store = buildStore();
+			const w = store.getState().addWidget("rectangle", 0, 0);
+			store.getState().updateWidget(w.id, { name: "Cadre_titre" });
+			store.getState().selectWidget(w.id);
+
+			store.getState().copyCutPasteManager.copySelectedElements();
+			store.getState().copyCutPasteManager.pasteElements();
+
+			const pasted = Object.values(store.getState().hmiPage.widgets).find(
+				(x) => x.id !== w.id,
+			)!;
+			expect(pasted.name).toBe("Cadre_titre_2");
+		});
 	});
 
 	describe("cutSelectedElements", () => {
@@ -173,7 +227,7 @@ describe("HmiCopyCutPasteManager", () => {
 	});
 
 	describe("pasteElements avec position du curseur", () => {
-		it("centre le collage sur la position convertie par screenToCanvasPosition quand disponible", () => {
+		it("centre le collage sur la position convertie par screenToCanvasPosition, accroché à la grille", () => {
 			const store = buildStore();
 			const original = store.getState().addWidget("push-button", 0, 0);
 			store.getState().selectWidget(original.id);
@@ -185,10 +239,12 @@ describe("HmiCopyCutPasteManager", () => {
 			const pasted = Object.values(store.getState().hmiPage.widgets).find(
 				(w) => w.id !== original.id,
 			)!;
+			expect(pasted.position.x % 10).toBe(0);
+			expect(pasted.position.y % 10).toBe(0);
 			const centerX = pasted.position.x + pasted.size.width / 2;
 			const centerY = pasted.position.y + pasted.size.height / 2;
-			expect(centerX).toBe(400);
-			expect(centerY).toBe(300);
+			expect(Math.abs(centerX - 400)).toBeLessThanOrEqual(5);
+			expect(Math.abs(centerY - 300)).toBeLessThanOrEqual(5);
 		});
 	});
 

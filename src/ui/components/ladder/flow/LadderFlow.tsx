@@ -5,6 +5,7 @@ import {
 	closestCenter,
 	DndContext,
 	DragEndEvent,
+	KeyboardSensor,
 	PointerSensor,
 	useSensor,
 	useSensors,
@@ -12,13 +13,18 @@ import {
 import {
 	arrayMove,
 	SortableContext,
+	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Box, useTheme } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useLadderStore } from "../context/LadderContext";
+import buildLadderReorderAnnouncements, {
+	LADDER_REORDER_SCREEN_READER_INSTRUCTIONS,
+} from "./ladder-reorder-announcements";
 import LadderSection from "./LadderSection";
+import useLadderSectionSelection from "./useLadderSectionSelection";
 
 import "@xyflow/react/dist/style.css";
 import "./_ladder-page.css";
@@ -33,7 +39,17 @@ function LadderFlowContent() {
 	// (ou un drag démarré ailleurs dans le header) déclencherait un reorder involontaire.
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
 	);
+
+	const announcements = useMemo(
+		() => buildLadderReorderAnnouncements(sections.map((section) => section.id)),
+		[sections],
+	);
+
+	useLadderSectionSelection();
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
@@ -79,6 +95,11 @@ function LadderFlowContent() {
 				sensors={sensors}
 				collisionDetection={closestCenter}
 				onDragEnd={handleDragEnd}
+				accessibility={{
+					announcements,
+					screenReaderInstructions:
+						LADDER_REORDER_SCREEN_READER_INSTRUCTIONS,
+				}}
 			>
 				<SortableContext
 					items={sections.map((section) => section.id)}

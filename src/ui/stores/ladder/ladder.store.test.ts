@@ -46,12 +46,12 @@ describe("createLadderStore — assemblage initial", () => {
 		expect(store.getState().activeSectionId).toBe("s2");
 	});
 
-	it("part au zoom 1", () => {
+	it("part sans zoom par section (défaut 1 à la lecture)", () => {
 		const store = createLadderStore(
 			buildLadder(),
 			new CommandsStack<Ladder>(100),
 		);
-		expect(store.getState().zoom).toBe(1);
+		expect(store.getState().zoomBySectionId).toEqual({});
 	});
 
 	it("met à jour les blocs système en attente via leurs setters", () => {

@@ -20,12 +20,23 @@ describe("initialConnectionPoints", () => {
 		).toEqual([]);
 	});
 
-	it("deux points à la colonne de sortie de la source, un par ligne", () => {
+	it("coude replié sur la sortie de la source quand aucune frontière de colonne n'est libre entre les deux", () => {
+		// sortie source = 8, entrée cible = 12 : aucune frontière strictement entre → coude à 8
 		expect(
 			initialConnectionPoints({ row: 0, col: 1 }, { row: 2, col: 3 }),
 		).toEqual([
 			[2, 8],
 			[10, 8],
+		]);
+	});
+
+	it("coude sur la frontière de colonne la plus proche du milieu quand il y a de la place", () => {
+		// sortie source = 8, entrée cible = 28 : milieu 18 → frontière de colonne la plus proche 20
+		expect(
+			initialConnectionPoints({ row: 0, col: 1 }, { row: 2, col: 7 }),
+		).toEqual([
+			[2, 20],
+			[10, 20],
 		]);
 	});
 });
@@ -418,9 +429,10 @@ describe("findCellCrossings", () => {
 		// Sortie en colonne 0 → segment vertical au bord gauche de la cellule (1,1) testée.
 		const contactLeft = createContactElement("A", "NO", 0, 0);
 		const targetOfLeft = createCoilElement("Q1", "normal", 3, 2);
-		// Sortie en colonne 1 → segment vertical au bord droit de la cellule (1,1) testée.
+		// Sortie en colonne 1, cible assez proche pour qu'aucune frontière ne s'intercale → coude
+		// replié sur la sortie, segment vertical au bord droit de la cellule (1,1) testée.
 		const contactRight = createContactElement("B", "NO", 2, 1);
-		const targetOfRight = createContactElement("C", "NO", 0, 4);
+		const targetOfRight = createContactElement("C", "NO", 0, 3);
 		section.elements = [contactLeft, targetOfLeft, contactRight, targetOfRight];
 		const leftTouchConnection = new Connection(
 			"c-left",

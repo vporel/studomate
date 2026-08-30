@@ -4,20 +4,29 @@ import { getLastMousePosition } from "@/ui/lib/mouse-position";
 import { getClipboardEntry } from "@/ui/stores/shared/clipboard.store";
 import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { SNAP_GRID } from "@/ui/components/hmi/view/constants";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
+/** Pas d'un appui flèche pour déplacer les widgets HMI sélectionnés — un pas de grille. */
+const HMI_ARROW_DELTAS: Record<string, [number, number]> = {
+	ArrowUp: [0, -SNAP_GRID],
+	ArrowDown: [0, SNAP_GRID],
+	ArrowLeft: [-SNAP_GRID, 0],
+	ArrowRight: [SNAP_GRID, 0],
+};
+
 export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const hmiManager = useProjectStore((state) => state.hmiManager);
-	const { setOpenModalVisible, saveProject, setSaveAsModalVisible } =
+	const { setOpenModalVisible, lifecycleManager, setSaveAsModalVisible } =
 		useProjectStore(
 			useShallow((state) => ({
 				setOpenModalVisible: state.setOpenModalVisible,
-				saveProject: state.saveProject,
+				lifecycleManager: state.lifecycleManager,
 				setSaveAsModalVisible: state.setSaveAsModalVisible,
 			})),
 		);
@@ -52,7 +61,7 @@ export default function useShortcutsHandler() {
 						if (e.shiftKey) {
 							setSaveAsModalVisible(true);
 						} else {
-							void saveProject();
+							void lifecycleManager.saveProject();
 						}
 						break;
 					}
@@ -143,6 +152,17 @@ export default function useShortcutsHandler() {
 					e.preventDefault();
 					hmiManager.getActiveStoreManagers()?.removeSelectedWidgets();
 				}
+			} else if (
+				designing &&
+				HMI_ARROW_DELTAS[e.key] &&
+				projectStore?.getState().activeScopeType === "hmi"
+			) {
+				//Déplacement des widgets sélectionnés à la grille (grafcet/ladder ont leur propre
+				//gestion des flèches ; le canvas HMI est une simple <div>).
+				e.stopPropagation();
+				e.preventDefault();
+				const [dx, dy] = HMI_ARROW_DELTAS[e.key];
+				hmiManager.getActiveStoreManagers()?.moveSelectedWidgets(dx, dy);
 			}
 		};
 		document.addEventListener("keydown", handleKeyDown);
@@ -151,7 +171,7 @@ export default function useShortcutsHandler() {
 		};
 	}, [
 		setOpenModalVisible,
-		saveProject,
+		lifecycleManager,
 		setSaveAsModalVisible,
 		projectStore,
 		grafcetsManager,

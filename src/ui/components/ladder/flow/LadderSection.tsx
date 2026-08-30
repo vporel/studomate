@@ -29,7 +29,7 @@ import {
 	ReactFlow,
 	Viewport,
 } from "@xyflow/react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useLadderStore } from "../context/LadderContext";
 import LadderConnectionLine from "../edges/LadderConnectionLine";
@@ -42,6 +42,7 @@ import {
 } from "./ladder-nodes-definitions";
 import useLadderConnectHandler from "./useLadderConnectHandler";
 import useLadderConnectionKeyboardHandler from "./useLadderConnectionKeyboardHandler";
+import useLadderNodeMoveKeyboardHandler from "./useLadderNodeMoveKeyboardHandler";
 import useLadderContextMenu from "./useLadderContextMenu";
 import useLadderDeleteHandler from "./useLadderDeleteHandler";
 import useLadderDropHandlers from "./useLadderDropHandlers";
@@ -94,7 +95,7 @@ const SECTION_FLOW_SX: SxProps<Theme> = {
 
 function LadderSection({ section, index }: LadderSectionProps) {
 	const viewManager = useLadderStore((state) => state.viewManager);
-	const zoom = useLadderStore((state) => state.zoom);
+	const zoom = useLadderStore((state) => state.zoomBySectionId[section.id] ?? 1);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const nodes = useLadderStore(
 		(state) => state.nodesBySectionId[section.id] ?? EMPTY_ARRAY,
@@ -123,6 +124,25 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		() => () => viewManager.unregisterInstance(section.id),
 		[viewManager, section.id],
 	);
+
+	// React Flow appelle `preventDefault` sur toute molette au-dessus de son pane, ce qui
+	// bloque le défilement de la page. On n'autorise ce comportement que pour le geste de
+	// zoom (Cmd/Ctrl enfoncé) ; sinon on arrête l'évènement en phase de capture, avant le
+	// listener de d3-zoom, pour qu'il remonte à la page comme un scroll normal.
+	// Ref-callback (et non useEffect) : le listener est (dé)branché exactement au moment où
+	// le nœud DOM apparaît/disparaît, sans dépendre de l'ordre de commit.
+	const detachWheelGuard = useRef<(() => void) | null>(null);
+	const flowWrapperRef = useCallback((node: HTMLDivElement | null) => {
+		detachWheelGuard.current?.();
+		detachWheelGuard.current = null;
+		if (!node) return;
+		const stopPlainWheel = (event: WheelEvent) => {
+			if (!event.ctrlKey && !event.metaKey) event.stopPropagation();
+		};
+		node.addEventListener("wheel", stopPlainWheel, { capture: true });
+		detachWheelGuard.current = () =>
+			node.removeEventListener("wheel", stopPlainWheel, { capture: true });
+	}, []);
 	const handleInit = useCallback(
 		(instance: ZoomableInstance) => {
 			viewManager.registerInstance(section.id, instance);
@@ -135,13 +155,13 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		[viewManager, section.id],
 	);
 
-	const { totalRows, leafPositions, rowHeightsInCells } = useMemo(
+	const { totalRows, leafPositions } = useMemo(
 		() => computeSectionLayout(section),
 		[section],
 	);
 	const flowDimensions = useMemo(
-		() => computeLadderFlowDimensions(totalRows, rowHeightsInCells),
-		[totalRows, rowHeightsInCells],
+		() => computeLadderFlowDimensions(totalRows),
+		[totalRows],
 	);
 
 	const [handleDragOver, handleDrop] = useLadderDropHandlers(
@@ -161,9 +181,20 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	const handleConnect = useLadderConnectHandler(section);
 	const handleDelete = useLadderDeleteHandler(section);
 	const handleConnectionKeyDown = useLadderConnectionKeyboardHandler(edges);
+	const handleNodeMoveKeyDown = useLadderNodeMoveKeyboardHandler(
+		section.id,
+		nodes,
+	);
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent) => {
+			handleConnectionKeyDown(e);
+			handleNodeMoveKeyDown(e);
+		},
+		[handleConnectionKeyDown, handleNodeMoveKeyDown],
+	);
 	const handleMoveEnd = useCallback<OnMove>(
-		(_, viewport) => viewManager.syncFromInstance(viewport.zoom),
-		[viewManager],
+		(_, viewport) => viewManager.syncFromInstance(section.id, viewport.zoom),
+		[viewManager, section.id],
 	);
 	const isValidConnection = useCallback<IsValidConnection>(
 		(connection) => {
@@ -254,11 +285,20 @@ function LadderSection({ section, index }: LadderSectionProps) {
 						py: 1,
 					}}
 				>
-					<Box onKeyDown={handleConnectionKeyDown} sx={SECTION_FLOW_SX}>
+					<Box
+						ref={flowWrapperRef}
+						onKeyDown={handleKeyDown}
+						sx={SECTION_FLOW_SX}
+					>
 						<ReactFlow
 							nodes={nodes}
 							edges={edges}
 							nodeTypes={nodeTypes}
+							// Le déplacement des nœuds aux flèches est fait par
+							// `useLadderNodeMoveKeyboardHandler` (grille row/col propre au Ladder) —
+							// celui, en pixels, de React Flow est désactivé pour éviter le double
+							// traitement. `onDelete` (Suppr/Backspace) n'en dépend pas.
+							disableKeyboardA11y
 							edgeTypes={edgeTypes}
 							nodesDraggable={mode === ProjectMode.DESIGN}
 							nodesConnectable={mode === ProjectMode.DESIGN}

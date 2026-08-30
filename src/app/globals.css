@@ -6,33 +6,72 @@
 */
 
 :root {
-	--background: #ffffff;
-	--foreground: #171717;
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 * {
-	outline: none;
-	box-sizing: border-box;
+  outline: none;
+  box-sizing: border-box;
 }
 
 body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: "Poppins", system-ui, sans-serif;
-	padding: 0;
-	margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Poppins", system-ui, sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
 }
 
 input,
 select {
-	border: none;
-	font-size: 1rem;
+  border: none;
+  font-size: 1rem;
 }
 
 button {
-	border: none;
+  border: none;
 }
 
 ul {
-	padding-left: 0;
+  padding-left: 0;
+}
+
+/*
+ * Splash affiché avant l'hydratation quand l'URL porte un projectId / shareToken (classe
+ * `restoring` posée sur <html> par le script inline du layout). Évite le flash de la page de
+ * démarrage prérendue le temps que React prenne la main. Retiré au montage de l'app.
+ */
+#boot-splash {
+  display: none;
+}
+
+.restoring #boot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+}
+
+.restoring #boot-splash::after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3.6px solid rgba(25, 118, 210, 0.25);
+  border-top-color: #1976d2;
+  animation: boot-splash-spin 0.8s linear infinite;
+}
+
+@keyframes boot-splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

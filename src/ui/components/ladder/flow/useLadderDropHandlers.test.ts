@@ -10,6 +10,7 @@ import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.comma
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createContactElement,
 	createCoilElement,
@@ -285,7 +286,7 @@ describe("useLadderDropHandlers", () => {
 	it("branchement parallèle vers la cible quand un segment vertical longe la cellule par la droite", () => {
 		const section = new Section("s1", "S");
 		const source = createContactElement("A", "NO", 2, 1);
-		const target = createContactElement("B", "NO", 0, 4);
+		const target = createContactElement("B", "NO", 0, 3);
 		section.elements = [source, target];
 		section.connections = [
 			new Connection(
@@ -296,7 +297,7 @@ describe("useLadderDropHandlers", () => {
 		];
 		const leafPositions = [
 			{ id: source.id, row: 2, col: 1 },
-			{ id: target.id, row: 0, col: 4 },
+			{ id: target.id, row: 0, col: 3 },
 		];
 		const { result } = setup(section, leafPositions, {
 			kind: "contact",
@@ -304,7 +305,8 @@ describe("useLadderDropHandlers", () => {
 		});
 		const [, handleDrop] = result.current;
 
-		// Cellule (1,1) : le segment vertical (sortie de la colonne 1) longe son bord droit.
+		// Cellule (1,1) : cible assez proche pour que le coude reste à la sortie de la colonne 1,
+		// dont le segment vertical longe le bord droit de la cellule.
 		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -354,7 +356,7 @@ describe("useLadderDropHandlers", () => {
 		const leftSource = createContactElement("A", "NO", 0, 0);
 		const leftTarget = createCoilElement("Q1", "normal", 3, 2);
 		const rightSource = createContactElement("B", "NO", 2, 1);
-		const rightTarget = createContactElement("C", "NO", 0, 4);
+		const rightTarget = createContactElement("C", "NO", 0, 3);
 		section.elements = [leftSource, leftTarget, rightSource, rightTarget];
 		const leftConnection = new Connection(
 			"c-left",
@@ -371,7 +373,7 @@ describe("useLadderDropHandlers", () => {
 			{ id: leftSource.id, row: 0, col: 0 },
 			{ id: leftTarget.id, row: 3, col: 2 },
 			{ id: rightSource.id, row: 2, col: 1 },
-			{ id: rightTarget.id, row: 0, col: 4 },
+			{ id: rightTarget.id, row: 0, col: 3 },
 		];
 		const { result } = setup(section, leafPositions, {
 			kind: "contact",
@@ -397,7 +399,7 @@ describe("useLadderDropHandlers", () => {
 	it("insère l'élément quand un segment horizontal inter-lignes traverse la cellule (pas seulement sur la même ligne)", () => {
 		const section = new Section("s1", "S");
 		const source = createContactElement("A", "NO", 0, 0);
-		const target = createCoilElement("Q1", "normal", 2, 4);
+		const target = createCoilElement("Q1", "normal", 2, 8);
 		section.elements = [source, target];
 		const existingConnection = new Connection(
 			"c1",
@@ -407,7 +409,7 @@ describe("useLadderDropHandlers", () => {
 		section.connections = [existingConnection];
 		const leafPositions = [
 			{ id: source.id, row: 0, col: 0 },
-			{ id: target.id, row: 2, col: 4 },
+			{ id: target.id, row: 2, col: 8 },
 		];
 		const { result } = setup(section, leafPositions, {
 			kind: "contact",
@@ -415,9 +417,9 @@ describe("useLadderDropHandlers", () => {
 		});
 		const [, handleDrop] = result.current;
 
-		// Coude à la colonne source (0), donc le segment horizontal sur la ligne cible (2) va de
-		// la colonne 0 à la colonne 4 — traverse la cellule (2,2).
-		act(() => handleDrop(fakeDragEvent(colToX(2), rowToY(2))));
+		// Coude à mi-chemin (quarterCol 20) ; le segment horizontal sur la ligne cible (2) va de
+		// la colonne 5 à la colonne 8 — traverse la cellule (2,6).
+		act(() => handleDrop(fakeDragEvent(colToX(6), rowToY(2))));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
@@ -428,13 +430,13 @@ describe("useLadderDropHandlers", () => {
 			{ source: { id: source.id }, target: { id: newElementId } },
 			{ source: { id: newElementId }, target: { id: target.id } },
 		]);
-		// source(0,0) -> nouveau(2,2) : lignes différentes, coude matérialisé à la sortie de la
-		// source (colonne 0, bord droit = quarterCol 4).
+		// source(0,0) -> nouveau(2,6) : lignes différentes, coude sur la frontière de colonne la
+		// plus proche du milieu (quarterCol 16).
 		expect(connectCommand.payload.connections[0].data.points).toEqual([
-			[2, 4],
-			[10, 4],
+			[2, 16],
+			[10, 16],
 		]);
-		// nouveau(2,2) -> cible(2,4) : même ligne, aucun coude.
+		// nouveau(2,6) -> cible(2,8) : même ligne, aucun coude.
 		expect(connectCommand.payload.connections[1].data.points).toEqual([]);
 		expect(removeCommand).toBeInstanceOf(ConnectionsRemoveCommand);
 		expect(removeCommand.payload.connections).toEqual([existingConnection]);
@@ -527,6 +529,61 @@ describe("useLadderDropHandlers", () => {
 		act(() => handleDragOver(event));
 
 		expect(event.dataTransfer.dropEffect).toBe("copy");
+	});
+
+	it("autorise le dépôt d'une bobine sur la 2e ligne d'un bloc, dans une colonne libre", () => {
+		const section = new Section("s1", "S");
+		const timer = createTimerBlockElement(
+			{ name: "T1", timerType: "TON", pt: "T#5s" },
+			0,
+			0,
+		);
+		section.elements = [timer];
+		const { result } = setup(section, [], { kind: "coil", type: "normal" });
+		const [, handleDrop] = result.current;
+
+		// (row 1, col 4) : ligne traversée par le bloc mais hors de ses colonnes (0-1).
+		act(() => handleDrop(fakeDragEvent(colToX(4), rowToY(1))));
+
+		expect(executeOperation).toHaveBeenCalledTimes(1);
+		const [commands] = executeOperation.mock.calls[0];
+		expect(commands[0]).toBeInstanceOf(ElementsAddCommand);
+		expect(commands[0].payload.elements[0]).toMatchObject({
+			type: "coil",
+			position: { row: 1, col: 4 },
+		});
+	});
+
+	it("refuse le dépôt d'une bobine sur une cellule couverte par la 2e ligne d'un bloc", () => {
+		const section = new Section("s1", "S");
+		const timer = createTimerBlockElement(
+			{ name: "T1", timerType: "TON", pt: "T#5s" },
+			0,
+			0,
+		);
+		section.elements = [timer];
+		const { result } = setup(section, [], { kind: "coil", type: "normal" });
+		const [, handleDrop] = result.current;
+
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(1))));
+
+		expect(executeOperation).not.toHaveBeenCalled();
+	});
+
+	it("refuse le dépôt d'un programme dont l'empreinte chevauche la 2e ligne d'un bloc", () => {
+		const section = new Section("s1", "S");
+		const timer = createTimerBlockElement(
+			{ name: "T1", timerType: "TON", pt: "T#5s" },
+			0,
+			0,
+		);
+		section.elements = [timer];
+		const { result } = setup(section, [], null);
+		const [, handleDrop] = result.current;
+
+		act(() => handleDrop(fakeProgramDragEvent(colToX(1), rowToY(1), "prog2")));
+
+		expect(executeOperation).not.toHaveBeenCalled();
 	});
 
 	it("refuse le dépôt d'un programme sur une cellule déjà occupée", () => {

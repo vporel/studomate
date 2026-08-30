@@ -1,4 +1,3 @@
-import MobileGuard from "@/ui/components/MobileGuard";
 import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/app-info";
 import { ThemeProvider } from "@/ui/theme/ThemeContext";
 import type { Metadata, Viewport } from "next";
@@ -37,7 +36,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="fr">
+			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `try{if(/[?&](projectId|shareToken)=/.test(location.search))document.documentElement.classList.add("restoring")}catch(e){}`,
+					}}
+				/>
+			</head>
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
 				<NextTopLoader
 					color={"gray"}
@@ -50,10 +56,8 @@ export default function RootLayout({
 					speed={200}
 				/>
 				<ThemeProvider>
-					<MobileGuard>
-						{children}
-						<ToastContainer position="bottom-right" />
-					</MobileGuard>
+					{children}
+					<ToastContainer position="bottom-right" />
 				</ThemeProvider>
 			</body>
 		</html>

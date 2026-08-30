@@ -16,7 +16,7 @@ describe("SaveTool", () => {
 			selectorImplementation({
 				hasUnsavedChanges,
 				isSharedProject,
-				saveProject,
+				lifecycleManager: { saveProject },
 			}),
 		);
 		return render(<SaveTool />);

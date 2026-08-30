@@ -17,7 +17,7 @@ function setup({
 		selectorImplementation({
 			ui: { shareRequiresCloudModalVisible: visible },
 			setShareRequiresCloudModalVisible: setVisible,
-			moveToCloudAndShare,
+			sharingManager: { moveToCloudAndShare },
 		}),
 	);
 	render(<ShareRequiresCloudModal />);

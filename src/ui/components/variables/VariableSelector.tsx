@@ -159,6 +159,15 @@ const VariableSelector = forwardRef<
 		}
 	};
 
+	// Saisie en cours non validée : la commiter au démontage. Sans ça, sélectionner un autre
+	// widget (qui remonte le panneau de propriétés) sans blurer d'abord validerait la valeur
+	// contre le widget suivant via un `onCommit` périmé.
+	const flushRef = useRef<() => void>(() => {});
+	flushRef.current = () => {
+		if (editingValue.trim() !== value) save();
+	};
+	useEffect(() => () => flushRef.current(), []);
+
 	const status = computeStatus(
 		editingValue,
 		variables,

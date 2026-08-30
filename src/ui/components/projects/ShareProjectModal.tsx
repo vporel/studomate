@@ -10,6 +10,7 @@ import {
 	IconButton,
 	InputAdornment,
 	TextField,
+	Tooltip,
 	Typography,
 } from "@mui/material";
 import CopyIcon from "@mui/icons-material/ContentCopy";
@@ -30,14 +31,14 @@ export default function ShareProjectModal() {
 		shareModalVisible,
 		setShareModalVisible,
 		shareToken,
-		unshareProject,
+		sharingManager,
 		isSharedProject,
 	} = useProjectStore(
 		useShallow((s) => ({
 			shareModalVisible: s.ui.shareModalVisible,
 			setShareModalVisible: s.setShareModalVisible,
 			shareToken: s.shareToken,
-			unshareProject: s.unshareProject,
+			sharingManager: s.sharingManager,
 			isSharedProject: s.isSharedProject,
 		})),
 	);
@@ -55,8 +56,8 @@ export default function ShareProjectModal() {
 	}, [shareUrl]);
 
 	const onRevoke = useCallback(() => {
-		void unshareProject();
-	}, [unshareProject]);
+		void sharingManager.unshareProject();
+	}, [sharingManager]);
 
 	const onClose = useCallback(() => {
 		setShareModalVisible(false);
@@ -86,13 +87,15 @@ export default function ShareProjectModal() {
 								readOnly: true,
 								endAdornment: (
 									<InputAdornment position="end">
-										<IconButton
-											onClick={onCopy}
-											edge="end"
-											title="Copier le lien"
-										>
-											<CopyIcon />
-										</IconButton>
+										<Tooltip title="Copier">
+											<IconButton
+												onClick={onCopy}
+												edge="end"
+												aria-label="Copier le lien"
+											>
+												<CopyIcon />
+											</IconButton>
+										</Tooltip>
 									</InputAdornment>
 								),
 							}}

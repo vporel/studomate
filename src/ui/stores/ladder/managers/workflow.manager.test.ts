@@ -1,7 +1,6 @@
-import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
+import ConnectionsAddCommand from "@/schemas/ladder/commands/connections-add.command";
 import ConnectionsRemoveCommand from "@/schemas/ladder/commands/connections-remove.command";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
-import ElementsRemoveCommand from "@/schemas/ladder/commands/elements-remove.command";
 import Connection from "@/schemas/ladder/connection.schema";
 import {
 	createCoilElement,
@@ -33,6 +32,8 @@ describe("LadderWorkflowManager", () => {
 				[section.id]: LadderNodesFactory.getInitialNodes(section),
 			},
 			edgesBySectionId: { [section.id]: [] as any[] },
+			selectedSectionIds: [] as string[],
+			activeSectionId: null as string | null,
 			commandsStackManager: commandsStackManager as any,
 		};
 		const setStoreState = jest.fn((partial: any) => {
@@ -61,6 +62,51 @@ describe("LadderWorkflowManager", () => {
 
 		expect(
 			getState().nodesBySectionId[section.id].find((n) => n.id === contact.id)!
+				.selected,
+		).toBe(true);
+	});
+
+	it("efface la sélection des autres sections quand un nœud est sélectionné (sélection globale)", () => {
+		const s1 = new Section("s1", "S1");
+		s1.elements = [createContactElement("A", "NO", 0, 0)];
+		const s2 = new Section("s2", "S2");
+		s2.elements = [createContactElement("B", "NO", 0, 0)];
+		const ladder = new Ladder("l1", "L", [s1, s2]);
+
+		let state: any = {
+			ladder,
+			nodesBySectionId: {
+				s1: LadderNodesFactory.getInitialNodes(s1).map((n) => ({
+					...n,
+					selected: true,
+				})),
+				s2: LadderNodesFactory.getInitialNodes(s2),
+			},
+			edgesBySectionId: {
+				s1: [{ id: "e1", selected: true } as any],
+				s2: [],
+			},
+			commandsStackManager: commandsStackManager as any,
+		};
+		const setStoreState = jest.fn((partial: any) => {
+			state = {
+				...state,
+				...(typeof partial === "function" ? partial(state) : partial),
+			};
+		});
+		const workflowManager = new LadderWorkflowManager(
+			setStoreState as any,
+			(() => state) as any,
+		);
+
+		workflowManager.handleNodesChange("s2", [
+			{ type: "select", id: s2.elements[0].id, selected: true } as any,
+		]);
+
+		expect(state.nodesBySectionId.s1.every((n: any) => !n.selected)).toBe(true);
+		expect(state.edgesBySectionId.s1.every((e: any) => !e.selected)).toBe(true);
+		expect(
+			state.nodesBySectionId.s2.find((n: any) => n.id === s2.elements[0].id)!
 				.selected,
 		).toBe(true);
 	});
@@ -164,217 +210,442 @@ describe("LadderWorkflowManager", () => {
 		expect(executeOperation).not.toHaveBeenCalled();
 	});
 
-	it("matérialise le coude d'une connexion même-ligne quand le déplacement fait diverger les lignes", () => {
-		const section = new Section("s1", "S");
-		const contact = createContactElement("A", "NO", 0, 0);
-		const coil = createCoilElement("Q1", "normal", 0, 3);
-		section.elements = [contact, coil];
-		section.connections = [
-			new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
-			),
-		];
-		const { workflowManager } = setup(section);
+	describe("moveSelectedElementsByCells (déplacement au clavier)", () => {
+		it("dispatche un ElementUpdateCommand d'une cellule pour le nœud sélectionné", () => {
+			const section = new Section("s1", "S");
+			const contact = createContactElement("A", "NO", 1, 2);
+			section.elements = [contact];
+			const { workflowManager } = setup(section);
+			workflowManager.handleNodesChange(section.id, [
+				{ type: "select", id: contact.id, selected: true } as any,
+			]);
+			executeOperation.mockClear();
 
-		workflowManager.handleNodesChange(section.id, [
-			{
-				type: "position",
-				id: coil.id,
-				position: {
-					x: POWER_RAIL_OFFSET + 3 * 60,
-					y: LADDER_FLOW_TOP_OFFSET + 1 * GRID_CELL_HEIGHT,
-				},
-				dragging: false,
-			} as any,
-		]);
+			workflowManager.moveSelectedElementsByCells(section.id, 0, 1);
 
-		expect(executeOperation).toHaveBeenCalledTimes(1);
-		const [commands] = executeOperation.mock.calls[0];
-		expect(commands).toHaveLength(2);
-		expect(commands[1]).toBeInstanceOf(ConnectionUpdateCommand);
-		expect(commands[1].payload).toEqual({
-			connectionId: "c1",
-			changes: {
-				points: [
-					[2, 4],
-					[6, 4],
-				],
-			},
-			previousChanges: { points: [] },
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands[0]).toBeInstanceOf(ElementUpdateCommand);
+			expect(commands[0].payload.changes.position).toEqual({ row: 1, col: 3 });
+		});
+
+		it("ne fait rien sans sélection", () => {
+			const section = new Section("s1", "S");
+			section.elements = [createContactElement("A", "NO", 0, 0)];
+			const { workflowManager } = setup(section);
+
+			workflowManager.moveSelectedElementsByCells(section.id, 0, 1);
+
+			expect(executeOperation).not.toHaveBeenCalled();
 		});
 	});
 
-	it("pousse le coude d'une connexion déjà matérialisée quand le nœud déplacé le rattrape", () => {
-		const section = new Section("s1", "S");
-		const contact = createContactElement("A", "NO", 0, 1);
-		const coil = createCoilElement("Q1", "normal", 2, 3);
-		section.elements = [contact, coil];
-		section.connections = [
-			new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
+	describe("contrainte d'occupation de la grille", () => {
+		const x = (col: number) => POWER_RAIL_OFFSET + col * 60;
+		const y = (row: number) => LADDER_FLOW_TOP_OFFSET + row * GRID_CELL_HEIGHT;
+		const posOf = (state: any, id: string) =>
+			state.nodesBySectionId["s1"].find((n: any) => n.id === id)!.position;
+
+		it("ne gèle pas une frame intermédiaire d'un seul nœud survolant une cellule occupée (suit le curseur pour pouvoir glisser au-delà)", () => {
+			const section = new Section("s1", "S");
+			const moved = createContactElement("A", "NO", 0, 0);
+			const obstacle = createContactElement("B", "NO", 0, 3);
+			section.elements = [moved, obstacle];
+			const { workflowManager, getState } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
 				{
-					points: [
-						[2, 8],
-						[10, 8],
-					],
-				},
-			),
-		];
-		const { workflowManager } = setup(section);
+					type: "position",
+					id: moved.id,
+					position: { x: x(3), y: y(0) },
+					dragging: true,
+				} as any,
+			]);
 
-		workflowManager.handleNodesChange(section.id, [
-			{
-				type: "position",
-				id: contact.id,
-				position: {
-					x: POWER_RAIL_OFFSET + 3 * 60,
-					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
-				},
-				dragging: false,
-			} as any,
-		]);
-
-		const [commands] = executeOperation.mock.calls[0];
-		expect(commands).toHaveLength(2);
-		expect(commands[1].payload.changes).toEqual({
-			points: [
-				[2, 16],
-				[10, 16],
-			],
+			expect(posOf(getState(), moved.id)).toEqual({ x: x(3), y: y(0) });
+			expect(executeOperation).not.toHaveBeenCalled();
 		});
-	});
 
-	it("ne touche jamais une connexion qui ne concerne pas le nœud déplacé", () => {
-		const section = new Section("s1", "S");
-		const contact = createContactElement("A", "NO", 0, 1);
-		const coil = createCoilElement("Q1", "normal", 2, 3);
-		const otherContact = createContactElement("B", "NO", 5, 0);
-		const otherCoil = createCoilElement("Q2", "normal", 6, 2);
-		section.elements = [contact, coil, otherContact, otherCoil];
-		const untouchedPoints: [number, number][] = [
-			[22, 4],
-			[26, 4],
-		];
-		section.connections = [
-			new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
+		it("laisse passer une frame intermédiaire vers une cellule libre", () => {
+			const section = new Section("s1", "S");
+			const moved = createContactElement("A", "NO", 0, 0);
+			section.elements = [moved];
+			const { workflowManager, getState } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
 				{
-					points: [
-						[2, 8],
-						[10, 8],
-					],
-				},
-			),
-			new Connection(
-				"c2",
-				{ id: otherContact.id, type: "contact", handle: "source" },
-				{ id: otherCoil.id, type: "coil", handle: "target" },
-				{ points: untouchedPoints },
-			),
-		];
-		const { workflowManager } = setup(section);
+					type: "position",
+					id: moved.id,
+					position: { x: x(4), y: y(0) },
+					dragging: true,
+				} as any,
+			]);
 
-		workflowManager.handleNodesChange(section.id, [
-			{
-				type: "position",
-				id: contact.id,
-				position: {
-					x: POWER_RAIL_OFFSET + 3 * 60,
-					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
-				},
-				dragging: false,
-			} as any,
-		]);
+			expect(posOf(getState(), moved.id)).toEqual({ x: x(4), y: y(0) });
+		});
 
-		const [commands] = executeOperation.mock.calls[0];
-		expect(
-			commands.filter((c: any) => c instanceof ConnectionUpdateCommand),
-		).toHaveLength(1);
-		expect(
-			commands.find((c: any) => c instanceof ConnectionUpdateCommand).payload
-				.connectionId,
-		).toBe("c1");
-		expect(section.connections[1].data.points).toEqual(untouchedPoints);
-	});
+		it("pose le nœud sur sa dernière cellule libre si le lâcher vise une cellule occupée", () => {
+			const section = new Section("s1", "S");
+			const moved = createContactElement("A", "NO", 0, 0);
+			const obstacle = createContactElement("B", "NO", 0, 1);
+			section.elements = [moved, obstacle];
+			const { workflowManager } = setup(section);
 
-	it("conserve la mémoire du coude quand le déplacement réaligne les deux nœuds sur la même ligne", () => {
-		const section = new Section("s1", "S");
-		const contact = createContactElement("A", "NO", 0, 1);
-		const coil = createCoilElement("Q1", "normal", 2, 3);
-		section.elements = [contact, coil];
-		section.connections = [
-			new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
+			// frame intermédiaire vers une cellule libre : le nœud y est rendu
+			workflowManager.handleNodesChange(section.id, [
 				{
-					points: [
-						[2, 8],
-						[10, 8],
-					],
-				},
-			),
-		];
-		const { workflowManager } = setup(section);
-
-		workflowManager.handleNodesChange(section.id, [
-			{
-				type: "position",
-				id: contact.id,
-				position: {
-					x: POWER_RAIL_OFFSET + 1 * 60,
-					y: LADDER_FLOW_TOP_OFFSET + 2 * GRID_CELL_HEIGHT,
-				},
-				dragging: false,
-			} as any,
-		]);
-
-		const [commands] = executeOperation.mock.calls[0];
-		expect(commands).toHaveLength(1); // pas de ConnectionUpdateCommand : les points sont laissés intacts
-	});
-
-	it("refuse un glisser qui inverserait l'ordre colonne d'une connexion existante (revient à la position d'origine)", () => {
-		const section = new Section("s1", "S");
-		const contact = createContactElement("A", "NO", 0, 1);
-		const coil = createCoilElement("Q1", "normal", 0, 3);
-		section.elements = [contact, coil];
-		section.connections = [
-			new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
+					type: "position",
+					id: moved.id,
+					position: { x: x(5), y: y(0) },
+					dragging: true,
+				} as any,
+			]);
+			// lâcher sur la cellule occupée par l'obstacle
+			workflowManager.handleNodesChange(section.id, [
 				{
-					points: [],
-				},
-			),
-		];
-		const { workflowManager, getState } = setup(section);
+					type: "position",
+					id: moved.id,
+					position: { x: x(1), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
 
-		workflowManager.handleNodesChange(section.id, [
-			{
-				type: "position",
-				id: coil.id,
-				position: {
-					x: POWER_RAIL_OFFSET + 0 * 60,
-					y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
-				},
-				dragging: false,
-			} as any,
-		]);
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands[0].payload.changes.position).toEqual({ row: 0, col: 5 });
+		});
 
-		expect(executeOperation).not.toHaveBeenCalled();
-		const coilNode = getState().nodesBySectionId[section.id].find(
-			(n: any) => n.id === coil.id,
-		)!;
-		expect(coilNode.position).toEqual({
-			x: POWER_RAIL_OFFSET + 3 * 60,
-			y: LADDER_FLOW_TOP_OFFSET + 0 * GRID_CELL_HEIGHT,
+		it("gèle tout le lot d'un déplacement multiple si un membre entre en collision", () => {
+			const section = new Section("s1", "S");
+			const a = createContactElement("A", "NO", 0, 0);
+			const b = createContactElement("B", "NO", 0, 1);
+			const obstacle = createContactElement("C", "NO", 0, 5);
+			section.elements = [a, b, obstacle];
+			const { workflowManager, getState } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: a.id,
+					position: { x: x(4), y: y(0) },
+					dragging: true,
+				} as any,
+				{
+					type: "position",
+					id: b.id,
+					position: { x: x(5), y: y(0) },
+					dragging: true,
+				} as any,
+			]);
+
+			expect(posOf(getState(), a.id)).toEqual({ x: x(0), y: y(0) });
+			expect(posOf(getState(), b.id)).toEqual({ x: x(1), y: y(0) });
+		});
+
+		it("recâble un élément connecté déplacé de l'autre côté de son voisin (cicatrise + redépose)", () => {
+			const section = new Section("s1", "S");
+			const x0 = createContactElement("X0", "NF", 0, 0);
+			const x1 = createContactElement("X1", "NF", 0, 3);
+			const x2 = createContactElement("X2", "NF", 0, 6);
+			section.elements = [x0, x1, x2];
+			section.connections = [
+				new Connection(
+					"c0",
+					{ id: x0.id, type: "contact", handle: "source" },
+					{ id: x1.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+				new Connection(
+					"c1",
+					{ id: x1.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(8), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			const update = commands.find(
+				(c: any) => c instanceof ElementUpdateCommand,
+			);
+			expect(update.payload.changes.position).toEqual({ row: 0, col: 8 });
+
+			const removed = commands.find(
+				(c: any) => c instanceof ConnectionsRemoveCommand,
+			);
+			const removedPairs = removed.payload.connections.map((c: any) => [
+				c.source.id,
+				c.target.id,
+			]);
+			expect(removedPairs).toEqual(
+				expect.arrayContaining([
+					[x0.id, x1.id],
+					[x1.id, x2.id],
+				]),
+			);
+
+			const added = commands.find(
+				(c: any) => c instanceof ConnectionsAddCommand,
+			);
+			const addedPairs = added.payload.connections.map((c: any) => [
+				c.source.id,
+				c.target.id,
+			]);
+			// cicatrisation X0->X2 et redépôt en série derrière X2
+			expect(addedPairs).toEqual(
+				expect.arrayContaining([
+					[x0.id, x2.id],
+					[x2.id, x1.id],
+				]),
+			);
+		});
+
+		it("laisse glisser un nœud connecté par-dessus son voisin adjacent puis recâble au lâcher", () => {
+			const section = new Section("s1", "S");
+			const x1 = createContactElement("X1", "NF", 0, 2);
+			const x2 = createContactElement("X2", "NF", 0, 3);
+			section.elements = [x1, x2];
+			section.connections = [
+				new Connection(
+					"c1",
+					{ id: x1.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager, getState } = setup(section);
+
+			// frame intermédiaire survolant exactement la cellule de X2 : X1 suit le curseur
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(3), y: y(0) },
+					dragging: true,
+				} as any,
+			]);
+			expect(posOf(getState(), x1.id)).toEqual({ x: x(3), y: y(0) });
+			expect(executeOperation).not.toHaveBeenCalled();
+
+			// lâcher au-delà de X2 : recâblage
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(5), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			const added = commands.find(
+				(c: any) => c instanceof ConnectionsAddCommand,
+			);
+			const addedPairs = added.payload.connections.map((c: any) => [
+				c.source.id,
+				c.target.id,
+			]);
+			expect(addedPairs).toEqual(expect.arrayContaining([[x2.id, x1.id]]));
+		});
+
+		it("épisse un élément déconnecté lâché sur un fil existant (X0→X2 devient X0→X1→X2)", () => {
+			const section = new Section("s1", "S");
+			const x0 = createContactElement("X0", "NF", 0, 0);
+			const x2 = createContactElement("X2", "NF", 0, 8);
+			const x1 = createContactElement("X1", "NF", 0, 12);
+			section.elements = [x0, x2, x1];
+			section.connections = [
+				new Connection(
+					"c",
+					{ id: x0.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(4), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			const added = commands
+				.find((c: any) => c instanceof ConnectionsAddCommand)
+				.payload.connections.map((c: any) => [c.source.id, c.target.id]);
+			expect(added).toEqual(
+				expect.arrayContaining([
+					[x0.id, x1.id],
+					[x1.id, x2.id],
+				]),
+			);
+			const removed = commands
+				.find((c: any) => c instanceof ConnectionsRemoveCommand)
+				.payload.connections.map((c: any) => c.id);
+			expect(removed).toEqual(["c"]);
+		});
+
+		it("recâble un élément adjacent à son voisin même quand la cicatrisation réutilise le rail", () => {
+			const section = new Section("s1", "S");
+			const rail = createRailTerminalElement(0);
+			const x1 = createContactElement("X1", "NF", 0, 2);
+			const x2 = createContactElement("X2", "NF", 0, 3);
+			section.elements = [rail, x1, x2];
+			section.connections = [
+				new Connection(
+					"c0",
+					{ id: rail.id, type: "railTerminal", handle: "source" },
+					{ id: x1.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+				new Connection(
+					"c1",
+					{ id: x1.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(6), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const commands = executeOperation.mock.calls[0][0];
+			// l'opération est valide (aucune commande annulée) : rail conservé pour rail->X2
+			const added = commands.find(
+				(c: any) => c instanceof ConnectionsAddCommand,
+			);
+			const addedPairs = added.payload.connections.map((c: any) => [
+				c.source.id,
+				c.target.id,
+			]);
+			expect(addedPairs).toEqual(
+				expect.arrayContaining([
+					[rail.id, x2.id],
+					[x2.id, x1.id],
+				]),
+			);
+			// et l'ordre place l'ajout avant le retrait
+			const addIndex = commands.findIndex(
+				(c: any) => c instanceof ConnectionsAddCommand,
+			);
+			const removeIndex = commands.findIndex(
+				(c: any) => c instanceof ConnectionsRemoveCommand,
+			);
+			expect(addIndex).toBeLessThan(removeIndex);
+		});
+
+		it("ne recâble pas un déplacement multiple qui inverserait une connexion (gel)", () => {
+			const section = new Section("s1", "S");
+			const x0 = createContactElement("X0", "NF", 0, 0);
+			const x1 = createContactElement("X1", "NF", 0, 3);
+			const x2 = createContactElement("X2", "NF", 0, 6);
+			const other = createContactElement("Y", "NF", 2, 0);
+			section.elements = [x0, x1, x2, other];
+			section.connections = [
+				new Connection(
+					"c1",
+					{ id: x1.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager, getState } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(8), y: y(0) },
+					dragging: false,
+				} as any,
+				{
+					type: "position",
+					id: other.id,
+					position: { x: x(1), y: y(2) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(
+				executeOperation.mock.calls.flatMap(([cmds]: any) => cmds).some(
+					(c: any) => c instanceof ConnectionsRemoveCommand,
+				),
+			).toBe(false);
+			expect(posOf(getState(), x1.id)).toEqual({ x: x(3), y: y(0) });
+		});
+
+		it("laisse déplacer un élément connecté vers une cellule libre entre ses voisins", () => {
+			const section = new Section("s1", "S");
+			const x0 = createContactElement("X0", "NF", 0, 0);
+			const x1 = createContactElement("X1", "NF", 0, 1);
+			const x2 = createContactElement("X2", "NF", 0, 4);
+			section.elements = [x0, x1, x2];
+			section.connections = [
+				new Connection(
+					"c1",
+					{ id: x1.id, type: "contact", handle: "source" },
+					{ id: x2.id, type: "contact", handle: "target" },
+					{ points: [] },
+				),
+			];
+			const { workflowManager } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: x1.id,
+					position: { x: x(3), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			const [commands] = executeOperation.mock.calls[0];
+			expect(commands[0].payload.changes.position).toEqual({ row: 0, col: 3 });
+		});
+
+		it("un pas clavier vers une cellule occupée laisse le nœud sur place", () => {
+			const section = new Section("s1", "S");
+			const moved = createContactElement("A", "NO", 0, 0);
+			const obstacle = createContactElement("B", "NO", 0, 1);
+			section.elements = [moved, obstacle];
+			const { workflowManager, getState } = setup(section);
+
+			workflowManager.handleNodesChange(section.id, [
+				{
+					type: "position",
+					id: moved.id,
+					position: { x: x(1), y: y(0) },
+					dragging: false,
+				} as any,
+			]);
+
+			expect(executeOperation).not.toHaveBeenCalled();
+			expect(posOf(getState(), moved.id)).toEqual({ x: x(0), y: y(0) });
 		});
 	});
 
@@ -397,97 +668,6 @@ describe("LadderWorkflowManager", () => {
 			getState().edgesBySectionId[section.id].find((e) => e.id === "e1")!
 				.selected,
 		).toBe(true);
-	});
-
-	describe("deleteElements", () => {
-		it("retire un élément et les connexions qui le touchent", () => {
-			const section = new Section("s1", "S");
-			const railTerminal = createRailTerminalElement(0);
-			const contact = createContactElement("A", "NO", 0, 0);
-			const coil = createCoilElement("Q1", "normal", 0, 1);
-			section.elements = [railTerminal, contact, coil];
-			const connection = new Connection(
-				"c1",
-				{ id: railTerminal.id, type: "contact", handle: "source" },
-				{ id: contact.id, type: "coil", handle: "target" },
-			);
-			section.connections = [
-				connection,
-				new Connection(
-					"c2",
-					{ id: contact.id, type: "contact", handle: "source" },
-					{ id: coil.id, type: "coil", handle: "target" },
-				),
-			];
-			const { workflowManager } = setup(section);
-
-			workflowManager.deleteElements(section.id, [contact.id]);
-
-			expect(executeOperation).toHaveBeenCalledTimes(1);
-			const [commands] = executeOperation.mock.calls[0];
-			expect(commands).toHaveLength(1);
-			const [command] = commands;
-			expect(command).toBeInstanceOf(ElementsRemoveCommand);
-			expect(command.payload.elements).toEqual([
-				{ sectionId: section.id, element: contact },
-			]);
-			expect(
-				command.payload.connections.map((c: any) => c.connection.id).sort(),
-			).toEqual(["c1", "c2"]);
-		});
-
-		it("ignore les nœuds virtuels (bornes d'alimentation non persistées)", () => {
-			const section = new Section("s1", "S");
-			const { workflowManager } = setup(section);
-
-			workflowManager.deleteElements(section.id, ["virtual-rail-0"]);
-
-			expect(executeOperation).not.toHaveBeenCalled();
-		});
-
-		it("retire une connexion isolée via ConnectionsRemoveCommand", () => {
-			const section = new Section("s1", "S");
-			const contact = createContactElement("A", "NO", 0, 0);
-			const coil = createCoilElement("Q1", "normal", 0, 1);
-			section.elements = [contact, coil];
-			const connection = new Connection(
-				"c1",
-				{ id: contact.id, type: "contact", handle: "source" },
-				{ id: coil.id, type: "coil", handle: "target" },
-			);
-			section.connections = [connection];
-			const { workflowManager } = setup(section);
-
-			workflowManager.deleteElements(section.id, [], ["c1"]);
-
-			expect(executeOperation).toHaveBeenCalledTimes(1);
-			const [commands] = executeOperation.mock.calls[0];
-			expect(commands).toHaveLength(1);
-			const [command] = commands;
-			expect(command).toBeInstanceOf(ConnectionsRemoveCommand);
-			expect(command.payload).toEqual({
-				sectionId: section.id,
-				connections: [connection],
-			});
-		});
-
-		it("ne dispatche rien si rien n'est à retirer", () => {
-			const section = new Section("s1", "S");
-			const { workflowManager } = setup(section);
-
-			workflowManager.deleteElements(section.id, [], []);
-
-			expect(executeOperation).not.toHaveBeenCalled();
-		});
-
-		it("ne fait rien pour une section inconnue", () => {
-			const section = new Section("s1", "S");
-			const { workflowManager } = setup(section);
-
-			workflowManager.deleteElements("unknown-section", ["some-id"]);
-
-			expect(executeOperation).not.toHaveBeenCalled();
-		});
 	});
 
 	describe("adoptLadder", () => {

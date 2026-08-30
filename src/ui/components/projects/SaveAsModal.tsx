@@ -7,15 +7,19 @@ import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
 
 export default function SaveAsModal() {
-	const { saveAsModalVisible, setSaveAsModalVisible, saveProjectAs, project } =
-		useProjectStore(
-			useShallow((s) => ({
-				saveAsModalVisible: s.ui.saveAsModalVisible,
-				setSaveAsModalVisible: s.setSaveAsModalVisible,
-				saveProjectAs: s.saveProjectAs,
-				project: s.project,
-			})),
-		);
+	const {
+		saveAsModalVisible,
+		setSaveAsModalVisible,
+		lifecycleManager,
+		project,
+	} = useProjectStore(
+		useShallow((s) => ({
+			saveAsModalVisible: s.ui.saveAsModalVisible,
+			setSaveAsModalVisible: s.setSaveAsModalVisible,
+			lifecycleManager: s.lifecycleManager,
+			project: s.project,
+		})),
+	);
 
 	const [name, setName] = useState("");
 
@@ -31,9 +35,9 @@ export default function SaveAsModal() {
 
 	const onSubmit = useCallback(async () => {
 		if (!canSubmit) return;
-		const ok = await saveProjectAs(name.trim());
+		const ok = await lifecycleManager.saveProjectAs(name.trim());
 		if (ok) onClose();
-	}, [canSubmit, saveProjectAs, name, onClose]);
+	}, [canSubmit, lifecycleManager, name, onClose]);
 
 	return (
 		<CustomModal

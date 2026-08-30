@@ -13,18 +13,14 @@ export default function useFileMenu(): AppMenuType {
 		setExportModalVisible,
 		setPdfExportModalVisible,
 		setSaveAsModalVisible,
-		newProject,
-		closeProject,
-		saveProject,
+		lifecycleManager,
 	} = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
 			setExportModalVisible: state.setExportModalVisible,
 			setPdfExportModalVisible: state.setPdfExportModalVisible,
 			setSaveAsModalVisible: state.setSaveAsModalVisible,
-			newProject: state.newProject,
-			closeProject: state.closeProject,
-			saveProject: state.saveProject,
+			lifecycleManager: state.lifecycleManager,
 		})),
 	);
 	const designing = useProjectStore(
@@ -43,7 +39,7 @@ export default function useFileMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							void newProject();
+							void lifecycleManager.newProject();
 						},
 					},
 				],
@@ -63,7 +59,7 @@ export default function useFileMenu(): AppMenuType {
 						label: "Enregistrer",
 						shortcut: platformShortcut("Ctrl+S", "Cmd+S"),
 						onClick: () => {
-							void saveProject();
+							void lifecycleManager.saveProject();
 						},
 					},
 				],
@@ -102,16 +98,14 @@ export default function useFileMenu(): AppMenuType {
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
-							void closeProject();
+							void lifecycleManager.closeProject();
 						},
 					},
 				],
 			],
 		}),
 		[
-			newProject,
-			saveProject,
-			closeProject,
+			lifecycleManager,
 			setOpenModalVisible,
 			setExportModalVisible,
 			setPdfExportModalVisible,

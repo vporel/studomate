@@ -12,6 +12,7 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { createStore } from "zustand";
 import { snapToGrid } from "@/ui/components/hmi/view/constants";
+import clampGroupDelta from "./hmi-group-move";
 import HmiCommandsStackManager from "./managers/commands-stack.manager";
 import HmiCopyCutPasteManager from "./managers/copy-cut-paste.manager";
 
@@ -59,6 +60,9 @@ export interface HmiStoreState {
 	/** Déplace plusieurs widgets d'un même delta en une seule commande annulable (glisser-déposer
 	 * d'une sélection multiple). */
 	moveWidgets: (widgetIds: string[], dx: number, dy: number) => void;
+	/** Déplace les widgets sélectionnés d'un delta (flèches du clavier), borné au canvas comme le
+	 * glisser. Sans effet si rien n'est sélectionné ou si le groupe est déjà contre le bord visé. */
+	moveSelectedWidgets: (dx: number, dy: number) => void;
 	/** Aligne verticalement les widgets sélectionnés (voir `HmiWidgetAlignment`) — sans effet à
 	 * moins de deux widgets sélectionnés. */
 	alignSelectedWidgets: (alignment: HmiWidgetAlignment) => void;
@@ -312,6 +316,16 @@ export const createHmiStore = (
 				});
 			});
 			get().commandsStackManager.executeOperation(commands);
+		},
+
+		moveSelectedWidgets: (dx, dy) => {
+			const { selectedWidgetIds, hmiPage } = get();
+			const widgets = selectedWidgetIds
+				.map((id) => hmiPage.widgets[id])
+				.filter((w): w is HmiWidget => !!w);
+			if (widgets.length === 0) return;
+			const clamped = clampGroupDelta(widgets, dx, dy);
+			get().moveWidgets(selectedWidgetIds, clamped.dx, clamped.dy);
 		},
 
 		removeSelectedWidgets: () => {

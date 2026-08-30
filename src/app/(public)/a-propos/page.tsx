@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function About() {
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<Typography variant="h2" color="primary" gutterBottom>
+			<Typography variant="h2" component="h1" color="primary" gutterBottom>
 				À propos de Studomate
 			</Typography>
 			<Divider sx={{ my: 2 }} />
@@ -68,21 +68,6 @@ export default function About() {
 				<li>Étudiants (BTS, IUT, écoles d’ingénieurs, universités).</li>
 				<li>Enseignants et formateurs en automatisme/électrotechnique.</li>
 				<li>Professionnels en reconversion ou remise à niveau.</li>
-			</Box>
-
-			<Typography variant="h3" gutterBottom mt={3}>
-				Feuille de route (extraits)
-			</Typography>
-			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
-				<li>
-					Amélioration de l’éditeur (alignements, validations, ergonomie).
-				</li>
-				<li>
-					Intégration de variables d’entrées/sorties et tableaux de bord de
-					simulation.
-				</li>
-				<li>Comptes utilisateurs & sauvegarde cloud.</li>
-				<li>Ouverture à d’autres langages/notations d’automatisme.</li>
 			</Box>
 
 			<Typography variant="h3" gutterBottom mt={3}>

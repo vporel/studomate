@@ -11,6 +11,9 @@ export type LadderConnectionEdgeType = Edge<
 export type LadderContextMenuElement =
 	{ type: "pane" } | LadderNodeType | LadderConnectionEdgeType;
 export type LadderContextMenuProps = {
+	/** Section dont le flow a reçu le clic droit — le bus mitt du menu contextuel est partagé par
+	 * toutes les sections du ladder, chaque `LadderContextMenu` ne réagit qu'à la sienne. */
+	sectionId: string;
 	element: LadderContextMenuElement;
 	position: XYPosition;
 	screenPosition: XYPosition;

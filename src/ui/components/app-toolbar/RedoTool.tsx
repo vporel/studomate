@@ -10,7 +10,7 @@ const RedoTool = () => {
 	const redo = useProjectStore((state) => state.redoActiveScope);
 
 	return (
-		<AppTool name="redo" disabled={!canRedo} onClick={redo}>
+		<AppTool name="redo" label="Rétablir" disabled={!canRedo} onClick={redo}>
 			<RedoIcon />
 		</AppTool>
 	);

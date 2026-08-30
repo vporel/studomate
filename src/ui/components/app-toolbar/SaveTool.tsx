@@ -8,14 +8,14 @@ import AppTool from "./AppTool";
 const SaveTool = () => {
 	const hasUnsavedChanges = useProjectStore((state) => state.hasUnsavedChanges);
 	const isSharedProject = useProjectStore((state) => state.isSharedProject);
-	const saveProject = useProjectStore((state) => state.saveProject);
+	const lifecycleManager = useProjectStore((state) => state.lifecycleManager);
 
 	if (isSharedProject) {
 		return (
 			<AppTool
 				name="save-as"
 				label="Enregistrer une copie"
-				onClick={() => void saveProject()}
+				onClick={() => void lifecycleManager.saveProject()}
 			>
 				<SaveAsIcon />
 			</AppTool>
@@ -27,7 +27,7 @@ const SaveTool = () => {
 			name="save"
 			label="Enregistrer"
 			disabled={!hasUnsavedChanges}
-			onClick={() => void saveProject()}
+			onClick={() => void lifecycleManager.saveProject()}
 		>
 			<SaveIcon />
 		</AppTool>

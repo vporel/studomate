@@ -112,10 +112,10 @@ describe("HmiWidget.create", () => {
 		expect(w.size).toEqual({ width: 40, height: 40 });
 	});
 
-	it("lockAspectRatio est désactivé par défaut pour ellipse", () => {
+	it("lockAspectRatio est absent par défaut", () => {
 		const w = HmiWidget.create("ellipse", 0, 0);
 		if (w.type !== "ellipse") throw new Error("unreachable");
-		expect(w.data.lockAspectRatio).toBe(false);
+		expect(w.data.lockAspectRatio).toBeUndefined();
 	});
 
 	it("applique dataOverride par-dessus les données par défaut du type", () => {
@@ -235,13 +235,27 @@ describe("HmiWidget.getResizeAspectRatio", () => {
 		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);
 	});
 
-	it("retourne undefined pour une ellipse non verrouillée", () => {
+	it("retourne undefined pour un widget non verrouillé", () => {
 		const w = HmiWidget.create("ellipse", 0, 0);
 		expect(HmiWidget.getResizeAspectRatio(w)).toBeUndefined();
 	});
 
-	it("retourne 1 pour une ellipse verrouillée (cercle)", () => {
-		const w = HmiWidget.create("ellipse", 0, 0, undefined, {
+	it("fige le ratio courant quand lockAspectRatio est vrai", () => {
+		const w = HmiWidget.create("rectangle", 0, 0, { width: 120, height: 80 }, {
+			lockAspectRatio: true,
+		});
+		expect(HmiWidget.getResizeAspectRatio(w)).toBeCloseTo(1.5);
+	});
+
+	it("donne 1 pour un widget carré verrouillé (cercle via l'outil palette)", () => {
+		const w = HmiWidget.create("ellipse", 0, 0, { width: 40, height: 40 }, {
+			lockAspectRatio: true,
+		});
+		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);
+	});
+
+	it("le ratio imposé par le type l'emporte sur lockAspectRatio", () => {
+		const w = HmiWidget.create("indicator", 0, 0, { width: 40, height: 40 }, {
 			lockAspectRatio: true,
 		});
 		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);

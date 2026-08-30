@@ -16,10 +16,10 @@ import ProjectsList from "./ProjectsList";
 
 export default function ProjectOpenModal() {
 	const projectRepository = useProjectStore((state) => state.projectRepository);
-	const { openProject, openModalVisible, setOpenModalVisible } =
+	const { lifecycleManager, openModalVisible, setOpenModalVisible } =
 		useProjectStore(
 			useShallow((state) => ({
-				openProject: state.openProject,
+				lifecycleManager: state.lifecycleManager,
 				openModalVisible: state.ui.openModalVisible,
 				setOpenModalVisible: state.setOpenModalVisible,
 			})),
@@ -30,7 +30,7 @@ export default function ProjectOpenModal() {
 	}, [setOpenModalVisible]);
 
 	const handleProjectClick = (projectId: string) => {
-		void openProject(projectId);
+		void lifecycleManager.openProject(projectId);
 		onClose();
 	};
 
@@ -70,9 +70,9 @@ export default function ProjectOpenModal() {
 			);
 			return;
 		}
-		await openProject(project.id);
+		await lifecycleManager.openProject(project.id);
 		onClose();
-	}, [openProject, onClose, projectRepository]);
+	}, [lifecycleManager, onClose, projectRepository]);
 
 	return (
 		<CustomModal

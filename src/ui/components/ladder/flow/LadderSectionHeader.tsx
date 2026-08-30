@@ -1,6 +1,5 @@
 "use client";
 
-import SectionRemoveCommand from "@/schemas/ladder/commands/section-remove.command";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
 import {
@@ -8,17 +7,27 @@ import {
 	DraggableSyntheticListeners,
 } from "@dnd-kit/core";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
+	alpha,
 	Box,
 	IconButton,
 	InputBase,
+	Tooltip,
 	Typography,
 	useTheme,
 } from "@mui/material";
-import { useCallback } from "react";
+import { type PointerEvent as ReactPointerEvent, useCallback } from "react";
+import {
+	LADDER_FLOW_MAX_ZOOM,
+	LADDER_FLOW_MIN_ZOOM,
+} from "@/ui/stores/ladder/managers/view.manager";
 import { useLadderStore } from "../context/LadderContext";
 
 interface LadderSectionHeaderProps {
@@ -47,6 +56,22 @@ export default function LadderSectionHeader({
 	// Un ladder porte toujours au moins une section (voir SectionRemoveCommand.execute) : le
 	// bouton se désactive plutôt que de dispatcher une commande qu'on sait invalide.
 	const sectionsCount = useLadderStore((state) => state.ladder.sections.length);
+	const viewManager = useLadderStore((state) => state.viewManager);
+	const workflowManager = useLadderStore((state) => state.workflowManager);
+	const copyCutPasteManager = useLadderStore(
+		(state) => state.copyCutPasteManager,
+	);
+	const selected = useLadderStore((state) =>
+		state.selectedSectionIds.includes(section.id),
+	);
+	// Le bouton « Copier » de l'en-tête ne copie que sa propre section : il se désactive dès
+	// qu'une sélection multiple est active (le collage multi passe par Ctrl+C / menu Édition).
+	const multipleSelected = useLadderStore(
+		(state) => state.selectedSectionIds.length > 1,
+	);
+	const zoom = useLadderStore(
+		(state) => state.zoomBySectionId[section.id] ?? 1,
+	);
 
 	const handleTitleBlur = useCallback(
 		(e: React.FocusEvent<HTMLInputElement>) => {
@@ -64,20 +89,27 @@ export default function LadderSectionHeader({
 	);
 
 	const handleDeleteSection = useCallback(() => {
-		commandsStackManager.executeOperation([
-			new SectionRemoveCommand({
-				sectionId: section.id,
-				title: section.title,
-				description: section.description,
-				elements: section.elements,
-				connections: section.connections,
-				index,
-			}),
-		]);
-	}, [section, index, commandsStackManager]);
+		workflowManager.deleteSections([section.id]);
+	}, [section.id, workflowManager]);
+
+	const handleDuplicateSection = useCallback(() => {
+		copyCutPasteManager.duplicateSection(section.id);
+	}, [section.id, copyCutPasteManager]);
+
+	const handleCopySection = useCallback(() => {
+		copyCutPasteManager.copySections([section.id]);
+	}, [section.id, copyCutPasteManager]);
+
+	// Les boutons d'action n'entrent pas dans la sélection de la section (voir
+	// `useLadderSectionSelection`) : ils arrêtent la propagation du pointer-down.
+	const stopSelect = useCallback(
+		(e: ReactPointerEvent) => e.stopPropagation(),
+		[],
+	);
 
 	return (
 		<Box
+			data-section-header={section.id}
 			sx={{
 				display: "flex",
 				alignItems: "center",
@@ -85,12 +117,18 @@ export default function LadderSectionHeader({
 				px: 1,
 				py: 0.5,
 				borderRadius: collapsed ? "6px" : "6px 6px 0 0",
-				background:
-					th.palette.mode === "dark"
+				background: selected
+					? alpha(
+							th.palette.primary.main,
+							th.palette.mode === "dark" ? 0.28 : 0.16,
+						)
+					: th.palette.mode === "dark"
 						? "rgba(255,255,255,0.05)"
 						: "rgba(0,0,0,0.04)",
 				borderBottom: collapsed ? `1px solid ${th.palette.divider}` : "none",
-				border: `1px solid ${th.palette.divider}`,
+				border: `1px solid ${
+					selected ? th.palette.primary.main : th.palette.divider
+				}`,
 				userSelect: "none",
 			}}
 		>
@@ -113,18 +151,21 @@ export default function LadderSectionHeader({
 				/>
 			</Box>
 
-			<IconButton
-				size="small"
-				onClick={onToggleCollapse}
-				sx={{ p: 0.25 }}
-				aria-label={collapsed ? "Déplier la section" : "Replier la section"}
-			>
-				{collapsed ? (
-					<ChevronRightIcon fontSize="small" />
-				) : (
-					<ExpandMoreIcon fontSize="small" />
-				)}
-			</IconButton>
+			<Tooltip title={collapsed ? "Déplier" : "Replier"}>
+				<IconButton
+					size="small"
+					onPointerDown={stopSelect}
+					onClick={onToggleCollapse}
+					sx={{ p: 0.25 }}
+					aria-label={collapsed ? "Déplier la section" : "Replier la section"}
+				>
+					{collapsed ? (
+						<ChevronRightIcon fontSize="small" />
+					) : (
+						<ExpandMoreIcon fontSize="small" />
+					)}
+				</IconButton>
+			</Tooltip>
 
 			<Typography
 				component="span"
@@ -153,15 +194,80 @@ export default function LadderSectionHeader({
 				inputProps={{ "aria-label": "Titre de la section" }}
 			/>
 
-			<IconButton
-				size="small"
-				onClick={handleDeleteSection}
-				disabled={sectionsCount <= 1}
-				sx={{ p: 0.25 }}
-				aria-label="Supprimer la section"
-			>
-				<DeleteOutlineIcon fontSize="small" />
-			</IconButton>
+			{!collapsed && (
+				<>
+					<Tooltip title="Dézoomer">
+						<span>
+							<IconButton
+								size="small"
+								onPointerDown={stopSelect}
+								onClick={() => viewManager.zoomOut(section.id)}
+								disabled={zoom <= LADDER_FLOW_MIN_ZOOM}
+								sx={{ p: 0.25 }}
+								aria-label="Dézoomer la section"
+							>
+								<ZoomOutIcon fontSize="small" />
+							</IconButton>
+						</span>
+					</Tooltip>
+					<Tooltip title="Zoomer">
+						<span>
+							<IconButton
+								size="small"
+								onPointerDown={stopSelect}
+								onClick={() => viewManager.zoomIn(section.id)}
+								disabled={zoom >= LADDER_FLOW_MAX_ZOOM}
+								sx={{ p: 0.25 }}
+								aria-label="Zoomer la section"
+							>
+								<ZoomInIcon fontSize="small" />
+							</IconButton>
+						</span>
+					</Tooltip>
+				</>
+			)}
+
+			<Tooltip title="Copier">
+				<span>
+					<IconButton
+						size="small"
+						onPointerDown={stopSelect}
+						onClick={handleCopySection}
+						disabled={multipleSelected}
+						sx={{ p: 0.25 }}
+						aria-label="Copier la section"
+					>
+						<ContentCopyOutlinedIcon fontSize="small" />
+					</IconButton>
+				</span>
+			</Tooltip>
+
+			<Tooltip title="Dupliquer">
+				<IconButton
+					size="small"
+					onPointerDown={stopSelect}
+					onClick={handleDuplicateSection}
+					sx={{ p: 0.25 }}
+					aria-label="Dupliquer la section"
+				>
+					<LibraryAddOutlinedIcon fontSize="small" />
+				</IconButton>
+			</Tooltip>
+
+			<Tooltip title="Supprimer">
+				<span>
+					<IconButton
+						size="small"
+						onPointerDown={stopSelect}
+						onClick={handleDeleteSection}
+						disabled={sectionsCount <= 1}
+						sx={{ p: 0.25 }}
+						aria-label="Supprimer la section"
+					>
+						<DeleteOutlineIcon fontSize="small" />
+					</IconButton>
+				</span>
+			</Tooltip>
 		</Box>
 	);
 }

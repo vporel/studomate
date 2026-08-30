@@ -67,6 +67,8 @@ const PagesTabBar = () => {
 	return (
 		<Box
 			className="pages__tab-bar"
+			role="tablist"
+			aria-label="Onglets ouverts"
 			sx={{
 				width: "100%",
 				height: "35px",

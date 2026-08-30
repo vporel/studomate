@@ -1,4 +1,8 @@
-import { getElementHeight } from "@/schemas/ladder/element.schema";
+import {
+	getElementHeight,
+	getElementWidth,
+	LadderElement,
+} from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import { Edge } from "@xyflow/react";
@@ -32,27 +36,6 @@ export const RAIL_LANE_WIDTH = 10;
 export const POWER_RAIL_OFFSET = RAIL_LANE_WIDTH;
 
 /**
- * Hauteur (en cellules de grille, voir `getElementHeight`) de chaque ligne occupée d'une section
- * — le maximum parmi ses éléments, pour qu'une ligne contenant un bloc tempo (2 cellules) pousse
- * toutes les lignes suivantes d'autant, sans affecter les autres éléments de cette même ligne
- * (positionnés en haut de l'espace ainsi agrandi). Une ligne absente de la map (aucun élément, ou
- * au-delà du contenu actuel) vaut 1 cellule — voir `rowToY`/`yToRow`.
- */
-export function computeRowHeightsInCells(
-	section: Section,
-): Map<number, number> {
-	const heights = new Map<number, number>();
-	for (const element of section.elements) {
-		const row = element.position.row;
-		heights.set(
-			row,
-			Math.max(heights.get(row) ?? 1, getElementHeight(element)),
-		);
-	}
-	return heights;
-}
-
-/**
  * Conversions ligne/colonne (grille logique) ↔ pixels (monde React Flow) — seul point de
  * vérité pour `LADDER_FLOW_TOP_OFFSET`/`POWER_RAIL_OFFSET` : tout site qui construit ou lit
  * une position doit passer par ces fonctions plutôt que refaire le calcul, pour qu'un futur
@@ -60,42 +43,75 @@ export function computeRowHeightsInCells(
  * (`Math.round`/`Math.floor` selon le site : accrochage au plus proche vs dépôt dans la
  * cellule survolée) reste au call site, ces fonctions ne font que le décalage/l'échelle.
  *
- * `rowHeightsInCells` (voir `computeRowHeightsInCells`) rend la hauteur de ligne non uniforme :
- * omis (grille uniforme), toute ligne vaut 1 cellule.
+ * La grille est strictement uniforme : toute ligne vaut `LADDER_FLOW_ROW_HEIGHT`, y compris
+ * celles que traverse un bloc de 2 cellules de haut. Un tel bloc réserve ses cellules sur
+ * plusieurs lignes via son empreinte (`elementFootprint`), pas en dilatant la ligne.
  */
-export function rowToY(
-	row: number,
-	rowHeightsInCells: Map<number, number> = new Map(),
-): number {
-	let y = LADDER_FLOW_TOP_OFFSET;
-	for (let r = 0; r < row; r++) {
-		y += (rowHeightsInCells.get(r) ?? 1) * LADDER_FLOW_ROW_HEIGHT;
-	}
-	return y;
+export function rowToY(row: number): number {
+	return LADDER_FLOW_TOP_OFFSET + row * LADDER_FLOW_ROW_HEIGHT;
 }
-export function yToRow(
-	y: number,
-	rowHeightsInCells: Map<number, number> = new Map(),
-): number {
-	let cumulativeY = LADDER_FLOW_TOP_OFFSET;
-	let row = 0;
-	// Borne défensive : une position hors de tout contenu raisonnable (souris hors du canevas)
-	// ne doit pas boucler indéfiniment.
-	while (row < 100_000) {
-		const rowHeightPx =
-			(rowHeightsInCells.get(row) ?? 1) * LADDER_FLOW_ROW_HEIGHT;
-		if (y < cumulativeY + rowHeightPx)
-			return row + (y - cumulativeY) / rowHeightPx;
-		cumulativeY += rowHeightPx;
-		row++;
-	}
-	return row;
+export function yToRow(y: number): number {
+	return (y - LADDER_FLOW_TOP_OFFSET) / LADDER_FLOW_ROW_HEIGHT;
 }
 export function colToX(col: number): number {
 	return POWER_RAIL_OFFSET + col * LADDER_FLOW_COL_WIDTH;
 }
 export function xToCol(x: number): number {
 	return (x - POWER_RAIL_OFFSET) / LADDER_FLOW_COL_WIDTH;
+}
+
+/** Rectangle de cellules de grille (ancre haut-gauche + dimensions dérivées du type) réellement
+ * occupé par un élément : un bloc tempo couvre 2 colonnes et 2 lignes, un contact/une bobine une
+ * seule cellule. Bornes hautes exclusives (`col + width`, `row + height`). */
+export type CellRect = {
+	row: number;
+	col: number;
+	width: number;
+	height: number;
+};
+
+export function elementFootprint(element: LadderElement): CellRect {
+	return {
+		row: element.position.row,
+		col: element.position.col,
+		width: getElementWidth(element),
+		height: getElementHeight(element),
+	};
+}
+
+/** Vrai si les deux rectangles de cellules se chevauchent, ne serait-ce que d'une cellule. */
+export function cellRectsOverlap(a: CellRect, b: CellRect): boolean {
+	return (
+		a.col < b.col + b.width &&
+		b.col < a.col + a.width &&
+		a.row < b.row + b.height &&
+		b.row < a.row + a.height
+	);
+}
+
+/** Élément de la section dont l'empreinte recouvre le rectangle `rect` — `undefined` si la zone
+ * est entièrement libre. `ignoreId` exclut l'élément en cours de déplacement de sa propre
+ * détection de collision. */
+export function findFootprintCollision(
+	section: Section,
+	rect: CellRect,
+	ignoreId?: string,
+): LadderElement | undefined {
+	return section.elements.find(
+		(element) =>
+			element.id !== ignoreId &&
+			element.type !== "railTerminal" &&
+			cellRectsOverlap(rect, elementFootprint(element)),
+	);
+}
+
+/** Élément dont l'empreinte couvre la cellule `(row, col)`. */
+export function elementAtCell(
+	section: Section,
+	row: number,
+	col: number,
+): LadderElement | undefined {
+	return findFootprintCollision(section, { row, col, width: 1, height: 1 });
 }
 
 /** Type d'edge des connexions du Ladder — voir `LadderConnectionEdge`. */
@@ -160,16 +176,19 @@ export function computeSectionLayout(section: Section): {
 	totalRows: number;
 	maxCol: number;
 	leafPositions: PositionedLeaf[];
-	rowHeightsInCells: Map<number, number>;
 } {
 	const leafPositions: PositionedLeaf[] = section.elements.map((element) => ({
 		id: element.id,
 		row: element.position.row,
 		col: element.position.col,
 	}));
+	// Un bloc de 2 cellules de haut occupe sa ligne d'ancrage ET la suivante : le canevas doit
+	// être assez grand pour les deux (`row + getElementHeight`).
 	const totalRows = Math.max(
 		1,
-		...section.elements.map((element) => element.position.row + 1),
+		...section.elements.map(
+			(element) => element.position.row + getElementHeight(element),
+		),
 	);
 	const maxCol = section.elements.reduce(
 		(max, element) => Math.max(max, element.position.col),
@@ -179,7 +198,6 @@ export function computeSectionLayout(section: Section): {
 		totalRows,
 		maxCol,
 		leafPositions,
-		rowHeightsInCells: computeRowHeightsInCells(section),
 	};
 }
 
@@ -191,7 +209,6 @@ export function computeSectionLayout(section: Section): {
  * précédents, jamais ce qu'on passe directement à `<ReactFlow>`.
  */
 export function buildTargetNodes(section: Section): LadderNodeType[] {
-	const rowHeightsInCells = computeRowHeightsInCells(section);
 	const nodes: LadderNodeType[] = section.elements.map((element) => {
 		if (element.type === "railTerminal") {
 			return {
@@ -200,7 +217,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 				// Toujours à l'extrême gauche (largeur RAIL_LANE_WIDTH) : ce n'est pas une colonne
 				// d'éléments, `element.position.col` (RAIL_TERMINAL_COL) n'est qu'un marqueur
 				// logique d'ordre, jamais traduit en pixels — cohérent avec `draggable: false`.
-				position: { x: 0, y: rowToY(element.position.row, rowHeightsInCells) },
+				position: { x: 0, y: rowToY(element.position.row) },
 				data: { virtual: false },
 				selectable: false,
 				draggable: false,
@@ -212,7 +229,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 				type: "block",
 				position: {
 					x: colToX(element.position.col),
-					y: rowToY(element.position.row, rowHeightsInCells),
+					y: rowToY(element.position.row),
 				},
 				data: element.data,
 			} as LadderNodeType;
@@ -222,7 +239,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 			type: element.type,
 			position: {
 				x: colToX(element.position.col),
-				y: rowToY(element.position.row, rowHeightsInCells),
+				y: rowToY(element.position.row),
 			},
 			data: { variable: element.data.variable, type: element.data.type },
 		} as LadderNodeType;
@@ -241,7 +258,7 @@ export function buildTargetNodes(section: Section): LadderNodeType[] {
 		nodes.push({
 			id: virtualRailId(row),
 			type: "railTerminal",
-			position: { x: 0, y: rowToY(row, rowHeightsInCells) },
+			position: { x: 0, y: rowToY(row) },
 			data: { virtual: true },
 			selectable: false,
 			draggable: false,

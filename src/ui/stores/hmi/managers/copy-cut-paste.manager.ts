@@ -6,6 +6,8 @@ import WidgetAddCommand from "@/schemas/hmi/commands/widget-add.command";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { createRandomId } from "@/ids";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
+import { snapToGrid } from "@/ui/components/hmi/view/constants";
+import { nextCopyName } from "@/lib/naming";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";
 
@@ -102,25 +104,37 @@ export default class HmiCopyCutPasteManager extends AbstractCopyCutPasteManager<
 		);
 
 		// Un widget collé ne peut pas garder le nom de son original (unicité par page, voir
-		// `HmiWidgetBase.name`) — accumule au fil du collage pour que deux widgets du même type
-		// collés ensemble ne reçoivent pas le même nom.
+		// `HmiWidgetBase.name`) : la copie est suffixée à partir de ce nom (`Bouton` -> `Bouton_2`),
+		// en accumulant au fil du collage pour que deux widgets collés ensemble diffèrent.
 		const namingContext = Object.values(this.getStoreState().hmiPage.widgets);
 		const newWidgets = widgets.map((widget) => {
-			const x = Math.max(
-				0,
-				Math.min(HMI_CANVAS_WIDTH - widget.size.width, widget.position.x + dx),
+			// Les widgets collés retombent sur la grille (comme un dépôt depuis la palette), même si
+			// l'original a été placé ou redimensionné hors grille via le panneau Propriétés.
+			const x = snapToGrid(
+				Math.max(
+					0,
+					Math.min(
+						HMI_CANVAS_WIDTH - widget.size.width,
+						widget.position.x + dx,
+					),
+				),
 			);
-			const y = Math.max(
-				0,
-				Math.min(
-					HMI_CANVAS_HEIGHT - widget.size.height,
-					widget.position.y + dy,
+			const y = snapToGrid(
+				Math.max(
+					0,
+					Math.min(
+						HMI_CANVAS_HEIGHT - widget.size.height,
+						widget.position.y + dy,
+					),
 				),
 			);
 			const newWidget = HmiWidget.createInstance(
 				createRandomId(),
 				widget.type,
-				HmiWidget.nextName(widget.type, namingContext),
+				nextCopyName(
+					widget.name,
+					namingContext.map((w) => w.name),
+				),
 				{ x, y },
 				{ ...widget.size },
 				stackOrderByOriginalId.get(widget.id)!,

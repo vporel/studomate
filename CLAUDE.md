@@ -64,7 +64,7 @@ UI). Un mapper entre deux couches internes reste dans la couche concernée — `
 ### Comptes & stockage cloud
 
 `src/persistence/repositories/` fournit trois implémentations de `ProjectRepository` :
-`local-storage` (défaut, hors ligne), `supabase` (cloud : table `projects` + RLS),
+`local-storage` (défaut, stockage local dans le navigateur), `supabase` (cloud : table `projects` + RLS),
 `hybrid` (bascule local/cloud selon l'authentification). L'auth (Supabase, `src/ui/stores/auth/`)
 gère inscription, connexion, comptes anonymes (pseudo + mot de passe), reset password. Le
 partage d'un projet passe par un token d'URL (`ShareableProjectRepository`, `?share=` géré

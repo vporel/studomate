@@ -1,7 +1,7 @@
 "use client";
 
 import CustomModal from "@/ui/lib/mui/CustomModal";
-import { isAnonymousUser, useAuthStore } from "@/ui/stores/auth/auth.store";
+import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import {
 	Alert,
 	Box,
@@ -18,7 +18,6 @@ type SignUpMode = "anonymous" | "real";
 
 export default function AuthModal() {
 	const {
-		user,
 		authModalVisible,
 		authModalPrompt,
 		setAuthModalVisible,
@@ -29,7 +28,6 @@ export default function AuthModal() {
 		resetPassword,
 	} = useAuthStore(
 		useShallow((state) => ({
-			user: state.user,
 			authModalVisible: state.ui.authModalVisible,
 			authModalPrompt: state.ui.authModalPrompt,
 			setAuthModalVisible: state.setAuthModalVisible,
@@ -43,9 +41,7 @@ export default function AuthModal() {
 
 	const [screen, setScreen] = useState<Screen>("signIn");
 	const [signUpMode, setSignUpMode] = useState<SignUpMode>("anonymous");
-	const [signInMode, setSignInMode] = useState<SignUpMode>(
-		isAnonymousUser(user) ? "anonymous" : "real",
-	);
+	const [signInMode, setSignInMode] = useState<SignUpMode>("anonymous");
 	const [email, setEmail] = useState("");
 	const [pseudo, setPseudo] = useState("");
 	const [password, setPassword] = useState("");

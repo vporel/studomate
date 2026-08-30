@@ -171,13 +171,15 @@ export default function ProjectsList({
 											</IconButton>
 										</Tooltip>
 									)}
-									<IconButton
-										edge="end"
-										aria-label="delete"
-										onClick={(e) => void handleDeleteProject(e, project.id)}
-									>
-										<DeleteIcon />
-									</IconButton>
+									<Tooltip title="Supprimer">
+										<IconButton
+											edge="end"
+											aria-label="delete"
+											onClick={(e) => void handleDeleteProject(e, project.id)}
+										>
+											<DeleteIcon />
+										</IconButton>
+									</Tooltip>
 								</Box>
 							}
 						>

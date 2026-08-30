@@ -9,7 +9,6 @@ import {
 	Box,
 	Button,
 	Divider,
-	SxProps,
 	Theme,
 	Typography,
 } from "@mui/material";
@@ -19,21 +18,6 @@ import routes from "@/app/routes";
 import AccountStatus from "./auth/AccountStatus";
 import { useProjectStore } from "./projects/ProjectContext";
 
-const linkSx: SxProps<Theme> = {
-	textDecoration: "none",
-	"&:hover *": {
-		color: (th) => th.palette.primary.main,
-	},
-};
-
-const footerLinks = [
-	{ label: "À propos", href: routes.about() },
-	{ label: "Mentions légales", href: routes.legalMentions() },
-	{ label: "Conditions d'utilisation", href: routes.termsOfUse() },
-	{ label: "Politique de confidentialité", href: routes.privacyPolicy() },
-	{ label: "Contact", href: routes.contact() },
-];
-
 const featuredTemplate = PROJECT_TEMPLATES.find(
 	(t) => t.id === FEATURED_TEMPLATE_ID && t.solution,
 );
@@ -41,12 +25,12 @@ const featuredTemplate = PROJECT_TEMPLATES.find(
 const AppStartup = () => {
 	const {
 		setOpenModalVisible,
-		newProjectFromTemplate,
+		lifecycleManager,
 		setNewProjectModalVisible,
 	} = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
-			newProjectFromTemplate: state.newProjectFromTemplate,
+			lifecycleManager: state.lifecycleManager,
 			setNewProjectModalVisible: state.setNewProjectModalVisible,
 		})),
 	);
@@ -77,6 +61,7 @@ const AppStartup = () => {
 					<Box
 						component="img"
 						src="/images/icon.png"
+						alt=""
 						sx={{ width: "72px", mt: "0.35rem" }}
 					/>
 					<Box flex={1}>
@@ -119,7 +104,10 @@ const AppStartup = () => {
 							variant="contained"
 							size="large"
 							onClick={() =>
-								void newProjectFromTemplate(featuredTemplate.id, "solution")
+								void lifecycleManager.newProjectFromTemplate(
+									featuredTemplate.id,
+									"solution",
+								)
 							}
 						>
 							Ouvrir la solution et simuler
@@ -164,27 +152,6 @@ const AppStartup = () => {
 					<Button color="primary" onClick={() => setOpenModalVisible(true)}>
 						Ouvrir un projet existant
 					</Button>
-				</FlexBox>
-
-				<Divider sx={{ mt: 4, mb: 2 }} />
-				<Typography textAlign="center" color="text.secondary" fontSize="12px">
-					Copyright © 2025 Studomate
-				</Typography>
-				<FlexBox center gap={1} justifyContent="center" flexWrap="wrap" mt={1}>
-					{footerLinks.map((l, i) => (
-						<FlexBox center gap={1} key={l.href}>
-							{i > 0 && (
-								<Typography color="text.disabled" fontSize="12px">
-									·
-								</Typography>
-							)}
-							<Box component={Link} href={l.href} sx={linkSx}>
-								<Typography color="text.secondary" fontSize="12px">
-									{l.label}
-								</Typography>
-							</Box>
-						</FlexBox>
-					))}
 				</FlexBox>
 			</Box>
 		</FlexBox>

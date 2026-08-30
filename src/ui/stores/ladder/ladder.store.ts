@@ -26,14 +26,23 @@ export interface LadderStoreState {
 	activeSectionId: string | null;
 	setActiveSectionId: (sectionId: string | null) => void;
 
+	/**
+	 * Sections mises en évidence pour une action portant sur la section entière (copier). État
+	 * distinct d'`activeSectionId` : sélectionner une section ne change pas la dernière section
+	 * interagie, et un clic hors d'un en-tête de section vide la liste (voir
+	 * `useLadderSectionSelection`). L'ordre n'est pas significatif.
+	 */
+	selectedSectionIds: string[];
+	setSelectedSectionIds: (sectionIds: string[]) => void;
+
 	//=============== COMMANDS STACK ===============
 	hasCommandsToUndo: boolean;
 	hasCommandsToRedo: boolean;
 	commandsStackManager: LadderCommandsStackManager;
 	copyCutPasteManager: LadderCopyCutPasteManager;
 
-	//=============== VIEW (zoom partagé par toutes les sections) ===============
-	zoom: number;
+	//=============== VIEW (zoom indépendant par section) ===============
+	zoomBySectionId: Record<string, number>;
 	viewManager: LadderViewManager;
 
 	highlightedNodesIds: string[];
@@ -52,8 +61,8 @@ export interface LadderStoreState {
 	) => void;
 
 	/**
-	 * Édition d'un bloc système existant en attente de validation, ouverte par double-clic sur le
-	 * bloc dans le canevas — voir `PendingSystemBlockEdit`.
+	 * Édition d'un bloc système existant en attente de validation, ouverte depuis le menu
+	 * contextuel d'une instance dans l'explorateur — voir `PendingSystemBlockEdit`.
 	 */
 	pendingSystemBlockEdit: PendingSystemBlockEdit | null;
 	setPendingSystemBlockEdit: (pending: PendingSystemBlockEdit | null) => void;
@@ -96,6 +105,10 @@ export const createLadderStore = (
 		activeSectionId: null,
 		setActiveSectionId: (sectionId) => set({ activeSectionId: sectionId }),
 
+		selectedSectionIds: [],
+		setSelectedSectionIds: (sectionIds) =>
+			set({ selectedSectionIds: sectionIds }),
+
 		//=============== COMMANDS STACK ===============
 		//Lu depuis la pile, pas figé à false : l'historique survit à la fermeture de l'onglet
 		//(voir LaddersManager), rouvrir un ladder doit donc montrer les boutons undo/redo
@@ -110,7 +123,7 @@ export const createLadderStore = (
 		copyCutPasteManager: new LadderCopyCutPasteManager(set, get),
 
 		//=============== VIEW (zoom) ===============
-		zoom: 1,
+		zoomBySectionId: {},
 		viewManager: new LadderViewManager(set, get),
 
 		highlightedNodesIds: [],

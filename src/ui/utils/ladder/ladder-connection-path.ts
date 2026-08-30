@@ -41,10 +41,12 @@ export type PathSegment =
  * les lignes reconvergent) plutôt que d'être recalculé — cette fonction ne sert donc plus
  * qu'ici et comme filet de sécurité dans `computeConnectionSegments`.
  *
- * Toujours à la sortie de la source : ce choix donne le bon nombre de segments dans tous les
- * cas (0 si même ligne, sinon exactement 2, même quand source et cible partagent nominalement
- * la même colonne — leurs poignées ne coïncident jamais, la sortie étant au bord droit et
- * l'entrée au bord gauche).
+ * Coude vertical placé sur la frontière de colonne la plus proche du milieu du segment
+ * sortie-source → entrée-cible ; s'il n'existe aucune frontière strictement entre les deux
+ * (source et cible adjacentes ou séparées d'une seule colonne), replié sur la sortie de la
+ * source. Toujours sur une frontière de colonne, comme un coude déplacé à la main — c'est
+ * l'invariant sur lequel repose `classifyCellTouch`. Le tracé a 2 segments quand les lignes
+ * diffèrent (3 si le coude n'est ni à la sortie ni à l'entrée), 0 sur une même ligne.
  */
 export function initialConnectionPoints(
 	source: GridPosition,
@@ -52,7 +54,15 @@ export function initialConnectionPoints(
 	sourceWidth: number = 1,
 ): [number, number][] {
 	if (source.row === target.row) return [];
-	const bendQuarterCol = colRightEdge(source.col + sourceWidth - 1);
+	const sourceExit = colRightEdge(source.col + sourceWidth - 1);
+	const targetEntry = colLeftEdge(target.col);
+	const snappedMiddle =
+		Math.round((sourceExit + targetEntry) / 2 / CELL_SUBDIVISIONS) *
+		CELL_SUBDIVISIONS;
+	const bendQuarterCol =
+		snappedMiddle > sourceExit && snappedMiddle < targetEntry
+			? snappedMiddle
+			: sourceExit;
 	return [
 		[rowCenter(source.row), bendQuarterCol],
 		[rowCenter(target.row), bendQuarterCol],

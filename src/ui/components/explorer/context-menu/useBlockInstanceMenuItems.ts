@@ -16,9 +16,9 @@ const OPEN_EDITOR_RETRY_INTERVAL_MS = 20;
 
 /**
  * Menu contextuel d'une instance de bloc système (voir `ExplorerSystemBlockInstancesItems`) —
- * "Paramétrer" ouvre la même fenêtre de configuration que le double-clic sur le bloc dans le
- * canevas (`LadderWorkflowManager.openSystemBlockEditor`), après avoir ouvert/activé la page du
- * ladder ciblé. `pagesManager.openPage` ne rend pas la page active de façon synchrone (montage
+ * "Paramétrer" ouvre la fenêtre de configuration du bloc
+ * (`LadderWorkflowManager.openSystemBlockEditor`), après avoir ouvert/activé la page du ladder
+ * ciblé. `pagesManager.openPage` ne rend pas la page active de façon synchrone (montage
  * React) : on attend par polling plutôt qu'un délai fixe, qui échouerait silencieusement si le
  * montage prend occasionnellement plus longtemps que prévu.
  */

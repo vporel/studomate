@@ -19,7 +19,13 @@ export default function useFlowContextMenu<TElement>(
 	const { screenToFlowPosition } = useReactFlow();
 
 	const openContextMenu = useCallback(
-		(event: React.MouseEvent | MouseEvent, element: TElement) => {
+		(
+			event: React.MouseEvent | MouseEvent,
+			element: TElement,
+			//Champs supplémentaires fusionnés dans l'événement `show` — le ladder y met le
+			//`sectionId` pour que seule la section cliquée affiche son menu (bus mitt partagé).
+			extra?: Record<string, unknown>,
+		) => {
 			event.preventDefault();
 			if (canOpen && !canOpen(element)) return;
 			contextMenuEvents.emit("show", {
@@ -28,6 +34,7 @@ export default function useFlowContextMenu<TElement>(
 				//Coordonnées écran brutes : le collage (grafcet/ladder) en a besoin tel quel
 				//(`elementsFromPoint`, `rfInstance.screenToFlowPosition`).
 				screenPosition: { x: event.clientX, y: event.clientY },
+				...extra,
 			});
 		},
 		[contextMenuEvents, screenToFlowPosition, canOpen],

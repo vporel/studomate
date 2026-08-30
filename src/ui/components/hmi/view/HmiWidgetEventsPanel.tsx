@@ -12,6 +12,7 @@ import {
 	IconButton,
 	MenuItem,
 	TextField,
+	Tooltip,
 	Typography,
 } from "@mui/material";
 
@@ -111,17 +112,20 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 										))}
 									</TextField>
 								)}
-								<IconButton
-									size="small"
-									onClick={() =>
-										setActions(
-											name,
-											actions.filter((_: HmiAction, i: number) => i !== index),
-										)
-									}
-								>
-									<DeleteIcon fontSize="small" />
-								</IconButton>
+								<Tooltip title="Supprimer">
+									<IconButton
+										size="small"
+										onClick={() =>
+											setActions(
+												name,
+												actions.filter((_: HmiAction, i: number) => i !== index),
+											)
+										}
+										aria-label="Supprimer l'action"
+									>
+										<DeleteIcon fontSize="small" />
+									</IconButton>
+								</Tooltip>
 							</Box>
 						))}
 						<Button

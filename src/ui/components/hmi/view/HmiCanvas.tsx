@@ -7,7 +7,6 @@ import {
 import {
 	HmiAction,
 	HmiWidget,
-	HmiWidgetSize,
 } from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
 import useHmiContextMenu from "@/ui/components/hmi/context-menu/useHmiContextMenu";
@@ -35,7 +34,7 @@ import HmiWidgetPropertiesPanel from "./HmiWidgetPropertiesPanel";
 import useHmiCanvasDrop from "./useHmiCanvasDrop";
 import useHmiMarqueeSelect, { HmiMarqueeRect } from "./useHmiMarqueeSelect";
 import useHmiWidgetDrag, { HmiDragPreview } from "./useHmiWidgetDrag";
-import useHmiWidgetResize from "./useHmiWidgetResize";
+import useHmiWidgetResize, { HmiWidgetRect } from "./useHmiWidgetResize";
 
 interface HmiCanvasProps {
 	isSimulation: boolean;
@@ -60,13 +59,13 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const project = useProjectStore((s) => s.project);
 
 	const [dragPreview, setDragPreview] = useState<HmiDragPreview | null>(null);
-	const [resizePreview, setResizePreview] = useState<HmiWidgetSize | null>(
+	const [geometryPreview, setGeometryPreview] = useState<HmiWidgetRect | null>(
 		null,
 	);
 	const [marqueeRect, setMarqueeRect] = useState<HmiMarqueeRect | null>(null);
 
 	const startDrag = useHmiWidgetDrag(zoom, setDragPreview);
-	const startResize = useHmiWidgetResize(zoom, setResizePreview);
+	const startResize = useHmiWidgetResize(zoom, setGeometryPreview);
 	const [onDragOver, onDrop] = useHmiCanvasDrop(zoom, isSimulation);
 
 	const canvasWrapperRef = useRef<HTMLDivElement>(null);
@@ -312,17 +311,22 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 								}
 								previewSize={
 									soleSelectedWidget?.id === widget.id
-										? (resizePreview ?? undefined)
+										? (geometryPreview?.size ?? undefined)
+										: undefined
+								}
+								previewPosition={
+									soleSelectedWidget?.id === widget.id
+										? (geometryPreview?.position ?? undefined)
 										: undefined
 								}
 								animationOffset={getPositionAnimationOffset(widget)}
 								onSetVariableValue={setVariableValue}
 								onTriggerEvent={triggerWidgetEvent}
 								onDragStart={(e) => handleWidgetDragStart(e, widget)}
-								onResizeStart={(e) => {
+								onResizeStart={(e, direction) => {
 									if (isSimulation) return;
 									e.stopPropagation();
-									startResize(e, widget);
+									startResize(e, widget, direction);
 								}}
 								onContextMenu={(e) => handleWidgetContextMenu(e, widget)}
 							/>
@@ -374,7 +378,11 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 						onToggle={() => setExpandedSection("properties")}
 					>
 						{soleSelectedWidget ? (
-							<HmiWidgetPropertiesPanel widget={soleSelectedWidget} />
+							<HmiWidgetPropertiesPanel
+								key={soleSelectedWidget.id}
+								widget={soleSelectedWidget}
+								onGeometryPreview={setGeometryPreview}
+							/>
 						) : selectedWidgets.length > 1 ? (
 							<Typography
 								sx={{ px: 1.5, pb: 1.5, fontSize: "0.8rem", color: "#888" }}

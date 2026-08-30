@@ -27,11 +27,10 @@ export interface ZoomableInstance {
 const ZOOM_STEP_FACTOR = 1.2;
 
 /**
- * Contrairement au GRAFCET (un seul flow par page, zoom géré via son unique `rfInstance`), le
- * Ladder a une instance React Flow par section — mais elles doivent zoomer ensemble comme une
- * seule page. Le niveau de zoom est donc un état partagé du store (`zoom`), et chaque section
- * enregistrée ici est resynchronisée impérativement (`zoomTo`) à chaque changement, qu'il vienne
- * des boutons de la toolbar ou d'un Ctrl+molette sur l'une des sections.
+ * Le Ladder a une instance React Flow par section, chacune avec son propre zoom (état
+ * `zoomBySectionId` du store, piloté par les boutons de l'en-tête de section). Chaque section est
+ * resynchronisée impérativement à chaque changement de son zoom pour repincer x/y à 0 (voir
+ * `pinViewport`).
  */
 export default class LadderViewManager extends AbstractHighlightingViewManager<LadderStoreState> {
 	private setStoreState: LadderStoreSetFunction;
@@ -67,23 +66,19 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 		this.instances.delete(sectionId);
 	}
 
-	getZoom(): number {
-		return this.getStoreState().zoom;
+	getZoom(sectionId: string): number {
+		return this.getStoreState().zoomBySectionId[sectionId] ?? 1;
 	}
 
 	/**
-	 * Fixe `x`/`y` à 0 sur toutes les sections enregistrées, jamais seulement le zoom : la lib
-	 * zoome par défaut en gardant le CENTRE du viewport fixe (`d3-zoom` `scaleTo`, utilisé en
-	 * interne par `zoomTo`), ce qui décale `x` dès que le zoom change — invisible sur le
-	 * contenu React Flow lui-même, mais la barre du rail (bordure CSS statique, hors du
-	 * viewport zoomable) reste immobile pendant que le contenu se décale, désolidarisant
-	 * visuellement le stub du rail de sa bordure. Le Ladder n'a jamais de pan (`panOnDrag`
-	 * false, `translateExtent`/`nodeExtent` verrouillés) : x/y doivent donc toujours valoir 0.
+	 * Fixe `x`/`y` à 0 sur la section, jamais seulement le zoom : la lib zoome par défaut en
+	 * gardant le CENTRE du viewport fixe (`d3-zoom` `scaleTo`, utilisé en interne par `zoomTo`),
+	 * ce qui décale `x` dès que le zoom change — invisible sur le contenu React Flow lui-même,
+	 * mais la barre du rail (bordure CSS statique, hors du viewport zoomable) reste immobile
+	 * pendant que le contenu se décale, désolidarisant visuellement le stub du rail de sa
+	 * bordure. Le Ladder n'a jamais de pan (`panOnDrag` false, `translateExtent`/`nodeExtent`
+	 * verrouillés) : x/y doivent donc toujours valoir 0.
 	 */
-	private pinAllViewports(zoom: number): void {
-		this.instances.forEach((instance) => this.pinViewport(instance, zoom));
-	}
-
 	private pinViewport(instance: ZoomableInstance, zoom: number): void {
 		this.pendingProgrammaticMoves++;
 		void instance.setViewport({ x: 0, y: 0, zoom }).finally(() => {
@@ -98,44 +93,57 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	 */
 	resetViewport(sectionId: string): void {
 		const instance = this.instances.get(sectionId);
-		if (instance) this.pinViewport(instance, this.getZoom());
+		if (instance) this.pinViewport(instance, this.getZoom(sectionId));
 	}
 
-	/** Applique `zoom` (borné) au store et le répercute sur toutes les sections enregistrées. */
-	private applyZoom(zoom: number): void {
+	private setSectionZoom(sectionId: string, zoom: number): number {
 		const clamped = Math.min(
 			LADDER_FLOW_MAX_ZOOM,
 			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
 		);
-		if (clamped === this.getStoreState().zoom) return;
-		this.setStoreState({ zoom: clamped });
-		this.pinAllViewports(clamped);
+		this.setStoreState((state) => ({
+			zoomBySectionId: { ...state.zoomBySectionId, [sectionId]: clamped },
+		}));
+		return clamped;
+	}
+
+	/** Applique `zoom` (borné) à la section et repince son viewport. */
+	private applyZoom(sectionId: string, zoom: number): void {
+		if (
+			this.clamp(zoom) === (this.getStoreState().zoomBySectionId[sectionId] ?? 1)
+		)
+			return;
+		const clamped = this.setSectionZoom(sectionId, zoom);
+		const instance = this.instances.get(sectionId);
+		if (instance) this.pinViewport(instance, clamped);
+	}
+
+	private clamp(zoom: number): number {
+		return Math.min(
+			LADDER_FLOW_MAX_ZOOM,
+			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
+		);
 	}
 
 	/**
-	 * À appeler depuis `onMoveEnd` d'une section : propage son zoom (ex. Ctrl+molette) aux
-	 * autres, et re-pince systématiquement x/y à 0 sur toutes (y compris celle d'origine, dont le
-	 * geste vient justement de décaler x) — même si le zoom résultant est inchangé (ex. déjà à
-	 * la borne min/max), un Ctrl+molette peut avoir décalé x sans changer la valeur affichée.
-	 * Ignoré si le déplacement vient de notre propre `pinViewport` (voir `pendingProgrammaticMoves`)
-	 * — sinon boucle infinie.
+	 * À appeler depuis `onMoveEnd` d'une section : enregistre son zoom et re-pince systématiquement
+	 * x/y à 0 — même si le zoom résultant est inchangé (ex. déjà à la borne min/max), le geste peut
+	 * avoir décalé x sans changer la valeur affichée. Ignoré si le déplacement vient de notre propre
+	 * `pinViewport` (voir `pendingProgrammaticMoves`) — sinon boucle infinie.
 	 */
-	syncFromInstance(zoom: number): void {
+	syncFromInstance(sectionId: string, zoom: number): void {
 		if (this.pendingProgrammaticMoves > 0) return;
-		const clamped = Math.min(
-			LADDER_FLOW_MAX_ZOOM,
-			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
-		);
-		this.setStoreState({ zoom: clamped });
-		this.pinAllViewports(clamped);
+		const clamped = this.setSectionZoom(sectionId, zoom);
+		const instance = this.instances.get(sectionId);
+		if (instance) this.pinViewport(instance, clamped);
 	}
 
-	zoomIn(): void {
-		this.applyZoom(this.getZoom() * ZOOM_STEP_FACTOR);
+	zoomIn(sectionId: string): void {
+		this.applyZoom(sectionId, this.getZoom(sectionId) * ZOOM_STEP_FACTOR);
 	}
 
-	zoomOut(): void {
-		this.applyZoom(this.getZoom() / ZOOM_STEP_FACTOR);
+	zoomOut(sectionId: string): void {
+		this.applyZoom(sectionId, this.getZoom(sectionId) / ZOOM_STEP_FACTOR);
 	}
 
 	dispose(): void {

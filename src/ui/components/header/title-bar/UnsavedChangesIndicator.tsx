@@ -6,10 +6,10 @@ import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
 const UnsavedChangesIndicator = () => {
-	const { hasUnsavedChanges, saveProject, savingProject } = useProjectStore(
+	const { hasUnsavedChanges, lifecycleManager, savingProject } = useProjectStore(
 		useShallow((state) => ({
 			hasUnsavedChanges: state.hasUnsavedChanges,
-			saveProject: state.saveProject,
+			lifecycleManager: state.lifecycleManager,
 			savingProject: state.savingProject,
 		})),
 	);
@@ -29,7 +29,7 @@ const UnsavedChangesIndicator = () => {
 					}}
 					onClick={() => {
 						if (savingProject) return;
-						void saveProject();
+						void lifecycleManager.saveProject();
 					}}
 				>
 					Cliquez ici pour enregistrer

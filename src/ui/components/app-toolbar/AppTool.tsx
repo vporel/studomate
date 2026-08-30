@@ -12,7 +12,7 @@ const AppTool = ({
 }: {
 	disabled?: boolean;
 	name: string;
-	label?: string;
+	label: string;
 	onClick?: () => void;
 	children: React.ReactElement;
 }) => {

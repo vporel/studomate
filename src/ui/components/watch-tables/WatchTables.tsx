@@ -1,7 +1,15 @@
 "use client";
 
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Divider, IconButton, Tab, Tabs, Typography } from "@mui/material";
+import {
+	Box,
+	Divider,
+	IconButton,
+	Tab,
+	Tabs,
+	Tooltip,
+	Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { useProjectStore } from "../projects/ProjectContext";
 import TabContent from "./TabContent";
@@ -16,13 +24,15 @@ function Header({ onClose }: { onClose: () => void }) {
 			}}
 		>
 			<Typography variant="h6">{"Tables de visualisation"}</Typography>
-			<IconButton
-				onClick={onClose}
-				size="small"
-				aria-label="close-watch-tables"
-			>
-				<CloseIcon />
-			</IconButton>
+			<Tooltip title="Fermer">
+				<IconButton
+					onClick={onClose}
+					size="small"
+					aria-label="close-watch-tables"
+				>
+					<CloseIcon />
+				</IconButton>
+			</Tooltip>
 		</Box>
 	);
 }

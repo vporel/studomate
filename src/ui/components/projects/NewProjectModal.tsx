@@ -19,12 +19,12 @@ export default function NewProjectModal() {
 	const {
 		newProjectModalVisible,
 		setNewProjectModalVisible,
-		newProjectFromTemplate,
+		lifecycleManager,
 	} = useProjectStore(
 		useShallow((s) => ({
 			newProjectModalVisible: s.ui.newProjectModalVisible,
 			setNewProjectModalVisible: s.setNewProjectModalVisible,
-			newProjectFromTemplate: s.newProjectFromTemplate,
+			lifecycleManager: s.lifecycleManager,
 		})),
 	);
 
@@ -36,7 +36,7 @@ export default function NewProjectModal() {
 	};
 
 	const onConfirm = (variant: "exercise" | "solution" = "exercise") => {
-		void newProjectFromTemplate(selected, variant);
+		void lifecycleManager.newProjectFromTemplate(selected, variant);
 		setSelected(null);
 	};
 

@@ -62,7 +62,7 @@ function setup({
 				resetViewport: jest.fn(),
 				syncFromInstance: jest.fn(),
 			},
-			zoom: 1,
+			zoomBySectionId: { s1: 1 },
 			workflowManager: {
 				handleNodesChange: jest.fn(),
 				handleEdgesChange: jest.fn(),
@@ -71,6 +71,7 @@ function setup({
 			edgesBySectionId: { s1: [] },
 			highlightedNodesIds,
 			setActiveSectionId: jest.fn(),
+			selectedSectionIds: [],
 			commandsStackManager: { executeOperation: jest.fn() },
 			ladder: { sections: [section] },
 		}),
@@ -100,7 +101,7 @@ function setup({
 						resetViewport: jest.fn(),
 						syncFromInstance: jest.fn(),
 					},
-					zoom: 1,
+					zoomBySectionId: { s1: 1 },
 					workflowManager: {
 						handleNodesChange: jest.fn(),
 						handleEdgesChange: jest.fn(),
@@ -109,6 +110,7 @@ function setup({
 					edgesBySectionId: { s1: [] },
 					highlightedNodesIds: nextHighlightedNodesIds,
 					setActiveSectionId: jest.fn(),
+					selectedSectionIds: [],
 					commandsStackManager: { executeOperation: jest.fn() },
 					ladder: { sections: [section] },
 				}),
@@ -140,6 +142,13 @@ describe("LadderSection", () => {
 			panOnDrag: false,
 			autoPanOnNodeDrag: false,
 		});
+	});
+
+	it("désactive le clavier a11y natif de React Flow (déplacement flèches fait maison) mais garde onDelete", () => {
+		setup();
+		const props = reactFlowProps.at(-1)!;
+		expect(props.disableKeyboardA11y).toBe(true);
+		expect(typeof props.onDelete).toBe("function");
 	});
 
 	it("se rend sans planter, avec la section identifiée par son id", () => {

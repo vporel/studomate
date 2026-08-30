@@ -11,6 +11,7 @@ const HomeTool = () => {
 	return (
 		<AppTool
 			name="home"
+			label="Accueil"
 			onClick={() => {
 				pagesManager.openPage(PROJECT_STARTUP_PAGE_DATA);
 			}}

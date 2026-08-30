@@ -63,6 +63,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 										onChange={(e) => {
 											changeValue(e.target.checked);
 										}}
+										inputProps={{ "aria-label": variable.mnemonic }}
 									/>
 								}
 								label={getBooleanLabel(value, dialect)}
@@ -74,6 +75,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 						<TextField
 							size="small"
 							type={nativeType === "number" ? "number" : "text"}
+							slotProps={{ htmlInput: { "aria-label": variable.mnemonic } }}
 							value={value === undefined ? "" : String(value)}
 							onChange={(e) => {
 								let newValue =

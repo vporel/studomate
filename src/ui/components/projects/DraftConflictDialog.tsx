@@ -12,10 +12,10 @@ import {
 import { useShallow } from "zustand/shallow";
 
 export default function DraftConflictDialog() {
-	const { draftConflictModal, resolveDraftConflict } = useProjectStore(
+	const { draftConflictModal, lifecycleManager } = useProjectStore(
 		useShallow((s) => ({
 			draftConflictModal: s.ui.draftConflictModal,
-			resolveDraftConflict: s.resolveDraftConflict,
+			lifecycleManager: s.lifecycleManager,
 		})),
 	);
 
@@ -37,13 +37,13 @@ export default function DraftConflictDialog() {
 			<DialogActions>
 				<Button
 					variant="outlined"
-					onClick={() => void resolveDraftConflict("real")}
+					onClick={() => void lifecycleManager.resolveDraftConflict("real")}
 				>
 					Version enregistrée
 				</Button>
 				<Button
 					variant="contained"
-					onClick={() => void resolveDraftConflict("draft")}
+					onClick={() => void lifecycleManager.resolveDraftConflict("draft")}
 				>
 					Reprendre le brouillon
 				</Button>

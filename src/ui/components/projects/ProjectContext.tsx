@@ -74,17 +74,10 @@ export const ProjectContextProvider = ({
 
 	// Démarre l'auto-save dès le montage, l'arrête au démontage
 	useEffect(() => {
-		storeRef.current!.getState().startAutoSave();
+		storeRef.current!.getState().lifecycleManager.startAutoSave();
 		return () => {
-			storeRef.current!.getState().stopAutoSave();
+			storeRef.current!.getState().lifecycleManager.stopAutoSave();
 		};
-	}, []);
-
-	// Ouverture par token de partage (prioritaire sur l'id de projet)
-	useEffect(() => {
-		const shareToken = getShareTokenFromUrl();
-		if (!shareToken) return;
-		void storeRef.current!.getState().openProjectByShareToken(shareToken);
 	}, []);
 
 	// Affichée au démarrage à froid (aucun projet ni token dans l'URL) ; réactivée plus bas si
@@ -92,6 +85,22 @@ export const ProjectContextProvider = ({
 	const [showDraftDialog, setShowDraftDialog] = useState(
 		() => !getProjectIdFromUrl() && !getShareTokenFromUrl(),
 	);
+
+	// Ouverture par token de partage (prioritaire sur l'id de projet)
+	useEffect(() => {
+		const shareToken = getShareTokenFromUrl();
+		if (!shareToken) return;
+		const reopen = async () => {
+			const opened = await storeRef
+				.current!.getState()
+				.lifecycleManager.openProjectByShareToken(shareToken);
+			if (!opened) {
+				storeRef.current!.getState().finishBoot();
+				setShowDraftDialog(true);
+			}
+		};
+		void reopen();
+	}, []);
 
 	// Rouvre le projet dont l'id voyage dans l'URL, en cherchant d'abord un brouillon
 	useEffect(() => {
@@ -101,8 +110,9 @@ export const ProjectContextProvider = ({
 		const reopen = async () => {
 			const opened = await storeRef
 				.current!.getState()
-				.openProject(projectId, true);
+				.lifecycleManager.openProject(projectId, true);
 			if (!opened) {
+				storeRef.current!.getState().finishBoot();
 				setProjectIdInUrl(null);
 				setShowDraftDialog(true);
 			}
@@ -113,7 +123,9 @@ export const ProjectContextProvider = ({
 	const handleDraftOpen = (draftData: string) => {
 		try {
 			const project = Project.createFromJSON(draftData);
-			void storeRef.current!.getState().openProject(project.id, true);
+			void storeRef
+				.current!.getState()
+				.lifecycleManager.openProject(project.id, true);
 		} catch {
 			// brouillon corrompu : ignoré silencieusement
 		}

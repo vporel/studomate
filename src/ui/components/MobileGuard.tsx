@@ -29,7 +29,7 @@ const MobileGuard = ({ children }: { children: React.ReactNode }) => {
 				<Box
 					component="img"
 					src="/images/icon.png"
-					alt="Logo"
+					alt=""
 					sx={{ width: 80, mb: 2 }}
 				/>
 				<Typography variant="h3" fontWeight="bold" gutterBottom>

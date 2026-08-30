@@ -21,10 +21,11 @@ const COUNTER_TYPE_LABELS: Record<CounterType, string> = {
  * Fenêtre de configuration d'un bloc compteur, en création comme en édition — même mécanisme que
  * `TimerBlockDialog` : ouverte par `useLadderDropHandlers` au dépose depuis la section "Blocs
  * systèmes" de l'explorateur (`pendingSystemBlockCreation`, n'insère l'élément qu'à la
- * validation), ou par double-clic/menu contextuel sur un bloc existant du canevas
+ * validation), ou par l'entrée "Paramétrer" du menu contextuel d'une instance dans l'explorateur
  * (`pendingSystemBlockEdit`, préremplie avec ses valeurs actuelles). Ne gère que `name`/
- * `counterType` : le contrôle (R/LD), PV et CV s'éditent directement sur le nœud du canevas
- * (voir `ParamPinRow`), comme PT/ET pour un timer.
+ * `counterType` : sur le canevas, ces deux-là s'éditent en place (voir `BlockNameField` /
+ * `inlineSelect`), et le contrôle (R/LD), PV et CV directement sur le nœud (voir `ParamPinRow`),
+ * comme PT/ET pour un timer.
  */
 export default function CounterBlockDialog() {
 	const {

@@ -70,8 +70,8 @@ export function getBlockPinRowCount(portSpecs: BlockPortSpec[]): number {
 }
 
 /**
- * Empreinte d'un bloc sur la grille d'une section, en cellules entières (la grille ne réserve
- * qu'en cellules pleines, voir `computeRowHeightsInCells`) : `ceil((lignes de pins + 1) / 2)` —
+ * Empreinte verticale d'un bloc sur la grille d'une section, en cellules entières (la grille ne
+ * réserve qu'en cellules pleines, voir `elementFootprint`) : `ceil((lignes de pins + 1) / 2)` —
  * les lignes après la première sont mi-hauteur. 1 ligne → 1 cellule, 2-3 → 2, 4-5 → 3.
  */
 export function getBlockHeightInCells(portSpecs: BlockPortSpec[]): number {

@@ -21,12 +21,14 @@ jest.mock("./LadderSection", () => ({
 // Simuler un vrai geste de glisser-déposer dnd-kit (capteurs pointeur) en jsdom est fragile et
 // hors de proportion ici : on intercepte `onDragEnd` directement, comme dnd-kit l'appellerait.
 let capturedOnDragEnd: ((event: any) => void) | null = null;
+let capturedProps: any = null;
 jest.mock("@dnd-kit/core", () => {
 	const actual = jest.requireActual("@dnd-kit/core");
 	return {
 		...actual,
 		DndContext: (props: any) => {
 			capturedOnDragEnd = props.onDragEnd;
+			capturedProps = props;
 			return props.children;
 		},
 	};
@@ -87,6 +89,26 @@ describe("LadderFlow", () => {
 			orderedSectionIds: ["s2", "s3", "s1"],
 			previousOrderedSectionIds: ["s1", "s2", "s3"],
 		});
+	});
+
+	it("active le capteur clavier et des annonces françaises pour le réordonnancement", () => {
+		const { KeyboardSensor } = jest.requireActual("@dnd-kit/core");
+		(useLadderStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				ladder: { sections: [new Section("s1", "A", ""), new Section("s2", "B", "")] },
+				commandsStackManager: { executeOperation: jest.fn() },
+			}),
+		);
+		render(<LadderFlow />);
+
+		expect(
+			capturedProps.sensors.some((s: any) => s.sensor === KeyboardSensor),
+		).toBe(true);
+		expect(
+			capturedProps.accessibility.announcements.onDragStart({
+				active: { id: "s2" },
+			}),
+		).toBe("Section 2 saisie.");
 	});
 
 	it("ne dispatche rien si la section est déposée sur elle-même ou hors cible", () => {

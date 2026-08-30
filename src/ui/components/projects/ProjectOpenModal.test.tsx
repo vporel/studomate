@@ -31,7 +31,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			projectRepository: { save },
-			openProject,
+			lifecycleManager: { openProject },
 			ui: { openModalVisible: true },
 			setOpenModalVisible,
 		}),

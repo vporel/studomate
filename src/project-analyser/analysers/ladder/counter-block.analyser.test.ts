@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
 import Variable from "@/schemas/variable/variable.schema";
@@ -23,6 +24,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(),
 		);
 
@@ -39,6 +41,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(),
 		);
 
@@ -58,6 +61,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(maVar),
 		);
 
@@ -77,7 +81,25 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(reset),
+		);
+
+		expect(issues).toEqual([]);
+	});
+
+	it("accepte un littéral booléen pour R/LD", () => {
+		const element = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "faux", pv: "5" },
+			0,
+			0,
+		);
+
+		const issues = CounterBlockAnalyser.analyse(
+			element,
+			source,
+			Dialect.FR,
+			variablesMap(),
 		);
 
 		expect(issues).toEqual([]);
@@ -94,6 +116,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 
@@ -111,6 +134,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 
@@ -128,6 +152,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 
@@ -148,6 +173,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r, maVar),
 		);
 
@@ -168,6 +194,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r, consigne),
 		);
 
@@ -187,6 +214,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 
@@ -210,6 +238,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 
@@ -236,6 +265,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r, maVar),
 		);
 
@@ -262,6 +292,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r, consigne),
 		);
 
@@ -281,6 +312,7 @@ describe("CounterBlockAnalyser", () => {
 		const issues = CounterBlockAnalyser.analyse(
 			element,
 			source,
+			Dialect.FR,
 			variablesMap(r),
 		);
 

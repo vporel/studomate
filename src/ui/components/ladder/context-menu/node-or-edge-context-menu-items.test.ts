@@ -10,6 +10,7 @@ const fakeCopyCutPasteManager = () =>
 const fakeWorkflowManager = () =>
 	({
 		setContactType: jest.fn(),
+		setCoilType: jest.fn(),
 	}) as any;
 
 function itemsFor(
@@ -68,7 +69,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 	it("délègue Copier / Couper au gestionnaire copier-coller", () => {
 		const ccp = fakeCopyCutPasteManager();
 		const [[copyItem, cutItem]] = nodeOrEdgeContextMenuItems(
-			{ id: "contact-1", type: "contact", data: { type: "NO" } } as any,
+			{ id: "e1", type: LADDER_CONNECTION_EDGE_TYPE } as any,
 			"s1",
 			jest.fn(),
 			ccp,
@@ -125,18 +126,58 @@ describe("nodeOrEdgeContextMenuItems", () => {
 			);
 		});
 
-		it("n'ajoute pas de sous-menu Type pour une bobine", () => {
-			const coil = {
+		it("n'ajoute pas de sous-menu Type pour une arête", () => {
+			const edge = { id: "e1", type: LADDER_CONNECTION_EDGE_TYPE } as any;
+
+			const hasType = itemsFor(edge)
+				.flat()
+				.some((item) => item.label === "Type");
+
+			expect(hasType).toBe(false);
+		});
+	});
+
+	describe("sous-menu Type (bobine)", () => {
+		it("propose les 3 types, coche le type courant", () => {
+			const node = {
+				id: "coil-1",
+				type: "coil",
+				data: { type: "set" },
+			} as any;
+
+			const typeItem = itemsFor(node)
+				.flat()
+				.find((item) => item.label === "Type")!;
+
+			expect(typeItem.subItems).toHaveLength(3);
+			const checked = typeItem.subItems!.filter(
+				(sub) => "checked" in sub && sub.checked,
+			);
+			expect(checked).toHaveLength(1);
+			expect((checked[0] as any).label).toContain("Set");
+		});
+
+		it("change le type de la bobine via workflowManager.setCoilType", () => {
+			const workflowManager = fakeWorkflowManager();
+			const node = {
 				id: "coil-1",
 				type: "coil",
 				data: { type: "normal" },
 			} as any;
 
-			const hasType = itemsFor(coil)
+			const typeItem = itemsFor(node, jest.fn(), workflowManager)
 				.flat()
-				.some((item) => item.label === "Type");
+				.find((item) => item.label === "Type")!;
+			const toReset = typeItem.subItems!.find(
+				(sub) => "label" in sub && sub.label.includes("Reset"),
+			) as any;
+			toReset.onClick();
 
-			expect(hasType).toBe(false);
+			expect(workflowManager.setCoilType).toHaveBeenCalledWith(
+				"s1",
+				"coil-1",
+				"reset",
+			);
 		});
 	});
 });

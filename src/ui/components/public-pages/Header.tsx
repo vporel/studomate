@@ -3,10 +3,28 @@
 import routes from "@/app/routes";
 import { APP_NAME } from "@/app-info";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { Box, Button, Typography } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import {
+	Box,
+	Button,
+	IconButton,
+	Menu,
+	MenuItem,
+	Typography,
+} from "@mui/material";
 import Link from "next/link";
+import { useState } from "react";
+
+const navLinks = [
+	{ label: "Accueil", href: routes.home() },
+	{ label: "Manuel", href: routes.userManual() },
+	{ label: "À propos", href: routes.about() },
+];
 
 const Header = () => {
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
 	return (
 		<FlexBox
 			component="header"
@@ -14,34 +32,93 @@ const Header = () => {
 			justifyContent="space-between"
 			sx={{
 				borderBottom: "1px solid lightgray",
-				padding: 1,
+				px: { xs: 1, sm: 2 },
+				py: 1,
 			}}
 		>
-			<FlexBox centerVertical gap={1}>
-				<Box component="img" src="/images/icon.png" sx={{ width: "30px" }} />
-				<Typography
-					sx={{
-						pr: 1,
-						borderRight: "3px solid black",
-						fontWeight: "bold",
-						fontSize: "1.2rem",
-					}}
-				>
-					{APP_NAME}
-				</Typography>
-				<Button LinkComponent={Link} href={routes.home()}>
-					APP WEB
-				</Button>
-			</FlexBox>
 			<Box
 				component={Link}
-				href={routes.about()}
-				sx={{
-					"&:hover, &:hover *": { color: (th) => th.palette.primary.main },
-				}}
+				href={routes.home()}
+				sx={{ textDecoration: "none", "&:hover *": { color: "inherit" } }}
 			>
-				À propos
+				<FlexBox centerVertical gap={1}>
+					<Box
+						component="img"
+						src="/images/icon.png"
+						alt=""
+						sx={{ width: "30px" }}
+					/>
+					<Typography
+						sx={{
+							color: "text.primary",
+							fontWeight: "bold",
+							fontSize: "1.2rem",
+						}}
+					>
+						{APP_NAME}
+					</Typography>
+				</FlexBox>
 			</Box>
+
+			<FlexBox centerVertical gap={1}>
+				<FlexBox
+					centerVertical
+					gap={0.5}
+					sx={{ display: { xs: "none", sm: "flex" } }}
+				>
+					{navLinks.map((l) => (
+						<Button
+							key={l.href}
+							LinkComponent={Link}
+							href={l.href}
+							color="inherit"
+						>
+							{l.label}
+						</Button>
+					))}
+				</FlexBox>
+
+				<Button
+					LinkComponent={Link}
+					href={routes.app()}
+					variant="contained"
+					startIcon={<PlayArrowIcon />}
+					sx={{ display: { xs: "none", sm: "inline-flex" } }}
+				>
+					Ouvrir l&apos;application
+				</Button>
+
+				<IconButton
+					aria-label="Menu"
+					onClick={(e) => setAnchorEl(e.currentTarget)}
+					sx={{ display: { xs: "inline-flex", sm: "none" } }}
+				>
+					<MenuIcon />
+				</IconButton>
+				<Menu
+					anchorEl={anchorEl}
+					open={!!anchorEl}
+					onClose={() => setAnchorEl(null)}
+				>
+					{navLinks.map((l) => (
+						<MenuItem
+							key={l.href}
+							component={Link}
+							href={l.href}
+							onClick={() => setAnchorEl(null)}
+						>
+							{l.label}
+						</MenuItem>
+					))}
+					<MenuItem
+						component={Link}
+						href={routes.app()}
+						onClick={() => setAnchorEl(null)}
+					>
+						Ouvrir l&apos;application
+					</MenuItem>
+				</Menu>
+			</FlexBox>
 		</FlexBox>
 	);
 };

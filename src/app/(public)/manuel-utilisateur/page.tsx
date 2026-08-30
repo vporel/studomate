@@ -34,7 +34,7 @@ export default function UserManual() {
 
 	return (
 		<Container maxWidth="lg" sx={{ my: 4, minHeight: "70vh" }}>
-			<Typography variant="h2" color="primary" gutterBottom>
+			<Typography variant="h2" component="h1" color="primary" gutterBottom>
 				Manuel utilisateur
 			</Typography>
 			<Divider sx={{ my: 2 }} />

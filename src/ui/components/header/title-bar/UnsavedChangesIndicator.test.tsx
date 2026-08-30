@@ -13,7 +13,11 @@ describe("UnsavedChangesIndicator", () => {
 
 	function setup(hasUnsavedChanges: boolean, savingProject: boolean) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ hasUnsavedChanges, savingProject, saveProject }),
+			selectorImplementation({
+				hasUnsavedChanges,
+				savingProject,
+				lifecycleManager: { saveProject },
+			}),
 		);
 		return render(<UnsavedChangesIndicator />);
 	}

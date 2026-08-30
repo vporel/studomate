@@ -12,19 +12,13 @@ import LadderToolbar from "./LadderToolbar";
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("../context/LadderContext");
 
-function setup({
-	mode = ProjectMode.DESIGN,
-	executeOperation = jest.fn(),
-	zoom = 1,
-} = {}) {
+function setup({ mode = ProjectMode.DESIGN, executeOperation = jest.fn() } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ mode }),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
-			viewManager: { zoomIn: jest.fn(), zoomOut: jest.fn() },
-			zoom,
 		}),
 	);
 
@@ -33,13 +27,9 @@ function setup({
 }
 
 describe("LadderToolbar", () => {
-	it("assemble les outils de dépose et les contrôles de zoom sans planter", () => {
+	it("assemble les outils de dépose sans planter", () => {
 		setup();
 
-		expect(document.querySelector(".app-toolbar__zoom-in")).toBeInTheDocument();
-		expect(
-			document.querySelector(".app-toolbar__zoom-out"),
-		).toBeInTheDocument();
 		expect(screen.getByText("Section")).toBeInTheDocument();
 	});
 

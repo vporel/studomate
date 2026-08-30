@@ -14,6 +14,7 @@ const ZoomOutTool = () => {
 	return (
 		<AppTool
 			name="zoom-out"
+			label="Zoom arrière"
 			disabled={
 				activeGrafcetZoom === null || activeGrafcetZoom <= GRAFCET_FLOW_MIN_ZOOM
 			}

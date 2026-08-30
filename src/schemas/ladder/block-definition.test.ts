@@ -136,8 +136,22 @@ describe("BLOCK_DEFINITIONS", () => {
 			expect(def.readParam(params, "IN2")).toBe("Y");
 			expect(def.readParam(params, "OUT")).toBe("Z");
 
-			params = def.operator!.write(params, "*");
-			expect(def.operator!.read(params)).toBe("*");
+			params = def.inlineSelect!.write(params, "*");
+			expect(def.inlineSelect!.read(params)).toBe("*");
+		});
+
+		it("timer : round-trip de la variante via inlineSelect", () => {
+			const def = BLOCK_DEFINITIONS.timer;
+			let params = defaultData("timer").params;
+			params = def.inlineSelect!.write(params, "TOF");
+			expect(def.inlineSelect!.read(params)).toBe("TOF");
+		});
+
+		it("counter : round-trip de la variante via inlineSelect", () => {
+			const def = BLOCK_DEFINITIONS.counter;
+			let params = defaultData("counter").params;
+			params = def.inlineSelect!.write(params, "CTD");
+			expect(def.inlineSelect!.read(params)).toBe("CTD");
 		});
 
 		it("compare / user-program : lèvent (pas de pinoche paramètre éditable)", () => {

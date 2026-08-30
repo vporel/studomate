@@ -32,7 +32,12 @@ const BLOCK_ANALYSERS: Record<
 	timer: (element, ctx) =>
 		TimerBlockAnalyser.analyse(element, ctx.source, ctx.variablesByMnemonic),
 	counter: (element, ctx) =>
-		CounterBlockAnalyser.analyse(element, ctx.source, ctx.variablesByMnemonic),
+		CounterBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.project.dialect,
+			ctx.variablesByMnemonic,
+		),
 	compare: (element, ctx) =>
 		CompareBlockAnalyser.analyse(
 			element,

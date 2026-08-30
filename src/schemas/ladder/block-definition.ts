@@ -1,5 +1,7 @@
 import type { ArithmeticOperator } from "@/expression-language/operators";
 import {
+	COUNTER_TYPES,
+	CounterType,
 	createCounterBlockElement,
 	createCounterBlockVariables,
 	getCounterPortSpecs,
@@ -8,6 +10,8 @@ import {
 } from "./function-blocks/counter.schema";
 import {
 	TIMER_PORT_SPECS,
+	TIMER_TYPES,
+	TimerType,
 	createTimerBlockElement,
 	createTimerBlockVariables,
 	readTimerParam,
@@ -75,8 +79,10 @@ export type BlockDefinition = {
 	/** Libellé fixe dans la boîte (assign, arithmetic). Absent : libellé porté ailleurs (nom du
 	 * bloc pour timer/compteur, nom du programme pour user-program). */
 	staticLabel?: string;
-	/** Sélecteur d'opérateur affiché dans la boîte, le cas échéant. */
-	operator?: {
+	/** Sélecteur affiché dans la boîte, le cas échéant : opérateur (arithmetic), variante
+	 * (timer/counter). Édité en place sur le nœud, pas de fenêtre de configuration. */
+	inlineSelect?: {
+		ariaLabel: string;
 		values: readonly string[];
 		read: (params: Params) => string;
 		write: (params: Params, value: string) => Params;
@@ -118,6 +124,15 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		portsAreExposedVariables: true,
 		exposedVariables: (elementId, params) =>
 			createTimerBlockVariables(elementId, (params as TimerBlockParams).name),
+		inlineSelect: {
+			ariaLabel: "Variante de la temporisation",
+			values: TIMER_TYPES,
+			read: (params) => (params as TimerBlockParams).timerType,
+			write: (params, value) => ({
+				...(params as TimerBlockParams),
+				timerType: value as TimerType,
+			}),
+		},
 	},
 	counter: {
 		portSpecs: (params) =>
@@ -137,6 +152,15 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 				(params as CounterBlockParams).name,
 				(params as CounterBlockParams).counterType,
 			),
+		inlineSelect: {
+			ariaLabel: "Variante du compteur",
+			values: COUNTER_TYPES,
+			read: (params) => (params as CounterBlockParams).counterType,
+			write: (params, value) => ({
+				...(params as CounterBlockParams),
+				counterType: value as CounterType,
+			}),
+		},
 	},
 	compare: {
 		portSpecs: COMPARE_PORT_SPECS,
@@ -176,7 +200,8 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 			writeArithmeticParam(params as ArithmeticBlockParams, suffix, value),
 		portsAreExposedVariables: false,
 		staticLabel: "Calc",
-		operator: {
+		inlineSelect: {
+			ariaLabel: "Opérateur du bloc",
 			values: ARITHMETIC_BLOCK_OPERATORS,
 			read: (params) => (params as ArithmeticBlockParams).operator,
 			write: (params, value) => ({

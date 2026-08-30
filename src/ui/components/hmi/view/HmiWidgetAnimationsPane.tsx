@@ -27,6 +27,7 @@ import {
 	Tab,
 	Tabs,
 	TextField,
+	Tooltip,
 	Typography,
 } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
@@ -281,14 +282,17 @@ const StyleTab = ({
 									))}
 									{!isBoolStyle && (
 										<td style={cellStyle}>
-											<IconButton
-												size="small"
-												onClick={() =>
-													setStyle(style.rows.filter((_, i) => i !== index))
-												}
-											>
-												<DeleteIcon fontSize="small" />
-											</IconButton>
+											<Tooltip title="Supprimer">
+												<IconButton
+													size="small"
+													onClick={() =>
+														setStyle(style.rows.filter((_, i) => i !== index))
+													}
+													aria-label="Supprimer la ligne"
+												>
+													<DeleteIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
 										</td>
 									)}
 								</tr>
@@ -365,9 +369,11 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 					}}
 				>
 					<Typography variant="h6">Animations | {widget.name}</Typography>
-					<IconButton size="small" onClick={close} aria-label="Fermer">
-						<CloseIcon fontSize="small" />
-					</IconButton>
+					<Tooltip title="Fermer">
+						<IconButton size="small" onClick={close} aria-label="Fermer">
+							<CloseIcon fontSize="small" />
+						</IconButton>
+					</Tooltip>
 				</Box>
 				<Box sx={{ display: "flex", flex: 1, minHeight: 0 }}>
 					<Tabs

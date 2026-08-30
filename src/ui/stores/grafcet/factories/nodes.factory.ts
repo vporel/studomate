@@ -2,6 +2,7 @@ import Element, { ElementType } from "@/schemas/grafcet/element.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractNodesFactory from "@/ui/stores/shared/abstract-nodes.factory";
+import describeGrafcetElement from "./describe-grafcet-element";
 
 type GrafcetElementEntry = {
 	id: string;
@@ -33,6 +34,7 @@ class NodesFactory extends AbstractNodesFactory<
 			position: domain.element.position,
 			width: domain.element.size.width,
 			height: domain.element.size.height,
+			ariaLabel: describeGrafcetElement(domain.type, domain.element.data),
 		} as GrafcetNodeType;
 	}
 }

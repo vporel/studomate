@@ -66,7 +66,10 @@ describe("VariablesTable", () => {
 
 	it("désactive le bouton de suppression tant qu'aucune ligne n'est sélectionnée", () => {
 		setupWithVariables([new Variable("v1", "I0", "logic-input", "BOOL")]);
-		expect(screen.getByRole("button", { name: "" })).toBeDisabled(); // IconButton delete, sans libellé accessible
+		const deleteButton = screen
+			.getAllByRole("button")
+			.find((b) => b.querySelector('[data-testid="DeleteIcon"]'))!;
+		expect(deleteButton).toBeDisabled();
 	});
 
 	it("supprime les variables sélectionnées au clic sur le bouton de suppression", () => {

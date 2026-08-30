@@ -31,7 +31,7 @@ describe("useProjectMenu", () => {
 				pagesManager,
 				mode,
 				isSharedProject,
-				shareProject,
+				sharingManager: { shareProject },
 				setShareModalVisible,
 			}),
 		);

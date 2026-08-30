@@ -36,23 +36,23 @@ export default function useLadderContextMenu(
 
 	const openNodeContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent, node: Node) => {
-			openContextMenu(event, node);
+			openContextMenu(event, node, { sectionId: section.id });
 		},
-		[openContextMenu],
+		[openContextMenu, section.id],
 	);
 
 	const openEdgeContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent, edge: Edge) => {
-			openContextMenu(event, edge);
+			openContextMenu(event, edge, { sectionId: section.id });
 		},
-		[openContextMenu],
+		[openContextMenu, section.id],
 	);
 
 	const openPaneContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent) => {
-			openContextMenu(event, { type: "pane" });
+			openContextMenu(event, { type: "pane" }, { sectionId: section.id });
 		},
-		[openContextMenu],
+		[openContextMenu, section.id],
 	);
 
 	return {

@@ -8,11 +8,11 @@ import { useCallback, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
 export default function ShareRequiresCloudModal() {
-	const { visible, setVisible, moveToCloudAndShare } = useProjectStore(
+	const { visible, setVisible, sharingManager } = useProjectStore(
 		useShallow((s) => ({
 			visible: s.ui.shareRequiresCloudModalVisible,
 			setVisible: s.setShareRequiresCloudModalVisible,
-			moveToCloudAndShare: s.moveToCloudAndShare,
+			sharingManager: s.sharingManager,
 		})),
 	);
 
@@ -26,11 +26,11 @@ export default function ShareRequiresCloudModal() {
 	const onConfirm = useCallback(async () => {
 		setSubmitting(true);
 		try {
-			await moveToCloudAndShare();
+			await sharingManager.moveToCloudAndShare();
 		} finally {
 			setSubmitting(false);
 		}
-	}, [moveToCloudAndShare]);
+	}, [sharingManager]);
 
 	return (
 		<CustomModal

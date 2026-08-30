@@ -44,6 +44,7 @@ const AppShell = () => {
 				<Box
 					component="img"
 					src="/images/icon.png"
+					alt=""
 					sx={{ width: "50px", margin: "10px" }}
 				/>
 				<Box sx={{ flex: 1, paddingTop: "5px" }}>

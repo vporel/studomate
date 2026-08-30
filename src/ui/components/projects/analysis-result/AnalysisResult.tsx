@@ -2,7 +2,7 @@
 
 import ResizableFixedBox from "@/ui/lib/mui/ResizableFixedBox";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Divider, IconButton, Typography } from "@mui/material";
+import { Box, Divider, IconButton, Tooltip, Typography } from "@mui/material";
 import { useCallback } from "react";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
@@ -17,13 +17,15 @@ function Header({ onClose }: { onClose: () => void }) {
 			}}
 		>
 			<Typography variant="h6">{"Résultats de l'analyse"}</Typography>
-			<IconButton
-				onClick={onClose}
-				size="small"
-				aria-label="close-analysis-errors"
-			>
-				<CloseIcon />
-			</IconButton>
+			<Tooltip title="Fermer">
+				<IconButton
+					onClick={onClose}
+					size="small"
+					aria-label="close-analysis-errors"
+				>
+					<CloseIcon />
+				</IconButton>
+			</Tooltip>
 		</Box>
 	);
 }

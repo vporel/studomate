@@ -13,7 +13,6 @@ import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
-import blockContextMenuItems from "./block-context-menu-items";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -31,7 +30,13 @@ const LadderContextMenu = ({
 	const copyCutPasteManager = useLadderStore(
 		(state) => state.copyCutPasteManager,
 	);
-	const canPaste = useClipboardStore((s) => s.entry?.scope === "ladder");
+	// Le menu du flow ne colle que des éléments : un presse-papiers contenant une section
+	// entière se colle par Ctrl+V ou le menu Édition, pas ici.
+	const canPaste = useClipboardStore(
+		(s) =>
+			s.entry?.scope === "ladder" &&
+			(s.entry.data as { kind?: string })?.kind === "elements",
+	);
 	const [element, setElement] = useState<LadderContextMenuElement>({
 		type: "pane",
 	});
@@ -53,8 +58,6 @@ const LadderContextMenu = ({
 			);
 		}
 		const items: ContextMenuItemType[][] = [];
-		if (element.type === "block")
-			items.push(...blockContextMenuItems(element, workflowManager));
 		items.push(
 			...nodeOrEdgeContextMenuItems(
 				element,
@@ -77,6 +80,12 @@ const LadderContextMenu = ({
 
 	useEffect(() => {
 		const showMenu = (props: LadderContextMenuProps) => {
+			// Bus mitt partagé par toutes les sections : n'afficher que dans la section cliquée, et
+			// refermer les menus des autres sections.
+			if (props.sectionId !== sectionId) {
+				hide();
+				return;
+			}
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
@@ -88,7 +97,7 @@ const LadderContextMenu = ({
 			contextMenuEvents.off("show", showMenu);
 			contextMenuEvents.off("hide", hide);
 		};
-	}, [contextMenuEvents, hide, show]);
+	}, [contextMenuEvents, hide, show, sectionId]);
 
 	return (
 		<ContextMenu

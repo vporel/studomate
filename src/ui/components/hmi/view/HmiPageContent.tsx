@@ -6,7 +6,6 @@ import Page from "@/ui/components/pages/Page";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 import { Box, Divider, Typography } from "@mui/material";
 import { useState } from "react";
 import {
@@ -108,14 +107,6 @@ const HmiPageContent = ({
 						onClick={() => setZoom((z) => clampZoom(z + ZOOM_STEP))}
 					>
 						<ZoomInIcon />
-					</AppTool>
-					<Divider orientation="vertical" style={{ margin: "10px 5px" }} />
-					<AppTool
-						name="hmi-zoom-reset"
-						label="Réinitialiser le zoom"
-						onClick={() => setZoom(ZOOM_DEFAULT)}
-					>
-						<ZoomOutMapIcon />
 					</AppTool>
 				</FlexBox>
 			</FlexBox>

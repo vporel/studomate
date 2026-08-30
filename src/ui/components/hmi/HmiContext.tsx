@@ -44,6 +44,7 @@ export const HmiContextProvider = ({
 			copyCutPasteManager: storeRef.current.getState().copyCutPasteManager,
 			selectAllWidgets: storeRef.current.getState().selectAllWidgets,
 			removeSelectedWidgets: storeRef.current.getState().removeSelectedWidgets,
+			moveSelectedWidgets: storeRef.current.getState().moveSelectedWidgets,
 		});
 		return () => {
 			hmiManager.deleteStoreManager(hmiPageId);

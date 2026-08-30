@@ -41,6 +41,10 @@ const ContextMenu = ({
 			pos.y -= ref.current.offsetHeight;
 			shiftAxes = shiftAxes === null ? "y" : "xy";
 		}
+		//Le menu est rendu dans un conteneur en overflow:hidden : sans borne basse,
+		//un décalage vers le haut/la gauche fait sortir les premières entrées du cadre.
+		pos.x = Math.max(0, pos.x);
+		pos.y = Math.max(0, pos.y);
 		setPositionShiftAxes(shiftAxes);
 		setInternalPosition(pos);
 	}, [position, parentWidth, parentHeight]);
@@ -95,12 +99,12 @@ const ContextMenu = ({
 					".right-text": {
 						color: "gray",
 					},
+					// L'ancrage vertical du sous-menu (haut/bas) et son plafond de hauteur sont posés
+					// par `ContextMenuItem`, qui mesure si le sous-menu de cette entrée déborderait.
 					".sub-items-container": {
 						position: "absolute",
 						left: !positionShiftAxes?.includes("x") ? "100%" : "auto",
 						right: positionShiftAxes?.includes("x") ? "100%" : "auto",
-						top: !positionShiftAxes?.includes("y") ? "0" : "auto",
-						bottom: positionShiftAxes?.includes("y") ? "0" : "auto",
 						background: "white",
 						minWidth: "160px",
 						minHeight: "20px",
@@ -120,6 +124,8 @@ const ContextMenu = ({
 								key={item.label}
 								item={item}
 								hideMenu={onClose!}
+								menuTop={internalPosition.y}
+								parentHeight={parentHeight}
 							/>
 						))}
 						{index < menuItems.length - 1 && (

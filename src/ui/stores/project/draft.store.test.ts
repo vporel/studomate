@@ -18,7 +18,7 @@ const mockedDeleteDraft = draftStorage.deleteDraft as jest.Mock;
 
 /** Ouvre un projet vierge : `newProject()` n'ouvre plus que la modale, c'est `newProjectFromTemplate(null)` qui crée réellement. */
 async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
-	await store.getState().newProjectFromTemplate(null);
+	await store.getState().lifecycleManager.newProjectFromTemplate(null);
 }
 
 function projectWithDate(id: string, lastModificationDate: Date): Project {
@@ -43,7 +43,7 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
-			store.getState().startAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
 			jest.advanceTimersByTime(30_000);
 
 			expect(mockedSaveDraft).toHaveBeenCalledTimes(1);
@@ -52,7 +52,7 @@ describe("store — brouillons", () => {
 				store.getState().project!.name,
 				expect.any(String),
 			);
-			store.getState().stopAutoSave();
+			store.getState().lifecycleManager.stopAutoSave();
 		});
 
 		it("ne sauvegarde pas si aucune modification n'est en attente", async () => {
@@ -60,11 +60,11 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			// hasUnsavedChanges est false après ouverture d'un projet vierge
 
-			store.getState().startAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
 			jest.advanceTimersByTime(30_000);
 
 			expect(mockedSaveDraft).not.toHaveBeenCalled();
-			store.getState().stopAutoSave();
+			store.getState().lifecycleManager.stopAutoSave();
 		});
 
 		it("ne sauvegarde pas si le projet est partagé (lecture seule)", async () => {
@@ -72,11 +72,11 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true, isSharedProject: true });
 
-			store.getState().startAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
 			jest.advanceTimersByTime(30_000);
 
 			expect(mockedSaveDraft).not.toHaveBeenCalled();
-			store.getState().stopAutoSave();
+			store.getState().lifecycleManager.stopAutoSave();
 		});
 
 		it("stopAutoSave arrête l'intervalle", async () => {
@@ -84,8 +84,8 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
-			store.getState().startAutoSave();
-			store.getState().stopAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
+			store.getState().lifecycleManager.stopAutoSave();
 			jest.advanceTimersByTime(60_000);
 
 			expect(mockedSaveDraft).not.toHaveBeenCalled();
@@ -96,12 +96,12 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
-			store.getState().startAutoSave();
-			store.getState().startAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
+			store.getState().lifecycleManager.startAutoSave();
 			jest.advanceTimersByTime(30_000);
 
 			expect(mockedSaveDraft).toHaveBeenCalledTimes(1);
-			store.getState().stopAutoSave();
+			store.getState().lifecycleManager.stopAutoSave();
 		});
 	});
 
@@ -111,7 +111,7 @@ describe("store — brouillons", () => {
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
-			await store.getState().saveProject();
+			await store.getState().lifecycleManager.saveProject();
 
 			expect(mockedDeleteDraft).toHaveBeenCalledWith(
 				store.getState().project!.id,
@@ -125,7 +125,7 @@ describe("store — brouillons", () => {
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 
-			const opened = await store.getState().openProject("p1");
+			const opened = await store.getState().lifecycleManager.openProject("p1");
 
 			expect(opened).toBe(true);
 			expect(store.getState().project!.id).toBe("p1");
@@ -144,7 +144,7 @@ describe("store — brouillons", () => {
 				data: JSON.stringify(project),
 			});
 
-			await store.getState().openProject("p1");
+			await store.getState().lifecycleManager.openProject("p1");
 
 			expect(mockedDeleteDraft).toHaveBeenCalledWith("p1");
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
@@ -163,7 +163,7 @@ describe("store — brouillons", () => {
 				data: JSON.stringify(project),
 			});
 
-			await store.getState().openProject("p1");
+			await store.getState().lifecycleManager.openProject("p1");
 
 			expect(store.getState().ui.draftConflictModal.visible).toBe(true);
 			expect(store.getState().ui.draftConflictModal.projectId).toBe("p1");
@@ -182,7 +182,7 @@ describe("store — brouillons", () => {
 				data: JSON.stringify(project),
 			});
 
-			await store.getState().openProject("p1", true);
+			await store.getState().lifecycleManager.openProject("p1", true);
 
 			expect(store.getState().project!.id).toBe("p1");
 			expect(store.getState().hasUnsavedChanges).toBe(true);
@@ -199,7 +199,7 @@ describe("store — brouillons", () => {
 				data: "{ json invalide",
 			});
 
-			const opened = await store.getState().openProject("p1", true);
+			const opened = await store.getState().lifecycleManager.openProject("p1", true);
 
 			expect(opened).toBe(true);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
@@ -225,7 +225,7 @@ describe("store — brouillons", () => {
 		it("ouvre le brouillon et marque hasUnsavedChanges si le choix est 'draft'", async () => {
 			const { store } = await storeAvecConflitActif();
 
-			await store.getState().resolveDraftConflict("draft");
+			await store.getState().lifecycleManager.resolveDraftConflict("draft");
 
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
 			expect(store.getState().hasUnsavedChanges).toBe(true);
@@ -234,7 +234,7 @@ describe("store — brouillons", () => {
 		it("supprime le brouillon et ferme la modale si le choix est 'real'", async () => {
 			const { store } = await storeAvecConflitActif();
 
-			await store.getState().resolveDraftConflict("real");
+			await store.getState().lifecycleManager.resolveDraftConflict("real");
 
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
 			expect(mockedDeleteDraft).toHaveBeenCalledWith("p1");

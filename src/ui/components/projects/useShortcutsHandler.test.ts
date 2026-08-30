@@ -35,6 +35,12 @@ function dispatchShortcut(
 	target.dispatchEvent(event);
 }
 
+function dispatchKey(key: string, target: EventTarget = document.body) {
+	target.dispatchEvent(
+		new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+	);
+}
+
 describe("useShortcutsHandler", () => {
 	const setOpenModalVisible = jest.fn();
 	const saveProject = jest.fn();
@@ -48,10 +54,15 @@ describe("useShortcutsHandler", () => {
 	const pasteElements = jest.fn();
 	const cutSelectedElements = jest.fn();
 
+	const moveSelectedWidgets = jest.fn();
+
 	function setup(
 		mode: ProjectMode,
-		activeScopeType: "grafcet" | "ladder" | "variables" = "grafcet",
+		activeScopeType: "grafcet" | "ladder" | "variables" | "hmi" = "grafcet",
 	) {
+		const hmiManager = {
+			getActiveStoreManagers: jest.fn(() => ({ moveSelectedWidgets })),
+		};
 		const grafcetsManager = {
 			newGrafcet,
 			getActiveStoreManagers: jest.fn(() => ({
@@ -79,6 +90,7 @@ describe("useShortcutsHandler", () => {
 			activeScopeType,
 			grafcetsManager,
 			laddersManager,
+			hmiManager,
 			undoActiveScope,
 			redoActiveScope,
 		};
@@ -86,8 +98,9 @@ describe("useShortcutsHandler", () => {
 			selectorImplementation({
 				grafcetsManager,
 				laddersManager,
+				hmiManager,
 				setOpenModalVisible,
-				saveProject,
+				lifecycleManager: { saveProject },
 				setSaveAsModalVisible,
 			}),
 		);
@@ -200,6 +213,35 @@ describe("useShortcutsHandler", () => {
 		setup(ProjectMode.DESIGN, "ladder");
 		dispatchShortcut("x");
 		expect(cutSelectedElements).toHaveBeenCalled();
+	});
+
+	it("moves selected HMI widgets by one grid step on arrow keys while designing", () => {
+		setup(ProjectMode.DESIGN, "hmi");
+		dispatchKey("ArrowRight");
+		expect(moveSelectedWidgets).toHaveBeenCalledWith(10, 0);
+		dispatchKey("ArrowUp");
+		expect(moveSelectedWidgets).toHaveBeenCalledWith(0, -10);
+	});
+
+	it("ignores arrow keys for HMI outside design mode", () => {
+		setup(ProjectMode.SIMULATION, "hmi");
+		dispatchKey("ArrowRight");
+		expect(moveSelectedWidgets).not.toHaveBeenCalled();
+	});
+
+	it("ignores arrow keys when the active scope is not HMI", () => {
+		setup(ProjectMode.DESIGN, "grafcet");
+		dispatchKey("ArrowRight");
+		expect(moveSelectedWidgets).not.toHaveBeenCalled();
+	});
+
+	it("ignores arrow keys typed inside an input", () => {
+		setup(ProjectMode.DESIGN, "hmi");
+		const input = document.createElement("input");
+		document.body.appendChild(input);
+		dispatchKey("ArrowRight", input);
+		expect(moveSelectedWidgets).not.toHaveBeenCalled();
+		document.body.removeChild(input);
 	});
 
 	it("ignores shortcuts typed inside an input", () => {

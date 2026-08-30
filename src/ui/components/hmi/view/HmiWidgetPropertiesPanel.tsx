@@ -6,14 +6,24 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
+import useCommittedField from "@/ui/lib/hooks/useCommittedField";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import BoltIcon from "@mui/icons-material/Bolt";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Box, Button, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import HmiWidgetGeometryFields from "./HmiWidgetGeometryFields";
 import HmiWidgetPropertyFields from "./HmiWidgetPropertyFields";
+import { HmiWidgetRect } from "./useHmiWidgetResize";
 
-const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
+const HmiWidgetPropertiesPanel = ({
+	widget,
+	onGeometryPreview,
+}: {
+	widget: HmiWidget;
+	/** Aperçu visuel live pendant la saisie dans les sections Position / Dimensions (voir
+	 * `HmiCanvas`, même canal que les poignées de redimensionnement). */
+	onGeometryPreview: (rect: HmiWidgetRect | null) => void;
+}) => {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const openAnimationsPane = useHmiStore((s) => s.openAnimationsPane);
 	const openEventsPane = useHmiStore((s) => s.openEventsPane);
@@ -24,34 +34,40 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 	// ne peut pas cibler une sortie : sa valeur est calculée par le programme, pas pilotable.
 	const excludeDirection = variableBinding?.writes ? "OUT" : undefined;
 
-	// Champ local plutôt que directement lié à `widget.name` : un nom vide ou en doublon est
-	// silencieusement ignoré par le store (voir `HmiStoreState.updateWidget`), il ne faut donc pas
-	// que la frappe en cours soit écrasée à chaque caractère tant qu'elle n'est pas valide.
-	const [nameInput, setNameInput] = useState(widget.name);
-	useEffect(() => setNameInput(widget.name), [widget.id, widget.name]);
+	// Un nom vide ou en doublon est silencieusement ignoré par le store (voir
+	// `HmiStoreState.updateWidget`) : on le refuse au blur pour ne pas laisser le champ afficher une
+	// valeur que le store n'a pas retenue.
+	const nameIsTaken = (name: string) =>
+		Object.values(widgets).some(
+			(w) => w.id !== widget.id && w.name === name.trim(),
+		);
+	const nameField = useCommittedField({
+		value: widget.name,
+		onCommit: (name) => updateWidget(widget.id, { name }),
+		reject: (name) => name.trim() === "" || nameIsTaken(name),
+	});
+	const nameConflicts = nameIsTaken(nameField.value);
 
-	const nameConflicts = Object.values(widgets).some(
-		(w) => w.id !== widget.id && w.name === nameInput.trim(),
-	);
+	const labelField = useCommittedField({
+		value: "label" in widget.data ? widget.data.label : "",
+		onCommit: (label) => {
+			if ("label" in widget.data)
+				updateWidget(widget.id, { data: { ...widget.data, label } });
+		},
+	});
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 1.5 }}>
 			<TextField
 				label="Nom"
 				size="small"
-				slotProps={{ inputLabel: { shrink: true } }}
-				value={nameInput}
-				onChange={(e) => setNameInput(e.target.value)}
-				onBlur={() => {
-					// Un doublon dans lequel l'utilisateur persiste jusqu'au blur n'est pas rattrapable :
-					// on revient au nom de départ plutôt que de laisser le champ afficher une valeur que
-					// le store a silencieusement ignorée (voir `HmiStoreState.updateWidget`).
-					if (nameConflicts) {
-						setNameInput(widget.name);
-						return;
-					}
-					updateWidget(widget.id, { name: nameInput });
+				slotProps={{
+					inputLabel: { shrink: true },
+					htmlInput: { onKeyDown: nameField.onKeyDown },
 				}}
+				value={nameField.value}
+				onChange={nameField.onChange}
+				onBlur={nameField.onBlur}
 				sx={{
 					"& .MuiInputBase-input": {
 						color: nameConflicts ? "error.main" : undefined,
@@ -66,13 +82,13 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 					<TextField
 						label="Libellé"
 						size="small"
-						slotProps={{ inputLabel: { shrink: true } }}
-						value={widget.data.label}
-						onChange={(e) =>
-							updateWidget(widget.id, {
-								data: { ...widget.data, label: e.target.value },
-							})
-						}
+						slotProps={{
+							inputLabel: { shrink: true },
+							htmlInput: { onKeyDown: labelField.onKeyDown },
+						}}
+						value={labelField.value}
+						onChange={labelField.onChange}
+						onBlur={labelField.onBlur}
 					/>
 					<VariableSelector
 						label="Variable liée"
@@ -92,6 +108,8 @@ const HmiWidgetPropertiesPanel = ({ widget }: { widget: HmiWidget }) => {
 			)}
 
 			<HmiWidgetPropertyFields widget={widget} />
+
+			<HmiWidgetGeometryFields widget={widget} onPreview={onGeometryPreview} />
 
 			<Box sx={{ display: "flex", gap: 1 }}>
 				{HMI_WIDGET_UI[widget.type].events.length > 0 && (

@@ -118,6 +118,11 @@ export type HmiWidgetBaseData = {
 	variable: string;
 	/** Libellé affiché sous le widget. */
 	label: string;
+	/** Fige le ratio largeur/hauteur au redimensionnement (poignées comme champs Dimensions) sur
+	 * la valeur courante — réglage par widget, indépendant du type. Un type à ratio imposé
+	 * (`HMI_WIDGET_DEFINITIONS[type].aspectRatio`, ex. voyant carré) l'emporte. Voir
+	 * `getResizeAspectRatio`. */
+	lockAspectRatio?: boolean;
 };
 
 export type PushButtonData = HmiWidgetBaseData & {
@@ -179,6 +184,8 @@ export type RectangleData = {
 		strokeWidth?: number;
 		borderRadius?: number;
 	};
+	/** Voir `getResizeAspectRatio`. */
+	lockAspectRatio?: boolean;
 	animations?: HmiWidgetAnimations<HmiShapeAnimatableProp>;
 };
 export type EllipseData = {
@@ -187,14 +194,14 @@ export type EllipseData = {
 		stroke: string;
 		strokeWidth?: number;
 	};
-	/** Contraint le redimensionnement à un ratio 1:1 (cercle) — voir `useHmiWidgetResize`. Un
-	 * réglage par widget, pas par type (contrairement à `HMI_WIDGET_DEFINITIONS[type].aspectRatio`) :
-	 * une ellipse peut librement devenir un cercle et inversement (voir `HmiWidgetPropertiesPanel`). */
+	/** Voir `getResizeAspectRatio`. */
 	lockAspectRatio?: boolean;
 	animations?: HmiWidgetAnimations<HmiShapeAnimatableProp>;
 };
 export type TextData = {
 	text: string;
+	/** Voir `getResizeAspectRatio`. */
+	lockAspectRatio?: boolean;
 	style?: {
 		fontSize?: number;
 		color?: string;
@@ -297,7 +304,6 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 		variableBinding: null,
 		defaultData: {
 			style: { fill: "#e0e0e0", stroke: "#555555", strokeWidth: 2 },
-			lockAspectRatio: false,
 		},
 		label: "Ellipse",
 		defaultSize: { width: 100, height: 70 },
@@ -536,15 +542,15 @@ function createFromJSON(json: string): HmiWidget {
 
 /**
  * Ratio largeur/hauteur à respecter au redimensionnement (voir `useHmiWidgetResize`), ou
- * `undefined` si libre. Vient soit du type (`HMI_WIDGET_DEFINITIONS`, ex. `indicator` toujours
- * carré), soit du widget lui-même pour une ellipse (`EllipseData.lockAspectRatio`, ex. "Cercle" —
- * seul type dont le ratio est un choix de l'utilisateur, pas une contrainte du type).
+ * `undefined` si le widget se redimensionne librement. Priorité au ratio imposé par le type
+ * (`HMI_WIDGET_DEFINITIONS`, ex. `indicator` toujours carré) ; sinon, si l'utilisateur a coché
+ * « Lier largeur et hauteur » (`data.lockAspectRatio`), le ratio courant du widget est figé.
  */
 function getResizeAspectRatio(widget: HmiWidget): number | undefined {
 	const { aspectRatio } = HMI_WIDGET_DEFINITIONS[widget.type];
 	if (aspectRatio !== undefined) return aspectRatio;
-	return widget.type === "ellipse" && widget.data.lockAspectRatio
-		? 1
+	return widget.data.lockAspectRatio
+		? widget.size.width / widget.size.height
 		: undefined;
 }
 

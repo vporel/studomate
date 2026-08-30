@@ -47,11 +47,15 @@ export default abstract class AbstractNodesFactory<
 	 */
 	protected syncNode(prevNode: TNode, domain: TDomain): TNode {
 		const built = this.buildNode(domain);
-		return this.syncNodeDataAndPosition(
+		const synced = this.syncNodeDataAndPosition(
 			prevNode,
 			built.data,
 			built.position,
 		) as TNode;
+		// Le libellé accessible dérive des `data` : le resynchroniser sans casser l'optimisation
+		// d'identité de `syncNodeDataAndPosition` quand rien n'a bougé.
+		if (synced.ariaLabel === built.ariaLabel) return synced;
+		return { ...synced, ariaLabel: built.ariaLabel };
 	}
 
 	protected abstract buildNode(domain: TDomain): TNode;

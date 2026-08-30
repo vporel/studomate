@@ -70,16 +70,21 @@ export default function GridToolBar({
 	return (
 		<Toolbar>
 			<Box sx={{ flex: 1 }}>
-				<IconButton
-					disabled={rowSelectionModel.ids.size === 0}
-					onClick={() =>
-						variablesManager.removeVariables(
-							Array.from(rowSelectionModel.ids).map((id) => id.toString()),
-						)
-					}
-				>
-					<DeleteIcon />
-				</IconButton>
+				<Tooltip title="Supprimer">
+					<span>
+						<IconButton
+							disabled={rowSelectionModel.ids.size === 0}
+							onClick={() =>
+								variablesManager.removeVariables(
+									Array.from(rowSelectionModel.ids).map((id) => id.toString()),
+								)
+							}
+							aria-label="Supprimer les variables sélectionnées"
+						>
+							<DeleteIcon />
+						</IconButton>
+					</span>
+				</Tooltip>
 			</Box>
 			<Tooltip title="Filtres">
 				<FilterPanelTrigger

@@ -18,7 +18,7 @@ export type CounterType = (typeof COUNTER_TYPES)[number];
  * contrôle/PV (paramètres, entrée) puis CV (paramètre, sortie). La pulsion de comptage s'appelle
  * `IN` pour CTU, `CD` pour CTD ; le port de contrôle `R` (remise à zéro) pour CTU, `LD` (charge
  * PV dans CV) pour CTD — ni l'un ni l'autre ne génère de variable, leur valeur est résolue
- * directement depuis la pinoche (toujours une variable, jamais de littéral, contrairement à PV).
+ * directement depuis la pinoche (nom de variable booléenne ou littéral booléen `TRUE`/`FALSE`).
  */
 export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
 	const pulseSuffix = counterType === "CTU" ? "IN" : "CD";

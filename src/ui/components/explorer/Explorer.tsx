@@ -64,7 +64,10 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<ExplorerHeader />
-			<SimpleTreeView defaultExpandedItems={["variables", "programs", "hmi"]}>
+			<SimpleTreeView
+				aria-label="Explorateur du projet"
+				defaultExpandedItems={["variables", "programs", "hmi"]}
+			>
 				<CustomTreeItem
 					itemId="variables"
 					label="Variables"
