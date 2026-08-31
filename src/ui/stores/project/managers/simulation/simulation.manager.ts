@@ -15,6 +15,7 @@ import {
 } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import trackEvent from "@/ui/lib/analytics";
 import SimulationNotifier from "./simulation.notifier";
 
 const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
@@ -180,6 +181,7 @@ export default class SimulationManager {
 			mode: ProjectMode.SIMULATION,
 			simulationPaused: startPaused,
 		}));
+		trackEvent("simulation-started", { mode: simulationMode });
 		this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
 	}
 

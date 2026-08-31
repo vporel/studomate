@@ -12,6 +12,12 @@ import {
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { createGrafcetStore } from "../grafcet.store";
 
+// jsdom ne fait pas de layout : mmToPx renvoie 0. On fixe la taille de page.
+jest.mock("@/ui/utils/grafcet/grafcet-utils", () => ({
+	...jest.requireActual("@/ui/utils/grafcet/grafcet-utils"),
+	getFlowDimensions: () => ({ width: 1000, height: 1400 }),
+}));
+
 function node(
 	id: string,
 	overrides: Partial<GrafcetNodeType["data"]> = {},
@@ -193,6 +199,77 @@ describe("GrafcetWorkflowManager.handleNodesChange — identité des nœuds", ()
 			.nodes.find((n) => n.id === "junction-1")! as any;
 		expect(junctionAfter.width).toBe(250);
 		expect(junctionAfter.data.pivotPosition).toBe(pivotBefore);
+	});
+});
+
+describe("GrafcetWorkflowManager.addJunctionBranch", () => {
+	it("insère une branche à droite en une seule commande (données + taille), annulable d'un coup", () => {
+		const store = buildStore();
+		const before = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!;
+		const branchCountBefore = before.data.branchesOrder.length;
+		const widthBefore = before.size.width;
+
+		store.getState().workflowManager.addJunctionBranch("junction-1", branchCountBefore);
+
+		const afterNode = store
+			.getState()
+			.nodes.find((n) => n.id === "junction-1")! as any;
+		expect(afterNode.data.branchesOrder).toHaveLength(branchCountBefore + 1);
+		expect(afterNode.width).toBeGreaterThan(widthBefore);
+
+		store.getState().commandsStackManager.undoOperation();
+
+		const restored = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!;
+		expect(restored.data.branchesOrder).toHaveLength(branchCountBefore);
+		expect(restored.size.width).toBe(widthBefore);
+	});
+
+	it("décale la jonction vers la gauche pour une insertion en tête", () => {
+		const store = buildStore();
+		const xBefore = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!.position.x;
+
+		store.getState().workflowManager.addJunctionBranch("junction-1", 0);
+
+		const after = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!;
+		expect(after.position.x).toBeLessThan(xBefore);
+		expect(after.data.branchesOrder).toHaveLength(3);
+	});
+});
+
+describe("GrafcetWorkflowManager.previewJunctionBarPosition", () => {
+	it("patche la vue sans toucher le grafcet ni pousser de commande", () => {
+		const store = buildStore();
+		const executeSpy = jest.spyOn(
+			store.getState().commandsStackManager,
+			"executeOperation",
+		);
+		const pivotBefore = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!.data.pivotPosition;
+
+		store
+			.getState()
+			.workflowManager.previewJunctionBarPosition("junction-1", {
+				pivotPosition: pivotBefore + 30,
+			});
+
+		const junctionNode = store
+			.getState()
+			.nodes.find((n) => n.id === "junction-1")! as any;
+		expect(junctionNode.data.pivotPosition).toBe(pivotBefore + 30);
+		expect(
+			store.getState().grafcet.getElementById<any>("junction-1")!.data
+				.pivotPosition,
+		).toBe(pivotBefore);
+		expect(executeSpy).not.toHaveBeenCalled();
 	});
 });
 

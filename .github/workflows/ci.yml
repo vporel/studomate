@@ -16,21 +16,15 @@ permissions:
 
 jobs:
   quality:
-    name: Lint, types, tests & build (Node ${{ matrix.node }})
+    name: Lint, types, tests & build (Node 22)
     runs-on: ubuntu-latest
-
-    strategy:
-      # On veut voir les échecs de toutes les versions, pas seulement de la première
-      fail-fast: false
-      matrix:
-        node: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22
           cache: npm
 
       - name: Install dependencies

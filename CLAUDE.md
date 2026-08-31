@@ -85,7 +85,7 @@ npm run lint     # ESLint
 npx tsc --noEmit # vérification des types
 ```
 
-CI GitHub Actions : ces quatre commandes tournent sur Node 20 et 22 à chaque push/PR vers
+CI GitHub Actions : ces quatre commandes tournent sur Node 22 à chaque push/PR vers
 `main` et `develop`.
 
 **Cadence de vérification pendant une tâche à plusieurs étapes** : ne pas relancer `npx tsc
@@ -98,7 +98,7 @@ lancer que les tests créés ou affectés par le changement en cours
 
 ## Versions
 
-Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 20 et 22).
+Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 22).
 
 | Paquet | Version | Rôle |
 |---|---|---|
@@ -115,8 +115,8 @@ Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 20 et 22)
 | `date-fns` | ^4.1.0 | Dates |
 | `mitt` | ^3.0.1 | Bus d'événements (menus contextuels du grafcet) |
 | `nanoid` | ^5.1.16 | Identifiants courts — toujours via `createRandomId()` (`src/ids.ts`), jamais `nanoid` en direct |
-| `dom-to-image` | ^2.6.0 | Export image du grafcet |
-| `jspdf` / `html2pdf.js` | ^4.2.1 / ^0.14.0 | Export PDF (manuel, projet) |
+| `dom-to-image` | ^2.6.0 | Rastérisation des programmes pour l'export PDF |
+| `jspdf` | ^4.2.1 | Export PDF (projet : page de garde + programmes) |
 | `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Réordonnancement des sections Ladder |
 | `react-toastify` | ^11.0.5 | Notifications |
 | `nextjs-toploader` | ^3.9.17 | Barre de progression de navigation |
@@ -137,7 +137,7 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
   n'est pas une exception à cette règle : il contient la logique d'enchaînement des
   migrations, pas une ré-export.
 - **Fichiers `*.d.ts`** : `src/types/` ne contient que les shims `declare module` de paquets tiers
-  non typés (ex. `html2pdf.d.ts`). Tout autre `.d.ts` est un fichier de types ordinaire
+  non typés (ex. `file-system-access.d.ts`). Tout autre `.d.ts` est un fichier de types ordinaire
   co-localisé avec le module ou la feature qu'il décrit (`src/ui/lib/context-menu/context-menu.d.ts`,
   `src/schemas/grafcet/shared-types.d.ts`...) — pas un candidat pour `src/types/`.
 - **`export default` assumé** pour la classe/valeur principale d'un fichier (schémas, commandes,

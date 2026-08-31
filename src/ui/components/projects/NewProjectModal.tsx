@@ -83,54 +83,59 @@ export default function NewProjectModal() {
 						</Divider>
 
 						<Box
-							display="grid"
-							gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
-							gap={2}
-							sx={{ maxHeight: 440, overflowY: "auto", pr: 1 }}
+							sx={{ minHeight: 0, maxHeight: 440, overflowY: "auto", pr: 1 }}
 						>
-							{PROJECT_TEMPLATES.map((template) => (
-								<Card
-									key={template.id}
-									variant="outlined"
-									sx={{
-										height: "100%",
-										borderColor:
-											selected === template.id ? "primary.main" : "divider",
-										cursor: "pointer",
-									}}
-								>
-									<CardActionArea
-										onClick={() => setSelected(template.id)}
+							<Box
+								display="grid"
+								gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+								gap={2}
+							>
+								{PROJECT_TEMPLATES.map((template) => (
+									<Card
+										key={template.id}
+										variant="outlined"
 										sx={{
 											height: "100%",
-											display: "flex",
-											alignItems: "stretch",
+											borderColor:
+												selected === template.id
+													? "primary.main"
+													: "divider",
+											cursor: "pointer",
 										}}
 									>
-										<CardContent>
-											<Typography variant="subtitle1" fontWeight={600}>
-												{template.label}
-											</Typography>
-											<Typography variant="body2" color="text.secondary">
-												{template.description}
-											</Typography>
-											{template.solution && (
-												<Typography
-													variant="caption"
-													color="text.secondary"
-													sx={{
-														fontStyle: "italic",
-														display: "block",
-														mt: 0.5,
-													}}
-												>
-													{`Une solution est disponible.`}
+										<CardActionArea
+											onClick={() => setSelected(template.id)}
+											sx={{
+												height: "100%",
+												display: "flex",
+												alignItems: "stretch",
+											}}
+										>
+											<CardContent>
+												<Typography variant="subtitle1" fontWeight={600}>
+													{template.label}
 												</Typography>
-											)}
-										</CardContent>
-									</CardActionArea>
-								</Card>
-							))}
+												<Typography variant="body2" color="text.secondary">
+													{template.description}
+												</Typography>
+												{template.solution && (
+													<Typography
+														variant="caption"
+														color="text.secondary"
+														sx={{
+															fontStyle: "italic",
+															display: "block",
+															mt: 0.5,
+														}}
+													>
+														{`Une solution est disponible.`}
+													</Typography>
+												)}
+											</CardContent>
+										</CardActionArea>
+									</Card>
+								))}
+							</Box>
 						</Box>
 					</>
 				)}

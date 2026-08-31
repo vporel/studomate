@@ -94,6 +94,43 @@ describe("createProjectStore", () => {
 		});
 	});
 
+	describe("setExerciseStatement", () => {
+		it("enregistre l'énoncé et marque des changements non sauvegardés", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+
+			store.getState().setExerciseStatement("## Consignes\n\nFaire X.");
+
+			expect(store.getState().project?.exercise?.statement).toBe(
+				"## Consignes\n\nFaire X.",
+			);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("retire l'énoncé quand la valeur est vide après trim", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setExerciseStatement("Un énoncé");
+
+			store.getState().setExerciseStatement("   \n  ");
+
+			expect(store.getState().project?.exercise).toBeUndefined();
+		});
+
+		it("ne fait rien quand l'énoncé est inchangé", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setExerciseStatement("Stable");
+			store.setState({ hasUnsavedChanges: false });
+			const projectBefore = store.getState().project;
+
+			store.getState().setExerciseStatement("Stable");
+
+			expect(store.getState().project).toBe(projectBefore);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+	});
+
 	describe("setProjectDialect", () => {
 		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
 			const store = createProjectStore();

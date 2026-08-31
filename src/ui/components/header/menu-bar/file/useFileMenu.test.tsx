@@ -12,7 +12,6 @@ jest.mock("@/ui/components/projects/ProjectContext");
 describe("useFileMenu", () => {
 	const setOpenModalVisible = jest.fn();
 	const setExportModalVisible = jest.fn();
-	const setPdfExportModalVisible = jest.fn();
 	const setSaveAsModalVisible = jest.fn();
 	const newProject = jest.fn();
 	const closeProject = jest.fn();
@@ -22,7 +21,6 @@ describe("useFileMenu", () => {
 		const state = {
 			setOpenModalVisible,
 			setExportModalVisible,
-			setPdfExportModalVisible,
 			setSaveAsModalVisible,
 			lifecycleManager: { newProject, closeProject, saveProject },
 			mode,
@@ -46,7 +44,6 @@ describe("useFileMenu", () => {
 			["Enregistrer"],
 			["Enregistrer sous"],
 			["Exporter"],
-			["Exporter en PDF"],
 			["Fermer le projet"],
 		]);
 	});
@@ -58,8 +55,7 @@ describe("useFileMenu", () => {
 		expect(result.current.items[2][0].disabled).toBeUndefined(); // Enregistrer
 		expect(result.current.items[3][0].disabled).toBeUndefined(); // Enregistrer sous
 		expect(result.current.items[4][0].disabled).toBe(true); // Exporter
-		expect(result.current.items[5][0].disabled).toBe(true); // Exporter en PDF
-		expect(result.current.items[6][0].disabled).toBe(true); // Fermer le projet
+		expect(result.current.items[5][0].disabled).toBe(true); // Fermer le projet
 	});
 
 	it("triggers the corresponding actions when designing", () => {
@@ -81,9 +77,6 @@ describe("useFileMenu", () => {
 		expect(setExportModalVisible).toHaveBeenCalledWith(true);
 
 		act(() => result.current.items[5][0].onClick?.());
-		expect(setPdfExportModalVisible).toHaveBeenCalledWith(true);
-
-		act(() => result.current.items[6][0].onClick?.());
 		expect(closeProject).toHaveBeenCalled();
 	});
 
@@ -94,12 +87,10 @@ describe("useFileMenu", () => {
 		act(() => result.current.items[1][0].onClick?.());
 		act(() => result.current.items[4][0].onClick?.());
 		act(() => result.current.items[5][0].onClick?.());
-		act(() => result.current.items[6][0].onClick?.());
 
 		expect(newProject).not.toHaveBeenCalled();
 		expect(setOpenModalVisible).not.toHaveBeenCalled();
 		expect(setExportModalVisible).not.toHaveBeenCalled();
-		expect(setPdfExportModalVisible).not.toHaveBeenCalled();
 		expect(closeProject).not.toHaveBeenCalled();
 	});
 });

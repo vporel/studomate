@@ -17,7 +17,7 @@ module.exports = {
 			{ isolatedModules: true, tsconfig: { jsx: "react-jsx", allowJs: true } },
 		],
 	},
-	transformIgnorePatterns: ["/node_modules/(?!nanoid/)"],
+	transformIgnorePatterns: ["/node_modules/(?!(nanoid|marked)/)"],
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/src/$1",
 		"^@tests/(.*)$": "<rootDir>/tests/$1",

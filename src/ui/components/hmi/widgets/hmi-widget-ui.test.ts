@@ -76,6 +76,19 @@ describe("descripteurs de champs (propertyFields)", () => {
 		);
 		expect(patch.size).toEqual({ width: 40, height: 120 });
 	});
+
+	it("le champ Orientation du trait échange largeur et hauteur", () => {
+		const orientation = HMI_WIDGET_UI.line.propertyFields.find(
+			(f) => f.kind === "select" && f.label === "Orientation",
+		);
+		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
+			throw new Error("champ orientation introuvable");
+		const patch = orientation.widgetPatch(
+			{ size: { width: 120, height: 2 } } as never,
+			"vertical",
+		);
+		expect(patch.size).toEqual({ width: 2, height: 120 });
+	});
 });
 
 describe("animatableStyleProps", () => {

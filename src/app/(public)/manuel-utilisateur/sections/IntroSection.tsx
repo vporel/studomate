@@ -18,7 +18,7 @@ export default function IntroSection() {
 				<li>{`Gestionnaire de variables (entrées, sorties, mémoires)`}</li>
 				<li>{`Analyse statique du projet avec détection d'erreurs et d'avertissements`}</li>
 				<li>{`Simulation PLC en temps réel`}</li>
-				<li>{`Export du projet au format JSON, ou du grafcet actif en image`}</li>
+				<li>{`Export du projet au format JSON ou PDF`}</li>
 			</Typography>
 			<Typography mb={2}>
 				{`L'interface est entièrement en français et conçue pour être utilisée dans un contexte pédagogique ou professionnel.`}

@@ -58,34 +58,25 @@ export default function ProjectsSection() {
 			<Typography variant="h4" mb={2}>
 				{`Exporter un projet`}
 			</Typography>
-			<Typography mb={2}>
-				{`Studomate propose deux commandes d'export dans le menu Fichier.`}
-			</Typography>
 			<Typography variant="h5" mb={1}>
 				{`Fichier → Exporter (Ctrl+E)`}
 			</Typography>
 			<Typography mb={2}>
-				{`Une fenêtre s'ouvre vous proposant deux options exclusives :`}
+				{`Une fenêtre s'ouvre vous proposant deux formats :`}
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`Exporter le projet entier au format JSON — cette sauvegarde externe peut être réimportée.`}</li>
-				<li>{`Exporter le grafcet actif en image (JPEG) — un instantané visuel, pas un fichier réimportable. Disponible uniquement si le programme actif est un grafcet (pas un ladder).`}</li>
+				<li>{`Fichier projet (JSON) — sauvegarde externe du projet entier, réimportable via Fichier → Ouvrir projet → "Ouvrir depuis un fichier...".`}</li>
+				<li>{`PDF — un document visuel des programmes.`}</li>
 			</Typography>
 			<Typography mb={2}>
-				{`Une case à cocher permet d'ajouter la date du jour au nom du fichier. Pour réimporter un projet, utilisez Fichier → Ouvrir projet → "Ouvrir depuis un fichier..." et sélectionnez le fichier JSON.`}
-			</Typography>
-			<Typography variant="h5" mb={1}>
-				{`Fichier → Exporter en PDF`}
-			</Typography>
-			<Typography mb={2}>
-				{`Génère un fichier PDF contenant les programmes du projet sous forme visuelle. Une fenêtre s'ouvre avec :`}
+				{`Pour le PDF, deux portées :`}
 			</Typography>
 			<Typography component="ul" sx={{ pl: 3 }} mb={2}>
-				<li>{`La liste de tous les grafcets et ladders du projet, cochés par défaut — décochez ceux à exclure.`}</li>
-				<li>{`Un champ "Nom du fichier", pré-rempli avec le nom du projet.`}</li>
+				<li>{`Projet complet — une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée.`}</li>
+				<li>{`Page active uniquement — une seule page, titrée, pour le grafcet ou le ladder actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert.`}</li>
 			</Typography>
 			<Typography mb={2}>
-				{`Cliquez sur "Exporter" pour lancer la génération. Une barre de progression indique l'avancement (rendu, capture, assemblage). Le fichier PDF est téléchargé automatiquement à la fin.`}
+				{`Une barre de progression indique l'avancement (rendu, capture, assemblage) ; le fichier est téléchargé automatiquement à la fin. Le champ "Nom du fichier" est pré-rempli.`}
 			</Typography>
 			<Divider sx={{ my: 2 }} />
 			<Typography variant="h4" mb={2}>

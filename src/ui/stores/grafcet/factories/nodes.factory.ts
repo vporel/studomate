@@ -1,4 +1,7 @@
-import Element, { ElementType } from "@/schemas/grafcet/element.schema";
+import Element, {
+	ElementType,
+	JUNCTION_TYPES,
+} from "@/schemas/grafcet/element.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractNodesFactory from "@/ui/stores/shared/abstract-nodes.factory";
@@ -24,6 +27,31 @@ class NodesFactory extends AbstractNodesFactory<
 			);
 		});
 		return allElements;
+	}
+
+	/**
+	 * Contrairement aux autres nœuds (taille mesurée par React Flow), la largeur
+	 * d'une jonction est portée par le domaine : elle définit la disposition du
+	 * pivot et des branches. Elle est donc resynchronisée depuis le domaine, sauf
+	 * pendant un redimensionnement où la vue garde la priorité.
+	 */
+	protected syncNode(
+		prevNode: GrafcetNodeType,
+		domain: GrafcetElementEntry,
+	): GrafcetNodeType {
+		const synced = super.syncNode(prevNode, domain);
+		if (
+			!JUNCTION_TYPES.includes(domain.type as (typeof JUNCTION_TYPES)[number]) ||
+			this.isNodeInGesture(prevNode) ||
+			(synced.width === domain.element.size.width &&
+				synced.height === domain.element.size.height)
+		)
+			return synced;
+		return {
+			...synced,
+			width: domain.element.size.width,
+			height: domain.element.size.height,
+		};
 	}
 
 	protected buildNode(domain: GrafcetElementEntry): GrafcetNodeType {

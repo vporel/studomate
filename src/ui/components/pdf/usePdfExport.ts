@@ -3,7 +3,7 @@
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
-import { PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
+import { PdfCoverPage, PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
 import { useCallback, useRef, useState } from "react";
 import { OffscreenProgram } from "../pdf/OffscreenProgramRenderer";
 
@@ -24,9 +24,14 @@ export interface UsePdfExportResult {
 	startExport: (
 		programs: PdfExportProgramConfig[],
 		filename: string,
+		cover?: PdfCoverPage,
 	) => Promise<void>;
 	reset: () => void;
 }
+
+/** Facteur de sur-échantillonnage de la capture : l'image finale est rasterisée à N× la
+ * taille CSS puis réduite dans le PDF, ce qui la garde nette à l'impression. */
+const CAPTURE_SCALE = 3;
 
 /** Rend la main au thread de rendu le temps de deux frames : la première laisse React
  * committer, la seconde garantit qu'un paint a eu lieu (barre de progression, démontage). */
@@ -34,6 +39,26 @@ const nextFrame = () =>
 	new Promise<void>((resolve) =>
 		requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
 	);
+
+/** Éléments d'habillage de l'éditeur React Flow à exclure de la capture PDF (grille de fond,
+ * panneaux, filigrane, contrôles, minimap). */
+const EXPORT_EXCLUDED_CLASSES = [
+	"react-flow__background",
+	"react-flow__attribution",
+	"react-flow__panel",
+	"react-flow__controls",
+	"react-flow__minimap",
+	"react-flow__handle",
+];
+
+export const excludeEditorChrome = (node: Node): boolean => {
+	const classList = (node as Element).classList;
+	if (!classList) return true;
+	return !EXPORT_EXCLUDED_CLASSES.some((c) => classList.contains(c));
+};
+
+const sectionTitle = (config: PdfExportProgramConfig): string =>
+	`${config.type === "grafcet" ? "GRAFCET" : "Ladder"} - ${config.program.name}`;
 
 export function usePdfExport(): UsePdfExportResult {
 	const [exportState, setExportState] = useState<PdfExportState>({
@@ -65,7 +90,11 @@ export function usePdfExport(): UsePdfExportResult {
 	);
 
 	const startExport = useCallback(
-		async (programs: PdfExportProgramConfig[], filename: string) => {
+		async (
+			programs: PdfExportProgramConfig[],
+			filename: string,
+			cover?: PdfCoverPage,
+		) => {
 			if (programs.length === 0) return;
 
 			const total = programs.length;
@@ -102,21 +131,25 @@ export function usePdfExport(): UsePdfExportResult {
 				await nextFrame();
 				const domToImage = (await import("dom-to-image")).default;
 				try {
+					const cssWidth = element.offsetWidth;
+					const cssHeight = element.offsetHeight;
 					const dataUrl = await domToImage.toPng(element, {
-						width: element.offsetWidth,
-						height: element.offsetHeight,
+						width: cssWidth * CAPTURE_SCALE,
+						height: cssHeight * CAPTURE_SCALE,
 						bgcolor: "white",
+						filter: excludeEditorChrome,
+						style: {
+							transform: `scale(${CAPTURE_SCALE})`,
+							transformOrigin: "top left",
+							width: `${cssWidth}px`,
+							height: `${cssHeight}px`,
+						},
 					});
-					const img = document.createElement("img");
-					img.src = dataUrl;
-					img.style.width = "100%";
-					img.style.height = "100%";
-					const wrapper = document.createElement("div");
-					wrapper.style.cssText = "width:100%;height:100%;background:white;";
-					wrapper.appendChild(img);
 					sections.push({
-						label: config.program.name,
-						element: wrapper,
+						title: sectionTitle(config),
+						imageDataUrl: dataUrl,
+						imageWidth: cssWidth,
+						imageHeight: cssHeight,
 						orientation: config.type === "ladder" ? "landscape" : "portrait",
 					});
 				} catch {
@@ -134,7 +167,7 @@ export function usePdfExport(): UsePdfExportResult {
 
 			setExportState({ status: "assembling" });
 			try {
-				await new JsPdfExporter().export(sections, filename);
+				await new JsPdfExporter().export({ filename, cover, sections });
 			} catch {
 				setExportState({
 					status: "error",

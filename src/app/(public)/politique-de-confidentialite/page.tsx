@@ -10,7 +10,7 @@ export default function PrivacyPolicy() {
 			<Typography variant="h2" component="h1" color="primary" gutterBottom>
 				Politique de confidentialité
 			</Typography>
-			<Typography>Dernière mise à jour : 13/10/2025</Typography>
+			<Typography>Dernière mise à jour : 31/08/2026</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h3" gutterBottom mt={3}>
@@ -27,45 +27,75 @@ export default function PrivacyPolicy() {
 				2. Données collectées
 			</Typography>
 			<Typography textAlign="justify">
-				La version actuelle de Studomate ne collecte aucune donnée personnelle
-				de manière automatique. Les informations créées par l’utilisateur sont
-				stockées <strong>localement</strong> dans des
-				<strong>fichiers</strong>. <br />
-				Aucune de ces données n’est transmise à des serveurs distants ni
-				partagée avec des tiers.
+				Studomate ne collecte aucune donnée personnelle identifiante de manière
+				automatique. Par défaut, les projets créés par l’utilisateur sont
+				stockés <strong>localement</strong> dans son navigateur et ne sont
+				transmis à aucun serveur distant. <br />
+				Des données ne quittent l’appareil de l’utilisateur que dans deux cas,
+				décrits ci-dessous : la mesure d’audience (§3) et, s’il choisit de
+				créer un compte, les comptes et la sauvegarde cloud (§4).
 			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
-				3. Utilisation future des données
+				3. Mesure d’audience
 			</Typography>
 			<Typography textAlign="justify">
-				Des fonctionnalités à venir pourront nécessiter la création de comptes
-				utilisateurs ou la sauvegarde cloud de projets. Dans ce cas :
+				Studomate utilise <strong>Umami</strong> (hébergé dans l’Union
+				européenne) pour mesurer la fréquentation du site : nombre de visites,
+				pages consultées, sources de trafic, type d’appareil, ainsi que
+				quelques événements d’usage anonymes (création d’un projet, lancement
+				d’une simulation). Ces mesures se font <strong>sans cookie</strong>,
+				sans stockage de l’adresse IP et sans permettre d’identifier ou de
+				suivre un utilisateur d’une visite à l’autre. Aucune donnée n’est
+				vendue ni utilisée à des fins publicitaires.
+			</Typography>
+
+			<Typography variant="h3" gutterBottom mt={3}>
+				4. Comptes et sauvegarde cloud
+			</Typography>
+			<Typography textAlign="justify">
+				La création d’un compte est <strong>facultative</strong> : sans
+				compte, Studomate fonctionne entièrement en local et aucune donnée
+				n’est envoyée à nos serveurs. En créant un compte, l’utilisateur peut
+				sauvegarder ses projets dans le cloud et les retrouver sur un autre
+				appareil.
 			</Typography>
 			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
 				<li>
-					Seules les données strictement nécessaires seront collectées (nom,
-					email, projets) ;
+					<strong>Compte classique :</strong> adresse email et mot de passe.
 				</li>
 				<li>
-					Les utilisateurs seront informés avant toute activation de ces
-					services ;
+					<strong>Compte anonyme :</strong> pseudonyme et mot de passe, sans
+					adresse email.
 				</li>
-				<li>Leur consentement explicite sera requis.</li>
+				<li>
+					<strong>Données stockées :</strong> un identifiant de compte,
+					l’email ou le pseudonyme, et uniquement les projets que
+					l’utilisateur choisit d’enregistrer dans le cloud.
+				</li>
 			</Box>
-			<Typography variant="h3" gutterBottom mt={3}>
-				4. Sécurité et confidentialité
-			</Typography>
-			<Typography textAlign="justify">
-				Studomate s’engage à assurer un haut niveau de protection des
-				informations stockées localement et à ne jamais exploiter les données
-				des utilisateurs à des fins commerciales ou publicitaires. Les
-				utilisateurs restent responsables de la sécurité de leurs fichiers
-				exportés.
+			<Typography textAlign="justify" mt={1}>
+				Ces données sont hébergées chez notre sous-traitant{" "}
+				<strong>Supabase</strong>, sur une infrastructure située dans l’Union
+				européenne. Chaque compte n’a accès qu’à ses propres données
+				(isolation appliquée au niveau de la base). Aucune donnée n’est vendue
+				ni utilisée à des fins publicitaires.
 			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
-				5. Cookies et stockage local
+				5. Sécurité et confidentialité
+			</Typography>
+			<Typography textAlign="justify">
+				Studomate s’engage à assurer un haut niveau de protection des données
+				et à ne jamais les exploiter à des fins commerciales ou publicitaires.
+				Les échanges avec le cloud sont chiffrés en transit (HTTPS) et l’accès
+				aux projets sauvegardés est restreint au compte qui les a créés. Les
+				utilisateurs restent responsables de la sécurité de leurs fichiers
+				exportés localement.
+			</Typography>
+
+			<Typography variant="h3" gutterBottom mt={3}>
+				6. Cookies et stockage local
 			</Typography>
 			<Typography textAlign="justify">
 				Studomate n’utilise aucun cookie de suivi. Seules des données techniques
@@ -74,24 +104,27 @@ export default function PrivacyPolicy() {
 			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
-				6. Droits de l’utilisateur
+				7. Droits de l’utilisateur
 			</Typography>
 			<Typography textAlign="justify">
 				Conformément au Règlement Général sur la Protection des Données (RGPD),
 				tout utilisateur peut :
 			</Typography>
 			<Box component="ul" sx={{ listStyleType: "disc", pl: 4, pt: 1 }}>
-				<li>Supprimer ses données ;</li>
+				<li>
+					Effacer à tout moment les données locales de son navigateur ;
+				</li>
 				<li>
 					Exporter ou sauvegarder manuellement ses projets à tout moment ;
 				</li>
 				<li>
-					Contacter l’équipe pour toute question relative à la confidentialité.
+					Demander la suppression de son compte et des projets associés en
+					contactant l’équipe (§8).
 				</li>
 			</Box>
 
 			<Typography variant="h3" gutterBottom mt={3}>
-				7. Contact
+				8. Contact
 			</Typography>
 			<Typography>
 				Pour toute question concernant la confidentialité ou la gestion des

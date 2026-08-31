@@ -8,6 +8,10 @@ import {
 	PROJECT_PROPERTIES_PAGE_ID,
 } from "@/ui/components/pages/ProjectPropertiesPage";
 import {
+	EXERCISE_PAGE_DATA,
+	EXERCISE_PAGE_ID,
+} from "@/ui/components/pages/ExercisePage";
+import {
 	getVariablesPageData,
 	VariablesPageId,
 } from "@/ui/components/pages/VariablesPage";
@@ -40,6 +44,7 @@ const VARIABLES_PAGE_IDS: VariablesPageId[] = [
 function resolvePageData(pageId: string, project: Project): PageData | null {
 	if (pageId === PROJECT_STARTUP_PAGE_ID) return PROJECT_STARTUP_PAGE_DATA;
 	if (pageId === PROJECT_PROPERTIES_PAGE_ID) return PROJECT_PROPERTIES_PAGE_DATA;
+	if (pageId === EXERCISE_PAGE_ID) return EXERCISE_PAGE_DATA;
 	if ((VARIABLES_PAGE_IDS as string[]).includes(pageId))
 		return getVariablesPageData(pageId as VariablesPageId);
 	const program = project.getProgram(pageId);

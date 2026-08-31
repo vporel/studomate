@@ -15,6 +15,9 @@ export const PROJECT_PROPERTIES_PAGE_DATA: PageData = {
 	title: "Propriétés du projet",
 };
 
+/** Fond blanc des champs, la page étant posée sur un gris clair. */
+const whiteFieldSx = { "& .MuiInputBase-root": { backgroundColor: "#fff" } };
+
 const PropertyTextField = ({
 	label,
 	value,
@@ -32,6 +35,7 @@ const PropertyTextField = ({
 			label={label}
 			size="small"
 			fullWidth
+			sx={whiteFieldSx}
 			slotProps={{ inputLabel: { shrink: true } }}
 			value={editingValue}
 			onChange={(e) => setEditingValue(e.target.value)}
@@ -46,22 +50,54 @@ const PropertyTextField = ({
 	);
 };
 
+const ExerciseStatementField = ({
+	value,
+	onSave,
+}: {
+	value: string;
+	onSave: (value: string) => void;
+}) => {
+	const [editingValue, setEditingValue] = useState<string>(value);
+	useEffect(() => setEditingValue(value), [value]);
+
+	return (
+		<TextField
+			label="Énoncé de l'exercice"
+			size="small"
+			fullWidth
+			multiline
+			minRows={6}
+			maxRows={20}
+			sx={whiteFieldSx}
+			slotProps={{ inputLabel: { shrink: true } }}
+			value={editingValue}
+			onChange={(e) => setEditingValue(e.target.value)}
+			onBlur={() => onSave(editingValue)}
+			helperText="Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice."
+		/>
+	);
+};
+
 const ProjectPropertiesPage = () => {
 	const {
 		name,
 		author,
 		dialect,
+		exerciseStatement,
 		changeProjectName,
 		changeProjectAuthor,
 		changeProjectDialect,
+		changeExerciseStatement,
 	} = useProjectStore(
 		useShallow((state) => ({
 			name: state.project?.name ?? "",
 			author: state.project?.author ?? "",
 			dialect: state.project?.dialect ?? Dialect.FR,
+			exerciseStatement: state.project?.exercise?.statement ?? "",
 			changeProjectName: state.setProjectName,
 			changeProjectAuthor: state.setProjectAuthor,
 			changeProjectDialect: state.setProjectDialect,
+			changeExerciseStatement: state.setExerciseStatement,
 		})),
 	);
 
@@ -98,6 +134,7 @@ const ProjectPropertiesPage = () => {
 							label="Langage des expressions"
 							fullWidth
 							size="small"
+							sx={whiteFieldSx}
 							slotProps={{ inputLabel: { shrink: true } }}
 							value={dialect}
 							onChange={(e) =>
@@ -114,6 +151,12 @@ const ProjectPropertiesPage = () => {
 						</TextField>
 					</Grid>
 				</Grid>
+				<Box sx={{ mt: 2 }}>
+					<ExerciseStatementField
+						value={exerciseStatement}
+						onSave={changeExerciseStatement}
+					/>
+				</Box>
 			</Box>
 		</Page>
 	);

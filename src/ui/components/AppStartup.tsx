@@ -59,13 +59,30 @@ const AppStartup = () => {
 
 				<FlexBox alignItems="flex-start" gap={2.5}>
 					<Box
-						component="img"
-						src="/images/icon.png"
-						alt=""
-						sx={{ width: "72px", mt: "0.35rem" }}
-					/>
+						component={Link}
+						href={routes.home()}
+						aria-label={`${APP_NAME} — accueil`}
+					>
+						<Box
+							component="img"
+							src="/images/icon.png"
+							alt=""
+							sx={{ width: "72px", mt: "0.35rem", display: "block" }}
+						/>
+					</Box>
 					<Box flex={1}>
-						<Typography variant="h2" sx={{ fontWeight: "bold" }}>
+						<Typography
+							variant="h2"
+							component={Link}
+							href={routes.home()}
+							sx={{
+								display: "inline-block",
+								fontWeight: "bold",
+								color: "text.primary",
+								textDecoration: "none",
+								"&:hover": { color: "primary.main" },
+							}}
+						>
 							{APP_NAME}
 						</Typography>
 						<Typography

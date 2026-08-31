@@ -11,14 +11,12 @@ export default function useFileMenu(): AppMenuType {
 	const {
 		setOpenModalVisible,
 		setExportModalVisible,
-		setPdfExportModalVisible,
 		setSaveAsModalVisible,
 		lifecycleManager,
 	} = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
 			setExportModalVisible: state.setExportModalVisible,
-			setPdfExportModalVisible: state.setPdfExportModalVisible,
 			setSaveAsModalVisible: state.setSaveAsModalVisible,
 			lifecycleManager: state.lifecycleManager,
 		})),
@@ -83,16 +81,6 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Exporter en PDF",
-						disabled: !designing,
-						onClick: () => {
-							if (!designing) return;
-							setPdfExportModalVisible(true);
-						},
-					},
-				],
-				[
-					{
 						label: "Fermer le projet",
 						shortcut: platformShortcut("Ctrl+F4", "Cmd+W"),
 						disabled: !designing,
@@ -108,7 +96,6 @@ export default function useFileMenu(): AppMenuType {
 			lifecycleManager,
 			setOpenModalVisible,
 			setExportModalVisible,
-			setPdfExportModalVisible,
 			setSaveAsModalVisible,
 			designing,
 		],

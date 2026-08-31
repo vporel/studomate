@@ -2,7 +2,11 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
-import { usePdfExport, PdfExportProgramConfig } from "./usePdfExport";
+import {
+	excludeEditorChrome,
+	usePdfExport,
+	PdfExportProgramConfig,
+} from "./usePdfExport";
 
 const mockExport = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/ui/lib/pdf/jspdf.pdf-exporter", () => ({
@@ -77,12 +81,41 @@ describe("usePdfExport", () => {
 
 		expect(mockToPng).toHaveBeenCalledTimes(2);
 		expect(mockExport).toHaveBeenCalledTimes(1);
-		expect(
-			mockExport.mock.calls[0][0].map((s: { label: string }) => s.label),
-		).toEqual(["G1", "G2"]);
-		expect(mockExport.mock.calls[0][1]).toBe("projet");
+		const doc = mockExport.mock.calls[0][0];
+		expect(doc.sections.map((s: { title: string }) => s.title)).toEqual([
+			"GRAFCET - G1",
+			"GRAFCET - G2",
+		]);
+		expect(doc.filename).toBe("projet");
 		expect(result.current.exportState.status).toBe("idle");
 		expect(result.current.offscreenPrograms).toHaveLength(0);
+	});
+
+	it("transmet la page de garde et sur-échantillonne la capture", async () => {
+		const { result } = renderHook(() => usePdfExport());
+		const cover = {
+			projectName: "P",
+			date: "01/09/2026",
+			stats: { grafcets: 1, ladders: 0, variables: 0 },
+		};
+
+		let done: Promise<void>;
+		act(() => {
+			done = result.current.startExport(
+				[makeProgram("g1", "G1")],
+				"f",
+				cover,
+			);
+		});
+		await drainProgram(result, "g1");
+		await act(async () => {
+			await done;
+		});
+
+		expect(mockExport.mock.calls[0][0].cover).toEqual(cover);
+		const opts = mockToPng.mock.calls[0][1];
+		expect(opts.width).toBe(1200 * 3);
+		expect(opts.style.transform).toBe("scale(3)");
 	});
 
 	it("passe en erreur et démonte tout si une capture échoue", async () => {
@@ -105,6 +138,19 @@ describe("usePdfExport", () => {
 		});
 		expect(result.current.offscreenPrograms).toHaveLength(0);
 		expect(mockExport).not.toHaveBeenCalled();
+	});
+
+	it("exclut l'habillage éditeur (grille, panneaux, poignées) de la capture", () => {
+		const grid = document.createElement("div");
+		grid.className = "react-flow__background";
+		const handle = document.createElement("div");
+		handle.className = "react-flow__handle react-flow__handle-bottom";
+		const node = document.createElement("div");
+		node.className = "react-flow__node";
+		expect(excludeEditorChrome(grid)).toBe(false);
+		expect(excludeEditorChrome(handle)).toBe(false);
+		expect(excludeEditorChrome(node)).toBe(true);
+		expect(excludeEditorChrome(document.createTextNode("x"))).toBe(true);
 	});
 
 	it("ne fait rien sans programme", async () => {

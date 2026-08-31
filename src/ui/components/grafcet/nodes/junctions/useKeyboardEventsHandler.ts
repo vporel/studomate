@@ -5,6 +5,10 @@ import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import React, { useCallback } from "react";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import {
+	resolveBranchPosition,
+	resolvePivotPosition,
+} from "./branch-position";
 
 export default function useKeyboardEventsHandler(
 	nodeId: string,
@@ -29,14 +33,14 @@ export default function useKeyboardEventsHandler(
 					clearSelection();
 					return;
 			}
-			if (
-				(e.key === "Backspace" || e.key === "Delete") &&
-				(e.ctrlKey || e.metaKey)
-			) {
+			if (e.key === "Backspace" || e.key === "Delete") {
+				// Empêche React Flow de supprimer la jonction entière : quand un pin est
+				// sélectionné, c'est la branche qui part.
 				e.preventDefault();
 				e.stopPropagation();
 				if (pivotSelected || selectedBranchId == null) return;
 				workflowManager.deleteJunctionBranch(nodeId, selectedBranchId);
+				return;
 			}
 			const toLeft = e.key == "ArrowLeft";
 			const toRight = e.key == "ArrowRight";
@@ -48,34 +52,32 @@ export default function useKeyboardEventsHandler(
 					else selectNextBranch();
 					return;
 				}
-				workflowManager.updateNodeData(nodeId, (prevData) => {
-					prevData = structuredClone(prevData) as JunctionData;
+				const step = FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
+				workflowManager.updateNodeData(nodeId, (prev) => {
+					const prevData = prev as JunctionData;
 					const dataToChange: Partial<JunctionData> = {};
 					if (pivotSelected) {
-						const newPosition =
-							prevData.pivotPosition + FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
-						if (
-							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= width - FLOW_GRID_CELL_WIDTH
-						) {
-							dataToChange.pivotPosition = newPosition;
-						}
+						const newPosition = resolvePivotPosition(
+							prevData.pivotPosition + step,
+							width,
+						);
+						if (newPosition != null) dataToChange.pivotPosition = newPosition;
 					}
 					if (selectedBranchId != null) {
-						const newPosition =
-							prevData.branches[selectedBranchId]!.position +
-							FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
-						if (
-							newPosition >= FLOW_GRID_CELL_WIDTH &&
-							newPosition <= width - FLOW_GRID_CELL_WIDTH &&
-							!prevData.branchesOrder.some((branchId) =>
-								branchId === selectedBranchId
-									? false
-									: prevData.branches[branchId]!.position === newPosition,
-							)
-						) {
-							dataToChange.branches = { ...prevData.branches };
-							dataToChange.branches[selectedBranchId]!.position = newPosition;
+						const newPosition = resolveBranchPosition(
+							prevData,
+							selectedBranchId,
+							prevData.branches[selectedBranchId]!.position + step,
+							width,
+						);
+						if (newPosition != null) {
+							dataToChange.branches = {
+								...prevData.branches,
+								[selectedBranchId]: {
+									...prevData.branches[selectedBranchId]!,
+									position: newPosition,
+								},
+							};
 						}
 					}
 					return dataToChange;

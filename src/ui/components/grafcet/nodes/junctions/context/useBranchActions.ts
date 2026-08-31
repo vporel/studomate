@@ -1,69 +1,18 @@
 "use client";
 
-import { JunctionData } from "@/schemas/grafcet/junction.schema";
-import { createRandomId } from "@/ids";
-import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
-import { useUpdateNodeInternals } from "@xyflow/react";
-import { useCallback } from "react";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
+import { useCallback } from "react";
 
-export default function useBranchActions(
-	nodeId: string,
-	nodeData: JunctionData,
-	width: number,
-): { add: (buttonIndex: number) => void } {
+export default function useBranchActions(nodeId: string): {
+	add: (insertIndex: number) => void;
+} {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const updateNodeInternals = useUpdateNodeInternals();
 
 	const add = useCallback(
-		(buttonIndex: number) => {
-			let newBranchPosition = 0;
-			if (nodeData.branchesOrder.length == 0) newBranchPosition = width / 2;
-			else {
-				if (buttonIndex == 0)
-					newBranchPosition =
-						nodeData.branches[nodeData.branchesOrder[0]]!.position / 2;
-				else if (buttonIndex == nodeData.branchesOrder.length)
-					newBranchPosition =
-						(nodeData.branches[
-							nodeData.branchesOrder[nodeData.branchesOrder.length - 1]
-						]!.position +
-							width) /
-						2;
-				else {
-					newBranchPosition =
-						(nodeData.branches[nodeData.branchesOrder[buttonIndex - 1]]!
-							.position +
-							nodeData.branches[nodeData.branchesOrder[buttonIndex]]!
-								.position) /
-						2;
-				}
-			}
-			if (newBranchPosition % FLOW_GRID_CELL_WIDTH != 0)
-				//Align to the grid
-				newBranchPosition =
-					newBranchPosition - (newBranchPosition % FLOW_GRID_CELL_WIDTH);
-			const newBranch = {
-				id: createRandomId(),
-				position: newBranchPosition,
-			};
-			const newBranches = { ...nodeData.branches, [newBranch.id]: newBranch };
-			const newBranchesOrder = [...nodeData.branchesOrder];
-			newBranchesOrder.splice(buttonIndex, 0, newBranch.id);
-			workflowManager.updateNodeData(nodeId, {
-				branches: newBranches,
-				branchesOrder: newBranchesOrder,
-			});
-			updateNodeInternals(nodeId);
+		(insertIndex: number) => {
+			workflowManager.addJunctionBranch(nodeId, insertIndex);
 		},
-		[
-			nodeData.branches,
-			nodeData.branchesOrder,
-			width,
-			workflowManager,
-			nodeId,
-			updateNodeInternals,
-		],
+		[workflowManager, nodeId],
 	);
 
 	return { add };

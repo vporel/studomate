@@ -16,6 +16,7 @@ import {
 import SupabaseProjectRepository from "@/persistence/repositories/supabase.project.repository";
 import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
+import trackEvent from "@/ui/lib/analytics";
 import {
 	getInitialPagesData,
 	restorePagesSession,
@@ -94,12 +95,18 @@ export default class ProjectLifecycleManager {
 					variant === "solution" && template.solution
 						? template.solution()
 						: template.create();
+				//L'énoncé accompagne les deux variantes : il donne son sens à la solution comme à
+				//l'exercice, une même maquette pouvant servir de support à des énoncés différents.
+				if (template.statement) {
+					project.exercise = { statement: template.statement };
+				}
 			} else {
 				project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
 			}
 		} else {
 			project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
 		}
+		trackEvent("project-created", { template: templateId ?? "blank", variant });
 		await this.doOpenProject(project);
 	}
 

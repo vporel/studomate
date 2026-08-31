@@ -3,6 +3,7 @@
 import InclinedAccountTreeIcon from "@/ui/components/icons/InclinedAccountTree";
 import LadderIcon from "@/ui/components/icons/LadderIcon";
 import LadderMainIcon from "@/ui/components/icons/LadderMainIcon";
+import ExerciseIcon from "@/ui/components/icons/ExerciseIcon";
 import ProjectStartupIcon from "@/ui/components/icons/ProjectStartupIcon";
 import ProjectPropertiesIcon from "@/ui/components/icons/ProjectPropertiesIcon";
 import VariablesIcon from "@/ui/components/icons/VariablesIcon";
@@ -31,6 +32,7 @@ import { useShallow } from "zustand/shallow";
 const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"project-startup": ProjectStartupIcon,
 	"project-properties": ProjectPropertiesIcon,
+	exercise: ExerciseIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,
 	hmi: HmiIcon,

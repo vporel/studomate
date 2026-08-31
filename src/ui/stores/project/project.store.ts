@@ -103,7 +103,6 @@ export const createProjectStore = () => {
 				openModalVisible: false,
 				newProjectModalVisible: false,
 				exportModalVisible: false,
-				pdfExportModalVisible: false,
 				saveAsModalVisible: false,
 				shareModalVisible: false,
 				shareRequiresCloudModalVisible: false,
@@ -166,9 +165,21 @@ export const createProjectStore = () => {
 				get().grafcetsManager.syncMountedStoresFromProject();
 			},
 
+			setExerciseStatement: (statement: string) => {
+				const project = get().project;
+				if (!project) return;
+				const trimmed = statement.trim();
+				const next = trimmed.length > 0 ? { statement } : undefined;
+				if (project.exercise?.statement === next?.statement) return;
+				set(() => {
+					const newProject = project.copy();
+					newProject.exercise = next;
+					return { project: newProject, hasUnsavedChanges: true };
+				});
+			},
+
 			setUnsavedChangesDialogVisible: modalSetter("unsavedChangesDialogVisible"),
 			setNewProjectModalVisible: modalSetter("newProjectModalVisible"),
-			setPdfExportModalVisible: modalSetter("pdfExportModalVisible"),
 			setSaveAsModalVisible: modalSetter("saveAsModalVisible"),
 			setShareModalVisible: modalSetter("shareModalVisible"),
 			setShareRequiresCloudModalVisible: modalSetter(

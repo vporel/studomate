@@ -22,6 +22,7 @@ type SimpleCallback = () => void;
 export type PageType =
 	| "project-startup"
 	| "project-properties"
+	| "exercise"
 	| "grafcet"
 	| "ladder"
 	| "variables"
@@ -104,7 +105,6 @@ export interface ProjectUiState {
 	openModalVisible: boolean;
 	newProjectModalVisible: boolean;
 	exportModalVisible: boolean;
-	pdfExportModalVisible: boolean;
 	saveAsModalVisible: boolean;
 	shareModalVisible: boolean;
 	shareRequiresCloudModalVisible: boolean;
@@ -147,12 +147,13 @@ export interface ProjectStoreState {
 	setProjectName: (newName: string) => void;
 	setProjectAuthor: (newAuthor: string) => void;
 	setProjectDialect: (dialect: Dialect) => void;
+	/** Met à jour l'énoncé du projet. Une valeur vide (après trim) retire l'énoncé. */
+	setExerciseStatement: (statement: string) => void;
 
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setNewProjectModalVisible: (visible: boolean) => void;
 	setOpenModalVisible: (visible: boolean) => void;
 	setExportModalVisible: (visible: boolean) => void;
-	setPdfExportModalVisible: (visible: boolean) => void;
 	setSaveAsModalVisible: (visible: boolean) => void;
 	setShareModalVisible: (visible: boolean) => void;
 	setShareRequiresCloudModalVisible: (visible: boolean) => void;

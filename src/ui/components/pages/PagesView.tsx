@@ -5,6 +5,7 @@ import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
+import ExercisePage from "./ExercisePage";
 import GrafcetPage from "./GrafcetPage";
 import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
@@ -134,6 +135,8 @@ const PagesView = () => {
 								return <ProjectStartupPage key={id} />;
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
+							case "exercise":
+								return <ExercisePage key={id} />;
 							case "variables":
 								return (
 									<VariablesPage

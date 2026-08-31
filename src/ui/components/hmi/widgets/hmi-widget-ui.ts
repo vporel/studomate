@@ -8,9 +8,11 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { ComponentType } from "react";
 import GaugeSymbol from "../toolbar/GaugeSymbol";
+import LineSymbol from "../toolbar/LineSymbol";
 import NumericInputSymbol from "../toolbar/NumericInputSymbol";
 import Ellipse from "./Ellipse";
 import Gauge from "./Gauge";
+import Line from "./Line";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 import Indicator from "./Indicator";
 import NumericDisplay from "./NumericDisplay";
@@ -328,7 +330,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		component: Rectangle,
 		previewWidth: 40,
 		previewValue: 0,
-		paletteOrder: 2,
+		paletteOrder: 3,
 		manualDescription:
 			"Rectangle — forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.",
 		animatableStyleProps: [
@@ -391,7 +393,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		component: Ellipse,
 		previewWidth: 40,
 		previewValue: 0,
-		paletteOrder: 3,
+		paletteOrder: 4,
 		manualDescription:
 			'Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case "Lier largeur et hauteur" (section Dimensions) fige le ratio courant.',
 		animatableStyleProps: [
@@ -436,6 +438,66 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 				set: (data, value) => ({
 					...data,
 					style: { ...data.style, strokeWidth: value },
+				}),
+			},
+		],
+	},
+	line: {
+		component: Line,
+		toolSymbol: LineSymbol,
+		previewWidth: 40,
+		previewValue: 0,
+		paletteOrder: 2,
+		manualDescription:
+			"Trait — segment de couleur unie. Options : couleur, épaisseur et orientation (horizontal / vertical).",
+		animatableStyleProps: [
+			{
+				name: "color",
+				label: "Couleur",
+				inputType: "color",
+				staticValue: (data) => data.style.color,
+			},
+		],
+		events: [],
+		propertyFields: [
+			{
+				kind: "color",
+				label: "Couleur",
+				get: (data) => data.style.color,
+				set: (data, value) => ({
+					...data,
+					style: { ...data.style, color: value },
+				}),
+			},
+			{
+				kind: "number",
+				label: "Épaisseur",
+				min: 1,
+				get: (data) => data.style.thickness ?? 2,
+				set: (data, value) => ({
+					...data,
+					style: { ...data.style, thickness: value },
+				}),
+			},
+			{
+				kind: "select",
+				label: "Orientation",
+				options: [
+					{ value: "horizontal", label: "Horizontal" },
+					{ value: "vertical", label: "Vertical" },
+				],
+				get: (data) => data.style.orientation ?? "horizontal",
+				set: (data, value) => ({
+					...data,
+					style: {
+						...data.style,
+						orientation: value as "horizontal" | "vertical",
+					},
+				}),
+				// La taille stockée reste exprimée "comme si horizontal" : on échange
+				// largeur/hauteur au changement d'orientation (voir `gauge`).
+				widgetPatch: (widget) => ({
+					size: { width: widget.size.height, height: widget.size.width },
 				}),
 			},
 		],

@@ -27,4 +27,29 @@ describe("LandingPage", () => {
 			screen.getByRole("heading", { name: /des exemples pour démarrer/i }),
 		).toBeInTheDocument();
 	});
+
+	it("met en avant le positionnement tout-en-un et la friction zéro", () => {
+		render(<LandingPage />);
+		expect(
+			screen.getByRole("heading", { name: /pourquoi studomate/i }),
+		).toBeInTheDocument();
+		expect(screen.getByText(/friction zéro/i)).toBeInTheDocument();
+		expect(screen.getByText(/tout-en-un/i)).toBeInTheDocument();
+	});
+
+	it("affiche l'argument de pérennité et la licence AGPL", () => {
+		render(<LandingPage />);
+		expect(
+			screen.getByRole("heading", { name: /vos projets vous appartiennent/i }),
+		).toBeInTheDocument();
+		expect(screen.getAllByText(/AGPL v3/i).length).toBeGreaterThan(0);
+		expect(screen.queryByText(/licence MIT/i)).not.toBeInTheDocument();
+	});
+
+	it("affiche la mention vie privée", () => {
+		render(<LandingPage />);
+		expect(
+			screen.getByRole("heading", { name: /pensé pour la vie privée/i }),
+		).toBeInTheDocument();
+	});
 });

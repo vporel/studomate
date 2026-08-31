@@ -85,22 +85,33 @@ describe("useKeyboardEventsHandler", () => {
 		expect(clearSelection).toHaveBeenCalled();
 	});
 
-	it("deletes the selected branch on Ctrl+Delete", () => {
+	it("deletes the selected branch on Delete and swallows the event", () => {
 		const handler = setup(false, "b1");
-		const event = fakeKeyboardEvent("Delete", { ctrlKey: true });
+		const event = fakeKeyboardEvent("Delete");
 
 		act(() => handler(event));
 
 		expect(deleteJunctionBranch).toHaveBeenCalledWith("node-1", "b1");
+		expect(event.stopPropagation).toHaveBeenCalled();
+		expect(event.preventDefault).toHaveBeenCalled();
 	});
 
-	it("does not delete when the pivot is selected", () => {
+	it("deletes the selected branch on Backspace too", () => {
+		const handler = setup(false, "b1");
+
+		act(() => handler(fakeKeyboardEvent("Backspace")));
+
+		expect(deleteJunctionBranch).toHaveBeenCalledWith("node-1", "b1");
+	});
+
+	it("does not delete when the pivot is selected, but still swallows Delete", () => {
 		const handler = setup(true, null);
-		const event = fakeKeyboardEvent("Backspace", { ctrlKey: true });
+		const event = fakeKeyboardEvent("Delete");
 
 		act(() => handler(event));
 
 		expect(deleteJunctionBranch).not.toHaveBeenCalled();
+		expect(event.stopPropagation).toHaveBeenCalled();
 	});
 
 	it("selects the previous/next branch on Shift+Arrow without touching the store", () => {

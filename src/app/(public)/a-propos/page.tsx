@@ -16,11 +16,14 @@ export default function About() {
 			</Typography>
 			<Typography textAlign="justify">
 				<strong>Studomate</strong> est un outil pédagogique dédié à l’
-				<strong>automatisme</strong> : apprentissage, conception et simulation.{" "}
+				<strong>automatisme</strong> : apprentissage, conception et simulation du
+				GRAFCET, du Ladder et des HMI, directement dans le navigateur.
 				<br />
-				Notre objectif : rendre les concepts d’automatisme accessibles, visuels
-				et actionnables — de l’introduction en classe à la mise en pratique
-				individuelle.
+				Sa valeur n’est pas d’être plus puissant qu’un logiciel industriel, mais
+				de réduire à presque zéro la friction pour apprendre l’automatisme : pas
+				d’installation, pas de licence, pas d’automate à configurer. Son
+				différenciateur : GRAFCET, Ladder et HMI animées dans le même
+				environnement, avec des variables partagées entre les trois.
 			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
@@ -59,7 +62,23 @@ export default function About() {
 					<strong>Usage mixte :</strong> démonstrations en cours, exercices à la
 					maison, corrections collaboratives.
 				</li>
+				<li>
+					<strong>Boucle de correction courte :</strong> les erreurs sont
+					signalées pendant l’édition, pas seulement au lancement de la
+					simulation.
+				</li>
 			</Box>
+
+			<Typography variant="h3" gutterBottom mt={3}>
+				Vos projets vous appartiennent
+			</Typography>
+			<Typography textAlign="justify">
+				Vos projets sont des fichiers que vous exportez et conservez. Le schéma
+				est versionné et les migrations sont automatiques : un projet exporté
+				aujourd’hui restera ouvrable après les mises à jour. Le code est libre
+				sous licence AGPL v3. Enfin, Studomate ne demande aucun email, ne stocke
+				aucune donnée personnelle et n’utilise aucun cookie de suivi.
+			</Typography>
 
 			<Typography variant="h3" gutterBottom mt={3}>
 				Public cible

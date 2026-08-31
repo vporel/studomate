@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_CONTACT_EMAIL } from "@/app-info";
 import { Box, Container, Divider, Typography } from "@mui/material";
 
 export default function Contact() {
@@ -16,10 +17,10 @@ export default function Contact() {
 				Email :{" "}
 				<Box
 					component="a"
-					href="mailto:dev.vporel@gmail.com"
+					href={`mailto:${APP_CONTACT_EMAIL}`}
 					sx={{ color: (th) => th.palette.primary.main }}
 				>
-					dev.vporel@gmail.com
+					{APP_CONTACT_EMAIL}
 				</Box>
 			</Typography>
 		</Container>

@@ -3,95 +3,105 @@
  */
 import { fireEvent, render, screen } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
-import { exportGrafcet } from "@/ui/utils/grafcet/grafcet-export-utils";
 import { exportProject } from "@/ui/utils/project/project-export-utils";
-import { useProjectContext, useProjectStore } from "./ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { useProjectStore } from "./ProjectContext";
 import ExportModal from "./ExportModal";
 
 jest.mock("./ProjectContext");
-jest.mock("@/ui/utils/grafcet/grafcet-export-utils");
 jest.mock("@/ui/utils/project/project-export-utils");
+jest.mock("../pdf/OffscreenProgramRenderer", () => () => null);
+
+const startExport = jest.fn();
+const reset = jest.fn();
+jest.mock("../pdf/usePdfExport", () => ({
+	usePdfExport: () => ({
+		exportState: { status: "idle" },
+		offscreenPrograms: [],
+		onProgramReady: jest.fn(),
+		startExport,
+		reset,
+	}),
+}));
 
 function setup({
-	activeScopeType = "project" as "project" | "grafcet" | "ladder",
-	activeScope = "",
 	setExportModalVisible = jest.fn(),
-	getProgramOrThrow = jest.fn(),
 	project = new Project("p1", "Mon projet", ""),
+	activeScope = "",
+	activeScopeType = "project" as "project" | "grafcet" | "ladder" | "hmi",
 } = {}) {
-	(useProjectContext as jest.Mock).mockReturnValue({
-		getState: () => ({ project }),
-	});
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			ui: { exportModalVisible: true },
 			setExportModalVisible,
+			project,
 			activeScope,
 			activeScopeType,
-			grafcetsManager: { getProgramOrThrow },
 		}),
 	);
-
 	render(<ExportModal />);
-	return { setExportModalVisible, getProgramOrThrow, project };
+	return { setExportModalVisible, project };
 }
+
+const mainId = (project: Project) => Object.values(project.ladders)[0].id;
 
 describe("ExportModal", () => {
 	afterEach(() => jest.clearAllMocks());
 
-	it("désactive 'Exporter' tant qu'aucun choix n'est fait", () => {
+	it("propose les deux formats, PDF sélectionné par défaut", () => {
 		setup();
-		expect(screen.getByText("Exporter", { selector: "button" })).toBeDisabled();
+		expect(screen.getByRole("radio", { name: "PDF" })).toBeChecked();
+		expect(
+			screen.getByRole("radio", { name: /JSON/ }),
+		).not.toBeChecked();
 	});
 
-	it("désactive l'option 'Exporter le grafcet actif' hors d'un scope grafcet", () => {
-		setup({ activeScopeType: "project" });
-		expect(screen.getByDisplayValue("grafcet")).toBeDisabled();
-	});
-
-	it("active l'option 'Exporter le grafcet actif' dans un scope grafcet", () => {
-		setup({ activeScopeType: "grafcet", activeScope: "g1" });
-		expect(screen.getByDisplayValue("grafcet")).not.toBeDisabled();
-	});
-
-	it("exporte le projet, puis ferme la modale", () => {
+	it("exporte le projet en JSON puis ferme la modale", () => {
 		const { setExportModalVisible, project } = setup();
 
-		fireEvent.click(screen.getByDisplayValue("project"));
-		fireEvent.click(screen.getByText("Exporter", { selector: "button" }));
+		fireEvent.click(screen.getByRole("radio", { name: /JSON/ }));
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 
 		expect(exportProject).toHaveBeenCalledWith(project, "Mon projet");
 		expect(setExportModalVisible).toHaveBeenCalledWith(false);
+		expect(startExport).not.toHaveBeenCalled();
 	});
 
-	it("ajoute la date au nom de fichier quand la case est cochée", () => {
-		const { project } = setup();
-		const today = new Date().toISOString().slice(0, 10);
-
-		fireEvent.click(screen.getByDisplayValue("project"));
-		fireEvent.click(screen.getByRole("checkbox"));
-		fireEvent.click(screen.getByText("Exporter", { selector: "button" }));
-
-		expect(exportProject).toHaveBeenCalledWith(project, `Mon projet-${today}`);
+	it("lance l'export PDF complet avec une page de garde par défaut", () => {
+		setup();
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+		expect(exportProject).not.toHaveBeenCalled();
+		const [programs, , cover] = startExport.mock.calls[0];
+		expect(programs.length).toBeGreaterThan(0);
+		expect(cover).toMatchObject({ projectName: "Mon projet" });
 	});
 
-	it("exporte le grafcet actif quand ce choix est sélectionné", () => {
-		const grafcet = { name: "Grafcet 1", format: {} };
-		const { getProgramOrThrow } = setup({
-			activeScopeType: "grafcet",
-			activeScope: "g1",
-			getProgramOrThrow: jest.fn(() => grafcet),
-		});
-
-		fireEvent.click(screen.getByDisplayValue("grafcet"));
-		fireEvent.click(screen.getByText("Exporter", { selector: "button" }));
-
-		expect(getProgramOrThrow).toHaveBeenCalledWith("g1");
-		expect(exportGrafcet).toHaveBeenCalledWith(
-			"g1",
-			"Grafcet 1",
-			grafcet.format,
+	it("omet la page de garde quand la case est décochée", () => {
+		setup();
+		fireEvent.click(
+			screen.getByRole("checkbox", { name: /page de garde/ }),
 		);
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+		expect(startExport.mock.calls[0][2]).toBeUndefined();
+	});
+
+	it("désactive « page active » sans programme actif", () => {
+		setup();
+		expect(
+			screen.getByRole("radio", { name: /Page active/ }),
+		).toBeDisabled();
+	});
+
+	it("exporte uniquement la page active, sans page de garde", () => {
+		const project = new Project("p1", "Mon projet", "");
+		setup({ project, activeScope: mainId(project), activeScopeType: "ladder" });
+
+		fireEvent.click(screen.getByRole("radio", { name: /Page active/ }));
+		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
+
+		const [programs, , cover] = startExport.mock.calls[0];
+		expect(programs).toHaveLength(1);
+		expect(programs[0].program.id).toBe(mainId(project));
+		expect(cover).toBeUndefined();
 	});
 });

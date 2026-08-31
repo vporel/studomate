@@ -6,10 +6,12 @@ import { GrafcetContextProvider } from "@/ui/components/grafcet/context/GrafcetC
 import GrafcetFlow from "@/ui/components/grafcet/flow/GrafcetFlow";
 import { LadderContextProvider } from "@/ui/components/ladder/context/LadderContext";
 import LadderFlow from "@/ui/components/ladder/flow/LadderFlow";
+import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
 import {
 	forwardRef,
 	useEffect,
 	useImperativeHandle,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -27,8 +29,10 @@ export interface OffscreenProgramRendererHandle {
  * Monte des programmes GRAFCET/Ladder dans un conteneur hors-écran (portail sur document.body)
  * avec une largeur fixe de 1200px. Chaque programme signale qu'il est prêt via `onProgramReady`.
  *
- * Le conteneur est invisible (position absolute, hors viewport) mais possède des dimensions
- * réelles pour que React Flow puisse calculer son layout correctement.
+ * Le conteneur est placé hors du viewport (position absolute, `left: -9999px`) mais reste
+ * peint et dimensionné : React Flow doit pouvoir calculer son layout, et la capture recopie
+ * le style calculé sur son clone — un `visibility: hidden` ou `opacity: 0` ici produirait une
+ * capture entièrement vide.
  */
 const OffscreenProgramRenderer = forwardRef<
 	OffscreenProgramRendererHandle,
@@ -64,7 +68,6 @@ const OffscreenProgramRenderer = forwardRef<
 				left: -9999,
 				top: 0,
 				width: 1200,
-				visibility: "hidden",
 				pointerEvents: "none",
 				zIndex: -1,
 			}}
@@ -103,10 +106,16 @@ function OffscreenGrafcet({
 }) {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const readyFired = useRef(false);
+	const dimensions = useMemo(
+		() => getFlowDimensions(grafcet.format),
+		[grafcet.format],
+	);
 
 	// Sonde l'apparition de l'instance React Flow (rfInstance) via rAF.
 	// GrafcetFlow appelle viewManager.setReactFlowInstance dans onInit :
 	// dès que l'élément .react-flow__viewport est présent dans le DOM, le rendu est terminé.
+	// On capture le nœud `.react-flow` (dimensions exactes de la page) plutôt que le conteneur
+	// éditeur, qui porte le fond gris, le padding et la scrollbar.
 	useEffect(() => {
 		let rafId: number;
 		let attempts = 0;
@@ -119,7 +128,10 @@ function OffscreenGrafcet({
 			) as HTMLElement | null;
 			if (viewport) {
 				readyFired.current = true;
-				onReady(grafcet.id, wrapperRef.current!);
+				const flow = wrapperRef.current?.querySelector(
+					".react-flow",
+				) as HTMLElement | null;
+				onReady(grafcet.id, flow ?? wrapperRef.current!);
 				return;
 			}
 			if (++attempts < MAX) rafId = requestAnimationFrame(poll);
@@ -133,7 +145,12 @@ function OffscreenGrafcet({
 		<div
 			ref={wrapperRef}
 			data-offscreen-id={grafcet.id}
-			style={{ width: 1200, height: 900, overflow: "hidden" }}
+			style={{
+				width: dimensions.width,
+				height: dimensions.height,
+				overflow: "hidden",
+				background: "#fff",
+			}}
 		>
 			<GrafcetContextProvider initialGrafcet={grafcet}>
 				<GrafcetFlow />
@@ -165,7 +182,18 @@ function OffscreenLadder({
 			) as HTMLElement | null;
 			if (viewport) {
 				readyFired.current = true;
-				onReady(ladder.id, wrapperRef.current!);
+				// `.ladder-page` porte le fond gris et le padding de l'éditeur : on les neutralise
+				// et on capture ce nœud, dimensionné au contenu (empilement des sections).
+				const page = wrapperRef.current?.querySelector(
+					".ladder-page",
+				) as HTMLElement | null;
+				if (page) {
+					page.style.padding = "0";
+					page.style.background = "#fff";
+					page.style.overflow = "visible";
+					page.style.width = "max-content";
+				}
+				onReady(ladder.id, page ?? wrapperRef.current!);
 				return;
 			}
 			if (++attempts < MAX) rafId = requestAnimationFrame(poll);
@@ -179,7 +207,7 @@ function OffscreenLadder({
 		<div
 			ref={wrapperRef}
 			data-offscreen-id={ladder.id}
-			style={{ width: 1200, height: 900, overflow: "hidden" }}
+			style={{ width: "max-content", background: "#fff", overflow: "visible" }}
 		>
 			<LadderContextProvider initialLadder={ladder}>
 				<LadderFlow />

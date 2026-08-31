@@ -3,6 +3,8 @@ import EdgesFactory from "../factories/edges.factory";
 import NodesFactory from "../factories/nodes.factory";
 import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.command";
 import ElementsAddCommand from "@/schemas/grafcet/commands/elements-add.command";
+import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
+import computeBranchInsertion from "@/ui/utils/grafcet/junction-branch-insertion";
 import Action, {
 	ACTION_HANDLE_TARGET_STEP,
 } from "@/schemas/grafcet/action.schema";
@@ -25,7 +27,10 @@ import {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { grafcetConnectionFromXYFlowConnectionOrEdge } from "@/ui/utils/grafcet/grafcet-utils";
+import {
+	getFlowDimensions,
+	grafcetConnectionFromXYFlowConnectionOrEdge,
+} from "@/ui/utils/grafcet/grafcet-utils";
 import {
 	applyEdgeChanges,
 	applyNodeChanges,
@@ -385,6 +390,66 @@ export default class GrafcetWorkflowManager {
 	}
 
 	//Specific methods for junction management
+
+	/**
+	 * Aperçu du déplacement d'un pin de jonction pendant le glisser : patche la vue
+	 * sans toucher le grafcet ni pousser de commande. Le glisser complet est validé
+	 * en une seule commande via `updateNodeData` au relâchement de la souris.
+	 */
+	previewJunctionBarPosition(
+		nodeId: string,
+		patch: Partial<JunctionData>,
+	): void {
+		this.setStoreState((state) => ({
+			nodes: state.nodes.map((node) =>
+				node.id === nodeId
+					? ({ ...node, data: { ...node.data, ...patch } } as GrafcetNodeType)
+					: node,
+			),
+		}));
+	}
+
+	/**
+	 * Insère une branche dans une jonction à la position `insertIndex` de
+	 * `branchesOrder`. Données, position et taille du nœud changent en une seule
+	 * commande (un seul undo). Sans effet s'il n'y a pas la place.
+	 */
+	addJunctionBranch(nodeId: string, insertIndex: number): void {
+		const grafcet = this.getStoreState().grafcet;
+		const element = grafcet.getElementById<Junction>(nodeId);
+		if (!element) throw new Error("Element with id " + nodeId + " not found");
+		if (!JUNCTION_TYPES.includes(element.type as any))
+			throw new Error("Element with id " + nodeId + " is not a junction");
+		const pageWidth = getFlowDimensions(grafcet.format).width;
+		const result = computeBranchInsertion(
+			element.data,
+			element.size.width,
+			element.position.x,
+			pageWidth,
+			insertIndex,
+			createRandomId(),
+		);
+		if (!result) return;
+		this.getStoreState().commandsStackManager.executeOperation([
+			new ElementsUpdateCommand([
+				{
+					type: element.type,
+					id: nodeId,
+					data: {
+						branches: result.branches,
+						branchesOrder: result.branchesOrder,
+						pivotPosition: result.pivotPosition,
+					},
+					previousData: element.data,
+					position: { x: result.nodeX, y: element.position.y },
+					previousPosition: element.position,
+					size: { width: result.width, height: element.size.height },
+					previousSize: element.size,
+				},
+			]),
+		]);
+	}
+
 	deleteJunctionBranch(nodeId: string, branchId: string): void {
 		const grafcet = this.getStoreState().grafcet;
 		const element = grafcet.getElementById<Junction>(nodeId);

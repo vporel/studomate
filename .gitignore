@@ -44,3 +44,4 @@ next-env.d.ts
 _ai_context/
 .env
 .env.local
+.env.production

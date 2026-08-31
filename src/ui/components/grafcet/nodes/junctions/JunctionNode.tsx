@@ -7,7 +7,13 @@ import Junction, {
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
-import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
+import {
+	Node,
+	NodeProps,
+	NodeResizer,
+	Position,
+	useUpdateNodeInternals,
+} from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
 import GrafcetNode from "../GrafcetNode";
 import {
@@ -53,8 +59,21 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 		width,
 	);
 
+	const updateNodeInternals = useUpdateNodeInternals();
 	const th = useTheme();
 	const nodeHTMLElement = useRef<HTMLDivElement>(null);
+
+	const aBarIsSelected = pivotSelected || selectedBranchId != null;
+
+	// Toute variation de position d'un pin (drag, clavier, undo/redo, restauration)
+	// doit forcer React Flow à recalculer l'ancrage des liaisons.
+	const handlePositionsKey = [
+		data.pivotPosition,
+		...data.branchesOrder.map((id) => data.branches[id]!.position),
+	].join(",");
+	useEffect(() => {
+		updateNodeInternals(id);
+	}, [id, handlePositionsKey, updateNodeInternals]);
 	const borderColor = selected ? th.palette.primary.main : "black";
 
 	//Snap to grid
@@ -64,9 +83,9 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	}, [width]);
 
 	useEffect(() => {
-		if ((pivotSelected || selectedBranchId != null) && nodeHTMLElement.current)
+		if (aBarIsSelected && nodeHTMLElement.current)
 			nodeHTMLElement.current.focus();
-	}, [pivotSelected, selectedBranchId]);
+	}, [aBarIsSelected]);
 
 	return (
 		<>

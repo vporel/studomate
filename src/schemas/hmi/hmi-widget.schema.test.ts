@@ -101,6 +101,14 @@ describe("HmiWidget.create", () => {
 		});
 	});
 
+	it("initialise couleur, épaisseur et orientation pour line", () => {
+		const w = HmiWidget.create("line", 0, 0);
+		if (w.type !== "line") throw new Error("unreachable");
+		expect(typeof w.data.style.color).toBe("string");
+		expect(w.data.style.thickness).toBe(2);
+		expect(w.data.style.orientation).toBe("horizontal");
+	});
+
 	it("initialise le contenu texte pour text", () => {
 		const w = HmiWidget.create("text", 0, 0);
 		if (w.type !== "text") throw new Error("unreachable");
@@ -320,6 +328,14 @@ describe("HmiWidget.createFromJSON", () => {
 });
 
 describe("HMI_WIDGET_DEFINITIONS", () => {
+	const ALL_WIDGET_TYPES: HmiWidgetType[] = [
+		...ALL_TYPES,
+		"rectangle",
+		"ellipse",
+		"line",
+		"text",
+	];
+
 	it("définit une taille par défaut positive pour chaque type", () => {
 		ALL_TYPES.forEach((type) => {
 			const { defaultSize } = HMI_WIDGET_DEFINITIONS[type];
@@ -328,12 +344,12 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 		});
 	});
 
-	// gauge n'a pas de taille minimale unique : son orientation peut varier (voir
-	// `HmiWidgetPropertiesPanel`), `useHmiWidgetResize` retombe alors sur un plancher générique.
-	it("définit une taille minimale pour chaque type sauf gauge", () => {
-		ALL_TYPES.forEach((type) => {
+	// gauge et line n'ont pas de taille minimale unique : leur orientation peut varier,
+	// `useHmiWidgetResize` retombe alors sur un plancher générique.
+	it("définit une taille minimale pour chaque type sauf gauge et line", () => {
+		ALL_WIDGET_TYPES.forEach((type) => {
 			const { minSize } = HMI_WIDGET_DEFINITIONS[type];
-			if (type === "gauge") {
+			if (type === "gauge" || type === "line") {
 				expect(minSize).toBeUndefined();
 				return;
 			}
@@ -383,20 +399,15 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 	});
 
 	it("les formes n'ont pas de liaison à une variable", () => {
-		(["rectangle", "ellipse", "text"] as HmiWidgetType[]).forEach((type) => {
-			expect(HMI_WIDGET_DEFINITIONS[type].variableBinding).toBeNull();
-		});
+		(["rectangle", "ellipse", "line", "text"] as HmiWidgetType[]).forEach(
+			(type) => {
+				expect(HMI_WIDGET_DEFINITIONS[type].variableBinding).toBeNull();
+			},
+		);
 	});
 
-	const ALL_9: HmiWidgetType[] = [
-		...ALL_TYPES,
-		"rectangle",
-		"ellipse",
-		"text",
-	];
-
 	it("kind cohérent avec variableBinding (shape => null, interactive => liaison non vide)", () => {
-		ALL_9.forEach((type) => {
+		ALL_WIDGET_TYPES.forEach((type) => {
 			const def = HMI_WIDGET_DEFINITIONS[type];
 			if (def.kind === "shape") {
 				expect(def.variableBinding).toBeNull();
@@ -407,7 +418,7 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 	});
 
 	it("une forme n'a pas de variable dans ses données par défaut", () => {
-		ALL_9.forEach((type) => {
+		ALL_WIDGET_TYPES.forEach((type) => {
 			const def = HMI_WIDGET_DEFINITIONS[type];
 			if (def.kind === "shape") {
 				expect("variable" in def.defaultData).toBe(false);
@@ -418,7 +429,7 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 	});
 
 	it("seuls le bouton, l'interrupteur et la saisie écrivent dans leur variable", () => {
-		const writers = ALL_9.filter(
+		const writers = ALL_WIDGET_TYPES.filter(
 			(t) => HMI_WIDGET_DEFINITIONS[t].variableBinding?.writes,
 		);
 		expect(writers.sort()).toEqual(

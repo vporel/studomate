@@ -12,6 +12,9 @@ const ContextMenuItem = ({
 	item,
 	hideMenu,
 	menuTop,
+	menuLeft,
+	menuWidth,
+	parentWidth,
 	parentHeight,
 }: {
 	item: ContextMenuItemType;
@@ -19,15 +22,25 @@ const ContextMenuItem = ({
 	/** Position du haut du menu dans son conteneur (voir `ContextMenu`) : avec `parentHeight`, sert
 	 * à savoir si le sous-menu de cette entrée déborderait du cadre en `overflow:hidden`. */
 	menuTop: number;
+	/** Position et largeur du menu dans son conteneur : avec `parentWidth`, servent à savoir de
+	 * quel côté ouvrir le sous-menu pour qu'il ne sorte pas du cadre. */
+	menuLeft: number;
+	menuWidth: number;
+	parentWidth: number;
 	parentHeight: number;
 }) => {
 	const itemRef = useRef<HTMLLIElement>(null);
 	const subRef = useRef<HTMLUListElement>(null);
 	const hasSubItems = !!item.subItems && item.subItems.length > 0;
 
-	// Sous-menu vers le bas par défaut ; vers le haut seulement s'il déborderait en bas et qu'il y a
-	// plus de place au-dessus. Hauteur plafonnée à l'espace disponible de ce côté.
-	const [sub, setSub] = useState({ openUp: false, maxHeight: parentHeight });
+	// Sous-menu vers la droite / le bas par défaut ; bascule à gauche / en haut seulement s'il
+	// déborderait de ce côté et qu'il y a plus de place de l'autre. Hauteur plafonnée à l'espace
+	// disponible verticalement.
+	const [sub, setSub] = useState({
+		openUp: false,
+		openLeft: false,
+		maxHeight: parentHeight,
+	});
 	useLayoutEffect(() => {
 		if (!hasSubItems || !itemRef.current || !subRef.current) return;
 		const itemTop = menuTop + itemRef.current.offsetTop;
@@ -36,12 +49,26 @@ const ContextMenuItem = ({
 		const openUp =
 			subRef.current.scrollHeight > roomDown && roomUp > roomDown;
 		const maxHeight = Math.max(60, openUp ? roomUp : roomDown);
+
+		const subWidth = subRef.current.offsetWidth;
+		const roomRight = parentWidth - (menuLeft + menuWidth);
+		const openLeft = subWidth > roomRight && menuLeft > roomRight;
+
 		setSub((prev) =>
-			prev.openUp === openUp && prev.maxHeight === maxHeight
+			prev.openUp === openUp &&
+			prev.openLeft === openLeft &&
+			prev.maxHeight === maxHeight
 				? prev
-				: { openUp, maxHeight },
+				: { openUp, openLeft, maxHeight },
 		);
-	}, [hasSubItems, menuTop, parentHeight]);
+	}, [
+		hasSubItems,
+		menuTop,
+		menuLeft,
+		menuWidth,
+		parentWidth,
+		parentHeight,
+	]);
 
 	return (
 		<MenuItem
@@ -89,6 +116,9 @@ const ContextMenuItem = ({
 					sx={{
 						top: sub.openUp ? "auto" : 0,
 						bottom: sub.openUp ? 0 : "auto",
+						left: sub.openLeft ? "auto" : "100%",
+						right: sub.openLeft ? "100%" : "auto",
+						borderRadius: sub.openLeft ? "5px 0 0 5px" : "0 5px 5px 0",
 						maxHeight: sub.maxHeight,
 						overflowY: "auto",
 					}}

@@ -28,7 +28,8 @@ function AppComponent() {
 	useEffect(() => {
 		setMounted(true);
 		// Le splash pré-hydratation (voir layout + globals.css) a joué son rôle : React prend la main.
-		document.getElementById("boot-splash")?.remove();
+		// On retire seulement la classe qui le rend visible — le nœud `#boot-splash` reste géré par
+		// React (le retirer du DOM ici casse le démontage lors d'une navigation client hors de /app).
 		document.documentElement.classList.remove("restoring");
 	}, []);
 

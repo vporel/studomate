@@ -25,28 +25,23 @@ const ContextMenu = ({
 	...props
 }: ContextMenuProps) => {
 	const ref = useRef<HTMLUListElement | null>(null);
-	const [positionShiftAxes, setPositionShiftAxes] = useState<
-		null | "x" | "y" | "xy"
-	>(null);
 	const [internalPosition, setInternalPosition] = useState(position);
+	const [menuWidth, setMenuWidth] = useState(0);
 	useLayoutEffect(() => {
 		if (!ref.current) return;
 		const pos = { ...position };
-		let shiftAxes: null | "x" | "y" | "xy" = null;
 		if (pos.x + ref.current.offsetWidth > parentWidth) {
 			pos.x -= ref.current.offsetWidth;
-			shiftAxes = "x";
 		}
 		if (pos.y + ref.current.offsetHeight > parentHeight) {
 			pos.y -= ref.current.offsetHeight;
-			shiftAxes = shiftAxes === null ? "y" : "xy";
 		}
 		//Le menu est rendu dans un conteneur en overflow:hidden : sans borne basse,
 		//un décalage vers le haut/la gauche fait sortir les premières entrées du cadre.
 		pos.x = Math.max(0, pos.x);
 		pos.y = Math.max(0, pos.y);
-		setPositionShiftAxes(shiftAxes);
 		setInternalPosition(pos);
+		setMenuWidth(ref.current.offsetWidth);
 	}, [position, parentWidth, parentHeight]);
 
 	//Hide the menu when another part of the window is clicked
@@ -99,19 +94,15 @@ const ContextMenu = ({
 					".right-text": {
 						color: "gray",
 					},
-					// L'ancrage vertical du sous-menu (haut/bas) et son plafond de hauteur sont posés
-					// par `ContextMenuItem`, qui mesure si le sous-menu de cette entrée déborderait.
+					// L'ancrage du sous-menu (gauche/droite, haut/bas), son arrondi et son plafond de
+					// hauteur sont posés par `ContextMenuItem`, qui mesure si le sous-menu de cette
+					// entrée déborderait du cadre.
 					".sub-items-container": {
 						position: "absolute",
-						left: !positionShiftAxes?.includes("x") ? "100%" : "auto",
-						right: positionShiftAxes?.includes("x") ? "100%" : "auto",
 						background: "white",
 						minWidth: "160px",
 						minHeight: "20px",
 						border: "1px solid lightgray",
-						borderRadius: !positionShiftAxes?.includes("x")
-							? "0 5px 5px 0"
-							: "5px 0 0 5px",
 						opacity: 0,
 						visibility: "hidden",
 					},
@@ -125,6 +116,9 @@ const ContextMenu = ({
 								item={item}
 								hideMenu={onClose!}
 								menuTop={internalPosition.y}
+								menuLeft={internalPosition.x}
+								menuWidth={menuWidth}
+								parentWidth={parentWidth}
 								parentHeight={parentHeight}
 							/>
 						))}

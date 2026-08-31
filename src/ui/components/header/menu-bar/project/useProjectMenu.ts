@@ -1,5 +1,6 @@
 "use client";
 
+import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { platformShortcut } from "@/ui/lib/platform";
@@ -15,12 +16,14 @@ export default function useProjectMenu(): AppMenuType {
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
-	const { isSharedProject, sharingManager, setShareModalVisible } =
+	const { isSharedProject, sharingManager, setShareModalVisible, hasExercise } =
 		useProjectStore(
 			useShallow((state) => ({
 				isSharedProject: state.isSharedProject,
 				sharingManager: state.sharingManager,
 				setShareModalVisible: state.setShareModalVisible,
+				hasExercise:
+					(state.project?.exercise?.statement ?? "").trim().length > 0,
 			})),
 		);
 
@@ -48,12 +51,14 @@ export default function useProjectMenu(): AppMenuType {
 							laddersManager.newLadder();
 						},
 					},
-				],
-				[
-					{
-						label: "Propriétés",
-						onClick: () => pageManager.openPage(PROJECT_PROPERTIES_PAGE_DATA),
-					},
+					...(hasExercise
+						? [
+								{
+									label: "Énoncé de l'exercice",
+									onClick: () => pageManager.openPage(EXERCISE_PAGE_DATA),
+								},
+							]
+						: []),
 				],
 				[
 					{
@@ -73,6 +78,12 @@ export default function useProjectMenu(): AppMenuType {
 								},
 							]),
 				],
+				[
+					{
+						label: "Propriétés",
+						onClick: () => pageManager.openPage(PROJECT_PROPERTIES_PAGE_DATA),
+					},
+				],
 			],
 		}),
 		[
@@ -83,6 +94,7 @@ export default function useProjectMenu(): AppMenuType {
 			isSharedProject,
 			sharingManager,
 			setShareModalVisible,
+			hasExercise,
 		],
 	);
 }

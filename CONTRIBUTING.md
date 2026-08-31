@@ -25,6 +25,6 @@ Ouvrez une [issue](https://github.com/vporel/studomate/issues) en décrivant :
 
 5. Ouvrez la pull request vers `develop` en décrivant le changement et sa motivation.
 
-Ces quatre commandes sont rejouées automatiquement par la CI sur Node 20 et 22 à chaque push et chaque pull request.
+Ces quatre commandes sont rejouées automatiquement par la CI sur Node 22 à chaque push et chaque pull request.
 
 Pour les changements conséquents, ouvrir une issue au préalable pour en discuter est apprécié, afin d'éviter du travail qui ne serait finalement pas retenu.

@@ -2,6 +2,7 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
+import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import NodesFactory from "./nodes.factory";
 
@@ -77,6 +78,41 @@ describe("NodesFactory.syncNodes", () => {
 			expect(nodes[0].width).toBe(120);
 			expect(nodes[0].height).toBe(80);
 			expect(nodes[0].position).toEqual({ x: 50, y: 60 });
+		});
+
+		it("resynchronise la largeur d'une jonction depuis le domaine (elle n'est pas mesurée par React Flow)", () => {
+			const grafcet = new GrafcetBuilder()
+				.addJunctionAndStart(
+					new JunctionAndStartBuilder().id("j1").build(),
+				)
+				.build();
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				width: 200,
+			})) as GrafcetNodeType[];
+			grafcet.getElementById("j1")!.size = { width: 320, height: 30 };
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
+
+			expect(nodes[0].width).toBe(320);
+		});
+
+		it("laisse la vue piloter la largeur d'une jonction pendant un redimensionnement", () => {
+			const grafcet = new GrafcetBuilder()
+				.addJunctionAndStart(
+					new JunctionAndStartBuilder().id("j1").build(),
+				)
+				.build();
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				width: 250,
+				resizing: true,
+			})) as GrafcetNodeType[];
+			grafcet.getElementById("j1")!.size = { width: 320, height: 30 };
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
+
+			expect(nodes[0].width).toBe(250);
 		});
 
 		it("conserve un champ de vue inconnu de la factory", () => {

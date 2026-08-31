@@ -73,6 +73,20 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().hasUnsavedChanges).toBe(false);
 			expect(store.getState().ui.newProjectModalVisible).toBe(false);
 		});
+
+		it("injecte l'énoncé du template dans le projet, exercice comme solution", async () => {
+			const store = createProjectStore();
+
+			await lifecycle(store).newProjectFromTemplate("traffic-light", "exercise");
+			expect(store.getState().project?.exercise?.statement).toContain(
+				"Feu tricolore",
+			);
+
+			await lifecycle(store).newProjectFromTemplate("traffic-light", "solution");
+			expect(store.getState().project?.exercise?.statement).toContain(
+				"Feu tricolore",
+			);
+		});
 	});
 
 	describe("saveProject", () => {

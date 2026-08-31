@@ -13,6 +13,18 @@ import HmiPage from "../hmi/hmi-page.schema";
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
 /**
+ * Énoncé pédagogique d'un projet : le contexte, les consignes et le travail demandé, rédigés
+ * par l'enseignant. Optionnel — un projet peut n'être qu'un système à simuler.
+ *
+ * Objet (et non simple chaîne) pour pouvoir accueillir plus tard d'autres volets (objectifs,
+ * indices, critères de validation) sans changer la forme du champ.
+ */
+export type Exercise = {
+	/** Texte de l'énoncé, en Markdown. */
+	statement: string;
+};
+
+/**
  * Version de la **forme d'un projet**. À incrémenter quand la structure change, en ajoutant
  * la migration correspondante.
  *
@@ -49,6 +61,8 @@ export default class Project {
 	programs: Record<string, Program>;
 	/** Pages HMI du projet, indexées par id. */
 	hmiPages: Record<string, HmiPage>;
+	/** Énoncé pédagogique du projet — absent si l'auteur n'en a pas rédigé. */
+	exercise?: Exercise;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;

@@ -11,6 +11,7 @@ export type HmiWidgetType =
 	| "numeric-input"
 	| "rectangle"
 	| "ellipse"
+	| "line"
 	| "text";
 
 export type HmiWidgetSize = { width: number; height: number };
@@ -24,6 +25,9 @@ export type HmiGaugeOrientation = "horizontal" | "vertical";
 
 /** Alignement horizontal du texte — widget `text` uniquement. */
 export type HmiTextAlign = "left" | "center" | "right";
+
+/** Orientation du trait — widget `line` uniquement. */
+export type HmiLineOrientation = "horizontal" | "vertical";
 
 /** Action déclenchable par un événement de widget (voir `HmiWidgetEvents`) — union discriminée
  * par `type`, une seule variante pour l'instant. */
@@ -103,8 +107,8 @@ export type HmiWidgetDefinition = {
 	/** Dimensions par défaut à la création, en pixels. */
 	defaultSize: HmiWidgetSize;
 	/** Dimensions minimales, en pixels — bornes du redimensionnement. Absent pour un widget dont
-	 * l'orientation peut varier (ex. gauge) : une taille minimale unique n'aurait de sens que pour
-	 * une seule orientation. `useHmiWidgetResize` retombe alors sur un plancher générique. */
+	 * l'orientation peut varier (gauge, trait) : une taille minimale unique n'aurait de sens que
+	 * pour une seule orientation. `useHmiWidgetResize` retombe alors sur un plancher générique. */
 	minSize?: HmiWidgetSize;
 	/** Ratio largeur/hauteur imposé au redimensionnement (ex. 1 pour un widget carré) —
 	 * absent si le widget se redimensionne librement dans les deux dimensions. */
@@ -197,6 +201,20 @@ export type EllipseData = {
 	/** Voir `getResizeAspectRatio`. */
 	lockAspectRatio?: boolean;
 	animations?: HmiWidgetAnimations<HmiShapeAnimatableProp>;
+};
+/** Trait — segment de couleur unie, purement visuel (comme `RectangleData`). Sa boîte englobante
+ * sert de zone cliquable ; le trait est centré dedans, d'épaisseur `style.thickness`. */
+export type LineData = {
+	style: {
+		color: string;
+		/** Épaisseur du trait en pixels — défaut 2, voir `Line`. */
+		thickness?: number;
+		/** Défaut : `horizontal`, voir `Line`. */
+		orientation?: HmiLineOrientation;
+	};
+	/** Voir `getResizeAspectRatio`. */
+	lockAspectRatio?: boolean;
+	animations?: HmiWidgetAnimations<"color">;
 };
 export type TextData = {
 	text: string;
@@ -309,6 +327,15 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 		defaultSize: { width: 100, height: 70 },
 		minSize: { width: 20, height: 20 },
 	},
+	line: {
+		kind: "shape",
+		variableBinding: null,
+		defaultData: {
+			style: { color: "#555555", thickness: 2, orientation: "horizontal" },
+		},
+		label: "Trait",
+		defaultSize: { width: 120, height: 2 },
+	},
 	text: {
 		kind: "shape",
 		variableBinding: null,
@@ -399,6 +426,9 @@ class RectangleWidget extends HmiWidgetBase<RectangleData> {
 class EllipseWidget extends HmiWidgetBase<EllipseData> {
 	readonly type = "ellipse" as const;
 }
+class LineWidget extends HmiWidgetBase<LineData> {
+	readonly type = "line" as const;
+}
 class TextWidget extends HmiWidgetBase<TextData> {
 	readonly type = "text" as const;
 }
@@ -416,6 +446,7 @@ export type HmiWidget =
 	| NumericInputWidget
 	| RectangleWidget
 	| EllipseWidget
+	| LineWidget
 	| TextWidget;
 
 /** Union de tous les `data` possibles — pour les rares points génériques qui manipulent un widget
@@ -436,7 +467,7 @@ type HmiWidgetCtor = new (
 ) => HmiWidget;
 
 /** Constructeur de chaque type de widget — `Record` exhaustif : TS casse si un type est oublié.
- * Les 9 classes restent nécessaires pour le rétrécissement de l'union discriminée (voir
+ * Les classes restent nécessaires pour le rétrécissement de l'union discriminée (voir
  * `HmiWidget`). */
 const WIDGET_CONSTRUCTORS: Record<HmiWidgetType, HmiWidgetCtor> = {
 	"push-button": PushButtonWidget,
@@ -447,6 +478,7 @@ const WIDGET_CONSTRUCTORS: Record<HmiWidgetType, HmiWidgetCtor> = {
 	"numeric-input": NumericInputWidget,
 	rectangle: RectangleWidget,
 	ellipse: EllipseWidget,
+	line: LineWidget,
 	text: TextWidget,
 };
 

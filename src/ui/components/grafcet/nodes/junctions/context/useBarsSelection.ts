@@ -13,7 +13,10 @@ import { useCallback, useEffect, useState } from "react";
  * selectNextBranch can be used to select the next branch, if any \
  * clearSelection can be used to clear the selection of the pivot and the branches, for example when the user clicks outside of the node
  */
-export default function useBarsSelection(branchesOrder: string[]): {
+export default function useBarsSelection(
+	nodeId: string,
+	branchesOrder: string[],
+): {
 	pivotSelected: boolean;
 	selectedBranchId: string | null;
 	selectPivot: () => void;
@@ -55,16 +58,22 @@ export default function useBarsSelection(branchesOrder: string[]): {
 		setSelectedBranchId(null);
 	}, []);
 
-	//Clear the selection when another part of the window is clicked
+	// Tout clic gauche ailleurs (nœud, liaison, fond, corps de la jonction) annule la
+	// sélection du pin. En phase de capture pour passer avant React Flow, qui stoppe la
+	// propagation du mousedown sur ses nœuds. Seul un clic sur un pin de CETTE jonction
+	// est épargné (c'est lui qui va le sélectionner — voir JunctionNodeVerticalBar).
 	useEffect(() => {
 		const handler = (e: MouseEvent) => {
-			if (e.buttons == 1) clearSelection();
+			if (e.button !== 0) return;
+			const bar = (e.target as HTMLElement)?.closest?.(".junction-node__bar");
+			if (bar && bar.closest(`[id="grafcet-node-${nodeId}"]`) != null) return;
+			clearSelection();
 		};
-		window.addEventListener("mousedown", handler);
+		document.addEventListener("mousedown", handler, true);
 		return () => {
-			window.removeEventListener("mousedown", handler);
+			document.removeEventListener("mousedown", handler, true);
 		};
-	}, [clearSelection]);
+	}, [clearSelection, nodeId]);
 
 	return {
 		pivotSelected,

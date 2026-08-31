@@ -25,6 +25,10 @@ export default abstract class Junction extends Element<JunctionData> {
 		height: 30,
 	};
 
+	/**
+	 * Une divergence/convergence naît avec deux branches : une jonction à zéro ou une branche
+	 * n'a pas de sens (l'analyseur l'exige, voir `junction-or-start.analyser`).
+	 */
 	static generateDefaultData(): JunctionData {
 		const branch1: JunctionBranch = { id: createRandomId(), position: 10 };
 		const branch2: JunctionBranch = { id: createRandomId(), position: 190 };
@@ -32,14 +36,6 @@ export default abstract class Junction extends Element<JunctionData> {
 			pivotPosition: Junction.DEFAULT_DIMENSIONS.width / 2,
 			branches: { [branch1.id]: branch1, [branch2.id]: branch2 },
 			branchesOrder: [branch1.id, branch2.id],
-		};
-	}
-
-	static generateDefaultDataWithEmptyBranches(): JunctionData {
-		return {
-			pivotPosition: Junction.DEFAULT_DIMENSIONS.width / 2,
-			branches: {},
-			branchesOrder: [],
 		};
 	}
 }

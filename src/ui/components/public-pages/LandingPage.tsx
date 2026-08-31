@@ -1,19 +1,18 @@
 "use client";
 
-import {
-	APP_NAME,
-	APP_REPO_URL,
-	APP_SHORT_DESCRIPTION,
-	APP_SLOGAN,
-} from "@/app-info";
+import { APP_NAME, APP_REPO_URL, APP_SLOGAN } from "@/app-info";
 import routes from "@/app/routes";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import BoltIcon from "@mui/icons-material/Bolt";
 import CloudQueueIcon from "@mui/icons-material/CloudQueue";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import HubIcon from "@mui/icons-material/Hub";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import RuleIcon from "@mui/icons-material/Rule";
 import ViewQuiltIcon from "@mui/icons-material/ViewQuilt";
 import {
 	Box,
@@ -72,8 +71,8 @@ const features: {
 	},
 	{
 		icon: ViewQuiltIcon,
-		title: "Interfaces HMI",
-		text: "Concevez des interfaces homme-machine interactives pour piloter et visualiser le système.",
+		title: "HMI animées",
+		text: "Déplacement d'un objet, remplissage d'un réservoir, changement d'état visuel : une partie opérative virtuelle pour piloter et voir le système réagir.",
 	},
 	{
 		icon: PlayArrowIcon,
@@ -94,6 +93,28 @@ const features: {
 		icon: CloudQueueIcon,
 		title: "Comptes & cloud (optionnel)",
 		text: "Projets stockés localement ou dans le cloud, avec partage par lien.",
+	},
+];
+
+const reasons: {
+	icon: ComponentType<SvgIconProps>;
+	title: string;
+	text: string;
+}[] = [
+	{
+		icon: BoltIcon,
+		title: "Friction zéro",
+		text: "Pas d'installation, pas de licence, pas d'automate ni de cartes d'E/S à configurer. On se concentre sur la logique, pas sur l'outil.",
+	},
+	{
+		icon: HubIcon,
+		title: "Tout-en-un",
+		text: "GRAFCET, Ladder et HMI animées dans le même environnement, avec des variables partagées entre les trois. Aucun outil gratuit ne combine les trois.",
+	},
+	{
+		icon: RuleIcon,
+		title: "Boucle de correction courte",
+		text: "Les erreurs sont signalées pendant l'édition, pas seulement au lancement de la simulation. Un droit à l'erreur rapide et visuel.",
 	},
 ];
 
@@ -118,11 +139,16 @@ const steps = [
 const grafcetCapture =
 	"/images/captures-projets/parking-a-barriere_grafcet.png";
 const hmiCapture = "/images/captures-projets/parking-a-barriere_hmi.jpeg";
+const ladderCapture = "/images/captures-projets/project-test_ladder.png";
 
 const heroSlides = [
 	{
 		src: grafcetCapture,
 		alt: `L'éditeur ${APP_NAME} en cours de simulation d'un GRAFCET`,
+	},
+	{
+		src: ladderCapture,
+		alt: `L'éditeur ${APP_NAME} en cours de simulation d'un Ladder`,
 	},
 	{
 		src: hmiCapture,
@@ -170,13 +196,15 @@ const LandingPage = () => {
 							variant="h6"
 							component="p"
 							color="text.secondary"
-							sx={{ maxWidth: 620 }}
+							sx={{ maxWidth: 720 }}
 						>
-							{APP_SHORT_DESCRIPTION}
+							Le studio d&apos;automatisme le plus rapide et le plus accessible
+							pour apprendre et expérimenter le GRAFCET, le Ladder et les HMI :
+							gratuit, sans installation, directement dans le navigateur.
 						</Typography>
 						<Typography variant="body2" color="text.secondary">
-							Gratuit et open source · Sans installation · Vos projets restent
-							sur votre machine
+							Gratuit et open source · Sans installation · Sans compte · Aucune
+							donnée personnelle
 						</Typography>
 						<FlexBox gap={2} wrap justifyContent="center" mt={1}>
 							<OpenAppButton />
@@ -203,6 +231,35 @@ const LandingPage = () => {
 					</FlexBox>
 				</Container>
 			</Box>
+
+			{/* Pourquoi Studomate ? */}
+			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+				<SectionTitle>Pourquoi {APP_NAME} ?</SectionTitle>
+				<Typography textAlign="center" color="text.secondary" mb={4}>
+					La valeur de {APP_NAME} n&apos;est pas d&apos;être plus puissant
+					qu&apos;un logiciel industriel, mais de réduire à presque zéro la
+					friction pour apprendre l&apos;automatisme.
+				</Typography>
+				<FlexBox gap={3} wrap justifyContent="center">
+					{reasons.map(({ icon: Icon, title, text }) => (
+						<Paper
+							key={title}
+							variant="outlined"
+							sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
+						>
+							<Icon color="primary" fontSize="large" />
+							<Typography variant="h6" fontWeight={700} mt={1}>
+								{title}
+							</Typography>
+							<Typography variant="body2" color="text.secondary" mt={0.5}>
+								{text}
+							</Typography>
+						</Paper>
+					))}
+				</FlexBox>
+			</Container>
+
+			<Divider />
 
 			{/* Public visé */}
 			<Container maxWidth="md" sx={{ py: { xs: 6, md: 8 } }}>
@@ -356,6 +413,56 @@ const LandingPage = () => {
 
 			<Divider />
 
+			{/* Pérennité */}
+			<Container maxWidth="md" sx={{ py: { xs: 6, md: 8 } }}>
+				<SectionTitle>Vos projets vous appartiennent</SectionTitle>
+				<FlexBox gap={3} wrap justifyContent="center">
+					{[
+						{
+							icon: LockOpenIcon,
+							title: "Aucun enfermement",
+							text: "Vos projets sont des fichiers que vous exportez et conservez. Le schéma est versionné : un projet exporté aujourd'hui restera ouvrable après les mises à jour de l'outil.",
+						},
+						{
+							icon: CloudQueueIcon,
+							title: "Vous ne dépendez de personne",
+							text: "Le code est libre sous licence AGPL v3 : si le projet s'arrête, il peut être repris ou auto-hébergé. Il restera libre quoi qu'il arrive.",
+						},
+					].map(({ icon: Icon, title, text }) => (
+						<Paper
+							key={title}
+							variant="outlined"
+							sx={{ p: 3, flex: "1 1 300px", maxWidth: 380 }}
+						>
+							<Icon color="primary" fontSize="large" />
+							<Typography variant="h6" fontWeight={700} mt={1}>
+								{title}
+							</Typography>
+							<Typography variant="body2" color="text.secondary" mt={0.5}>
+								{text}
+							</Typography>
+						</Paper>
+					))}
+				</FlexBox>
+			</Container>
+
+			<Divider />
+
+			{/* Vie privée */}
+			<Container
+				maxWidth="md"
+				sx={{ py: { xs: 6, md: 8 }, textAlign: "center" }}
+			>
+				<SectionTitle>Pensé pour la vie privée</SectionTitle>
+				<Typography color="text.secondary" sx={{ maxWidth: 560, mx: "auto" }}>
+					Aucun email requis, aucune donnée personnelle stockée, aucun cookie de
+					suivi. L&apos;authentification se fait par pseudo, et les statistiques
+					d&apos;usage sont anonymes.
+				</Typography>
+			</Container>
+
+			<Divider />
+
 			{/* Open source */}
 			<Container
 				maxWidth="md"
@@ -363,8 +470,8 @@ const LandingPage = () => {
 			>
 				<SectionTitle>Open source</SectionTitle>
 				<Typography color="text.secondary" sx={{ maxWidth: 560, mx: "auto" }}>
-					{APP_NAME} est un projet libre sous licence MIT. Les idées, retours et
-					contributions sont les bienvenus.
+					{APP_NAME} est un projet libre sous licence AGPL v3. Les idées, retours
+					et contributions sont les bienvenus.
 				</Typography>
 				<FlexBox justifyContent="center" mt={3}>
 					<Button

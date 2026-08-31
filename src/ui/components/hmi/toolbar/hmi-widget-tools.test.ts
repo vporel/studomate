@@ -38,6 +38,7 @@ describe("HMI_SHAPE_TOOLS", () => {
 	it("place les formes simples avant les variantes d'ellipse, dans l'ordre paletteOrder", () => {
 		expect(HMI_SHAPE_TOOLS.map((t) => t.label ?? t.type)).toEqual([
 			"text",
+			"line",
 			"rectangle",
 			"Cercle",
 			"Ellipse",

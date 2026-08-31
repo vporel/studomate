@@ -21,7 +21,6 @@ import { StoreApi, useStore } from "zustand";
 import AnalysisResult from "./analysis-result/AnalysisResult";
 import ExportModal from "./ExportModal";
 import NewProjectModal from "./NewProjectModal";
-import PdfExportModal from "../pdf/PdfExportModal";
 import ProjectOpenModal from "./ProjectOpenModal";
 import SaveAsModal from "./SaveAsModal";
 import ShareProjectModal from "./ShareProjectModal";
@@ -139,7 +138,6 @@ export const ProjectContextProvider = ({
 			<NewProjectModal />
 			<ProjectOpenModal />
 			<ExportModal />
-			<PdfExportModal />
 			<SaveAsModal />
 			<ShareProjectModal />
 			<ShareRequiresCloudModal />

@@ -8,6 +8,10 @@ import {
 	createDrillingSolution,
 } from "./drilling.template";
 import {
+	createElevatorProject,
+	createElevatorSolution,
+} from "./elevator.template";
+import {
 	createParkingProject,
 	createParkingSolution,
 } from "./parking.template";
@@ -23,6 +27,12 @@ export type ProjectTemplate = {
 	label: string;
 	/** Description courte affichée sous le titre dans la modale. */
 	description: string;
+	/**
+	 * Énoncé de l'exercice (contexte + travail demandé), en Markdown. Injecté comme `exercise`
+	 * dans le projet créé, aussi bien pour la version exercice que pour la solution — une même
+	 * maquette pouvant servir de support à des énoncés différents. Absent = pas d'énoncé.
+	 */
+	statement?: string;
 	/** Construit et retourne un projet neuf basé sur ce template (version exercice). */
 	create: () => Project;
 	/** Construit et retourne la version complète et simulable du template. Absent = pas de solution disponible. */
@@ -49,6 +59,18 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		label: "Feu tricolore",
 		description:
 			"3 sorties booléennes (rouge, orange, vert) + interface HMI avec voyants colorés. À programmer.",
+		statement: [
+			"## Feu tricolore",
+			"",
+			"On souhaite piloter un feu de circulation à trois couleurs. Les sorties disponibles sont",
+			"`rouge`, `orange` et `vert` ; une seule doit être active à la fois.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Écrire le GRAFCET qui fait défiler les phases dans l'ordre **vert → orange → rouge**, en boucle.",
+			"2. Temporiser chaque phase : vert 10 s, orange 2 s, rouge 10 s.",
+			"3. Vérifier le fonctionnement en simulation à l'aide des voyants de l'interface HMI.",
+		].join("\n"),
 		create: createTrafficLightProject,
 		solution: createTrafficLightSolution,
 	},
@@ -57,6 +79,18 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		label: "Carrefour de feux tricolores",
 		description:
 			"12 sorties booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2) + interface HMI avec carrefour. À programmer.",
+		statement: [
+			"## Carrefour de feux tricolores",
+			"",
+			"Un carrefour croise deux axes : Nord-Sud (feux `NS1`, `NS2`) et Est-Ouest (feux `EO1`, `EO2`).",
+			"Chaque feu dispose de ses trois sorties `rouge…`, `orange…`, `vert…` (par exemple `vertNS1`).",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Faire fonctionner les deux feux d'un même axe **en parallèle** (même couleur au même instant).",
+			"2. Alterner les deux axes en respectant une phase de **tout-au-rouge** entre chaque changement.",
+			"3. Temporiser les phases et valider le cycle complet en simulation.",
+		].join("\n"),
 		create: createCrossroadsProject,
 		solution: createCrossroadsSolution,
 	},
@@ -65,14 +99,63 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		label: "Poste de perçage",
 		description:
 			"Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Modèle de partie opérative fourni. À programmer.",
+		statement: [
+			"## Poste de perçage",
+			"",
+			"Une perceuse automatique usine une pièce en un cycle. Entrée : `dcy` (bouton départ cycle).",
+			"Sorties : `descendre`, `monter` (mouvement de la table) et `broche` (rotation du foret).",
+			"Les capteurs de fin de course `h` (foret en haut) et `b` (foret en bas) sont fournis par la maquette.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Au repos, la table est en position haute, broche à l'arrêt.",
+			"2. Sur appui de `dcy` : mettre la broche en rotation puis descendre jusqu'à `b`.",
+			"3. Maintenir le perçage 3 s en position basse, puis remonter jusqu'à `h` et arrêter la broche.",
+			"4. Le cycle ne redémarre que sur un nouvel appui de `dcy`.",
+		].join("\n"),
 		create: createDrillingProject,
 		solution: createDrillingSolution,
+	},
+	{
+		id: "elevator",
+		label: "Ascenseur",
+		description:
+			"Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Modèle de partie opérative fourni. À programmer.",
+		statement: [
+			"## Ascenseur 3 niveaux",
+			"",
+			"Un ascenseur dessert trois étages (0, 1, 2). Appels : `appel_0..2` (paliers) et `cabine_0..2` (pupitre).",
+			"Sorties : `monter`, `descendre` (déplacement) et `porte` (ouverture). Capteurs de position d'étage",
+			"`etage_0..2` et `porte_ouverte` fournis par la maquette.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur un appel, déplacer la cabine vers l'étage demandé dans le bon sens.",
+			"2. À l'arrivée, arrêter la cabine et ouvrir la porte pendant 3 s, puis la refermer.",
+			"3. Ignorer un nouvel appel tant qu'un déplacement est en cours (traitement d'un appel à la fois).",
+			"4. Valider en simulation avec l'afficheur d'étage et l'animation de la cabine.",
+		].join("\n"),
+		create: createElevatorProject,
+		solution: createElevatorSolution,
 	},
 	{
 		id: "parking",
 		label: "Parking à barrière",
 		description:
 			"Barrière + compteur de places : entrées/sorties par boutons, voyant « complet », jauge et affichage d'occupation. À programmer.",
+		statement: [
+			"## Parking à barrière",
+			"",
+			"Un parking possède un nombre fini de places. Entrées : `dem_entree`, `dem_sortie` (demandes de passage).",
+			"Sorties : `barriere` (ouverture) et `complet` (voyant). Le nombre de places occupées est suivi dans `places`.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur `dem_entree`, si le parking n'est pas complet : ouvrir la barrière, incrémenter `places`.",
+			"2. Sur `dem_sortie`, si le parking n'est pas vide : ouvrir la barrière, décrémenter `places`.",
+			"3. Allumer `complet` dès que toutes les places sont occupées et refuser les nouvelles entrées.",
+			"4. Vérifier la jauge d'occupation en simulation.",
+		].join("\n"),
 		create: createParkingProject,
 		solution: createParkingSolution,
 	},

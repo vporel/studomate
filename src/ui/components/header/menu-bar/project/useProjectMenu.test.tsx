@@ -15,6 +15,13 @@ jest.mock("@/ui/components/pages/ProjectPropertiesPage", () => ({
 		title: "Propriétés",
 	},
 }));
+jest.mock("@/ui/components/pages/ExercisePage", () => ({
+	EXERCISE_PAGE_DATA: {
+		id: "exercise",
+		type: "exercise",
+		title: "Énoncé de l'exercice",
+	},
+}));
 
 describe("useProjectMenu", () => {
 	const grafcetsManager = { newGrafcet: jest.fn() };
@@ -23,7 +30,11 @@ describe("useProjectMenu", () => {
 	const shareProject = jest.fn();
 	const setShareModalVisible = jest.fn();
 
-	function setup(mode: ProjectMode, isSharedProject = false) {
+	function setup(
+		mode: ProjectMode,
+		isSharedProject = false,
+		exerciseStatement: string | undefined = undefined,
+	) {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({
 				grafcetsManager,
@@ -33,6 +44,9 @@ describe("useProjectMenu", () => {
 				isSharedProject,
 				sharingManager: { shareProject },
 				setShareModalVisible,
+				project: exerciseStatement
+					? { exercise: { statement: exerciseStatement } }
+					: {},
 			}),
 		);
 		return renderHook(() => useProjectMenu());
@@ -44,7 +58,32 @@ describe("useProjectMenu", () => {
 		const { result } = setup(ProjectMode.DESIGN);
 		expect(result.current.id).toBe("project");
 		expect(result.current.items[0][0].label).toBe("Nouveau grafcet");
-		expect(result.current.items[1][0].label).toBe("Propriétés");
+		expect(result.current.items[1][0].label).toBe("Partager");
+		expect(result.current.items[2][0].label).toBe("Propriétés");
+	});
+
+	it("n'expose l'item 'Énoncé de l'exercice' que si l'énoncé est non vide (trim)", () => {
+		expect(
+			setup(ProjectMode.DESIGN).result.current.items[0].map((i) => i.label),
+		).not.toContain("Énoncé de l'exercice");
+
+		expect(
+			setup(ProjectMode.DESIGN, false, "   \n ").result.current.items[0].map(
+				(i) => i.label,
+			),
+		).not.toContain("Énoncé de l'exercice");
+
+		const { result } = setup(ProjectMode.DESIGN, false, "## Consignes");
+		const item = result.current.items[0].find(
+			(i) => i.label === "Énoncé de l'exercice",
+		);
+		expect(item).toBeDefined();
+		act(() => item?.onClick?.());
+		expect(pagesManager.openPage).toHaveBeenCalledWith({
+			id: "exercise",
+			type: "exercise",
+			title: "Énoncé de l'exercice",
+		});
 	});
 
 	it("creates a new grafcet when designing", () => {
@@ -63,7 +102,7 @@ describe("useProjectMenu", () => {
 
 	it("opens the project properties page regardless of mode", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
-		act(() => result.current.items[1][0].onClick?.());
+		act(() => result.current.items[2][0].onClick?.());
 		expect(pagesManager.openPage).toHaveBeenCalledWith({
 			id: "project-properties",
 			type: "project-properties",
@@ -72,38 +111,38 @@ describe("useProjectMenu", () => {
 	});
 
 	describe("groupe Partager", () => {
-		it("expose l'item 'Partager' dans le troisième groupe", () => {
+		it("expose l'item 'Partager' dans le deuxième groupe", () => {
 			const { result } = setup(ProjectMode.DESIGN);
-			const partagerItem = result.current.items[2][0];
+			const partagerItem = result.current.items[1][0];
 			expect(partagerItem.label).toBe("Partager");
 		});
 
 		it("appelle shareProject au clic sur 'Partager'", () => {
 			const { result } = setup(ProjectMode.DESIGN);
-			act(() => result.current.items[2][0].onClick?.());
+			act(() => result.current.items[1][0].onClick?.());
 			expect(shareProject).toHaveBeenCalled();
 		});
 
 		it("désactive 'Partager' si le projet est partagé (lecture seule)", () => {
 			const { result } = setup(ProjectMode.DESIGN, true);
-			expect(result.current.items[2][0].disabled).toBe(true);
+			expect(result.current.items[1][0].disabled).toBe(true);
 		});
 
 		it("expose 'Gérer le partage' quand le projet n'est pas partagé", () => {
 			const { result } = setup(ProjectMode.DESIGN, false);
-			const labels = result.current.items[2].map((i) => i.label);
+			const labels = result.current.items[1].map((i) => i.label);
 			expect(labels).toContain("Gérer le partage");
 		});
 
 		it("n'expose pas 'Gérer le partage' quand isSharedProject est true", () => {
 			const { result } = setup(ProjectMode.DESIGN, true);
-			const labels = result.current.items[2].map((i) => i.label);
+			const labels = result.current.items[1].map((i) => i.label);
 			expect(labels).not.toContain("Gérer le partage");
 		});
 
 		it("appelle setShareModalVisible au clic sur 'Gérer le partage'", () => {
 			const { result } = setup(ProjectMode.DESIGN, false);
-			const gerItem = result.current.items[2].find(
+			const gerItem = result.current.items[1].find(
 				(i) => i.label === "Gérer le partage",
 			);
 			act(() => gerItem?.onClick?.());

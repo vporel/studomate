@@ -6,13 +6,13 @@ import { useJunctionNodeContext } from "./context/JunctionNodeContext";
 export const JUNCTION_NODE_BRANCH_ADD_BUTTON_WIDTH = 20;
 
 const JunctionNodeBranchAddButton = ({
-	index,
+	insertIndex,
 	position,
 	onClick,
 }: {
-	index: number;
+	insertIndex: number;
 	position: { top: number; left: number };
-	onClick: (index: number) => void;
+	onClick: (insertIndex: number) => void;
 }) => {
 	return (
 		<Box
@@ -37,7 +37,7 @@ const JunctionNodeBranchAddButton = ({
 					color: "white",
 				},
 			}}
-			onClick={() => onClick(index)}
+			onClick={() => onClick(insertIndex)}
 		>
 			+
 		</Box>
@@ -47,11 +47,11 @@ const JunctionNodeBranchAddButton = ({
 const JunctionNodeBranchAddButtons = ({ top }: { top: number }) => {
 	const { branchAddButtonsPositions, onBranchAdd } = useJunctionNodeContext();
 
-	return branchAddButtonsPositions.map((pos, index) => (
+	return branchAddButtonsPositions.map((button) => (
 		<JunctionNodeBranchAddButton
-			key={index}
-			index={index}
-			position={{ top, left: pos }}
+			key={button.insertIndex}
+			insertIndex={button.insertIndex}
+			position={{ top, left: button.left }}
 			onClick={onBranchAdd}
 		/>
 	));

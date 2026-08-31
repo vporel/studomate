@@ -1,7 +1,6 @@
 import { ElementType } from "./element.schema";
 import Junction, {
 	JUNCTION_HANDLE_PIVOT,
-	JunctionData,
 	JunctionHandle,
 } from "./junction.schema";
 
@@ -28,8 +27,4 @@ export const JUNCTION_OR_END_HANDLE_BRANCH_TYPES = [
 
 export default class JunctionOrEnd extends Junction {
 	readonly type = "junction-or-end";
-
-	static generateDefaultData(): JunctionData {
-		return Junction.generateDefaultDataWithEmptyBranches();
-	}
 }
