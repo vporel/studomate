@@ -1,6 +1,12 @@
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
+import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
+import {
+	ActionData,
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import ElementsCommandsFactory from "./elements-commands.factory";
@@ -51,6 +57,48 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 				"inexistant",
 				{ number: 5 } as Partial<StepData>,
 				grafcetWithStep(1),
+			);
+
+			expect(commands).toHaveLength(0);
+		});
+
+		function grafcetWithBooleanAction(expression: string) {
+			return new GrafcetBuilder()
+				.addAction(
+					new ActionBuilder()
+						.id("action-1")
+						.type(ActionType.BOOLEAN_VARIABLE)
+						.executionMode(ActionExecutionMode.CONTINUOUS)
+						.expression(expression)
+						.build(),
+				)
+				.build();
+		}
+
+		it("applique un changement de type même si l'expression conservée est incohérente", () => {
+			const grafcet = grafcetWithBooleanAction("moteur");
+
+			const { commands, nodeDataToUpdate } =
+				ElementsCommandsFactory.onNodeDataChange(
+					"action-1",
+					{ type: ActionType.NUMERIC_VARIABLE } as Partial<ActionData>,
+					grafcet,
+				);
+
+			expect(commands).toHaveLength(1);
+			expect((nodeDataToUpdate as ActionData).type).toBe(
+				ActionType.NUMERIC_VARIABLE,
+			);
+			expect((nodeDataToUpdate as ActionData).expression).toBe("moteur");
+		});
+
+		it("bloque toujours une édition d'expression syntaxiquement invalide", () => {
+			const grafcet = grafcetWithBooleanAction("moteur");
+
+			const { commands } = ElementsCommandsFactory.onNodeDataChange(
+				"action-1",
+				{ expression: "moteur :=" } as Partial<ActionData>,
+				grafcet,
 			);
 
 			expect(commands).toHaveLength(0);

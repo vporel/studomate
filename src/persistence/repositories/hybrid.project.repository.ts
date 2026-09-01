@@ -6,6 +6,7 @@ import ProjectRepository, {
 	SaveResult,
 	ShareableProjectRepository,
 	ShareResult,
+	StorageLocation,
 } from "./project.repository";
 
 const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
@@ -40,8 +41,19 @@ export default class HybridProjectRepository
 		return this.local.get(projectId);
 	}
 
-	async save(project: Project): Promise<SaveResult> {
+	/**
+	 * `location` ne joue que pour un id encore inconnu de cet index : un projet déjà local ou
+	 * déjà cloud garde son emplacement, quel que soit `location` — seul le premier enregistrement
+	 * d'un projet peut choisir sa destination.
+	 */
+	async save(project: Project, location?: StorageLocation): Promise<SaveResult> {
 		if (this.isCloud(project.id)) return this.cloud.save(project);
+		// `isCloud` à false ne veut pas dire "projet neuf" : il peut déjà exister en local, auquel
+		// cas `location` ne doit rien changer — seul un id absent des deux repositories est
+		// réellement neuf et peut choisir sa destination.
+		if (location === "cloud" && !(await this.local.get(project.id))) {
+			return this.moveToCloud(project);
+		}
 		return this.local.save(project);
 	}
 

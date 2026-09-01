@@ -19,6 +19,10 @@ import {
 	NodePositionChange,
 } from "@xyflow/react";
 
+/** Champs de donnée dont la modification (menu contextuel) est structurelle et ne doit pas être
+ * bloquée par le garde-fou d'analyse : le type et le mode d'exécution d'une action. */
+const STRUCTURAL_DATA_FIELDS = ["type", "executionMode"];
+
 export default class ElementsCommandsFactory {
 	static onNodesAdd(
 		newNodes: GrafcetNodeType[],
@@ -127,17 +131,27 @@ export default class ElementsCommandsFactory {
 		if (!element) return { commands: [] };
 		const prevData = element.data as any;
 		if (typeof newData === "function") newData = newData(prevData);
+		// Un changement purement structurel venu d'un menu (type d'action, mode d'exécution) doit
+		// toujours s'appliquer : l'analyseur signalera ensuite une éventuelle incohérence avec
+		// l'expression conservée. Le garde-fou ne concerne que l'édition du contenu lui-même.
+		const isStructuralOnlyChange =
+			Object.keys(newData).length > 0 &&
+			Object.keys(newData).every((key) =>
+				STRUCTURAL_DATA_FIELDS.includes(key),
+			);
 		newData = element.fixNewDataConsistency(newData, prevData);
 		const analyser = GrafcetElementAnalyserFactory.getAnalyser(element.type);
 		if (!analyser) return { commands: [] };
 		const elementcopy = element.copy();
 		elementcopy.updateData(newData);
-		const issues = analyser.analyseIsolated(elementcopy, {
-			allowEmptyContent: true,
-			dialect,
-		});
-		if (issues.filter((issue) => issue.severity === "error").length > 0)
-			return { commands: [] };
+		if (!isStructuralOnlyChange) {
+			const issues = analyser.analyseIsolated(elementcopy, {
+				allowEmptyContent: true,
+				dialect,
+			});
+			if (issues.filter((issue) => issue.severity === "error").length > 0)
+				return { commands: [] };
+		}
 		const fullModifiedData = { ...element.data, ...newData };
 		const commands = [];
 		//Make sure the data is not the same as the previous one, to avoid creating unnecessary commands

@@ -2,6 +2,7 @@
 import Project from "@/schemas/project/project.schema";
 import { createProjectStore } from "./project.store";
 import * as draftStorage from "@/persistence/draft.storage";
+import { setPreferredSaveLocation } from "@/persistence/preferences.storage";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 jest.mock("@/persistence/draft.storage", () => ({
@@ -32,6 +33,9 @@ describe("store — brouillons", () => {
 		localStorage.clear();
 		jest.clearAllMocks();
 		mockedGetDraft.mockReturnValue(null);
+		// Sans préférence de lieu de stockage, le premier enregistrement d'un projet neuf ouvrirait
+		// la modale de choix — hors sujet ici (voir lifecycle.manager.test.ts).
+		setPreferredSaveLocation("local");
 	});
 
 	describe("startAutoSave / stopAutoSave", () => {

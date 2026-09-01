@@ -1,6 +1,8 @@
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
-import ProjectRepository from "@/persistence/repositories/project.repository";
+import ProjectRepository, {
+	StorageLocation,
+} from "@/persistence/repositories/project.repository";
 import { AnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import { GrafcetStoreState } from "../grafcet/grafcet.store";
 import { HmiStoreState } from "../hmi/hmi.store";
@@ -22,6 +24,7 @@ type SimpleCallback = () => void;
 export type PageType =
 	| "project-startup"
 	| "project-properties"
+	| "preferences"
 	| "exercise"
 	| "grafcet"
 	| "ladder"
@@ -115,6 +118,19 @@ export interface ProjectUiState {
 		projectId: string | null;
 		draftData: string | null;
 	};
+	/**
+	 * Affichée quand `saveProject` échoue avec `reason: "conflict"` : un autre appareil a
+	 * enregistré ce même projet cloud entre son chargement ici et cette tentative d'écriture.
+	 */
+	cloudConflictModalVisible: boolean;
+	/**
+	 * Affichée au premier enregistrement d'un projet neuf tant qu'aucune préférence de lieu de
+	 * stockage n'existe (voir `preferences.storage.ts`), ou en repli quand la préférence est
+	 * "cloud" mais qu'aucune session n'est active. `onSaveLocationChosen` porte le choix retenu
+	 * (`null` si l'utilisateur annule) — appelé par la modale, jamais lu ailleurs.
+	 */
+	saveLocationModalVisible: boolean;
+	onSaveLocationChosen: ((location: StorageLocation | null) => void) | null;
 }
 
 /**

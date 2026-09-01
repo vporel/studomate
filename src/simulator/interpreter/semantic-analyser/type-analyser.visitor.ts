@@ -59,9 +59,9 @@ export default class TypeAnalyserVisitor extends BaseVisitor<
 	}
 
 	protected visitUnaryExpressionNode(
-		_node: UnaryExpressionNode,
+		node: UnaryExpressionNode,
 	): ExpectedNodeResultType {
-		return "boolean";
+		return node.operator === "-" ? "number" : "boolean";
 	}
 
 	protected visitArithmeticExpressionNode(

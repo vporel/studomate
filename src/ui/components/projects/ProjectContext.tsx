@@ -27,6 +27,8 @@ import ShareProjectModal from "./ShareProjectModal";
 import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
 import DraftRecoveryDialog from "./DraftRecoveryDialog";
 import DraftConflictDialog from "./DraftConflictDialog";
+import CloudConflictDialog from "./CloudConflictDialog";
+import SaveLocationModal from "./SaveLocationModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
 import Project from "@/schemas/project/project.schema";
@@ -144,6 +146,8 @@ export const ProjectContextProvider = ({
 			<AnalysisResult />
 			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
 			<DraftConflictDialog />
+			<CloudConflictDialog />
+			<SaveLocationModal />
 		</ProjectContext.Provider>
 	);
 };

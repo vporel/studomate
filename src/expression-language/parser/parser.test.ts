@@ -122,6 +122,31 @@ describe("Parser", () => {
 			expect((ast as any).right.operator).toBe("/");
 		});
 
+		it("parses a standalone unary minus", () => {
+			const ast = parseExpression("-5");
+			expect(ast.type).toBe("UNARY_EXPRESSION");
+			expect((ast as any).operator).toBe("-");
+			expect((ast as any).expr.type).toBe("NUMBER_LITERAL");
+			expect((ast as any).expr.value).toBe(5);
+		});
+
+		it("parses unary minus as a multiplication operand", () => {
+			const ast = parseExpression("a * -1");
+			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).operator).toBe("*");
+			expect((ast as any).right.type).toBe("UNARY_EXPRESSION");
+			expect((ast as any).right.operator).toBe("-");
+		});
+
+		it("distinguishes unary minus from binary subtraction", () => {
+			const ast = parseExpression("a - -5");
+			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).operator).toBe("-");
+			expect((ast as any).left.type).toBe("IDENTIFIER");
+			expect((ast as any).right.type).toBe("UNARY_EXPRESSION");
+			expect((ast as any).right.operator).toBe("-");
+		});
+
 		it("parses complex arithmetic with multiple operators", () => {
 			const ast = parseExpression("a + b * c - d / e");
 			expect(ast.type).toBe("ARITHMETIC_EXPRESSION");
@@ -183,6 +208,16 @@ describe("Parser", () => {
 			expect((ast as any).operator).toBe("NOT");
 		});
 
+		it("positions the OR node at the operator, not past the right operand", () => {
+			const ast = parseExpression("a OU b");
+			expect((ast as any).position).toBe(2);
+		});
+
+		it("positions the AND node at the operator, not past the right operand", () => {
+			const ast = parseExpression("a ET b");
+			expect((ast as any).position).toBe(2);
+		});
+
 		it("respects precedence (AND before OR)", () => {
 			const ast = parseExpression("VRAI OU FAUX ET VRAI");
 			expect(ast.type).toBe("LOGICAL_EXPRESSION");
@@ -236,11 +271,40 @@ describe("Parser", () => {
 			expect((ast as any).presetTime).toBe(5000);
 		});
 
-		it("parses timer with complex input expression", () => {
-			const ast = parseExpression("timer1/a ET b/10s");
+		it("parses timer with a parenthesized complex input expression", () => {
+			const ast = parseExpression("timer1/(a ET b)/10s");
 			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
 			expect((ast as any).name).toBe("timer1");
 			expect((ast as any).input.type).toBe("LOGICAL_EXPRESSION");
+		});
+
+		it("parses a parenthesized timer input longer than the old fixed lookahead window", () => {
+			const ast = parseExpression("t1/(a ET b ET c ET d ET e)/5s");
+			expect(ast.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).name).toBe("t1");
+			expect((ast as any).presetTime).toBe(5000);
+			expect((ast as any).input.type).toBe("LOGICAL_EXPRESSION");
+		});
+
+		it("rejects a compound timer input written without parentheses", () => {
+			expect(() => parseExpression("timer1/a ET b/10s")).toThrow();
+		});
+
+		it("does not confuse a division followed by an unrelated timer with the timer's own input", () => {
+			const ast = parseExpression("debit / 2 ET t1 / X1 / 5s");
+			expect(ast.type).toBe("LOGICAL_EXPRESSION");
+			expect((ast as any).operator).toBe("AND");
+			expect((ast as any).left.type).toBe("ARITHMETIC_EXPRESSION");
+			expect((ast as any).left.operator).toBe("/");
+			expect((ast as any).left.left.value).toBe("debit");
+			expect((ast as any).right.type).toBe("TIMER_STRING_DECLARATION");
+			expect((ast as any).right.name).toBe("t1");
+			expect((ast as any).right.input.value).toBe("X1");
+			expect((ast as any).right.presetTime).toBe(5000);
+		});
+
+		it("rejects a duration glued to a following identifier instead of silently splitting it", () => {
+			expect(() => parseExpression("Test ET t1/X1/2sET X2")).toThrow();
 		});
 
 		it("converts duration units correctly", () => {

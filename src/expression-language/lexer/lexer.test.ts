@@ -61,6 +61,26 @@ describe("Lexer", () => {
 				value: "2.5s",
 			});
 		});
+
+		it("does not treat a unit letter glued to a following identifier as a duration", () => {
+			const tokens = lexer.tokenize("2sET");
+			expect(tokens[0]).toMatchObject({ type: TokenType.NUMBER, value: "2" });
+			expect(tokens[1]).toMatchObject({
+				type: TokenType.IDENTIFIER,
+				value: "sET",
+			});
+		});
+
+		it("still tokenizes a duration followed directly by a non-identifier character", () => {
+			expect(lexer.tokenize("5s)")[0]).toMatchObject({
+				type: TokenType.DURATION,
+				value: "5s",
+			});
+			expect(lexer.tokenize("5s/2")[0]).toMatchObject({
+				type: TokenType.DURATION,
+				value: "5s",
+			});
+		});
 	});
 
 	describe("strings", () => {

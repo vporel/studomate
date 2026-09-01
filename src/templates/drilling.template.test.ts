@@ -1,5 +1,8 @@
 import Project from "@/schemas/project/project.schema";
-import { getElementWidth } from "@/schemas/ladder/element.schema";
+import {
+	getElementHeight,
+	getElementWidth,
+} from "@/schemas/ladder/element.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	createDrillingProject,
@@ -55,27 +58,26 @@ describe("drilling.template", () => {
 			expect(mainCallsIt).toBe(true);
 		});
 
-		it("espace les éléments de chaque réseau du modèle (jamais deux blocs collés)", () => {
+		it("dispose les lignes du modèle sans chevauchement d'empreintes (bloc Calc sur 2 cellules)", () => {
 			const operative = Object.values(project.ladders).find(
 				(l) => l.name === "Partie opérative",
-			);
-			const byRow = new Map<number, { col: number; width: number }[]>();
-			for (const element of operative!.sections[0].elements) {
-				if (element.type === "railTerminal") continue;
-				const row = element.position.row;
-				const list = byRow.get(row) ?? [];
-				list.push({
-					col: element.position.col,
-					width: getElementWidth(element),
-				});
-				byRow.set(row, list);
-			}
-			for (const list of byRow.values()) {
-				list.sort((a, b) => a.col - b.col);
-				for (let i = 1; i < list.length; i++) {
-					expect(list[i].col).toBeGreaterThan(
-						list[i - 1].col + list[i - 1].width,
-					);
+			)!;
+			const footprints = operative.sections[0].elements.map((el) => ({
+				row: el.position.row,
+				col: el.position.col,
+				width: getElementWidth(el),
+				height: getElementHeight(el),
+			}));
+			for (let i = 0; i < footprints.length; i++) {
+				for (let j = i + 1; j < footprints.length; j++) {
+					const a = footprints[i];
+					const b = footprints[j];
+					const overlap =
+						a.col < b.col + b.width &&
+						b.col < a.col + a.width &&
+						a.row < b.row + b.height &&
+						b.row < a.row + a.height;
+					expect(overlap).toBe(false);
 				}
 			}
 		});

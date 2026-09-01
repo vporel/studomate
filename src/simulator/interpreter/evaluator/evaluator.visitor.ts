@@ -83,6 +83,8 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 		switch (node.operator) {
 			case "NOT":
 				return !this.visit(node.expr);
+			case "-":
+				return -(this.visit(node.expr) as number);
 		}
 	}
 

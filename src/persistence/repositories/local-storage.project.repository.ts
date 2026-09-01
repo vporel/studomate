@@ -42,6 +42,8 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 		return raw ? deserializeProject(raw) : null;
 	}
 
+	// `location` (voir `ProjectRepository`) est sans objet ici : ce repository ne connaît qu'un
+	// seul lieu de stockage.
 	async save(project: Project): Promise<SaveResult> {
 		const raws = this.readRawProjects();
 		//`write` re-sérialise tout le tableau : inutile de cloner le projet par JSON ici, une

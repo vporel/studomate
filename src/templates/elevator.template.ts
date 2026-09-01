@@ -10,9 +10,13 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import JunctionOrEndBuilder from "@/schemas/grafcet/builders/junction-or-end.builder";
 import JunctionOrStartBuilder from "@/schemas/grafcet/builders/junction-or-start.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
+import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
+import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "@/schemas/grafcet/junction.schema";
+import { STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR } from "@/schemas/grafcet/step-referral-source.schema";
+import { STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR } from "@/schemas/grafcet/step-referral-target.schema";
 import {
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
@@ -35,8 +39,10 @@ import {
 	createCoilElement,
 	createContactElement,
 	createRailTerminalElement,
+	getElementHeight,
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
@@ -48,6 +54,9 @@ const POSITION_MAX = 200;
 const ETAGE_POSITION = [0, 100, POSITION_MAX];
 /** Course de la porte, de fermée (0) à ouverte (100). */
 const PORTE_MAX = 100;
+/** Temps de garde porte ouverte : la porte ne peut pas se refermer avant l'écoulement de ce
+ * délai après avoir atteint la position ouverte, même si la commande `porte` retombe. */
+const MAINTIEN_PORTE = "T#2s";
 /** Avance de la cabine et de la porte par cycle automate. */
 const PAS = 2;
 
@@ -72,159 +81,219 @@ function wireInSeries(elements: LadderElement[]): Connection[] {
 	return connections;
 }
 
+type RungBuilder = (build: (row: number) => LadderElement[]) => void;
+
 /**
- * Modèle de partie opérative de l'ascenseur, en Ladder — **fourni, à ne pas modifier**.
- * Le simulateur n'a pas de modèle physique : ce programme le remplace en calculant, à chaque
- * cycle, la position de la cabine d'après les commandes `monter`/`descendre` et l'avancement de
- * la porte d'après `porte`. Il en déduit les capteurs d'étage `etage_0/1/2`, la fin de course
- * `porte_ouverte`, la position d'animation `cabine_y` et le numéro d'étage `etage_courant`
- * affiché — ce dernier calculé à partir des seuls capteurs d'étage, comme sur un pupitre réel.
+ * Construit une section : chaque `rung()` pose une ligne à la rangée courante puis avance du
+ * nombre de cellules occupées par son élément le plus haut (un bloc Calc ou Assign en occupe
+ * deux) — sans quoi la ligne suivante le chevaucherait.
  */
-function buildOperativePartLadder(): Ladder {
+function buildLadderSection(
+	name: string,
+	description: string,
+	fill: (rung: RungBuilder) => void,
+): Section {
 	const rungs: LadderElement[][] = [];
-
-	// Déplacement de la cabine
-	rungs.push([
-		createRailTerminalElement(0),
-		createContactElement("monter", "NO", 0, 1),
-		createCompareBlockElement(0, 3, {
-			in1: "position",
-			in2: `${POSITION_MAX}`,
-			operator: "<",
-		}),
-		createArithmeticBlockElement(0, 5, {
-			in1: "position",
-			in2: `${PAS}`,
-			out: "position",
-			operator: "+",
-		}),
-	]);
-	rungs.push([
-		createRailTerminalElement(1),
-		createContactElement("descendre", "NO", 1, 1),
-		createCompareBlockElement(1, 3, {
-			in1: "position",
-			in2: "0",
-			operator: ">",
-		}),
-		createArithmeticBlockElement(1, 5, {
-			in1: "position",
-			in2: `${PAS}`,
-			out: "position",
-			operator: "-",
-		}),
-	]);
-
-	// Avancement de la porte (ouverture ≈ 2 s, fermeture ≈ 2 s)
-	rungs.push([
-		createRailTerminalElement(2),
-		createContactElement("porte", "NO", 2, 1),
-		createCompareBlockElement(2, 3, {
-			in1: "porte_pos",
-			in2: `${PORTE_MAX}`,
-			operator: "<",
-		}),
-		createArithmeticBlockElement(2, 5, {
-			in1: "porte_pos",
-			in2: `${PAS}`,
-			out: "porte_pos",
-			operator: "+",
-		}),
-	]);
-	rungs.push([
-		createRailTerminalElement(3),
-		createContactElement("porte", "NF", 3, 1),
-		createCompareBlockElement(3, 3, {
-			in1: "porte_pos",
-			in2: "0",
-			operator: ">",
-		}),
-		createArithmeticBlockElement(3, 5, {
-			in1: "porte_pos",
-			in2: `${PAS}`,
-			out: "porte_pos",
-			operator: "-",
-		}),
-	]);
-
-	// Position d'animation : la cabine monte quand `position` augmente
-	rungs.push([
-		createRailTerminalElement(4),
-		createArithmeticBlockElement(4, 1, {
-			in1: `${POSITION_MAX}`,
-			in2: "position",
-			out: "cabine_y",
-			operator: "-",
-		}),
-	]);
-
-	// Capteurs de présence à chaque étage
-	rungs.push([
-		createRailTerminalElement(5),
-		createCompareBlockElement(5, 1, {
-			in1: "position",
-			in2: `${ETAGE_POSITION[0] + 1}`,
-			operator: "<=",
-		}),
-		createCoilElement("etage_0", "normal", 5, 3),
-	]);
-	rungs.push([
-		createRailTerminalElement(6),
-		createCompareBlockElement(6, 1, {
-			in1: "position",
-			in2: `${ETAGE_POSITION[1] - 1}`,
-			operator: ">=",
-		}),
-		createCompareBlockElement(6, 3, {
-			in1: "position",
-			in2: `${ETAGE_POSITION[1] + 1}`,
-			operator: "<=",
-		}),
-		createCoilElement("etage_1", "normal", 6, 5),
-	]);
-	rungs.push([
-		createRailTerminalElement(7),
-		createCompareBlockElement(7, 1, {
-			in1: "position",
-			in2: `${ETAGE_POSITION[2] - 1}`,
-			operator: ">=",
-		}),
-		createCoilElement("etage_2", "normal", 7, 3),
-	]);
-
-	// Fin de course porte ouverte
-	rungs.push([
-		createRailTerminalElement(8),
-		createCompareBlockElement(8, 1, {
-			in1: "porte_pos",
-			in2: `${PORTE_MAX}`,
-			operator: ">=",
-		}),
-		createCoilElement("porte_ouverte", "normal", 8, 3),
-	]);
-
-	// Numéro d'étage affiché, déduit des capteurs de présence
-	ETAGE_POSITION.forEach((_, etage) => {
-		const row = 9 + etage;
-		rungs.push([
-			createRailTerminalElement(row),
-			createContactElement(`etage_${etage}`, "NO", row, 1),
-			createAssignBlockElement(row, 3, {
-				out: "etage_courant",
-				in: `${etage}`,
-			}),
-		]);
-	});
-
-	const section = new Section(
+	let row = 0;
+	const rung: RungBuilder = (build) => {
+		const elements = build(row);
+		rungs.push(elements);
+		row += Math.max(...elements.map(getElementHeight));
+	};
+	fill(rung);
+	return new Section(
 		createRandomId(),
-		"Modèle de partie opérative",
-		"Simule le déplacement de la cabine, la porte et les capteurs d'étage à la place d'une partie opérative réelle. Ne pas modifier : ce n'est pas le programme de commande à écrire.",
+		name,
+		description,
 		rungs.flat(),
 		rungs.flatMap(wireInSeries),
 	);
+}
 
-	return new Ladder(createRandomId(), "Partie opérative", [section]);
+/**
+ * Modèle de partie opérative de l'ascenseur, en Ladder — **fourni, à ne pas modifier**.
+ * Le simulateur n'a pas de modèle physique : ce programme le remplace. Trois sections, exécutées
+ * dans l'ordre à chaque cycle : la cinématique intègre les commandes en positions, les capteurs
+ * en sont déduits, puis l'affichage produit les sorties destinées au pupitre.
+ */
+function buildOperativePartLadder(): Ladder {
+	const cinematique = buildLadderSection(
+		"Cinématique",
+		"Intègre les commandes en positions physiques : monter/descendre → position, porte → porte_pos ; temps de garde porte ouverte.",
+		(rung) => {
+			// Déplacement de la cabine
+			rung((r) => [
+				createRailTerminalElement(r),
+				createContactElement("monter", "NO", r, 1),
+				createCompareBlockElement(r, 3, {
+					in1: "position",
+					in2: `${POSITION_MAX}`,
+					operator: "<",
+				}),
+				createArithmeticBlockElement(r, 5, {
+					in1: "position",
+					in2: `${PAS}`,
+					out: "position",
+					operator: "+",
+				}),
+			]);
+			rung((r) => [
+				createRailTerminalElement(r),
+				createContactElement("descendre", "NO", r, 1),
+				createCompareBlockElement(r, 3, {
+					in1: "position",
+					in2: "0",
+					operator: ">",
+				}),
+				createArithmeticBlockElement(r, 5, {
+					in1: "position",
+					in2: `${PAS}`,
+					out: "position",
+					operator: "-",
+				}),
+			]);
+
+			// Avancement de la porte (ouverture ≈ 2 s, fermeture ≈ 2 s)
+			rung((r) => [
+				createRailTerminalElement(r),
+				createContactElement("porte", "NO", r, 1),
+				createCompareBlockElement(r, 3, {
+					in1: "porte_pos",
+					in2: `${PORTE_MAX}`,
+					operator: "<",
+				}),
+				createArithmeticBlockElement(r, 5, {
+					in1: "porte_pos",
+					in2: `${PAS}`,
+					out: "porte_pos",
+					operator: "+",
+				}),
+			]);
+			// Temps de garde : un TON armé par `porte_ouverte` verrouille `porte_maintien` au bout
+			// du délai ; ce verrou autorise la fermeture jusqu'à ce que la porte soit refermée,
+			// où il est levé.
+			rung((r) => [
+				createRailTerminalElement(r),
+				createContactElement("porte_ouverte", "NO", r, 1),
+				createTimerBlockElement(
+					{ name: "Tempo_maintien_porte", timerType: "TON", pt: MAINTIEN_PORTE },
+					r,
+					3,
+				),
+				createCoilElement("porte_maintien", "set", r, 5),
+			]);
+			rung((r) => [
+				createRailTerminalElement(r),
+				createCompareBlockElement(r, 1, {
+					in1: "porte_pos",
+					in2: "0",
+					operator: "<=",
+				}),
+				createCoilElement("porte_maintien", "reset", r, 3),
+			]);
+			rung((r) => [
+				createRailTerminalElement(r),
+				createContactElement("porte", "NF", r, 1),
+				createContactElement("porte_maintien", "NO", r, 2),
+				createCompareBlockElement(r, 3, {
+					in1: "porte_pos",
+					in2: "0",
+					operator: ">",
+				}),
+				createArithmeticBlockElement(r, 5, {
+					in1: "porte_pos",
+					in2: `${PAS}`,
+					out: "porte_pos",
+					operator: "-",
+				}),
+			]);
+		},
+	);
+
+	const capteurs = buildLadderSection(
+		"Capteurs",
+		"Capteurs de présence d'étage et fin de course porte ouverte, déduits de position / porte_pos.",
+		(rung) => {
+			rung((r) => [
+				createRailTerminalElement(r),
+				createCompareBlockElement(r, 1, {
+					in1: "position",
+					in2: `${ETAGE_POSITION[0] + 1}`,
+					operator: "<=",
+				}),
+				createCoilElement("etage_0", "normal", r, 3),
+			]);
+			rung((r) => [
+				createRailTerminalElement(r),
+				createCompareBlockElement(r, 1, {
+					in1: "position",
+					in2: `${ETAGE_POSITION[1] - 1}`,
+					operator: ">=",
+				}),
+				createCompareBlockElement(r, 3, {
+					in1: "position",
+					in2: `${ETAGE_POSITION[1] + 1}`,
+					operator: "<=",
+				}),
+				createCoilElement("etage_1", "normal", r, 5),
+			]);
+			rung((r) => [
+				createRailTerminalElement(r),
+				createCompareBlockElement(r, 1, {
+					in1: "position",
+					in2: `${ETAGE_POSITION[2] - 1}`,
+					operator: ">=",
+				}),
+				createCoilElement("etage_2", "normal", r, 3),
+			]);
+
+			// Fin de course porte ouverte
+			rung((r) => [
+				createRailTerminalElement(r),
+				createCompareBlockElement(r, 1, {
+					in1: "porte_pos",
+					in2: `${PORTE_MAX}`,
+					operator: ">=",
+				}),
+				createCoilElement("porte_ouverte", "normal", r, 3),
+			]);
+		},
+	);
+
+	const affichage = buildLadderSection(
+		"Affichage",
+		"Sorties destinées au pupitre : position d'animation de la cabine et numéro d'étage courant.",
+		(rung) => {
+			// Position d'animation : la cabine monte quand `position` augmente
+			rung((r) => [
+				createRailTerminalElement(r),
+				createArithmeticBlockElement(r, 1, {
+					in1: `${POSITION_MAX}`,
+					in2: "position",
+					out: "cabine_y",
+					operator: "-",
+				}),
+			]);
+
+			// Numéro d'étage affiché, déduit des capteurs de présence
+			ETAGE_POSITION.forEach((_, etage) => {
+				rung((r) => [
+					createRailTerminalElement(r),
+					createContactElement(`etage_${etage}`, "NO", r, 1),
+					createAssignBlockElement(r, 3, {
+						out: "etage_courant",
+						in: `${etage}`,
+					}),
+				]);
+			});
+		},
+	);
+
+	return new Ladder(createRandomId(), "Partie opérative", [
+		cinematique,
+		capteurs,
+		affichage,
+	]);
 }
 
 /** Page HMI commune : gaine, cabine et porte animées, boutons palier et cabine, voyants. */
@@ -270,17 +339,22 @@ function buildElevatorPage(): HmiPage {
 		"Gaine",
 	);
 
-	// Repères de niveau (le RDC est en bas, le 2ᵉ en haut)
-	ETAGE_POSITION.forEach((posEtage, etage) => {
+	// Repères de niveau : un trait horizontal séparant les paliers (l'afficheur donne le numéro).
+	// Le palier haut coïncide avec le bord de la gaine — pas de trait.
+	ETAGE_POSITION.slice(0, -1).forEach((posEtage, etage) => {
 		const y = 70 + (POSITION_MAX - posEtage);
 		addWidget(
-			"text",
-			CX - 78,
+			"rectangle",
+			CX - 80,
 			y,
-			{ width: 60, height: 20 },
+			{ width: 160, height: 2 },
 			{
-				text: etage === 0 ? "RDC" : `${etage}`,
-				style: { fontSize: 12, color: "#607d8b", align: "left" },
+				style: {
+					fill: "#90a4ae",
+					stroke: "#90a4ae",
+					strokeWidth: 0,
+					borderRadius: 0,
+				},
 			},
 			`Repère ${etage}`,
 		);
@@ -383,20 +457,20 @@ function buildElevatorPage(): HmiPage {
 	voyants.forEach(({ mnemonic, label }, i) => {
 		addWidget(
 			"indicator",
-			colX,
-			270 + i * 56,
+			colX + i * 80,
+			270,
 			{ width: 36, height: 36 },
 			{ variable: mnemonic, label },
 			`Voyant ${mnemonic}`,
 		);
 	});
 
-	// Afficheur d'étage
+	// Afficheur d'étage, à droite du titre du pupitre
 	addWidget(
 		"numeric-display",
-		colX,
-		450,
-		{ width: 200, height: 44 },
+		colX + 150,
+		54,
+		{ width: 140, height: 40 },
 		{ variable: "etage_courant", label: "Étage", decimalPlaces: 0 },
 		"Afficheur étage",
 	);
@@ -409,7 +483,7 @@ function buildElevatorPage(): HmiPage {
  * — 6 entrées booléennes : `appel_0/1/2` (paliers), `cabine_0/1/2` (pupitre)
  * — 3 sorties : `monter`, `descendre`, `porte`
  * — les capteurs et grandeurs internes en mémoire (`position`, `porte_pos`, `cabine_y`,
- *   `etage_0/1/2`, `porte_ouverte`, `etage_courant`), calculés par le modèle de partie
+ *   `etage_0/1/2`, `porte_ouverte`, `porte_maintien`, `etage_courant`), calculés par le modèle de partie
  *   opérative (Ladder « Partie opérative », fourni et référencé par le Main)
  * — 1 page HMI (gaine, cabine et porte animées, boutons, voyants, afficheur)
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
@@ -434,6 +508,7 @@ export function createElevatorProject(): Project {
 		VariableBuilder.buildMemoryBool(createRandomId(), "etage_1"),
 		VariableBuilder.buildMemoryBool(createRandomId(), "etage_2"),
 		VariableBuilder.buildMemoryBool(createRandomId(), "porte_ouverte"),
+		VariableBuilder.buildMemoryBool(createRandomId(), "porte_maintien"),
 		VariableBuilder.buildMemoryInt(createRandomId(), "etage_courant"),
 	);
 
@@ -473,12 +548,14 @@ export function createElevatorSolution(): Project {
 		VariableBuilder.buildMemoryInt(createRandomId(), "cible"),
 	);
 
-	const XL = 180;
-	const XM = 400;
-	const XR = 620;
+	// Colonne centrale du grafcet (étapes 0, 4, 7, 8 et transitions de la séquence porte).
+	const GX = 360;
+	const XL = 120;
+	const XM = 340;
+	const XR = 560;
 	const juWidth = XR - XL + 40;
 	const juBranches: [number, number, number] = [20, XM - XL + 20, XR - XL + 20];
-	const juPivot = CX - 20 - XL;
+	const juPivot = GX - XL;
 
 	const step = (n: number, x: number, y: number, initial = false) => {
 		const b = new StepBuilder().id(createRandomId()).number(n).position(x, y);
@@ -505,6 +582,7 @@ export function createElevatorSolution(): Project {
 			.id(createRandomId())
 			.dimensions(juWidth, 30)
 			.nBranches(3)
+			.branchesPositions(...juBranches)
 			.pivotPosition(juPivot)
 			.position(XL, y)
 			.build();
@@ -526,38 +604,49 @@ export function createElevatorSolution(): Project {
 			.position(x, y)
 			.build();
 
-	const e0 = step(0, CX - 20, 40, true);
-	const div1 = orStart(95);
-	const t0a = trans("appel_0 OU cabine_0", XL, 150);
-	const t0b = trans("appel_1 OU cabine_1", XM, 150);
-	const t0c = trans("appel_2 OU cabine_2", XR, 150);
-	const e1a = step(1, XL, 210);
-	const e1b = step(2, XM, 210);
-	const e1c = step(3, XR, 210);
-	const aCible0 = memoAction("cible := 0", XL + 60, 210);
-	const aCible1 = memoAction("cible := 1", XM + 60, 210);
-	const aCible2 = memoAction("cible := 2", XR + 60, 210);
-	const tA = trans("cible >= 0", XL, 285);
-	const tB = trans("cible >= 0", XM, 285);
-	const tC = trans("cible >= 0", XR, 285);
-	const conv1 = orEnd(335);
-	const e2 = step(4, CX - 20, 385);
-	const div2 = orStart(440);
-	const tUp = trans("cible > etage_courant", XL, 495);
-	const tDown = trans("cible < etage_courant", XM, 495);
-	const tSame = trans("cible = etage_courant", XR, 495);
-	const e5 = step(5, XL, 555);
-	const e6 = step(6, XM, 555);
-	const aMonter = boolAction("monter", XL + 60, 555);
-	const aDescendre = boolAction("descendre", XM + 60, 555);
-	const tUpDone = trans("cible = etage_courant", XL, 630);
-	const tDownDone = trans("cible = etage_courant", XM, 630);
-	const conv2 = orEnd(685);
-	const e7 = step(7, CX - 20, 735);
-	const aPorte = boolAction("porte", CX + 60, 735);
-	const tPorte = trans("porte_ouverte ET t7/X7/2s", CX, 805);
-	const e8 = step(8, CX - 20, 865);
-	const tFerme = trans("NON porte_ouverte", CX, 930);
+	// Marge haute : l'aboutissant du renvoi d'étape (provenance E8) se loge au-dessus de l'étape 0.
+	const e0 = step(0, GX - 20, 95, true);
+	const div1 = orStart(150);
+	const t0a = trans("appel_0 OU cabine_0", XL, 205);
+	const t0b = trans("appel_1 OU cabine_1", XM, 205);
+	const t0c = trans("appel_2 OU cabine_2", XR, 205);
+	const e1a = step(1, XL, 265);
+	const e1b = step(2, XM, 265);
+	const e1c = step(3, XR, 265);
+	const aCible0 = memoAction("cible := 0", XL + 60, 265);
+	const aCible1 = memoAction("cible := 1", XM + 60, 265);
+	const aCible2 = memoAction("cible := 2", XR + 60, 265);
+	const tA = trans("cible >= 0", XL, 340);
+	const tB = trans("cible >= 0", XM, 340);
+	const tC = trans("cible >= 0", XR, 340);
+	const conv1 = orEnd(390);
+	const e2 = step(4, GX - 20, 440);
+	const div2 = orStart(495);
+	const tUp = trans("cible > etage_courant", XL, 550);
+	const tDown = trans("cible < etage_courant", XM, 550);
+	const tSame = trans("cible = etage_courant", XR, 550);
+	const e5 = step(5, XL, 610);
+	const e6 = step(6, XM, 610);
+	const aMonter = boolAction("monter", XL + 60, 610);
+	const aDescendre = boolAction("descendre", XM + 60, 610);
+	const tUpDone = trans("cible = etage_courant", XL, 685);
+	const tDownDone = trans("cible = etage_courant", XM, 685);
+	const conv2 = orEnd(740);
+	const e7 = step(7, GX - 20, 790);
+	const aPorte = boolAction("porte", GX + 60, 790);
+	const tPorte = trans("porte_ouverte ET t7/X7/2s", GX - 20, 860);
+	const e8 = step(8, GX - 20, 920);
+	const tFerme = trans("NON porte_ouverte", GX - 20, 985);
+	const renvoiVersE0 = new StepReferralSourceBuilder()
+		.id(createRandomId())
+		.targetStepNumber(0)
+		.position(GX - 20, 1035)
+		.build();
+	const provenanceE8 = new StepReferralTargetBuilder()
+		.id(createRandomId())
+		.sourceStepNumber(8)
+		.position(GX - 20, 20)
+		.build();
 
 	const [d1a, d1b, d1c] = div1.data.branchesOrder;
 	const [c1a, c1b, c1c] = conv1.data.branchesOrder;
@@ -659,6 +748,8 @@ export function createElevatorSolution(): Project {
 		)
 		.addJunctionsOrStarts(div1, div2)
 		.addJunctionsOrEnds(conv1, conv2)
+		.addStepReferralsSources(renvoiVersE0)
+		.addStepReferralsTargets(provenanceE8)
 		.addActions(
 			aCible0,
 			aCible1,
@@ -696,17 +787,25 @@ export function createElevatorSolution(): Project {
 			junctionToStep(conv2, e7),
 			linkSeq(e7, tPorte),
 			linkSeq(tPorte, e8),
+			linkSeq(e8, tFerme),
 			new ConnectionBuilder()
 				.id(createRandomId())
 				.source("transition", tFerme.id, TRANSITION_HANDLE_SOURCE_SUCCESSOR)
-				.target("step", e0.id, STEP_HANDLE_TARGET_PREDECESSOR)
-				.data([
-					[XL - 90, 950],
-					[XL - 90, 15],
-					[CX - 15, 15],
-				])
+				.target(
+					"step-referral-source",
+					renvoiVersE0.id,
+					STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR,
+				)
 				.build(),
-			linkSeq(e8, tFerme),
+			new ConnectionBuilder()
+				.id(createRandomId())
+				.source(
+					"step-referral-target",
+					provenanceE8.id,
+					STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR,
+				)
+				.target("step", e0.id, STEP_HANDLE_TARGET_PREDECESSOR)
+				.build(),
 			linkAction(e1a, aCible0),
 			linkAction(e1b, aCible1),
 			linkAction(e1c, aCible2),

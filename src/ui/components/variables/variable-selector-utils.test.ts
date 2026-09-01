@@ -49,6 +49,12 @@ describe("computeStatus", () => {
 		expect(computeStatus("T#5s", [], undefined, undefined, ["time"])).toBe("ok");
 	});
 
+	it("ne retourne pas ok pour une constante TIME mal formée", () => {
+		expect(computeStatus("T#s5s", [], undefined, undefined, ["time"])).not.toBe(
+			"ok",
+		);
+	});
+
 	it("retourne undeclared pour T# si 'time' n'est pas accepté", () => {
 		expect(computeStatus("T#5s", [], undefined, undefined, ["number"])).toBe(
 			"undeclared",

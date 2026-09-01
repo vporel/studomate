@@ -90,6 +90,11 @@ describe("TypeAnalyserVisitor", () => {
 			expect(parseAndAnalyze("NON VRAI")).toBe("boolean");
 			expect(parseAndAnalyze("NON flag")).toBe("boolean");
 		});
+
+		it("returns number type for unary minus", () => {
+			expect(parseAndAnalyze("-5")).toBe("number");
+			expect(parseAndAnalyze("-x")).toBe("number");
+		});
 	});
 
 	describe("assignment statements", () => {

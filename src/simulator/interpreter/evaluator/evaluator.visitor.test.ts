@@ -80,6 +80,12 @@ describe("EvaluatorVisitor", () => {
 		it("throws on division by zero", () => {
 			expect(() => parseAndEvaluate("x / 0")).toThrow(DivisionByZeroException);
 		});
+
+		it("evaluates unary minus", () => {
+			expect(parseAndEvaluate("-5")).toBe(-5);
+			expect(parseAndEvaluate("x * -1")).toBe(-10);
+			expect(parseAndEvaluate("x - -y")).toBe(15);
+		});
 	});
 
 	describe("comparison operations", () => {

@@ -5,7 +5,7 @@ import {
 import { ASTNode } from "./ast-node";
 import { BaseNode } from "./base-node";
 
-export type UnaryExpressionOperator = "NOT";
+export type UnaryExpressionOperator = "NOT" | "-";
 
 export interface UnaryExpressionNode extends BaseNode {
 	type: "UNARY_EXPRESSION";

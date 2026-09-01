@@ -44,13 +44,22 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	}
 
 	protected visitUnaryExpressionNode(node: UnaryExpressionNode): ASTNode {
+		const simplifiedExpr = this.visit(node.expr);
 		switch (node.operator) {
 			case "NOT":
-				const simplifiedExpr = this.visit(node.expr);
 				// If the inner expression is a boolean literal, we can simplify the NOT operation
 				if (simplifiedExpr.type === "BOOLEAN_LITERAL") {
 					return LiteralsBuilder.buildBooleanNode(
 						!simplifiedExpr.value,
+						node.position,
+					);
+				}
+				return { ...node, expr: simplifiedExpr };
+			case "-":
+				// If the inner expression is a number literal, we can simplify the negation
+				if (simplifiedExpr.type === "NUMBER_LITERAL") {
+					return LiteralsBuilder.buildNumberNode(
+						-simplifiedExpr.value,
 						node.position,
 					);
 				}

@@ -72,6 +72,8 @@ function wireInSeries(elements: LadderElement[]): Connection[] {
  * par le GRAFCET de commande.
  */
 function buildOperativePartLadder(): Ladder {
+	// Les lignes à bloc Calc occupent 2 cellules de haut : la ligne suivante démarre 2 rangées
+	// plus bas (rung1 en 2, capteurs en 4 et 5).
 	const rail0 = createRailTerminalElement(0);
 	const descendreContact = createContactElement("descendre", "NO", 0, 1);
 	const canDescend = createCompareBlockElement(0, 3, {
@@ -86,35 +88,35 @@ function buildOperativePartLadder(): Ladder {
 		operator: "+",
 	});
 
-	const rail1 = createRailTerminalElement(1);
-	const monterContact = createContactElement("monter", "NO", 1, 1);
-	const canRise = createCompareBlockElement(1, 3, {
+	const rail1 = createRailTerminalElement(2);
+	const monterContact = createContactElement("monter", "NO", 2, 1);
+	const canRise = createCompareBlockElement(2, 3, {
 		in1: "position",
 		in2: "0",
 		operator: ">",
 	});
-	const riseStep = createArithmeticBlockElement(1, 5, {
+	const riseStep = createArithmeticBlockElement(2, 5, {
 		in1: "position",
 		in2: `${PAS}`,
 		out: "position",
 		operator: "-",
 	});
 
-	const rail2 = createRailTerminalElement(2);
-	const highSensorCompare = createCompareBlockElement(2, 1, {
+	const rail2 = createRailTerminalElement(4);
+	const highSensorCompare = createCompareBlockElement(4, 1, {
 		in1: "position",
 		in2: "0",
 		operator: "<=",
 	});
-	const highSensorCoil = createCoilElement("h", "normal", 2, 3);
+	const highSensorCoil = createCoilElement("h", "normal", 4, 3);
 
-	const rail3 = createRailTerminalElement(3);
-	const lowSensorCompare = createCompareBlockElement(3, 1, {
+	const rail3 = createRailTerminalElement(5);
+	const lowSensorCompare = createCompareBlockElement(5, 1, {
 		in1: "position",
 		in2: `${POSITION_MAX}`,
 		operator: ">=",
 	});
-	const lowSensorCoil = createCoilElement("b", "normal", 3, 3);
+	const lowSensorCoil = createCoilElement("b", "normal", 5, 3);
 
 	const rung0 = [rail0, descendreContact, canDescend, descendStep];
 	const rung1 = [rail1, monterContact, canRise, riseStep];

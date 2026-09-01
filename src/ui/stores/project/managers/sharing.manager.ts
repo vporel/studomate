@@ -88,7 +88,9 @@ export default class ProjectSharingManager {
 		const result = await repo.moveToCloud(project);
 		if (!result.ok) {
 			toast.error(
-				"Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+				result.reason === "conflict"
+					? "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil."
+					: "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
 			);
 			return;
 		}

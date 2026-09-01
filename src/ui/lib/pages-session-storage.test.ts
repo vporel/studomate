@@ -1,6 +1,10 @@
-import { getPagesSession, setPagesSession } from "./pages-session-storage";
+import {
+	clearPagesSession,
+	getPagesSession,
+	setPagesSession,
+} from "./pages-session-storage";
 
-/** localStorage minimal, l'environnement de test étant en `node` */
+/** localStorage minimal énumérable, l'environnement de test étant en `node` */
 function installLocalStorage() {
 	const store = new Map<string, string>();
 	const mock = {
@@ -8,6 +12,10 @@ function installLocalStorage() {
 		setItem: (k: string, v: string) => store.set(k, v),
 		removeItem: (k: string) => store.delete(k),
 		clear: () => store.clear(),
+		get length() {
+			return store.size;
+		},
+		key: (i: number) => [...store.keys()][i] ?? null,
 	};
 	(globalThis as any).localStorage = mock;
 	return store;
@@ -33,6 +41,13 @@ describe("pages-session-storage", () => {
 		});
 	});
 
+	it("stocke tout dans une seule clé", () => {
+		setPagesSession("p1", { pagesOrder: ["a"], activePageId: "a" });
+		setPagesSession("p2", { pagesOrder: ["b"], activePageId: "b" });
+
+		expect([...store.keys()]).toEqual(["studomate_session_pages"]);
+	});
+
 	it("isole les sessions de deux projets différents", () => {
 		setPagesSession("p1", { pagesOrder: ["a"], activePageId: "a" });
 		setPagesSession("p2", { pagesOrder: ["x", "y"], activePageId: "x" });
@@ -47,18 +62,55 @@ describe("pages-session-storage", () => {
 		});
 	});
 
-	it("ne lève pas sur une entrée corrompue, et la traite comme absente", () => {
-		store.set("studomate_session_pages_p1", "{ ceci n'est pas du JSON");
+	it("ne lève pas sur un objet corrompu, et le traite comme vide", () => {
+		store.set("studomate_session_pages", "{ ceci n'est pas du JSON");
 
 		expect(getPagesSession("p1")).toBeNull();
 	});
 
-	it("ne lève pas sur une entrée dont pagesOrder n'est pas un tableau", () => {
+	it("ignore une entrée dont pagesOrder n'est pas un tableau", () => {
 		store.set(
-			"studomate_session_pages_p1",
-			JSON.stringify({ activePageId: "a" }),
+			"studomate_session_pages",
+			JSON.stringify({ p1: { activePageId: "a" } }),
 		);
 
 		expect(getPagesSession("p1")).toBeNull();
+	});
+
+	it("plafonne le nombre de sessions en évinçant les moins récemment écrites", () => {
+		let now = 1_000;
+		const spy = jest.spyOn(Date, "now").mockImplementation(() => (now += 1));
+		for (let i = 0; i < 45; i++) {
+			setPagesSession(`p${i}`, { pagesOrder: ["a"], activePageId: "a" });
+		}
+		spy.mockRestore();
+
+		const map = JSON.parse(store.get("studomate_session_pages")!);
+		expect(Object.keys(map)).toHaveLength(40);
+		expect(getPagesSession("p0")).toBeNull();
+		expect(getPagesSession("p44")).not.toBeNull();
+	});
+
+	it("réécrire une session la garde parmi les plus récentes", () => {
+		let now = 1_000;
+		const spy = jest.spyOn(Date, "now").mockImplementation(() => (now += 1));
+		setPagesSession("keep", { pagesOrder: ["a"], activePageId: "a" });
+		for (let i = 0; i < 45; i++) {
+			setPagesSession(`p${i}`, { pagesOrder: ["a"], activePageId: "a" });
+			setPagesSession("keep", { pagesOrder: ["a"], activePageId: "a" });
+		}
+		spy.mockRestore();
+
+		expect(getPagesSession("keep")).not.toBeNull();
+	});
+
+	it("clearPagesSession supprime l'entrée du projet et garde les autres", () => {
+		setPagesSession("p1", { pagesOrder: ["a"], activePageId: "a" });
+		setPagesSession("p2", { pagesOrder: ["b"], activePageId: "b" });
+
+		clearPagesSession("p1");
+
+		expect(getPagesSession("p1")).toBeNull();
+		expect(getPagesSession("p2")).not.toBeNull();
 	});
 });

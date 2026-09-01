@@ -50,6 +50,8 @@ const PROGRAM_COMPILERS: Record<
 	ProgramType,
 	(preCompiled: PreCompiledProgram) => {
 		nodes: ASTNode[];
+		/** Nœuds d'initialisation à exécuter après la routine des mémos d'étape (grafcets). */
+		initNodes: ASTNode[];
 		timers: TimerNode[];
 		counters: CounterNode[];
 		calls: PLCRoutineCall[];
@@ -62,8 +64,10 @@ const PROGRAM_COMPILERS: Record<
 		counters: [],
 		calls: [],
 	}),
-	ladder: (preCompiled) =>
-		LadderCompiler.compile(preCompiled as PreCompiledLadder),
+	ladder: (preCompiled) => ({
+		...LadderCompiler.compile(preCompiled as PreCompiledLadder),
+		initNodes: [],
+	}),
 };
 
 export default class ProjectCompiler {
@@ -82,6 +86,7 @@ export default class ProjectCompiler {
 			const timers: TimerNode[] = [];
 			const counters: CounterNode[] = [];
 			const routinesById: Record<string, PLCRoutine> = {};
+			const initNodes: ASTNode[] = [];
 			let mainProgramId: string | null = null;
 
 			for (const [programId, preCompiledProgram] of Object.entries(
@@ -98,6 +103,7 @@ export default class ProjectCompiler {
 				const compiled = compiler(preCompiledProgram);
 				timers.push(...compiled.timers);
 				counters.push(...compiled.counters);
+				initNodes.push(...compiled.initNodes);
 				routinesById[programId] = new PLCRoutine(
 					compiled.nodes,
 					compiled.calls,
@@ -110,10 +116,34 @@ export default class ProjectCompiler {
 				}
 			}
 
+			//Routine d'assignation des mémos d'étape : `Xi_memo := Xi` pour toutes les étapes de
+			//tous les grafcets. Exécutée après toutes les routines de grafcet (mais avant la routine
+			//d'initialisation) pour que chacune ait lu la même situation (mémos figés en début de
+			//cycle) — franchissements simultanés entre grafcets (règle 3). Voir
+			//`ProjectPreCompiler.rebindStepReferencesToMemos`.
+			const stepMemoNodes: ASTNode[] = [];
+			for (const preCompiledProgram of Object.values(
+				preCompiledProject.programs,
+			)) {
+				if (preCompiledProgram?.type !== "grafcet") continue;
+				const grafcet = preCompiledProgram as PreCompiledGrafcet;
+				for (const [stepId, memo] of grafcet.stepsMemos) {
+					const step = grafcet.steps.get(stepId);
+					if (!step) continue;
+					stepMemoNodes.push(
+						StatementsBuilder.buildAssignStatementNode(memo.node, step.node),
+					);
+				}
+			}
+			const stepMemosRoutine = new PLCRoutine(stepMemoNodes);
+			const initRoutine = new PLCRoutine(initNodes);
+
 			const routines: PLCRoutine[] = [
 				...Object.entries(preCompiledProject.programs)
 					.filter(([, program]) => program?.type === "grafcet")
 					.map(([programId]) => routinesById[programId]),
+				...(stepMemoNodes.length > 0 ? [stepMemosRoutine] : []),
+				...(initNodes.length > 0 ? [initRoutine] : []),
 				...(mainProgramId ? [routinesById[mainProgramId]] : []),
 			];
 
@@ -159,6 +189,10 @@ export default class ProjectCompiler {
 					.getCalls()
 					.forEach((call) => semanticAnalyser.visit(call.condition));
 			});
+			stepMemosRoutine
+				.getNodes()
+				.forEach((node) => semanticAnalyser.visit(node));
+			initRoutine.getNodes().forEach((node) => semanticAnalyser.visit(node));
 			observationRoutine
 				.getNodes()
 				.forEach((node) => semanticAnalyser.visit(node));

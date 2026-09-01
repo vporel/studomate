@@ -129,7 +129,10 @@ export class Lexer {
 				}
 				//Duration
 				const durationMatch = input.slice(position).match(/^(ms|s|m|h|d)/);
-				if (durationMatch) {
+				const afterUnit = durationMatch
+					? input[position + durationMatch[0].length] ?? ""
+					: "";
+				if (durationMatch && !isLetterOrUnderscoreOrDigit(afterUnit)) {
 					const unit = durationMatch[0];
 					tokens.push({
 						type: TokenType.DURATION,

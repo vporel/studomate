@@ -16,6 +16,7 @@ describe("useFileMenu", () => {
 	const newProject = jest.fn();
 	const closeProject = jest.fn();
 	const saveProject = jest.fn();
+	const openPage = jest.fn();
 
 	function setup(mode: ProjectMode) {
 		const state = {
@@ -23,6 +24,7 @@ describe("useFileMenu", () => {
 			setExportModalVisible,
 			setSaveAsModalVisible,
 			lifecycleManager: { newProject, closeProject, saveProject },
+			pagesManager: { openPage },
 			mode,
 		};
 		(useProjectStore as jest.Mock).mockImplementation(
@@ -45,6 +47,7 @@ describe("useFileMenu", () => {
 			["Enregistrer sous"],
 			["Exporter"],
 			["Fermer le projet"],
+			["Préférences"],
 		]);
 	});
 
@@ -56,6 +59,7 @@ describe("useFileMenu", () => {
 		expect(result.current.items[3][0].disabled).toBeUndefined(); // Enregistrer sous
 		expect(result.current.items[4][0].disabled).toBe(true); // Exporter
 		expect(result.current.items[5][0].disabled).toBe(true); // Fermer le projet
+		expect(result.current.items[6][0].disabled).toBeUndefined(); // Préférences
 	});
 
 	it("triggers the corresponding actions when designing", () => {
@@ -78,6 +82,9 @@ describe("useFileMenu", () => {
 
 		act(() => result.current.items[5][0].onClick?.());
 		expect(closeProject).toHaveBeenCalled();
+
+		act(() => result.current.items[6][0].onClick?.());
+		expect(openPage).toHaveBeenCalled();
 	});
 
 	it("does not trigger design-only actions outside design mode", () => {

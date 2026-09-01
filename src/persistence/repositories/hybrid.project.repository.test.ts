@@ -41,6 +41,8 @@ function resolved(result: { data?: any; error?: any }) {
 		eq: () => resolved(result),
 		maybeSingle: () => resolved(result),
 		upsert: () => resolved(result),
+		update: () => resolved(result),
+		insert: () => resolved(result),
 		delete: () => resolved(result),
 		then: (resolve: any, reject: any) =>
 			Promise.resolve(result).then(resolve, reject),
@@ -119,6 +121,54 @@ describe("HybridProjectRepository", () => {
 		const project = await new HybridProjectRepository().get("p1");
 
 		expect(project?.name).toBe("Cloud");
+	});
+
+	describe("save avec un lieu forcé", () => {
+		it('save(project, "cloud") enregistre dans le cloud un projet encore inconnu', async () => {
+			mockFrom.mockReturnValue(resolved({ error: null }));
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.save(newProject("p1", "A"), "cloud");
+
+			expect(result).toEqual({ ok: true });
+			expect(JSON.parse(store.get(CLOUD_INDEX_KEY)!)).toEqual(["p1"]);
+			expect(await new LocalStorageProjectRepository().get("p1")).toBeNull();
+		});
+
+		it('save(project, "local") est équivalent au comportement par défaut', async () => {
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.save(newProject("p1", "A"), "local");
+
+			expect(result).toEqual({ ok: true });
+			expect((await new LocalStorageProjectRepository().get("p1"))?.name).toBe(
+				"A",
+			);
+		});
+
+		it('"cloud" est ignoré pour un projet déjà local : il reste local', async () => {
+			const repo = new HybridProjectRepository();
+			await repo.save(newProject("p1", "A"));
+
+			const result = await repo.save(newProject("p1", "A modifié"), "cloud");
+
+			expect(result).toEqual({ ok: true });
+			expect((await new LocalStorageProjectRepository().get("p1"))?.name).toBe(
+				"A modifié",
+			);
+			expect(store.get(CLOUD_INDEX_KEY)).toBeUndefined();
+		});
+
+		it('"local" est ignoré pour un projet déjà indexé comme cloud : il reste cloud', async () => {
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
+			mockFrom.mockReturnValue(resolved({ error: null }));
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.save(newProject("p1", "A"), "local");
+
+			expect(result).toEqual({ ok: true });
+			expect(await new LocalStorageProjectRepository().get("p1")).toBeNull();
+		});
 	});
 
 	describe("moveToCloud", () => {

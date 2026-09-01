@@ -11,11 +11,21 @@ import { setPagesSession } from "@/ui/lib/pages-session-storage";
 import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
 import { createProjectStore } from "../project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
+import {
+	getPreferredSaveLocation,
+	setPreferredSaveLocation,
+} from "@/persistence/preferences.storage";
+import { authStore } from "@/ui/stores/auth/auth.store";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
 const lifecycle = (store: ReturnType<typeof createProjectStore>) =>
 	store.getState().lifecycleManager;
+
+/** Laisse les microtâches en attente (résolution du lieu de stockage, avant l'ouverture de la
+ * modale) se dérouler avant d'inspecter l'état, quand `saveProject`/`saveProjectAs` n'est
+ * volontairement pas attendu. */
+const flushMicrotasks = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 /** Ouvre un projet vierge : `newProject()` n'ouvre plus que la modale, c'est `newProjectFromTemplate(null)` qui crée réellement. */
 async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
@@ -25,6 +35,18 @@ async function openBlankProject(store: ReturnType<typeof createProjectStore>) {
 describe("ProjectLifecycleManager", () => {
 	beforeEach(() => {
 		localStorage.clear();
+		// Sans préférence de lieu de stockage, le premier enregistrement d'un projet neuf ouvre
+		// la modale de choix (voir `describe("résolution du lieu de stockage")` plus bas) — non
+		// pertinent pour la plupart des tests, qui veulent un `saveProject`/`saveProjectAs`
+		// silencieux comme avant l'introduction de cette modale.
+		setPreferredSaveLocation("local");
+	});
+
+	afterEach(() => {
+		authStore.setState({
+			user: null,
+			ui: { authModalVisible: false, authModalPrompt: null },
+		});
 	});
 
 	describe("newProject", () => {
@@ -151,6 +173,145 @@ describe("ProjectLifecycleManager", () => {
 
 			expect(result).toBe(false);
 			expect(store.getState().ui.saveAsModalVisible).toBe(true);
+		});
+
+		it("conflit cloud : ouvre la modale de conflit au lieu d'un toast, garde hasUnsavedChanges", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setProjectName("Projet en conflit");
+			jest.spyOn(store.getState().projectRepository, "save").mockResolvedValue({
+				ok: false,
+				reason: "conflict",
+			});
+			(toast.error as jest.Mock).mockClear();
+
+			const result = await lifecycle(store).saveProject();
+
+			expect(result).toBe(false);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(store.getState().ui.cloudConflictModalVisible).toBe(true);
+			expect(toast.error).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("resolveCloudConflict", () => {
+		it("'copy' ferme la modale de conflit et ouvre Enregistrer sous, sans toucher au projet", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({
+				hasUnsavedChanges: true,
+				ui: { ...store.getState().ui, cloudConflictModalVisible: true },
+			});
+			const projectId = store.getState().project!.id;
+
+			await lifecycle(store).resolveCloudConflict("copy");
+
+			expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+			expect(store.getState().ui.saveAsModalVisible).toBe(true);
+			expect(store.getState().project?.id).toBe(projectId);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("'reload' recharge la version distante et efface hasUnsavedChanges", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Version distante", "");
+			await store.getState().projectRepository.save(project);
+			store.setState({
+				project,
+				hasUnsavedChanges: true,
+				ui: { ...store.getState().ui, cloudConflictModalVisible: true },
+			});
+
+			await lifecycle(store).resolveCloudConflict("reload");
+
+			expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(store.getState().project?.id).toBe("p1");
+		});
+	});
+
+	describe("résolution du lieu de stockage", () => {
+		it("aucune préférence : le premier enregistrement ouvre la modale et le choix devient la préférence par défaut", async () => {
+			localStorage.clear(); // efface la préférence "local" posée par le beforeEach
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const saveResult = lifecycle(store).saveProject();
+			await flushMicrotasks();
+
+			expect(store.getState().ui.saveLocationModalVisible).toBe(true);
+			store.getState().ui.onSaveLocationChosen?.("local");
+
+			expect(await saveResult).toBe(true);
+			expect(store.getState().ui.saveLocationModalVisible).toBe(false);
+			expect(getPreferredSaveLocation()).toBe("local");
+		});
+
+		it("préférence déjà connue : n'ouvre jamais la modale", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+
+			const result = await lifecycle(store).saveProject();
+
+			expect(result).toBe(true);
+			expect(store.getState().ui.saveLocationModalVisible).toBe(false);
+		});
+
+		it("projet déjà enregistré : Enregistrer reste silencieux même sans préférence", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			await lifecycle(store).saveProject(); // premier enregistrement, avec préférence "local"
+			localStorage.removeItem("studomate_preferred_save_location");
+			store.getState().setProjectName("Nouveau nom");
+
+			const result = await lifecycle(store).saveProject();
+
+			expect(result).toBe(true);
+			expect(store.getState().ui.saveLocationModalVisible).toBe(false);
+		});
+
+		it("préférence cloud sans session active : ouvre la modale en repli plutôt que d'échouer", async () => {
+			setPreferredSaveLocation("cloud");
+			const store = createProjectStore();
+			await openBlankProject(store);
+
+			const saveResult = lifecycle(store).saveProject();
+			await flushMicrotasks();
+
+			expect(store.getState().ui.saveLocationModalVisible).toBe(true);
+			store.getState().ui.onSaveLocationChosen?.(null);
+
+			expect(await saveResult).toBe(false);
+			// Choix annulé : la préférence "cloud" n'est pas altérée par ce repli ponctuel
+			expect(getPreferredSaveLocation()).toBe("cloud");
+		});
+
+		it("annulation depuis la modale : n'enregistre pas, garde hasUnsavedChanges", async () => {
+			localStorage.clear();
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: true });
+
+			const saveResult = lifecycle(store).saveProject();
+			await flushMicrotasks();
+			store.getState().ui.onSaveLocationChosen?.(null);
+
+			expect(await saveResult).toBe(false);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(getPreferredSaveLocation()).toBeNull();
+		});
+
+		it("s'applique aussi à Enregistrer sous", async () => {
+			localStorage.clear();
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const saveResult = lifecycle(store).saveProjectAs("Copie");
+			await flushMicrotasks();
+
+			expect(store.getState().ui.saveLocationModalVisible).toBe(true);
+			store.getState().ui.onSaveLocationChosen?.("local");
+
+			expect(await saveResult).toBe(true);
+			expect(getPreferredSaveLocation()).toBe("local");
 		});
 	});
 

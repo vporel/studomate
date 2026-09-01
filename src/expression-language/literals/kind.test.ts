@@ -16,6 +16,12 @@ describe("matchesLiteralKind", () => {
 		expect(matchesLiteralKind("42", "time", Dialect.FR)).toBe(false);
 		expect(matchesLiteralKind("T#5s", "number", Dialect.FR)).toBe(false);
 	});
+
+	it("exige une constante TIME bien formée, pas seulement le préfixe T#", () => {
+		expect(matchesLiteralKind("T#s5s", "time", Dialect.FR)).toBe(false);
+		expect(matchesLiteralKind("T#", "time", Dialect.FR)).toBe(false);
+		expect(matchesLiteralKind("T#1h2m3s", "time", Dialect.FR)).toBe(true);
+	});
 });
 
 describe("matchesAnyAcceptedLiteral", () => {

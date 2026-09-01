@@ -131,9 +131,10 @@ describe("parking.template", () => {
 			expect(maxX - minX).toBeLessThan(794);
 		});
 
-		it("produit des routines exécutables (2 grafcets + Main + observation)", () => {
+		it("produit des routines exécutables (2 grafcets + mémos + init + Main + observation)", () => {
 			const { compilation } = compilePipelineDetailed(project);
-			expect(compilation.result!.routines).toHaveLength(4);
+			// 2 grafcets + mémos d'étape + initialisation + 1 Main + observation des réceptivités
+			expect(compilation.result!.routines).toHaveLength(6);
 		});
 
 		describe("simulation", () => {

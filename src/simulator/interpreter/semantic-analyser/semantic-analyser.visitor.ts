@@ -95,9 +95,9 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	}
 
 	protected visitUnaryExpressionNode(node: UnaryExpressionNode): void {
+		const operandType = this.typeAnalyser.visit(node.expr);
 		switch (node.operator) {
 			case "NOT":
-				const operandType = this.typeAnalyser.visit(node.expr);
 				if (operandType !== "boolean") {
 					throw new InvalidUnaryExprOperandTypeException(
 						"NOT",
@@ -106,9 +106,19 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 						node,
 					);
 				}
-				this.visit(node.expr);
+				break;
+			case "-":
+				if (operandType !== "number") {
+					throw new InvalidUnaryExprOperandTypeException(
+						"-",
+						"number",
+						operandType,
+						node,
+					);
+				}
 				break;
 		}
+		this.visit(node.expr);
 	}
 
 	protected visitArithmeticExpressionNode(

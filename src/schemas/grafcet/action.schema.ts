@@ -101,40 +101,29 @@ export default class Action extends Element<ActionData> {
 	}
 
 	/**
-	 * When the type is changed, we help the user by automatically changing
-	 * the execution mode to the first compatible one with the new type if the current execution mode is not compatible with the new type.
-	 * This way, we avoid leaving the action in an invalid state with incompatible type and execution mode.
+	 * Au changement de type, on recale le mode d'exécution sur le premier compatible avec le
+	 * nouveau type si l'actuel ne l'est plus, pour ne pas laisser l'action dans un état type/mode
+	 * incohérent. L'expression, elle, est conservée telle quelle : si elle ne convient pas au
+	 * nouveau type, l'analyseur le signalera — plutôt que de faire perdre à l'utilisateur ce
+	 * qu'il a saisi.
 	 */
 	fixNewDataConsistency(
 		newData: Partial<ActionData>,
 		_oldData: ActionData,
 	): Partial<ActionData> {
-		if (newData.type) {
-			if (
-				!Action.isValidExecutionModeForType(
-					newData.type,
-					this.data.executionMode,
-				)
-			) {
-				const compatibleExecutionModes =
-					ACTION_TYPES_TO_EXECUTION_MODES[newData.type];
-				newData = {
-					...newData,
-					executionMode:
-						compatibleExecutionModes.length > 0
-							? compatibleExecutionModes[0]
-							: null,
-				};
-			}
-			if (newData.type !== ActionType.TEXT) {
-				//If the type changes to a specific type, we clear the expression to avoid keeping
-				//an expression that might not be relevant with the new type.
-				//Otherwise, the analyser might raise errors an cancel the change
-				newData = {
-					...newData,
-					expression: "",
-				};
-			}
+		if (
+			newData.type &&
+			!Action.isValidExecutionModeForType(newData.type, this.data.executionMode)
+		) {
+			const compatibleExecutionModes =
+				ACTION_TYPES_TO_EXECUTION_MODES[newData.type];
+			newData = {
+				...newData,
+				executionMode:
+					compatibleExecutionModes.length > 0
+						? compatibleExecutionModes[0]
+						: null,
+			};
 		}
 		return newData;
 	}

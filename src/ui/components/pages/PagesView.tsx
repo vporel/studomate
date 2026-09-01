@@ -9,6 +9,7 @@ import ExercisePage from "./ExercisePage";
 import GrafcetPage from "./GrafcetPage";
 import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
+import PreferencesPage from "./PreferencesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 import VariablesPage, { VariablesPageData } from "./VariablesPage";
@@ -135,6 +136,8 @@ const PagesView = () => {
 								return <ProjectStartupPage key={id} />;
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
+							case "preferences":
+								return <PreferencesPage key={id} />;
 							case "exercise":
 								return <ExercisePage key={id} />;
 							case "variables":

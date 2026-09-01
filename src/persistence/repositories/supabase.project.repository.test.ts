@@ -23,6 +23,7 @@ function resolved(result: { data?: any; error?: any }) {
 		eq: () => resolved(result),
 		maybeSingle: () => resolved(result),
 		upsert: () => resolved(result),
+		update: () => resolved(result),
 		delete: () => resolved(result),
 		insert: () => resolved(result),
 		then: (resolve: any, reject: any) =>
@@ -109,6 +110,70 @@ describe("SupabaseProjectRepository", () => {
 
 			expect(result.ok).toBe(false);
 			if (!result.ok) expect(result.reason).toBe("network");
+		});
+	});
+
+	describe("save - concurrence optimiste (version)", () => {
+		it("insère avec version 1 au premier enregistrement (jamais lu)", async () => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+			mockFrom.mockReturnValue(resolved({ error: null }));
+
+			const result = await new SupabaseProjectRepository().save(
+				newProject("p1", "A"),
+			);
+
+			expect(result).toEqual({ ok: true });
+		});
+
+		it("enregistre par update conditionnel sur la version lue par un get précédent", async () => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
+			const repo = new SupabaseProjectRepository();
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: { data: raw, version: 3 }, error: null }),
+			);
+			await repo.get("p1");
+
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: [{ version: 4 }], error: null }),
+			);
+			const result = await repo.save(newProject("p1", "A"));
+
+			expect(result).toEqual({ ok: true });
+		});
+
+		it("signale un conflit si la ligne existe déjà côté serveur sans avoir été lue ici (autre appareil)", async () => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+			mockFrom.mockReturnValue(
+				resolved({ error: { code: "23505", message: "duplicate key" } }),
+			);
+
+			const result = await new SupabaseProjectRepository().save(
+				newProject("p1", "A"),
+			);
+
+			expect(result).toEqual({
+				ok: false,
+				reason: "conflict",
+				cause: { code: "23505", message: "duplicate key" },
+			});
+		});
+
+		it("signale un conflit si la version a changé depuis le dernier get/save", async () => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
+			const repo = new SupabaseProjectRepository();
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: { data: raw, version: 3 }, error: null }),
+			);
+			await repo.get("p1");
+
+			// L'update conditionnel (`eq("version", 3)`) ne trouve aucune ligne : un autre
+			// appareil a déjà enregistré une version plus récente.
+			mockFrom.mockReturnValueOnce(resolved({ data: [], error: null }));
+			const result = await repo.save(newProject("p1", "A"));
+
+			expect(result).toEqual({ ok: false, reason: "conflict" });
 		});
 	});
 

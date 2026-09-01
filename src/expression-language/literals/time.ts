@@ -17,8 +17,13 @@ const COMPONENT_REGEX = /(\d+(?:\.\d+)?)(ms|d|h|m|s)/gi;
 
 export const TIME_LITERAL_PREFIX = "T#";
 
-/** `true` si `text` a la forme d'une constante TIME (`T#...`), sans en valider le contenu — utile
- * pour distinguer une constante d'un nom de variable avant d'appeler `parseTimeLiteral`. */
+/** `true` si `text` a la forme d'une constante TIME (`T#...`), sans en valider le contenu.
+ *
+ * C'est un aiguillage, pas une validation : il répond « l'utilisateur vise-t-il une constante
+ * plutôt qu'un nom de variable ? », et doit rester vrai même pour une constante mal formée
+ * (`T#s5s`) — sinon l'analyseur la classerait en « variable non déclarée » au lieu de
+ * « constante invalide ». Aucun identifiant ne peut commencer par `T#`, donc le préfixe suffit.
+ * Pour savoir si la constante est bien formée (et sa valeur), utiliser `parseTimeLiteral`. */
 export function isTimeLiteral(text: string): boolean {
 	return text.trim().toUpperCase().startsWith(TIME_LITERAL_PREFIX);
 }

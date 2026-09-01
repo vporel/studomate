@@ -13,6 +13,11 @@ import { PreCompiledProgram } from "./pre-compiled-program";
 import { isPreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
 import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectPreCompiler from "./project.pre-compiler";
+import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
+import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
+import ProjectAnalyser from "@/project-analyser/project.analyser";
+import { GrafcetFactory } from "@tests/utils/grafcet-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
 
 /** Rétrécit un programme pré-compilé vers sa forme GRAFCET, en échouant clairement sinon */
 function asGrafcet(program: PreCompiledProgram) {
@@ -197,6 +202,79 @@ describe("ProjectPreCompiler", () => {
 			expect(result.result!.variables).toHaveLength(2);
 			expect(result.result!.variables[0].getName()).toBe("_GeneratedMemo_0");
 			expect(result.result!.variables[1].getName()).toBe("_GeneratedMemo_1");
+		});
+
+		it("rebinds a receptivity's reference to another grafcet's step to that step's memo", () => {
+			const g1 = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI", 0); // steps X0, X1
+			// La réceptivité de trans-0 référence directement l'étape X1 de g1.
+			const g2 = GrafcetFactory.createSimpleCycle("g2", "X1", "VRAI", 10); // steps X10, X11
+			const project = ProjectFactory.create([], [g1, g2]);
+			const generatedVariables = ProjectAnalyser.analyse(project).generatedVariables;
+
+			const result = ProjectPreCompiler.preCompile(
+				project,
+				generatedVariables,
+				Dialect.FR,
+			);
+
+			expect(result.errors).toEqual([]);
+			const grafcet1 = asGrafcet(result.result!.programs["g1"]);
+			const grafcet2 = asGrafcet(result.result!.programs["g2"]);
+			const step1Id = Array.from(grafcet1.steps.entries()).find(
+				([, step]) => step.node.value === "X1",
+			)![0];
+			const memoNameForX1 = grafcet1.stepsMemos.get(step1Id)!.variable.getName();
+
+			const trans0Node = Array.from(grafcet2.transitions.values())[0].node;
+			const identifiers = new FinderVisitor<IdentifierNode>("IDENTIFIER").visit(
+				trans0Node,
+			);
+			expect(identifiers.map((n) => n.value)).toContain(memoNameForX1);
+			expect(identifiers.map((n) => n.value)).not.toContain("X1");
+		});
+
+		it("also rebinds a receptivity referencing a non-predecessor step of its own grafcet", () => {
+			const g1 = new GrafcetBuilder()
+				.id("g1")
+				.addStep(new StepBuilder().id("s0").number(0).initial().build())
+				.addStep(new StepBuilder().id("s1").number(1).build())
+				.addStep(new StepBuilder().id("s2").number(2).build())
+				.addTransition(
+					// Réceptivité du s0→s1 référençant l'étape non-prédécesseur X2.
+					new TransitionBuilder().id("t0").expression("X2").build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("step", "s0", "source:successor")
+						.target("transition", "t0", "target:predecessor")
+						.build(),
+				)
+				.addConnection(
+					new ConnectionBuilder()
+						.source("transition", "t0", "source:successor")
+						.target("step", "s1", "target:predecessor")
+						.build(),
+				)
+				.build();
+			const project = new ProjectBuilder().addGrafcet(g1).build();
+			const generatedVariables = ProjectAnalyser.analyse(project).generatedVariables;
+
+			const result = ProjectPreCompiler.preCompile(
+				project,
+				generatedVariables,
+				Dialect.FR,
+			);
+
+			expect(result.errors).toEqual([]);
+			const grafcet = asGrafcet(result.result!.programs["g1"]);
+			const step2Id = Array.from(grafcet.steps.entries()).find(
+				([, step]) => step.node.value === "X2",
+			)![0];
+			const memoNameForX2 = grafcet.stepsMemos.get(step2Id)!.variable.getName();
+
+			const t0Node = grafcet.transitions.get("t0")!.node;
+			const identifiers = new FinderVisitor<IdentifierNode>("IDENTIFIER").visit(t0Node);
+			expect(identifiers.map((n) => n.value)).toEqual([memoNameForX2]);
 		});
 
 		it("collects compilation errors", () => {

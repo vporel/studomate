@@ -13,6 +13,7 @@ import { PageType } from "@/ui/stores/project/project.store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
 	alpha,
 	Box,
@@ -32,6 +33,7 @@ import { useShallow } from "zustand/shallow";
 const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"project-startup": ProjectStartupIcon,
 	"project-properties": ProjectPropertiesIcon,
+	preferences: SettingsIcon,
 	exercise: ExerciseIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,

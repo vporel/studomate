@@ -10,6 +10,13 @@ import TransitionCompiler from "./transition.compiler";
 
 export type CompiledGrafcet = {
 	nodes: ASTNode[];
+	/**
+	 * Activation de l'étape initiale si aucune étape n'est active. Émis à part des `nodes` :
+	 * `ProjectCompiler` l'exécute après la routine d'assignation des mémos d'étape, pour que
+	 * le front montant de l'étape initiale reste détectable au cycle suivant (le mémo doit
+	 * capturer la valeur *avant* cette activation au premier cycle).
+	 */
+	initNodes: ASTNode[];
 	timers: TimerNode[];
 };
 
@@ -43,21 +50,11 @@ export default class GrafcetCompiler {
 						stepMemosNodes,
 					),
 				),
-			//Memorizations of steps
-			...Array.from(preCompiledGrafcet.steps.entries()).map(
-				([stepId, preCompiledStep]) =>
-					//For each step, create a memo variable that stores its previous value before it gets updated in the step compiler. This allows actions to detect rising/falling edges on steps by comparing the current value of the step with its previous value stored in the memo variable.
-					StatementsBuilder.buildAssignStatementNode(
-						stepMemosNodes.get(stepId)!,
-						preCompiledStep.node,
-					),
-			),
-			//If no step is active at the beginning, activate the initial step(s)
-			...this.initializeSteps(preCompiledGrafcet),
 		];
 
 		return {
 			nodes,
+			initNodes: this.initializeSteps(preCompiledGrafcet),
 			timers: Array.from(preCompiledGrafcet.transitions.values()).flatMap(
 				(t) => t.timers,
 			),

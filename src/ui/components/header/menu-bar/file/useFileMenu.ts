@@ -1,6 +1,7 @@
 "use client";
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { PREFERENCES_PAGE_DATA } from "@/ui/components/pages/PreferencesPage";
 import { platformShortcut } from "@/ui/lib/platform";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useMemo } from "react";
@@ -13,12 +14,14 @@ export default function useFileMenu(): AppMenuType {
 		setExportModalVisible,
 		setSaveAsModalVisible,
 		lifecycleManager,
+		pagesManager,
 	} = useProjectStore(
 		useShallow((state) => ({
 			setOpenModalVisible: state.setOpenModalVisible,
 			setExportModalVisible: state.setExportModalVisible,
 			setSaveAsModalVisible: state.setSaveAsModalVisible,
 			lifecycleManager: state.lifecycleManager,
+			pagesManager: state.pagesManager,
 		})),
 	);
 	const designing = useProjectStore(
@@ -90,10 +93,17 @@ export default function useFileMenu(): AppMenuType {
 						},
 					},
 				],
+				[
+					{
+						label: "Préférences",
+						onClick: () => pagesManager.openPage(PREFERENCES_PAGE_DATA),
+					},
+				],
 			],
 		}),
 		[
 			lifecycleManager,
+			pagesManager,
 			setOpenModalVisible,
 			setExportModalVisible,
 			setSaveAsModalVisible,

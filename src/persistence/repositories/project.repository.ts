@@ -5,16 +5,21 @@ import Project from "@/schemas/project/project.schema";
  * - `quota-exceeded` : le stockage est plein (limite ~5 Mo en localStorage)
  * - `unavailable`    : le stockage est inaccessible (navigation privée, permissions)
  * - `network`        : le serveur distant est injoignable, ou la session a expiré
+ * - `conflict`       : le projet cloud a été modifié par un autre appareil depuis son chargement
  * - `unknown`        : autre chose
  */
 export type SaveFailureReason =
-	"quota-exceeded" | "unavailable" | "network" | "unknown";
+	"quota-exceeded" | "unavailable" | "network" | "conflict" | "unknown";
 
 export type SaveResult =
 	{ ok: true } | { ok: false; reason: SaveFailureReason; cause?: unknown };
 
 export type ShareResult =
 	{ ok: true; token: string } | { ok: false; message: string };
+
+/** Lieu de stockage d'un projet — pertinent uniquement pour `HybridProjectRepository`, qui
+ * seul a le choix entre les deux ; les autres implémentations l'ignorent. */
+export type StorageLocation = "local" | "cloud";
 
 /**
  * Accès au stockage des projets — abstrait pour que le store ne dépende pas d'une
@@ -30,7 +35,12 @@ export type ShareResult =
 export default interface ProjectRepository {
 	list(): Promise<Project[]>;
 	get(projectId: string): Promise<Project | null>;
-	save(project: Project): Promise<SaveResult>;
+	/**
+	 * `location` ne force un choix que pour un projet encore inconnu de ce repository (premier
+	 * enregistrement) — un projet déjà rangé quelque part garde son emplacement, quel que soit
+	 * `location`. Absent, le comportement par défaut (local pour un id inconnu) s'applique.
+	 */
+	save(project: Project, location?: StorageLocation): Promise<SaveResult>;
 	delete(projectId: string): Promise<SaveResult>;
 }
 

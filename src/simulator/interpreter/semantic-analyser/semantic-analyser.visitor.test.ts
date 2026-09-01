@@ -90,6 +90,17 @@ describe("SemanticAnalyserVisitor", () => {
 				InvalidUnaryExprOperandTypeException,
 			);
 		});
+
+		it("accepts valid unary minus", () => {
+			expect(() => parseAndCheck("-x")).not.toThrow();
+			expect(() => parseAndCheck("-5")).not.toThrow();
+		});
+
+		it("throws on unary minus with non-number operand", () => {
+			expect(() => parseAndCheck("-flag")).toThrow(
+				InvalidUnaryExprOperandTypeException,
+			);
+		});
 	});
 
 	describe("arithmetic expressions", () => {

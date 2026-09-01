@@ -2,7 +2,7 @@ import { isBooleanLiteral } from "./boolean";
 import { Dialect } from "../dialect.enum";
 import { isNumberLiteral } from "./number";
 import { isStringLiteral } from "./string";
-import { isTimeLiteral } from "./time";
+import { parseTimeLiteral } from "./time";
 
 /** Les formes de littéral qu'une pinoche paramètre peut accepter en plus d'un nom de variable :
  * une constante TIME (`T#...`), un nombre brut, un booléen (`vrai`/`faux`), une chaîne. Une
@@ -12,8 +12,10 @@ export const LITERAL_KINDS = ["time", "number", "boolean", "string"] as const;
 
 export type LiteralKind = (typeof LITERAL_KINDS)[number];
 
-/** `true` si `text` a la forme d'un littéral de ce genre. Le dialecte n'est utile que pour
- * `"boolean"` (mot-clé traduit), il est ignoré pour les autres. */
+/** `true` si `text` est un littéral valide de ce genre. Le dialecte n'est utile que pour
+ * `"boolean"` (mot-clé traduit), il est ignoré pour les autres. Contrairement à l'aiguillage
+ * `isTimeLiteral` (« l'utilisateur vise-t-il une constante TIME ? »), on exige ici une constante
+ * bien formée : ce test décide seul de la validité, sans branche « constante invalide » en aval. */
 export function matchesLiteralKind(
 	text: string,
 	kind: LiteralKind,
@@ -21,7 +23,7 @@ export function matchesLiteralKind(
 ): boolean {
 	switch (kind) {
 		case "time":
-			return isTimeLiteral(text);
+			return parseTimeLiteral(text) !== null;
 		case "number":
 			return isNumberLiteral(text);
 		case "boolean":

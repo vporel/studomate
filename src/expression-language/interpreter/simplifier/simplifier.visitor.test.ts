@@ -166,6 +166,18 @@ describe("SimplifierVisitor", () => {
 			const result = parseAndSimplify("NON x");
 			expect(result.type).toBe("UNARY_EXPRESSION");
 		});
+
+		it("simplifies unary minus with number literal", () => {
+			const result = parseAndSimplify("-5");
+			expect(result.type).toBe("NUMBER_LITERAL");
+			expect((result as any).value).toBe(-5);
+		});
+
+		it("keeps unary minus with non-literal", () => {
+			const result = parseAndSimplify("-x");
+			expect(result.type).toBe("UNARY_EXPRESSION");
+			expect((result as any).operator).toBe("-");
+		});
 	});
 
 	describe("complex expressions", () => {

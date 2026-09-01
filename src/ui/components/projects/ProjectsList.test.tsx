@@ -198,6 +198,25 @@ describe("ProjectsList", () => {
 		await waitFor(() => expect(moveToCloudFn).toHaveBeenCalled());
 	});
 
+	it("signale un message dédié quand l'envoi vers le cloud échoue en conflit", async () => {
+		const alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
+		setup({
+			list: [project("p1", "Projet A")],
+			authenticated: true,
+			moveToCloudFn: jest.fn().mockResolvedValue({ ok: false, reason: "conflict" }),
+		});
+		await waitFor(() => screen.getByText("Projet A"));
+
+		fireEvent.click(screen.getByLabelText("envoyer vers le cloud"));
+
+		await waitFor(() =>
+			expect(alertSpy).toHaveBeenCalledWith(
+				expect.stringContaining("existe déjà"),
+			),
+		);
+		alertSpy.mockRestore();
+	});
+
 	it("ne propose pas d'envoyer vers le cloud sans être connecté", async () => {
 		setup({ list: [project("p1", "Projet A")], authenticated: false });
 		await waitFor(() => screen.getByText("Projet A"));

@@ -105,7 +105,8 @@ describe("ProjectCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
-			expect(result.result!.routines).toHaveLength(1);
+			// 1 routine de grafcet + la routine des mémos d'étape + la routine d'initialisation.
+			expect(result.result!.routines).toHaveLength(3);
 			expect(result.result!.routines[0].getNodes().length).toBeGreaterThan(0);
 		});
 

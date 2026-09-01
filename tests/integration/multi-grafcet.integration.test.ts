@@ -45,9 +45,10 @@ describe("Multi-Grafcet Integration Tests", () => {
 			);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
-			// Une routine par grafcet (2) + le Main (voir Project.createMain) + la routine
-			// d'observation des réceptivités.
-			expect(pipeline.compilation.result!.routines).toHaveLength(4);
+			// Une routine par grafcet (2) + la routine des mémos d'étape + la routine
+			// d'initialisation + le Main (voir Project.createMain) + la routine d'observation
+			// des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(6);
 		});
 
 		it("step variables of each grafcet are properly isolated (no duplicates)", () => {
@@ -311,6 +312,64 @@ describe("Multi-Grafcet Integration Tests", () => {
 			// Q0 never set → G2 blocked → Q1 stays false
 			expectVariableValue(plc!, "Q0", false);
 			expectVariableValue(plc!, "Q1", false);
+		});
+	});
+
+	// ──────────────────────────────────────────────────────────────
+	// Simulation – référence directe à l'étape d'un autre grafcet (Xn)
+	// ──────────────────────────────────────────────────────────────
+	describe("Simulation: cross-grafcet step reference (Xn)", () => {
+		/**
+		 * G2 franchit sur `X1`, l'étape 1 de G1, référencée directement par son mnémonique.
+		 * G1 : step0 → [I0] → step1 (reste actif tant que I0 est vrai).
+		 * G2 : step10 → [X1] → step11 → [NON X1] → step10.
+		 *
+		 * Enregistre la trace (X1, X11) à chaque cycle. Les deux grafcets sont compilés dans
+		 * les deux ordres d'insertion (`[g1, g2]` puis `[g2, g1]`) : si la réceptivité de G2 lisait
+		 * la valeur vive de X1 au lieu de son mémo figé en début de cycle, la trace dépendrait de
+		 * l'ordre — exactement le bug corrigé par `ProjectPreCompiler.rebindStepReferencesToMemos`.
+		 */
+		function runTrace(order: "g1-first" | "g2-first"): { x1: boolean; x11: boolean }[] {
+			const i0 = VariableFactory.createLogicInput("I0");
+			const g1 = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0", 0);
+			const g2 = GrafcetFactory.createSimpleCycle("g2", "X1", "NON X1", 10);
+			const grafcets = order === "g1-first" ? [g1, g2] : [g2, g1];
+			const project = ProjectFactory.create([i0], grafcets);
+
+			const trace: { x1: boolean; x11: boolean }[] = [];
+			let cycleError: Error | null = null;
+			const plc = compileToPLC(project, 10, Dialect.FR, {
+				onCycleEnd: (p) =>
+					trace.push({
+						x1: getVariableValue(p, "X1"),
+						x11: getVariableValue(p, "X11"),
+					}),
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.setPhysicalInputValueByName("I0", true);
+			plc!.start();
+			jest.advanceTimersByTime(200);
+			plc!.stop();
+			if (cycleError) throw cycleError;
+			return trace;
+		}
+
+		it("G2 reacts to G1's step deterministically, independently of program order", () => {
+			VariableFactory.reset();
+			ProjectFactory.reset();
+			const traceG1First = runTrace("g1-first");
+
+			VariableFactory.reset();
+			ProjectFactory.reset();
+			const traceG2First = runTrace("g2-first");
+
+			expect(traceG1First).toEqual(traceG2First);
+			// La référence croisée doit bien produire un effet : G2 finit par suivre G1.
+			expect(traceG1First.some((c) => c.x11)).toBe(true);
 		});
 	});
 

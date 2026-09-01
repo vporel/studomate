@@ -1,6 +1,8 @@
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
+import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import GrafcetCompiler from "./grafcet.compiler";
 
 describe("GrafcetCompiler", () => {
@@ -54,6 +56,125 @@ describe("GrafcetCompiler", () => {
 			expect(result.nodes).toBeDefined();
 			expect(result.timers).toEqual([]);
 			expect(result.nodes.length).toBeGreaterThan(0);
+		});
+
+		it("emits the initial step activation in initNodes, not in nodes", () => {
+			const step0Node = IdentifiersBuilder.buildIdentifierNode("X0");
+			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
+
+			const preCompiledGrafcet: PreCompiledGrafcet = {
+				type: "grafcet",
+				transitionObservations: new Map(),
+				steps: new Map([
+					["step-0", { node: step0Node, initial: true }],
+					["step-1", { node: step1Node, initial: false }],
+				]),
+				stepsMemos: new Map([
+					[
+						"step-0",
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
+					],
+					[
+						"step-1",
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
+					],
+				]),
+				transitions: new Map([
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
+				]),
+				actions: new Map(),
+			};
+
+			const result = GrafcetCompiler.compile(preCompiledGrafcet);
+
+			// L'activation de l'étape initiale (X0 := TRUE si aucune autre étape n'est active)
+			// est émise à part : `ProjectCompiler` l'exécute après la routine des mémos d'étape.
+			expect(result.initNodes.length).toBeGreaterThan(0);
+			const initAssigns = result.initNodes.flatMap((n) =>
+				new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
+			);
+			expect(initAssigns.some((n) => (n.left as any).value === "X0")).toBe(
+				true,
+			);
+
+			// La désactivation de X0 par le franchissement de trans-1 reste dans `nodes` — seule
+			// l'activation initiale (X0 := TRUE) en est absente.
+			const nodesAssigns = result.nodes.flatMap((n) =>
+				new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
+			);
+			expect(
+				nodesAssigns.some(
+					(n) =>
+						(n.left as any).value === "X0" && (n.right as any).value === true,
+				),
+			).toBe(false);
+		});
+
+		it("does not memorize step values in nodes anymore (moved to a separate routine by ProjectCompiler)", () => {
+			const step0Node = IdentifiersBuilder.buildIdentifierNode("X0");
+			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
+
+			const preCompiledGrafcet: PreCompiledGrafcet = {
+				type: "grafcet",
+				transitionObservations: new Map(),
+				steps: new Map([
+					["step-0", { node: step0Node, initial: true }],
+					["step-1", { node: step1Node, initial: false }],
+				]),
+				stepsMemos: new Map([
+					[
+						"step-0",
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
+					],
+					[
+						"step-1",
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
+					],
+				]),
+				transitions: new Map([
+					[
+						"trans-1",
+						{
+							node: LiteralsBuilder.buildBooleanNode(true),
+							timers: [],
+							predecessorStepsIds: ["step-0"],
+							successorStepsIds: ["step-1"],
+							orPriorityExclusionTransitionIds: [],
+						},
+					],
+				]),
+				actions: new Map(),
+			};
+
+			const result = GrafcetCompiler.compile(preCompiledGrafcet);
+
+			const assignsToMemo = result.nodes
+				.flatMap((n) =>
+					new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
+				)
+				.filter((n) => (n.left as any).value?.startsWith("_memo_"));
+			expect(assignsToMemo).toEqual([]);
 		});
 
 		it("includes timers from transitions", () => {

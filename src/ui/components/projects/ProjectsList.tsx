@@ -3,6 +3,7 @@
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
+import { clearPagesSession } from "@/ui/lib/pages-session-storage";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { useProjectStore } from "./ProjectContext";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -77,6 +78,7 @@ export default function ProjectsList({
 		event.stopPropagation();
 		if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
 			await projectRepository.delete(projectId);
+			clearPagesSession(projectId);
 			setProjects((prevProjects) =>
 				prevProjects.filter((p) => p.id !== projectId),
 			);
@@ -91,7 +93,9 @@ export default function ProjectsList({
 		const result = await projectRepository.moveToCloud(project);
 		if (!result.ok) {
 			alert(
-				"Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+				result.reason === "conflict"
+					? "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil. Rechargez la liste."
+					: "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
 			);
 			return;
 		}

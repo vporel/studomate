@@ -20,10 +20,26 @@ const SHARES_TABLE = "project_shares";
  *
  * Comme `LocalStorageProjectRepository`, le projet est stocké tel quel (JSON versionné) et
  * migré à la lecture — jamais en base, cf. `deserializeProject`.
+ *
+ * **Concurrence optimiste.** La colonne `version` de la table détecte qu'un autre appareil a
+ * modifié le projet entre son chargement ici et l'enregistrement en cours — un problème propre
+ * au stockage cloud, donc absent du schéma `Project` (voir `versions`, ci-dessous) et non exposé
+ * dans `ProjectRepository`. `versions` retient, par projet, la dernière version lue ou écrite par
+ * cette instance ; `save` s'en sert comme condition d'écriture (`update ... where version = ...`)
+ * et échoue avec `reason: "conflict"` si aucune ligne ne correspond, plutôt que d'écraser une
+ * modification distante plus récente.
+ *
+ * Cette instance n'ayant jamais lu la ligne d'un projet donné n'implique pas que la ligne
+ * n'existe pas côté serveur (ex. un autre appareil a déjà envoyé ce projet dans le cloud, sans
+ * que cet appareil-ci le sache). `save` insère donc (`insert`, pas `upsert`) dans ce cas : une
+ * violation de clé primaire remonte alors comme `reason: "conflict"` au lieu d'écraser en
+ * silence une ligne dont l'existence était insoupçonnée.
  */
 export default class SupabaseProjectRepository
 	implements ProjectRepository, ShareableProjectRepository
 {
+	private readonly versions = new Map<string, number>();
+
 	async list(): Promise<Project[]> {
 		const { data, error } = await supabase.from(TABLE).select("data");
 		if (error) {
@@ -38,13 +54,16 @@ export default class SupabaseProjectRepository
 	async get(projectId: string): Promise<Project | null> {
 		const { data, error } = await supabase
 			.from(TABLE)
-			.select("data")
+			.select("data, version")
 			.eq("id", projectId)
 			.maybeSingle();
 		if (error || !data) return null;
+		this.versions.set(projectId, data.version as number);
 		return deserializeProject(data.data as Record<string, any>);
 	}
 
+	// `location` (voir `ProjectRepository`) est sans objet ici : ce repository ne connaît qu'un
+	// seul lieu de stockage.
 	async save(project: Project): Promise<SaveResult> {
 		const {
 			data: { user },
@@ -52,14 +71,41 @@ export default class SupabaseProjectRepository
 		if (!user) return { ok: false, reason: "network" };
 
 		const serialized = JSON.parse(JSON.stringify(project));
-		const { error } = await supabase.from(TABLE).upsert({
-			id: project.id,
-			owner_id: user.id,
-			data: serialized,
-			updated_at: new Date().toISOString(),
-		});
+		const baseVersion = this.versions.get(project.id);
+
+		// Jamais lu (ou écrit) par cette instance : à sa connaissance, premier enregistrement de
+		// ce projet dans le cloud. `insert` (pas `upsert`) pour qu'une ligne déjà existante — écrite
+		// par un autre appareil à l'insu de celui-ci — échoue en conflit plutôt que d'être écrasée.
+		if (baseVersion === undefined) {
+			const { error } = await supabase.from(TABLE).insert({
+				id: project.id,
+				owner_id: user.id,
+				data: serialized,
+				version: 1,
+				updated_at: new Date().toISOString(),
+			});
+			if (error)
+				return { ok: false, reason: this.failureReason(error), cause: error };
+			this.versions.set(project.id, 1);
+			return { ok: true };
+		}
+
+		const { data, error } = await supabase
+			.from(TABLE)
+			.update({
+				data: serialized,
+				version: baseVersion + 1,
+				updated_at: new Date().toISOString(),
+			})
+			.eq("id", project.id)
+			.eq("version", baseVersion)
+			.select("version");
 		if (error)
 			return { ok: false, reason: this.failureReason(error), cause: error };
+		// Aucune ligne ne correspondait à `baseVersion` : un autre appareil a déjà incrémenté la
+		// version depuis notre dernière lecture.
+		if (!data || data.length === 0) return { ok: false, reason: "conflict" };
+		this.versions.set(project.id, baseVersion + 1);
 		return { ok: true };
 	}
 
@@ -67,6 +113,7 @@ export default class SupabaseProjectRepository
 		const { error } = await supabase.from(TABLE).delete().eq("id", projectId);
 		if (error)
 			return { ok: false, reason: this.failureReason(error), cause: error };
+		this.versions.delete(projectId);
 		return { ok: true };
 	}
 
@@ -109,7 +156,10 @@ export default class SupabaseProjectRepository
 		return { ok: true };
 	}
 
-	private failureReason(_error: unknown): SaveFailureReason {
+	private failureReason(error: unknown): SaveFailureReason {
+		// Code Postgres de violation de contrainte unique (ici, la clé primaire `id`) : la ligne
+		// existe déjà, écrite par un appareil dont celui-ci ignorait l'existence.
+		if ((error as { code?: string } | null)?.code === "23505") return "conflict";
 		return "network";
 	}
 }

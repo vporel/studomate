@@ -3,7 +3,10 @@ import Project, {
 } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import { PROJECT_TEMPLATES } from "@/templates/index";
-import { SaveFailureReason } from "@/persistence/repositories/project.repository";
+import {
+	SaveFailureReason,
+	StorageLocation,
+} from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
 import {
 	getActivePageIdFromUrl,
@@ -14,7 +17,13 @@ import {
 	setProjectIdInUrl,
 } from "@/ui/lib/project-url";
 import SupabaseProjectRepository from "@/persistence/repositories/supabase.project.repository";
+import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
+import {
+	getPreferredSaveLocation,
+	setPreferredSaveLocation,
+} from "@/persistence/preferences.storage";
+import { authStore } from "@/ui/stores/auth/auth.store";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
 import trackEvent from "@/ui/lib/analytics";
 import {
@@ -33,6 +42,8 @@ const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
 		"Enregistrement impossible : le stockage du navigateur est inaccessible (navigation privée ?). Exportez le projet dans un fichier.",
 	network:
 		"Enregistrement dans le cloud impossible : vérifiez votre connexion et que vous êtes bien connecté. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+	conflict:
+		"Ce projet a été modifié ailleurs entre-temps. Rechargez la version en ligne ou enregistrez vos modifications sous un autre nom.",
 	unknown:
 		"Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
 };
@@ -238,6 +249,56 @@ export default class ProjectLifecycleManager {
 		await this.doNewProject(templateId, variant);
 	}
 
+	/**
+	 * Résout le lieu de stockage à passer à `save` pour `project` — `undefined` si ce projet a
+	 * déjà un lieu (rien à décider, `save` garde son comportement par défaut).
+	 *
+	 * Un id absent de l'index cloud n'est pas forcément neuf (il peut déjà exister en local) :
+	 * seul un id absent des deux repositories l'est réellement, d'où la lecture locale avant de
+	 * proposer un choix.
+	 */
+	private async resolveLocationIfNeeded(
+		project: Project,
+	): Promise<StorageLocation | undefined | "cancelled"> {
+		const repo = this.getStoreState().projectRepository;
+		if (!(repo instanceof HybridProjectRepository)) return undefined;
+		if (repo.locationOf(project.id) === "cloud") return undefined;
+		if ((await repo.get(project.id)) !== null) return undefined;
+
+		const preferred = getPreferredSaveLocation();
+		if (preferred === "cloud" && authStore.getState().user) return "cloud";
+		if (preferred === "local") return "local";
+
+		// Pas encore de préférence, ou préférence "cloud" sans session active : on demande —
+		// dans le second cas, un nouveau choix "cloud" plutôt qu'un aller direct vers la
+		// connexion, l'utilisateur pouvant préférer rester en local pour cette fois.
+		const persistAsDefault = preferred === null;
+		const resolved = await this.openSaveLocationModal();
+		if (resolved && persistAsDefault) setPreferredSaveLocation(resolved);
+		return resolved ?? "cancelled";
+	}
+
+	private openSaveLocationModal(): Promise<StorageLocation | null> {
+		return new Promise((resolve) => {
+			this.setStoreState((state) => ({
+				ui: {
+					...state.ui,
+					saveLocationModalVisible: true,
+					onSaveLocationChosen: (location) => {
+						this.setStoreState((state) => ({
+							ui: {
+								...state.ui,
+								saveLocationModalVisible: false,
+								onSaveLocationChosen: null,
+							},
+						}));
+						resolve(location);
+					},
+				},
+			}));
+		});
+	}
+
 	/** true si réellement enregistré. */
 	async saveProject(): Promise<boolean> {
 		const set = this.setStoreState;
@@ -249,15 +310,27 @@ export default class ProjectLifecycleManager {
 			set((state) => ({ ui: { ...state.ui, saveAsModalVisible: true } }));
 			return false;
 		}
+		set(() => ({ savingProject: true }));
+		const location = await this.resolveLocationIfNeeded(project);
+		if (location === "cancelled") {
+			set(() => ({ savingProject: false }));
+			return false;
+		}
+
 		const newProject = project.copy();
 		newProject.touch(); //Update the project's last modified date
-		set(() => ({ savingProject: true }));
 
-		const result = await get().projectRepository.save(newProject);
+		const result = await get().projectRepository.save(newProject, location);
 		if (!result.ok) {
 			//Ne jamais annoncer un enregistrement qui n'a pas eu lieu : le projet reste
 			//marqué comme modifié pour que l'utilisateur puisse réessayer
 			set(() => ({ savingProject: false }));
+			if (result.reason === "conflict") {
+				set((state) => ({
+					ui: { ...state.ui, cloudConflictModalVisible: true },
+				}));
+				return false;
+			}
 			toast.error(SAVE_FAILURE_MESSAGES[result.reason]);
 			console.error("Failed to save the project:", result.cause);
 			return false;
@@ -282,8 +355,15 @@ export default class ProjectLifecycleManager {
 		copy.id = createRandomId();
 		copy.name = name.trim() || project.name;
 		copy.touch();
+
 		set(() => ({ savingProject: true }));
-		const result = await get().projectRepository.save(copy);
+		const location = await this.resolveLocationIfNeeded(copy);
+		if (location === "cancelled") {
+			set(() => ({ savingProject: false }));
+			return false;
+		}
+
+		const result = await get().projectRepository.save(copy, location);
 		if (!result.ok) {
 			set(() => ({ savingProject: false }));
 			toast.error(SAVE_FAILURE_MESSAGES[result.reason]);
@@ -346,6 +426,35 @@ export default class ProjectLifecycleManager {
 			// Partir du projet réel : supprimer le brouillon
 			deleteDraft(projectId);
 		}
+	}
+
+	/**
+	 * `"reload"` abandonne les modifications locales pour reprendre la version enregistrée par
+	 * l'autre appareil. `"copy"` renvoie vers "Enregistrer sous" : le travail local n'est pas
+	 * perdu, mais reste à fusionner manuellement avec la version en ligne.
+	 */
+	async resolveCloudConflict(choice: "reload" | "copy"): Promise<void> {
+		const set = this.setStoreState;
+		const get = this.getStoreState;
+		set((state) => ({
+			ui: { ...state.ui, cloudConflictModalVisible: false },
+		}));
+		if (choice === "copy") {
+			set((state) => ({ ui: { ...state.ui, saveAsModalVisible: true } }));
+			return;
+		}
+		const project = get().project;
+		if (!project) return;
+		const reloaded = await get().projectRepository.get(project.id);
+		if (!reloaded) {
+			toast.error("Impossible de recharger la version en ligne du projet.");
+			return;
+		}
+		const urlActiveId = getActivePageIdFromUrl();
+		deleteDraft(project.id);
+		await this.doOpenProject(reloaded);
+		set(() => ({ isSharedProject: false, hasUnsavedChanges: false }));
+		restorePagesSession(set, get, reloaded, urlActiveId);
 	}
 
 	startAutoSave(): void {

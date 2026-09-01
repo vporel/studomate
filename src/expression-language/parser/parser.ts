@@ -54,13 +54,13 @@ export default class Parser {
 	private parseOrExpr(): ASTNode {
 		let left = this.parseAndExpr();
 		while (this.at(TokenType.OR)) {
-			this.consume(TokenType.OR);
+			const token = this.consume(TokenType.OR);
 			const right = this.parseAndExpr();
 			left = ExpressionsBuilder.buildLogicalExpressionNode(
 				"OR",
 				left,
 				right,
-				this.current().position,
+				token.position,
 			);
 		}
 		return left;
@@ -69,13 +69,13 @@ export default class Parser {
 	private parseAndExpr(): ASTNode {
 		let left = this.parseNotExpr();
 		while (this.at(TokenType.AND)) {
-			this.consume(TokenType.AND);
+			const token = this.consume(TokenType.AND);
 			const right = this.parseNotExpr();
 			left = ExpressionsBuilder.buildLogicalExpressionNode(
 				"AND",
 				left,
 				right,
-				this.current().position,
+				token.position,
 			);
 		}
 		return left;
@@ -125,10 +125,10 @@ export default class Parser {
 	}
 
 	private parseMulDivExpr(): ASTNode {
-		let left = this.parsePrimary();
+		let left = this.parseUnaryExpr();
 		while (this.at(TokenType.MUL) || this.at(TokenType.SLASH)) {
 			const token = this.consumeArithmeticOperator();
-			const right = this.parsePrimary();
+			const right = this.parseUnaryExpr();
 			left = ExpressionsBuilder.buildArithmeticExpressionNode(
 				token.value as ArithmeticOperator,
 				left,
@@ -137,6 +137,19 @@ export default class Parser {
 			);
 		}
 		return left;
+	}
+
+	private parseUnaryExpr(): ASTNode {
+		if (this.at(TokenType.MINUS)) {
+			const tok = this.consume(TokenType.MINUS);
+			const expr = this.parseUnaryExpr();
+			return ExpressionsBuilder.buildUnaryExpressionNode(
+				"-",
+				expr,
+				tok.position,
+			);
+		}
+		return this.parsePrimary();
 	}
 
 	private parsePrimary(): ASTNode {
@@ -195,7 +208,7 @@ export default class Parser {
 
 	private isTimerPattern(): boolean {
 		const p = this.position;
-		// First verification : Identifier followed by /
+		// Identifier followed by /
 		if (!(
 			this.tokens[p]?.type === TokenType.IDENTIFIER &&
 			this.tokens[p + 1]?.type === TokenType.SLASH
@@ -203,17 +216,48 @@ export default class Parser {
 			return false;
 		}
 
-		// We seek a SLASH + DURATION later
-		// We limit the search (e.g., 10 tokens) to avoid scanning the entire array
-		for (let i = p + 2; i < p + 12 && i < this.tokens.length; i++) {
-			if (
-				this.tokens[i].type === TokenType.SLASH &&
-				this.tokens[i + 1]?.type === TokenType.DURATION
-			) {
-				return true;
+		// L'entrée du timer doit être une valeur atomique seule (identifiant,
+		// booléen...), ou une expression parenthésée — jamais une expression
+		// composée à nu, sous peine de confondre le / de clôture du timer avec
+		// un / de division plus loin dans l'expression englobante.
+		const inputStart = p + 2;
+		const inputToken = this.tokens[inputStart];
+		if (
+			inputToken?.type === TokenType.IDENTIFIER ||
+			inputToken?.type === TokenType.TRUE ||
+			inputToken?.type === TokenType.FALSE
+		) {
+			return (
+				this.tokens[inputStart + 1]?.type === TokenType.SLASH &&
+				this.tokens[inputStart + 2]?.type === TokenType.DURATION
+			);
+		}
+
+		if (this.tokens[inputStart]?.type === TokenType.LPAREN) {
+			const closingParenIndex = this.findMatchingParenIndex(inputStart);
+			return (
+				closingParenIndex !== -1 &&
+				this.tokens[closingParenIndex + 1]?.type === TokenType.SLASH &&
+				this.tokens[closingParenIndex + 2]?.type === TokenType.DURATION
+			);
+		}
+
+		return false;
+	}
+
+	private findMatchingParenIndex(openIndex: number): number {
+		let depth = 0;
+		for (let i = openIndex; i < this.tokens.length; i++) {
+			if (this.tokens[i].type === TokenType.LPAREN) {
+				depth++;
+			} else if (this.tokens[i].type === TokenType.RPAREN) {
+				depth--;
+				if (depth === 0) {
+					return i;
+				}
 			}
 		}
-		return false;
+		return -1;
 	}
 
 	private parseTimerDefinition(): ASTNode {
@@ -222,23 +266,7 @@ export default class Parser {
 		const timerIdToken = this.consume(TokenType.IDENTIFIER);
 		this.consume(TokenType.SLASH);
 
-		// Extract the tokens of the expression
-		// until we find the SLASH + DURATION that ends the timer definition
-		const subTokens: Token[] = [];
-		while (!this.isEndOfTimerInput()) {
-			subTokens.push(this.tokens[this.position]);
-			this.position++;
-		}
-		// Add a fictitious EOF to ensure the sub-parser stops properly
-		subTokens.push({
-			type: TokenType.EOF,
-			value: "",
-			position: this.current().position,
-		});
-
-		// Parse the expression with a new instance of Parser
-		const subParser = new Parser(subTokens);
-		const inputExpr = subParser.parse();
+		const inputExpr = this.parsePrimary();
 
 		this.consume(TokenType.SLASH);
 		const durationToken = this.consume(TokenType.DURATION);
@@ -248,13 +276,6 @@ export default class Parser {
 			inputExpr,
 			this.convertDurationToMs(durationToken.value),
 			startPos,
-		);
-	}
-
-	private isEndOfTimerInput(): boolean {
-		return (
-			this.at(TokenType.SLASH) &&
-			this.tokens[this.position + 1]?.type === TokenType.DURATION
 		);
 	}
 
