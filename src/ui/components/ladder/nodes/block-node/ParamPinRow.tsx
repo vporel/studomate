@@ -1,7 +1,7 @@
 "use client";
 
+import { ParameterPinRow } from "@/schemas/ladder/block-port.schema";
 import { Box } from "@mui/material";
-import { ParameterPinRow } from "./block-node-layout";
 import ParamPin from "./ParamPin";
 import { PIN_ROW_HEIGHT } from "./dimensions";
 

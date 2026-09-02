@@ -423,8 +423,18 @@ export default class ProjectLifecycleManager {
 				toast.error(getT("toasts")("draftCorrupted"));
 			}
 		} else {
-			// Partir du projet réel : supprimer le brouillon
+			// Partir du projet réel : supprimer le brouillon puis (re)charger et ouvrir
+			// le projet enregistré (l'ouverture délibérée s'est arrêtée à la modale)
 			deleteDraft(projectId);
+			const project = await get().projectRepository.get(projectId);
+			if (!project) {
+				toast.error(getT("toasts")("projectReloadFailed"));
+				return;
+			}
+			const urlActiveId = getActivePageIdFromUrl();
+			await this.doOpenProject(project);
+			set(() => ({ isSharedProject: false, hasUnsavedChanges: false }));
+			restorePagesSession(set, get, project, urlActiveId);
 		}
 	}
 

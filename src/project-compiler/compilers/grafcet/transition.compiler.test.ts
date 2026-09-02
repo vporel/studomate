@@ -56,6 +56,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: [],
 				successorStepsIds: ["step-1"],
@@ -80,6 +81,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: [],
@@ -104,6 +106,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-1"],
@@ -136,6 +139,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-1"],
@@ -164,6 +168,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-1"],
@@ -197,6 +202,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0", "step-1"],
 				successorStepsIds: ["step-2"],
@@ -238,6 +244,7 @@ describe("TransitionCompiler", () => {
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 			const preCompiledTransition: PreCompiledTransition = {
 				node: transitionNode,
+				pureNode: transitionNode,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-1", "step-2"],
@@ -277,6 +284,7 @@ describe("TransitionCompiler", () => {
 
 			const preCompiledTrans1: PreCompiledTransition = {
 				node: trans1Node,
+				pureNode: trans1Node,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-1"],
@@ -285,6 +293,7 @@ describe("TransitionCompiler", () => {
 			// trans-2 is lower priority: must exclude trans-1
 			const preCompiledTrans2: PreCompiledTransition = {
 				node: trans2Node,
+				pureNode: trans2Node,
 				timers: [],
 				predecessorStepsIds: ["step-0"],
 				successorStepsIds: ["step-2"],
@@ -327,6 +336,52 @@ describe("TransitionCompiler", () => {
 			// The rightmost operand should be NOT(trans1Node)
 			expect(ifNode2.condition.right.type).toBe("UNARY_EXPRESSION");
 			expect(ifNode2.condition.right.operator).toBe("NOT");
+		});
+
+		it("OR divergence: l'exclusion utilise le pureNode de la transition prioritaire (pas son TimerNode)", () => {
+			// trans-1 : réceptivité temporisée — node = TimerNode, pureNode = lecture de la sortie
+			const timerNode = { type: "TIMER_BLOCK", timerType: "TON" } as any;
+			const timerOutputRead = IdentifiersBuilder.buildIdentifierNode("_timerOut");
+
+			const preCompiledTrans1: PreCompiledTransition = {
+				node: timerNode,
+				pureNode: timerOutputRead,
+				timers: [timerNode],
+				predecessorStepsIds: ["step-0"],
+				successorStepsIds: ["step-1"],
+				orPriorityExclusionTransitionIds: [],
+			};
+			const preCompiledTrans2: PreCompiledTransition = {
+				node: LiteralsBuilder.buildBooleanNode(true),
+				pureNode: LiteralsBuilder.buildBooleanNode(true),
+				timers: [],
+				predecessorStepsIds: ["step-0"],
+				successorStepsIds: ["step-2"],
+				orPriorityExclusionTransitionIds: ["trans-1"],
+			};
+
+			const { preCompiledGrafcet, memos } = makeGrafcet(
+				[
+					{ id: "step-0", varName: "X0", initial: true },
+					{ id: "step-1", varName: "X1" },
+					{ id: "step-2", varName: "X2" },
+				],
+				[
+					{ id: "trans-1", preCompiledTransition: preCompiledTrans1 },
+					{ id: "trans-2", preCompiledTransition: preCompiledTrans2 },
+				],
+			);
+
+			const ifNode2 = TransitionCompiler.compile(
+				"trans-2",
+				preCompiledTrans2,
+				preCompiledGrafcet,
+				memos,
+			)[0] as any;
+
+			// NOT(...) enveloppe la lecture de la sortie de tempo, jamais le TIMER_BLOCK
+			expect(ifNode2.condition.right.operator).toBe("NOT");
+			expect(ifNode2.condition.right.expr).toBe(timerOutputRead);
 		});
 	});
 });

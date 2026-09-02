@@ -69,14 +69,16 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "L'étape source référencée ne correspond pas à l'étape liée au tenant.",
 
-	"NETWORK_NO_COIL": "Cette branche ne pilote aucune bobine.",
-	"CONTACT_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
-	"CONTACT_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
-	"COIL_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
-	"COIL_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
-	"COIL_DUPLICATE_NORMAL_ASSIGNMENT": "La variable « {variableName} » est pilotée par {count} bobines normales distinctes.",
-	"ELEMENT_NO_PREDECESSOR": "Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
-	"COIL_VARIABLE_IS_INPUT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+	"LADDER_NETWORK_NO_COIL": "Cette branche ne pilote aucune bobine.",
+	"LADDER_CONTACT_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
+	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
+	"LADDER_COIL_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
+	"LADDER_COIL_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
+	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "La variable « {variableName} » est pilotée par {count} bobines normales distinctes.",
+	"LADDER_ELEMENT_NO_PREDECESSOR": "Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
+	"LADDER_COIL_VARIABLE_IS_INPUT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+
+	"LADDER_CONNECTION_INVALID_ORDER": "Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 
 	"BLOCK_PROGRAM_UNDECLARED": "Le programme référencé par ce bloc n'existe pas dans le projet.",
 	"BLOCK_PROGRAM_NOT_LADDER": "Le programme « {programName} » référencé par ce bloc n'est pas un ladder.",
@@ -86,8 +88,6 @@
 
 	"BLOCK_NAME_DUPLICATE": "Le nom « {blockName} » de ce bloc est déjà utilisé par un autre bloc du projet.",
 	"BLOCK_NAME_VARIABLE_CONFLICT": "Le nom « {blockName} » de ce bloc entre en conflit avec une variable existante du même nom.",
-
-	"LADDER_CONNECTION_INVALID_ORDER": "Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 
 	"BLOCK_TIMER_NAME_INVALID": "Le nom « {blockName} » de ce bloc tempo n'est pas valide.",
 	"BLOCK_TIMER_PT_EMPTY": "Le paramètre {pinName} de ce bloc doit être renseigné.",

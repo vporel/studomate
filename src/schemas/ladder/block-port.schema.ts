@@ -55,8 +55,7 @@ export function requireConcreteType(spec: BlockPortSpec): VariableType {
  * structurelle toujours présente (EN/ENO, IN/Q...), plus une ligne par rangée de paramètres
  * (ex. PT à gauche/ET à droite pour un timer partagent une seule ligne). Une famille à 3 entrées
  * paramètres et 1 sortie donnerait `1 + 3 = 4` sans rien changer ici. Base de l'empreinte du
- * bloc sur la grille (`getBlockHeightInCells`) et de la hauteur de rendu du nœud (voir
- * `block-node-layout` côté UI).
+ * bloc sur la grille (`getBlockHeightInCells`) et de sa hauteur de rendu (`getBlockHeightInCellUnits`).
  */
 export function getBlockPinRowCount(portSpecs: BlockPortSpec[]): number {
 	const parameterPorts = portSpecs.filter((spec) => spec.kind === "parameter");
@@ -76,4 +75,41 @@ export function getBlockPinRowCount(portSpecs: BlockPortSpec[]): number {
  */
 export function getBlockHeightInCells(portSpecs: BlockPortSpec[]): number {
 	return Math.ceil((getBlockPinRowCount(portSpecs) + 1) / 2);
+}
+
+/**
+ * Hauteur de **rendu** d'un bloc, en unités de cellule (fractionnaire, contrairement à
+ * `getBlockHeightInCells` qui réserve la grille en cellules entières) : la première ligne de
+ * pins (structurelle) occupe une cellule pleine, chaque ligne suivante un demi-cellule.
+ * Multipliée par la hauteur d'une cellule pour dimensionner le nœud (éditeur) ou son dessin
+ * (export PDF).
+ */
+export function getBlockHeightInCellUnits(portSpecs: BlockPortSpec[]): number {
+	return 1 + (getBlockPinRowCount(portSpecs) - 1) * 0.5;
+}
+
+/** Une ligne de pins paramètres affichable — une entrée à gauche, une sortie à droite, l'une
+ * des deux pouvant être absente (voir `getParameterPinRows`). */
+export type ParameterPinRow = { input?: BlockPortSpec; output?: BlockPortSpec };
+
+/**
+ * Regroupe les ports `kind: "parameter"` en lignes affichables : la n-ième entrée paramètre
+ * partage sa ligne avec la n-ième sortie paramètre (PT/ET d'un timer, par exemple, forment une
+ * seule ligne). Même comptage de lignes que `getBlockPinRowCount` — jamais de rendu codé en dur
+ * par famille.
+ */
+export function getParameterPinRows(
+	portSpecs: BlockPortSpec[],
+): ParameterPinRow[] {
+	const inputs = portSpecs.filter(
+		(spec) => spec.kind === "parameter" && spec.direction === "input",
+	);
+	const outputs = portSpecs.filter(
+		(spec) => spec.kind === "parameter" && spec.direction === "output",
+	);
+	const rowCount = Math.max(inputs.length, outputs.length);
+	return Array.from({ length: rowCount }, (_, i) => ({
+		input: inputs[i],
+		output: outputs[i],
+	}));
 }

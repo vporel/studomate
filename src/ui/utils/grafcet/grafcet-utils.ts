@@ -18,17 +18,29 @@ export function getConnectionLinePoints(
 	toY: number,
 ): [number, number][] {
 	const points: [number, number][] = [];
-	if (Math.abs(fromX - toX) < 5 && fromY > toY) {
+	// Cible au-dessus de la source : connexion remontante, toujours une boucle de retour en
+	// GRAFCET. Contournement orthogonal par la gauche, quel que soit l'écart en X — sinon le
+	// tracé dégénère en diagonale à travers les étapes dès qu'on déplace une extrémité.
+	if (fromY > toY) {
 		const downY = fromY + CONNECTION_LINE_Y_OFFSET;
 		points.push([fromX, fromY]);
 		points.push([fromX, downY]);
-		const horizontalX = fromX - 40; //Start with a left shift (convention)
+		const horizontalX = Math.min(fromX, toX) - 40; //Start with a left shift (convention)
 		points.push([horizontalX, downY]);
 		points.push([horizontalX, toY - CONNECTION_LINE_Y_OFFSET]);
 		points.push([toX, toY - CONNECTION_LINE_Y_OFFSET]);
 		points.push([toX, toY]);
-	} else {
+	} else if (Math.abs(fromX - toX) < 3) {
+		// Alignées verticalement : liaison droite.
 		points.push([fromX, fromY]);
+		points.push([toX, toY]);
+	} else {
+		// Descendante mais désalignée (sortie d'une divergence vers une branche, etc.) :
+		// routage orthogonal en S — jamais de diagonale dans un GRAFCET.
+		const midY = (fromY + toY) / 2;
+		points.push([fromX, fromY]);
+		points.push([fromX, midY]);
+		points.push([toX, midY]);
 		points.push([toX, toY]);
 	}
 	return points;

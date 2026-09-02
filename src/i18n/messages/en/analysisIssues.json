@@ -69,14 +69,16 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "The referral has several preceding steps; the referenced source cannot be determined.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "The referenced source step does not match the step linked to the referral.",
 
-	"NETWORK_NO_COIL": "This branch does not drive any coil.",
-	"CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
-	"CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
-	"COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
-	"COIL_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
-	"COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",
-	"ELEMENT_NO_PREDECESSOR": "This element is not linked to any previous element or to the power rail.",
-	"COIL_VARIABLE_IS_INPUT": "The coil cannot change variable \"{variableName}\" because it is an input variable.",
+	"LADDER_NETWORK_NO_COIL": "This branch does not drive any coil.",
+	"LADDER_CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
+	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
+	"LADDER_COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
+	"LADDER_COIL_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
+	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",
+	"LADDER_ELEMENT_NO_PREDECESSOR": "This element is not linked to any previous element or to the power rail.",
+	"LADDER_COIL_VARIABLE_IS_INPUT": "The coil cannot change variable \"{variableName}\" because it is an input variable.",
+
+	"LADDER_CONNECTION_INVALID_ORDER": "A connection links an element to another one located in an earlier column.",
 
 	"BLOCK_PROGRAM_UNDECLARED": "The program referenced by this block does not exist in the project.",
 	"BLOCK_PROGRAM_NOT_LADDER": "The program \"{programName}\" referenced by this block is not a ladder.",
@@ -86,8 +88,6 @@
 
 	"BLOCK_NAME_DUPLICATE": "The name \"{blockName}\" of this block is already used by another block in the project.",
 	"BLOCK_NAME_VARIABLE_CONFLICT": "The name \"{blockName}\" of this block conflicts with an existing variable of the same name.",
-
-	"LADDER_CONNECTION_INVALID_ORDER": "A connection links an element to another one located in an earlier column.",
 
 	"BLOCK_TIMER_NAME_INVALID": "The name \"{blockName}\" of this timer block is not valid.",
 	"BLOCK_TIMER_PT_EMPTY": "The {pinName} parameter of this block must be filled in.",

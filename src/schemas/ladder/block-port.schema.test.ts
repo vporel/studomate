@@ -1,9 +1,33 @@
 import {
 	BlockPortSpec,
 	getBlockHeightInCells,
+	getBlockHeightInCellUnits,
 	getBlockPinRowCount,
+	getParameterPinRows,
 	requireConcreteType,
 } from "./block-port.schema";
+
+const structuralPort = (
+	suffix: string,
+	direction: "input" | "output",
+): BlockPortSpec => ({
+	suffix,
+	type: "BOOL",
+	kind: "structural",
+	direction,
+	generatesVariable: true,
+});
+
+const parameterPort = (
+	suffix: string,
+	direction: "input" | "output",
+): BlockPortSpec => ({
+	suffix,
+	type: "TIME",
+	kind: "parameter",
+	direction,
+	generatesVariable: direction === "output",
+});
 
 describe("requireConcreteType", () => {
 	it("renvoie le type d'un port concret", () => {
@@ -219,5 +243,66 @@ describe("getBlockHeightInCells", () => {
 
 	it("trois lignes de pins : 2 cellules", () => {
 		expect(getBlockHeightInCells(threeRows)).toBe(2);
+	});
+});
+
+describe("getBlockHeightInCellUnits", () => {
+	it("une seule ligne de pins : 1 cellule pleine", () => {
+		expect(
+			getBlockHeightInCellUnits([
+				structuralPort("EN", "input"),
+				structuralPort("ENO", "output"),
+			]),
+		).toBe(1);
+	});
+
+	it("deux lignes de pins (timer) : 1.5 cellule précisément", () => {
+		expect(
+			getBlockHeightInCellUnits([
+				structuralPort("IN", "input"),
+				structuralPort("Q", "output"),
+				parameterPort("PT", "input"),
+				parameterPort("ET", "output"),
+			]),
+		).toBe(1.5);
+	});
+
+	it("trois lignes de pins : 2 cellules précisément", () => {
+		expect(
+			getBlockHeightInCellUnits([
+				structuralPort("IN", "input"),
+				structuralPort("Q", "output"),
+				parameterPort("P1", "input"),
+				parameterPort("P2", "input"),
+			]),
+		).toBe(2);
+	});
+});
+
+describe("getParameterPinRows", () => {
+	it("associe l'entrée et la sortie paramètres de même rang sur une seule ligne", () => {
+		const pt = parameterPort("PT", "input");
+		const et = parameterPort("ET", "output");
+		expect(
+			getParameterPinRows([
+				structuralPort("IN", "input"),
+				structuralPort("Q", "output"),
+				pt,
+				et,
+			]),
+		).toEqual([{ input: pt, output: et }]);
+	});
+
+	it("laisse un côté vide quand les comptes d'entrées/sorties paramètres diffèrent", () => {
+		const p1 = parameterPort("P1", "input");
+		const p2 = parameterPort("P2", "input");
+		expect(getParameterPinRows([p1, p2])).toEqual([
+			{ input: p1, output: undefined },
+			{ input: p2, output: undefined },
+		]);
+	});
+
+	it("renvoie un tableau vide sans port paramètre", () => {
+		expect(getParameterPinRows([structuralPort("EN", "input")])).toEqual([]);
 	});
 });

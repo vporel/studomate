@@ -84,6 +84,7 @@ describe("ProjectCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -235,6 +236,7 @@ describe("ProjectCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],

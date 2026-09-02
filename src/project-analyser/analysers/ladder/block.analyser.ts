@@ -96,7 +96,11 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 			.some(({ connection }) => connection.target.id === element.id);
 		if (!hasPredecessor) {
 			issues.push(
-				new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", source),
+				new ProjectAnalyserIssue(
+					"error",
+					"LADDER_ELEMENT_NO_PREDECESSOR",
+					source,
+				),
 			);
 		}
 

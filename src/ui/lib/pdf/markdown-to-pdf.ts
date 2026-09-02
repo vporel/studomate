@@ -20,6 +20,34 @@ const CODE_SIZE = 9;
 
 const lineHeight = (sizePt: number) => sizePt * 1.15 * PT_TO_MM;
 
+/** Symboles hors du jeu WinAnsi des polices intégrées de jsPDF : la police les rendrait avec un
+ * espacement erratique (flèches surtout). On les translittère en ASCII avant tout
+ * `text`/`splitTextToSize`. */
+const SYMBOL_REPLACEMENTS: [RegExp, string][] = [
+	[/[←⇐⟵]/g, "<-"],
+	[/[↔⇔⟷]/g, "<->"],
+	[/[→⇒⟶➔➙➜➡]/g, "->"],
+	[/≤/g, "<="],
+	[/≥/g, ">="],
+	[/≠/g, "!="],
+];
+
+/** Codepoints CP1252 (0x80–0x9F) hors Latin-1 mais gérés par jsPDF — conservés tels quels. */
+const WINANSI_EXTRAS =
+	"€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
+
+const NON_ENCODABLE = new RegExp(`[^\\x00-\\xFF${WINANSI_EXTRAS}]`, "g");
+
+/** Rend une chaîne sûre pour les polices intégrées de jsPDF (Helvetica/Courier, encodage
+ * WinAnsi) : translittère les symboles courants, supprime le reste. */
+export function toPdfSafeText(text: string): string {
+	let result = text;
+	for (const [pattern, replacement] of SYMBOL_REPLACEMENTS) {
+		result = result.replace(pattern, replacement);
+	}
+	return result.replace(NON_ENCODABLE, "");
+}
+
 /** Concatène le texte brut d'un jeton (récursif sur les jetons enfants). */
 function plainText(token: Token): string {
 	const withChildren = token as { tokens?: Token[] };
@@ -62,7 +90,10 @@ export default function renderMarkdownToPdf(
 		doc.setFont(font, style);
 		doc.setFontSize(sizePt);
 		const lh = lineHeight(sizePt);
-		for (const line of doc.splitTextToSize(text, layout.width - indent)) {
+		for (const line of doc.splitTextToSize(
+			toPdfSafeText(text),
+			layout.width - indent,
+		)) {
 			ensureSpace(lh);
 			doc.text(line, layout.x + indent, y);
 			y += lh;
@@ -91,7 +122,9 @@ export default function renderMarkdownToPdf(
 					doc.setFont("helvetica", "normal");
 					doc.setFontSize(BODY_SIZE);
 					const lh = lineHeight(BODY_SIZE);
-					const body = item.tokens.map(plainText).join(" ").replace(/\s+/g, " ").trim();
+					const body = toPdfSafeText(
+						item.tokens.map(plainText).join(" ").replace(/\s+/g, " ").trim(),
+					);
 					const lines = doc.splitTextToSize(body, layout.width - 7);
 					lines.forEach((line: string, li: number) => {
 						ensureSpace(lh);

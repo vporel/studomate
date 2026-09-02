@@ -19,7 +19,7 @@ describe("CoilAnalyser", () => {
 		return new Map(variables.map((v) => [v.mnemonic, v]));
 	}
 
-	it("signale COIL_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
+	it("signale LADDER_COIL_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
 		const rail = createRailTerminalElement(0);
 		const coil = createCoilElement("Q", "normal", 0, 1);
 		const ladder = new Ladder("l1", "L", [
@@ -33,10 +33,12 @@ describe("CoilAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_UNDECLARED");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_COIL_VARIABLE_UNDECLARED",
+		);
 	});
 
-	it("signale COIL_VARIABLE_NOT_BOOLEAN quand la variable n'est pas booléenne", () => {
+	it("signale LADDER_COIL_VARIABLE_NOT_BOOLEAN quand la variable n'est pas booléenne", () => {
 		const rail = createRailTerminalElement(0);
 		const q = VariableFactory.createMemoryInt("Q");
 		const coil = createCoilElement("Q", "normal", 0, 1);
@@ -51,10 +53,12 @@ describe("CoilAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_NOT_BOOLEAN");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_COIL_VARIABLE_NOT_BOOLEAN",
+		);
 	});
 
-	it("signale COIL_VARIABLE_IS_INPUT quand la bobine piloterait une entrée", () => {
+	it("signale LADDER_COIL_VARIABLE_IS_INPUT quand la bobine piloterait une entrée", () => {
 		const rail = createRailTerminalElement(0);
 		const i0 = VariableFactory.createLogicInput("I0");
 		const coil = createCoilElement("I0", "normal", 0, 1);
@@ -69,10 +73,12 @@ describe("CoilAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("COIL_VARIABLE_IS_INPUT");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_COIL_VARIABLE_IS_INPUT",
+		);
 	});
 
-	it("signale ELEMENT_NO_PREDECESSOR quand la bobine n'a aucune connexion entrante", () => {
+	it("signale LADDER_ELEMENT_NO_PREDECESSOR quand la bobine n'a aucune connexion entrante", () => {
 		const q = VariableFactory.createMemoryBool("Q");
 		const coil = createCoilElement("Q", "normal", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([coil])]);
@@ -84,10 +90,12 @@ describe("CoilAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("ELEMENT_NO_PREDECESSOR");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_ELEMENT_NO_PREDECESSOR",
+		);
 	});
 
-	it("signale une seule COIL_DUPLICATE_NORMAL_ASSIGNMENT par bobine quand deux bobines normales partagent la variable, avec le compte dans le message", () => {
+	it("signale une seule LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT par bobine quand deux bobines normales partagent la variable, avec le compte dans le message", () => {
 		const q = VariableFactory.createMemoryBool("Q");
 		const rail1 = createRailTerminalElement(0);
 		const coil1 = createCoilElement("Q", "normal", 0, 1);
@@ -115,13 +123,17 @@ describe("CoilAnalyser", () => {
 		);
 
 		expect(
-			issuesCoil1.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT"),
+			issuesCoil1.filter(
+				(i) => i.code === "LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			),
 		).toHaveLength(1);
 		expect(
-			issuesCoil2.filter((i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT"),
+			issuesCoil2.filter(
+				(i) => i.code === "LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			),
 		).toHaveLength(1);
 		const duplicateIssue = issuesCoil1.find(
-			(i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			(i) => i.code === "LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 		)!;
 		expect(duplicateIssue.severity).toBe("warning");
 		expect(duplicateIssue.params.count).toBe(2);
@@ -158,10 +170,10 @@ describe("CoilAnalyser", () => {
 		);
 
 		expect(issuesSet.map((i) => i.code)).not.toContain(
-			"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 		);
 		expect(issuesReset.map((i) => i.code)).not.toContain(
-			"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 		);
 	});
 

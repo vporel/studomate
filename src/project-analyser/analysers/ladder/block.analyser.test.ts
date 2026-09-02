@@ -1,8 +1,8 @@
 import { createCompareBlockElement } from "@/schemas/ladder/block.schema";
 import { createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { ProjectFactory } from "@tests/utils/project-factory";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
+import { ProjectFactory } from "@tests/utils/project-factory";
 import BlockAnalyser from "./block.analyser";
 
 describe("BlockAnalyser", () => {
@@ -11,10 +11,15 @@ describe("BlockAnalyser", () => {
 
 	function analyse(ladder: Ladder, blockId: string) {
 		const block = ladder.getAllElements().find((e) => e.id === blockId)!;
-		return analyser.analyseInContext(block as never, ladder, new Map(), project);
+		return analyser.analyseInContext(
+			block as never,
+			ladder,
+			new Map(),
+			project,
+		);
 	}
 
-	it("signale ELEMENT_NO_PREDECESSOR quand le bloc n'a aucune connexion entrante", () => {
+	it("signale LADDER_ELEMENT_NO_PREDECESSOR quand le bloc n'a aucune connexion entrante", () => {
 		const block = createCompareBlockElement(0, 0, {
 			in1: "1",
 			in2: "0",
@@ -23,7 +28,7 @@ describe("BlockAnalyser", () => {
 		const ladder = new Ladder("l1", "L", [createSectionWith([block])]);
 
 		expect(analyse(ladder, block.id).map((i) => i.code)).toContain(
-			"ELEMENT_NO_PREDECESSOR",
+			"LADDER_ELEMENT_NO_PREDECESSOR",
 		);
 	});
 
@@ -39,7 +44,7 @@ describe("BlockAnalyser", () => {
 		]);
 
 		expect(analyse(ladder, block.id).map((i) => i.code)).not.toContain(
-			"ELEMENT_NO_PREDECESSOR",
+			"LADDER_ELEMENT_NO_PREDECESSOR",
 		);
 	});
 });

@@ -16,7 +16,7 @@
 		"grafcet-comments": "Comments",
 		"grafcet-connections": "Links",
 		"ladder": "Ladder",
-		"ladder-sections": "Rungs",
+		"ladder-sections": "Sections",
 		"ladder-contacts": "Contacts",
 		"ladder-coils": "Coils",
 		"ladder-blocks": "Blocks",
@@ -311,7 +311,7 @@
 		"p1": "Ladder (contact diagram) is a graphical notation representing the program's logic as electrical circuits: contacts in series or in parallel drive coils. Studomate lets you create and edit ladders with an interactive graphical editor, in a tab separate from the grafcet.",
 		"p2": "A project always contains a special ladder called \"Main\". It is the execution entry point: it runs first on every PLC scan and orchestrates the other ladders via program-call blocks. The Main ladder cannot be deleted.",
 		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a rung.",
-		"sectionsTitle": "Rungs",
+		"sectionsTitle": "Sections",
 		"sectionsIntro": "A ladder is made of one or more rungs (also called \"sections\"), stacked vertically. Each rung carries its own circuit, independent of the others.",
 		"sectionsItems": [
 			"\"Section\" button in the ladder toolbar: adds a new empty rung.",
@@ -572,10 +572,7 @@
 			"Export and Close project — no shortcut (File menu)"
 		],
 		"projectTitle": "Project",
-		"projectItems": [
-			"Ctrl+G — New grafcet",
-			"Ctrl+L — New ladder"
-		],
+		"projectItems": ["Ctrl+G — New grafcet", "Ctrl+L — New ladder"],
 		"editTitle": "Edit",
 		"editItems": [
 			"Ctrl+Z — Undo",
@@ -587,14 +584,9 @@
 			"Delete or Backspace — Delete the selection (active HMI canvas)"
 		],
 		"explorerTitle": "Explorer",
-		"explorerItems": [
-			"F2 — Rename the selected grafcet or ladder"
-		],
+		"explorerItems": ["F2 — Rename the selected grafcet or ladder"],
 		"inlineTitle": "Inline editing",
-		"inlineItems": [
-			"Enter — Confirm the change",
-			"Esc — Cancel the change"
-		]
+		"inlineItems": ["Enter — Confirm the change", "Esc — Cancel the change"]
 	},
 	"navHeading": "Manual outline",
 	"searchPlaceholder": "Search the manual…",

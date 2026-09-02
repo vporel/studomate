@@ -451,12 +451,12 @@ describe("ProjectLifecycleManager", () => {
 			).resolves.not.toThrow();
 		});
 
-		it("supprime le brouillon et ferme la modale quand le choix est 'real'", async () => {
+		it("supprime le brouillon, ferme la modale et ouvre le projet enregistré quand le choix est 'real'", async () => {
 			const store = createProjectStore();
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 			store.setState({
-				project,
+				project: null,
 				ui: {
 					...store.getState().ui,
 					draftConflictModal: {
@@ -470,6 +470,9 @@ describe("ProjectLifecycleManager", () => {
 			await lifecycle(store).resolveDraftConflict("real");
 
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
+			expect(store.getState().project?.id).toBe("p1");
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(getDraft("p1")).toBeNull();
 		});
 
 		it("ouvre le brouillon et marque hasUnsavedChanges quand le choix est 'draft'", async () => {

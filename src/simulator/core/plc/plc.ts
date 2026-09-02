@@ -3,7 +3,10 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
 import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
-import PLCVariable, { PLCVariableValue } from "./plc-variable";
+import PLCVariable, {
+	PLCVariableType,
+	PLCVariableValue,
+} from "./plc-variable";
 
 export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
@@ -89,6 +92,16 @@ export default class PLC extends ClockedRunnable {
 			...Object.values(this.outputImage),
 			...Object.values(this.memory),
 		].map((v) => v.copy());
+	}
+
+	/**
+	 * Type natif d'une variable adressable par forçage ou par écriture directe (entrée
+	 * physique, image de sortie, mémoire), ou `undefined` si l'id n'en désigne aucune.
+	 */
+	public getVariableTypeById(id: string): PLCVariableType | undefined {
+		const variable =
+			this.physicalInputs[id] ?? this.outputImage[id] ?? this.memory[id];
+		return variable?.getType();
 	}
 
 	public setOutputImageValueById(id: string, value: PLCVariableValue): void {

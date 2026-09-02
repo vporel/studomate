@@ -75,6 +75,15 @@ Cette couche est consommée par l'UI ; elle ne remonte jamais dans le domaine (`
 Variables d'environnement : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` pour le
 cloud, `NEXT_PUBLIC_SENTRY_DSN` pour le monitoring. Sans elles, l'app reste en local-only.
 
+### Export PDF
+
+`src/ui/lib/program-export-drawing/` dessine chaque programme (grafcet, ladder) **directement
+depuis le schéma** en une IR de primitives (`DrawOp[]` → `Scene`), sans monter React Flow.
+Deux backends : `backends/jspdf-backend.ts` (primitives vectorielles jsPDF, utilisé par
+`JsPdfExporter.drawSection`) et `backends/svg-backend.ts` (chaîne `<svg>`, pour les snapshots
+de test). `usePdfExport` assemble les scènes ; `JsPdfExporter` ajoute page de garde et titres.
+Le rendu est vectoriel et synchrone — pas de rasterisation, pas de capture de l'éditeur.
+
 ## Commandes
 
 ```bash
@@ -115,7 +124,6 @@ Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 22).
 | `date-fns` | ^4.1.0 | Dates |
 | `mitt` | ^3.0.1 | Bus d'événements (menus contextuels du grafcet) |
 | `nanoid` | ^5.1.16 | Identifiants courts — toujours via `createRandomId()` (`src/ids.ts`), jamais `nanoid` en direct |
-| `dom-to-image` | ^2.6.0 | Rastérisation des programmes pour l'export PDF |
 | `jspdf` | ^4.2.1 | Export PDF (projet : page de garde + programmes) |
 | `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Réordonnancement des sections Ladder |
 | `react-toastify` | ^11.0.5 | Notifications |

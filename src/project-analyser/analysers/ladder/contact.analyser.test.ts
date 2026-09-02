@@ -19,7 +19,7 @@ describe("ContactAnalyser", () => {
 		return new Map(variables.map((v) => [v.mnemonic, v]));
 	}
 
-	it("signale CONTACT_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
+	it("signale LADDER_CONTACT_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
 		const rail = createRailTerminalElement(0);
 		const contact = createContactElement("A", "NO", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
@@ -37,10 +37,12 @@ describe("ContactAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_UNDECLARED");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_CONTACT_VARIABLE_UNDECLARED",
+		);
 	});
 
-	it("signale CONTACT_VARIABLE_NOT_BOOLEAN quand la variable n'est pas booléenne", () => {
+	it("signale LADDER_CONTACT_VARIABLE_NOT_BOOLEAN quand la variable n'est pas booléenne", () => {
 		const rail = createRailTerminalElement(0);
 		const a = VariableFactory.createMemoryInt("A");
 		const contact = createContactElement("A", "NO", 0, 1);
@@ -59,10 +61,12 @@ describe("ContactAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("CONTACT_VARIABLE_NOT_BOOLEAN");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN",
+		);
 	});
 
-	it("signale NETWORK_NO_COIL (warning) quand le contact ne pilote aucune bobine", () => {
+	it("signale LADDER_NETWORK_NO_COIL (warning) quand le contact ne pilote aucune bobine", () => {
 		const rail = createRailTerminalElement(0);
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 1);
@@ -77,12 +81,12 @@ describe("ContactAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		const issue = issues.find((i) => i.code === "NETWORK_NO_COIL");
+		const issue = issues.find((i) => i.code === "LADDER_NETWORK_NO_COIL");
 		expect(issue).toBeDefined();
 		expect(issue?.severity).toBe("warning");
 	});
 
-	it("signale ELEMENT_NO_PREDECESSOR quand le contact n'a aucune connexion entrante", () => {
+	it("signale LADDER_ELEMENT_NO_PREDECESSOR quand le contact n'a aucune connexion entrante", () => {
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 0);
 		const coil = createCoilElement("Q", "normal", 0, 1);
@@ -97,10 +101,12 @@ describe("ContactAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		expect(issues.map((i) => i.code)).toContain("ELEMENT_NO_PREDECESSOR");
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_ELEMENT_NO_PREDECESSOR",
+		);
 	});
 
-	it("cumule NETWORK_NO_COIL et ELEMENT_NO_PREDECESSOR sur un contact totalement isolé", () => {
+	it("cumule LADDER_NETWORK_NO_COIL et LADDER_ELEMENT_NO_PREDECESSOR sur un contact totalement isolé", () => {
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([contact])]);
@@ -113,8 +119,8 @@ describe("ContactAnalyser", () => {
 		);
 
 		expect(issues.map((i) => i.code).sort()).toEqual([
-			"ELEMENT_NO_PREDECESSOR",
-			"NETWORK_NO_COIL",
+			"LADDER_ELEMENT_NO_PREDECESSOR",
+			"LADDER_NETWORK_NO_COIL",
 		]);
 	});
 

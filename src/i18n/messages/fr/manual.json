@@ -16,7 +16,7 @@
 		"grafcet-comments": "Commentaires",
 		"grafcet-connections": "Liaisons",
 		"ladder": "Ladder",
-		"ladder-sections": "Réseaux",
+		"ladder-sections": "Sections",
 		"ladder-contacts": "Contacts",
 		"ladder-coils": "Bobines",
 		"ladder-blocks": "Blocs",
@@ -83,7 +83,7 @@
 		"interfaceTitle": "Interface principale",
 		"interfaceIntro": "L'interface est divisée en plusieurs zones :",
 		"interfaceItems": [
-			"Barre de menus (haut) : Fichier, Édition, Projet, Vue, Aide",
+			"Barre de menus (haut) : Fichier, Édition, Projet, Interface, Aide",
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
@@ -129,7 +129,7 @@
 	},
 	"explorer": {
 		"title": "Explorateur",
-		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Vue → Explorateur.",
+		"p1": "L'explorateur est un panneau latéral gauche affichant l'arborescence du projet. Il peut être affiché ou masqué via le menu Interface → Explorateur.",
 		"structureTitle": "Structure de l'explorateur",
 		"structureIntro": "L'explorateur est organisé en plusieurs sections :",
 		"variablesLabel": "Variables :",
@@ -311,7 +311,7 @@
 		"p1": "Le ladder (schéma à contacts) est une notation graphique représentant la logique du programme sous forme de circuits électriques : des contacts en série ou en parallèle commandent des bobines. Studomate permet de créer et de modifier des ladders à l'aide d'un éditeur graphique interactif, dans un onglet séparé du grafcet.",
 		"p2": "Un projet contient toujours un ladder spécial appelé « Main ». C'est le point d'entrée de l'exécution : il est lancé en premier à chaque cycle PLC et orchestre les autres ladders via des blocs d'appel de programme. Le ladder Main ne peut pas être supprimé.",
 		"p3": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante dans un réseau.",
-		"sectionsTitle": "Réseaux",
+		"sectionsTitle": "Sections",
 		"sectionsIntro": "Un ladder est composé d'un ou plusieurs réseaux (aussi appelés « sections »), empilés verticalement. Chaque réseau porte son propre circuit, indépendant des autres.",
 		"sectionsItems": [
 			"Bouton « Section » dans la barre d'outils ladder : ajoute un nouveau réseau vide.",
@@ -572,10 +572,7 @@
 			"Exporter et Fermer le projet — aucun raccourci (menu Fichier)"
 		],
 		"projectTitle": "Projet",
-		"projectItems": [
-			"Ctrl+G — Nouveau grafcet",
-			"Ctrl+L — Nouveau ladder"
-		],
+		"projectItems": ["Ctrl+G — Nouveau grafcet", "Ctrl+L — Nouveau ladder"],
 		"editTitle": "Édition",
 		"editItems": [
 			"Ctrl+Z — Annuler",
@@ -587,9 +584,7 @@
 			"Suppr ou Retour arrière — Supprimer la sélection (canvas HMI actif)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": [
-			"F2 — Renommer le grafcet ou le ladder sélectionné"
-		],
+		"explorerItems": ["F2 — Renommer le grafcet ou le ladder sélectionné"],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée — Valider la modification",

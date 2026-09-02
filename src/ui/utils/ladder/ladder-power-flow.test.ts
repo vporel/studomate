@@ -214,6 +214,46 @@ describe("computeEnergizedEdges", () => {
 		expect(computeEnergizedEdges(ladder, { ...state })).not.toBe(first); // nouvelle référence → recalcul
 	});
 
+	it("un bloc timer ne relaie le courant que lorsque sa sortie Q est vraie", () => {
+		ladder.addElements(sectionId, [
+			{ id: "rail1", type: "railTerminal", data: {}, position: { row: 0, col: 0 } },
+			{
+				id: "ton1",
+				type: "block",
+				data: {
+					blockType: "timer",
+					params: { name: "T1", timerType: "TON", pt: "T#5s" },
+				},
+				position: { row: 0, col: 1 },
+			},
+			{ id: "coil1", type: "coil", data: { variable: "Q1", type: "normal" }, position: { row: 0, col: 3 } },
+		]);
+		ladder.addConnections(sectionId, [
+			new Connection(
+				"in",
+				{ id: "rail1", type: "railTerminal", handle: "source" },
+				{ id: "ton1", type: "block", handle: "IN" },
+			),
+			new Connection(
+				"out",
+				{ id: "ton1", type: "block", handle: "Q" },
+				{ id: "coil1", type: "coil", handle: "target" },
+			),
+		]);
+
+		expect(
+			computeEnergizedEdges(ladder, {
+				"T1.Q": { id: "T1.Q", mnemonic: "T1.Q", value: false },
+			}).has("out"),
+		).toBe(false); // tempo non échue
+
+		expect(
+			computeEnergizedEdges(ladder, {
+				"T1.Q": { id: "T1.Q", mnemonic: "T1.Q", value: true },
+			}).has("out"),
+		).toBe(true); // tempo échue
+	});
+
 	it("calcule le power-flow de chaque section d'un ladder multi-sections", () => {
 		const section2 = ladder.createSection("Section 2");
 		for (const [sId, suffix] of [

@@ -42,11 +42,8 @@ describe("useFileMenu", () => {
 			group.map((i) => i.label),
 		);
 		expect(labels).toEqual([
-			["Nouveau projet"],
-			["Ouvrir projet"],
-			["Enregistrer"],
-			["Enregistrer sous"],
-			["Exporter"],
+			["Nouveau projet", "Ouvrir projet"],
+			["Enregistrer", "Enregistrer sous", "Exporter"],
 			["Fermer le projet"],
 			["Préférences"],
 		]);
@@ -55,12 +52,12 @@ describe("useFileMenu", () => {
 	it("disables project-editing actions outside design mode, but keeps save enabled", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
 		expect(result.current.items[0][0].disabled).toBe(true); // Nouveau projet
-		expect(result.current.items[1][0].disabled).toBe(true); // Ouvrir projet
-		expect(result.current.items[2][0].disabled).toBeUndefined(); // Enregistrer
-		expect(result.current.items[3][0].disabled).toBeUndefined(); // Enregistrer sous
-		expect(result.current.items[4][0].disabled).toBe(true); // Exporter
-		expect(result.current.items[5][0].disabled).toBe(true); // Fermer le projet
-		expect(result.current.items[6][0].disabled).toBeUndefined(); // Préférences
+		expect(result.current.items[0][1].disabled).toBe(true); // Ouvrir projet
+		expect(result.current.items[1][0].disabled).toBeUndefined(); // Enregistrer
+		expect(result.current.items[1][1].disabled).toBeUndefined(); // Enregistrer sous
+		expect(result.current.items[1][2].disabled).toBe(true); // Exporter
+		expect(result.current.items[2][0].disabled).toBe(true); // Fermer le projet
+		expect(result.current.items[3][0].disabled).toBeUndefined(); // Préférences
 	});
 
 	it("triggers the corresponding actions when designing", () => {
@@ -69,22 +66,22 @@ describe("useFileMenu", () => {
 		act(() => result.current.items[0][0].onClick?.());
 		expect(newProject).toHaveBeenCalled();
 
-		act(() => result.current.items[1][0].onClick?.());
+		act(() => result.current.items[0][1].onClick?.());
 		expect(setOpenModalVisible).toHaveBeenCalledWith(true);
 
-		act(() => result.current.items[2][0].onClick?.());
+		act(() => result.current.items[1][0].onClick?.());
 		expect(saveProject).toHaveBeenCalled();
 
-		act(() => result.current.items[3][0].onClick?.());
+		act(() => result.current.items[1][1].onClick?.());
 		expect(setSaveAsModalVisible).toHaveBeenCalledWith(true);
 
-		act(() => result.current.items[4][0].onClick?.());
+		act(() => result.current.items[1][2].onClick?.());
 		expect(setExportModalVisible).toHaveBeenCalledWith(true);
 
-		act(() => result.current.items[5][0].onClick?.());
+		act(() => result.current.items[2][0].onClick?.());
 		expect(closeProject).toHaveBeenCalled();
 
-		act(() => result.current.items[6][0].onClick?.());
+		act(() => result.current.items[3][0].onClick?.());
 		expect(openPage).toHaveBeenCalled();
 	});
 
@@ -92,9 +89,9 @@ describe("useFileMenu", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
 
 		act(() => result.current.items[0][0].onClick?.());
-		act(() => result.current.items[1][0].onClick?.());
-		act(() => result.current.items[4][0].onClick?.());
-		act(() => result.current.items[5][0].onClick?.());
+		act(() => result.current.items[0][1].onClick?.());
+		act(() => result.current.items[1][2].onClick?.());
+		act(() => result.current.items[2][0].onClick?.());
 
 		expect(newProject).not.toHaveBeenCalled();
 		expect(setOpenModalVisible).not.toHaveBeenCalled();

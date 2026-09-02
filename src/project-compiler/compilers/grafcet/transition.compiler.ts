@@ -15,7 +15,7 @@ export default class TransitionCompiler {
 		stepMemosNodes: Map<string, IdentifierNode>,
 	): ASTNode[] {
 		const {
-			node: transitionNode,
+			pureNode: transitionNode,
 			predecessorStepsIds,
 			successorStepsIds,
 			orPriorityExclusionTransitionIds,
@@ -37,12 +37,13 @@ export default class TransitionCompiler {
 			return memoNode;
 		});
 
-		// OR priority exclusions: NOT(T_prior) using the cycle-current transition value
-		// (transitions evaluate PLC signals directly, no memo concept applies)
+		// OR priority exclusions: NOT(T_prior) using the prior transition's pure receptivity
+		// node (timers already advanced once this cycle, see GrafcetCompiler) — evaluating the
+		// raw node here would double-step its timers.
 		const priorityExclusionNodes = orPriorityExclusionTransitionIds.map(
 			(tId) => {
 				const priorTransitionNode =
-					preCompiledGrafcet.transitions.get(tId)?.node;
+					preCompiledGrafcet.transitions.get(tId)?.pureNode;
 				if (!priorTransitionNode)
 					throw new Error(
 						`No pre-compiled node found for prior transition ${tId}`,

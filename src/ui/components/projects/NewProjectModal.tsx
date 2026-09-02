@@ -67,10 +67,9 @@ export default function NewProjectModal() {
 				>
 					<CardActionArea onClick={() => setSelected(null)}>
 						<CardContent>
-							<Typography
-								variant="subtitle1"
-								fontWeight={600}
-							>{t("emptyProject")}</Typography>
+							<Typography variant="subtitle1" fontWeight={600}>
+								{t("emptyProject")}
+							</Typography>
 							<Typography variant="body2" color="text.secondary">
 								{t("emptyProjectDescription")}
 							</Typography>
@@ -87,7 +86,7 @@ export default function NewProjectModal() {
 						</Divider>
 
 						<Box
-							sx={{ minHeight: 0, maxHeight: 440, overflowY: "auto", pr: 1 }}
+							sx={{ minHeight: 0, maxHeight: 400, overflowY: "auto", pr: 1 }}
 						>
 							<Box
 								display="grid"
@@ -101,9 +100,7 @@ export default function NewProjectModal() {
 										sx={{
 											height: "100%",
 											borderColor:
-												selected === template.id
-													? "primary.main"
-													: "divider",
+												selected === template.id ? "primary.main" : "divider",
 											cursor: "pointer",
 										}}
 									>

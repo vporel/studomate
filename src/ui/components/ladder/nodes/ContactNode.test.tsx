@@ -48,6 +48,7 @@ function setup({
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			ladder: { id: "ladder-1" },
 			highlightedNodesIds,
 			commandsStackManager: { executeOperation },
 		}),
@@ -162,6 +163,70 @@ describe("ContactNode", () => {
 			expect(screen.getByTestId("symbol")).toHaveAttribute(
 				"data-color",
 				DEFAULT_THEME.light.primaryColor,
+			);
+		});
+
+		it("contact NF : 'energized' quand la variable est à false (il laisse passer)", () => {
+			setup({
+				variable: "E1",
+				type: "NF",
+				simulationVariablesStates: { v1: { mnemonic: "E1", value: false } },
+			});
+
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.energizedColor,
+			);
+		});
+
+		it("contact NF : noir quand la variable est à true (il bloque)", () => {
+			setup({
+				variable: "E1",
+				type: "NF",
+				simulationVariablesStates: { v1: { mnemonic: "E1", value: true } },
+			});
+
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
+			);
+		});
+
+		it("contact front P : 'energized' seulement sur front montant (mémoire à false)", () => {
+			setup({
+				variable: "E1",
+				type: "P",
+				simulationVariablesStates: {
+					v1: { mnemonic: "E1", value: true },
+					"ladder-ladder-1-edge-contact-1": {
+						mnemonic: "EDGE_x",
+						value: false,
+					},
+				},
+			});
+
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				DEFAULT_THEME.light.energizedColor,
+			);
+		});
+
+		it("contact front P : noir si la mémoire de front est déjà à true", () => {
+			setup({
+				variable: "E1",
+				type: "P",
+				simulationVariablesStates: {
+					v1: { mnemonic: "E1", value: true },
+					"ladder-ladder-1-edge-contact-1": {
+						mnemonic: "EDGE_x",
+						value: true,
+					},
+				},
+			});
+
+			expect(screen.getByTestId("symbol")).toHaveAttribute(
+				"data-color",
+				"black",
 			);
 		});
 

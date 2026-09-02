@@ -8,7 +8,9 @@ import ProjectCompiler, {
 } from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import PLC from "@/simulator/core/plc/plc";
-import PLCVariable from "@/simulator/core/plc/plc-variable";
+import PLCVariable, {
+	PLCVariableValue,
+} from "@/simulator/core/plc/plc-variable";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -172,12 +174,17 @@ export default class SimulationManager {
 		this.plc = this.createPLC(projectCompilationResult);
 		this.plc.start();
 
-		//En mode pas-à-pas, on passe immédiatement en pause : aucun cycle ne s'exécute
-		//avant que l'utilisateur ne clique "Avancer d'un cycle".
+		//Cycle d'établissement : exécuté synchronement à l'entrée en simulation pour que la
+		//situation initiale (étapes initiales actives, sorties calculées) soit publiée avant
+		//tout affichage — sinon, en pas-à-pas, aucun cycle ne tourne jusqu'au premier
+		//"Avancer" et l'interface montre un grafcet sans étape active. `deltaTimeMs` vaut 0
+		//sur ce cycle : aucune temporisation n'avance.
 		const simulationMode = this.getStoreState().simulationMode;
 		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
-		if (startPaused) {
-			this.plc.pause();
+		this.plc.pause();
+		this.plc.stepOnce();
+		if (!startPaused) {
+			this.plc.resume();
 		}
 
 		//Set the mode
@@ -341,6 +348,26 @@ export default class SimulationManager {
 		this.observationVariableToSource = new Map();
 	}
 
+	/**
+	 * Ramène une valeur venue de l'UI (`any`) au type natif de la variable ciblée. `undefined`
+	 * si la variable est inconnue du PLC ou si un nombre attendu n'est pas fini — l'appelant
+	 * n'écrit alors rien, plutôt que de laisser `PLCVariable.setValue` lever et détruire la
+	 * simulation au cycle suivant.
+	 */
+	private coerceToPlcType(
+		variableId: string,
+		value: unknown,
+	): PLCVariableValue | undefined {
+		const type = this.plc?.getVariableTypeById(variableId);
+		if (!type) return undefined;
+		if (type === "boolean") return typeof value === "boolean" ? value : !!value;
+		if (type === "number") {
+			const n = typeof value === "number" ? value : Number(value);
+			return Number.isFinite(n) ? n : undefined;
+		}
+		return typeof value === "string" ? value : String(value);
+	}
+
 	public setPhysicalInputValue(variableId: string, value: any): void {
 		const mode = this.getStoreState().mode;
 		if (mode !== ProjectMode.SIMULATION) {
@@ -351,7 +378,9 @@ export default class SimulationManager {
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
-		this.plc.setPhysicalInputValueById(variableId, value);
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.setPhysicalInputValueById(variableId, coerced);
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {
@@ -362,14 +391,18 @@ export default class SimulationManager {
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
-		this.plc.setMemoryValueById(variableId, value);
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.setMemoryValueById(variableId, coerced);
 	}
 
 	public forceVariable(variableId: string, value: any): void {
 		if (!this.plc) return;
-		this.plc.forceVariable(variableId, value);
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.forceVariable(variableId, coerced);
 		this.setStoreState((state) => ({
-			forcedVariables: { ...state.forcedVariables, [variableId]: value },
+			forcedVariables: { ...state.forcedVariables, [variableId]: coerced },
 		}));
 	}
 

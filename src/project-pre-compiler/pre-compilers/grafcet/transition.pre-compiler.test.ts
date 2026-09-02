@@ -185,6 +185,45 @@ describe("TransitionPreCompiler", () => {
 			expect(result.timers).toHaveLength(1);
 		});
 
+		it("expose un pureNode où le TimerNode est remplacé par la lecture de sa sortie", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("T1/E1/1s")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.node.type).toBe("TIMER_BLOCK");
+			// pureNode ne contient plus de TIMER_BLOCK : c'est une lecture d'identifiant
+			expect(result.pureNode.type).toBe("IDENTIFIER");
+			expect((result.pureNode as any).value).toBe(
+				(result.timers[0].output as any).value,
+			);
+		});
+
+		it("pureNode est identique au node en l'absence de tempo", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("A ET B")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.pureNode).toBe(result.node);
+		});
+
 		it("generates synthetic memo variables for timers", () => {
 			const transition = new TransitionBuilder()
 				.id("trans-1")

@@ -11,15 +11,12 @@ import ExportModal from "./ExportModal";
 
 jest.mock("./ProjectContext");
 jest.mock("@/ui/utils/project/project-export-utils");
-jest.mock("../pdf/OffscreenProgramRenderer", () => () => null);
 
 const startExport = jest.fn();
 const reset = jest.fn();
 jest.mock("../pdf/usePdfExport", () => ({
 	usePdfExport: () => ({
 		exportState: { status: "idle" },
-		offscreenPrograms: [],
-		onProgramReady: jest.fn(),
 		startExport,
 		reset,
 	}),

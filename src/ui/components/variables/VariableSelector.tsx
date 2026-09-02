@@ -15,9 +15,9 @@ import {
 	useTheme,
 } from "@mui/material";
 import {
+	forwardRef,
 	FocusEvent as ReactFocusEvent,
 	KeyboardEvent as ReactKeyboardEvent,
-	forwardRef,
 	useEffect,
 	useImperativeHandle,
 	useMemo,
@@ -47,7 +47,7 @@ interface VariableSelectorProps {
 	/** Restreint les suggestions et le statut valide à ces types — non fourni : tous les types. */
 	typeFilter?: VariableType[];
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
-	 * `"IN"` pour une bobine de ladder, voir `COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
+	 * `"IN"` pour une bobine de ladder, voir `LADDER_COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
 	excludeDirection?: VariableDirection;
 	/** Formes de littéral acceptées en plus d'un nom de variable (voir
 	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé

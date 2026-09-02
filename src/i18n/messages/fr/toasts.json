@@ -12,6 +12,7 @@
 	},
 	"draftCorrupted": "Le brouillon est corrompu et n'a pas pu être ouvert.",
 	"cloudReloadFailed": "Impossible de recharger la version en ligne du projet.",
+	"projectReloadFailed": "Impossible de charger le projet enregistré.",
 	"shareLinkFailed": "Impossible de créer le lien de partage.",
 	"moveToCloudConflict": "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil.",
 	"moveToCloudFailed": "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",

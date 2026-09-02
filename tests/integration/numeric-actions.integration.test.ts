@@ -160,4 +160,33 @@ describe("Numeric Actions Integration Tests", () => {
 			expect(pipeline.compilation.errors).toEqual([]);
 		});
 	});
+
+	describe("Court-circuit ET/OU — réceptivité gardée", () => {
+		it("ne crashe pas la simulation quand la branche protégée diviserait par zéro", async () => {
+			const v = VariableFactory.createMemoryInt("V"); // vaut 0
+
+			// trans-0 : V != 0 ET (100 / V) > 10 — la branche droite diviserait par zéro,
+			// mais le court-circuit ne l'évalue pas tant que V vaut 0.
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"grafcet-guard",
+				"V != 0 ET (100 / V) > 10",
+				"VRAI",
+			);
+			const project = ProjectFactory.create([v], [grafcet], "Guarded division");
+
+			let cycleError: Error | null = null;
+			const plc = compileToPLC(project, 10, Dialect.FR, {
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.start();
+			await jest.advanceTimersByTimeAsync(400);
+			plc!.stop();
+
+			expect(cycleError).toBeNull();
+		});
+	});
 });

@@ -74,6 +74,30 @@ describe("PLC", () => {
 		});
 	});
 
+	describe("getVariableTypeById", () => {
+		it("renvoie le type natif pour une entrée, une sortie et une mémoire", () => {
+			const boolMemory = new PLCVariable("id4", "flag", "memory", "boolean");
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar, outputVar, memoryVar, boolMemory],
+			});
+			expect(plc.getVariableTypeById("id1")).toBe("number");
+			expect(plc.getVariableTypeById("id2")).toBe("number");
+			expect(plc.getVariableTypeById("id3")).toBe("number");
+			expect(plc.getVariableTypeById("id4")).toBe("boolean");
+		});
+
+		it("renvoie undefined pour un id inconnu", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar],
+			});
+			expect(plc.getVariableTypeById("nope")).toBeUndefined();
+		});
+	});
+
 	describe("physical input management", () => {
 		it("sets physical input value by id", () => {
 			const plc = new PLC({

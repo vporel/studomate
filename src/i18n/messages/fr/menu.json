@@ -21,13 +21,14 @@
 		"paste": "Coller"
 	},
 	"view": {
-		"title": "Vue",
+		"title": "Interface",
 		"explorer": "Explorateur"
 	},
 	"project": {
 		"title": "Projet",
 		"newGrafcet": "Nouveau grafcet",
 		"newLadder": "Nouveau ladder",
+		"newHmiView": "Nouvelle vue HMI",
 		"exerciseStatement": "Énoncé de l'exercice",
 		"share": "Partager",
 		"manageSharing": "Gérer le partage",

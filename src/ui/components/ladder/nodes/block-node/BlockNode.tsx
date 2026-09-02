@@ -6,6 +6,10 @@ import {
 	resolveStructuralPorts,
 } from "@/schemas/ladder/block-definition";
 import { BlockData } from "@/schemas/ladder/block.schema";
+import {
+	getBlockHeightInCellUnits,
+	getParameterPinRows,
+} from "@/schemas/ladder/block-port.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -15,10 +19,6 @@ import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { getHighlightOverlaySx } from "../node-highlight";
 import { BLOCK_NODE_UI } from "./block-node-ui";
-import {
-	getBlockHeightInCellUnits,
-	getParameterPinRows,
-} from "./block-node-layout";
 import BlockNameField from "./BlockNameField";
 import BlockStructuralRow from "./BlockStructuralRow";
 import CompareBlockNode from "./CompareBlockNode";

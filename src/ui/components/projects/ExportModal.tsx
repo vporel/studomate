@@ -4,6 +4,7 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
+import { LadderRenderContext } from "@/ui/lib/program-export-drawing/ladder-render-context";
 import { exportProject } from "@/ui/utils/project/project-export-utils";
 import {
 	Alert,
@@ -19,7 +20,6 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import OffscreenProgramRenderer from "../pdf/OffscreenProgramRenderer";
 import { PdfExportProgramConfig, usePdfExport } from "../pdf/usePdfExport";
 import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
@@ -64,6 +64,21 @@ export default function ExportModal() {
 
 	const t = useT("projects.export");
 	const tc = useT("projects.common");
+	const tBlock = useT("ladderEditor.block");
+
+	const ladderContext = useMemo<LadderRenderContext>(
+		() => ({
+			programName: (id) =>
+				project?.ladders[id]?.name ?? project?.grafcets[id]?.name,
+			blockStaticLabel: (blockType) =>
+				blockType === "assign"
+					? tBlock("assignStaticLabel")
+					: blockType === "arithmetic"
+						? tBlock("arithmeticStaticLabel")
+						: undefined,
+		}),
+		[project, tBlock],
+	);
 	const [format, setFormat] = useState<ExportFormat>("pdf");
 	const [scope, setScope] = useState<PdfScope>("full");
 	const [includeCover, setIncludeCover] = useState(true);
@@ -84,8 +99,7 @@ export default function ExportModal() {
 		setFilename(project.name);
 	}, [exportModalVisible, project]);
 
-	const { exportState, offscreenPrograms, onProgramReady, startExport, reset } =
-		usePdfExport();
+	const { exportState, startExport, reset } = usePdfExport();
 	const isExporting =
 		exportState.status !== "idle" && exportState.status !== "error";
 
@@ -150,6 +164,8 @@ export default function ExportModal() {
 				void startExport(
 					[activeProgram],
 					filename || activeProgram.program.name,
+					undefined,
+					ladderContext,
 				);
 			return;
 		}
@@ -161,7 +177,7 @@ export default function ExportModal() {
 				.filter((l) => selectedIds.has(l.id))
 				.map((l) => ({ type: "ladder" as const, program: l })),
 		];
-		void startExport(programs, filename || "export", buildCover());
+		void startExport(programs, filename || "export", buildCover(), ladderContext);
 	}, [
 		format,
 		scope,
@@ -170,6 +186,7 @@ export default function ExportModal() {
 		grafcets,
 		ladders,
 		selectedIds,
+		ladderContext,
 		filename,
 		startExport,
 		buildCover,
@@ -183,9 +200,7 @@ export default function ExportModal() {
 
 	const progressValue = (() => {
 		if (exportState.status === "rendering")
-			return Math.round((exportState.current / exportState.total) * 40);
-		if (exportState.status === "capturing")
-			return 40 + Math.round((exportState.current / exportState.total) * 55);
+			return Math.round((exportState.current / exportState.total) * 90);
 		if (exportState.status === "assembling") return 95;
 		return 0;
 	})();
@@ -193,29 +208,18 @@ export default function ExportModal() {
 	const progressLabel = (() => {
 		if (exportState.status === "rendering")
 			return t("progressRendering", { current: exportState.current, total: exportState.total, label: exportState.label });
-		if (exportState.status === "capturing")
-			return t("progressCapturing", { current: exportState.current, total: exportState.total, label: exportState.label });
 		if (exportState.status === "assembling") return t("progressAssembling");
 		return "";
 	})();
 
 	return (
-		<>
-			{/* Rendu hors-écran des programmes — toujours monté quand l'export est en cours */}
-			{offscreenPrograms.length > 0 && (
-				<OffscreenProgramRenderer
-					programs={offscreenPrograms}
-					onProgramReady={onProgramReady}
-				/>
-			)}
-
-			<CustomModal
-				open={exportModalVisible}
-				onClose={onClose}
-				title={t("title")}
-				width={480}
-				closeButton={!isExporting}
-			>
+		<CustomModal
+			open={exportModalVisible}
+			onClose={onClose}
+			title={t("title")}
+			width={480}
+			closeButton={!isExporting}
+		>
 				<Box display="flex" flexDirection="column" gap={2}>
 					<RadioGroup
 						row
@@ -373,6 +377,5 @@ export default function ExportModal() {
 					</Box>
 				</Box>
 			</CustomModal>
-		</>
 	);
 }

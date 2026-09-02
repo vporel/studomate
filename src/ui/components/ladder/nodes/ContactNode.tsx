@@ -17,6 +17,8 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { useRef } from "react";
 import ContactSymbol from "./ContactSymbol";
 import { getHighlightOverlaySx } from "./node-highlight";
+import { contactLetsPowerThrough } from "@/ui/utils/ladder/ladder-power-flow";
+import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 
 export type ContactNodeData = { variable: string; type: ContactType };
 export type ContactNodeType = Node<ContactNodeData> & { type: "contact" };
@@ -31,13 +33,20 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 	const { variable, type } = data;
 	const th = useTheme();
 	const pageVisible = usePageVisible();
-	const energized = useProjectStore(
-		(state) =>
-			pageVisible &&
-			Object.values(state.simulationVariablesStates).some(
-				(v) => v.mnemonic === variable && v.value === true,
-			),
-	);
+	const ladderId = useLadderStore((state) => state.ladder.id);
+	// Surbrillance locale : le contact conduirait si le courant l'atteignait (expression vraie
+	// selon son type), indépendamment de ce qui se passe en amont sur le rail.
+	const energized = useProjectStore((state) => {
+		if (!pageVisible) return false;
+		const states = Object.values(state.simulationVariablesStates);
+		const variableValue = states.find((v) => v.mnemonic === variable)?.value;
+		const memVarId = getContactMemoryVariableId(ladderId, id);
+		return contactLetsPowerThrough(
+			type,
+			variableValue,
+			state.simulationVariablesStates[memVarId]?.value,
+		);
+	});
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);

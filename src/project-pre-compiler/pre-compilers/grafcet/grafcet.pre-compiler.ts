@@ -3,7 +3,6 @@ import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program"
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import ReplacerVisitor from "@/expression-language/ast/visitors/replacer.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -154,19 +153,9 @@ export default class GrafcetPreCompiler {
 			);
 			takenObservationNames.add(observationVar.getName());
 			variables.push(observationVar);
-			const replacer = new ReplacerVisitor(
-				preCompiledTransition.timers.map((timer) => ({
-					predicate: (node: ASTNode) => node.id === timer.id,
-					replacement: timer.output,
-				})),
-			);
-			const node =
-				preCompiledTransition.timers.length > 0
-					? replacer.visit(preCompiledTransition.node)
-					: preCompiledTransition.node;
 			transitionObservations.set(transitionId, {
 				variable: observationVar,
-				node,
+				node: preCompiledTransition.pureNode,
 			});
 		}
 

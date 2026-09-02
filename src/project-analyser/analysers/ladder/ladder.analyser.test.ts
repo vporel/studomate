@@ -1,15 +1,15 @@
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
-import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
-import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import {
-	createContactElement,
 	createCoilElement,
+	createContactElement,
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { validateMnemonic } from "@/schemas/variable/variable.validator";
-import Project from "@/schemas/project/project.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
@@ -86,7 +86,7 @@ describe("LadderAnalyser", () => {
 			expect(ladderAnalyser.generateVariables(ladder)).toEqual([]);
 		});
 
-		it("rend les variables mémoire de front visibles des analyseurs d'élément (pas de CONTACT_VARIABLE_UNDECLARED)", () => {
+		it("rend les variables mémoire de front visibles des analyseurs d'élément (pas de LADDER_CONTACT_VARIABLE_UNDECLARED)", () => {
 			const rail = createRailTerminalElement(0);
 			const contactP = createContactElement("A", "P", 0, 1);
 			const coil = createCoilElement("Q", "normal", 0, 2);
@@ -104,7 +104,7 @@ describe("LadderAnalyser", () => {
 			const { issues } = analyse(ladder, project);
 
 			expect(issues.map((i) => i.code)).not.toContain(
-				"CONTACT_VARIABLE_UNDECLARED",
+				"LADDER_CONTACT_VARIABLE_UNDECLARED",
 			);
 		});
 	});
@@ -369,7 +369,7 @@ describe("LadderAnalyser", () => {
 				[...project.variables],
 			);
 			expect(withoutCrossProgramVariable.issues.map((i) => i.code)).toContain(
-				"CONTACT_VARIABLE_UNDECLARED",
+				"LADDER_CONTACT_VARIABLE_UNDECLARED",
 			);
 
 			const withCrossProgramVariable = ladderAnalyser.analyse(ladder, project, [
@@ -377,7 +377,7 @@ describe("LadderAnalyser", () => {
 				crossProgramVariable,
 			]);
 			expect(withCrossProgramVariable.issues.map((i) => i.code)).not.toContain(
-				"CONTACT_VARIABLE_UNDECLARED",
+				"LADDER_CONTACT_VARIABLE_UNDECLARED",
 			);
 		});
 	});

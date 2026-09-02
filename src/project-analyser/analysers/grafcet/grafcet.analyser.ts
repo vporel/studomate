@@ -94,7 +94,12 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			...this.checkConnectedComponents(grafcet),
 			...this.checkConnectionTypes(grafcet),
 			...this.checkDirectedReachability(grafcet),
-			...this.checkStepVariableNameConflicts(grafcet, project, stepsVariables),
+			...this.checkStepVariableNameConflicts(
+				grafcet,
+				project,
+				stepsVariables,
+				allVariables,
+			),
 			...this.checkDuplicateTimerNames(grafcet, project.dialect),
 			...elementsIssues,
 		];
@@ -196,19 +201,35 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	}
 
 	/**
-	 * Grafcet-level rule: a project variable must not share its mnemonic with a synthetic
-	 * step variable X{n} — the analogous rule already exists for timer identifiers
+	 * Grafcet-level rule: a variable must not share its mnemonic with a synthetic step
+	 * variable X{n} — the analogous rule already exists for timer identifiers
 	 * (`TRANSITION_TIMER_NAME_CONFLICT`). An unchecked collision here silently shadows one of
 	 * the two variables in every expression of the grafcet.
+	 *
+	 * Compare contre `allVariables` (variables projet + celles générées par tous les
+	 * programmes) privé des variables d'étape synthétiques de tous les grafcets : le conflit
+	 * `X{n}` vs `X{n}` entre grafcets est déjà couvert par `checkDuplicateStepNumbers`.
 	 */
 	private checkStepVariableNameConflicts(
 		grafcet: Grafcet,
 		project: Project,
 		stepsVariables: Variable[],
+		allVariables: Variable[],
 	): ProjectAnalyserIssue[] {
-		const projectMnemonics = new Set(project.variables.map((v) => v.mnemonic));
+		const grafcetsById = new Map(Object.entries(project.grafcets));
+		grafcetsById.set(grafcet.id, grafcet);
+		const stepVariableIds = new Set(
+			[...grafcetsById.values()].flatMap((g) =>
+				this.generateVariables(g).map((v) => v.id),
+			),
+		);
+		const externalMnemonics = new Set(
+			allVariables
+				.filter((v) => !stepVariableIds.has(v.id))
+				.map((v) => v.mnemonic),
+		);
 		return stepsVariables
-			.filter((stepVariable) => projectMnemonics.has(stepVariable.mnemonic))
+			.filter((stepVariable) => externalMnemonics.has(stepVariable.mnemonic))
 			.map(
 				(stepVariable) =>
 					new ProjectAnalyserIssue(

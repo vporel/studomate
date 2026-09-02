@@ -26,16 +26,21 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 
 		if (!variable) {
 			issues.push(
-				new ProjectAnalyserIssue("error", "COIL_VARIABLE_UNDECLARED", source, {
-					variableName: element.data.variable,
-				}),
+				new ProjectAnalyserIssue(
+					"error",
+					"LADDER_COIL_VARIABLE_UNDECLARED",
+					source,
+					{
+						variableName: element.data.variable,
+					},
+				),
 			);
 		} else {
 			if (variable.type !== "BOOL") {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
-						"COIL_VARIABLE_NOT_BOOLEAN",
+						"LADDER_COIL_VARIABLE_NOT_BOOLEAN",
 						source,
 						{ variableName: element.data.variable },
 					),
@@ -45,9 +50,11 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"error",
-						"COIL_VARIABLE_IS_INPUT",
+						"LADDER_COIL_VARIABLE_IS_INPUT",
 						source,
-						{ variableName: element.data.variable },
+						{
+							variableName: element.data.variable,
+						},
 					),
 				);
 			}
@@ -60,7 +67,11 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 			!connections.some((connection) => connection.target.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", source),
+				new ProjectAnalyserIssue(
+					"error",
+					"LADDER_ELEMENT_NO_PREDECESSOR",
+					source,
+				),
 			);
 		}
 
@@ -77,7 +88,7 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 				issues.push(
 					new ProjectAnalyserIssue(
 						"warning",
-						"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+						"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 						source,
 						{
 							variableName: element.data.variable,

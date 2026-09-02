@@ -10,6 +10,7 @@ import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import { ProjectStoreState } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -103,6 +104,47 @@ describe("SimulationManager", () => {
 			manager.setDesignMode();
 
 			expect(get().evaluableExpressionsValues).toEqual({});
+		});
+	});
+
+	describe("setSimulationMode() — situation initiale publiée à l'entrée", () => {
+		function stepState(get: () => ProjectStoreState, mnemonic: string) {
+			return Object.values(get().simulationVariablesStates).find(
+				(v) => v.mnemonic === mnemonic,
+			);
+		}
+
+		it("publie l'étape initiale active en pas-à-pas sans avancer l'horloge", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			set({ simulationMode: SimulationMode.STEP_BY_STEP });
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			// Aucun jest.advanceTimersByTime : seul le cycle d'établissement synchrone a tourné
+			expect(stepState(get, "X0")?.value).toBe(true);
+			expect(get().simulationPaused).toBe(true);
+
+			manager.setDesignMode();
+		});
+
+		it("publie la situation initiale en continu avant tout battement d'horloge", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			set({ simulationMode: SimulationMode.CONTINUOUS });
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(stepState(get, "X0")?.value).toBe(true);
+			expect(get().simulationPaused).toBe(false);
+
+			manager.setDesignMode();
 		});
 	});
 
@@ -324,6 +366,64 @@ describe("SimulationManager", () => {
 			manager.setDesignMode();
 
 			expect(get().forcedVariables).toEqual({});
+		});
+	});
+
+	describe("forceVariable / setMemoryValue — coercition de type défensive", () => {
+		it("force une valeur mal typée sur une variable BOOL sans crasher la simulation", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			const i0Id = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+
+			manager.forceVariable(i0Id, 1 as unknown as boolean);
+			expect(get().forcedVariables[i0Id]).toBe(true); // coercé
+
+			await jest.advanceTimersByTimeAsync(60);
+			expect(notifier.simulationCrashed).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
+		});
+
+		it("ignore un nombre non fini passé à setMemoryValue", async () => {
+			const n = VariableFactory.createMemoryInt("N");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI");
+			const project = ProjectFactory.create([n], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			const nId = get().project!.variables.find((v) => v.mnemonic === "N")!.id;
+
+			expect(() => manager.setMemoryValue(nId, NaN)).not.toThrow();
+			await jest.advanceTimersByTimeAsync(60);
+			expect(notifier.simulationCrashed).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
+		});
+
+		it("no-op silencieux quand la variable est inconnue du PLC", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			manager.forceVariable("id-inexistant", true);
+
+			expect(get().forcedVariables["id-inexistant"]).toBeUndefined();
+			manager.setDesignMode();
 		});
 	});
 

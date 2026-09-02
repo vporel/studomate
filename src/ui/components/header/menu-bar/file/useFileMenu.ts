@@ -45,8 +45,6 @@ export default function useFileMenu(): AppMenuType {
 							void lifecycleManager.newProject();
 						},
 					},
-				],
-				[
 					{
 						label: t("openProject"),
 						shortcut: platformShortcut("Ctrl+O", "Cmd+O"),
@@ -65,15 +63,11 @@ export default function useFileMenu(): AppMenuType {
 							void lifecycleManager.saveProject();
 						},
 					},
-				],
-				[
 					{
 						label: t("saveAs"),
 						shortcut: platformShortcut("Ctrl+Shift+S", "Cmd+Shift+S"),
 						onClick: () => setSaveAsModalVisible(true),
 					},
-				],
-				[
 					{
 						label: t("export"),
 						disabled: !designing,

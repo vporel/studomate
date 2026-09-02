@@ -3,11 +3,7 @@
  */
 import { act, renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
-import {
-	excludeEditorChrome,
-	usePdfExport,
-	PdfExportProgramConfig,
-} from "./usePdfExport";
+import { usePdfExport, PdfExportProgramConfig } from "./usePdfExport";
 
 const renderUsePdfExport = () =>
 	renderHook(() => usePdfExport(), { wrapper: i18nWrapper() });
@@ -17,85 +13,68 @@ jest.mock("@/ui/lib/pdf/jspdf.pdf-exporter", () => ({
 	JsPdfExporter: jest.fn().mockImplementation(() => ({ export: mockExport })),
 }));
 
-const mockToPng = jest.fn().mockResolvedValue("data:image/png;base64,AAAA");
-jest.mock("dom-to-image", () => ({
+const mockRenderProgramScenes = jest.fn((config: { type: string }) =>
+	config.type === "ladder"
+		? [
+				{ heading: "Section 1", scene: { ops: [], width: 300, height: 100 } },
+				{ heading: "Section 2", scene: { ops: [], width: 300, height: 120 } },
+			]
+		: [{ scene: { ops: [], width: 100, height: 200 } }],
+);
+jest.mock("@/ui/lib/program-export-drawing/program-scene", () => ({
 	__esModule: true,
-	default: {
-		get toPng() {
-			return mockToPng;
-		},
-	},
+	default: (config: unknown) => mockRenderProgramScenes(config as { type: string }),
 }));
 
-function makeProgram(id: string, name: string): PdfExportProgramConfig {
+function makeGrafcet(id: string, name: string): PdfExportProgramConfig {
 	return { type: "grafcet", program: { id, name } as never };
 }
-
-function makeElement(): HTMLElement {
-	const el = document.createElement("div");
-	Object.defineProperty(el, "offsetWidth", { value: 1200 });
-	Object.defineProperty(el, "offsetHeight", { value: 900 });
-	return el;
+function makeLadder(id: string, name: string): PdfExportProgramConfig {
+	return { type: "ladder", program: { id, name } as never };
 }
 
-beforeEach(() => {
-	jest.clearAllMocks();
-	// rAF synchrone : `nextFrame` se résout alors sur une microtask, sans dépendre du timer jsdom.
-	jest.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
-		cb(0);
-		return 0;
-	});
-});
-
-/** Fait avancer l'export : attend que le programme courant soit monté, vérifie qu'il est
- * seul, puis simule son signal « prêt ». */
-async function drainProgram(
-	result: { current: ReturnType<typeof usePdfExport> },
-	expectedId: string,
-) {
-	await act(async () => {
-		await Promise.resolve();
-	});
-	expect(result.current.offscreenPrograms).toHaveLength(1);
-	expect(result.current.offscreenPrograms[0].program.id).toBe(expectedId);
-	await act(async () => {
-		result.current.onProgramReady(expectedId, makeElement());
-		await Promise.resolve();
-	});
-}
+beforeEach(() => jest.clearAllMocks());
 
 describe("usePdfExport", () => {
-	it("monte, capture et démonte les programmes un par un", async () => {
+	it("rend chaque grafcet en une page et assemble le PDF", async () => {
 		const { result } = renderUsePdfExport();
 
-		let done: Promise<void>;
-		act(() => {
-			done = result.current.startExport(
-				[makeProgram("g1", "G1"), makeProgram("g2", "G2")],
+		await act(async () => {
+			await result.current.startExport(
+				[makeGrafcet("g1", "G1"), makeGrafcet("g2", "G2")],
 				"projet",
 			);
 		});
 
-		await drainProgram(result, "g1");
-		await drainProgram(result, "g2");
-
-		await act(async () => {
-			await done;
-		});
-
-		expect(mockToPng).toHaveBeenCalledTimes(2);
+		expect(mockRenderProgramScenes).toHaveBeenCalledTimes(2);
 		expect(mockExport).toHaveBeenCalledTimes(1);
 		const doc = mockExport.mock.calls[0][0];
 		expect(doc.sections.map((s: { title: string }) => s.title)).toEqual([
 			"GRAFCET - G1",
 			"GRAFCET - G2",
 		]);
+		expect(doc.sections[0].scene).toEqual({ ops: [], width: 100, height: 200 });
 		expect(doc.filename).toBe("projet");
 		expect(result.current.exportState.status).toBe("idle");
-		expect(result.current.offscreenPrograms).toHaveLength(0);
 	});
 
-	it("transmet la page de garde et sur-échantillonne la capture", async () => {
+	it("découpe un ladder en sous-sections pour l'exporter en flux", async () => {
+		const { result } = renderUsePdfExport();
+
+		await act(async () => {
+			await result.current.startExport([makeLadder("l1", "L1")], "projet");
+		});
+
+		const section = mockExport.mock.calls[0][0].sections[0];
+		expect(section.scene).toBeUndefined();
+		expect(section.orientation).toBe("landscape");
+		expect(section.ladderSections.map((s: { heading: string }) => s.heading)).toEqual([
+			"Section 1",
+			"Section 2",
+		]);
+	});
+
+	it("transmet la page de garde", async () => {
 		const { result } = renderUsePdfExport();
 		const cover = {
 			projectName: "P",
@@ -108,58 +87,28 @@ describe("usePdfExport", () => {
 			},
 		};
 
-		let done: Promise<void>;
-		act(() => {
-			done = result.current.startExport(
-				[makeProgram("g1", "G1")],
-				"f",
-				cover,
-			);
-		});
-		await drainProgram(result, "g1");
 		await act(async () => {
-			await done;
+			await result.current.startExport([makeGrafcet("g1", "G1")], "f", cover);
 		});
 
 		expect(mockExport.mock.calls[0][0].cover).toEqual(cover);
-		const opts = mockToPng.mock.calls[0][1];
-		expect(opts.width).toBe(1200 * 3);
-		expect(opts.style.transform).toBe("scale(3)");
 	});
 
-	it("passe en erreur et démonte tout si une capture échoue", async () => {
-		mockToPng.mockRejectedValueOnce(new Error("boom"));
+	it("passe en erreur si le rendu d'un programme échoue", async () => {
+		mockRenderProgramScenes.mockImplementationOnce(() => {
+			throw new Error("boom");
+		});
 		const { result } = renderUsePdfExport();
 
-		let done: Promise<void>;
-		act(() => {
-			done = result.current.startExport([makeProgram("g1", "G1")], "projet");
-		});
-
-		await drainProgram(result, "g1");
 		await act(async () => {
-			await done;
+			await result.current.startExport([makeGrafcet("g1", "G1")], "projet");
 		});
 
 		expect(result.current.exportState).toEqual({
 			status: "error",
-			message: "La capture de « G1 » a échoué.",
+			message: "Le rendu de « G1 » a échoué.",
 		});
-		expect(result.current.offscreenPrograms).toHaveLength(0);
 		expect(mockExport).not.toHaveBeenCalled();
-	});
-
-	it("exclut l'habillage éditeur (grille, panneaux, poignées) de la capture", () => {
-		const grid = document.createElement("div");
-		grid.className = "react-flow__background";
-		const handle = document.createElement("div");
-		handle.className = "react-flow__handle react-flow__handle-bottom";
-		const node = document.createElement("div");
-		node.className = "react-flow__node";
-		expect(excludeEditorChrome(grid)).toBe(false);
-		expect(excludeEditorChrome(handle)).toBe(false);
-		expect(excludeEditorChrome(node)).toBe(true);
-		expect(excludeEditorChrome(document.createTextNode("x"))).toBe(true);
 	});
 
 	it("ne fait rien sans programme", async () => {

@@ -28,7 +28,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
-					"CONTACT_VARIABLE_UNDECLARED",
+					"LADDER_CONTACT_VARIABLE_UNDECLARED",
 					source,
 					{ variableName: element.data.variable },
 				),
@@ -37,7 +37,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
-					"CONTACT_VARIABLE_NOT_BOOLEAN",
+					"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN",
 					source,
 					{ variableName: element.data.variable },
 				),
@@ -51,14 +51,18 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			!connections.some((connection) => connection.source.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue("warning", "NETWORK_NO_COIL", source),
+				new ProjectAnalyserIssue("warning", "LADDER_NETWORK_NO_COIL", source),
 			);
 		}
 		if (
 			!connections.some((connection) => connection.target.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", source),
+				new ProjectAnalyserIssue(
+					"error",
+					"LADDER_ELEMENT_NO_PREDECESSOR",
+					source,
+				),
 			);
 		}
 

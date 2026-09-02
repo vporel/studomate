@@ -112,6 +112,54 @@ describe("OR Junction Integration Tests", () => {
 			expect(q1WasEverTrue).toBe(true); // branch2 fired at least once
 		});
 
+		it("ne double pas le pas de la tempo d'une branche prioritaire à cause de l'exclusion de la branche suivante", async () => {
+			// Branche 0 (prioritaire) : réceptivité temporisée T1/RUN/2s.
+			// Branche 1 : FAUX (jamais franchie), mais son exclusion NOT(T1) ne doit pas
+			// ré-évaluer le TimerNode de la branche 0 → sinon la tempo expire ~2× trop vite.
+			const run = VariableFactory.createLogicInput("RUN");
+			const q0 = VariableFactory.createLogicOutput("Q0");
+			const q1 = VariableFactory.createLogicOutput("Q1");
+
+			const grafcet = GrafcetFactory.createOrDivergenceCycle(
+				"grafcet-1",
+				"T1/RUN/2s",
+				"FAUX",
+				"Q0",
+				"Q1",
+			);
+			const project = ProjectFactory.create(
+				[run, q0, q1],
+				[grafcet],
+				"OR priority timer",
+			);
+
+			let cycleError: Error | null = null;
+			let cycles = 0;
+			let cyclesWhenQ0FirstTrue: number | null = null;
+			const scanMs = 10;
+			const plc = compileToPLC(project, scanMs, Dialect.FR, {
+				onCycleEnd: (p) => {
+					cycles++;
+					if (cyclesWhenQ0FirstTrue === null && getVariableValue(p, "Q0"))
+						cyclesWhenQ0FirstTrue = cycles;
+				},
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.setPhysicalInputValueByName("RUN", true);
+			plc!.start();
+			await jest.advanceTimersByTimeAsync(3000);
+			plc!.stop();
+			if (cycleError) throw cycleError;
+
+			expect(cyclesWhenQ0FirstTrue).not.toBeNull();
+			// ~2s / 10ms ≈ 200 cycles. Le bug de double-pas ferait franchir vers ~100 cycles.
+			expect(cyclesWhenQ0FirstTrue!).toBeGreaterThan(160);
+		});
+
 		it("switches branch when I0 changes", async () => {
 			const i0 = VariableFactory.createLogicInput("I0");
 			const q0 = VariableFactory.createLogicOutput("Q0");

@@ -12,6 +12,7 @@
 	},
 	"draftCorrupted": "The draft is corrupted and could not be opened.",
 	"cloudReloadFailed": "Could not reload the online version of the project.",
+	"projectReloadFailed": "Could not load the saved project.",
 	"shareLinkFailed": "Could not create the share link.",
 	"moveToCloudConflict": "A cloud project with this identifier already exists, probably sent from another device.",
 	"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",

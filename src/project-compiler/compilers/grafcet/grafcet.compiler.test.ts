@@ -40,6 +40,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: transitionNode,
+							pureNode: transitionNode,
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -90,6 +91,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -157,6 +159,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -220,6 +223,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [timer1],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -234,6 +238,9 @@ describe("GrafcetCompiler", () => {
 
 			expect(result.timers).toHaveLength(1);
 			expect(result.timers[0]).toBe(timer1);
+			// La tempo brute est évaluée une seule fois par cycle, en tête de routine,
+			// avant toute logique de transition.
+			expect(result.nodes[0]).toBe(timer1);
 		});
 
 		it("throws error if no initial step", () => {
@@ -261,6 +268,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -319,6 +327,7 @@ describe("GrafcetCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: [],

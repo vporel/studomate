@@ -1,3 +1,5 @@
+import { Scene } from "@/ui/lib/program-export-drawing/draw-op";
+
 export type PdfExportOrientation = "portrait" | "landscape";
 
 /** Libellés localisés de la page de garde, déjà interpolés par l'appelant (qui maîtrise la
@@ -25,14 +27,18 @@ export interface PdfCoverPage {
 	labels: PdfCoverLabels;
 }
 
+/** Un programme à exporter. Un GRAFCET tient sur une page (`scene`). Un ladder est découpé en
+ * sous-sections (`ladderSections`) que l'exporter fait couler sur les pages à une échelle
+ * commune — la barre d'alimentation reste alignée d'une page à l'autre. Exactement l'un des deux
+ * champs est renseigné. */
 export interface PdfExportSection {
-	/** Titre affiché en haut de la page (ex. « GRAFCET — Feu tricolore »). */
+	/** Titre affiché en haut de la (première) page (ex. « GRAFCET — Feu tricolore »). */
 	title: string;
-	/** PNG (data URI) du programme déjà rasterisé, de ratio `imageWidth`/`imageHeight`. */
-	imageDataUrl: string;
-	imageWidth: number;
-	imageHeight: number;
 	orientation: PdfExportOrientation;
+	/** GRAFCET : scène unique. */
+	scene?: Scene;
+	/** Ladder : une scène recadrée par section, avec son intitulé. */
+	ladderSections?: { heading: string; scene: Scene }[];
 }
 
 export interface PdfExportDocument {

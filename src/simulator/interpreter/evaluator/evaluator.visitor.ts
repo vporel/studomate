@@ -132,15 +132,14 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	protected visitLogicalExpressionNode(
 		node: LogicalExpressionNode,
 	): EnvVariableValue {
-		const leftValue = this.visit(node.left) as boolean;
-		const rightValue = this.visit(node.right) as boolean;
+		//Évaluation court-circuit : l'opérande droit n'est pas évalué si le gauche suffit à
+		//trancher — une expression gardée (`b != 0 ET a / b > 1`) ne déclenche donc pas
+		//l'exception de la branche protégée.
 		switch (node.operator) {
 			case "AND":
-				//Use double negation to ensure the result is a boolean
-				return !!(leftValue && rightValue);
+				return !!(this.visit(node.left) && this.visit(node.right));
 			case "OR":
-				//Use double negation to ensure the result is a boolean
-				return !!(leftValue || rightValue);
+				return !!(this.visit(node.left) || this.visit(node.right));
 		}
 	}
 

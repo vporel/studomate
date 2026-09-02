@@ -13,6 +13,7 @@ import { AppMenuType } from "../app-menu-bar";
 export default function useProjectMenu(): AppMenuType {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pageManager = useProjectStore((state) => state.pagesManager);
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
@@ -53,6 +54,14 @@ export default function useProjectMenu(): AppMenuType {
 							laddersManager.newLadder();
 						},
 					},
+					{
+						label: t("newHmiView"),
+						disabled: !designing,
+						onClick: () => {
+							if (!designing) return;
+							hmiManager.newHmiPage();
+						},
+					},
 					...(hasExercise
 						? [
 								{
@@ -91,6 +100,7 @@ export default function useProjectMenu(): AppMenuType {
 		[
 			grafcetsManager,
 			laddersManager,
+			hmiManager,
 			pageManager,
 			designing,
 			isSharedProject,

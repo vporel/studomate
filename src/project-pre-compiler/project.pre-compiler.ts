@@ -123,6 +123,7 @@ export default class ProjectPreCompiler {
 			if (!isPreCompiledGrafcet(program)) continue;
 			for (const transition of program.transitions.values()) {
 				transition.node = replacer.visit(transition.node);
+				transition.pureNode = replacer.visit(transition.pureNode);
 			}
 		}
 	}

@@ -22,6 +22,15 @@ import { parseExpressionCached } from "@/expression-language/parse-expression-ca
 
 export type PreCompiledTransition = {
 	node: ASTNode;
+	/**
+	 * `node` où chaque `TimerNode` est remplacé par une lecture de sa variable de sortie —
+	 * expression pure, sans effet de bord sur l'environnement. Les `TimerNode` bruts sont
+	 * évalués une seule fois par cycle en tête de routine (voir `GrafcetCompiler`) ; toute
+	 * lecture de la réceptivité (condition d'activation, exclusion de priorité d'une
+	 * divergence OU, observation d'affichage) passe par `pureNode`. Identique à `node` en
+	 * l'absence de tempo.
+	 */
+	pureNode: ASTNode;
 	timers: TimerNode[];
 	/**
 	 * Ids of the steps that must be active (checked via memos) for this transition to fire,
@@ -69,6 +78,16 @@ export default class TransitionPreCompiler {
 		const replacer = new ReplacerVisitor(replacements);
 		node = replacer.visit(node);
 
+		const pureNode =
+			timers.length > 0
+				? new ReplacerVisitor(
+						timers.map((timer) => ({
+							predicate: (n: ASTNode) => n.id === timer.id,
+							replacement: timer.output,
+						})),
+					).visit(node)
+				: node;
+
 		const predecessorStepsIds = TransitionHelper.getPredecessorSteps(
 			transition.id,
 			grafcet,
@@ -84,6 +103,7 @@ export default class TransitionPreCompiler {
 
 		return {
 			node,
+			pureNode,
 			timers,
 			predecessorStepsIds,
 			successorStepsIds,

@@ -29,6 +29,13 @@ export default class GrafcetCompiler {
 		);
 
 		const nodes: ASTNode[] = [
+			//Évalue chaque tempo une seule fois par cycle, avant toute logique de transition :
+			//les conditions compilées ne lisent ensuite que les variables de sortie des tempos
+			//(voir `TransitionCompiler` et `PreCompiledTransition.pureNode`), ce qui garantit une
+			//avance unique même quand une réceptivité sert d'exclusion de priorité à une autre.
+			...Array.from(preCompiledGrafcet.transitions.values()).flatMap(
+				(preCompiledTransition) => preCompiledTransition.timers,
+			),
 			//Compile transitions: each transition generates its activation/deactivation block
 			...Array.from(preCompiledGrafcet.transitions.entries()).flatMap(
 				([transitionId, preCompiledTransition]) =>

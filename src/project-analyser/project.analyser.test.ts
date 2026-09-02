@@ -1,14 +1,14 @@
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
-import ProjectBuilder from "@/schemas/project/builders/project.builder";
-import Project from "@/schemas/project/project.schema";
-import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createContactElement,
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
+import ProjectBuilder from "@/schemas/project/builders/project.builder";
+import Project from "@/schemas/project/project.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import ProjectAnalyser from "./project.analyser";
 
@@ -48,7 +48,9 @@ describe("ProjectAnalyser", () => {
 			);
 			expect(missingAnalyserIssue).toBeDefined();
 			expect(missingAnalyserIssue?.severity).toBe("error");
-			expect(missingAnalyserIssue?.params).toMatchObject({ programName: "Mystère" });
+			expect(missingAnalyserIssue?.params).toMatchObject({
+				programName: "Mystère",
+			});
 		});
 
 		it("analyses single grafcet with valid initial step", () => {
@@ -102,8 +104,10 @@ describe("ProjectAnalyser", () => {
 				.build();
 			const result = ProjectAnalyser.analyse(project);
 
-			const initialStepError = result.issues.find((issue) =>
-				(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
+			const initialStepError = result.issues.find(
+				(issue) =>
+					issue.code === "GRAFCET_NO_INITIAL_STEP" ||
+					issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS",
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -144,8 +148,10 @@ describe("ProjectAnalyser", () => {
 				.build();
 			const result = ProjectAnalyser.analyse(project);
 
-			const initialStepErrors = result.issues.filter((issue) =>
-				(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
+			const initialStepErrors = result.issues.filter(
+				(issue) =>
+					issue.code === "GRAFCET_NO_INITIAL_STEP" ||
+					issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS",
 			);
 			expect(initialStepErrors).toHaveLength(2);
 		});
@@ -389,8 +395,8 @@ describe("ProjectAnalyser", () => {
 					.build();
 				const result = ProjectAnalyser.analyse(project);
 
-				const dupIssues = result.issues.filter((i) =>
-					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+				const dupIssues = result.issues.filter(
+					(i) => i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(1);
 				expect(String(dupIssues[0].params.grafcetNames)).toContain("G1");
@@ -424,8 +430,8 @@ describe("ProjectAnalyser", () => {
 					.build();
 				const result = ProjectAnalyser.analyse(project);
 
-				const dupIssues = result.issues.filter((i) =>
-					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+				const dupIssues = result.issues.filter(
+					(i) => i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(0);
 			});
@@ -462,8 +468,8 @@ describe("ProjectAnalyser", () => {
 					.build();
 				const result = ProjectAnalyser.analyse(project);
 
-				const dupIssues = result.issues.filter((i) =>
-					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+				const dupIssues = result.issues.filter(
+					(i) => i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(0);
 			});
@@ -494,7 +500,7 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				expect(result.issues.map((i) => i.code)).not.toContain(
-					"CONTACT_VARIABLE_UNDECLARED",
+					"LADDER_CONTACT_VARIABLE_UNDECLARED",
 				);
 			});
 
@@ -524,7 +530,7 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				expect(result.issues.map((i) => i.code)).not.toContain(
-					"CONTACT_VARIABLE_UNDECLARED",
+					"LADDER_CONTACT_VARIABLE_UNDECLARED",
 				);
 			});
 		});

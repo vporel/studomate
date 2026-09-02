@@ -1,6 +1,9 @@
 import type { jsPDF } from "jspdf";
 import { lexer } from "marked";
-import renderMarkdownToPdf, { MarkdownPdfLayout } from "./markdown-to-pdf";
+import renderMarkdownToPdf, {
+	MarkdownPdfLayout,
+	toPdfSafeText,
+} from "./markdown-to-pdf";
 
 const LAYOUT: MarkdownPdfLayout = { x: 15, width: 180, top: 15, bottom: 280 };
 
@@ -45,6 +48,26 @@ function fakeDoc() {
 
 const texts = (calls: Call[]) =>
 	calls.filter((c) => c.method === "text").map((c) => c.args[0] as string);
+
+describe("toPdfSafeText", () => {
+	it("translittère les flèches et symboles hors WinAnsi", () => {
+		expect(toPdfSafeText("vert → orange ⇒ rouge")).toBe("vert -> orange -> rouge");
+		expect(toPdfSafeText("a ≤ b ≠ c")).toBe("a <= b != c");
+	});
+
+	it("conserve les accents et la ponctuation typographique", () => {
+		expect(toPdfSafeText("Écrire l’énoncé — « ok »")).toBe(
+			"Écrire l’énoncé — « ok »",
+		);
+	});
+
+	it("supprime les caractères non encodables restants", () => {
+		expect(toPdfSafeText("okX✓Yfin".replace("X", "").replace("Y", ""))).toBe(
+			"okfin",
+		);
+		expect(toPdfSafeText("a😀b")).toBe("ab");
+	});
+});
 
 describe("renderMarkdownToPdf", () => {
 	it("rend les titres en gras", () => {

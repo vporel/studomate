@@ -30,7 +30,9 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 			sourceId: "project-1",
 		});
 		const result = AnalysisIssuesMapper.analyserToApp([issue]);
-		expect(result.project).toEqual(["Le projet ne porte aucun programme Main."]);
+		expect(result.project).toEqual([
+			"Le projet ne porte aucun programme Main.",
+		]);
 		expect(result.grafcets).toEqual({});
 		expect(result.ladders).toEqual({});
 	});
@@ -134,11 +136,15 @@ describe("AnalysisIssuesMapper.analyserToApp", () => {
 	});
 
 	it("routes ladder element-level issues (contact/coil) to the element bucket of their parent ladder", () => {
-		const issue = new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", {
-			sourceType: "ladder-contact",
-			sourceId: "contact-1",
-			parentId: "ladder-1",
-		});
+		const issue = new ProjectAnalyserIssue(
+			"error",
+			"LADDER_ELEMENT_NO_PREDECESSOR",
+			{
+				sourceType: "ladder-contact",
+				sourceId: "contact-1",
+				parentId: "ladder-1",
+			},
+		);
 		const result = AnalysisIssuesMapper.analyserToApp([issue]);
 		expect(result.ladders["ladder-1"].elements["contact-1"]).toHaveLength(1);
 		expect(result.grafcets).toEqual({});

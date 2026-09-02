@@ -27,6 +27,7 @@ jest.mock("@/ui/components/pages/ExercisePage", () => ({
 describe("useProjectMenu", () => {
 	const grafcetsManager = { newGrafcet: jest.fn() };
 	const laddersManager = { newLadder: jest.fn() };
+	const hmiManager = { newHmiPage: jest.fn() };
 	const pagesManager = { openPage: jest.fn() };
 	const shareProject = jest.fn();
 	const setShareModalVisible = jest.fn();
@@ -40,6 +41,7 @@ describe("useProjectMenu", () => {
 			selectorImplementation({
 				grafcetsManager,
 				laddersManager,
+				hmiManager,
 				pagesManager,
 				mode,
 				isSharedProject,
@@ -91,6 +93,26 @@ describe("useProjectMenu", () => {
 		const { result } = setup(ProjectMode.DESIGN);
 		act(() => result.current.items[0][0].onClick?.());
 		expect(grafcetsManager.newGrafcet).toHaveBeenCalled();
+	});
+
+	it("creates a new HMI view when designing", () => {
+		const { result } = setup(ProjectMode.DESIGN);
+		const item = result.current.items[0].find(
+			(i) => i.label === "Nouvelle vue HMI",
+		);
+		expect(item).toBeDefined();
+		act(() => item?.onClick?.());
+		expect(hmiManager.newHmiPage).toHaveBeenCalled();
+	});
+
+	it("disables the new HMI view item outside design mode", () => {
+		const { result } = setup(ProjectMode.SIMULATION);
+		const item = result.current.items[0].find(
+			(i) => i.label === "Nouvelle vue HMI",
+		);
+		expect(item?.disabled).toBe(true);
+		act(() => item?.onClick?.());
+		expect(hmiManager.newHmiPage).not.toHaveBeenCalled();
 	});
 
 	it("disables and ignores new grafcet outside design mode", () => {

@@ -126,6 +126,26 @@ describe("EvaluatorVisitor", () => {
 			expect(parseAndEvaluate("NON FAUX")).toBe(true);
 			expect(parseAndEvaluate("NON flag")).toBe(false);
 		});
+
+		it("court-circuite ET : l'opérande droit n'est pas évalué si le gauche est faux", () => {
+			// La branche droite lèverait DivisionByZeroException si elle était évaluée
+			expect(parseAndEvaluate("(y = 0) ET ((x / y) > 1)")).toBe(false);
+		});
+
+		it("court-circuite OU : l'opérande droit n'est pas évalué si le gauche est vrai", () => {
+			expect(parseAndEvaluate("(y > 0) OU ((x / 0) > 1)")).toBe(true);
+		});
+
+		it("évalue l'opérande droit quand le gauche ne suffit pas à trancher", () => {
+			expect(() => parseAndEvaluate("(y != 0) ET ((x / 0) > 1)")).toThrow(
+				DivisionByZeroException,
+			);
+		});
+
+		it("garde un résultat booléen sur une chaîne ET/OU", () => {
+			expect(parseAndEvaluate("flag ET flag ET VRAI")).toBe(true);
+			expect(parseAndEvaluate("FAUX OU flag OU FAUX")).toBe(true);
+		});
 	});
 
 	describe("assignment", () => {
