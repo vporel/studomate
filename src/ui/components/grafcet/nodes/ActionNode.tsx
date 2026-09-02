@@ -1,7 +1,6 @@
 "use client";
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import Action, {
-	ACTION_EXECUTION_MODE_LABELS,
 	ACTION_HANDLE_TARGET_STEP,
 	ActionData,
 	ActionExecutionMode,
@@ -15,6 +14,7 @@ import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
+import { useT } from "@/ui/i18n/useT";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -30,6 +30,7 @@ const ActionNode: FC<ActionNodeProps> = ({
 	height,
 }) => {
 	const th = useTheme();
+	const tModes = useT("grafcetEditor.actionModes");
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
 	const [
@@ -196,7 +197,7 @@ const ActionNode: FC<ActionNodeProps> = ({
 						}}
 					>
 						<Typography fontSize="0.8rem">
-							{ACTION_EXECUTION_MODE_LABELS[data.executionMode].substring(0, 1)}
+							{tModes(data.executionMode).substring(0, 1)}
 						</Typography>
 					</Box>
 				)}

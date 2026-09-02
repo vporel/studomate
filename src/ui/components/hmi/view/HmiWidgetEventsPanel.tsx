@@ -15,9 +15,10 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
+import { useT } from "@/ui/i18n/useT";
 
 const HMI_ACTION_TYPES: { value: HmiAction["type"]; label: string }[] = [
-	{ value: "navigate-to-page", label: "Changer de page" },
+	{ value: "navigate-to-page", label: "navigateToPage" },
 ];
 
 function defaultAction(
@@ -31,6 +32,7 @@ function defaultAction(
 }
 
 const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
+	const t = useT("hmiEditor");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const project = useProjectStore((s) => s.project);
 	const hmiPages = Object.values(project?.hmiPages ?? {});
@@ -62,7 +64,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 						sx={{ display: "flex", flexDirection: "column", gap: 1 }}
 					>
 						<Typography sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
-							{label}
+							{t(label as never)}
 						</Typography>
 						{actions.map((action: HmiAction, index: number) => (
 							<Box
@@ -85,7 +87,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 								>
 									{HMI_ACTION_TYPES.map((option) => (
 										<MenuItem key={option.value} value={option.value}>
-											{option.label}
+											{t(`events.${option.label}` as never)}
 										</MenuItem>
 									))}
 								</TextField>
@@ -93,7 +95,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 									<TextField
 										select
 										size="small"
-										label="Page cible"
+										label={t("panel.targetPage")}
 										value={action.targetHmiPageId}
 										onChange={(e) => {
 											const next = [...actions];
@@ -112,7 +114,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 										))}
 									</TextField>
 								)}
-								<Tooltip title="Supprimer">
+								<Tooltip title={t("panel.delete")}>
 									<IconButton
 										size="small"
 										onClick={() =>
@@ -121,7 +123,7 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 												actions.filter((_: HmiAction, i: number) => i !== index),
 											)
 										}
-										aria-label="Supprimer l'action"
+										aria-label={t("panel.deleteAction")}
 									>
 										<DeleteIcon fontSize="small" />
 									</IconButton>

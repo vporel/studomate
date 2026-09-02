@@ -1,12 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import Footer from "./Footer";
 
 describe("Footer", () => {
 	it("expose les liens légaux", () => {
-		render(<Footer />);
+		renderWithI18n(<Footer />);
 		expect(
 			screen.getByRole("link", { name: /mentions légales/i }),
 		).toHaveAttribute("href", "/mentions-legales");
@@ -16,7 +17,7 @@ describe("Footer", () => {
 	});
 
 	it("affiche l'année courante dans le copyright", () => {
-		render(<Footer />);
+		renderWithI18n(<Footer />);
 		expect(
 			screen.getByText(new RegExp(`© ${new Date().getFullYear()} Studomate`)),
 		).toBeInTheDocument();
@@ -24,7 +25,7 @@ describe("Footer", () => {
 
 	it("ouvre le mailto de signalement sans naviguer", () => {
 		const open = jest.spyOn(window, "open").mockImplementation(() => null);
-		render(<Footer />);
+		renderWithI18n(<Footer />);
 		fireEvent.click(screen.getByText(/signaler un problème/i));
 		expect(open).toHaveBeenCalledWith(
 			expect.stringMatching(/^mailto:/),

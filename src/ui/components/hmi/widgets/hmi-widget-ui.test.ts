@@ -66,7 +66,7 @@ describe("descripteurs de champs (propertyFields)", () => {
 
 	it("le champ Orientation de la jauge échange largeur et hauteur", () => {
 		const orientation = HMI_WIDGET_UI.gauge.propertyFields.find(
-			(f) => f.kind === "select" && f.label === "Orientation",
+			(f) => f.kind === "select" && f.label === "fields.orientation",
 		);
 		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
 			throw new Error("champ orientation introuvable");
@@ -79,7 +79,7 @@ describe("descripteurs de champs (propertyFields)", () => {
 
 	it("le champ Orientation du trait échange largeur et hauteur", () => {
 		const orientation = HMI_WIDGET_UI.line.propertyFields.find(
-			(f) => f.kind === "select" && f.label === "Orientation",
+			(f) => f.kind === "select" && f.label === "fields.orientation",
 		);
 		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
 			throw new Error("champ orientation introuvable");

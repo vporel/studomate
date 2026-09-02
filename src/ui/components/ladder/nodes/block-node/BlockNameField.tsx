@@ -2,6 +2,7 @@
 
 import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { InputBase } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
@@ -24,6 +25,7 @@ export default function BlockNameField({
 	onCommit: (name: string) => void;
 }) {
 	const project = useProjectStore((state) => state.project);
+	const t = useT("ladderEditor.block");
 	const [draft, setDraft] = useState(value);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const cancelledRef = useRef(false);
@@ -64,7 +66,7 @@ export default function BlockNameField({
 				e.stopPropagation();
 			}}
 			inputProps={{
-				"aria-label": "Nom du bloc",
+				"aria-label": t("nameAria"),
 				style: {
 					textAlign: "center",
 					padding: 0,

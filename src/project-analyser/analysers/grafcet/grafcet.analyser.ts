@@ -154,7 +154,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 					"error",
 					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 					{ sourceType: "project", sourceId: project.id },
-					`Le numéro d'étape ${stepNumber} est utilisé dans plusieurs grafcets du projet : ${names}. Chaque numéro d'étape doit être unique à l'échelle du projet.`,
+					{ stepNumber, grafcetNames: names },
 				),
 			);
 		}
@@ -215,7 +215,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"error",
 						"GRAFCET_STEP_VARIABLE_NAME_CONFLICT",
 						{ sourceType: "grafcet", sourceId: grafcet.id },
-						`La variable "${stepVariable.mnemonic}" entre en conflit avec la variable d'étape générée automatiquement du même nom.`,
+						{ variableName: stepVariable.mnemonic },
 					),
 			);
 	}
@@ -223,12 +223,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	private checkAtLeastTwoSteps(grafcet: Grafcet): ProjectAnalyserIssue[] {
 		if (Object.keys(grafcet.steps).length < 2) {
 			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"GRAFCET_TOO_FEW_STEPS",
-					{ sourceType: "grafcet", sourceId: grafcet.id },
-					"Le grafcet doit contenir au moins deux étapes.",
-				),
+				new ProjectAnalyserIssue("error", "GRAFCET_TOO_FEW_STEPS", {
+					sourceType: "grafcet",
+					sourceId: grafcet.id,
+				}),
 			];
 		}
 		return [];
@@ -250,12 +248,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		).length;
 		if (initialStepsCount === 0) {
 			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"GRAFCET_NO_INITIAL_STEP",
-					{ sourceType: "grafcet", sourceId: grafcet.id },
-					"Le grafcet ne contient aucune étape initiale.",
-				),
+				new ProjectAnalyserIssue("error", "GRAFCET_NO_INITIAL_STEP", {
+					sourceType: "grafcet",
+					sourceId: grafcet.id,
+				}),
 			];
 		}
 		if (initialStepsCount > 1) {
@@ -264,7 +260,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 					"error",
 					"GRAFCET_MULTIPLE_INITIAL_STEPS",
 					{ sourceType: "grafcet", sourceId: grafcet.id },
-					`Le grafcet contient ${initialStepsCount} étapes initiales. Studomate ne supporte pour l'instant qu'une seule étape initiale (limite de l'outil, pas une règle du GRAFCET).`,
+					{ count: initialStepsCount },
 				),
 			];
 		}
@@ -313,7 +309,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"error",
 						"GRAFCET_DUPLICATE_TIMER_NAME",
 						{ sourceType: "grafcet", sourceId: grafcet.id },
-						`L'identifiant de temporisation "${name}" est utilisé pour plusieurs temporisations de ce grafcet. Chaque temporisation doit avoir un identifiant unique au sein du grafcet.`,
+						{ timerName: name },
 					),
 			);
 	}
@@ -356,12 +352,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		if (visited.size === allNodes.length) return [];
 
 		return [
-			new ProjectAnalyserIssue(
-				"error",
-				"GRAFCET_DISCONNECTED_COMPONENTS",
-				{ sourceType: "grafcet", sourceId: grafcet.id },
-				"Le grafcet contient plusieurs réseaux non connectés (plusieurs cycles distincts).",
-			),
+			new ProjectAnalyserIssue("error", "GRAFCET_DISCONNECTED_COMPONENTS", {
+				sourceType: "grafcet",
+				sourceId: grafcet.id,
+			}),
 		];
 	}
 
@@ -413,7 +407,14 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"error",
 						"GRAFCET_CONNECTION_DANGLING_ELEMENT",
 						source,
-						`Une connexion référence un élément inexistant (${!sourceElement ? connection.source.type : connection.target.type} "${!sourceElement ? connection.source.id : connection.target.id}").`,
+						{
+							elementType: !sourceElement
+								? connection.source.type
+								: connection.target.type,
+							elementId: !sourceElement
+								? connection.source.id
+								: connection.target.id,
+						},
 					),
 				);
 				continue;
@@ -434,7 +435,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"error",
 						"GRAFCET_CONNECTION_INVALID_TYPE",
 						source,
-						`Connexion invalide entre un élément de type "${connection.source.type}" et un élément de type "${connection.target.type}".`,
+						{
+							sourceType: connection.source.type,
+							targetType: connection.target.type,
+						},
 					),
 				);
 			}
@@ -475,12 +479,11 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		);
 		if (unreachableSteps.length > 0) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"GRAFCET_UNREACHABLE_STEPS",
-					source,
-					`Étape(s) inaccessible(s) depuis l'étape initiale : ${unreachableSteps.map((s) => s.data.number).join(", ")}. Cette portion du grafcet ne s'activera jamais.`,
-				),
+				new ProjectAnalyserIssue("error", "GRAFCET_UNREACHABLE_STEPS", source, {
+					stepNumbers: unreachableSteps
+						.map((s) => s.data.number)
+						.join(", "),
+				}),
 			);
 		}
 
@@ -507,7 +510,11 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"warning",
 						"GRAFCET_DEAD_END_STEPS",
 						source,
-						`Étape(s) sans chemin de retour vers un cycle : ${deadEndSteps.map((s) => s.data.number).join(", ")}. Une fois atteinte(s), le grafcet s'y bloque définitivement.`,
+						{
+							stepNumbers: deadEndSteps
+								.map((s) => s.data.number)
+								.join(", "),
+						},
 					),
 				);
 			}

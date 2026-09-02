@@ -40,7 +40,6 @@ export default class JunctionAndEndAnalyser extends GrafcetElementAnalyser<Junct
 					"error",
 					"JUNCTION_PIVOT_NOT_CONNECTED",
 					source,
-					"Le pivot n'est connecté à aucun élément.",
 				),
 			);
 		}
@@ -51,7 +50,6 @@ export default class JunctionAndEndAnalyser extends GrafcetElementAnalyser<Junct
 					"error",
 					"JUNCTION_BRANCH_NOT_CONNECTED",
 					source,
-					"Certaines branches ne sont connectées à aucun élément.",
 				),
 			);
 		} else {
@@ -83,7 +81,6 @@ export default class JunctionAndEndAnalyser extends GrafcetElementAnalyser<Junct
 							"error",
 							"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
 							source,
-							"La convergence en ET ne provient pas d'une divergence en ET.",
 						),
 					);
 				} else {
@@ -96,7 +93,6 @@ export default class JunctionAndEndAnalyser extends GrafcetElementAnalyser<Junct
 								"error",
 								"JUNCTION_AND_BRANCH_COUNT_MISMATCH",
 								source,
-								"Le nombre de branches de la convergence en ET ne correspond pas à celui de la divergence en ET.",
 							),
 						);
 					}

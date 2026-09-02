@@ -22,6 +22,7 @@ import { useShallow } from "zustand/shallow";
 import OffscreenProgramRenderer from "../pdf/OffscreenProgramRenderer";
 import { PdfExportProgramConfig, usePdfExport } from "../pdf/usePdfExport";
 import { useProjectStore } from "./ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 type ExportFormat = "pdf" | "json";
 type PdfScope = "full" | "active";
@@ -61,6 +62,8 @@ export default function ExportModal() {
 		return null;
 	}, [project, activeScope, activeScopeType]);
 
+	const t = useT("projects.export");
+	const tc = useT("projects.common");
 	const [format, setFormat] = useState<ExportFormat>("pdf");
 	const [scope, setScope] = useState<PdfScope>("full");
 	const [includeCover, setIncludeCover] = useState(true);
@@ -113,18 +116,28 @@ export default function ExportModal() {
 
 	const buildCover = useCallback((): PdfCoverPage | undefined => {
 		if (!project || !includeCover) return undefined;
+		const date = new Date().toLocaleDateString();
+		const stats = {
+			grafcets: Object.keys(project.grafcets).length,
+			ladders: Object.keys(project.ladders).length,
+			variables: project.variables.length,
+		};
 		return {
 			projectName: project.name,
 			author: project.author || undefined,
-			date: new Date().toLocaleDateString("fr-FR"),
+			date,
 			statement: project.exercise?.statement,
-			stats: {
-				grafcets: Object.keys(project.grafcets).length,
-				ladders: Object.keys(project.ladders).length,
-				variables: project.variables.length,
+			stats,
+			labels: {
+				author: project.author
+					? t("coverAuthor", { author: project.author })
+					: undefined,
+				exportedOn: t("coverExportedOn", { date }),
+				stats: t("coverStats", stats),
+				statementHeading: t("coverStatementHeading"),
 			},
 		};
-	}, [project, includeCover]);
+	}, [project, includeCover, t]);
 
 	const onExport = useCallback(() => {
 		if (format === "json") {
@@ -179,10 +192,10 @@ export default function ExportModal() {
 
 	const progressLabel = (() => {
 		if (exportState.status === "rendering")
-			return `Rendu (${exportState.current}/${exportState.total}) — ${exportState.label}`;
+			return t("progressRendering", { current: exportState.current, total: exportState.total, label: exportState.label });
 		if (exportState.status === "capturing")
-			return `Capture (${exportState.current}/${exportState.total}) — ${exportState.label}`;
-		if (exportState.status === "assembling") return "Assemblage du PDF…";
+			return t("progressCapturing", { current: exportState.current, total: exportState.total, label: exportState.label });
+		if (exportState.status === "assembling") return t("progressAssembling");
 		return "";
 	})();
 
@@ -199,7 +212,7 @@ export default function ExportModal() {
 			<CustomModal
 				open={exportModalVisible}
 				onClose={onClose}
-				title="Exporter"
+				title={t("title")}
 				width={480}
 				closeButton={!isExporting}
 			>
@@ -212,12 +225,12 @@ export default function ExportModal() {
 						<FormControlLabel
 							value="pdf"
 							control={<Radio size="small" disabled={isExporting} />}
-							label="PDF"
+							label={t("formatPdf")}
 						/>
 						<FormControlLabel
 							value="json"
 							control={<Radio size="small" disabled={isExporting} />}
-							label="Fichier projet (JSON)"
+							label={t("formatJson")}
 						/>
 					</RadioGroup>
 
@@ -230,7 +243,7 @@ export default function ExportModal() {
 								<FormControlLabel
 									value="full"
 									control={<Radio size="small" disabled={isExporting} />}
-									label="Projet complet"
+									label={t("scopeFull")}
 								/>
 								<FormControlLabel
 									value="active"
@@ -242,14 +255,14 @@ export default function ExportModal() {
 									}
 									label={
 										activeProgram
-											? `Page active uniquement (${activeProgram.program.name})`
-											: "Page active uniquement"
+											? t("scopeActiveNamed", { name: activeProgram.program.name })
+											: t("scopeActive")
 									}
 								/>
 							</RadioGroup>
 							{!activeProgram && (
 								<Typography variant="caption" color="text.secondary">
-									{"Ouvrez un grafcet ou un ladder pour l'exporter seul."}
+									{t("openProgramHint")}
 								</Typography>
 							)}
 
@@ -264,7 +277,7 @@ export default function ExportModal() {
 												size="small"
 											/>
 										}
-										label="Inclure une page de garde"
+										label={t("includeCover")}
 									/>
 									<Box>
 										{grafcets.length > 0 && (
@@ -272,7 +285,7 @@ export default function ExportModal() {
 												variant="subtitle2"
 												sx={{ mb: 0.5, fontWeight: 600 }}
 											>
-												GRAFCETs
+												{t("grafcets")}
 											</Typography>
 										)}
 										{grafcets.map((g) => (
@@ -295,7 +308,7 @@ export default function ExportModal() {
 												variant="subtitle2"
 												sx={{ mt: 1, mb: 0.5, fontWeight: 600 }}
 											>
-												Ladders
+												{t("ladders")}
 											</Typography>
 										)}
 										{ladders.map((l) => (
@@ -309,7 +322,7 @@ export default function ExportModal() {
 														size="small"
 													/>
 												}
-												label={`${l.name} (paysage)`}
+												label={t("ladderLandscape", { name: l.name })}
 											/>
 										))}
 									</Box>
@@ -319,7 +332,7 @@ export default function ExportModal() {
 					)}
 
 					<TextField
-						label="Nom du fichier"
+						label={t("filename")}
 						value={filename}
 						onChange={(e) => setFilename(e.target.value)}
 						size="small"
@@ -348,14 +361,14 @@ export default function ExportModal() {
 
 					<Box display="flex" justifyContent="flex-end" gap={1}>
 						<Button onClick={onClose} disabled={isExporting} variant="outlined">
-							Annuler
+							{tc("cancel")}
 						</Button>
 						<Button
 							variant="contained"
 							onClick={onExport}
 							disabled={exportDisabled}
 						>
-							{isExporting ? "Export en cours…" : "Exporter"}
+							{isExporting ? t("exporting") : t("title")}
 						</Button>
 					</Box>
 				</Box>

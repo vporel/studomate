@@ -1,0 +1,21 @@
+{
+	"analysisComplete": "Analyse terminée : {elements, plural, one {# élément analysé} other {# éléments analysés}}, {errors, plural, =0 {aucune erreur} one {# erreur} other {# erreurs}} et {warnings, plural, =0 {aucun avertissement} one {# avertissement} other {# avertissements}} {total, plural, one {trouvé} other {trouvés}}.",
+	"simulationStarting": "Compilation terminée, lancement de la simulation…",
+	"simulationCouldNotStart": "Impossible de lancer la simulation : {count, plural, one {# erreur} other {# erreurs}} lors de {step, select, preCompilation {la pré-compilation} other {la compilation}}.",
+	"simulationCrashed": "Arrêt de la simulation. Erreur lors de l'exécution du cycle automate.",
+	"save": {
+		"storageFull": "Enregistrement impossible : l'espace de stockage du navigateur est plein. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+		"storageUnavailable": "Enregistrement impossible : le stockage du navigateur est inaccessible (navigation privée ?). Exportez le projet dans un fichier.",
+		"cloudUnreachable": "Enregistrement dans le cloud impossible : vérifiez votre connexion et que vous êtes bien connecté. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+		"conflict": "Ce projet a été modifié ailleurs entre-temps. Rechargez la version en ligne ou enregistrez vos modifications sous un autre nom.",
+		"generic": "Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail."
+	},
+	"draftCorrupted": "Le brouillon est corrompu et n'a pas pu être ouvert.",
+	"cloudReloadFailed": "Impossible de recharger la version en ligne du projet.",
+	"shareLinkFailed": "Impossible de créer le lien de partage.",
+	"moveToCloudConflict": "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil.",
+	"moveToCloudFailed": "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+	"shareRevokeFailed": "Impossible de révoquer le partage.",
+	"shareLoginPrompt": "Connectez-vous pour partager ce projet.",
+	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page."
+}

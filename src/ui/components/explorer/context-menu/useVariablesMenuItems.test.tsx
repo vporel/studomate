@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useVariablesMenuItems from "./useVariablesMenuItems";
@@ -29,7 +30,7 @@ describe("useVariablesMenuItems", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("returns a single group with an open action", () => {
-		const { result } = renderHook(() => useVariablesMenuItems());
+		const { result } = renderHook(() => useVariablesMenuItems(), { wrapper: i18nWrapper() });
 		const items = result.current("input-variables");
 		expect(items).toHaveLength(1);
 		expect(items[0]).toHaveLength(1);
@@ -37,7 +38,7 @@ describe("useVariablesMenuItems", () => {
 	});
 
 	it("opens the requested variables page", () => {
-		const { result } = renderHook(() => useVariablesMenuItems());
+		const { result } = renderHook(() => useVariablesMenuItems(), { wrapper: i18nWrapper() });
 
 		act(() => result.current("output-variables")[0][0].onClick?.());
 

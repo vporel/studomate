@@ -1,0 +1,22 @@
+{
+	"traffic-light": {
+		"label": "Feu tricolore",
+		"description": "3 sorties booléennes (rouge, orange, vert) + interface HMI avec voyants colorés. À programmer."
+	},
+	"crossroads": {
+		"label": "Carrefour de feux tricolores",
+		"description": "12 sorties booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2) + interface HMI avec carrefour. À programmer."
+	},
+	"drilling": {
+		"label": "Poste de perçage",
+		"description": "Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Modèle de partie opérative fourni. À programmer."
+	},
+	"elevator": {
+		"label": "Ascenseur",
+		"description": "Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Modèle de partie opérative fourni. À programmer."
+	},
+	"parking": {
+		"label": "Parking à barrière",
+		"description": "Barrière + compteur de places : entrées/sorties par boutons, voyant « complet », jauge et affichage d'occupation. À programmer."
+	}
+}

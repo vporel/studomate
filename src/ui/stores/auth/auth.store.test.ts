@@ -103,7 +103,7 @@ describe("authStore", () => {
 			const result = await authStore.getState().signUp("x@x.com", "p");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/existe déjà/i);
+			if (!result.ok) expect(result.code).toBe("emailAlreadyExists");
 		});
 
 		it("retourne un message français pour un mot de passe faible", async () => {
@@ -118,7 +118,7 @@ describe("authStore", () => {
 			const result = await authStore.getState().signUp("x@x.com", "a");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/trop faible/i);
+			if (!result.ok) expect(result.code).toBe("weakPassword");
 		});
 
 		it("retourne un message générique pour une erreur inconnue", async () => {
@@ -130,7 +130,7 @@ describe("authStore", () => {
 			const result = await authStore.getState().signUp("x@x.com", "p");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toBeTruthy();
+			if (!result.ok) expect(result.code).toBeTruthy();
 		});
 	});
 
@@ -159,7 +159,7 @@ describe("authStore", () => {
 			const result = await authStore.getState().signIn("x@x.com", "wrong");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/incorrect/i);
+			if (!result.ok) expect(result.code).toBe("invalidCredentials");
 		});
 	});
 
@@ -192,7 +192,7 @@ describe("authStore", () => {
 				.signUpAnonymous("pierre", "mdp");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/pseudo.*déjà utilisé/i);
+			if (!result.ok) expect(result.code).toBe("pseudoTaken");
 		});
 	});
 
@@ -225,7 +225,7 @@ describe("authStore", () => {
 				.signInAnonymous("pierre", "mauvais");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/pseudo.*incorrect/i);
+			if (!result.ok) expect(result.code).toBe("invalidPseudoCredentials");
 		});
 	});
 
@@ -250,7 +250,7 @@ describe("authStore", () => {
 				.resetPassword("alice@example.com");
 
 			expect(result.ok).toBe(false);
-			if (!result.ok) expect(result.message).toMatch(/tentatives/i);
+			if (!result.ok) expect(result.code).toBe("rateLimit");
 		});
 	});
 

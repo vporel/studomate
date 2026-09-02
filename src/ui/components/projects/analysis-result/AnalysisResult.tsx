@@ -6,8 +6,10 @@ import { Box, Divider, IconButton, Tooltip, Typography } from "@mui/material";
 import { useCallback } from "react";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
+import { useT } from "@/ui/i18n/useT";
 
 function Header({ onClose }: { onClose: () => void }) {
+	const t = useT("projects.analysisResult");
 	return (
 		<Box
 			sx={{
@@ -16,8 +18,8 @@ function Header({ onClose }: { onClose: () => void }) {
 				justifyContent: "space-between",
 			}}
 		>
-			<Typography variant="h6">{"Résultats de l'analyse"}</Typography>
-			<Tooltip title="Fermer">
+			<Typography variant="h6">{t("title")}</Typography>
+			<Tooltip title={t("close")}>
 				<IconButton
 					onClick={onClose}
 					size="small"
@@ -33,6 +35,7 @@ function Header({ onClose }: { onClose: () => void }) {
 import SeveritySection from "./SeveritySection";
 
 export default function AnalysisResult() {
+	const t = useT("projects.analysisResult");
 	const analysisResultVisible = useProjectStore(
 		(s) => s.ui.analysisResultVisible,
 	);
@@ -49,12 +52,12 @@ export default function AnalysisResult() {
 	// doit jamais faire planter le panneau, juste afficher "Nom inconnu".
 	const getGrafcetName = useCallback(
 		(grafcetId: string) =>
-			project?.getGrafcet(grafcetId)?.name ?? "Nom inconnu",
-		[project],
+			project?.getGrafcet(grafcetId)?.name ?? t("unknownName"),
+		[project, t],
 	);
 	const getLadderName = useCallback(
-		(ladderId: string) => project?.getLadder(ladderId)?.name ?? "Nom inconnu",
-		[project],
+		(ladderId: string) => project?.getLadder(ladderId)?.name ?? t("unknownName"),
+		[project, t],
 	);
 
 	const getGrafcetElementLabel = useCallback(
@@ -68,12 +71,12 @@ export default function AnalysisResult() {
 			const located = project?.getLadder(ladderId)?.findElement(elementId);
 			if (!located || located.element.type === "railTerminal") return "";
 			if (located.element.type === "contact")
-				return `Contact ${located.element.data.variable}`;
+				return t("contactLabel", { variable: located.element.data.variable });
 			if (located.element.type === "coil")
-				return `Bobine ${located.element.data.variable}`;
-			return "Bloc";
+				return t("coilLabel", { variable: located.element.data.variable });
+			return t("blockLabel");
 		},
-		[project],
+		[project, t],
 	);
 
 	const onClose = () => {
@@ -111,7 +114,7 @@ export default function AnalysisResult() {
 			<Divider sx={{ my: 1 }} />
 			<Box sx={{ overflow: "auto", flex: 1 }}>
 				<SeveritySection
-					title="Erreurs"
+					title={t("errors")}
 					severity="error"
 					issues={analysisErrors}
 					hasProgramIssues={hasErrorProgramIssues}
@@ -125,7 +128,7 @@ export default function AnalysisResult() {
 				<Divider sx={{ my: 1 }} />
 
 				<SeveritySection
-					title="Avertissements"
+					title={t("warnings")}
 					severity="warning"
 					issues={analysisWarnings}
 					hasProgramIssues={hasWarningProgramIssues}

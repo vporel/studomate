@@ -14,6 +14,7 @@ import { Box, Button, TextField } from "@mui/material";
 import HmiWidgetGeometryFields from "./HmiWidgetGeometryFields";
 import HmiWidgetPropertyFields from "./HmiWidgetPropertyFields";
 import { HmiWidgetRect } from "./useHmiWidgetResize";
+import { useT } from "@/ui/i18n/useT";
 
 const HmiWidgetPropertiesPanel = ({
 	widget,
@@ -25,6 +26,7 @@ const HmiWidgetPropertiesPanel = ({
 	onGeometryPreview: (rect: HmiWidgetRect | null) => void;
 }) => {
 	const updateWidget = useHmiStore((s) => s.updateWidget);
+	const t = useT("hmiEditor.panel");
 	const openAnimationsPane = useHmiStore((s) => s.openAnimationsPane);
 	const openEventsPane = useHmiStore((s) => s.openEventsPane);
 	const widgets = useHmiStore((s) => s.hmiPage.widgets);
@@ -59,7 +61,7 @@ const HmiWidgetPropertiesPanel = ({
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 1.5 }}>
 			<TextField
-				label="Nom"
+				label={t("name")}
 				size="small"
 				slotProps={{
 					inputLabel: { shrink: true },
@@ -80,7 +82,7 @@ const HmiWidgetPropertiesPanel = ({
 			{"variable" in widget.data && variableBinding && (
 				<>
 					<TextField
-						label="Libellé"
+						label={t("label")}
 						size="small"
 						slotProps={{
 							inputLabel: { shrink: true },
@@ -91,7 +93,7 @@ const HmiWidgetPropertiesPanel = ({
 						onBlur={labelField.onBlur}
 					/>
 					<VariableSelector
-						label="Variable liée"
+						label={t("boundVariable")}
 						value={widget.data.variable}
 						onCommit={(mnemonic) =>
 							updateWidget(widget.id, {

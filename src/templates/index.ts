@@ -1,3 +1,4 @@
+import type frTemplates from "@/i18n/messages/fr/templates.json";
 import Project from "@/schemas/project/project.schema";
 import {
 	createCrossroadsProject,
@@ -20,13 +21,16 @@ import {
 	createTrafficLightSolution,
 } from "./traffic-light.template";
 
+/**
+ * Identifiant d'un template — aussi sa clé de traduction : le libellé et la description
+ * affichés vivent dans `src/i18n/messages/{fr,en}/templates.json` sous
+ * `templates.<id>.label` / `.description` (jamais persistés dans le projet créé).
+ */
+export type TemplateId = keyof typeof frTemplates;
+
 export type ProjectTemplate = {
-	/** Identifiant stable, utilisé comme clé dans la modale. */
-	id: string;
-	/** Libellé affiché dans la modale de sélection. */
-	label: string;
-	/** Description courte affichée sous le titre dans la modale. */
-	description: string;
+	/** Identifiant stable, aussi la clé de traduction (voir `TemplateId`). */
+	id: TemplateId;
 	/**
 	 * Énoncé de l'exercice (contexte + travail demandé), en Markdown. Injecté comme `exercise`
 	 * dans le projet créé, aussi bien pour la version exercice que pour la solution — une même
@@ -56,9 +60,6 @@ export const FEATURED_TEMPLATE_ID = "traffic-light";
 export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 	{
 		id: "traffic-light",
-		label: "Feu tricolore",
-		description:
-			"3 sorties booléennes (rouge, orange, vert) + interface HMI avec voyants colorés. À programmer.",
 		statement: [
 			"## Feu tricolore",
 			"",
@@ -76,9 +77,6 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 	},
 	{
 		id: "crossroads",
-		label: "Carrefour de feux tricolores",
-		description:
-			"12 sorties booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2) + interface HMI avec carrefour. À programmer.",
 		statement: [
 			"## Carrefour de feux tricolores",
 			"",
@@ -96,9 +94,6 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 	},
 	{
 		id: "drilling",
-		label: "Poste de perçage",
-		description:
-			"Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Modèle de partie opérative fourni. À programmer.",
 		statement: [
 			"## Poste de perçage",
 			"",
@@ -118,9 +113,6 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 	},
 	{
 		id: "elevator",
-		label: "Ascenseur",
-		description:
-			"Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Modèle de partie opérative fourni. À programmer.",
 		statement: [
 			"## Ascenseur 3 niveaux",
 			"",
@@ -140,9 +132,6 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 	},
 	{
 		id: "parking",
-		label: "Parking à barrière",
-		description:
-			"Barrière + compteur de places : entrées/sorties par boutons, voyant « complet », jauge et affichage d'occupation. À programmer.",
 		statement: [
 			"## Parking à barrière",
 			"",

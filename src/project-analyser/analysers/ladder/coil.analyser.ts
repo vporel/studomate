@@ -26,12 +26,9 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 
 		if (!variable) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"COIL_VARIABLE_UNDECLARED",
-					source,
-					`La variable "${element.data.variable}" n'est pas déclarée.`,
-				),
+				new ProjectAnalyserIssue("error", "COIL_VARIABLE_UNDECLARED", source, {
+					variableName: element.data.variable,
+				}),
 			);
 		} else {
 			if (variable.type !== "BOOL") {
@@ -40,7 +37,7 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 						"error",
 						"COIL_VARIABLE_NOT_BOOLEAN",
 						source,
-						`La variable "${element.data.variable}" doit être booléenne.`,
+						{ variableName: element.data.variable },
 					),
 				);
 			}
@@ -50,7 +47,7 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 						"error",
 						"COIL_VARIABLE_IS_INPUT",
 						source,
-						`La bobine ne peut pas modifier la variable "${element.data.variable}" car c'est une variable d'entrée.`,
+						{ variableName: element.data.variable },
 					),
 				);
 			}
@@ -63,12 +60,7 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 			!connections.some((connection) => connection.target.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"ELEMENT_NO_PREDECESSOR",
-					source,
-					"Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
-				),
+				new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", source),
 			);
 		}
 
@@ -87,7 +79,10 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 						"warning",
 						"COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 						source,
-						`La variable "${element.data.variable}" est pilotée par ${sameVariableCoilsCount} bobines normales distinctes.`,
+						{
+							variableName: element.data.variable,
+							count: sameVariableCoilsCount,
+						},
 					),
 				);
 			}

@@ -151,7 +151,6 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 								sourceId: section.id,
 								parentId: ladder.id,
 							},
-							"Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 						),
 					);
 				}
@@ -172,12 +171,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		if (mains.length === 1) return [];
 		if (mains.length === 0) {
 			return [
-				new ProjectAnalyserIssue(
-					"error",
-					"PROJECT_MISSING_MAIN",
-					{ sourceType: "project", sourceId: project.id },
-					"Le projet ne porte aucun programme Main.",
-				),
+				new ProjectAnalyserIssue("error", "PROJECT_MISSING_MAIN", {
+					sourceType: "project",
+					sourceId: project.id,
+				}),
 			];
 		}
 		return [
@@ -185,7 +182,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 				"error",
 				"PROJECT_MULTIPLE_MAINS",
 				{ sourceType: "project", sourceId: project.id },
-				`Le projet porte ${mains.length} programmes Main, il ne devrait en porter qu'un seul.`,
+				{ count: mains.length },
 			),
 		];
 	}
@@ -229,7 +226,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 						"error",
 						"BLOCK_NAME_VARIABLE_CONFLICT",
 						source,
-						`Le nom "${block.name}" de ce bloc entre en conflit avec une variable existante du même nom.`,
+						{ blockName: block.name },
 					),
 				);
 			} else if (namesSeen.has(block.name)) {
@@ -238,7 +235,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 						"error",
 						"BLOCK_NAME_DUPLICATE",
 						source,
-						`Le nom "${block.name}" de ce bloc est déjà utilisé par un autre bloc du projet.`,
+						{ blockName: block.name },
 					),
 				);
 			}
@@ -293,7 +290,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 					"warning",
 					"LADDER_NOT_REFERENCED",
 					{ sourceType: "ladder", sourceId: ladder.id },
-					`Le ladder "${ladder.name}" n'est référencé par aucun bloc du projet : il ne s'exécutera pas.`,
+					{ ladderName: ladder.name },
 				),
 			);
 		}
@@ -329,7 +326,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 							"error",
 							"BLOCK_PROGRAM_CALL_CYCLE",
 							{ sourceType: "project", sourceId: project.id },
-							`Cycle d'appels entre ladders détecté : ${names}.`,
+							{ cycle: names },
 						),
 					);
 					continue;

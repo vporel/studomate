@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import Project from "@/schemas/project/project.schema";
 import { useProjectStore } from "./ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
@@ -52,7 +53,7 @@ function setup({
 		}),
 	);
 
-	const utils = render(
+	const utils = renderWithI18n(
 		<ProjectsList reloadKey={reloadKey} onProjectClick={onProjectClick} />,
 	);
 	return {

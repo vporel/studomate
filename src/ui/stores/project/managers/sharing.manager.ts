@@ -2,6 +2,7 @@ import HybridProjectRepository from "@/persistence/repositories/hybrid.project.r
 import { isShareable } from "@/persistence/repositories/project.repository";
 import { authStore } from "@/ui/stores/auth/auth.store";
 import { toast } from "react-toastify";
+import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -47,7 +48,7 @@ export default class ProjectSharingManager {
 			});
 			authStore
 				.getState()
-				.setAuthModalVisible(true, "Connectez-vous pour partager ce projet.");
+				.setAuthModalVisible(true, getT("toasts")("shareLoginPrompt"));
 			return;
 		}
 
@@ -71,7 +72,7 @@ export default class ProjectSharingManager {
 		}
 		const result = await repo.createShareToken(project.id);
 		if (!result.ok) {
-			toast.error(result.message);
+			toast.error(getT("toasts")("shareLinkFailed"));
 			return;
 		}
 		set(() => ({ shareToken: result.token }));
@@ -89,8 +90,8 @@ export default class ProjectSharingManager {
 		if (!result.ok) {
 			toast.error(
 				result.reason === "conflict"
-					? "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil."
-					: "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+					? getT("toasts")("moveToCloudConflict")
+					: getT("toasts")("moveToCloudFailed"),
 			);
 			return;
 		}
@@ -109,7 +110,7 @@ export default class ProjectSharingManager {
 		if (!isShareable(repo)) return;
 		const result = await repo.deleteShareToken(project.id);
 		if (!result.ok) {
-			toast.error("Impossible de révoquer le partage.");
+			toast.error(getT("toasts")("shareRevokeFailed"));
 			return;
 		}
 		set(() => ({ shareToken: null }));

@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 const UnsavedChangesDialog = ({
 	buttonsProps,
@@ -26,6 +27,8 @@ const UnsavedChangesDialog = ({
 		};
 	};
 }) => {
+	const t = useT("projects.unsavedChanges");
+	const tc = useT("projects.common");
 	const {
 		visible,
 		message,
@@ -69,9 +72,9 @@ const UnsavedChangesDialog = ({
 			aria-labelledby="customized-dialog-title"
 		>
 			<DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-				Modifications non enregistrées
+				{t("title")}
 			</DialogTitle>
-			<Tooltip title="Fermer">
+			<Tooltip title={t("close")}>
 				<IconButton
 					aria-label="close"
 					onClick={onClose}
@@ -88,19 +91,19 @@ const UnsavedChangesDialog = ({
 			<DialogContent dividers>
 				<Typography gutterBottom>
 					{message ||
-						"Voulez-vous enregistrer les modifications avant de quitter le projet ?"}
+						t("defaultMessage")}
 				</Typography>
 			</DialogContent>
 			<DialogActions>
 				<Button autoFocus onClick={() => void onSave()}>
-					{buttonsProps?.save?.text || "Enregistrer"}
+					{buttonsProps?.save?.text || tc("save")}
 				</Button>
 				<Button autoFocus onClick={onContinueWithoutSaving}>
 					{buttonsProps?.continueWithoutSaving?.text ||
-						"Continuer sans enregistrer"}
+						t("continueWithoutSaving")}
 				</Button>
 				<Button autoFocus onClick={onClose}>
-					{buttonsProps?.cancel?.text || "Annuler"}
+					{buttonsProps?.cancel?.text || tc("cancel")}
 				</Button>
 			</DialogActions>
 		</Dialog>

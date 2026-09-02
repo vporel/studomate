@@ -1,0 +1,12 @@
+{
+	"MNEMONIC_EMPTY": "Le mnémonique ne peut pas être vide.",
+	"MNEMONIC_TOO_LONG": "Le mnémonique doit faire au plus {max} caractères.",
+	"MNEMONIC_MUST_START_WITH_LETTER": "Le mnémonique doit commencer par une lettre.",
+	"MNEMONIC_INVALID_CHARS": "Le mnémonique ne peut contenir que des lettres, chiffres et underscores.",
+	"MNEMONIC_BLOCK_FORMAT": "Le mnémonique d'une variable de bloc doit s'écrire « NomDuBloc.NomDuPort ».",
+	"TYPE_UNKNOWN": "Le type « {type} » n'est pas reconnu.",
+	"TYPE_NOT_ALLOWED_IN_ZONE": "Le type « {type} » n'est pas autorisé ici. Types possibles : {allowed}.",
+	"ZONE_TYPE_INCOMPATIBLE": "Le type « {type} » n'est pas compatible avec la zone « {zone} ».",
+	"ADDRESS_MISSING_PERCENT": "L'adresse doit commencer par le symbole %.",
+	"ADDRESS_INVALID": "L'adresse est invalide (ex. %I0.0, %QW10, %MD100)."
+}

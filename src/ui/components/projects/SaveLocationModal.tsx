@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
 import StorageLocationRadioGroup from "./StorageLocationRadioGroup";
+import { useT } from "@/ui/i18n/useT";
 
 export default function SaveLocationModal() {
 	const { visible, onChosen } = useProjectStore(
@@ -16,6 +17,8 @@ export default function SaveLocationModal() {
 			onChosen: s.ui.onSaveLocationChosen,
 		})),
 	);
+	const t = useT("projects.saveLocation");
+	const tc = useT("projects.common");
 	const user = useAuthStore((s) => s.user);
 	const [selected, setSelected] = useState<StorageLocation>("local");
 
@@ -29,22 +32,22 @@ export default function SaveLocationModal() {
 		<CustomModal
 			open={visible}
 			onClose={() => onChosen?.(null)}
-			title="Où enregistrer ce projet ?"
+			title={t("title")}
 			width={420}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 				<Typography variant="body2" color="text.secondary">
-					Ce projet n&apos;est pas encore enregistré. Choisissez où le stocker.
+					{t("body")}
 				</Typography>
 				<StorageLocationRadioGroup value={selected} onChange={setSelected} />
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-					<Button onClick={() => onChosen?.(null)}>Annuler</Button>
+					<Button onClick={() => onChosen?.(null)}>{tc("cancel")}</Button>
 					<Button
 						variant="contained"
 						onClick={() => onChosen?.(selected)}
 						disabled={!canConfirm}
 					>
-						Enregistrer
+						{tc("save")}
 					</Button>
 				</Box>
 			</Box>

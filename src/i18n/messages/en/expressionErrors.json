@@ -1,0 +1,68 @@
+{
+	"labels": {
+		"operator": {
+			"AND": "AND",
+			"OR": "OR",
+			"NOT": "NOT"
+		},
+		"nativeType": {
+			"number": "number",
+			"boolean": "boolean",
+			"string": "string",
+			"unknown": "unknown"
+		},
+		"side": {
+			"left": "left",
+			"right": "right"
+		},
+		"astNodeType": {
+			"IDENTIFIER": "Variable",
+			"BOOLEAN_LITERAL": "Boolean",
+			"NUMBER_LITERAL": "Number",
+			"STRING_LITERAL": "String",
+			"UNARY_EXPRESSION": "Unary expression",
+			"COMPARISON_EXPRESSION": "Comparison expression",
+			"LOGICAL_EXPRESSION": "Logical expression",
+			"ARITHMETIC_EXPRESSION": "Arithmetic expression",
+			"ASSIGN_STATEMENT": "Assignment",
+			"TIMER_BLOCK": "Timer block",
+			"TIMER_STRING_DECLARATION": "Timer",
+			"COUNTER_BLOCK": "Counter block",
+			"IF_CONTROL": "Conditional control"
+		}
+	},
+	"UNKNOWN_VARIABLE_NAME": "Unknown variable name: {variableName}",
+	"UNKNOWN_IDENTIFIER": "Unknown variable: {identifier}",
+	"UNAUTHORIZED_NODE": "Unauthorized node of type: {nodeType}",
+	"INVALID_UNARY_OPERAND_TYPE": "Invalid type for operator \"{operator}\": expected {expected}, got {actual}",
+	"INVALID_BINARY_OPERAND_TYPE": "Invalid type for operator \"{operator}\" on the {side} side: expected {expected}, got {actual}",
+	"INVALID_ASSIGNMENT_TARGET": "Invalid assignment target: left-hand side must be a variable.",
+	"INPUT_IDENTIFIER_ASSIGNMENT": "Invalid assignment: the assigned variable is an input variable.",
+	"INCOMPATIBLE_OPERANDS_TYPES": "Incompatible types for operator \"{operator}\": left {leftType}, right {rightType}",
+	"INVALID_TIMER_INPUT_TYPE": "Invalid timer input type: the input of a timer must be boolean (found {actual})",
+	"INVALID_TIMER_LAST_INPUT_NODE": "Invalid timer last input node: the last input of a timer block must be an identifier",
+	"INVALID_TIMER_LAST_INPUT_TYPE": "Invalid timer last input type: the last input of a timer block must be boolean (found {actual})",
+	"INVALID_TIMER_OUTPUT_NODE": "Invalid timer output node: the output of a timer block must be an identifier",
+	"INVALID_TIMER_OUTPUT_TYPE": "Invalid timer output type: the output of a timer block must be boolean (found {actual})",
+	"INVALID_TIMER_PRESET_TIME_TYPE": "Invalid timer preset time type: expected {expected}, got {actual}",
+	"INVALID_TIMER_ELAPSED_TIME_NODE": "Invalid timer elapsed time node: the elapsed time of a timer block must be an identifier",
+	"INVALID_TIMER_ELAPSED_TIME_TYPE": "Invalid timer elapsed time type: expected {expected}, got {actual}",
+	"INVALID_CONTROL_CONDITION_TYPE": "Invalid control condition type: the condition of a control structure must be boolean",
+	"INVALID_COUNTER_INPUT_TYPE": "Invalid counter input type: the input of a counter must be boolean (found {actual})",
+	"INVALID_COUNTER_CONTROL_TYPE": "Invalid counter control type: the control (R/LD) of a counter must be boolean (found {actual})",
+	"INVALID_COUNTER_CURRENT_VALUE_NODE": "Invalid counter current value node: the current value (CV) of a counter block must be an identifier",
+	"INVALID_COUNTER_CURRENT_VALUE_TYPE": "Invalid counter current value type: the current value (CV) of a counter block must be a number (found {actual})",
+	"INVALID_COUNTER_OUTPUT_NODE": "Invalid counter output node: the output of a counter block must be an identifier",
+	"INVALID_COUNTER_OUTPUT_TYPE": "Invalid counter output type: the output of a counter block must be boolean (found {actual})",
+	"INVALID_COUNTER_PRESET_VALUE_TYPE": "Invalid counter preset value type: expected {expected}, got {actual}",
+	"DIVISION_BY_ZERO": "Division by zero: {left} / {right}",
+	"PARSING_ENDED_BEFORE_EOF": "Invalid expression: unexpected character at position {position}",
+	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expected expression (variable, number, string) or '(' at position {position}",
+	"MISSING_RIGHT_PARENTHESE": "Missing closing parenthesis at position {position}",
+	"MISSING_RIGHT_PARENTHESE_AT_END": "Missing closing parenthesis at position {position} (end of input)",
+	"BAD_TOKEN_TYPE": "Unexpected token at position {position}: expected {expected}, found {actual}",
+	"INVALID_CHARACTER": "Unexpected character \"{char}\" at position {position}",
+	"INVALID_KEYWORD": "Invalid keyword \"{keyword}\" at position {position}",
+	"UNTERMINATED_STRING": "Unterminated string starting with {quote} at position {position}",
+	"UNKNOWN_ERROR": "Invalid expression: unknown error"
+}

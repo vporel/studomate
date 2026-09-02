@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import BlockNameField from "./BlockNameField";
@@ -20,7 +21,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ project: { isNameTaken } }),
 	);
-	render(<BlockNameField value={value} onCommit={onCommit} />);
+	renderWithI18n(<BlockNameField value={value} onCommit={onCommit} />);
 	return { onCommit, input: screen.getByLabelText("Nom du bloc") };
 }
 

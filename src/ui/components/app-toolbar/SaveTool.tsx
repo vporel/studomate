@@ -3,9 +3,11 @@
 import SaveIcon from "@mui/icons-material/SaveOutlined";
 import SaveAsIcon from "@mui/icons-material/SaveAs";
 import { useProjectStore } from "../projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import AppTool from "./AppTool";
 
 const SaveTool = () => {
+	const t = useT("chrome.toolbar");
 	const hasUnsavedChanges = useProjectStore((state) => state.hasUnsavedChanges);
 	const isSharedProject = useProjectStore((state) => state.isSharedProject);
 	const lifecycleManager = useProjectStore((state) => state.lifecycleManager);
@@ -14,7 +16,7 @@ const SaveTool = () => {
 		return (
 			<AppTool
 				name="save-as"
-				label="Enregistrer une copie"
+				label={t("saveCopy")}
 				onClick={() => void lifecycleManager.saveProject()}
 			>
 				<SaveAsIcon />
@@ -25,7 +27,7 @@ const SaveTool = () => {
 	return (
 		<AppTool
 			name="save"
-			label="Enregistrer"
+			label={t("save")}
 			disabled={!hasUnsavedChanges}
 			onClick={() => void lifecycleManager.saveProject()}
 		>

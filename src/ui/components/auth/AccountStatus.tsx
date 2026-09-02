@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import AuthModal from "./AuthModal";
+import { useT } from "@/ui/i18n/useT";
 
 export default function AccountStatus() {
 	const { user, loading, init, signOut, setAuthModalVisible } = useAuthStore(
@@ -30,6 +31,7 @@ export default function AccountStatus() {
 		})),
 	);
 
+	const t = useT("auth.accountStatus");
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
 	useEffect(() => {
@@ -41,9 +43,9 @@ export default function AccountStatus() {
 	if (!user) {
 		return (
 			<Box>
-				<Tooltip title="Connectez-vous pour associer vos projets à votre compte">
+				<Tooltip title={t("tooltip")}>
 					<Button size="small" onClick={() => setAuthModalVisible(true)}>
-						Se connecter
+						{t("signIn")}
 					</Button>
 				</Tooltip>
 				<AuthModal />
@@ -84,7 +86,7 @@ export default function AccountStatus() {
 						void signOut();
 					}}
 				>
-					Se déconnecter
+					{t("signOut")}
 				</MenuItem>
 			</Menu>
 		</Box>

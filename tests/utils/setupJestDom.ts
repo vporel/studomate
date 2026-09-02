@@ -15,3 +15,11 @@ if (typeof globalThis.structuredClone === "undefined") {
 }
 
 import "@testing-library/jest-dom"
+
+//Langue d'interface fixée au français pour les tests (le code hors React lit `resolveUiLocale`,
+//qui retomberait sinon sur la locale du navigateur jsdom/node « en-US ») : les assertions
+//portent sur le texte français.
+jest.mock("@/persistence/preferences.storage", () => {
+	const actual = jest.requireActual("@/persistence/preferences.storage")
+	return { ...actual, resolveUiLocale: () => "fr" }
+})

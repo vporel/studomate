@@ -1,3 +1,4 @@
+import { identityT } from "@tests/utils/i18n";
 import defaultContextMenuItems from "./default-context-menu-items";
 
 const fakeCopyCutPasteManager = () =>
@@ -18,6 +19,7 @@ describe("defaultContextMenuItems", () => {
 			{ type: "step", id: "step-1" } as any,
 			workflowManager,
 			ccp,
+			identityT,
 		);
 		copyItem.onClick!();
 		cutItem.onClick!();
@@ -37,6 +39,7 @@ describe("defaultContextMenuItems", () => {
 			element,
 			workflowManager,
 			fakeCopyCutPasteManager(),
+			identityT,
 		);
 		deleteItem.onClick!();
 
@@ -55,6 +58,7 @@ describe("defaultContextMenuItems", () => {
 			element,
 			workflowManager,
 			fakeCopyCutPasteManager(),
+			identityT,
 		);
 		deleteItem.onClick!();
 
@@ -73,6 +77,7 @@ describe("defaultContextMenuItems", () => {
 			element,
 			workflowManager,
 			fakeCopyCutPasteManager(),
+			identityT,
 		);
 		deleteItem.onClick!();
 

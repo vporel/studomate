@@ -31,7 +31,7 @@ describe("TransitionAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("pas d'expression");
+			expect(issues[0].code).toBe("TRANSITION_EMPTY_EXPRESSION");
 		});
 
 		it("allows empty expression when allowEmptyContent is true", () => {
@@ -56,7 +56,7 @@ describe("TransitionAnalyser", () => {
 			const issues = analyser.analyseIsolated(transition);
 
 			const assignmentIssue = issues.find((i) =>
-				i.message.includes("affectation"),
+				i.code === "TRANSITION_ASSIGNMENT_NOT_ALLOWED",
 			);
 			expect(assignmentIssue).toBeDefined();
 			expect(assignmentIssue?.severity).toBe("error");
@@ -71,7 +71,7 @@ describe("TransitionAnalyser", () => {
 			const issues = analyser.analyseIsolated(transition);
 
 			const numericIssue = issues.find((i) =>
-				i.message.includes("constante numérique"),
+				i.code === "TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
 			);
 			expect(numericIssue).toBeDefined();
 			expect(numericIssue?.severity).toBe("error");
@@ -172,10 +172,10 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const noPredecessorIssues = issues.filter((i) =>
-				i.message.includes("amont"),
+				i.code === "TRANSITION_NO_PREDECESSOR",
 			);
 			const noSuccessorIssues = issues.filter((i) =>
-				i.message.includes("aval"),
+				i.code === "TRANSITION_NO_SUCCESSOR",
 			);
 			expect(noPredecessorIssues).toHaveLength(0);
 			expect(noSuccessorIssues).toHaveLength(0);
@@ -198,7 +198,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const noPredecessorIssue = issues.find((i) =>
-				i.message.includes("amont"),
+				i.code === "TRANSITION_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeDefined();
 			expect(noPredecessorIssue?.severity).toBe("error");
@@ -220,7 +220,7 @@ describe("TransitionAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noSuccessorIssue = issues.find((i) => i.message.includes("aval"));
+			const noSuccessorIssue = issues.find((i) => i.code === "TRANSITION_NO_SUCCESSOR");
 			expect(noSuccessorIssue).toBeDefined();
 			expect(noSuccessorIssue?.severity).toBe("error");
 		});
@@ -242,7 +242,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const undefinedVarIssue = issues.find(
-				(i) => i.message.includes("unknownVar") || i.message.includes("défini"),
+				(i) => i.code === "TRANSITION_INVALID_EXPRESSION",
 			);
 			expect(undefinedVarIssue).toBeDefined();
 		});
@@ -285,9 +285,8 @@ describe("TransitionAnalyser", () => {
 
 			const varIssues = issues.filter(
 				(i) =>
-					i.message.includes("sensor") &&
-					!i.message.includes("amont") &&
-					!i.message.includes("aval"),
+					i.code === "TRANSITION_INVALID_EXPRESSION" ||
+					i.code === "TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE",
 			);
 			expect(varIssues).toHaveLength(0);
 		});
@@ -314,7 +313,7 @@ describe("TransitionAnalyser", () => {
 				analyserEnvironment([variable]),
 			);
 
-			const typeIssue = issues.find((i) => i.message.includes("booléenne"));
+			const typeIssue = issues.find((i) => i.code === "TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE");
 			expect(typeIssue).toBeDefined();
 			expect(typeIssue?.severity).toBe("error");
 		});
@@ -341,7 +340,7 @@ describe("TransitionAnalyser", () => {
 				analyserEnvironment([variable]),
 			);
 
-			const conflictIssue = issues.find((i) => i.message.includes("conflit"));
+			const conflictIssue = issues.find((i) => i.code === "TRANSITION_TIMER_NAME_CONFLICT");
 			expect(conflictIssue).toBeDefined();
 			expect(conflictIssue?.severity).toBe("error");
 		});
@@ -377,7 +376,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const conflictIssues = issues.filter((i) =>
-				i.message.includes("conflit"),
+				i.code === "TRANSITION_TIMER_NAME_CONFLICT",
 			);
 			expect(conflictIssues).toHaveLength(0);
 		});
@@ -399,7 +398,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const divisionIssue = issues.find((i) =>
-				i.message.includes("Division par zéro"),
+				i.code === "TRANSITION_INVALID_EXPRESSION",
 			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
@@ -442,7 +441,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const multiSuccessorIssue = issues.find((i) =>
-				i.message.includes("successeur direct"),
+				i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
 			);
 			expect(multiSuccessorIssue).toBeDefined();
 			expect(multiSuccessorIssue?.severity).toBe("error");
@@ -479,7 +478,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const multiSuccessorIssues = issues.filter((i) =>
-				i.message.includes("successeur direct"),
+				i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
 			);
 			expect(multiSuccessorIssues).toHaveLength(0);
 		});
@@ -521,7 +520,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const multiPredecessorIssue = issues.find((i) =>
-				i.message.includes("prédécesseur direct"),
+				i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
 			);
 			expect(multiPredecessorIssue).toBeDefined();
 			expect(multiPredecessorIssue?.severity).toBe("error");
@@ -558,7 +557,7 @@ describe("TransitionAnalyser", () => {
 			);
 
 			const multiPredecessorIssues = issues.filter((i) =>
-				i.message.includes("prédécesseur direct"),
+				i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
 			);
 			expect(multiPredecessorIssues).toHaveLength(0);
 		});

@@ -1,4 +1,3 @@
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
@@ -7,6 +6,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueCode,
+	ProjectAnalyserIssueParams,
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
 import { BlockElement, COMPARE_OPERATORS } from "@/schemas/ladder/block.schema";
@@ -44,28 +44,12 @@ export default class CompareBlockAnalyser {
 
 		const issues: ProjectAnalyserIssue[] = [];
 		if (!in1 || in1.trim() === "")
-			issues.push(
-				this.issue(
-					"BLOCK_COMPARE_IN1_EMPTY",
-					source,
-					"Le paramètre IN1 doit être renseignée.",
-				),
-			);
+			issues.push(this.issue("BLOCK_COMPARE_IN1_EMPTY", source));
 		if (!in2 || in2.trim() === "")
-			issues.push(
-				this.issue(
-					"BLOCK_COMPARE_IN2_EMPTY",
-					source,
-					"Le paramètre IN2 doit être renseignée.",
-				),
-			);
+			issues.push(this.issue("BLOCK_COMPARE_IN2_EMPTY", source));
 		if (!COMPARE_OPERATORS.includes(operator))
 			issues.push(
-				this.issue(
-					"BLOCK_COMPARE_OPERATOR_INVALID",
-					source,
-					`"${operator}" n'est pas un opérateur de comparaison valide.`,
-				),
+				this.issue("BLOCK_COMPARE_OPERATOR_INVALID", source, { operator }),
 			);
 		if (issues.length > 0) return issues;
 
@@ -87,10 +71,12 @@ export default class CompareBlockAnalyser {
 			new SemanticAnalyserVisitor(env).visit(comparison);
 		} catch (e) {
 			return [
-				this.issue(
+				new ProjectAnalyserIssue(
+					"error",
 					"BLOCK_COMPARE_INVALID_EXPRESSION",
 					source,
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+					{},
+					e,
 				),
 			];
 		}
@@ -108,11 +94,7 @@ export default class CompareBlockAnalyser {
 		const { ast } = parseExpressionCached(raw, dialect);
 		if (new AllowedNodeTypesVisitor(ALLOWED_OPERAND_NODE_TYPES).visit(ast)[0]) {
 			issues.push(
-				this.issue(
-					"BLOCK_COMPARE_INPUT_NOT_ALLOWED",
-					source,
-					`Le paramètre ${pinName} doit contenir une variable ou une valeur, pas une expression complexe.`,
-				),
+				this.issue("BLOCK_COMPARE_INPUT_NOT_ALLOWED", source, { pinName }),
 			);
 			return null;
 		}
@@ -122,8 +104,8 @@ export default class CompareBlockAnalyser {
 	private static issue(
 		code: ProjectAnalyserIssueCode,
 		source: ProjectAnalyserIssueSource,
-		message: string,
+		params?: ProjectAnalyserIssueParams,
 	): ProjectAnalyserIssue {
-		return new ProjectAnalyserIssue("error", code, source, message);
+		return new ProjectAnalyserIssue("error", code, source, params);
 	}
 }

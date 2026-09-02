@@ -163,21 +163,36 @@ export const PROJECT_ANALYSER_ISSUE_CODES = [
 export type ProjectAnalyserIssueCode =
 	(typeof PROJECT_ANALYSER_ISSUE_CODES)[number];
 
+/**
+ * Valeurs interpolées dans le message localisé du `code` (`{variableName}`, `{stepNumber}`…).
+ * Le domaine ne produit jamais de texte : il décrit le problème par un `code` stable et ces
+ * paramètres, et le rendu se fait dans `src/bridge/` (voir `AnalysisIssuesMapper`).
+ */
+export type ProjectAnalyserIssueParams = Record<string, string | number>;
+
 export default class ProjectAnalyserIssue {
 	readonly severity: ProjectAnalyserIssueSeverity;
 	readonly code: ProjectAnalyserIssueCode;
 	readonly source: ProjectAnalyserIssueSource;
-	readonly message: string;
+	readonly params: ProjectAnalyserIssueParams;
+	/**
+	 * Exception attrapée par l'analyseur (lexer/parser/analyse sémantique d'une expression) —
+	 * son message lisible est produit par `SimulatorExceptionsMapper` au moment du rendu, dans
+	 * la langue de l'interface. Renseigné uniquement pour les codes `*_INVALID_EXPRESSION`.
+	 */
+	readonly cause?: unknown;
 
 	constructor(
 		severity: ProjectAnalyserIssueSeverity,
 		code: ProjectAnalyserIssueCode,
 		source: ProjectAnalyserIssueSource,
-		message: string,
+		params: ProjectAnalyserIssueParams = {},
+		cause?: unknown,
 	) {
 		this.severity = severity;
 		this.code = code;
 		this.source = source;
-		this.message = message;
+		this.params = params;
+		this.cause = cause;
 	}
 }

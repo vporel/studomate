@@ -1,3 +1,4 @@
+import { identityT } from "@tests/utils/i18n";
 import junctionContextMenuItems from "./junction-context-menu-items";
 
 function fakeJunction(branchesOrder: string[]): any {
@@ -12,6 +13,7 @@ describe("junctionContextMenuItems", () => {
 			fakeJunction(["b1", "b2"]),
 			contextMenuEvents,
 			workflowManager,
+			identityT,
 		);
 
 		selectPivotItem.onClick!();
@@ -29,12 +31,13 @@ describe("junctionContextMenuItems", () => {
 			fakeJunction(["b1", "b2", "b3"]),
 			contextMenuEvents,
 			workflowManager,
+			identityT,
 		);
 
 		expect(selectBranchItem.subItems!.map((s) => s.label)).toEqual([
-			"Branche 1",
-			"Branche 2",
-			"Branche 3",
+			"branch 1",
+			"branch 2",
+			"branch 3",
 		]);
 		selectBranchItem.subItems![1].onClick();
 
@@ -52,6 +55,7 @@ describe("junctionContextMenuItems", () => {
 			fakeJunction(["b1", "b2"]),
 			contextMenuEvents,
 			workflowManager,
+			identityT,
 		);
 
 		expect(deleteBranchItem.disabled).toBe(true);
@@ -64,6 +68,7 @@ describe("junctionContextMenuItems", () => {
 			fakeJunction(["b1", "b2", "b3"]),
 			contextMenuEvents,
 			workflowManager,
+			identityT,
 		);
 
 		expect(deleteBranchItem.disabled).toBe(false);

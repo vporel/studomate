@@ -671,7 +671,7 @@ export default class LadderPreCompiler {
 				errors.push(
 					e instanceof ProjectPreCompilerError
 						? e
-						: new ProjectPreCompilerError(source, message),
+						: new ProjectPreCompilerError(source, message, e),
 				);
 			}
 		}

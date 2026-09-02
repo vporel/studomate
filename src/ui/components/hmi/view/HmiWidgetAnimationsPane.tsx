@@ -31,6 +31,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 const NUMERIC_VARIABLE_TYPES: VariableType[] = [
 	"INT",
@@ -66,6 +67,7 @@ function defaultRowProperties(
 }
 
 const PositionTab = ({ widget }: { widget: HmiWidget }) => {
+	const t = useT("hmiEditor.panel");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const animations = (
 		widget.data as { animations?: HmiWidgetAnimations<string> }
@@ -91,7 +93,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 			sx={{ display: "flex", flexDirection: "column", gap: 1.5, maxWidth: 320 }}
 		>
 			<VariableSelector
-				label="Décalage X"
+				label={t("offsetX")}
 				value={position?.xVariable ?? ""}
 				onCommit={(mnemonic) => setPosition({ xVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
@@ -100,7 +102,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				baseInputSx={{ fontSize: "0.85rem !important" }}
 			/>
 			<VariableSelector
-				label="Décalage Y"
+				label={t("offsetY")}
 				value={position?.yVariable ?? ""}
 				onCommit={(mnemonic) => setPosition({ yVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
@@ -114,7 +116,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				onClick={reset}
 				sx={{ alignSelf: "flex-start" }}
 			>
-				Réinitialiser
+				{t("reset")}
 			</Button>
 		</Box>
 	);
@@ -127,6 +129,7 @@ const StyleTab = ({
 	widget: HmiWidget;
 	styleProps: StyleProp[];
 }) => {
+	const t = useT("hmiEditor");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const project = useProjectStore((s) => s.project);
 
@@ -198,7 +201,7 @@ const StyleTab = ({
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
 			<VariableSelector
-				label="Variable"
+				label={t("panel.variable")}
 				value={style?.variable ?? ""}
 				onCommit={handleVariableChange}
 				typeFilter={STYLE_VARIABLE_TYPES}
@@ -212,10 +215,10 @@ const StyleTab = ({
 					<table style={{ borderCollapse: "collapse" }}>
 						<thead>
 							<tr>
-								<th style={headerCellStyle}>Valeur</th>
+								<th style={headerCellStyle}>{t("panel.value")}</th>
 								{styleProps.map((p) => (
 									<th key={p.name} style={headerCellStyle}>
-										{p.label}
+										{t(p.label as never)}
 									</th>
 								))}
 								{!isBoolStyle && <th style={headerCellStyle} />}
@@ -282,13 +285,13 @@ const StyleTab = ({
 									))}
 									{!isBoolStyle && (
 										<td style={cellStyle}>
-											<Tooltip title="Supprimer">
+											<Tooltip title={t("panel.delete")}>
 												<IconButton
 													size="small"
 													onClick={() =>
 														setStyle(style.rows.filter((_, i) => i !== index))
 													}
-													aria-label="Supprimer la ligne"
+													aria-label={t("panel.deleteRow")}
 												>
 													<DeleteIcon fontSize="small" />
 												</IconButton>
@@ -306,7 +309,7 @@ const StyleTab = ({
 							onClick={addRow}
 							sx={{ mt: 1 }}
 						>
-							Ajouter une ligne
+							{t("panel.addRow")}
 						</Button>
 					)}
 				</Box>
@@ -317,7 +320,7 @@ const StyleTab = ({
 				onClick={reset}
 				sx={{ alignSelf: "flex-start" }}
 			>
-				Réinitialiser
+				{t("panel.reset")}
 			</Button>
 		</Box>
 	);
@@ -330,6 +333,7 @@ const StyleTab = ({
  * lisible (voir la demande d'origine).
  */
 const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
+	const t = useT("hmiEditor.panel");
 	const visible = useHmiStore((s) => s.animationsPaneVisible);
 	const close = useHmiStore((s) => s.closeAnimationsPane);
 	const styleProps = HMI_WIDGET_UI[widget.type]
@@ -368,9 +372,9 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 						borderBottom: "1px solid #e0e0e0",
 					}}
 				>
-					<Typography variant="h6">Animations | {widget.name}</Typography>
-					<Tooltip title="Fermer">
-						<IconButton size="small" onClick={close} aria-label="Fermer">
+					<Typography variant="h6">{t("animationsHeading", { name: widget.name })}</Typography>
+					<Tooltip title={t("close")}>
+						<IconButton size="small" onClick={close} aria-label={t("close")}>
 							<CloseIcon fontSize="small" />
 						</IconButton>
 					</Tooltip>
@@ -383,13 +387,13 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 						sx={{ borderRight: "1px solid #e0e0e0", minWidth: 160 }}
 					>
 						<Tab
-							label="Position"
+							label={t("tabPosition")}
 							value="position"
 							sx={{ alignItems: "flex-start" }}
 						/>
 						{hasStyleTab && (
 							<Tab
-								label="Style"
+								label={t("tabStyle")}
 								value="style"
 								sx={{ alignItems: "flex-start" }}
 							/>

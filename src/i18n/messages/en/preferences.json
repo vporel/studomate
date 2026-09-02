@@ -1,0 +1,8 @@
+{
+	"tabTitle": "Preferences",
+	"heading": "Application preferences",
+	"storageLocation": {
+		"heading": "Default storage location",
+		"description": "Used the first time a new project is saved."
+	}
+}

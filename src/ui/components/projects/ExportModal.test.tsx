@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
 import { exportProject } from "@/ui/utils/project/project-export-utils";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -39,7 +40,7 @@ function setup({
 			activeScopeType,
 		}),
 	);
-	render(<ExportModal />);
+	renderWithI18n(<ExportModal />);
 	return { setExportModalVisible, project };
 }
 

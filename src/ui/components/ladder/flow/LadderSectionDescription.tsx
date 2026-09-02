@@ -4,6 +4,7 @@ import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.comma
 import Section from "@/schemas/ladder/section.schema";
 import { InputBase } from "@mui/material";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 
 export default function LadderSectionDescription({
@@ -14,6 +15,7 @@ export default function LadderSectionDescription({
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
+	const t = useT("ladderEditor.sectionDescription");
 
 	const handleBlur = useCallback(
 		(e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -34,7 +36,7 @@ export default function LadderSectionDescription({
 		<InputBase
 			defaultValue={section.description}
 			key={`desc-${section.description}`}
-			placeholder="Description (optionnelle)…"
+			placeholder={t("placeholder")}
 			multiline
 			minRows={1}
 			maxRows={5}
@@ -63,7 +65,7 @@ export default function LadderSectionDescription({
 					"&::placeholder": { fontStyle: "italic" },
 				},
 			}}
-			inputProps={{ "aria-label": "Description de la section" }}
+			inputProps={{ "aria-label": t("aria") }}
 		/>
 	);
 }

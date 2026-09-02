@@ -1,0 +1,36 @@
+{
+	"ariaLabel": "Explorateur du projet",
+	"headerTitle": "EXPLORATEUR",
+	"close": "Fermer",
+	"closeAria": "Fermer l'explorateur",
+	"sections": {
+		"variables": "Variables",
+		"programs": "Programmes",
+		"blockInstances": "Instances de blocs",
+		"systemBlocks": "Blocs systèmes",
+		"hmi": "Interfaces HMI"
+	},
+	"variableGroups": {
+		"inputs": "Entrées",
+		"outputs": "Sorties",
+		"memories": "Mémoires"
+	},
+	"hmiMain": "Principale",
+	"noHmiPages": "Aucune page HMI",
+	"noPrograms": "Aucun programme",
+	"menu": {
+		"open": "Ouvrir",
+		"configure": "Paramétrer",
+		"rename": "Renommer",
+		"delete": "Supprimer",
+		"newGrafcet": "Nouveau grafcet",
+		"newLadder": "Nouveau ladder",
+		"newHmiPage": "Nouvelle page HMI",
+		"hideExplorer": "Masquer l'explorateur"
+	},
+	"confirmDelete": {
+		"grafcet": "Êtes-vous sûr de vouloir supprimer ce grafcet ?",
+		"ladder": "Êtes-vous sûr de vouloir supprimer ce ladder ?",
+		"hmiPage": "Êtes-vous sûr de vouloir supprimer cette page HMI ?"
+	}
+}

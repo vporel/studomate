@@ -31,7 +31,7 @@ describe("StepReferralSourceAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("vide");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_EMPTY");
 		});
 
 		it("allows empty target when allowEmptyContent is true", () => {
@@ -57,7 +57,7 @@ describe("StepReferralSourceAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("detects decimal target step number", () => {
@@ -70,7 +70,7 @@ describe("StepReferralSourceAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("accepts zero as target step number", () => {
@@ -104,7 +104,7 @@ describe("StepReferralSourceAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const notExistIssue = issues.find((i) => i.message.includes("n'existe"));
+			const notExistIssue = issues.find((i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND");
 			expect(notExistIssue).toBeDefined();
 			expect(notExistIssue?.severity).toBe("error");
 		});
@@ -144,7 +144,7 @@ describe("StepReferralSourceAnalyser", () => {
 			);
 
 			const notExistIssues = issues.filter((i) =>
-				i.message.includes("n'existe"),
+				i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 			);
 			expect(notExistIssues).toHaveLength(0);
 		});
@@ -206,7 +206,7 @@ describe("StepReferralSourceAnalyser", () => {
 			);
 
 			const selfRefIssue = issues.find((i) =>
-				i.message.includes("référer l'étape"),
+				i.code === "STEP_REFERRAL_SELF_REFERENCE",
 			);
 			expect(selfRefIssue).toBeDefined();
 			expect(selfRefIssue?.severity).toBe("error");

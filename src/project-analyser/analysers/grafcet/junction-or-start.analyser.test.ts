@@ -49,7 +49,7 @@ describe("JunctionOrStartAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const pivotIssue = issues.find((i) => i.message.includes("pivot"));
+			const pivotIssue = issues.find((i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED");
 			expect(pivotIssue).toBeDefined();
 			expect(pivotIssue?.severity).toBe("error");
 		});
@@ -76,7 +76,7 @@ describe("JunctionOrStartAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const branchIssue = issues.find((i) => i.message.includes("branches"));
+			const branchIssue = issues.find((i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED");
 			expect(branchIssue).toBeDefined();
 			expect(branchIssue?.severity).toBe("error");
 		});

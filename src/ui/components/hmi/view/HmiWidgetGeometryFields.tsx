@@ -15,6 +15,7 @@ import { Box, IconButton, TextField, Tooltip, Typography } from "@mui/material";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import { ReactNode, useEffect } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { HMI_WIDGET_DEFAULT_MIN_SIZE } from "./constants";
 import { HmiWidgetRect } from "./useHmiWidgetResize";
 
@@ -66,6 +67,7 @@ const HmiWidgetGeometryFields = ({
 	widget: HmiWidget;
 	onPreview: (rect: HmiWidgetRect | null) => void;
 }) => {
+	const t = useT("hmiEditor.panel");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const aspectRatio = HmiWidget.getResizeAspectRatio(widget);
 	const minSize =
@@ -166,18 +168,18 @@ const HmiWidgetGeometryFields = ({
 
 	return (
 		<>
-			<Section title="Position">
+			<Section title={t("position")}>
 				{field(xField, "X")}
 				{field(yField, "Y")}
 			</Section>
-			<Section title="Dimensions">
-				{field(widthField, "Largeur")}
+			<Section title={t("dimensions")}>
+				{field(widthField, t("width"))}
 				{canLockAspectRatio && (
 					<Tooltip
 						title={
 							linked
-								? "Largeur et hauteur liées"
-								: "Lier largeur et hauteur"
+								? t("sizeLinked")
+								: t("linkSize")
 						}
 					>
 						<IconButton
@@ -198,7 +200,7 @@ const HmiWidgetGeometryFields = ({
 						</IconButton>
 					</Tooltip>
 				)}
-				{field(heightField, "Hauteur")}
+				{field(heightField, t("height"))}
 			</Section>
 		</>
 	);

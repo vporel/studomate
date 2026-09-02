@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -54,7 +55,7 @@ function setup({
 		isConnectable: true,
 	} as unknown as BlockNodeType & { id: string };
 
-	const { container } = render(
+	const { container } = renderWithI18n(
 		<AppThemeProvider>
 			<ReactFlowProvider>
 				<BlockNode {...(props as any)} />

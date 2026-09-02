@@ -28,6 +28,7 @@ import {
 	LADDER_FLOW_MAX_ZOOM,
 	LADDER_FLOW_MIN_ZOOM,
 } from "@/ui/stores/ladder/managers/view.manager";
+import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 
 interface LadderSectionHeaderProps {
@@ -50,6 +51,7 @@ export default function LadderSectionHeader({
 	dragHandleListeners,
 }: LadderSectionHeaderProps) {
 	const th = useTheme();
+	const t = useT("ladderEditor.sectionHeader");
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
@@ -142,7 +144,7 @@ export default function LadderSectionHeader({
 					touchAction: "none",
 					opacity: sectionsCount > 1 ? 1 : 0.35,
 				}}
-				aria-label="Réordonner la section"
+				aria-label={t("reorderAria")}
 				aria-disabled={sectionsCount <= 1}
 			>
 				<DragIndicatorIcon
@@ -151,13 +153,13 @@ export default function LadderSectionHeader({
 				/>
 			</Box>
 
-			<Tooltip title={collapsed ? "Déplier" : "Replier"}>
+			<Tooltip title={collapsed ? t("expand") : t("collapse")}>
 				<IconButton
 					size="small"
 					onPointerDown={stopSelect}
 					onClick={onToggleCollapse}
 					sx={{ p: 0.25 }}
-					aria-label={collapsed ? "Déplier la section" : "Replier la section"}
+					aria-label={collapsed ? t("expandAria") : t("collapseAria")}
 				>
 					{collapsed ? (
 						<ChevronRightIcon fontSize="small" />
@@ -171,7 +173,7 @@ export default function LadderSectionHeader({
 				component="span"
 				sx={{ fontWeight: 700, fontSize: "0.9rem", flexShrink: 0 }}
 			>
-				Section {index + 1} :
+				{t("number", { number: index + 1 })}
 			</Typography>
 
 			<InputBase
@@ -191,12 +193,12 @@ export default function LadderSectionHeader({
 					flex: 1,
 					"& input": { p: 0, cursor: "text" },
 				}}
-				inputProps={{ "aria-label": "Titre de la section" }}
+				inputProps={{ "aria-label": t("titleAria") }}
 			/>
 
 			{!collapsed && (
 				<>
-					<Tooltip title="Dézoomer">
+					<Tooltip title={t("zoomOut")}>
 						<span>
 							<IconButton
 								size="small"
@@ -204,13 +206,13 @@ export default function LadderSectionHeader({
 								onClick={() => viewManager.zoomOut(section.id)}
 								disabled={zoom <= LADDER_FLOW_MIN_ZOOM}
 								sx={{ p: 0.25 }}
-								aria-label="Dézoomer la section"
+								aria-label={t("zoomOutAria")}
 							>
 								<ZoomOutIcon fontSize="small" />
 							</IconButton>
 						</span>
 					</Tooltip>
-					<Tooltip title="Zoomer">
+					<Tooltip title={t("zoomIn")}>
 						<span>
 							<IconButton
 								size="small"
@@ -218,7 +220,7 @@ export default function LadderSectionHeader({
 								onClick={() => viewManager.zoomIn(section.id)}
 								disabled={zoom >= LADDER_FLOW_MAX_ZOOM}
 								sx={{ p: 0.25 }}
-								aria-label="Zoomer la section"
+								aria-label={t("zoomInAria")}
 							>
 								<ZoomInIcon fontSize="small" />
 							</IconButton>
@@ -227,7 +229,7 @@ export default function LadderSectionHeader({
 				</>
 			)}
 
-			<Tooltip title="Copier">
+			<Tooltip title={t("copy")}>
 				<span>
 					<IconButton
 						size="small"
@@ -235,26 +237,26 @@ export default function LadderSectionHeader({
 						onClick={handleCopySection}
 						disabled={multipleSelected}
 						sx={{ p: 0.25 }}
-						aria-label="Copier la section"
+						aria-label={t("copyAria")}
 					>
 						<ContentCopyOutlinedIcon fontSize="small" />
 					</IconButton>
 				</span>
 			</Tooltip>
 
-			<Tooltip title="Dupliquer">
+			<Tooltip title={t("duplicate")}>
 				<IconButton
 					size="small"
 					onPointerDown={stopSelect}
 					onClick={handleDuplicateSection}
 					sx={{ p: 0.25 }}
-					aria-label="Dupliquer la section"
+					aria-label={t("duplicateAria")}
 				>
 					<LibraryAddOutlinedIcon fontSize="small" />
 				</IconButton>
 			</Tooltip>
 
-			<Tooltip title="Supprimer">
+			<Tooltip title={t("delete")}>
 				<span>
 					<IconButton
 						size="small"
@@ -262,7 +264,7 @@ export default function LadderSectionHeader({
 						onClick={handleDeleteSection}
 						disabled={sectionsCount <= 1}
 						sx={{ p: 0.25 }}
-						aria-label="Supprimer la section"
+						aria-label={t("deleteAria")}
 					>
 						<DeleteOutlineIcon fontSize="small" />
 					</IconButton>

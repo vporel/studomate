@@ -1,5 +1,8 @@
+import {
+	validateMnemonic,
+	type VariableValidationIssue,
+} from "@/schemas/variable/variable.validator";
 import { BlockPortSpec } from "../block-port.schema";
-import Variable from "@/schemas/variable/variable.schema";
 
 /** Les mnémoniques plats générés pour un bloc nommé `name`, un par port de `portSpecs` dont
  * `generatesVariable` est vrai (ex. `Tempo1.IN`). */
@@ -15,7 +18,7 @@ export function getBlockVariableMnemonics(
 }
 
 /** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : même règle de
- * validation. */
-export function validateBlockName(name: string): string[] {
-	return Variable.validateMnemonic(name, false);
+ * validation (mêmes codes d'erreur). */
+export function validateBlockName(name: string): VariableValidationIssue[] {
+	return validateMnemonic(name, false);
 }

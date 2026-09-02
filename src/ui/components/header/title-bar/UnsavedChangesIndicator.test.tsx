@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
@@ -19,7 +20,7 @@ describe("UnsavedChangesIndicator", () => {
 				lifecycleManager: { saveProject },
 			}),
 		);
-		return render(<UnsavedChangesIndicator />);
+		return renderWithI18n(<UnsavedChangesIndicator />);
 	}
 
 	afterEach(() => jest.clearAllMocks());

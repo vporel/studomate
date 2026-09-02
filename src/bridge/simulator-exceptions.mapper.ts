@@ -5,8 +5,6 @@ import UnknownIdentifierException from "@/simulator/interpreter/semantic-analyse
 
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 
-import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import UnknownVariableNameException from "@/simulator/interpreter/environment/exceptions/unknown-variable-name.exception";
 import InvalidCounterControlTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-control-type.exception";
 import InvalidCounterCurrentValueNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-current-value-node.exception";
@@ -35,400 +33,339 @@ import ParsingEndedBeforeEOFException from "@/expression-language/parser/excepti
 import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
 import InvalidUnaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
 
-type Lang = "FR" | "EN";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
+import frExpressionErrors from "@/i18n/messages/fr/expressionErrors.json";
+import { createTranslator } from "next-intl";
 
-const AST_NODE_TYPE_LABELS: Record<ASTNode["type"], string> = {
-	IDENTIFIER: "Variable",
-	BOOLEAN_LITERAL: "Booléen",
-	NUMBER_LITERAL: "Nombre",
-	STRING_LITERAL: "Chaîne de caractères",
-	UNARY_EXPRESSION: "Expression unaire",
-	COMPARISON_EXPRESSION: "Expression de comparaison",
-	LOGICAL_EXPRESSION: "Expression logique",
-	ARITHMETIC_EXPRESSION: "Expression arithmétique",
-	ASSIGN_STATEMENT: "Affectation",
-	TIMER_BLOCK: "Bloc de temporisation",
-	TIMER_STRING_DECLARATION: "Temporisation",
-	COUNTER_BLOCK: "Bloc compteur",
-	IF_CONTROL: "Contrôle conditionnel",
+type MessageCode = Exclude<keyof typeof frExpressionErrors, "labels">;
+
+/**
+ * Descripteur i18n d'une exception : clé de message (namespace `expressionErrors`) et
+ * paramètres ICU déjà résolus (libellés d'opérateur, de type, de nœud traduits).
+ */
+type MessageDescriptor = {
+	code: MessageCode;
+	params: Record<string, string | number>;
 };
 
 export default class SimulatorExceptionsMapper {
 	/**
-	 * Returns user-friendly error messages for exceptions thrown by the compiler modules.
+	 * Message lisible d'une exception levée par les modules du compilateur (lexer, parser,
+	 * analyse sémantique, environnement, évaluateur).
 	 */
-	static getUserFriendlyMessage(exception: unknown, lang: Lang = "FR"): string {
-		const handlers = [
-			this.getForEnvironmentException,
-			this.getForSemanticException,
-			this.getForInterpreterException,
-			this.getForParserException,
-			this.getForLexerException,
-		];
+	static getUserFriendlyMessage(
+		exception: unknown,
+		locale: Locale = DEFAULT_LOCALE,
+	): string {
+		const labels = getMessages(locale).expressionErrors.labels;
+		const t = createTranslator({
+			locale,
+			messages: getMessages(locale),
+			namespace: "expressionErrors",
+		});
 
-		for (const h of handlers) {
-			const msg = h.call(this, exception, lang);
-			if (msg) return msg;
-		}
+		const operatorLabel = (op: string): string =>
+			(labels.operator as Record<string, string>)[op.toUpperCase()] ?? op;
+		const typeLabel = (type: string): string =>
+			(labels.nativeType as Record<string, string>)[type] ?? type;
+		const sideLabel = (side: string): string =>
+			(labels.side as Record<string, string>)[side] ?? side;
+		const nodeTypeLabel = (nodeType: string): string =>
+			(labels.astNodeType as Record<string, string>)[nodeType] ?? nodeType;
+
+		const descriptor =
+			this.describeEnvironmentException(exception) ??
+			this.describeSemanticException(exception, {
+				operatorLabel,
+				typeLabel,
+				sideLabel,
+				nodeTypeLabel,
+			}) ??
+			this.describeInterpreterException(exception) ??
+			this.describeParserException(exception) ??
+			this.describeLexerException(exception);
+
+		if (descriptor) return t(descriptor.code, descriptor.params);
 
 		if (exception instanceof Error) {
-			return (
-				exception.message ||
-				(lang === "EN"
-					? "Invalid expression: unknown error"
-					: "Expression invalide : erreur inconnue")
-			);
+			return exception.message || t("UNKNOWN_ERROR");
 		}
 		return String(exception);
 	}
 
-	private static transformVariableType(type: string, lang: Lang): string {
-		if (lang === "EN") return type;
-		return NATIVE_TYPE_LABELS[type as keyof typeof NATIVE_TYPE_LABELS] ?? type;
-	}
-
-	private static transformOperator(op: string, lang: Lang): string {
-		if (lang === "EN") return op;
-		switch (op.toUpperCase()) {
-			case "AND":
-				return "ET";
-			case "OR":
-				return "OU";
-			case "NOT":
-				return "NON";
-			default:
-				return op;
-		}
-	}
-
-	private static getForEnvironmentException(
+	private static describeEnvironmentException(
 		exception: unknown,
-		lang: Lang,
-	): string | null {
+	): MessageDescriptor | null {
 		if (exception instanceof UnknownVariableNameException) {
-			return lang === "EN"
-				? `Unknown variable name: ${exception.getVariableName()}`
-				: `Variable inconnue : ${exception.getVariableName()}`;
+			return {
+				code: "UNKNOWN_VARIABLE_NAME",
+				params: { variableName: exception.getVariableName() },
+			};
 		}
 		return null;
 	}
 
-	private static getForSemanticException(
+	private static describeSemanticException(
 		exception: unknown,
-		lang: Lang,
-	): string | null {
+		labels: LabelResolvers,
+	): MessageDescriptor | null {
+		const { operatorLabel, typeLabel, sideLabel, nodeTypeLabel } = labels;
+
 		if (exception instanceof UnauthorizedNodeException) {
-			return lang === "EN"
-				? `Unauthorized node of type: ${AST_NODE_TYPE_LABELS[exception.getNodeType()]}`
-				: `Nœud non autorisé de type : ${exception.getNodeType()}`;
+			return {
+				code: "UNAUTHORIZED_NODE",
+				params: { nodeType: nodeTypeLabel(exception.getNodeType()) },
+			};
 		}
 
 		if (exception instanceof UnknownIdentifierException) {
-			return lang === "EN"
-				? `Unknown variable: ${exception.getIdentifier()}`
-				: `Variable inconnue : ${exception.getIdentifier()}`;
+			return {
+				code: "UNKNOWN_IDENTIFIER",
+				params: { identifier: exception.getIdentifier() },
+			};
 		}
 
 		if (exception instanceof InvalidUnaryExprOperandTypeException) {
-			const op = SimulatorExceptionsMapper.transformOperator(
-				exception.getOperator(),
-				lang,
-			);
-			const expected = SimulatorExceptionsMapper.transformVariableType(
-				exception.getExpectedType(),
-				lang,
-			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid type for operator '${op}': expected ${expected}, got ${actual}`
-				: `Type invalide pour l'opérateur '${op}' : attendu ${expected}, obtenu ${actual}`;
+			return {
+				code: "INVALID_UNARY_OPERAND_TYPE",
+				params: {
+					operator: operatorLabel(exception.getOperator()),
+					expected: typeLabel(exception.getExpectedType()),
+					actual: typeLabel(exception.getActualType()),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidBinaryExprOperandTypeException) {
-			const op = SimulatorExceptionsMapper.transformOperator(
-				exception.getOperator(),
-				lang,
-			);
-			const side = exception.getSide();
-			const expected = SimulatorExceptionsMapper.transformVariableType(
-				exception.getExpectedType(),
-				lang,
-			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			if (lang === "EN") {
-				return `Invalid type for operator '${op}' on the ${side} side: expected ${expected}, got ${actual}`;
-			}
-			const sideFr = side === "left" ? "gauche" : "droite";
-			return `Type invalide pour l'opérateur '${op}' côté ${sideFr} : attendu ${expected}, obtenu ${actual}`;
+			return {
+				code: "INVALID_BINARY_OPERAND_TYPE",
+				params: {
+					operator: operatorLabel(exception.getOperator()),
+					side: sideLabel(exception.getSide()),
+					expected: typeLabel(exception.getExpectedType()),
+					actual: typeLabel(exception.getActualType()),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidAssignmentTargetException) {
-			return lang === "EN"
-				? "Invalid assignment target: left-hand side must be a variable."
-				: "Cible d'affectation invalide : la partie gauche doit être une variable.";
+			return { code: "INVALID_ASSIGNMENT_TARGET", params: {} };
 		}
 
 		if (exception instanceof InputIdentifierAssignmentException) {
-			return lang === "EN"
-				? "Invalid assignment: the assigned variable is an input variable."
-				: "Affectation invalide : la variable affectée est une variable d'entrée.";
+			return { code: "INPUT_IDENTIFIER_ASSIGNMENT", params: {} };
 		}
 
 		if (exception instanceof IncompatibleOperandsTypesException) {
-			const op = SimulatorExceptionsMapper.transformOperator(
-				exception.getOperator(),
-				lang,
-			);
-			const leftType = SimulatorExceptionsMapper.transformVariableType(
-				exception.getLeftType(),
-				lang,
-			);
-			const rightType = SimulatorExceptionsMapper.transformVariableType(
-				exception.getRightType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Incompatible types for operator '${op}': left ${leftType}, right ${rightType}`
-				: `Types incompatibles pour l'opérateur '${op}' : gauche ${leftType}, droite ${rightType}`;
+			return {
+				code: "INCOMPATIBLE_OPERANDS_TYPES",
+				params: {
+					operator: operatorLabel(exception.getOperator()),
+					leftType: typeLabel(exception.getLeftType()),
+					rightType: typeLabel(exception.getRightType()),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidTimerInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid timer input type: the input of a timer must be boolean (found ${actual})`
-				: `Type d'entrée de temporisation invalide : l'entrée d'une temporisation doit être un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_TIMER_INPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidTimerLastInputNodeException) {
-			return lang === "EN"
-				? `Invalid timer last input node: the last input of a timer block must be an identifier`
-				: `Nœud de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être une variable`;
+			return { code: "INVALID_TIMER_LAST_INPUT_NODE", params: {} };
 		}
 
 		if (exception instanceof InvalidTimerLastInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid timer last input type: the last input of a timer block must be boolean (found ${actual})`
-				: `Type de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_TIMER_LAST_INPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidTimerOutputNodeException) {
-			return lang === "EN"
-				? `Invalid timer output node: the output of a timer block must be an identifier`
-				: `Nœud de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit être une variable`;
+			return { code: "INVALID_TIMER_OUTPUT_NODE", params: {} };
 		}
 
 		if (exception instanceof InvalidTimerOutputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid timer output type: the output of a timer block must be boolean (found ${actual})`
-				: `Type de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit retourner un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_TIMER_OUTPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidTimerPresetTimeTypeException) {
-			const expected = SimulatorExceptionsMapper.transformVariableType(
-				exception.getExpectedType(),
-				lang,
-			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid timer preset time type: expected ${expected}, got ${actual}`
-				: `Type de temps préréglé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
+			return {
+				code: "INVALID_TIMER_PRESET_TIME_TYPE",
+				params: {
+					expected: typeLabel(exception.getExpectedType()),
+					actual: typeLabel(exception.getActualType()),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidTimerElapsedTimeNodeException) {
-			return lang === "EN"
-				? `Invalid timer elapsed time node: the elapsed time of a timer block must be an identifier`
-				: `Nœud de temps écoulé de temporisation invalide : le temps écoulé d'un bloc de temporisation doit être une variable`;
+			return { code: "INVALID_TIMER_ELAPSED_TIME_NODE", params: {} };
 		}
 
 		if (exception instanceof InvalidTimerElapsedTimeTypeException) {
-			const expected = SimulatorExceptionsMapper.transformVariableType(
-				exception.getExpectedType(),
-				lang,
-			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid timer elapsed time type: expected ${expected}, got ${actual}`
-				: `Type de temps écoulé de temporisation invalide : attendu ${expected}, obtenu ${actual}`;
+			return {
+				code: "INVALID_TIMER_ELAPSED_TIME_TYPE",
+				params: {
+					expected: typeLabel(exception.getExpectedType()),
+					actual: typeLabel(exception.getActualType()),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidControlConditionTypeException) {
-			return lang === "EN"
-				? `Invalid control condition type: the condition of a control structure must be boolean`
-				: `Type de condition invalide : la condition d'une structure de contrôle doit être un booléen`;
+			return { code: "INVALID_CONTROL_CONDITION_TYPE", params: {} };
 		}
 
 		if (exception instanceof InvalidCounterInputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid counter input type: the input of a counter must be boolean (found ${actual})`
-				: `Type d'entrée de compteur invalide : l'entrée d'un compteur doit être un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_COUNTER_INPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidCounterControlTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid counter control type: the control (R/LD) of a counter must be boolean (found ${actual})`
-				: `Type de contrôle de compteur invalide : le contrôle (R/LD) d'un compteur doit être un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_COUNTER_CONTROL_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidCounterCurrentValueNodeException) {
-			return lang === "EN"
-				? `Invalid counter current value node: the current value (CV) of a counter block must be an identifier`
-				: `Nœud de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être une variable`;
+			return { code: "INVALID_COUNTER_CURRENT_VALUE_NODE", params: {} };
 		}
 
 		if (exception instanceof InvalidCounterCurrentValueTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid counter current value type: the current value (CV) of a counter block must be a number (found ${actual})`
-				: `Type de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être numérique (trouvé ${actual})`;
+			return {
+				code: "INVALID_COUNTER_CURRENT_VALUE_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidCounterOutputNodeException) {
-			return lang === "EN"
-				? `Invalid counter output node: the output of a counter block must be an identifier`
-				: `Nœud de sortie de compteur invalide : la sortie d'un bloc compteur doit être une variable`;
+			return { code: "INVALID_COUNTER_OUTPUT_NODE", params: {} };
 		}
 
 		if (exception instanceof InvalidCounterOutputTypeException) {
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid counter output type: the output of a counter block must be boolean (found ${actual})`
-				: `Type de sortie de compteur invalide : la sortie d'un bloc compteur doit retourner un booléen (trouvé ${actual})`;
+			return {
+				code: "INVALID_COUNTER_OUTPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
 		}
 
 		if (exception instanceof InvalidCounterPresetValueTypeException) {
-			const expected = SimulatorExceptionsMapper.transformVariableType(
-				exception.getExpectedType(),
-				lang,
-			);
-			const actual = SimulatorExceptionsMapper.transformVariableType(
-				exception.getActualType(),
-				lang,
-			);
-			return lang === "EN"
-				? `Invalid counter preset value type: expected ${expected}, got ${actual}`
-				: `Type de valeur préréglée de compteur invalide : attendu ${expected}, obtenu ${actual}`;
+			return {
+				code: "INVALID_COUNTER_PRESET_VALUE_TYPE",
+				params: {
+					expected: typeLabel(exception.getExpectedType()),
+					actual: typeLabel(exception.getActualType()),
+				},
+			};
 		}
 
 		return null;
 	}
 
-	private static getForInterpreterException(
+	private static describeInterpreterException(
 		exception: unknown,
-		lang: Lang,
-	): string | null {
+	): MessageDescriptor | null {
 		if (exception instanceof DivisionByZeroException) {
-			return lang === "EN"
-				? `Division by zero: ${exception.getLeft()} / ${exception.getRight()}`
-				: `Division par zéro : ${exception.getLeft()} / ${exception.getRight()}`;
+			return {
+				code: "DIVISION_BY_ZERO",
+				params: { left: exception.getLeft(), right: exception.getRight() },
+			};
 		}
 		return null;
 	}
 
-	private static getForParserException(
+	private static describeParserException(
 		exception: unknown,
-		lang: Lang,
-	): string | null {
+	): MessageDescriptor | null {
 		if (exception instanceof ParsingEndedBeforeEOFException) {
-			const token = (exception as any).getToken();
-			const pos = token ? token.position : exception.getPosition?.() || "?";
-			return lang === "EN"
-				? `Invalid expression: unexpected character at position ${pos}`
-				: `Expression invalide : caractère inattendu à la position ${pos}`;
+			return {
+				code: "PARSING_ENDED_BEFORE_EOF",
+				params: { position: exception.getPosition() },
+			};
 		}
 
 		if (exception instanceof MissingPrimaryOrLeftParentheseException) {
-			const token = (exception as any).getToken();
-			const pos = token ? token.position : exception.getPosition?.() || "?";
-			return lang === "EN"
-				? `Expected expression (variable, number, string) or '(' at position ${pos}`
-				: `Expression attendue (variable, nombre, chaîne) ou '(' à la position ${pos}`;
+			return {
+				code: "MISSING_PRIMARY_OR_LEFT_PARENTHESE",
+				params: { position: exception.getPosition() },
+			};
 		}
 
 		if (exception instanceof MissingRightParentheseException) {
-			const pos = exception.getPosition ? exception.getPosition() : "?";
-			const end = (exception as any).isEnd ? (exception as any).isEnd() : false;
-			return lang === "EN"
-				? `Missing closing parenthesis at position ${pos}${end ? " (end of input)" : ""}`
-				: `Parenthèse fermante manquante à la position ${pos}${end ? " (fin d'entrée)" : ""}`;
+			return {
+				code: exception.isEnd()
+					? "MISSING_RIGHT_PARENTHESE_AT_END"
+					: "MISSING_RIGHT_PARENTHESE",
+				params: { position: exception.getPosition() },
+			};
 		}
 
 		if (exception instanceof BadTokenTypeException) {
-			const expected = exception.getExpected ? exception.getExpected() : [];
-			const actual = exception.getActual ? exception.getActual() : null;
-			const pos = exception.getPosition ? exception.getPosition() : "?";
-			return lang === "EN"
-				? `Unexpected token at position ${pos}: expected ${expected.join(", ")}, found ${actual}`
-				: `Jeton inattendu à la position ${pos} : attendu ${expected.join(", ")}, trouvé ${actual}`;
+			return {
+				code: "BAD_TOKEN_TYPE",
+				params: {
+					position: exception.getPosition(),
+					expected: exception.getExpected().join(", "),
+					actual: String(exception.getActual()),
+				},
+			};
 		}
 
 		return null;
 	}
 
-	private static getForLexerException(
+	private static describeLexerException(
 		exception: unknown,
-		lang: Lang,
-	): string | null {
+	): MessageDescriptor | null {
 		if (exception instanceof InvalidCharacterException) {
-			const char = exception.getChar ? exception.getChar() : "?";
-			const pos = exception.getPosition ? exception.getPosition() : "?";
-			return lang === "EN"
-				? `Unexpected character '${char}' at position ${pos}`
-				: `Caractère inattendu '${char}' à la position ${pos}`;
+			return {
+				code: "INVALID_CHARACTER",
+				params: {
+					char: exception.getChar(),
+					position: exception.getPosition(),
+				},
+			};
 		}
 
 		if (exception instanceof InvalidKeywordException) {
-			const keyword = exception.getKeyword ? exception.getKeyword() : "?";
-			const pos = exception.getPosition ? exception.getPosition() : "?";
-			return lang === "EN"
-				? `Invalid keyword '${keyword}' at position ${pos}`
-				: `Mot-clé invalide '${keyword}' à la position ${pos}`;
+			return {
+				code: "INVALID_KEYWORD",
+				params: {
+					keyword: exception.getKeyword(),
+					position: exception.getPosition(),
+				},
+			};
 		}
 
 		if (exception instanceof UnterminatedStringException) {
-			const quote = exception.getQuoteType ? exception.getQuoteType() : "?";
-			const pos = exception.getPosition ? exception.getPosition() : "?";
-			return lang === "EN"
-				? `Unterminated string starting with ${quote} at position ${pos}`
-				: `Chaîne non terminée commençant par ${quote} à la position ${pos}`;
+			return {
+				code: "UNTERMINATED_STRING",
+				params: {
+					quote: exception.getQuoteType(),
+					position: exception.getPosition(),
+				},
+			};
 		}
 
 		return null;
 	}
 }
+
+type LabelResolvers = {
+	operatorLabel: (op: string) => string;
+	typeLabel: (type: string) => string;
+	sideLabel: (side: string) => string;
+	nodeTypeLabel: (nodeType: string) => string;
+};

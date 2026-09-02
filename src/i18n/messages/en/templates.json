@@ -1,0 +1,22 @@
+{
+	"traffic-light": {
+		"label": "Traffic light",
+		"description": "3 boolean outputs (red, amber, green) + an HMI with coloured indicators. To be programmed."
+	},
+	"crossroads": {
+		"label": "Traffic light crossroads",
+		"description": "12 boolean outputs (red/amber/green × 4 lights: NS1, NS2, EO1, EO2) + an HMI with the crossroads. To be programmed."
+	},
+	"drilling": {
+		"label": "Drilling station",
+		"description": "Sequential cycle driven by limit switches: start button, lowering, timed drilling, raising. Plant model provided. To be programmed."
+	},
+	"elevator": {
+		"label": "Lift",
+		"description": "3-floor lift: landing call buttons and car panel, animated car and door, floor display. Plant model provided. To be programmed."
+	},
+	"parking": {
+		"label": "Barrier car park",
+		"description": "Barrier + space counter: entries/exits via buttons, \"full\" indicator, gauge and occupancy display. To be programmed."
+	}
+}

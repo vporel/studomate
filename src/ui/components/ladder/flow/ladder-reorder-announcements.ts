@@ -1,40 +1,49 @@
 import type { Announcements, ScreenReaderInstructions } from "@dnd-kit/core";
 
-export const LADDER_REORDER_SCREEN_READER_INSTRUCTIONS: ScreenReaderInstructions =
-	{
-		draggable:
-			"Pour réordonner une section : Espace ou Entrée pour la saisir, " +
-			"flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, " +
-			"Échap pour annuler.",
-	};
+/** Traducteur (namespace `ladderEditor.reorder`) passé aux annonces, pour qu'elles restent de
+ * simples fonctions hors React. */
+export type ReorderTranslate = (
+	key: string,
+	values?: Record<string, string | number>,
+) => string;
+
+export function ladderReorderScreenReaderInstructions(
+	t: ReorderTranslate,
+): ScreenReaderInstructions {
+	return { draggable: t("instructions") };
+}
 
 /** Annonces vocales (région `aria-live` de dnd-kit) du réordonnancement des sections Ladder :
  * dnd-kit ne fournit que des annonces en anglais par défaut. Les sections n'ont pas de numéro
  * propre — leur position (1-based) sert de repère. */
 export default function buildLadderReorderAnnouncements(
 	sectionIdsInOrder: string[],
+	t: ReorderTranslate,
 ): Announcements {
 	const positionOf = (id: string | number) =>
 		sectionIdsInOrder.indexOf(String(id)) + 1;
 
 	return {
 		onDragStart({ active }) {
-			return `Section ${positionOf(active.id)} saisie.`;
+			return t("grabbed", { position: positionOf(active.id) });
 		},
 		onDragOver({ active, over }) {
 			if (over) {
-				return `Section ${positionOf(active.id)} déplacée en position ${positionOf(over.id)}.`;
+				return t("moved", {
+					position: positionOf(active.id),
+					over: positionOf(over.id),
+				});
 			}
-			return `Section ${positionOf(active.id)} n'est plus au-dessus d'une zone de dépôt.`;
+			return t("outside", { position: positionOf(active.id) });
 		},
 		onDragEnd({ active, over }) {
 			if (over) {
-				return `Section déposée en position ${positionOf(over.id)}.`;
+				return t("dropped", { over: positionOf(over.id) });
 			}
-			return `Section ${positionOf(active.id)} déposée à sa position initiale.`;
+			return t("droppedInitial", { position: positionOf(active.id) });
 		},
 		onDragCancel({ active }) {
-			return `Déplacement annulé. Section ${positionOf(active.id)} remise à sa position initiale.`;
+			return t("cancelled", { position: positionOf(active.id) });
 		},
 	};
 }

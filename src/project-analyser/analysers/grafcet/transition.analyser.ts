@@ -1,4 +1,3 @@
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/blocks";
 import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
@@ -42,7 +41,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 						"error",
 						"TRANSITION_EMPTY_EXPRESSION",
 						source,
-						"La transition n'a pas d'expression. Elle ne pourra jamais être franchie.",
 					),
 				);
 			}
@@ -60,7 +58,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 						"error",
 						"TRANSITION_ASSIGNMENT_NOT_ALLOWED",
 						source,
-						"Expression invalide : une transition ne peut pas être une affectation.",
 					),
 				);
 			}
@@ -74,7 +71,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 							"error",
 							"TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
 							source,
-							"Une transition ne peut pas être une constante numérique. Si vous voulez qu'elle soit toujours validée, utilisez plutôt la constante booléenne VRAI.",
 						),
 					);
 				} else {
@@ -83,7 +79,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 							"error",
 							"TRANSITION_EXPRESSION_NOT_BOOLEAN",
 							source,
-							"Expression invalide : une transition doit être une expression retournant un booléen.",
 						),
 					);
 				}
@@ -94,7 +89,8 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 					"error",
 					"TRANSITION_INVALID_EXPRESSION",
 					source,
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+					{},
+					e,
 				),
 			);
 		}
@@ -123,19 +119,13 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 					"error",
 					"TRANSITION_NO_PREDECESSOR",
 					source,
-					"La transition n'a aucun élément en amont.",
 				),
 			);
 		}
 
 		if (!TransitionHelper.hasSuccessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"TRANSITION_NO_SUCCESSOR",
-					source,
-					"La transition n'a aucun élément en aval.",
-				),
+				new ProjectAnalyserIssue("error", "TRANSITION_NO_SUCCESSOR", source),
 			);
 		}
 
@@ -145,7 +135,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 					"error",
 					"TRANSITION_MULTIPLE_SUCCESSORS",
 					source,
-					"Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément.",
 				),
 			);
 		}
@@ -156,7 +145,6 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 					"error",
 					"TRANSITION_MULTIPLE_PREDECESSORS",
 					source,
-					"Une transition ne peut avoir qu'un seul prédécesseur direct. Utilisez une convergence en ET pour synchroniser plusieurs étapes.",
 				),
 			);
 		}
@@ -184,7 +172,7 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 								"error",
 								"TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE",
 								source,
-								`La transition fait référence à la variable "${node.value}" qui n'est pas booléenne.`,
+								{ variableName: node.value },
 							),
 						);
 					}
@@ -202,7 +190,7 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 								"error",
 								"TRANSITION_TIMER_NAME_CONFLICT",
 								source,
-								`L'identifiant de temporisation "${decl.name}" entre en conflit avec une variable existante.`,
+								{ timerName: decl.name },
 							),
 						);
 					}
@@ -213,7 +201,8 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 						"error",
 						"TRANSITION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+						{},
+						e,
 					),
 				);
 			}

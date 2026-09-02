@@ -7,6 +7,7 @@ import {
 } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
+import { useT } from "@/ui/i18n/useT";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import {
 	GRID_CELL_HEIGHT,
@@ -35,6 +36,7 @@ export default function CompareBlockNode({
 	selected: boolean;
 }) {
 	const th = useTheme();
+	const t = useT("ladderEditor.block");
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
@@ -123,7 +125,7 @@ export default function CompareBlockNode({
 					value={operator}
 					onChange={(next) => commit({ operator: next })}
 					operators={COMPARE_OPERATORS}
-					ariaLabel="Opérateur de comparaison"
+					ariaLabel={t("compareOperatorAria")}
 				/>
 			</Box>
 

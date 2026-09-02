@@ -1,0 +1,21 @@
+{
+	"title": "Raccourcis clavier",
+	"groups": {
+		"file": "Fichier",
+		"project": "Projet",
+		"edit": "Édition"
+	},
+	"openProject": "Ouvrir un projet",
+	"save": "Enregistrer",
+	"saveAs": "Enregistrer sous",
+	"newGrafcet": "Nouveau grafcet",
+	"newLadder": "Nouveau ladder",
+	"undo": "Annuler",
+	"redo": "Rétablir",
+	"selectAll": "Tout sélectionner",
+	"copy": "Copier",
+	"cut": "Couper",
+	"paste": "Coller",
+	"deleteHmiSelection": "Supprimer (sélection HMI)",
+	"deleteKey": "Suppr / Retour arrière"
+}

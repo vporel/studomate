@@ -1,0 +1,21 @@
+{
+	"title": "Keyboard shortcuts",
+	"groups": {
+		"file": "File",
+		"project": "Project",
+		"edit": "Edit"
+	},
+	"openProject": "Open a project",
+	"save": "Save",
+	"saveAs": "Save as",
+	"newGrafcet": "New grafcet",
+	"newLadder": "New ladder",
+	"undo": "Undo",
+	"redo": "Redo",
+	"selectAll": "Select all",
+	"copy": "Copy",
+	"cut": "Cut",
+	"paste": "Paste",
+	"deleteHmiSelection": "Delete (HMI selection)",
+	"deleteKey": "Delete / Backspace"
+}

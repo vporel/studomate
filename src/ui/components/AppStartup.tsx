@@ -2,6 +2,7 @@
 
 import { APP_NAME, APP_SHORT_DESCRIPTION, APP_SLOGAN } from "@/app-info";
 import { FEATURED_TEMPLATE_ID, PROJECT_TEMPLATES } from "@/templates/index";
+import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import {
@@ -23,6 +24,7 @@ const featuredTemplate = PROJECT_TEMPLATES.find(
 );
 
 const AppStartup = () => {
+	const tTemplates = useT("templates");
 	const {
 		setOpenModalVisible,
 		lifecycleManager,
@@ -112,10 +114,10 @@ const AppStartup = () => {
 							Découvrir avec un exemple
 						</Typography>
 						<Typography variant="h5" fontWeight={600} mt={0.5}>
-							{featuredTemplate.label}
+							{tTemplates(`${featuredTemplate.id}.label`)}
 						</Typography>
 						<Typography variant="body2" color="text.secondary" mt={0.5} mb={2}>
-							{featuredTemplate.description}
+							{tTemplates(`${featuredTemplate.id}.description`)}
 						</Typography>
 						<Button
 							variant="contained"

@@ -2,6 +2,7 @@
 
 import VariablesIcon from "../icons/VariablesIcon";
 import { ElementType, Fragment, MouseEvent } from "react";
+import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { getVariablesPageData, VariablesPageId } from "../pages/VariablesPage";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -51,20 +52,21 @@ const ExplorerVariablesItems = ({
 		element: ExplorerContextMenuElement,
 	) => void;
 }) => {
+	const t = useT("explorer.variableGroups");
 	const variablesTypes: {
 		id: VariablesPageId;
 		label: string;
 		IconComponent?: ElementType;
 	}[] = [
-		{ id: "input-variables", label: "Entrées", IconComponent: VariablesIcon },
+		{ id: "input-variables", label: t("inputs"), IconComponent: VariablesIcon },
 		{
 			id: "output-variables",
-			label: "Sorties",
+			label: t("outputs"),
 			IconComponent: VariablesIcon,
 		},
 		{
 			id: "memory-variables",
-			label: "Mémoires",
+			label: t("memories"),
 			IconComponent: VariablesIcon,
 		},
 	];

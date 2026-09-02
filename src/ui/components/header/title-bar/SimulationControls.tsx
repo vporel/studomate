@@ -8,8 +8,10 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 const SimulationControls = () => {
+	const t = useT("chrome.simulationControls");
 	const { mode, simulationMode, simulationPaused, simulationManager } =
 		useProjectStore(
 			useShallow((state) => ({
@@ -24,7 +26,7 @@ const SimulationControls = () => {
 
 	if (simulationMode === SimulationMode.CONTINUOUS) {
 		return simulationPaused ? (
-			<Tooltip title="Reprendre la simulation">
+			<Tooltip title={t("resume")}>
 				<IconButton
 					size="small"
 					onClick={() => simulationManager.resumeSimulation()}
@@ -33,7 +35,7 @@ const SimulationControls = () => {
 				</IconButton>
 			</Tooltip>
 		) : (
-			<Tooltip title="Mettre en pause">
+			<Tooltip title={t("pause")}>
 				<IconButton
 					size="small"
 					onClick={() => simulationManager.pauseSimulation()}
@@ -46,7 +48,7 @@ const SimulationControls = () => {
 
 	if (simulationMode === SimulationMode.STEP_BY_STEP) {
 		return (
-			<Tooltip title="Avancer d'un cycle">
+			<Tooltip title={t("step")}>
 				<IconButton
 					size="small"
 					onClick={() => simulationManager.stepSimulation()}

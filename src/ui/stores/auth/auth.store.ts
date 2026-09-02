@@ -2,7 +2,25 @@ import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
 import { createStore, useStore } from "zustand";
 
-export type AuthResult = { ok: true } | { ok: false; message: string };
+/**
+ * Codes d'erreur d'authentification — le store (couche non-UI) ne produit pas de texte :
+ * le message lisible vit dans `src/i18n/messages/{fr,en}/auth.json` sous `auth.errors.<code>`
+ * et le rendu se fait dans `AuthModal`.
+ */
+export type AuthErrorCode =
+	| "invalidCredentials"
+	| "invalidPseudoCredentials"
+	| "emailAlreadyExists"
+	| "pseudoTaken"
+	| "emailNotConfirmed"
+	| "rateLimit"
+	| "weakPassword"
+	| "invalidEmail"
+	| "network"
+	| "signInFailed"
+	| "signUpFailed";
+
+export type AuthResult = { ok: true } | { ok: false; code: AuthErrorCode };
 
 export const ANONYMOUS_EMAIL_DOMAIN = "user.studomate.com";
 
@@ -42,59 +60,41 @@ export type AuthStoreState = {
  */
 let initPromise: Promise<void> | null = null;
 
-function toFrenchAuthMessage(
+function toAuthErrorCode(
 	error: { code?: string; message?: string },
 	mode: "signIn" | "signUp",
-): string {
+): AuthErrorCode {
 	const code = error.code ?? "";
-	const message = error.message ?? "";
+	const message = (error.message ?? "").toLowerCase();
 
-	if (
-		code === "invalid_credentials" ||
-		message.toLowerCase().includes("invalid login credentials")
-	) {
-		return "Email ou mot de passe incorrect.";
-	}
-	if (
-		code === "user_already_exists" ||
-		message.toLowerCase().includes("already registered")
-	) {
-		return "Un compte existe déjà avec cette adresse email.";
-	}
-	if (
-		code === "email_not_confirmed" ||
-		message.toLowerCase().includes("email not confirmed")
-	) {
-		return "Votre adresse email n'a pas encore été confirmée. Vérifiez votre boîte mail.";
-	}
-	if (
-		code === "over_email_send_rate_limit" ||
-		message.toLowerCase().includes("rate limit")
-	) {
-		return "Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.";
-	}
-	if (
-		code === "weak_password" ||
-		message.toLowerCase().includes("weak password")
-	) {
-		return "Mot de passe trop faible. Utilisez au moins 8 caractères.";
-	}
-	if (
-		code === "invalid_email" ||
-		message.toLowerCase().includes("invalid email")
-	) {
-		return "Adresse email invalide.";
-	}
-	if (
-		message.toLowerCase().includes("fetch") ||
-		message.toLowerCase().includes("network")
-	) {
-		return "Impossible de contacter le serveur. Vérifiez votre connexion.";
-	}
-	if (mode === "signIn") {
-		return "Connexion impossible. Vérifiez vos identifiants.";
-	}
-	return "Création de compte impossible. Veuillez réessayer.";
+	if (code === "invalid_credentials" || message.includes("invalid login credentials"))
+		return "invalidCredentials";
+	if (code === "user_already_exists" || message.includes("already registered"))
+		return "emailAlreadyExists";
+	if (code === "email_not_confirmed" || message.includes("email not confirmed"))
+		return "emailNotConfirmed";
+	if (code === "over_email_send_rate_limit" || message.includes("rate limit"))
+		return "rateLimit";
+	if (code === "weak_password" || message.includes("weak password"))
+		return "weakPassword";
+	if (code === "invalid_email" || message.includes("invalid email"))
+		return "invalidEmail";
+	if (message.includes("fetch") || message.includes("network")) return "network";
+	return mode === "signIn" ? "signInFailed" : "signUpFailed";
+}
+
+function isAlreadyRegistered(error: { code?: string; message?: string }): boolean {
+	return (
+		error.code === "user_already_exists" ||
+		(error.message ?? "").toLowerCase().includes("already registered")
+	);
+}
+
+function isInvalidCredentials(error: { code?: string; message?: string }): boolean {
+	return (
+		error.code === "invalid_credentials" ||
+		(error.message ?? "").toLowerCase().includes("invalid login credentials")
+	);
 }
 
 export const authStore = createStore<AuthStoreState>((set) => ({
@@ -123,7 +123,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 	signUp: async (email, password) => {
 		const { data, error } = await supabase.auth.signUp({ email, password });
 		if (error)
-			return { ok: false, message: toFrenchAuthMessage(error, "signUp") };
+			return { ok: false, code: toAuthErrorCode(error, "signUp") };
 		set({ user: data.user });
 		return { ok: true };
 	},
@@ -132,12 +132,10 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 		const email = buildAnonymousEmail(pseudo);
 		const { data, error } = await supabase.auth.signUp({ email, password });
 		if (error) {
-			const message =
-				error.code === "user_already_exists" ||
-				error.message.toLowerCase().includes("already registered")
-					? "Ce pseudo est déjà utilisé. Choisissez-en un autre."
-					: toFrenchAuthMessage(error, "signUp");
-			return { ok: false, message };
+			const code: AuthErrorCode = isAlreadyRegistered(error)
+				? "pseudoTaken"
+				: toAuthErrorCode(error, "signUp");
+			return { ok: false, code };
 		}
 		set({ user: data.user });
 		return { ok: true };
@@ -149,7 +147,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 			password,
 		});
 		if (error)
-			return { ok: false, message: toFrenchAuthMessage(error, "signIn") };
+			return { ok: false, code: toAuthErrorCode(error, "signIn") };
 		set({ user: data.user });
 		return { ok: true };
 	},
@@ -161,12 +159,10 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 			password,
 		});
 		if (error) {
-			const message =
-				error.code === "invalid_credentials" ||
-				error.message.toLowerCase().includes("invalid login credentials")
-					? "Pseudo ou mot de passe incorrect."
-					: toFrenchAuthMessage(error, "signIn");
-			return { ok: false, message };
+			const code: AuthErrorCode = isInvalidCredentials(error)
+				? "invalidPseudoCredentials"
+				: toAuthErrorCode(error, "signIn");
+			return { ok: false, code };
 		}
 		set({ user: data.user });
 		return { ok: true };
@@ -175,7 +171,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 	resetPassword: async (email) => {
 		const { error } = await supabase.auth.resetPasswordForEmail(email);
 		if (error)
-			return { ok: false, message: toFrenchAuthMessage(error, "signIn") };
+			return { ok: false, code: toAuthErrorCode(error, "signIn") };
 		return { ok: true };
 	},
 

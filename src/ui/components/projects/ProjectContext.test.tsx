@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { ProjectContextProvider, useProjectContext } from "./ProjectContext";
 
 jest.mock("./analysis-result/AnalysisResult", () => () => null);
@@ -36,7 +37,7 @@ afterEach(() => {
 
 describe("ProjectContextProvider - modale des brouillons", () => {
 	it("la monte au démarrage à froid (aucun id ni token dans l'URL)", () => {
-		render(<ProjectContextProvider>{null}</ProjectContextProvider>);
+		renderWithI18n(<ProjectContextProvider>{null}</ProjectContextProvider>);
 
 		expect(screen.getByTestId("draft-recovery-dialog")).toBeInTheDocument();
 	});
@@ -44,7 +45,7 @@ describe("ProjectContextProvider - modale des brouillons", () => {
 	it("la monte quand la réouverture du projet de l'URL échoue (id invalide / projet supprimé)", async () => {
 		mockUrl.getProjectIdFromUrl.mockReturnValue("deleted-id");
 
-		render(<ProjectContextProvider>{null}</ProjectContextProvider>);
+		renderWithI18n(<ProjectContextProvider>{null}</ProjectContextProvider>);
 
 		// openProject échoue (projet introuvable) → repli sur la modale + nettoyage de l'URL
 		expect(
@@ -68,7 +69,7 @@ function dispatchBeforeUnload(): Event {
 
 describe("ProjectContextProvider - beforeunload", () => {
 	it("does not warn when there are no unsaved changes", () => {
-		render(
+		renderWithI18n(
 			<ProjectContextProvider>
 				<SetHasUnsavedChanges value={false} />
 			</ProjectContextProvider>,
@@ -78,7 +79,7 @@ describe("ProjectContextProvider - beforeunload", () => {
 	});
 
 	it("warns when there are unsaved changes", () => {
-		render(
+		renderWithI18n(
 			<ProjectContextProvider>
 				<SetHasUnsavedChanges value={true} />
 			</ProjectContextProvider>,

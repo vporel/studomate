@@ -1,0 +1,8 @@
+{
+	"tabTitle": "Préférences",
+	"heading": "Préférences de l'application",
+	"storageLocation": {
+		"heading": "Lieu de stockage par défaut",
+		"description": "Utilisé pour le premier enregistrement d'un projet neuf."
+	}
+}

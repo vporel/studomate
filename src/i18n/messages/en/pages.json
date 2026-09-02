@@ -1,0 +1,76 @@
+{
+	"titles": {
+		"preferences": "Preferences",
+		"projectProperties": "Project properties",
+		"exercise": "Exercise brief",
+		"projectStartup": "Start",
+		"inputVariables": "Input variables",
+		"outputVariables": "Output variables",
+		"memoryVariables": "Memory variables"
+	},
+	"tabBar": {
+		"ariaLabel": "Open tabs",
+		"close": "Close",
+		"closeAria": "Close the tab"
+	},
+	"properties": {
+		"heading": "Project properties",
+		"name": "Name",
+		"author": "Author",
+		"expressionLanguage": "Expression language",
+		"expressionLanguageHelper": "Expressions already written are translated automatically.",
+		"dialectFr": "French — ET, OU, NON, VRAI, FAUX",
+		"dialectEn": "English — AND, OR, NOT, TRUE, FALSE",
+		"exerciseField": "Exercise brief",
+		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu."
+	},
+	"exercise": {
+		"heading": "Exercise brief",
+		"empty": "This project has no brief yet. The brief is written in the project properties.",
+		"openProperties": "Open the project properties"
+	},
+	"startup": {
+		"variables": "Variables",
+		"programs": "Programs",
+		"noPrograms": "You don't have any program yet.",
+		"actions": "Actions",
+		"newGrafcet": "New grafcet",
+		"newLadder": "New ladder"
+	},
+	"variablesGrid": {
+		"toolbar": {
+			"delete": "Delete",
+			"deleteSelectedAria": "Delete the selected variables",
+			"filters": "Filters",
+			"export": "Export",
+			"print": "Print",
+			"exportCsv": "Export as CSV",
+			"search": "Search",
+			"searchPlaceholder": "Search...",
+			"clearSearch": "Clear the search"
+		},
+		"columns": {
+			"mnemonic": "Mnemonic",
+			"type": "Type",
+			"address": "Address",
+			"comment": "Comment"
+		},
+		"errors": {
+			"mnemonicExists": "This mnemonic already exists",
+			"addressExists": "This address already exists"
+		},
+		"selectorPlaceholder": "?"
+	},
+	"watchTables": {
+		"heading": "Watch tables",
+		"close": "Close",
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"memories": "Memories"
+	},
+	"noPage": {
+		"openProject": "Open a project",
+		"saveProject": "Save the project",
+		"newGrafcet": "New grafcet"
+	}
+}

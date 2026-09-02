@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { i18nWrapper } from "@tests/utils/i18n";
 import { renderHook } from "@testing-library/react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useGotoProgram from "@/ui/components/projects/useGotoProgram";
@@ -31,7 +32,7 @@ describe("useBlockInstanceMenuItems", () => {
 					laddersManager: { getActiveStoreManagers },
 				}),
 		);
-		const { result } = renderHook(() => useBlockInstanceMenuItems());
+		const { result } = renderHook(() => useBlockInstanceMenuItems(), { wrapper: i18nWrapper() });
 		return result.current("l1", timerElement.id);
 	}
 

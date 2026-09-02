@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import Project from "@/schemas/project/project.schema";
 import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
+import { useT } from "@/ui/i18n/useT";
 
 /**
  * Erreurs de validation du champ nom d'un bloc tempo/compteur — identique pour les deux familles
@@ -13,15 +14,17 @@ export function useBlockNameField(
 	initialName: string | undefined,
 	project: Project | null | undefined,
 ): string[] {
+	const t = useT("ladderEditor.block");
+	const tv = useT("variableValidation");
 	return useMemo(() => {
 		if (name === "") return [];
 		if (name === initialName) return [];
-		const errors = validateBlockName(name);
+		const errors = validateBlockName(name).map((i) =>
+			tv(i.code as never, i.params as never),
+		);
 		if (errors.length === 0 && project?.isNameTaken(name)) {
-			errors.push(
-				"Ce nom est déjà utilisé par une variable ou un autre bloc du projet.",
-			);
+			errors.push(t("nameTaken"));
 		}
 		return errors;
-	}, [name, initialName, project]);
+	}, [name, initialName, project, t, tv]);
 }

@@ -10,6 +10,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { styled } from "@mui/material/styles";
+import { useT } from "@/ui/i18n/useT";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import {
@@ -63,6 +64,7 @@ export default function GridToolBar({
 }: {
 	rowSelectionModel: GridRowSelectionModel;
 }) {
+	const t = useT("pages.variablesGrid.toolbar");
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
@@ -70,7 +72,7 @@ export default function GridToolBar({
 	return (
 		<Toolbar>
 			<Box sx={{ flex: 1 }}>
-				<Tooltip title="Supprimer">
+				<Tooltip title={t("delete")}>
 					<span>
 						<IconButton
 							disabled={rowSelectionModel.ids.size === 0}
@@ -79,14 +81,14 @@ export default function GridToolBar({
 									Array.from(rowSelectionModel.ids).map((id) => id.toString()),
 								)
 							}
-							aria-label="Supprimer les variables sélectionnées"
+							aria-label={t("deleteSelectedAria")}
 						>
 							<DeleteIcon />
 						</IconButton>
 					</span>
 				</Tooltip>
 			</Box>
-			<Tooltip title="Filtres">
+			<Tooltip title={t("filters")}>
 				<FilterPanelTrigger
 					render={(props, state) => (
 						<ToolbarButton {...props} color="default">
@@ -109,7 +111,7 @@ export default function GridToolBar({
 				sx={{ mx: 0.5 }}
 			/>
 
-			<Tooltip title="Exporter">
+			<Tooltip title={t("export")}>
 				<ToolbarButton
 					ref={exportMenuTriggerRef}
 					id="export-menu-trigger"
@@ -139,20 +141,20 @@ export default function GridToolBar({
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}
 				>
-					Imprimer
+					{t("print")}
 				</ExportPrint>
 				<ExportCsv
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}
 				>
-					Exporter en CSV
+					{t("exportCsv")}
 				</ExportCsv>
 			</Menu>
 
 			<StyledQuickFilter>
 				<QuickFilterTrigger
 					render={(triggerProps, state) => (
-						<Tooltip title="Rechercher" enterDelay={0}>
+						<Tooltip title={t("search")} enterDelay={0}>
 							<StyledToolbarButton
 								{...triggerProps}
 								ownerState={{ expanded: state.expanded }}
@@ -170,8 +172,8 @@ export default function GridToolBar({
 							{...controlProps}
 							ownerState={{ expanded: state.expanded }}
 							inputRef={ref}
-							aria-label="Rechercher"
-							placeholder="Rechercher..."
+							aria-label={t("search")}
+							placeholder={t("searchPlaceholder")}
 							size="small"
 							slotProps={{
 								input: {
@@ -185,7 +187,7 @@ export default function GridToolBar({
 											<QuickFilterClear
 												edge="end"
 												size="small"
-												aria-label="Effacer la recherche"
+												aria-label={t("clearSearch")}
 												material={{ sx: { marginRight: -0.75 } }}
 											>
 												<CancelIcon fontSize="small" />

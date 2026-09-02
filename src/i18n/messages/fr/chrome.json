@@ -1,0 +1,36 @@
+{
+	"toolbar": {
+		"home": "Accueil",
+		"save": "Enregistrer",
+		"saveCopy": "Enregistrer une copie",
+		"undo": "Annuler",
+		"redo": "Rétablir"
+	},
+	"analyse": "Analyser",
+	"mode": {
+		"design": "Conception",
+		"simulation": "Simulation"
+	},
+	"simulationMode": {
+		"continuous": "Continu",
+		"stepByStep": "Pas-à-pas"
+	},
+	"simulationControls": {
+		"resume": "Reprendre la simulation",
+		"pause": "Mettre en pause",
+		"step": "Avancer d'un cycle"
+	},
+	"unsavedChanges": "Cliquez ici pour enregistrer",
+	"statusBar": {
+		"author": "Auteur : {name}",
+		"unknownAuthor": "Inconnu"
+	},
+	"footerActions": {
+		"watchTables": "Tables de visualisation",
+		"hmiSimulation": "Simulation HMI",
+		"analysisResults": "Résultats de l'analyse",
+		"ok": "(OK)",
+		"errors": "(Erreurs)",
+		"warnings": "(Avertissements)"
+	}
+}

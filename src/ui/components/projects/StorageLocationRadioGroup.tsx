@@ -11,6 +11,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useShallow } from "zustand/shallow";
+import { useT } from "@/ui/i18n/useT";
 
 export default function StorageLocationRadioGroup({
 	value,
@@ -19,6 +20,8 @@ export default function StorageLocationRadioGroup({
 	value: StorageLocation;
 	onChange: (location: StorageLocation) => void;
 }) {
+	const t = useT("projects.storageLocation");
+	const tc = useT("projects.common");
 	const { user, setAuthModalVisible } = useAuthStore(
 		useShallow((s) => ({
 			user: s.user,
@@ -35,25 +38,25 @@ export default function StorageLocationRadioGroup({
 				<FormControlLabel
 					value="local"
 					control={<Radio />}
-					label="Sur cet appareil"
+					label={t("onThisDevice")}
 				/>
-				<FormControlLabel value="cloud" control={<Radio />} label="Dans le cloud" />
+				<FormControlLabel value="cloud" control={<Radio />} label={t("inTheCloud")} />
 			</RadioGroup>
 			{value === "cloud" && !user && (
 				<Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 4 }}>
 					<Typography variant="body2" color="text.secondary">
-						Connexion requise.
+						{t("loginRequired")}
 					</Typography>
 					<Button
 						size="small"
 						onClick={() =>
 							setAuthModalVisible(
 								true,
-								"Connectez-vous pour enregistrer dans le cloud.",
+								t("loginToSaveCloud"),
 							)
 						}
 					>
-						Se connecter
+						{tc("login")}
 					</Button>
 				</Box>
 			)}

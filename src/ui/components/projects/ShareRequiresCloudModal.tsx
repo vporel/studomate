@@ -2,6 +2,7 @@
 
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { useProjectStore } from "./ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Button, Typography } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useCallback, useState } from "react";
@@ -16,6 +17,8 @@ export default function ShareRequiresCloudModal() {
 		})),
 	);
 
+	const t = useT("projects.shareRequiresCloud");
+	const tc = useT("projects.common");
 	const [submitting, setSubmitting] = useState(false);
 
 	const onClose = useCallback(() => {
@@ -36,19 +39,17 @@ export default function ShareRequiresCloudModal() {
 		<CustomModal
 			open={visible}
 			onClose={onClose}
-			title="Envoyer le projet dans le cloud"
+			title={t("title")}
 			width={480}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 				<Typography color="text.secondary">
-					Ce projet est stocké localement sur cet appareil. Pour le partager, il
-					doit d&apos;abord être envoyé dans le cloud. Il restera modifiable
-					uniquement depuis votre compte.
+					{t("body")}
 				</Typography>
 
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<Button onClick={onClose} disabled={submitting}>
-						Annuler
+						{tc("cancel")}
 					</Button>
 					<Button
 						variant="contained"
@@ -56,7 +57,7 @@ export default function ShareRequiresCloudModal() {
 						onClick={() => void onConfirm()}
 						disabled={submitting}
 					>
-						Envoyer et partager
+						{t("confirm")}
 					</Button>
 				</Box>
 			</Box>

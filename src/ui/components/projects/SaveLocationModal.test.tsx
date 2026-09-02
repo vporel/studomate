@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen } from "@testing-library/react";
 import { useProjectStore } from "./ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -29,7 +30,7 @@ function setup({
 			setAuthModalVisible: jest.fn(),
 		}),
 	);
-	render(<SaveLocationModal />);
+	renderWithI18n(<SaveLocationModal />);
 	return { onChosen };
 }
 

@@ -1,0 +1,42 @@
+{
+	"bar": {
+		"ariaLabel": "Main menu"
+	},
+	"file": {
+		"title": "File",
+		"newProject": "New project",
+		"openProject": "Open project",
+		"save": "Save",
+		"saveAs": "Save as",
+		"export": "Export",
+		"closeProject": "Close project",
+		"preferences": "Preferences"
+	},
+	"edit": {
+		"title": "Edit",
+		"undo": "Undo",
+		"redo": "Redo",
+		"copy": "Copy",
+		"cut": "Cut",
+		"paste": "Paste"
+	},
+	"view": {
+		"title": "View",
+		"explorer": "Explorer"
+	},
+	"project": {
+		"title": "Project",
+		"newGrafcet": "New grafcet",
+		"newLadder": "New ladder",
+		"exerciseStatement": "Exercise brief",
+		"share": "Share",
+		"manageSharing": "Manage sharing",
+		"properties": "Properties"
+	},
+	"help": {
+		"title": "Help",
+		"userManual": "User manual",
+		"keyboardShortcuts": "Keyboard shortcuts",
+		"reportIssue": "Report a problem"
+	}
+}

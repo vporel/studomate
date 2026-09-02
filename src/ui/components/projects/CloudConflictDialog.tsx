@@ -10,6 +10,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useShallow } from "zustand/shallow";
+import { useT } from "@/ui/i18n/useT";
 
 export default function CloudConflictDialog() {
 	const { visible, lifecycleManager } = useProjectStore(
@@ -19,19 +20,19 @@ export default function CloudConflictDialog() {
 		})),
 	);
 
+	const t = useT("projects.cloudConflict");
+
 	if (!visible) return null;
 
 	return (
 		<Dialog open maxWidth="xs" fullWidth>
-			<DialogTitle>Projet modifié ailleurs</DialogTitle>
+			<DialogTitle>{t("title")}</DialogTitle>
 			<DialogContent>
 				<Typography variant="body2">
-					Ce projet a été enregistré depuis un autre appareil après son
-					ouverture ici. Enregistrer maintenant écraserait ces modifications.
+					{t("body1")}
 				</Typography>
 				<Typography variant="body2" mt={1}>
-					Voulez-vous reprendre la version en ligne (vos modifications locales
-					seront perdues) ou enregistrer votre travail sous un autre nom ?
+					{t("body2")}
 				</Typography>
 			</DialogContent>
 			<DialogActions>
@@ -39,13 +40,13 @@ export default function CloudConflictDialog() {
 					variant="outlined"
 					onClick={() => void lifecycleManager.resolveCloudConflict("reload")}
 				>
-					Reprendre la version en ligne
+					{t("reload")}
 				</Button>
 				<Button
 					variant="contained"
 					onClick={() => void lifecycleManager.resolveCloudConflict("copy")}
 				>
-					Enregistrer sous...
+					{t("saveAs")}
 				</Button>
 			</DialogActions>
 		</Dialog>

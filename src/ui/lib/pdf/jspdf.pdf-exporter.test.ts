@@ -27,6 +27,12 @@ const cover: PdfCoverPage = {
 	date: "01/09/2026",
 	statement: "Piloter un feu tricolore.",
 	stats: { grafcets: 2, ladders: 1, variables: 5 },
+	labels: {
+		author: "Auteur : Alice",
+		exportedOn: "Exporté le 01/09/2026",
+		stats: "2 grafcet(s), 1 ladder(s), 5 variable(s)",
+		statementHeading: "Énoncé",
+	},
 };
 
 function makeDoc(overrides: Partial<PdfExportDocument> = {}): PdfExportDocument {

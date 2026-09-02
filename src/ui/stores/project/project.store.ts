@@ -20,6 +20,7 @@ import {
 import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
 import { deleteDraft } from "@/persistence/draft.storage";
+import { getT } from "@/ui/i18n/translateGlobal";
 import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import {
 	ProjectStoreState,
@@ -203,8 +204,7 @@ export const createProjectStore = () => {
 					return;
 				}
 				openWithUnsavedGuard("exportModalVisible", {
-					message:
-						"Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant d'exporter ?",
+					message: getT("projects.unsavedChanges")("exportMessage"),
 				});
 			},
 

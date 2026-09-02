@@ -63,23 +63,19 @@ export class JsPdfExporter implements PdfExporter {
 
 		doc.setFont("helvetica", "normal");
 		doc.setFontSize(12);
-		if (cover.author) {
-			doc.text(`Auteur : ${cover.author}`, MARGIN_MM, y);
+		if (cover.labels.author) {
+			doc.text(cover.labels.author, MARGIN_MM, y);
 			y += 7;
 		}
-		doc.text(`Exporté le ${cover.date}`, MARGIN_MM, y);
+		doc.text(cover.labels.exportedOn, MARGIN_MM, y);
 		y += 7;
-		doc.text(
-			`${cover.stats.grafcets} grafcet(s), ${cover.stats.ladders} ladder(s), ${cover.stats.variables} variable(s)`,
-			MARGIN_MM,
-			y,
-		);
+		doc.text(cover.labels.stats, MARGIN_MM, y);
 		y += 16;
 
 		if (cover.statement) {
 			doc.setFont("helvetica", "bold");
 			doc.setFontSize(14);
-			doc.text("Énoncé", MARGIN_MM, y);
+			doc.text(cover.labels.statementHeading, MARGIN_MM, y);
 			y += 8;
 
 			const { lexer } = await import("marked");

@@ -1,0 +1,154 @@
+{
+	"common": {
+		"cancel": "Cancel",
+		"save": "Save",
+		"close": "Close",
+		"login": "Sign in"
+	},
+	"list": {
+		"tabLocal": "Local",
+		"tabCloud": "Cloud",
+		"empty": "No saved project",
+		"lastModified": "Last modified: {date} at {time}",
+		"sendToCloud": "Send to the cloud",
+		"sendToCloudAria": "send to the cloud",
+		"bringLocal": "Bring back locally",
+		"bringLocalAria": "bring back locally",
+		"delete": "Delete",
+		"confirmDelete": "Are you sure you want to delete this project?",
+		"moveToCloudConflict": "A cloud project with this identifier already exists, probably sent from another device. Reload the list.",
+		"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",
+		"moveToLocalFailed": "The project could not be brought back locally. Check the available space."
+	},
+	"open": {
+		"title": "Open a project",
+		"fromFile": "Open from a file...",
+		"fileDialogName": "JSON files",
+		"readError": "An error occurred while reading the file. Make sure the file is a valid project.",
+		"saveError": "The project could not be saved in the browser. Check the available space."
+	},
+	"new": {
+		"title": "New project",
+		"chooseStartingPoint": "Choose a starting point for your project.",
+		"emptyProject": "Empty project",
+		"emptyProjectDescription": "Start with a project with no variable and no HMI.",
+		"templates": "Templates",
+		"solutionAvailable": "A solution is available.",
+		"openSolution": "Open the solution",
+		"create": "Create"
+	},
+	"export": {
+		"title": "Export",
+		"formatPdf": "PDF",
+		"formatJson": "Project file (JSON)",
+		"scopeFull": "Whole project",
+		"scopeActive": "Active page only",
+		"scopeActiveNamed": "Active page only ({name})",
+		"openProgramHint": "Open a grafcet or a ladder to export it on its own.",
+		"includeCover": "Include a cover page",
+		"grafcets": "GRAFCETs",
+		"ladders": "Ladders",
+		"ladderLandscape": "{name} (landscape)",
+		"filename": "File name",
+		"progressRendering": "Rendering ({current}/{total}) — {label}",
+		"progressCapturing": "Capturing ({current}/{total}) — {label}",
+		"progressAssembling": "Assembling the PDF…",
+		"exporting": "Exporting…",
+		"sectionTitleGrafcet": "GRAFCET - {name}",
+		"sectionTitleLadder": "Ladder - {name}",
+		"preparing": "Preparing…",
+		"errorCapture": "Capturing “{name}” failed.",
+		"errorAssembling": "PDF generation failed.",
+		"coverAuthor": "Author: {author}",
+		"coverExportedOn": "Exported on {date}",
+		"coverStats": "{grafcets} grafcet(s), {ladders} ladder(s), {variables} variable(s)",
+		"coverStatementHeading": "Statement"
+	},
+	"saveAs": {
+		"title": "Save as",
+		"name": "Project name"
+	},
+	"share": {
+		"title": "Share the project",
+		"sharedAlert": "The project is shared. Anyone with the link can view and simulate it.",
+		"linkLabel": "Share link",
+		"copy": "Copy",
+		"copyLinkAria": "Copy the link",
+		"copied": "Link copied to the clipboard.",
+		"revokeHint": "Revoking the link makes the share unavailable immediately.",
+		"revoke": "Revoke",
+		"noActiveLink": "No active share link for this project.",
+		"close": "Close"
+	},
+	"shareRequiresCloud": {
+		"title": "Send the project to the cloud",
+		"body": "This project is stored locally on this device. To share it, it must first be sent to the cloud. It will only remain editable from your account.",
+		"confirm": "Send and share"
+	},
+	"storageLocation": {
+		"onThisDevice": "On this device",
+		"inTheCloud": "In the cloud",
+		"loginRequired": "Sign-in required.",
+		"loginToSaveCloud": "Sign in to save to the cloud."
+	},
+	"saveLocation": {
+		"title": "Where to save this project?",
+		"body": "This project is not saved yet. Choose where to store it."
+	},
+	"unsavedChanges": {
+		"title": "Unsaved changes",
+		"defaultMessage": "Do you want to save the changes before leaving the project?",
+		"continueWithoutSaving": "Continue without saving",
+		"close": "Close",
+		"exportMessage": "You have unsaved changes. Do you want to save them before exporting?"
+	},
+	"cloudConflict": {
+		"title": "Project changed elsewhere",
+		"body1": "This project was saved from another device after it was opened here. Saving now would overwrite those changes.",
+		"body2": "Do you want to take the online version (your local changes will be lost) or save your work under another name?",
+		"reload": "Take the online version",
+		"saveAs": "Save as..."
+	},
+	"draftConflict": {
+		"title": "Unsaved version found",
+		"body1": "This project has an unsaved version that is more recent than the last save.",
+		"body2": "Do you want to resume from the draft or from the last saved version?",
+		"keepSaved": "Saved version",
+		"keepDraft": "Resume the draft"
+	},
+	"draftRecovery": {
+		"confirmDeleteTitle": "Confirm deletion",
+		"confirmDeleteAll": "Delete all drafts? This action cannot be undone.",
+		"deleteAll": "Delete all",
+		"confirmDeleteOne": "Delete the draft of {name}? This action cannot be undone.",
+		"delete": "Delete",
+		"title": "Unsaved drafts",
+		"intro": "Unsaved changes were found. Do you want to recover them?",
+		"savedAgo": "Saved {ago}",
+		"open": "Open",
+		"discardOne": "Discard",
+		"cancelAll": "Discard all",
+		"pass": "Skip"
+	},
+	"analysisResult": {
+		"title": "Analysis results",
+		"close": "Close",
+		"errors": "Errors",
+		"warnings": "Warnings",
+		"unknownName": "Unknown name",
+		"contactLabel": "Contact {variable}",
+		"coilLabel": "Coil {variable}",
+		"blockLabel": "Block",
+		"noErrors": "No error during analysis.",
+		"noWarnings": "No warning.",
+		"projectErrors": "Project-wide errors",
+		"projectWarnings": "Project-wide warnings",
+		"programErrors": "{kind}-wide errors",
+		"programWarnings": "{kind}-wide warnings",
+		"elementErrors": "Errors on {kind} elements",
+		"elementWarnings": "Warnings on {kind} elements",
+		"programHeading": "{kind}: {name}",
+		"grafcetKind": "Grafcet",
+		"ladderKind": "Ladder"
+	}
+}

@@ -98,7 +98,7 @@ describe("GrafcetAnalyser", () => {
 			const initialStepError = result.issues.find(
 				(issue) =>
 					issue.source.sourceType === "grafcet" &&
-					issue.message.includes("étape initiale"),
+					(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -369,7 +369,7 @@ describe("GrafcetAnalyser", () => {
 			);
 			expect(conflictIssue).toBeDefined();
 			expect(conflictIssue?.severity).toBe("error");
-			expect(conflictIssue?.message).toContain("X1");
+			expect(conflictIssue?.params).toMatchObject({ variableName: "X1" });
 		});
 
 		it("returns no name-conflict issue when project variables don't collide with X{n}", () => {
@@ -429,7 +429,7 @@ describe("GrafcetAnalyser", () => {
 			expect(result.stepsVariables).toEqual([]);
 			// Should have error about missing initial step
 			const initialStepError = result.issues.find((i) =>
-				i.message.includes("étape initiale"),
+				(i.code === "GRAFCET_NO_INITIAL_STEP" || i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepError).toBeDefined();
 		});
@@ -464,7 +464,7 @@ describe("GrafcetAnalyser", () => {
 			]);
 
 			const initialStepError = result.issues.find((i) =>
-				i.message.includes("étape initiale"),
+				(i.code === "GRAFCET_NO_INITIAL_STEP" || i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -519,7 +519,7 @@ describe("GrafcetAnalyser", () => {
 			const connectivityError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("réseaux non connectés"),
+					i.code === "GRAFCET_DISCONNECTED_COMPONENTS",
 			);
 			expect(connectivityError).toBeUndefined();
 		});
@@ -614,7 +614,7 @@ describe("GrafcetAnalyser", () => {
 			);
 			expect(unreachableError).toBeDefined();
 			expect(unreachableError?.severity).toBe("error");
-			expect(unreachableError?.message).toContain("3");
+			expect(String(unreachableError?.params.stepNumbers)).toContain("3");
 		});
 
 		it("detects a dead-end branch with no path back to a cycle", () => {
@@ -706,7 +706,7 @@ describe("GrafcetAnalyser", () => {
 			);
 			expect(deadEndWarning).toBeDefined();
 			expect(deadEndWarning?.severity).toBe("warning");
-			expect(deadEndWarning?.message).toContain("3");
+			expect(String(deadEndWarning?.params.stepNumbers)).toContain("3");
 		});
 
 		it("returns no dead-end warning for a purely linear grafcet with no cycle at all", () => {
@@ -961,7 +961,7 @@ describe("GrafcetAnalyser", () => {
 				(i) => i.code === "GRAFCET_DEAD_END_STEPS",
 			);
 			expect(deadEnd).toBeDefined();
-			expect(deadEnd?.message).toContain("3");
+			expect(String(deadEnd?.params.stepNumbers)).toContain("3");
 			expect(
 				result.issues.find((i) => i.code === "GRAFCET_UNREACHABLE_STEPS"),
 			).toBeUndefined();
@@ -1043,7 +1043,7 @@ describe("GrafcetAnalyser", () => {
 			const connectivityError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("réseaux non connectés"),
+					i.code === "GRAFCET_DISCONNECTED_COMPONENTS",
 			);
 			expect(connectivityError).toBeDefined();
 			expect(connectivityError?.severity).toBe("error");
@@ -1076,7 +1076,7 @@ describe("GrafcetAnalyser", () => {
 			const connectivityError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("réseaux non connectés"),
+					i.code === "GRAFCET_DISCONNECTED_COMPONENTS",
 			);
 			expect(connectivityError).toBeUndefined();
 		});
@@ -1234,7 +1234,7 @@ describe("GrafcetAnalyser", () => {
 			const twoStepsError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("au moins deux étapes"),
+					i.code === "GRAFCET_TOO_FEW_STEPS",
 			);
 			expect(twoStepsError).toBeDefined();
 			expect(twoStepsError?.severity).toBe("error");
@@ -1267,7 +1267,7 @@ describe("GrafcetAnalyser", () => {
 			const twoStepsError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("au moins deux étapes"),
+					i.code === "GRAFCET_TOO_FEW_STEPS",
 			);
 			expect(twoStepsError).toBeDefined();
 			expect(twoStepsError?.severity).toBe("error");
@@ -1309,7 +1309,7 @@ describe("GrafcetAnalyser", () => {
 			const twoStepsError = result.issues.find(
 				(i) =>
 					i.source.sourceType === "grafcet" &&
-					i.message.includes("au moins deux étapes"),
+					i.code === "GRAFCET_TOO_FEW_STEPS",
 			);
 			expect(twoStepsError).toBeUndefined();
 		});
@@ -1356,7 +1356,7 @@ describe("GrafcetAnalyser", () => {
 				);
 				expect(issue).toBeDefined();
 				expect(issue?.severity).toBe("error");
-				expect(issue?.message).toContain('"t1"');
+				expect(issue?.params).toMatchObject({ timerName: "t1" });
 			});
 
 			it("accepte des identifiants de temporisation distincts", () => {

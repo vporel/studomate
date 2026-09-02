@@ -1,6 +1,7 @@
 "use client";
 
 import CustomModal from "@/ui/lib/mui/CustomModal";
+import { useT } from "@/ui/i18n/useT";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import {
 	Alert,
@@ -39,6 +40,8 @@ export default function AuthModal() {
 		})),
 	);
 
+	const t = useT("auth");
+	const tError = useT("auth.errors");
 	const [screen, setScreen] = useState<Screen>("signIn");
 	const [signUpMode, setSignUpMode] = useState<SignUpMode>("anonymous");
 	const [signInMode, setSignInMode] = useState<SignUpMode>("anonymous");
@@ -72,11 +75,11 @@ export default function AuthModal() {
 				: await signIn(email, password);
 		setSubmitting(false);
 		if (!result.ok) {
-			setError(result.message);
+			setError(tError(result.code));
 			return;
 		}
 		onClose();
-	}, [signInMode, pseudo, email, password, signIn, signInAnonymous, onClose]);
+	}, [signInMode, pseudo, email, password, signIn, signInAnonymous, onClose, tError]);
 
 	const onSubmitSignUp = useCallback(async () => {
 		setSubmitting(true);
@@ -87,11 +90,11 @@ export default function AuthModal() {
 				: await signUp(email, password);
 		setSubmitting(false);
 		if (!result.ok) {
-			setError(result.message);
+			setError(tError(result.code));
 			return;
 		}
 		onClose();
-	}, [signUpMode, pseudo, email, password, signUp, signUpAnonymous, onClose]);
+	}, [signUpMode, pseudo, email, password, signUp, signUpAnonymous, onClose, tError]);
 
 	const onSubmitResetPassword = useCallback(async () => {
 		setSubmitting(true);
@@ -99,20 +102,13 @@ export default function AuthModal() {
 		const result = await resetPassword(email);
 		setSubmitting(false);
 		if (!result.ok) {
-			setError(result.message);
+			setError(tError(result.code));
 			return;
 		}
-		setSuccessMessage(
-			"Un email de réinitialisation a été envoyé. Vérifiez votre boîte mail.",
-		);
-	}, [email, resetPassword]);
+		setSuccessMessage(t("resetPassword.emailSent"));
+	}, [email, resetPassword, t, tError]);
 
-	const title =
-		screen === "signIn"
-			? "Se connecter"
-			: screen === "signUp"
-				? "Créer un compte"
-				: "Mot de passe oublié";
+	const title = t(`titles.${screen}`);
 
 	return (
 		<CustomModal
@@ -145,7 +141,7 @@ export default function AuthModal() {
 								resetForm();
 							}}
 						>
-							Pseudo
+							{t("modeSelector.pseudo")}
 						</Button>
 						<Button
 							variant={signInMode === "real" ? "contained" : "outlined"}
@@ -155,13 +151,13 @@ export default function AuthModal() {
 								resetForm();
 							}}
 						>
-							Email
+							{t("modeSelector.email")}
 						</Button>
 					</Box>
 
 					{signInMode === "anonymous" ? (
 						<TextField
-							label="Pseudo"
+							label={t("fields.pseudo")}
 							value={pseudo}
 							onChange={(e) => setPseudo(e.target.value)}
 							required
@@ -169,7 +165,7 @@ export default function AuthModal() {
 						/>
 					) : (
 						<TextField
-							label="Email"
+							label={t("fields.email")}
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
@@ -179,7 +175,7 @@ export default function AuthModal() {
 					)}
 
 					<TextField
-						label="Mot de passe"
+						label={t("fields.password")}
 						type="password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
@@ -193,7 +189,7 @@ export default function AuthModal() {
 					)}
 
 					<Button type="submit" variant="contained" disabled={submitting}>
-						Se connecter
+						{t("signIn.submit")}
 					</Button>
 
 					{signInMode === "real" && (
@@ -205,7 +201,7 @@ export default function AuthModal() {
 								setScreen("resetPassword");
 							}}
 						>
-							Mot de passe oublié ?
+							{t("signIn.forgotPassword")}
 						</Button>
 					)}
 
@@ -218,7 +214,7 @@ export default function AuthModal() {
 							setScreen("signUp");
 						}}
 					>
-						Pas de compte ? En créer un
+						{t("signIn.noAccount")}
 					</Button>
 				</Box>
 			)}
@@ -242,7 +238,7 @@ export default function AuthModal() {
 								resetForm();
 							}}
 						>
-							Anonyme
+							{t("modeSelector.anonymous")}
 						</Button>
 						<Button
 							variant={signUpMode === "real" ? "contained" : "outlined"}
@@ -252,30 +248,27 @@ export default function AuthModal() {
 								resetForm();
 							}}
 						>
-							Avec email
+							{t("modeSelector.withEmail")}
 						</Button>
 					</Box>
 
 					{signUpMode === "anonymous" ? (
 						<>
 							<Alert severity="info" sx={{ fontSize: "0.85rem" }}>
-								Aucune donnée personnelle n&apos;est collectée en mode anonyme.
-								En contrepartie,{" "}
-								<strong>la récupération du mot de passe est impossible</strong>{" "}
-								si vous l&apos;oubliez.
+								{t("signUp.anonymousNotice")}
 							</Alert>
 							<TextField
-								label="Pseudo"
+								label={t("fields.pseudo")}
 								value={pseudo}
 								onChange={(e) => setPseudo(e.target.value)}
 								required
 								autoFocus
-								helperText="Votre identifiant public. Doit être unique."
+								helperText={t("fields.pseudoHelper")}
 							/>
 						</>
 					) : (
 						<TextField
-							label="Email"
+							label={t("fields.email")}
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
@@ -285,7 +278,7 @@ export default function AuthModal() {
 					)}
 
 					<TextField
-						label="Mot de passe"
+						label={t("fields.password")}
 						type="password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
@@ -299,7 +292,7 @@ export default function AuthModal() {
 					)}
 
 					<Button type="submit" variant="contained" disabled={submitting}>
-						Créer le compte
+						{t("signUp.submit")}
 					</Button>
 
 					<Divider />
@@ -311,7 +304,7 @@ export default function AuthModal() {
 							setScreen("signIn");
 						}}
 					>
-						Déjà un compte ? Se connecter
+						{t("signUp.haveAccount")}
 					</Button>
 				</Box>
 			)}
@@ -326,12 +319,11 @@ export default function AuthModal() {
 					sx={{ display: "flex", flexDirection: "column", gap: 2 }}
 				>
 					<Typography variant="body2" color="text.secondary">
-						Entrez votre adresse email. Vous recevrez un lien pour réinitialiser
-						votre mot de passe.
+						{t("resetPassword.intro")}
 					</Typography>
 
 					<TextField
-						label="Email"
+						label={t("fields.email")}
 						type="email"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
@@ -348,7 +340,7 @@ export default function AuthModal() {
 
 					{!successMessage && (
 						<Button type="submit" variant="contained" disabled={submitting}>
-							Envoyer le lien
+							{t("resetPassword.submit")}
 						</Button>
 					)}
 
@@ -359,7 +351,7 @@ export default function AuthModal() {
 							setScreen("signIn");
 						}}
 					>
-						Retour à la connexion
+						{t("resetPassword.backToSignIn")}
 					</Button>
 				</Box>
 			)}

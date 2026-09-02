@@ -2,14 +2,23 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import { AppContextProvider, useAppContext } from "@/ui/components/AppContext";
+import type { ReactNode } from "react";
 import usePaneMenuItems from "./usePaneMenuItems";
+
+const I18n = i18nWrapper();
+const wrapper = ({ children }: { children: ReactNode }) => (
+	<I18n>
+		<AppContextProvider>{children}</AppContextProvider>
+	</I18n>
+);
 
 describe("usePaneMenuItems", () => {
 	function setup() {
 		return renderHook(
 			() => ({ items: usePaneMenuItems(), appContext: useAppContext() }),
-			{ wrapper: AppContextProvider },
+			{ wrapper },
 		);
 	}
 

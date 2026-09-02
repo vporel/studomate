@@ -42,19 +42,13 @@ export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<Juncti
 					"error",
 					"JUNCTION_PIVOT_NOT_CONNECTED",
 					source,
-					"Le pivot n'est connecté à aucun élément.",
 				),
 			);
 		}
 
 		if (junctionOrEnd.data.branchesOrder.length < 2) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_OR_MIN_BRANCHES",
-					source,
-					"Une convergence en OU doit avoir au moins deux branches.",
-				),
+				new ProjectAnalyserIssue("error", "JUNCTION_OR_MIN_BRANCHES", source),
 			);
 		}
 
@@ -64,7 +58,6 @@ export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<Juncti
 					"error",
 					"JUNCTION_BRANCH_NOT_CONNECTED",
 					source,
-					"Certaines branches ne sont connectées à aucun élément.",
 				),
 			);
 			return issues;
@@ -86,7 +79,6 @@ export default class JunctionOrEndAnalyser extends GrafcetElementAnalyser<Juncti
 						"error",
 						"JUNCTION_OR_END_BRANCH_NOT_TRANSITION",
 						source,
-						"Une convergence en OU doit provenir de transitions.",
 					),
 				);
 			}

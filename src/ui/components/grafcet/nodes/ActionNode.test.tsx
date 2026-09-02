@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -87,7 +88,7 @@ function setup({
 		isConnectable: true,
 	} as unknown as ActionNodeType & { id: string };
 
-	render(<ActionNode {...(props as any)} />);
+	renderWithI18n(<ActionNode {...(props as any)} />);
 
 	return { updateNodeData };
 }

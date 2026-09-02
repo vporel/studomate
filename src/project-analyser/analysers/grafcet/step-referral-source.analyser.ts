@@ -33,7 +33,6 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 						"error",
 						"STEP_REFERRAL_NUMBER_EMPTY",
 						source,
-						"Le numéro de l'étape cible est vide, liaison non fonctionnelle.",
 					),
 				);
 			}
@@ -48,7 +47,6 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 					"error",
 					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
-					"Le numéro de l'étape doit être un entier positif.",
 				),
 			);
 		}
@@ -79,7 +77,7 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 					"error",
 					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 					source,
-					`Aucune étape avec le numéro ${stepReferral.data.targetStepNumber} n'existe dans le grafcet.`,
+					{ stepNumber: stepReferral.data.targetStepNumber as number },
 				),
 			);
 		}
@@ -90,7 +88,6 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 					"error",
 					"STEP_REFERRAL_SOURCE_MISSING_UPSTREAM_CONNECTION",
 					source,
-					`Connexion manquante en amont.`,
 				),
 			);
 		}
@@ -111,7 +108,6 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 					"error",
 					"STEP_REFERRAL_SELF_REFERENCE",
 					source,
-					`Le tenant ne peut pas référer l'étape dont il dépend directement.`,
 				),
 			);
 		}

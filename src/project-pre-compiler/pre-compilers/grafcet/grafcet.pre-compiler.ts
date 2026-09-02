@@ -5,7 +5,6 @@ import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import ReplacerVisitor from "@/expression-language/ast/visitors/replacer.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectPreCompilerError, {
@@ -83,18 +82,14 @@ export default class GrafcetPreCompiler {
 				takenVariablesNames.add(generatedMemoVar.getName());
 				variables.push(generatedMemoVar);
 			} catch (e) {
-				const message =
-					SimulatorExceptionsMapper.getUserFriendlyMessage(
-						e,
-						dialect === Dialect.EN ? "EN" : "FR",
-					) || String(e);
+				const message = e instanceof Error ? e.message : String(e);
 				const source = ProjectPreCompilerErrorSourceBuilder.buildStepSource(
 					step.id,
 				);
 				errors.push(
 					e instanceof ProjectPreCompilerError
 						? e
-						: new ProjectPreCompilerError(source, message),
+						: new ProjectPreCompilerError(source, message, e),
 				);
 			}
 		}
@@ -111,11 +106,7 @@ export default class GrafcetPreCompiler {
 					),
 				);
 			} catch (e) {
-				const message =
-					SimulatorExceptionsMapper.getUserFriendlyMessage(
-						e,
-						dialect === Dialect.EN ? "EN" : "FR",
-					) || String(e);
+				const message = e instanceof Error ? e.message : String(e);
 				const source =
 					ProjectPreCompilerErrorSourceBuilder.buildTransitionSource(
 						transition.id,
@@ -123,7 +114,7 @@ export default class GrafcetPreCompiler {
 				errors.push(
 					e instanceof ProjectPreCompilerError
 						? e
-						: new ProjectPreCompilerError(source, message),
+						: new ProjectPreCompilerError(source, message, e),
 				);
 			}
 		}
@@ -139,18 +130,14 @@ export default class GrafcetPreCompiler {
 				if (!result) continue;
 				actions.set(action.id, result);
 			} catch (e) {
-				const message =
-					SimulatorExceptionsMapper.getUserFriendlyMessage(
-						e,
-						dialect === Dialect.EN ? "EN" : "FR",
-					) || String(e);
+				const message = e instanceof Error ? e.message : String(e);
 				const source = ProjectPreCompilerErrorSourceBuilder.buildActionSource(
 					action.id,
 				);
 				errors.push(
 					e instanceof ProjectPreCompilerError
 						? e
-						: new ProjectPreCompilerError(source, message),
+						: new ProjectPreCompilerError(source, message, e),
 				);
 			}
 		}

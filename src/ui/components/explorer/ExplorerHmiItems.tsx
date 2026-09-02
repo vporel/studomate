@@ -3,6 +3,7 @@
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Chip, Typography } from "@mui/material";
 import { Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
+import { useT } from "@/ui/i18n/useT";
 import HmiIcon from "../icons/HmiIcon";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -27,6 +28,7 @@ const ExplorerHmiItem = ({
 		element: ExplorerContextMenuElement,
 	) => void;
 }) => {
+	const t = useT("explorer");
 	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const designing = useProjectStore(
@@ -60,7 +62,7 @@ const ExplorerHmiItem = ({
 			trailing={
 				isMain && (
 					<Chip
-						label="Principale"
+						label={t("hmiMain")}
 						size="small"
 						color="primary"
 						variant="outlined"
@@ -118,6 +120,7 @@ const ExplorerHmiItems = ({
 		element: ExplorerContextMenuElement,
 	) => void;
 }) => {
+	const t = useT("explorer");
 	// `useShallow` sur des sélecteurs à valeurs primitives (ids, noms) pour éviter les
 	// re-rendus infinis : un sélecteur retournant des objets reconstruits à chaque appel
 	// ferait systématiquement échouer la comparaison superficielle de Zustand.
@@ -145,7 +148,7 @@ const ExplorerHmiItems = ({
 				<Typography
 					sx={{ padding: "3px 0 3px 33px", color: "gray", fontSize: "0.8rem" }}
 				>
-					Aucune page HMI
+					{t("noHmiPages")}
 				</Typography>
 			) : (
 				hmiPagesIds.map((hmiPageId) => (

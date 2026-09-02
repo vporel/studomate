@@ -4,6 +4,7 @@ import FolderIcon from "@/ui/components/icons/FolderIcon";
 import { Box } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view";
 import React, { useMemo, useRef } from "react";
+import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import ExplorerHeader from "./ExplorerHeader";
 import ExplorerProgramsItems from "./ExplorerProgramsItems";
@@ -32,6 +33,7 @@ export const treeItemStyles: CustomTreeItemStyles = {
 };
 
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
+	const t = useT("explorer");
 	const explorerRef = useRef<HTMLDivElement>(null);
 	const project = useProjectStore((state) => state.project);
 	const hasSystemBlockInstances = useMemo(
@@ -65,12 +67,12 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 		>
 			<ExplorerHeader />
 			<SimpleTreeView
-				aria-label="Explorateur du projet"
+				aria-label={t("ariaLabel")}
 				defaultExpandedItems={["variables", "programs", "hmi"]}
 			>
 				<CustomTreeItem
 					itemId="variables"
-					label="Variables"
+					label={t("sections.variables")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 				>
@@ -81,7 +83,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="programs"
-					label="Programmes"
+					label={t("sections.programs")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 					onContextMenu={(e) => {
@@ -98,7 +100,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				{hasSystemBlockInstances && (
 					<CustomTreeItem
 						itemId="system-block-instances"
-						label="Instances de blocs"
+						label={t("sections.blockInstances")}
 						IconComponent={FolderIcon}
 						styles={treeItemStyles}
 					>
@@ -110,7 +112,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				)}
 				<CustomTreeItem
 					itemId="system-blocks"
-					label="Blocs systèmes"
+					label={t("sections.systemBlocks")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 				>
@@ -118,7 +120,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="hmi"
-					label="Interfaces HMI"
+					label={t("sections.hmi")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 					onContextMenu={(e) => {

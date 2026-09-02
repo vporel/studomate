@@ -12,14 +12,15 @@ export type SystemBlockType = Exclude<BlockType, "user-program">;
 
 export type SystemBlockCatalogEntry = {
 	blockType: SystemBlockType;
-	/** Libellé et icône dans la section « Blocs systèmes » de l'explorateur. */
-	explorerLabel: string;
+	/** Clé i18n (namespace `ladderEditor.systemBlocks`) du libellé dans la section « Blocs
+	 * systèmes » de l'explorateur — résolue par le consommateur. */
+	explorerLabelKey: string;
 	explorerItemId: string;
 	ExplorerIcon: ElementType;
 	/** Présent si le bloc a aussi un outil dédié dans la toolbar du ladder (blocs configurés
 	 * entièrement sur le canevas — pas ceux à fenêtre). `symbol` est le texte court affiché dans
-	 * l'icône rectangulaire, `label` l'infobulle. */
-	toolbar?: { label: string; symbol: string; width: number };
+	 * l'icône rectangulaire, `labelKey` la clé i18n de l'infobulle. */
+	toolbar?: { labelKey: string; symbol: string; width: number };
 	/** `"config-dialog"` : la dépose ouvre une fenêtre de configuration avant insertion (timer,
 	 * compteur). `"direct-insert"` : insère un bloc vide, configuré ensuite sur le canevas. */
 	interaction: "direct-insert" | "config-dialog";
@@ -33,25 +34,25 @@ export type SystemBlockCatalogEntry = {
 export const SYSTEM_BLOCK_CATALOG: SystemBlockCatalogEntry[] = [
 	{
 		blockType: "timer",
-		explorerLabel: "Temporisation",
+		explorerLabelKey: "timerLabel",
 		explorerItemId: "system-block-timer",
 		ExplorerIcon: TimerBlockIcon,
 		interaction: "config-dialog",
 	},
 	{
 		blockType: "counter",
-		explorerLabel: "Compteur",
+		explorerLabelKey: "counterLabel",
 		explorerItemId: "system-block-counter",
 		ExplorerIcon: CounterBlockIcon,
 		interaction: "config-dialog",
 	},
 	{
 		blockType: "compare",
-		explorerLabel: "Comparaison",
+		explorerLabelKey: "compareLabel",
 		explorerItemId: "system-block-compare",
 		ExplorerIcon: CompareBlockIcon,
 		toolbar: {
-			label: "Bloc Compare — compare deux valeurs",
+			labelKey: "compareToolbarLabel",
 			symbol: "COMPARE",
 			width: 68,
 		},
@@ -59,11 +60,11 @@ export const SYSTEM_BLOCK_CATALOG: SystemBlockCatalogEntry[] = [
 	},
 	{
 		blockType: "assign",
-		explorerLabel: "Affectation",
+		explorerLabelKey: "assignLabel",
 		explorerItemId: "system-block-assign",
 		ExplorerIcon: AssignBlockIcon,
 		toolbar: {
-			label: "Bloc Assign — affecte une valeur à une variable",
+			labelKey: "assignToolbarLabel",
 			symbol: "ASSIGN",
 			width: 54,
 		},
@@ -71,11 +72,11 @@ export const SYSTEM_BLOCK_CATALOG: SystemBlockCatalogEntry[] = [
 	},
 	{
 		blockType: "arithmetic",
-		explorerLabel: "Calcul",
+		explorerLabelKey: "arithmeticLabel",
 		explorerItemId: "system-block-arithmetic",
 		ExplorerIcon: ArithmeticBlockIcon,
 		toolbar: {
-			label: "Bloc calc - Opération arithmétique",
+			labelKey: "arithmeticToolbarLabel",
 			symbol: "CALC",
 			width: 44,
 		},

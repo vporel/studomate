@@ -7,14 +7,15 @@ import {
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";
+import { useT } from "@/ui/i18n/useT";
 import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useBlockNameField } from "./useBlockNameField";
 import { useSystemBlockDialog } from "./useSystemBlockDialog";
 
-const COUNTER_TYPE_LABELS: Record<CounterType, string> = {
-	CTU: "CTU — compte vers le haut",
-	CTD: "CTD — compte vers le bas",
+const COUNTER_TYPE_KEYS: Record<CounterType, string> = {
+	CTU: "typeCTU",
+	CTD: "typeCTD",
 };
 
 /**
@@ -38,6 +39,7 @@ export default function CounterBlockDialog() {
 		commandsStackManager,
 	} = useSystemBlockDialog("counter");
 	const project = useProjectStore((state) => state.project);
+	const t = useT("ladderEditor.counterDialog");
 
 	const [name, setName] = useState("");
 	const [counterType, setCounterType] = useState<CounterType>("CTU");
@@ -97,12 +99,12 @@ export default function CounterBlockDialog() {
 		<CustomModal
 			open={open}
 			onClose={onClose}
-			title={editing ? "Modifier le compteur" : "Nouveau compteur"}
+			title={editing ? t("editTitle") : t("createTitle")}
 			width={400}
 		>
 			<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 				<TextField
-					label="Nom"
+					label={t("name")}
 					autoFocus
 					slotProps={{ inputLabel: { shrink: true } }}
 					value={name}
@@ -115,24 +117,22 @@ export default function CounterBlockDialog() {
 				/>
 				<TextField
 					select
-					label="Variante"
+					label={t("variant")}
 					value={counterType}
 					onChange={(e) => setCounterType(e.target.value as CounterType)}
 				>
 					{COUNTER_TYPES.map((type) => (
 						<MenuItem key={type} value={type}>
-							{COUNTER_TYPE_LABELS[type]}
+							{t(COUNTER_TYPE_KEYS[type] as never)}
 						</MenuItem>
 					))}
 				</TextField>
 				<Typography variant="caption" color="text.secondary">
-					Contrairement à une temporisation, ce compteur évalue son entrée à
-					chaque cycle (pas de détection de front) : il compte tant que celle-ci
-					reste vraie, sans stopper à la valeur de consigne.
+					{t("note")}
 				</Typography>
 				<div style={{ display: "flex", justifyContent: "flex-end" }}>
 					<Button variant="contained" onClick={onSubmit} disabled={!canSubmit}>
-						{editing ? "Enregistrer" : "Créer"}
+						{editing ? t("save") : t("create")}
 					</Button>
 				</div>
 			</div>

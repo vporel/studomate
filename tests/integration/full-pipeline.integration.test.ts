@@ -150,8 +150,8 @@ describe("Full Pipeline Integration Test", () => {
 
 			// Analysis should catch the undefined variable
 			expect(pipeline.analysis.issues.length).toBeGreaterThan(0);
-			const undefinedVarIssue = pipeline.analysis.issues.find((i) =>
-				i.message.includes("UNDEFINED_VARIABLE"),
+			const undefinedVarIssue = pipeline.analysis.issues.find(
+				(i) => i.code === "TRANSITION_INVALID_EXPRESSION",
 			);
 			expect(undefinedVarIssue).toBeDefined();
 			expect(undefinedVarIssue?.severity).toBe("error");

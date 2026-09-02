@@ -1,5 +1,7 @@
+import { formatAnalysisIssue } from "@/bridge/analysis-issue-formatter";
 import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import { ElementType } from "@/schemas/grafcet/element.schema";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import {
 	Dispatch,
 	SetStateAction,
@@ -25,6 +27,7 @@ export default function useWithTextNodeValue(
 	error: string | false,
 ] {
 	const { store } = useGrafcetContext();
+	const { locale } = useLocaleContext();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const [value, _setValue] = useState(data[valueProperty] + "");
 	const [editing, setEditing] = useState(false);
@@ -69,9 +72,11 @@ export default function useWithTextNodeValue(
 				analyser?.analyseIsolated(elementCopy, { allowEmptyContent: true }) ??
 				[];
 			const errors = issues.filter((issue) => issue.severity === "error");
-			setError(errors.length > 0 ? errors[0].message : false);
+			setError(
+				errors.length > 0 ? formatAnalysisIssue(errors[0], locale) : false,
+			);
 		},
-		[transformValue, nodeId, valueProperty, store, analyser],
+		[transformValue, nodeId, valueProperty, store, analyser, locale],
 	);
 
 	return [value, setValue, editing, setEditing, saveValue, error];

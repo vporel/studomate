@@ -1,6 +1,7 @@
 "use client";
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import {
 	closestCenter,
 	DndContext,
@@ -20,6 +21,7 @@ import { useShallow } from "zustand/shallow";
 import PageTab, { PageTabProps } from "./PageTab";
 
 const PagesTabBar = () => {
+	const t = useT("pages.tabBar");
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
@@ -68,7 +70,7 @@ const PagesTabBar = () => {
 		<Box
 			className="pages__tab-bar"
 			role="tablist"
-			aria-label="Onglets ouverts"
+			aria-label={t("ariaLabel")}
 			sx={{
 				width: "100%",
 				height: "35px",

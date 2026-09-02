@@ -8,6 +8,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Divider } from "@mui/material";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 import CoilSymbol from "../nodes/CoilSymbol";
 import ContactSymbol from "../nodes/ContactSymbol";
@@ -49,6 +50,8 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 		(state) => state.commandsStackManager,
 	);
 	const mode = useProjectStore((state) => state.mode);
+	const t = useT("ladderEditor.toolbar");
+	const tsb = useT("ladderEditor.systemBlocks");
 
 	const addSection = () => {
 		commandsStackManager.executeOperation([
@@ -78,44 +81,44 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
 				<LadderTool
 					element={{ kind: "contact", type: "NO" }}
-					label="Contact normalement ouvert (NO)"
+					label={t("contactNO")}
 				>
 					<ContactSymbol type="NO" />
 				</LadderTool>
 				<LadderTool
 					element={{ kind: "contact", type: "NF" }}
-					label="Contact normalement fermé (NF)"
+					label={t("contactNF")}
 				>
 					<ContactSymbol type="NF" />
 				</LadderTool>
 				<LadderTool
 					element={{ kind: "contact", type: "P" }}
-					label="Contact détection front montant (P)"
+					label={t("contactP")}
 				>
 					<ContactSymbol type="P" />
 				</LadderTool>
 				<LadderTool
 					element={{ kind: "contact", type: "N" }}
-					label="Contact détection front descendant (N)"
+					label={t("contactN")}
 				>
 					<ContactSymbol type="N" />
 				</LadderTool>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				<LadderTool
 					element={{ kind: "coil", type: "normal" }}
-					label="Bobine normale"
+					label={t("coilNormal")}
 				>
 					<CoilSymbol type="normal" />
 				</LadderTool>
 				<LadderTool
 					element={{ kind: "coil", type: "set" }}
-					label="Bobine Set (mémorisation à 1)"
+					label={t("coilSet")}
 				>
 					<CoilSymbol type="set" />
 				</LadderTool>
 				<LadderTool
 					element={{ kind: "coil", type: "reset" }}
-					label="Bobine Reset (mémorisation à 0)"
+					label={t("coilReset")}
 				>
 					<CoilSymbol type="reset" />
 				</LadderTool>
@@ -125,7 +128,7 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 						key={entry.blockType}
 						blockType={entry.blockType}
 						width={entry.toolbar!.width}
-						label={entry.toolbar!.label}
+						label={tsb(entry.toolbar!.labelKey as never)}
 					>
 						<SystemBlockToolLabel>{entry.toolbar!.symbol}</SystemBlockToolLabel>
 					</LadderSystemBlockTool>
@@ -137,7 +140,7 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 					onClick={addSection}
 					disabled={mode !== ProjectMode.DESIGN}
 				>
-					Section
+					{t("addSection")}
 				</Button>
 			</FlexBox>
 		</FlexBox>

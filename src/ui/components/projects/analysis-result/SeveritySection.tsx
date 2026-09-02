@@ -1,4 +1,5 @@
 import { AnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import { useT } from "@/ui/i18n/useT";
 import { Box, List, Typography } from "@mui/material";
 import ProgramIssues, { IssueListItem } from "./ProgramIssues";
 
@@ -27,23 +28,20 @@ export default function SeveritySection({
 		elId?: string,
 	) => void;
 }) {
+	const t = useT("projects.analysisResult");
 	const isError = severity === "error";
 	return (
 		<>
 			<Typography variant="h5">{">> " + title}</Typography>
 			{!hasProgramIssues && issues.project.length === 0 && (
 				<Typography sx={{ p: 2 }}>
-					{isError
-						? "Aucune erreur lors de l'analyse."
-						: "Aucun avertissement."}
+					{isError ? t("noErrors") : t("noWarnings")}
 				</Typography>
 			)}
 			{issues.project.length > 0 && (
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
-						{isError
-							? "Erreurs globales au projet"
-							: "Avertissements globaux au projet"}
+						{isError ? t("projectErrors") : t("projectWarnings")}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{issues.project.map((msg: string, idx: number) => (
@@ -61,7 +59,7 @@ export default function SeveritySection({
 					{Object.entries(issues.grafcets).map(([grafcetId, progIssues]) => (
 						<ProgramIssues
 							key={grafcetId}
-							programKind="Grafcet"
+							programKind={t("grafcetKind")}
 							programId={grafcetId}
 							programName={getGrafcetName(grafcetId)}
 							issues={progIssues}
@@ -81,7 +79,7 @@ export default function SeveritySection({
 					{Object.entries(issues.ladders).map(([ladderId, progIssues]) => (
 						<ProgramIssues
 							key={ladderId}
-							programKind="Ladder"
+							programKind={t("ladderKind")}
 							programId={ladderId}
 							programName={getLadderName(ladderId)}
 							issues={progIssues}

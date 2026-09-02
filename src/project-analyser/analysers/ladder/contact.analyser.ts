@@ -30,7 +30,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 					"error",
 					"CONTACT_VARIABLE_UNDECLARED",
 					source,
-					`La variable "${element.data.variable}" n'est pas déclarée.`,
+					{ variableName: element.data.variable },
 				),
 			);
 		} else if (variable.type !== "BOOL") {
@@ -39,7 +39,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 					"error",
 					"CONTACT_VARIABLE_NOT_BOOLEAN",
 					source,
-					`La variable "${element.data.variable}" doit être booléenne.`,
+					{ variableName: element.data.variable },
 				),
 			);
 		}
@@ -51,24 +51,14 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			!connections.some((connection) => connection.source.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"warning",
-					"NETWORK_NO_COIL",
-					source,
-					"Cette branche ne pilote aucune bobine.",
-				),
+				new ProjectAnalyserIssue("warning", "NETWORK_NO_COIL", source),
 			);
 		}
 		if (
 			!connections.some((connection) => connection.target.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"ELEMENT_NO_PREDECESSOR",
-					source,
-					"Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
-				),
+				new ProjectAnalyserIssue("error", "ELEMENT_NO_PREDECESSOR", source),
 			);
 		}
 

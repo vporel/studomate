@@ -1,0 +1,102 @@
+{
+	"toolbar": {
+		"contactNO": "Contact normalement ouvert (NO)",
+		"contactNF": "Contact normalement fermé (NF)",
+		"contactP": "Contact détection front montant (P)",
+		"contactN": "Contact détection front descendant (N)",
+		"coilNormal": "Bobine normale",
+		"coilSet": "Bobine Set (mémorisation à 1)",
+		"coilReset": "Bobine Reset (mémorisation à 0)",
+		"addSection": "Section"
+	},
+	"systemBlocks": {
+		"timerLabel": "Temporisation",
+		"counterLabel": "Compteur",
+		"compareLabel": "Comparaison",
+		"assignLabel": "Affectation",
+		"arithmeticLabel": "Calcul",
+		"compareToolbarLabel": "Bloc Compare — compare deux valeurs",
+		"assignToolbarLabel": "Bloc Assign — affecte une valeur à une variable",
+		"arithmeticToolbarLabel": "Bloc calc — opération arithmétique"
+	},
+	"sectionHeader": {
+		"reorderAria": "Réordonner la section",
+		"expand": "Déplier",
+		"collapse": "Replier",
+		"expandAria": "Déplier la section",
+		"collapseAria": "Replier la section",
+		"number": "Section {number} :",
+		"titleAria": "Titre de la section",
+		"zoomIn": "Zoomer",
+		"zoomOut": "Dézoomer",
+		"zoomInAria": "Zoomer la section",
+		"zoomOutAria": "Dézoomer la section",
+		"copy": "Copier",
+		"copyAria": "Copier la section",
+		"duplicate": "Dupliquer",
+		"duplicateAria": "Dupliquer la section",
+		"delete": "Supprimer",
+		"deleteAria": "Supprimer la section"
+	},
+	"sectionDescription": {
+		"placeholder": "Description (optionnelle)…",
+		"aria": "Description de la section"
+	},
+	"contextMenu": {
+		"selectAll": "Tout sélectionner",
+		"selectEdges": "Sélectionner les liaisons",
+		"paste": "Coller",
+		"type": "Type",
+		"contactNO": "Normalement ouvert (NO)",
+		"contactNF": "Normalement fermé (NF)",
+		"contactP": "Front montant (P)",
+		"contactN": "Front descendant (N)",
+		"coilNormal": "Bobine normale",
+		"coilSet": "Bobine Set (mémorisation à 1)",
+		"coilReset": "Bobine Reset (mémorisation à 0)",
+		"copy": "Copier",
+		"cut": "Couper",
+		"delete": "Supprimer"
+	},
+	"block": {
+		"nameAria": "Nom du bloc",
+		"nameTaken": "Ce nom est déjà utilisé par une variable ou un autre bloc du projet.",
+		"compareOperatorAria": "Opérateur de comparaison",
+		"timerVariantAria": "Variante de la temporisation",
+		"counterVariantAria": "Variante du compteur",
+		"arithmeticOperatorAria": "Opérateur du bloc",
+		"assignStaticLabel": "Assign",
+		"arithmeticStaticLabel": "Calc"
+	},
+	"timerDialog": {
+		"createTitle": "Nouvelle temporisation",
+		"editTitle": "Modifier la temporisation",
+		"name": "Nom",
+		"variant": "Variante",
+		"typeTON": "TON — retard à l'enclenchement",
+		"typeTOF": "TOF — retard au déclenchement",
+		"typeTP": "TP — impulsion calibrée",
+		"create": "Créer",
+		"save": "Enregistrer"
+	},
+	"counterDialog": {
+		"createTitle": "Nouveau compteur",
+		"editTitle": "Modifier le compteur",
+		"name": "Nom",
+		"variant": "Variante",
+		"typeCTU": "CTU — compte vers le haut",
+		"typeCTD": "CTD — compte vers le bas",
+		"note": "Contrairement à une temporisation, ce compteur évalue son entrée à chaque cycle (pas de détection de front) : il compte tant que celle-ci reste vraie, sans stopper à la valeur de consigne.",
+		"create": "Créer",
+		"save": "Enregistrer"
+	},
+	"reorder": {
+		"instructions": "Pour réordonner une section : Espace ou Entrée pour la saisir, flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+		"grabbed": "Section {position} saisie.",
+		"moved": "Section {position} déplacée en position {over}.",
+		"outside": "Section {position} n'est plus au-dessus d'une zone de dépôt.",
+		"dropped": "Section déposée en position {over}.",
+		"droppedInitial": "Section {position} déposée à sa position initiale.",
+		"cancelled": "Déplacement annulé. Section {position} remise à sa position initiale."
+	}
+}

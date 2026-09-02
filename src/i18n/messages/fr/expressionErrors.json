@@ -1,0 +1,68 @@
+{
+	"labels": {
+		"operator": {
+			"AND": "ET",
+			"OR": "OU",
+			"NOT": "NON"
+		},
+		"nativeType": {
+			"number": "nombre",
+			"boolean": "booléen",
+			"string": "chaîne de caractères",
+			"unknown": "inconnu"
+		},
+		"side": {
+			"left": "gauche",
+			"right": "droite"
+		},
+		"astNodeType": {
+			"IDENTIFIER": "Variable",
+			"BOOLEAN_LITERAL": "Booléen",
+			"NUMBER_LITERAL": "Nombre",
+			"STRING_LITERAL": "Chaîne de caractères",
+			"UNARY_EXPRESSION": "Expression unaire",
+			"COMPARISON_EXPRESSION": "Expression de comparaison",
+			"LOGICAL_EXPRESSION": "Expression logique",
+			"ARITHMETIC_EXPRESSION": "Expression arithmétique",
+			"ASSIGN_STATEMENT": "Affectation",
+			"TIMER_BLOCK": "Bloc de temporisation",
+			"TIMER_STRING_DECLARATION": "Temporisation",
+			"COUNTER_BLOCK": "Bloc compteur",
+			"IF_CONTROL": "Contrôle conditionnel"
+		}
+	},
+	"UNKNOWN_VARIABLE_NAME": "Variable inconnue : {variableName}",
+	"UNKNOWN_IDENTIFIER": "Variable inconnue : {identifier}",
+	"UNAUTHORIZED_NODE": "Nœud non autorisé de type : {nodeType}",
+	"INVALID_UNARY_OPERAND_TYPE": "Type invalide pour l'opérateur « {operator} » : attendu {expected}, obtenu {actual}",
+	"INVALID_BINARY_OPERAND_TYPE": "Type invalide pour l'opérateur « {operator} » côté {side} : attendu {expected}, obtenu {actual}",
+	"INVALID_ASSIGNMENT_TARGET": "Cible d'affectation invalide : la partie gauche doit être une variable.",
+	"INPUT_IDENTIFIER_ASSIGNMENT": "Affectation invalide : la variable affectée est une variable d'entrée.",
+	"INCOMPATIBLE_OPERANDS_TYPES": "Types incompatibles pour l'opérateur « {operator} » : gauche {leftType}, droite {rightType}",
+	"INVALID_TIMER_INPUT_TYPE": "Type d'entrée de temporisation invalide : l'entrée d'une temporisation doit être un booléen (trouvé {actual})",
+	"INVALID_TIMER_LAST_INPUT_NODE": "Nœud de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être une variable",
+	"INVALID_TIMER_LAST_INPUT_TYPE": "Type de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être un booléen (trouvé {actual})",
+	"INVALID_TIMER_OUTPUT_NODE": "Nœud de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit être une variable",
+	"INVALID_TIMER_OUTPUT_TYPE": "Type de sortie de temporisation invalide : la sortie d'un bloc de temporisation doit retourner un booléen (trouvé {actual})",
+	"INVALID_TIMER_PRESET_TIME_TYPE": "Type de temps préréglé de temporisation invalide : attendu {expected}, obtenu {actual}",
+	"INVALID_TIMER_ELAPSED_TIME_NODE": "Nœud de temps écoulé de temporisation invalide : le temps écoulé d'un bloc de temporisation doit être une variable",
+	"INVALID_TIMER_ELAPSED_TIME_TYPE": "Type de temps écoulé de temporisation invalide : attendu {expected}, obtenu {actual}",
+	"INVALID_CONTROL_CONDITION_TYPE": "Type de condition invalide : la condition d'une structure de contrôle doit être un booléen",
+	"INVALID_COUNTER_INPUT_TYPE": "Type d'entrée de compteur invalide : l'entrée d'un compteur doit être un booléen (trouvé {actual})",
+	"INVALID_COUNTER_CONTROL_TYPE": "Type de contrôle de compteur invalide : le contrôle (R/LD) d'un compteur doit être un booléen (trouvé {actual})",
+	"INVALID_COUNTER_CURRENT_VALUE_NODE": "Nœud de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être une variable",
+	"INVALID_COUNTER_CURRENT_VALUE_TYPE": "Type de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être numérique (trouvé {actual})",
+	"INVALID_COUNTER_OUTPUT_NODE": "Nœud de sortie de compteur invalide : la sortie d'un bloc compteur doit être une variable",
+	"INVALID_COUNTER_OUTPUT_TYPE": "Type de sortie de compteur invalide : la sortie d'un bloc compteur doit retourner un booléen (trouvé {actual})",
+	"INVALID_COUNTER_PRESET_VALUE_TYPE": "Type de valeur préréglée de compteur invalide : attendu {expected}, obtenu {actual}",
+	"DIVISION_BY_ZERO": "Division par zéro : {left} / {right}",
+	"PARSING_ENDED_BEFORE_EOF": "Expression invalide : caractère inattendu à la position {position}",
+	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expression attendue (variable, nombre, chaîne) ou '(' à la position {position}",
+	"MISSING_RIGHT_PARENTHESE": "Parenthèse fermante manquante à la position {position}",
+	"MISSING_RIGHT_PARENTHESE_AT_END": "Parenthèse fermante manquante à la position {position} (fin d'entrée)",
+	"BAD_TOKEN_TYPE": "Jeton inattendu à la position {position} : attendu {expected}, trouvé {actual}",
+	"INVALID_CHARACTER": "Caractère inattendu « {char} » à la position {position}",
+	"INVALID_KEYWORD": "Mot-clé invalide « {keyword} » à la position {position}",
+	"UNTERMINATED_STRING": "Chaîne non terminée commençant par {quote} à la position {position}",
+	"UNKNOWN_ERROR": "Expression invalide : erreur inconnue"
+}

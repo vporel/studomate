@@ -25,12 +25,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 		) {
 			if (!allowEmptyContent) {
 				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_NUMBER_MISSING",
-						source,
-						"Le numéro de l'étape n'est pas défini.",
-					),
+					new ProjectAnalyserIssue("error", "STEP_NUMBER_MISSING", source),
 				);
 			}
 			return issues;
@@ -41,7 +36,6 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 					"error",
 					"STEP_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
-					"Le numéro de l'étape doit être un entier positif ou nul.",
 				),
 			);
 		}
@@ -69,12 +63,9 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 		);
 		if (sameNumber.length > 0) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_NUMBER_DUPLICATE",
-					source,
-					`Le numéro d'étape ${step.data.number} est utilisé par plusieurs étapes.`,
-				),
+				new ProjectAnalyserIssue("error", "STEP_NUMBER_DUPLICATE", source, {
+					stepNumber: step.data.number as number,
+				}),
 			);
 		}
 
@@ -84,23 +75,13 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 		) {
 			//We allow only the initial step to have no predecessor, as it can can be activated through a step referral source
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_NO_PREDECESSOR",
-					source,
-					"L'étape n'a aucun élément en amont.",
-				),
+				new ProjectAnalyserIssue("error", "STEP_NO_PREDECESSOR", source),
 			);
 		}
 
 		if (!StepHelper.hasSuccessor(step.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_NO_SUCCESSOR",
-					source,
-					"L'étape n'a aucun élément en aval.",
-				),
+				new ProjectAnalyserIssue("error", "STEP_NO_SUCCESSOR", source),
 			);
 		}
 
@@ -115,12 +96,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 			).length > 1
 		) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_MULTIPLE_SUCCESSORS",
-					source,
-					"L'étape a plusieurs éléments en aval. Une sélection de séquence doit passer par une divergence en OU.",
-				),
+				new ProjectAnalyserIssue("error", "STEP_MULTIPLE_SUCCESSORS", source),
 			);
 		}
 

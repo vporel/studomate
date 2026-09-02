@@ -55,7 +55,7 @@ describe("JunctionAndStartAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const pivotIssue = issues.find((i) => i.message.includes("pivot"));
+			const pivotIssue = issues.find((i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED");
 			expect(pivotIssue).toBeDefined();
 			expect(pivotIssue?.severity).toBe("error");
 		});
@@ -82,7 +82,7 @@ describe("JunctionAndStartAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const branchIssue = issues.find((i) => i.message.includes("branches"));
+			const branchIssue = issues.find((i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED");
 			expect(branchIssue).toBeDefined();
 			expect(branchIssue?.severity).toBe("error");
 		});
@@ -121,7 +121,7 @@ describe("JunctionAndStartAnalyser", () => {
 			);
 
 			const closureIssue = issues.find((i) =>
-				i.message.includes("convergence en ET"),
+				i.code === "JUNCTION_AND_DIVERGENCE_NOT_CLOSED",
 			);
 			expect(closureIssue).toBeDefined();
 			expect(closureIssue?.severity).toBe("error");
@@ -138,7 +138,7 @@ describe("JunctionAndStartAnalyser", () => {
 			);
 
 			const closureIssue = issues.find((i) =>
-				i.message.includes("convergence en ET"),
+				i.code === "JUNCTION_AND_DIVERGENCE_NOT_CLOSED",
 			);
 			expect(closureIssue).toBeDefined();
 			expect(closureIssue?.severity).toBe("error");
@@ -155,7 +155,7 @@ describe("JunctionAndStartAnalyser", () => {
 			);
 
 			const mismatchIssue = issues.find((i) =>
-				i.message.includes("nombre de branches"),
+				i.code === "JUNCTION_AND_BRANCH_COUNT_MISMATCH",
 			);
 			expect(mismatchIssue).toBeDefined();
 			expect(mismatchIssue?.severity).toBe("error");

@@ -4,6 +4,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useLadderMenuItems(): (
@@ -15,12 +16,15 @@ export default function useLadderMenuItems(): (
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
 
+	const t = useT("explorer.menu");
+	const tc = useT("explorer.confirmDelete");
+
 	return useCallback(
 		(ladderId: string) => {
 			return [
 				[
 					{
-						label: "Ouvrir",
+						label: t("open"),
 						onClick: () => {
 							const ladder = laddersManager.getProgramOrThrow(ladderId);
 							if (ladder) {
@@ -35,17 +39,17 @@ export default function useLadderMenuItems(): (
 				],
 				[
 					{
-						label: "Renommer",
+						label: t("rename"),
 						disabled: !designing,
 						onClick: () =>
 							explorerContextMenuEventsOut.emit("ladder-rename", { ladderId }),
 						shortcut: "F2",
 					},
 					{
-						label: "Supprimer",
+						label: t("delete"),
 						disabled: !designing,
 						onClick: () => {
-							if (confirm("Êtes-vous sûr de vouloir supprimer ce ladder ?")) {
+							if (confirm(tc("ladder"))) {
 								laddersManager.deleteProgramById(ladderId);
 							}
 						},
@@ -53,6 +57,6 @@ export default function useLadderMenuItems(): (
 				],
 			];
 		},
-		[laddersManager, pagesManager, designing],
+		[laddersManager, pagesManager, designing, t, tc],
 	);
 }

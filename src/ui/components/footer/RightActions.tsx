@@ -3,9 +3,11 @@
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Button } from "@mui/material";
+import { useT } from "@/ui/i18n/useT";
 import { useProjectStore } from "../projects/ProjectContext";
 
 const RightActions = () => {
+	const t = useT("chrome.footerActions");
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
 	const analysisHasWarnings = useProjectStore(
 		(state) => state.analysisHasWarnings,
@@ -35,7 +37,7 @@ const RightActions = () => {
 					}}
 					onClick={() => setWatchTablesVisible(true)}
 				>
-					{`Tables de visualisation`}
+					{t("watchTables")}
 				</Button>
 			)}
 			{mode === ProjectMode.SIMULATION && hasHmiPages && (
@@ -49,7 +51,7 @@ const RightActions = () => {
 					}}
 					onClick={() => hmiManager.openHmiSimulationPageIfAny()}
 				>
-					{`Simulation HMI`}
+					{t("hmiSimulation")}
 				</Button>
 			)}
 			<Button
@@ -67,7 +69,13 @@ const RightActions = () => {
 				}}
 				onClick={() => setAnalysisResultVisible(true)}
 			>
-				{`Résultats de l'analyse ${!analysisHasErrors && !analysisHasWarnings ? "(OK)" : analysisHasErrors ? "(Erreurs)" : "(Avertissements)"}`}
+				{`${t("analysisResults")} ${
+					!analysisHasErrors && !analysisHasWarnings
+						? t("ok")
+						: analysisHasErrors
+							? t("errors")
+							: t("warnings")
+				}`}
 			</Button>
 		</FlexBox>
 	);

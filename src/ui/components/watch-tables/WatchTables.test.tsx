@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -46,7 +47,7 @@ describe("WatchTables", () => {
 				simulationVariablesStates: {},
 			}),
 		);
-		return render(<WatchTables />);
+		return renderWithI18n(<WatchTables />);
 	}
 
 	afterEach(() => jest.clearAllMocks());

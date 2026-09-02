@@ -8,7 +8,9 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import type { MenuTranslate } from "./menu-translate";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
 	GrafcetNodeType,
@@ -62,6 +64,22 @@ const GrafcetContextMenu = ({
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
 
+	const tMenuRaw = useT("grafcetEditor.menu");
+	const tActionTypesRaw = useT("grafcetEditor.actionTypes");
+	const tActionModesRaw = useT("grafcetEditor.actionModes");
+	const tMenu = useMemo<MenuTranslate>(
+		() => (key, values) => tMenuRaw(key as never, values as never),
+		[tMenuRaw],
+	);
+	const tActionTypes = useMemo<MenuTranslate>(
+		() => (key) => tActionTypesRaw(key as never),
+		[tActionTypesRaw],
+	);
+	const tActionModes = useMemo<MenuTranslate>(
+		() => (key) => tActionModesRaw(key as never),
+		[tActionModesRaw],
+	);
+
 	//Groups of items, the groups will be separated with dividers
 	const menuItems: ContextMenuItemType[][] = useMemo(() => {
 		const items: ContextMenuItemType[][] = [];
@@ -72,6 +90,7 @@ const GrafcetContextMenu = ({
 					copyCutPasteManager,
 					screenPosition,
 					canPaste,
+					tMenu,
 				),
 			);
 		} else {
@@ -81,7 +100,7 @@ const GrafcetContextMenu = ({
 					(element as StepNodeType).data.number as number,
 				);
 				items.push(
-					...stepContextMenuItems(element as StepNodeType, {
+					...stepContextMenuItems(element as StepNodeType, tMenu, {
 						inSimulation,
 						grafcet,
 						workflowManager,
@@ -97,6 +116,7 @@ const GrafcetContextMenu = ({
 						element as TransitionNodeType,
 						grafcet,
 						workflowManager,
+						tMenu,
 					),
 				);
 			}
@@ -104,10 +124,19 @@ const GrafcetContextMenu = ({
 				element as GrafcetNodeType,
 				workflowManager,
 				copyCutPasteManager,
+				tMenu,
 			);
 			if (element.type === "action") {
 				items.push(
-					...actionContextMenuItems(element as ActionNodeType, workflowManager),
+					...actionContextMenuItems(
+						element as ActionNodeType,
+						grafcet,
+						inSimulation,
+						workflowManager,
+						tMenu,
+						tActionTypes,
+						tActionModes,
+					),
 				);
 			}
 			if (element.type.includes("junction")) {
@@ -116,6 +145,7 @@ const GrafcetContextMenu = ({
 						element as JunctionNodeType,
 						contextMenuEvents,
 						workflowManager,
+						tMenu,
 					),
 				);
 			}
@@ -137,6 +167,9 @@ const GrafcetContextMenu = ({
 		grafcetId,
 		simulationManager,
 		forcedVariables,
+		tMenu,
+		tActionTypes,
+		tActionModes,
 	]);
 
 	//Show the menu on 'show' event

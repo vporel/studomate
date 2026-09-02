@@ -1,4 +1,3 @@
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -34,43 +33,17 @@ export default class AssignBlockAnalyser {
 
 		const issues: ProjectAnalyserIssue[] = [];
 		if (!inRaw || inRaw.trim() === "")
-			issues.push(
-				issue(
-					"BLOCK_ASSIGN_IN_EMPTY",
-					source,
-					"Le paramètre IN doit être renseignée.",
-				),
-			);
+			issues.push(issue("BLOCK_ASSIGN_IN_EMPTY", source));
 		if (!outRaw || outRaw.trim() === "")
-			issues.push(
-				issue(
-					"BLOCK_ASSIGN_OUT_EMPTY",
-					source,
-					"Le paramètre OUT doit être renseignée.",
-				),
-			);
+			issues.push(issue("BLOCK_ASSIGN_OUT_EMPTY", source));
 		if (issues.length > 0) return issues;
 
 		try {
 			const target = parseIdentifierNode(outRaw, dialect);
-			if (!target)
-				return [
-					issue(
-						"BLOCK_ASSIGN_OUT_NOT_A_VARIABLE",
-						source,
-						"Le paramètre OUT doit être un mnémonique de variable.",
-					),
-				];
+			if (!target) return [issue("BLOCK_ASSIGN_OUT_NOT_A_VARIABLE", source)];
 
 			const value = parseOperandNode(inRaw, dialect, OPERAND_NODE_TYPES);
-			if (!value)
-				return [
-					issue(
-						"BLOCK_ASSIGN_IN_NOT_ALLOWED",
-						source,
-						"Le paramètre IN doit contenir une variable ou une valeur, pas une expression.",
-					),
-				];
+			if (!value) return [issue("BLOCK_ASSIGN_IN_NOT_ALLOWED", source)];
 
 			const env = new Environment(
 				Array.from(variablesByMnemonic.values()).map(
@@ -82,11 +55,7 @@ export default class AssignBlockAnalyser {
 			);
 		} catch (e) {
 			return [
-				issue(
-					"BLOCK_ASSIGN_INVALID",
-					source,
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_ASSIGN_INVALID", source, {}, e),
 			];
 		}
 

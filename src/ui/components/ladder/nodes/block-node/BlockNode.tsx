@@ -9,10 +9,12 @@ import { BlockData } from "@/schemas/ladder/block.schema";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { GRID_CELL_HEIGHT } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { getHighlightOverlaySx } from "../node-highlight";
+import { BLOCK_NODE_UI } from "./block-node-ui";
 import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
@@ -52,7 +54,9 @@ const BoxBlockNode = ({
 	selected: boolean;
 }) => {
 	const th = useTheme();
+	const t = useT("ladderEditor.block");
 	const def = BLOCK_DEFINITIONS[data.blockType];
+	const ui = BLOCK_NODE_UI[data.blockType];
 	const programName =
 		useProjectStore((state) =>
 			data.blockType === "user-program"
@@ -63,8 +67,11 @@ const BoxBlockNode = ({
 	// store). Timer/compteur portent leur nom dans un champ éditable (`labelSlot`). Toute autre
 	// famille tire son libellé de `BLOCK_DEFINITIONS` (fixe).
 	const label =
-		def.staticLabel ??
-		(data.blockType === "user-program" ? programName : "");
+		def.hasStaticLabel && ui.staticLabelKey
+			? t(ui.staticLabelKey as never)
+			: data.blockType === "user-program"
+				? programName
+				: "";
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
@@ -159,7 +166,9 @@ const BoxBlockNode = ({
 							runUpdate(def.inlineSelect!.write(data.params, value))
 						}
 						operators={def.inlineSelect.values}
-						ariaLabel={def.inlineSelect.ariaLabel}
+						ariaLabel={
+							ui.inlineSelectAriaKey ? t(ui.inlineSelectAriaKey as never) : ""
+						}
 					/>
 				</Box>
 			)}

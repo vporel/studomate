@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
@@ -76,7 +77,7 @@ describe("useEditMenu", () => {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation(state),
 		);
-		return renderHook(() => useEditMenu());
+		return renderHook(() => useEditMenu(), { wrapper: i18nWrapper() });
 	}
 
 	beforeEach(() => clearClipboard());

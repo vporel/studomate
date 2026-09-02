@@ -1,5 +1,7 @@
 import {
+	getPreferredLocale,
 	getPreferredSaveLocation,
+	setPreferredLocale,
 	setPreferredSaveLocation,
 } from "./preferences.storage";
 
@@ -34,5 +36,24 @@ describe("preferences.storage", () => {
 	it("ignore une valeur corrompue en localStorage", () => {
 		localStorage.setItem("studomate_preferred_save_location", "n'importe quoi");
 		expect(getPreferredSaveLocation()).toBeNull();
+	});
+
+	describe("langue", () => {
+		it("retourne null tant qu'aucune langue n'a été choisie", () => {
+			expect(getPreferredLocale()).toBeNull();
+		});
+
+		it("retient la langue choisie", () => {
+			setPreferredLocale("en");
+			expect(getPreferredLocale()).toBe("en");
+
+			setPreferredLocale("fr");
+			expect(getPreferredLocale()).toBe("fr");
+		});
+
+		it("ignore une valeur non reconnue", () => {
+			localStorage.setItem("studomate_locale", "zz");
+			expect(getPreferredLocale()).toBeNull();
+		});
 	});
 });

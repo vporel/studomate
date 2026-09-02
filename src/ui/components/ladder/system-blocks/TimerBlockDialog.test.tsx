@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
@@ -39,7 +40,7 @@ function setup({
 		}),
 	);
 
-	render(
+	renderWithI18n(
 		<AppThemeProvider>
 			<TimerBlockDialog />
 		</AppThemeProvider>,

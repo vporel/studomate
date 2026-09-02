@@ -13,8 +13,10 @@ import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
 import ProjectsList from "./ProjectsList";
+import { useT } from "@/ui/i18n/useT";
 
 export default function ProjectOpenModal() {
+	const t = useT("projects.open");
 	const projectRepository = useProjectStore((state) => state.projectRepository);
 	const { lifecycleManager, openModalVisible, setOpenModalVisible } =
 		useProjectStore(
@@ -38,7 +40,7 @@ export default function ProjectOpenModal() {
 		let text: string | null = null;
 		if (typeof window !== "undefined" && window.showOpenFilePicker) {
 			try {
-				const handle = await openFileDialog("Fichiers JSON", {
+				const handle = await openFileDialog(t("fileDialogName"), {
 					"application/json": [".json"],
 				});
 				if (!handle) return;
@@ -46,7 +48,7 @@ export default function ProjectOpenModal() {
 			} catch (err: any) {
 				console.error("Failed to open file:", err);
 				alert(
-					"Une erreur est survenue lors de la lecture du fichier. Assurez-vous que le fichier est un projet valide.",
+					t("readError"),
 				);
 			}
 		} else {
@@ -59,31 +61,31 @@ export default function ProjectOpenModal() {
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
 			alert(
-				"Une erreur est survenue lors de la lecture du fichier. Assurez-vous que le fichier est un projet valide.",
+				t("readError"),
 			);
 			return;
 		}
 		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
 			alert(
-				"Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible.",
+				t("saveError"),
 			);
 			return;
 		}
 		await lifecycleManager.openProject(project.id);
 		onClose();
-	}, [lifecycleManager, onClose, projectRepository]);
+	}, [lifecycleManager, onClose, projectRepository, t]);
 
 	return (
 		<CustomModal
 			open={openModalVisible}
 			onClose={onClose}
-			title="Ouvrir un projet"
+			title={t("title")}
 			width={500}
 		>
 			<Box>
 				<Button variant="outlined" onClick={() => void onFromFileBtnClick()}>
-					Ouvrir depuis un fichier...
+					{t("fromFile")}
 				</Button>
 			</Box>
 			<Divider sx={{ mt: 2, mb: 0 }} />

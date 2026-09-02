@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import Section from "@/schemas/ladder/section.schema";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import { useLadderStore } from "../context/LadderContext";
@@ -15,7 +16,7 @@ function setup(description = "", executeOperation = jest.fn()) {
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ commandsStackManager: { executeOperation } }),
 	);
-	render(<LadderSectionDescription section={section} />);
+	renderWithI18n(<LadderSectionDescription section={section} />);
 	return { section, executeOperation };
 }
 

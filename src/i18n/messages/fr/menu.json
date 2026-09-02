@@ -1,0 +1,42 @@
+{
+	"bar": {
+		"ariaLabel": "Menu principal"
+	},
+	"file": {
+		"title": "Fichier",
+		"newProject": "Nouveau projet",
+		"openProject": "Ouvrir projet",
+		"save": "Enregistrer",
+		"saveAs": "Enregistrer sous",
+		"export": "Exporter",
+		"closeProject": "Fermer le projet",
+		"preferences": "Préférences"
+	},
+	"edit": {
+		"title": "Édition",
+		"undo": "Annuler",
+		"redo": "Rétablir",
+		"copy": "Copier",
+		"cut": "Couper",
+		"paste": "Coller"
+	},
+	"view": {
+		"title": "Vue",
+		"explorer": "Explorateur"
+	},
+	"project": {
+		"title": "Projet",
+		"newGrafcet": "Nouveau grafcet",
+		"newLadder": "Nouveau ladder",
+		"exerciseStatement": "Énoncé de l'exercice",
+		"share": "Partager",
+		"manageSharing": "Gérer le partage",
+		"properties": "Propriétés"
+	},
+	"help": {
+		"title": "Aide",
+		"userManual": "Manuel utilisateur",
+		"keyboardShortcuts": "Raccourcis clavier",
+		"reportIssue": "Signaler un problème"
+	}
+}

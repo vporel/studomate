@@ -1,4 +1,3 @@
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
@@ -38,60 +37,26 @@ export default class ArithmeticBlockAnalyser {
 
 		const issues: ProjectAnalyserIssue[] = [];
 		if (!in1 || in1.trim() === "")
-			issues.push(
-				issue(
-					"BLOCK_ARITHMETIC_IN1_EMPTY",
-					source,
-					"Le paramètre IN1 doit être renseignée.",
-				),
-			);
+			issues.push(issue("BLOCK_ARITHMETIC_IN1_EMPTY", source));
 		if (!in2 || in2.trim() === "")
-			issues.push(
-				issue(
-					"BLOCK_ARITHMETIC_IN2_EMPTY",
-					source,
-					"Le paramètre IN2 doit être renseignée.",
-				),
-			);
+			issues.push(issue("BLOCK_ARITHMETIC_IN2_EMPTY", source));
 		if (!out || out.trim() === "")
-			issues.push(
-				issue(
-					"BLOCK_ARITHMETIC_OUT_EMPTY",
-					source,
-					"Le paramètre OUT doit être renseignée.",
-				),
-			);
+			issues.push(issue("BLOCK_ARITHMETIC_OUT_EMPTY", source));
 		if (!ARITHMETIC_BLOCK_OPERATORS.includes(operator))
 			issues.push(
-				issue(
-					"BLOCK_ARITHMETIC_OPERATOR_INVALID",
-					source,
-					`"${operator}" n'est pas un opérateur arithmétique valide.`,
-				),
+				issue("BLOCK_ARITHMETIC_OPERATOR_INVALID", source, { operator }),
 			);
 		if (issues.length > 0) return issues;
 
 		try {
 			const target = parseIdentifierNode(out, dialect);
 			if (!target)
-				return [
-					issue(
-						"BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE",
-						source,
-						"Le paramètre OUT doit être un mnémonique de variable.",
-					),
-				];
+				return [issue("BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE", source)];
 
 			const left = parseOperandNode(in1, dialect, OPERAND_NODE_TYPES);
 			const right = parseOperandNode(in2, dialect, OPERAND_NODE_TYPES);
 			if (!left || !right)
-				return [
-					issue(
-						"BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED",
-						source,
-						"Les pinoches IN1 et IN2 doivent contenir une variable ou une valeur, pas une expression.",
-					),
-				];
+				return [issue("BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED", source)];
 
 			const env = new Environment(
 				Array.from(variablesByMnemonic.values()).map(
@@ -110,10 +75,12 @@ export default class ArithmeticBlockAnalyser {
 			);
 		} catch (e) {
 			return [
-				issue(
+				new ProjectAnalyserIssue(
+					"error",
 					"BLOCK_ARITHMETIC_INVALID",
 					source,
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+					{},
+					e,
 				),
 			];
 		}

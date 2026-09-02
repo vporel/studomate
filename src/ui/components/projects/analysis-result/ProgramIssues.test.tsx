@@ -1,12 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import ProgramIssues from "./ProgramIssues";
 
 describe("ProgramIssues", () => {
 	it("ne rend rien quand overall est absent et elements vide", () => {
-		const { container } = render(
+		const { container } = renderWithI18n(
 			<ProgramIssues
 				programKind="Grafcet"
 				programId="g1"
@@ -21,7 +22,7 @@ describe("ProgramIssues", () => {
 	});
 
 	it("affiche au moins le titre du programme quand overall et elements sont vides (tableaux vides = truthy)", () => {
-		render(
+		renderWithI18n(
 			<ProgramIssues
 				programKind="Grafcet"
 				programId="g1"
@@ -36,7 +37,7 @@ describe("ProgramIssues", () => {
 	});
 
 	it("affiche les issues d'éléments avec le libellé de l'élément préfixé", () => {
-		render(
+		renderWithI18n(
 			<ProgramIssues
 				programKind="Grafcet"
 				programId="g1"
@@ -57,7 +58,7 @@ describe("ProgramIssues", () => {
 
 	it("appelle onGoto avec l'id de l'élément au clic sur une issue d'élément", () => {
 		const onGoto = jest.fn();
-		render(
+		renderWithI18n(
 			<ProgramIssues
 				programKind="Grafcet"
 				programId="g1"
@@ -76,7 +77,7 @@ describe("ProgramIssues", () => {
 
 	it("appelle onGoto sans id au clic sur une issue globale au programme", () => {
 		const onGoto = jest.fn();
-		render(
+		renderWithI18n(
 			<ProgramIssues
 				programKind="Ladder"
 				programId="l1"
@@ -94,7 +95,7 @@ describe("ProgramIssues", () => {
 	});
 
 	it("libelle les sections selon la sévérité (avertissements)", () => {
-		render(
+		renderWithI18n(
 			<ProgramIssues
 				programKind="Ladder"
 				programId="l1"

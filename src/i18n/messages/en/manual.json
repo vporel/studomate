@@ -1,0 +1,602 @@
+{
+	"pageTitle": "User manual",
+	"nav": {
+		"intro": "Introduction",
+		"getting-started": "Getting started",
+		"projects": "Projects",
+		"explorer": "Explorer",
+		"variables": "Variables",
+		"grafcet": "Grafcet",
+		"grafcet-canvas": "Canvas",
+		"grafcet-steps": "Steps",
+		"grafcet-transitions": "Transitions",
+		"grafcet-actions": "Actions",
+		"grafcet-junctions": "Junctions",
+		"grafcet-referrals": "Referrals",
+		"grafcet-comments": "Comments",
+		"grafcet-connections": "Links",
+		"ladder": "Ladder",
+		"ladder-sections": "Rungs",
+		"ladder-contacts": "Contacts",
+		"ladder-coils": "Coils",
+		"ladder-blocks": "Blocks",
+		"ladder-connections": "Connections",
+		"toolbar": "Toolbar",
+		"hmi": "HMI screens",
+		"hmi-pages": "HMI pages",
+		"hmi-canvas": "Canvas",
+		"hmi-widgets": "Widgets",
+		"hmi-properties": "Properties",
+		"hmi-animations": "Animations",
+		"hmi-events": "Events",
+		"hmi-simulation": "HMI simulation",
+		"simulation": "Simulation",
+		"simulation-start": "Start",
+		"simulation-running": "During simulation",
+		"simulation-watch-tables": "Watch tables",
+		"simulation-stop": "Stop",
+		"analysis": "Analysis",
+		"analysis-run": "Run the analysis",
+		"analysis-checks": "Types of checks",
+		"analysis-messages": "Example messages",
+		"shortcuts": "Keyboard shortcuts"
+	},
+	"intro": {
+		"title": "Introduction",
+		"p1": "Studomate is a graphical editor for automation: GRAFCET (a sequential function chart) and Ladder (contact diagrams). It lets you create, edit, analyse and simulate these diagrams in an interactive web environment.",
+		"p2": "The application offers the following features:",
+		"features": [
+			"Graphical GRAFCET and Ladder editors with drag and drop",
+			"Project management grouping several grafcets and ladders",
+			"Variable manager (inputs, outputs, memory)",
+			"Static project analysis with error and warning detection",
+			"Real-time PLC simulation",
+			"Animated HMI screens to visualise and drive the system",
+			"Project export as JSON or PDF"
+		],
+		"p3": "The interface is available in French and English (Preferences page) and is designed for use in an educational or professional context.",
+		"landmarksTitle": "Reference points",
+		"landmarksIntro": "This manual documents the tool, not the GRAFCET method itself. A few useful pointers if the terms below aren't already familiar:",
+		"landmarks": [
+			"Step — a stable state of the system, active or inactive.",
+			"Transition — the condition for moving from one step to the next.",
+			"Condition (of a transition) — a Boolean expression attached to a transition; it must be true for the transition to be crossed.",
+			"AND divergence / convergence — opening then closing parallel branches, all active at the same time.",
+			"OR divergence / convergence — opening then closing alternative branches, only one active at a time.",
+			"Rising / falling edge — the instant a condition goes from false to true, or from true to false respectively."
+		],
+		"readingOrder": "For a first read-through, a logical order is: Getting started, then Grafcet (in plan order: Canvas, Steps, Transitions, Actions), before Simulation and Analysis. The other sections (Ladder, Variables, Explorer, Toolbar, Shortcuts) can be consulted as needed."
+	},
+	"gettingStarted": {
+		"title": "Getting started",
+		"newProjectTitle": "Create a new project",
+		"newProjectIntro": "When the application starts, the home page is shown. You can:",
+		"newProjectItems": [
+			"Click \"New project\" to create a project.",
+			"Use the File → New project menu (no keyboard shortcut: Ctrl+N is reserved by the browser to open a new window)."
+		],
+		"newProjectOutro": "A new project is created with an empty grafcet. You can set the project name and author via the Project → Properties menu.",
+		"openTitle": "Open an existing project",
+		"openBody": "Via the File → Open project menu (Ctrl+O), a list of all saved projects is shown. Click a project to open it. If a project is already open with unsaved changes, you'll be asked to confirm.",
+		"saveTitle": "Save",
+		"saveBody": "Use File → Save (Ctrl+S) to save your project. An indicator in the title bar shows unsaved changes. Projects are stored in the browser (localStorage).",
+		"interfaceTitle": "Main interface",
+		"interfaceIntro": "The interface is divided into several areas:",
+		"interfaceItems": [
+			"Menu bar (top): File, Edit, Project, View, Help",
+			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
+			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
+			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties). Click a tab to activate it, click its cross to close it.",
+			"Bottom panel: watch tables (simulation) and analysis results"
+		],
+		"helpMenuTitle": "Help menu",
+		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Keyboard shortcuts (opens the shortcut list) and Report an issue (opens a pre-filled email)."
+	},
+	"projects": {
+		"title": "Projects",
+		"p1": "A Studomate project groups one or more programs (grafcets and/or ladders), a set of variables, HMI screens and metadata (name, author, dialect). All data is stored locally in the browser (localStorage); an account also lets you back it up to the cloud.",
+		"createTitle": "Create a project",
+		"createIntro": "File → New project. A window opens to choose the starting point:",
+		"createItems": [
+			"Empty project — starts with no variables and no HMI screen.",
+			"Templates — pre-configured projects with variables and an HMI screen already in place; all that's left is to write the program. Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park)."
+		],
+		"openTitle": "Open a project",
+		"openBody": "File → Open project (Ctrl+O). The list of saved projects is shown with their last-modified date. Click a project to open it. Each project in the list also has a delete button (with confirmation), and an \"Open from a file…\" button lets you re-import a project exported as JSON.",
+		"saveTitle": "Save a project",
+		"saveBody1": "File → Save (Ctrl+S) — saves the current project, overwriting the previous version.",
+		"saveBody2": "File → Save as (Ctrl+Shift+S) — creates an independent copy of the project. A window asks for the desired name; on confirmation the copy is saved and becomes the active project. The original project stays unchanged in the project list.",
+		"propertiesTitle": "Project properties",
+		"propertiesBody1": "Project → Properties. Lets you change the project's name, author and dialect. This information is saved with the project.",
+		"propertiesBody2": "The dialect determines the keywords used in expressions (transition conditions, actions): French (ET, OU, NON, VRAI, FAUX) or English (AND, OR, NOT, TRUE, FALSE). Changing the dialect translates the expressions already written. The dialect is independent of the interface language.",
+		"addProgramTitle": "Add a grafcet or a ladder",
+		"addProgramBody": "Project → New grafcet (Ctrl+G) or Project → New ladder (Ctrl+L). The new program is added to the project and its tab opens automatically. You can rename it by double-clicking its name in the explorer or via right-click → Rename (F2).",
+		"exportTitle": "Export a project",
+		"exportSubtitle": "File → Export (Ctrl+E)",
+		"exportIntro": "A window opens offering two formats:",
+		"exportFormats": [
+			"Project file (JSON) — an external backup of the whole project, re-importable via File → Open project → \"Open from a file…\".",
+			"PDF — a visual document of the programs."
+		],
+		"exportScopeIntro": "For PDF, two scopes:",
+		"exportScopes": [
+			"Whole project — a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked.",
+			"Active page only — a single titled page for the currently open grafcet or ladder (no cover page). Unavailable if no program is open."
+		],
+		"exportOutro": "A progress bar shows progress (rendering, capture, assembly); the file is downloaded automatically at the end. The \"File name\" field is pre-filled.",
+		"closeTitle": "Close a project",
+		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
+	},
+	"explorer": {
+		"title": "Explorer",
+		"p1": "The explorer is a left-hand side panel showing the project tree. It can be shown or hidden via the View → Explorer menu.",
+		"structureTitle": "Explorer structure",
+		"structureIntro": "The explorer is organised into several sections:",
+		"variablesLabel": "Variables:",
+		"variablesItems": [
+			"Logic inputs — Boolean input variables",
+			"Analog inputs — numeric input variables",
+			"Logic outputs — Boolean output variables",
+			"Analog outputs — numeric output variables",
+			"Memory — internal variables (all types)"
+		],
+		"programsLabel": "Programs:",
+		"programsItems": [
+			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type."
+		],
+		"blockInstancesLabel": "Block instances:",
+		"blockInstancesItems": [
+			"Appears only when the project contains at least one timer or counter block. Lists all named instances, with a context menu to configure them or jump to the ladder that contains them."
+		],
+		"systemBlocksLabel": "System blocks:",
+		"systemBlocksItems": [
+			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation. Drag a block from this section onto a ladder canvas to insert it."
+		],
+		"hmiLabel": "HMI screens:",
+		"hmiItems": [
+			"A list of all the project's HMI pages. The main page is marked by the \"Main\" badge. Right-click the folder: create a new page. Right-click a page: Open, Rename (F2), Delete."
+		],
+		"actionsTitle": "Available actions",
+		"actionsItems": [
+			"Click a variable section: opens the page to manage those variables",
+			"Click a grafcet or a ladder: opens its tab",
+			"Double-click a program's name: edit the name in place",
+			"Right-click a program → Open, Rename (F2), Delete",
+			"Right-click empty area → Hide the explorer"
+		]
+	},
+	"variables": {
+		"title": "Variables",
+		"p1": "Variables are the data handled by the program. They are organised into zones according to their role in the system. Each variable has a unique mnemonic used in the expressions of transitions and actions.",
+		"zonesTitle": "Variable zones",
+		"zonesItems": [
+			"Logic inputs: Boolean signals coming from outside (sensors, buttons)",
+			"Analog inputs: numeric values coming from outside",
+			"Logic outputs: Boolean signals sent outside (actuators, indicator lights)",
+			"Analog outputs: numeric values sent outside",
+			"Memory: internal variables used for internal logic"
+		],
+		"typesTitle": "Data types",
+		"typesItems": [
+			"BOOL — Boolean (true/false), available in every zone",
+			"INT — signed integer, available for analog and memory",
+			"LONG — signed long integer, available in memory",
+			"WORD — unsigned 16-bit integer, available for analog and memory",
+			"DWORD — unsigned 32-bit integer, available for analog and memory",
+			"REAL — floating-point number, available in memory",
+			"STRING — character string, available in memory",
+			"TIME — duration (e.g. T#5s), available in memory — used in particular for timers"
+		],
+		"propertiesTitle": "Properties of a variable",
+		"propertiesItems": [
+			"Mnemonic (required): the variable's name, max 32 characters, must start with a letter, alphanumeric characters and underscores allowed, must be unique",
+			"Zone: the variable's category",
+			"Type: the data type",
+			"Address (optional): PLC address (e.g. %I0.0, %QW10, %MD100)",
+			"Comment (optional): free description"
+		],
+		"managementTitle": "Managing variables",
+		"managementBody1": "From the Variables page (reachable via the explorer or the menu), you can add, edit and delete variables. Editing and deleting are disabled in Simulation mode.",
+		"managementBody2": "Renaming a variable's mnemonic updates every expression that uses it in the project's grafcets and ladders.",
+		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it."
+	},
+	"grafcet": {
+		"title": "Grafcet",
+		"p1": "A grafcet is a functional diagram representing the sequential behaviour of an automated system. Studomate lets you create and edit grafcets with an interactive graphical editor.",
+		"canvasTitle": "Canvas",
+		"canvasIntro": "The canvas is the grafcet's main working area. It offers the following interactions:",
+		"canvasItems": [
+			"Drag and drop from the toolbar to create elements",
+			"Click an element to select it",
+			"Ctrl+click (or Cmd+click) to select several elements",
+			"Click-drag on an empty area to select several elements by region",
+			"Move the selected elements by dragging them",
+			"Drag from a connection point to create a link",
+			"Mouse wheel (with Ctrl/Cmd) to zoom",
+			"Right-click the canvas to show the context menu"
+		],
+		"canvasOutro1": "Elements snap to a grid to make alignment easier. In Simulation mode the canvas becomes read-only.",
+		"canvasOutro2": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection — including multi-element selections. Pasted elements are placed slightly offset from the originals.",
+		"stepsTitle": "Steps",
+		"stepsIntro": "Steps represent the stable states of the system. A step can be active or inactive at any point during execution.",
+		"stepsTypesTitle": "Step types",
+		"stepsTypes": [
+			"Initial step: active when the grafcet starts, drawn with a double border",
+			"Normal step: a standard step"
+		],
+		"stepsPropsTitle": "Properties",
+		"stepsProps": [
+			"Numeric identifier: the step's unique number (e.g. 1, 2, 3…)",
+			"Name: the label shown on the step"
+		],
+		"stepsBody1": "To change a step's name or number, double-click the corresponding field. In simulation, active steps are highlighted.",
+		"stepsBody2": "Via right-click on a step, you can set it as the initial step — useful for changing the initial step of an existing grafcet without recreating the step.",
+		"stepsBody3": "Current limitation: a grafcet can only have one initial step. The standard allows an initial situation made of several steps active at the same time (for example one per branch of a parallel construct); Studomate does not support this yet.",
+		"transitionsTitle": "Transitions",
+		"transitionsIntro": "Transitions define the conditions for moving from one step to the next. A transition is crossed when all upstream steps are active AND its condition is true.",
+		"transitionsReceptivityTitle": "Condition",
+		"transitionsReceptivityBody": "The condition is a Boolean expression typed into the transition's field. It can refer to project variables, constants, or logical combinations (AND, OR, NOT).",
+		"transitionsItems": [
+			"Logical keywords: ET, OU, NON, VRAI, FAUX (French dialect) or AND, OR, NOT, TRUE, FALSE (English dialect, see Projects → Project properties)",
+			"Comparison operators: =, !=, <, >, <=, >=",
+			"Arithmetic operators: +, -, *, /",
+			"Example: \"sensor1 AND NOT sensor2\"",
+			"Example with comparison: \"tankLevel >= 80\"",
+			"Always-true condition: write \"TRUE\""
+		],
+		"transitionsOutro": "To change the condition, double-click the transition's text area. The syntax is checked when the project is analysed. A transition must be a Boolean expression: an assignment (:=) or a bare numeric constant is not accepted.",
+		"actionsTitle": "Actions",
+		"actionsIntro": "Actions are blocks attached to steps that describe what the system does while a step is active. A step can have several actions.",
+		"actionsTypesTitle": "Action types",
+		"actionsTypes": [
+			"Text — free text description, with no execution or syntax check. Drawn with a thin border.",
+			"Boolean variable — handles one or more BOOL variables. The border is thick; syntax and variable consistency are checked. If a Boolean variable is written without an explicit assignment (e.g. \"var1\" instead of \"var1 := 1\"), it is treated as being set to 1.",
+			"Numeric variable — handles numeric variables (INT, REAL, etc.). Thick border with validation.",
+			"String variable — handles STRING variables. Thick border with validation."
+		],
+		"actionsTypeChange": "An action's type is changed via right-click → Type.",
+		"actionsModesTitle": "Execution modes",
+		"actionsModes": [
+			"Continuous (C) — the action runs while the step is active.",
+			"Rising edge (↗) — the action runs once, the moment the step becomes active.",
+			"Falling edge (↘) — the action runs once, the moment the step becomes inactive.",
+			"Set (S) — forces the Boolean variable to TRUE (available only for Boolean-variable actions).",
+			"Reset (R) — forces the Boolean variable to FALSE (available only for Boolean-variable actions)."
+		],
+		"actionsModeChange": "The execution mode is changed via right-click → Execution mode. The available modes depend on the action's type.",
+		"junctionsTitle": "Junctions",
+		"junctionsIntro": "Junctions let you model parallel or alternative sequences in the grafcet.",
+		"junctionsTypesTitle": "Junction types",
+		"junctionsTypes": [
+			"AND divergence — splits the flow into several parallel branches that run at the same time.",
+			"AND convergence — synchronises several parallel branches and resumes a single flow.",
+			"OR divergence — creates alternative branches, only one can be active.",
+			"OR convergence — merges alternative branches."
+		],
+		"junctionsBranchesTitle": "Branches",
+		"junctionsBranchesIntro": "Every junction has a pivot point and several branches. Via right-click on a junction, you can:",
+		"junctionsBranches": [
+			"Select the pivot",
+			"Select a specific branch",
+			"Delete a branch (not possible if only 2 branches remain)"
+		],
+		"referralsTitle": "Referrals",
+		"referralsIntro": "Referrals let you link distant parts of a grafcet without drawing a long link, or reference steps located in another area of the diagram.",
+		"referralsItems": [
+			"Source referral — the referral's starting point, points to the target step.",
+			"Target referral — the referral's end point, points to the source step."
+		],
+		"referralsOutro": "A source and a target referral match by the step number they reference.",
+		"commentsTitle": "Comments",
+		"commentsBody1": "Comments are free text annotations placed on the canvas. They have no effect on execution and only serve to document the diagram.",
+		"commentsBody2": "To change a comment's text, double-click it.",
+		"connectionsTitle": "Links",
+		"connectionsIntro": "Links connect elements together and define the grafcet's execution order. They represent the control flow.",
+		"connectionsCreateTitle": "Create a link",
+		"connectionsCreateBody": "Hover over an element to reveal its connection points, then drag from a connection point to the target element.",
+		"connectionsRulesTitle": "Connection rules",
+		"connectionsRulesIntro": "The connection validator prevents invalid links. Allowed connections follow GRAFCET logic:",
+		"connectionsRules": [
+			"Step → Transition",
+			"Transition → Step",
+			"Divergence junction → Branch → Step or Transition",
+			"Step or Transition → Branch → Convergence junction",
+			"Step → Action"
+		],
+		"connectionsWaypointsTitle": "Waypoints",
+		"connectionsWaypointsBody": "Click a link to add a waypoint; drag it to change the route. This lets you route around other elements or improve the diagram's readability."
+	},
+	"ladder": {
+		"title": "Ladder",
+		"p1": "Ladder (contact diagram) is a graphical notation representing the program's logic as electrical circuits: contacts in series or in parallel drive coils. Studomate lets you create and edit ladders with an interactive graphical editor, in a tab separate from the grafcet.",
+		"p2": "A project always contains a special ladder called \"Main\". It is the execution entry point: it runs first on every PLC scan and orchestrates the other ladders via program-call blocks. The Main ladder cannot be deleted.",
+		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a rung.",
+		"sectionsTitle": "Rungs",
+		"sectionsIntro": "A ladder is made of one or more rungs (also called \"sections\"), stacked vertically. Each rung carries its own circuit, independent of the others.",
+		"sectionsItems": [
+			"\"Section\" button in the ladder toolbar: adds a new empty rung.",
+			"Rung title: click in it to edit (Enter confirms, Esc cancels).",
+			"Description (optional): a free text area under the title, to document the rung.",
+			"Handle to the left of the title: drag it to reorder the rungs (only shown when there is more than one).",
+			"Arrow to the left of the title: collapses or expands the rung.",
+			"Bin icon: deletes the rung. Disabled when only one remains — a ladder always has at least one rung."
+		],
+		"contactsTitle": "Contacts",
+		"contactsIntro": "A contact tests the state of a Boolean variable and passes power from the rail to its right, or not.",
+		"contactsItems": [
+			"NO (normally open) — passes power when the variable is true.",
+			"NC (normally closed, diagonal bar) — passes power when the variable is false.",
+			"P (rising edge) — passes power once, when the variable goes from false to true.",
+			"N (falling edge) — passes power once, when the variable goes from true to false."
+		],
+		"contactsOutro": "Drag the symbol from the ladder toolbar onto the rung grid to place a contact. Double-click it to choose the associated variable (no type check is enforced on entry: an incompatible variable is flagged by the analysis, not blocked at placement). In simulation, the contact changes colour when the variable it tests is true.",
+		"coilsTitle": "Coils",
+		"coilsIntro": "A coil assigns a Boolean variable at the output of a contact circuit.",
+		"coilsItems": [
+			"Normal — the variable takes the state of the circuit feeding the coil (true if powered, false otherwise).",
+			"Set (S) — forces the variable to TRUE when the circuit is powered; never resets it to FALSE.",
+			"Reset (R) — forces the variable to FALSE when the circuit is powered; never sets it to TRUE."
+		],
+		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted.",
+		"blocksTitle": "Blocks",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a rung like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment and Calculation — from the dedicated tool in the ladder toolbar.",
+		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment and Calculation are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block.",
+		"timerTitle": "Timer",
+		"timerIntro": "Measures a duration and exposes an output signal. Three variants:",
+		"timerItems": [
+			"TON — on-delay: output Q goes true after input IN has been true for the duration PT.",
+			"TOF — off-delay: output Q stays true for PT after IN goes false.",
+			"TP — calibrated pulse: output Q is true for exactly PT after a rising edge on IN."
+		],
+		"timerOutro": "Configuration: name (unique in the project) and variant (TON/TOF/TP). The PT (preset duration, e.g. T#5s) and ET (elapsed time output, optional) parameters are entered directly on the block's pins on the canvas, as a variable or a TIME constant.",
+		"counterTitle": "Counter",
+		"counterIntro": "Counts pulses. Two variants:",
+		"counterItems": [
+			"CTU — counts up: increments CV on every scan where IN is true; R resets CV to zero.",
+			"CTD — counts down: decrements CV on every scan where CD is true; LD loads PV into CV."
+		],
+		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
+		"compareTitle": "Comparison",
+		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a rung like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
+		"assignTitle": "Assignment",
+		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
+		"calcTitle": "Calculation",
+		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
+		"programCallTitle": "Program call",
+		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
+		"connectionsTitle": "Connections",
+		"connectionsIntro": "A rung is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
+		"connectionsItems": [
+			"Simple chain (contacts one after another on the same line): logical AND.",
+			"Divergence (one connection splitting into several branches): logical OR between the branches.",
+			"Convergence (several branches joining back): closes the OR opened by the matching divergence."
+		],
+		"connectionsMenu": "Right-click the rung background: \"Select all\" (Ctrl+A) or \"Select links\". Right-click an element or a link: \"Delete\".",
+		"connectionsSim": "In simulation, powered links are highlighted, letting you visually follow the power flow in each rung."
+	},
+	"toolbar": {
+		"title": "Toolbar",
+		"p1": "The toolbar is divided into two areas: general actions (top left) and creation tools (top, specific to the type of program open — Grafcet or Ladder).",
+		"generalTitle": "General actions",
+		"generalItems": [
+			"Home — back to the home page",
+			"Save — saves the current project",
+			"Undo (Ctrl+Z) — undoes the last action",
+			"Redo (Ctrl+Y) — redoes the undone action"
+		],
+		"nameTitle": "Project name and indicator",
+		"nameBody": "The project name field (top, centre) can be edited directly. A visual indicator shows unsaved changes.",
+		"analysisTitle": "Analysis and mode",
+		"analysisItems": [
+			"Analyse button — runs the project's static analysis. Turns red on errors, orange on warnings only.",
+			"Mode selector — switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode."
+		],
+		"grafcetToolsTitle": "Grafcet creation tools",
+		"grafcetToolsIntro": "When a grafcet is open, extra tools appear. Drag the chosen tool onto the canvas to create the matching element:",
+		"grafcetTools": [
+			"Initial step",
+			"Normal step",
+			"Action",
+			"Transition",
+			"OR divergence",
+			"OR convergence",
+			"AND divergence",
+			"AND convergence",
+			"Source referral",
+			"Target referral",
+			"Comment"
+		],
+		"grafcetToolsZoom": "The Zoom + and Zoom − buttons adjust the canvas zoom level.",
+		"ladderToolsTitle": "Ladder creation tools",
+		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a rung to create the matching element:",
+		"ladderTools": [
+			"NO, NC, P (rising edge) and N (falling edge) contacts",
+			"Normal, Set and Reset coils",
+			"Comparison, Assignment and Calculation blocks (the other system blocks are dragged from the explorer)",
+			"\"Section\" button — adds a new rung to the ladder"
+		],
+		"ladderToolsOutro": "See the Ladder section for details of these elements."
+	},
+	"hmi": {
+		"title": "HMI screens",
+		"p1": "An HMI (Human-Machine Interface) screen is an interactive graphical page to visualise and drive the system during simulation. A project can contain several HMI pages; one of them is designated as the main page and is shown when simulation starts.",
+		"pagesTitle": "HMI pages",
+		"pagesIntro": "HMI pages are managed from the explorer, in the \"HMI screens\" section.",
+		"pagesItems": [
+			"Create a page: right-click the \"HMI screens\" folder → \"New HMI page\". Available only in design mode.",
+			"Open a page: single click on its name, or right-click → Open.",
+			"Rename: double-click the name in the explorer, or right-click → Rename (F2). An empty name is ignored.",
+			"Delete: right-click → Delete (confirmation asked)."
+		],
+		"pagesMain": "The main page carries the \"Main\" badge to the right of its name. To designate a page as the main page: open it, click an empty area of the canvas to show the page properties in the right-hand side panel, then click \"Set as main page\".",
+		"canvasTitle": "Canvas",
+		"canvasIntro": "The canvas is an HMI page's working area (1000 × 640 px). Widgets are placed freely and snap automatically to a 10 px grid.",
+		"canvasZoomTitle": "Zoom",
+		"canvasZoomBody": "The zoom buttons (+/−) and the percentage indicator (click it to go back to 100%) are in the toolbar at the top of the page. Ctrl+wheel also zooms from the canvas. Range: 80% – 200%.",
+		"canvasPlaceTitle": "Place a widget",
+		"canvasPlaceBody": "Drag the widget icon from the palette (toolbar, top left) onto the canvas. The widget is centred on the drop point and immediately selected.",
+		"canvasSelectTitle": "Select",
+		"canvasSelectItems": [
+			"Single click on a widget: selects that widget.",
+			"Click on an empty area: clears the selection.",
+			"Shift+click or Ctrl+click: adds or removes a widget from the selection.",
+			"Click-drag on an empty area: selection rectangle — selects every widget it intersects.",
+			"Ctrl+A: select all."
+		],
+		"canvasMoveTitle": "Move and resize",
+		"canvasMoveItems": [
+			"Move: click-drag a selected widget. A whole group moves in a single undoable command.",
+			"Resize: available only for a single selected widget. A blue handle appears in the bottom-right corner; drag it."
+		],
+		"canvasCopy": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection, via the keyboard shortcuts or right-click. Pasted widgets are placed slightly offset from the original.",
+		"canvasUndo": "Every change is undoable (Ctrl+Z / Ctrl+Y).",
+		"widgetsTitle": "Widgets",
+		"widgetsCount": "{count} widget types are available, split into two groups in the palette.",
+		"widgetsInteractiveTitle": "Interactive widgets (bound to a variable)",
+		"widgetsShapeTitle": "Shapes (purely visual)",
+		"propertiesTitle": "Properties",
+		"propertiesIntro": "When a single widget is selected, the right-hand side panel shows its properties.",
+		"propertiesItems": [
+			"Name: the widget's unique identifier in the page.",
+			"Label: the text shown on the widget (for interactive widgets).",
+			"Bound variable: the mnemonic of the associated variable. The selector is filtered by widget type.",
+			"Type-specific properties: behaviour (button), unit and decimals (numeric display), min/max (gauge, numeric input), colours and dimensions (shapes)."
+		],
+		"propertiesObjects": "The \"Objects\" panel (below \"Properties\") lists every widget on the page from top to bottom of the stacking order. Click a name to select the matching widget.",
+		"propertiesZOrder": "The stacking order (z-order) is changed via right-click on a widget: Bring forward, Send backward, Bring to front, Send to back.",
+		"animationsTitle": "Animations",
+		"animationsIntro": "Animations let you dynamically vary a widget's position or appearance based on a variable, during simulation. Click the \"Animations\" button (settings icon) at the bottom of the Properties panel to open the animations window.",
+		"animationsPositionTitle": "Position animation",
+		"animationsPositionBody": "Available for every widget type. Bind a numeric variable to the X and/or Y axis: in simulation, the variable's value is added (in pixels) to the widget's base position.",
+		"animationsStyleTitle": "Style animation",
+		"animationsStyleBody": "Available for rectangle, ellipse and text. Choose a driving variable (BOOL or numeric), then define a value → style-properties mapping table:",
+		"animationsStyleItems": [
+			"BOOL variable: two fixed rows (value 0 and value 1) — assign a colour to each state.",
+			"Numeric variable: free rows — add as many values as needed, each mapped to a colour or a text."
+		],
+		"animationsStyleOutro": "In simulation, the first row whose value exactly matches the driving variable's current value is applied. If none matches, the widget's static style is shown.",
+		"eventsTitle": "Events",
+		"eventsIntro": "Events let you trigger actions on interactions with a widget during simulation. Click the \"Events\" button (lightning icon) at the bottom of the Properties panel to open the events window. This button only appears for widgets that expose events.",
+		"eventsBody1": "Currently, only the push button exposes an event: \"Button pressed\" (fired on every press, regardless of the configured behaviour).",
+		"eventsBody2": "Available action: \"Change page\" — navigates to the chosen HMI page in the HMI simulation view. Several actions can be attached to the same event and run in order.",
+		"simulationTitle": "HMI simulation",
+		"simulationBody1": "The \"HMI simulation\" tab opens automatically when simulation starts (if the project contains at least one HMI page). It shows the main page and closes when simulation stops.",
+		"simulationBody2": "In simulation, the canvas is interaction-only: the palette, the properties panel and selection are disabled. Widgets reflect the program's variable values in real time.",
+		"simulationItems": [
+			"Push button and switch: interact with their bound variable according to their configured behaviour.",
+			"Numeric input: type a value and confirm with Enter or by clicking elsewhere to write it into the variable.",
+			"Indicator light, numeric display, gauge: reflect their variable's current value.",
+			"Position and style animations: active in simulation."
+		],
+		"simulationOutro": "Navigation between pages is done via widget events configured with the \"Change page\" action: the page shown in the tab changes without switching tabs."
+	},
+	"simulation": {
+		"title": "Simulation",
+		"p1": "Simulation mode runs the project like a programmable logic controller (PLC): ladders are compiled into routines executed on every scan, the grafcet evaluates its conditions and triggers its actions, and HMI screens become interactive.",
+		"startTitle": "Start the simulation",
+		"startIntro": "Select \"Simulation\" in the mode selector (top right). Before it starts:",
+		"startItems": [
+			"The project is analysed.",
+			"The project is compiled into executable PLC routines.",
+			"The PLC scan starts (default scan time: 100 ms)."
+		],
+		"startError": "If errors are found during the analysis, the simulation will not start.",
+		"startModesIntro": "Two execution modes are available in the selector next to the mode selector:",
+		"startModes": [
+			"Continuous — the PLC scan runs automatically at a regular interval (100 ms). A Pause button suspends execution; Resume restarts it.",
+			"Step-by-step — the PLC scan advances by one step on each click of the \"Step\" button. Useful for observing the behaviour scan by scan."
+		],
+		"startTimers": "Timers follow the real elapsed time, including in step-by-step: if you let two seconds pass between two clicks on \"Step\", a 2 s timer will elapse on the next click — no need to click as many times as there are scans. Timers freeze in only one case: continuous mode when paused. They then resume where they stopped, the pause duration not being counted.",
+		"runningTitle": "During simulation",
+		"runningItems": [
+			"Active steps are highlighted on the grafcet canvas.",
+			"Transition conditions are evaluated on every scan.",
+			"The actions of active steps are applied.",
+			"Powered contacts, coils and links are highlighted in the ladder editors.",
+			"Variable values are updated in real time.",
+			"The grafcet and ladder editors are read-only.",
+			"The \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section)."
+		],
+		"watchTitle": "Watch and modify tables for variables",
+		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with three tabs:",
+		"watchItems": [
+			"Inputs — current values of the input variables",
+			"Outputs — current values of the output variables",
+			"Memory — current values of the memory variables"
+		],
+		"watchOutro": "Values update after every PLC scan. You can change the values of input and memory variables directly from the table to simulate external signals or force an internal state. Outputs are shown read-only.",
+		"stopTitle": "Stop the simulation",
+		"stopBody": "Switch back to \"Design\" mode via the mode selector. The PLC scan stops and editing the grafcet is available again."
+	},
+	"analysis": {
+		"title": "Analysis",
+		"p1": "Static analysis checks the project's consistency and validity before simulation. It detects blocking errors and warnings.",
+		"runTitle": "Run the analysis",
+		"runIntro": "Click the \"Analyse\" button in the toolbar. The result is shown in the bottom panel with:",
+		"runItems": [
+			"The total number of elements analysed",
+			"The number of errors and warnings",
+			"The list of problems found, by program (grafcet or ladder) and by element"
+		],
+		"runOutro": "The Analyse button changes colour: red if there are errors, orange for warnings only, neutral if there is no problem.",
+		"checksTitle": "Types of checks",
+		"checksItems": [
+			"Project consistency: Main ladder missing or duplicated, ladder not called by Main, duplicate step numbers across grafcets",
+			"Grafcet structure: initial step missing or multiple, unreachable steps or steps with no successor, invalid or missing links",
+			"Referrals (source / target): referenced step does not exist, referral with no connection, circular references",
+			"Ladder structure: rungs with no coil, invalid connections",
+			"System blocks: name missing or duplicated, parameters (PT, PV, control, ET/CV) missing, of the wrong type or referencing a non-existent variable",
+			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
+			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",
+			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence"
+		],
+		"checksOutro": "Click a problem in the list to navigate to the element concerned, in the matching grafcet or ladder.",
+		"messagesTitle": "Example messages",
+		"messagesIntro": "A few common messages and their cause:",
+		"messagesItems": [
+			"\"The transition has no expression. It can never be crossed.\" — the condition field is empty.",
+			"\"Invalid expression: a transition must be an expression that returns a Boolean.\" — the condition contains, for example, a numeric calculation instead of a logical condition.",
+			"\"A transition can only have one direct successor. Use an AND divergence to activate several steps at the same time.\" — several links leave the same transition directly without going through a junction.",
+			"\"The action is not connected to any step.\" — an action was dropped on the canvas without being linked to a step."
+		]
+	},
+	"shortcuts": {
+		"title": "Keyboard shortcuts",
+		"intro": "The shortcuts below use Ctrl on Windows/Linux and Cmd on macOS.",
+		"fileTitle": "File",
+		"fileItems": [
+			"New project — no shortcut (Ctrl+N is reserved by the browser to open a new window)",
+			"Ctrl+O — Open project",
+			"Ctrl+S — Save",
+			"Ctrl+Shift+S — Save as (creates a copy of the project under a new name)",
+			"Export and Close project — no shortcut (File menu)"
+		],
+		"projectTitle": "Project",
+		"projectItems": [
+			"Ctrl+G — New grafcet",
+			"Ctrl+L — New ladder"
+		],
+		"editTitle": "Edit",
+		"editItems": [
+			"Ctrl+Z — Undo",
+			"Ctrl+Y — Redo",
+			"Ctrl+C — Copy (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+V — Paste (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+X — Cut (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+A — Select all (active Grafcet, Ladder or HMI canvas)",
+			"Delete or Backspace — Delete the selection (active HMI canvas)"
+		],
+		"explorerTitle": "Explorer",
+		"explorerItems": [
+			"F2 — Rename the selected grafcet or ladder"
+		],
+		"inlineTitle": "Inline editing",
+		"inlineItems": [
+			"Enter — Confirm the change",
+			"Esc — Cancel the change"
+		]
+	},
+	"navHeading": "Manual outline",
+	"searchPlaceholder": "Search the manual…",
+	"searchNoResults": "No results for “{query}”."
+}

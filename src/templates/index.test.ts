@@ -1,6 +1,8 @@
 import Project, {
 	PROJECT_SCHEMA_VERSION,
 } from "@/schemas/project/project.schema";
+import { LOCALES } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
 import { compilePipelineDetailed } from "@tests/utils/test-helpers";
 import { FEATURED_TEMPLATE_ID, PROJECT_TEMPLATES } from "./index";
 
@@ -17,6 +19,17 @@ describe("PROJECT_TEMPLATES — registre", () => {
 	it("a des identifiants uniques", () => {
 		const ids = PROJECT_TEMPLATES.map((t) => t.id);
 		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it.each(LOCALES)("a un libellé et une description en %s pour chaque template", (locale) => {
+		const templates = getMessages(locale).templates as Record<
+			string,
+			{ label?: string; description?: string }
+		>;
+		for (const { id } of PROJECT_TEMPLATES) {
+			expect(templates[id]?.label).toBeTruthy();
+			expect(templates[id]?.description).toBeTruthy();
+		}
 	});
 
 	it("FEATURED_TEMPLATE_ID désigne une entrée existante pourvue d'une solution", () => {

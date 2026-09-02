@@ -3,6 +3,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueCode,
+	ProjectAnalyserIssueParams,
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
 
@@ -40,7 +41,7 @@ export function parseIdentifierNode(
 export function issue(
 	code: ProjectAnalyserIssueCode,
 	source: ProjectAnalyserIssueSource,
-	message: string,
+	params?: ProjectAnalyserIssueParams,
 ): ProjectAnalyserIssue {
-	return new ProjectAnalyserIssue("error", code, source, message);
+	return new ProjectAnalyserIssue("error", code, source, params);
 }

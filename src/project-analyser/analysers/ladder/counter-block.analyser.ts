@@ -36,7 +36,7 @@ export default class CounterBlockAnalyser {
 					"error",
 					"BLOCK_COUNTER_NAME_INVALID",
 					source,
-					`Le nom "${name}" de ce bloc n'est pas valide.`,
+					{ blockName: name },
 				),
 			);
 		}
@@ -67,7 +67,6 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_EMPTY",
 						source,
-						"Le paramètre de remise à zéro/chargement (R/LD) doit être renseignée.",
 					),
 				];
 			case "undeclared":
@@ -76,7 +75,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par le paramètre de remise à zéro/chargement (R/LD) n'existe pas.`,
+						{ variableName: pin },
 					),
 				];
 			case "invalid-type":
@@ -85,7 +84,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par le paramètre de remise à zéro/chargement (R/LD) doit être booléenne.`,
+						{ variableName: pin },
 					),
 				];
 			default:
@@ -108,12 +107,7 @@ export default class CounterBlockAnalyser {
 		switch (resolution.kind) {
 			case "empty":
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_COUNTER_PV_EMPTY",
-						source,
-						"Le paramètre PV de ce bloc doit être renseignée.",
-					),
+					new ProjectAnalyserIssue("error", "BLOCK_COUNTER_PV_EMPTY", source),
 				];
 			case "undeclared":
 				return [
@@ -121,7 +115,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_PV_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par le paramètre PV de ce bloc n'existe pas.`,
+						{ variableName: pin },
 					),
 				];
 			case "invalid-type":
@@ -130,7 +124,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_PV_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par le paramètre PV de ce bloc doit être numérique.`,
+						{ variableName: pin },
 					),
 				];
 			default:
@@ -157,7 +151,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CV_UNDECLARED_VARIABLE",
 						source,
-						`La variable "${pin}" référencée par le paramètre CV de ce bloc n'existe pas.`,
+						{ variableName: pin },
 					),
 				];
 			case "invalid-type":
@@ -166,7 +160,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CV_INVALID_TYPE",
 						source,
-						`La variable "${pin}" référencée par le paramètre CV de ce bloc doit être numérique.`,
+						{ variableName: pin },
 					),
 				];
 			default:

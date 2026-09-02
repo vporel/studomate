@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen } from "@testing-library/react";
 import {
 	AnalysisIssues,
 	emptyAnalysisIssues,
@@ -44,7 +45,7 @@ function setup({
 		}),
 	);
 
-	return render(<AnalysisResult />);
+	return renderWithI18n(<AnalysisResult />);
 }
 
 describe("AnalysisResult", () => {

@@ -1,4 +1,6 @@
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import type ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import { formatAnalysisIssue } from "./analysis-issue-formatter";
 
 /**
  * Problèmes d'analyse regroupés par programme (GRAFCET ou Ladder), prêts à être affichés.
@@ -25,11 +27,14 @@ export function emptyAnalysisIssues(): AnalysisIssues {
 export default class AnalysisIssuesMapper {
 	static analyserToApp(
 		projectAnalyserIssues: ProjectAnalyserIssue[],
+		locale: Locale = DEFAULT_LOCALE,
 	): AnalysisIssues {
+		const message = (issue: ProjectAnalyserIssue) =>
+			formatAnalysisIssue(issue, locale);
 		const result: AnalysisIssues = emptyAnalysisIssues();
 		result.project = projectAnalyserIssues
 			.filter((issue) => issue.source.sourceType === "project")
-			.map((issue) => issue.message);
+			.map(message);
 
 		projectAnalyserIssues.forEach((issue) => {
 			const { sourceType, sourceId, parentId } = issue.source;
@@ -51,11 +56,11 @@ export default class AnalysisIssuesMapper {
 
 			if (!bucket[programId]) bucket[programId] = { overall: [], elements: {} };
 			if (isProgramItself) {
-				bucket[programId].overall.push(issue.message);
+				bucket[programId].overall.push(message(issue));
 			} else {
 				if (!bucket[programId].elements[sourceId])
 					bucket[programId].elements[sourceId] = [];
-				bucket[programId].elements[sourceId].push(issue.message);
+				bucket[programId].elements[sourceId].push(message(issue));
 			}
 		});
 

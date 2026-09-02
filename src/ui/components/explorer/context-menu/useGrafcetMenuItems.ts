@@ -4,6 +4,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useGrafcetMenuItems(): (
@@ -15,12 +16,15 @@ export default function useGrafcetMenuItems(): (
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
 
+	const t = useT("explorer.menu");
+	const tc = useT("explorer.confirmDelete");
+
 	return useCallback(
 		(grafcetId: string) => {
 			return [
 				[
 					{
-						label: "Ouvrir",
+						label: t("open"),
 						onClick: () => {
 							const grafcet = grafcetsManager.getProgramOrThrow(grafcetId);
 							if (grafcet) {
@@ -35,7 +39,7 @@ export default function useGrafcetMenuItems(): (
 				],
 				[
 					{
-						label: "Renommer",
+						label: t("rename"),
 						disabled: !designing,
 						onClick: () =>
 							explorerContextMenuEventsOut.emit("grafcet-rename", {
@@ -44,10 +48,10 @@ export default function useGrafcetMenuItems(): (
 						shortcut: "F2",
 					},
 					{
-						label: "Supprimer",
+						label: t("delete"),
 						disabled: !designing,
 						onClick: () => {
-							if (confirm("Êtes-vous sûr de vouloir supprimer ce grafcet ?")) {
+							if (confirm(tc("grafcet"))) {
 								grafcetsManager.deleteProgramById(grafcetId);
 							}
 						},
@@ -55,6 +59,6 @@ export default function useGrafcetMenuItems(): (
 				],
 			];
 		},
-		[grafcetsManager, pagesManager, designing],
+		[grafcetsManager, pagesManager, designing, t, tc],
 	);
 }

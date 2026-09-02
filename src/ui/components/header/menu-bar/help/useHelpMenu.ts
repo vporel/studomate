@@ -1,31 +1,33 @@
 "use client";
 
 import routes from "@/app/routes";
+import { useT } from "@/ui/i18n/useT";
 import buildReportIssueMailto from "@/ui/lib/report-issue";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
+	const t = useT("menu.help");
 	return useMemo(
 		() => ({
 			id: "help",
-			label: "Aide",
+			label: t("title"),
 			items: [
 				[
 					{
-						label: "Manuel utilisateur",
+						label: t("userManual"),
 						onClick: () => {
 							window.open(routes.userManual(), "_blank", "noopener,noreferrer");
 						},
 					},
 					{
-						label: "Raccourcis clavier",
+						label: t("keyboardShortcuts"),
 						onClick: onShortcutsOpen,
 					},
 				],
 				[
 					{
-						label: "Signaler un problème",
+						label: t("reportIssue"),
 						onClick: () => {
 							window.open(buildReportIssueMailto(), "_blank", "noopener,noreferrer");
 						},
@@ -33,6 +35,6 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 				],
 			],
 		}),
-		[onShortcutsOpen],
+		[onShortcutsOpen, t],
 	);
 }

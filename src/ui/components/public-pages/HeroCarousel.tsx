@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/ui/i18n/useT";
 import { Box, IconButton } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -10,6 +11,7 @@ export type HeroSlide = { src: string; alt: string };
 const AUTOPLAY_MS = 6000;
 
 const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
+	const t = useT("public.landing");
 	const [index, setIndex] = useState(0);
 	const [paused, setPaused] = useState(false);
 
@@ -68,7 +70,7 @@ const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
 			{slides.length > 1 && (
 				<>
 					<IconButton
-						aria-label="Image précédente"
+						aria-label={t("heroPrev")}
 						onClick={() => go(index - 1)}
 						sx={{
 							position: "absolute",
@@ -82,7 +84,7 @@ const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
 						<ChevronLeftIcon />
 					</IconButton>
 					<IconButton
-						aria-label="Image suivante"
+						aria-label={t("heroNext")}
 						onClick={() => go(index + 1)}
 						sx={{
 							position: "absolute",
@@ -111,7 +113,7 @@ const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
 							<Box
 								key={slide.src}
 								component="button"
-								aria-label={`Aller à l'image ${i + 1}`}
+								aria-label={t("heroGoTo", { number: i + 1 })}
 								aria-current={i === index}
 								onClick={() => setIndex(i)}
 								sx={{

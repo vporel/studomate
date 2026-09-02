@@ -14,8 +14,10 @@ import {
 	GridRowsProp,
 } from "@mui/x-data-grid";
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
+import { enUS, frFR } from "@mui/x-data-grid/locales";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
 import GridToolBar from "./GridToolBar";
@@ -43,6 +45,9 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 	);
 
 	const dataGridColumns = useDataGridColumns(zones);
+	const { locale } = useLocaleContext();
+	const gridLocaleText = (locale === "fr" ? frFR : enUS).components.MuiDataGrid
+		.defaultProps.localeText;
 
 	const dataGrdiRows: GridRowsProp = useMemo(() => {
 		const rows = projectVariables
@@ -121,6 +126,7 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 		>
 			<DataGrid
 				apiRef={apiRef}
+				localeText={gridLocaleText}
 				columns={dataGridColumns}
 				rows={dataGrdiRows}
 				hideFooterPagination

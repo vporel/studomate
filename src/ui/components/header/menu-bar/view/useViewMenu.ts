@@ -1,20 +1,22 @@
 "use client";
 
 import { useAppContext } from "@/ui/components/AppContext";
+import { useT } from "@/ui/i18n/useT";
 import { useMemo } from "react";
 import { AppMenuType } from "../app-menu-bar";
 
 export default function useViewMenu(): AppMenuType {
 	const { viewAppearance, setViewAppearance } = useAppContext();
+	const t = useT("menu.view");
 
 	return useMemo(
 		() => ({
 			id: "view",
-			label: "Vue",
+			label: t("title"),
 			items: [
 				[
 					{
-						label: "Explorateur",
+						label: t("explorer"),
 						checked: viewAppearance.explorer,
 						onClick: () =>
 							setViewAppearance({
@@ -25,6 +27,6 @@ export default function useViewMenu(): AppMenuType {
 				],
 			],
 		}),
-		[viewAppearance, setViewAppearance],
+		[viewAppearance, setViewAppearance, t],
 	);
 }

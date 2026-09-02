@@ -20,7 +20,9 @@ import {
 	Typography,
 } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS, fr } from "date-fns/locale";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
+import { useT } from "@/ui/i18n/useT";
 import { useCallback, useEffect, useState } from "react";
 
 type Props = {
@@ -28,6 +30,9 @@ type Props = {
 };
 
 export default function DraftRecoveryDialog({ onOpen }: Props) {
+	const t = useT("projects.draftRecovery");
+	const tc = useT("projects.common");
+	const { locale } = useLocaleContext();
 	const [drafts, setDrafts] = useState<Draft[]>([]);
 	const [open, setOpen] = useState(false);
 	const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
@@ -76,16 +81,16 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 	if (confirmDeleteAll) {
 		return (
 			<Dialog open maxWidth="xs" fullWidth>
-				<DialogTitle>Confirmer la suppression</DialogTitle>
+				<DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
 				<DialogContent>
 					<Typography>
-						Supprimer tous les brouillons ? Cette action est irréversible.
+						{t("confirmDeleteAll")}
 					</Typography>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setConfirmDeleteAll(false)}>Annuler</Button>
+					<Button onClick={() => setConfirmDeleteAll(false)}>{tc("cancel")}</Button>
 					<Button color="error" variant="contained" onClick={handleDeleteAll}>
-						Tout supprimer
+						{t("deleteAll")}
 					</Button>
 				</DialogActions>
 			</Dialog>
@@ -96,21 +101,20 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 		const draft = drafts.find((d) => d.projectId === confirmDeleteId);
 		return (
 			<Dialog open maxWidth="xs" fullWidth>
-				<DialogTitle>Confirmer la suppression</DialogTitle>
+				<DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
 				<DialogContent>
 					<Typography>
-						Supprimer le brouillon de <strong>{draft?.projectName}</strong> ?
-						Cette action est irréversible.
+						{t("confirmDeleteOne", { name: draft?.projectName ?? "" })}
 					</Typography>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setConfirmDeleteId(null)}>Annuler</Button>
+					<Button onClick={() => setConfirmDeleteId(null)}>{tc("cancel")}</Button>
 					<Button
 						color="error"
 						variant="contained"
 						onClick={() => handleDeleteOne(confirmDeleteId)}
 					>
-						Supprimer
+						{t("delete")}
 					</Button>
 				</DialogActions>
 			</Dialog>
@@ -119,11 +123,10 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 
 	return (
 		<Dialog open maxWidth="sm" fullWidth>
-			<DialogTitle>Brouillons non enregistrés</DialogTitle>
+			<DialogTitle>{t("title")}</DialogTitle>
 			<DialogContent>
 				<Typography variant="body2" color="text.secondary" mb={2}>
-					Des modifications non enregistrées ont été trouvées. Voulez-vous les
-					récupérer ?
+					{t("intro")}
 				</Typography>
 				<List disablePadding>
 					{drafts.map((draft, i) => (
@@ -132,7 +135,7 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 							<ListItem disablePadding sx={{ py: 1, gap: 1, flexWrap: "wrap" }}>
 								<ListItemText
 									primary={draft.projectName}
-									secondary={`Sauvegardé ${formatDistanceToNow(draft.savedAt, { addSuffix: true, locale: fr })}`}
+									secondary={t("savedAgo", { ago: formatDistanceToNow(draft.savedAt, { addSuffix: true, locale: locale === "en" ? enUS : fr }) })}
 									sx={{ flex: 1, minWidth: 0 }}
 								/>
 								<Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
@@ -141,14 +144,14 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 										variant="contained"
 										onClick={() => handleOpen(draft)}
 									>
-										Ouvrir
+										{t("open")}
 									</Button>
 									<Button
 										size="small"
 										color="error"
 										onClick={() => setConfirmDeleteId(draft.projectId)}
 									>
-										Annuler
+										{t("discardOne")}
 									</Button>
 								</Box>
 							</ListItem>
@@ -158,9 +161,9 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 			</DialogContent>
 			<DialogActions sx={{ justifyContent: "space-between" }}>
 				<Button color="error" onClick={() => setConfirmDeleteAll(true)}>
-					Tout annuler
+					{t("cancelAll")}
 				</Button>
-				<Button onClick={handlePass}>Passer</Button>
+				<Button onClick={handlePass}>{t("pass")}</Button>
 			</DialogActions>
 		</Dialog>
 	);

@@ -2,11 +2,15 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import {
 	excludeEditorChrome,
 	usePdfExport,
 	PdfExportProgramConfig,
 } from "./usePdfExport";
+
+const renderUsePdfExport = () =>
+	renderHook(() => usePdfExport(), { wrapper: i18nWrapper() });
 
 const mockExport = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/ui/lib/pdf/jspdf.pdf-exporter", () => ({
@@ -62,7 +66,7 @@ async function drainProgram(
 
 describe("usePdfExport", () => {
 	it("monte, capture et démonte les programmes un par un", async () => {
-		const { result } = renderHook(() => usePdfExport());
+		const { result } = renderUsePdfExport();
 
 		let done: Promise<void>;
 		act(() => {
@@ -92,11 +96,16 @@ describe("usePdfExport", () => {
 	});
 
 	it("transmet la page de garde et sur-échantillonne la capture", async () => {
-		const { result } = renderHook(() => usePdfExport());
+		const { result } = renderUsePdfExport();
 		const cover = {
 			projectName: "P",
 			date: "01/09/2026",
 			stats: { grafcets: 1, ladders: 0, variables: 0 },
+			labels: {
+				exportedOn: "Exporté le 01/09/2026",
+				stats: "1 grafcet(s), 0 ladder(s), 0 variable(s)",
+				statementHeading: "Énoncé",
+			},
 		};
 
 		let done: Promise<void>;
@@ -120,7 +129,7 @@ describe("usePdfExport", () => {
 
 	it("passe en erreur et démonte tout si une capture échoue", async () => {
 		mockToPng.mockRejectedValueOnce(new Error("boom"));
-		const { result } = renderHook(() => usePdfExport());
+		const { result } = renderUsePdfExport();
 
 		let done: Promise<void>;
 		act(() => {
@@ -134,7 +143,7 @@ describe("usePdfExport", () => {
 
 		expect(result.current.exportState).toEqual({
 			status: "error",
-			message: 'La capture de "G1" a échoué.',
+			message: "La capture de « G1 » a échoué.",
 		});
 		expect(result.current.offscreenPrograms).toHaveLength(0);
 		expect(mockExport).not.toHaveBeenCalled();
@@ -154,7 +163,7 @@ describe("usePdfExport", () => {
 	});
 
 	it("ne fait rien sans programme", async () => {
-		const { result } = renderHook(() => usePdfExport());
+		const { result } = renderUsePdfExport();
 
 		await act(async () => {
 			await result.current.startExport([], "projet");

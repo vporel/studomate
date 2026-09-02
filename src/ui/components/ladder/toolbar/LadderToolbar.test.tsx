@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useLadderStore } from "../context/LadderContext";
@@ -22,7 +23,7 @@ function setup({ mode = ProjectMode.DESIGN, executeOperation = jest.fn() } = {})
 		}),
 	);
 
-	render(<LadderToolbar />);
+	renderWithI18n(<LadderToolbar />);
 	return { executeOperation };
 }
 

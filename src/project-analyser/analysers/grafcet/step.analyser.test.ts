@@ -24,7 +24,7 @@ describe("StepAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("numéro de l'étape n'est pas défini");
+			expect(issues[0].code).toBe("STEP_NUMBER_MISSING");
 		});
 
 		it("allows empty number when allowEmptyContent is true", () => {
@@ -44,7 +44,7 @@ describe("StepAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("detects decimal step number", () => {
@@ -54,7 +54,7 @@ describe("StepAnalyser", () => {
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("accepts zero as step number", () => {
@@ -116,10 +116,10 @@ describe("StepAnalyser", () => {
 			);
 
 			const noPredecessorIssues = issues.filter((i) =>
-				i.message.includes("amont"),
+				i.code === "STEP_NO_PREDECESSOR",
 			);
 			const noSuccessorIssues = issues.filter((i) =>
-				i.message.includes("aval"),
+				i.code === "STEP_NO_SUCCESSOR",
 			);
 			expect(noPredecessorIssues).toHaveLength(0);
 			expect(noSuccessorIssues).toHaveLength(0);
@@ -140,7 +140,7 @@ describe("StepAnalyser", () => {
 			);
 
 			const duplicateIssue = issues.find((i) =>
-				i.message.includes("utilisé par plusieurs"),
+				i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			expect(duplicateIssue).toBeDefined();
 			expect(duplicateIssue?.severity).toBe("error");
@@ -161,7 +161,7 @@ describe("StepAnalyser", () => {
 			);
 
 			const duplicateIssue = issues.find((i) =>
-				i.message.includes("utilisé par plusieurs"),
+				i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			expect(duplicateIssue).toBeUndefined();
 		});
@@ -184,7 +184,7 @@ describe("StepAnalyser", () => {
 			);
 
 			const noPredecessorIssue = issues.find((i) =>
-				i.message.includes("amont"),
+				i.code === "STEP_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeDefined();
 			expect(noPredecessorIssue?.severity).toBe("error");
@@ -215,7 +215,7 @@ describe("StepAnalyser", () => {
 			);
 
 			const noPredecessorIssue = issues.find((i) =>
-				i.message.includes("amont"),
+				i.code === "STEP_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeUndefined();
 		});
@@ -233,7 +233,7 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noSuccessorIssue = issues.find((i) => i.message.includes("aval"));
+			const noSuccessorIssue = issues.find((i) => i.code === "STEP_NO_SUCCESSOR");
 			expect(noSuccessorIssue).toBeDefined();
 			expect(noSuccessorIssue?.severity).toBe("error");
 		});
@@ -343,13 +343,13 @@ describe("StepAnalyser", () => {
 			);
 
 			const duplicateIssue1 = issues1.find((i) =>
-				i.message.includes("utilisé par plusieurs"),
+				i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			const duplicateIssue2 = issues2.find((i) =>
-				i.message.includes("utilisé par plusieurs"),
+				i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			const duplicateIssue3 = issues3.find((i) =>
-				i.message.includes("utilisé par plusieurs"),
+				i.code === "STEP_NUMBER_DUPLICATE",
 			);
 
 			expect(duplicateIssue1).toBeUndefined();

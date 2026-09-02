@@ -13,18 +13,19 @@ import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager"
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Edge, Node, OnDelete } from "@xyflow/react";
 import { LadderContextMenuElement } from "./ladder-context-menu";
+import { MenuTranslate } from "./menu-translate";
 
-const CONTACT_TYPE_LABELS: Record<ContactType, string> = {
-	NO: "Normalement ouvert (NO)",
-	NF: "Normalement fermé (NF)",
-	P: "Front montant (P)",
-	N: "Front descendant (N)",
+const CONTACT_TYPE_KEYS: Record<ContactType, string> = {
+	NO: "contactNO",
+	NF: "contactNF",
+	P: "contactP",
+	N: "contactN",
 };
 
-const COIL_TYPE_LABELS: Record<CoilType, string> = {
-	normal: "Bobine normale",
-	set: "Bobine Set (mémorisation à 1)",
-	reset: "Bobine Reset (mémorisation à 0)",
+const COIL_TYPE_KEYS: Record<CoilType, string> = {
+	normal: "coilNormal",
+	set: "coilSet",
+	reset: "coilReset",
 };
 
 export default function nodeOrEdgeContextMenuItems(
@@ -33,6 +34,7 @@ export default function nodeOrEdgeContextMenuItems(
 	handleDelete: OnDelete,
 	copyCutPasteManager: LadderCopyCutPasteManager,
 	workflowManager: LadderWorkflowManager,
+	t: MenuTranslate,
 ): ContextMenuItemType[][] {
 	const groups: ContextMenuItemType[][] = [];
 
@@ -40,9 +42,9 @@ export default function nodeOrEdgeContextMenuItems(
 		const current = element.data.type;
 		groups.push([
 			{
-				label: "Type",
+				label: t("type"),
 				subItems: CONTACT_TYPES.map((type) => ({
-					label: CONTACT_TYPE_LABELS[type],
+					label: t(CONTACT_TYPE_KEYS[type]),
 					checked: type === current,
 					onClick: () =>
 						workflowManager.setContactType(sectionId, element.id, type),
@@ -55,9 +57,9 @@ export default function nodeOrEdgeContextMenuItems(
 		const current = element.data.type;
 		groups.push([
 			{
-				label: "Type",
+				label: t("type"),
 				subItems: COIL_TYPES.map((type) => ({
-					label: COIL_TYPE_LABELS[type],
+					label: t(COIL_TYPE_KEYS[type]),
 					checked: type === current,
 					onClick: () =>
 						workflowManager.setCoilType(sectionId, element.id, type),
@@ -68,12 +70,12 @@ export default function nodeOrEdgeContextMenuItems(
 
 	groups.push([
 		{
-			label: "Copier",
+			label: t("copy"),
 			shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
 			onClick: () => copyCutPasteManager.copySelectedElements(),
 		},
 		{
-			label: "Couper",
+			label: t("cut"),
 			shortcut: platformShortcut("Ctrl+X", "Cmd+X"),
 			onClick: () => copyCutPasteManager.cutSelectedElements(),
 		},
@@ -81,7 +83,7 @@ export default function nodeOrEdgeContextMenuItems(
 
 	groups.push([
 		{
-			label: "Supprimer",
+			label: t("delete"),
 			onClick: () => {
 				if (element.type === LADDER_CONNECTION_EDGE_TYPE) {
 					handleDelete({

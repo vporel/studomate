@@ -29,7 +29,6 @@ export default class UserProgramBlockAnalyser {
 					"error",
 					"BLOCK_PROGRAM_UNDECLARED",
 					source,
-					"Le programme référencé par ce bloc n'existe pas dans le projet.",
 				),
 			);
 			return issues;
@@ -40,7 +39,7 @@ export default class UserProgramBlockAnalyser {
 					"error",
 					"BLOCK_PROGRAM_NOT_LADDER",
 					source,
-					`Le programme "${referenced.name}" référencé par ce bloc n'est pas un ladder.`,
+					{ programName: referenced.name },
 				),
 			);
 			return issues;
@@ -51,7 +50,7 @@ export default class UserProgramBlockAnalyser {
 					"error",
 					"BLOCK_PROGRAM_IS_MAIN",
 					source,
-					`Le programme "${referenced.name}" est le Main du projet : il ne peut pas être appelé par un bloc.`,
+					{ programName: referenced.name },
 				),
 			);
 		}
@@ -70,7 +69,7 @@ export default class UserProgramBlockAnalyser {
 					"warning",
 					"BLOCK_PROGRAM_DUPLICATE_REFERENCE",
 					source,
-					`Le programme "${referenced.name}" est référencé par plusieurs blocs de ce Main.`,
+					{ programName: referenced.name },
 				),
 			);
 		}

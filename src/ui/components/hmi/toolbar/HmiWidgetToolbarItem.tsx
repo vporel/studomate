@@ -3,6 +3,7 @@
 import { HMI_WIDGET_DEFINITIONS } from "@/schemas/hmi/hmi-widget.schema";
 import { HmiWidgetTool } from "@/ui/components/hmi/view/constants";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Tooltip } from "@mui/material";
 import { useHmiWidgetDnD } from "./HmiWidgetDnDContext";
 
@@ -27,8 +28,9 @@ const HmiWidgetToolbarItem = ({
 }: HmiWidgetToolbarItemProps) => {
 	const { type } = tool;
 	const { setDraggedTool } = useHmiWidgetDnD();
+	const t = useT("hmiEditor.widgetNames");
 	const ui = HMI_WIDGET_UI[type];
-	const label = tool.label ?? HMI_WIDGET_DEFINITIONS[type].label;
+	const label = t((tool.label ?? type) as never);
 	const previewWidth = tool.previewWidth ?? ui.previewWidth;
 	const SymbolComponent = ui.toolSymbol;
 	const RealComponent = ui.component;

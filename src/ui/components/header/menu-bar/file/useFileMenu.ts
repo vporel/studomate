@@ -2,6 +2,7 @@
 
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { PREFERENCES_PAGE_DATA } from "@/ui/components/pages/PreferencesPage";
+import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useMemo } from "react";
@@ -27,15 +28,16 @@ export default function useFileMenu(): AppMenuType {
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
+	const t = useT("menu.file");
 
 	return useMemo(
 		() => ({
 			id: "file",
-			label: "Fichier",
+			label: t("title"),
 			items: [
 				[
 					{
-						label: "Nouveau projet",
+						label: t("newProject"),
 						// The shortcut Ctrl+N is reserved by the browser to open a new window so we don't use it
 						disabled: !designing,
 						onClick: () => {
@@ -46,7 +48,7 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Ouvrir projet",
+						label: t("openProject"),
 						shortcut: platformShortcut("Ctrl+O", "Cmd+O"),
 						disabled: !designing,
 						onClick: () => {
@@ -57,7 +59,7 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Enregistrer",
+						label: t("save"),
 						shortcut: platformShortcut("Ctrl+S", "Cmd+S"),
 						onClick: () => {
 							void lifecycleManager.saveProject();
@@ -66,15 +68,14 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Enregistrer sous",
+						label: t("saveAs"),
 						shortcut: platformShortcut("Ctrl+Shift+S", "Cmd+Shift+S"),
 						onClick: () => setSaveAsModalVisible(true),
 					},
 				],
 				[
 					{
-						label: "Exporter",
-						shortcut: platformShortcut("Ctrl+E", "Cmd+E"),
+						label: t("export"),
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
@@ -84,8 +85,7 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Fermer le projet",
-						shortcut: platformShortcut("Ctrl+F4", "Cmd+W"),
+						label: t("closeProject"),
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;
@@ -95,7 +95,7 @@ export default function useFileMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Préférences",
+						label: t("preferences"),
 						onClick: () => pagesManager.openPage(PREFERENCES_PAGE_DATA),
 					},
 				],
@@ -108,6 +108,7 @@ export default function useFileMenu(): AppMenuType {
 			setExportModalVisible,
 			setSaveAsModalVisible,
 			designing,
+			t,
 		],
 	);
 }

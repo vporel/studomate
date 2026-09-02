@@ -1,3 +1,4 @@
+import { identityT } from "@tests/utils/i18n";
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 
@@ -24,6 +25,7 @@ function itemsFor(
 		handleDelete,
 		fakeCopyCutPasteManager(),
 		workflowManager,
+		identityT,
 	);
 }
 
@@ -74,6 +76,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 			jest.fn(),
 			ccp,
 			fakeWorkflowManager(),
+			identityT,
 		);
 
 		copyItem.onClick!();
@@ -93,7 +96,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 			const typeItem = itemsFor(node)
 				.flat()
-				.find((item) => item.label === "Type")!;
+				.find((item) => item.label === "type")!;
 
 			expect(typeItem.subItems).toHaveLength(4);
 			const checked = typeItem.subItems!.filter(
@@ -113,7 +116,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 			const typeItem = itemsFor(node, jest.fn(), workflowManager)
 				.flat()
-				.find((item) => item.label === "Type")!;
+				.find((item) => item.label === "type")!;
 			const toNF = typeItem.subItems!.find(
 				(sub) => "label" in sub && sub.label.includes("NF"),
 			) as any;
@@ -131,7 +134,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 			const hasType = itemsFor(edge)
 				.flat()
-				.some((item) => item.label === "Type");
+				.some((item) => item.label === "type");
 
 			expect(hasType).toBe(false);
 		});
@@ -147,7 +150,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 			const typeItem = itemsFor(node)
 				.flat()
-				.find((item) => item.label === "Type")!;
+				.find((item) => item.label === "type")!;
 
 			expect(typeItem.subItems).toHaveLength(3);
 			const checked = typeItem.subItems!.filter(
@@ -167,7 +170,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 			const typeItem = itemsFor(node, jest.fn(), workflowManager)
 				.flat()
-				.find((item) => item.label === "Type")!;
+				.find((item) => item.label === "type")!;
 			const toReset = typeItem.subItems!.find(
 				(sub) => "label" in sub && sub.label.includes("Reset"),
 			) as any;

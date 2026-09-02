@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_NAME } from "@/app-info";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
@@ -17,10 +18,11 @@ import HmiPageView from "../hmi/HmiPageView";
 import HmiSimulationPageView from "../hmi/HmiSimulationPageView";
 
 const NoPage = () => {
+	const t = useT("pages.noPage");
 	const commands = [
-		{ label: "Ouvrir un projet", shortcut: ["Ctrl", "O"] },
-		{ label: "Enregistrer le projet", shortcut: ["Ctrl", "S"] },
-		{ label: "Nouveau grafcet", shortcut: ["Ctrl", "G"] },
+		{ label: t("openProject"), shortcut: ["Ctrl", "O"] },
+		{ label: t("saveProject"), shortcut: ["Ctrl", "S"] },
+		{ label: t("newGrafcet"), shortcut: ["Ctrl", "G"] },
 	];
 
 	return (

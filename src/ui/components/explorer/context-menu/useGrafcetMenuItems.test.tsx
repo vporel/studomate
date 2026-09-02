@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { act, renderHook } from "@testing-library/react";
+import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -29,7 +30,7 @@ describe("useGrafcetMenuItems", () => {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({ grafcetsManager, pagesManager, mode }),
 		);
-		return renderHook(() => useGrafcetMenuItems());
+		return renderHook(() => useGrafcetMenuItems(), { wrapper: i18nWrapper() });
 	}
 
 	afterEach(() => jest.clearAllMocks());

@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
 import { useLadderStore } from "../context/LadderContext";
@@ -38,7 +39,7 @@ function setup({
 		}),
 	);
 
-	render(
+	renderWithI18n(
 		<LadderSectionHeader
 			section={section}
 			index={index}

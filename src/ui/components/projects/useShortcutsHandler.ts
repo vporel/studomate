@@ -5,6 +5,7 @@ import { getClipboardEntry } from "@/ui/stores/shared/clipboard.store";
 import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SNAP_GRID } from "@/ui/components/hmi/view/constants";
+import { getT } from "@/ui/i18n/translateGlobal";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
@@ -127,9 +128,7 @@ export default function useShortcutsHandler() {
 								activeScopeType === "hmi") &&
 							entry.scope !== activeScopeType
 						) {
-							toast.error(
-								"Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page.",
-							);
+							toast.error(getT("toasts")("pasteWrongScope"));
 							break;
 						}
 						getActiveCopyCutPasteManager()?.pasteElements(

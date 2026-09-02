@@ -1,7 +1,9 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import Variable from "@/schemas/variable/variable.schema";
@@ -25,7 +27,7 @@ function setupWithVariables(
 			mode: ProjectMode.DESIGN,
 		}),
 	);
-	render(<VariablesTable zones={["logic-input"]} />);
+	renderWithI18n(<VariablesTable zones={["logic-input"]} />);
 	return { removeVariables };
 }
 
@@ -38,7 +40,7 @@ describe("VariablesTable", () => {
 				mode: ProjectMode.DESIGN,
 			}),
 		);
-		expect(() => render(<VariablesTable zones={[]} />)).toThrow();
+		expect(() => renderWithI18n(<VariablesTable zones={[]} />)).toThrow();
 	});
 
 	it("affiche une ligne par variable des zones demandées, plus la ligne vide d'ajout", () => {
@@ -58,7 +60,7 @@ describe("VariablesTable", () => {
 			}),
 		);
 
-		render(<VariablesTable zones={["logic-input"]} />);
+		renderWithI18n(<VariablesTable zones={["logic-input"]} />);
 
 		expect(screen.getByText("I0")).toBeInTheDocument();
 		expect(screen.queryByText("M0")).not.toBeInTheDocument();
@@ -103,7 +105,7 @@ describe("VariablesTable", () => {
 			}),
 		);
 
-		render(<VariablesTable zones={["memory"]} />);
+		renderWithI18n(<VariablesTable zones={["memory"]} />);
 
 		expect(screen.getByText("M0")).toBeInTheDocument();
 		expect(screen.queryByText("Tempo1.PT")).not.toBeInTheDocument();
@@ -124,5 +126,31 @@ describe("VariablesTable", () => {
 			expect(screen.queryByText("I1")).not.toBeInTheDocument(),
 		);
 		expect(screen.getByText("I0")).toBeInTheDocument();
+	});
+
+	it("localise le DataGrid selon la langue de l'interface", () => {
+		window.localStorage.setItem("studomate_locale", "en");
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				variablesManager: {
+					existsByMnemonic: () => undefined,
+					existsByAddress: () => undefined,
+					removeVariables: jest.fn(),
+				},
+				project: { variables: [] },
+				mode: ProjectMode.DESIGN,
+			}),
+		);
+
+		renderWithI18n(
+			<LocaleProvider>
+				<VariablesTable zones={["logic-input"]} />
+			</LocaleProvider>,
+		);
+
+		expect(
+			screen.getByRole("button", { name: "Search" }),
+		).toBeInTheDocument();
+		window.localStorage.removeItem("studomate_locale");
 	});
 });

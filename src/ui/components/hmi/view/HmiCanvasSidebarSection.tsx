@@ -4,6 +4,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { ReactNode } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 interface HmiCanvasSidebarSectionProps {
 	title: string;
@@ -27,6 +28,7 @@ const HmiCanvasSidebarSection = ({
 	collapsed,
 	onToggle,
 }: HmiCanvasSidebarSectionProps) => {
+	const t = useT("hmiEditor.panel");
 	return (
 		<Box
 			sx={{
@@ -51,11 +53,11 @@ const HmiCanvasSidebarSection = ({
 				<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
 					{title}
 				</Typography>
-				<Tooltip title={collapsed ? "Déplier" : "Replier"}>
+				<Tooltip title={collapsed ? t("expand") : t("collapse")}>
 					<IconButton
 						size="small"
 						onClick={onToggle}
-						aria-label={collapsed ? `Déplier ${title}` : `Replier ${title}`}
+						aria-label={collapsed ? t("expandNamed", { name: String(title) }) : t("collapseNamed", { name: String(title) })}
 					>
 						{collapsed ? (
 							<ExpandMoreIcon fontSize="small" />

@@ -32,6 +32,8 @@ import InvalidTimerElapsedTimeNodeException from "@/simulator/interpreter/semant
 import ControlsBuilder from "@/expression-language/ast/builders/controls.builder";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
+import frExpressionErrors from "@/i18n/messages/fr/expressionErrors.json";
+import enExpressionErrors from "@/i18n/messages/en/expressionErrors.json";
 import SimulatorExceptionsMapper from "./simulator-exceptions.mapper";
 
 function timerNode(): TimerNode {
@@ -45,16 +47,15 @@ function timerNode(): TimerNode {
 	);
 }
 
+const message = (exception: unknown, locale: "fr" | "en" = "fr") =>
+	SimulatorExceptionsMapper.getUserFriendlyMessage(exception, locale);
+
 describe("SimulatorExceptionsMapper", () => {
 	describe("environment exceptions", () => {
 		it("maps UnknownVariableNameException", () => {
 			const e = new UnknownVariableNameException("Foo");
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Variable inconnue : Foo",
-			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Unknown variable name: Foo",
-			);
+			expect(message(e, "fr")).toBe("Variable inconnue : Foo");
+			expect(message(e, "en")).toBe("Unknown variable name: Foo");
 		});
 	});
 
@@ -62,23 +63,20 @@ describe("SimulatorExceptionsMapper", () => {
 		it("maps UnauthorizedNodeException", () => {
 			const node = LiteralsBuilder.buildNumberNode(1, 0);
 			const e = new UnauthorizedNodeException("NUMBER_LITERAL", node);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("Nœud non autorisé");
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN"),
-			).toContain("Unauthorized node");
+			const fr = message(e, "fr");
+			const en = message(e, "en");
+			expect(fr).toContain("Nœud non autorisé");
+			expect(fr).toContain("Nombre");
+			expect(en).toContain("Unauthorized node");
+			expect(en).toContain("Number");
+			expect(en).not.toContain("NUMBER_LITERAL");
 		});
 
 		it("maps UnknownIdentifierException", () => {
 			const node = IdentifiersBuilder.buildIdentifierNode("Bar", 0);
 			const e = new UnknownIdentifierException(node);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Variable inconnue : Bar",
-			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Unknown variable: Bar",
-			);
+			expect(message(e, "fr")).toBe("Variable inconnue : Bar");
+			expect(message(e, "en")).toBe("Unknown variable: Bar");
 		});
 
 		it("maps InvalidUnaryExprOperandTypeException, translating the operator to French", () => {
@@ -93,11 +91,11 @@ describe("SimulatorExceptionsMapper", () => {
 				"number",
 				node,
 			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Type invalide pour l'opérateur 'NON' : attendu booléen, obtenu nombre",
+			expect(message(e, "fr")).toBe(
+				"Type invalide pour l'opérateur « NON » : attendu booléen, obtenu nombre",
 			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Invalid type for operator 'NOT': expected boolean, got number",
+			expect(message(e, "en")).toBe(
+				'Invalid type for operator "NOT": expected boolean, got number',
 			);
 		});
 
@@ -115,11 +113,11 @@ describe("SimulatorExceptionsMapper", () => {
 				"boolean",
 				node,
 			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Type invalide pour l'opérateur '=' côté droite : attendu nombre, obtenu booléen",
+			expect(message(e, "fr")).toBe(
+				"Type invalide pour l'opérateur « = » côté droite : attendu nombre, obtenu booléen",
 			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Invalid type for operator '=' on the right side: expected number, got boolean",
+			expect(message(e, "en")).toBe(
+				'Invalid type for operator "=" on the right side: expected number, got boolean',
 			);
 		});
 
@@ -130,7 +128,7 @@ describe("SimulatorExceptionsMapper", () => {
 				0,
 			);
 			const e = new InvalidAssignmentTargetException(node);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
+			expect(message(e, "fr")).toBe(
 				"Cible d'affectation invalide : la partie gauche doit être une variable.",
 			);
 		});
@@ -142,7 +140,7 @@ describe("SimulatorExceptionsMapper", () => {
 				0,
 			);
 			const e = new InputIdentifierAssignmentException(node);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
+			expect(message(e, "fr")).toBe(
 				"Affectation invalide : la variable affectée est une variable d'entrée.",
 			);
 		});
@@ -160,69 +158,55 @@ describe("SimulatorExceptionsMapper", () => {
 				"string",
 				node,
 			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Types incompatibles pour l'opérateur '=' : gauche nombre, droite chaîne de caractères",
+			expect(message(e, "fr")).toBe(
+				"Types incompatibles pour l'opérateur « = » : gauche nombre, droite chaîne de caractères",
 			);
 		});
 
 		describe("timer-related exceptions", () => {
 			it("maps InvalidTimerInputTypeException", () => {
 				const e = new InvalidTimerInputTypeException("number", timerNode());
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain("l'entrée d'une temporisation doit être un booléen");
+				expect(message(e, "fr")).toContain(
+					"l'entrée d'une temporisation doit être un booléen",
+				);
 			});
 
 			it("maps InvalidTimerLastInputNodeException", () => {
 				const e = new InvalidTimerLastInputNodeException(timerNode());
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain(
+				expect(message(e, "fr")).toContain(
 					"la dernière valeur d'entrée d'un bloc de temporisation doit être une variable",
 				);
 			});
 
 			it("maps InvalidTimerLastInputTypeException", () => {
 				const e = new InvalidTimerLastInputTypeException("number", timerNode());
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain("doit être un booléen (trouvé nombre)");
+				expect(message(e, "fr")).toContain("doit être un booléen (trouvé nombre)");
 			});
 
 			it("maps InvalidTimerOutputNodeException", () => {
 				const e = new InvalidTimerOutputNodeException(timerNode());
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain(
+				expect(message(e, "fr")).toContain(
 					"la sortie d'un bloc de temporisation doit être une variable",
 				);
 			});
 
 			it("maps InvalidTimerOutputTypeException", () => {
 				const e = new InvalidTimerOutputTypeException("string", timerNode());
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain("doit retourner un booléen (trouvé chaîne de caractères)");
+				expect(message(e, "fr")).toContain(
+					"doit retourner un booléen (trouvé chaîne de caractères)",
+				);
 			});
 
 			it("maps InvalidTimerPresetTimeTypeException", () => {
-				const e = new InvalidTimerPresetTimeTypeException(
-					"boolean",
-					timerNode(),
-				);
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain("attendu nombre, obtenu booléen");
+				const e = new InvalidTimerPresetTimeTypeException("boolean", timerNode());
+				expect(message(e, "fr")).toContain("attendu nombre, obtenu booléen");
 			});
 
 			it("maps InvalidTimerElapsedTimeTypeException", () => {
-				const e = new InvalidTimerElapsedTimeTypeException(
-					"string",
-					timerNode(),
+				const e = new InvalidTimerElapsedTimeTypeException("string", timerNode());
+				expect(message(e, "fr")).toContain(
+					"attendu nombre, obtenu chaîne de caractères",
 				);
-				expect(
-					SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-				).toContain("attendu nombre, obtenu chaîne de caractères");
 			});
 		});
 	});
@@ -231,12 +215,8 @@ describe("SimulatorExceptionsMapper", () => {
 		it("maps DivisionByZeroException", () => {
 			const node = LiteralsBuilder.buildNumberNode(1, 0);
 			const e = new DivisionByZeroException(10, 0, node);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Division par zéro : 10 / 0",
-			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Division by zero: 10 / 0",
-			);
+			expect(message(e, "fr")).toBe("Division par zéro : 10 / 0");
+			expect(message(e, "en")).toBe("Division by zero: 10 / 0");
 		});
 	});
 
@@ -246,9 +226,7 @@ describe("SimulatorExceptionsMapper", () => {
 				type: "EOF",
 				position: 5,
 			} as any);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("caractère inattendu à la position");
+			expect(message(e, "fr")).toContain("caractère inattendu à la position 5");
 		});
 
 		it("maps MissingPrimaryOrLeftParentheseException", () => {
@@ -256,17 +234,22 @@ describe("SimulatorExceptionsMapper", () => {
 				type: "PLUS",
 				position: 3,
 			} as any);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain(
-				"Expression attendue (variable, nombre, chaîne) ou '(' à la position",
+			expect(message(e, "fr")).toContain(
+				"Expression attendue (variable, nombre, chaîne) ou '(' à la position 3",
 			);
 		});
 
 		it("maps MissingRightParentheseException", () => {
 			const e = new MissingRightParentheseException(7, false);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
+			expect(message(e, "fr")).toBe(
 				"Parenthèse fermante manquante à la position 7",
+			);
+		});
+
+		it("maps MissingRightParentheseException at end of input", () => {
+			const e = new MissingRightParentheseException(7, true);
+			expect(message(e, "fr")).toBe(
+				"Parenthèse fermante manquante à la position 7 (fin d'entrée)",
 			);
 		});
 
@@ -276,44 +259,34 @@ describe("SimulatorExceptionsMapper", () => {
 				"STAR" as any,
 				4,
 			);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("Jeton inattendu à la position 4");
+			expect(message(e, "fr")).toContain("Jeton inattendu à la position 4");
 		});
 	});
 
 	describe("lexer exceptions", () => {
 		it("maps InvalidCharacterException", () => {
 			const e = new InvalidCharacterException("$", 2);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Caractère inattendu '$' à la position 2",
-			);
+			expect(message(e, "fr")).toBe("Caractère inattendu « $ » à la position 2");
 		});
 
 		it("maps InvalidKeywordException", () => {
 			const e = new InvalidKeywordException("SI", 6);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("Mot-clé invalide");
+			expect(message(e, "fr")).toContain("Mot-clé invalide");
 		});
 
 		it("maps UnterminatedStringException", () => {
 			const e = new UnterminatedStringException('"', 8);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("Chaîne non terminée");
+			expect(message(e, "fr")).toContain("Chaîne non terminée");
 		});
 	});
 
 	describe("timer / contrôle : nœuds", () => {
 		it("maps InvalidTimerElapsedTimeNodeException", () => {
 			const e = new InvalidTimerElapsedTimeNodeException(timerNode());
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain("Nœud de temps écoulé de temporisation invalide");
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN"),
-			).toContain("Invalid timer elapsed time node");
+			expect(message(e, "fr")).toContain(
+				"Nœud de temps écoulé de temporisation invalide",
+			);
+			expect(message(e, "en")).toContain("Invalid timer elapsed time node");
 		});
 
 		it("maps InvalidControlConditionTypeException", () => {
@@ -324,14 +297,10 @@ describe("SimulatorExceptionsMapper", () => {
 				0,
 			);
 			const e = new InvalidControlConditionTypeException(control);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
-			).toContain(
+			expect(message(e, "fr")).toContain(
 				"la condition d'une structure de contrôle doit être un booléen",
 			);
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN"),
-			).toContain("Invalid control condition type");
+			expect(message(e, "en")).toContain("Invalid control condition type");
 		});
 	});
 
@@ -353,8 +322,7 @@ describe("SimulatorExceptionsMapper", () => {
 			const names: string[] = [];
 			for (const entry of readdirSync(dir, { withFileTypes: true })) {
 				const full = join(dir, entry.name);
-				if (entry.isDirectory())
-					names.push(...collectExceptionClassNames(full));
+				if (entry.isDirectory()) names.push(...collectExceptionClassNames(full));
 				else if (entry.name.endsWith(".exception.ts")) {
 					const match = readFileSync(full, "utf8").match(
 						/class\s+([A-Za-z0-9_]+)/,
@@ -385,33 +353,31 @@ describe("SimulatorExceptionsMapper", () => {
 
 			expect(unaccounted).toEqual([]);
 		});
+
+		it("les dictionnaires fr et en portent les mêmes codes d'erreur d'expression", () => {
+			expect(Object.keys(enExpressionErrors).sort()).toEqual(
+				Object.keys(frExpressionErrors).sort(),
+			);
+		});
 	});
 
 	describe("fallback behaviour", () => {
 		it("falls back to the raw message of a generic Error", () => {
 			const e = new Error("boom");
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"boom",
-			);
+			expect(message(e, "fr")).toBe("boom");
 		});
 
 		it("falls back to a generic message when a generic Error has no message", () => {
 			const e = new Error("");
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR")).toBe(
-				"Expression invalide : erreur inconnue",
-			);
-			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e, "EN")).toBe(
-				"Invalid expression: unknown error",
-			);
+			expect(message(e, "fr")).toBe("Expression invalide : erreur inconnue");
+			expect(message(e, "en")).toBe("Invalid expression: unknown error");
 		});
 
 		it("stringifies a thrown value that isn't an Error", () => {
-			expect(
-				SimulatorExceptionsMapper.getUserFriendlyMessage("plain string", "FR"),
-			).toBe("plain string");
+			expect(message("plain string", "fr")).toBe("plain string");
 		});
 
-		it("defaults to French when no language is given", () => {
+		it("defaults to French when no locale is given", () => {
 			const e = new UnknownVariableNameException("Foo");
 			expect(SimulatorExceptionsMapper.getUserFriendlyMessage(e)).toBe(
 				"Variable inconnue : Foo",

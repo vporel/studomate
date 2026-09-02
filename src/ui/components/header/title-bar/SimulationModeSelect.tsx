@@ -3,8 +3,10 @@
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { Box } from "@mui/material";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 const SimulationModeSelect = () => {
+	const t = useT("chrome.simulationMode");
 	const simulationMode = useProjectStore((state) => state.simulationMode);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 
@@ -26,8 +28,8 @@ const SimulationModeSelect = () => {
 				backgroundColor: "lightgray",
 			}}
 		>
-			<option value={SimulationMode.CONTINUOUS}>Continu</option>
-			<option value={SimulationMode.STEP_BY_STEP}>Pas-à-pas</option>
+			<option value={SimulationMode.CONTINUOUS}>{t("continuous")}</option>
+			<option value={SimulationMode.STEP_BY_STEP}>{t("stepByStep")}</option>
 		</Box>
 	);
 };

@@ -15,6 +15,7 @@ import {
 	TextField,
 } from "@mui/material";
 import { ReactNode } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 type PropertyField = HmiWidgetPropertyField<HmiWidgetData>;
 type NumberField = Extract<PropertyField, { kind: "number" }>;
@@ -50,6 +51,7 @@ export function groupPropertyFields<D>(
  * par les `get`/`set` typés du descripteur. Les champs communs (Nom, Libellé, Variable liée) restent
  * dans `HmiWidgetPropertiesPanel`. */
 const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
+	const t = useT("hmiEditor");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
 	const fields = HMI_WIDGET_UI[widget.type].propertyFields as PropertyField[];
 
@@ -73,7 +75,7 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 							onChange={(e) => apply(field.set(widget.data, e.target.checked))}
 						/>
 					}
-					label={field.label}
+					label={t(field.label as never)}
 					sx={{ "& .MuiFormControlLabel-label": { fontSize: 12 } }}
 				/>
 			);
@@ -84,7 +86,7 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 				<TextField
 					select
 					fullWidth
-					label={field.label}
+					label={t(field.label as never)}
 					size="small"
 					value={field.get(widget.data)}
 					onChange={(e) =>
@@ -96,7 +98,7 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 				>
 					{field.options.map((option) => (
 						<MenuItem key={option.value} value={option.value}>
-							{option.label}
+							{t(option.label as never)}
 						</MenuItem>
 					))}
 				</TextField>
@@ -112,7 +114,7 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 		if (field.kind === "color") {
 			return (
 				<TextField
-					label={field.label}
+					label={t(field.label as never)}
 					size="small"
 					fullWidth
 					type="color"
@@ -152,6 +154,7 @@ const NumberPropertyField = ({
 	widget: HmiWidget;
 	apply: (data: HmiWidgetData) => void;
 }) => {
+	const t = useT("hmiEditor");
 	const committed = useCommittedField<number>({
 		value: field.get(widget.data),
 		parse: (text) => {
@@ -166,7 +169,7 @@ const NumberPropertyField = ({
 
 	return (
 		<TextField
-			label={field.label}
+			label={t(field.label as never)}
 			size="small"
 			type="number"
 			fullWidth
@@ -195,6 +198,7 @@ const TextPropertyField = ({
 	widget: HmiWidget;
 	apply: (data: HmiWidgetData) => void;
 }) => {
+	const t = useT("hmiEditor");
 	const multiline = !!field.multiline;
 	const committed = useCommittedField<string>({
 		value: field.get(widget.data),
@@ -203,7 +207,7 @@ const TextPropertyField = ({
 
 	return (
 		<TextField
-			label={field.label}
+			label={t(field.label as never)}
 			size="small"
 			fullWidth
 			multiline={multiline}

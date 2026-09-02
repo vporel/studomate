@@ -29,12 +29,12 @@ export const HMI_SHAPE_TOOLS: HmiWidgetTool[] = [
 			? [
 					{
 						type: "ellipse" as const,
-						label: "Cercle",
+						label: "circle",
 						sizeOverride: { width: 40, height: 40 },
 						dataOverride: { lockAspectRatio: true },
 						previewWidth: 24,
 					},
-					{ type: "ellipse" as const, label: "Ellipse" },
+					{ type: "ellipse" as const, label: "ellipse" },
 				]
 			: [tool],
 	),

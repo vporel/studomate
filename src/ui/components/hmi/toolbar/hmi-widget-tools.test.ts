@@ -26,11 +26,11 @@ describe("HMI_WIDGET_TOOLS", () => {
 describe("HMI_SHAPE_TOOLS", () => {
 	it("expose deux variantes d'ellipse (Cercle et Ellipse)", () => {
 		const ellipses = HMI_SHAPE_TOOLS.filter((t) => t.type === "ellipse");
-		expect(ellipses.map((t) => t.label)).toEqual(["Cercle", "Ellipse"]);
+		expect(ellipses.map((t) => t.label)).toEqual(["circle", "ellipse"]);
 	});
 
 	it('la variante "Cercle" verrouille le ratio et démarre carrée', () => {
-		const cercle = HMI_SHAPE_TOOLS.find((t) => t.label === "Cercle");
+		const cercle = HMI_SHAPE_TOOLS.find((t) => t.label === "circle");
 		expect(cercle?.sizeOverride).toEqual({ width: 40, height: 40 });
 		expect(cercle?.dataOverride).toEqual({ lockAspectRatio: true });
 	});
@@ -40,8 +40,8 @@ describe("HMI_SHAPE_TOOLS", () => {
 			"text",
 			"line",
 			"rectangle",
-			"Cercle",
-			"Ellipse",
+			"circle",
+			"ellipse",
 		]);
 	});
 });

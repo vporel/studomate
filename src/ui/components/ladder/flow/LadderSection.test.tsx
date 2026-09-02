@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { ReactFlowProvider } from "@xyflow/react";
 import { DndContext } from "@dnd-kit/core";
 import {
@@ -77,7 +78,7 @@ function setup({
 		}),
 	);
 
-	const rendered = render(
+	const rendered = renderWithI18n(
 		<ReactFlowProvider>
 			<DndContext>
 				<SortableContext

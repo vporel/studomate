@@ -1,8 +1,10 @@
 "use client";
 
-import { APP_NAME, APP_REPO_URL, APP_SLOGAN } from "@/app-info";
+import { APP_NAME, APP_REPO_URL } from "@/app-info";
 import routes from "@/app/routes";
-import { PROJECT_TEMPLATES } from "@/templates/index";
+import { Link } from "@/i18n/navigation";
+import { PROJECT_TEMPLATES, type TemplateId } from "@/templates/index";
+import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -25,25 +27,27 @@ import {
 	Typography,
 	alpha,
 } from "@mui/material";
-import Link from "next/link";
+import NextLink from "next/link";
 import { ComponentType } from "react";
 import HeroCarousel from "./HeroCarousel";
 
 const OpenAppButton = ({
+	label,
 	size = "large",
 	variant = "contained",
 }: {
+	label: string;
 	size?: "medium" | "large";
 	variant?: "contained" | "outlined";
 }) => (
 	<Button
-		LinkComponent={Link}
+		LinkComponent={NextLink}
 		href={routes.app()}
 		size={size}
 		variant={variant}
 		startIcon={<PlayArrowIcon />}
 	>
-		Ouvrir l&apos;application
+		{label}
 	</Button>
 );
 
@@ -59,113 +63,53 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 	</Typography>
 );
 
-const features: {
-	icon: ComponentType<SvgIconProps>;
-	title: string;
-	text: string;
-}[] = [
-	{
-		icon: AccountTreeIcon,
-		title: "Édition multi-langages",
-		text: "GRAFCET et Ladder : étapes, transitions, contacts, bobines, temporisations, compteurs.",
-	},
-	{
-		icon: ViewQuiltIcon,
-		title: "HMI animées",
-		text: "Déplacement d'un objet, remplissage d'un réservoir, changement d'état visuel : une partie opérative virtuelle pour piloter et voir le système réagir.",
-	},
-	{
-		icon: PlayArrowIcon,
-		title: "Simulation temps réel",
-		text: "Exécution pas-à-pas ou continue, avec visualisation des états, transitions et variables en direct.",
-	},
-	{
-		icon: FactCheckIcon,
-		title: "Analyse du projet",
-		text: "Détection des erreurs de structure avant de lancer la simulation.",
-	},
-	{
-		icon: MenuBookIcon,
-		title: "Manuel intégré",
-		text: "Une aide complète accessible directement depuis l'application.",
-	},
-	{
-		icon: CloudQueueIcon,
-		title: "Comptes & cloud (optionnel)",
-		text: "Projets stockés localement ou dans le cloud, avec partage par lien.",
-	},
+const featureIcons: ComponentType<SvgIconProps>[] = [
+	AccountTreeIcon,
+	ViewQuiltIcon,
+	PlayArrowIcon,
+	FactCheckIcon,
+	MenuBookIcon,
+	CloudQueueIcon,
 ];
+const featureKeys = [
+	"featureEditing",
+	"featureHmi",
+	"featureSimulation",
+	"featureAnalysis",
+	"featureManual",
+	"featureCloud",
+] as const;
 
-const reasons: {
-	icon: ComponentType<SvgIconProps>;
-	title: string;
-	text: string;
-}[] = [
-	{
-		icon: BoltIcon,
-		title: "Friction zéro",
-		text: "Pas d'installation, pas de licence, pas d'automate ni de cartes d'E/S à configurer. On se concentre sur la logique, pas sur l'outil.",
-	},
-	{
-		icon: HubIcon,
-		title: "Tout-en-un",
-		text: "GRAFCET, Ladder et HMI animées dans le même environnement, avec des variables partagées entre les trois. Aucun outil gratuit ne combine les trois.",
-	},
-	{
-		icon: RuleIcon,
-		title: "Boucle de correction courte",
-		text: "Les erreurs sont signalées pendant l'édition, pas seulement au lancement de la simulation. Un droit à l'erreur rapide et visuel.",
-	},
-];
+const reasonIcons: ComponentType<SvgIconProps>[] = [BoltIcon, HubIcon, RuleIcon];
+const reasonKeys = [
+	"reasonFriction",
+	"reasonAllInOne",
+	"reasonShortLoop",
+] as const;
 
-const steps = [
-	{
-		n: 1,
-		title: "Ouvrez l'application",
-		text: "Rien à installer, tout se passe dans le navigateur.",
-	},
-	{
-		n: 2,
-		title: "Créez un projet ou partez d'un exemple",
-		text: "Démarrez de zéro ou ouvrez l'un des templates prêts à l'emploi.",
-	},
-	{
-		n: 3,
-		title: "Analysez, puis simulez",
-		text: "Vérifiez la structure, puis exécutez la logique et observez le système réagir.",
-	},
-];
+const stepKeys = ["step1", "step2", "step3"] as const;
 
-const grafcetCapture =
-	"/images/captures-projets/parking-a-barriere_grafcet.png";
+const grafcetCapture = "/images/captures-projets/parking-a-barriere_grafcet.png";
 const hmiCapture = "/images/captures-projets/parking-a-barriere_hmi.jpeg";
 const ladderCapture = "/images/captures-projets/project-test_ladder.png";
 
-const heroSlides = [
-	{
-		src: grafcetCapture,
-		alt: `L'éditeur ${APP_NAME} en cours de simulation d'un GRAFCET`,
-	},
-	{
-		src: ladderCapture,
-		alt: `L'éditeur ${APP_NAME} en cours de simulation d'un Ladder`,
-	},
-	{
-		src: hmiCapture,
-		alt: `L'éditeur d'interface HMI de ${APP_NAME}`,
-	},
-];
-
-const templateCaptures: Record<string, string> = {
+const templateCaptures: Partial<Record<TemplateId, string>> = {
 	parking: grafcetCapture,
 	crossroads: "/images/captures-projets/carrefour-feu-tricolore_hmi.png",
 };
 
-const featuredTemplates = PROJECT_TEMPLATES.filter(
-	(t) => t.id in templateCaptures,
-);
+const featuredTemplates = PROJECT_TEMPLATES.filter((t) => t.id in templateCaptures);
 
 const LandingPage = () => {
+	const t = useT("public.landing");
+	const tTemplates = useT("templates");
+
+	const heroSlides = [
+		{ src: grafcetCapture, alt: t("heroSlideGrafcet", { name: APP_NAME }) },
+		{ src: ladderCapture, alt: t("heroSlideLadder", { name: APP_NAME }) },
+		{ src: hmiCapture, alt: t("heroSlideHmi", { name: APP_NAME }) },
+	];
+
 	return (
 		<Box>
 			{/* Hero */}
@@ -190,7 +134,7 @@ const LandingPage = () => {
 							color="primary"
 							fontWeight={600}
 						>
-							{APP_SLOGAN}
+							{t("slogan")}
 						</Typography>
 						<Typography
 							variant="h6"
@@ -198,24 +142,21 @@ const LandingPage = () => {
 							color="text.secondary"
 							sx={{ maxWidth: 720 }}
 						>
-							Le studio d&apos;automatisme le plus rapide et le plus accessible
-							pour apprendre et expérimenter le GRAFCET, le Ladder et les HMI :
-							gratuit, sans installation, directement dans le navigateur.
+							{t("heroTagline")}
 						</Typography>
 						<Typography variant="body2" color="text.secondary">
-							Gratuit et open source · Sans installation · Sans compte · Aucune
-							donnée personnelle
+							{t("heroBadges")}
 						</Typography>
 						<FlexBox gap={2} wrap justifyContent="center" mt={1}>
-							<OpenAppButton />
+							<OpenAppButton label={t("openApp")} />
 							<Button
 								LinkComponent={Link}
-								href={routes.userManual()}
+								href="/user-manual"
 								size="large"
 								variant="outlined"
 								startIcon={<MenuBookIcon />}
 							>
-								Consulter le manuel
+								{t("openManual")}
 							</Button>
 						</FlexBox>
 						<Box
@@ -234,28 +175,29 @@ const LandingPage = () => {
 
 			{/* Pourquoi Studomate ? */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Pourquoi {APP_NAME} ?</SectionTitle>
+				<SectionTitle>{t("whyTitle", { name: APP_NAME })}</SectionTitle>
 				<Typography textAlign="center" color="text.secondary" mb={4}>
-					La valeur de {APP_NAME} n&apos;est pas d&apos;être plus puissant
-					qu&apos;un logiciel industriel, mais de réduire à presque zéro la
-					friction pour apprendre l&apos;automatisme.
+					{t("whyIntro", { name: APP_NAME })}
 				</Typography>
 				<FlexBox gap={3} wrap justifyContent="center">
-					{reasons.map(({ icon: Icon, title, text }) => (
-						<Paper
-							key={title}
-							variant="outlined"
-							sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
-						>
-							<Icon color="primary" fontSize="large" />
-							<Typography variant="h6" fontWeight={700} mt={1}>
-								{title}
-							</Typography>
-							<Typography variant="body2" color="text.secondary" mt={0.5}>
-								{text}
-							</Typography>
-						</Paper>
-					))}
+					{reasonKeys.map((key, i) => {
+						const Icon = reasonIcons[i];
+						return (
+							<Paper
+								key={key}
+								variant="outlined"
+								sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
+							>
+								<Icon color="primary" fontSize="large" />
+								<Typography variant="h6" fontWeight={700} mt={1}>
+									{t(`${key}Title` as never)}
+								</Typography>
+								<Typography variant="body2" color="text.secondary" mt={0.5}>
+									{t(`${key}Text` as never)}
+								</Typography>
+							</Paper>
+						);
+					})}
 				</FlexBox>
 			</Container>
 
@@ -263,16 +205,15 @@ const LandingPage = () => {
 
 			{/* Public visé */}
 			<Container maxWidth="md" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Pour qui ?</SectionTitle>
+				<SectionTitle>{t("audienceTitle")}</SectionTitle>
 				<Typography textAlign="center" color="text.secondary" mb={3}>
-					Studomate s&apos;adresse à toutes celles et ceux qui apprennent ou
-					enseignent l&apos;automatisme.
+					{t("audienceIntro")}
 				</Typography>
 				<FlexBox gap={2} wrap justifyContent="center">
 					{[
-						"Étudiants (BTS, IUT, écoles d'ingénieurs, universités)",
-						"Enseignants et formateurs en automatisme / électrotechnique",
-						"Professionnels en reconversion ou remise à niveau",
+						t("audienceStudents"),
+						t("audienceTeachers"),
+						t("audienceProfessionals"),
 					].map((profile) => (
 						<Paper
 							key={profile}
@@ -294,23 +235,26 @@ const LandingPage = () => {
 
 			{/* Fonctionnalités */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Ce que propose {APP_NAME}</SectionTitle>
+				<SectionTitle>{t("featuresTitle", { name: APP_NAME })}</SectionTitle>
 				<FlexBox gap={3} wrap justifyContent="center">
-					{features.map(({ icon: Icon, title, text }) => (
-						<Paper
-							key={title}
-							variant="outlined"
-							sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
-						>
-							<Icon color="primary" fontSize="large" />
-							<Typography variant="h6" fontWeight={700} mt={1}>
-								{title}
-							</Typography>
-							<Typography variant="body2" color="text.secondary" mt={0.5}>
-								{text}
-							</Typography>
-						</Paper>
-					))}
+					{featureKeys.map((key, i) => {
+						const Icon = featureIcons[i];
+						return (
+							<Paper
+								key={key}
+								variant="outlined"
+								sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
+							>
+								<Icon color="primary" fontSize="large" />
+								<Typography variant="h6" fontWeight={700} mt={1}>
+									{t(`${key}Title` as never)}
+								</Typography>
+								<Typography variant="body2" color="text.secondary" mt={0.5}>
+									{t(`${key}Text` as never)}
+								</Typography>
+							</Paper>
+						);
+					})}
 				</FlexBox>
 			</Container>
 
@@ -318,11 +262,11 @@ const LandingPage = () => {
 
 			{/* Démarrer en 30 secondes */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Démarrez en 30 secondes</SectionTitle>
+				<SectionTitle>{t("stepsTitle")}</SectionTitle>
 				<FlexBox gap={3} wrap justifyContent="center">
-					{steps.map(({ n, title, text }) => (
+					{stepKeys.map((key, i) => (
 						<Box
-							key={n}
+							key={key}
 							sx={{ flex: "1 1 260px", maxWidth: 320, textAlign: "center" }}
 						>
 							<FlexBox
@@ -338,19 +282,19 @@ const LandingPage = () => {
 									background: (th: Theme) => th.palette.primary.main,
 								}}
 							>
-								{n}
+								{i + 1}
 							</FlexBox>
 							<Typography variant="h6" fontWeight={700}>
-								{title}
+								{t(`${key}Title` as never)}
 							</Typography>
 							<Typography variant="body2" color="text.secondary" mt={0.5}>
-								{text}
+								{t(`${key}Text` as never)}
 							</Typography>
 						</Box>
 					))}
 				</FlexBox>
 				<FlexBox justifyContent="center" mt={5}>
-					<OpenAppButton />
+					<OpenAppButton label={t("openApp")} />
 				</FlexBox>
 			</Container>
 
@@ -358,14 +302,14 @@ const LandingPage = () => {
 
 			{/* Templates / exemples */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Des exemples pour démarrer</SectionTitle>
+				<SectionTitle>{t("templatesTitle")}</SectionTitle>
 				<Typography textAlign="center" color="text.secondary" mb={4}>
-					Ouvrez un projet pré-configuré et explorez-le à votre rythme.
+					{t("templatesIntro")}
 				</Typography>
 				<FlexBox gap={4} wrap justifyContent="center">
-					{featuredTemplates.map((t) => (
+					{featuredTemplates.map((tpl) => (
 						<Paper
-							key={t.id}
+							key={tpl.id}
 							variant="outlined"
 							sx={{
 								flex: "1 1 340px",
@@ -377,8 +321,10 @@ const LandingPage = () => {
 						>
 							<Box
 								component="img"
-								src={templateCaptures[t.id]}
-								alt={`Aperçu du projet ${t.label}`}
+								src={templateCaptures[tpl.id]}
+								alt={t("templatePreviewAlt", {
+									label: tTemplates(`${tpl.id}.label` as never),
+								})}
 								sx={{
 									width: "100%",
 									aspectRatio: "16 / 9",
@@ -390,20 +336,20 @@ const LandingPage = () => {
 							/>
 							<Box sx={{ p: 2.5, flex: 1 }}>
 								<Typography variant="h6" fontWeight={700}>
-									{t.label}
+									{tTemplates(`${tpl.id}.label` as never)}
 								</Typography>
 								<Typography variant="body2" color="text.secondary" mt={0.5}>
-									{t.description}
+									{tTemplates(`${tpl.id}.description` as never)}
 								</Typography>
 							</Box>
 							<Box sx={{ px: 2.5, pb: 2.5 }}>
 								<Button
-									LinkComponent={Link}
+									LinkComponent={NextLink}
 									href={routes.app()}
 									variant="outlined"
 									size="small"
 								>
-									Ouvrir dans l&apos;application
+									{t("openInApp")}
 								</Button>
 							</Box>
 						</Paper>
@@ -415,34 +361,28 @@ const LandingPage = () => {
 
 			{/* Pérennité */}
 			<Container maxWidth="md" sx={{ py: { xs: 6, md: 8 } }}>
-				<SectionTitle>Vos projets vous appartiennent</SectionTitle>
+				<SectionTitle>{t("durabilityTitle")}</SectionTitle>
 				<FlexBox gap={3} wrap justifyContent="center">
-					{[
-						{
-							icon: LockOpenIcon,
-							title: "Aucun enfermement",
-							text: "Vos projets sont des fichiers que vous exportez et conservez. Le schéma est versionné : un projet exporté aujourd'hui restera ouvrable après les mises à jour de l'outil.",
+					{(["durabilityNoLockIn", "durabilityIndependence"] as const).map(
+						(key, i) => {
+							const Icon = i === 0 ? LockOpenIcon : CloudQueueIcon;
+							return (
+								<Paper
+									key={key}
+									variant="outlined"
+									sx={{ p: 3, flex: "1 1 300px", maxWidth: 380 }}
+								>
+									<Icon color="primary" fontSize="large" />
+									<Typography variant="h6" fontWeight={700} mt={1}>
+										{t(`${key}Title` as never)}
+									</Typography>
+									<Typography variant="body2" color="text.secondary" mt={0.5}>
+										{t(`${key}Text` as never)}
+									</Typography>
+								</Paper>
+							);
 						},
-						{
-							icon: CloudQueueIcon,
-							title: "Vous ne dépendez de personne",
-							text: "Le code est libre sous licence AGPL v3 : si le projet s'arrête, il peut être repris ou auto-hébergé. Il restera libre quoi qu'il arrive.",
-						},
-					].map(({ icon: Icon, title, text }) => (
-						<Paper
-							key={title}
-							variant="outlined"
-							sx={{ p: 3, flex: "1 1 300px", maxWidth: 380 }}
-						>
-							<Icon color="primary" fontSize="large" />
-							<Typography variant="h6" fontWeight={700} mt={1}>
-								{title}
-							</Typography>
-							<Typography variant="body2" color="text.secondary" mt={0.5}>
-								{text}
-							</Typography>
-						</Paper>
-					))}
+					)}
 				</FlexBox>
 			</Container>
 
@@ -453,11 +393,9 @@ const LandingPage = () => {
 				maxWidth="md"
 				sx={{ py: { xs: 6, md: 8 }, textAlign: "center" }}
 			>
-				<SectionTitle>Pensé pour la vie privée</SectionTitle>
+				<SectionTitle>{t("privacyTitle")}</SectionTitle>
 				<Typography color="text.secondary" sx={{ maxWidth: 560, mx: "auto" }}>
-					Aucun email requis, aucune donnée personnelle stockée, aucun cookie de
-					suivi. L&apos;authentification se fait par pseudo, et les statistiques
-					d&apos;usage sont anonymes.
+					{t("privacyText")}
 				</Typography>
 			</Container>
 
@@ -468,10 +406,9 @@ const LandingPage = () => {
 				maxWidth="md"
 				sx={{ py: { xs: 6, md: 8 }, textAlign: "center" }}
 			>
-				<SectionTitle>Open source</SectionTitle>
+				<SectionTitle>{t("openSourceTitle")}</SectionTitle>
 				<Typography color="text.secondary" sx={{ maxWidth: 560, mx: "auto" }}>
-					{APP_NAME} est un projet libre sous licence AGPL v3. Les idées, retours
-					et contributions sont les bienvenus.
+					{t("openSourceText", { name: APP_NAME })}
 				</Typography>
 				<FlexBox justifyContent="center" mt={3}>
 					<Button
@@ -482,7 +419,7 @@ const LandingPage = () => {
 						variant="outlined"
 						size="large"
 					>
-						Voir sur GitHub
+						{t("viewOnGitHub")}
 					</Button>
 				</FlexBox>
 			</Container>

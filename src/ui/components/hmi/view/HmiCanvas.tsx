@@ -10,7 +10,7 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
 import useHmiContextMenu from "@/ui/components/hmi/context-menu/useHmiContextMenu";
-import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { useT } from "@/ui/i18n/useT";import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { Box, Typography } from "@mui/material";
 import {
@@ -42,7 +42,9 @@ interface HmiCanvasProps {
 	onZoomChange: (zoom: number) => void;
 }
 
+
 const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
+	const t = useT("hmiEditor.panel");
 	const hmiPage = useHmiStore((s) => s.hmiPage);
 	const selectedWidgetIds = useHmiStore((s) => s.selectedWidgetIds);
 	const selectWidget = useHmiStore((s) => s.selectWidget);
@@ -373,7 +375,7 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 					}}
 				>
 					<HmiCanvasSidebarSection
-						title="Propriétés"
+						title={t("properties")}
 						collapsed={expandedSection !== "properties"}
 						onToggle={() => setExpandedSection("properties")}
 					>
@@ -394,7 +396,7 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 						)}
 					</HmiCanvasSidebarSection>
 					<HmiCanvasSidebarSection
-						title="Objets"
+						title={t("objects")}
 						fillRemainingSpace
 						collapsed={expandedSection !== "objects"}
 						onToggle={() => setExpandedSection("objects")}

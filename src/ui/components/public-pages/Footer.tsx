@@ -1,11 +1,12 @@
 "use client";
 
-import routes from "@/app/routes";
-import { APP_NAME, APP_REPO_URL, APP_SLOGAN } from "@/app-info";
+import { APP_NAME, APP_REPO_URL } from "@/app-info";
+import { Link } from "@/i18n/navigation";
+import type { PublicPathname } from "@/i18n/routing";
+import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import buildReportIssueMailto from "@/ui/lib/report-issue";
 import { Box, Container, Divider, Link as MuiLink, Typography } from "@mui/material";
-import Link from "next/link";
 
 const linkSx = {
 	color: "text.secondary",
@@ -13,32 +14,40 @@ const linkSx = {
 	"&:hover": { color: "primary.main" },
 };
 
-const InternalLink = ({ href, children }: { href: string; children: string }) => (
+const InternalLink = ({
+	href,
+	children,
+}: {
+	href: PublicPathname;
+	children: string;
+}) => (
 	<Typography component={Link} href={href} variant="body2" sx={linkSx}>
 		{children}
 	</Typography>
 );
 
-const columns = [
-	{
-		title: "Ressources",
-		links: [
-			{ label: "Manuel utilisateur", href: routes.userManual() },
-			{ label: "À propos", href: routes.about() },
-			{ label: "Aide", href: "/aide" },
-		],
-	},
-	{
-		title: "Légal",
-		links: [
-			{ label: "Mentions légales", href: routes.legalMentions() },
-			{ label: "Conditions d'utilisation", href: routes.termsOfUse() },
-			{ label: "Politique de confidentialité", href: routes.privacyPolicy() },
-		],
-	},
-];
-
 const Footer = () => {
+	const t = useT("public.footer");
+
+	const columns: { title: string; links: { label: string; href: PublicPathname }[] }[] =
+		[
+			{
+				title: t("resources"),
+				links: [
+					{ label: t("manual"), href: "/user-manual" },
+					{ label: t("about"), href: "/about" },
+				],
+			},
+			{
+				title: t("legalTitle"),
+				links: [
+					{ label: t("legalMentions"), href: "/legal" },
+					{ label: t("terms"), href: "/terms" },
+					{ label: t("privacy"), href: "/privacy" },
+				],
+			},
+		];
+
 	return (
 		<Box
 			component="footer"
@@ -69,7 +78,7 @@ const Footer = () => {
 							</Typography>
 						</FlexBox>
 						<Typography variant="body2" color="text.secondary">
-							{APP_SLOGAN}
+							{t("slogan")}
 						</Typography>
 						<FlexBox gap={1} mt={1.5} sx={{ flexWrap: "wrap" }}>
 							<MuiLink
@@ -91,7 +100,7 @@ const Footer = () => {
 								variant="body2"
 								sx={linkSx}
 							>
-								Licence AGPL v3
+								{t("license")}
 							</MuiLink>
 						</FlexBox>
 					</Box>
@@ -127,10 +136,10 @@ const Footer = () => {
 					}}
 				>
 					<Typography variant="body2" color="text.secondary">
-						© {new Date().getFullYear()} {APP_NAME}
+						{t("copyright", { year: new Date().getFullYear(), name: APP_NAME })}
 					</Typography>
 					<FlexBox gap={2} sx={{ flexWrap: "wrap" }}>
-						<InternalLink href={routes.contact()}>Contact</InternalLink>
+						<InternalLink href="/contact">{t("contact")}</InternalLink>
 						<Typography
 							component="a"
 							href="#"
@@ -145,7 +154,7 @@ const Footer = () => {
 								);
 							}}
 						>
-							Signaler un problème
+							{t("reportIssue")}
 						</Typography>
 					</FlexBox>
 				</FlexBox>

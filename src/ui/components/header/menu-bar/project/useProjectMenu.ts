@@ -3,6 +3,7 @@
 import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import { platformShortcut } from "@/ui/lib/platform";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useMemo } from "react";
@@ -26,15 +27,16 @@ export default function useProjectMenu(): AppMenuType {
 					(state.project?.exercise?.statement ?? "").trim().length > 0,
 			})),
 		);
+	const t = useT("menu.project");
 
 	return useMemo(
 		() => ({
 			id: "project",
-			label: "Projet",
+			label: t("title"),
 			items: [
 				[
 					{
-						label: "Nouveau grafcet",
+						label: t("newGrafcet"),
 						shortcut: platformShortcut("Ctrl+G", "Cmd+G"),
 						disabled: !designing,
 						onClick: () => {
@@ -43,7 +45,7 @@ export default function useProjectMenu(): AppMenuType {
 						},
 					},
 					{
-						label: "Nouveau ladder",
+						label: t("newLadder"),
 						shortcut: platformShortcut("Ctrl+L", "Cmd+L"),
 						disabled: !designing,
 						onClick: () => {
@@ -54,7 +56,7 @@ export default function useProjectMenu(): AppMenuType {
 					...(hasExercise
 						? [
 								{
-									label: "Énoncé de l'exercice",
+									label: t("exerciseStatement"),
 									onClick: () => pageManager.openPage(EXERCISE_PAGE_DATA),
 								},
 							]
@@ -62,7 +64,7 @@ export default function useProjectMenu(): AppMenuType {
 				],
 				[
 					{
-						label: "Partager",
+						label: t("share"),
 						disabled: isSharedProject,
 						onClick: () => {
 							if (isSharedProject) return;
@@ -73,14 +75,14 @@ export default function useProjectMenu(): AppMenuType {
 						? []
 						: [
 								{
-									label: "Gérer le partage",
+									label: t("manageSharing"),
 									onClick: () => setShareModalVisible(true),
 								},
 							]),
 				],
 				[
 					{
-						label: "Propriétés",
+						label: t("properties"),
 						onClick: () => pageManager.openPage(PROJECT_PROPERTIES_PAGE_DATA),
 					},
 				],
@@ -95,6 +97,7 @@ export default function useProjectMenu(): AppMenuType {
 			sharingManager,
 			setShareModalVisible,
 			hasExercise,
+			t,
 		],
 	);
 }

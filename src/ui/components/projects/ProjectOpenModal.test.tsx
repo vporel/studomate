@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
 import { parseProjectFromFile } from "@/persistence/project-file";
 import {
@@ -37,7 +38,7 @@ function setup({
 		}),
 	);
 
-	render(<ProjectOpenModal />);
+	renderWithI18n(<ProjectOpenModal />);
 	return { openProject, setOpenModalVisible, save };
 }
 

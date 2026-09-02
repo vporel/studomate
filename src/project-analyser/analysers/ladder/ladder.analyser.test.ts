@@ -8,6 +8,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import { validateMnemonic } from "@/schemas/variable/variable.validator";
 import Project from "@/schemas/project/project.schema";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
@@ -60,7 +61,7 @@ describe("LadderAnalyser", () => {
 				),
 			).toBe(true);
 			for (const variable of generatedVariables) {
-				expect(Variable.validateMnemonic(variable.mnemonic)).toEqual([]);
+				expect(validateMnemonic(variable.mnemonic)).toEqual([]);
 				expect(variable.mnemonic).not.toContain("-");
 			}
 			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(

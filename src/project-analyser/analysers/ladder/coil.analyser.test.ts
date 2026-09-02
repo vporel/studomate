@@ -124,7 +124,7 @@ describe("CoilAnalyser", () => {
 			(i) => i.code === "COIL_DUPLICATE_NORMAL_ASSIGNMENT",
 		)!;
 		expect(duplicateIssue.severity).toBe("warning");
-		expect(duplicateIssue.message).toContain("2");
+		expect(duplicateIssue.params.count).toBe(2);
 	});
 
 	it("n'émet aucune issue quand deux bobines set/reset partagent la même variable", () => {

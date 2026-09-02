@@ -47,7 +47,12 @@ export type PageTabProps = {
 	type: PageType;
 };
 
+import { useT } from "@/ui/i18n/useT";
+import { usePageTitle } from "../usePageTitle";
+
 const PageTab = ({ id, title, type }: PageTabProps) => {
+	const pageTitle = usePageTitle();
+	const t = useT("pages.tabBar");
 	const th = useTheme();
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const { activePageId } = useProjectStore(
@@ -137,16 +142,16 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 					}}
 				/>
 				<Typography component="span" sx={{ fontSize: "0.85rem" }}>
-					{title}
+					{pageTitle({ id, title, type })}
 				</Typography>
 			</Box>
 			{/* La "Simulation HMI" est un onglet unique, réouvert via le bouton de la bottom bar
 			(voir `RightActions`) — jamais fermable, pour rester à portée en un clic. */}
 			{type !== "hmi-simulation" && (
-				<Tooltip title="Fermer">
+				<Tooltip title={t("close")}>
 					<IconButton
 						className="page__tab__button-icon"
-						aria-label="Fermer l'onglet"
+						aria-label={t("closeAria")}
 						sx={{
 							opacity: active ? 1 : 0,
 							display: "flex",

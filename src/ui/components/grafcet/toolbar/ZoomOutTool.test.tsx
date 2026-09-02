@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { GRAFCET_FLOW_MIN_ZOOM } from "@/ui/stores/grafcet/managers/view.manager";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -13,7 +14,7 @@ function setup(zoom: number | null, zoomOut = jest.fn()) {
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ viewManager: { getZoom: () => zoom, zoomOut } }),
 	);
-	render(<ZoomOutTool />);
+	renderWithI18n(<ZoomOutTool />);
 	return { zoomOut };
 }
 

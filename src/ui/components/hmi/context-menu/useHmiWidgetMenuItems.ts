@@ -4,6 +4,7 @@ import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { platformShortcut } from "@/ui/lib/platform";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 /**
  * Menu d'un widget du canvas — agit sur la sélection courante, pas seulement le widget cliqué :
@@ -20,17 +21,18 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 	const sendBackward = useHmiStore((s) => s.sendBackward);
 	const bringToFront = useHmiStore((s) => s.bringToFront);
 	const sendToBack = useHmiStore((s) => s.sendToBack);
+	const t = useT("hmiEditor.menu");
 
 	return useCallback(() => {
 		const items: ContextMenuItemType[][] = [
 			[
 				{
-					label: "Copier",
+					label: t("copy"),
 					shortcut: platformShortcut("Ctrl+C", "Cmd+C"),
 					onClick: () => copyCutPasteManager.copySelectedElements(),
 				},
 				{
-					label: "Couper",
+					label: t("cut"),
 					shortcut: platformShortcut("Ctrl+X", "Cmd+X"),
 					onClick: () => copyCutPasteManager.cutSelectedElements(),
 				},
@@ -51,22 +53,22 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 				);
 				items.push([
 					{
-						label: "Avancer",
+						label: t("bringForward"),
 						onClick: () => bringForward(widget.id),
 						disabled: isFrontmost,
 					},
 					{
-						label: "Mettre au premier plan",
+						label: t("bringToFront"),
 						onClick: () => bringToFront(widget.id),
 						disabled: isFrontmost,
 					},
 					{
-						label: "Reculer",
+						label: t("sendBackward"),
 						onClick: () => sendBackward(widget.id),
 						disabled: isBackmost,
 					},
 					{
-						label: "Mettre en arrière-plan",
+						label: t("sendToBack"),
 						onClick: () => sendToBack(widget.id),
 						disabled: isBackmost,
 					},
@@ -79,25 +81,25 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 		if (selectedWidgetIds.length > 1) {
 			items.push([
 				{
-					label: "Alignement",
+					label: t("alignment"),
 					subItems: [
 						{
-							label: "Vers le haut",
+							label: t("alignTop"),
 							onClick: () => alignSelectedWidgets("top"),
 						},
 						{
-							label: "Vers le bas",
+							label: t("alignBottom"),
 							onClick: () => alignSelectedWidgets("bottom"),
 						},
 						{
-							label: "Au centre vertical",
+							label: t("alignMiddle"),
 							onClick: () => alignSelectedWidgets("center-vertical"),
 						},
 						{ divider: true },
-						{ label: "À gauche", onClick: () => alignSelectedWidgets("left") },
-						{ label: "À droite", onClick: () => alignSelectedWidgets("right") },
+						{ label: t("alignLeft"), onClick: () => alignSelectedWidgets("left") },
+						{ label: t("alignRight"), onClick: () => alignSelectedWidgets("right") },
 						{
-							label: "Au centre horizontal",
+							label: t("alignCenter"),
 							onClick: () => alignSelectedWidgets("center-horizontal"),
 						},
 					],
@@ -107,7 +109,7 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 
 		items.push([
 			{
-				label: "Supprimer",
+				label: t("delete"),
 				shortcut: "Suppr",
 				onClick: removeSelectedWidgets,
 			},
@@ -124,5 +126,6 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 		sendBackward,
 		bringToFront,
 		sendToBack,
+		t,
 	]);
 }

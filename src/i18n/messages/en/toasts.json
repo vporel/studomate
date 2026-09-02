@@ -1,0 +1,21 @@
+{
+	"analysisComplete": "Analysis complete: {elements, plural, one {# element analysed} other {# elements analysed}}, {errors, plural, =0 {no error} one {# error} other {# errors}} and {warnings, plural, =0 {no warning} one {# warning} other {# warnings}} found.",
+	"simulationStarting": "Compilation complete, starting the simulation…",
+	"simulationCouldNotStart": "Cannot start the simulation: {count, plural, one {# error} other {# errors}} during {step, select, preCompilation {pre-compilation} other {compilation}}.",
+	"simulationCrashed": "Simulation stopped. Error while running the PLC cycle.",
+	"save": {
+		"storageFull": "Cannot save: the browser storage is full. Export the project to a file so you don't lose your work.",
+		"storageUnavailable": "Cannot save: the browser storage is unavailable (private browsing?). Export the project to a file.",
+		"cloudUnreachable": "Cannot save to the cloud: check your connection and that you are signed in. Export the project to a file so you don't lose your work.",
+		"conflict": "This project was changed elsewhere in the meantime. Reload the online version or save your changes under another name.",
+		"generic": "Cannot save. Export the project to a file so you don't lose your work."
+	},
+	"draftCorrupted": "The draft is corrupted and could not be opened.",
+	"cloudReloadFailed": "Could not reload the online version of the project.",
+	"shareLinkFailed": "Could not create the share link.",
+	"moveToCloudConflict": "A cloud project with this identifier already exists, probably sent from another device.",
+	"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",
+	"shareRevokeFailed": "Could not revoke the share.",
+	"shareLoginPrompt": "Sign in to share this project.",
+	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page."
+}

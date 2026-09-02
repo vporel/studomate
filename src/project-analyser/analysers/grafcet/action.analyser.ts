@@ -1,7 +1,5 @@
-import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import { NATIVE_TYPE_LABELS } from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import { Environment } from "@/simulator/interpreter/environment/environment";
@@ -38,12 +36,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		// Expression must not be empty for non-TEXT actions
 		if (!action.data.expression || action.data.expression.trim() === "") {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"warning",
-					"ACTION_EMPTY_EXPRESSION",
-					source,
-					"L'action n'a pas d'expression.",
-				),
+				new ProjectAnalyserIssue("warning", "ACTION_EMPTY_EXPRESSION", source),
 			);
 		} else {
 			try {
@@ -58,7 +51,6 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 								"error",
 								"ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 								source,
-								`Une action booléenne doit être une simple référence à une variable.`,
 							),
 						);
 					}
@@ -69,7 +61,6 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 									"error",
 									"ACTION_NUMERIC_MUST_BE_ASSIGNMENT",
 									source,
-									`Une action sur variable numérique doit être une affectation (ex: Var := X + Y).`,
 								),
 							);
 						}
@@ -82,7 +73,6 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 									"error",
 									"ACTION_STRING_MUST_BE_ASSIGNMENT",
 									source,
-									`Une action sur variable chaîne doit être une affectation (ex: Var := "Texte").`,
 								),
 							);
 						}
@@ -94,7 +84,8 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						"error",
 						"ACTION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+						{},
+						e,
 					),
 				);
 			}
@@ -112,7 +103,10 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 					"error",
 					"ACTION_INCOMPATIBLE_EXECUTION_MODE",
 					source,
-					`Le mode d'exécution "${action.data.executionMode}" est incompatible avec le type d'action "${action.data.type}".`,
+					{
+						executionMode: action.data.executionMode ?? "",
+						actionType: action.data.type,
+					},
 				),
 			);
 		}
@@ -153,7 +147,6 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 					"error",
 					"ACTION_NOT_CONNECTED_TO_STEP",
 					source,
-					"L'action n'est connectée à aucune étape.",
 				),
 			);
 		}
@@ -193,7 +186,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 									"error",
 									"ACTION_NUMERIC_TYPE_MISMATCH",
 									source,
-									`L'action est de type numérique mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
+									{ actualType: assignedVariableType },
 								),
 							);
 						}
@@ -206,7 +199,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 									"error",
 									"ACTION_STRING_TYPE_MISMATCH",
 									source,
-									`L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible (${NATIVE_TYPE_LABELS[assignedVariableType as keyof typeof NATIVE_TYPE_LABELS]})`,
+									{ actualType: assignedVariableType },
 								),
 							);
 						}
@@ -218,7 +211,8 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						"error",
 						"ACTION_INVALID_EXPRESSION",
 						source,
-						SimulatorExceptionsMapper.getUserFriendlyMessage(e, "FR"),
+						{},
+						e,
 					),
 				);
 			}
@@ -234,7 +228,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						"error",
 						"ACTION_VARIABLE_IS_INPUT",
 						source,
-						`L'action ne peut pas modifier la variable "${writtenVariableName}" car c'est une variable d'entrée.`,
+						{ variableName: writtenVariableName },
 					),
 				);
 			}
@@ -255,7 +249,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						"error",
 						"ACTION_STEP_VARIABLE_READONLY",
 						source,
-						`L'action ne peut pas modifier "${writtenVariableName}" : c'est une variable d'étape générée automatiquement, en lecture seule.`,
+						{ variableName: writtenVariableName },
 					),
 				);
 			}
@@ -294,7 +288,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						"error",
 						"ACTION_SET_RESET_CONFLICT_SAME_STEP",
 						source,
-						`Cette étape porte à la fois une action SET et une action RESET sur la variable "${writtenVariableName}" : comportement contradictoire au même cycle.`,
+						{ variableName: writtenVariableName },
 					),
 				);
 			}

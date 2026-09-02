@@ -19,9 +19,10 @@ import {
 import { Box, useTheme } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useCallback, useMemo } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
 import buildLadderReorderAnnouncements, {
-	LADDER_REORDER_SCREEN_READER_INSTRUCTIONS,
+	ladderReorderScreenReaderInstructions,
 } from "./ladder-reorder-announcements";
 import LadderSection from "./LadderSection";
 import useLadderSectionSelection from "./useLadderSectionSelection";
@@ -31,6 +32,13 @@ import "./_ladder-page.css";
 
 function LadderFlowContent() {
 	const th = useTheme();
+	const tReorderRaw = useT("ladderEditor.reorder");
+	const tReorder = useMemo(
+		() =>
+			(key: string, values?: Record<string, string | number>) =>
+				tReorderRaw(key as never, values as never),
+		[tReorderRaw],
+	);
 	const sections = useLadderStore((state) => state.ladder.sections);
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
@@ -45,8 +53,16 @@ function LadderFlowContent() {
 	);
 
 	const announcements = useMemo(
-		() => buildLadderReorderAnnouncements(sections.map((section) => section.id)),
-		[sections],
+		() =>
+			buildLadderReorderAnnouncements(
+				sections.map((section) => section.id),
+				tReorder,
+			),
+		[sections, tReorder],
+	);
+	const screenReaderInstructions = useMemo(
+		() => ladderReorderScreenReaderInstructions(tReorder),
+		[tReorder],
 	);
 
 	useLadderSectionSelection();
@@ -97,8 +113,7 @@ function LadderFlowContent() {
 				onDragEnd={handleDragEnd}
 				accessibility={{
 					announcements,
-					screenReaderInstructions:
-						LADDER_REORDER_SCREEN_READER_INSTRUCTIONS,
+					screenReaderInstructions,
 				}}
 			>
 				<SortableContext

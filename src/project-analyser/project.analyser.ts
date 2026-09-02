@@ -70,7 +70,7 @@ export default class ProjectAnalyser {
 						"error",
 						"PROJECT_MISSING_ANALYSER_FOR_NOTATION",
 						{ sourceType: "project", sourceId: project.id },
-						`Aucun analyseur disponible pour la notation "${program.type}" (programme "${program.name}"). Ce programme n'a pas été analysé.`,
+						{ notation: program.type, programName: program.name },
 					),
 				);
 				continue;

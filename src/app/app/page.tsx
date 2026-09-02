@@ -1,5 +1,6 @@
 "use client";
 
+import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
 import FullScreenLoader from "@/ui/components/FullScreenLoader";
@@ -50,10 +51,12 @@ function AppComponent() {
 
 export default function App() {
 	return (
-		<AppContextProvider>
-			<ProjectContextProvider>
-				<AppComponent />
-			</ProjectContextProvider>
-		</AppContextProvider>
+		<LocaleProvider>
+			<AppContextProvider>
+				<ProjectContextProvider>
+					<AppComponent />
+				</ProjectContextProvider>
+			</AppContextProvider>
+		</LocaleProvider>
 	);
 }

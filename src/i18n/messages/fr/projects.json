@@ -1,0 +1,154 @@
+{
+	"common": {
+		"cancel": "Annuler",
+		"save": "Enregistrer",
+		"close": "Fermer",
+		"login": "Se connecter"
+	},
+	"list": {
+		"tabLocal": "Local",
+		"tabCloud": "Cloud",
+		"empty": "Aucun projet enregistré",
+		"lastModified": "Dernière modification : {date} à {time}",
+		"sendToCloud": "Envoyer vers le cloud",
+		"sendToCloudAria": "envoyer vers le cloud",
+		"bringLocal": "Rapatrier en local",
+		"bringLocalAria": "rapatrier en local",
+		"delete": "Supprimer",
+		"confirmDelete": "Êtes-vous sûr de vouloir supprimer ce projet ?",
+		"moveToCloudConflict": "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil. Rechargez la liste.",
+		"moveToCloudFailed": "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+		"moveToLocalFailed": "Le projet n'a pas pu être rapatrié en local. Vérifiez l'espace disponible."
+	},
+	"open": {
+		"title": "Ouvrir un projet",
+		"fromFile": "Ouvrir depuis un fichier...",
+		"fileDialogName": "Fichiers JSON",
+		"readError": "Une erreur est survenue lors de la lecture du fichier. Assurez-vous que le fichier est un projet valide.",
+		"saveError": "Le projet n'a pas pu être enregistré dans le navigateur. Vérifiez l'espace disponible."
+	},
+	"new": {
+		"title": "Nouveau projet",
+		"chooseStartingPoint": "Choisissez un point de départ pour votre projet.",
+		"emptyProject": "Projet vide",
+		"emptyProjectDescription": "Démarre avec un projet sans variable ni interface HMI.",
+		"templates": "Maquettes",
+		"solutionAvailable": "Une solution est disponible.",
+		"openSolution": "Ouvrir la solution",
+		"create": "Créer"
+	},
+	"export": {
+		"title": "Exporter",
+		"formatPdf": "PDF",
+		"formatJson": "Fichier projet (JSON)",
+		"scopeFull": "Projet complet",
+		"scopeActive": "Page active uniquement",
+		"scopeActiveNamed": "Page active uniquement ({name})",
+		"openProgramHint": "Ouvrez un grafcet ou un ladder pour l'exporter seul.",
+		"includeCover": "Inclure une page de garde",
+		"grafcets": "GRAFCETs",
+		"ladders": "Ladders",
+		"ladderLandscape": "{name} (paysage)",
+		"filename": "Nom du fichier",
+		"progressRendering": "Rendu ({current}/{total}) — {label}",
+		"progressCapturing": "Capture ({current}/{total}) — {label}",
+		"progressAssembling": "Assemblage du PDF…",
+		"exporting": "Export en cours…",
+		"sectionTitleGrafcet": "GRAFCET - {name}",
+		"sectionTitleLadder": "Ladder - {name}",
+		"preparing": "Montage en cours…",
+		"errorCapture": "La capture de « {name} » a échoué.",
+		"errorAssembling": "La génération du PDF a échoué.",
+		"coverAuthor": "Auteur : {author}",
+		"coverExportedOn": "Exporté le {date}",
+		"coverStats": "{grafcets} grafcet(s), {ladders} ladder(s), {variables} variable(s)",
+		"coverStatementHeading": "Énoncé"
+	},
+	"saveAs": {
+		"title": "Enregistrer sous",
+		"name": "Nom du projet"
+	},
+	"share": {
+		"title": "Partager le projet",
+		"sharedAlert": "Le projet est partagé. Toute personne disposant du lien peut le consulter et le simuler.",
+		"linkLabel": "Lien de partage",
+		"copy": "Copier",
+		"copyLinkAria": "Copier le lien",
+		"copied": "Lien copié dans le presse-papier.",
+		"revokeHint": "Révoquer le lien rend le partage inaccessible immédiatement.",
+		"revoke": "Révoquer",
+		"noActiveLink": "Aucun lien de partage actif pour ce projet.",
+		"close": "Fermer"
+	},
+	"shareRequiresCloud": {
+		"title": "Envoyer le projet dans le cloud",
+		"body": "Ce projet est stocké localement sur cet appareil. Pour le partager, il doit d'abord être envoyé dans le cloud. Il restera modifiable uniquement depuis votre compte.",
+		"confirm": "Envoyer et partager"
+	},
+	"storageLocation": {
+		"onThisDevice": "Sur cet appareil",
+		"inTheCloud": "Dans le cloud",
+		"loginRequired": "Connexion requise.",
+		"loginToSaveCloud": "Connectez-vous pour enregistrer dans le cloud."
+	},
+	"saveLocation": {
+		"title": "Où enregistrer ce projet ?",
+		"body": "Ce projet n'est pas encore enregistré. Choisissez où le stocker."
+	},
+	"unsavedChanges": {
+		"title": "Modifications non enregistrées",
+		"defaultMessage": "Voulez-vous enregistrer les modifications avant de quitter le projet ?",
+		"continueWithoutSaving": "Continuer sans enregistrer",
+		"close": "Fermer",
+		"exportMessage": "Vous avez des modifications non enregistrées. Voulez-vous les enregistrer avant d'exporter ?"
+	},
+	"cloudConflict": {
+		"title": "Projet modifié ailleurs",
+		"body1": "Ce projet a été enregistré depuis un autre appareil après son ouverture ici. Enregistrer maintenant écraserait ces modifications.",
+		"body2": "Voulez-vous reprendre la version en ligne (vos modifications locales seront perdues) ou enregistrer votre travail sous un autre nom ?",
+		"reload": "Reprendre la version en ligne",
+		"saveAs": "Enregistrer sous..."
+	},
+	"draftConflict": {
+		"title": "Version non enregistrée trouvée",
+		"body1": "Ce projet a une version non enregistrée plus récente que la dernière sauvegarde.",
+		"body2": "Voulez-vous reprendre à partir du brouillon ou de la dernière version enregistrée ?",
+		"keepSaved": "Version enregistrée",
+		"keepDraft": "Reprendre le brouillon"
+	},
+	"draftRecovery": {
+		"confirmDeleteTitle": "Confirmer la suppression",
+		"confirmDeleteAll": "Supprimer tous les brouillons ? Cette action est irréversible.",
+		"deleteAll": "Tout supprimer",
+		"confirmDeleteOne": "Supprimer le brouillon de {name} ? Cette action est irréversible.",
+		"delete": "Supprimer",
+		"title": "Brouillons non enregistrés",
+		"intro": "Des modifications non enregistrées ont été trouvées. Voulez-vous les récupérer ?",
+		"savedAgo": "Sauvegardé {ago}",
+		"open": "Ouvrir",
+		"discardOne": "Annuler",
+		"cancelAll": "Tout annuler",
+		"pass": "Passer"
+	},
+	"analysisResult": {
+		"title": "Résultats de l'analyse",
+		"close": "Fermer",
+		"errors": "Erreurs",
+		"warnings": "Avertissements",
+		"unknownName": "Nom inconnu",
+		"contactLabel": "Contact {variable}",
+		"coilLabel": "Bobine {variable}",
+		"blockLabel": "Bloc",
+		"noErrors": "Aucune erreur lors de l'analyse.",
+		"noWarnings": "Aucun avertissement.",
+		"projectErrors": "Erreurs globales au projet",
+		"projectWarnings": "Avertissements globaux au projet",
+		"programErrors": "Erreurs globales au {kind}",
+		"programWarnings": "Avertissements globaux au {kind}",
+		"elementErrors": "Erreurs des éléments du {kind}",
+		"elementWarnings": "Avertissements des éléments du {kind}",
+		"programHeading": "{kind} : {name}",
+		"grafcetKind": "Grafcet",
+		"ladderKind": "Ladder"
+	}
+}

@@ -6,6 +6,7 @@ import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
 import VariablesTable from "../variables/VariablesTable";
 import Page from "./Page";
+import { usePageTitle } from "./usePageTitle";
 
 export type VariablesPageId =
 	"input-variables" | "output-variables" | "memory-variables";
@@ -27,6 +28,7 @@ export function getVariablesPageData(pageId: VariablesPageId): PageData {
 }
 
 const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
+	const pageTitle = usePageTitle();
 	const zones: VariableZone[] = useMemo(() => {
 		switch (pageData.id) {
 			case "input-variables":
@@ -50,7 +52,11 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 				}}
 			>
 				<Typography variant="h3" sx={{ mb: 3 }}>
-					{pageData.title}
+					{pageTitle({
+					id: pageData.id,
+					type: "variables",
+					title: pageData.title,
+				})}
 				</Typography>
 				<VariablesTable zones={zones} />
 			</Box>

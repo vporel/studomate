@@ -24,6 +24,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 interface ProjectsListProps {
 	reloadKey: any;
@@ -36,6 +37,8 @@ export default function ProjectsList({
 	reloadKey,
 	onProjectClick,
 }: ProjectsListProps) {
+	const t = useT("projects.list");
+	const tc = useT("projects.common");
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [tab, setTab] = useState<ProjectsTab>("local");
@@ -76,7 +79,7 @@ export default function ProjectsList({
 		projectId: string,
 	) => {
 		event.stopPropagation();
-		if (confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+		if (confirm(t("confirmDelete"))) {
 			await projectRepository.delete(projectId);
 			clearPagesSession(projectId);
 			setProjects((prevProjects) =>
@@ -94,8 +97,8 @@ export default function ProjectsList({
 		if (!result.ok) {
 			alert(
 				result.reason === "conflict"
-					? "Un projet cloud avec cet identifiant existe déjà, probablement envoyé depuis un autre appareil. Rechargez la liste."
-					: "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
+					? t("moveToCloudConflict")
+					: t("moveToCloudFailed"),
 			);
 			return;
 		}
@@ -110,7 +113,7 @@ export default function ProjectsList({
 		const result = await projectRepository.moveToLocal(project);
 		if (!result.ok) {
 			alert(
-				"Le projet n'a pas pu être rapatrié en local. Vérifiez l'espace disponible.",
+				t("moveToLocalFailed"),
 			);
 			return;
 		}
@@ -121,15 +124,15 @@ export default function ProjectsList({
 		<Box>
 			{isSupabaseConfigured && (
 				<Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 1 }}>
-					<Tab label="Local" value="local" />
-					<Tab label="Cloud" value="cloud" />
+					<Tab label={t("tabLocal")} value="local" />
+					<Tab label={t("tabCloud")} value="cloud" />
 				</Tabs>
 			)}
 
 			{tab === "cloud" && !authenticated ? (
 				<Box display="flex" justifyContent="center" py={4}>
 					<Button onClick={() => setAuthModalVisible(true)}>
-						Se connecter
+						{tc("login")}
 					</Button>
 				</Box>
 			) : loading ? (
@@ -143,7 +146,7 @@ export default function ProjectsList({
 					textAlign="center"
 					py={4}
 				>
-					Aucun projet enregistré
+					{t("empty")}
 				</Typography>
 			) : (
 				<List>
@@ -154,10 +157,10 @@ export default function ProjectsList({
 							secondaryAction={
 								<Box sx={{ display: "flex", alignItems: "center" }}>
 									{tab === "local" && authenticated && (
-										<Tooltip title="Envoyer vers le cloud">
+										<Tooltip title={t("sendToCloud")}>
 											<IconButton
 												edge="end"
-												aria-label="envoyer vers le cloud"
+												aria-label={t("sendToCloudAria")}
 												onClick={(e) => void handleMoveToCloud(e, project)}
 											>
 												<CloudUploadIcon />
@@ -165,17 +168,17 @@ export default function ProjectsList({
 										</Tooltip>
 									)}
 									{tab === "cloud" && (
-										<Tooltip title="Rapatrier en local">
+										<Tooltip title={t("bringLocal")}>
 											<IconButton
 												edge="end"
-												aria-label="rapatrier en local"
+												aria-label={t("bringLocalAria")}
 												onClick={(e) => void handleMoveToLocal(e, project)}
 											>
 												<CloudDownloadIcon />
 											</IconButton>
 										</Tooltip>
 									)}
-									<Tooltip title="Supprimer">
+									<Tooltip title={t("delete")}>
 										<IconButton
 											edge="end"
 											aria-label="delete"
@@ -190,7 +193,7 @@ export default function ProjectsList({
 							<ListItemButton onClick={() => onProjectClick(project.id)}>
 								<ListItemText
 									primary={project.name}
-									secondary={`Dernière modification : ${project.lastModificationDate.toLocaleDateString()} à ${project.lastModificationDate.toLocaleTimeString()}`}
+									secondary={t("lastModified", { date: project.lastModificationDate.toLocaleDateString(), time: project.lastModificationDate.toLocaleTimeString() })}
 									slotProps={{
 										secondary: {
 											sx: { fontSize: "0.8rem" },

@@ -14,8 +14,10 @@ import useHelpMenu from "./help/useHelpMenu";
 import useProjectMenu from "./project/useProjectMenu";
 import useViewMenu from "./view/useViewMenu";
 import ShortcutsModal from "./help/ShortcutsModal";
+import { useT } from "@/ui/i18n/useT";
 
 const MenuBar = () => {
+	const t = useT("menu.bar");
 	const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 	const [focusedIndex, setFocusedIndex] = useState(0);
 	const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -108,7 +110,7 @@ const MenuBar = () => {
 		>
 			<FlexBox
 				role="menubar"
-				aria-label="Menu principal"
+				aria-label={t("ariaLabel")}
 				className="menu-bar"
 				onKeyDown={onMenuBarKeyDown}
 				sx={{

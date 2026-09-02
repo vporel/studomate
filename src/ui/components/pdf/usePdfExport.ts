@@ -4,6 +4,7 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
 import { PdfCoverPage, PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
+import { useT } from "@/ui/i18n/useT";
 import { useCallback, useRef, useState } from "react";
 import { OffscreenProgram } from "../pdf/OffscreenProgramRenderer";
 
@@ -57,10 +58,20 @@ export const excludeEditorChrome = (node: Node): boolean => {
 	return !EXPORT_EXCLUDED_CLASSES.some((c) => classList.contains(c));
 };
 
-const sectionTitle = (config: PdfExportProgramConfig): string =>
-	`${config.type === "grafcet" ? "GRAFCET" : "Ladder"} - ${config.program.name}`;
-
 export function usePdfExport(): UsePdfExportResult {
+	const t = useT("projects.export");
+
+	const sectionTitle = useCallback(
+		(config: PdfExportProgramConfig): string =>
+			t(
+				config.type === "grafcet"
+					? "sectionTitleGrafcet"
+					: "sectionTitleLadder",
+				{ name: config.program.name },
+			),
+		[t],
+	);
+
 	const [exportState, setExportState] = useState<PdfExportState>({
 		status: "idle",
 	});
@@ -102,7 +113,7 @@ export function usePdfExport(): UsePdfExportResult {
 				status: "rendering",
 				current: 0,
 				total,
-				label: "Montage en cours…",
+				label: t("preparing"),
 			});
 
 			// Un seul programme monté hors-écran à la fois : monter les N ensemble ferait tourner
@@ -155,7 +166,7 @@ export function usePdfExport(): UsePdfExportResult {
 				} catch {
 					setExportState({
 						status: "error",
-						message: `La capture de "${config.program.name}" a échoué.`,
+						message: t("errorCapture", { name: config.program.name }),
 					});
 					setOffscreenPrograms([]);
 					return;
@@ -171,14 +182,14 @@ export function usePdfExport(): UsePdfExportResult {
 			} catch {
 				setExportState({
 					status: "error",
-					message: "La génération du PDF a échoué.",
+					message: t("errorAssembling"),
 				});
 				return;
 			}
 
 			reset();
 		},
-		[reset],
+		[reset, t, sectionTitle],
 	);
 
 	return { exportState, offscreenPrograms, onProgramReady, startExport, reset };

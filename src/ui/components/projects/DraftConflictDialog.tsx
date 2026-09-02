@@ -10,6 +10,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useShallow } from "zustand/shallow";
+import { useT } from "@/ui/i18n/useT";
 
 export default function DraftConflictDialog() {
 	const { draftConflictModal, lifecycleManager } = useProjectStore(
@@ -19,19 +20,19 @@ export default function DraftConflictDialog() {
 		})),
 	);
 
+	const t = useT("projects.draftConflict");
+
 	if (!draftConflictModal.visible) return null;
 
 	return (
 		<Dialog open maxWidth="xs" fullWidth>
-			<DialogTitle>Version non enregistrée trouvée</DialogTitle>
+			<DialogTitle>{t("title")}</DialogTitle>
 			<DialogContent>
 				<Typography variant="body2">
-					Ce projet a une version non enregistrée plus récente que la dernière
-					sauvegarde.
+					{t("body1")}
 				</Typography>
 				<Typography variant="body2" mt={1}>
-					Voulez-vous reprendre à partir du brouillon ou de la dernière version
-					enregistrée ?
+					{t("body2")}
 				</Typography>
 			</DialogContent>
 			<DialogActions>
@@ -39,13 +40,13 @@ export default function DraftConflictDialog() {
 					variant="outlined"
 					onClick={() => void lifecycleManager.resolveDraftConflict("real")}
 				>
-					Version enregistrée
+					{t("keepSaved")}
 				</Button>
 				<Button
 					variant="contained"
 					onClick={() => void lifecycleManager.resolveDraftConflict("draft")}
 				>
-					Reprendre le brouillon
+					{t("keepDraft")}
 				</Button>
 			</DialogActions>
 		</Dialog>

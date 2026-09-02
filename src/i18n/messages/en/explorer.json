@@ -1,0 +1,36 @@
+{
+	"ariaLabel": "Project explorer",
+	"headerTitle": "EXPLORER",
+	"close": "Close",
+	"closeAria": "Close the explorer",
+	"sections": {
+		"variables": "Variables",
+		"programs": "Programs",
+		"blockInstances": "Block instances",
+		"systemBlocks": "System blocks",
+		"hmi": "HMIs"
+	},
+	"variableGroups": {
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"memories": "Memories"
+	},
+	"hmiMain": "Main",
+	"noHmiPages": "No HMI page",
+	"noPrograms": "No program",
+	"menu": {
+		"open": "Open",
+		"configure": "Configure",
+		"rename": "Rename",
+		"delete": "Delete",
+		"newGrafcet": "New grafcet",
+		"newLadder": "New ladder",
+		"newHmiPage": "New HMI page",
+		"hideExplorer": "Hide the explorer"
+	},
+	"confirmDelete": {
+		"grafcet": "Are you sure you want to delete this grafcet?",
+		"ladder": "Are you sure you want to delete this ladder?",
+		"hmiPage": "Are you sure you want to delete this HMI page?"
+	}
+}

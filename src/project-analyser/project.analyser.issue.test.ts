@@ -7,14 +7,13 @@ describe("ProjectAnalyserIssue", () => {
 				"error",
 				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "grafcet-1" },
-				"Test error message",
 			);
 
 			expect(issue.severity).toBe("error");
 			expect(issue.code).toBe("GRAFCET_NO_INITIAL_STEP");
 			expect(issue.source.sourceType).toBe("grafcet");
 			expect(issue.source.sourceId).toBe("grafcet-1");
-			expect(issue.message).toBe("Test error message");
+			expect(issue.params).toEqual({});
 		});
 
 		it("creates a warning issue", () => {
@@ -22,14 +21,12 @@ describe("ProjectAnalyserIssue", () => {
 				"warning",
 				"ACTION_EMPTY_EXPRESSION",
 				{ sourceType: "grafcet-step", sourceId: "step-1" },
-				"Test warning message",
 			);
 
 			expect(issue.severity).toBe("warning");
 			expect(issue.code).toBe("ACTION_EMPTY_EXPRESSION");
 			expect(issue.source.sourceType).toBe("grafcet-step");
 			expect(issue.source.sourceId).toBe("step-1");
-			expect(issue.message).toBe("Test warning message");
 		});
 
 		it("creates issue with parent ID", () => {
@@ -41,7 +38,6 @@ describe("ProjectAnalyserIssue", () => {
 					sourceId: "transition-1",
 					parentId: "grafcet-1",
 				},
-				"Test message with parent",
 			);
 
 			expect(issue.source.parentId).toBe("grafcet-1");
@@ -68,7 +64,6 @@ describe("ProjectAnalyserIssue", () => {
 					"error",
 					"GRAFCET_NO_INITIAL_STEP",
 					{ sourceType, sourceId: "test-id" },
-					"Test message",
 				);
 				expect(issue.source.sourceType).toBe(sourceType);
 			});
@@ -81,7 +76,6 @@ describe("ProjectAnalyserIssue", () => {
 				"error",
 				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "test" },
-				"Error",
 			);
 			expect(issue.severity).toBe("error");
 		});
@@ -91,43 +85,42 @@ describe("ProjectAnalyserIssue", () => {
 				"warning",
 				"ACTION_EMPTY_EXPRESSION",
 				{ sourceType: "grafcet", sourceId: "test" },
-				"Warning",
 			);
 			expect(issue.severity).toBe("warning");
 		});
 	});
 
-	describe("message content", () => {
-		it("stores exact message text", () => {
-			const message = "Le grafcet ne contient aucune étape initiale.";
+	describe("params and cause", () => {
+		it("stores interpolation params by code", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
-				"GRAFCET_NO_INITIAL_STEP",
-				{ sourceType: "grafcet", sourceId: "test" },
-				message,
+				"STEP_NUMBER_DUPLICATE",
+				{ sourceType: "grafcet-step", sourceId: "test" },
+				{ stepNumber: 3 },
 			);
-			expect(issue.message).toBe(message);
+			expect(issue.params).toEqual({ stepNumber: 3 });
 		});
 
-		it("handles multiline messages", () => {
-			const message = "Line 1\nLine 2\nLine 3";
+		it("keeps the wrapped exception for *_INVALID_EXPRESSION codes", () => {
+			const cause = new Error("boom");
 			const issue = new ProjectAnalyserIssue(
 				"error",
-				"GRAFCET_NO_INITIAL_STEP",
-				{ sourceType: "grafcet", sourceId: "test" },
-				message,
+				"TRANSITION_INVALID_EXPRESSION",
+				{ sourceType: "grafcet-transition", sourceId: "test" },
+				{},
+				cause,
 			);
-			expect(issue.message).toBe(message);
+			expect(issue.cause).toBe(cause);
 		});
 
-		it("handles empty message", () => {
+		it("defaults params to an empty object and cause to undefined", () => {
 			const issue = new ProjectAnalyserIssue(
 				"error",
 				"GRAFCET_NO_INITIAL_STEP",
 				{ sourceType: "grafcet", sourceId: "test" },
-				"",
 			);
-			expect(issue.message).toBe("");
+			expect(issue.params).toEqual({});
+			expect(issue.cause).toBeUndefined();
 		});
 	});
 });

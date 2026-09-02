@@ -83,7 +83,12 @@ export type HmiAnimatableStyleProp<D> = {
 };
 
 /** Métadonnées d'affichage de chaque type de widget — pendant UI de `HMI_WIDGET_DEFINITIONS`
- * (domaine). Ajouter un widget = une entrée ici (composant + aperçu + descripteurs de champs). */
+ * (domaine). Ajouter un widget = une entrée ici (composant + aperçu + descripteurs de champs).
+ *
+ * Les `label` (champs, options, événements) sont des **clés de traduction** relatives au
+ * namespace `hmiEditor` (ex. `"fields.behavior"`, `"options.momentary"`) : le rendu passe par
+ * `useT("hmiEditor")` dans les panneaux qui consomment ces descripteurs. `manualDescription`
+ * est une **clé de traduction** (namespace `hmiEditor.widgetManual`), résolue par `HmiSection`. */
 export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
 	component: ComponentType<HmiWidgetComponentProps<any>>;
 	/** Symbole d'aperçu compact si le rendu réel est illisible en miniature (ex. jauge, saisie). */
@@ -94,7 +99,8 @@ export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
 	previewValue: boolean | number;
 	/** Ordre d'apparition dans son groupe de palette (voir `HMI_WIDGET_TOOLS`). */
 	paletteOrder: number;
-	/** Phrase du manuel utilisateur pour ce widget (voir `HmiSection`). */
+	/** Clé i18n (namespace `hmiEditor.widgetManual`) de la phrase du manuel pour ce widget
+	 * (voir `HmiSection`). */
 	manualDescription: string;
 	animatableStyleProps: HmiAnimatableStyleProp<WidgetData<T>>[];
 	events: { name: string; label: string }[];
@@ -103,10 +109,10 @@ export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
 
 const PUSH_BUTTON_BEHAVIORS: { value: HmiPushButtonBehavior; label: string }[] =
 	[
-		{ value: "momentary", label: "Impulsionnel (maintien momentané)" },
-		{ value: "set", label: "SET (mise à 1)" },
-		{ value: "reset", label: "RESET (mise à 0)" },
-		{ value: "toggle", label: "Bascule (inversion)" },
+		{ value: "momentary", label: "options.momentary" },
+		{ value: "set", label: "options.set" },
+		{ value: "reset", label: "options.reset" },
+		{ value: "toggle", label: "options.toggle" },
 	];
 
 export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
@@ -115,14 +121,13 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 46,
 		previewValue: false,
 		paletteOrder: 1,
-		manualDescription:
-			"Bouton poussoir — commande une variable BOOL. Comportements configurables : maintien momentané (la variable passe à 1 tant que le bouton est enfoncé), SET (force à 1), RESET (force à 0), bascule (inverse la valeur à chaque appui).",
+		manualDescription: "widgetManual.pushButton",
 		animatableStyleProps: [],
-		events: [{ name: "onPress", label: "Bouton pressé" }],
+		events: [{ name: "onPress", label: "events.onPress" }],
 		propertyFields: [
 			{
 				kind: "select",
-				label: "Comportement",
+				label: "fields.behavior",
 				options: PUSH_BUTTON_BEHAVIORS,
 				get: (data) => data.behavior ?? "momentary",
 				set: (data, value) => ({
@@ -137,7 +142,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 40,
 		previewValue: false,
 		paletteOrder: 2,
-		manualDescription: "Interrupteur — lit et inverse une variable BOOL au clic.",
+		manualDescription: "widgetManual.toggleSwitch",
 		animatableStyleProps: [],
 		events: [],
 		propertyFields: [],
@@ -147,20 +152,19 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 24,
 		previewValue: false,
 		paletteOrder: 3,
-		manualDescription:
-			"Voyant — affiche l'état d'une variable BOOL (éteint = gris, allumé = vert).",
+		manualDescription: "widgetManual.indicator",
 		animatableStyleProps: [],
 		events: [],
 		propertyFields: [
 			{
 				kind: "color",
-				label: "Couleur (allumé)",
+				label: "fields.onColor",
 				get: (data) => data.onColor ?? DEFAULT_INDICATOR_ON_COLOR,
 				set: (data, value) => ({ ...data, onColor: value }),
 			},
 			{
 				kind: "color",
-				label: "Couleur (éteint)",
+				label: "fields.offColor",
 				get: (data) => data.offColor ?? DEFAULT_INDICATOR_OFF_COLOR,
 				set: (data, value) => ({ ...data, offColor: value }),
 			},
@@ -171,20 +175,19 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 50,
 		previewValue: 0,
 		paletteOrder: 4,
-		manualDescription:
-			"Affichage numérique — affiche la valeur d'une variable numérique. Options : unité (suffixe textuel) et nombre de décimales.",
+		manualDescription: "widgetManual.numericDisplay",
 		animatableStyleProps: [],
 		events: [],
 		propertyFields: [
 			{
 				kind: "text",
-				label: "Unité",
+				label: "fields.unit",
 				get: (data) => data.unit ?? "",
 				set: (data, value) => ({ ...data, unit: value }),
 			},
 			{
 				kind: "number",
-				label: "Décimales",
+				label: "fields.decimals",
 				min: 0,
 				max: 6,
 				get: (data) => data.decimalPlaces ?? 0,
@@ -198,17 +201,16 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 60,
 		previewValue: 30,
 		paletteOrder: 5,
-		manualDescription:
-			"Jauge — barre de progression liée à une variable numérique. Options : min, max et orientation (horizontal / vertical).",
+		manualDescription: "widgetManual.gauge",
 		animatableStyleProps: [],
 		events: [],
 		propertyFields: [
 			{
 				kind: "select",
-				label: "Orientation",
+				label: "fields.orientation",
 				options: [
-					{ value: "horizontal", label: "Horizontal" },
-					{ value: "vertical", label: "Vertical" },
+					{ value: "horizontal", label: "options.horizontal" },
+					{ value: "vertical", label: "options.vertical" },
 				],
 				get: (data) => data.style?.orientation ?? "horizontal",
 				set: (data, value) => ({
@@ -227,13 +229,13 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "number",
-				label: "Min",
+				label: "fields.min",
 				get: (data) => data.min ?? 0,
 				set: (data, value) => ({ ...data, min: value }),
 			},
 			{
 				kind: "number",
-				label: "Max",
+				label: "fields.max",
 				get: (data) => data.max ?? 100,
 				set: (data, value) => ({ ...data, max: value }),
 			},
@@ -245,20 +247,19 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 50,
 		previewValue: 0,
 		paletteOrder: 6,
-		manualDescription:
-			"Saisie numérique — champ de saisie lié à une variable numérique. En simulation, saisir une valeur et valider par Entrée ou en cliquant ailleurs l'écrit dans la variable. Options : min et max.",
+		manualDescription: "widgetManual.numericInput",
 		animatableStyleProps: [],
 		events: [],
 		propertyFields: [
 			{
 				kind: "number",
-				label: "Min",
+				label: "fields.min",
 				get: (data) => data.min ?? 0,
 				set: (data, value) => ({ ...data, min: value }),
 			},
 			{
 				kind: "number",
-				label: "Max",
+				label: "fields.max",
 				get: (data) => data.max ?? 100,
 				set: (data, value) => ({ ...data, max: value }),
 			},
@@ -269,12 +270,11 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 50,
 		previewValue: 0,
 		paletteOrder: 1,
-		manualDescription:
-			"Texte — texte libre. Options : contenu, taille de police, couleur, alignement (gauche / centré / droite).",
+		manualDescription: "widgetManual.text",
 		animatableStyleProps: [
 			{
 				name: "text",
-				label: "Texte",
+				label: "fields.text",
 				inputType: "text",
 				staticValue: (data) => data.text,
 			},
@@ -283,14 +283,14 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		propertyFields: [
 			{
 				kind: "text",
-				label: "Texte",
+				label: "fields.text",
 				multiline: true,
 				get: (data) => data.text,
 				set: (data, value) => ({ ...data, text: value }),
 			},
 			{
 				kind: "number",
-				label: "Taille",
+				label: "fields.size",
 				min: 1,
 				get: (data) => data.style?.fontSize ?? 14,
 				set: (data, value) => ({
@@ -300,7 +300,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "color",
-				label: "Couleur",
+				label: "fields.color",
 				get: (data) => data.style?.color ?? "#333333",
 				set: (data, value) => ({
 					...data,
@@ -309,11 +309,11 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "select",
-				label: "Alignement",
+				label: "fields.align",
 				options: [
-					{ value: "left", label: "Gauche" },
-					{ value: "center", label: "Centré" },
-					{ value: "right", label: "Droite" },
+					{ value: "left", label: "options.left" },
+					{ value: "center", label: "options.center" },
+					{ value: "right", label: "options.right" },
 				],
 				get: (data) => data.style?.align ?? "center",
 				set: (data, value) => ({
@@ -331,18 +331,17 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 40,
 		previewValue: 0,
 		paletteOrder: 3,
-		manualDescription:
-			"Rectangle — forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.",
+		manualDescription: "widgetManual.rectangle",
 		animatableStyleProps: [
 			{
 				name: "fill",
-				label: "Remplissage",
+				label: "fields.fill",
 				inputType: "color",
 				staticValue: (data) => data.style.fill,
 			},
 			{
 				name: "stroke",
-				label: "Contour",
+				label: "fields.stroke",
 				inputType: "color",
 				staticValue: (data) => data.style.stroke,
 			},
@@ -351,7 +350,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		propertyFields: [
 			{
 				kind: "color",
-				label: "Remplissage",
+				label: "fields.fill",
 				get: (data) => data.style.fill,
 				set: (data, value) => ({
 					...data,
@@ -360,7 +359,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "color",
-				label: "Contour",
+				label: "fields.stroke",
 				get: (data) => data.style.stroke,
 				set: (data, value) => ({
 					...data,
@@ -369,7 +368,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "number",
-				label: "Épaisseur du contour",
+				label: "fields.strokeWidth",
 				min: 0,
 				get: (data) => data.style.strokeWidth ?? 0,
 				set: (data, value) => ({
@@ -379,7 +378,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "number",
-				label: "Rayon des angles",
+				label: "fields.borderRadius",
 				min: 0,
 				get: (data) => data.style.borderRadius ?? 0,
 				set: (data, value) => ({
@@ -394,18 +393,17 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 40,
 		previewValue: 0,
 		paletteOrder: 4,
-		manualDescription:
-			'Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case "Lier largeur et hauteur" (section Dimensions) fige le ratio courant.',
+		manualDescription: "widgetManual.ellipse",
 		animatableStyleProps: [
 			{
 				name: "fill",
-				label: "Remplissage",
+				label: "fields.fill",
 				inputType: "color",
 				staticValue: (data) => data.style.fill,
 			},
 			{
 				name: "stroke",
-				label: "Contour",
+				label: "fields.stroke",
 				inputType: "color",
 				staticValue: (data) => data.style.stroke,
 			},
@@ -414,7 +412,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		propertyFields: [
 			{
 				kind: "color",
-				label: "Remplissage",
+				label: "fields.fill",
 				get: (data) => data.style.fill,
 				set: (data, value) => ({
 					...data,
@@ -423,7 +421,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "color",
-				label: "Contour",
+				label: "fields.stroke",
 				get: (data) => data.style.stroke,
 				set: (data, value) => ({
 					...data,
@@ -432,7 +430,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "number",
-				label: "Épaisseur du contour",
+				label: "fields.strokeWidth",
 				min: 0,
 				get: (data) => data.style.strokeWidth ?? 0,
 				set: (data, value) => ({
@@ -448,12 +446,11 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewWidth: 40,
 		previewValue: 0,
 		paletteOrder: 2,
-		manualDescription:
-			"Trait — segment de couleur unie. Options : couleur, épaisseur et orientation (horizontal / vertical).",
+		manualDescription: "widgetManual.line",
 		animatableStyleProps: [
 			{
 				name: "color",
-				label: "Couleur",
+				label: "fields.color",
 				inputType: "color",
 				staticValue: (data) => data.style.color,
 			},
@@ -462,7 +459,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		propertyFields: [
 			{
 				kind: "color",
-				label: "Couleur",
+				label: "fields.color",
 				get: (data) => data.style.color,
 				set: (data, value) => ({
 					...data,
@@ -471,7 +468,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "number",
-				label: "Épaisseur",
+				label: "fields.thickness",
 				min: 1,
 				get: (data) => data.style.thickness ?? 2,
 				set: (data, value) => ({
@@ -481,10 +478,10 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			},
 			{
 				kind: "select",
-				label: "Orientation",
+				label: "fields.orientation",
 				options: [
-					{ value: "horizontal", label: "Horizontal" },
-					{ value: "vertical", label: "Vertical" },
+					{ value: "horizontal", label: "options.horizontal" },
+					{ value: "vertical", label: "options.vertical" },
 				],
 				get: (data) => data.style.orientation ?? "horizontal",
 				set: (data, value) => ({

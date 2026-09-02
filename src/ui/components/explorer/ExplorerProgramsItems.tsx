@@ -12,6 +12,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { useT } from "@/ui/i18n/useT";
 import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
 import LadderIcon from "../icons/LadderIcon";
 import LadderMainIcon from "../icons/LadderMainIcon";
@@ -183,6 +184,7 @@ const ExplorerProgramsItems = ({
 		element: ExplorerContextMenuElement,
 	) => void;
 }) => {
+	const t = useT("explorer");
 	const programs = useProjectPrograms();
 
 	return (
@@ -195,7 +197,7 @@ const ExplorerProgramsItems = ({
 						fontSize: "0.8rem",
 					}}
 				>
-					Aucun programme
+					{t("noPrograms")}
 				</Typography>
 			) : (
 				programs.map((program) => (

@@ -1,4 +1,5 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
+import { resolveUiLocale } from "@/persistence/preferences.storage";
 import ProjectAnalyser, {
 	ProjectAnalysisResult,
 } from "@/project-analyser/project.analyser";
@@ -92,8 +93,11 @@ export default class SimulationManager {
 		this.setStoreState((state) => ({
 			analysisHasErrors: errors.length > 0,
 			analysisHasWarnings: warnings.length > 0,
-			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors),
-			analysisWarnings: AnalysisIssuesMapper.analyserToApp(warnings),
+			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors, resolveUiLocale()),
+			analysisWarnings: AnalysisIssuesMapper.analyserToApp(
+				warnings,
+				resolveUiLocale(),
+			),
 			ui: {
 				...state.ui,
 				analysisResultVisible:

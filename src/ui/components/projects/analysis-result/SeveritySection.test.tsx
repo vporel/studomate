@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen } from "@testing-library/react";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import SeveritySection from "./SeveritySection";
 
@@ -24,14 +25,14 @@ function baseProps(
 
 describe("SeveritySection", () => {
 	it("affiche 'Aucune erreur' pour la sévérité error sans aucune issue", () => {
-		render(<SeveritySection {...baseProps({ severity: "error" })} />);
+		renderWithI18n(<SeveritySection {...baseProps({ severity: "error" })} />);
 		expect(
 			screen.getByText("Aucune erreur lors de l'analyse."),
 		).toBeInTheDocument();
 	});
 
 	it("affiche 'Aucun avertissement' pour la sévérité warning sans aucune issue", () => {
-		render(
+		renderWithI18n(
 			<SeveritySection
 				{...baseProps({ severity: "warning", title: "Avertissements" })}
 			/>,
@@ -40,7 +41,7 @@ describe("SeveritySection", () => {
 	});
 
 	it("affiche les issues globales au ladder, avec le nom du ladder résolu", () => {
-		render(
+		renderWithI18n(
 			<SeveritySection
 				{...baseProps({
 					issues: {
@@ -58,7 +59,7 @@ describe("SeveritySection", () => {
 
 	it("navigue vers le grafcet fautif au clic sur une issue d'élément grafcet", () => {
 		const onGotoProgram = jest.fn();
-		render(
+		renderWithI18n(
 			<SeveritySection
 				{...baseProps({
 					issues: {
@@ -80,7 +81,7 @@ describe("SeveritySection", () => {
 
 	it("navigue vers le ladder fautif au clic sur une issue d'élément ladder", () => {
 		const onGotoProgram = jest.fn();
-		render(
+		renderWithI18n(
 			<SeveritySection
 				{...baseProps({
 					issues: {
@@ -101,7 +102,7 @@ describe("SeveritySection", () => {
 	});
 
 	it("affiche les issues globales au projet sous un intitulé distinct", () => {
-		render(
+		renderWithI18n(
 			<SeveritySection
 				{...baseProps({
 					issues: {

@@ -1,5 +1,6 @@
 import { AnalysisProgramIssues } from "@/bridge/analysis-issues.mapper";
 import { ProjectAnalyserIssueSeverity } from "@/project-analyser/project.analyser.issue";
+import { useT } from "@/ui/i18n/useT";
 import { Box, List, ListItem, Typography } from "@mui/material";
 
 export function IssueListItem({
@@ -45,6 +46,7 @@ export default function ProgramIssues({
 	getElementLabel: (elementId: string) => string;
 	onGoto: (elementId?: string) => void;
 }) {
+	const t = useT("projects.analysisResult");
 	if (
 		!issues.overall &&
 		(!issues.elements || Object.keys(issues.elements).length === 0)
@@ -54,13 +56,15 @@ export default function ProgramIssues({
 	const programKindLower = programKind.toLowerCase();
 	return (
 		<Box key={programId}>
-			<Typography variant="h6">{`${programKind} : ${programName}`}</Typography>
+			<Typography variant="h6">
+				{t("programHeading", { kind: programKind, name: programName })}
+			</Typography>
 			{issues.overall && issues.overall.length > 0 && (
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
 						{severity === "error"
-							? `Erreurs globales au ${programKindLower}`
-							: `Avertissements globaux au ${programKindLower}`}
+							? t("programErrors", { kind: programKindLower })
+							: t("programWarnings", { kind: programKindLower })}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{issues.overall.map((msg: string, idx: number) => (
@@ -79,8 +83,8 @@ export default function ProgramIssues({
 				<>
 					<Typography variant="subtitle2" sx={{ ml: 2 }}>
 						{severity === "error"
-							? `Erreurs des éléments du ${programKindLower}`
-							: `Avertissements des éléments du ${programKindLower}`}
+							? t("elementErrors", { kind: programKindLower })
+							: t("elementWarnings", { kind: programKindLower })}
 					</Typography>
 					<List dense sx={{ ml: 2 }}>
 						{Object.entries(issues.elements).map(([elementId, msgs]) =>

@@ -1,6 +1,7 @@
 "use client";
 
 import renderMarkdown from "@/ui/lib/markdown";
+import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -16,6 +17,7 @@ export const EXERCISE_PAGE_DATA: PageData = {
 };
 
 const ExercisePage = () => {
+	const t = useT("pages.exercise");
 	const statement = useProjectStore(
 		(state) => state.project?.exercise?.statement ?? "",
 	);
@@ -78,16 +80,15 @@ const ExercisePage = () => {
 					/>
 				) : (
 					<Box>
-						<Typography variant="h2">Énoncé de l&apos;exercice</Typography>
+						<Typography variant="h2">{t("heading")}</Typography>
 						<Typography sx={{ mt: 2, mb: 3 }} color="text.secondary">
-							Ce projet n&apos;a pas encore d&apos;énoncé. L&apos;énoncé se rédige
-							dans les propriétés du projet.
+							{t("empty")}
 						</Typography>
 						<Button
 							variant="outlined"
 							onClick={() => pagesManager.openPage(PROJECT_PROPERTIES_PAGE_DATA)}
 						>
-							Ouvrir les propriétés du projet
+							{t("openProperties")}
 						</Button>
 					</Box>
 				)}

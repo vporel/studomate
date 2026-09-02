@@ -5,6 +5,7 @@ import { Button, TextField } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 export default function SaveAsModal() {
 	const {
@@ -21,6 +22,8 @@ export default function SaveAsModal() {
 		})),
 	);
 
+	const t = useT("projects.saveAs");
+	const tc = useT("projects.common");
 	const [name, setName] = useState("");
 
 	useEffect(() => {
@@ -43,12 +46,12 @@ export default function SaveAsModal() {
 		<CustomModal
 			open={saveAsModalVisible}
 			onClose={onClose}
-			title="Enregistrer sous"
+			title={t("title")}
 			width={400}
 		>
 			<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 				<TextField
-					label="Nom du projet"
+					label={t("name")}
 					autoFocus
 					slotProps={{ inputLabel: { shrink: true } }}
 					value={name}
@@ -60,14 +63,14 @@ export default function SaveAsModal() {
 				/>
 				<div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
 					<Button variant="outlined" onClick={onClose}>
-						Annuler
+						{tc("cancel")}
 					</Button>
 					<Button
 						variant="contained"
 						onClick={() => void onSubmit()}
 						disabled={!canSubmit}
 					>
-						Enregistrer
+						{tc("save")}
 					</Button>
 				</div>
 			</div>

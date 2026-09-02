@@ -6,6 +6,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useGotoProgram from "@/ui/components/projects/useGotoProgram";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 /** Nombre de tentatives et intervalle du polling qui attend que le manager du ladder ciblé
  * devienne actif après `pagesManager.openPage` (voir `useBlockInstanceMenuItems`) — 500 ms au
@@ -30,18 +31,20 @@ export default function useBlockInstanceMenuItems(): (
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const onGotoProgram = useGotoProgram();
 
+	const t = useT("explorer.menu");
+
 	return useCallback(
 		(ladderId: string, elementId: string) => {
 			return [
 				[
 					{
-						label: "Ouvrir",
+						label: t("open"),
 						onClick: () => onGotoProgram(ladderId, "ladder", elementId),
 					},
 				],
 				[
 					{
-						label: "Paramétrer",
+						label: t("configure"),
 						onClick: () => {
 							const element = project
 								?.getLadder(ladderId)
@@ -85,6 +88,6 @@ export default function useBlockInstanceMenuItems(): (
 				],
 			];
 		},
-		[project, laddersManager, onGotoProgram],
+		[project, laddersManager, onGotoProgram, t],
 	);
 }

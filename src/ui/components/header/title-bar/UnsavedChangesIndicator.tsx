@@ -4,8 +4,10 @@ import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { CircularProgress, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 const UnsavedChangesIndicator = () => {
+	const t = useT("chrome");
 	const { hasUnsavedChanges, lifecycleManager, savingProject } = useProjectStore(
 		useShallow((state) => ({
 			hasUnsavedChanges: state.hasUnsavedChanges,
@@ -32,7 +34,7 @@ const UnsavedChangesIndicator = () => {
 						void lifecycleManager.saveProject();
 					}}
 				>
-					Cliquez ici pour enregistrer
+					{t("unsavedChanges")}
 				</Typography>
 			)}
 			{savingProject && <CircularProgress size={15} />}

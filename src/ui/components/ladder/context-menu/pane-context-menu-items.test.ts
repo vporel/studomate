@@ -1,3 +1,4 @@
+import { identityT } from "@tests/utils/i18n";
 import paneContextMenuItems from "./pane-context-menu-items";
 
 function fakeWorkflowManager(nodes: unknown[], edges: unknown[]): any {
@@ -23,6 +24,7 @@ function items(
 		ccp,
 		SCREEN_POSITION,
 		canPaste,
+		identityT,
 	);
 }
 

@@ -6,9 +6,11 @@ import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import SimulationManager from "@/ui/stores/project/managers/simulation/simulation.manager";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { StepNodeType } from "../nodes/StepNode";
+import { MenuTranslate } from "./menu-translate";
 
 export default function stepContextMenuItems(
 	step: StepNodeType,
+	t: MenuTranslate,
 	{
 		inSimulation,
 		grafcet,
@@ -29,11 +31,11 @@ export default function stepContextMenuItems(
 		return [
 			[
 				{
-					label: "Ajouter une action",
+					label: t("addAction"),
 					onClick: () => workflowManager.addActionToStep(step.id),
 				},
 				{
-					label: "Ajouter une transition",
+					label: t("addTransition"),
 					disabled: StepHelper.hasSuccessor(step.id, grafcet),
 					onClick: () => workflowManager.addTransitionAfterStep(step.id),
 				},
@@ -48,17 +50,17 @@ export default function stepContextMenuItems(
 	return [
 		[
 			{
-				label: "Forcer active",
+				label: t("forceActive"),
 				checked: isForcedActive,
 				onClick: () => simulationManager.forceVariable(stepVariableId, true),
 			},
 			{
-				label: "Forcer inactive",
+				label: t("forceInactive"),
 				checked: isForcedInactive,
 				onClick: () => simulationManager.forceVariable(stepVariableId, false),
 			},
 			{
-				label: "Relâcher le forçage",
+				label: t("releaseForce"),
 				disabled: !isForced,
 				onClick: () => simulationManager.releaseVariable(stepVariableId),
 			},

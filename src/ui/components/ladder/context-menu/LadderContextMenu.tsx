@@ -7,12 +7,14 @@ import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
 import { useEffect, useMemo, useState } from "react";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
 import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
+import type { MenuTranslate } from "./menu-translate";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -41,6 +43,11 @@ const LadderContextMenu = ({
 		type: "pane",
 	});
 	const [visible, show, hide] = useBooleanState(false);
+	const tRaw = useT("ladderEditor.contextMenu");
+	const t = useMemo<MenuTranslate>(
+		() => (key, values) => tRaw(key as never, values as never),
+		[tRaw],
+	);
 	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
 	const [screenPosition, setScreenPosition] = useState<XYPosition>({
 		x: 0,
@@ -55,6 +62,7 @@ const LadderContextMenu = ({
 				copyCutPasteManager,
 				screenPosition,
 				canPaste,
+				t,
 			);
 		}
 		const items: ContextMenuItemType[][] = [];
@@ -65,6 +73,7 @@ const LadderContextMenu = ({
 				handleDelete,
 				copyCutPasteManager,
 				workflowManager,
+				t,
 			),
 		);
 		return items;
@@ -76,6 +85,7 @@ const LadderContextMenu = ({
 		screenPosition,
 		sectionId,
 		handleDelete,
+		t,
 	]);
 
 	useEffect(() => {

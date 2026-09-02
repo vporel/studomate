@@ -48,7 +48,7 @@ describe("ProjectAnalyser", () => {
 			);
 			expect(missingAnalyserIssue).toBeDefined();
 			expect(missingAnalyserIssue?.severity).toBe("error");
-			expect(missingAnalyserIssue?.message).toContain("Mystère");
+			expect(missingAnalyserIssue?.params).toMatchObject({ programName: "Mystère" });
 		});
 
 		it("analyses single grafcet with valid initial step", () => {
@@ -103,7 +103,7 @@ describe("ProjectAnalyser", () => {
 			const result = ProjectAnalyser.analyse(project);
 
 			const initialStepError = result.issues.find((issue) =>
-				issue.message.includes("étape initiale"),
+				(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -145,7 +145,7 @@ describe("ProjectAnalyser", () => {
 			const result = ProjectAnalyser.analyse(project);
 
 			const initialStepErrors = result.issues.filter((issue) =>
-				issue.message.includes("étape initiale"),
+				(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepErrors).toHaveLength(2);
 		});
@@ -335,13 +335,15 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				const dupIssues = result.issues.filter(
-					(i) => i.message.includes("unique") && i.message.includes("1"),
+					(i) =>
+						i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS" &&
+						String(i.params.stepNumber) === "1",
 				);
 				expect(dupIssues).toHaveLength(1);
 				expect(dupIssues[0].severity).toBe("error");
 				expect(dupIssues[0].source.sourceType).toBe("project");
-				expect(dupIssues[0].message).toContain('"G1"');
-				expect(dupIssues[0].message).toContain('"G2"');
+				expect(String(dupIssues[0].params.grafcetNames)).toContain("G1");
+				expect(String(dupIssues[0].params.grafcetNames)).toContain("G2");
 			});
 
 			it("flags all occurrences when three grafcets share the same step number", () => {
@@ -388,12 +390,12 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				const dupIssues = result.issues.filter((i) =>
-					i.message.includes("unique"),
+					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(1);
-				expect(dupIssues[0].message).toContain('"G1"');
-				expect(dupIssues[0].message).toContain('"G2"');
-				expect(dupIssues[0].message).toContain('"G3"');
+				expect(String(dupIssues[0].params.grafcetNames)).toContain("G1");
+				expect(String(dupIssues[0].params.grafcetNames)).toContain("G2");
+				expect(String(dupIssues[0].params.grafcetNames)).toContain("G3");
 			});
 
 			it("does not flag identical step numbers within the same grafcet (already handled by step analyser)", () => {
@@ -423,7 +425,7 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				const dupIssues = result.issues.filter((i) =>
-					i.message.includes("unique"),
+					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(0);
 			});
@@ -461,7 +463,7 @@ describe("ProjectAnalyser", () => {
 				const result = ProjectAnalyser.analyse(project);
 
 				const dupIssues = result.issues.filter((i) =>
-					i.message.includes("unique"),
+					i.code === "PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
 				);
 				expect(dupIssues).toHaveLength(0);
 			});

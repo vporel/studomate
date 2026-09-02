@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { useProjectStore } from "./ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
@@ -20,7 +21,7 @@ function setup({
 			sharingManager: { moveToCloudAndShare },
 		}),
 	);
-	render(<ShareRequiresCloudModal />);
+	renderWithI18n(<ShareRequiresCloudModal />);
 	return { setVisible, moveToCloudAndShare };
 }
 

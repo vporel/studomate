@@ -26,6 +26,7 @@ import {
 import { authStore } from "@/ui/stores/auth/auth.store";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
 import trackEvent from "@/ui/lib/analytics";
+import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	getInitialPagesData,
 	restorePagesSession,
@@ -35,18 +36,17 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store.types";
 
-const SAVE_FAILURE_MESSAGES: Record<SaveFailureReason, string> = {
-	"quota-exceeded":
-		"Enregistrement impossible : l'espace de stockage du navigateur est plein. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
-	unavailable:
-		"Enregistrement impossible : le stockage du navigateur est inaccessible (navigation privée ?). Exportez le projet dans un fichier.",
-	network:
-		"Enregistrement dans le cloud impossible : vérifiez votre connexion et que vous êtes bien connecté. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
-	conflict:
-		"Ce projet a été modifié ailleurs entre-temps. Rechargez la version en ligne ou enregistrez vos modifications sous un autre nom.",
-	unknown:
-		"Enregistrement impossible. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
+const SAVE_FAILURE_KEYS: Record<SaveFailureReason, string> = {
+	"quota-exceeded": "storageFull",
+	unavailable: "storageUnavailable",
+	network: "cloudUnreachable",
+	conflict: "conflict",
+	unknown: "generic",
 };
+
+function saveFailureMessage(reason: SaveFailureReason): string {
+	return getT("toasts.save")(SAVE_FAILURE_KEYS[reason] as never);
+}
 
 const AUTO_SAVE_INTERVAL_MS = 30_000;
 
@@ -331,7 +331,7 @@ export default class ProjectLifecycleManager {
 				}));
 				return false;
 			}
-			toast.error(SAVE_FAILURE_MESSAGES[result.reason]);
+			toast.error(saveFailureMessage(result.reason));
 			console.error("Failed to save the project:", result.cause);
 			return false;
 		}
@@ -366,7 +366,7 @@ export default class ProjectLifecycleManager {
 		const result = await get().projectRepository.save(copy, location);
 		if (!result.ok) {
 			set(() => ({ savingProject: false }));
-			toast.error(SAVE_FAILURE_MESSAGES[result.reason]);
+			toast.error(saveFailureMessage(result.reason));
 			console.error("Failed to save the project:", result.cause);
 			return false;
 		}
@@ -420,7 +420,7 @@ export default class ProjectLifecycleManager {
 				set(() => ({ isSharedProject: false, hasUnsavedChanges: true }));
 				restorePagesSession(set, get, project, urlActiveId);
 			} catch {
-				toast.error("Le brouillon est corrompu et n'a pas pu être ouvert.");
+				toast.error(getT("toasts")("draftCorrupted"));
 			}
 		} else {
 			// Partir du projet réel : supprimer le brouillon
@@ -447,7 +447,7 @@ export default class ProjectLifecycleManager {
 		if (!project) return;
 		const reloaded = await get().projectRepository.get(project.id);
 		if (!reloaded) {
-			toast.error("Impossible de recharger la version en ligne du projet.");
+			toast.error(getT("toasts")("cloudReloadFailed"));
 			return;
 		}
 		const urlActiveId = getActivePageIdFromUrl();

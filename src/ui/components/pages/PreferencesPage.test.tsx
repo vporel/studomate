@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "../projects/ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -12,14 +13,19 @@ jest.mock("@/ui/stores/auth/auth.store");
 
 const mockGetPreferredSaveLocation = jest.fn();
 const mockSetPreferredSaveLocation = jest.fn();
+const mockGetPreferredLocale = jest.fn();
+const mockSetPreferredLocale = jest.fn();
 jest.mock("@/persistence/preferences.storage", () => ({
 	getPreferredSaveLocation: (...args: unknown[]) =>
 		mockGetPreferredSaveLocation(...args),
 	setPreferredSaveLocation: (...args: unknown[]) =>
 		mockSetPreferredSaveLocation(...args),
+	getPreferredLocale: (...args: unknown[]) => mockGetPreferredLocale(...args),
+	setPreferredLocale: (...args: unknown[]) => mockSetPreferredLocale(...args),
 }));
 
 function setup({ authenticated = true } = {}) {
+	mockGetPreferredLocale.mockReturnValue(null);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ activePageId: PREFERENCES_PAGE_ID }),
 	);
@@ -29,7 +35,7 @@ function setup({ authenticated = true } = {}) {
 			setAuthModalVisible: jest.fn(),
 		}),
 	);
-	render(<PreferencesPage />);
+	renderWithI18n(<PreferencesPage />);
 }
 
 describe("PreferencesPage", () => {
@@ -59,5 +65,13 @@ describe("PreferencesPage", () => {
 
 		expect(mockSetPreferredSaveLocation).toHaveBeenCalledWith("cloud");
 		expect(screen.getByLabelText("Dans le cloud")).toBeChecked();
+	});
+
+	it("propose le choix de la langue de l'interface", () => {
+		mockGetPreferredSaveLocation.mockReturnValue("local");
+		setup();
+
+		expect(screen.getByLabelText("Français")).toBeChecked();
+		expect(screen.getByLabelText("Anglais")).toBeInTheDocument();
 	});
 });

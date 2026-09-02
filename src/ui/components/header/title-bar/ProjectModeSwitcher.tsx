@@ -4,6 +4,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
@@ -19,6 +20,7 @@ const ProjectModeSwitcher = () => {
 		})),
 	);
 	const [blinkOff, setBlinkOff] = useState(false);
+	const t = useT("chrome.mode");
 
 	// Le sélecteur clignote uniquement en simulation continue, pour signaler que des cycles
 	// s'enchaînent. En pas-à-pas rien ne bouge tant qu'on ne le demande pas : couleur fixe.
@@ -60,8 +62,8 @@ const ProjectModeSwitcher = () => {
 				backgroundColor: backgroundColor,
 			}}
 		>
-			<option value="DESIGN">Conception</option>
-			<option value="SIMULATION">Simulation</option>
+			<option value="DESIGN">{t("design")}</option>
+			<option value="SIMULATION">{t("simulation")}</option>
 		</Box>
 	);
 };

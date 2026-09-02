@@ -8,6 +8,7 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import { Box, Divider, Typography } from "@mui/material";
 import { useState } from "react";
+import { useT } from "@/ui/i18n/useT";
 import {
 	HMI_SHAPE_TOOLS,
 	HMI_WIDGET_TOOLS,
@@ -39,6 +40,7 @@ const HmiPageContent = ({
 	tabPageId,
 	isSimulation = false,
 }: HmiPageContentProps) => {
+	const t = useT("hmiEditor.toolbar");
 	const [zoom, setZoom] = useState(ZOOM_DEFAULT);
 
 	return (
@@ -81,7 +83,7 @@ const HmiPageContent = ({
 				<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
 					<AppTool
 						name="hmi-zoom-out"
-						label="Zoom arrière"
+						label={t("zoomOut")}
 						disabled={zoom <= ZOOM_MIN}
 						onClick={() => setZoom((z) => clampZoom(z - ZOOM_STEP))}
 					>
@@ -102,7 +104,7 @@ const HmiPageContent = ({
 					</Typography>
 					<AppTool
 						name="hmi-zoom-in"
-						label="Zoom avant"
+						label={t("zoomIn")}
 						disabled={zoom >= ZOOM_MAX}
 						onClick={() => setZoom((z) => clampZoom(z + ZOOM_STEP))}
 					>

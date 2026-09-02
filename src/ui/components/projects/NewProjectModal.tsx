@@ -1,6 +1,7 @@
 "use client";
 
 import { PROJECT_TEMPLATES } from "@/templates/index";
+import { useT } from "@/ui/i18n/useT";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import {
 	Box,
@@ -29,6 +30,9 @@ export default function NewProjectModal() {
 	);
 
 	const [selected, setSelected] = useState<string | null>(null);
+	const tTemplates = useT("templates");
+	const t = useT("projects.new");
+	const tc = useT("projects.common");
 
 	const onClose = () => {
 		setNewProjectModalVisible(false);
@@ -44,13 +48,13 @@ export default function NewProjectModal() {
 		<CustomModal
 			open={newProjectModalVisible}
 			onClose={onClose}
-			title="Nouveau projet"
+			title={t("title")}
 			width={960}
 			sx={{ maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto" }}
 		>
 			<Box display="flex" flexDirection="column" gap={2}>
 				<Typography variant="body2" color="text.secondary">
-					{`Choisissez un point de départ pour votre projet.`}
+					{t("chooseStartingPoint")}
 				</Typography>
 
 				{/* Projet vide */}
@@ -66,9 +70,9 @@ export default function NewProjectModal() {
 							<Typography
 								variant="subtitle1"
 								fontWeight={600}
-							>{`Projet vide`}</Typography>
+							>{t("emptyProject")}</Typography>
 							<Typography variant="body2" color="text.secondary">
-								{`Démarre avec un projet sans variable ni interface HMI.`}
+								{t("emptyProjectDescription")}
 							</Typography>
 						</CardContent>
 					</CardActionArea>
@@ -78,7 +82,7 @@ export default function NewProjectModal() {
 					<>
 						<Divider>
 							<Typography variant="caption" color="text.secondary">
-								{`Maquettes`}
+								{t("templates")}
 							</Typography>
 						</Divider>
 
@@ -113,10 +117,10 @@ export default function NewProjectModal() {
 										>
 											<CardContent>
 												<Typography variant="subtitle1" fontWeight={600}>
-													{template.label}
+													{tTemplates(`${template.id}.label`)}
 												</Typography>
 												<Typography variant="body2" color="text.secondary">
-													{template.description}
+													{tTemplates(`${template.id}.description`)}
 												</Typography>
 												{template.solution && (
 													<Typography
@@ -128,7 +132,7 @@ export default function NewProjectModal() {
 															mt: 0.5,
 														}}
 													>
-														{`Une solution est disponible.`}
+														{t("solutionAvailable")}
 													</Typography>
 												)}
 											</CardContent>
@@ -142,16 +146,16 @@ export default function NewProjectModal() {
 
 				<Box display="flex" justifyContent="flex-end" gap={1} mt={1}>
 					<Button variant="outlined" onClick={onClose}>
-						{`Annuler`}
+						{tc("cancel")}
 					</Button>
 					{selected !== null &&
-						PROJECT_TEMPLATES.find((t) => t.id === selected)?.solution && (
+						PROJECT_TEMPLATES.find((tpl) => tpl.id === selected)?.solution && (
 							<Button variant="outlined" onClick={() => onConfirm("solution")}>
-								{`Ouvrir la solution`}
+								{t("openSolution")}
 							</Button>
 						)}
 					<Button variant="contained" onClick={() => onConfirm("exercise")}>
-						{`Créer`}
+						{t("create")}
 					</Button>
 				</Box>
 			</Box>

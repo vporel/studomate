@@ -1,0 +1,76 @@
+{
+	"titles": {
+		"preferences": "Préférences",
+		"projectProperties": "Propriétés du projet",
+		"exercise": "Énoncé de l'exercice",
+		"projectStartup": "Démarrage",
+		"inputVariables": "Variables d'entrée",
+		"outputVariables": "Variables de sortie",
+		"memoryVariables": "Variables de mémoire"
+	},
+	"tabBar": {
+		"ariaLabel": "Onglets ouverts",
+		"close": "Fermer",
+		"closeAria": "Fermer l'onglet"
+	},
+	"properties": {
+		"heading": "Propriétés du projet",
+		"name": "Nom",
+		"author": "Auteur",
+		"expressionLanguage": "Langage des expressions",
+		"expressionLanguageHelper": "Les expressions déjà écrites sont traduites automatiquement.",
+		"dialectFr": "Français — ET, OU, NON, VRAI, FAUX",
+		"dialectEn": "Anglais — AND, OR, NOT, TRUE, FALSE",
+		"exerciseField": "Énoncé de l'exercice",
+		"exerciseFieldHelper": "Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice."
+	},
+	"exercise": {
+		"heading": "Énoncé de l'exercice",
+		"empty": "Ce projet n'a pas encore d'énoncé. L'énoncé se rédige dans les propriétés du projet.",
+		"openProperties": "Ouvrir les propriétés du projet"
+	},
+	"startup": {
+		"variables": "Variables",
+		"programs": "Programmes",
+		"noPrograms": "Vous n'avez pas encore de programme.",
+		"actions": "Actions",
+		"newGrafcet": "Nouveau grafcet",
+		"newLadder": "Nouveau ladder"
+	},
+	"variablesGrid": {
+		"toolbar": {
+			"delete": "Supprimer",
+			"deleteSelectedAria": "Supprimer les variables sélectionnées",
+			"filters": "Filtres",
+			"export": "Exporter",
+			"print": "Imprimer",
+			"exportCsv": "Exporter en CSV",
+			"search": "Rechercher",
+			"searchPlaceholder": "Rechercher...",
+			"clearSearch": "Effacer la recherche"
+		},
+		"columns": {
+			"mnemonic": "Mnémonique",
+			"type": "Type",
+			"address": "Adresse",
+			"comment": "Commentaire"
+		},
+		"errors": {
+			"mnemonicExists": "Ce mnémonique existe déjà",
+			"addressExists": "Cette adresse existe déjà"
+		},
+		"selectorPlaceholder": "?"
+	},
+	"watchTables": {
+		"heading": "Tables de visualisation",
+		"close": "Fermer",
+		"inputs": "Entrées",
+		"outputs": "Sorties",
+		"memories": "Mémoires"
+	},
+	"noPage": {
+		"openProject": "Ouvrir un projet",
+		"saveProject": "Enregistrer le projet",
+		"newGrafcet": "Nouveau grafcet"
+	}
+}

@@ -1,0 +1,102 @@
+{
+	"toolbar": {
+		"contactNO": "Normally open contact (NO)",
+		"contactNF": "Normally closed contact (NC)",
+		"contactP": "Rising-edge detection contact (P)",
+		"contactN": "Falling-edge detection contact (N)",
+		"coilNormal": "Normal coil",
+		"coilSet": "Set coil (latch to 1)",
+		"coilReset": "Reset coil (latch to 0)",
+		"addSection": "Section"
+	},
+	"systemBlocks": {
+		"timerLabel": "Timer",
+		"counterLabel": "Counter",
+		"compareLabel": "Comparison",
+		"assignLabel": "Assignment",
+		"arithmeticLabel": "Calculation",
+		"compareToolbarLabel": "Compare block — compares two values",
+		"assignToolbarLabel": "Assign block — assigns a value to a variable",
+		"arithmeticToolbarLabel": "Calc block — arithmetic operation"
+	},
+	"sectionHeader": {
+		"reorderAria": "Reorder the section",
+		"expand": "Expand",
+		"collapse": "Collapse",
+		"expandAria": "Expand the section",
+		"collapseAria": "Collapse the section",
+		"number": "Section {number}:",
+		"titleAria": "Section title",
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out",
+		"zoomInAria": "Zoom in on the section",
+		"zoomOutAria": "Zoom out of the section",
+		"copy": "Copy",
+		"copyAria": "Copy the section",
+		"duplicate": "Duplicate",
+		"duplicateAria": "Duplicate the section",
+		"delete": "Delete",
+		"deleteAria": "Delete the section"
+	},
+	"sectionDescription": {
+		"placeholder": "Description (optional)…",
+		"aria": "Section description"
+	},
+	"contextMenu": {
+		"selectAll": "Select all",
+		"selectEdges": "Select links",
+		"paste": "Paste",
+		"type": "Type",
+		"contactNO": "Normally open (NO)",
+		"contactNF": "Normally closed (NC)",
+		"contactP": "Rising edge (P)",
+		"contactN": "Falling edge (N)",
+		"coilNormal": "Normal coil",
+		"coilSet": "Set coil (latch to 1)",
+		"coilReset": "Reset coil (latch to 0)",
+		"copy": "Copy",
+		"cut": "Cut",
+		"delete": "Delete"
+	},
+	"block": {
+		"nameAria": "Block name",
+		"nameTaken": "This name is already used by a variable or another block in the project.",
+		"compareOperatorAria": "Comparison operator",
+		"timerVariantAria": "Timer variant",
+		"counterVariantAria": "Counter variant",
+		"arithmeticOperatorAria": "Block operator",
+		"assignStaticLabel": "Assign",
+		"arithmeticStaticLabel": "Calc"
+	},
+	"timerDialog": {
+		"createTitle": "New timer",
+		"editTitle": "Edit timer",
+		"name": "Name",
+		"variant": "Variant",
+		"typeTON": "TON — on-delay",
+		"typeTOF": "TOF — off-delay",
+		"typeTP": "TP — calibrated pulse",
+		"create": "Create",
+		"save": "Save"
+	},
+	"counterDialog": {
+		"createTitle": "New counter",
+		"editTitle": "Edit counter",
+		"name": "Name",
+		"variant": "Variant",
+		"typeCTU": "CTU — counts up",
+		"typeCTD": "CTD — counts down",
+		"note": "Unlike a timer, this counter evaluates its input on every scan (no edge detection): it counts as long as the input stays true, without stopping at the preset value.",
+		"create": "Create",
+		"save": "Save"
+	},
+	"reorder": {
+		"instructions": "To reorder a section: Space or Enter to grab it, up and down arrows to move it, Space or Enter to drop it, Esc to cancel.",
+		"grabbed": "Section {position} grabbed.",
+		"moved": "Section {position} moved to position {over}.",
+		"outside": "Section {position} is no longer over a drop zone.",
+		"dropped": "Section dropped at position {over}.",
+		"droppedInitial": "Section {position} dropped at its initial position.",
+		"cancelled": "Move cancelled. Section {position} returned to its initial position."
+	}
+}

@@ -50,19 +50,13 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 					"error",
 					"JUNCTION_PIVOT_NOT_CONNECTED",
 					source,
-					"Le pivot n'est connecté à aucun élément.",
 				),
 			);
 		}
 
 		if (junctionOrStart.data.branchesOrder.length < 2) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"JUNCTION_OR_MIN_BRANCHES",
-					source,
-					"Une divergence en OU doit avoir au moins deux branches.",
-				),
+				new ProjectAnalyserIssue("error", "JUNCTION_OR_MIN_BRANCHES", source),
 			);
 		}
 
@@ -72,7 +66,6 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 					"error",
 					"JUNCTION_BRANCH_NOT_CONNECTED",
 					source,
-					"Certaines branches ne sont connectées à aucun élément.",
 				),
 			);
 			return issues;
@@ -98,7 +91,6 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 						"error",
 						"JUNCTION_OR_START_BRANCH_NOT_TRANSITION",
 						source,
-						"Une divergence en OU doit distribuer vers des transitions.",
 					),
 				);
 				continue;
@@ -186,7 +178,7 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 							"error",
 							"JUNCTION_OR_START_BRANCHES_NOT_EXCLUSIVE",
 							source,
-							`Les réceptivités des transitions "${a.expression}" et "${b.expression}" ne sont pas mutuellement exclusives : plusieurs branches de la divergence en OU pourraient être franchies simultanément.`,
+							{ expressionA: a.expression, expressionB: b.expression },
 						),
 					);
 				}

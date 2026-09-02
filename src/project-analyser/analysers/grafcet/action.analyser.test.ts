@@ -38,7 +38,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const emptyExprIssue = issues.find((i) =>
-				i.message.includes("pas d'expression"),
+				i.code === "ACTION_EMPTY_EXPRESSION",
 			);
 			expect(emptyExprIssue).toBeDefined();
 			expect(emptyExprIssue?.severity).toBe("warning");
@@ -55,7 +55,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const identifierIssue = issues.find((i) =>
-				i.message.includes("simple référence"),
+				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 			);
 			expect(identifierIssue).toBeDefined();
 			expect(identifierIssue?.severity).toBe("error");
@@ -72,7 +72,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const identifierIssues = issues.filter((i) =>
-				i.message.includes("simple référence"),
+				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 			);
 			expect(identifierIssues).toHaveLength(0);
 		});
@@ -87,7 +87,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssue = issues.find((i) => i.message.includes("affectation"));
+			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -103,7 +103,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const assignIssues = issues.filter((i) =>
-				i.message.includes("affectation"),
+				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
 			);
 			expect(assignIssues).toHaveLength(0);
 		});
@@ -118,7 +118,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssue = issues.find((i) => i.message.includes("affectation"));
+			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -134,7 +134,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const assignIssues = issues.filter((i) =>
-				i.message.includes("affectation"),
+				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
 			);
 			expect(assignIssues).toHaveLength(0);
 		});
@@ -150,7 +150,7 @@ describe("ActionAnalyser", () => {
 			const issues = analyser.analyseIsolated(action);
 
 			const modeIssue = issues.find((i) =>
-				i.message.includes("mode d'exécution"),
+				i.code === "ACTION_INCOMPATIBLE_EXECUTION_MODE",
 			);
 			expect(modeIssue).toBeDefined();
 			expect(modeIssue?.severity).toBe("error");
@@ -205,7 +205,7 @@ describe("ActionAnalyser", () => {
 			);
 
 			const connectionIssue = issues.find((i) =>
-				i.message.includes("connectée à aucune étape"),
+				i.code === "ACTION_NOT_CONNECTED_TO_STEP",
 			);
 			expect(connectionIssue).toBeDefined();
 			expect(connectionIssue?.severity).toBe("error");
@@ -266,7 +266,7 @@ describe("ActionAnalyser", () => {
 				analyserEnvironment([boolVar]),
 			);
 
-			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
+			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
 			expect(typeIssue).toBeDefined();
 		});
 
@@ -303,7 +303,7 @@ describe("ActionAnalyser", () => {
 			);
 
 			const typeIssues = issues.filter((i) =>
-				i.message.includes("incompatible"),
+				(i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH"),
 			);
 			expect(typeIssues).toHaveLength(0);
 		});
@@ -341,7 +341,7 @@ describe("ActionAnalyser", () => {
 			);
 
 			const divisionIssue = issues.find((i) =>
-				i.message.includes("Division par zéro"),
+				i.code === "ACTION_INVALID_EXPRESSION",
 			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
@@ -379,7 +379,7 @@ describe("ActionAnalyser", () => {
 				analyserEnvironment([intVar]),
 			);
 
-			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
+			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
 			expect(typeIssue).toBeDefined();
 		});
 

@@ -17,7 +17,9 @@ import LadderIcon from "../icons/LadderIcon";
 import VariablesIcon from "../icons/VariablesIcon";
 import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
+import { useT } from "@/ui/i18n/useT";
 import Page from "./Page";
+import { usePageTitle } from "./usePageTitle";
 import { getVariablesPageData, VariablesPageId } from "./VariablesPage";
 
 export const PROJECT_STARTUP_PAGE_ID = "project-startup";
@@ -28,6 +30,8 @@ export const PROJECT_STARTUP_PAGE_DATA: PageData = {
 };
 
 function VariblesPagesList() {
+	const t = useT("pages.startup");
+	const pageTitle = usePageTitle();
 	const pagedsIds: VariablesPageId[] = [
 		"input-variables",
 		"output-variables",
@@ -39,7 +43,7 @@ function VariblesPagesList() {
 	return (
 		<>
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 2 }}>
-				Variables
+				{t("variables")}
 			</Typography>
 			{pagesData.map((pageData) => (
 				<MenuItem
@@ -55,7 +59,13 @@ function VariblesPagesList() {
 					<ListItemIcon>
 						<VariablesIcon />
 					</ListItemIcon>
-					<ListItemText>{pageData.title}</ListItemText>
+					<ListItemText>
+						{pageTitle({
+							id: pageData.id,
+							type: "variables",
+							title: pageData.title,
+						})}
+					</ListItemText>
 				</MenuItem>
 			))}
 		</>
@@ -63,6 +73,7 @@ function VariblesPagesList() {
 }
 
 function ProgramsList() {
+	const t = useT("pages.startup");
 	const programs = useProjectPrograms();
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
@@ -73,11 +84,11 @@ function ProgramsList() {
 				color="rgb(80, 80, 80)"
 				sx={{ marginBottom: 1, mt: 2 }}
 			>
-				Programmes
+				{t("programs")}
 			</Typography>
 			{programs.length === 0 && (
 				<Typography color="rgb(80, 80, 80)">
-					Vous n&apos;avez pas encore de programme.
+					{t("noPrograms")}
 				</Typography>
 			)}
 			{programs.map((program) => (
@@ -106,12 +117,13 @@ function ProgramsList() {
 }
 
 function Actions() {
+	const t = useT("pages.startup");
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	return (
 		<>
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1 }}>
-				Actions
+				{t("actions")}
 			</Typography>
 			<MenuItem
 				onClick={() => {
@@ -122,7 +134,7 @@ function Actions() {
 					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
 				</ListItemIcon>
 				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
-					Nouveau grafcet
+					{t("newGrafcet")}
 				</ListItemText>
 			</MenuItem>
 			<MenuItem
@@ -134,7 +146,7 @@ function Actions() {
 					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
 				</ListItemIcon>
 				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
-					Nouveau ladder
+					{t("newLadder")}
 				</ListItemText>
 			</MenuItem>
 		</>

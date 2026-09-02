@@ -5,11 +5,13 @@ import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, IconButton, Modal, Paper, Tooltip, Typography } from "@mui/material";
 import HmiWidgetEventsPanel from "./HmiWidgetEventsPanel";
+import { useT } from "@/ui/i18n/useT";
 
 /** Pane flottant affichant les événements du widget sélectionné — même principe que
  * `HmiWidgetAnimationsPane` (ouvert depuis `HmiWidgetPropertiesPanel`, visibilité portée par le
  * store). Pas d'onglets ici : un seul contenu, la liste des événements du widget. */
 const HmiWidgetEventsPane = ({ widget }: { widget: HmiWidget }) => {
+	const t = useT("hmiEditor.panel");
 	const visible = useHmiStore((s) => s.eventsPaneVisible);
 	const close = useHmiStore((s) => s.closeEventsPane);
 
@@ -40,9 +42,9 @@ const HmiWidgetEventsPane = ({ widget }: { widget: HmiWidget }) => {
 						borderBottom: "1px solid #e0e0e0",
 					}}
 				>
-					<Typography variant="h6">Événements | {widget.name}</Typography>
-					<Tooltip title="Fermer">
-						<IconButton size="small" onClick={close} aria-label="Fermer">
+					<Typography variant="h6">{t("eventsHeading", { name: widget.name })}</Typography>
+					<Tooltip title={t("close")}>
+						<IconButton size="small" onClick={close} aria-label={t("close")}>
 							<CloseIcon fontSize="small" />
 						</IconButton>
 					</Tooltip>

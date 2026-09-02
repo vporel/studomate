@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import Section from "@/schemas/ladder/section.schema";
 import SectionReorderCommand from "@/schemas/ladder/commands/section-reorder.command";
 import { useLadderStore } from "../context/LadderContext";
@@ -44,7 +45,7 @@ describe("LadderFlow", () => {
 			}),
 		);
 
-		render(<LadderFlow />);
+		renderWithI18n(<LadderFlow />);
 
 		const rendered = screen
 			.getAllByTestId("ladder-section")
@@ -60,7 +61,7 @@ describe("LadderFlow", () => {
 			}),
 		);
 
-		render(<LadderFlow />);
+		renderWithI18n(<LadderFlow />);
 
 		expect(screen.queryByTestId("ladder-section")).not.toBeInTheDocument();
 	});
@@ -78,7 +79,7 @@ describe("LadderFlow", () => {
 				commandsStackManager: { executeOperation },
 			}),
 		);
-		render(<LadderFlow />);
+		renderWithI18n(<LadderFlow />);
 
 		capturedOnDragEnd!({ active: { id: "s1" }, over: { id: "s3" } });
 
@@ -99,7 +100,7 @@ describe("LadderFlow", () => {
 				commandsStackManager: { executeOperation: jest.fn() },
 			}),
 		);
-		render(<LadderFlow />);
+		renderWithI18n(<LadderFlow />);
 
 		expect(
 			capturedProps.sensors.some((s: any) => s.sensor === KeyboardSensor),
@@ -120,7 +121,7 @@ describe("LadderFlow", () => {
 				commandsStackManager: { executeOperation },
 			}),
 		);
-		render(<LadderFlow />);
+		renderWithI18n(<LadderFlow />);
 
 		capturedOnDragEnd!({ active: { id: "s1" }, over: { id: "s1" } });
 		capturedOnDragEnd!({ active: { id: "s1" }, over: null });

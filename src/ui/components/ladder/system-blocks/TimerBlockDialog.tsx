@@ -4,15 +4,16 @@ import { TIMER_TYPES, TimerType } from "@/schemas/ladder/function-blocks/timer.s
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import CustomModal from "@/ui/lib/mui/CustomModal";
+import { useT } from "@/ui/i18n/useT";
 import { Button, MenuItem, TextField } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useBlockNameField } from "./useBlockNameField";
 import { useSystemBlockDialog } from "./useSystemBlockDialog";
 
-const TIMER_TYPE_LABELS: Record<TimerType, string> = {
-	TON: "TON — retard à l'enclenchement",
-	TOF: "TOF — retard au déclenchement",
-	TP: "TP — impulsion calibrée",
+const TIMER_TYPE_KEYS: Record<TimerType, string> = {
+	TON: "typeTON",
+	TOF: "typeTOF",
+	TP: "typeTP",
 };
 
 /**
@@ -35,6 +36,7 @@ export default function TimerBlockDialog() {
 		commandsStackManager,
 	} = useSystemBlockDialog("timer");
 	const project = useProjectStore((state) => state.project);
+	const t = useT("ladderEditor.timerDialog");
 
 	const [name, setName] = useState("");
 	const [timerType, setTimerType] = useState<TimerType>("TON");
@@ -94,12 +96,12 @@ export default function TimerBlockDialog() {
 		<CustomModal
 			open={open}
 			onClose={onClose}
-			title={editing ? "Modifier la temporisation" : "Nouvelle temporisation"}
+			title={editing ? t("editTitle") : t("createTitle")}
 			width={400}
 		>
 			<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 				<TextField
-					label="Nom"
+					label={t("name")}
 					autoFocus
 					slotProps={{ inputLabel: { shrink: true } }}
 					value={name}
@@ -112,19 +114,19 @@ export default function TimerBlockDialog() {
 				/>
 				<TextField
 					select
-					label="Variante"
+					label={t("variant")}
 					value={timerType}
 					onChange={(e) => setTimerType(e.target.value as TimerType)}
 				>
 					{TIMER_TYPES.map((type) => (
 						<MenuItem key={type} value={type}>
-							{TIMER_TYPE_LABELS[type]}
+							{t(TIMER_TYPE_KEYS[type] as never)}
 						</MenuItem>
 					))}
 				</TextField>
 				<div style={{ display: "flex", justifyContent: "flex-end" }}>
 					<Button variant="contained" onClick={onSubmit} disabled={!canSubmit}>
-						{editing ? "Enregistrer" : "Créer"}
+						{editing ? t("save") : t("create")}
 					</Button>
 				</div>
 			</div>

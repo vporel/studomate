@@ -1,3 +1,4 @@
+import { identityT } from "@tests/utils/i18n";
 import paneContextMenuItems from "./pane-context-menu-items";
 
 function fakeViewManager(nodes: unknown[], edges: unknown[]): any {
@@ -13,7 +14,7 @@ const fakeCopyCutPasteManager = () => ({ pasteElements: jest.fn() }) as any;
 const SCREEN_POSITION = { x: 12, y: 34 };
 
 function items(viewManager: any, canPaste = false, ccp = fakeCopyCutPasteManager()) {
-	return paneContextMenuItems(viewManager, ccp, SCREEN_POSITION, canPaste);
+	return paneContextMenuItems(viewManager, ccp, SCREEN_POSITION, canPaste, identityT);
 }
 
 describe("paneContextMenuItems", () => {

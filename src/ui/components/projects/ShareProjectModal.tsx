@@ -2,6 +2,7 @@
 
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { useProjectStore } from "./ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 import {
 	Alert,
 	Box,
@@ -43,6 +44,7 @@ export default function ShareProjectModal() {
 		})),
 	);
 
+	const t = useT("projects.share");
 	const [copied, setCopied] = useState(false);
 
 	const shareUrl = shareToken ? buildShareUrl(shareToken) : "";
@@ -69,29 +71,28 @@ export default function ShareProjectModal() {
 		<CustomModal
 			open={shareModalVisible}
 			onClose={onClose}
-			title="Partager le projet"
+			title={t("title")}
 			width={520}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 				{shareToken ? (
 					<>
 						<Alert severity="success">
-							Le projet est partagé. Toute personne disposant du lien peut le
-							consulter et le simuler.
+							{t("sharedAlert")}
 						</Alert>
 
 						<TextField
-							label="Lien de partage"
+							label={t("linkLabel")}
 							value={shareUrl}
 							InputProps={{
 								readOnly: true,
 								endAdornment: (
 									<InputAdornment position="end">
-										<Tooltip title="Copier">
+										<Tooltip title={t("copy")}>
 											<IconButton
 												onClick={onCopy}
 												edge="end"
-												aria-label="Copier le lien"
+												aria-label={t("copyLinkAria")}
 											>
 												<CopyIcon />
 											</IconButton>
@@ -104,7 +105,7 @@ export default function ShareProjectModal() {
 
 						{copied && (
 							<Typography variant="caption" color="success.main">
-								Lien copié dans le presse-papier.
+								{t("copied")}
 							</Typography>
 						)}
 
@@ -113,7 +114,7 @@ export default function ShareProjectModal() {
 						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 							<RevokeIcon fontSize="small" color="error" />
 							<Typography variant="body2" color="text.secondary" flex={1}>
-								Révoquer le lien rend le partage inaccessible immédiatement.
+								{t("revokeHint")}
 							</Typography>
 							<Button
 								variant="outlined"
@@ -121,19 +122,19 @@ export default function ShareProjectModal() {
 								size="small"
 								onClick={onRevoke}
 							>
-								Révoquer
+								{t("revoke")}
 							</Button>
 						</Box>
 					</>
 				) : (
 					<Typography color="text.secondary">
-						Aucun lien de partage actif pour ce projet.
+						{t("noActiveLink")}
 					</Typography>
 				)}
 
 				<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
 					<Button variant="contained" onClick={onClose}>
-						Fermer
+						{t("close")}
 					</Button>
 				</Box>
 			</Box>

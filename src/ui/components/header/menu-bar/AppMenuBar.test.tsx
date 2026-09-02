@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import type { AppMenuType } from "./app-menu-bar";
 
 const makeMenu = (id: string, label: string): AppMenuType => ({
@@ -36,7 +37,7 @@ const title = (name: string) =>
 
 describe("AppMenuBar — navigation clavier", () => {
 	it("rend une barre de menus dont les titres sont accessibles", () => {
-		render(<AppMenuBar />);
+		renderWithI18n(<AppMenuBar />);
 		expect(
 			screen.getByRole("menubar", { name: "Menu principal" }),
 		).toBeInTheDocument();
@@ -44,13 +45,13 @@ describe("AppMenuBar — navigation clavier", () => {
 	});
 
 	it("un seul titre est tabbable (roving tabindex)", () => {
-		render(<AppMenuBar />);
+		renderWithI18n(<AppMenuBar />);
 		expect(title("Fichier")).toHaveAttribute("tabindex", "0");
 		expect(title("Édition")).toHaveAttribute("tabindex", "-1");
 	});
 
 	it("les flèches déplacent le focus entre titres, avec bouclage", () => {
-		render(<AppMenuBar />);
+		renderWithI18n(<AppMenuBar />);
 		title("Fichier").focus();
 
 		fireEvent.keyDown(title("Fichier"), { key: "ArrowRight" });
@@ -67,7 +68,7 @@ describe("AppMenuBar — navigation clavier", () => {
 	});
 
 	it("Entrée ouvre le menu, Échap le ferme et rend le focus au titre", async () => {
-		render(<AppMenuBar />);
+		renderWithI18n(<AppMenuBar />);
 		const fichier = title("Fichier");
 		fichier.focus();
 
@@ -83,7 +84,7 @@ describe("AppMenuBar — navigation clavier", () => {
 	});
 
 	it("ArrowDown ouvre aussi le menu", async () => {
-		render(<AppMenuBar />);
+		renderWithI18n(<AppMenuBar />);
 		title("Aide").focus();
 
 		fireEvent.keyDown(title("Aide"), { key: "ArrowDown" });

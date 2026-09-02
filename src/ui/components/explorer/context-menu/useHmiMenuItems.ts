@@ -4,6 +4,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
+import { useT } from "@/ui/i18n/useT";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useHmiMenuItems(): (
@@ -15,12 +16,15 @@ export default function useHmiMenuItems(): (
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
 
+	const t = useT("explorer.menu");
+	const tc = useT("explorer.confirmDelete");
+
 	return useCallback(
 		(hmiPageId: string) => {
 			return [
 				[
 					{
-						label: "Ouvrir",
+						label: t("open"),
 						onClick: () => {
 							const page = hmiManager.getHmiPageOrThrow(hmiPageId);
 							pagesManager.openPage({
@@ -33,18 +37,18 @@ export default function useHmiMenuItems(): (
 				],
 				[
 					{
-						label: "Renommer",
+						label: t("rename"),
 						disabled: !designing,
 						onClick: () =>
 							explorerContextMenuEventsOut.emit("hmi-rename", { hmiPageId }),
 						shortcut: "F2",
 					},
 					{
-						label: "Supprimer",
+						label: t("delete"),
 						disabled: !designing,
 						onClick: () => {
 							if (
-								confirm("Êtes-vous sûr de vouloir supprimer cette page HMI ?")
+								confirm(tc("hmiPage"))
 							) {
 								hmiManager.deleteHmiPage(hmiPageId);
 							}
@@ -53,6 +57,6 @@ export default function useHmiMenuItems(): (
 				],
 			];
 		},
-		[hmiManager, pagesManager, designing],
+		[hmiManager, pagesManager, designing, t, tc],
 	);
 }

@@ -2,6 +2,7 @@
 
 import { PageData } from "@/ui/stores/project/project.store";
 import { Dialect } from "@/expression-language/dialect.enum";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
@@ -57,12 +58,13 @@ const ExerciseStatementField = ({
 	value: string;
 	onSave: (value: string) => void;
 }) => {
+	const t = useT("pages.properties");
 	const [editingValue, setEditingValue] = useState<string>(value);
 	useEffect(() => setEditingValue(value), [value]);
 
 	return (
 		<TextField
-			label="Énoncé de l'exercice"
+			label={t("exerciseField")}
 			size="small"
 			fullWidth
 			multiline
@@ -73,12 +75,13 @@ const ExerciseStatementField = ({
 			value={editingValue}
 			onChange={(e) => setEditingValue(e.target.value)}
 			onBlur={() => onSave(editingValue)}
-			helperText="Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice."
+			helperText={t("exerciseFieldHelper")}
 		/>
 	);
 };
 
 const ProjectPropertiesPage = () => {
+	const t = useT("pages.properties");
 	const {
 		name,
 		author,
@@ -112,18 +115,18 @@ const ProjectPropertiesPage = () => {
 					width: 800,
 				}}
 			>
-				<Typography variant="h2">Propriétés du projet</Typography>
+				<Typography variant="h2">{t("heading")}</Typography>
 				<Grid container spacing={2} sx={{ mt: 3, mb: 2 }}>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyTextField
-							label="Nom"
+							label={t("name")}
 							value={name}
 							onSave={changeProjectName}
 						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<PropertyTextField
-							label="Auteur"
+							label={t("author")}
 							value={author}
 							onSave={changeProjectAuthor}
 						/>
@@ -131,7 +134,7 @@ const ProjectPropertiesPage = () => {
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<TextField
 							select
-							label="Langage des expressions"
+							label={t("expressionLanguage")}
 							fullWidth
 							size="small"
 							sx={whiteFieldSx}
@@ -140,14 +143,10 @@ const ProjectPropertiesPage = () => {
 							onChange={(e) =>
 								changeProjectDialect(Number(e.target.value) as Dialect)
 							}
-							helperText="Les expressions déjà écrites sont traduites automatiquement."
+							helperText={t("expressionLanguageHelper")}
 						>
-							<MenuItem value={Dialect.FR}>
-								Français — ET, OU, NON, VRAI, FAUX
-							</MenuItem>
-							<MenuItem value={Dialect.EN}>
-								Anglais — AND, OR, NOT, TRUE, FALSE
-							</MenuItem>
+							<MenuItem value={Dialect.FR}>{t("dialectFr")}</MenuItem>
+							<MenuItem value={Dialect.EN}>{t("dialectEn")}</MenuItem>
 						</TextField>
 					</Grid>
 				</Grid>

@@ -40,7 +40,7 @@ export default class TimerBlockAnalyser {
 					"error",
 					"BLOCK_TIMER_NAME_INVALID",
 					source,
-					`Le nom "${name}" de ce bloc tempo n'est pas valide.`,
+					{ blockName: name },
 				),
 			);
 		}
@@ -88,12 +88,7 @@ export default class TimerBlockAnalyser {
 			case "empty":
 				if (!codes.empty) return []; // ET est optionnel
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						codes.empty,
-						source,
-						`Le paramètre ${pinName} de ce bloc doit être renseignée.`,
-					),
+					new ProjectAnalyserIssue("error", codes.empty, source, { pinName }),
 				];
 			case "literal":
 				return [];
@@ -104,7 +99,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.invalidConstant,
 						source,
-						`"${pin}" n'est pas une constante TIME valide (ex. T#5s, T#1h30m).`,
+						{ value: pin },
 					),
 				];
 			case "undeclared":
@@ -113,7 +108,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.undeclaredVariable,
 						source,
-						`La variable "${pin}" référencée par le paramètre ${pinName} de ce bloc n'existe pas.`,
+						{ variableName: pin, pinName },
 					),
 				];
 			case "invalid-type":
@@ -122,7 +117,7 @@ export default class TimerBlockAnalyser {
 						"error",
 						codes.invalidType,
 						source,
-						`La variable "${pin}" référencée par le paramètre ${pinName} de ce bloc doit être numérique ou TIME.`,
+						{ variableName: pin, pinName },
 					),
 				];
 			case "ok":
