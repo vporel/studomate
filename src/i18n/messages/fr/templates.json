@@ -18,5 +18,9 @@
 	"parking": {
 		"label": "Parking à barrière",
 		"description": "Barrière + compteur de places : entrées/sorties par boutons, voyant « complet », jauge et affichage d'occupation. À programmer."
+	},
+	"carton-sorting": {
+		"label": "Poste de tri de caisses",
+		"description": "Tri de caisses par hauteur : détection au poste, aiguillage par trois vérins vers deux tapis de sortie, comptage. Modèle de partie opérative fourni. À programmer."
 	}
 }

@@ -28,7 +28,7 @@ import {
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
-	getFlowDimensions,
+	GRAFCET_PAGE_DIMENSIONS,
 	grafcetConnectionFromXYFlowConnectionOrEdge,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import {
@@ -420,7 +420,7 @@ export default class GrafcetWorkflowManager {
 		if (!element) throw new Error("Element with id " + nodeId + " not found");
 		if (!JUNCTION_TYPES.includes(element.type as any))
 			throw new Error("Element with id " + nodeId + " is not a junction");
-		const pageWidth = getFlowDimensions(grafcet.format).width;
+		const pageWidth = GRAFCET_PAGE_DIMENSIONS.width;
 		const result = computeBranchInsertion(
 			element.data,
 			element.size.width,

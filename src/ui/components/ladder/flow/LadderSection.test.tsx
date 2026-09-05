@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { act } from "react";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { ReactFlowProvider } from "@xyflow/react";
@@ -44,9 +45,26 @@ class ResizeObserverStub {
 }
 (global as any).ResizeObserver = ResizeObserverStub;
 
+type IoCallback = (entries: { isIntersecting: boolean }[]) => void;
+class IntersectionObserverStub {
+	static instances: IntersectionObserverStub[] = [];
+	callback: IoCallback;
+	constructor(callback: IoCallback) {
+		this.callback = callback;
+		IntersectionObserverStub.instances.push(this);
+	}
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+	trigger(isIntersecting: boolean) {
+		this.callback([{ isIntersecting }]);
+	}
+}
+
 function setup({
 	mode = ProjectMode.DESIGN,
 	highlightedNodesIds = [] as string[],
+	activeSectionId = null as string | null,
 	section = new Section("s1", "Ma section", ""),
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
@@ -71,6 +89,7 @@ function setup({
 			nodesBySectionId: { s1: [] },
 			edgesBySectionId: { s1: [] },
 			highlightedNodesIds,
+			activeSectionId,
 			setActiveSectionId: jest.fn(),
 			selectedSectionIds: [],
 			commandsStackManager: { executeOperation: jest.fn() },
@@ -179,5 +198,54 @@ describe("LadderSection", () => {
 		rerenderWith([contact.id]);
 
 		expect(screen.getByLabelText("Replier la section")).toBeInTheDocument();
+	});
+
+	describe("virtualisation du canvas (montage à l'approche du viewport)", () => {
+		const realIo = (global as any).IntersectionObserver;
+		beforeEach(() => {
+			IntersectionObserverStub.instances.length = 0;
+			(global as any).IntersectionObserver = IntersectionObserverStub;
+		});
+		afterEach(() => {
+			(global as any).IntersectionObserver = realIo;
+		});
+
+		it("ne monte pas React Flow tant que la section n'a pas approché le viewport", () => {
+			setup();
+			expect(reactFlowProps.length).toBe(0);
+		});
+
+		it("monte React Flow quand la section entre dans le viewport, et le garde monté ensuite", () => {
+			setup();
+			act(() => IntersectionObserverStub.instances[0].trigger(true));
+			expect(reactFlowProps.length).toBeGreaterThan(0);
+
+			act(() => IntersectionObserverStub.instances[0]?.trigger(false));
+			expect(reactFlowProps.at(-1)).toBeDefined();
+		});
+
+		it("remonte React Flow après un cycle repli / dépliage", () => {
+			setup();
+			act(() => IntersectionObserverStub.instances[0].trigger(true));
+			const countAfterMount = reactFlowProps.length;
+			expect(countAfterMount).toBeGreaterThan(0);
+
+			fireEvent.click(screen.getByLabelText("Replier la section"));
+			fireEvent.click(screen.getByLabelText("Déplier la section"));
+
+			expect(reactFlowProps.length).toBeGreaterThan(countAfterMount);
+		});
+
+		it("monte React Flow d'emblée si la section est active", () => {
+			setup({ activeSectionId: "s1" });
+			expect(reactFlowProps.length).toBeGreaterThan(0);
+		});
+
+		it("monte React Flow d'emblée si un élément de la section est surligné", () => {
+			const contact = createContactElement("A", "NO", 0, 0);
+			const section = new Section("s1", "Ma section", "", [contact]);
+			setup({ section, highlightedNodesIds: [contact.id] });
+			expect(reactFlowProps.length).toBeGreaterThan(0);
+		});
 	});
 });

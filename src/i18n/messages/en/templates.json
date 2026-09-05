@@ -18,5 +18,9 @@
 	"parking": {
 		"label": "Barrier car park",
 		"description": "Barrier + space counter: entries/exits via buttons, \"full\" indicator, gauge and occupancy display. To be programmed."
+	},
+	"carton-sorting": {
+		"label": "Carton sorting station",
+		"description": "Sorting cartons by height: detection at the post, routing by three cylinders to two output conveyors, counting. Plant model provided. To be programmed."
 	}
 }

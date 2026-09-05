@@ -1,6 +1,5 @@
 /** @jest-environment jsdom */
 import Grafcet, {
-	DEFAULT_GRAFCET_FORMAT,
 } from "@/schemas/grafcet/grafcet.schema";
 import Project, {
 	DEFAULT_PROJECT_NAME,
@@ -387,7 +386,7 @@ describe("ProjectLifecycleManager", () => {
 			it("rouvre les onglets et la page active mémorisés en session (localStorage)", async () => {
 				const store = createProjectStore();
 				const project = new Project("p1", "Projet", "Author");
-				const grafcet = new Grafcet("g1", "Mon grafcet", DEFAULT_GRAFCET_FORMAT);
+				const grafcet = new Grafcet("g1", "Mon grafcet");
 				project.addProgram(grafcet);
 				await store.getState().projectRepository.save(project);
 				setPagesSession("p1", {
@@ -411,8 +410,8 @@ describe("ProjectLifecycleManager", () => {
 			it("priorise la page active de l'URL (lien partagé) sur celle de la session", async () => {
 				const store = createProjectStore();
 				const project = new Project("p1", "Projet", "Author");
-				const grafcetA = new Grafcet("gA", "A", DEFAULT_GRAFCET_FORMAT);
-				const grafcetB = new Grafcet("gB", "B", DEFAULT_GRAFCET_FORMAT);
+				const grafcetA = new Grafcet("gA", "A");
+				const grafcetB = new Grafcet("gB", "B");
 				project.addProgram(grafcetA);
 				project.addProgram(grafcetB);
 				await store.getState().projectRepository.save(project);

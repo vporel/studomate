@@ -1,7 +1,7 @@
-import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
-import { PAPERS_SIZES } from "@/ui/constants";
-import { mmToPx } from "@/ui/lib/utils";
-import { getConnectionLinePoints, getFlowDimensions } from "./grafcet-utils";
+import {
+	GRAFCET_PAGE_DIMENSIONS,
+	getConnectionLinePoints,
+} from "./grafcet-utils";
 
 describe("getConnectionLinePoints", () => {
 	it("relie directement quand les extrémités sont alignées verticalement", () => {
@@ -49,25 +49,8 @@ describe("getConnectionLinePoints", () => {
 	});
 });
 
-describe("getFlowDimensions", () => {
-	it.each([
-		["A4", "portrait", PAPERS_SIZES.A4_PORTRAIT],
-		["A4", "landscape", PAPERS_SIZES.A4_LANDSCAPE],
-		["A3", "portrait", PAPERS_SIZES.A3_PORTRAIT],
-		["A3", "landscape", PAPERS_SIZES.A3_LANDSCAPE],
-	] as [
-		GrafcetFormat["type"],
-		GrafcetFormat["orientation"],
-		{ width: number; height: number },
-	][])(
-		"%s %s → dimensions converties en pixels",
-		(type, orientation, expected) => {
-			const dimensions = getFlowDimensions({ type, orientation });
-
-			expect(dimensions).toEqual({
-				width: mmToPx(expected.width),
-				height: mmToPx(expected.height),
-			});
-		},
-	);
+describe("GRAFCET_PAGE_DIMENSIONS", () => {
+	it("correspond à une page A4 portrait en pixels (96 dpi)", () => {
+		expect(GRAFCET_PAGE_DIMENSIONS).toEqual({ width: 794, height: 1123 });
+	});
 });

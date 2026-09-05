@@ -1,3 +1,4 @@
+import { NumericRange } from "@/lib/numeric-range";
 import { validateVariable } from "./variable.validator";
 
 export type {
@@ -57,6 +58,33 @@ export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 	STRING: "string",
 	TIME: "number",
 };
+
+/**
+ * Domaine de valeurs à faire respecter en simulation, par type. `null` = aucune contrainte :
+ * REAL est un flottant libre ; TIME est un compteur de millisecondes piloté par les
+ * temporisations, le borner casserait leur accumulation. LONG sature (JS ne représente pas
+ * exactement au-delà de 2^53), les entiers plus courts replient comme sur un automate.
+ */
+const VARIABLE_TYPE_TO_NUMERIC_RANGE: Record<VariableType, NumericRange | null> =
+	{
+		BOOL: null,
+		STRING: null,
+		REAL: null,
+		TIME: null,
+		INT: { min: -32768, max: 32767, integer: true, wrap: true },
+		WORD: { min: 0, max: 65535, integer: true, wrap: true },
+		DWORD: { min: 0, max: 4294967295, integer: true, wrap: true },
+		LONG: {
+			min: Number.MIN_SAFE_INTEGER,
+			max: Number.MAX_SAFE_INTEGER,
+			integer: true,
+			wrap: false,
+		},
+	};
+
+export function getNumericRange(type: VariableType): NumericRange | null {
+	return VARIABLE_TYPE_TO_NUMERIC_RANGE[type];
+}
 
 export const VARIABLE_UPDATABLE_FIELDS = [
 	"mnemonic",
@@ -121,6 +149,10 @@ export default class Variable {
 
 	getNativeType(): NativeType {
 		return VARIABLE_TYPE_TO_NATIVE_TYPE[this.type];
+	}
+
+	getNumericRange(): NumericRange | null {
+		return getNumericRange(this.type);
 	}
 
 	/** Retourne une nouvelle instance avec les champs appliqués, sans muter `this` : les variables

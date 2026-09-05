@@ -1,4 +1,5 @@
 import Variable, {
+	getNumericRange,
 	VariableType,
 	VariableZone,
 } from "@/schemas/variable/variable.schema";
@@ -45,7 +46,13 @@ export default class VariableCompiler {
 
 			const scope = ZONE_TO_SCOPE[variable.zone];
 			result.push(
-				new PLCVariable(variable.id, variable.mnemonic, scope, plcType),
+				new PLCVariable(
+					variable.id,
+					variable.mnemonic,
+					scope,
+					plcType,
+					getNumericRange(variable.type),
+				),
 			);
 		}
 

@@ -12,10 +12,10 @@ import {
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import { createGrafcetStore } from "../grafcet.store";
 
-// jsdom ne fait pas de layout : mmToPx renvoie 0. On fixe la taille de page.
+// On fixe une largeur de page connue pour les assertions d'insertion de branche.
 jest.mock("@/ui/utils/grafcet/grafcet-utils", () => ({
 	...jest.requireActual("@/ui/utils/grafcet/grafcet-utils"),
-	getFlowDimensions: () => ({ width: 1000, height: 1400 }),
+	GRAFCET_PAGE_DIMENSIONS: { width: 1000, height: 1400 },
 }));
 
 function node(

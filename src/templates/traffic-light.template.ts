@@ -17,7 +17,6 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
@@ -228,7 +227,6 @@ export function createTrafficLightSolution(): Project {
 	const grafcet = new GrafcetBuilder()
 		.id(createRandomId())
 		.name("Feu tricolore")
-		.format(DEFAULT_GRAFCET_FORMAT)
 		.addSteps(e0, e1, e2)
 		.addTransitions(t0, t1, t2)
 		.addActions(a0, a1, a2)

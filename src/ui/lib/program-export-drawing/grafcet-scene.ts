@@ -3,8 +3,8 @@ import Element from "@/schemas/grafcet/element.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import {
+	GRAFCET_PAGE_DIMENSIONS,
 	getConnectionLinePoints,
-	getFlowDimensions,
 } from "@/ui/utils/grafcet/grafcet-utils";
 import { DrawOp, Scene } from "./draw-op";
 import grafcetHandlePosition from "./grafcet-handle-position";
@@ -293,6 +293,10 @@ export default function grafcetToScene(grafcet: Grafcet): Scene {
 		ops.push(...elementOps(element));
 	}
 
-	const page = getFlowDimensions(grafcet.format);
-	return framePage(ops, page.width, page.height, MARGIN);
+	return framePage(
+		ops,
+		GRAFCET_PAGE_DIMENSIONS.width,
+		GRAFCET_PAGE_DIMENSIONS.height,
+		MARGIN,
+	);
 }

@@ -1,6 +1,6 @@
 import { GRAFCET_ELEMENT_TYPES } from "./element.schema";
 import Connection from "./connection.schema";
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "./grafcet.schema";
+import Grafcet from "./grafcet.schema";
 
 /**
  * Ces tests portent sur l'invariant introduit en §1.6 : une table unique pilote la
@@ -12,7 +12,7 @@ import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "./grafcet.schema";
  * le défaut corrigé.
  */
 function grafcetWithOneElementOfEachType(): Grafcet {
-	const grafcet = new Grafcet("g1", "Grafcet", DEFAULT_GRAFCET_FORMAT);
+	const grafcet = new Grafcet("g1", "Grafcet");
 	GRAFCET_ELEMENT_TYPES.forEach((type, index) => {
 		grafcet.addElements([
 			{
@@ -29,11 +29,7 @@ function grafcetWithOneElementOfEachType(): Grafcet {
 describe("Grafcet — table des collections d'éléments", () => {
 	describe("getTypeToElementsMap", () => {
 		it("couvre tous les types déclarés", () => {
-			const map = new Grafcet(
-				"g1",
-				"G",
-				DEFAULT_GRAFCET_FORMAT,
-			).getTypeToElementsMap();
+			const map = new Grafcet("g1", "G").getTypeToElementsMap();
 
 			expect(Object.keys(map).sort()).toEqual(
 				[...GRAFCET_ELEMENT_TYPES].sort(),
@@ -99,15 +95,6 @@ describe("Grafcet — table des collections d'éléments", () => {
 				x: 999,
 				y: 999,
 			});
-		});
-
-		it("isole la copie de l'original sur le format", () => {
-			const original = grafcetWithOneElementOfEachType();
-			const copie = original.copy();
-
-			copie.format.orientation = "landscape";
-
-			expect(original.format.orientation).not.toBe("landscape");
 		});
 	});
 

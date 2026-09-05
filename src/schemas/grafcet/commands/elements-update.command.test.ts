@@ -1,9 +1,9 @@
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import ElementsUpdateCommand from "./elements-update.command";
 
 describe("ElementsUpdateCommand", () => {
 	function grafcetWithOneStep(): Grafcet {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		grafcet.addElements([
 			{
 				type: "step",

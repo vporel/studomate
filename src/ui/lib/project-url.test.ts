@@ -4,6 +4,9 @@ import {
 	setProjectIdInUrl,
 	getShareTokenFromUrl,
 	clearShareTokenFromUrl,
+	getTemplateIdFromUrl,
+	getTemplateModeFromUrl,
+	clearTemplateParamsFromUrl,
 } from "./project-url";
 
 describe("project-url", () => {
@@ -63,6 +66,60 @@ describe("project-url", () => {
 
 		it("ne lève pas si le shareToken est absent", () => {
 			expect(() => clearShareTokenFromUrl()).not.toThrow();
+		});
+	});
+
+	describe("getTemplateIdFromUrl", () => {
+		it("retourne null si aucun template dans l'URL", () => {
+			expect(getTemplateIdFromUrl()).toBeNull();
+		});
+
+		it("retourne l'id de template présent dans l'URL", () => {
+			window.history.replaceState(null, "", "/?template=parking");
+			expect(getTemplateIdFromUrl()).toBe("parking");
+		});
+	});
+
+	describe("getTemplateModeFromUrl", () => {
+		it("retourne 'exercise' si le paramètre est absent", () => {
+			window.history.replaceState(null, "", "/?template=parking");
+			expect(getTemplateModeFromUrl()).toBe("exercise");
+		});
+
+		it("retourne 'solution' si le paramètre vaut 'solution'", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-mode=solution",
+			);
+			expect(getTemplateModeFromUrl()).toBe("solution");
+		});
+
+		it("retourne 'exercise' si le paramètre a une valeur invalide", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-mode=autre-chose",
+			);
+			expect(getTemplateModeFromUrl()).toBe("exercise");
+		});
+	});
+
+	describe("clearTemplateParamsFromUrl", () => {
+		it("retire template et template-mode, laisse le reste intact", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?projectId=p1&template=parking&template-mode=solution",
+			);
+			clearTemplateParamsFromUrl();
+			expect(getTemplateIdFromUrl()).toBeNull();
+			expect(getTemplateModeFromUrl()).toBe("exercise");
+			expect(getProjectIdFromUrl()).toBe("p1");
+		});
+
+		it("ne lève pas si les paramètres sont absents", () => {
+			expect(() => clearTemplateParamsFromUrl()).not.toThrow();
 		});
 	});
 });

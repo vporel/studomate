@@ -1,7 +1,5 @@
 import Grafcet, {
-	DEFAULT_GRAFCET_FORMAT,
 	GRAFCET_NAME_LABEL,
-	GrafcetFormat,
 } from "@/schemas/grafcet/grafcet.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
@@ -71,15 +69,12 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 
 	/** @param name Absent : auto-généré au format "Grafcet_N", unique parmi les programmes du
 	 * projet (voir `Project.nextProgramName`). */
-	newGrafcet(
-		name?: string,
-		format: GrafcetFormat = DEFAULT_GRAFCET_FORMAT,
-	): Grafcet | null {
+	newGrafcet(name?: string): Grafcet | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
 		const resolvedName = name ?? project.nextProgramName(GRAFCET_NAME_LABEL);
 		return this.createProgram(resolvedName, (p) =>
-			p.createGrafcet(resolvedName, format),
+			p.createGrafcet(resolvedName),
 		);
 	}
 }

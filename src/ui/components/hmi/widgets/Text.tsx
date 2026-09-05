@@ -40,6 +40,8 @@ const Text = ({
 				cursor: onClick ? "pointer" : "default",
 				fontSize: data.style?.fontSize ?? 14,
 				color: data.style?.color ?? "#333333",
+				fontWeight: data.style?.bold ? "bold" : "normal",
+				fontStyle: data.style?.italic ? "italic" : "normal",
 				textAlign: align,
 				whiteSpace: "nowrap",
 				textOverflow: "ellipsis",

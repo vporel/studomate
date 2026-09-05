@@ -59,6 +59,18 @@ describe("Project — dialecte des expressions", () => {
 		expect(relu.dialect).toBe(Dialect.FR);
 	});
 
+	// Brouillon d'autosave écrit avant le passage au dialecte en chaîne : il ne passe pas
+	// par le pipeline de migration, donc `createFromJSON` doit encore reconnaître l'ancien
+	// codage numérique (0 = FR, 1 = EN)
+	it("reconnaît l'ancien codage numérique du dialecte", () => {
+		expect(
+			Project.createFromJSON(JSON.stringify({ id: "p1", dialect: 1 })).dialect,
+		).toBe(Dialect.EN);
+		expect(
+			Project.createFromJSON(JSON.stringify({ id: "p1", dialect: 0 })).dialect,
+		).toBe(Dialect.FR);
+	});
+
 	describe("setDialect", () => {
 		it("traduit les mots-clés des transitions", () => {
 			const project = projectWithExpressions();

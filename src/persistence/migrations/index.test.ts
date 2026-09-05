@@ -18,6 +18,21 @@ describe("migrateProject", () => {
 		expect(project.hmiPages).toEqual({});
 	});
 
+	it("convertit le dialecte numérique d'un projet v1 en chaîne", () => {
+		const v1 = {
+			id: "p1",
+			schemaVersion: 1,
+			dialect: 1,
+			programs: {},
+			hmiPages: {},
+		};
+
+		const { project } = migrateProject(v1) as { project: any; from: number };
+
+		expect(project.schemaVersion).toBe(PROJECT_SCHEMA_VERSION);
+		expect(project.dialect).toBe("EN");
+	});
+
 	it("déplace les dimensions des éléments GRAFCET de `data` vers `size`", () => {
 		const ancien = {
 			id: "p1",

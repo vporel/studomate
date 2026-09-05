@@ -1,9 +1,9 @@
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import ElementsRemoveCommand from "./elements-remove.command";
 
 describe("ElementsRemoveCommand", () => {
 	function grafcetWithOneStep(): Grafcet {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		grafcet.addElements([
 			{
 				type: "step",

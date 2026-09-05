@@ -167,7 +167,27 @@ const LandingPage = () => {
 								justifyContent: "center",
 							}}
 						>
-							<HeroCarousel slides={heroSlides} />
+							<Box
+								component="video"
+								controls
+								autoPlay
+								muted
+								loop
+								playsInline
+								preload="metadata"
+								aria-label={t("heroVideoLabel", { name: APP_NAME })}
+								sx={{
+									width: "100%",
+									maxWidth: 960,
+									borderRadius: 2,
+									border: "1px solid",
+									borderColor: "divider",
+									boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+									background: "#000",
+								}}
+							>
+								<source src="/videos/demo-feu-tricolore.mov" type="video/quicktime" />
+							</Box>
 						</Box>
 					</FlexBox>
 				</Container>
@@ -260,6 +280,19 @@ const LandingPage = () => {
 
 			<Divider />
 
+			{/* Aperçus par notation */}
+			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+				<SectionTitle>{t("notationsTitle")}</SectionTitle>
+				<Typography textAlign="center" color="text.secondary" mb={4}>
+					{t("notationsIntro")}
+				</Typography>
+				<Box sx={{ display: "flex", justifyContent: "center" }}>
+					<HeroCarousel slides={heroSlides} />
+				</Box>
+			</Container>
+
+			<Divider />
+
 			{/* Démarrer en 30 secondes */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
 				<SectionTitle>{t("stepsTitle")}</SectionTitle>
@@ -345,7 +378,7 @@ const LandingPage = () => {
 							<Box sx={{ px: 2.5, pb: 2.5 }}>
 								<Button
 									LinkComponent={NextLink}
-									href={routes.app()}
+									href={`${routes.app()}?template=${tpl.id}&template-mode=solution`}
 									variant="outlined"
 									size="small"
 								>

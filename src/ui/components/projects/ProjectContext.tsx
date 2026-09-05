@@ -5,10 +5,14 @@ import {
 } from "@/ui/stores/project/project.store";
 import { setLastMousePosition } from "@/ui/lib/mouse-position";
 import {
+	clearTemplateParamsFromUrl,
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
+	getTemplateIdFromUrl,
+	getTemplateModeFromUrl,
 	setProjectIdInUrl,
 } from "@/ui/lib/project-url";
+import { PROJECT_TEMPLATES } from "@/templates/index";
 import {
 	createContext,
 	ReactNode,
@@ -84,7 +88,10 @@ export const ProjectContextProvider = ({
 	// Affichée au démarrage à froid (aucun projet ni token dans l'URL) ; réactivée plus bas si
 	// la réouverture d'un projet dont l'id est dans l'URL échoue (id invalide, projet supprimé).
 	const [showDraftDialog, setShowDraftDialog] = useState(
-		() => !getProjectIdFromUrl() && !getShareTokenFromUrl(),
+		() =>
+			!getProjectIdFromUrl() &&
+			!getShareTokenFromUrl() &&
+			!getTemplateIdFromUrl(),
 	);
 
 	// Ouverture par token de partage (prioritaire sur l'id de projet)
@@ -119,6 +126,32 @@ export const ProjectContextProvider = ({
 			}
 		};
 		void reopen();
+	}, []);
+
+	// Ouverture depuis un lien de template (`?template=id[&template-mode=solution]`, voir la
+	// landing page) — priorité au token de partage / à l'id de projet s'ils sont présents.
+	useEffect(() => {
+		if (getShareTokenFromUrl() || getProjectIdFromUrl()) return;
+		const templateId = getTemplateIdFromUrl();
+		if (!templateId) return;
+		const template = PROJECT_TEMPLATES.find((t) => t.id === templateId);
+		if (!template) {
+			clearTemplateParamsFromUrl();
+			storeRef.current!.getState().finishBoot();
+			setShowDraftDialog(true);
+			return;
+		}
+		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
+		const open = async () => {
+			await storeRef
+				.current!.getState()
+				.lifecycleManager.newProjectFromTemplate(
+					templateId,
+					wantsSolution ? "solution" : "exercise",
+				);
+			clearTemplateParamsFromUrl();
+		};
+		void open();
 	}, []);
 
 	const handleDraftOpen = (draftData: string) => {

@@ -141,7 +141,7 @@ const ProjectPropertiesPage = () => {
 							slotProps={{ inputLabel: { shrink: true } }}
 							value={dialect}
 							onChange={(e) =>
-								changeProjectDialect(Number(e.target.value) as Dialect)
+								changeProjectDialect(e.target.value as Dialect)
 							}
 							helperText={t("expressionLanguageHelper")}
 						>

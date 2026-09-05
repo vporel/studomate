@@ -64,6 +64,24 @@ describe("descripteurs de champs (propertyFields)", () => {
 		});
 	});
 
+	it("les champs Gras/Italique du texte basculent style.bold / style.italic", () => {
+		(["fields.bold", "fields.italic"] as const).forEach((label) => {
+			const field = HMI_WIDGET_UI.text.propertyFields.find(
+				(f) => f.kind === "checkbox" && f.label === label,
+			);
+			if (!field || field.kind !== "checkbox")
+				throw new Error(`champ ${label} introuvable`);
+			const data = HMI_WIDGET_DEFINITIONS.text.defaultData as Extract<
+				typeof HMI_WIDGET_DEFINITIONS.text.defaultData,
+				{ text: string }
+			>;
+			expect(field.get(data)).toBe(false);
+			const next = field.set(data, true);
+			expect(field.get(next)).toBe(true);
+			expect(next.style?.fontSize).toBe(14);
+		});
+	});
+
 	it("le champ Orientation de la jauge échange largeur et hauteur", () => {
 		const orientation = HMI_WIDGET_UI.gauge.propertyFields.find(
 			(f) => f.kind === "select" && f.label === "fields.orientation",

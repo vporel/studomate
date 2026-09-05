@@ -1,6 +1,5 @@
 /** @jest-environment jsdom */
 import { Dialect } from "@/expression-language/dialect.enum";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import { createProjectStore } from "./project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
@@ -137,7 +136,7 @@ describe("createProjectStore", () => {
 			await openBlankProject(store);
 			const grafcet = store
 				.getState()
-				.grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+				.grafcetsManager.newGrafcet("G1")!;
 			const syncSpy = jest.spyOn(
 				store.getState().grafcetsManager,
 				"syncMountedStoresFromProject",
@@ -170,7 +169,7 @@ describe("createProjectStore", () => {
 			await openBlankProject(store);
 			const grafcet = store
 				.getState()
-				.grafcetsManager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)!;
+				.grafcetsManager.newGrafcet("G1")!;
 
 			store.getState().setActiveScope(grafcet.id);
 
@@ -192,10 +191,10 @@ describe("createProjectStore", () => {
 			await openBlankProject(store);
 			const grafcetA = store
 				.getState()
-				.grafcetsManager.newGrafcet("A", DEFAULT_GRAFCET_FORMAT)!;
+				.grafcetsManager.newGrafcet("A")!;
 			const grafcetB = store
 				.getState()
-				.grafcetsManager.newGrafcet("B", DEFAULT_GRAFCET_FORMAT)!;
+				.grafcetsManager.newGrafcet("B")!;
 			const focusA = jest.fn();
 			const focusB = jest.fn();
 			store.getState().grafcetsManager.registerStoreManager(grafcetA.id, {

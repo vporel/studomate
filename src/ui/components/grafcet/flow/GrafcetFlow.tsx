@@ -7,7 +7,7 @@ import {
 	GRAFCET_FLOW_MIN_ZOOM,
 } from "@/ui/stores/grafcet/managers/view.manager";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
+import { GRAFCET_PAGE_DIMENSIONS } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, SxProps, Theme } from "@mui/material";
 import {
 	Background,
@@ -82,16 +82,12 @@ export function GrafcetFlowContent() {
 		useContextMenuOpeningHandlers();
 	const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
-	const grafcetFormat = useGrafcetStore((state) => state.grafcet.format);
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
 	const viewManager = useGrafcetStore((state) => state.viewManager);
 	const viewport = useGrafcetStore((state) => state.viewport);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const flowDimensions = useMemo(
-		() => getFlowDimensions(grafcetFormat),
-		[grafcetFormat],
-	);
+	const flowDimensions = GRAFCET_PAGE_DIMENSIONS;
 	const projectMode = useProjectStore((state) => state.mode);
 
 	const setContainerElement = useCallback(

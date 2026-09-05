@@ -1,11 +1,7 @@
 import Action from "../action.schema";
 import Comment from "../comment.schema";
 import Connection from "../connection.schema";
-import Grafcet, {
-	DEFAULT_GRAFCET_FORMAT,
-	DEFAULT_GRAFCET_NAME,
-	GrafcetFormat,
-} from "../grafcet.schema";
+import Grafcet, { DEFAULT_GRAFCET_NAME } from "../grafcet.schema";
 import JunctionAndEnd from "../junction-and-end.schema";
 import JunctionAndStart from "../junction-and-start.schema";
 import JunctionOrEnd from "../junction-or-end.schema";
@@ -18,7 +14,6 @@ import Transition from "../transition.schema";
 export default class GrafcetBuilder {
 	private _id: string;
 	private _name: string;
-	private _format: GrafcetFormat;
 	private _steps: Step[];
 	private _transitions: Transition[];
 	private _actions: Action[];
@@ -34,7 +29,6 @@ export default class GrafcetBuilder {
 	constructor() {
 		this._id = "";
 		this._name = DEFAULT_GRAFCET_NAME;
-		this._format = DEFAULT_GRAFCET_FORMAT;
 		this._steps = [];
 		this._transitions = [];
 		this._actions = [];
@@ -55,11 +49,6 @@ export default class GrafcetBuilder {
 
 	name(name: string): GrafcetBuilder {
 		this._name = name;
-		return this;
-	}
-
-	format(format: GrafcetFormat): GrafcetBuilder {
-		this._format = format;
 		return this;
 	}
 
@@ -178,7 +167,7 @@ export default class GrafcetBuilder {
 	}
 
 	build(): Grafcet {
-		const grafcet = new Grafcet(this._id, this._name, this._format);
+		const grafcet = new Grafcet(this._id, this._name);
 		grafcet.steps = byId(this._steps);
 		grafcet.transitions = byId(this._transitions);
 		grafcet.actions = byId(this._actions);

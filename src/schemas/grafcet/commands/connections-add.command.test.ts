@@ -1,10 +1,10 @@
 import Connection from "../connection.schema";
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import ConnectionsAddCommand from "./connections-add.command";
 
 describe("ConnectionsAddCommand", () => {
 	function grafcetWithStepAndTransition(): Grafcet {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		grafcet.addElements([
 			{
 				type: "step",

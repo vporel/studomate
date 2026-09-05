@@ -4,7 +4,7 @@ import {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { getFlowDimensions } from "@/ui/utils/grafcet/grafcet-utils";
+import { GRAFCET_PAGE_DIMENSIONS } from "@/ui/utils/grafcet/grafcet-utils";
 import {
 	GrafcetStoreGetFunction,
 	GrafcetStoreSetFunction,
@@ -79,9 +79,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 		const flowMousePosition = !mousePosition
 			? null
 			: rfInstance.screenToFlowPosition(mousePosition);
-		const flowDimensions = getFlowDimensions(grafcet.format);
-		flowDimensions.width = Math.floor(flowDimensions.width);
-		flowDimensions.height = Math.floor(flowDimensions.height);
+		const flowDimensions = GRAFCET_PAGE_DIMENSIONS;
 		const nodesBounds = rfInstance.getNodesBounds(copiedElements.nodes);
 		let offsetDueToMouse = null;
 		if (

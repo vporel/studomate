@@ -12,6 +12,7 @@ export default class SchemaVariablesMapper {
 			schemaVar.mnemonic,
 			schemaVar.getNativeType(),
 			schemaVar.getDirection(),
+			schemaVar.getNumericRange(),
 		);
 		return envVar;
 	}

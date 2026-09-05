@@ -1,4 +1,3 @@
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
@@ -35,7 +34,7 @@ function makeManager(initial: {
 
 function projectWithGrafcet() {
 	const project = new Project("p1", "Projet", "auteur");
-	const grafcetId = project.createGrafcet("G1", DEFAULT_GRAFCET_FORMAT).id;
+	const grafcetId = project.createGrafcet("G1").id;
 	return { project, grafcetId };
 }
 
@@ -64,7 +63,7 @@ describe("GrafcetsManager", () => {
 		it("ne fait rien si aucun projet n'est ouvert", () => {
 			const { manager } = makeManager({ project: null });
 
-			expect(manager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)).toBeNull();
+			expect(manager.newGrafcet("G1")).toBeNull();
 		});
 
 		it("refuse la création hors mode DESIGN", () => {
@@ -73,7 +72,7 @@ describe("GrafcetsManager", () => {
 				mode: ProjectMode.SIMULATION,
 			});
 
-			expect(manager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT)).toBeNull();
+			expect(manager.newGrafcet("G1")).toBeNull();
 		});
 
 		it("crée le grafcet, ouvre sa page et marque le projet comme modifié", () => {
@@ -81,7 +80,7 @@ describe("GrafcetsManager", () => {
 				project: new Project("p1", "Projet", "auteur"),
 			});
 
-			const grafcet = manager.newGrafcet("G1", DEFAULT_GRAFCET_FORMAT);
+			const grafcet = manager.newGrafcet("G1");
 
 			expect(grafcet).not.toBeNull();
 			expect(getState().project!.getGrafcet(grafcet!.id)).toBeDefined();
@@ -93,7 +92,7 @@ describe("GrafcetsManager", () => {
 			expect(getState().hasUnsavedChanges).toBe(true);
 		});
 
-		it("génère un nom unique au format Grafcet_N et le format par défaut quand rien n'est fourni", () => {
+		it("génère un nom unique au format Grafcet_N quand rien n'est fourni", () => {
 			const { manager } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),
 			});
@@ -103,7 +102,6 @@ describe("GrafcetsManager", () => {
 
 			expect(first!.name).toBe("Grafcet_1");
 			expect(second!.name).toBe("Grafcet_2");
-			expect(first!.format).toEqual(DEFAULT_GRAFCET_FORMAT);
 		});
 	});
 

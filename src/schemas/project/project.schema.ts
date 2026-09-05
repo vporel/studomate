@@ -1,5 +1,5 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
+import Grafcet from "../grafcet/grafcet.schema";
 import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
 import { createRandomId } from "@/ids";
@@ -11,6 +11,18 @@ import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
+
+/**
+ * Ramène un `dialect` lu vers une valeur de l'enum. Le pipeline de migration convertit déjà
+ * l'ancien codage numérique (`0`/`1`), mais les brouillons d'autosave ne passent pas par lui :
+ * un brouillon écrit avant le déploiement du dialecte en chaîne peut encore porter un nombre.
+ * Toute valeur non reconnue — absente comprise, cas des projets antérieurs au dialecte
+ * configurable, tous écrits en français — retombe sur le français.
+ */
+function normalizeDialect(raw: unknown): Dialect {
+	if (raw === Dialect.EN || raw === 1) return Dialect.EN;
+	return Dialect.FR;
+}
 
 /**
  * Énoncé pédagogique d'un projet : le contexte, les consignes et le travail demandé, rédigés
@@ -36,7 +48,7 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 1;
+export const PROJECT_SCHEMA_VERSION = 2;
 
 export default class Project {
 	id: string;
@@ -142,8 +154,8 @@ export default class Project {
 		return program?.type === "grafcet" ? (program as Grafcet) : undefined;
 	}
 
-	createGrafcet(name: string, format: GrafcetFormat): Grafcet {
-		const grafcet = new Grafcet(createRandomId(), name, format);
+	createGrafcet(name: string): Grafcet {
+		const grafcet = new Grafcet(createRandomId(), name);
 		this.addProgram(grafcet);
 		return grafcet;
 	}
@@ -358,8 +370,7 @@ export default class Project {
 		const project = Project.rehydrate(jsonParsed);
 		project.schemaVersion = jsonParsed.schemaVersion ?? PROJECT_SCHEMA_VERSION;
 		project.creationDate = new Date(jsonParsed.creationDate);
-		//Les projets antérieurs au dialecte configurable ont tous été écrits en français
-		project.dialect = jsonParsed.dialect ?? Dialect.FR;
+		project.dialect = normalizeDialect(jsonParsed.dialect);
 		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>
 			Variable.createFromJSON(JSON.stringify(v)),

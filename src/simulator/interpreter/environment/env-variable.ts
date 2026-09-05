@@ -1,3 +1,4 @@
+import { coerceToRange, NumericRange } from "@/lib/numeric-range";
 import IllegalVariableValueTypeException from "./exceptions/illegal-variable-value-type.exception";
 
 export type EnvVariableType = "number" | "string" | "boolean";
@@ -10,17 +11,21 @@ export default class EnvVariable {
 	private type: EnvVariableType;
 	private direction: EnvVariableDirection;
 	private value: EnvVariableValue;
+	/** Domaine du type numérique d'origine (INT, WORD…) — toute valeur écrite y est ramenée. */
+	private numericRange: NumericRange | null;
 
 	constructor(
 		id: string,
 		name: string,
 		type: EnvVariableType,
 		direction: EnvVariableDirection,
+		numericRange: NumericRange | null = null,
 	) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.direction = direction;
+		this.numericRange = numericRange;
 		switch (type) {
 			case "number":
 				this.value = 0;
@@ -46,6 +51,10 @@ export default class EnvVariable {
 		return this.type;
 	}
 
+	getNumericRange(): NumericRange | null {
+		return this.numericRange;
+	}
+
 	getDirection(): EnvVariableDirection {
 		return this.direction;
 	}
@@ -64,6 +73,9 @@ export default class EnvVariable {
 				valueType,
 			);
 		}
-		this.value = value;
+		this.value =
+			typeof value === "number" && this.numericRange
+				? coerceToRange(value, this.numericRange)
+				: value;
 	}
 }

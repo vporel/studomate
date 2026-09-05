@@ -10,7 +10,6 @@ describe("GrafcetBuilder", () => {
 		expect(grafcet).toBeInstanceOf(Grafcet);
 		expect(grafcet.id).toBe("grafcet-1");
 		expect(grafcet.name).toBe("Sans titre");
-		expect(grafcet.format).toEqual({ type: "A4", orientation: "portrait" });
 		expect(grafcet.steps).toEqual({});
 		expect(grafcet.transitions).toEqual({});
 		expect(grafcet.actions).toEqual({});
@@ -25,15 +24,6 @@ describe("GrafcetBuilder", () => {
 			.build();
 
 		expect(grafcet.name).toBe("Mon Grafcet");
-	});
-
-	it("builds a grafcet with custom format", () => {
-		const grafcet = new GrafcetBuilder()
-			.id("grafcet-1")
-			.format({ type: "A3", orientation: "landscape" })
-			.build();
-
-		expect(grafcet.format).toEqual({ type: "A3", orientation: "landscape" });
 	});
 
 	it("builds a grafcet with one step", () => {
@@ -87,7 +77,6 @@ describe("GrafcetBuilder", () => {
 		const grafcet = new GrafcetBuilder()
 			.id("grafcet-1")
 			.name("Test Grafcet")
-			.format({ type: "A4", orientation: "portrait" })
 			.addSteps(step1, step2)
 			.addTransition(trans1)
 			.build();

@@ -13,7 +13,6 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "@/schemas/grafcet/junction.schema";
 import { STEP_REFERRAL_SOURCE_HANDLE_TARGET_PREDECESSOR } from "@/schemas/grafcet/step-referral-source.schema";
 import { STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR } from "@/schemas/grafcet/step-referral-target.schema";
@@ -729,7 +728,6 @@ export function createElevatorSolution(): Project {
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
 		.name("Commande")
-		.format(DEFAULT_GRAFCET_FORMAT)
 		.addSteps(e0, e1a, e1b, e1c, e2, e5, e6, e7, e8)
 		.addTransitions(
 			t0a,

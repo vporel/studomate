@@ -211,6 +211,17 @@ renommage de champ, changement de structure...) doit s'accompagner d'une migrati
 la dernière migration existante (par exemple si elle n'a pas encore été déployée en production)
 ou en créer une nouvelle version.
 
+**Nommage et enregistrement d'une migration** (saut de la vN vers la vN+1) :
+
+- Fichier `src/persistence/migrations/vN-to-vN+1.ts` (kebab-case, `to`) — ex. `v0-to-v1.ts`,
+  `v1-to-v2.ts`. Test co-localisé `vN-to-vN+1.test.ts`.
+- `export default` d'un `const vNToVN+1: ProjectMigration` (camelCase du nom de fichier) portant
+  `from` (la version de départ — `UNVERSIONED` pour la v0), une `description` en anglais, et
+  `migrate` qui opère sur la forme brute et pose `schemaVersion: N+1`.
+- Enregistrer dans `src/persistence/migrations/index.ts` : importer la migration et l'ajouter
+  **en fin** du tableau `MIGRATIONS` (les migrations s'enchaînent dans l'ordre).
+- Incrémenter `PROJECT_SCHEMA_VERSION` dans `src/schemas/project/project.schema.ts`.
+
 ## Cache de parsing des expressions (`parseExpressionCached`)
 
 L'analyseur et le pré-compilateur lexent/parsent chaque expression via

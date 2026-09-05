@@ -32,6 +32,7 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useLadderStore } from "../context/LadderContext";
+import useInViewport from "./useInViewport";
 import LadderConnectionLine from "../edges/LadderConnectionLine";
 import LadderSectionDescription from "./LadderSectionDescription";
 import LadderSectionHeader from "./LadderSectionHeader";
@@ -113,6 +114,19 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	const setActiveSectionId = useLadderStore(
 		(state) => state.setActiveSectionId,
 	);
+	const isActiveSection = useLadderStore(
+		(state) => state.activeSectionId === section.id,
+	);
+
+	// Le montage d'une instance React Flow (DOM + SVG + d3-zoom + ResizeObserver) est coûteux ;
+	// avec 6+ sections, tout monter au premier rendu fige l'ouverture de l'éditeur. On ne monte
+	// le canvas qu'à l'approche du viewport (marge d'environ un écran et demi pour qu'il soit prêt
+	// avant d'être visible) — ou tout de suite si la section est active ou ciblée par une mise en
+	// surbrillance (« localiser dans le ladder »).
+	const contentRef = useRef<HTMLDivElement | null>(null);
+	const nearViewport = useInViewport(contentRef, { rootMargin: "1200px 0px" });
+	const flowMounted =
+		nearViewport || isActiveSection || hasHighlightedNode;
 
 	useEffect(() => {
 		if (hasHighlightedNode) {
@@ -147,10 +161,11 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		(instance: ZoomableInstance) => {
 			viewManager.registerInstance(section.id, instance);
 			// À l'initialisation, React Flow peut mesurer son conteneur avant qu'il ait sa taille
-			// finale (ex. juste après le montage, hors de toute interaction) et rester avec un
-			// viewport interne incohérent — un simple zoom manuel (donc un `setViewport`) suffit à
-			// corriger l'affichage, on le déclenche donc nous-mêmes une fois prêt.
-			viewManager.resetViewport(section.id);
+			// finale (montage pendant l'animation du Collapse) et rester avec un viewport interne
+			// incohérent — un `setViewport` suffit à corriger l'affichage. Repoussé d'une frame :
+			// le montage d'une section est déjà lourd (rendu des nœuds + ResizeObserver de React
+			// Flow), on n'y ajoute pas la correction de viewport dans la même tâche.
+			requestAnimationFrame(() => viewManager.resetViewport(section.id));
 		},
 		[viewManager, section.id],
 	);
@@ -269,13 +284,14 @@ function LadderSection({ section, index }: LadderSectionProps) {
 			/>
 
 			{/* ── Contenu repliable : description puis ReactFlow de la section ── */}
-			<Collapse
-				in={!collapsed}
-				unmountOnExit={false}
-				sx={{ background: "white" }}
-			>
+			{/* unmountOnExit : une section repliée démonte son canvas React Flow — travailler sur
+			    une section ne fait plus payer les instances des autres. Les boutons de zoom de
+			    l'en-tête sont masqués quand la section est repliée, aucun code ne pilote donc le
+			    viewport d'un canvas démonté. */}
+			<Collapse in={!collapsed} unmountOnExit sx={{ background: "white" }}>
 				<LadderSectionDescription section={section} />
 				<Box
+					ref={contentRef}
 					sx={{
 						width: "100%",
 						height: flowDimensions.height + FLOW_MARGIN * 2 + "px",
@@ -285,68 +301,70 @@ function LadderSection({ section, index }: LadderSectionProps) {
 						py: 1,
 					}}
 				>
-					<Box
-						ref={flowWrapperRef}
-						onKeyDown={handleKeyDown}
-						sx={SECTION_FLOW_SX}
-					>
-						<ReactFlow
-							nodes={nodes}
-							edges={edges}
-							nodeTypes={nodeTypes}
-							// Le déplacement des nœuds aux flèches est fait par
-							// `useLadderNodeMoveKeyboardHandler` (grille row/col propre au Ladder) —
-							// celui, en pixels, de React Flow est désactivé pour éviter le double
-							// traitement. `onDelete` (Suppr/Backspace) n'en dépend pas.
-							disableKeyboardA11y
-							edgeTypes={edgeTypes}
-							nodesDraggable={mode === ProjectMode.DESIGN}
-							nodesConnectable={mode === ProjectMode.DESIGN}
-							elementsSelectable={mode === ProjectMode.DESIGN}
-							onNodesChange={handleNodesChange}
-							onEdgesChange={handleEdgesChange}
-							onConnect={handleConnect}
-							connectionLineComponent={LadderConnectionLine}
-							isValidConnection={isValidConnection}
-							onDelete={handleDelete}
-							onNodeContextMenu={openNodeContextMenu}
-							onEdgeContextMenu={openEdgeContextMenu}
-							onPaneClick={closeContextMenu}
-							onPaneContextMenu={openPaneContextMenu}
-							onMoveStart={closeContextMenu}
-							onMoveEnd={handleMoveEnd}
-							onInit={handleInit}
-							panOnDrag={false}
-							// Le viewport du Ladder est verrouillé à (0,0) (voir `LadderViewManager`) :
-							// laisser React Flow faire défiler le viewport quand un glisser de nœud
-							// approche un bord décalerait tout le contenu (dont les stubs de rail) par
-							// rapport à la barre CSS statique du rail, sans jamais revenir à zéro.
-							autoPanOnNodeDrag={false}
-							selectionOnDrag={true}
-							// Pas de snapToGrid/snapGrid natif : ses multiples partent de l'origine (0,0),
-							// incompatibles avec le décalage de POWER_RAIL_OFFSET sur les colonnes réelles
-							// (10, 70, 130, ...) — l'accrochage à la grille est fait nous-mêmes, à chaque
-							// frame, dans `LadderWorkflowManager.snapPositionChange`.
-							panOnScroll={false}
-							zoomOnScroll={false}
-							zoomOnPinch={false}
-							zoomOnDoubleClick={false}
-							minZoom={LADDER_FLOW_MIN_ZOOM}
-							maxZoom={LADDER_FLOW_MAX_ZOOM}
-							translateExtent={extent}
-							nodeExtent={extent}
-							defaultViewport={defaultViewport}
-							fitView={false}
-							onDragOver={handleDragOver}
-							onDrop={handleDrop}
+					{flowMounted && (
+						<Box
+							ref={flowWrapperRef}
+							onKeyDown={handleKeyDown}
+							sx={SECTION_FLOW_SX}
 						>
-							<LadderContextMenu
-								flowDimensions={flowDimensions}
-								sectionId={section.id}
-								handleDelete={handleDelete}
-							/>
-						</ReactFlow>
-					</Box>
+							<ReactFlow
+								nodes={nodes}
+								edges={edges}
+								nodeTypes={nodeTypes}
+								// Le déplacement des nœuds aux flèches est fait par
+								// `useLadderNodeMoveKeyboardHandler` (grille row/col propre au Ladder) —
+								// celui, en pixels, de React Flow est désactivé pour éviter le double
+								// traitement. `onDelete` (Suppr/Backspace) n'en dépend pas.
+								disableKeyboardA11y
+								edgeTypes={edgeTypes}
+								nodesDraggable={mode === ProjectMode.DESIGN}
+								nodesConnectable={mode === ProjectMode.DESIGN}
+								elementsSelectable={mode === ProjectMode.DESIGN}
+								onNodesChange={handleNodesChange}
+								onEdgesChange={handleEdgesChange}
+								onConnect={handleConnect}
+								connectionLineComponent={LadderConnectionLine}
+								isValidConnection={isValidConnection}
+								onDelete={handleDelete}
+								onNodeContextMenu={openNodeContextMenu}
+								onEdgeContextMenu={openEdgeContextMenu}
+								onPaneClick={closeContextMenu}
+								onPaneContextMenu={openPaneContextMenu}
+								onMoveStart={closeContextMenu}
+								onMoveEnd={handleMoveEnd}
+								onInit={handleInit}
+								panOnDrag={false}
+								// Le viewport du Ladder est verrouillé à (0,0) (voir `LadderViewManager`) :
+								// laisser React Flow faire défiler le viewport quand un glisser de nœud
+								// approche un bord décalerait tout le contenu (dont les stubs de rail) par
+								// rapport à la barre CSS statique du rail, sans jamais revenir à zéro.
+								autoPanOnNodeDrag={false}
+								selectionOnDrag={true}
+								// Pas de snapToGrid/snapGrid natif : ses multiples partent de l'origine (0,0),
+								// incompatibles avec le décalage de POWER_RAIL_OFFSET sur les colonnes réelles
+								// (10, 70, 130, ...) — l'accrochage à la grille est fait nous-mêmes, à chaque
+								// frame, dans `LadderWorkflowManager.snapPositionChange`.
+								panOnScroll={false}
+								zoomOnScroll={false}
+								zoomOnPinch={false}
+								zoomOnDoubleClick={false}
+								minZoom={LADDER_FLOW_MIN_ZOOM}
+								maxZoom={LADDER_FLOW_MAX_ZOOM}
+								translateExtent={extent}
+								nodeExtent={extent}
+								defaultViewport={defaultViewport}
+								fitView={false}
+								onDragOver={handleDragOver}
+								onDrop={handleDrop}
+							>
+								<LadderContextMenu
+									flowDimensions={flowDimensions}
+									sectionId={section.id}
+									handleDelete={handleDelete}
+								/>
+							</ReactFlow>
+						</Box>
+					)}
 				</Box>
 			</Collapse>
 		</Box>

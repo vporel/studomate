@@ -308,6 +308,24 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 				}),
 			},
 			{
+				kind: "checkbox",
+				label: "fields.bold",
+				get: (data) => data.style?.bold ?? false,
+				set: (data, value) => ({
+					...data,
+					style: { ...data.style, bold: value },
+				}),
+			},
+			{
+				kind: "checkbox",
+				label: "fields.italic",
+				get: (data) => data.style?.italic ?? false,
+				set: (data, value) => ({
+					...data,
+					style: { ...data.style, italic: value },
+				}),
+			},
+			{
 				kind: "select",
 				label: "fields.align",
 				options: [

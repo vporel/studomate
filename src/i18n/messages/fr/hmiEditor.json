@@ -29,6 +29,8 @@
 		"size": "Taille",
 		"color": "Couleur",
 		"align": "Alignement",
+		"bold": "Gras",
+		"italic": "Italique",
 		"fill": "Remplissage",
 		"stroke": "Contour",
 		"strokeWidth": "Épaisseur du contour",

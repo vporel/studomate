@@ -1,12 +1,11 @@
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import Project from "./project.schema";
 import VariablesAddCommand from "./commands/variables-add.command";
 import VariablesUpdateCommand from "./commands/variables-update.command";
 
 function makeProject() {
 	const project = new Project("p1", "Projet", "auteur");
-	const g1 = project.createGrafcet("G1", DEFAULT_GRAFCET_FORMAT);
-	const g2 = project.createGrafcet("G2", DEFAULT_GRAFCET_FORMAT);
+	const g1 = project.createGrafcet("G1");
+	const g2 = project.createGrafcet("G2");
 	new VariablesAddCommand([
 		{ id: "v1", mnemonic: "A", zone: "memory", type: "BOOL" },
 	]).execute(project);

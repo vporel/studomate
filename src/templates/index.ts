@@ -1,6 +1,10 @@
 import type frTemplates from "@/i18n/messages/fr/templates.json";
 import Project from "@/schemas/project/project.schema";
 import {
+	createCartonSortingProject,
+	createCartonSortingSolution,
+} from "./carton-sorting.template";
+import {
 	createCrossroadsProject,
 	createCrossroadsSolution,
 } from "./crossroads.template";
@@ -147,5 +151,27 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		].join("\n"),
 		create: createParkingProject,
 		solution: createParkingSolution,
+	},
+	{
+		id: "carton-sorting",
+		statement: [
+			"## Poste de tri de caisses",
+			"",
+			"Des caisses arrivent une à une sur le tapis `Cmd_T1` jusqu'à un poste de détection.",
+			"Le capteur `cpt_psce_c` signale la présence d'une caisse, `cpt_c_hte` indique qu'elle est haute.",
+			"Trois vérins double effet `P1`, `P2`, `P3` (commandes `Cmd_Px_out` / `Cmd_Px_in`,",
+			"fins de course `cpt_px_out` / `cpt_px_in`) aiguillent la caisse. Le compteur `C` totalise",
+			"les caisses triées.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur `dcy`, démarrer les tapis (`Cmd_T2T3` mémorisé, `Cmd_T1` tant qu'une caisse circule).",
+			"2. Caisse **basse** : la pousser avec `P1` puis l'évacuer vers `T2` avec `P2`.",
+			"3. Caisse **haute** : la pousser avec `P1` puis l'évacuer vers `T3` avec `P3`.",
+			"4. Incrémenter `C` à chaque caisse triée ; après 2 caisses, réinitialiser le cycle complet.",
+			"5. Vérifier le tri en simulation à l'aide de la vue HMI (bouton « Nouvelle caisse », sélecteur de hauteur).",
+		].join("\n"),
+		create: createCartonSortingProject,
+		solution: createCartonSortingSolution,
 	},
 ];

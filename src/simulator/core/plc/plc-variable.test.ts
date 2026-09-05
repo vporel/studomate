@@ -82,6 +82,27 @@ describe("PLCVariable", () => {
 			expect(v1.getValue()).toBe(10);
 			expect(v2.getValue()).toBe(20);
 		});
+
+		it("préserve le domaine numérique", () => {
+			const range = { min: 0, max: 65535, integer: true, wrap: true };
+			const v1 = new PLCVariable("id", "w", "memory", "number", range);
+			expect(v1.copy().getNumericRange()).toEqual(range);
+		});
+	});
+
+	describe("numericRange", () => {
+		it("vaut null par défaut", () => {
+			expect(
+				new PLCVariable("id", "n", "output", "number").getNumericRange(),
+			).toBeNull();
+		});
+
+		it("est exposé quand fourni", () => {
+			const range = { min: -32768, max: 32767, integer: true, wrap: true };
+			expect(
+				new PLCVariable("id", "n", "memory", "number", range).getNumericRange(),
+			).toEqual(range);
+		});
 	});
 
 	describe("scopes", () => {

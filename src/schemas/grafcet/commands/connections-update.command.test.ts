@@ -1,5 +1,5 @@
 import Connection from "../connection.schema";
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import ConnectionsUpdateCommand from "./connections-update.command";
 
 describe("ConnectionsUpdateCommand", () => {
@@ -7,7 +7,7 @@ describe("ConnectionsUpdateCommand", () => {
 		grafcet: Grafcet;
 		connection: Connection;
 	} {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		grafcet.addElements([
 			{
 				type: "step",

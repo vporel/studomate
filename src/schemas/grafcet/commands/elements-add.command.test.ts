@@ -1,9 +1,9 @@
-import Grafcet, { DEFAULT_GRAFCET_FORMAT } from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import ElementsAddCommand from "./elements-add.command";
 
 describe("ElementsAddCommand", () => {
 	it("ajoute les éléments, et l'annulation les retire", () => {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		const command = new ElementsAddCommand([
 			{
 				type: "step",
@@ -25,7 +25,7 @@ describe("ElementsAddCommand", () => {
 	});
 
 	it("round-trip execute→cancel laisse le grafcet inchangé", () => {
-		const grafcet = new Grafcet("g1", "G", DEFAULT_GRAFCET_FORMAT);
+		const grafcet = new Grafcet("g1", "G");
 		const before = JSON.stringify(grafcet);
 		const command = new ElementsAddCommand([
 			{

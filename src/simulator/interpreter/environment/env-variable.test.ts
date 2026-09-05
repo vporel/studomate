@@ -19,4 +19,25 @@ describe("EnvVariable", () => {
 			IllegalVariableValueTypeException,
 		);
 	});
+
+	it("ramène toute valeur écrite dans le domaine numérique du type (INT qui déborde → repli)", () => {
+		const v = new EnvVariable("id", "pos", "number", "INOUT", {
+			min: -32768,
+			max: 32767,
+			integer: true,
+			wrap: true,
+		});
+		v.setValue(30000);
+		expect(v.getValue()).toBe(30000);
+		v.setValue(40000);
+		expect(v.getValue()).toBe(40000 - 65536);
+		v.setValue(12.9);
+		expect(v.getValue()).toBe(12);
+	});
+
+	it("ne borne pas quand aucun domaine n'est fourni (REAL, TIME…)", () => {
+		const v = new EnvVariable("id", "r", "number", "INOUT");
+		v.setValue(1e9);
+		expect(v.getValue()).toBe(1e9);
+	});
 });

@@ -29,6 +29,8 @@
 		"size": "Size",
 		"color": "Colour",
 		"align": "Alignment",
+		"bold": "Bold",
+		"italic": "Italic",
 		"fill": "Fill",
 		"stroke": "Stroke",
 		"strokeWidth": "Stroke width",

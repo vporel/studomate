@@ -89,6 +89,37 @@ describe("Variable", () => {
 		});
 	});
 
+	describe("getNumericRange", () => {
+		it("borne INT sur 16 bits signés avec repli", () => {
+			const v = new Variable("id", "M", "memory", "INT");
+			expect(v.getNumericRange()).toEqual({
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+		});
+
+		it("borne WORD sur 16 bits non signés", () => {
+			const v = new Variable("id", "M", "memory", "WORD");
+			expect(v.getNumericRange()).toMatchObject({ min: 0, max: 65535 });
+		});
+
+		it("ne contraint pas REAL, TIME, BOOL, STRING", () => {
+			for (const type of ["REAL", "TIME", "BOOL", "STRING"] as const) {
+				expect(
+					new Variable("id", "M", "memory", type).getNumericRange(),
+				).toBeNull();
+			}
+		});
+
+		it("fait saturer LONG (pas de repli)", () => {
+			expect(
+				new Variable("id", "M", "memory", "LONG").getNumericRange(),
+			).toMatchObject({ wrap: false });
+		});
+	});
+
 	describe("ownerBlock", () => {
 		it("crée une variable de bloc avec un mnémonique pointé", () => {
 			const variable = new Variable("id", "Tempo1.PT", "memory", "TIME", {

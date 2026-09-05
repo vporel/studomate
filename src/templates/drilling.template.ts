@@ -17,7 +17,6 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import {
@@ -421,7 +420,6 @@ export function createDrillingSolution(): Project {
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
 		.name("Commande")
-		.format(DEFAULT_GRAFCET_FORMAT)
 		.addSteps(e0, e1, e2, e3)
 		.addTransitions(t0, t1, t2, t3)
 		.addActions(aDescendre, aBroche, aMonter)

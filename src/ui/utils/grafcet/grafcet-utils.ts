@@ -1,15 +1,16 @@
 import Connection from "@/schemas/grafcet//connection.schema";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import { GrafcetFormat } from "@/schemas/grafcet/grafcet.schema";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { PAPERS_SIZES } from "@/ui/constants";
-import { mmToPx } from "@/ui/lib/utils";
 import {
 	ReactFlowInstance,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
 
 const CONNECTION_LINE_Y_OFFSET = 20;
+
+/** Dimensions en pixels de la surface de dessin d'un GRAFCET : une page A4 portrait
+ * (210 × 297 mm à 96 dpi). Taille fixe — le format n'est pas configurable. */
+export const GRAFCET_PAGE_DIMENSIONS = { width: 794, height: 1123 };
 
 export function getConnectionLinePoints(
 	fromX: number,
@@ -70,35 +71,4 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 		//aucun, son tracé est dérivé des handles au rendu (`getConnectionLinePoints`).
 		(connection as GrafcetEdgeType).data || { points: [] },
 	);
-}
-
-export function getFlowDimensions(format: GrafcetFormat) {
-	switch (format.type) {
-		case "A4":
-			return {
-				width: mmToPx(
-					format.orientation === "portrait"
-						? PAPERS_SIZES.A4_PORTRAIT.width
-						: PAPERS_SIZES.A4_LANDSCAPE.width,
-				),
-				height: mmToPx(
-					format.orientation === "portrait"
-						? PAPERS_SIZES.A4_PORTRAIT.height
-						: PAPERS_SIZES.A4_LANDSCAPE.height,
-				),
-			};
-		case "A3":
-			return {
-				width: mmToPx(
-					format.orientation === "portrait"
-						? PAPERS_SIZES.A3_PORTRAIT.width
-						: PAPERS_SIZES.A3_LANDSCAPE.width,
-				),
-				height: mmToPx(
-					format.orientation === "portrait"
-						? PAPERS_SIZES.A3_PORTRAIT.height
-						: PAPERS_SIZES.A3_LANDSCAPE.height,
-				),
-			};
-	}
 }

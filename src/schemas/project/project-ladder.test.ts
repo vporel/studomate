@@ -14,10 +14,7 @@ describe("Project — intégration Ladder", () => {
 
 	it("ne mélange pas grafcets et ladders dans les accesseurs typés", () => {
 		const project = new Project("p1", "Projet", "");
-		project.createGrafcet("Mon grafcet", {
-			type: "A4",
-			orientation: "portrait",
-		});
+		project.createGrafcet("Mon grafcet");
 		const ladder = project.createLadder("Mon ladder");
 
 		expect(Object.keys(project.ladders).sort()).toEqual(
@@ -64,7 +61,7 @@ describe("Project.nextProgramName", () => {
 
 	it("partage le même espace de noms entre ladders et grafcets", () => {
 		const project = new Project("p1", "Projet", "");
-		project.createGrafcet("Ladder_1", { type: "A4", orientation: "portrait" });
+		project.createGrafcet("Ladder_1");
 
 		expect(project.nextProgramName("Ladder")).toBe("Ladder_2");
 	});

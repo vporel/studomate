@@ -16,6 +16,7 @@ import { ProjectMode } from "./ProjectMode.enum";
 import {
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
+	getTemplateIdFromUrl,
 } from "@/ui/lib/project-url";
 import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
@@ -94,7 +95,9 @@ export const createProjectStore = () => {
 		return {
 			project: null,
 			bootStatus:
-				getProjectIdFromUrl() || getShareTokenFromUrl() ? "restoring" : "idle",
+				getProjectIdFromUrl() || getShareTokenFromUrl() || getTemplateIdFromUrl()
+						? "restoring"
+						: "idle",
 			hasUnsavedChanges: false,
 			ui: {
 				unsavedChangesDialogVisible: false,

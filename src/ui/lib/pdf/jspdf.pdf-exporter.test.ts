@@ -158,4 +158,30 @@ describe("JsPdfExporter", () => {
 		// La 2e section est plus bas que la 1re.
 		expect(callB[2].y).toBeGreaterThan(callA[2].y);
 	});
+
+	it("abaisse l'échelle commune pour qu'une section très haute tienne sur une page", async () => {
+		const tall = { ops: [], width: 500, height: 2000 };
+		const short = { ops: [], width: 500, height: 120 };
+		await new JsPdfExporter().export(
+			makeDoc({
+				sections: [
+					{
+						title: "Ladder - L",
+						orientation: "landscape",
+						ladderSections: [
+							{ heading: "Section 1", scene: short },
+							{ heading: "Section 2", scene: tall },
+						],
+					},
+				],
+			}),
+		);
+		const [callShort, callTall] = mockRenderSceneToJsPdf.mock.calls;
+		// Échelle commune conservée.
+		expect(callShort[2].scale).toBe(callTall[2].scale);
+		const scale = callTall[2].scale;
+		// Hauteur utile d'une page (A4 paysage) : (210-15) - 15 (marge basse) - 7 (intitulé).
+		const availableSectionHeight = 210 - 15 - 15 - 7;
+		expect(tall.height * scale).toBeLessThanOrEqual(availableSectionHeight + 0.01);
+	});
 });

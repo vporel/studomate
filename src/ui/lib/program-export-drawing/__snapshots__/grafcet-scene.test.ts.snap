@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`grafcetToScene — feu tricolore le backend SVG sérialise la scène (snapshot) 1`] = `
-"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793.701 1122.52" width="793.701" height="1122.52">
-	<rect x="0" y="0" width="793.701" height="1122.52" fill="#ffffff"/>
+"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 794 1123" width="794" height="1123">
+	<rect x="0" y="0" width="794" height="1123" fill="#ffffff"/>
 	<polyline points="220,100 220,110" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="220,140 220,160" fill="none" stroke="#000000" stroke-width="2"/>
 	<polyline points="220,200 220,210" fill="none" stroke="#000000" stroke-width="2"/>

@@ -2,7 +2,6 @@ import type { jsPDF } from "jspdf";
 import { renderSceneToJsPdf } from "@/ui/lib/program-export-drawing/backends/jspdf-backend";
 import { LADDER_ZOOM } from "@/ui/lib/program-export-drawing/ladder-scene";
 import { mmToPx } from "@/ui/lib/utils";
-import { PAPERS_SIZES } from "@/ui/constants";
 import renderMarkdownToPdf from "./markdown-to-pdf";
 import {
 	PdfCoverPage,
@@ -141,10 +140,14 @@ export class JsPdfExporter implements PdfExporter {
 	}
 
 	/**
-	 * Ladder : les sections coulent sur les pages à une **échelle commune** (calculée sur la
-	 * section la plus large, plafonnée par `LADDER_ZOOM`) et sont **calées à gauche** — la barre
-	 * d'alimentation garde donc la même abscisse d'une page à l'autre. Nouvelle page dès qu'une
-	 * section ne tient plus.
+	 * Ladder : les sections coulent sur les pages à une **échelle commune** et sont **calées à
+	 * gauche** — la barre d'alimentation garde donc la même abscisse d'une page à l'autre.
+	 * Nouvelle page dès qu'une section ne tient plus.
+	 *
+	 * L'échelle est celle qui fait tenir la section la plus large sur la largeur de page
+	 * (plafonnée par `LADDER_ZOOM`), **puis abaissée si besoin** pour que la section la plus
+	 * haute tienne sur une page entière : sinon une section trop haute placée en haut de page
+	 * serait dessinée sous le bord et ses derniers rungs seraient perdus.
 	 */
 	private drawLadderFlow(doc: jsPDF, section: PdfExportSection): void {
 		const pageWidth = A4_HEIGHT_MM;
@@ -154,8 +157,14 @@ export class JsPdfExporter implements PdfExporter {
 		const sections = section.ladderSections!;
 
 		const maxSceneWidth = Math.max(1, ...sections.map((s) => s.scene.width));
-		const minSceneWidth = mmToPx(PAPERS_SIZES.A4_LANDSCAPE.width) / LADDER_ZOOM;
-		const scale = availableWidth / Math.max(maxSceneWidth, minSceneWidth);
+		const minSceneWidth = mmToPx(A4_HEIGHT_MM) / LADDER_ZOOM;
+		const widthScale = availableWidth / Math.max(maxSceneWidth, minSceneWidth);
+
+		const maxSceneHeight = Math.max(1, ...sections.map((s) => s.scene.height));
+		const availableSectionHeight = bottom - MARGIN_MM - SECTION_HEADING_MM;
+		const heightScale = availableSectionHeight / maxSceneHeight;
+
+		const scale = Math.min(widthScale, heightScale);
 
 		this.pageTitle(doc, section.title, pageWidth);
 		let y = MARGIN_MM + TITLE_BAND_MM;

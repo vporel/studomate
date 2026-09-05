@@ -16,11 +16,6 @@ import StepReferralTarget from "./step-referral-target.schema";
 import Step from "./step.schema";
 import Transition from "./transition.schema";
 
-export type GrafcetFormat = {
-	type: "A4" | "A3";
-	orientation: "portrait" | "landscape";
-};
-
 /** Nom par défaut d'un GRAFCET construit sans nom explicite (voir `GrafcetBuilder`) — distinct de
  * `GRAFCET_NAME_LABEL`, propre à la création d'un nouveau GRAFCET depuis l'UI. */
 export const DEFAULT_GRAFCET_NAME = "Sans titre";
@@ -28,11 +23,6 @@ export const DEFAULT_GRAFCET_NAME = "Sans titre";
 /** Base du nom auto-généré ("Grafcet_1", "Grafcet_2"...) à la création — voir
  * `Project.nextProgramName`. */
 export const GRAFCET_NAME_LABEL = "Grafcet";
-
-export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
-	type: "A4",
-	orientation: "portrait",
-};
 
 /**
  * Classe de schéma et collection portant chaque type d'élément.
@@ -90,7 +80,6 @@ export const elementsSchemasClasses: Record<ElementType, any> =
  */
 export default class Grafcet extends Program {
 	readonly type: ProgramType = "grafcet";
-	format: GrafcetFormat = { type: "A4", orientation: "portrait" };
 	steps: Record<string, Step> = {};
 	actions: Record<string, Action> = {};
 	transitions: Record<string, Transition> = {};
@@ -103,9 +92,8 @@ export default class Grafcet extends Program {
 	comments: Record<string, Comment> = {};
 	connections: Connection[] = [];
 
-	constructor(id: string, name: string, format: GrafcetFormat) {
+	constructor(id: string, name: string) {
 		super(id, name);
-		this.format = format;
 	}
 
 	/**
@@ -390,11 +378,7 @@ export default class Grafcet extends Program {
 	}
 
 	copy(): Grafcet {
-		const newGrafcet = Object.assign(
-			new Grafcet(this.id, this.name, this.format),
-			this,
-		);
-		newGrafcet.format = { ...this.format };
+		const newGrafcet = Object.assign(new Grafcet(this.id, this.name), this);
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
 			newGrafcet.setCollection(
 				collection,
@@ -420,10 +404,7 @@ export default class Grafcet extends Program {
 
 	static createFromJSON(json: string): Grafcet {
 		const jsonParsed = JSON.parse(json);
-		const grafcet = Object.assign(
-			new Grafcet("", "", DEFAULT_GRAFCET_FORMAT),
-			jsonParsed,
-		);
+		const grafcet = Object.assign(new Grafcet("", ""), jsonParsed);
 		for (const [, { collection, schema }] of ELEMENT_TYPES_ENTRIES) {
 			grafcet.setCollection(
 				collection,

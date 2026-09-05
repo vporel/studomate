@@ -224,6 +224,8 @@ export type TextData = {
 		fontSize?: number;
 		color?: string;
 		align?: HmiTextAlign;
+		bold?: boolean;
+		italic?: boolean;
 	};
 	animations?: HmiWidgetAnimations<"text">;
 };
@@ -341,7 +343,13 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 		variableBinding: null,
 		defaultData: {
 			text: "Texte",
-			style: { fontSize: 14, color: "#333333", align: "center" },
+			style: {
+				fontSize: 14,
+				color: "#333333",
+				align: "center",
+				bold: false,
+				italic: false,
+			},
 		},
 		label: "Texte",
 		defaultSize: { width: 120, height: 30 },

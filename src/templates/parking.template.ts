@@ -21,7 +21,6 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import { DEFAULT_GRAFCET_FORMAT } from "@/schemas/grafcet/grafcet.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
@@ -427,7 +426,6 @@ export function createParkingSolution(): Project {
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
 		.name("Commande")
-		.format(DEFAULT_GRAFCET_FORMAT)
 		.addSteps(e0, e1, e2, e3, e4)
 		.addTransitions(t01, t03, t12, t34, t20, t40)
 		.addJunctionOrStart(orStart)
@@ -547,7 +545,6 @@ export function createParkingSolution(): Project {
 	const signalisation = new GrafcetBuilder()
 		.id(createRandomId())
 		.name("Signalisation")
-		.format(DEFAULT_GRAFCET_FORMAT)
 		.addSteps(ef0, ef1)
 		.addTransitions(tf01, tf10)
 		.addActions(aComplet)
