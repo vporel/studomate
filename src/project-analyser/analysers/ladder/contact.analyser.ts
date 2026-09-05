@@ -2,8 +2,9 @@ import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import { ContactElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
-import Variable from "@/schemas/variable/variable.schema";
-import LadderElementAnalyser from "./element.analyser";
+import LadderElementAnalyser, {
+	LadderVariablesContext,
+} from "./element.analyser";
 
 export default class ContactAnalyser extends LadderElementAnalyser<ContactElement> {
 	analyseIsolated(_element: ContactElement): ProjectAnalyserIssue[] {
@@ -13,7 +14,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 	analyseInContext(
 		element: ContactElement,
 		ladder: Ladder,
-		variablesByMnemonic: Map<string, Variable>,
+		{ variablesByMnemonic }: LadderVariablesContext,
 		_project: Project,
 	): ProjectAnalyserIssue[] {
 		const source = {

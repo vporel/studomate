@@ -5,11 +5,14 @@ import { BlockElement, BlockType } from "@/schemas/ladder/block.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import ArithmeticBlockAnalyser from "./arithmetic-block.analyser";
 import AssignBlockAnalyser from "./assign-block.analyser";
 import CompareBlockAnalyser from "./compare-block.analyser";
 import CounterBlockAnalyser from "./counter-block.analyser";
-import LadderElementAnalyser from "./element.analyser";
+import LadderElementAnalyser, {
+	LadderVariablesContext,
+} from "./element.analyser";
 import TimerBlockAnalyser from "./timer-block.analyser";
 import UserProgramBlockAnalyser from "./user-program-block.analyser";
 
@@ -17,6 +20,7 @@ type BlockAnalysisContext = {
 	source: ProjectAnalyserIssueSource;
 	ladder: Ladder;
 	variablesByMnemonic: Map<string, Variable>;
+	environment: Environment;
 	project: Project;
 };
 
@@ -43,21 +47,21 @@ const BLOCK_ANALYSERS: Record<
 			element,
 			ctx.source,
 			ctx.project.dialect,
-			ctx.variablesByMnemonic,
+			ctx.environment,
 		),
 	assign: (element, ctx) =>
 		AssignBlockAnalyser.analyse(
 			element,
 			ctx.source,
 			ctx.project.dialect,
-			ctx.variablesByMnemonic,
+			ctx.environment,
 		),
 	arithmetic: (element, ctx) =>
 		ArithmeticBlockAnalyser.analyse(
 			element,
 			ctx.source,
 			ctx.project.dialect,
-			ctx.variablesByMnemonic,
+			ctx.environment,
 		),
 	"user-program": (element, ctx) =>
 		UserProgramBlockAnalyser.analyse(
@@ -76,7 +80,7 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 	analyseInContext(
 		element: BlockElement,
 		ladder: Ladder,
-		variablesByMnemonic: Map<string, Variable>,
+		{ variablesByMnemonic, environment }: LadderVariablesContext,
 		project: Project,
 	): ProjectAnalyserIssue[] {
 		const source = {
@@ -88,6 +92,7 @@ export default class BlockAnalyser extends LadderElementAnalyser<BlockElement> {
 			source,
 			ladder,
 			variablesByMnemonic,
+			environment,
 			project,
 		});
 

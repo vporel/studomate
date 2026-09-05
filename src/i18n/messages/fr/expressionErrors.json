@@ -38,6 +38,7 @@
 	"INVALID_BINARY_OPERAND_TYPE": "Type invalide pour l'opérateur « {operator} » côté {side} : attendu {expected}, obtenu {actual}",
 	"INVALID_ASSIGNMENT_TARGET": "Cible d'affectation invalide : la partie gauche doit être une variable.",
 	"INPUT_IDENTIFIER_ASSIGNMENT": "Affectation invalide : la variable affectée est une variable d'entrée.",
+	"ASSIGNMENT_TO_SYSTEM_VARIABLE": "Affectation invalide : une variable système (_SYS_) est en lecture seule.",
 	"INCOMPATIBLE_OPERANDS_TYPES": "Types incompatibles pour l'opérateur « {operator} » : gauche {leftType}, droite {rightType}",
 	"INVALID_TIMER_INPUT_TYPE": "Type d'entrée de temporisation invalide : l'entrée d'une temporisation doit être un booléen (trouvé {actual})",
 	"INVALID_TIMER_LAST_INPUT_NODE": "Nœud de dernière valeur d'entrée de temporisation invalide : la dernière valeur d'entrée d'un bloc de temporisation doit être une variable",

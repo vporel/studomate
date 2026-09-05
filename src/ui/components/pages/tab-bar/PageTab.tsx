@@ -37,6 +37,7 @@ const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	exercise: ExerciseIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,
+	"system-variables": VariablesIcon,
 	hmi: HmiIcon,
 	"hmi-simulation": HmiIcon,
 };

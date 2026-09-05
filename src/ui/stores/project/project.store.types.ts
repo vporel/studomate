@@ -29,6 +29,7 @@ export type PageType =
 	| "grafcet"
 	| "ladder"
 	| "variables"
+	| "system-variables"
 	| "hmi"
 	| "hmi-simulation";
 

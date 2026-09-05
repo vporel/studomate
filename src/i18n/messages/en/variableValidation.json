@@ -4,6 +4,7 @@
 	"MNEMONIC_MUST_START_WITH_LETTER": "The mnemonic must start with a letter.",
 	"MNEMONIC_INVALID_CHARS": "The mnemonic may only contain letters, digits and underscores.",
 	"MNEMONIC_BLOCK_FORMAT": "A block variable's mnemonic must be written \"BlockName.PortName\".",
+	"RESERVED_SYSTEM_PREFIX": "The \"{prefix}\" prefix is reserved for system variables.",
 	"TYPE_UNKNOWN": "The type \"{type}\" is not recognised.",
 	"TYPE_NOT_ALLOWED_IN_ZONE": "The type \"{type}\" is not allowed here. Possible types: {allowed}.",
 	"ZONE_TYPE_INCOMPATIBLE": "The type \"{type}\" is not compatible with the \"{zone}\" zone.",

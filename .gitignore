@@ -42,6 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 _ai_context/
+_ai/
 .env
 .env.local
 .env.production.local

@@ -5,7 +5,7 @@ import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import PLC from "@/simulator/core/plc/plc";
 import Variable from "@/schemas/variable/variable.schema";
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
@@ -18,7 +18,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  * construit une fois par grafcet.
  */
 export function analyserEnvironment(variables: Variable[] = []): Environment {
-	return new Environment(variables.map(SchemaVariablesMapper.schemaToEnv));
+	return buildAnalysisEnvironment(variables);
 }
 
 /**

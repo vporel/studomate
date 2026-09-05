@@ -5,6 +5,7 @@ import { ElementType, Fragment, MouseEvent } from "react";
 import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { getVariablesPageData, VariablesPageId } from "../pages/VariablesPage";
+import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
 
@@ -53,6 +54,7 @@ const ExplorerVariablesItems = ({
 	) => void;
 }) => {
 	const t = useT("explorer.variableGroups");
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const variablesTypes: {
 		id: VariablesPageId;
 		label: string;
@@ -83,6 +85,13 @@ const ExplorerVariablesItems = ({
 					onContextMenu={onContextMenu}
 				/>
 			))}
+			<CustomTreeItem
+				itemId="system-variables"
+				label={t("system")}
+				IconComponent={VariablesIcon}
+				styles={styles}
+				onClick={() => pagesManager.openPage(SYSTEM_VARIABLES_PAGE_DATA)}
+			/>
 		</Fragment>
 	);
 };

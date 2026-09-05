@@ -51,8 +51,13 @@ import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 const CYL_MAX = 192;
 /** Distance parcourue par une caisse sur le tapis T1 avant d'atteindre le poste de détection. */
 const T1_MAX = 516;
-/** Avance par cycle automate d'une caisse sur T1 et de chaque vérin (diviseur de toutes les
- * courses pour que la caisse s'arrête pile sur sa position cible). */
+/** Base de temps système qui cadence toute la cinématique : les mouvements avancent d'un `PAS`
+ * par impulsion (toutes les 200 ms de temps simulé), et non par cycle automate — le procédé
+ * garde la même vitesse quel que soit le temps de scan. */
+const TICK = "_SYS_TB_200ms";
+/** Avance d'une caisse sur T1 et de chaque vérin par impulsion de `TICK`. Divise toutes les
+ * courses (T1_MAX, CYL_MAX, CAISSE_Y_*, CAISSE_X_MAX) pour que la caisse s'arrête pile sur sa
+ * position cible ; 5 impulsions par seconde de temps simulé. */
 const PAS = 12;
 /** Descente de la caisse (px) sous la poussée de P1 : niveau d'éjection de P2 (caisses basses). */
 const CAISSE_Y_P2 = CYL_MAX;
@@ -167,14 +172,15 @@ function buildOperativePartLadder(): Ladder {
 		(rung) => {
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement("caisse_presente", "NO", r, col(0)),
-				createContactElement("Cmd_T1", "NO", r, col(1)),
-				createCompareBlockElement(r, col(2), {
+				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement("caisse_presente", "NO", r, col(1)),
+				createContactElement("Cmd_T1", "NO", r, col(2)),
+				createCompareBlockElement(r, col(3), {
 					in1: "pos_caisse",
 					in2: `${T1_MAX}`,
 					operator: "<",
 				}),
-				createArithmeticBlockElement(r, col(3), {
+				createArithmeticBlockElement(r, col(4), {
 					in1: "pos_caisse",
 					in2: `${PAS}`,
 					out: "pos_caisse",
@@ -192,13 +198,14 @@ function buildOperativePartLadder(): Ladder {
 				const cmd = `Cmd_${p.toUpperCase()}`;
 				rung((r) => [
 					createRailTerminalElement(r),
-					createContactElement(`${cmd}_out`, "NO", r, col(0)),
-					createCompareBlockElement(r, col(1), {
+					createContactElement(TICK, "NO", r, col(0)),
+					createContactElement(`${cmd}_out`, "NO", r, col(1)),
+					createCompareBlockElement(r, col(2), {
 						in1: `pos_${p}`,
 						in2: `${CYL_MAX}`,
 						operator: "<",
 					}),
-					createArithmeticBlockElement(r, col(2), {
+					createArithmeticBlockElement(r, col(3), {
 						in1: `pos_${p}`,
 						in2: `${PAS}`,
 						out: `pos_${p}`,
@@ -207,13 +214,14 @@ function buildOperativePartLadder(): Ladder {
 				]);
 				rung((r) => [
 					createRailTerminalElement(r),
-					createContactElement(`${cmd}_in`, "NO", r, col(0)),
-					createCompareBlockElement(r, col(1), {
+					createContactElement(TICK, "NO", r, col(0)),
+					createContactElement(`${cmd}_in`, "NO", r, col(1)),
+					createCompareBlockElement(r, col(2), {
 						in1: `pos_${p}`,
 						in2: "0",
 						operator: ">",
 					}),
-					createArithmeticBlockElement(r, col(2), {
+					createArithmeticBlockElement(r, col(3), {
 						in1: `pos_${p}`,
 						in2: `${PAS}`,
 						out: `pos_${p}`,
@@ -282,13 +290,14 @@ function buildOperativePartLadder(): Ladder {
 			// P1 descend la caisse jusqu'au niveau d'éjection de P2
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement("Cmd_P1_out", "NO", r, col(0)),
-				createCompareBlockElement(r, col(1), {
+				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement("Cmd_P1_out", "NO", r, col(1)),
+				createCompareBlockElement(r, col(2), {
 					in1: "caisse_y",
 					in2: `${CAISSE_Y_P2}`,
 					operator: "<",
 				}),
-				createArithmeticBlockElement(r, col(2), {
+				createArithmeticBlockElement(r, col(3), {
 					in1: "caisse_y",
 					in2: `${PAS}`,
 					out: "caisse_y",
@@ -312,13 +321,14 @@ function buildOperativePartLadder(): Ladder {
 			// Éjection latérale par P2 (caisses basses)
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement("Cmd_P2_out", "NO", r, col(0)),
-				createCompareBlockElement(r, col(1), {
+				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement("Cmd_P2_out", "NO", r, col(1)),
+				createCompareBlockElement(r, col(2), {
 					in1: "caisse_x_extra",
 					in2: `${CAISSE_X_MAX}`,
 					operator: "<",
 				}),
-				createArithmeticBlockElement(r, col(2), {
+				createArithmeticBlockElement(r, col(3), {
 					in1: "caisse_x_extra",
 					in2: `${PAS}`,
 					out: "caisse_x_extra",
@@ -328,18 +338,19 @@ function buildOperativePartLadder(): Ladder {
 			// Éjection latérale par P3 (caisses hautes), une fois au niveau de P3
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement("Cmd_P3_out", "NO", r, col(0)),
-				createCompareBlockElement(r, col(1), {
+				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement("Cmd_P3_out", "NO", r, col(1)),
+				createCompareBlockElement(r, col(2), {
 					in1: "caisse_y",
 					in2: `${CAISSE_Y_P3}`,
 					operator: ">=",
 				}),
-				createCompareBlockElement(r, col(2), {
+				createCompareBlockElement(r, col(3), {
 					in1: "caisse_x_extra",
 					in2: `${CAISSE_X_MAX}`,
 					operator: "<",
 				}),
-				createArithmeticBlockElement(r, col(3), {
+				createArithmeticBlockElement(r, col(4), {
 					in1: "caisse_x_extra",
 					in2: `${PAS}`,
 					out: "caisse_x_extra",

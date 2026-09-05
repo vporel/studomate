@@ -2,6 +2,7 @@
 
 import { Dialect } from "@/expression-language/dialect.enum";
 import { LiteralKind } from "@/expression-language/literals/kind";
+import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.builder";
 import Variable, {
 	VariableDirection,
 	VariableType,
@@ -98,8 +99,14 @@ const VariableSelector = forwardRef<
 	ref,
 ) {
 	const th = useTheme();
-	const variables = useProjectStore(
+	const projectVariables = useProjectStore(
 		useShallow((s) => s.project?.variables ?? []),
+	);
+	// Les variables système (`_SYS_TB_*`) sont proposées et reconnues comme valides partout où on
+	// lit une variable ; leur direction `IN` les exclut d'elle-même des sélecteurs d'écriture.
+	const variables = useMemo(
+		() => [...projectVariables, ...SYSTEM_SCHEMA_VARIABLES],
+		[projectVariables],
 	);
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const inputRef = useRef<HTMLInputElement>(null);

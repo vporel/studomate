@@ -6,7 +6,24 @@
 		"projectStartup": "Start",
 		"inputVariables": "Input variables",
 		"outputVariables": "Output variables",
-		"memoryVariables": "Memory variables"
+		"memoryVariables": "Memory variables",
+		"systemVariables": "System variables"
+	},
+	"systemVariables": {
+		"heading": "System variables",
+		"intro": "Provided by the engine and injected at compile time. Read-only: the \"_SYS_\" prefix is reserved. The \"_SYS_TB_…\" time bases are true for a single scan per simulated-time period (a pulse).",
+		"columns": {
+			"name": "Name",
+			"type": "Type",
+			"description": "Description"
+		},
+		"items": {
+			"_SYS_TB_100ms": "One-scan pulse every 100 ms.",
+			"_SYS_TB_200ms": "One-scan pulse every 200 ms.",
+			"_SYS_TB_500ms": "One-scan pulse every 500 ms.",
+			"_SYS_TB_1s": "One-scan pulse every 1 s.",
+			"_SYS_TB_2s": "One-scan pulse every 2 s."
+		}
 	},
 	"tabBar": {
 		"ariaLabel": "Open tabs",

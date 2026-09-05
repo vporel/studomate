@@ -46,6 +46,18 @@ describe("validateMnemonic", () => {
 		expect(validateMnemonic("A_1")).toEqual([]);
 	});
 
+	it("RESERVED_SYSTEM_PREFIX pour un mnémonique commençant par _SYS_", () => {
+		const issues = validateMnemonic("_SYS_TB_200ms");
+		expect(codes(issues)).toContain("RESERVED_SYSTEM_PREFIX");
+		expect(
+			issues.find((i) => i.code === "RESERVED_SYSTEM_PREFIX")?.params,
+		).toEqual({ prefix: "_SYS_" });
+		// même avec ownerBlock (variable de bloc générée)
+		expect(codes(validateMnemonic("_SYS_Foo.Bar", true))).toContain(
+			"RESERVED_SYSTEM_PREFIX",
+		);
+	});
+
 	it("rejette un point sans ownerBlock, l'accepte avec (un seul)", () => {
 		expect(codes(validateMnemonic("Tempo1.IN"))).toContain(
 			"MNEMONIC_INVALID_CHARS",

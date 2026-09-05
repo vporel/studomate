@@ -1,6 +1,7 @@
 import { createCompareBlockElement } from "@/schemas/ladder/block.schema";
 import { createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import BlockAnalyser from "./block.analyser";
@@ -14,7 +15,7 @@ describe("BlockAnalyser", () => {
 		return analyser.analyseInContext(
 			block as never,
 			ladder,
-			new Map(),
+			{ variablesByMnemonic: new Map(), environment: buildAnalysisEnvironment([]) },
 			project,
 		);
 	}

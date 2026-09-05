@@ -5,6 +5,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
@@ -15,8 +16,11 @@ describe("ContactAnalyser", () => {
 
 	beforeEach(() => VariableFactory.reset());
 
-	function variablesMap(...variables: Variable[]): Map<string, Variable> {
-		return new Map(variables.map((v) => [v.mnemonic, v]));
+	function variablesContext(...variables: Variable[]) {
+		return {
+			variablesByMnemonic: new Map(variables.map((v) => [v.mnemonic, v])),
+			environment: buildAnalysisEnvironment(variables),
+		};
 	}
 
 	it("signale LADDER_CONTACT_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
@@ -33,7 +37,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(),
+			variablesContext(),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -57,7 +61,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(a),
+			variablesContext(a),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -77,7 +81,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(a),
+			variablesContext(a),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -97,7 +101,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(a),
+			variablesContext(a),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -114,7 +118,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(a),
+			variablesContext(a),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -140,7 +144,7 @@ describe("ContactAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			contact,
 			ladder,
-			variablesMap(a, q),
+			variablesContext(a, q),
 			ProjectFactory.createEmpty(),
 		);
 

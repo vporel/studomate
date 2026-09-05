@@ -11,8 +11,7 @@ import { TimerStringDeclarationNode } from "@/expression-language/ast/nodes/bloc
 import FinderVisitor from "@/expression-language/ast/visitors/finder.visitor";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
-import { Environment } from "@/simulator/interpreter/environment/environment";
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import GrafcetElementAnalyserFactory from "./element-analyser.factory";
 
 export type GrafcetAnalysisResult = {
@@ -60,9 +59,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const stepsVariables = this.generateVariables(grafcet);
 		// Construit une seule fois pour tout le grafcet : `analyseInContext` reçoit l'`Environment`
 		// et non la liste, pour qu'il soit structurellement impossible de le reconstruire par élément.
-		const environment = new Environment(
-			allVariables.map(SchemaVariablesMapper.schemaToEnv),
-		);
+		const environment = buildAnalysisEnvironment(allVariables);
 		const elementsIssues = grafcet
 			.getAllElements()
 			.flatMap((element) => {

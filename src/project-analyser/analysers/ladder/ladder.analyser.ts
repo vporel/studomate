@@ -6,6 +6,7 @@ import {
 	BlockElement,
 	UserProgramBlockParams,
 } from "@/schemas/ladder/block.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import LadderElementAnalyserFactory from "./element-analyser.factory";
 import Project from "@/schemas/project/project.schema";
@@ -97,9 +98,13 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		project: Project,
 		allVariables: Variable[],
 	): LadderAnalysisResult {
-		const variablesByMnemonic = new Map(
-			allVariables.map((v) => [v.mnemonic, v]),
-		);
+		// Construit une seule fois pour tout le ladder — `analyseInContext` reçoit le contexte,
+		// jamais `allVariables`, pour qu'il soit structurellement impossible de le reconstruire
+		// par élément.
+		const variables = {
+			variablesByMnemonic: new Map(allVariables.map((v) => [v.mnemonic, v])),
+			environment: buildAnalysisEnvironment(allVariables),
+		};
 
 		const issues: ProjectAnalyserIssue[] = [
 			...this.checkConnectionColumnOrder(ladder),
@@ -109,12 +114,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 			if (analyser) {
 				issues.push(...analyser.analyseIsolated(element));
 				issues.push(
-					...analyser.analyseInContext(
-						element,
-						ladder,
-						variablesByMnemonic,
-						project,
-					),
+					...analyser.analyseInContext(element, ladder, variables, project),
 				);
 			}
 		}

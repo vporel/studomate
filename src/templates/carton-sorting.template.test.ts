@@ -218,6 +218,10 @@ describe("carton-sorting.template", () => {
 		});
 
 		describe("simulation", () => {
+			// La cinématique cadencée sur `_SYS_TB_200ms` demande ~40 s de temps simulé pour un
+			// cycle complet ; à 10 ms de scan ça fait beaucoup d'itérations de timers factices,
+			// lentes sous charge parallèle — d'où la marge sur le délai.
+			jest.setTimeout(30000);
 			beforeEach(() => jest.useFakeTimers());
 			afterEach(() => jest.useRealTimers());
 
@@ -251,7 +255,7 @@ describe("carton-sorting.template", () => {
 				await pulse(plc, "dcy_caisse"); // nouvelle caisse basse
 
 				// Convoyage + poussées P1 puis P2 (large marge)
-				await jest.advanceTimersByTimeAsync(3000);
+				await jest.advanceTimersByTimeAsync(45000);
 				if (getError()) throw getError();
 
 				expect(getVariableValue(plc, "C")).toBe(1);
@@ -272,7 +276,7 @@ describe("carton-sorting.template", () => {
 				plc.setPhysicalInputValueByName("sel_caisse_haute", true);
 				await pulse(plc, "dcy_caisse");
 
-				await jest.advanceTimersByTimeAsync(3000);
+				await jest.advanceTimersByTimeAsync(45000);
 				if (getError()) throw getError();
 
 				expect(getVariableValue(plc, "C")).toBe(1);
@@ -284,6 +288,28 @@ describe("carton-sorting.template", () => {
 				plc.stop();
 			});
 
+			it("avance la cinématique sur une base de temps, pas sur le scan", async () => {
+				// Même temps simulé, deux temps de scan différents : la caisse doit être à la
+				// même position (les mouvements sont cadencés par `_SYS_TB_200ms`).
+				const advanceOnScan = async (scanTimeMs: number) => {
+					const plc = compileToPLC(project, scanTimeMs, Dialect.FR)!;
+					plc.setPhysicalInputValueByName("dcy", true);
+					plc.setPhysicalInputValueByName("dcy_caisse", true);
+					plc.setPhysicalInputValueByName("sel_caisse_haute", false);
+					plc.start();
+					await jest.advanceTimersByTimeAsync(4000);
+					const posCaisse = getVariableValue(plc, "pos_caisse");
+					plc.stop();
+					return posCaisse;
+				};
+
+				const posAt10 = await advanceOnScan(10);
+				const posAt50 = await advanceOnScan(50);
+
+				expect(posAt10).toBeGreaterThan(0);
+				expect(posAt50).toBe(posAt10);
+			});
+
 			it("réinitialise le cycle complet après deux caisses", async () => {
 				const { plc, getError } = startMachine();
 				await jest.advanceTimersByTimeAsync(50);
@@ -291,10 +317,10 @@ describe("carton-sorting.template", () => {
 				await pulse(plc, "dcy");
 				plc.setPhysicalInputValueByName("sel_caisse_haute", false);
 				await pulse(plc, "dcy_caisse");
-				await jest.advanceTimersByTimeAsync(3000);
+				await jest.advanceTimersByTimeAsync(45000);
 
 				await pulse(plc, "dcy_caisse"); // 2e caisse
-				await jest.advanceTimersByTimeAsync(3000);
+				await jest.advanceTimersByTimeAsync(45000);
 				if (getError()) throw getError();
 
 				// X6 -> renvoi vers X0 : compteur remis à zéro, tapis T2/T3 relâché

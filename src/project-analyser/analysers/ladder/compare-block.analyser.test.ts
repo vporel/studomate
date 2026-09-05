@@ -5,6 +5,7 @@ import {
 	createCompareBlockElement,
 } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import CompareBlockAnalyser from "./compare-block.analyser";
 
 describe("CompareBlockAnalyser", () => {
@@ -12,10 +13,6 @@ describe("CompareBlockAnalyser", () => {
 		sourceType: "ladder-block",
 		sourceId: "b1",
 	};
-
-	function variablesMap(...variables: Variable[]): Map<string, Variable> {
-		return new Map(variables.map((v) => [v.mnemonic, v]));
-	}
 
 	function analyse(
 		params: CompareBlockParams,
@@ -26,7 +23,7 @@ describe("CompareBlockAnalyser", () => {
 			element,
 			source,
 			Dialect.FR,
-			variablesMap(...variables),
+			buildAnalysisEnvironment(variables),
 		).map((i) => i.code);
 	}
 

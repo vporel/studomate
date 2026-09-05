@@ -1,4 +1,3 @@
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import AllowedNodeTypesVisitor from "@/expression-language/ast/visitors/allowed-node-types.visitor";
@@ -10,7 +9,6 @@ import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
 import { BlockElement, COMPARE_OPERATORS } from "@/schemas/ladder/block.schema";
-import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 
@@ -37,7 +35,7 @@ export default class CompareBlockAnalyser {
 		element: BlockElement,
 		source: ProjectAnalyserIssueSource,
 		dialect: Dialect,
-		variablesByMnemonic: Map<string, Variable>,
+		environment: Environment,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "compare") return [];
 		const { in1, in2, operator } = element.data.params;
@@ -63,12 +61,7 @@ export default class CompareBlockAnalyser {
 				left,
 				right,
 			);
-			const env = new Environment(
-				Array.from(variablesByMnemonic.values()).map(
-					SchemaVariablesMapper.schemaToEnv,
-				),
-			);
-			new SemanticAnalyserVisitor(env).visit(comparison);
+			new SemanticAnalyserVisitor(environment).visit(comparison);
 		} catch (e) {
 			return [
 				new ProjectAnalyserIssue(

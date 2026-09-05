@@ -198,7 +198,10 @@
 		"managementTitle": "Managing variables",
 		"managementBody1": "From the Variables page (reachable via the explorer or the menu), you can add, edit and delete variables. Editing and deleting are disabled in Simulation mode.",
 		"managementBody2": "Renaming a variable's mnemonic updates every expression that uses it in the project's grafcets and ladders.",
-		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it."
+		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it.",
+		"systemTitle": "System variables",
+		"systemBody1": "The \"_SYS_\" prefix is reserved: you cannot create a variable whose mnemonic starts with \"_SYS_\", nor assign a value to one (read-only). They are not saved with the project: the engine injects them at analysis and compile time. The full list is shown in the explorer, under Variables › System.",
+		"systemBody2": "The \"_SYS_TB_…\" time bases are booleans that are true for a single scan per simulated-time period (a pulse): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle — for instance moving a position by a fixed step: \"position := position + step\" run only while \"_SYS_TB_200ms\" is true."
 	},
 	"grafcet": {
 		"title": "Grafcet",

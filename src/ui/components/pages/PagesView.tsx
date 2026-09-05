@@ -12,6 +12,7 @@ import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
 import PreferencesPage from "./PreferencesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
+import SystemVariablesPage from "./SystemVariablesPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 import VariablesPage, { VariablesPageData } from "./VariablesPage";
 import HmiPageView from "../hmi/HmiPageView";
@@ -149,6 +150,8 @@ const PagesView = () => {
 										pageData={pageData as VariablesPageData}
 									/>
 								);
+							case "system-variables":
+								return <SystemVariablesPage key={id} />;
 							case "grafcet":
 								return (
 									<GrafcetPage

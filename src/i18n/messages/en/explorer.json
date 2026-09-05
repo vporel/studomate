@@ -13,7 +13,8 @@
 	"variableGroups": {
 		"inputs": "Inputs",
 		"outputs": "Outputs",
-		"memories": "Memories"
+		"memories": "Memories",
+		"system": "System"
 	},
 	"hmiMain": "Main",
 	"noHmiPages": "No HMI page",

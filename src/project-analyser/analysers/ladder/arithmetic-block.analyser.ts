@@ -1,4 +1,3 @@
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -9,7 +8,6 @@ import {
 	ARITHMETIC_BLOCK_OPERATORS,
 	BlockElement,
 } from "@/schemas/ladder/block.schema";
-import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import {
@@ -30,7 +28,7 @@ export default class ArithmeticBlockAnalyser {
 		element: BlockElement,
 		source: ProjectAnalyserIssueSource,
 		dialect: Dialect,
-		variablesByMnemonic: Map<string, Variable>,
+		environment: Environment,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "arithmetic") return [];
 		const { in1, in2, out, operator } = element.data.params;
@@ -58,12 +56,7 @@ export default class ArithmeticBlockAnalyser {
 			if (!left || !right)
 				return [issue("BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED", source)];
 
-			const env = new Environment(
-				Array.from(variablesByMnemonic.values()).map(
-					SchemaVariablesMapper.schemaToEnv,
-				),
-			);
-			new SemanticAnalyserVisitor(env).visit(
+			new SemanticAnalyserVisitor(environment).visit(
 				StatementsBuilder.buildAssignStatementNode(
 					target,
 					ExpressionsBuilder.buildArithmeticExpressionNode(

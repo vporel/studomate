@@ -26,6 +26,8 @@ export function usePageTitle() {
 				if (page.id === "input-variables") return t("inputVariables");
 				if (page.id === "output-variables") return t("outputVariables");
 				return t("memoryVariables");
+			case "system-variables":
+				return t("systemVariables");
 			default:
 				return page.title;
 		}

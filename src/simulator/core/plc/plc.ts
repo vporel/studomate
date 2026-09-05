@@ -1,3 +1,4 @@
+import { SYSTEM_TIME_BASES } from "@/schemas/variable/system-variables";
 import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
@@ -38,6 +39,14 @@ export default class PLC extends ClockedRunnable {
 	 * contente d'y recopier les valeurs courantes des images puis de les relire.
 	 */
 	private readonly environment: Environment;
+	/**
+	 * Temps accumulé (ms) depuis la dernière impulsion de chaque base de temps système
+	 * (`_SYS_TB_*`). `acc -= période` (et non `= 0`) à chaque impulsion : si un scan couvre
+	 * plusieurs périodes, l'impulsion se répète sur les scans suivants jusqu'à rattrapage.
+	 */
+	private readonly systemTimeBaseAccumulatorsMs = new Map<string, number>(
+		SYSTEM_TIME_BASES.map((base) => [base.name, 0]),
+	);
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -72,6 +81,19 @@ export default class PLC extends ClockedRunnable {
 				this.memory[variableCopy.getId()] = variableCopy;
 			}
 		});
+
+		// Variables système : garanties présentes même quand le programme ne vient pas du
+		// pré-compilateur (tests, usages directs). Le PLC les met à jour lui-même chaque cycle.
+		for (const base of SYSTEM_TIME_BASES) {
+			if (!this.memory[base.name]) {
+				this.memory[base.name] = new PLCVariable(
+					base.name,
+					base.name,
+					"memory",
+					"boolean",
+				);
+			}
+		}
 
 		this.environment = new Environment(
 			[
@@ -220,6 +242,7 @@ export default class PLC extends ClockedRunnable {
 		}
 
 		const deltaTimeMs = this.consumeElapsedMs();
+		this.updateSystemTimeBases(deltaTimeMs);
 
 		for (const routine of this.program) {
 			routine.execute(this.environment, deltaTimeMs, this.routinesById);
@@ -234,6 +257,40 @@ export default class PLC extends ClockedRunnable {
 		for (const id of Object.keys(this.memory)) {
 			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
 		}
+	}
+
+	/**
+	 * Calcule les impulsions des bases de temps système pour ce cycle et les écrit dans
+	 * l'environnement, **avant** l'exécution des routines. `deltaTimeMs` est celui déjà consommé
+	 * pour les temporisations — les bases suivent donc le même temps simulé.
+	 */
+	private updateSystemTimeBases(deltaTimeMs: number): void {
+		for (const base of SYSTEM_TIME_BASES) {
+			const accumulated =
+				(this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) + deltaTimeMs;
+			const pulse = accumulated >= base.periodMs;
+			this.systemTimeBaseAccumulatorsMs.set(
+				base.name,
+				pulse ? accumulated - base.periodMs : accumulated,
+			);
+			this.environment.setVariableValueByName(base.name, pulse);
+		}
+	}
+
+	private resetSystemTimeBases(): void {
+		for (const base of SYSTEM_TIME_BASES) {
+			this.systemTimeBaseAccumulatorsMs.set(base.name, 0);
+		}
+	}
+
+	public start(): void {
+		this.resetSystemTimeBases();
+		super.start();
+	}
+
+	public stop(): void {
+		this.resetSystemTimeBases();
+		super.stop();
 	}
 
 	private writeOutputs(): void {

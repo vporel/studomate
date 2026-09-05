@@ -9,6 +9,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
+import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
 import InvalidBinaryExprOperandTypeException from "./exceptions/invalid-binary-expr-operand-type.exception";
@@ -33,7 +34,20 @@ describe("SemanticAnalyserVisitor", () => {
 			"boolean",
 			"OUT",
 		);
-		env = new Environment([varX, varY, varFlag, varResult, varBoolResult]);
+		const varSystemTimeBase = new EnvVariable(
+			"_SYS_TB_200ms",
+			"_SYS_TB_200ms",
+			"boolean",
+			"IN",
+		);
+		env = new Environment([
+			varX,
+			varY,
+			varFlag,
+			varResult,
+			varBoolResult,
+			varSystemTimeBase,
+		]);
 		analyser = new SemanticAnalyserVisitor(env);
 		lexer = new Lexer(Dialect.FR);
 	});
@@ -49,6 +63,10 @@ describe("SemanticAnalyserVisitor", () => {
 		it("accepts valid identifiers", () => {
 			expect(() => parseAndCheck("x")).not.toThrow();
 			expect(() => parseAndCheck("flag")).not.toThrow();
+		});
+
+		it("accepts a system variable read in an expression", () => {
+			expect(() => parseAndCheck("flag ET _SYS_TB_200ms")).not.toThrow();
 		});
 
 		it("accepts valid arithmetic expressions", () => {
@@ -193,6 +211,12 @@ describe("SemanticAnalyserVisitor", () => {
 		it("accepts assignment to OUT and INOUT variables", () => {
 			expect(() => parseAndCheck("result := 42")).not.toThrow();
 			expect(() => parseAndCheck("y := 100")).not.toThrow();
+		});
+
+		it("throws AssignmentToSystemVariableException on a _SYS_ target", () => {
+			expect(() => parseAndCheck("_SYS_TB_200ms := VRAI")).toThrow(
+				AssignmentToSystemVariableException,
+			);
 		});
 	});
 

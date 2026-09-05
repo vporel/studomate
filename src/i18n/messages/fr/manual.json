@@ -198,7 +198,10 @@
 		"managementTitle": "Gestion des variables",
 		"managementBody1": "Depuis la page Variables (accessible via l'explorateur ou le menu), vous pouvez ajouter, modifier et supprimer des variables. La modification et la suppression sont désactivées en mode Simulation.",
 		"managementBody2": "Renommer le mnémonique d'une variable met à jour toutes les expressions qui l'utilisent dans les grafcets et les ladders du projet.",
-		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer."
+		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer.",
+		"systemTitle": "Variables système",
+		"systemBody1": "Le préfixe « _SYS_ » est réservé : vous ne pouvez pas créer de variable dont le mnémonique commence par « _SYS_ », ni leur affecter de valeur (lecture seule). Elles ne sont pas enregistrées avec le projet : le moteur les injecte à l'analyse et à la compilation. La liste complète est visible dans l'explorateur, sous Variables › Système.",
+		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens vrais pendant un seul scan par période de temps simulé (une impulsion) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate — par exemple faire avancer une position d'un pas fixe : « position := position + pas » exécuté uniquement quand « _SYS_TB_200ms » est vrai."
 	},
 	"grafcet": {
 		"title": "Grafcet",

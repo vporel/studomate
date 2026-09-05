@@ -9,6 +9,8 @@ import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { isSystemVariableName } from "@/schemas/variable/system-variables";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import { PreCompiledProgram } from "./pre-compiled-program";
 import { isPreCompiledGrafcet } from "./pre-compilers/grafcet/grafcet.pre-compiler";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -18,6 +20,11 @@ import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import ProjectAnalyser from "@/project-analyser/project.analyser";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
+
+/** Variables du pré-compilé hors variables système (`_SYS_*`), toujours injectées. */
+function userVariables(variables: PLCVariable[]): PLCVariable[] {
+	return variables.filter((v) => !isSystemVariableName(v.getName()));
+}
 
 /** Rétrécit un programme pré-compilé vers sa forme GRAFCET, en échouant clairement sinon */
 function asGrafcet(program: PreCompiledProgram) {
@@ -35,7 +42,7 @@ describe("ProjectPreCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
-			expect(result.result!.variables).toEqual([]);
+			expect(userVariables(result.result!.variables)).toEqual([]);
 			// Un projet porte toujours un Main (voir Project.createMain) — seul programme ici.
 			expect(Object.values(result.result!.programs)).toHaveLength(1);
 			expect(Object.values(result.result!.programs)[0]).toMatchObject({
@@ -65,9 +72,9 @@ describe("ProjectPreCompiler", () => {
 			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.variables).toHaveLength(2);
-			expect(result.result!.variables[0].getName()).toBe("E1");
-			expect(result.result!.variables[1].getName()).toBe("M1");
+			expect(userVariables(result.result!.variables)).toHaveLength(2);
+			expect(userVariables(result.result!.variables)[0].getName()).toBe("E1");
+			expect(userVariables(result.result!.variables)[1].getName()).toBe("M1");
 		});
 
 		it("compiles step variables", () => {
@@ -86,8 +93,8 @@ describe("ProjectPreCompiler", () => {
 			);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.variables).toHaveLength(1);
-			expect(result.result!.variables[0].getName()).toBe("X1");
+			expect(userVariables(result.result!.variables)).toHaveLength(1);
+			expect(userVariables(result.result!.variables)[0].getName()).toBe("X1");
 		});
 
 		it("merges project variables and step variables", () => {
@@ -112,9 +119,9 @@ describe("ProjectPreCompiler", () => {
 			);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.variables).toHaveLength(2);
-			expect(result.result!.variables.map((v) => v.getName())).toContain("M1");
-			expect(result.result!.variables.map((v) => v.getName())).toContain("X1");
+			expect(userVariables(result.result!.variables)).toHaveLength(2);
+			expect(userVariables(result.result!.variables).map((v) => v.getName())).toContain("M1");
+			expect(userVariables(result.result!.variables).map((v) => v.getName())).toContain("X1");
 		});
 
 		it("compiles a grafcet", () => {
@@ -175,8 +182,8 @@ describe("ProjectPreCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			// Should have 1 memo variable (one for the step)
-			expect(result.result!.variables).toHaveLength(1);
-			expect(result.result!.variables[0].getName()).toBe("_GeneratedMemo_0");
+			expect(userVariables(result.result!.variables)).toHaveLength(1);
+			expect(userVariables(result.result!.variables)[0].getName()).toBe("_GeneratedMemo_0");
 		});
 
 		it("ensures memo variables from different grafcets have unique names", () => {
@@ -199,9 +206,9 @@ describe("ProjectPreCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			// Should have 2 memo variables
-			expect(result.result!.variables).toHaveLength(2);
-			expect(result.result!.variables[0].getName()).toBe("_GeneratedMemo_0");
-			expect(result.result!.variables[1].getName()).toBe("_GeneratedMemo_1");
+			expect(userVariables(result.result!.variables)).toHaveLength(2);
+			expect(userVariables(result.result!.variables)[0].getName()).toBe("_GeneratedMemo_0");
+			expect(userVariables(result.result!.variables)[1].getName()).toBe("_GeneratedMemo_1");
 		});
 
 		it("rebinds a receptivity's reference to another grafcet's step to that step's memo", () => {

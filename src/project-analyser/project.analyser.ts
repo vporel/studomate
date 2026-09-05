@@ -1,6 +1,7 @@
 import { ProgramType } from "@/schemas/program/program.schema";
 import ProgramAnalyser from "./program.analyser";
 import Project from "@/schemas/project/project.schema";
+import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.builder";
 import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
 import LadderAnalyser from "./analysers/ladder/ladder.analyser";
@@ -58,6 +59,7 @@ export default class ProjectAnalyser {
 		const allVariables = [
 			...project.variables,
 			...[...generatedVariablesByProgram.values()].flat(),
+			...SYSTEM_SCHEMA_VARIABLES,
 		];
 
 		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des

@@ -661,4 +661,56 @@ describe("PLC", () => {
 			expect(output?.getValue()).toBe(99);
 		});
 	});
+
+	describe("bases de temps système", () => {
+		const pulseOf = (plc: PLC, name: string): boolean =>
+			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+				?.getValue() as boolean;
+
+		it("_SYS_TB_200ms : impulsion d'un scan une fois par période, scan 100 ms", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+
+			jest.advanceTimersByTime(100); // acc 100 < 200
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			jest.advanceTimersByTime(100); // acc 100
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+
+			plc.stop();
+		});
+
+		it("catch-up : un scan couvrant plusieurs périodes répète l'impulsion jusqu'à rattrapage", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			plc.pause();
+			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle
+
+			plc.stepOnce(); // delta 500 : acc 500 -> impulsion, reste 300
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stepOnce(); // delta 0 : acc 300 -> impulsion, reste 100
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stepOnce(); // delta 0 : acc 100 -> pas d'impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("remet les accumulateurs à zéro au stop puis au redémarrage", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(100); // acc 100
+			plc.stop();
+
+			plc.start();
+			jest.advanceTimersByTime(100); // acc repart de 0 -> 100, pas d'impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stop();
+		});
+	});
 });

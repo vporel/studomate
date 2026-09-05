@@ -60,10 +60,10 @@ export default class ProjectPreCompiler {
 		stepsVariables: Variable[],
 		dialect: Dialect = Dialect.FR,
 	): ProjectPreCompilationResult {
-		const variables = VariableCompiler.compile([
-			...project.variables,
-			...stepsVariables,
-		]);
+		const variables = [
+			...VariableCompiler.compile([...project.variables, ...stepsVariables]),
+			...VariableCompiler.compileSystemVariables(),
+		];
 		const errors: ProjectPreCompilerError[] = [];
 		const programs: Record<string, PreCompiledProgram> = {};
 

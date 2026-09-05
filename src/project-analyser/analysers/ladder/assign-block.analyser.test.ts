@@ -5,6 +5,7 @@ import {
 	createAssignBlockElement,
 } from "@/schemas/ladder/block.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import AssignBlockAnalyser from "./assign-block.analyser";
 
 describe("AssignBlockAnalyser", () => {
@@ -21,7 +22,7 @@ describe("AssignBlockAnalyser", () => {
 			createAssignBlockElement(0, 0, params),
 			source,
 			Dialect.FR,
-			new Map(variables.map((v) => [v.mnemonic, v])),
+			buildAnalysisEnvironment(variables),
 		).map((i) => i.code);
 	}
 

@@ -5,6 +5,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
@@ -15,8 +16,11 @@ describe("CoilAnalyser", () => {
 
 	beforeEach(() => VariableFactory.reset());
 
-	function variablesMap(...variables: Variable[]): Map<string, Variable> {
-		return new Map(variables.map((v) => [v.mnemonic, v]));
+	function variablesContext(...variables: Variable[]) {
+		return {
+			variablesByMnemonic: new Map(variables.map((v) => [v.mnemonic, v])),
+			environment: buildAnalysisEnvironment(variables),
+		};
 	}
 
 	it("signale LADDER_COIL_VARIABLE_UNDECLARED quand la variable n'est pas dans le dictionnaire", () => {
@@ -29,7 +33,7 @@ describe("CoilAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(),
+			variablesContext(),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -49,7 +53,7 @@ describe("CoilAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(q),
+			variablesContext(q),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -69,7 +73,7 @@ describe("CoilAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(i0),
+			variablesContext(i0),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -86,7 +90,7 @@ describe("CoilAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(q),
+			variablesContext(q),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -107,7 +111,7 @@ describe("CoilAnalyser", () => {
 				[...wireInSeries([rail1, coil1]), ...wireInSeries([rail2, coil2])],
 			),
 		]);
-		const variables = variablesMap(q);
+		const variables = variablesContext(q);
 
 		const issuesCoil1 = analyser.analyseInContext(
 			coil1,
@@ -154,7 +158,7 @@ describe("CoilAnalyser", () => {
 				],
 			),
 		]);
-		const variables = variablesMap(q);
+		const variables = variablesContext(q);
 
 		const issuesSet = analyser.analyseInContext(
 			setCoil,
@@ -187,7 +191,7 @@ describe("CoilAnalyser", () => {
 		const [issue] = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(),
+			variablesContext(),
 			ProjectFactory.createEmpty(),
 		);
 
@@ -214,7 +218,7 @@ describe("CoilAnalyser", () => {
 		const issues = analyser.analyseInContext(
 			coil,
 			ladder,
-			variablesMap(q, a),
+			variablesContext(q, a),
 			ProjectFactory.createEmpty(),
 		);
 

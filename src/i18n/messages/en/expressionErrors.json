@@ -38,6 +38,7 @@
 	"INVALID_BINARY_OPERAND_TYPE": "Invalid type for operator \"{operator}\" on the {side} side: expected {expected}, got {actual}",
 	"INVALID_ASSIGNMENT_TARGET": "Invalid assignment target: left-hand side must be a variable.",
 	"INPUT_IDENTIFIER_ASSIGNMENT": "Invalid assignment: the assigned variable is an input variable.",
+	"ASSIGNMENT_TO_SYSTEM_VARIABLE": "Invalid assignment: a system variable (_SYS_) is read-only.",
 	"INCOMPATIBLE_OPERANDS_TYPES": "Incompatible types for operator \"{operator}\": left {leftType}, right {rightType}",
 	"INVALID_TIMER_INPUT_TYPE": "Invalid timer input type: the input of a timer must be boolean (found {actual})",
 	"INVALID_TIMER_LAST_INPUT_NODE": "Invalid timer last input node: the last input of a timer block must be an identifier",

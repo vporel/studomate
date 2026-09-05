@@ -3,6 +3,18 @@ import { LadderElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import { Environment } from "@/simulator/interpreter/environment/environment";
+
+/**
+ * Contexte de résolution des variables, construit **une fois par ladder** par `LadderAnalyser`
+ * et partagé par tous les éléments : la map par mnémonique (types, direction, bloc propriétaire)
+ * et l'`Environment` pour l'analyse sémantique des expressions de blocs. Lecture seule pendant
+ * l'analyse — aucun analyseur ne doit muter l'`Environment`.
+ */
+export type LadderVariablesContext = {
+	variablesByMnemonic: Map<string, Variable>;
+	environment: Environment;
+};
 
 export default abstract class LadderElementAnalyser<E extends LadderElement> {
 	/**
@@ -17,7 +29,7 @@ export default abstract class LadderElementAnalyser<E extends LadderElement> {
 	abstract analyseInContext(
 		element: E,
 		ladder: Ladder,
-		variablesByMnemonic: Map<string, Variable>,
+		variables: LadderVariablesContext,
 		project: Project,
 	): ProjectAnalyserIssue[];
 }

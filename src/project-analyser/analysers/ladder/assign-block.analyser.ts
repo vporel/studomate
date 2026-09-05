@@ -1,11 +1,9 @@
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { Dialect } from "@/expression-language/dialect.enum";
 import ProjectAnalyserIssue, {
 	ProjectAnalyserIssueSource,
 } from "@/project-analyser/project.analyser.issue";
 import { BlockElement } from "@/schemas/ladder/block.schema";
-import Variable from "@/schemas/variable/variable.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import {
@@ -26,7 +24,7 @@ export default class AssignBlockAnalyser {
 		element: BlockElement,
 		source: ProjectAnalyserIssueSource,
 		dialect: Dialect,
-		variablesByMnemonic: Map<string, Variable>,
+		environment: Environment,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "assign") return [];
 		const { in: inRaw, out: outRaw } = element.data.params;
@@ -45,12 +43,7 @@ export default class AssignBlockAnalyser {
 			const value = parseOperandNode(inRaw, dialect, OPERAND_NODE_TYPES);
 			if (!value) return [issue("BLOCK_ASSIGN_IN_NOT_ALLOWED", source)];
 
-			const env = new Environment(
-				Array.from(variablesByMnemonic.values()).map(
-					SchemaVariablesMapper.schemaToEnv,
-				),
-			);
-			new SemanticAnalyserVisitor(env).visit(
+			new SemanticAnalyserVisitor(environment).visit(
 				StatementsBuilder.buildAssignStatementNode(target, value),
 			);
 		} catch (e) {

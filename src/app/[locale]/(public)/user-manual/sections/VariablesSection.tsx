@@ -39,6 +39,13 @@ export default function VariablesSection() {
 			<Typography mb={2}>{t("managementBody2")}</Typography>
 			<Typography mb={2}>{t("managementBody3")}</Typography>
 			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2} id="system-variables">
+				{t("systemTitle")}
+			</Typography>
+			<Typography mb={2}>{t("systemBody1")}</Typography>
+			<Typography mb={2}>{t("systemBody2")}</Typography>
+			<Divider sx={{ my: 2 }} />
 		</section>
 	);
 }

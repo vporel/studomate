@@ -8,6 +8,7 @@
  * `variable.schema.ts` importe en retour `validateVariable` (appelé uniquement dans le
  * constructeur / `update`) — aucun des deux modules n'utilise l'autre à l'évaluation.
  */
+import { isSystemVariableName, SYSTEM_VARIABLE_PREFIX } from "./system-variables";
 import {
 	getValidTypesForZones,
 	VARIABLE_TYPES,
@@ -25,6 +26,7 @@ export type VariableValidationCode =
 	| "MNEMONIC_MUST_START_WITH_LETTER"
 	| "MNEMONIC_INVALID_CHARS"
 	| "MNEMONIC_BLOCK_FORMAT"
+	| "RESERVED_SYSTEM_PREFIX"
 	| "TYPE_UNKNOWN"
 	| "TYPE_NOT_ALLOWED_IN_ZONE"
 	| "ZONE_TYPE_INCOMPATIBLE"
@@ -52,6 +54,10 @@ export function validateMnemonic(
 ): VariableValidationIssue[] {
 	const issues: VariableValidationIssue[] = [];
 	if (mnemonic.length === 0) issues.push(issue("MNEMONIC_EMPTY"));
+	if (isSystemVariableName(mnemonic))
+		issues.push(
+			issue("RESERVED_SYSTEM_PREFIX", { prefix: SYSTEM_VARIABLE_PREFIX }),
+		);
 	if (mnemonic.length > MNEMONIC_MAX_LENGTH)
 		issues.push(issue("MNEMONIC_TOO_LONG", { max: MNEMONIC_MAX_LENGTH }));
 	if (!/^[a-zA-Z]/.test(mnemonic))

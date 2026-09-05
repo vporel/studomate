@@ -1,5 +1,7 @@
+import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import Variable, {
 	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
 	VariableType,
 	VariableZone,
 } from "@/schemas/variable/variable.schema";
@@ -57,5 +59,24 @@ export default class VariableCompiler {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Variables système (bases de temps `_SYS_TB_*`) injectées dans tout programme compilé.
+	 * `scope: "memory"` — le PLC les met à jour lui-même en début de cycle, aucune routine
+	 * utilisateur ne les écrit (l'affectation est refusée à l'analyse). Source unique :
+	 * `SYSTEM_VARIABLES`.
+	 */
+	static compileSystemVariables(): PLCVariable[] {
+		return SYSTEM_VARIABLES.map(
+			(variable) =>
+				new PLCVariable(
+					variable.name,
+					variable.name,
+					"memory",
+					VARIABLE_TYPE_TO_NATIVE_TYPE[variable.type],
+					getNumericRange(variable.type),
+				),
+		);
 	}
 }

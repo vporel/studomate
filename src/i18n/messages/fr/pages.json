@@ -6,7 +6,24 @@
 		"projectStartup": "Démarrage",
 		"inputVariables": "Variables d'entrée",
 		"outputVariables": "Variables de sortie",
-		"memoryVariables": "Variables de mémoire"
+		"memoryVariables": "Variables de mémoire",
+		"systemVariables": "Variables système"
+	},
+	"systemVariables": {
+		"heading": "Variables système",
+		"intro": "Fournies par le moteur et injectées à la compilation. En lecture seule : le préfixe « _SYS_ » est réservé. Les bases de temps « _SYS_TB_… » sont vraies pendant un seul scan par période de temps simulé (impulsion).",
+		"columns": {
+			"name": "Nom",
+			"type": "Type",
+			"description": "Description"
+		},
+		"items": {
+			"_SYS_TB_100ms": "Impulsion d'un scan toutes les 100 ms.",
+			"_SYS_TB_200ms": "Impulsion d'un scan toutes les 200 ms.",
+			"_SYS_TB_500ms": "Impulsion d'un scan toutes les 500 ms.",
+			"_SYS_TB_1s": "Impulsion d'un scan toutes les 1 s.",
+			"_SYS_TB_2s": "Impulsion d'un scan toutes les 2 s."
+		}
 	},
 	"tabBar": {
 		"ariaLabel": "Onglets ouverts",
