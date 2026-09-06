@@ -34,6 +34,7 @@ export default function nodeOrEdgeContextMenuItems(
 	handleDelete: OnDelete,
 	copyCutPasteManager: LadderCopyCutPasteManager,
 	workflowManager: LadderWorkflowManager,
+	openCrossReferences: (variable: string) => void,
 	t: MenuTranslate,
 ): ContextMenuItemType[][] {
 	const groups: ContextMenuItemType[][] = [];
@@ -64,6 +65,17 @@ export default function nodeOrEdgeContextMenuItems(
 					onClick: () =>
 						workflowManager.setCoilType(sectionId, element.id, type),
 				})),
+			},
+		]);
+	}
+
+	// Un contact/une bobine ne porte qu'une variable — groupe isolé (donc encadré de dividers),
+	// juste après le sous-menu « Type ».
+	if (element.type === "contact" || element.type === "coil") {
+		groups.push([
+			{
+				label: t("crossReferences"),
+				onClick: () => openCrossReferences(element.data.variable),
 			},
 		]);
 	}

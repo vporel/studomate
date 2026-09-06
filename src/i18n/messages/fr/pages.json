@@ -76,7 +76,11 @@
 			"mnemonicExists": "Ce mnémonique existe déjà",
 			"addressExists": "Cette adresse existe déjà"
 		},
-		"selectorPlaceholder": "?"
+		"selectorPlaceholder": "?",
+		"contextMenu": {
+			"crossReferences": "Références croisées",
+			"delete": "Supprimer"
+		}
 	},
 	"watchTables": {
 		"heading": "Tables de visualisation",

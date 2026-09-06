@@ -18,6 +18,7 @@ function itemsFor(
 	element: any,
 	handleDelete: jest.Mock = jest.fn(),
 	workflowManager = fakeWorkflowManager(),
+	openCrossReferences: jest.Mock = jest.fn(),
 ) {
 	return nodeOrEdgeContextMenuItems(
 		element,
@@ -25,6 +26,7 @@ function itemsFor(
 		handleDelete,
 		fakeCopyCutPasteManager(),
 		workflowManager,
+		openCrossReferences,
 		identityT,
 	);
 }
@@ -76,6 +78,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 			jest.fn(),
 			ccp,
 			fakeWorkflowManager(),
+			jest.fn(),
 			identityT,
 		);
 
@@ -137,6 +140,44 @@ describe("nodeOrEdgeContextMenuItems", () => {
 				.some((item) => item.label === "type");
 
 			expect(hasType).toBe(false);
+		});
+	});
+
+	describe("Références croisées", () => {
+		it.each([
+			["contact", { type: "NO", variable: "Dcy" }],
+			["coil", { type: "normal", variable: "Moteur" }],
+		])("ouvre le panneau sur la variable du %s", (type, data) => {
+			const openCrossReferences = jest.fn();
+			const node = { id: `${type}-1`, type, data } as any;
+
+			const item = itemsFor(node, jest.fn(), fakeWorkflowManager(), openCrossReferences)
+				.flat()
+				.find((i) => i.label === "crossReferences")!;
+			item.onClick!();
+
+			expect(openCrossReferences).toHaveBeenCalledWith(data.variable);
+		});
+
+		it("place « Références croisées » dans son propre groupe, juste après « Type »", () => {
+			const groups = itemsFor({
+				id: "contact-1",
+				type: "contact",
+				data: { type: "NO", variable: "Dcy" },
+			} as any);
+			const typeGroupIndex = groups.findIndex((g) =>
+				g.some((i) => i.label === "type"),
+			);
+			const xrefGroup = groups[typeGroupIndex + 1];
+			expect(xrefGroup).toHaveLength(1);
+			expect(xrefGroup[0].label).toBe("crossReferences");
+		});
+
+		it("n'apparaît pas pour une arête", () => {
+			const has = itemsFor({ id: "e1", type: LADDER_CONNECTION_EDGE_TYPE } as any)
+				.flat()
+				.some((i) => i.label === "crossReferences");
+			expect(has).toBe(false);
 		});
 	});
 

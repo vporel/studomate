@@ -23,6 +23,7 @@ import {
 } from "react";
 import { StoreApi, useStore } from "zustand";
 import AnalysisResult from "./analysis-result/AnalysisResult";
+import CrossReferenceResult from "./cross-reference/CrossReferenceResult";
 import ExportModal from "./ExportModal";
 import NewProjectModal from "./NewProjectModal";
 import ProjectOpenModal from "./ProjectOpenModal";
@@ -177,6 +178,7 @@ export const ProjectContextProvider = ({
 			<ShareProjectModal />
 			<ShareRequiresCloudModal />
 			<AnalysisResult />
+			<CrossReferenceResult />
 			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
 			<DraftConflictDialog />
 			<CloudConflictDialog />

@@ -15,12 +15,15 @@ import {
 } from "@mui/x-data-grid";
 import { GridApiCommunity } from "@mui/x-data-grid/internals";
 import { enUS, frFR } from "@mui/x-data-grid/locales";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { MouseEvent, useCallback, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
 import GridToolBar from "./GridToolBar";
+import VariableRowContextMenu, {
+	VariableRowMenuTarget,
+} from "./VariableRowContextMenu";
 import useDataGridColumns from "./useDataGridColums";
 
 function chooseZone(zones: VariableZone[], type: VariableType): VariableZone {
@@ -45,6 +48,12 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 	);
 
 	const dataGridColumns = useDataGridColumns(zones);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [contextMenu, setContextMenu] = useState<{
+		visible: boolean;
+		target: VariableRowMenuTarget | null;
+		position: { x: number; y: number };
+	}>({ visible: false, target: null, position: { x: 0, y: 0 } });
 	const { locale } = useLocaleContext();
 	const gridLocaleText = (locale === "fr" ? frFR : enUS).components.MuiDataGrid
 		.defaultProps.localeText;
@@ -107,10 +116,38 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 			ids: new Set<GridRowId>([]),
 		});
 
+	const onRowContextMenu = useCallback(
+		(event: MouseEvent<HTMLElement>) => {
+			const id = event.currentTarget.getAttribute("data-id");
+			// La ligne d'ajout vide (`new-variable`) n'a pas de variable à cibler.
+			if (!id || id === "new-variable" || !containerRef.current) return;
+			const variable = projectVariables.find((v) => v.id === id);
+			if (!variable) return;
+			event.preventDefault();
+			const rect = containerRef.current.getBoundingClientRect();
+			setContextMenu({
+				visible: true,
+				target: { variableId: id, mnemonic: variable.mnemonic },
+				position: {
+					x: event.clientX - rect.left,
+					y: event.clientY - rect.top,
+				},
+			});
+		},
+		[projectVariables],
+	);
+
+	const closeContextMenu = useCallback(
+		() => setContextMenu((menu) => ({ ...menu, visible: false })),
+		[],
+	);
+
 	return (
 		<Box
+			ref={containerRef}
 			sx={{
 				width: "100%",
+				position: "relative",
 				"& .MuiDataGrid-row--editing .MuiDataGrid-cell": {
 					backgroundColor: "rgb(13, 71, 161, 0.1)",
 				},
@@ -147,7 +184,18 @@ const VariablesTable = ({ zones }: { zones: VariableZone[] }) => {
 				slots={{
 					toolbar: () => <GridToolBar rowSelectionModel={rowSelectionModel} />,
 				}}
+				slotProps={{ row: { onContextMenu: onRowContextMenu } }}
 			/>
+			{contextMenu.visible && (
+				<VariableRowContextMenu
+					visible
+					target={contextMenu.target}
+					position={contextMenu.position}
+					onClose={closeContextMenu}
+					parentWidth={window.innerWidth}
+					parentHeight={window.innerHeight}
+				/>
+			)}
 		</Box>
 	);
 };

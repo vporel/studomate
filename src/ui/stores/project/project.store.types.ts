@@ -113,6 +113,7 @@ export interface ProjectUiState {
 	shareModalVisible: boolean;
 	shareRequiresCloudModalVisible: boolean;
 	analysisResultVisible: boolean;
+	crossReferenceResultVisible: boolean;
 	watchTablesVisible: boolean;
 	draftConflictModal: {
 		visible: boolean;
@@ -196,6 +197,14 @@ export interface ProjectStoreState {
 	analysisErrors: AnalysisIssues;
 	analysisWarnings: AnalysisIssues;
 	setAnalysisResultVisible: (visible: boolean) => void;
+	setCrossReferenceResultVisible: (visible: boolean) => void;
+	/**
+	 * Texte du champ de filtre du panneau des références croisées. Vit dans le store pour
+	 * persister quand le panneau est fermé puis rouvert, et pour qu'un clic droit sur une ligne
+	 * de la table des variables puisse le pré-remplir avec un mnémonique.
+	 */
+	crossReferenceFilter: string;
+	setCrossReferenceFilter: (filter: string) => void;
 	setWatchTablesVisible: (visible: boolean) => void;
 	plcConfig: PLCConfig;
 	/**

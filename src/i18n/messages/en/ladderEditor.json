@@ -47,6 +47,7 @@
 		"selectEdges": "Select links",
 		"paste": "Paste",
 		"type": "Type",
+		"crossReferences": "Cross-references",
 		"contactNO": "Normally open (NO)",
 		"contactNF": "Normally closed (NC)",
 		"contactP": "Rising edge (P)",

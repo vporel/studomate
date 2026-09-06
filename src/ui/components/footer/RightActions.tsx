@@ -8,12 +8,16 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 const RightActions = () => {
 	const t = useT("chrome.footerActions");
+	const tCrossRef = useT("crossReference");
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
 	const analysisHasWarnings = useProjectStore(
 		(state) => state.analysisHasWarnings,
 	);
 	const setAnalysisResultVisible = useProjectStore(
 		(state) => state.setAnalysisResultVisible,
+	);
+	const setCrossReferenceResultVisible = useProjectStore(
+		(state) => state.setCrossReferenceResultVisible,
 	);
 	const setWatchTablesVisible = useProjectStore(
 		(state) => state.setWatchTablesVisible,
@@ -54,6 +58,19 @@ const RightActions = () => {
 					{t("hmiSimulation")}
 				</Button>
 			)}
+			<Button
+				sx={{
+					color: "black",
+					fontWeight: "normal",
+					height: "100%",
+					py: "0",
+					px: "3px",
+					"&:hover": { backgroundColor: "rgb(230,230,230)" },
+				}}
+				onClick={() => setCrossReferenceResultVisible(true)}
+			>
+				{tCrossRef("footerButton")}
+			</Button>
 			<Button
 				sx={{
 					color: analysisHasErrors

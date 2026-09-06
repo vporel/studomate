@@ -111,6 +111,7 @@ export const createProjectStore = () => {
 				shareModalVisible: false,
 				shareRequiresCloudModalVisible: false,
 				analysisResultVisible: false,
+				crossReferenceResultVisible: false,
 				watchTablesVisible: false,
 				draftConflictModal: {
 					visible: false,
@@ -241,6 +242,10 @@ export const createProjectStore = () => {
 			analysisErrors: emptyAnalysisIssues(),
 			analysisWarnings: emptyAnalysisIssues(),
 			setAnalysisResultVisible: modalSetter("analysisResultVisible"),
+			setCrossReferenceResultVisible: modalSetter("crossReferenceResultVisible"),
+			crossReferenceFilter: "",
+			setCrossReferenceFilter: (filter) =>
+				set(() => ({ crossReferenceFilter: filter })),
 			setWatchTablesVisible: modalSetter("watchTablesVisible"),
 			plcConfig: {
 				scanTimeMs: 100,

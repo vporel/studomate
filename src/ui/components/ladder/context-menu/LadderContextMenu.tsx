@@ -5,8 +5,9 @@ import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -38,6 +39,19 @@ const LadderContextMenu = ({
 		(s) =>
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
+	);
+	const setCrossReferenceFilter = useProjectStore(
+		(s) => s.setCrossReferenceFilter,
+	);
+	const setCrossReferenceResultVisible = useProjectStore(
+		(s) => s.setCrossReferenceResultVisible,
+	);
+	const openCrossReferences = useCallback(
+		(variable: string) => {
+			setCrossReferenceFilter(variable);
+			setCrossReferenceResultVisible(true);
+		},
+		[setCrossReferenceFilter, setCrossReferenceResultVisible],
 	);
 	const [element, setElement] = useState<LadderContextMenuElement>({
 		type: "pane",
@@ -73,6 +87,7 @@ const LadderContextMenu = ({
 				handleDelete,
 				copyCutPasteManager,
 				workflowManager,
+				openCrossReferences,
 				t,
 			),
 		);
@@ -85,6 +100,7 @@ const LadderContextMenu = ({
 		screenPosition,
 		sectionId,
 		handleDelete,
+		openCrossReferences,
 		t,
 	]);
 

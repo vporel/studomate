@@ -1,0 +1,44 @@
+{
+	"footerButton": "Références croisées",
+	"panelTitle": "Références croisées",
+	"close": "Fermer",
+	"filterPlaceholder": "Filtrer les variables…",
+	"noVariables": "Aucune référence de variable dans ce projet.",
+	"noMatch": "Aucune variable ne correspond au filtre.",
+	"readBy": "Lu par",
+	"writtenBy": "Écrit par",
+	"noReaders": "Lu nulle part",
+	"noWriters": "Écrit nulle part",
+	"unknownProgram": "Programme inconnu",
+	"blockType": {
+		"timer": "temporisation",
+		"counter": "compteur",
+		"compare": "comparaison",
+		"assign": "affectation",
+		"arithmetic": "opération",
+		"user-program": "sous-programme"
+	},
+	"widgetType": {
+		"push-button": "bouton",
+		"indicator": "voyant",
+		"toggle-switch": "interrupteur",
+		"numeric-display": "affichage",
+		"gauge": "jauge",
+		"numeric-input": "saisie",
+		"rectangle": "rectangle",
+		"ellipse": "ellipse",
+		"line": "trait",
+		"text": "texte"
+	},
+	"location": {
+		"ladder-contact": "{programName} · section « {sectionTitle} » · ligne {gridRow} · contact",
+		"ladder-coil": "{programName} · section « {sectionTitle} » · ligne {gridRow} · bobine",
+		"ladder-block-pin": "{programName} · section « {sectionTitle} » · bloc {blockLabel} · pinoche {port}",
+		"grafcet-transition": "{programName} · réceptivité de transition",
+		"grafcet-action-boolean": "{programName} · étape {stepNumber} · action",
+		"grafcet-action-assign": "{programName} · étape {stepNumber} · action",
+		"grafcet-step": "{programName} · étape {stepNumber} · activité de l'étape",
+		"hmi-widget-binding": "{programName} · {widgetTypeLabel} « {widgetName} »",
+		"hmi-widget-animation": "{programName} · {widgetTypeLabel} « {widgetName} » · animation"
+	}
+}
