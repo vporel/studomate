@@ -10,6 +10,7 @@ import useContextMenuEventsHandler from "./useContextMenuEventsHandler";
 type JunctionNodeContextType = {
 	nodeId: string;
 	width: number;
+	nodeX: number;
 	data: JunctionData;
 	pivotSelected: boolean;
 	selectedBranchId: string | null;
@@ -25,6 +26,7 @@ type JunctionNodeContextType = {
 const JunctionNodeContext = createContext<JunctionNodeContextType>({
 	nodeId: "",
 	width: 0,
+	nodeX: 0,
 	data: { pivotPosition: 0, branches: {}, branchesOrder: [] },
 	pivotSelected: false,
 	selectedBranchId: null,
@@ -41,11 +43,13 @@ export const JunctionNodeContextProvider = ({
 	id,
 	data,
 	width,
+	nodeX,
 	children,
 }: {
 	id: string;
 	data: JunctionData;
 	width: number;
+	nodeX: number;
 	children: ReactNode;
 }) => {
 	const {
@@ -66,6 +70,7 @@ export const JunctionNodeContextProvider = ({
 		() => ({
 			nodeId: id,
 			width,
+			nodeX,
 			data,
 			pivotSelected,
 			selectedBranchId,
@@ -80,6 +85,7 @@ export const JunctionNodeContextProvider = ({
 		[
 			id,
 			width,
+			nodeX,
 			data,
 			selectBranch,
 			selectPivot,

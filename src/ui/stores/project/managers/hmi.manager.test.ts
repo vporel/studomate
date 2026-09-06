@@ -1,6 +1,13 @@
 import Project from "@/schemas/project/project.schema";
 import { ProjectStoreState } from "../project.store";
+import { ProjectMode } from "../ProjectMode.enum";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
+
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/lib/analytics", () => ({
+	__esModule: true,
+	default: (...args: any[]) => mockTrackEvent(...args),
+}));
 
 function makeManager(initial: {
 	project?: Project | null;
@@ -8,6 +15,7 @@ function makeManager(initial: {
 }) {
 	let state = {
 		project: initial.project ?? null,
+		mode: ProjectMode.DESIGN,
 		hmiSimulationActivePageId: initial.hmiSimulationActivePageId ?? null,
 		pagesManager: { openPage: jest.fn(), closePage: jest.fn() },
 	} as unknown as ProjectStoreState;
@@ -22,6 +30,26 @@ function makeManager(initial: {
 }
 
 describe("HmiManager", () => {
+	beforeEach(() => mockTrackEvent.mockClear());
+
+	describe("newHmiPage", () => {
+		it("crée la page, ouvre son onglet et enregistre l'événement", () => {
+			const { manager, getState } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
+
+			const page = manager.newHmiPage("Vue 1");
+
+			expect(page).not.toBeNull();
+			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({
+				id: page!.id,
+				type: "hmi",
+				title: "Vue 1",
+			});
+			expect(mockTrackEvent).toHaveBeenCalledWith("hmi-page-created");
+		});
+	});
+
 	describe("setMainHmiPage", () => {
 		it("désigne la nouvelle page principale et retire le statut à l'ancienne", () => {
 			const project = new Project("p1", "Projet", "");

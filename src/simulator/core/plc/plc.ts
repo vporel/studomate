@@ -41,8 +41,14 @@ export default class PLC extends ClockedRunnable {
 	private readonly environment: Environment;
 	/**
 	 * Temps accumulé (ms) depuis la dernière impulsion de chaque base de temps système
-	 * (`_SYS_TB_*`). `acc -= période` (et non `= 0`) à chaque impulsion : si un scan couvre
-	 * plusieurs périodes, l'impulsion se répète sur les scans suivants jusqu'à rattrapage.
+	 * (`_SYS_TB_*`). `acc -= période` (et non `= 0`) à chaque impulsion, pour ne pas perdre le
+	 * reliquat de phase quand un scan dépasse un peu la période.
+	 *
+	 * Le moteur n'émet qu'**une** impulsion par scan. Si un scan couvre plusieurs périodes (cas
+	 * hors contrat : `temps de scan ≤ période`, cf. `SystemTimeBase` — n'arrive en pratique qu'en
+	 * pas-à-pas après une longue pause réelle), une seule période est soustraite : l'impulsion
+	 * reprend au scan suivant si le reliquat le justifie, mais les tops purement intermédiaires
+	 * d'un même scan sont perdus.
 	 */
 	private readonly systemTimeBaseAccumulatorsMs = new Map<string, number>(
 		SYSTEM_TIME_BASES.map((base) => [base.name, 0]),
@@ -263,6 +269,10 @@ export default class PLC extends ClockedRunnable {
 	 * Calcule les impulsions des bases de temps système pour ce cycle et les écrit dans
 	 * l'environnement, **avant** l'exécution des routines. `deltaTimeMs` est celui déjà consommé
 	 * pour les temporisations — les bases suivent donc le même temps simulé.
+	 *
+	 * Au plus une impulsion par scan et par base. Une base dont la période est plus courte que le
+	 * temps de scan est interdite (cf. `SystemTimeBase`) ; le comportement quand `deltaTimeMs`
+	 * couvre néanmoins plusieurs périodes est décrit sur `systemTimeBaseAccumulatorsMs`.
 	 */
 	private updateSystemTimeBases(deltaTimeMs: number): void {
 		for (const base of SYSTEM_TIME_BASES) {

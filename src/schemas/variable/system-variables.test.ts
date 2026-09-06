@@ -36,6 +36,14 @@ describe("SYSTEM_TIME_BASES", () => {
 		}
 	});
 
+	// Simplification assumée : le moteur n'émet qu'une impulsion par scan, une base plus rapide
+	// que le temps de scan par défaut (100 ms) perdrait des tops.
+	it("aucune base n'a de période inférieure au temps de scan par défaut (100 ms)", () => {
+		for (const base of SYSTEM_TIME_BASES) {
+			expect(base.periodMs).toBeGreaterThanOrEqual(100);
+		}
+	});
+
 	it("périodes croissantes, en millisecondes", () => {
 		expect(SYSTEM_TIME_BASES.map((b) => b.periodMs)).toEqual([
 			100, 200, 500, 1000, 2000,

@@ -3,6 +3,7 @@ import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
 import { isSupabaseConfigured, supabase } from "./supabase-client";
 import ProjectRepository, {
+	ProjectListResult,
 	SaveResult,
 	ShareableProjectRepository,
 	ShareResult,
@@ -27,13 +28,17 @@ export default class HybridProjectRepository
 	private readonly local = new LocalStorageProjectRepository();
 	private readonly cloud = new SupabaseProjectRepository();
 
-	async list(): Promise<Project[]> {
-		const localProjects = await this.local.list();
-		if (!(await this.isAuthenticated())) return localProjects;
+	async list(): Promise<ProjectListResult> {
+		const local = await this.local.list();
+		if (!(await this.isAuthenticated())) return local;
 		// Un projet présent dans l'index cloud n'est plus local, même si `local.list()` le renvoie
 		// encore (nettoyage local incomplet après un `moveToCloud` — voir plus bas).
-		const localOnly = localProjects.filter((p) => !this.isCloud(p.id));
-		return [...localOnly, ...(await this.cloud.list())];
+		const localOnly = local.projects.filter((p) => !this.isCloud(p.id));
+		const cloud = await this.cloud.list();
+		return {
+			projects: [...localOnly, ...cloud.projects],
+			skipped: [...local.skipped, ...cloud.skipped],
+		};
 	}
 
 	async get(projectId: string): Promise<Project | null> {

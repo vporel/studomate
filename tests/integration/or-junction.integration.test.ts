@@ -79,6 +79,44 @@ describe("OR Junction Integration Tests", () => {
 			expect(q1WasEverTrue).toBe(false); // branch2 never fired
 		});
 
+		it("divergence/convergence OU à 3 branches exclusives : seule la branche éligible est franchie", async () => {
+			const sel = VariableFactory.createAnalogInput("sel");
+			const q0 = VariableFactory.createLogicOutput("Q0");
+			const q1 = VariableFactory.createLogicOutput("Q1");
+			const q2 = VariableFactory.createLogicOutput("Q2");
+
+			// 3 branches mutuellement exclusives (contrainte de l'analyse OU).
+			const grafcet = GrafcetFactory.createOrDivergenceCycleN(
+				"grafcet-or3",
+				["sel = 0", "sel = 1", "sel = 2"],
+				["Q0", "Q1", "Q2"],
+			);
+			const project = ProjectFactory.create([sel, q0, q1, q2], [grafcet], "OR 3 branches");
+
+			const runWith = async (selValue: number) => {
+				const seen = { q0: false, q1: false, q2: false };
+				let cycleError: Error | null = null;
+				const plc = compileToPLC(project, 10, Dialect.FR, {
+					onCycleEnd: (p) => {
+						if (getVariableValue(p, "Q0")) seen.q0 = true;
+						if (getVariableValue(p, "Q1")) seen.q1 = true;
+						if (getVariableValue(p, "Q2")) seen.q2 = true;
+					},
+					onCycleError: (e) => { cycleError = e; },
+				});
+				expect(plc).not.toBeNull();
+				plc!.setPhysicalInputValueByName("sel", selValue);
+				plc!.start();
+				await jest.advanceTimersByTimeAsync(400);
+				plc!.stop();
+				if (cycleError) throw cycleError;
+				return seen;
+			};
+
+			expect(await runWith(1)).toEqual({ q0: false, q1: true, q2: false });
+			expect(await runWith(2)).toEqual({ q0: false, q1: false, q2: true });
+		});
+
 		it("activates branch2 (Q1) when I0 is FALSE", async () => {
 			const i0 = VariableFactory.createLogicInput("I0");
 			const q0 = VariableFactory.createLogicOutput("Q0");

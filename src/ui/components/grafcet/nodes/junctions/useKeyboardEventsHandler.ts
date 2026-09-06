@@ -2,6 +2,8 @@
 
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
+import { GRAFCET_PAGE_DIMENSIONS } from "@/ui/utils/grafcet/grafcet-utils";
+import resolveExtremeBranchDrag from "@/ui/utils/grafcet/junction-extreme-branch-drag";
 import { useUpdateNodeInternals } from "@xyflow/react";
 import React, { useCallback } from "react";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
@@ -18,6 +20,8 @@ export default function useKeyboardEventsHandler(
 	selectNextBranch: () => void,
 	clearSelection: () => void,
 	width: number,
+	nodeX: number,
+	data: JunctionData,
 ): (e: React.KeyboardEvent<HTMLDivElement>) => void {
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const updatenodeInternals = useUpdateNodeInternals();
@@ -53,6 +57,35 @@ export default function useKeyboardEventsHandler(
 					return;
 				}
 				const step = FLOW_GRID_CELL_WIDTH * (toLeft ? -1 : 1);
+
+				const order = data.branchesOrder;
+				const edge =
+					selectedBranchId != null && order.length >= 2
+						? selectedBranchId === order[0]
+							? "first"
+							: selectedBranchId === order[order.length - 1]
+								? "last"
+								: null
+						: null;
+				if (edge != null) {
+					const resolved = resolveExtremeBranchDrag(
+						{ data, nodeX, width },
+						edge,
+						step,
+						GRAFCET_PAGE_DIMENSIONS.width,
+					);
+					if (resolved.nodeX !== nodeX || resolved.width !== width) {
+						workflowManager.applyJunctionBranchDrag(nodeId, {
+							branches: resolved.branches,
+							pivotPosition: resolved.pivotPosition,
+							nodeX: resolved.nodeX,
+							width: resolved.width,
+						});
+						updatenodeInternals(nodeId);
+					}
+					return;
+				}
+
 				workflowManager.updateNodeData(nodeId, (prev) => {
 					const prevData = prev as JunctionData;
 					const dataToChange: Partial<JunctionData> = {};
@@ -95,6 +128,8 @@ export default function useKeyboardEventsHandler(
 			workflowManager,
 			updatenodeInternals,
 			width,
+			nodeX,
+			data,
 		],
 	);
 }

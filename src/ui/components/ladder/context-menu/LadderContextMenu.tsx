@@ -6,8 +6,12 @@ import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useLadderRenderContext from "@/ui/components/pdf/useLadderRenderContext";
+import trackEvent from "@/ui/lib/analytics";
+import { exportProgramPdf } from "@/ui/lib/pdf/program-pdf";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -29,6 +33,7 @@ const LadderContextMenu = ({
 	handleDelete: OnDelete;
 }) => {
 	const { contextMenuEvents } = useLadderContext();
+	const ladder = useLadderStore((state) => state.ladder);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const copyCutPasteManager = useLadderStore(
 		(state) => state.copyCutPasteManager,
@@ -40,6 +45,21 @@ const LadderContextMenu = ({
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
+	const projectName = useProjectStore((s) => s.project?.name ?? "export");
+	const ladderContext = useLadderRenderContext();
+	const tExport = useT("projects.export");
+	const onExport = useCallback(() => {
+		void exportProgramPdf({
+			config: { type: "ladder", program: ladder },
+			filename: `${projectName} - ${ladder.name}`,
+			sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
+			ladderContext,
+		})
+			.then(() =>
+				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
+			)
+			.catch(() => toast.error(tExport("errorAssembling")));
+	}, [ladder, projectName, ladderContext, tExport]);
 	const setCrossReferenceFilter = useProjectStore(
 		(s) => s.setCrossReferenceFilter,
 	);
@@ -77,6 +97,8 @@ const LadderContextMenu = ({
 				screenPosition,
 				canPaste,
 				t,
+				onExport,
+				ladder.getAllElements().length === 0,
 			);
 		}
 		const items: ContextMenuItemType[][] = [];
@@ -94,12 +116,14 @@ const LadderContextMenu = ({
 		return items;
 	}, [
 		element,
+		ladder,
 		workflowManager,
 		copyCutPasteManager,
 		canPaste,
 		screenPosition,
 		sectionId,
 		handleDelete,
+		onExport,
 		openCrossReferences,
 		t,
 	]);

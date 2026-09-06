@@ -6,8 +6,11 @@ import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { XYPosition } from "@xyflow/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import trackEvent from "@/ui/lib/analytics";
+import { exportProgramPdf } from "@/ui/lib/pdf/program-pdf";
 import { useT } from "@/ui/i18n/useT";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import type { MenuTranslate } from "./menu-translate";
@@ -63,6 +66,20 @@ const GrafcetContextMenu = ({
 	);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
+	const projectName = useProjectStore((state) => state.project?.name ?? "export");
+
+	const tExport = useT("projects.export");
+	const onExport = useCallback(() => {
+		void exportProgramPdf({
+			config: { type: "grafcet", program: grafcet },
+			filename: `${projectName} - ${grafcet.name}`,
+			sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
+		})
+			.then(() =>
+				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
+			)
+			.catch(() => toast.error(tExport("errorAssembling")));
+	}, [grafcet, projectName, tExport]);
 
 	const tMenuRaw = useT("grafcetEditor.menu");
 	const tActionTypesRaw = useT("grafcetEditor.actionTypes");
@@ -91,6 +108,7 @@ const GrafcetContextMenu = ({
 					screenPosition,
 					canPaste,
 					tMenu,
+					onExport,
 				),
 			);
 		} else {
@@ -162,6 +180,7 @@ const GrafcetContextMenu = ({
 		canPaste,
 		screenPosition,
 		contextMenuEvents,
+		onExport,
 		inSimulation,
 		grafcet,
 		grafcetId,

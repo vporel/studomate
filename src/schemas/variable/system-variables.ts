@@ -19,7 +19,13 @@ export type SystemVariable = {
 /**
  * Base de temps : `_SYS_TB_X` est un BOOL vrai pendant exactement un scan par période de temps
  * simulé, faux sinon (impulsion, pas un signal carré). Équivalent des *clock memory bits* des
- * automates réels. Contrainte assumée : `temps de scan ≤ période`.
+ * automates réels.
+ *
+ * Simplification assumée : `periodMs` d'une base de temps ne doit jamais être **inférieure au
+ * temps de scan** (100 ms par défaut). Une base plus rapide que le scan (`_SYS_TB_50ms`,
+ * `_SYS_TB_10ms`) est donc interdite : un scan couvrirait alors plusieurs périodes, or le moteur
+ * n'émet qu'une impulsion par scan (`PLC.updateSystemTimeBases`) — les tops intermédiaires
+ * seraient perdus. Toutes les bases listées ici respectent cette borne au scan par défaut.
  */
 export type SystemTimeBase = SystemVariable & {
 	type: "BOOL";
@@ -28,7 +34,7 @@ export type SystemTimeBase = SystemVariable & {
 
 /**
  * `_SYS_TB_100ms` est dégénérée au temps de scan par défaut (100 ms) — active à chaque scan —
- * mais utile à scan plus court ; `_SYS_TB_10ms` reste absente (inutilisable à cette échelle).
+ * mais utile à scan plus court.
  */
 export const SYSTEM_TIME_BASES: readonly SystemTimeBase[] = [
 	{

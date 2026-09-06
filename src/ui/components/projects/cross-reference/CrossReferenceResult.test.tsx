@@ -10,6 +10,7 @@ import {
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";
@@ -51,8 +52,7 @@ function buildProject(): Project {
  * Le filtre vit dans le store : on le simule ici avec une variable locale que
  * `setCrossReferenceFilter` met à jour, en re-rendant le composant.
  */
-function setup(visible = true, initialFilter = "") {
-	const project = buildProject();
+function setup(visible = true, initialFilter = "", project = buildProject()) {
 	const setCrossReferenceResultVisible = jest.fn();
 	let filter = initialFilter;
 	const setCrossReferenceFilter = jest.fn((value: string) => {
@@ -116,6 +116,21 @@ describe("CrossReferenceResult", () => {
 		setup(true, "Moteur");
 		expect(screen.getByDisplayValue("Moteur")).toBeInTheDocument();
 		expect(screen.queryByText("Dcy")).not.toBeInTheDocument();
+	});
+
+	it("distingue une variable existante sans référence d'un filtre qui ne correspond à rien", () => {
+		const project = buildProject();
+		project.variables.push(new Variable("v1", "ma_var2", "memory", "BOOL"));
+
+		setup(true, "ma_var2", project);
+		expect(
+			screen.getByText("« ma_var2 » n'est ni lue ni écrite dans ce projet."),
+		).toBeInTheDocument();
+
+		setup(true, "zzz_inexistante", project);
+		expect(
+			screen.getByText("Aucune variable ne correspond au filtre."),
+		).toBeInTheDocument();
 	});
 
 	it("ferme le panneau via le bouton de fermeture", () => {

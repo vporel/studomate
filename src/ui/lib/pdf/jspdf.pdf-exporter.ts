@@ -3,6 +3,7 @@ import { renderSceneToJsPdf } from "@/ui/lib/program-export-drawing/backends/jsp
 import { LADDER_ZOOM } from "@/ui/lib/program-export-drawing/ladder-scene";
 import { mmToPx } from "@/ui/lib/utils";
 import renderMarkdownToPdf from "./markdown-to-pdf";
+import { drawPdfTable } from "./pdf-table";
 import {
 	PdfCoverPage,
 	PdfExportDocument,
@@ -21,6 +22,14 @@ const TITLE_BAND_MM = 12;
 const SECTION_HEADING_MM = 7;
 /** Espace vertical entre deux sections de ladder sur une même page, en mm. */
 const SECTION_GAP_MM = 8;
+/** Corps de la description d'une section de ladder, en points. */
+const SECTION_DESC_FONT_PT = 9;
+/** Interligne de la description d'une section de ladder, en mm. */
+const SECTION_DESC_LINE_MM = 4;
+/** Espace entre la description d'une section et son dessin, en mm. */
+const SECTION_DESC_GAP_MM = 2;
+/** Niveau de gris (0-255) du trait séparant deux sections de ladder sur une même page. */
+const SECTION_SEPARATOR_GREY = 180;
 
 export class JsPdfExporter implements PdfExporter {
 	async export(document: PdfExportDocument): Promise<void> {
@@ -57,6 +66,8 @@ export class JsPdfExporter implements PdfExporter {
 				this.drawLadderFlow(doc, section);
 			} else if (section.scene) {
 				this.drawGrafcetPage(doc, section, orientation);
+			} else if (section.table) {
+				this.drawTablePage(doc, section, orientation);
 			}
 		}
 
@@ -139,6 +150,27 @@ export class JsPdfExporter implements PdfExporter {
 		renderSceneToJsPdf(doc, scene, { x, y, scale });
 	}
 
+	private drawTablePage(
+		doc: jsPDF,
+		section: PdfExportSection,
+		orientation: "portrait" | "landscape",
+	): void {
+		const pageWidth = orientation === "landscape" ? A4_HEIGHT_MM : A4_WIDTH_MM;
+		const pageHeight = orientation === "landscape" ? A4_WIDTH_MM : A4_HEIGHT_MM;
+		this.pageTitle(doc, section.title, pageWidth);
+		drawPdfTable(
+			doc,
+			section.table!,
+			{
+				x: MARGIN_MM,
+				top: MARGIN_MM + TITLE_BAND_MM,
+				pageTop: MARGIN_MM,
+				bottom: pageHeight - MARGIN_MM,
+			},
+			() => doc.addPage("a4", orientation),
+		);
+	}
+
 	/**
 	 * Ladder : les sections coulent sur les pages à une **échelle commune** et sont **calées à
 	 * gauche** — la barre d'alimentation garde donc la même abscisse d'une page à l'autre.
@@ -156,12 +188,29 @@ export class JsPdfExporter implements PdfExporter {
 		const bottom = pageHeight - MARGIN_MM;
 		const sections = section.ladderSections!;
 
+		// Lignes de description enroulées et hauteur du bloc d'en-tête (intitulé + description),
+		// par section — l'échelle commune et les sauts de page doivent en tenir compte.
+		doc.setFont("helvetica", "normal");
+		doc.setFontSize(SECTION_DESC_FONT_PT);
+		const headings = sections.map(({ description }) => {
+			const lines: string[] = description
+				? (doc.splitTextToSize(description, availableWidth) as string[])
+				: [];
+			const blockHeight =
+				SECTION_HEADING_MM +
+				(lines.length
+					? lines.length * SECTION_DESC_LINE_MM + SECTION_DESC_GAP_MM
+					: 0);
+			return { lines, blockHeight };
+		});
+
 		const maxSceneWidth = Math.max(1, ...sections.map((s) => s.scene.width));
 		const minSceneWidth = mmToPx(A4_HEIGHT_MM) / LADDER_ZOOM;
 		const widthScale = availableWidth / Math.max(maxSceneWidth, minSceneWidth);
 
 		const maxSceneHeight = Math.max(1, ...sections.map((s) => s.scene.height));
-		const availableSectionHeight = bottom - MARGIN_MM - SECTION_HEADING_MM;
+		const maxHeadingHeight = Math.max(...headings.map((h) => h.blockHeight));
+		const availableSectionHeight = bottom - MARGIN_MM - maxHeadingHeight;
 		const heightScale = availableSectionHeight / maxSceneHeight;
 
 		const scale = Math.min(widthScale, heightScale);
@@ -169,13 +218,23 @@ export class JsPdfExporter implements PdfExporter {
 		this.pageTitle(doc, section.title, pageWidth);
 		let y = MARGIN_MM + TITLE_BAND_MM;
 
-		for (const { heading, scene } of sections) {
+		sections.forEach(({ heading, scene }, i) => {
+			const { lines, blockHeight: headingHeight } = headings[i];
 			const blockHeight = scene.height * scale;
-			const needed = SECTION_HEADING_MM + blockHeight;
+			const needed = headingHeight + blockHeight;
 			const atPageTop = y <= MARGIN_MM + TITLE_BAND_MM + 0.01;
+			let startedNewPage = false;
 			if (!atPageTop && y + needed > bottom) {
 				doc.addPage("a4", "landscape");
 				y = MARGIN_MM;
+				startedNewPage = true;
+			}
+
+			if (i > 0 && !startedNewPage) {
+				const sepY = y - SECTION_GAP_MM / 2;
+				doc.setDrawColor(SECTION_SEPARATOR_GREY);
+				doc.line(MARGIN_MM, sepY, pageWidth - MARGIN_MM, sepY);
+				doc.setDrawColor(0);
 			}
 
 			doc.setFont("helvetica", "bold");
@@ -183,8 +242,15 @@ export class JsPdfExporter implements PdfExporter {
 			doc.text(heading, MARGIN_MM, y + 4);
 			y += SECTION_HEADING_MM;
 
+			if (lines.length) {
+				doc.setFont("helvetica", "normal");
+				doc.setFontSize(SECTION_DESC_FONT_PT);
+				doc.text(lines, MARGIN_MM, y + SECTION_DESC_LINE_MM - 1);
+				y += lines.length * SECTION_DESC_LINE_MM + SECTION_DESC_GAP_MM;
+			}
+
 			renderSceneToJsPdf(doc, scene, { x: MARGIN_MM, y, scale });
 			y += blockHeight + SECTION_GAP_MM;
-		}
+		});
 	}
 }

@@ -59,7 +59,7 @@ describe("GrafcetCompiler", () => {
 			expect(result.nodes.length).toBeGreaterThan(0);
 		});
 
-		it("emits the initial step activation in initNodes, not in nodes", () => {
+		it("garde l'activation de l'étape initiale hors des nodes (X0 := TRUE)", () => {
 			const step0Node = IdentifiersBuilder.buildIdentifierNode("X0");
 			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
 
@@ -104,18 +104,8 @@ describe("GrafcetCompiler", () => {
 
 			const result = GrafcetCompiler.compile(preCompiledGrafcet);
 
-			// L'activation de l'étape initiale (X0 := TRUE si aucune autre étape n'est active)
-			// est émise à part : `ProjectCompiler` l'exécute après la routine des mémos d'étape.
-			expect(result.initNodes.length).toBeGreaterThan(0);
-			const initAssigns = result.initNodes.flatMap((n) =>
-				new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
-			);
-			expect(initAssigns.some((n) => (n.left as any).value === "X0")).toBe(
-				true,
-			);
-
 			// La désactivation de X0 par le franchissement de trans-1 reste dans `nodes` — seule
-			// l'activation initiale (X0 := TRUE) en est absente.
+			// l'activation initiale (X0 := TRUE), portée par `buildInitializationNodes`, en est absente.
 			const nodesAssigns = result.nodes.flatMap((n) =>
 				new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
 			);
@@ -243,104 +233,60 @@ describe("GrafcetCompiler", () => {
 			expect(result.nodes[0]).toBe(timer1);
 		});
 
-		it("throws error if no initial step", () => {
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+	});
+
+	describe("buildInitializationNodes", () => {
+		function grafcetWith(
+			steps: [string, { node: any; initial: boolean }][],
+		): PreCompiledGrafcet {
+			return {
 				type: "grafcet",
 				transitionObservations: new Map(),
-				steps: new Map([
-					[
-						"step-0",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X0"),
-							initial: false,
-						},
-					],
-					[
-						"step-1",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X1"),
-							initial: false,
-						},
-					],
-				]),
-				transitions: new Map([
-					[
-						"trans-1",
-						{
-							node: LiteralsBuilder.buildBooleanNode(true),
-							pureNode: LiteralsBuilder.buildBooleanNode(true),
-							timers: [],
-							predecessorStepsIds: ["step-0"],
-							successorStepsIds: ["step-1"],
-							orPriorityExclusionTransitionIds: [],
-						},
-					],
-				]),
+				steps: new Map(steps),
+				stepsMemos: new Map(),
+				transitions: new Map(),
 				actions: new Map(),
-				stepsMemos: new Map([
-					[
-						"step-0",
-						{
-							variable: {} as any,
-							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
-						},
-					],
-					[
-						"step-1",
-						{
-							variable: {} as any,
-							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
-						},
-					],
-				]),
 			};
+		}
 
-			expect(() => GrafcetCompiler.compile(preCompiledGrafcet)).toThrow(
-				"Grafcet must have exactly one initial step",
+		it("émet l'activation de l'étape initiale (X0 := TRUE) sous garde « aucune autre étape active »", () => {
+			const nodes = GrafcetCompiler.buildInitializationNodes(
+				grafcetWith([
+					["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
+					["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
+				]),
 			);
+
+			const assigns = nodes.flatMap((n) =>
+				new FinderVisitor<AssignStatementNode>("ASSIGN_STATEMENT").visit(n),
+			);
+			expect(
+				assigns.some(
+					(n) =>
+						(n.left as any).value === "X0" && (n.right as any).value === true,
+				),
+			).toBe(true);
 		});
 
-		it("throws error if less than 2 steps", () => {
-			const preCompiledGrafcet: PreCompiledGrafcet = {
-				type: "grafcet",
-				transitionObservations: new Map(),
-				steps: new Map([
-					[
-						"step-0",
-						{
-							node: IdentifiersBuilder.buildIdentifierNode("X0"),
-							initial: true,
-						},
-					],
-				]),
-				stepsMemos: new Map([
-					[
-						"step-0",
-						{
-							variable: {} as any,
-							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
-						},
-					],
-				]),
-				transitions: new Map([
-					[
-						"trans-1",
-						{
-							node: LiteralsBuilder.buildBooleanNode(true),
-							pureNode: LiteralsBuilder.buildBooleanNode(true),
-							timers: [],
-							predecessorStepsIds: ["step-0"],
-							successorStepsIds: [],
-							orPriorityExclusionTransitionIds: [],
-						},
-					],
-				]),
-				actions: new Map(),
-			};
+		it("lève si aucune étape initiale", () => {
+			expect(() =>
+				GrafcetCompiler.buildInitializationNodes(
+					grafcetWith([
+						["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: false }],
+						["step-1", { node: IdentifiersBuilder.buildIdentifierNode("X1"), initial: false }],
+					]),
+				),
+			).toThrow("Grafcet must have exactly one initial step");
+		});
 
-			expect(() => GrafcetCompiler.compile(preCompiledGrafcet)).toThrow(
-				"Grafcet must have at least 2 steps",
-			);
+		it("lève si moins de 2 étapes", () => {
+			expect(() =>
+				GrafcetCompiler.buildInitializationNodes(
+					grafcetWith([
+						["step-0", { node: IdentifiersBuilder.buildIdentifierNode("X0"), initial: true }],
+					]),
+				),
+			).toThrow("Grafcet must have at least 2 steps");
 		});
 	});
 });

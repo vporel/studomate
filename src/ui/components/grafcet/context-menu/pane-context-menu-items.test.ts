@@ -13,9 +13,20 @@ function fakeViewManager(nodes: unknown[], edges: unknown[]): any {
 const fakeCopyCutPasteManager = () => ({ pasteElements: jest.fn() }) as any;
 const SCREEN_POSITION = { x: 12, y: 34 };
 
+const onExport = jest.fn();
+
 function items(viewManager: any, canPaste = false, ccp = fakeCopyCutPasteManager()) {
-	return paneContextMenuItems(viewManager, ccp, SCREEN_POSITION, canPaste, identityT);
+	return paneContextMenuItems(
+		viewManager,
+		ccp,
+		SCREEN_POSITION,
+		canPaste,
+		identityT,
+		onExport,
+	);
 }
+
+beforeEach(() => onExport.mockClear());
 
 describe("paneContextMenuItems", () => {
 	it("désactive 'Tout sélectionner' et 'Exporter' quand le flow est vide", () => {
@@ -32,6 +43,14 @@ describe("paneContextMenuItems", () => {
 
 		expect(selectAllItem.disabled).toBe(false);
 		expect(exportItem.disabled).toBe(false);
+	});
+
+	it("déclenche l'export au clic sur 'Exporter'", () => {
+		const [, , [exportItem]] = items(fakeViewManager([{ id: "n1" }], []));
+
+		exportItem.onClick();
+
+		expect(onExport).toHaveBeenCalledTimes(1);
 	});
 
 	it("désactive 'Sélectionner les liaisons' sans arête, l'active sinon", () => {

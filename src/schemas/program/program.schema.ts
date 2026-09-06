@@ -31,8 +31,9 @@ export default abstract class Program {
 
 	/**
 	 * Traduit les mots-clés des expressions de la notation d'un dialecte vers l'autre (voir
-	 * `Project.setDialect`). Sans objet — et donc non implémentée — pour une notation dont les
-	 * éléments référencent les variables par mnémonique sans expression textuelle (Ladder).
+	 * `Project.setDialect`). Abstraite, pas optionnelle : chaque notation doit se prononcer —
+	 * une notation dont les éléments référencent les variables par mnémonique sans expression
+	 * textuelle (Ladder) fournit une implémentation vide explicite.
 	 */
-	translateExpressionsKeywords?(from: Dialect, to: Dialect): void;
+	abstract translateExpressionsKeywords(from: Dialect, to: Dialect): void;
 }

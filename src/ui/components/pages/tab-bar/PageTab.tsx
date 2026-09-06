@@ -94,6 +94,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			sx={{
 				height: "100%",
 				width: "fit-content",
+				flexShrink: 0,
 				padding: "5px 5px 5px 10px",
 				display: "flex",
 				alignItems: "center",
@@ -142,7 +143,10 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 						fontSize: "1.2rem",
 					}}
 				/>
-				<Typography component="span" sx={{ fontSize: "0.85rem" }}>
+				<Typography
+					component="span"
+					sx={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
+				>
 					{pageTitle({ id, title, type })}
 				</Typography>
 			</Box>

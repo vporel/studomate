@@ -15,16 +15,13 @@ export default function useHmiStyleAnimation<TProps extends string>(
 	animation: HmiStyleAnimation<TProps> | undefined,
 	enabled: boolean,
 ): Partial<Record<TProps, string>> {
-	const simulationVariablesStates = useProjectStore(
-		(s) => s.simulationVariablesStates,
+	const value = useProjectStore((s) =>
+		animation
+			? s.simulationVariablesStatesByMnemonic[animation.variable]?.value
+			: undefined,
 	);
-	if (!enabled || !animation) return {};
-	const entry = Object.values(simulationVariablesStates).find(
-		(s) => s.mnemonic === animation.variable,
-	);
-	if (!entry) return {};
-	const currentValue =
-		typeof entry.value === "boolean" ? (entry.value ? 1 : 0) : entry.value;
+	if (!enabled || !animation || value === undefined) return {};
+	const currentValue = typeof value === "boolean" ? (value ? 1 : 0) : value;
 	const row = animation.rows.find((r) => r.value === currentValue);
 	return row?.properties ?? {};
 }

@@ -4,13 +4,18 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
-import { LadderRenderContext } from "@/ui/lib/program-export-drawing/ladder-render-context";
+import {
+	buildProjectVariablesSections,
+	buildVariableGroupSection,
+	VariableGroupKey,
+} from "@/ui/lib/pdf/variables-table-pdf";
 import { exportProject } from "@/ui/utils/project/project-export-utils";
 import {
 	Alert,
 	Box,
 	Button,
 	Checkbox,
+	Divider,
 	FormControlLabel,
 	LinearProgress,
 	Radio,
@@ -20,12 +25,28 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import useLadderRenderContext from "../pdf/useLadderRenderContext";
 import { PdfExportProgramConfig, usePdfExport } from "../pdf/usePdfExport";
+import { usePageTitle } from "../pages/usePageTitle";
+import type { VariablesPageId } from "../pages/VariablesPage";
 import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 
 type ExportFormat = "pdf" | "json";
 type PdfScope = "full" | "active";
+
+const VARIABLES_PAGE_GROUP: Record<VariablesPageId, VariableGroupKey> = {
+	"input-variables": "input",
+	"output-variables": "output",
+	"memory-variables": "memory",
+};
+const isVariablesPageId = (id: string): id is VariablesPageId =>
+	id in VARIABLES_PAGE_GROUP;
+
+/** Cible d'un export « page active » : un programme ou une page de variables utilisateur. */
+type ActiveExport =
+	| { kind: "program"; config: PdfExportProgramConfig; name: string }
+	| { kind: "variables"; pageId: VariablesPageId; name: string };
 
 export default function ExportModal() {
 	const {
@@ -53,35 +74,50 @@ export default function ExportModal() {
 		[project],
 	);
 
-	const activeProgram: PdfExportProgramConfig | null = useMemo(() => {
-		if (!project) return null;
-		if (activeScopeType === "grafcet" && project.grafcets[activeScope])
-			return { type: "grafcet", program: project.grafcets[activeScope] };
-		if (activeScopeType === "ladder" && project.ladders[activeScope])
-			return { type: "ladder", program: project.ladders[activeScope] };
-		return null;
-	}, [project, activeScope, activeScopeType]);
-
 	const t = useT("projects.export");
 	const tc = useT("projects.common");
-	const tBlock = useT("ladderEditor.block");
+	const tColumns = useT("pages.variablesGrid.columns");
+	const tPageTitles = useT("pages.titles");
+	const pageTitle = usePageTitle();
 
-	const ladderContext = useMemo<LadderRenderContext>(
+	const columnLabels = useMemo(
 		() => ({
-			programName: (id) =>
-				project?.ladders[id]?.name ?? project?.grafcets[id]?.name,
-			blockStaticLabel: (blockType) =>
-				blockType === "assign"
-					? tBlock("assignStaticLabel")
-					: blockType === "arithmetic"
-						? tBlock("arithmeticStaticLabel")
-						: undefined,
+			mnemonic: tColumns("mnemonic"),
+			type: tColumns("type"),
+			address: tColumns("address"),
+			comment: tColumns("comment"),
 		}),
-		[project, tBlock],
+		[tColumns],
 	);
+
+	const activeExport: ActiveExport | null = useMemo(() => {
+		if (!project) return null;
+		if (activeScopeType === "grafcet" && project.grafcets[activeScope])
+			return {
+				kind: "program",
+				config: { type: "grafcet", program: project.grafcets[activeScope] },
+				name: project.grafcets[activeScope].name,
+			};
+		if (activeScopeType === "ladder" && project.ladders[activeScope])
+			return {
+				kind: "program",
+				config: { type: "ladder", program: project.ladders[activeScope] },
+				name: project.ladders[activeScope].name,
+			};
+		if (isVariablesPageId(activeScope))
+			return {
+				kind: "variables",
+				pageId: activeScope,
+				name: pageTitle({ id: activeScope, type: "variables", title: "" }),
+			};
+		return null;
+	}, [project, activeScope, activeScopeType, pageTitle]);
+
+	const ladderContext = useLadderRenderContext();
 	const [format, setFormat] = useState<ExportFormat>("pdf");
 	const [scope, setScope] = useState<PdfScope>("full");
 	const [includeCover, setIncludeCover] = useState(true);
+	const [includeVariables, setIncludeVariables] = useState(true);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [filename, setFilename] = useState("");
 
@@ -95,6 +131,7 @@ export default function ExportModal() {
 		setFormat("pdf");
 		setScope("full");
 		setIncludeCover(true);
+		setIncludeVariables(true);
 		setSelectedIds(new Set(ids));
 		setFilename(project.name);
 	}, [exportModalVisible, project]);
@@ -121,11 +158,10 @@ export default function ExportModal() {
 	const changeScope = useCallback(
 		(next: PdfScope) => {
 			setScope(next);
-			if (next === "active" && activeProgram)
-				setFilename(activeProgram.program.name);
+			if (next === "active" && activeExport) setFilename(activeExport.name);
 			else if (project) setFilename(project.name);
 		},
-		[activeProgram, project],
+		[activeExport, project],
 	);
 
 	const buildCover = useCallback((): PdfCoverPage | undefined => {
@@ -160,13 +196,27 @@ export default function ExportModal() {
 			return;
 		}
 		if (scope === "active") {
-			if (activeProgram)
-				void startExport(
-					[activeProgram],
-					filename || activeProgram.program.name,
-					undefined,
-					ladderContext,
-				);
+			if (!activeExport || !project) return;
+			const name = filename || activeExport.name;
+			if (activeExport.kind === "program") {
+				void startExport([activeExport.config], name, { ladderContext });
+			} else {
+				const date = new Date().toLocaleDateString();
+				void startExport([], name, {
+					variableSections: [
+						buildVariableGroupSection(
+							VARIABLES_PAGE_GROUP[activeExport.pageId],
+							project.variables,
+							t("variablesPdfHeading", {
+								project: project.name,
+								page: activeExport.name,
+								date,
+							}),
+							columnLabels,
+						),
+					],
+				});
+			}
 			return;
 		}
 		const programs: PdfExportProgramConfig[] = [
@@ -177,26 +227,48 @@ export default function ExportModal() {
 				.filter((l) => selectedIds.has(l.id))
 				.map((l) => ({ type: "ladder" as const, program: l })),
 		];
-		void startExport(programs, filename || "export", buildCover(), ladderContext);
+		const variableSections =
+			includeVariables && project
+				? buildProjectVariablesSections(project.variables, {
+						columns: columnLabels,
+						groups: {
+							input: tPageTitles("inputVariables"),
+							output: tPageTitles("outputVariables"),
+							memory: tPageTitles("memoryVariables"),
+						},
+					})
+				: [];
+		void startExport(programs, filename || "export", {
+			cover: buildCover(),
+			ladderContext,
+			variableSections,
+		});
 	}, [
 		format,
 		scope,
 		project,
-		activeProgram,
+		activeExport,
 		grafcets,
 		ladders,
 		selectedIds,
+		includeVariables,
 		ladderContext,
 		filename,
 		startExport,
 		buildCover,
 		onClose,
+		t,
+		columnLabels,
+		tPageTitles,
 	]);
 
 	const exportDisabled =
 		isExporting ||
-		(format === "pdf" && scope === "full" && selectedIds.size === 0) ||
-		(format === "pdf" && scope === "active" && !activeProgram);
+		(format === "pdf" &&
+			scope === "full" &&
+			selectedIds.size === 0 &&
+			!includeVariables) ||
+		(format === "pdf" && scope === "active" && !activeExport);
 
 	const progressValue = (() => {
 		if (exportState.status === "rendering")
@@ -217,7 +289,7 @@ export default function ExportModal() {
 			open={exportModalVisible}
 			onClose={onClose}
 			title={t("title")}
-			width={480}
+			width={560}
 			closeButton={!isExporting}
 		>
 				<Box display="flex" flexDirection="column" gap={2}>
@@ -238,9 +310,12 @@ export default function ExportModal() {
 						/>
 					</RadioGroup>
 
+					<Divider sx={{ mt: -1 }} />
+
 					{format === "pdf" && (
 						<>
 							<RadioGroup
+								row
 								value={scope}
 								onChange={(e) => changeScope(e.target.value as PdfScope)}
 							>
@@ -254,17 +329,17 @@ export default function ExportModal() {
 									control={
 										<Radio
 											size="small"
-											disabled={isExporting || !activeProgram}
+											disabled={isExporting || !activeExport}
 										/>
 									}
 									label={
-										activeProgram
-											? t("scopeActiveNamed", { name: activeProgram.program.name })
+										activeExport
+											? t("scopeActiveNamed", { name: activeExport.name })
 											: t("scopeActive")
 									}
 								/>
 							</RadioGroup>
-							{!activeProgram && (
+							{!activeExport && (
 								<Typography variant="caption" color="text.secondary">
 									{t("openProgramHint")}
 								</Typography>
@@ -272,17 +347,32 @@ export default function ExportModal() {
 
 							{scope === "full" && (
 								<>
-									<FormControlLabel
-										control={
-											<Checkbox
-												checked={includeCover}
-												onChange={(e) => setIncludeCover(e.target.checked)}
-												disabled={isExporting}
-												size="small"
-											/>
-										}
-										label={t("includeCover")}
-									/>
+									<Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 3 }}>
+										<FormControlLabel
+											control={
+												<Checkbox
+													checked={includeCover}
+													onChange={(e) => setIncludeCover(e.target.checked)}
+													disabled={isExporting}
+													size="small"
+												/>
+											}
+											label={t("includeCover")}
+										/>
+										<FormControlLabel
+											control={
+												<Checkbox
+													checked={includeVariables}
+													onChange={(e) =>
+														setIncludeVariables(e.target.checked)
+													}
+													disabled={isExporting}
+													size="small"
+												/>
+											}
+											label={t("includeVariables")}
+										/>
+									</Box>
 									<Box>
 										{grafcets.length > 0 && (
 											<Typography
@@ -326,7 +416,7 @@ export default function ExportModal() {
 														size="small"
 													/>
 												}
-												label={t("ladderLandscape", { name: l.name })}
+												label={l.name}
 											/>
 										))}
 									</Box>

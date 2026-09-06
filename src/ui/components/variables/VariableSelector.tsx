@@ -34,9 +34,11 @@ import {
 	VariableColumn,
 } from "./variable-selector-utils";
 import {
-	makeVariableSelectorPaper,
 	VariableSelectorOption,
+	VariableSelectorPaper,
+	VariableSelectorPaperContext,
 } from "./VariableSelectorPopup";
+import VariableSelectorContextMenu from "./VariableSelectorContextMenu";
 
 interface VariableSelectorProps {
 	value: string;
@@ -58,6 +60,10 @@ interface VariableSelectorProps {
 	 * `mnemonic` reste toujours affichée, quel que soit `cols` : c'est la valeur éditée, sans
 	 * elle le tableau ne permet plus d'identifier quelle ligne on choisit. */
 	cols?: VariableColumn[];
+	/** Désactive le menu contextuel « Références croisées » du champ (clic droit) — à utiliser
+	 * quand le composant parent porte déjà cette entrée à son propre niveau (ex : menu contextuel
+	 * d'un nœud de contact/bobine Ladder). */
+	disableContextMenu?: boolean;
 	className?: string;
 	sx?: SxProps<Theme>;
 	baseInputSx?: SxProps<Theme>;
@@ -92,6 +98,7 @@ const VariableSelector = forwardRef<
 		excludeDirection,
 		acceptedLiterals,
 		cols,
+		disableContextMenu,
 		className,
 		sx,
 		baseInputSx,
@@ -112,6 +119,10 @@ const VariableSelector = forwardRef<
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [editingValue, setEditingValue] = useState(value);
 	const [widthPx, setWidthPx] = useState(44);
+	const [menuPosition, setMenuPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 
 	useImperativeHandle(
 		ref,
@@ -186,112 +197,142 @@ const VariableSelector = forwardRef<
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;
 
+	// Variable réellement déclarée (projet ou système) correspondant au texte courant — pilote
+	// l'affichage du menu contextuel du champ.
+	const menuVariable = variables.find(
+		(v) => v.mnemonic === editingValue.trim(),
+	);
+
+	const paperContext = useMemo(
+		() => ({ activeColumns, isEmpty: filteredSuggestions.length === 0 }),
+		[activeColumns, filteredSuggestions.length],
+	);
+
 	return (
-		<Autocomplete
-			freeSolo
-			openOnFocus
-			size="small"
-			options={suggestions}
-			getOptionLabel={(option) =>
-				typeof option === "string" ? option : option.mnemonic
-			}
-			inputValue={editingValue}
-			onInputChange={(_, newValue) => setEditingValue(newValue)}
-			// Filtrage maison plutôt que celui par défaut d'Autocomplete : ce dernier, dès qu'une
-			// suggestion a déjà été cliquée une fois, réaffiche la liste entière non filtrée à
-			// chaque réouverture tant que le texte n'a pas changé depuis (heuristique MUI interne
-			// liée à sa notion de "valeur sélectionnée" — qu'on n'utilise pas, `editingValue` est
-			// notre seule source de vérité). On filtre nous-mêmes sur `editingValue` pour un
-			// comportement prévisible : toujours filtré par ce qui est effectivement affiché.
-			filterOptions={() => filteredSuggestions}
-			className={className}
-			disableClearable
-			forcePopupIcon={false}
-			slotProps={{
-				popper: {
-					style: {
-						width:
-							activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16,
-					},
-				},
-			}}
-			slots={{
-				paper: makeVariableSelectorPaper(activeColumns, filteredSuggestions),
-			}}
-			renderOption={(props, option) => (
-				<VariableSelectorOption
-					key={(option as Variable).id}
-					optionProps={props}
-					option={option as Variable}
-					activeColumns={activeColumns}
-				/>
-			)}
-			renderInput={(params) => (
-				<TextField
-					{...params}
-					inputRef={inputRef}
-					variant={label ? "outlined" : "standard"}
-					label={label}
-					placeholder={label ? undefined : "?"}
-					inputProps={{
-						...params.inputProps,
-						"data-variable-status": status ?? undefined,
-					}}
-					// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
-					// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au
-					// clic — un `slotProps.input` à côté les aurait purement et simplement écrasés.
-					slotProps={{
-						input: label
-							? params.InputProps
-							: { ...params.InputProps, disableUnderline: true },
-						// Label toujours en haut, comme les autres champs du panneau de propriétés — pas
-						// seulement au focus/à la saisie (comportement par défaut de `InputLabel`).
-						inputLabel: label ? { shrink: true } : undefined,
-					}}
-					// `params.inputProps` porte les handlers réels d'Autocomplete (ouverture au focus,
-					// navigation clavier de la liste, etc.) — les remplacer purement et simplement au
-					// niveau du `TextField` les casse. On les rappelle explicitement avant d'ajouter
-					// notre propre comportement.
-					onBlur={(e) => {
-						params.inputProps.onBlur?.(e as ReactFocusEvent<HTMLInputElement>);
-						save();
-					}}
-					onKeyDown={(e) => {
-						params.inputProps.onKeyDown?.(
-							e as unknown as ReactKeyboardEvent<HTMLInputElement>,
-						);
-						if (e.key === "Enter" || e.key === "Escape")
-							inputRef.current?.blur();
-					}}
-					sx={[
-						{
-							// `!important` : `.MuiInputBase-inputSizeSmall` (ajoutée par `size="small"`) a
-							// la même spécificité qu'une classe générée par `sx` et gagne parfois
-							// l'arbitrage, laissant du padding/un `text-overflow: ellipsis` par défaut qui
-							// tronquait le texte au lieu de laisser le champ s'élargir — non pertinent en
-							// apparence bordée, qui garde le padding standard d'un `TextField` outlined.
-							"& .MuiInputBase-input": label
-								? { color: statusColor, cursor: "text", ...(baseInputSx ?? {}) }
-								: {
-										color: statusColor,
-										padding: "0 !important",
-										textAlign: "center",
-										fontSize: "0.7rem",
-										cursor: "text",
-										textOverflow: "clip !important",
-										...(baseInputSx ?? {}),
-									},
+		<VariableSelectorPaperContext.Provider value={paperContext}>
+			<Autocomplete
+				freeSolo
+				openOnFocus
+				size="small"
+				options={suggestions}
+				getOptionLabel={(option) =>
+					typeof option === "string" ? option : option.mnemonic
+				}
+				inputValue={editingValue}
+				onInputChange={(_, newValue) => setEditingValue(newValue)}
+				// Filtrage maison plutôt que celui par défaut d'Autocomplete : ce dernier, dès qu'une
+				// suggestion a déjà été cliquée une fois, réaffiche la liste entière non filtrée à
+				// chaque réouverture tant que le texte n'a pas changé depuis (heuristique MUI interne
+				// liée à sa notion de "valeur sélectionnée" — qu'on n'utilise pas, `editingValue` est
+				// notre seule source de vérité). On filtre nous-mêmes sur `editingValue` pour un
+				// comportement prévisible : toujours filtré par ce qui est effectivement affiché.
+				filterOptions={() => filteredSuggestions}
+				className={className}
+				disableClearable
+				forcePopupIcon={false}
+				slotProps={{
+					popper: {
+						style: {
+							width:
+								activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16,
 						},
-						...(Array.isArray(sx) ? sx : [sx]),
-						// L'emporte sur un `width` fixe passé par l'appelant (ex : compact dans un nœud
-						// Ladder) : le champ doit pouvoir s'élargir avec le texte (voir
-						// `inputWidthPx` — le pourquoi d'un calcul plutôt qu'un `auto`). Non pertinent en
-						// apparence bordée, où la largeur vient normalement de l'appelant (`sx`).
-						...(label ? [] : [{ width: widthPx }]),
-					]}
+					},
+				}}
+				slots={{ paper: VariableSelectorPaper }}
+				renderOption={(props, option) => (
+					<VariableSelectorOption
+						key={(option as Variable).id}
+						optionProps={props}
+						option={option as Variable}
+						activeColumns={activeColumns}
+					/>
+				)}
+				renderInput={(params) => (
+					<TextField
+						{...params}
+						inputRef={inputRef}
+						variant={label ? "outlined" : "standard"}
+						label={label}
+						placeholder={label ? undefined : "?"}
+						inputProps={{
+							...params.inputProps,
+							"data-variable-status": status ?? undefined,
+						}}
+						// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
+						// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au
+						// clic — un `slotProps.input` à côté les aurait purement et simplement écrasés.
+						slotProps={{
+							input: label
+								? params.InputProps
+								: { ...params.InputProps, disableUnderline: true },
+							// Label toujours en haut, comme les autres champs du panneau de propriétés — pas
+							// seulement au focus/à la saisie (comportement par défaut de `InputLabel`).
+							inputLabel: label ? { shrink: true } : undefined,
+						}}
+						// `params.inputProps` porte les handlers réels d'Autocomplete (ouverture au focus,
+						// navigation clavier de la liste, etc.) — les remplacer purement et simplement au
+						// niveau du `TextField` les casse. On les rappelle explicitement avant d'ajouter
+						// notre propre comportement.
+						onContextMenu={(e) => {
+							if (disableContextMenu) return;
+							if (!menuVariable) return;
+							// `stopPropagation` : sans lui, un parent qui porte aussi un menu contextuel
+							// (ex : le panneau/canvas Ladder) en ouvrirait un second par-dessus.
+							e.preventDefault();
+							e.stopPropagation();
+							setMenuPosition({ x: e.clientX, y: e.clientY });
+							// Ferme le popper de suggestions (sinon il recouvre le menu contextuel) :
+							// un clic droit veut le menu, pas la liste de complétion.
+							inputRef.current?.blur();
+						}}
+						onBlur={(e) => {
+							params.inputProps.onBlur?.(e as ReactFocusEvent<HTMLInputElement>);
+							save();
+						}}
+						onKeyDown={(e) => {
+							params.inputProps.onKeyDown?.(
+								e as unknown as ReactKeyboardEvent<HTMLInputElement>,
+							);
+							if (e.key === "Enter" || e.key === "Escape")
+								inputRef.current?.blur();
+						}}
+						sx={[
+							{
+								// `!important` : `.MuiInputBase-inputSizeSmall` (ajoutée par `size="small"`) a
+								// la même spécificité qu'une classe générée par `sx` et gagne parfois
+								// l'arbitrage, laissant du padding/un `text-overflow: ellipsis` par défaut qui
+								// tronquait le texte au lieu de laisser le champ s'élargir — non pertinent en
+								// apparence bordée, qui garde le padding standard d'un `TextField` outlined.
+								"& .MuiInputBase-input": label
+									? { color: statusColor, cursor: "text", ...(baseInputSx ?? {}) }
+									: {
+											color: statusColor,
+											padding: "0 !important",
+											textAlign: "center",
+											fontSize: "0.7rem",
+											cursor: "text",
+											textOverflow: "clip !important",
+											...(baseInputSx ?? {}),
+										},
+							},
+							...(Array.isArray(sx) ? sx : [sx]),
+							// L'emporte sur un `width` fixe passé par l'appelant (ex : compact dans un nœud
+							// Ladder) : le champ doit pouvoir s'élargir avec le texte (voir
+							// `inputWidthPx` — le pourquoi d'un calcul plutôt qu'un `auto`). Non pertinent en
+							// apparence bordée, où la largeur vient normalement de l'appelant (`sx`).
+							...(label ? [] : [{ width: widthPx }]),
+						]}
+					/>
+				)}
+			/>
+			{!disableContextMenu && menuPosition && menuVariable && (
+				<VariableSelectorContextMenu
+					variable={menuVariable}
+					position={menuPosition}
+					onClose={() => setMenuPosition(null)}
 				/>
 			)}
-		/>
+		</VariableSelectorPaperContext.Provider>
 	);
 });
 

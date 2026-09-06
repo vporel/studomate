@@ -2,7 +2,7 @@ import {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { ReactFlowInstance, Viewport } from "@xyflow/react";
+import { ReactFlowInstance } from "@xyflow/react";
 import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
 import {
 	GrafcetStoreGetFunction,
@@ -106,14 +106,6 @@ export default class GrafcetViewManager extends AbstractHighlightingViewManager<
 
 	setReactFlowInstance(instance: ReactFlowInstance): void {
 		this.rfInstance = instance;
-	}
-
-	getViewport(): Viewport | null {
-		return this.getStoreState().viewport;
-	}
-
-	setViewport(viewport: Viewport): void {
-		this.setStoreState({ viewport });
 	}
 
 	getNodes(): GrafcetNodeType[] {

@@ -45,7 +45,7 @@ describe("SupabaseProjectRepository", () => {
 				resolved({ data: [{ data: raw }], error: null }),
 			);
 
-			const projects = await new SupabaseProjectRepository().list();
+			const { projects } = await new SupabaseProjectRepository().list();
 
 			expect(projects).toHaveLength(1);
 			expect(projects[0]).toBeInstanceOf(Project);
@@ -57,7 +57,10 @@ describe("SupabaseProjectRepository", () => {
 				resolved({ data: null, error: new Error("offline") }),
 			);
 
-			await expect(new SupabaseProjectRepository().list()).resolves.toEqual([]);
+			await expect(new SupabaseProjectRepository().list()).resolves.toEqual({
+				projects: [],
+				skipped: [],
+			});
 		});
 	});
 
@@ -157,6 +160,27 @@ describe("SupabaseProjectRepository", () => {
 				reason: "conflict",
 				cause: { code: "23505", message: "duplicate key" },
 			});
+		});
+
+		it("getByShareToken enregistre la version pour un save conditionnel ultérieur", async () => {
+			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
+			const repo = new SupabaseProjectRepository();
+			// 1. résolution du token → project_id
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: { project_id: "p1" }, error: null }),
+			);
+			// 2. get interne → data + version courante
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: { data: raw, version: 9 }, error: null }),
+			);
+			await repo.getByShareToken("tok");
+
+			// 3. save → update conditionnel qui trouve la ligne (pas d'insert → pas de faux conflit)
+			mockFrom.mockReturnValueOnce(
+				resolved({ data: [{ version: 10 }], error: null }),
+			);
+			expect(await repo.save(newProject("p1", "A"))).toEqual({ ok: true });
 		});
 
 		it("signale un conflit si la version a changé depuis le dernier get/save", async () => {

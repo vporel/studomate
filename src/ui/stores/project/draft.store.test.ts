@@ -6,7 +6,7 @@ import { setPreferredSaveLocation } from "@/persistence/preferences.storage";
 
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 jest.mock("@/persistence/draft.storage", () => ({
-	saveDraft: jest.fn(),
+	saveDraft: jest.fn().mockReturnValue({ ok: true }),
 	getDraft: jest.fn().mockReturnValue(null),
 	deleteDraft: jest.fn(),
 	getAllDrafts: jest.fn().mockReturnValue([]),
@@ -33,6 +33,7 @@ describe("store — brouillons", () => {
 		localStorage.clear();
 		jest.clearAllMocks();
 		mockedGetDraft.mockReturnValue(null);
+		mockedSaveDraft.mockReturnValue({ ok: true });
 		// Sans préférence de lieu de stockage, le premier enregistrement d'un projet neuf ouvrirait
 		// la modale de choix — hors sujet ici (voir lifecycle.manager.test.ts).
 		setPreferredSaveLocation("local");
@@ -95,6 +96,26 @@ describe("store — brouillons", () => {
 			expect(mockedSaveDraft).not.toHaveBeenCalled();
 		});
 
+		it("signale l'indisponibilité quand l'auto-sauvegarde échoue, puis la lève au succès suivant", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: true });
+
+			mockedSaveDraft.mockReturnValueOnce({
+				ok: false,
+				reason: "quota-exceeded",
+			});
+
+			store.getState().lifecycleManager.startAutoSave();
+			jest.advanceTimersByTime(30_000);
+			expect(store.getState().autoSaveUnavailable).toBe(true);
+
+			jest.advanceTimersByTime(30_000); // saveDraft retourne { ok: true } cette fois
+			expect(store.getState().autoSaveUnavailable).toBe(false);
+
+			store.getState().lifecycleManager.stopAutoSave();
+		});
+
 		it("un double appel à startAutoSave ne crée pas deux intervalles", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
@@ -124,6 +145,17 @@ describe("store — brouillons", () => {
 	});
 
 	describe("openProject — ouverture délibérée", () => {
+		it("réinitialise autoSaveUnavailable à l'ouverture d'un projet", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Projet", "");
+			await store.getState().projectRepository.save(project);
+			store.setState({ autoSaveUnavailable: true });
+
+			await store.getState().lifecycleManager.openProject("p1");
+
+			expect(store.getState().autoSaveUnavailable).toBe(false);
+		});
+
 		it("ouvre le projet réel si aucun brouillon n'existe", async () => {
 			const store = createProjectStore();
 			const project = new Project("p1", "Projet", "");

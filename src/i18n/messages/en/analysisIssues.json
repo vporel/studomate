@@ -32,6 +32,7 @@
 	"TRANSITION_NO_SUCCESSOR": "The transition has no downstream element.",
 	"TRANSITION_MULTIPLE_SUCCESSORS": "A transition can have only one direct successor. Use an AND divergence to activate several steps simultaneously.",
 	"TRANSITION_MULTIPLE_PREDECESSORS": "A transition can have only one direct predecessor. Use an AND convergence to synchronise several steps.",
+	"TRANSITION_STEPLESS_OR_BRANCH": "This transition links an OR divergence directly to an OR convergence: a selection branch must contain at least one step.",
 	"TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE": "The transition references variable \"{variableName}\", which is not boolean.",
 	"TRANSITION_TIMER_NAME_CONFLICT": "Timer identifier \"{timerName}\" conflicts with an existing variable.",
 

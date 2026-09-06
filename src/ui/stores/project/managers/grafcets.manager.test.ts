@@ -3,6 +3,14 @@ import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/lib/analytics", () => ({
+	__esModule: true,
+	default: (...args: any[]) => mockTrackEvent(...args),
+}));
+
+beforeEach(() => mockTrackEvent.mockClear());
+
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
@@ -90,6 +98,9 @@ describe("GrafcetsManager", () => {
 				title: "G1",
 			});
 			expect(getState().hasUnsavedChanges).toBe(true);
+			expect(mockTrackEvent).toHaveBeenCalledWith("program-created", {
+				type: "grafcet",
+			});
 		});
 
 		it("génère un nom unique au format Grafcet_N quand rien n'est fourni", () => {

@@ -1,4 +1,5 @@
 import { APP_CONTACT_EMAIL, APP_NAME } from "@/app-info";
+import trackEvent from "@/ui/lib/analytics";
 
 const SUBJECT = `[${APP_NAME}] Signalement de problème`;
 
@@ -26,4 +27,10 @@ export default function buildReportIssueMailto(): string {
 		lines.join("\n"),
 	)}`;
 	return `mailto:${APP_CONTACT_EMAIL}?${query}`;
+}
+
+/** Ouvre le client mail de signalement et enregistre l'intention de retour. */
+export function openReportIssue(): void {
+	trackEvent("feedback-opened");
+	window.open(buildReportIssueMailto(), "_blank", "noopener,noreferrer");
 }

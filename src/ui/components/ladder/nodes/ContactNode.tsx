@@ -38,8 +38,8 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 	// selon son type), indépendamment de ce qui se passe en amont sur le rail.
 	const energized = useProjectStore((state) => {
 		if (!pageVisible) return false;
-		const states = Object.values(state.simulationVariablesStates);
-		const variableValue = states.find((v) => v.mnemonic === variable)?.value;
+		const variableValue =
+			state.simulationVariablesStatesByMnemonic[variable]?.value;
 		const memVarId = getContactMemoryVariableId(ladderId, id);
 		return contactLetsPowerThrough(
 			type,
@@ -92,6 +92,8 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 					ref={variableSelectorRef}
 					value={variable}
 					onCommit={handleCommitVariable}
+					// Le menu contextuel du nœud Ladder porte déjà « Références croisées ».
+					disableContextMenu
 					className="nodrag"
 					sx={{ width: 44, mb: "2px" }}
 				/>

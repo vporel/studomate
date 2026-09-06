@@ -18,6 +18,7 @@ function setup(withTarget: VariableRowMenuTarget | null = target) {
 	const setCrossReferenceResultVisible = jest.fn();
 	const setCrossReferenceFilter = jest.fn();
 	const onClose = jest.fn();
+	const onInsertBelow = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			variablesManager: { removeVariables },
@@ -31,6 +32,7 @@ function setup(withTarget: VariableRowMenuTarget | null = target) {
 			target={withTarget}
 			position={{ x: 0, y: 0 }}
 			onClose={onClose}
+			onInsertBelow={onInsertBelow}
 			parentWidth={1000}
 			parentHeight={800}
 		/>,
@@ -40,6 +42,7 @@ function setup(withTarget: VariableRowMenuTarget | null = target) {
 		setCrossReferenceResultVisible,
 		setCrossReferenceFilter,
 		onClose,
+		onInsertBelow,
 	};
 }
 
@@ -59,6 +62,16 @@ describe("VariableRowContextMenu", () => {
 		expect(setCrossReferenceFilter).toHaveBeenCalledWith("M0");
 		expect(setCrossReferenceResultVisible).toHaveBeenCalledWith(true);
 		expect(onClose).toHaveBeenCalled();
+	});
+
+	it("propose « Insérer une variable » en première position et la relaie sur la cible", () => {
+		const { onInsertBelow } = setup();
+		const labels = screen
+			.getAllByRole("menuitem")
+			.map((li) => li.textContent);
+		expect(labels[0]).toContain("Insérer une variable");
+		fireEvent.click(screen.getByText("Insérer une variable"));
+		expect(onInsertBelow).toHaveBeenCalledWith("v1");
 	});
 
 	it("supprime la variable ciblée", () => {

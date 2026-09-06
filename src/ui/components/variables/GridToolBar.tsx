@@ -1,9 +1,10 @@
+import AddIcon from "@mui/icons-material/Add";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, IconButton } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -13,9 +14,12 @@ import { styled } from "@mui/material/styles";
 import { useT } from "@/ui/i18n/useT";
 import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
+import { toast } from "react-toastify";
+import Variable from "@/schemas/variable/variable.schema";
+import { exportVariablesTablePdf } from "@/ui/lib/pdf/variables-table-pdf";
+import trackEvent from "@/ui/lib/analytics";
 import {
 	ExportCsv,
-	ExportPrint,
 	FilterPanelTrigger,
 	GridRowSelectionModel,
 	QuickFilter,
@@ -24,6 +28,7 @@ import {
 	QuickFilterTrigger,
 	Toolbar,
 	ToolbarButton,
+	useGridApiContext,
 } from "@mui/x-data-grid";
 import * as React from "react";
 import { useProjectStore } from "../projects/ProjectContext";
@@ -61,17 +66,65 @@ const StyledTextField = styled(TextField)<{
 
 export default function GridToolBar({
 	rowSelectionModel,
+	zoneVariables,
+	pageTitle,
 }: {
 	rowSelectionModel: GridRowSelectionModel;
+	zoneVariables: Variable[];
+	pageTitle: string;
 }) {
 	const t = useT("pages.variablesGrid.toolbar");
+	const tColumns = useT("pages.variablesGrid.columns");
+	const tExport = useT("projects.export");
+	const projectName = useProjectStore((state) => state.project?.name ?? "");
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
+	const apiRef = useGridApiContext();
+
+	const exportPdf = () => {
+		setExportMenuOpen(false);
+		const date = new Date().toLocaleDateString();
+		void exportVariablesTablePdf({
+			filename: `${projectName} - ${pageTitle}`,
+			title: tExport("variablesPdfHeading", {
+				page: pageTitle,
+				project: projectName,
+				date,
+			}),
+			variables: zoneVariables,
+			labels: {
+				mnemonic: tColumns("mnemonic"),
+				type: tColumns("type"),
+				address: tColumns("address"),
+				comment: tColumns("comment"),
+			},
+		})
+			.then(() =>
+				trackEvent("pdf-exported", { programs: 0, withVariablesTable: true }),
+			)
+			.catch(() => toast.error(t("exportPdfError")));
+	};
+
+	// Fait défiler jusqu'à la ligne d'ajout vide en bas de table et la passe en édition.
+	const goToNewVariableRow = () => {
+		const id = "new-variable";
+		apiRef.current.scrollToIndexes({
+			rowIndex: apiRef.current.getRowsCount() - 1,
+		});
+		requestAnimationFrame(() => {
+			apiRef.current.getRowElement(id)?.scrollIntoView?.({ block: "center" });
+			try {
+				apiRef.current.startRowEditMode({ id, fieldToFocus: "mnemonic" });
+			} catch {
+				// la ligne n'est pas encore rendue ; le défilement l'aura mise en vue
+			}
+		});
+	};
 
 	return (
 		<Toolbar>
-			<Box sx={{ flex: 1 }}>
+			<Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
 				<Tooltip title={t("delete")}>
 					<span>
 						<IconButton
@@ -87,6 +140,13 @@ export default function GridToolBar({
 						</IconButton>
 					</span>
 				</Tooltip>
+				<Button
+					size="small"
+					startIcon={<AddIcon />}
+					onClick={goToNewVariableRow}
+				>
+					{t("newVariable")}
+				</Button>
 			</Box>
 			<Tooltip title={t("filters")}>
 				<FilterPanelTrigger
@@ -117,6 +177,7 @@ export default function GridToolBar({
 					id="export-menu-trigger"
 					aria-controls="export-menu"
 					aria-haspopup="true"
+					aria-label={t("export")}
 					aria-expanded={exportMenuOpen ? "true" : undefined}
 					onClick={() => setExportMenuOpen(true)}
 				>
@@ -137,12 +198,7 @@ export default function GridToolBar({
 					},
 				}}
 			>
-				<ExportPrint
-					render={<MenuItem />}
-					onClick={() => setExportMenuOpen(false)}
-				>
-					{t("print")}
-				</ExportPrint>
+				<MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>
 				<ExportCsv
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}

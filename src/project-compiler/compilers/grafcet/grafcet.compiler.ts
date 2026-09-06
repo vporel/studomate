@@ -10,13 +10,6 @@ import TransitionCompiler from "./transition.compiler";
 
 export type CompiledGrafcet = {
 	nodes: ASTNode[];
-	/**
-	 * Activation de l'étape initiale si aucune étape n'est active. Émis à part des `nodes` :
-	 * `ProjectCompiler` l'exécute après la routine d'assignation des mémos d'étape, pour que
-	 * le front montant de l'étape initiale reste détectable au cycle suivant (le mémo doit
-	 * capturer la valeur *avant* cette activation au premier cycle).
-	 */
-	initNodes: ASTNode[];
 	timers: TimerNode[];
 };
 
@@ -61,14 +54,19 @@ export default class GrafcetCompiler {
 
 		return {
 			nodes,
-			initNodes: this.initializeSteps(preCompiledGrafcet),
 			timers: Array.from(preCompiledGrafcet.transitions.values()).flatMap(
 				(t) => t.timers,
 			),
 		};
 	}
 
-	private static initializeSteps(
+	/**
+	 * Instruction d'amorçage : active l'étape initiale si aucune autre étape n'est active.
+	 * `GrafcetsCompiler` la range dans une routine exécutée **après** la routine d'assignation des
+	 * mémos d'étape, pour que le front montant de l'étape initiale reste détectable au cycle
+	 * suivant (le mémo doit capturer la valeur *avant* cette activation au premier cycle).
+	 */
+	static buildInitializationNodes(
 		preCompiledGrafcet: PreCompiledGrafcet,
 	): ASTNode[] {
 		const initialSteps = Array.from(preCompiledGrafcet.steps.values()).filter(

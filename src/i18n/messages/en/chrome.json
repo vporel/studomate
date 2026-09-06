@@ -21,6 +21,7 @@
 		"step": "Step one cycle"
 	},
 	"unsavedChanges": "Click here to save",
+	"autoSaveUnavailable": "Automatic backup unavailable — save manually",
 	"statusBar": {
 		"author": "Author: {name}",
 		"unknownAuthor": "Unknown"

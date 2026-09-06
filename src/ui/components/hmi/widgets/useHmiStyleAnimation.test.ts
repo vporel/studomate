@@ -12,8 +12,14 @@ jest.mock("@/ui/components/projects/ProjectContext");
 function mockSimulationVariablesStates(
 	states: Record<string, { id: string; mnemonic: string; value: unknown }>,
 ) {
+	const simulationVariablesStatesByMnemonic = Object.fromEntries(
+		Object.values(states).map((s) => [s.mnemonic, s]),
+	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ simulationVariablesStates: states }),
+		selectorImplementation({
+			simulationVariablesStates: states,
+			simulationVariablesStatesByMnemonic,
+		}),
 	);
 }
 

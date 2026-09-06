@@ -127,6 +127,19 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	}
 
 	/**
+	 * Règles cross-ladder du projet (voir `ProgramAnalyser.crossProgramChecks`). Délègue aux
+	 * statiques, conservés pour être testés directement.
+	 */
+	crossProgramChecks(project: Project): ProjectAnalyserIssue[] {
+		return [
+			...LadderAnalyser.checkMainUniqueness(project),
+			...LadderAnalyser.checkOrphanLadders(project),
+			...LadderAnalyser.checkCallCycles(project),
+			...LadderAnalyser.checkBlockNameConflicts(project),
+		];
+	}
+
+	/**
 	 * Défense en profondeur : la cible d'une connexion doit rester à une colonne au moins égale à
 	 * celle de sa source, garanti par `ConnectionsAddCommand`/`isConnectionAllowed` à la création
 	 * d'une connexion et par `LadderWorkflowManager.isPositionValidForConnections` quand un élément

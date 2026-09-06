@@ -71,6 +71,22 @@ describe("Project — dialecte des expressions", () => {
 		).toBe(Dialect.FR);
 	});
 
+	it("signale un dialecte présent mais non reconnu, et retombe sur le français", () => {
+		const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+		expect(
+			Project.createFromJSON(JSON.stringify({ id: "p1", dialect: "EN " }))
+				.dialect,
+		).toBe(Dialect.FR);
+		expect(warn).toHaveBeenCalled();
+
+		warn.mockClear();
+		Project.createFromJSON(JSON.stringify({ id: "p1", name: "Ancien" }));
+		expect(warn).not.toHaveBeenCalled();
+
+		warn.mockRestore();
+	});
+
 	describe("setDialect", () => {
 		it("traduit les mots-clés des transitions", () => {
 			const project = projectWithExpressions();

@@ -21,8 +21,9 @@ export function createSectionWith(
 	connections: Connection[] = [],
 	id: string = createRandomId(),
 	title: string = "S",
+	description: string = "",
 ): Section {
-	return new Section(id, title, "", elements, connections);
+	return new Section(id, title, description, elements, connections);
 }
 
 function connect(from: LadderElement, to: LadderElement): Connection {

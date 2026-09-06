@@ -1,6 +1,7 @@
 "use client";
 
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
 import { clearPagesSession } from "@/ui/lib/pages-session-storage";
@@ -40,6 +41,7 @@ export default function ProjectsList({
 	const t = useT("projects.list");
 	const tc = useT("projects.common");
 	const [projects, setProjects] = useState<Project[]>([]);
+	const [skipped, setSkipped] = useState<SkippedProjectInfo[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [tab, setTab] = useState<ProjectsTab>("local");
 	const projectRepository = useProjectStore(
@@ -53,8 +55,10 @@ export default function ProjectsList({
 	const reload = useCallback(async () => {
 		setLoading(true);
 		try {
-			const loadedProjects = await projectRepository.list();
+			const { projects: loadedProjects, skipped: skippedProjects } =
+				await projectRepository.list();
 			setProjects(loadedProjects);
+			setSkipped(skippedProjects);
 		} catch (error) {
 			console.error("Erreur lors du chargement des projets:", error);
 		} finally {
@@ -72,6 +76,10 @@ export default function ProjectsList({
 				(project) => projectRepository.locationOf(project.id) === tab,
 			),
 		[projects, projectRepository, tab],
+	);
+
+	const skippedNewerVersion = skipped.some(
+		(s) => s.reason === "newer-version",
 	);
 
 	const handleDeleteProject = async (
@@ -127,6 +135,18 @@ export default function ProjectsList({
 					<Tab label={t("tabLocal")} value="local" />
 					<Tab label={t("tabCloud")} value="cloud" />
 				</Tabs>
+			)}
+
+			{skipped.length > 0 && (
+				<Typography
+					variant="body2"
+					color="warning.main"
+					sx={{ mb: 1, px: 1 }}
+				>
+					{skippedNewerVersion
+						? t("skippedProjectsNewerVersion", { count: skipped.length })
+						: t("skippedProjects", { count: skipped.length })}
+				</Typography>
 			)}
 
 			{tab === "cloud" && !authenticated ? (

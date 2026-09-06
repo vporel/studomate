@@ -20,6 +20,7 @@ import frPublic from "./fr/public.json";
 import frManual from "./fr/manual.json";
 import frVariableValidation from "./fr/variableValidation.json";
 import frCrossReference from "./fr/crossReference.json";
+import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
@@ -40,6 +41,7 @@ import enPublic from "./en/public.json";
 import enManual from "./en/manual.json";
 import enVariableValidation from "./en/variableValidation.json";
 import enCrossReference from "./en/crossReference.json";
+import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -62,6 +64,7 @@ export type Messages = {
 	manual: typeof frManual;
 	variableValidation: typeof frVariableValidation;
 	crossReference: typeof frCrossReference;
+	variableSelectorMenu: typeof frVariableSelectorMenu;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -86,6 +89,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		manual: frManual,
 		variableValidation: frVariableValidation,
 		crossReference: frCrossReference,
+		variableSelectorMenu: frVariableSelectorMenu,
 	},
 	en: {
 		common: enCommon,
@@ -108,6 +112,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		manual: enManual,
 		variableValidation: enVariableValidation,
 		crossReference: enCrossReference,
+		variableSelectorMenu: enVariableSelectorMenu,
 	},
 };
 

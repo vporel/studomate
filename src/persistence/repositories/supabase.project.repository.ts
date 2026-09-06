@@ -1,8 +1,12 @@
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import { deserializeProject } from "../project-deserialization";
+import {
+	deserializeProject,
+	deserializeProjects,
+} from "../project-deserialization";
 import { supabase } from "./supabase-client";
 import ProjectRepository, {
+	ProjectListResult,
 	SaveFailureReason,
 	SaveResult,
 	ShareableProjectRepository,
@@ -34,21 +38,27 @@ const SHARES_TABLE = "project_shares";
  * que cet appareil-ci le sache). `save` insère donc (`insert`, pas `upsert`) dans ce cas : une
  * violation de clé primaire remonte alors comme `reason: "conflict"` au lieu d'écraser en
  * silence une ligne dont l'existence était insoupçonnée.
+ *
+ * `versions` étant en mémoire et par instance, il ne doit exister **qu'une** instance vivante
+ * (celle portée par `HybridProjectRepository`). Aucun `new SupabaseProjectRepository()` jetable
+ * ailleurs : lire un projet via une instance puis l'enregistrer via une autre ferait perdre la
+ * `baseVersion` et provoquerait un faux `conflict`. Les accès par lien de partage passent par
+ * `HybridProjectRepository.getByShareToken`.
  */
 export default class SupabaseProjectRepository
 	implements ProjectRepository, ShareableProjectRepository
 {
 	private readonly versions = new Map<string, number>();
 
-	async list(): Promise<Project[]> {
+	async list(): Promise<ProjectListResult> {
 		const { data, error } = await supabase.from(TABLE).select("data");
 		if (error) {
 			console.error("Impossible de lister les projets cloud :", error);
-			return [];
+			return { projects: [], skipped: [] };
 		}
-		return (data ?? [])
-			.map((row) => deserializeProject(row.data as Record<string, any>))
-			.filter((p): p is Project => p !== null);
+		return deserializeProjects(
+			(data ?? []).map((row) => row.data as Record<string, any>),
+		);
 	}
 
 	async get(projectId: string): Promise<Project | null> {
@@ -59,7 +69,8 @@ export default class SupabaseProjectRepository
 			.maybeSingle();
 		if (error || !data) return null;
 		this.versions.set(projectId, data.version as number);
-		return deserializeProject(data.data as Record<string, any>);
+		const result = deserializeProject(data.data as Record<string, any>);
+		return result.ok ? result.project : null;
 	}
 
 	// `location` (voir `ProjectRepository`) est sans objet ici : ce repository ne connaît qu'un

@@ -8,9 +8,11 @@ export default function useContextMenuOpeningHandlers(): {
 	onPaneContextMenu: (e: React.MouseEvent | MouseEvent) => void;
 	onNodeContextMenu: (e: React.MouseEvent | MouseEvent, node: any) => void;
 	onEdgeContextMenu: (e: React.MouseEvent | MouseEvent, edge: any) => void;
+	closeContextMenu: () => void;
 } {
 	const { contextMenuEvents } = useGrafcetContext();
-	const { openContextMenu } = useFlowContextMenu(contextMenuEvents);
+	const { openContextMenu, closeContextMenu } =
+		useFlowContextMenu(contextMenuEvents);
 
 	return {
 		onPaneContextMenu: useCallback(
@@ -31,5 +33,6 @@ export default function useContextMenuOpeningHandlers(): {
 			},
 			[openContextMenu],
 		),
+		closeContextMenu,
 	};
 }

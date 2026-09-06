@@ -21,8 +21,9 @@ export type ProjectAnalysisResult = {
 
 /**
  * Une entrée par notation, chaque analyseur implémentant directement `ProgramAnalyser` — en
- * ajouter une consiste à écrire son analyseur et à l'inscrire ici, rien d'autre ne change dans
- * ce fichier.
+ * ajouter une consiste à écrire son analyseur et à l'inscrire ici. Ses éventuelles règles
+ * cross-programmes passent par le hook `crossProgramChecks` de l'interface, appelé génériquement
+ * plus bas : rien d'autre ne change dans ce fichier.
  */
 const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
 	grafcet: new GrafcetAnalyser(),
@@ -82,17 +83,16 @@ export default class ProjectAnalyser {
 			totalAnalysedElements += result.analysedElementsCount;
 		}
 
-		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette notation.
-		issues.push(
-			...GrafcetAnalyser.checkDuplicateStepNumbers(
-				generatedVariablesByProgram,
-				project,
-			),
-		);
-		issues.push(...LadderAnalyser.checkMainUniqueness(project));
-		issues.push(...LadderAnalyser.checkOrphanLadders(project));
-		issues.push(...LadderAnalyser.checkCallCycles(project));
-		issues.push(...LadderAnalyser.checkBlockNameConflicts(project));
+		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette notation
+		// via son hook optionnel `crossProgramChecks`.
+		for (const analyser of Object.values(PROGRAM_ANALYSERS)) {
+			issues.push(
+				...(analyser.crossProgramChecks?.(
+					project,
+					generatedVariablesByProgram,
+				) ?? []),
+			);
+		}
 
 		return {
 			totalAnalysedElements,

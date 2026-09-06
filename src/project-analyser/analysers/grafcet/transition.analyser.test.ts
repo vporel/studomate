@@ -561,5 +561,78 @@ describe("TransitionAnalyser", () => {
 			);
 			expect(multiPredecessorIssues).toHaveLength(0);
 		});
+
+		it("detects a stepless OR selection branch (OR divergence straight to OR convergence)", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("VRAI")
+				.build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("junction-or-start", "j-start", "source:branch")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
+				.target("junction-or-end", "j-end", "target:branch")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addTransition(transition)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				transition,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			const issue = issues.find((i) =>
+				i.code === "TRANSITION_STEPLESS_OR_BRANCH",
+			);
+			expect(issue).toBeDefined();
+			expect(issue?.severity).toBe("error");
+		});
+
+		it.each([
+			["junction-and-end", "junction-and-start"],
+			["junction-and-end", "junction-or-end"],
+			["junction-or-start", "junction-and-start"],
+		])(
+			"accepts a transition between %s and %s (licit chaining)",
+			(predecessorType, successorType) => {
+				const transition = new TransitionBuilder()
+					.id("trans-1")
+					.expression("VRAI")
+					.build();
+				const c1 = new ConnectionBuilder()
+					.id("c1")
+					.source(predecessorType as never, "j-pred", "source:branch")
+					.target("transition", "trans-1", "target:predecessor")
+					.build();
+				const c2 = new ConnectionBuilder()
+					.id("c2")
+					.source("transition", "trans-1", "source:successor")
+					.target(successorType as never, "j-succ", "target:branch")
+					.build();
+				const grafcet = new GrafcetBuilder()
+					.id("grafcet-1")
+					.addTransition(transition)
+					.addConnections(c1, c2)
+					.build();
+
+				const issues = analyser.analyseInContext(
+					transition,
+					grafcet,
+					analyserEnvironment(),
+				);
+
+				expect(
+					issues.filter((i) => i.code === "TRANSITION_STEPLESS_OR_BRANCH"),
+				).toHaveLength(0);
+			},
+		);
 	});
 });

@@ -217,6 +217,37 @@ describe("LadderAnalyser", () => {
 		});
 	});
 
+	describe("crossProgramChecks", () => {
+		it("agrège les règles cross-ladder : Main dupliqué + nom de bloc dupliqué", () => {
+			const project = ProjectFactory.createEmpty();
+			// Deux Main → checkMainUniqueness ; deux blocs "T1" → checkBlockNameConflicts.
+			project.programs["m2"] = new Ladder("m2", "Main bis", undefined, "main");
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[
+						createTimerBlockElement(
+							{ name: "T1", timerType: "TON", pt: "T#5s" },
+							0,
+							0,
+						),
+						createTimerBlockElement(
+							{ name: "T1", timerType: "TON", pt: "T#5s" },
+							0,
+							1,
+						),
+					],
+					[],
+				),
+			]);
+			project.addProgram(ladder);
+
+			const codes = new LadderAnalyser().crossProgramChecks(project).map((i) => i.code);
+
+			expect(codes).toContain("PROJECT_MULTIPLE_MAINS");
+			expect(codes).toContain("BLOCK_NAME_DUPLICATE");
+		});
+	});
+
 	describe("checkBlockNameConflicts", () => {
 		it("ne signale rien quand tous les noms de blocs sont distincts", () => {
 			const timer = createTimerBlockElement(

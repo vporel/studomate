@@ -5,6 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { i18nWrapper } from "@tests/utils/i18n";
 import VariableSelector, { VariableSelectorHandle } from "./VariableSelector";
 import { createRef } from "react";
 
@@ -169,6 +170,24 @@ describe("VariableSelector — suggestions", () => {
 		expect(screen.queryByText("Bonne")).not.toBeInTheDocument();
 		expect(screen.queryByText("Mnémonique")).not.toBeInTheDocument();
 	});
+
+	it("ne démonte pas la liste de suggestions entre deux frappes qui la gardent non vide", () => {
+		const variables = [
+			new Variable("v1", "Moteur", "memory", "BOOL"),
+			new Variable("v2", "Marche", "memory", "BOOL"),
+		];
+		setup({ value: "", variables });
+
+		fireEvent.focus(input());
+		const listboxBefore = screen.getByRole("listbox");
+
+		fireEvent.change(input(), { target: { value: "M" } });
+		fireEvent.change(input(), { target: { value: "Ma" } });
+
+		expect(screen.getByRole("listbox")).toBe(listboxBefore);
+		expect(screen.getByText("Marche")).toBeInTheDocument();
+		expect(screen.getByText("Mnémonique")).toBeInTheDocument();
+	});
 });
 
 describe("VariableSelector — colonnes", () => {
@@ -181,6 +200,107 @@ describe("VariableSelector — colonnes", () => {
 		expect(screen.getByText("Type")).toBeInTheDocument();
 		expect(screen.getByText("Mnémonique")).toBeInTheDocument();
 		expect(screen.queryByText("Scope")).not.toBeInTheDocument();
+	});
+});
+
+describe("VariableSelector — menu contextuel", () => {
+	function setupMenu({
+		value,
+		variables,
+		disableContextMenu,
+	}: {
+		value: string;
+		variables: Variable[];
+		disableContextMenu?: boolean;
+	}) {
+		const setCrossReferenceFilter = jest.fn();
+		const setCrossReferenceResultVisible = jest.fn();
+		const openPage = jest.fn();
+		const setVariableToReveal = jest.fn();
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				project: { variables },
+				setCrossReferenceFilter,
+				setCrossReferenceResultVisible,
+				pagesManager: { openPage },
+				setVariableToReveal,
+			}),
+		);
+		render(
+			<VariableSelector
+				value={value}
+				onCommit={jest.fn()}
+				disableContextMenu={disableContextMenu}
+			/>,
+			{ wrapper: i18nWrapper() },
+		);
+		return {
+			setCrossReferenceFilter,
+			setCrossReferenceResultVisible,
+			openPage,
+			setVariableToReveal,
+		};
+	}
+
+	it("ouvre le menu au clic droit quand le champ contient une variable réelle", () => {
+		setupMenu({ value: "M0", variables: [new Variable("v1", "M0", "memory", "BOOL")] });
+
+		input().focus();
+		const event = fireEvent.contextMenu(input());
+
+		expect(event).toBe(false); // preventDefault appelé
+		expect(screen.getByText("Références croisées")).toBeInTheDocument();
+		// le champ est blurré → le popper de suggestions se ferme au profit du menu contextuel
+		expect(document.activeElement).not.toBe(input());
+	});
+
+	it("ignore le clic droit quand le contenu n'est pas une variable déclarée", () => {
+		setupMenu({ value: "PASUNEVAR", variables: [new Variable("v1", "M0", "memory", "BOOL")] });
+
+		const event = fireEvent.contextMenu(input());
+
+		expect(event).toBe(true); // menu natif laissé au navigateur
+		expect(screen.queryByText("Références croisées")).not.toBeInTheDocument();
+	});
+
+	it("n'ouvre aucun menu quand disableContextMenu est vrai", () => {
+		setupMenu({
+			value: "M0",
+			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			disableContextMenu: true,
+		});
+
+		fireEvent.contextMenu(input());
+
+		expect(screen.queryByText("Références croisées")).not.toBeInTheDocument();
+	});
+
+	it("« Ouvrir la déclaration » ouvre la page de la zone et cible la ligne", () => {
+		const { openPage, setVariableToReveal } = setupMenu({
+			value: "M0",
+			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+		});
+
+		fireEvent.contextMenu(input());
+		fireEvent.click(screen.getByText("Ouvrir la déclaration"));
+
+		expect(openPage).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "memory-variables" }),
+		);
+		expect(setVariableToReveal).toHaveBeenCalledWith("v1");
+	});
+
+	it("« Références croisées » filtre sur le mnémonique et ouvre le panneau", () => {
+		const { setCrossReferenceFilter, setCrossReferenceResultVisible } = setupMenu({
+			value: "M0",
+			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+		});
+
+		fireEvent.contextMenu(input());
+		fireEvent.click(screen.getByText("Références croisées"));
+
+		expect(setCrossReferenceFilter).toHaveBeenCalledWith("M0");
+		expect(setCrossReferenceResultVisible).toHaveBeenCalledWith(true);
 	});
 });
 

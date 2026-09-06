@@ -271,6 +271,23 @@ describe("Ladder", () => {
 		});
 	});
 
+	describe("translateExpressionsKeywords", () => {
+		it("ne lève pas et ne modifie aucun élément (Ladder n'a pas d'expression textuelle)", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const contact = createContactElement("moteur", "NO", 0, 0);
+			const coil = createCoilElement("moteur", "normal", 0, 1);
+			ladder.addElements(section.id, [contact, coil]);
+
+			expect(() =>
+				ladder.translateExpressionsKeywords(),
+			).not.toThrow();
+
+			expect(contact.data.variable).toBe("moteur");
+			expect(coil.data.variable).toBe("moteur");
+		});
+	});
+
 	describe("createFromJSON", () => {
 		it("reconstruit un ladder identique après un aller-retour JSON", () => {
 			const ladder = new Ladder("l1", "Mon ladder");

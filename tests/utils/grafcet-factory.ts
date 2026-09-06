@@ -665,4 +665,126 @@ export class GrafcetFactory {
 			.addConnections(...connections, ...actionConnections)
 			.build();
 	}
+
+	/**
+	 * Divergence ET à `branchVariables.length` branches (≥ 2) :
+	 *
+	 *   Step0 ─[div]→ JAS ⇒ Step1..StepN (chacune une action CONTINUOUS optionnelle)
+	 *   Step1..StepN ⇒ JAE ─[conv]→ Step0
+	 *
+	 * Une entrée vide de `branchVariables` = branche sans action.
+	 */
+	static createAndDivergenceCycleN(
+		grafcetId: string,
+		divCondition: string,
+		convCondition: string,
+		branchVariables: string[],
+	): Grafcet {
+		const n = branchVariables.length;
+		const step0 = new StepBuilder().id(`${grafcetId}-step-0`).number(0).initial().position(100, 50).build();
+		const branchSteps = branchVariables.map((_, i) =>
+			new StepBuilder().id(`${grafcetId}-step-${i + 1}`).number(i + 1).initial(false).position(i * 120, 300).build(),
+		);
+		const transDiv = new TransitionBuilder().id(`${grafcetId}-trans-div`).expression(divCondition).position(100, 150).build();
+		const transConv = new TransitionBuilder().id(`${grafcetId}-trans-conv`).expression(convCondition).position(100, 450).build();
+		const jAndStart = new JunctionAndStartBuilder().id(`${grafcetId}-jand-start`).nBranches(n).position(100, 200).build();
+		const jAndEnd = new JunctionAndEndBuilder().id(`${grafcetId}-jand-end`).nBranches(n).position(100, 400).build();
+
+		const connections = [
+			new ConnectionBuilder().id(`${grafcetId}-c0`).source("step", step0.id, "source:successor").target("transition", transDiv.id, "target:predecessor").build(),
+			new ConnectionBuilder().id(`${grafcetId}-c1`).source("transition", transDiv.id, "source:successor").target("junction-and-start", jAndStart.id, "pivot").build(),
+			new ConnectionBuilder().id(`${grafcetId}-c2`).source("junction-and-end", jAndEnd.id, "pivot").target("transition", transConv.id, "target:predecessor").build(),
+			new ConnectionBuilder().id(`${grafcetId}-c3`).source("transition", transConv.id, "source:successor").target("step", step0.id, "target:predecessor").build(),
+		];
+		branchSteps.forEach((step, i) => {
+			connections.push(
+				new ConnectionBuilder().id(`${grafcetId}-cs${i}`).source("junction-and-start", jAndStart.id, jAndStart.data.branchesOrder[i]).target("step", step.id, "target:predecessor").build(),
+				new ConnectionBuilder().id(`${grafcetId}-ce${i}`).source("step", step.id, "source:successor").target("junction-and-end", jAndEnd.id, jAndEnd.data.branchesOrder[i]).build(),
+			);
+		});
+
+		const actions: ReturnType<ActionBuilder["build"]>[] = [];
+		const actionConnections: ReturnType<ConnectionBuilder["build"]>[] = [];
+		branchVariables.forEach((variable, i) => {
+			if (variable.trim() === "") return;
+			const action = new ActionBuilder().id(`${grafcetId}-action-${i + 1}`).expression(variable).type(ActionType.BOOLEAN_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(i * 120, 300).build();
+			actions.push(action);
+			actionConnections.push(
+				new ConnectionBuilder().id(`${grafcetId}-ca${i}`).source("step", branchSteps[i].id, "source:action").target("action", action.id, "target:step").build(),
+			);
+		});
+
+		return new GrafcetBuilder()
+			.id(grafcetId)
+			.name("AND Divergence Grafcet (N branches)")
+			.addSteps(step0, ...branchSteps)
+			.addTransitions(transDiv, transConv)
+			.addJunctionAndStart(jAndStart)
+			.addJunctionAndEnd(jAndEnd)
+			.addActions(...actions)
+			.addConnections(...connections, ...actionConnections)
+			.build();
+	}
+
+	/**
+	 * Divergence OU à `branchConditions.length` branches (≥ 2) :
+	 *
+	 *   Step0 ⇒ JOS ─[cond_i]→ Step_i (action CONTINUOUS optionnelle) ─[VRAI]→ JOE ⇒ Step0
+	 *
+	 * L'ordre de `branchConditions` est l'ordre de priorité d'exclusion mutuelle.
+	 */
+	static createOrDivergenceCycleN(
+		grafcetId: string,
+		branchConditions: string[],
+		branchVariables: string[] = [],
+	): Grafcet {
+		const n = branchConditions.length;
+		const step0 = new StepBuilder().id(`${grafcetId}-step-0`).number(0).initial().position(100, 50).build();
+		const branchSteps = branchConditions.map((_, i) =>
+			new StepBuilder().id(`${grafcetId}-step-${i + 1}`).number(i + 1).initial(false).position(i * 120, 250).build(),
+		);
+		const jOrStart = new JunctionOrStartBuilder().id(`${grafcetId}-jor-start`).nBranches(n).position(100, 150).build();
+		const jOrEnd = new JunctionOrEndBuilder().id(`${grafcetId}-jor-end`).nBranches(n).position(100, 400).build();
+		const transIn = branchConditions.map((cond, i) =>
+			new TransitionBuilder().id(`${grafcetId}-trans-in-${i}`).expression(cond).position(i * 120, 200).build(),
+		);
+		const transOut = branchConditions.map((_, i) =>
+			new TransitionBuilder().id(`${grafcetId}-trans-out-${i}`).expression("VRAI").position(i * 120, 350).build(),
+		);
+
+		const connections = [
+			new ConnectionBuilder().id(`${grafcetId}-c0`).source("step", step0.id, "source:successor").target("junction-or-start", jOrStart.id, "pivot").build(),
+			new ConnectionBuilder().id(`${grafcetId}-c1`).source("junction-or-end", jOrEnd.id, "pivot").target("step", step0.id, "target:predecessor").build(),
+		];
+		branchSteps.forEach((step, i) => {
+			connections.push(
+				new ConnectionBuilder().id(`${grafcetId}-a${i}`).source("junction-or-start", jOrStart.id, jOrStart.data.branchesOrder[i]).target("transition", transIn[i].id, "target:predecessor").build(),
+				new ConnectionBuilder().id(`${grafcetId}-b${i}`).source("transition", transIn[i].id, "source:successor").target("step", step.id, "target:predecessor").build(),
+				new ConnectionBuilder().id(`${grafcetId}-d${i}`).source("step", step.id, "source:successor").target("transition", transOut[i].id, "target:predecessor").build(),
+				new ConnectionBuilder().id(`${grafcetId}-e${i}`).source("transition", transOut[i].id, "source:successor").target("junction-or-end", jOrEnd.id, jOrEnd.data.branchesOrder[i]).build(),
+			);
+		});
+
+		const actions: ReturnType<ActionBuilder["build"]>[] = [];
+		const actionConnections: ReturnType<ConnectionBuilder["build"]>[] = [];
+		branchVariables.forEach((variable, i) => {
+			if (!variable || variable.trim() === "") return;
+			const action = new ActionBuilder().id(`${grafcetId}-action-${i + 1}`).expression(variable).type(ActionType.BOOLEAN_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(i * 120, 250).build();
+			actions.push(action);
+			actionConnections.push(
+				new ConnectionBuilder().id(`${grafcetId}-ca${i}`).source("step", branchSteps[i].id, "source:action").target("action", action.id, "target:step").build(),
+			);
+		});
+
+		return new GrafcetBuilder()
+			.id(grafcetId)
+			.name("OR Divergence Grafcet (N branches)")
+			.addSteps(step0, ...branchSteps)
+			.addTransitions(...transIn, ...transOut)
+			.addJunctionOrStart(jOrStart)
+			.addJunctionOrEnd(jOrEnd)
+			.addActions(...actions)
+			.addConnections(...connections, ...actionConnections)
+			.build();
+	}
 }

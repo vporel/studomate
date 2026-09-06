@@ -36,6 +36,9 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 	const t = useT("explorer");
 	const explorerRef = useRef<HTMLDivElement>(null);
 	const project = useProjectStore((state) => state.project);
+	const onLadder = useProjectStore(
+		(state) => state.activeScopeType === "ladder",
+	);
 	const hasSystemBlockInstances = useMemo(
 		() =>
 			(project?.getAllTimerBlockElements().length ?? 0) > 0 ||
@@ -110,14 +113,16 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 						/>
 					</CustomTreeItem>
 				)}
-				<CustomTreeItem
-					itemId="system-blocks"
-					label={t("sections.systemBlocks")}
-					IconComponent={FolderIcon}
-					styles={treeItemStyles}
-				>
-					<ExplorerSystemBlocksItems styles={treeItemStyles} />
-				</CustomTreeItem>
+				{onLadder && (
+					<CustomTreeItem
+						itemId="system-blocks"
+						label={t("sections.systemBlocks")}
+						IconComponent={FolderIcon}
+						styles={treeItemStyles}
+					>
+						<ExplorerSystemBlocksItems styles={treeItemStyles} />
+					</CustomTreeItem>
+				)}
 				<CustomTreeItem
 					itemId="hmi"
 					label={t("sections.hmi")}

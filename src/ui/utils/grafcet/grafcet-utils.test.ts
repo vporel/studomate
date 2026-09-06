@@ -1,7 +1,36 @@
 import {
 	GRAFCET_PAGE_DIMENSIONS,
 	getConnectionLinePoints,
+	getInitialConnectionPoints,
+	grafcetConnectionFromXYFlowConnectionOrEdge,
 } from "./grafcet-utils";
+
+/** Nœud interne React Flow minimal : un seul handle source (bas) et un handle target (haut),
+ *  tous deux centrés en X, largeur/hauteur de handle nulles pour des centres exacts. */
+function fakeInternalNode(
+	id: string,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+): any {
+	return {
+		id,
+		type: "step",
+		measured: { width, height },
+		internals: {
+			positionAbsolute: { x, y },
+			handleBounds: {
+				source: [{ id: null, x: width / 2, y: height, width: 0, height: 0 }],
+				target: [{ id: null, x: width / 2, y: 0, width: 0, height: 0 }],
+			},
+		},
+	};
+}
+
+function fakeRfInstance(nodes: Record<string, any>): any {
+	return { getInternalNode: (nodeId: string) => nodes[nodeId] };
+}
 
 describe("getConnectionLinePoints", () => {
 	it("relie directement quand les extrémités sont alignées verticalement", () => {
@@ -46,6 +75,75 @@ describe("getConnectionLinePoints", () => {
 			[100, 100],
 			[101, 200],
 		]);
+	});
+});
+
+describe("getInitialConnectionPoints", () => {
+	// source sous la cible (boucle de retour) : centre source = (110, 400), centre cible = (110, 100)
+	const feedbackRf = fakeRfInstance({
+		src: fakeInternalNode("src", 100, 360, 20, 40),
+		tgt: fakeInternalNode("tgt", 100, 100, 20, 40),
+	});
+	const connection = {
+		source: "src",
+		target: "tgt",
+		sourceHandle: "",
+		targetHandle: "",
+	};
+
+	it("fige les 4 coudes intermédiaires du contournement pour une connexion remontante", () => {
+		const points = getInitialConnectionPoints(feedbackRf, connection);
+		expect(points).toEqual(
+			getConnectionLinePoints(110, 400, 110, 100).slice(1, -1),
+		);
+		expect(points).toHaveLength(4);
+	});
+
+	it("retourne [] pour une liaison droite (extrémités alignées, cible en dessous)", () => {
+		const rf = fakeRfInstance({
+			src: fakeInternalNode("src", 100, 100, 20, 40),
+			tgt: fakeInternalNode("tgt", 100, 300, 20, 40),
+		});
+		expect(getInitialConnectionPoints(rf, connection)).toEqual([]);
+	});
+
+	it("retourne [] quand un nœud est introuvable", () => {
+		expect(
+			getInitialConnectionPoints(fakeRfInstance({}), connection),
+		).toEqual([]);
+	});
+});
+
+describe("grafcetConnectionFromXYFlowConnectionOrEdge", () => {
+	const rf = fakeRfInstance({
+		src: fakeInternalNode("src", 100, 360, 20, 40),
+		tgt: fakeInternalNode("tgt", 100, 100, 20, 40),
+	});
+
+	it("dérive data.points pour une nouvelle connexion sans données", () => {
+		const conn = grafcetConnectionFromXYFlowConnectionOrEdge(
+			rf,
+			{ source: "src", target: "tgt", sourceHandle: "", targetHandle: "" },
+			"c1",
+		);
+		expect(conn?.data.points).toHaveLength(4);
+	});
+
+	it("conserve les data.points existants d'une arête déjà tracée", () => {
+		const existing = { points: [[1, 2]] as [number, number][] };
+		const conn = grafcetConnectionFromXYFlowConnectionOrEdge(
+			rf,
+			{
+				id: "c1",
+				source: "src",
+				target: "tgt",
+				sourceHandle: "",
+				targetHandle: "",
+				data: existing,
+			} as any,
+			"c1",
+		);
+		expect(conn?.data.points).toEqual([[1, 2]]);
 	});
 });
 

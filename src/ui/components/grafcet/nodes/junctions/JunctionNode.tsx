@@ -10,7 +10,6 @@ import { useTheme } from "@mui/material";
 import {
 	Node,
 	NodeProps,
-	NodeResizer,
 	Position,
 	useUpdateNodeInternals,
 } from "@xyflow/react";
@@ -36,6 +35,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	data,
 	selected,
 	width: nodeWidth,
+	positionAbsoluteX,
 	orientation,
 	className,
 	children,
@@ -57,6 +57,8 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 		selectNextBranch,
 		clearSelection,
 		width,
+		positionAbsoluteX,
+		data,
 	);
 
 	const updateNodeInternals = useUpdateNodeInternals();
@@ -89,12 +91,6 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 
 	return (
 		<>
-			<NodeResizer
-				isVisible={selected}
-				minWidth={Junction.DEFAULT_DIMENSIONS.width}
-				minHeight={Junction.DEFAULT_DIMENSIONS.height}
-				maxHeight={Junction.DEFAULT_DIMENSIONS.height}
-			/>
 			{data.branchesOrder.map((branchId) => (
 				<HandleWithConnectionsLimit
 					key={branchId}
@@ -155,6 +151,7 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 	id,
 	data,
 	width,
+	positionAbsoluteX,
 	children,
 	...props
 }) => {
@@ -163,8 +160,15 @@ const JunctionNode: FC<JunctionNodeProps> = ({
 			id={id}
 			data={data}
 			width={width ?? Junction.DEFAULT_DIMENSIONS.width}
+			nodeX={positionAbsoluteX}
 		>
-			<JunctionNodeContent id={id} data={data} width={width} {...props}>
+			<JunctionNodeContent
+				id={id}
+				data={data}
+				width={width}
+				positionAbsoluteX={positionAbsoluteX}
+				{...props}
+			>
 				{children}
 			</JunctionNodeContent>
 		</JunctionNodeContextProvider>

@@ -27,6 +27,10 @@ export type ProgramAnalysisResult = {
  *   celui-ci, voir `generateVariables`) — pour qu'une référence à une variable générée par un
  *   AUTRE programme (ex. `Tempo1.Q` d'un bloc tempo posé dans un autre ladder) ne soit jamais
  *   signalée à tort comme non déclarée.
+ * - `crossProgramChecks` (optionnelle) : les règles qui portent sur l'ensemble des programmes de
+ *   cette notation et non sur un seul (unicité d'un numéro d'étape entre grafcets, unicité du
+ *   Main, cycles d'appel entre ladders...). Appelée une fois par `ProjectAnalyser` après la passe
+ *   `analyse`, une seule fois par notation. Absente pour une notation sans règle de ce genre.
  */
 export default interface ProgramAnalyser<P extends Program = Program> {
 	generateVariables(program: P): Variable[];
@@ -35,4 +39,8 @@ export default interface ProgramAnalyser<P extends Program = Program> {
 		project: Project,
 		allVariables: Variable[],
 	): ProgramAnalysisResult;
+	crossProgramChecks?(
+		project: Project,
+		generatedVariablesByProgram: Map<string, Variable[]>,
+	): ProjectAnalyserIssue[];
 }

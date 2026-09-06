@@ -18,6 +18,7 @@ export default function VariableRowContextMenu({
 	target,
 	position,
 	onClose,
+	onInsertBelow,
 	parentWidth,
 	parentHeight,
 }: {
@@ -25,6 +26,7 @@ export default function VariableRowContextMenu({
 	target: VariableRowMenuTarget | null;
 	position: { x: number; y: number };
 	onClose: () => void;
+	onInsertBelow: (variableId: string) => void;
 	parentWidth: number;
 	parentHeight: number;
 }) {
@@ -39,6 +41,12 @@ export default function VariableRowContextMenu({
 
 	const menuItems = target
 		? [
+				[
+					{
+						label: t("insertVariable"),
+						onClick: () => onInsertBelow(target.variableId),
+					},
+				],
 				[
 					{
 						label: t("crossReferences"),

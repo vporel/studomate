@@ -66,6 +66,37 @@ describe("createProjectStore", () => {
 		});
 	});
 
+	describe("panneaux analyse / références croisées mutuellement exclusifs", () => {
+		it("ferme les références croisées à l'ouverture du panneau d'analyse", () => {
+			const store = createProjectStore();
+			store.getState().setCrossReferenceResultVisible(true);
+
+			store.getState().setAnalysisResultVisible(true);
+
+			expect(store.getState().ui.analysisResultVisible).toBe(true);
+			expect(store.getState().ui.crossReferenceResultVisible).toBe(false);
+		});
+
+		it("ferme le panneau d'analyse à l'ouverture des références croisées", () => {
+			const store = createProjectStore();
+			store.getState().setAnalysisResultVisible(true);
+
+			store.getState().setCrossReferenceResultVisible(true);
+
+			expect(store.getState().ui.crossReferenceResultVisible).toBe(true);
+			expect(store.getState().ui.analysisResultVisible).toBe(false);
+		});
+
+		it("fermer un panneau ne touche pas à l'autre", () => {
+			const store = createProjectStore();
+			store.getState().setAnalysisResultVisible(true);
+
+			store.getState().setCrossReferenceResultVisible(false);
+
+			expect(store.getState().ui.analysisResultVisible).toBe(true);
+		});
+	});
+
 	describe("setProjectName / setProjectAuthor", () => {
 		it("updates the project name and marks unsaved changes", async () => {
 			const store = createProjectStore();

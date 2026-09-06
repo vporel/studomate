@@ -22,6 +22,7 @@ import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import { JUNCTION_TYPES } from "@/schemas/grafcet/element.schema";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
+import { normalizeJunctionGeometry } from "@/schemas/grafcet/junction-geometry";
 import { createRandomId } from "@/ids";
 import {
 	GrafcetEdgeType,
@@ -36,10 +37,8 @@ import {
 	applyNodeChanges,
 	EdgeChange,
 	NodeChange,
-	NodeDimensionChange,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
-import { JunctionNodeType } from "@/ui/components/grafcet/nodes/junctions/JunctionNode";
 import ConnectionsCommandsFactory from "../factories/connections-commands.factory";
 import ElementsCommandsFactory from "../factories/elements-commands.factory";
 import {
@@ -61,29 +60,21 @@ export default class GrafcetWorkflowManager {
 
 	handleNodesChange(changes: NodeChange<GrafcetNodeType>[]): void {
 		const grafcet = this.getStoreState().grafcet;
-		//We filter the changes
-		//The remove operation is handle by the method onNodesAndEdgesRemove
-		const changesToAccept = changes.filter((change) => change.type != "remove");
-		//Copie superficielle : seul le nœud jonction réellement modifié est cloné ci-dessous, les
-		//autres gardent leur identité. Appelée à chaque frame d'un glisser-déposer : ne pas
-		//structuredClone tout le tableau ici.
-		let newNodes = [...this.getStoreState().nodes];
-		changesToAccept.forEach((change) => {
-			const index = newNodes.findIndex((n) => n.id === (change as any).id);
-			if (index === -1) return;
-			const node = newNodes[index];
-			if (
-				JUNCTION_TYPES.includes(node.type as (typeof JUNCTION_TYPES)[number])
-			) {
-				const newData = this.resolveJunctionNodePositionOrDimensionsChange(
-					change,
-					changesToAccept,
-					newNodes,
-				);
-				newNodes[index] = { ...node, data: newData } as GrafcetNodeType;
-			}
-		});
-		newNodes = applyNodeChanges(changesToAccept, newNodes);
+		const isJunction = (id: string) =>
+			JUNCTION_TYPES.includes(
+				grafcet.getElementById(id)?.type as (typeof JUNCTION_TYPES)[number],
+			);
+		//The remove operation is handled by onNodesAndEdgesRemove.
+		//Les changements de dimensions d'une jonction sont ignorés : sa largeur est portée par
+		//le domaine (pilotée par les branches extrêmes), jamais mesurée par React Flow.
+		const changesToAccept = changes.filter(
+			(change) =>
+				change.type !== "remove" &&
+				!(change.type === "dimensions" && isJunction(change.id)),
+		);
+		const newNodes = applyNodeChanges(changesToAccept, [
+			...this.getStoreState().nodes,
+		]);
 		this.setStoreState(() => ({ nodes: newNodes }));
 		//Execute commands on for some changes types
 		//The others types are handled by other methods
@@ -399,14 +390,61 @@ export default class GrafcetWorkflowManager {
 	previewJunctionBarPosition(
 		nodeId: string,
 		patch: Partial<JunctionData>,
+		geometry?: { x?: number; width?: number },
 	): void {
 		this.setStoreState((state) => ({
 			nodes: state.nodes.map((node) =>
 				node.id === nodeId
-					? ({ ...node, data: { ...node.data, ...patch } } as GrafcetNodeType)
+					? ({
+							...node,
+							data: { ...node.data, ...patch },
+							...(geometry?.x != null
+								? { position: { ...node.position, x: geometry.x } }
+								: {}),
+							...(geometry?.width != null ? { width: geometry.width } : {}),
+						} as GrafcetNodeType)
 					: node,
 			),
 		}));
+	}
+
+	/**
+	 * Valide en une commande le redimensionnement d'une jonction piloté par une branche
+	 * extrême (voir `resolveExtremeBranchDrag`) : données, position et taille du nœud changent
+	 * ensemble (un seul undo).
+	 */
+	applyJunctionBranchDrag(
+		nodeId: string,
+		result: {
+			branches: JunctionData["branches"];
+			pivotPosition: number;
+			nodeX: number;
+			width: number;
+		},
+	): void {
+		const grafcet = this.getStoreState().grafcet;
+		const element = grafcet.getElementById<Junction>(nodeId);
+		if (!element) throw new Error("Element with id " + nodeId + " not found");
+		if (!JUNCTION_TYPES.includes(element.type as (typeof JUNCTION_TYPES)[number]))
+			throw new Error("Element with id " + nodeId + " is not a junction");
+		this.getStoreState().commandsStackManager.executeOperation([
+			new ElementsUpdateCommand([
+				{
+					type: element.type,
+					id: nodeId,
+					data: {
+						branches: result.branches,
+						branchesOrder: element.data.branchesOrder,
+						pivotPosition: result.pivotPosition,
+					},
+					previousData: element.data,
+					position: { x: result.nodeX, y: element.position.y },
+					previousPosition: element.position,
+					size: { width: result.width, height: element.size.height },
+					previousSize: element.size,
+				},
+			]),
+		]);
 	}
 
 	/**
@@ -461,56 +499,37 @@ export default class GrafcetWorkflowManager {
 			nodeId,
 			branchId,
 		);
-		this.updateNodeData(
-			nodeId,
-			(prevData) => {
-				const newData = structuredClone(prevData) as JunctionData;
-				delete newData.branches[branchId];
-				newData.branchesOrder = newData.branchesOrder.filter(
-					(id: string) => id !== branchId,
-				);
-				return newData;
-			},
-			{
-				edgesToDelete: connectionsToDelete.map((c) => c.id),
-			},
+
+		const trimmed = structuredClone(element.data) as JunctionData;
+		delete trimmed.branches[branchId];
+		trimmed.branchesOrder = trimmed.branchesOrder.filter(
+			(id) => id !== branchId,
 		);
+		// Retirer une branche extrême recale le bord du nœud sur la nouvelle extrémité.
+		const geometry = normalizeJunctionGeometry(
+			trimmed,
+			element.position.x,
+			element.size.width,
+		);
+
+		this.getStoreState().commandsStackManager.executeOperation([
+			new ElementsUpdateCommand([
+				{
+					type: element.type,
+					id: nodeId,
+					data: geometry.data,
+					previousData: element.data,
+					position: { x: geometry.nodeX, y: element.position.y },
+					previousPosition: element.position,
+					size: { width: geometry.width, height: element.size.height },
+					previousSize: element.size,
+				},
+			]),
+			...ConnectionsCommandsFactory.onEdgesRemove(
+				connectionsToDelete.map((c) => c.id),
+				grafcet,
+			).commands,
+		]);
 	}
 
-	/**
-	 * Une jonction garde ses branches à une position relative constante par rapport au nœud :
-	 * un déplacement ou redimensionnement doit donc aussi translater le pivot et les branches,
-	 * pas seulement la position du nœud lui-même.
-	 */
-	private resolveJunctionNodePositionOrDimensionsChange(
-		change: NodeChange,
-		changes: NodeChange[], //The other changes of the same batch
-		nodes: GrafcetNodeType[],
-	): JunctionData {
-		const node = nodes.find((n) => n.id === (change as any).id) as
-			JunctionNodeType | undefined;
-		if (!node)
-			throw new Error(`Junction node not found for id ${(change as any).id}`);
-		if (!node.type!.includes("junction") || change.type !== "position")
-			return node.data;
-		const dimensionsChange: NodeDimensionChange = changes.find(
-			(c) => (c as any).id === (change as any).id && c.type === "dimensions",
-		) as NodeDimensionChange;
-		if (!dimensionsChange) return node.data;
-		//If the position of a junction node is changed
-		//and there is also a change of dimensions for the same node,
-		//we update the position of the bars in order to keep them in the same relative position to the node position, because during the resizing, the position of the node is updated before the dimensions are updated, so if we don't do this, the bars will be in the wrong position during the resizing
-		//Update the branches positions and the pivot position according to the new position of the node
-		const positionDelta = node.position.x! - change.position!.x;
-		return {
-			...node.data,
-			pivotPosition: node.data.pivotPosition + positionDelta,
-			branches: Object.fromEntries(
-				Object.entries(node.data.branches).map(([branchId, branch]) => [
-					branchId,
-					{ ...branch, position: branch.position + positionDelta },
-				]),
-			),
-		};
-	}
 }

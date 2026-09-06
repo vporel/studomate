@@ -1,0 +1,114 @@
+{
+	"id": "legacy-project-v0",
+	"name": "Legacy project (schema v0)",
+	"creationDate": "2024-01-01T00:00:00.000Z",
+	"lastModificationDate": "2024-01-02T00:00:00.000Z",
+	"author": "Legacy Author",
+	"dialect": 0,
+	"variables": [
+		{
+			"id": "input-i0",
+			"mnemonic": "I0",
+			"zone": "logic-input",
+			"type": "BOOL",
+			"address": "",
+			"comment": ""
+		},
+		{
+			"id": "output-q0",
+			"mnemonic": "Q0",
+			"zone": "logic-output",
+			"type": "BOOL",
+			"address": "",
+			"comment": ""
+		}
+	],
+	"grafcets": {
+		"legacy-grafcet": {
+			"id": "legacy-grafcet",
+			"name": "Legacy cycle",
+			"format": "A4_PORTRAIT",
+			"steps": [
+				{
+					"id": "s0",
+					"data": { "number": 0, "initial": true, "width": 40, "height": 40 },
+					"position": { "x": 100, "y": 100 },
+					"type": "step"
+				},
+				{
+					"id": "s1",
+					"data": { "number": 1, "initial": false, "width": 40, "height": 40 },
+					"position": { "x": 100, "y": 200 },
+					"type": "step"
+				}
+			],
+			"actions": [
+				{
+					"id": "a0",
+					"data": {
+						"expression": "Q0",
+						"type": "boolean_variable",
+						"executionMode": "continuous",
+						"width": 100,
+						"height": 40
+					},
+					"position": { "x": 200, "y": 100 },
+					"type": "action"
+				}
+			],
+			"transitions": [
+				{
+					"id": "t0",
+					"data": { "expression": "I0", "width": 40, "height": 30 },
+					"position": { "x": 100, "y": 150 },
+					"type": "transition"
+				},
+				{
+					"id": "t1",
+					"data": { "expression": "NON I0", "width": 40, "height": 30 },
+					"position": { "x": 100, "y": 250 },
+					"type": "transition"
+				}
+			],
+			"stepsReferralsSources": [],
+			"stepsReferralsTargets": [],
+			"junctionsAndStarts": [],
+			"junctionsAndEnds": [],
+			"junctionsOrStarts": [],
+			"junctionsOrEnds": [],
+			"comments": [],
+			"connections": [
+				{
+					"id": "c0",
+					"source": { "type": "step", "id": "s0", "handle": "source:successor" },
+					"target": { "type": "transition", "id": "t0", "handle": "target:predecessor" },
+					"data": { "points": [{ "x": 120, "y": 140 }, { "x": 120, "y": 150 }, { "x": 120, "y": 160 }] }
+				},
+				{
+					"id": "c1",
+					"source": { "type": "transition", "id": "t0", "handle": "source:successor" },
+					"target": { "type": "step", "id": "s1", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c2",
+					"source": { "type": "step", "id": "s1", "handle": "source:successor" },
+					"target": { "type": "transition", "id": "t1", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c3",
+					"source": { "type": "transition", "id": "t1", "handle": "source:successor" },
+					"target": { "type": "step", "id": "s0", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c4",
+					"source": { "type": "step", "id": "s0", "handle": "source:action" },
+					"target": { "type": "action", "id": "a0", "handle": "target:step" },
+					"data": { "points": [] }
+				}
+			]
+		}
+	}
+}

@@ -19,7 +19,7 @@ jest.mock("../context-menu/GrafcetContextMenu", () => ({
 }));
 
 // jsdom n'implémente pas ResizeObserver (API navigateur, hors du DOM qu'il simule) ; React Flow
-// s'en sert pour mesurer le viewport au montage.
+// s'en sert pour se dimensionner au montage.
 class ResizeObserverStub {
 	observe() {}
 	unobserve() {}
@@ -45,10 +45,8 @@ describe("GrafcetFlow", () => {
 				grafcet,
 				nodes: [],
 				edges: [],
-				viewport: null,
 				viewManager: {
 					setReactFlowInstance: jest.fn(),
-					setViewport: jest.fn(),
 					setContainerElement: jest.fn(),
 				},
 				workflowManager: {

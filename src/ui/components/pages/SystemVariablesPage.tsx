@@ -31,7 +31,15 @@ const SystemVariablesPage = () => {
 			pageId={SYSTEM_VARIABLES_PAGE_ID}
 			sx={{ justifyContent: "center", alignItems: "start" }}
 		>
-			<Box sx={{ padding: "3rem 3rem", width: "100%", maxWidth: 900 }}>
+			<Box
+				sx={{
+					padding: "3rem 3rem",
+					width: "100%",
+					maxWidth: 900,
+					height: "100%",
+					overflowY: "auto",
+				}}
+			>
 				<Typography variant="h3" sx={{ mb: 2 }}>
 					{pageTitle({
 						id: SYSTEM_VARIABLES_PAGE_ID,

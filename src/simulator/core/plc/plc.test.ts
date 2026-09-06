@@ -683,7 +683,7 @@ describe("PLC", () => {
 			plc.stop();
 		});
 
-		it("catch-up : un scan couvrant plusieurs périodes répète l'impulsion jusqu'à rattrapage", () => {
+		it("report : un scan couvrant plusieurs périodes soustrait une période et reporte le reliquat sur les scans suivants", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
 			plc.pause();

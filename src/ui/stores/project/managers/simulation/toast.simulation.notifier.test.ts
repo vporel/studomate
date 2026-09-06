@@ -84,6 +84,20 @@ describe("ToastSimulationNotifier", () => {
 		});
 	});
 
+	describe("crash du cycle", () => {
+		it("message générique sans raison", () => {
+			notifier.simulationCrashed();
+			expect(toastCalls[0].level).toBe("error");
+			expect(toastCalls[0].message).toContain("cycle automate");
+		});
+
+		it("intègre la raison quand elle est fournie", () => {
+			notifier.simulationCrashed("Division par zéro : 10 / 0");
+			expect(toastCalls[0].level).toBe("error");
+			expect(toastCalls[0].message).toContain("Division par zéro : 10 / 0");
+		});
+	});
+
 	describe("échec de démarrage", () => {
 		it("nomme l'étape en cause", () => {
 			notifier.simulationCouldNotStart({

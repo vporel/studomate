@@ -90,6 +90,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				flex: 1,
 				hideable: false,
 				editable: designing,
+				renderEditCell: EditInputCell,
 			},
 		],
 		[variablesManager, zones, designing, t, tError, tv],

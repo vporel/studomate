@@ -5,7 +5,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import PagesTabBar from "./PagesTabBar";
+import PagesTabBar, { edgeFadeMask } from "./PagesTabBar";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
@@ -28,6 +28,27 @@ function setup({
 	renderWithI18n(<PagesTabBar />);
 	return { setActivePage };
 }
+
+describe("edgeFadeMask", () => {
+	it("ne renvoie aucun masque quand rien ne déborde", () => {
+		expect(edgeFadeMask(false, false)).toBeUndefined();
+	});
+
+	it("estompe uniquement le bord qui déborde", () => {
+		expect(edgeFadeMask(true, false)).toBe(
+			"linear-gradient(to right, transparent, black 28px, black)",
+		);
+		expect(edgeFadeMask(false, true)).toBe(
+			"linear-gradient(to right, black, black calc(100% - 28px), transparent)",
+		);
+	});
+
+	it("estompe les deux bords quand des onglets sont cachés de chaque côté", () => {
+		expect(edgeFadeMask(true, true)).toBe(
+			"linear-gradient(to right, transparent, black 28px, black calc(100% - 28px), transparent)",
+		);
+	});
+});
 
 describe("PagesTabBar — accessibilité des onglets", () => {
 	it("expose une tablist et des onglets avec aria-selected", () => {

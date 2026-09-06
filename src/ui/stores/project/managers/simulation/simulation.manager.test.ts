@@ -11,6 +11,7 @@ import { VariableFactory } from "@tests/utils/variable-factory";
 import { ProjectStoreState } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -34,6 +35,7 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		plcConfig: { scanTimeMs: 10 },
 		ui: { watchTablesVisible: false, analysisResultVisible: false },
 		simulationVariablesStates: {},
+		simulationVariablesStatesByMnemonic: {},
 		evaluableExpressionsValues: {},
 		forcedVariables: {},
 		analysisHasErrors: false,
@@ -445,6 +447,25 @@ describe("SimulationManager", () => {
 			expect(get().mode).toBe(ProjectMode.DESIGN);
 			expect(get().simulationVariablesStates).toEqual({});
 		});
+
+		it("remonte le message lisible de l'exception à l'origine du crash", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			(manager as any).plc.onCycleError(
+				new DivisionByZeroException(10, 0, null as any),
+			);
+
+			expect(notifier.simulationCrashed).toHaveBeenCalledWith(
+				expect.stringContaining("10 / 0"),
+			);
+		});
 	});
 
 	describe("publishCycleState — publication différentielle", () => {
@@ -506,6 +527,24 @@ describe("SimulationManager", () => {
 			expect(Object.keys(firstRepublish).sort()).toEqual(allVarIds.sort());
 
 			manager.setDesignMode();
+		});
+
+		it("publie une vue indexée par mnémonique en miroir de simulationVariablesStates", async () => {
+			const { get, set } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+
+			const byId = get().simulationVariablesStates;
+			const byMnemonic = get().simulationVariablesStatesByMnemonic;
+			expect(Object.keys(byMnemonic).length).toBe(Object.keys(byId).length);
+			for (const entry of Object.values(byId)) {
+				expect(byMnemonic[entry.mnemonic]).toEqual(entry);
+			}
+
+			manager.setDesignMode();
+			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
 		});
 	});
 });

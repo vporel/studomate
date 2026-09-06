@@ -4,10 +4,7 @@ import {
 	HMI_CANVAS_HEIGHT,
 	HMI_CANVAS_WIDTH,
 } from "@/schemas/hmi/hmi-page.schema";
-import {
-	HmiAction,
-	HmiWidget,
-} from "@/schemas/hmi/hmi-widget.schema";
+import { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
 import useHmiContextMenu from "@/ui/components/hmi/context-menu/useHmiContextMenu";
 import { useT } from "@/ui/i18n/useT";import { useHmiStore } from "@/ui/components/hmi/HmiContext";
@@ -23,7 +20,6 @@ import {
 } from "react";
 import { clampZoom, SNAP_GRID, ZOOM_STEP } from "./constants";
 import { executeHmiAction } from "./hmi-action.executor";
-import { resolvePositionAnimationOffset } from "./hmi-position-animation";
 import HmiCanvasSidebarSection from "./HmiCanvasSidebarSection";
 import HmiObjectsPanel from "./HmiObjectsPanel";
 import HmiPagePropertiesPanel from "./HmiPagePropertiesPanel";
@@ -34,7 +30,10 @@ import HmiWidgetPropertiesPanel from "./HmiWidgetPropertiesPanel";
 import useHmiCanvasDrop from "./useHmiCanvasDrop";
 import useHmiMarqueeSelect, { HmiMarqueeRect } from "./useHmiMarqueeSelect";
 import useHmiWidgetDrag, { HmiDragPreview } from "./useHmiWidgetDrag";
-import useHmiWidgetResize, { HmiWidgetRect } from "./useHmiWidgetResize";
+import useHmiWidgetResize, {
+	HmiResizeDirection,
+	HmiWidgetRect,
+} from "./useHmiWidgetResize";
 
 interface HmiCanvasProps {
 	isSimulation: boolean;
@@ -52,9 +51,6 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const clearSelection = useHmiStore((s) => s.clearSelection);
 	const setScreenToCanvasPosition = useHmiStore(
 		(s) => s.setScreenToCanvasPosition,
-	);
-	const simulationVariablesStates = useProjectStore(
-		(s) => s.simulationVariablesStates,
 	);
 	const simulationManager = useProjectStore((s) => s.simulationManager);
 	const hmiManager = useProjectStore((s) => s.hmiManager);
@@ -122,18 +118,6 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 		onZoomChange(clampZoom(zoom - Math.sign(e.deltaY) * ZOOM_STEP));
 	};
 
-	/** Retourne la valeur brute de la variable (boolean ou number selon le type PLC). */
-	const getVariableValue = useCallback(
-		(mnemonic: string): unknown => {
-			if (!mnemonic) return undefined;
-			const entry = Object.values(simulationVariablesStates).find(
-				(s) => s.mnemonic === mnemonic,
-			);
-			return entry?.value;
-		},
-		[simulationVariablesStates],
-	);
-
 	/** Écrit une valeur dans la variable liée au widget — entrée physique ou mémoire. Une sortie
 	 * n'est jamais ciblée : `HmiWidgetPropertiesPanel` l'exclut du sélecteur de variable pour tout
 	 * widget écrivain. */
@@ -149,16 +133,6 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 			}
 		},
 		[project, simulationManager],
-	);
-
-	/** Décalage courant de position d'un widget — inactif hors simulation (voir
-	 * `resolvePositionAnimationOffset`). */
-	const getPositionAnimationOffset = useCallback(
-		(widget: HmiWidget): { dx: number; dy: number } | undefined =>
-			isSimulation
-				? resolvePositionAnimationOffset(widget, getVariableValue)
-				: undefined,
-		[isSimulation, getVariableValue],
 	);
 
 	/** Exécute les actions liées à l'événement nommé du widget (voir `HmiWidgetEvents`) — `events`
@@ -196,36 +170,53 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 		openContextMenu(e, { type: "pane" });
 	};
 
-	const handleWidgetContextMenu = (e: ReactMouseEvent, widget: HmiWidget) => {
-		if (isSimulation) return;
-		e.preventDefault();
-		e.stopPropagation();
-		if (!selectedWidgetIds.includes(widget.id)) selectWidget(widget.id);
-		openContextMenu(e, { type: "widget", widgetId: widget.id });
-	};
+	const handleWidgetContextMenu = useCallback(
+		(e: ReactMouseEvent, widgetId: string) => {
+			if (isSimulation) return;
+			e.preventDefault();
+			e.stopPropagation();
+			if (!selectedWidgetIds.includes(widgetId)) selectWidget(widgetId);
+			openContextMenu(e, { type: "widget", widgetId });
+		},
+		[isSimulation, selectedWidgetIds, selectWidget, openContextMenu],
+	);
 
 	/** Clic simple = ne sélectionne que ce widget (sauf s'il fait déjà partie de la sélection en
 	 * cours, auquel cas on la préserve pour pouvoir la glisser en groupe). Shift/Ctrl/Cmd =
 	 * ajoute/retire ce widget de la sélection. Le glisser démarre sur le résultat, qu'il s'agisse
 	 * d'un seul widget ou du groupe entier. */
-	const handleWidgetDragStart = (e: ReactMouseEvent, widget: HmiWidget) => {
-		if (isSimulation) return;
-		e.stopPropagation();
-		const additive = e.shiftKey || e.ctrlKey || e.metaKey;
-		const nextSelection = additive
-			? selectedWidgetIds.includes(widget.id)
-				? selectedWidgetIds.filter((id) => id !== widget.id)
-				: [...selectedWidgetIds, widget.id]
-			: selectedWidgetIds.includes(widget.id)
-				? selectedWidgetIds
-				: [widget.id];
-		setSelection(nextSelection);
-		if (nextSelection.length === 0) return;
-		const group = Object.values(hmiPage.widgets).filter((w) =>
-			nextSelection.includes(w.id),
-		);
-		startDrag(e, group);
-	};
+	const handleWidgetDragStart = useCallback(
+		(e: ReactMouseEvent, widgetId: string) => {
+			if (isSimulation) return;
+			e.stopPropagation();
+			const additive = e.shiftKey || e.ctrlKey || e.metaKey;
+			const nextSelection = additive
+				? selectedWidgetIds.includes(widgetId)
+					? selectedWidgetIds.filter((id) => id !== widgetId)
+					: [...selectedWidgetIds, widgetId]
+				: selectedWidgetIds.includes(widgetId)
+					? selectedWidgetIds
+					: [widgetId];
+			setSelection(nextSelection);
+			if (nextSelection.length === 0) return;
+			const group = Object.values(hmiPage.widgets).filter((w) =>
+				nextSelection.includes(w.id),
+			);
+			startDrag(e, group);
+		},
+		[isSimulation, selectedWidgetIds, setSelection, hmiPage.widgets, startDrag],
+	);
+
+	const handleWidgetResizeStart = useCallback(
+		(e: ReactMouseEvent, direction: HmiResizeDirection, widgetId: string) => {
+			if (isSimulation) return;
+			e.stopPropagation();
+			const widget = hmiPage.widgets[widgetId];
+			if (!widget) return;
+			startResize(e, widget, direction);
+		},
+		[isSimulation, hmiPage.widgets, startResize],
+	);
 
 	const selectedWidgets = Object.values(hmiPage.widgets).filter((w) =>
 		selectedWidgetIds.includes(w.id),
@@ -286,16 +277,6 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 				>
 					{Object.values(hmiPage.widgets).map((widget) => {
 						const isSelected = selectedWidgetIds.includes(widget.id);
-						// Hors simulation (page de conception), les widgets restent statiques même si une
-						// simulation tourne : on ne lit pas l'état du simulateur. Une forme (rectangle,
-						// ellipse, texte) n'a de toute façon pas de variable "principale" — voir
-						// `RectangleData`/`EllipseData`/`TextData`.
-						const rawValue =
-							isSimulation && "variable" in widget.data
-								? getVariableValue(widget.data.variable)
-								: undefined;
-						const value: boolean | number =
-							typeof rawValue === "number" ? rawValue : Boolean(rawValue);
 						return (
 							<HmiWidgetItem
 								key={widget.id}
@@ -305,7 +286,6 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 								showResizeHandle={
 									isSelected && soleSelectedWidget?.id === widget.id
 								}
-								value={value}
 								previewOffset={
 									isSelected && dragPreview?.widgetIds.includes(widget.id)
 										? { dx: dragPreview.dx, dy: dragPreview.dy }
@@ -321,16 +301,11 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 										? (geometryPreview?.position ?? undefined)
 										: undefined
 								}
-								animationOffset={getPositionAnimationOffset(widget)}
 								onSetVariableValue={setVariableValue}
 								onTriggerEvent={triggerWidgetEvent}
-								onDragStart={(e) => handleWidgetDragStart(e, widget)}
-								onResizeStart={(e, direction) => {
-									if (isSimulation) return;
-									e.stopPropagation();
-									startResize(e, widget, direction);
-								}}
-								onContextMenu={(e) => handleWidgetContextMenu(e, widget)}
+								onDragStart={handleWidgetDragStart}
+								onResizeStart={handleWidgetResizeStart}
+								onContextMenu={handleWidgetContextMenu}
 							/>
 						);
 					})}

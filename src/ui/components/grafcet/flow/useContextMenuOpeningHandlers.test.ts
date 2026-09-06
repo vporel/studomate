@@ -11,11 +11,15 @@ jest.mock("@/ui/lib/hooks/useFlowContextMenu");
 
 describe("useContextMenuOpeningHandlers", () => {
 	const openContextMenu = jest.fn();
+	const closeContextMenu = jest.fn();
 	const contextMenuEvents = {};
 
 	beforeEach(() => {
 		(useGrafcetContext as jest.Mock).mockReturnValue({ contextMenuEvents });
-		(useFlowContextMenu as jest.Mock).mockReturnValue({ openContextMenu });
+		(useFlowContextMenu as jest.Mock).mockReturnValue({
+			openContextMenu,
+			closeContextMenu,
+		});
 	});
 
 	afterEach(() => jest.clearAllMocks());
@@ -47,5 +51,11 @@ describe("useContextMenuOpeningHandlers", () => {
 		act(() => result.current.onEdgeContextMenu(event, edge));
 
 		expect(openContextMenu).toHaveBeenCalledWith(event, edge);
+	});
+
+	it("exposes closeContextMenu from useFlowContextMenu", () => {
+		const { result } = renderHook(() => useContextMenuOpeningHandlers());
+
+		expect(result.current.closeContextMenu).toBe(closeContextMenu);
 	});
 });

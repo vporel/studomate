@@ -1,4 +1,5 @@
 import { Scene } from "@/ui/lib/program-export-drawing/draw-op";
+import { PdfTableModel } from "./pdf-table";
 
 export type PdfExportOrientation = "portrait" | "landscape";
 
@@ -37,8 +38,10 @@ export interface PdfExportSection {
 	orientation: PdfExportOrientation;
 	/** GRAFCET : scène unique. */
 	scene?: Scene;
-	/** Ladder : une scène recadrée par section, avec son intitulé. */
-	ladderSections?: { heading: string; scene: Scene }[];
+	/** Ladder : une scène recadrée par section, avec son intitulé et sa description (vide si absente). */
+	ladderSections?: { heading: string; description: string; scene: Scene }[];
+	/** Tableau (table des variables) : coulé sur les pages, ligne d'en-tête répétée. */
+	table?: PdfTableModel;
 }
 
 export interface PdfExportDocument {

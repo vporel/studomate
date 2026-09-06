@@ -9,8 +9,8 @@ import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -19,6 +19,16 @@ export type TransitionNodeType = Node<TransitionData> & {
 };
 
 export type TransitionNodeProps = NodeProps<TransitionNodeType>;
+
+const TEXTAREA_LINE_HEIGHT_REM = 1.2;
+const TEXTAREA_MAX_LINES = 6;
+
+/** Ajuste la hauteur de la textarea à son contenu (rétrécit d'abord pour permettre la réduction). */
+function fitTextareaHeight(el: HTMLTextAreaElement | null): void {
+	if (!el) return;
+	el.style.height = "auto";
+	el.style.height = el.scrollHeight + "px";
+}
 
 const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 	const th = useTheme();
@@ -31,6 +41,12 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 		saveExpression,
 		error,
 	] = useWithTextNodeValue(id, "transition", data, "expression", false);
+	// La hauteur impérative posée par `onChange` n'est pas réappliquée aux rendus suivants
+	// (blur, montage, mise à jour externe) : sans ce recalcul, la textarea retombe sur sa
+	// hauteur plafonnée et une scrollbar apparaît dès la 2ᵉ ligne.
+	React.useLayoutEffect(() => {
+		fitTextareaHeight(textareaRef.current);
+	}, [editingExpression]);
 	const pageVisible = usePageVisible();
 	const trueInSimulator = useProjectStore(
 		(state) => pageVisible && state.evaluableExpressionsValues[id] === true,
@@ -102,9 +118,9 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 				<Box
 					sx={{
 						position: "absolute",
-						left: "100%",
+						left: "calc(100% + 5px)",
 						height: "100%",
-						width: "280px",
+						width: "230px",
 						display: "flex",
 						alignItems: "center",
 					}}
@@ -115,9 +131,7 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						value={editingExpression}
 						onChange={(e) => {
 							setEditingExpression(e.target.value);
-							// Auto-resize: shrink first, then expand to fit content
-							e.target.style.height = "auto";
-							e.target.style.height = e.target.scrollHeight + "px";
+							fitTextareaHeight(e.target);
 						}}
 						onKeyDown={(e) => {
 							if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
@@ -133,17 +147,17 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						style={{
 							width: "100%",
 							height: "auto",
-							maxHeight: "100%",
+							maxHeight: `${TEXTAREA_LINE_HEIGHT_REM * TEXTAREA_MAX_LINES}rem`,
 							border: "none",
 							outline: "none",
 							resize: "none",
 							overflowY: "auto",
 							padding: "0",
-							lineHeight: "1.2rem",
+							lineHeight: `${TEXTAREA_LINE_HEIGHT_REM}rem`,
 							fontSize: "0.75rem",
 							pointerEvents: !editing ? "none" : "all",
 							color: trueInSimulator ? colorIfTrueInSimulation : "black",
-							background: "transparent",
+							background: editing ? th.palette.grey[200] : "transparent",
 						}}
 					/>
 				</Box>

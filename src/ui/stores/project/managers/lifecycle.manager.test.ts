@@ -371,6 +371,71 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().bootStatus).toBe("idle");
 		});
 
+		describe("rechargement via URL avec brouillon (preferDraft)", () => {
+			it("restaure le brouillon sans modale quand il est plus récent que le projet enregistré", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "");
+				project.lastModificationDate = new Date(0);
+				await store.getState().projectRepository.save(project);
+				const draft = new Project("p1", "Projet modifié", "");
+				saveDraft("p1", draft.name, JSON.stringify(draft));
+
+				const result = await lifecycle(store).openProject("p1", true);
+
+				expect(result).toBe(true);
+				expect(store.getState().ui.draftConflictModal.visible).toBe(false);
+				expect(store.getState().project?.name).toBe("Projet modifié");
+				expect(store.getState().hasUnsavedChanges).toBe(true);
+			});
+
+			it("ouvre la modale de conflit quand le projet enregistré est plus récent que le brouillon", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "");
+				project.lastModificationDate = new Date(Date.now() + 60_000);
+				await store.getState().projectRepository.save(project);
+				const draft = new Project("p1", "Projet modifié", "");
+				saveDraft("p1", draft.name, JSON.stringify(draft));
+
+				const result = await lifecycle(store).openProject("p1", true);
+
+				expect(result).toBe(true);
+				expect(store.getState().ui.draftConflictModal.visible).toBe(true);
+				expect(store.getState().ui.draftConflictModal.projectId).toBe("p1");
+				expect(store.getState().project).toBeNull();
+			});
+
+			it("lit le projet enregistré pour réamorcer la version, permettant l'enregistrement sans faux conflit", async () => {
+				const store = createProjectStore();
+				const getSpy = jest.spyOn(store.getState().projectRepository, "get");
+				const project = new Project("p1", "Projet", "");
+				project.lastModificationDate = new Date(0);
+				await store.getState().projectRepository.save(project);
+				const draft = new Project("p1", "Projet modifié", "");
+				saveDraft("p1", draft.name, JSON.stringify(draft));
+
+				await lifecycle(store).openProject("p1", true);
+				expect(getSpy).toHaveBeenCalledWith("p1");
+
+				const saved = await lifecycle(store).saveProject();
+				expect(saved).toBe(true);
+				expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
+			});
+
+			it("se rabat sur le projet enregistré quand le brouillon est illisible", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "");
+				await store.getState().projectRepository.save(project);
+				saveDraft("p1", "Projet", "{ invalide");
+
+				const result = await lifecycle(store).openProject("p1", true);
+
+				expect(result).toBe(true);
+				expect(store.getState().project?.name).toBe("Projet");
+				expect(store.getState().hasUnsavedChanges).toBe(false);
+				expect(getDraft("p1")).toBeNull();
+			});
+		});
+
 		describe("restauration des onglets ouverts", () => {
 			it("sans session ni URL, garde la page de démarrage par défaut", async () => {
 				const store = createProjectStore();
@@ -438,6 +503,49 @@ describe("ProjectLifecycleManager", () => {
 				expect(store.getState().pagesOrder).toEqual([PROJECT_STARTUP_PAGE_ID]);
 				expect(store.getState().activePageId).toBe(PROJECT_STARTUP_PAGE_ID);
 			});
+		});
+	});
+
+	describe("openProjectByShareToken", () => {
+		it("passe par le repository partagé du store, pas par une instance jetable", async () => {
+			const store = createProjectStore();
+			const shared = new Project("shared-id", "Projet partagé", "Author");
+			const getByShareToken = jest.fn().mockResolvedValue(shared);
+			// Repository partageable minimal substitué au hybrid : si `openProjectByShareToken`
+			// créait sa propre instance, ce spy ne serait jamais appelé.
+			store.setState({
+				projectRepository: {
+					list: async () => ({ projects: [], skipped: [] }),
+					get: async () => null,
+					save: async () => ({ ok: true }),
+					delete: async () => ({ ok: true }),
+					getByShareToken,
+					getShareToken: async () => null,
+					createShareToken: async () => ({ ok: false, message: "" }),
+					deleteShareToken: async () => ({ ok: true }),
+				} as never,
+			});
+
+			const opened = await lifecycle(store).openProjectByShareToken("tok-1");
+
+			expect(opened).toBe(true);
+			expect(getByShareToken).toHaveBeenCalledWith("tok-1");
+			expect(store.getState().project?.id).toBe("shared-id");
+			expect(store.getState().isSharedProject).toBe(true);
+		});
+
+		it("retourne false si le repository n'est pas partageable", async () => {
+			const store = createProjectStore();
+			store.setState({
+				projectRepository: {
+					list: async () => ({ projects: [], skipped: [] }),
+					get: async () => null,
+					save: async () => ({ ok: true }),
+					delete: async () => ({ ok: true }),
+				} as never,
+			});
+
+			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(false);
 		});
 	});
 

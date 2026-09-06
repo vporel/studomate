@@ -5,6 +5,8 @@
 	"filterPlaceholder": "Filter variables…",
 	"noVariables": "No variable references in this project.",
 	"noMatch": "No variable matches the filter.",
+	"noReferencesForVariable": "“{name}” is neither read nor written in this project.",
+	"noReferencesForMatch": "None of the variables matching the filter are read or written.",
 	"readBy": "Read by",
 	"writtenBy": "Written by",
 	"noReaders": "Read nowhere",

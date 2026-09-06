@@ -21,6 +21,7 @@
 		"step": "Avancer d'un cycle"
 	},
 	"unsavedChanges": "Cliquez ici pour enregistrer",
+	"autoSaveUnavailable": "Sauvegarde automatique indisponible — enregistrez manuellement",
 	"statusBar": {
 		"author": "Auteur : {name}",
 		"unknownAuthor": "Inconnu"

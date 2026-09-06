@@ -16,7 +16,6 @@ import {
 	OnDelete,
 	OnEdgesChange,
 	OnInit,
-	OnMove,
 	OnNodesChange,
 	ReactFlow,
 	ReactFlowProvider,
@@ -78,14 +77,17 @@ const FLOW_CONTAINER_SX: SxProps<Theme> = {
 export function GrafcetFlowContent() {
 	const setActiveScope = useProjectStore((state) => state.setActiveScope);
 	const [handleToolDragOver, handleToolDrop] = useToolDragOverHandlers();
-	const { onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu } =
-		useContextMenuOpeningHandlers();
+	const {
+		onPaneContextMenu,
+		onNodeContextMenu,
+		onEdgeContextMenu,
+		closeContextMenu,
+	} = useContextMenuOpeningHandlers();
 	const { store } = useGrafcetContext();
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
 	const nodes = useGrafcetStore(useShallow((state) => state.nodes));
 	const edges = useGrafcetStore(useShallow((state) => state.edges));
 	const viewManager = useGrafcetStore((state) => state.viewManager);
-	const viewport = useGrafcetStore((state) => state.viewport);
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const flowDimensions = GRAFCET_PAGE_DIMENSIONS;
 	const projectMode = useProjectStore((state) => state.mode);
@@ -96,10 +98,6 @@ export function GrafcetFlowContent() {
 	);
 	const handleInit = useCallback<OnInit<GrafcetNodeType, GrafcetEdgeType>>(
 		(instance) => viewManager.setReactFlowInstance(instance as any),
-		[viewManager],
-	);
-	const handleMoveEnd = useCallback<OnMove>(
-		(_, nextViewport) => viewManager.setViewport(nextViewport),
 		[viewManager],
 	);
 	const handleNodesChange = useCallback<OnNodesChange<GrafcetNodeType>>(
@@ -172,8 +170,6 @@ export function GrafcetFlowContent() {
 					nodes={nodes}
 					edges={edges}
 					onInit={handleInit}
-					defaultViewport={viewport ?? undefined}
-					onMoveEnd={handleMoveEnd}
 					nodesDraggable={projectMode === ProjectMode.DESIGN}
 					nodesConnectable={projectMode === ProjectMode.DESIGN}
 					elementsSelectable={projectMode === ProjectMode.DESIGN}
@@ -201,6 +197,11 @@ export function GrafcetFlowContent() {
 					onPaneContextMenu={onPaneContextMenu as any}
 					onNodeContextMenu={onNodeContextMenu}
 					onEdgeContextMenu={onEdgeContextMenu}
+					onPaneClick={closeContextMenu}
+					onNodeClick={closeContextMenu}
+					onEdgeClick={closeContextMenu}
+					onMoveStart={closeContextMenu}
+					onNodeDragStart={closeContextMenu}
 					zoomOnScroll={false}
 					onWheelCapture={handleWheelCapture}
 				>

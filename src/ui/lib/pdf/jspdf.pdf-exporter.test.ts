@@ -49,6 +49,8 @@ const mockText = jest.fn();
 const mockSetFont = jest.fn();
 const mockSetFontSize = jest.fn();
 const mockSplitTextToSize = jest.fn((t: string) => [t]);
+const mockSetDrawColor = jest.fn();
+const mockLine = jest.fn();
 
 jest.mock("jspdf", () => ({
 	__esModule: true,
@@ -59,14 +61,19 @@ jest.mock("jspdf", () => ({
 		setFont: mockSetFont,
 		setFontSize: mockSetFontSize,
 		splitTextToSize: mockSplitTextToSize,
-		setDrawColor: jest.fn(),
-		line: jest.fn(),
+		setDrawColor: mockSetDrawColor,
+		line: mockLine,
 	})),
 }));
 
 const mockRenderSceneToJsPdf = jest.fn();
 jest.mock("@/ui/lib/program-export-drawing/backends/jspdf-backend", () => ({
 	renderSceneToJsPdf: (...args: unknown[]) => mockRenderSceneToJsPdf(...args),
+}));
+
+const mockDrawPdfTable = jest.fn();
+jest.mock("./pdf-table", () => ({
+	drawPdfTable: (...args: unknown[]) => mockDrawPdfTable(...args),
 }));
 
 describe("JsPdfExporter", () => {
@@ -142,8 +149,8 @@ describe("JsPdfExporter", () => {
 						title: "Ladder - L",
 						orientation: "landscape",
 						ladderSections: [
-							{ heading: "Section 1", scene: small },
-							{ heading: "Section 2", scene: wide },
+							{ heading: "Section 1", description: "", scene: small },
+							{ heading: "Section 2", description: "", scene: wide },
 						],
 					},
 				],
@@ -159,6 +166,81 @@ describe("JsPdfExporter", () => {
 		expect(callB[2].y).toBeGreaterThan(callA[2].y);
 	});
 
+	it("sépare deux sections de ladder d'une même page par un trait horizontal gris", async () => {
+		const a = { ops: [], width: 300, height: 40 };
+		const b = { ops: [], width: 300, height: 40 };
+		await new JsPdfExporter().export(
+			makeDoc({
+				sections: [
+					{
+						title: "Ladder - L",
+						orientation: "landscape",
+						ladderSections: [
+							{ heading: "Section 1", description: "", scene: a },
+							{ heading: "Section 2", description: "", scene: b },
+						],
+					},
+				],
+			}),
+		);
+		expect(mockSetDrawColor).toHaveBeenCalledWith(180);
+		const horizontalRules = mockLine.mock.calls.filter(
+			([x1, y1, x2, y2]) => y1 === y2 && x1 === 15 && x2 === 297 - 15,
+		);
+		expect(horizontalRules).toHaveLength(1);
+	});
+
+	it("imprime la description d'une section de ladder sous son intitulé et décale le dessin", async () => {
+		mockSplitTextToSize.mockReturnValueOnce(["Ligne A", "Ligne B"]);
+		const withDesc = { ops: [], width: 300, height: 100 };
+		const withoutDesc = { ops: [], width: 300, height: 100 };
+		await new JsPdfExporter().export(
+			makeDoc({
+				sections: [
+					{
+						title: "Ladder - L",
+						orientation: "landscape",
+						ladderSections: [
+							{
+								heading: "Section 1",
+								description: "Ligne A Ligne B",
+								scene: withDesc,
+							},
+							{ heading: "Section 2", description: "", scene: withoutDesc },
+						],
+					},
+				],
+			}),
+		);
+		const printed = mockText.mock.calls.flatMap((c) =>
+			Array.isArray(c[0]) ? c[0] : [c[0]],
+		);
+		expect(printed).toContain("Ligne A");
+		expect(printed).toContain("Ligne B");
+		// Le dessin de la 1re section (avec description) commence plus bas que la 2nde n'aurait
+		// commencé sans elle : delta = 2 lignes + l'espace description→dessin.
+		const [callWithDesc] = mockRenderSceneToJsPdf.mock.calls;
+		expect(callWithDesc[2].y).toBeGreaterThan(15 + 12 + 7);
+	});
+
+	it("imprime le titre d'une section tableau puis délègue le tracé du tableau", async () => {
+		const table = {
+			columns: [{ header: "Mnémonique", width: 50 }],
+			rows: [["M0"]],
+		};
+		await new JsPdfExporter().export(
+			makeDoc({
+				sections: [{ title: "Variables de mémoire", orientation: "landscape", table }],
+			}),
+		);
+		const printed = mockText.mock.calls.flatMap((c) =>
+			Array.isArray(c[0]) ? c[0] : [c[0]],
+		);
+		expect(printed).toContain("Variables de mémoire");
+		expect(mockDrawPdfTable).toHaveBeenCalledTimes(1);
+		expect(mockDrawPdfTable.mock.calls[0][1]).toBe(table);
+	});
+
 	it("abaisse l'échelle commune pour qu'une section très haute tienne sur une page", async () => {
 		const tall = { ops: [], width: 500, height: 2000 };
 		const short = { ops: [], width: 500, height: 120 };
@@ -169,8 +251,8 @@ describe("JsPdfExporter", () => {
 						title: "Ladder - L",
 						orientation: "landscape",
 						ladderSections: [
-							{ heading: "Section 1", scene: short },
-							{ heading: "Section 2", scene: tall },
+							{ heading: "Section 1", description: "", scene: short },
+							{ heading: "Section 2", description: "", scene: tall },
 						],
 					},
 				],

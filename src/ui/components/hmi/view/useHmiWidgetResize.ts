@@ -11,7 +11,7 @@ import {
 	HmiWidgetSize,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
-import { MouseEvent as ReactMouseEvent, useRef } from "react";
+import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
 import { HMI_WIDGET_DEFAULT_MIN_SIZE, snapToGrid } from "./constants";
 
 /** Poignée de redimensionnement : un point cardinal. `n`/`s`/`e`/`w` déplacent un seul bord, les
@@ -139,7 +139,7 @@ export default function useHmiWidgetResize(
 		aspectRatio?: number;
 	} | null>(null);
 
-	return (
+	return useCallback((
 		e: ReactMouseEvent,
 		widget: HmiWidget,
 		direction: HmiResizeDirection,
@@ -196,5 +196,5 @@ export default function useHmiWidgetResize(
 		};
 		window.addEventListener("mousemove", onMouseMove);
 		window.addEventListener("mouseup", onMouseUp);
-	};
+	}, [zoom, onPreviewChange, updateWidget]);
 }

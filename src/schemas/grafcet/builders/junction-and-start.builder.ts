@@ -1,5 +1,9 @@
 import { createRandomId } from "@/ids";
 import JunctionAndStart from "../junction-and-start.schema";
+import {
+	JUNCTION_BRANCH_MARGIN,
+	normalizeJunctionGeometry,
+} from "../junction-geometry";
 import { JunctionData } from "../junction.schema";
 import { Dimensions, XYPosition } from "../shared-types";
 
@@ -31,13 +35,16 @@ export default class JunctionAndStartBuilder {
 	nBranches(n: number): JunctionAndStartBuilder {
 		const branches: Record<string, { id: string; position: number }> = {};
 		const branchesOrder: string[] = [];
-		const spacing = this._size.width / (n + 1);
+		const span = this._size.width - 2 * JUNCTION_BRANCH_MARGIN;
 
 		for (let i = 0; i < n; i++) {
 			const branchId = createRandomId();
 			branches[branchId] = {
 				id: branchId,
-				position: spacing * (i + 1),
+				position:
+					n === 1
+						? this._size.width / 2
+						: JUNCTION_BRANCH_MARGIN + (span * i) / (n - 1),
 			};
 			branchesOrder.push(branchId);
 		}
@@ -64,11 +71,16 @@ export default class JunctionAndStartBuilder {
 	}
 
 	build(): JunctionAndStart {
+		const { data, nodeX, width } = normalizeJunctionGeometry(
+			this._data,
+			this._position.x,
+			this._size.width,
+		);
 		return new JunctionAndStart(
 			this._id,
-			{ ...this._data },
-			{ ...this._position },
-			{ ...this._size },
+			{ ...data },
+			{ x: nodeX, y: this._position.y },
+			{ width, height: this._size.height },
 		);
 	}
 }

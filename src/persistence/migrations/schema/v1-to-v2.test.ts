@@ -79,3 +79,81 @@ describe("Migration v1 → v2 — retrait de `format` des GRAFCET", () => {
 		expect(migrated.programs).toBeUndefined();
 	});
 });
+
+describe("Migration v1 → v2 — normalisation de la géométrie des jonctions", () => {
+	function junction(
+		id: string,
+		positions: number[],
+		pivotPosition: number,
+		nodeX: number,
+		width: number,
+	) {
+		const branches: Record<string, { id: string; position: number }> = {};
+		const branchesOrder: string[] = [];
+		positions.forEach((position, i) => {
+			branches[`${id}-b${i}`] = { id: `${id}-b${i}`, position };
+			branchesOrder.push(`${id}-b${i}`);
+		});
+		return {
+			id,
+			type: "junction-or-start",
+			data: { pivotPosition, branches, branchesOrder },
+			position: { x: nodeX, y: 40 },
+			size: { width, height: 30 },
+		};
+	}
+
+	function projectWithJunction(j: ReturnType<typeof junction>) {
+		return {
+			...makeV1Project(0),
+			programs: {
+				g1: {
+					id: "g1",
+					type: "grafcet",
+					junctionsOrStarts: { [j.id]: j },
+				},
+			},
+		};
+	}
+
+	it("ramène la première branche à la marge et cale la largeur sur la dernière", () => {
+		const migrated = v1ToV2.migrate(
+			projectWithJunction(junction("j1", [50, 200], 120, 300, 250)),
+		);
+		const j = (migrated.programs as any).g1.junctionsOrStarts.j1;
+
+		expect(j.data.branches["j1-b0"].position).toBe(10);
+		expect(j.data.branches["j1-b1"].position).toBe(160);
+		expect(j.position.x).toBe(340);
+		expect(j.size.width).toBe(170);
+	});
+
+	it("laisse une jonction déjà canonique intacte", () => {
+		const migrated = v1ToV2.migrate(
+			projectWithJunction(junction("j1", [10, 190], 100, 300, 200)),
+		);
+		const j = (migrated.programs as any).g1.junctionsOrStarts.j1;
+
+		expect(j.position.x).toBe(300);
+		expect(j.size.width).toBe(200);
+		expect(j.data.branches["j1-b1"].position).toBe(190);
+	});
+
+	it("ne touche pas un objet qui n'a pas la forme d'une jonction", () => {
+		const project = {
+			...makeV1Project(0),
+			programs: {
+				g1: {
+					id: "g1",
+					type: "grafcet",
+					junctionsOrStarts: { bogus: { id: "bogus" } },
+				},
+			},
+		};
+
+		const migrated = v1ToV2.migrate(project);
+		expect((migrated.programs as any).g1.junctionsOrStarts.bogus).toEqual({
+			id: "bogus",
+		});
+	});
+});

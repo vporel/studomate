@@ -87,7 +87,7 @@ describe("HybridProjectRepository", () => {
 		const repo = new HybridProjectRepository();
 		await repo.save(newProject("p1", "A"));
 
-		expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+		expect((await repo.list()).projects.map((p) => p.id)).toEqual(["p1"]);
 	});
 
 	it("fusionne local et cloud pour un utilisateur connecté", async () => {
@@ -103,7 +103,7 @@ describe("HybridProjectRepository", () => {
 		const repo = new HybridProjectRepository();
 		await repo.save(newProject("p1", "A"));
 
-		expect((await repo.list()).map((p) => p.id).sort()).toEqual([
+		expect((await repo.list()).projects.map((p) => p.id).sort()).toEqual([
 			"cloud1",
 			"p1",
 		]);
@@ -225,7 +225,7 @@ describe("HybridProjectRepository", () => {
 			(globalThis as any).localStorage.setItem = realSetItem;
 
 			expect(result).toEqual({ ok: true });
-			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+			expect((await repo.list()).projects.map((p) => p.id)).toEqual(["p1"]);
 			expect(warn).toHaveBeenCalled();
 			warn.mockRestore();
 		});
@@ -271,7 +271,7 @@ describe("HybridProjectRepository", () => {
 			const result = await repo.moveToLocal(newProject("p1", "A"));
 
 			expect(result).toEqual({ ok: true });
-			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+			expect((await repo.list()).projects.map((p) => p.id)).toEqual(["p1"]);
 			expect(warn).toHaveBeenCalled();
 			warn.mockRestore();
 			error.mockRestore();
@@ -321,7 +321,7 @@ describe("HybridProjectRepository", () => {
 			await repo.save(newProject("p1", "A")); // encore présent en local
 			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
 
-			expect((await repo.list()).map((p) => p.id)).toEqual(["p1"]);
+			expect((await repo.list()).projects.map((p) => p.id)).toEqual(["p1"]);
 		});
 	});
 

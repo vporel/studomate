@@ -38,9 +38,16 @@ function setup({
 	projectVariables = [] as Variable[],
 	executeOperation = jest.fn(),
 } = {}) {
+	const simulationVariablesStatesByMnemonic = Object.fromEntries(
+		Object.entries(simulationVariablesStates).map(([id, s]) => [
+			s.mnemonic,
+			{ id, ...s },
+		]),
+	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			simulationVariablesStates,
+			simulationVariablesStatesByMnemonic,
 			project: { variables: projectVariables },
 		}),
 	);

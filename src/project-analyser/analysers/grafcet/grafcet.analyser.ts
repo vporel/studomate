@@ -109,6 +109,20 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	}
 
 	/**
+	 * Règles cross-grafcet du projet (voir `ProgramAnalyser.crossProgramChecks`). Délègue aux
+	 * statiques, conservés pour être testés directement.
+	 */
+	crossProgramChecks(
+		project: Project,
+		generatedVariablesByProgram: Map<string, Variable[]>,
+	): ProjectAnalyserIssue[] {
+		return GrafcetAnalyser.checkDuplicateStepNumbers(
+			generatedVariablesByProgram,
+			project,
+		);
+	}
+
+	/**
 	 * Cross-grafcet rule: a step number must be unique across all grafcets of a project. Statique
 	 * (et pas une méthode d'instance) : porte sur l'ensemble des programmes du projet, pas sur un
 	 * seul grafcet — appelée une fois par `ProjectAnalyser`, pas par grafcet.

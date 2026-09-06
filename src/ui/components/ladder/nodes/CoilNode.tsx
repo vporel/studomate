@@ -34,9 +34,7 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 	const energized = useProjectStore(
 		(state) =>
 			pageVisible &&
-			Object.values(state.simulationVariablesStates).some(
-				(v) => v.mnemonic === variable && v.value === true,
-			),
+			state.simulationVariablesStatesByMnemonic[variable]?.value === true,
 	);
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
@@ -83,6 +81,8 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 					ref={variableSelectorRef}
 					value={variable}
 					onCommit={handleCommitVariable}
+					// Le menu contextuel du nœud Ladder porte déjà « Références croisées ».
+					disableContextMenu
 					className="nodrag"
 					sx={{ width: 44, mb: "2px" }}
 				/>

@@ -12,7 +12,7 @@ import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import React, { type FC } from "react";
+import React, { type FC, useMemo } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
 import { useT } from "@/ui/i18n/useT";
 import GrafcetNode from "./GrafcetNode";
@@ -44,18 +44,23 @@ const ActionNode: FC<ActionNodeProps> = ({
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
 	const pageVisible = usePageVisible();
 
-	const activeInSimulation = useProjectStore((state) => {
-		if (!pageVisible) return false;
-		const grafcet = state.project!.grafcets[grafcetId];
-		if (!grafcet) return false;
+	// Étape porteuse résolue via les connexions du grafcet : ne change qu'à l'édition du grafcet,
+	// pas par cycle de simulation — le sélecteur `activeInSimulation` ne fait alors qu'un accès
+	// indexé (même patron que `stepVariableId` dans `StepNode`).
+	const grafcet = useProjectStore((state) => state.project?.grafcets[grafcetId]);
+	const stepVariableId = useMemo(() => {
+		if (!grafcet) return null;
 		const step = ActionHelper.getStep(id, grafcet);
-		if (!step || step.data.number === "") return false;
-		return (
-			state.simulationVariablesStates[
-				getStepVariableId(grafcetId, step.data.number)
-			]?.value === true
-		);
-	});
+		if (!step || step.data.number === "") return null;
+		return getStepVariableId(grafcetId, step.data.number);
+	}, [id, grafcet, grafcetId]);
+
+	const activeInSimulation = useProjectStore(
+		(state) =>
+			pageVisible &&
+			stepVariableId !== null &&
+			state.simulationVariablesStates[stepVariableId]?.value === true,
+	);
 
 	return (
 		<>

@@ -58,6 +58,7 @@ export default function ProjectsSection() {
 			<Typography mb={2}>{t("exportScopeIntro")}</Typography>
 			<ManualList items={t.raw("exportScopes") as string[]} />
 			<Typography mb={2}>{t("exportOutro")}</Typography>
+			<Typography mb={2}>{t("exportContextMenu")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

@@ -8,15 +8,35 @@ import { useT } from "@/ui/i18n/useT";
 
 const UnsavedChangesIndicator = () => {
 	const t = useT("chrome");
-	const { hasUnsavedChanges, lifecycleManager, savingProject } = useProjectStore(
+	const {
+		hasUnsavedChanges,
+		autoSaveUnavailable,
+		lifecycleManager,
+		savingProject,
+	} = useProjectStore(
 		useShallow((state) => ({
 			hasUnsavedChanges: state.hasUnsavedChanges,
+			autoSaveUnavailable: state.autoSaveUnavailable,
 			lifecycleManager: state.lifecycleManager,
 			savingProject: state.savingProject,
 		})),
 	);
 	return (
 		<FlexBox>
+			{hasUnsavedChanges && autoSaveUnavailable && (
+				<Typography
+					color="warning"
+					style={{
+						background: "rgba(255, 170, 0, 0.2)",
+						padding: "2px 4px",
+						borderRadius: "5px",
+						fontSize: "0.8rem",
+						userSelect: "none",
+					}}
+				>
+					{t("autoSaveUnavailable")}
+				</Typography>
+			)}
 			{hasUnsavedChanges && (
 				<Typography
 					color="error"

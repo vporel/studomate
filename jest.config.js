@@ -5,6 +5,8 @@ module.exports = {
 		customExportConditions: [""],
 	},
 	setupFilesAfterEnv: ["<rootDir>/tests/utils/setupJestDom.ts"],
+	// `e2e/` est piloté par Playwright (`playwright.config.ts`), pas par Jest.
+	testPathIgnorePatterns: ["/node_modules/", "<rootDir>/e2e/"],
 	transform: {
 		// nanoid ships ESM-only from v5 — also transform it (and stop ignoring it in
 		// node_modules) instead of the CommonJS-transpiled test build hitting `require()`

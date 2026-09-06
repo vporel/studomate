@@ -7,8 +7,12 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
-import { MouseEvent as ReactMouseEvent } from "react";
+import { memo, MouseEvent as ReactMouseEvent } from "react";
 import { HMI_WIDGET_ZINDEX_OFFSET } from "./constants";
+import {
+	useHmiPositionAnimationOffset,
+	useHmiSimulationValue,
+} from "./use-hmi-widget-simulation";
 import { HmiResizeDirection } from "./useHmiWidgetResize";
 
 const RESIZE_HANDLE_SIZE = 10;
@@ -44,9 +48,6 @@ interface HmiWidgetItemProps {
 	/** N'affiche la poignée que pour une sélection d'un seul widget — pas de redimensionnement
 	 * de groupe. */
 	showResizeHandle: boolean;
-	/** Valeur brute de la variable liée, déjà résolue par `HmiCanvas` (booléenne ou numérique
-	 * selon le type PLC). */
-	value: boolean | number;
 	/** Décalage visuel pendant un glisser en cours (voir `useHmiWidgetDrag`) — ne touche pas
 	 * `widget.position`, qui ne change qu'au relâchement. */
 	previewOffset?: { dx: number; dy: number };
@@ -55,14 +56,15 @@ interface HmiWidgetItemProps {
 	/** Position visuelle pendant un redimensionnement en cours : une poignée nord/ouest déplace le
 	 * coin haut-gauche autant qu'elle change la taille (voir `useHmiWidgetResize`). */
 	previewPosition?: HmiWidgetPosition;
-	/** Décalage courant de l'animation de position en simulation (voir `HmiPositionAnimation`) —
-	 * s'ajoute à `previewOffset`, qui ne s'applique lui qu'en conception. */
-	animationOffset?: { dx: number; dy: number };
 	onSetVariableValue: (mnemonic: string, value: boolean | number) => void;
 	onTriggerEvent: (widgetId: string, eventName: string) => void;
-	onDragStart: (e: ReactMouseEvent) => void;
-	onResizeStart: (e: ReactMouseEvent, direction: HmiResizeDirection) => void;
-	onContextMenu: (e: ReactMouseEvent) => void;
+	onDragStart: (e: ReactMouseEvent, widgetId: string) => void;
+	onResizeStart: (
+		e: ReactMouseEvent,
+		direction: HmiResizeDirection,
+		widgetId: string,
+	) => void;
+	onContextMenu: (e: ReactMouseEvent, widgetId: string) => void;
 }
 
 /** Un widget posé sur le canvas : son wrapper positionné (drag, sélection), son rendu — délégué
@@ -73,11 +75,9 @@ const HmiWidgetItem = ({
 	isSelected,
 	isSimulation,
 	showResizeHandle,
-	value,
 	previewOffset,
 	previewSize,
 	previewPosition,
-	animationOffset,
 	onSetVariableValue,
 	onTriggerEvent,
 	onDragStart,
@@ -91,11 +91,18 @@ const HmiWidgetItem = ({
 	const boundMnemonic =
 		"variable" in widget.data ? widget.data.variable : null;
 
+	const rawValue = useHmiSimulationValue(
+		isSimulation && boundMnemonic ? boundMnemonic : undefined,
+	);
+	const value: boolean | number =
+		typeof rawValue === "number" ? rawValue : Boolean(rawValue);
+	const animationOffset = useHmiPositionAnimationOffset(widget, isSimulation);
+
 	return (
 		<Box
-			onMouseDown={onDragStart}
+			onMouseDown={(e) => onDragStart(e, widget.id)}
 			onClick={(e) => e.stopPropagation()}
-			onContextMenu={onContextMenu}
+			onContextMenu={(e) => onContextMenu(e, widget.id)}
 			sx={{
 				position: "absolute",
 				left:
@@ -136,7 +143,7 @@ const HmiWidgetItem = ({
 				RESIZE_HANDLES.map(({ direction, cursor, style }) => (
 					<Box
 						key={direction}
-						onMouseDown={(e) => onResizeStart(e, direction)}
+						onMouseDown={(e) => onResizeStart(e, direction, widget.id)}
 						sx={{
 							position: "absolute",
 							...style,
@@ -154,4 +161,4 @@ const HmiWidgetItem = ({
 	);
 };
 
-export default HmiWidgetItem;
+export default memo(HmiWidgetItem);

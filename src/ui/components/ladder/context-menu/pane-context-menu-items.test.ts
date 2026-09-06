@@ -13,10 +13,13 @@ function fakeWorkflowManager(nodes: unknown[], edges: unknown[]): any {
 const fakeCopyCutPasteManager = () => ({ pasteElements: jest.fn() }) as any;
 const SCREEN_POSITION = { x: 12, y: 34 };
 
+const onExport = jest.fn();
+
 function items(
 	workflowManager: any,
 	canPaste = false,
 	ccp = fakeCopyCutPasteManager(),
+	exportDisabled = false,
 ) {
 	return paneContextMenuItems(
 		workflowManager,
@@ -25,8 +28,12 @@ function items(
 		SCREEN_POSITION,
 		canPaste,
 		identityT,
+		onExport,
+		exportDisabled,
 	);
 }
+
+beforeEach(() => onExport.mockClear());
 
 describe("paneContextMenuItems (Ladder)", () => {
 	it("désactive 'Tout sélectionner' quand la section est vide", () => {
@@ -60,6 +67,21 @@ describe("paneContextMenuItems (Ladder)", () => {
 
 		expect(workflowManager.selectAllNodesAndEdges).toHaveBeenCalledWith("s1");
 		expect(workflowManager.selectAllEdges).toHaveBeenCalledWith("s1");
+	});
+
+	it("expose 'Exporter' : déclenche l'export au clic, se grise selon exportDisabled", () => {
+		const [, , [exportEnabled]] = items(fakeWorkflowManager([], []));
+		exportEnabled.onClick();
+		expect(onExport).toHaveBeenCalledTimes(1);
+		expect(exportEnabled.disabled).toBe(false);
+
+		const [, , [exportDisabled]] = items(
+			fakeWorkflowManager([], []),
+			false,
+			fakeCopyCutPasteManager(),
+			true,
+		);
+		expect(exportDisabled.disabled).toBe(true);
 	});
 
 	it("grise 'Coller' quand le presse-papiers n'est pas collable, l'active sinon", () => {

@@ -134,71 +134,35 @@ describe("GrafcetWorkflowManager.handleNodesChange — identité des nœuds", ()
 		expect(executeSpy).not.toHaveBeenCalled();
 	});
 
-	// Une jonction garde ses branches à une position relative constante par rapport au nœud :
-	// un déplacement accompagné d'un redimensionnement (glisser un bord pendant un resize) doit
-	// donc translater le pivot et les branches du même delta que la position.
-	it("translate le pivot et les branches d'une jonction quand position ET dimensions changent dans le même lot", () => {
+	it("ignore un changement de dimensions ciblant une jonction (largeur portée par le domaine)", () => {
 		const store = buildStore();
-		const junctionBefore = store
-			.getState()
-			.grafcet.getElementById<any>("junction-1")!;
-		const pivotBefore = junctionBefore.data.pivotPosition;
-		const branchPositionsBefore = Object.values(
-			junctionBefore.data.branches,
-		).map((b: any) => b.position);
-
-		store.getState().workflowManager.handleNodesChange([
-			{
-				id: "junction-1",
-				type: "position",
-				position: { x: 80, y: 100 },
-				dragging: true,
-			},
-			{
-				id: "junction-1",
-				type: "dimensions",
-				dimensions: { width: 220, height: 30 },
-				resizing: true,
-				setAttributes: true,
-			},
-		]);
-
-		const junctionAfter = store
-			.getState()
-			.nodes.find((n) => n.id === "junction-1")! as any;
-		const delta = 100 - 80; //node.position.x (avant) - change.position.x
-		expect(junctionAfter.data.pivotPosition).toBe(pivotBefore + delta);
-		expect(junctionAfter.width).toBe(220);
-		const branchPositionsAfter = Object.values(junctionAfter.data.branches).map(
-			(b: any) => b.position,
+		const executeSpy = jest.spyOn(
+			store.getState().commandsStackManager,
+			"executeOperation",
 		);
-		expect(branchPositionsAfter).toEqual(
-			branchPositionsBefore.map((p: any) => p + delta),
-		);
-	});
-
-	it("met à jour uniquement la largeur d'une jonction sur un changement de dimensions sans position", () => {
-		const store = buildStore();
-		const junctionBefore = store
+		const widthBefore = store
 			.getState()
-			.grafcet.getElementById<any>("junction-1")!;
-		const pivotBefore = junctionBefore.data.pivotPosition;
+			.grafcet.getElementById<any>("junction-1")!.size.width;
 
 		store.getState().workflowManager.handleNodesChange([
 			{
 				id: "junction-1",
 				type: "dimensions",
-				dimensions: { width: 250, height: 30 },
-				resizing: true,
+				dimensions: { width: 320, height: 30 },
+				resizing: false,
 				setAttributes: true,
 			},
 		]);
 
-		const junctionAfter = store
-			.getState()
-			.nodes.find((n) => n.id === "junction-1")! as any;
-		expect(junctionAfter.width).toBe(250);
-		expect(junctionAfter.data.pivotPosition).toBe(pivotBefore);
+		// aucune commande de redimensionnement produite
+		for (const [commands] of executeSpy.mock.calls)
+			expect(commands).toHaveLength(0);
+		expect(
+			store.getState().grafcet.getElementById<any>("junction-1")!.size.width,
+		).toBe(widthBefore);
+		expect(
+			(store.getState().nodes.find((n) => n.id === "junction-1") as any).width,
+		).toBe(widthBefore);
 	});
 });
 

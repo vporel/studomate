@@ -1,5 +1,6 @@
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
+import trackEvent from "@/ui/lib/analytics";
 import { createStore, useStore } from "zustand";
 
 /**
@@ -125,6 +126,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 		if (error)
 			return { ok: false, code: toAuthErrorCode(error, "signUp") };
 		set({ user: data.user });
+		trackEvent("account-created", { anonymous: false });
 		return { ok: true };
 	},
 
@@ -138,6 +140,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 			return { ok: false, code };
 		}
 		set({ user: data.user });
+		trackEvent("account-created", { anonymous: true });
 		return { ok: true };
 	},
 

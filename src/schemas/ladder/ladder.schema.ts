@@ -318,6 +318,11 @@ export default class Ladder extends Program {
 		);
 	}
 
+	translateExpressionsKeywords(): void {
+		// Les contacts et bobines Ladder référencent une variable par mnémonique : aucune
+		// expression textuelle à traduire d'un dialecte à l'autre.
+	}
+
 	static createFromJSON(json: string): Ladder {
 		const jsonParsed = JSON.parse(json);
 		const ladder = Object.assign(new Ladder("", ""), jsonParsed);

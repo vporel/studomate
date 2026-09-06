@@ -58,9 +58,11 @@
 		"toolbar": {
 			"delete": "Delete",
 			"deleteSelectedAria": "Delete the selected variables",
+			"newVariable": "New variable",
 			"filters": "Filters",
 			"export": "Export",
-			"print": "Print",
+			"exportPdf": "Export as PDF",
+			"exportPdfError": "PDF export failed.",
 			"exportCsv": "Export as CSV",
 			"search": "Search",
 			"searchPlaceholder": "Search...",
@@ -78,6 +80,7 @@
 		},
 		"selectorPlaceholder": "?",
 		"contextMenu": {
+			"insertVariable": "Insert a variable",
 			"crossReferences": "Cross-references",
 			"delete": "Delete"
 		}

@@ -5,6 +5,7 @@ import Program, {
 	ProgramType,
 } from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
+import trackEvent from "@/ui/lib/analytics";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -163,6 +164,7 @@ export default abstract class AbstractProgramsManager<
 		}
 		const newProject = project.copy();
 		const program = create(newProject);
+		trackEvent("program-created", { type: this.programType });
 		this.getStoreState().pagesManager.openPage({
 			id: program.id,
 			type: this.programType,

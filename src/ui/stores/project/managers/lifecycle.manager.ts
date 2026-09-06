@@ -4,8 +4,8 @@ import Project, {
 import { createRandomId } from "@/ids";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import {
+	isShareable,
 	SaveFailureReason,
-	StorageLocation,
 } from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
 import {
@@ -16,14 +16,7 @@ import {
 	clearShareTokenFromUrl,
 	setProjectIdInUrl,
 } from "@/ui/lib/project-url";
-import SupabaseProjectRepository from "@/persistence/repositories/supabase.project.repository";
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
-import {
-	getPreferredSaveLocation,
-	setPreferredSaveLocation,
-} from "@/persistence/preferences.storage";
-import { authStore } from "@/ui/stores/auth/auth.store";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
 import trackEvent from "@/ui/lib/analytics";
 import { getT } from "@/ui/i18n/translateGlobal";
@@ -31,6 +24,7 @@ import {
 	getInitialPagesData,
 	restorePagesSession,
 } from "../pages-session-restore";
+import resolveSaveLocationIfNeeded from "../save-location";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -81,6 +75,7 @@ export default class ProjectLifecycleManager {
 			project: project,
 			bootStatus: "idle",
 			hasUnsavedChanges: false,
+			autoSaveUnavailable: false,
 			pagesData: initialPagesData,
 			pagesOrder: Object.keys(initialPagesData),
 			activePageId: Object.keys(initialPagesData)[0],
@@ -137,6 +132,7 @@ export default class ProjectLifecycleManager {
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
+			autoSaveUnavailable: false,
 			isSharedProject: false,
 			shareToken: null,
 			pagesData: {},
@@ -149,6 +145,25 @@ export default class ProjectLifecycleManager {
 		setActivePageIdInUrl(null);
 	}
 
+	/**
+	 * Ouvre `project` puis restaure la session de pages depuis l'URL. Chemin commun à
+	 * l'ouverture délibérée et aux sorties des modales de conflit (brouillon, cloud).
+	 */
+	private async openAndRestore(
+		project: Project,
+		opts: { shared: boolean; unsaved: boolean },
+	): Promise<void> {
+		const set = this.setStoreState;
+		const get = this.getStoreState;
+		const urlActiveId = getActivePageIdFromUrl();
+		await this.doOpenProject(project);
+		set(() => ({
+			isSharedProject: opts.shared,
+			hasUnsavedChanges: opts.unsaved,
+		}));
+		restorePagesSession(set, get, project, urlActiveId);
+	}
+
 	/** Returns true if a project was opened, false if cancelled or failed. */
 	async openProject(projectId: string, preferDraft = false): Promise<boolean> {
 		const set = this.setStoreState;
@@ -157,18 +172,45 @@ export default class ProjectLifecycleManager {
 		let fromDraft = false;
 
 		if (preferDraft) {
-			// Rechargement via URL : brouillon prioritaire, pas de modale
+			// Rechargement via URL : le brouillon est prioritaire, mais on lit tout de même le
+			// projet enregistré. Deux raisons : réamorcer la version de concurrence optimiste du
+			// repository (sans quoi l'enregistrement suivant partirait en faux conflit), et
+			// détecter qu'un autre appareil a écrit depuis la dernière sauvegarde du brouillon.
 			const draft = getDraft(projectId);
+			let draftProject: Project | null = null;
 			if (draft) {
 				try {
-					project = Project.createFromJSON(draft.data);
-					fromDraft = true;
+					draftProject = Project.createFromJSON(draft.data);
 				} catch {
 					// Brouillon illisible : suppression et repli sur le projet réel
 					deleteDraft(projectId);
 				}
 			}
-			if (!project) project = await get().projectRepository.get(projectId);
+			const stored = await get().projectRepository.get(projectId);
+			if (draft && draftProject) {
+				if (
+					stored &&
+					stored.lastModificationDate.getTime() > draft.savedAt
+				) {
+					// Le projet enregistré est plus récent que le brouillon : proposer le choix
+					set((state) => ({
+						bootStatus: "idle",
+						ui: {
+							...state.ui,
+							draftConflictModal: {
+								visible: true,
+								projectId,
+								draftData: draft.data,
+							},
+						},
+					}));
+					return true;
+				}
+				project = draftProject;
+				fromDraft = true;
+			} else {
+				project = stored;
+			}
 		} else {
 			// Ouverture délibérée : charger le projet réel, puis vérifier le brouillon
 			project = await get().projectRepository.get(projectId);
@@ -198,19 +240,24 @@ export default class ProjectLifecycleManager {
 		}
 
 		if (!project) return false;
-		const urlActiveId = getActivePageIdFromUrl();
-		await this.doOpenProject(project);
-		set(() => ({ isSharedProject: false, hasUnsavedChanges: fromDraft }));
-		restorePagesSession(set, get, project, urlActiveId);
+		await this.openAndRestore(project, {
+			shared: false,
+			unsaved: fromDraft,
+		});
 		return true;
 	}
 
 	async openProjectByShareToken(token: string): Promise<boolean> {
 		const set = this.setStoreState;
-		const supabase = new SupabaseProjectRepository();
-		const project = await supabase.getByShareToken(token);
+		// Passer par le repository partagé du store, jamais par un `new SupabaseProjectRepository()`
+		// jetable : c'est cette instance-là qui retient la `version` cloud servant de `baseVersion`
+		// à un enregistrement conditionnel ultérieur (voir `SupabaseProjectRepository`).
+		const repo = this.getStoreState().projectRepository;
+		if (!isShareable(repo)) return false;
+		const project = await repo.getByShareToken(token);
 		if (!project) return false;
 		await this.doOpenProject(project);
+		trackEvent("shared-project-opened");
 		set(() => ({ isSharedProject: true, shareToken: null }));
 		clearShareTokenFromUrl();
 		return true;
@@ -249,56 +296,6 @@ export default class ProjectLifecycleManager {
 		await this.doNewProject(templateId, variant);
 	}
 
-	/**
-	 * Résout le lieu de stockage à passer à `save` pour `project` — `undefined` si ce projet a
-	 * déjà un lieu (rien à décider, `save` garde son comportement par défaut).
-	 *
-	 * Un id absent de l'index cloud n'est pas forcément neuf (il peut déjà exister en local) :
-	 * seul un id absent des deux repositories l'est réellement, d'où la lecture locale avant de
-	 * proposer un choix.
-	 */
-	private async resolveLocationIfNeeded(
-		project: Project,
-	): Promise<StorageLocation | undefined | "cancelled"> {
-		const repo = this.getStoreState().projectRepository;
-		if (!(repo instanceof HybridProjectRepository)) return undefined;
-		if (repo.locationOf(project.id) === "cloud") return undefined;
-		if ((await repo.get(project.id)) !== null) return undefined;
-
-		const preferred = getPreferredSaveLocation();
-		if (preferred === "cloud" && authStore.getState().user) return "cloud";
-		if (preferred === "local") return "local";
-
-		// Pas encore de préférence, ou préférence "cloud" sans session active : on demande —
-		// dans le second cas, un nouveau choix "cloud" plutôt qu'un aller direct vers la
-		// connexion, l'utilisateur pouvant préférer rester en local pour cette fois.
-		const persistAsDefault = preferred === null;
-		const resolved = await this.openSaveLocationModal();
-		if (resolved && persistAsDefault) setPreferredSaveLocation(resolved);
-		return resolved ?? "cancelled";
-	}
-
-	private openSaveLocationModal(): Promise<StorageLocation | null> {
-		return new Promise((resolve) => {
-			this.setStoreState((state) => ({
-				ui: {
-					...state.ui,
-					saveLocationModalVisible: true,
-					onSaveLocationChosen: (location) => {
-						this.setStoreState((state) => ({
-							ui: {
-								...state.ui,
-								saveLocationModalVisible: false,
-								onSaveLocationChosen: null,
-							},
-						}));
-						resolve(location);
-					},
-				},
-			}));
-		});
-	}
-
 	/** true si réellement enregistré. */
 	async saveProject(): Promise<boolean> {
 		const set = this.setStoreState;
@@ -311,7 +308,7 @@ export default class ProjectLifecycleManager {
 			return false;
 		}
 		set(() => ({ savingProject: true }));
-		const location = await this.resolveLocationIfNeeded(project);
+		const location = await resolveSaveLocationIfNeeded(project, get, set);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;
@@ -339,6 +336,7 @@ export default class ProjectLifecycleManager {
 		set(() => ({
 			project: newProject,
 			hasUnsavedChanges: false,
+			autoSaveUnavailable: false,
 			savingProject: false,
 		}));
 		deleteDraft(newProject.id);
@@ -357,7 +355,7 @@ export default class ProjectLifecycleManager {
 		copy.touch();
 
 		set(() => ({ savingProject: true }));
-		const location = await this.resolveLocationIfNeeded(copy);
+		const location = await resolveSaveLocationIfNeeded(copy, get, set);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;
@@ -415,10 +413,10 @@ export default class ProjectLifecycleManager {
 		if (choice === "draft" && draftData) {
 			try {
 				const project = Project.createFromJSON(draftData);
-				const urlActiveId = getActivePageIdFromUrl();
-				await this.doOpenProject(project);
-				set(() => ({ isSharedProject: false, hasUnsavedChanges: true }));
-				restorePagesSession(set, get, project, urlActiveId);
+				await this.openAndRestore(project, {
+					shared: false,
+					unsaved: true,
+				});
 			} catch {
 				toast.error(getT("toasts")("draftCorrupted"));
 			}
@@ -431,10 +429,10 @@ export default class ProjectLifecycleManager {
 				toast.error(getT("toasts")("projectReloadFailed"));
 				return;
 			}
-			const urlActiveId = getActivePageIdFromUrl();
-			await this.doOpenProject(project);
-			set(() => ({ isSharedProject: false, hasUnsavedChanges: false }));
-			restorePagesSession(set, get, project, urlActiveId);
+			await this.openAndRestore(project, {
+				shared: false,
+				unsaved: false,
+			});
 		}
 	}
 
@@ -460,11 +458,8 @@ export default class ProjectLifecycleManager {
 			toast.error(getT("toasts")("cloudReloadFailed"));
 			return;
 		}
-		const urlActiveId = getActivePageIdFromUrl();
 		deleteDraft(project.id);
-		await this.doOpenProject(reloaded);
-		set(() => ({ isSharedProject: false, hasUnsavedChanges: false }));
-		restorePagesSession(set, get, reloaded, urlActiveId);
+		await this.openAndRestore(reloaded, { shared: false, unsaved: false });
 	}
 
 	startAutoSave(): void {
@@ -473,7 +468,15 @@ export default class ProjectLifecycleManager {
 			const { project, hasUnsavedChanges, isSharedProject } =
 				this.getStoreState();
 			if (!project || !hasUnsavedChanges || isSharedProject) return;
-			saveDraft(project.id, project.name, JSON.stringify(project));
+			const result = saveDraft(
+				project.id,
+				project.name,
+				JSON.stringify(project),
+			);
+			this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
+			if (!result.ok) {
+				console.error("Auto-save of the draft failed:", result.reason);
+			}
 		}, AUTO_SAVE_INTERVAL_MS);
 	}
 

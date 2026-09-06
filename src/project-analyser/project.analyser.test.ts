@@ -1,6 +1,7 @@
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
+import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import {
 	createContactElement,
 	createRailTerminalElement,
@@ -532,6 +533,46 @@ describe("ProjectAnalyser", () => {
 				expect(result.issues.map((i) => i.code)).not.toContain(
 					"LADDER_CONTACT_VARIABLE_UNDECLARED",
 				);
+			});
+		});
+
+		describe("règles cross-programmes (hook crossProgramChecks)", () => {
+			it("invoque le hook de chaque notation présente : doublon de numéro d'étape ET cycle d'appel ladder remontent ensemble", () => {
+				const project = new Project("p1", "Projet", "");
+
+				// Deux grafcets partageant le numéro d'étape 1 → règle cross-grafcet.
+				const g1 = new GrafcetBuilder()
+					.id("g1")
+					.name("G1")
+					.addStep(
+						new StepBuilder().id("s1").number(1).initial().position(0, 0).build(),
+					)
+					.build();
+				const g2 = new GrafcetBuilder()
+					.id("g2")
+					.name("G2")
+					.addStep(
+						new StepBuilder().id("s2").number(1).initial().position(0, 0).build(),
+					)
+					.build();
+				project.addProgram(g1);
+				project.addProgram(g2);
+
+				// Un ladder qui se référence lui-même → règle cross-ladder (cycle d'appel).
+				const ladder = project.createLadder("L1");
+				const rail = createRailTerminalElement(0);
+				const selfCall = createUserProgramBlockElement(ladder.id, 0, 1);
+				ladder.sections = [
+					createSectionWith(
+						[rail, selfCall],
+						wireInSeries([rail, selfCall]),
+					),
+				];
+
+				const codes = ProjectAnalyser.analyse(project).issues.map((i) => i.code);
+
+				expect(codes).toContain("PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS");
+				expect(codes).toContain("BLOCK_PROGRAM_CALL_CYCLE");
 			});
 		});
 	});

@@ -46,7 +46,7 @@ src/project-compiler/  produit le programme exécutable (PLCRoutine[]) à partir
 src/simulator/          lexer/parser/interpréteur du langage d'expression + moteur PLC
 src/bridge/             mappers entre le domaine/l'analyse et l'UI (exceptions, variables, issues)
 src/lib/                utilitaires neutres (array, date, object), sans dépendance de domaine
-src/persistence/        migrations de schéma + repositories (localStorage, cloud Supabase, hybride) + tokens de partage
+src/persistence/        migrations (forme de projet + disposition localStorage) + repositories (localStorage, cloud Supabase, hybride) + tokens de partage
 src/ui/                 Next.js (App Router) + stores zustand + composants MUI
 src/app-info.ts         identité de l'application (nom, slogan...), module racine neutre
 ```
@@ -141,9 +141,9 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
 - **Imports** : alias `@/...` pour tout ce qui est dans `src/`, `@tests/...` pour
   `tests/`. Un import relatif ne remontant qu'un seul niveau (`../sibling`) est acceptable ;
   au-delà, `no-restricted-imports` (ESLint) le refuse — utiliser l'alias.
-- **Pas de fichiers `index.ts` de ré-export** (barrel files). `src/persistence/migrations/index.ts`
-  n'est pas une exception à cette règle : il contient la logique d'enchaînement des
-  migrations, pas une ré-export.
+- **Pas de fichiers `index.ts` de ré-export** (barrel files). `src/persistence/migrations/schema/index.ts`
+  et `src/persistence/migrations/local-storage/index.ts` ne sont pas des exceptions à cette règle :
+  ils contiennent la logique d'enchaînement des migrations, pas une ré-export.
 - **Fichiers `*.d.ts`** : `src/types/` ne contient que les shims `declare module` de paquets tiers
   non typés (ex. `file-system-access.d.ts`). Tout autre `.d.ts` est un fichier de types ordinaire
   co-localisé avec le module ou la feature qu'il décrit (`src/ui/lib/context-menu/context-menu.d.ts`,
@@ -205,22 +205,41 @@ Toujours vérifier `package.json` avant de citer une version : ce tableau se pé
 
 ## Modification du schéma et migrations
 
+Deux niveaux de versionnement, indépendants :
+
+- **Forme d'un projet** (`schemaVersion`, porté par le projet, partagé par tous les supports) —
+  migrations dans `src/persistence/migrations/schema/`.
+- **Disposition du `localStorage`** (quelles clés, comment les projets y sont rangés — propre au
+  stockage local) — migrations dans `src/persistence/migrations/local-storage/`, version dans la
+  clé `studomate_local_storage_version` (absente = v0).
+
+### Migration de forme de projet (`migrations/schema/`)
+
 Toute modification de `src/schemas/` qui change la forme des données persistées (ajout/retrait/
-renommage de champ, changement de structure...) doit s'accompagner d'une migration dans
-`src/persistence/migrations/`. Avant d'en créer une, demander au développeur s'il faut modifier
-la dernière migration existante (par exemple si elle n'a pas encore été déployée en production)
-ou en créer une nouvelle version.
+renommage de champ, changement de structure...) doit s'accompagner d'une migration. Avant d'en
+créer une, demander au développeur s'il faut modifier la dernière migration existante (par
+exemple si elle n'a pas encore été déployée en production) ou en créer une nouvelle version.
 
-**Nommage et enregistrement d'une migration** (saut de la vN vers la vN+1) :
+**Nommage et enregistrement** (saut de la vN vers la vN+1) :
 
-- Fichier `src/persistence/migrations/vN-to-vN+1.ts` (kebab-case, `to`) — ex. `v0-to-v1.ts`,
+- Fichier `src/persistence/migrations/schema/vN-to-vN+1.ts` (kebab-case, `to`) — ex. `v0-to-v1.ts`,
   `v1-to-v2.ts`. Test co-localisé `vN-to-vN+1.test.ts`.
 - `export default` d'un `const vNToVN+1: ProjectMigration` (camelCase du nom de fichier) portant
   `from` (la version de départ — `UNVERSIONED` pour la v0), une `description` en anglais, et
   `migrate` qui opère sur la forme brute et pose `schemaVersion: N+1`.
-- Enregistrer dans `src/persistence/migrations/index.ts` : importer la migration et l'ajouter
-  **en fin** du tableau `MIGRATIONS` (les migrations s'enchaînent dans l'ordre).
+- Enregistrer dans `src/persistence/migrations/schema/index.ts` : importer la migration et
+  l'ajouter **en fin** du tableau `MIGRATIONS` (les migrations s'enchaînent dans l'ordre).
 - Incrémenter `PROJECT_SCHEMA_VERSION` dans `src/schemas/project/project.schema.ts`.
+
+### Migration de disposition `localStorage` (`migrations/local-storage/`)
+
+Nécessaire quand on change **comment** le stockage local range les projets (clés, index...),
+pas leur forme. Une migration opère directement sur `localStorage` et doit laisser l'ancienne
+disposition lisible tant que la nouvelle version n'est pas posée (coupure quota). `LayoutMigration`
+(`from`, `description` en anglais, `migrate: () => void`), fichier `vN-to-vN+1.ts` + test,
+enregistré en fin de `LAYOUT_MIGRATIONS` dans `local-storage/index.ts`, et incrémenter
+`CURRENT_LAYOUT_VERSION` dans `local-storage/keys.ts`. `ensureLocalStorageLayout()` applique la
+chaîne à la première opération du `LocalStorageProjectRepository`.
 
 ## Cache de parsing des expressions (`parseExpressionCached`)
 

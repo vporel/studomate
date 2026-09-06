@@ -3,6 +3,7 @@
 	"simulationStarting": "Compilation complete, starting the simulation…",
 	"simulationCouldNotStart": "Cannot start the simulation: {count, plural, one {# error} other {# errors}} during {step, select, preCompilation {pre-compilation} other {compilation}}.",
 	"simulationCrashed": "Simulation stopped. Error while running the PLC cycle.",
+	"simulationCrashedWithReason": "Simulation stopped. {reason}",
 	"save": {
 		"storageFull": "Cannot save: the browser storage is full. Export the project to a file so you don't lose your work.",
 		"storageUnavailable": "Cannot save: the browser storage is unavailable (private browsing?). Export the project to a file.",

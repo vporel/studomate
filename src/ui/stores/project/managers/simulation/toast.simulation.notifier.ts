@@ -40,7 +40,11 @@ export default class ToastSimulationNotifier implements SimulationNotifier {
 		);
 	}
 
-	simulationCrashed(): void {
-		toast.error(getT("toasts")("simulationCrashed"));
+	simulationCrashed(reason?: string): void {
+		toast.error(
+			reason
+				? getT("toasts")("simulationCrashedWithReason", { reason })
+				: getT("toasts")("simulationCrashed"),
+		);
 	}
 }

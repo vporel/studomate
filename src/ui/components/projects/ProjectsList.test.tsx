@@ -4,6 +4,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import Project from "@/schemas/project/project.schema";
+import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { useProjectStore } from "./ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -26,6 +27,7 @@ function project(id: string, name: string): Project {
 
 function setup({
 	list = [] as Project[],
+	skipped = [] as SkippedProjectInfo[],
 	deleteFn = jest.fn(),
 	moveToCloudFn = jest.fn().mockResolvedValue({ ok: true }),
 	moveToLocalFn = jest.fn().mockResolvedValue({ ok: true }),
@@ -38,7 +40,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			projectRepository: {
-				list: () => list,
+				list: () => ({ projects: list, skipped }),
 				delete: deleteFn,
 				moveToCloud: moveToCloudFn,
 				moveToLocal: moveToLocalFn,
@@ -119,6 +121,39 @@ describe("ProjectsList", () => {
 
 		expect(screen.getByText("Projet cloud")).toBeInTheDocument();
 		expect(screen.queryByText("Projet local")).not.toBeInTheDocument();
+	});
+
+	it("signale les projets non ouvrables sans les faire disparaître en silence", async () => {
+		setup({
+			list: [project("p1", "Projet A")],
+			skipped: [{ reason: "unreadable", id: "p2" }],
+		});
+		await waitFor(() => screen.getByText("Projet A"));
+
+		expect(
+			screen.getByText(/1 projet n'a pas pu être ouvert/),
+		).toBeInTheDocument();
+	});
+
+	it("affiche un message dédié pour un projet d'une version plus récente", async () => {
+		setup({
+			list: [],
+			skipped: [{ reason: "newer-version", id: "p2" }],
+		});
+		await waitFor(() =>
+			expect(
+				screen.getByText(/version plus récente/),
+			).toBeInTheDocument(),
+		);
+	});
+
+	it("n'affiche aucun avertissement quand rien n'a été écarté", async () => {
+		setup({ list: [project("p1", "Projet A")] });
+		await waitFor(() => screen.getByText("Projet A"));
+
+		expect(
+			screen.queryByText(/n'a pas pu être ouvert/),
+		).not.toBeInTheDocument();
 	});
 
 	it("propose de se connecter dans l'onglet Cloud sans compte", async () => {

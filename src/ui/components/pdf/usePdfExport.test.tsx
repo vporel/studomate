@@ -88,7 +88,9 @@ describe("usePdfExport", () => {
 		};
 
 		await act(async () => {
-			await result.current.startExport([makeGrafcet("g1", "G1")], "f", cover);
+			await result.current.startExport([makeGrafcet("g1", "G1")], "f", {
+				cover,
+			});
 		});
 
 		expect(mockExport.mock.calls[0][0].cover).toEqual(cover);
@@ -120,5 +122,44 @@ describe("usePdfExport", () => {
 
 		expect(result.current.exportState.status).toBe("idle");
 		expect(mockExport).not.toHaveBeenCalled();
+	});
+
+	it("place les sections supplémentaires avant les programmes", async () => {
+		const { result } = renderUsePdfExport();
+		const table = {
+			title: "Variables de mémoire",
+			orientation: "landscape" as const,
+			table: { columns: [{ header: "Mnémonique", width: 50 }], rows: [["M0"]] },
+		};
+
+		await act(async () => {
+			await result.current.startExport([makeGrafcet("g1", "G1")], "projet", {
+				variableSections: [table],
+			});
+		});
+
+		const sections = mockExport.mock.calls[0][0].sections;
+		expect(sections.map((s: { title: string }) => s.title)).toEqual([
+			"Variables de mémoire",
+			"GRAFCET - G1",
+		]);
+	});
+
+	it("exporte les sections supplémentaires seules, sans programme", async () => {
+		const { result } = renderUsePdfExport();
+		const table = {
+			title: "Variables de mémoire",
+			orientation: "landscape" as const,
+			table: { columns: [{ header: "Mnémonique", width: 50 }], rows: [] },
+		};
+
+		await act(async () => {
+			await result.current.startExport([], "projet", {
+				variableSections: [table],
+			});
+		});
+
+		expect(mockExport).toHaveBeenCalledTimes(1);
+		expect(mockExport.mock.calls[0][0].sections).toEqual([table]);
 	});
 });

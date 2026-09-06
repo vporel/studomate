@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { APP_CONTACT_EMAIL } from "@/app-info";
-import buildReportIssueMailto from "./report-issue";
+import buildReportIssueMailto, { openReportIssue } from "./report-issue";
 
 describe("buildReportIssueMailto", () => {
 	it("cible l'adresse de contact avec un sujet et un corps encodés", () => {
@@ -19,5 +19,27 @@ describe("buildReportIssueMailto", () => {
 		const body = params.get("body") ?? "";
 		expect(body).toContain(`Page : ${window.location.href}`);
 		expect(body).toContain(`Navigateur : ${window.navigator.userAgent}`);
+	});
+});
+
+describe("openReportIssue", () => {
+	afterEach(() => {
+		delete window.umami;
+		jest.restoreAllMocks();
+	});
+
+	it("enregistre l'événement et ouvre le mailto dans un nouvel onglet", () => {
+		const track = jest.fn();
+		window.umami = { track };
+		const open = jest.spyOn(window, "open").mockImplementation(() => null);
+
+		openReportIssue();
+
+		expect(track).toHaveBeenCalledWith("feedback-opened", undefined);
+		expect(open).toHaveBeenCalledWith(
+			expect.stringMatching(/^mailto:/),
+			"_blank",
+			"noopener,noreferrer",
+		);
 	});
 });

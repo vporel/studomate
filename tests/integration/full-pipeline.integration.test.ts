@@ -27,7 +27,7 @@ describe("Full Pipeline Integration Test", () => {
 			const grafcet = GrafcetFactory.createCycleWithBooleanActions(
 				"grafcet-1",
 				"Q0", // Action on step 0: SET Q0 (Q0 := TRUE)
-				"Q0", // Action on step 1: RESET Q0 (Q0 := FALSE)
+				"Q0", // Action on step 1: SET Q0 too (default mode is SET; step 1 is not reached without I0)
 				"I0", // Transition condition from step 0 to 1
 				"NON I0", // Transition condition from step 1 to 0
 			);
@@ -75,6 +75,41 @@ describe("Full Pipeline Integration Test", () => {
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);
 			expectVariableValue(plc!, "Q0", true); // Output ON (SET action on step 0 fired on rising edge)
+		});
+
+		it("clears a SET output with a RESET action on the next step", async () => {
+			const outputVar = VariableFactory.createLogicOutput("Q0");
+
+			// Step0 (SET Q0) → [VRAI] → Step1 (RESET Q0) → [FAUX] → Step0.
+			// Le grafcet se stabilise sur X1 : Q0 posé au passage de X0, puis retiré à l'entrée de X1.
+			const grafcet = GrafcetFactory.createCycleWithBooleanActions(
+				"grafcet-reset",
+				"Q0",
+				"Q0",
+				"VRAI",
+				"FAUX",
+				ActionExecutionMode.SET,
+				ActionExecutionMode.RESET,
+			);
+			const project = ProjectFactory.create([outputVar], [grafcet], "RESET action");
+
+			expect(compilePipelineDetailed(project).analysis.issues.filter((i) => i.severity === "error")).toEqual([]);
+
+			let cycleError: Error | null = null;
+			const plc = compileToPLC(project, 10, Dialect.FR, {
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.start();
+			await jest.advanceTimersByTimeAsync(200);
+			plc!.stop();
+			if (cycleError) throw cycleError;
+
+			expectVariableValue(plc!, "X1", true);
+			expectVariableValue(plc!, "Q0", false);
 		});
 
 		it("handles state transitions when input changes", async () => {

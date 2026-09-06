@@ -114,4 +114,14 @@ describe("TransitionNode", () => {
 			expression: "I1",
 		});
 	});
+
+	it("fond transparent au repos, gris clair pendant l'édition", () => {
+		setup({ expression: "I0" });
+		expect(expressionTextarea()).toHaveStyle({ background: "transparent" });
+
+		fireEvent.doubleClick(document.querySelector(".grafcet-transition-node")!);
+		expect(expressionTextarea()).toHaveStyle({
+			background: "rgb(238, 238, 238)",
+		});
+	});
 });

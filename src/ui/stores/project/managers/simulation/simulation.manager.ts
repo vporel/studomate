@@ -1,4 +1,5 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
+import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import { resolveUiLocale } from "@/persistence/preferences.storage";
 import ProjectAnalyser, {
 	ProjectAnalysisResult,
@@ -257,8 +258,13 @@ export default class SimulationManager {
 				this.publishCycleState(plcInstance.getVariablesSnapshot());
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
-			onCycleError: () => {
-				this.notifier.simulationCrashed();
+			onCycleError: (error) => {
+				this.notifier.simulationCrashed(
+					SimulatorExceptionsMapper.getUserFriendlyMessage(
+						error,
+						resolveUiLocale(),
+					),
+				);
 				this.setDesignMode();
 			},
 		});
@@ -276,6 +282,8 @@ export default class SimulationManager {
 		if (!this.lastPublishedExprValues) this.lastPublishedExprValues = new Map();
 
 		const changedVariables: Record<string, SimulationVariableState> = {};
+		const changedVariablesByMnemonic: Record<string, SimulationVariableState> =
+			{};
 		const changedExprValues: Record<string, unknown> = {};
 		for (const v of variablesSnapshot) {
 			const id = v.getId();
@@ -303,7 +311,9 @@ export default class SimulationManager {
 				!this.lastPublishedValues.has(id) ||
 				!Object.is(this.lastPublishedValues.get(id), value)
 			) {
-				changedVariables[id] = { id, mnemonic: v.getName(), value };
+				const entry = { id, mnemonic: v.getName(), value };
+				changedVariables[id] = entry;
+				changedVariablesByMnemonic[v.getName()] = entry;
 				this.lastPublishedValues.set(id, value);
 			}
 		}
@@ -318,6 +328,10 @@ export default class SimulationManager {
 						simulationVariablesStates: {
 							...state.simulationVariablesStates,
 							...changedVariables,
+						},
+						simulationVariablesStatesByMnemonic: {
+							...state.simulationVariablesStatesByMnemonic,
+							...changedVariablesByMnemonic,
 						},
 					}
 				: {}),
@@ -345,6 +359,7 @@ export default class SimulationManager {
 		this.lastPublishedExprValues = null;
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
+			simulationVariablesStatesByMnemonic: {},
 			evaluableExpressionsValues: {},
 			simulationPaused: false,
 			forcedVariables: {},

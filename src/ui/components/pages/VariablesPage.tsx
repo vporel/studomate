@@ -19,6 +19,14 @@ const VARIABLES_PAGES_TITLES: Record<VariablesPageId, string> = {
 	"memory-variables": "Variables de mémoire",
 };
 
+export function getVariablesPageIdForZone(
+	zone: VariableZone,
+): VariablesPageId {
+	if (zone.includes("input")) return "input-variables";
+	if (zone.includes("output")) return "output-variables";
+	return "memory-variables";
+}
+
 export function getVariablesPageData(pageId: VariablesPageId): PageData {
 	return {
 		id: pageId,
@@ -29,6 +37,11 @@ export function getVariablesPageData(pageId: VariablesPageId): PageData {
 
 const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 	const pageTitle = usePageTitle();
+	const title = pageTitle({
+		id: pageData.id,
+		type: "variables",
+		title: pageData.title,
+	});
 	const zones: VariableZone[] = useMemo(() => {
 		switch (pageData.id) {
 			case "input-variables":
@@ -49,16 +62,14 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 				sx={{
 					padding: "3rem 3rem",
 					width: "100%",
+					height: "100%",
+					overflowY: "auto",
 				}}
 			>
 				<Typography variant="h3" sx={{ mb: 3 }}>
-					{pageTitle({
-					id: pageData.id,
-					type: "variables",
-					title: pageData.title,
-				})}
+					{title}
 				</Typography>
-				<VariablesTable zones={zones} />
+				<VariablesTable zones={zones} pageTitle={title} />
 			</Box>
 		</Page>
 	);

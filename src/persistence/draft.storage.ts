@@ -1,3 +1,8 @@
+import {
+	classifyStorageWriteError,
+	StorageWriteErrorReason,
+} from "./storage-write-error";
+
 const STORAGE_KEY = "studomate_drafts";
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -20,11 +25,17 @@ function readStore(): DraftStore {
 	}
 }
 
-function writeStore(store: DraftStore): void {
+export type DraftSaveResult =
+	| { ok: true }
+	| { ok: false; reason: StorageWriteErrorReason };
+
+function writeStore(store: DraftStore): DraftSaveResult {
 	try {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-	} catch {
-		// Quota dépassé : on ne lève pas, le brouillon est silencieusement ignoré
+		return { ok: true };
+	} catch (e) {
+		// On ne lève pas : le brouillon est ignoré, l'appelant décide quoi en faire.
+		return { ok: false, reason: classifyStorageWriteError(e) };
 	}
 }
 
@@ -44,10 +55,10 @@ export function saveDraft(
 	projectId: string,
 	projectName: string,
 	data: string,
-): void {
+): DraftSaveResult {
 	const store = pruneExpired(readStore());
 	store[projectId] = { projectId, projectName, savedAt: Date.now(), data };
-	writeStore(store);
+	return writeStore(store);
 }
 
 export function getDraft(projectId: string): Draft | null {

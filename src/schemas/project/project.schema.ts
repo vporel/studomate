@@ -17,10 +17,16 @@ export const DEFAULT_PROJECT_NAME = "Nouveau projet";
  * l'ancien codage numérique (`0`/`1`), mais les brouillons d'autosave ne passent pas par lui :
  * un brouillon écrit avant le déploiement du dialecte en chaîne peut encore porter un nombre.
  * Toute valeur non reconnue — absente comprise, cas des projets antérieurs au dialecte
- * configurable, tous écrits en français — retombe sur le français.
+ * configurable, tous écrits en français — retombe sur le français. Une valeur *présente* mais
+ * non reconnue (dialecte corrompu) est en plus signalée par un `console.warn`.
  */
 function normalizeDialect(raw: unknown): Dialect {
 	if (raw === Dialect.EN || raw === 1) return Dialect.EN;
+	if (raw !== undefined && raw !== null && raw !== Dialect.FR && raw !== 0) {
+		console.warn(
+			`Dialecte non reconnu (${JSON.stringify(raw)}), français par défaut`,
+		);
+	}
 	return Dialect.FR;
 }
 
@@ -317,7 +323,7 @@ export default class Project {
 		if (dialect === this.dialect) return;
 		const from = this.dialect;
 		Object.values(this.programs).forEach((program) => {
-			program.translateExpressionsKeywords?.(from, dialect);
+			program.translateExpressionsKeywords(from, dialect);
 		});
 		this.dialect = dialect;
 		this.touch();
@@ -333,7 +339,15 @@ export default class Project {
 	 * juste après), ce n'est pas au moteur de reconstruction de le créer.
 	 */
 	private static rehydrate(source: object): Project {
-		return Object.assign(Object.create(Project.prototype) as Project, source);
+		const project = Object.assign(
+			Object.create(Project.prototype) as Project,
+			source,
+		);
+		// Détache les instances Date : une copie ne doit jamais partager les dates de l'original.
+		// `new Date` accepte aussi bien une Date (copie mémoire) qu'une chaîne ISO (`createFromJSON`).
+		project.creationDate = new Date(project.creationDate);
+		project.lastModificationDate = new Date(project.lastModificationDate);
+		return project;
 	}
 
 	copy(): Project {
@@ -369,9 +383,7 @@ export default class Project {
 		const jsonParsed = JSON.parse(json);
 		const project = Project.rehydrate(jsonParsed);
 		project.schemaVersion = jsonParsed.schemaVersion ?? PROJECT_SCHEMA_VERSION;
-		project.creationDate = new Date(jsonParsed.creationDate);
 		project.dialect = normalizeDialect(jsonParsed.dialect);
-		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>
 			Variable.createFromJSON(JSON.stringify(v)),
 		);

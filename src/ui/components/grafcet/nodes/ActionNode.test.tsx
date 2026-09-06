@@ -158,4 +158,16 @@ describe("ActionNode", () => {
 			color: "rgb(0, 0, 0)",
 		});
 	});
+
+	it("reste en noir quand l'action n'est reliée à aucune étape", () => {
+		setup({
+			stepNumber: "",
+			simulationVariablesStates: {
+				"grafcet-g1-step-": { mnemonic: "X", value: true },
+			},
+		});
+		expect(document.querySelector(".grafcet-action-node")).toHaveStyle({
+			color: "rgb(0, 0, 0)",
+		});
+	});
 });

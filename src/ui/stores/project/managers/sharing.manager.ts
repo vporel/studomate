@@ -1,6 +1,7 @@
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { isShareable } from "@/persistence/repositories/project.repository";
-import { authStore } from "@/ui/stores/auth/auth.store";
+import { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
+import trackEvent from "@/ui/lib/analytics";
 import { toast } from "react-toastify";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
@@ -75,6 +76,9 @@ export default class ProjectSharingManager {
 			toast.error(getT("toasts")("shareLinkFailed"));
 			return;
 		}
+		trackEvent("share-link-created", {
+			anonymous: isAnonymousUser(authStore.getState().user),
+		});
 		set(() => ({ shareToken: result.token }));
 		set((state) => ({ ui: { ...state.ui, shareModalVisible: true } }));
 	}

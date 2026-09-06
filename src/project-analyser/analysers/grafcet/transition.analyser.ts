@@ -148,6 +148,27 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 				),
 			);
 		}
+
+		// Divergence en OU directement reliée à une convergence en OU par cette seule transition :
+		// branche de sélection sans étape. Les autres voisinages transition/jonction (ET→ET,
+		// ET→OU, OU→ET) sont des enchaînements licites des grafcets complexes.
+		const afterOrDivergence = TransitionHelper.getPredecessors(
+			transition.id,
+			grafcet,
+		).some((c) => c.source.type === "junction-or-start");
+		const beforeOrConvergence = TransitionHelper.getSuccessors(
+			transition.id,
+			grafcet,
+		).some((c) => c.target.type === "junction-or-end");
+		if (afterOrDivergence && beforeOrConvergence) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"TRANSITION_STEPLESS_OR_BRANCH",
+					source,
+				),
+			);
+		}
 		if (
 			transition.data.expression &&
 			transition.data.expression.trim() !== ""

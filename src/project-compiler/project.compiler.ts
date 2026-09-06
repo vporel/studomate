@@ -1,19 +1,13 @@
 import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
-import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
-import { PreCompiledLadder } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
-import PLCRoutine, { PLCRoutineCall } from "@/simulator/core/plc/plc-routine";
-import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
-import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
-import { ProgramType } from "@/schemas/program/program.schema";
-import { PreCompiledProgram } from "@/project-pre-compiler/pre-compiled-program";
-import GrafcetCompiler from "./compilers/grafcet/grafcet.compiler";
-import LadderCompiler from "./compilers/ladder/ladder.compiler";
+import PLCRoutine from "@/simulator/core/plc/plc-routine";
+import NotationCompiler from "./notation-compiler";
+import GrafcetsCompiler from "./compilers/grafcet/grafcets.compiler";
+import LaddersCompiler from "./compilers/ladder/ladders.compiler";
 
 /**
  * - variables    : all PLCVariables needed at runtime (user + steps Xi + generated memos)
@@ -43,32 +37,14 @@ export type ProjectCompilationResult = {
 };
 
 /**
- * Une entrée par notation. Chacune rétrécit le pré-compilé opaque sur son propre type :
- * c'est le seul endroit qui sait à quoi ressemble le pré-compilé d'une notation donnée.
+ * Une entrée par notation. **L'ordre est l'ordre de scan** : les `scanRoutines` de chaque
+ * notation s'enchaînent dans cet ordre (grafcets — routines, mémos, amorçage — puis Main),
+ * les `trailingRoutines` (observation GRAFCET) fermant la marche.
  */
-const PROGRAM_COMPILERS: Record<
-	ProgramType,
-	(preCompiled: PreCompiledProgram) => {
-		nodes: ASTNode[];
-		/** Nœuds d'initialisation à exécuter après la routine des mémos d'étape (grafcets). */
-		initNodes: ASTNode[];
-		timers: TimerNode[];
-		counters: CounterNode[];
-		calls: PLCRoutineCall[];
-	}
-> = {
-	// GRAFCET ne supporte pas encore de bloc "counter" ni "user-program" : toujours vide,
-	// contrairement à Ladder.
-	grafcet: (preCompiled) => ({
-		...GrafcetCompiler.compile(preCompiled as PreCompiledGrafcet),
-		counters: [],
-		calls: [],
-	}),
-	ladder: (preCompiled) => ({
-		...LadderCompiler.compile(preCompiled as PreCompiledLadder),
-		initNodes: [],
-	}),
-};
+const NOTATION_COMPILERS: NotationCompiler[] = [
+	new GrafcetsCompiler(),
+	new LaddersCompiler(),
+];
 
 export default class ProjectCompiler {
 	/**
@@ -77,102 +53,37 @@ export default class ProjectCompiler {
 	 * Chaque programme (grafcet ou ladder) devient une `PLCRoutine`, indexée dans `routinesById`.
 	 * Seuls les grafcets et le Main du projet (le seul ladder qui soit un point d'entrée — voir
 	 * `Ladder.role`) sont scannés directement (`routines`) ; un ladder standard ne s'exécute que
-	 * si un bloc `"user-program"`, quelque part, l'appelle avec son `EN` vrai ce balayage.
+	 * si un bloc `"user-program"`, quelque part, l'appelle avec son `EN` vrai à ce balayage.
+	 *
+	 * Toute la logique propre à une notation vit dans son `NotationCompiler` ; ici on n'assemble
+	 * que des primitives moteur.
 	 */
 	static compile(
 		preCompiledProject: PreCompiledProject,
 	): ProjectCompilationResult {
 		try {
+			const outputs = NOTATION_COMPILERS.map((compiler) =>
+				compiler.compile(preCompiledProject),
+			);
+
+			const routinesById: Record<string, PLCRoutine> = {};
 			const timers: TimerNode[] = [];
 			const counters: CounterNode[] = [];
-			const routinesById: Record<string, PLCRoutine> = {};
-			const initNodes: ASTNode[] = [];
-			let mainProgramId: string | null = null;
-
-			for (const [programId, preCompiledProgram] of Object.entries(
-				preCompiledProject.programs,
-			)) {
-				if (!preCompiledProgram) continue;
-				const compiler = PROGRAM_COMPILERS[preCompiledProgram.type];
-				if (!compiler) {
-					console.error(
-						`Aucun compilateur pour la notation "${preCompiledProgram.type}"`,
-					);
-					continue;
-				}
-				const compiled = compiler(preCompiledProgram);
-				timers.push(...compiled.timers);
-				counters.push(...compiled.counters);
-				initNodes.push(...compiled.initNodes);
-				routinesById[programId] = new PLCRoutine(
-					compiled.nodes,
-					compiled.calls,
+			const evaluableExpressionVariableIds: Record<string, string> = {};
+			for (const output of outputs) {
+				Object.assign(routinesById, output.routinesById);
+				timers.push(...output.timers);
+				counters.push(...output.counters);
+				Object.assign(
+					evaluableExpressionVariableIds,
+					output.observableExpressionVariableIds,
 				);
-				if (
-					preCompiledProgram.type === "ladder" &&
-					(preCompiledProgram as PreCompiledLadder).role === "main"
-				) {
-					mainProgramId = programId;
-				}
 			}
-
-			//Routine d'assignation des mémos d'étape : `Xi_memo := Xi` pour toutes les étapes de
-			//tous les grafcets. Exécutée après toutes les routines de grafcet (mais avant la routine
-			//d'initialisation) pour que chacune ait lu la même situation (mémos figés en début de
-			//cycle) — franchissements simultanés entre grafcets (règle 3). Voir
-			//`ProjectPreCompiler.rebindStepReferencesToMemos`.
-			const stepMemoNodes: ASTNode[] = [];
-			for (const preCompiledProgram of Object.values(
-				preCompiledProject.programs,
-			)) {
-				if (preCompiledProgram?.type !== "grafcet") continue;
-				const grafcet = preCompiledProgram as PreCompiledGrafcet;
-				for (const [stepId, memo] of grafcet.stepsMemos) {
-					const step = grafcet.steps.get(stepId);
-					if (!step) continue;
-					stepMemoNodes.push(
-						StatementsBuilder.buildAssignStatementNode(memo.node, step.node),
-					);
-				}
-			}
-			const stepMemosRoutine = new PLCRoutine(stepMemoNodes);
-			const initRoutine = new PLCRoutine(initNodes);
 
 			const routines: PLCRoutine[] = [
-				...Object.entries(preCompiledProject.programs)
-					.filter(([, program]) => program?.type === "grafcet")
-					.map(([programId]) => routinesById[programId]),
-				...(stepMemoNodes.length > 0 ? [stepMemosRoutine] : []),
-				...(initNodes.length > 0 ? [initRoutine] : []),
-				...(mainProgramId ? [routinesById[mainProgramId]] : []),
+				...outputs.flatMap((output) => output.scanRoutines),
+				...outputs.flatMap((output) => output.trailingRoutines),
 			];
-
-			//Routine d'observation : une affectation par transition GRAFCET, `varRéceptivité := <réceptivité>`.
-			//Ajoutée en dernier pour que toutes les routines réelles aient tourné avant (état des
-			//étapes final, sorties de tempo à jour — voir `transitionObservations`).
-			const evaluableExpressionVariableIds: Record<string, string> = {};
-			const observationNodes: ASTNode[] = [];
-			for (const preCompiledProgram of Object.values(
-				preCompiledProject.programs,
-			)) {
-				if (preCompiledProgram?.type !== "grafcet") continue;
-				for (const [sourceId, observation] of (
-					preCompiledProgram as PreCompiledGrafcet
-				).transitionObservations) {
-					evaluableExpressionVariableIds[sourceId] =
-						observation.variable.getId();
-					observationNodes.push(
-						StatementsBuilder.buildAssignStatementNode(
-							IdentifiersBuilder.buildIdentifierNode(
-								observation.variable.getName(),
-							),
-							observation.node,
-						),
-					);
-				}
-			}
-			const observationRoutine = new PLCRoutine(observationNodes);
-			if (observationNodes.length > 0) routines.push(observationRoutine);
 
 			//Perform a semantic check on all the routines (y compris celles appelées, pas seulement
 			//les scannées directement) et leurs conditions d'appel.
@@ -183,19 +94,17 @@ export default class ProjectCompiler {
 					preCompiledProject.variables.map(PlcVariablesMapper.plcToEnv),
 				),
 			);
-			Object.values(routinesById).forEach((routine) => {
+			const checked = new Set<PLCRoutine>();
+			const check = (routine: PLCRoutine) => {
+				if (checked.has(routine)) return;
+				checked.add(routine);
 				routine.getNodes().forEach((node) => semanticAnalyser.visit(node));
 				routine
 					.getCalls()
 					.forEach((call) => semanticAnalyser.visit(call.condition));
-			});
-			stepMemosRoutine
-				.getNodes()
-				.forEach((node) => semanticAnalyser.visit(node));
-			initRoutine.getNodes().forEach((node) => semanticAnalyser.visit(node));
-			observationRoutine
-				.getNodes()
-				.forEach((node) => semanticAnalyser.visit(node));
+			};
+			Object.values(routinesById).forEach(check);
+			routines.forEach(check);
 
 			return {
 				errors: [],

@@ -1,4 +1,14 @@
 import Project from "@/schemas/project/project.schema";
+import { SkippedProjectInfo } from "../project-deserialization";
+
+/**
+ * Résultat d'un `list()` : les projets lisibles, et la liste de ceux qui ont été écartés (forme
+ * illisible, version plus récente…) pour que l'UI puisse le signaler.
+ */
+export type ProjectListResult = {
+	projects: Project[];
+	skipped: SkippedProjectInfo[];
+};
 
 /**
  * Raison pour laquelle une sauvegarde a échoué.
@@ -33,7 +43,7 @@ export type StorageLocation = "local" | "cloud";
  * exception à avaler.
  */
 export default interface ProjectRepository {
-	list(): Promise<Project[]>;
+	list(): Promise<ProjectListResult>;
 	get(projectId: string): Promise<Project | null>;
 	/**
 	 * `location` ne force un choix que pour un projet encore inconnu de ce repository (premier

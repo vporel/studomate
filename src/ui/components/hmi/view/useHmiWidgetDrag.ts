@@ -6,7 +6,7 @@ import {
 	HMI_CANVAS_WIDTH,
 } from "@/schemas/hmi/hmi-page.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
-import { MouseEvent as ReactMouseEvent, useRef } from "react";
+import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
 import { snapToGrid } from "./constants";
 
 export interface HmiDragPreview {
@@ -40,7 +40,7 @@ export default function useHmiWidgetDrag(
 		maxY: number;
 	} | null>(null);
 
-	return (e: ReactMouseEvent, group: HmiWidget[]) => {
+	return useCallback((e: ReactMouseEvent, group: HmiWidget[]) => {
 		const minX = Math.min(...group.map((w) => w.position.x));
 		const minY = Math.min(...group.map((w) => w.position.y));
 		const maxX = Math.max(...group.map((w) => w.position.x + w.size.width));
@@ -95,5 +95,5 @@ export default function useHmiWidgetDrag(
 
 		window.addEventListener("mousemove", onMouseMove);
 		window.addEventListener("mouseup", onMouseUp);
-	};
+	}, [zoom, onPreviewChange, moveWidgets]);
 }

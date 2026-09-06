@@ -14,20 +14,22 @@ export interface HmiMarqueeRect {
 	height: number;
 }
 
-export function intersects(widget: HmiWidget, rect: HmiMarqueeRect): boolean {
+/** Vrai si la boîte englobante du widget est entièrement contenue dans le rectangle. */
+export function isContained(widget: HmiWidget, rect: HmiMarqueeRect): boolean {
 	return (
-		widget.position.x < rect.x + rect.width &&
-		widget.position.x + widget.size.width > rect.x &&
-		widget.position.y < rect.y + rect.height &&
-		widget.position.y + widget.size.height > rect.y
+		widget.position.x >= rect.x &&
+		widget.position.y >= rect.y &&
+		widget.position.x + widget.size.width <= rect.x + rect.width &&
+		widget.position.y + widget.size.height <= rect.y + rect.height
 	);
 }
 
 /**
  * Sélection rectangulaire au glisser sur une zone vide du canvas — au relâchement, tout widget
- * dont la boîte englobante intersecte le rectangle rejoint la sélection. Additif (Shift/Ctrl/Cmd,
- * même convention que le clic sur un widget — voir `HmiCanvas.handleWidgetDragStart`) : le
- * résultat s'ajoute alors à la sélection déjà en cours plutôt que de la remplacer.
+ * dont la boîte englobante est entièrement contenue dans le rectangle rejoint la sélection.
+ * Additif (Shift/Ctrl/Cmd, même convention que le clic sur un widget — voir
+ * `HmiCanvas.handleWidgetDragStart`) : le résultat s'ajoute alors à la sélection déjà en cours
+ * plutôt que de la remplacer.
  */
 export default function useHmiMarqueeSelect(
 	canvasWrapperRef: RefObject<HTMLDivElement | null>,
@@ -92,7 +94,9 @@ export default function useHmiMarqueeSelect(
 			);
 			// Glisser nul (simple clic) : laissé au `onClick` du canvas, qui vide la sélection.
 			if (rect.width === 0 && rect.height === 0) return;
-			const hit = widgets.filter((w) => intersects(w, rect)).map((w) => w.id);
+			const hit = widgets
+				.filter((w) => isContained(w, rect))
+				.map((w) => w.id);
 			setSelection(Array.from(new Set([...drag.additiveBase, ...hit])));
 		};
 

@@ -38,6 +38,22 @@ describe("Project.copy", () => {
 		expect(copy.variables[0].mnemonic).toBe("B");
 		expect(project.variables[0].mnemonic).toBe("A");
 	});
+
+	it("détache les instances Date : la copie ne partage pas les dates de l'original", () => {
+		const { project } = makeProject();
+
+		const copy = project.copy();
+
+		expect(copy.creationDate).not.toBe(project.creationDate);
+		expect(copy.creationDate.getTime()).toBe(project.creationDate.getTime());
+		expect(copy.lastModificationDate).not.toBe(project.lastModificationDate);
+		expect(copy.lastModificationDate.getTime()).toBe(
+			project.lastModificationDate.getTime(),
+		);
+
+		copy.creationDate.setFullYear(1999);
+		expect(project.creationDate.getFullYear()).not.toBe(1999);
+	});
 });
 
 describe("Project.copyWithProgram", () => {

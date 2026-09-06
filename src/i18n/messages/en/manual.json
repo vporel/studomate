@@ -124,6 +124,7 @@
 			"Active page only — a single titled page for the currently open grafcet or ladder (no cover page). Unavailable if no program is open."
 		],
 		"exportOutro": "A progress bar shows progress (rendering, capture, assembly); the file is downloaded automatically at the end. The \"File name\" field is pre-filled.",
+		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly — bypassing this window and with no cover page.",
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
 	},
@@ -150,7 +151,7 @@
 		],
 		"systemBlocksLabel": "System blocks:",
 		"systemBlocksItems": [
-			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation. Drag a block from this section onto a ladder canvas to insert it."
+			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
 		],
 		"hmiLabel": "HMI screens:",
 		"hmiItems": [

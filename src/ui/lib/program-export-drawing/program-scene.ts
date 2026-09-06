@@ -10,8 +10,12 @@ export type ProgramSceneConfig =
 	| { type: "ladder"; program: Ladder };
 
 /** Une page d'export : sa scène de dessin et, pour une section de ladder, son intitulé à
- * accoler au titre de la page. */
-export type ProgramScenePage = { heading?: string; scene: Scene };
+ * accoler au titre de la page ainsi que sa description. */
+export type ProgramScenePage = {
+	heading?: string;
+	description?: string;
+	scene: Scene;
+};
 
 /**
  * Pages de dessin d'un programme. Un grafcet tient sur une page ; un ladder produit une page par

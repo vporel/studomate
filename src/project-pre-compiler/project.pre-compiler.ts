@@ -3,6 +3,8 @@ import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import Program, { ProgramType } from "@/schemas/program/program.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Ladder from "@/schemas/ladder/ladder.schema";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import ReplacerVisitor, {
 	ReplacerVisitorReplacement,
@@ -27,16 +29,21 @@ export type PreCompiledProject = {
 const PROGRAM_PRE_COMPILERS: Record<
 	ProgramType,
 	(
-		program: any,
+		program: Program,
 		variables: PLCVariable[],
 		dialect: Dialect,
 		errors: ProjectPreCompilerError[],
 	) => PreCompiledProgram
 > = {
-	grafcet: (grafcet, variables, dialect, errors) =>
-		GrafcetPreCompiler.preCompile(grafcet, variables, dialect, errors),
-	ladder: (ladder, variables, dialect, errors) =>
-		LadderPreCompiler.preCompile(ladder, variables, dialect, errors),
+	grafcet: (program, variables, dialect, errors) =>
+		GrafcetPreCompiler.preCompile(
+			program as Grafcet,
+			variables,
+			dialect,
+			errors,
+		),
+	ladder: (program, variables, dialect, errors) =>
+		LadderPreCompiler.preCompile(program as Ladder, variables, dialect, errors),
 };
 
 export type ProjectPreCompilationResult = {
@@ -68,10 +75,10 @@ export default class ProjectPreCompiler {
 		const programs: Record<string, PreCompiledProgram> = {};
 
 		for (const [programId, program] of Object.entries(project.programs)) {
-			const preCompiler = PROGRAM_PRE_COMPILERS[(program as Program).type];
+			const preCompiler = PROGRAM_PRE_COMPILERS[program.type];
 			if (!preCompiler) {
 				console.error(
-					`Aucun pré-compilateur pour la notation "${(program as Program).type}"`,
+					`Aucun pré-compilateur pour la notation "${program.type}"`,
 				);
 				continue;
 			}

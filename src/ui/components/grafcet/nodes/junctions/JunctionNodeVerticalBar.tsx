@@ -18,6 +18,7 @@ const JunctionNodeVerticalBar = ({
 	const {
 		nodeId,
 		width,
+		nodeX,
 		data,
 		pivotSelected,
 		selectedBranchId,
@@ -34,6 +35,7 @@ const JunctionNodeVerticalBar = ({
 		branchId ?? null,
 		left,
 		width,
+		nodeX,
 	);
 
 	const { setNodes, setEdges } = useReactFlow();

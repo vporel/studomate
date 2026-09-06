@@ -2,6 +2,8 @@ import Connection from "@/schemas/grafcet//connection.schema";
 import { ElementType } from "@/schemas/grafcet/element.schema";
 import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
+	InternalNode,
+	Node,
 	ReactFlowInstance,
 	Connection as XYFlowConnection,
 } from "@xyflow/react";
@@ -47,6 +49,56 @@ export function getConnectionLinePoints(
 	return points;
 }
 
+/** Centre absolu (coords flow) d'un handle, ou le centre du nœud si le handle est introuvable. */
+function handleCenter(
+	node: InternalNode<Node>,
+	handleType: "source" | "target",
+	handleId: string,
+): [number, number] {
+	const { x: nodeX, y: nodeY } = node.internals.positionAbsolute;
+	const handle = node.internals.handleBounds?.[handleType]?.find(
+		(h) => (h.id ?? "") === handleId,
+	);
+	if (!handle)
+		return [
+			nodeX + (node.measured.width ?? 0) / 2,
+			nodeY + (node.measured.height ?? 0) / 2,
+		];
+	return [
+		nodeX + handle.x + handle.width / 2,
+		nodeY + handle.y + handle.height / 2,
+	];
+}
+
+/**
+ * Coudes intermédiaires du tracé d'une connexion neuve, figés dans `data.points` dès la création
+ * pour que le contournement orthogonal (boucle de retour, routage en S) reste éditable — sans
+ * eux, le premier ajout/déplacement de coude dégénère le tracé en diagonale. Retourne `[]` pour
+ * une liaison droite (extrémités alignées), qui reste alors dérivée des handles au rendu.
+ */
+export function getInitialConnectionPoints(
+	rfInstance: ReactFlowInstance,
+	connection: Pick<XYFlowConnection, "source" | "target"> & {
+		sourceHandle?: string | null;
+		targetHandle?: string | null;
+	},
+): [number, number][] {
+	const sourceNode = rfInstance.getInternalNode(connection.source);
+	const targetNode = rfInstance.getInternalNode(connection.target);
+	if (!sourceNode || !targetNode) return [];
+	const [fromX, fromY] = handleCenter(
+		sourceNode,
+		"source",
+		connection.sourceHandle || "",
+	);
+	const [toX, toY] = handleCenter(
+		targetNode,
+		"target",
+		connection.targetHandle || "",
+	);
+	return getConnectionLinePoints(fromX, fromY, toX, toY).slice(1, -1);
+}
+
 export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	rfInstance: ReactFlowInstance,
 	connection: XYFlowConnection | GrafcetEdgeType,
@@ -55,6 +107,10 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 	const sourceNode = rfInstance.getInternalNode(connection.source);
 	const targetNode = rfInstance.getInternalNode(connection.target);
 	if (!sourceNode || !targetNode) return null;
+	const data =
+		"data" in connection && connection.data
+			? connection.data
+			: { points: getInitialConnectionPoints(rfInstance, connection) };
 	return new Connection(
 		connectionId,
 		{
@@ -67,8 +123,6 @@ export function grafcetConnectionFromXYFlowConnectionOrEdge(
 			id: targetNode.id,
 			handle: connection.targetHandle || "",
 		},
-		//`data.points` ne porte que les coudes intermédiaires : une nouvelle connexion n'en a
-		//aucun, son tracé est dérivé des handles au rendu (`getConnectionLinePoints`).
-		(connection as GrafcetEdgeType).data || { points: [] },
+		data,
 	);
 }

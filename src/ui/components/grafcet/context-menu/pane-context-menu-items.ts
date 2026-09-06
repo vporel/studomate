@@ -11,6 +11,7 @@ export default function paneContextMenuItems(
 	screenPosition: { x: number; y: number },
 	canPaste: boolean,
 	t: MenuTranslate,
+	onExport: () => void,
 ): {
 	label: string;
 	shortcut?: string;
@@ -44,7 +45,7 @@ export default function paneContextMenuItems(
 		[
 			{
 				label: t("export"),
-				onClick: () => {},
+				onClick: onExport,
 				disabled: nodes.length == 0 && edges.length == 0,
 			},
 		],

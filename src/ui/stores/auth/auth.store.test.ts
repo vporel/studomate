@@ -13,6 +13,12 @@ const mockOnAuthStateChange = jest.fn((..._args: any[]) => ({
 	data: { subscription: { unsubscribe: jest.fn() } },
 }));
 const mockResetPasswordForEmail = jest.fn();
+const mockTrackEvent = jest.fn();
+
+jest.mock("@/ui/lib/analytics", () => ({
+	__esModule: true,
+	default: (...args: any[]) => mockTrackEvent(...args),
+}));
 
 jest.mock("@/persistence/repositories/supabase-client", () => ({
 	supabase: {
@@ -89,6 +95,9 @@ describe("authStore", () => {
 
 			expect(result.ok).toBe(true);
 			expect(authStore.getState().user?.email).toBe("alice@example.com");
+			expect(mockTrackEvent).toHaveBeenCalledWith("account-created", {
+				anonymous: false,
+			});
 		});
 
 		it("retourne un message français pour 'already registered'", async () => {
@@ -176,6 +185,9 @@ describe("authStore", () => {
 			expect(mockSignUp).toHaveBeenCalledWith(
 				expect.objectContaining({ email: `pierre@${ANONYMOUS_EMAIL_DOMAIN}` }),
 			);
+			expect(mockTrackEvent).toHaveBeenCalledWith("account-created", {
+				anonymous: true,
+			});
 		});
 
 		it("retourne un message spécifique si le pseudo est déjà utilisé", async () => {

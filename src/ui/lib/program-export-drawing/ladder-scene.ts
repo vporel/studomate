@@ -347,36 +347,31 @@ function elementOps(
 
 // --- sections ----------------------------------------------------------
 
-/** Rapproche le contenu du rail : décale les éléments (jamais les bornes de rail) pour que la
- * première colonne occupée devienne la colonne 1 et la première ligne la ligne 0. */
-function trimEmptyLeading(elements: LadderElement[]): LadderElement[] {
-	const placed = elements.filter((e) => e.type !== "railTerminal");
-	if (placed.length === 0) return elements;
-	const colShift = Math.max(0, Math.min(...placed.map((e) => e.position.col)) - 1);
+/** Supprime les lignes vides en tête de section (la première ligne occupée devient la ligne 0).
+ * Les colonnes ne sont pas touchées : un élément non câblé garde son écart réel au rail. */
+function trimLeadingRows(elements: LadderElement[]): LadderElement[] {
+	if (elements.length === 0) return elements;
 	const rowShift = Math.min(...elements.map((e) => e.position.row));
-	if (colShift === 0 && rowShift === 0) return elements;
-	return elements.map((e) =>
-		e.type === "railTerminal"
-			? { ...e, position: { ...e.position, row: e.position.row - rowShift } }
-			: {
-					...e,
-					position: {
-						row: e.position.row - rowShift,
-						col: e.position.col - colShift,
-					},
-				},
-	);
+	if (rowShift === 0) return elements;
+	return elements.map((e) => ({
+		...e,
+		position: { ...e.position, row: e.position.row - rowShift },
+	}));
 }
 
-/** Une section rendue : son intitulé (pour la bande de titre de la page) et sa scène de dessin. */
-export type LadderSectionScene = { heading: string; scene: Scene };
+/** Une section rendue : son intitulé, sa description (vide si absente) et sa scène de dessin. */
+export type LadderSectionScene = {
+	heading: string;
+	description: string;
+	scene: Scene;
+};
 
 function sectionScene(
 	rawSection: Section,
 	index: number,
 	context: LadderRenderContext,
 ): LadderSectionScene {
-	const elements = trimEmptyLeading(rawSection.elements);
+	const elements = trimLeadingRows(rawSection.elements);
 	const section = { ...rawSection, elements } as Section;
 
 	const heading = section.title
@@ -384,18 +379,21 @@ function sectionScene(
 		: `Section ${index + 1}`;
 
 	const ops: DrawOp[] = [];
-	const railRows = section.elements
-		.filter((e) => e.type === "railTerminal")
-		.map((e) => e.position.row);
-	if (railRows.length > 0) {
+	// La barre d'alimentation verticale est toujours tracée et court de la première à la dernière
+	// ligne occupée par un élément — un contact non câblé au rail reste ainsi visiblement détaché.
+	const rows = section.elements.map((e) => e.position.row);
+	if (rows.length > 0) {
 		ops.push({
 			op: "line",
 			x1: RAIL_LANE_WIDTH / 2,
-			y1: rowToY(Math.min(...railRows)),
+			y1: rowToY(Math.min(...rows)),
 			x2: RAIL_LANE_WIDTH / 2,
-			y2: rowToY(Math.max(...railRows)) + CELL_HEIGHT,
+			y2: rowToY(Math.max(...rows)) + CELL_HEIGHT,
 			strokeWidth: STROKE,
 		});
+		const railRows = section.elements
+			.filter((e) => e.type === "railTerminal")
+			.map((e) => e.position.row);
 		for (const row of railRows) {
 			const ry = cellCenterY(row);
 			ops.push({
@@ -432,7 +430,11 @@ function sectionScene(
 
 	// Recadré sur le contenu ; l'exporter calcule une échelle commune à toutes les sections
 	// (rail vertical aligné d'une page à l'autre).
-	return { heading, scene: frameScene(ops, MARGIN) };
+	return {
+		heading,
+		description: rawSection.description?.trim() ?? "",
+		scene: frameScene(ops, MARGIN),
+	};
 }
 
 /**

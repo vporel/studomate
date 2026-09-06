@@ -147,6 +147,12 @@ export interface ProjectStoreState {
 	project: Project | null; //null when no project is opened
 	bootStatus: ProjectBootStatus;
 	hasUnsavedChanges: boolean;
+	/**
+	 * Vrai quand la dernière auto-sauvegarde du brouillon a échoué (quota `localStorage` dépassé
+	 * le plus souvent). Bascule à chaque tick de `startAutoSave` et sert à afficher un
+	 * avertissement persistant invitant à enregistrer manuellement.
+	 */
+	autoSaveUnavailable: boolean;
 	ui: ProjectUiState;
 	savingProject: boolean;
 	/**
@@ -205,12 +211,26 @@ export interface ProjectStoreState {
 	 */
 	crossReferenceFilter: string;
 	setCrossReferenceFilter: (filter: string) => void;
+	/**
+	 * Id de la variable de projet à révéler dans sa table de déclaration (défilement + surbrillance
+	 * temporaire) au prochain rendu de `VariablesTable`. Remis à `null` par la table une fois la
+	 * ligne atteinte. Alimenté par `useGotoVariableDeclaration`.
+	 */
+	variableToReveal: string | null;
+	setVariableToReveal: (variableId: string | null) => void;
 	setWatchTablesVisible: (visible: boolean) => void;
 	plcConfig: PLCConfig;
 	/**
 	 * The current values of the variables during simulation, used to display them in the UI
 	 */
 	simulationVariablesStates: Record<string, SimulationVariableState>;
+	/**
+	 * Même donnée que `simulationVariablesStates`, mais indexée par mnémonique plutôt que par id.
+	 * Écrite au même instant, au même unique point d'écriture (`publishCycleState`) — ce n'est pas
+	 * un cache invalidé, c'est une seconde vue. Permet aux abonnés qui résolvent une variable par
+	 * mnémonique (nœuds Ladder, widgets HMI) un accès indexé plutôt qu'un parcours linéaire par cycle.
+	 */
+	simulationVariablesStatesByMnemonic: Record<string, SimulationVariableState>;
 	/**
 	 * Current values of the expressions watched during simulation (e.g. a transition's
 	 * receptivity), indexed by the id chosen when the expression was registered.

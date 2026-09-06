@@ -99,6 +99,7 @@ export const createProjectStore = () => {
 						? "restoring"
 						: "idle",
 			hasUnsavedChanges: false,
+			autoSaveUnavailable: false,
 			ui: {
 				unsavedChangesDialogVisible: false,
 				unsavedChangesDialogMessage: null,
@@ -241,16 +242,39 @@ export const createProjectStore = () => {
 			analysisHasWarnings: false,
 			analysisErrors: emptyAnalysisIssues(),
 			analysisWarnings: emptyAnalysisIssues(),
-			setAnalysisResultVisible: modalSetter("analysisResultVisible"),
-			setCrossReferenceResultVisible: modalSetter("crossReferenceResultVisible"),
+			// Panneaux latéraux mutuellement exclusifs : ouvrir l'un ferme l'autre.
+			setAnalysisResultVisible: (visible) =>
+				set((state) => ({
+					ui: {
+						...state.ui,
+						analysisResultVisible: visible,
+						crossReferenceResultVisible: visible
+							? false
+							: state.ui.crossReferenceResultVisible,
+					},
+				})),
+			setCrossReferenceResultVisible: (visible) =>
+				set((state) => ({
+					ui: {
+						...state.ui,
+						crossReferenceResultVisible: visible,
+						analysisResultVisible: visible
+							? false
+							: state.ui.analysisResultVisible,
+					},
+				})),
 			crossReferenceFilter: "",
 			setCrossReferenceFilter: (filter) =>
 				set(() => ({ crossReferenceFilter: filter })),
+			variableToReveal: null,
+			setVariableToReveal: (variableId) =>
+				set(() => ({ variableToReveal: variableId })),
 			setWatchTablesVisible: modalSetter("watchTablesVisible"),
 			plcConfig: {
 				scanTimeMs: 100,
 			},
 			simulationVariablesStates: {},
+			simulationVariablesStatesByMnemonic: {},
 			evaluableExpressionsValues: {},
 			forcedVariables: {},
 			simulationManager: new SimulationManager(

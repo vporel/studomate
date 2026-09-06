@@ -22,7 +22,9 @@
 	},
 	"view": {
 		"title": "Interface",
-		"explorer": "Explorateur"
+		"explorer": "Explorateur",
+		"crossReferences": "Références croisées",
+		"analysisResults": "Résultats de l'analyse"
 	},
 	"project": {
 		"title": "Projet",

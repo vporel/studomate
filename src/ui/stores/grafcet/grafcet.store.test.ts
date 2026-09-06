@@ -93,7 +93,7 @@ describe("createGrafcetStore — assemblage initial", () => {
 		expect(state.commandsStackManager).toBeDefined();
 	});
 
-	it("part sans surlignage ni viewport mémorisé", () => {
+	it("part sans surlignage mémorisé", () => {
 		const store = createGrafcetStore(
 			GrafcetFactory.createSimpleCycle("g1"),
 			new CommandsStack<Grafcet>(100),
@@ -102,6 +102,5 @@ describe("createGrafcetStore — assemblage initial", () => {
 		const state = store.getState();
 		expect(state.highlightedNodesIds).toEqual([]);
 		expect(state.highlightedEdgesIds).toEqual([]);
-		expect(state.viewport).toBeNull();
 	});
 });

@@ -44,6 +44,33 @@ describe("draft.storage", () => {
 
 			expect(getDraft("p1")!.data).toBe('{"id":"p1","v":2}');
 		});
+
+		it("retourne { ok: true } quand l'écriture réussit", () => {
+			expect(saveDraft("p1", "Mon projet", "{}")).toEqual({ ok: true });
+		});
+
+		it("remonte un échec de quota sans lever", () => {
+			(globalThis as any).localStorage.setItem = () => {
+				const err = new DOMException("quota", "QuotaExceededError");
+				throw err;
+			};
+
+			expect(saveDraft("p1", "Mon projet", "{}")).toEqual({
+				ok: false,
+				reason: "quota-exceeded",
+			});
+		});
+
+		it("remonte une raison inconnue pour une autre erreur d'écriture", () => {
+			(globalThis as any).localStorage.setItem = () => {
+				throw new Error("boom");
+			};
+
+			expect(saveDraft("p1", "Mon projet", "{}")).toEqual({
+				ok: false,
+				reason: "unknown",
+			});
+		});
 	});
 
 	describe("getAllDrafts", () => {

@@ -24,6 +24,11 @@ const HandleWithConnectionsLimit = ({
 				width: "1px",
 				minHeight: "1px",
 				height: "1px",
+				// Les handles précèdent la box du nœud dans le DOM : sans z-index explicite, la
+				// box (positionnée) se peint par-dessus et intercepte le mousedown sur la moitié
+				// du point de connexion qui chevauche le nœud, rendant l'amorce d'une connexion
+				// difficile.
+				zIndex: 1,
 			}}
 		/>
 	);

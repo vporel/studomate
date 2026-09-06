@@ -8,6 +8,7 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
+import trackEvent from "@/ui/lib/analytics";
 
 const COMMANDS_STACK_SIZE = 100;
 
@@ -91,6 +92,7 @@ export default class HmiManager {
 		const resolvedName = name ?? project.nextHmiPageName(HMI_PAGE_NAME_LABEL);
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
+		trackEvent("hmi-page-created");
 		this.getStoreState().pagesManager.openPage({
 			id: page.id,
 			type: "hmi",

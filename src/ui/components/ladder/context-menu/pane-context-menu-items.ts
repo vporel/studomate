@@ -12,6 +12,8 @@ export default function paneContextMenuItems(
 	screenPosition: { x: number; y: number },
 	canPaste: boolean,
 	t: MenuTranslate,
+	onExport: () => void,
+	exportDisabled: boolean,
 ): {
 	label: string;
 	shortcut?: string;
@@ -40,6 +42,13 @@ export default function paneContextMenuItems(
 				shortcut: platformShortcut("Ctrl + V", "Cmd + V"),
 				onClick: () => copyCutPasteManager.pasteElements(screenPosition),
 				disabled: !canPaste,
+			},
+		],
+		[
+			{
+				label: t("export"),
+				onClick: onExport,
+				disabled: exportDisabled,
 			},
 		],
 	];

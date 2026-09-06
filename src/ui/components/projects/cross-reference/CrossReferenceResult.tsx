@@ -116,6 +116,16 @@ function CrossReferencePanel() {
 		? rows.filter((row) => row.variableName.toLowerCase().includes(needle))
 		: rows;
 
+	// Variables qui existent bien mais n'apparaissent nulle part : le collecteur ne produit de
+	// ligne que pour les variables référencées, un filtre qui ne cible que celles-ci tomberait
+	// sinon sur « aucune variable ne correspond ».
+	const matchingUnreferencedVariables =
+		needle && rows.length > 0 && filteredRows.length === 0
+			? (project?.variables ?? []).filter((variable) =>
+					variable.mnemonic.toLowerCase().includes(needle),
+				)
+			: [];
+
 	return (
 		<ResizableFixedBox
 			position="bottom"
@@ -157,7 +167,15 @@ function CrossReferencePanel() {
 					<Typography sx={{ p: 2 }}>{t("noVariables")}</Typography>
 				)}
 				{rows.length > 0 && filteredRows.length === 0 && (
-					<Typography sx={{ p: 2 }}>{t("noMatch")}</Typography>
+					<Typography sx={{ p: 2 }}>
+						{matchingUnreferencedVariables.length === 1
+							? t("noReferencesForVariable", {
+									name: matchingUnreferencedVariables[0].mnemonic,
+								})
+							: matchingUnreferencedVariables.length > 1
+								? t("noReferencesForMatch")
+								: t("noMatch")}
+					</Typography>
 				)}
 				{filteredRows.map((row) => (
 					<Box key={row.variableName} sx={{ mb: 1.5 }}>

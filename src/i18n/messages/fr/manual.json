@@ -124,6 +124,7 @@
 			"Page active uniquement — une seule page, titrée, pour le grafcet ou le ladder actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
 		],
 		"exportOutro": "Une barre de progression indique l'avancement (rendu, capture, assemblage) ; le fichier est téléchargé automatiquement à la fin. Le champ « Nom du fichier » est pré-rempli.",
+		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme — sans passer par cette fenêtre et sans page de garde.",
 		"closeTitle": "Fermer un projet",
 		"closeBody": "Fichier → Fermer le projet (Ctrl+F4 sur Windows/Linux, Cmd+W sur macOS). Si des modifications non sauvegardées existent, une confirmation est demandée."
 	},
@@ -150,7 +151,7 @@
 		],
 		"systemBlocksLabel": "Blocs systèmes :",
 		"systemBlocksItems": [
-			"Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer."
+			"Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer. Cette section n'apparaît que lorsqu'un ladder est ouvert."
 		],
 		"hmiLabel": "Interfaces HMI :",
 		"hmiItems": [
