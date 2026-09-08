@@ -4,6 +4,7 @@
 		"intro": "Introduction",
 		"getting-started": "Getting started",
 		"projects": "Projects",
+		"accounts": "Accounts & sharing",
 		"explorer": "Explorer",
 		"variables": "Variables",
 		"grafcet": "Grafcet",
@@ -22,6 +23,7 @@
 		"ladder-blocks": "Blocks",
 		"ladder-connections": "Connections",
 		"toolbar": "Toolbar",
+		"cross-references": "Cross-references",
 		"hmi": "HMI screens",
 		"hmi-pages": "HMI pages",
 		"hmi-canvas": "Canvas",
@@ -43,7 +45,7 @@
 	},
 	"intro": {
 		"title": "Introduction",
-		"p1": "Studomate is a graphical editor for automation: GRAFCET (a sequential function chart) and Ladder (contact diagrams). It lets you create, edit, analyse and simulate these diagrams in an interactive web environment.",
+		"p1": "Studomate is a graphical editor for automation. It brings together, in one interactive web environment with variables shared between them, three notations: GRAFCET (a sequential function chart), Ladder (contact diagrams) and HMI screens (graphical pages to visualise and drive the system). You create, edit, analyse and simulate these diagrams there.",
 		"p2": "The application offers the following features:",
 		"features": [
 			"Graphical GRAFCET and Ladder editors with drag and drop",
@@ -54,18 +56,23 @@
 			"Animated HMI screens to visualise and drive the system",
 			"Project export as JSON or PDF"
 		],
-		"p3": "The interface is available in French and English (Preferences page) and is designed for use in an educational or professional context.",
+		"p3": "The interface is available in French and English (Preferences page, which also sets the default storage location for projects) and is designed for use in an educational or professional context.",
 		"landmarksTitle": "Reference points",
-		"landmarksIntro": "This manual documents the tool, not the GRAFCET method itself. A few useful pointers if the terms below aren't already familiar:",
+		"landmarksIntro": "This manual documents the tool, not the methods (GRAFCET, ladder logic) themselves. A few useful pointers if the terms below aren't already familiar:",
 		"landmarks": [
-			"Step — a stable state of the system, active or inactive.",
-			"Transition — the condition for moving from one step to the next.",
-			"Condition (of a transition) — a Boolean expression attached to a transition; it must be true for the transition to be crossed.",
-			"AND divergence / convergence — opening then closing parallel branches, all active at the same time.",
-			"OR divergence / convergence — opening then closing alternative branches, only one active at a time.",
-			"Rising / falling edge — the instant a condition goes from false to true, or from true to false respectively."
+			"Step (Grafcet) — a stable state of the system, active or inactive.",
+			"Transition (Grafcet) — the condition for moving from one step to the next.",
+			"Condition (Grafcet) — a Boolean expression attached to a transition; it must be true for the transition to be crossed.",
+			"AND divergence / convergence (Grafcet) — opening then closing parallel branches, all active at the same time.",
+			"OR divergence / convergence (Grafcet) — opening then closing alternative branches, only one active at a time.",
+			"Rising / falling edge (Grafcet) — the instant a condition goes from false to true, or from true to false respectively.",
+			"Contact (Ladder) — tests a Boolean variable: NO (normally open) conducts when it is true, NC (normally closed) when it is false.",
+			"Coil (Ladder) — assigns a Boolean variable at the output of a contact circuit.",
+			"Network / rung (Ladder) — an independent circuit line, powered by the vertical rail on the left.",
+			"Widget (HMI) — a graphical element on an HMI page; an interactive widget is bound to a variable.",
+			"Animation (HMI) — a change in a widget's position or appearance driven by a variable during simulation."
 		],
-		"readingOrder": "For a first read-through, a logical order is: Getting started, then Grafcet (in plan order: Canvas, Steps, Transitions, Actions), before Simulation and Analysis. The other sections (Ladder, Variables, Explorer, Toolbar, Shortcuts) can be consulted as needed."
+		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Sections, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed."
 	},
 	"gettingStarted": {
 		"title": "Getting started",
@@ -75,7 +82,9 @@
 			"Click \"New project\" to create a project.",
 			"Use the File → New project menu (no keyboard shortcut: Ctrl+N is reserved by the browser to open a new window)."
 		],
-		"newProjectOutro": "A new project is created with an empty grafcet. You can set the project name and author via the Project → Properties menu.",
+		"newProjectOutro": "An empty project contains only an empty Main ladder (no grafcet); it is ready to receive grafcets, ladders and HMI pages. You can set the project name and author via the Project → Properties menu.",
+		"featuredTitle": "Explore with an example",
+		"featuredBody": "The home screen highlights a template together with its solution. The \"Open the solution and simulate\" button creates the complete project and lets you simulate it right away — handy for exploring the tool before starting from a blank slate.",
 		"openTitle": "Open an existing project",
 		"openBody": "Via the File → Open project menu (Ctrl+O), a list of all saved projects is shown. Click a project to open it. If a project is already open with unsaved changes, you'll be asked to confirm.",
 		"saveTitle": "Save",
@@ -99,7 +108,7 @@
 		"createIntro": "File → New project. A window opens to choose the starting point:",
 		"createItems": [
 			"Empty project — starts with no variables and no HMI screen.",
-			"Templates — pre-configured projects with variables and an HMI screen already in place; all that's left is to write the program. Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park)."
+			"Templates — pre-configured projects with variables and an HMI screen already in place. Most templates offer two variants at creation: \"exercise\" (the program still has to be written) and, when \"A solution is available\" is shown, \"solution\" (the \"Open the solution\" button: the program is complete and ready to simulate). Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park, carton sorting station)."
 		],
 		"openTitle": "Open a project",
 		"openBody": "File → Open project (Ctrl+O). The list of saved projects is shown with their last-modified date. Click a project to open it. Each project in the list also has a delete button (with confirmation), and an \"Open from a file…\" button lets you re-import a project exported as JSON.",
@@ -107,10 +116,13 @@
 		"saveBody1": "File → Save (Ctrl+S) — saves the current project, overwriting the previous version.",
 		"saveBody2": "File → Save as (Ctrl+Shift+S) — creates an independent copy of the project. A window asks for the desired name; on confirmation the copy is saved and becomes the active project. The original project stays unchanged in the project list.",
 		"propertiesTitle": "Project properties",
-		"propertiesBody1": "Project → Properties. Lets you change the project's name, author and dialect. This information is saved with the project.",
+		"propertiesBody1": "Project → Properties. Lets you change the project's name, author, dialect and exercise statement. This information is saved with the project.",
 		"propertiesBody2": "The dialect determines the keywords used in expressions (transition conditions, actions): French (ET, OU, NON, VRAI, FAUX) or English (AND, OR, NOT, TRUE, FALSE). Changing the dialect translates the expressions already written. The dialect is independent of the interface language.",
-		"addProgramTitle": "Add a grafcet or a ladder",
-		"addProgramBody": "Project → New grafcet (Ctrl+G) or Project → New ladder (Ctrl+L). The new program is added to the project and its tab opens automatically. You can rename it by double-clicking its name in the explorer or via right-click → Rename (F2).",
+		"exerciseTitle": "Exercise statement",
+		"exerciseBody": "An exercise template comes with a statement written in Markdown (context and the work to do). It opens in a tab via Project → Exercise statement — an entry shown only when the project has a statement. The text is edited in the \"Exercise statement\" field of Project → Properties; an empty project can be given one too.",
+		"addProgramTitle": "Add a grafcet, a ladder or an HMI page",
+		"addProgramBody": "Project → New grafcet (Ctrl+G), Project → New ladder (Ctrl+L) or Project → New HMI page (no shortcut). The new item is added to the project and its tab opens automatically. You can rename it by double-clicking its name in the explorer or via right-click → Rename (F2).",
+		"addProgramOutro": "The Project menu also groups \"Exercise statement\" (when the project has one), \"Share\" / \"Manage sharing\" (see the Accounts & sharing section) and \"Properties\".",
 		"exportTitle": "Export a project",
 		"exportSubtitle": "File → Export (Ctrl+E)",
 		"exportIntro": "A window opens offering two formats:",
@@ -128,9 +140,33 @@
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
 	},
+	"accounts": {
+		"title": "Accounts & sharing",
+		"p1": "By default, all your projects are stored locally in the browser. Creating an account also lets you save them to the cloud, so they follow you from one device to another.",
+		"statusTitle": "Account status button",
+		"statusBody": "A button in the title bar shows whether you are signed in. When signed out, it reads \"Sign in\" and opens the authentication dialog. When signed in, it shows your identity and opens a menu to sign out.",
+		"authTitle": "Sign in or sign up",
+		"authIntro": "The authentication dialog offers:",
+		"authItems": [
+			"Sign in — with the email address and password of an existing account.",
+			"Sign up — create a real account (email address + password), or an anonymous account identified by just a nickname and a password, with no email address.",
+			"Forgot password — sends a reset link to the account's email address (real accounts only)."
+		],
+		"storageTitle": "Storage location",
+		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set on the Preferences page.",
+		"sharingTitle": "Share a project",
+		"sharingIntro": "Project → Share creates a share link containing a token. Anyone with the link can open a copy of the project.",
+		"sharingItems": [
+			"Sharing requires a cloud account: if you are not signed in, the sign-in dialog opens and sharing resumes afterwards; if the project is still stored locally, a dialog offers to move it to the cloud first.",
+			"The share dialog lets you copy the link and revoke sharing — the link then stops working.",
+			"Project → Manage sharing reopens this dialog for an already-shared project."
+		],
+		"sharingOpenedTitle": "Open a shared project",
+		"sharingOpenedBody": "A project opened from a share link is opened as a copy. The \"Save\" button becomes \"Save a copy\": the first save creates your own project, independent of the original. The \"Share\" entry is disabled for this project."
+	},
 	"explorer": {
 		"title": "Explorer",
-		"p1": "The explorer is a left-hand side panel showing the project tree. It can be shown or hidden via the View → Explorer menu.",
+		"p1": "The explorer is a left-hand side panel showing the project tree. It can be shown or hidden via the View → Explorer menu. The View menu groups the show/hide toggles for three panels: Explorer, Cross-references (see the dedicated section) and Analysis results (see the Analysis section).",
 		"structureTitle": "Explorer structure",
 		"structureIntro": "The explorer is organised into several sections:",
 		"variablesLabel": "Variables:",
@@ -188,6 +224,7 @@
 			"STRING — character string, available in memory",
 			"TIME — duration (e.g. T#5s), available in memory — used in particular for timers"
 		],
+		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768), LONG is truncated to an integer. Worth keeping in mind for an accumulation such as \"position := position + step\".",
 		"propertiesTitle": "Properties of a variable",
 		"propertiesItems": [
 			"Mnemonic (required): the variable's name, max 32 characters, must start with a letter, alphanumeric characters and underscores allowed, must be unique",
@@ -236,6 +273,7 @@
 		"stepsBody1": "To change a step's name or number, double-click the corresponding field. In simulation, active steps are highlighted.",
 		"stepsBody2": "Via right-click on a step, you can set it as the initial step — useful for changing the initial step of an existing grafcet without recreating the step.",
 		"stepsBody3": "Current limitation: a grafcet can only have one initial step. The standard allows an initial situation made of several steps active at the same time (for example one per branch of a parallel construct); Studomate does not support this yet.",
+		"stepsBody4": "Every numbered step n exposes a boolean variable Xn, true while the step is active — usable in any expression of the project (transition condition, action, ladder contact) to react to a step's activity. You may also define your own X0, X1… variables (for example to build cycle logic in ladder without a grafcet): the mnemonic Xn is not reserved. Analysis only flags the case where a grafcet actually contains a step n while a variable Xn also exists.",
 		"transitionsTitle": "Transitions",
 		"transitionsIntro": "Transitions define the conditions for moving from one step to the next. A transition is crossed when all upstream steps are active AND its condition is true.",
 		"transitionsReceptivityTitle": "Condition",
@@ -421,6 +459,22 @@
 		],
 		"ladderToolsOutro": "See the Ladder section for details of these elements."
 	},
+	"crossReferences": {
+		"title": "Cross-references",
+		"p1": "Cross-references show, for any variable in the project, every place where it is read and every place where it is written — across grafcets, ladders and HMI screens alike.",
+		"openTitle": "Open the panel",
+		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel.",
+		"panelTitle": "Panel contents",
+		"panelIntro": "The panel lists the project's variables with a filter field. For the selected variable, it shows two lists:",
+		"panelItems": [
+			"Read by — every location where the variable's value is used.",
+			"Written by — every location where a value is assigned to it."
+		],
+		"panelOutro": "Each entry points to a precise location: a ladder contact or coil, a block pin, a transition condition, a step action, a step's activity, or an HMI widget binding or animation. Click it to navigate straight there.",
+		"quickTitle": "Quick access from a variable",
+		"quickBody": "Right-clicking a variable — in the variables table, in a variable selector, or on a ladder contact or block — offers \"Cross-references\", which opens the panel already filtered on that variable.",
+		"scopeBody": "Cross-references are a navigation tool, not a diagnostic one: they raise no warnings (a variable that is never read or never written is not flagged as a problem)."
+	},
 	"hmi": {
 		"title": "HMI screens",
 		"p1": "An HMI (Human-Machine Interface) screen is an interactive graphical page to visualise and drive the system during simulation. A project can contain several HMI pages; one of them is designated as the main page and is shown when simulation starts.",
@@ -450,6 +504,7 @@
 		"canvasMoveTitle": "Move and resize",
 		"canvasMoveItems": [
 			"Move: click-drag a selected widget. A whole group moves in a single undoable command.",
+			"Move with the keyboard: the arrow keys move the selected widgets by one grid step (10 px), in design mode.",
 			"Resize: available only for a single selected widget. A blue handle appears in the bottom-right corner; drag it."
 		],
 		"canvasCopy": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection, via the keyboard shortcuts or right-click. Pasted widgets are placed slightly offset from the original.",
@@ -473,7 +528,7 @@
 		"animationsPositionTitle": "Position animation",
 		"animationsPositionBody": "Available for every widget type. Bind a numeric variable to the X and/or Y axis: in simulation, the variable's value is added (in pixels) to the widget's base position.",
 		"animationsStyleTitle": "Style animation",
-		"animationsStyleBody": "Available for rectangle, ellipse and text. Choose a driving variable (BOOL or numeric), then define a value → style-properties mapping table:",
+		"animationsStyleBody": "Available for rectangle, ellipse, line and text. Choose a driving variable (BOOL or numeric), then define a value → style-properties mapping table:",
 		"animationsStyleItems": [
 			"BOOL variable: two fixed rows (value 0 and value 1) — assign a colour to each state.",
 			"Numeric variable: free rows — add as many values as needed, each mapped to a colour or a text."
@@ -585,7 +640,8 @@
 			"Ctrl+V — Paste (active Grafcet, Ladder or HMI canvas)",
 			"Ctrl+X — Cut (active Grafcet, Ladder or HMI canvas)",
 			"Ctrl+A — Select all (active Grafcet, Ladder or HMI canvas)",
-			"Delete or Backspace — Delete the selection (active HMI canvas)"
+			"Delete or Backspace — Delete the selection (active Grafcet, Ladder or HMI canvas, in design mode)",
+			"Arrow keys — Move the selected widgets by one grid step (active HMI canvas, design mode)"
 		],
 		"explorerTitle": "Explorer",
 		"explorerItems": ["F2 — Rename the selected grafcet or ladder"],

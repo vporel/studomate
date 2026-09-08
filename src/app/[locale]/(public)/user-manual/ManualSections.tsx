@@ -1,7 +1,9 @@
 "use client";
 
 import { Box } from "@mui/material";
+import AccountsSection from "./sections/AccountsSection";
 import AnalysisSection from "./sections/AnalysisSection";
+import CrossReferencesSection from "./sections/CrossReferencesSection";
 import ExplorerSection from "./sections/ExplorerSection";
 import GettingStartedSection from "./sections/GettingStartedSection";
 import GrafcetSection from "./sections/GrafcetSection";
@@ -23,6 +25,7 @@ export default function ManualSections({ selected }: { selected: string }) {
 			{selected === "intro" && <IntroSection />}
 			{selected === "getting-started" && <GettingStartedSection />}
 			{selected === "projects" && <ProjectsSection />}
+			{selected === "accounts" && <AccountsSection />}
 			{selected === "explorer" && <ExplorerSection />}
 			{selected === "variables" && <VariablesSection />}
 			{isSectionOrChild(selected, "grafcet") && (
@@ -32,6 +35,7 @@ export default function ManualSections({ selected }: { selected: string }) {
 				<LadderSection selected={selected} />
 			)}
 			{selected === "toolbar" && <ToolbarSection />}
+			{selected === "cross-references" && <CrossReferencesSection />}
 			{isSectionOrChild(selected, "hmi") && <HmiSection selected={selected} />}
 			{isSectionOrChild(selected, "simulation") && (
 				<SimulationSection selected={selected} />

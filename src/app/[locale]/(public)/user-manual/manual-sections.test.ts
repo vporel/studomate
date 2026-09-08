@@ -3,6 +3,22 @@ import { flattenManualSections, MANUAL_SECTIONS } from "./manual-sections";
 const t = (key: string) => `label:${key}`;
 
 describe("manual-sections", () => {
+	it("expose une section « accounts » sans sous-section, après « projects »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids).toContain("accounts");
+		expect(ids.indexOf("accounts")).toBe(ids.indexOf("projects") + 1);
+		expect(MANUAL_SECTIONS.find((s) => s.id === "accounts")?.children).toBeUndefined();
+	});
+
+	it("expose une section « cross-references » sans sous-section, avant « simulation »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids).toContain("cross-references");
+		expect(ids.indexOf("cross-references")).toBeLessThan(ids.indexOf("simulation"));
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "cross-references")?.children,
+		).toBeUndefined();
+	});
+
 	it("chaque enfant d'une section est un identifiant d'ancre valide (préfixé par le parent)", () => {
 		for (const section of MANUAL_SECTIONS) {
 			for (const child of section.children ?? []) {

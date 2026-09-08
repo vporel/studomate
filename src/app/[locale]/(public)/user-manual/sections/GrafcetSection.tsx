@@ -46,6 +46,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					<Typography mb={2}>{t("stepsBody1")}</Typography>
 					<Typography mb={2}>{t("stepsBody2")}</Typography>
 					<Typography mb={2}>{t("stepsBody3")}</Typography>
+					<Typography mb={2}>{t("stepsBody4")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}

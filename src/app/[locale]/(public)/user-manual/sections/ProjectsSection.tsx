@@ -42,9 +42,16 @@ export default function ProjectsSection() {
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>
+				{t("exerciseTitle")}
+			</Typography>
+			<Typography mb={2}>{t("exerciseBody")}</Typography>
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
 				{t("addProgramTitle")}
 			</Typography>
 			<Typography mb={2}>{t("addProgramBody")}</Typography>
+			<Typography mb={2}>{t("addProgramOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

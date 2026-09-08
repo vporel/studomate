@@ -32,7 +32,6 @@
 	"TRANSITION_NO_SUCCESSOR": "La transition n'a aucun élément en aval.",
 	"TRANSITION_MULTIPLE_SUCCESSORS": "Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément.",
 	"TRANSITION_MULTIPLE_PREDECESSORS": "Une transition ne peut avoir qu'un seul prédécesseur direct. Utilisez une convergence en ET pour synchroniser plusieurs étapes.",
-	"TRANSITION_STEPLESS_OR_BRANCH": "Cette transition relie directement une divergence en OU à une convergence en OU : une branche de sélection doit contenir au moins une étape.",
 	"TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE": "La transition fait référence à la variable « {variableName} » qui n'est pas booléenne.",
 	"TRANSITION_TIMER_NAME_CONFLICT": "L'identifiant de temporisation « {timerName} » entre en conflit avec une variable existante.",
 

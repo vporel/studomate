@@ -562,7 +562,11 @@ describe("TransitionAnalyser", () => {
 			expect(multiPredecessorIssues).toHaveLength(0);
 		});
 
-		it("detects a stepless OR selection branch (OR divergence straight to OR convergence)", () => {
+		it("accepts a single-transition OR selection branch (step skip / saut d'étapes)", () => {
+			// IEC 60848 : une branche de sélection réduite à une seule transition (divergence OU
+			// → transition → convergence OU) est la représentation normative du saut d'étapes et
+			// de la reprise de séquence. L'alternance étape/transition reste respectée : les
+			// jonctions OU ne sont ni des étapes ni des transitions.
 			const transition = new TransitionBuilder()
 				.id("trans-1")
 				.expression("VRAI")
@@ -589,50 +593,13 @@ describe("TransitionAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const issue = issues.find((i) =>
-				i.code === "TRANSITION_STEPLESS_OR_BRANCH",
-			);
-			expect(issue).toBeDefined();
-			expect(issue?.severity).toBe("error");
+			expect(
+				issues.filter(
+					(i) =>
+						i.code === "TRANSITION_NO_PREDECESSOR" ||
+						i.code === "TRANSITION_NO_SUCCESSOR",
+				),
+			).toHaveLength(0);
 		});
-
-		it.each([
-			["junction-and-end", "junction-and-start"],
-			["junction-and-end", "junction-or-end"],
-			["junction-or-start", "junction-and-start"],
-		])(
-			"accepts a transition between %s and %s (licit chaining)",
-			(predecessorType, successorType) => {
-				const transition = new TransitionBuilder()
-					.id("trans-1")
-					.expression("VRAI")
-					.build();
-				const c1 = new ConnectionBuilder()
-					.id("c1")
-					.source(predecessorType as never, "j-pred", "source:branch")
-					.target("transition", "trans-1", "target:predecessor")
-					.build();
-				const c2 = new ConnectionBuilder()
-					.id("c2")
-					.source("transition", "trans-1", "source:successor")
-					.target(successorType as never, "j-succ", "target:branch")
-					.build();
-				const grafcet = new GrafcetBuilder()
-					.id("grafcet-1")
-					.addTransition(transition)
-					.addConnections(c1, c2)
-					.build();
-
-				const issues = analyser.analyseInContext(
-					transition,
-					grafcet,
-					analyserEnvironment(),
-				);
-
-				expect(
-					issues.filter((i) => i.code === "TRANSITION_STEPLESS_OR_BRANCH"),
-				).toHaveLength(0);
-			},
-		);
 	});
 });

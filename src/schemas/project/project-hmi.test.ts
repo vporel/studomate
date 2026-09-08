@@ -135,13 +135,13 @@ describe("Project.nextHmiPageName", () => {
 	it("génère Label_1 quand aucune page ne porte ce nom", () => {
 		const project = new Project("p1", "Projet", "");
 
-		expect(project.nextHmiPageName("Vue HMI")).toBe("Vue HMI_1");
+		expect(project.nextHmiPageName("Page HMI")).toBe("Page HMI_1");
 	});
 
 	it("avance au premier numéro libre", () => {
 		const project = new Project("p1", "Projet", "");
-		project.createHmiPage("Vue HMI_1");
+		project.createHmiPage("Page HMI_1");
 
-		expect(project.nextHmiPageName("Vue HMI")).toBe("Vue HMI_2");
+		expect(project.nextHmiPageName("Page HMI")).toBe("Page HMI_2");
 	});
 });

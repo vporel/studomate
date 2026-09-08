@@ -12,6 +12,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 	{ id: "intro" },
 	{ id: "getting-started" },
 	{ id: "projects" },
+	{ id: "accounts" },
 	{ id: "explorer" },
 	{ id: "variables" },
 	{
@@ -50,6 +51,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 			"hmi-simulation",
 		],
 	},
+	{ id: "cross-references" },
 	{
 		id: "simulation",
 		children: [

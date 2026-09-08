@@ -2,7 +2,9 @@
 
 import { Box } from "@mui/material";
 import { useEffect, useRef } from "react";
+import AccountsSection from "./sections/AccountsSection";
 import AnalysisSection from "./sections/AnalysisSection";
+import CrossReferencesSection from "./sections/CrossReferencesSection";
 import ExplorerSection from "./sections/ExplorerSection";
 import GettingStartedSection from "./sections/GettingStartedSection";
 import GrafcetSection from "./sections/GrafcetSection";
@@ -46,11 +48,13 @@ export default function ManualContentIndex({
 			<IntroSection />
 			<GettingStartedSection />
 			<ProjectsSection />
+			<AccountsSection />
 			<ExplorerSection />
 			<VariablesSection />
 			<GrafcetSection selected="grafcet" />
 			<LadderSection selected="ladder" />
 			<ToolbarSection />
+			<CrossReferencesSection />
 			<HmiSection selected="hmi" />
 			<SimulationSection selected="simulation" />
 			<AnalysisSection selected="analysis" />

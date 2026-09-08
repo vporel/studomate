@@ -95,20 +95,20 @@ describe("useProjectMenu", () => {
 		expect(grafcetsManager.newGrafcet).toHaveBeenCalled();
 	});
 
-	it("creates a new HMI view when designing", () => {
+	it("creates a new HMI page when designing", () => {
 		const { result } = setup(ProjectMode.DESIGN);
 		const item = result.current.items[0].find(
-			(i) => i.label === "Nouvelle vue HMI",
+			(i) => i.label === "Nouvelle page HMI",
 		);
 		expect(item).toBeDefined();
 		act(() => item?.onClick?.());
 		expect(hmiManager.newHmiPage).toHaveBeenCalled();
 	});
 
-	it("disables the new HMI view item outside design mode", () => {
+	it("disables the new HMI page item outside design mode", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
 		const item = result.current.items[0].find(
-			(i) => i.label === "Nouvelle vue HMI",
+			(i) => i.label === "Nouvelle page HMI",
 		);
 		expect(item?.disabled).toBe(true);
 		act(() => item?.onClick?.());

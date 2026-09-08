@@ -55,7 +55,7 @@ export default function useProjectMenu(): AppMenuType {
 						},
 					},
 					{
-						label: t("newHmiView"),
+						label: t("newHmiPage"),
 						disabled: !designing,
 						onClick: () => {
 							if (!designing) return;

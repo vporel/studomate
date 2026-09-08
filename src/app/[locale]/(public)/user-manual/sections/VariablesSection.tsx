@@ -24,6 +24,7 @@ export default function VariablesSection() {
 				{t("typesTitle")}
 			</Typography>
 			<ManualList items={t.raw("typesItems") as string[]} />
+			<Typography mb={2}>{t("typesOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

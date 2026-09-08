@@ -11,9 +11,9 @@ import {
 export const HMI_CANVAS_WIDTH = 1000;
 export const HMI_CANVAS_HEIGHT = 640;
 
-/** Base du nom auto-généré ("Vue HMI_1", "Vue HMI_2"...) à la création — voir
+/** Base du nom auto-généré ("Page HMI_1", "Page HMI_2"...) à la création — voir
  * `Project.nextHmiPageName`. */
-export const HMI_PAGE_NAME_LABEL = "Vue HMI";
+export const HMI_PAGE_NAME_LABEL = "Page HMI";
 
 /**
  * `widgets` est indexé par id (`Record<string, HmiWidget>`), pas un tableau : on cherche un

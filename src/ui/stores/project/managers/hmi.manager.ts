@@ -83,7 +83,7 @@ export default class HmiManager {
 		});
 	}
 
-	/** @param name Absent : auto-généré au format "Vue HMI_N", unique parmi les pages du projet
+	/** @param name Absent : auto-généré au format "Page HMI_N", unique parmi les pages du projet
 	 * (voir `Project.nextHmiPageName`). */
 	newHmiPage(name?: string): HmiPage | null {
 		const project = this.getStoreState().project;

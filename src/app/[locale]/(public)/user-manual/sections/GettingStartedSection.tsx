@@ -21,6 +21,12 @@ export default function GettingStartedSection() {
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>
+				{t("featuredTitle")}
+			</Typography>
+			<Typography mb={2}>{t("featuredBody")}</Typography>
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
 				{t("openTitle")}
 			</Typography>
 			<Typography mb={2}>{t("openBody")}</Typography>

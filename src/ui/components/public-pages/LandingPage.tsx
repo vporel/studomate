@@ -186,7 +186,7 @@ const LandingPage = () => {
 									background: "#000",
 								}}
 							>
-								<source src="/videos/demo-feu-tricolore.mov" type="video/quicktime" />
+								<source src="/videos/demo-feu-tricolore.mp4" type="video/mp4" />
 							</Box>
 						</Box>
 					</FlexBox>
