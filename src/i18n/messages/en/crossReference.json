@@ -1,0 +1,46 @@
+{
+	"footerButton": "Cross-references",
+	"panelTitle": "Cross-references",
+	"close": "Close",
+	"filterPlaceholder": "Filter variables…",
+	"noVariables": "No variable references in this project.",
+	"noMatch": "No variable matches the filter.",
+	"noReferencesForVariable": "“{name}” is neither read nor written in this project.",
+	"noReferencesForMatch": "None of the variables matching the filter are read or written.",
+	"readBy": "Read by",
+	"writtenBy": "Written by",
+	"noReaders": "Read nowhere",
+	"noWriters": "Written nowhere",
+	"unknownProgram": "Unknown program",
+	"blockType": {
+		"timer": "timer",
+		"counter": "counter",
+		"compare": "compare",
+		"assign": "assign",
+		"arithmetic": "arithmetic",
+		"user-program": "subprogram"
+	},
+	"widgetType": {
+		"push-button": "push button",
+		"indicator": "indicator",
+		"toggle-switch": "toggle switch",
+		"numeric-display": "display",
+		"gauge": "gauge",
+		"numeric-input": "input",
+		"rectangle": "rectangle",
+		"ellipse": "ellipse",
+		"line": "line",
+		"text": "text"
+	},
+	"location": {
+		"ladder-contact": "{programName} · section \"{sectionTitle}\" · row {gridRow} · contact",
+		"ladder-coil": "{programName} · section \"{sectionTitle}\" · row {gridRow} · coil",
+		"ladder-block-pin": "{programName} · section \"{sectionTitle}\" · block {blockLabel} · pin {port}",
+		"grafcet-transition": "{programName} · transition receptivity",
+		"grafcet-action-boolean": "{programName} · step {stepNumber} · action",
+		"grafcet-action-assign": "{programName} · step {stepNumber} · action",
+		"grafcet-step": "{programName} · step {stepNumber} · step activity",
+		"hmi-widget-binding": "{programName} · {widgetTypeLabel} \"{widgetName}\"",
+		"hmi-widget-animation": "{programName} · {widgetTypeLabel} \"{widgetName}\" · animation"
+	}
+}

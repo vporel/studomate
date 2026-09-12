@@ -33,7 +33,7 @@ const FlexBox = forwardRef(function <C extends React.ElementType = "div">(
 		column?: boolean;
 		wrap?: boolean;
 	},
-	ref: ForwardedRef<HTMLElement>
+	ref: ForwardedRef<HTMLElement>,
 ) {
 	return (
 		<Box
@@ -45,12 +45,12 @@ const FlexBox = forwardRef(function <C extends React.ElementType = "div">(
 				center || centerHorizontal
 					? "center"
 					: between
-					? "space-between"
-					: around
-					? "space-around"
-					: end
-					? "flex-end"
-					: justifyContent
+						? "space-between"
+						: around
+							? "space-around"
+							: end
+								? "flex-end"
+								: justifyContent
 			}
 			alignItems={center || centerVertical ? "center" : alignItems}
 			flexDirection={column ? "column" : flexDirection}

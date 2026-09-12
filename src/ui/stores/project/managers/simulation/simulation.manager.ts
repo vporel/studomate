@@ -1,18 +1,29 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
-import ProjectAnalyser, { ProjectAnalysisResult } from "@/project-analyser/project.analyser";
-import ProjectCompiler, { ProjectCompilationResult } from "@/project-compiler/project.compiler";
-import { isPreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
+import { resolveUiLocale } from "@/persistence/preferences.storage";
+import ProjectAnalyser, {
+	ProjectAnalysisResult,
+} from "@/project-analyser/project.analyser";
+import ProjectCompiler, {
+	ProjectCompilationResult,
+} from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
-import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import PLC from "@/simulator/core/plc/plc";
-import ExpressionsWatcher from "@/simulator/runtime/expressions-watcher";
+import PLCVariable, {
+	PLCVariableValue,
+} from "@/simulator/core/plc/plc-variable";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 	SimulationVariableState,
 } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import trackEvent from "@/ui/lib/analytics";
 import SimulationNotifier from "./simulation.notifier";
+
+const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
 
 export default class SimulationManager {
 	private setStoreState: ProjectStoreSetFunction;
@@ -21,10 +32,19 @@ export default class SimulationManager {
 	private plc: PLC | null = null;
 
 	/**
-	 * Expressions observées pendant la simulation, en marge du programme : sert par exemple à
-	 * montrer si la réceptivité d'une transition est vraie à cet instant.
+	 * Id de variable de mémoire (portant l'état d'une réceptivité observée) → id de la transition
+	 * correspondante. Construite depuis `CompiledProject.evaluableExpressionVariableIds` au
+	 * démarrage : `publishCycleState` s'en sert pour aiguiller la valeur de ces variables vers
+	 * `evaluableExpressionsValues[transitionId]` et les exclure de `simulationVariablesStates`.
 	 */
-	private expressionsWatcher: ExpressionsWatcher | null = null;
+	private observationVariableToSource: Map<string, string> = new Map();
+
+	/**
+	 * Dernières valeurs publiées dans le store (par id de variable / d'expression observée), pour
+	 * ne republier à chaque cycle que ce qui a changé. `null` tant qu'aucun cycle n'a été publié.
+	 */
+	private lastPublishedValues: Map<string, unknown> | null = null;
+	private lastPublishedExprValues: Map<string, unknown> | null = null;
 
 	private notifier: SimulationNotifier;
 
@@ -38,19 +58,35 @@ export default class SimulationManager {
 		this.notifier = notifier;
 	}
 
+	static getPersistedSimulationMode(): SimulationMode {
+		if (typeof window === "undefined") return SimulationMode.CONTINUOUS;
+		const stored = localStorage.getItem(SIMULATION_MODE_STORAGE_KEY);
+		if (stored === SimulationMode.STEP_BY_STEP)
+			return SimulationMode.STEP_BY_STEP;
+		return SimulationMode.CONTINUOUS;
+	}
+
 	/**
-	 *
+	 * @param showOnWarningsOnly Ouvre le panneau de résultats dès qu'il y a des avertissements,
+	 * même sans erreur — vrai pour un clic sur "Analyser" (l'utilisateur veut voir le résultat
+	 * dans tous les cas), faux pour la réanalyse automatique à l'entrée en simulation (voir
+	 * `setSimulationMode`) : des avertissements n'empêchent pas de simuler, ça n'a donc pas à
+	 * interrompre l'utilisateur. Une erreur ouvre le panneau dans les deux cas.
 	 * @returns true if no error
 	 */
-	analyze(): {
+	analyze(showOnWarningsOnly = true): {
 		ok: boolean;
 		projectAnalysisResult: ProjectAnalysisResult | null;
 	} {
 		const project = this.getStoreState().project;
 		if (!project) return { ok: false, projectAnalysisResult: null };
 		const projectAnalysisResult = ProjectAnalyser.analyse(project);
-		const errors = projectAnalysisResult.issues.filter((i) => i.severity === "error");
-		const warnings = projectAnalysisResult.issues.filter((i) => i.severity === "warning");
+		const errors = projectAnalysisResult.issues.filter(
+			(i) => i.severity === "error",
+		);
+		const warnings = projectAnalysisResult.issues.filter(
+			(i) => i.severity === "warning",
+		);
 
 		this.notifier.analysisCompleted({
 			analysedElements: projectAnalysisResult.totalAnalysedElements,
@@ -61,9 +97,16 @@ export default class SimulationManager {
 		this.setStoreState((state) => ({
 			analysisHasErrors: errors.length > 0,
 			analysisHasWarnings: warnings.length > 0,
-			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors),
-			analysisWarnings: AnalysisIssuesMapper.analyserToApp(warnings),
-			ui: { ...state.ui, analysisResultVisible: errors.length > 0 || warnings.length > 0 },
+			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors, resolveUiLocale()),
+			analysisWarnings: AnalysisIssuesMapper.analyserToApp(
+				warnings,
+				resolveUiLocale(),
+			),
+			ui: {
+				...state.ui,
+				analysisResultVisible:
+					errors.length > 0 || (showOnWarningsOnly && warnings.length > 0),
+			},
 		}));
 
 		return { ok: errors.length === 0, projectAnalysisResult };
@@ -71,21 +114,24 @@ export default class SimulationManager {
 
 	setDesignMode() {
 		this.stopSimulation();
+		this.getStoreState().hmiManager.closeHmiSimulationPage();
 		this.setStoreState(() => ({ mode: ProjectMode.DESIGN }));
 	}
 
 	setSimulationMode() {
+		if (this.plc) this.stopSimulation();
+
 		const project = this.getStoreState().project;
 		if (!project) return;
 
 		//Reanalyze project when switching to simulation mode
-		const { ok: analysisOK, projectAnalysisResult } = this.analyze();
+		const { ok: analysisOK, projectAnalysisResult } = this.analyze(false);
 		if (!analysisOK || !projectAnalysisResult) return;
 
 		//Pre compile the project
 		const projectPreCompilationResult = ProjectPreCompiler.preCompile(
 			project,
-			projectAnalysisResult.stepsVariables,
+			projectAnalysisResult.generatedVariables,
 			project.dialect,
 		);
 		if (projectPreCompilationResult.errors.length > 0) {
@@ -93,55 +139,111 @@ export default class SimulationManager {
 				step: "pre-compilation",
 				errorsCount: projectPreCompilationResult.errors.length,
 			});
-			console.error("Errors during project pre-compilation:", projectPreCompilationResult.errors);
+			console.error(
+				"Errors during project pre-compilation:",
+				projectPreCompilationResult.errors,
+			);
 			return;
 		}
 
-		//We register each transition expression to be evaluated during simulation,
-		// with the transition id as expression id
-		//Fonctionnalité propre au GRAFCET : afficher l'état des réceptivités. On ne s'intéresse
-		//donc qu'aux programmes de cette notation, sans supposer qu'il n'y en a pas d'autres.
-		const watchedExpressions = new Map<string, ASTNode>();
-		Object.values(projectPreCompilationResult.result!.programs)
-			.filter(isPreCompiledGrafcet)
-			.forEach((g) =>
-				g.transitions.entries().forEach(([transitionId, transition]) => {
-					//L'AST pré-compilé est déjà analysé et simplifié
-					watchedExpressions.set(transitionId, transition.node);
-				}),
-			);
-		this.expressionsWatcher = new ExpressionsWatcher(this.getStoreState().plcConfig.scanTimeMs);
-		this.expressionsWatcher.watch(watchedExpressions);
-
 		//Compile the project
-		const projectCompilationResult = ProjectCompiler.compile(projectPreCompilationResult.result!);
+		const projectCompilationResult = ProjectCompiler.compile(
+			projectPreCompilationResult.result!,
+		);
 		if (projectCompilationResult.errors.length > 0) {
 			this.notifier.simulationCouldNotStart({
 				step: "compilation",
 				errorsCount: projectCompilationResult.errors.length,
 			});
-			console.error("Errors during project compilation:", projectCompilationResult.errors);
+			console.error(
+				"Errors during project compilation:",
+				projectCompilationResult.errors,
+			);
 			return;
 		}
 		this.notifier.simulationStarting();
+
+		//État des réceptivités (surlignage des transitions franchissables) : la routine
+		//d'observation compilée écrit ces valeurs dans des variables de mémoire, on retient
+		//juste l'association variable → transition pour la publication.
+		this.observationVariableToSource = new Map(
+			Object.entries(
+				projectCompilationResult.result!.evaluableExpressionVariableIds,
+			).map(([sourceId, variableId]) => [variableId, sourceId]),
+		);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
 		this.plc.start();
 
+		//Cycle d'établissement : exécuté synchronement à l'entrée en simulation pour que la
+		//situation initiale (étapes initiales actives, sorties calculées) soit publiée avant
+		//tout affichage — sinon, en pas-à-pas, aucun cycle ne tourne jusqu'au premier
+		//"Avancer" et l'interface montre un grafcet sans étape active. `deltaTimeMs` vaut 0
+		//sur ce cycle : aucune temporisation n'avance.
+		const simulationMode = this.getStoreState().simulationMode;
+		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
+		this.plc.pause();
+		this.plc.stepOnce();
+		if (!startPaused) {
+			this.plc.resume();
+		}
+
 		//Set the mode
-		this.setStoreState((state) => ({
+		this.setStoreState(() => ({
 			mode: ProjectMode.SIMULATION,
-			ui: { ...state.ui, watchTablesVisible: true },
+			simulationPaused: startPaused,
 		}));
+		trackEvent("simulation-started", { mode: simulationMode });
+		this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
+	}
+
+	pauseSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.pause();
+		this.setStoreState(() => ({ simulationPaused: true }));
+	}
+
+	resumeSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.resume();
+		this.setStoreState(() => ({ simulationPaused: false }));
+	}
+
+	stepSimulation(): void {
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+		if (!this.plc) return;
+		this.plc.stepOnce();
+	}
+
+	setPlcSimulationMode(mode: SimulationMode): void {
+		if (typeof window !== "undefined") {
+			localStorage.setItem(SIMULATION_MODE_STORAGE_KEY, mode);
+		}
+		this.setStoreState(() => ({ simulationMode: mode }));
+
+		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;
+
+		if (mode === SimulationMode.STEP_BY_STEP && !this.plc?.isPaused()) {
+			this.pauseSimulation();
+		} else if (mode === SimulationMode.CONTINUOUS && this.plc?.isPaused()) {
+			this.resumeSimulation();
+		}
 	}
 
 	private createPLC(projectCompilationResult: ProjectCompilationResult): PLC {
 		if (!projectCompilationResult.result) {
 			throw new Error("No compiled project result provided");
 		}
-		if (!projectCompilationResult.result.routines || !projectCompilationResult.result.variables) {
-			throw new Error("Compiled project result must include routines and variables");
+		if (
+			!projectCompilationResult.result.routines ||
+			!projectCompilationResult.result.variables
+		) {
+			throw new Error(
+				"Compiled project result must include routines and variables",
+			);
 		}
 		const scanTimeMs = this.getStoreState().plcConfig.scanTimeMs;
 		if (!scanTimeMs || scanTimeMs <= 0) {
@@ -150,58 +252,155 @@ export default class SimulationManager {
 		const plc = new PLC({
 			scanTimeMs,
 			program: projectCompilationResult.result!.routines,
+			routinesById: projectCompilationResult.result!.routinesById,
 			variables: projectCompilationResult.result!.variables,
 			onCycleEnd: (plcInstance) => {
-				const variablesSnapshot = plcInstance.getVariablesSnapshot();
-				const variablesState: Record<string, SimulationVariableState> = {};
-				variablesSnapshot.forEach((v) => {
-					variablesState[v.getId()] = {
-						id: v.getId(),
-						mnemonic: v.getName(),
-						value: v.getValue(),
-					};
-				});
-				this.expressionsWatcher?.evaluate(variablesSnapshot);
-				this.setStoreState(() => ({
-					simulationVariablesStates: variablesState,
-					evaluableExpressionsValues: this.expressionsWatcher?.getValuesSnapshot() ?? {},
-				}));
+				this.publishCycleState(plcInstance.getVariablesSnapshot());
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
-			onCycleError: () => {
-				this.notifier.simulationCrashed();
+			onCycleError: (error) => {
+				this.notifier.simulationCrashed(
+					SimulatorExceptionsMapper.getUserFriendlyMessage(
+						error,
+						resolveUiLocale(),
+					),
+				);
 				this.setDesignMode();
 			},
 		});
 		return plc;
 	}
 
+	/**
+	 * Publie dans le store uniquement les variables (et réceptivités observées) dont la valeur a
+	 * changé depuis le cycle précédent. En régime établi peu de bits basculent par cycle : les
+	 * abonnés dont la variable n'a pas bougé ne sont pas réveillés, et si rien n'a changé le
+	 * store n'est pas touché du tout.
+	 */
+	private publishCycleState(variablesSnapshot: readonly PLCVariable[]): void {
+		if (!this.lastPublishedValues) this.lastPublishedValues = new Map();
+		if (!this.lastPublishedExprValues) this.lastPublishedExprValues = new Map();
+
+		const changedVariables: Record<string, SimulationVariableState> = {};
+		const changedVariablesByMnemonic: Record<string, SimulationVariableState> =
+			{};
+		const changedExprValues: Record<string, unknown> = {};
+		for (const v of variablesSnapshot) {
+			const id = v.getId();
+			const value = v.getValue();
+
+			//Variables système (`_SYS_TB_*`) : fournies par le moteur, elles n'apparaissent pas
+			//dans les variables de simulation (leur place est l'entrée « Variables système »).
+			if (isSystemVariableName(v.getName())) continue;
+
+			const sourceId = this.observationVariableToSource.get(id);
+			if (sourceId !== undefined) {
+				//Variable d'observation d'une réceptivité : n'apparaît pas dans les variables de
+				//simulation, sa valeur alimente l'état des expressions évaluables.
+				if (
+					!this.lastPublishedExprValues.has(sourceId) ||
+					!Object.is(this.lastPublishedExprValues.get(sourceId), value)
+				) {
+					changedExprValues[sourceId] = value;
+					this.lastPublishedExprValues.set(sourceId, value);
+				}
+				continue;
+			}
+
+			if (
+				!this.lastPublishedValues.has(id) ||
+				!Object.is(this.lastPublishedValues.get(id), value)
+			) {
+				const entry = { id, mnemonic: v.getName(), value };
+				changedVariables[id] = entry;
+				changedVariablesByMnemonic[v.getName()] = entry;
+				this.lastPublishedValues.set(id, value);
+			}
+		}
+
+		const hasVarChanges = Object.keys(changedVariables).length > 0;
+		const hasExprChanges = Object.keys(changedExprValues).length > 0;
+		if (!hasVarChanges && !hasExprChanges) return;
+
+		this.setStoreState((state) => ({
+			...(hasVarChanges
+				? {
+						simulationVariablesStates: {
+							...state.simulationVariablesStates,
+							...changedVariables,
+						},
+						simulationVariablesStatesByMnemonic: {
+							...state.simulationVariablesStatesByMnemonic,
+							...changedVariablesByMnemonic,
+						},
+					}
+				: {}),
+			...(hasExprChanges
+				? {
+						evaluableExpressionsValues: {
+							...state.evaluableExpressionsValues,
+							...changedExprValues,
+						},
+					}
+				: {}),
+		}));
+	}
+
 	private stopSimulation(): void {
-		//Stop the PLC if it is running
+		//Stop the PLC if it is running or paused
 		if (this.plc) {
+			this.plc.releaseAllVariables();
 			this.plc.stop();
 			this.plc = null;
 		}
 
 		//Reset simulation variables states
+		this.lastPublishedValues = null;
+		this.lastPublishedExprValues = null;
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
+			simulationVariablesStatesByMnemonic: {},
 			evaluableExpressionsValues: {},
+			simulationPaused: false,
+			forcedVariables: {},
 		}));
 
-		this.expressionsWatcher?.clear();
-		this.expressionsWatcher = null;
+		this.observationVariableToSource = new Map();
+	}
+
+	/**
+	 * Ramène une valeur venue de l'UI (`any`) au type natif de la variable ciblée. `undefined`
+	 * si la variable est inconnue du PLC ou si un nombre attendu n'est pas fini — l'appelant
+	 * n'écrit alors rien, plutôt que de laisser `PLCVariable.setValue` lever et détruire la
+	 * simulation au cycle suivant.
+	 */
+	private coerceToPlcType(
+		variableId: string,
+		value: unknown,
+	): PLCVariableValue | undefined {
+		const type = this.plc?.getVariableTypeById(variableId);
+		if (!type) return undefined;
+		if (type === "boolean") return typeof value === "boolean" ? value : !!value;
+		if (type === "number") {
+			const n = typeof value === "number" ? value : Number(value);
+			return Number.isFinite(n) ? n : undefined;
+		}
+		return typeof value === "string" ? value : String(value);
 	}
 
 	public setPhysicalInputValue(variableId: string, value: any): void {
 		const mode = this.getStoreState().mode;
 		if (mode !== ProjectMode.SIMULATION) {
-			throw new Error("Cannot set physical input value when not in simulation mode");
+			throw new Error(
+				"Cannot set physical input value when not in simulation mode",
+			);
 		}
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
-		this.plc.setPhysicalInputValueById(variableId, value);
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.setPhysicalInputValueById(variableId, coerced);
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {
@@ -212,6 +411,28 @@ export default class SimulationManager {
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
-		this.plc.setMemoryValueById(variableId, value);
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.setMemoryValueById(variableId, coerced);
+	}
+
+	public forceVariable(variableId: string, value: any): void {
+		if (!this.plc) return;
+		const coerced = this.coerceToPlcType(variableId, value);
+		if (coerced === undefined) return;
+		this.plc.forceVariable(variableId, coerced);
+		this.setStoreState((state) => ({
+			forcedVariables: { ...state.forcedVariables, [variableId]: coerced },
+		}));
+	}
+
+	public releaseVariable(variableId: string): void {
+		if (!this.plc) return;
+		this.plc.releaseVariable(variableId);
+		this.setStoreState((state) => {
+			const next = { ...state.forcedVariables };
+			delete next[variableId];
+			return { forcedVariables: next };
+		});
 	}
 }

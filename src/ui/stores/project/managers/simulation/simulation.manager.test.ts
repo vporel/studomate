@@ -1,9 +1,17 @@
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
+import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
+import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
+import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { wait } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import { ProjectStoreState } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
+import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -27,11 +35,17 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		plcConfig: { scanTimeMs: 10 },
 		ui: { watchTablesVisible: false, analysisResultVisible: false },
 		simulationVariablesStates: {},
+		simulationVariablesStatesByMnemonic: {},
 		evaluableExpressionsValues: {},
+		forcedVariables: {},
 		analysisHasErrors: false,
 		analysisHasWarnings: false,
 		analysisErrors: { project: [], grafcets: {} },
 		analysisWarnings: { project: [], grafcets: {} },
+		hmiManager: {
+			openHmiSimulationPageIfAny: jest.fn(),
+			closeHmiSimulationPage: jest.fn(),
+		},
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -44,8 +58,13 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 
 describe("SimulationManager", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	// Régression §2.7 : les valeurs observées vivaient dans une classe mutée hors du store,
@@ -61,9 +80,17 @@ describe("SimulationManager", () => {
 			const transitionId = "g1-trans-0";
 
 			manager.setSimulationMode();
-			await wait(60);
+			await jest.advanceTimersByTimeAsync(60);
 
 			expect(get().evaluableExpressionsValues[transitionId]).toBeDefined();
+
+			//Les variables de mémoire qui portent l'état des réceptivités ne fuient pas dans les
+			//variables de simulation : ici I0 + X0 + X1 + 2 mémos d'étape = 5 au plus, jamais les
+			//2 variables d'observation en plus.
+			expect(
+				Object.keys(get().simulationVariablesStates).length,
+			).toBeLessThanOrEqual(5);
+
 			manager.setDesignMode();
 		});
 
@@ -75,10 +102,449 @@ describe("SimulationManager", () => {
 			const manager = new SimulationManager(set, get, stubNotifier());
 
 			manager.setSimulationMode();
-			await wait(60);
+			await jest.advanceTimersByTimeAsync(60);
 			manager.setDesignMode();
 
 			expect(get().evaluableExpressionsValues).toEqual({});
+		});
+	});
+
+	describe("setSimulationMode() — situation initiale publiée à l'entrée", () => {
+		function stepState(get: () => ProjectStoreState, mnemonic: string) {
+			return Object.values(get().simulationVariablesStates).find(
+				(v) => v.mnemonic === mnemonic,
+			);
+		}
+
+		it("publie l'étape initiale active en pas-à-pas sans avancer l'horloge", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			set({ simulationMode: SimulationMode.STEP_BY_STEP });
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			// Aucun jest.advanceTimersByTime : seul le cycle d'établissement synchrone a tourné
+			expect(stepState(get, "X0")?.value).toBe(true);
+			expect(get().simulationPaused).toBe(true);
+
+			manager.setDesignMode();
+		});
+
+		it("publie la situation initiale en continu avant tout battement d'horloge", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			set({ simulationMode: SimulationMode.CONTINUOUS });
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(stepState(get, "X0")?.value).toBe(true);
+			expect(get().simulationPaused).toBe(false);
+
+			manager.setDesignMode();
+		});
+	});
+
+	describe("setSimulationMode() — appels répétés", () => {
+		it("n'abandonne pas l'ancien PLC en marche quand appelée deux fois de suite", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			manager.setSimulationMode();
+			manager.setDesignMode();
+			await jest.advanceTimersByTimeAsync(60);
+
+			//Si le premier PLC n'avait pas été arrêté, son intervalle continuerait d'écrire dans
+			//le store après le retour en conception.
+			expect(get().simulationVariablesStates).toEqual({});
+			expect(get().evaluableExpressionsValues).toEqual({});
+		});
+	});
+
+	describe("analyze()", () => {
+		function projectWithOneErrorAndOneWarning() {
+			// Erreur : variable non déclarée dans la condition de la transition.
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"g1",
+				"UNDEFINED_VAR",
+				"VRAI",
+			);
+			// Avertissement : une action sans expression n'a aucun effet.
+			const action = new ActionBuilder()
+				.id("a-empty")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.expression("")
+				.build();
+			grafcet.actions[action.id] = action;
+			grafcet.connections.push(
+				new ConnectionBuilder()
+					.id("a-empty-conn")
+					.source("step", "g1-step-0", "source:action")
+					.target("action", "a-empty", "target:step")
+					.build(),
+			);
+			return ProjectFactory.createWithGrafcets([grafcet]);
+		}
+
+		it("remplit analysisHasErrors/Warnings, les buckets, ouvre le panneau et notifie les comptes", () => {
+			const project = projectWithOneErrorAndOneWarning();
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.analyze();
+
+			expect(get().analysisHasErrors).toBe(true);
+			expect(get().analysisHasWarnings).toBe(true);
+			expect(get().analysisErrors.grafcets["g1"]).toBeDefined();
+			expect(get().analysisWarnings.grafcets["g1"]).toBeDefined();
+			expect(get().ui.analysisResultVisible).toBe(true);
+			expect(notifier.analysisCompleted).toHaveBeenCalledWith(
+				expect.objectContaining({ errors: 1, warnings: 1 }),
+			);
+		});
+
+		it("ne rouvre pas le panneau quand le projet n'a aucune issue", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.analyze();
+
+			expect(get().analysisHasErrors).toBe(false);
+			expect(get().analysisHasWarnings).toBe(false);
+			expect(get().ui.analysisResultVisible).toBe(false);
+		});
+	});
+
+	describe("setSimulationMode() — refus de démarrer", () => {
+		it("reste en DESIGN et n'appelle jamais simulationStarting quand l'analyse a des erreurs", () => {
+			const grafcet = new GrafcetBuilder().id("g1").build(); // grafcet vide : GRAFCET_TOO_FEW_STEPS
+			const project = ProjectFactory.createWithGrafcets([grafcet]);
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(notifier.simulationStarting).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("setSimulationMode() — affichage du panneau d'analyse", () => {
+		function projectWithOneWarningOnly() {
+			// Avertissement seul (pas d'erreur) : une action sans expression n'a aucun effet.
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI");
+			const action = new ActionBuilder()
+				.id("a-empty")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.expression("")
+				.build();
+			grafcet.actions[action.id] = action;
+			grafcet.connections.push(
+				new ConnectionBuilder()
+					.id("a-empty-conn")
+					.source("step", "g1-step-0", "source:action")
+					.target("action", "a-empty", "target:step")
+					.build(),
+			);
+			return ProjectFactory.createWithGrafcets([grafcet]);
+		}
+
+		it("ne rouvre pas le panneau à l'entrée en simulation quand le projet n'a que des avertissements", () => {
+			const project = projectWithOneWarningOnly();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(get().mode).toBe(ProjectMode.SIMULATION);
+			expect(get().analysisHasWarnings).toBe(true);
+			expect(get().ui.analysisResultVisible).toBe(false);
+		});
+
+		it("ouvre quand même le panneau à l'entrée en simulation si le projet a des erreurs", () => {
+			const grafcet = new GrafcetBuilder().id("g1").build(); // grafcet vide : GRAFCET_TOO_FEW_STEPS
+			const project = ProjectFactory.createWithGrafcets([grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(get().ui.analysisResultVisible).toBe(true);
+		});
+	});
+
+	describe("setPhysicalInputValue / setMemoryValue — gardes hors simulation", () => {
+		it("lèvent hors mode simulation", () => {
+			const project = ProjectFactory.createEmpty();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(() => manager.setPhysicalInputValue("v1", true)).toThrow();
+			expect(() => manager.setMemoryValue("v1", 1)).toThrow();
+		});
+
+		it("lèvent en mode simulation si le PLC n'est pas initialisé", () => {
+			const project = ProjectFactory.createEmpty();
+			const { get, set } = makeStore(project);
+			set(() => ({ mode: ProjectMode.SIMULATION }));
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(() => manager.setPhysicalInputValue("v1", true)).toThrow();
+			expect(() => manager.setMemoryValue("v1", 1)).toThrow();
+		});
+	});
+
+	describe("forceVariable / releaseVariable", () => {
+		it("forceVariable met à jour forcedVariables dans le store", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+
+			const variableId = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+			manager.forceVariable(variableId, true);
+
+			expect(get().forcedVariables[variableId]).toBe(true);
+			manager.setDesignMode();
+		});
+
+		it("releaseVariable retire la variable de forcedVariables dans le store", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+
+			const variableId = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+			manager.forceVariable(variableId, true);
+			manager.releaseVariable(variableId);
+
+			expect(get().forcedVariables[variableId]).toBeUndefined();
+			manager.setDesignMode();
+		});
+
+		it("stopSimulation vide forcedVariables", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+
+			const variableId = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+			manager.forceVariable(variableId, true);
+			manager.setDesignMode();
+
+			expect(get().forcedVariables).toEqual({});
+		});
+	});
+
+	describe("forceVariable / setMemoryValue — coercition de type défensive", () => {
+		it("force une valeur mal typée sur une variable BOOL sans crasher la simulation", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			const i0Id = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+
+			manager.forceVariable(i0Id, 1 as unknown as boolean);
+			expect(get().forcedVariables[i0Id]).toBe(true); // coercé
+
+			await jest.advanceTimersByTimeAsync(60);
+			expect(notifier.simulationCrashed).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
+		});
+
+		it("ignore un nombre non fini passé à setMemoryValue", async () => {
+			const n = VariableFactory.createMemoryInt("N");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "VRAI");
+			const project = ProjectFactory.create([n], [grafcet]);
+			const { get, set } = makeStore(project);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			const nId = get().project!.variables.find((v) => v.mnemonic === "N")!.id;
+
+			expect(() => manager.setMemoryValue(nId, NaN)).not.toThrow();
+			await jest.advanceTimersByTimeAsync(60);
+			expect(notifier.simulationCrashed).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
+		});
+
+		it("no-op silencieux quand la variable est inconnue du PLC", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			manager.forceVariable("id-inexistant", true);
+
+			expect(get().forcedVariables["id-inexistant"]).toBeUndefined();
+			manager.setDesignMode();
+		});
+	});
+
+	describe("onCycleError", () => {
+		it("notifie simulationCrashed et repasse en DESIGN avec les états de variables vidés", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			// Simule un crash de cycle en appelant directement le callback enregistré sur le PLC.
+			(manager as any).plc.onCycleError(new Error("boom"));
+
+			expect(notifier.simulationCrashed).toHaveBeenCalled();
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(get().simulationVariablesStates).toEqual({});
+		});
+
+		it("remonte le message lisible de l'exception à l'origine du crash", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			(manager as any).plc.onCycleError(
+				new DivisionByZeroException(10, 0, null as any),
+			);
+
+			expect(notifier.simulationCrashed).toHaveBeenCalledWith(
+				expect.stringContaining("10 / 0"),
+			);
+		});
+	});
+
+	describe("publishCycleState — publication différentielle", () => {
+		/** Grafcet figé : les deux réceptivités sont fausses, aucune variable ne bouge après
+		 *  l'activation de l'étape initiale. */
+		function frozenProject() {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "FAUX", "FAUX");
+			return ProjectFactory.createWithGrafcets([grafcet]);
+		}
+
+		function recordingStore(project: ReturnType<typeof ProjectFactory.create>) {
+			const base = makeStore(project);
+			const patches: Array<Record<string, unknown>> = [];
+			const set = (partial: any) => {
+				const patch =
+					typeof partial === "function" ? partial(base.get()) : partial;
+				patches.push(patch);
+				base.set(partial);
+			};
+			return { get: base.get, set, patches };
+		}
+
+		const varPatches = (patches: Array<Record<string, unknown>>) =>
+			patches.filter((p) => "simulationVariablesStates" in p);
+
+		it("ne republie simulationVariablesStates que lorsqu'une valeur change", async () => {
+			const { get, set, patches } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(40); // stabilisation
+			const countAfterSettle = varPatches(patches).length;
+			expect(countAfterSettle).toBeGreaterThan(0);
+
+			await jest.advanceTimersByTimeAsync(150); // ~15 cycles, état figé
+			expect(varPatches(patches).length).toBe(countAfterSettle);
+
+			manager.setDesignMode();
+		});
+
+		it("republie l'état complet au redémarrage (référence de diff réinitialisée)", async () => {
+			const { get, set, patches } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+			const allVarIds = Object.keys(get().simulationVariablesStates);
+			expect(allVarIds.length).toBeGreaterThan(0);
+
+			manager.setDesignMode();
+			patches.length = 0;
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(40);
+
+			const firstRepublish = varPatches(patches)[0]
+				.simulationVariablesStates as Record<string, unknown>;
+			// Toutes les variables sont republiées d'un coup, pas seulement un delta.
+			expect(Object.keys(firstRepublish).sort()).toEqual(allVarIds.sort());
+
+			manager.setDesignMode();
+		});
+
+		it("publie une vue indexée par mnémonique en miroir de simulationVariablesStates", async () => {
+			const { get, set } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+
+			const byId = get().simulationVariablesStates;
+			const byMnemonic = get().simulationVariablesStatesByMnemonic;
+			expect(Object.keys(byMnemonic).length).toBe(Object.keys(byId).length);
+			for (const entry of Object.values(byId)) {
+				expect(byMnemonic[entry.mnemonic]).toEqual(entry);
+			}
+
+			manager.setDesignMode();
+			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
 		});
 	});
 });

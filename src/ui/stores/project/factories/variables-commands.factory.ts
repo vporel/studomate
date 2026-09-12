@@ -4,7 +4,7 @@ import VariablesAddCommand from "@/schemas/project/commands/variables-add.comman
 import VariablesRemoveCommand from "@/schemas/project/commands/variables-remove.command";
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Project from "@/schemas/project/project.schema";
-import { createRandomId } from "@/schemas/utils/ids";
+import { createRandomId } from "@/ids";
 import {
 	VARIABLE_UPDATABLE_FIELDS,
 	VariableUpdatableFields,
@@ -21,7 +21,9 @@ export default class VariablesCommandsFactory {
 	} {
 		const variablesToAdd = data
 			.filter(
-				(d) => d.mnemonic.trim() != "" && !project.variables.some((v) => d.mnemonic === v.mnemonic),
+				(d) =>
+					d.mnemonic.trim() != "" &&
+					!project.variables.some((v) => d.mnemonic === v.mnemonic),
 			)
 			.map((d) => ({ ...d, id: createRandomId() }));
 		const commands = [];
@@ -75,7 +77,10 @@ export default class VariablesCommandsFactory {
 		const variablesToRemove = project.variables
 			.filter((v) => variableIds.includes(v.id))
 			.map((v) =>
-				extractFields<VariableUpdatableFieldsWithId>([...VARIABLE_UPDATABLE_FIELDS, "id"], v),
+				extractFields<VariableUpdatableFieldsWithId>(
+					[...VARIABLE_UPDATABLE_FIELDS, "id"],
+					v,
+				),
 			);
 		const commands: AbstractProjectCommand<any>[] = [];
 		if (variablesToRemove.length > 0) {

@@ -1,15 +1,14 @@
-import EnvVariable, { EnvVariableDirection } from "./interpreter/environment/env-variable";
+import { invertRecord } from "@/lib/object";
 import PLCVariable, { PLCVariableScope } from "./core/plc/plc-variable";
+import EnvVariable, {
+	EnvVariableDirection,
+} from "./interpreter/environment/env-variable";
 
 const directionToScope: Record<EnvVariableDirection, PLCVariableScope> = {
 	IN: "input",
 	OUT: "output",
 	INOUT: "memory",
 };
-
-function invertRecord<K extends string, V extends string>(record: Record<K, V>): Record<V, K> {
-	return Object.fromEntries(Object.entries(record).map(([k, v]) => [v, k])) as Record<V, K>;
-}
 
 const scopeToDirection = invertRecord(directionToScope);
 
@@ -20,14 +19,26 @@ const scopeToDirection = invertRecord(directionToScope);
 export default class PlcVariablesMapper {
 	static envToPlc(envVar: EnvVariable): PLCVariable {
 		const scope = directionToScope[envVar.getDirection()];
-		const plcVar = new PLCVariable(envVar.getId(), envVar.getName(), scope, envVar.getType());
+		const plcVar = new PLCVariable(
+			envVar.getId(),
+			envVar.getName(),
+			scope,
+			envVar.getType(),
+			envVar.getNumericRange(),
+		);
 		plcVar.setValue(envVar.getValue());
 		return plcVar;
 	}
 
 	static plcToEnv(plcVar: PLCVariable): EnvVariable {
 		const direction = scopeToDirection[plcVar.getScope()];
-		const envVar = new EnvVariable(plcVar.getId(), plcVar.getName(), plcVar.getType(), direction);
+		const envVar = new EnvVariable(
+			plcVar.getId(),
+			plcVar.getName(),
+			plcVar.getType(),
+			direction,
+			plcVar.getNumericRange(),
+		);
 		envVar.setValue(plcVar.getValue());
 		return envVar;
 	}

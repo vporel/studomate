@@ -1,4 +1,3 @@
-﻿import { HandleType } from "../connection.schema";
 import Grafcet from "../grafcet.schema";
 import Junction, { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 
@@ -10,21 +9,29 @@ export default class JunctionHelper {
 	 * Checks if the junction pivot is connected to an element
 	 */
 	static isPivotConnected(junctionId: string, grafcet: Grafcet): boolean {
-		const connections = grafcet.getConnectionsByElementIdAndHandle(junctionId, JUNCTION_HANDLE_PIVOT);
+		const connections = grafcet.getConnectionsByElementIdAndHandle(
+			junctionId,
+			JUNCTION_HANDLE_PIVOT,
+		);
 		return connections.length > 0;
 	}
 
 	/**
-	 * Checks if all each branch of the junction is connected to an element
+	 * Checks if each branch of the junction has exactly one connection — a total-count
+	 * comparison would miss two connections stacked on the same branch while another branch
+	 * stays empty, and would still count a stale connection left on a since-removed branch.
 	 */
-	static areAllBranchesConnected(junctionId: string, grafcet: Grafcet): boolean {
+	static areAllBranchesConnected(
+		junctionId: string,
+		grafcet: Grafcet,
+	): boolean {
 		const junction = grafcet.getElementById<Junction>(junctionId);
 		if (!junction) return false;
 
-		// For START junctions, branches are on the source side
-		// For END junctions, branches are on the target side
-		const handleType: HandleType = junction.type.endsWith("-start") ? "source" : "target";
-		const connections = grafcet.getConnectionsByElementIdAndHandleType(junctionId, handleType);
-		return connections.length === junction.data.branchesOrder.length;
+		return junction.data.branchesOrder.every(
+			(branchId) =>
+				grafcet.getConnectionsByElementIdAndHandle(junctionId, branchId)
+					.length === 1,
+		);
 	}
 }

@@ -1,28 +1,76 @@
 import Project from "@/schemas/project/project.schema";
+import { SkippedProjectInfo } from "../project-deserialization";
+
+/**
+ * Résultat d'un `list()` : les projets lisibles, et la liste de ceux qui ont été écartés (forme
+ * illisible, version plus récente…) pour que l'UI puisse le signaler.
+ */
+export type ProjectListResult = {
+	projects: Project[];
+	skipped: SkippedProjectInfo[];
+};
 
 /**
  * Raison pour laquelle une sauvegarde a échoué.
  * - `quota-exceeded` : le stockage est plein (limite ~5 Mo en localStorage)
  * - `unavailable`    : le stockage est inaccessible (navigation privée, permissions)
+ * - `network`        : le serveur distant est injoignable, ou la session a expiré
+ * - `conflict`       : le projet cloud a été modifié par un autre appareil depuis son chargement
  * - `unknown`        : autre chose
  */
-export type SaveFailureReason = "quota-exceeded" | "unavailable" | "unknown";
+export type SaveFailureReason =
+	"quota-exceeded" | "unavailable" | "network" | "conflict" | "unknown";
 
-export type SaveResult = { ok: true } | { ok: false; reason: SaveFailureReason; cause?: unknown };
+export type SaveResult =
+	{ ok: true } | { ok: false; reason: SaveFailureReason; cause?: unknown };
+
+export type ShareResult =
+	{ ok: true; token: string } | { ok: false; message: string };
+
+/** Lieu de stockage d'un projet — pertinent uniquement pour `HybridProjectRepository`, qui
+ * seul a le choix entre les deux ; les autres implémentations l'ignorent. */
+export type StorageLocation = "local" | "cloud";
 
 /**
- * Accès au stockage des projets.
+ * Accès au stockage des projets — abstrait pour que le store ne dépende pas d'une
+ * implémentation (localStorage, Supabase, hybride).
  *
- * L'interface existe pour que le store ne dépende pas d'une implémentation : la feuille de
- * route prévoit une sauvegarde cloud, qui viendra s'y substituer sans toucher au store.
+ * Toutes les méthodes sont asynchrones, y compris l'implémentation localStorage (synchrone en
+ * interne).
  *
- * `save` retourne un résultat au lieu de lever : un échec de sauvegarde est un cas
- * fonctionnel normal (stockage plein, navigation privée) que l'interface doit pouvoir
- * annoncer honnêtement à l'utilisateur, pas une exception à avaler.
+ * `save`/`delete` retournent un `SaveResult` au lieu de lever : un échec (stockage plein,
+ * navigation privée, réseau) est un cas fonctionnel à annoncer à l'utilisateur, pas une
+ * exception à avaler.
  */
 export default interface ProjectRepository {
-	list(): Project[];
-	get(projectId: string): Project | null;
-	save(project: Project): SaveResult;
-	delete(projectId: string): SaveResult;
+	list(): Promise<ProjectListResult>;
+	get(projectId: string): Promise<Project | null>;
+	/**
+	 * `location` ne force un choix que pour un projet encore inconnu de ce repository (premier
+	 * enregistrement) — un projet déjà rangé quelque part garde son emplacement, quel que soit
+	 * `location`. Absent, le comportement par défaut (local pour un id inconnu) s'applique.
+	 */
+	save(project: Project, location?: StorageLocation): Promise<SaveResult>;
+	delete(projectId: string): Promise<SaveResult>;
+}
+
+/**
+ * Extension du repository pour les projets cloud partageables.
+ * Implémentée par `SupabaseProjectRepository` et `HybridProjectRepository` (qui délègue au cloud).
+ */
+export interface ShareableProjectRepository extends ProjectRepository {
+	getByShareToken(token: string): Promise<Project | null>;
+	getShareToken(projectId: string): Promise<string | null>;
+	createShareToken(projectId: string): Promise<ShareResult>;
+	deleteShareToken(projectId: string): Promise<SaveResult>;
+}
+
+export function isShareable(repo: unknown): repo is ShareableProjectRepository {
+	const candidate = repo as ShareableProjectRepository;
+	return (
+		typeof candidate.getByShareToken === "function" &&
+		typeof candidate.getShareToken === "function" &&
+		typeof candidate.createShareToken === "function" &&
+		typeof candidate.deleteShareToken === "function"
+	);
 }

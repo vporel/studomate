@@ -1,3 +1,4 @@
+import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepReferralSourceBuilder from "@/schemas/grafcet/builders/step-referral-source.builder";
@@ -10,7 +11,10 @@ describe("StepReferralSourceAnalyser", () => {
 
 	describe("analyseIsolated", () => {
 		it("returns no issues for valid target step number", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(5).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(5)
+				.build();
 
 			const issues = analyser.analyseIsolated(referral);
 
@@ -18,45 +22,62 @@ describe("StepReferralSourceAnalyser", () => {
 		});
 
 		it("detects empty target step number", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber("").build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber("")
+				.build();
 
 			const issues = analyser.analyseIsolated(referral);
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("vide");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_EMPTY");
 		});
 
 		it("allows empty target when allowEmptyContent is true", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber("").build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber("")
+				.build();
 
-			const issues = analyser.analyseIsolated(referral, { allowEmptyContent: true });
+			const issues = analyser.analyseIsolated(referral, {
+				allowEmptyContent: true,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
 
 		it("detects negative target step number", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(-1).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(-1)
+				.build();
 
 			const issues = analyser.analyseIsolated(referral);
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("detects decimal target step number", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(2.5).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(2.5)
+				.build();
 
 			const issues = analyser.analyseIsolated(referral);
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
-			expect(issues[0].message).toContain("entier positif");
+			expect(issues[0].code).toBe("STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER");
 		});
 
 		it("accepts zero as target step number", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(0).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(0)
+				.build();
 
 			const issues = analyser.analyseIsolated(referral);
 
@@ -66,7 +87,10 @@ describe("StepReferralSourceAnalyser", () => {
 
 	describe("analyseInContext", () => {
 		it("detects target step does not exist", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(99).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(99)
+				.build();
 			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
@@ -74,53 +98,27 @@ describe("StepReferralSourceAnalyser", () => {
 				.addStepReferralSource(referral)
 				.build();
 
-			const issues = analyser.analyseInContext(referral, grafcet, []);
+			const issues = analyser.analyseInContext(
+				referral,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const notExistIssue = issues.find((i) => i.message.includes("n'existe"));
+			const notExistIssue = issues.find((i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND");
 			expect(notExistIssue).toBeDefined();
 			expect(notExistIssue?.severity).toBe("error");
 		});
 
 		it("accepts when target step exists", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(1).build();
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(1)
+				.build();
 			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
-			const connection = new ConnectionBuilder()
-				.id("c1")
-				.source("step", "step-1", "source:successor")
-				.target("step-referral-source", "referral-1", "target:predecessor")
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("VRAI")
 				.build();
-			const grafcet = new GrafcetBuilder()
-				.id("grafcet-1")
-				.addStep(step1)
-				.addStepReferralSource(referral)
-				.addConnection(connection)
-				.build();
-
-			const issues = analyser.analyseInContext(referral, grafcet, []);
-
-			const notExistIssues = issues.filter((i) => i.message.includes("n'existe"));
-			expect(notExistIssues).toHaveLength(0);
-		});
-
-		it("detects when referral source has no predecessor", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(2).build();
-			const step2 = new StepBuilder().id("step-2").number(2).initial().build();
-			const grafcet = new GrafcetBuilder()
-				.id("grafcet-1")
-				.addStep(step2)
-				.addStepReferralSource(referral)
-				.build();
-
-			const issues = analyser.analyseInContext(referral, grafcet, []);
-
-			// Should have error about missing connection
-			expect(issues.length).toBeGreaterThan(0);
-		});
-
-		it("detects self-referral", () => {
-			const referral = new StepReferralSourceBuilder().id("referral-1").targetStepNumber(1).build();
-			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
-			const transition = new TransitionBuilder().id("trans-1").expression("VRAI").build();
 			const c1 = new ConnectionBuilder()
 				.id("c1")
 				.source("step", "step-1", "source:successor")
@@ -139,9 +137,77 @@ describe("StepReferralSourceAnalyser", () => {
 				.addConnections(c1, c2)
 				.build();
 
-			const issues = analyser.analyseInContext(referral, grafcet, []);
+			const issues = analyser.analyseInContext(
+				referral,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const selfRefIssue = issues.find((i) => i.message.includes("référer l'étape"));
+			const notExistIssues = issues.filter((i) =>
+				i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
+			);
+			expect(notExistIssues).toHaveLength(0);
+		});
+
+		it("detects when referral source has no predecessor", () => {
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(2)
+				.build();
+			const step2 = new StepBuilder().id("step-2").number(2).initial().build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step2)
+				.addStepReferralSource(referral)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				referral,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			// Should have error about missing connection
+			expect(issues.length).toBeGreaterThan(0);
+		});
+
+		it("detects self-referral", () => {
+			const referral = new StepReferralSourceBuilder()
+				.id("referral-1")
+				.targetStepNumber(1)
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("VRAI")
+				.build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:successor")
+				.target("transition", "trans-1", "target:predecessor")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("transition", "trans-1", "source:successor")
+				.target("step-referral-source", "referral-1", "target:predecessor")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step1)
+				.addTransition(transition)
+				.addStepReferralSource(referral)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				referral,
+				grafcet,
+				analyserEnvironment(),
+			);
+
+			const selfRefIssue = issues.find((i) =>
+				i.code === "STEP_REFERRAL_SELF_REFERENCE",
+			);
 			expect(selfRefIssue).toBeDefined();
 			expect(selfRefIssue?.severity).toBe("error");
 		});

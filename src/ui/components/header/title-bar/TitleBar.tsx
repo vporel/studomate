@@ -2,8 +2,7 @@
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import AppToolbar from "@/ui/components/app-toolbar/AppToolbar";
-import AnalyseButton from "./AnalyseButton";
-import ProjectModeSwitcher from "./ProjectModeSwitcher";
+import AccountStatus from "@/ui/components/auth/AccountStatus";
 import ProjectNameInput from "./ProjectNameInput";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
 
@@ -25,9 +24,11 @@ const TitleBar = () => {
 				<UnsavedChangesIndicator />
 			</FlexBox>
 			<ProjectNameInput />
-			<FlexBox centerVertical sx={{ width: 350, justifyContent: "flex-end", px: 1, gap: 1 }}>
-				<AnalyseButton />
-				<ProjectModeSwitcher />
+			<FlexBox
+				centerVertical
+				sx={{ width: 350, justifyContent: "flex-end", px: 1, gap: 1 }}
+			>
+				<AccountStatus />
 			</FlexBox>
 		</FlexBox>
 	);

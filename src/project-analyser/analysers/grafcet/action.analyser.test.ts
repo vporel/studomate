@@ -1,4 +1,8 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import { analyserEnvironment } from "@tests/utils/test-helpers";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
@@ -10,7 +14,8 @@ describe("ActionAnalyser", () => {
 	const analyser = new ActionAnalyser();
 
 	describe("analyseIsolated", () => {
-		it("returns warning for TEXT action", () => {
+		it("returns no issues for TEXT action", () => {
+			// Description littérale (niveau 1 GRAFCET), forme normale et attendue.
 			const action = new ActionBuilder()
 				.id("action-1")
 				.expression("Some text")
@@ -19,9 +24,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			expect(issues).toHaveLength(1);
-			expect(issues[0].severity).toBe("warning");
-			expect(issues[0].message).toContain("type TEXTE");
+			expect(issues).toHaveLength(0);
 		});
 
 		it("detects empty expression for non-TEXT action", () => {
@@ -34,7 +37,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const emptyExprIssue = issues.find((i) => i.message.includes("pas d'expression"));
+			const emptyExprIssue = issues.find((i) =>
+				i.code === "ACTION_EMPTY_EXPRESSION",
+			);
 			expect(emptyExprIssue).toBeDefined();
 			expect(emptyExprIssue?.severity).toBe("warning");
 		});
@@ -49,7 +54,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const identifierIssue = issues.find((i) => i.message.includes("simple référence"));
+			const identifierIssue = issues.find((i) =>
+				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
+			);
 			expect(identifierIssue).toBeDefined();
 			expect(identifierIssue?.severity).toBe("error");
 		});
@@ -64,7 +71,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const identifierIssues = issues.filter((i) => i.message.includes("simple référence"));
+			const identifierIssues = issues.filter((i) =>
+				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
+			);
 			expect(identifierIssues).toHaveLength(0);
 		});
 
@@ -78,7 +87,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssue = issues.find((i) => i.message.includes("affectation"));
+			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -93,7 +102,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssues = issues.filter((i) => i.message.includes("affectation"));
+			const assignIssues = issues.filter((i) =>
+				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
+			);
 			expect(assignIssues).toHaveLength(0);
 		});
 
@@ -107,7 +118,7 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssue = issues.find((i) => i.message.includes("affectation"));
+			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -122,7 +133,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const assignIssues = issues.filter((i) => i.message.includes("affectation"));
+			const assignIssues = issues.filter((i) =>
+				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
+			);
 			expect(assignIssues).toHaveLength(0);
 		});
 
@@ -136,7 +149,9 @@ describe("ActionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(action);
 
-			const modeIssue = issues.find((i) => i.message.includes("mode d'exécution"));
+			const modeIssue = issues.find((i) =>
+				i.code === "ACTION_INCOMPATIBLE_EXECUTION_MODE",
+			);
 			expect(modeIssue).toBeDefined();
 			expect(modeIssue?.severity).toBe("error");
 		});
@@ -165,7 +180,11 @@ describe("ActionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").build();
 
-			const issues = analyser.analyseInContext(action, grafcet, []);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment(),
+			);
 
 			expect(issues).toHaveLength(0);
 		});
@@ -179,11 +198,40 @@ describe("ActionAnalyser", () => {
 				.build();
 			const grafcet = new GrafcetBuilder().id("grafcet-1").build();
 
-			const issues = analyser.analyseInContext(action, grafcet, []);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment(),
+			);
 
-			const connectionIssue = issues.find((i) => i.message.includes("connectée à aucune étape"));
+			const connectionIssue = issues.find((i) =>
+				i.code === "ACTION_NOT_CONNECTED_TO_STEP",
+			);
 			expect(connectionIssue).toBeDefined();
 			expect(connectionIssue?.severity).toBe("error");
+		});
+
+		it("does not throw when the action is connected to a non-step element", () => {
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("sensor")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const connection = new ConnectionBuilder()
+				.id("c1")
+				.source("transition", "trans-1", "source:successor")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addAction(action)
+				.addConnections(connection)
+				.build();
+
+			expect(() =>
+				analyser.analyseInContext(action, grafcet, analyserEnvironment()),
+			).not.toThrow();
 		});
 
 		it("validates variable types in numeric assignment", () => {
@@ -212,9 +260,13 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [boolVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([boolVar]),
+			);
 
-			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
+			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
 			expect(typeIssue).toBeDefined();
 		});
 
@@ -244,9 +296,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
-			const typeIssues = issues.filter((i) => i.message.includes("incompatible"));
+			const typeIssues = issues.filter((i) =>
+				(i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH"),
+			);
 			expect(typeIssues).toHaveLength(0);
 		});
 
@@ -276,9 +334,15 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
-			const divisionIssue = issues.find((i) => i.message.includes("Division par zéro"));
+			const divisionIssue = issues.find((i) =>
+				i.code === "ACTION_INVALID_EXPRESSION",
+			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
 		});
@@ -309,10 +373,272 @@ describe("ActionAnalyser", () => {
 				.addConnection(c1)
 				.build();
 
-			const issues = analyser.analyseInContext(action, grafcet, [intVar]);
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([intVar]),
+			);
 
-			const typeIssue = issues.find((i) => i.message.includes("incompatible"));
+			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
 			expect(typeIssue).toBeDefined();
+		});
+
+		it("detects a boolean action writing to an input variable", () => {
+			const inputVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("sensor")
+				.zone("logic-input")
+				.type("BOOL")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("sensor")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([inputVar]),
+			);
+
+			const inputIssue = issues.find(
+				(i) => i.code === "ACTION_VARIABLE_IS_INPUT",
+			);
+			expect(inputIssue).toBeDefined();
+			expect(inputIssue?.severity).toBe("error");
+		});
+
+		it("rejects a numeric action assigning to an input variable (already caught upstream)", () => {
+			// SemanticAnalyserVisitor lève déjà sur une affectation vers une variable IN ; le
+			// message générique ACTION_INVALID_EXPRESSION suffit, ACTION_VARIABLE_IS_INPUT est
+			// réservé aux actions booléennes (référence directe, jamais interceptée en amont).
+			const inputVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("counter")
+				.zone("analog-input")
+				.type("INT")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("counter := 5")
+				.type(ActionType.NUMERIC_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([inputVar]),
+			);
+
+			expect(
+				issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION"),
+			).toBeDefined();
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT"),
+			).toBeUndefined();
+		});
+
+		it("accepts a boolean action writing to a memory variable", () => {
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
+
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_INPUT"),
+			).toBeUndefined();
+		});
+
+		it("detects a boolean action writing to a step variable X{n}", () => {
+			const x1 = new VariableBuilder()
+				.id("x1")
+				.mnemonic("X1")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("X1")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-2", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([x1]),
+			);
+
+			const readonlyIssue = issues.find(
+				(i) => i.code === "ACTION_STEP_VARIABLE_READONLY",
+			);
+			expect(readonlyIssue).toBeDefined();
+			expect(readonlyIssue?.severity).toBe("error");
+		});
+
+		it("detects a SET/RESET conflict on the same step for the same variable", () => {
+			const setAction = new ActionBuilder()
+				.id("action-set")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const resetAction = new ActionBuilder()
+				.id("action-reset")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.RESET)
+				.build();
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-set", "target:step")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-reset", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addActions(setAction, resetAction)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				setAction,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
+
+			const conflictIssue = issues.find(
+				(i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP",
+			);
+			expect(conflictIssue).toBeDefined();
+			expect(conflictIssue?.severity).toBe("error");
+		});
+
+		it("accepts SET and RESET on the same variable from different steps", () => {
+			const setAction = new ActionBuilder()
+				.id("action-set")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+			const resetAction = new ActionBuilder()
+				.id("action-reset")
+				.expression("flag")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.RESET)
+				.build();
+			const memoryVar = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("flag")
+				.zone("memory")
+				.type("BOOL")
+				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").number(2).build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-set", "target:step")
+				.build();
+			const c2 = new ConnectionBuilder()
+				.id("c2")
+				.source("step", "step-2", "source:action")
+				.target("action", "action-reset", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2)
+				.addActions(setAction, resetAction)
+				.addConnections(c1, c2)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				setAction,
+				grafcet,
+				analyserEnvironment([memoryVar]),
+			);
+
+			expect(
+				issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP"),
+			).toBeUndefined();
 		});
 	});
 });

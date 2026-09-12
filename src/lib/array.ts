@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 /**
  * Generate an array of numbers from start to end (the last number is excluded)

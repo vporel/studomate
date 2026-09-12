@@ -1,4 +1,7 @@
-import { ArithmeticOperator, ComparisonOperator } from "@/expression-language/operators";
+import {
+	ArithmeticOperator,
+	ComparisonOperator,
+} from "@/expression-language/operators";
 
 export interface Token {
 	type: TokenType;
@@ -52,14 +55,20 @@ export enum TokenType {
 	EOF = "EOF",
 }
 
-export const ARITHMETIC_OPERATOR_TOKENS_TYPES: Record<ArithmeticOperator, TokenType> = {
+export const ARITHMETIC_OPERATOR_TOKENS_TYPES: Record<
+	ArithmeticOperator,
+	TokenType
+> = {
 	"+": TokenType.PLUS,
 	"-": TokenType.MINUS,
 	"*": TokenType.MUL,
 	"/": TokenType.SLASH,
 };
 
-export const COMPARISON_OPERATOR_TOKENS_TYPES: Record<ComparisonOperator, TokenType> = {
+export const COMPARISON_OPERATOR_TOKENS_TYPES: Record<
+	ComparisonOperator,
+	TokenType
+> = {
 	"=": TokenType.EQ,
 	"!=": TokenType.NEQ,
 	"<": TokenType.LT,

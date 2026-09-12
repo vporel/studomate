@@ -1,4 +1,4 @@
-﻿import Grafcet from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 import Step from "../step.schema";
 import Transition from "../transition.schema";
@@ -12,10 +12,13 @@ export default class JunctionOrStartHelper {
 		junctionOrStartId: string,
 		grafcet: Grafcet,
 	): Array<Transition | null> {
-		const junctionOrStart = grafcet.junctionsOrStarts.find((j) => j.id === junctionOrStartId);
+		const junctionOrStart = grafcet.junctionsOrStarts[junctionOrStartId];
 		if (!junctionOrStart) return [];
 		return junctionOrStart.data.branchesOrder.map((branchId) => {
-			const conns = grafcet.getConnectionsByElementIdAndHandle(junctionOrStartId, branchId);
+			const conns = grafcet.getConnectionsByElementIdAndHandle(
+				junctionOrStartId,
+				branchId,
+			);
 			if (conns.length === 0) return null;
 			if (conns[0].target.type !== "transition") {
 				throw new Error(
@@ -23,7 +26,10 @@ export default class JunctionOrStartHelper {
 						`Found a connection to a ${conns[0].target.type} (id: ${conns[0].target.id}).`,
 				);
 			}
-			const transition = grafcet.getElementByIdAndType<Transition>(conns[0].target.id, "transition");
+			const transition = grafcet.getElementByIdAndType<Transition>(
+				conns[0].target.id,
+				"transition",
+			);
 			return transition || null;
 		});
 	}
@@ -31,11 +37,15 @@ export default class JunctionOrStartHelper {
 	/**
 	 * Returns the step that lead to the junction or start node
 	 */
-	static getPredecessorStep(junctionOrStartId: string, grafcet: Grafcet): Step | null {
-		const connectionsToJunctionOrStart = grafcet.getConnectionsByElementIdAndHandle(
-			junctionOrStartId,
-			JUNCTION_HANDLE_PIVOT,
-		);
+	static getPredecessorStep(
+		junctionOrStartId: string,
+		grafcet: Grafcet,
+	): Step | null {
+		const connectionsToJunctionOrStart =
+			grafcet.getConnectionsByElementIdAndHandle(
+				junctionOrStartId,
+				JUNCTION_HANDLE_PIVOT,
+			);
 		if (connectionsToJunctionOrStart.length === 0) return null;
 		if (connectionsToJunctionOrStart.length > 1)
 			throw new Error(
@@ -47,7 +57,10 @@ export default class JunctionOrStartHelper {
 					connectionsToJunctionOrStart[0].source.type,
 			);
 
-		const step = grafcet.getElementByIdAndType<Step>(connectionsToJunctionOrStart[0].source.id, "step");
+		const step = grafcet.getElementByIdAndType<Step>(
+			connectionsToJunctionOrStart[0].source.id,
+			"step",
+		);
 		return step || null;
 	}
 }

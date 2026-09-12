@@ -1,21 +1,29 @@
 "use client";
 
 import { APP_NAME } from "@/app-info";
+import { useT } from "@/ui/i18n/useT";
 import { Box, Typography } from "@mui/material";
 import { Fragment } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
+import ExercisePage from "./ExercisePage";
 import GrafcetPage from "./GrafcetPage";
+import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
+import PreferencesPage from "./PreferencesPage";
 import ProjectStartupPage from "./ProjectStartupPage";
+import SystemVariablesPage from "./SystemVariablesPage";
 import PagesTabBar from "./tab-bar/PagesTabBar";
 import VariablesPage, { VariablesPageData } from "./VariablesPage";
+import HmiPageView from "../hmi/HmiPageView";
+import HmiSimulationPageView from "../hmi/HmiSimulationPageView";
 
 const NoPage = () => {
+	const t = useT("pages.noPage");
 	const commands = [
-		{ label: "Ouvrir un projet", shortcut: ["Ctrl", "O"] },
-		{ label: "Enregistrer le projet", shortcut: ["Ctrl", "S"] },
-		{ label: "Nouveau grafcet", shortcut: ["Ctrl", "G"] },
+		{ label: t("openProject"), shortcut: ["Ctrl", "O"] },
+		{ label: t("saveProject"), shortcut: ["Ctrl", "S"] },
+		{ label: t("newGrafcet"), shortcut: ["Ctrl", "G"] },
 	];
 
 	return (
@@ -37,7 +45,12 @@ const NoPage = () => {
 					gap: 2,
 				}}
 			>
-				<Box component="img" src="/images/icon.png" alt="No page" sx={{ width: "100px" }} />
+				<Box
+					component="img"
+					src="/images/icon.png"
+					alt=""
+					sx={{ width: "100px" }}
+				/>
 				<Typography
 					variant="h2"
 					sx={{
@@ -51,11 +64,21 @@ const NoPage = () => {
 					{APP_NAME}
 				</Typography>
 				{commands.map(({ label, shortcut }) => (
-					<Box key={label} sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+					<Box
+						key={label}
+						sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+					>
 						<Typography textAlign="right" sx={{ width: "250px" }}>
 							{label}{" "}
 						</Typography>
-						<Box sx={{ display: "flex", gap: 0.5, width: "200px", alignItems: "center" }}>
+						<Box
+							sx={{
+								display: "flex",
+								gap: 0.5,
+								width: "200px",
+								alignItems: "center",
+							}}
+						>
 							{shortcut.map((el, index) => {
 								return (
 									<Fragment key={el}>
@@ -84,6 +107,8 @@ const NoPage = () => {
 
 const PagesView = () => {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const { pagesData, pagesOrder } = useProjectStore(
 		useShallow((state) => ({
 			pagesData: state.pagesData,
@@ -114,12 +139,42 @@ const PagesView = () => {
 								return <ProjectStartupPage key={id} />;
 							case "project-properties":
 								return <ProjectPropertiesPage key={id} />;
+							case "preferences":
+								return <PreferencesPage key={id} />;
+							case "exercise":
+								return <ExercisePage key={id} />;
 							case "variables":
-								return <VariablesPage key={id} pageData={pageData as VariablesPageData} />;
+								return (
+									<VariablesPage
+										key={id}
+										pageData={pageData as VariablesPageData}
+									/>
+								);
+							case "system-variables":
+								return <SystemVariablesPage key={id} />;
 							case "grafcet":
 								return (
-									<GrafcetPage key={id} initialGrafcet={grafcetsManager.getGrafcet(id)} />
+									<GrafcetPage
+										key={id}
+										initialGrafcet={grafcetsManager.getProgramOrThrow(id)}
+									/>
 								);
+							case "ladder":
+								return (
+									<LadderPage
+										key={id}
+										initialLadder={laddersManager.getProgramOrThrow(id)}
+									/>
+								);
+							case "hmi":
+								return (
+									<HmiPageView
+										key={id}
+										initialHmiPage={hmiManager.getHmiPageOrThrow(id)}
+									/>
+								);
+							case "hmi-simulation":
+								return <HmiSimulationPageView key={id} />;
 							default:
 								return null;
 						}

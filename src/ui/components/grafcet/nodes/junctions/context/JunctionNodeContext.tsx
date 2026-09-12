@@ -2,10 +2,16 @@ import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import useBarsSelection from "./useBarsSelection";
 import useBranchActions from "./useBranchActions";
-import useBranchAddButtonsPositions from "./useBranchAddButtonsPositions";
+import useBranchAddButtonsPositions, {
+	BranchAddButton,
+} from "./useBranchAddButtonsPositions";
 import useContextMenuEventsHandler from "./useContextMenuEventsHandler";
 
 type JunctionNodeContextType = {
+	nodeId: string;
+	width: number;
+	nodeX: number;
+	data: JunctionData;
 	pivotSelected: boolean;
 	selectedBranchId: string | null;
 	selectPivot: () => void;
@@ -13,11 +19,15 @@ type JunctionNodeContextType = {
 	selectPreviousBranch: () => void;
 	selectNextBranch: () => void;
 	clearSelection: () => void;
-	branchAddButtonsPositions: number[];
-	onBranchAdd: (buttonIndex: number) => void;
+	branchAddButtonsPositions: BranchAddButton[];
+	onBranchAdd: (insertIndex: number) => void;
 };
 
 const JunctionNodeContext = createContext<JunctionNodeContextType>({
+	nodeId: "",
+	width: 0,
+	nodeX: 0,
+	data: { pivotPosition: 0, branches: {}, branchesOrder: [] },
 	pivotSelected: false,
 	selectedBranchId: null,
 	selectPivot: () => {},
@@ -32,10 +42,14 @@ const JunctionNodeContext = createContext<JunctionNodeContextType>({
 export const JunctionNodeContextProvider = ({
 	id,
 	data,
+	width,
+	nodeX,
 	children,
 }: {
 	id: string;
 	data: JunctionData;
+	width: number;
+	nodeX: number;
 	children: ReactNode;
 }) => {
 	const {
@@ -46,14 +60,18 @@ export const JunctionNodeContextProvider = ({
 		selectPreviousBranch,
 		selectNextBranch,
 		clearSelection,
-	} = useBarsSelection(data.branchesOrder);
-	const { add: onBranchAdd } = useBranchActions(id, data);
-	const branchAddButtonsPositions = useBranchAddButtonsPositions(data);
+	} = useBarsSelection(id, data.branchesOrder);
+	const { add: onBranchAdd } = useBranchActions(id);
+	const branchAddButtonsPositions = useBranchAddButtonsPositions(data, width);
 
 	useContextMenuEventsHandler(id, selectPivot, selectBranch);
 
 	const contextValue = useMemo(
 		() => ({
+			nodeId: id,
+			width,
+			nodeX,
+			data,
 			pivotSelected,
 			selectedBranchId,
 			selectPivot,
@@ -65,6 +83,10 @@ export const JunctionNodeContextProvider = ({
 			onBranchAdd,
 		}),
 		[
+			id,
+			width,
+			nodeX,
+			data,
 			selectBranch,
 			selectPivot,
 			selectPreviousBranch,
@@ -77,7 +99,11 @@ export const JunctionNodeContextProvider = ({
 		],
 	);
 
-	return <JunctionNodeContext.Provider value={contextValue}>{children}</JunctionNodeContext.Provider>;
+	return (
+		<JunctionNodeContext.Provider value={contextValue}>
+			{children}
+		</JunctionNodeContext.Provider>
+	);
 };
 
 export const useJunctionNodeContext = () => useContext(JunctionNodeContext);

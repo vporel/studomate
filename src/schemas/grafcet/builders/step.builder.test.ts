@@ -10,8 +10,8 @@ describe("StepBuilder", () => {
 		expect(step.type).toBe("step");
 		expect(step.data.number).toBe("");
 		expect(step.data.initial).toBe(false);
-		expect(step.data.width).toBe(Step.DEFAULT_DIMENSIONS.width);
-		expect(step.data.height).toBe(Step.DEFAULT_DIMENSIONS.height);
+		expect(step.size.width).toBe(Step.DEFAULT_DIMENSIONS.width);
+		expect(step.size.height).toBe(Step.DEFAULT_DIMENSIONS.height);
 		expect(step.position).toEqual({ x: 0, y: 0 });
 	});
 
@@ -36,8 +36,8 @@ describe("StepBuilder", () => {
 	it("builds a step with custom dimensions", () => {
 		const step = new StepBuilder().id("step-1").dimensions(60, 60).build();
 
-		expect(step.data.width).toBe(60);
-		expect(step.data.height).toBe(60);
+		expect(step.size.width).toBe(60);
+		expect(step.size.height).toBe(60);
 	});
 
 	it("builds a step with custom position", () => {
@@ -58,8 +58,8 @@ describe("StepBuilder", () => {
 		expect(step.id).toBe("step-1");
 		expect(step.data.number).toBe(10);
 		expect(step.data.initial).toBe(true);
-		expect(step.data.width).toBe(50);
-		expect(step.data.height).toBe(50);
+		expect(step.size.width).toBe(50);
+		expect(step.size.height).toBe(50);
 		expect(step.position).toEqual({ x: 150, y: 250 });
 	});
 

@@ -45,7 +45,8 @@ describe("ProjectCompiler", () => {
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-0",
@@ -63,14 +64,27 @@ describe("ProjectCompiler", () => {
 					],
 				]),
 				stepsMemos: new Map([
-					["step-0", { variable: memo0, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") }],
-					["step-1", { variable: memo1, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") }],
+					[
+						"step-0",
+						{
+							variable: memo0,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
+					],
+					[
+						"step-1",
+						{
+							variable: memo1,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
+					],
 				]),
 				transitions: new Map([
 					[
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -92,17 +106,24 @@ describe("ProjectCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();
-			expect(result.result!.routines).toHaveLength(1);
+			// 1 routine de grafcet + la routine des mémos d'étape + la routine d'initialisation.
+			expect(result.result!.routines).toHaveLength(3);
 			expect(result.result!.routines[0].getNodes().length).toBeGreaterThan(0);
 		});
 
-		it("performs semantic analysis on routines", () => {
-			const var1 = new PLCVariable("var-1", "X0", "memory", "boolean");
-			const var2 = new PLCVariable("var-2", "X1", "memory", "boolean");
+		it("ajoute une routine d'observation en dernier et remplit l'index des réceptivités", () => {
+			const obsVar = new PLCVariable(
+				"obs-1",
+				"_GeneratedMemo_9",
+				"memory",
+				"boolean",
+			);
+			const x0 = new PLCVariable("var-1", "X0", "memory", "boolean");
+			const x1 = new PLCVariable("var-2", "X1", "memory", "boolean");
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
 				steps: new Map([
 					[
 						"step-0",
@@ -122,11 +143,92 @@ describe("ProjectCompiler", () => {
 				stepsMemos: new Map([
 					[
 						"step-0",
-						{ variable: memo0, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") },
+						{
+							variable: memo0,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
 					],
 					[
 						"step-1",
-						{ variable: memo1, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") },
+						{
+							variable: memo1,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
+					],
+				]),
+				transitions: new Map(),
+				actions: new Map(),
+				transitionObservations: new Map([
+					[
+						"trans-1",
+						{
+							variable: obsVar,
+							node: IdentifiersBuilder.buildIdentifierNode("X0"),
+						},
+					],
+				]),
+			};
+			const preCompiledProject: PreCompiledProject = {
+				variables: [x0, x1, memo0, memo1, obsVar],
+				programs: { "grafcet-1": preCompiledGrafcet },
+			};
+
+			const result = ProjectCompiler.compile(preCompiledProject);
+
+			expect(result.errors).toEqual([]);
+			expect(result.result!.evaluableExpressionVariableIds).toEqual({
+				"trans-1": "obs-1",
+			});
+			const observationRoutine =
+				result.result!.routines[result.result!.routines.length - 1];
+			expect(observationRoutine.getNodes()).toHaveLength(1);
+			expect(observationRoutine.getNodes()[0].type).toBe("ASSIGN_STATEMENT");
+		});
+
+		it("n'ajoute pas de routine d'observation quand aucune transition n'est observable", () => {
+			const result = ProjectCompiler.compile({ variables: [], programs: {} });
+			expect(result.result!.routines).toEqual([]);
+			expect(result.result!.evaluableExpressionVariableIds).toEqual({});
+		});
+
+		it("performs semantic analysis on routines", () => {
+			const var1 = new PLCVariable("var-1", "X0", "memory", "boolean");
+			const var2 = new PLCVariable("var-2", "X1", "memory", "boolean");
+			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
+			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
+			const preCompiledGrafcet: PreCompiledGrafcet = {
+				type: "grafcet",
+				transitionObservations: new Map(),
+				steps: new Map([
+					[
+						"step-0",
+						{
+							node: IdentifiersBuilder.buildIdentifierNode("X0"),
+							initial: true,
+						},
+					],
+					[
+						"step-1",
+						{
+							node: IdentifiersBuilder.buildIdentifierNode("X1"),
+							initial: false,
+						},
+					],
+				]),
+				stepsMemos: new Map([
+					[
+						"step-0",
+						{
+							variable: memo0,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
+					],
+					[
+						"step-1",
+						{
+							variable: memo1,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
 					],
 				]),
 				transitions: new Map([
@@ -134,6 +236,7 @@ describe("ProjectCompiler", () => {
 						"trans-1",
 						{
 							node: LiteralsBuilder.buildBooleanNode(true),
+							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
@@ -162,7 +265,8 @@ describe("ProjectCompiler", () => {
 
 			// Neither step is initial → initializeSteps throws, which is caught as a compilation error
 			const preCompiledGrafcet: PreCompiledGrafcet = {
-		type: "grafcet",
+				type: "grafcet",
+				transitionObservations: new Map(),
 				steps: new Map([
 					[
 						"step-0",
@@ -182,11 +286,17 @@ describe("ProjectCompiler", () => {
 				stepsMemos: new Map([
 					[
 						"step-0",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_0") },
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_0"),
+						},
 					],
 					[
 						"step-1",
-						{ variable: {} as any, node: IdentifiersBuilder.buildIdentifierNode("_memo_1") },
+						{
+							variable: {} as any,
+							node: IdentifiersBuilder.buildIdentifierNode("_memo_1"),
+						},
 					],
 				]),
 				transitions: new Map(),

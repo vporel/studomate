@@ -1,15 +1,20 @@
 "use client";
 
-import FolderIcon from "@mui/icons-material/Folder";
+import FolderIcon from "@/ui/components/icons/FolderIcon";
 import { Box } from "@mui/material";
 import { SimpleTreeView } from "@mui/x-tree-view";
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
+import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
-import ExplorerGrafcetsItems from "./ExplorerGrafcetsItems";
 import ExplorerHeader from "./ExplorerHeader";
+import ExplorerProgramsItems from "./ExplorerProgramsItems";
+import ExplorerSystemBlockInstancesItems from "./ExplorerSystemBlockInstancesItems";
+import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
+import ExplorerHmiItems from "./ExplorerHmiItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
 import useExplorerContextMenu from "./useExplorerContextMenu";
+import { useProjectStore } from "../projects/ProjectContext";
 
 export const treeItemStyles: CustomTreeItemStyles = {
 	root: {
@@ -28,7 +33,18 @@ export const treeItemStyles: CustomTreeItemStyles = {
 };
 
 const Explorer = ({ style }: { style?: React.CSSProperties }) => {
+	const t = useT("explorer");
 	const explorerRef = useRef<HTMLDivElement>(null);
+	const project = useProjectStore((state) => state.project);
+	const onLadder = useProjectStore(
+		(state) => state.activeScopeType === "ladder",
+	);
+	const hasSystemBlockInstances = useMemo(
+		() =>
+			(project?.getAllTimerBlockElements().length ?? 0) > 0 ||
+			(project?.getAllCounterBlockElements().length ?? 0) > 0,
+		[project],
+	);
 	const {
 		visible: contextMenuVisible,
 		element: contextMenuElement,
@@ -53,22 +69,75 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			}}
 		>
 			<ExplorerHeader />
-			<SimpleTreeView defaultExpandedItems={["variables", "grafcets"]}>
+			<SimpleTreeView
+				aria-label={t("ariaLabel")}
+				defaultExpandedItems={["variables", "programs", "hmi"]}
+			>
 				<CustomTreeItem
 					itemId="variables"
-					label="Variables"
+					label={t("sections.variables")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
 				>
-					<ExplorerVariablesItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					<ExplorerVariablesItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
 				</CustomTreeItem>
 				<CustomTreeItem
-					itemId="grafcets"
-					label="Grafcets"
+					itemId="programs"
+					label={t("sections.programs")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}
+					onContextMenu={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						openContextMenu(e, { type: "programs-folder" });
+					}}
 				>
-					<ExplorerGrafcetsItems styles={treeItemStyles} onContextMenu={openContextMenu} />
+					<ExplorerProgramsItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
+				</CustomTreeItem>
+				{hasSystemBlockInstances && (
+					<CustomTreeItem
+						itemId="system-block-instances"
+						label={t("sections.blockInstances")}
+						IconComponent={FolderIcon}
+						styles={treeItemStyles}
+					>
+						<ExplorerSystemBlockInstancesItems
+							styles={treeItemStyles}
+							onContextMenu={openContextMenu}
+						/>
+					</CustomTreeItem>
+				)}
+				{onLadder && (
+					<CustomTreeItem
+						itemId="system-blocks"
+						label={t("sections.systemBlocks")}
+						IconComponent={FolderIcon}
+						styles={treeItemStyles}
+					>
+						<ExplorerSystemBlocksItems styles={treeItemStyles} />
+					</CustomTreeItem>
+				)}
+				<CustomTreeItem
+					itemId="hmi"
+					label={t("sections.hmi")}
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+					onContextMenu={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						openContextMenu(e, { type: "hmi-folder" });
+					}}
+				>
+					<ExplorerHmiItems
+						styles={treeItemStyles}
+						onContextMenu={openContextMenu}
+					/>
 				</CustomTreeItem>
 			</SimpleTreeView>
 			{explorerRef.current && (

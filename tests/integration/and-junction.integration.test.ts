@@ -1,13 +1,18 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("AND Junction Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Divergence ET : pipeline compilation", () => {
@@ -24,11 +29,13 @@ describe("AND Junction Integration Tests", () => {
 
 			expect(pipeline.analysis.issues).toEqual([]);
 			// X0, X1, X2 step variables
-			expect(pipeline.analysis.stepsVariables).toHaveLength(3);
+			expect(pipeline.analysis.generatedVariables).toHaveLength(3);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			expect(pipeline.compilation.result!.routines).toHaveLength(1);
+			// 1 grafcet + la routine des mémos d'étape + la routine d'initialisation + le Main
+			// (voir Project.createMain) + la routine d'observation des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(5);
 		});
 
 		it("compiles without actions on branches", () => {
@@ -67,7 +74,7 @@ describe("AND Junction Integration Tests", () => {
 			// I0=TRUE → divergence fires, both step1 + step2 active, convergence blocked (NON I0=FALSE)
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			// Both X1 and X2 must be active at the same time (AND semantics)
@@ -79,6 +86,46 @@ describe("AND Junction Integration Tests", () => {
 			expectVariableValue(plc!, "Q1", true);
 
 			plc!.stop();
+		});
+
+		it("divergence/convergence ET à 3 branches : les 3 s'activent ensemble, convergence quand les 3 sont actives", async () => {
+			const i0 = VariableFactory.createLogicInput("I0");
+			const q0 = VariableFactory.createLogicOutput("Q0");
+			const q1 = VariableFactory.createLogicOutput("Q1");
+			const q2 = VariableFactory.createLogicOutput("Q2");
+
+			const grafcet = GrafcetFactory.createAndDivergenceCycleN("grafcet-3", "I0", "NON I0", ["Q0", "Q1", "Q2"]);
+			const project = ProjectFactory.create([i0, q0, q1, q2], [grafcet], "AND 3 branches");
+
+			let cycleError: Error | null = null;
+			const plc = compileToPLC(project, 10, Dialect.FR, { onCycleError: (e) => { cycleError = e; } })!;
+			expect(plc).not.toBeNull();
+
+			plc.setPhysicalInputValueByName("I0", true);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(200);
+			if (cycleError) throw cycleError;
+
+			// Les 3 branches actives simultanément (sémantique ET).
+			expectVariableValue(plc, "X1", true);
+			expectVariableValue(plc, "X2", true);
+			expectVariableValue(plc, "X3", true);
+			expectVariableValue(plc, "Q0", true);
+			expectVariableValue(plc, "Q1", true);
+			expectVariableValue(plc, "Q2", true);
+
+			// Convergence : NON I0 devient vraie, les 3 étapes sont actives → franchissement.
+			plc.setPhysicalInputValueByName("I0", false);
+			await jest.advanceTimersByTimeAsync(200);
+			plc.stop();
+			if (cycleError) throw cycleError;
+			expectVariableValue(plc, "X0", true);
+			expectVariableValue(plc, "X1", false);
+			expectVariableValue(plc, "X2", false);
+			expectVariableValue(plc, "X3", false);
+			expectVariableValue(plc, "Q0", false);
+			expectVariableValue(plc, "Q1", false);
+			expectVariableValue(plc, "Q2", false);
 		});
 
 		it("converges back to step0 only when both branches are active", async () => {
@@ -100,14 +147,14 @@ describe("AND Junction Integration Tests", () => {
 			// Phase 1: I0=TRUE → both branches active
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X1", true);
 			expectVariableValue(plc!, "X2", true);
 
 			// Phase 2: I0=FALSE → trans-conv = NON I0 = TRUE, X1 AND X2 both active → convergence fires
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(200);
+			await jest.advanceTimersByTimeAsync(200);
 			if (cycleError) throw cycleError;
 
 			// Step0 re-activates, both branches deactivate (CONTINUOUS cleanup)
@@ -139,7 +186,7 @@ describe("AND Junction Integration Tests", () => {
 			// I0=FALSE: trans-div = FALSE → step0 stays active, branches never activate
 			plc!.setPhysicalInputValueByName("I0", false);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			expectVariableValue(plc!, "X0", true);
@@ -178,7 +225,7 @@ describe("AND Junction Integration Tests", () => {
 
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 

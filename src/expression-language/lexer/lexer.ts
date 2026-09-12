@@ -1,6 +1,6 @@
 import { ARITHMETIC_OPERATORS, ArithmeticOperator } from "../operators";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
-import InvalidStringEndQuoteException from "./exceptions/invalid-string-end-quote.exception";
+import InvalidKeywordException from "./exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
 import {
 	isDigit,
@@ -8,10 +8,17 @@ import {
 	isLetterOrUnderscoreOrDigit,
 	isQuote,
 } from "@/expression-language/alphabet";
-import { getKeywordByString, getKeywordsStringsForDialect } from "@/expression-language/keywords";
+import {
+	getKeywordByString,
+	getKeywordsStringsForDialect,
+} from "@/expression-language/keywords";
 import { Dialect } from "@/expression-language/dialect.enum";
 import LexerHelper from "./lexer.helper";
-import { ARITHMETIC_OPERATOR_TOKENS_TYPES, Token, TokenType } from "../tokens/tokens";
+import {
+	ARITHMETIC_OPERATOR_TOKENS_TYPES,
+	Token,
+	TokenType,
+} from "../tokens/tokens";
 
 export class Lexer {
 	dialect: Dialect;
@@ -110,7 +117,10 @@ export class Lexer {
 					value += ".";
 					position++;
 					if (position >= input.length || !isDigit(input[position])) {
-						throw new InvalidCharacterException(input[position] || "end of input", position);
+						throw new InvalidCharacterException(
+							input[position] || "end of input",
+							position,
+						);
 					}
 					while (position < input.length && isDigit(input[position])) {
 						value += input[position];
@@ -119,7 +129,10 @@ export class Lexer {
 				}
 				//Duration
 				const durationMatch = input.slice(position).match(/^(ms|s|m|h|d)/);
-				if (durationMatch) {
+				const afterUnit = durationMatch
+					? input[position + durationMatch[0].length] ?? ""
+					: "";
+				if (durationMatch && !isLetterOrUnderscoreOrDigit(afterUnit)) {
 					const unit = durationMatch[0];
 					tokens.push({
 						type: TokenType.DURATION,
@@ -147,15 +160,10 @@ export class Lexer {
 				}
 				if (position >= input.length) {
 					throw new UnterminatedStringException(quoteType, start);
-				} else {
-					if (input[position] === quoteType) {
-						position++;
-						tokens.push({ type: TokenType.STRING, value, position: start });
-						continue;
-					} else {
-						throw new InvalidStringEndQuoteException(input[position], position);
-					}
 				}
+				position++;
+				tokens.push({ type: TokenType.STRING, value, position: start });
+				continue;
 			}
 
 			//Identifiers and keywords
@@ -163,7 +171,10 @@ export class Lexer {
 				const start = position;
 				let value = char;
 				position++;
-				while (position < input.length && isLetterOrUnderscoreOrDigit(input[position])) {
+				while (
+					position < input.length &&
+					isLetterOrUnderscoreOrDigit(input[position])
+				) {
 					value += input[position];
 					position++;
 				}
@@ -175,6 +186,7 @@ export class Lexer {
 						tokens.push({ type: tokenType, value, position: start });
 						continue;
 					}
+					throw new InvalidKeywordException(value, start);
 				} else {
 					tokens.push({ type: TokenType.IDENTIFIER, value, position: start });
 				}

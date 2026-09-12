@@ -5,7 +5,7 @@ import GrafcetTool from "./GrafcetTool";
 
 const CommentTool = ({ disabled }: { disabled?: boolean }) => {
 	return (
-		<GrafcetTool type="comment" disabled={disabled}>
+		<GrafcetTool element={{ type: "comment" }} disabled={disabled}>
 			<Box
 				style={{
 					width: "60px",

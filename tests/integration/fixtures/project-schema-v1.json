@@ -1,0 +1,125 @@
+{
+	"id": "legacy-project-v1",
+	"schemaVersion": 1,
+	"name": "Legacy project (schema v1)",
+	"creationDate": "2024-06-01T00:00:00.000Z",
+	"lastModificationDate": "2024-06-02T00:00:00.000Z",
+	"author": "Legacy Author",
+	"dialect": 0,
+	"variables": [
+		{
+			"id": "input-i0",
+			"mnemonic": "I0",
+			"zone": "logic-input",
+			"type": "BOOL",
+			"address": "",
+			"comment": ""
+		},
+		{
+			"id": "output-q0",
+			"mnemonic": "Q0",
+			"zone": "logic-output",
+			"type": "BOOL",
+			"address": "",
+			"comment": ""
+		}
+	],
+	"programs": {
+		"legacy-main": {
+			"id": "legacy-main",
+			"name": "Main",
+			"type": "ladder",
+			"role": "main",
+			"sections": [
+				{ "id": "legacy-main-section", "title": "", "description": "", "elements": [], "connections": [] }
+			]
+		},
+		"legacy-grafcet": {
+			"id": "legacy-grafcet",
+			"name": "Legacy cycle",
+			"type": "grafcet",
+			"format": "A4_PORTRAIT",
+			"steps": {
+				"s0": {
+					"id": "s0",
+					"data": { "number": 0, "initial": true },
+					"position": { "x": 100, "y": 100 },
+					"size": { "width": 40, "height": 40 },
+					"type": "step"
+				},
+				"s1": {
+					"id": "s1",
+					"data": { "number": 1, "initial": false },
+					"position": { "x": 100, "y": 200 },
+					"size": { "width": 40, "height": 40 },
+					"type": "step"
+				}
+			},
+			"actions": {
+				"a0": {
+					"id": "a0",
+					"data": { "expression": "Q0", "type": "boolean_variable", "executionMode": "continuous" },
+					"position": { "x": 200, "y": 100 },
+					"size": { "width": 100, "height": 40 },
+					"type": "action"
+				}
+			},
+			"transitions": {
+				"t0": {
+					"id": "t0",
+					"data": { "expression": "I0" },
+					"position": { "x": 100, "y": 150 },
+					"size": { "width": 40, "height": 30 },
+					"type": "transition"
+				},
+				"t1": {
+					"id": "t1",
+					"data": { "expression": "NON I0" },
+					"position": { "x": 100, "y": 250 },
+					"size": { "width": 40, "height": 30 },
+					"type": "transition"
+				}
+			},
+			"stepsReferralsSources": {},
+			"stepsReferralsTargets": {},
+			"junctionsAndStarts": {},
+			"junctionsAndEnds": {},
+			"junctionsOrStarts": {},
+			"junctionsOrEnds": {},
+			"comments": {},
+			"connections": [
+				{
+					"id": "c0",
+					"source": { "type": "step", "id": "s0", "handle": "source:successor" },
+					"target": { "type": "transition", "id": "t0", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c1",
+					"source": { "type": "transition", "id": "t0", "handle": "source:successor" },
+					"target": { "type": "step", "id": "s1", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c2",
+					"source": { "type": "step", "id": "s1", "handle": "source:successor" },
+					"target": { "type": "transition", "id": "t1", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c3",
+					"source": { "type": "transition", "id": "t1", "handle": "source:successor" },
+					"target": { "type": "step", "id": "s0", "handle": "target:predecessor" },
+					"data": { "points": [] }
+				},
+				{
+					"id": "c4",
+					"source": { "type": "step", "id": "s0", "handle": "source:action" },
+					"target": { "type": "action", "id": "a0", "handle": "target:step" },
+					"data": { "points": [] }
+				}
+			]
+		}
+	},
+	"hmiPages": {}
+}

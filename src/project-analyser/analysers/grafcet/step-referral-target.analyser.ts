@@ -1,12 +1,14 @@
 import StepReferralSourceHelper from "@/schemas/grafcet/helpers/step-referral-source.helper";
 import StepReferralTargetHelper from "@/schemas/grafcet/helpers/step-referral-target.helper";
 import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
-import Variable from "@/schemas/variable/variable.schema";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import ElementAnalyser, { ElementAnalyseIsolatedOptions } from "./element.analyser";
+import GrafcetElementAnalyser, {
+	ElementAnalyseIsolatedOptions,
+} from "./element.analyser";
 
-export default class StepReferralTargetAnalyser extends ElementAnalyser<StepReferralTarget> {
+export default class StepReferralTargetAnalyser extends GrafcetElementAnalyser<StepReferralTarget> {
 	/**
 	 * Rules that apply to the step's own data, independently of the grafcet.
 	 */
@@ -15,7 +17,10 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };
+		const source = {
+			sourceType: "grafcet-step-referral-target" as const,
+			sourceId: stepReferral.id,
+		};
 
 		if (
 			stepReferral.data.sourceStepNumber === "" ||
@@ -28,19 +33,20 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 						"error",
 						"STEP_REFERRAL_NUMBER_EMPTY",
 						source,
-						"Le numéro de l'étape source est vide, liaison non fonctionnelle.",
 					),
 				);
 			}
 			return issues;
 		}
-		if (!Number.isInteger(stepReferral.data.sourceStepNumber) || stepReferral.data.sourceStepNumber < 0) {
+		if (
+			!Number.isInteger(stepReferral.data.sourceStepNumber) ||
+			stepReferral.data.sourceStepNumber < 0
+		) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
 					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
 					source,
-					"Le numéro de l'étape doit être un entier positif.",
 				),
 			);
 		}
@@ -54,85 +60,96 @@ export default class StepReferralTargetAnalyser extends ElementAnalyser<StepRefe
 	analyseInContext(
 		stepReferral: StepReferralTarget,
 		grafcet: Grafcet,
-		_variables: Variable[],
+		_environment: Environment,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
-		const source = { sourceType: "grafcet-step-referral-target" as const, sourceId: stepReferral.id };
+		const source = {
+			sourceType: "grafcet-step-referral-target" as const,
+			sourceId: stepReferral.id,
+		};
 
 		//Check that the referred step number exists in the grafcet
-		const referredStep = grafcet.steps.find((s) => s.data.number === stepReferral.data.sourceStepNumber);
+		const referredStep = Object.values(grafcet.steps).find(
+			(s) => s.data.number === stepReferral.data.sourceStepNumber,
+		);
 		if (!referredStep) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
 					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 					source,
-					`Aucune étape avec le numéro ${stepReferral.data.sourceStepNumber} n'existe dans le grafcet.`,
+					{ stepNumber: stepReferral.data.sourceStepNumber as number },
 				),
 			);
 		} else {
-			if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
-						source,
-						`Connexion manquante en aval,`,
-					),
-				);
-			}
-			const stepReferralSource = StepReferralTargetHelper.getStepReferralSource(
-				stepReferral.id,
-				grafcet,
-			);
-			if (!stepReferralSource) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_NO_UPSTREAM_TENANT",
-						source,
-						`Aucun tenant directement relié à l'étape source (sans jonction par exemple).`,
-					),
-				);
-			} else {
-				const predecessorSteps = StepReferralSourceHelper.getPredecessorSteps(
-					stepReferralSource.id,
-					grafcet,
-				);
-				if (predecessorSteps.length === 0) {
+			// Une connexion structurellement invalide (type inattendu) est déjà relevée par la
+			// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
+			// pas rompre le contrat "l'analyse ne lève jamais".
+			try {
+				if (!StepReferralTargetHelper.getTargetStep(stepReferral.id, grafcet)) {
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
-							"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
+							"STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
 							source,
-							`Le tenant n'est précédé par aucune étape.`,
 						),
 					);
-					return issues;
 				}
-				if (predecessorSteps.length > 1) {
+				const stepReferralSource =
+					StepReferralTargetHelper.getStepReferralSource(
+						stepReferral.id,
+						grafcet,
+					);
+				if (!stepReferralSource) {
 					issues.push(
 						new ProjectAnalyserIssue(
 							"error",
-							"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
+							"STEP_REFERRAL_NO_UPSTREAM_TENANT",
 							source,
-							`Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.`,
 						),
 					);
-					return issues;
-				}
-				const sourceStep = predecessorSteps[0];
+				} else {
+					const predecessorSteps = StepReferralSourceHelper.getPredecessorSteps(
+						stepReferralSource.id,
+						grafcet,
+					);
+					if (predecessorSteps.length === 0) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_TENANT_NO_PREDECESSOR",
+								source,
+							),
+						);
+						return issues;
+					}
+					if (predecessorSteps.length > 1) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
+								source,
+							),
+						);
+						return issues;
+					}
+					const sourceStep = predecessorSteps[0];
 
-				if (!sourceStep || sourceStep.data.number !== stepReferral.data.sourceStepNumber) {
-					issues.push(
-						new ProjectAnalyserIssue(
-							"error",
-							"STEP_REFERRAL_SOURCE_MISMATCH",
-							source,
-							`L'étape source référencée ne correspond pas à l'étape liée au tenant.`,
-						),
-					);
+					if (
+						!sourceStep ||
+						sourceStep.data.number !== stepReferral.data.sourceStepNumber
+					) {
+						issues.push(
+							new ProjectAnalyserIssue(
+								"error",
+								"STEP_REFERRAL_SOURCE_MISMATCH",
+								source,
+							),
+						);
+					}
 				}
+			} catch {
+				return issues;
 			}
 		}
 

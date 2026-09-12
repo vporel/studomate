@@ -5,11 +5,17 @@ import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
 import mitt from "mitt";
 import { ExplorerContextMenuProps } from "./explorer-context-menu";
 import { ExplorerContextMenuEventsOut } from "./explorer-context-menu-events";
+import useBlockInstanceMenuItems from "./useBlockInstanceMenuItems";
 import useGrafcetMenuItems from "./useGrafcetMenuItems";
+import useLadderMenuItems from "./useLadderMenuItems";
 import usePaneMenuItems from "./usePaneMenuItems";
+import useProgramsFolderMenuItems from "./useProgramsFolderMenuItems";
+import useHmiFolderMenuItems from "./useHmiFolderMenuItems";
 import useVariablesMenuItems from "./useVariablesMenuItems";
+import useHmiMenuItems from "./useHmiMenuItems";
 
-export const explorerContextMenuEventsOut = mitt<ExplorerContextMenuEventsOut>();
+export const explorerContextMenuEventsOut =
+	mitt<ExplorerContextMenuEventsOut>();
 
 /**
  *
@@ -25,16 +31,31 @@ const ExplorerContextMenu = ({
 	explorerHeight,
 }: ExplorerContextMenuProps) => {
 	const paneMenuItems = usePaneMenuItems();
+	const programsFolderMenuItems = useProgramsFolderMenuItems();
+	const hmiFolderMenuItems = useHmiFolderMenuItems();
 	const grafcetMenuItems = useGrafcetMenuItems();
+	const ladderMenuItems = useLadderMenuItems();
 	const variablesMenuItems = useVariablesMenuItems();
+	const blockInstanceMenuItems = useBlockInstanceMenuItems();
+	const hmiMenuItems = useHmiMenuItems();
 
 	let menuItems: ContextMenuItemType[][] = [];
 	if (element.type == "pane") {
 		menuItems = paneMenuItems();
+	} else if (element.type == "programs-folder") {
+		menuItems = programsFolderMenuItems();
+	} else if (element.type == "hmi-folder") {
+		menuItems = hmiFolderMenuItems();
 	} else if (element.type == "grafcet") {
 		menuItems = grafcetMenuItems(element.grafcetId);
+	} else if (element.type == "ladder") {
+		menuItems = ladderMenuItems(element.ladderId);
 	} else if (element.type == "variables") {
 		menuItems = variablesMenuItems(element.variablesPageId);
+	} else if (element.type == "block-instance") {
+		menuItems = blockInstanceMenuItems(element.ladderId, element.elementId);
+	} else if (element.type == "hmi") {
+		menuItems = hmiMenuItems(element.hmiPageId);
 	}
 
 	return (

@@ -1,9 +1,18 @@
 "use client";
 
 import { platformShortcut } from "@/ui/lib/platform";
-import ViewManager from "@/ui/stores/grafcet/managers/view.manager";
+import GrafcetCopyCutPasteManager from "@/ui/stores/grafcet/managers/copy-cut-paste.manager";
+import GrafcetViewManager from "@/ui/stores/grafcet/managers/view.manager";
+import { MenuTranslate } from "./menu-translate";
 
-export default function paneContextMenuItems(viewManager: ViewManager): {
+export default function paneContextMenuItems(
+	viewManager: GrafcetViewManager,
+	copyCutPasteManager: GrafcetCopyCutPasteManager,
+	screenPosition: { x: number; y: number },
+	canPaste: boolean,
+	t: MenuTranslate,
+	onExport: () => void,
+): {
 	label: string;
 	shortcut?: string;
 	onClick: () => void;
@@ -14,21 +23,29 @@ export default function paneContextMenuItems(viewManager: ViewManager): {
 	return [
 		[
 			{
-				label: "Tout sélectionner",
+				label: t("selectAll"),
 				shortcut: platformShortcut("Ctrl + A", "Cmd + A"),
 				onClick: () => viewManager.selectAllNodesAndEdges(),
 				disabled: nodes.length == 0 && edges.length == 0,
 			},
 			{
-				label: "Sélectionner les liaisons",
+				label: t("selectEdges"),
 				onClick: () => viewManager.selectAllEdges(),
 				disabled: edges.length == 0,
 			},
 		],
 		[
 			{
-				label: "Exporter",
-				onClick: () => {},
+				label: t("paste"),
+				shortcut: platformShortcut("Ctrl + V", "Cmd + V"),
+				onClick: () => copyCutPasteManager.pasteElements(screenPosition),
+				disabled: !canPaste,
+			},
+		],
+		[
+			{
+				label: t("export"),
+				onClick: onExport,
 				disabled: nodes.length == 0 && edges.length == 0,
 			},
 		],

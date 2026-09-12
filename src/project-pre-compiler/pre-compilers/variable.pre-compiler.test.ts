@@ -22,11 +22,36 @@ describe("VariableCompiler", () => {
 
 		it("compiles INT, LONG, WORD, DWORD, REAL to number PLCVariable", () => {
 			const variables = [
-				new VariableBuilder().id("v1").mnemonic("M1").type("INT").zone("memory").build(),
-				new VariableBuilder().id("v2").mnemonic("M2").type("LONG").zone("memory").build(),
-				new VariableBuilder().id("v3").mnemonic("M3").type("WORD").zone("memory").build(),
-				new VariableBuilder().id("v4").mnemonic("M4").type("DWORD").zone("memory").build(),
-				new VariableBuilder().id("v5").mnemonic("M5").type("REAL").zone("memory").build(),
+				new VariableBuilder()
+					.id("v1")
+					.mnemonic("M1")
+					.type("INT")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v2")
+					.mnemonic("M2")
+					.type("LONG")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v3")
+					.mnemonic("M3")
+					.type("WORD")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v4")
+					.mnemonic("M4")
+					.type("DWORD")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v5")
+					.mnemonic("M5")
+					.type("REAL")
+					.zone("memory")
+					.build(),
 			];
 
 			const result = VariableCompiler.compile(variables);
@@ -35,6 +60,20 @@ describe("VariableCompiler", () => {
 			result.forEach((plcVar) => {
 				expect(plcVar.getType()).toBe("number");
 			});
+		});
+
+		it("compiles a TIME variable to number PLCVariable", () => {
+			const variable = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("Tempo1ET")
+				.type("TIME")
+				.zone("memory")
+				.build();
+
+			const result = VariableCompiler.compile([variable]);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].getType()).toBe("number");
 		});
 
 		it("compiles a STRING variable to string PLCVariable", () => {
@@ -124,10 +163,30 @@ describe("VariableCompiler", () => {
 
 		it("compiles multiple variables with mixed types", () => {
 			const variables = [
-				new VariableBuilder().id("v1").mnemonic("M1").type("BOOL").zone("memory").build(),
-				new VariableBuilder().id("v2").mnemonic("E1").type("BOOL").zone("logic-input").build(),
-				new VariableBuilder().id("v3").mnemonic("M2").type("INT").zone("memory").build(),
-				new VariableBuilder().id("v4").mnemonic("M3").type("STRING").zone("memory").build(),
+				new VariableBuilder()
+					.id("v1")
+					.mnemonic("M1")
+					.type("BOOL")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v2")
+					.mnemonic("E1")
+					.type("BOOL")
+					.zone("logic-input")
+					.build(),
+				new VariableBuilder()
+					.id("v3")
+					.mnemonic("M2")
+					.type("INT")
+					.zone("memory")
+					.build(),
+				new VariableBuilder()
+					.id("v4")
+					.mnemonic("M3")
+					.type("STRING")
+					.zone("memory")
+					.build(),
 			];
 
 			const result = VariableCompiler.compile(variables);

@@ -1,10 +1,17 @@
-﻿import { ElementType } from "./element.schema";
-import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData, JunctionHandle } from "./junction.schema";
-import { XYPosition } from "./shared-types";
+import { ElementType } from "./element.schema";
+import Junction, {
+	JUNCTION_HANDLE_PIVOT,
+	JunctionHandle,
+} from "./junction.schema";
 
-export const JUNCTION_AND_START_HANDLE_PIVOT_TYPES = ["transition"] as const satisfies readonly ElementType[];
+export const JUNCTION_AND_START_HANDLE_PIVOT_TYPES = [
+	"transition",
+] as const satisfies readonly ElementType[];
 
-export const JUNCTION_AND_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonly ElementType[]> = {
+export const JUNCTION_AND_START_HANDLES_TO_TYPES: Record<
+	JunctionHandle,
+	readonly ElementType[]
+> = {
 	[JUNCTION_HANDLE_PIVOT]: JUNCTION_AND_START_HANDLE_PIVOT_TYPES,
 };
 
@@ -14,22 +21,10 @@ export const JUNCTION_AND_START_HANDLES_TO_TYPES: Record<JunctionHandle, readonl
  * So, for each branch, we will create a specific unpredictable id
  * Nevertheless, we specify here the element types that can be connected to these branch handles
  */
-export const JUNCTION_AND_START_HANDLE_BRANCH_TYPES = ["step"] as const satisfies readonly ElementType[];
+export const JUNCTION_AND_START_HANDLE_BRANCH_TYPES = [
+	"step",
+] as const satisfies readonly ElementType[];
 
 export default class JunctionAndStart extends Junction {
-	constructor(id: string, data: JunctionData, position: XYPosition) {
-		super(id, "junction-and-start", data, position);
-	}
-
-	copy(): JunctionAndStart {
-		return JunctionAndStart.createFromJSON(JSON.stringify(this));
-	}
-
-	static createFromJSON(json: string): JunctionAndStart {
-		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new JunctionAndStart("", { ...Junction.generateDefaultDataWithEmptyBranches() }, { x: 0, y: 0 }),
-			jsonParsed,
-		);
-	}
+	readonly type = "junction-and-start";
 }

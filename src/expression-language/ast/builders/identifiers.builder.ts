@@ -1,4 +1,4 @@
-import { createRandomId } from "@/simulator/utils/ids";
+import { createRandomId } from "@/ids";
 import { IdentifierNode } from "../nodes/identifiers";
 
 export default class IdentifiersBuilder {

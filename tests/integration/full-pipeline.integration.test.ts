@@ -2,14 +2,19 @@ import { ActionExecutionMode } from "@/schemas/grafcet/action.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, expectVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("Full Pipeline Integration Test", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		// Reset factories before each test
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Complete workflow: Analysis → Pre-compilation → Compilation → Simulation", () => {
@@ -22,7 +27,7 @@ describe("Full Pipeline Integration Test", () => {
 			const grafcet = GrafcetFactory.createCycleWithBooleanActions(
 				"grafcet-1",
 				"Q0", // Action on step 0: SET Q0 (Q0 := TRUE)
-				"Q0", // Action on step 1: RESET Q0 (Q0 := FALSE)
+				"Q0", // Action on step 1: SET Q0 too (default mode is SET; step 1 is not reached without I0)
 				"I0", // Transition condition from step 0 to 1
 				"NON I0", // Transition condition from step 1 to 0
 			);
@@ -37,11 +42,14 @@ describe("Full Pipeline Integration Test", () => {
 			const pipeline = compilePipelineDetailed(project);
 
 			expect(pipeline.analysis.issues).toEqual([]);
-			expect(pipeline.analysis.stepsVariables).toHaveLength(2); // X0, X1
+			expect(pipeline.analysis.generatedVariables).toHaveLength(2); // X0, X1
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			expect(pipeline.compilation.result!.routines).toHaveLength(1);
+			// 1 grafcet + le Main (voir Project.createMain) + la routine d'observation des réceptivités.
+			// 1 grafcet + la routine des mémos d'étape + la routine d'initialisation + le Main +
+			// la routine d'observation.
+			expect(pipeline.compilation.result!.routines).toHaveLength(5);
 
 			// 3. CREATE PLC AND SIMULATE
 			let cycleError: Error | null = null;
@@ -59,7 +67,7 @@ describe("Full Pipeline Integration Test", () => {
 
 			// Run many cycles (10ms scan × 50 cycles minimum in 600ms)
 			plc!.start();
-			await wait(600);
+			await jest.advanceTimersByTimeAsync(600);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
@@ -67,6 +75,41 @@ describe("Full Pipeline Integration Test", () => {
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);
 			expectVariableValue(plc!, "Q0", true); // Output ON (SET action on step 0 fired on rising edge)
+		});
+
+		it("clears a SET output with a RESET action on the next step", async () => {
+			const outputVar = VariableFactory.createLogicOutput("Q0");
+
+			// Step0 (SET Q0) → [VRAI] → Step1 (RESET Q0) → [FAUX] → Step0.
+			// Le grafcet se stabilise sur X1 : Q0 posé au passage de X0, puis retiré à l'entrée de X1.
+			const grafcet = GrafcetFactory.createCycleWithBooleanActions(
+				"grafcet-reset",
+				"Q0",
+				"Q0",
+				"VRAI",
+				"FAUX",
+				ActionExecutionMode.SET,
+				ActionExecutionMode.RESET,
+			);
+			const project = ProjectFactory.create([outputVar], [grafcet], "RESET action");
+
+			expect(compilePipelineDetailed(project).analysis.issues.filter((i) => i.severity === "error")).toEqual([]);
+
+			let cycleError: Error | null = null;
+			const plc = compileToPLC(project, 10, Dialect.FR, {
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.start();
+			await jest.advanceTimersByTimeAsync(200);
+			plc!.stop();
+			if (cycleError) throw cycleError;
+
+			expectVariableValue(plc!, "X1", true);
+			expectVariableValue(plc!, "Q0", false);
 		});
 
 		it("handles state transitions when input changes", async () => {
@@ -103,7 +146,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.start();
 
 			// After many cycles, step 0 should be active, Q0=false
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);
@@ -113,7 +156,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.setPhysicalInputValueByName("I0", true);
 
 			// After many cycles, step 1 should be active and CONTINUOUS action fires Q0=true
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", false);
 			expectVariableValue(plc!, "X1", true);
@@ -123,7 +166,7 @@ describe("Full Pipeline Integration Test", () => {
 			plc!.setPhysicalInputValueByName("I0", false);
 
 			// After many cycles, step 0 active again, Q0=false (CONTINUOUS falling edge fired)
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 			expectVariableValue(plc!, "X0", true);
 			expectVariableValue(plc!, "X1", false);
@@ -142,8 +185,8 @@ describe("Full Pipeline Integration Test", () => {
 
 			// Analysis should catch the undefined variable
 			expect(pipeline.analysis.issues.length).toBeGreaterThan(0);
-			const undefinedVarIssue = pipeline.analysis.issues.find((i) =>
-				i.message.includes("UNDEFINED_VARIABLE"),
+			const undefinedVarIssue = pipeline.analysis.issues.find(
+				(i) => i.code === "TRANSITION_INVALID_EXPRESSION",
 			);
 			expect(undefinedVarIssue).toBeDefined();
 			expect(undefinedVarIssue?.severity).toBe("error");
@@ -175,11 +218,12 @@ describe("Full Pipeline Integration Test", () => {
 			const pipeline = compilePipelineDetailed(project);
 
 			expect(pipeline.analysis.issues).toEqual([]);
-			expect(pipeline.analysis.stepsVariables).toHaveLength(4); // X0, X1, X10, X11
+			expect(pipeline.analysis.generatedVariables).toHaveLength(4); // X0, X1, X10, X11
 			expect(pipeline.preCompilation.errors).toEqual([]);
-			expect(Object.keys(pipeline.preCompilation.result!.programs)).toHaveLength(2);
+			// +1 pour le Main, toujours présent (voir Project.createMain).
+			expect(Object.keys(pipeline.preCompilation.result!.programs)).toHaveLength(3);
 			expect(pipeline.compilation.errors).toEqual([]);
-			expect(pipeline.compilation.result!.routines).toHaveLength(2); // One routine per grafcet
+			expect(pipeline.compilation.result!.routines).toHaveLength(6); // 2 grafcets + la routine des mémos d'étape + la routine d'initialisation + le Main + la routine d'observation
 
 			// Variables should include: M0, X0, X1, X10, X11, and memos
 			expect(pipeline.compilation.result!.variables.length).toBeGreaterThanOrEqual(5);

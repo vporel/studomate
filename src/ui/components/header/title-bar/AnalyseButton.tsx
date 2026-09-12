@@ -1,12 +1,16 @@
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { Rule as AnalyseIcon } from "@mui/icons-material";
+import AnalyseIcon from "@mui/icons-material/Rule";
 import { Button } from "@mui/material";
 import { useMemo } from "react";
+import { useT } from "@/ui/i18n/useT";
 
 const AnalyseButton = () => {
 	const analysisHasErrors = useProjectStore((state) => state.analysisHasErrors);
-	const analysisHasWarnings = useProjectStore((state) => state.analysisHasWarnings);
+	const analysisHasWarnings = useProjectStore(
+		(state) => state.analysisHasWarnings,
+	);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
+	const t = useT("chrome");
 	const color: string = useMemo(() => {
 		if (analysisHasErrors) return "red";
 		else if (analysisHasWarnings) return "orange";
@@ -20,7 +24,7 @@ const AnalyseButton = () => {
 			sx={{ color, height: 25 }}
 			onClick={() => simulationManager.analyze()}
 		>
-			Analyser
+			{t("analyse")}
 		</Button>
 	);
 };

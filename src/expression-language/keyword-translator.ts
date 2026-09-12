@@ -1,4 +1,9 @@
-import { isDigit, isLetterOrUnderscore, isLetterOrUnderscoreOrDigit, isQuote } from "./alphabet";
+import {
+	isDigit,
+	isLetterOrUnderscore,
+	isLetterOrUnderscoreOrDigit,
+	isQuote,
+} from "./alphabet";
 import { Dialect } from "./dialect.enum";
 import { getKeywordByString, getKeywordString } from "./keywords";
 
@@ -32,7 +37,8 @@ export default class KeywordTranslator {
 			if (isQuote(char)) {
 				const quote = char;
 				position++;
-				while (position < expression.length && expression[position] !== quote) position++;
+				while (position < expression.length && expression[position] !== quote)
+					position++;
 				position++;
 				continue;
 			}
@@ -44,18 +50,27 @@ export default class KeywordTranslator {
 					(isDigit(expression[position]) || expression[position] === ".")
 				)
 					position++;
-				while (position < expression.length && isLetterOrUnderscore(expression[position])) position++;
+				while (
+					position < expression.length &&
+					isLetterOrUnderscore(expression[position])
+				)
+					position++;
 				continue;
 			}
 
 			if (isLetterOrUnderscore(char)) {
 				const start = position;
-				while (position < expression.length && isLetterOrUnderscoreOrDigit(expression[position]))
+				while (
+					position < expression.length &&
+					isLetterOrUnderscoreOrDigit(expression[position])
+				)
 					position++;
 				const word = expression.slice(start, position);
 				const keyword = getKeywordByString(word, from);
 				if (keyword) {
-					result += expression.slice(segmentStart, start) + getKeywordString(keyword, to);
+					result +=
+						expression.slice(segmentStart, start) +
+						getKeywordString(keyword, to);
 					segmentStart = position;
 				}
 				continue;

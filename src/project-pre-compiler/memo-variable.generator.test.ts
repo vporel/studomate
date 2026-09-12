@@ -34,7 +34,11 @@ describe("MemoVariableGenerator", () => {
 		});
 
 		it("skips multiple taken names and finds first available index", () => {
-			const takenNames = new Set(["_GeneratedMemo_0", "_GeneratedMemo_1", "_GeneratedMemo_2"]);
+			const takenNames = new Set([
+				"_GeneratedMemo_0",
+				"_GeneratedMemo_1",
+				"_GeneratedMemo_2",
+			]);
 			const variable = MemoVariableGenerator.generate("boolean", takenNames);
 
 			expect(variable.getName()).toBe("_GeneratedMemo_3");

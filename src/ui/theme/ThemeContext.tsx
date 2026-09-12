@@ -3,12 +3,22 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
 import { frFR } from "@mui/x-data-grid/locales";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
+declare module "@mui/material/styles" {
+	interface Palette {
+		energized: Palette["primary"];
+	}
+	interface PaletteOptions {
+		energized?: PaletteOptions["primary"];
+	}
+}
+
 type Theme = {
 	light: {
 		primaryColor: string;
 		secondaryColor: string;
 		backgroundColor: string;
 		textColor: string;
+		energizedColor: string;
 	};
 };
 
@@ -25,6 +35,7 @@ export const DEFAULT_THEME: Theme = {
 		//surfaces "papier" (palette.background.paper, valeur par défaut de MUI)
 		backgroundColor: "rgb(235, 235, 235)",
 		textColor: "#000000",
+		energizedColor: "#00d800",
 	},
 };
 const ThemeContext = createContext<ThemeContextType>({
@@ -51,6 +62,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 						},
 						background: {
 							default: theme.light.backgroundColor,
+						},
+						energized: {
+							main: theme.light.energizedColor,
+							light: theme.light.energizedColor,
+							dark: theme.light.energizedColor,
+							contrastText: "#fff",
 						},
 					},
 					typography: {
@@ -92,7 +109,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 						button: {
 							textTransform: "none",
 							"&.btn-rounded": { borderRadius: "20px" },
-							"&.grow": { borderRadius: "30px", padding: "10px 30px", fontSize: 15 },
+							"&.grow": {
+								borderRadius: "30px",
+								padding: "10px 30px",
+								fontSize: 15,
+							},
 						},
 					},
 				},
@@ -101,8 +122,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 		[breakpoints, theme],
 	);
 
+	const contextValue = useMemo(() => ({ theme, setTheme }), [theme]);
+
 	return (
-		<ThemeContext.Provider value={{ theme, setTheme }}>
+		<ThemeContext.Provider value={contextValue}>
 			<MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
 		</ThemeContext.Provider>
 	);

@@ -1,9 +1,11 @@
 "use client";
 
-import { Segment as SegmentIcon } from "@mui/icons-material";
+import VariablesIcon from "../icons/VariablesIcon";
 import { ElementType, Fragment, MouseEvent } from "react";
+import { useT } from "@/ui/i18n/useT";
 import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
 import { getVariablesPageData, VariablesPageId } from "../pages/VariablesPage";
+import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
 
@@ -18,7 +20,10 @@ const ExplorerVariablesItem = ({
 	label: string;
 	IconComponent?: ElementType;
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
@@ -43,23 +48,28 @@ const ExplorerVariablesItems = ({
 	onContextMenu,
 }: {
 	styles: CustomTreeItemStyles;
-	onContextMenu: (event: MouseEvent, element: ExplorerContextMenuElement) => void;
+	onContextMenu: (
+		event: MouseEvent,
+		element: ExplorerContextMenuElement,
+	) => void;
 }) => {
+	const t = useT("explorer.variableGroups");
+	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const variablesTypes: {
 		id: VariablesPageId;
 		label: string;
 		IconComponent?: ElementType;
 	}[] = [
-		{ id: "input-variables", label: "Entrées", IconComponent: SegmentIcon },
+		{ id: "input-variables", label: t("inputs"), IconComponent: VariablesIcon },
 		{
 			id: "output-variables",
-			label: "Sorties",
-			IconComponent: SegmentIcon,
+			label: t("outputs"),
+			IconComponent: VariablesIcon,
 		},
 		{
 			id: "memory-variables",
-			label: "Mémoires",
-			IconComponent: SegmentIcon,
+			label: t("memories"),
+			IconComponent: VariablesIcon,
 		},
 	];
 
@@ -75,6 +85,13 @@ const ExplorerVariablesItems = ({
 					onContextMenu={onContextMenu}
 				/>
 			))}
+			<CustomTreeItem
+				itemId="system-variables"
+				label={t("system")}
+				IconComponent={VariablesIcon}
+				styles={styles}
+				onClick={() => pagesManager.openPage(SYSTEM_VARIABLES_PAGE_DATA)}
+			/>
 		</Fragment>
 	);
 };

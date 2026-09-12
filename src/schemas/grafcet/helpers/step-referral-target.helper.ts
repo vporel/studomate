@@ -1,4 +1,4 @@
-﻿import Grafcet from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import StepReferralSource from "../step-referral-source.schema";
 import { STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR } from "../step-referral-target.schema";
 
@@ -29,7 +29,10 @@ export default class StepReferralTargetHelper {
 			throw new Error(
 				`The successor of a step referral target should be a step, but a ${connection.target.type} was found.`,
 			);
-		const targetStep = grafcet.getElementByIdAndType(connection.target.id, "step");
+		const targetStep = grafcet.getElementByIdAndType(
+			connection.target.id,
+			"step",
+		);
 		return targetStep || null;
 	}
 
@@ -38,7 +41,10 @@ export default class StepReferralTargetHelper {
 	 * Returns null if no sourceStepNumber is defined
 	 * Returns null if the step referral source doesn't exist
 	 */
-	static getStepReferralSource(stepReferralTargetId: string, grafcet: Grafcet): StepReferralSource | null {
+	static getStepReferralSource(
+		stepReferralTargetId: string,
+		grafcet: Grafcet,
+	): StepReferralSource | null {
 		const stepReferralTarget = grafcet.getElementByIdAndType(
 			stepReferralTargetId,
 			"step-referral-target",
@@ -47,7 +53,8 @@ export default class StepReferralTargetHelper {
 		if (stepReferralTarget.data.sourceStepNumber === "") return null;
 		const targetStep = this.getTargetStep(stepReferralTargetId, grafcet);
 		if (!targetStep) return null;
-		const allStepReferralSources = grafcet.getElementsByType<StepReferralSource>("step-referral-source");
+		const allStepReferralSources =
+			grafcet.getElementsByType<StepReferralSource>("step-referral-source");
 		const stepReferralSource = allStepReferralSources.find(
 			(source) => source.data.targetStepNumber === targetStep.data.number,
 		);

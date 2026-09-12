@@ -1,4 +1,6 @@
-export type RunnableCallback<T extends Runnable> = (runnable: T) => void | undefined;
+export type RunnableCallback<T extends Runnable> = (
+	runnable: T,
+) => void | undefined;
 
 export default abstract class Runnable {
 	public abstract start(): void;
@@ -7,11 +9,17 @@ export default abstract class Runnable {
 
 	public abstract isRunning(): boolean;
 
-	protected executeCallback(callback?: RunnableCallback<this>, messageOnError?: string): void {
+	protected executeCallback(
+		callback?: RunnableCallback<this>,
+		messageOnError?: string,
+	): void {
 		try {
 			if (callback) callback(this);
 		} catch (e) {
-			console.error(messageOnError || "Error during runnable callback execution:", e);
+			console.error(
+				messageOnError || "Error during runnable callback execution:",
+				e,
+			);
 		}
 	}
 }

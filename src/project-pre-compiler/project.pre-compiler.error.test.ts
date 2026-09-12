@@ -6,7 +6,8 @@ import ProjectPreCompilerError, {
 describe("ProjectPreCompilerErrorSourceBuilder", () => {
 	describe("buildGrafcetSource", () => {
 		it("creates a grafcet source", () => {
-			const source = ProjectPreCompilerErrorSourceBuilder.buildGrafcetSource("grafcet-1");
+			const source =
+				ProjectPreCompilerErrorSourceBuilder.buildGrafcetSource("grafcet-1");
 			expect(source).toEqual({
 				sourceType: "grafcet",
 				sourceId: "grafcet-1",
@@ -16,7 +17,8 @@ describe("ProjectPreCompilerErrorSourceBuilder", () => {
 
 	describe("buildStepSource", () => {
 		it("creates a step source", () => {
-			const source = ProjectPreCompilerErrorSourceBuilder.buildStepSource("step-1");
+			const source =
+				ProjectPreCompilerErrorSourceBuilder.buildStepSource("step-1");
 			expect(source).toEqual({
 				sourceType: "grafcet-step",
 				sourceId: "step-1",
@@ -26,7 +28,8 @@ describe("ProjectPreCompilerErrorSourceBuilder", () => {
 
 	describe("buildTransitionSource", () => {
 		it("creates a transition source", () => {
-			const source = ProjectPreCompilerErrorSourceBuilder.buildTransitionSource("trans-1");
+			const source =
+				ProjectPreCompilerErrorSourceBuilder.buildTransitionSource("trans-1");
 			expect(source).toEqual({
 				sourceType: "grafcet-transition",
 				sourceId: "trans-1",
@@ -36,7 +39,8 @@ describe("ProjectPreCompilerErrorSourceBuilder", () => {
 
 	describe("buildActionSource", () => {
 		it("creates an action source", () => {
-			const source = ProjectPreCompilerErrorSourceBuilder.buildActionSource("action-1");
+			const source =
+				ProjectPreCompilerErrorSourceBuilder.buildActionSource("action-1");
 			expect(source).toEqual({
 				sourceType: "grafcet-action",
 				sourceId: "action-1",

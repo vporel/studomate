@@ -42,7 +42,10 @@ describe("EdgesFactory.syncEdges", () => {
 
 	it("conserve la sélection d'une arête", () => {
 		const grafcet = grafcetWithConnection();
-		const prev = EdgesFactory.syncEdges([], grafcet).map((e) => ({ ...e, selected: true }));
+		const prev = EdgesFactory.syncEdges([], grafcet).map((e) => ({
+			...e,
+			selected: true,
+		}));
 
 		const edges = EdgesFactory.syncEdges(prev, grafcet);
 
@@ -51,7 +54,10 @@ describe("EdgesFactory.syncEdges", () => {
 
 	it("conserve la sélection quand la connexion change", () => {
 		const grafcet = grafcetWithConnection();
-		const prev = EdgesFactory.syncEdges([], grafcet).map((e) => ({ ...e, selected: true }));
+		const prev = EdgesFactory.syncEdges([], grafcet).map((e) => ({
+			...e,
+			selected: true,
+		}));
 		grafcet.connections[0].data = { points: [[99, 99]] };
 
 		const edges = EdgesFactory.syncEdges(prev, grafcet);

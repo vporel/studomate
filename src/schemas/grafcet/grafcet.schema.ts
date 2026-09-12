@@ -1,7 +1,7 @@
-﻿import { Dialect } from "@/expression-language/dialect.enum";
-import Program, { ProgramType } from "@/schemas/program/program.schema";
+import { Dialect } from "@/expression-language/dialect.enum";
 import IdentifierRenamer from "@/expression-language/identifier-renamer";
 import KeywordTranslator from "@/expression-language/keyword-translator";
+import Program, { ProgramType } from "@/schemas/program/program.schema";
 import Action, { ActionType } from "./action.schema";
 import Comment from "./comment.schema";
 import Connection, { HandleType } from "./connection.schema";
@@ -10,78 +10,90 @@ import JunctionAndEnd from "./junction-and-end.schema";
 import JunctionAndStart from "./junction-and-start.schema";
 import JunctionOrEnd from "./junction-or-end.schema";
 import JunctionOrStart from "./junction-or-start.schema";
-import { XYPosition } from "./shared-types";
+import { Dimensions, XYPosition } from "./shared-types";
 import StepReferralSource from "./step-referral-source.schema";
 import StepReferralTarget from "./step-referral-target.schema";
 import Step from "./step.schema";
 import Transition from "./transition.schema";
 
-export type GrafcetFormat = {
-	type: "A4" | "A3";
-	orientation: "portrait" | "landscape";
-};
-
+/** Nom par défaut d'un GRAFCET construit sans nom explicite (voir `GrafcetBuilder`) — distinct de
+ * `GRAFCET_NAME_LABEL`, propre à la création d'un nouveau GRAFCET depuis l'UI. */
 export const DEFAULT_GRAFCET_NAME = "Sans titre";
 
-export const DEFAULT_GRAFCET_FORMAT: GrafcetFormat = {
-	type: "A4",
-	orientation: "portrait",
-};
+/** Base du nom auto-généré ("Grafcet_1", "Grafcet_2"...) à la création — voir
+ * `Project.nextProgramName`. */
+export const GRAFCET_NAME_LABEL = "Grafcet";
 
 /**
  * Classe de schéma et collection portant chaque type d'élément.
  *
- * **Source unique de vérité.** Cette table remplace cinq énumérations manuelles de la même
- * liste (`elementsSchemasClasses`, `getTypeToElementsMap`, `copy`, `createFromJSON`, et la
- * déclaration des champs), qu'il fallait tenir synchronisées à la main sans qu'aucune erreur
- * ne soit détectée.
- *
- * Le `satisfies Record<ElementType, …>` la rend **exhaustive à la compilation** : ajouter un
- * type d'élément sans l'inscrire ici ne compile plus.
+ * **Source unique de vérité.** Le `satisfies Record<ElementType, …>` la rend **exhaustive à
+ * la compilation** : ajouter un type d'élément sans l'inscrire ici ne compile plus.
  */
 const ELEMENT_COLLECTIONS = {
 	step: { collection: "steps", schema: Step },
 	action: { collection: "actions", schema: Action },
 	transition: { collection: "transitions", schema: Transition },
-	"step-referral-source": { collection: "stepsReferralsSources", schema: StepReferralSource },
-	"step-referral-target": { collection: "stepsReferralsTargets", schema: StepReferralTarget },
-	"junction-and-start": { collection: "junctionsAndStarts", schema: JunctionAndStart },
-	"junction-and-end": { collection: "junctionsAndEnds", schema: JunctionAndEnd },
-	"junction-or-start": { collection: "junctionsOrStarts", schema: JunctionOrStart },
+	"step-referral-source": {
+		collection: "stepsReferralsSources",
+		schema: StepReferralSource,
+	},
+	"step-referral-target": {
+		collection: "stepsReferralsTargets",
+		schema: StepReferralTarget,
+	},
+	"junction-and-start": {
+		collection: "junctionsAndStarts",
+		schema: JunctionAndStart,
+	},
+	"junction-and-end": {
+		collection: "junctionsAndEnds",
+		schema: JunctionAndEnd,
+	},
+	"junction-or-start": {
+		collection: "junctionsOrStarts",
+		schema: JunctionOrStart,
+	},
 	"junction-or-end": { collection: "junctionsOrEnds", schema: JunctionOrEnd },
 	comment: { collection: "comments", schema: Comment },
-} as const satisfies Record<
-	ElementType,
-	{ collection: string; schema: { createFromJSON(json: string): Element<any> } }
->;
+} as const satisfies Record<ElementType, { collection: string; schema: any }>;
 
 const ELEMENT_TYPES_ENTRIES = Object.entries(ELEMENT_COLLECTIONS) as [
 	ElementType,
 	(typeof ELEMENT_COLLECTIONS)[ElementType],
 ][];
 
-export const elementsSchemasClasses: Record<ElementType, any> = Object.fromEntries(
-	ELEMENT_TYPES_ENTRIES.map(([type, { schema }]) => [type, schema]),
-) as Record<ElementType, any>;
+export const elementsSchemasClasses: Record<ElementType, any> =
+	Object.fromEntries(
+		ELEMENT_TYPES_ENTRIES.map(([type, { schema }]) => [type, schema]),
+	) as Record<ElementType, any>;
 
+/**
+ * Les collections d'éléments sont indexées par id (`Record<string, T>`), pas des tableaux :
+ * on cherche un élément par son id (analyseurs, helpers, compilateur), jamais par position, et
+ * l'ordre n'a aucun sens — chaque élément porte sa position `x/y`, qui suffit à le placer.
+ * Même forme que `Project.programs` / `Project.hmiPages`.
+ *
+ * `connections` reste un tableau : une connexion se cherche par extrémité (`source.id` /
+ * `target.id`), jamais par une clé propre, donc un `Record` n'accélérerait rien — et le tableau
+ * est plus compact en JSON.
+ */
 export default class Grafcet extends Program {
 	readonly type: ProgramType = "grafcet";
-	format: GrafcetFormat = { type: "A4", orientation: "portrait" };
-	steps: Step[] = [];
-	actions: Action[] = [];
-	transitions: Transition[] = [];
-	stepsReferralsSources: StepReferralSource[] = [];
-	stepsReferralsTargets: StepReferralTarget[] = [];
-	junctionsAndStarts: JunctionAndStart[] = [];
-	junctionsAndEnds: JunctionAndEnd[] = [];
-	junctionsOrStarts: JunctionOrStart[] = [];
-	junctionsOrEnds: JunctionOrEnd[] = [];
-	comments: Comment[] = [];
+	steps: Record<string, Step> = {};
+	actions: Record<string, Action> = {};
+	transitions: Record<string, Transition> = {};
+	stepsReferralsSources: Record<string, StepReferralSource> = {};
+	stepsReferralsTargets: Record<string, StepReferralTarget> = {};
+	junctionsAndStarts: Record<string, JunctionAndStart> = {};
+	junctionsAndEnds: Record<string, JunctionAndEnd> = {};
+	junctionsOrStarts: Record<string, JunctionOrStart> = {};
+	junctionsOrEnds: Record<string, JunctionOrEnd> = {};
+	comments: Record<string, Comment> = {};
 	connections: Connection[] = [];
 
-	constructor(id: string, name: string, format: GrafcetFormat) {
+	constructor(id: string, name: string) {
 		super(id, name);
-		this.format = format;
 	}
 
 	/**
@@ -90,10 +102,15 @@ export default class Grafcet extends Program {
 	 * @returns
 	 */
 	getConnectionsByElementId(elementId: string): Connection[] {
-		return this.connections.filter((c) => c.source.id === elementId || c.target.id === elementId);
+		return this.connections.filter(
+			(c) => c.source.id === elementId || c.target.id === elementId,
+		);
 	}
 
-	getConnectionsByElementIdAndHandle(elementId: string, handle: string): Connection[] {
+	getConnectionsByElementIdAndHandle(
+		elementId: string,
+		handle: string,
+	): Connection[] {
 		return this.connections.filter(
 			(c) =>
 				(c.source.id === elementId && c.source.handle === handle) ||
@@ -101,7 +118,10 @@ export default class Grafcet extends Program {
 		);
 	}
 
-	getConnectionsByElementIdAndHandleType(elementId: string, handleType: HandleType): Connection[] {
+	getConnectionsByElementIdAndHandleType(
+		elementId: string,
+		handleType: HandleType,
+	): Connection[] {
 		return this.connections.filter((c) => c[handleType].id === elementId);
 	}
 
@@ -111,16 +131,20 @@ export default class Grafcet extends Program {
 	 */
 	getTypeToElementsMap(): Record<ElementType, Element<any>[]> {
 		return Object.fromEntries(
-			ELEMENT_TYPES_ENTRIES.map(([type, { collection }]) => [type, this.getCollection(collection)]),
+			ELEMENT_TYPES_ENTRIES.map(([type, { collection }]) => [
+				type,
+				Object.values(this.getCollection(collection)),
+			]),
 		) as Record<ElementType, Element<any>[]>;
 	}
 
 	/**
-	 * Accès à la collection portant un type d'élément, sans passer par la construction d'une
-	 * table intermédiaire.
+	 * Collection portant un type d'élément, indexée par id (voir le commentaire de classe).
 	 */
-	private getCollection(collection: string): Element<any>[] {
-		return (this as unknown as Record<string, Element<any>[]>)[collection];
+	private getCollection(collection: string): Record<string, Element<any>> {
+		return (this as unknown as Record<string, Record<string, Element<any>>>)[
+			collection
+		];
 	}
 
 	/**
@@ -130,78 +154,111 @@ export default class Grafcet extends Program {
 	getAllElements(): Element<any>[] {
 		const allElements: Element<any>[] = [];
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
-			allElements.push(...this.getCollection(collection));
+			allElements.push(...Object.values(this.getCollection(collection)));
 		}
 		return allElements;
 	}
 
 	getElementsByType<T extends Element<any>>(type: ElementType): T[] {
-		return this.getCollection(ELEMENT_COLLECTIONS[type].collection) as T[];
+		return Object.values(
+			this.getCollection(ELEMENT_COLLECTIONS[type].collection),
+		) as T[];
 	}
 
-	getElementByIdAndType<T extends Element<any>>(id: string, type: ElementType): T | undefined {
-		const group = this.getElementsByType<T>(type);
-		return group.find((e) => e.id === id);
+	getElementByIdAndType<T extends Element<any>>(
+		id: string,
+		type: ElementType,
+	): T | undefined {
+		return this.getCollection(ELEMENT_COLLECTIONS[type].collection)[id] as
+			T | undefined;
 	}
 
 	getElementById<T extends Element<any>>(id: string): T | undefined {
-		//On parcourt les collections sans les concaténer : cette méthode est appelée en boucle
-		//par les analyseurs et les helpers, l'allocation d'un tableau intermédiaire à chaque
-		//appel se payait cher
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
-			const found = this.getCollection(collection).find((e) => e.id === id);
+			const found = this.getCollection(collection)[id];
 			if (found) return found as T;
 		}
 		return undefined;
 	}
 
-	addElements(elements: { type: ElementType; id: string; data: any; position: XYPosition }[]): void {
-		elements.forEach(({ type, id, data, position }) => {
-			const group = this.getElementsByType(type);
-			const element = new elementsSchemasClasses[type](id, structuredClone(data), position);
-			if (!group.find((e) => e.id === element.id)) {
-				group.push(element);
+	addElements(
+		elements: {
+			type: ElementType;
+			id: string;
+			data: any;
+			position: XYPosition;
+			size?: Dimensions;
+		}[],
+	): void {
+		elements.forEach(({ type, id, data, position, size }) => {
+			const group = this.getCollection(ELEMENT_COLLECTIONS[type].collection);
+			const elementClass = elementsSchemasClasses[type];
+			const element = new elementClass(
+				id,
+				structuredClone(data),
+				position,
+				structuredClone(size ?? elementClass.DEFAULT_DIMENSIONS),
+			);
+			if (!group[element.id]) {
+				group[element.id] = element;
 			}
 		});
 	}
 
-	updateElements(elements: { type: ElementType; id: string; data?: any; position?: XYPosition }[]): void {
-		elements.forEach(({ type, id, data, position }) => {
-			const group = this.getElementsByType(type);
-			const element = group.find((e) => e.id === id);
+	updateElements(
+		elements: {
+			type: ElementType;
+			id: string;
+			data?: any;
+			position?: XYPosition;
+			size?: Dimensions;
+		}[],
+	): void {
+		elements.forEach(({ type, id, data, position, size }) => {
+			const element = this.getCollection(ELEMENT_COLLECTIONS[type].collection)[
+				id
+			];
 			if (element) {
 				if (data) element.updateData(data);
 				if (position) element.position = position;
+				if (size) element.updateSize(size);
 			}
 		});
 	}
 
 	removeElements(elements: { type: ElementType; id: string }[]): void {
 		elements.forEach(({ type, id }) => {
-			const group = this.getElementsByType(type);
-			const index = group.findIndex((e) => e.id === id);
-			if (index !== -1) {
-				group.splice(index, 1);
-			}
+			delete this.getCollection(ELEMENT_COLLECTIONS[type].collection)[id];
 			// Remove related connections
 			const relatedConnections = this.connections.filter(
 				(c) => c.source.id === id || c.target.id === id,
 			);
 			this.removeConnections(
-				relatedConnections.map((c) => ({ sourceId: c.source.id, targetId: c.target.id })),
+				relatedConnections.map((c) => ({
+					sourceId: c.source.id,
+					targetId: c.target.id,
+				})),
 			);
 		});
 	}
 
 	getConnection(sourceId: string, targetId: string): Connection | undefined {
-		return this.connections.find((c) => c.source.id === sourceId && c.target.id === targetId);
+		return this.connections.find(
+			(c) => c.source.id === sourceId && c.target.id === targetId,
+		);
 	}
 
 	addConnections(connections: Connection[]): void {
 		// Check if connection elements exist, the source and the target
 		connections.forEach((connection) => {
-			const sourceExists = !!this.getElementByIdAndType(connection.source.id, connection.source.type);
-			const targetExists = !!this.getElementByIdAndType(connection.target.id, connection.target.type);
+			const sourceExists = !!this.getElementByIdAndType(
+				connection.source.id,
+				connection.source.type,
+			);
+			const targetExists = !!this.getElementByIdAndType(
+				connection.target.id,
+				connection.target.type,
+			);
 			if (!sourceExists) {
 				throw new Error(
 					`Connection 'source' element missing: type=${connection.source.type}, id=${connection.source.id}`,
@@ -216,7 +273,9 @@ export default class Grafcet extends Program {
 				sourceExists &&
 				targetExists &&
 				!this.connections.find(
-					(c) => c.source.id === connection.source.id && c.target.id === connection.target.id,
+					(c) =>
+						c.source.id === connection.source.id &&
+						c.target.id === connection.target.id,
 				)
 			) {
 				this.connections.push(connection);
@@ -232,7 +291,9 @@ export default class Grafcet extends Program {
 	updateConnections(connections: Connection[]): void {
 		connections.forEach((connection) => {
 			const index = this.connections.findIndex(
-				(c) => c.source.id === connection.source.id && c.target.id === connection.target.id,
+				(c) =>
+					c.source.id === connection.source.id &&
+					c.target.id === connection.target.id,
 			);
 			if (index !== -1) {
 				this.connections[index] = connection;
@@ -248,7 +309,9 @@ export default class Grafcet extends Program {
 	): void {
 		connections.forEach((connection) => {
 			const index = this.connections.findIndex(
-				(c) => c.source.id === connection.sourceId && c.target.id === connection.targetId,
+				(c) =>
+					c.source.id === connection.sourceId &&
+					c.target.id === connection.targetId,
 			);
 			if (index !== -1) {
 				this.connections.splice(index, 1);
@@ -267,10 +330,13 @@ export default class Grafcet extends Program {
 	 * @param renames Map of old identifier name → new identifier name
 	 * @param dialect Dialect of the expressions, so that keywords are not mistaken for identifiers
 	 */
-	renameIdentifiersInExpressions(renames: Record<string, string>, dialect: Dialect = Dialect.FR): void {
+	renameIdentifiersInExpressions(
+		renames: Record<string, string>,
+		dialect: Dialect = Dialect.FR,
+	): void {
 		if (Object.keys(renames).length === 0) return;
 
-		this.transitions.forEach((transition) => {
+		Object.values(this.transitions).forEach((transition) => {
 			transition.data.expression = IdentifierRenamer.rename(
 				transition.data.expression,
 				renames,
@@ -278,9 +344,13 @@ export default class Grafcet extends Program {
 			);
 		});
 
-		this.actions.forEach((action) => {
+		Object.values(this.actions).forEach((action) => {
 			if (action.data.type === ActionType.TEXT) return;
-			action.data.expression = IdentifierRenamer.rename(action.data.expression, renames, dialect);
+			action.data.expression = IdentifierRenamer.rename(
+				action.data.expression,
+				renames,
+				dialect,
+			);
 		});
 	}
 
@@ -290,38 +360,60 @@ export default class Grafcet extends Program {
 	 * elle n'est jamais touchée.
 	 */
 	translateExpressionsKeywords(from: Dialect, to: Dialect): void {
-		this.transitions.forEach((transition) => {
-			transition.data.expression = KeywordTranslator.translate(transition.data.expression, from, to);
+		Object.values(this.transitions).forEach((transition) => {
+			transition.data.expression = KeywordTranslator.translate(
+				transition.data.expression,
+				from,
+				to,
+			);
 		});
-		this.actions.forEach((action) => {
+		Object.values(this.actions).forEach((action) => {
 			if (action.data.type === ActionType.TEXT) return;
-			action.data.expression = KeywordTranslator.translate(action.data.expression, from, to);
+			action.data.expression = KeywordTranslator.translate(
+				action.data.expression,
+				from,
+				to,
+			);
 		});
 	}
 
 	copy(): Grafcet {
-		const newGrafcet = Object.assign(new Grafcet(this.id, this.name, this.format), this);
+		const newGrafcet = Object.assign(new Grafcet(this.id, this.name), this);
 		for (const [, { collection }] of ELEMENT_TYPES_ENTRIES) {
 			newGrafcet.setCollection(
 				collection,
-				this.getCollection(collection).map((element) => element.copy()),
+				Object.fromEntries(
+					Object.entries(this.getCollection(collection)).map(
+						([id, element]) => [id, element.copy()],
+					),
+				),
 			);
 		}
 		newGrafcet.connections = this.connections.map((c) => c.copy());
 		return newGrafcet;
 	}
 
-	private setCollection(collection: string, elements: Element<any>[]): void {
-		(this as unknown as Record<string, Element<any>[]>)[collection] = elements;
+	private setCollection(
+		collection: string,
+		elements: Record<string, Element<any>>,
+	): void {
+		(this as unknown as Record<string, Record<string, Element<any>>>)[
+			collection
+		] = elements;
 	}
 
 	static createFromJSON(json: string): Grafcet {
 		const jsonParsed = JSON.parse(json);
-		const grafcet = Object.assign(new Grafcet("", "", DEFAULT_GRAFCET_FORMAT), jsonParsed);
+		const grafcet = Object.assign(new Grafcet("", ""), jsonParsed);
 		for (const [, { collection, schema }] of ELEMENT_TYPES_ENTRIES) {
 			grafcet.setCollection(
 				collection,
-				(jsonParsed[collection] ?? []).map((raw: unknown) => schema.createFromJSON(JSON.stringify(raw))),
+				Object.fromEntries(
+					Object.entries(jsonParsed[collection] ?? {}).map(([id, raw]) => [
+						id,
+						(schema as any).createFromJSON(JSON.stringify(raw)),
+					]),
+				),
 			);
 		}
 		grafcet.connections = (jsonParsed.connections ?? []).map((c: unknown) =>

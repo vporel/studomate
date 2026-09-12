@@ -25,22 +25,23 @@ const ContextMenu = ({
 	...props
 }: ContextMenuProps) => {
 	const ref = useRef<HTMLUListElement | null>(null);
-	const [positionShiftAxes, setPositionShiftAxes] = useState<null | "x" | "y" | "xy">(null);
 	const [internalPosition, setInternalPosition] = useState(position);
+	const [menuWidth, setMenuWidth] = useState(0);
 	useLayoutEffect(() => {
 		if (!ref.current) return;
 		const pos = { ...position };
-		let shiftAxes: null | "x" | "y" | "xy" = null;
 		if (pos.x + ref.current.offsetWidth > parentWidth) {
 			pos.x -= ref.current.offsetWidth;
-			shiftAxes = "x";
 		}
 		if (pos.y + ref.current.offsetHeight > parentHeight) {
 			pos.y -= ref.current.offsetHeight;
-			shiftAxes = shiftAxes === null ? "y" : "xy";
 		}
-		setPositionShiftAxes(shiftAxes);
+		//Le menu est rendu dans un conteneur en overflow:hidden : sans borne basse,
+		//un décalage vers le haut/la gauche fait sortir les premières entrées du cadre.
+		pos.x = Math.max(0, pos.x);
+		pos.y = Math.max(0, pos.y);
 		setInternalPosition(pos);
+		setMenuWidth(ref.current.offsetWidth);
 	}, [position, parentWidth, parentHeight]);
 
 	//Hide the menu when another part of the window is clicked
@@ -93,17 +94,15 @@ const ContextMenu = ({
 					".right-text": {
 						color: "gray",
 					},
+					// L'ancrage du sous-menu (gauche/droite, haut/bas), son arrondi et son plafond de
+					// hauteur sont posés par `ContextMenuItem`, qui mesure si le sous-menu de cette
+					// entrée déborderait du cadre.
 					".sub-items-container": {
 						position: "absolute",
-						left: !positionShiftAxes?.includes("x") ? "100%" : "auto",
-						right: positionShiftAxes?.includes("x") ? "100%" : "auto",
-						top: !positionShiftAxes?.includes("y") ? "0" : "auto",
-						bottom: positionShiftAxes?.includes("y") ? "0" : "auto",
 						background: "white",
 						minWidth: "160px",
 						minHeight: "20px",
 						border: "1px solid lightgray",
-						borderRadius: !positionShiftAxes?.includes("x") ? "0 5px 5px 0" : "5px 0 0 5px",
 						opacity: 0,
 						visibility: "hidden",
 					},
@@ -112,9 +111,20 @@ const ContextMenu = ({
 				{menuItems.map((group, index) => (
 					<Fragment key={index}>
 						{group.map((item) => (
-							<ContextMenuItem key={item.label} item={item} hideMenu={onClose!} />
+							<ContextMenuItem
+								key={item.label}
+								item={item}
+								hideMenu={onClose!}
+								menuTop={internalPosition.y}
+								menuLeft={internalPosition.x}
+								menuWidth={menuWidth}
+								parentWidth={parentWidth}
+								parentHeight={parentHeight}
+							/>
 						))}
-						{index < menuItems.length - 1 && <Divider sx={{ my: "4px!important" }} />}
+						{index < menuItems.length - 1 && (
+							<Divider sx={{ my: "4px!important" }} />
+						)}
 					</Fragment>
 				))}
 			</Box>

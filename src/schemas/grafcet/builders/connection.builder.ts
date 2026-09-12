@@ -10,7 +10,10 @@ import { STEP_REFERRAL_TARGET_HANDLES_TO_TYPES } from "../step-referral-target.s
 import { STEP_HANDLES_TO_TYPES } from "../step.schema";
 import { TRANSITION_HANDLES_TO_TYPES } from "../transition.schema";
 
-export const HANDLES_TO_TYPES_MAP: Record<ElementType, Record<string, readonly ElementType[]> | null> = {
+export const HANDLES_TO_TYPES_MAP: Record<
+	ElementType,
+	Record<string, readonly ElementType[]> | null
+> = {
 	action: ACTION_HANDLES_TO_TYPES,
 	comment: null,
 	"junction-and-start": JUNCTION_AND_START_HANDLES_TO_TYPES,

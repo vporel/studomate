@@ -19,7 +19,11 @@ export type StepReferralTargetNodeType = Node<StepReferralTargetData> & {
 
 export type StepReferralTargetNodeProps = NodeProps<StepReferralTargetNodeType>;
 
-const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, selected }) => {
+const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({
+	id,
+	data,
+	selected,
+}) => {
 	const th = useTheme();
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
@@ -30,7 +34,13 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({ id, data, sel
 		setEditing,
 		saveSourceStepNumber,
 		error,
-	] = useWithTextNodeValue(id, "step-referral-target", data, "sourceStepNumber", true);
+	] = useWithTextNodeValue(
+		id,
+		"step-referral-target",
+		data,
+		"sourceStepNumber",
+		true,
+	);
 
 	return (
 		<>

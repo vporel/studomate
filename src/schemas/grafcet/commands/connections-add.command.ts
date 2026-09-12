@@ -1,8 +1,10 @@
-﻿import Connection from "..//connection.schema";
+import Connection from "..//connection.schema";
 import Grafcet from "../grafcet.schema";
 import AbstractGrafcetCommand from "./abstract-grafcet.command";
 
-export default class ConnectionsAddCommand extends AbstractGrafcetCommand<Connection[]> {
+export default class ConnectionsAddCommand extends AbstractGrafcetCommand<
+	Connection[]
+> {
 	getType(): string {
 		return "grafcet-connections-add";
 	}
@@ -14,7 +16,10 @@ export default class ConnectionsAddCommand extends AbstractGrafcetCommand<Connec
 
 	cancel(grafcet: Grafcet): Grafcet {
 		grafcet.removeConnections(
-			this.payload.map((c) => ({ sourceId: c.source.id, targetId: c.target.id })),
+			this.payload.map((c) => ({
+				sourceId: c.source.id,
+				targetId: c.target.id,
+			})),
 		);
 		return grafcet;
 	}

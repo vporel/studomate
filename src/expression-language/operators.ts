@@ -1,4 +1,3 @@
-
 export const ASSIGNMENT_OPERATOR = ":=";
 
 export const ARITHMETIC_OPERATORS = ["+", "-", "*", "/"] as const;

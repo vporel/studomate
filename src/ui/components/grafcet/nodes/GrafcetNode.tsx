@@ -15,49 +15,55 @@ interface GrafcetNodeProps extends BoxProps {
 	className?: string;
 }
 
-const GrafcetNode = forwardRef<HTMLElement, GrafcetNodeProps>(function GrafcetNode(
-	{ id, type, error, className = "", children, sx, ...props },
-	ref,
-) {
-	const theme = useTheme();
-	const highlighted = useGrafcetStore((state) => state.highlightedNodesIds.includes(id));
+const GrafcetNode = forwardRef<HTMLElement, GrafcetNodeProps>(
+	function GrafcetNode(
+		{ id, type, error, className = "", children, sx, ...props },
+		ref,
+	) {
+		const theme = useTheme();
+		const highlighted = useGrafcetStore((state) =>
+			state.highlightedNodesIds.includes(id),
+		);
 
-	const mainColor = theme.palette.primary.main;
-	const faded = alpha(mainColor, 0.25);
+		let highlightSx: object | undefined;
+		if (highlighted) {
+			const mainColor = theme.palette.primary.main;
+			const faded = alpha(mainColor, 0.25);
+			highlightSx = {
+				"&::before": {
+					content: '""',
+					position: "absolute",
+					top: "-7px",
+					left: "-7px",
+					right: "-7px",
+					bottom: "-7px",
+					border: "4px solid",
+					borderColor: mainColor,
+					borderRadius: "4px",
+					animation: "grafcet-node-blink 1s infinite linear",
+				},
+				"@keyframes grafcet-node-blink": {
+					"0%": { borderColor: mainColor },
+					"50%": { borderColor: faded },
+					"100%": { borderColor: mainColor },
+				},
+			};
+		}
 
-	const highlightSx = {
-		"&::before": {
-			content: '""',
-			position: "absolute",
-			top: "-7px",
-			left: "-7px",
-			right: "-7px",
-			bottom: "-7px",
-			border: "4px solid",
-			borderColor: mainColor,
-			borderRadius: "4px",
-			animation: "grafcet-node-blink 1s infinite linear",
-		},
-		"@keyframes grafcet-node-blink": {
-			"0%": { borderColor: mainColor },
-			"50%": { borderColor: faded },
-			"100%": { borderColor: mainColor },
-		},
-	} as const;
-
-	return (
-		<ErrorTooltip open={!!error} title={error}>
-			<Box
-				id={`grafcet-node-${id}`}
-				ref={ref}
-				className={`grafcet-node grafcet-${type}-node ${highlighted ? "highlighted" : ""} ${className}`}
-				sx={{ ...sx, ...(highlighted ? highlightSx : {}) }}
-				{...props}
-			>
-				{children}
-			</Box>
-		</ErrorTooltip>
-	);
-});
+		return (
+			<ErrorTooltip open={!!error} title={error}>
+				<Box
+					id={`grafcet-node-${id}`}
+					ref={ref}
+					className={`grafcet-node grafcet-${type}-node ${highlighted ? "highlighted" : ""} ${className}`}
+					sx={highlightSx ? { ...sx, ...highlightSx } : sx}
+					{...props}
+				>
+					{children}
+				</Box>
+			</ErrorTooltip>
+		);
+	},
+);
 
 export default GrafcetNode;

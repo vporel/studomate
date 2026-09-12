@@ -1,0 +1,283 @@
+import {
+	getElementHeight,
+	getElementWidth,
+	LadderElement,
+} from "@/schemas/ladder/element.schema";
+import Section from "@/schemas/ladder/section.schema";
+import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import { Edge } from "@xyflow/react";
+
+/** Taille d'une cellule de la grille de snap (unité de base de tout le layout ladder). */
+export const GRID_CELL_WIDTH = 60;
+export const GRID_CELL_HEIGHT = 45;
+
+/** Largeur d'une colonne d'éléments (contact/coil) = 1 cellule. */
+export const LADDER_FLOW_COL_WIDTH = GRID_CELL_WIDTH; // 60px
+/** Hauteur d'une ligne de réseau = 1 cellule. */
+export const LADDER_FLOW_ROW_HEIGHT = GRID_CELL_HEIGHT; // 45px
+
+/** Décalage vertical de la ligne 0 par rapport à l'origine du monde React Flow. Sans lui, la
+ * ligne 0 est exactement à y=0 et l'étiquette au-dessus de son contact/bobine (`top: -10px`,
+ * voir `ContactNode`/`CoilNode`) sort du wrapper `.react-flow`, dont l'`overflow: hidden`
+ * (posé en inline style par la librairie, pas surchargeable en CSS) la coupe alors. Une demi-
+ * cellule suffit à loger l'étiquette sans laisser une ligne entière de vide ; n'étant plus un
+ * multiple exact de la taille de cellule, le fond en pointillés doit être explicitement recalé
+ * sur cette valeur (`backgroundPosition`, voir `LadderSection`) au lieu de compter sur la
+ * périodicité du motif. */
+export const LADDER_FLOW_TOP_OFFSET = GRID_CELL_HEIGHT / 2;
+
+/** Nombre maximum de colonnes du ladder. */
+export const LADDER_MAX_COLS = 18;
+
+/** Largeur de la lane du rail d'alimentation — un simple stub visuel, pas une colonne
+ * d'éléments. */
+export const RAIL_LANE_WIDTH = 10;
+/** Abscisse où commence la colonne 0 des éléments (contact/coil). */
+export const POWER_RAIL_OFFSET = RAIL_LANE_WIDTH;
+
+/**
+ * Conversions ligne/colonne (grille logique) ↔ pixels (monde React Flow) — seul point de
+ * vérité pour `LADDER_FLOW_TOP_OFFSET`/`POWER_RAIL_OFFSET` : tout site qui construit ou lit
+ * une position doit passer par ces fonctions plutôt que refaire le calcul, pour qu'un futur
+ * changement de l'un ou l'autre décalage n'ait qu'un seul endroit à corriger. L'arrondi
+ * (`Math.round`/`Math.floor` selon le site : accrochage au plus proche vs dépôt dans la
+ * cellule survolée) reste au call site, ces fonctions ne font que le décalage/l'échelle.
+ *
+ * La grille est strictement uniforme : toute ligne vaut `LADDER_FLOW_ROW_HEIGHT`, y compris
+ * celles que traverse un bloc de 2 cellules de haut. Un tel bloc réserve ses cellules sur
+ * plusieurs lignes via son empreinte (`elementFootprint`), pas en dilatant la ligne.
+ */
+export function rowToY(row: number): number {
+	return LADDER_FLOW_TOP_OFFSET + row * LADDER_FLOW_ROW_HEIGHT;
+}
+export function yToRow(y: number): number {
+	return (y - LADDER_FLOW_TOP_OFFSET) / LADDER_FLOW_ROW_HEIGHT;
+}
+export function colToX(col: number): number {
+	return POWER_RAIL_OFFSET + col * LADDER_FLOW_COL_WIDTH;
+}
+export function xToCol(x: number): number {
+	return (x - POWER_RAIL_OFFSET) / LADDER_FLOW_COL_WIDTH;
+}
+
+/** Rectangle de cellules de grille (ancre haut-gauche + dimensions dérivées du type) réellement
+ * occupé par un élément : un bloc tempo couvre 2 colonnes et 2 lignes, un contact/une bobine une
+ * seule cellule. Bornes hautes exclusives (`col + width`, `row + height`). */
+export type CellRect = {
+	row: number;
+	col: number;
+	width: number;
+	height: number;
+};
+
+export function elementFootprint(element: LadderElement): CellRect {
+	return {
+		row: element.position.row,
+		col: element.position.col,
+		width: getElementWidth(element),
+		height: getElementHeight(element),
+	};
+}
+
+/** Vrai si les deux rectangles de cellules se chevauchent, ne serait-ce que d'une cellule. */
+export function cellRectsOverlap(a: CellRect, b: CellRect): boolean {
+	return (
+		a.col < b.col + b.width &&
+		b.col < a.col + a.width &&
+		a.row < b.row + b.height &&
+		b.row < a.row + a.height
+	);
+}
+
+/** Élément de la section dont l'empreinte recouvre le rectangle `rect` — `undefined` si la zone
+ * est entièrement libre. `ignoreId` exclut l'élément en cours de déplacement de sa propre
+ * détection de collision. */
+export function findFootprintCollision(
+	section: Section,
+	rect: CellRect,
+	ignoreId?: string,
+): LadderElement | undefined {
+	return section.elements.find(
+		(element) =>
+			element.id !== ignoreId &&
+			element.type !== "railTerminal" &&
+			cellRectsOverlap(rect, elementFootprint(element)),
+	);
+}
+
+/** Élément dont l'empreinte couvre la cellule `(row, col)`. */
+export function elementAtCell(
+	section: Section,
+	row: number,
+	col: number,
+): LadderElement | undefined {
+	return findFootprintCollision(section, { row, col, width: 1, height: 1 });
+}
+
+/** Type d'edge des connexions du Ladder — voir `LadderConnectionEdge`. */
+export const LADDER_CONNECTION_EDGE_TYPE = "ladder-connection";
+
+/**
+ * Sommets (pixels) d'un tracé sans coude explicite — coude à mi-chemin entre source et cible.
+ * Équivalent Ladder de `getConnectionLinePoints` (`grafcet-utils.ts`) : partagé entre
+ * `LadderConnectionEdge` (repli quand `points` n'est pas encore matérialisé) et
+ * `LadderConnectionLine` (aperçu pendant le tracé manuel d'une connexion, qui n'a jamais de
+ * `points`), pour que les deux rendus se ressemblent.
+ */
+export function getConnectionLinePoints(
+	fromX: number,
+	fromY: number,
+	toX: number,
+	toY: number,
+): [number, number][] {
+	if (fromY === toY)
+		return [
+			[fromX, fromY],
+			[toX, toY],
+		];
+	const midX = (fromX + toX) / 2;
+	return [
+		[fromX, fromY],
+		[midX, fromY],
+		[midX, toY],
+		[toX, toY],
+	];
+}
+
+const VIRTUAL_RAIL_ID_PREFIX = "virtual-rail-";
+
+/** Id d'un nœud de borne d'alimentation virtuelle (non persistée) pour la ligne `row`. */
+export function virtualRailId(row: number): string {
+	return `${VIRTUAL_RAIL_ID_PREFIX}${row}`;
+}
+
+/**
+ * Extrait la ligne d'un id de borne d'alimentation virtuelle, ou `null` si `id` n'en est pas un
+ * (élément réel du schéma) — utilisé pour matérialiser une vraie `RailTerminalElement` quand
+ * l'utilisateur trace manuellement une connexion depuis une ligne qui n'en a pas encore.
+ */
+export function parseVirtualRailRow(id: string): number | null {
+	if (!id.startsWith(VIRTUAL_RAIL_ID_PREFIX)) return null;
+	const row = Number(id.slice(VIRTUAL_RAIL_ID_PREFIX.length));
+	return Number.isInteger(row) ? row : null;
+}
+
+/** Position en grille logique (ligne/colonne) d'un élément de la section. */
+export type PositionedLeaf = { id: string; row: number; col: number };
+
+/**
+ * Dérivés purs de `section.elements`, indépendants de tout état de vue (sélection, glisser en
+ * cours) — utilisés pour la résolution de dépôt/glisser et le dimensionnement du canevas, jamais
+ * pour construire les `nodes`/`edges` React Flow eux-mêmes (voir `buildTargetNodes` plus bas et
+ * `LadderNodesFactory`/`LadderEdgesFactory`, qui préservent l'identité/l'état de vue entre deux
+ * synchronisations — contrairement à ces fonctions, rappelées à chaque rendu).
+ */
+export function computeSectionLayout(section: Section): {
+	totalRows: number;
+	maxCol: number;
+	leafPositions: PositionedLeaf[];
+} {
+	const leafPositions: PositionedLeaf[] = section.elements.map((element) => ({
+		id: element.id,
+		row: element.position.row,
+		col: element.position.col,
+	}));
+	// Un bloc de 2 cellules de haut occupe sa ligne d'ancrage ET la suivante : le canevas doit
+	// être assez grand pour les deux (`row + getElementHeight`).
+	const totalRows = Math.max(
+		1,
+		...section.elements.map(
+			(element) => element.position.row + getElementHeight(element),
+		),
+	);
+	const maxCol = section.elements.reduce(
+		(max, element) => Math.max(max, element.position.col),
+		0,
+	);
+	return {
+		totalRows,
+		maxCol,
+		leafPositions,
+	};
+}
+
+/**
+ * Nœuds React Flow "cibles" d'une section : chaque élément porte sa propre position de grille
+ * (`row`/`col`), un simple mapping direct, sans layout à recalculer — la position affichée est
+ * donc toujours exactement celle où l'élément a été déposé. Pas d'état de vue ici (`selected`,
+ * `dragging`...) : c'est la donnée que `LadderNodesFactory.syncNodes` réconcilie avec les nœuds
+ * précédents, jamais ce qu'on passe directement à `<ReactFlow>`.
+ */
+export function buildTargetNodes(section: Section): LadderNodeType[] {
+	const nodes: LadderNodeType[] = section.elements.map((element) => {
+		if (element.type === "railTerminal") {
+			return {
+				id: element.id,
+				type: "railTerminal",
+				// Toujours à l'extrême gauche (largeur RAIL_LANE_WIDTH) : ce n'est pas une colonne
+				// d'éléments, `element.position.col` (RAIL_TERMINAL_COL) n'est qu'un marqueur
+				// logique d'ordre, jamais traduit en pixels — cohérent avec `draggable: false`.
+				position: { x: 0, y: rowToY(element.position.row) },
+				data: { virtual: false },
+				selectable: false,
+				draggable: false,
+			} as LadderNodeType;
+		}
+		if (element.type === "block") {
+			return {
+				id: element.id,
+				type: "block",
+				position: {
+					x: colToX(element.position.col),
+					y: rowToY(element.position.row),
+				},
+				data: element.data,
+			} as LadderNodeType;
+		}
+		return {
+			id: element.id,
+			type: element.type,
+			position: {
+				x: colToX(element.position.col),
+				y: rowToY(element.position.row),
+			},
+			data: { variable: element.data.variable, type: element.data.type },
+		} as LadderNodeType;
+	});
+
+	// Affordance visuelle : une borne d'alimentation virtuelle (non persistée) sur chaque ligne
+	// qui n'en a pas encore de réelle, pour que le rail semble toujours présent sur tout le flow.
+	const { totalRows } = computeSectionLayout(section);
+	const rowsWithRealRailTerminal = new Set(
+		section.elements
+			.filter((element) => element.type === "railTerminal")
+			.map((element) => element.position.row),
+	);
+	for (let row = 0; row < totalRows; row++) {
+		if (rowsWithRealRailTerminal.has(row)) continue;
+		nodes.push({
+			id: virtualRailId(row),
+			type: "railTerminal",
+			position: { x: 0, y: rowToY(row) },
+			data: { virtual: true },
+			selectable: false,
+			draggable: false,
+		} as LadderNodeType);
+	}
+
+	return nodes;
+}
+
+/** Arêtes React Flow "cibles" d'une section — voir `buildTargetNodes`. */
+export function buildTargetEdges(section: Section): Edge[] {
+	return section.connections.map((connection) => ({
+		id: connection.id,
+		source: connection.source.id,
+		sourceHandle: connection.source.handle,
+		target: connection.target.id,
+		targetHandle: connection.target.handle,
+		type: LADDER_CONNECTION_EDGE_TYPE,
+		// `points` (le tracé, en demi-unités de grille) : voir `LadderConnectionEdge`.
+		data: { points: connection.data.points },
+	}));
+}

@@ -2,44 +2,49 @@
 
 [![CI](https://github.com/vporel/studomate/actions/workflows/ci.yml/badge.svg)](https://github.com/vporel/studomate/actions/workflows/ci.yml)
 
-**Studomate** est un outil pédagogique dédié à l'automatisme : apprentissage, conception et simulation de logiques d'automatisme directement dans le navigateur.
+**Studomate** is the fastest and most accessible automation studio for learning and experimenting with **GRAFCET**, **Ladder**, and **HMI**: free, no install, directly in the browser.
 
-L'objectif est de rendre les concepts d'automatisme accessibles, visuels et actionnables — de l'introduction en classe à la mise en pratique individuelle. Le projet prend actuellement en charge le **GRAFCET**, avec l'ambition d'évoluer vers un simulateur plus large (autres notations comme le **Ladder**, nouvelles interfaces, etc.).
+Its value isn't being more powerful than industrial software, but reducing the friction of learning automation to almost zero: no installation, no license, no PLC or I/O cards to configure. Its differentiator: GRAFCET, Ladder and animated HMI in the same environment, with variables shared across all three — a virtual plant to watch the system react.
 
-## Fonctionnalités
+Without an account, projects are stored locally in the browser; cloud backup and link sharing are optional via an account (username, no email).
 
-- **Édition graphique** de GRAFCET : étapes, transitions, actions, entrées/sorties virtuelles, temporisations, compteurs, variables analogiques.
-- **Simulation** en mode pas-à-pas, scan complet ou exécution continue, avec visualisation en temps réel des états actifs et des transitions évaluées.
-- **Analyse** du projet pour détecter les erreurs de structure avant simulation.
-- **Manuel utilisateur** intégré à l'application.
+## Features
 
-## Feuille de route
+- **Multi-language graphical editing**: GRAFCET and Ladder (steps, transitions, contacts, coils, timers, counters...).
+- **Animated HMI**: moving an object, filling a tank, changing a visual state — a virtual plant driven by the project's variables.
+- **Simulation and visualization**: step-by-step or continuous execution, with real-time visualization of states, transitions, and live variables.
+- **Continuous analysis**: structural errors are flagged while editing (`error` / `warning` severities), not only when starting the simulation.
+- **User manual** built into the application.
+- **Link sharing**: send a project to your students; they open it with no account or install.
+- **Accounts & cloud backup (optional)**: projects stored locally or in the cloud, username-based authentication (no email).
+- **Your projects belong to you**: JSON export/import, versioned schema with automatic migrations — a project exported today will still open tomorrow.
 
-- Amélioration de l'éditeur (alignements, validations, ergonomie).
-- Tableaux de bord de simulation.
-- Comptes utilisateurs & sauvegarde cloud.
-- Ouverture à d'autres langages/notations d'automatisme (Ladder, etc.).
+## Privacy
 
-Public visé : étudiants (BTS, IUT, écoles d'ingénieurs, universités), enseignants et formateurs en automatisme/électrotechnique, professionnels en reconversion ou remise à niveau.
+No email required, no personal data stored, no tracking cookies. Authentication uses a username and usage statistics are anonymous.
 
-## Stack technique
+Target audience: students (vocational/technical schools, engineering schools, universities), teachers and trainers in automation/electrical engineering, professionals retraining or upskilling.
+
+## Tech stack
 
 - [Next.js](https://nextjs.org) (App Router) + React 19 + TypeScript
-- [MUI](https://mui.com) pour l'interface
-- [React Flow (@xyflow/react)](https://reactflow.dev) pour l'éditeur graphique
-- [Zustand](https://github.com/pmndrs/zustand) pour la gestion d'état
-- Jest pour les tests
+- [MUI](https://mui.com) for the UI
+- [React Flow (@xyflow/react)](https://reactflow.dev) for the graphical editor
+- [Zustand](https://github.com/pmndrs/zustand) for state management
+- [Supabase](https://supabase.com) for authentication and cloud project storage
+- [Sentry](https://sentry.io) for error monitoring
+- Jest for tests
 
-## Démarrer en local
+## Getting started locally
 
-Node 20 ou plus est requis.
+Node 20 or later is required.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Ouvrir [http://localhost:3000](http://localhost:3000) dans le navigateur.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Tests
 
@@ -47,10 +52,10 @@ Ouvrir [http://localhost:3000](http://localhost:3000) dans le navigateur.
 npm test
 ```
 
-## Contribuer
+## Contributing
 
-Les idées, retours et contributions sont les bienvenus. Ouvrez une issue ou une pull request.
+Ideas, feedback, and contributions are welcome. Open an issue or a pull request.
 
-## Licence
+## License
 
-Ce projet est sous licence [MIT](./LICENSE).
+This project is licensed under [GNU AGPL v3](./LICENSE).

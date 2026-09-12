@@ -2,10 +2,12 @@
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Typography } from "@mui/material";
+import { useT } from "@/ui/i18n/useT";
 import { useProjectStore } from "../projects/ProjectContext";
 import RightActions from "./RightActions";
 
 const StatusBar = () => {
+	const t = useT("chrome.statusBar");
 	const projectAuthor = useProjectStore((state) => state.project?.author);
 	return (
 		<FlexBox
@@ -23,7 +25,7 @@ const StatusBar = () => {
 		>
 			<FlexBox centerVertical>
 				<Typography sx={{ fontSize: "0.85rem", color: "rgb(100, 100, 100)" }}>
-					Auteur : {projectAuthor || "Inconnu"}
+					{t("author", { name: projectAuthor || t("unknownAuthor") })}
 				</Typography>
 			</FlexBox>
 

@@ -29,11 +29,3 @@ export function mmToPx(mm: number) {
 	const dpi = getScreenDPI();
 	return (mm / 25.4) * dpi;
 }
-
-export function downloadFromUrl(dataUrl: string, destinationFileName: string) {
-	const a = document.createElement("a");
-
-	a.setAttribute("download", destinationFileName);
-	a.setAttribute("href", dataUrl);
-	a.click();
-}

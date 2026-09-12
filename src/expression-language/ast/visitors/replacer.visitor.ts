@@ -1,5 +1,9 @@
 import { ASTNode } from "../nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import {
+	CounterNode,
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -62,7 +66,9 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		};
 	}
 
-	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): ASTNode {
+	protected visitArithmeticExpressionNode(
+		node: ArithmeticExpressionNode,
+	): ASTNode {
 		const replacement = this.replacements.find((r) => r.predicate(node));
 		if (replacement) return replacement.replacement;
 		return {
@@ -72,7 +78,9 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		};
 	}
 
-	protected visitComparisonExpressionNode(node: ComparisonExpressionNode): ASTNode {
+	protected visitComparisonExpressionNode(
+		node: ComparisonExpressionNode,
+	): ASTNode {
 		const replacement = this.replacements.find((r) => r.predicate(node));
 		if (replacement) return replacement.replacement;
 		return {
@@ -109,7 +117,9 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 			...node,
 			condition: this.visit(node.condition),
 			trueBranch: node.trueBranch.map((n) => this.visit(n)),
-			falseBranch: node.falseBranch ? node.falseBranch.map((n) => this.visit(n)) : null,
+			falseBranch: node.falseBranch
+				? node.falseBranch.map((n) => this.visit(n))
+				: null,
 		};
 	}
 
@@ -126,12 +136,27 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		};
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): ASTNode {
+	protected visitTimerStringDeclarationNode(
+		node: TimerStringDeclarationNode,
+	): ASTNode {
 		const replacement = this.replacements.find((r) => r.predicate(node));
 		if (replacement) return replacement.replacement;
 		return {
 			...node,
 			input: this.visit(node.input),
+		};
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): ASTNode {
+		const replacement = this.replacements.find((r) => r.predicate(node));
+		if (replacement) return replacement.replacement;
+		return {
+			...node,
+			input: this.visit(node.input),
+			control: this.visit(node.control),
+			presetValue: this.visit(node.presetValue),
+			currentValue: this.visit(node.currentValue),
+			output: this.visit(node.output),
 		};
 	}
 }

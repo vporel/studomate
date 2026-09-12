@@ -1,5 +1,9 @@
 import { ASTNode } from "../nodes/ast-node";
-import { TimerNode, TimerStringDeclarationNode } from "../nodes/blocks";
+import {
+	CounterNode,
+	TimerNode,
+	TimerStringDeclarationNode,
+} from "../nodes/blocks";
 import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
@@ -15,7 +19,9 @@ import { BaseVisitor } from "./base.visitor";
 /**
  * This visitor is used to find all the nodes of a specified type in an AST
  */
-export default class FinderVisitor<T extends ASTNode = ASTNode> extends BaseVisitor<T[]> {
+export default class FinderVisitor<
+	T extends ASTNode = ASTNode,
+> extends BaseVisitor<T[]> {
 	private typeToFind: ASTNode["type"];
 
 	constructor(typeToFind: ASTNode["type"]) {
@@ -40,7 +46,9 @@ export default class FinderVisitor<T extends ASTNode = ASTNode> extends BaseVisi
 	}
 
 	protected visitUnaryExpressionNode(node: UnaryExpressionNode): T[] {
-		return this.visit(node.expr).concat(node.type === this.typeToFind ? [node as T] : []);
+		return this.visit(node.expr).concat(
+			node.type === this.typeToFind ? [node as T] : [],
+		);
 	}
 
 	protected visitArithmeticExpressionNode(node: ArithmeticExpressionNode): T[] {
@@ -70,7 +78,9 @@ export default class FinderVisitor<T extends ASTNode = ASTNode> extends BaseVisi
 	protected visitIfControlNode(node: IfControlNode): T[] {
 		return this.visit(node.condition)
 			.concat(node.trueBranch.flatMap((n) => this.visit(n)))
-			.concat(node.falseBranch ? node.falseBranch.flatMap((n) => this.visit(n)) : [])
+			.concat(
+				node.falseBranch ? node.falseBranch.flatMap((n) => this.visit(n)) : [],
+			)
 			.concat(node.type === this.typeToFind ? [node as T] : []);
 	}
 
@@ -83,7 +93,20 @@ export default class FinderVisitor<T extends ASTNode = ASTNode> extends BaseVisi
 			.concat(node.type === this.typeToFind ? [node as T] : []);
 	}
 
-	protected visitTimerStringDeclarationNode(node: TimerStringDeclarationNode): T[] {
-		return this.visit(node.input).concat(node.type === this.typeToFind ? [node as T] : []);
+	protected visitTimerStringDeclarationNode(
+		node: TimerStringDeclarationNode,
+	): T[] {
+		return this.visit(node.input).concat(
+			node.type === this.typeToFind ? [node as T] : [],
+		);
+	}
+
+	protected visitCounterBlockNode(node: CounterNode): T[] {
+		return this.visit(node.input)
+			.concat(this.visit(node.control))
+			.concat(this.visit(node.presetValue))
+			.concat(this.visit(node.currentValue))
+			.concat(this.visit(node.output))
+			.concat(node.type === this.typeToFind ? [node as T] : []);
 	}
 }

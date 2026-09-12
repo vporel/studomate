@@ -1,4 +1,4 @@
-﻿import Grafcet from "../grafcet.schema";
+import Grafcet from "../grafcet.schema";
 import { JUNCTION_HANDLE_PIVOT } from "../junction.schema";
 import Step from "../step.schema";
 import Transition from "../transition.schema";
@@ -8,12 +8,18 @@ export default class JunctionAndStartHelper {
 	 * Returns the steps that the junction and start fans out to (AND divergence successors).
 	 * Each branch handle of the junction connects to one step.
 	 */
-	static getSuccessorSteps(junctionAndStartId: string, grafcet: Grafcet): Step[] {
-		const junctionAndStart = grafcet.junctionsAndStarts.find((j) => j.id === junctionAndStartId);
+	static getSuccessorSteps(
+		junctionAndStartId: string,
+		grafcet: Grafcet,
+	): Step[] {
+		const junctionAndStart = grafcet.junctionsAndStarts[junctionAndStartId];
 		if (!junctionAndStart) return [];
 		const steps: Step[] = [];
 		for (const branchId of junctionAndStart.data.branchesOrder) {
-			const conns = grafcet.getConnectionsByElementIdAndHandle(junctionAndStartId, branchId);
+			const conns = grafcet.getConnectionsByElementIdAndHandle(
+				junctionAndStartId,
+				branchId,
+			);
 			if (conns.length === 0) continue;
 			if (conns[0].target.type !== "step") {
 				throw new Error(
@@ -21,7 +27,10 @@ export default class JunctionAndStartHelper {
 						`Found a connection to a ${conns[0].target.type} (id: ${conns[0].target.id}).`,
 				);
 			}
-			const step = grafcet.getElementByIdAndType<Step>(conns[0].target.id, "step");
+			const step = grafcet.getElementByIdAndType<Step>(
+				conns[0].target.id,
+				"step",
+			);
 			if (step) steps.push(step);
 		}
 		return steps;
@@ -30,11 +39,15 @@ export default class JunctionAndStartHelper {
 	/**
 	 * Returns the transition that lead to the junction and start node
 	 */
-	static getPredecessorTransition(junctionAndStartId: string, grafcet: Grafcet): Transition | null {
-		const connectionsToJunctionAndStart = grafcet.getConnectionsByElementIdAndHandle(
-			junctionAndStartId,
-			JUNCTION_HANDLE_PIVOT,
-		);
+	static getPredecessorTransition(
+		junctionAndStartId: string,
+		grafcet: Grafcet,
+	): Transition | null {
+		const connectionsToJunctionAndStart =
+			grafcet.getConnectionsByElementIdAndHandle(
+				junctionAndStartId,
+				JUNCTION_HANDLE_PIVOT,
+			);
 		if (connectionsToJunctionAndStart.length === 0) return null;
 		if (connectionsToJunctionAndStart.length > 1)
 			throw new Error(

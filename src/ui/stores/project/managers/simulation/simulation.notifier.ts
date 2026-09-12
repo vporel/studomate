@@ -19,6 +19,10 @@ export default interface SimulationNotifier {
 	analysisCompleted(summary: AnalysisSummary): void;
 	simulationStarting(): void;
 	simulationCouldNotStart(failure: SimulationFailure): void;
-	/** Le cycle automate a échoué : la simulation s'est arrêtée d'elle-même. */
-	simulationCrashed(): void;
+	/**
+	 * Le cycle automate a échoué : la simulation s'est arrêtée d'elle-même. `reason` porte le
+	 * message lisible de l'exception à l'origine du crash (division par zéro dynamique, etc.)
+	 * quand il a pu être résolu.
+	 */
+	simulationCrashed(reason?: string): void;
 }

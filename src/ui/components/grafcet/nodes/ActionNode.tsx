@@ -1,19 +1,20 @@
 "use client";
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import Action, {
-	ACTION_EXECUTION_MODE_LABELS,
 	ACTION_HANDLE_TARGET_STEP,
 	ActionData,
 	ActionExecutionMode,
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import React, { type FC } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import React, { type FC, useMemo } from "react";
 import { useGrafcetStore } from "../context/GrafcetContext";
+import { useT } from "@/ui/i18n/useT";
 import GrafcetNode from "./GrafcetNode";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
@@ -21,23 +22,45 @@ export type ActionNodeType = Node<ActionData> & { type: "action" };
 
 export type ActionNodeProps = NodeProps<ActionNodeType>;
 
-const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth, height: nodeHeight }) => {
+const ActionNode: FC<ActionNodeProps> = ({
+	id,
+	data,
+	selected,
+	width,
+	height,
+}) => {
 	const th = useTheme();
+	const tModes = useT("grafcetEditor.actionModes");
 	const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 	const borderColor = selected ? th.palette.primary.main : "black";
-	const [editingExpression, setEditingExpression, editing, setEditing, saveExpression, error] =
-		useWithTextNodeValue(id, "action", data, "expression", false);
+	const [
+		editingExpression,
+		setEditingExpression,
+		editing,
+		setEditing,
+		saveExpression,
+		error,
+	] = useWithTextNodeValue(id, "action", data, "expression", false);
 	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const pageVisible = usePageVisible();
 
-	const activeInSimulation = useProjectStore((state) => {
-		const grafcet = state.project!.grafcets[grafcetId];
-		if (!grafcet) return false;
+	// Étape porteuse résolue via les connexions du grafcet : ne change qu'à l'édition du grafcet,
+	// pas par cycle de simulation — le sélecteur `activeInSimulation` ne fait alors qu'un accès
+	// indexé (même patron que `stepVariableId` dans `StepNode`).
+	const grafcet = useProjectStore((state) => state.project?.grafcets[grafcetId]);
+	const stepVariableId = useMemo(() => {
+		if (!grafcet) return null;
 		const step = ActionHelper.getStep(id, grafcet);
-		if (!step || step.data.number === "") return false;
-		return (
-			state.simulationVariablesStates[getStepVariableId(grafcetId, step.data.number)]?.value === true
-		);
-	});
+		if (!step || step.data.number === "") return null;
+		return getStepVariableId(grafcetId, step.data.number);
+	}, [id, grafcet, grafcetId]);
+
+	const activeInSimulation = useProjectStore(
+		(state) =>
+			pageVisible &&
+			stepVariableId !== null &&
+			state.simulationVariablesStates[stepVariableId]?.value === true,
+	);
 
 	return (
 		<>
@@ -63,8 +86,8 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 				type="action"
 				error={error}
 				sx={{
-					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
-					height: (nodeHeight != 0 ? nodeHeight : data.height) + "px",
+					width: (width ?? Action.DEFAULT_DIMENSIONS.width) + "px",
+					height: (height ?? Action.DEFAULT_DIMENSIONS.height) + "px",
 					borderWidth: data.type === ActionType.TEXT ? "1px" : "2px",
 					borderStyle: "solid",
 					borderColor: borderColor,
@@ -73,7 +96,9 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 					display: "flex",
 					alignItems: "center",
 					transition: "background .2s ease, borderColor .2s ease",
-					backgroundColor: activeInSimulation ? "primary.main" : "white",
+					backgroundColor: activeInSimulation
+						? th.palette.primary.main
+						: "white",
 					color: activeInSimulation ? "white" : "black",
 					"&:hover": {
 						backgroundColor: activeInSimulation ? "primary.main" : "#efefef",
@@ -106,8 +131,11 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 						border: "none",
 						outline: "none",
 						resize: "none",
-						boxSizing: "border-box",
 						padding: "0",
+						backgroundColor: activeInSimulation
+							? th.palette.primary.main
+							: "white",
+						color: activeInSimulation ? "white" : "black",
 						lineHeight: "1.1rem",
 						pointerEvents: !editing ? "none" : "all",
 						fontSize: "0.8rem",
@@ -137,7 +165,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 									data.executionMode === ActionExecutionMode.FALLING_EDGE
 										? "rotate(-35deg)"
 										: "rotate(35deg)",
-								top: data.executionMode === ActionExecutionMode.FALLING_EDGE ? "7px" : "-1px",
+								top:
+									data.executionMode === ActionExecutionMode.FALLING_EDGE
+										? "7px"
+										: "-1px",
 								left: "-2px",
 							},
 							"&::after": {
@@ -145,7 +176,10 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 									data.executionMode === ActionExecutionMode.FALLING_EDGE
 										? "rotate(35deg)"
 										: "rotate(-35deg)",
-								top: data.executionMode === ActionExecutionMode.FALLING_EDGE ? "7px" : "-1px",
+								top:
+									data.executionMode === ActionExecutionMode.FALLING_EDGE
+										? "7px"
+										: "-1px",
 								left: "2px",
 							},
 						}}
@@ -168,7 +202,7 @@ const ActionNode: FC<ActionNodeProps> = ({ id, data, selected, width: nodeWidth,
 						}}
 					>
 						<Typography fontSize="0.8rem">
-							{ACTION_EXECUTION_MODE_LABELS[data.executionMode].substring(0, 1)}
+							{tModes(data.executionMode).substring(0, 1)}
 						</Typography>
 					</Box>
 				)}

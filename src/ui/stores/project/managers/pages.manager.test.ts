@@ -1,12 +1,30 @@
 import { PageData, ProjectStoreState } from "../project.store";
 import PagesManager from "./pages.manager";
 
+const mockSetPagesSession = jest.fn();
+const mockSetActivePageIdInUrl = jest.fn();
+
+jest.mock("@/ui/lib/pages-session-storage", () => ({
+	setPagesSession: (...args: unknown[]) => mockSetPagesSession(...args),
+}));
+jest.mock("@/ui/lib/pages-url", () => ({
+	setActivePageIdInUrl: (...args: unknown[]) =>
+		mockSetActivePageIdInUrl(...args),
+}));
+
 /**
  * Ces tests tournent sans zustand ni React : le manager ne reçoit qu'un `get`/`set`.
  */
-function makeManager(initial: { pagesOrder?: string[]; pagesData?: Record<string, PageData>; activePageId?: string | null }) {
+function makeManager(
+	initial: {
+		pagesOrder?: string[];
+		pagesData?: Record<string, PageData>;
+		activePageId?: string | null;
+	},
+	projectId: string | null = "p1",
+) {
 	let state = {
-		project: {},
+		project: projectId ? { id: projectId } : null,
 		pagesOrder: initial.pagesOrder ?? [],
 		pagesData: initial.pagesData ?? {},
 		activePageId: initial.activePageId ?? null,
@@ -27,9 +45,14 @@ function page(id: string): PageData {
 }
 
 describe("PagesManager", () => {
+	afterEach(() => jest.clearAllMocks());
+
 	describe("openPage", () => {
 		it("ajoute la page en fin d'ordre et l'active", () => {
-			const { manager, getState } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a"],
+				pagesData: { a: page("a") },
+			});
 
 			manager.openPage(page("b"));
 
@@ -126,7 +149,10 @@ describe("PagesManager", () => {
 		});
 
 		it("ignore une page non ouverte", () => {
-			const { manager, getState } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a"],
+				pagesData: { a: page("a") },
+			});
 
 			manager.closePage("inexistante");
 
@@ -134,11 +160,116 @@ describe("PagesManager", () => {
 		});
 	});
 
+	describe("reorderPages", () => {
+		it("applique un nouvel ordre qui est une permutation des onglets ouverts", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b", "c"],
+				pagesData: { a: page("a"), b: page("b"), c: page("c") },
+			});
+
+			manager.reorderPages(["c", "a", "b"]);
+
+			expect(getState().pagesOrder).toEqual(["c", "a", "b"]);
+		});
+
+		it("persiste la session avec le nouvel ordre", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+			});
+
+			manager.reorderPages(["b", "a"]);
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", {
+				pagesOrder: ["b", "a"],
+				activePageId: "a",
+			});
+		});
+
+		it("ignore un ordre dont les ids ne correspondent pas exactement aux onglets ouverts", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+			});
+
+			manager.reorderPages(["a", "b", "c"]);
+			manager.reorderPages(["a"]);
+			manager.reorderPages(["a", "x"]);
+
+			expect(getState().pagesOrder).toEqual(["a", "b"]);
+		});
+	});
+
 	describe("setActivePage", () => {
 		it("refuse une page non ouverte", () => {
-			const { manager } = makeManager({ pagesOrder: ["a"], pagesData: { a: page("a") } });
+			const { manager } = makeManager({
+				pagesOrder: ["a"],
+				pagesData: { a: page("a") },
+			});
 
 			expect(() => manager.setActivePage("inexistante")).toThrow();
+		});
+	});
+
+	describe("persistance de la session (localStorage + URL)", () => {
+		it("openPage enregistre la session et pose activePage dans l'URL", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a"],
+				pagesData: { a: page("a") },
+			});
+
+			manager.openPage(page("b"));
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", {
+				pagesOrder: ["a", "b"],
+				activePageId: "b",
+			});
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("b");
+		});
+
+		it("closePage enregistre la session même quand la page active ne change pas", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+			});
+
+			manager.closePage("b");
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", {
+				pagesOrder: ["a"],
+				activePageId: "a",
+			});
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("a");
+		});
+
+		it("setActivePage enregistre la session", () => {
+			const { manager } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+			});
+
+			manager.setActivePage("b");
+
+			expect(mockSetPagesSession).toHaveBeenCalledWith("p1", {
+				pagesOrder: ["a", "b"],
+				activePageId: "b",
+			});
+			expect(mockSetActivePageIdInUrl).toHaveBeenCalledWith("b");
+		});
+
+		it("ne persiste rien sans projet ouvert", () => {
+			const { manager } = makeManager(
+				{ pagesOrder: ["a"], pagesData: { a: page("a") } },
+				null,
+			);
+
+			manager.closePage("a");
+
+			expect(mockSetPagesSession).not.toHaveBeenCalled();
+			expect(mockSetActivePageIdInUrl).not.toHaveBeenCalled();
 		});
 	});
 });

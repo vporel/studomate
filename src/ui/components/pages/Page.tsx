@@ -3,13 +3,17 @@
 import { Box, BoxProps } from "@mui/material";
 import { forwardRef, ReactNode } from "react";
 import { useProjectStore } from "../projects/ProjectContext";
+import PageVisibilityContext from "./page-visibility-context";
 
 interface PageComponentProps extends BoxProps {
 	pageId: string;
 	children: ReactNode;
 }
 
-const Page = forwardRef<HTMLElement, PageComponentProps>(function Page({ children, pageId, ...props }, ref) {
+const Page = forwardRef<HTMLElement, PageComponentProps>(function Page(
+	{ children, pageId, ...props },
+	ref,
+) {
 	const activePageId = useProjectStore((state) => state.activePageId);
 	const open = activePageId === pageId;
 
@@ -26,7 +30,9 @@ const Page = forwardRef<HTMLElement, PageComponentProps>(function Page({ childre
 				display: open ? "flex" : "none",
 			}}
 		>
-			{children}
+			<PageVisibilityContext.Provider value={open}>
+				{children}
+			</PageVisibilityContext.Provider>
 		</Box>
 	);
 });

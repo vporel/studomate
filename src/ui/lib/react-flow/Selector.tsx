@@ -58,7 +58,10 @@ const Selector = ({
 
 	function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
 		(e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
-		const { x, y } = screenToFlowPosition({ x: e.pageX, y: e.pageY }, { snapToGrid: false });
+		const { x, y } = screenToFlowPosition(
+			{ x: e.pageX, y: e.pageY },
+			{ snapToGrid: false },
+		);
 		switch (shape) {
 			case "rectangle":
 				rectanglePoints.current.p1 = { x, y };
@@ -101,7 +104,10 @@ const Selector = ({
 
 	function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
 		if (e.buttons !== 1) return;
-		const { x, y } = screenToFlowPosition({ x: e.pageX, y: e.pageY }, { snapToGrid: false });
+		const { x, y } = screenToFlowPosition(
+			{ x: e.pageX, y: e.pageY },
+			{ snapToGrid: false },
+		);
 		switch (shape) {
 			case "rectangle": {
 				rectanglePoints.current.p2 = { x, y };
@@ -125,7 +131,10 @@ const Selector = ({
 				break;
 			}
 			case "lasso": {
-				const nextPoints = [...lassoPoints.current, [x, y]] satisfies [number, number][];
+				const nextPoints = [...lassoPoints.current, [x, y]] satisfies [
+					number,
+					number,
+				][];
 				lassoPoints.current = nextPoints;
 				path.current = new Path2D(getSvgPathFromStroke(nextPoints));
 				break;
@@ -144,7 +153,8 @@ const Selector = ({
 			if (path.current) {
 				const nodesToSelect = new Set<string>();
 				const partial =
-					(shape == "rectangle" && rectanglePoints.current.p2.x < rectanglePoints.current.p1.x) ||
+					(shape == "rectangle" &&
+						rectanglePoints.current.p2.x < rectanglePoints.current.p1.x) ||
 					shape == "lasso";
 				for (const [nodeId, points] of Object.entries(nodesPoints.current)) {
 					if (partial) {
@@ -157,7 +167,9 @@ const Selector = ({
 					} else {
 						let allPointsInPath = true;
 						for (const point of points) {
-							if (!ctx.current.isPointInPath(path.current, point[0], point[1])) {
+							if (
+								!ctx.current.isPointInPath(path.current, point[0], point[1])
+							) {
 								allPointsInPath = false;
 								break;
 							}
@@ -165,7 +177,9 @@ const Selector = ({
 						if (allPointsInPath) nodesToSelect.add(nodeId);
 					}
 				}
-				setNodes((nds) => nds.map((nd) => ({ ...nd, selected: nodesToSelect.has(nd.id) })));
+				setNodes((nds) =>
+					nds.map((nd) => ({ ...nd, selected: nodesToSelect.has(nd.id) })),
+				);
 			}
 			ctx.current.clearRect(0, 0, width, height);
 		}

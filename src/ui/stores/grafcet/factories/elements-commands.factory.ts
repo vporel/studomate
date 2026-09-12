@@ -1,5 +1,5 @@
 import { deepObjectsComparison } from "@/lib/object";
-import ElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
+import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import Connection from "@/schemas/grafcet//connection.schema";
 import AbstractGrafcetCommand from "@/schemas/grafcet/commands/abstract-grafcet.command";
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/connections-remove.command";
@@ -9,8 +9,19 @@ import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.co
 import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
-import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
-import { NodeChange, NodeDimensionChange, NodePositionChange } from "@xyflow/react";
+import {
+	GRAFCET_ELEMENTS_CONFIG,
+	GrafcetNodeType,
+} from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import {
+	NodeChange,
+	NodeDimensionChange,
+	NodePositionChange,
+} from "@xyflow/react";
+
+/** Champs de donnée dont la modification (menu contextuel) est structurelle et ne doit pas être
+ * bloquée par le garde-fou d'analyse : le type et le mode d'exécution d'une action. */
+const STRUCTURAL_DATA_FIELDS = ["type", "executionMode"];
 
 export default class ElementsCommandsFactory {
 	static onNodesAdd(
@@ -47,6 +58,16 @@ export default class ElementsCommandsFactory {
 						id: node.id,
 						data: node.data,
 						position: node.position,
+						size: {
+							width:
+								node.width ??
+								GRAFCET_ELEMENTS_CONFIG[node.type].elementClass
+									.DEFAULT_DIMENSIONS.width,
+							height:
+								node.height ??
+								GRAFCET_ELEMENTS_CONFIG[node.type].elementClass
+									.DEFAULT_DIMENSIONS.height,
+						},
 					})),
 				),
 			);
@@ -77,11 +98,14 @@ export default class ElementsCommandsFactory {
 				id: node.id,
 				data: node.data,
 				position: node.position,
+				size: grafcet.getElementById(node.id)!.size,
 			}));
 
 		const commands: AbstractGrafcetCommand<any>[] = [];
-		if (nodesToRemove.length > 0) commands.push(new ElementsRemoveCommand(nodesToRemove));
-		if (connections.length > 0) commands.push(new ConnectionsRemoveCommand(connections));
+		if (nodesToRemove.length > 0)
+			commands.push(new ElementsRemoveCommand(nodesToRemove));
+		if (connections.length > 0)
+			commands.push(new ConnectionsRemoveCommand(connections));
 		return {
 			commands,
 			nodesIdsToDelete: nodesToRemove.map((n) => n.id),
@@ -93,24 +117,41 @@ export default class ElementsCommandsFactory {
 		nodeId: string,
 		newData:
 			| Partial<GrafcetNodeType["data"]>
-			| ((prevData: GrafcetNodeType["data"]) => Partial<GrafcetNodeType["data"]>),
+			| ((
+					prevData: GrafcetNodeType["data"],
+			  ) => Partial<GrafcetNodeType["data"]>),
 
 		grafcet: Grafcet,
 		dialect: Dialect = Dialect.FR,
-	): { commands: AbstractGrafcetCommand<any>[]; nodeDataToUpdate?: GrafcetNodeType["data"] } {
+	): {
+		commands: AbstractGrafcetCommand<any>[];
+		nodeDataToUpdate?: GrafcetNodeType["data"];
+	} {
 		const element = grafcet.getElementById(nodeId);
 		if (!element) return { commands: [] };
 		const prevData = element.data as any;
 		if (typeof newData === "function") newData = newData(prevData);
+		// Un changement purement structurel venu d'un menu (type d'action, mode d'exécution) doit
+		// toujours s'appliquer : l'analyseur signalera ensuite une éventuelle incohérence avec
+		// l'expression conservée. Le garde-fou ne concerne que l'édition du contenu lui-même.
+		const isStructuralOnlyChange =
+			Object.keys(newData).length > 0 &&
+			Object.keys(newData).every((key) =>
+				STRUCTURAL_DATA_FIELDS.includes(key),
+			);
 		newData = element.fixNewDataConsistency(newData, prevData);
-		const analyser = ElementAnalyserFactory.getAnalyserForType(element.type);
+		const analyser = GrafcetElementAnalyserFactory.getAnalyser(element.type);
+		if (!analyser) return { commands: [] };
 		const elementcopy = element.copy();
 		elementcopy.updateData(newData);
-		const issues = analyser.analyseIsolated(elementcopy, {
-			allowEmptyContent: true,
-			dialect,
-		});
-		if (issues.filter((issue) => issue.severity === "error").length > 0) return { commands: [] };
+		if (!isStructuralOnlyChange) {
+			const issues = analyser.analyseIsolated(elementcopy, {
+				allowEmptyContent: true,
+				dialect,
+			});
+			if (issues.filter((issue) => issue.severity === "error").length > 0)
+				return { commands: [] };
+		}
 		const fullModifiedData = { ...element.data, ...newData };
 		const commands = [];
 		//Make sure the data is not the same as the previous one, to avoid creating unnecessary commands
@@ -136,29 +177,26 @@ export default class ElementsCommandsFactory {
 		grafcet: Grafcet,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
-		nodesIdsToUpdate: Set<string>;
 	} {
 		const commands: AbstractGrafcetCommand<any>[] = [];
-		const nodesIdsToUpdate: Set<string> = new Set();
 		changes.forEach((change) => {
 			switch (change.type) {
 				case "position":
-					const { commands: positionCommands } = ElementsCommandsFactory.getPositionChangeCommands(
-						change,
-						grafcet,
-					);
+					const { commands: positionCommands } =
+						ElementsCommandsFactory.getPositionChangeCommands(change, grafcet);
 					commands.push(...positionCommands);
-					if (positionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
 				case "dimensions":
 					const { commands: dimensionCommands } =
-						ElementsCommandsFactory.getDimensionsChangeCommands(change, grafcet);
+						ElementsCommandsFactory.getDimensionsChangeCommands(
+							change,
+							grafcet,
+						);
 					commands.push(...dimensionCommands);
-					if (dimensionCommands.length > 0) nodesIdsToUpdate.add(change.id);
 					break;
 			}
 		});
-		return { commands, nodesIdsToUpdate };
+		return { commands };
 	}
 
 	private static getPositionChangeCommands(
@@ -172,10 +210,14 @@ export default class ElementsCommandsFactory {
 				commands: [], //No position provided or the node is still being dragged, we will handle the position change on the next event when the dragging is finished
 			};
 		const element = grafcet.getElementById(change.id);
-		if (!element) throw new Error("Grafcet element not found for id " + change.id);
+		if (!element)
+			throw new Error("Grafcet element not found for id " + change.id);
 		//Make sure the position is not the same as the previous one, to avoid creating unnecessary commands
 		const commands = [];
-		if (element.position.x !== change.position.x || element.position.y !== change.position.y) {
+		if (
+			element.position.x !== change.position.x ||
+			element.position.y !== change.position.y
+		) {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
@@ -203,29 +245,24 @@ export default class ElementsCommandsFactory {
 				commands: [], //No dimensions provided or currently resizing (we will handle the change at the end of the resizing to avoid creating unnecessary commands during the resizing)
 			};
 		const element = grafcet.getElementById(change.id);
-		if (!element) throw new Error("Grafcet element not found for id " + change.id);
+		if (!element)
+			throw new Error("Grafcet element not found for id " + change.id);
 		const commands = [];
 		//Make sure the dimensions are not the same as the previous ones, to avoid creating unnecessary commands
 		if (
-			element.data.width !== change.dimensions.width ||
-			element.data.height !== change.dimensions.height
+			element.size.width !== change.dimensions.width ||
+			element.size.height !== change.dimensions.height
 		) {
 			commands.push(
 				new ElementsUpdateCommand([
 					structuredClone({
 						type: element.type,
 						id: change.id,
-						data: {
-							...element.data,
+						size: {
 							width: change.dimensions.width,
 							height: change.dimensions.height,
-						} as any,
-						position: element.position,
-						previousData: element.data ? element.data || {} : undefined,
-						previousPosition: element.position || {
-							x: 0,
-							y: 0,
 						},
+						previousSize: element.size,
 					}),
 				]),
 			);

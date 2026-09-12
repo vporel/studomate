@@ -2,12 +2,15 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
+import JunctionAndStartBuilder from "@/schemas/grafcet/builders/junction-and-start.builder";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import NodesFactory from "./nodes.factory";
 
 function grafcetWithSteps(...numbers: number[]) {
 	const builder = new GrafcetBuilder();
-	numbers.forEach((n) => builder.addStep(new StepBuilder().id(`step-${n}`).number(n).build()));
+	numbers.forEach((n) =>
+		builder.addStep(new StepBuilder().id(`step-${n}`).number(n).build()),
+	);
 	return builder.build();
 }
 
@@ -23,7 +26,9 @@ describe("NodesFactory.syncNodes", () => {
 		it("getInitialNodes est le cas particulier d'une vue vide", () => {
 			const grafcet = grafcetWithSteps(1, 2);
 
-			expect(NodesFactory.getInitialNodes(grafcet)).toEqual(NodesFactory.syncNodes([], grafcet));
+			expect(NodesFactory.getInitialNodes(grafcet)).toEqual(
+				NodesFactory.syncNodes([], grafcet),
+			);
 		});
 	});
 
@@ -31,7 +36,10 @@ describe("NodesFactory.syncNodes", () => {
 	describe("préservation de l'état de vue", () => {
 		it("conserve la sélection quand l'élément ne change pas", () => {
 			const grafcet = grafcetWithSteps(1);
-			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({ ...n, selected: true }));
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				selected: true,
+			}));
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
 
@@ -40,8 +48,11 @@ describe("NodesFactory.syncNodes", () => {
 
 		it("conserve la sélection même quand l'élément change", () => {
 			const grafcet = grafcetWithSteps(1);
-			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({ ...n, selected: true }));
-			grafcet.steps[0].data.number = 42;
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				selected: true,
+			}));
+			Object.values(grafcet.steps)[0].data.number = 42;
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
 
@@ -59,7 +70,7 @@ describe("NodesFactory.syncNodes", () => {
 				width: 120,
 				height: 80,
 			})) as GrafcetNodeType[];
-			grafcet.steps[0].position = { x: 50, y: 60 };
+			Object.values(grafcet.steps)[0].position = { x: 50, y: 60 };
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
 
@@ -69,6 +80,41 @@ describe("NodesFactory.syncNodes", () => {
 			expect(nodes[0].position).toEqual({ x: 50, y: 60 });
 		});
 
+		it("resynchronise la largeur d'une jonction depuis le domaine (elle n'est pas mesurée par React Flow)", () => {
+			const grafcet = new GrafcetBuilder()
+				.addJunctionAndStart(
+					new JunctionAndStartBuilder().id("j1").build(),
+				)
+				.build();
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				width: 200,
+			})) as GrafcetNodeType[];
+			grafcet.getElementById("j1")!.size = { width: 320, height: 30 };
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
+
+			expect(nodes[0].width).toBe(320);
+		});
+
+		it("laisse la vue piloter la largeur d'une jonction pendant un redimensionnement", () => {
+			const grafcet = new GrafcetBuilder()
+				.addJunctionAndStart(
+					new JunctionAndStartBuilder().id("j1").build(),
+				)
+				.build();
+			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
+				...n,
+				width: 250,
+				resizing: true,
+			})) as GrafcetNodeType[];
+			grafcet.getElementById("j1")!.size = { width: 320, height: 30 };
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
+
+			expect(nodes[0].width).toBe(250);
+		});
+
 		it("conserve un champ de vue inconnu de la factory", () => {
 			// Garde-fou : on part du nœud précédent, donc tout champ non géré survit
 			const grafcet = grafcetWithSteps(1);
@@ -76,7 +122,7 @@ describe("NodesFactory.syncNodes", () => {
 				...n,
 				unChampFutur: "à conserver",
 			})) as any[];
-			grafcet.steps[0].data.number = 7;
+			Object.values(grafcet.steps)[0].data.number = 7;
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet) as any[];
 
@@ -103,7 +149,7 @@ describe("NodesFactory.syncNodes", () => {
 
 		it("réaligne la position une fois le geste terminé", () => {
 			const grafcet = grafcetWithSteps(1);
-			grafcet.steps[0].position = { x: 40, y: 50 };
+			Object.values(grafcet.steps)[0].position = { x: 40, y: 50 };
 			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
 				...n,
 				position: { x: 300, y: 300 },
@@ -122,7 +168,7 @@ describe("NodesFactory.syncNodes", () => {
 				position: { x: 300, y: 300 },
 				dragging: true,
 			})) as GrafcetNodeType[];
-			grafcet.steps[0].data.number = 8;
+			Object.values(grafcet.steps)[0].data.number = 8;
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
 
@@ -145,7 +191,7 @@ describe("NodesFactory.syncNodes", () => {
 		it("ne remplace que le nœud réellement modifié", () => {
 			const grafcet = grafcetWithSteps(1, 2);
 			const prev = NodesFactory.syncNodes([], grafcet);
-			grafcet.steps[0].position = { x: 99, y: 99 };
+			Object.values(grafcet.steps)[0].position = { x: 99, y: 99 };
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
 
@@ -154,12 +200,35 @@ describe("NodesFactory.syncNodes", () => {
 		});
 	});
 
+	describe("libellé accessible (ariaLabel)", () => {
+		it("pose un ariaLabel descriptif à la construction", () => {
+			const nodes = NodesFactory.syncNodes([], grafcetWithSteps(3));
+
+			expect(nodes[0].ariaLabel).toBe("Étape 3");
+		});
+
+		it("rafraîchit l'ariaLabel quand les données changent", () => {
+			const grafcet = grafcetWithSteps(1);
+			const prev = NodesFactory.syncNodes([], grafcet);
+			Object.values(grafcet.steps)[0].data.number = 42;
+
+			const nodes = NodesFactory.syncNodes(prev, grafcet);
+
+			expect(nodes[0].ariaLabel).toBe("Étape 42");
+		});
+	});
+
 	describe("ajouts et suppressions", () => {
 		it("ajoute un nœud pour un nouvel élément", () => {
 			const grafcet = grafcetWithSteps(1);
 			const prev = NodesFactory.syncNodes([], grafcet);
 			grafcet.addElements([
-				{ type: "step", id: "step-2", data: { number: 2, width: 10, height: 10 }, position: { x: 0, y: 0 } },
+				{
+					type: "step",
+					id: "step-2",
+					data: { number: 2 },
+					position: { x: 0, y: 0 },
+				},
 			]);
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);
@@ -189,11 +258,21 @@ describe("NodesFactory.syncNodes", () => {
 				.addTransition(new TransitionBuilder().id("trans-1").build())
 				.build();
 			const prev = [
-				{ id: "trans-1", type: "transition", data: {}, position: { x: 0, y: 0 } },
+				{
+					id: "trans-1",
+					type: "transition",
+					data: {},
+					position: { x: 0, y: 0 },
+				},
 				{ id: "step-1", type: "step", data: {}, position: { x: 0, y: 0 } },
 			] as unknown as GrafcetNodeType[];
 			grafcet.addElements([
-				{ type: "step", id: "step-9", data: { number: 9, width: 10, height: 10 }, position: { x: 0, y: 0 } },
+				{
+					type: "step",
+					id: "step-9",
+					data: { number: 9 },
+					position: { x: 0, y: 0 },
+				},
 			]);
 
 			const nodes = NodesFactory.syncNodes(prev, grafcet);

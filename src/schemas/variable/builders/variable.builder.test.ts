@@ -13,25 +13,40 @@ describe("VariableBuilder", () => {
 	});
 
 	it("builds a variable with custom mnemonic", () => {
-		const variable = new VariableBuilder().id("var-1").mnemonic("myVar").build();
+		const variable = new VariableBuilder()
+			.id("var-1")
+			.mnemonic("myVar")
+			.build();
 
 		expect(variable.mnemonic).toBe("myVar");
 	});
 
 	it("builds a variable with custom zone", () => {
-		const variable = new VariableBuilder().id("var-1").mnemonic("input1").zone("logic-input").build();
+		const variable = new VariableBuilder()
+			.id("var-1")
+			.mnemonic("input1")
+			.zone("logic-input")
+			.build();
 
 		expect(variable.zone).toBe("logic-input");
 	});
 
 	it("builds a variable with custom type", () => {
-		const variable = new VariableBuilder().id("var-1").mnemonic("counter").type("INT").build();
+		const variable = new VariableBuilder()
+			.id("var-1")
+			.mnemonic("counter")
+			.type("INT")
+			.build();
 
 		expect(variable.type).toBe("INT");
 	});
 
 	it("builds a variable with address", () => {
-		const variable = new VariableBuilder().id("var-1").mnemonic("sensor1").address("%I0.0").build();
+		const variable = new VariableBuilder()
+			.id("var-1")
+			.mnemonic("sensor1")
+			.address("%I0.0")
+			.build();
 
 		expect(variable.address).toBe("%I0.0");
 	});

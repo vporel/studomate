@@ -12,7 +12,11 @@ function buildStore() {
 		.id("g1")
 		.addStep(new StepBuilder().id("step-1").number(1).position(0, 0).build())
 		.build();
-	return createGrafcetStore(grafcet, new CommandsStack<Grafcet>(100), () => Dialect.FR);
+	return createGrafcetStore(
+		grafcet,
+		new CommandsStack<Grafcet>(100),
+		() => Dialect.FR,
+	);
 }
 
 function renumberCommand(newNumber: number, oldNumber: number) {
@@ -26,15 +30,19 @@ function renumberCommand(newNumber: number, oldNumber: number) {
 	]);
 }
 
-describe("CommandsStackManager (grafcet)", () => {
+describe("GrafcetCommandsStackManager (grafcet)", () => {
 	describe("executeOperation", () => {
 		it("applique la commande au grafcet et active l'annulation", () => {
 			const store = buildStore();
 
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
 
 			const state = store.getState();
-			expect((state.grafcet.getElementById("step-1")!.data as StepData).number).toBe(2);
+			expect(
+				(state.grafcet.getElementById("step-1")!.data as StepData).number,
+			).toBe(2);
 			expect(state.hasCommandsToUndo).toBe(true);
 			expect(state.hasCommandsToRedo).toBe(false);
 		});
@@ -53,12 +61,16 @@ describe("CommandsStackManager (grafcet)", () => {
 	describe("undoOperation", () => {
 		it("restaure l'état exact d'avant la commande", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
 
 			store.getState().commandsStackManager.undoOperation();
 
 			const state = store.getState();
-			expect((state.grafcet.getElementById("step-1")!.data as StepData).number).toBe(1);
+			expect(
+				(state.grafcet.getElementById("step-1")!.data as StepData).number,
+			).toBe(1);
 			expect(state.hasCommandsToUndo).toBe(false);
 			expect(state.hasCommandsToRedo).toBe(true);
 		});
@@ -76,7 +88,9 @@ describe("CommandsStackManager (grafcet)", () => {
 		// connexions, sans être reconstruite à la main commande par commande.
 		it("resynchronise les nœuds de la vue sur le grafcet annulé", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
 
 			store.getState().commandsStackManager.undoOperation();
 
@@ -88,13 +102,17 @@ describe("CommandsStackManager (grafcet)", () => {
 	describe("redoOperation", () => {
 		it("réapplique la commande annulée", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
 			store.getState().commandsStackManager.undoOperation();
 
 			store.getState().commandsStackManager.redoOperation();
 
 			const state = store.getState();
-			expect((state.grafcet.getElementById("step-1")!.data as StepData).number).toBe(2);
+			expect(
+				(state.grafcet.getElementById("step-1")!.data as StepData).number,
+			).toBe(2);
 			expect(state.hasCommandsToUndo).toBe(true);
 			expect(state.hasCommandsToRedo).toBe(false);
 		});
@@ -110,10 +128,14 @@ describe("CommandsStackManager (grafcet)", () => {
 
 		it("vide la pile de rétablissement après une nouvelle commande", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
 			store.getState().commandsStackManager.undoOperation();
 
-			store.getState().commandsStackManager.executeOperation([renumberCommand(3, 1)]);
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(3, 1)]);
 
 			expect(store.getState().hasCommandsToRedo).toBe(false);
 		});
@@ -122,13 +144,19 @@ describe("CommandsStackManager (grafcet)", () => {
 	describe("cycle complet", () => {
 		it("exécuter → annuler → rétablir redonne le même résultat", () => {
 			const store = buildStore();
-			store.getState().commandsStackManager.executeOperation([renumberCommand(2, 1)]);
-			const afterExecute = (store.getState().grafcet.getElementById("step-1")!.data as StepData).number;
+			store
+				.getState()
+				.commandsStackManager.executeOperation([renumberCommand(2, 1)]);
+			const afterExecute = (
+				store.getState().grafcet.getElementById("step-1")!.data as StepData
+			).number;
 
 			store.getState().commandsStackManager.undoOperation();
 			store.getState().commandsStackManager.redoOperation();
 
-			const afterRedo = (store.getState().grafcet.getElementById("step-1")!.data as StepData).number;
+			const afterRedo = (
+				store.getState().grafcet.getElementById("step-1")!.data as StepData
+			).number;
 			expect(afterRedo).toBe(afterExecute);
 		});
 	});

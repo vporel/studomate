@@ -1,13 +1,42 @@
 "use client";
-import { createProjectStore, ProjectStoreState } from "@/ui/stores/project/project.store";
+import {
+	createProjectStore,
+	ProjectStoreState,
+} from "@/ui/stores/project/project.store";
 import { setLastMousePosition } from "@/ui/lib/mouse-position";
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import {
+	clearTemplateParamsFromUrl,
+	getProjectIdFromUrl,
+	getShareTokenFromUrl,
+	getTemplateIdFromUrl,
+	getTemplateModeFromUrl,
+	setProjectIdInUrl,
+} from "@/ui/lib/project-url";
+import { PROJECT_TEMPLATES } from "@/templates/index";
+import {
+	createContext,
+	ReactNode,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { StoreApi, useStore } from "zustand";
-import AnalysisResult from "./AnalysisResult";
+import AnalysisResult from "./analysis-result/AnalysisResult";
+import CrossReferenceResult from "./cross-reference/CrossReferenceResult";
 import ExportModal from "./ExportModal";
+import NewProjectModal from "./NewProjectModal";
 import ProjectOpenModal from "./ProjectOpenModal";
+import SaveAsModal from "./SaveAsModal";
+import ShareProjectModal from "./ShareProjectModal";
+import ShareRequiresCloudModal from "./ShareRequiresCloudModal";
+import DraftRecoveryDialog from "./DraftRecoveryDialog";
+import DraftConflictDialog from "./DraftConflictDialog";
+import CloudConflictDialog from "./CloudConflictDialog";
+import SaveLocationModal from "./SaveLocationModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
+import Project from "@/schemas/project/project.schema";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
 
@@ -16,16 +45,20 @@ function ShortcutsHandler() {
 	return null;
 }
 
-export const ProjectContextProvider = ({ children }: { children: ReactNode }) => {
+export const ProjectContextProvider = ({
+	children,
+}: {
+	children: ReactNode;
+}) => {
 	const storeRef = useRef<StoreApi<ProjectStoreState> | null>(null);
 
 	if (!storeRef.current) {
 		storeRef.current = createProjectStore();
 	}
 
-	//Show a browser dialog when the user tries to close the tab or refresh the page with unsaved changes
 	useEffect(() => {
 		const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+			if (!storeRef.current?.getState().hasUnsavedChanges) return;
 			e.preventDefault();
 		};
 
@@ -35,7 +68,6 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		};
 	}, []);
 
-	//Constantly track the mouse position to be able to paste elements at the right position
 	useEffect(() => {
 		const handleMouseMove = (event: MouseEvent) => {
 			setLastMousePosition(event.clientX, event.clientY);
@@ -46,14 +78,111 @@ export const ProjectContextProvider = ({ children }: { children: ReactNode }) =>
 		};
 	}, []);
 
+	// Démarre l'auto-save dès le montage, l'arrête au démontage
+	useEffect(() => {
+		storeRef.current!.getState().lifecycleManager.startAutoSave();
+		return () => {
+			storeRef.current!.getState().lifecycleManager.stopAutoSave();
+		};
+	}, []);
+
+	// Affichée au démarrage à froid (aucun projet ni token dans l'URL) ; réactivée plus bas si
+	// la réouverture d'un projet dont l'id est dans l'URL échoue (id invalide, projet supprimé).
+	const [showDraftDialog, setShowDraftDialog] = useState(
+		() =>
+			!getProjectIdFromUrl() &&
+			!getShareTokenFromUrl() &&
+			!getTemplateIdFromUrl(),
+	);
+
+	// Ouverture par token de partage (prioritaire sur l'id de projet)
+	useEffect(() => {
+		const shareToken = getShareTokenFromUrl();
+		if (!shareToken) return;
+		const reopen = async () => {
+			const opened = await storeRef
+				.current!.getState()
+				.lifecycleManager.openProjectByShareToken(shareToken);
+			if (!opened) {
+				storeRef.current!.getState().finishBoot();
+				setShowDraftDialog(true);
+			}
+		};
+		void reopen();
+	}, []);
+
+	// Rouvre le projet dont l'id voyage dans l'URL, en cherchant d'abord un brouillon
+	useEffect(() => {
+		if (getShareTokenFromUrl()) return;
+		const projectId = getProjectIdFromUrl();
+		if (!projectId) return;
+		const reopen = async () => {
+			const opened = await storeRef
+				.current!.getState()
+				.lifecycleManager.openProject(projectId, true);
+			if (!opened) {
+				storeRef.current!.getState().finishBoot();
+				setProjectIdInUrl(null);
+				setShowDraftDialog(true);
+			}
+		};
+		void reopen();
+	}, []);
+
+	// Ouverture depuis un lien de template (`?template=id[&template-mode=solution]`, voir la
+	// landing page) — priorité au token de partage / à l'id de projet s'ils sont présents.
+	useEffect(() => {
+		if (getShareTokenFromUrl() || getProjectIdFromUrl()) return;
+		const templateId = getTemplateIdFromUrl();
+		if (!templateId) return;
+		const template = PROJECT_TEMPLATES.find((t) => t.id === templateId);
+		if (!template) {
+			clearTemplateParamsFromUrl();
+			storeRef.current!.getState().finishBoot();
+			setShowDraftDialog(true);
+			return;
+		}
+		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
+		const open = async () => {
+			await storeRef
+				.current!.getState()
+				.lifecycleManager.newProjectFromTemplate(
+					templateId,
+					wantsSolution ? "solution" : "exercise",
+				);
+			clearTemplateParamsFromUrl();
+		};
+		void open();
+	}, []);
+
+	const handleDraftOpen = (draftData: string) => {
+		try {
+			const project = Project.createFromJSON(draftData);
+			void storeRef
+				.current!.getState()
+				.lifecycleManager.openProject(project.id, true);
+		} catch {
+			// brouillon corrompu : ignoré silencieusement
+		}
+	};
+
 	return (
 		<ProjectContext.Provider value={storeRef.current}>
 			{children}
 			<ShortcutsHandler />
 			<UnsavedChangesDialog />
+			<NewProjectModal />
 			<ProjectOpenModal />
 			<ExportModal />
+			<SaveAsModal />
+			<ShareProjectModal />
+			<ShareRequiresCloudModal />
 			<AnalysisResult />
+			<CrossReferenceResult />
+			{showDraftDialog && <DraftRecoveryDialog onOpen={handleDraftOpen} />}
+			<DraftConflictDialog />
+			<CloudConflictDialog />
+			<SaveLocationModal />
 		</ProjectContext.Provider>
 	);
 };
@@ -63,7 +192,9 @@ export const useProjectContext = () => useContext(ProjectContext);
 export function useProjectStore<T>(selector: (state: ProjectStoreState) => T) {
 	const store = useProjectContext();
 	if (!store) {
-		throw new Error("useProjectStore must be used within a ProjectContextProvider");
+		throw new Error(
+			"useProjectStore must be used within a ProjectContextProvider",
+		);
 	}
 	return useStore(store, selector);
 }

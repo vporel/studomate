@@ -1,61 +1,147 @@
 import Project from "@/schemas/project/project.schema";
-import { isFromNewerVersion, migrateProject } from "../migrations";
-import ProjectRepository, { SaveFailureReason, SaveResult } from "./project.repository";
-
-const STORAGE_KEY = "studomate_projects_data";
+import {
+	deserializeProject,
+	deserializeProjects,
+} from "../project-deserialization";
+import { ensureLocalStorageLayout } from "../migrations/local-storage";
+import {
+	PROJECTS_INDEX_KEY,
+	ProjectIndex,
+	projectKey,
+} from "../migrations/local-storage/keys";
+import { classifyStorageWriteError } from "../storage-write-error";
+import ProjectRepository, {
+	ProjectListResult,
+	SaveResult,
+} from "./project.repository";
 
 /**
  * Stockage des projets dans le `localStorage` du navigateur.
  *
- * **La disposition du stockage est une affaire interne à ce repository** : la clé utilisée, la
- * façon dont les projets y sont rangés, tout cela ne quitte jamais cette classe et n'a donc
- * pas à être versionné. Une implémentation base de données répondrait à ces questions
- * autrement, sans que rien d'autre ne change.
+ * **La disposition du stockage est une affaire interne à ce repository** — mais elle est
+ * versionnée (`../migrations/local-storage/`), car un projet peut devenir gros et une clé unique
+ * pour tous les projets faisait payer chaque `save`/`get`/`delete` du poids de tous les autres.
  *
- * Ce qui est versionné, en revanche, c'est la **forme d'un projet** — et cette version est
- * portée par le projet lui-même, donc partagée par tous les supports.
+ * Disposition v1 : une clé `studomate_project_<id>` par projet, plus un index `{ id, name }` sous
+ * `studomate_projects_data`. `ensureLocalStorageLayout()` migre depuis la v0 (tableau unique) à
+ * la première opération. Tant que la migration n'a pas abouti (quota), le repository reste
+ * fonctionnel en lisant/écrivant l'ancienne disposition.
  *
- * **Une seule clé pour tous les projets, volontairement.** Studomate est un outil pédagogique :
- * peu de projets par utilisateur, chacun de petite taille (un grafcet tient en quelques Ko de
- * JSON). Une clé par projet résoudrait un problème de passage à l'échelle que ce
- * contexte n'a pas. Si ça change (gros volumes, sauvegarde cloud...), c'est cette classe seule
- * qu'il faudra remplacer — voir la remarque sur la disposition du stockage ci-dessus.
+ * Ce qui reste porté par le projet lui-même, et non par la disposition, c'est la **forme d'un
+ * projet** (`schemaVersion`) — partagée par tous les supports.
+ *
+ * Chaque méthode est `async` bien que le stockage soit synchrone : simule la latence d'un futur
+ * backend distant sans lui, pour que l'interface `ProjectRepository` — et l'indicateur
+ * `savingProject` qui en dépend — n'ait pas à changer.
  */
 export default class LocalStorageProjectRepository implements ProjectRepository {
-	list(): Project[] {
-		return this.readRawProjects()
-			.map((raw) => this.toProject(raw))
-			.filter((p): p is Project => p !== null);
+	private layoutVersion: number | null = null;
+
+	/** Migre la disposition une fois par instance, et retient la version effective. */
+	private ensureLayout(): number {
+		if (this.layoutVersion === null) {
+			this.layoutVersion = ensureLocalStorageLayout();
+		}
+		return this.layoutVersion;
 	}
 
-	get(projectId: string): Project | null {
-		return this.list().find((p) => p.id === projectId) ?? null;
+	async list(): Promise<ProjectListResult> {
+		return deserializeProjects(this.readRawProjects());
 	}
 
-	save(project: Project): SaveResult {
-		const raws = this.readRawProjects();
-		const serialized = JSON.parse(JSON.stringify(project));
+	async get(projectId: string): Promise<Project | null> {
+		const raw =
+			this.ensureLayout() >= 1
+				? this.readRawProject(projectId)
+				: (this.readLegacyProjects().find((p) => p?.id === projectId) ?? null);
+		if (!raw) return null;
+		const result = deserializeProject(raw);
+		return result.ok ? result.project : null;
+	}
+
+	// `location` (voir `ProjectRepository`) est sans objet ici : ce repository ne connaît qu'un
+	// seul lieu de stockage.
+	async save(project: Project): Promise<SaveResult> {
+		//Une copie de surface suffit à détacher le prototype de classe avant `JSON.stringify`.
+		const serialized = { ...project };
+
+		if (this.ensureLayout() >= 1) {
+			const projectWrite = this.writeKey(projectKey(project.id), serialized);
+			if (!projectWrite.ok) return projectWrite;
+			const index = this.readIndex();
+			index[project.id] = { name: project.name };
+			//Si l'index échoue après l'écriture du projet, le projet est écrit mais absent de la
+			//liste ; l'échec est remonté et un ré-enregistrement (idempotent) le rattrapera.
+			return this.writeKey(PROJECTS_INDEX_KEY, index);
+		}
+
+		const raws = this.readLegacyProjects();
 		const index = raws.findIndex((p) => p?.id === project.id);
 		if (index === -1) raws.push(serialized);
 		else raws[index] = serialized;
-		return this.write(raws);
+		return this.writeKey(PROJECTS_INDEX_KEY, raws);
 	}
 
-	delete(projectId: string): SaveResult {
-		return this.write(this.readRawProjects().filter((p) => p?.id !== projectId));
+	async delete(projectId: string): Promise<SaveResult> {
+		if (this.ensureLayout() >= 1) {
+			try {
+				localStorage.removeItem(projectKey(projectId));
+			} catch (e) {
+				console.error(`Clé du projet "${projectId}" non supprimée :`, e);
+			}
+			const index = this.readIndex();
+			delete index[projectId];
+			return this.writeKey(PROJECTS_INDEX_KEY, index);
+		}
+		return this.writeKey(
+			PROJECTS_INDEX_KEY,
+			this.readLegacyProjects().filter((p) => p?.id !== projectId),
+		);
+	}
+
+	private readRawProjects(): Record<string, any>[] {
+		if (this.ensureLayout() >= 1) {
+			return Object.keys(this.readIndex())
+				.map((id) => this.readRawProject(id))
+				.filter((p): p is Record<string, any> => p !== null);
+		}
+		return this.readLegacyProjects();
+	}
+
+	private readRawProject(id: string): Record<string, any> | null {
+		try {
+			const raw = localStorage.getItem(projectKey(id));
+			if (!raw) return null;
+			const parsed = JSON.parse(raw);
+			return parsed && typeof parsed === "object" ? parsed : null;
+		} catch (e) {
+			console.error(`Projet "${id}" illisible, ignoré :`, e);
+			return null;
+		}
+	}
+
+	private readIndex(): ProjectIndex {
+		try {
+			const raw = localStorage.getItem(PROJECTS_INDEX_KEY);
+			const parsed = raw ? JSON.parse(raw) : {};
+			if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+				return {};
+			}
+			return parsed as ProjectIndex;
+		} catch {
+			return {};
+		}
 	}
 
 	/**
-	 * Lit les projets bruts, en absorbant l'ancienne disposition.
-	 *
-	 * La toute première version rangeait un tableau JSON dont les *entrées étaient elles-mêmes
-	 * des chaînes JSON*, ce qui doublait l'échappement. C'est une question de rangement, pas de
-	 * forme de projet : elle se règle donc ici, sans migration.
+	 * Lit le tableau unique de la disposition v0, en absorbant l'ancien format où chaque entrée
+	 * était elle-même une chaîne JSON (double échappement). N'est utilisé que tant que la
+	 * migration v0 → v1 n'a pas abouti.
 	 */
-	private readRawProjects(): Record<string, any>[] {
+	private readLegacyProjects(): Record<string, any>[] {
 		let parsed: unknown;
 		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
+			const raw = localStorage.getItem(PROJECTS_INDEX_KEY);
 			if (!raw) return [];
 			parsed = JSON.parse(raw);
 		} catch (e) {
@@ -70,8 +156,6 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 				try {
 					return JSON.parse(entry);
 				} catch {
-					//Une entrée illisible est écartée : perdre un projet est grave, les perdre
-					//tous l'est davantage
 					console.error("Projet illisible écarté");
 					return null;
 				}
@@ -79,46 +163,12 @@ export default class LocalStorageProjectRepository implements ProjectRepository 
 			.filter((p): p is Record<string, any> => !!p && typeof p === "object");
 	}
 
-	private write(raws: Record<string, any>[]): SaveResult {
+	private writeKey(key: string, value: unknown): SaveResult {
 		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(raws));
+			localStorage.setItem(key, JSON.stringify(value));
 			return { ok: true };
 		} catch (e) {
-			return { ok: false, reason: this.failureReason(e), cause: e };
-		}
-	}
-
-	private failureReason(e: unknown): SaveFailureReason {
-		if (typeof DOMException !== "undefined" && e instanceof DOMException) {
-			//Firefox et Chrome ne s'accordent pas sur le nom, et Chrome utilise le code 22
-			if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22) {
-				return "quota-exceeded";
-			}
-		}
-		if (typeof localStorage === "undefined") return "unavailable";
-		return "unknown";
-	}
-
-	/**
-	 * Reconstruit un projet, en migrant sa forme si besoin et en refusant ce qui n'est pas
-	 * lisible plutôt que de produire un objet incohérent.
-	 */
-	private toProject(raw: Record<string, any>): Project | null {
-		if (typeof raw.id !== "string" || raw.id === "") {
-			console.error("Projet sans identifiant valide ignoré");
-			return null;
-		}
-		if (isFromNewerVersion(raw)) {
-			//Laissé intact : une version ancienne ne doit pas réécrire ce qu'elle ne comprend pas
-			console.warn(`Projet "${raw.id}" enregistré par une version plus récente, ignoré`);
-			return null;
-		}
-		try {
-			const { project } = migrateProject(raw);
-			return Project.createFromJSON(JSON.stringify(project));
-		} catch (e) {
-			console.error(`Projet "${raw.id}" illisible, ignoré :`, e);
-			return null;
+			return { ok: false, reason: classifyStorageWriteError(e), cause: e };
 		}
 	}
 }

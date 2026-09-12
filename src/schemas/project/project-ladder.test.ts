@@ -1,0 +1,68 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import Ladder from "@/schemas/ladder/ladder.schema";
+import Project from "./project.schema";
+
+describe("Project — intégration Ladder", () => {
+	it("createLadder ajoute un ladder au projet, accessible via ladders/getLadder", () => {
+		const project = new Project("p1", "Projet", "");
+
+		const ladder = project.createLadder("Mon ladder");
+
+		expect(project.getLadder(ladder.id)).toBe(ladder);
+		expect(project.ladders[ladder.id]).toBe(ladder);
+	});
+
+	it("ne mélange pas grafcets et ladders dans les accesseurs typés", () => {
+		const project = new Project("p1", "Projet", "");
+		project.createGrafcet("Mon grafcet");
+		const ladder = project.createLadder("Mon ladder");
+
+		expect(Object.keys(project.ladders).sort()).toEqual(
+			[ladder.id, project.main.id].sort(),
+		);
+		expect(Object.keys(project.grafcets)).toHaveLength(1);
+	});
+
+	it("createFromJSON reconstruit un ladder à partir de son type", () => {
+		const project = new Project("p1", "Projet", "");
+		const ladder = project.createLadder("Mon ladder");
+
+		const restored = Project.createFromJSON(JSON.stringify(project));
+
+		expect(restored.getLadder(ladder.id)).toBeInstanceOf(Ladder);
+	});
+
+	it("setDialect ne touche pas au ladder (pas d'expression textuelle dans ce périmètre)", () => {
+		const project = new Project("p1", "Projet", "");
+		const ladder = project.createLadder("Mon ladder");
+		const section = ladder.sections[0];
+
+		project.setDialect(Dialect.EN);
+
+		expect(project.getLadder(ladder.id)!.sections[0]).toBe(section);
+		expect(project.dialect).toBe(Dialect.EN);
+	});
+});
+
+describe("Project.nextProgramName", () => {
+	it("génère Label_1 quand aucun programme ne porte ce nom", () => {
+		const project = new Project("p1", "Projet", "");
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_1");
+	});
+
+	it("avance au premier numéro libre", () => {
+		const project = new Project("p1", "Projet", "");
+		project.createLadder("Ladder_1");
+		project.createLadder("Ladder_2");
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_3");
+	});
+
+	it("partage le même espace de noms entre ladders et grafcets", () => {
+		const project = new Project("p1", "Projet", "");
+		project.createGrafcet("Ladder_1");
+
+		expect(project.nextProgramName("Ladder")).toBe("Ladder_2");
+	});
+});

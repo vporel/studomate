@@ -4,10 +4,22 @@ import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import PLC from "@/simulator/core/plc/plc";
+import Variable from "@/schemas/variable/variable.schema";
+import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
  * Helper functions for integration tests
  */
+
+/**
+ * Construit l'`Environment` attendu par `GrafcetElementAnalyser.analyseInContext` à partir
+ * d'une liste de variables de schéma — équivalent de ce que `GrafcetAnalyser.analyse`
+ * construit une fois par grafcet.
+ */
+export function analyserEnvironment(variables: Variable[] = []): Environment {
+	return buildAnalysisEnvironment(variables);
+}
 
 /**
  * Runs the complete pipeline: Analysis → Pre-compilation → Compilation
@@ -23,7 +35,7 @@ export function compileProject(project: Project, dialect: Dialect = Dialect.FR):
 
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
-		analysisResult.stepsVariables,
+		analysisResult.generatedVariables,
 		dialect,
 	);
 	if (preCompilationResult.errors.length > 0 || !preCompilationResult.result) {
@@ -45,7 +57,7 @@ export function compilePipelineDetailed(project: Project, dialect: Dialect = Dia
 	const analysisResult = ProjectAnalyser.analyse(project);
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
-		analysisResult.stepsVariables,
+		analysisResult.generatedVariables,
 		dialect,
 	);
 	const compilationResult = preCompilationResult.result
@@ -77,6 +89,7 @@ export function createPLC(
 	return new PLC({
 		scanTimeMs,
 		program: compiled.routines,
+		routinesById: compiled.routinesById,
 		variables: compiled.variables,
 		onCycleEnd: callbacks?.onCycleEnd,
 		onCycleError: callbacks?.onCycleError,
@@ -100,25 +113,6 @@ export function compileToPLC(
 		return null;
 	}
 	return createPLC(compiled, scanTimeMs, callbacks);
-}
-
-/**
- * Waits for a specified number of milliseconds
- */
-export function wait(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Runs a PLC for a specified number of cycles
- * @param plc PLC instance
- * @param cycles Number of cycles to run
- * @param scanTimeMs Scan time per cycle
- */
-export async function runPLCCycles(plc: PLC, cycles: number, scanTimeMs: number): Promise<void> {
-	plc.start();
-	await wait(cycles * scanTimeMs + 50); // Add 50ms buffer
-	plc.stop();
 }
 
 /**

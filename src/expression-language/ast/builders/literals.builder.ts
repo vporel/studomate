@@ -1,4 +1,4 @@
-import { createRandomId } from "@/simulator/utils/ids";
+import { createRandomId } from "@/ids";
 import { BooleanNode, NumberNode, StringNode } from "../nodes/literals";
 
 export default class LiteralsBuilder {

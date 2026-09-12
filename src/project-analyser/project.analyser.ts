@@ -1,36 +1,33 @@
-import Grafcet from "../schemas/grafcet/grafcet.schema";
-import { ProgramType } from "../schemas/program/program.schema";
+import { ProgramType } from "@/schemas/program/program.schema";
 import ProgramAnalyser from "./program.analyser";
-import Project from "../schemas/project/project.schema";
-import Variable from "../schemas/variable/variable.schema";
+import Project from "@/schemas/project/project.schema";
+import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.builder";
+import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
+import LadderAnalyser from "./analysers/ladder/ladder.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
 
 export type ProjectAnalysisResult = {
 	totalAnalysedElements: number;
 	issues: ProjectAnalyserIssue[];
 	/**
-	 * Synthetic BOOL memory variables generated for each step with a valid number.
-	 * Mnemonic pattern: X{stepNumber} — available for use in transition/action expressions.
+	 * Toutes les variables synthétiques générées par tous les programmes du projet — les `X{n}`
+	 * d'étape en GRAFCET, mais aussi les variables de bloc en Ladder (`<Nom>.IN/.Q/.ET` d'un bloc
+	 * tempo, mémoire de front, ports EN/ENO...). Ne contient PAS `project.variables` : à fusionner
+	 * par l'appelant (voir `ProjectPreCompiler.preCompile`, qui attend exactement ça).
 	 */
-	stepsVariables: Variable[];
+	generatedVariables: Variable[];
 };
 
 /**
- * Une entrée par notation. En ajouter une consiste à écrire son analyseur et à l'inscrire
- * ici — rien d'autre ne change dans ce fichier.
+ * Une entrée par notation, chaque analyseur implémentant directement `ProgramAnalyser` — en
+ * ajouter une consiste à écrire son analyseur et à l'inscrire ici. Ses éventuelles règles
+ * cross-programmes passent par le hook `crossProgramChecks` de l'interface, appelé génériquement
+ * plus bas : rien d'autre ne change dans ce fichier.
  */
 const PROGRAM_ANALYSERS: Record<ProgramType, ProgramAnalyser<any>> = {
-	grafcet: {
-		analyse: (grafcet: Grafcet, project: Project) => {
-			const result = GrafcetAnalyser.analyse(grafcet, project);
-			return {
-				issues: result.issues,
-				generatedVariables: result.stepsVariables,
-				analysedElementsCount: grafcet.getAllElements().length,
-			};
-		},
-	},
+	grafcet: new GrafcetAnalyser(),
+	ladder: new LadderAnalyser(),
 };
 
 export default class ProjectAnalyser {
@@ -48,69 +45,61 @@ export default class ProjectAnalyser {
 
 		let totalAnalysedElements = 0;
 
+		// Première passe : génère les variables synthétiques de chaque programme (X{n} d'étape,
+		// `<Nom>.IN/.Q/.ET` d'un bloc tempo...), sans encore rien analyser — un programme ne peut
+		// valider ses propres références qu'après avoir vu ce que TOUS les autres génèrent (voir
+		// `ProgramAnalyser.generateVariables`).
+		for (const program of Object.values(project.programs)) {
+			const analyser = PROGRAM_ANALYSERS[program.type];
+			if (!analyser) continue;
+			generatedVariablesByProgram.set(
+				program.id,
+				analyser.generateVariables(program),
+			);
+		}
+		const allVariables = [
+			...project.variables,
+			...[...generatedVariablesByProgram.values()].flat(),
+			...SYSTEM_SCHEMA_VARIABLES,
+		];
+
+		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des
+		// variables du projet (les siennes propres et celles de tous les autres).
 		for (const program of Object.values(project.programs)) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) {
-				console.error(`Aucun analyseur pour la notation "${program.type}"`);
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"PROJECT_MISSING_ANALYSER_FOR_NOTATION",
+						{ sourceType: "project", sourceId: project.id },
+						{ notation: program.type, programName: program.name },
+					),
+				);
 				continue;
 			}
-			const result = analyser.analyse(program, project);
+			const result = analyser.analyse(program, project, allVariables);
 			issues.push(...result.issues);
-			generatedVariablesByProgram.set(program.id, result.generatedVariables);
 			totalAnalysedElements += result.analysedElementsCount;
 		}
 
-		issues.push(...this.checkDuplicateStepNumbers(generatedVariablesByProgram, project));
+		// Règles cross-programmes propres à une notation : déléguées à l'analyseur de cette notation
+		// via son hook optionnel `crossProgramChecks`.
+		for (const analyser of Object.values(PROGRAM_ANALYSERS)) {
+			issues.push(
+				...(analyser.crossProgramChecks?.(
+					project,
+					generatedVariablesByProgram,
+				) ?? []),
+			);
+		}
 
 		return {
 			totalAnalysedElements,
 			issues,
-			stepsVariables: [...generatedVariablesByProgram.values()].flatMap((vars) => vars),
+			generatedVariables: [...generatedVariablesByProgram.values()].flatMap(
+				(vars) => vars,
+			),
 		};
-	}
-
-	/**
-	 * Cross-grafcet rule: a step number must be unique across all grafcets of a project.
-	 * Uses the already-computed stepsVariables (one mnemonic = one valid unique number per grafcet).
-	 * Detection: total mnemonic count vs Set size — if they differ, duplicates exist across grafcets.
-	 * Emits one project-level issue per duplicated number, listing the involved grafcet names.
-	 */
-	private static checkDuplicateStepNumbers(
-		generatedVariablesByProgram: Map<string, Variable[]>,
-		project: Project,
-	): ProjectAnalyserIssue[] {
-		const allMnemonics = [...generatedVariablesByProgram.values()].flatMap((vars) =>
-			vars.map((v) => v.mnemonic),
-		);
-
-		// Quick exit: no cross-grafcet duplicates
-		if (new Set(allMnemonics).size === allMnemonics.length) return [];
-
-		// Build mnemonic → grafcet names mapping
-		const mnemonicToGrafcetNames = new Map<string, string[]>();
-		for (const [grafcetId, vars] of generatedVariablesByProgram) {
-			const grafcetName = project.getProgram(grafcetId)?.name ?? grafcetId;
-			for (const variable of vars) {
-				if (!mnemonicToGrafcetNames.has(variable.mnemonic))
-					mnemonicToGrafcetNames.set(variable.mnemonic, []);
-				mnemonicToGrafcetNames.get(variable.mnemonic)!.push(grafcetName);
-			}
-		}
-
-		const issues: ProjectAnalyserIssue[] = [];
-		for (const [mnemonic, grafcetNames] of mnemonicToGrafcetNames) {
-			if (grafcetNames.length < 2) continue;
-			const stepNumber = parseInt(mnemonic.slice(1)); // X{n} → n
-			const names = grafcetNames.map((n) => `"${n}"`).join(", ");
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
-					{ sourceType: "project", sourceId: project.id },
-					`Le numéro d'étape ${stepNumber} est utilisé dans plusieurs grafcets du projet : ${names}. Chaque numéro d'étape doit être unique à l'échelle du projet.`,
-				),
-			);
-		}
-		return issues;
 	}
 }

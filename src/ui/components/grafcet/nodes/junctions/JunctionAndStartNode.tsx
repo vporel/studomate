@@ -18,7 +18,11 @@ const JunctionAndStartNode: FC<JunctionAndStartNodeProps> = (props) => {
 	const borderColor = selected ? th.palette.primary.main : "black";
 
 	return (
-		<JunctionNode orientation="start" className="junction-and-start-node" {...props}>
+		<JunctionNode
+			orientation="start"
+			className="junction-and-start-node"
+			{...props}
+		>
 			<Box
 				sx={{
 					width: "100%",
@@ -26,7 +30,11 @@ const JunctionAndStartNode: FC<JunctionAndStartNodeProps> = (props) => {
 					position: "relative",
 				}}
 			>
-				<JunctionNodeVerticalBar color={borderColor} left={data.pivotPosition} pivot={true} />
+				<JunctionNodeVerticalBar
+					color={borderColor}
+					left={data.pivotPosition}
+					pivot={true}
+				/>
 			</Box>
 			<Box
 				sx={{

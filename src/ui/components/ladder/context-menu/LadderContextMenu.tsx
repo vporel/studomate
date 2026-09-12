@@ -1,0 +1,164 @@
+"use client";
+
+import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
+import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
+import useBooleanState from "@/ui/lib/hooks/useBooleanState";
+import { OnDelete } from "@xyflow/react";
+import { XYPosition } from "@xyflow/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useLadderRenderContext from "@/ui/components/pdf/useLadderRenderContext";
+import trackEvent from "@/ui/lib/analytics";
+import { exportProgramPdf } from "@/ui/lib/pdf/program-pdf";
+import { useT } from "@/ui/i18n/useT";
+import { useLadderContext } from "../context/LadderContext";
+import { useLadderStore } from "../context/LadderContext";
+import {
+	LadderContextMenuElement,
+	LadderContextMenuProps,
+} from "./ladder-context-menu";
+import type { MenuTranslate } from "./menu-translate";
+import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
+import paneContextMenuItems from "./pane-context-menu-items";
+
+const LadderContextMenu = ({
+	flowDimensions,
+	sectionId,
+	handleDelete,
+}: {
+	flowDimensions: { width: number; height: number };
+	sectionId: string;
+	handleDelete: OnDelete;
+}) => {
+	const { contextMenuEvents } = useLadderContext();
+	const ladder = useLadderStore((state) => state.ladder);
+	const workflowManager = useLadderStore((state) => state.workflowManager);
+	const copyCutPasteManager = useLadderStore(
+		(state) => state.copyCutPasteManager,
+	);
+	// Le menu du flow ne colle que des éléments : un presse-papiers contenant une section
+	// entière se colle par Ctrl+V ou le menu Édition, pas ici.
+	const canPaste = useClipboardStore(
+		(s) =>
+			s.entry?.scope === "ladder" &&
+			(s.entry.data as { kind?: string })?.kind === "elements",
+	);
+	const projectName = useProjectStore((s) => s.project?.name ?? "export");
+	const ladderContext = useLadderRenderContext();
+	const tExport = useT("projects.export");
+	const onExport = useCallback(() => {
+		void exportProgramPdf({
+			config: { type: "ladder", program: ladder },
+			filename: `${projectName} - ${ladder.name}`,
+			sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
+			ladderContext,
+		})
+			.then(() =>
+				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
+			)
+			.catch(() => toast.error(tExport("errorAssembling")));
+	}, [ladder, projectName, ladderContext, tExport]);
+	const setCrossReferenceFilter = useProjectStore(
+		(s) => s.setCrossReferenceFilter,
+	);
+	const setCrossReferenceResultVisible = useProjectStore(
+		(s) => s.setCrossReferenceResultVisible,
+	);
+	const openCrossReferences = useCallback(
+		(variable: string) => {
+			setCrossReferenceFilter(variable);
+			setCrossReferenceResultVisible(true);
+		},
+		[setCrossReferenceFilter, setCrossReferenceResultVisible],
+	);
+	const [element, setElement] = useState<LadderContextMenuElement>({
+		type: "pane",
+	});
+	const [visible, show, hide] = useBooleanState(false);
+	const tRaw = useT("ladderEditor.contextMenu");
+	const t = useMemo<MenuTranslate>(
+		() => (key, values) => tRaw(key as never, values as never),
+		[tRaw],
+	);
+	const [position, setPosition] = useState<XYPosition>({ x: 0, y: 0 });
+	const [screenPosition, setScreenPosition] = useState<XYPosition>({
+		x: 0,
+		y: 0,
+	});
+
+	const menuItems: ContextMenuItemType[][] = useMemo(() => {
+		if (element.type === "pane") {
+			return paneContextMenuItems(
+				workflowManager,
+				sectionId,
+				copyCutPasteManager,
+				screenPosition,
+				canPaste,
+				t,
+				onExport,
+				ladder.getAllElements().length === 0,
+			);
+		}
+		const items: ContextMenuItemType[][] = [];
+		items.push(
+			...nodeOrEdgeContextMenuItems(
+				element,
+				sectionId,
+				handleDelete,
+				copyCutPasteManager,
+				workflowManager,
+				openCrossReferences,
+				t,
+			),
+		);
+		return items;
+	}, [
+		element,
+		ladder,
+		workflowManager,
+		copyCutPasteManager,
+		canPaste,
+		screenPosition,
+		sectionId,
+		handleDelete,
+		onExport,
+		openCrossReferences,
+		t,
+	]);
+
+	useEffect(() => {
+		const showMenu = (props: LadderContextMenuProps) => {
+			// Bus mitt partagé par toutes les sections : n'afficher que dans la section cliquée, et
+			// refermer les menus des autres sections.
+			if (props.sectionId !== sectionId) {
+				hide();
+				return;
+			}
+			setElement(props.element);
+			setPosition(props.position);
+			setScreenPosition(props.screenPosition);
+			show();
+		};
+		contextMenuEvents.on("show", showMenu);
+		contextMenuEvents.on("hide", hide);
+		return () => {
+			contextMenuEvents.off("show", showMenu);
+			contextMenuEvents.off("hide", hide);
+		};
+	}, [contextMenuEvents, hide, show, sectionId]);
+
+	return (
+		<ContextMenu
+			visible={visible}
+			position={position}
+			menuItems={menuItems}
+			onClose={hide}
+			parentWidth={flowDimensions.width}
+			parentHeight={flowDimensions.height}
+		/>
+	);
+};
+
+export default LadderContextMenu;

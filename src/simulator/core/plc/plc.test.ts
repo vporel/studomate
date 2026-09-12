@@ -74,6 +74,30 @@ describe("PLC", () => {
 		});
 	});
 
+	describe("getVariableTypeById", () => {
+		it("renvoie le type natif pour une entrée, une sortie et une mémoire", () => {
+			const boolMemory = new PLCVariable("id4", "flag", "memory", "boolean");
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar, outputVar, memoryVar, boolMemory],
+			});
+			expect(plc.getVariableTypeById("id1")).toBe("number");
+			expect(plc.getVariableTypeById("id2")).toBe("number");
+			expect(plc.getVariableTypeById("id3")).toBe("number");
+			expect(plc.getVariableTypeById("id4")).toBe("boolean");
+		});
+
+		it("renvoie undefined pour un id inconnu", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar],
+			});
+			expect(plc.getVariableTypeById("nope")).toBeUndefined();
+		});
+	});
+
 	describe("physical input management", () => {
 		it("sets physical input value by id", () => {
 			const plc = new PLC({
@@ -294,6 +318,307 @@ describe("PLC", () => {
 		});
 	});
 
+	describe("pause / resume / stepOnce", () => {
+		it("pause fige le PLC sans réinitialiser les variables", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(200); // 2 cycles
+			plc.pause();
+			expect(plc.isPaused()).toBe(true);
+			expect(plc.isRunning()).toBe(false);
+
+			jest.advanceTimersByTime(300); // aucun cycle supplémentaire
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(2);
+		});
+
+		it("resume reprend l'exécution après pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.pause();
+			plc.resume();
+			expect(plc.isPaused()).toBe(false);
+			expect(plc.isRunning()).toBe(true);
+
+			jest.advanceTimersByTime(200);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(3);
+		});
+
+		it("stepOnce exécute exactement un cycle quand le PLC est en pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			plc.pause();
+			plc.stepOnce();
+			plc.stepOnce();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(2);
+		});
+
+		it("stepOnce est sans effet si le PLC n'est pas en pause", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.stepOnce(); // pas démarré, pas en pause → no-op
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(0);
+		});
+
+		it("stepOnce déclenche onCycleEnd", () => {
+			const onCycleEndSpy = jest.fn();
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [],
+				onCycleEnd: onCycleEndSpy,
+			});
+
+			plc.start();
+			plc.pause();
+			plc.stepOnce();
+
+			expect(onCycleEndSpy).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("forçage de variables", () => {
+		it("forceVariable impose la valeur d'une entrée physique à chaque cycle", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [inputVar],
+			});
+
+			plc.setPhysicalInputValueById("id1", 10);
+			plc.forceVariable("id1", 99);
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const input = snapshot.find((v) => v.getId() === "id1");
+			expect(input?.getValue()).toBe(99);
+		});
+
+		it("forceVariable empêche le programme d'écraser une variable mémoire", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 42);
+			plc.start();
+			jest.advanceTimersByTime(300); // 3 cycles
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(42);
+		});
+
+		it("forceVariable sur une sortie prend le dessus sur le programme", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("result := 99");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [outputVar],
+			});
+
+			plc.forceVariable("id2", 7);
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const result = snapshot.find((v) => v.getName() === "result");
+			expect(result?.getValue()).toBe(7);
+		});
+
+		it("releaseVariable restaure le comportement normal dès le cycle suivant", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 10);
+			plc.start();
+			jest.advanceTimersByTime(100); // cycle 1 : forcé à 10
+			plc.releaseVariable("id3");
+			jest.advanceTimersByTime(100); // cycle 2 : count = 10 + 1 = 11
+			plc.stop();
+
+			const snapshot = plc.getVariablesSnapshot();
+			const count = snapshot.find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(11);
+		});
+
+		it("releaseAllVariables efface tous les forçages", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [memoryVar],
+			});
+
+			plc.forceVariable("id3", 55);
+			expect(plc.getForcedVariables().size).toBe(1);
+			plc.releaseAllVariables();
+			expect(plc.getForcedVariables().size).toBe(0);
+		});
+
+		it("getForcedVariables reflète l'état courant de la table de forçage", () => {
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [memoryVar, outputVar],
+			});
+
+			plc.forceVariable("id3", true);
+			plc.forceVariable("id2", 5);
+			expect(plc.getForcedVariables().get("id3")).toBe(true);
+			expect(plc.getForcedVariables().get("id2")).toBe(5);
+			plc.releaseVariable("id3");
+			expect(plc.getForcedVariables().has("id3")).toBe(false);
+		});
+	});
+
+	describe("réutilisation de l'environnement entre cycles", () => {
+		it("enchaîne un grand nombre de cycles sans dérive de valeur", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("count := count + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [memoryVar],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100 * 50);
+			plc.stop();
+
+			const count = plc.getVariablesSnapshot().find((v) => v.getName() === "count");
+			expect(count?.getValue()).toBe(50);
+		});
+
+		it("propage une entrée physique vers une sortie à chaque cycle", () => {
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("result := x + 1");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [inputVar, outputVar],
+			});
+
+			plc.start();
+			plc.setPhysicalInputValueById("id1", 3);
+			jest.advanceTimersByTime(100);
+			plc.setPhysicalInputValueById("id1", 8);
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const result = plc.getVariablesSnapshot().find((v) => v.getName() === "result");
+			expect(result?.getValue()).toBe(9);
+		});
+
+		it("gère une variable mémoire booléenne (contrôle de type à l'hydratation)", () => {
+			const boolMemory = new PLCVariable("id4", "flag", "memory", "boolean");
+			const lexer = new Lexer(Dialect.FR);
+			const tokens = lexer.tokenize("flag := NON flag");
+			const parser = new Parser(tokens);
+			const ast = parser.parse();
+			const routine = new PLCRoutine([ast]);
+
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [boolMemory],
+			});
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.stop();
+
+			const flag = plc.getVariablesSnapshot().find((v) => v.getName() === "flag");
+			expect(flag?.getValue()).toBe(true);
+		});
+	});
+
 	describe("input/output image synchronization", () => {
 		it("reads inputs to input image at cycle start", () => {
 			const plc = new PLC({
@@ -334,6 +659,58 @@ describe("PLC", () => {
 			const snapshot = plc.getVariablesSnapshot();
 			const output = snapshot.find((v) => v.getName() === "result");
 			expect(output?.getValue()).toBe(99);
+		});
+	});
+
+	describe("bases de temps système", () => {
+		const pulseOf = (plc: PLC, name: string): boolean =>
+			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+				?.getValue() as boolean;
+
+		it("_SYS_TB_200ms : impulsion d'un scan une fois par période, scan 100 ms", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+
+			jest.advanceTimersByTime(100); // acc 100 < 200
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			jest.advanceTimersByTime(100); // acc 100
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+
+			plc.stop();
+		});
+
+		it("report : un scan couvrant plusieurs périodes soustrait une période et reporte le reliquat sur les scans suivants", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			plc.pause();
+			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle
+
+			plc.stepOnce(); // delta 500 : acc 500 -> impulsion, reste 300
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stepOnce(); // delta 0 : acc 300 -> impulsion, reste 100
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stepOnce(); // delta 0 : acc 100 -> pas d'impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("remet les accumulateurs à zéro au stop puis au redémarrage", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(100); // acc 100
+			plc.stop();
+
+			plc.start();
+			jest.advanceTimersByTime(100); // acc repart de 0 -> 100, pas d'impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stop();
 		});
 	});
 });

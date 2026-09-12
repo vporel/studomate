@@ -5,7 +5,7 @@ import GrafcetTool from "./GrafcetTool";
 
 const StepReferralTargetTool = ({ disabled }: { disabled?: boolean }) => {
 	return (
-		<GrafcetTool type="step-referral-target" disabled={disabled}>
+		<GrafcetTool element={{ type: "step-referral-target" }} disabled={disabled}>
 			<Box
 				style={{
 					width: "30px",

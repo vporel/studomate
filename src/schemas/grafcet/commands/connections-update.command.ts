@@ -1,4 +1,4 @@
-﻿import { deepObjectsComparison } from "@/lib/object";
+import { deepObjectsComparison } from "@/lib/object";
 import Connection from "..//connection.schema";
 import Grafcet from "../grafcet.schema";
 import AbstractGrafcetCommand from "./abstract-grafcet.command";

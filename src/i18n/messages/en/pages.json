@@ -1,0 +1,100 @@
+{
+	"titles": {
+		"preferences": "Preferences",
+		"projectProperties": "Project properties",
+		"exercise": "Exercise brief",
+		"projectStartup": "Start",
+		"inputVariables": "Input variables",
+		"outputVariables": "Output variables",
+		"memoryVariables": "Memory variables",
+		"systemVariables": "System variables"
+	},
+	"systemVariables": {
+		"heading": "System variables",
+		"intro": "Provided by the engine and injected at compile time. Read-only: the \"_SYS_\" prefix is reserved. The \"_SYS_TB_…\" time bases are true for a single scan per simulated-time period (a pulse).",
+		"columns": {
+			"name": "Name",
+			"type": "Type",
+			"description": "Description"
+		},
+		"items": {
+			"_SYS_TB_100ms": "One-scan pulse every 100 ms.",
+			"_SYS_TB_200ms": "One-scan pulse every 200 ms.",
+			"_SYS_TB_500ms": "One-scan pulse every 500 ms.",
+			"_SYS_TB_1s": "One-scan pulse every 1 s.",
+			"_SYS_TB_2s": "One-scan pulse every 2 s."
+		}
+	},
+	"tabBar": {
+		"ariaLabel": "Open tabs",
+		"close": "Close",
+		"closeAria": "Close the tab"
+	},
+	"properties": {
+		"heading": "Project properties",
+		"name": "Name",
+		"author": "Author",
+		"expressionLanguage": "Expression language",
+		"expressionLanguageHelper": "Expressions already written are translated automatically.",
+		"dialectFr": "French — ET, OU, NON, VRAI, FAUX",
+		"dialectEn": "English — AND, OR, NOT, TRUE, FALSE",
+		"exerciseField": "Exercise brief",
+		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu."
+	},
+	"exercise": {
+		"heading": "Exercise brief",
+		"empty": "This project has no brief yet. The brief is written in the project properties.",
+		"openProperties": "Open the project properties"
+	},
+	"startup": {
+		"variables": "Variables",
+		"programs": "Programs",
+		"noPrograms": "You don't have any program yet.",
+		"actions": "Actions",
+		"newGrafcet": "New grafcet",
+		"newLadder": "New ladder"
+	},
+	"variablesGrid": {
+		"toolbar": {
+			"delete": "Delete",
+			"deleteSelectedAria": "Delete the selected variables",
+			"newVariable": "New variable",
+			"filters": "Filters",
+			"export": "Export",
+			"exportPdf": "Export as PDF",
+			"exportPdfError": "PDF export failed.",
+			"exportCsv": "Export as CSV",
+			"search": "Search",
+			"searchPlaceholder": "Search...",
+			"clearSearch": "Clear the search"
+		},
+		"columns": {
+			"mnemonic": "Mnemonic",
+			"type": "Type",
+			"address": "Address",
+			"comment": "Comment"
+		},
+		"errors": {
+			"mnemonicExists": "This mnemonic already exists",
+			"addressExists": "This address already exists"
+		},
+		"selectorPlaceholder": "?",
+		"contextMenu": {
+			"insertVariable": "Insert a variable",
+			"crossReferences": "Cross-references",
+			"delete": "Delete"
+		}
+	},
+	"watchTables": {
+		"heading": "Watch tables",
+		"close": "Close",
+		"inputs": "Inputs",
+		"outputs": "Outputs",
+		"memories": "Memories"
+	},
+	"noPage": {
+		"openProject": "Open a project",
+		"saveProject": "Save the project",
+		"newGrafcet": "New grafcet"
+	}
+}

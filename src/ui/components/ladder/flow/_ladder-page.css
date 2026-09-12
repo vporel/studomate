@@ -1,0 +1,35 @@
+/* Portée sous .ladder-page (voir LadderFlow.tsx) : les sélecteurs react-flow__* ciblent des
+   classes générées par la librairie, pas les nôtres — sans ce préfixe, ces règles
+   s'appliqueraient aussi aux flows du GRAFCET (les deux pages sont importées ensemble par
+   PagesView.tsx, donc leurs CSS globales sont toujours chargées côte à côte). */
+
+/* Bornes de connexion : invisibles au repos, révélées au survol du nœud. */
+.ladder-page .react-flow__node .react-flow__handle {
+	width: 1px;
+	height: 1px;
+	min-width: 1px;
+	min-height: 1px;
+	border-width: 0;
+	background: transparent;
+}
+.ladder-page .react-flow__node .react-flow__handle::before {
+	content: "";
+	position: absolute;
+	top: -4px;
+	left: -3px;
+	width: 8px;
+	height: 8px;
+	background-color: black;
+	border-radius: 50%;
+	opacity: 0;
+}
+.ladder-page .react-flow__node:hover .react-flow__handle::before {
+	opacity: 1;
+}
+
+/* Sans `stroke`, ce trait invisible élargissant la zone de clic d'une connexion (stroke-opacity:
+   0 seul) n'est pas peint du tout, donc pas hit-testé malgré son stroke-width — `transparent`
+   (une couleur, contrairement à `none`) le garde peint tout en restant invisible. */
+.ladder-page .react-flow__edge-interaction {
+	stroke: transparent;
+}

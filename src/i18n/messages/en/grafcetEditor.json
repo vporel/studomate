@@ -1,0 +1,40 @@
+{
+	"toolbar": {
+		"zoomIn": "Zoom in",
+		"zoomOut": "Zoom out"
+	},
+	"menu": {
+		"addStep": "Add a step",
+		"addAction": "Add an action",
+		"addTransition": "Add a transition",
+		"forceActive": "Force active",
+		"forceInactive": "Force inactive",
+		"releaseForce": "Release the force",
+		"selectAll": "Select all",
+		"selectEdges": "Select the links",
+		"paste": "Paste",
+		"export": "Export",
+		"copy": "Copy",
+		"cut": "Cut",
+		"delete": "Delete",
+		"selectPivot": "Select the pivot",
+		"selectBranch": "Select a branch",
+		"deleteBranch": "Delete a branch",
+		"branch": "Branch {n}",
+		"actionType": "Type",
+		"actionMode": "Execution mode"
+	},
+	"actionTypes": {
+		"text": "Text",
+		"boolean_variable": "Boolean variable",
+		"numeric_variable": "Numeric variable",
+		"string_variable": "String variable"
+	},
+	"actionModes": {
+		"continuous": "Continuous",
+		"rising_edge": "Rising edge",
+		"falling_edge": "Falling edge",
+		"set": "Set",
+		"reset": "Reset"
+	}
+}

@@ -10,6 +10,6 @@
  * the dialect that wrote them has to travel with them.
  */
 export enum Dialect {
-	FR,
-	EN,
+	FR = "FR",
+	EN = "EN",
 }

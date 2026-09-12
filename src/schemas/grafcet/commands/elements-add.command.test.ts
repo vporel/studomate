@@ -1,0 +1,45 @@
+import Grafcet from "../grafcet.schema";
+import ElementsAddCommand from "./elements-add.command";
+
+describe("ElementsAddCommand", () => {
+	it("ajoute les éléments, et l'annulation les retire", () => {
+		const grafcet = new Grafcet("g1", "G");
+		const command = new ElementsAddCommand([
+			{
+				type: "step",
+				id: "step-1",
+				data: {},
+				position: { x: 0, y: 0 },
+				size: { width: 10, height: 10 },
+			},
+		]);
+
+		const [, isValid] = command.execute(grafcet);
+
+		expect(isValid).toBe(true);
+		expect(grafcet.getElementById("step-1")).toBeDefined();
+
+		command.cancel(grafcet);
+
+		expect(grafcet.getElementById("step-1")).toBeUndefined();
+	});
+
+	it("round-trip execute→cancel laisse le grafcet inchangé", () => {
+		const grafcet = new Grafcet("g1", "G");
+		const before = JSON.stringify(grafcet);
+		const command = new ElementsAddCommand([
+			{
+				type: "step",
+				id: "step-1",
+				data: {},
+				position: { x: 0, y: 0 },
+				size: { width: 10, height: 10 },
+			},
+		]);
+
+		command.execute(grafcet);
+		command.cancel(grafcet);
+
+		expect(JSON.stringify(grafcet)).toBe(before);
+	});
+});

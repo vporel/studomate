@@ -1,5 +1,5 @@
 import Project from "@/schemas/project/project.schema";
-import { isFromNewerVersion, migrateProject } from "./migrations";
+import { isFromNewerVersion, migrateProject } from "./migrations/schema";
 
 /**
  * Sérialisation d'un projet vers un fichier autonome.

@@ -1,7 +1,7 @@
 import Action from "../action.schema";
 import Comment from "../comment.schema";
 import Connection from "../connection.schema";
-import Grafcet, { DEFAULT_GRAFCET_FORMAT, DEFAULT_GRAFCET_NAME, GrafcetFormat } from "../grafcet.schema";
+import Grafcet, { DEFAULT_GRAFCET_NAME } from "../grafcet.schema";
 import JunctionAndEnd from "../junction-and-end.schema";
 import JunctionAndStart from "../junction-and-start.schema";
 import JunctionOrEnd from "../junction-or-end.schema";
@@ -14,7 +14,6 @@ import Transition from "../transition.schema";
 export default class GrafcetBuilder {
 	private _id: string;
 	private _name: string;
-	private _format: GrafcetFormat;
 	private _steps: Step[];
 	private _transitions: Transition[];
 	private _actions: Action[];
@@ -30,7 +29,6 @@ export default class GrafcetBuilder {
 	constructor() {
 		this._id = "";
 		this._name = DEFAULT_GRAFCET_NAME;
-		this._format = DEFAULT_GRAFCET_FORMAT;
 		this._steps = [];
 		this._transitions = [];
 		this._actions = [];
@@ -51,11 +49,6 @@ export default class GrafcetBuilder {
 
 	name(name: string): GrafcetBuilder {
 		this._name = name;
-		return this;
-	}
-
-	format(format: GrafcetFormat): GrafcetBuilder {
-		this._format = format;
 		return this;
 	}
 
@@ -114,7 +107,9 @@ export default class GrafcetBuilder {
 		return this;
 	}
 
-	addStepReferralsSources(...stepReferrals: StepReferralSource[]): GrafcetBuilder {
+	addStepReferralsSources(
+		...stepReferrals: StepReferralSource[]
+	): GrafcetBuilder {
 		this._stepsReferralsSources.push(...stepReferrals);
 		return this;
 	}
@@ -124,7 +119,9 @@ export default class GrafcetBuilder {
 		return this;
 	}
 
-	addStepReferralsTargets(...stepReferrals: StepReferralTarget[]): GrafcetBuilder {
+	addStepReferralsTargets(
+		...stepReferrals: StepReferralTarget[]
+	): GrafcetBuilder {
 		this._stepsReferralsTargets.push(...stepReferrals);
 		return this;
 	}
@@ -170,18 +167,22 @@ export default class GrafcetBuilder {
 	}
 
 	build(): Grafcet {
-		const grafcet = new Grafcet(this._id, this._name, this._format);
-		grafcet.steps = [...this._steps];
-		grafcet.transitions = [...this._transitions];
-		grafcet.actions = [...this._actions];
-		grafcet.comments = [...this._comments];
+		const grafcet = new Grafcet(this._id, this._name);
+		grafcet.steps = byId(this._steps);
+		grafcet.transitions = byId(this._transitions);
+		grafcet.actions = byId(this._actions);
+		grafcet.comments = byId(this._comments);
 		grafcet.connections = [...this._connections];
-		grafcet.stepsReferralsSources = [...this._stepsReferralsSources];
-		grafcet.stepsReferralsTargets = [...this._stepsReferralsTargets];
-		grafcet.junctionsAndStarts = [...this._junctionsAndStarts];
-		grafcet.junctionsAndEnds = [...this._junctionsAndEnds];
-		grafcet.junctionsOrStarts = [...this._junctionsOrStarts];
-		grafcet.junctionsOrEnds = [...this._junctionsOrEnds];
+		grafcet.stepsReferralsSources = byId(this._stepsReferralsSources);
+		grafcet.stepsReferralsTargets = byId(this._stepsReferralsTargets);
+		grafcet.junctionsAndStarts = byId(this._junctionsAndStarts);
+		grafcet.junctionsAndEnds = byId(this._junctionsAndEnds);
+		grafcet.junctionsOrStarts = byId(this._junctionsOrStarts);
+		grafcet.junctionsOrEnds = byId(this._junctionsOrEnds);
 		return grafcet;
 	}
+}
+
+function byId<T extends { id: string }>(items: T[]): Record<string, T> {
+	return Object.fromEntries(items.map((item) => [item.id, item]));
 }

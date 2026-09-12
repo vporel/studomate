@@ -4,7 +4,11 @@ import StepPreCompiler from "./step.pre-compiler";
 describe("StepPreCompiler", () => {
 	describe("preCompile", () => {
 		it("compiles an initial step with step number 1", () => {
-			const step = new StepBuilder().id("step-1").number(1).initial(true).build();
+			const step = new StepBuilder()
+				.id("step-1")
+				.number(1)
+				.initial(true)
+				.build();
 
 			const result = StepPreCompiler.preCompile(step);
 
@@ -14,7 +18,11 @@ describe("StepPreCompiler", () => {
 		});
 
 		it("compiles a non-initial step", () => {
-			const step = new StepBuilder().id("step-1").number(5).initial(false).build();
+			const step = new StepBuilder()
+				.id("step-1")
+				.number(5)
+				.initial(false)
+				.build();
 
 			const result = StepPreCompiler.preCompile(step);
 

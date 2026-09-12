@@ -1,13 +1,24 @@
 "use client";
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import Junction, { JUNCTION_HANDLE_PIVOT, JunctionData } from "@/schemas/grafcet/junction.schema";
+import Junction, {
+	JUNCTION_HANDLE_PIVOT,
+	JunctionData,
+} from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
 import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
 import { useTheme } from "@mui/material";
-import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
+import {
+	Node,
+	NodeProps,
+	Position,
+	useUpdateNodeInternals,
+} from "@xyflow/react";
 import React, { useEffect, useRef, type FC } from "react";
 import GrafcetNode from "../GrafcetNode";
-import { JunctionNodeContextProvider, useJunctionNodeContext } from "./context/JunctionNodeContext";
+import {
+	JunctionNodeContextProvider,
+	useJunctionNodeContext,
+} from "./context/JunctionNodeContext";
 import useKeyboardEventsHandler from "./useKeyboardEventsHandler";
 
 export type JunctionNodeType = Node<JunctionData>;
@@ -24,12 +35,19 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	data,
 	selected,
 	width: nodeWidth,
+	positionAbsoluteX,
 	orientation,
 	className,
 	children,
 }) => {
-	const { pivotSelected, selectedBranchId, selectPreviousBranch, selectNextBranch, clearSelection } =
-		useJunctionNodeContext();
+	const width = nodeWidth ?? Junction.DEFAULT_DIMENSIONS.width;
+	const {
+		pivotSelected,
+		selectedBranchId,
+		selectPreviousBranch,
+		selectNextBranch,
+		clearSelection,
+	} = useJunctionNodeContext();
 
 	const handleKeyDown = useKeyboardEventsHandler(
 		id,
@@ -38,30 +56,41 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 		selectPreviousBranch,
 		selectNextBranch,
 		clearSelection,
+		width,
+		positionAbsoluteX,
+		data,
 	);
 
+	const updateNodeInternals = useUpdateNodeInternals();
 	const th = useTheme();
 	const nodeHTMLElement = useRef<HTMLDivElement>(null);
+
+	const aBarIsSelected = pivotSelected || selectedBranchId != null;
+
+	// Toute variation de position d'un pin (drag, clavier, undo/redo, restauration)
+	// doit forcer React Flow à recalculer l'ancrage des liaisons.
+	const handlePositionsKey = [
+		data.pivotPosition,
+		...data.branchesOrder.map((id) => data.branches[id]!.position),
+	].join(",");
+	useEffect(() => {
+		updateNodeInternals(id);
+	}, [id, handlePositionsKey, updateNodeInternals]);
 	const borderColor = selected ? th.palette.primary.main : "black";
 
 	//Snap to grid
 	useEffect(() => {
-		if (data.width % FLOW_GRID_CELL_WIDTH !== 0) throw new Error("The width does not snap the grid");
-	}, [data.width]);
+		if (width % FLOW_GRID_CELL_WIDTH !== 0)
+			throw new Error("The width does not snap the grid");
+	}, [width]);
 
 	useEffect(() => {
-		if ((pivotSelected || selectedBranchId != null) && nodeHTMLElement.current)
+		if (aBarIsSelected && nodeHTMLElement.current)
 			nodeHTMLElement.current.focus();
-	}, [pivotSelected, selectedBranchId]);
+	}, [aBarIsSelected]);
 
 	return (
 		<>
-			<NodeResizer
-				isVisible={selected}
-				minWidth={Junction.DEFAULT_DIMENSIONS.width}
-				minHeight={Junction.DEFAULT_DIMENSIONS.height}
-				maxHeight={Junction.DEFAULT_DIMENSIONS.height}
-			/>
 			{data.branchesOrder.map((branchId) => (
 				<HandleWithConnectionsLimit
 					key={branchId}
@@ -94,7 +123,7 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 				ref={nodeHTMLElement}
 				tabIndex={0}
 				sx={{
-					width: (nodeWidth != 0 ? nodeWidth : data.width) + "px",
+					width: width + "px",
 					height: Junction.DEFAULT_DIMENSIONS.height + "px",
 					display: "flex",
 					flexDirection: "column",
@@ -118,10 +147,28 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	);
 };
 
-const JunctionNode: FC<JunctionNodeProps> = ({ id, data, children, ...props }) => {
+const JunctionNode: FC<JunctionNodeProps> = ({
+	id,
+	data,
+	width,
+	positionAbsoluteX,
+	children,
+	...props
+}) => {
 	return (
-		<JunctionNodeContextProvider id={id} data={data}>
-			<JunctionNodeContent id={id} data={data} {...props}>
+		<JunctionNodeContextProvider
+			id={id}
+			data={data}
+			width={width ?? Junction.DEFAULT_DIMENSIONS.width}
+			nodeX={positionAbsoluteX}
+		>
+			<JunctionNodeContent
+				id={id}
+				data={data}
+				width={width}
+				positionAbsoluteX={positionAbsoluteX}
+				{...props}
+			>
 				{children}
 			</JunctionNodeContent>
 		</JunctionNodeContextProvider>

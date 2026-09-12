@@ -1,22 +1,63 @@
+import { SYSTEM_TIME_BASES } from "@/schemas/variable/system-variables";
+import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
+import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
 import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
-import PLCVariable, { PLCVariableValue } from "./plc-variable";
+import PLCVariable, {
+	PLCVariableType,
+	PLCVariableValue,
+} from "./plc-variable";
 
 export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
 	private outputImage: Record<string, PLCVariable> = {};
 	private physicalInputs: Record<string, PLCVariable> = {};
+	/** Nom → id d'entrée physique. Construit une fois : l'ensemble des E/S est figé à la
+	 * création du PLC, cet index n'a donc jamais à être invalidé. */
+	private physicalInputIdsByName = new Map<string, string>();
 	private physicalOutputs: Record<string, PLCVariable> = {};
 	private memory: Record<string, PLCVariable> = {};
+	/** Table de forçage : id de variable → valeur imposée, indépendante du scope. */
+	private forcedVariables: Map<string, PLCVariableValue> = new Map();
 	private program: PLCRoutine[];
+	/**
+	 * Registre de **toutes** les routines compilées, y compris celles jamais scannées
+	 * directement (un ladder standard, appelé par un bloc `"user-program"` seulement). Ne peut
+	 * pas être déduit de `program` : `program` ne contient que les routines de premier niveau
+	 * (grafcets + Main), volontairement — un ladder appelé n'y figure jamais, donc il faut ce
+	 * registre séparé pour que `PLCRoutine.execute` puisse le retrouver par `programId` au moment
+	 * de l'appel. Voir `CompiledProject.routinesById`.
+	 */
+	private routinesById: Record<string, PLCRoutine>;
 	private onCycleStart: RunnableCallback<PLC> = () => {};
 	private onCycleEnd: RunnableCallback<PLC> = () => {};
 	private onCycleError: (error: Error) => void = () => {};
+	/**
+	 * Environnement d'exécution construit **une seule fois** : ses `Map` id→var et name→var, et
+	 * les `EnvVariable` qu'elles contiennent, sont réutilisées de cycle en cycle. Chaque cycle se
+	 * contente d'y recopier les valeurs courantes des images puis de les relire.
+	 */
+	private readonly environment: Environment;
+	/**
+	 * Temps accumulé (ms) depuis la dernière impulsion de chaque base de temps système
+	 * (`_SYS_TB_*`). `acc -= période` (et non `= 0`) à chaque impulsion, pour ne pas perdre le
+	 * reliquat de phase quand un scan dépasse un peu la période.
+	 *
+	 * Le moteur n'émet qu'**une** impulsion par scan. Si un scan couvre plusieurs périodes (cas
+	 * hors contrat : `temps de scan ≤ période`, cf. `SystemTimeBase` — n'arrive en pratique qu'en
+	 * pas-à-pas après une longue pause réelle), une seule période est soustraite : l'impulsion
+	 * reprend au scan suivant si le reliquat le justifie, mais les tops purement intermédiaires
+	 * d'un même scan sont perdus.
+	 */
+	private readonly systemTimeBaseAccumulatorsMs = new Map<string, number>(
+		SYSTEM_TIME_BASES.map((base) => [base.name, 0]),
+	);
 
 	constructor(config: {
 		scanTimeMs: number;
 		program: PLCRoutine[];
+		routinesById?: Record<string, PLCRoutine>;
 		variables: PLCVariable[];
 		onPLCStart?: RunnableCallback<PLC>;
 		onPLCStop?: RunnableCallback<PLC>;
@@ -26,6 +67,7 @@ export default class PLC extends ClockedRunnable {
 	}) {
 		super(config.scanTimeMs);
 		this.program = config.program;
+		this.routinesById = config.routinesById ?? {};
 		if (config.onPLCStart) this.onStart = config.onPLCStart;
 		if (config.onPLCStop) this.onStop = config.onPLCStop;
 		if (config.onCycleStart) this.onCycleStart = config.onCycleStart;
@@ -35,6 +77,8 @@ export default class PLC extends ClockedRunnable {
 			const variableCopy = variable.copy();
 			if (variable.getScope() === "input") {
 				this.physicalInputs[variableCopy.getId()] = variableCopy;
+				this.physicalInputIdsByName.set(variableCopy.getName(), variableCopy.getId());
+				this.inputImage[variableCopy.getId()] = variableCopy.copy();
 			} else if (variable.getScope() === "output") {
 				this.physicalOutputs[variableCopy.getId()] = variableCopy.copy();
 				//Initialize output image with initial variable values
@@ -43,6 +87,27 @@ export default class PLC extends ClockedRunnable {
 				this.memory[variableCopy.getId()] = variableCopy;
 			}
 		});
+
+		// Variables système : garanties présentes même quand le programme ne vient pas du
+		// pré-compilateur (tests, usages directs). Le PLC les met à jour lui-même chaque cycle.
+		for (const base of SYSTEM_TIME_BASES) {
+			if (!this.memory[base.name]) {
+				this.memory[base.name] = new PLCVariable(
+					base.name,
+					base.name,
+					"memory",
+					"boolean",
+				);
+			}
+		}
+
+		this.environment = new Environment(
+			[
+				...Object.values(this.inputImage),
+				...Object.values(this.outputImage),
+				...Object.values(this.memory),
+			].map(PlcVariablesMapper.plcToEnv),
+		);
 	}
 
 	/**
@@ -55,6 +120,16 @@ export default class PLC extends ClockedRunnable {
 			...Object.values(this.outputImage),
 			...Object.values(this.memory),
 		].map((v) => v.copy());
+	}
+
+	/**
+	 * Type natif d'une variable adressable par forçage ou par écriture directe (entrée
+	 * physique, image de sortie, mémoire), ou `undefined` si l'id n'en désigne aucune.
+	 */
+	public getVariableTypeById(id: string): PLCVariableType | undefined {
+		const variable =
+			this.physicalInputs[id] ?? this.outputImage[id] ?? this.memory[id];
+		return variable?.getType();
 	}
 
 	public setOutputImageValueById(id: string, value: PLCVariableValue): void {
@@ -96,40 +171,141 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	private getPhysicalInputByName(name: string): PLCVariable {
-		const input = Object.values(this.physicalInputs).find((i) => i.getName() === name);
+		const id = this.physicalInputIdsByName.get(name);
+		const input = id !== undefined ? this.physicalInputs[id] : undefined;
 		if (!input) throw new Error(`No input found with name ${name}`);
 		return input;
+	}
+
+	public forceVariable(id: string, value: PLCVariableValue): void {
+		this.forcedVariables.set(id, value);
+	}
+
+	public releaseVariable(id: string): void {
+		this.forcedVariables.delete(id);
+	}
+
+	public releaseAllVariables(): void {
+		this.forcedVariables.clear();
+	}
+
+	public getForcedVariables(): ReadonlyMap<string, PLCVariableValue> {
+		return this.forcedVariables;
+	}
+
+	public stepOnce(): void {
+		this.tickOnce();
 	}
 
 	//Cycle
 	protected tick(): void {
 		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
 		try {
+			this.applyForcedVariables();
 			this.readInputs();
 			this.executeProgram();
 			this.writeOutputs();
 		} catch (e) {
 			this.stop();
 			console.error("Error during PLC cycle execution:", e);
-			this.executeCallback(() => this.onCycleError?.(e as Error), "Error in onCycleError callback:");
+			this.executeCallback(
+				() => this.onCycleError?.(e as Error),
+				"Error in onCycleError callback:",
+			);
 			return;
 		}
 		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
 	}
 
+	private applyForcedVariables(): void {
+		this.forcedVariables.forEach((value, id) => {
+			if (this.physicalInputs[id]) {
+				this.physicalInputs[id].setValue(value);
+			} else if (this.outputImage[id]) {
+				this.outputImage[id].setValue(value);
+			} else if (this.memory[id]) {
+				this.memory[id].setValue(value);
+			}
+		});
+	}
+
 	private readInputs(): void {
 		Object.entries(this.physicalInputs).forEach(([id, v]) => {
-			this.inputImage[id] = v.copy();
+			this.inputImage[id].setValue(v.getValue());
 		});
 	}
 
 	private executeProgram(): void {
-		this.program.forEach((routine) => routine.execute(this));
+		this.environment.setForcedVariableIds(new Set(this.forcedVariables.keys()));
+		for (const [id, v] of Object.entries(this.inputImage)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
+		}
+		for (const [id, v] of Object.entries(this.outputImage)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
+		}
+		for (const [id, v] of Object.entries(this.memory)) {
+			this.environment.hydrateVariableValue(id, v.getValue());
+		}
+
+		const deltaTimeMs = this.consumeElapsedMs();
+		this.updateSystemTimeBases(deltaTimeMs);
+
+		for (const routine of this.program) {
+			routine.execute(this.environment, deltaTimeMs, this.routinesById);
+		}
+
+		for (const id of Object.keys(this.outputImage)) {
+			this.setOutputImageValueById(
+				id,
+				this.environment.getVariableValueById(id),
+			);
+		}
+		for (const id of Object.keys(this.memory)) {
+			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
+		}
+	}
+
+	/**
+	 * Calcule les impulsions des bases de temps système pour ce cycle et les écrit dans
+	 * l'environnement, **avant** l'exécution des routines. `deltaTimeMs` est celui déjà consommé
+	 * pour les temporisations — les bases suivent donc le même temps simulé.
+	 *
+	 * Au plus une impulsion par scan et par base. Une base dont la période est plus courte que le
+	 * temps de scan est interdite (cf. `SystemTimeBase`) ; le comportement quand `deltaTimeMs`
+	 * couvre néanmoins plusieurs périodes est décrit sur `systemTimeBaseAccumulatorsMs`.
+	 */
+	private updateSystemTimeBases(deltaTimeMs: number): void {
+		for (const base of SYSTEM_TIME_BASES) {
+			const accumulated =
+				(this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) + deltaTimeMs;
+			const pulse = accumulated >= base.periodMs;
+			this.systemTimeBaseAccumulatorsMs.set(
+				base.name,
+				pulse ? accumulated - base.periodMs : accumulated,
+			);
+			this.environment.setVariableValueByName(base.name, pulse);
+		}
+	}
+
+	private resetSystemTimeBases(): void {
+		for (const base of SYSTEM_TIME_BASES) {
+			this.systemTimeBaseAccumulatorsMs.set(base.name, 0);
+		}
+	}
+
+	public start(): void {
+		this.resetSystemTimeBases();
+		super.start();
+	}
+
+	public stop(): void {
+		this.resetSystemTimeBases();
+		super.stop();
 	}
 
 	private writeOutputs(): void {
 		Object.entries(this.outputImage).forEach(([id, v]) => {
-			this.physicalOutputs[id] = v.copy();
+			this.physicalOutputs[id].setValue(v.getValue());
 		});
 	}
 }

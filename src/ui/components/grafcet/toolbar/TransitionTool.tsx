@@ -5,7 +5,7 @@ import GrafcetTool from "./GrafcetTool";
 
 const TransitionTool = ({ disabled }: { disabled?: boolean }) => {
 	return (
-		<GrafcetTool type="transition" disabled={disabled}>
+		<GrafcetTool element={{ type: "transition" }} disabled={disabled}>
 			<Box
 				style={{
 					width: "30px",

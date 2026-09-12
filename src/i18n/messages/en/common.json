@@ -1,0 +1,8 @@
+{
+	"language": {
+		"label": "Language",
+		"description": "Language of the application interface.",
+		"fr": "French",
+		"en": "English"
+	}
+}

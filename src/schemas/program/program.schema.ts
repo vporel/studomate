@@ -1,28 +1,21 @@
 /**
- * The notations a program can be written in.
- *
- * Adding one means adding its schema, its pipeline (analyse / pre-compile / compile) and
- * its editor — but nothing in the project model or in the pipeline entry points.
+ * Les notations dans lesquelles un programme peut être écrit.
  */
-export const PROGRAM_TYPES = ["grafcet"] as const;
+import { Dialect } from "@/expression-language/dialect.enum";
+
+export const PROGRAM_TYPES = ["grafcet", "ladder"] as const;
 
 export type ProgramType = (typeof PROGRAM_TYPES)[number];
 
 export const PROGRAM_TYPE_LABELS: Record<ProgramType, string> = {
 	grafcet: "Grafcet",
+	ladder: "Ladder",
 };
 
 /**
- * A program held by a project — a unit of executable logic, whatever the notation.
- *
- * **Deliberately thin.** It carries only what the *project* level needs to know: identity,
- * name, and which notation it is written in. Everything else is specific to the notation
- * and stays there.
- *
- * The temptation would be to hoist "elements", "connections" or a common editing interface
- * up here. That would be designing from a single example: a Ladder program has no elements
- * and no connections, it has rungs. Such an abstraction can only be drawn honestly once a
- * second notation actually exists.
+ * Un programme porté par un projet — une unité de logique exécutable, quelle que soit la
+ * notation. Ne porte que ce que le niveau projet doit connaître : identité, nom et notation ;
+ * tout le reste est spécifique à la notation et y reste.
  */
 export default abstract class Program {
 	id: string;
@@ -35,4 +28,12 @@ export default abstract class Program {
 	}
 
 	abstract copy(): Program;
+
+	/**
+	 * Traduit les mots-clés des expressions de la notation d'un dialecte vers l'autre (voir
+	 * `Project.setDialect`). Abstraite, pas optionnelle : chaque notation doit se prononcer —
+	 * une notation dont les éléments référencent les variables par mnémonique sans expression
+	 * textuelle (Ladder) fournit une implémentation vide explicite.
+	 */
+	abstract translateExpressionsKeywords(from: Dialect, to: Dialect): void;
 }

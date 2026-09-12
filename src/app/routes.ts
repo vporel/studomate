@@ -1,5 +1,6 @@
 const routes = {
 	home: () => "/",
+	app: () => "/app",
 	about: () => "/a-propos",
 	legalMentions: () => "/mentions-legales",
 	termsOfUse: () => "/conditions-d-utilisation",

@@ -2,8 +2,9 @@
 
 import { PageData } from "@/ui/stores/project/project.store";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { alpha, Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
-import { useState } from "react";
+import { useT } from "@/ui/i18n/useT";
+import { Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
@@ -15,99 +16,146 @@ export const PROJECT_PROPERTIES_PAGE_DATA: PageData = {
 	title: "Propriétés du projet",
 };
 
-const PropertyLabel = ({ label }: { label: string }) => {
-	return (
-		<Typography color="rgb(100, 100, 100)" sx={{ mt: 1 }}>
-			{label}
-		</Typography>
-	);
-};
+/** Fond blanc des champs, la page étant posée sur un gris clair. */
+const whiteFieldSx = { "& .MuiInputBase-root": { backgroundColor: "#fff" } };
 
 const PropertyTextField = ({
-	defaultValue,
+	label,
+	value,
 	onSave,
 }: {
-	defaultValue: string;
+	label: string;
+	value: string;
 	onSave: (value: string) => void;
 }) => {
-	const [editingValue, setEditingValue] = useState<string>(defaultValue);
+	const [editingValue, setEditingValue] = useState<string>(value);
+	useEffect(() => setEditingValue(value), [value]);
 
 	return (
-		<Box
-			component="input"
+		<TextField
+			label={label}
+			size="small"
+			fullWidth
+			sx={whiteFieldSx}
+			slotProps={{ inputLabel: { shrink: true } }}
 			value={editingValue}
 			onChange={(e) => setEditingValue(e.target.value)}
-			onBlur={() => {
-				onSave(editingValue);
-			}}
+			onBlur={() => onSave(editingValue)}
 			onKeyDown={(e) => {
 				if (e.key === "Enter") {
 					onSave(editingValue);
 					(e.target as HTMLInputElement).blur();
 				}
 			}}
-			sx={{
-				padding: "4px",
-				width: "100%",
-				background: "rgb(220, 220, 220)",
-				border: "1px solid rgb(220, 220, 220)",
-				transition: "all .2s ease",
-				"&:focus": {
-					color: (th) => th.palette.primary.main,
-					background: (th) => alpha(th.palette.primary.main, 0.1),
-					borderColor: (th) => th.palette.primary.main,
-				},
-			}}
+		/>
+	);
+};
+
+const ExerciseStatementField = ({
+	value,
+	onSave,
+}: {
+	value: string;
+	onSave: (value: string) => void;
+}) => {
+	const t = useT("pages.properties");
+	const [editingValue, setEditingValue] = useState<string>(value);
+	useEffect(() => setEditingValue(value), [value]);
+
+	return (
+		<TextField
+			label={t("exerciseField")}
+			size="small"
+			fullWidth
+			multiline
+			minRows={6}
+			maxRows={20}
+			sx={whiteFieldSx}
+			slotProps={{ inputLabel: { shrink: true } }}
+			value={editingValue}
+			onChange={(e) => setEditingValue(e.target.value)}
+			onBlur={() => onSave(editingValue)}
+			helperText={t("exerciseFieldHelper")}
 		/>
 	);
 };
 
 const ProjectPropertiesPage = () => {
-	const { name, author, dialect, changeProjectName, changeProjectAuthor, changeProjectDialect } =
-		useProjectStore(
-			useShallow((state) => ({
-				name: state.project?.name ?? "",
-				author: state.project?.author ?? "",
-				dialect: state.project?.dialect ?? Dialect.FR,
-				changeProjectName: state.setProjectName,
-				changeProjectAuthor: state.setProjectAuthor,
-				changeProjectDialect: state.setProjectDialect,
-			})),
-		);
+	const t = useT("pages.properties");
+	const {
+		name,
+		author,
+		dialect,
+		exerciseStatement,
+		changeProjectName,
+		changeProjectAuthor,
+		changeProjectDialect,
+		changeExerciseStatement,
+	} = useProjectStore(
+		useShallow((state) => ({
+			name: state.project?.name ?? "",
+			author: state.project?.author ?? "",
+			dialect: state.project?.dialect ?? Dialect.FR,
+			exerciseStatement: state.project?.exercise?.statement ?? "",
+			changeProjectName: state.setProjectName,
+			changeProjectAuthor: state.setProjectAuthor,
+			changeProjectDialect: state.setProjectDialect,
+			changeExerciseStatement: state.setExerciseStatement,
+		})),
+	);
 
 	return (
-		<Page pageId={PROJECT_PROPERTIES_PAGE_ID} sx={{ justifyContent: "center", alignItems: "start" }}>
+		<Page
+			pageId={PROJECT_PROPERTIES_PAGE_ID}
+			sx={{ justifyContent: "center", alignItems: "start" }}
+		>
 			<Box
 				sx={{
 					padding: "2rem 1rem",
 					width: 800,
 				}}
 			>
-				<Typography variant="h2">Propriétés du projet</Typography>
+				<Typography variant="h2">{t("heading")}</Typography>
 				<Grid container spacing={2} sx={{ mt: 3, mb: 2 }}>
 					<Grid size={{ xs: 12, sm: 6 }}>
-						<PropertyLabel label="Nom" />
-						<PropertyTextField defaultValue={name} onSave={changeProjectName} />
+						<PropertyTextField
+							label={t("name")}
+							value={name}
+							onSave={changeProjectName}
+						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
-						<PropertyLabel label="Auteur" />
-						<PropertyTextField defaultValue={author} onSave={changeProjectAuthor} />
+						<PropertyTextField
+							label={t("author")}
+							value={author}
+							onSave={changeProjectAuthor}
+						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
-						<PropertyLabel label="Langage des expressions" />
 						<TextField
 							select
+							label={t("expressionLanguage")}
 							fullWidth
 							size="small"
+							sx={whiteFieldSx}
+							slotProps={{ inputLabel: { shrink: true } }}
 							value={dialect}
-							onChange={(e) => changeProjectDialect(Number(e.target.value) as Dialect)}
-							helperText="Les expressions déjà écrites sont traduites automatiquement."
+							onChange={(e) =>
+								changeProjectDialect(e.target.value as Dialect)
+							}
+							helperText={t("expressionLanguageHelper")}
 						>
-							<MenuItem value={Dialect.FR}>Français — ET, OU, NON, VRAI, FAUX</MenuItem>
-							<MenuItem value={Dialect.EN}>Anglais — AND, OR, NOT, TRUE, FALSE</MenuItem>
+							<MenuItem value={Dialect.FR}>{t("dialectFr")}</MenuItem>
+							<MenuItem value={Dialect.EN}>{t("dialectEn")}</MenuItem>
 						</TextField>
 					</Grid>
 				</Grid>
+				<Box sx={{ mt: 2 }}>
+					<ExerciseStatementField
+						value={exerciseStatement}
+						onSave={changeExerciseStatement}
+					/>
+				</Box>
 			</Box>
 		</Page>
 	);

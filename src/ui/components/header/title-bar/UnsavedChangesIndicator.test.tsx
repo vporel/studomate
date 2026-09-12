@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
@@ -11,12 +12,24 @@ jest.mock("@/ui/components/projects/ProjectContext");
 describe("UnsavedChangesIndicator", () => {
 	const saveProject = jest.fn();
 
-	function setup(hasUnsavedChanges: boolean, savingProject: boolean) {
+	function setup(
+		hasUnsavedChanges: boolean,
+		savingProject: boolean,
+		autoSaveUnavailable = false,
+	) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ hasUnsavedChanges, savingProject, saveProject }),
+			selectorImplementation({
+				hasUnsavedChanges,
+				savingProject,
+				autoSaveUnavailable,
+				lifecycleManager: { saveProject },
+			}),
 		);
-		return render(<UnsavedChangesIndicator />);
+		return renderWithI18n(<UnsavedChangesIndicator />);
 	}
+
+	const autoSaveWarning =
+		"Sauvegarde automatique indisponible — enregistrez manuellement";
 
 	afterEach(() => jest.clearAllMocks());
 
@@ -27,7 +40,9 @@ describe("UnsavedChangesIndicator", () => {
 
 	it("shows the prompt when there are unsaved changes", () => {
 		setup(true, false);
-		expect(screen.getByText("Cliquez ici pour enregistrer")).toBeInTheDocument();
+		expect(
+			screen.getByText("Cliquez ici pour enregistrer"),
+		).toBeInTheDocument();
 	});
 
 	it("triggers saveProject when clicked", () => {
@@ -45,5 +60,20 @@ describe("UnsavedChangesIndicator", () => {
 	it("shows a progress indicator while saving", () => {
 		setup(true, true);
 		expect(screen.getByRole("progressbar")).toBeInTheDocument();
+	});
+
+	it("shows the auto-save warning only when unavailable and there are unsaved changes", () => {
+		setup(true, false, true);
+		expect(screen.getByText(autoSaveWarning)).toBeInTheDocument();
+	});
+
+	it("hides the auto-save warning when there are no unsaved changes", () => {
+		setup(false, false, true);
+		expect(screen.queryByText(autoSaveWarning)).toBeNull();
+	});
+
+	it("hides the auto-save warning when auto-save is available", () => {
+		setup(true, false, false);
+		expect(screen.queryByText(autoSaveWarning)).toBeNull();
 	});
 });

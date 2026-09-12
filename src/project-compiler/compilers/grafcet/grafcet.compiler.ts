@@ -16,60 +16,82 @@ export type CompiledGrafcet = {
 export default class GrafcetCompiler {
 	static compile(preCompiledGrafcet: PreCompiledGrafcet): CompiledGrafcet {
 		const stepMemosNodes = new Map(
-			preCompiledGrafcet.stepsMemos.entries().map(([stepId, { node }]) => [stepId, node]),
+			Array.from(preCompiledGrafcet.stepsMemos.entries()).map(
+				([stepId, { node }]) => [stepId, node],
+			),
 		);
 
 		const nodes: ASTNode[] = [
+			//Évalue chaque tempo une seule fois par cycle, avant toute logique de transition :
+			//les conditions compilées ne lisent ensuite que les variables de sortie des tempos
+			//(voir `TransitionCompiler` et `PreCompiledTransition.pureNode`), ce qui garantit une
+			//avance unique même quand une réceptivité sert d'exclusion de priorité à une autre.
+			...Array.from(preCompiledGrafcet.transitions.values()).flatMap(
+				(preCompiledTransition) => preCompiledTransition.timers,
+			),
 			//Compile transitions: each transition generates its activation/deactivation block
-			...preCompiledGrafcet.transitions
-				.entries()
-				.flatMap(([transitionId, preCompiledTransition]) =>
-					TransitionCompiler.compile(transitionId, preCompiledTransition, preCompiledGrafcet, stepMemosNodes),
-				),
+			...Array.from(preCompiledGrafcet.transitions.entries()).flatMap(
+				([transitionId, preCompiledTransition]) =>
+					TransitionCompiler.compile(
+						transitionId,
+						preCompiledTransition,
+						preCompiledGrafcet,
+						stepMemosNodes,
+					),
+			),
 			//Compile actions
-			...preCompiledGrafcet.actions
-				.entries()
+			...Array.from(preCompiledGrafcet.actions.entries())
 				.filter(([, preCompiledAction]) => !!preCompiledAction) //Filter out TEXT actions, or actions with no expression
 				.flatMap(([actionId, preCompiledAction]) =>
-					ActionCompiler.compile(actionId, preCompiledAction!, preCompiledGrafcet, stepMemosNodes),
+					ActionCompiler.compile(
+						actionId,
+						preCompiledAction!,
+						preCompiledGrafcet,
+						stepMemosNodes,
+					),
 				),
-			//Memorizations of steps
-			...preCompiledGrafcet.steps.entries().map(([stepId, preCompiledStep]) =>
-				//For each step, create a memo variable that stores its previous value before it gets updated in the step compiler. This allows actions to detect rising/falling edges on steps by comparing the current value of the step with its previous value stored in the memo variable.
-				StatementsBuilder.buildAssignStatementNode(stepMemosNodes.get(stepId)!, preCompiledStep.node),
-			),
-			//If no step is active at the beginning, activate the initial step(s)
-			...this.initializeSteps(preCompiledGrafcet),
 		];
 
 		return {
 			nodes,
-			timers: preCompiledGrafcet.transitions
-				.values()
-				.flatMap((t) => t.timers)
-				.toArray(),
+			timers: Array.from(preCompiledGrafcet.transitions.values()).flatMap(
+				(t) => t.timers,
+			),
 		};
 	}
 
-	private static initializeSteps(preCompiledGrafcet: PreCompiledGrafcet): ASTNode[] {
-		const initialSteps = preCompiledGrafcet.steps
-			.values()
-			.filter((s) => s.initial)
-			.toArray();
-		if (initialSteps.length !== 1) throw new Error("Grafcet must have exactly one initial step.");
+	/**
+	 * Instruction d'amorçage : active l'étape initiale si aucune autre étape n'est active.
+	 * `GrafcetsCompiler` la range dans une routine exécutée **après** la routine d'assignation des
+	 * mémos d'étape, pour que le front montant de l'étape initiale reste détectable au cycle
+	 * suivant (le mémo doit capturer la valeur *avant* cette activation au premier cycle).
+	 */
+	static buildInitializationNodes(
+		preCompiledGrafcet: PreCompiledGrafcet,
+	): ASTNode[] {
+		const initialSteps = Array.from(preCompiledGrafcet.steps.values()).filter(
+			(s) => s.initial,
+		);
+		if (initialSteps.length !== 1)
+			throw new Error("Grafcet must have exactly one initial step.");
 		const initialStep = initialSteps[0];
-		const otherSteps = preCompiledGrafcet.steps
-			.values()
-			.filter((s) => s !== initialStep)
-			.toArray();
-		if (otherSteps.length === 0) throw new Error("Grafcet must have at least 2 steps.");
+		const otherSteps = Array.from(preCompiledGrafcet.steps.values()).filter(
+			(s) => s !== initialStep,
+		);
+		if (otherSteps.length === 0)
+			throw new Error("Grafcet must have at least 2 steps.");
 		return [
 			ControlsBuilder.buildIfControlNode(
 				otherSteps.length === 1
-					? ExpressionsBuilder.buildUnaryExpressionNode("NOT", otherSteps[0].node)
+					? ExpressionsBuilder.buildUnaryExpressionNode(
+							"NOT",
+							otherSteps[0].node,
+						)
 					: ExpressionsBuilder.buildChainedLogicalExpressionNode(
 							"AND",
-							otherSteps.map((s) => ExpressionsBuilder.buildUnaryExpressionNode("NOT", s.node)),
+							otherSteps.map((s) =>
+								ExpressionsBuilder.buildUnaryExpressionNode("NOT", s.node),
+							),
 						),
 				[
 					StatementsBuilder.buildAssignStatementNode(

@@ -3,7 +3,13 @@ import { Environment } from "../environment/environment";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
+import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
+import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
 import InvalidBinaryExprOperandTypeException from "./exceptions/invalid-binary-expr-operand-type.exception";
@@ -22,8 +28,26 @@ describe("SemanticAnalyserVisitor", () => {
 		const varY = new EnvVariable("id2", "y", "number", "INOUT");
 		const varFlag = new EnvVariable("id3", "flag", "boolean", "IN");
 		const varResult = new EnvVariable("id4", "result", "number", "OUT");
-		const varBoolResult = new EnvVariable("id5", "boolResult", "boolean", "OUT");
-		env = new Environment([varX, varY, varFlag, varResult, varBoolResult]);
+		const varBoolResult = new EnvVariable(
+			"id5",
+			"boolResult",
+			"boolean",
+			"OUT",
+		);
+		const varSystemTimeBase = new EnvVariable(
+			"_SYS_TB_200ms",
+			"_SYS_TB_200ms",
+			"boolean",
+			"IN",
+		);
+		env = new Environment([
+			varX,
+			varY,
+			varFlag,
+			varResult,
+			varBoolResult,
+			varSystemTimeBase,
+		]);
 		analyser = new SemanticAnalyserVisitor(env);
 		lexer = new Lexer(Dialect.FR);
 	});
@@ -39,6 +63,10 @@ describe("SemanticAnalyserVisitor", () => {
 		it("accepts valid identifiers", () => {
 			expect(() => parseAndCheck("x")).not.toThrow();
 			expect(() => parseAndCheck("flag")).not.toThrow();
+		});
+
+		it("accepts a system variable read in an expression", () => {
+			expect(() => parseAndCheck("flag ET _SYS_TB_200ms")).not.toThrow();
 		});
 
 		it("accepts valid arithmetic expressions", () => {
@@ -68,37 +96,62 @@ describe("SemanticAnalyserVisitor", () => {
 
 	describe("unknown identifiers", () => {
 		it("throws on unknown identifier", () => {
-			expect(() => parseAndCheck("unknownVar")).toThrow(UnknownIdentifierException);
+			expect(() => parseAndCheck("unknownVar")).toThrow(
+				UnknownIdentifierException,
+			);
 		});
 	});
 
 	describe("unary expressions", () => {
 		it("throws on NOT with non-boolean operand", () => {
-			expect(() => parseAndCheck("NON x")).toThrow(InvalidUnaryExprOperandTypeException);
+			expect(() => parseAndCheck("NON x")).toThrow(
+				InvalidUnaryExprOperandTypeException,
+			);
+		});
+
+		it("accepts valid unary minus", () => {
+			expect(() => parseAndCheck("-x")).not.toThrow();
+			expect(() => parseAndCheck("-5")).not.toThrow();
+		});
+
+		it("throws on unary minus with non-number operand", () => {
+			expect(() => parseAndCheck("-flag")).toThrow(
+				InvalidUnaryExprOperandTypeException,
+			);
 		});
 	});
 
 	describe("arithmetic expressions", () => {
 		it("throws on arithmetic with non-number left operand", () => {
-			expect(() => parseAndCheck("flag + 5")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag + 5")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on arithmetic with non-number right operand", () => {
-			expect(() => parseAndCheck("5 + flag")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("5 + flag")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on arithmetic with both non-number operands", () => {
-			expect(() => parseAndCheck("flag + VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag + VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 	});
 
 	describe("comparison expressions", () => {
 		it("throws on incompatible types", () => {
-			expect(() => parseAndCheck("x = flag")).toThrow(IncompatibleOperandsTypesException);
+			expect(() => parseAndCheck("x = flag")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
 		});
 
 		it("throws on non-number with ordered comparison", () => {
-			expect(() => parseAndCheck("flag < VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("flag < VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("accepts equality/inequality with same types", () => {
@@ -109,15 +162,21 @@ describe("SemanticAnalyserVisitor", () => {
 
 	describe("logical expressions", () => {
 		it("throws on AND with non-boolean left operand", () => {
-			expect(() => parseAndCheck("x ET VRAI")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("x ET VRAI")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on AND with non-boolean right operand", () => {
-			expect(() => parseAndCheck("VRAI ET x")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("VRAI ET x")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 
 		it("throws on OR with non-boolean operands", () => {
-			expect(() => parseAndCheck("x OU y")).toThrow(InvalidBinaryExprOperandTypeException);
+			expect(() => parseAndCheck("x OU y")).toThrow(
+				InvalidBinaryExprOperandTypeException,
+			);
 		});
 	});
 
@@ -126,22 +185,38 @@ describe("SemanticAnalyserVisitor", () => {
 			const tokens = lexer.tokenize("5 := x");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			expect(() => analyser.visit(ast)).toThrow(InvalidAssignmentTargetException);
+			expect(() => analyser.visit(ast)).toThrow(
+				InvalidAssignmentTargetException,
+			);
 		});
 
 		it("throws on input variable assignment", () => {
-			expect(() => parseAndCheck("x := 10")).toThrow(InputIdentifierAssignmentException);
-			expect(() => parseAndCheck("flag := VRAI")).toThrow(InputIdentifierAssignmentException);
+			expect(() => parseAndCheck("x := 10")).toThrow(
+				InputIdentifierAssignmentException,
+			);
+			expect(() => parseAndCheck("flag := VRAI")).toThrow(
+				InputIdentifierAssignmentException,
+			);
 		});
 
 		it("throws on type mismatch in assignment", () => {
-			expect(() => parseAndCheck("result := VRAI")).toThrow(IncompatibleOperandsTypesException);
-			expect(() => parseAndCheck("boolResult := 42")).toThrow(IncompatibleOperandsTypesException);
+			expect(() => parseAndCheck("result := VRAI")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
+			expect(() => parseAndCheck("boolResult := 42")).toThrow(
+				IncompatibleOperandsTypesException,
+			);
 		});
 
 		it("accepts assignment to OUT and INOUT variables", () => {
 			expect(() => parseAndCheck("result := 42")).not.toThrow();
 			expect(() => parseAndCheck("y := 100")).not.toThrow();
+		});
+
+		it("throws AssignmentToSystemVariableException on a _SYS_ target", () => {
+			expect(() => parseAndCheck("_SYS_TB_200ms := VRAI")).toThrow(
+				AssignmentToSystemVariableException,
+			);
 		});
 	});
 
@@ -153,7 +228,9 @@ describe("SemanticAnalyserVisitor", () => {
 			const tokens = lexer.tokenize("42");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			expect(() => restrictedAnalyser.visit(ast)).toThrow(UnauthorizedNodeException);
+			expect(() => restrictedAnalyser.visit(ast)).toThrow(
+				UnauthorizedNodeException,
+			);
 		});
 	});
 
@@ -164,6 +241,32 @@ describe("SemanticAnalyserVisitor", () => {
 
 		it("accepts boolean timer input", () => {
 			expect(() => parseAndCheck("timer1/flag/5s")).not.toThrow();
+		});
+	});
+
+	describe("timer block nodes", () => {
+		function buildTimerNode(
+			elapsedTime: ASTNode = IdentifiersBuilder.buildIdentifierNode("result"),
+		) {
+			return BlocksBuilder.buildTimerNode(
+				"TON",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				elapsedTime,
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+		}
+
+		it("accepts an identifier for elapsedTime", () => {
+			expect(() => analyser.visit(buildTimerNode())).not.toThrow();
+		});
+
+		it("throws InvalidTimerElapsedTimeNodeException when elapsedTime is not an identifier", () => {
+			const node = buildTimerNode(LiteralsBuilder.buildNumberNode(5));
+			expect(() => analyser.visit(node)).toThrow(
+				InvalidTimerElapsedTimeNodeException,
+			);
 		});
 	});
 

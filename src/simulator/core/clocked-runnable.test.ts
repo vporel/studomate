@@ -2,6 +2,8 @@ import ClockedRunnable from "./clocked-runnable";
 
 class TestClockedRunnable extends ClockedRunnable {
 	public tickCount = 0;
+	/** Delta imputé au dernier `tick()` — pour vérifier l'horloge libre. */
+	public lastDeltaMs = 0;
 
 	constructor(clockIntervalMs: number) {
 		super(clockIntervalMs);
@@ -9,6 +11,11 @@ class TestClockedRunnable extends ClockedRunnable {
 
 	protected tick(): void {
 		this.tickCount++;
+		this.lastDeltaMs = this.consumeElapsedMs();
+	}
+
+	public stepForTest(): void {
+		this.tickOnce();
 	}
 
 	// Expose callbacks for testing
@@ -30,9 +37,7 @@ describe("ClockedRunnable", () => {
 	});
 
 	afterEach(() => {
-		if (testRunnable.isRunning()) {
-			testRunnable.stop();
-		}
+		testRunnable.stop();
 		jest.useRealTimers();
 	});
 
@@ -122,7 +127,10 @@ describe("ClockedRunnable", () => {
 				throw new Error("Start error");
 			});
 			testRunnable.start();
-			expect(consoleSpy).toHaveBeenCalledWith("Error in onStart callback:", expect.any(Error));
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error in onStart callback:",
+				expect.any(Error),
+			);
 			expect(testRunnable.isRunning()).toBe(true); // Runnable should still start
 			consoleSpy.mockRestore();
 		});
@@ -134,9 +142,116 @@ describe("ClockedRunnable", () => {
 			});
 			testRunnable.start();
 			testRunnable.stop();
-			expect(consoleSpy).toHaveBeenCalledWith("Error in onStop callback:", expect.any(Error));
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error in onStop callback:",
+				expect.any(Error),
+			);
 			expect(testRunnable.isRunning()).toBe(false); // Runnable should still stop
 			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("pause/resume", () => {
+		it("pause fige la boucle sans déclencher onStop", () => {
+			const onStopSpy = jest.fn();
+			testRunnable.setOnStop(onStopSpy);
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			expect(testRunnable.tickCount).toBe(1);
+
+			testRunnable.pause();
+			expect(testRunnable.isPaused()).toBe(true);
+			expect(testRunnable.isRunning()).toBe(false);
+			expect(onStopSpy).not.toHaveBeenCalled();
+
+			jest.advanceTimersByTime(300);
+			expect(testRunnable.tickCount).toBe(1); // aucun tick supplémentaire
+		});
+
+		it("resume reprend la boucle après pause", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			testRunnable.pause();
+
+			testRunnable.resume();
+			expect(testRunnable.isPaused()).toBe(false);
+			expect(testRunnable.isRunning()).toBe(true);
+
+			jest.advanceTimersByTime(200);
+			expect(testRunnable.tickCount).toBe(3); // 1 avant pause + 2 après resume
+		});
+
+		it("start est sans effet sur un runnable en pause", () => {
+			const onStartSpy = jest.fn();
+			testRunnable.start();
+			testRunnable.pause();
+			testRunnable.setOnStart(onStartSpy);
+
+			testRunnable.start(); // ne doit pas redémarrer
+			expect(onStartSpy).not.toHaveBeenCalled();
+			expect(testRunnable.isPaused()).toBe(true);
+		});
+
+		it("stop réinitialise l'état de pause et déclenche onStop (l'horloge tournait encore)", () => {
+			const onStopSpy = jest.fn();
+			testRunnable.setOnStop(onStopSpy);
+			testRunnable.start();
+			testRunnable.pause();
+			testRunnable.stop();
+
+			expect(testRunnable.isPaused()).toBe(false);
+			expect(testRunnable.isRunning()).toBe(false);
+			expect(onStopSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it("aucun tick automatique ne se produit pendant la pause", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			expect(testRunnable.tickCount).toBe(1);
+
+			testRunnable.pause();
+			jest.advanceTimersByTime(200);
+			expect(testRunnable.tickCount).toBe(1);
+		});
+
+		it("pause sans start préalable est sans effet", () => {
+			testRunnable.pause();
+			expect(testRunnable.isPaused()).toBe(false);
+		});
+
+		it("resume sans pause préalable est sans effet", () => {
+			testRunnable.resume();
+			expect(testRunnable.isRunning()).toBe(false);
+		});
+	});
+
+	describe("horloge libre (pas de temps variable)", () => {
+		it("un cycle en continu impute un intervalle d'horloge", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			expect(testRunnable.lastDeltaMs).toBe(100);
+		});
+
+		it("en pause, l'horloge continue de tourner : le step suivant impute le temps écoulé", () => {
+			testRunnable.start();
+			testRunnable.pause();
+			jest.advanceTimersByTime(300); // 3 battements, aucun cycle
+			expect(testRunnable.tickCount).toBe(0);
+
+			testRunnable.stepForTest();
+			expect(testRunnable.tickCount).toBe(1);
+			expect(testRunnable.lastDeltaMs).toBe(300);
+		});
+
+		it("resume resynchronise : la durée de pause n'est pas imputée au premier cycle", () => {
+			testRunnable.start();
+			jest.advanceTimersByTime(100);
+			testRunnable.pause();
+			jest.advanceTimersByTime(500); // pause de 500 ms
+			testRunnable.resume();
+			jest.advanceTimersByTime(100); // un cycle après reprise
+
+			expect(testRunnable.lastDeltaMs).toBe(100);
 		});
 	});
 

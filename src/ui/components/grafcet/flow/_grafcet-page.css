@@ -1,16 +1,16 @@
-.node__input::-webkit-outer-spin-button,
-.node__input::-webkit-inner-spin-button {
+.grafcet-page .node__input::-webkit-outer-spin-button,
+.grafcet-page .node__input::-webkit-inner-spin-button {
 	/* display: none; <- Crashes Chrome on hover */
 	-webkit-appearance: none;
 	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }
-.node__input[type="number"],
-.node___textarea {
+.grafcet-page .node__input[type="number"],
+.grafcet-page .node___textarea {
 	-moz-appearance: textfield; /* Firefox */
 }
 
 /* nodes handles */
-.react-flow__node .react-flow__handle::before {
+.grafcet-page .react-flow__node .react-flow__handle::before {
 	content: "";
 	position: absolute;
 	top: -4px;
@@ -22,6 +22,13 @@
 	opacity: 0;
 }
 /* Show handles on hover by adding before pseudo element */
-.react-flow__node:hover .react-flow__handle::before {
+.grafcet-page .react-flow__node:hover .react-flow__handle::before {
 	opacity: 1;
+}
+
+/* Sans `stroke`, ce trait invisible élargissant la zone de clic d'une connexion (stroke-opacity:
+   0 seul) n'est pas peint du tout, donc pas hit-testé malgré son stroke-width — `transparent`
+   (une couleur, contrairement à `none`) le garde peint tout en restant invisible. */
+.grafcet-page .react-flow__edge-interaction {
+	stroke: transparent;
 }

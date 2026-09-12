@@ -4,17 +4,39 @@ import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { CircularProgress, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { useT } from "@/ui/i18n/useT";
 
 const UnsavedChangesIndicator = () => {
-	const { hasUnsavedChanges, saveProject, savingProject } = useProjectStore(
+	const t = useT("chrome");
+	const {
+		hasUnsavedChanges,
+		autoSaveUnavailable,
+		lifecycleManager,
+		savingProject,
+	} = useProjectStore(
 		useShallow((state) => ({
 			hasUnsavedChanges: state.hasUnsavedChanges,
-			saveProject: state.saveProject,
+			autoSaveUnavailable: state.autoSaveUnavailable,
+			lifecycleManager: state.lifecycleManager,
 			savingProject: state.savingProject,
 		})),
 	);
 	return (
 		<FlexBox>
+			{hasUnsavedChanges && autoSaveUnavailable && (
+				<Typography
+					color="warning"
+					style={{
+						background: "rgba(255, 170, 0, 0.2)",
+						padding: "2px 4px",
+						borderRadius: "5px",
+						fontSize: "0.8rem",
+						userSelect: "none",
+					}}
+				>
+					{t("autoSaveUnavailable")}
+				</Typography>
+			)}
 			{hasUnsavedChanges && (
 				<Typography
 					color="error"
@@ -29,10 +51,10 @@ const UnsavedChangesIndicator = () => {
 					}}
 					onClick={() => {
 						if (savingProject) return;
-						void saveProject();
+						void lifecycleManager.saveProject();
 					}}
 				>
-					Cliquez ici pour enregistrer
+					{t("unsavedChanges")}
 				</Typography>
 			)}
 			{savingProject && <CircularProgress size={15} />}

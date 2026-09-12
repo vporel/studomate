@@ -1,13 +1,18 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { GrafcetFactory } from "@tests/utils/grafcet-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, getVariableValue, wait } from "@tests/utils/test-helpers";
+import { compilePipelineDetailed, compileToPLC, getVariableValue } from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 describe("OR Junction Integration Tests", () => {
 	beforeEach(() => {
+		jest.useFakeTimers();
 		VariableFactory.reset();
 		ProjectFactory.reset();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
 	});
 
 	describe("Divergence OU : pipeline compilation", () => {
@@ -25,11 +30,13 @@ describe("OR Junction Integration Tests", () => {
 
 			expect(pipeline.analysis.issues).toHaveLength(0);
 			// X0, X1, X2 step variables
-			expect(pipeline.analysis.stepsVariables).toHaveLength(3);
+			expect(pipeline.analysis.generatedVariables).toHaveLength(3);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			expect(pipeline.compilation.result!.routines).toHaveLength(1);
+			// 1 grafcet + la routine des mémos d'étape + la routine d'initialisation + le Main
+			// (voir Project.createMain) + la routine d'observation des réceptivités.
+			expect(pipeline.compilation.result!.routines).toHaveLength(5);
 		});
 	});
 
@@ -64,12 +71,50 @@ describe("OR Junction Integration Tests", () => {
 			// I0=TRUE → branch1 eligible, branch2 (NON I0 = FALSE) never eligible
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(400);
+			await jest.advanceTimersByTimeAsync(400);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
 			expect(q0WasEverTrue).toBe(true); // branch1 fired at least once
 			expect(q1WasEverTrue).toBe(false); // branch2 never fired
+		});
+
+		it("divergence/convergence OU à 3 branches exclusives : seule la branche éligible est franchie", async () => {
+			const sel = VariableFactory.createAnalogInput("sel");
+			const q0 = VariableFactory.createLogicOutput("Q0");
+			const q1 = VariableFactory.createLogicOutput("Q1");
+			const q2 = VariableFactory.createLogicOutput("Q2");
+
+			// 3 branches mutuellement exclusives (contrainte de l'analyse OU).
+			const grafcet = GrafcetFactory.createOrDivergenceCycleN(
+				"grafcet-or3",
+				["sel = 0", "sel = 1", "sel = 2"],
+				["Q0", "Q1", "Q2"],
+			);
+			const project = ProjectFactory.create([sel, q0, q1, q2], [grafcet], "OR 3 branches");
+
+			const runWith = async (selValue: number) => {
+				const seen = { q0: false, q1: false, q2: false };
+				let cycleError: Error | null = null;
+				const plc = compileToPLC(project, 10, Dialect.FR, {
+					onCycleEnd: (p) => {
+						if (getVariableValue(p, "Q0")) seen.q0 = true;
+						if (getVariableValue(p, "Q1")) seen.q1 = true;
+						if (getVariableValue(p, "Q2")) seen.q2 = true;
+					},
+					onCycleError: (e) => { cycleError = e; },
+				});
+				expect(plc).not.toBeNull();
+				plc!.setPhysicalInputValueByName("sel", selValue);
+				plc!.start();
+				await jest.advanceTimersByTimeAsync(400);
+				plc!.stop();
+				if (cycleError) throw cycleError;
+				return seen;
+			};
+
+			expect(await runWith(1)).toEqual({ q0: false, q1: true, q2: false });
+			expect(await runWith(2)).toEqual({ q0: false, q1: false, q2: true });
 		});
 
 		it("activates branch2 (Q1) when I0 is FALSE", async () => {
@@ -97,12 +142,60 @@ describe("OR Junction Integration Tests", () => {
 			// I0=FALSE → branch2 eligible, branch1 (I0 = FALSE) never eligible
 			plc!.setPhysicalInputValueByName("I0", false);
 			plc!.start();
-			await wait(400);
+			await jest.advanceTimersByTimeAsync(400);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 
 			expect(q0WasEverTrue).toBe(false); // branch1 never fired
 			expect(q1WasEverTrue).toBe(true); // branch2 fired at least once
+		});
+
+		it("ne double pas le pas de la tempo d'une branche prioritaire à cause de l'exclusion de la branche suivante", async () => {
+			// Branche 0 (prioritaire) : réceptivité temporisée T1/RUN/2s.
+			// Branche 1 : FAUX (jamais franchie), mais son exclusion NOT(T1) ne doit pas
+			// ré-évaluer le TimerNode de la branche 0 → sinon la tempo expire ~2× trop vite.
+			const run = VariableFactory.createLogicInput("RUN");
+			const q0 = VariableFactory.createLogicOutput("Q0");
+			const q1 = VariableFactory.createLogicOutput("Q1");
+
+			const grafcet = GrafcetFactory.createOrDivergenceCycle(
+				"grafcet-1",
+				"T1/RUN/2s",
+				"FAUX",
+				"Q0",
+				"Q1",
+			);
+			const project = ProjectFactory.create(
+				[run, q0, q1],
+				[grafcet],
+				"OR priority timer",
+			);
+
+			let cycleError: Error | null = null;
+			let cycles = 0;
+			let cyclesWhenQ0FirstTrue: number | null = null;
+			const scanMs = 10;
+			const plc = compileToPLC(project, scanMs, Dialect.FR, {
+				onCycleEnd: (p) => {
+					cycles++;
+					if (cyclesWhenQ0FirstTrue === null && getVariableValue(p, "Q0"))
+						cyclesWhenQ0FirstTrue = cycles;
+				},
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			});
+			expect(plc).not.toBeNull();
+
+			plc!.setPhysicalInputValueByName("RUN", true);
+			plc!.start();
+			await jest.advanceTimersByTimeAsync(3000);
+			plc!.stop();
+			if (cycleError) throw cycleError;
+
+			expect(cyclesWhenQ0FirstTrue).not.toBeNull();
+			// ~2s / 10ms ≈ 200 cycles. Le bug de double-pas ferait franchir vers ~100 cycles.
+			expect(cyclesWhenQ0FirstTrue!).toBeGreaterThan(160);
 		});
 
 		it("switches branch when I0 changes", async () => {
@@ -137,13 +230,13 @@ describe("OR Junction Integration Tests", () => {
 			// Phase 1: I0=TRUE → only branch1 eligible
 			plc!.setPhysicalInputValueByName("I0", true);
 			plc!.start();
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			if (cycleError) throw cycleError;
 
 			// Switch to phase 2: I0=FALSE → only branch2 eligible
 			phase.current = 2;
 			plc!.setPhysicalInputValueByName("I0", false);
-			await wait(300);
+			await jest.advanceTimersByTimeAsync(300);
 			plc!.stop();
 			if (cycleError) throw cycleError;
 

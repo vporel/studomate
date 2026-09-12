@@ -1,10 +1,46 @@
-﻿import { Dialect } from "@/expression-language/dialect.enum";
-import Grafcet, { GrafcetFormat } from "../grafcet/grafcet.schema";
+import { Dialect } from "@/expression-language/dialect.enum";
+import Grafcet from "../grafcet/grafcet.schema";
+import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
-import { createRandomId } from "../utils/ids";
+import { createRandomId } from "@/ids";
+import { nextAvailableName } from "@/lib/naming";
 import Variable from "../variable/variable.schema";
+import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema";
+import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
+import { BlockElement, BlockType } from "../ladder/block.schema";
+import HmiPage from "../hmi/hmi-page.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
+
+/**
+ * Ramène un `dialect` lu vers une valeur de l'enum. Le pipeline de migration convertit déjà
+ * l'ancien codage numérique (`0`/`1`), mais les brouillons d'autosave ne passent pas par lui :
+ * un brouillon écrit avant le déploiement du dialecte en chaîne peut encore porter un nombre.
+ * Toute valeur non reconnue — absente comprise, cas des projets antérieurs au dialecte
+ * configurable, tous écrits en français — retombe sur le français. Une valeur *présente* mais
+ * non reconnue (dialecte corrompu) est en plus signalée par un `console.warn`.
+ */
+function normalizeDialect(raw: unknown): Dialect {
+	if (raw === Dialect.EN || raw === 1) return Dialect.EN;
+	if (raw !== undefined && raw !== null && raw !== Dialect.FR && raw !== 0) {
+		console.warn(
+			`Dialecte non reconnu (${JSON.stringify(raw)}), français par défaut`,
+		);
+	}
+	return Dialect.FR;
+}
+
+/**
+ * Énoncé pédagogique d'un projet : le contexte, les consignes et le travail demandé, rédigés
+ * par l'enseignant. Optionnel — un projet peut n'être qu'un système à simuler.
+ *
+ * Objet (et non simple chaîne) pour pouvoir accueillir plus tard d'autres volets (objectifs,
+ * indices, critères de validation) sans changer la forme du champ.
+ */
+export type Exercise = {
+	/** Texte de l'énoncé, en Markdown. */
+	statement: string;
+};
 
 /**
  * Version de la **forme d'un projet**. À incrémenter quand la structure change, en ajoutant
@@ -18,7 +54,7 @@ export const DEFAULT_PROJECT_NAME = "Nouveau projet";
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 1;
+export const PROJECT_SCHEMA_VERSION = 2;
 
 export default class Project {
 	id: string;
@@ -41,6 +77,10 @@ export default class Project {
 	 * que `Program` ; chaque notation garde ses spécificités chez elle.
 	 */
 	programs: Record<string, Program>;
+	/** Pages HMI du projet, indexées par id. */
+	hmiPages: Record<string, HmiPage>;
+	/** Énoncé pédagogique du projet — absent si l'auteur n'en a pas rédigé. */
+	exercise?: Exercise;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;
@@ -52,6 +92,9 @@ export default class Project {
 		this.dialect = Dialect.FR;
 		this.variables = [];
 		this.programs = {};
+		this.hmiPages = {};
+		// Chaque projet porte toujours un Main — voir `createMain`.
+		this.createMain();
 	}
 
 	//=============== PROGRAMMES, TOUTES NOTATIONS ===============
@@ -60,6 +103,10 @@ export default class Project {
 		return this.programs[programId];
 	}
 
+	/**
+	 * Vue calculée : un nouveau `Record` est construit à chaque appel. Le capturer dans une
+	 * variable plutôt que relire `project.ladders`/`project.grafcets` en boucle.
+	 */
 	getProgramsOfType<T extends Program>(type: ProgramType): Record<string, T> {
 		const result: Record<string, T> = {};
 		for (const id in this.programs) {
@@ -70,18 +117,33 @@ export default class Project {
 
 	addProgram(program: Program): void {
 		if (this.programs[program.id]) {
-			throw new Error(`Program with id ${program.id} already exists in the project.`);
+			throw new Error(
+				`Program with id ${program.id} already exists in the project.`,
+			);
 		}
 		this.programs[program.id] = program;
 		this.touch();
 	}
 
-	updateProgram(programId: string, program: Program) {
-		this.programs[programId] = program;
+	updateProgram(program: Program) {
+		this.programs[program.id] = program;
 		this.touch();
 	}
 
+	/** Nom auto-généré au format "Label_N" pour un nouveau programme — unique parmi tous les
+	 * programmes du projet, indépendamment de leur type (ladders et grafcets partagent le même
+	 * dossier dans l'explorateur, donc le même espace de noms). */
+	nextProgramName(label: string): string {
+		return nextAvailableName(
+			label,
+			Object.values(this.programs).map((program) => program.name),
+		);
+	}
+
+	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
 	deleteProgram(programId: string) {
+		const program = this.programs[programId];
+		if (program instanceof Ladder && program.role === "main") return;
 		delete this.programs[programId];
 		this.touch();
 	}
@@ -98,10 +160,154 @@ export default class Project {
 		return program?.type === "grafcet" ? (program as Grafcet) : undefined;
 	}
 
-	createGrafcet(name: string, format: GrafcetFormat): Grafcet {
-		const grafcet = new Grafcet(createRandomId(), name, format);
+	createGrafcet(name: string): Grafcet {
+		const grafcet = new Grafcet(createRandomId(), name);
 		this.addProgram(grafcet);
 		return grafcet;
+	}
+
+	//=============== LADDER ===============
+	//Accesseurs typés, pour que le code propre au Ladder n'ait pas à transtyper partout
+
+	get ladders(): Record<string, Ladder> {
+		return this.getProgramsOfType<Ladder>("ladder");
+	}
+
+	getLadder(ladderId: string): Ladder | undefined {
+		const program = this.programs[ladderId];
+		return program?.type === "ladder" ? (program as Ladder) : undefined;
+	}
+
+	createLadder(name: string): Ladder {
+		const ladder = new Ladder(createRandomId(), name);
+		this.addProgram(ladder);
+		return ladder;
+	}
+
+	//=============== HMI ===============
+
+	getHmiPage(hmiPageId: string): HmiPage | undefined {
+		return this.hmiPages[hmiPageId];
+	}
+
+	/** Même principe que `nextProgramName`, pour une nouvelle page HMI. */
+	nextHmiPageName(label: string): string {
+		return nextAvailableName(
+			label,
+			Object.values(this.hmiPages).map((page) => page.name),
+		);
+	}
+
+	createHmiPage(name: string): HmiPage {
+		// La toute première page HMI du projet devient automatiquement la page principale (voir
+		// `HmiPage.isMain`) — sans ça, aucune page n'en porterait tant que l'utilisateur n'ouvre pas
+		// le panel de propriétés pour en désigner une.
+		const isMain = Object.keys(this.hmiPages).length === 0;
+		const page = HmiPage.create(name, isMain);
+		this.hmiPages[page.id] = page;
+		this.touch();
+		return page;
+	}
+
+	updateHmiPage(page: HmiPage): void {
+		this.hmiPages[page.id] = page;
+		this.touch();
+	}
+
+	deleteHmiPage(hmiPageId: string): void {
+		delete this.hmiPages[hmiPageId];
+		this.touch();
+	}
+
+	/** Page affichée par défaut par la vue simulation HMI (voir `HmiSimulationPageView`) — celle
+	 * marquée `isMain`, ou la première du projet si aucune ne l'est encore (ex. projet migré avant
+	 * l'introduction de ce champ, voir `v0-to-v1`). */
+	getMainHmiPage(): HmiPage | undefined {
+		return (
+			Object.values(this.hmiPages).find((page) => page.isMain) ??
+			Object.values(this.hmiPages)[0]
+		);
+	}
+
+	/** Une seule page principale à la fois : les autres perdent le statut. */
+	setMainHmiPage(hmiPageId: string): void {
+		for (const id in this.hmiPages) {
+			this.hmiPages[id].isMain = id === hmiPageId;
+		}
+		this.touch();
+	}
+
+	//=============== MAIN ===============
+
+	/** Le programme Main du projet — invariant garanti par le constructeur/`deleteProgram`. */
+	get main(): Ladder {
+		const found = Object.values(this.programs).find(
+			(program): program is Ladder =>
+				program.type === "ladder" && (program as Ladder).role === "main",
+		);
+		if (!found)
+			throw new Error("Project has no Main program — invariant violated.");
+		return found;
+	}
+
+	createMain(name: string = DEFAULT_MAIN_NAME): Ladder {
+		const existing = Object.values(this.programs).some(
+			(program) =>
+				program.type === "ladder" && (program as Ladder).role === "main",
+		);
+		if (existing) throw new Error("A project can only have one Main program.");
+		const main = new Ladder(createRandomId(), name, undefined, "main");
+		this.addProgram(main);
+		return main;
+	}
+
+	//=============== BLOCS SYSTÈME ===============
+
+	/**
+	 * Tous les blocs timer du projet, tous ladders confondus — pas de registre dédié, la config
+	 * vivant directement dans chaque `BlockElement` (voir `TimerBlockParams`).
+	 */
+	getAllTimerBlockElements(): { ladder: Ladder; element: BlockElement }[] {
+		return this.getAllBlockElements("timer");
+	}
+
+	/**
+	 * Tous les blocs compteur du projet, tous ladders confondus — même principe que
+	 * `getAllTimerBlockElements`.
+	 */
+	getAllCounterBlockElements(): { ladder: Ladder; element: BlockElement }[] {
+		return this.getAllBlockElements("counter");
+	}
+
+	private getAllBlockElements(
+		blockType: BlockType,
+	): { ladder: Ladder; element: BlockElement }[] {
+		return Object.values(this.ladders).flatMap((ladder) =>
+			ladder
+				.getAllElements()
+				.filter(
+					(element): element is BlockElement =>
+						element.type === "block" && element.data.blockType === blockType,
+				)
+				.map((element) => ({ ladder, element })),
+		);
+	}
+
+	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être
+	 * unique parmi les deux. */
+	isNameTaken(name: string): boolean {
+		if (this.variables.some((variable) => variable.mnemonic === name))
+			return true;
+		if (
+			this.getAllTimerBlockElements().some(
+				({ element }) => getTimerBlockParams(element)?.name === name,
+			)
+		) {
+			return true;
+		}
+		return this.getAllCounterBlockElements().some(
+			({ element }) => getCounterBlockParams(element)?.name === name,
+		);
 	}
 
 	/**
@@ -109,14 +315,15 @@ export default class Project {
 	 *
 	 * Sans cette traduction, passer de FR à EN rendrait chaque `ET` méconnaissable : l'analyse
 	 * le prendrait pour un identifiant inconnu.
+	 *
+	 * Le Ladder n'est pas concerné : ses contacts/bobines référencent une variable par simple
+	 * mnémonique, sans expression textuelle à traduire.
 	 */
 	setDialect(dialect: Dialect): void {
 		if (dialect === this.dialect) return;
 		const from = this.dialect;
 		Object.values(this.programs).forEach((program) => {
-			if (program.type === "grafcet") {
-				(program as Grafcet).translateExpressionsKeywords(from, dialect);
-			}
+			program.translateExpressionsKeywords(from, dialect);
 		});
 		this.dialect = dialect;
 		this.touch();
@@ -126,37 +333,79 @@ export default class Project {
 		this.lastModificationDate = new Date();
 	}
 
+	/**
+	 * Reconstruit une instance sans repasser par le constructeur — donc sans fabriquer de Main :
+	 * le Main fait partie des données réhydratées (`copy`/`createFromJSON` réassignent `programs`
+	 * juste après), ce n'est pas au moteur de reconstruction de le créer.
+	 */
+	private static rehydrate(source: object): Project {
+		const project = Object.assign(
+			Object.create(Project.prototype) as Project,
+			source,
+		);
+		// Détache les instances Date : une copie ne doit jamais partager les dates de l'original.
+		// `new Date` accepte aussi bien une Date (copie mémoire) qu'une chaîne ISO (`createFromJSON`).
+		project.creationDate = new Date(project.creationDate);
+		project.lastModificationDate = new Date(project.lastModificationDate);
+		return project;
+	}
+
 	copy(): Project {
-		const newProject = Object.assign(new Project("", "", ""), this);
-		newProject.variables = this.variables.map((v) => v.copy());
+		const newProject = Project.rehydrate(this);
+		// Copie superficielle : les `Variable` sont immuables (voir `Variable.update`), donc les
+		// instances inchangées sont réutilisées par référence — seul le tableau doit être distinct
+		// (les commandes add/remove le mutent en place).
+		newProject.variables = this.variables.slice();
 		newProject.programs = {};
 		for (const programId in this.programs) {
 			newProject.programs[programId] = this.programs[programId].copy();
 		}
+		newProject.hmiPages = {};
+		for (const hmiPageId in this.hmiPages) {
+			newProject.hmiPages[hmiPageId] = this.hmiPages[hmiPageId].copy();
+		}
+		return newProject;
+	}
+
+	/**
+	 * Copie du projet où seul `program` est remplacé — les autres programmes, les pages HMI et
+	 * les variables sont réutilisés par référence. Pour le flux d'édition d'un programme, qui ne
+	 * touche à rien d'autre : évite de cloner en profondeur tout le reste du projet à chaque
+	 * commande. `copy()` reste requis pour les mutations qui touchent au projet lui-même.
+	 */
+	copyWithProgram(program: Program): Project {
+		const newProject = Project.rehydrate(this);
+		newProject.programs = { ...this.programs, [program.id]: program };
 		return newProject;
 	}
 
 	static createFromJSON(json: string): Project {
 		const jsonParsed = JSON.parse(json);
-		const project = Object.assign(new Project("", "", ""), jsonParsed);
-		project.creationDate = new Date(jsonParsed.creationDate);
-		//Les projets antérieurs au dialecte configurable ont tous été écrits en français
-		project.dialect = jsonParsed.dialect ?? Dialect.FR;
-		project.lastModificationDate = new Date(jsonParsed.lastModificationDate);
+		const project = Project.rehydrate(jsonParsed);
+		project.schemaVersion = jsonParsed.schemaVersion ?? PROJECT_SCHEMA_VERSION;
+		project.dialect = normalizeDialect(jsonParsed.dialect);
 		project.variables = (jsonParsed.variables || []).map((v: any) =>
 			Variable.createFromJSON(JSON.stringify(v)),
 		);
 		const programs: Record<string, Program> = {};
 		for (const programId in jsonParsed.programs) {
 			const raw = jsonParsed.programs[programId];
-			//Un seul type pour l'instant ; c'est ici que se branchera la prochaine notation
 			if (raw?.type === "grafcet") {
 				programs[programId] = Grafcet.createFromJSON(JSON.stringify(raw));
+			} else if (raw?.type === "ladder") {
+				programs[programId] = Ladder.createFromJSON(JSON.stringify(raw));
 			} else {
 				console.error(`Programme de type inconnu ignoré : ${raw?.type}`);
 			}
 		}
 		project.programs = programs;
+		const hmiPages: Record<string, HmiPage> = {};
+		for (const hmiPageId in jsonParsed.hmiPages ?? {}) {
+			hmiPages[hmiPageId] = HmiPage.createFromJSON(
+				JSON.stringify(jsonParsed.hmiPages[hmiPageId]),
+			);
+		}
+		project.hmiPages = hmiPages;
 		return project;
 	}
 }

@@ -1,4 +1,9 @@
-import { isDigit, isLetterOrUnderscore, isLetterOrUnderscoreOrDigit, isQuote } from "./alphabet";
+import {
+	isDigit,
+	isLetterOrUnderscore,
+	isLetterOrUnderscoreOrDigit,
+	isQuote,
+} from "./alphabet";
 
 describe("alphabet", () => {
 	describe("isLetterOrUnderscore", () => {

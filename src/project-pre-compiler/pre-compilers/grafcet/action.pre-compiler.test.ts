@@ -1,4 +1,7 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -31,9 +34,17 @@ describe("ActionPreCompiler", () => {
 					.executionMode(ActionExecutionMode.CONTINUOUS)
 					.expression("Descriptive text")
 					.build();
-				const grafcet = new GrafcetBuilder().addStep(step).addAction(action).build();
+				const grafcet = new GrafcetBuilder()
+					.addStep(step)
+					.addAction(action)
+					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).toBeNull();
 			});
@@ -57,7 +68,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).toBeNull();
 			});
@@ -80,7 +96,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).toBeNull();
 			});
@@ -106,7 +127,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toHaveLength(1);
@@ -135,7 +161,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toHaveLength(1);
@@ -163,7 +194,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toHaveLength(1); // M1 := TRUE
@@ -191,7 +227,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toHaveLength(1);
@@ -219,7 +260,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toEqual([]);
@@ -246,7 +292,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).not.toBeNull();
 				expect(result!.phases.onActivation).toHaveLength(2);
@@ -273,7 +324,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toEqual([]);
@@ -302,7 +358,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toHaveLength(1);
@@ -330,7 +391,12 @@ describe("ActionPreCompiler", () => {
 						)
 						.build();
 
-					const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+					const result = ActionPreCompiler.preCompile(
+						action,
+						grafcet,
+						variables,
+						Dialect.FR,
+					);
 
 					expect(result).not.toBeNull();
 					expect(result!.phases.onActivation).toEqual([]);
@@ -357,7 +423,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).not.toBeNull();
 				expect(result!.phases.continuous).toHaveLength(2);
@@ -381,7 +452,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).not.toBeNull();
 				expect(result!.phases.continuous).toHaveLength(1);
@@ -412,7 +488,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.FR);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.FR,
+				);
 
 				expect(result).not.toBeNull();
 				expect(result!.stepId).toBe("step-1");
@@ -438,7 +519,12 @@ describe("ActionPreCompiler", () => {
 					)
 					.build();
 
-				const result = ActionPreCompiler.preCompile(action, grafcet, variables, Dialect.EN);
+				const result = ActionPreCompiler.preCompile(
+					action,
+					grafcet,
+					variables,
+					Dialect.EN,
+				);
 
 				expect(result).not.toBeNull();
 				expect(result!.phases.continuous).toHaveLength(1);
