@@ -1,3 +1,3 @@
 # Instructions
 
-Lire et suivre les règles du fichier `CLAUDE.md` à la racine du dépôt.
+Read and follow the rules in the `CLAUDE.md` file at the repository root.

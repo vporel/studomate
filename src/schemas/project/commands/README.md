@@ -1,2 +1,2 @@
-Les variables n'ont pas de stack dédiée \
-Leur état est géré directement par le projet
+Variables have no dedicated stack \
+Their state is managed directly by the project

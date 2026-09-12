@@ -1,296 +1,290 @@
 # CLAUDE.md
 
-Instructions pour tout assistant IA travaillant sur ce dépôt.
+Instructions for any AI assistant working on this repository.
 
-## Le projet
+## The project
 
-**Studomate** est un outil pédagogique pour l'apprentissage, la conception et la simulation
-de logiques d'automatisme (GRAFCET aujourd'hui, ouverture prévue à d'autres notations comme
-le Ladder). Voir `README.md` pour la présentation complète.
+**Studomate** is a learning tool for teaching, designing, and simulating automation
+logic (GRAFCET today, with planned support for other notations such as Ladder). See
+`README.md` for the full presentation.
 
-### Échelle du projet — proportionner les optimisations
+### Project scale — keep optimizations proportionate
 
-Les projets manipulés sont petits : grafcets de quelques dizaines d'éléments, quelques
-programmes, quelques dizaines de variables, poignée de projets en `localStorage`. Une opération
-en O(n²) sur ces tailles, c'est quelques milliers d'opérations — imperceptible.
+The projects handled here are small: grafcets with a few dozen elements, a handful of
+programs, a few dozen variables, a handful of projects in `localStorage`. An O(n²) operation
+at these sizes is a few thousand operations — imperceptible.
 
-Ne pas proposer (ni implémenter sur simple suggestion d'un audit) des mécanismes de cache
-invalidé par hash/compteur de mutation, de mémoïsation inter-passes, de dédup de recalcul entre
-« Analyser » et « Simuler », etc. : le gain est nul à cette échelle et le coût est une machine à
-états d'invalidation qui devient une source de bugs subtils. Les optimisations qui se paient
-**par cycle de simulation** (boucle PLC) ou **par frappe** (édition) peuvent se justifier ;
-celles qui se paient **une fois par action utilisateur explicite** (ouvrir un projet, lancer une
-analyse, entrer en simulation, exporter) ne se justifient quasiment jamais. En cas de doute,
-mesurer avant de complexifier.
+Do not propose (or implement on the strength of an audit suggestion alone) caching
+mechanisms invalidated by hash/mutation counter, cross-pass memoization, dedup of recomputation
+between "Analyze" and "Simulate", etc.: the gain is nil at this scale and the cost is an
+invalidation state machine that becomes a source of subtle bugs. Optimizations that pay off
+**per simulation cycle** (PLC loop) or **per keystroke** (editing) can be justified; those that
+pay off **once per explicit user action** (opening a project, running an analysis, entering
+simulation, exporting) are almost never justified. When in doubt, measure before adding
+complexity.
 
-**Compilation de l'AST d'expression en closures JS / résolution des identifiants par slot** :
-écartée. Le gain (3–10× sur le coût d'évaluation des expressions, technique standard des moteurs
-de règles) est imperceptible à cette échelle — après élimination des allocations par cycle
-(`Environment` du PLC construit une fois, `EvaluatorVisitor` réutilisé par routine), il ne reste
-qu'un peu de CPU sur de très petits AST. Le coût est réel : l'AST cesse d'être une IR-donnée
-neutre (partagée par le simplifieur, le replacer, le finder, l'analyseur sémantique et
-l'évaluateur ; sérialisable, inspectable, gelable en dev) pour devenir un graphe de fonctions lié
-au runtime JS. **Piste à rouvrir uniquement** sur un problème de performance de simulation
-*mesuré* (boucle PLC à scan très court sur un gros projet) : commencer par la résolution par slot
-(séparable, ne couple pas au JS) avant d'envisager les closures.
+**Compiling the expression AST into JS closures / resolving identifiers by slot**: ruled out.
+The gain (3–10× on expression evaluation cost, a standard rule-engine technique) is
+imperceptible at this scale — once per-cycle allocations are eliminated (the PLC's
+`Environment` is built once, `EvaluatorVisitor` is reused across routines), only a little CPU
+remains on very small ASTs. The cost is real: the AST would stop being a neutral data-IR
+(shared by the simplifier, the replacer, the finder, the semantic analyser and the evaluator;
+serializable, inspectable, freezable in dev) and become a function graph tied to the JS
+runtime. **Only worth revisiting** on a _measured_ simulation performance problem (a PLC with a
+very short scan on a large project): start with slot resolution (separable, doesn't couple to
+JS) before considering closures.
 
-## Architecture, en bref
+## Architecture, in brief
 
 ```
-src/schemas/           modèle de domaine (Grafcet, Project, Variable, commandes...)
-src/expression-language/  langage des expressions (ET/OU/NON, dialectes FR/EN) — module
-                        neutre, sans dépendance ; utilisé par le compilateur ET l'édition
-src/project-analyser/  analyse d'un projet (règles métier, jamais ne lève : collecte des issues)
-src/project-pre-compiler/  lexe/parse/analyse/simplifie les expressions une fois pour toutes
-src/project-compiler/  produit le programme exécutable (PLCRoutine[]) à partir du pré-compilé
-src/simulator/          lexer/parser/interpréteur du langage d'expression + moteur PLC
-src/bridge/             mappers entre le domaine/l'analyse et l'UI (exceptions, variables, issues)
-src/lib/                utilitaires neutres (array, date, object), sans dépendance de domaine
-src/persistence/        migrations (forme de projet + disposition localStorage) + repositories (localStorage, cloud Supabase, hybride) + tokens de partage
-src/ui/                 Next.js (App Router) + stores zustand + composants MUI
-src/app-info.ts         identité de l'application (nom, slogan...), module racine neutre
+src/schemas/           domain model (Grafcet, Project, Variable, commands...)
+src/expression-language/  expression language (AND/OR/NOT, FR/EN dialects) — neutral
+                        module with no dependencies; used by both the compiler and editing
+src/project-analyser/  project analysis (business rules, never throws: collects issues)
+src/project-pre-compiler/  lexes/parses/analyses/simplifies expressions once and for all
+src/project-compiler/  produces the executable program (PLCRoutine[]) from the pre-compiled form
+src/simulator/          expression-language lexer/parser/interpreter + PLC engine
+src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
+src/lib/                neutral utilities (array, date, object), no domain dependency
+src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
+src/ui/                 Next.js (App Router) + zustand stores + MUI components
+src/app-info.ts         app identity (name, tagline...), neutral root module
 ```
 
-Le sens des dépendances va de haut en bas dans cette liste : le domaine ne dépend jamais de
-l'UI. Un projet a un `dialect` (FR/EN) qui voyage avec lui — ce n'est pas une préférence
-d'interface, c'est une propriété des expressions qu'il contient.
+Dependencies flow top to bottom in this list: the domain never depends on the UI. A project
+has a `dialect` (FR/EN) that travels with it — this is not a UI preference, it's a property of
+the expressions it contains.
 
-`src/bridge/` ne contient que des mappers dont l'UI est un des deux bouts (domaine/analyse ↔
-UI). Un mapper entre deux couches internes reste dans la couche concernée — `PlcVariablesMapper`
-(environnement ↔ PLC) vit dans `src/simulator/`. Exception assumée : `SchemaVariablesMapper`
-(schéma → environnement) est dans `src/bridge/` alors que ses seuls consommateurs sont dans
-`src/project-analyser/` ; à déplacer vers `src/project-analyser/` si on y retouche.
+`src/bridge/` only contains mappers where the UI is one of the two ends (domain/analysis ↔
+UI). A mapper between two internal layers stays in the layer concerned — `PlcVariablesMapper`
+(environment ↔ PLC) lives in `src/simulator/`. Accepted exception: `SchemaVariablesMapper`
+(schema → environment) is in `src/bridge/` even though its only consumers are in
+`src/project-analyser/`; move it to `src/project-analyser/` if it's touched again.
 
-### Comptes & stockage cloud
+### Accounts & cloud storage
 
-`src/persistence/repositories/` fournit trois implémentations de `ProjectRepository` :
-`local-storage` (défaut, stockage local dans le navigateur), `supabase` (cloud : table `projects` + RLS),
-`hybrid` (bascule local/cloud selon l'authentification). L'auth (Supabase, `src/ui/stores/auth/`)
-gère inscription, connexion, comptes anonymes (pseudo + mot de passe), reset password. Le
-partage d'un projet passe par un token d'URL (`ShareableProjectRepository`, `?share=` géré
-dans `src/ui/lib/project-url.ts`). Le monitoring d'erreurs est branché via Sentry
-(`sentry.{client,server,edge}.config.ts` à la racine).
+`src/persistence/repositories/` provides three implementations of `ProjectRepository`:
+`local-storage` (default, browser-local storage), `supabase` (cloud: `projects` table + RLS),
+`hybrid` (switches local/cloud based on authentication). Auth (Supabase, `src/ui/stores/auth/`)
+handles sign-up, sign-in, anonymous accounts (username + password), password reset. Sharing a
+project goes through a URL token (`ShareableProjectRepository`, `?share=` handled in
+`src/ui/lib/project-url.ts`). Error monitoring is wired via Sentry
+(`sentry.{client,server,edge}.config.ts` at the root).
 
-Cette couche est consommée par l'UI ; elle ne remonte jamais dans le domaine (`src/schemas/`).
-Variables d'environnement : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` pour le
-cloud, `NEXT_PUBLIC_SENTRY_DSN` pour le monitoring. Sans elles, l'app reste en local-only.
+This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
+Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for cloud,
+`NEXT_PUBLIC_SENTRY_DSN` for monitoring. Without them, the app stays local-only.
 
-### Export PDF
+### PDF export
 
-`src/ui/lib/program-export-drawing/` dessine chaque programme (grafcet, ladder) **directement
-depuis le schéma** en une IR de primitives (`DrawOp[]` → `Scene`), sans monter React Flow.
-Deux backends : `backends/jspdf-backend.ts` (primitives vectorielles jsPDF, utilisé par
-`JsPdfExporter.drawSection`) et `backends/svg-backend.ts` (chaîne `<svg>`, pour les snapshots
-de test). `usePdfExport` assemble les scènes ; `JsPdfExporter` ajoute page de garde et titres.
-Le rendu est vectoriel et synchrone — pas de rasterisation, pas de capture de l'éditeur.
+`src/ui/lib/program-export-drawing/` draws each program (grafcet, ladder) **directly from the
+schema** into an IR of primitives (`DrawOp[]` → `Scene`), without mounting React Flow. Two
+backends: `backends/jspdf-backend.ts` (vector primitives via jsPDF, used by
+`JsPdfExporter.drawSection`) and `backends/svg-backend.ts` (`<svg>` string, for test snapshots).
+`usePdfExport` assembles the scenes; `JsPdfExporter` adds a cover page and titles. Rendering is
+vector-based and synchronous — no rasterization, no editor capture.
 
-## Commandes
+## Commands
 
 ```bash
-npm run dev      # serveur de dev (Turbopack)
-npm run build    # build de production
-npm test         # suite Jest complète
+npm run dev      # dev server (Turbopack)
+npm run build    # production build
+npm test         # full Jest suite
 npm run lint     # ESLint
-npx tsc --noEmit # vérification des types
+npx tsc --noEmit # type checking
 ```
 
-CI GitHub Actions : ces quatre commandes tournent sur Node 22 à chaque push/PR vers
-`main` et `develop`.
+GitHub Actions CI: these four commands run on Node 22 on every push/PR to `main` and
+`develop`.
 
-**Cadence de vérification pendant une tâche à plusieurs étapes** : ne pas relancer `npx tsc
---noEmit`/`npm run lint`/la suite complète `npm test` après chaque petite étape — ça ralentit
-inutilement. Les lancer à la fin de la tâche (ou les suggérer en cours de route si une étape
-est vraiment risquée). Exception : un changement touchant un très grand nombre de fichiers
-(renommage d'imports, etc.) justifie une passe complète immédiate. En cours de tâche, ne
-lancer que les tests créés ou affectés par le changement en cours
-(`npx jest chemin/du/fichier.test.ts`), jamais la suite entière.
+**Verification cadence during a multi-step task**: don't re-run `npx tsc
+--noEmit`/`npm run lint`/the full `npm test` suite after every small step — that slows things
+down unnecessarily. Run them at the end of the task (or suggest running them along the way if
+a step is genuinely risky). Exception: a change touching a very large number of files (import
+renaming, etc.) justifies an immediate full pass. Mid-task, only run tests created by or
+affected by the change in progress (`npx jest path/to/file.test.ts`), never the whole suite.
 
 ## Versions
 
-Node **≥ 20** (`engines` dans `package.json`, imposé en CI sur Node 22).
+Node **≥ 20** (`engines` in `package.json`, enforced in CI on Node 22).
 
-| Paquet | Version | Rôle |
-|---|---|---|
-| `next` | 15.5.2 | Framework (App Router, Turbopack) |
-| `react` / `react-dom` | 19.1.0 | UI |
-| `typescript` | ^5 | Langage |
-| `@mui/material` | ^7.3.2 | Composants UI |
-| `@mui/icons-material` | ^7.3.2 | Icônes |
-| `@mui/x-data-grid` | ^8.27.1 | Tables (variables, watch tables) |
-| `@mui/x-tree-view` | ^8.14.0 | Arborescences (explorateur) |
-| `@emotion/react` / `@emotion/styled` | ^11.14.0 / ^11.14.1 | Moteur CSS-in-JS de MUI |
-| `@xyflow/react` | ^12.8.4 | Éditeur graphique (React Flow) — GRAFCET |
-| `zustand` | ^5.0.11 | État (stores créés via `createStore`, pas le hook `create` — voir `src/ui/stores/*/[project\|grafcet].store.ts`) |
-| `date-fns` | ^4.1.0 | Dates |
-| `mitt` | ^3.0.1 | Bus d'événements (menus contextuels du grafcet) |
-| `nanoid` | ^5.1.16 | Identifiants courts — toujours via `createRandomId()` (`src/ids.ts`), jamais `nanoid` en direct |
-| `jspdf` | ^4.2.1 | Export PDF (projet : page de garde + programmes) |
-| `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Réordonnancement des sections Ladder |
-| `react-toastify` | ^11.0.5 | Notifications |
-| `nextjs-toploader` | ^3.9.17 | Barre de progression de navigation |
-| `@supabase/supabase-js` | ^2.112.3 | Auth + stockage cloud des projets (`src/persistence/repositories/supabase*`) |
-| `@sentry/nextjs` | ^8 | Monitoring d'erreurs (`sentry.{client,server,edge}.config.ts` à la racine) |
+| Package                                                       | Version                   | Role                                                                                                            |
+| ------------------------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `next`                                                       | 15.5.2                    | Framework (App Router, Turbopack)                                                                                |
+| `react` / `react-dom`                                        | 19.1.0                    | UI                                                                                                               |
+| `typescript`                                                 | ^5                        | Language                                                                                                          |
+| `@mui/material`                                              | ^7.3.2                    | UI components                                                                                                    |
+| `@mui/icons-material`                                        | ^7.3.2                    | Icons                                                                                                             |
+| `@mui/x-data-grid`                                           | ^8.27.1                   | Tables (variables, watch tables)                                                                                 |
+| `@mui/x-tree-view`                                           | ^8.14.0                   | Trees (explorer)                                                                                                  |
+| `@emotion/react` / `@emotion/styled`                         | ^11.14.0 / ^11.14.1       | MUI's CSS-in-JS engine                                                                                           |
+| `@xyflow/react`                                              | ^12.8.4                   | Graphical editor (React Flow) — GRAFCET                                                                          |
+| `zustand`                                                    | ^5.0.11                   | State (stores created via `createStore`, not the `create` hook — see `src/ui/stores/*/[project\|grafcet].store.ts`) |
+| `date-fns`                                                   | ^4.1.0                    | Dates                                                                                                             |
+| `mitt`                                                       | ^3.0.1                    | Event bus (grafcet context menus)                                                                                |
+| `nanoid`                                                     | ^5.1.16                   | Short identifiers — always via `createRandomId()` (`src/ids.ts`), never `nanoid` directly                        |
+| `jspdf`                                                      | ^4.2.1                    | PDF export (project: cover page + programs)                                                                      |
+| `@dnd-kit/core` / `@dnd-kit/sortable` / `@dnd-kit/utilities` | ^6.3.1 / ^10.0.0 / ^3.2.2 | Reordering Ladder sections                                                                                       |
+| `react-toastify`                                             | ^11.0.5                   | Notifications                                                                                                     |
+| `nextjs-toploader`                                           | ^3.9.17                   | Navigation progress bar                                                                                          |
+| `@supabase/supabase-js`                                      | ^2.112.3                  | Auth + cloud project storage (`src/persistence/repositories/supabase*`)                                          |
+| `@sentry/nextjs`                                             | ^8                        | Error monitoring (`sentry.{client,server,edge}.config.ts` at the root)                                           |
 
-Dev/CI : `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6.
+Dev/CI: `eslint` ^9 + `eslint-config-next` 15.5.2, `jest` ^30.2.0 + `ts-jest` ^29.4.6.
 
-Toujours vérifier `package.json` avant de citer une version : ce tableau se périme au premier
+Always check `package.json` before quoting a version: this table goes stale at the first
 `npm update`.
 
-## Conventions du dépôt
+## Repository conventions
 
-- **Imports** : alias `@/...` pour tout ce qui est dans `src/`, `@tests/...` pour
-  `tests/`. Un import relatif ne remontant qu'un seul niveau (`../sibling`) est acceptable ;
-  au-delà, `no-restricted-imports` (ESLint) le refuse — utiliser l'alias.
-- **Pas de fichiers `index.ts` de ré-export** (barrel files). `src/persistence/migrations/schema/index.ts`
-  et `src/persistence/migrations/local-storage/index.ts` ne sont pas des exceptions à cette règle :
-  ils contiennent la logique d'enchaînement des migrations, pas une ré-export.
-- **Fichiers `*.d.ts`** : `src/types/` ne contient que les shims `declare module` de paquets tiers
-  non typés (ex. `file-system-access.d.ts`). Tout autre `.d.ts` est un fichier de types ordinaire
-  co-localisé avec le module ou la feature qu'il décrit (`src/ui/lib/context-menu/context-menu.d.ts`,
-  `src/schemas/grafcet/shared-types.d.ts`...) — pas un candidat pour `src/types/`.
-- **`export default` assumé** pour la classe/valeur principale d'un fichier (schémas, commandes,
-  mappers, repositories, analysers...). Convention en place dans tout le dépôt : un fichier = une
-  entité principale exportée par défaut, les types/constantes annexes en exports nommés. Ne pas
-  introduire d'export nommé pour l'entité principale d'un nouveau fichier de ce type.
-- **Tests** : co-localisés à côté du fichier testé (`nomDuFichier.test.ts`), pas dans un
-  dossier séparé — à l'exception de `tests/integration/` (tests de bout en bout du pipeline
-  analyse → compilation → simulation) et `tests/utils/` (fabriques et utilitaires partagés
-  entre tests, importables via `@tests/utils/...`).
-- **Environnement de test** : `testEnvironment` global est `node` (`jest.config.js`). Tout fichier de
-  test qui touche au DOM — `@testing-library/react`, `@testing-library/dom`, `renderHook`, `react-dom`,
-  ou un accès direct à `document`/`window` — doit déclarer `/** @jest-environment jsdom */` en tête de
-  fichier, sinon il échoue (`document is not defined`) ou, pire, teste à côté.
-- **Détection de plateforme** : préférer `navigator.userAgentData.platform` avec repli sur
-  `navigator.userAgent`, jamais `navigator.platform` (dépréciée) — voir `src/ui/lib/platform.ts`.
-- **Modales** : leur visibilité vit dans le store zustand concerné (`openModalVisible`,
-  `exportModalVisible`, ...), pas dans un état React local — pour rester pilotable depuis
-  n'importe quel composant (raccourcis clavier, menus).
-- **Dépendances de hooks** (`useEffect`, `useCallback`, `useMemo`) : vérifier qu'elles sont
-  complètes après toute modification touchant leur corps.
-- **`box-sizing`** : déjà réglé sur `border-box` globalement pour tous les éléments
-  (`src/app/globals.css`, sélecteur `*`) — ne jamais le redéclarer dans un `sx` ou un style
-  composant.
-- Changements minimaux et ciblés ; respecter le style existant (tabulations, pas de point-virgule
-  final superflu, etc. — voir les fichiers voisins).
-- **Commentaires** : jamais l'historique d'une décision (alternatives essayées, "avant/après",
-  justification d'un choix déjà pris) — ça appartient à la conversation ou au message de commit,
-  pas au code, et ça rote au premier refactor. Un commentaire n'a de valeur que s'il documente
-  une contrainte ou un invariant non trivial que le code seul ne montre pas. Pas de commentaire
-  qui reformule ce qu'un nom de variable/fonction bien choisi dit déjà — si le code se lit tout
-  seul, un commentaire à côté est du bruit, pas de la documentation. Dans le doute, préférer le
-  composant UI qui consomme la valeur (là où le "pourquoi" a un contexte visuel) plutôt que le
-  schéma/domaine (souvent trop générique pour justifier une explication locale). En particulier,
-  ne jamais expliquer au point d'appel ce que fait un hook générique (ex. `useShallow`,
-  `useCallback`) — son comportement est connu de quiconque connaît la librairie, ce n'est pas une
-  règle métier de ce fichier. Un commentaire à cet endroit ne se justifie que pour une règle
-  métier propre au fichier (pourquoi CE sélecteur a besoin de cette protection ici).
-  Jamais de renvoi du type « voir la conversation d'origine »/« voir plus haut »/« comme discuté » :
-  le commentaire doit être compréhensible seul, sans accès à l'historique de la conversation qui a
-  produit le code — écrire directement la contrainte ou l'invariant, pas une référence à une
-  discussion externe au fichier. Cas récurrent à surveiller : un commentaire de tête de
-  fichier/composant ne doit jamais motiver son existence par contraste avec une alternative non
-  retenue (« plutôt que de réduire le composant réel », « au lieu de X », « on aurait pu Y mais... »).
-  Ce risque est le plus fort à la création d'un nouveau fichier, où le réflexe est de justifier
-  pourquoi ce fichier existe plutôt que de le laisser parler de lui-même. Décrire uniquement ce que
-  fait le code, jamais pourquoi il existe par rapport à une autre option — même formulé positivement.
-- **Langue des commentaires/JSDoc** : français, comme ce fichier. Ne pas traduire les commentaires
-  anglais existants au passage dans un fichier qu'on modifie pour une autre raison (churn inutile) ;
-  écrire en français tout nouveau commentaire.
-- **Vérification visuelle d'un changement UI** : ne jamais proposer ou demander de vérifier
-  visuellement dans le navigateur après un changement UI, et ne pas lancer automatiquement
-  l'extension de navigateur (`claude-in-chrome`) de sa propre initiative. C'est à
-  l'utilisateur de le demander s'il le souhaite. Exception : suggérer `claude-in-chrome`
-  quand on tourne en rond (ex. plusieurs tentatives de correction d'un bug qui échouent) et
-  qu'une vérification visuelle permettrait de sortir de la boucle.
+- **Imports**: alias `@/...` for anything in `src/`, `@tests/...` for `tests/`. A relative
+  import going up only one level (`../sibling`) is acceptable; beyond that, `no-restricted-imports`
+  (ESLint) rejects it — use the alias.
+- **No `index.ts` re-export files** (barrel files). `src/persistence/migrations/schema/index.ts`
+  and `src/persistence/migrations/local-storage/index.ts` are not exceptions to this rule:
+  they contain migration-chaining logic, not a re-export.
+- **`*.d.ts` files**: `src/types/` only contains `declare module` shims for untyped third-party
+  packages (e.g. `file-system-access.d.ts`). Any other `.d.ts` is an ordinary type file
+  co-located with the module or feature it describes (`src/ui/lib/context-menu/context-menu.d.ts`,
+  `src/schemas/grafcet/shared-types.d.ts`...) — not a candidate for `src/types/`.
+- **`export default` assumed** for the main class/value of a file (schemas, commands,
+  mappers, repositories, analysers...). This convention is in place across the whole repo: one
+  file = one main entity exported by default, with secondary types/constants as named exports.
+  Don't introduce a named export for the main entity of a new file of this kind.
+- **Tests**: co-located next to the file under test (`fileName.test.ts`), not in a separate
+  folder — except for `tests/integration/` (end-to-end tests of the analysis → compilation →
+  simulation pipeline) and `tests/utils/` (factories and utilities shared between tests,
+  importable via `@tests/utils/...`).
+- **Test environment**: the global `testEnvironment` is `node` (`jest.config.js`). Any test file
+  that touches the DOM — `@testing-library/react`, `@testing-library/dom`, `renderHook`,
+  `react-dom`, or direct access to `document`/`window` — must declare `/** @jest-environment jsdom */`
+  at the top of the file, or it will fail (`document is not defined`) or, worse, test the wrong
+  thing.
+- **Platform detection**: prefer `navigator.userAgentData.platform` with a fallback to
+  `navigator.userAgent`, never `navigator.platform` (deprecated) — see `src/ui/lib/platform.ts`.
+- **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
+  `exportModalVisible`, ...), not in local React state — so it can be driven from anywhere
+  (keyboard shortcuts, menus).
+- **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
+  after any change touching their body.
+- **`box-sizing`**: already set to `border-box` globally for all elements
+  (`src/app/globals.css`, `*` selector) — never redeclare it in an `sx` prop or component style.
+- Minimal, targeted changes; follow the existing style (tabs, no trailing superfluous
+  semicolons, etc. — see neighboring files).
+- **Comments**: never document decision history (alternatives tried, "before/after",
+  justification for a choice already made) — that belongs in the conversation or the commit
+  message, not the code, and it rots at the first refactor. A comment is only worth writing if
+  it documents a non-trivial constraint or invariant that the code alone doesn't show. No
+  comment that restates what a well-chosen variable/function name already says — if the code
+  reads on its own, a comment next to it is noise, not documentation. When in doubt, prefer the
+  UI component consuming the value (where the "why" has visual context) over the schema/domain
+  (often too generic to justify a local explanation). In particular, never explain at the call
+  site what a generic hook does (e.g. `useShallow`, `useCallback`) — its behavior is known to
+  anyone who knows the library, it's not a business rule of this file. A comment there is only
+  justified for a business rule specific to the file (why THIS selector needs this protection
+  here). Never refer back with things like "see the original conversation"/"see above"/"as
+  discussed": the comment must be understandable on its own, without access to the conversation
+  history that produced the code — write the constraint or invariant directly, not a reference
+  to an external discussion. Recurring case to watch for: a file/component header comment must
+  never justify its existence by contrasting with an alternative not taken ("rather than
+  shrinking the actual component", "instead of X", "we could have done Y but..."). This risk is
+  strongest when creating a new file, where the instinct is to justify why this file exists
+  rather than letting it speak for itself. Describe only what the code does, never why it
+  exists relative to another option — even when phrased positively.
+- **Comment/JSDoc language**: English. Existing French comments do not need to be translated
+  in passing when a file is touched for an unrelated reason (avoid needless churn); write all
+  new comments in English going forward.
+- **Visual verification of a UI change**: never propose or ask to visually verify in the
+  browser after a UI change, and don't launch the browser extension (`claude-in-chrome`) on
+  your own initiative. It's up to the user to ask for it if they want. Exception: suggest
+  `claude-in-chrome` when going in circles (e.g. several failed attempts at fixing a bug) and a
+  visual check would help break out of the loop.
 
-## Modification du schéma et migrations
+## Schema changes and migrations
 
-Deux niveaux de versionnement, indépendants :
+Two independent versioning levels:
 
-- **Forme d'un projet** (`schemaVersion`, porté par le projet, partagé par tous les supports) —
-  migrations dans `src/persistence/migrations/schema/`.
-- **Disposition du `localStorage`** (quelles clés, comment les projets y sont rangés — propre au
-  stockage local) — migrations dans `src/persistence/migrations/local-storage/`, version dans la
-  clé `studomate_local_storage_version` (absente = v0).
+- **Project shape** (`schemaVersion`, carried by the project, shared across all storage
+  backends) — migrations in `src/persistence/migrations/schema/`.
+- **`localStorage` layout** (which keys, how projects are arranged there — specific to local
+  storage) — migrations in `src/persistence/migrations/local-storage/`, version in the
+  `studomate_local_storage_version` key (missing = v0).
 
-### Migration de forme de projet (`migrations/schema/`)
+### Project shape migration (`migrations/schema/`)
 
-Toute modification de `src/schemas/` qui change la forme des données persistées (ajout/retrait/
-renommage de champ, changement de structure...) doit s'accompagner d'une migration. Avant d'en
-créer une, demander au développeur s'il faut modifier la dernière migration existante (par
-exemple si elle n'a pas encore été déployée en production) ou en créer une nouvelle version.
+Any change to `src/schemas/` that changes the shape of persisted data (adding/removing/
+renaming a field, structural change...) must come with a migration. Before creating one, ask
+the developer whether to modify the latest existing migration (e.g. if it hasn't been deployed
+to production yet) or create a new version.
 
-**Nommage et enregistrement** (saut de la vN vers la vN+1) :
+**Naming and registration** (bump from vN to vN+1):
 
-- Fichier `src/persistence/migrations/schema/vN-to-vN+1.ts` (kebab-case, `to`) — ex. `v0-to-v1.ts`,
-  `v1-to-v2.ts`. Test co-localisé `vN-to-vN+1.test.ts`.
-- `export default` d'un `const vNToVN+1: ProjectMigration` (camelCase du nom de fichier) portant
-  `from` (la version de départ — `UNVERSIONED` pour la v0), une `description` en anglais, et
-  `migrate` qui opère sur la forme brute et pose `schemaVersion: N+1`.
-- Enregistrer dans `src/persistence/migrations/schema/index.ts` : importer la migration et
-  l'ajouter **en fin** du tableau `MIGRATIONS` (les migrations s'enchaînent dans l'ordre).
-- Incrémenter `PROJECT_SCHEMA_VERSION` dans `src/schemas/project/project.schema.ts`.
+- File `src/persistence/migrations/schema/vN-to-vN+1.ts` (kebab-case, `to`) — e.g. `v0-to-v1.ts`,
+  `v1-to-v2.ts`. Co-located test `vN-to-vN+1.test.ts`.
+- `export default` a `const vNToVN+1: ProjectMigration` (camelCase of the file name) carrying
+  `from` (the starting version — `UNVERSIONED` for v0), a `description` in English, and
+  `migrate` which operates on the raw shape and sets `schemaVersion: N+1`.
+- Register in `src/persistence/migrations/schema/index.ts`: import the migration and append it
+  **at the end** of the `MIGRATIONS` array (migrations run in order).
+- Bump `PROJECT_SCHEMA_VERSION` in `src/schemas/project/project.schema.ts`.
 
-### Migration de disposition `localStorage` (`migrations/local-storage/`)
+### `localStorage` layout migration (`migrations/local-storage/`)
 
-Nécessaire quand on change **comment** le stockage local range les projets (clés, index...),
-pas leur forme. Une migration opère directement sur `localStorage` et doit laisser l'ancienne
-disposition lisible tant que la nouvelle version n'est pas posée (coupure quota). `LayoutMigration`
-(`from`, `description` en anglais, `migrate: () => void`), fichier `vN-to-vN+1.ts` + test,
-enregistré en fin de `LAYOUT_MIGRATIONS` dans `local-storage/index.ts`, et incrémenter
-`CURRENT_LAYOUT_VERSION` dans `local-storage/keys.ts`. `ensureLocalStorageLayout()` applique la
-chaîne à la première opération du `LocalStorageProjectRepository`.
+Needed when changing **how** local storage arranges projects (keys, index...), not their
+shape. A migration operates directly on `localStorage` and must leave the old layout readable
+until the new version is set (quota interruption). `LayoutMigration` (`from`, a `description`
+in English, `migrate: () => void`), file `vN-to-vN+1.ts` + test, registered at the end of
+`LAYOUT_MIGRATIONS` in `local-storage/index.ts`, and bump `CURRENT_LAYOUT_VERSION` in
+`local-storage/keys.ts`. `ensureLocalStorageLayout()` applies the chain on the first operation
+of `LocalStorageProjectRepository`.
 
-## Cache de parsing des expressions (`parseExpressionCached`)
+## Expression parsing cache (`parseExpressionCached`)
 
-L'analyseur et le pré-compilateur lexent/parsent chaque expression via
+The analyser and the pre-compiler lex/parse each expression via
 `parseExpressionCached(expression, dialect)` (`src/expression-language/parse-expression-cached.ts`),
-qui mémoïse `{ tokens, ast }` par paire (expression, dialecte). **L'AST rendu est partagé entre
-tous les appelants.**
+which memoizes `{ tokens, ast }` per (expression, dialect) pair. **The returned AST is shared
+across all callers.**
 
-Invariant à préserver : **aucun code ne doit muter un nœud d'AST en place** (`node.x = ...`,
-`Object.assign(node, ...)`, `node.trueBranch.push(...)`, etc.). Tous les visiteurs qui
-transforment un arbre (`SimplifierVisitor`, `ReplacerVisitor`...) en reconstruisent un neuf
-(`{ ...node, left: ... }` / builders) et ne touchent jamais l'entrée — tout nouveau visiteur ou
-analyseur doit faire pareil. Hors production, l'AST caché est gelé récursivement
-(`Object.freeze`), donc une mutation accidentelle lève un `TypeError` immédiatement en dev/test ;
-ne pas contourner ce gel (pas de `structuredClone` défensif au point d'appel — corriger le
-consommateur fautif pour qu'il soit pur).
+Invariant to preserve: **no code may mutate an AST node in place** (`node.x = ...`,
+`Object.assign(node, ...)`, `node.trueBranch.push(...)`, etc.). All visitors that transform a
+tree (`SimplifierVisitor`, `ReplacerVisitor`...) rebuild a new one (`{ ...node, left: ... }` /
+builders) and never touch the input — any new visitor or analyser must do the same. Outside
+production, the cached AST is recursively frozen (`Object.freeze`), so an accidental mutation
+throws a `TypeError` immediately in dev/test; don't work around this freeze (no defensive
+`structuredClone` at the call site — fix the offending consumer to be pure instead).
 
-Un visiteur ou une passe qui aurait réellement besoin d'un arbre mutable doit repartir d'un
-`new Lexer(dialect).tokenize(...)` / `new Parser(...).parse()` explicite, hors du cache.
+A visitor or pass that genuinely needs a mutable tree must start from an explicit
+`new Lexer(dialect).tokenize(...)` / `new Parser(...).parse()`, outside the cache.
 
-## Templates de projets (`src/templates/`)
+## Project templates (`src/templates/`)
 
-Les templates sont des projets pré-configurés proposés à la création d'un nouveau projet
-(variables, pages HMI, widgets). Chaque template vit dans `src/templates/xxx.template.ts`
-et est enregistré dans `src/templates/index.ts`.
+Templates are pre-configured projects offered when creating a new project (variables, HMI
+pages, widgets). Each template lives in `src/templates/xxx.template.ts` and is registered in
+`src/templates/index.ts`.
 
-**Maintenance :** les templates ne passent pas par le pipeline de migration. Si
-`PROJECT_SCHEMA_VERSION` est incrémenté suite à un changement de schéma, vérifier que les
-données produites par chaque fonction `createXxxProject()` sont conformes au nouveau schéma
-et les mettre à jour si nécessaire. Ne pas oublier de tester la création d'un projet depuis
-chaque template après une migration.
+**Maintenance:** templates do not go through the migration pipeline. If
+`PROJECT_SCHEMA_VERSION` is bumped following a schema change, check that the data produced by
+each `createXxxProject()` function conforms to the new schema and update it if needed. Don't
+forget to test creating a project from each template after a migration.
 
-## Ambiguïté d'une demande
+## Ambiguity in a request
 
-En cas de doute sur ce que l'utilisateur demande précisément (mécanisme d'interaction visé,
-périmètre exact, etc.), demander une précision plutôt que deviner et implémenter — même pour un
-détail qui semble mineur. Une implémentation dans la mauvaise direction coûte plus cher à défaire
-qu'une question posée à l'avance.
+When in doubt about exactly what the user is asking for (which interaction mechanism is meant,
+the exact scope, etc.), ask for clarification rather than guessing and implementing — even for
+a detail that seems minor. An implementation in the wrong direction costs more to undo than a
+question asked upfront.
 
-## Tests et bugs découverts en testant
+## Tests and bugs discovered while testing
 
-Toute logique nouvelle ou modifiée (fonction, branche, règle métier, comportement de
-composant) doit s'accompagner de tests dédiés — créés à côté du fichier concerné
-(`nomDuFichier.test.ts`) ou ajoutés à un test existant. Lancer la suite existante ne suffit
-pas : à chaque fichier créé ou modifié, se demander explicitement quels cas ce changement
-introduit et les couvrir. Seul un changement sans logique propre (renommage, déplacement,
-type pur) peut s'en dispenser.
+Any new or modified logic (function, branch, business rule, component behavior) must come with
+dedicated tests — created next to the relevant file (`fileName.test.ts`) or added to an
+existing test. Running the existing suite is not enough: for every file created or modified,
+explicitly ask what cases this change introduces and cover them. Only a change with no logic of
+its own (renaming, moving, pure type change) can skip this.
 
-Si un test écrit pour vérifier un comportement révèle que le code source est en tort, ne pas
-réécrire le test pour qu'il « passe » sur un comportement cassé. Signaler clairement ce qui a
-été trouvé (fichier, symptôme, scénario de reproduction) et corriger si le correctif est
-localisé et sûr ; sinon, remonter la question avant de toucher au code.
+If a test written to verify a behavior reveals that the source code is wrong, don't rewrite the
+test to "pass" on broken behavior. Clearly report what was found (file, symptom, reproduction
+scenario) and fix it if the fix is localized and safe; otherwise, raise the question before
+touching the code.
 
-## Ne pas divulguer le nom du modèle sous-jacent à moins que l'utilisateur ne le demande explicitement.
+## Do not disclose the name of the underlying model unless the user explicitly asks for it.

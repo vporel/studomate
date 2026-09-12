@@ -1,108 +1,103 @@
 ---
 name: process-audit
-description: Traiter, dépiler et résoudre les points d'un fichier d'audit (typiquement _ai_context/audit-code.md ou _ai_context/audit-perfs.md). Boucle de haut en bas sur les points numérotés : vérifier, proposer un plan, attendre validation, implémenter, tester, supprimer le point.
+description: Process, work through, and resolve the points of an audit file (typically _ai_context/audit-code.md or _ai_context/audit-perfs.md). Loop top to bottom over the numbered points: verify, propose a plan, wait for approval, implement, test, delete the point.
 ---
 
-# Skill : traitement d'un fichier d'audit
+# Skill: processing an audit file
 
-Ce skill s'applique dès qu'une tâche demande de traiter, dépiler ou résoudre les points d'un
-fichier d'audit (typiquement `_ai_context/audit-code.md` ou `_ai_context/audit-perfs.md`).
+This skill applies whenever a task asks to process, work through, or resolve the points of an
+audit file (typically `_ai_context/audit-code.md` or `_ai_context/audit-perfs.md`).
 
-Un fichier d'audit est une liste numérotée de points (1, 2, 3… avec d'éventuels sous-points),
-chacun décrivant un défaut avec fichier(s) concerné(s), symptôme, problème et recommandation.
+An audit file is a numbered list of points (1, 2, 3… with possible sub-points), each
+describing a defect with affected file(s), symptom, problem, and recommendation.
 
-## Prérequis — savoir quel fichier traiter
+## Prerequisite — knowing which file to process
 
-Le skill ne démarre pas tant que le fichier d'audit cible n'est pas connu. S'il n'a pas été
-passé en argument (`/process-audit _ai_context/audit-perfs.md`) et qu'il n'est pas évident
-d'après la conversation, demander explicitement quel fichier traiter. Ne pas deviner.
+The skill doesn't start until the target audit file is known. If it wasn't passed as an
+argument (`/process-audit _ai_context/audit-perfs.md`) and it isn't obvious from the
+conversation, explicitly ask which file to process. Don't guess.
 
-## La boucle
+## The loop
 
-Le fichier est traité **de haut en bas**. Pour chaque itération :
+The file is processed **top to bottom**. For each iteration:
 
-### 1. Choisir un point
+### 1. Pick a point
 
-Prendre le **premier point encore présent** dans le fichier (le plus haut). Ne pas sauter de
-point, ne pas laisser le développeur choisir l'ordre — c'est toujours le premier restant.
+Take the **first point still present** in the file (the topmost one). Don't skip a point,
+don't let the developer choose the order — it's always the first one remaining.
 
-### 2. Vérifier que l'audit dit vrai
+### 2. Verify the audit is right
 
-Aller lire le code réellement concerné et confirmer que le défaut décrit existe bien tel
-qu'énoncé.
+Go read the actually affected code and confirm the described defect really exists as stated.
 
-- Si le point est **confirmé** : passer à l'étape 3.
-- Si le point est un **faux positif** (le défaut n'existe pas, ou plus, ou la description est
-  fausse) : le signaler clairement au développeur (ce qui a été vérifié, pourquoi le point ne
-  tient pas) et **attendre sa décision** (supprimer le point sans rien implémenter, le
-  requalifier, autre). Ne jamais supprimer un point de sa propre initiative dans ce cas.
+- If the point is **confirmed**: move to step 3.
+- If the point is a **false positive** (the defect doesn't exist, or no longer does, or the
+  description is wrong): clearly report this to the developer (what was checked, why the point
+  doesn't hold) and **wait for their decision** (delete the point without implementing
+  anything, reclassify it, other). Never delete a point on your own initiative in this case.
 
-### 3. Proposer un plan
+### 3. Propose a plan
 
-Décrire le plan d'implémentation en texte : fichiers touchés, nature des changements,
-migrations éventuelles (voir CLAUDE.md), risques. Ne pas écrire de code à ce stade.
+Describe the implementation plan in text: affected files, nature of the changes, any
+migrations (see CLAUDE.md), risks. Don't write code at this stage.
 
-### 4. Attendre la validation du développeur
+### 4. Wait for developer approval
 
-**Point non négociable : ne rien implémenter avant que le développeur ait explicitement
-validé le plan.**
+**Non-negotiable: implement nothing before the developer has explicitly approved the plan.**
 
-- Si le plan est **rejeté ou amendé** : le réviser et re-soumettre, puis re-attendre la
-  validation. On ne passe pas à l'étape suivante sans un feu vert explicite.
-- Une notification automatique de tâche de fond n'est **pas** une validation.
+- If the plan is **rejected or amended**: revise it and resubmit, then wait for approval again.
+  Don't move to the next step without an explicit green light.
+- An automatic background task notification is **not** an approval.
 
-### 5. Implémenter
+### 5. Implement
 
-Une fois le plan validé, l'implémenter. Changements minimaux et ciblés, style du dépôt (voir
-CLAUDE.md).
+Once the plan is approved, implement it. Minimal, targeted changes, matching the repo's style
+(see CLAUDE.md).
 
-Pour chaque fichier créé ou modifié qui introduit une logique nouvelle ou modifiée
-(fonction, branche, règle métier, comportement de composant) : écrire les tests dédiés
-correspondants (créés à côté du fichier ou ajoutés à un test existant). Se demander
-explicitement quels cas le correctif introduit et les couvrir — ne pas se contenter de
-relancer la suite existante. Seul un changement sans logique propre (renommage, déplacement,
-type pur) peut s'en dispenser.
+For every file created or modified that introduces new or changed logic (function, branch,
+business rule, component behavior): write the corresponding dedicated tests (created next to
+the file or added to an existing test). Explicitly ask what cases the fix introduces and cover
+them — don't just rerun the existing suite. Only a change with no logic of its own (renaming,
+moving, pure type change) can skip this.
 
-### 6. Vérifier
+### 6. Verify
 
-Avant de toucher au fichier d'audit :
+Before touching the audit file:
 
-- Lancer les tests **affectés ou créés** par le changement (`npx jest chemin/du/fichier.test.ts`),
-  pas la suite entière — sauf changement transverse (voir CLAUDE.md).
-- Lancer `npx tsc --noEmit` et `npm run lint`.
+- Run the tests **affected or created** by the change (`npx jest path/to/file.test.ts`),
+  not the whole suite — unless it's a cross-cutting change (see CLAUDE.md).
+- Run `npx tsc --noEmit` and `npm run lint`.
 
-Si une vérification échoue, corriger avant de continuer. Ne pas passer à l'étape 7 sur du
-rouge.
+If a check fails, fix it before continuing. Don't move to step 7 while red.
 
-### 7. Supprimer le point
+### 7. Delete the point
 
-Supprimer purement et simplement le bloc du point dans le fichier d'audit. **Ne pas** le
-marquer « Traité », « Fait » ou barré — le **supprimer**.
+Simply delete the point's block from the audit file. **Don't** mark it "Done", "Processed", or
+strike it through — **delete** it.
 
-**Ne pas renuméroter** les points restants : les numéros servent de références croisées
-(« voir point 24 »), les garder stables même si des trous apparaissent.
+**Don't renumber** the remaining points: numbers serve as cross-references ("see point 24"),
+keep them stable even if gaps appear.
 
-### 8. Répercuter sur les points liés
+### 8. Ripple to related points
 
-Relire le reste du fichier d'audit et repérer les points **liés** à celui qu'on vient de
-traiter (même fichier, même mécanisme, dépendance).
+Reread the rest of the audit file and spot points **related** to the one just processed (same
+file, same mechanism, dependency).
 
-- Si le traitement a **modifié ce qu'un autre point doit dire** (lignes qui ont bougé, partie
-  du problème déjà résolue) : mettre à jour le texte de ce point directement dans le fichier
-  d'audit pour refléter l'état réel.
-- Si un point lié devient **entièrement caduc** : ne pas le supprimer d'office — le signaler
-  au développeur et attendre sa décision (comme un faux positif à l'étape 2).
+- If the fix **changed what another point should say** (lines that moved, part of the problem
+  already solved): update that point's text directly in the audit file to reflect the actual
+  state.
+- If a related point becomes **entirely moot**: don't delete it on your own — report it to the
+  developer and wait for their decision (like a false positive in step 2).
 
-### 9. Point suivant
+### 9. Next point
 
-Enchaîner directement sur le point suivant (retour à l'étape 1) **sans demander au
-développeur s'il veut continuer**. La boucle ne s'arrête que lorsque le fichier d'audit ne
-contient plus aucun point.
+Move straight on to the next point (back to step 1) **without asking the developer whether to
+continue**. The loop only stops when the audit file no longer contains any point.
 
-La validation attendue à l'étape 4 porte uniquement sur le plan du point courant, jamais sur
-le fait de poursuivre la boucle.
+The approval expected in step 4 only concerns the current point's plan, never whether to keep
+looping.
 
-## Fin
+## End
 
-Quand tous les points sont traités, l'indiquer au développeur. Le fichier d'audit vidé peut
-être laissé en place (ou supprimé si le développeur le demande).
+When all points are processed, tell the developer. The emptied audit file can be left in place
+(or deleted if the developer asks).

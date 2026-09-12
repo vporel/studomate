@@ -1,96 +1,96 @@
 ---
 name: add-hmi-widget
-description: Ajouter un nouveau type de widget à l'éditeur HMI de Studomate. Questions préalables obligatoires puis checklist courte (définition domaine, composant de rendu, entrée UI satellite avec descripteurs de champs déclaratifs, migration si besoin). La palette, le panneau propriétés, les animations, les événements et le manuel sont dérivés — plus de tables parallèles à éditer.
+description: Add a new widget type to Studomate's HMI editor. Mandatory preliminary questions, then a short checklist (domain definition, render component, satellite UI entry with declarative field descriptors, migration if needed). The palette, properties panel, animations, events and manual are derived — no parallel tables to edit.
 ---
 
-# Skill : ajout d'un nouveau widget HMI
+# Skill: adding a new HMI widget
 
-Ce skill s'applique dès qu'une tâche demande d'ajouter un nouveau type de widget à l'éditeur HMI.
+This skill applies whenever a task asks to add a new widget type to the HMI editor.
 
-L'architecture est **table-driven** : une définition domaine (`HMI_WIDGET_DEFINITIONS`, React-free)
-et une table satellite UI (`HMI_WIDGET_UI`, composant + aperçu + descripteurs de champs). Le
-panneau Propriétés, la palette, les panneaux Animations/Événements et le manuel lisent ces deux
-tables — ils n'ont **pas** à être édités pour un widget simple.
+The architecture is **table-driven**: a domain definition (`HMI_WIDGET_DEFINITIONS`, React-free)
+and a satellite UI table (`HMI_WIDGET_UI`, component + preview + field descriptors). The
+Properties panel, the palette, the Animations/Events panels and the manual all read from these
+two tables — they **don't** need to be edited for a simple widget.
 
-## Avant de commencer — questions obligatoires
+## Before starting — mandatory questions
 
-Ne pas implémenter avant d'avoir des réponses claires. Si la demande ne les précise pas, les poser :
+Don't implement before getting clear answers. If the request doesn't specify them, ask:
 
-1. **Nature du widget** — `interactive` (lié à une variable) ou `shape` (purement visuelle, sans variable) ?
-2. **Variable liée** — si interactif : quel(s) type(s) (`BOOL`, `INT`, `REAL`…) ? Le widget **écrit**-il dans la variable (`writesToVariable: true`, ex. interrupteur) ou la **lit**-il seulement (ex. voyant) ?
-3. **Emplacement dans la palette** — groupe interactif ou formes ? Plusieurs variantes du même type (comme Cercle/Ellipse) ?
-4. **Propriétés configurables** — quelles options dans le panneau Propriétés, et de quel type (texte, couleur, nombre, select, case à cocher) ? Un champ a-t-il un effet de bord (ex. l'orientation de la jauge échange largeur/hauteur) ?
-5. **Style animable** — des propriétés visuelles pilotables par variable en simulation (couleur, texte…) ?
-6. **Événements** — le widget déclenche-t-il des actions (ex. `onPress`) en simulation ?
-7. **Impact sur le schéma persisté** — `defaultData` introduit-il un champ que des projets existants n'ont pas ? Si oui, demander si la dernière migration peut être amendée ou s'il faut une nouvelle version (voir CLAUDE.md).
+1. **Widget nature** — `interactive` (bound to a variable) or `shape` (purely visual, no variable)?
+2. **Bound variable** — if interactive: which type(s) (`BOOL`, `INT`, `REAL`…)? Does the widget **write** to the variable (`writesToVariable: true`, e.g. a switch) or only **read** it (e.g. an indicator lamp)?
+3. **Palette placement** — interactive group or shapes? Several variants of the same type (like Circle/Ellipse)?
+4. **Configurable properties** — which options in the Properties panel, and of what type (text, color, number, select, checkbox)? Does any field have a side effect (e.g. the gauge orientation swaps width/height)?
+5. **Animatable style** — any visual properties drivable by a variable during simulation (color, text…)?
+6. **Events** — does the widget trigger actions (e.g. `onPress`) during simulation?
+7. **Impact on the persisted schema** — does `defaultData` introduce a field that existing projects don't have? If so, ask whether the latest migration can be amended or a new version is needed (see CLAUDE.md).
 
 ---
 
-## Checklist d'implémentation
+## Implementation checklist
 
-### 1. Définition domaine — `src/schemas/hmi/hmi-widget.schema.ts`
+### 1. Domain definition — `src/schemas/hmi/hmi-widget.schema.ts`
 
-- [ ] **Union `HmiWidgetType`** — ajouter `| "mon-widget"`. Alimente tous les `Record<HmiWidgetType, …>` exhaustifs ; TS signale les points non couverts.
-- [ ] **Type `MonWidgetData`** — étend `HmiWidgetBaseData` si variable liée, ne l'étend pas si forme pure. Déclarer `animations?: HmiWidgetAnimations<"prop1" | …>` si style animable, `events?: HmiWidgetEvents<"onNom">` si événements.
-- [ ] **Classe `class MonWidgetWidget extends HmiWidgetBase<MonWidgetData>`** avec `readonly type = "mon-widget" as const` (indispensable au rétrécissement d'union).
-- [ ] **Union `HmiWidget`** — ajouter `| MonWidgetWidget`.
-- [ ] **`HMI_WIDGET_DEFINITIONS`** — une entrée : `kind`, `writesToVariable`, `defaultData` (le `data` initial complet, `label` inclus pour un widget interactif), `label`, `defaultSize`, `minSize`, `aspectRatio?`, `variableTypes`. `Record` exhaustif.
-- [ ] **`WIDGET_CONSTRUCTORS`** — une ligne `"mon-widget": MonWidgetWidget`. `Record` exhaustif.
-- [ ] *(Pas de `generateDefaultData` ni `createInstance` à éditer — ils sont pilotés par les tables.)*
+- [ ] **`HmiWidgetType` union** — add `| "my-widget"`. Feeds every exhaustive `Record<HmiWidgetType, …>`; TS flags uncovered spots.
+- [ ] **`MyWidgetData` type** — extends `HmiWidgetBaseData` if bound to a variable, doesn't extend it for a pure shape. Declare `animations?: HmiWidgetAnimations<"prop1" | …>` if the style is animatable, `events?: HmiWidgetEvents<"onName">` if it has events.
+- [ ] **`class MyWidgetWidget extends HmiWidgetBase<MyWidgetData>`** with `readonly type = "my-widget" as const` (required for union narrowing).
+- [ ] **`HmiWidget` union** — add `| MyWidgetWidget`.
+- [ ] **`HMI_WIDGET_DEFINITIONS`** — one entry: `kind`, `writesToVariable`, `defaultData` (the full initial `data`, `label` included for an interactive widget), `label`, `defaultSize`, `minSize`, `aspectRatio?`, `variableTypes`. Exhaustive `Record`.
+- [ ] **`WIDGET_CONSTRUCTORS`** — one line `"my-widget": MyWidgetWidget`. Exhaustive `Record`.
+- [ ] *(No `generateDefaultData` or `createInstance` to edit — they're driven by the tables.)*
 
-### 2. Composant de rendu — nouveau `src/ui/components/hmi/widgets/MonWidget.tsx`
+### 2. Render component — new `src/ui/components/hmi/widgets/MyWidget.tsx`
 
-- [ ] Signature `HmiWidgetComponentProps<MonWidgetData>`. Props : `data`, `value`, `selected`, `hideLabel`, `onClick`, `onValueChange`, `onTrigger`.
-- [ ] `onValueChange` / `onTrigger` sont `undefined` en conception — ne jamais les appeler sans garde.
-- [ ] Nom d'événement passé à `onTrigger?.("nom")` = exactement la clé déclarée dans l'entrée `events` (étape 3).
+- [ ] Signature `HmiWidgetComponentProps<MyWidgetData>`. Props: `data`, `value`, `selected`, `hideLabel`, `onClick`, `onValueChange`, `onTrigger`.
+- [ ] `onValueChange` / `onTrigger` are `undefined` at design time — never call them without a guard.
+- [ ] Event name passed to `onTrigger?.("name")` = exactly the key declared in the `events` entry (step 3).
 
-### 3. Entrée UI satellite — `src/ui/components/hmi/widgets/hmi-widget-ui.ts`
+### 3. Satellite UI entry — `src/ui/components/hmi/widgets/hmi-widget-ui.ts`
 
-Une entrée dans `HMI_WIDGET_UI` (`Record<HmiWidgetType, …>` exhaustif) :
+One entry in `HMI_WIDGET_UI` (exhaustive `Record<HmiWidgetType, …>`):
 
-- [ ] `component` : le composant de l'étape 2 (+ import).
-- [ ] `previewWidth`, `previewValue` (`false`/`0`/valeur de démo), `paletteOrder` (rang dans son groupe).
-- [ ] `manualDescription` : la phrase du manuel (`"Mon widget — … Options : …"`).
-- [ ] `toolSymbol?` : symbole SVG compact si le rendu réel est illisible en miniature.
-- [ ] `events` : `[]` ou `[{ name: "onNom", label: "Libellé" }]`.
-- [ ] `animatableStyleProps` : `[]` ou `[{ name, label, inputType: "color" | "text", staticValue: (data) => … }]`.
-- [ ] `propertyFields` : descripteurs déclaratifs des champs du panneau Propriétés. Chaque champ porte `label` + `get: (data) => …` / `set: (data, value) => ({ …data })` **typés** sur `MonWidgetData` (TS casse sur un mauvais champ). Variantes : `text` (`multiline?`), `color`, `number` (`min?`/`max?`), `select` (`options`, `widgetPatch?` pour un effet de bord), `checkbox`.
+- [ ] `component`: the component from step 2 (+ import).
+- [ ] `previewWidth`, `previewValue` (`false`/`0`/demo value), `paletteOrder` (rank within its group).
+- [ ] `manualDescription`: the manual's sentence (`"My widget — … Options: …"`).
+- [ ] `toolSymbol?`: compact SVG symbol if the actual render is illegible at thumbnail size.
+- [ ] `events`: `[]` or `[{ name: "onName", label: "Label" }]`.
+- [ ] `animatableStyleProps`: `[]` or `[{ name, label, inputType: "color" | "text", staticValue: (data) => … }]`.
+- [ ] `propertyFields`: declarative descriptors for the Properties panel fields. Each field carries `label` + `get: (data) => …` / `set: (data, value) => ({ …data })` **typed** against `MyWidgetData` (TS breaks on a wrong field). Variants: `text` (`multiline?`), `color`, `number` (`min?`/`max?`), `select` (`options`, `widgetPatch?` for a side effect), `checkbox`.
 
-### 4. Palette — rien à faire
+### 4. Palette — nothing to do
 
-`HMI_WIDGET_TOOLS` / `HMI_SHAPE_TOOLS` (`src/ui/components/hmi/toolbar/hmi-widget-tools.ts`) sont
-**dérivés** de `kind` + `paletteOrder`. À éditer uniquement pour **plusieurs variantes** du même
-type dans la palette (modèle : les deux entrées `ellipse` pour Cercle/Ellipse).
+`HMI_WIDGET_TOOLS` / `HMI_SHAPE_TOOLS` (`src/ui/components/hmi/toolbar/hmi-widget-tools.ts`) are
+**derived** from `kind` + `paletteOrder`. Only edit for **several variants** of the same type in
+the palette (model: the two `ellipse` entries for Circle/Ellipse).
 
-### 5. Nouveau type d'action — `src/schemas/hmi/hmi-widget.schema.ts` + `hmi-action.executor.ts`
+### 5. New action type — `src/schemas/hmi/hmi-widget.schema.ts` + `hmi-action.executor.ts`
 
-Uniquement si le widget introduit un **nouveau type d'action** (rare, orthogonal aux widgets) :
-ajouter à l'union `HmiAction` puis un `case` dans `executeHmiAction` (switch exhaustif).
+Only if the widget introduces a **new action type** (rare, orthogonal to widgets):
+add it to the `HmiAction` union then a `case` in `executeHmiAction` (exhaustive switch).
 
 ### 6. Migration — `src/persistence/migrations/`
 
-Uniquement si `defaultData` introduit un champ absent des projets existants :
+Only if `defaultData` introduces a field absent from existing projects:
 
-- [ ] Demander : amender la dernière migration ou nouvelle version ?
-- [ ] Créer `vN-to-vN+1.ts`, l'enregistrer dans `migrations/index.ts`, incrémenter `PROJECT_SCHEMA_VERSION`.
+- [ ] Ask: amend the latest migration or create a new version?
+- [ ] Create `vN-to-vN+1.ts`, register it in `migrations/index.ts`, bump `PROJECT_SCHEMA_VERSION`.
 
-### 7. Manuel — rien à faire
+### 7. Manual — nothing to do
 
-`HmiSection.tsx` est généré depuis `HMI_WIDGET_DEFINITIONS` + `manualDescription`.
+`HmiSection.tsx` is generated from `HMI_WIDGET_DEFINITIONS` + `manualDescription`.
 
 ### 8. Tests
 
-- [ ] `hmi-widget.schema.test.ts` : `generateDefaultData` / `create` pour le nouveau type ; cohérence `kind` / `writesToVariable` / `defaultData`.
-- [ ] `hmi-widget-ui.test.ts` : couvert automatiquement (entrée par type, aller-retour `get`/`set`, immutabilité de `set`) — ajouter un cas dédié pour un `widgetPatch` ou un `staticValue` non trivial.
-- [ ] Logique conditionnelle du composant de rendu (interaction variable, déclenchement d'événement).
-- [ ] Migration, si créée (round-trip).
+- [ ] `hmi-widget.schema.test.ts`: `generateDefaultData` / `create` for the new type; `kind` / `writesToVariable` / `defaultData` consistency.
+- [ ] `hmi-widget-ui.test.ts`: covered automatically (per-type entry, `get`/`set` round-trip, `set` immutability) — add a dedicated case for a non-trivial `widgetPatch` or `staticValue`.
+- [ ] Conditional logic of the render component (variable interaction, event triggering).
+- [ ] Migration, if created (round-trip).
 
 ---
 
-## Invariants globaux
+## Global invariants
 
-- `readonly type = "mon-widget" as const` sur la classe — sans `as const`, plus de rétrécissement d'union.
-- `Record<HmiWidgetType, …>` exhaustifs : `HMI_WIDGET_DEFINITIONS`, `WIDGET_CONSTRUCTORS`, `HMI_WIDGET_UI`. Ne jamais masquer l'erreur d'une clé manquante avec un cast.
-- Les descripteurs `propertyFields` reconstruisent `data` (`{ ...data, … }`), ne le mutent jamais.
-- Nom d'événement dans `events` = chaîne passée à `onTrigger` — contrat par convention, non vérifié par TS.
-- `onValueChange` / `onTrigger` `undefined` en conception.
+- `readonly type = "my-widget" as const` on the class — without `as const`, no more union narrowing.
+- Exhaustive `Record<HmiWidgetType, …>`: `HMI_WIDGET_DEFINITIONS`, `WIDGET_CONSTRUCTORS`, `HMI_WIDGET_UI`. Never hide a missing-key error with a cast.
+- `propertyFields` descriptors rebuild `data` (`{ ...data, … }`), never mutate it.
+- Event name in `events` = string passed to `onTrigger` — a convention-based contract, not checked by TS.
+- `onValueChange` / `onTrigger` are `undefined` at design time.
