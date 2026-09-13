@@ -22,5 +22,17 @@
 	"carton-sorting": {
 		"label": "Carton sorting station",
 		"description": "Sorting cartons by height: detection at the post, routing by three cylinders to two output conveyors, counting. Plant model provided. To be programmed."
+	},
+	"linear-sequence": {
+		"label": "Linear sequence",
+		"description": "A 4-step GRAFCET, a single chain, no timer or divergence. Training module mini-exercise."
+	},
+	"and-divergence": {
+		"label": "AND divergence",
+		"description": "An AND divergence closed by its convergence, two parallel branches. Training module mini-exercise."
+	},
+	"or-divergence": {
+		"label": "OR divergence",
+		"description": "A two-branch OR divergence with mutually exclusive branches, each looping back to the initial state on its own. Training module mini-exercise."
 	}
 }

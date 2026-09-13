@@ -22,5 +22,17 @@
 	"carton-sorting": {
 		"label": "Poste de tri de caisses",
 		"description": "Tri de caisses par hauteur : détection au poste, aiguillage par trois vérins vers deux tapis de sortie, comptage. Modèle de partie opérative fourni. À programmer."
+	},
+	"linear-sequence": {
+		"label": "Séquence linéaire",
+		"description": "GRAFCET à 4 étapes, une seule chaîne, sans temporisation ni divergence. Mini-exercice du module Formations."
+	},
+	"and-divergence": {
+		"label": "Divergence en ET",
+		"description": "Une divergence en ET refermée par sa convergence, deux branches parallèles. Mini-exercice du module Formations."
+	},
+	"or-divergence": {
+		"label": "Divergence en OU",
+		"description": "Une divergence en OU à deux branches exclusives, chacune rebouclant seule vers l'état initial. Mini-exercice du module Formations."
 	}
 }

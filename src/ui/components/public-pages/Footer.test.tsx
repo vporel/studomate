@@ -16,6 +16,13 @@ describe("Footer", () => {
 		).toHaveAttribute("href", "/politique-de-confidentialite");
 	});
 
+	it("expose un lien vers le site de l'auteur", () => {
+		renderWithI18n(<Footer />);
+		expect(
+			screen.getByRole("link", { name: "Vivian NKOUANANG" }),
+		).toHaveAttribute("href", "https://www.vporel.com");
+	});
+
 	it("affiche l'année courante dans le copyright", () => {
 		renderWithI18n(<Footer />);
 		expect(

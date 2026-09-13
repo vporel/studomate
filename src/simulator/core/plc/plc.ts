@@ -132,6 +132,15 @@ export default class PLC extends ClockedRunnable {
 		return variable?.getType();
 	}
 
+	/**
+	 * Mnémonique d'une entrée physique ou d'une mémoire, ou `undefined` si l'id n'en désigne
+	 * aucune.
+	 */
+	public getVariableNameById(id: string): string | undefined {
+		const variable = this.physicalInputs[id] ?? this.memory[id];
+		return variable?.getName();
+	}
+
 	public setOutputImageValueById(id: string, value: PLCVariableValue): void {
 		const variable = this.getOutputImageVariableById(id);
 		variable.setValue(value);

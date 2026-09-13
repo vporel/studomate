@@ -1,6 +1,6 @@
 "use client";
 
-import { APP_NAME, APP_REPO_URL } from "@/app-info";
+import { APP_NAME, APP_REPO_URL, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
 import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
 import { useT } from "@/ui/i18n/useT";
@@ -34,6 +34,7 @@ const Footer = () => {
 			{
 				title: t("resources"),
 				links: [
+					{ label: t("training"), href: "/training" },
 					{ label: t("manual"), href: "/user-manual" },
 					{ label: t("about"), href: "/about" },
 				],
@@ -137,6 +138,16 @@ const Footer = () => {
 				>
 					<Typography variant="body2" color="text.secondary">
 						{t("copyright", { year: new Date().getFullYear(), name: APP_NAME })}
+						{" — "}
+						{t("createdBy")}{" "}
+						<MuiLink
+							href={AUTHOR_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							sx={linkSx}
+						>
+							{AUTHOR_NAME}
+						</MuiLink>
 					</Typography>
 					<FlexBox gap={2} sx={{ flexWrap: "wrap" }}>
 						<InternalLink href="/contact">{t("contact")}</InternalLink>

@@ -13,6 +13,7 @@ import {
 	setProjectIdInUrl,
 } from "@/ui/lib/project-url";
 import { PROJECT_TEMPLATES } from "@/templates/index";
+import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import {
 	createContext,
 	ReactNode,
@@ -151,6 +152,11 @@ export const ProjectContextProvider = ({
 					wantsSolution ? "solution" : "exercise",
 				);
 			clearTemplateParamsFromUrl();
+			// Un template ouvert depuis un lien porte un énoncé : on l'affiche directement plutôt
+			// que la page de démarrage classique, exercice comme solution.
+			if (template.statement) {
+				storeRef.current!.getState().pagesManager.openPage(EXERCISE_PAGE_DATA);
+			}
 		};
 		void open();
 	}, []);

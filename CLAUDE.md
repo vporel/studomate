@@ -5,8 +5,8 @@ Instructions for any AI assistant working on this repository.
 ## The project
 
 **Studomate** is a learning tool for teaching, designing, and simulating automation
-logic (GRAFCET today, with planned support for other notations such as Ladder). See
-`README.md` for the full presentation.
+logic, currently covering GRAFCET, Ladder, and animated HMI, with variables shared
+across all three. See `README.md` for the full presentation.
 
 ### Project scale — keep optimizations proportionate
 
@@ -104,6 +104,13 @@ a step is genuinely risky). Exception: a change touching a very large number of 
 renaming, etc.) justifies an immediate full pass. Mid-task, only run tests created by or
 affected by the change in progress (`npx jest path/to/file.test.ts`), never the whole suite.
 
+**`npm run build`: don't run it as a routine verification step.** `tsc --noEmit` + `lint` +
+targeted tests already cover type-safety and correctness; a full production build is expensive
+and mostly redundant with those. Reach for it only when a change plausibly breaks the build in a
+way the others can't catch (new/changed Server Component ↔ Client Component prop boundaries,
+new routes/dynamic segments, config changes to `next.config`, env vars, etc.) — otherwise a
+broken build surfaces at deployment, which is an acceptable place to catch it.
+
 ## Versions
 
 Node **≥ 20** (`engines` in `package.json`, enforced in CI on Node 22).
@@ -118,7 +125,7 @@ Node **≥ 20** (`engines` in `package.json`, enforced in CI on Node 22).
 | `@mui/x-data-grid`                                           | ^8.27.1                   | Tables (variables, watch tables)                                                                                 |
 | `@mui/x-tree-view`                                           | ^8.14.0                   | Trees (explorer)                                                                                                  |
 | `@emotion/react` / `@emotion/styled`                         | ^11.14.0 / ^11.14.1       | MUI's CSS-in-JS engine                                                                                           |
-| `@xyflow/react`                                              | ^12.8.4                   | Graphical editor (React Flow) — GRAFCET                                                                          |
+| `@xyflow/react`                                              | ^12.8.4                   | Graphical editor (React Flow) — GRAFCET and Ladder                                                                 |
 | `zustand`                                                    | ^5.0.11                   | State (stores created via `createStore`, not the `create` hook — see `src/ui/stores/*/[project\|grafcet].store.ts`) |
 | `date-fns`                                                   | ^4.1.0                    | Dates                                                                                                             |
 | `mitt`                                                       | ^3.0.1                    | Event bus (grafcet context menus)                                                                                |

@@ -40,7 +40,7 @@ export default async function About({ params }: Props) {
 				{t("missionTitle")}
 			</Typography>
 			<Typography textAlign="justify">
-				{renderStrong(t("missionBody"))}
+				{renderStrong(t.raw("missionBody"))}
 			</Typography>
 			<Typography textAlign="justify" mt={1}>
 				{t("missionBody2")}

@@ -3,6 +3,7 @@
 		"home": "Accueil",
 		"manual": "Manuel",
 		"about": "À propos",
+		"training": "Formations",
 		"openApp": "Ouvrir l'application",
 		"menu": "Menu"
 	},
@@ -10,6 +11,7 @@
 		"resources": "Ressources",
 		"manual": "Manuel utilisateur",
 		"about": "À propos",
+		"training": "Formations",
 		"legalTitle": "Légal",
 		"legalMentions": "Mentions légales",
 		"terms": "Conditions d'utilisation",
@@ -18,6 +20,7 @@
 		"contact": "Contact",
 		"reportIssue": "Signaler un problème",
 		"copyright": "© {year} {name}",
+		"createdBy": "Créé par",
 		"slogan": "Créer, Simuler, Automatiser"
 	},
 	"languageSwitch": {
@@ -127,7 +130,8 @@
 		"title": "Mentions légales",
 		"lastUpdated": "Dernière mise à jour : 13/10/2024",
 		"editorTitle": "1. Éditeur du site",
-		"editorBody": "Le présent site est édité par <strong>Studomate</strong>, projet pédagogique dédié à la simulation en automatisme pour l'enseignement. <strong>Responsable de la publication</strong> : Vivian NKOUANANG (dev.vporel@gmail.com).",
+		"editorBody": "Le présent site est édité par <strong>Studomate</strong>, projet pédagogique dédié à la simulation en automatisme pour l'enseignement.",
+		"editorResponsible": "Responsable de la publication :",
 		"ipTitle": "2. Propriété intellectuelle",
 		"ipBody": "L'ensemble du contenu présent sur le site Studomate (textes, interfaces, logos, visuels, structure du code, etc.) est protégé par le droit d'auteur. Toute reproduction, distribution ou modification sans autorisation préalable est interdite, sauf usage strictement personnel et éducatif.",
 		"liabilityTitle": "3. Responsabilité",
@@ -209,6 +213,10 @@
 		"privacyTitle": "Politique de confidentialité — Studomate",
 		"privacyDescription": "Comment Studomate gère les données personnelles et techniques des utilisateurs.",
 		"manualTitle": "Manuel utilisateur — Studomate",
-		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation."
+		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation.",
+		"trainingTitle": "Formations — Studomate",
+		"trainingDescription": "Parcours de formation à l'automatisme avec Studomate : théorie, exercices auto-corrigés, épreuves de synthèse.",
+		"trainingM1Title": "Module 1 : Bases du GRAFCET — Formations Studomate",
+		"trainingM1Description": "Module 1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés."
 	}
 }

@@ -36,27 +36,27 @@ export default async function PrivacyPolicy({ params }: Props) {
 
 			<LegalArticle title={t("introTitle")}>
 				<Typography textAlign="justify">
-					{renderStrong(t("introBody"))}
+					{renderStrong(t.raw("introBody"))}
 				</Typography>
 			</LegalArticle>
 			<LegalArticle title={t("collectedTitle")}>
 				<Typography textAlign="justify">
-					{renderStrong(t("collectedBody"))}
+					{renderStrong(t.raw("collectedBody"))}
 				</Typography>
 			</LegalArticle>
 			<LegalArticle title={t("analyticsTitle")}>
 				<Typography textAlign="justify">
-					{renderStrong(t("analyticsBody"))}
+					{renderStrong(t.raw("analyticsBody"))}
 				</Typography>
 			</LegalArticle>
 
 			<LegalArticle title={t("accountsTitle")}>
 				<Typography textAlign="justify">
-					{renderStrong(t("accountsBody"))}
+					{renderStrong(t.raw("accountsBody"))}
 				</Typography>
 				<LegalList items={t.raw("accountsItems") as string[]} />
 				<Typography textAlign="justify" mt={1}>
-					{renderStrong(t("accountsHosting"))}
+					{renderStrong(t.raw("accountsHosting"))}
 				</Typography>
 			</LegalArticle>
 

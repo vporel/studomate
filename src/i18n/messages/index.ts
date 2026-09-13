@@ -18,6 +18,7 @@ import frShortcuts from "./fr/shortcuts.json";
 import frChrome from "./fr/chrome.json";
 import frPublic from "./fr/public.json";
 import frManual from "./fr/manual.json";
+import frTraining from "./fr/training.json";
 import frVariableValidation from "./fr/variableValidation.json";
 import frCrossReference from "./fr/crossReference.json";
 import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
@@ -39,6 +40,7 @@ import enShortcuts from "./en/shortcuts.json";
 import enChrome from "./en/chrome.json";
 import enPublic from "./en/public.json";
 import enManual from "./en/manual.json";
+import enTraining from "./en/training.json";
 import enVariableValidation from "./en/variableValidation.json";
 import enCrossReference from "./en/crossReference.json";
 import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
@@ -62,6 +64,7 @@ export type Messages = {
 	chrome: typeof frChrome;
 	public: typeof frPublic;
 	manual: typeof frManual;
+	training: typeof frTraining;
 	variableValidation: typeof frVariableValidation;
 	crossReference: typeof frCrossReference;
 	variableSelectorMenu: typeof frVariableSelectorMenu;
@@ -87,6 +90,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		chrome: frChrome,
 		public: frPublic,
 		manual: frManual,
+		training: frTraining,
 		variableValidation: frVariableValidation,
 		crossReference: frCrossReference,
 		variableSelectorMenu: frVariableSelectorMenu,
@@ -110,6 +114,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		chrome: enChrome,
 		public: enPublic,
 		manual: enManual,
+		training: enTraining,
 		variableValidation: enVariableValidation,
 		crossReference: enCrossReference,
 		variableSelectorMenu: enVariableSelectorMenu,

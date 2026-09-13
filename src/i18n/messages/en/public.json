@@ -3,6 +3,7 @@
 		"home": "Home",
 		"manual": "Manual",
 		"about": "About",
+		"training": "Training",
 		"openApp": "Open the app",
 		"menu": "Menu"
 	},
@@ -10,6 +11,7 @@
 		"resources": "Resources",
 		"manual": "User manual",
 		"about": "About",
+		"training": "Training",
 		"legalTitle": "Legal",
 		"legalMentions": "Legal notice",
 		"terms": "Terms of use",
@@ -18,6 +20,7 @@
 		"contact": "Contact",
 		"reportIssue": "Report an issue",
 		"copyright": "© {year} {name}",
+		"createdBy": "Created by",
 		"slogan": "Design, Simulate, Automate"
 	},
 	"languageSwitch": {
@@ -127,7 +130,8 @@
 		"title": "Legal notice",
 		"lastUpdated": "Last updated: 13/10/2024",
 		"editorTitle": "1. Site publisher",
-		"editorBody": "This site is published by <strong>Studomate</strong>, a teaching project dedicated to automation simulation for education. <strong>Publication manager</strong>: Vivian NKOUANANG (dev.vporel@gmail.com).",
+		"editorBody": "This site is published by <strong>Studomate</strong>, a teaching project dedicated to automation simulation for education.",
+		"editorResponsible": "Publication manager:",
 		"ipTitle": "2. Intellectual property",
 		"ipBody": "All content on the Studomate site (text, interfaces, logos, visuals, code structure, etc.) is protected by copyright. Any reproduction, distribution or modification without prior authorisation is prohibited, except for strictly personal and educational use.",
 		"liabilityTitle": "3. Liability",
@@ -209,6 +213,10 @@
 		"privacyTitle": "Privacy policy — Studomate",
 		"privacyDescription": "How Studomate handles users' personal and technical data.",
 		"manualTitle": "User manual — Studomate",
-		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation."
+		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
+		"trainingTitle": "Training — Studomate",
+		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
+		"trainingM1Title": "Module 1: GRAFCET basics — Studomate Training",
+		"trainingM1Description": "Module 1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises."
 	}
 }

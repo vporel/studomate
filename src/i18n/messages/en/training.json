@@ -1,0 +1,115 @@
+{
+	"landingTitle": "Training",
+	"landingIntro": "Learn automation control step by step: a short theory section followed by a self-corrected exercise at each stage, directly simulable in Studomate.",
+	"howItWorksTitle": "How it works",
+	"howItWorksTheoryTitle": "Short theory",
+	"howItWorksTheoryBody": "Each step explains one concept in a few lines, no unnecessary jargon.",
+	"howItWorksExerciseTitle": "Self-corrected exercise",
+	"howItWorksExerciseBody": "A mini-project to complete directly in the app, in your browser, no account or install needed.",
+	"howItWorksSolutionTitle": "Solution to compare",
+	"howItWorksSolutionBody": "A simulable solution comes with every summary assignment: compare your solution against ours by simulating it.",
+	"landingTreeIntro": "Planned path:",
+	"blockATitle": "Block A — Core skills",
+	"blockM1Label": "Module 1: GRAFCET basics",
+	"blockM1Status": "Available",
+	"moduleCompletedLabel": "Completed",
+	"blockM2Label": "Module 2: Ladder",
+	"blockM3Label": "Module 3: HMI",
+	"blockBLabel": "Block B — Career readiness",
+	"blockM4Label": "Module 4: Analysing a documented project",
+	"blockM5Label": "Module 5: Capstone project and portfolio",
+	"comingSoon": "coming soon",
+	"comingSoonMessage": "This module will be available soon.",
+	"m1Link": "Start module 1",
+	"backToTraining": "Back to Training",
+	"backHome": "Back home",
+
+	"previousStep": "Previous",
+	"nextStep": "Next",
+
+	"resumeSignInHint": "Sign in to pick up where you left off next time.",
+	"resumeSignInCta": "Sign in",
+	"progressSavedHint": "Your progress in this module is saved to your account.",
+
+	"m1PageTitle": "Module 1: GRAFCET basics",
+	"m1Intro": "A short theory section at each step, with a hands-on exercise whenever a concept calls for one. Open each exercise in the app, solve it, then compare against the solution where there is one.",
+
+	"grafcetDefinitionTitle": "What is a GRAFCET?",
+	"grafcetDefinitionBody": [
+		"GRAFCET (French for \"step/transition function chart\") is a standardized graphical language (IEC 60848) that describes the sequential behaviour expected from an automated system: what to do, in what order, under what conditions — independent of the technology that will later run it (a PLC, relays...).",
+		"It's the specification tool Studomate lets you write, check and simulate directly in the browser."
+	],
+
+	"theoryTitle": "Steps, transitions, receptivities, actions",
+	"theoryBody": [
+		"A step is either active or inactive; while active, its associated actions run — turning on a boolean output, but also assigning a numeric variable (e.g. counter := counter + 1). Each step n exposes its own boolean variable Xn, true while it is active.",
+		"The initial step (double outline) is the one active at power-on or after a reset — a GRAFCET always has at least one.",
+		"A transition links two steps and carries a receptivity — a boolean condition.",
+		"As soon as an upstream step is active and the receptivity of the transition following it becomes true, the upstream step deactivates and the downstream step activates: this is an evolution. Several evolutions can happen at the same instant if their conditions are met simultaneously.",
+		"A step can only have a single element downstream, and a transition only a single element upstream and downstream: this strict alternation is what forces you through an OR or AND divergence as soon as you want to branch towards several elements. Studomate flags an error if you link several elements directly without going through a junction."
+	],
+
+	"theoryActionsTitle": "Action types and execution modes",
+	"theoryActionsBody": [
+		"An action can act on a boolean variable (turn on an output) or a numeric one (assign a value, e.g. counter := counter + 1) — the type determines the expected shape of the expression.",
+		"The execution mode defines when the action runs: continuously while the step is active, or just once on an edge — rising when the step activates, falling when it deactivates. That's the mode to use to increment a counter just once, rather than on every scan cycle.",
+		"For boolean variables only, two extra modes exist: Set (forces the variable true) and Reset (forces it false) — a so-called \"stored\" action, which doesn't revert on its own when the step deactivates."
+	],
+
+	"exerciseLinearTitle": "Exercise — linear sequence",
+	"exerciseLinearBody": [
+		"A 4-step GRAFCET, no divergence and no timer: enough to practise steps, transitions, receptivities and actions on a simple case before tackling richer structures."
+	],
+	"exerciseLinearCta": "Open the exercise",
+
+	"theoryTimerTitle": "Timing a receptivity",
+	"theoryTimerBody": [
+		"A receptivity can depend on the time spent in a step, not just on an input: the `t1/X10/5s` notation declares a timer named t1, armed while X10 (step 10) is active, that turns true 5 seconds after it activates.",
+		"This notation can be used directly inside a receptivity, like any other boolean condition."
+	],
+
+	"synthesisTrafficLightTitle": "Summary assignment — traffic light",
+	"synthesisTrafficLightBody": [
+		"Apply what you just saw on a complete case: a traffic light cycling through its three colours, each timed."
+	],
+	"ctaExercise": "Statement",
+	"ctaSolution": "Solution",
+
+	"theoryOrDivergenceTitle": "OR divergence / convergence",
+	"theoryOrDivergenceBody": [
+		"An OR divergence describes a choice between several sequences: at any instant, only one receptivity among the branches should be true — that's what makes the sequences mutually exclusive.",
+		"The branches can later rejoin on a shared path further down through an OR convergence, but this isn't required: each branch can also continue on its own without an explicit junction, as in the exercise below where each branch loops back to the initial step by itself.",
+		"Studomate checks the branches' exclusivity and flags an error if several receptivities turn out true at the same time."
+	],
+
+	"exerciseOrDivergenceTitle": "Exercise — OR divergence",
+	"exerciseOrDivergenceBody": [
+		"Two branches triggered by mutually exclusive inputs, each looping back to the initial step on its own: enough to practise the choice and its exclusivity before the \"barrier car park\" summary assignment below, which reuses it in a fuller case."
+	],
+	"exerciseOrDivergenceCta": "Open the exercise",
+
+	"theoryAndDivergenceTitle": "AND divergence / convergence",
+	"theoryAndDivergenceBody": [
+		"Unlike an OR divergence, where each branch carries its own receptivity after the bar, an AND divergence places a single receptivity before the bar: that one receptivity alone triggers every branch at once.",
+		"An AND divergence starts several branches in parallel as soon as a single transition fires: all branches run simultaneously.",
+		"Its AND convergence only lets the GRAFCET continue once every branch has reached its joining step — the slowest branch sets the pace for the others."
+	],
+	"exerciseAndDivergenceCta": "Open the exercise",
+
+	"synthesisParkingTitle": "Summary assignment — barrier car park",
+	"synthesisParkingBody": [
+		"An OR divergence between the entry sequence and the exit sequence, a space counter and a \"full\" indicator to drive."
+	],
+
+	"synthesisCrossroadsTitle": "Summary assignment — traffic light crossroads",
+	"synthesisCrossroadsBody": [
+		"Two light axes to synchronize within a single GRAFCET, alternating with an all-red phase between each change — the difficulty is coordinating both axes so they're never green at the same time."
+	],
+
+	"readingErrorsTitle": "Reading analysis errors",
+	"readingErrorsBody": [
+		"Studomate can analyse your GRAFCET at any time, without waiting for a simulation: a click on \"Analyse\" immediately shows an unconnected step, an invalid receptivity or an unknown variable in the editor's analysis panel.",
+		"It's also what catches the easiest traps to miss: a step with no way back into a cycle blocks the GRAFCET forever (a \"dead end\"), and a step never reached from the initial step will never activate — two common mistakes when a sequence isn't looped back to its starting point.",
+		"Get in the habit of checking after each transition or branch you add: that's exactly where these two traps show up most often."
+	]
+}
