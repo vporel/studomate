@@ -42,6 +42,9 @@ jest.mock("@/ui/lib/project-url", () => ({
 
 const mockCreateExercise = jest.fn(() => new Project("tpl-exercise", "Exercise", ""));
 const mockCreateSolution = jest.fn(() => new Project("tpl-solution", "Solution", ""));
+const mockCreateWithStatement = jest.fn(
+	() => new Project("tpl-with-statement-exercise", "Avec énoncé", ""),
+);
 jest.mock("@/templates/index", () => ({
 	PROJECT_TEMPLATES: [
 		{
@@ -53,13 +56,24 @@ jest.mock("@/templates/index", () => ({
 			id: "tpl-no-solution",
 			create: () => mockCreateExercise(),
 		},
+		{
+			id: "tpl-with-statement",
+			statement: "## Énoncé",
+			create: () => mockCreateWithStatement(),
+		},
 	],
 }));
 
 function ProjectProbe() {
 	const store = useProjectContext();
 	const project = useStore(store!, (s) => s.project);
-	return <div data-testid="project-probe">{project?.id ?? "none"}</div>;
+	const activePageId = useStore(store!, (s) => s.activePageId);
+	return (
+		<div>
+			<div data-testid="project-probe">{project?.id ?? "none"}</div>
+			<div data-testid="active-page-probe">{activePageId ?? "none"}</div>
+		</div>
+	);
 }
 
 afterEach(() => {
@@ -71,6 +85,7 @@ afterEach(() => {
 	mockUrl.clearTemplateParamsFromUrl.mockReset();
 	mockCreateExercise.mockClear();
 	mockCreateSolution.mockClear();
+	mockCreateWithStatement.mockClear();
 });
 
 describe("ProjectContextProvider - modale des brouillons", () => {
@@ -154,6 +169,40 @@ describe("ProjectContextProvider - ouverture depuis un template", () => {
 
 		expect(await screen.findByTestId("project-probe")).toHaveTextContent(
 			"tpl-exercise",
+		);
+	});
+
+	it("ouvre directement l'énoncé quand le template en porte un (exercice)", async () => {
+		mockUrl.getTemplateIdFromUrl.mockReturnValue("tpl-with-statement");
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(await screen.findByTestId("project-probe")).toHaveTextContent(
+			"tpl-with-statement-exercise",
+		);
+		expect(await screen.findByTestId("active-page-probe")).toHaveTextContent(
+			"exercise",
+		);
+	});
+
+	it("reste sur la page de démarrage quand le template n'a pas d'énoncé", async () => {
+		mockUrl.getTemplateIdFromUrl.mockReturnValue("tpl-with-solution");
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(await screen.findByTestId("project-probe")).toHaveTextContent(
+			"tpl-exercise",
+		);
+		expect(await screen.findByTestId("active-page-probe")).toHaveTextContent(
+			"project-startup",
 		);
 	});
 

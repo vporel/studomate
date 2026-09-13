@@ -12,7 +12,7 @@ const OG_LOCALES: Record<Locale, string> = {
 	en: "en_US",
 };
 
-function absolute(locale: Locale, pathname: PublicPathname): string {
+export function absolute(locale: Locale, pathname: PublicPathname): string {
 	return new URL(getPathname({ locale, href: pathname }), siteUrl).toString();
 }
 

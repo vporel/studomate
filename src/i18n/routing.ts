@@ -2,12 +2,12 @@ import { defineRouting } from "next-intl/routing";
 import { DEFAULT_LOCALE, LOCALES } from "./config";
 
 /**
- * Routing des **pages publiques** (`src/app/[locale]/(public)/`). L'app `/app` est hors de ce
+ * Routing des **pages publiques** (`src/app/[locale]/`). L'app `/app` est hors de ce
  * routing (SPA, langue en `localStorage`) — le middleware l'exclut de son `matcher`.
  *
  * `localePrefix: "as-needed"` : le français (défaut) reste sans préfixe (`/a-propos`), l'anglais
  * est préfixé (`/en/about`). Les slugs sont traduits par langue (meilleur SEO) ; la clé de
- * `pathnames` est le chemin **interne** (nom du dossier sous `(public)/`).
+ * `pathnames` est le chemin **interne** (nom du dossier sous `[locale]/`).
  */
 export const routing = defineRouting({
 	locales: LOCALES,
@@ -22,6 +22,8 @@ export const routing = defineRouting({
 		"/terms": { fr: "/conditions-d-utilisation", en: "/terms" },
 		"/privacy": { fr: "/politique-de-confidentialite", en: "/privacy" },
 		"/user-manual": { fr: "/manuel-utilisateur", en: "/user-manual" },
+		"/training": { fr: "/formations", en: "/training" },
+		"/training/m1": { fr: "/formations/m1", en: "/training/m1" },
 	},
 });
 

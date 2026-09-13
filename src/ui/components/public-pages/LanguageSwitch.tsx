@@ -4,7 +4,7 @@ import { LOCALES, type Locale } from "@/i18n/config";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useT } from "@/ui/i18n/useT";
 import LanguageIcon from "@mui/icons-material/Language";
-import { Box, IconButton, Menu, MenuItem } from "@mui/material";
+import { Box, Button, Menu, MenuItem } from "@mui/material";
 import { useLocale } from "next-intl";
 import { useState } from "react";
 
@@ -25,13 +25,16 @@ export default function LanguageSwitch({
 
 	return (
 		<Box>
-			<IconButton
+			<Button
 				aria-label={t("label")}
 				onClick={(e) => setAnchorEl(e.currentTarget)}
 				size="small"
+				color="inherit"
+				startIcon={<LanguageIcon fontSize="small" />}
+				sx={{ minWidth: 0, px: 1 }}
 			>
-				<LanguageIcon fontSize="small" />
-			</IconButton>
+				{current.toUpperCase()}
+			</Button>
 			<Menu
 				anchorEl={anchorEl}
 				open={!!anchorEl}

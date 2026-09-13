@@ -33,6 +33,9 @@ export default function NewProjectModal() {
 	const tTemplates = useT("templates");
 	const t = useT("projects.new");
 	const tc = useT("projects.common");
+	const catalogTemplates = PROJECT_TEMPLATES.filter(
+		(template) => !template.hiddenFromCatalog,
+	);
 
 	const onClose = () => {
 		setNewProjectModalVisible(false);
@@ -77,7 +80,7 @@ export default function NewProjectModal() {
 					</CardActionArea>
 				</Card>
 
-				{PROJECT_TEMPLATES.length > 0 && (
+				{catalogTemplates.length > 0 && (
 					<>
 						<Divider>
 							<Typography variant="caption" color="text.secondary">
@@ -93,7 +96,7 @@ export default function NewProjectModal() {
 								gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
 								gap={2}
 							>
-								{PROJECT_TEMPLATES.map((template) => (
+								{catalogTemplates.map((template) => (
 									<Card
 										key={template.id}
 										variant="outlined"

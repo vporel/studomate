@@ -24,6 +24,18 @@ import {
 	createTrafficLightProject,
 	createTrafficLightSolution,
 } from "./traffic-light.template";
+import {
+	createLinearSequenceProject,
+	createLinearSequenceSolution,
+} from "./training/linear-sequence.template";
+import {
+	createAndDivergenceProject,
+	createAndDivergenceSolution,
+} from "./training/and-divergence.template";
+import {
+	createOrDivergenceProject,
+	createOrDivergenceSolution,
+} from "./training/or-divergence.template";
 
 /**
  * Identifiant d'un template — aussi sa clé de traduction : le libellé et la description
@@ -45,6 +57,12 @@ export type ProjectTemplate = {
 	create: () => Project;
 	/** Construit et retourne la version complète et simulable du template. Absent = pas de solution disponible. */
 	solution?: () => Project;
+	/**
+	 * Hides this template from the "New project" popup (`NewProjectModal`): still resolvable by
+	 * `id` (`?template=` link, store-side creation) but absent from the visible catalog. Used by
+	 * the Training module's mini-templates.
+	 */
+	hiddenFromCatalog?: boolean;
 };
 
 /**
@@ -173,5 +191,58 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		].join("\n"),
 		create: createCartonSortingProject,
 		solution: createCartonSortingSolution,
+	},
+	{
+		id: "linear-sequence",
+		hiddenFromCatalog: true,
+		statement: [
+			"## Séquence linéaire",
+			"",
+			"Entrées : `dcy`, `fin1`, `fin2`. Sorties : `sortie1`, `sortie2`.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur `dcy`, activer `sortie1`.",
+			"2. Sur `fin1`, désactiver `sortie1` et activer `sortie2`.",
+			"3. Sur `fin2`, désactiver `sortie2`.",
+			"4. Sur un nouvel appui de `dcy`, reprendre le cycle depuis le début.",
+		].join("\n"),
+		create: createLinearSequenceProject,
+		solution: createLinearSequenceSolution,
+	},
+	{
+		id: "and-divergence",
+		hiddenFromCatalog: true,
+		statement: [
+			"## Divergence en ET",
+			"",
+			"Entrées : `dcy`, `capteur1`, `capteur2`. Sorties : `sortie1`, `sortie2`.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur `dcy`, activer **simultanément** `sortie1` et `sortie2`.",
+			"2. Attendre que `capteur1` **et** `capteur2` soient actifs avant de revenir à l'état initial",
+			"   (désactivation des deux sorties).",
+		].join("\n"),
+		create: createAndDivergenceProject,
+		solution: createAndDivergenceSolution,
+	},
+	{
+		id: "or-divergence",
+		hiddenFromCatalog: true,
+		statement: [
+			"## Divergence en OU",
+			"",
+			"Entrées : `dcy1`, `dcy2`, `fin1`, `fin2`. Sorties : `sortie1`, `sortie2`.",
+			"",
+			"### Travail demandé",
+			"",
+			"1. Sur `dcy1`, activer `sortie1` ; sur `fin1`, revenir à l'état initial.",
+			"2. Sur `dcy2` (exclusif de `dcy1`), activer `sortie2` ; sur `fin2`, revenir à l'état initial.",
+			"3. Vérifiez dans le panneau d'analyse que Studomate ne signale rien tant que `dcy1` et",
+			"   `dcy2` restent exclusifs.",
+		].join("\n"),
+		create: createOrDivergenceProject,
+		solution: createOrDivergenceSolution,
 	},
 ];

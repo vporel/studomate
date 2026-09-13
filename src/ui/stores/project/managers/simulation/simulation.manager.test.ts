@@ -311,6 +311,37 @@ describe("SimulationManager", () => {
 		});
 	});
 
+	describe("setPhysicalInputValue / setMemoryValue — pas-à-pas en pause", () => {
+		it("répercute immédiatement la valeur dans simulationVariablesStates sans attendre un cycle", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const memoryVar = VariableFactory.createMemoryBool("M0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar, memoryVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			set(() => ({ simulationMode: SimulationMode.STEP_BY_STEP }));
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(0);
+			expect(get().simulationPaused).toBe(true);
+
+			const i0Id = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "I0",
+			)!;
+			const m0Id = Object.keys(get().simulationVariablesStates).find(
+				(id) => get().simulationVariablesStates[id].mnemonic === "M0",
+			)!;
+
+			manager.setPhysicalInputValue(i0Id, true);
+			expect(get().simulationVariablesStates[i0Id].value).toBe(true);
+
+			manager.setMemoryValue(m0Id, true);
+			expect(get().simulationVariablesStates[m0Id].value).toBe(true);
+
+			manager.setDesignMode();
+		});
+	});
+
 	describe("forceVariable / releaseVariable", () => {
 		it("forceVariable met à jour forcedVariables dans le store", async () => {
 			const inputVar = VariableFactory.createLogicInput("I0");

@@ -401,6 +401,7 @@ export default class SimulationManager {
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
 		this.plc.setPhysicalInputValueById(variableId, coerced);
+		this.publishImmediateValue(variableId, coerced);
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {
@@ -414,6 +415,35 @@ export default class SimulationManager {
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
 		this.plc.setMemoryValueById(variableId, coerced);
+		this.publishImmediateValue(variableId, coerced);
+	}
+
+	/**
+	 * Répercute immédiatement dans le store la valeur qu'on vient d'écrire dans le PLC, sans
+	 * attendre `onCycleEnd`. Nécessaire pour les entrées physiques : `setPhysicalInputValueById`
+	 * n'écrit que le buffer `physicalInputs`, relu dans l'image d'entrée (publiée par
+	 * `publishCycleState`) seulement au prochain tick — qui n'arrive qu'au prochain "Avancer" en
+	 * pas-à-pas. Sans ce court-circuit, la table de visualisation semblerait ne pas réagir à la
+	 * saisie tant que la simulation est en pause.
+	 */
+	private publishImmediateValue(
+		variableId: string,
+		value: PLCVariableValue,
+	): void {
+		const mnemonic = this.plc?.getVariableNameById(variableId);
+		if (mnemonic === undefined) return;
+		this.lastPublishedValues?.set(variableId, value);
+		const entry: SimulationVariableState = { id: variableId, mnemonic, value };
+		this.setStoreState((state) => ({
+			simulationVariablesStates: {
+				...state.simulationVariablesStates,
+				[variableId]: entry,
+			},
+			simulationVariablesStatesByMnemonic: {
+				...state.simulationVariablesStatesByMnemonic,
+				[mnemonic]: entry,
+			},
+		}));
 	}
 
 	public forceVariable(variableId: string, value: any): void {

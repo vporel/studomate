@@ -16,6 +16,12 @@ if (typeof globalThis.structuredClone === "undefined") {
 
 import "@testing-library/jest-dom"
 
+//jsdom doesn't implement scrollIntoView (no real layout engine) — stub it so components that
+//call it don't throw under jsdom; tests that care about the call itself can spy on it.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+	Element.prototype.scrollIntoView = () => {}
+}
+
 //Langue d'interface fixée au français pour les tests (le code hors React lit `resolveUiLocale`,
 //qui retomberait sinon sur la locale du navigateur jsdom/node « en-US ») : les assertions
 //portent sur le texte français.

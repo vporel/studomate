@@ -27,10 +27,14 @@ describe("sitemap", () => {
 		// FR : slugs traduits sans préfixe
 		expect(urls).toContain(`${APP_URL}/a-propos`);
 		expect(urls).toContain(`${APP_URL}/politique-de-confidentialite`);
+		expect(urls).toContain(`${APP_URL}/formations`);
+		expect(urls).toContain(`${APP_URL}/formations/m1`);
 		// EN : préfixe /en + slugs traduits
 		expect(urls).toContain(`${APP_URL}/en`);
 		expect(urls).toContain(`${APP_URL}/en/about`);
 		expect(urls).toContain(`${APP_URL}/en/privacy`);
+		expect(urls).toContain(`${APP_URL}/en/training`);
+		expect(urls).toContain(`${APP_URL}/en/training/m1`);
 	});
 
 	it("déclare les alternates hreflang sur les pages localisées", () => {
@@ -38,6 +42,14 @@ describe("sitemap", () => {
 		expect(about?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/a-propos`,
 			en: `${APP_URL}/en/about`,
+		});
+	});
+
+	it("déclare les alternates hreflang pour les pages du module Formations", () => {
+		const training = sitemap().find((e) => e.url === `${APP_URL}/formations`);
+		expect(training?.alternates?.languages).toEqual({
+			fr: `${APP_URL}/formations`,
+			en: `${APP_URL}/en/training`,
 		});
 	});
 });
