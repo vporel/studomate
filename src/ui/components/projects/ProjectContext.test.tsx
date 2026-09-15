@@ -29,6 +29,7 @@ const mockUrl = {
 	setProjectIdInUrl: jest.fn(),
 	getTemplateIdFromUrl: jest.fn<string | null, []>(() => null),
 	getTemplateModeFromUrl: jest.fn<"exercise" | "solution", []>(() => "exercise"),
+	getTemplateAutostartFromUrl: jest.fn<boolean, []>(() => false),
 	clearTemplateParamsFromUrl: jest.fn(),
 };
 jest.mock("@/ui/lib/project-url", () => ({
@@ -37,6 +38,7 @@ jest.mock("@/ui/lib/project-url", () => ({
 	setProjectIdInUrl: (...args: unknown[]) => mockUrl.setProjectIdInUrl(...args),
 	getTemplateIdFromUrl: () => mockUrl.getTemplateIdFromUrl(),
 	getTemplateModeFromUrl: () => mockUrl.getTemplateModeFromUrl(),
+	getTemplateAutostartFromUrl: () => mockUrl.getTemplateAutostartFromUrl(),
 	clearTemplateParamsFromUrl: () => mockUrl.clearTemplateParamsFromUrl(),
 }));
 
@@ -68,10 +70,12 @@ function ProjectProbe() {
 	const store = useProjectContext();
 	const project = useStore(store!, (s) => s.project);
 	const activePageId = useStore(store!, (s) => s.activePageId);
+	const mode = useStore(store!, (s) => s.mode);
 	return (
 		<div>
 			<div data-testid="project-probe">{project?.id ?? "none"}</div>
 			<div data-testid="active-page-probe">{activePageId ?? "none"}</div>
+			<div data-testid="mode-probe">{mode}</div>
 		</div>
 	);
 }
@@ -82,6 +86,7 @@ afterEach(() => {
 	mockUrl.setProjectIdInUrl.mockReset();
 	mockUrl.getTemplateIdFromUrl.mockReturnValue(null);
 	mockUrl.getTemplateModeFromUrl.mockReturnValue("exercise");
+	mockUrl.getTemplateAutostartFromUrl.mockReturnValue(false);
 	mockUrl.clearTemplateParamsFromUrl.mockReset();
 	mockCreateExercise.mockClear();
 	mockCreateSolution.mockClear();
@@ -203,6 +208,24 @@ describe("ProjectContextProvider - ouverture depuis un template", () => {
 		);
 		expect(await screen.findByTestId("active-page-probe")).toHaveTextContent(
 			"project-startup",
+		);
+	});
+
+	it("démarre directement la simulation quand demandé, sans passer par l'énoncé", async () => {
+		mockUrl.getTemplateIdFromUrl.mockReturnValue("tpl-with-statement");
+		mockUrl.getTemplateAutostartFromUrl.mockReturnValue(true);
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(await screen.findByTestId("mode-probe")).toHaveTextContent(
+			"SIMULATION",
+		);
+		expect(screen.getByTestId("active-page-probe")).not.toHaveTextContent(
+			"exercise",
 		);
 	});
 

@@ -13,7 +13,7 @@ const publicPaths: PublicPathname[] = [
 	"/about",
 	"/user-manual",
 	"/training",
-	"/training/m1",
+	"/training/a1",
 	"/contact",
 	"/legal",
 	"/terms",

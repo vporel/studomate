@@ -23,7 +23,8 @@ export const routing = defineRouting({
 		"/privacy": { fr: "/politique-de-confidentialite", en: "/privacy" },
 		"/user-manual": { fr: "/manuel-utilisateur", en: "/user-manual" },
 		"/training": { fr: "/formations", en: "/training" },
-		"/training/m1": { fr: "/formations/m1", en: "/training/m1" },
+		"/training/a0": { fr: "/formations/a0", en: "/training/a0" },
+		"/training/a1": { fr: "/formations/a1", en: "/training/a1" },
 	},
 });
 

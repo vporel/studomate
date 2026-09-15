@@ -8,6 +8,7 @@ import {
 	clearTemplateParamsFromUrl,
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
+	getTemplateAutostartFromUrl,
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
 	setProjectIdInUrl,
@@ -144,6 +145,7 @@ export const ProjectContextProvider = ({
 			return;
 		}
 		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
+		const autostartSimulation = getTemplateAutostartFromUrl();
 		const open = async () => {
 			await storeRef
 				.current!.getState()
@@ -152,6 +154,13 @@ export const ProjectContextProvider = ({
 					wantsSolution ? "solution" : "exercise",
 				);
 			clearTemplateParamsFromUrl();
+			if (autostartSimulation) {
+				// Pas d'énoncé affiché ici : on veut atterrir directement sur la simulation
+				// (grafcet, ou HMI si le template en a une — voir `openHmiSimulationPageIfAny`),
+				// pas sur la page de démarrage classique.
+				storeRef.current!.getState().simulationManager.setSimulationMode();
+				return;
+			}
 			// Un template ouvert depuis un lien porte un énoncé : on l'affiche directement plutôt
 			// que la page de démarrage classique, exercice comme solution.
 			if (template.statement) {

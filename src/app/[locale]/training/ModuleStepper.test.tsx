@@ -52,14 +52,18 @@ const steps: StepData[] = [
 	},
 ];
 
-function setup(initialHash = "") {
+function setup(
+	initialHash = "",
+	nextModule?: { href: "/training/a1"; label: string },
+) {
 	window.location.hash = initialHash;
 	return renderWithI18n(
 		<ModuleStepper
 			steps={steps}
 			prevLabel="Précédent"
 			nextLabel="Suivant"
-			moduleId="m1"
+			moduleId="a1"
+			nextModule={nextModule}
 		/>,
 	);
 }
@@ -135,6 +139,37 @@ describe("ModuleStepper", () => {
 		);
 	});
 
+	it("ouvre le template en mode solution quand primaryMode vaut solution, sans second bouton", () => {
+		renderWithI18n(
+			<ModuleStepper
+				steps={[
+					{
+						id: "s1",
+						kind: "theory",
+						title: "Observer",
+						body: ["Corps"],
+						cta: {
+							templateId: "traffic-light",
+							exerciseLabel: "Observer la simulation",
+							primaryMode: "solution",
+						},
+					},
+				]}
+				prevLabel="Précédent"
+				nextLabel="Suivant"
+				moduleId="a0"
+			/>,
+		);
+
+		expect(
+			screen.getByRole("link", { name: "Observer la simulation" }),
+		).toHaveAttribute(
+			"href",
+			expect.stringContaining("template=traffic-light&template-mode=solution"),
+		);
+		expect(screen.queryByRole("link", { name: "Corrigé" })).not.toBeInTheDocument();
+	});
+
 	it("n'affiche qu'un bouton quand l'étape ne propose pas de corrigé", () => {
 		setup("#step-s3");
 		expect(screen.getByRole("link", { name: "Ouvrir l'exercice" })).toBeInTheDocument();
@@ -161,6 +196,26 @@ describe("ModuleStepper", () => {
 	it("Suivant est désactivé sur la dernière étape", () => {
 		setup("#step-s4");
 		expect(screen.getByRole("button", { name: "Suivant" })).toBeDisabled();
+	});
+
+	it("remplace Suivant par un lien vers le module suivant sur la dernière étape, quand disponible", () => {
+		setup("#step-s4", { href: "/training/a1", label: "Passer au module 1" });
+
+		expect(
+			screen.queryByRole("button", { name: "Suivant" }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Passer au module 1" }),
+		).toBeInTheDocument();
+	});
+
+	it("garde Suivant désactivé sur la dernière étape même avec nextModule si ce n'est pas la dernière visitée", () => {
+		setup("#step-s3", { href: "/training/a1", label: "Passer au module 1" });
+
+		expect(screen.getByRole("button", { name: "Suivant" })).toBeEnabled();
+		expect(
+			screen.queryByRole("link", { name: "Passer au module 1" }),
+		).not.toBeInTheDocument();
 	});
 
 	it("le sommaire permet de sauter directement à une étape via son titre", () => {
@@ -301,7 +356,7 @@ describe("ModuleStepper", () => {
 			setup();
 
 			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
-			expect(mockGetStepId).toHaveBeenCalledWith("m1");
+			expect(mockGetStepId).toHaveBeenCalledWith("a1");
 		});
 
 		it("reste sur la première étape si l'étape sauvegardée n'existe plus dans le module", async () => {
@@ -329,7 +384,7 @@ describe("ModuleStepper", () => {
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
 
-			expect(mockSaveStepId).toHaveBeenCalledWith("m1", "s2");
+			expect(mockSaveStepId).toHaveBeenCalledWith("a1", "s2");
 		});
 
 		it("ne sauvegarde rien quand le cloud n'est pas configuré", () => {

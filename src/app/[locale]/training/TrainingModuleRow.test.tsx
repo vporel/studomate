@@ -47,13 +47,13 @@ describe("TrainingModuleRow", () => {
 				{...defaultProps}
 				label="Module 1"
 				available
-				href="/training/m1"
+				href="/training/a1"
 			/>,
 		);
 
 		expect(screen.getByRole("link", { name: /module 1/i })).toHaveAttribute(
 			"href",
-			"/formations/m1",
+			"/formations/a1",
 		);
 	});
 
@@ -91,14 +91,14 @@ describe("TrainingModuleRow", () => {
 				{...defaultProps}
 				label="Module 1"
 				available
-				href="/training/m1"
-				moduleId="m1"
+				href="/training/a1"
+				moduleId="a1"
 				stepIds={stepIds}
 			/>,
 		);
 
 		expect(await screen.findByText("Terminé")).toBeInTheDocument();
-		expect(mockGetStepId).toHaveBeenCalledWith("m1");
+		expect(mockGetStepId).toHaveBeenCalledWith("a1");
 	});
 
 	it("affiche le nombre d'étapes atteint sur le total tant que le module n'est pas terminé", async () => {
@@ -109,8 +109,8 @@ describe("TrainingModuleRow", () => {
 				{...defaultProps}
 				label="Module 1"
 				available
-				href="/training/m1"
-				moduleId="m1"
+				href="/training/a1"
+				moduleId="a1"
 				stepIds={stepIds}
 			/>,
 		);
@@ -127,8 +127,8 @@ describe("TrainingModuleRow", () => {
 				{...defaultProps}
 				label="Module 1"
 				available
-				href="/training/m1"
-				moduleId="m1"
+				href="/training/a1"
+				moduleId="a1"
 				stepIds={stepIds}
 			/>,
 		);
@@ -143,7 +143,7 @@ describe("TrainingModuleRow", () => {
 				{...defaultProps}
 				label="Module 1"
 				available
-				href="/training/m1"
+				href="/training/a1"
 			/>,
 		);
 

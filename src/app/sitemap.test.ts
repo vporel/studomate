@@ -28,13 +28,13 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/a-propos`);
 		expect(urls).toContain(`${APP_URL}/politique-de-confidentialite`);
 		expect(urls).toContain(`${APP_URL}/formations`);
-		expect(urls).toContain(`${APP_URL}/formations/m1`);
+		expect(urls).toContain(`${APP_URL}/formations/a1`);
 		// EN : préfixe /en + slugs traduits
 		expect(urls).toContain(`${APP_URL}/en`);
 		expect(urls).toContain(`${APP_URL}/en/about`);
 		expect(urls).toContain(`${APP_URL}/en/privacy`);
 		expect(urls).toContain(`${APP_URL}/en/training`);
-		expect(urls).toContain(`${APP_URL}/en/training/m1`);
+		expect(urls).toContain(`${APP_URL}/en/training/a1`);
 	});
 
 	it("déclare les alternates hreflang sur les pages localisées", () => {
