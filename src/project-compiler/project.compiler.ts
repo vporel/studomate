@@ -5,7 +5,7 @@ import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/s
 import PLCVariable from "@/simulator/core/plc/plc-variable";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
 import PLCRoutine from "@/simulator/core/plc/plc-routine";
-import NotationCompiler from "./notation-compiler";
+import NotationCompiler, { ObservableVariableRef } from "./notation-compiler";
 import GrafcetsCompiler from "./compilers/grafcet/grafcets.compiler";
 import LaddersCompiler from "./compilers/ladder/ladders.compiler";
 
@@ -24,11 +24,12 @@ export type CompiledProject = {
 	timers: TimerNode[];
 	counters: CounterNode[];
 	/**
-	 * Id d'élément observable (transition GRAFCET) → id de la variable de mémoire qui porte
-	 * l'état de sa réceptivité. Alimentée par la routine d'observation ajoutée en fin de
-	 * `routines`. L'UI lit ces valeurs pour surligner les transitions franchissables.
+	 * Id d'élément propriétaire (transition GRAFCET) → variables observables qui lui sont
+	 * rattachées (état booléen évalué, valeurs nommées type temps écoulé de tempo...).
+	 * Alimentée par la routine d'observation ajoutée en fin de `routines`. L'UI lit ces valeurs
+	 * pour surligner les transitions franchissables et afficher le temps écoulé des tempos.
 	 */
-	evaluableExpressionVariableIds: Record<string, string>;
+	observableExpressionVariableIds: Record<string, ObservableVariableRef[]>;
 };
 
 export type ProjectCompilationResult = {
@@ -69,13 +70,16 @@ export default class ProjectCompiler {
 			const routinesById: Record<string, PLCRoutine> = {};
 			const timers: TimerNode[] = [];
 			const counters: CounterNode[] = [];
-			const evaluableExpressionVariableIds: Record<string, string> = {};
+			const observableExpressionVariableIds: Record<
+				string,
+				ObservableVariableRef[]
+			> = {};
 			for (const output of outputs) {
 				Object.assign(routinesById, output.routinesById);
 				timers.push(...output.timers);
 				counters.push(...output.counters);
 				Object.assign(
-					evaluableExpressionVariableIds,
+					observableExpressionVariableIds,
 					output.observableExpressionVariableIds,
 				);
 			}
@@ -114,7 +118,7 @@ export default class ProjectCompiler {
 					routinesById,
 					timers,
 					counters,
-					evaluableExpressionVariableIds,
+					observableExpressionVariableIds,
 				},
 			};
 		} catch (e) {

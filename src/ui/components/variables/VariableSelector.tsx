@@ -8,8 +8,11 @@ import Variable, {
 	VariableType,
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { formatVariableValue } from "@/ui/lib/variables/format-variable-value";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	Autocomplete,
+	AutocompleteRenderInputParams,
 	SxProps,
 	TextField,
 	Theme,
@@ -19,6 +22,7 @@ import {
 	forwardRef,
 	FocusEvent as ReactFocusEvent,
 	KeyboardEvent as ReactKeyboardEvent,
+	MouseEvent as ReactMouseEvent,
 	useEffect,
 	useImperativeHandle,
 	useMemo,
@@ -30,15 +34,17 @@ import {
 	ALL_COLUMNS,
 	COLUMNS,
 	computeStatus,
+	inputBaseSx,
 	inputWidthPx,
+	simulationValueSx,
 	VariableColumn,
 } from "./variable-selector-utils";
+import VariableSelectorContextMenu from "./VariableSelectorContextMenu";
 import {
 	VariableSelectorOption,
 	VariableSelectorPaper,
 	VariableSelectorPaperContext,
 } from "./VariableSelectorPopup";
-import VariableSelectorContextMenu from "./VariableSelectorContextMenu";
 
 interface VariableSelectorProps {
 	value: string;
@@ -64,6 +70,19 @@ interface VariableSelectorProps {
 	 * quand le composant parent porte déjà cette entrée à son propre niveau (ex : menu contextuel
 	 * d'un nœud de contact/bobine Ladder). */
 	disableContextMenu?: boolean;
+	/** Affiche la valeur courante de la variable en simulation — activée par défaut. À désactiver
+	 * quand le champ n'a pas la place pour un second niveau de texte (ex : champ d'une propriété de
+	 * widget HMI). */
+	showSimulationValue?: boolean;
+	/** `position` : `"TOP"` (au-dessus du champ, par défaut) ou `"BOTTOM"` (en dessous) — à choisir
+	 * selon la place disponible autour du champ (ex : `"BOTTOM"` pour un pin paramètre de bloc
+	 * Ladder, dont le libellé est déjà au-dessus). */
+	simulationValueProps?: { position?: "TOP" | "BOTTOM" };
+	/** Alignement horizontal du texte du champ, et de la valeur de simulation qui doit rester
+	 * calée dessus (même bord, même décalage) — explicite plutôt que déduit du `textAlign` CSS
+	 * (fragile : `baseInputSx` peut le fixer sans que ce composant le sache). Non fourni : `"left"`
+	 * en apparence bordée (`label` fourni), `"center"` en apparence compacte. */
+	align?: "left" | "center" | "right";
 	className?: string;
 	sx?: SxProps<Theme>;
 	baseInputSx?: SxProps<Theme>;
@@ -99,6 +118,9 @@ const VariableSelector = forwardRef<
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
+		showSimulationValue = true,
+		simulationValueProps,
+		align,
 		className,
 		sx,
 		baseInputSx,
@@ -196,17 +218,59 @@ const VariableSelector = forwardRef<
 	);
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;
+	const resolvedAlign = align ?? (label ? "left" : "center");
 
 	// Variable réellement déclarée (projet ou système) correspondant au texte courant — pilote
-	// l'affichage du menu contextuel du champ.
+	// l'affichage du menu contextuel du champ et de la valeur de simulation.
 	const menuVariable = variables.find(
 		(v) => v.mnemonic === editingValue.trim(),
 	);
+
+	const mode = useProjectStore((s) => s.mode);
+	const rawSimulationValue = useProjectStore(
+		(s) => s.simulationVariablesStates[menuVariable?.id ?? ""]?.value,
+	);
+	const simulationValueDisplay =
+		showSimulationValue && mode === ProjectMode.SIMULATION && menuVariable
+			? formatVariableValue(menuVariable, rawSimulationValue, dialect)
+			: undefined;
 
 	const paperContext = useMemo(
 		() => ({ activeColumns, isEmpty: filteredSuggestions.length === 0 }),
 		[activeColumns, filteredSuggestions.length],
 	);
+
+	// `params.inputProps` porte les handlers réels d'Autocomplete (ouverture au focus, navigation
+	// clavier de la liste, etc.) — les remplacer purement et simplement au niveau du `TextField`
+	// les casse. On les rappelle explicitement avant d'ajouter notre propre comportement.
+	const handleFieldBlur =
+		(params: AutocompleteRenderInputParams) =>
+		(e: ReactFocusEvent<HTMLInputElement>) => {
+			params.inputProps.onBlur?.(e);
+			save();
+		};
+
+	const handleFieldKeyDown =
+		(params: AutocompleteRenderInputParams) =>
+		(e: ReactKeyboardEvent<HTMLInputElement>) => {
+			params.inputProps.onKeyDown?.(
+				e as unknown as ReactKeyboardEvent<HTMLInputElement>,
+			);
+			if (e.key === "Enter" || e.key === "Escape") inputRef.current?.blur();
+		};
+
+	// `stopPropagation` : sans lui, un parent qui porte aussi un menu contextuel (ex : le
+	// panneau/canvas Ladder) en ouvrirait un second par-dessus.
+	const handleFieldContextMenu = (e: ReactMouseEvent<HTMLInputElement>) => {
+		if (disableContextMenu) return;
+		if (!menuVariable) return;
+		e.preventDefault();
+		e.stopPropagation();
+		setMenuPosition({ x: e.clientX, y: e.clientY });
+		// Ferme le popper de suggestions (sinon il recouvre le menu contextuel) : un clic droit
+		// veut le menu, pas la liste de complétion.
+		inputRef.current?.blur();
+	};
 
 	return (
 		<VariableSelectorPaperContext.Provider value={paperContext}>
@@ -234,7 +298,8 @@ const VariableSelector = forwardRef<
 					popper: {
 						style: {
 							width:
-								activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) + 16,
+								activeColumns.reduce((sum, c) => sum + COLUMNS[c].width, 0) +
+								16,
 						},
 					},
 				}}
@@ -254,6 +319,7 @@ const VariableSelector = forwardRef<
 						variant={label ? "outlined" : "standard"}
 						label={label}
 						placeholder={label ? undefined : "?"}
+						helperText={simulationValueDisplay}
 						inputProps={{
 							...params.inputProps,
 							"data-variable-status": status ?? undefined,
@@ -268,52 +334,25 @@ const VariableSelector = forwardRef<
 							// Label toujours en haut, comme les autres champs du panneau de propriétés — pas
 							// seulement au focus/à la saisie (comportement par défaut de `InputLabel`).
 							inputLabel: label ? { shrink: true } : undefined,
+							formHelperText: {
+								sx: simulationValueSx(
+									simulationValueProps?.position ?? "TOP",
+									resolvedAlign,
+									label,
+								),
+							},
 						}}
-						// `params.inputProps` porte les handlers réels d'Autocomplete (ouverture au focus,
-						// navigation clavier de la liste, etc.) — les remplacer purement et simplement au
-						// niveau du `TextField` les casse. On les rappelle explicitement avant d'ajouter
-						// notre propre comportement.
-						onContextMenu={(e) => {
-							if (disableContextMenu) return;
-							if (!menuVariable) return;
-							// `stopPropagation` : sans lui, un parent qui porte aussi un menu contextuel
-							// (ex : le panneau/canvas Ladder) en ouvrirait un second par-dessus.
-							e.preventDefault();
-							e.stopPropagation();
-							setMenuPosition({ x: e.clientX, y: e.clientY });
-							// Ferme le popper de suggestions (sinon il recouvre le menu contextuel) :
-							// un clic droit veut le menu, pas la liste de complétion.
-							inputRef.current?.blur();
-						}}
-						onBlur={(e) => {
-							params.inputProps.onBlur?.(e as ReactFocusEvent<HTMLInputElement>);
-							save();
-						}}
-						onKeyDown={(e) => {
-							params.inputProps.onKeyDown?.(
-								e as unknown as ReactKeyboardEvent<HTMLInputElement>,
-							);
-							if (e.key === "Enter" || e.key === "Escape")
-								inputRef.current?.blur();
-						}}
+						onContextMenu={handleFieldContextMenu}
+						onBlur={handleFieldBlur(params)}
+						onKeyDown={handleFieldKeyDown(params)}
 						sx={[
 							{
-								// `!important` : `.MuiInputBase-inputSizeSmall` (ajoutée par `size="small"`) a
-								// la même spécificité qu'une classe générée par `sx` et gagne parfois
-								// l'arbitrage, laissant du padding/un `text-overflow: ellipsis` par défaut qui
-								// tronquait le texte au lieu de laisser le champ s'élargir — non pertinent en
-								// apparence bordée, qui garde le padding standard d'un `TextField` outlined.
-								"& .MuiInputBase-input": label
-									? { color: statusColor, cursor: "text", ...(baseInputSx ?? {}) }
-									: {
-											color: statusColor,
-											padding: "0 !important",
-											textAlign: "center",
-											fontSize: "0.7rem",
-											cursor: "text",
-											textOverflow: "clip !important",
-											...(baseInputSx ?? {}),
-										},
+								"& .MuiInputBase-input": inputBaseSx(
+									label,
+									resolvedAlign,
+									statusColor,
+									baseInputSx,
+								),
 							},
 							...(Array.isArray(sx) ? sx : [sx]),
 							// L'emporte sur un `width` fixe passé par l'appelant (ex : compact dans un nœud

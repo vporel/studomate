@@ -577,11 +577,12 @@
 			"The \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section)."
 		],
 		"watchTitle": "Watch and modify tables for variables",
-		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with three tabs:",
+		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
 		"watchItems": [
 			"Inputs — current values of the input variables",
 			"Outputs — current values of the output variables",
-			"Memory — current values of the memory variables"
+			"Memory — current values of the memory variables",
+			"Grafcets — for each grafcet in the project, the number(s) of its active step(s)"
 		],
 		"watchOutro": "Values update after every PLC scan. You can change the values of input and memory variables directly from the table to simulate external signals or force an internal state. Outputs are shown read-only.",
 		"stopTitle": "Stop the simulation",

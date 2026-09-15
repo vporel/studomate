@@ -4,5 +4,12 @@
 	"storageLocation": {
 		"heading": "Default storage location",
 		"description": "Used the first time a new project is saved."
+	},
+	"simulation": {
+		"heading": "Simulation",
+		"autoOpenHmi": {
+			"label": "Automatically open the HMI simulation view",
+			"description": "When entering simulation, automatically switch to the \"Simulation HMI\" tab if the project has at least one HMI page."
+		}
 	}
 }

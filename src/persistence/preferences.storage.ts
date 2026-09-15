@@ -3,6 +3,7 @@ import { StorageLocation } from "./repositories/project.repository";
 
 const STORAGE_KEY = "studomate_preferred_save_location";
 const LOCALE_STORAGE_KEY = "studomate_locale";
+const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
 
 /**
  * Lieu de stockage par défaut choisi par l'utilisateur (page Préférences, ou premier
@@ -42,6 +43,27 @@ export function getPreferredLocale(): Locale | null {
 export function setPreferredLocale(locale: Locale): void {
 	try {
 		localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+	} catch {
+		// Stockage indisponible : la préférence ne sera simplement pas retenue
+	}
+}
+
+/**
+ * Bascule automatiquement sur l'onglet "Simulation HMI" à l'entrée en simulation quand le
+ * projet a au moins une page HMI. `true` par défaut (comportement historique) tant que
+ * l'utilisateur n'a rien désactivé dans les Préférences.
+ */
+export function getAutoOpenHmiSimulationOnStart(): boolean {
+	try {
+		return localStorage.getItem(AUTO_OPEN_HMI_SIMULATION_KEY) !== "false";
+	} catch {
+		return true;
+	}
+}
+
+export function setAutoOpenHmiSimulationOnStart(value: boolean): void {
+	try {
+		localStorage.setItem(AUTO_OPEN_HMI_SIMULATION_KEY, String(value));
 	} catch {
 		// Stockage indisponible : la préférence ne sera simplement pas retenue
 	}

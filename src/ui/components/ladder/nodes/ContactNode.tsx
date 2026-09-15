@@ -1,5 +1,6 @@
 "use client";
 
+import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { ContactType } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
@@ -12,13 +13,12 @@ import {
 	GRID_CELL_HEIGHT,
 	GRID_CELL_WIDTH,
 } from "@/ui/utils/ladder/ladder-flow-builder";
+import { contactLetsPowerThrough } from "@/ui/utils/ladder/ladder-power-flow";
 import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { useRef } from "react";
 import ContactSymbol from "./ContactSymbol";
 import { getHighlightOverlaySx } from "./node-highlight";
-import { contactLetsPowerThrough } from "@/ui/utils/ladder/ladder-power-flow";
-import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 
 export type ContactNodeData = { variable: string; type: ContactType };
 export type ContactNodeType = Node<ContactNodeData> & { type: "contact" };
@@ -96,6 +96,7 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 					disableContextMenu
 					className="nodrag"
 					sx={{ width: 44, mb: "2px" }}
+					showSimulationValue={false}
 				/>
 			</Box>
 			<Box sx={{ width: "100%", height: 20 }}>

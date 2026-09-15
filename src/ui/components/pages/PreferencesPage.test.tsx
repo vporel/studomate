@@ -15,6 +15,8 @@ const mockGetPreferredSaveLocation = jest.fn();
 const mockSetPreferredSaveLocation = jest.fn();
 const mockGetPreferredLocale = jest.fn();
 const mockSetPreferredLocale = jest.fn();
+const mockGetAutoOpenHmiSimulationOnStart = jest.fn();
+const mockSetAutoOpenHmiSimulationOnStart = jest.fn();
 jest.mock("@/persistence/preferences.storage", () => ({
 	getPreferredSaveLocation: (...args: unknown[]) =>
 		mockGetPreferredSaveLocation(...args),
@@ -22,10 +24,15 @@ jest.mock("@/persistence/preferences.storage", () => ({
 		mockSetPreferredSaveLocation(...args),
 	getPreferredLocale: (...args: unknown[]) => mockGetPreferredLocale(...args),
 	setPreferredLocale: (...args: unknown[]) => mockSetPreferredLocale(...args),
+	getAutoOpenHmiSimulationOnStart: (...args: unknown[]) =>
+		mockGetAutoOpenHmiSimulationOnStart(...args),
+	setAutoOpenHmiSimulationOnStart: (...args: unknown[]) =>
+		mockSetAutoOpenHmiSimulationOnStart(...args),
 }));
 
-function setup({ authenticated = true } = {}) {
+function setup({ authenticated = true, autoOpenHmi = true } = {}) {
 	mockGetPreferredLocale.mockReturnValue(null);
+	mockGetAutoOpenHmiSimulationOnStart.mockReturnValue(autoOpenHmi);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ activePageId: PREFERENCES_PAGE_ID }),
 	);
@@ -73,5 +80,38 @@ describe("PreferencesPage", () => {
 
 		expect(screen.getByLabelText("Français")).toBeChecked();
 		expect(screen.getByLabelText("Anglais")).toBeInTheDocument();
+	});
+
+	it("précoche l'ouverture automatique de la simulation HMI par défaut", () => {
+		mockGetPreferredSaveLocation.mockReturnValue("local");
+		setup();
+
+		expect(
+			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+		).toBeChecked();
+	});
+
+	it("reflète la préférence désactivée", () => {
+		mockGetPreferredSaveLocation.mockReturnValue("local");
+		setup({ autoOpenHmi: false });
+
+		expect(
+			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+		).not.toBeChecked();
+	});
+
+	it("persiste immédiatement le changement de préférence d'ouverture auto de la simulation HMI", () => {
+		mockGetPreferredSaveLocation.mockReturnValue("local");
+		mockGetAutoOpenHmiSimulationOnStart.mockReturnValue(true);
+		setup();
+
+		fireEvent.click(
+			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+		);
+
+		expect(mockSetAutoOpenHmiSimulationOnStart).toHaveBeenCalledWith(false);
+		expect(
+			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+		).not.toBeChecked();
 	});
 });

@@ -95,6 +95,16 @@ export type SimulationVariableState = {
 };
 
 /**
+ * A single observed value published for an element (e.g. a GRAFCET transition): `label: null`
+ * for its evaluated boolean state (receptivity), `label` set to a name (e.g. a timer name `t1`)
+ * for a named value among several observables of the same owner.
+ */
+export type ObservableValueState = {
+	label: string | null;
+	value: unknown;
+};
+
+/**
  * Pure UI state: nothing here has business meaning on its own, it only reflects what's
  * currently shown on screen (dialogs, panels). Kept as one nested object rather than split
  * into its own store: the managers below already read/write it in the same `set()` calls as
@@ -232,13 +242,13 @@ export interface ProjectStoreState {
 	 */
 	simulationVariablesStatesByMnemonic: Record<string, SimulationVariableState>;
 	/**
-	 * Current values of the expressions watched during simulation (e.g. a transition's
-	 * receptivity), indexed by the id chosen when the expression was registered.
+	 * Current values of the variables observed during simulation (e.g. a transition's
+	 * receptivity, or a named timer's elapsed time), indexed by the id of their owner element.
 	 *
 	 * Held here, in the reactive state, rather than in a private field mutated by the manager:
 	 * a Zustand selector only re-runs when the piece of state it reads actually changes.
 	 */
-	evaluableExpressionsValues: Record<string, unknown>;
+	observableExpressionsValues: Record<string, ObservableValueState[]>;
 	/**
 	 * Variables actuellement forcées pendant la simulation : id de variable → valeur imposée.
 	 * Miroir réactif de la table de forçage du PLC, pour permettre à l'UI de savoir quelles

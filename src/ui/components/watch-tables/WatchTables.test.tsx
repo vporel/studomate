@@ -39,6 +39,7 @@ describe("WatchTables", () => {
 				project: {
 					variables: [inputVar, outputVar, memoryVar],
 					dialect: Dialect.FR,
+					grafcets: {},
 				},
 				simulationManager: {
 					setPhysicalInputValue: jest.fn(),
@@ -70,6 +71,12 @@ describe("WatchTables", () => {
 		setup();
 		fireEvent.click(screen.getByText("Mémoires"));
 		expect(screen.getByText("M1")).toBeInTheDocument();
+	});
+
+	it("switches to the grafcets tab", () => {
+		setup();
+		fireEvent.click(screen.getByText("Grafcets"));
+		expect(screen.getByText("Aucun grafcet dans le projet")).toBeInTheDocument();
 	});
 
 	it("calls setWatchTablesVisible(false) when closed", () => {

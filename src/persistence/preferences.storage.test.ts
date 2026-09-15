@@ -1,6 +1,8 @@
 import {
+	getAutoOpenHmiSimulationOnStart,
 	getPreferredLocale,
 	getPreferredSaveLocation,
+	setAutoOpenHmiSimulationOnStart,
 	setPreferredLocale,
 	setPreferredSaveLocation,
 } from "./preferences.storage";
@@ -54,6 +56,20 @@ describe("preferences.storage", () => {
 		it("ignore une valeur non reconnue", () => {
 			localStorage.setItem("studomate_locale", "zz");
 			expect(getPreferredLocale()).toBeNull();
+		});
+	});
+
+	describe("ouverture automatique de la simulation HMI", () => {
+		it("vaut true tant qu'aucune préférence n'a été enregistrée (comportement historique)", () => {
+			expect(getAutoOpenHmiSimulationOnStart()).toBe(true);
+		});
+
+		it("retient la préférence désactivée", () => {
+			setAutoOpenHmiSimulationOnStart(false);
+			expect(getAutoOpenHmiSimulationOnStart()).toBe(false);
+
+			setAutoOpenHmiSimulationOnStart(true);
+			expect(getAutoOpenHmiSimulationOnStart()).toBe(true);
 		});
 	});
 });

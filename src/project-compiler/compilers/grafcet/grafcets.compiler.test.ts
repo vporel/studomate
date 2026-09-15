@@ -7,6 +7,7 @@ import GrafcetsCompiler from "./grafcets.compiler";
 
 function simpleGrafcet(
 	transitionObservations: PreCompiledGrafcet["transitionObservations"] = new Map(),
+	timerElapsedVariables: { name: string; variableId: string }[] = [],
 ): PreCompiledGrafcet {
 	const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 	const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
@@ -28,6 +29,7 @@ function simpleGrafcet(
 					node: LiteralsBuilder.buildBooleanNode(true),
 					pureNode: LiteralsBuilder.buildBooleanNode(true),
 					timers: [],
+					timerElapsedVariables,
 					predecessorStepsIds: ["step-0"],
 					successorStepsIds: ["step-1"],
 					orPriorityExclusionTransitionIds: [],
@@ -76,7 +78,28 @@ describe("GrafcetsCompiler", () => {
 		expect(out.trailingRoutines).toHaveLength(1);
 		expect(out.trailingRoutines[0].getNodes()).toHaveLength(1);
 		expect(out.observableExpressionVariableIds).toEqual({
-			"trans-1": "obs-1",
+			"trans-1": [{ variableId: "obs-1", label: null }],
+		});
+	});
+
+	it("ajoute les variables de temps écoulé des tempos, nommées, à l'index des observables", () => {
+		const project: PreCompiledProject = {
+			variables: [],
+			programs: {
+				"grafcet-1": simpleGrafcet(new Map(), [
+					{ name: "T1", variableId: "elapsed-1" },
+					{ name: "T2", variableId: "elapsed-2" },
+				]),
+			},
+		};
+
+		const out = new GrafcetsCompiler().compile(project);
+
+		expect(out.observableExpressionVariableIds).toEqual({
+			"trans-1": [
+				{ variableId: "elapsed-1", label: "T1" },
+				{ variableId: "elapsed-2", label: "T2" },
+			],
 		});
 	});
 

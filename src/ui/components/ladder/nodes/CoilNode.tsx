@@ -85,6 +85,7 @@ const CoilNode = ({ id, data, selected }: NodeProps<CoilNodeType>) => {
 					disableContextMenu
 					className="nodrag"
 					sx={{ width: 44, mb: "2px" }}
+					showSimulationValue={false}
 				/>
 			</Box>
 			<Box sx={{ width: "100%", height: 20 }}>

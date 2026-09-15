@@ -23,7 +23,10 @@ function setup(
 ) {
 	const executeOperation = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { variables: [] } }),
+		selectorImplementation({
+			project: { variables: [] },
+			simulationVariablesStates: {},
+		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({

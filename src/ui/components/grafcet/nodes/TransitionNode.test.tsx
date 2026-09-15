@@ -22,7 +22,10 @@ function setup({
 	expression = "I0",
 	selected = false,
 	highlightedNodesIds = [] as string[],
-	evaluableExpressionsValues = {} as Record<string, boolean>,
+	observableExpressionsValues = {} as Record<
+		string,
+		{ label: string | null; value: unknown }[]
+	>,
 	updateNodeData = jest.fn(),
 } = {}) {
 	const grafcet = new GrafcetBuilder()
@@ -47,7 +50,7 @@ function setup({
 		}),
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ evaluableExpressionsValues }),
+		selectorImplementation({ observableExpressionsValues }),
 	);
 
 	const props = {
@@ -93,13 +96,48 @@ describe("TransitionNode", () => {
 	});
 
 	it("colore la réceptivité en couleur primaire quand elle est vraie pendant la simulation", () => {
-		setup({ evaluableExpressionsValues: { "trans-1": true } });
+		setup({
+			observableExpressionsValues: {
+				"trans-1": [{ label: null, value: true }],
+			},
+		});
 		expect(expressionTextarea()).not.toHaveStyle({ color: "black" });
 	});
 
 	it("laisse la réceptivité en noir quand elle est fausse (ou hors simulation)", () => {
-		setup({ evaluableExpressionsValues: { "trans-1": false } });
+		setup({
+			observableExpressionsValues: {
+				"trans-1": [{ label: null, value: false }],
+			},
+		});
 		expect(expressionTextarea()).toHaveStyle({ color: "rgb(0, 0, 0)" });
+	});
+
+	it("affiche le temps écoulé d'une tempo unique, sans son nom", () => {
+		setup({
+			observableExpressionsValues: {
+				"trans-1": [{ label: "t1", value: 2500 }],
+			},
+		});
+		expect(document.body.textContent).toContain("2.5s");
+		expect(document.body.textContent).not.toContain("t1/2.5s");
+	});
+
+	it("affiche les temps écoulés de plusieurs tempos, préfixés par leur nom", () => {
+		setup({
+			observableExpressionsValues: {
+				"trans-1": [
+					{ label: "t1", value: 2500 },
+					{ label: "t2", value: 0 },
+				],
+			},
+		});
+		expect(document.body.textContent).toContain("t1/2.5s, t2/0.0s");
+	});
+
+	it("n'affiche aucun temps écoulé hors simulation", () => {
+		setup();
+		expect(document.body.textContent).not.toMatch(/\ds/);
 	});
 
 	it("édite la réceptivité au double-clic puis dispatche la commande de mise à jour au blur", () => {

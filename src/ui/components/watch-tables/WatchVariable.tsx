@@ -3,15 +3,9 @@
 import Variable from "@/schemas/variable/variable.schema";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Dialect } from "@/expression-language/dialect.enum";
+import { formatBooleanValue } from "@/ui/lib/variables/format-variable-value";
 import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
-
-//VRAI/TRUE relève du vocabulaire du langage d'expression, pas de la langue de l'interface
-function getBooleanLabel(value: boolean | undefined, dialect: Dialect) {
-	if (value === undefined) return "-";
-	if (value) return dialect === Dialect.FR ? "VRAI" : "TRUE";
-	else return dialect === Dialect.FR ? "FAUX" : "FALSE";
-}
 
 export default function WatchVariable({ variable }: { variable: Variable }) {
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
@@ -53,7 +47,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 							<Typography
 								color={value === true ? "primary.main" : "text.primary"}
 							>
-								{getBooleanLabel(value, dialect)}
+								{formatBooleanValue(value, dialect)}
 							</Typography>
 						) : (
 							<FormControlLabel
@@ -66,7 +60,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 										inputProps={{ "aria-label": variable.mnemonic }}
 									/>
 								}
-								label={getBooleanLabel(value, dialect)}
+								label={formatBooleanValue(value, dialect)}
 							/>
 						)
 					) : variable.getDirection() === "OUT" ? (

@@ -1,6 +1,9 @@
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
-import { resolveUiLocale } from "@/persistence/preferences.storage";
+import {
+	getAutoOpenHmiSimulationOnStart,
+	resolveUiLocale,
+} from "@/persistence/preferences.storage";
 import ProjectAnalyser, {
 	ProjectAnalysisResult,
 } from "@/project-analyser/project.analyser";
@@ -14,6 +17,7 @@ import PLCVariable, {
 	PLCVariableValue,
 } from "@/simulator/core/plc/plc-variable";
 import {
+	ObservableValueState,
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 	SimulationVariableState,
@@ -32,19 +36,30 @@ export default class SimulationManager {
 	private plc: PLC | null = null;
 
 	/**
-	 * Id de variable de mémoire (portant l'état d'une réceptivité observée) → id de la transition
-	 * correspondante. Construite depuis `CompiledProject.evaluableExpressionVariableIds` au
+	 * Id de variable de mémoire (portant une valeur observable) → propriétaire (transition) et
+	 * étiquette (`null` pour l'état booléen évalué, un nom pour une valeur nommée type temps
+	 * écoulé de tempo). Construite depuis `CompiledProject.observableExpressionVariableIds` au
 	 * démarrage : `publishCycleState` s'en sert pour aiguiller la valeur de ces variables vers
-	 * `evaluableExpressionsValues[transitionId]` et les exclure de `simulationVariablesStates`.
+	 * `observableExpressionsValues[ownerId]` et les exclure de `simulationVariablesStates`.
 	 */
-	private observationVariableToSource: Map<string, string> = new Map();
+	private observationVariableToSource: Map<
+		string,
+		{ ownerId: string; label: string | null }
+	> = new Map();
 
 	/**
-	 * Dernières valeurs publiées dans le store (par id de variable / d'expression observée), pour
-	 * ne republier à chaque cycle que ce qui a changé. `null` tant qu'aucun cycle n'a été publié.
+	 * Dernier ensemble complet des entrées observables publiées par propriétaire (transition),
+	 * maintenu à jour à chaque changement pour republier un tableau complet et cohérent (pas
+	 * seulement l'entrée qui a changé) sans avoir à relire tout l'état courant du PLC.
+	 */
+	private currentObservableEntries: Map<string, Map<string | null, unknown>> =
+		new Map();
+
+	/**
+	 * Dernières valeurs publiées dans le store (par id de variable), pour ne republier à chaque
+	 * cycle que ce qui a changé. `null` tant qu'aucun cycle n'a été publié.
 	 */
 	private lastPublishedValues: Map<string, unknown> | null = null;
-	private lastPublishedExprValues: Map<string, unknown> | null = null;
 
 	private notifier: SimulationNotifier;
 
@@ -163,14 +178,22 @@ export default class SimulationManager {
 		}
 		this.notifier.simulationStarting();
 
-		//État des réceptivités (surlignage des transitions franchissables) : la routine
-		//d'observation compilée écrit ces valeurs dans des variables de mémoire, on retient
-		//juste l'association variable → transition pour la publication.
-		this.observationVariableToSource = new Map(
-			Object.entries(
-				projectCompilationResult.result!.evaluableExpressionVariableIds,
-			).map(([sourceId, variableId]) => [variableId, sourceId]),
-		);
+		//Valeurs observables (état des réceptivités pour le surlignage, temps écoulé des tempos
+		//nommées...) : la routine d'observation compilée écrit ces valeurs dans des variables de
+		//mémoire, on retient juste l'association variable → (propriétaire, étiquette) pour la
+		//publication.
+		this.observationVariableToSource = new Map();
+		for (const [ownerId, refs] of Object.entries(
+			projectCompilationResult.result!.observableExpressionVariableIds,
+		)) {
+			for (const ref of refs) {
+				this.observationVariableToSource.set(ref.variableId, {
+					ownerId,
+					label: ref.label,
+				});
+			}
+		}
+		this.currentObservableEntries = new Map();
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -195,7 +218,9 @@ export default class SimulationManager {
 			simulationPaused: startPaused,
 		}));
 		trackEvent("simulation-started", { mode: simulationMode });
-		this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
+		if (getAutoOpenHmiSimulationOnStart()) {
+			this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
+		}
 	}
 
 	pauseSimulation(): void {
@@ -279,12 +304,11 @@ export default class SimulationManager {
 	 */
 	private publishCycleState(variablesSnapshot: readonly PLCVariable[]): void {
 		if (!this.lastPublishedValues) this.lastPublishedValues = new Map();
-		if (!this.lastPublishedExprValues) this.lastPublishedExprValues = new Map();
 
 		const changedVariables: Record<string, SimulationVariableState> = {};
 		const changedVariablesByMnemonic: Record<string, SimulationVariableState> =
 			{};
-		const changedExprValues: Record<string, unknown> = {};
+		const changedOwnerIds = new Set<string>();
 		for (const v of variablesSnapshot) {
 			const id = v.getId();
 			const value = v.getValue();
@@ -293,16 +317,23 @@ export default class SimulationManager {
 			//dans les variables de simulation (leur place est l'entrée « Variables système »).
 			if (isSystemVariableName(v.getName())) continue;
 
-			const sourceId = this.observationVariableToSource.get(id);
-			if (sourceId !== undefined) {
-				//Variable d'observation d'une réceptivité : n'apparaît pas dans les variables de
-				//simulation, sa valeur alimente l'état des expressions évaluables.
+			const source = this.observationVariableToSource.get(id);
+			if (source !== undefined) {
+				//Variable observable (réceptivité, temps écoulé de tempo...) : n'apparaît pas dans
+				//les variables de simulation, sa valeur alimente l'état des valeurs observées de
+				//son propriétaire.
 				if (
-					!this.lastPublishedExprValues.has(sourceId) ||
-					!Object.is(this.lastPublishedExprValues.get(sourceId), value)
+					!this.lastPublishedValues.has(id) ||
+					!Object.is(this.lastPublishedValues.get(id), value)
 				) {
-					changedExprValues[sourceId] = value;
-					this.lastPublishedExprValues.set(sourceId, value);
+					this.lastPublishedValues.set(id, value);
+					let ownerEntries = this.currentObservableEntries.get(source.ownerId);
+					if (!ownerEntries) {
+						ownerEntries = new Map();
+						this.currentObservableEntries.set(source.ownerId, ownerEntries);
+					}
+					ownerEntries.set(source.label, value);
+					changedOwnerIds.add(source.ownerId);
 				}
 				continue;
 			}
@@ -319,8 +350,16 @@ export default class SimulationManager {
 		}
 
 		const hasVarChanges = Object.keys(changedVariables).length > 0;
-		const hasExprChanges = Object.keys(changedExprValues).length > 0;
-		if (!hasVarChanges && !hasExprChanges) return;
+		const hasObservableChanges = changedOwnerIds.size > 0;
+		if (!hasVarChanges && !hasObservableChanges) return;
+
+		const changedObservableValues: Record<string, ObservableValueState[]> = {};
+		for (const ownerId of changedOwnerIds) {
+			changedObservableValues[ownerId] = Array.from(
+				this.currentObservableEntries.get(ownerId)!,
+				([label, value]) => ({ label, value }),
+			);
+		}
 
 		this.setStoreState((state) => ({
 			...(hasVarChanges
@@ -335,11 +374,11 @@ export default class SimulationManager {
 						},
 					}
 				: {}),
-			...(hasExprChanges
+			...(hasObservableChanges
 				? {
-						evaluableExpressionsValues: {
-							...state.evaluableExpressionsValues,
-							...changedExprValues,
+						observableExpressionsValues: {
+							...state.observableExpressionsValues,
+							...changedObservableValues,
 						},
 					}
 				: {}),
@@ -356,16 +395,16 @@ export default class SimulationManager {
 
 		//Reset simulation variables states
 		this.lastPublishedValues = null;
-		this.lastPublishedExprValues = null;
 		this.setStoreState(() => ({
 			simulationVariablesStates: {},
 			simulationVariablesStatesByMnemonic: {},
-			evaluableExpressionsValues: {},
+			observableExpressionsValues: {},
 			simulationPaused: false,
 			forcedVariables: {},
 		}));
 
 		this.observationVariableToSource = new Map();
+		this.currentObservableEntries = new Map();
 	}
 
 	/**

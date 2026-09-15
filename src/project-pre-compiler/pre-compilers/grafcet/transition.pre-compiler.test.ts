@@ -270,6 +270,45 @@ describe("TransitionPreCompiler", () => {
 			expect(result.node.type).toBe("LOGICAL_EXPRESSION");
 		});
 
+		it("pairs each timer's elapsed-time variable with its user-typed name", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("T1/E1/1s")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.timerElapsedVariables).toEqual([
+				{ name: "T1", variableId: "_GeneratedMemo_1" },
+			]);
+		});
+
+		it("pairs several timers' elapsed-time variables, in declaration order", () => {
+			const transition = new TransitionBuilder()
+				.id("trans-1")
+				.expression("T1/E1/1s ET T2/M1/2s")
+				.build();
+			const grafcet = new GrafcetBuilder().addTransition(transition).build();
+
+			const result = TransitionPreCompiler.preCompile(
+				transition,
+				grafcet,
+				variables,
+				Dialect.FR,
+			);
+
+			expect(result.timerElapsedVariables).toEqual([
+				{ name: "T1", variableId: "_GeneratedMemo_1" },
+				{ name: "T2", variableId: "_GeneratedMemo_4" },
+			]);
+		});
+
 		it("avoids name collisions with existing variables", () => {
 			const transition = new TransitionBuilder()
 				.id("trans-1")

@@ -46,6 +46,7 @@ export type {
 	HmiStoreManagers,
 	PLCConfig,
 	SimulationVariableState,
+	ObservableValueState,
 	ProjectUiState,
 	ProjectBootStatus,
 	ProjectStoreState,
@@ -275,7 +276,7 @@ export const createProjectStore = () => {
 			},
 			simulationVariablesStates: {},
 			simulationVariablesStatesByMnemonic: {},
-			evaluableExpressionsValues: {},
+			observableExpressionsValues: {},
 			forcedVariables: {},
 			simulationManager: new SimulationManager(
 				set,

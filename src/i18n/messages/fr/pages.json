@@ -90,7 +90,9 @@
 		"close": "Fermer",
 		"inputs": "Entrées",
 		"outputs": "Sorties",
-		"memories": "Mémoires"
+		"memories": "Mémoires",
+		"grafcets": "Grafcets",
+		"noGrafcets": "Aucun grafcet dans le projet"
 	},
 	"noPage": {
 		"openProject": "Ouvrir un projet",

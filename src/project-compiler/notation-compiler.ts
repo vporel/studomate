@@ -12,6 +12,17 @@ import PLCRoutine from "@/simulator/core/plc/plc-routine";
  * que des primitives moteur — registre de routines, listes plates de tempos/compteurs, ordre de
  * scan — sans rien connaître d'une notation en particulier.
  */
+/**
+ * Une variable observable rattachée à un élément propriétaire (ex. une transition GRAFCET).
+ * `label: null` pour l'état booléen évalué de l'élément (surlignage) ; `label` porte un nom
+ * (ex. le nom d'une tempo `t1`) pour une valeur nommée parmi plusieurs observables du même
+ * propriétaire.
+ */
+export type ObservableVariableRef = {
+	variableId: string;
+	label: string | null;
+};
+
 export type NotationCompilationOutput = {
 	/** Toutes les routines compilées de cette notation, indexées par id de programme — fusionnées
 	 * dans le registre global qui résout les appels de sous-programme (`PLCRoutine.execute`). */
@@ -30,10 +41,11 @@ export type NotationCompilationOutput = {
 	timers: TimerNode[];
 	counters: CounterNode[];
 	/**
-	 * Id d'élément observable → id de la variable de mémoire qui porte l'état de sa réceptivité,
-	 * pour le surlignage côté UI. `{}` si la notation n'expose rien de tel.
+	 * Id d'élément propriétaire (ex. transition GRAFCET) → variables observables qui lui sont
+	 * rattachées (état booléen évalué, valeurs nommées type temps écoulé de tempo...). `{}` si
+	 * la notation n'expose rien de tel.
 	 */
-	observableExpressionVariableIds: Record<string, string>;
+	observableExpressionVariableIds: Record<string, ObservableVariableRef[]>;
 };
 
 export default interface NotationCompiler {

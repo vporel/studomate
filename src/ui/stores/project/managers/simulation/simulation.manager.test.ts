@@ -12,8 +12,14 @@ import { ProjectStoreState } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
+import { getAutoOpenHmiSimulationOnStart } from "@/persistence/preferences.storage";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
+
+jest.mock("@/persistence/preferences.storage", () => ({
+	...jest.requireActual("@/persistence/preferences.storage"),
+	getAutoOpenHmiSimulationOnStart: jest.fn(() => true),
+}));
 
 function stubNotifier(): SimulationNotifier {
 	return {
@@ -36,7 +42,7 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		ui: { watchTablesVisible: false, analysisResultVisible: false },
 		simulationVariablesStates: {},
 		simulationVariablesStatesByMnemonic: {},
-		evaluableExpressionsValues: {},
+		observableExpressionsValues: {},
 		forcedVariables: {},
 		analysisHasErrors: false,
 		analysisHasWarnings: false,
@@ -82,7 +88,7 @@ describe("SimulationManager", () => {
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(60);
 
-			expect(get().evaluableExpressionsValues[transitionId]).toBeDefined();
+			expect(get().observableExpressionsValues[transitionId]).toBeDefined();
 
 			//Les variables de mémoire qui portent l'état des réceptivités ne fuient pas dans les
 			//variables de simulation : ici I0 + X0 + X1 + 2 mémos d'étape = 5 au plus, jamais les
@@ -90,6 +96,27 @@ describe("SimulationManager", () => {
 			expect(
 				Object.keys(get().simulationVariablesStates).length,
 			).toBeLessThanOrEqual(5);
+
+			manager.setDesignMode();
+		});
+
+		it("publie le temps écoulé d'une tempo nommée, à côté de l'état booléen de la transition", async () => {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "T1/X1/2s");
+			const project = ProjectFactory.create([], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+			const transitionId = "g1-trans-1";
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(60);
+
+			const values = get().observableExpressionsValues[transitionId];
+			const booleanEntry = values.find((v) => v.label === null);
+			const timerEntry = values.find((v) => v.label === "T1");
+
+			expect(booleanEntry?.value).toBe(false); //la tempo (2s) n'est pas encore écoulée
+			expect(typeof timerEntry?.value).toBe("number");
+			expect(timerEntry?.value as number).toBeGreaterThan(0);
 
 			manager.setDesignMode();
 		});
@@ -105,7 +132,7 @@ describe("SimulationManager", () => {
 			await jest.advanceTimersByTimeAsync(60);
 			manager.setDesignMode();
 
-			expect(get().evaluableExpressionsValues).toEqual({});
+			expect(get().observableExpressionsValues).toEqual({});
 		});
 	});
 
@@ -166,7 +193,48 @@ describe("SimulationManager", () => {
 			//Si le premier PLC n'avait pas été arrêté, son intervalle continuerait d'écrire dans
 			//le store après le retour en conception.
 			expect(get().simulationVariablesStates).toEqual({});
-			expect(get().evaluableExpressionsValues).toEqual({});
+			expect(get().observableExpressionsValues).toEqual({});
+		});
+	});
+
+	describe("setSimulationMode() — ouverture automatique de la simulation HMI", () => {
+		afterEach(() => {
+			(getAutoOpenHmiSimulationOnStart as jest.Mock).mockReturnValue(true);
+		});
+
+		it("ouvre la simulation HMI à l'entrée en simulation par défaut", () => {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(get().hmiManager.openHmiSimulationPageIfAny).toHaveBeenCalled();
+
+			manager.setDesignMode();
+		});
+
+		it("n'ouvre pas la simulation HMI quand la préférence est désactivée", () => {
+			(getAutoOpenHmiSimulationOnStart as jest.Mock).mockReturnValue(false);
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+
+			expect(
+				get().hmiManager.openHmiSimulationPageIfAny,
+			).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
 		});
 	});
 
