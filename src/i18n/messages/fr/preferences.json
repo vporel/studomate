@@ -4,5 +4,12 @@
 	"storageLocation": {
 		"heading": "Lieu de stockage par défaut",
 		"description": "Utilisé pour le premier enregistrement d'un projet neuf."
+	},
+	"simulation": {
+		"heading": "Simulation",
+		"autoOpenHmi": {
+			"label": "Ouvrir automatiquement la simulation HMI",
+			"description": "À l'entrée en simulation, bascule automatiquement sur l'onglet « Simulation HMI » si le projet a au moins une page HMI."
+		}
 	}
 }

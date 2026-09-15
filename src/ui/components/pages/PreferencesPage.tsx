@@ -1,14 +1,21 @@
 "use client";
 
 import {
+	getAutoOpenHmiSimulationOnStart,
 	getPreferredSaveLocation,
+	setAutoOpenHmiSimulationOnStart,
 	setPreferredSaveLocation,
 } from "@/persistence/preferences.storage";
 import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
-import { Box, Typography } from "@mui/material";
+import {
+	Box,
+	Checkbox,
+	FormControlLabel,
+	Typography,
+} from "@mui/material";
 import { useState } from "react";
 import StorageLocationRadioGroup from "../projects/StorageLocationRadioGroup";
 import LanguageRadioGroup from "./LanguageRadioGroup";
@@ -28,10 +35,18 @@ const PreferencesPage = () => {
 	const [location, setLocation] = useState<StorageLocation>(
 		() => getPreferredSaveLocation() ?? "local",
 	);
+	const [autoOpenHmi, setAutoOpenHmi] = useState<boolean>(() =>
+		getAutoOpenHmiSimulationOnStart(),
+	);
 
 	const handleChange = (next: StorageLocation) => {
 		setLocation(next);
 		setPreferredSaveLocation(next);
+	};
+
+	const handleAutoOpenHmiChange = (next: boolean) => {
+		setAutoOpenHmi(next);
+		setAutoOpenHmiSimulationOnStart(next);
 	};
 
 	return (
@@ -54,6 +69,21 @@ const PreferencesPage = () => {
 						{t("storageLocation.description")}
 					</Typography>
 					<StorageLocationRadioGroup value={location} onChange={handleChange} />
+				</Box>
+				<Box sx={{ mt: 3 }}>
+					<Typography variant="h6">{t("simulation.heading")}</Typography>
+					<FormControlLabel
+						control={
+							<Checkbox
+								checked={autoOpenHmi}
+								onChange={(e) => handleAutoOpenHmiChange(e.target.checked)}
+							/>
+						}
+						label={t("simulation.autoOpenHmi.label")}
+					/>
+					<Typography variant="body2" color="text.secondary">
+						{t("simulation.autoOpenHmi.description")}
+					</Typography>
 				</Box>
 			</Box>
 		</Page>

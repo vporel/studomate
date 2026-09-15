@@ -1,8 +1,10 @@
 "use client";
 
 import routes from "@/app/routes";
+import type { PublicPathname } from "@/i18n/routing";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
+import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import CheckIcon from "@mui/icons-material/Check";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
@@ -47,6 +49,12 @@ export type StepData = {
 		templateId: string;
 		exerciseLabel: string;
 		solutionLabel?: string;
+		/** Mode ouvert par `exerciseLabel` — `"solution"` pour un pas d'observation d'un projet
+		 * déjà résolu plutôt que d'un énoncé vierge. Par défaut `"exercise"`. */
+		primaryMode?: "exercise" | "solution";
+		/** Démarre directement la simulation à l'ouverture du template depuis `exerciseLabel`,
+		 * plutôt que de laisser l'utilisateur basculer lui-même Conception → Simulation. */
+		autostartSimulation?: boolean;
 	};
 };
 
@@ -132,6 +140,7 @@ export default function ModuleStepper({
 	prevLabel,
 	nextLabel,
 	moduleId,
+	nextModule,
 }: {
 	steps: StepData[];
 	prevLabel: string;
@@ -139,6 +148,9 @@ export default function ModuleStepper({
 	/** Clé de module (ex. `"m1"`) — sert de clé de reprise de progression, distincte de l'id de
 	 * chaque étape. */
 	moduleId: string;
+	/** Module suivant du parcours, s'il est disponible — remplace le bouton "Suivant" (désactivé
+	 * par défaut) sur la dernière étape par un lien vers ce module. */
+	nextModule?: { href: PublicPathname; label: string };
 }) {
 	const [activeIndex, setActiveIndex] = useState(0);
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -262,7 +274,9 @@ export default function ModuleStepper({
 					<Stack direction="row" gap={1.5} flexWrap="wrap" mt={2}>
 						<Button
 							LinkComponent={NextLink}
-							href={`${routes.app()}?template=${step.cta.templateId}`}
+							href={`${routes.app()}?template=${step.cta.templateId}${
+								step.cta.primaryMode === "solution" ? "&template-mode=solution" : ""
+							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}`}
 							variant="contained"
 						>
 							{step.cta.exerciseLabel}
@@ -287,14 +301,24 @@ export default function ModuleStepper({
 					>
 						{prevLabel}
 					</Button>
-					<Button
-						onClick={() => goTo(activeIndex + 1)}
-						disabled={activeIndex === steps.length - 1}
-						endIcon={<NavigateNextIcon />}
-						variant="contained"
-					>
-						{nextLabel}
-					</Button>
+					{activeIndex === steps.length - 1 && nextModule ? (
+						<PublicLinkButton
+							href={nextModule.href}
+							endIcon={<NavigateNextIcon />}
+							variant="contained"
+						>
+							{nextModule.label}
+						</PublicLinkButton>
+					) : (
+						<Button
+							onClick={() => goTo(activeIndex + 1)}
+							disabled={activeIndex === steps.length - 1}
+							endIcon={<NavigateNextIcon />}
+							variant="contained"
+						>
+							{nextLabel}
+						</Button>
+					)}
 				</Stack>
 			</Paper>
 		</Stack>

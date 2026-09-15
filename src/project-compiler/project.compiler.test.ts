@@ -86,6 +86,7 @@ describe("ProjectCompiler", () => {
 							node: LiteralsBuilder.buildBooleanNode(true),
 							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
+							timerElapsedVariables: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
 							orPriorityExclusionTransitionIds: [],
@@ -176,8 +177,8 @@ describe("ProjectCompiler", () => {
 			const result = ProjectCompiler.compile(preCompiledProject);
 
 			expect(result.errors).toEqual([]);
-			expect(result.result!.evaluableExpressionVariableIds).toEqual({
-				"trans-1": "obs-1",
+			expect(result.result!.observableExpressionVariableIds).toEqual({
+				"trans-1": [{ variableId: "obs-1", label: null }],
 			});
 			const observationRoutine =
 				result.result!.routines[result.result!.routines.length - 1];
@@ -188,7 +189,7 @@ describe("ProjectCompiler", () => {
 		it("n'ajoute pas de routine d'observation quand aucune transition n'est observable", () => {
 			const result = ProjectCompiler.compile({ variables: [], programs: {} });
 			expect(result.result!.routines).toEqual([]);
-			expect(result.result!.evaluableExpressionVariableIds).toEqual({});
+			expect(result.result!.observableExpressionVariableIds).toEqual({});
 		});
 
 		it("performs semantic analysis on routines", () => {
@@ -238,6 +239,7 @@ describe("ProjectCompiler", () => {
 							node: LiteralsBuilder.buildBooleanNode(true),
 							pureNode: LiteralsBuilder.buildBooleanNode(true),
 							timers: [],
+							timerElapsedVariables: [],
 							predecessorStepsIds: ["step-0"],
 							successorStepsIds: ["step-1"],
 							orPriorityExclusionTransitionIds: [],

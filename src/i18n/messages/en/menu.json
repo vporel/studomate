@@ -39,6 +39,7 @@
 	"help": {
 		"title": "Help",
 		"userManual": "User manual",
+		"training": "Training",
 		"keyboardShortcuts": "Keyboard shortcuts",
 		"reportIssue": "Report a problem"
 	}

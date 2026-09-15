@@ -4,6 +4,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { i18nWrapper } from "@tests/utils/i18n";
 import VariableSelector, { VariableSelectorHandle } from "./VariableSelector";
@@ -20,6 +21,12 @@ function setup({
 	cols,
 	onCommit = jest.fn(),
 	ref,
+	mode = ProjectMode.DESIGN,
+	simulationVariablesStates = {} as Record<string, { value: unknown }>,
+	showSimulationValue,
+	simulationValueProps,
+	align,
+	label,
 }: {
 	value?: string;
 	variables?: Variable[];
@@ -29,9 +36,19 @@ function setup({
 	cols?: ("address" | "mnemonic" | "type" | "scope")[];
 	onCommit?: (next: string) => void;
 	ref?: React.Ref<VariableSelectorHandle>;
+	mode?: ProjectMode;
+	simulationVariablesStates?: Record<string, { value: unknown }>;
+	showSimulationValue?: boolean;
+	simulationValueProps?: { position?: "TOP" | "BOTTOM" };
+	align?: "left" | "center" | "right";
+	label?: string;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { variables } }),
+		selectorImplementation({
+			project: { variables },
+			mode,
+			simulationVariablesStates,
+		}),
 	);
 
 	render(
@@ -43,6 +60,10 @@ function setup({
 			acceptedLiterals={acceptedLiterals}
 			cols={cols}
 			ref={ref}
+			showSimulationValue={showSimulationValue}
+			simulationValueProps={simulationValueProps}
+			align={align}
+			label={label}
 		/>,
 	);
 
@@ -53,7 +74,10 @@ describe("VariableSelector — validation différée", () => {
 	it("commite la saisie en cours au démontage", () => {
 		const onCommit = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ project: { variables: [] } }),
+			selectorImplementation({
+				project: { variables: [] },
+				simulationVariablesStates: {},
+			}),
 		);
 		const { unmount } = render(
 			<VariableSelector value="" onCommit={onCommit} />,
@@ -68,7 +92,10 @@ describe("VariableSelector — validation différée", () => {
 	it("ne commite rien au démontage sans saisie en cours", () => {
 		const onCommit = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ project: { variables: [] } }),
+			selectorImplementation({
+				project: { variables: [] },
+				simulationVariablesStates: {},
+			}),
 		);
 		const { unmount } = render(
 			<VariableSelector value="X1" onCommit={onCommit} />,
@@ -220,6 +247,7 @@ describe("VariableSelector — menu contextuel", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: { variables },
+				simulationVariablesStates: {},
 				setCrossReferenceFilter,
 				setCrossReferenceResultVisible,
 				pagesManager: { openPage },
@@ -243,7 +271,10 @@ describe("VariableSelector — menu contextuel", () => {
 	}
 
 	it("ouvre le menu au clic droit quand le champ contient une variable réelle", () => {
-		setupMenu({ value: "M0", variables: [new Variable("v1", "M0", "memory", "BOOL")] });
+		setupMenu({
+			value: "M0",
+			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+		});
 
 		input().focus();
 		const event = fireEvent.contextMenu(input());
@@ -255,7 +286,10 @@ describe("VariableSelector — menu contextuel", () => {
 	});
 
 	it("ignore le clic droit quand le contenu n'est pas une variable déclarée", () => {
-		setupMenu({ value: "PASUNEVAR", variables: [new Variable("v1", "M0", "memory", "BOOL")] });
+		setupMenu({
+			value: "PASUNEVAR",
+			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+		});
 
 		const event = fireEvent.contextMenu(input());
 
@@ -291,10 +325,11 @@ describe("VariableSelector — menu contextuel", () => {
 	});
 
 	it("« Références croisées » filtre sur le mnémonique et ouvre le panneau", () => {
-		const { setCrossReferenceFilter, setCrossReferenceResultVisible } = setupMenu({
-			value: "M0",
-			variables: [new Variable("v1", "M0", "memory", "BOOL")],
-		});
+		const { setCrossReferenceFilter, setCrossReferenceResultVisible } =
+			setupMenu({
+				value: "M0",
+				variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			});
 
 		fireEvent.contextMenu(input());
 		fireEvent.click(screen.getByText("Références croisées"));
@@ -312,5 +347,147 @@ describe("VariableSelector — startEditing", () => {
 		ref.current!.startEditing();
 
 		expect(document.activeElement).toBe(input());
+	});
+});
+
+describe("VariableSelector — valeur de simulation", () => {
+	it("n'affiche rien en mode DESIGN", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.DESIGN,
+			simulationVariablesStates: { v1: { value: true } },
+		});
+		expect(screen.queryByText("VRAI")).not.toBeInTheDocument();
+	});
+
+	it("affiche la valeur BOOL formatée en simulation", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+		});
+		expect(screen.getByText("VRAI")).toBeInTheDocument();
+	});
+
+	it("affiche la valeur TIME formatée en simulation", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "TIME")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: 5000 } },
+		});
+		expect(screen.getByText("5s")).toBeInTheDocument();
+	});
+
+	it("affiche la valeur INT telle quelle en simulation", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "INT")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: 42 } },
+		});
+		expect(screen.getByText("42")).toBeInTheDocument();
+	});
+
+	it("n'affiche rien quand showSimulationValue vaut false", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+			showSimulationValue: false,
+		});
+		expect(screen.queryByText("VRAI")).not.toBeInTheDocument();
+	});
+
+	it("n'affiche rien quand le mnémonique ne correspond à aucune variable déclarée", () => {
+		setup({
+			value: "INCONNUE",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+		});
+		expect(screen.queryByText("VRAI")).not.toBeInTheDocument();
+	});
+
+	it("n'affiche rien tant que la valeur n'est pas encore connue", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: {},
+		});
+		expect(screen.queryByText("VRAI")).not.toBeInTheDocument();
+		expect(screen.queryByText("FAUX")).not.toBeInTheDocument();
+	});
+});
+
+describe("VariableSelector — position de la valeur de simulation", () => {
+	it("positionne la valeur au-dessus du champ par défaut (TOP)", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+		});
+		expect(screen.getByText("VRAI")).toHaveStyle({ bottom: "100%" });
+	});
+
+	it("positionne la valeur en dessous du champ avec position: BOTTOM", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+			simulationValueProps: { position: "BOTTOM" },
+		});
+		expect(screen.getByText("VRAI")).toHaveStyle({ top: "100%" });
+	});
+});
+
+describe("VariableSelector — alignement", () => {
+	it("centre le texte par défaut en apparence compacte (sans label)", () => {
+		setup({ value: "A", variables: [] });
+		expect(input()).toHaveStyle({ textAlign: "center" });
+	});
+
+	it("aligne le texte à gauche par défaut en apparence bordée (avec label)", () => {
+		setup({ value: "A", variables: [], label: "Variable" });
+		expect(input()).toHaveStyle({ textAlign: "left" });
+	});
+
+	it("respecte align quand il est fourni", () => {
+		setup({ value: "A", variables: [], align: "right" });
+		expect(input()).toHaveStyle({ textAlign: "right" });
+	});
+
+	it("cale la valeur de simulation sur le même bord que le texte (align: right)", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+			align: "right",
+		});
+		expect(screen.getByText("VRAI")).toHaveStyle({
+			right: "0px",
+			marginRight: "3px",
+		});
+	});
+
+	it("cale la valeur de simulation sur le même bord que le texte (align: left)", () => {
+		setup({
+			value: "A",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			mode: ProjectMode.SIMULATION,
+			simulationVariablesStates: { v1: { value: true } },
+			align: "left",
+		});
+		expect(screen.getByText("VRAI")).toHaveStyle({
+			left: "0px",
+			marginLeft: "3px",
+		});
 	});
 });

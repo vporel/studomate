@@ -23,6 +23,22 @@ export type TransitionNodeProps = NodeProps<TransitionNodeType>;
 const TEXTAREA_LINE_HEIGHT_REM = 1.2;
 const TEXTAREA_MAX_LINES = 6;
 
+/** Formate un temps écoulé de tempo (en ms) en secondes, ex. `1500` → `"1.5s"`, `5000` → `"5.0s"`. */
+function formatTimerElapsed(elapsedMs: number): string {
+	const seconds = Math.round(elapsedMs / 100) / 10;
+	return `${seconds.toFixed(1)}s`;
+}
+
+function getTimerElapsedDisplay(
+	entries: { label: string; value: number }[],
+): string | null {
+	if (entries.length === 0) return null;
+	if (entries.length === 1) return formatTimerElapsed(entries[0].value);
+	return entries
+		.map((entry) => `${entry.label}/${formatTimerElapsed(entry.value)}`)
+		.join(", ");
+}
+
 /** Ajuste la hauteur de la textarea à son contenu (rétrécit d'abord pour permettre la réduction). */
 function fitTextareaHeight(el: HTMLTextAreaElement | null): void {
 	if (!el) return;
@@ -48,9 +64,16 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 		fitTextareaHeight(textareaRef.current);
 	}, [editingExpression]);
 	const pageVisible = usePageVisible();
-	const trueInSimulator = useProjectStore(
-		(state) => pageVisible && state.evaluableExpressionsValues[id] === true,
+	const observedValues = useProjectStore((state) =>
+		pageVisible ? state.observableExpressionsValues[id] : undefined,
 	);
+	const trueInSimulator =
+		observedValues?.some((v) => v.label === null && v.value === true) ?? false;
+	const timerElapsedEntries = (observedValues ?? []).filter(
+		(v): v is { label: string; value: number } =>
+			v.label !== null && typeof v.value === "number",
+	);
+	const timerElapsedDisplay = getTimerElapsedDisplay(timerElapsedEntries);
 	const colorIfTrueInSimulation = th.palette.primary.main;
 	const borderColor = trueInSimulator
 		? colorIfTrueInSimulation
@@ -115,6 +138,22 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 						},
 					}}
 				></Box>
+				{timerElapsedDisplay && (
+					<Box
+						sx={{
+							position: "absolute",
+							top: "50%",
+							right: "calc(100% - 2px)",
+							transform: "translateY(calc(-50% + 2px))",
+							fontSize: "0.65rem",
+							color: th.palette.text.secondary,
+							whiteSpace: "nowrap",
+							pointerEvents: "none",
+						}}
+					>
+						{timerElapsedDisplay}
+					</Box>
+				)}
 				<Box
 					sx={{
 						position: "absolute",

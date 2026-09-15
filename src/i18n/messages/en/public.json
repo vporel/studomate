@@ -216,7 +216,9 @@
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
 		"trainingTitle": "Training — Studomate",
 		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
-		"trainingM1Title": "Module 1: GRAFCET basics — Studomate Training",
-		"trainingM1Description": "Module 1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises."
+		"trainingA0Title": "Module A0: Before you start — Studomate Training",
+		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
+		"trainingA1Title": "Module A1: GRAFCET basics — Studomate Training",
+		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises."
 	}
 }

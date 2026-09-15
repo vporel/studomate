@@ -1,15 +1,20 @@
-import {
-	VariableDirection,
-	VariableType,
-} from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	LiteralKind,
 	matchesAnyAcceptedLiteral,
 } from "@/expression-language/literals/kind";
+import {
+	VariableDirection,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
+import { SxProps, Theme } from "@mui/material";
 
 export type SelectorStatus =
-	"undeclared" | "wrong-type" | "excluded-direction" | "ok" | null;
+	| "undeclared"
+	| "wrong-type"
+	| "excluded-direction"
+	| "ok"
+	| null;
 
 export type VariableColumn = "address" | "mnemonic" | "type" | "scope";
 
@@ -88,7 +93,8 @@ export function computeStatus(
 	// Un littéral d'un genre accepté n'est jamais une variable déclarée — sa validité de format
 	// est du ressort de l'analyseur (`TimerBlockAnalyser`/`CounterBlockAnalyser`/
 	// `CompareBlockAnalyser`), pas de ce composant.
-	if (matchesAnyAcceptedLiteral(trimmed, acceptedLiterals, dialect)) return "ok";
+	if (matchesAnyAcceptedLiteral(trimmed, acceptedLiterals, dialect))
+		return "ok";
 	const match = variables.find((v) => v.mnemonic === trimmed);
 	if (!match) return "undeclared";
 	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
@@ -103,4 +109,95 @@ export function columnsGridTemplate(columns: VariableColumn[]): string {
 
 export function inputWidthPx(text: string, font: string): number {
 	return Math.max(MIN_WIDTH_PX, measureTextWidthPx(text || "?", font) + 24);
+}
+
+export type SimulationValueAlign = "left" | "center" | "right";
+
+// Décalage du texte (input et valeur de simulation) par rapport au bord du champ quand il n'est
+// pas centré, en mode compact — pour qu'il ne touche pas le trait du pin/contact (ex : `ParamPin`).
+// En chaîne (`"3px"`), pas en nombre : dans `sx`, un nombre pour une prop d'espacement (`m`/`p`/
+// `mr`/`ml`...) est multiplié par `theme.spacing()` (8px par défaut) au lieu d'être pris en px.
+const EDGE_INSET_PX = "3px";
+
+/** `textAlign` et décalage de bord associés à `align` — factorisés pour que l'input et la valeur
+ * de simulation restent alignés l'un sur l'autre quel que soit `align` (voir `inputBaseSx` et
+ * `simulationValueSx`). Marges en propriétés longues (`marginLeft`/`marginRight`), jamais le
+ * raccourci `margin` : les deux dans un même style se marchent dessus de façon peu fiable selon
+ * l'environnement (constaté avec jsdom en test). `withEdgeInset` : `false` en apparence bordée
+ * (`label` fourni), qui a déjà le padding standard d'un `TextField` outlined. */
+function alignEdgeSx(align: SimulationValueAlign, withEdgeInset: boolean) {
+	switch (align) {
+		case "left":
+			return {
+				textAlign: "left" as const,
+				...(withEdgeInset ? { marginLeft: EDGE_INSET_PX } : {}),
+			};
+		case "right":
+			return {
+				textAlign: "right" as const,
+				...(withEdgeInset ? { marginRight: EDGE_INSET_PX } : {}),
+			};
+		case "center":
+			return { textAlign: "center" as const };
+	}
+}
+
+/** Style de la valeur de simulation (`FormHelperText`) — `position: absolute` : le champ garde sa
+ * taille sans valeur affichée, la valeur ne doit pas décaler le layout du parent (nœud Ladder,
+ * panneau de propriétés). `.MuiFormControl-root` (racine du `TextField`, dont hérite ce texte)
+ * est déjà `position: relative` par défaut, y compris quand l'appelant le passe en
+ * `position: absolute` via `sx` (ex : `ParamPin`) — dans les deux cas c'est un bloc conteneur
+ * valide pour ce positionnement. `align`/`label` pilotent aussi la position horizontale, avec le
+ * même décalage de bord que l'input (`alignEdgeSx`) pour un alignement exact. */
+export function simulationValueSx(
+	position: "TOP" | "BOTTOM",
+	align: SimulationValueAlign,
+	label: string | undefined,
+) {
+	const { textAlign: _textAlign, ...edgeSx } = alignEdgeSx(align, !label);
+	return {
+		position: "absolute" as const,
+		...(position === "TOP" ? { bottom: "100%" } : { top: "100%" }),
+		...(align === "right"
+			? { right: 0 }
+			: align === "center"
+				? { left: "50%", transform: "translateX(-50%)" }
+				: { left: 0 }),
+		...edgeSx,
+		fontSize: "0.6rem",
+		lineHeight: 1.2,
+		whiteSpace: "nowrap" as const,
+		pointerEvents: "none" as const,
+		background: "rgba(0, 0, 0, 0.15)",
+		padding: "2px",
+	};
+}
+
+/** Style de `.MuiInputBase-input` du champ — `!important` : `.MuiInputBase-inputSizeSmall`
+ * (ajoutée par `size="small"`) a la même spécificité qu'une classe générée par `sx` et gagne
+ * parfois l'arbitrage, laissant du padding/un `text-overflow: ellipsis` par défaut qui tronquait
+ * le texte au lieu de laisser le champ s'élargir — non pertinent en apparence bordée (`label`
+ * fourni), qui garde le padding standard d'un `TextField` outlined. */
+export function inputBaseSx(
+	label: string | undefined,
+	align: SimulationValueAlign,
+	statusColor: string | undefined,
+	baseInputSx: SxProps<Theme> | undefined,
+) {
+	return label
+		? {
+				color: statusColor,
+				cursor: "text",
+				...alignEdgeSx(align, false),
+				...(baseInputSx ?? {}),
+			}
+		: {
+				color: statusColor,
+				padding: "0 !important",
+				fontSize: "0.7rem",
+				cursor: "text",
+				textOverflow: "clip !important",
+				...alignEdgeSx(align, true),
+				...(baseInputSx ?? {}),
+			};
 }

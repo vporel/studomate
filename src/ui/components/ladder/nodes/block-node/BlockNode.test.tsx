@@ -6,6 +6,7 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import BlockNode, {
@@ -34,7 +35,11 @@ function setup({
 	executeOperation?: jest.Mock;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { ladders } }),
+		selectorImplementation({
+			project: { ladders },
+			mode: ProjectMode.DESIGN,
+			simulationVariablesStates: {},
+		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({

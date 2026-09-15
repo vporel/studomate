@@ -4,6 +4,7 @@ const PROJECT_ID_PARAM = "projectId";
 const SHARE_TOKEN_PARAM = "shareToken";
 const TEMPLATE_ID_PARAM = "template";
 const TEMPLATE_MODE_PARAM = "template-mode";
+const TEMPLATE_AUTOSTART_PARAM = "template-autostart";
 
 export type TemplateMode = "exercise" | "solution";
 
@@ -45,8 +46,14 @@ export function getTemplateModeFromUrl(): TemplateMode {
 		: "exercise";
 }
 
+/** Demande dans l'URL de démarrer directement la simulation à l'ouverture du template. */
+export function getTemplateAutostartFromUrl(): boolean {
+	return getUrlQueryParam(TEMPLATE_AUTOSTART_PARAM) === "simulation";
+}
+
 /** Retire les paramètres de template de l'URL une fois le projet créé (ou le paramètre ignoré). */
 export function clearTemplateParamsFromUrl(): void {
 	setUrlQueryParam(TEMPLATE_ID_PARAM, null);
 	setUrlQueryParam(TEMPLATE_MODE_PARAM, null);
+	setUrlQueryParam(TEMPLATE_AUTOSTART_PARAM, null);
 }

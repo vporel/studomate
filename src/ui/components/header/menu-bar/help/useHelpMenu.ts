@@ -21,6 +21,12 @@ export default function useHelpMenu(onShortcutsOpen: () => void): AppMenuType {
 						},
 					},
 					{
+						label: t("training"),
+						onClick: () => {
+							window.open(routes.training(), "_blank", "noopener,noreferrer");
+						},
+					},
+					{
 						label: t("keyboardShortcuts"),
 						onClick: onShortcutsOpen,
 					},

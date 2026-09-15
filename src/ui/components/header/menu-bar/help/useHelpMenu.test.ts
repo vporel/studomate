@@ -14,9 +14,10 @@ describe("useHelpMenu", () => {
 		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
 		expect(result.current.id).toBe("help");
 		expect(result.current.items).toHaveLength(2);
-		expect(result.current.items[0]).toHaveLength(2);
+		expect(result.current.items[0]).toHaveLength(3);
 		expect(result.current.items[0][0].label).toBe("Manuel utilisateur");
-		expect(result.current.items[0][1].label).toBe("Raccourcis clavier");
+		expect(result.current.items[0][1].label).toBe("Formations");
+		expect(result.current.items[0][2].label).toBe("Raccourcis clavier");
 		expect(result.current.items[1][0].label).toBe("Signaler un problème");
 	});
 
@@ -48,10 +49,24 @@ describe("useHelpMenu", () => {
 		openSpy.mockRestore();
 	});
 
+	it("opens the training page in a new tab when clicked", () => {
+		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+
+		result.current.items[0][1].onClick?.();
+
+		expect(openSpy).toHaveBeenCalledWith(
+			"/formations",
+			"_blank",
+			"noopener,noreferrer",
+		);
+		openSpy.mockRestore();
+	});
+
 	it("appelle onShortcutsOpen au clic sur 'Raccourcis clavier'", () => {
 		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
 
-		act(() => result.current.items[0][1].onClick?.());
+		act(() => result.current.items[0][2].onClick?.());
 
 		expect(onShortcutsOpen).toHaveBeenCalledTimes(1);
 	});

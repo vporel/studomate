@@ -4,6 +4,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import NotationCompiler, {
 	NotationCompilationOutput,
+	ObservableVariableRef,
 } from "@/project-compiler/notation-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
 import { isPreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
@@ -67,12 +68,17 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			scanRoutines.push(new PLCRoutine(initNodes));
 		}
 
-		const observableExpressionVariableIds: Record<string, string> = {};
+		const observableExpressionVariableIds: Record<
+			string,
+			ObservableVariableRef[]
+		> = {};
 		const observationNodes: ASTNode[] = [];
 		for (const [, grafcet] of grafcets) {
 			for (const [sourceId, observation] of grafcet.transitionObservations) {
-				observableExpressionVariableIds[sourceId] =
-					observation.variable.getId();
+				(observableExpressionVariableIds[sourceId] ??= []).push({
+					variableId: observation.variable.getId(),
+					label: null,
+				});
 				observationNodes.push(
 					StatementsBuilder.buildAssignStatementNode(
 						IdentifiersBuilder.buildIdentifierNode(
@@ -81,6 +87,14 @@ export default class GrafcetsCompiler implements NotationCompiler {
 						observation.node,
 					),
 				);
+			}
+			for (const [transitionId, transition] of grafcet.transitions) {
+				for (const timerVar of transition.timerElapsedVariables) {
+					(observableExpressionVariableIds[transitionId] ??= []).push({
+						variableId: timerVar.variableId,
+						label: timerVar.name,
+					});
+				}
 			}
 		}
 		const trailingRoutines =

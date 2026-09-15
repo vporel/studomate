@@ -7,7 +7,8 @@ const routes = {
 	privacyPolicy: () => "/politique-de-confidentialite",
 	userManual: () => "/manuel-utilisateur",
 	training: () => "/formations",
-	trainingM1: () => "/formations/m1",
+	trainingA0: () => "/formations/a0",
+	trainingA1: () => "/formations/a1",
 	contact: () => "/contact",
 };
 

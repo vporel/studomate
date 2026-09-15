@@ -14,6 +14,7 @@ import {
 } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
+import { useT } from "@/ui/i18n/useT";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -31,7 +32,6 @@ import {
 	Typography,
 } from "@mui/material";
 import { CSSProperties, useEffect, useState } from "react";
-import { useT } from "@/ui/i18n/useT";
 
 const NUMERIC_VARIABLE_TYPES: VariableType[] = [
 	"INT",
@@ -85,8 +85,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 		});
 	};
 
-	const reset = () =>
-		setPosition({ xVariable: "", yVariable: "" });
+	const reset = () => setPosition({ xVariable: "", yVariable: "" });
 
 	return (
 		<Box
@@ -100,6 +99,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}
+				showSimulationValue={false}
 			/>
 			<VariableSelector
 				label={t("offsetY")}
@@ -109,6 +109,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}
+				showSimulationValue={false}
 			/>
 			<Button
 				size="small"
@@ -208,6 +209,7 @@ const StyleTab = ({
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: 320, maxWidth: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}
+				showSimulationValue={false}
 			/>
 
 			{style && (
@@ -372,7 +374,9 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 						borderBottom: "1px solid #e0e0e0",
 					}}
 				>
-					<Typography variant="h6">{t("animationsHeading", { name: widget.name })}</Typography>
+					<Typography variant="h6">
+						{t("animationsHeading", { name: widget.name })}
+					</Typography>
 					<Tooltip title={t("close")}>
 						<IconButton size="small" onClick={close} aria-label={t("close")}>
 							<CloseIcon fontSize="small" />

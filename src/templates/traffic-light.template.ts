@@ -161,7 +161,7 @@ export function createTrafficLightProject(): Project {
  * GRAFCET à 3 étapes (une par couleur, la première initiale) avec temporisations,
  * et le même HMI que la version exercice.
  *
- * Séquence : E0 (initiale) vert 10s → E1 orange 2s → E2 rouge 10s → retour E0
+ * Séquence : E0 (initiale) vert 5s → E1 orange 2s → E2 rouge 5s → retour E0
  */
 export function createTrafficLightSolution(): Project {
 	const project = createTrafficLightProject();
@@ -177,7 +177,7 @@ export function createTrafficLightSolution(): Project {
 		.build();
 	const t0 = new TransitionBuilder()
 		.id(createRandomId())
-		.expression("t0/X0/10s")
+		.expression("t0/X0/5s")
 		.position(X, 110)
 		.build();
 	const e1 = new StepBuilder()
@@ -197,7 +197,7 @@ export function createTrafficLightSolution(): Project {
 		.build();
 	const t2 = new TransitionBuilder()
 		.id(createRandomId())
-		.expression("t2/X2/10s")
+		.expression("t2/X2/5s")
 		.position(X, 310)
 		.build();
 

@@ -11,7 +11,8 @@ import { alpha, Box, Container, Divider, Paper, Stack, Typography } from "@mui/m
 import { green } from "@mui/material/colors";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import M1_STEP_IDS from "./m1/step-ids";
+import A0_STEP_IDS from "./a0/step-ids";
+import A1_STEP_IDS from "./a1/step-ids";
 import ResumeSignInHint from "./ResumeSignInHint";
 import TrainingModuleRow from "./TrainingModuleRow";
 
@@ -65,18 +66,25 @@ export default async function Training({ params }: Props) {
 
 	const modulesA: ModuleEntry[] = [
 		{
-			label: t("blockM1Label"),
+			label: t("blockA0Label"),
 			available: true,
-			href: "/training/m1",
-			moduleId: "m1",
-			stepIds: Object.values(M1_STEP_IDS),
+			href: "/training/a0",
+			moduleId: "a0",
+			stepIds: Object.values(A0_STEP_IDS),
 		},
-		{ label: t("blockM2Label"), available: false },
-		{ label: t("blockM3Label"), available: false },
+		{
+			label: t("blockA1Label"),
+			available: true,
+			href: "/training/a1",
+			moduleId: "a1",
+			stepIds: Object.values(A1_STEP_IDS),
+		},
+		{ label: t("blockA2Label"), available: false },
+		{ label: t("blockA3Label"), available: false },
 	];
 	const modulesB: ModuleEntry[] = [
-		{ label: t("blockM4Label"), available: false },
-		{ label: t("blockM5Label"), available: false },
+		{ label: t("blockB1Label"), available: false },
+		{ label: t("blockB2Label"), available: false },
 	];
 
 	const BlockCard = ({
@@ -100,7 +108,7 @@ export default async function Training({ params }: Props) {
 						label={module.label}
 						available={module.available}
 						href={module.href}
-						statusLabel={t("blockM1Status")}
+						statusLabel={t("moduleAvailableStatusLabel")}
 						completedLabel={t("moduleCompletedLabel")}
 						comingSoonLabel={t("comingSoon")}
 						backgroundColor={AVAILABLE_ROW_BACKGROUND}
@@ -161,12 +169,12 @@ export default async function Training({ params }: Props) {
 				mt={4}
 			>
 				<PublicLinkButton
-					href="/training/m1"
+					href="/training/a0"
 					variant="contained"
 					size="large"
 					startIcon={<PlayArrowIcon />}
 				>
-					{t("m1Link")}
+					{t("a0Link")}
 				</PublicLinkButton>
 				<PublicLink href="/">{t("backHome")}</PublicLink>
 			</Stack>

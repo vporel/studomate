@@ -1,9 +1,9 @@
 /**
- * Identifiants stables des étapes de M1 (voir `StepData.id`, `ModuleStepper.tsx`) — source
- * unique, réutilisée par `m1/page.tsx` (contenu) et `../page.tsx` (savoir si le module est
+ * Identifiants stables des étapes de A1 (voir `StepData.id`, `ModuleStepper.tsx`) — source
+ * unique, réutilisée par `a1/page.tsx` (contenu) et `../page.tsx` (savoir si le module est
  * achevé, via la reprise de progression) pour ne jamais désynchroniser les deux.
  */
-const M1_STEP_IDS = {
+const A1_STEP_IDS = {
 	grafcetDefinition: "grafcet-definition",
 	theory: "theory",
 	theoryActions: "theory-actions",
@@ -18,4 +18,4 @@ const M1_STEP_IDS = {
 	readingErrors: "reading-errors",
 } as const;
 
-export default M1_STEP_IDS;
+export default A1_STEP_IDS;

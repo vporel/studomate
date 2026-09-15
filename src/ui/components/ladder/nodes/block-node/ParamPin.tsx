@@ -82,15 +82,12 @@ export default function ParamPin({
 			acceptedLiterals={spec.acceptedLiterals}
 			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
 			className="nodrag"
+			simulationValueProps={{ position: "BOTTOM" }}
+			align={side === "left" ? "right" : "left"}
 			sx={{
 				position: "absolute",
 				top: "7px",
-				height: "100%",
 				[side === "left" ? "right" : "left"]: "100%",
-			}}
-			baseInputSx={{
-				textAlign: side === "left" ? "right" : "left",
-				[side === "left" ? "mr" : "ml"]: "3px",
 			}}
 		/>
 	);

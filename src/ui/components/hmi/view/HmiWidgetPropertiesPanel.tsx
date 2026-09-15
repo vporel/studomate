@@ -6,15 +6,15 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
-import useCommittedField from "@/ui/lib/hooks/useCommittedField";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
+import { useT } from "@/ui/i18n/useT";
+import useCommittedField from "@/ui/lib/hooks/useCommittedField";
 import BoltIcon from "@mui/icons-material/Bolt";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Box, Button, TextField } from "@mui/material";
 import HmiWidgetGeometryFields from "./HmiWidgetGeometryFields";
 import HmiWidgetPropertyFields from "./HmiWidgetPropertyFields";
 import { HmiWidgetRect } from "./useHmiWidgetResize";
-import { useT } from "@/ui/i18n/useT";
 
 const HmiWidgetPropertiesPanel = ({
 	widget,
@@ -105,6 +105,7 @@ const HmiWidgetPropertiesPanel = ({
 						cols={["mnemonic", "address", "scope"]}
 						sx={{ width: "100% !important" }}
 						baseInputSx={{ fontSize: "0.85rem !important" }}
+						showSimulationValue={false}
 					/>
 				</>
 			)}

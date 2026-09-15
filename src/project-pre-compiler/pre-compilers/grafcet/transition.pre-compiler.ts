@@ -20,6 +20,12 @@ import SimplifierVisitor from "@/expression-language/interpreter/simplifier/simp
 import { Dialect } from "@/expression-language/dialect.enum";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 
+/** A timer's elapsed-time variable, paired with the timer name as typed by the user (`t1`, `t2`...). */
+export type TimerElapsedVariableRef = {
+	name: string;
+	variableId: string;
+};
+
 export type PreCompiledTransition = {
 	node: ASTNode;
 	/**
@@ -32,6 +38,7 @@ export type PreCompiledTransition = {
 	 */
 	pureNode: ASTNode;
 	timers: TimerNode[];
+	timerElapsedVariables: TimerElapsedVariableRef[];
 	/**
 	 * Ids of the steps that must be active (checked via memos) for this transition to fire,
 	 * and that are deactivated when it does.
@@ -65,10 +72,8 @@ export default class TransitionPreCompiler {
 		const timersDeclarations = new FinderVisitor<TimerStringDeclarationNode>(
 			"TIMER_STRING_DECLARATION",
 		).visit(node);
-		const timers = this.preCompileTimersFromDeclarations(
-			timersDeclarations,
-			variables,
-		);
+		const { timers, timerElapsedVariables } =
+			this.preCompileTimersFromDeclarations(timersDeclarations, variables);
 		const replacements: ReplacerVisitorReplacement[] = timersDeclarations.map(
 			(decl, index) => ({
 				predicate: (n) => n.id === decl.id,
@@ -105,6 +110,7 @@ export default class TransitionPreCompiler {
 			node,
 			pureNode,
 			timers,
+			timerElapsedVariables,
 			predecessorStepsIds,
 			successorStepsIds,
 			orPriorityExclusionTransitionIds,
@@ -143,8 +149,9 @@ export default class TransitionPreCompiler {
 	private static preCompileTimersFromDeclarations(
 		declarations: TimerStringDeclarationNode[],
 		variables: PLCVariable[],
-	): TimerNode[] {
+	): { timers: TimerNode[]; timerElapsedVariables: TimerElapsedVariableRef[] } {
 		const timers: TimerNode[] = [];
+		const timerElapsedVariables: TimerElapsedVariableRef[] = [];
 		const takenVariablesNames = new Set(variables.map((v) => v.getName()));
 		for (const decl of declarations) {
 			const lastInputVariable = MemoVariableGenerator.generate(
@@ -157,6 +164,10 @@ export default class TransitionPreCompiler {
 				takenVariablesNames,
 			);
 			takenVariablesNames.add(elapsedTimeVariable.getName());
+			timerElapsedVariables.push({
+				name: decl.name,
+				variableId: elapsedTimeVariable.getId(),
+			});
 			const outputVariable = MemoVariableGenerator.generate(
 				"boolean",
 				takenVariablesNames,
@@ -174,6 +185,6 @@ export default class TransitionPreCompiler {
 				),
 			);
 		}
-		return timers;
+		return { timers, timerElapsedVariables };
 	}
 }

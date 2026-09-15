@@ -34,7 +34,7 @@ describe("grafcetToScene — feu tricolore", () => {
 		expect(rects).toHaveLength(7);
 		const texts = scene.ops.filter((o) => o.op === "text").map((o) => (o as { text: string }).text);
 		expect(texts).toEqual(
-			expect.arrayContaining(["0", "1", "2", "vert", "orange", "rouge", "t0/X0/10s"]),
+			expect.arrayContaining(["0", "1", "2", "vert", "orange", "rouge", "t0/X0/5s"]),
 		);
 	});
 

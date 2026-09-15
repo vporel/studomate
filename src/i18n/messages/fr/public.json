@@ -216,7 +216,9 @@
 		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation.",
 		"trainingTitle": "Formations — Studomate",
 		"trainingDescription": "Parcours de formation à l'automatisme avec Studomate : théorie, exercices auto-corrigés, épreuves de synthèse.",
-		"trainingM1Title": "Module 1 : Bases du GRAFCET — Formations Studomate",
-		"trainingM1Description": "Module 1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés."
+		"trainingA0Title": "Module A0 : Avant de commencer — Formations Studomate",
+		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation — les prérequis avant le GRAFCET.",
+		"trainingA1Title": "Module A1 : Bases du GRAFCET — Formations Studomate",
+		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés."
 	}
 }
