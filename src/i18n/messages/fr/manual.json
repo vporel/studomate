@@ -407,12 +407,13 @@
 		],
 		"timerOutro": "Configuration : nom (unique dans le projet) et variante (TON/TOF/TP). Les paramètres PT (durée de consigne, ex. T#5s) et ET (durée écoulée en sortie, optionnelle) se renseignent directement sur les pinoches du bloc dans le canvas, sous forme de variable ou de constante TIME.",
 		"counterTitle": "Compteur",
-		"counterIntro": "Compte des impulsions. Deux variantes :",
+		"counterIntro": "Compte des impulsions. Trois variantes :",
 		"counterItems": [
 			"CTU (compte vers le haut) : incrémente CV à chaque front montant de CU ; R remet CV à zéro.",
-			"CTD (compte vers le bas) : décrémente CV à chaque front montant de CD ; LD charge PV dans CV."
+			"CTD (compte vers le bas) : décrémente CV à chaque front montant de CD ; LD charge PV dans CV.",
+			"CTUD (compte vers le haut et vers le bas) : incrémente CV à chaque front montant de CU, le décrémente à chaque front montant de CD ; R remet CV à zéro (prioritaire) et LD charge PV dans CV. CD, R et LD se renseignent sur les pinoches."
 		],
-		"counterOutro": "La sortie Q passe à vrai lorsque CV atteint PV (CTU) ou descend à zéro (CTD). Configuration : nom et variante. PV (valeur de consigne) et la variable de contrôle (R ou LD) se renseignent sur les pinoches.",
+		"counterOutro": "La sortie Q passe à vrai lorsque CV atteint PV (CTU) ou descend à zéro (CTD). Le CTUD a deux sorties : QU (CV ≥ PV) et QD (CV ≤ 0). Configuration : nom et variante. PV (valeur de consigne) et la variable de contrôle (R ou LD) se renseignent sur les pinoches.",
 		"compareTitle": "Comparaison",
 		"compareBody": "Compare deux valeurs IN1 et IN2 selon un opérateur (=, !=, <, >, <=, >=) et transmet l'alimentation si le résultat est vrai. S'insère dans un réseau comme un contact. IN1 et IN2 se renseignent sur les pinoches (variable ou constante) ; l'opérateur se choisit dans le menu qui s'ouvre au clic sur le bloc.",
 		"assignTitle": "Affectation",

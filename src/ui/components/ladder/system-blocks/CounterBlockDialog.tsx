@@ -16,6 +16,7 @@ import { useSystemBlockDialog } from "./useSystemBlockDialog";
 const COUNTER_TYPE_KEYS: Record<CounterType, string> = {
 	CTU: "typeCTU",
 	CTD: "typeCTD",
+	CTUD: "typeCTUD",
 };
 
 /**

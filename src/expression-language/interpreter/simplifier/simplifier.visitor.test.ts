@@ -323,5 +323,33 @@ describe("SimplifierVisitor", () => {
 			expect(result.presetValue.type).toBe("NUMBER_LITERAL");
 			expect(result.presetValue.value).toBe(8);
 		});
+
+		it("simplifies and preserves the CTUD down part", () => {
+			const down = {
+				input: IdentifiersBuilder.buildIdentifierNode("cd"),
+				lastInput: IdentifiersBuilder.buildIdentifierNode("lastCd"),
+				load: IdentifiersBuilder.buildIdentifierNode("ld"),
+				output: IdentifiersBuilder.buildIdentifierNode("qd"),
+			};
+			const node = BlocksBuilder.buildCounterNode(
+				"CTUD",
+				IdentifiersBuilder.buildIdentifierNode("in"),
+				IdentifiersBuilder.buildIdentifierNode("lastIn"),
+				IdentifiersBuilder.buildIdentifierNode("ctrl"),
+				foldableAddition(),
+				IdentifiersBuilder.buildIdentifierNode("cv"),
+				IdentifiersBuilder.buildIdentifierNode("q"),
+				down,
+			);
+
+			const result = simplifier.visit(node) as any;
+
+			expect(result.down).toMatchObject({
+				input: { value: "cd" },
+				lastInput: { value: "lastCd" },
+				load: { value: "ld" },
+				output: { value: "qd" },
+			});
+		});
 	});
 });

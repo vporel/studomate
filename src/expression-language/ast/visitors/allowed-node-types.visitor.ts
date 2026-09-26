@@ -114,6 +114,14 @@ export default class AllowedNodeTypesVisitor extends BaseVisitor<ASTNode[]> {
 			.concat(this.visit(node.presetValue))
 			.concat(this.visit(node.currentValue))
 			.concat(this.visit(node.output))
+			.concat(
+				node.down
+					? this.visit(node.down.input)
+							.concat(this.visit(node.down.lastInput))
+							.concat(this.visit(node.down.load))
+							.concat(this.visit(node.down.output))
+					: [],
+			)
 			.concat(this.checkSelf(node));
 	}
 }

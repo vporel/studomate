@@ -266,6 +266,12 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 			this.visit(node.presetValue),
 			this.visit(node.currentValue),
 			this.visit(node.output),
+			node.down && {
+				input: this.visit(node.down.input),
+				lastInput: this.visit(node.down.lastInput),
+				load: this.visit(node.down.load),
+				output: this.visit(node.down.output),
+			},
 			node.position,
 		);
 	}

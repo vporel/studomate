@@ -158,6 +158,16 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 			presetValue: this.visit(node.presetValue),
 			currentValue: this.visit(node.currentValue),
 			output: this.visit(node.output),
+			...(node.down
+				? {
+						down: {
+							input: this.visit(node.down.input),
+							lastInput: this.visit(node.down.lastInput),
+							load: this.visit(node.down.load),
+							output: this.visit(node.down.output),
+						},
+					}
+				: {}),
 		};
 	}
 }

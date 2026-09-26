@@ -348,6 +348,62 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", false);
 		});
 
+		it("compteur CTUD : CU incrémente, CD décrémente, LD charge PV, R remet à zéro, QU/QD en sortie", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("ENTREE"),
+				VariableFactory.createLogicInput("SORTIE"),
+				VariableFactory.createLogicInput("CHARGE"),
+				VariableFactory.createLogicInput("RAZ"),
+				VariableFactory.createLogicOutput("PLEIN"),
+				VariableFactory.createMemoryBool("VIDE"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("ENTREE", "NO", 0, 1),
+				createCounterBlockElement(
+					{ name: "Stock", counterType: "CTUD", control: "RAZ", down: "SORTIE", load: "CHARGE", qd: "VIDE", pv: "2" },
+					0,
+					2,
+				),
+				createCoilElement("PLEIN", "normal", 0, 4),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			const pulse = async (input: string) => {
+				plc.setPhysicalInputValueByName(input, true);
+				await jest.advanceTimersByTimeAsync(30);
+				plc.setPhysicalInputValueByName(input, false);
+				await jest.advanceTimersByTimeAsync(30);
+			};
+
+			await pulse("ENTREE");
+			await pulse("ENTREE");
+			throwOnCycleError();
+			expect(getVariableValue(plc, "Stock.CV")).toBe(2);
+			expectVariableValue(plc, "PLEIN", true);
+			expectVariableValue(plc, "VIDE", false);
+
+			await pulse("SORTIE");
+			expect(getVariableValue(plc, "Stock.CV")).toBe(1);
+			expectVariableValue(plc, "PLEIN", false);
+
+			await pulse("SORTIE");
+			expect(getVariableValue(plc, "Stock.CV")).toBe(0);
+			expectVariableValue(plc, "VIDE", true);
+
+			plc.setPhysicalInputValueByName("CHARGE", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("CHARGE", false);
+			expect(getVariableValue(plc, "Stock.CV")).toBe(2);
+
+			plc.setPhysicalInputValueByName("RAZ", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expect(getVariableValue(plc, "Stock.CV")).toBe(0);
+		});
+
 		it("bloc compare : Q suit le résultat de l'expression booléenne", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createAnalogInput("Niveau"),

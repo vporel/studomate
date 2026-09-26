@@ -9,6 +9,9 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
 import InvalidTimerLastInputTypeException from "./exceptions/invalid-timer-last-input-type.exception";
+import InvalidCounterControlTypeException from "./exceptions/invalid-counter-control-type.exception";
+import InvalidCounterInputTypeException from "./exceptions/invalid-counter-input-type.exception";
+import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-output-type.exception";
 import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
 import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
@@ -338,6 +341,56 @@ describe("SemanticAnalyserVisitor", () => {
 			expect(
 				(caught as InvalidCounterLastInputTypeException).getInvalidNodes(),
 			).toEqual([lastInput]);
+		});
+	});
+
+	describe("CTUD counter block nodes", () => {
+		const buildCtud = (down: {
+			input?: string;
+			lastInput?: ASTNode;
+			load?: string;
+			output?: ASTNode;
+		}) =>
+			BlocksBuilder.buildCounterNode(
+				"CTUD",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("y"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+				{
+					input: IdentifiersBuilder.buildIdentifierNode(down.input ?? "flag"),
+					lastInput:
+						down.lastInput ?? IdentifiersBuilder.buildIdentifierNode("flag"),
+					load: IdentifiersBuilder.buildIdentifierNode(down.load ?? "flag"),
+					output:
+						down.output ??
+						IdentifiersBuilder.buildIdentifierNode("boolResult"),
+				},
+			);
+
+		it("accepts a valid down part", () => {
+			expect(() => analyser.visit(buildCtud({}))).not.toThrow();
+		});
+
+		it("validates the types of the down part", () => {
+			expect(() => analyser.visit(buildCtud({ input: "x" }))).toThrow(
+				InvalidCounterInputTypeException,
+			);
+			expect(() => analyser.visit(buildCtud({ load: "x" }))).toThrow(
+				InvalidCounterControlTypeException,
+			);
+			expect(() =>
+				analyser.visit(
+					buildCtud({ lastInput: LiteralsBuilder.buildBooleanNode(false) }),
+				),
+			).toThrow(InvalidCounterLastInputNodeException);
+			expect(() =>
+				analyser.visit(
+					buildCtud({ output: IdentifiersBuilder.buildIdentifierNode("x") }),
+				),
+			).toThrow(InvalidCounterOutputTypeException);
 		});
 	});
 

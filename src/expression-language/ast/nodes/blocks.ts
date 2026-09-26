@@ -25,12 +25,12 @@ export interface TimerStringDeclarationNode extends BaseNode {
 	presetTime: number; //in ms
 }
 
-export type CounterType = "CTU" | "CTD";
+export type CounterType = "CTU" | "CTD" | "CTUD";
 
 /**
- * CTU (counts up, `input`/`control` = `CU`/`R`) or CTD (counts down, `input`/`control` =
- * `CD`/`LD`): both variants share the same node shape, only the counting direction and the
- * target of `control` differ (`CounterNodeEvaluator`). `input` counts on its rising edge
+ * CTU (counts up, `input`/`control` = `CU`/`R`), CTD (counts down, `input`/`control` =
+ * `CD`/`LD`) or CTUD (both, see `down`): the variants share the same node shape, only the counting
+ * direction and the target of `control` differ (`CounterNodeEvaluator`). `input` counts on its rising edge
  * (detected through `lastInput`); `control` is evaluated on level: while true, it takes priority
  * over `input` and holds `currentValue` at its target value (`0` for CTU, `presetValue` for CTD).
  */
@@ -42,6 +42,15 @@ export interface CounterNode extends BaseNode {
 	control: ASTNode; //should be of native type boolean
 	presetValue: ASTNode; //should be of native type number
 	currentValue: ASTNode; //should be an identifier node referencing a numeric variable
+	output: ASTNode; //should be an identifier node referencing a boolean variable
+	/** CTUD only: the counting-down half (`CD`, its edge memory, `LD`, `QD`); `input`/`control`/`output` then carry `CU`/`R`/`QU`. */
+	down?: CounterDownPart;
+}
+
+export interface CounterDownPart {
+	input: ASTNode; //should be of native type boolean
+	lastInput: ASTNode; //should be an identifier node referencing a boolean variable (used to detect edges)
+	load: ASTNode; //should be of native type boolean
 	output: ASTNode; //should be an identifier node referencing a boolean variable
 }
 

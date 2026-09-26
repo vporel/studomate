@@ -717,6 +717,80 @@ describe("LadderPreCompiler", () => {
 		});
 	});
 
+	describe("bloc compteur CTUD", () => {
+		function build(qd?: string) {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{
+					name: "Stock",
+					counterType: "CTUD",
+					control: "RAZ",
+					pv: "5",
+					down: "sortie",
+					load: "charge",
+					qd,
+				},
+				0,
+				1,
+			);
+			const coil = createCoilElement("Q", "normal", 0, 3);
+			const section = createSectionWith(
+				[rail, block, coil],
+				wireInSeries([rail, block, coil]),
+			);
+			return { block, ...preCompile(new Ladder("l1", "L", [section])) };
+		}
+
+		it("matérialise CU en entrée câblée, R/CD/LD en pinoches et une mémoire de front dédiée à CD", () => {
+			const { block, result } = build();
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+
+			expect(counter.counterType).toBe("CTUD");
+			expect(describeNode(counter.input)).toBe("Stock.CU");
+			expect(describeNode(counter.control)).toBe("RAZ");
+			expect(describeNode(counter.output)).toBe("Stock.QU");
+			expect(describeNode(counter.down!.input)).toBe("sortie");
+			expect(describeNode(counter.down!.load)).toBe("charge");
+			expect(describeNode(counter.down!.output)).toBe("Stock.QD");
+			expect(describeNode(counter.down!.lastInput)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastCD"),
+			);
+			expect(describeNode(counter.lastInput)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastInput"),
+			);
+		});
+
+		it("propage QU vers l'élément suivant", () => {
+			const { result } = build();
+
+			expect(describeNode(coilAssignments(result)[0].condition)).toBe(
+				"Stock.QU",
+			);
+		});
+
+		it("copie QD dans la variable de la pinoche QD quand elle est renseignée", () => {
+			const { result } = build("vide");
+
+			const copies = result.assignments.filter(
+				(a) => a.kind === "blockPort" && a.mnemonic === "vide",
+			);
+			expect(copies).toHaveLength(1);
+			expect(describeNode((copies[0] as { value: ASTNode }).value)).toBe(
+				"Stock.QD",
+			);
+			expect(
+				build().result.assignments.some(
+					(a) => a.kind === "blockPort" && a.mnemonic === "vide",
+				),
+			).toBe(false);
+		});
+	});
+
 	describe("blocs compare", () => {
 		it("matérialise IN depuis reach, et Q = IN ET l'expression", () => {
 			const rail = createRailTerminalElement(0);

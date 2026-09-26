@@ -79,6 +79,11 @@ export type CounterBlockParams = {
 	control: string;
 	pv: string;
 	cv?: string;
+	/** CTUD seulement : pinoches `CD` (comptage vers le bas), `LD` (chargement de PV) et `QD`
+	 * (copie de la sortie « compteur à zéro »). `control` porte alors `R`. */
+	down?: string;
+	load?: string;
+	qd?: string;
 };
 
 /** Les 6 opérateurs d'un bloc `"compare"` — exactement ceux du langage d'expression
@@ -107,11 +112,7 @@ export type CompareBlockParams = {
 /** Genres de littéral acceptés sur une pinoche d'opérande de bloc (IN1/IN2 d'un compare,
  * `in` d'un assign, IN1/IN2 d'un arithmetic) — tout sauf une constante TIME (qui n'a de sens que
  * pour une pinoche timer et n'est pas une expression valide isolée). */
-export const BLOCK_OPERAND_LITERALS = [
-	"number",
-	"boolean",
-	"string",
-] as const;
+export const BLOCK_OPERAND_LITERALS = ["number", "boolean", "string"] as const;
 
 /**
  * Bloc `"assign"` : `out := in`, exécuté seulement quand `EN` est vrai ; `ENO` toujours vrai
@@ -319,7 +320,10 @@ export function getArithmeticBlockParams(
  * Lecture/écriture d'une pinoche paramètre d'un bloc `"assign"` par son suffixe (`IN`/`OUT`) —
  * consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches générique de `BoxBlockNode`.
  */
-export function readAssignParam(params: AssignBlockParams, suffix: string): string {
+export function readAssignParam(
+	params: AssignBlockParams,
+	suffix: string,
+): string {
 	return suffix === "IN" ? params.in : params.out;
 }
 

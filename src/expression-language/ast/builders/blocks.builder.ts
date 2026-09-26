@@ -1,6 +1,7 @@
 import { createRandomId } from "@/ids";
 import { ASTNode } from "../nodes/ast-node";
 import {
+	CounterDownPart,
 	CounterNode,
 	CounterType,
 	TimerNode,
@@ -39,6 +40,7 @@ export default class BlocksBuilder {
 		presetValue: ASTNode,
 		currentValue: ASTNode,
 		output: ASTNode,
+		down?: CounterDownPart,
 		position?: number,
 	): CounterNode {
 		return {
@@ -51,6 +53,7 @@ export default class BlocksBuilder {
 			presetValue,
 			currentValue,
 			output,
+			...(down ? { down } : {}),
 			position,
 		};
 	}

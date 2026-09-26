@@ -1,5 +1,6 @@
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import {
+	CounterDownPart,
 	CounterNode,
 	TimerNode,
 	TimerStringDeclarationNode,
@@ -366,6 +367,47 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (presetValueType !== "number") {
 			throw new InvalidCounterPresetValueTypeException(
 				presetValueType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (node.down) this.analyseCounterDownPart(node, node.down);
+	}
+
+	private analyseCounterDownPart(
+		node: CounterNode,
+		down: CounterDownPart,
+	): void {
+		const inputType = this.typeAnalyser.visit(down.input);
+		if (inputType !== "boolean") {
+			throw new InvalidCounterInputTypeException(
+				inputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (down.lastInput.type !== "IDENTIFIER") {
+			throw new InvalidCounterLastInputNodeException(node);
+		}
+		const lastInputType = this.typeAnalyser.visit(down.lastInput);
+		if (lastInputType !== "boolean") {
+			throw new InvalidCounterLastInputTypeException(
+				lastInputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		const loadType = this.typeAnalyser.visit(down.load);
+		if (loadType !== "boolean") {
+			throw new InvalidCounterControlTypeException(
+				loadType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (down.output.type !== "IDENTIFIER") {
+			throw new InvalidCounterOutputNodeException(node);
+		}
+		const outputType = this.typeAnalyser.visit(down.output);
+		if (outputType !== "boolean") {
+			throw new InvalidCounterOutputTypeException(
+				outputType as ExpectedNodeResultType,
 				node,
 			);
 		}

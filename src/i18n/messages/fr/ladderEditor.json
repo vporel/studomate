@@ -96,7 +96,8 @@
 		"variant": "Variante",
 		"typeCTU": "CTU — compte vers le haut",
 		"typeCTD": "CTD — compte vers le bas",
-		"note": "Contrairement à une temporisation, ce compteur évalue son entrée à chaque cycle (pas de détection de front) : il compte tant que celle-ci reste vraie, sans stopper à la valeur de consigne.",
+		"typeCTUD": "CTUD — compte vers le haut et vers le bas",
+		"note": "Le compteur compte à chaque front montant de son entrée de comptage (un capteur maintenu ne compte qu'une fois), sans stopper à la valeur de consigne.",
 		"create": "Créer",
 		"save": "Enregistrer"
 	},

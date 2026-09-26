@@ -96,7 +96,8 @@
 		"variant": "Variant",
 		"typeCTU": "CTU — counts up",
 		"typeCTD": "CTD — counts down",
-		"note": "Unlike a timer, this counter evaluates its input on every scan (no edge detection): it counts as long as the input stays true, without stopping at the preset value.",
+		"typeCTUD": "CTUD — counts up and down",
+		"note": "The counter counts on each rising edge of its counting input (a held sensor counts only once), without stopping at the preset value.",
 		"create": "Create",
 		"save": "Save"
 	},

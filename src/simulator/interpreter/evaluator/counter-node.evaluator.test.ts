@@ -295,4 +295,123 @@ describe("CounterNodeEvaluator", () => {
 			expect(env.getVariableValueByName("output")).toBe(true);
 		});
 	});
+
+	describe("CTUD (compte vers le haut et vers le bas)", () => {
+		beforeEach(() => {
+			const variables = (
+				[
+					["input", "boolean", false],
+					["lastInput", "boolean", false],
+					["control", "boolean", false],
+					["presetValue", "number", 3],
+					["currentValue", "number", 0],
+					["output", "boolean", false],
+					["downInput", "boolean", false],
+					["downLastInput", "boolean", false],
+					["load", "boolean", false],
+					["downOutput", "boolean", false],
+				] as const
+			).map(([name, type, value]) => {
+				const variable = new EnvVariable(`id_${name}`, name, type, "INOUT");
+				variable.setValue(value);
+				return variable;
+			});
+			env = new Environment(variables);
+			visitor = new MockVisitor(env);
+			evaluator = new CounterNodeEvaluator(env, visitor);
+		});
+
+		const createCtudNode = (): CounterNode =>
+			BlocksBuilder.buildCounterNode(
+				"CTUD",
+				IdentifiersBuilder.buildIdentifierNode("input", 0),
+				IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
+				IdentifiersBuilder.buildIdentifierNode("control", 0),
+				IdentifiersBuilder.buildIdentifierNode("presetValue", 0),
+				IdentifiersBuilder.buildIdentifierNode("currentValue", 0),
+				IdentifiersBuilder.buildIdentifierNode("output", 0),
+				{
+					input: IdentifiersBuilder.buildIdentifierNode("downInput", 0),
+					lastInput: IdentifiersBuilder.buildIdentifierNode("downLastInput", 0),
+					load: IdentifiersBuilder.buildIdentifierNode("load", 0),
+					output: IdentifiersBuilder.buildIdentifierNode("downOutput", 0),
+				},
+			);
+
+		it("incrémente sur front montant de CU et décrémente sur front montant de CD", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("presetValue", 5);
+
+			env.setVariableValueByName("input", true);
+			evaluator.evaluate(counter);
+			env.setVariableValueByName("input", false);
+			evaluator.evaluate(counter);
+			env.setVariableValueByName("input", true);
+			evaluator.evaluate(counter);
+			expect(env.getVariableValueByName("currentValue")).toBe(2);
+
+			env.setVariableValueByName("downInput", true);
+			evaluator.evaluate(counter);
+			expect(env.getVariableValueByName("currentValue")).toBe(1);
+		});
+
+		it("deux fronts simultanés s'annulent", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("currentValue", 2);
+			env.setVariableValueByName("input", true);
+			env.setVariableValueByName("downInput", true);
+
+			evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(2);
+		});
+
+		it("mémorise CD dans sa propre mémoire de front", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("downInput", true);
+			evaluator.evaluate(counter);
+			evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("downLastInput")).toBe(true);
+			expect(env.getVariableValueByName("currentValue")).toBe(-1);
+		});
+
+		it("R remet à zéro avec priorité sur LD et sur les fronts", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("currentValue", 2);
+			env.setVariableValueByName("control", true);
+			env.setVariableValueByName("load", true);
+			env.setVariableValueByName("input", true);
+
+			evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(0);
+		});
+
+		it("LD charge presetValue avec priorité sur les fronts", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("presetValue", 7);
+			env.setVariableValueByName("load", true);
+			env.setVariableValueByName("downInput", true);
+
+			evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(7);
+		});
+
+		it("QU vaut currentValue >= presetValue, QD vaut currentValue <= 0", () => {
+			const counter = createCtudNode();
+			env.setVariableValueByName("presetValue", 1);
+
+			evaluator.evaluate(counter);
+			expect(env.getVariableValueByName("output")).toBe(false);
+			expect(env.getVariableValueByName("downOutput")).toBe(true);
+
+			env.setVariableValueByName("input", true);
+			const result = evaluator.evaluate(counter);
+			expect(result).toBe(true);
+			expect(env.getVariableValueByName("output")).toBe(true);
+			expect(env.getVariableValueByName("downOutput")).toBe(false);
+		});
+	});
 });

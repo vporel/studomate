@@ -407,12 +407,13 @@
 		],
 		"timerOutro": "Configuration: name (unique in the project) and variant (TON/TOF/TP). The PT (preset duration, e.g. T#5s) and ET (elapsed time output, optional) parameters are entered directly on the block's pins on the canvas, as a variable or a TIME constant.",
 		"counterTitle": "Counter",
-		"counterIntro": "Counts pulses. Two variants:",
+		"counterIntro": "Counts pulses. Three variants:",
 		"counterItems": [
 			"CTU (counts up): increments CV on each rising edge of CU; R resets CV to zero.",
-			"CTD (counts down): decrements CV on each rising edge of CD; LD loads PV into CV."
+			"CTD (counts down): decrements CV on each rising edge of CD; LD loads PV into CV.",
+			"CTUD (counts up and down): increments CV on each rising edge of CU and decrements it on each rising edge of CD; R resets CV to zero (highest priority) and LD loads PV into CV. CD, R and LD are entered on the pins."
 		],
-		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
+		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). The CTUD has two outputs: QU (CV ≥ PV) and QD (CV ≤ 0). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
 		"compareTitle": "Comparison",
 		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a rung like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
 		"assignTitle": "Assignment",

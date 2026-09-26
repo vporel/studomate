@@ -195,6 +195,34 @@ describe("LadderAnalyser", () => {
 		});
 	});
 
+	it("crée une seconde variable cachée (front de CD) pour un compteur CTUD, aucune pour un CTU", () => {
+		const ctud = createCounterBlockElement(
+			{ name: "Stock", counterType: "CTUD", control: "faux", pv: "5" },
+			0,
+			0,
+		);
+		const ctu = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "faux", pv: "5" },
+			1,
+			0,
+		);
+		const ladder = new Ladder("l1", "L", [createSectionWith([ctud, ctu], [])]);
+
+		const mnemonics = ladderAnalyser
+			.generateVariables(ladder)
+			.map((v) => v.mnemonic);
+
+		expect(mnemonics).toContain(
+			getBlockPortVariableMnemonic(ctud.id, "lastCD"),
+		);
+		expect(mnemonics).not.toContain(
+			getBlockPortVariableMnemonic(ctu.id, "lastCD"),
+		);
+		expect(mnemonics).toEqual(
+			expect.arrayContaining(["Stock.CU", "Stock.QU", "Stock.QD", "Stock.CV"]),
+		);
+	});
+
 	describe("buildTimerExposedVariables/buildCounterExposedVariables (via generateVariables)", () => {
 		it("ignore un bloc tempo dont le nom est invalide, sans lever", () => {
 			const rail = createRailTerminalElement(0);

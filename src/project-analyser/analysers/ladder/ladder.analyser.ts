@@ -438,7 +438,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	}
 
 	/**
-	 * One hidden BOOL memory variable per timer or counter block, for the edge detection of its
+	 * One hidden BOOL memory variable per timer or counter block (two for a CTUD), for the edge detection of its
 	 * input (`TimerNode.lastInput` / `CounterNode.lastInput`, see `LadderPreCompiler`): never
 	 * exposed, unlike `<Name>.IN`/`.Q`/`.ET`/`.CV` (see `buildTimerExposedVariables` and
 	 * `buildCounterExposedVariables`).
@@ -452,14 +452,21 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 					element.data.blockType !== "counter")
 			)
 				continue;
-			variables.push(
-				new Variable(
-					getBlockPortVariableId(ladder.id, element.id, "lastInput"),
-					getBlockPortVariableMnemonic(element.id, "lastInput"),
-					"memory",
-					"BOOL",
-				),
-			);
+			const edgeInputs =
+				element.data.blockType === "counter" &&
+				element.data.params.counterType === "CTUD"
+					? ["lastInput", "lastCD"]
+					: ["lastInput"];
+			for (const port of edgeInputs) {
+				variables.push(
+					new Variable(
+						getBlockPortVariableId(ladder.id, element.id, port),
+						getBlockPortVariableMnemonic(element.id, port),
+						"memory",
+						"BOOL",
+					),
+				);
+			}
 		}
 		return variables;
 	}
