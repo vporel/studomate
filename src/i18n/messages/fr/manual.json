@@ -189,7 +189,7 @@
 		],
 		"systemBlocksLabel": "Blocs systèmes :",
 		"systemBlocksItems": [
-			"Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer. Cette section n'apparaît que lorsqu'un ladder est ouvert."
+			"Palette des blocs disponibles pour l'éditeur ladder : Temporisation, Compteur, Comparaison, Affectation, Calcul, Conversion. Faites glisser un bloc depuis cette section vers le canvas d'un ladder pour l'insérer. Cette section n'apparaît que lorsqu'un ladder est ouvert."
 		],
 		"hmiLabel": "Interfaces HMI :",
 		"hmiItems": [
@@ -227,6 +227,15 @@
 			"TIME — durée (ex. T#5s), disponible dans les mémoires — utilisé notamment pour les temporisations"
 		],
 		"typesOutro": "En simulation, les variables entières sont ramenées à la plage de leur type à chaque écriture : INT, DINT, WORD et DWORD repartent de l'autre borne en cas de dépassement (un INT qui dépasse 32767 revient à −32768). À garder en tête pour une accumulation du type « position := position + pas ».",
+		"typesCalcTitle": "Calculs et conversions",
+		"typesCalcItems": [
+			"Un calcul se fait dans le type de ses opérandes (norme IEC 61131-3) : INT * INT donne un INT, qui peut déborder avant même d'être rangé dans une variable DINT.",
+			"Entre deux types différents, seuls les élargissements sans perte sont implicites : INT vers DINT ou REAL, WORD vers DWORD. DINT et REAL ne se combinent pas sans conversion.",
+			"Ranger une valeur dans un type plus petit (DINT ou REAL dans un INT) demande une conversion explicite : fonctions DINT_TO_INT, REAL_TO_INT, INT_TO_REAL… dans une expression, bloc Conversion en ladder.",
+			"La division entre entiers tronque : 7 / 2 vaut 3, même rangé dans un REAL. Écrivez 7.0 / 2 pour obtenir 3,5.",
+			"WORD et DWORD sont des chaînes de bits : pas d'opération arithmétique sur ces types sans les convertir d'abord en entier (WORD_TO_INT…).",
+			"Une constante s'écrit selon son type : 100 (entier), 2.5 (réel), T#5s (durée). Une durée se compare à une autre durée : t > T#2s."
+		],
 		"propertiesTitle": "Propriétés d'une variable",
 		"propertiesItems": [
 			"Mnémonique (obligatoire) : nom de la variable, max 32 caractères, doit commencer par une lettre, caractères alphanumériques et underscores autorisés, doit être unique",
@@ -396,8 +405,8 @@
 		],
 		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence.",
 		"blocksTitle": "Blocs",
-		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou — pour la Comparaison, l'Affectation et le Calcul — depuis l'outil dédié de la barre d'outils ladder.",
-		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation et le Calcul sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les pinoches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc.",
+		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou — pour la Comparaison, l'Affectation, le Calcul et la Conversion — depuis l'outil dédié de la barre d'outils ladder.",
+		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les pinoches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
 		"timerTitle": "Temporisation",
 		"timerIntro": "Mesure une durée et expose un signal de sortie. Trois variantes :",
 		"timerItems": [
@@ -420,6 +429,8 @@
 		"assignBody": "Affecte une valeur à une variable (out := in) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. L'opérande in (variable ou constante) et la variable de destination out se renseignent sur les pinoches du bloc.",
 		"calcTitle": "Calcul",
 		"calcBody": "Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.",
+		"convertTitle": "Conversion",
+		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Le bloc affiche le nom normalisé de la conversion appliquée, par exemple DINT_TO_INT. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les pinoches du bloc (variables uniquement).",
 		"programCallTitle": "Appel de programme",
 		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet — un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",
@@ -470,7 +481,7 @@
 		"ladderTools": [
 			"Contact NO, NF, P (front montant) et N (front descendant)",
 			"Bobine normale, Set et Reset",
-			"Blocs Comparaison, Affectation et Calcul (les autres blocs systèmes se glissent depuis l'explorateur)",
+			"Blocs Comparaison, Affectation, Calcul et Conversion (les autres blocs systèmes se glissent depuis l'explorateur)",
 			"Bouton « Section » — ajoute un nouveau réseau au ladder"
 		],
 		"ladderToolsOutro": "Voir la section Ladder pour le détail de ces éléments."

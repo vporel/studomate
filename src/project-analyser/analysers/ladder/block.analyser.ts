@@ -9,6 +9,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
 import ArithmeticBlockAnalyser from "./arithmetic-block.analyser";
 import AssignBlockAnalyser from "./assign-block.analyser";
 import CompareBlockAnalyser from "./compare-block.analyser";
+import ConvertBlockAnalyser from "./convert-block.analyser";
 import CounterBlockAnalyser from "./counter-block.analyser";
 import LadderElementAnalyser, {
 	LadderVariablesContext,
@@ -58,6 +59,13 @@ const BLOCK_ANALYSERS: Record<
 		),
 	arithmetic: (element, ctx) =>
 		ArithmeticBlockAnalyser.analyse(
+			element,
+			ctx.source,
+			ctx.project.dialect,
+			ctx.environment,
+		),
+	convert: (element, ctx) =>
+		ConvertBlockAnalyser.analyse(
 			element,
 			ctx.source,
 			ctx.project.dialect,

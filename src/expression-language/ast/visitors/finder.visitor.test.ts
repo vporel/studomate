@@ -306,4 +306,16 @@ describe("FinderVisitor", () => {
 			expect(result[0]).toBe(input);
 		});
 	});
+
+	describe("conversion expressions", () => {
+		it("finds identifiers inside a conversion, and the conversion itself", () => {
+			const x = IdentifiersBuilder.buildIdentifierNode("x");
+			const node = ExpressionsBuilder.buildConversionExpressionNode("DINT", "INT", x);
+
+			expect(new FinderVisitor("IDENTIFIER").visit(node)).toEqual([x]);
+			expect(new FinderVisitor("CONVERSION_EXPRESSION").visit(node)).toEqual([
+				node,
+			]);
+		});
+	});
 });

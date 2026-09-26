@@ -48,6 +48,10 @@ class MockVisitor extends BaseVisitor<EnvVariableValue> {
 		return false;
 	}
 
+	protected visitConversionExpressionNode(): EnvVariableValue {
+		return 0;
+	}
+
 	protected visitAssignStatementNode(): EnvVariableValue {
 		return 0;
 	}

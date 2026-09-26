@@ -4,6 +4,8 @@ import ControlsBuilder from "@/expression-language/ast/builders/controls.builder
 import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
+import { isConvertibleType } from "@/expression-language/conversions";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
@@ -268,13 +270,13 @@ function buildUserProgramBlockAssignments(
 				mnemonic: enMnemonic,
 				value: reach ?? LiteralsBuilder.buildBooleanNode(true),
 			},
-			// ENO d'un appel de programme utilisateur vaut toujours vrai : le bloc ne bloque jamais
-			// le rail, seul EN gate l'appel.
+			// ENO = EN (IEC 61131-3) : le bloc ne coupe jamais le rail, mais ne l'alimente pas
+			// non plus quand EN est faux.
 			{
 				kind: "blockPort",
 				blockId: block.id,
 				mnemonic: enoMnemonic,
-				value: LiteralsBuilder.buildBooleanNode(true),
+				value: IdentifiersBuilder.buildIdentifierNode(enMnemonic),
 			},
 			{
 				kind: "call",
@@ -486,8 +488,9 @@ function buildCompareBlockAssignments(
 /**
  * `"assign"` (`out := in`) et `"arithmetic"` (`out := in1 <op> in2`) partagent le même moule :
  * une affectation exécutée seulement quand `EN` est vrai (`IF <EN> THEN …`, voir
- * `PreCompiledAssignBlockAssignment`), `ENO` toujours vrai — l'affectation n'est jamais elle-même
- * une condition pour le rail (comme ENO d'un appel de programme utilisateur). Le membre droit est
+ * `PreCompiledAssignBlockAssignment`), `ENO = EN` : l'affectation n'est jamais elle-même une
+ * condition pour le rail, qui passe au-delà du bloc exactement quand il arrive sur `EN` (comme pour
+ * un appel de programme utilisateur). Le membre droit est
  * reconstruit depuis les pinoches (jamais reparsé comme une expression opaque).
  */
 function buildAssignmentGatedByEn(
@@ -528,7 +531,7 @@ function buildAssignmentGatedByEn(
 				kind: "blockPort",
 				blockId: block.id,
 				mnemonic: enoMnemonic,
-				value: LiteralsBuilder.buildBooleanNode(true),
+				value: IdentifiersBuilder.buildIdentifierNode(enMnemonic),
 			},
 		],
 		propagated: IdentifiersBuilder.buildIdentifierNode(enoMnemonic),
@@ -569,6 +572,35 @@ function buildArithmeticBlockAssignments(
 	);
 }
 
+/** Target type of a `"convert"` block: the declared type of its `OUT` variable, which the
+ * analyser has already checked to be convertible. */
+function buildConvertBlockAssignments(
+	block: BlockElement,
+	reach: ASTNode | null,
+	dialect: Dialect,
+	declaredTypes: DeclaredTypesByName,
+): BuiltBlockAssignments {
+	if (block.data.blockType !== "convert") throw new Error("Bloc non convert");
+	const { in: inRaw, out } = block.data.params;
+	const targetType = declaredTypes.get(out.trim());
+	if (!targetType || !isConvertibleType(targetType))
+		throw new Error(
+			`Bloc convert : la variable "${out}" n'a pas de type convertible.`,
+		);
+	return buildAssignmentGatedByEn(
+		block,
+		reach,
+		out,
+		ExpressionsBuilder.buildConversionExpressionNode(
+			null,
+			targetType,
+			parseExpressionCached(inRaw, dialect).ast,
+		),
+	);
+}
+
+type DeclaredTypesByName = ReadonlyMap<string, VariableType | null>;
+
 /**
  * Une entrée par famille de bloc — délègue au builder dédié (matérialisation d'AST propre à la
  * famille, jamais fusionnée ici). `Record<BlockType, …>` casse le build tant qu'une famille manque.
@@ -579,6 +611,7 @@ const BLOCK_ASSIGNMENT_BUILDERS: Record<
 		block: BlockElement,
 		reach: ASTNode | null,
 		dialect: Dialect,
+		declaredTypes: DeclaredTypesByName,
 	) => BuiltBlockAssignments
 > = {
 	"user-program": (block, reach) =>
@@ -591,14 +624,22 @@ const BLOCK_ASSIGNMENT_BUILDERS: Record<
 		buildAssignBlockAssignments(block, reach, dialect),
 	arithmetic: (block, reach, dialect) =>
 		buildArithmeticBlockAssignments(block, reach, dialect),
+	convert: (block, reach, dialect, declaredTypes) =>
+		buildConvertBlockAssignments(block, reach, dialect, declaredTypes),
 };
 
 function buildBlockAssignments(
 	block: BlockElement,
 	reach: ASTNode | null,
 	dialect: Dialect,
+	declaredTypes: DeclaredTypesByName,
 ): BuiltBlockAssignments {
-	return BLOCK_ASSIGNMENT_BUILDERS[block.data.blockType](block, reach, dialect);
+	return BLOCK_ASSIGNMENT_BUILDERS[block.data.blockType](
+		block,
+		reach,
+		dialect,
+		declaredTypes,
+	);
 }
 
 /**
@@ -666,6 +707,7 @@ function computeNetworkAssignments(
 	elements: LadderElement[],
 	connections: Connection[],
 	dialect: Dialect,
+	declaredTypes: DeclaredTypesByName,
 ): PreCompiledLadderAssignment[] {
 	const incomingByTarget = new Map<string, Connection[]>();
 	for (const connection of connections) {
@@ -714,7 +756,7 @@ function computeNetworkAssignments(
 			passThroughById.set(element.id, LiteralsBuilder.buildBooleanNode(true));
 		} else if (element.type === "block") {
 			const { assignments: blockAssignments, propagated } =
-				buildBlockAssignments(element, reach, dialect);
+				buildBlockAssignments(element, reach, dialect, declaredTypes);
 			assignments.push(...blockAssignments);
 			passThroughById.set(element.id, propagated);
 		} else {
@@ -732,11 +774,17 @@ function computeNetworkAssignments(
 export default class LadderPreCompiler {
 	static preCompile(
 		ladder: Ladder,
-		_variables: PLCVariable[],
+		variables: PLCVariable[],
 		dialect: Dialect,
 		errors: ProjectPreCompilerError[],
 	): PreCompiledLadder {
 		const assignments: PreCompiledLadderAssignment[] = [];
+		const declaredTypes: DeclaredTypesByName = new Map(
+			variables.map((variable) => [
+				variable.getName(),
+				variable.getDeclaredType(),
+			]),
+		);
 
 		for (const section of ladder.sections) {
 			try {
@@ -745,6 +793,7 @@ export default class LadderPreCompiler {
 						section.elements,
 						section.connections,
 						dialect,
+						declaredTypes,
 					),
 				);
 			} catch (e) {

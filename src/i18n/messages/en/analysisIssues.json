@@ -127,5 +127,12 @@
 	"BLOCK_ARITHMETIC_OPERATOR_INVALID": "\"{operator}\" is not a valid arithmetic operator.",
 	"BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED": "The IN1 and IN2 parameters must contain a variable or a value, not an expression.",
 	"BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
-	"BLOCK_ARITHMETIC_INVALID": "{detail}"
+	"BLOCK_ARITHMETIC_INVALID": "{detail}",
+
+	"BLOCK_CONVERT_IN_EMPTY": "The IN parameter must be filled in.",
+	"BLOCK_CONVERT_OUT_EMPTY": "The OUT parameter must be filled in.",
+	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "The IN parameter must be a variable mnemonic.",
+	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
+	"BLOCK_CONVERT_OUT_INVALID_TYPE": "Variable \"{variableName}\" (OUT) must be of type INT, DINT, WORD, DWORD or REAL.",
+	"BLOCK_CONVERT_INVALID": "{detail}"
 }

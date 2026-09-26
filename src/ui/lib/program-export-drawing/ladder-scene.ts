@@ -41,6 +41,7 @@ const PIN_SIZE = 8;
 const FALLBACK_STATIC_LABEL: Record<string, string> = {
 	assign: "Assign",
 	arithmetic: "Calc",
+	convert: "CONV",
 };
 
 /** Hauteur d'une ligne de grille dans le rendu SVG. */
@@ -273,7 +274,10 @@ function boxBlockOps(
 				) ?? "Programme"
 			: data.blockType === "timer" || data.blockType === "counter"
 				? (data.params as { name?: string }).name || data.blockType
-				: context.blockStaticLabel?.(data.blockType) ??
+				: (data.blockType === "convert"
+						? context.convertFunctionName?.(data.params)
+						: undefined) ??
+					context.blockStaticLabel?.(data.blockType) ??
 					FALLBACK_STATIC_LABEL[data.blockType] ??
 					data.blockType;
 

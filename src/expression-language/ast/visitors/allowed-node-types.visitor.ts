@@ -8,6 +8,7 @@ import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "../nodes/expressions";
@@ -75,6 +76,12 @@ export default class AllowedNodeTypesVisitor extends BaseVisitor<ASTNode[]> {
 		return this.visit(node.left)
 			.concat(this.visit(node.right))
 			.concat(this.checkSelf(node));
+	}
+
+	protected visitConversionExpressionNode(
+		node: ConversionExpressionNode,
+	): ASTNode[] {
+		return this.visit(node.expr).concat(this.checkSelf(node));
 	}
 
 	protected visitAssignStatementNode(node: AssignStatementNode): ASTNode[] {

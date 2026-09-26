@@ -1,3 +1,4 @@
+import { BLOCK_OPERAND_LITERALS } from "@/schemas/ladder/block.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import {
@@ -19,6 +20,12 @@ describe("computeStatus", () => {
 	it("retourne null pour un mnémonique vide", () => {
 		expect(computeStatus("", [])).toBeNull();
 		expect(computeStatus("   ", [])).toBeNull();
+	});
+
+	it("retourne ok pour une constante TIME sur une pinoche d'opérande de bloc", () => {
+		expect(
+			computeStatus("T#2s", [], undefined, undefined, [...BLOCK_OPERAND_LITERALS]),
+		).toBe("ok");
 	});
 
 	it("retourne ok pour un mnémonique déclaré sans filtre", () => {

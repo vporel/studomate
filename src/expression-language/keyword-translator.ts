@@ -4,6 +4,7 @@ import {
 	isLetterOrUnderscoreOrDigit,
 	isQuote,
 } from "./alphabet";
+import { findTimeLiteralEnd } from "./literals/time";
 import { Dialect } from "./dialect.enum";
 import { getKeywordByString, getKeywordString } from "./keywords";
 
@@ -55,6 +56,13 @@ export default class KeywordTranslator {
 					isLetterOrUnderscore(expression[position])
 				)
 					position++;
+				continue;
+			}
+
+			//TIME constant (T#5s): its letters are units, not an identifier
+			const timeLiteralEnd = findTimeLiteralEnd(expression, position);
+			if (timeLiteralEnd !== null) {
+				position = timeLiteralEnd;
 				continue;
 			}
 

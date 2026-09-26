@@ -9,7 +9,10 @@
 			"number": "number",
 			"boolean": "boolean",
 			"string": "string",
-			"unknown": "unknown"
+			"unknown": "unknown",
+			"ANY_INT": "integer constant",
+			"ANY_REAL": "real constant",
+			"ANY_NUM": "number"
 		},
 		"side": {
 			"left": "left",
@@ -28,7 +31,8 @@
 			"TIMER_BLOCK": "Timer block",
 			"TIMER_STRING_DECLARATION": "Timer",
 			"COUNTER_BLOCK": "Counter block",
-			"IF_CONTROL": "Conditional control"
+			"IF_CONTROL": "Conditional control",
+			"CONVERSION_EXPRESSION": "Type conversion"
 		}
 	},
 	"UNKNOWN_VARIABLE_NAME": "Unknown variable name: {variableName}",
@@ -58,6 +62,15 @@
 	"INVALID_COUNTER_OUTPUT_NODE": "Invalid counter output node: the output of a counter block must be an identifier",
 	"INVALID_COUNTER_OUTPUT_TYPE": "Invalid counter output type: the output of a counter block must be boolean (found {actual})",
 	"INVALID_COUNTER_PRESET_VALUE_TYPE": "Invalid counter preset value type: expected {expected}, got {actual}",
+	"CONVERSION_HINT": " (function {function})",
+	"INCOMPATIBLE_NUMERIC_TYPES": "Types {leftType} and {rightType} are incompatible for operator \"{operator}\": explicitly convert one of the operands{hint}.",
+	"BIT_STRING_ARITHMETIC": "Operator \"{operator}\" is not allowed on type {type} (bit string): first convert the value to an integer ({type}_TO_INT or {type}_TO_DINT).",
+	"CONSTANT_OUT_OF_RANGE": "Constant {value} is out of the range of type {type}.",
+	"EXPLICIT_CONVERSION_REQUIRED": "Assigning a {valueType} value to a {targetType} variable: an explicit conversion is required{hint}.",
+	"INVALID_CONVERSION_ARGUMENT": "Cannot convert to {targetType}: the value is of type {actual}, {expected} expected.",
+	"UNSUPPORTED_CONVERSION": "No conversion from {actual} to {targetType}.",
+	"UNKNOWN_FUNCTION": "Unknown function \"{name}\" at position {position}: only the standard's conversion functions (INT_TO_REAL, DINT_TO_INT…) are available.",
+	"INVALID_TIME_LITERAL": "Invalid time constant \"{literal}\" at position {position}",
 	"DIVISION_BY_ZERO": "Division by zero: {left} / {right}",
 	"PARSING_ENDED_BEFORE_EOF": "Invalid expression: unexpected character at position {position}",
 	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expected expression (variable, number, string) or '(' at position {position}",

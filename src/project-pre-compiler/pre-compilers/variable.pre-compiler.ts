@@ -58,6 +58,7 @@ export default class VariableCompiler {
 				scope,
 				plcType,
 				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
+				variable.type,
 			);
 			const restValue = getInputRestValue(variable.behavior);
 			if (restValue !== undefined) plcVariable.setValue(restValue);
@@ -82,6 +83,7 @@ export default class VariableCompiler {
 					"memory",
 					VARIABLE_TYPE_TO_NATIVE_TYPE[variable.type],
 					getNumericRange(variable.type),
+					variable.type,
 				),
 		);
 	}

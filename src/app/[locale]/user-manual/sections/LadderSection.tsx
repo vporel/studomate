@@ -85,6 +85,10 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("calcBody")}</Typography>
 					<Typography variant="h5" mb={1}>
+						{t("convertTitle")}
+					</Typography>
+					<Typography mb={2}>{t("convertBody")}</Typography>
+					<Typography variant="h5" mb={1}>
 						{t("programCallTitle")}
 					</Typography>
 					<Typography mb={2}>{t("programCallBody")}</Typography>

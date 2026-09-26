@@ -3,6 +3,10 @@ import {
 	SYSTEM_TIME_BASES,
 	SYSTEM_VARIABLES,
 } from "@/schemas/variable/system-variables";
+import {
+	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+} from "@/schemas/variable/variable.schema";
 import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
@@ -102,7 +106,9 @@ export default class PLC extends ClockedRunnable {
 					systemVariable.name,
 					systemVariable.name,
 					"memory",
-					"boolean",
+					VARIABLE_TYPE_TO_NATIVE_TYPE[systemVariable.type],
+					getNumericRange(systemVariable.type),
+					systemVariable.type,
 				);
 			}
 		}

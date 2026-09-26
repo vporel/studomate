@@ -536,4 +536,29 @@ describe("ReplacerVisitor", () => {
 			expect((result as any).right).toBe(num);
 		});
 	});
+
+	describe("conversion expressions", () => {
+		it("replaces inside the argument of a conversion and keeps its types", () => {
+			const node = ExpressionsBuilder.buildConversionExpressionNode(
+				"DINT",
+				"INT",
+				IdentifiersBuilder.buildIdentifierNode("x"),
+			);
+			const visitor = new ReplacerVisitor([
+				{
+					predicate: (n) =>
+						n.type === "IDENTIFIER" && (n as IdentifierNode).value === "x",
+					replacement: IdentifiersBuilder.buildIdentifierNode("y"),
+				},
+			]);
+
+			expect(visitor.visit(node)).toMatchObject({
+				type: "CONVERSION_EXPRESSION",
+				sourceType: "DINT",
+				targetType: "INT",
+				expr: { type: "IDENTIFIER", value: "y" },
+			});
+			expect(node.expr).toMatchObject({ value: "x" });
+		});
+	});
 });

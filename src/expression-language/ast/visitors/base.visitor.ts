@@ -8,6 +8,7 @@ import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "../nodes/expressions";
@@ -34,6 +35,8 @@ export abstract class BaseVisitor<T> {
 				return this.visitComparisonExpressionNode(node);
 			case "LOGICAL_EXPRESSION":
 				return this.visitLogicalExpressionNode(node);
+			case "CONVERSION_EXPRESSION":
+				return this.visitConversionExpressionNode(node);
 			case "ASSIGN_STATEMENT":
 				return this.visitAssignStatementNode(node);
 			case "IF_CONTROL":
@@ -64,6 +67,9 @@ export abstract class BaseVisitor<T> {
 		node: ComparisonExpressionNode,
 	): T;
 	protected abstract visitLogicalExpressionNode(node: LogicalExpressionNode): T;
+	protected abstract visitConversionExpressionNode(
+		node: ConversionExpressionNode,
+	): T;
 
 	// Statements
 	protected abstract visitAssignStatementNode(node: AssignStatementNode): T;

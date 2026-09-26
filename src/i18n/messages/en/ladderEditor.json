@@ -20,9 +20,11 @@
 		"compareLabel": "Comparison",
 		"assignLabel": "Assignment",
 		"arithmeticLabel": "Calculation",
+		"convertLabel": "Type conversion",
 		"compareToolbarLabel": "Compare block — compares two values",
 		"assignToolbarLabel": "Assign block — assigns a value to a variable",
-		"arithmeticToolbarLabel": "Calc block — arithmetic operation"
+		"arithmeticToolbarLabel": "Calc block — arithmetic operation",
+		"convertToolbarLabel": "CONV block: converts a value to the type of the OUT variable (DINT_TO_INT…)"
 	},
 	"sectionHeader": {
 		"reorderAria": "Reorder the section",
@@ -76,7 +78,8 @@
 		"counterVariantAria": "Counter variant",
 		"arithmeticOperatorAria": "Block operator",
 		"assignStaticLabel": "Assign",
-		"arithmeticStaticLabel": "Calc"
+		"arithmeticStaticLabel": "Calc",
+		"convertStaticLabel": "CONV"
 	},
 	"timerDialog": {
 		"createTitle": "New timer",

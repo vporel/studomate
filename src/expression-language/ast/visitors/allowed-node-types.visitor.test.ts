@@ -65,4 +65,20 @@ describe("AllowedNodeTypesVisitor", () => {
 
 		expect(violations).toEqual([num]);
 	});
+
+	it("signale une conversion non autorisée et contrôle son argument", () => {
+		const argument = LiteralsBuilder.buildStringNode("a");
+		const node = ExpressionsBuilder.buildConversionExpressionNode(
+			"DINT",
+			"INT",
+			argument,
+		);
+
+		expect(
+			new AllowedNodeTypesVisitor(["CONVERSION_EXPRESSION"]).visit(node),
+		).toEqual([argument]);
+		expect(new AllowedNodeTypesVisitor(["STRING_LITERAL"]).visit(node)).toEqual([
+			node,
+		]);
+	});
 });

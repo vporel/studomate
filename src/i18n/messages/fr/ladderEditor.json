@@ -20,9 +20,11 @@
 		"compareLabel": "Comparaison",
 		"assignLabel": "Affectation",
 		"arithmeticLabel": "Calcul",
+		"convertLabel": "Conversion de type",
 		"compareToolbarLabel": "Bloc Compare — compare deux valeurs",
 		"assignToolbarLabel": "Bloc Assign — affecte une valeur à une variable",
-		"arithmeticToolbarLabel": "Bloc calc — opération arithmétique"
+		"arithmeticToolbarLabel": "Bloc calc — opération arithmétique",
+		"convertToolbarLabel": "Bloc CONV : convertit une valeur vers le type de la variable OUT (DINT_TO_INT…)"
 	},
 	"sectionHeader": {
 		"reorderAria": "Réordonner la section",
@@ -76,7 +78,8 @@
 		"counterVariantAria": "Variante du compteur",
 		"arithmeticOperatorAria": "Opérateur du bloc",
 		"assignStaticLabel": "Assign",
-		"arithmeticStaticLabel": "Calc"
+		"arithmeticStaticLabel": "Calc",
+		"convertStaticLabel": "CONV"
 	},
 	"timerDialog": {
 		"createTitle": "Nouvelle temporisation",

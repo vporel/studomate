@@ -3,6 +3,23 @@ import VariableCompiler from "./variable.pre-compiler";
 
 describe("VariableCompiler", () => {
 	describe("compile", () => {
+		it("porte le type déclaré de chaque variable, y compris pour un curseur", () => {
+			const brut = new VariableBuilder()
+				.mnemonic("brut")
+				.zone("analog-input")
+				.type("INT")
+				.behavior({ kind: "slider", params: { min: 0, max: 27648 } })
+				.build();
+			const [plcVariable] = VariableCompiler.compile([brut]);
+			expect(plcVariable.getDeclaredType()).toBe("INT");
+		});
+
+		it("porte le type déclaré des variables système", () => {
+			for (const variable of VariableCompiler.compileSystemVariables()) {
+				expect(variable.getDeclaredType()).toBe("BOOL");
+			}
+		});
+
 		it("démarre une entrée à sa valeur de repos et borne un curseur", () => {
 			const arret = new VariableBuilder()
 				.id("a")

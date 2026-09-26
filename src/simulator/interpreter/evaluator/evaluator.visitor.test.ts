@@ -4,6 +4,11 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { Lexer } from "@/expression-language/lexer/lexer";
 import Parser from "@/expression-language/parser/parser";
 import EvaluatorVisitor from "./evaluator.visitor";
+import {
+	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
@@ -254,6 +259,96 @@ describe("EvaluatorVisitor", () => {
 			evaluator.visit(timer);
 
 			expect(timerEnv.getVariableValueById("et")).toBe(250);
+		});
+	});
+});
+
+describe("EvaluatorVisitor : calcul dans le type IEC 61131-3", () => {
+	const typed = (name: string, type: VariableType, value = 0) => {
+		const variable = new EnvVariable(
+			name,
+			name,
+			VARIABLE_TYPE_TO_NATIVE_TYPE[type],
+			"INOUT",
+			getNumericRange(type),
+			type,
+		);
+		variable.setValue(value);
+		return variable;
+	};
+	let env: Environment;
+	let evaluator: EvaluatorVisitor;
+
+	beforeEach(() => {
+		env = new Environment([
+			typed("brut", "INT", 27648),
+			typed("i", "INT", -32768),
+			typed("d", "DINT", 40000),
+			typed("n", "DINT"),
+			typed("r", "REAL", 2.5),
+			typed("w", "WORD", 65535),
+			typed("t", "TIME", 1000),
+			new EnvVariable("u", "u", "number", "INOUT"),
+		]);
+		evaluator = new EvaluatorVisitor(env, { timers: { deltaTimeMs: 10 } });
+	});
+	const evaluate = (expression: string) =>
+		evaluator.visit(new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse());
+
+	it("un produit INT déborde dans son type avant d'être affecté à un DINT", () => {
+		evaluate("n := brut * 100");
+		expect(env.getVariableValueByName("n")).toBe(12288);
+	});
+
+	it("un produit calculé en DINT ne déborde pas", () => {
+		evaluate("n := INT_TO_DINT(brut) * 100");
+		expect(env.getVariableValueByName("n")).toBe(2764800);
+	});
+
+	it("la division entière tronque vers zéro à chaque opération", () => {
+		expect(evaluate("brut / 27648 * 100")).toBe(100);
+		expect(evaluate("(brut - 1) / 27648 * 100")).toBe(0);
+		expect(evaluate("-7 / 2")).toBe(-3);
+	});
+
+	it("la division d'un réel reste réelle", () => {
+		expect(evaluate("r / 2")).toBe(1.25);
+	});
+
+	it("la négation reboucle dans le type", () => {
+		expect(evaluate("-i")).toBe(-32768);
+	});
+
+	it("une durée divisée par un nombre n'est pas tronquée", () => {
+		expect(evaluate("t / 3")).toBeCloseTo(333.333, 2);
+	});
+
+	it("une variable sans type déclaré garde un calcul non typé", () => {
+		env.setVariableValueByName("u", 7);
+		expect(evaluate("u / 2")).toBe(3.5);
+	});
+
+	describe("fonctions de conversion", () => {
+		it("un entier vers un entier plus petit reboucle, comme sur un automate", () => {
+			expect(evaluate("DINT_TO_INT(d)")).toBe(-25536);
+		});
+
+		it("entier et chaîne de bits : même motif binaire", () => {
+			expect(evaluate("WORD_TO_INT(w)")).toBe(-1);
+			expect(evaluate("INT_TO_WORD(-1)")).toBe(65535);
+		});
+
+		it("un réel vers un entier arrondit au plus proche, à égalité vers le pair", () => {
+			expect(evaluate("REAL_TO_INT(1.4)")).toBe(1);
+			expect(evaluate("REAL_TO_INT(1.6)")).toBe(2);
+			expect(evaluate("REAL_TO_INT(r)")).toBe(2);
+			expect(evaluate("REAL_TO_INT(3.5)")).toBe(4);
+			expect(evaluate("REAL_TO_INT(-2.5)")).toBe(-2);
+			expect(evaluate("REAL_TO_INT(-1.5)")).toBe(-2);
+		});
+
+		it("vers un réel, la valeur est conservée", () => {
+			expect(evaluate("DINT_TO_REAL(d)")).toBe(40000);
 		});
 	});
 });

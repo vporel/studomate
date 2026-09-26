@@ -180,7 +180,7 @@ export default class LadderElementOpsManager {
 	 */
 	// `blockType` doit être fourni explicitement par l'appelant plutôt que déduit de la présence
 	// d'un champ (comme `timerType`/`counterType` le permettent pour timer/counter). Les blocs
-	// `"compare"`/`"assign"`/`"arithmetic"` n'ont pas de fenêtre : ils se configurent sur le canevas.
+	// `"compare"`/`"assign"`/`"arithmetic"`/`"convert"` n'ont pas de fenêtre : ils se configurent sur le canevas.
 	openSystemBlockEditor(
 		elementId: string,
 		blockType: PendingSystemBlockEdit["blockType"],

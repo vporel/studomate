@@ -80,6 +80,7 @@ export const elementsSchemasClasses: Record<ElementType, any> =
  */
 export default class Grafcet extends Program {
 	readonly type: ProgramType = "grafcet";
+
 	steps: Record<string, Step> = {};
 	actions: Record<string, Action> = {};
 	transitions: Record<string, Transition> = {};
@@ -170,7 +171,8 @@ export default class Grafcet extends Program {
 		type: ElementType,
 	): T | undefined {
 		return this.getCollection(ELEMENT_COLLECTIONS[type].collection)[id] as
-			T | undefined;
+			| T
+			| undefined;
 	}
 
 	getElementById<T extends Element<any>>(id: string): T | undefined {

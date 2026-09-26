@@ -1,3 +1,4 @@
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
@@ -6,6 +7,7 @@ import {
 	getArithmeticBlockParams,
 	getAssignBlockParams,
 	getCompareBlockParams,
+	getConvertBlockFunctionName,
 } from "./block.schema";
 
 describe("createUserProgramBlockElement", () => {
@@ -138,5 +140,29 @@ describe("createArithmeticBlockElement", () => {
 		expect(
 			getArithmeticBlockParams(createUserProgramBlockElement("p", 0, 0)),
 		).toBeNull();
+	});
+});
+
+describe("getConvertBlockFunctionName", () => {
+	const types: Record<string, VariableType> = {
+		D: "DINT",
+		I: "INT",
+		R: "REAL",
+		W: "WORD",
+		B: "BOOL",
+	};
+	const typeOf = (mnemonic: string) => types[mnemonic];
+
+	it("donne le nom normalisé déduit des types de IN et OUT", () => {
+		expect(getConvertBlockFunctionName({ in: " D ", out: "I" }, typeOf)).toBe(
+			"DINT_TO_INT",
+		);
+	});
+
+	it("renvoie null tant que la conversion n'est pas définie", () => {
+		expect(getConvertBlockFunctionName({ in: "", out: "I" }, typeOf)).toBeNull();
+		expect(getConvertBlockFunctionName({ in: "B", out: "I" }, typeOf)).toBeNull();
+		expect(getConvertBlockFunctionName({ in: "R", out: "W" }, typeOf)).toBeNull();
+		expect(getConvertBlockFunctionName({ in: "I", out: "I" }, typeOf)).toBeNull();
 	});
 });

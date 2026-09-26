@@ -1,3 +1,4 @@
+import InvalidTimeLiteralException from "./exceptions/invalid-time-literal.exception";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -247,6 +248,45 @@ describe("Lexer", () => {
 			const tokens = lexer.tokenize("abc 123");
 			expect(tokens[0].position).toBe(0); // 'abc' starts at position 0
 			expect(tokens[1].position).toBe(4); // '123' starts at position 4 (after space)
+		});
+	});
+
+	describe("constantes TIME", () => {
+		it("lit une constante T# en millisecondes, quelle que soit la casse du préfixe", () => {
+			expect(lexer.tokenize("T#5s")[0]).toMatchObject({
+				type: TokenType.TIME_LITERAL,
+				value: "5000",
+				position: 0,
+			});
+			expect(lexer.tokenize("t#1m30s")[0]).toMatchObject({
+				type: TokenType.TIME_LITERAL,
+				value: "90000",
+			});
+		});
+
+		it("lit une constante TIME au milieu d'une expression", () => {
+			const tokens = lexer.tokenize("duree > T#2s");
+			expect(tokens.map((t) => t.type)).toEqual([
+				TokenType.IDENTIFIER,
+				TokenType.GT,
+				TokenType.TIME_LITERAL,
+				TokenType.EOF,
+			]);
+		});
+
+		it("lève InvalidTimeLiteralException pour une constante mal formée", () => {
+			expect(() => lexer.tokenize("T#abc")).toThrow(InvalidTimeLiteralException);
+		});
+
+		it("laisse un identifiant T ou T1 intact", () => {
+			expect(lexer.tokenize("T")[0]).toMatchObject({
+				type: TokenType.IDENTIFIER,
+				value: "T",
+			});
+			expect(lexer.tokenize("T1")[0]).toMatchObject({
+				type: TokenType.IDENTIFIER,
+				value: "T1",
+			});
 		});
 	});
 });

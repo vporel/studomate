@@ -352,4 +352,42 @@ describe("SimplifierVisitor", () => {
 			});
 		});
 	});
+
+	describe("repli des constantes selon leur type", () => {
+		const simplify = (input: string) =>
+			simplifier.visit(new Parser(lexer.tokenize(input)).parse());
+
+		it("tronque la division de deux constantes entières", () => {
+			expect(simplify("7 / 2")).toMatchObject({
+				type: "NUMBER_LITERAL",
+				value: 3,
+				kind: "integer",
+			});
+		});
+
+		it("garde un quotient réel dès qu'une constante est réelle", () => {
+			expect(simplify("7.0 / 2")).toMatchObject({
+				type: "NUMBER_LITERAL",
+				value: 3.5,
+				kind: "real",
+			});
+		});
+
+		it("conserve le genre réel d'une constante négative", () => {
+			expect(simplify("-2.0")).toMatchObject({ value: -2, kind: "real" });
+		});
+
+		it("ne replie pas une opération sur une constante TIME", () => {
+			expect(simplify("T#1s + T#2s").type).toBe("ARITHMETIC_EXPRESSION");
+		});
+
+		it("simplifie l'argument d'une conversion sans supprimer la conversion", () => {
+			expect(simplify("DINT_TO_INT(2 + 3)")).toMatchObject({
+				type: "CONVERSION_EXPRESSION",
+				sourceType: "DINT",
+				targetType: "INT",
+				expr: { type: "NUMBER_LITERAL", value: 5 },
+			});
+		});
+	});
 });

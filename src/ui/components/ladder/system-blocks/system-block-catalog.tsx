@@ -2,6 +2,7 @@ import { BlockType } from "@/schemas/ladder/block.schema";
 import ArithmeticBlockIcon from "@/ui/components/icons/ArithmeticBlockIcon";
 import AssignBlockIcon from "@/ui/components/icons/AssignBlockIcon";
 import CompareBlockIcon from "@/ui/components/icons/CompareBlockIcon";
+import ConvertBlockIcon from "@/ui/components/icons/ConvertBlockIcon";
 import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
 import TimerBlockIcon from "@/ui/components/icons/TimerBlockIcon";
 import { ElementType } from "react";
@@ -78,6 +79,18 @@ export const SYSTEM_BLOCK_CATALOG: SystemBlockCatalogEntry[] = [
 		toolbar: {
 			labelKey: "arithmeticToolbarLabel",
 			symbol: "CALC",
+			width: 44,
+		},
+		interaction: "direct-insert",
+	},
+	{
+		blockType: "convert",
+		explorerLabelKey: "convertLabel",
+		explorerItemId: "system-block-convert",
+		ExplorerIcon: ConvertBlockIcon,
+		toolbar: {
+			labelKey: "convertToolbarLabel",
+			symbol: "CONV",
 			width: 44,
 		},
 		interaction: "direct-insert",

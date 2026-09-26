@@ -1,4 +1,5 @@
 import { coerceToRange, NumericRange } from "@/lib/numeric-range";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 
 export type PLCVariableScope = "input" | "output" | "memory";
 export type PLCVariableType = "boolean" | "number" | "string";
@@ -13,6 +14,9 @@ export default class PLCVariable {
 	/** Domaine du type numérique d'origine (INT, WORD…) ou bornes d'un curseur, appliqué à
 	 * chaque écriture. */
 	private numericRange: NumericRange | null;
+	/** Declared PLC type, used by the typing rules of the language (`null` for an internal
+	 * variable such as a step memo). */
+	private declaredType: VariableType | null;
 
 	constructor(
 		id: string,
@@ -20,12 +24,14 @@ export default class PLCVariable {
 		scope: PLCVariableScope,
 		type: PLCVariableType,
 		numericRange: NumericRange | null = null,
+		declaredType: VariableType | null = null,
 	) {
 		this.id = id;
 		this.name = name;
 		this.scope = scope;
 		this.type = type;
 		this.numericRange = numericRange;
+		this.declaredType = declaredType;
 		if (scope !== "memory" && type === "string")
 			throw new Error("A string variable is only allowed for the memory scope");
 		this.value = type === "boolean" ? false : type === "number" ? 0 : "";
@@ -51,6 +57,10 @@ export default class PLCVariable {
 		return this.numericRange;
 	}
 
+	public getDeclaredType(): VariableType | null {
+		return this.declaredType;
+	}
+
 	public getValue(): PLCVariableValue {
 		return this.value;
 	}
@@ -71,6 +81,7 @@ export default class PLCVariable {
 			this.scope,
 			this.type,
 			this.numericRange,
+			this.declaredType,
 		);
 		copy.value = this.value;
 		return copy;

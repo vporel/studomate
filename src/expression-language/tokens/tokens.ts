@@ -28,6 +28,9 @@ export enum TokenType {
 	//Duration
 	DURATION = "DURATION", // 100ms, 2s, etc.
 
+	//TIME constant, value in milliseconds
+	TIME_LITERAL = "TIME_LITERAL", // T#5s, T#1m30s
+
 	//Comparison operators
 	EQ = "EQ", // =
 	NEQ = "NEQ", // <>

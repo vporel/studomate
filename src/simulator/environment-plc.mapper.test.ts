@@ -72,4 +72,11 @@ describe("VariablesMapper", () => {
 			expect(result.getValue()).toBe(original.getValue());
 		});
 	});
+
+	it("conserve le type déclaré dans les deux sens", () => {
+		const envVar = new EnvVariable("id", "d", "number", "INOUT", null, "DINT");
+		const plcVar = VariablesMapper.envToPlc(envVar);
+		expect(plcVar.getDeclaredType()).toBe("DINT");
+		expect(VariablesMapper.plcToEnv(plcVar).getDeclaredType()).toBe("DINT");
+	});
 });

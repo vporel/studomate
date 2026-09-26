@@ -23,6 +23,18 @@ import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-exp
 import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
 import SemanticAnalyserVisitor from "./semantic-analyser.visitor";
+import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "./exceptions/invalid-conversion-argument.exception";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import { ConvertibleType } from "@/expression-language/conversions";
+import {
+	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 
 describe("SemanticAnalyserVisitor", () => {
 	let env: Environment;
@@ -402,6 +414,170 @@ describe("SemanticAnalyserVisitor", () => {
 		it("catches errors in nested expressions", () => {
 			expect(() => parseAndCheck("result := (flag + 5) * 2")).toThrow(
 				InvalidBinaryExprOperandTypeException,
+			);
+		});
+	});
+});
+
+describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
+	const typed = (name: string, type: VariableType) =>
+		new EnvVariable(
+			name,
+			name,
+			VARIABLE_TYPE_TO_NATIVE_TYPE[type],
+			"INOUT",
+			getNumericRange(type),
+			type,
+		);
+	const env = new Environment([
+		typed("i", "INT"),
+		typed("i2", "INT"),
+		typed("d", "DINT"),
+		typed("r", "REAL"),
+		typed("w", "WORD"),
+		typed("dw", "DWORD"),
+		typed("t", "TIME"),
+		typed("b", "BOOL"),
+		new EnvVariable("u", "u", "number", "INOUT"),
+	]);
+	const analyse = (expression: string) =>
+		new SemanticAnalyserVisitor(env).visit(
+			new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse(),
+		);
+
+	describe("opérations arithmétiques", () => {
+		it("accepte des opérandes de même type, un élargissement ou une constante qui tient", () => {
+			expect(() => analyse("i := i * 100")).not.toThrow();
+			expect(() => analyse("d := i + d")).not.toThrow();
+			expect(() => analyse("r := i * r")).not.toThrow();
+			expect(() => analyse("r := r * 2.5")).not.toThrow();
+		});
+
+		it("refuse DINT avec REAL sans conversion", () => {
+			expect(() => analyse("r := d * r")).toThrow(IncompatibleNumericTypesException);
+		});
+
+		it("refuse une constante réelle avec un entier", () => {
+			expect(() => analyse("r := i * 2.5")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+
+		it("refuse une constante hors de la plage du type de l'autre opérande", () => {
+			expect(() => analyse("i := i + 40000")).toThrow(ConstantOutOfRangeException);
+		});
+
+		it("refuse l'arithmétique sur une chaîne de bits, y compris la négation", () => {
+			expect(() => analyse("w := w + 1")).toThrow(BitStringArithmeticException);
+			expect(() => analyse("b := -w = 0")).toThrow(BitStringArithmeticException);
+		});
+
+		it("TIME : additionne deux durées, multiplie une durée par un nombre", () => {
+			expect(() => analyse("t := t + T#1s")).not.toThrow();
+			expect(() => analyse("t := t * 2")).not.toThrow();
+			expect(() => analyse("t := t + 1000")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+
+		it("une variable sans type déclaré échappe aux règles", () => {
+			expect(() => analyse("u := u + w * 2.5")).toThrow(
+				BitStringArithmeticException,
+			);
+			expect(() => analyse("u := u * 2.5 + d")).not.toThrow();
+		});
+	});
+
+	describe("comparaisons", () => {
+		it("compare des types compatibles, chaînes de bits comprises", () => {
+			expect(() => analyse("b := i < d")).not.toThrow();
+			expect(() => analyse("b := w = 0")).not.toThrow();
+			expect(() => analyse("b := t > T#2s")).not.toThrow();
+		});
+
+		it("refuse des types incompatibles", () => {
+			expect(() => analyse("b := i = w")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("b := d < r")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("b := t > 2000")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+	});
+
+	describe("affectations", () => {
+		it("accepte le même type ou un élargissement", () => {
+			expect(() => analyse("d := i")).not.toThrow();
+			expect(() => analyse("r := i")).not.toThrow();
+			expect(() => analyse("dw := w")).not.toThrow();
+			expect(() => analyse("w := 255")).not.toThrow();
+		});
+
+		it("exige une conversion explicite pour rétrécir", () => {
+			expect(() => analyse("i := d")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := r")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("r := d")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := w")).toThrow(ExplicitConversionRequiredException);
+		});
+
+		it("évalue le type d'une expression, pas seulement celui des variables", () => {
+			expect(() => analyse("i := i * d")).toThrow(ExplicitConversionRequiredException);
+		});
+
+		it("refuse une constante hors plage, y compris repliée", () => {
+			expect(() => analyse("i := 40000")).toThrow(ConstantOutOfRangeException);
+			expect(() => analyse("i := 30000 + 30000")).toThrow(
+				ConstantOutOfRangeException,
+			);
+			expect(() => analyse("w := -1")).toThrow(ConstantOutOfRangeException);
+		});
+
+		it("refuse une constante réelle dans un entier", () => {
+			expect(() => analyse("i := 2.5")).toThrow(ExplicitConversionRequiredException);
+		});
+	});
+
+	describe("fonctions de conversion", () => {
+		it("accepte un argument du type source ou d'un type qui s'y élargit", () => {
+			expect(() => analyse("i := DINT_TO_INT(d)")).not.toThrow();
+			expect(() => analyse("i := DINT_TO_INT(i * 100)")).not.toThrow();
+			expect(() => analyse("i := REAL_TO_INT(r * 2.5)")).not.toThrow();
+			expect(() => analyse("i := WORD_TO_INT(w)")).not.toThrow();
+		});
+
+		it("refuse un argument d'un autre type", () => {
+			expect(() => analyse("i := DINT_TO_INT(r)")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => analyse("i := INT_TO_DINT(b)")).toThrow(
+				InvalidConversionArgumentException,
+			);
+		});
+
+		it("le résultat a le type cible", () => {
+			expect(() => analyse("r := DINT_TO_REAL(d) * r")).not.toThrow();
+			expect(() => analyse("i := INT_TO_DINT(i)")).toThrow(
+				ExplicitConversionRequiredException,
+			);
+		});
+
+		it("sans type source, le type de l'opérande doit être convertible vers la cible", () => {
+			const conversion = (source: string, target: ConvertibleType) =>
+				new SemanticAnalyserVisitor(env).visit(
+					ExpressionsBuilder.buildConversionExpressionNode(
+						null,
+						target,
+						IdentifiersBuilder.buildIdentifierNode(source),
+					),
+				);
+			expect(() => conversion("d", "INT")).not.toThrow();
+			expect(() => conversion("r", "WORD")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => conversion("i", "INT")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => conversion("t", "DINT")).toThrow(
+				InvalidConversionArgumentException,
 			);
 		});
 	});

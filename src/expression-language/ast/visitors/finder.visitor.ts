@@ -8,6 +8,7 @@ import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "../nodes/expressions";
@@ -67,6 +68,12 @@ export default class FinderVisitor<
 		return this.visit(node.left)
 			.concat(this.visit(node.right))
 			.concat(node.type === this.typeToFind ? [node as T] : []);
+	}
+
+	protected visitConversionExpressionNode(node: ConversionExpressionNode): T[] {
+		return this.visit(node.expr).concat(
+			node.type === this.typeToFind ? [node as T] : [],
+		);
 	}
 
 	protected visitAssignStatementNode(node: AssignStatementNode): T[] {

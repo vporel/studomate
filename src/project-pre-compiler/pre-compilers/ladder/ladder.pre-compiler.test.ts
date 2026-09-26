@@ -11,8 +11,10 @@ import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
+	createConvertBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import {
 	createContactElement,
 	createCoilElement,
@@ -71,6 +73,8 @@ function describeNode(node: ASTNode): string {
 			return `${describeNode(node.left)} := ${describeNode(node.right)}`;
 		case "IF_CONTROL":
 			return `IF ${describeNode(node.condition)} THEN [${node.trueBranch.map(describeNode).join(", ")}]`;
+		case "CONVERSION_EXPRESSION":
+			return `${node.sourceType ?? "?"}_TO_${node.targetType}(${describeNode(node.expr)})`;
 		default:
 			throw new Error(
 				`Nœud inattendu dans un ladder pré-compilé : ${node.type}`,
@@ -415,7 +419,7 @@ describe("LadderPreCompiler", () => {
 	});
 
 	describe("blocs", () => {
-		it("matérialise EN depuis reach, et ENO toujours vrai pour un appel de programme utilisateur", () => {
+		it("matérialise EN depuis reach, et ENO = EN pour un appel de programme utilisateur", () => {
 			const rail = createRailTerminalElement(0);
 			const contactA = createContactElement("A", "NO", 0, 1);
 			const block = createUserProgramBlockElement("prog1", 0, 2);
@@ -440,10 +444,9 @@ describe("LadderPreCompiler", () => {
 				blockId: block.id,
 				mnemonic: enMnemonic,
 			});
-			expect((blockPortAssignments[1] as any).value).toMatchObject({
-				type: "BOOLEAN_LITERAL",
-				value: true,
-			});
+			expect(describeNode((blockPortAssignments[1] as any).value)).toBe(
+				enMnemonic,
+			);
 			expect(blockPortAssignments[1]).toMatchObject({
 				blockId: block.id,
 				mnemonic: enoMnemonic,
@@ -890,7 +893,7 @@ describe("LadderPreCompiler", () => {
 			const enoAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === enoMnemonic,
 			)!;
-			expect(describeNode(enoAssignment.value)).toBe("true");
+			expect(describeNode(enoAssignment.value)).toBe(enMnemonic);
 
 			const assignAssignment = result.assignments.find(
 				(a) => a.kind === "embeddedNode",
@@ -900,7 +903,7 @@ describe("LadderPreCompiler", () => {
 			);
 		});
 
-		it("propage ENO (toujours vrai) aux éléments suivants sur la même ligne", () => {
+		it("propage ENO aux éléments suivants sur la même ligne", () => {
 			const rail = createRailTerminalElement(0);
 			const block = createAssignBlockElement(0, 1, { out: "X", in: "Y" });
 			const coil = createCoilElement("Q", "normal", 0, 2);
@@ -963,6 +966,57 @@ describe("LadderPreCompiler", () => {
 			expect(describeNode(assignAssignment.node)).toBe(
 				`IF ${enMnemonic} THEN [Z := (X + Y)]`,
 			);
+
+			const enoMnemonic = getBlockPortVariableMnemonic(block.id, "ENO");
+			const enoAssignment = (
+				result.assignments.filter((a) => a.kind === "blockPort") as any[]
+			).find((a) => a.mnemonic === enoMnemonic)!;
+			expect(describeNode(enoAssignment.value)).toBe(enMnemonic);
 		});
 	});
+
+describe("LadderPreCompiler : bloc convert", () => {
+	const variables = [
+		new PLCVariable("d", "D", "memory", "number", null, "DINT"),
+		new PLCVariable("i", "I", "memory", "number", null, "INT"),
+		new PLCVariable("b", "B", "memory", "boolean", null, "BOOL"),
+	];
+
+	function preCompileConvert(out: string) {
+		const rail = createRailTerminalElement(0);
+		const contactA = createContactElement("A", "NO", 0, 1);
+		const block = createConvertBlockElement(0, 2, { out, in: "D" });
+		const section = createSectionWith(
+			[rail, contactA, block],
+			wireInSeries([rail, contactA, block]),
+		);
+		const errors: ProjectPreCompilerError[] = [];
+		const result = LadderPreCompiler.preCompile(
+			new Ladder("l1", "L", [section]),
+			variables,
+			Dialect.FR,
+			errors,
+		);
+		return { result, errors, block };
+	}
+
+	it("affecte OUT par une conversion vers son type déclaré, gardée par EN", () => {
+		const { result, errors, block } = preCompileConvert("I");
+		const enMnemonic = getBlockPortVariableMnemonic(block.id, "EN");
+
+		expect(errors).toEqual([]);
+		const embedded = result.assignments.find(
+			(a) => a.kind === "embeddedNode",
+		) as PreCompiledEmbeddedNodeAssignment;
+		expect(describeNode(embedded.node)).toBe(
+			`IF ${enMnemonic} THEN [I := ?_TO_INT(D)]`,
+		);
+	});
+
+	it("signale une erreur si OUT n'a pas de type convertible", () => {
+		const { errors } = preCompileConvert("B");
+		expect(errors).toHaveLength(1);
+		expect(errors[0].message).toContain("type convertible");
+	});
+});
 });

@@ -35,6 +35,18 @@ import MissingRightParentheseException from "@/expression-language/parser/except
 import ParsingEndedBeforeEOFException from "@/expression-language/parser/exceptions/parsing-ended-before-eof.exception";
 import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
 import InvalidUnaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
+import BitStringArithmeticException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-arithmetic.exception";
+import ConstantOutOfRangeException from "@/simulator/interpreter/semantic-analyser/exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "@/simulator/interpreter/semantic-analyser/exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-conversion-argument.exception";
+import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
+import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
+import {
+	getConversionFunctionName,
+	isConversionSupported,
+	isConvertibleType,
+} from "@/expression-language/conversions";
 
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
@@ -77,8 +89,22 @@ export default class SimulatorExceptionsMapper {
 		const nodeTypeLabel = (nodeType: string): string =>
 			(labels.astNodeType as Record<string, string>)[nodeType] ?? nodeType;
 
+		const conversionHint = (source: string, target: string): string =>
+			isConvertibleType(source) &&
+			isConvertibleType(target) &&
+			isConversionSupported(source, target)
+				? t("CONVERSION_HINT", {
+						function: getConversionFunctionName(source, target),
+					})
+				: "";
+
 		const descriptor =
 			this.describeEnvironmentException(exception) ??
+			this.describeNumericTypingException(exception, {
+				operatorLabel,
+				typeLabel,
+				conversionHint,
+			}) ??
 			this.describeSemanticException(exception, {
 				operatorLabel,
 				typeLabel,
@@ -106,6 +132,90 @@ export default class SimulatorExceptionsMapper {
 				params: { variableName: exception.getVariableName() },
 			};
 		}
+		return null;
+	}
+
+	private static describeNumericTypingException(
+		exception: unknown,
+		labels: {
+			operatorLabel: (op: string) => string;
+			typeLabel: (type: string) => string;
+			conversionHint: (source: string, target: string) => string;
+		},
+	): MessageDescriptor | null {
+		const { operatorLabel, typeLabel, conversionHint } = labels;
+
+		if (exception instanceof IncompatibleNumericTypesException) {
+			const left = exception.getLeftType();
+			const right = exception.getRightType();
+			const [source, target] =
+				left === "REAL" || right === "WORD" || right === "DWORD"
+					? [right, left]
+					: [left, right];
+			return {
+				code: "INCOMPATIBLE_NUMERIC_TYPES",
+				params: {
+					operator: operatorLabel(exception.getOperator()),
+					leftType: typeLabel(left),
+					rightType: typeLabel(right),
+					hint: conversionHint(source, target),
+				},
+			};
+		}
+
+		if (exception instanceof BitStringArithmeticException) {
+			return {
+				code: "BIT_STRING_ARITHMETIC",
+				params: {
+					operator: operatorLabel(exception.getOperator()),
+					type: exception.getOperandType(),
+				},
+			};
+		}
+
+		if (exception instanceof ConstantOutOfRangeException) {
+			return {
+				code: "CONSTANT_OUT_OF_RANGE",
+				params: {
+					value: String(exception.getValue()),
+					type: typeLabel(exception.getTargetType()),
+				},
+			};
+		}
+
+		if (exception instanceof ExplicitConversionRequiredException) {
+			const valueType = exception.getValueType();
+			const targetType = exception.getTargetType();
+			return {
+				code: "EXPLICIT_CONVERSION_REQUIRED",
+				params: {
+					valueType: typeLabel(valueType),
+					targetType: typeLabel(targetType),
+					hint: conversionHint(valueType, targetType),
+				},
+			};
+		}
+
+		if (exception instanceof InvalidConversionArgumentException) {
+			const expected = exception.getExpectedType();
+			return expected === null
+				? {
+						code: "UNSUPPORTED_CONVERSION",
+						params: {
+							actual: typeLabel(exception.getActualType()),
+							targetType: exception.getTargetType(),
+						},
+					}
+				: {
+						code: "INVALID_CONVERSION_ARGUMENT",
+						params: {
+							actual: typeLabel(exception.getActualType()),
+							expected: typeLabel(expected),
+							targetType: exception.getTargetType(),
+						},
+					};
+		}
+
 		return null;
 	}
 
@@ -330,6 +440,16 @@ export default class SimulatorExceptionsMapper {
 			};
 		}
 
+		if (exception instanceof UnknownFunctionException) {
+			return {
+				code: "UNKNOWN_FUNCTION",
+				params: {
+					name: exception.getFunctionName(),
+					position: exception.getPosition(),
+				},
+			};
+		}
+
 		if (exception instanceof BadTokenTypeException) {
 			return {
 				code: "BAD_TOKEN_TYPE",
@@ -362,6 +482,16 @@ export default class SimulatorExceptionsMapper {
 				code: "INVALID_KEYWORD",
 				params: {
 					keyword: exception.getKeyword(),
+					position: exception.getPosition(),
+				},
+			};
+		}
+
+		if (exception instanceof InvalidTimeLiteralException) {
+			return {
+				code: "INVALID_TIME_LITERAL",
+				params: {
+					literal: exception.getLiteral(),
 					position: exception.getPosition(),
 				},
 			};

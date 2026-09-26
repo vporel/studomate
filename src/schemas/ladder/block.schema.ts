@@ -5,6 +5,12 @@ import {
 	COMPARISON_OPERATORS,
 	ComparisonOperator,
 } from "@/expression-language/operators";
+import {
+	getConversionFunctionName,
+	isConversionSupported,
+	isConvertibleType,
+} from "@/expression-language/conversions";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import type { CounterType } from "./function-blocks/counter.schema";
 import type { TimerType } from "./function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
@@ -33,6 +39,7 @@ export const BLOCK_TYPES = [
 	"compare",
 	"assign",
 	"arithmetic",
+	"convert",
 ] as const;
 
 export type BlockType = (typeof BLOCK_TYPES)[number];
@@ -109,13 +116,12 @@ export type CompareBlockParams = {
 	operator: CompareOperator;
 };
 
-/** Genres de littéral acceptés sur une pinoche d'opérande de bloc (IN1/IN2 d'un compare,
- * `in` d'un assign, IN1/IN2 d'un arithmetic) — tout sauf une constante TIME (qui n'a de sens que
- * pour une pinoche timer et n'est pas une expression valide isolée). */
-export const BLOCK_OPERAND_LITERALS = ["number", "boolean", "string"] as const;
+/** Genres de littéral acceptés sur une pinoche d'opérande de bloc (IN1/IN2 d'un compare, `in`
+ * d'un assign). */
+export const BLOCK_OPERAND_LITERALS = ["number", "boolean", "string", "time"] as const;
 
 /**
- * Bloc `"assign"` : `out := in`, exécuté seulement quand `EN` est vrai ; `ENO` toujours vrai
+ * Bloc `"assign"` : `out := in`, exécuté seulement quand `EN` est vrai ; `ENO = EN`
  * (l'affectation n'est jamais elle-même une condition pour le rail — voir `AssignBlockAnalyser`/
  * `LadderPreCompiler`). `in` est un opérande simple (mnémonique de variable ou littéral, voir
  * `BLOCK_OPERAND_LITERALS`), jamais une expression. `out` est le mnémonique d'une variable
@@ -128,10 +134,17 @@ export const ARITHMETIC_BLOCK_OPERATORS = ARITHMETIC_OPERATORS;
 
 /**
  * Bloc `"arithmetic"` : `out := in1 <operator> in2`, exécuté seulement quand `EN` est vrai ;
- * `ENO` toujours vrai (même moule qu'`assign`). `in1`/`in2` sont des opérandes simples (variable
+ * `ENO = EN` (même moule qu'`assign`). `in1`/`in2` sont des opérandes simples (variable
  * ou littéral numérique), `out` le mnémonique d'une variable numérique existante inscriptible.
  * Édité uniquement sur le canevas.
  */
+/**
+ * Block `"convert"`: `out := <type of in>_TO_<type of out>(in)`, executed only when `EN` is true;
+ * `ENO = EN`. `in` and `out` are variable mnemonics: the conversion applied (IEC 61131-3 name
+ * such as `DINT_TO_INT`) follows from their declared types. Edited on the canvas only.
+ */
+export type ConvertBlockParams = { out: string; in: string };
+
 export type ArithmeticBlockParams = {
 	in1: string;
 	in2: string;
@@ -196,6 +209,26 @@ export const ASSIGN_PORT_SPECS: BlockPortSpec[] = [
 	},
 ];
 
+/** EN/ENO + IN (variable only) / OUT. */
+export const CONVERT_PORT_SPECS: BlockPortSpec[] = [
+	...EN_ENO_PORT_SPECS,
+	{
+		suffix: "IN",
+		type: "ANY",
+		kind: "parameter",
+		direction: "input",
+		generatesVariable: false,
+	},
+	{
+		suffix: "OUT",
+		type: "ANY",
+		kind: "parameter",
+		direction: "output",
+		generatesVariable: false,
+		excludeInputVariable: true,
+	},
+];
+
 /** EN/ENO structurels + rangées IN1/OUT puis IN2 — opérandes numériques uniquement. */
 export const ARITHMETIC_PORT_SPECS: BlockPortSpec[] = [
 	...EN_ENO_PORT_SPECS,
@@ -234,7 +267,8 @@ export type BlockData =
 	| { blockType: "counter"; params: CounterBlockParams }
 	| { blockType: "compare"; params: CompareBlockParams }
 	| { blockType: "assign"; params: AssignBlockParams }
-	| { blockType: "arithmetic"; params: ArithmeticBlockParams };
+	| { blockType: "arithmetic"; params: ArithmeticBlockParams }
+	| { blockType: "convert"; params: ConvertBlockParams };
 
 export type BlockElement = SharedElement<"block", BlockData, GridPosition>;
 
@@ -316,6 +350,20 @@ export function getArithmeticBlockParams(
 	return element.data.blockType === "arithmetic" ? element.data.params : null;
 }
 
+/** `params` omitted when dropped on the canvas (empty pins), explicit for templates. */
+export function createConvertBlockElement(
+	row: number,
+	col: number,
+	params: ConvertBlockParams = { out: "", in: "" },
+): BlockElement {
+	return {
+		id: createRandomId(),
+		type: "block",
+		data: { blockType: "convert", params },
+		position: { row, col },
+	};
+}
+
 /**
  * Lecture/écriture d'une pinoche paramètre d'un bloc `"assign"` par son suffixe (`IN`/`OUT`) —
  * consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches générique de `BoxBlockNode`.
@@ -353,4 +401,34 @@ export function writeArithmeticParam(
 	if (suffix === "IN1") return { ...params, in1: value };
 	if (suffix === "IN2") return { ...params, in2: value };
 	return { ...params, out: value };
+}
+
+/** Same pins as `"assign"` (`IN`/`OUT`). */
+export function readConvertParam(
+	params: ConvertBlockParams,
+	suffix: string,
+): string {
+	return suffix === "IN" ? params.in : params.out;
+}
+
+export function writeConvertParam(
+	params: ConvertBlockParams,
+	suffix: string,
+	value: string,
+): ConvertBlockParams {
+	return suffix === "IN" ? { ...params, in: value } : { ...params, out: value };
+}
+
+/** IEC 61131-3 name of the conversion a `"convert"` block applies (`DINT_TO_INT`), or `null`
+ * while its pins do not name two variables of convertible types. */
+export function getConvertBlockFunctionName(
+	params: ConvertBlockParams,
+	typeOf: (mnemonic: string) => VariableType | undefined,
+): string | null {
+	const source = typeOf(params.in.trim());
+	const target = typeOf(params.out.trim());
+	if (!source || !target) return null;
+	if (!isConvertibleType(source) || !isConvertibleType(target)) return null;
+	if (!isConversionSupported(source, target)) return null;
+	return getConversionFunctionName(source, target);
 }

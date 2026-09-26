@@ -37,6 +37,13 @@ import enExpressionErrors from "@/i18n/messages/en/expressionErrors.json";
 import InvalidCounterLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-node.exception";
 import InvalidCounterLastInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-type.exception";
 import SimulatorExceptionsMapper from "./simulator-exceptions.mapper";
+import BitStringArithmeticException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-arithmetic.exception";
+import ConstantOutOfRangeException from "@/simulator/interpreter/semantic-analyser/exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "@/simulator/interpreter/semantic-analyser/exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-conversion-argument.exception";
+import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
+import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
 
 function timerNode(): TimerNode {
 	return BlocksBuilder.buildTimerNode(
@@ -70,6 +77,104 @@ describe("SimulatorExceptionsMapper", () => {
 			const e = new UnknownVariableNameException("Foo");
 			expect(message(e, "fr")).toBe("Variable inconnue : Foo");
 			expect(message(e, "en")).toBe("Unknown variable name: Foo");
+		});
+	});
+
+	describe("numeric typing exceptions", () => {
+		const x = () => IdentifiersBuilder.buildIdentifierNode("x", 0);
+		const arithmetic = () =>
+			ExpressionsBuilder.buildArithmeticExpressionNode("*", x(), x(), 0);
+
+		it("maps IncompatibleNumericTypesException with a conversion hint toward REAL", () => {
+			const e = new IncompatibleNumericTypesException(
+				"*",
+				"DINT",
+				"REAL",
+				arithmetic(),
+			);
+			expect(message(e, "fr")).toBe(
+				"Types DINT et REAL incompatibles pour l'opérateur « * » : convertissez explicitement l'un des opérandes (fonction DINT_TO_REAL).",
+			);
+			expect(message(e, "en")).toBe(
+				'Types DINT and REAL are incompatible for operator "*": explicitly convert one of the operands (function DINT_TO_REAL).',
+			);
+		});
+
+		it("maps IncompatibleNumericTypesException, converting a bit string to the integer", () => {
+			const e = new IncompatibleNumericTypesException("=", "INT", "WORD", arithmetic());
+			expect(message(e, "fr")).toContain("(fonction WORD_TO_INT)");
+		});
+
+		it("maps IncompatibleNumericTypesException without a hint for a constant", () => {
+			const e = new IncompatibleNumericTypesException(
+				"*",
+				"INT",
+				"ANY_REAL",
+				arithmetic(),
+			);
+			expect(message(e, "fr")).toBe(
+				"Types INT et constante réelle incompatibles pour l'opérateur « * » : convertissez explicitement l'un des opérandes.",
+			);
+		});
+
+		it("maps BitStringArithmeticException", () => {
+			const e = new BitStringArithmeticException("+", "WORD", arithmetic());
+			expect(message(e, "fr")).toBe(
+				"Opérateur « + » interdit sur le type WORD (chaîne de bits) : convertissez d'abord la valeur en entier (WORD_TO_INT ou WORD_TO_DINT).",
+			);
+		});
+
+		it("maps ConstantOutOfRangeException", () => {
+			const e = new ConstantOutOfRangeException(40000, "INT", x());
+			expect(message(e, "fr")).toBe(
+				"La constante 40000 dépasse les limites du type INT.",
+			);
+			expect(message(e, "en")).toBe("Constant 40000 is out of the range of type INT.");
+		});
+
+		it("maps ExplicitConversionRequiredException, naming the conversion function", () => {
+			const e = new ExplicitConversionRequiredException(
+				"DINT",
+				"INT",
+				StatementsBuilder.buildAssignStatementNode(x(), x()),
+			);
+			expect(message(e, "fr")).toBe(
+				"Affectation d'une valeur DINT à une variable INT : une conversion explicite est nécessaire (fonction DINT_TO_INT).",
+			);
+		});
+
+		it("maps ExplicitConversionRequiredException without a hint when no conversion exists", () => {
+			const e = new ExplicitConversionRequiredException(
+				"TIME",
+				"INT",
+				StatementsBuilder.buildAssignStatementNode(x(), x()),
+			);
+			expect(message(e, "fr")).toBe(
+				"Affectation d'une valeur TIME à une variable INT : une conversion explicite est nécessaire.",
+			);
+		});
+
+		it("maps InvalidConversionArgumentException, with or without an expected type", () => {
+			const node = ExpressionsBuilder.buildConversionExpressionNode(
+				"DINT",
+				"INT",
+				x(),
+			);
+			expect(
+				message(new InvalidConversionArgumentException("INT", "DINT", "REAL", node), "fr"),
+			).toBe("Conversion vers INT impossible : la valeur est de type REAL, DINT attendu.");
+			expect(
+				message(new InvalidConversionArgumentException("WORD", null, "REAL", node), "fr"),
+			).toBe("Aucune conversion de REAL vers WORD.");
+		});
+
+		it("maps UnknownFunctionException and InvalidTimeLiteralException", () => {
+			expect(message(new UnknownFunctionException("FOO", 3), "fr")).toContain(
+				"Fonction inconnue « FOO » à la position 3",
+			);
+			expect(message(new InvalidTimeLiteralException("T#abc", 0), "fr")).toBe(
+				"Constante de temps invalide « T#abc » à la position 0",
+			);
 		});
 	});
 

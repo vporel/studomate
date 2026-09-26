@@ -51,4 +51,11 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 			.build();
 		expect(SchemaVariablesMapper.schemaToEnv(stringVar).getValue()).toBe("");
 	});
+
+	it("carries over the declared PLC type, used by the typing rules", () => {
+		const variable = new VariableBuilder().zone("memory").type("DINT").build();
+		expect(SchemaVariablesMapper.schemaToEnv(variable).getDeclaredType()).toBe(
+			"DINT",
+		);
+	});
 });

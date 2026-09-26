@@ -13,6 +13,7 @@ import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
@@ -21,10 +22,12 @@ import {
 	BooleanNode,
 	NumberNode,
 	StringNode,
+	getNumberLiteralKind,
 } from "@/expression-language/ast/nodes/literals";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
+import { foldNumberLiterals } from "@/expression-language/interpreter/numeric-literal-folding";
 
 export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	protected visitIdentifierNode(node: IdentifierNode): ASTNode {
@@ -61,6 +64,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 					return LiteralsBuilder.buildNumberNode(
 						-simplifiedExpr.value,
 						node.position,
+						getNumberLiteralKind(simplifiedExpr),
 					);
 				}
 				return { ...node, expr: simplifiedExpr };
@@ -72,34 +76,34 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 	): ASTNode {
 		const simplifiedLeft = this.visit(node.left);
 		const simplifiedRight = this.visit(node.right);
-		// If both sides are number literals, we can simplify the arithmetic operation
 		if (
 			simplifiedLeft.type === "NUMBER_LITERAL" &&
 			simplifiedRight.type === "NUMBER_LITERAL"
 		) {
-			let result: number;
-			switch (node.operator) {
-				case "+":
-					result = simplifiedLeft.value + simplifiedRight.value;
-					break;
-				case "-":
-					result = simplifiedLeft.value - simplifiedRight.value;
-					break;
-				case "*":
-					result = simplifiedLeft.value * simplifiedRight.value;
-					break;
-				case "/":
-					if (simplifiedRight.value === 0) {
-						throw new DivisionByZeroException(
-							simplifiedLeft.value,
-							simplifiedRight.value,
-							node,
-						);
-					}
-					result = simplifiedLeft.value / simplifiedRight.value;
-					break;
+			if (node.operator === "/" && simplifiedRight.value === 0) {
+				throw new DivisionByZeroException(
+					simplifiedLeft.value,
+					simplifiedRight.value,
+					node,
+				);
 			}
-			return LiteralsBuilder.buildNumberNode(result, node.position);
+			const folded = foldNumberLiterals(
+				node.operator,
+				{
+					value: simplifiedLeft.value,
+					kind: getNumberLiteralKind(simplifiedLeft),
+				},
+				{
+					value: simplifiedRight.value,
+					kind: getNumberLiteralKind(simplifiedRight),
+				},
+			);
+			if (folded)
+				return LiteralsBuilder.buildNumberNode(
+					folded.value,
+					node.position,
+					folded.kind,
+				);
 		}
 		return ExpressionsBuilder.buildArithmeticExpressionNode(
 			node.operator,
@@ -129,6 +133,17 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 			case "OR":
 				return this.simplifyOrExpr(node);
 		}
+	}
+
+	protected visitConversionExpressionNode(
+		node: ConversionExpressionNode,
+	): ASTNode {
+		return ExpressionsBuilder.buildConversionExpressionNode(
+			node.sourceType,
+			node.targetType,
+			this.visit(node.expr),
+			node.position,
+		);
 	}
 
 	protected visitAssignStatementNode(node: AssignStatementNode): ASTNode {

@@ -189,7 +189,7 @@
 		],
 		"systemBlocksLabel": "System blocks:",
 		"systemBlocksItems": [
-			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
+			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation, Conversion. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
 		],
 		"hmiLabel": "HMI screens:",
 		"hmiItems": [
@@ -227,6 +227,15 @@
 			"TIME — duration (e.g. T#5s), available in memory — used in particular for timers"
 		],
 		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, DINT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768). Worth keeping in mind for an accumulation such as \"position := position + step\".",
+		"typesCalcTitle": "Calculations and conversions",
+		"typesCalcItems": [
+			"A calculation is done in the type of its operands (IEC 61131-3): INT * INT gives an INT, which can overflow before it is even stored in a DINT variable.",
+			"Between two different types, only lossless widenings are implicit: INT to DINT or REAL, WORD to DWORD. DINT and REAL cannot be combined without a conversion.",
+			"Storing a value in a smaller type (DINT or REAL into an INT) requires an explicit conversion: DINT_TO_INT, REAL_TO_INT, INT_TO_REAL… functions in an expression, Conversion block in ladder.",
+			"Division between integers truncates: 7 / 2 is 3, even when stored in a REAL. Write 7.0 / 2 to get 3.5.",
+			"WORD and DWORD are bit strings: no arithmetic on these types without first converting them to an integer (WORD_TO_INT…).",
+			"A constant is written according to its type: 100 (integer), 2.5 (real), T#5s (duration). A duration is compared with another duration: t > T#2s."
+		],
 		"propertiesTitle": "Properties of a variable",
 		"propertiesItems": [
 			"Mnemonic (required): the variable's name, max 32 characters, must start with a letter, alphanumeric characters and underscores allowed, must be unique",
@@ -396,8 +405,8 @@
 		],
 		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted.",
 		"blocksTitle": "Blocks",
-		"blocksIntro1": "Blocks are advanced functional elements that fit into a rung like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment and Calculation — from the dedicated tool in the ladder toolbar.",
-		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment and Calculation are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block.",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a rung like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment, Calculation and Conversion — from the dedicated tool in the ladder toolbar.",
+		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same rung.",
 		"timerTitle": "Timer",
 		"timerIntro": "Measures a duration and exposes an output signal. Three variants:",
 		"timerItems": [
@@ -420,6 +429,8 @@
 		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
 		"calcTitle": "Calculation",
 		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
+		"convertTitle": "Conversion",
+		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The block shows the standard name of the conversion it applies, for example DINT_TO_INT. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
 		"programCallTitle": "Program call",
 		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",
@@ -470,7 +481,7 @@
 		"ladderTools": [
 			"NO, NC, P (rising edge) and N (falling edge) contacts",
 			"Normal, Set and Reset coils",
-			"Comparison, Assignment and Calculation blocks (the other system blocks are dragged from the explorer)",
+			"Comparison, Assignment, Calculation and Conversion blocks (the other system blocks are dragged from the explorer)",
 			"\"Section\" button — adds a new rung to the ladder"
 		],
 		"ladderToolsOutro": "See the Ladder section for details of these elements."

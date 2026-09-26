@@ -12,7 +12,7 @@ import { compilePipelineDetailed, compileToPLC, getVariableValue } from "@tests/
 import { VariableFactory } from "@tests/utils/variable-factory";
 
 /** Variable mémoire d'un type sans factory dédiée (REAL, STRING…). */
-function memoryVariable(mnemonic: string, type: "REAL" | "STRING") {
+function memoryVariable(mnemonic: string, type: "REAL" | "STRING" | "DINT") {
 	return new VariableBuilder().id(`mem-${mnemonic}`).mnemonic(mnemonic).zone("memory").type(type).build();
 }
 
@@ -186,23 +186,27 @@ describe("Numeric Actions Integration Tests", () => {
 	});
 
 	describe("Simulation PLC — variable REAL", () => {
-		it("division yields a fractional REAL but a truncated INT (coercition pilotée par le type)", async () => {
+		it("division entre entiers tronquée même vers un REAL ; un opérande réel donne un quotient réel", async () => {
 			const r = memoryVariable("R", "REAL");
 			const n = VariableFactory.createMemoryInt("N");
+			const r2 = memoryVariable("R2", "REAL");
+			const n2 = VariableFactory.createMemoryInt("N2");
 
-			// Step0 → [VRAI] → Step1 (CONTINUOUS: R := 7/2 ; N := 7/2) → [VRAI] → Step0.
+			// Step0 → [VRAI] → Step1 (CONTINUOUS: R := 7.0/2 ; N := 7/2 ; R2 := 7/2 ; N2 := REAL_TO_INT(R2 + 0.5)) → [VRAI] → Step0.
 			const step0 = new StepBuilder().id("g-num-step-0").number(0).initial().position(100, 100).build();
 			const step1 = new StepBuilder().id("g-num-step-1").number(1).initial(false).position(100, 200).build();
 			const trans0 = new TransitionBuilder().id("g-num-trans-0").expression("VRAI").position(100, 150).build();
 			const trans1 = new TransitionBuilder().id("g-num-trans-1").expression("VRAI").position(100, 250).build();
-			const realAction = new ActionBuilder().id("g-num-action-real").expression("R := 7 / 2").type(ActionType.NUMERIC_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(200, 180).build();
+			const realAction = new ActionBuilder().id("g-num-action-real").expression("R := 7.0 / 2").type(ActionType.NUMERIC_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(200, 180).build();
 			const intAction = new ActionBuilder().id("g-num-action-int").expression("N := 7 / 2").type(ActionType.NUMERIC_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(200, 220).build();
+			const intIntoRealAction = new ActionBuilder().id("g-num-action-int-real").expression("R2 := 7 / 2").type(ActionType.NUMERIC_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(200, 260).build();
+			const conversionAction = new ActionBuilder().id("g-num-action-conv").expression("N2 := REAL_TO_INT(R2 + 0.5)").type(ActionType.NUMERIC_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(200, 300).build();
 			const grafcet = new GrafcetBuilder()
 				.id("g-num")
 				.name("REAL vs INT grafcet")
 				.addSteps(step0, step1)
 				.addTransitions(trans0, trans1)
-				.addActions(realAction, intAction)
+				.addActions(realAction, intAction, intIntoRealAction, conversionAction)
 				.addConnections(
 					new ConnectionBuilder().id("g-num-c0").source("step", step0.id, "source:successor").target("transition", trans0.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-num-c1").source("transition", trans0.id, "source:successor").target("step", step1.id, "target:predecessor").build(),
@@ -210,9 +214,11 @@ describe("Numeric Actions Integration Tests", () => {
 					new ConnectionBuilder().id("g-num-c3").source("transition", trans1.id, "source:successor").target("step", step0.id, "target:predecessor").build(),
 					new ConnectionBuilder().id("g-num-c4").source("step", step1.id, "source:action").target("action", realAction.id, "target:step").build(),
 					new ConnectionBuilder().id("g-num-c5").source("step", step1.id, "source:action").target("action", intAction.id, "target:step").build(),
+					new ConnectionBuilder().id("g-num-c6").source("step", step1.id, "source:action").target("action", intIntoRealAction.id, "target:step").build(),
+					new ConnectionBuilder().id("g-num-c7").source("step", step1.id, "source:action").target("action", conversionAction.id, "target:step").build(),
 				)
 				.build();
-			const project = ProjectFactory.create([r, n], [grafcet], "REAL vs INT");
+			const project = ProjectFactory.create([r, n, r2, n2], [grafcet], "REAL vs INT");
 
 			expect(compilePipelineDetailed(project).analysis.issues.filter((i) => i.severity === "error")).toEqual([]);
 
@@ -231,6 +237,10 @@ describe("Numeric Actions Integration Tests", () => {
 
 			expect(getVariableValue(plc!, "R")).toBe(3.5);
 			expect(getVariableValue(plc!, "N")).toBe(3);
+			// 7 / 2 est une division entre constantes entières : 3, même rangé dans un REAL.
+			expect(getVariableValue(plc!, "R2")).toBe(3);
+			// REAL_TO_INT(3.5) : arrondi au plus proche, à égalité vers le pair.
+			expect(getVariableValue(plc!, "N2")).toBe(4);
 		});
 	});
 

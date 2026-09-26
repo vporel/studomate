@@ -347,6 +347,40 @@ describe("ActionAnalyser", () => {
 			expect(divisionIssue?.severity).toBe("error");
 		});
 
+		it("signale une affectation qui rétrécit un DINT dans un INT sans conversion", () => {
+			const small = new VariableBuilder().id("v-i").mnemonic("niveau").zone("memory").type("INT").build();
+			const wide = new VariableBuilder().id("v-d").mnemonic("inter").zone("memory").type("DINT").build();
+			const grafcetWith = (expression: string) => {
+				const action = new ActionBuilder()
+					.id("action-1")
+					.expression(expression)
+					.type(ActionType.NUMERIC_VARIABLE)
+					.executionMode(ActionExecutionMode.CONTINUOUS)
+					.build();
+				const step = new StepBuilder().id("step-1").number(1).initial().build();
+				const grafcet = new GrafcetBuilder()
+					.id("grafcet-1")
+					.addStep(step)
+					.addAction(action)
+					.addConnection(
+						new ConnectionBuilder()
+							.id("c1")
+							.source("step", "step-1", "source:action")
+							.target("action", "action-1", "target:step")
+							.build(),
+					)
+					.build();
+				return analyser
+					.analyseInContext(action, grafcet, analyserEnvironment([small, wide]))
+					.map((i) => i.code);
+			};
+
+			expect(grafcetWith("niveau := inter / 276")).toContain("ACTION_INVALID_EXPRESSION");
+			expect(grafcetWith("niveau := DINT_TO_INT(inter / 276)")).not.toContain(
+				"ACTION_INVALID_EXPRESSION",
+			);
+		});
+
 		it("validates variable types in string assignment", () => {
 			const intVar = new VariableBuilder()
 				.id("var-1")

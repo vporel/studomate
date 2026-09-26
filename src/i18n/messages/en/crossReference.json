@@ -18,6 +18,7 @@
 		"compare": "compare",
 		"assign": "assign",
 		"arithmetic": "arithmetic",
+		"convert": "conversion",
 		"user-program": "subprogram"
 	},
 	"widgetType": {

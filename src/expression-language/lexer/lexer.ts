@@ -2,6 +2,11 @@ import { ARITHMETIC_OPERATORS, ArithmeticOperator } from "../operators";
 import InvalidCharacterException from "./exceptions/invalid-character.exception";
 import InvalidKeywordException from "./exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "./exceptions/unterminated-string.exception";
+import InvalidTimeLiteralException from "./exceptions/invalid-time-literal.exception";
+import {
+	parseTimeLiteral,
+	TIME_LITERAL_PREFIX,
+} from "@/expression-language/literals/time";
 import {
 	isDigit,
 	isLetterOrUnderscore,
@@ -163,6 +168,30 @@ export class Lexer {
 				}
 				position++;
 				tokens.push({ type: TokenType.STRING, value, position: start });
+				continue;
+			}
+
+			//TIME constants (T#5s): checked before identifiers, `T` alone being a valid identifier
+			if (
+				input.slice(position, position + 2).toUpperCase() === TIME_LITERAL_PREFIX
+			) {
+				const start = position;
+				position += 2;
+				while (
+					position < input.length &&
+					(isLetterOrUnderscoreOrDigit(input[position]) ||
+						input[position] === ".")
+				)
+					position++;
+				const literal = input.slice(start, position);
+				const milliseconds = parseTimeLiteral(literal);
+				if (milliseconds === null)
+					throw new InvalidTimeLiteralException(literal, start);
+				tokens.push({
+					type: TokenType.TIME_LITERAL,
+					value: String(milliseconds),
+					position: start,
+				});
 				continue;
 			}
 

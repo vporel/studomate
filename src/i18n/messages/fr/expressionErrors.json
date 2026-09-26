@@ -9,7 +9,10 @@
 			"number": "nombre",
 			"boolean": "booléen",
 			"string": "chaîne de caractères",
-			"unknown": "inconnu"
+			"unknown": "inconnu",
+			"ANY_INT": "constante entière",
+			"ANY_REAL": "constante réelle",
+			"ANY_NUM": "nombre"
 		},
 		"side": {
 			"left": "gauche",
@@ -28,7 +31,8 @@
 			"TIMER_BLOCK": "Bloc de temporisation",
 			"TIMER_STRING_DECLARATION": "Temporisation",
 			"COUNTER_BLOCK": "Bloc compteur",
-			"IF_CONTROL": "Contrôle conditionnel"
+			"IF_CONTROL": "Contrôle conditionnel",
+			"CONVERSION_EXPRESSION": "Conversion de type"
 		}
 	},
 	"UNKNOWN_VARIABLE_NAME": "Variable inconnue : {variableName}",
@@ -58,6 +62,15 @@
 	"INVALID_COUNTER_OUTPUT_NODE": "Nœud de sortie de compteur invalide : la sortie d'un bloc compteur doit être une variable",
 	"INVALID_COUNTER_OUTPUT_TYPE": "Type de sortie de compteur invalide : la sortie d'un bloc compteur doit retourner un booléen (trouvé {actual})",
 	"INVALID_COUNTER_PRESET_VALUE_TYPE": "Type de valeur préréglée de compteur invalide : attendu {expected}, obtenu {actual}",
+	"CONVERSION_HINT": " (fonction {function})",
+	"INCOMPATIBLE_NUMERIC_TYPES": "Types {leftType} et {rightType} incompatibles pour l'opérateur « {operator} » : convertissez explicitement l'un des opérandes{hint}.",
+	"BIT_STRING_ARITHMETIC": "Opérateur « {operator} » interdit sur le type {type} (chaîne de bits) : convertissez d'abord la valeur en entier ({type}_TO_INT ou {type}_TO_DINT).",
+	"CONSTANT_OUT_OF_RANGE": "La constante {value} dépasse les limites du type {type}.",
+	"EXPLICIT_CONVERSION_REQUIRED": "Affectation d'une valeur {valueType} à une variable {targetType} : une conversion explicite est nécessaire{hint}.",
+	"INVALID_CONVERSION_ARGUMENT": "Conversion vers {targetType} impossible : la valeur est de type {actual}, {expected} attendu.",
+	"UNSUPPORTED_CONVERSION": "Aucune conversion de {actual} vers {targetType}.",
+	"UNKNOWN_FUNCTION": "Fonction inconnue « {name} » à la position {position} : seules les fonctions de conversion de la norme (INT_TO_REAL, DINT_TO_INT…) sont disponibles.",
+	"INVALID_TIME_LITERAL": "Constante de temps invalide « {literal} » à la position {position}",
 	"DIVISION_BY_ZERO": "Division par zéro : {left} / {right}",
 	"PARSING_ENDED_BEFORE_EOF": "Expression invalide : caractère inattendu à la position {position}",
 	"MISSING_PRIMARY_OR_LEFT_PARENTHESE": "Expression attendue (variable, nombre, chaîne) ou '(' à la position {position}",

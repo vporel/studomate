@@ -6,6 +6,7 @@ import {
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import { createConvertBlockElement } from "@/schemas/ladder/block.schema";
 import {
 	createSectionWith,
 	wireInSeries,
@@ -176,5 +177,29 @@ describe("ladderToSectionScenes", () => {
 			.map((s) => `<!-- ${s.heading} -->\n${sceneToSvg(s.scene)}`)
 			.join("\n\n");
 		expect(svg).toMatchSnapshot();
+	});
+});
+
+describe("libellé d'un bloc convert", () => {
+	function convertLadder(): Ladder {
+		const rail = createRailTerminalElement(0);
+		const block = createConvertBlockElement(0, 0, { in: "D", out: "I" });
+		return new Ladder("l1", "L", [
+			createSectionWith([rail, block], wireInSeries([rail, block])),
+		]);
+	}
+	const texts = (ops: DrawOp[]) =>
+		ops.flatMap((o) => (o.op === "text" ? [o.text] : []));
+
+	it("affiche le nom normalisé de la conversion fourni par le contexte", () => {
+		const [section] = ladderToSectionScenes(convertLadder(), {
+			convertFunctionName: () => "DINT_TO_INT",
+		});
+		expect(texts(section.scene.ops)).toContain("DINT_TO_INT");
+	});
+
+	it("retombe sur CONV sans nom de conversion", () => {
+		const [section] = ladderToSectionScenes(convertLadder());
+		expect(texts(section.scene.ops)).toContain("CONV");
 	});
 });

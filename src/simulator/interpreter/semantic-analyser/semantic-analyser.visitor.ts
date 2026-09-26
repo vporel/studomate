@@ -9,6 +9,7 @@ import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
@@ -48,6 +49,25 @@ import InvalidTimerPresetTimeTypeException from "./exceptions/invalid-timer-pres
 import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-expr-operand-type.exception";
 import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
+import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "./exceptions/invalid-conversion-argument.exception";
+import NumericTypeAnalyserVisitor from "./numeric-type-analyser.visitor";
+import {
+	arithmeticResultType,
+	isBitStringType,
+	isConstantOutOfRange,
+	isImplicitlyAssignable,
+	NumericType,
+	TypedNumber,
+	unifyNumericTypes,
+} from "./numeric-typing";
+import {
+	isConversionSupported,
+	isConvertibleType,
+} from "@/expression-language/conversions";
 import TypeAnalyserVisitor, {
 	ExpectedNodeResultType,
 } from "./type-analyser.visitor";
@@ -62,12 +82,14 @@ export type SemanticAnalyserOptions = {
 export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	private env: Environment;
 	private typeAnalyser: TypeAnalyserVisitor;
+	private numericTypeAnalyser: NumericTypeAnalyserVisitor;
 	private unauthorizedNodes: ASTNode["type"][];
 
 	constructor(environment: Environment, options?: SemanticAnalyserOptions) {
 		super();
 		this.env = environment;
 		this.typeAnalyser = new TypeAnalyserVisitor(environment);
+		this.numericTypeAnalyser = new NumericTypeAnalyserVisitor(environment);
 		this.unauthorizedNodes = options?.unauthorizedNodes || [];
 	}
 
@@ -112,7 +134,7 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 					);
 				}
 				break;
-			case "-":
+			case "-": {
 				if (operandType !== "number") {
 					throw new InvalidUnaryExprOperandTypeException(
 						"-",
@@ -121,7 +143,11 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 						node,
 					);
 				}
+				const numericType = this.numericTypeAnalyser.visit(node.expr).type;
+				if (isBitStringType(numericType))
+					throw new BitStringArithmeticException("-", numericType, node);
 				break;
+			}
 		}
 		this.visit(node.expr);
 	}
@@ -152,6 +178,71 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.visit(node.left);
 		this.visit(node.right);
+
+		const left = this.numericTypeAnalyser.visit(node.left);
+		const right = this.numericTypeAnalyser.visit(node.right);
+		for (const operand of [left, right]) {
+			if (isBitStringType(operand.type))
+				throw new BitStringArithmeticException(node.operator, operand.type, node);
+		}
+		if (arithmeticResultType(node.operator, left, right) === null)
+			this.throwIncompatibleOperands(node, left, right);
+	}
+
+	/** Two numeric operands that no implicit conversion reconciles: a constant out of the range
+	 * of the other operand's type is reported as such, anything else as a type mismatch. */
+	private throwIncompatibleOperands(
+		node: ArithmeticExpressionNode | ComparisonExpressionNode,
+		left: TypedNumber,
+		right: TypedNumber,
+	): never {
+		if (left.value !== undefined && isConstantOutOfRange(left, right.type))
+			throw new ConstantOutOfRangeException(left.value, right.type, node.left);
+		if (right.value !== undefined && isConstantOutOfRange(right, left.type))
+			throw new ConstantOutOfRangeException(right.value, left.type, node.right);
+		throw new IncompatibleNumericTypesException(
+			node.operator,
+			left.type,
+			right.type,
+			node,
+		);
+	}
+
+	protected visitConversionExpressionNode(node: ConversionExpressionNode): void {
+		this.visit(node.expr);
+		const nativeType = this.typeAnalyser.visit(node.expr);
+		if (nativeType !== "number") {
+			throw new InvalidConversionArgumentException(
+				node.targetType,
+				node.sourceType,
+				nativeType === "void" ? "unknown" : nativeType,
+				node,
+			);
+		}
+		const argument = this.numericTypeAnalyser.visit(node.expr);
+		if (node.sourceType !== null) {
+			if (!isImplicitlyAssignable(argument, node.sourceType))
+				throw new InvalidConversionArgumentException(
+					node.targetType,
+					node.sourceType,
+					argument.type,
+					node,
+				);
+			return;
+		}
+		if (
+			argument.type !== "ANY_NUM" &&
+			!(
+				isConvertibleType(argument.type) &&
+				isConversionSupported(argument.type, node.targetType)
+			)
+		)
+			throw new InvalidConversionArgumentException(
+				node.targetType,
+				null,
+				argument.type,
+				node,
+			);
 	}
 
 	protected visitComparisonExpressionNode(
@@ -166,6 +257,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				rightType as ExpectedNodeResultType,
 				node,
 			);
+		}
+		if (leftType === "number") {
+			const left = this.numericTypeAnalyser.visit(node.left);
+			const right = this.numericTypeAnalyser.visit(node.right);
+			const mixesTimeWithNonTime =
+				(left.type === "TIME") !== (right.type === "TIME") &&
+				left.type !== "ANY_NUM" &&
+				right.type !== "ANY_NUM";
+			if (mixesTimeWithNonTime || unifyNumericTypes(left, right) === null)
+				this.throwIncompatibleOperands(node, left, right);
 		}
 		if (node.operator !== "=" && node.operator !== "!=") {
 			// For comparison operators other than equality and inequality, check that both operands are numbers
@@ -244,6 +345,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.visit(node.left);
 		this.visit(node.right);
+
+		if (leftType === "number") {
+			const target: NumericType = this.numericTypeAnalyser.visit(node.left).type;
+			const value = this.numericTypeAnalyser.visit(node.right);
+			if (!isImplicitlyAssignable(value, target)) {
+				if (value.value !== undefined && isConstantOutOfRange(value, target))
+					throw new ConstantOutOfRangeException(value.value, target, node.right);
+				throw new ExplicitConversionRequiredException(value.type, target, node);
+			}
+		}
 	}
 
 	protected visitIfControlNode(node: IfControlNode): void {

@@ -30,7 +30,9 @@ import {
 	BlockPortLabels,
 	BlockType,
 	COMPARE_PORT_SPECS,
+	CONVERT_PORT_SPECS,
 	CompareBlockParams,
+	ConvertBlockParams,
 	CounterBlockParams,
 	TimerBlockParams,
 	USER_PROGRAM_PORT_SPECS,
@@ -38,11 +40,14 @@ import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
+	createConvertBlockElement,
 	createUserProgramBlockElement,
 	readArithmeticParam,
 	readAssignParam,
+	readConvertParam,
 	writeArithmeticParam,
 	writeAssignParam,
+	writeConvertParam,
 } from "./block.schema";
 
 type Params = BlockData["params"];
@@ -184,6 +189,19 @@ export const BLOCK_DEFINITIONS: Record<BlockType, BlockDefinition> = {
 		readParam: (params, suffix) => readAssignParam(params as AssignBlockParams, suffix),
 		writeParam: (params, suffix, value) =>
 			writeAssignParam(params as AssignBlockParams, suffix, value),
+		portsAreExposedVariables: false,
+		hasStaticLabel: true,
+	},
+	convert: {
+		portSpecs: CONVERT_PORT_SPECS,
+		widthInColumns: 2,
+		render: "box",
+		createElement: (row, col, params) =>
+			createConvertBlockElement(row, col, params as ConvertBlockParams | undefined),
+		readParam: (params, suffix) =>
+			readConvertParam(params as ConvertBlockParams, suffix),
+		writeParam: (params, suffix, value) =>
+			writeConvertParam(params as ConvertBlockParams, suffix, value),
 		portsAreExposedVariables: false,
 		hasStaticLabel: true,
 	},

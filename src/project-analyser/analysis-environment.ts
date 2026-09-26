@@ -4,6 +4,7 @@ import {
 	SYSTEM_VARIABLES,
 } from "@/schemas/variable/system-variables";
 import Variable, {
+	getNumericRange,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
 } from "@/schemas/variable/variable.schema";
 import EnvVariable from "@/simulator/interpreter/environment/env-variable";
@@ -31,6 +32,8 @@ export default function buildAnalysisEnvironment(
 					variable.name,
 					VARIABLE_TYPE_TO_NATIVE_TYPE[variable.type],
 					"IN",
+					getNumericRange(variable.type),
+					variable.type,
 				),
 		),
 	]);

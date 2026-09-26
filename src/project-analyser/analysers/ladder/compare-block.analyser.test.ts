@@ -103,4 +103,21 @@ describe("CompareBlockAnalyser", () => {
 			"BLOCK_COMPARE_INVALID_EXPRESSION",
 		]);
 	});
+
+	it("compare une durée à une constante T#, refuse une durée comparée à un entier", () => {
+		const duree = new Variable("v1", "duree", "memory", "TIME");
+		expect(analyse({ in1: "duree", in2: "T#2s", operator: ">" }, duree)).toEqual([]);
+		expect(analyse({ in1: "duree", in2: "2000", operator: ">" }, duree)).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
+	});
+
+	it("accepte une conversion de type dans un opérande", () => {
+		const d = new Variable("v1", "D", "memory", "DINT");
+		const r = new Variable("v2", "R", "memory", "REAL");
+		expect(analyse({ in1: "DINT_TO_REAL(D)", in2: "R", operator: "<" }, d, r)).toEqual([]);
+		expect(analyse({ in1: "D", in2: "R", operator: "<" }, d, r)).toEqual([
+			"BLOCK_COMPARE_INVALID_EXPRESSION",
+		]);
+	});
 });

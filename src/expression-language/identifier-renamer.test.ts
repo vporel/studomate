@@ -171,4 +171,18 @@ describe("IdentifierRenamer", () => {
 			expect(IdentifierRenamer.usesAnyIdentifier("a, b", ["a"])).toBe(true);
 		});
 	});
+
+	describe("constantes TIME", () => {
+		it("ne renomme pas les lettres d'une constante T#", () => {
+			expect(
+				IdentifierRenamer.rename("T > T#5s", { T: "duree", s: "x" }),
+			).toBe("duree > T#5s");
+		});
+
+		it("n'y voit aucune occurrence d'identifiant", () => {
+			expect(IdentifierRenamer.usesAnyIdentifier("a > T#1m30s", ["m", "s", "T"])).toBe(
+				false,
+			);
+		});
+	});
 });

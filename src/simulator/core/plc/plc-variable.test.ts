@@ -158,4 +158,9 @@ describe("PLCVariable", () => {
 			expect(v.getType()).toBe("string");
 		});
 	});
+
+	it("copy() conserve le type déclaré", () => {
+		const variable = new PLCVariable("id", "d", "memory", "number", null, "DINT");
+		expect(variable.copy().getDeclaredType()).toBe("DINT");
+	});
 });

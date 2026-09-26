@@ -5,6 +5,7 @@ import {
 	isQuote,
 } from "./alphabet";
 import { getKeywordsStringsForDialect } from "./keywords";
+import { findTimeLiteralEnd } from "./literals/time";
 import { Dialect } from "@/expression-language/dialect.enum";
 
 type IdentifierOccurrence = { start: number; end: number; name: string };
@@ -117,6 +118,13 @@ export default class IdentifierRenamer {
 					isLetterOrUnderscore(expression[position])
 				)
 					position++;
+				continue;
+			}
+
+			//TIME constant (T#5s): its letters are units, not an identifier
+			const timeLiteralEnd = findTimeLiteralEnd(expression, position);
+			if (timeLiteralEnd !== null) {
+				position = timeLiteralEnd;
 				continue;
 			}
 

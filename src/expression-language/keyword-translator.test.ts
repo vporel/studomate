@@ -80,4 +80,10 @@ describe("KeywordTranslator", () => {
 		const original = "Btn1 ET NON Btn2 OU VRAI";
 		expect(enToFr(frToEn(original))).toBe(original);
 	});
+
+	describe("constantes TIME", () => {
+		it("laisse une constante T# intacte en traduisant les mots-clés autour", () => {
+			expect(frToEn("a ET t > T#5s")).toBe("a AND t > T#5s");
+		});
+	});
 });

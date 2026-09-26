@@ -7,6 +7,7 @@ import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
@@ -66,6 +67,12 @@ export default class TypeAnalyserVisitor extends BaseVisitor<
 
 	protected visitArithmeticExpressionNode(
 		_node: ArithmeticExpressionNode,
+	): ExpectedNodeResultType {
+		return "number";
+	}
+
+	protected visitConversionExpressionNode(
+		_node: ConversionExpressionNode,
 	): ExpectedNodeResultType {
 		return "number";
 	}

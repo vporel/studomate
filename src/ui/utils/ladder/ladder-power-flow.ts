@@ -88,7 +88,7 @@ export function computeEnergizedEdges(
 		if (element.type === "railTerminal") return true; // Le rail est la source, il laisse toujours passer
 		if (element.type === "coil") return false; // Une bobine est un puits, elle ne transmet pas le courant
 		if (element.type === "block") {
-			// La sortie structurelle du bloc porte l'état à propager : `ENO` (toujours vrai pour un
+			// La sortie structurelle du bloc porte l'état à propager : `ENO` (égal à `EN` pour un
 			// appel de programme / assign / arithmetic) ou `Q` (timer non échu, compteur, comparaison
 			// fausse → le rail est coupé en aval).
 			const mnemonic = blockOutputMnemonic(element);

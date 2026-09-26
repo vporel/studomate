@@ -5,7 +5,10 @@ import {
 	resolvePortSpecs,
 	resolveStructuralPorts,
 } from "@/schemas/ladder/block-definition";
-import { BlockData } from "@/schemas/ladder/block.schema";
+import {
+	BlockData,
+	getConvertBlockFunctionName,
+} from "@/schemas/ladder/block.schema";
 import {
 	getBlockHeightInCellUnits,
 	getParameterPinRows,
@@ -63,15 +66,27 @@ const BoxBlockNode = ({
 				? state.project?.ladders[data.params.programId]?.name
 				: undefined,
 		) ?? "";
+	// A conversion block shows the standard name of the conversion it applies (`DINT_TO_INT`),
+	// which follows from the types of its IN and OUT variables.
+	const conversionName = useProjectStore((state) =>
+		data.blockType === "convert"
+			? getConvertBlockFunctionName(
+					data.params,
+					(mnemonic) =>
+						state.project?.variables.find((v) => v.mnemonic === mnemonic)?.type,
+				)
+			: null,
+	);
 	// `user-program` n'a pas de libellé fixe : c'est le nom du programme référencé (résolu dans le
 	// store). Timer/compteur portent leur nom dans un champ éditable (`labelSlot`). Toute autre
 	// famille tire son libellé de `BLOCK_DEFINITIONS` (fixe).
 	const label =
-		def.hasStaticLabel && ui.staticLabelKey
+		conversionName ??
+		(def.hasStaticLabel && ui.staticLabelKey
 			? t(ui.staticLabelKey as never)
 			: data.blockType === "user-program"
 				? programName
-				: "";
+				: "");
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);

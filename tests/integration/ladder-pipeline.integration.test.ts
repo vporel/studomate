@@ -4,8 +4,10 @@ import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
+	createConvertBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Section from "@/schemas/ladder/section.schema";
@@ -470,6 +472,134 @@ describe("Ladder Pipeline Integration Test", () => {
 			expect(getVariableValue(plc, "Sortie")).toBe(5); // EN faux : plus d'écriture
 		});
 
+		it("assign : ENO = EN, une bobine placée après le bloc n'est pas alimentée quand EN est faux", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("Var1"),
+				VariableFactory.createLogicInput("Var4"),
+				VariableFactory.createAnalogInput("Var2"),
+				VariableFactory.createMemoryInt("Mem1"),
+				VariableFactory.createLogicOutput("Out1"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("Var1", "NO", 0, 1),
+				createAssignBlockElement(0, 2, { out: "Mem1", in: "Var2" }),
+				createContactElement("Var4", "NO", 0, 4),
+				createCoilElement("Out1", "normal", 0, 5),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+
+			plc.setPhysicalInputValueByName("Var4", true);
+			await jest.advanceTimersByTimeAsync(30);
+			throwOnCycleError();
+			expectVariableValue(plc, "Out1", false);
+
+			plc.setPhysicalInputValueByName("Var1", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "Out1", true);
+		});
+
+		it("assign → arithmetic en série : EN faux sur le premier bloc, le second ne s'exécute pas", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createAnalogInput("Niveau"),
+				VariableFactory.createMemoryInt("Copie"),
+				VariableFactory.createMemoryInt("Sortie"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createAssignBlockElement(0, 2, { out: "Copie", in: "Niveau" }),
+				createArithmeticBlockElement(0, 4, {
+					in1: "Niveau",
+					in2: "1",
+					out: "Sortie",
+					operator: "+",
+				}),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+
+			plc.setPhysicalInputValueByName("Niveau", 7);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expect(getVariableValue(plc, "Sortie")).toBe(0);
+		});
+
+		describe("mise à l'échelle d'une mesure (typage IEC 61131-3)", () => {
+			const memoryDint = (mnemonic: string) =>
+				new VariableBuilder().id(`mem-${mnemonic}`).mnemonic(mnemonic).zone("memory").type("DINT").build();
+
+			it("brut * 100 calculé en INT reboucle avant d'être rangé dans un DINT", async () => {
+				const { project, ladder, section } = newLadderProject([
+					VariableFactory.createAnalogInput("brut"),
+					memoryDint("inter"),
+				]);
+				wireSeries(ladder, section, [
+					createRailTerminalElement(0),
+					createArithmeticBlockElement(0, 1, { in1: "brut", in2: "100", out: "inter", operator: "*" }),
+				]);
+
+				const { plc, throwOnCycleError } = runPlc(project);
+				plc.start();
+				plc.setPhysicalInputValueByName("brut", 27648);
+				await jest.advanceTimersByTimeAsync(30);
+				plc.stop();
+				throwOnCycleError();
+				expect(getVariableValue(plc, "inter")).toBe(12288);
+			});
+
+			it("copie en DINT, calcul, puis bloc convert vers INT : niveau exact de 0 à 100 %", async () => {
+				const { project, ladder, section } = newLadderProject([
+					VariableFactory.createAnalogInput("brut"),
+					memoryDint("inter"),
+					VariableFactory.createMemoryInt("niveau"),
+				]);
+				wireSeries(ladder, section, [
+					createRailTerminalElement(0),
+					createAssignBlockElement(0, 1, { out: "inter", in: "brut" }),
+					createArithmeticBlockElement(0, 3, { in1: "inter", in2: "100", out: "inter", operator: "*" }),
+					createArithmeticBlockElement(0, 5, { in1: "inter", in2: "27648", out: "inter", operator: "/" }),
+					createConvertBlockElement(0, 7, { in: "inter", out: "niveau" }),
+				]);
+
+				const { plc, throwOnCycleError } = runPlc(project);
+				plc.start();
+				plc.setPhysicalInputValueByName("brut", 27648);
+				await jest.advanceTimersByTimeAsync(30);
+				throwOnCycleError();
+				expect(getVariableValue(plc, "niveau")).toBe(100);
+
+				plc.setPhysicalInputValueByName("brut", 13824);
+				await jest.advanceTimersByTimeAsync(30);
+				plc.stop();
+				throwOnCycleError();
+				expect(getVariableValue(plc, "niveau")).toBe(50);
+			});
+
+			it("l'analyse refuse de ranger un résultat DINT dans un INT sans conversion", () => {
+				const { project, ladder, section } = newLadderProject([
+					memoryDint("inter"),
+					VariableFactory.createMemoryInt("niveau"),
+				]);
+				wireSeries(ladder, section, [
+					createRailTerminalElement(0),
+					createArithmeticBlockElement(0, 1, { in1: "inter", in2: "276", out: "niveau", operator: "/" }),
+				]);
+
+				const errors = compilePipelineDetailed(project).analysis.issues.filter(
+					(i) => i.severity === "error",
+				);
+				expect(errors.map((i) => i.code)).toEqual(["BLOCK_ARITHMETIC_INVALID"]);
+			});
+		});
+
 		it("timer TOF : Q reste vrai pendant PT après la retombée de IN", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("I0"),
@@ -605,6 +735,37 @@ describe("Ladder Pipeline Integration Test", () => {
 			plc.stop();
 			throwOnCycleError();
 			expectVariableValue(plc, "Q0", true); // EN vrai : le SET du sous-programme a été exécuté
+		});
+
+		it("appel `user-program` : ENO = EN, une bobine placée après le bloc suit EN", async () => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createLogicInput("enable"),
+				VariableFactory.createLogicOutput("Q1"),
+			]);
+			const sub = project.createLadder("Sous-programme");
+
+			const [mainSection] = project.main.sections;
+			const elements = [
+				createRailTerminalElement(0),
+				createContactElement("enable", "NO", 0, 1),
+				createUserProgramBlockElement(sub.id, 0, 2),
+				createCoilElement("Q1", "normal", 0, 4),
+			];
+			project.main.addElements(mainSection.id, elements);
+			project.main.addConnections(mainSection.id, wireInSeries(elements));
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+
+			await jest.advanceTimersByTimeAsync(30);
+			throwOnCycleError();
+			expectVariableValue(plc, "Q1", false);
+
+			plc.setPhysicalInputValueByName("enable", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "Q1", true);
 		});
 
 		it("appel `user-program` : le sous-programme s'exécute à la position du bloc, avant les réseaux suivants", async () => {

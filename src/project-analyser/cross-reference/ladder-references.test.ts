@@ -1,6 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	createArithmeticBlockElement,
+	createConvertBlockElement,
 	createCompareBlockElement,
 } from "@/schemas/ladder/block.schema";
 import {
@@ -118,5 +119,16 @@ describe("collectLadderReferences", () => {
 			sectionTitle: "Comptage",
 			gridRow: 2,
 		});
+	});
+
+	it("lit l'entrée et écrit la sortie d'un bloc convert", () => {
+		const ladder = ladderWith(createConvertBlockElement(0, 1, { in: "Brut", out: "Niveau" }));
+		const refs = collectLadderReferences(ladder, Dialect.FR);
+		expect(find(refs, "Brut")).toEqual([
+			expect.objectContaining({ access: "read", locationKind: "ladder-block-pin" }),
+		]);
+		expect(find(refs, "Niveau")).toEqual([
+			expect.objectContaining({ access: "write", locationKind: "ladder-block-pin" }),
+		]);
 	});
 });

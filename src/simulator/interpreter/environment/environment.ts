@@ -3,6 +3,7 @@ import EnvVariable, {
 	EnvVariableType,
 	EnvVariableValue,
 } from "./env-variable";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import UnknownVariableIdException from "./exceptions/unknown-variable-id.exception";
 import UnknownVariableNameException from "./exceptions/unknown-variable-name.exception";
 
@@ -73,6 +74,10 @@ export class Environment {
 
 	getVariableTypeByName(name: string): EnvVariableType {
 		return this.getVariableByName(name).getType();
+	}
+
+	getVariableDeclaredTypeByName(name: string): VariableType | null {
+		return this.getVariableByName(name).getDeclaredType();
 	}
 
 	getVariableDirectionById(id: string): EnvVariableDirection {

@@ -19,4 +19,5 @@ export const BLOCK_NODE_UI: Record<
 		staticLabelKey: "arithmeticStaticLabel",
 		inlineSelectAriaKey: "arithmeticOperatorAria",
 	},
+	convert: { staticLabelKey: "convertStaticLabel" },
 };

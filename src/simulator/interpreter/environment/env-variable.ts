@@ -1,4 +1,5 @@
 import { coerceToRange, NumericRange } from "@/lib/numeric-range";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import IllegalVariableValueTypeException from "./exceptions/illegal-variable-value-type.exception";
 
 export type EnvVariableType = "number" | "string" | "boolean";
@@ -13,6 +14,9 @@ export default class EnvVariable {
 	private value: EnvVariableValue;
 	/** Domaine du type numérique d'origine (INT, WORD…) — toute valeur écrite y est ramenée. */
 	private numericRange: NumericRange | null;
+	/** Declared PLC type, used by the typing rules of the language (`null` for an internal
+	 * variable such as a step memo). */
+	private declaredType: VariableType | null;
 
 	constructor(
 		id: string,
@@ -20,12 +24,14 @@ export default class EnvVariable {
 		type: EnvVariableType,
 		direction: EnvVariableDirection,
 		numericRange: NumericRange | null = null,
+		declaredType: VariableType | null = null,
 	) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.direction = direction;
 		this.numericRange = numericRange;
+		this.declaredType = declaredType;
 		switch (type) {
 			case "number":
 				this.value = 0;
@@ -53,6 +59,10 @@ export default class EnvVariable {
 
 	getNumericRange(): NumericRange | null {
 		return this.numericRange;
+	}
+
+	getDeclaredType(): VariableType | null {
+		return this.declaredType;
 	}
 
 	getDirection(): EnvVariableDirection {
