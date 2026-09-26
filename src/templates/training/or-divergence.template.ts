@@ -23,6 +23,7 @@ import {
 } from "@/schemas/grafcet/transition.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /**
@@ -35,8 +36,8 @@ export function createOrDivergenceProject(): Project {
 	const project = new Project(createRandomId(), "Divergence en OU", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy1"),
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy2"),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy1", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy2", PUSH_BUTTON_NO_BEHAVIOR),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),

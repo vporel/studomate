@@ -36,6 +36,26 @@ describe("PLCVariable", () => {
 	});
 
 	describe("setValue", () => {
+		it("ramène une valeur numérique dans sa plage", () => {
+			const saturating = new PLCVariable("n", "niveau", "input", "number", {
+				min: 0,
+				max: 100,
+				integer: true,
+				wrap: false,
+			});
+			saturating.setValue(150);
+			expect(saturating.getValue()).toBe(100);
+
+			const wrapping = new PLCVariable("i", "compteur", "memory", "number", {
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+			wrapping.setValue(32768);
+			expect(wrapping.getValue()).toBe(-32768);
+		});
+
 		it("sets boolean value correctly", () => {
 			const v = new PLCVariable("id", "flag", "input", "boolean");
 			v.setValue(true);

@@ -14,6 +14,8 @@ import { GridColDef } from "@mui/x-data-grid";
 import { useMemo } from "react";
 import { useProjectStore } from "../projects/ProjectContext";
 import EditInputCell from "./EditInputCell";
+import InputBehaviorCell from "./InputBehaviorCell";
+import VariableValueCell from "./VariableValueCell";
 
 export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const t = useT("pages.variablesGrid.columns");
@@ -22,6 +24,13 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const variablesManager = useProjectStore((state) => state.variablesManager);
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
+	);
+	const simulating = useProjectStore(
+		(state) => state.mode === ProjectMode.SIMULATION,
+	);
+
+	const hasInputZone = zones.some(
+		(zone) => zone === "logic-input" || zone === "analog-input",
 	);
 
 	return useMemo(
@@ -84,6 +93,39 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				renderEditCell: EditInputCell,
 				valueParser: (value) => (value ? value.trim().toUpperCase() : ""),
 			},
+			...(simulating
+				? [
+						{
+							field: "value",
+							headerName: t("value"),
+							width: 110,
+							hideable: false,
+							editable: false,
+							sortable: false,
+							renderCell: (params) => (
+								<VariableValueCell variableId={String(params.id)} />
+							),
+						} satisfies GridColDef,
+					]
+				: []),
+			...(hasInputZone
+				? [
+						{
+							field: "behavior",
+							headerName: t("behavior"),
+							width: 190,
+							hideable: false,
+							editable: false,
+							sortable: false,
+							renderCell: (params) => (
+								<InputBehaviorCell
+									variableId={String(params.id)}
+									editable={designing}
+								/>
+							),
+						} satisfies GridColDef,
+					]
+				: []),
 			{
 				field: "comment",
 				headerName: t("comment"),
@@ -93,6 +135,15 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 				renderEditCell: EditInputCell,
 			},
 		],
-		[variablesManager, zones, designing, t, tError, tv],
+		[
+			variablesManager,
+			zones,
+			hasInputZone,
+			designing,
+			simulating,
+			t,
+			tError,
+			tv,
+		],
 	);
 }

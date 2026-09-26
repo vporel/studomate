@@ -104,6 +104,19 @@ describe("carton-sorting.template", () => {
 			}
 		});
 
+		it("donne aux entrées le comportement de leur organe physique", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				dcy: "push-button-no",
+				dcy_caisse: "push-button-no",
+				sel_caisse_haute: "toggle-switch-no",
+			});
+		});
+
 		it("passe l'analyse sans erreur (le modèle seul, sans commande, est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			expect(

@@ -10,6 +10,7 @@
 		"numeric-display": "Numeric display",
 		"gauge": "Gauge",
 		"numeric-input": "Numeric input",
+		"slider": "Slider",
 		"text": "Text",
 		"rectangle": "Rectangle",
 		"ellipse": "Ellipse",
@@ -35,10 +36,13 @@
 		"stroke": "Stroke",
 		"strokeWidth": "Stroke width",
 		"borderRadius": "Corner radius",
-		"thickness": "Thickness"
+		"thickness": "Thickness",
+		"contact": "Contact",
+		"step": "Step"
 	},
 	"options": {
-		"momentary": "Momentary (held while pressed)",
+		"momentaryNo": "Momentary NO (1 while held)",
+		"momentaryNc": "Momentary NC (0 while held)",
 		"set": "SET (force to 1)",
 		"reset": "RESET (force to 0)",
 		"toggle": "Toggle (invert)",
@@ -46,7 +50,9 @@
 		"vertical": "Vertical",
 		"left": "Left",
 		"center": "Centre",
-		"right": "Right"
+		"right": "Right",
+		"contactNo": "NO (1 when actuated)",
+		"contactNc": "NC (0 when actuated)"
 	},
 	"events": {
 		"onPress": "Button pressed",
@@ -82,7 +88,8 @@
 		"offsetX": "Offset X",
 		"offsetY": "Offset Y",
 		"reset": "Reset",
-		"addRow": "Add a row"
+		"addRow": "Add a row",
+		"imposedByInputBehavior": "Imposed by the behaviour of the variable \"{variable}\" ({behavior}). Can be changed in the inputs table."
 	},
 	"menu": {
 		"copy": "Copy",
@@ -103,15 +110,16 @@
 		"paste": "Paste"
 	},
 	"widgetManual": {
-		"pushButton": "Push button — drives a BOOL variable. Configurable behaviours: momentary (the variable is 1 while the button is held), SET (forces to 1), RESET (forces to 0), toggle (inverts the value on each press).",
-		"toggleSwitch": "Switch — reads and inverts a BOOL variable on click.",
-		"indicator": "Indicator light — shows the state of a BOOL variable (off = grey, on = green).",
-		"numericDisplay": "Numeric display — shows the value of a numeric variable. Options: unit (text suffix) and number of decimals.",
-		"gauge": "Gauge — a progress bar bound to a numeric variable. Options: min, max and orientation (horizontal / vertical).",
-		"numericInput": "Numeric input — an input field bound to a numeric variable. In simulation, type a value and confirm with Enter or by clicking elsewhere to write it into the variable. Options: min and max.",
-		"text": "Text — free text. Options: content, font size, colour, alignment (left / centre / right).",
-		"rectangle": "Rectangle — a rectangular shape. Options: fill colour, stroke colour and width, corner radius.",
-		"ellipse": "Ellipse — an oval or circular shape. Options: fill colour, stroke colour and width. The \"Link width and height\" box (Dimensions section) locks the current ratio.",
-		"line": "Line — a solid-colour segment. Options: colour, width and orientation (horizontal / vertical)."
+		"pushButton": "Push button: drives a BOOL variable. Configurable behaviours: momentary NO (the variable is 1 while the button is held), momentary NC (the variable is 0 while the button is held), SET (forces to 1), RESET (forces to 0), toggle (inverts the value on each press). When bound to an input whose behaviour is \"Push button\", the behaviour is imposed by the variable.",
+		"toggleSwitch": "Switch: inverts a BOOL variable on each click. NO contact (1 when actuated) or NC contact (0 when actuated). When bound to an input whose behaviour is \"Switch\", the contact is imposed by the variable.",
+		"indicator": "Indicator light: shows the state of a BOOL variable (off = grey, on = green).",
+		"numericDisplay": "Numeric display: shows the value of a numeric variable. Options: unit (text suffix) and number of decimals.",
+		"gauge": "Gauge: a progress bar bound to a numeric variable. Options: min, max and orientation (horizontal / vertical).",
+		"numericInput": "Numeric input: an input field bound to a numeric variable. In simulation, type a value and confirm with Enter or by clicking elsewhere to write it into the variable. Options: min and max. When bound to an input whose behaviour is \"Slider\", min and max are imposed by the variable.",
+		"slider": "Slider: sets a numeric variable by dragging a cursor. In simulation, the value is written into the variable continuously while dragging; it stays displayed next to the cursor. Options: min, max, step and orientation (horizontal / vertical). When bound to an input whose behaviour is \"Slider\", min and max are imposed by the variable.",
+		"text": "Text: free text. Options: content, font size, colour, alignment (left / centre / right).",
+		"rectangle": "Rectangle: a rectangular shape. Options: fill colour, stroke colour and width, corner radius.",
+		"ellipse": "Ellipse: an oval or circular shape. Options: fill colour, stroke colour and width. The \"Link width and height\" box (Dimensions section) locks the current ratio.",
+		"line": "Line: a solid-colour segment. Options: colour, width and orientation (horizontal / vertical)."
 	}
 }

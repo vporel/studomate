@@ -1,3 +1,4 @@
+import { InputBehavior } from "../input-behavior";
 import Variable, {
 	VariableOwnerBlock,
 	VariableType,
@@ -12,6 +13,7 @@ export default class VariableBuilder {
 	private _address?: string;
 	private _comment?: string;
 	private _ownerBlock?: VariableOwnerBlock;
+	private _behavior: InputBehavior | null = null;
 
 	constructor() {
 		this._id = "";
@@ -50,6 +52,11 @@ export default class VariableBuilder {
 		return this;
 	}
 
+	behavior(behavior: InputBehavior | null): VariableBuilder {
+		this._behavior = behavior;
+		return this;
+	}
+
 	ownerBlock(ownerBlock: VariableOwnerBlock): VariableBuilder {
 		this._ownerBlock = ownerBlock;
 		return this;
@@ -69,16 +76,23 @@ export default class VariableBuilder {
 		if (this._comment !== undefined) {
 			variable.comment = this._comment;
 		}
-		return variable;
+		return this._behavior
+			? variable.update({ behavior: this._behavior })
+			: variable;
 	}
 
 	// Static factory methods for common variable patterns
-	static buildLogicInput(id: string, mnemonic: string): Variable {
+	static buildLogicInput(
+		id: string,
+		mnemonic: string,
+		behavior: InputBehavior | null = null,
+	): Variable {
 		return new VariableBuilder()
 			.id(id)
 			.mnemonic(mnemonic)
 			.zone("logic-input")
 			.type("BOOL")
+			.behavior(behavior)
 			.build();
 	}
 

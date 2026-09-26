@@ -124,6 +124,34 @@ describe("PLC", () => {
 			plc.stop();
 		});
 
+		it("returns the stored value, brought back into the input's range", () => {
+			const slider = new PLCVariable("s1", "niveau", "input", "number", {
+				min: 0,
+				max: 100,
+				integer: true,
+				wrap: false,
+			});
+			const memory = new PLCVariable("m1", "compteur", "memory", "number", {
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [slider, memory] });
+
+			expect(plc.setPhysicalInputValueById("s1", 150)).toBe(100);
+			expect(plc.setMemoryValueById("m1", 32768)).toBe(-32768);
+		});
+
+		it("keeps the initial value of a compiled input (rest value)", () => {
+			const stop = new PLCVariable("b1", "arret", "input", "boolean");
+			stop.setValue(true);
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [stop] });
+
+			const snapshot = plc.getVariablesSnapshot().find((v) => v.getId() === "b1")!;
+			expect(snapshot.getValue()).toBe(true);
+		});
+
 		it("throws on unknown input id", () => {
 			const plc = new PLC({
 				scanTimeMs: 100,

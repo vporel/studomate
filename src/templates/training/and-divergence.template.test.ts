@@ -32,6 +32,19 @@ describe("and-divergence.template", () => {
 			);
 		});
 
+		it("donne aux entrées le comportement de leur organe physique (capteurs laissés libres)", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				dcy: "push-button-no",
+				capteur1: null,
+				capteur2: null,
+			});
+		});
+
 		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");

@@ -9,5 +9,9 @@
 	"TYPE_NOT_ALLOWED_IN_ZONE": "The type \"{type}\" is not allowed here. Possible types: {allowed}.",
 	"ZONE_TYPE_INCOMPATIBLE": "The type \"{type}\" is not compatible with the \"{zone}\" zone.",
 	"ADDRESS_MISSING_PERCENT": "The address must start with the % symbol.",
-	"ADDRESS_INVALID": "The address is invalid (e.g. %I0.0, %QW10, %MD100)."
+	"ADDRESS_INVALID": "The address is invalid (e.g. %I0.0, %QW10, %MD100).",
+	"BEHAVIOR_NOT_ALLOWED": "This behaviour is not available for a {type} variable in this zone.",
+	"SLIDER_BOUNDS_NOT_INTEGER": "The slider bounds must be integers.",
+	"SLIDER_BOUNDS_ORDER": "The slider minimum must be strictly lower than its maximum.",
+	"SLIDER_BOUNDS_OUT_OF_TYPE_RANGE": "The slider bounds must stay within the {type} range ({min} … {max})."
 }

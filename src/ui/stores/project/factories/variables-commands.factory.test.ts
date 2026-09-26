@@ -119,4 +119,58 @@ describe("VariablesCommandsFactory", () => {
 			expect(variablesToRemove).toHaveLength(0);
 		});
 	});
+
+	describe("onUpdateVariable : comportement d'entrée", () => {
+		function projectWithInput(behavior: Variable["behavior"], zone: "logic-input" | "analog-input", type: "BOOL" | "INT") {
+			const project = new Project("p1", "Projet", "auteur");
+			project.variables = [new Variable("v1", "e", zone, type).update({ behavior })];
+			return project;
+		}
+
+		it("remet le comportement à null quand un changement de zone le rend invalide, et l'annulation le restaure", () => {
+			const project = projectWithInput({ kind: "push-button-nc", params: null }, "logic-input", "BOOL");
+
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", {
+				zone: "memory",
+			});
+			const [updated] = commands[0].execute(project);
+
+			expect(updated.variables[0].zone).toBe("memory");
+			expect(updated.variables[0].behavior).toBeNull();
+
+			const restored = commands[0].cancel(updated);
+			expect(restored.variables[0].zone).toBe("logic-input");
+			expect(restored.variables[0].behavior).toEqual({ kind: "push-button-nc", params: null });
+		});
+
+		it("remet un curseur à null quand ses bornes sortent de la plage du nouveau type", () => {
+			const project = projectWithInput({ kind: "slider", params: { min: -10, max: 10 } }, "analog-input", "INT");
+
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", { type: "WORD" });
+			const [updated] = commands[0].execute(project);
+
+			expect(updated.variables[0].behavior).toBeNull();
+		});
+
+		it("conserve un comportement resté valide", () => {
+			const project = projectWithInput({ kind: "slider", params: { min: 0, max: 10 } }, "analog-input", "INT");
+
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", { type: "WORD" });
+			const [updated] = commands[0].execute(project);
+
+			expect(updated.variables[0].behavior).toEqual({ kind: "slider", params: { min: 0, max: 10 } });
+		});
+
+		it("applique un comportement explicitement fourni", () => {
+			const project = projectWithInput(null, "logic-input", "BOOL");
+
+			const { commands } = VariablesCommandsFactory.onUpdateVariable(project, "v1", {
+				behavior: { kind: "toggle-switch-nc", params: null },
+			});
+			const [updated] = commands[0].execute(project);
+
+			expect(updated.variables[0].behavior).toEqual({ kind: "toggle-switch-nc", params: null });
+		});
+	});
 });
+

@@ -17,6 +17,7 @@ function setup({
 	variables = [] as Variable[],
 	typeFilter,
 	excludeDirection,
+	excludeBehaviorKinds,
 	acceptedLiterals,
 	cols,
 	onCommit = jest.fn(),
@@ -32,6 +33,7 @@ function setup({
 	variables?: Variable[];
 	typeFilter?: Variable["type"][];
 	excludeDirection?: "IN" | "OUT" | "INOUT";
+	excludeBehaviorKinds?: import("@/schemas/variable/input-behavior").InputBehaviorKind[];
 	acceptedLiterals?: import("@/expression-language/literals/kind").LiteralKind[];
 	cols?: ("address" | "mnemonic" | "type" | "scope")[];
 	onCommit?: (next: string) => void;
@@ -57,6 +59,7 @@ function setup({
 			onCommit={onCommit}
 			typeFilter={typeFilter}
 			excludeDirection={excludeDirection}
+			excludeBehaviorKinds={excludeBehaviorKinds}
 			acceptedLiterals={acceptedLiterals}
 			cols={cols}
 			ref={ref}
@@ -184,6 +187,29 @@ describe("VariableSelector — suggestions", () => {
 		expect(screen.getByText("Bonne")).toBeInTheDocument();
 		expect(screen.queryByText("MauvaisType")).not.toBeInTheDocument();
 		expect(screen.queryByText("MauvaiseDirection")).not.toBeInTheDocument();
+	});
+
+	it("écarte des suggestions les entrées dont le comportement est exclu", () => {
+		const variables = [
+			new Variable("v1", "Libre", "logic-input", "BOOL"),
+			new Variable("v2", "Commutateur", "logic-input", "BOOL").update({
+				behavior: { kind: "toggle-switch-no", params: null },
+			}),
+			new Variable("v3", "Poussoir", "logic-input", "BOOL").update({
+				behavior: { kind: "push-button-no", params: null },
+			}),
+		];
+		setup({
+			value: "",
+			variables,
+			excludeBehaviorKinds: ["toggle-switch-no", "toggle-switch-nc"],
+		});
+
+		fireEvent.focus(input());
+
+		expect(screen.getByText("Libre")).toBeInTheDocument();
+		expect(screen.getByText("Poussoir")).toBeInTheDocument();
+		expect(screen.queryByText("Commutateur")).not.toBeInTheDocument();
 	});
 
 	it("n'affiche aucun popup de suggestions quand rien ne correspond au texte saisi", () => {

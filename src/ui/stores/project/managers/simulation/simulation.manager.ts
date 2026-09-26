@@ -439,8 +439,8 @@ export default class SimulationManager {
 		}
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
-		this.plc.setPhysicalInputValueById(variableId, coerced);
-		this.publishImmediateValue(variableId, coerced);
+		const stored = this.plc.setPhysicalInputValueById(variableId, coerced);
+		this.publishImmediateValue(variableId, stored);
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {
@@ -453,8 +453,8 @@ export default class SimulationManager {
 		}
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
-		this.plc.setMemoryValueById(variableId, coerced);
-		this.publishImmediateValue(variableId, coerced);
+		const stored = this.plc.setMemoryValueById(variableId, coerced);
+		this.publishImmediateValue(variableId, stored);
 	}
 
 	/**

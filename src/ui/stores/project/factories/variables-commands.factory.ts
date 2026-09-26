@@ -5,7 +5,8 @@ import VariablesRemoveCommand from "@/schemas/project/commands/variables-remove.
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import {
+import { validateBehavior } from "@/schemas/variable/variable.validator";
+import Variable, {
 	VARIABLE_UPDATABLE_FIELDS,
 	VariableUpdatableFields,
 	VariableUpdatableFieldsWithId,
@@ -49,6 +50,10 @@ export default class VariablesCommandsFactory {
 				commands: [],
 			};
 		}
+		newData = VariablesCommandsFactory.withInvalidatedBehaviorReset(
+			variableToUpdate,
+			newData,
+		);
 		const oldData = extractFields(Object.keys(newData), variableToUpdate);
 		const commands = [];
 		if (!deepObjectsComparison(newData, oldData)) {
@@ -65,6 +70,23 @@ export default class VariablesCommandsFactory {
 		return {
 			commands,
 		};
+	}
+
+	/**
+	 * A zone or type change can make the current behavior invalid (push-button moved to memory,
+	 * slider bounds outside the new type's range...): it is then reset to `null` within the same
+	 * command, so that undo restores it.
+	 */
+	private static withInvalidatedBehaviorReset(
+		variable: Variable,
+		newData: Partial<VariableUpdatableFields>,
+	): Partial<VariableUpdatableFields> {
+		if ("behavior" in newData || !variable.behavior) return newData;
+		const zone = newData.zone ?? variable.zone;
+		const type = newData.type ?? variable.type;
+		if (validateBehavior(zone, type, variable.behavior).length === 0)
+			return newData;
+		return { ...newData, behavior: null };
 	}
 
 	static onRemoveVariable(

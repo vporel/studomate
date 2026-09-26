@@ -1,7 +1,11 @@
 import {
 	DEFAULT_INDICATOR_OFF_COLOR,
 	DEFAULT_INDICATOR_ON_COLOR,
+	DEFAULT_PUSH_BUTTON_BEHAVIOR,
+	DEFAULT_SWITCH_CONTACT,
 	HmiPushButtonBehavior,
+	HmiSliderOrientation,
+	HmiSwitchContact,
 	HmiWidget,
 	HmiWidgetSize,
 	HmiWidgetType,
@@ -10,6 +14,7 @@ import { ComponentType } from "react";
 import GaugeSymbol from "../toolbar/GaugeSymbol";
 import LineSymbol from "../toolbar/LineSymbol";
 import NumericInputSymbol from "../toolbar/NumericInputSymbol";
+import SliderSymbol from "../toolbar/SliderSymbol";
 import Ellipse from "./Ellipse";
 import Gauge from "./Gauge";
 import Line from "./Line";
@@ -19,6 +24,7 @@ import NumericDisplay from "./NumericDisplay";
 import NumericInput from "./NumericInput";
 import PushButton from "./PushButton";
 import Rectangle from "./Rectangle";
+import Slider from "./Slider";
 import Text from "./Text";
 import ToggleSwitch from "./ToggleSwitch";
 
@@ -50,6 +56,9 @@ export type HmiWidgetPropertyField<D> =
 			label: string;
 			min?: number;
 			max?: number;
+			/** Field imposed by the behavior of the bound input (see `getBehaviorImposedData`):
+			 * read-only while the binding lasts. */
+			imposedByInputBehavior?: boolean;
 			get: (data: D) => number;
 			set: (data: D, value: number) => D;
 	  }
@@ -57,6 +66,8 @@ export type HmiWidgetPropertyField<D> =
 			kind: "select";
 			label: string;
 			options: { value: string; label: string }[];
+			/** See the `number` field. */
+			imposedByInputBehavior?: boolean;
 			get: (data: D) => string;
 			set: (data: D, value: string) => D;
 			/** Patch supplémentaire du widget appliqué en même temps que `set` — échappatoire pour
@@ -86,7 +97,7 @@ export type HmiAnimatableStyleProp<D> = {
  * (domaine). Ajouter un widget = une entrée ici (composant + aperçu + descripteurs de champs).
  *
  * Les `label` (champs, options, événements) sont des **clés de traduction** relatives au
- * namespace `hmiEditor` (ex. `"fields.behavior"`, `"options.momentary"`) : le rendu passe par
+ * namespace `hmiEditor` (ex. `"fields.behavior"`, `"options.momentaryNo"`) : le rendu passe par
  * `useT("hmiEditor")` dans les panneaux qui consomment ces descripteurs. `manualDescription`
  * est une **clé de traduction** (namespace `hmiEditor.widgetManual`), résolue par `HmiSection`. */
 export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
@@ -109,11 +120,17 @@ export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
 
 const PUSH_BUTTON_BEHAVIORS: { value: HmiPushButtonBehavior; label: string }[] =
 	[
-		{ value: "momentary", label: "options.momentary" },
+		{ value: "momentary-no", label: "options.momentaryNo" },
+		{ value: "momentary-nc", label: "options.momentaryNc" },
 		{ value: "set", label: "options.set" },
 		{ value: "reset", label: "options.reset" },
 		{ value: "toggle", label: "options.toggle" },
 	];
+
+const SWITCH_CONTACTS: { value: HmiSwitchContact; label: string }[] = [
+	{ value: "no", label: "options.contactNo" },
+	{ value: "nc", label: "options.contactNc" },
+];
 
 export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 	"push-button": {
@@ -129,7 +146,8 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 				kind: "select",
 				label: "fields.behavior",
 				options: PUSH_BUTTON_BEHAVIORS,
-				get: (data) => data.behavior ?? "momentary",
+				imposedByInputBehavior: true,
+				get: (data) => data.behavior ?? DEFAULT_PUSH_BUTTON_BEHAVIOR,
 				set: (data, value) => ({
 					...data,
 					behavior: value as HmiPushButtonBehavior,
@@ -145,7 +163,19 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		manualDescription: "widgetManual.toggleSwitch",
 		animatableStyleProps: [],
 		events: [],
-		propertyFields: [],
+		propertyFields: [
+			{
+				kind: "select",
+				label: "fields.contact",
+				options: SWITCH_CONTACTS,
+				imposedByInputBehavior: true,
+				get: (data) => data.contact ?? DEFAULT_SWITCH_CONTACT,
+				set: (data, value) => ({
+					...data,
+					contact: value as HmiSwitchContact,
+				}),
+			},
+		],
 	},
 	indicator: {
 		component: Indicator,
@@ -254,14 +284,64 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 			{
 				kind: "number",
 				label: "fields.min",
+				imposedByInputBehavior: true,
 				get: (data) => data.min ?? 0,
 				set: (data, value) => ({ ...data, min: value }),
 			},
 			{
 				kind: "number",
 				label: "fields.max",
+				imposedByInputBehavior: true,
 				get: (data) => data.max ?? 100,
 				set: (data, value) => ({ ...data, max: value }),
+			},
+		],
+	},
+	slider: {
+		component: Slider,
+		toolSymbol: SliderSymbol,
+		previewWidth: 60,
+		previewValue: 40,
+		paletteOrder: 7,
+		manualDescription: "widgetManual.slider",
+		animatableStyleProps: [],
+		events: [],
+		propertyFields: [
+			{
+				kind: "select",
+				label: "fields.orientation",
+				options: [
+					{ value: "horizontal", label: "options.horizontal" },
+					{ value: "vertical", label: "options.vertical" },
+				],
+				get: (data) => data.style?.orientation ?? "horizontal",
+				set: (data, value) => ({
+					...data,
+					style: { ...data.style, orientation: value as HmiSliderOrientation },
+				}),
+				widgetPatch: (widget) => ({
+					size: { width: widget.size.height, height: widget.size.width },
+				}),
+			},
+			{
+				kind: "number",
+				label: "fields.min",
+				imposedByInputBehavior: true,
+				get: (data) => data.min ?? 0,
+				set: (data, value) => ({ ...data, min: value }),
+			},
+			{
+				kind: "number",
+				label: "fields.max",
+				imposedByInputBehavior: true,
+				get: (data) => data.max ?? 100,
+				set: (data, value) => ({ ...data, max: value }),
+			},
+			{
+				kind: "number",
+				label: "fields.step",
+				get: (data) => data.step ?? 1,
+				set: (data, value) => ({ ...data, step: value }),
 			},
 		],
 	},

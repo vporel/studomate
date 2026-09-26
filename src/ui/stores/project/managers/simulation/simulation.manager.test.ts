@@ -410,6 +410,36 @@ describe("SimulationManager", () => {
 		});
 	});
 
+	describe("comportement physique des entrées", () => {
+		it("démarre une entrée NF à VRAI et ramène l'écriture d'un curseur à sa borne", async () => {
+			const arret = VariableFactory.createLogicInput("arret").update({
+				behavior: { kind: "push-button-nc", params: null },
+			});
+			const niveau = VariableFactory.createAnalogInput("niveau").update({
+				behavior: { kind: "slider", params: { min: 0, max: 100 } },
+			});
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "arret", "NON arret");
+			const project = ProjectFactory.create([arret, niveau], [grafcet]);
+			const { get, set } = makeStore(project);
+			set(() => ({ simulationMode: SimulationMode.STEP_BY_STEP }));
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(0);
+
+			expect(get().simulationVariablesStates[arret.id].value).toBe(true);
+			expect(get().simulationVariablesStates[niveau.id].value).toBe(0);
+
+			manager.setPhysicalInputValue(niveau.id, 150);
+			expect(get().simulationVariablesStates[niveau.id].value).toBe(100);
+
+			manager.setPhysicalInputValue(niveau.id, -5);
+			expect(get().simulationVariablesStates[niveau.id].value).toBe(0);
+
+			manager.setDesignMode();
+		});
+	});
+
 	describe("forceVariable / releaseVariable", () => {
 		it("forceVariable met à jour forcedVariables dans le store", async () => {
 			const inputVar = VariableFactory.createLogicInput("I0");

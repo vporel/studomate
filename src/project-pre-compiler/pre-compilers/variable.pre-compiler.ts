@@ -1,3 +1,7 @@
+import {
+	getInputRestValue,
+	getSliderRange,
+} from "@/schemas/variable/input-behavior";
 import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import Variable, {
 	getNumericRange,
@@ -37,7 +41,8 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
 
 export default class VariableCompiler {
 	/**
-	 * Converts all project-level variables to PLCVariables.
+	 * Converts all project-level variables to PLCVariables. An input with a behavior starts at
+	 * its rest value, and a slider input is bounded by the slider's range.
 	 */
 	static compile(variables: Variable[]): PLCVariable[] {
 		const result: PLCVariable[] = [];
@@ -47,15 +52,16 @@ export default class VariableCompiler {
 			if (!plcType) continue;
 
 			const scope = ZONE_TO_SCOPE[variable.zone];
-			result.push(
-				new PLCVariable(
-					variable.id,
-					variable.mnemonic,
-					scope,
-					plcType,
-					getNumericRange(variable.type),
-				),
+			const plcVariable = new PLCVariable(
+				variable.id,
+				variable.mnemonic,
+				scope,
+				plcType,
+				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
 			);
+			const restValue = getInputRestValue(variable.behavior);
+			if (restValue !== undefined) plcVariable.setValue(restValue);
+			result.push(plcVariable);
 		}
 
 		return result;

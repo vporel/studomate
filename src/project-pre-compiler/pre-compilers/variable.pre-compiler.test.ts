@@ -3,6 +3,51 @@ import VariableCompiler from "./variable.pre-compiler";
 
 describe("VariableCompiler", () => {
 	describe("compile", () => {
+		it("démarre une entrée à sa valeur de repos et borne un curseur", () => {
+			const arret = new VariableBuilder()
+				.id("a")
+				.mnemonic("arret")
+				.zone("logic-input")
+				.behavior({ kind: "toggle-switch-nc", params: null })
+				.build();
+			const marche = new VariableBuilder()
+				.id("m")
+				.mnemonic("marche")
+				.zone("logic-input")
+				.behavior({ kind: "push-button-no", params: null })
+				.build();
+			const niveau = new VariableBuilder()
+				.id("n")
+				.mnemonic("niveau")
+				.zone("analog-input")
+				.type("INT")
+				.behavior({ kind: "slider", params: { min: 20, max: 80 } })
+				.build();
+
+			const [a, m, n] = VariableCompiler.compile([arret, marche, niveau]);
+
+			expect(a.getValue()).toBe(true);
+			expect(m.getValue()).toBe(false);
+			expect(n.getValue()).toBe(20);
+			expect(n.getNumericRange()).toEqual({ min: 20, max: 80, integer: true, wrap: false });
+			n.setValue(500);
+			expect(n.getValue()).toBe(80);
+		});
+
+		it("garde la plage du type pour une entrée analogique sans curseur", () => {
+			const niveau = new VariableBuilder()
+				.id("n")
+				.mnemonic("niveau")
+				.zone("analog-input")
+				.type("INT")
+				.build();
+
+			const [n] = VariableCompiler.compile([niveau]);
+
+			expect(n.getValue()).toBe(0);
+			expect(n.getNumericRange()).toEqual(expect.objectContaining({ min: -32768, max: 32767 }));
+		});
+
 		it("compiles a BOOL variable to boolean PLCVariable", () => {
 			const variable = new VariableBuilder()
 				.id("var-1")

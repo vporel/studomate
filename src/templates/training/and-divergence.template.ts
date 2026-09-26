@@ -24,6 +24,7 @@ import {
 } from "@/schemas/grafcet/transition.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /**
@@ -36,7 +37,7 @@ export function createAndDivergenceProject(): Project {
 	const project = new Project(createRandomId(), "Divergence en ET", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy"),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
 		VariableBuilder.buildLogicInput(createRandomId(), "capteur1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "capteur2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),

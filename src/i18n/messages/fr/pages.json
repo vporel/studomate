@@ -73,7 +73,9 @@
 			"mnemonic": "Mnémonique",
 			"type": "Type",
 			"address": "Adresse",
-			"comment": "Commentaire"
+			"value": "Valeur",
+			"comment": "Commentaire",
+			"behavior": "Comportement"
 		},
 		"errors": {
 			"mnemonicExists": "Ce mnémonique existe déjà",
@@ -84,6 +86,21 @@
 			"insertVariable": "Insérer une variable",
 			"crossReferences": "Références croisées",
 			"delete": "Supprimer"
+		},
+		"behavior": {
+			"none": "Aucun",
+			"pushButtonNo": "Bouton poussoir NO",
+			"pushButtonNc": "Bouton poussoir NF",
+			"toggleSwitchNo": "Commutateur NO",
+			"toggleSwitchNc": "Commutateur NF",
+			"slider": "Curseur",
+			"sliderSummary": "Curseur ({min} … {max})",
+			"kind": "Comportement",
+			"min": "Min",
+			"max": "Max",
+			"apply": "Appliquer",
+			"cancel": "Annuler",
+			"editAria": "Modifier le comportement de {mnemonic}"
 		}
 	},
 	"watchTables": {

@@ -232,11 +232,23 @@
 			"Mnémonique (obligatoire) : nom de la variable, max 32 caractères, doit commencer par une lettre, caractères alphanumériques et underscores autorisés, doit être unique",
 			"Zone : catégorie de la variable",
 			"Type : type de données",
+			"Comportement (entrées uniquement, optionnel) : organe physique câblé sur l'entrée, voir ci-dessous",
 			"Adresse (optionnel) : adresse automate au format PLC (ex. %I0.0, %QW10, %MD100)",
 			"Commentaire (optionnel) : description libre"
 		],
+		"behaviorTitle": "Comportement d'une entrée",
+		"behaviorBody1": "Le comportement décrit l'organe physique câblé sur une entrée. Il se règle dans la colonne « Comportement » de la table des entrées (clic sur la cellule, en mode Conception) et agit sur la simulation, que la table de visualisation soit ouverte ou non.",
+		"behaviorItems": [
+			"Bouton poussoir NO : la variable vaut VRAI tant que le bouton est enfoncé, FAUX au repos. C'est le comportement donné à une nouvelle entrée logique créée dans la table.",
+			"Bouton poussoir NF : la variable vaut FAUX tant que le bouton est enfoncé, VRAI au repos, donc dès le lancement de la simulation (bouton d'arrêt câblé en contact à ouverture).",
+			"Commutateur NO ou NF : le commutateur reste dans la position choisie. En position actionnée, la variable vaut VRAI (NO) ou FAUX (NF) ; un commutateur NF démarre donc à VRAI.",
+			"Curseur (entrées analogiques INT, WORD, DWORD) : la valeur se règle entre un minimum et un maximum entiers. Toute valeur écrite (table de visualisation, IHM) est ramenée à la borne la plus proche. Au lancement, l'entrée vaut 0 si 0 est dans la plage, sinon le minimum.",
+			"Aucun : la table de visualisation affiche un interrupteur (entrée logique) ou un champ de saisie libre (entrée analogique)."
+		],
+		"behaviorBody2": "Dans la table de visualisation, l'entrée prend la forme de l'organe choisi : bouton à maintenir enfoncé (à la souris ou avec la touche Espace), interrupteur ou curseur. Sur une page IHM, un widget lié à une entrée qui a un comportement en reprend le réglage : le mode d'un bouton poussoir, le contact d'un interrupteur et les bornes d'une saisie numérique ou d'un curseur sont imposés et grisés. Un interrupteur ne peut pas être lié à une entrée bouton poussoir, ni un bouton poussoir à une entrée commutateur.",
+		"behaviorBody3": "Changer la zone ou le type d'une variable remet son comportement à « Aucun » quand il n'est plus possible (par exemple une entrée déplacée dans les mémoires).",
 		"managementTitle": "Gestion des variables",
-		"managementBody1": "Depuis la page Variables (accessible via l'explorateur ou le menu), vous pouvez ajouter, modifier et supprimer des variables. La modification et la suppression sont désactivées en mode Simulation.",
+		"managementBody1": "Depuis la page Variables (accessible via l'explorateur ou le menu), vous pouvez ajouter, modifier et supprimer des variables. La modification et la suppression sont désactivées en mode Simulation ; une colonne « Valeur » affiche alors la valeur courante de chaque variable, en lecture seule.",
 		"managementBody2": "Renommer le mnémonique d'une variable met à jour toutes les expressions qui l'utilisent dans les grafcets et les ladders du projet.",
 		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer.",
 		"systemTitle": "Variables système",
@@ -635,7 +647,10 @@
 			"Exporter et Fermer le projet — aucun raccourci (menu Fichier)"
 		],
 		"projectTitle": "Projet",
-		"projectItems": ["Ctrl+G — Nouveau grafcet", "Ctrl+L — Nouveau ladder"],
+		"projectItems": [
+			"Ctrl+G — Nouveau grafcet",
+			"Ctrl+L — Nouveau ladder"
+		],
 		"editTitle": "Édition",
 		"editItems": [
 			"Ctrl+Z — Annuler",
@@ -648,7 +663,9 @@
 			"Flèches — Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": ["F2 — Renommer le grafcet ou le ladder sélectionné"],
+		"explorerItems": [
+			"F2 — Renommer le grafcet ou le ladder sélectionné"
+		],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée — Valider la modification",

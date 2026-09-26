@@ -91,6 +91,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			aria-selected={active}
 			{...attributes}
 			{...listeners}
+			style={{ transform: CSS.Transform.toString(transform) }}
 			sx={{
 				height: "100%",
 				width: "fit-content",
@@ -102,7 +103,6 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				gap: "10px",
 				cursor: "pointer",
 				userSelect: "none",
-				transform: CSS.Transform.toString(transform),
 				transition: [transition, "background-color .2s ease", "color .2s ease"]
 					.filter(Boolean)
 					.join(", "),

@@ -27,6 +27,6 @@ describe("HmiSection", () => {
 			(Object.keys(HMI_WIDGET_DEFINITIONS) as HmiWidgetType[]).length,
 		);
 		// Un extrait d'une description connue, pour vérifier la résolution i18n.
-		expect(screen.getByText(/Bouton poussoir —/)).toBeInTheDocument();
+		expect(screen.getByText(/Bouton poussoir :/)).toBeInTheDocument();
 	});
 });

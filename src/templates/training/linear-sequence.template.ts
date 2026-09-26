@@ -19,6 +19,7 @@ import {
 } from "@/schemas/grafcet/transition.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /**
@@ -30,7 +31,7 @@ export function createLinearSequenceProject(): Project {
 	const project = new Project(createRandomId(), "Séquence linéaire", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy"),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),

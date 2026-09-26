@@ -24,7 +24,7 @@ export default class VariablesRemoveCommand extends AbstractProjectCommand<
 				const variable = new Variable(v.id, v.mnemonic, v.zone, v.type);
 				if (v.address) variable.address = v.address;
 				if (v.comment) variable.comment = v.comment;
-				return variable;
+				return v.behavior ? variable.update({ behavior: v.behavior }) : variable;
 			}),
 		);
 		return project;

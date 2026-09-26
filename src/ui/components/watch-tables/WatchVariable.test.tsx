@@ -136,3 +136,117 @@ describe("WatchVariable — variables non booléennes", () => {
 		expect(prevented).toBe(true);
 	});
 });
+
+describe("WatchVariable — comportement physique des entrées", () => {
+	const withBehavior = (variable: Variable, behavior: Variable["behavior"]) =>
+		variable.update({ behavior });
+
+	it("bouton poussoir NO : VRAI à l'appui, FAUX au relâchement", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
+				kind: "push-button-no",
+				params: null,
+			}),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "marche" });
+
+		fireEvent.pointerDown(button);
+		fireEvent.pointerUp(button);
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", true],
+			["v1", false],
+		]);
+	});
+
+	it("bouton poussoir NF : FAUX à l'appui, VRAI au relâchement, affiché enfoncé quand FAUX", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "arret", "logic-input", "BOOL"), {
+				kind: "push-button-nc",
+				params: null,
+			}),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "arret" });
+		expect(button).toHaveAttribute("aria-pressed", "true");
+		expect(button).toHaveTextContent("");
+		expect(screen.getByText("FAUX")).toBeInTheDocument();
+
+		fireEvent.pointerDown(button);
+		fireEvent.pointerLeave(button);
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", false],
+			["v1", true],
+		]);
+	});
+
+	it("bouton poussoir : Espace maintenu appuie une seule fois, relâché revient au repos", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
+				kind: "push-button-no",
+				params: null,
+			}),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "marche" });
+
+		fireEvent.keyDown(button, { key: " " });
+		fireEvent.keyDown(button, { key: " " });
+		fireEvent.keyUp(button, { key: " " });
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", true],
+			["v1", false],
+		]);
+	});
+
+	it("bouton poussoir : un relâchement sans appui préalable n'écrit rien", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
+				kind: "push-button-no",
+				params: null,
+			}),
+			value: false,
+		});
+
+		fireEvent.pointerLeave(screen.getByRole("button", { name: "marche" }));
+
+		expect(setPhysicalInputValue).not.toHaveBeenCalled();
+	});
+
+	it("commutateur NF : la position actionnée écrit FAUX", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "arret", "logic-input", "BOOL"), {
+				kind: "toggle-switch-nc",
+				params: null,
+			}),
+			value: true,
+		});
+		const control = screen.getByRole("switch");
+		expect(control).not.toBeChecked();
+
+		fireEvent.click(control);
+
+		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", false);
+	});
+
+	it("curseur : affiche la valeur et écrit la valeur choisie", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(new Variable("v1", "niveau", "analog-input", "INT"), {
+				kind: "slider",
+				params: { min: 0, max: 100 },
+			}),
+			value: 40,
+		});
+		const slider = screen.getByRole("slider", { name: "niveau" });
+		expect(slider).toHaveAttribute("aria-valuemin", "0");
+		expect(slider).toHaveAttribute("aria-valuemax", "100");
+		expect(screen.getByText("40")).toBeInTheDocument();
+
+		fireEvent.change(slider, { target: { value: 70 } });
+
+		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", 70);
+	});
+});

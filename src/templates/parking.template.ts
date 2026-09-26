@@ -25,6 +25,7 @@ import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /** Nombre de places du parking — sert de borne au compteur et à la jauge. */
@@ -255,9 +256,21 @@ export function createParkingProject(): Project {
 	const project = new Project(createRandomId(), "Parking à barrière", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dem_entree"),
-		VariableBuilder.buildLogicInput(createRandomId(), "dem_sortie"),
-		VariableBuilder.buildLogicInput(createRandomId(), "passage"),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dem_entree",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dem_sortie",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"passage",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicOutput(createRandomId(), "barriere"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "complet"),
 		VariableBuilder.buildMemoryInt(createRandomId(), "places"),

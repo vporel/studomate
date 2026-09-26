@@ -242,7 +242,10 @@ describe("VariablesTable", () => {
 		});
 	});
 
-	it("valide au clavier sans perdre les derniers caractères (Entrée juste après la frappe)", async () => {
+	async function addVariableFromBottomRow(
+		zones: import("@/schemas/variable/variable.schema").VariableZone[],
+		mnemonics: string[],
+	) {
 		const addVariables = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
@@ -255,9 +258,7 @@ describe("VariablesTable", () => {
 				mode: ProjectMode.DESIGN,
 			}),
 		);
-		renderWithI18n(
-			<VariablesTable zones={["logic-input"]} pageTitle="Variables" />,
-		);
+		renderWithI18n(<VariablesTable zones={zones} pageTitle="Variables" />);
 
 		fireEvent.click(screen.getByRole("button", { name: "Nouvelle variable" }));
 
@@ -269,14 +270,46 @@ describe("VariablesTable", () => {
 			return el;
 		})) as HTMLInputElement;
 
-		// Frappe rapide puis Entrée immédiate, sans laisser le debounce s'écouler.
-		fireEvent.change(input, { target: { value: "Feu_Ora" } });
-		fireEvent.change(input, { target: { value: "Feu_Orange" } });
+		for (const mnemonic of mnemonics)
+			fireEvent.change(input, { target: { value: mnemonic } });
 		fireEvent.keyDown(input, { key: "Enter" });
 
 		await waitFor(() => expect(addVariables).toHaveBeenCalled());
+		return addVariables;
+	}
+
+	it("valide au clavier sans perdre les derniers caractères (Entrée juste après la frappe)", async () => {
+		// Frappe rapide puis Entrée immédiate, sans laisser le debounce s'écouler.
+		const addVariables = await addVariableFromBottomRow(
+			["logic-input"],
+			["Feu_Ora", "Feu_Orange"],
+		);
+
 		expect(addVariables).toHaveBeenCalledWith([
 			expect.objectContaining({ mnemonic: "Feu_Orange" }),
+		]);
+	});
+
+	it("crée une nouvelle entrée TOR avec le comportement bouton poussoir NO", async () => {
+		const addVariables = await addVariableFromBottomRow(
+			["logic-input", "analog-input"],
+			["marche"],
+		);
+
+		expect(addVariables).toHaveBeenCalledWith([
+			expect.objectContaining({
+				mnemonic: "marche",
+				zone: "logic-input",
+				behavior: { kind: "push-button-no", params: null },
+			}),
+		]);
+	});
+
+	it("crée une variable hors des entrées sans comportement", async () => {
+		const addVariables = await addVariableFromBottomRow(["memory"], ["m0"]);
+
+		expect(addVariables).toHaveBeenCalledWith([
+			expect.objectContaining({ mnemonic: "m0", zone: "memory", behavior: null }),
 		]);
 	});
 

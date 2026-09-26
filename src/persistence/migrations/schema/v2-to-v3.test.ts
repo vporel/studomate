@@ -153,3 +153,63 @@ describe("Migration v2 → v3 — port de comptage CTU renommé en CU", () => {
 		expect(() => v2ToV3.migrate(project)).not.toThrow();
 	});
 });
+
+describe("Migration v2 → v3 — contact NO/NF explicite des widgets IHM", () => {
+	function projectWithWidgets(widgets: Record<string, unknown>) {
+		return { ...makeV2Project(), hmiPages: { p1: { id: "p1", widgets } } };
+	}
+
+	it("passe un bouton poussoir `momentary` ou sans comportement en `momentary-no`", () => {
+		const project = projectWithWidgets({
+			w1: { id: "w1", type: "push-button", data: { variable: "a", behavior: "momentary" } },
+			w2: { id: "w2", type: "push-button", data: { variable: "b" } },
+		});
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({ variable: "a", behavior: "momentary-no" });
+		expect(migrated.hmiPages.p1.widgets.w2.data).toEqual({ variable: "b", behavior: "momentary-no" });
+	});
+
+	it("conserve les modes `set`, `reset` et `toggle` d'un bouton poussoir", () => {
+		const project = projectWithWidgets({
+			w1: { id: "w1", type: "push-button", data: { behavior: "set" } },
+			w2: { id: "w2", type: "push-button", data: { behavior: "reset" } },
+			w3: { id: "w3", type: "push-button", data: { behavior: "toggle" } },
+		});
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(migrated.hmiPages.p1.widgets.w1.data.behavior).toBe("set");
+		expect(migrated.hmiPages.p1.widgets.w2.data.behavior).toBe("reset");
+		expect(migrated.hmiPages.p1.widgets.w3.data.behavior).toBe("toggle");
+	});
+
+	it("donne `contact: \"no\"` à un interrupteur et ne touche pas les autres widgets", () => {
+		const indicator = { id: "w2", type: "indicator", data: { variable: "v" } };
+		const project = projectWithWidgets({
+			w1: { id: "w1", type: "toggle-switch", data: { variable: "s", label: "S" } },
+			w2: indicator,
+		});
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(migrated.hmiPages.p1.widgets.w1.data).toEqual({ variable: "s", label: "S", contact: "no" });
+		expect(migrated.hmiPages.p1.widgets.w2).toEqual(indicator);
+	});
+
+	it("ne modifie pas l'objet d'entrée et tolère des pages malformées", () => {
+		const project = {
+			...projectWithWidgets({ w1: { id: "w1", type: "toggle-switch", data: {} } }),
+		};
+		(project.hmiPages as any).p2 = null;
+		(project.hmiPages as any).p3 = { id: "p3" };
+		const snapshot = JSON.parse(JSON.stringify(project));
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(project).toEqual(snapshot);
+		expect(migrated.hmiPages.p2).toBeNull();
+		expect(migrated.hmiPages.p3).toEqual({ id: "p3" });
+	});
+});

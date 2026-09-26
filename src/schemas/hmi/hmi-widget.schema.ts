@@ -9,6 +9,7 @@ export type HmiWidgetType =
 	| "numeric-display"
 	| "gauge"
 	| "numeric-input"
+	| "slider"
 	| "rectangle"
 	| "ellipse"
 	| "line"
@@ -18,10 +19,25 @@ export type HmiWidgetSize = { width: number; height: number };
 export type HmiWidgetPosition = { x: number; y: number };
 
 /** Comportement d'un bouton poussoir (`push-button`) au clic, en simulation — voir `PushButton`. */
-export type HmiPushButtonBehavior = "momentary" | "set" | "reset" | "toggle";
+export type HmiPushButtonBehavior =
+	| "momentary-no"
+	| "momentary-nc"
+	| "set"
+	| "reset"
+	| "toggle";
+
+export const DEFAULT_PUSH_BUTTON_BEHAVIOR: HmiPushButtonBehavior = "momentary-no";
+
+/** Contact of a toggle-switch: `nc` writes `true` in the rest position. */
+export type HmiSwitchContact = "no" | "nc";
+
+export const DEFAULT_SWITCH_CONTACT: HmiSwitchContact = "no";
 
 /** Orientation de la barre — gauge uniquement. */
 export type HmiGaugeOrientation = "horizontal" | "vertical";
+
+/** Slider track orientation. */
+export type HmiSliderOrientation = "horizontal" | "vertical";
 
 /** Alignement horizontal du texte — widget `text` uniquement. */
 export type HmiTextAlign = "left" | "center" | "right";
@@ -130,7 +146,8 @@ export type HmiWidgetBaseData = {
 };
 
 export type PushButtonData = HmiWidgetBaseData & {
-	/** Comportement au clic en simulation — défaut : `momentary`, voir `PushButton`. */
+	/** Comportement au clic en simulation — défaut : `DEFAULT_PUSH_BUTTON_BEHAVIOR`, voir
+	 * `PushButton`. */
 	behavior?: HmiPushButtonBehavior;
 	events?: HmiWidgetEvents<HmiPushButtonEventName>;
 	animations?: HmiWidgetAnimations;
@@ -148,6 +165,8 @@ export type IndicatorData = HmiWidgetBaseData & {
 	animations?: HmiWidgetAnimations;
 };
 export type ToggleSwitchData = HmiWidgetBaseData & {
+	/** Défaut : `DEFAULT_SWITCH_CONTACT`. */
+	contact?: HmiSwitchContact;
 	animations?: HmiWidgetAnimations;
 };
 export type NumericDisplayData = HmiWidgetBaseData & {
@@ -173,6 +192,17 @@ export type NumericInputData = HmiWidgetBaseData & {
 	min?: number;
 	/** Valeur maximale acceptée. */
 	max?: number;
+	animations?: HmiWidgetAnimations;
+};
+export type SliderData = HmiWidgetBaseData & {
+	min?: number;
+	max?: number;
+	/** Increment of the cursor, strictly positive. */
+	step?: number;
+	style?: {
+		/** Default: `horizontal`. */
+		orientation?: HmiSliderOrientation;
+	};
 	animations?: HmiWidgetAnimations;
 };
 
@@ -243,7 +273,7 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 	"push-button": {
 		kind: "interactive",
 		variableBinding: { types: ["BOOL"], writes: true },
-		defaultData: { variable: "", label: "BP", behavior: "momentary" },
+		defaultData: { variable: "", label: "BP", behavior: "momentary-no" },
 		label: "Bouton poussoir",
 		defaultSize: { width: 90, height: 40 },
 		minSize: { width: 80, height: 30 },
@@ -265,7 +295,7 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 	"toggle-switch": {
 		kind: "interactive",
 		variableBinding: { types: ["BOOL"], writes: true },
-		defaultData: { variable: "", label: "Interrupteur" },
+		defaultData: { variable: "", label: "Interrupteur", contact: "no" },
 		label: "Interrupteur",
 		defaultSize: { width: 90, height: 40 },
 		minSize: { width: 80, height: 30 },
@@ -303,6 +333,20 @@ export const HMI_WIDGET_DEFINITIONS: Record<
 		label: "Saisie numérique",
 		defaultSize: { width: 100, height: 40 },
 		minSize: { width: 80, height: 30 },
+	},
+	slider: {
+		kind: "interactive",
+		variableBinding: { types: NUMERIC_VARIABLE_TYPES, writes: true },
+		defaultData: {
+			variable: "",
+			label: "Curseur",
+			min: 0,
+			max: 100,
+			step: 1,
+			style: { orientation: "horizontal" },
+		},
+		label: "Curseur",
+		defaultSize: { width: 160, height: 40 },
 	},
 	rectangle: {
 		kind: "shape",
@@ -428,6 +472,9 @@ class GaugeWidget extends HmiWidgetBase<GaugeData> {
 class NumericInputWidget extends HmiWidgetBase<NumericInputData> {
 	readonly type = "numeric-input" as const;
 }
+class SliderWidget extends HmiWidgetBase<SliderData> {
+	readonly type = "slider" as const;
+}
 class RectangleWidget extends HmiWidgetBase<RectangleData> {
 	readonly type = "rectangle" as const;
 }
@@ -452,6 +499,7 @@ export type HmiWidget =
 	| NumericDisplayWidget
 	| GaugeWidget
 	| NumericInputWidget
+	| SliderWidget
 	| RectangleWidget
 	| EllipseWidget
 	| LineWidget
@@ -484,6 +532,7 @@ const WIDGET_CONSTRUCTORS: Record<HmiWidgetType, HmiWidgetCtor> = {
 	"numeric-display": NumericDisplayWidget,
 	gauge: GaugeWidget,
 	"numeric-input": NumericInputWidget,
+	slider: SliderWidget,
 	rectangle: RectangleWidget,
 	ellipse: EllipseWidget,
 	line: LineWidget,

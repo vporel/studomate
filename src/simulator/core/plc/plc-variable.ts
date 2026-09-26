@@ -1,4 +1,4 @@
-import { NumericRange } from "@/lib/numeric-range";
+import { coerceToRange, NumericRange } from "@/lib/numeric-range";
 
 export type PLCVariableScope = "input" | "output" | "memory";
 export type PLCVariableType = "boolean" | "number" | "string";
@@ -10,7 +10,8 @@ export default class PLCVariable {
 	private scope: PLCVariableScope;
 	private type: PLCVariableType;
 	private value: PLCVariableValue;
-	/** Domaine du type numérique d'origine (INT, WORD…) à faire respecter en simulation. */
+	/** Domaine du type numérique d'origine (INT, WORD…) ou bornes d'un curseur, appliqué à
+	 * chaque écriture. */
 	private numericRange: NumericRange | null;
 
 	constructor(
@@ -57,7 +58,10 @@ export default class PLCVariable {
 	public setValue(value: PLCVariableValue): void {
 		if (typeof value !== this.type)
 			throw new Error("The type of the value does not match the variable type");
-		this.value = value;
+		this.value =
+			typeof value === "number" && this.numericRange
+				? coerceToRange(value, this.numericRange)
+				: value;
 	}
 
 	public copy(): PLCVariable {

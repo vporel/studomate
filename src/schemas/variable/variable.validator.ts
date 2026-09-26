@@ -8,8 +8,13 @@
  * `variable.schema.ts` importe en retour `validateVariable` (appelé uniquement dans le
  * constructeur / `update`) — aucun des deux modules n'utilise l'autre à l'évaluation.
  */
+import {
+	getAllowedInputBehaviorKinds,
+	type InputBehavior,
+} from "./input-behavior";
 import { isSystemVariableName, SYSTEM_VARIABLE_PREFIX } from "./system-variables";
 import {
+	getNumericRange,
 	getValidTypesForZones,
 	VARIABLE_TYPES,
 	ZONES_TO_TYPES,
@@ -31,7 +36,11 @@ export type VariableValidationCode =
 	| "TYPE_NOT_ALLOWED_IN_ZONE"
 	| "ZONE_TYPE_INCOMPATIBLE"
 	| "ADDRESS_MISSING_PERCENT"
-	| "ADDRESS_INVALID";
+	| "ADDRESS_INVALID"
+	| "BEHAVIOR_NOT_ALLOWED"
+	| "SLIDER_BOUNDS_NOT_INTEGER"
+	| "SLIDER_BOUNDS_ORDER"
+	| "SLIDER_BOUNDS_OUT_OF_TYPE_RANGE";
 
 export type VariableValidationIssue = {
 	code: VariableValidationCode;
@@ -105,6 +114,31 @@ export function validateAddress(address: string): VariableValidationIssue[] {
 	return issues;
 }
 
+export function validateBehavior(
+	zone: VariableZone,
+	type: VariableType,
+	behavior: InputBehavior | null | undefined,
+): VariableValidationIssue[] {
+	if (!behavior) return [];
+	if (!getAllowedInputBehaviorKinds(zone, type).includes(behavior.kind))
+		return [issue("BEHAVIOR_NOT_ALLOWED", { kind: behavior.kind, type, zone })];
+	if (behavior.kind !== "slider") return [];
+	const { min, max } = behavior.params;
+	if (!Number.isInteger(min) || !Number.isInteger(max))
+		return [issue("SLIDER_BOUNDS_NOT_INTEGER")];
+	if (min >= max) return [issue("SLIDER_BOUNDS_ORDER", { min, max })];
+	const typeRange = getNumericRange(type);
+	if (typeRange && (min < typeRange.min || max > typeRange.max))
+		return [
+			issue("SLIDER_BOUNDS_OUT_OF_TYPE_RANGE", {
+				type,
+				min: typeRange.min,
+				max: typeRange.max,
+			}),
+		];
+	return [];
+}
+
 /** Forme minimale requise pour valider une variable complète (évite d'importer la classe). */
 export type ValidatableVariable = {
 	mnemonic: string;
@@ -112,9 +146,11 @@ export type ValidatableVariable = {
 	type: VariableType;
 	address?: string;
 	ownerBlock?: unknown;
+	behavior?: InputBehavior | null;
 };
 
-/** Validation composite d'une variable : mnémonique + compatibilité zone/type + adresse. */
+/** Validation composite d'une variable : mnémonique + compatibilité zone/type + adresse +
+ * comportement d'entrée. */
 export function validateVariable(
 	variable: ValidatableVariable,
 ): VariableValidationIssue[] {
@@ -122,5 +158,6 @@ export function validateVariable(
 		...validateMnemonic(variable.mnemonic, variable.ownerBlock !== undefined),
 		...validateZoneType(variable.zone, variable.type),
 		...(variable.address ? validateAddress(variable.address) : []),
+		...validateBehavior(variable.zone, variable.type, variable.behavior),
 	];
 }

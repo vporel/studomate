@@ -27,6 +27,7 @@
 		"numeric-display": "display",
 		"gauge": "gauge",
 		"numeric-input": "input",
+		"slider": "slider",
 		"rectangle": "rectangle",
 		"ellipse": "ellipse",
 		"line": "line",

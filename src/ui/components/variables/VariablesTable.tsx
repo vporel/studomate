@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_LOGIC_INPUT_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import {
 	VariableType,
 	VariableZone,
@@ -231,8 +232,14 @@ const VariablesTable = ({
 					if (isDraft) {
 						pendingInsert.current = { draftId: id, mnemonic };
 					}
+					const zone = chooseZone(zones, newData.type);
 					variablesManager.addVariables([
-						{ ...(newData as any), zone: chooseZone(zones, newData.type) },
+						{
+							...(newData as any),
+							zone,
+							behavior:
+								zone === "logic-input" ? DEFAULT_LOGIC_INPUT_BEHAVIOR : null,
+						},
 					]);
 				} else if (isDraft) {
 					setOrder((prev) => prev.filter((x) => x !== id));

@@ -4,6 +4,10 @@ import {
 	matchesAnyAcceptedLiteral,
 } from "@/expression-language/literals/kind";
 import {
+	InputBehavior,
+	InputBehaviorKind,
+} from "@/schemas/variable/input-behavior";
+import {
 	VariableDirection,
 	VariableType,
 } from "@/schemas/variable/variable.schema";
@@ -13,6 +17,7 @@ export type SelectorStatus =
 	| "undeclared"
 	| "wrong-type"
 	| "excluded-direction"
+	| "excluded-behavior"
 	| "ok"
 	| null;
 
@@ -81,12 +86,14 @@ export function computeStatus(
 	variables: {
 		mnemonic: string;
 		type: VariableType;
+		behavior?: InputBehavior | null;
 		getDirection(): VariableDirection;
 	}[],
 	typeFilter?: VariableType[],
 	excludeDirection?: VariableDirection,
 	acceptedLiterals?: LiteralKind[],
 	dialect: Dialect = Dialect.FR,
+	excludeBehaviorKinds?: readonly InputBehaviorKind[],
 ): SelectorStatus {
 	const trimmed = mnemonic.trim();
 	if (!trimmed) return null;
@@ -100,7 +107,19 @@ export function computeStatus(
 	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
 	if (excludeDirection && match.getDirection() === excludeDirection)
 		return "excluded-direction";
+	if (hasExcludedBehavior(match, excludeBehaviorKinds))
+		return "excluded-behavior";
 	return "ok";
+}
+
+export function hasExcludedBehavior(
+	variable: { behavior?: InputBehavior | null },
+	excludeBehaviorKinds?: readonly InputBehaviorKind[],
+): boolean {
+	return (
+		!!variable.behavior &&
+		!!excludeBehaviorKinds?.includes(variable.behavior.kind)
+	);
 }
 
 export function columnsGridTemplate(columns: VariableColumn[]): string {

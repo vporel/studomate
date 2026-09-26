@@ -1,4 +1,5 @@
 import { NumericRange } from "@/lib/numeric-range";
+import type { InputBehavior } from "./input-behavior";
 import { validateVariable } from "./variable.validator";
 
 export type {
@@ -92,6 +93,7 @@ export const VARIABLE_UPDATABLE_FIELDS = [
 	"type",
 	"address",
 	"comment",
+	"behavior",
 ] as const;
 
 export type VariableUpdatableFields = Pick<
@@ -114,6 +116,8 @@ export default class Variable {
 	type: VariableType;
 	address?: string;
 	comment?: string;
+	/** Absent on projects saved before this field existed: same meaning as `null`. */
+	behavior?: InputBehavior | null;
 	ownerBlock?: VariableOwnerBlock;
 
 	constructor(
@@ -129,6 +133,7 @@ export default class Variable {
 		this.type = type.toUpperCase() as VariableType;
 		this.address = "";
 		this.comment = "";
+		this.behavior = null;
 		this.ownerBlock = ownerBlock;
 
 		const issues = validateVariable(this);

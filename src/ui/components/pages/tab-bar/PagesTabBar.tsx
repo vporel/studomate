@@ -6,6 +6,7 @@ import {
 	closestCenter,
 	DndContext,
 	DragEndEvent,
+	Modifier,
 	PointerSensor,
 	useSensor,
 	useSensors,
@@ -46,6 +47,25 @@ export function edgeFadeMask(
 		? `black calc(100% - ${EDGE_FADE_PX}px), transparent`
 		: "black";
 	return `linear-gradient(to right, ${start}, ${end})`;
+}
+
+/** Tabs sit in a single horizontal row: the dragged tab only follows the pointer along X. */
+export const restrictToHorizontalAxis: Modifier = ({ transform }) => ({
+	...transform,
+	y: 0,
+});
+
+/** New tab order after dropping `activeId` onto `overId`; `null` when the order is unchanged. */
+export function reorderTabIds(
+	ids: string[],
+	activeId: string,
+	overId: string | null,
+): string[] | null {
+	if (overId === null || activeId === overId) return null;
+	const from = ids.indexOf(activeId);
+	const to = ids.indexOf(overId);
+	if (from === -1 || to === -1) return null;
+	return arrayMove(ids, from, to);
 }
 
 const PagesTabBar = () => {
@@ -124,15 +144,12 @@ const PagesTabBar = () => {
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			const { active, over } = event;
-			if (!over || active.id === over.id) return;
-			const ids = tabsData.map((tab) => tab.id);
-			pagesManager.reorderPages(
-				arrayMove(
-					ids,
-					ids.indexOf(active.id as string),
-					ids.indexOf(over.id as string),
-				),
+			const newOrder = reorderTabIds(
+				tabsData.map((tab) => tab.id),
+				String(active.id),
+				over ? String(over.id) : null,
 			);
+			if (newOrder) pagesManager.reorderPages(newOrder);
 		},
 		[tabsData, pagesManager],
 	);
@@ -165,6 +182,7 @@ const PagesTabBar = () => {
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
+				modifiers={[restrictToHorizontalAxis]}
 				onDragEnd={handleDragEnd}
 			>
 				<SortableContext

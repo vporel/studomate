@@ -1,5 +1,6 @@
 "use client";
 
+import { getBehaviorImposedData } from "@/schemas/hmi/hmi-widget-input-behavior";
 import { HmiWidget, HmiWidgetData } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import {
@@ -7,15 +8,18 @@ import {
 	HmiWidgetPropertyField,
 } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import useCommittedField from "@/ui/lib/hooks/useCommittedField";
+import useFormatInputBehavior from "@/ui/lib/variables/useFormatInputBehavior";
 import {
 	Box,
 	Checkbox,
 	FormControlLabel,
 	MenuItem,
 	TextField,
+	Tooltip,
 } from "@mui/material";
 import { ReactNode } from "react";
 import { useT } from "@/ui/i18n/useT";
+import useBoundInputBehavior from "./useBoundInputBehavior";
 
 type PropertyField = HmiWidgetPropertyField<HmiWidgetData>;
 type NumberField = Extract<PropertyField, { kind: "number" }>;
@@ -53,7 +57,22 @@ export function groupPropertyFields<D>(
 const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 	const t = useT("hmiEditor");
 	const updateWidget = useHmiStore((s) => s.updateWidget);
+	const formatBehavior = useFormatInputBehavior();
 	const fields = HMI_WIDGET_UI[widget.type].propertyFields as PropertyField[];
+
+	const boundMnemonic = "variable" in widget.data ? widget.data.variable : null;
+	const boundBehavior = useBoundInputBehavior(boundMnemonic);
+	const imposed = getBehaviorImposedData(widget.type, boundBehavior);
+	// Fields imposed by the bound input's behavior show the imposed value, read-only.
+	const data = (imposed ? { ...widget.data, ...imposed } : widget.data) as HmiWidgetData;
+	const isLocked = (field: PropertyField) =>
+		!!imposed &&
+		(field.kind === "select" || field.kind === "number") &&
+		!!field.imposedByInputBehavior;
+	const lockTooltip = t("panel.imposedByInputBehavior", {
+		variable: boundMnemonic ?? "",
+		behavior: formatBehavior(boundBehavior),
+	});
 
 	const apply = (
 		data: HmiWidgetData,
@@ -88,7 +107,8 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 					fullWidth
 					label={t(field.label as never)}
 					size="small"
-					value={field.get(widget.data)}
+					disabled={isLocked(field)}
+					value={field.get(data)}
 					onChange={(e) =>
 						apply(
 							field.set(widget.data, e.target.value),
@@ -107,7 +127,13 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 
 		if (field.kind === "number") {
 			return (
-				<NumberPropertyField field={field} widget={widget} apply={apply} />
+				<NumberPropertyField
+					field={field}
+					widget={widget}
+					data={data}
+					disabled={isLocked(field)}
+					apply={apply}
+				/>
 			);
 		}
 
@@ -127,16 +153,26 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 		return <TextPropertyField field={field} widget={widget} apply={apply} />;
 	};
 
+	// A disabled field does not emit mouse events: the tooltip listens on its wrapper.
+	const renderWithLock = (field: PropertyField): ReactNode =>
+		isLocked(field) ? (
+			<Tooltip title={lockTooltip}>
+				<Box>{renderField(field)}</Box>
+			</Tooltip>
+		) : (
+			renderField(field)
+		);
+
 	return (
 		<>
 			{groupPropertyFields(fields).map((group) =>
 				Array.isArray(group) ? (
 					<Box key={group[0].label} sx={{ display: "flex", gap: 1 }}>
-						<Box sx={{ flex: 1, minWidth: 0 }}>{renderField(group[0])}</Box>
-						<Box sx={{ flex: 1, minWidth: 0 }}>{renderField(group[1])}</Box>
+						<Box sx={{ flex: 1, minWidth: 0 }}>{renderWithLock(group[0])}</Box>
+						<Box sx={{ flex: 1, minWidth: 0 }}>{renderWithLock(group[1])}</Box>
 					</Box>
 				) : (
-					<Box key={group.label}>{renderField(group)}</Box>
+					<Box key={group.label}>{renderWithLock(group)}</Box>
 				),
 			)}
 		</>
@@ -148,15 +184,20 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 const NumberPropertyField = ({
 	field,
 	widget,
+	data,
+	disabled,
 	apply,
 }: {
 	field: NumberField;
 	widget: HmiWidget;
+	/** `widget.data` with the fields imposed by the bound input's behavior applied. */
+	data: HmiWidgetData;
+	disabled: boolean;
 	apply: (data: HmiWidgetData) => void;
 }) => {
 	const t = useT("hmiEditor");
 	const committed = useCommittedField<number>({
-		value: field.get(widget.data),
+		value: field.get(data),
 		parse: (text) => {
 			if (text.trim() === "" || Number.isNaN(Number(text))) return null;
 			let n = Number(text);
@@ -173,6 +214,7 @@ const NumberPropertyField = ({
 			size="small"
 			type="number"
 			fullWidth
+			disabled={disabled}
 			slotProps={{
 				htmlInput: {
 					min: field.min,

@@ -66,6 +66,19 @@ describe("parking.template", () => {
 			});
 		});
 
+		it("donne aux entrées le comportement de leur organe physique", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				dem_entree: "push-button-no",
+				dem_sortie: "push-button-no",
+				passage: "push-button-no",
+			});
+		});
+
 		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");

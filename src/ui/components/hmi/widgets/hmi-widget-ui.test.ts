@@ -107,6 +107,26 @@ describe("descripteurs de champs (propertyFields)", () => {
 		);
 		expect(patch.size).toEqual({ width: 2, height: 120 });
 	});
+
+	it("le champ Orientation du curseur échange largeur et hauteur", () => {
+		const orientation = HMI_WIDGET_UI.slider.propertyFields.find(
+			(f) => f.kind === "select" && f.label === "fields.orientation",
+		);
+		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
+			throw new Error("champ orientation introuvable");
+		const patch = orientation.widgetPatch(
+			{ size: { width: 160, height: 40 } } as never,
+			"vertical",
+		);
+		expect(patch.size).toEqual({ width: 40, height: 160 });
+	});
+
+	it("les bornes du curseur sont imposables par le comportement de la variable, pas son pas", () => {
+		const imposable = HMI_WIDGET_UI.slider.propertyFields
+			.filter((f) => f.kind === "number" && f.imposedByInputBehavior)
+			.map((f) => f.label);
+		expect(imposable).toEqual(["fields.min", "fields.max"]);
+	});
 });
 
 describe("animatableStyleProps", () => {

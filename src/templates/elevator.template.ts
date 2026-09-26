@@ -46,6 +46,7 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 
 /** Hauteur de gaine, du RDC (0) au 2ᵉ étage (200), en pixels d'animation. */
 const POSITION_MAX = 200;
@@ -491,12 +492,12 @@ export function createElevatorProject(): Project {
 	const project = new Project(createRandomId(), "Ascenseur", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_0"),
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_1"),
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_2"),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_0"),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_1"),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_2"),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_0", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_1", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_2", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_0", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_1", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_2", PUSH_BUTTON_NO_BEHAVIOR),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "porte"),

@@ -97,6 +97,17 @@ describe("drilling.template", () => {
 			).toBe(true);
 		});
 
+		it("donne aux entrées le comportement de leur organe physique", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				dcy: "push-button-no",
+			});
+		});
+
 		it("passe l'analyse sans erreur (le modèle seul, sans commande, est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");

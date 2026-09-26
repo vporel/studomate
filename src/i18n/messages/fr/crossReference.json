@@ -27,6 +27,7 @@
 		"numeric-display": "affichage",
 		"gauge": "jauge",
 		"numeric-input": "saisie",
+		"slider": "curseur",
 		"rectangle": "rectangle",
 		"ellipse": "ellipse",
 		"line": "trait",

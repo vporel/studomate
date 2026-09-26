@@ -113,6 +113,19 @@ describe("VariableBuilder", () => {
 			expect(variable.type).toBe("BOOL");
 		});
 
+		it("creates a logic input variable without behavior by default", () => {
+			expect(VariableBuilder.buildLogicInput("var-1", "I0").behavior).toBeNull();
+		});
+
+		it("creates a logic input variable with the given behavior", () => {
+			const variable = VariableBuilder.buildLogicInput("var-1", "I0", {
+				kind: "toggle-switch-nc",
+				params: null,
+			});
+
+			expect(variable.behavior).toEqual({ kind: "toggle-switch-nc", params: null });
+		});
+
 		it("creates a logic output variable", () => {
 			const variable = VariableBuilder.buildLogicOutput("var-2", "Q0");
 
@@ -163,4 +176,26 @@ describe("VariableBuilder", () => {
 			expect(variable.type).toBe("INT");
 		});
 	});
+
+	it("builds a variable with a behavior", () => {
+		const variable = new VariableBuilder()
+			.id("e1")
+			.mnemonic("niveau")
+			.zone("analog-input")
+			.type("INT")
+			.behavior({ kind: "slider", params: { min: 0, max: 100 } })
+			.build();
+
+		expect(variable.behavior).toEqual({ kind: "slider", params: { min: 0, max: 100 } });
+	});
+
+	it("rejects a behavior invalid for the zone", () => {
+		expect(() =>
+			new VariableBuilder()
+				.zone("memory")
+				.behavior({ kind: "push-button-no", params: null })
+				.build(),
+		).toThrow();
+	});
 });
+

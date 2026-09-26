@@ -158,9 +158,14 @@ export default class PLC extends ClockedRunnable {
 		return variable;
 	}
 
-	public setMemoryValueById(id: string, value: PLCVariableValue): void {
+	/** Returns the value actually stored, after coercion to the variable's range. */
+	public setMemoryValueById(
+		id: string,
+		value: PLCVariableValue,
+	): PLCVariableValue {
 		const variable = this.getMemoryVariableById(id);
 		variable.setValue(value);
+		return variable.getValue();
 	}
 
 	private getMemoryVariableById(id: string): PLCVariable {
@@ -169,9 +174,14 @@ export default class PLC extends ClockedRunnable {
 		return variable;
 	}
 
-	public setPhysicalInputValueById(id: string, value: PLCVariableValue): void {
+	/** Returns the value actually stored, after coercion to the input's range. */
+	public setPhysicalInputValueById(
+		id: string,
+		value: PLCVariableValue,
+	): PLCVariableValue {
 		const input = this.getPhysicalInputById(id);
 		input.setValue(value);
+		return input.getValue();
 	}
 
 	public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {

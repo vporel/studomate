@@ -5,6 +5,7 @@ import {
 } from "./variable.schema";
 import {
 	validateAddress,
+	validateBehavior,
 	validateMnemonic,
 	validateVariable,
 	validateVariableType,
@@ -158,5 +159,79 @@ describe("validateVariable", () => {
 		expect(
 			validateVariable({ mnemonic: "M", zone: "memory", type: "BOOL" }),
 		).toEqual([]);
+	});
+});
+
+describe("validateBehavior", () => {
+	it("accepte l'absence de comportement partout", () => {
+		expect(validateBehavior("memory", "BOOL", null)).toEqual([]);
+		expect(validateBehavior("logic-output", "BOOL", undefined)).toEqual([]);
+	});
+
+	it("accepte un bouton poussoir ou un commutateur sur une entrée TOR", () => {
+		expect(validateBehavior("logic-input", "BOOL", { kind: "push-button-nc", params: null })).toEqual([]);
+		expect(validateBehavior("logic-input", "BOOL", { kind: "toggle-switch-no", params: null })).toEqual([]);
+	});
+
+	it("BEHAVIOR_NOT_ALLOWED hors des entrées ou pour un type incompatible", () => {
+		expect(codes(validateBehavior("memory", "BOOL", { kind: "push-button-no", params: null }))).toEqual([
+			"BEHAVIOR_NOT_ALLOWED",
+		]);
+		expect(
+			codes(validateBehavior("memory", "INT", { kind: "slider", params: { min: 0, max: 10 } })),
+		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
+		expect(
+			codes(validateBehavior("analog-input", "INT", { kind: "push-button-no", params: null })),
+		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
+		expect(
+			codes(validateBehavior("logic-input", "BOOL", { kind: "slider", params: { min: 0, max: 10 } })),
+		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
+	});
+
+	it("accepte un curseur aux bornes entières, ordonnées, dans la plage du type", () => {
+		expect(
+			validateBehavior("analog-input", "INT", { kind: "slider", params: { min: -10, max: 100 } }),
+		).toEqual([]);
+	});
+
+	it("SLIDER_BOUNDS_NOT_INTEGER pour une borne décimale ou absente", () => {
+		expect(
+			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: 0.5, max: 10 } })),
+		).toEqual(["SLIDER_BOUNDS_NOT_INTEGER"]);
+		expect(
+			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: NaN, max: 10 } })),
+		).toEqual(["SLIDER_BOUNDS_NOT_INTEGER"]);
+	});
+
+	it("SLIDER_BOUNDS_ORDER quand min n'est pas strictement inférieur à max", () => {
+		expect(
+			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: 10, max: 10 } })),
+		).toEqual(["SLIDER_BOUNDS_ORDER"]);
+	});
+
+	it("SLIDER_BOUNDS_OUT_OF_TYPE_RANGE avec la plage du type en paramètres", () => {
+		const issues = validateBehavior("analog-input", "WORD", {
+			kind: "slider",
+			params: { min: -1, max: 10 },
+		});
+		expect(issues).toEqual([
+			{
+				code: "SLIDER_BOUNDS_OUT_OF_TYPE_RANGE",
+				params: { type: "WORD", min: 0, max: 65535 },
+			},
+		]);
+	});
+
+	it("est appelée par validateVariable", () => {
+		expect(
+			codes(
+				validateVariable({
+					mnemonic: "m",
+					zone: "memory",
+					type: "BOOL",
+					behavior: { kind: "push-button-no", params: null },
+				}),
+			),
+		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
 	});
 });

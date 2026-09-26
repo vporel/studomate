@@ -73,4 +73,22 @@ describe("VariablesRemoveCommand", () => {
 			),
 		);
 	});
+
+	it("restaure le comportement d'entrée à l'annulation", () => {
+		const project = new Project("p1", "Projet", "");
+		const payload = {
+			id: "v1",
+			mnemonic: "arret",
+			zone: "logic-input" as const,
+			type: "BOOL" as const,
+			behavior: { kind: "push-button-nc" as const, params: null },
+		};
+		new VariablesAddCommand([payload]).execute(project);
+		const command = new VariablesRemoveCommand([payload]);
+
+		command.execute(project);
+		command.cancel(project);
+
+		expect(project.variables[0].behavior).toEqual({ kind: "push-button-nc", params: null });
+	});
 });

@@ -54,6 +54,42 @@ describe("Variable", () => {
 		});
 	});
 
+	describe("behavior", () => {
+		it("vaut null à la création", () => {
+			expect(new Variable("id", "BP", "logic-input", "BOOL").behavior).toBeNull();
+		});
+
+		it("s'applique via update quand il est valide pour la zone et le type", () => {
+			const variable = new Variable("id", "BP", "logic-input", "BOOL");
+
+			const updated = variable.update({ behavior: { kind: "push-button-nc", params: null } });
+
+			expect(updated.behavior).toEqual({ kind: "push-button-nc", params: null });
+			expect(variable.behavior).toBeNull();
+		});
+
+		it("fait lever update quand il est invalide", () => {
+			const variable = new Variable("id", "M", "memory", "BOOL");
+
+			expect(() =>
+				variable.update({ behavior: { kind: "push-button-no", params: null } }),
+			).toThrow();
+		});
+
+		it("est restitué par createFromJSON, et vaut null pour un projet sans ce champ", () => {
+			const variable = new Variable("id", "niveau", "analog-input", "INT").update({
+				behavior: { kind: "slider", params: { min: 0, max: 100 } },
+			});
+			const { behavior: _omitted, ...legacy } = JSON.parse(JSON.stringify(variable));
+
+			expect(Variable.createFromJSON(JSON.stringify(variable)).behavior).toEqual({
+				kind: "slider",
+				params: { min: 0, max: 100 },
+			});
+			expect(Variable.createFromJSON(JSON.stringify(legacy)).behavior).toBeNull();
+		});
+	});
+
 	describe("copy", () => {
 		it("produit une instance indépendante de l'original", () => {
 			const original = new Variable("id", "M", "memory", "BOOL");

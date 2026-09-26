@@ -1,6 +1,9 @@
 "use client";
 
-import { ToggleSwitchData } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	DEFAULT_SWITCH_CONTACT,
+	ToggleSwitchData,
+} from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
 
@@ -12,7 +15,11 @@ const ToggleSwitch = ({
 	onClick,
 	onValueChange,
 }: HmiWidgetComponentProps<ToggleSwitchData>) => {
-	const active = Boolean(value);
+	const normallyClosed = (data.contact ?? DEFAULT_SWITCH_CONTACT) === "nc";
+	// `active` is the actuated position: for a normally closed contact, it writes `false`. An
+	// unknown value (outside simulation) shows the rest position.
+	const active =
+		value !== undefined && (normallyClosed ? !value : Boolean(value));
 
 	return (
 		// `size` ne dimensionne que la piste (le dessin) : le libellé est positionné en absolu
@@ -25,7 +32,7 @@ const ToggleSwitch = ({
 				cursor: onValueChange || onClick ? "pointer" : "default",
 				userSelect: "none",
 			}}
-			onClick={() => (onValueChange ? onValueChange(!active) : onClick?.())}
+			onClick={() => (onValueChange ? onValueChange(!value) : onClick?.())}
 		>
 			{/* Piste — le curseur suit `justifyContent` plutôt qu'un `left` en px, pour rester
 			cohérent quelle que soit la taille du widget (redimensionnable). */}

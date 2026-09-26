@@ -102,6 +102,22 @@ describe("elevator.template", () => {
 			}
 		});
 
+		it("donne aux entrées le comportement de leur organe physique", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				appel_0: "push-button-no",
+				appel_1: "push-button-no",
+				appel_2: "push-button-no",
+				cabine_0: "push-button-no",
+				cabine_1: "push-button-no",
+				cabine_2: "push-button-no",
+			});
+		});
+
 		it("passe l'analyse sans erreur (le modèle seul, sans commande, est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");

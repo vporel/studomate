@@ -2,6 +2,7 @@
 
 import { Dialect } from "@/expression-language/dialect.enum";
 import { LiteralKind } from "@/expression-language/literals/kind";
+import { InputBehaviorKind } from "@/schemas/variable/input-behavior";
 import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.builder";
 import Variable, {
 	VariableDirection,
@@ -34,6 +35,7 @@ import {
 	ALL_COLUMNS,
 	COLUMNS,
 	computeStatus,
+	hasExcludedBehavior,
 	inputBaseSx,
 	inputWidthPx,
 	simulationValueSx,
@@ -58,6 +60,9 @@ interface VariableSelectorProps {
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
 	 * `"IN"` pour une bobine de ladder, voir `LADDER_COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
 	excludeDirection?: VariableDirection;
+	/** Excludes the inputs having one of these behaviors from the suggestions and the valid
+	 * status (e.g. a toggle-switch widget cannot drive a push-button input). */
+	excludeBehaviorKinds?: readonly InputBehaviorKind[];
 	/** Formes de littéral acceptées en plus d'un nom de variable (voir
 	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé
 	 * comme mnémonique non déclaré. */
@@ -115,6 +120,7 @@ const VariableSelector = forwardRef<
 		label,
 		typeFilter,
 		excludeDirection,
+		excludeBehaviorKinds,
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
@@ -177,9 +183,10 @@ const VariableSelector = forwardRef<
 			variables.filter(
 				(v) =>
 					(!typeFilter || typeFilter.includes(v.type)) &&
-					(!excludeDirection || v.getDirection() !== excludeDirection),
+					(!excludeDirection || v.getDirection() !== excludeDirection) &&
+					!hasExcludedBehavior(v, excludeBehaviorKinds),
 			),
-		[variables, typeFilter, excludeDirection],
+		[variables, typeFilter, excludeDirection, excludeBehaviorKinds],
 	);
 
 	// Calculé ici (pas seulement dans `filterOptions`) pour aussi piloter l'affichage du popup :
@@ -215,6 +222,7 @@ const VariableSelector = forwardRef<
 		excludeDirection,
 		acceptedLiterals,
 		dialect,
+		excludeBehaviorKinds,
 	);
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;

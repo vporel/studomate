@@ -10,6 +10,7 @@
 		"numeric-display": "Affichage numérique",
 		"gauge": "Jauge",
 		"numeric-input": "Saisie numérique",
+		"slider": "Curseur",
 		"text": "Texte",
 		"rectangle": "Rectangle",
 		"ellipse": "Ellipse",
@@ -35,10 +36,13 @@
 		"stroke": "Contour",
 		"strokeWidth": "Épaisseur du contour",
 		"borderRadius": "Rayon des angles",
-		"thickness": "Épaisseur"
+		"thickness": "Épaisseur",
+		"contact": "Contact",
+		"step": "Pas"
 	},
 	"options": {
-		"momentary": "Impulsionnel (maintien momentané)",
+		"momentaryNo": "Impulsionnel NO (1 tant qu'il est enfoncé)",
+		"momentaryNc": "Impulsionnel NF (0 tant qu'il est enfoncé)",
 		"set": "SET (mise à 1)",
 		"reset": "RESET (mise à 0)",
 		"toggle": "Bascule (inversion)",
@@ -46,7 +50,9 @@
 		"vertical": "Vertical",
 		"left": "Gauche",
 		"center": "Centré",
-		"right": "Droite"
+		"right": "Droite",
+		"contactNo": "NO (1 en position actionnée)",
+		"contactNc": "NF (0 en position actionnée)"
 	},
 	"events": {
 		"onPress": "Bouton pressé",
@@ -82,7 +88,8 @@
 		"offsetX": "Décalage X",
 		"offsetY": "Décalage Y",
 		"reset": "Réinitialiser",
-		"addRow": "Ajouter une ligne"
+		"addRow": "Ajouter une ligne",
+		"imposedByInputBehavior": "Imposé par le comportement de la variable « {variable} » ({behavior}). Modifiable dans la table des entrées."
 	},
 	"menu": {
 		"copy": "Copier",
@@ -103,15 +110,16 @@
 		"paste": "Coller"
 	},
 	"widgetManual": {
-		"pushButton": "Bouton poussoir — commande une variable BOOL. Comportements configurables : maintien momentané (la variable passe à 1 tant que le bouton est enfoncé), SET (force à 1), RESET (force à 0), bascule (inverse la valeur à chaque appui).",
-		"toggleSwitch": "Interrupteur — lit et inverse une variable BOOL au clic.",
-		"indicator": "Voyant — affiche l'état d'une variable BOOL (éteint = gris, allumé = vert).",
-		"numericDisplay": "Affichage numérique — affiche la valeur d'une variable numérique. Options : unité (suffixe textuel) et nombre de décimales.",
-		"gauge": "Jauge — barre de progression liée à une variable numérique. Options : min, max et orientation (horizontal / vertical).",
-		"numericInput": "Saisie numérique — champ de saisie lié à une variable numérique. En simulation, saisir une valeur et valider par Entrée ou en cliquant ailleurs l'écrit dans la variable. Options : min et max.",
-		"text": "Texte — texte libre. Options : contenu, taille de police, couleur, alignement (gauche / centré / droite).",
-		"rectangle": "Rectangle — forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.",
-		"ellipse": "Ellipse — forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case « Lier largeur et hauteur » (section Dimensions) fige le ratio courant.",
-		"line": "Trait — segment de couleur unie. Options : couleur, épaisseur et orientation (horizontal / vertical)."
+		"pushButton": "Bouton poussoir : commande une variable BOOL. Comportements configurables : impulsionnel NO (la variable passe à 1 tant que le bouton est enfoncé), impulsionnel NF (la variable passe à 0 tant que le bouton est enfoncé), SET (force à 1), RESET (force à 0), bascule (inverse la valeur à chaque appui). Lié à une entrée de comportement « Bouton poussoir », le comportement est imposé par la variable.",
+		"toggleSwitch": "Interrupteur : inverse une variable BOOL à chaque clic. Contact NO (1 en position actionnée) ou NF (0 en position actionnée). Lié à une entrée de comportement « Commutateur », le contact est imposé par la variable.",
+		"indicator": "Voyant : affiche l'état d'une variable BOOL (éteint = gris, allumé = vert).",
+		"numericDisplay": "Affichage numérique : affiche la valeur d'une variable numérique. Options : unité (suffixe textuel) et nombre de décimales.",
+		"gauge": "Jauge : barre de progression liée à une variable numérique. Options : min, max et orientation (horizontal / vertical).",
+		"numericInput": "Saisie numérique : champ de saisie lié à une variable numérique. En simulation, saisir une valeur et valider par Entrée ou en cliquant ailleurs l'écrit dans la variable. Options : min et max. Liée à une entrée de comportement « Curseur », min et max sont imposés par la variable.",
+		"slider": "Curseur : règle une variable numérique en faisant glisser un curseur. En simulation, la valeur est écrite dans la variable en continu pendant le glissement ; elle reste affichée à côté du curseur. Options : min, max, pas et orientation (horizontal / vertical). Lié à une entrée de comportement « Curseur », min et max sont imposés par la variable.",
+		"text": "Texte : texte libre. Options : contenu, taille de police, couleur, alignement (gauche / centré / droite).",
+		"rectangle": "Rectangle : forme rectangulaire. Options : couleur de remplissage, couleur et épaisseur du contour, rayon des angles.",
+		"ellipse": "Ellipse : forme ovale ou circulaire. Options : couleur de remplissage, couleur et épaisseur du contour. La case « Lier largeur et hauteur » (section Dimensions) fige le ratio courant.",
+		"line": "Trait : segment de couleur unie. Options : couleur, épaisseur et orientation (horizontal / vertical)."
 	}
 }

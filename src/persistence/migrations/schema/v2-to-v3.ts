@@ -54,12 +54,52 @@ function renameExactStrings(
 }
 
 /**
- * The counting port of a `CTU` is named `CU` (IEC 61131-3): references to `Name.IN` become
- * `Name.CU`. `CTD` already used `CD`.
+ * Push-buttons: the `momentary` behavior (also the meaning of an absent behavior) becomes
+ * `momentary-no`. Toggle-switches get the explicit `contact: "no"`.
+ */
+function migrateHmiSwitchingWidgets(hmiPages: unknown): unknown {
+	if (!hmiPages || typeof hmiPages !== "object") return hmiPages;
+	const pages: Record<string, unknown> = {};
+	for (const [pageId, page] of Object.entries(hmiPages)) {
+		const widgets = (page as Record<string, unknown> | null)?.widgets;
+		if (!widgets || typeof widgets !== "object") {
+			pages[pageId] = page;
+			continue;
+		}
+		const migratedWidgets = Array.isArray(widgets)
+			? widgets.map(migrateHmiWidget)
+			: Object.fromEntries(
+					Object.entries(widgets).map(([id, w]) => [id, migrateHmiWidget(w)]),
+				);
+		pages[pageId] = { ...(page as object), widgets: migratedWidgets };
+	}
+	return pages;
+}
+
+function migrateHmiWidget(widget: unknown): unknown {
+	if (!widget || typeof widget !== "object") return widget;
+	const w = widget as Record<string, unknown>;
+	const data = (w.data ?? {}) as Record<string, unknown>;
+	if (w.type === "push-button") {
+		if (data.behavior !== undefined && data.behavior !== "momentary")
+			return widget;
+		return { ...w, data: { ...data, behavior: "momentary-no" } };
+	}
+	if (w.type === "toggle-switch") {
+		return { ...w, data: { ...data, contact: "no" } };
+	}
+	return widget;
+}
+
+/**
+ * - The counting port of a `CTU` is named `CU` (IEC 61131-3): references to `Name.IN` become
+ *   `Name.CU`. `CTD` already used `CD`.
+ * - HMI push-buttons and toggle-switches carry an explicit NO/NC contact.
  */
 const v2ToV3: ProjectMigration = {
 	from: 2,
-	description: "Rename CTU counting port references from `.IN` to `.CU`",
+	description:
+		"Rename CTU counting port references from `.IN` to `.CU`; explicit NO/NC contact on HMI push-buttons and toggle-switches",
 	migrate: (project) => {
 		const programs = project.programs;
 		const names =
@@ -71,7 +111,12 @@ const v2ToV3: ProjectMigration = {
 			renames.size > 0
 				? (renameExactStrings(project, renames) as Record<string, unknown>)
 				: project;
-		return { ...renamed, schemaVersion: 3 };
+		const hmiPages = migrateHmiSwitchingWidgets(renamed.hmiPages);
+		return {
+			...renamed,
+			...(hmiPages !== undefined ? { hmiPages } : {}),
+			schemaVersion: 3,
+		};
 	},
 };
 

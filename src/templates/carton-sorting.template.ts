@@ -45,6 +45,10 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import {
+	PUSH_BUTTON_NO_BEHAVIOR,
+	TOGGLE_SWITCH_NO_BEHAVIOR,
+} from "@/schemas/variable/input-behavior";
 
 /** Course d'un vérin, du rentré (0) au sorti (CYL_MAX), en pixels d'animation et en unités du
  * modèle de partie opérative. */
@@ -676,9 +680,9 @@ export function createCartonSortingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de tri de caisses", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy"),
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy_caisse"),
-		VariableBuilder.buildLogicInput(createRandomId(), "sel_caisse_haute"),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy_caisse", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "sel_caisse_haute", TOGGLE_SWITCH_NO_BEHAVIOR),
 		...OUTPUTS.map((m) => VariableBuilder.buildLogicOutput(createRandomId(), m)),
 		...MEMORY_BOOLS.map((m) => VariableBuilder.buildMemoryBool(createRandomId(), m)),
 		...MEMORY_INTS.map((m) => VariableBuilder.buildMemoryInt(createRandomId(), m)),

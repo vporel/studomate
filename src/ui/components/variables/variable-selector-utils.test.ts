@@ -27,6 +27,21 @@ describe("computeStatus", () => {
 		expect(computeStatus("moteur", variables)).toBe("ok");
 	});
 
+	it("retourne excluded-behavior pour une entrée dont le comportement est exclu", () => {
+		const pushButton = boolInput("arret").update({
+			behavior: { kind: "push-button-nc", params: null },
+		});
+		const free = boolInput("libre");
+		const excluded = ["push-button-no", "push-button-nc"] as const;
+
+		expect(
+			computeStatus("arret", [pushButton], undefined, undefined, undefined, Dialect.FR, excluded),
+		).toBe("excluded-behavior");
+		expect(
+			computeStatus("libre", [free], undefined, undefined, undefined, Dialect.FR, excluded),
+		).toBe("ok");
+	});
+
 	it("retourne undeclared quand le mnémonique est inconnu", () => {
 		expect(computeStatus("inconnu", [boolInput("moteur")])).toBe("undeclared");
 	});

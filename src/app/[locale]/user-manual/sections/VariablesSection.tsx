@@ -33,6 +33,15 @@ export default function VariablesSection() {
 			<ManualList items={t.raw("propertiesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
+			<Typography variant="h4" mb={2} id="input-behavior">
+				{t("behaviorTitle")}
+			</Typography>
+			<Typography mb={2}>{t("behaviorBody1")}</Typography>
+			<ManualList items={t.raw("behaviorItems") as string[]} />
+			<Typography mb={2}>{t("behaviorBody2")}</Typography>
+			<Typography mb={2}>{t("behaviorBody3")}</Typography>
+			<Divider sx={{ my: 2 }} />
+
 			<Typography variant="h4" mb={2}>
 				{t("managementTitle")}
 			</Typography>

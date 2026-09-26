@@ -12,6 +12,7 @@ const ALL_TYPES: HmiWidgetType[] = [
 	"numeric-display",
 	"gauge",
 	"numeric-input",
+	"slider",
 ];
 
 describe("HmiWidget.create", () => {
@@ -69,6 +70,23 @@ describe("HmiWidget.create", () => {
 		if (w.type !== "numeric-input") throw new Error("unreachable");
 		expect(w.data.min).toBe(0);
 		expect(w.data.max).toBe(100);
+	});
+
+	it("initialise min=0, max=100, step=1 et l'orientation horizontale pour slider", () => {
+		const w = HmiWidget.create("slider", 0, 0);
+		if (w.type !== "slider") throw new Error("unreachable");
+		expect(w.data.min).toBe(0);
+		expect(w.data.max).toBe(100);
+		expect(w.data.step).toBe(1);
+		expect(w.data.style?.orientation).toBe("horizontal");
+	});
+
+	it("isole les données par défaut du slider entre deux widgets", () => {
+		const a = HmiWidget.create("slider", 0, 0);
+		const b = HmiWidget.create("slider", 0, 0);
+		if (a.type !== "slider" || b.type !== "slider")
+			throw new Error("unreachable");
+		expect(a.data.style).not.toBe(b.data.style);
 	});
 
 	it("initialise unit et decimalPlaces pour numeric-display", () => {
@@ -346,10 +364,10 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 
 	// gauge et line n'ont pas de taille minimale unique : leur orientation peut varier,
 	// `useHmiWidgetResize` retombe alors sur un plancher générique.
-	it("définit une taille minimale pour chaque type sauf gauge et line", () => {
+	it("définit une taille minimale pour chaque type sauf ceux à orientation variable", () => {
 		ALL_WIDGET_TYPES.forEach((type) => {
 			const { minSize } = HMI_WIDGET_DEFINITIONS[type];
-			if (type === "gauge" || type === "line") {
+			if (type === "gauge" || type === "line" || type === "slider") {
 				expect(minSize).toBeUndefined();
 				return;
 			}
@@ -389,7 +407,14 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 	});
 
 	it("les widgets numériques ne lient pas de variable BOOL", () => {
-		(["numeric-display", "gauge", "numeric-input"] as HmiWidgetType[]).forEach(
+		(
+			[
+				"numeric-display",
+				"gauge",
+				"numeric-input",
+				"slider",
+			] as HmiWidgetType[]
+		).forEach(
 			(type) => {
 				const types = HMI_WIDGET_DEFINITIONS[type].variableBinding?.types ?? [];
 				expect(types).not.toContain("BOOL");
@@ -428,12 +453,12 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 		});
 	});
 
-	it("seuls le bouton, l'interrupteur et la saisie écrivent dans leur variable", () => {
+	it("seuls le bouton, l'interrupteur, la saisie et le curseur écrivent dans leur variable", () => {
 		const writers = ALL_WIDGET_TYPES.filter(
 			(t) => HMI_WIDGET_DEFINITIONS[t].variableBinding?.writes,
 		);
 		expect(writers.sort()).toEqual(
-			["numeric-input", "push-button", "toggle-switch"].sort(),
+			["numeric-input", "push-button", "slider", "toggle-switch"].sort(),
 		);
 	});
 });
