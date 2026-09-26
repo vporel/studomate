@@ -55,7 +55,7 @@ export function createOrDivergenceProject(): Project {
  */
 export function createOrDivergenceSolution(): Project {
 	const project = createOrDivergenceProject();
-	project.name = "Divergence en OU — solution";
+	project.name = "Divergence en OU : solution";
 
 	const XL = 140;
 	const XR = 340;

@@ -57,6 +57,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 		<Box
 			ref={explorerRef}
 			className="explorer"
+			data-tour="explorer"
 			style={{
 				height: "100%",
 				width: "100%",
@@ -125,6 +126,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				)}
 				<CustomTreeItem
 					itemId="hmi"
+					data-tour="hmiPages"
 					label={t("sections.hmi")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}

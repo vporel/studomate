@@ -170,8 +170,9 @@ Always check `package.json` before quoting a version: this table goes stale at t
 - **Platform detection**: prefer `navigator.userAgentData.platform` with a fallback to
   `navigator.userAgent`, never `navigator.platform` (deprecated) — see `src/ui/lib/platform.ts`.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
-  `exportModalVisible`, ...), not in local React state — so it can be driven from anywhere
-  (keyboard shortcuts, menus).
+  `exportModalVisible`, ...) when its state is shared between components or when it must be
+  openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
+  itself, with nothing else able to drive it, keeps its visibility in local React state.
 - **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
   after any change touching their body.
 - **`box-sizing`**: already set to `border-box` globally for all elements
@@ -198,6 +199,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   strongest when creating a new file, where the instinct is to justify why this file exists
   rather than letting it speak for itself. Describe only what the code does, never why it
   exists relative to another option — even when phrased positively.
+- **Punctuation in prose**: prefer a colon (`:`) over an em dash (`—`) to introduce an
+  explanation, a subtitle or an enumeration ("Exercice : séquence linéaire", not "Exercice —
+  séquence linéaire"). For an aside, prefer parentheses, commas or a new sentence. This applies
+  above all to text meant to be read: UI strings and i18n files, manuals, docs, training
+  content. Do not sprinkle em dashes as a default separator.
 - **Comment/JSDoc language**: English. Existing French comments do not need to be translated
   in passing when a file is touched for an unrelated reason (avoid needless churn); write all
   new comments in English going forward.
@@ -280,6 +286,12 @@ When in doubt about exactly what the user is asking for (which interaction mecha
 the exact scope, etc.), ask for clarification rather than guessing and implementing — even for
 a detail that seems minor. An implementation in the wrong direction costs more to undo than a
 question asked upfront.
+
+**Verifiable facts**: never ask the user a question whose answer you can obtain yourself
+(library compatibility with the installed React/Next versions, whether a menu/file/component
+exists, an npm package's license or peer dependencies...). Run the check (`npm view`, grep,
+reading the code) and report the result. Questions are reserved for real choices (scope,
+product decisions, naming).
 
 ## Tests and bugs discovered while testing
 

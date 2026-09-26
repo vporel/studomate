@@ -4,6 +4,7 @@ import Explorer from "@/ui/components/explorer/Explorer";
 import StatusBar from "@/ui/components/footer/StatusBar";
 import AppMenuBar from "@/ui/components/header/menu-bar/AppMenuBar";
 import TitleBar from "@/ui/components/header/title-bar/TitleBar";
+import ProductTour from "@/ui/components/product-tour/ProductTour";
 import PagesView from "@/ui/components/pages/PagesView";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import WatchTables from "@/ui/components/watch-tables/WatchTables";
@@ -77,6 +78,7 @@ const AppShell = () => {
 				</Pane>
 			</SplitPane>
 			<StatusBar />
+			<ProductTour />
 		</Box>
 	);
 };

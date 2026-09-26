@@ -38,6 +38,7 @@ import CloudConflictDialog from "./CloudConflictDialog";
 import SaveLocationModal from "./SaveLocationModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
+import { suppressProductTourForThisPageLoad } from "@/ui/lib/product-tour/product-tour-eligibility";
 import Project from "@/schemas/project/project.schema";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
@@ -101,6 +102,7 @@ export const ProjectContextProvider = ({
 	useEffect(() => {
 		const shareToken = getShareTokenFromUrl();
 		if (!shareToken) return;
+		suppressProductTourForThisPageLoad();
 		const reopen = async () => {
 			const opened = await storeRef
 				.current!.getState()
@@ -146,6 +148,7 @@ export const ProjectContextProvider = ({
 		}
 		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
 		const autostartSimulation = getTemplateAutostartFromUrl();
+		if (autostartSimulation) suppressProductTourForThisPageLoad();
 		const open = async () => {
 			await storeRef
 				.current!.getState()

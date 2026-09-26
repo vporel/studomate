@@ -1,6 +1,10 @@
+import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
+import ProfileRepository from "@/persistence/repositories/profile.repository";
 import trackEvent from "@/ui/lib/analytics";
+import { setStoredUserProfile } from "@/ui/lib/user-profile-storage";
+import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
 import { createStore, useStore } from "zustand";
 
 /**
@@ -19,7 +23,10 @@ export type AuthErrorCode =
 	| "invalidEmail"
 	| "network"
 	| "signInFailed"
-	| "signUpFailed";
+	| "signUpFailed"
+	| "wrongPassword"
+	| "repatriationFailed"
+	| "deleteAccountFailed";
 
 export type AuthResult = { ok: true } | { ok: false; code: AuthErrorCode };
 
@@ -37,6 +44,12 @@ function buildAnonymousEmail(pseudo: string): string {
 	return `${pseudo}@${ANONYMOUS_EMAIL_DOMAIN}`;
 }
 
+/** A failure to save the profile must never fail the sign-up: the account already exists. */
+function persistProfile(profile: UserProfile): void {
+	setStoredUserProfile(profile);
+	void new ProfileRepository().save(profile).catch(() => undefined);
+}
+
 export type AuthStoreState = {
 	user: User | null;
 	loading: boolean;
@@ -46,12 +59,25 @@ export type AuthStoreState = {
 		authModalPrompt: string | null;
 	};
 	init: () => Promise<void>;
-	signUp: (email: string, password: string) => Promise<AuthResult>;
-	signUpAnonymous: (pseudo: string, password: string) => Promise<AuthResult>;
+	signUp: (
+		email: string,
+		password: string,
+		profile?: UserProfile,
+	) => Promise<AuthResult>;
+	signUpAnonymous: (
+		pseudo: string,
+		password: string,
+		profile?: UserProfile,
+	) => Promise<AuthResult>;
 	signIn: (email: string, password: string) => Promise<AuthResult>;
 	signInAnonymous: (pseudo: string, password: string) => Promise<AuthResult>;
 	resetPassword: (email: string) => Promise<AuthResult>;
 	signOut: () => Promise<void>;
+	/**
+	 * Vérifie le mot de passe, rapatrie les projets cloud en local, puis supprime le compte.
+	 * Rien n'est supprimé côté serveur tant que le rapatriement n'est pas terminé.
+	 */
+	deleteAccount: (password: string) => Promise<AuthResult>;
 	setAuthModalVisible: (visible: boolean, prompt?: string) => void;
 };
 
@@ -98,7 +124,7 @@ function isInvalidCredentials(error: { code?: string; message?: string }): boole
 	);
 }
 
-export const authStore = createStore<AuthStoreState>((set) => ({
+export const authStore = createStore<AuthStoreState>((set, get) => ({
 	user: null,
 	loading: true,
 	ui: {
@@ -121,16 +147,17 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 		await initPromise;
 	},
 
-	signUp: async (email, password) => {
+	signUp: async (email, password, profile = EMPTY_USER_PROFILE) => {
 		const { data, error } = await supabase.auth.signUp({ email, password });
 		if (error)
 			return { ok: false, code: toAuthErrorCode(error, "signUp") };
 		set({ user: data.user });
+		persistProfile(profile);
 		trackEvent("account-created", { anonymous: false });
 		return { ok: true };
 	},
 
-	signUpAnonymous: async (pseudo, password) => {
+	signUpAnonymous: async (pseudo, password, profile = EMPTY_USER_PROFILE) => {
 		const email = buildAnonymousEmail(pseudo);
 		const { data, error } = await supabase.auth.signUp({ email, password });
 		if (error) {
@@ -140,6 +167,7 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 			return { ok: false, code };
 		}
 		set({ user: data.user });
+		persistProfile(profile);
 		trackEvent("account-created", { anonymous: true });
 		return { ok: true };
 	},
@@ -181,6 +209,33 @@ export const authStore = createStore<AuthStoreState>((set) => ({
 	signOut: async () => {
 		await supabase.auth.signOut();
 		set({ user: null });
+	},
+
+	deleteAccount: async (password) => {
+		const email = get().user?.email;
+		if (!email) return { ok: false, code: "deleteAccountFailed" };
+
+		const { error: reauthError } = await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
+		if (reauthError) {
+			const code: AuthErrorCode = isInvalidCredentials(reauthError)
+				? "wrongPassword"
+				: toAuthErrorCode(reauthError, "signIn");
+			return { ok: false, code };
+		}
+
+		const repatriation = await new HybridProjectRepository().moveAllCloudToLocal();
+		if (!repatriation.ok) return { ok: false, code: "repatriationFailed" };
+
+		const { error } = await supabase.rpc("delete_my_account");
+		if (error) return { ok: false, code: "deleteAccountFailed" };
+
+		await supabase.auth.signOut({ scope: "local" });
+		set({ user: null });
+		trackEvent("account-deleted");
+		return { ok: true };
 	},
 
 	setAuthModalVisible: (visible, prompt) =>

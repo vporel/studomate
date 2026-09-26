@@ -306,6 +306,102 @@ describe("HybridProjectRepository", () => {
 		});
 	});
 
+	describe("listCloud", () => {
+		it("renvoie une liste vide sans session, sans interroger le cloud", async () => {
+			const repo = new HybridProjectRepository();
+
+			expect(await repo.listCloud()).toEqual({ projects: [], skipped: [] });
+			expect(mockFrom).not.toHaveBeenCalled();
+		});
+
+		it("renvoie les projets du cloud avec une session", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [
+						{ data: rawOf(newProject("c1", "A")) },
+						{ data: rawOf(newProject("c2", "B")) },
+					],
+					error: null,
+				}),
+			);
+			const repo = new HybridProjectRepository();
+
+			const { projects } = await repo.listCloud();
+
+			expect(projects.map((p) => p.id)).toEqual(["c1", "c2"]);
+		});
+	});
+
+	describe("moveAllCloudToLocal", () => {
+		function signIn() {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+		}
+
+		it("ne fait rien sans session", async () => {
+			const repo = new HybridProjectRepository();
+
+			expect(await repo.moveAllCloudToLocal()).toEqual({ ok: true });
+			expect(mockFrom).not.toHaveBeenCalled();
+		});
+
+		it("rapatrie tous les projets cloud en local et vide l'index", async () => {
+			signIn();
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["c1"]));
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [
+						{ data: rawOf(newProject("c1", "A")) },
+						{ data: rawOf(newProject("c2", "B")) },
+					],
+					error: null,
+				}),
+			);
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.moveAllCloudToLocal();
+
+			expect(result).toEqual({ ok: true });
+			const local = await new LocalStorageProjectRepository().list();
+			expect(local.projects.map((p) => p.id).sort()).toEqual(["c1", "c2"]);
+			expect(JSON.parse(store.get(CLOUD_INDEX_KEY)!)).toEqual([]);
+		});
+
+		it("s'arrête au premier échec sans supprimer les projets restants du cloud", async () => {
+			signIn();
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["c1", "c2"]));
+			const error = jest.spyOn(console, "error").mockImplementation(() => {});
+			const deleteSpy = jest.fn(() => resolved({ data: [], error: null }));
+			mockFrom.mockReturnValue({
+				...resolved({
+					data: [
+						{ data: rawOf(newProject("c1", "A")) },
+						{ data: rawOf(newProject("c2", "B")) },
+					],
+					error: null,
+				}),
+				delete: deleteSpy,
+			});
+			const realSetItem = (globalThis as any).localStorage.setItem;
+			(globalThis as any).localStorage.setItem = (k: string, v: string) => {
+				if (k === CLOUD_INDEX_KEY) throw new Error("quota");
+				realSetItem(k, v);
+			};
+			const repo = new HybridProjectRepository();
+
+			const result = await repo.moveAllCloudToLocal();
+			(globalThis as any).localStorage.setItem = realSetItem;
+
+			expect(result).toEqual({ ok: false, reason: "unavailable" });
+			expect(deleteSpy).not.toHaveBeenCalled();
+			error.mockRestore();
+		});
+	});
+
 	describe("list", () => {
 		it("écarte du volet local un projet présent dans l'index cloud", async () => {
 			mockGetSession.mockResolvedValue({

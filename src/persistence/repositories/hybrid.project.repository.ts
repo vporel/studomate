@@ -109,6 +109,25 @@ export default class HybridProjectRepository
 		return result;
 	}
 
+	/** Projets stockés dans le cloud du compte connecté ; vide sans session. */
+	async listCloud(): Promise<ProjectListResult> {
+		if (!(await this.isAuthenticated())) return { projects: [], skipped: [] };
+		return this.cloud.list();
+	}
+
+	/**
+	 * Rapatrie tous les projets cloud en local, en s'arrêtant au premier échec (les projets déjà
+	 * déplacés restent en local, les autres restent dans le cloud).
+	 */
+	async moveAllCloudToLocal(): Promise<SaveResult> {
+		const { projects } = await this.listCloud();
+		for (const project of projects) {
+			const result = await this.moveToLocal(project);
+			if (!result.ok) return result;
+		}
+		return { ok: true };
+	}
+
 	// Le partage n'existe que pour les projets cloud : le token porte sur une ligne `project_id`
 	// de la base. L'appelant vérifie `locationOf` avant d'appeler `createShareToken`.
 	getByShareToken(token: string): Promise<Project | null> {

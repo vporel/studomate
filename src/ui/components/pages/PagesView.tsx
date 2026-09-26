@@ -118,6 +118,7 @@ const PagesView = () => {
 
 	return (
 		<Box
+			data-tour="pages"
 			sx={{
 				height: "100%",
 				display: "flex",

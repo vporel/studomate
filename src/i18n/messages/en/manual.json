@@ -144,7 +144,7 @@
 		"title": "Accounts & sharing",
 		"p1": "By default, all your projects are stored locally in the browser. Creating an account also lets you save them to the cloud, so they follow you from one device to another.",
 		"statusTitle": "Account status button",
-		"statusBody": "A button in the title bar shows whether you are signed in. When signed out, it reads \"Sign in\" and opens the authentication dialog. When signed in, it shows your identity and opens a menu to sign out.",
+		"statusBody": "A button in the title bar shows whether you are signed in. When signed out, it reads \"Sign in\" and opens the authentication dialog. When signed in, it shows your identity and opens the Cloud account dialog.",
 		"authTitle": "Sign in or sign up",
 		"authIntro": "The authentication dialog offers:",
 		"authItems": [
@@ -162,7 +162,9 @@
 			"Project → Manage sharing reopens this dialog for an already-shared project."
 		],
 		"sharingOpenedTitle": "Open a shared project",
-		"sharingOpenedBody": "A project opened from a share link is opened as a copy. The \"Save\" button becomes \"Save a copy\": the first save creates your own project, independent of the original. The \"Share\" entry is disabled for this project."
+		"sharingOpenedBody": "A project opened from a share link is opened as a copy. The \"Save\" button becomes \"Save a copy\": the first save creates your own project, independent of the original. The \"Share\" entry is disabled for this project.",
+		"deleteAccountTitle": "Cloud account and account deletion",
+		"deleteAccountBody": "The \"Cloud account\" dialog, opened from the account status button, shows how many projects are stored in the cloud, lets you open a project or sign out, and gives access to account deletion. Deletion is permanent and requires confirming with your password. Your cloud projects are first moved to this browser; your profile, your training progress and the share links of your projects are deleted. Your local projects are not affected."
 	},
 	"explorer": {
 		"title": "Explorer",

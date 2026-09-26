@@ -9,14 +9,14 @@
 	"howItWorksSolutionTitle": "Solution to compare",
 	"howItWorksSolutionBody": "A simulable solution comes with every summary assignment: compare your solution against ours by simulating it.",
 	"landingTreeIntro": "Planned path:",
-	"blockATitle": "Block A — Core skills",
+	"blockATitle": "Block A: Core skills",
 	"blockA0Label": "Module A0: Before you start",
 	"blockA1Label": "Module A1: GRAFCET basics",
 	"moduleAvailableStatusLabel": "Available",
 	"moduleCompletedLabel": "Completed",
 	"blockA2Label": "Module A2: Ladder",
 	"blockA3Label": "Module A3: HMI",
-	"blockBLabel": "Block B — Career readiness",
+	"blockBLabel": "Block B: Career readiness",
 	"blockB1Label": "Module B1: Analysing a documented project",
 	"blockB2Label": "Module B2: Capstone project and portfolio",
 	"comingSoon": "coming soon",
@@ -33,25 +33,25 @@
 	"progressSavedHint": "Your progress in this module is saved to your account.",
 
 	"a0PageTitle": "Module A0: Before you start",
-	"a0Intro": "Three short theory sections to set the vocabulary before tackling GRAFCET in module A1 — nothing to build here, just enough to understand what you'll observe and manipulate next.",
+	"a0Intro": "Three short theory sections to set the vocabulary before tackling GRAFCET in module A1. Nothing to build here, just enough to understand what you'll observe and manipulate next.",
 
 	"automatismeTitle": "What is an automated system?",
 	"automatismeBody": [
-		"Take an automatic car park barrier: a car pulls up, a device detects it, and the barrier lifts on its own, without an operator pressing a button. That's an automated system: something that constantly watches its surroundings and acts based on what it observes, following logic decided in advance — a traffic light cycling through its three colours, a conveyor sorting boxes by size are other examples.",
-		"Whatever \"watches\" (the detection device at the park entrance) is called a sensor; whatever \"acts\" (the motor that lifts the barrier) is called an actuator. Before wiring or programming anything, it helps to describe that expected behaviour precisely — what to do, in what order, under what conditions — independent of the technology that will later run it. That's exactly the role of GRAFCET, which you'll discover in module A1: a specification language, not a particular programming language.",
-		"Once that behaviour is described in GRAFCET, it still needs to become executable and controllable. Ladder (module A2) is a language closer to traditional electrical wiring — relays, contacts, coils — used to program a real PLC. The HMI, or human-machine interface (module A3), is the screen through which an operator watches and drives the automated system once it's running — the traffic light indicators you'll watch in the next step are an example. Studomate lets you work across all three languages on the same project, sharing the same variables between them."
+		"Take an automatic car park barrier: a car pulls up, a device detects it, and the barrier lifts on its own, without an operator pressing a button. That's an automated system: something that constantly watches its surroundings and acts based on what it observes, following logic decided in advance. A traffic light cycling through its three colours, a conveyor sorting boxes by size are other examples.",
+		"Whatever \"watches\" (the detection device at the park entrance) is called a sensor; whatever \"acts\" (the motor that lifts the barrier) is called an actuator. Before wiring or programming anything, it helps to describe that expected behaviour precisely (what to do, in what order, under what conditions), independent of the technology that will later run it. That's exactly the role of GRAFCET, which you'll discover in module A1: a specification language, not a particular programming language.",
+		"Once that behaviour is described in GRAFCET, it still needs to become executable and controllable. Ladder (module A2) is a language closer to traditional electrical wiring (relays, contacts, coils), used to program a real PLC. The HMI, or human-machine interface (module A3), is the screen through which an operator watches and drives the automated system once it's running: the traffic light indicators you'll watch in the next step are an example. Studomate lets you work across all three languages on the same project, sharing the same variables between them."
 	],
 
 	"logicBasicsTitle": "Variables and basic logic",
 	"logicBasicsBody": [
-		"Back to the barrier: at any instant, either a car is detected or it isn't — two possible states. That's what's called a boolean variable: true or false. The sensor that detects the car is a boolean variable you read (an input), the command that lifts the barrier is one you write (an output); some variables are only used internally by the logic, never touching the field. A counter of free spaces, on the other hand, isn't limited to two states: that's a numeric variable.",
+		"Back to the barrier: at any instant, either a car is detected or it isn't: two possible states. That's what's called a boolean variable: true or false. The sensor that detects the car is a boolean variable you read (an input), the command that lifts the barrier is one you write (an output); some variables are only used internally by the logic, never touching the field. A counter of free spaces, on the other hand, isn't limited to two states: that's a numeric variable.",
 		"Combining several conditions only takes three words, and they read like plain English: the door is closed AND the button is pressed (both are needed at once); emergency_stop OR fault (either one is enough); NOT presence (the opposite of a condition). A number can also be compared, such as spaces < 5. In a Studomate expression, it's written exactly like that: door_closed AND button, NOT presence, spaces < 5.",
-		"Studomate accepts these words in both French (ET, OU, NON) and English (AND, OR, NOT), depending on the dialect chosen for the project — the two notations aren't mixed within the same project."
+		"Studomate accepts these words in both French (ET, OU, NON) and English (AND, OR, NOT), depending on the dialect chosen for the project. The two notations aren't mixed within the same project."
 	],
 
 	"scanCycleTitle": "The PLC and its scan cycle",
 	"scanCycleBody": [
-		"A traffic light doesn't constantly \"know\" it's green: it rechecks its timer's state dozens of times a second, and decides each time whether to change colour or stay as it is. That's the scan cycle: a PLC repeats a three-step loop, very fast — read the state of every input, run the program to decide the outputs, write those outputs — before starting over immediately. This loop is what gives full meaning to notions you'll meet in module A1, such as running an action \"continuously\" (recomputed every pass of the loop) or \"on an edge\" (just once, on the pass where a condition turns true).",
+		"A traffic light doesn't constantly \"know\" it's green: it rechecks its timer's state dozens of times a second, and decides each time whether to change colour or stay as it is. That's the scan cycle: a PLC repeats a three-step loop, very fast (read the state of every input, run the program to decide the outputs, write those outputs) before starting over immediately. This loop is what gives full meaning to notions you'll meet in module A1, such as running an action \"continuously\" (recomputed every pass of the loop) or \"on an edge\" (just once, on the pass where a condition turns true).",
 		"The simplest way to grasp this cycle is to watch it run: open the traffic light solution below, start the simulation, and watch a step's variable (Xn) turn true then false while an output switches on and off in rhythm."
 	],
 	"scanCycleCta": "Watch the simulation",
@@ -64,27 +64,27 @@
 
 	"grafcetDefinitionTitle": "What is a GRAFCET?",
 	"grafcetDefinitionBody": [
-		"GRAFCET (French for \"step/transition function chart\") is a standardized graphical language (IEC 60848) that describes the sequential behaviour expected from an automated system: what to do, in what order, under what conditions — independent of the technology that will later run it (a PLC, relays...).",
+		"GRAFCET (French for \"step/transition function chart\") is a standardized graphical language (IEC 60848) that describes the sequential behaviour expected from an automated system: what to do, in what order, under what conditions, independent of the technology that will later run it (a PLC, relays...).",
 		"It's the specification tool Studomate lets you write, check and simulate directly in the browser."
 	],
 
 	"theoryTitle": "Steps, transitions, receptivities, actions",
 	"theoryBody": [
-		"A step is either active or inactive; while active, its associated actions run — turning on a boolean output, but also assigning a numeric variable (e.g. counter := counter + 1). Each step n exposes its own boolean variable Xn, true while it is active.",
-		"The initial step (double outline) is the one active at power-on or after a reset — a GRAFCET always has at least one.",
-		"A transition links two steps and carries a receptivity — a boolean condition.",
+		"A step is either active or inactive; while active, its associated actions run: turning on a boolean output, but also assigning a numeric variable (e.g. counter := counter + 1). Each step n exposes its own boolean variable Xn, true while it is active.",
+		"The initial step (double outline) is the one active at power-on or after a reset. A GRAFCET always has at least one.",
+		"A transition links two steps and carries a receptivity: a boolean condition.",
 		"As soon as an upstream step is active and the receptivity of the transition following it becomes true, the upstream step deactivates and the downstream step activates: this is an evolution.",
 		"A step can only have a single element downstream, and a transition only a single element upstream and downstream: this strict alternation is what forces you through an OR or AND divergence as soon as you want to branch towards several elements. Studomate flags an error if you link several elements directly without going through a junction."
 	],
 
 	"theoryActionsTitle": "Action types and execution modes",
 	"theoryActionsBody": [
-		"An action can act on a boolean variable (turn on an output) or a numeric one (assign a value, e.g. counter := counter + 1) — the type determines the expected shape of the expression.",
-		"The execution mode defines when the action runs: continuously while the step is active, or just once on an edge — rising when the step activates, falling when it deactivates. That's the mode to use to increment a counter just once, rather than on every scan cycle.",
-		"For boolean variables only, two extra modes exist: Set (forces the variable true) and Reset (forces it false) — a so-called \"stored\" action, which doesn't revert on its own when the step deactivates."
+		"An action can act on a boolean variable (turn on an output) or a numeric one (assign a value, e.g. counter := counter + 1). The type determines the expected shape of the expression.",
+		"The execution mode defines when the action runs: continuously while the step is active, or just once on an edge (rising when the step activates, falling when it deactivates). That's the mode to use to increment a counter just once, rather than on every scan cycle.",
+		"For boolean variables only, two extra modes exist: Set (forces the variable true) and Reset (forces it false). A so-called \"stored\" action doesn't revert on its own when the step deactivates."
 	],
 
-	"exerciseLinearTitle": "Exercise — linear sequence",
+	"exerciseLinearTitle": "Exercise: linear sequence",
 	"exerciseLinearBody": [
 		"A 4-step GRAFCET, no divergence and no timer: enough to practise steps, transitions, receptivities and actions on a simple case before tackling richer structures."
 	],
@@ -96,7 +96,7 @@
 		"This notation can be used directly inside a receptivity, like any other boolean condition."
 	],
 
-	"synthesisTrafficLightTitle": "Summary assignment — traffic light",
+	"synthesisTrafficLightTitle": "Summary assignment: traffic light",
 	"synthesisTrafficLightBody": [
 		"Apply what you just saw on a complete case: a traffic light cycling through its three colours, each timed."
 	],
@@ -105,12 +105,12 @@
 
 	"theoryOrDivergenceTitle": "OR divergence / convergence",
 	"theoryOrDivergenceBody": [
-		"An OR divergence describes a choice between several sequences: at any instant, only one receptivity among the branches should be true — that's what makes the sequences mutually exclusive.",
+		"An OR divergence describes a choice between several sequences: at any instant, only one receptivity among the branches should be true. That's what makes the sequences mutually exclusive.",
 		"The branches can later rejoin on a shared path further down through an OR convergence, but this isn't required: each branch can also continue on its own without an explicit junction, as in the exercise below where each branch loops back to the initial step by itself.",
 		"Studomate checks the branches' exclusivity and flags an error if several receptivities turn out true at the same time."
 	],
 
-	"exerciseOrDivergenceTitle": "Exercise — OR divergence",
+	"exerciseOrDivergenceTitle": "Exercise: OR divergence",
 	"exerciseOrDivergenceBody": [
 		"Two branches triggered by mutually exclusive inputs, each looping back to the initial step on its own: enough to practise the choice and its exclusivity before the \"barrier car park\" summary assignment below, which reuses it in a fuller case."
 	],
@@ -118,27 +118,27 @@
 
 	"theoryAndDivergenceTitle": "AND divergence / convergence",
 	"theoryAndDivergenceBody": [
-		"Several evolutions can happen at the same instant if their conditions are met simultaneously — an AND divergence is the clearest case, since it starts several branches at once.",
+		"Several evolutions can happen at the same instant if their conditions are met simultaneously. An AND divergence is the clearest case, since it starts several branches at once.",
 		"Unlike an OR divergence, where each branch carries its own receptivity after the bar, an AND divergence places a single receptivity before the bar: that one receptivity alone triggers every branch at once.",
 		"An AND divergence starts several branches in parallel as soon as a single transition fires: all branches run simultaneously.",
-		"Its AND convergence only lets the GRAFCET continue once every branch has reached its joining step — the slowest branch sets the pace for the others."
+		"Its AND convergence only lets the GRAFCET continue once every branch has reached its joining step. The slowest branch sets the pace for the others."
 	],
 	"exerciseAndDivergenceCta": "Open the exercise",
 
-	"synthesisParkingTitle": "Summary assignment — barrier car park",
+	"synthesisParkingTitle": "Summary assignment: barrier car park",
 	"synthesisParkingBody": [
 		"An OR divergence between the entry sequence and the exit sequence, a space counter and a \"full\" indicator to drive."
 	],
 
-	"synthesisCrossroadsTitle": "Summary assignment — traffic light crossroads",
+	"synthesisCrossroadsTitle": "Summary assignment: traffic light crossroads",
 	"synthesisCrossroadsBody": [
-		"Two light axes to synchronize within a single GRAFCET, alternating with an all-red phase between each change — the difficulty is coordinating both axes so they're never green at the same time."
+		"Two light axes to synchronize within a single GRAFCET, alternating with an all-red phase between each change. The difficulty is coordinating both axes so they're never green at the same time."
 	],
 
 	"readingErrorsTitle": "Reading analysis errors",
 	"readingErrorsBody": [
 		"Studomate can analyse your GRAFCET at any time, without waiting for a simulation: a click on \"Analyse\" immediately shows an unconnected step, an invalid receptivity or an unknown variable in the editor's analysis panel.",
-		"It's also what catches the easiest traps to miss: a step with no way back into a cycle blocks the GRAFCET forever (a \"dead end\"), and a step never reached from the initial step will never activate — two common mistakes when a sequence isn't looped back to its starting point.",
+		"It's also what catches the easiest traps to miss: a step with no way back into a cycle blocks the GRAFCET forever (a \"dead end\"), and a step never reached from the initial step will never activate. These are two common mistakes when a sequence isn't looped back to its starting point.",
 		"Get in the habit of checking after each transition or branch you add: that's exactly where these two traps show up most often."
 	]
 }

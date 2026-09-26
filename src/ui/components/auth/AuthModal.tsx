@@ -3,6 +3,9 @@
 import CustomModal from "@/ui/lib/mui/CustomModal";
 import { useT } from "@/ui/i18n/useT";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
+import { getStoredUserProfile } from "@/ui/lib/user-profile-storage";
+import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
+import UserProfileFields from "@/ui/components/profile/UserProfileFields";
 import {
 	Alert,
 	Box,
@@ -11,7 +14,7 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
 type Screen = "signIn" | "signUp" | "resetPassword";
@@ -51,6 +54,7 @@ export default function AuthModal() {
 	const [error, setError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
+	const [profile, setProfile] = useState<UserProfile>(EMPTY_USER_PROFILE);
 
 	const resetForm = useCallback(() => {
 		setEmail("");
@@ -59,6 +63,12 @@ export default function AuthModal() {
 		setError(null);
 		setSuccessMessage(null);
 	}, []);
+
+	useEffect(() => {
+		if (authModalVisible) {
+			setProfile(getStoredUserProfile() ?? EMPTY_USER_PROFILE);
+		}
+	}, [authModalVisible]);
 
 	const onClose = useCallback(() => {
 		setAuthModalVisible(false);
@@ -86,15 +96,15 @@ export default function AuthModal() {
 		setError(null);
 		const result =
 			signUpMode === "anonymous"
-				? await signUpAnonymous(pseudo, password)
-				: await signUp(email, password);
+				? await signUpAnonymous(pseudo, password, profile)
+				: await signUp(email, password, profile);
 		setSubmitting(false);
 		if (!result.ok) {
 			setError(tError(result.code));
 			return;
 		}
 		onClose();
-	}, [signUpMode, pseudo, email, password, signUp, signUpAnonymous, onClose, tError]);
+	}, [signUpMode, pseudo, email, password, profile, signUp, signUpAnonymous, onClose, tError]);
 
 	const onSubmitResetPassword = useCallback(async () => {
 		setSubmitting(true);
@@ -115,7 +125,7 @@ export default function AuthModal() {
 			open={authModalVisible}
 			onClose={onClose}
 			title={title}
-			width={440}
+			width={540}
 		>
 			{authModalPrompt && (
 				<Alert severity="info" sx={{ mb: 2 }}>
@@ -284,6 +294,8 @@ export default function AuthModal() {
 						onChange={(e) => setPassword(e.target.value)}
 						required
 					/>
+
+					<UserProfileFields value={profile} onChange={setProfile} />
 
 					{error && (
 						<Typography color="error" fontSize="0.9rem">

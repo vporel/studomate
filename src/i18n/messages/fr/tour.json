@@ -1,0 +1,37 @@
+{
+	"buttons": {
+		"next": "Suivant",
+		"previous": "Précédent",
+		"done": "Terminer"
+	},
+	"steps": {
+		"menubar": {
+			"title": "Barre de menus",
+			"description": "Ouvrez, enregistrez, partagez et exportez votre projet, créez de nouveaux programmes (grafcet, ladder) et retrouvez le manuel, les formations et les raccourcis clavier."
+		},
+		"explorer": {
+			"title": "Explorateur",
+			"description": "Les variables, les programmes et les pages HMI du projet. Le clic droit ouvre un menu d'actions."
+		},
+		"pages": {
+			"title": "Zone de travail",
+			"description": "Les éditeurs s'ouvrent ici, dans des onglets : grafcets, ladders, variables et pages HMI."
+		},
+		"hmiPages": {
+			"title": "Pages HMI",
+			"description": "Dessinez une interface opérateur animée, reliée aux variables du projet. Faites un clic droit sur ce dossier pour créer une page."
+		},
+		"simulation": {
+			"title": "Analyse et simulation",
+			"description": "Analysez le projet, puis passez en mode simulation pour le faire fonctionner : démarrer, arrêter ou avancer pas à pas."
+		},
+		"crossReference": {
+			"title": "Références croisées",
+			"description": "Pour chaque variable, voyez quels programmes la lisent et lesquels l'écrivent."
+		},
+		"analysis": {
+			"title": "Résultats d'analyse",
+			"description": "Les erreurs et avertissements détectés dans le projet. Cliquez pour afficher le détail ; la couleur indique la gravité."
+		}
+	}
+}

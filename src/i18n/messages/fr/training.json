@@ -9,14 +9,14 @@
 	"howItWorksSolutionTitle": "Corrigé à comparer",
 	"howItWorksSolutionBody": "Un corrigé simulable accompagne chaque épreuve de synthèse : comparez votre solution à la nôtre en simulation.",
 	"landingTreeIntro": "Parcours prévu :",
-	"blockATitle": "Bloc A — Socle technique",
+	"blockATitle": "Bloc A : Socle technique",
 	"blockA0Label": "Module A0 : Avant de commencer",
 	"blockA1Label": "Module A1 : Bases du GRAFCET",
 	"moduleAvailableStatusLabel": "Disponible",
 	"moduleCompletedLabel": "Terminé",
 	"blockA2Label": "Module A2 : Ladder",
 	"blockA3Label": "Module A3 : IHM",
-	"blockBLabel": "Bloc B — Vers l'emploi",
+	"blockBLabel": "Bloc B : Vers l'emploi",
 	"blockB1Label": "Module B1 : Analyser un projet documenté",
 	"blockB2Label": "Module B2 : Projet de synthèse et valorisation",
 	"comingSoon": "à venir",
@@ -33,25 +33,25 @@
 	"progressSavedHint": "Votre progression dans ce module est sauvegardée sur votre compte.",
 
 	"a0PageTitle": "Module A0 : Avant de commencer",
-	"a0Intro": "Trois courtes théories pour poser le vocabulaire avant d'aborder le GRAFCET au module A1 — rien à construire ici, juste de quoi comprendre ce que vous observerez et manipulerez ensuite.",
+	"a0Intro": "Trois courtes théories pour poser le vocabulaire avant d'aborder le GRAFCET au module A1. Rien à construire ici, juste de quoi comprendre ce que vous observerez et manipulerez ensuite.",
 
 	"automatismeTitle": "Qu'est-ce qu'un automatisme ?",
 	"automatismeBody": [
-		"Prenez une barrière de parking automatique : une voiture arrive, un dispositif détecte sa présence, et la barrière se lève toute seule, sans qu'un opérateur appuie sur un bouton. C'est ça, un automatisme : un système qui observe en permanence son environnement et agit en fonction de ce qu'il observe, selon une logique décidée à l'avance — un feu tricolore qui boucle sur ses trois couleurs, un tapis qui trie des cartons selon leur taille en sont d'autres exemples.",
-		"Ce qui « observe » (le dispositif de détection à l'entrée du parking) s'appelle un capteur ; ce qui « agit » (le moteur qui lève la barrière) s'appelle un actionneur. Avant de câbler ou de programmer quoi que ce soit, il est utile de décrire précisément ce comportement attendu — quoi faire, dans quel ordre, sous quelles conditions — indépendamment de la technologie qui l'exécutera ensuite. C'est exactement le rôle du GRAFCET, que vous découvrirez au module A1 : un langage de spécification, pas un langage de programmation particulier.",
-		"Une fois ce comportement décrit en GRAFCET, il reste à le rendre exécutable et pilotable. Le Ladder (module A2) est un langage plus proche du câblage électrique historique — relais, contacts, bobines — utilisé pour programmer un automate réel. L'IHM, ou interface homme-machine (module A3), est l'écran par lequel un opérateur observe et pilote l'automatisme une fois en service — les voyants du feu tricolore que vous observerez à l'étape suivante en sont un exemple. Studomate permet de travailler ces trois langages sur un même projet, avec les mêmes variables partagées entre eux."
+		"Prenez une barrière de parking automatique : une voiture arrive, un dispositif détecte sa présence, et la barrière se lève toute seule, sans qu'un opérateur appuie sur un bouton. C'est ça, un automatisme : un système qui observe en permanence son environnement et agit en fonction de ce qu'il observe, selon une logique décidée à l'avance. Un feu tricolore qui boucle sur ses trois couleurs, un tapis qui trie des cartons selon leur taille en sont d'autres exemples.",
+		"Ce qui « observe » (le dispositif de détection à l'entrée du parking) s'appelle un capteur ; ce qui « agit » (le moteur qui lève la barrière) s'appelle un actionneur. Avant de câbler ou de programmer quoi que ce soit, il est utile de décrire précisément ce comportement attendu (quoi faire, dans quel ordre, sous quelles conditions), indépendamment de la technologie qui l'exécutera ensuite. C'est exactement le rôle du GRAFCET, que vous découvrirez au module A1 : un langage de spécification, pas un langage de programmation particulier.",
+		"Une fois ce comportement décrit en GRAFCET, il reste à le rendre exécutable et pilotable. Le Ladder (module A2) est un langage plus proche du câblage électrique historique (relais, contacts, bobines), utilisé pour programmer un automate réel. L'IHM, ou interface homme-machine (module A3), est l'écran par lequel un opérateur observe et pilote l'automatisme une fois en service : les voyants du feu tricolore que vous observerez à l'étape suivante en sont un exemple. Studomate permet de travailler ces trois langages sur un même projet, avec les mêmes variables partagées entre eux."
 	],
 
 	"logicBasicsTitle": "Variables et logique de base",
 	"logicBasicsBody": [
-		"Reprenons la barrière : à chaque instant, soit une voiture est détectée, soit non — deux états possibles. C'est ce qu'on appelle une variable booléenne : vraie ou fausse. Le capteur qui détecte la voiture est une variable booléenne qu'on lit (une entrée), la commande qui lève la barrière en est une qu'on écrit (une sortie) ; certaines variables enfin ne servent qu'en interne à la logique, sans jamais toucher le terrain. Un compteur de places libres, lui, n'a pas que deux états possibles : c'est une variable numérique.",
+		"Reprenons la barrière : à chaque instant, soit une voiture est détectée, soit non : deux états possibles. C'est ce qu'on appelle une variable booléenne : vraie ou fausse. Le capteur qui détecte la voiture est une variable booléenne qu'on lit (une entrée), la commande qui lève la barrière en est une qu'on écrit (une sortie) ; certaines variables enfin ne servent qu'en interne à la logique, sans jamais toucher le terrain. Un compteur de places libres, lui, n'a pas que deux états possibles : c'est une variable numérique.",
 		"Pour combiner plusieurs conditions, trois mots suffisent, et ils se lisent comme en français courant : la porte est fermée ET le bouton est appuyé (il faut les deux à la fois) ; arrêt d'urgence OU défaut (l'un des deux suffit) ; NON présence (l'inverse d'une condition). On peut aussi comparer un nombre, comme places < 5. Dans une expression Studomate, ça s'écrit tel quel : porte_fermee ET bouton, NON presence, places < 5.",
-		"Studomate accepte ces mots aussi bien en français (ET, OU, NON) qu'en anglais (AND, OR, NOT), selon le dialecte choisi pour le projet — les deux notations ne se mélangent pas au sein d'un même projet."
+		"Studomate accepte ces mots aussi bien en français (ET, OU, NON) qu'en anglais (AND, OR, NOT), selon le dialecte choisi pour le projet. Les deux notations ne se mélangent pas au sein d'un même projet."
 	],
 
 	"scanCycleTitle": "L'automate et son cycle de scrutation",
 	"scanCycleBody": [
-		"Le feu tricolore ne « sait » pas en permanence qu'il est vert : il revérifie l'état de son minuteur des dizaines de fois par seconde, et décide à chaque fois s'il doit changer de couleur ou rester ainsi. C'est le principe du cycle de scrutation : un automate répète en boucle, très vite, trois étapes — lire l'état de toutes les entrées, exécuter le programme pour décider des sorties, écrire ces sorties — avant de recommencer aussitôt. Cette boucle donne tout son sens à des notions que vous croiserez au module A1, comme une action exécutée « en continu » (recalculée à chaque tour de boucle) ou « sur front » (une seule fois, au tour où une condition devient vraie).",
+		"Le feu tricolore ne « sait » pas en permanence qu'il est vert : il revérifie l'état de son minuteur des dizaines de fois par seconde, et décide à chaque fois s'il doit changer de couleur ou rester ainsi. C'est le principe du cycle de scrutation : un automate répète en boucle, très vite, trois étapes (lire l'état de toutes les entrées, exécuter le programme pour décider des sorties, écrire ces sorties) avant de recommencer aussitôt. Cette boucle donne tout son sens à des notions que vous croiserez au module A1, comme une action exécutée « en continu » (recalculée à chaque tour de boucle) ou « sur front » (une seule fois, au tour où une condition devient vraie).",
 		"Le plus simple pour saisir ce cycle est de le voir tourner : ouvrez le corrigé du feu tricolore ci-dessous, lancez la simulation, et observez comment la variable d'une étape (Xn) passe à vrai puis à faux pendant qu'une sortie s'allume et s'éteint en rythme."
 	],
 	"scanCycleCta": "Observer la simulation",
@@ -64,27 +64,27 @@
 
 	"grafcetDefinitionTitle": "Qu'est-ce qu'un GRAFCET ?",
 	"grafcetDefinitionBody": [
-		"Le GRAFCET (GRAphe fonctionnel de Commande Étape/Transition) est un langage graphique normé (IEC 60848) qui décrit le comportement séquentiel attendu d'un automatisme : quoi faire, dans quel ordre, sous quelles conditions — indépendamment de la technologie qui l'exécutera ensuite (automate programmable, relais...).",
+		"Le GRAFCET (GRAphe fonctionnel de Commande Étape/Transition) est un langage graphique normé (IEC 60848) qui décrit le comportement séquentiel attendu d'un automatisme : quoi faire, dans quel ordre, sous quelles conditions, indépendamment de la technologie qui l'exécutera ensuite (automate programmable, relais...).",
 		"C'est l'outil de spécification que Studomate vous permet d'écrire, de vérifier et de simuler directement dans le navigateur."
 	],
 
 	"theoryTitle": "Étapes, transitions, réceptivités, actions",
 	"theoryBody": [
-		"Une étape est active ou inactive ; quand elle est active, ses actions associées s'exécutent — activer une sortie booléenne, mais aussi affecter une variable numérique (par exemple compteur := compteur + 1). Chaque étape n expose sa propre variable booléenne Xn, vraie tant qu'elle est active.",
-		"L'étape initiale (double contour) est celle qui est active à la mise sous tension ou après une remise à zéro — un GRAFCET en possède toujours au moins une.",
-		"Une transition relie deux étapes et porte une réceptivité — une condition booléenne.",
+		"Une étape est active ou inactive ; quand elle est active, ses actions associées s'exécutent : activer une sortie booléenne, mais aussi affecter une variable numérique (par exemple compteur := compteur + 1). Chaque étape n expose sa propre variable booléenne Xn, vraie tant qu'elle est active.",
+		"L'étape initiale (double contour) est celle qui est active à la mise sous tension ou après une remise à zéro. Un GRAFCET en possède toujours au moins une.",
+		"Une transition relie deux étapes et porte une réceptivité : une condition booléenne.",
 		"Dès qu'une étape amont est active et que la réceptivité de la transition qui la suit devient vraie, l'étape amont se désactive et l'étape aval s'active : c'est une évolution.",
 		"Une étape ne peut avoir qu'un seul élément en aval, une transition qu'un seul élément en amont et en aval : c'est cette alternance stricte qui impose de passer par une divergence en OU ou en ET dès qu'on veut brancher vers plusieurs éléments. Studomate le signale par une erreur si vous reliez directement plusieurs éléments sans passer par une jonction."
 	],
 
 	"theoryActionsTitle": "Types et modes d'exécution des actions",
 	"theoryActionsBody": [
-		"Une action peut agir sur une variable booléenne (activer une sortie) ou numérique (affecter une valeur, par exemple compteur := compteur + 1) — le type détermine la forme attendue de l'expression.",
-		"Le mode d'exécution définit quand l'action s'exécute : en continu tant que l'étape est active, ou une seule fois sur front — montant à l'activation de l'étape, descendant à sa désactivation. C'est le mode à utiliser pour incrémenter un compteur une seule fois, plutôt qu'à chaque cycle de scrutation.",
-		"Pour les variables booléennes uniquement, deux modes supplémentaires existent : Set (force la variable à vrai) et Reset (la force à faux) — une action dite « mémorisée », qui ne revient pas en arrière automatiquement quand l'étape se désactive."
+		"Une action peut agir sur une variable booléenne (activer une sortie) ou numérique (affecter une valeur, par exemple compteur := compteur + 1). Le type détermine la forme attendue de l'expression.",
+		"Le mode d'exécution définit quand l'action s'exécute : en continu tant que l'étape est active, ou une seule fois sur front (montant à l'activation de l'étape, descendant à sa désactivation). C'est le mode à utiliser pour incrémenter un compteur une seule fois, plutôt qu'à chaque cycle de scrutation.",
+		"Pour les variables booléennes uniquement, deux modes supplémentaires existent : Set (force la variable à vrai) et Reset (la force à faux). Une action dite « mémorisée » ne revient pas en arrière automatiquement quand l'étape se désactive."
 	],
 
-	"exerciseLinearTitle": "Exercice — séquence linéaire",
+	"exerciseLinearTitle": "Exercice : séquence linéaire",
 	"exerciseLinearBody": [
 		"Un GRAFCET à 4 étapes, sans divergence ni temporisation : de quoi manipuler étapes, transitions, réceptivités et actions sur un cas simple avant d'aborder des structures plus riches."
 	],
@@ -96,7 +96,7 @@
 		"Cette notation peut s'utiliser directement dans une réceptivité, comme n'importe quelle autre condition booléenne."
 	],
 
-	"synthesisTrafficLightTitle": "Épreuve de synthèse — feu tricolore",
+	"synthesisTrafficLightTitle": "Épreuve de synthèse : feu tricolore",
 	"synthesisTrafficLightBody": [
 		"Reprenez ce que vous venez de voir sur un cas complet : un feu tricolore qui boucle sur ses trois couleurs, chacune temporisée."
 	],
@@ -105,12 +105,12 @@
 
 	"theoryOrDivergenceTitle": "Divergence / convergence en OU",
 	"theoryOrDivergenceBody": [
-		"Une divergence en OU décrit un choix entre plusieurs séquences : à un instant donné, une seule réceptivité parmi les branches doit être vraie — c'est ce qui rend les séquences mutuellement exclusives.",
+		"Une divergence en OU décrit un choix entre plusieurs séquences : à un instant donné, une seule réceptivité parmi les branches doit être vraie. C'est ce qui rend les séquences mutuellement exclusives.",
 		"Les branches peuvent ensuite se rejoindre plus loin sur une suite commune via une convergence en OU, mais ce n'est pas obligatoire : chaque branche peut aussi continuer de son côté sans jonction explicite, comme dans l'exercice ci-dessous où chaque branche reboucle seule vers l'étape initiale.",
 		"Studomate vérifie l'exclusivité des branches et signale une erreur si plusieurs réceptivités s'avèrent vraies simultanément."
 	],
 
-	"exerciseOrDivergenceTitle": "Exercice — divergence en OU",
+	"exerciseOrDivergenceTitle": "Exercice : divergence en OU",
 	"exerciseOrDivergenceBody": [
 		"Deux branches déclenchées par des entrées mutuellement exclusives, chacune rebouclant seule vers l'étape initiale : de quoi manipuler le choix et l'exclusivité avant l'épreuve de synthèse « parking à barrière » plus bas, qui la réutilise dans un cas plus complet."
 	],
@@ -118,27 +118,27 @@
 
 	"theoryAndDivergenceTitle": "Divergence / convergence en ET",
 	"theoryAndDivergenceBody": [
-		"Plusieurs évolutions peuvent se produire au même instant si leurs conditions sont réunies simultanément — la divergence en ET en est le cas le plus visible, puisqu'elle démarre plusieurs branches d'un seul coup.",
+		"Plusieurs évolutions peuvent se produire au même instant si leurs conditions sont réunies simultanément. La divergence en ET en est le cas le plus visible, puisqu'elle démarre plusieurs branches d'un seul coup.",
 		"Contrairement à la divergence en OU, où chaque branche porte sa propre réceptivité après la barre, la divergence en ET place une réceptivité unique avant la barre : c'est elle seule qui déclenche toutes les branches en même temps.",
 		"Une divergence en ET démarre plusieurs branches en parallèle dès qu'une même transition franchit : toutes les branches s'exécutent simultanément.",
-		"Sa convergence en ET ne laisse repartir la suite du GRAFCET que lorsque toutes les branches sont arrivées à leur étape de jonction — la plus lente impose son rythme aux autres."
+		"Sa convergence en ET ne laisse repartir la suite du GRAFCET que lorsque toutes les branches sont arrivées à leur étape de jonction. La plus lente impose son rythme aux autres."
 	],
 	"exerciseAndDivergenceCta": "Ouvrir l'exercice",
 
-	"synthesisParkingTitle": "Épreuve de synthèse — parking à barrière",
+	"synthesisParkingTitle": "Épreuve de synthèse : parking à barrière",
 	"synthesisParkingBody": [
 		"Une divergence en OU entre séquence d'entrée et séquence de sortie, un compteur de places et un voyant « complet » à piloter."
 	],
 
-	"synthesisCrossroadsTitle": "Épreuve de synthèse — carrefour de feux tricolores",
+	"synthesisCrossroadsTitle": "Épreuve de synthèse : carrefour de feux tricolores",
 	"synthesisCrossroadsBody": [
-		"Deux axes de feux à synchroniser dans un même GRAFCET, avec une alternance et une phase de tout-au-rouge entre chaque changement — la difficulté est de coordonner les deux axes sans jamais les rendre verts en même temps."
+		"Deux axes de feux à synchroniser dans un même GRAFCET, avec une alternance et une phase de tout-au-rouge entre chaque changement. La difficulté est de coordonner les deux axes sans jamais les rendre verts en même temps."
 	],
 
 	"readingErrorsTitle": "Lire les erreurs d'analyse",
 	"readingErrorsBody": [
 		"Studomate peut analyser votre GRAFCET à tout moment, sans attendre une simulation : un clic sur « Analyser » fait apparaître immédiatement dans le panneau d'analyse de l'éditeur une étape non reliée, une réceptivité invalide ou une variable inconnue.",
-		"C'est aussi ce qui repère les pièges les plus faciles à manquer : une étape sans chemin de retour vers un cycle bloque le GRAFCET pour toujours (une « impasse »), et une étape jamais atteinte depuis l'étape initiale ne s'activera jamais — deux erreurs fréquentes quand on oublie de reboucler une séquence vers son point de départ.",
+		"C'est aussi ce qui repère les pièges les plus faciles à manquer : une étape sans chemin de retour vers un cycle bloque le GRAFCET pour toujours (une « impasse »), et une étape jamais atteinte depuis l'étape initiale ne s'activera jamais. Ce sont deux erreurs fréquentes quand on oublie de reboucler une séquence vers son point de départ.",
 		"Prenez l'habitude d'y jeter un œil après chaque ajout de transition ou de branchement : c'est précisément là que ces deux pièges apparaissent le plus souvent."
 	]
 }

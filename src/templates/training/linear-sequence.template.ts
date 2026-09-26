@@ -48,7 +48,7 @@ export function createLinearSequenceProject(): Project {
  */
 export function createLinearSequenceSolution(): Project {
 	const project = createLinearSequenceProject();
-	project.name = "Séquence linéaire — solution";
+	project.name = "Séquence linéaire : solution";
 
 	const X = 200;
 	const e0 = new StepBuilder()

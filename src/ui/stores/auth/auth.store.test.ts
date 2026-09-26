@@ -4,6 +4,8 @@ import {
 	isAnonymousUser,
 } from "./auth.store";
 import type { User } from "@supabase/supabase-js";
+import { SchoolType } from "@/user-profile/SchoolType.enum";
+import { UserType } from "@/user-profile/UserType.enum";
 
 const mockSignUp = jest.fn();
 const mockSignInWithPassword = jest.fn();
@@ -13,6 +15,8 @@ const mockOnAuthStateChange = jest.fn((..._args: any[]) => ({
 	data: { subscription: { unsubscribe: jest.fn() } },
 }));
 const mockResetPasswordForEmail = jest.fn();
+const mockRpc = jest.fn();
+const mockMoveAllCloudToLocal = jest.fn();
 const mockTrackEvent = jest.fn();
 
 jest.mock("@/ui/lib/analytics", () => ({
@@ -20,8 +24,30 @@ jest.mock("@/ui/lib/analytics", () => ({
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));
 
+const mockSaveProfile = jest.fn();
+const mockSetStoredProfile = jest.fn();
+
+jest.mock("@/persistence/repositories/profile.repository", () => ({
+	__esModule: true,
+	default: class {
+		save = (...args: any[]) => mockSaveProfile(...args);
+	},
+}));
+
+jest.mock("@/ui/lib/user-profile-storage", () => ({
+	setStoredUserProfile: (...args: any[]) => mockSetStoredProfile(...args),
+}));
+
+jest.mock("@/persistence/repositories/hybrid.project.repository", () => ({
+	__esModule: true,
+	default: class {
+		moveAllCloudToLocal = (...args: any[]) => mockMoveAllCloudToLocal(...args);
+	},
+}));
+
 jest.mock("@/persistence/repositories/supabase-client", () => ({
 	supabase: {
+		rpc: (...args: any[]) => mockRpc(...args),
 		auth: {
 			getSession: (...args: any[]) => mockGetSession(...args),
 			onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args),
@@ -82,9 +108,66 @@ describe("authStore", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockGetSession.mockResolvedValue({ data: { session: null } });
+		mockSaveProfile.mockResolvedValue(undefined);
 	});
 
 	describe("signUp", () => {
+		it("saves the profile locally and in the cloud after sign-up", async () => {
+			const user = makeUser("alice@example.com");
+			mockSignUp.mockResolvedValue({ data: { user }, error: null });
+			const profile = {
+				userType: UserType.STUDENT,
+				schoolType: SchoolType.BTS,
+			};
+
+			await authStore.getState().signUp("alice@example.com", "password", profile);
+
+			expect(mockSetStoredProfile).toHaveBeenCalledWith(profile);
+			expect(mockSaveProfile).toHaveBeenCalledWith(profile);
+		});
+
+		it("saves an empty profile when none is given", async () => {
+			const user = makeUser("alice@example.com");
+			mockSignUp.mockResolvedValue({ data: { user }, error: null });
+
+			await authStore.getState().signUp("alice@example.com", "password");
+
+			expect(mockSaveProfile).toHaveBeenCalledWith({
+				userType: null,
+				schoolType: null,
+			});
+		});
+
+		it("still succeeds when saving the profile in the cloud fails", async () => {
+			const user = makeUser("alice@example.com");
+			mockSignUp.mockResolvedValue({ data: { user }, error: null });
+			mockSaveProfile.mockRejectedValue(new Error("network"));
+
+			const result = await authStore
+				.getState()
+				.signUp("alice@example.com", "password", {
+					userType: UserType.TEACHER,
+					schoolType: null,
+				});
+
+			expect(result.ok).toBe(true);
+		});
+
+		it("does not save the profile when sign-up fails", async () => {
+			mockSignUp.mockResolvedValue({
+				data: {},
+				error: { code: "weak_password", message: "weak" },
+			});
+
+			await authStore.getState().signUp("x@x.com", "a", {
+				userType: UserType.TEACHER,
+				schoolType: null,
+			});
+
+			expect(mockSetStoredProfile).not.toHaveBeenCalled();
+			expect(mockSaveProfile).not.toHaveBeenCalled();
+		});
+
 		it("retourne ok:true et pose l'utilisateur si Supabase réussit", async () => {
 			const user = makeUser("alice@example.com");
 			mockSignUp.mockResolvedValue({ data: { user }, error: null });
@@ -173,6 +256,34 @@ describe("authStore", () => {
 	});
 
 	describe("signUpAnonymous", () => {
+		it("saves the profile after an anonymous sign-up", async () => {
+			const user = makeUser(`pierre@${ANONYMOUS_EMAIL_DOMAIN}`);
+			mockSignUp.mockResolvedValue({ data: { user }, error: null });
+			const profile = {
+				userType: UserType.PROFESSIONAL,
+				schoolType: null,
+			};
+
+			await authStore.getState().signUpAnonymous("pierre", "mdp", profile);
+
+			expect(mockSetStoredProfile).toHaveBeenCalledWith(profile);
+			expect(mockSaveProfile).toHaveBeenCalledWith(profile);
+		});
+
+		it("does not save the profile when the pseudo is taken", async () => {
+			mockSignUp.mockResolvedValue({
+				data: {},
+				error: { code: "user_already_exists", message: "already registered" },
+			});
+
+			await authStore.getState().signUpAnonymous("pierre", "mdp", {
+				userType: UserType.TEACHER,
+				schoolType: null,
+			});
+
+			expect(mockSaveProfile).not.toHaveBeenCalled();
+		});
+
 		it("construit l'adresse factice et crée le compte", async () => {
 			const user = makeUser(`pierre@${ANONYMOUS_EMAIL_DOMAIN}`);
 			mockSignUp.mockResolvedValue({ data: { user }, error: null });
@@ -274,6 +385,99 @@ describe("authStore", () => {
 			await authStore.getState().signOut();
 
 			expect(authStore.getState().user).toBeNull();
+		});
+	});
+	describe("deleteAccount", () => {
+		beforeEach(() => {
+			authStore.setState({ user: makeUser("alice@example.com") });
+			mockSignInWithPassword.mockResolvedValue({ data: {}, error: null });
+			mockMoveAllCloudToLocal.mockResolvedValue({ ok: true });
+			mockRpc.mockResolvedValue({ error: null });
+			mockSignOut.mockResolvedValue({ error: null });
+		});
+
+		it("re-authenticates, moves the cloud projects to local, deletes the account and signs out", async () => {
+			const calls: string[] = [];
+			mockSignInWithPassword.mockImplementation(async () => {
+				calls.push("reauth");
+				return { data: {}, error: null };
+			});
+			mockMoveAllCloudToLocal.mockImplementation(async () => {
+				calls.push("repatriate");
+				return { ok: true };
+			});
+			mockRpc.mockImplementation(async () => {
+				calls.push("rpc");
+				return { error: null };
+			});
+
+			const result = await authStore.getState().deleteAccount("secret");
+
+			expect(result).toEqual({ ok: true });
+			expect(calls).toEqual(["reauth", "repatriate", "rpc"]);
+			expect(mockSignInWithPassword).toHaveBeenCalledWith({
+				email: "alice@example.com",
+				password: "secret",
+			});
+			expect(mockRpc).toHaveBeenCalledWith("delete_my_account");
+			expect(mockSignOut).toHaveBeenCalledWith({ scope: "local" });
+			expect(authStore.getState().user).toBeNull();
+			expect(mockTrackEvent).toHaveBeenCalledWith("account-deleted");
+		});
+
+		it("returns wrongPassword and touches nothing when the password is wrong", async () => {
+			mockSignInWithPassword.mockResolvedValue({
+				data: {},
+				error: { code: "invalid_credentials", message: "Invalid login credentials" },
+			});
+
+			const result = await authStore.getState().deleteAccount("nope");
+
+			expect(result).toEqual({ ok: false, code: "wrongPassword" });
+			expect(mockMoveAllCloudToLocal).not.toHaveBeenCalled();
+			expect(mockRpc).not.toHaveBeenCalled();
+			expect(authStore.getState().user).not.toBeNull();
+		});
+
+		it("returns a network error when the re-authentication cannot reach the server", async () => {
+			mockSignInWithPassword.mockResolvedValue({
+				data: {},
+				error: { message: "Failed to fetch" },
+			});
+
+			const result = await authStore.getState().deleteAccount("secret");
+
+			expect(result).toEqual({ ok: false, code: "network" });
+			expect(mockRpc).not.toHaveBeenCalled();
+		});
+
+		it("does not delete the account when the repatriation fails", async () => {
+			mockMoveAllCloudToLocal.mockResolvedValue({ ok: false, reason: "quota-exceeded" });
+
+			const result = await authStore.getState().deleteAccount("secret");
+
+			expect(result).toEqual({ ok: false, code: "repatriationFailed" });
+			expect(mockRpc).not.toHaveBeenCalled();
+			expect(authStore.getState().user).not.toBeNull();
+		});
+
+		it("keeps the user signed in when the server-side deletion fails", async () => {
+			mockRpc.mockResolvedValue({ error: { message: "boom" } });
+
+			const result = await authStore.getState().deleteAccount("secret");
+
+			expect(result).toEqual({ ok: false, code: "deleteAccountFailed" });
+			expect(mockSignOut).not.toHaveBeenCalled();
+			expect(authStore.getState().user).not.toBeNull();
+		});
+
+		it("fails without calling the server when nobody is signed in", async () => {
+			authStore.setState({ user: null });
+
+			const result = await authStore.getState().deleteAccount("secret");
+
+			expect(result).toEqual({ ok: false, code: "deleteAccountFailed" });
+			expect(mockSignInWithPassword).not.toHaveBeenCalled();
 		});
 	});
 });

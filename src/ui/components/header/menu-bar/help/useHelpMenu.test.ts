@@ -5,6 +5,12 @@ import { act, renderHook } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
 import useHelpMenu from "./useHelpMenu";
 
+const startProductTour = jest.fn();
+jest.mock("@/ui/components/product-tour/useStartProductTour", () => ({
+	__esModule: true,
+	default: () => startProductTour,
+}));
+
 describe("useHelpMenu", () => {
 	const onShortcutsOpen = jest.fn();
 
@@ -14,10 +20,11 @@ describe("useHelpMenu", () => {
 		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
 		expect(result.current.id).toBe("help");
 		expect(result.current.items).toHaveLength(2);
-		expect(result.current.items[0]).toHaveLength(3);
+		expect(result.current.items[0]).toHaveLength(4);
 		expect(result.current.items[0][0].label).toBe("Manuel utilisateur");
 		expect(result.current.items[0][1].label).toBe("Formations");
 		expect(result.current.items[0][2].label).toBe("Raccourcis clavier");
+		expect(result.current.items[0][3].label).toBe("Revoir la visite guidée");
 		expect(result.current.items[1][0].label).toBe("Signaler un problème");
 	});
 
@@ -33,6 +40,14 @@ describe("useHelpMenu", () => {
 			"noopener,noreferrer",
 		);
 		openSpy.mockRestore();
+	});
+
+	it("starts the guided tour when 'Revoir la visite guidée' is clicked", () => {
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+
+		result.current.items[0][3].onClick?.();
+
+		expect(startProductTour).toHaveBeenCalledTimes(1);
 	});
 
 	it("opens the user manual in a new tab when clicked", () => {

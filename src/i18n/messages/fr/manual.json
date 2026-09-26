@@ -144,7 +144,7 @@
 		"title": "Comptes & partage",
 		"p1": "Par défaut, tous vos projets sont stockés localement dans le navigateur. Créer un compte permet en plus de les sauvegarder dans le cloud : ils vous suivent alors d'un appareil à l'autre.",
 		"statusTitle": "Bouton d'état de compte",
-		"statusBody": "Un bouton dans la barre de titre indique si vous êtes connecté. Déconnecté, il affiche « Se connecter » et ouvre la fenêtre d'authentification. Connecté, il affiche votre identité et déroule un menu permettant de vous déconnecter.",
+		"statusBody": "Un bouton dans la barre de titre indique si vous êtes connecté. Déconnecté, il affiche « Se connecter » et ouvre la fenêtre d'authentification. Connecté, il affiche votre identité et ouvre la fenêtre « Compte Cloud ».",
 		"authTitle": "Se connecter ou s'inscrire",
 		"authIntro": "La fenêtre d'authentification propose :",
 		"authItems": [
@@ -162,7 +162,9 @@
 			"Projet → Gérer le partage rouvre cette fenêtre pour un projet déjà partagé."
 		],
 		"sharingOpenedTitle": "Ouvrir un projet partagé",
-		"sharingOpenedBody": "Un projet ouvert depuis un lien de partage l'est en copie. Le bouton « Enregistrer » devient « Enregistrer une copie » : la première sauvegarde crée votre propre projet, indépendant de l'original. L'entrée « Partager » est désactivée pour ce projet."
+		"sharingOpenedBody": "Un projet ouvert depuis un lien de partage l'est en copie. Le bouton « Enregistrer » devient « Enregistrer une copie » : la première sauvegarde crée votre propre projet, indépendant de l'original. L'entrée « Partager » est désactivée pour ce projet.",
+		"deleteAccountTitle": "Compte Cloud et suppression du compte",
+		"deleteAccountBody": "La fenêtre « Compte Cloud », ouverte depuis le bouton d'état de compte, affiche le nombre de projets stockés dans le cloud, permet d'ouvrir un projet ou de se déconnecter, et donne accès à la suppression du compte. Cette suppression est définitive et demande de confirmer avec votre mot de passe. Vos projets cloud sont d'abord rapatriés en local dans ce navigateur ; votre profil, votre progression de formation et les liens de partage de vos projets sont supprimés. Vos projets locaux ne sont pas affectés."
 	},
 	"explorer": {
 		"title": "Explorateur",

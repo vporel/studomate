@@ -55,7 +55,7 @@ export function createAndDivergenceProject(): Project {
  */
 export function createAndDivergenceSolution(): Project {
 	const project = createAndDivergenceProject();
-	project.name = "Divergence en ET — solution";
+	project.name = "Divergence en ET : solution";
 
 	const XL = 140;
 	const XR = 340;

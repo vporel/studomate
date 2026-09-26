@@ -110,6 +110,7 @@ const MenuBar = () => {
 		>
 			<FlexBox
 				role="menubar"
+				data-tour="menubar"
 				aria-label={t("ariaLabel")}
 				className="menu-bar"
 				onKeyDown={onMenuBarKeyDown}
@@ -135,7 +136,7 @@ const MenuBar = () => {
 					/>
 				))}
 			</FlexBox>
-			<FlexBox centerVertical sx={{ gap: 1, px: 1 }}>
+			<FlexBox data-tour="simulation" centerVertical sx={{ gap: 1, px: 1 }}>
 				<AnalyseButton />
 				<ProjectModeSwitcher />
 				<SimulationModeSelect />

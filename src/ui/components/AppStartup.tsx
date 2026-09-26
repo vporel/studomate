@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useShallow } from "zustand/shallow";
 import routes from "@/app/routes";
 import AccountStatus from "./auth/AccountStatus";
+import ProfilePromptModal from "./profile/ProfilePromptModal";
 import { useProjectStore } from "./projects/ProjectContext";
 
 const featuredTemplate = PROJECT_TEMPLATES.find(
@@ -99,6 +100,8 @@ const AppStartup = () => {
 						</Typography>
 					</Box>
 				</FlexBox>
+
+				<ProfilePromptModal />
 
 				{featuredTemplate && (
 					<Box

@@ -4,6 +4,7 @@ import { StorageLocation } from "./repositories/project.repository";
 const STORAGE_KEY = "studomate_preferred_save_location";
 const LOCALE_STORAGE_KEY = "studomate_locale";
 const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
+const PRODUCT_TOUR_SEEN_KEY = "studomate_product_tour_seen";
 
 /**
  * Lieu de stockage par défaut choisi par l'utilisateur (page Préférences, ou premier
@@ -66,6 +67,23 @@ export function setAutoOpenHmiSimulationOnStart(value: boolean): void {
 		localStorage.setItem(AUTO_OPEN_HMI_SIMULATION_KEY, String(value));
 	} catch {
 		// Stockage indisponible : la préférence ne sera simplement pas retenue
+	}
+}
+
+/** Whether the guided tour was already shown in this browser. */
+export function getProductTourSeen(): boolean {
+	try {
+		return localStorage.getItem(PRODUCT_TOUR_SEEN_KEY) === "true";
+	} catch {
+		return false;
+	}
+}
+
+export function setProductTourSeen(): void {
+	try {
+		localStorage.setItem(PRODUCT_TOUR_SEEN_KEY, "true");
+	} catch {
+		// Storage unavailable: the tour will simply be offered again.
 	}
 }
 

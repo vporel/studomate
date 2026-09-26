@@ -22,6 +22,8 @@ import frTraining from "./fr/training.json";
 import frVariableValidation from "./fr/variableValidation.json";
 import frCrossReference from "./fr/crossReference.json";
 import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
+import frProfile from "./fr/profile.json";
+import frTour from "./fr/tour.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
@@ -44,6 +46,8 @@ import enTraining from "./en/training.json";
 import enVariableValidation from "./en/variableValidation.json";
 import enCrossReference from "./en/crossReference.json";
 import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
+import enProfile from "./en/profile.json";
+import enTour from "./en/tour.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -68,6 +72,8 @@ export type Messages = {
 	variableValidation: typeof frVariableValidation;
 	crossReference: typeof frCrossReference;
 	variableSelectorMenu: typeof frVariableSelectorMenu;
+	profile: typeof frProfile;
+	tour: typeof frTour;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -94,6 +100,8 @@ const MESSAGES: Record<Locale, Messages> = {
 		variableValidation: frVariableValidation,
 		crossReference: frCrossReference,
 		variableSelectorMenu: frVariableSelectorMenu,
+		profile: frProfile,
+		tour: frTour,
 	},
 	en: {
 		common: enCommon,
@@ -118,6 +126,8 @@ const MESSAGES: Record<Locale, Messages> = {
 		variableValidation: enVariableValidation,
 		crossReference: enCrossReference,
 		variableSelectorMenu: enVariableSelectorMenu,
+		profile: enProfile,
+		tour: enTour,
 	},
 };
 
