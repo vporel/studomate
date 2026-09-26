@@ -6,19 +6,15 @@ import CrossReferenceMapper, {
 import CrossReferenceCollector from "@/project-analyser/cross-reference/cross-reference-collector";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
-import ResizableFixedBox from "@/ui/lib/mui/ResizableFixedBox";
-import CloseIcon from "@mui/icons-material/Close";
 import {
 	Box,
-	Divider,
-	IconButton,
 	List,
 	ListItemButton,
 	TextField,
-	Tooltip,
 	Typography,
 } from "@mui/material";
 import { useMemo } from "react";
+import BottomPanel from "../BottomPanel";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
 
@@ -127,33 +123,12 @@ function CrossReferencePanel() {
 			: [];
 
 	return (
-		<ResizableFixedBox
-			position="bottom"
-			initialSize={350}
-			offset={30}
-			contentContainerProps={{
-				sx: { px: 2, py: 1, display: "flex", flexDirection: "column" },
-			}}
+		<BottomPanel
+			title={t("panelTitle")}
+			closeLabel={t("close")}
+			closeAriaLabel="close-cross-references"
+			onClose={() => setVisible(false)}
 		>
-			<Box
-				sx={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-				}}
-			>
-				<Typography variant="h6">{t("panelTitle")}</Typography>
-				<Tooltip title={t("close")}>
-					<IconButton
-						onClick={() => setVisible(false)}
-						size="small"
-						aria-label="close-cross-references"
-					>
-						<CloseIcon />
-					</IconButton>
-				</Tooltip>
-			</Box>
-			<Divider sx={{ my: 1 }} />
 			<TextField
 				size="small"
 				variant="standard"
@@ -197,6 +172,6 @@ function CrossReferencePanel() {
 					</Box>
 				))}
 			</Box>
-		</ResizableFixedBox>
+		</BottomPanel>
 	);
 }

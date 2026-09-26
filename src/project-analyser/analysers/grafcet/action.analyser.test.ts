@@ -27,6 +27,21 @@ describe("ActionAnalyser", () => {
 			expect(issues).toHaveLength(0);
 		});
 
+		it("reports an unparsable expression with the original error as cause", () => {
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("A ET ET")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+
+			const issues = analyser.analyseIsolated(action);
+
+			const issue = issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION");
+			expect(issue?.severity).toBe("error");
+			expect(issue?.cause).toBeInstanceOf(Error);
+		});
+
 		it("detects empty expression for non-TEXT action", () => {
 			const action = new ActionBuilder()
 				.id("action-1")

@@ -7,7 +7,7 @@ import {
 } from "./hmi-widget.schema";
 
 /** Dimensions fixes du canvas HMI, en pixels — multiples de `SNAP_GRID` (voir
- * `src/ui/components/hmi/view/constants.ts`) pour que les bords du canvas tombent sur la grille. */
+ * `src/ui/components/hmi/logic/constants.ts`) pour que les bords du canvas tombent sur la grille. */
 export const HMI_CANVAS_WIDTH = 1000;
 export const HMI_CANVAS_HEIGHT = 640;
 

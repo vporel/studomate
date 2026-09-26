@@ -15,7 +15,7 @@ import {
 	getVariablesPageData,
 	VariablesPageId,
 } from "@/ui/components/pages/VariablesPage";
-import { getPagesSession } from "@/ui/lib/pages-session-storage";
+import { getPagesSession } from "@/persistence/pages-session.storage";
 import {
 	PageData,
 	ProjectStoreGetFunction,
@@ -56,7 +56,7 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 }
 
 /**
- * Rouvre les onglets d'une session de navigateur précédente (voir `pages-session-storage.ts`)
+ * Rouvre les onglets d'une session de navigateur précédente (voir `pages-session.storage.ts`)
  * pour ce projet, et active en priorité `urlActiveId` (lien partagé) sur la page active
  * mémorisée par la session — voir la discussion produit associée. Appelée juste après
  * `_openProject`, qui a déjà posé l'état par défaut (page de démarrage seule) : si rien n'est

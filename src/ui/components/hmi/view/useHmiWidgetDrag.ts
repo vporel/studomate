@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import {
 	HMI_CANVAS_HEIGHT,
@@ -7,7 +8,7 @@ import {
 } from "@/schemas/hmi/hmi-page.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
-import { snapToGrid } from "./constants";
+import { snapToGrid } from "@/ui/components/hmi/logic/constants";
 
 export interface HmiDragPreview {
 	widgetIds: string[];
@@ -63,10 +64,10 @@ export default function useHmiWidgetDrag(
 			const rawDx = (clientX - drag.startMouseX) / zoom;
 			const rawDy = (clientY - drag.startMouseY) / zoom;
 			const dx = snapToGrid(
-				Math.max(-drag.minX, Math.min(HMI_CANVAS_WIDTH - drag.maxX, rawDx)),
+				clamp(rawDx, -drag.minX, HMI_CANVAS_WIDTH - drag.maxX),
 			);
 			const dy = snapToGrid(
-				Math.max(-drag.minY, Math.min(HMI_CANVAS_HEIGHT - drag.maxY, rawDy)),
+				clamp(rawDy, -drag.minY, HMI_CANVAS_HEIGHT - drag.maxY),
 			);
 			return { dx, dy };
 		};

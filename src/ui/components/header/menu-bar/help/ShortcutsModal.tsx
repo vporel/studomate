@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { platformShortcut } from "@/ui/lib/platform";
 import {
 	Box,

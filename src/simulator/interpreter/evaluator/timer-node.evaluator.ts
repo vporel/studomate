@@ -67,60 +67,62 @@ export default class TimerNodeEvaluator {
 					outputValue = false;
 				}
 				break;
-			case "TOF":
-				if (fallingEdge) {
-					this.env.setVariableValueByName(
-						(node.output as IdentifierNode).value,
-						true,
-					);
-					outputValue = true;
-					break;
-				}
-				if (!inputValue) {
-					if (elapsedTimeValue >= presetTimeValue) {
-						outputValue = false;
-					} else {
-						outputValue = true;
-						this.env.setVariableValueByName(
-							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + this.options.deltaTimeMs,
-						);
-					}
-				} else {
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						0,
-					);
-					outputValue = true;
-				}
-				break;
-			case "TP":
-				if (risingEdge) {
-					this.env.setVariableValueByName(
-						(node.output as IdentifierNode).value,
-						true,
-					);
-					outputValue = true;
-					break;
-				}
+			case "TOF": {
 				if (inputValue) {
-					if (elapsedTimeValue >= presetTimeValue) {
-						outputValue = false;
-					} else {
-						outputValue = true;
-						this.env.setVariableValueByName(
-							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + this.options.deltaTimeMs,
-						);
-					}
-				} else {
 					this.env.setVariableValueByName(
 						(node.elapsedTime as IdentifierNode).value,
 						0,
 					);
+					outputValue = true;
+					break;
+				}
+				if (fallingEdge) {
+					outputValue = true;
+					break;
+				}
+				// The off-delay only runs after IN has been true: Q stays false at startup.
+				const delayRunning = this.visitor.visit(node.output) as boolean;
+				if (delayRunning && elapsedTimeValue < presetTimeValue) {
+					outputValue = true;
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						elapsedTimeValue + this.options.deltaTimeMs,
+					);
+				} else {
 					outputValue = false;
 				}
 				break;
+			}
+			case "TP": {
+				// IEC 61131-3: once started, the pulse lasts PT whatever IN does, and a rising edge
+				// during the pulse is ignored (not retriggerable). ET holds PT after the pulse
+				// while IN stays true.
+				const pulseRunning = this.visitor.visit(node.output) as boolean;
+				if (!pulseRunning && risingEdge) {
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						0,
+					);
+					outputValue = true;
+					break;
+				}
+				if (pulseRunning && elapsedTimeValue < presetTimeValue) {
+					outputValue = true;
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						elapsedTimeValue + this.options.deltaTimeMs,
+					);
+					break;
+				}
+				outputValue = false;
+				if (!inputValue) {
+					this.env.setVariableValueByName(
+						(node.elapsedTime as IdentifierNode).value,
+						0,
+					);
+				}
+				break;
+			}
 		}
 		this.env.setVariableValueByName(
 			(node.output as IdentifierNode).value,

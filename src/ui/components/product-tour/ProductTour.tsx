@@ -1,6 +1,6 @@
 "use client";
 
-import shouldStartProductTour from "@/ui/lib/product-tour/product-tour-eligibility";
+import shouldStartProductTour from "@/ui/components/product-tour/product-tour-eligibility";
 import { useEffect } from "react";
 import useStartProductTour from "./useStartProductTour";
 

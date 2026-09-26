@@ -695,33 +695,49 @@ describe("PLC", () => {
 			plc.getVariablesSnapshot().find((v) => v.getName() === name)
 				?.getValue() as boolean;
 
-		it("_SYS_TB_200ms : impulsion d'un scan une fois par période, scan 100 ms", () => {
+		it("_SYS_TB_200ms : alterne à chaque scan quand la demi-période vaut le temps de scan", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
 
-			jest.advanceTimersByTime(100); // acc 100 < 200
+			jest.advanceTimersByTime(100); // phase 100 (>= 100) -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			jest.advanceTimersByTime(100); // acc 100
+			jest.advanceTimersByTime(100); // phase 100 -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
 
 			plc.stop();
 		});
 
-		it("report : un scan couvrant plusieurs périodes soustrait une période et reporte le reliquat sur les scans suivants", () => {
+		it("_SYS_TB_1s : signal carré, niveau haut maintenu sur toute la première moitié de la période", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+
+			for (let i = 0; i < 4; i++) {
+				jest.advanceTimersByTime(100); // phase 100, 200, 300, 400 : < 500 -> vrai
+				expect(pulseOf(plc, "_SYS_TB_1s")).toBe(true);
+			}
+			for (let i = 0; i < 5; i++) {
+				jest.advanceTimersByTime(100); // phase 500, 600, 700, 800, 900 : >= 500 -> faux
+				expect(pulseOf(plc, "_SYS_TB_1s")).toBe(false);
+			}
+			jest.advanceTimersByTime(100); // phase 0 -> vrai, la période recommence
+			expect(pulseOf(plc, "_SYS_TB_1s")).toBe(true);
+
+			plc.stop();
+		});
+
+		it("un scan couvrant plusieurs périodes retombe directement sur la bonne phase", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
 			plc.pause();
-			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle
+			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle exécuté
 
-			plc.stepOnce(); // delta 500 : acc 500 -> impulsion, reste 300
-			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			plc.stepOnce(); // delta 0 : acc 300 -> impulsion, reste 100
-			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			plc.stepOnce(); // delta 0 : acc 100 -> pas d'impulsion
+			plc.stepOnce(); // delta 500 d'un coup : phase 500 % 200 = 100 -> faux
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			plc.stepOnce(); // delta 0 : phase toujours 100 -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
 
 			plc.stop();
@@ -730,13 +746,13 @@ describe("PLC", () => {
 		it("remet les accumulateurs à zéro au stop puis au redémarrage", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
-			jest.advanceTimersByTime(100); // acc 100
+			jest.advanceTimersByTime(100); // phase 100
 			plc.stop();
 
 			plc.start();
-			jest.advanceTimersByTime(100); // acc repart de 0 -> 100, pas d'impulsion
+			jest.advanceTimersByTime(100); // phase repart de 0 -> 100, faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
 			plc.stop();
 		});

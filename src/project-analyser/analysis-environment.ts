@@ -1,4 +1,4 @@
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import SchemaVariablesMapper from "@/project-analyser/variables.mapper";
 import {
 	isSystemVariableName,
 	SYSTEM_VARIABLES,

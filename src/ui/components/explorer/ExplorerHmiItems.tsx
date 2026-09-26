@@ -2,15 +2,16 @@
 
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Chip, Typography } from "@mui/material";
-import { Fragment, MouseEvent, useCallback, useEffect, useState } from "react";
+import { Fragment, useEffect } from "react";
 import { useT } from "@/ui/i18n/useT";
 import HmiIcon from "../icons/HmiIcon";
-import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
+import CustomTreeItem from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
-import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
+import { ExplorerItemsProps } from "./explorer-items-props";
 import { ExplorerContextMenuEventsOutHmiRename } from "./context-menu/explorer-context-menu-events";
 import { explorerContextMenuEventsOut } from "./context-menu/ExplorerContextMenu";
 import { useShallow } from "zustand/shallow";
+import { useRenamableTreeItem } from "./useRenamableTreeItem";
 
 const ExplorerHmiItem = ({
 	hmiPageId,
@@ -18,15 +19,10 @@ const ExplorerHmiItem = ({
 	isMain,
 	styles,
 	onContextMenu,
-}: {
+}: ExplorerItemsProps & {
 	hmiPageId: string;
 	hmiPageName: string;
 	isMain: boolean;
-	styles: CustomTreeItemStyles;
-	onContextMenu: (
-		event: MouseEvent,
-		element: ExplorerContextMenuElement,
-	) => void;
 }) => {
 	const t = useT("explorer");
 	const hmiManager = useProjectStore((state) => state.hmiManager);
@@ -34,23 +30,21 @@ const ExplorerHmiItem = ({
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
-	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
-	const [editingName, setEditingName] = useState(hmiPageName);
-
-	const saveName = useCallback(() => {
-		const trimmed =
-			editingName.trim() !== "" ? editingName.trim() : hmiPageName;
-		hmiManager.renameHmiPage(hmiPageId, trimmed);
-	}, [editingName, hmiPageId, hmiPageName, hmiManager]);
+	const { labelMode, startEditing, onDoubleClick, inputProps } =
+		useRenamableTreeItem({
+			name: hmiPageName,
+			designing,
+			onRename: (name) => hmiManager.renameHmiPage(hmiPageId, name),
+		});
 
 	useEffect(() => {
 		const handler = (e: ExplorerContextMenuEventsOutHmiRename) => {
 			if (!designing) return;
-			if (e.hmiPageId === hmiPageId) setLabelMode("edit");
+			if (e.hmiPageId === hmiPageId) startEditing();
 		};
 		explorerContextMenuEventsOut.on("hmi-rename", handler);
 		return () => explorerContextMenuEventsOut.off("hmi-rename", handler);
-	}, [hmiPageId, designing]);
+	}, [hmiPageId, designing, startEditing]);
 
 	return (
 		<CustomTreeItem
@@ -83,24 +77,8 @@ const ExplorerHmiItem = ({
 					title: hmiPageName,
 				})
 			}
-			onDoubleClick={() => {
-				if (!designing) return;
-				setLabelMode("edit");
-			}}
-			inputProps={{
-				value: editingName,
-				onChange: (e) => setEditingName(e.target.value),
-				onBlur: () => {
-					setLabelMode("normal");
-					saveName();
-				},
-				onKeyDown: (e) => {
-					if (e.key === "Enter" || e.key === "Escape") {
-						setLabelMode("normal");
-						saveName();
-					}
-				},
-			}}
+			onDoubleClick={onDoubleClick}
+			inputProps={inputProps}
 			onContextMenu={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -113,13 +91,7 @@ const ExplorerHmiItem = ({
 const ExplorerHmiItems = ({
 	styles,
 	onContextMenu,
-}: {
-	styles: CustomTreeItemStyles;
-	onContextMenu: (
-		event: MouseEvent,
-		element: ExplorerContextMenuElement,
-	) => void;
-}) => {
+}: ExplorerItemsProps) => {
 	const t = useT("explorer");
 	// `useShallow` sur des sélecteurs à valeurs primitives (ids, noms) pour éviter les
 	// re-rendus infinis : un sélecteur retournant des objets reconstruits à chaque appel

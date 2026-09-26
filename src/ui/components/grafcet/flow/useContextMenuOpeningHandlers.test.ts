@@ -3,11 +3,11 @@
  */
 import { act, renderHook } from "@testing-library/react";
 import { useGrafcetContext } from "../context/GrafcetContext";
-import useFlowContextMenu from "@/ui/lib/hooks/useFlowContextMenu";
+import useFlowContextMenu from "@/ui/lib/react-flow/useFlowContextMenu";
 import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 
 jest.mock("../context/GrafcetContext");
-jest.mock("@/ui/lib/hooks/useFlowContextMenu");
+jest.mock("@/ui/lib/react-flow/useFlowContextMenu");
 
 describe("useContextMenuOpeningHandlers", () => {
 	const openContextMenu = jest.fn();

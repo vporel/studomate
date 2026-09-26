@@ -25,6 +25,9 @@ export const routing = defineRouting({
 		"/training": { fr: "/formations", en: "/training" },
 		"/training/a0": { fr: "/formations/a0", en: "/training/a0" },
 		"/training/a1": { fr: "/formations/a1", en: "/training/a1" },
+		"/training/a2": { fr: "/formations/a2", en: "/training/a2" },
+		"/training/a3": { fr: "/formations/a3", en: "/training/a3" },
+		"/training/a4": { fr: "/formations/a4", en: "/training/a4" },
 	},
 });
 

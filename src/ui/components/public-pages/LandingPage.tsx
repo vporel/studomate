@@ -87,6 +87,38 @@ const reasonKeys = [
 	"reasonShortLoop",
 ] as const;
 
+const IconCardGrid = ({
+	keys,
+	icons,
+}: {
+	keys: readonly string[];
+	icons: ComponentType<SvgIconProps>[];
+}) => {
+	const t = useT("public.landing");
+	return (
+		<FlexBox gap={3} wrap justifyContent="center">
+			{keys.map((key, i) => {
+				const Icon = icons[i];
+				return (
+					<Paper
+						key={key}
+						variant="outlined"
+						sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
+					>
+						<Icon color="primary" fontSize="large" />
+						<Typography variant="h6" fontWeight={700} mt={1}>
+							{t(`${key}Title` as never)}
+						</Typography>
+						<Typography variant="body2" color="text.secondary" mt={0.5}>
+							{t(`${key}Text` as never)}
+						</Typography>
+					</Paper>
+				);
+			})}
+		</FlexBox>
+	);
+};
+
 const stepKeys = ["step1", "step2", "step3"] as const;
 
 const grafcetCapture = "/images/captures-projets/parking-a-barriere_grafcet.png";
@@ -199,26 +231,7 @@ const LandingPage = () => {
 				<Typography textAlign="center" color="text.secondary" mb={4}>
 					{t("whyIntro", { name: APP_NAME })}
 				</Typography>
-				<FlexBox gap={3} wrap justifyContent="center">
-					{reasonKeys.map((key, i) => {
-						const Icon = reasonIcons[i];
-						return (
-							<Paper
-								key={key}
-								variant="outlined"
-								sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
-							>
-								<Icon color="primary" fontSize="large" />
-								<Typography variant="h6" fontWeight={700} mt={1}>
-									{t(`${key}Title` as never)}
-								</Typography>
-								<Typography variant="body2" color="text.secondary" mt={0.5}>
-									{t(`${key}Text` as never)}
-								</Typography>
-							</Paper>
-						);
-					})}
-				</FlexBox>
+				<IconCardGrid keys={reasonKeys} icons={reasonIcons} />
 			</Container>
 
 			<Divider />
@@ -256,26 +269,7 @@ const LandingPage = () => {
 			{/* Fonctionnalités */}
 			<Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
 				<SectionTitle>{t("featuresTitle", { name: APP_NAME })}</SectionTitle>
-				<FlexBox gap={3} wrap justifyContent="center">
-					{featureKeys.map((key, i) => {
-						const Icon = featureIcons[i];
-						return (
-							<Paper
-								key={key}
-								variant="outlined"
-								sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
-							>
-								<Icon color="primary" fontSize="large" />
-								<Typography variant="h6" fontWeight={700} mt={1}>
-									{t(`${key}Title` as never)}
-								</Typography>
-								<Typography variant="body2" color="text.secondary" mt={0.5}>
-									{t(`${key}Text` as never)}
-								</Typography>
-							</Paper>
-						);
-					})}
-				</FlexBox>
+				<IconCardGrid keys={featureKeys} icons={featureIcons} />
 			</Container>
 
 			<Divider />

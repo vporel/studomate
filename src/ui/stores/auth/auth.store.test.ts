@@ -19,7 +19,7 @@ const mockRpc = jest.fn();
 const mockMoveAllCloudToLocal = jest.fn();
 const mockTrackEvent = jest.fn();
 
-jest.mock("@/ui/lib/analytics", () => ({
+jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));
@@ -34,7 +34,7 @@ jest.mock("@/persistence/repositories/profile.repository", () => ({
 	},
 }));
 
-jest.mock("@/ui/lib/user-profile-storage", () => ({
+jest.mock("@/persistence/user-profile.storage", () => ({
 	setStoredUserProfile: (...args: any[]) => mockSetStoredProfile(...args),
 }));
 

@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";

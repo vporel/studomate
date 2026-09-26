@@ -1,7 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
-import { resolvePositionAnimationOffset } from "@/ui/components/hmi/view/hmi-position-animation";
+import { resolvePositionAnimationOffset } from "@/ui/components/hmi/logic/hmi-position-animation";
 import Connection from "@/schemas/ladder/connection.schema";
 import { createCoilElement, createContactElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import { createRandomId } from "@/ids";

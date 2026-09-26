@@ -28,6 +28,7 @@ import LadderSection from "./LadderSection";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 import "@xyflow/react/dist/style.css";
+import "@/ui/lib/react-flow/flow-page.css";
 import "./_ladder-page.css";
 
 function LadderFlowContent() {
@@ -93,7 +94,7 @@ function LadderFlowContent() {
 
 	return (
 		<Box
-			className="ladder-page"
+			className="ladder-page flow-page"
 			sx={{
 				padding: "25px",
 				width: "100%",

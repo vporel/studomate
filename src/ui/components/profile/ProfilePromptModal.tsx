@@ -1,15 +1,15 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import {
 	setStoredUserProfile,
 	shouldAskUserProfile,
-} from "@/ui/lib/user-profile-storage";
+} from "@/persistence/user-profile.storage";
 import { SchoolType } from "@/user-profile/SchoolType.enum";
 import { UserType } from "@/user-profile/UserType.enum";
 import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 

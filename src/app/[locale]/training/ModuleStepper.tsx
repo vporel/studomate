@@ -2,10 +2,9 @@
 
 import routes from "@/app/routes";
 import type { PublicPathname } from "@/i18n/routing";
-import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
-import { useAuthStore } from "@/ui/stores/auth/auth.store";
+import MarkdownBody from "@/ui/lib/markdown-body";
 import CheckIcon from "@mui/icons-material/Check";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
@@ -25,7 +24,6 @@ import {
 import { blue } from "@mui/material/colors";
 import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useShallow } from "zustand/shallow";
 
 const ACCENT_BACKGROUND = alpha(blue[700], 0.05);
 
@@ -43,6 +41,7 @@ export type StepData = {
 	 * l'ajout/réordonnancement d'étapes. */
 	id: string;
 	title: string;
+	/** Blocs Markdown (paragraphe, liste...), joints par une ligne vide avant rendu. */
 	body: string[];
 	kind: StepKind;
 	cta?: {
@@ -159,43 +158,28 @@ export default function ModuleStepper({
 	// after picking a step — scrolling it into view isn't needed once they sit side by side.
 	const isStackedLayout = useMediaQuery(theme.breakpoints.down("md"));
 
-	const { user, init } = useAuthStore(
-		useShallow((state) => ({ user: state.user, init: state.init })),
-	);
-
-	useEffect(() => {
-		if (isSupabaseConfigured) void init();
-	}, [init]);
-
-	// Verrouille les étapes non encore atteintes dans le sommaire, pour un utilisateur connecté
-	// uniquement : la progression sauvegardée ne doit refléter que des étapes réellement vues,
-	// pas un saut direct vers une étape avancée. Sans compte, rien n'est persisté — la navigation
-	// libre reste sans conséquence.
-	const stepsLocked = isSupabaseConfigured && !!user;
-
 	// La plus grande étape jamais atteinte pour ce module (hash ou progression sauvegardée) :
 	// la sauvegarde ne redescend jamais en dessous, même si l'utilisateur revient en arrière
-	// pour relire une étape. Sert aussi à verrouiller/cocher le sommaire (voir `stepsLocked`) —
+	// pour relire une étape. Sert aussi à verrouiller/cocher le sommaire —
 	// sans verrouillage, un saut direct à une étape avancée ferait cocher à tort les précédentes.
 	const [furthestIndex, setFurthestIndex] = useState(0);
 
 	// Le hash de l'URL garde la priorité pour l'affichage (lien direct vers une étape) ; sinon,
-	// pour un utilisateur connecté, reprend la dernière étape sauvegardée pour ce module.
+	// reprend la dernière étape sauvegardée pour ce module.
 	useEffect(() => {
 		const hashIndex = stepIndexFromHash(window.location.hash, steps);
 		if (hashIndex !== null) setActiveIndex(hashIndex);
 
-		if (!isSupabaseConfigured) {
-			setFurthestIndex(Math.max(hashIndex ?? -1, 0));
-			return;
-		}
 		let cancelled = false;
-		void new TrainingProgressRepository().getStepId(moduleId).then((stepId) => {
-			if (cancelled) return;
-			const savedIndex = stepId ? steps.findIndex((s) => s.id === stepId) : -1;
-			setFurthestIndex(Math.max(hashIndex ?? -1, savedIndex, 0));
-			if (hashIndex === null && savedIndex !== -1) setActiveIndex(savedIndex);
-		});
+		const stepIds = steps.map((s) => s.id);
+		void new TrainingProgressRepository()
+			.getStepId(moduleId, stepIds)
+			.then((stepId) => {
+				if (cancelled) return;
+				const savedIndex = stepId ? stepIds.indexOf(stepId) : -1;
+				setFurthestIndex(Math.max(hashIndex ?? -1, savedIndex, 0));
+				if (hashIndex === null && savedIndex !== -1) setActiveIndex(savedIndex);
+			});
 		return () => {
 			cancelled = true;
 		};
@@ -209,9 +193,7 @@ export default function ModuleStepper({
 		}
 		if (index > furthestIndex) {
 			setFurthestIndex(index);
-			if (isSupabaseConfigured) {
-				void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
-			}
+			void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
 		}
 	};
 
@@ -235,8 +217,8 @@ export default function ModuleStepper({
 						step={s}
 						number={i + 1}
 						active={i === activeIndex}
-						completed={stepsLocked && i < furthestIndex}
-						disabled={stepsLocked && i > furthestIndex}
+						completed={i < furthestIndex}
+						disabled={i > furthestIndex}
 						onClick={() => goTo(i)}
 					/>
 				))}
@@ -262,13 +244,10 @@ export default function ModuleStepper({
 					</Typography>
 				</Stack>
 
-				<Stack gap={1.5}>
-					{step.body.map((paragraph, i) => (
-						<Typography key={i} textAlign="justify">
-							{paragraph}
-						</Typography>
-					))}
-				</Stack>
+				<MarkdownBody
+					source={step.body.join("\n\n")}
+					sx={{ "& p": { textAlign: "justify" } }}
+				/>
 
 				{step.cta && (
 					<Stack direction="row" gap={1.5} flexWrap="wrap" mt={2}>
@@ -277,6 +256,7 @@ export default function ModuleStepper({
 							href={`${routes.app()}?template=${step.cta.templateId}${
 								step.cta.primaryMode === "solution" ? "&template-mode=solution" : ""
 							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}`}
+							target="_blank"
 							variant="contained"
 						>
 							{step.cta.exerciseLabel}
@@ -285,6 +265,7 @@ export default function ModuleStepper({
 							<Button
 								LinkComponent={NextLink}
 								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution`}
+								target="_blank"
 								variant="outlined"
 							>
 								{step.cta.solutionLabel}

@@ -17,15 +17,16 @@ export type SystemVariable = {
 };
 
 /**
- * Base de temps : `_SYS_TB_X` est un BOOL vrai pendant exactement un scan par période de temps
- * simulé, faux sinon (impulsion, pas un signal carré). Équivalent des *clock memory bits* des
- * automates réels.
+ * Base de temps : `_SYS_TB_X` est un BOOL en signal carré (rapport cyclique 50 %) vrai pendant
+ * la première moitié de chaque période de temps simulé, faux pendant la seconde. Équivalent des
+ * *clock memory bits* des automates réels (%S de Schneider, clock memory bits de Siemens...), qui
+ * sont eux aussi des niveaux et non des impulsions.
  *
  * Simplification assumée : `periodMs` d'une base de temps ne doit jamais être **inférieure au
  * temps de scan** (100 ms par défaut). Une base plus rapide que le scan (`_SYS_TB_50ms`,
- * `_SYS_TB_10ms`) est donc interdite : un scan couvrirait alors plusieurs périodes, or le moteur
- * n'émet qu'une impulsion par scan (`PLC.updateSystemTimeBases`) — les tops intermédiaires
- * seraient perdus. Toutes les bases listées ici respectent cette borne au scan par défaut.
+ * `_SYS_TB_10ms`) est donc interdite : la demi-période deviendrait plus courte qu'un scan, et le
+ * niveau haut ou bas risquerait de ne jamais être observé par le programme (`PLC.updateSystemTimeBases`).
+ * Toutes les bases listées ici respectent cette borne au scan par défaut.
  */
 export type SystemTimeBase = SystemVariable & {
 	type: "BOOL";
@@ -33,39 +34,39 @@ export type SystemTimeBase = SystemVariable & {
 };
 
 /**
- * `_SYS_TB_100ms` est dégénérée au temps de scan par défaut (100 ms) — active à chaque scan —
- * mais utile à scan plus court.
+ * `_SYS_TB_100ms` est dégénérée au temps de scan par défaut (100 ms) — sa demi-période (50 ms)
+ * n'est pas résolue et son niveau peut sembler irrégulier — mais utile à scan plus court.
  */
 export const SYSTEM_TIME_BASES: readonly SystemTimeBase[] = [
 	{
 		name: "_SYS_TB_100ms",
 		type: "BOOL",
 		periodMs: 100,
-		description: "Base de temps : impulsion d'un scan toutes les 100 ms.",
+		description: "Base de temps : signal carré de période 100 ms.",
 	},
 	{
 		name: "_SYS_TB_200ms",
 		type: "BOOL",
 		periodMs: 200,
-		description: "Base de temps : impulsion d'un scan toutes les 200 ms.",
+		description: "Base de temps : signal carré de période 200 ms.",
 	},
 	{
 		name: "_SYS_TB_500ms",
 		type: "BOOL",
 		periodMs: 500,
-		description: "Base de temps : impulsion d'un scan toutes les 500 ms.",
+		description: "Base de temps : signal carré de période 500 ms.",
 	},
 	{
 		name: "_SYS_TB_1s",
 		type: "BOOL",
 		periodMs: 1000,
-		description: "Base de temps : impulsion d'un scan toutes les 1 s.",
+		description: "Base de temps : signal carré de période 1 s.",
 	},
 	{
 		name: "_SYS_TB_2s",
 		type: "BOOL",
 		periodMs: 2000,
-		description: "Base de temps : impulsion d'un scan toutes les 2 s.",
+		description: "Base de temps : signal carré de période 2 s.",
 	},
 ] as const;
 

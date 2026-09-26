@@ -13,7 +13,8 @@ import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
 import ExplorerHmiItems from "./ExplorerHmiItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
-import useExplorerContextMenu from "./useExplorerContextMenu";
+import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
+import useContextMenuState from "@/ui/lib/context-menu/useContextMenuState";
 import { useProjectStore } from "../projects/ProjectContext";
 
 export const treeItemStyles: CustomTreeItemStyles = {
@@ -51,7 +52,9 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 		position: contextMenuPosition,
 		openContextMenu,
 		closeContextMenu,
-	} = useExplorerContextMenu(explorerRef);
+	} = useContextMenuState<ExplorerContextMenuElement>(explorerRef, {
+		type: "pane",
+	});
 
 	return (
 		<Box

@@ -4,7 +4,7 @@ import Transition, {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TransitionData,
 } from "@/schemas/grafcet/transition.schema";
-import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
+import GrafcetHandle from "./GrafcetHandle";
 import { Box, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
@@ -83,25 +83,19 @@ const TransitionNode: FC<TransitionNodeProps> = ({ id, data, selected }) => {
 
 	return (
 		<>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={TRANSITION_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Top}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={TRANSITION_HANDLE_SOURCE_SUCCESSOR}
 				type="source"
 				position={Position.Bottom}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
 			<GrafcetNode
 				id={id}

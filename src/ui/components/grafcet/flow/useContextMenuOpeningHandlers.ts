@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
-import useFlowContextMenu from "@/ui/lib/hooks/useFlowContextMenu";
+import useFlowContextMenu from "@/ui/lib/react-flow/useFlowContextMenu";
 import { useGrafcetContext } from "../context/GrafcetContext";
 
 export default function useContextMenuOpeningHandlers(): {

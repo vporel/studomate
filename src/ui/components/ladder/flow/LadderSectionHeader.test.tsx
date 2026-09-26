@@ -65,7 +65,7 @@ function setup({
 describe("LadderSectionHeader — édition du titre", () => {
 	it("dispatche SectionUpdateCommand quand le titre change et perd le focus", () => {
 		const { section, executeOperation } = setup({ title: "Avant" });
-		const input = screen.getByLabelText("Titre de la section");
+		const input = screen.getByLabelText("Titre du réseau");
 
 		fireEvent.change(input, { target: { value: "Après" } });
 		fireEvent.blur(input);
@@ -82,7 +82,7 @@ describe("LadderSectionHeader — édition du titre", () => {
 
 	it("ne dispatche rien si le titre n'a pas changé (blur sans modification)", () => {
 		const { executeOperation } = setup({ title: "Inchangé" });
-		const input = screen.getByLabelText("Titre de la section");
+		const input = screen.getByLabelText("Titre du réseau");
 
 		fireEvent.blur(input);
 
@@ -92,7 +92,7 @@ describe("LadderSectionHeader — édition du titre", () => {
 	it("commit le titre sur Entrée (perd le focus)", () => {
 		const { executeOperation } = setup({ title: "Avant" });
 		const input = screen.getByLabelText(
-			"Titre de la section",
+			"Titre du réseau",
 		) as HTMLInputElement;
 		act(() => input.focus());
 
@@ -105,7 +105,7 @@ describe("LadderSectionHeader — édition du titre", () => {
 	it("annule la saisie sur Échap (revient au titre d'origine, aucune commande dispatchée)", () => {
 		const { executeOperation } = setup({ title: "Original" });
 		const input = screen.getByLabelText(
-			"Titre de la section",
+			"Titre du réseau",
 		) as HTMLInputElement;
 		act(() => input.focus());
 
@@ -121,7 +121,7 @@ describe("LadderSectionHeader — suppression et réordonnancement", () => {
 	it("appelle deleteSections avec sa propre section au clic sur Supprimer", () => {
 		const { section, deleteSections } = setup({ index: 2, sectionsCount: 3 });
 
-		fireEvent.click(screen.getByLabelText("Supprimer la section"));
+		fireEvent.click(screen.getByLabelText("Supprimer le réseau"));
 
 		expect(deleteSections).toHaveBeenCalledWith([section.id]);
 	});
@@ -129,8 +129,8 @@ describe("LadderSectionHeader — suppression et réordonnancement", () => {
 	it("désactive Supprimer et la poignée de réordonnancement quand c'est la seule section du ladder", () => {
 		setup({ sectionsCount: 1 });
 
-		expect(screen.getByLabelText("Supprimer la section")).toBeDisabled();
-		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute(
+		expect(screen.getByLabelText("Supprimer le réseau")).toBeDisabled();
+		expect(screen.getByLabelText("Réordonner le réseau")).toHaveAttribute(
 			"aria-disabled",
 			"true",
 		);
@@ -139,8 +139,8 @@ describe("LadderSectionHeader — suppression et réordonnancement", () => {
 	it("active Supprimer et la poignée de réordonnancement dès qu'il y a plusieurs sections", () => {
 		setup({ sectionsCount: 2 });
 
-		expect(screen.getByLabelText("Supprimer la section")).not.toBeDisabled();
-		expect(screen.getByLabelText("Réordonner la section")).toHaveAttribute(
+		expect(screen.getByLabelText("Supprimer le réseau")).not.toBeDisabled();
+		expect(screen.getByLabelText("Réordonner le réseau")).toHaveAttribute(
 			"aria-disabled",
 			"false",
 		);
@@ -151,7 +151,7 @@ describe("LadderSectionHeader — duplication", () => {
 	it("appelle duplicateSection au clic sur Dupliquer", () => {
 		const { section, duplicateSection } = setup();
 
-		fireEvent.click(screen.getByLabelText("Dupliquer la section"));
+		fireEvent.click(screen.getByLabelText("Dupliquer le réseau"));
 
 		expect(duplicateSection).toHaveBeenCalledWith(section.id);
 	});
@@ -159,7 +159,7 @@ describe("LadderSectionHeader — duplication", () => {
 	it("reste disponible quand la section est repliée", () => {
 		const { section, duplicateSection } = setup({ collapsed: true });
 
-		fireEvent.click(screen.getByLabelText("Dupliquer la section"));
+		fireEvent.click(screen.getByLabelText("Dupliquer le réseau"));
 
 		expect(duplicateSection).toHaveBeenCalledWith(section.id);
 	});
@@ -177,7 +177,7 @@ describe("LadderSectionHeader — sélection de section et copie", () => {
 	it("appelle copySections avec sa propre section au clic sur Copier", () => {
 		const { section, copySections } = setup();
 
-		fireEvent.click(screen.getByLabelText("Copier la section"));
+		fireEvent.click(screen.getByLabelText("Copier le réseau"));
 
 		expect(copySections).toHaveBeenCalledWith([section.id]);
 	});
@@ -185,13 +185,13 @@ describe("LadderSectionHeader — sélection de section et copie", () => {
 	it("désactive Copier quand plusieurs sections sont sélectionnées", () => {
 		setup({ selectedSectionIds: ["s1", "s2"] });
 
-		expect(screen.getByLabelText("Copier la section")).toBeDisabled();
+		expect(screen.getByLabelText("Copier le réseau")).toBeDisabled();
 	});
 
 	it("garde Copier actif quand la section est seule sélectionnée", () => {
 		setup({ selectedSectionIds: ["s1"] });
 
-		expect(screen.getByLabelText("Copier la section")).not.toBeDisabled();
+		expect(screen.getByLabelText("Copier le réseau")).not.toBeDisabled();
 	});
 
 	it("le pointer-down sur Copier ne se propage pas (pas de sélection de section)", () => {
@@ -199,7 +199,7 @@ describe("LadderSectionHeader — sélection de section et copie", () => {
 		const docHandler = jest.fn();
 		document.addEventListener("pointerdown", docHandler);
 
-		fireEvent.pointerDown(screen.getByLabelText("Copier la section"));
+		fireEvent.pointerDown(screen.getByLabelText("Copier le réseau"));
 
 		expect(docHandler).not.toHaveBeenCalled();
 		document.removeEventListener("pointerdown", docHandler);
@@ -223,8 +223,8 @@ describe("LadderSectionHeader — zoom de la section", () => {
 	it("zoome / dézoome la section via le viewManager", () => {
 		const { section, zoomIn, zoomOut } = setup({ zoom: 1.5 });
 
-		fireEvent.click(screen.getByLabelText("Zoomer la section"));
-		fireEvent.click(screen.getByLabelText("Dézoomer la section"));
+		fireEvent.click(screen.getByLabelText("Zoomer le réseau"));
+		fireEvent.click(screen.getByLabelText("Dézoomer le réseau"));
 
 		expect(zoomIn).toHaveBeenCalledWith(section.id);
 		expect(zoomOut).toHaveBeenCalledWith(section.id);
@@ -232,20 +232,20 @@ describe("LadderSectionHeader — zoom de la section", () => {
 
 	it("désactive Zoomer à la borne max", () => {
 		setup({ zoom: 2.5 });
-		expect(screen.getByLabelText("Zoomer la section")).toBeDisabled();
-		expect(screen.getByLabelText("Dézoomer la section")).not.toBeDisabled();
+		expect(screen.getByLabelText("Zoomer le réseau")).toBeDisabled();
+		expect(screen.getByLabelText("Dézoomer le réseau")).not.toBeDisabled();
 	});
 
 	it("désactive Dézoomer à la borne min", () => {
 		setup({ zoom: 1 });
-		expect(screen.getByLabelText("Dézoomer la section")).toBeDisabled();
-		expect(screen.getByLabelText("Zoomer la section")).not.toBeDisabled();
+		expect(screen.getByLabelText("Dézoomer le réseau")).toBeDisabled();
+		expect(screen.getByLabelText("Zoomer le réseau")).not.toBeDisabled();
 	});
 
 	it("masque les boutons de zoom quand la section est repliée", () => {
 		setup({ collapsed: true });
 
-		expect(screen.queryByLabelText("Zoomer la section")).toBeNull();
-		expect(screen.queryByLabelText("Dézoomer la section")).toBeNull();
+		expect(screen.queryByLabelText("Zoomer le réseau")).toBeNull();
+		expect(screen.queryByLabelText("Dézoomer le réseau")).toBeNull();
 	});
 });

@@ -450,6 +450,7 @@ describe("SimulatorExceptionsMapper", () => {
 			"EnvironmentException", // classe de base
 			"SemanticException", // classe de base
 			"InvalidNodeTypeException", // classe de base des exceptions de type
+			"BinaryOperandsTypesException", // classe de base des exceptions d'opérandes incompatibles
 			"UnknownVariableIdException", // lookup par id interne : l'environnement pré-résout les noms
 			"IllegalVariableValueTypeException", // invariant interne sur l'écriture d'une variable d'env
 		]);

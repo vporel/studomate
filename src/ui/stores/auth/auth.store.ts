@@ -2,8 +2,8 @@ import HybridProjectRepository from "@/persistence/repositories/hybrid.project.r
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
 import ProfileRepository from "@/persistence/repositories/profile.repository";
-import trackEvent from "@/ui/lib/analytics";
-import { setStoredUserProfile } from "@/ui/lib/user-profile-storage";
+import trackEvent from "@/ui/services/analytics";
+import { setStoredUserProfile } from "@/persistence/user-profile.storage";
 import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
 import { createStore, useStore } from "zustand";
 

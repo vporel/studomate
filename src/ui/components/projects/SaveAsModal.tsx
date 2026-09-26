@@ -1,6 +1,6 @@
 "use client";
 
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { Button, TextField } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";

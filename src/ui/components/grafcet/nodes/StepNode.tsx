@@ -5,7 +5,7 @@ import Step, {
 	STEP_HANDLE_TARGET_PREDECESSOR,
 	StepData,
 } from "@/schemas/grafcet/step.schema";
-import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
+import GrafcetHandle from "./GrafcetHandle";
 import LockIcon from "@mui/icons-material/Lock";
 import { SxProps, Theme, useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
@@ -93,35 +93,26 @@ const StepNode: FC<StepNodeProps> = ({ id, data, selected }) => {
 
 	return (
 		<>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={10}
 				id={STEP_HANDLE_TARGET_PREDECESSOR}
 				type="target"
 				position={Position.Top}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={STEP_HANDLE_SOURCE_SUCCESSOR}
 				type="source"
 				position={Position.Bottom}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={4}
 				id={STEP_HANDLE_SOURCE_ACTION}
 				type="source"
 				position={Position.Right}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
 			<GrafcetNode
 				id={id}

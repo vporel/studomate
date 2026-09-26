@@ -17,7 +17,7 @@
 		"grafcet-comments": "Comments",
 		"grafcet-connections": "Links",
 		"ladder": "Ladder",
-		"ladder-sections": "Sections",
+		"ladder-sections": "Networks",
 		"ladder-contacts": "Contacts",
 		"ladder-coils": "Coils",
 		"ladder-blocks": "Blocks",
@@ -72,7 +72,7 @@
 			"Widget (HMI) — a graphical element on an HMI page; an interactive widget is bound to a variable.",
 			"Animation (HMI) — a change in a widget's position or appearance driven by a variable during simulation."
 		],
-		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Sections, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed."
+		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Networks, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed."
 	},
 	"gettingStarted": {
 		"title": "Getting started",
@@ -262,7 +262,7 @@
 		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it.",
 		"systemTitle": "System variables",
 		"systemBody1": "The \"_SYS_\" prefix is reserved: you cannot create a variable whose mnemonic starts with \"_SYS_\", nor assign a value to one (read-only). They are not saved with the project: the engine injects them at analysis and compile time. The full list is shown in the explorer, under Variables › System.",
-		"systemBody2": "The \"_SYS_TB_…\" time bases are booleans that are true for a single scan per simulated-time period (a pulse): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle — for instance moving a position by a fixed step: \"position := position + step\" run only while \"_SYS_TB_200ms\" is true.",
+		"systemBody2": "The \"_SYS_TB_…\" time bases are square-wave booleans, true for the first half of each simulated-time period and false for the second (like real PLCs' clock memory bits): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle. Wired directly (a normally-open contact) they blink a lamp; to trigger an action once per period rather than on every scan the level is true — for instance moving a position by a fixed step — use a rising-edge contact: \"position := position + step\" run on the rising edge of \"_SYS_TB_200ms\".",
 		"systemBody3": "\"_SYS_FIRST_SCAN\" is true only during the first scan after the simulation starts, false afterwards (pausing then resuming does not rearm it). Use it to initialise memories or values once at startup, like the first-scan bit of real PLCs."
 	},
 	"grafcet": {
@@ -376,16 +376,16 @@
 		"title": "Ladder",
 		"p1": "Ladder (contact diagram) is a graphical notation representing the program's logic as electrical circuits: contacts in series or in parallel drive coils. Studomate lets you create and edit ladders with an interactive graphical editor, in a tab separate from the grafcet.",
 		"p2": "A project always contains a special ladder called \"Main\". It is the execution entry point: it runs first on every PLC scan and orchestrates the other ladders via program-call blocks. The Main ladder cannot be deleted.",
-		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a rung.",
-		"sectionsTitle": "Sections",
-		"sectionsIntro": "A ladder is made of one or more rungs (also called \"sections\"), stacked vertically. Each rung carries its own circuit, independent of the others.",
+		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a network.",
+		"sectionsTitle": "Networks",
+		"sectionsIntro": "A ladder is made of one or more networks, stacked vertically. Each network carries its own circuit, independent of the others.",
 		"sectionsItems": [
-			"\"Section\" button in the ladder toolbar: adds a new empty rung.",
-			"Rung title: click in it to edit (Enter confirms, Esc cancels).",
-			"Description (optional): a free text area under the title, to document the rung.",
-			"Handle to the left of the title: drag it to reorder the rungs (only shown when there is more than one).",
-			"Arrow to the left of the title: collapses or expands the rung.",
-			"Bin icon: deletes the rung. Disabled when only one remains — a ladder always has at least one rung."
+			"\"Network\" button in the ladder toolbar: adds a new empty network.",
+			"Network title: click in it to edit (Enter confirms, Esc cancels).",
+			"Description (optional): a free text area under the title, to document the network.",
+			"Handle to the left of the title: drag it to reorder the networks (only shown when there is more than one).",
+			"Arrow to the left of the title: collapses or expands the network.",
+			"Bin icon: deletes the network. Disabled when only one remains — a ladder always has at least one network."
 		],
 		"contactsTitle": "Contacts",
 		"contactsIntro": "A contact tests the state of a Boolean variable and passes power from the rail to its right, or not.",
@@ -395,7 +395,7 @@
 			"P (rising edge) — passes power once, when the variable goes from false to true.",
 			"N (falling edge) — passes power once, when the variable goes from true to false."
 		],
-		"contactsOutro": "Drag the symbol from the ladder toolbar onto the rung grid to place a contact. Double-click it to choose the associated variable (no type check is enforced on entry: an incompatible variable is flagged by the analysis, not blocked at placement). In simulation, the contact changes colour when the variable it tests is true.",
+		"contactsOutro": "Drag the symbol from the ladder toolbar onto the network grid to place a contact. Double-click it to choose the associated variable (no type check is enforced on entry: an incompatible variable is flagged by the analysis, not blocked at placement). In simulation, the contact changes colour when the variable it tests is true.",
 		"coilsTitle": "Coils",
 		"coilsIntro": "A coil assigns a Boolean variable at the output of a contact circuit.",
 		"coilsItems": [
@@ -405,14 +405,14 @@
 		],
 		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted.",
 		"blocksTitle": "Blocks",
-		"blocksIntro1": "Blocks are advanced functional elements that fit into a rung like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment, Calculation and Conversion — from the dedicated tool in the ladder toolbar.",
-		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same rung.",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment, Calculation and Conversion — from the dedicated tool in the ladder toolbar.",
+		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same network.",
 		"timerTitle": "Timer",
 		"timerIntro": "Measures a duration and exposes an output signal. Three variants:",
 		"timerItems": [
 			"TON — on-delay: output Q goes true after input IN has been true for the duration PT.",
 			"TOF — off-delay: output Q stays true for PT after IN goes false.",
-			"TP — calibrated pulse: output Q is true for exactly PT after a rising edge on IN."
+			"TP — calibrated pulse: output Q is true for exactly PT after a rising edge on IN, even if IN falls earlier; a rising edge during the pulse is ignored (not retriggerable)."
 		],
 		"timerOutro": "Configuration: name (unique in the project) and variant (TON/TOF/TP). The PT (preset duration, e.g. T#5s) and ET (elapsed time output, optional) parameters are entered directly on the block's pins on the canvas, as a variable or a TIME constant.",
 		"counterTitle": "Counter",
@@ -424,24 +424,24 @@
 		],
 		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). The CTUD has two outputs: QU (CV ≥ PV) and QD (CV ≤ 0). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
 		"compareTitle": "Comparison",
-		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a rung like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
+		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a network like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
 		"assignTitle": "Assignment",
-		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
+		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a network like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
 		"calcTitle": "Calculation",
-		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
+		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a network like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
 		"convertTitle": "Conversion",
 		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The block shows the standard name of the conversion it applies, for example DINT_TO_INT. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
 		"programCallTitle": "Program call",
 		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",
-		"connectionsIntro": "A rung is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
+		"connectionsIntro": "A network is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
 		"connectionsItems": [
 			"Simple chain (contacts one after another on the same line): logical AND.",
 			"Divergence (one connection splitting into several branches): logical OR between the branches.",
 			"Convergence (several branches joining back): closes the OR opened by the matching divergence."
 		],
-		"connectionsMenu": "Right-click the rung background: \"Select all\" (Ctrl+A) or \"Select links\". Right-click an element or a link: \"Delete\".",
-		"connectionsSim": "In simulation, powered links are highlighted, letting you visually follow the power flow in each rung."
+		"connectionsMenu": "Right-click the network background: \"Select all\" (Ctrl+A) or \"Select links\". Right-click an element or a link: \"Delete\".",
+		"connectionsSim": "In simulation, powered links are highlighted, letting you visually follow the power flow in each network."
 	},
 	"toolbar": {
 		"title": "Toolbar",
@@ -477,12 +477,12 @@
 		],
 		"grafcetToolsZoom": "The Zoom + and Zoom − buttons adjust the canvas zoom level.",
 		"ladderToolsTitle": "Ladder creation tools",
-		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a rung to create the matching element:",
+		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a network to create the matching element:",
 		"ladderTools": [
 			"NO, NC, P (rising edge) and N (falling edge) contacts",
 			"Normal, Set and Reset coils",
 			"Comparison, Assignment, Calculation and Conversion blocks (the other system blocks are dragged from the explorer)",
-			"\"Section\" button — adds a new rung to the ladder"
+			"\"Network\" button: adds a new network to the ladder"
 		],
 		"ladderToolsOutro": "See the Ladder section for details of these elements."
 	},
@@ -631,7 +631,7 @@
 			"Project consistency: Main ladder missing or duplicated, ladder not called by Main, duplicate step numbers across grafcets",
 			"Grafcet structure: initial step missing or multiple, unreachable steps or steps with no successor, invalid or missing links",
 			"Referrals (source / target): referenced step does not exist, referral with no connection, circular references",
-			"Ladder structure: rungs with no coil, invalid connections",
+			"Ladder structure: networks with no coil, invalid connections",
 			"System blocks: name missing or duplicated, parameters (PT, PV, control, ET/CV) missing, of the wrong type or referencing a non-existent variable",
 			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
 			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",

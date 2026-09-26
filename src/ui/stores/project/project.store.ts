@@ -17,7 +17,7 @@ import {
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
 	getTemplateIdFromUrl,
-} from "@/ui/lib/project-url";
+} from "@/ui/stores/project/url/project-url";
 import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
 import { deleteDraft } from "@/persistence/draft.storage";

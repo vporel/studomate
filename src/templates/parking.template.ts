@@ -24,12 +24,13 @@ import {
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /** Nombre de places du parking — sert de borne au compteur et à la jauge. */
-const CAPACITE = 4;
+export const CAPACITE = 4;
 
 const CX = 500;
 
@@ -245,6 +246,17 @@ function buildParkingPage(): HmiPage {
 	return page;
 }
 
+export function createParkingVariables(): Variable[] {
+	return [
+		VariableBuilder.buildLogicInput(createRandomId(), "dem_entree", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "dem_sortie", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(createRandomId(), "passage", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicOutput(createRandomId(), "barriere"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "complet"),
+		VariableBuilder.buildMemoryInt(createRandomId(), "places"),
+	];
+}
+
 /**
  * Crée un projet "Parking à barrière" pré-configuré :
  * — 3 entrées booléennes (dem_entree, dem_sortie, passage) + 2 sorties (barriere, complet)
@@ -255,26 +267,7 @@ function buildParkingPage(): HmiPage {
 export function createParkingProject(): Project {
 	const project = new Project(createRandomId(), "Parking à barrière", "");
 
-	project.variables.push(
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"dem_entree",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"dem_sortie",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"passage",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicOutput(createRandomId(), "barriere"),
-		VariableBuilder.buildLogicOutput(createRandomId(), "complet"),
-		VariableBuilder.buildMemoryInt(createRandomId(), "places"),
-	);
+	project.variables.push(...createParkingVariables());
 
 	const page = buildParkingPage();
 	project.hmiPages[page.id] = page;

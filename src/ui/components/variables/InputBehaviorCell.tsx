@@ -10,7 +10,7 @@ import { validateBehavior } from "@/schemas/variable/variable.validator";
 import { useT } from "@/ui/i18n/useT";
 import useFormatInputBehavior, {
 	INPUT_BEHAVIOR_KIND_LABEL_KEYS,
-} from "@/ui/lib/variables/useFormatInputBehavior";
+} from "@/ui/components/variables/useFormatInputBehavior";
 import {
 	Box,
 	Button,

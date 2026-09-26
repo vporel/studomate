@@ -10,7 +10,7 @@ import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
 import { memo, MouseEvent as ReactMouseEvent, useMemo } from "react";
 import useBoundInputBehavior from "./useBoundInputBehavior";
-import { HMI_WIDGET_ZINDEX_OFFSET } from "./constants";
+import { HMI_WIDGET_ZINDEX_OFFSET } from "@/ui/components/hmi/logic/constants";
 import {
 	useHmiPositionAnimationOffset,
 	useHmiSimulationValue,

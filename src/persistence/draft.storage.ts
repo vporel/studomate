@@ -1,7 +1,5 @@
-import {
-	classifyStorageWriteError,
-	StorageWriteErrorReason,
-} from "./storage-write-error";
+import { readJson, writeJson } from "./safe-local-storage";
+import { StorageWriteResult } from "./storage-write-error";
 
 const STORAGE_KEY = "studomate_drafts";
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -16,27 +14,17 @@ export type Draft = {
 type DraftStore = Record<string, Draft>; // indexé par projectId
 
 function readStore(): DraftStore {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		const parsed = raw ? JSON.parse(raw) : {};
-		return typeof parsed === "object" && parsed !== null ? parsed : {};
-	} catch {
-		return {};
-	}
+	const parsed = readJson(STORAGE_KEY);
+	return typeof parsed === "object" && parsed !== null
+		? (parsed as DraftStore)
+		: {};
 }
 
-export type DraftSaveResult =
-	| { ok: true }
-	| { ok: false; reason: StorageWriteErrorReason };
+export type DraftSaveResult = StorageWriteResult;
 
+// On ne lève pas : le brouillon est ignoré, l'appelant décide quoi en faire.
 function writeStore(store: DraftStore): DraftSaveResult {
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-		return { ok: true };
-	} catch (e) {
-		// On ne lève pas : le brouillon est ignoré, l'appelant décide quoi en faire.
-		return { ok: false, reason: classifyStorageWriteError(e) };
-	}
+	return writeJson(STORAGE_KEY, store);
 }
 
 /** Supprime les entrées expirées et retourne le store nettoyé. */

@@ -1,13 +1,13 @@
 "use client";
 
 import VariablesIcon from "../icons/VariablesIcon";
-import { ElementType, Fragment, MouseEvent } from "react";
+import { ElementType, Fragment } from "react";
 import { useT } from "@/ui/i18n/useT";
-import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
+import CustomTreeItem from "../mui/CustomTreeItem";
 import { getVariablesPageData, VariablesPageId } from "../pages/VariablesPage";
 import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
 import { useProjectStore } from "../projects/ProjectContext";
-import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
+import { ExplorerItemsProps } from "./explorer-items-props";
 
 const ExplorerVariablesItem = ({
 	id,
@@ -15,15 +15,10 @@ const ExplorerVariablesItem = ({
 	IconComponent,
 	styles,
 	onContextMenu,
-}: {
+}: ExplorerItemsProps & {
 	id: VariablesPageId;
 	label: string;
 	IconComponent?: ElementType;
-	styles: CustomTreeItemStyles;
-	onContextMenu: (
-		event: MouseEvent,
-		element: ExplorerContextMenuElement,
-	) => void;
 }) => {
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
@@ -46,13 +41,7 @@ const ExplorerVariablesItem = ({
 const ExplorerVariablesItems = ({
 	styles,
 	onContextMenu,
-}: {
-	styles: CustomTreeItemStyles;
-	onContextMenu: (
-		event: MouseEvent,
-		element: ExplorerContextMenuElement,
-	) => void;
-}) => {
+}: ExplorerItemsProps) => {
 	const t = useT("explorer.variableGroups");
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 	const variablesTypes: {

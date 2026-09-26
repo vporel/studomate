@@ -90,7 +90,7 @@ describe("CrossReferenceResult", () => {
 		setup();
 		expect(screen.getByText("Dcy")).toBeInTheDocument();
 		expect(screen.getByText("Moteur")).toBeInTheDocument();
-		expect(screen.getByText(/section « Marche ».*bobine/)).toBeInTheDocument();
+		expect(screen.getByText(/réseau « Marche ».*bobine/)).toBeInTheDocument();
 		expect(
 			screen.getByText(/Cycle · réceptivité de transition/),
 		).toBeInTheDocument();

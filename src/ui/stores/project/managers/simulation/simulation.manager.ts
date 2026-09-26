@@ -24,7 +24,8 @@ import {
 } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
-import trackEvent from "@/ui/lib/analytics";
+import { readString, writeString } from "@/persistence/safe-local-storage";
+import trackEvent from "@/ui/services/analytics";
 import SimulationNotifier from "./simulation.notifier";
 
 const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
@@ -74,8 +75,7 @@ export default class SimulationManager {
 	}
 
 	static getPersistedSimulationMode(): SimulationMode {
-		if (typeof window === "undefined") return SimulationMode.CONTINUOUS;
-		const stored = localStorage.getItem(SIMULATION_MODE_STORAGE_KEY);
+		const stored = readString(SIMULATION_MODE_STORAGE_KEY);
 		if (stored === SimulationMode.STEP_BY_STEP)
 			return SimulationMode.STEP_BY_STEP;
 		return SimulationMode.CONTINUOUS;
@@ -112,7 +112,10 @@ export default class SimulationManager {
 		this.setStoreState((state) => ({
 			analysisHasErrors: errors.length > 0,
 			analysisHasWarnings: warnings.length > 0,
-			analysisErrors: AnalysisIssuesMapper.analyserToApp(errors, resolveUiLocale()),
+			analysisErrors: AnalysisIssuesMapper.analyserToApp(
+				errors,
+				resolveUiLocale(),
+			),
 			analysisWarnings: AnalysisIssuesMapper.analyserToApp(
 				warnings,
 				resolveUiLocale(),
@@ -244,9 +247,7 @@ export default class SimulationManager {
 	}
 
 	setPlcSimulationMode(mode: SimulationMode): void {
-		if (typeof window !== "undefined") {
-			localStorage.setItem(SIMULATION_MODE_STORAGE_KEY, mode);
-		}
+		writeString(SIMULATION_MODE_STORAGE_KEY, mode);
 		this.setStoreState(() => ({ simulationMode: mode }));
 
 		if (this.getStoreState().mode !== ProjectMode.SIMULATION) return;

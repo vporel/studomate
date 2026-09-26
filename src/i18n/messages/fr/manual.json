@@ -17,7 +17,7 @@
 		"grafcet-comments": "Commentaires",
 		"grafcet-connections": "Liaisons",
 		"ladder": "Ladder",
-		"ladder-sections": "Sections",
+		"ladder-sections": "Réseaux",
 		"ladder-contacts": "Contacts",
 		"ladder-coils": "Bobines",
 		"ladder-blocks": "Blocs",
@@ -72,7 +72,7 @@
 			"Widget (HMI) — élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
 			"Animation (HMI) — variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
 		],
-		"readingOrder": "Pour une première découverte : commencer par Démarrer, puis parcourir la notation visée — Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Sections, Contacts, Bobines, Blocs) — avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin."
+		"readingOrder": "Pour une première découverte : commencer par Démarrer, puis parcourir la notation visée — Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs) — avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin."
 	},
 	"gettingStarted": {
 		"title": "Démarrer",
@@ -262,7 +262,7 @@
 		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer.",
 		"systemTitle": "Variables système",
 		"systemBody1": "Le préfixe « _SYS_ » est réservé : vous ne pouvez pas créer de variable dont le mnémonique commence par « _SYS_ », ni leur affecter de valeur (lecture seule). Elles ne sont pas enregistrées avec le projet : le moteur les injecte à l'analyse et à la compilation. La liste complète est visible dans l'explorateur, sous Variables › Système.",
-		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens vrais pendant un seul scan par période de temps simulé (une impulsion) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate — par exemple faire avancer une position d'un pas fixe : « position := position + pas » exécuté uniquement quand « _SYS_TB_200ms » est vrai.",
+		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens en signal carré, vrais pendant la première moitié de chaque période de temps simulé puis faux pendant la seconde (comme les bits d'horloge des automates réels) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate. Utilisées directement (contact à fermeture), elles font clignoter une lampe ; pour déclencher une action une seule fois par période plutôt qu'à chaque scan où le niveau est vrai — par exemple faire avancer une position d'un pas fixe — utilisez un contact à front montant : « position := position + pas » exécuté sur front de « _SYS_TB_200ms ».",
 		"systemBody3": "« _SYS_FIRST_SCAN » est vrai pendant le seul premier scan après le démarrage de la simulation, faux ensuite (une pause suivie d'une reprise ne le réarme pas). Il sert à initialiser une fois pour toutes des mémoires ou des valeurs au démarrage, comme le bit de premier cycle des automates réels."
 	},
 	"grafcet": {
@@ -377,10 +377,10 @@
 		"p1": "Le ladder (schéma à contacts) est une notation graphique représentant la logique du programme sous forme de circuits électriques : des contacts en série ou en parallèle commandent des bobines. Studomate permet de créer et de modifier des ladders à l'aide d'un éditeur graphique interactif, dans un onglet séparé du grafcet.",
 		"p2": "Un projet contient toujours un ladder spécial appelé « Main ». C'est le point d'entrée de l'exécution : il est lancé en premier à chaque cycle PLC et orchestre les autres ladders via des blocs d'appel de programme. Le ladder Main ne peut pas être supprimé.",
 		"p3": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante dans un réseau.",
-		"sectionsTitle": "Sections",
-		"sectionsIntro": "Un ladder est composé d'un ou plusieurs réseaux (aussi appelés « sections »), empilés verticalement. Chaque réseau porte son propre circuit, indépendant des autres.",
+		"sectionsTitle": "Réseaux",
+		"sectionsIntro": "Un ladder est composé d'un ou plusieurs réseaux, empilés verticalement. Chaque réseau porte son propre circuit, indépendant des autres.",
 		"sectionsItems": [
-			"Bouton « Section » dans la barre d'outils ladder : ajoute un nouveau réseau vide.",
+			"Bouton « Réseau » dans la barre d'outils ladder : ajoute un nouveau réseau vide.",
 			"Titre du réseau : cliquez dedans pour le modifier (Entrée valide, Échap annule).",
 			"Description (optionnelle) : zone de texte libre sous le titre, pour documenter le réseau.",
 			"Poignée à gauche du titre : glissez-la pour réordonner les réseaux (visible uniquement s'il y en a plus d'un).",
@@ -412,7 +412,7 @@
 		"timerItems": [
 			"TON — retard à l'enclenchement : la sortie Q passe à vrai après que l'entrée IN est vraie pendant la durée PT.",
 			"TOF — retard au déclenchement : la sortie Q reste vraie pendant PT après que IN est passée à faux.",
-			"TP — impulsion calibrée : la sortie Q est vraie pendant exactement PT après un front montant sur IN."
+			"TP — impulsion calibrée : la sortie Q est vraie pendant exactement PT après un front montant sur IN, même si IN retombe avant ; un front montant pendant l'impulsion est ignoré (non redéclenchable)."
 		],
 		"timerOutro": "Configuration : nom (unique dans le projet) et variante (TON/TOF/TP). Les paramètres PT (durée de consigne, ex. T#5s) et ET (durée écoulée en sortie, optionnelle) se renseignent directement sur les pinoches du bloc dans le canvas, sous forme de variable ou de constante TIME.",
 		"counterTitle": "Compteur",
@@ -482,7 +482,7 @@
 			"Contact NO, NF, P (front montant) et N (front descendant)",
 			"Bobine normale, Set et Reset",
 			"Blocs Comparaison, Affectation, Calcul et Conversion (les autres blocs systèmes se glissent depuis l'explorateur)",
-			"Bouton « Section » — ajoute un nouveau réseau au ladder"
+			"Bouton « Réseau » : ajoute un nouveau réseau au ladder"
 		],
 		"ladderToolsOutro": "Voir la section Ladder pour le détail de ces éléments."
 	},

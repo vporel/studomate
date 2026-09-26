@@ -354,7 +354,7 @@ describe("LadderPreCompiler", () => {
 	});
 
 	it("ordonne les réseaux d'une section par ligne d'apparition, pas colonne par colonne", () => {
-		// Rung du haut (ligne 0) : bobine en colonne 3. Rung du bas (ligne 1) : bobine en colonne 1.
+		// Circuit du haut (ligne 0) : bobine en colonne 3. Circuit du bas (ligne 1) : bobine en colonne 1.
 		// Un tri colonne-major placerait Bas avant Haut ; l'ordre attendu suit la ligne.
 		const railHaut = createRailTerminalElement(0);
 		const contactHaut = createContactElement("A", "NO", 0, 1);

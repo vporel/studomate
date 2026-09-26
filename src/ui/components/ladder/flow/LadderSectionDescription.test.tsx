@@ -22,7 +22,7 @@ function setup(description = "", executeOperation = jest.fn()) {
 
 function textarea(): HTMLTextAreaElement {
 	return screen.getByLabelText(
-		"Description de la section",
+		"Description du réseau",
 	) as HTMLTextAreaElement;
 }
 

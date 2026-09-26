@@ -4,8 +4,10 @@ import {
 	DEFAULT_SWITCH_CONTACT,
 	ToggleSwitchData,
 } from "@/schemas/hmi/hmi-widget.schema";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
+import widgetBorder from "./widget-border";
+import HmiWidgetFrame from "./HmiWidgetFrame";
 
 const ToggleSwitch = ({
 	data,
@@ -24,14 +26,10 @@ const ToggleSwitch = ({
 	return (
 		// `size` ne dimensionne que la piste (le dessin) : le libellé est positionné en absolu
 		// sous le widget pour ne jamais l'empiéter, quelle que soit sa taille.
-		<Box
-			sx={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				cursor: onValueChange || onClick ? "pointer" : "default",
-				userSelect: "none",
-			}}
+		<HmiWidgetFrame
+			label={data.label}
+			hideLabel={hideLabel}
+			cursor={onValueChange || onClick ? "pointer" : "default"}
 			onClick={() => (onValueChange ? onValueChange(!value) : onClick?.())}
 		>
 			{/* Piste — le curseur suit `justifyContent` plutôt qu'un `left` en px, pour rester
@@ -45,7 +43,7 @@ const ToggleSwitch = ({
 					justifyContent: active ? "flex-end" : "flex-start",
 					padding: "2px",
 					borderRadius: 999,
-					border: selected ? "2px solid #1976d2" : "2px solid #555",
+					border: widgetBorder(selected),
 					backgroundColor: active ? "#1976d2" : "#bdbdbd",
 					transition: "background-color 0.15s",
 				}}
@@ -60,26 +58,7 @@ const ToggleSwitch = ({
 					}}
 				/>
 			</Box>
-			{!hideLabel && data.label && (
-				<Typography
-					sx={{
-						position: "absolute",
-						top: "100%",
-						left: "50%",
-						transform: "translateX(-50%)",
-						width: "max-content",
-						maxWidth: "none",
-						mt: 0.5,
-						fontSize: "0.7rem",
-						color: "#333",
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{data.label}
-				</Typography>
-			)}
-		</Box>
+		</HmiWidgetFrame>
 	);
 };
 

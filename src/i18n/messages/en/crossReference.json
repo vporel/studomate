@@ -35,9 +35,9 @@
 		"text": "text"
 	},
 	"location": {
-		"ladder-contact": "{programName} · section \"{sectionTitle}\" · row {gridRow} · contact",
-		"ladder-coil": "{programName} · section \"{sectionTitle}\" · row {gridRow} · coil",
-		"ladder-block-pin": "{programName} · section \"{sectionTitle}\" · block {blockLabel} · pin {port}",
+		"ladder-contact": "{programName} · network \"{sectionTitle}\" · row {gridRow} · contact",
+		"ladder-coil": "{programName} · network \"{sectionTitle}\" · row {gridRow} · coil",
+		"ladder-block-pin": "{programName} · network \"{sectionTitle}\" · block {blockLabel} · pin {port}",
 		"grafcet-transition": "{programName} · transition receptivity",
 		"grafcet-action-boolean": "{programName} · step {stepNumber} · action",
 		"grafcet-action-assign": "{programName} · step {stepNumber} · action",

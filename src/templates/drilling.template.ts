@@ -34,6 +34,7 @@ import {
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
@@ -71,11 +72,14 @@ function wireInSeries(elements: LadderElement[]): Connection[] {
  * capteurs de fin de course `h` (foret en haut) et `b` (foret en bas), utilisés comme entrées
  * par le GRAFCET de commande.
  */
-function buildOperativePartLadder(): Ladder {
+export function buildOperativePartLadder(
+	options: { blockable?: boolean } = {},
+): Ladder {
 	// Les lignes à bloc Calc occupent 2 cellules de haut : la ligne suivante démarre 2 rangées
 	// plus bas (rung1 en 2, capteurs en 4 et 5).
 	const rail0 = createRailTerminalElement(0);
 	const descendreContact = createContactElement("descendre", "NO", 0, 1);
+	const blockageContact = createContactElement("blocage", "NF", 0, 2);
 	const canDescend = createCompareBlockElement(0, 3, {
 		in1: "position",
 		in2: `${POSITION_MAX}`,
@@ -118,7 +122,13 @@ function buildOperativePartLadder(): Ladder {
 	});
 	const lowSensorCoil = createCoilElement("b", "normal", 5, 3);
 
-	const rung0 = [rail0, descendreContact, canDescend, descendStep];
+	const rung0 = [
+		rail0,
+		descendreContact,
+		...(options.blockable ? [blockageContact] : []),
+		canDescend,
+		descendStep,
+	];
 	const rung1 = [rail1, monterContact, canRise, riseStep];
 	const rung2 = [rail2, highSensorCompare, highSensorCoil];
 	const rung3 = [rail3, lowSensorCompare, lowSensorCoil];
@@ -287,6 +297,32 @@ function buildDrillingPage(): HmiPage {
 	return page;
 }
 
+export function createDrillingVariables(): Variable[] {
+	return [
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
+		VariableBuilder.buildMemoryBool(createRandomId(), "h"),
+		VariableBuilder.buildMemoryBool(createRandomId(), "b"),
+		VariableBuilder.buildMemoryInt(createRandomId(), "position"),
+	];
+}
+
+/** Adds the operative part model to the project and makes the Main call it. */
+export function addDrillingOperativePart(
+	project: Project,
+	options: { blockable?: boolean } = {},
+): void {
+	const operativePart = buildOperativePartLadder(options);
+	project.addProgram(operativePart);
+	const [mainSection] = project.main.sections;
+	const mainRail = createRailTerminalElement(0);
+	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
+	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
+	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
+}
+
 /**
  * Crée un projet "Poste de perçage" pré-configuré :
  * — 1 entrée booléenne `dcy` + 3 sorties (`descendre`, `monter`, `broche`)
@@ -298,23 +334,8 @@ function buildDrillingPage(): HmiPage {
 export function createDrillingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de perçage", "");
 
-	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
-		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
-		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
-		VariableBuilder.buildMemoryBool(createRandomId(), "h"),
-		VariableBuilder.buildMemoryBool(createRandomId(), "b"),
-		VariableBuilder.buildMemoryInt(createRandomId(), "position"),
-	);
-
-	const operativePart = buildOperativePartLadder();
-	project.addProgram(operativePart);
-	const [mainSection] = project.main.sections;
-	const mainRail = createRailTerminalElement(0);
-	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
-	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
-	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
+	project.variables.push(...createDrillingVariables());
+	addDrillingOperativePart(project);
 
 	const page = buildDrillingPage();
 	project.hmiPages[page.id] = page;

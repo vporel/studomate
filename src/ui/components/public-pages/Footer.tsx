@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { openReportIssue } from "@/ui/lib/report-issue";
+import { openReportIssue } from "@/ui/services/report-issue";
 import { Box, Container, Divider, Link as MuiLink, Typography } from "@mui/material";
 
 const linkSx = {

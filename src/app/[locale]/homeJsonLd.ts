@@ -1,5 +1,5 @@
 import { APP_NAME, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
-import { absolute } from "@/i18n/metadata";
+import { absolute } from "@/app/metadata";
 import type { Locale } from "@/i18n/config";
 import { serializeJsonLd } from "./json-ld";
 

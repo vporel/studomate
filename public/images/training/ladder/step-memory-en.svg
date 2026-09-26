@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 240" font-family="sans-serif">
+	<text x="20" y="12" font-size="11" font-weight="bold" fill="#263238">GRAFCET</text>
+	<text x="150" y="12" font-size="11" font-weight="bold" fill="#263238">Equivalent Ladder</text>
+
+	<g stroke="#263238" stroke-width="1.8" fill="none">
+		<rect x="60" y="20" width="20" height="20" />
+		<line x1="70" y1="40" x2="70" y2="55" />
+		<line x1="64" y1="55" x2="76" y2="55" stroke-width="2.5" />
+		<line x1="70" y1="55" x2="70" y2="70" />
+	</g>
+	<rect x="60" y="70" width="20" height="20" fill="#c8e6c9" stroke="#263238" stroke-width="1.8" />
+	<g stroke="#263238" stroke-width="1.8" fill="none">
+		<line x1="70" y1="90" x2="70" y2="105" />
+		<line x1="64" y1="105" x2="76" y2="105" stroke-width="2.5" />
+		<line x1="70" y1="105" x2="70" y2="120" />
+		<rect x="60" y="120" width="20" height="20" />
+	</g>
+	<g font-size="10" fill="#263238">
+		<text x="86" y="33">Xn-1</text>
+		<text x="86" y="58">Rn-1</text>
+		<text x="86" y="83" font-weight="bold">Xn</text>
+		<text x="86" y="108">Rn</text>
+		<text x="86" y="133">Xn+1</text>
+	</g>
+
+	<text x="120" y="85" font-size="20" fill="#607d8b">→</text>
+
+	<line x1="150" y1="15" x2="150" y2="145" stroke="#263238" stroke-width="3" />
+	<line x1="330" y1="15" x2="330" y2="145" stroke="#263238" stroke-width="3" />
+
+	<line x1="150" y1="45" x2="184" y2="45" stroke="#263238" stroke-width="2" />
+	<line x1="184" y1="35" x2="184" y2="55" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="35" x2="196" y2="55" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="45" x2="224" y2="45" stroke="#263238" stroke-width="2" />
+	<line x1="224" y1="35" x2="224" y2="55" stroke="#263238" stroke-width="2.5" />
+	<line x1="236" y1="35" x2="236" y2="55" stroke="#263238" stroke-width="2.5" />
+	<line x1="236" y1="45" x2="260" y2="45" stroke="#263238" stroke-width="2" />
+	<text x="190" y="31" font-size="9" text-anchor="middle" fill="#263238">Xn-1</text>
+	<text x="230" y="31" font-size="9" text-anchor="middle" fill="#263238">Rn-1</text>
+
+	<line x1="150" y1="85" x2="184" y2="85" stroke="#263238" stroke-width="2" />
+	<line x1="184" y1="75" x2="184" y2="95" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="75" x2="196" y2="95" stroke="#263238" stroke-width="2.5" />
+	<line x1="196" y1="85" x2="224" y2="85" stroke="#263238" stroke-width="2" />
+	<text x="190" y="101" font-size="9" text-anchor="middle" fill="#263238">Xn</text>
+
+	<line x1="224" y1="75" x2="224" y2="95" stroke="#263238" stroke-width="2.5" />
+	<line x1="236" y1="75" x2="236" y2="95" stroke="#263238" stroke-width="2.5" />
+	<line x1="222" y1="96" x2="238" y2="74" stroke="#263238" stroke-width="2" />
+	<line x1="236" y1="85" x2="260" y2="85" stroke="#263238" stroke-width="2" />
+	<text x="230" y="101" font-size="9" text-anchor="middle" fill="#263238">Rn</text>
+
+	<line x1="260" y1="45" x2="260" y2="85" stroke="#263238" stroke-width="2" />
+	<circle cx="260" cy="65" r="2.5" fill="#263238" />
+	<line x1="260" y1="65" x2="292" y2="65" stroke="#263238" stroke-width="2" />
+	<path d="M 292 55 Q 285 65 292 75" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 308 55 Q 315 65 308 75" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="300" y="69" font-size="9" text-anchor="middle" fill="#263238">Xn</text>
+	<line x1="308" y1="65" x2="330" y2="65" stroke="#263238" stroke-width="2" />
+
+	<text x="20" y="172" font-size="12" font-family="monospace" fill="#263238">Xn = (Xn-1 AND Rn-1) + Xn AND NOT Rn</text>
+	<text x="20" y="192" font-size="9.5" font-style="italic" fill="#455a64">(notation: Tn-1 = Xn-1 AND Rn-1, Tn = Xn AND Rn → Xn = Tn-1 + Xn AND NOT Tn)</text>
+
+	<line x1="20" y1="203" x2="330" y2="203" stroke="#cfd8dc" stroke-width="1" />
+	<g font-size="9" fill="#455a64">
+		<text x="20" y="217">Xn: step n active</text>
+		<text x="20" y="230">Rn: receptivity of transition n</text>
+		<text x="180" y="217">Tn = Xn AND Rn: crossing of transition n</text>
+	</g>
+</svg>

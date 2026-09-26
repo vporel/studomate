@@ -2,12 +2,14 @@ import { createRandomId } from "@/ids";
 import type { BlockElement, TimerBlockParams } from "../block.schema";
 import type { GridPosition } from "../element.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import {
 	BlockPortSpec,
-	requireConcreteType,
+	structuralRailPorts,
 } from "../block-port.schema";
-import { getBlockVariableMnemonics } from "./function-block.schema";
+import {
+	createBlockVariables,
+	getBlockVariableMnemonics,
+} from "./function-block.schema";
 
 /** Les trois variantes de bloc timer — TON (retard à l'enclenchement), TOF (retard au
  * déclenchement), TP (impulsion calibrée). Chaque variante a son propre logigramme interne, mais
@@ -23,20 +25,7 @@ export type TimerType = (typeof TIMER_TYPES)[number];
  * `BlockPortSpec.generatesVariable`.
  */
 export const TIMER_PORT_SPECS: BlockPortSpec[] = [
-	{
-		suffix: "IN",
-		type: "BOOL",
-		kind: "structural",
-		direction: "input",
-		generatesVariable: true,
-	},
-	{
-		suffix: "Q",
-		type: "BOOL",
-		kind: "structural",
-		direction: "output",
-		generatesVariable: true,
-	},
+	...structuralRailPorts("IN", "Q"),
 	{
 		suffix: "PT",
 		type: "TIME",
@@ -77,15 +66,7 @@ export function createTimerBlockVariables(
 	elementId: string,
 	name: string,
 ): Variable[] {
-	return TIMER_PORT_SPECS.filter((spec) => spec.generatesVariable).map((spec) =>
-		new VariableBuilder()
-			.id(`${elementId}-${spec.suffix}`)
-			.mnemonic(`${name}.${spec.suffix}`)
-			.zone("memory")
-			.type(requireConcreteType(spec))
-			.ownerBlock({ id: elementId })
-			.build(),
-	);
+	return createBlockVariables(elementId, name, TIMER_PORT_SPECS);
 }
 
 /**

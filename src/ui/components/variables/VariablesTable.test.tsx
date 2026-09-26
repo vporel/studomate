@@ -8,11 +8,11 @@ import { useProjectStore } from "../projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import { exportVariablesTablePdf } from "@/ui/lib/pdf/variables-table-pdf";
+import { exportVariablesTablePdf } from "@/ui/pdf/variables-table-pdf";
 import VariablesTable from "./VariablesTable";
 
 jest.mock("../projects/ProjectContext");
-jest.mock("@/ui/lib/pdf/variables-table-pdf", () => ({
+jest.mock("@/ui/pdf/variables-table-pdf", () => ({
 	exportVariablesTablePdf: jest.fn().mockResolvedValue(undefined),
 }));
 

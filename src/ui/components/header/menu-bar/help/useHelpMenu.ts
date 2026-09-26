@@ -2,7 +2,7 @@
 
 import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
-import { openReportIssue } from "@/ui/lib/report-issue";
+import { openReportIssue } from "@/ui/services/report-issue";
 import { useMemo } from "react";
 import useStartProductTour from "@/ui/components/product-tour/useStartProductTour";
 import { AppMenuType } from "../app-menu-bar";

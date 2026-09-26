@@ -16,8 +16,8 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import Variable from "@/schemas/variable/variable.schema";
-import { exportVariablesTablePdf } from "@/ui/lib/pdf/variables-table-pdf";
-import trackEvent from "@/ui/lib/analytics";
+import { exportVariablesTablePdf } from "@/ui/pdf/variables-table-pdf";
+import trackEvent from "@/ui/services/analytics";
 import {
 	ExportCsv,
 	FilterPanelTrigger,

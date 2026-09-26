@@ -3,6 +3,8 @@
 import { NumericDisplayData } from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
+import widgetBorder from "./widget-border";
+import HmiWidgetFrame from "./HmiWidgetFrame";
 
 const NumericDisplay = ({
 	data,
@@ -17,16 +19,7 @@ const NumericDisplay = ({
 	const formatted = numValue.toFixed(Math.max(0, decimalPlaces));
 
 	return (
-		<Box
-			sx={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				cursor: onClick ? "pointer" : "default",
-				userSelect: "none",
-			}}
-			onClick={onClick}
-		>
+		<HmiWidgetFrame label={data.label} hideLabel={hideLabel} onClick={onClick}>
 			<Box
 				sx={{
 					width: "100%",
@@ -35,7 +28,7 @@ const NumericDisplay = ({
 					alignItems: "center",
 					justifyContent: "center",
 					gap: 0.5,
-					border: selected ? "2px solid #1976d2" : "2px solid #555",
+					border: widgetBorder(selected),
 					borderRadius: 1,
 					backgroundColor: "#1a1a1a",
 					fontFamily: "'Courier New', monospace",
@@ -63,26 +56,7 @@ const NumericDisplay = ({
 					</Typography>
 				)}
 			</Box>
-			{!hideLabel && data.label && (
-				<Typography
-					sx={{
-						position: "absolute",
-						top: "100%",
-						left: "50%",
-						transform: "translateX(-50%)",
-						width: "max-content",
-						maxWidth: "none",
-						mt: 0.5,
-						fontSize: "0.7rem",
-						color: "#333",
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{data.label}
-				</Typography>
-			)}
-		</Box>
+		</HmiWidgetFrame>
 	);
 };
 

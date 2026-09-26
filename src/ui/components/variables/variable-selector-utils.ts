@@ -126,8 +126,16 @@ export function columnsGridTemplate(columns: VariableColumn[]): string {
 	return columns.map((c) => `${COLUMNS[c].width}px`).join(" ");
 }
 
+// 1px/character beyond the padding: a canvas-measured width is occasionally a hair narrower
+// than the input's actual rendered width (font rendering/rounding varies by OS and display),
+// which clips the last characters of a long mnemonic — a flat margin isn't enough since the gap
+// grows with the text length, so this one scales with it instead.
 export function inputWidthPx(text: string, font: string): number {
-	return Math.max(MIN_WIDTH_PX, measureTextWidthPx(text || "?", font) + 24);
+	const measured = text || "?";
+	return Math.max(
+		MIN_WIDTH_PX,
+		measureTextWidthPx(measured, font) + 24 + measured.length * 1,
+	);
 }
 
 export type SimulationValueAlign = "left" | "center" | "right";
@@ -176,7 +184,7 @@ export function simulationValueSx(
 	const { textAlign: _textAlign, ...edgeSx } = alignEdgeSx(align, !label);
 	return {
 		position: "absolute" as const,
-		...(position === "TOP" ? { bottom: "100%" } : { top: "100%" }),
+		...(position === "TOP" ? { bottom: "100%" } : { top: "60%" }),
 		...(align === "right"
 			? { right: 0 }
 			: align === "center"
@@ -188,7 +196,7 @@ export function simulationValueSx(
 		whiteSpace: "nowrap" as const,
 		pointerEvents: "none" as const,
 		background: "rgba(0, 0, 0, 0.15)",
-		padding: "2px",
+		padding: "0px 1px",
 	};
 }
 

@@ -12,7 +12,7 @@
 		"showExtraCoils": "Afficher d'autres bobines",
 		"hideExtraCoils": "Masquer les bobines supplémentaires",
 		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
-		"addSection": "Section"
+		"addSection": "Réseau"
 	},
 	"systemBlocks": {
 		"timerLabel": "Temporisation",
@@ -27,27 +27,29 @@
 		"convertToolbarLabel": "Bloc CONV : convertit une valeur vers le type de la variable OUT (DINT_TO_INT…)"
 	},
 	"sectionHeader": {
-		"reorderAria": "Réordonner la section",
+		"reorderAria": "Réordonner le réseau",
 		"expand": "Déplier",
 		"collapse": "Replier",
-		"expandAria": "Déplier la section",
-		"collapseAria": "Replier la section",
-		"number": "Section {number} :",
-		"titleAria": "Titre de la section",
+		"expandAria": "Déplier le réseau",
+		"collapseAria": "Replier le réseau",
+		"number": "Réseau {number} :",
+		"titleAria": "Titre du réseau",
 		"zoomIn": "Zoomer",
 		"zoomOut": "Dézoomer",
-		"zoomInAria": "Zoomer la section",
-		"zoomOutAria": "Dézoomer la section",
+		"zoomInAria": "Zoomer le réseau",
+		"zoomOutAria": "Dézoomer le réseau",
 		"copy": "Copier",
-		"copyAria": "Copier la section",
+		"copyAria": "Copier le réseau",
 		"duplicate": "Dupliquer",
-		"duplicateAria": "Dupliquer la section",
+		"duplicateAria": "Dupliquer le réseau",
 		"delete": "Supprimer",
-		"deleteAria": "Supprimer la section"
+		"deleteAria": "Supprimer le réseau",
+		"pdfHeading": "Réseau {number}",
+		"pdfHeadingWithTitle": "Réseau {number} : {title}"
 	},
 	"sectionDescription": {
 		"placeholder": "Description (optionnelle)…",
-		"aria": "Description de la section"
+		"aria": "Description du réseau"
 	},
 	"contextMenu": {
 		"selectAll": "Tout sélectionner",
@@ -105,12 +107,12 @@
 		"save": "Enregistrer"
 	},
 	"reorder": {
-		"instructions": "Pour réordonner une section : Espace ou Entrée pour la saisir, flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
-		"grabbed": "Section {position} saisie.",
-		"moved": "Section {position} déplacée en position {over}.",
-		"outside": "Section {position} n'est plus au-dessus d'une zone de dépôt.",
-		"dropped": "Section déposée en position {over}.",
-		"droppedInitial": "Section {position} déposée à sa position initiale.",
-		"cancelled": "Déplacement annulé. Section {position} remise à sa position initiale."
+		"instructions": "Pour réordonner un réseau : Espace ou Entrée pour le saisir, flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+		"grabbed": "Réseau {position} saisi.",
+		"moved": "Réseau {position} déplacé en position {over}.",
+		"outside": "Le réseau {position} n'est plus au-dessus d'une zone de dépôt.",
+		"dropped": "Réseau déposé en position {over}.",
+		"droppedInitial": "Réseau {position} déposé à sa position initiale.",
+		"cancelled": "Déplacement annulé. Réseau {position} remis à sa position initiale."
 	}
 }

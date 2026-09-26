@@ -34,5 +34,93 @@
 	"or-divergence": {
 		"label": "OR divergence",
 		"description": "A two-branch OR divergence with mutually exclusive branches, each looping back to the initial state on its own. Training module mini-exercise."
+	},
+	"ladder-reading": {
+		"label": "Read a Ladder program",
+		"description": "Four combinational networks provided: predict the outputs, then check in simulation. Training module mini-exercise."
+	},
+	"ladder-logic": {
+		"label": "Two-way lighting",
+		"description": "Combinational logic: two switches and an enable. Training module mini-exercise."
+	},
+	"ladder-self-holding": {
+		"label": "Pump: self-holding",
+		"description": "Push-button start, stop priority, self-holding. Training module mini-exercise."
+	},
+	"ladder-interlock": {
+		"label": "Reversing motor",
+		"description": "Two interlocked self-holdings with a common stop. Training module mini-exercise."
+	},
+	"ladder-memory": {
+		"label": "Pump: latched fault",
+		"description": "Thermal relay, latched fault lamp, acknowledgement without automatic restart. Training module mini-exercise."
+	},
+	"ladder-edges-reading": {
+		"label": "Read edges",
+		"description": "The same input on a NO, P and N contact: record the timing diagram. Training module mini-exercise."
+	},
+	"ladder-toggle": {
+		"label": "Toggle switch",
+		"description": "One button turns a lamp on then off: section execution order and P contact. Training module mini-exercise."
+	},
+	"ladder-gate": {
+		"label": "Motorised gate",
+		"description": "Two interlocked directions, limit switches, stop, photocell. The student declares the inputs. Training module synthesis."
+	},
+	"ladder-timers-reading": {
+		"label": "Read timers",
+		"description": "A TON, a TOF and a TP on the same input: draw the timing diagrams. Training module mini-exercise."
+	},
+	"ladder-timers": {
+		"label": "Star-delta start",
+		"description": "Star then delta with a TON, fan held by a TOF, two-TON blinker. Training module mini-exercise."
+	},
+	"ladder-counters": {
+		"label": "Counting",
+		"description": "Piece counting (CTU), buffer zone (CTUD), stock (CTD). Training module mini-exercise."
+	},
+	"ladder-tank": {
+		"label": "Tank",
+		"description": "Level hysteresis, alarm, start counter on a P contact. Training module mini-exercise."
+	},
+	"ladder-scaling": {
+		"label": "Scaling",
+		"description": "Computing a level from a raw value: overflow, truncation, REAL computation. Training module mini-exercise."
+	},
+	"ladder-packing": {
+		"label": "Case packing",
+		"description": "Conveyor, fault, counting and box change in subprograms. No variables provided. Training module synthesis."
+	},
+	"linear-sequence-naive-ladder": {
+		"label": "Linear sequence: textbook method",
+		"description": "Linear GRAFCET implemented with one self-holding per step: observe the overlap. Training module mini-exercise."
+	},
+	"linear-sequence-ladder": {
+		"label": "Linear sequence in Ladder",
+		"description": "Implement a linear GRAFCET in Ladder with the three-block method. Training module mini-exercise."
+	},
+	"drilling-ladder": {
+		"label": "Drilling station in Ladder",
+		"description": "Drilling GRAFCET in Ladder, timer and descent watchdog. Training module synthesis."
+	},
+	"or-divergence-ladder": {
+		"label": "OR divergence in Ladder",
+		"description": "An OR divergence implemented in Ladder. Training module mini-exercise."
+	},
+	"and-divergence-ladder": {
+		"label": "AND divergence in Ladder",
+		"description": "An AND divergence implemented in Ladder. Training module mini-exercise."
+	},
+	"traffic-light-ladder": {
+		"label": "Traffic light in Ladder",
+		"description": "Traffic light in Ladder with reset and end-of-cycle stop. Training module mini-exercise."
+	},
+	"parking-ladder": {
+		"label": "Parking in Ladder",
+		"description": "Parking control in Ladder, signalling provided, reset. Training module synthesis."
+	},
+	"gate-grafcet-ladder": {
+		"label": "Remote-controlled gate",
+		"description": "Single-button specification: write the GRAFCET, then implement it in Ladder. Training module synthesis."
 	}
 }

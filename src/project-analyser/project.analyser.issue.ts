@@ -14,7 +14,7 @@ export type ProjectAnalyserIssueSource = {
 		| "grafcet-junction-or-start"
 		| "grafcet-junction-or-end"
 		| "ladder"
-		| "ladder-network"
+		| "ladder-section"
 		| "ladder-contact"
 		| "ladder-coil"
 		| "ladder-block";
@@ -101,7 +101,7 @@ export const PROJECT_ANALYSER_ISSUE_CODES = [
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
 	"STEP_REFERRAL_SOURCE_MISMATCH",
 
-	"LADDER_NETWORK_NO_COIL",
+	"LADDER_SECTION_NO_COIL",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN",
 	"LADDER_COIL_VARIABLE_UNDECLARED",

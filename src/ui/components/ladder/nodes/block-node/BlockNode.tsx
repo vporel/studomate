@@ -136,7 +136,7 @@ const BoxBlockNode = ({
 					border: "1.5px solid",
 					borderColor: selected ? th.palette.primary.main : "black",
 					width: "100%",
-					height: "75%",
+					height: "calc(100% - 13px)",
 					marginTop: "6.5px",
 				}}
 			/>

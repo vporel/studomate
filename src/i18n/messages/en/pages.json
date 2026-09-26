@@ -11,7 +11,7 @@
 	},
 	"systemVariables": {
 		"heading": "System variables",
-		"intro": "Provided by the engine and injected at compile time. Read-only: the \"_SYS_\" prefix is reserved. The \"_SYS_TB_…\" time bases are true for a single scan per simulated-time period (a pulse).",
+		"intro": "Provided by the engine and injected at compile time. Read-only: the \"_SYS_\" prefix is reserved. The \"_SYS_TB_…\" time bases are square waves, true for the first half of each simulated-time period.",
 		"columns": {
 			"name": "Name",
 			"type": "Type",
@@ -19,11 +19,11 @@
 		},
 		"items": {
 			"_SYS_FIRST_SCAN": "True during the first scan after the simulation starts, false afterwards.",
-			"_SYS_TB_100ms": "One-scan pulse every 100 ms.",
-			"_SYS_TB_200ms": "One-scan pulse every 200 ms.",
-			"_SYS_TB_500ms": "One-scan pulse every 500 ms.",
-			"_SYS_TB_1s": "One-scan pulse every 1 s.",
-			"_SYS_TB_2s": "One-scan pulse every 2 s."
+			"_SYS_TB_100ms": "Square wave, 100 ms period.",
+			"_SYS_TB_200ms": "Square wave, 200 ms period.",
+			"_SYS_TB_500ms": "Square wave, 500 ms period.",
+			"_SYS_TB_1s": "Square wave, 1 s period.",
+			"_SYS_TB_2s": "Square wave, 2 s period."
 		}
 	},
 	"tabBar": {

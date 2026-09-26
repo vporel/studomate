@@ -2,11 +2,14 @@
  * @jest-environment jsdom
  */
 import { fireEvent, render, screen } from "@testing-library/react";
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { i18nWrapper } from "@tests/utils/i18n";
+import { ProjectFactory } from "@tests/utils/project-factory";
 import VariableSelector, { VariableSelectorHandle } from "./VariableSelector";
 import { createRef } from "react";
 
@@ -15,6 +18,7 @@ jest.mock("@/ui/components/projects/ProjectContext");
 function setup({
 	value = "",
 	variables = [] as Variable[],
+	project,
 	typeFilter,
 	excludeDirection,
 	excludeBehaviorKinds,
@@ -31,6 +35,8 @@ function setup({
 }: {
 	value?: string;
 	variables?: Variable[];
+	/** Remplace le projet construit depuis `variables` — pour un projet avec des blocs, par exemple. */
+	project?: Project;
 	typeFilter?: Variable["type"][];
 	excludeDirection?: "IN" | "OUT" | "INOUT";
 	excludeBehaviorKinds?: import("@/schemas/variable/input-behavior").InputBehaviorKind[];
@@ -47,7 +53,7 @@ function setup({
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { variables },
+			project: project ?? ProjectFactory.createWithVariables(variables),
 			mode,
 			simulationVariablesStates,
 		}),
@@ -78,7 +84,7 @@ describe("VariableSelector — validation différée", () => {
 		const onCommit = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				project: { variables: [] },
+				project: ProjectFactory.createWithVariables([]),
 				simulationVariablesStates: {},
 			}),
 		);
@@ -96,7 +102,7 @@ describe("VariableSelector — validation différée", () => {
 		const onCommit = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				project: { variables: [] },
+				project: ProjectFactory.createWithVariables([]),
 				simulationVariablesStates: {},
 			}),
 		);
@@ -165,6 +171,18 @@ describe("VariableSelector — statut affiché", () => {
 	it("undeclared : une constante TIME reste non déclarée si 'time' n'est pas accepté", () => {
 		setup({ value: "T#5s", variables: [] });
 		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
+	});
+
+	it("ok : une variable exposée par une instance de bloc (t_etoile.Q) est reconnue, même hors du ladder qui la contient", () => {
+		const project = ProjectFactory.createEmpty();
+		const ladder = project.createLadder("L1");
+		ladder.addElements(ladder.sections[0].id, [
+			createTimerBlockElement({ name: "t_etoile", timerType: "TON", pt: "T#5s" }, 0, 0),
+		]);
+
+		setup({ value: "t_etoile.Q", project });
+
+		expect(input()).toHaveAttribute("data-variable-status", "ok");
 	});
 });
 
@@ -272,7 +290,7 @@ describe("VariableSelector — menu contextuel", () => {
 		const setVariableToReveal = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				project: { variables },
+				project: ProjectFactory.createWithVariables(variables),
 				simulationVariablesStates: {},
 				setCrossReferenceFilter,
 				setCrossReferenceResultVisible,

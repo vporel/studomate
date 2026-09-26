@@ -53,6 +53,19 @@ describe("LadderFlow", () => {
 		expect(rendered).toEqual(["0:s1", "1:s2"]);
 	});
 
+	it("porte les classes de portée CSS du ladder et des flows React Flow", () => {
+		(useLadderStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				ladder: { sections: [new Section("s1", "A", "")] },
+				commandsStackManager: { executeOperation: jest.fn() },
+			}),
+		);
+
+		const { container } = renderWithI18n(<LadderFlow />);
+
+		expect(container.querySelector(".ladder-page")).toHaveClass("flow-page");
+	});
+
 	it("ne rend rien pour un ladder sans section", () => {
 		(useLadderStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
@@ -109,7 +122,7 @@ describe("LadderFlow", () => {
 			capturedProps.accessibility.announcements.onDragStart({
 				active: { id: "s2" },
 			}),
-		).toBe("Section 2 saisie.");
+		).toBe("Réseau 2 saisi.");
 	});
 
 	it("ne dispatche rien si la section est déposée sur elle-même ou hors cible", () => {

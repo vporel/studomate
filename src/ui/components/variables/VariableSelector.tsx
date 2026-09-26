@@ -1,5 +1,6 @@
 "use client";
 
+import { getBlockInstanceVariables } from "@/bridge/block-instance-variables.mapper";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { LiteralKind } from "@/expression-language/literals/kind";
 import { InputBehaviorKind } from "@/schemas/variable/input-behavior";
@@ -9,7 +10,7 @@ import Variable, {
 	VariableType,
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { formatVariableValue } from "@/ui/lib/variables/format-variable-value";
+import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	Autocomplete,
@@ -137,11 +138,18 @@ const VariableSelector = forwardRef<
 	const projectVariables = useProjectStore(
 		useShallow((s) => s.project?.variables ?? []),
 	);
+	const project = useProjectStore((s) => s.project);
 	// Les variables système (`_SYS_TB_*`) sont proposées et reconnues comme valides partout où on
 	// lit une variable ; leur direction `IN` les exclut d'elle-même des sélecteurs d'écriture.
+	// Les variables exposées par les instances de blocs (temporisation/compteur) ne sont jamais
+	// persistées dans `project.variables` : voir `getBlockInstanceVariables`.
 	const variables = useMemo(
-		() => [...projectVariables, ...SYSTEM_SCHEMA_VARIABLES],
-		[projectVariables],
+		() => [
+			...projectVariables,
+			...(project ? getBlockInstanceVariables(project) : []),
+			...SYSTEM_SCHEMA_VARIABLES,
+		],
+		[projectVariables, project],
 	);
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const inputRef = useRef<HTMLInputElement>(null);

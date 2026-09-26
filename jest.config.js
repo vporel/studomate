@@ -23,9 +23,9 @@ module.exports = {
 		"/node_modules/(?!(nanoid|marked|next-intl|use-intl|@formatjs|intl-messageformat)/)",
 	],
 	moduleNameMapper: {
+		"\\.css$": "<rootDir>/tests/utils/cssStub.js",
 		"^@/(.*)$": "<rootDir>/src/$1",
 		"^@tests/(.*)$": "<rootDir>/tests/$1",
-		"\\.css$": "<rootDir>/tests/utils/cssStub.js",
 	},
 	// Seuils volontairement placés sous la couverture réelle : assez bas pour ne pas casser la
 	// CI au premier fichier tiré par un nouveau test (la couverture ne compte que les fichiers

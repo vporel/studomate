@@ -4,6 +4,10 @@ import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import {
+	checkReferredStepExists,
+	validateStepReferralNumber,
+} from "./step-referral-number.validator";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
@@ -16,42 +20,16 @@ export default class StepReferralTargetAnalyser extends GrafcetElementAnalyser<S
 		stepReferral: StepReferralTarget,
 		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
-		const issues: ProjectAnalyserIssue[] = [];
 		const source = {
 			sourceType: "grafcet-step-referral-target" as const,
 			sourceId: stepReferral.id,
 		};
 
-		if (
-			stepReferral.data.sourceStepNumber === "" ||
-			stepReferral.data.sourceStepNumber === null ||
-			stepReferral.data.sourceStepNumber === undefined
-		) {
-			if (!allowEmptyContent) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_NUMBER_EMPTY",
-						source,
-					),
-				);
-			}
-			return issues;
-		}
-		if (
-			!Number.isInteger(stepReferral.data.sourceStepNumber) ||
-			stepReferral.data.sourceStepNumber < 0
-		) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
-					source,
-				),
-			);
-		}
-
-		return issues;
+		return validateStepReferralNumber(
+			stepReferral.data.sourceStepNumber,
+			source,
+			allowEmptyContent,
+		);
 	}
 
 	/**
@@ -68,20 +46,13 @@ export default class StepReferralTargetAnalyser extends GrafcetElementAnalyser<S
 			sourceId: stepReferral.id,
 		};
 
-		//Check that the referred step number exists in the grafcet
-		const referredStep = Object.values(grafcet.steps).find(
-			(s) => s.data.number === stepReferral.data.sourceStepNumber,
+		const referredStepIssues = checkReferredStepExists(
+			stepReferral.data.sourceStepNumber,
+			grafcet,
+			source,
 		);
-		if (!referredStep) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
-					source,
-					{ stepNumber: stepReferral.data.sourceStepNumber as number },
-				),
-			);
-		} else {
+		issues.push(...referredStepIssues);
+		if (referredStepIssues.length === 0) {
 			// Une connexion structurellement invalide (type inattendu) est déjà relevée par la
 			// règle de niveau grafcet GRAFCET_CONNECTION_INVALID_TYPE ; on l'avale ici pour ne
 			// pas rompre le contrat "l'analyse ne lève jamais".

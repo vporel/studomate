@@ -8,7 +8,7 @@ import {
 	HmiWidgetPropertyField,
 } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import useCommittedField from "@/ui/lib/hooks/useCommittedField";
-import useFormatInputBehavior from "@/ui/lib/variables/useFormatInputBehavior";
+import useFormatInputBehavior from "@/ui/components/variables/useFormatInputBehavior";
 import {
 	Box,
 	Checkbox,

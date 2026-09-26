@@ -4,6 +4,7 @@
 import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { APP_REPO_URL } from "@/app-info";
+import messages from "@/i18n/messages/fr/public.json";
 import LandingPage from "./LandingPage";
 
 describe("LandingPage", () => {
@@ -52,5 +53,32 @@ describe("LandingPage", () => {
 		expect(
 			screen.getByRole("heading", { name: /pensé pour la vie privée/i }),
 		).toBeInTheDocument();
+	});
+
+	describe("grilles de cartes", () => {
+		const cardKeys = [
+			"reasonFriction",
+			"reasonAllInOne",
+			"reasonShortLoop",
+			"featureEditing",
+			"featureHmi",
+			"featureSimulation",
+			"featureAnalysis",
+			"featureManual",
+			"featureCloud",
+		] as const;
+
+		it.each(cardKeys)(
+			"affiche la carte %s avec son titre et son texte",
+			(key) => {
+				const landing = messages.landing as Record<string, string>;
+				renderWithI18n(<LandingPage />);
+
+				expect(
+					screen.getByRole("heading", { name: landing[`${key}Title`] }),
+				).toBeInTheDocument();
+				expect(screen.getByText(landing[`${key}Text`])).toBeInTheDocument();
+			},
+		);
 	});
 });

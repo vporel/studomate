@@ -14,7 +14,7 @@ import type { VariableType } from "@/schemas/variable/variable.schema";
 import type { CounterType } from "./function-blocks/counter.schema";
 import type { TimerType } from "./function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
-import type { BlockPortSpec } from "./block-port.schema";
+import { type BlockPortSpec, structuralRailPorts } from "./block-port.schema";
 import type { GridPosition } from "./element.schema";
 
 /**
@@ -154,39 +154,9 @@ export type ArithmeticBlockParams = {
 
 /** Ports structurels d'un bloc `"compare"` : IN/Q câblés sur le rail. IN1/IN2 ne sont pas des
  * pinoches paramètre au sens `BlockPortSpec` — `CompareBlockNode` les rend lui-même. */
-export const COMPARE_PORT_SPECS: BlockPortSpec[] = [
-	{
-		suffix: "IN",
-		type: "BOOL",
-		kind: "structural",
-		direction: "input",
-		generatesVariable: true,
-	},
-	{
-		suffix: "Q",
-		type: "BOOL",
-		kind: "structural",
-		direction: "output",
-		generatesVariable: true,
-	},
-];
+export const COMPARE_PORT_SPECS: BlockPortSpec[] = structuralRailPorts("IN", "Q");
 
-const EN_ENO_PORT_SPECS: BlockPortSpec[] = [
-	{
-		suffix: "EN",
-		type: "BOOL",
-		kind: "structural",
-		direction: "input",
-		generatesVariable: true,
-	},
-	{
-		suffix: "ENO",
-		type: "BOOL",
-		kind: "structural",
-		direction: "output",
-		generatesVariable: true,
-	},
-];
+const EN_ENO_PORT_SPECS: BlockPortSpec[] = structuralRailPorts("EN", "ENO");
 
 /** EN/ENO structurels + rangée pinoche IN (gauche) / OUT (droite). */
 export const ASSIGN_PORT_SPECS: BlockPortSpec[] = [

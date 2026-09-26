@@ -5,6 +5,7 @@ import {
 	getBlockPinRowCount,
 	getParameterPinRows,
 	requireConcreteType,
+	structuralRailPorts,
 } from "./block-port.schema";
 
 const structuralPort = (
@@ -304,5 +305,39 @@ describe("getParameterPinRows", () => {
 
 	it("renvoie un tableau vide sans port paramètre", () => {
 		expect(getParameterPinRows([structuralPort("EN", "input")])).toEqual([]);
+	});
+});
+
+describe("structuralRailPorts", () => {
+	it("renvoie une entrée puis une sortie booléennes structurelles générant une variable", () => {
+		expect(structuralRailPorts("IN", "Q")).toEqual([
+			{
+				suffix: "IN",
+				type: "BOOL",
+				kind: "structural",
+				direction: "input",
+				generatesVariable: true,
+			},
+			{
+				suffix: "Q",
+				type: "BOOL",
+				kind: "structural",
+				direction: "output",
+				generatesVariable: true,
+			},
+		]);
+	});
+
+	it("utilise les suffixes fournis", () => {
+		expect(structuralRailPorts("CU", "QU").map((p) => p.suffix)).toEqual([
+			"CU",
+			"QU",
+		]);
+	});
+
+	it("renvoie de nouveaux objets à chaque appel", () => {
+		expect(structuralRailPorts("A", "B")[0]).not.toBe(
+			structuralRailPorts("A", "B")[0],
+		);
 	});
 });

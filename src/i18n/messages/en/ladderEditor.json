@@ -12,7 +12,7 @@
 		"showExtraCoils": "Show more coils",
 		"hideExtraCoils": "Hide extra coils",
 		"coilFalling": "Falling-edge coil (pulse on deactivation)",
-		"addSection": "Section"
+		"addSection": "Network"
 	},
 	"systemBlocks": {
 		"timerLabel": "Timer",
@@ -27,27 +27,29 @@
 		"convertToolbarLabel": "CONV block: converts a value to the type of the OUT variable (DINT_TO_INT…)"
 	},
 	"sectionHeader": {
-		"reorderAria": "Reorder the section",
+		"reorderAria": "Reorder the network",
 		"expand": "Expand",
 		"collapse": "Collapse",
-		"expandAria": "Expand the section",
-		"collapseAria": "Collapse the section",
-		"number": "Section {number}:",
-		"titleAria": "Section title",
+		"expandAria": "Expand the network",
+		"collapseAria": "Collapse the network",
+		"number": "Network {number}:",
+		"titleAria": "Network title",
 		"zoomIn": "Zoom in",
 		"zoomOut": "Zoom out",
-		"zoomInAria": "Zoom in on the section",
-		"zoomOutAria": "Zoom out of the section",
+		"zoomInAria": "Zoom in on the network",
+		"zoomOutAria": "Zoom out of the network",
 		"copy": "Copy",
-		"copyAria": "Copy the section",
+		"copyAria": "Copy the network",
 		"duplicate": "Duplicate",
-		"duplicateAria": "Duplicate the section",
+		"duplicateAria": "Duplicate the network",
 		"delete": "Delete",
-		"deleteAria": "Delete the section"
+		"deleteAria": "Delete the network",
+		"pdfHeading": "Network {number}",
+		"pdfHeadingWithTitle": "Network {number}: {title}"
 	},
 	"sectionDescription": {
 		"placeholder": "Description (optional)…",
-		"aria": "Section description"
+		"aria": "Network description"
 	},
 	"contextMenu": {
 		"selectAll": "Select all",
@@ -105,12 +107,12 @@
 		"save": "Save"
 	},
 	"reorder": {
-		"instructions": "To reorder a section: Space or Enter to grab it, up and down arrows to move it, Space or Enter to drop it, Esc to cancel.",
-		"grabbed": "Section {position} grabbed.",
-		"moved": "Section {position} moved to position {over}.",
-		"outside": "Section {position} is no longer over a drop zone.",
-		"dropped": "Section dropped at position {over}.",
-		"droppedInitial": "Section {position} dropped at its initial position.",
-		"cancelled": "Move cancelled. Section {position} returned to its initial position."
+		"instructions": "To reorder a network: Space or Enter to grab it, up and down arrows to move it, Space or Enter to drop it, Esc to cancel.",
+		"grabbed": "Network {position} grabbed.",
+		"moved": "Network {position} moved to position {over}.",
+		"outside": "Network {position} is no longer over a drop zone.",
+		"dropped": "Network dropped at position {over}.",
+		"droppedInitial": "Network {position} dropped at its initial position.",
+		"cancelled": "Move cancelled. Network {position} returned to its initial position."
 	}
 }

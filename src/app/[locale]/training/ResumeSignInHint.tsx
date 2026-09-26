@@ -2,15 +2,15 @@
 
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
-import { Button, Stack, Typography } from "@mui/material";
+import { Link, Stack, Typography } from "@mui/material";
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 
 /**
  * État de la reprise de progression (voir `ModuleStepper.tsx`), affiché uniquement sur la page
- * d'accueil du module — pas répété à chaque étape d'une leçon, pour ne pas pousser la
- * connexion : invite à se connecter si nécessaire, ou confirme que la progression est
- * sauvegardée pour un utilisateur déjà connecté.
+ * d'accueil du module : précise que la progression est gardée dans ce navigateur et invite à se
+ * connecter pour la synchroniser, ou confirme la sauvegarde sur le compte d'un utilisateur
+ * connecté.
  */
 export default function ResumeSignInHint({
 	hint,
@@ -45,13 +45,18 @@ export default function ResumeSignInHint({
 	}
 
 	return (
-		<Stack direction="row" alignItems="center" flexWrap="wrap" gap={1.5}>
-			<Typography variant="body2" color="text.secondary">
+		<Stack gap={0.5} alignItems="flex-start">
+			<Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
 				{hint}
 			</Typography>
-			<Button size="small" onClick={() => setAuthModalVisible(true, hint)}>
+			<Link
+				component="button"
+				type="button"
+				variant="body2"
+				onClick={() => setAuthModalVisible(true, hint)}
+			>
 				{cta}
-			</Button>
+			</Link>
 		</Stack>
 	);
 }

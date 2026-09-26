@@ -45,7 +45,7 @@ export function getContactMemoryVariableMnemonic(contactId: string): string {
 	return `EDGE_${contactId.replace(/-/g, "")}`;
 }
 
-/** Holds the edge detected by a P/N contact during the last scan of its network. */
+/** Holds the edge detected by a P/N contact during the last scan of its section. */
 export function getContactPulseVariableId(
 	ladderId: string,
 	contactId: string,
@@ -157,7 +157,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * celle de sa source, garanti par `ConnectionsAddCommand`/`isConnectionAllowed` à la création
 	 * d'une connexion et par `LadderWorkflowManager.isPositionValidForConnections` quand un élément
 	 * connecté est ensuite déplacé — mais jamais revérifié pour un projet importé/édité à la main.
-	 * `computeNetworkAssignments` du pré-compilateur trie les éléments par colonne croissante et
+	 * `computeSectionAssignments` du pré-compilateur trie les éléments par colonne croissante et
 	 * suppose la source déjà traitée avant sa cible.
 	 */
 	private checkConnectionColumnOrder(ladder: Ladder): ProjectAnalyserIssue[] {
@@ -173,7 +173,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 							"error",
 							"LADDER_CONNECTION_INVALID_ORDER",
 							{
-								sourceType: "ladder-network",
+								sourceType: "ladder-section",
 								sourceId: section.id,
 								parentId: ladder.id,
 							},

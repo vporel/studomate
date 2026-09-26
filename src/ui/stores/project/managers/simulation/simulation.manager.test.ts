@@ -676,4 +676,48 @@ describe("SimulationManager", () => {
 			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
 		});
 	});
+
+	describe("mode de simulation persisté", () => {
+		const original = (globalThis as any).localStorage;
+		afterEach(() => {
+			(globalThis as any).localStorage = original;
+		});
+
+		it("relit le mode pas à pas depuis le stockage", () => {
+			(globalThis as any).localStorage = {
+				getItem: () => SimulationMode.STEP_BY_STEP,
+			};
+
+			expect(SimulationManager.getPersistedSimulationMode()).toBe(
+				SimulationMode.STEP_BY_STEP,
+			);
+		});
+
+		it("retombe sur le mode continu quand le stockage est indisponible", () => {
+			(globalThis as any).localStorage = {
+				getItem: () => {
+					throw new Error("blocked");
+				},
+			};
+
+			expect(SimulationManager.getPersistedSimulationMode()).toBe(
+				SimulationMode.CONTINUOUS,
+			);
+		});
+
+		it("applique le mode même si l'écriture dans le stockage échoue", () => {
+			(globalThis as any).localStorage = {
+				setItem: () => {
+					throw new Error("blocked");
+				},
+			};
+			const { get, set } = makeStore(ProjectFactory.createEmpty());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(() =>
+				manager.setPlcSimulationMode(SimulationMode.STEP_BY_STEP),
+			).not.toThrow();
+			expect(get().simulationMode).toBe(SimulationMode.STEP_BY_STEP);
+		});
+	});
 });

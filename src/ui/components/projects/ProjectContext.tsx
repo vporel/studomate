@@ -12,7 +12,7 @@ import {
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
 	setProjectIdInUrl,
-} from "@/ui/lib/project-url";
+} from "@/ui/stores/project/url/project-url";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import {
@@ -38,7 +38,7 @@ import CloudConflictDialog from "./CloudConflictDialog";
 import SaveLocationModal from "./SaveLocationModal";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
-import { suppressProductTourForThisPageLoad } from "@/ui/lib/product-tour/product-tour-eligibility";
+import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
 import Project from "@/schemas/project/project.schema";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);

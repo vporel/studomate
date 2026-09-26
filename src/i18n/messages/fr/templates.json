@@ -34,5 +34,93 @@
 	"or-divergence": {
 		"label": "Divergence en OU",
 		"description": "Une divergence en OU à deux branches exclusives, chacune rebouclant seule vers l'état initial. Mini-exercice du module Formations."
+	},
+	"ladder-reading": {
+		"label": "Lire un programme Ladder",
+		"description": "Quatre réseaux combinatoires fournis : prédire les sorties puis vérifier en simulation. Mini-exercice du module Formations."
+	},
+	"ladder-logic": {
+		"label": "Éclairage en va-et-vient",
+		"description": "Logique combinatoire : deux interrupteurs et une validation. Mini-exercice du module Formations."
+	},
+	"ladder-self-holding": {
+		"label": "Pompe : auto-maintien",
+		"description": "Marche par bouton poussoir, arrêt prioritaire, auto-maintien. Mini-exercice du module Formations."
+	},
+	"ladder-interlock": {
+		"label": "Moteur deux sens",
+		"description": "Deux auto-maintiens verrouillés entre eux, arrêt commun. Mini-exercice du module Formations."
+	},
+	"ladder-memory": {
+		"label": "Pompe : défaut mémorisé",
+		"description": "Relais thermique, voyant de défaut mémorisé, acquittement sans redémarrage automatique. Mini-exercice du module Formations."
+	},
+	"ladder-edges-reading": {
+		"label": "Lire les fronts",
+		"description": "Une même entrée sur un contact NO, P et N : relever le chronogramme. Mini-exercice du module Formations."
+	},
+	"ladder-toggle": {
+		"label": "Télérupteur",
+		"description": "Un bouton allume puis éteint une lampe : ordre d'exécution des réseaux et contact P. Mini-exercice du module Formations."
+	},
+	"ladder-gate": {
+		"label": "Portail motorisé",
+		"description": "Deux sens verrouillés, fins de course, arrêt, cellule. L'élève déclare les entrées. Épreuve de synthèse du module Formations."
+	},
+	"ladder-timers-reading": {
+		"label": "Lire les temporisations",
+		"description": "Un TON, un TOF et un TP sur la même entrée : tracer les chronogrammes. Mini-exercice du module Formations."
+	},
+	"ladder-timers": {
+		"label": "Démarrage étoile-triangle",
+		"description": "Étoile puis triangle par un TON, ventilateur prolongé par un TOF, clignotant à deux TON. Mini-exercice du module Formations."
+	},
+	"ladder-counters": {
+		"label": "Comptage",
+		"description": "Comptage de pièces (CTU), zone tampon (CTUD), stock (CTD). Mini-exercice du module Formations."
+	},
+	"ladder-tank": {
+		"label": "Cuve",
+		"description": "Hystérésis de niveau, alarme, compteur de démarrages par contact P. Mini-exercice du module Formations."
+	},
+	"ladder-scaling": {
+		"label": "Mise à l'échelle",
+		"description": "Calcul du niveau à partir d'une valeur brute : dépassement, troncature, calcul en REAL. Mini-exercice du module Formations."
+	},
+	"ladder-packing": {
+		"label": "Mise en caisse",
+		"description": "Convoyeur, défaut, comptage et changement de caisse en sous-programmes. Aucune variable fournie. Épreuve de synthèse du module Formations."
+	},
+	"linear-sequence-naive-ladder": {
+		"label": "Séquence linéaire : méthode des manuels",
+		"description": "GRAFCET linéaire implanté avec un auto-maintien par étape : observer le chevauchement. Mini-exercice du module Formations."
+	},
+	"linear-sequence-ladder": {
+		"label": "Séquence linéaire en Ladder",
+		"description": "Implanter un GRAFCET linéaire en Ladder avec la méthode en trois blocs. Mini-exercice du module Formations."
+	},
+	"drilling-ladder": {
+		"label": "Poste de perçage en Ladder",
+		"description": "GRAFCET de perçage en Ladder, temporisation et surveillance de la descente. Épreuve de synthèse du module Formations."
+	},
+	"or-divergence-ladder": {
+		"label": "Divergence en OU en Ladder",
+		"description": "Une divergence en OU implantée en Ladder. Mini-exercice du module Formations."
+	},
+	"and-divergence-ladder": {
+		"label": "Divergence en ET en Ladder",
+		"description": "Une divergence en ET implantée en Ladder. Mini-exercice du module Formations."
+	},
+	"traffic-light-ladder": {
+		"label": "Feu tricolore en Ladder",
+		"description": "Feu tricolore en Ladder avec réinitialisation et arrêt en fin de cycle. Mini-exercice du module Formations."
+	},
+	"parking-ladder": {
+		"label": "Parking en Ladder",
+		"description": "Commande du parking en Ladder, signalisation fournie, réinitialisation. Épreuve de synthèse du module Formations."
+	},
+	"gate-grafcet-ladder": {
+		"label": "Portail à télécommande",
+		"description": "Cahier des charges à un seul bouton : écrire le GRAFCET puis l'implanter en Ladder. Épreuve de synthèse du module Formations."
 	}
 }

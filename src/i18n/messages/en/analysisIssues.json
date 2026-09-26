@@ -69,7 +69,7 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "The referral has several preceding steps; the referenced source cannot be determined.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "The referenced source step does not match the step linked to the referral.",
 
-	"LADDER_NETWORK_NO_COIL": "This branch does not drive any coil.",
+	"LADDER_SECTION_NO_COIL": "This branch does not drive any coil.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",

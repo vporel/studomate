@@ -6,7 +6,8 @@ import {
 } from "@/schemas/hmi/hmi-page.schema";
 import { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
-import useHmiContextMenu from "@/ui/components/hmi/context-menu/useHmiContextMenu";
+import { HmiContextMenuElement } from "@/ui/components/hmi/context-menu/hmi-context-menu";
+import useContextMenuState from "@/ui/lib/context-menu/useContextMenuState";
 import { useT } from "@/ui/i18n/useT";import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { Box, Typography } from "@mui/material";
@@ -18,8 +19,8 @@ import {
 	useState,
 	WheelEvent as ReactWheelEvent,
 } from "react";
-import { clampZoom, SNAP_GRID, ZOOM_STEP } from "./constants";
-import { executeHmiAction } from "./hmi-action.executor";
+import { clampZoom, SNAP_GRID, ZOOM_STEP } from "@/ui/components/hmi/logic/constants";
+import { executeHmiAction } from "@/ui/components/hmi/logic/hmi-action.executor";
 import HmiCanvasSidebarSection from "./HmiCanvasSidebarSection";
 import HmiObjectsPanel from "./HmiObjectsPanel";
 import HmiPagePropertiesPanel from "./HmiPagePropertiesPanel";
@@ -87,7 +88,9 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 		position: contextMenuPosition,
 		openContextMenu,
 		closeContextMenu,
-	} = useHmiContextMenu(canvasWrapperRef);
+	} = useContextMenuState<HmiContextMenuElement>(canvasWrapperRef, {
+		type: "pane",
+	});
 
 	// Convertisseur écran -> canvas pour le collage au curseur (voir HmiCopyCutPasteManager),
 	// équivalent HMI de `rfInstance.screenToFlowPosition`. Recalculé à chaque changement de zoom.

@@ -643,14 +643,14 @@ function buildBlockAssignments(
 }
 
 /**
- * Ligne d'apparition du réseau (composante connexe du graphe `elements`/`connections`) auquel
- * appartient chaque élément — le minimum des `position.row` de ses éléments. Clé de tri primaire
- * des instructions générées : un automate scanne les rungs de haut en bas, deux réseaux
- * indépendants doivent donc s'exécuter dans l'ordre de leur ligne (et non entrelacés colonne par
- * colonne), pour qu'une variable mémoire écrite par un rung soit vue à jour par les rungs
- * suivants dès le même balayage.
+ * Ligne d'apparition du groupe connexe du graphe `elements`/`connections` auquel appartient
+ * chaque élément — le minimum des `position.row` de ses éléments. Clé de tri primaire des
+ * instructions générées : un automate scanne les circuits de haut en bas, deux circuits
+ * indépendants d'une même section doivent donc s'exécuter dans l'ordre de leur ligne (et non
+ * entrelacés colonne par colonne), pour qu'une variable mémoire écrite par l'un soit vue à jour
+ * par les suivants dès le même balayage.
  */
-function networkTopRowByElementId(
+function connectedGroupTopRowByElementId(
 	elements: LadderElement[],
 	connections: Connection[],
 ): Map<string, number> {
@@ -691,7 +691,7 @@ function networkTopRowByElementId(
 
 /**
  * Calcule, dans l'ordre de lecture du réseau, les affectations de bobines, de fronts de contact et de ports de bloc —
- * réseau par réseau dans l'ordre de leur ligne d'apparition (voir `networkTopRowByElementId`),
+ * réseau par réseau dans l'ordre de leur ligne d'apparition (voir `connectedGroupTopRowByElementId`),
  * puis colonne par colonne à l'intérieur d'un réseau (croissant le long de toute connexion, donc
  * sans cycle, voir `ConnectionsAddCommand`). Pour chaque élément,
  * `reach` est le OU des conditions accumulées de ses connexions entrantes (`null` = aucune —
@@ -703,7 +703,7 @@ function networkTopRowByElementId(
  * `buildBlockAssignments` — pour que les éléments suivants n'aient qu'à la lire, plutôt que de
  * réembarquer toute l'expression amont.
  */
-function computeNetworkAssignments(
+function computeSectionAssignments(
 	elements: LadderElement[],
 	connections: Connection[],
 	dialect: Dialect,
@@ -716,11 +716,11 @@ function computeNetworkAssignments(
 		incomingByTarget.set(connection.target.id, list);
 	}
 
-	const networkTopRow = networkTopRowByElementId(elements, connections);
+	const connectedGroupTopRow = connectedGroupTopRowByElementId(elements, connections);
 	const sortedByColumn = [...elements].sort(
 		(a, b) =>
-			(networkTopRow.get(a.id) ?? a.position.row) -
-				(networkTopRow.get(b.id) ?? b.position.row) ||
+			(connectedGroupTopRow.get(a.id) ?? a.position.row) -
+				(connectedGroupTopRow.get(b.id) ?? b.position.row) ||
 			a.position.col - b.position.col,
 	);
 	const passThroughById = new Map<string, ASTNode>();
@@ -789,7 +789,7 @@ export default class LadderPreCompiler {
 		for (const section of ladder.sections) {
 			try {
 				assignments.push(
-					...computeNetworkAssignments(
+					...computeSectionAssignments(
 						section.elements,
 						section.connections,
 						dialect,
@@ -799,7 +799,7 @@ export default class LadderPreCompiler {
 			} catch (e) {
 				const message = e instanceof Error ? e.message : String(e);
 				const source =
-					ProjectPreCompilerErrorSourceBuilder.buildLadderNetworkSource(
+					ProjectPreCompilerErrorSourceBuilder.buildLadderSectionSource(
 						section.id,
 					);
 				errors.push(

@@ -1,16 +1,17 @@
 "use client";
-import { range } from "@/lib/array";
 import {
 	STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR,
 	StepReferralTargetData,
 } from "@/schemas/grafcet/step-referral-target.schema";
 import StepReferral from "@/schemas/grafcet/step-referral.schema";
-import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
-import { Box, useTheme } from "@mui/material";
+import GrafcetHandle from "./GrafcetHandle";
+import { useTheme } from "@mui/material";
 import { Node, NodeProps, Position } from "@xyflow/react";
 import React, { type FC } from "react";
 
 import GrafcetNode from "./GrafcetNode";
+import ReferralArrow from "./ReferralArrow";
+import StepNumberInput from "./StepNumberInput";
 import useWithTextNodeValue from "./useWithTextNodeValue";
 
 export type StepReferralTargetNodeType = Node<StepReferralTargetData> & {
@@ -44,15 +45,12 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({
 
 	return (
 		<>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={STEP_REFERRAL_TARGET_HANDLE_SOURCE_SUCCESSOR}
 				type="source"
 				position={Position.Bottom}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
 			<GrafcetNode
 				id={id}
@@ -70,58 +68,18 @@ const StepReferralTargetNode: FC<StepReferralTargetNodeProps> = ({
 					inputRef.current?.focus();
 				}}
 			>
-				<input
-					ref={inputRef}
-					className="node__input step_referral_target_node__input nodrag"
-					type="text" //The values are restricted to numbers via the keydown event (because the type='number' causes issues when exporting the nodes to image)
+				<StepNumberInput
+					inputRef={inputRef}
+					className="step_referral_target_node__input"
 					value={editingSourceStepNumber}
-					onChange={(e) => setEditingSourceStepNumber(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter" || e.key === "Escape") {
-							//The save is done only on blur to avoid multiple saves when pressing enter
-							inputRef.current?.blur();
-						} else {
-							if (e.key.length == 1 && !range(0, 10).includes(parseInt(e.key)))
-								e.preventDefault();
-						}
-					}}
-					onBlur={() => {
+					editing={editing}
+					onChange={setEditingSourceStepNumber}
+					onCommit={() => {
 						setEditing(false);
 						saveSourceStepNumber();
 					}}
-					style={{
-						width: "100%",
-						textAlign: "center",
-						border: "none",
-						outline: "none",
-						pointerEvents: !editing ? "none" : "all",
-					}}
 				/>
-				<Box
-					sx={{
-						width: "1px",
-						height: "20px",
-						background: borderColor,
-						position: "relative",
-						"&::before, &::after": {
-							content: '""',
-							position: "absolute",
-							width: "1px",
-							height: "10px",
-							background: borderColor,
-						},
-						"&::before": {
-							transform: "rotate(-45deg)",
-							top: "-7px",
-							left: "-4px",
-						},
-						"&::after": {
-							transform: "rotate(45deg)",
-							top: "-7px",
-							left: "4px",
-						},
-					}}
-				></Box>
+				<ReferralArrow color={borderColor} arrowTop="-7px" />
 			</GrafcetNode>
 		</>
 	);

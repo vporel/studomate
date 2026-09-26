@@ -219,6 +219,12 @@
 		"trainingA0Title": "Module A0 : Avant de commencer — Formations Studomate",
 		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation — les prérequis avant le GRAFCET.",
 		"trainingA1Title": "Module A1 : Bases du GRAFCET — Formations Studomate",
-		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés."
+		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés.",
+		"trainingA2Title": "Module A2 : Ladder, logique et mémoire — Formations Studomate",
+		"trainingA2Description": "Module A2 : du schéma à relais au Ladder, contacts et bobines, auto-maintien, bobines S/R, fronts et ordre d'exécution des réseaux.",
+		"trainingA3Title": "Module A3 : Ladder, temps, comptage et calcul — Formations Studomate",
+		"trainingA3Description": "Module A3 : temporisations, compteurs, calcul et types numériques, sous-programmes : théorie et exercices auto-corrigés.",
+		"trainingA4Title": "Module A4 : Du GRAFCET au Ladder — Formations Studomate",
+		"trainingA4Description": "Module A4 : implanter un GRAFCET en Ladder, méthode en trois blocs, actions, divergences et réinitialisation."
 	}
 }

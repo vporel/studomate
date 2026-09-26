@@ -4,7 +4,7 @@ import { ProjectMode } from "../ProjectMode.enum";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/lib/analytics", () => ({
+jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));

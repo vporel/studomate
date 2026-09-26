@@ -5,7 +5,7 @@ import Program, {
 	ProgramType,
 } from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,

@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import { deepObjectsComparison } from "@/lib/object";
 import {
 	getElementHeight,
@@ -88,7 +89,7 @@ export function resolveMovedElement(
  * Un glisser peut inverser l'ordre colonne d'un élément déjà connecté par rapport à un voisin,
  * ce que `ConnectionsAddCommand`/`isConnectionAllowed` (cible strictement à droite de la
  * source) n'a l'occasion de garantir qu'à la création d'une connexion, jamais quand un élément
- * connecté bouge ensuite — voir `computeNetworkAssignments` du pré-compilateur, qui trie les
+ * connecté bouge ensuite — voir `computeSectionAssignments` du pré-compilateur, qui trie les
  * éléments par colonne croissante et suppose la source déjà traitée avant sa cible. Une même
  * colonne pour les deux (le nœud déplacé "rattrape" son voisin, un cas de glisser normal et
  * testé) reste tolérée : seule une inversion franche casserait ce tri.
@@ -361,8 +362,8 @@ export function buildKeyboardMoveChanges(
 		const rawRow = element.position.row + dRow;
 		const rawCol = element.position.col + dCol;
 		const cell: GridPosition = {
-			row: Math.min(Math.max(0, rawRow), maxRow),
-			col: Math.min(Math.max(0, rawCol), LADDER_MAX_COLS - width),
+			row: clamp(rawRow, 0, maxRow),
+			col: clamp(rawCol, 0, LADDER_MAX_COLS - width),
 		};
 		const inBounds =
 			rawRow >= 0 &&

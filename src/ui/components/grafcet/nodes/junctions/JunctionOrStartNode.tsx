@@ -1,10 +1,11 @@
 "use client";
-import { Box, useTheme } from "@mui/material";
+import { useTheme } from "@mui/material";
 import { NodeProps } from "@xyflow/react";
 import { type FC } from "react";
+import JunctionBarsRow from "./JunctionBarsRow";
+import JunctionHorizontalBar from "./JunctionHorizontalBar";
 import JunctionNode, { JunctionNodeType } from "./JunctionNode";
 import JunctionNodeBranchAddButtons from "./JunctionNodeBranchAddButtons";
-import JunctionNodeVerticalBar from "./JunctionNodeVerticalBar";
 
 export type JunctionOrStartNodeType = JunctionNodeType & {
 	type: "junction-or-start";
@@ -23,43 +24,9 @@ const JunctionOrStartNode: FC<JunctionOrStartNodeProps> = (props) => {
 			className="junction-or-start-node"
 			{...props}
 		>
-			<Box
-				sx={{
-					width: "100%",
-					height: "14px",
-					position: "relative",
-				}}
-			>
-				<JunctionNodeVerticalBar
-					color={borderColor}
-					left={data.pivotPosition}
-					pivot={true}
-				/>
-			</Box>
-			<Box
-				sx={{
-					width: "100%",
-					height: "2px",
-					background: borderColor,
-				}}
-			/>
-			<Box
-				sx={{
-					width: "100%",
-					height: "14px",
-					position: "relative",
-				}}
-			>
-				{data.branchesOrder.map((branchId) => (
-					<JunctionNodeVerticalBar
-						key={branchId}
-						color={borderColor}
-						left={data.branches[branchId]!.position}
-						pivot={false}
-						branchId={branchId}
-					/>
-				))}
-			</Box>
+			<JunctionBarsRow data={data} color={borderColor} height="14px" pivot />
+			<JunctionHorizontalBar color={borderColor} thickness="2px" />
+			<JunctionBarsRow data={data} color={borderColor} height="14px" />
 			<JunctionNodeBranchAddButtons top={20} />
 		</JunctionNode>
 	);

@@ -1,4 +1,5 @@
 import Project from "@/schemas/project/project.schema";
+import { readJson } from "../safe-local-storage";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
 import { isSupabaseConfigured, supabase } from "./supabase-client";
@@ -51,7 +52,10 @@ export default class HybridProjectRepository
 	 * déjà cloud garde son emplacement, quel que soit `location` — seul le premier enregistrement
 	 * d'un projet peut choisir sa destination.
 	 */
-	async save(project: Project, location?: StorageLocation): Promise<SaveResult> {
+	async save(
+		project: Project,
+		location?: StorageLocation,
+	): Promise<SaveResult> {
 		if (this.isCloud(project.id)) return this.cloud.save(project);
 		// `isCloud` à false ne veut pas dire "projet neuf" : il peut déjà exister en local, auquel
 		// cas `location` ne doit rien changer — seul un id absent des deux repositories est
@@ -186,13 +190,8 @@ export default class HybridProjectRepository
 	}
 
 	private readIndex(): string[] {
-		try {
-			const raw = localStorage.getItem(CLOUD_INDEX_KEY);
-			const parsed = raw ? JSON.parse(raw) : [];
-			return Array.isArray(parsed) ? parsed : [];
-		} catch {
-			return [];
-		}
+		const parsed = readJson(CLOUD_INDEX_KEY);
+		return Array.isArray(parsed) ? parsed : [];
 	}
 
 	private writeIndex(ids: string[]): boolean {

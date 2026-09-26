@@ -116,6 +116,25 @@ function ProgramsList() {
 	);
 }
 
+function StartupAction({
+	label,
+	onClick,
+}: {
+	label: string;
+	onClick: () => void;
+}) {
+	return (
+		<MenuItem onClick={onClick}>
+			<ListItemIcon>
+				<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
+			</ListItemIcon>
+			<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
+				{label}
+			</ListItemText>
+		</MenuItem>
+	);
+}
+
 function Actions() {
 	const t = useT("pages.startup");
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
@@ -125,30 +144,14 @@ function Actions() {
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1 }}>
 				{t("actions")}
 			</Typography>
-			<MenuItem
-				onClick={() => {
-					grafcetsManager.newGrafcet();
-				}}
-			>
-				<ListItemIcon>
-					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
-				</ListItemIcon>
-				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
-					{t("newGrafcet")}
-				</ListItemText>
-			</MenuItem>
-			<MenuItem
-				onClick={() => {
-					laddersManager.newLadder();
-				}}
-			>
-				<ListItemIcon>
-					<AddIcon sx={{ color: (th) => th.palette.primary.main }} />
-				</ListItemIcon>
-				<ListItemText sx={{ color: (th) => th.palette.primary.main }}>
-					{t("newLadder")}
-				</ListItemText>
-			</MenuItem>
+			<StartupAction
+				label={t("newGrafcet")}
+				onClick={() => grafcetsManager.newGrafcet()}
+			/>
+			<StartupAction
+				label={t("newLadder")}
+				onClick={() => laddersManager.newLadder()}
+			/>
 		</>
 	);
 }

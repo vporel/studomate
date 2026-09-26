@@ -6,6 +6,7 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Typography } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
+import widgetBorder from "./widget-border";
 
 /**
  * Mode simulation : comportement au clic piloté par `data.behavior` —
@@ -52,7 +53,7 @@ const PushButton = ({
 				alignItems: "center",
 				justifyContent: "center",
 				borderRadius: "6px",
-				border: selected ? "2px solid #1976d2" : "2px solid #555",
+				border: widgetBorder(selected),
 				backgroundColor: active ? "#1976d2" : "#e0e0e0",
 				boxShadow: active
 					? "inset 0 3px 6px rgba(0,0,0,0.3)"

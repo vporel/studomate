@@ -1,15 +1,15 @@
+import { renderSceneToJsPdf } from "@/ui/lib/drawing/backends/jspdf-backend";
+import { LADDER_ZOOM } from "@/ui/pdf/drawing/ladder-scene";
+import { mmToPx } from "@/ui/lib/screen-units";
 import type { jsPDF } from "jspdf";
-import { renderSceneToJsPdf } from "@/ui/lib/program-export-drawing/backends/jspdf-backend";
-import { LADDER_ZOOM } from "@/ui/lib/program-export-drawing/ladder-scene";
-import { mmToPx } from "@/ui/lib/utils";
 import renderMarkdownToPdf from "./markdown-to-pdf";
-import { drawPdfTable } from "./pdf-table";
 import {
 	PdfCoverPage,
 	PdfExportDocument,
 	PdfExporter,
 	PdfExportSection,
 } from "./pdf-exporter";
+import { drawPdfTable } from "./pdf-table";
 
 /** Largeur et hauteur d'une page A4 en mm. */
 const A4_WIDTH_MM = 210;
@@ -80,7 +80,11 @@ export class JsPdfExporter implements PdfExporter {
 
 		doc.setFont("helvetica", "bold");
 		doc.setFontSize(24);
-		doc.text(doc.splitTextToSize(cover.projectName, contentWidth), MARGIN_MM, y);
+		doc.text(
+			doc.splitTextToSize(cover.projectName, contentWidth),
+			MARGIN_MM,
+			y,
+		);
 		y += 16;
 
 		doc.setFont("helvetica", "normal");
@@ -115,11 +119,7 @@ export class JsPdfExporter implements PdfExporter {
 		}
 	}
 
-	private pageTitle(
-		doc: jsPDF,
-		title: string,
-		pageWidth: number,
-	): void {
+	private pageTitle(doc: jsPDF, title: string, pageWidth: number): void {
 		doc.setFont("helvetica", "bold");
 		doc.setFontSize(14);
 		doc.text(
@@ -179,7 +179,7 @@ export class JsPdfExporter implements PdfExporter {
 	 * L'échelle est celle qui fait tenir la section la plus large sur la largeur de page
 	 * (plafonnée par `LADDER_ZOOM`), **puis abaissée si besoin** pour que la section la plus
 	 * haute tienne sur une page entière : sinon une section trop haute placée en haut de page
-	 * serait dessinée sous le bord et ses derniers rungs seraient perdus.
+	 * serait dessinée sous le bord et ses dernières sections seraient perdues.
 	 */
 	private drawLadderFlow(doc: jsPDF, section: PdfExportSection): void {
 		const pageWidth = A4_HEIGHT_MM;

@@ -32,7 +32,7 @@ const mockUrl = {
 	getTemplateAutostartFromUrl: jest.fn<boolean, []>(() => false),
 	clearTemplateParamsFromUrl: jest.fn(),
 };
-jest.mock("@/ui/lib/project-url", () => ({
+jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getProjectIdFromUrl: () => mockUrl.getProjectIdFromUrl(),
 	getShareTokenFromUrl: () => mockUrl.getShareTokenFromUrl(),
 	setProjectIdInUrl: (...args: unknown[]) => mockUrl.setProjectIdInUrl(...args),

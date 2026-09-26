@@ -15,16 +15,14 @@ import {
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
+import HmiFloatingPane from "./HmiFloatingPane";
 import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
 	Box,
 	Button,
 	IconButton,
-	Modal,
-	Paper,
 	Tab,
 	Tabs,
 	TextField,
@@ -330,9 +328,7 @@ const StyleTab = ({
 
 /** Pane flottant (pas une modale MUI classique) affichant les animations du widget sélectionné —
  * ouvert depuis `HmiWidgetPropertiesPanel`, visibilité portée par le store (voir `HmiStoreState`).
- * Une barre d'onglets verticale plutôt qu'horizontale ou qu'un accordéon comme les autres blocs de
- * la colonne latérale : la table de style a besoin de largeur, pas de hauteur, pour rester
- * lisible (voir la demande d'origine).
+ * Onglets verticaux : la table de style a besoin de largeur, pas de hauteur, pour rester lisible.
  */
 const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 	const t = useT("hmiEditor.panel");
@@ -350,68 +346,40 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 	if (!visible) return null;
 
 	return (
-		<Modal open onClose={close}>
-			<Paper
-				sx={{
-					position: "fixed",
-					top: "50%",
-					left: "50%",
-					transform: "translate(-50%, -50%)",
-					width: "min(90vw, 720px)",
-					height: "min(80vh, 520px)",
-					display: "flex",
-					flexDirection: "column",
-					outline: "none",
-				}}
-			>
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						px: 2,
-						py: 1,
-						borderBottom: "1px solid #e0e0e0",
-					}}
+		<HmiFloatingPane
+			title={t("animationsHeading", { name: widget.name })}
+			onClose={close}
+			width="min(90vw, 720px)"
+			height="min(80vh, 520px)"
+		>
+			<Box sx={{ display: "flex", flex: 1, minHeight: 0 }}>
+				<Tabs
+					orientation="vertical"
+					value={activeTab}
+					onChange={(_, value) => setActiveTab(value)}
+					sx={{ borderRight: "1px solid #e0e0e0", minWidth: 160 }}
 				>
-					<Typography variant="h6">
-						{t("animationsHeading", { name: widget.name })}
-					</Typography>
-					<Tooltip title={t("close")}>
-						<IconButton size="small" onClick={close} aria-label={t("close")}>
-							<CloseIcon fontSize="small" />
-						</IconButton>
-					</Tooltip>
-				</Box>
-				<Box sx={{ display: "flex", flex: 1, minHeight: 0 }}>
-					<Tabs
-						orientation="vertical"
-						value={activeTab}
-						onChange={(_, value) => setActiveTab(value)}
-						sx={{ borderRight: "1px solid #e0e0e0", minWidth: 160 }}
-					>
+					<Tab
+						label={t("tabPosition")}
+						value="position"
+						sx={{ alignItems: "flex-start" }}
+					/>
+					{hasStyleTab && (
 						<Tab
-							label={t("tabPosition")}
-							value="position"
+							label={t("tabStyle")}
+							value="style"
 							sx={{ alignItems: "flex-start" }}
 						/>
-						{hasStyleTab && (
-							<Tab
-								label={t("tabStyle")}
-								value="style"
-								sx={{ alignItems: "flex-start" }}
-							/>
-						)}
-					</Tabs>
-					<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: 2 }}>
-						{activeTab === "position" && <PositionTab widget={widget} />}
-						{activeTab === "style" && hasStyleTab && (
-							<StyleTab widget={widget} styleProps={styleProps} />
-						)}
-					</Box>
+					)}
+				</Tabs>
+				<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: 2 }}>
+					{activeTab === "position" && <PositionTab widget={widget} />}
+					{activeTab === "style" && hasStyleTab && (
+						<StyleTab widget={widget} styleProps={styleProps} />
+					)}
 				</Box>
-			</Paper>
-		</Modal>
+			</Box>
+		</HmiFloatingPane>
 	);
 };
 

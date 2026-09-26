@@ -5,17 +5,17 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import { exportProject } from "@/ui/utils/project/project-export-utils";
+import { exportProject } from "@/ui/components/projects/project-export";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "./ProjectContext";
 import ExportModal from "./ExportModal";
 
 jest.mock("./ProjectContext");
-jest.mock("@/ui/utils/project/project-export-utils");
+jest.mock("@/ui/components/projects/project-export");
 
 const startExport = jest.fn();
 const reset = jest.fn();
-jest.mock("../pdf/usePdfExport", () => ({
+jest.mock("@/ui/pdf/usePdfExport", () => ({
 	usePdfExport: () => ({
 		exportState: { status: "idle" },
 		startExport,

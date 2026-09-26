@@ -2,20 +2,12 @@
 
 import { Box } from "@mui/material";
 import GrafcetTool from "./GrafcetTool";
+import ToolboxCell from "./ToolboxCell";
 
 const StepReferralTargetTool = ({ disabled }: { disabled?: boolean }) => {
 	return (
 		<GrafcetTool element={{ type: "step-referral-target" }} disabled={disabled}>
-			<Box
-				style={{
-					width: "30px",
-					height: "30px",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
+			<ToolboxCell>
 				<Box
 					sx={{
 						width: "1px",
@@ -42,7 +34,7 @@ const StepReferralTargetTool = ({ disabled }: { disabled?: boolean }) => {
 						},
 					}}
 				></Box>
-			</Box>
+			</ToolboxCell>
 		</GrafcetTool>
 	);
 };

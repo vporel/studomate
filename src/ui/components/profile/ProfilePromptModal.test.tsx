@@ -7,12 +7,12 @@ const mockShouldAsk = jest.fn();
 const mockSetStored = jest.fn();
 const mockTrackEvent = jest.fn();
 
-jest.mock("@/ui/lib/user-profile-storage", () => ({
+jest.mock("@/persistence/user-profile.storage", () => ({
 	shouldAskUserProfile: () => mockShouldAsk(),
 	setStoredUserProfile: (...args: any[]) => mockSetStored(...args),
 }));
 
-jest.mock("@/ui/lib/analytics", () => ({
+jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));

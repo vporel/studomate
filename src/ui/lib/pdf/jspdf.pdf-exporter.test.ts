@@ -67,7 +67,7 @@ jest.mock("jspdf", () => ({
 }));
 
 const mockRenderSceneToJsPdf = jest.fn();
-jest.mock("@/ui/lib/program-export-drawing/backends/jspdf-backend", () => ({
+jest.mock("@/ui/lib/drawing/backends/jspdf-backend", () => ({
 	renderSceneToJsPdf: (...args: unknown[]) => mockRenderSceneToJsPdf(...args),
 }));
 

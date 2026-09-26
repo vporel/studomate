@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialect } from "@/expression-language/dialect.enum";
-import { formatVariableValue } from "@/ui/lib/variables/format-variable-value";
+import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
 import { Typography } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
 

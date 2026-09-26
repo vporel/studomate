@@ -180,11 +180,11 @@ describe("LadderSection", () => {
 
 	it("replie/déplie le contenu au clic sur le bouton de repli de l'en-tête", () => {
 		setup();
-		const collapseButton = screen.getByLabelText("Replier la section");
+		const collapseButton = screen.getByLabelText("Replier le réseau");
 
 		fireEvent.click(collapseButton);
 
-		expect(screen.getByLabelText("Déplier la section")).toBeInTheDocument();
+		expect(screen.getByLabelText("Déplier le réseau")).toBeInTheDocument();
 	});
 
 	it("se déplie automatiquement quand un de ses éléments est mis en surbrillance", () => {
@@ -192,12 +192,12 @@ describe("LadderSection", () => {
 		const section = new Section("s1", "Ma section", "", [contact]);
 		const { rerenderWith } = setup({ section });
 
-		fireEvent.click(screen.getByLabelText("Replier la section"));
-		expect(screen.getByLabelText("Déplier la section")).toBeInTheDocument();
+		fireEvent.click(screen.getByLabelText("Replier le réseau"));
+		expect(screen.getByLabelText("Déplier le réseau")).toBeInTheDocument();
 
 		rerenderWith([contact.id]);
 
-		expect(screen.getByLabelText("Replier la section")).toBeInTheDocument();
+		expect(screen.getByLabelText("Replier le réseau")).toBeInTheDocument();
 	});
 
 	describe("virtualisation du canvas (montage à l'approche du viewport)", () => {
@@ -230,8 +230,8 @@ describe("LadderSection", () => {
 			const countAfterMount = reactFlowProps.length;
 			expect(countAfterMount).toBeGreaterThan(0);
 
-			fireEvent.click(screen.getByLabelText("Replier la section"));
-			fireEvent.click(screen.getByLabelText("Déplier la section"));
+			fireEvent.click(screen.getByLabelText("Replier le réseau"));
+			fireEvent.click(screen.getByLabelText("Déplier le réseau"));
 
 			expect(reactFlowProps.length).toBeGreaterThan(countAfterMount);
 		});

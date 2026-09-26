@@ -1,19 +1,18 @@
 import { toLocale } from "@/i18n/config";
-import { pageMetadata } from "@/i18n/metadata";
+import PageTitle from "@/ui/components/public-pages/PageTitle";
+import { createGenerateMetadata } from "@/app/metadata";
 import PublicLink from "@/ui/components/public-pages/PublicLink";
 import { Box, Container, Divider, Typography } from "@mui/material";
-import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { renderStrong } from "../legal/LegalArticle";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-	const { locale: rawLocale } = await params;
-	const locale = toLocale(rawLocale);
-	const t = await getTranslations({ locale, namespace: "public.metadata" });
-	return pageMetadata(locale, "/about", t("aboutTitle"), t("aboutDescription"));
-}
+export const generateMetadata = createGenerateMetadata(
+	"/about",
+	"aboutTitle",
+	"aboutDescription",
+);
 
 export default async function About({ params }: Props) {
 	const { locale: rawLocale } = await params;
@@ -31,9 +30,9 @@ export default async function About({ params }: Props) {
 
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<Typography variant="h2" component="h1" color="primary" gutterBottom>
+			<PageTitle>
 				{t("title")}
-			</Typography>
+			</PageTitle>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h3" gutterBottom mt={3}>

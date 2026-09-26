@@ -52,7 +52,7 @@ export default class ContactAnalyser extends LadderElementAnalyser<ContactElemen
 			!connections.some((connection) => connection.source.id === element.id)
 		) {
 			issues.push(
-				new ProjectAnalyserIssue("warning", "LADDER_NETWORK_NO_COIL", source),
+				new ProjectAnalyserIssue("warning", "LADDER_SECTION_NO_COIL", source),
 			);
 		}
 		if (

@@ -1,8 +1,11 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import { SliderData } from "@/schemas/hmi/hmi-widget.schema";
 import { Box, Slider as MuiSlider, Typography } from "@mui/material";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
+import widgetBorder from "./widget-border";
+import HmiWidgetFrame from "./HmiWidgetFrame";
 
 /** Number of decimals of `step`, so that the displayed value does not show float noise. */
 export function stepDecimals(step: number): number {
@@ -23,20 +26,11 @@ const Slider = ({
 	const step = data.step !== undefined && data.step > 0 ? data.step : 1;
 	const vertical = (data.style?.orientation ?? "horizontal") === "vertical";
 	const numValue =
-		typeof value === "number" ? value : Math.min(max, Math.max(min, 0));
+		typeof value === "number" ? value : clamp(0, min, max);
 	const displayedValue = Number(numValue.toFixed(stepDecimals(step)));
 
 	return (
-		<Box
-			sx={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				cursor: onClick ? "pointer" : "default",
-				userSelect: "none",
-			}}
-			onClick={onClick}
-		>
+		<HmiWidgetFrame label={data.label} hideLabel={hideLabel} onClick={onClick}>
 			<Box
 				sx={{
 					width: "100%",
@@ -45,7 +39,7 @@ const Slider = ({
 					flexDirection: vertical ? "column-reverse" : "row",
 					alignItems: "center",
 					gap: 1,
-					border: selected ? "2px solid #1976d2" : "2px solid #555",
+					border: widgetBorder(selected),
 					borderRadius: 1,
 					backgroundColor: "#f5f5f5",
 					px: vertical ? 0.5 : 1.5,
@@ -90,26 +84,7 @@ const Slider = ({
 					{displayedValue}
 				</Typography>
 			</Box>
-			{!hideLabel && data.label && (
-				<Typography
-					sx={{
-						position: "absolute",
-						top: "100%",
-						left: "50%",
-						transform: "translateX(-50%)",
-						width: "max-content",
-						maxWidth: "none",
-						mt: 0.5,
-						fontSize: "0.7rem",
-						color: "#333",
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{data.label}
-				</Typography>
-			)}
-		</Box>
+		</HmiWidgetFrame>
 	);
 };
 

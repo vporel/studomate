@@ -8,14 +8,6 @@ import TrainingModuleRow from "./TrainingModuleRow";
 
 jest.mock("react-toastify", () => ({ toast: { info: jest.fn() } }));
 
-let supabaseConfigured = false;
-jest.mock("@/persistence/repositories/supabase-client", () => ({
-	get isSupabaseConfigured() {
-		return supabaseConfigured;
-	},
-	supabase: {},
-}));
-
 const mockGetStepId = jest.fn();
 jest.mock("@/persistence/repositories/training-progress.repository", () => ({
 	__esModule: true,
@@ -28,12 +20,10 @@ const defaultProps = {
 	statusLabel: "Disponible",
 	completedLabel: "Terminé",
 	comingSoonLabel: "à venir",
-	backgroundColor: "rgba(0,0,0,0)",
 };
 
 describe("TrainingModuleRow", () => {
 	beforeEach(() => {
-		supabaseConfigured = false;
 		mockGetStepId.mockReset().mockResolvedValue(null);
 	});
 
@@ -84,7 +74,6 @@ describe("TrainingModuleRow", () => {
 	const stepIds = ["intro", "theory-actions", "reading-errors"];
 
 	it("affiche « Terminé » quand la dernière étape sauvegardée correspond au module", async () => {
-		supabaseConfigured = true;
 		mockGetStepId.mockResolvedValue("reading-errors");
 		renderWithI18n(
 			<TrainingModuleRow
@@ -98,11 +87,10 @@ describe("TrainingModuleRow", () => {
 		);
 
 		expect(await screen.findByText("Terminé")).toBeInTheDocument();
-		expect(mockGetStepId).toHaveBeenCalledWith("a1");
+		expect(mockGetStepId).toHaveBeenCalledWith("a1", stepIds);
 	});
 
 	it("affiche le nombre d'étapes atteint sur le total tant que le module n'est pas terminé", async () => {
-		supabaseConfigured = true;
 		mockGetStepId.mockResolvedValue("theory-actions");
 		renderWithI18n(
 			<TrainingModuleRow
@@ -120,7 +108,6 @@ describe("TrainingModuleRow", () => {
 	});
 
 	it("affiche 0 sur le total sans progression sauvegardée", async () => {
-		supabaseConfigured = true;
 		mockGetStepId.mockResolvedValue(null);
 		renderWithI18n(
 			<TrainingModuleRow
@@ -137,7 +124,6 @@ describe("TrainingModuleRow", () => {
 	});
 
 	it("retombe sur le libellé générique sans moduleId/stepIds", () => {
-		supabaseConfigured = true;
 		renderWithI18n(
 			<TrainingModuleRow
 				{...defaultProps}

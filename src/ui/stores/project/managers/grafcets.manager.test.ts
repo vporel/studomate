@@ -4,7 +4,7 @@ import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/lib/analytics", () => ({
+jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));

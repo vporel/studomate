@@ -201,8 +201,12 @@ describe("store — brouillons", () => {
 
 			await store.getState().lifecycleManager.openProject("p1");
 
-			expect(store.getState().ui.draftConflictModal.visible).toBe(true);
-			expect(store.getState().ui.draftConflictModal.projectId).toBe("p1");
+			expect(store.getState().ui.draftConflictModal).toEqual({
+				visible: true,
+				projectId: "p1",
+				draftData: JSON.stringify(project),
+			});
+			expect(store.getState().bootStatus).toBe("idle");
 		});
 	});
 

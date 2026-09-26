@@ -3,7 +3,8 @@
  * d'écrire (projet, brouillon…). `quota-exceeded` mérite un message spécifique : c'est le seul
  * cas où l'utilisateur peut agir (libérer de la place, exporter).
  */
-export type StorageWriteErrorReason = "quota-exceeded" | "unavailable" | "unknown";
+export type StorageWriteErrorReason =
+	"quota-exceeded" | "unavailable" | "unknown";
 
 export function classifyStorageWriteError(e: unknown): StorageWriteErrorReason {
 	if (typeof DOMException !== "undefined" && e instanceof DOMException) {
@@ -19,3 +20,6 @@ export function classifyStorageWriteError(e: unknown): StorageWriteErrorReason {
 	if (typeof localStorage === "undefined") return "unavailable";
 	return "unknown";
 }
+
+export type StorageWriteResult =
+	{ ok: true } | { ok: false; reason: StorageWriteErrorReason };

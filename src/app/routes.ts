@@ -9,6 +9,9 @@ const routes = {
 	training: () => "/formations",
 	trainingA0: () => "/formations/a0",
 	trainingA1: () => "/formations/a1",
+	trainingA2: () => "/formations/a2",
+	trainingA3: () => "/formations/a3",
+	trainingA4: () => "/formations/a4",
 	contact: () => "/contact",
 };
 

@@ -11,7 +11,7 @@
 	},
 	"systemVariables": {
 		"heading": "Variables système",
-		"intro": "Fournies par le moteur et injectées à la compilation. En lecture seule : le préfixe « _SYS_ » est réservé. Les bases de temps « _SYS_TB_… » sont vraies pendant un seul scan par période de temps simulé (impulsion).",
+		"intro": "Fournies par le moteur et injectées à la compilation. En lecture seule : le préfixe « _SYS_ » est réservé. Les bases de temps « _SYS_TB_… » sont des signaux carrés, vrais pendant la première moitié de chaque période de temps simulé.",
 		"columns": {
 			"name": "Nom",
 			"type": "Type",
@@ -19,11 +19,11 @@
 		},
 		"items": {
 			"_SYS_FIRST_SCAN": "Vrai pendant le premier scan après le démarrage de la simulation, faux ensuite.",
-			"_SYS_TB_100ms": "Impulsion d'un scan toutes les 100 ms.",
-			"_SYS_TB_200ms": "Impulsion d'un scan toutes les 200 ms.",
-			"_SYS_TB_500ms": "Impulsion d'un scan toutes les 500 ms.",
-			"_SYS_TB_1s": "Impulsion d'un scan toutes les 1 s.",
-			"_SYS_TB_2s": "Impulsion d'un scan toutes les 2 s."
+			"_SYS_TB_100ms": "Signal carré de période 100 ms.",
+			"_SYS_TB_200ms": "Signal carré de période 200 ms.",
+			"_SYS_TB_500ms": "Signal carré de période 500 ms.",
+			"_SYS_TB_1s": "Signal carré de période 1 s.",
+			"_SYS_TB_2s": "Signal carré de période 2 s."
 		}
 	},
 	"tabBar": {

@@ -11,8 +11,8 @@ import {
 	HmiWidgetType,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { createStore } from "zustand";
-import { snapToGrid } from "@/ui/components/hmi/view/constants";
-import clampGroupDelta from "./hmi-group-move";
+import { snapToGrid } from "@/ui/components/hmi/logic/constants";
+import clampGroupDelta from "./managers/hmi-group-move";
 import HmiCommandsStackManager from "./managers/commands-stack.manager";
 import HmiCopyCutPasteManager from "./managers/copy-cut-paste.manager";
 

@@ -61,5 +61,9 @@ describe("GrafcetFlow", () => {
 		const { container } = render(<GrafcetFlow />);
 
 		expect(container.querySelector("#grafcet-g1")).toBeInTheDocument();
+		expect(container.querySelector("#grafcet-g1")).toHaveClass(
+			"grafcet-page",
+			"flow-page",
+		);
 	});
 });

@@ -1,24 +1,22 @@
 "use client";
 
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { useT } from "@/ui/i18n/useT";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
-import { getStoredUserProfile } from "@/ui/lib/user-profile-storage";
+import { getStoredUserProfile } from "@/persistence/user-profile.storage";
 import { EMPTY_USER_PROFILE, UserProfile } from "@/user-profile/user-profile";
 import UserProfileFields from "@/ui/components/profile/UserProfileFields";
-import {
-	Alert,
-	Box,
-	Button,
-	Divider,
-	TextField,
-	Typography,
-} from "@mui/material";
+import { Alert, Button, Divider, Typography } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import AuthForm from "./AuthForm";
+import AuthFormError from "./AuthFormError";
+import AuthIdentityField from "./AuthIdentityField";
+import AuthModeSelector, { AuthMode } from "./AuthModeSelector";
+import AuthPasswordField from "./AuthPasswordField";
 
 type Screen = "signIn" | "signUp" | "resetPassword";
-type SignUpMode = "anonymous" | "real";
+type SignUpMode = AuthMode;
 
 export default function AuthModal() {
 	const {
@@ -133,70 +131,28 @@ export default function AuthModal() {
 				</Alert>
 			)}
 			{screen === "signIn" && (
-				<Box
-					component="form"
-					onSubmit={(e) => {
-						e.preventDefault();
-						void onSubmitSignIn();
-					}}
-					sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-				>
-					{/* Sélecteur de mode connexion */}
-					<Box sx={{ display: "flex", gap: 1 }}>
-						<Button
-							variant={signInMode === "anonymous" ? "contained" : "outlined"}
-							size="small"
-							onClick={() => {
-								setSignInMode("anonymous");
-								resetForm();
-							}}
-						>
-							{t("modeSelector.pseudo")}
-						</Button>
-						<Button
-							variant={signInMode === "real" ? "contained" : "outlined"}
-							size="small"
-							onClick={() => {
-								setSignInMode("real");
-								resetForm();
-							}}
-						>
-							{t("modeSelector.email")}
-						</Button>
-					</Box>
-
-					{signInMode === "anonymous" ? (
-						<TextField
-							label={t("fields.pseudo")}
-							value={pseudo}
-							onChange={(e) => setPseudo(e.target.value)}
-							required
-							autoFocus
-						/>
-					) : (
-						<TextField
-							label={t("fields.email")}
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-							autoFocus
-						/>
-					)}
-
-					<TextField
-						label={t("fields.password")}
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
+				<AuthForm onSubmit={() => void onSubmitSignIn()}>
+					<AuthModeSelector
+						mode={signInMode}
+						anonymousLabel={t("modeSelector.pseudo")}
+						realLabel={t("modeSelector.email")}
+						onSelect={(mode) => {
+							setSignInMode(mode);
+							resetForm();
+						}}
 					/>
 
-					{error && (
-						<Typography color="error" fontSize="0.9rem">
-							{error}
-						</Typography>
-					)}
+					<AuthIdentityField
+						mode={signInMode}
+						pseudo={pseudo}
+						email={email}
+						onPseudoChange={setPseudo}
+						onEmailChange={setEmail}
+					/>
+
+					<AuthPasswordField value={password} onChange={setPassword} />
+
+					<AuthFormError error={error} />
 
 					<Button type="submit" variant="contained" disabled={submitting}>
 						{t("signIn.submit")}
@@ -226,82 +182,40 @@ export default function AuthModal() {
 					>
 						{t("signIn.noAccount")}
 					</Button>
-				</Box>
+				</AuthForm>
 			)}
 
 			{screen === "signUp" && (
-				<Box
-					component="form"
-					onSubmit={(e) => {
-						e.preventDefault();
-						void onSubmitSignUp();
-					}}
-					sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-				>
-					{/* Sélecteur de mode création */}
-					<Box sx={{ display: "flex", gap: 1 }}>
-						<Button
-							variant={signUpMode === "anonymous" ? "contained" : "outlined"}
-							size="small"
-							onClick={() => {
-								setSignUpMode("anonymous");
-								resetForm();
-							}}
-						>
-							{t("modeSelector.anonymous")}
-						</Button>
-						<Button
-							variant={signUpMode === "real" ? "contained" : "outlined"}
-							size="small"
-							onClick={() => {
-								setSignUpMode("real");
-								resetForm();
-							}}
-						>
-							{t("modeSelector.withEmail")}
-						</Button>
-					</Box>
-
-					{signUpMode === "anonymous" ? (
-						<>
-							<Alert severity="info" sx={{ fontSize: "0.85rem" }}>
-								{t("signUp.anonymousNotice")}
-							</Alert>
-							<TextField
-								label={t("fields.pseudo")}
-								value={pseudo}
-								onChange={(e) => setPseudo(e.target.value)}
-								required
-								autoFocus
-								helperText={t("fields.pseudoHelper")}
-							/>
-						</>
-					) : (
-						<TextField
-							label={t("fields.email")}
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-							autoFocus
-						/>
-					)}
-
-					<TextField
-						label={t("fields.password")}
-						type="password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
+				<AuthForm onSubmit={() => void onSubmitSignUp()}>
+					<AuthModeSelector
+						mode={signUpMode}
+						anonymousLabel={t("modeSelector.anonymous")}
+						realLabel={t("modeSelector.withEmail")}
+						onSelect={(mode) => {
+							setSignUpMode(mode);
+							resetForm();
+						}}
 					/>
+
+					{signUpMode === "anonymous" && (
+						<Alert severity="info" sx={{ fontSize: "0.85rem" }}>
+							{t("signUp.anonymousNotice")}
+						</Alert>
+					)}
+					<AuthIdentityField
+						mode={signUpMode}
+						pseudo={pseudo}
+						email={email}
+						onPseudoChange={setPseudo}
+						onEmailChange={setEmail}
+						pseudoHelperText={t("fields.pseudoHelper")}
+					/>
+
+					<AuthPasswordField value={password} onChange={setPassword} />
 
 					<UserProfileFields value={profile} onChange={setProfile} />
 
-					{error && (
-						<Typography color="error" fontSize="0.9rem">
-							{error}
-						</Typography>
-					)}
+					<AuthFormError error={error} />
 
 					<Button type="submit" variant="contained" disabled={submitting}>
 						{t("signUp.submit")}
@@ -318,36 +232,24 @@ export default function AuthModal() {
 					>
 						{t("signUp.haveAccount")}
 					</Button>
-				</Box>
+				</AuthForm>
 			)}
 
 			{screen === "resetPassword" && (
-				<Box
-					component="form"
-					onSubmit={(e) => {
-						e.preventDefault();
-						void onSubmitResetPassword();
-					}}
-					sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-				>
+				<AuthForm onSubmit={() => void onSubmitResetPassword()}>
 					<Typography variant="body2" color="text.secondary">
 						{t("resetPassword.intro")}
 					</Typography>
 
-					<TextField
-						label={t("fields.email")}
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						required
-						autoFocus
+					<AuthIdentityField
+						mode="real"
+						pseudo={pseudo}
+						email={email}
+						onPseudoChange={setPseudo}
+						onEmailChange={setEmail}
 					/>
 
-					{error && (
-						<Typography color="error" fontSize="0.9rem">
-							{error}
-						</Typography>
-					)}
+					<AuthFormError error={error} />
 					{successMessage && <Alert severity="success">{successMessage}</Alert>}
 
 					{!successMessage && (
@@ -365,7 +267,7 @@ export default function AuthModal() {
 					>
 						{t("resetPassword.backToSignIn")}
 					</Button>
-				</Box>
+				</AuthForm>
 			)}
 		</CustomModal>
 	);

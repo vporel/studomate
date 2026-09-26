@@ -140,17 +140,7 @@ export default class LadderElementOpsManager {
 		elementId: string,
 		type: ContactType,
 	): void {
-		const section = this.getStoreState().ladder.getSection(sectionId);
-		const element = section?.getElement(elementId);
-		if (!element || element.type !== "contact" || element.data.type === type)
-			return;
-		this.getStoreState().commandsStackManager.executeOperation([
-			new ElementUpdateCommand({
-				elementId,
-				changes: { data: { type } },
-				previousChanges: { data: { type: element.data.type } },
-			}),
-		]);
+		this.setElementDataType(sectionId, elementId, "contact", type);
 	}
 
 	/**
@@ -159,10 +149,18 @@ export default class LadderElementOpsManager {
 	 * bobine ou porte déjà ce type.
 	 */
 	setCoilType(sectionId: string, elementId: string, type: CoilType): void {
+		this.setElementDataType(sectionId, elementId, "coil", type);
+	}
+
+	private setElementDataType(
+		sectionId: string,
+		elementId: string,
+		kind: "contact" | "coil",
+		type: ContactType | CoilType,
+	): void {
 		const section = this.getStoreState().ladder.getSection(sectionId);
 		const element = section?.getElement(elementId);
-		if (!element || element.type !== "coil" || element.data.type === type)
-			return;
+		if (!element || element.type !== kind || element.data.type === type) return;
 		this.getStoreState().commandsStackManager.executeOperation([
 			new ElementUpdateCommand({
 				elementId,

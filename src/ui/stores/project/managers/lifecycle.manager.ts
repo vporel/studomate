@@ -11,14 +11,14 @@ import { toast } from "react-toastify";
 import {
 	getActivePageIdFromUrl,
 	setActivePageIdInUrl,
-} from "@/ui/lib/pages-url";
+} from "@/ui/stores/project/url/pages-url";
 import {
 	clearShareTokenFromUrl,
 	setProjectIdInUrl,
-} from "@/ui/lib/project-url";
-import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
+} from "@/ui/stores/project/url/project-url";
+import { Draft, deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	getInitialPagesData,
@@ -164,9 +164,22 @@ export default class ProjectLifecycleManager {
 		restorePagesSession(set, get, project, urlActiveId);
 	}
 
+	private openDraftConflictModal(projectId: string, draft: Draft): void {
+		this.setStoreState((state) => ({
+			bootStatus: "idle",
+			ui: {
+				...state.ui,
+				draftConflictModal: {
+					visible: true,
+					projectId,
+					draftData: draft.data,
+				},
+			},
+		}));
+	}
+
 	/** Returns true if a project was opened, false if cancelled or failed. */
 	async openProject(projectId: string, preferDraft = false): Promise<boolean> {
-		const set = this.setStoreState;
 		const get = this.getStoreState;
 		let project: Project | null = null;
 		let fromDraft = false;
@@ -193,17 +206,7 @@ export default class ProjectLifecycleManager {
 					stored.lastModificationDate.getTime() > draft.savedAt
 				) {
 					// Le projet enregistré est plus récent que le brouillon : proposer le choix
-					set((state) => ({
-						bootStatus: "idle",
-						ui: {
-							...state.ui,
-							draftConflictModal: {
-								visible: true,
-								projectId,
-								draftData: draft.data,
-							},
-						},
-					}));
+					this.openDraftConflictModal(projectId, draft);
 					return true;
 				}
 				project = draftProject;
@@ -219,17 +222,7 @@ export default class ProjectLifecycleManager {
 				if (draft) {
 					if (draft.savedAt > project.lastModificationDate.getTime()) {
 						// Brouillon plus récent : proposer le choix via modale
-						set((state) => ({
-							bootStatus: "idle",
-							ui: {
-								...state.ui,
-								draftConflictModal: {
-									visible: true,
-									projectId,
-									draftData: draft.data,
-								},
-							},
-						}));
+						this.openDraftConflictModal(projectId, draft);
 						return true;
 					} else {
 						// Brouillon périmé : suppression silencieuse

@@ -1,5 +1,5 @@
-import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
-import { setPagesSession } from "@/ui/lib/pages-session-storage";
+import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
+import { setPagesSession } from "@/persistence/pages-session.storage";
 import {
 	PageData,
 	ProjectStoreGetFunction,
@@ -90,7 +90,7 @@ export default class PagesManager {
 
 	/** Onglets ouverts + page active : session en `localStorage` (source de vérité pour ce
 	 * navigateur), page active aussi dans l'URL (juste pour qu'un lien partagé pointe dessus —
-	 * voir `pages-url.ts`/`pages-session-storage.ts`). */
+	 * voir `pages-url.ts`/`pages-session.storage.ts`). */
 	private persistSession(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;

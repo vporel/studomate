@@ -69,7 +69,7 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "L'étape source référencée ne correspond pas à l'étape liée au tenant.",
 
-	"LADDER_NETWORK_NO_COIL": "Cette branche ne pilote aucune bobine.",
+	"LADDER_SECTION_NO_COIL": "Cette branche ne pilote aucune bobine.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",

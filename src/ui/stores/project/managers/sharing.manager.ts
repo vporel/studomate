@@ -1,7 +1,7 @@
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { isShareable } from "@/persistence/repositories/project.repository";
 import { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import { toast } from "react-toastify";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {

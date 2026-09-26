@@ -8,7 +8,7 @@ import {
 	isNormallyClosed,
 	isPushButtonBehavior,
 } from "@/schemas/variable/input-behavior";
-import { formatBooleanValue } from "@/ui/lib/variables/format-variable-value";
+import { formatBooleanValue } from "@/ui/components/variables/format-variable-value";
 import {
 	Box,
 	Button,

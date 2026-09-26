@@ -1,6 +1,6 @@
 "use client";
 
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import {

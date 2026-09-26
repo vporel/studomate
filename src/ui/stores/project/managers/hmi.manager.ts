@@ -8,7 +8,7 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 
 const COMMANDS_STACK_SIZE = 100;
 

@@ -5,7 +5,7 @@ import {
 	HmiWidget,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { resolvePositionAnimationOffset } from "./hmi-position-animation";
+import { resolvePositionAnimationOffset } from "@/ui/components/hmi/logic/hmi-position-animation";
 
 /**
  * Valeur brute (booléenne ou numérique) d'une variable de simulation résolue par mnémonique.

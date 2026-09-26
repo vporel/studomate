@@ -5,7 +5,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { createHmiStore, HmiStoreState } from "@/ui/stores/hmi/hmi.store";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import { syncHmiPageToProject } from "./hmi-project-sync";
+import { syncHmiPageToProject } from "@/ui/components/hmi/logic/hmi-project-sync";
 
 const HmiContext = createContext<StoreApi<HmiStoreState> | null>(null);
 

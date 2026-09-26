@@ -39,6 +39,30 @@ export type BlockPortSpec = {
 	excludeInputVariable?: boolean;
 };
 
+/** Les deux ports structurels d'un bloc, câblés sur le rail : une entrée et une sortie booléennes
+ * qui génèrent chacune une variable (ex. IN/Q d'un timer, EN/ENO d'un bloc d'affectation). */
+export function structuralRailPorts(
+	inputSuffix: string,
+	outputSuffix: string,
+): BlockPortSpec[] {
+	return [
+		{
+			suffix: inputSuffix,
+			type: "BOOL",
+			kind: "structural",
+			direction: "input",
+			generatesVariable: true,
+		},
+		{
+			suffix: outputSuffix,
+			type: "BOOL",
+			kind: "structural",
+			direction: "output",
+			generatesVariable: true,
+		},
+	];
+}
+
 /** Le type concret d'un port — `"ANY"` est interdit sur un port structurel ou générateur de
  * variable (voir l'invariant de `BlockPortSpec`), ce resserrement est donc toujours sûr là où
  * un type concret est requis (génération de mnémoniques/variables exposées). */

@@ -56,12 +56,14 @@ const CYL_MAX = 192;
 /** Distance parcourue par une caisse sur le tapis T1 avant d'atteindre le poste de détection. */
 const T1_MAX = 516;
 /** Base de temps système qui cadence toute la cinématique : les mouvements avancent d'un `PAS`
- * par impulsion (toutes les 200 ms de temps simulé), et non par cycle automate — le procédé
- * garde la même vitesse quel que soit le temps de scan. */
+ * sur chaque front montant (toutes les 200 ms de temps simulé), et non par cycle automate — le
+ * procédé garde la même vitesse quel que soit le temps de scan. `TICK` est un signal carré, d'où
+ * le contact à front (`"P"`) plutôt qu'un contact à fermeture : un contact à fermeture resterait
+ * fermé toute la première moitié de la période et avancerait `pos_*` à chaque scan. */
 const TICK = "_SYS_TB_200ms";
-/** Avance d'une caisse sur T1 et de chaque vérin par impulsion de `TICK`. Divise toutes les
+/** Avance d'une caisse sur T1 et de chaque vérin sur front montant de `TICK`. Divise toutes les
  * courses (T1_MAX, CYL_MAX, CAISSE_Y_*, CAISSE_X_MAX) pour que la caisse s'arrête pile sur sa
- * position cible ; 5 impulsions par seconde de temps simulé. */
+ * position cible ; 5 fronts par seconde de temps simulé. */
 const PAS = 12;
 /** Descente de la caisse (px) sous la poussée de P1 : niveau d'éjection de P2 (caisses basses). */
 const CAISSE_Y_P2 = CYL_MAX;
@@ -176,7 +178,7 @@ function buildOperativePartLadder(): Ladder {
 		(rung) => {
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement(TICK, "P", r, col(0)),
 				createContactElement("caisse_presente", "NO", r, col(1)),
 				createContactElement("Cmd_T1", "NO", r, col(2)),
 				createCompareBlockElement(r, col(3), {
@@ -202,7 +204,7 @@ function buildOperativePartLadder(): Ladder {
 				const cmd = `Cmd_${p.toUpperCase()}`;
 				rung((r) => [
 					createRailTerminalElement(r),
-					createContactElement(TICK, "NO", r, col(0)),
+					createContactElement(TICK, "P", r, col(0)),
 					createContactElement(`${cmd}_out`, "NO", r, col(1)),
 					createCompareBlockElement(r, col(2), {
 						in1: `pos_${p}`,
@@ -218,7 +220,7 @@ function buildOperativePartLadder(): Ladder {
 				]);
 				rung((r) => [
 					createRailTerminalElement(r),
-					createContactElement(TICK, "NO", r, col(0)),
+					createContactElement(TICK, "P", r, col(0)),
 					createContactElement(`${cmd}_in`, "NO", r, col(1)),
 					createCompareBlockElement(r, col(2), {
 						in1: `pos_${p}`,
@@ -294,7 +296,7 @@ function buildOperativePartLadder(): Ladder {
 			// P1 descend la caisse jusqu'au niveau d'éjection de P2
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement(TICK, "P", r, col(0)),
 				createContactElement("Cmd_P1_out", "NO", r, col(1)),
 				createCompareBlockElement(r, col(2), {
 					in1: "caisse_y",
@@ -325,7 +327,7 @@ function buildOperativePartLadder(): Ladder {
 			// Éjection latérale par P2 (caisses basses)
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement(TICK, "P", r, col(0)),
 				createContactElement("Cmd_P2_out", "NO", r, col(1)),
 				createCompareBlockElement(r, col(2), {
 					in1: "caisse_x_extra",
@@ -342,7 +344,7 @@ function buildOperativePartLadder(): Ladder {
 			// Éjection latérale par P3 (caisses hautes), une fois au niveau de P3
 			rung((r) => [
 				createRailTerminalElement(r),
-				createContactElement(TICK, "NO", r, col(0)),
+				createContactElement(TICK, "P", r, col(0)),
 				createContactElement("Cmd_P3_out", "NO", r, col(1)),
 				createCompareBlockElement(r, col(2), {
 					in1: "caisse_y",

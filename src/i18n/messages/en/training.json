@@ -14,8 +14,10 @@
 	"blockA1Label": "Module A1: GRAFCET basics",
 	"moduleAvailableStatusLabel": "Available",
 	"moduleCompletedLabel": "Completed",
-	"blockA2Label": "Module A2: Ladder",
-	"blockA3Label": "Module A3: HMI",
+	"blockA2Label": "Module A2: Ladder, logic and memory",
+	"blockA3Label": "Module A3: Ladder, time, counting and calculation",
+	"blockA4Label": "Module A4: From GRAFCET to Ladder",
+	"blockA5Label": "Module A5: HMI",
 	"blockBLabel": "Block B: Career readiness",
 	"blockB1Label": "Module B1: Analysing a documented project",
 	"blockB2Label": "Module B2: Capstone project and portfolio",
@@ -28,9 +30,9 @@
 	"previousStep": "Previous",
 	"nextStep": "Next",
 
-	"resumeSignInHint": "Sign in to pick up where you left off next time.",
+	"resumeSignInHint": "Your progress is kept in this browser. It will be lost if you clear browser data or switch browsers.\nSign in to save it to your account.",
 	"resumeSignInCta": "Sign in",
-	"progressSavedHint": "Your progress in this module is saved to your account.",
+	"progressSavedHint": "Your progress is saved to your account.",
 
 	"a0PageTitle": "Module A0: Before you start",
 	"a0Intro": "Three short theory sections to set the vocabulary before tackling GRAFCET in module A1. Nothing to build here, just enough to understand what you'll observe and manipulate next.",
@@ -39,13 +41,14 @@
 	"automatismeBody": [
 		"Take an automatic car park barrier: a car pulls up, a device detects it, and the barrier lifts on its own, without an operator pressing a button. That's an automated system: something that constantly watches its surroundings and acts based on what it observes, following logic decided in advance. A traffic light cycling through its three colours, a conveyor sorting boxes by size are other examples.",
 		"Whatever \"watches\" (the detection device at the park entrance) is called a sensor; whatever \"acts\" (the motor that lifts the barrier) is called an actuator. Before wiring or programming anything, it helps to describe that expected behaviour precisely (what to do, in what order, under what conditions), independent of the technology that will later run it. That's exactly the role of GRAFCET, which you'll discover in module A1: a specification language, not a particular programming language.",
-		"Once that behaviour is described in GRAFCET, it still needs to become executable and controllable. Ladder (module A2) is a language closer to traditional electrical wiring (relays, contacts, coils), used to program a real PLC. The HMI, or human-machine interface (module A3), is the screen through which an operator watches and drives the automated system once it's running: the traffic light indicators you'll watch in the next step are an example. Studomate lets you work across all three languages on the same project, sharing the same variables between them."
+		"Once that behaviour is described in GRAFCET, it still needs to become executable and controllable. Ladder (modules A2 to A4) is a language closer to traditional electrical wiring (relays, contacts, coils), used to program a real PLC. The HMI, or human-machine interface (module A5), is the screen through which an operator watches and drives the automated system once it's running: the traffic light indicators you'll watch in the next step are an example. Studomate lets you work across all three languages on the same project, sharing the same variables between them."
 	],
 
 	"logicBasicsTitle": "Variables and basic logic",
 	"logicBasicsBody": [
 		"Back to the barrier: at any instant, either a car is detected or it isn't: two possible states. That's what's called a boolean variable: true or false. The sensor that detects the car is a boolean variable you read (an input), the command that lifts the barrier is one you write (an output); some variables are only used internally by the logic, never touching the field. A counter of free spaces, on the other hand, isn't limited to two states: that's a numeric variable.",
-		"Combining several conditions only takes three words, and they read like plain English: the door is closed AND the button is pressed (both are needed at once); emergency_stop OR fault (either one is enough); NOT presence (the opposite of a condition). A number can also be compared, such as spaces < 5. In a Studomate expression, it's written exactly like that: door_closed AND button, NOT presence, spaces < 5.",
+		"Combining several conditions only takes three words, and they read like plain English:\n\n- the door is closed AND the button is pressed (both are needed at once)\n- emergency_stop OR fault (either one is enough)\n- NOT presence (the opposite of a condition)",
+		"A number can also be compared, such as spaces < 5. In a Studomate expression, it's written exactly like that: door_closed AND button, NOT presence, spaces < 5.",
 		"Studomate accepts these words in both French (ET, OU, NON) and English (AND, OR, NOT), depending on the dialect chosen for the project. The two notations aren't mixed within the same project."
 	],
 
@@ -92,7 +95,7 @@
 
 	"theoryTimerTitle": "Timing a receptivity",
 	"theoryTimerBody": [
-		"A receptivity can depend on the time spent in a step, not just on an input: the `t1/X10/5s` notation declares a timer named t1, armed while X10 (step 10) is active, that turns true 5 seconds after it activates.",
+		"A receptivity can depend on the time spent in a step, not just on an input: the standard (IEC 60848) writes 5s/X10 for a 5-second delay after step 10 activates. Studomate writes `t1/X10/5s`: a timer named t1, armed while X10 (step 10) is active, that turns true 5 seconds after it activates. This syntax is specific to Studomate; it is close to the old French notation `T/X10/5s` (NF C 03-190), still found in many textbooks.",
 		"This notation can be used directly inside a receptivity, like any other boolean condition."
 	],
 
@@ -140,5 +143,247 @@
 		"Studomate can analyse your GRAFCET at any time, without waiting for a simulation: a click on \"Analyse\" immediately shows an unconnected step, an invalid receptivity or an unknown variable in the editor's analysis panel.",
 		"It's also what catches the easiest traps to miss: a step with no way back into a cycle blocks the GRAFCET forever (a \"dead end\"), and a step never reached from the initial step will never activate. These are two common mistakes when a sequence isn't looped back to its starting point.",
 		"Get in the habit of checking after each transition or branch you add: that's exactly where these two traps show up most often."
+	],
+
+	"openExerciseCta": "Open the exercise",
+	"nextModuleA2Cta": "Move on to module A2",
+	"nextModuleA3Cta": "Move on to module A3",
+	"nextModuleA4Cta": "Move on to module A4",
+	"a2PageTitle": "Module A2: Ladder, logic and memory",
+	"a2Intro": "Ladder is the graphical programming language of PLCs. This module builds the language for its own sake: combinational logic, memorisation, edges and network execution order. A short theory section at each step, with a hands-on exercise whenever a notion allows. Prerequisite: module A0.",
+	"a2LadderBasicsTitle": "From the relay diagram to Ladder",
+	"a2LadderBasicsBody": [
+		"Ladder (LD in IEC 61131-3) descends from the relay diagram: two vertical power rails, and between them horizontal lines carrying contacts and coils. Each line, called a **network**, is read from left to right: if the chain of contacts conducts, the coil is energised. Two contacts in series express an AND, two contacts in parallel an OR.",
+		"These contacts and coils correspond to real hardware on a control panel:\n\n<figure><img src=\"/images/training/bouton-poussoir.svg\" width=\"56\" height=\"56\" alt=\"Push button\" /><figcaption>Push button</figcaption></figure><figure><img src=\"/images/training/commutateur.svg\" width=\"56\" height=\"56\" alt=\"Selector switch\" /><figcaption>Selector switch</figcaption></figure><figure><img src=\"/images/training/voyant.svg\" width=\"56\" height=\"56\" alt=\"Pilot light\" /><figcaption>Pilot light</figcaption></figure><figure><img src=\"/images/training/arret-urgence.svg\" width=\"56\" height=\"56\" alt=\"Emergency stop\" /><figcaption>Emergency stop</figcaption></figure><figure><img src=\"/images/training/bobine-enfichable.svg\" width=\"56\" height=\"56\" alt=\"Contactor\" /><figcaption>Contactor</figcaption></figure><figure><img src=\"/images/training/bobine-automobile.svg\" width=\"56\" height=\"56\" alt=\"Mini relay\" /><figcaption>Mini relay (automotive)</figcaption></figure>",
+		"One difference from the relay diagram: power flows from the left rail towards the right only. In a relay diagram, current can flow in both directions within a branch; in Ladder, no backward flow is possible.",
+		"Networks run from top to bottom on every scan cycle (a reminder from module A0). The consequence is important: it is covered later in this module, with the S/R coils and the toggle switch.",
+		"Variables are designated by a meaningful mnemonic (pump, stop) rather than by an address. The standard also defines direct addressing (%I0.1 for an input, %Q0.1 for an output, %M for a memory bit), which you will meet on real PLCs."
+	],
+	"a2TheoryContactsCoilsTitle": "Contacts, coils and internal memories",
+	"a2TheoryContactsCoilsBody": [
+		"The standard symbols:\n\n- the normally open contact NO (--| |--), conducting when its variable is true\n- the normally closed contact NF (--|/|--), conducting when it is false\n- the coil (--( )--), which takes the value of the network on every scan\n- the inverted coil (--(/)--), which takes the opposite value: it is rare in practice, and must not be confused with the NF contact",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/ladder-symbols-en.svg\" width=\"400\" alt=\"Ladder symbols: NO contact, NF contact, coil, inverted coil\" /></figure></div>",
+		"An internal memory (internal bit, marker) is a variable written and read by the program without ever touching the field: it is used to remember a state or to prepare a condition.",
+		"A contact can be wired in two ways:\n\n- normally open (NO): at rest the circuit is open, it closes when the button or switch is actuated\n- normally closed (NF): at rest the circuit is closed, it opens when the button or switch is actuated (this is the wiring used for example on a stop button, so that a broken wire causes a stop per EN 60204-1)",
+		"This physical wiring is independent of the type of contact chosen in the program (NO or NF) to read the variable. In Studomate, it is set on the variable through its **behavior** (push button or switch, NO or NF): the simulation accounts for it when setting the input's rest state.",
+		"| Behavior (physical wiring) | Variable state at rest | NO contact in the program | NF contact in the program |\n|---|---|---|---|\n| NO push button/switch | False | Not conducting (conducts when actuated) | Conducting (stops conducting when actuated) |\n| NC push button/switch | True | Conducting (stops conducting when actuated) | Not conducting (conducts when actuated) |"
+	],
+	"a2ExerciseReadingTitle": "Exercise: read before you write",
+	"a2ExerciseReadingBody": [
+		"A program of a few combinational networks is provided (series, parallel, normally closed contact). Predict the state of the outputs for given input combinations, then check in simulation.",
+		"First use of watch tables, which let you read and change variables during the simulation."
+	],
+	"a2ExerciseLogicTitle": "Exercise: two-way lighting",
+	"a2ExerciseLogicBody": [
+		"A lamp controlled by two switches, with an enabling condition. The truth table of the two-way circuit gives the equation: lamp = switch1 AND NOT switch2, OR NOT switch1 AND switch2. In Ladder, these are two parallel branches, each with a NO contact and a NF contact."
+	],
+	"a2TheorySelfHoldingTitle": "Memorising with a self-holding circuit",
+	"a2TheorySelfHoldingBody": [
+		"A pump is started by a brief press on a push button, but must keep running once the button is released: the run command must be memorised.",
+		"A contact remembers nothing: as soon as the push button is released, the coil drops out. To memorise, a contact of the coil itself is placed in parallel with the button: once the output is true, it holds itself. This is self-holding.",
+		"Depending on where the stop contact is placed, you get set-priority (the stop is in parallel) or stop-priority (the stop is in series, after the parallel). For a machine control, stop wins: this is a requirement of EN 60204-1, and the basis of the stop-priority self-holding circuit.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/self-holding-en.svg\" width=\"380\" alt=\"Self-holding circuit: start priority and stop priority\" /></figure></div>",
+		"The set-priority form will be used again in module A4, to write a GRAFCET step."
+	],
+	"a2ExerciseSelfHoldingTitle": "Exercise: pump",
+	"a2ExerciseSelfHoldingBody": [
+		"A pump is started by a push button and stopped by a stop button. Write the stop-priority self-holding circuit: it is the first one you write, before combining it with other notions.",
+		"Machine safety: the safety level required for a function such as the emergency stop results from a risk assessment (PL a to e of ISO 13849-1, SIL of IEC 62061), and determines how it is implemented (wiring, safety relay, safety PLC). This subject deserves a course of its own, which Studomate does not offer: the emergency stop is not covered in the exercises."
+	],
+	"a2ExerciseInterlockTitle": "Exercise: reversing motor",
+	"a2ExerciseInterlockBody": [
+		"A motor with a forward and a reverse run: two self-holding circuits and a common stop. Mutual interlocking means placing the NF contact of each output in the network of the other, so they are never true together.",
+		"On real reversing contactors, this interlock is also hardwired (auxiliary contacts, often backed by a mechanical latch): the program interlock alone is not enough (EN 60204-1), since simultaneous closing would create a short circuit."
+	],
+	"a2TheorySetResetTitle": "S/R coils",
+	"a2TheorySetResetBody": [
+		"An S (set) coil sets the variable to true when its network is true, and does nothing otherwise: it never clears it. An R (reset) coil sets it to false. The last network that writes the variable wins: priority therefore comes from the order of the networks. The standard defines SR (set-dominant) and RS (reset-dominant) bistables; Studomate does not offer them, but the order of S/R networks gives the same priorities.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/set-reset-en.svg\" width=\"300\" alt=\"S and R coils: the last network executed wins\" /></figure></div>",
+		"Self-holding or S coil for a run command? EN 60204-1 forbids restarting when power returns: a self-holding circuit drops out on power loss, whereas an S coil on a retentive memory would restart the machine when power is restored. Studomate has no retentive memory.",
+		"Good practice (not a rule of the standard, but checked by Studomate's analysis): a normal coil is written in a single network only. With a double coil, the last network overwrites the others."
+	],
+	"a2ExerciseMemoryTitle": "Exercise: latched fault",
+	"a2ExerciseMemoryBody": [
+		"Continuation of the pump (solution provided). First, a temperature sensor (wired normally closed, a maintained switch) stops the pump on overheating and lights a latched fault lamp. Then, acknowledging the fault: after acknowledgement, the pump only restarts on a new press of Start (EN 60204-1: no automatic restart after a fault).",
+		"What the analysis reports:\n\n- double write of a normal coil\n- coil writing an input\n- undeclared variable\n- unconnected element",
+		"The cross-reference tool (who reads and who writes each variable) helps diagnose a double coil, as in industrial software workshops."
+	],
+	"a2TheoryEdgesTitle": "P and N edges",
+	"a2TheoryEdgesBody": [
+		"A NO contact stays true as long as its input is. When an action must happen only once per press, the edge must be detected: a P contact (rising edge) is true for a single scan only, when the variable goes from false to true; an N contact is true when it goes from true to false.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/edges-chronogram.svg\" width=\"340\" alt=\"Chronogram: input, P contact, N contact\" /></figure></div>",
+		"Each P or N contact has its own edge memory: two P contacts on the same variable therefore detect the same edge on the same scan. The edge coils (--(P)--) and (--(N)--) give the same pulse, applied to the network condition rather than to a variable.",
+		"At the vendors: on Siemens, the edge memory is explicit (a variable you provide) and must not be shared between two contacts: this is a common mistake.",
+		"In Studomate, this edge memory is generated automatically for each P or N contact: there is no variable to provide, and choosing the contact is enough."
+	],
+	"a2ExerciseEdgesReadingTitle": "Exercise: read the edges",
+	"a2ExerciseEdgesReadingBody": [
+		"A provided program where the same input drives three outputs, through a NO contact, a P contact and an N contact (each towards an S coil, with a common reset). In step-by-step simulation, press, hold the input for several scans, then release, and note the state of the three contacts scan by scan.",
+		"This record is called a timing diagram: it is the tool that will come back with timers."
+	],
+	"a2ExerciseToggleTitle": "Exercise: toggle switch",
+	"a2ExerciseToggleBody": [
+		"A single push button turns a lamp on then off. The naive solution has two networks: the first turns on if there is an edge on the button and the lamp is off, the second turns off if there is an edge on the button and the lamp is on. Why does the lamp never turn on?",
+		"Hints: simulate step by step and note that both P contacts light up on the same scan; work through this scan network by network on paper (step-by-step runs a whole scan, the state between two networks cannot be observed); use a single P contact. Expected solution: a pulse memory written by a single P contact, then lamp = pulse AND NOT lamp, OR NOT pulse AND lamp. Variant: write the pulse memory with an edge coil.",
+		"This is the central exercise on network execution order."
+	],
+	"a2SynthesisGateTitle": "Synthesis: motorised gate",
+	"a2SynthesisGateBody": [
+		"A motorised gate: two interlocked directions (opening and closing), controlled by an Open button and a Close button, with open and closed limit switches, a normally closed stop button, and a photocell that, while closing, causes the gate to reopen. You reuse self-holding, interlocking, S/R coils and the physical NF contact.",
+		"First contact with the variable table: the project provides the outputs, and you declare the inputs from the specification (mnemonic, type, physical behaviour: the stop is a normally closed push button). This type of equipment falls under EN 12453."
+	],
+	"a2ConclusionTitle": "Module A2 conclusion",
+	"a2ConclusionBody": [
+		"You can now read and write an on/off Ladder program: combinational logic, memories through self-holding or S/R coils, edges, and network execution order.",
+		"Three things are still missing for a real machine: time, counting and numeric quantities. That is the subject of module A3."
+	],
+	"a3PageTitle": "Module A3: Ladder, time, counting and calculation",
+	"a3Intro": "Module A2 built on/off Ladder, but three things are still missing for a real machine: time, counting and numeric quantities. This module adds to Ladder the function blocks that answer that need: timers, counting, calculation and types, splitting into subprograms. It reuses, without re-explaining them, the skills from module A2: stop-priority self-holding, S/R coils and network order, P contact and toggle switch. Prerequisite: module A2.",
+	"a3TheoryTimersTitle": "Timers TON, TOF and TP",
+	"a3TheoryTimersBody": [
+		"Delaying a start-up, extending a signal after release, or emitting a calibrated pulse: these three needs come up constantly on a machine, and a plain contact cannot express them. That is the role of timers. A timer block always has the same pins: IN (the monitored input), PT (the configured duration, preset time), Q (the output) and ET (the elapsed time).\n\n- **TON** (on-delay): sets its output Q to true when its input IN has been true for the duration PT; Q drops as soon as IN drops.\n- **TOF** (off-delay): follows IN on the way up, then holds Q for PT after IN drops.\n- **TP** (pulse): emits a pulse of duration PT on a rising edge of IN; it is not retriggerable, and the pulse lasts PT even if IN drops earlier.\n\nIn all three cases, ET gives the elapsed time. Durations are written with the standard literal T#5s.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/timers-chronogram.svg\" width=\"340\" alt=\"Chronogram: TON, TOF, TP\" /></figure></div>",
+		"A timer is an instance: it keeps its state from one scan to the next. Its condition goes through IN (in Studomate, the contacts placed in front of the block), and the block must run on every scan.",
+		"Typical uses: delay, extension, sensor filtering (a TON ignores a signal shorter than PT), movement supervision (fault if a limit switch is not reached in the expected time: mentioned here, practised in module A4).",
+		"The system time bases _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s... are square waves (50% duty cycle), like real PLCs' clock bits: wired directly to a coil, they blink a lamp with no toggle switch needed. This is the method used from here on. Two crossed TONs give the same result portably, when the PLC has no time base."
+	],
+	"a3ExerciseTimersReadingTitle": "Exercise: read the timers",
+	"a3ExerciseTimersReadingBody": [
+		"A provided program where the same input drives a TON, a TOF and a 2 s TP. For a given sequence of presses (including a press shorter than PT and a second press during the TP pulse), draw the timing diagram of the three Q outputs before checking it in simulation.",
+		"**How is a timer added in Studomate?**\n\nA timer is a block: it is placed like a contact or a coil, by dragging it from the \"System blocks\" section of the explorer onto the canvas of a ladder network (this section only appears when a ladder is open). Dropping it opens a configuration window where you choose a name and the variant (TON, TOF or TP); it can be reopened by double-clicking the block, or by right-clicking → Configure on its instance in the explorer. Once named, the instance appears in the \"Block instances\" section of the explorer, which lists every named timer and counter in the project, with direct access to the ladder that contains it."
+	],
+	"a3ExerciseTimersTitle": "Exercise: star-delta start",
+	"a3ExerciseTimersBody": [
+		"A motor starts in star, then switches to delta after a delay: a line contactor, a star contactor and a delta contactor, interlocked with each other (this interlock is also hardwired). A TON controls the changeover, and a cooling fan keeps running for 10 s after the stop (TOF).",
+		"Optional extensions: a dead time between the star opening and the delta closing (second TON); an adjustable blinker made of two crossed TONs, started by a switch."
+	],
+	"a3TheoryCountersTitle": "Counters CTU, CTD and CTUD",
+	"a3TheoryCountersBody": [
+		"Counting parts on a conveyor, machine cycles, a stock level: these needs come up often, and call for a dedicated block rather than a totaliser cobbled together in Ladder. That is the role of counters. A counter block always has the same pins: PV (the preset, *preset value*, not to be confused with a timer's PT) and CV (the current value). Counting happens on a rising edge: a sensor held actuated counts only once.\n\n- **CTU** (counts up, increments): counts the rising edges of its CU input. Its output Q equals CV >= PV. An R input resets it (CV := 0).\n- **CTD** (counts down, decrements): counts the rising edges of its CD input. Its output Q equals CV <= 0. An LD input reloads it to PV (CV := PV).\n- **CTUD**: combines both counting directions in a single block.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/counter-ctu-block.svg\" width=\"220\" alt=\"CTU counter block: inputs CU, R, PV and outputs Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctd-block.svg\" width=\"220\" alt=\"CTD counter block: inputs CD, LD, PV and outputs Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctud-block.svg\" width=\"260\" alt=\"CTUD counter block: inputs CU, CD, R, LD, PV and outputs QU, QD, CV\" /></figure></div>",
+		"On a CTUD, R takes priority over LD when both are active, and only CU is wired to the rail: CD, R and LD are entered directly on the pins, like contacts placed in front of them. Its outputs are QU (CV >= PV) and QD (CV <= 0), and simultaneous edges on CU and CD cancel each other."
+	],
+	"a3ExerciseCountersTitle": "Exercise: counting",
+	"a3ExerciseCountersBody": [
+		"(a) Counting parts on a conveyor with a CTU: the conveyor stops at the preset, and a button resets the counter. (b) Buffer zone with a CTUD: an input sensor counts up, an output sensor counts down, a \"buffer full\" lamp on QU (the capacity is PV) and \"buffer empty\" on QD.",
+		"Optional extension: a parts stock with a CTD, loaded to its initial level by a button (LD), counted down for every part picked, with a \"stock empty\" lamp on Q."
+	],
+	"a3TheoryNumericTitle": "Handling a numeric quantity",
+	"a3TheoryNumericBody": [
+		"For a level, a counter or a setpoint, the standard defines one function per operation: MOVE (assignment), ADD, SUB, MUL, DIV, and the comparisons GT, GE, EQ, NE, LE, LT. Studomate simplifies them into blocks:\n\n- a compare block (the operator is chosen on the block, and it is placed like a contact)\n- an assign block (equivalent of MOVE)\n- an arithmetic block with two operands (a calculation with several operations chains several blocks)\n- a convert block",
+		"In the standard, a function only executes if its input EN is true, and its output ENO is false when EN is false. Studomate follows this principle (ENO = EN), without the error case: a division by zero raises a simulation error.",
+		"Pitfall: an arithmetic block runs on every scan as long as EN is true. A count := count + 1 driven by a held sensor increments on every scan. For a one-off increment, use a P contact. Types and their pitfalls are covered later in this module."
+	],
+	"a3ExerciseTankTitle": "Exercise: tank",
+	"a3ExerciseTankBody": [
+		"A tank whose level is given directly as a percentage (integer input from 0 to 100): the pump starts below the low level and stops above the high level (hysteresis: a comparison plus a memory), with a very high level alarm.",
+		"Then a pump start counter using an arithmetic block. The program starts from an EN driven by a NO contact on the pump: observe in simulation that the counter increases on every scan, then fix it with a P contact."
+	],
+	"a3TheoryTypesTitle": "Types and conversions",
+	"a3TheoryTypesBody": [
+		"Studomate offers the types INT (16 bits), DINT (32 bits) and REAL, as well as WORD and DWORD; the standard also defines SINT, LINT and the unsigned versions. A calculation is done in the type of its operands: INT * INT gives an INT, which overflows before the assignment. Widening (INT to DINT or REAL) is implicit; narrowing must be explicit, with the functions DINT_TO_INT, REAL_TO_INT, etc., or the Ladder conversion block. The analysis refuses otherwise. An integer division truncates.",
+		"A real analog input provides a raw value to be scaled, whose range depends on the vendor. Two integer pitfalls: overflow (in INT, raw * 100 exceeds 32767 and wraps around) and truncation (dividing first, raw / 27648 * 100, gives 0 except at full scale). Remedies: compute in REAL (industrial practice) or widen to DINT before computing.",
+		"At the vendors: raw range of 0 to 27648 on Siemens, often 0 to 10000 on Schneider; scaling with NORM_X and SCALE_X on Siemens."
+	],
+	"a3ExerciseScalingTitle": "Exercise: scaling",
+	"a3ExerciseScalingBody": [
+		"Back to the tank (solution provided), now fitted with a real sensor: the level is no longer an input but is computed from the raw value (0 to 27648). First compute raw * 100 then / 27648 in INT, and observe the wrap-around in simulation. Then try dividing first, and observe the truncation.",
+		"Expected fix: copy the raw value into a REAL intermediate, multiply and divide in this intermediate, then convert with REAL_TO_INT into the level. Variant: the same calculation in a DINT intermediate, with DINT_TO_INT. The tank then works again."
+	],
+	"a3TheoryStructureTitle": "Structuring a program",
+	"a3TheoryStructureBody": [
+		"A program is split up: the Main calls subprograms, one per function of the machine (faults, run, counting...), through the call block. The standard instead organises a program into POUs (PROGRAM, FUNCTION_BLOCK, FUNCTION) assigned to tasks; the Main and the call block belong to vendor practice.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/program-structure-en.svg\" width=\"340\" alt=\"Main calling subprograms\" /></figure></div>",
+		"A program that is never called does not run: the analysis reports it. Rule for this level: call subprograms unconditionally. A subprogram that is not called misses edges, and its timers are no longer updated reliably (they freeze in Studomate, behaviour varies by vendor).",
+		"At the vendors: OB1 and FC on Siemens, SR sections on Schneider, MainRoutine and JSR on Rockwell."
+	],
+	"a3SynthesisPackingTitle": "Synthesis: case packing",
+	"a3SynthesisPackingBody": [
+		"A case packing line structured in subprograms called by the Main. This is the only synthesis without provided variables: start from the specification, build the complete table of inputs, outputs and memories, then declare it.",
+		"The conveyor runs with start/stop, with a latched thermal fault (acknowledge, then a new press on Start). The fault lamp follows the workshop convention: blinking while the fault is not acknowledged, steady if acknowledged but still present, off once gone. Parts are counted on an edge; at the preset, the conveyor stops during a box change delay, then restarts automatically and the counter starts again from zero.",
+		"Note: a subprogram runs at the position of its call block, so the networks placed below it see its writes from the same scan."
+	],
+	"a3ConclusionTitle": "Module A3 conclusion: Studomate and the standard",
+	"a3ConclusionBody": [
+		"You can now use timers, counters and numeric quantities, and structure a program into subprograms. Here is a recap of what the theory sections only mentioned in passing, to tell the standard apart from Studomate.",
+		"The _SYS_TB_... time bases are specific to Studomate (real PLCs have the equivalent under other names: %S on Schneider, clock memory bits on Siemens...). The numeric blocks (compare, assign, arithmetic, convert) simplify the standard functions. The Main and the subprograms follow vendor practice rather than the standard POUs. Studomate has neither retentive memory nor SR and RS bistables: S/R coils and network order cover the need."
+	],
+	"a4PageTitle": "Module A4: From GRAFCET to Ladder",
+	"a4Intro": "This module applies Ladder to implementing a GRAFCET, following the evolution rules of IEC 60848: steps, transitions, actions, divergences and reset. Prerequisites: modules A1 and A3.",
+	"a4TheoryStepsLadderTitle": "A step is a memory",
+	"a4TheoryStepsLadderBody": [
+		"Let us take the gate from module A2 again, this time driven by a single-button remote: open, close or stop depending on the state. Written as combinational logic, such a sequence quickly becomes unreadable. A method is needed.",
+		"A GRAFCET step is a memory: Xn = (Xn-1 AND Rn-1) + Xn AND NOT Rn, where Rn-1 and Rn are the receptivities of the upstream and downstream transitions. It is activated when the upstream transition is crossed (its upstream step Xn-1 active AND its receptivity Rn-1 true), and deactivated when its downstream transition is crossed. This is the set-priority self-holding of module A2, and this priority to activation is exactly rule 5 of GRAFCET (activation wins over deactivation). Tn-1 = Xn-1 AND Rn-1 and Tn = Xn AND Rn denote the crossing of each transition, which shortens the equation to Xn = Tn-1 + Xn AND NOT Tn: this is the notation used for the rest of the module.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/step-memory-en.svg\" width=\"380\" alt=\"GRAFCET step and its equivalent Ladder network\" /></figure></div>",
+		"In many textbooks, you will meet another method: Xn = Xn-1 AND Rn-1 + Xn AND NOT Xn+1, where the step is deactivated by the next step, written as one self-holding per step, network after network. This is the textbook method: the next exercise shows its limits."
+	],
+	"a4ExerciseGrafcetNaiveTitle": "Exercise: diagnose the textbook method",
+	"a4ExerciseGrafcetNaiveBody": [
+		"The GRAFCET of the linear sequence from module A1, implemented with one self-holding per step. In step-by-step simulation, observe that at the crossing two consecutive steps remain active for one scan (their outputs are commanded together), and that with two receptivities true at the same time the evolution depends on the network order. There is no program to write: explain what happens.",
+		"Correction: on a real PLC, physical outputs are written at the end of the scan. The one-scan overlap is therefore really seen by the actuators (both directions of a motor commanded together, for example): it is not a simulation artefact."
+	],
+	"a4TheoryMethodLadderTitle": "The three-block method",
+	"a4TheoryMethodLadderBody": [
+		"The method consists of three blocks of networks, in this order:\n\n1. the crossing conditions Tn = Xn AND Rn, all computed before any evolution (rule 4, simultaneous crossing)\n2. the evolution of the steps: all the resets of all the transitions, then all the sets, so that activation wins (rule 5)\n3. the outputs, limited here to continuous actions: the OR of the steps that command them, in a single network",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/three-blocks-method-en.svg\" width=\"300\" alt=\"The three blocks of networks, in order\" /></figure></div>",
+		"Counter-example: handling each transition one after another (its resets then its sets) leaves deactivated a step that is activated by one transition and deactivated by another written further down. The S and R coils write the same memory as the equation Xn = Tn-1 + Xn AND NOT Tn, split over two networks instead of one, which makes each transition readable.",
+		"The initial step is activated on the first scan with the classic arrangement: an init memory, false at start-up, activates the initial step then latches. Studomate also offers the system variable _SYS_FIRST_SCAN, equivalent to the first-scan bit of real PLCs.",
+		"Two differences from the standard. It allows transient evolution (cascading crossings until stability); this method crosses at most one transition per branch and per scan, like Studomate's GRAFCET and real PLCs. And the standard knows the edge receptivity (↑a): it is implemented with a P contact in the crossing condition.",
+		"At the vendors: first-scan bit FirstScan on Siemens, S:FS on Rockwell, %S13 on Schneider."
+	],
+	"a4ExerciseGrafcetLinearTitle": "Exercise: implement a linear sequence",
+	"a4ExerciseGrafcetLinearBody": [
+		"Implement in Ladder the GRAFCET of the linear sequence from module A1 (continuous actions only), with the three-block method. Its behaviour is already known to you, and you diagnosed it in the previous step: the effort is on the method."
+	],
+	"a4TheoryActionsLadderTitle": "Actions in Ladder",
+	"a4TheoryActionsLadderBody": [
+		"The outputs block covers non-timed actions. A conditional action is step AND condition. A stored action goes through S and R coils. An action on activation or deactivation of the step (the \"on edge\" mode from module A1) uses a P or N contact on the step memory.",
+		"The same goes for a numeric assignment: places := places + 1 becomes a P contact on the step followed by an arithmetic block. Without the P contact, you fall into the trap of incrementing on every scan seen in module A3."
+	],
+	"a4TheoryTimedActionsLadderTitle": "Time in GRAFCET",
+	"a4TheoryTimedActionsLadderBody": [
+		"A delay in a receptivity (5s/X10 in the standard notation) becomes a TON whose IN is the step and whose Q enters the crossing condition. In Studomate, the syntax is t1/X10/5s, close to the old French notation T/X10/5s (NF C 03-190), still present in many textbooks.",
+		"Delayed and time-limited actions (IEC 60848) are different from a delay in a receptivity: a TON on the step, whose Q (delayed action) or NOT Q (limited action) enters the action condition.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/timed-action-en.svg\" width=\"340\" alt=\"TON on a step: timed receptivity and delayed action\" /></figure></div>",
+		"Finally, supervising a movement step, announced in module A3: a TON on the step, whose Q signals a fault if the receptivity is not crossed in time."
+	],
+	"a4SynthesisDrillingTitle": "Synthesis: drilling station",
+	"a4SynthesisDrillingBody": [
+		"A drilling station with a four-step linear GRAFCET: implement the control GRAFCET in Ladder, the operative part being provided. The drilling delay becomes a TON.",
+		"Addition to the specification: descent supervision. If the drill does not reach the bottom within 8 s, a fault is latched and the drill goes back up. Test it by simulating a jammed drill with the blocage switch of the operative part."
+	],
+	"a4TheoryDivergencesLadderTitle": "Divergences and convergences in Ladder",
+	"a4TheoryDivergencesLadderBody": [
+		"OR divergence: one crossing condition per branch. If two receptivities are true at the same time, the method activates both branches (compliant with rule 4, but almost always a design error: the standard does not require exclusivity, but it must be guaranteed). OR convergence: the downstream step is activated by either transition (Xn = T1 + T2 + ...). Step skipping and sequence loops are special cases of OR divergence.",
+		"AND divergence: one transition activates several steps. AND convergence: the transition requires all upstream steps, and deactivates them all.",
+		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/divergences-en.svg\" width=\"360\" alt=\"OR and AND divergence/convergence\" /></figure></div>"
+	],
+	"a4ExerciseGrafcetOrDivergenceTitle": "Exercise: OR divergence",
+	"a4ExerciseGrafcetOrDivergenceBody": [
+		"Implement in Ladder the OR divergence GRAFCET from module A1. Observe what happens if both starting receptivities are true at the same time."
+	],
+	"a4ExerciseGrafcetAndDivergenceTitle": "Exercise: AND divergence",
+	"a4ExerciseGrafcetAndDivergenceBody": [
+		"Implement in Ladder the AND divergence GRAFCET from module A1: a single transition activates two steps, and the convergence waits for both."
+	],
+	"a4TheoryGrafcetResetTitle": "Stopping a sequence",
+	"a4TheoryGrafcetResetBody": [
+		"There are two ways to stop a sequence. The immediate stop: reinitialise the GRAFCET, that is, clear all step memories and reactivate the initial step (on stop or on fault), with priority over normal evolution thanks to the network order. This corresponds to the standard forcing order F/G1:{0}. Beware: reinitialising the steps clears neither stored outputs (S coils) nor counters, which must be handled explicitly.",
+		"The end-of-cycle stop: a run condition in the receptivity that loops the sequence. The current cycle finishes and the sequence stops in a known state, without forcing.",
+		"These run and stop modes are organised by the GEMMA, to go further."
+	],
+	"a4ExerciseGrafcetResetTitle": "Exercise: traffic light with stops",
+	"a4ExerciseGrafcetResetBody": [
+		"Implement in Ladder the traffic light GRAFCET from module A1 (green 5 s, orange 2 s, red 5 s, looping, three TONs) with both stops: a reset on a stop button, and an end-of-cycle stop by a run switch added to the receptivity that loops (the light finishes its cycle and stays red while run is false). The effort is on the stops, not on understanding the GRAFCET."
+	],
+	"a4SynthesisParkingTitle": "Synthesis: parking",
+	"a4SynthesisParkingBody": [
+		"Implement in Ladder the parking control GRAFCET from module A1: OR divergence for entry/exit, receptivities with numeric comparison, places incremented or decremented on step activation, plus a reset of the control on a stop button.",
+		"The signalling GRAFCET is provided already implemented, in a subprogram called by the Main: the effort is on the control and the reset. Point to consider: resetting the GRAFCET does not reset the places counter."
+	],
+	"a4SynthesisGateGrafcetTitle": "Synthesis: remote-controlled gate",
+	"a4SynthesisGateGrafcetBody": [
+		"Back to the gate from module A2, driven by a single-button remote. First write the GRAFCET (on paper or in the statement, not in the project), then implement it in Ladder: specification, GRAFCET, Ladder.",
+		"A press (on an edge) opens if the gate is closed, closes if it is open, stops if it is moving. After a stop mid-travel, the next press restarts in the opposite direction of the last movement. The normally closed stop button produces the same stop. While closing, the photocell causes reopening."
 	]
 }

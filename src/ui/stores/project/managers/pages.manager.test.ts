@@ -4,10 +4,10 @@ import PagesManager from "./pages.manager";
 const mockSetPagesSession = jest.fn();
 const mockSetActivePageIdInUrl = jest.fn();
 
-jest.mock("@/ui/lib/pages-session-storage", () => ({
+jest.mock("@/persistence/pages-session.storage", () => ({
 	setPagesSession: (...args: unknown[]) => mockSetPagesSession(...args),
 }));
-jest.mock("@/ui/lib/pages-url", () => ({
+jest.mock("@/ui/stores/project/url/pages-url", () => ({
 	setActivePageIdInUrl: (...args: unknown[]) =>
 		mockSetActivePageIdInUrl(...args),
 }));

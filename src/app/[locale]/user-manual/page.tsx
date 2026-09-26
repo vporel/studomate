@@ -1,7 +1,8 @@
 "use client";
 
+import PageTitle from "@/ui/components/public-pages/PageTitle";
 import { useT } from "@/ui/i18n/useT";
-import { Container, Divider, Grid, Typography } from "@mui/material";
+import { Container, Divider, Grid } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import ManualContentIndex, {
 	ManualContentIndex as ManualContentIndexType,
@@ -36,9 +37,9 @@ export default function UserManual() {
 
 	return (
 		<Container maxWidth="lg" sx={{ my: 4, minHeight: "70vh" }}>
-			<Typography variant="h2" component="h1" color="primary" gutterBottom>
+			<PageTitle>
 				{t("pageTitle")}
-			</Typography>
+			</PageTitle>
 			<Divider sx={{ my: 2 }} />
 
 			<ManualContentIndex onReady={setContentIndex} />

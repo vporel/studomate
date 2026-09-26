@@ -1,6 +1,6 @@
 "use client";
 
-import { HmiWidgetTool } from "@/ui/components/hmi/view/constants";
+import { HmiWidgetTool } from "@/ui/components/hmi/logic/constants";
 import React, {
 	createContext,
 	Dispatch,

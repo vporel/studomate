@@ -2,7 +2,7 @@
 
 import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";

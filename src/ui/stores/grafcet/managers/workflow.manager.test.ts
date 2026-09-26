@@ -169,13 +169,13 @@ describe("GrafcetWorkflowManager.handleNodesChange — identité des nœuds", ()
 describe("GrafcetWorkflowManager.addJunctionBranch", () => {
 	it("insère une branche à droite en une seule commande (données + taille), annulable d'un coup", () => {
 		const store = buildStore();
-		const before = store
-			.getState()
-			.grafcet.getElementById<any>("junction-1")!;
+		const before = store.getState().grafcet.getElementById<any>("junction-1")!;
 		const branchCountBefore = before.data.branchesOrder.length;
 		const widthBefore = before.size.width;
 
-		store.getState().workflowManager.addJunctionBranch("junction-1", branchCountBefore);
+		store
+			.getState()
+			.workflowManager.addJunctionBranch("junction-1", branchCountBefore);
 
 		const afterNode = store
 			.getState()
@@ -194,17 +194,94 @@ describe("GrafcetWorkflowManager.addJunctionBranch", () => {
 
 	it("décale la jonction vers la gauche pour une insertion en tête", () => {
 		const store = buildStore();
-		const xBefore = store
-			.getState()
-			.grafcet.getElementById<any>("junction-1")!.position.x;
+		const xBefore = store.getState().grafcet.getElementById<any>("junction-1")!
+			.position.x;
 
 		store.getState().workflowManager.addJunctionBranch("junction-1", 0);
 
-		const after = store
-			.getState()
-			.grafcet.getElementById<any>("junction-1")!;
+		const after = store.getState().grafcet.getElementById<any>("junction-1")!;
 		expect(after.position.x).toBeLessThan(xBefore);
 		expect(after.data.branchesOrder).toHaveLength(3);
+	});
+});
+
+describe("GrafcetWorkflowManager.addJunctionBranch (garde-fous)", () => {
+	it("lève sur un id de nœud inconnu", () => {
+		const store = buildStore();
+
+		expect(() =>
+			store.getState().workflowManager.addJunctionBranch("inexistant", 0),
+		).toThrow();
+	});
+
+	it("lève sur un nœud qui n'est pas une jonction", () => {
+		const store = buildStore();
+
+		expect(() =>
+			store.getState().workflowManager.addJunctionBranch("step-1", 0),
+		).toThrow();
+	});
+});
+
+describe("GrafcetWorkflowManager.applyJunctionBranchDrag", () => {
+	it("lève sur un id de nœud inconnu ou un nœud qui n'est pas une jonction", () => {
+		const store = buildStore();
+		const result = { branches: {}, pivotPosition: 0, nodeX: 0, width: 0 };
+
+		expect(() =>
+			store
+				.getState()
+				.workflowManager.applyJunctionBranchDrag("inexistant", result),
+		).toThrow();
+		expect(() =>
+			store
+				.getState()
+				.workflowManager.applyJunctionBranchDrag("step-1", result),
+		).toThrow();
+	});
+
+	it("applique données, position et taille en une commande, annulable d'un coup", () => {
+		const store = buildStore();
+		const before = store.getState().grafcet.getElementById<any>("junction-1")!;
+		const { branchesOrder, branches } = before.data;
+		const moved = {
+			...branches,
+			[branchesOrder[0]]: { ...branches[branchesOrder[0]], position: 25 },
+		};
+		const snapshot = {
+			data: structuredClone(before.data),
+			position: { ...before.position },
+			size: { ...before.size },
+		};
+
+		store.getState().workflowManager.applyJunctionBranchDrag("junction-1", {
+			branches: moved,
+			pivotPosition: 42,
+			nodeX: before.position.x + 15,
+			width: before.size.width - 15,
+		});
+
+		const after = store.getState().grafcet.getElementById<any>("junction-1")!;
+		expect(after.data.branches[branchesOrder[0]].position).toBe(25);
+		expect(after.data.branchesOrder).toEqual(branchesOrder);
+		expect(after.data.pivotPosition).toBe(42);
+		expect(after.position).toEqual({
+			x: before.position.x + 15,
+			y: before.position.y,
+		});
+		expect(after.size).toEqual({
+			width: before.size.width - 15,
+			height: before.size.height,
+		});
+
+		store.getState().commandsStackManager.undoOperation();
+
+		const restored = store
+			.getState()
+			.grafcet.getElementById<any>("junction-1")!;
+		expect(restored.data).toEqual(snapshot.data);
+		expect(restored.position).toEqual(snapshot.position);
+		expect(restored.size).toEqual(snapshot.size);
 	});
 });
 
@@ -219,11 +296,9 @@ describe("GrafcetWorkflowManager.previewJunctionBarPosition", () => {
 			.getState()
 			.grafcet.getElementById<any>("junction-1")!.data.pivotPosition;
 
-		store
-			.getState()
-			.workflowManager.previewJunctionBarPosition("junction-1", {
-				pivotPosition: pivotBefore + 30,
-			});
+		store.getState().workflowManager.previewJunctionBarPosition("junction-1", {
+			pivotPosition: pivotBefore + 30,
+		});
 
 		const junctionNode = store
 			.getState()

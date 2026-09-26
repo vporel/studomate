@@ -31,22 +31,22 @@ describe("LadderToolbar", () => {
 	it("assemble les outils de dépose sans planter", () => {
 		setup();
 
-		expect(screen.getByText("Section")).toBeInTheDocument();
+		expect(screen.getByText("Réseau")).toBeInTheDocument();
 	});
 
-	it("dispatche SectionAddCommand au clic sur 'Section'", () => {
+	it("dispatche SectionAddCommand au clic sur 'Réseau'", () => {
 		const { executeOperation } = setup();
 
-		fireEvent.click(screen.getByText("Section"));
+		fireEvent.click(screen.getByText("Réseau"));
 
 		expect(executeOperation).toHaveBeenCalledTimes(1);
 		const [commands] = executeOperation.mock.calls[0];
 		expect(commands[0]).toBeInstanceOf(SectionAddCommand);
 	});
 
-	it("désactive le bouton 'Section' hors du mode DESIGN", () => {
+	it("désactive le bouton 'Réseau' hors du mode DESIGN", () => {
 		setup({ mode: ProjectMode.SIMULATION });
-		expect(screen.getByText("Section").closest("button")).toBeDisabled();
+		expect(screen.getByText("Réseau").closest("button")).toBeDisabled();
 	});
 
 	it("masque les bobines inversée et de front tant que la flèche d'extension n'est pas cliquée", () => {

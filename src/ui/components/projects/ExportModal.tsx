@@ -2,14 +2,14 @@
 
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
 import {
 	buildProjectVariablesSections,
 	buildVariableGroupSection,
 	VariableGroupKey,
-} from "@/ui/lib/pdf/variables-table-pdf";
-import { exportProject } from "@/ui/utils/project/project-export-utils";
+} from "@/ui/pdf/variables-table-pdf";
+import { exportProject } from "@/ui/components/projects/project-export";
 import {
 	Alert,
 	Box,
@@ -25,8 +25,8 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import useLadderRenderContext from "../pdf/useLadderRenderContext";
-import { PdfExportProgramConfig, usePdfExport } from "../pdf/usePdfExport";
+import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
+import { PdfExportProgramConfig, usePdfExport } from "@/ui/pdf/usePdfExport";
 import { usePageTitle } from "../pages/usePageTitle";
 import type { VariablesPageId } from "../pages/VariablesPage";
 import { useProjectStore } from "./ProjectContext";

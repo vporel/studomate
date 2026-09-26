@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import {
 	HMI_CANVAS_HEIGHT,
 	HMI_CANVAS_WIDTH,
@@ -12,7 +13,7 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
-import { HMI_WIDGET_DEFAULT_MIN_SIZE, snapToGrid } from "./constants";
+import { HMI_WIDGET_DEFAULT_MIN_SIZE, snapToGrid } from "@/ui/components/hmi/logic/constants";
 
 /** Poignée de redimensionnement : un point cardinal. `n`/`s`/`e`/`w` déplacent un seul bord, les
  * coins (`ne`, `nw`, `se`, `sw`) deux à la fois. Un bord non cité dans la direction reste ancré. */
@@ -76,7 +77,7 @@ export function resizeRect(params: {
 		const rawSide = drivenByWidth
 			? start.width + widthDelta
 			: (start.height + heightDelta) * aspectRatio;
-		const width = snapToGrid(Math.max(minSide, Math.min(maxSide, rawSide)));
+		const width = snapToGrid(clamp(rawSide, minSide, maxSide));
 		const height = width / aspectRatio;
 		return {
 			size: { width, height },
@@ -91,11 +92,11 @@ export function resizeRect(params: {
 	let width = start.width;
 	if (movesRight) {
 		width = snapToGrid(
-			Math.max(minSize.width, Math.min(roomX, start.width + dx)),
+			clamp(start.width + dx, minSize.width, roomX),
 		);
 	} else if (movesLeft) {
 		x = snapToGrid(
-			Math.max(0, Math.min(right - minSize.width, start.x + dx)),
+			clamp(start.x + dx, 0, right - minSize.width),
 		);
 		width = right - x;
 	}
@@ -104,11 +105,11 @@ export function resizeRect(params: {
 	let height = start.height;
 	if (movesBottom) {
 		height = snapToGrid(
-			Math.max(minSize.height, Math.min(roomY, start.height + dy)),
+			clamp(start.height + dy, minSize.height, roomY),
 		);
 	} else if (movesTop) {
 		y = snapToGrid(
-			Math.max(0, Math.min(bottom - minSize.height, start.y + dy)),
+			clamp(start.y + dy, 0, bottom - minSize.height),
 		);
 		height = bottom - y;
 	}

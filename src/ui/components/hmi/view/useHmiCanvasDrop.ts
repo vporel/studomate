@@ -8,7 +8,7 @@ import { HMI_WIDGET_DEFINITIONS } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useHmiWidgetDnD } from "@/ui/components/hmi/toolbar/HmiWidgetDnDContext";
 import { DragEvent as ReactDragEvent } from "react";
-import { snapToGrid } from "./constants";
+import { snapToGrid } from "@/ui/components/hmi/logic/constants";
 
 /**
  * Dépose sur le canvas d'un widget glissé depuis la toolbar (voir `HmiWidgetDnDContext`,

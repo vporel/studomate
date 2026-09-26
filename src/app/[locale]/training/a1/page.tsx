@@ -1,25 +1,17 @@
 import { toLocale } from "@/i18n/config";
-import { pageMetadata } from "@/i18n/metadata";
-import PublicLink from "@/ui/components/public-pages/PublicLink";
-import { Box, Container, Divider, Stack, Typography } from "@mui/material";
-import type { Metadata } from "next";
+import { createGenerateMetadata } from "@/app/metadata";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import ModuleStepper, { StepData } from "../ModuleStepper";
+import { StepData } from "../ModuleStepper";
+import TrainingModulePage from "../TrainingModulePage";
 import A1_STEP_IDS from "./step-ids";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-	const { locale: rawLocale } = await params;
-	const locale = toLocale(rawLocale);
-	const t = await getTranslations({ locale, namespace: "public.metadata" });
-	return pageMetadata(
-		locale,
-		"/training/a1",
-		t("trainingA1Title"),
-		t("trainingA1Description"),
-	);
-}
+export const generateMetadata = createGenerateMetadata(
+	"/training/a1",
+	"trainingA1Title",
+	"trainingA1Description",
+);
 
 export default async function TrainingA1({ params }: Props) {
 	const { locale: rawLocale } = await params;
@@ -133,29 +125,14 @@ export default async function TrainingA1({ params }: Props) {
 	];
 
 	return (
-		<Container maxWidth="lg" sx={{ my: 4 }}>
-			<Box maxWidth={720}>
-				<Typography variant="h2" component="h1" color="primary" gutterBottom>
-					{t("a1PageTitle")}
-				</Typography>
-				<Divider sx={{ my: 2 }} />
-				<Typography textAlign="justify" color="text.secondary" mb={4}>
-					{t("a1Intro")}
-				</Typography>
-			</Box>
-
-			<ModuleStepper
-				steps={steps}
-				prevLabel={t("previousStep")}
-				nextLabel={t("nextStep")}
-				moduleId="a1"
-			/>
-
-			<Divider sx={{ my: 4 }} />
-			<Stack direction="row" gap={2} flexWrap="wrap">
-				<PublicLink href="/training">{t("backToTraining")}</PublicLink>
-				<PublicLink href="/">{t("backHome")}</PublicLink>
-			</Stack>
-		</Container>
+		<TrainingModulePage
+			title={t("a1PageTitle")}
+			intro={t("a1Intro")}
+			steps={steps}
+			moduleId="a1"
+			prevLabel={t("previousStep")}
+			nextLabel={t("nextStep")}
+			nextModule={{ href: "/training/a2", label: t("nextModuleA2Cta") }}
+		/>
 	);
 }

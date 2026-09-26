@@ -1,36 +1,11 @@
 "use client";
 
-import ResizableFixedBox from "@/ui/lib/mui/ResizableFixedBox";
-import CloseIcon from "@mui/icons-material/Close";
-import { Box, Divider, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import { useCallback } from "react";
+import BottomPanel from "../BottomPanel";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
 import { useT } from "@/ui/i18n/useT";
-
-function Header({ onClose }: { onClose: () => void }) {
-	const t = useT("projects.analysisResult");
-	return (
-		<Box
-			sx={{
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "space-between",
-			}}
-		>
-			<Typography variant="h6">{t("title")}</Typography>
-			<Tooltip title={t("close")}>
-				<IconButton
-					onClick={onClose}
-					size="small"
-					aria-label="close-analysis-errors"
-				>
-					<CloseIcon />
-				</IconButton>
-			</Tooltip>
-		</Box>
-	);
-}
 
 import SeveritySection from "./SeveritySection";
 
@@ -97,21 +72,12 @@ export default function AnalysisResult() {
 			Object.keys(analysisWarnings.ladders).length > 0);
 
 	return (
-		<ResizableFixedBox
-			position="bottom"
-			initialSize={350}
-			offset={30}
-			contentContainerProps={{
-				sx: {
-					px: 2,
-					py: 1,
-					display: "flex",
-					flexDirection: "column",
-				},
-			}}
+		<BottomPanel
+			title={t("title")}
+			closeLabel={t("close")}
+			closeAriaLabel="close-analysis-errors"
+			onClose={onClose}
 		>
-			<Header onClose={onClose} />
-			<Divider sx={{ my: 1 }} />
 			<Box sx={{ overflow: "auto", flex: 1 }}>
 				<SeveritySection
 					title={t("errors")}
@@ -139,6 +105,6 @@ export default function AnalysisResult() {
 					onGotoProgram={onGotoProgram}
 				/>
 			</Box>
-		</ResizableFixedBox>
+		</BottomPanel>
 	);
 }

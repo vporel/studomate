@@ -3,7 +3,7 @@ import {
 	UMAMI_SRC,
 	UMAMI_WEBSITE_ID,
 	analyticsEnabled,
-} from "@/ui/lib/analytics";
+} from "@/ui/services/analytics";
 import { ThemeProvider } from "@/ui/theme/ThemeContext";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

@@ -3,6 +3,10 @@ import StepReferralSource from "@/schemas/grafcet/step-referral-source.schema";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import {
+	checkReferredStepExists,
+	validateStepReferralNumber,
+} from "./step-referral-number.validator";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
@@ -15,43 +19,16 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 		stepReferral: StepReferralSource,
 		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
 	): ProjectAnalyserIssue[] {
-		const issues: ProjectAnalyserIssue[] = [];
 		const source = {
 			sourceType: "grafcet-step-referral-source" as const,
 			sourceId: stepReferral.id,
 		};
 
-		// Check that the target number is not empty
-		if (
-			stepReferral.data.targetStepNumber === "" ||
-			stepReferral.data.targetStepNumber === null ||
-			stepReferral.data.targetStepNumber === undefined
-		) {
-			if (!allowEmptyContent) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"STEP_REFERRAL_NUMBER_EMPTY",
-						source,
-					),
-				);
-			}
-			return issues;
-		}
-		if (
-			!Number.isInteger(stepReferral.data.targetStepNumber) ||
-			stepReferral.data.targetStepNumber < 0
-		) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_REFERRAL_NUMBER_NOT_POSITIVE_INTEGER",
-					source,
-				),
-			);
-		}
-
-		return issues;
+		return validateStepReferralNumber(
+			stepReferral.data.targetStepNumber,
+			source,
+			allowEmptyContent,
+		);
 	}
 
 	/**
@@ -67,20 +44,13 @@ export default class StepReferralSourceAnalyser extends GrafcetElementAnalyser<S
 			sourceType: "grafcet-step-referral-source" as const,
 			sourceId: stepReferral.id,
 		};
-		//Check that the referred step number exists in the grafcet
-		const referredStep = Object.values(grafcet.steps).find(
-			(s) => s.data.number === stepReferral.data.targetStepNumber,
+		issues.push(
+			...checkReferredStepExists(
+				stepReferral.data.targetStepNumber,
+				grafcet,
+				source,
+			),
 		);
-		if (!referredStep) {
-			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
-					source,
-					{ stepNumber: stepReferral.data.targetStepNumber as number },
-				),
-			);
-		}
 
 		if (!StepReferralSourceHelper.hasPredecessor(stepReferral.id, grafcet)) {
 			issues.push(

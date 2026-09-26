@@ -5,14 +5,6 @@ import { act, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import ModuleStepper, { StepData } from "./ModuleStepper";
 
-let supabaseConfigured = false;
-jest.mock("@/persistence/repositories/supabase-client", () => ({
-	get isSupabaseConfigured() {
-		return supabaseConfigured;
-	},
-	supabase: {},
-}));
-
 const mockGetStepId = jest.fn();
 const mockSaveStepId = jest.fn();
 jest.mock("@/persistence/repositories/training-progress.repository", () => ({
@@ -21,12 +13,6 @@ jest.mock("@/persistence/repositories/training-progress.repository", () => ({
 		getStepId: (...args: any[]) => mockGetStepId(...args),
 		saveStepId: (...args: any[]) => mockSaveStepId(...args),
 	})),
-}));
-
-let mockUser: { id: string } | null = null;
-const mockInit = jest.fn();
-jest.mock("@/ui/stores/auth/auth.store", () => ({
-	useAuthStore: (selector: any) => selector({ user: mockUser, init: mockInit }),
 }));
 
 const steps: StepData[] = [
@@ -83,23 +69,20 @@ function mockViewport(matches: boolean) {
 
 describe("ModuleStepper", () => {
 	beforeEach(() => {
-		supabaseConfigured = false;
-		mockUser = null;
 		mockGetStepId.mockReset().mockResolvedValue(null);
 		mockSaveStepId.mockReset();
-		mockInit.mockReset();
 	});
 
 	afterEach(() => {
 		window.location.hash = "";
 	});
 
-	it("affiche la première étape par défaut", () => {
+	it("affiche la première étape par défaut", async () => {
 		setup();
 		expect(
 			screen.getByRole("heading", { name: "Étape un" }),
 		).toBeInTheDocument();
-		expect(screen.getByText("Corps un")).toBeInTheDocument();
+		expect(await screen.findByText("Corps un")).toBeInTheDocument();
 		expect(screen.queryByText("Corps deux")).not.toBeInTheDocument();
 	});
 
@@ -113,9 +96,9 @@ describe("ModuleStepper", () => {
 		).toBeInTheDocument();
 	});
 
-	it("restaure l'étape indiquée par l'ancre de l'URL au montage", () => {
+	it("restaure l'étape indiquée par l'ancre de l'URL au montage", async () => {
 		setup("#step-s3");
-		expect(screen.getByText("Corps trois")).toBeInTheDocument();
+		expect(await screen.findByText("Corps trois")).toBeInTheDocument();
 		expect(
 			screen.getByRole("link", { name: /ouvrir l'exercice/i }),
 		).toBeInTheDocument();
@@ -137,6 +120,8 @@ describe("ModuleStepper", () => {
 			"href",
 			expect.stringContaining("template=linear-sequence&template-mode=solution"),
 		);
+		expect(exerciseLink).toHaveAttribute("target", "_blank");
+		expect(solutionLink).toHaveAttribute("target", "_blank");
 	});
 
 	it("ouvre le template en mode solution quand primaryMode vaut solution, sans second bouton", () => {
@@ -176,15 +161,15 @@ describe("ModuleStepper", () => {
 		expect(screen.queryByRole("link", { name: "Corrigé" })).not.toBeInTheDocument();
 	});
 
-	it("ignore une ancre invalide et reste sur la première étape", () => {
+	it("ignore une ancre invalide et reste sur la première étape", async () => {
 		setup("#not-a-step");
-		expect(screen.getByText("Corps un")).toBeInTheDocument();
+		expect(await screen.findByText("Corps un")).toBeInTheDocument();
 	});
 
-	it("Suivant affiche l'étape suivante et met à jour l'ancre", () => {
+	it("Suivant affiche l'étape suivante et met à jour l'ancre", async () => {
 		setup();
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
-		expect(screen.getByText("Corps deux")).toBeInTheDocument();
+		expect(await screen.findByText("Corps deux")).toBeInTheDocument();
 		expect(window.location.hash).toBe("#step-s2");
 	});
 
@@ -218,11 +203,15 @@ describe("ModuleStepper", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("le sommaire permet de sauter directement à une étape via son titre", () => {
+	it("le sommaire permet de revenir directement à une étape déjà atteinte via son titre", async () => {
 		setup();
-		fireEvent.click(screen.getByRole("button", { name: /étape trois/i }));
-		expect(screen.getByText("Corps trois")).toBeInTheDocument();
-		expect(window.location.hash).toBe("#step-s3");
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s3
+
+		fireEvent.click(screen.getByRole("button", { name: /étape un/i }));
+
+		expect(await screen.findByText("Corps un")).toBeInTheDocument();
+		expect(window.location.hash).toBe("#step-s1");
 	});
 
 	it("met en gras dans le sommaire le titre d'une étape de synthèse, même inactive", () => {
@@ -244,7 +233,7 @@ describe("ModuleStepper", () => {
 		Element.prototype.scrollIntoView = scrollIntoView;
 		setup();
 
-		fireEvent.click(screen.getByRole("button", { name: /étape deux/i }));
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
 
 		expect(scrollIntoView).toHaveBeenCalledWith({
 			behavior: "smooth",
@@ -258,14 +247,12 @@ describe("ModuleStepper", () => {
 		Element.prototype.scrollIntoView = scrollIntoView;
 		setup();
 
-		fireEvent.click(screen.getByRole("button", { name: /étape deux/i }));
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
 
 		expect(scrollIntoView).not.toHaveBeenCalled();
 	});
 
-	it("coche les étapes déjà franchies dans le sommaire pour un utilisateur connecté, pas l'étape active ni les suivantes", () => {
-		supabaseConfigured = true;
-		mockUser = { id: "u1" };
+	it("coche les étapes déjà franchies dans le sommaire, pas l'étape active ni les suivantes", () => {
 		setup();
 		const item1 = screen.getByRole("button", { name: /étape un/i });
 		const item2 = screen.getByRole("button", { name: /étape deux/i });
@@ -280,9 +267,7 @@ describe("ModuleStepper", () => {
 		expect(within(item3).queryByTestId("CheckIcon")).not.toBeInTheDocument();
 	});
 
-	it("garde la coche sur une étape déjà franchie même en y revenant, pour un utilisateur connecté", () => {
-		supabaseConfigured = true;
-		mockUser = { id: "u1" };
+	it("garde la coche sur une étape déjà franchie même en y revenant", () => {
 		setup();
 		const item1 = screen.getByRole("button", { name: /étape un/i });
 
@@ -292,19 +277,8 @@ describe("ModuleStepper", () => {
 		expect(within(item1).getByTestId("CheckIcon")).toBeInTheDocument();
 	});
 
-	it("n'affiche aucune coche pour un visiteur non connecté (l'ordre n'étant pas garanti)", () => {
-		setup();
-
-		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
-		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s3
-
-		expect(screen.queryAllByTestId("CheckIcon")).toHaveLength(0);
-	});
-
-	describe("verrouillage du sommaire (compte connecté uniquement)", () => {
-		it("verrouille les étapes non atteintes pour un utilisateur connecté", () => {
-			supabaseConfigured = true;
-			mockUser = { id: "u1" };
+	describe("verrouillage du sommaire", () => {
+		it("verrouille les étapes non atteintes", async () => {
 			setup();
 
 			const item3 = screen.getByRole("button", { name: /étape trois/i });
@@ -312,12 +286,10 @@ describe("ModuleStepper", () => {
 
 			fireEvent.click(item3);
 			expect(screen.queryByText("Corps trois")).not.toBeInTheDocument();
-			expect(screen.getByText("Corps un")).toBeInTheDocument();
+			expect(await screen.findByText("Corps un")).toBeInTheDocument();
 		});
 
-		it("laisse cliquables les étapes déjà atteintes pour un utilisateur connecté", () => {
-			supabaseConfigured = true;
-			mockUser = { id: "u1" };
+		it("laisse cliquables les étapes déjà atteintes", async () => {
 			setup();
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
@@ -325,61 +297,36 @@ describe("ModuleStepper", () => {
 			const item1 = screen.getByRole("button", { name: /étape un/i });
 			expect(item1).not.toBeDisabled();
 			fireEvent.click(item1);
-			expect(screen.getByText("Corps un")).toBeInTheDocument();
-		});
-
-		it("ne verrouille rien pour un visiteur non connecté, même avec le cloud configuré", () => {
-			supabaseConfigured = true;
-			mockUser = null;
-			setup();
-
-			const item3 = screen.getByRole("button", { name: /étape trois/i });
-			expect(item3).not.toBeDisabled();
-			fireEvent.click(item3);
-			expect(screen.getByText("Corps trois")).toBeInTheDocument();
-		});
-
-		it("ne verrouille rien quand le cloud n'est pas configuré, même avec un utilisateur", () => {
-			supabaseConfigured = false;
-			mockUser = { id: "u1" };
-			setup();
-
-			const item3 = screen.getByRole("button", { name: /étape trois/i });
-			expect(item3).not.toBeDisabled();
+			expect(await screen.findByText("Corps un")).toBeInTheDocument();
 		});
 	});
 
-	describe("reprise de progression (compte requis)", () => {
+	describe("reprise de progression", () => {
 		it("reprend l'étape sauvegardée pour le module quand il n'y a pas d'ancre dans l'URL", async () => {
-			supabaseConfigured = true;
 			mockGetStepId.mockResolvedValue("s3");
 			setup();
 
 			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
-			expect(mockGetStepId).toHaveBeenCalledWith("a1");
+			expect(mockGetStepId).toHaveBeenCalledWith("a1", ["s1", "s2", "s3", "s4"]);
 		});
 
 		it("reste sur la première étape si l'étape sauvegardée n'existe plus dans le module", async () => {
-			supabaseConfigured = true;
 			mockGetStepId.mockResolvedValue("removed-step");
 			setup();
 
-			await Promise.resolve();
-			expect(screen.getByText("Corps un")).toBeInTheDocument();
+			expect(await screen.findByText("Corps un")).toBeInTheDocument();
 		});
 
 		it("l'ancre de l'URL garde la priorité sur la progression sauvegardée", async () => {
-			supabaseConfigured = true;
 			mockGetStepId.mockResolvedValue("s3");
 			setup("#step-s2");
 
-			expect(screen.getByText("Corps deux")).toBeInTheDocument();
+			expect(await screen.findByText("Corps deux")).toBeInTheDocument();
 			await Promise.resolve();
 			expect(screen.getByText("Corps deux")).toBeInTheDocument();
 		});
 
 		it("sauvegarde la nouvelle étape courante à chaque navigation", () => {
-			supabaseConfigured = true;
 			setup();
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
@@ -387,17 +334,7 @@ describe("ModuleStepper", () => {
 			expect(mockSaveStepId).toHaveBeenCalledWith("a1", "s2");
 		});
 
-		it("ne sauvegarde rien quand le cloud n'est pas configuré", () => {
-			supabaseConfigured = false;
-			setup();
-
-			fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
-
-			expect(mockSaveStepId).not.toHaveBeenCalled();
-		});
-
-		it("ne redescend jamais la progression sauvegardée en revenant en arrière", () => {
-			supabaseConfigured = true;
+		it("ne redescend jamais la progression sauvegardée en revenant en arrière", async () => {
 			setup();
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
@@ -407,11 +344,10 @@ describe("ModuleStepper", () => {
 			fireEvent.click(screen.getByRole("button", { name: "Précédent" })); // -> s2
 
 			expect(mockSaveStepId).not.toHaveBeenCalled();
-			expect(screen.getByText("Corps deux")).toBeInTheDocument();
+			expect(await screen.findByText("Corps deux")).toBeInTheDocument();
 		});
 
 		it("ne resauvegarde pas en revenant sur l'étape déjà connue comme la plus avancée", () => {
-			supabaseConfigured = true;
 			setup();
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
@@ -424,7 +360,6 @@ describe("ModuleStepper", () => {
 		});
 
 		it("ne redescend pas la progression connue même si l'ancre pointe vers une étape antérieure", async () => {
-			supabaseConfigured = true;
 			mockGetStepId.mockResolvedValue("s3");
 			setup("#step-s1");
 

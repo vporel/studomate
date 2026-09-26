@@ -19,7 +19,7 @@ import {
 	ZOOM_MAX,
 	ZOOM_MIN,
 	ZOOM_STEP,
-} from "./constants";
+} from "@/ui/components/hmi/logic/constants";
 import HmiCanvas from "./HmiCanvas";
 
 interface HmiPageContentProps {

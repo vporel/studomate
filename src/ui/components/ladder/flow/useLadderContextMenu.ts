@@ -4,7 +4,7 @@ import Section from "@/schemas/ladder/section.schema";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Edge, Node } from "@xyflow/react";
 import React, { useCallback } from "react";
-import useFlowContextMenu from "@/ui/lib/hooks/useFlowContextMenu";
+import useFlowContextMenu from "@/ui/lib/react-flow/useFlowContextMenu";
 import { useLadderContext } from "../context/LadderContext";
 
 /**

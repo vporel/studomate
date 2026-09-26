@@ -45,11 +45,17 @@ src/project-pre-compiler/  lexes/parses/analyses/simplifies expressions once and
 src/project-compiler/  produces the executable program (PLCRoutine[]) from the pre-compiled form
 src/simulator/          expression-language lexer/parser/interpreter + PLC engine
 src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
-src/lib/                neutral utilities (array, date, object), no domain dependency
+src/lib/                neutral utilities (array, object), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
 src/app-info.ts         app identity (name, tagline...), neutral root module
+src/user-profile/       user profile model (database-side schema, not part of the project schema), neutral root module
 ```
+
+`src/ui/lib/` only holds generic, project-agnostic code that could be copied to another
+project as is (boxes, context menu, split pane, platform detection...). Anything that knows the
+Studomate domain (schemas, stores, i18n keys, app identity) belongs elsewhere. `src/ui/utils/`
+holds pure editing/geometry logic specific to an editor (`grafcet/`, `ladder/`).
 
 Dependencies flow top to bottom in this list: the domain never depends on the UI. A project
 has a `dialect` (FR/EN) that travels with it — this is not a UI preference, it's a property of
@@ -57,9 +63,8 @@ the expressions it contains.
 
 `src/bridge/` only contains mappers where the UI is one of the two ends (domain/analysis ↔
 UI). A mapper between two internal layers stays in the layer concerned — `PlcVariablesMapper`
-(environment ↔ PLC) lives in `src/simulator/`. Accepted exception: `SchemaVariablesMapper`
-(schema → environment) is in `src/bridge/` even though its only consumers are in
-`src/project-analyser/`; move it to `src/project-analyser/` if it's touched again.
+(environment ↔ PLC) lives in `src/simulator/`, and `SchemaVariablesMapper` (schema →
+environment) in `src/project-analyser/`.
 
 ### Accounts & cloud storage
 
@@ -68,7 +73,7 @@ UI). A mapper between two internal layers stays in the layer concerned — `PlcV
 `hybrid` (switches local/cloud based on authentication). Auth (Supabase, `src/ui/stores/auth/`)
 handles sign-up, sign-in, anonymous accounts (username + password), password reset. Sharing a
 project goes through a URL token (`ShareableProjectRepository`, `?share=` handled in
-`src/ui/lib/project-url.ts`). Error monitoring is wired via Sentry
+`src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
 
 This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
@@ -77,10 +82,11 @@ Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KE
 
 ### PDF export
 
-`src/ui/lib/program-export-drawing/` draws each program (grafcet, ladder) **directly from the
-schema** into an IR of primitives (`DrawOp[]` → `Scene`), without mounting React Flow. Two
-backends: `backends/jspdf-backend.ts` (vector primitives via jsPDF, used by
-`JsPdfExporter.drawSection`) and `backends/svg-backend.ts` (`<svg>` string, for test snapshots).
+`src/ui/pdf/drawing/` draws each program (grafcet, ladder) **directly from the schema** into an
+IR of primitives (`DrawOp[]` → `Scene`, defined in `src/ui/lib/drawing/`), without mounting React
+Flow. Two backends in `src/ui/lib/drawing/backends/`: `jspdf-backend.ts` (vector primitives via
+jsPDF, used by `JsPdfExporter.drawSection`) and `svg-backend.ts` (`<svg>` string, for test
+snapshots).
 `usePdfExport` assembles the scenes; `JsPdfExporter` adds a cover page and titles. Rendering is
 vector-based and synchronous — no rasterization, no editor capture.
 
@@ -179,6 +185,8 @@ Always check `package.json` before quoting a version: this table goes stale at t
   (`src/app/globals.css`, `*` selector) — never redeclare it in an `sx` prop or component style.
 - Minimal, targeted changes; follow the existing style (tabs, no trailing superfluous
   semicolons, etc. — see neighboring files).
+- **Never `git commit` unless explicitly asked.** Leave changes staged/unstaged for the
+  developer to review and commit themselves.
 - **Comments**: never document decision history (alternatives tried, "before/after",
   justification for a choice already made) — that belongs in the conversation or the commit
   message, not the code, and it rots at the first refactor. A comment is only worth writing if

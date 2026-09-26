@@ -6,8 +6,8 @@ import Project, {
 } from "@/schemas/project/project.schema";
 import { toast } from "react-toastify";
 import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
-import { setPagesSession } from "@/ui/lib/pages-session-storage";
-import { setActivePageIdInUrl } from "@/ui/lib/pages-url";
+import { setPagesSession } from "@/persistence/pages-session.storage";
+import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
 import { createProjectStore } from "../project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 import {
@@ -399,8 +399,12 @@ describe("ProjectLifecycleManager", () => {
 				const result = await lifecycle(store).openProject("p1", true);
 
 				expect(result).toBe(true);
-				expect(store.getState().ui.draftConflictModal.visible).toBe(true);
-				expect(store.getState().ui.draftConflictModal.projectId).toBe("p1");
+				expect(store.getState().ui.draftConflictModal).toEqual({
+					visible: true,
+					projectId: "p1",
+					draftData: JSON.stringify(draft),
+				});
+				expect(store.getState().bootStatus).toBe("idle");
 				expect(store.getState().project).toBeNull();
 			});
 

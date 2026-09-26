@@ -1,5 +1,4 @@
-import Connection from "@/schemas/ladder/connection.schema";
-import { LadderElement, createContactElement, createCoilElement, createRailTerminalElement } from "@/schemas/ladder/element.schema";
+import { createRandomId } from "@/ids";
 import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
@@ -7,31 +6,63 @@ import {
 	createConvertBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
-import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import Connection from "@/schemas/ladder/connection.schema";
+import {
+	LadderElement,
+	createCoilElement,
+	createContactElement,
+	createRailTerminalElement,
+} from "@/schemas/ladder/element.schema";
 import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
-import Section from "@/schemas/ladder/section.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import { createRandomId } from "@/ids";
+import Section from "@/schemas/ladder/section.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import {
+	wireInParallel,
+	wireInSeries,
+	wireLadderIntoMain,
+} from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
-import { compilePipelineDetailed, compileToPLC, expectVariableValue, getVariableValue } from "@tests/utils/test-helpers";
+import {
+	compilePipelineDetailed,
+	compileToPLC,
+	expectVariableValue,
+	getVariableValue,
+} from "@tests/utils/test-helpers";
 import { VariableFactory } from "@tests/utils/variable-factory";
-import { wireLadderIntoMain, wireInSeries, wireInParallel } from "@tests/utils/ladder-factory";
 
 /** Pose une borne d'alimentation, un contact et une bobine reliés en série, dans la section donnée. */
-function wireContactToCoil(ladder: Ladder, section: Section, contactParams: Parameters<typeof createContactElement>, coilParams: Parameters<typeof createCoilElement>) {
+function wireContactToCoil(
+	ladder: Ladder,
+	section: Section,
+	contactParams: Parameters<typeof createContactElement>,
+	coilParams: Parameters<typeof createCoilElement>,
+) {
 	const railTerminal = createRailTerminalElement(contactParams[2]);
 	const contact = createContactElement(...contactParams);
 	const coil = createCoilElement(...coilParams);
 	ladder.addElements(section.id, [railTerminal, contact, coil]);
 	ladder.addConnections(section.id, [
-		new Connection(createRandomId(), { id: railTerminal.id, type: "contact", handle: "source" }, { id: contact.id, type: "coil", handle: "target" }),
-		new Connection(createRandomId(), { id: contact.id, type: "contact", handle: "source" }, { id: coil.id, type: "coil", handle: "target" }),
+		new Connection(
+			createRandomId(),
+			{ id: railTerminal.id, type: "contact", handle: "source" },
+			{ id: contact.id, type: "coil", handle: "target" },
+		),
+		new Connection(
+			createRandomId(),
+			{ id: contact.id, type: "contact", handle: "source" },
+			{ id: coil.id, type: "coil", handle: "target" },
+		),
 	]);
 }
 
 /** Câble une ligne d'éléments en série (rail → … → dernier) dans la section donnée. */
-function wireSeries(ladder: Ladder, section: Section, elements: LadderElement[]) {
+function wireSeries(
+	ladder: Ladder,
+	section: Section,
+	elements: LadderElement[],
+) {
 	ladder.addElements(section.id, elements);
 	ladder.addConnections(section.id, wireInSeries(elements));
 }
@@ -56,7 +87,12 @@ describe("Ladder Pipeline Integration Test", () => {
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
 			const [section] = ladder.sections;
-			wireContactToCoil(ladder, section, ["I0", "NO", 0, 0], ["Q0", "normal", 0, 1]);
+			wireContactToCoil(
+				ladder,
+				section,
+				["I0", "NO", 0, 0],
+				["Q0", "normal", 0, 1],
+			);
 
 			const pipeline = compilePipelineDetailed(project);
 			expect(pipeline.analysis.issues).toEqual([]);
@@ -93,13 +129,27 @@ describe("Ladder Pipeline Integration Test", () => {
 			const resetInput = VariableFactory.createLogicInput("I1");
 			const outputVar = VariableFactory.createLogicOutput("Q0");
 
-			const project = ProjectFactory.createWithVariables([setInput, resetInput, outputVar]);
+			const project = ProjectFactory.createWithVariables([
+				setInput,
+				resetInput,
+				outputVar,
+			]);
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
 			const [sectionA] = ladder.sections;
 			const sectionB = ladder.createSection("Section B");
-			wireContactToCoil(ladder, sectionA, ["I0", "NO", 0, 0], ["Q0", "set", 0, 1]);
-			wireContactToCoil(ladder, sectionB, ["I1", "NO", 0, 0], ["Q0", "reset", 0, 1]);
+			wireContactToCoil(
+				ladder,
+				sectionA,
+				["I0", "NO", 0, 0],
+				["Q0", "set", 0, 1],
+			);
+			wireContactToCoil(
+				ladder,
+				sectionB,
+				["I1", "NO", 0, 0],
+				["Q0", "reset", 0, 1],
+			);
 
 			let cycleError: Error | null = null;
 			const plc = compileToPLC(project, 10, undefined, {
@@ -138,7 +188,12 @@ describe("Ladder Pipeline Integration Test", () => {
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
 			const [section] = ladder.sections;
-			wireContactToCoil(ladder, section, ["I0", "P", 0, 0], ["Q0", "normal", 0, 1]);
+			wireContactToCoil(
+				ladder,
+				section,
+				["I0", "P", 0, 0],
+				["Q0", "normal", 0, 1],
+			);
 
 			const pipeline = compilePipelineDetailed(project);
 			expect(pipeline.analysis.issues).toEqual([]);
@@ -172,14 +227,23 @@ describe("Ladder Pipeline Integration Test", () => {
 			]);
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
-			wireContactToCoil(ladder, ladder.sections[0], ["I0", "N", 0, 0], ["Q0", "normal", 0, 1]);
+			wireContactToCoil(
+				ladder,
+				ladder.sections[0],
+				["I0", "N", 0, 0],
+				["Q0", "normal", 0, 1],
+			);
 
 			const pipeline = compilePipelineDetailed(project);
 			expect(pipeline.analysis.issues).toEqual([]);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, undefined, { onCycleError: (e) => { cycleError = e; } })!;
+			const plc = compileToPLC(project, 10, undefined, {
+				onCycleError: (e) => {
+					cycleError = e;
+				},
+			})!;
 
 			plc.start();
 			plc.setPhysicalInputValueByName("I0", true);
@@ -207,7 +271,12 @@ describe("Ladder Pipeline Integration Test", () => {
 			]);
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
-			wireContactToCoil(ladder, ladder.sections[0], ["I0", "NO", 0, 0], ["Q0", coilType, 0, 1]);
+			wireContactToCoil(
+				ladder,
+				ladder.sections[0],
+				["I0", "NO", 0, 0],
+				["Q0", coilType, 0, 1],
+			);
 			const pipeline = compilePipelineDetailed(project);
 			expect(pipeline.analysis.issues).toEqual([]);
 			expect(pipeline.preCompilation.errors).toEqual([]);
@@ -257,7 +326,9 @@ describe("Ladder Pipeline Integration Test", () => {
 	});
 
 	describe("Blocs fonction : pipeline complet + simulation", () => {
-		function newLadderProject(vars: Parameters<typeof ProjectFactory.createWithVariables>[0]) {
+		function newLadderProject(
+			vars: Parameters<typeof ProjectFactory.createWithVariables>[0],
+		) {
 			const project = ProjectFactory.createWithVariables(vars);
 			const ladder = project.createLadder("Ladder 1");
 			wireLadderIntoMain(project, ladder);
@@ -266,14 +337,23 @@ describe("Ladder Pipeline Integration Test", () => {
 
 		function runPlc(project: Parameters<typeof compileToPLC>[0]) {
 			const pipeline = compilePipelineDetailed(project);
-			expect(pipeline.analysis.issues.filter((i) => i.severity === "error")).toEqual([]);
+			expect(
+				pipeline.analysis.issues.filter((i) => i.severity === "error"),
+			).toEqual([]);
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 
 			let cycleError: Error | null = null;
-			const plc = compileToPLC(project, 10, undefined, { onCycleError: (e) => (cycleError = e) });
+			const plc = compileToPLC(project, 10, undefined, {
+				onCycleError: (e) => (cycleError = e),
+			});
 			expect(plc).not.toBeNull();
-			return { plc: plc!, throwOnCycleError: () => { if (cycleError) throw cycleError; } };
+			return {
+				plc: plc!,
+				throwOnCycleError: () => {
+					if (cycleError) throw cycleError;
+				},
+			};
 		}
 
 		it("timer TON : Q passe à vrai après l'écoulement de PT, retombe quand IN repasse à faux", async () => {
@@ -284,7 +364,11 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(ladder, section, [
 				createRailTerminalElement(0),
 				createContactElement("I0", "NO", 0, 1),
-				createTimerBlockElement({ name: "Tempo1", timerType: "TON", pt: "T#1s" }, 0, 2),
+				createTimerBlockElement(
+					{ name: "Tempo1", timerType: "TON", pt: "T#1s" },
+					0,
+					2,
+				),
 				createCoilElement("Q0", "normal", 0, 3),
 			]);
 
@@ -316,7 +400,11 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(ladder, section, [
 				createRailTerminalElement(0),
 				createContactElement("I0", "NO", 0, 1),
-				createCounterBlockElement({ name: "Compteur1", counterType: "CTU", control: "RST", pv: "3" }, 0, 2),
+				createCounterBlockElement(
+					{ name: "Compteur1", counterType: "CTU", control: "RST", pv: "3" },
+					0,
+					2,
+				),
 				createCoilElement("Q0", "normal", 0, 3),
 			]);
 
@@ -363,7 +451,15 @@ describe("Ladder Pipeline Integration Test", () => {
 				createRailTerminalElement(0),
 				createContactElement("ENTREE", "NO", 0, 1),
 				createCounterBlockElement(
-					{ name: "Stock", counterType: "CTUD", control: "RAZ", down: "SORTIE", load: "CHARGE", qd: "VIDE", pv: "2" },
+					{
+						name: "Stock",
+						counterType: "CTUD",
+						control: "RAZ",
+						down: "SORTIE",
+						load: "CHARGE",
+						qd: "VIDE",
+						pv: "2",
+					},
 					0,
 					2,
 				),
@@ -534,7 +630,12 @@ describe("Ladder Pipeline Integration Test", () => {
 
 		describe("mise à l'échelle d'une mesure (typage IEC 61131-3)", () => {
 			const memoryDint = (mnemonic: string) =>
-				new VariableBuilder().id(`mem-${mnemonic}`).mnemonic(mnemonic).zone("memory").type("DINT").build();
+				new VariableBuilder()
+					.id(`mem-${mnemonic}`)
+					.mnemonic(mnemonic)
+					.zone("memory")
+					.type("DINT")
+					.build();
 
 			it("brut * 100 calculé en INT reboucle avant d'être rangé dans un DINT", async () => {
 				const { project, ladder, section } = newLadderProject([
@@ -543,7 +644,12 @@ describe("Ladder Pipeline Integration Test", () => {
 				]);
 				wireSeries(ladder, section, [
 					createRailTerminalElement(0),
-					createArithmeticBlockElement(0, 1, { in1: "brut", in2: "100", out: "inter", operator: "*" }),
+					createArithmeticBlockElement(0, 1, {
+						in1: "brut",
+						in2: "100",
+						out: "inter",
+						operator: "*",
+					}),
 				]);
 
 				const { plc, throwOnCycleError } = runPlc(project);
@@ -564,8 +670,18 @@ describe("Ladder Pipeline Integration Test", () => {
 				wireSeries(ladder, section, [
 					createRailTerminalElement(0),
 					createAssignBlockElement(0, 1, { out: "inter", in: "brut" }),
-					createArithmeticBlockElement(0, 3, { in1: "inter", in2: "100", out: "inter", operator: "*" }),
-					createArithmeticBlockElement(0, 5, { in1: "inter", in2: "27648", out: "inter", operator: "/" }),
+					createArithmeticBlockElement(0, 3, {
+						in1: "inter",
+						in2: "100",
+						out: "inter",
+						operator: "*",
+					}),
+					createArithmeticBlockElement(0, 5, {
+						in1: "inter",
+						in2: "27648",
+						out: "inter",
+						operator: "/",
+					}),
 					createConvertBlockElement(0, 7, { in: "inter", out: "niveau" }),
 				]);
 
@@ -590,7 +706,12 @@ describe("Ladder Pipeline Integration Test", () => {
 				]);
 				wireSeries(ladder, section, [
 					createRailTerminalElement(0),
-					createArithmeticBlockElement(0, 1, { in1: "inter", in2: "276", out: "niveau", operator: "/" }),
+					createArithmeticBlockElement(0, 1, {
+						in1: "inter",
+						in2: "276",
+						out: "niveau",
+						operator: "/",
+					}),
 				]);
 
 				const errors = compilePipelineDetailed(project).analysis.issues.filter(
@@ -608,7 +729,11 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(ladder, section, [
 				createRailTerminalElement(0),
 				createContactElement("I0", "NO", 0, 1),
-				createTimerBlockElement({ name: "Tof1", timerType: "TOF", pt: "T#1s" }, 0, 2),
+				createTimerBlockElement(
+					{ name: "Tof1", timerType: "TOF", pt: "T#1s" },
+					0,
+					2,
+				),
 				createCoilElement("Q0", "normal", 0, 3),
 			]);
 
@@ -631,6 +756,31 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", false);
 		});
 
+		it("timer TOF : Q reste faux au démarrage tant que IN n'a jamais été vrai", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createLogicOutput("Q0"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createTimerBlockElement(
+					{ name: "Tof1", timerType: "TOF", pt: "T#1s" },
+					0,
+					2,
+				),
+				createCoilElement("Q0", "normal", 0, 3),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+
+			await jest.advanceTimersByTimeAsync(300);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "Q0", false);
+		});
+
 		it("timer TP : impulsion de durée PT même si IN reste vrai", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("I0"),
@@ -639,7 +789,11 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(ladder, section, [
 				createRailTerminalElement(0),
 				createContactElement("I0", "NO", 0, 1),
-				createTimerBlockElement({ name: "Tp1", timerType: "TP", pt: "T#1s" }, 0, 2),
+				createTimerBlockElement(
+					{ name: "Tp1", timerType: "TP", pt: "T#1s" },
+					0,
+					2,
+				),
 				createCoilElement("Q0", "normal", 0, 3),
 			]);
 
@@ -658,6 +812,40 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", false);
 		});
 
+		it("timer TP : un appui plus court que PT donne une impulsion complète, non redéclenchable", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createLogicOutput("Q0"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createTimerBlockElement(
+					{ name: "Tp1", timerType: "TP", pt: "T#1s" },
+					0,
+					2,
+				),
+				createCoilElement("Q0", "normal", 0, 3),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(200);
+			plc.setPhysicalInputValueByName("I0", false);
+			await jest.advanceTimersByTimeAsync(300);
+			throwOnCycleError();
+			expectVariableValue(plc, "Q0", true); // I0 retombé, l'impulsion continue
+
+			// Nouvel appui pendant l'impulsion : ignoré, elle retombe toujours à PT.
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(700);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "Q0", false);
+		});
+
 		it("compteur CTD : LD recharge CV à PV, CD décompte, Q vrai quand CV ≤ 0", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("CD"),
@@ -667,7 +855,11 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(ladder, section, [
 				createRailTerminalElement(0),
 				createContactElement("CD", "NO", 0, 1),
-				createCounterBlockElement({ name: "Down1", counterType: "CTD", control: "LD", pv: "3" }, 0, 2),
+				createCounterBlockElement(
+					{ name: "Down1", counterType: "CTD", control: "LD", pv: "3" },
+					0,
+					2,
+				),
 				createCoilElement("Q0", "normal", 0, 3),
 			]);
 
@@ -720,8 +912,15 @@ describe("Ladder Pipeline Integration Test", () => {
 			const rail = createRailTerminalElement(0);
 			const enableContact = createContactElement("enable", "NO", 0, 1);
 			const callBlock = createUserProgramBlockElement(sub.id, 0, 2);
-			project.main.addElements(mainSection.id, [rail, enableContact, callBlock]);
-			project.main.addConnections(mainSection.id, wireInSeries([rail, enableContact, callBlock]));
+			project.main.addElements(mainSection.id, [
+				rail,
+				enableContact,
+				callBlock,
+			]);
+			project.main.addConnections(
+				mainSection.id,
+				wireInSeries([rail, enableContact, callBlock]),
+			);
 
 			const { plc, throwOnCycleError } = runPlc(project);
 			plc.start();
@@ -848,7 +1047,12 @@ describe("Ladder Pipeline Integration Test", () => {
 			wireSeries(project.main, countSection, [
 				createRailTerminalElement(0),
 				createContactElement("x", "P", 0, 1),
-				createArithmeticBlockElement(0, 2, { in1: "n", in2: "1", out: "n", operator: "+" }),
+				createArithmeticBlockElement(0, 2, {
+					in1: "n",
+					in2: "1",
+					out: "n",
+					operator: "+",
+				}),
 			]);
 			wireSeries(project.main, project.main.createSection("Appel"), [
 				createRailTerminalElement(0),
@@ -895,7 +1099,7 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q", true); // front vu au premier appel
 		});
 
-		it("rung à branches parallèles (OU) : la bobine suit le OU des deux contacts", async () => {
+		it("section à branches parallèles (OU) : la bobine suit le OU des deux contacts", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("I0"),
 				VariableFactory.createLogicInput("I1"),
@@ -906,7 +1110,10 @@ describe("Ladder Pipeline Integration Test", () => {
 			const contactB = createContactElement("I1", "NO", 1, 1);
 			const coil = createCoilElement("Q0", "normal", 0, 2);
 			ladder.addElements(section.id, [rail, contactA, contactB, coil]);
-			ladder.addConnections(section.id, wireInParallel(rail, [contactA, contactB], coil));
+			ladder.addConnections(
+				section.id,
+				wireInParallel(rail, [contactA, contactB], coil),
+			);
 
 			const { plc, throwOnCycleError } = runPlc(project);
 			plc.start();

@@ -219,6 +219,12 @@
 		"trainingA0Title": "Module A0: Before you start — Studomate Training",
 		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
 		"trainingA1Title": "Module A1: GRAFCET basics — Studomate Training",
-		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises."
+		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises.",
+		"trainingA2Title": "Module A2: Ladder, logic and memory — Studomate Training",
+		"trainingA2Description": "Module A2: from the relay diagram to Ladder, contacts and coils, self-holding, S/R coils, edges and network execution order.",
+		"trainingA3Title": "Module A3: Ladder, time, counting and calculation — Studomate Training",
+		"trainingA3Description": "Module A3: timers, counters, calculation and numeric types, subprograms: theory and self-corrected exercises.",
+		"trainingA4Title": "Module A4: From GRAFCET to Ladder — Studomate Training",
+		"trainingA4Description": "Module A4: implementing a GRAFCET in Ladder, three-block method, actions, divergences and reset."
 	}
 }

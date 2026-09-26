@@ -11,7 +11,7 @@ jest.mock("./useStartProductTour", () => ({
 }));
 
 const shouldStartProductTour = jest.fn();
-jest.mock("@/ui/lib/product-tour/product-tour-eligibility", () => ({
+jest.mock("@/ui/components/product-tour/product-tour-eligibility", () => ({
 	__esModule: true,
 	default: () => shouldStartProductTour(),
 }));

@@ -1,10 +1,12 @@
 import { createRandomId } from "@/ids";
-import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import Variable from "@/schemas/variable/variable.schema";
-import { BlockPortSpec, requireConcreteType } from "../block-port.schema";
+import { BlockPortSpec, structuralRailPorts } from "../block-port.schema";
 import type { BlockElement, CounterBlockParams } from "../block.schema";
 import type { GridPosition } from "../element.schema";
-import { getBlockVariableMnemonics } from "./function-block.schema";
+import {
+	createBlockVariables,
+	getBlockVariableMnemonics,
+} from "./function-block.schema";
 
 /** Les variantes de bloc compteur — CTU (compte vers le haut), CTD (compte vers le bas) et CTUD
  * (les deux). Contrairement au timer, leurs ports diffèrent (voir `getCounterPortSpecs`) : CTU a
@@ -35,22 +37,7 @@ const booleanInputParameter = (suffix: string): BlockPortSpec => ({
 export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
 	const pulseSuffix = counterType === "CTD" ? "CD" : "CU";
 	const outputSuffix = counterType === "CTUD" ? "QU" : "Q";
-	const pulseAndOutput: BlockPortSpec[] = [
-		{
-			suffix: pulseSuffix,
-			type: "BOOL",
-			kind: "structural",
-			direction: "input",
-			generatesVariable: true,
-		},
-		{
-			suffix: outputSuffix,
-			type: "BOOL",
-			kind: "structural",
-			direction: "output",
-			generatesVariable: true,
-		},
-	];
+	const pulseAndOutput = structuralRailPorts(pulseSuffix, outputSuffix);
 	const presetAndCurrent: BlockPortSpec[] = [
 		{
 			suffix: "PV",
@@ -117,17 +104,7 @@ export function createCounterBlockVariables(
 	name: string,
 	counterType: CounterType,
 ): Variable[] {
-	return getCounterPortSpecs(counterType)
-		.filter((spec) => spec.generatesVariable)
-		.map((spec) =>
-			new VariableBuilder()
-				.id(`${elementId}-${spec.suffix}`)
-				.mnemonic(`${name}.${spec.suffix}`)
-				.zone("memory")
-				.type(requireConcreteType(spec))
-				.ownerBlock({ id: elementId })
-				.build(),
-		);
+	return createBlockVariables(elementId, name, getCounterPortSpecs(counterType));
 }
 
 /**

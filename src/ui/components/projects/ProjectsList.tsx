@@ -4,7 +4,7 @@ import HybridProjectRepository from "@/persistence/repositories/hybrid.project.r
 import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
-import { clearPagesSession } from "@/ui/lib/pages-session-storage";
+import { clearPagesSession } from "@/persistence/pages-session.storage";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { useProjectStore } from "./ProjectContext";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
