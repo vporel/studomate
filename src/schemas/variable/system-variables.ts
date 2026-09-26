@@ -1,8 +1,8 @@
 import { VariableType } from "./variable.schema";
 
 /**
- * Préfixe réservé aux **variables système** : registres fournis par le moteur (bases de temps
- * aujourd'hui, d'autres catégories à terme). Un identifiant commençant par ce préfixe ne peut
+ * Préfixe réservé aux **variables système** : registres fournis par le moteur (bit de premier
+ * scan, bases de temps). Un identifiant commençant par ce préfixe ne peut
  * pas être créé par l'utilisateur (validation) ni recevoir d'affectation (analyse sémantique) —
  * il est injecté au moment de l'analyse et de la compilation, jamais persisté.
  */
@@ -69,8 +69,19 @@ export const SYSTEM_TIME_BASES: readonly SystemTimeBase[] = [
 	},
 ] as const;
 
+/** Vrai pendant le seul premier scan après le démarrage de la simulation (le cycle
+ * d'établissement), faux ensuite. Pause, reprise et pas-à-pas ne le réarment pas. */
+export const SYSTEM_FIRST_SCAN: SystemVariable = {
+	name: "_SYS_FIRST_SCAN",
+	type: "BOOL",
+	description: "Vrai pendant le premier scan après le démarrage de la simulation.",
+};
+
 /** Toutes les variables système exposées, toutes catégories confondues. */
-export const SYSTEM_VARIABLES: readonly SystemVariable[] = [...SYSTEM_TIME_BASES];
+export const SYSTEM_VARIABLES: readonly SystemVariable[] = [
+	SYSTEM_FIRST_SCAN,
+	...SYSTEM_TIME_BASES,
+];
 
 export function isSystemVariableName(name: string): boolean {
 	return name.startsWith(SYSTEM_VARIABLE_PREFIX);

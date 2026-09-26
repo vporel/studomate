@@ -241,7 +241,8 @@
 		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it.",
 		"systemTitle": "System variables",
 		"systemBody1": "The \"_SYS_\" prefix is reserved: you cannot create a variable whose mnemonic starts with \"_SYS_\", nor assign a value to one (read-only). They are not saved with the project: the engine injects them at analysis and compile time. The full list is shown in the explorer, under Variables › System.",
-		"systemBody2": "The \"_SYS_TB_…\" time bases are booleans that are true for a single scan per simulated-time period (a pulse): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle — for instance moving a position by a fixed step: \"position := position + step\" run only while \"_SYS_TB_200ms\" is true."
+		"systemBody2": "The \"_SYS_TB_…\" time bases are booleans that are true for a single scan per simulated-time period (a pulse): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle — for instance moving a position by a fixed step: \"position := position + step\" run only while \"_SYS_TB_200ms\" is true.",
+		"systemBody3": "\"_SYS_FIRST_SCAN\" is true only during the first scan after the simulation starts, false afterwards (pausing then resuming does not rearm it). Use it to initialise memories or values once at startup, like the first-scan bit of real PLCs."
 	},
 	"grafcet": {
 		"title": "Grafcet",
@@ -396,8 +397,8 @@
 		"counterTitle": "Counter",
 		"counterIntro": "Counts pulses. Two variants:",
 		"counterItems": [
-			"CTU — counts up: increments CV on every scan where IN is true; R resets CV to zero.",
-			"CTD — counts down: decrements CV on every scan where CD is true; LD loads PV into CV."
+			"CTU (counts up): increments CV on each rising edge of CU; R resets CV to zero.",
+			"CTD (counts down): decrements CV on each rising edge of CD; LD loads PV into CV."
 		],
 		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
 		"compareTitle": "Comparison",

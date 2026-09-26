@@ -50,6 +50,8 @@
 	"INVALID_TIMER_ELAPSED_TIME_TYPE": "Type de temps écoulé de temporisation invalide : attendu {expected}, obtenu {actual}",
 	"INVALID_CONTROL_CONDITION_TYPE": "Type de condition invalide : la condition d'une structure de contrôle doit être un booléen",
 	"INVALID_COUNTER_INPUT_TYPE": "Type d'entrée de compteur invalide : l'entrée d'un compteur doit être un booléen (trouvé {actual})",
+	"INVALID_COUNTER_LAST_INPUT_NODE": "Nœud de dernière valeur d'entrée de compteur invalide : la dernière valeur d'entrée d'un bloc compteur doit être une variable",
+	"INVALID_COUNTER_LAST_INPUT_TYPE": "Type de dernière valeur d'entrée de compteur invalide : la dernière valeur d'entrée d'un bloc compteur doit être un booléen (trouvé {actual})",
 	"INVALID_COUNTER_CONTROL_TYPE": "Type de contrôle de compteur invalide : le contrôle (R/LD) d'un compteur doit être un booléen (trouvé {actual})",
 	"INVALID_COUNTER_CURRENT_VALUE_NODE": "Nœud de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être une variable",
 	"INVALID_COUNTER_CURRENT_VALUE_TYPE": "Type de valeur courante de compteur invalide : la valeur courante (CV) d'un bloc compteur doit être numérique (trouvé {actual})",

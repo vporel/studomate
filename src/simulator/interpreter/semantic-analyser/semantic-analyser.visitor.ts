@@ -31,6 +31,8 @@ import InvalidCounterControlTypeException from "./exceptions/invalid-counter-con
 import InvalidCounterCurrentValueNodeException from "./exceptions/invalid-counter-current-value-node.exception";
 import InvalidCounterCurrentValueTypeException from "./exceptions/invalid-counter-current-value-type.exception";
 import InvalidCounterInputTypeException from "./exceptions/invalid-counter-input-type.exception";
+import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import InvalidCounterOutputNodeException from "./exceptions/invalid-counter-output-node.exception";
 import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-output-type.exception";
 import InvalidCounterPresetValueTypeException from "./exceptions/invalid-counter-preset-value-type.exception";
@@ -320,6 +322,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (inputType !== "boolean") {
 			throw new InvalidCounterInputTypeException(
 				inputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (node.lastInput.type !== "IDENTIFIER") {
+			throw new InvalidCounterLastInputNodeException(node);
+		}
+		const lastInputType = this.typeAnalyser.visit(node.lastInput);
+		if (lastInputType !== "boolean") {
+			throw new InvalidCounterLastInputTypeException(
+				lastInputType as ExpectedNodeResultType,
 				node,
 			);
 		}

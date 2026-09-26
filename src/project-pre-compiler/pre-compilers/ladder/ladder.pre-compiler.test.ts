@@ -1,6 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
@@ -18,6 +18,7 @@ import {
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createSectionWith,
@@ -548,6 +549,36 @@ describe("LadderPreCompiler", () => {
 
 			expect(result.timers).toHaveLength(1);
 			expect(result.timers[0].type).toBe("TIMER_BLOCK");
+		});
+	});
+
+	describe("blocs compteur", () => {
+		it("matérialise un CounterNode dont lastInput référence la variable cachée du bloc", () => {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+				0,
+				2,
+			);
+			const section = createSectionWith(
+				[rail, contactA, block],
+				wireInSeries([rail, contactA, block]),
+			);
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const found = result.assignments.find(
+				(a): a is PreCompiledEmbeddedNodeAssignment =>
+					a.kind === "embeddedNode" && a.simRole === "counter",
+			);
+			const counter = found?.node as CounterNode;
+			expect(describeNode(counter.input as ASTNode)).toBe("Compteur1.CU");
+			expect(describeNode(counter.lastInput as ASTNode)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastInput"),
+			);
+			expect(describeNode(counter.control as ASTNode)).toBe("R");
 		});
 	});
 

@@ -103,6 +103,7 @@ export default class FinderVisitor<
 
 	protected visitCounterBlockNode(node: CounterNode): T[] {
 		return this.visit(node.input)
+			.concat(this.visit(node.lastInput))
 			.concat(this.visit(node.control))
 			.concat(this.visit(node.presetValue))
 			.concat(this.visit(node.currentValue))

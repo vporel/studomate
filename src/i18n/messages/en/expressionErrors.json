@@ -50,6 +50,8 @@
 	"INVALID_TIMER_ELAPSED_TIME_TYPE": "Invalid timer elapsed time type: expected {expected}, got {actual}",
 	"INVALID_CONTROL_CONDITION_TYPE": "Invalid control condition type: the condition of a control structure must be boolean",
 	"INVALID_COUNTER_INPUT_TYPE": "Invalid counter input type: the input of a counter must be boolean (found {actual})",
+	"INVALID_COUNTER_LAST_INPUT_NODE": "Invalid counter last input node: the last input of a counter block must be an identifier",
+	"INVALID_COUNTER_LAST_INPUT_TYPE": "Invalid counter last input type: the last input of a counter block must be boolean (found {actual})",
 	"INVALID_COUNTER_CONTROL_TYPE": "Invalid counter control type: the control (R/LD) of a counter must be boolean (found {actual})",
 	"INVALID_COUNTER_CURRENT_VALUE_NODE": "Invalid counter current value node: the current value (CV) of a counter block must be an identifier",
 	"INVALID_COUNTER_CURRENT_VALUE_TYPE": "Invalid counter current value type: the current value (CV) of a counter block must be a number (found {actual})",

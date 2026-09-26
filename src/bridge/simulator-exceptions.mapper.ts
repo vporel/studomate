@@ -11,6 +11,8 @@ import InvalidCounterControlTypeException from "@/simulator/interpreter/semantic
 import InvalidCounterCurrentValueNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-current-value-node.exception";
 import InvalidCounterCurrentValueTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-current-value-type.exception";
 import InvalidCounterInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-input-type.exception";
+import InvalidCounterLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-type.exception";
 import InvalidCounterOutputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-node.exception";
 import InvalidCounterOutputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-output-type.exception";
 import InvalidCounterPresetValueTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-preset-value-type.exception";
@@ -233,6 +235,17 @@ export default class SimulatorExceptionsMapper {
 		if (exception instanceof InvalidCounterInputTypeException) {
 			return {
 				code: "INVALID_COUNTER_INPUT_TYPE",
+				params: { actual: typeLabel(exception.getActualType()) },
+			};
+		}
+
+		if (exception instanceof InvalidCounterLastInputNodeException) {
+			return { code: "INVALID_COUNTER_LAST_INPUT_NODE", params: {} };
+		}
+
+		if (exception instanceof InvalidCounterLastInputTypeException) {
+			return {
+				code: "INVALID_COUNTER_LAST_INPUT_TYPE",
 				params: { actual: typeLabel(exception.getActualType()) },
 			};
 		}

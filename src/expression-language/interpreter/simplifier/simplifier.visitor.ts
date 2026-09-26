@@ -261,6 +261,7 @@ export default class SimplifierVisitor extends BaseVisitor<ASTNode> {
 		return BlocksBuilder.buildCounterNode(
 			node.counterType,
 			this.visit(node.input),
+			this.visit(node.lastInput),
 			this.visit(node.control),
 			this.visit(node.presetValue),
 			this.visit(node.currentValue),

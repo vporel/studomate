@@ -1,4 +1,8 @@
-import { SYSTEM_TIME_BASES } from "@/schemas/variable/system-variables";
+import {
+	SYSTEM_FIRST_SCAN,
+	SYSTEM_TIME_BASES,
+	SYSTEM_VARIABLES,
+} from "@/schemas/variable/system-variables";
 import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
@@ -53,6 +57,8 @@ export default class PLC extends ClockedRunnable {
 	private readonly systemTimeBaseAccumulatorsMs = new Map<string, number>(
 		SYSTEM_TIME_BASES.map((base) => [base.name, 0]),
 	);
+	/** Rearmed by `start()`, consumed by the first `executeProgram()` that follows. */
+	private firstScanPending = true;
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -90,11 +96,11 @@ export default class PLC extends ClockedRunnable {
 
 		// Variables système : garanties présentes même quand le programme ne vient pas du
 		// pré-compilateur (tests, usages directs). Le PLC les met à jour lui-même chaque cycle.
-		for (const base of SYSTEM_TIME_BASES) {
-			if (!this.memory[base.name]) {
-				this.memory[base.name] = new PLCVariable(
-					base.name,
-					base.name,
+		for (const systemVariable of SYSTEM_VARIABLES) {
+			if (!this.memory[systemVariable.name]) {
+				this.memory[systemVariable.name] = new PLCVariable(
+					systemVariable.name,
+					systemVariable.name,
 					"memory",
 					"boolean",
 				);
@@ -258,6 +264,11 @@ export default class PLC extends ClockedRunnable {
 
 		const deltaTimeMs = this.consumeElapsedMs();
 		this.updateSystemTimeBases(deltaTimeMs);
+		this.environment.setVariableValueByName(
+			SYSTEM_FIRST_SCAN.name,
+			this.firstScanPending,
+		);
+		this.firstScanPending = false;
 
 		for (const routine of this.program) {
 			routine.execute(this.environment, deltaTimeMs, this.routinesById);
@@ -304,6 +315,7 @@ export default class PLC extends ClockedRunnable {
 
 	public start(): void {
 		this.resetSystemTimeBases();
+		this.firstScanPending = true;
 		super.start();
 	}
 

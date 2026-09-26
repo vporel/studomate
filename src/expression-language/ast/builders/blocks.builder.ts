@@ -34,6 +34,7 @@ export default class BlocksBuilder {
 	static buildCounterNode(
 		counterType: CounterType,
 		input: ASTNode,
+		lastInput: ASTNode,
 		control: ASTNode,
 		presetValue: ASTNode,
 		currentValue: ASTNode,
@@ -45,6 +46,7 @@ export default class BlocksBuilder {
 			type: "COUNTER_BLOCK",
 			counterType,
 			input,
+			lastInput,
 			control,
 			presetValue,
 			currentValue,

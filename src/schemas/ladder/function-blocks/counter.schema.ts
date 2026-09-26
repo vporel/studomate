@@ -8,7 +8,7 @@ import { getBlockVariableMnemonics } from "./function-block.schema";
 
 /** Les deux variantes de bloc compteur — CTU (compte vers le haut) et CTD (compte vers le bas).
  * Contrairement au timer, leurs ports structurels diffèrent (voir `getCounterPortSpecs`) : CTU a
- * `IN`/`R`, CTD a `CD`/`LD`. */
+ * `CU`/`R`, CTD a `CD`/`LD`. */
 export const COUNTER_TYPES = ["CTU", "CTD"] as const;
 
 export type CounterType = (typeof COUNTER_TYPES)[number];
@@ -16,12 +16,12 @@ export type CounterType = (typeof COUNTER_TYPES)[number];
 /**
  * Les ports d'un bloc compteur, dans l'ordre pulsion/Q (structurels, câblés sur le rail) puis
  * contrôle/PV (paramètres, entrée) puis CV (paramètre, sortie). La pulsion de comptage s'appelle
- * `IN` pour CTU, `CD` pour CTD ; le port de contrôle `R` (remise à zéro) pour CTU, `LD` (charge
+ * `CU` pour CTU, `CD` pour CTD ; le port de contrôle `R` (remise à zéro) pour CTU, `LD` (charge
  * PV dans CV) pour CTD — ni l'un ni l'autre ne génère de variable, leur valeur est résolue
  * directement depuis la pinoche (nom de variable booléenne ou littéral booléen `TRUE`/`FALSE`).
  */
 export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
-	const pulseSuffix = counterType === "CTU" ? "IN" : "CD";
+	const pulseSuffix = counterType === "CTU" ? "CU" : "CD";
 	const controlSuffix = counterType === "CTU" ? "R" : "LD";
 	return [
 		{

@@ -8,6 +8,9 @@ import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
+import InvalidTimerLastInputTypeException from "./exceptions/invalid-timer-last-input-type.exception";
+import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
 import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
@@ -267,6 +270,74 @@ describe("SemanticAnalyserVisitor", () => {
 			expect(() => analyser.visit(node)).toThrow(
 				InvalidTimerElapsedTimeNodeException,
 			);
+		});
+
+		it("InvalidTimerLastInputTypeException désigne lastInput comme nœud invalide", () => {
+			const lastInput = IdentifiersBuilder.buildIdentifierNode("x");
+			const node = BlocksBuilder.buildTimerNode(
+				"TON",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				lastInput,
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("result"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+
+			let caught: unknown;
+			try {
+				analyser.visit(node);
+			} catch (e) {
+				caught = e;
+			}
+
+			expect(caught).toBeInstanceOf(InvalidTimerLastInputTypeException);
+			expect(
+				(caught as InvalidTimerLastInputTypeException).getInvalidNodes(),
+			).toEqual([lastInput]);
+		});
+	});
+
+	describe("counter block nodes", () => {
+		function buildCounterNode(
+			lastInput: ASTNode = IdentifiersBuilder.buildIdentifierNode("flag"),
+		) {
+			return BlocksBuilder.buildCounterNode(
+				"CTU",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				lastInput,
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("y"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+		}
+
+		it("accepts a boolean identifier for lastInput", () => {
+			expect(() => analyser.visit(buildCounterNode())).not.toThrow();
+		});
+
+		it("throws InvalidCounterLastInputNodeException when lastInput is not an identifier", () => {
+			const node = buildCounterNode(LiteralsBuilder.buildBooleanNode(false));
+			expect(() => analyser.visit(node)).toThrow(
+				InvalidCounterLastInputNodeException,
+			);
+		});
+
+		it("throws InvalidCounterLastInputTypeException when lastInput is not boolean, pointing at lastInput", () => {
+			const lastInput = IdentifiersBuilder.buildIdentifierNode("x");
+			const node = buildCounterNode(lastInput);
+
+			let caught: unknown;
+			try {
+				analyser.visit(node);
+			} catch (e) {
+				caught = e;
+			}
+
+			expect(caught).toBeInstanceOf(InvalidCounterLastInputTypeException);
+			expect(
+				(caught as InvalidCounterLastInputTypeException).getInvalidNodes(),
+			).toEqual([lastInput]);
 		});
 	});
 

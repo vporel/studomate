@@ -7,9 +7,9 @@ import {
 } from "./counter.schema";
 
 describe("getCounterPortSpecs", () => {
-	it("CTU : pulsion IN, contrôle R", () => {
+	it("CTU : pulsion CU, contrôle R", () => {
 		const specs = getCounterPortSpecs("CTU");
-		expect(specs.map((s) => s.suffix)).toEqual(["IN", "Q", "R", "PV", "CV"]);
+		expect(specs.map((s) => s.suffix)).toEqual(["CU", "Q", "R", "PV", "CV"]);
 	});
 
 	it("CTD : pulsion CD, contrôle LD", () => {
@@ -31,7 +31,7 @@ describe("getCounterPortSpecs", () => {
 describe("getCounterBlockVariableMnemonics", () => {
 	it("génère les mnémoniques pulsion/Q/CV à partir du nom du bloc, pas le contrôle ni PV", () => {
 		expect(getCounterBlockVariableMnemonics("Compteur1", "CTU")).toEqual({
-			IN: "Compteur1.IN",
+			CU: "Compteur1.CU",
 			Q: "Compteur1.Q",
 			CV: "Compteur1.CV",
 		});
@@ -48,7 +48,7 @@ describe("createCounterBlockVariables", () => {
 		const variables = createCounterBlockVariables("el1", "Compteur1", "CTU");
 
 		expect(variables.map((v) => v.mnemonic)).toEqual([
-			"Compteur1.IN",
+			"Compteur1.CU",
 			"Compteur1.Q",
 			"Compteur1.CV",
 		]);

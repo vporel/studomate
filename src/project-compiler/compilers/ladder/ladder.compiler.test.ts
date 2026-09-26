@@ -221,7 +221,8 @@ describe("LadderCompiler", () => {
 	it("embarque un CounterNode tel quel parmi les instructions, et le propage dans `counters`", () => {
 		const counterNode = BlocksBuilder.buildCounterNode(
 			"CTU",
-			IdentifiersBuilder.buildIdentifierNode("Compteur1.IN"),
+			IdentifiersBuilder.buildIdentifierNode("Compteur1.CU"),
+			IdentifiersBuilder.buildIdentifierNode("lastInput"),
 			IdentifiersBuilder.buildIdentifierNode("Compteur1.RLD"),
 			LiteralsBuilder.buildNumberNode(10),
 			IdentifiersBuilder.buildIdentifierNode("cv"),

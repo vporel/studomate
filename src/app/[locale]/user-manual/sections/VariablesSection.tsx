@@ -46,6 +46,7 @@ export default function VariablesSection() {
 			</Typography>
 			<Typography mb={2}>{t("systemBody1")}</Typography>
 			<Typography mb={2}>{t("systemBody2")}</Typography>
+			<Typography mb={2}>{t("systemBody3")}</Typography>
 			<Divider sx={{ my: 2 }} />
 		</section>
 	);

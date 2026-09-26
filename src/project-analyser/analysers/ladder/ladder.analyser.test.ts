@@ -133,6 +133,35 @@ describe("LadderAnalyser", () => {
 		});
 	});
 
+	describe("buildBlockLastInputVariables (via generateVariables)", () => {
+		it("crée une variable memory/BOOL cachée par bloc timer et par bloc compteur", () => {
+			const timer = createTimerBlockElement(
+				{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
+			const counter = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+				1,
+				0,
+			);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith([timer, counter], []),
+			]);
+
+			const generated = ladderAnalyser.generateVariables(ladder);
+
+			for (const block of [timer, counter]) {
+				const variable = generated.find(
+					(v) =>
+						v.mnemonic === getBlockPortVariableMnemonic(block.id, "lastInput"),
+				);
+				expect(variable?.zone).toBe("memory");
+				expect(variable?.type).toBe("BOOL");
+			}
+		});
+	});
+
 	describe("buildTimerExposedVariables/buildCounterExposedVariables (via generateVariables)", () => {
 		it("ignore un bloc tempo dont le nom est invalide, sans lever", () => {
 			const rail = createRailTerminalElement(0);

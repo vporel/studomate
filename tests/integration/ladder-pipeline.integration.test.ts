@@ -248,7 +248,7 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", false);
 		});
 
-		it("compteur CTU : CV monte tant que CU est vrai, Q à PV, R remet à zéro", async () => {
+		it("compteur CTU : une unité par front montant de CU, Q à PV, R remet à zéro", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("I0"),
 				VariableFactory.createLogicInput("RST"),
@@ -264,13 +264,23 @@ describe("Ladder Pipeline Integration Test", () => {
 			const { plc, throwOnCycleError } = runPlc(project);
 			plc.start();
 
-			// CU compté en niveau (voir counter-node.evaluator) : CV croît de 1 par cycle tant que I0 est vrai.
+			// I0 maintenu plusieurs cycles : un seul front, donc une seule unité.
 			plc.setPhysicalInputValueByName("I0", true);
 			await jest.advanceTimersByTimeAsync(200);
 			plc.setPhysicalInputValueByName("I0", false);
 			await jest.advanceTimersByTimeAsync(30);
 			throwOnCycleError();
-			expect(getVariableValue(plc, "Compteur1.CV")).toBeGreaterThanOrEqual(3);
+			expect(getVariableValue(plc, "Compteur1.CV")).toBe(1);
+			expectVariableValue(plc, "Q0", false);
+
+			for (let i = 0; i < 2; i++) {
+				plc.setPhysicalInputValueByName("I0", true);
+				await jest.advanceTimersByTimeAsync(30);
+				plc.setPhysicalInputValueByName("I0", false);
+				await jest.advanceTimersByTimeAsync(30);
+			}
+			throwOnCycleError();
+			expect(getVariableValue(plc, "Compteur1.CV")).toBe(3);
 			expectVariableValue(plc, "Q0", true);
 
 			plc.setPhysicalInputValueByName("RST", true);
@@ -405,7 +415,7 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", false);
 		});
 
-		it("compteur CTD : LD recharge CV à PV, CD décompte, Q suit CV ≥ PV", async () => {
+		it("compteur CTD : LD recharge CV à PV, CD décompte, Q vrai quand CV ≤ 0", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("CD"),
 				VariableFactory.createLogicInput("LD"),
@@ -421,23 +431,34 @@ describe("Ladder Pipeline Integration Test", () => {
 			const { plc, throwOnCycleError } = runPlc(project);
 			plc.start();
 
-			// LD en niveau : CV figé à PV, Q vrai (CV ≥ PV).
+			// LD en niveau : CV figé à PV, Q faux (CV > 0).
 			plc.setPhysicalInputValueByName("LD", true);
 			await jest.advanceTimersByTimeAsync(30);
 			throwOnCycleError();
 			expect(getVariableValue(plc, "Down1.CV")).toBe(3);
-			expectVariableValue(plc, "Q0", true);
+			expectVariableValue(plc, "Q0", false);
 
-			// LD relâché, CD en niveau : CV décroît d'une unité par cycle, Q retombe sous PV.
+			// LD relâché, CD maintenu plusieurs cycles : un seul front, donc une seule unité.
 			plc.setPhysicalInputValueByName("LD", false);
 			plc.setPhysicalInputValueByName("CD", true);
 			await jest.advanceTimersByTimeAsync(200);
 			plc.setPhysicalInputValueByName("CD", false);
 			await jest.advanceTimersByTimeAsync(30);
+			throwOnCycleError();
+			expect(getVariableValue(plc, "Down1.CV")).toBe(2);
+			expectVariableValue(plc, "Q0", false);
+
+			// Deux fronts de plus : CV atteint zéro, Q passe à vrai.
+			for (let i = 0; i < 2; i++) {
+				plc.setPhysicalInputValueByName("CD", true);
+				await jest.advanceTimersByTimeAsync(30);
+				plc.setPhysicalInputValueByName("CD", false);
+				await jest.advanceTimersByTimeAsync(30);
+			}
 			plc.stop();
 			throwOnCycleError();
-			expect(getVariableValue(plc, "Down1.CV") as number).toBeLessThan(3);
-			expectVariableValue(plc, "Q0", false);
+			expect(getVariableValue(plc, "Down1.CV")).toBe(0);
+			expectVariableValue(plc, "Q0", true);
 		});
 
 		it("appel `user-program` gardé : le sous-programme ne s'exécute que si EN est vrai", async () => {

@@ -3,7 +3,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
-import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import InvalidCharacterException from "@/expression-language/lexer/exceptions/invalid-character.exception";
 import InvalidKeywordException from "@/expression-language/lexer/exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "@/expression-language/lexer/exceptions/unterminated-string.exception";
@@ -34,6 +34,8 @@ import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import frExpressionErrors from "@/i18n/messages/fr/expressionErrors.json";
 import enExpressionErrors from "@/i18n/messages/en/expressionErrors.json";
+import InvalidCounterLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-type.exception";
 import SimulatorExceptionsMapper from "./simulator-exceptions.mapper";
 
 function timerNode(): TimerNode {
@@ -43,6 +45,18 @@ function timerNode(): TimerNode {
 		IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
 		LiteralsBuilder.buildNumberNode(1000, 0),
 		IdentifiersBuilder.buildIdentifierNode("elapsed", 0),
+		IdentifiersBuilder.buildIdentifierNode("output", 0),
+	);
+}
+
+function counterNode(): CounterNode {
+	return BlocksBuilder.buildCounterNode(
+		"CTU",
+		LiteralsBuilder.buildBooleanNode(true, 0),
+		IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
+		LiteralsBuilder.buildBooleanNode(false, 0),
+		LiteralsBuilder.buildNumberNode(5, 0),
+		IdentifiersBuilder.buildIdentifierNode("cv", 0),
 		IdentifiersBuilder.buildIdentifierNode("output", 0),
 	);
 }
@@ -181,6 +195,23 @@ describe("SimulatorExceptionsMapper", () => {
 			it("maps InvalidTimerLastInputTypeException", () => {
 				const e = new InvalidTimerLastInputTypeException("number", timerNode());
 				expect(message(e, "fr")).toContain("doit être un booléen (trouvé nombre)");
+			});
+
+			it("maps InvalidCounterLastInputNodeException", () => {
+				const e = new InvalidCounterLastInputNodeException(counterNode());
+				expect(message(e, "fr")).toContain(
+					"la dernière valeur d'entrée d'un bloc compteur doit être une variable",
+				);
+				expect(message(e, "en")).toContain(
+					"the last input of a counter block must be an identifier",
+				);
+			});
+
+			it("maps InvalidCounterLastInputTypeException", () => {
+				const e = new InvalidCounterLastInputTypeException("number", counterNode());
+				expect(message(e, "fr")).toContain(
+					"dernière valeur d'entrée d'un bloc compteur doit être un booléen (trouvé nombre)",
+				);
 			});
 
 			it("maps InvalidTimerOutputNodeException", () => {

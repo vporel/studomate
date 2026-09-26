@@ -713,4 +713,65 @@ describe("PLC", () => {
 			plc.stop();
 		});
 	});
+	describe("bit de premier scan système", () => {
+		const valueOf = (plc: PLC, name: string): boolean =>
+			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+				?.getValue() as boolean;
+
+		it("_SYS_FIRST_SCAN est vrai au premier scan seulement, et lisible par le programme", () => {
+			const tokens = new Lexer(Dialect.FR).tokenize("init := _SYS_FIRST_SCAN");
+			const routine = new PLCRoutine([new Parser(tokens).parse()]);
+			const initVar = new PLCVariable("id_init", "init", "memory", "boolean");
+			const plc = new PLC({ scanTimeMs: 100, program: [routine], variables: [initVar] });
+			plc.start();
+
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+			expect(valueOf(plc, "init")).toBe(true);
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+			expect(valueOf(plc, "init")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("cycle d'établissement en pause : vrai sur ce cycle, faux dès le pas suivant", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			plc.pause();
+
+			plc.stepOnce();
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+			plc.stepOnce();
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("pause puis reprise ne le réarment pas", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.pause();
+			plc.resume();
+
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("un redémarrage après stop le réarme", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(200);
+			plc.stop();
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+
+			plc.stop();
+		});
+	});
 });

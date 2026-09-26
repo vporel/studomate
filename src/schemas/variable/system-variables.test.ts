@@ -58,6 +58,12 @@ describe("SYSTEM_VARIABLES / getSystemVariable", () => {
 		}
 	});
 
+	it("expose le bit de premier scan en BOOL", () => {
+		expect(getSystemVariable("_SYS_FIRST_SCAN")).toEqual(
+			expect.objectContaining({ name: "_SYS_FIRST_SCAN", type: "BOOL" }),
+		);
+	});
+
 	it("getSystemVariable retrouve par nom, undefined sinon", () => {
 		expect(getSystemVariable("_SYS_TB_1s")?.name).toBe("_SYS_TB_1s");
 		expect(getSystemVariable("_SYS_TB_unknown")).toBeUndefined();

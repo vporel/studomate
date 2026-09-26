@@ -5,11 +5,11 @@ import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variab
 import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
- * `input`/`control` sont évalués en niveau, pas en front : tant que `control` (R pour CTU, LD
- * pour CTD) est vrai, `currentValue` est figé à sa valeur cible chaque cycle, prioritaire sur
- * `input` — sinon `currentValue` change d'une unité par cycle tant que `input` (CU/CD) reste
- * vrai, sans saturation à `presetValue` (continue au-delà). `output` (Q) vaut
- * `currentValue >= presetValue`, même règle pour CTU et CTD.
+ * `input` (CU/CD) counts on its rising edge, detected against `lastInput`; `control` (R for CTU,
+ * LD for CTD) is evaluated on level: while true, `currentValue` is held at its target value every
+ * cycle, with priority over `input`. Otherwise `currentValue` moves by one unit per rising edge of
+ * `input`, without saturating (CTU keeps counting past `presetValue`, CTD below zero). `output`
+ * (Q) follows IEC 61131-3: `currentValue >= presetValue` for CTU, `currentValue <= 0` for CTD.
  */
 export default class CounterNodeEvaluator {
 	private env: Environment;
@@ -29,6 +29,7 @@ export default class CounterNodeEvaluator {
 
 	evaluate(node: CounterNode): EnvVariableValue {
 		const inputValue = this.visitor.visit(node.input) as boolean;
+		const lastInputValue = this.visitor.visit(node.lastInput) as boolean;
 		const controlValue = this.visitor.visit(node.control) as boolean;
 		const presetValueValue = this.visitor.visit(node.presetValue) as number;
 		const currentValueValue = this.visitor.visit(node.currentValue) as number;
@@ -36,7 +37,7 @@ export default class CounterNodeEvaluator {
 		let nextCurrentValue: number;
 		if (controlValue) {
 			nextCurrentValue = node.counterType === "CTU" ? 0 : presetValueValue;
-		} else if (inputValue) {
+		} else if (inputValue && !lastInputValue) {
 			nextCurrentValue =
 				node.counterType === "CTU"
 					? currentValueValue + 1
@@ -45,8 +46,15 @@ export default class CounterNodeEvaluator {
 			nextCurrentValue = currentValueValue;
 		}
 
-		const outputValue = nextCurrentValue >= presetValueValue;
+		const outputValue =
+			node.counterType === "CTU"
+				? nextCurrentValue >= presetValueValue
+				: nextCurrentValue <= 0;
 
+		this.env.setVariableValueByName(
+			(node.lastInput as IdentifierNode).value,
+			inputValue,
+		);
 		this.env.setVariableValueByName(
 			(node.currentValue as IdentifierNode).value,
 			nextCurrentValue,

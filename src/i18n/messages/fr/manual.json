@@ -241,7 +241,8 @@
 		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer.",
 		"systemTitle": "Variables système",
 		"systemBody1": "Le préfixe « _SYS_ » est réservé : vous ne pouvez pas créer de variable dont le mnémonique commence par « _SYS_ », ni leur affecter de valeur (lecture seule). Elles ne sont pas enregistrées avec le projet : le moteur les injecte à l'analyse et à la compilation. La liste complète est visible dans l'explorateur, sous Variables › Système.",
-		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens vrais pendant un seul scan par période de temps simulé (une impulsion) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate — par exemple faire avancer une position d'un pas fixe : « position := position + pas » exécuté uniquement quand « _SYS_TB_200ms » est vrai."
+		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens vrais pendant un seul scan par période de temps simulé (une impulsion) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate — par exemple faire avancer une position d'un pas fixe : « position := position + pas » exécuté uniquement quand « _SYS_TB_200ms » est vrai.",
+		"systemBody3": "« _SYS_FIRST_SCAN » est vrai pendant le seul premier scan après le démarrage de la simulation, faux ensuite (une pause suivie d'une reprise ne le réarme pas). Il sert à initialiser une fois pour toutes des mémoires ou des valeurs au démarrage, comme le bit de premier cycle des automates réels."
 	},
 	"grafcet": {
 		"title": "Grafcet",
@@ -396,8 +397,8 @@
 		"counterTitle": "Compteur",
 		"counterIntro": "Compte des impulsions. Deux variantes :",
 		"counterItems": [
-			"CTU — compte vers le haut : incrémente CV à chaque cycle où IN est vrai ; R remet CV à zéro.",
-			"CTD — compte vers le bas : décrémente CV à chaque cycle où CD est vrai ; LD charge PV dans CV."
+			"CTU (compte vers le haut) : incrémente CV à chaque front montant de CU ; R remet CV à zéro.",
+			"CTD (compte vers le bas) : décrémente CV à chaque front montant de CD ; LD charge PV dans CV."
 		],
 		"counterOutro": "La sortie Q passe à vrai lorsque CV atteint PV (CTU) ou descend à zéro (CTD). Configuration : nom et variante. PV (valeur de consigne) et la variable de contrôle (R ou LD) se renseignent sur les pinoches.",
 		"compareTitle": "Comparaison",

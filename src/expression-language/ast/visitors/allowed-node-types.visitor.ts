@@ -109,6 +109,7 @@ export default class AllowedNodeTypesVisitor extends BaseVisitor<ASTNode[]> {
 
 	protected visitCounterBlockNode(node: CounterNode): ASTNode[] {
 		return this.visit(node.input)
+			.concat(this.visit(node.lastInput))
 			.concat(this.visit(node.control))
 			.concat(this.visit(node.presetValue))
 			.concat(this.visit(node.currentValue))

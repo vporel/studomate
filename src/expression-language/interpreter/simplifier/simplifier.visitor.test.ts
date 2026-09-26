@@ -311,6 +311,7 @@ describe("SimplifierVisitor", () => {
 			const node = BlocksBuilder.buildCounterNode(
 				"CTU",
 				IdentifiersBuilder.buildIdentifierNode("in"),
+				IdentifiersBuilder.buildIdentifierNode("lastIn"),
 				IdentifiersBuilder.buildIdentifierNode("ctrl"),
 				foldableAddition(),
 				IdentifiersBuilder.buildIdentifierNode("cv"),

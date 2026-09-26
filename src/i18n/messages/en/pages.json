@@ -18,6 +18,7 @@
 			"description": "Description"
 		},
 		"items": {
+			"_SYS_FIRST_SCAN": "True during the first scan after the simulation starts, false afterwards.",
 			"_SYS_TB_100ms": "One-scan pulse every 100 ms.",
 			"_SYS_TB_200ms": "One-scan pulse every 200 ms.",
 			"_SYS_TB_500ms": "One-scan pulse every 500 ms.",

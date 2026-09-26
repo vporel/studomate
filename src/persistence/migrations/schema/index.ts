@@ -2,12 +2,13 @@ import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
 import { ProjectMigration, UNVERSIONED } from "./migration";
 import v0ToV1 from "./v0-to-v1";
 import v1ToV2 from "./v1-to-v2";
+import v2ToV3 from "./v2-to-v3";
 
 /**
  * Les migrations, dans l'ordre. Ajouter un saut de version consiste à ajouter un fichier et
  * une ligne ici, puis à incrémenter `PROJECT_SCHEMA_VERSION` dans le schéma du projet.
  */
-const MIGRATIONS: ProjectMigration[] = [v0ToV1, v1ToV2];
+const MIGRATIONS: ProjectMigration[] = [v0ToV1, v1ToV2, v2ToV3];
 
 /**
  * Amène un projet brut à la version courante de sa forme.

@@ -18,6 +18,7 @@
 			"description": "Description"
 		},
 		"items": {
+			"_SYS_FIRST_SCAN": "Vrai pendant le premier scan après le démarrage de la simulation, faux ensuite.",
 			"_SYS_TB_100ms": "Impulsion d'un scan toutes les 100 ms.",
 			"_SYS_TB_200ms": "Impulsion d'un scan toutes les 200 ms.",
 			"_SYS_TB_500ms": "Impulsion d'un scan toutes les 500 ms.",

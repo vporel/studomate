@@ -82,7 +82,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		return [
 			...this.buildEdgeMemoryVariables(ladder),
 			...this.buildBlockPortVariables(ladder),
-			...this.buildTimerLastInputVariables(ladder),
+			...this.buildBlockLastInputVariables(ladder),
 			...this.buildTimerExposedVariables(ladder),
 			...this.buildCounterExposedVariables(ladder),
 		];
@@ -411,14 +411,19 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	}
 
 	/**
-	 * Une variable mémoire BOOL cachée par bloc timer, pour la détection de front de son `IN`
-	 * (`TimerNode.lastInput`, voir `LadderPreCompiler`) — jamais exposée, contrairement à
-	 * `<Nom>.IN`/`.Q`/`.ET` (voir `buildTimerExposedVariables`).
+	 * One hidden BOOL memory variable per timer or counter block, for the edge detection of its
+	 * input (`TimerNode.lastInput` / `CounterNode.lastInput`, see `LadderPreCompiler`): never
+	 * exposed, unlike `<Name>.IN`/`.Q`/`.ET`/`.CV` (see `buildTimerExposedVariables` and
+	 * `buildCounterExposedVariables`).
 	 */
-	private buildTimerLastInputVariables(ladder: Ladder): Variable[] {
+	private buildBlockLastInputVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (element.type !== "block" || element.data.blockType !== "timer")
+			if (
+				element.type !== "block" ||
+				(element.data.blockType !== "timer" &&
+					element.data.blockType !== "counter")
+			)
 				continue;
 			variables.push(
 				new Variable(

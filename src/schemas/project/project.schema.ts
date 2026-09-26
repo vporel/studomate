@@ -54,7 +54,7 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 2;
+export const PROJECT_SCHEMA_VERSION = 3;
 
 export default class Project {
 	id: string;

@@ -28,17 +28,17 @@ export interface TimerStringDeclarationNode extends BaseNode {
 export type CounterType = "CTU" | "CTD";
 
 /**
- * CTU (compte vers le haut, `input`/`control` = `CU`/`R`) ou CTD (compte vers le bas,
- * `input`/`control` = `CD`/`LD`) — les deux variantes partagent la même forme de nœud, seul le
- * sens du comptage et la cible de `control` diffèrent (`CounterNodeEvaluator`). `input` et
- * `control` sont évalués en niveau (pas de détection de front, contrairement à `TimerNode`) :
- * `control` vrai est prioritaire sur `input` et fige `currentValue` à sa valeur cible (`0` pour
- * CTU, `presetValue` pour CTD) le temps qu'il reste vrai.
+ * CTU (counts up, `input`/`control` = `CU`/`R`) or CTD (counts down, `input`/`control` =
+ * `CD`/`LD`): both variants share the same node shape, only the counting direction and the
+ * target of `control` differ (`CounterNodeEvaluator`). `input` counts on its rising edge
+ * (detected through `lastInput`); `control` is evaluated on level: while true, it takes priority
+ * over `input` and holds `currentValue` at its target value (`0` for CTU, `presetValue` for CTD).
  */
 export interface CounterNode extends BaseNode {
 	type: "COUNTER_BLOCK";
 	counterType: CounterType;
 	input: ASTNode; //should be of native type boolean
+	lastInput: ASTNode; //should be an identifier node referencing a boolean variable (used to detect edges)
 	control: ASTNode; //should be of native type boolean
 	presetValue: ASTNode; //should be of native type number
 	currentValue: ASTNode; //should be an identifier node referencing a numeric variable
