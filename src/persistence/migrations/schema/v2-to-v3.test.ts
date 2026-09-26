@@ -213,3 +213,41 @@ describe("Migration v2 → v3 — contact NO/NF explicite des widgets IHM", () =
 		expect(migrated.hmiPages.p3).toEqual({ id: "p3" });
 	});
 });
+
+describe("Migration v2 → v3 — type LONG remplacé par DINT", () => {
+	it("passe les variables LONG en DINT sans toucher aux autres", () => {
+		const project = {
+			...makeV2Project(),
+			variables: [
+				{ id: "v1", mnemonic: "total", zone: "memory", type: "LONG", comment: "c" },
+				{ id: "v2", mnemonic: "n", zone: "memory", type: "INT" },
+			],
+		};
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(migrated.variables).toEqual([
+			{ id: "v1", mnemonic: "total", zone: "memory", type: "DINT", comment: "c" },
+			{ id: "v2", mnemonic: "n", zone: "memory", type: "INT" },
+		]);
+	});
+
+	it("ne modifie pas l'objet d'entrée et tolère des variables malformées", () => {
+		const project = {
+			...makeV2Project(),
+			variables: [null, {}, { id: "v1", type: "LONG" }],
+		};
+		const snapshot = JSON.parse(JSON.stringify(project));
+
+		const migrated = v2ToV3.migrate(project) as any;
+
+		expect(project).toEqual(snapshot);
+		expect(migrated.variables).toEqual([null, {}, { id: "v1", type: "DINT" }]);
+	});
+
+	it("ne crée pas de champ `variables` absent", () => {
+		const migrated = v2ToV3.migrate(makeV2Project()) as any;
+
+		expect("variables" in migrated).toBe(false);
+	});
+});

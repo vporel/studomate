@@ -219,14 +219,14 @@
 		"typesItems": [
 			"BOOL — Boolean (true/false), available in every zone",
 			"INT — signed integer, available for analog and memory",
-			"LONG — signed long integer, available in memory",
+			"DINT — signed 32-bit integer, available in memory",
 			"WORD — unsigned 16-bit integer, available for analog and memory",
 			"DWORD — unsigned 32-bit integer, available for analog and memory",
 			"REAL — floating-point number, available in memory",
 			"STRING — character string, available in memory",
 			"TIME — duration (e.g. T#5s), available in memory — used in particular for timers"
 		],
-		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768), LONG is truncated to an integer. Worth keeping in mind for an accumulation such as \"position := position + step\".",
+		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, DINT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768). Worth keeping in mind for an accumulation such as \"position := position + step\".",
 		"propertiesTitle": "Properties of a variable",
 		"propertiesItems": [
 			"Mnemonic (required): the variable's name, max 32 characters, must start with a letter, alphanumeric characters and underscores allowed, must be unique",
@@ -420,7 +420,7 @@
 		"calcTitle": "Calculation",
 		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
 		"programCallTitle": "Program call",
-		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
+		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",
 		"connectionsIntro": "A rung is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
 		"connectionsItems": [

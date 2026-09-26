@@ -35,7 +35,7 @@ import { CSSProperties, useEffect, useState } from "react";
 
 const NUMERIC_VARIABLE_TYPES: VariableType[] = [
 	"INT",
-	"LONG",
+	"DINT",
 	"WORD",
 	"DWORD",
 	"REAL",

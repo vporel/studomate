@@ -7,7 +7,6 @@ import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
-import { IdentifierNode } from "@/expression-language/ast/nodes/identifiers";
 import { parseNumberLiteral } from "@/expression-language/literals/number";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import { parseTimeLiteral } from "@/expression-language/literals/time";
@@ -19,13 +18,16 @@ import ProjectPreCompilerError, {
 import {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
+	getContactPulseVariableMnemonic,
 } from "@/project-analyser/analysers/ladder/ladder.analyser";
 import { resolveStructuralPorts } from "@/schemas/ladder/block-definition";
 import { BlockElement, BlockType } from "@/schemas/ladder/block.schema";
 import Connection from "@/schemas/ladder/connection.schema";
 import Ladder, { LadderRole } from "@/schemas/ladder/ladder.schema";
 import {
+	CoilElement,
 	CoilType,
+	isEdgeCoilType,
 	ContactElement,
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
@@ -42,9 +44,20 @@ export type PreCompiledCoilAssignment = {
 };
 
 /**
+ * Échantillonne, à la position d'un contact P/N dans le réseau, le front de sa variable
+ * (variable d'impulsion lue par l'expression du contact) puis la mémoire de sa valeur : un
+ * contact voit ainsi un front même si sa variable est réécrite plus loin dans le balayage.
+ */
+export type PreCompiledContactEdgeAssignment = {
+	kind: "contactEdge";
+	contactId: string;
+	mnemonic: string;
+	value: ASTNode;
+};
+
+/**
  * Affecte la variable mémoire générée d'un port de bloc (voir `getBlockPortVariableMnemonic`).
- * Contrairement à `edgeMemoUpdates`, l'ordre de ces affectations dans `assignments` est
- * impératif : un port `ENO` peut être lu par un élément plus loin sur la même ligne (`reach`),
+ * L'ordre de ces affectations dans `assignments` est impératif : un port `ENO` peut être lu par un élément plus loin sur la même ligne (`reach`),
  * qui doit donc voir sa valeur de ce même balayage, pas celle du balayage précédent.
  */
 export type PreCompiledBlockPortAssignment = {
@@ -71,32 +84,30 @@ export type PreCompiledEmbeddedNodeAssignment = {
 	simRole?: "timer" | "counter";
 };
 
-export type PreCompiledLadderAssignment =
-	| PreCompiledCoilAssignment
-	| PreCompiledBlockPortAssignment
-	| PreCompiledEmbeddedNodeAssignment;
-
-export type PreCompiledEdgeMemoUpdate = {
-	contactId: string;
-	memoIdentifier: IdentifierNode;
-	sourceIdentifier: IdentifierNode;
-};
-
 /**
- * Un bloc `"user-program"` appelle le programme référencé quand la variable mémoire de son port
- * `EN` (`enMnemonic`) est vraie — voir `PLCRoutine`, qui résout `programId` à l'exécution via le
- * registre des routines du projet.
+ * Un bloc `"user-program"` appelle le programme référencé, à sa position dans le réseau, quand la
+ * variable mémoire de son port `EN` (`enMnemonic`) est vraie — voir `PLCRoutine`, qui résout
+ * `programId` à l'exécution via le registre des routines du projet.
  */
-export type PreCompiledBlockCall = {
+export type PreCompiledCallAssignment = {
+	kind: "call";
 	blockId: string;
 	programId: string;
 	enMnemonic: string;
 };
 
+export type PreCompiledLadderAssignment =
+	| PreCompiledCoilAssignment
+	| PreCompiledContactEdgeAssignment
+	| PreCompiledBlockPortAssignment
+	| PreCompiledEmbeddedNodeAssignment
+	| PreCompiledCallAssignment;
+
 /**
  * Tout le pré-compilé d'un ladder : une affectation par bobine et par port de bloc (dans l'ordre
- * de lecture du réseau, voir `PreCompiledBlockPortAssignment`), une mise à jour de variable
- * mémoire par contact P/N, un appel par bloc `"user-program"`, un `TimerNode` par bloc `"timer"`
+ * de lecture du réseau, voir `PreCompiledBlockPortAssignment`), deux par contact P/N (voir
+ * `PreCompiledContactEdgeAssignment`), un appel par bloc `"user-program"` (voir
+ * `PreCompiledCallAssignment`), un `TimerNode` par bloc `"timer"`
  * et un `CounterNode` par bloc `"counter"` — chacun évalué pour ses effets de bord comme tout
  * autre nœud (même mécanisme que côté GRAFCET pour les timers). `role` voyage jusqu'au
  * compilateur, qui l'utilise pour savoir si ce ladder est le point d'entrée (le Main) ou un
@@ -106,8 +117,6 @@ export type PreCompiledLadder = {
 	type: "ladder";
 	role: LadderRole;
 	assignments: PreCompiledLadderAssignment[];
-	edgeMemoUpdates: PreCompiledEdgeMemoUpdate[];
-	blockCalls: PreCompiledBlockCall[];
 	timers: TimerNode[];
 	counters: CounterNode[];
 };
@@ -134,32 +143,110 @@ function mergeOr(conditions: ASTNode[]): ASTNode | null {
 }
 
 function buildContactExpressionNode(contact: ContactElement): ASTNode {
+	if (contact.data.type === "P" || contact.data.type === "N")
+		return IdentifiersBuilder.buildIdentifierNode(
+			getContactPulseVariableMnemonic(contact.id),
+		);
 	const variableNode = IdentifiersBuilder.buildIdentifierNode(
 		contact.data.variable,
 	);
-	if (contact.data.type === "NO") return variableNode;
-	if (contact.data.type === "NF")
-		return ExpressionsBuilder.buildUnaryExpressionNode("NOT", variableNode);
-	const memoNode = IdentifiersBuilder.buildIdentifierNode(
-		getContactMemoryVariableMnemonic(contact.id),
+	return contact.data.type === "NO"
+		? variableNode
+		: ExpressionsBuilder.buildUnaryExpressionNode("NOT", variableNode);
+}
+
+/** Vide pour un contact NO/NF (voir `PreCompiledContactEdgeAssignment`). */
+function buildContactEdgeAssignments(
+	contact: ContactElement,
+): PreCompiledContactEdgeAssignment[] {
+	if (contact.data.type !== "P" && contact.data.type !== "N") return [];
+	const variableNode = IdentifiersBuilder.buildIdentifierNode(
+		contact.data.variable,
 	);
+	const memoMnemonic = getContactMemoryVariableMnemonic(contact.id);
+	const memoNode = IdentifiersBuilder.buildIdentifierNode(memoMnemonic);
 	// P (front montant) : variable ET NON mémoire ; N (front descendant) : NON variable ET mémoire
-	return contact.data.type === "P"
-		? ExpressionsBuilder.buildLogicalExpressionNode(
-				"AND",
-				variableNode,
-				ExpressionsBuilder.buildUnaryExpressionNode("NOT", memoNode),
-			)
-		: ExpressionsBuilder.buildLogicalExpressionNode(
-				"AND",
-				ExpressionsBuilder.buildUnaryExpressionNode("NOT", variableNode),
-				memoNode,
-			);
+	const pulse =
+		contact.data.type === "P"
+			? ExpressionsBuilder.buildLogicalExpressionNode(
+					"AND",
+					variableNode,
+					ExpressionsBuilder.buildUnaryExpressionNode("NOT", memoNode),
+				)
+			: ExpressionsBuilder.buildLogicalExpressionNode(
+					"AND",
+					ExpressionsBuilder.buildUnaryExpressionNode("NOT", variableNode),
+					memoNode,
+				);
+	return [
+		{
+			kind: "contactEdge",
+			contactId: contact.id,
+			mnemonic: getContactPulseVariableMnemonic(contact.id),
+			value: pulse,
+		},
+		{
+			kind: "contactEdge",
+			contactId: contact.id,
+			mnemonic: memoMnemonic,
+			value: variableNode,
+		},
+	];
+}
+
+/**
+ * Une bobine inversée, montante ou descendante écrit sa variable à chaque balayage
+ * (`mode: "normal"`) avec la condition transformée. Une bobine de front est suivie de
+ * l'affectation de sa mémoire (condition de ce balayage), placée après pour que la condition
+ * du balayage précédent soit encore lisible dans l'expression du front.
+ */
+function buildCoilAssignments(
+	coil: CoilElement,
+	condition: ASTNode,
+): PreCompiledLadderAssignment[] {
+	const { type, variable } = coil.data;
+	const base = { kind: "coil", coilId: coil.id, variable } as const;
+	if (type === "inverted") {
+		return [
+			{
+				...base,
+				mode: "normal",
+				condition: ExpressionsBuilder.buildUnaryExpressionNode(
+					"NOT",
+					condition,
+				),
+			},
+		];
+	}
+	if (!isEdgeCoilType(type)) return [{ ...base, mode: type, condition }];
+
+	const memoMnemonic = getContactMemoryVariableMnemonic(coil.id);
+	const memoNode = IdentifiersBuilder.buildIdentifierNode(memoMnemonic);
+	const edge =
+		type === "rising"
+			? ExpressionsBuilder.buildLogicalExpressionNode(
+					"AND",
+					condition,
+					ExpressionsBuilder.buildUnaryExpressionNode("NOT", memoNode),
+				)
+			: ExpressionsBuilder.buildLogicalExpressionNode(
+					"AND",
+					ExpressionsBuilder.buildUnaryExpressionNode("NOT", condition),
+					memoNode,
+				);
+	return [
+		{ ...base, mode: "normal", condition: edge },
+		{
+			kind: "contactEdge",
+			contactId: coil.id,
+			mnemonic: memoMnemonic,
+			value: condition,
+		},
+	];
 }
 
 type BuiltBlockAssignments = {
 	assignments: PreCompiledLadderAssignment[];
-	call: PreCompiledBlockCall | null;
 	propagated: ASTNode;
 };
 
@@ -189,12 +276,13 @@ function buildUserProgramBlockAssignments(
 				mnemonic: enoMnemonic,
 				value: LiteralsBuilder.buildBooleanNode(true),
 			},
+			{
+				kind: "call",
+				blockId: block.id,
+				programId: block.data.params.programId,
+				enMnemonic,
+			},
 		],
-		call: {
-			blockId: block.id,
-			programId: block.data.params.programId,
-			enMnemonic,
-		},
 		propagated: IdentifiersBuilder.buildIdentifierNode(enoMnemonic),
 	};
 }
@@ -255,7 +343,6 @@ function buildTimerBlockAssignments(
 
 	return {
 		assignments,
-		call: null,
 		propagated: IdentifiersBuilder.buildIdentifierNode(mnemonics.Q),
 	};
 }
@@ -318,7 +405,6 @@ function buildCounterBlockAssignments(
 
 	return {
 		assignments,
-		call: null,
 		propagated: IdentifiersBuilder.buildIdentifierNode(mnemonics.Q),
 	};
 }
@@ -370,7 +456,6 @@ function buildCompareBlockAssignments(
 				),
 			},
 		],
-		call: null,
 		propagated: IdentifiersBuilder.buildIdentifierNode(qMnemonic),
 	};
 }
@@ -423,7 +508,6 @@ function buildAssignmentGatedByEn(
 				value: LiteralsBuilder.buildBooleanNode(true),
 			},
 		],
-		call: null,
 		propagated: IdentifiersBuilder.buildIdentifierNode(enoMnemonic),
 	};
 }
@@ -541,7 +625,7 @@ function networkTopRowByElementId(
 }
 
 /**
- * Calcule, dans l'ordre de lecture du réseau, les affectations de bobines et de ports de bloc —
+ * Calcule, dans l'ordre de lecture du réseau, les affectations de bobines, de fronts de contact et de ports de bloc —
  * réseau par réseau dans l'ordre de leur ligne d'apparition (voir `networkTopRowByElementId`),
  * puis colonne par colonne à l'intérieur d'un réseau (croissant le long de toute connexion, donc
  * sans cycle, voir `ConnectionsAddCommand`). Pour chaque élément,
@@ -558,10 +642,7 @@ function computeNetworkAssignments(
 	elements: LadderElement[],
 	connections: Connection[],
 	dialect: Dialect,
-): {
-	assignments: PreCompiledLadderAssignment[];
-	blockCalls: PreCompiledBlockCall[];
-} {
+): PreCompiledLadderAssignment[] {
 	const incomingByTarget = new Map<string, Connection[]>();
 	for (const connection of connections) {
 		const list = incomingByTarget.get(connection.target.id) ?? [];
@@ -578,7 +659,6 @@ function computeNetworkAssignments(
 	);
 	const passThroughById = new Map<string, ASTNode>();
 	const assignments: PreCompiledLadderAssignment[] = [];
-	const blockCalls: PreCompiledBlockCall[] = [];
 
 	for (const element of sortedByColumn) {
 		const incoming = incomingByTarget.get(element.id) ?? [];
@@ -599,26 +679,22 @@ function computeNetworkAssignments(
 		);
 
 		if (element.type === "coil") {
-			assignments.push({
-				kind: "coil",
-				coilId: element.id,
-				variable: element.data.variable,
-				mode: element.data.type,
-				condition: reach ?? LiteralsBuilder.buildBooleanNode(true),
-			});
+			assignments.push(
+				...buildCoilAssignments(
+					element,
+					reach ?? LiteralsBuilder.buildBooleanNode(true),
+				),
+			);
 		} else if (element.type === "railTerminal") {
 			// Racine du graphe (jamais de connexion entrante) : toujours sous tension.
 			passThroughById.set(element.id, LiteralsBuilder.buildBooleanNode(true));
 		} else if (element.type === "block") {
-			const {
-				assignments: blockAssignments,
-				call,
-				propagated,
-			} = buildBlockAssignments(element, reach, dialect);
+			const { assignments: blockAssignments, propagated } =
+				buildBlockAssignments(element, reach, dialect);
 			assignments.push(...blockAssignments);
-			if (call) blockCalls.push(call);
 			passThroughById.set(element.id, propagated);
 		} else {
+			assignments.push(...buildContactEdgeAssignments(element));
 			passThroughById.set(
 				element.id,
 				mergeAnd(reach, buildContactExpressionNode(element)),
@@ -626,7 +702,7 @@ function computeNetworkAssignments(
 		}
 	}
 
-	return { assignments, blockCalls };
+	return assignments;
 }
 
 export default class LadderPreCompiler {
@@ -637,34 +713,16 @@ export default class LadderPreCompiler {
 		errors: ProjectPreCompilerError[],
 	): PreCompiledLadder {
 		const assignments: PreCompiledLadderAssignment[] = [];
-		const edgeMemoUpdates: PreCompiledEdgeMemoUpdate[] = [];
-		const blockCalls: PreCompiledBlockCall[] = [];
 
 		for (const section of ladder.sections) {
 			try {
-				const networkResult = computeNetworkAssignments(
-					section.elements,
-					section.connections,
-					dialect,
+				assignments.push(
+					...computeNetworkAssignments(
+						section.elements,
+						section.connections,
+						dialect,
+					),
 				);
-				assignments.push(...networkResult.assignments);
-				blockCalls.push(...networkResult.blockCalls);
-				for (const element of section.elements) {
-					if (
-						element.type === "contact" &&
-						(element.data.type === "P" || element.data.type === "N")
-					) {
-						edgeMemoUpdates.push({
-							contactId: element.id,
-							memoIdentifier: IdentifiersBuilder.buildIdentifierNode(
-								getContactMemoryVariableMnemonic(element.id),
-							),
-							sourceIdentifier: IdentifiersBuilder.buildIdentifierNode(
-								element.data.variable,
-							),
-						});
-					}
-				}
 			} catch (e) {
 				const message = e instanceof Error ? e.message : String(e);
 				const source =
@@ -694,8 +752,6 @@ export default class LadderPreCompiler {
 			type: "ladder",
 			role: ladder.role,
 			assignments,
-			edgeMemoUpdates,
-			blockCalls,
 			timers,
 			counters,
 		};

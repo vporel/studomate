@@ -197,6 +197,63 @@ describe("Ladder Pipeline Integration Test", () => {
 		});
 	});
 
+	describe("Bobines inversée et de front", () => {
+		const buildProject = (coilType: "inverted" | "rising" | "falling") => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createLogicOutput("Q0"),
+			]);
+			const ladder = project.createLadder("Ladder 1");
+			wireLadderIntoMain(project, ladder);
+			wireContactToCoil(ladder, ladder.sections[0], ["I0", "NO", 0, 0], ["Q0", coilType, 0, 1]);
+			const pipeline = compilePipelineDetailed(project);
+			expect(pipeline.analysis.issues).toEqual([]);
+			expect(pipeline.preCompilation.errors).toEqual([]);
+			return project;
+		};
+
+		it("bobine inversée : la sortie est l'inverse de la condition", async () => {
+			const plc = compileToPLC(buildProject("inverted"), 10)!;
+			plc.start();
+			await jest.advanceTimersByTimeAsync(50);
+			expectVariableValue(plc, "Q0", true);
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(50);
+			plc.stop();
+			expectVariableValue(plc, "Q0", false);
+		});
+
+		it("bobine de front montant : impulsion d'un seul cycle à l'activation", async () => {
+			const plc = compileToPLC(buildProject("rising"), 10)!;
+			plc.start();
+			await jest.advanceTimersByTimeAsync(50);
+			expectVariableValue(plc, "Q0", false);
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(15);
+			expectVariableValue(plc, "Q0", true);
+			await jest.advanceTimersByTimeAsync(100);
+			expectVariableValue(plc, "Q0", false);
+			plc.setPhysicalInputValueByName("I0", false);
+			await jest.advanceTimersByTimeAsync(100);
+			plc.stop();
+			expectVariableValue(plc, "Q0", false);
+		});
+
+		it("bobine de front descendant : impulsion d'un seul cycle à la désactivation", async () => {
+			const plc = compileToPLC(buildProject("falling"), 10)!;
+			plc.start();
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(50);
+			expectVariableValue(plc, "Q0", false);
+			plc.setPhysicalInputValueByName("I0", false);
+			await jest.advanceTimersByTimeAsync(15);
+			expectVariableValue(plc, "Q0", true);
+			await jest.advanceTimersByTimeAsync(100);
+			plc.stop();
+			expectVariableValue(plc, "Q0", false);
+		});
+	});
+
 	describe("Blocs fonction : pipeline complet + simulation", () => {
 		function newLadderProject(vars: Parameters<typeof ProjectFactory.createWithVariables>[0]) {
 			const project = ProjectFactory.createWithVariables(vars);
@@ -494,6 +551,133 @@ describe("Ladder Pipeline Integration Test", () => {
 			expectVariableValue(plc, "Q0", true); // EN vrai : le SET du sous-programme a été exécuté
 		});
 
+		it("appel `user-program` : le sous-programme s'exécute à la position du bloc, avant les réseaux suivants", async () => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createMemoryBool("m"),
+			]);
+			const sub = project.createLadder("Sous-programme");
+			wireSeries(sub, sub.sections[0], [
+				createRailTerminalElement(0),
+				createCoilElement("m", "set", 0, 1),
+			]);
+
+			// Main : réseau 1 appelle le sous-programme, réseau 2 remet m à zéro.
+			const [callSection] = project.main.sections;
+			wireSeries(project.main, callSection, [
+				createRailTerminalElement(0),
+				createUserProgramBlockElement(sub.id, 0, 1),
+			]);
+			wireSeries(project.main, project.main.createSection("Reset"), [
+				createRailTerminalElement(0),
+				createCoilElement("m", "reset", 0, 1),
+			]);
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "m", false); // SET du sous-programme puis RESET du réseau 2
+		});
+
+		it("appel `user-program` : un réseau placé sous l'appel voit les écritures du sous-programme du même cycle", async () => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createMemoryBool("m"),
+				VariableFactory.createLogicOutput("Q"),
+			]);
+			const sub = project.createLadder("Sous-programme");
+			wireSeries(sub, sub.sections[0], [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createCoilElement("m", "normal", 0, 2),
+			]);
+			const [callSection] = project.main.sections;
+			wireSeries(project.main, callSection, [
+				createRailTerminalElement(0),
+				createUserProgramBlockElement(sub.id, 0, 1),
+			]);
+			// Réseau 2 : SET Q sur m ET NON I0, possible seulement si m retarde d'un cycle sur I0.
+			wireSeries(project.main, project.main.createSection("Lecture"), [
+				createRailTerminalElement(0),
+				createContactElement("m", "NO", 0, 1),
+				createContactElement("I0", "NF", 0, 2),
+				createCoilElement("Q", "set", 0, 3),
+			]);
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("I0", false);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "m", false);
+			expectVariableValue(plc, "Q", false);
+		});
+
+		it("contact P du Main sur une variable écrite par un sous-programme appelé plus bas : un seul front", async () => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createMemoryBool("x"),
+				VariableFactory.createMemoryInt("n"),
+			]);
+			const sub = project.createLadder("Sous-programme");
+			wireSeries(sub, sub.sections[0], [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createCoilElement("x", "normal", 0, 2),
+			]);
+			const [countSection] = project.main.sections;
+			wireSeries(project.main, countSection, [
+				createRailTerminalElement(0),
+				createContactElement("x", "P", 0, 1),
+				createArithmeticBlockElement(0, 2, { in1: "n", in2: "1", out: "n", operator: "+" }),
+			]);
+			wireSeries(project.main, project.main.createSection("Appel"), [
+				createRailTerminalElement(0),
+				createUserProgramBlockElement(sub.id, 0, 1),
+			]);
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(100);
+			plc.stop();
+			throwOnCycleError();
+			expect(getVariableValue(plc, "n")).toBe(1);
+		});
+
+		it("contact P d'un sous-programme appelé conditionnellement : sa mémoire n'avance pas tant qu'il n'est pas appelé", async () => {
+			const project = ProjectFactory.createWithVariables([
+				VariableFactory.createLogicInput("enable"),
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createLogicOutput("Q"),
+			]);
+			const sub = project.createLadder("Sous-programme");
+			wireSeries(sub, sub.sections[0], [
+				createRailTerminalElement(0),
+				createContactElement("I0", "P", 0, 1),
+				createCoilElement("Q", "set", 0, 2),
+			]);
+			const [mainSection] = project.main.sections;
+			wireSeries(project.main, mainSection, [
+				createRailTerminalElement(0),
+				createContactElement("enable", "NO", 0, 1),
+				createUserProgramBlockElement(sub.id, 0, 2),
+			]);
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("I0", true); // front pendant que le sous-programme n'est pas appelé
+			await jest.advanceTimersByTimeAsync(30);
+			expectVariableValue(plc, "Q", false);
+			plc.setPhysicalInputValueByName("enable", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "Q", true); // front vu au premier appel
+		});
+
 		it("rung à branches parallèles (OU) : la bobine suit le OU des deux contacts", async () => {
 			const { project, ladder, section } = newLadderProject([
 				VariableFactory.createLogicInput("I0"),
@@ -568,6 +752,64 @@ describe("Ladder Pipeline Integration Test", () => {
 			resetLast.plc.stop();
 			resetLast.throwOnCycleError();
 			expectVariableValue(resetLast.plc, "Q", false);
+		});
+
+		it("contact P : le front est vu même si sa variable est écrite plus bas dans le balayage", async () => {
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("I0"),
+				VariableFactory.createMemoryBool("x"),
+				VariableFactory.createLogicOutput("Q"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("x", "P", 0, 1),
+				createCoilElement("Q", "set", 0, 2),
+			]);
+			wireSeries(ladder, ladder.createSection("Écriture de x"), [
+				createRailTerminalElement(0),
+				createContactElement("I0", "NO", 0, 1),
+				createCoilElement("x", "normal", 0, 2),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("I0", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "x", true);
+			expectVariableValue(plc, "Q", true);
+		});
+
+		it("deux contacts P sur la même variable voient le même front au même cycle", async () => {
+			// Télérupteur naïf : le réseau 2 voit la lampe que le réseau 1 vient d'allumer et
+			// l'éteint dans le même cycle.
+			const { project, ladder, section } = newLadderProject([
+				VariableFactory.createLogicInput("bp"),
+				VariableFactory.createLogicOutput("lampe"),
+			]);
+			wireSeries(ladder, section, [
+				createRailTerminalElement(0),
+				createContactElement("bp", "P", 0, 1),
+				createContactElement("lampe", "NF", 0, 2),
+				createCoilElement("lampe", "set", 0, 3),
+			]);
+			wireSeries(ladder, ladder.createSection("Extinction"), [
+				createRailTerminalElement(0),
+				createContactElement("bp", "P", 0, 1),
+				createContactElement("lampe", "NO", 0, 2),
+				createCoilElement("lampe", "reset", 0, 3),
+			]);
+
+			const { plc, throwOnCycleError } = runPlc(project);
+			plc.start();
+			await jest.advanceTimersByTimeAsync(30);
+			plc.setPhysicalInputValueByName("bp", true);
+			await jest.advanceTimersByTimeAsync(30);
+			plc.stop();
+			throwOnCycleError();
+			expectVariableValue(plc, "lampe", false);
 		});
 	});
 });

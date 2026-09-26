@@ -18,7 +18,7 @@ export type VariableDirection = "IN" | "OUT" | "INOUT";
 export const VARIABLE_TYPES = [
 	"BOOL",
 	"INT",
-	"LONG",
+	"DINT",
 	"WORD",
 	"DWORD",
 	"REAL",
@@ -33,7 +33,7 @@ export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 	"logic-output": ["BOOL"],
 	"analog-input": ["INT", "WORD", "DWORD"],
 	"analog-output": ["INT", "WORD", "DWORD"],
-	memory: ["BOOL", "INT", "LONG", "WORD", "DWORD", "REAL", "STRING", "TIME"],
+	memory: ["BOOL", "INT", "DINT", "WORD", "DWORD", "REAL", "STRING", "TIME"],
 };
 
 /** Types valides pour l'union de plusieurs zones, sans doublon. */
@@ -52,7 +52,7 @@ export const NATIVE_TYPE_LABELS: Record<NativeType, string> = {
 export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 	BOOL: "boolean",
 	INT: "number",
-	LONG: "number",
+	DINT: "number",
 	WORD: "number",
 	DWORD: "number",
 	REAL: "number",
@@ -63,8 +63,8 @@ export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
 /**
  * Domaine de valeurs à faire respecter en simulation, par type. `null` = aucune contrainte :
  * REAL est un flottant libre ; TIME est un compteur de millisecondes piloté par les
- * temporisations, le borner casserait leur accumulation. LONG sature (JS ne représente pas
- * exactement au-delà de 2^53), les entiers plus courts replient comme sur un automate.
+ * temporisations, le borner casserait leur accumulation. Les entiers replient comme sur un
+ * automate.
  */
 const VARIABLE_TYPE_TO_NUMERIC_RANGE: Record<VariableType, NumericRange | null> =
 	{
@@ -73,14 +73,9 @@ const VARIABLE_TYPE_TO_NUMERIC_RANGE: Record<VariableType, NumericRange | null> 
 		REAL: null,
 		TIME: null,
 		INT: { min: -32768, max: 32767, integer: true, wrap: true },
+		DINT: { min: -2147483648, max: 2147483647, integer: true, wrap: true },
 		WORD: { min: 0, max: 65535, integer: true, wrap: true },
 		DWORD: { min: 0, max: 4294967295, integer: true, wrap: true },
-		LONG: {
-			min: Number.MIN_SAFE_INTEGER,
-			max: Number.MAX_SAFE_INTEGER,
-			integer: true,
-			wrap: false,
-		},
 	};
 
 export function getNumericRange(type: VariableType): NumericRange | null {

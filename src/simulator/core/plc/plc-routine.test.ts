@@ -35,8 +35,8 @@ describe("PLCRoutine", () => {
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
-			expect(routine.getNodes()).toHaveLength(1);
+			const routine = PLCRoutine.fromNodes([ast]);
+			expect(routine.getInstructions()).toEqual([{ kind: "node", node: ast }]);
 		});
 	});
 
@@ -46,7 +46,7 @@ describe("PLCRoutine", () => {
 			const tokens = lexer.tokenize("result := 42");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			plc = new PLC({
 				scanTimeMs: 100,
@@ -68,7 +68,7 @@ describe("PLCRoutine", () => {
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			plc = new PLC({
 				scanTimeMs: 100,
@@ -98,7 +98,7 @@ describe("PLCRoutine", () => {
 			const parser2 = new Parser(tokens2);
 			const ast2 = parser2.parse();
 
-			const routine = new PLCRoutine([ast1, ast2]);
+			const routine = PLCRoutine.fromNodes([ast1, ast2]);
 
 			plc = new PLC({
 				scanTimeMs: 100,
@@ -123,7 +123,7 @@ describe("PLCRoutine", () => {
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const env = new Environment([
 				new EnvVariable("id1", "x", "number", "IN"),
@@ -137,7 +137,7 @@ describe("PLCRoutine", () => {
 		});
 
 		it("réutilise le même évaluateur d'un appel à l'autre en suivant l'environnement fourni", () => {
-			const routine = new PLCRoutine([
+			const routine = PLCRoutine.fromNodes([
 				new Parser(new Lexer(Dialect.FR).tokenize("result := x + 5")).parse(),
 			]);
 			const makeEnv = (x: number) => {
@@ -162,8 +162,8 @@ describe("PLCRoutine", () => {
 		it("lets a later routine see the writes of an earlier one sharing the same environment", () => {
 			const parse = (expression: string) =>
 				new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse();
-			const routine1 = new PLCRoutine([parse("temp := x + 5")]);
-			const routine2 = new PLCRoutine([parse("result := temp * 2")]);
+			const routine1 = PLCRoutine.fromNodes([parse("temp := x + 5")]);
+			const routine2 = PLCRoutine.fromNodes([parse("result := temp * 2")]);
 
 			const env = new Environment([
 				new EnvVariable("id1", "x", "number", "IN"),
@@ -179,17 +179,56 @@ describe("PLCRoutine", () => {
 		});
 	});
 
-	describe("getNodes", () => {
-		it("returns readonly nodes array", () => {
-			const lexer = new Lexer(Dialect.FR);
-			const tokens = lexer.tokenize("result := 42");
-			const parser = new Parser(tokens);
-			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+	describe("calls", () => {
+		const parse = (expression: string) =>
+			new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse();
+		const makeEnv = () => {
+			const env = new Environment([
+				new EnvVariable("id1", "x", "number", "INOUT"),
+				new EnvVariable("id2", "en", "boolean", "INOUT"),
+			]);
+			env.setVariableValueById("id1", 0);
+			env.setVariableValueById("id2", true);
+			return env;
+		};
 
-			const nodes = routine.getNodes();
-			expect(nodes).toHaveLength(1);
-			expect(nodes[0]).toBe(ast);
+		it("runs a call at its position, between the surrounding instructions", () => {
+			const callee = PLCRoutine.fromNodes([parse("x := x * 10")]);
+			const caller = new PLCRoutine([
+				{ kind: "node", node: parse("x := 1") },
+				{ kind: "call", programId: "sub", condition: parse("en") },
+				{ kind: "node", node: parse("x := x + 2") },
+			]);
+			const env = makeEnv();
+
+			caller.execute(env, 100, { sub: callee });
+
+			expect(env.getVariableValueById("id1")).toBe(12); // (1 * 10) + 2
+		});
+
+		it("skips a call whose condition is false", () => {
+			const callee = PLCRoutine.fromNodes([parse("x := 99")]);
+			const caller = new PLCRoutine([
+				{ kind: "call", programId: "sub", condition: parse("en") },
+			]);
+			const env = makeEnv();
+			env.setVariableValueById("id2", false);
+
+			caller.execute(env, 100, { sub: callee });
+
+			expect(env.getVariableValueById("id1")).toBe(0);
+		});
+
+		it("skips a call to an unknown routine and keeps executing", () => {
+			const caller = new PLCRoutine([
+				{ kind: "call", programId: "missing", condition: parse("en") },
+				{ kind: "node", node: parse("x := 5") },
+			]);
+			const env = makeEnv();
+
+			caller.execute(env, 100, {});
+
+			expect(env.getVariableValueById("id1")).toBe(5);
 		});
 	});
 });

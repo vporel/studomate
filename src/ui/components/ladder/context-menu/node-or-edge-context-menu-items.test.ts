@@ -182,7 +182,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 	});
 
 	describe("sous-menu Type (bobine)", () => {
-		it("propose les 3 types, coche le type courant", () => {
+		it("propose les 6 types, coche le type courant", () => {
 			const node = {
 				id: "coil-1",
 				type: "coil",
@@ -193,7 +193,7 @@ describe("nodeOrEdgeContextMenuItems", () => {
 				.flat()
 				.find((item) => item.label === "type")!;
 
-			expect(typeItem.subItems).toHaveLength(3);
+			expect(typeItem.subItems).toHaveLength(6);
 			const checked = typeItem.subItems!.filter(
 				(sub) => "checked" in sub && sub.checked,
 			);

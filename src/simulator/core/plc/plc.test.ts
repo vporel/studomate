@@ -229,7 +229,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -252,7 +252,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -327,7 +327,7 @@ describe("PLC", () => {
 			const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
 			// Create a bad routine that will throw
-			const badRoutine = new PLCRoutine([null as any]);
+			const badRoutine = PLCRoutine.fromNodes([null as any]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -352,7 +352,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -377,7 +377,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -405,7 +405,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -428,7 +428,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -483,7 +483,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -506,7 +506,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := 99");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -529,7 +529,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -584,7 +584,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -605,7 +605,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := x + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -630,7 +630,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("flag := NON flag");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -671,7 +671,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := 99");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -748,7 +748,7 @@ describe("PLC", () => {
 
 		it("_SYS_FIRST_SCAN est vrai au premier scan seulement, et lisible par le programme", () => {
 			const tokens = new Lexer(Dialect.FR).tokenize("init := _SYS_FIRST_SCAN");
-			const routine = new PLCRoutine([new Parser(tokens).parse()]);
+			const routine = PLCRoutine.fromNodes([new Parser(tokens).parse()]);
 			const initVar = new PLCVariable("id_init", "init", "memory", "boolean");
 			const plc = new PLC({ scanTimeMs: 100, program: [routine], variables: [initVar] });
 			plc.start();

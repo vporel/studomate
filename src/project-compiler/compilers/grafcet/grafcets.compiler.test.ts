@@ -52,9 +52,9 @@ describe("GrafcetsCompiler", () => {
 		expect(out.scanRoutines).toHaveLength(3);
 		expect(out.scanRoutines[0]).toBe(out.routinesById["grafcet-1"]);
 		// routine des mémos : deux affectations `_memo_i := Xi`
-		expect(out.scanRoutines[1].getNodes()).toHaveLength(2);
+		expect(out.scanRoutines[1].getInstructions()).toHaveLength(2);
 		// routine d'amorçage : la garde d'activation de l'étape initiale
-		expect(out.scanRoutines[2].getNodes()).toHaveLength(1);
+		expect(out.scanRoutines[2].getInstructions()).toHaveLength(1);
 	});
 
 	it("place l'observation en trailing et remplit l'index des réceptivités", () => {
@@ -76,7 +76,7 @@ describe("GrafcetsCompiler", () => {
 		const out = new GrafcetsCompiler().compile(project);
 
 		expect(out.trailingRoutines).toHaveLength(1);
-		expect(out.trailingRoutines[0].getNodes()).toHaveLength(1);
+		expect(out.trailingRoutines[0].getInstructions()).toHaveLength(1);
 		expect(out.observableExpressionVariableIds).toEqual({
 			"trans-1": [{ variableId: "obs-1", label: null }],
 		});

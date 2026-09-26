@@ -41,7 +41,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 		for (const [programId, grafcet] of grafcets) {
 			const compiled = GrafcetCompiler.compile(grafcet);
 			timers.push(...compiled.timers);
-			const routine = new PLCRoutine(compiled.nodes);
+			const routine = PLCRoutine.fromNodes(compiled.nodes);
 			routinesById[programId] = routine;
 			scanRoutines.push(routine);
 		}
@@ -57,7 +57,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			}
 		}
 		if (stepMemoNodes.length > 0) {
-			scanRoutines.push(new PLCRoutine(stepMemoNodes));
+			scanRoutines.push(PLCRoutine.fromNodes(stepMemoNodes));
 		}
 
 		const initNodes: ASTNode[] = [];
@@ -65,7 +65,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			initNodes.push(...GrafcetCompiler.buildInitializationNodes(grafcet));
 		}
 		if (initNodes.length > 0) {
-			scanRoutines.push(new PLCRoutine(initNodes));
+			scanRoutines.push(PLCRoutine.fromNodes(initNodes));
 		}
 
 		const observableExpressionVariableIds: Record<
@@ -98,7 +98,9 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			}
 		}
 		const trailingRoutines =
-			observationNodes.length > 0 ? [new PLCRoutine(observationNodes)] : [];
+			observationNodes.length > 0
+				? [PLCRoutine.fromNodes(observationNodes)]
+				: [];
 
 		return {
 			routinesById,

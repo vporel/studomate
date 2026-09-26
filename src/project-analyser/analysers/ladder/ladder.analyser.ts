@@ -8,6 +8,7 @@ import {
 } from "@/schemas/ladder/block.schema";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import { isEdgeCoilType } from "@/schemas/ladder/element.schema";
 import LadderElementAnalyserFactory from "./element-analyser.factory";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -42,6 +43,18 @@ export function getContactMemoryVariableId(
  */
 export function getContactMemoryVariableMnemonic(contactId: string): string {
 	return `EDGE_${contactId.replace(/-/g, "")}`;
+}
+
+/** Holds the edge detected by a P/N contact during the last scan of its network. */
+export function getContactPulseVariableId(
+	ladderId: string,
+	contactId: string,
+): string {
+	return `ladder-${ladderId}-edge-pulse-${contactId}`;
+}
+
+export function getContactPulseVariableMnemonic(contactId: string): string {
+	return `EDGEQ_${contactId.replace(/-/g, "")}`;
 }
 
 /** `portName` est le nom déclaré par `BLOCK_PORTS` (`"EN"`, `"ENO"`, et plus tard `"PT"`, `"ET"`...). */
@@ -357,20 +370,34 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	}
 
 	/**
-	 * Une variable mémoire cachée par contact en mode P/N, pour détecter le front — même
-	 * mécanisme que les variables d'étape `Xn` du GRAFCET (`GrafcetAnalyser.buildstepsVariables`).
+	 * Deux variables mémoire cachées par contact en mode P/N : la valeur de sa variable lue au
+	 * balayage précédent, et le front détecté au balayage courant ; une seule (la condition du
+	 * balayage précédent) par bobine de front — même mécanisme que les
+	 * variables d'étape `Xn` du GRAFCET (`GrafcetAnalyser.buildstepsVariables`).
 	 */
 	private buildEdgeMemoryVariables(ladder: Ladder): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
-			if (
+			const isEdgeContact =
 				element.type === "contact" &&
-				(element.data.type === "P" || element.data.type === "N")
-			) {
+				(element.data.type === "P" || element.data.type === "N");
+			const isEdgeCoil =
+				element.type === "coil" && isEdgeCoilType(element.data.type);
+			if (isEdgeContact || isEdgeCoil) {
 				variables.push(
 					new Variable(
 						getContactMemoryVariableId(ladder.id, element.id),
 						getContactMemoryVariableMnemonic(element.id),
+						"memory",
+						"BOOL",
+					),
+				);
+			}
+			if (isEdgeContact) {
+				variables.push(
+					new Variable(
+						getContactPulseVariableId(ladder.id, element.id),
+						getContactPulseVariableMnemonic(element.id),
 						"memory",
 						"BOOL",
 					),

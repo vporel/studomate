@@ -102,10 +102,13 @@ export default class ProjectCompiler {
 			const check = (routine: PLCRoutine) => {
 				if (checked.has(routine)) return;
 				checked.add(routine);
-				routine.getNodes().forEach((node) => semanticAnalyser.visit(node));
-				routine
-					.getCalls()
-					.forEach((call) => semanticAnalyser.visit(call.condition));
+				for (const instruction of routine.getInstructions()) {
+					semanticAnalyser.visit(
+						instruction.kind === "node"
+							? instruction.node
+							: instruction.condition,
+					);
+				}
 			};
 			Object.values(routinesById).forEach(check);
 			routines.forEach(check);

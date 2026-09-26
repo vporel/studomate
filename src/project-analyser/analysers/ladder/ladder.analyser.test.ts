@@ -16,6 +16,7 @@ import { VariableFactory } from "@tests/utils/variable-factory";
 import LadderAnalyser, {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
+	getContactPulseVariableMnemonic,
 } from "./ladder.analyser";
 
 describe("LadderAnalyser", () => {
@@ -36,7 +37,7 @@ describe("LadderAnalyser", () => {
 	});
 
 	describe("buildEdgeMemoryVariables (via generateVariables)", () => {
-		it("crée une variable memory/BOOL par contact P ou N, dont le mnémonique est valide", () => {
+		it("crée deux variables memory/BOOL (mémoire + impulsion) par contact P ou N, aux mnémoniques valides", () => {
 			const rail1 = createRailTerminalElement(0);
 			const contactP = createContactElement("A", "P", 0, 1);
 			const coil1 = createCoilElement("Q1", "normal", 0, 2);
@@ -54,7 +55,7 @@ describe("LadderAnalyser", () => {
 
 			const generatedVariables = ladderAnalyser.generateVariables(ladder);
 
-			expect(generatedVariables).toHaveLength(2);
+			expect(generatedVariables).toHaveLength(4);
 			expect(
 				generatedVariables.every(
 					(v) => v.zone === "memory" && v.type === "BOOL",
@@ -67,9 +68,41 @@ describe("LadderAnalyser", () => {
 			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
 				[
 					getContactMemoryVariableMnemonic(contactP.id),
+					getContactPulseVariableMnemonic(contactP.id),
 					getContactMemoryVariableMnemonic(contactN.id),
+					getContactPulseVariableMnemonic(contactN.id),
 				].sort(),
 			);
+		});
+
+		it("crée une seule variable mémoire (la condition précédente) par bobine de front, aucune pour les autres bobines", () => {
+			const rail = createRailTerminalElement(0);
+			const rising = createCoilElement("Q1", "rising", 0, 1);
+			const falling = createCoilElement("Q2", "falling", 0, 1);
+			const inverted = createCoilElement("Q3", "inverted", 0, 1);
+			const normal = createCoilElement("Q4", "normal", 0, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[rail, rising, falling, inverted, normal],
+					[rising, falling, inverted, normal].flatMap((coil) =>
+						wireInSeries([rail, coil]),
+					),
+				),
+			]);
+
+			const generatedVariables = ladderAnalyser.generateVariables(ladder);
+
+			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
+				[
+					getContactMemoryVariableMnemonic(rising.id),
+					getContactMemoryVariableMnemonic(falling.id),
+				].sort(),
+			);
+			expect(
+				generatedVariables.every(
+					(v) => v.zone === "memory" && v.type === "BOOL",
+				),
+			).toBe(true);
 		});
 
 		it("ne crée aucune variable mémoire pour un contact NO ou NF", () => {

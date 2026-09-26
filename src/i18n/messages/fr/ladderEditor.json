@@ -7,6 +7,11 @@
 		"coilNormal": "Bobine normale",
 		"coilSet": "Bobine Set (mémorisation à 1)",
 		"coilReset": "Bobine Reset (mémorisation à 0)",
+		"coilInverted": "Bobine inversée",
+		"coilRising": "Bobine de front montant (impulsion à l'activation)",
+		"showExtraCoils": "Afficher d'autres bobines",
+		"hideExtraCoils": "Masquer les bobines supplémentaires",
+		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
 		"addSection": "Section"
 	},
 	"systemBlocks": {
@@ -56,6 +61,9 @@
 		"coilNormal": "Bobine normale",
 		"coilSet": "Bobine Set (mémorisation à 1)",
 		"coilReset": "Bobine Reset (mémorisation à 0)",
+		"coilInverted": "Bobine inversée",
+		"coilRising": "Bobine de front montant (impulsion à l'activation)",
+		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
 		"copy": "Copier",
 		"cut": "Couper",
 		"delete": "Supprimer"

@@ -91,15 +91,26 @@ function migrateHmiWidget(widget: unknown): unknown {
 	return widget;
 }
 
+/** The `LONG` variable type becomes `DINT` (IEC 61131-3). */
+function migrateLongVariables(variables: unknown): unknown {
+	if (!Array.isArray(variables)) return variables;
+	return variables.map((variable) =>
+		(variable as Record<string, unknown> | null)?.type === "LONG"
+			? { ...(variable as object), type: "DINT" }
+			: variable,
+	);
+}
+
 /**
  * - The counting port of a `CTU` is named `CU` (IEC 61131-3): references to `Name.IN` become
  *   `Name.CU`. `CTD` already used `CD`.
  * - HMI push-buttons and toggle-switches carry an explicit NO/NC contact.
+ * - The `LONG` variable type is replaced by `DINT`.
  */
 const v2ToV3: ProjectMigration = {
 	from: 2,
 	description:
-		"Rename CTU counting port references from `.IN` to `.CU`; explicit NO/NC contact on HMI push-buttons and toggle-switches",
+		"Rename CTU counting port references from `.IN` to `.CU`; explicit NO/NC contact on HMI push-buttons and toggle-switches; `LONG` variable type replaced by `DINT`",
 	migrate: (project) => {
 		const programs = project.programs;
 		const names =
@@ -112,9 +123,11 @@ const v2ToV3: ProjectMigration = {
 				? (renameExactStrings(project, renames) as Record<string, unknown>)
 				: project;
 		const hmiPages = migrateHmiSwitchingWidgets(renamed.hmiPages);
+		const variables = migrateLongVariables(renamed.variables);
 		return {
 			...renamed,
 			...(hmiPages !== undefined ? { hmiPages } : {}),
+			...(variables !== undefined ? { variables } : {}),
 			schemaVersion: 3,
 		};
 	},

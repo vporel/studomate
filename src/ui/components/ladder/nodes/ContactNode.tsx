@@ -1,6 +1,6 @@
 "use client";
 
-import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
+import { getContactPulseVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 import ElementUpdateCommand from "@/schemas/ladder/commands/element-update.command";
 import { ContactType } from "@/schemas/ladder/element.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
@@ -40,11 +40,11 @@ const ContactNode = ({ id, data, selected }: NodeProps<ContactNodeType>) => {
 		if (!pageVisible) return false;
 		const variableValue =
 			state.simulationVariablesStatesByMnemonic[variable]?.value;
-		const memVarId = getContactMemoryVariableId(ladderId, id);
+		const pulseVarId = getContactPulseVariableId(ladderId, id);
 		return contactLetsPowerThrough(
 			type,
 			variableValue,
-			state.simulationVariablesStates[memVarId]?.value,
+			state.simulationVariablesStates[pulseVarId]?.value,
 		);
 	});
 	const highlighted = useLadderStore((state) =>

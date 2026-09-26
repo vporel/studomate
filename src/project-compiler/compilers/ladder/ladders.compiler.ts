@@ -27,7 +27,7 @@ export default class LaddersCompiler implements NotationCompiler {
 			const compiled = LadderCompiler.compile(program);
 			timers.push(...compiled.timers);
 			counters.push(...compiled.counters);
-			const routine = new PLCRoutine(compiled.nodes, compiled.calls);
+			const routine = new PLCRoutine(compiled.instructions);
 			routinesById[programId] = routine;
 			if (program.role === "main") mainRoutine = routine;
 		}

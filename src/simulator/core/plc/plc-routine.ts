@@ -9,7 +9,14 @@ import EvaluatorVisitor from "@/simulator/interpreter/evaluator/evaluator.visito
  * de continuer à s'exécuter (chacun trouvant l'autre déjà construit), l'analyseur étant seul
  * responsable d'interdire les cycles avant qu'on en arrive là.
  */
-export type PLCRoutineCall = { programId: string; condition: ASTNode };
+export type PLCRoutineCall = {
+	kind: "call";
+	programId: string;
+	condition: ASTNode;
+};
+
+export type PLCRoutineInstruction =
+	{ kind: "node"; node: ASTNode } | PLCRoutineCall;
 
 /**
  * A ready-to-execute PLC routine.
@@ -17,30 +24,28 @@ export type PLCRoutineCall = { programId: string; condition: ASTNode };
  * We assume that the routine has already been lexed, parsed semantically analysed, and simplified,
  * so it only contains nodes that are valid and can be directly evaluated.
  *
- * At runtime, execute() evaluates the stored nodes against the environment shared by every
+ * At runtime, execute() evaluates the stored instructions against the environment shared by every
  * routine of the same PLC cycle, mutating it directly — so a later routine sees the writes of
- * an earlier one without going through the PLC. `calls` are evaluated after `nodes`, each
- * invoking another routine — recursively, so a called routine's own calls run in turn — found in
- * `routinesById` by `programId`, and silently skipped if absent (project malformed/mid-edit,
- * never a reason to crash a running simulation).
+ * an earlier one without going through the PLC. Instructions run in order: a call runs at its
+ * position, invoking another routine (recursively, so a called routine's own calls run in turn)
+ * found in `routinesById` by `programId`, and is silently skipped if absent (project
+ * malformed/mid-edit, never a reason to crash a running simulation).
  */
 export default class PLCRoutine {
-	private readonly nodes: ASTNode[];
-	private readonly calls: PLCRoutineCall[];
+	private readonly instructions: PLCRoutineInstruction[];
 	/** Réutilisé de cycle en cycle : seuls `env` et `deltaTimeMs` changent (voir `execute`). */
 	private evaluator: EvaluatorVisitor | null = null;
 
-	constructor(nodes: ASTNode[], calls: PLCRoutineCall[] = []) {
-		this.nodes = nodes;
-		this.calls = calls;
+	constructor(instructions: PLCRoutineInstruction[]) {
+		this.instructions = instructions;
 	}
 
-	getNodes(): readonly ASTNode[] {
-		return this.nodes;
+	static fromNodes(nodes: ASTNode[]): PLCRoutine {
+		return new PLCRoutine(nodes.map((node) => ({ kind: "node", node })));
 	}
 
-	getCalls(): readonly PLCRoutineCall[] {
-		return this.calls;
+	getInstructions(): readonly PLCRoutineInstruction[] {
+		return this.instructions;
 	}
 
 	execute(
@@ -55,12 +60,17 @@ export default class PLCRoutine {
 			this.evaluator.setDeltaTimeMs(deltaTimeMs);
 		}
 		const evaluator = this.evaluator;
-		for (const node of this.nodes) {
-			evaluator.visit(node);
-		}
-		for (const call of this.calls) {
-			if (!evaluator.visit(call.condition)) continue;
-			routinesById[call.programId]?.execute(env, deltaTimeMs, routinesById);
+		for (const instruction of this.instructions) {
+			if (instruction.kind === "node") {
+				evaluator.visit(instruction.node);
+				continue;
+			}
+			if (!evaluator.visit(instruction.condition)) continue;
+			routinesById[instruction.programId]?.execute(
+				env,
+				deltaTimeMs,
+				routinesById,
+			);
 		}
 	}
 }

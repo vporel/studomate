@@ -48,4 +48,24 @@ describe("LadderToolbar", () => {
 		setup({ mode: ProjectMode.SIMULATION });
 		expect(screen.getByText("Section").closest("button")).toBeDisabled();
 	});
+
+	it("masque les bobines inversée et de front tant que la flèche d'extension n'est pas cliquée", () => {
+		setup();
+		const extraLabels = [
+			"Bobine inversée",
+			"Bobine de front montant (impulsion à l'activation)",
+			"Bobine de front descendant (impulsion à la désactivation)",
+		];
+		const hasTool = (label: string) =>
+			document.querySelector(`[title="${label}"], [aria-label="${label}"]`) !==
+			null;
+
+		expect(extraLabels.some(hasTool)).toBe(false);
+
+		fireEvent.click(screen.getByRole("button", { name: "Afficher d'autres bobines" }));
+		expect(extraLabels.every(hasTool)).toBe(true);
+
+		fireEvent.click(screen.getByRole("button", { name: "Masquer les bobines supplémentaires" }));
+		expect(extraLabels.some(hasTool)).toBe(false);
+	});
 });

@@ -1,5 +1,8 @@
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
-import { CoilElement } from "@/schemas/ladder/element.schema";
+import {
+	CoilElement,
+	isOverwritingCoilType,
+} from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import LadderElementAnalyser, {
@@ -76,13 +79,13 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 			);
 		}
 
-		if (element.data.type === "normal") {
+		if (isOverwritingCoilType(element.data.type)) {
 			const sameVariableCoilsCount = ladder
 				.getAllElements()
 				.filter(
 					(el) =>
 						el.type === "coil" &&
-						el.data.type === "normal" &&
+						isOverwritingCoilType(el.data.type) &&
 						el.data.variable === element.data.variable,
 				).length;
 			if (sameVariableCoilsCount > 1) {

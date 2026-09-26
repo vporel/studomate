@@ -9,6 +9,7 @@ import {
 	getParameterPinRows,
 } from "@/schemas/ladder/block-port.schema";
 import {
+	CoilType,
 	getElementWidth,
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
@@ -136,6 +137,15 @@ function contactOps(element: LadderElement & { type: "contact" }): DrawOp[] {
 	return ops;
 }
 
+const COIL_LETTERS: Record<CoilType, string> = {
+	normal: "",
+	inverted: "/",
+	set: "S",
+	reset: "R",
+	rising: "P",
+	falling: "N",
+};
+
 function coilOps(element: LadderElement & { type: "coil" }): DrawOp[] {
 	const x = colToX(element.position.col);
 	const y = rowToY(element.position.row);
@@ -160,8 +170,7 @@ function coilOps(element: LadderElement & { type: "coil" }): DrawOp[] {
 		},
 		{ op: "line", x1: bx2, y1: cy, x2: x + w, y2: cy, strokeWidth: STROKE },
 	];
-	const letter =
-		element.data.type === "set" ? "S" : element.data.type === "reset" ? "R" : "";
+	const letter = COIL_LETTERS[element.data.type];
 	if (letter) {
 		ops.push({
 			op: "text",

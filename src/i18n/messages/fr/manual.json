@@ -219,14 +219,14 @@
 		"typesItems": [
 			"BOOL — booléen (vrai/faux), disponible dans toutes les zones",
 			"INT — entier signé, disponible pour les analogiques et mémoires",
-			"LONG — entier long signé, disponible dans les mémoires",
+			"DINT — entier signé 32 bits, disponible dans les mémoires",
 			"WORD — entier non signé 16 bits, disponible pour les analogiques et mémoires",
 			"DWORD — entier non signé 32 bits, disponible pour les analogiques et mémoires",
 			"REAL — nombre flottant, disponible dans les mémoires",
 			"STRING — chaîne de caractères, disponible dans les mémoires",
 			"TIME — durée (ex. T#5s), disponible dans les mémoires — utilisé notamment pour les temporisations"
 		],
-		"typesOutro": "En simulation, les variables entières sont ramenées à la plage de leur type à chaque écriture : INT, WORD et DWORD repartent de l'autre borne en cas de dépassement (un INT qui dépasse 32767 revient à −32768), LONG est tronqué à l'entier. À garder en tête pour une accumulation du type « position := position + pas ».",
+		"typesOutro": "En simulation, les variables entières sont ramenées à la plage de leur type à chaque écriture : INT, DINT, WORD et DWORD repartent de l'autre borne en cas de dépassement (un INT qui dépasse 32767 revient à −32768). À garder en tête pour une accumulation du type « position := position + pas ».",
 		"propertiesTitle": "Propriétés d'une variable",
 		"propertiesItems": [
 			"Mnémonique (obligatoire) : nom de la variable, max 32 caractères, doit commencer par une lettre, caractères alphanumériques et underscores autorisés, doit être unique",
@@ -420,7 +420,7 @@
 		"calcTitle": "Calcul",
 		"calcBody": "Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.",
 		"programCallTitle": "Appel de programme",
-		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet — un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
+		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet — un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",
 		"connectionsIntro": "Un réseau est alimenté par le rail à gauche (trait vertical). Les éléments se relient entre eux en glissant depuis un point de connexion vers l'élément cible ; le validateur de connexions empêche les liaisons invalides (ex. relier deux bobines entre elles).",
 		"connectionsItems": [

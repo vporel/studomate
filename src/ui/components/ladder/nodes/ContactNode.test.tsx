@@ -199,15 +199,15 @@ describe("ContactNode", () => {
 			);
 		});
 
-		it("contact front P : 'energized' seulement sur front montant (mémoire à false)", () => {
+		it("contact front P : 'energized' quand le front a été détecté au dernier balayage", () => {
 			setup({
 				variable: "E1",
 				type: "P",
 				simulationVariablesStates: {
 					v1: { mnemonic: "E1", value: true },
-					"ladder-ladder-1-edge-contact-1": {
-						mnemonic: "EDGE_x",
-						value: false,
+					"ladder-ladder-1-edge-pulse-contact-1": {
+						mnemonic: "EDGEQ_x",
+						value: true,
 					},
 				},
 			});
@@ -218,15 +218,15 @@ describe("ContactNode", () => {
 			);
 		});
 
-		it("contact front P : noir si la mémoire de front est déjà à true", () => {
+		it("contact front P : noir sans front détecté, même si sa variable est vraie", () => {
 			setup({
 				variable: "E1",
 				type: "P",
 				simulationVariablesStates: {
 					v1: { mnemonic: "E1", value: true },
-					"ladder-ladder-1-edge-contact-1": {
-						mnemonic: "EDGE_x",
-						value: true,
+					"ladder-ladder-1-edge-pulse-contact-1": {
+						mnemonic: "EDGEQ_x",
+						value: false,
 					},
 				},
 			});

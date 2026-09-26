@@ -143,6 +143,37 @@ describe("CoilAnalyser", () => {
 		expect(duplicateIssue.params.count).toBe(2);
 	});
 
+	it.each(["inverted", "rising", "falling"] as const)(
+		"signale LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT quand une bobine %s partage sa variable avec une bobine normale",
+		(type) => {
+			const q = VariableFactory.createMemoryBool("Q");
+			const rail1 = createRailTerminalElement(0);
+			const normalCoil = createCoilElement("Q", "normal", 0, 1);
+			const rail2 = createRailTerminalElement(1);
+			const otherCoil = createCoilElement("Q", type, 1, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[rail1, normalCoil, rail2, otherCoil],
+					[
+						...wireInSeries([rail1, normalCoil]),
+						...wireInSeries([rail2, otherCoil]),
+					],
+				),
+			]);
+
+			const issues = analyser.analyseInContext(
+				otherCoil,
+				ladder,
+				variablesContext(q),
+				ProjectFactory.createEmpty(),
+			);
+
+			expect(issues.map((i) => i.code)).toContain(
+				"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			);
+		},
+	);
+
 	it("n'émet aucune issue quand deux bobines set/reset partagent la même variable", () => {
 		const q = VariableFactory.createMemoryBool("Q");
 		const rail1 = createRailTerminalElement(0);

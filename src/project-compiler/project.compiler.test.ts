@@ -109,7 +109,7 @@ describe("ProjectCompiler", () => {
 			expect(result.result).toBeDefined();
 			// 1 routine de grafcet + la routine des mémos d'étape + la routine d'initialisation.
 			expect(result.result!.routines).toHaveLength(3);
-			expect(result.result!.routines[0].getNodes().length).toBeGreaterThan(0);
+			expect(result.result!.routines[0].getInstructions().length).toBeGreaterThan(0);
 		});
 
 		it("ajoute une routine d'observation en dernier et remplit l'index des réceptivités", () => {
@@ -182,8 +182,8 @@ describe("ProjectCompiler", () => {
 			});
 			const observationRoutine =
 				result.result!.routines[result.result!.routines.length - 1];
-			expect(observationRoutine.getNodes()).toHaveLength(1);
-			expect(observationRoutine.getNodes()[0].type).toBe("ASSIGN_STATEMENT");
+			expect(observationRoutine.getInstructions()).toHaveLength(1);
+			expect(observationRoutine.getInstructions()[0]).toMatchObject({ kind: "node", node: { type: "ASSIGN_STATEMENT" } });
 		});
 
 		it("n'ajoute pas de routine d'observation quand aucune transition n'est observable", () => {

@@ -2,7 +2,7 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import { computeEnergizedEdges } from "./ladder-power-flow";
 import { SimulationVariableState } from "@/ui/stores/project/project.store";
 import Connection from "@/schemas/ladder/connection.schema";
-import { getContactMemoryVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
+import { getContactPulseVariableId } from "@/project-analyser/analysers/ladder/ladder.analyser";
 
 describe("computeEnergizedEdges", () => {
 	let ladder: Ladder;
@@ -137,7 +137,7 @@ describe("computeEnergizedEdges", () => {
 		expect(energized.has("c2")).toBe(false);
 	});
 
-	it("should energize P contact only when variable is true AND memory is false", () => {
+	it("should energize a P contact only when its edge pulse variable is true", () => {
 		ladder.addElements(sectionId, [
 			{
 				id: "rail1",
@@ -171,28 +171,21 @@ describe("computeEnergizedEdges", () => {
 			),
 		]);
 
-		const memVar = getContactMemoryVariableId(ladder.id, "contact1");
+		const pulseVar = getContactPulseVariableId(ladder.id, "contact1");
 
-		// Variable false -> no power
+		// Pulse false -> no power, whatever the variable value
 		let energized = computeEnergizedEdges(ladder, {
-			I1: { id: "I1", mnemonic: "I1", value: false },
-			[memVar]: { id: memVar, mnemonic: memVar, value: false },
+			I1: { id: "I1", mnemonic: "I1", value: true },
+			[pulseVar]: { id: pulseVar, mnemonic: pulseVar, value: false },
 		});
 		expect(energized.has("c2")).toBe(false);
 
-		// Variable true, memVar false -> P pulse! power passes
+		// Pulse true -> edge detected during the last scan, power passes
 		energized = computeEnergizedEdges(ladder, {
 			I1: { id: "I1", mnemonic: "I1", value: true },
-			[memVar]: { id: memVar, mnemonic: memVar, value: false },
+			[pulseVar]: { id: pulseVar, mnemonic: pulseVar, value: true },
 		});
 		expect(energized.has("c2")).toBe(true);
-
-		// Variable true, memVar true -> pulse ended, power blocks
-		energized = computeEnergizedEdges(ladder, {
-			I1: { id: "I1", mnemonic: "I1", value: true },
-			[memVar]: { id: memVar, mnemonic: memVar, value: true },
-		});
-		expect(energized.has("c2")).toBe(false);
 	});
 
 	it("réutilise le résultat mémoïsé tant que ladder et état gardent leur référence", () => {

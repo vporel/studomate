@@ -31,7 +31,7 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
 > = {
 	BOOL: "boolean",
 	INT: "number",
-	LONG: "number",
+	DINT: "number",
 	WORD: "number",
 	DWORD: "number",
 	REAL: "number",

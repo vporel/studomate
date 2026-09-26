@@ -149,10 +149,15 @@ describe("Variable", () => {
 			}
 		});
 
-		it("fait saturer LONG (pas de repli)", () => {
+		it("borne DINT sur 32 bits signés, avec repli", () => {
 			expect(
-				new Variable("id", "M", "memory", "LONG").getNumericRange(),
-			).toMatchObject({ wrap: false });
+				new Variable("id", "M", "memory", "DINT").getNumericRange(),
+			).toEqual({
+				min: -2147483648,
+				max: 2147483647,
+				integer: true,
+				wrap: true,
+			});
 		});
 	});
 

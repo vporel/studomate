@@ -6,7 +6,10 @@ import { createRandomId } from "@/ids";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Divider } from "@mui/material";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { Box, Button, Divider, IconButton } from "@mui/material";
+import { useState } from "react";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
@@ -36,7 +39,7 @@ const SystemBlockToolLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 /**
- * Outils de dépose (contact NO/NF/P/N, bobine normal/set/reset, compare, assign, arithmetic) :
+ * Outils de dépose (contact NO/NF/P/N, bobine normal/inversée/set/reset/front, compare, assign, arithmetic) :
  * on drague l'icône, on la lâche sur le canevas — la cible (insertion, branche parallèle, nouveau
  * réseau) est résolue par accrochage à la grille, pas de zone de dépôt dédiée. Un réseau ne peut
  * pas être vide : il n'existe qu'à partir du moment où un premier élément y est déposé, d'où
@@ -52,6 +55,7 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 	const mode = useProjectStore((state) => state.mode);
 	const t = useT("ladderEditor.toolbar");
 	const tsb = useT("ladderEditor.systemBlocks");
+	const [extraCoilsVisible, setExtraCoilsVisible] = useState(false);
 
 	const addSection = () => {
 		commandsStackManager.executeOperation([
@@ -122,6 +126,43 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				>
 					<CoilSymbol type="reset" />
 				</LadderTool>
+				{extraCoilsVisible && (
+					<>
+						<LadderTool
+							element={{ kind: "coil", type: "inverted" }}
+							label={t("coilInverted")}
+						>
+							<CoilSymbol type="inverted" />
+						</LadderTool>
+						<LadderTool
+							element={{ kind: "coil", type: "rising" }}
+							label={t("coilRising")}
+						>
+							<CoilSymbol type="rising" />
+						</LadderTool>
+						<LadderTool
+							element={{ kind: "coil", type: "falling" }}
+							label={t("coilFalling")}
+						>
+							<CoilSymbol type="falling" />
+						</LadderTool>
+					</>
+				)}
+				<IconButton
+					size="small"
+					aria-label={t(
+						extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils",
+					)}
+					title={t(extraCoilsVisible ? "hideExtraCoils" : "showExtraCoils")}
+					onClick={() => setExtraCoilsVisible((visible) => !visible)}
+					sx={{ p: 0.25 }}
+				>
+					{extraCoilsVisible ? (
+						<ChevronLeftIcon fontSize="small" />
+					) : (
+						<ChevronRightIcon fontSize="small" />
+					)}
+				</IconButton>
 				<Divider orientation="vertical" style={{ margin: "5px" }} />
 				{SYSTEM_BLOCK_CATALOG.filter((entry) => entry.toolbar).map((entry) => (
 					<LadderSystemBlockTool

@@ -19,9 +19,25 @@ export const CONTACT_TYPES = ["NO", "NF", "P", "N"] as const;
 
 export type ContactType = (typeof CONTACT_TYPES)[number];
 
-export const COIL_TYPES = ["normal", "set", "reset"] as const;
+export const COIL_TYPES = [
+	"normal",
+	"inverted",
+	"set",
+	"reset",
+	"rising",
+	"falling",
+] as const;
 
 export type CoilType = (typeof COIL_TYPES)[number];
+
+/** Bobines qui écrivent leur variable à chaque balayage (par opposition à `set`/`reset`, qui ne
+ * l'écrivent que si la condition est vraie). */
+export const isOverwritingCoilType = (type: CoilType): boolean =>
+	type !== "set" && type !== "reset";
+
+/** Bobines de front (`--(P)--` / `--(N)--`) : elles mémorisent la condition du balayage précédent. */
+export const isEdgeCoilType = (type: CoilType): boolean =>
+	type === "rising" || type === "falling";
 
 /** Position sur la grille d'une section — pas de pixels, contrairement au GRAFCET. */
 export type GridPosition = { row: number; col: number };

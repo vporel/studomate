@@ -65,7 +65,7 @@ describe("VariableCompiler", () => {
 			expect(result[0].getType()).toBe("boolean");
 		});
 
-		it("compiles INT, LONG, WORD, DWORD, REAL to number PLCVariable", () => {
+		it("compiles INT, DINT, WORD, DWORD, REAL to number PLCVariable", () => {
 			const variables = [
 				new VariableBuilder()
 					.id("v1")
@@ -76,7 +76,7 @@ describe("VariableCompiler", () => {
 				new VariableBuilder()
 					.id("v2")
 					.mnemonic("M2")
-					.type("LONG")
+					.type("DINT")
 					.zone("memory")
 					.build(),
 				new VariableBuilder()
