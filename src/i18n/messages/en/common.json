@@ -4,5 +4,15 @@
 		"description": "Language of the application interface.",
 		"fr": "French",
 		"en": "English"
+	},
+	"programExecution": {
+		"badge": "Not executed",
+		"warningLabel": "Excluded from execution",
+		"warningTooltip": "This program is not executed",
+		"modalTitle": "Program not executed",
+		"modalBody": "This program is excluded from execution. It can still be drawn, edited and exported to PDF, but it is neither analysed, compiled nor simulated.",
+		"modalFreeText": "Its mnemonics can therefore be free text, without matching a declared variable. Its step (Xn) and block variables do not exist for the other programs.",
+		"include": "Include in execution",
+		"close": "Close"
 	}
 }

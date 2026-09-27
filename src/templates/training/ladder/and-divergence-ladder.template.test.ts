@@ -16,13 +16,13 @@ describe("and-divergence-ladder.template", () => {
 		scenario.set("capteur1", true);
 		await scenario.cycles(3);
 		expect(scenario.get("sortie1")).toBe(true);
-		expect(scenario.get("M0")).toBe(false);
+		expect(scenario.get("X0")).toBe(false);
 
 		scenario.set("capteur2", true);
 		await scenario.cycles(2);
 		expect(scenario.get("sortie1")).toBe(false);
 		expect(scenario.get("sortie2")).toBe(false);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		scenario.stop();
 	});
 });

@@ -6,6 +6,7 @@ import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import Project from "@/schemas/project/project.schema";
 import useLadderMenuItems from "./useLadderMenuItems";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -23,12 +24,13 @@ describe("useLadderMenuItems", () => {
 	const laddersManager = {
 		getProgramOrThrow: jest.fn(),
 		deleteProgramById: jest.fn(),
+		setExcludedFromExecution: jest.fn(),
 	};
 	const pagesManager = { openPage: jest.fn() };
 
-	function setup(mode: ProjectMode) {
+	function setup(mode: ProjectMode, project?: Project) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ laddersManager, pagesManager, mode }),
+			selectorImplementation({ laddersManager, pagesManager, mode, project }),
 		);
 		return renderHook(() => useLadderMenuItems(), { wrapper: i18nWrapper() });
 	}
@@ -98,5 +100,27 @@ describe("useLadderMenuItems", () => {
 
 		expect(laddersManager.deleteProgramById).not.toHaveBeenCalled();
 		confirmSpy.mockRestore();
+	});
+
+	it("adds an item to exclude a standard ladder from execution", () => {
+		const project = new Project("p1", "P", "");
+		const ladder = project.createLadder("L1");
+		const { result } = setup(ProjectMode.DESIGN, project);
+
+		const items = result.current(ladder.id);
+		act(() => items[2][0].onClick?.());
+
+		expect(laddersManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			ladder.id,
+			true,
+		);
+	});
+
+	it("adds no execution item for the Main", () => {
+		const project = new Project("p1", "P", "");
+		const main = Object.values(project.ladders).find((l) => l.role === "main")!;
+		const { result } = setup(ProjectMode.DESIGN, project);
+
+		expect(result.current(main.id)).toHaveLength(2);
 	});
 });

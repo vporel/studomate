@@ -80,6 +80,12 @@ export function getBlockPortVariableMnemonic(
 	return `BLOCK_${blockId.replace(/-/g, "")}_${portName}`;
 }
 
+function executedLadders(project: Project): Ladder[] {
+	return Object.values(project.ladders).filter(
+		(ladder) => !ladder.excludedFromExecution,
+	);
+}
+
 /**
  * Analyseur du Ladder — parcourt les éléments et connexions à plat : chaque vérification
  * structurelle se réduit à une recherche locale dans `connections`.
@@ -191,7 +197,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * ladders du projet, pas sur un seul — appelée une fois par `ProjectAnalyser`.
 	 */
 	static checkMainUniqueness(project: Project): ProjectAnalyserIssue[] {
-		const mains = Object.values(project.ladders).filter(
+		const mains = executedLadders(project).filter(
 			(ladder) => ladder.role === "main",
 		);
 		if (mains.length === 1) return [];
@@ -234,7 +240,9 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 				element,
 				name: getCounterBlockParams(element)?.name ?? "",
 			})),
-		].filter((block) => block.name !== "");
+		].filter(
+			(block) => block.name !== "" && !block.ladder.excludedFromExecution,
+		);
 
 		const projectMnemonics = new Set(project.variables.map((v) => v.mnemonic));
 		const issues: ProjectAnalyserIssue[] = [];
@@ -279,7 +287,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		project: Project,
 	): Map<string, string[]> {
 		const graph = new Map<string, string[]>();
-		for (const ladder of Object.values(project.ladders)) {
+		for (const ladder of executedLadders(project)) {
 			const targets = ladder
 				.getAllElements()
 				.filter(
@@ -291,7 +299,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 					(element) =>
 						(element.data.params as UserProgramBlockParams).programId,
 				)
-				.filter((programId) => project.getLadder(programId) !== undefined);
+				.filter(
+					(programId) =>
+						project.getLadder(programId)?.excludedFromExecution === false,
+				);
 			graph.set(ladder.id, targets);
 		}
 		return graph;
@@ -309,7 +320,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		const referencedIds = new Set(Array.from(graph.values()).flat());
 
 		const issues: ProjectAnalyserIssue[] = [];
-		for (const ladder of Object.values(project.ladders)) {
+		for (const ladder of executedLadders(project)) {
 			if (ladder.role === "main" || referencedIds.has(ladder.id)) continue;
 			issues.push(
 				new ProjectAnalyserIssue(

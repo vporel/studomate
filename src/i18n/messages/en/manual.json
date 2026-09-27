@@ -181,7 +181,8 @@
 		],
 		"programsLabel": "Programs:",
 		"programsItems": [
-			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type."
+			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type.",
+			"A program excluded from execution carries the \"Not executed\" badge."
 		],
 		"blockInstancesLabel": "Block instances:",
 		"blockInstancesItems": [
@@ -200,8 +201,19 @@
 			"Click a variable section: opens the page to manage those variables",
 			"Click a grafcet or a ladder: opens its tab",
 			"Double-click a program's name: edit the name in place",
-			"Right-click a program → Open, Rename (F2), Delete",
+			"Right-click a program → Open, Rename (F2), Delete, Exclude from execution / Include in execution",
 			"Right-click empty area → Hide the explorer"
+		],
+		"excludedTitle": "Excluding a program from execution",
+		"excludedP1": "A grafcet or a ladder can exist in the project for illustration only: it can still be drawn, edited and exported to PDF, but it is neither analysed, compiled nor simulated. This is useful, for example, to show next to a ladder the grafcet it implements.",
+		"excludedItems": [
+			"To exclude a program: right-click it in the explorer → Exclude from execution. To include it again: Include in execution. Switching is only possible in design mode.",
+			"The Main cannot be excluded: it is the project's execution entry point.",
+			"An excluded program carries the \"Not executed\" badge in the explorer, and the \"Excluded from execution\" label on the right of its toolbar. Clicking this label explains what exclusion means and lets you include the program again.",
+			"Its mnemonics (receptivities, actions, contacts, coils, block parameters) can be free text, without matching a declared variable: no error is reported.",
+			"It is invisible to the rest of the project: its step (Xn) and block variables do not exist for the other programs, and it does not appear in the cross-references. A block calling an excluded ladder is reported as an error by the analysis.",
+			"During simulation, no step of an excluded grafcet is active and its steps cannot be forced.",
+			"Including a program again does not fix it: the analysis resumes and reports any errors it contains."
 		]
 	},
 	"variables": {
@@ -635,7 +647,8 @@
 			"System blocks: name missing or duplicated, parameters (PT, PV, control, ET/CV) missing, of the wrong type or referencing a non-existent variable",
 			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
 			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",
-			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence"
+			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence",
+			"Programs excluded from execution: skipped by every check; a block calling an excluded ladder is reported"
 		],
 		"checksOutro": "Click a problem in the list to navigate to the element concerned, in the matching grafcet or ladder.",
 		"messagesTitle": "Example messages",

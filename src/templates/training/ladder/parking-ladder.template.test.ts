@@ -28,7 +28,7 @@ describe("parking-ladder.template", () => {
 		await scenario.cycles(3);
 		await enter(scenario);
 		expect(scenario.get("places")).toBe(1);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		scenario.stop();
 	});
 
@@ -72,7 +72,7 @@ describe("parking-ladder.template", () => {
 		expect(scenario.get("barriere")).toBe(true);
 		await scenario.press("arret", 2);
 		expect(scenario.get("barriere")).toBe(false);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		expect(scenario.get("places")).toBe(2);
 		scenario.stop();
 	});

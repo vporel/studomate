@@ -83,6 +83,7 @@
 	"BLOCK_PROGRAM_UNDECLARED": "The program referenced by this block does not exist in the project.",
 	"BLOCK_PROGRAM_NOT_LADDER": "The program \"{programName}\" referenced by this block is not a ladder.",
 	"BLOCK_PROGRAM_IS_MAIN": "The program \"{programName}\" is the project Main: it cannot be called by a block.",
+	"BLOCK_PROGRAM_EXCLUDED": "The program \"{programName}\" is excluded from execution: this block will not call it.",
 	"BLOCK_PROGRAM_DUPLICATE_REFERENCE": "The program \"{programName}\" is referenced by several blocks of this Main.",
 	"BLOCK_PROGRAM_CALL_CYCLE": "Call cycle detected between ladders: {cycle}.",
 

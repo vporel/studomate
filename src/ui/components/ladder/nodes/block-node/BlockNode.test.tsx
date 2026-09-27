@@ -36,13 +36,14 @@ function setup({
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { ladders },
+			project: { ladders, getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			ladder: { id: "ladder-1", excludedFromExecution: false },
 			highlightedNodesIds,
 			commandsStackManager: { executeOperation },
 			workflowManager: { openSystemBlockEditor: jest.fn() },

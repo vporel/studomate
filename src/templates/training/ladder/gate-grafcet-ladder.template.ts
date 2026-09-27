@@ -12,28 +12,28 @@ import { pushButton } from "@/templates/training/utils/training-variables";
 const pressOrStop = or([rising("telecommande")], [nf("arret")]);
 
 /**
- * M0 closed (initial), M1 opening, M2 open, M3 closing, M4 stopped while opening, M5 stopped
+ * X0 closed (initial), X1 opening, X2 open, X3 closing, X4 stopped while opening, X5 stopped
  * while closing. A press opens, closes or stops; after a stop it reverses the last movement;
  * the photocell reopens while closing.
  */
 export const GATE_SPEC: GrafcetLadderSpec = {
-	steps: ["M0", "M1", "M2", "M3", "M4", "M5"],
-	initial: ["M0"],
+	steps: ["X0", "X1", "X2", "X3", "X4", "X5"],
+	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["M0"], to: ["M1"], receptivity: [rising("telecommande")] },
-		{ name: "T1", from: ["M1"], to: ["M2"], receptivity: [no("fc_ouvert")] },
-		{ name: "T2", from: ["M1"], to: ["M4"], receptivity: [pressOrStop, nf("fc_ouvert")] },
-		{ name: "T3", from: ["M2"], to: ["M3"], receptivity: [rising("telecommande")] },
-		{ name: "T4", from: ["M3"], to: ["M0"], receptivity: [no("fc_ferme")] },
+		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [rising("telecommande")] },
+		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("fc_ouvert")] },
+		{ name: "T2", from: ["X1"], to: ["X4"], receptivity: [pressOrStop, nf("fc_ouvert")] },
+		{ name: "T3", from: ["X2"], to: ["X3"], receptivity: [rising("telecommande")] },
+		{ name: "T4", from: ["X3"], to: ["X0"], receptivity: [no("fc_ferme")] },
 		{
 			name: "T5",
-			from: ["M3"],
-			to: ["M5"],
+			from: ["X3"],
+			to: ["X5"],
 			receptivity: [pressOrStop, nf("barriere_immaterielle"), nf("fc_ferme")],
 		},
-		{ name: "T6", from: ["M3"], to: ["M1"], receptivity: [no("barriere_immaterielle"), nf("fc_ferme")] },
-		{ name: "T7", from: ["M4"], to: ["M3"], receptivity: [rising("telecommande")] },
-		{ name: "T8", from: ["M5"], to: ["M1"], receptivity: [rising("telecommande")] },
+		{ name: "T6", from: ["X3"], to: ["X1"], receptivity: [no("barriere_immaterielle"), nf("fc_ferme")] },
+		{ name: "T7", from: ["X4"], to: ["X3"], receptivity: [rising("telecommande")] },
+		{ name: "T8", from: ["X5"], to: ["X1"], receptivity: [rising("telecommande")] },
 	],
 };
 
@@ -57,8 +57,8 @@ export function createGateGrafcetLadderSolution(): Project {
 	setMainSections(
 		project,
 		grafcetSections(GATE_SPEC, [
-			{ variable: "ouvrir", steps: ["M1"] },
-			{ variable: "fermer", steps: ["M3"] },
+			{ variable: "ouvrir", steps: ["X1"] },
+			{ variable: "fermer", steps: ["X3"] },
 		]),
 	);
 	return project;

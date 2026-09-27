@@ -12,7 +12,7 @@ describe("drilling-ladder.template", () => {
 		const project = createDrillingLadderProject();
 		expect(project.main.sections).toHaveLength(1);
 		expect(project.variables.map((v) => v.mnemonic)).toEqual(
-			expect.arrayContaining(["blocage", "position", "M0"]),
+			expect.arrayContaining(["blocage", "position", "X0"]),
 		);
 	});
 
@@ -24,11 +24,11 @@ describe("drilling-ladder.template", () => {
 		expect(scenario.get("descendre")).toBe(true);
 		expect(scenario.get("broche")).toBe(true);
 		await scenario.seconds(6);
-		expect(scenario.get("M2")).toBe(true);
+		expect(scenario.get("X2")).toBe(true);
 		await scenario.seconds(3);
 		expect(scenario.get("monter")).toBe(true);
 		await scenario.seconds(8);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		expect(scenario.get("position")).toBe(0);
 		expect(scenario.get("defaut")).toBe(false);
 		scenario.stop();
@@ -44,7 +44,7 @@ describe("drilling-ladder.template", () => {
 		expect(scenario.get("defaut")).toBe(true);
 		expect(scenario.get("monter")).toBe(true);
 		await scenario.seconds(6);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		expect(scenario.get("position")).toBe(0);
 		expect(scenario.get("defaut")).toBe(true);
 		scenario.stop();

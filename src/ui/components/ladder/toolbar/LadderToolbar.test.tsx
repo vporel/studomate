@@ -13,18 +13,24 @@ import LadderToolbar from "./LadderToolbar";
 jest.mock("@/ui/components/projects/ProjectContext");
 jest.mock("../context/LadderContext");
 
-function setup({ mode = ProjectMode.DESIGN, executeOperation = jest.fn() } = {}) {
+function setup({
+	mode = ProjectMode.DESIGN,
+	executeOperation = jest.fn(),
+	excludedFromExecution = false,
+} = {}) {
+	const laddersManager = { setExcludedFromExecution: jest.fn() };
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ mode }),
+		selectorImplementation({ mode, laddersManager }),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
+			ladder: { id: "l1", excludedFromExecution },
 		}),
 	);
 
 	renderWithI18n(<LadderToolbar />);
-	return { executeOperation };
+	return { executeOperation, laddersManager };
 }
 
 describe("LadderToolbar", () => {
@@ -67,5 +73,24 @@ describe("LadderToolbar", () => {
 
 		fireEvent.click(screen.getByRole("button", { name: "Masquer les bobines supplémentaires" }));
 		expect(extraLabels.some(hasTool)).toBe(false);
+	});
+
+	it("shows no execution warning for an executed ladder", () => {
+		setup();
+		expect(
+			screen.queryByText("Exclu de l'exécution"),
+		).not.toBeInTheDocument();
+	});
+
+	it("shows the execution warning for an excluded ladder, whose dialog re-includes it", () => {
+		const { laddersManager } = setup({ excludedFromExecution: true });
+
+		fireEvent.click(screen.getByText("Exclu de l'exécution"));
+		fireEvent.click(screen.getByText("Inclure dans l'exécution"));
+
+		expect(laddersManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			"l1",
+			false,
+		);
 	});
 });

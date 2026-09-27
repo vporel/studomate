@@ -24,6 +24,8 @@
 		"configure": "Configure",
 		"rename": "Rename",
 		"delete": "Delete",
+		"excludeFromExecution": "Exclude from execution",
+		"includeInExecution": "Include in execution",
 		"newGrafcet": "New grafcet",
 		"newLadder": "New ladder",
 		"newHmiPage": "New HMI page",

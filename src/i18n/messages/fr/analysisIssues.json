@@ -83,6 +83,7 @@
 	"BLOCK_PROGRAM_UNDECLARED": "Le programme référencé par ce bloc n'existe pas dans le projet.",
 	"BLOCK_PROGRAM_NOT_LADDER": "Le programme « {programName} » référencé par ce bloc n'est pas un ladder.",
 	"BLOCK_PROGRAM_IS_MAIN": "Le programme « {programName} » est le Main du projet : il ne peut pas être appelé par un bloc.",
+	"BLOCK_PROGRAM_EXCLUDED": "Le programme « {programName} » est exclu de l'exécution : ce bloc ne l'appellera pas.",
 	"BLOCK_PROGRAM_DUPLICATE_REFERENCE": "Le programme « {programName} » est référencé par plusieurs blocs de ce Main.",
 	"BLOCK_PROGRAM_CALL_CYCLE": "Cycle d'appels entre ladders détecté : {cycle}.",
 

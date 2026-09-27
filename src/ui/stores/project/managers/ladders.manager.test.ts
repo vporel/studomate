@@ -226,6 +226,78 @@ describe("LaddersManager", () => {
 	// Régression : un renommage de variable réécrit les ladders du projet (voir
 	// VariablesUpdateCommand), mais un ladder monté possède sa propre copie et la repousse dans
 	// le projet — sans cette resynchronisation, elle écraserait le résultat du renommage.
+	describe("setExcludedFromExecution", () => {
+		it("excludes then re-includes the ladder and marks the project as modified", () => {
+			const { project, ladderId } = projectWithLadder();
+			const { manager, getState } = makeManager({ project });
+
+			manager.setExcludedFromExecution(ladderId, true);
+
+			expect(getState().project!.getLadder(ladderId)!.excludedFromExecution).toBe(
+				true,
+			);
+			expect(getState().project).not.toBe(project);
+			expect(getState().hasUnsavedChanges).toBe(true);
+
+			manager.setExcludedFromExecution(ladderId, false);
+
+			expect(getState().project!.getLadder(ladderId)!.excludedFromExecution).toBe(
+				false,
+			);
+		});
+
+		it("refuses the change outside DESIGN mode", () => {
+			const { project, ladderId } = projectWithLadder();
+			const { manager, getState } = makeManager({
+				project,
+				mode: ProjectMode.SIMULATION,
+			});
+
+			manager.setExcludedFromExecution(ladderId, true);
+
+			expect(getState().project).toBe(project);
+			expect(project.getLadder(ladderId)!.excludedFromExecution).toBe(false);
+		});
+
+		it("never excludes the Main", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			const main = Object.values(project.ladders).find((l) => l.role === "main")!;
+			const { manager, getState } = makeManager({ project });
+
+			manager.setExcludedFromExecution(main.id, true);
+
+			expect(getState().project).toBe(project);
+			expect(main.excludedFromExecution).toBe(false);
+		});
+
+		it("makes a mounted store adopt the updated ladder", () => {
+			const { project, ladderId } = projectWithLadder();
+			const adoptLadder = jest.fn();
+			const mountedLadder = project.getLadder(ladderId)!.copy();
+			const { manager } = makeManager({
+				project,
+				laddersStoresManagers: {
+					[ladderId]: {
+						workflowManager: { adoptLadder, getLadder: () => mountedLadder },
+					},
+				},
+			});
+
+			manager.setExcludedFromExecution(ladderId, true);
+
+			expect(adoptLadder).toHaveBeenCalledTimes(1);
+			expect(adoptLadder.mock.calls[0][0].excludedFromExecution).toBe(true);
+		});
+
+		it("throws if the ladder does not exist", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+			});
+
+			expect(() => manager.setExcludedFromExecution("inexistant", true)).toThrow();
+		});
+	});
+
 	describe("syncMountedStoresFromProject", () => {
 		it("fait adopter par les stores montés le ladder à jour du projet quand leur copie est périmée", () => {
 			const { project, ladderId } = projectWithLadder();

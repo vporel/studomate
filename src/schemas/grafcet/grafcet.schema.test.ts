@@ -96,6 +96,13 @@ describe("Grafcet — table des collections d'éléments", () => {
 				y: 999,
 			});
 		});
+
+		it("preserves excludedFromExecution", () => {
+			const original = new Grafcet("g1", "G");
+			expect(original.copy().excludedFromExecution).toBe(false);
+			original.excludedFromExecution = true;
+			expect(original.copy().excludedFromExecution).toBe(true);
+		});
 	});
 
 	describe("createFromJSON", () => {
@@ -127,6 +134,19 @@ describe("Grafcet — table des collections d'éléments", () => {
 
 			expect(restitué.getAllElements()).toEqual([]);
 			expect(restitué.connections).toEqual([]);
+		});
+
+		it("restores excludedFromExecution, and defaults to false when absent from the JSON", () => {
+			const original = new Grafcet("g1", "G");
+			original.excludedFromExecution = true;
+			expect(
+				Grafcet.createFromJSON(JSON.stringify(original)).excludedFromExecution,
+			).toBe(true);
+
+			expect(
+				Grafcet.createFromJSON(JSON.stringify({ id: "g2", name: "G2" }))
+					.excludedFromExecution,
+			).toBe(false);
 		});
 	});
 

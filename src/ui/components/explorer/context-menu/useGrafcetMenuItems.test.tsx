@@ -6,6 +6,8 @@ import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
+import Project from "@/schemas/project/project.schema";
 import useGrafcetMenuItems from "./useGrafcetMenuItems";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -23,12 +25,13 @@ describe("useGrafcetMenuItems", () => {
 	const grafcetsManager = {
 		getProgramOrThrow: jest.fn(),
 		deleteProgramById: jest.fn(),
+		setExcludedFromExecution: jest.fn(),
 	};
 	const pagesManager = { openPage: jest.fn() };
 
-	function setup(mode: ProjectMode) {
+	function setup(mode: ProjectMode, project?: Project) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ grafcetsManager, pagesManager, mode }),
+			selectorImplementation({ grafcetsManager, pagesManager, mode, project }),
 		);
 		return renderHook(() => useGrafcetMenuItems(), { wrapper: i18nWrapper() });
 	}
@@ -98,5 +101,21 @@ describe("useGrafcetMenuItems", () => {
 
 		expect(grafcetsManager.deleteProgramById).not.toHaveBeenCalled();
 		confirmSpy.mockRestore();
+	});
+
+	it("adds an item to include an excluded grafcet back in execution", () => {
+		const project = new Project("p1", "P", "");
+		const grafcet = new Grafcet("g1", "G1");
+		grafcet.excludedFromExecution = true;
+		project.addProgram(grafcet);
+		const { result } = setup(ProjectMode.DESIGN, project);
+
+		const items = result.current("g1");
+		act(() => items[2][0].onClick?.());
+
+		expect(grafcetsManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			"g1",
+			false,
+		);
 	});
 });

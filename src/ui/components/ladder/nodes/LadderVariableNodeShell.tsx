@@ -40,6 +40,9 @@ const LadderVariableNodeShell = ({
 	const highlighted = useLadderStore((state) =>
 		state.highlightedNodesIds?.includes(id),
 	);
+	const excludedFromExecution = useLadderStore(
+		(state) => state.ladder.excludedFromExecution,
+	);
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
@@ -84,6 +87,7 @@ const LadderVariableNodeShell = ({
 					onCommit={handleCommitVariable}
 					// Le menu contextuel du nœud Ladder porte déjà « Références croisées ».
 					disableContextMenu
+					suppressStatus={excludedFromExecution}
 					className="nodrag"
 					sx={{ width: 44, mb: "2px" }}
 					showSimulationValue={false}

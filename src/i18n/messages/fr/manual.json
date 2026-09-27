@@ -181,7 +181,8 @@
 		],
 		"programsLabel": "Programmes :",
 		"programsItems": [
-			"Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type."
+			"Liste de tous les grafcets et ladders du projet, chacun distingué par une icône propre à son type.",
+			"Un programme exclu de l'exécution porte le badge « Non exécuté »."
 		],
 		"blockInstancesLabel": "Instances de blocs :",
 		"blockInstancesItems": [
@@ -200,8 +201,19 @@
 			"Cliquer sur une section de variables : ouvre la page de gestion de ces variables",
 			"Cliquer sur un grafcet ou un ladder : ouvre son onglet",
 			"Double-cliquer sur le nom d'un programme : édition du nom sur place",
-			"Clic droit sur un programme → Ouvrir, Renommer (F2), Supprimer",
+			"Clic droit sur un programme → Ouvrir, Renommer (F2), Supprimer, Exclure de l'exécution / Inclure dans l'exécution",
 			"Clic droit sur zone vide → Masquer l'explorateur"
+		],
+		"excludedTitle": "Exclure un programme de l'exécution",
+		"excludedP1": "Un grafcet ou un ladder peut exister dans le projet à titre purement illustratif : il reste dessiné, modifiable et exportable en PDF, mais il n'est ni analysé, ni compilé, ni simulé. C'est utile par exemple pour montrer, à côté d'un ladder, le grafcet qu'il implémente.",
+		"excludedItems": [
+			"Pour exclure un programme : clic droit sur le programme dans l'explorateur → Exclure de l'exécution. Pour l'inclure de nouveau : Inclure dans l'exécution. La bascule n'est possible qu'en mode conception.",
+			"Le Main ne peut pas être exclu : c'est le point d'entrée de l'exécution du projet.",
+			"Un programme exclu porte le badge « Non exécuté » dans l'explorateur, et la mention « Exclu de l'exécution » à droite de sa barre d'outils. Un clic sur cette mention explique ce que signifie l'exclusion et permet de réinclure le programme.",
+			"Ses mnémoniques (réceptivités, actions, contacts, bobines, paramètres de bloc) peuvent être du texte libre, sans correspondre à une variable déclarée : aucune erreur n'est signalée.",
+			"Il est invisible pour le reste du projet : ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes, et il n'apparaît pas dans les références croisées. Un bloc qui appelle un ladder exclu est signalé comme une erreur par l'analyse.",
+			"En simulation, aucune étape d'un grafcet exclu n'est active et ses étapes ne peuvent pas être forcées.",
+			"Réinclure un programme ne le corrige pas : l'analyse reprend et signale ses éventuelles erreurs."
 		]
 	},
 	"variables": {
@@ -635,7 +647,8 @@
 			"Blocs système : nom manquant ou en doublon, paramètres (PT, PV, contrôle, ET/CV) absents, de type incorrect ou référençant une variable inexistante",
 			"Expressions : syntaxe des réceptivités et des actions (transitions, actions grafcet, blocs comparaison et affectation)",
 			"Variables : références à des variables inexistantes, types incompatibles, affectation à une variable d'entrée",
-			"Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante"
+			"Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante",
+			"Programmes exclus de l'exécution : ignorés par toutes les vérifications ; un bloc qui appelle un ladder exclu est signalé"
 		],
 		"checksOutro": "Cliquez sur un problème dans la liste pour naviguer vers l'élément concerné, dans le grafcet ou le ladder correspondant.",
 		"messagesTitle": "Exemples de messages",

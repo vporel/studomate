@@ -32,6 +32,7 @@ function setup({
 	simulationValueProps,
 	align,
 	label,
+	suppressStatus,
 }: {
 	value?: string;
 	variables?: Variable[];
@@ -50,6 +51,7 @@ function setup({
 	simulationValueProps?: { position?: "TOP" | "BOTTOM" };
 	align?: "left" | "center" | "right";
 	label?: string;
+	suppressStatus?: boolean;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -73,6 +75,7 @@ function setup({
 			simulationValueProps={simulationValueProps}
 			align={align}
 			label={label}
+			suppressStatus={suppressStatus}
 		/>,
 	);
 
@@ -130,6 +133,15 @@ describe("VariableSelector — statut affiché", () => {
 			variables: [new Variable("v1", "A", "memory", "BOOL")],
 		});
 		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
+	});
+
+	it("shows no status with suppressStatus, even for an unknown mnemonic", () => {
+		setup({
+			value: "INCONNUE",
+			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			suppressStatus: true,
+		});
+		expect(input()).not.toHaveAttribute("data-variable-status");
 	});
 
 	it("wrong-type : la variable existe mais hors du typeFilter", () => {
@@ -487,7 +499,7 @@ describe("VariableSelector — position de la valeur de simulation", () => {
 			simulationVariablesStates: { v1: { value: true } },
 			simulationValueProps: { position: "BOTTOM" },
 		});
-		expect(screen.getByText("VRAI")).toHaveStyle({ top: "100%" });
+		expect(screen.getByText("VRAI")).toHaveStyle({ top: "60%" });
 	});
 });
 

@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
@@ -19,6 +20,7 @@ describe("GrafcetToolbar", () => {
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
+				grafcet: { id: "g1", excludedFromExecution: false },
 				nodes: [],
 				viewManager: {
 					getZoom: () => 1,
@@ -55,5 +57,36 @@ describe("GrafcetToolbar", () => {
 		expect(
 			document.querySelector(".app-toolbar__zoom-out"),
 		).toBeInTheDocument();
+	});
+
+	it("shows the execution warning for an excluded grafcet, whose dialog re-includes it", () => {
+		const grafcetsManager = { setExcludedFromExecution: jest.fn() };
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({ mode: ProjectMode.DESIGN, grafcetsManager }),
+		);
+		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				grafcet: { id: "g1", excludedFromExecution: true },
+				nodes: [],
+				viewManager: {
+					getZoom: () => 1,
+					zoomIn: jest.fn(),
+					zoomOut: jest.fn(),
+				},
+			}),
+		);
+
+		renderWithI18n(
+			<GrafcetToolbarDnDProvider>
+				<GrafcetToolbar />
+			</GrafcetToolbarDnDProvider>,
+		);
+		fireEvent.click(screen.getByText("Exclu de l'exécution"));
+		fireEvent.click(screen.getByText("Inclure dans l'exécution"));
+
+		expect(grafcetsManager.setExcludedFromExecution).toHaveBeenCalledWith(
+			"g1",
+			false,
+		);
 	});
 });

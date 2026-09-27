@@ -49,7 +49,10 @@ export default class ProjectAnalyser {
 		// `<Nom>.IN/.Q/.ET` d'un bloc tempo...), sans encore rien analyser — un programme ne peut
 		// valider ses propres références qu'après avoir vu ce que TOUS les autres génèrent (voir
 		// `ProgramAnalyser.generateVariables`).
-		for (const program of Object.values(project.programs)) {
+		const executedPrograms = Object.values(project.programs).filter(
+			(program) => !program.excludedFromExecution,
+		);
+		for (const program of executedPrograms) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) continue;
 			generatedVariablesByProgram.set(
@@ -65,7 +68,7 @@ export default class ProjectAnalyser {
 
 		// Seconde passe : analyse réelle, chaque programme voyant l'ensemble complet des
 		// variables du projet (les siennes propres et celles de tous les autres).
-		for (const program of Object.values(project.programs)) {
+		for (const program of executedPrograms) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) {
 				issues.push(

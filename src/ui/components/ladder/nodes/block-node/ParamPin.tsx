@@ -6,6 +6,7 @@ import {
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
 	VariableType,
 } from "@/schemas/variable/variable.schema";
+import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import VariableSelector, {
 	VariableSelectorHandle,
 } from "@/ui/components/variables/VariableSelector";
@@ -55,6 +56,9 @@ export default function ParamPin({
 	onCommit: (value: string) => void;
 }) {
 	const selectorRef = useRef<VariableSelectorHandle>(null);
+	const excludedFromExecution = useLadderStore(
+		(state) => state.ladder.excludedFromExecution,
+	);
 
 	const label = (
 		<Typography
@@ -78,6 +82,7 @@ export default function ParamPin({
 			ref={selectorRef}
 			value={value}
 			onCommit={onCommit}
+			suppressStatus={excludedFromExecution}
 			typeFilter={getTypeFilter(spec)}
 			acceptedLiterals={spec.acceptedLiterals}
 			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}

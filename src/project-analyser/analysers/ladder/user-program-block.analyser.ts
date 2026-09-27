@@ -44,6 +44,17 @@ export default class UserProgramBlockAnalyser {
 			);
 			return issues;
 		}
+		if (referenced.excludedFromExecution) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"BLOCK_PROGRAM_EXCLUDED",
+					source,
+					{ programName: referenced.name },
+				),
+			);
+			return issues;
+		}
 		if ((referenced as Ladder).role === "main") {
 			issues.push(
 				new ProjectAnalyserIssue(

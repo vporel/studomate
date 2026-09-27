@@ -1,12 +1,12 @@
 ---
 name: process-audit
-description: Process, work through, and resolve the points of an audit file (typically _ai_context/audit-code.md or _ai_context/audit-perfs.md). Loop top to bottom over the numbered points: verify, propose a plan, wait for approval, implement, test, delete the point.
+description: Process, work through, and resolve the points of an audit file (typically _ai/audit-code.md or _ai/audit-perfs.md). Loop top to bottom over the numbered points: verify, propose a plan, wait for approval, implement, test, delete the point.
 ---
 
 # Skill: processing an audit file
 
 This skill applies whenever a task asks to process, work through, or resolve the points of an
-audit file (typically `_ai_context/audit-code.md` or `_ai_context/audit-perfs.md`).
+audit file (typically `_ai/audit-code.md` or `_ai/audit-perfs.md`).
 
 An audit file is a numbered list of points (1, 2, 3… with possible sub-points), each
 describing a defect with affected file(s), symptom, problem, and recommendation.
@@ -14,7 +14,7 @@ describing a defect with affected file(s), symptom, problem, and recommendation.
 ## Prerequisite — knowing which file to process
 
 The skill doesn't start until the target audit file is known. If it wasn't passed as an
-argument (`/process-audit _ai_context/audit-perfs.md`) and it isn't obvious from the
+argument (`/process-audit _ai/audit-perfs.md`) and it isn't obvious from the
 conversation, explicitly ask which file to process. Don't guess.
 
 ## The loop

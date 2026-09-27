@@ -14,15 +14,15 @@ import {
 
 /** Green 5 s → orange 2 s → red 5 s, looping while `marche` is true; `arret` re-initializes. */
 export const TRAFFIC_LIGHT_SPEC: GrafcetLadderSpec = {
-	steps: ["M0", "M1", "M2"],
-	initial: ["M0"],
+	steps: ["X0", "X1", "X2"],
+	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["M0"], to: ["M1"], receptivity: [no("t_vert.Q")] },
-		{ name: "T1", from: ["M1"], to: ["M2"], receptivity: [no("t_orange.Q")] },
+		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("t_vert.Q")] },
+		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("t_orange.Q")] },
 		{
 			name: "T2",
-			from: ["M2"],
-			to: ["M0"],
+			from: ["X2"],
+			to: ["X0"],
 			receptivity: [no("t_rouge.Q"), no("marche")],
 		},
 	],
@@ -49,13 +49,13 @@ export function createTrafficLightLadderProject(): Project {
 export function createTrafficLightLadderSolution(): Project {
 	const project = createBase("Feu tricolore en Ladder : solution");
 	setMainSections(project, [
-		section("Temporisation du vert", "", no("M0"), timer("TON", "t_vert", "T#5s")),
-		section("Temporisation de l'orange", "", no("M1"), timer("TON", "t_orange", "T#2s")),
-		section("Temporisation du rouge", "", no("M2"), timer("TON", "t_rouge", "T#5s")),
+		section("Temporisation du vert", "", no("X0"), timer("TON", "t_vert", "T#5s")),
+		section("Temporisation de l'orange", "", no("X1"), timer("TON", "t_orange", "T#2s")),
+		section("Temporisation du rouge", "", no("X2"), timer("TON", "t_rouge", "T#5s")),
 		...grafcetSections(TRAFFIC_LIGHT_SPEC, [
-			{ variable: "vert", steps: ["M0"] },
-			{ variable: "orange", steps: ["M1"] },
-			{ variable: "rouge", steps: ["M2"] },
+			{ variable: "vert", steps: ["X0"] },
+			{ variable: "orange", steps: ["X1"] },
+			{ variable: "rouge", steps: ["X2"] },
 		]),
 	]);
 	return project;

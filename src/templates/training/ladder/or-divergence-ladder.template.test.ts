@@ -18,7 +18,7 @@ describe("or-divergence-ladder.template", () => {
 		scenario.set(end, true);
 		await scenario.cycles(2);
 		expect(scenario.get(on)).toBe(false);
-		expect(scenario.get("M0")).toBe(true);
+		expect(scenario.get("X0")).toBe(true);
 		scenario.stop();
 	});
 

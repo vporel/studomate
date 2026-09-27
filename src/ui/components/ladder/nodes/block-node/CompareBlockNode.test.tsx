@@ -24,12 +24,13 @@ function setup(
 	const executeOperation = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { variables: [] },
+			project: { variables: [], getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
 			simulationVariablesStates: {},
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			ladder: { id: "ladder-1", excludedFromExecution: false },
 			highlightedNodesIds: [],
 			commandsStackManager: { executeOperation },
 		}),

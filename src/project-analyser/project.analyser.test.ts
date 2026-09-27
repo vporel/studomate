@@ -575,5 +575,88 @@ describe("ProjectAnalyser", () => {
 				expect(codes).toContain("BLOCK_PROGRAM_CALL_CYCLE");
 			});
 		});
+
+		describe("programs excluded from execution", () => {
+			function grafcetWithoutInitialStep(id: string, stepNumber: number) {
+				return new GrafcetBuilder()
+					.id(id)
+					.name(id)
+					.addStep(
+						new StepBuilder()
+							.id(`${id}-step`)
+							.number(stepNumber)
+							.initial(false)
+							.position(0, 0)
+							.build(),
+					)
+					.build();
+			}
+
+			it("produces no issue and no generated variable for an excluded program, even when invalid", () => {
+				const project = new Project("p1", "Projet", "");
+				const grafcet = grafcetWithoutInitialStep("g1", 3);
+				grafcet.excludedFromExecution = true;
+				project.addProgram(grafcet);
+				const ladder = project.createLadder("L1");
+				ladder.excludedFromExecution = true;
+				const rail = createRailTerminalElement(0);
+				const contact = createContactElement("inconnu", "NO", 0, 1);
+				ladder.sections = [
+					createSectionWith([rail, contact], wireInSeries([rail, contact])),
+				];
+
+				const result = ProjectAnalyser.analyse(project);
+
+				expect(
+					result.issues.filter(
+						(i) =>
+							i.source.sourceId === grafcet.id ||
+							i.source.sourceId === ladder.id ||
+							i.source.parentId === grafcet.id ||
+							i.source.parentId === ladder.id,
+					),
+				).toEqual([]);
+				expect(result.generatedVariables.map((v) => v.mnemonic)).not.toContain(
+					"X3",
+				);
+			});
+
+			it("reports an undeclared variable when a ladder reads a step variable of an excluded grafcet", () => {
+				const project = new Project("p1", "Projet", "");
+				const grafcet = grafcetWithoutInitialStep("g1", 3);
+				grafcet.excludedFromExecution = true;
+				project.addProgram(grafcet);
+				const ladder = project.createLadder("L1");
+				const rail = createRailTerminalElement(0);
+				const contact = createContactElement("X3", "NO", 0, 1);
+				ladder.sections = [
+					createSectionWith([rail, contact], wireInSeries([rail, contact])),
+				];
+
+				const result = ProjectAnalyser.analyse(project);
+
+				expect(result.issues.map((i) => i.code)).toContain(
+					"LADDER_CONTACT_VARIABLE_UNDECLARED",
+				);
+			});
+
+			it("does not report a duplicate step number with an excluded grafcet", () => {
+				const executed = grafcetWithoutInitialStep("g1", 1);
+				const excluded = grafcetWithoutInitialStep("g2", 1);
+				excluded.excludedFromExecution = true;
+				const project = new ProjectBuilder()
+					.id("project-1")
+					.name("Test Project")
+					.author("Test Author")
+					.addGrafcets(executed, excluded)
+					.build();
+
+				const result = ProjectAnalyser.analyse(project);
+
+				expect(result.issues.map((i) => i.code)).not.toContain(
+					"PROJECT_DUPLICATE_STEP_NUMBER_ACROSS_GRAFCETS",
+				);
+			});
+		});
 	});
 });

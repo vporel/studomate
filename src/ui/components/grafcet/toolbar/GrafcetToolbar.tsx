@@ -1,8 +1,12 @@
 "use client";
 
+import ExcludedFromExecutionWarning from "@/ui/components/programs/ExcludedFromExecutionWarning";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Divider } from "@mui/material";
 import React from "react";
+import { useGrafcetStore } from "../context/GrafcetContext";
 import ActionTool from "./ActionTool";
 import CommentTool from "./CommentTool";
 import JunctionAndEndTool from "./JunctionAndEndTool";
@@ -17,6 +21,15 @@ import ZoomInTool from "./ZoomInTool";
 import ZoomOutTool from "./ZoomOutTool";
 
 const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
+	const grafcetId = useGrafcetStore((state) => state.grafcet.id);
+	const excludedFromExecution = useGrafcetStore(
+		(state) => state.grafcet.excludedFromExecution,
+	);
+	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
+	const designing = useProjectStore(
+		(state) => state.mode === ProjectMode.DESIGN,
+	);
+
 	return (
 		<FlexBox
 			className="grafcet-toolbar"
@@ -49,6 +62,14 @@ const GrafcetToolbar = ({ style }: { style?: React.CSSProperties }) => {
 				<CommentTool />
 			</FlexBox>
 			<FlexBox centerVertical sx={{ gap: "5px", height: "100%" }}>
+				{excludedFromExecution && (
+					<ExcludedFromExecutionWarning
+						includeDisabled={!designing}
+						onInclude={() =>
+							grafcetsManager.setExcludedFromExecution(grafcetId, false)
+						}
+					/>
+				)}
 				<ZoomInTool />
 				<ZoomOutTool />
 			</FlexBox>

@@ -23,25 +23,25 @@ import { stopButton } from "@/templates/training/utils/training-variables";
  *          E0 ─dem_sortie ET places > 0→ E3 (barrière, places-1) ─passage→ E4 ─NON passage→ E0
  */
 export const PARKING_COMMAND_SPEC: GrafcetLadderSpec = {
-	steps: ["M0", "M1", "M2", "M3", "M4"],
-	initial: ["M0"],
+	steps: ["X0", "X1", "X2", "X3", "X4"],
+	initial: ["X0"],
 	transitions: [
 		{
 			name: "T0",
-			from: ["M0"],
-			to: ["M1"],
+			from: ["X0"],
+			to: ["X1"],
 			receptivity: [no("dem_entree"), compare("places", "<", `${CAPACITE}`)],
 		},
 		{
 			name: "T1",
-			from: ["M0"],
-			to: ["M3"],
+			from: ["X0"],
+			to: ["X3"],
 			receptivity: [no("dem_sortie"), compare("places", ">", "0")],
 		},
-		{ name: "T2", from: ["M1"], to: ["M2"], receptivity: [no("passage")] },
-		{ name: "T3", from: ["M3"], to: ["M4"], receptivity: [no("passage")] },
-		{ name: "T4", from: ["M2"], to: ["M0"], receptivity: [nf("passage")] },
-		{ name: "T5", from: ["M4"], to: ["M0"], receptivity: [nf("passage")] },
+		{ name: "T2", from: ["X1"], to: ["X2"], receptivity: [no("passage")] },
+		{ name: "T3", from: ["X3"], to: ["X4"], receptivity: [no("passage")] },
+		{ name: "T4", from: ["X2"], to: ["X0"], receptivity: [nf("passage")] },
+		{ name: "T5", from: ["X4"], to: ["X0"], receptivity: [nf("passage")] },
 	],
 	resetCondition: [nf("arret")],
 };
@@ -93,18 +93,18 @@ export function createParkingLadderSolution(): Project {
 	setMainSections(project, [
 		...project.main.sections,
 		...grafcetSections(PARKING_COMMAND_SPEC, [
-			{ variable: "barriere", steps: ["M1", "M3"] },
+			{ variable: "barriere", steps: ["X1", "X3"] },
 		]),
 		section(
 			"Entrée d'un véhicule",
 			"Action sur front d'étape : une seule unité ajoutée par passage.",
-			rising("M1"),
+			rising("X1"),
 			arithmetic("places", "places", "+", "1"),
 		),
 		section(
 			"Sortie d'un véhicule",
 			"Action sur front d'étape : une seule unité retirée par passage.",
-			rising("M3"),
+			rising("X3"),
 			arithmetic("places", "places", "-", "1"),
 		),
 	]);

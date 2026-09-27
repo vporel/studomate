@@ -5,6 +5,7 @@ import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
 import { useT } from "@/ui/i18n/useT";
+import executionMenuItems from "./execution-menu-items";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useGrafcetMenuItems(): (
@@ -12,6 +13,7 @@ export default function useGrafcetMenuItems(): (
 ) => ContextMenuItemType[][] {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
+	const project = useProjectStore((state) => state.project);
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
@@ -57,8 +59,14 @@ export default function useGrafcetMenuItems(): (
 						},
 					},
 				],
+				...executionMenuItems(
+					project?.getGrafcet(grafcetId),
+					grafcetsManager,
+					designing,
+					t,
+				),
 			];
 		},
-		[grafcetsManager, pagesManager, designing, t, tc],
+		[grafcetsManager, pagesManager, project, designing, t, tc],
 	);
 }

@@ -130,11 +130,34 @@ type Layout = { elements: LadderElement[]; connections: Connection[] };
 
 type Placement = { ends: LadderElement[]; col: number; height: number };
 
-function link(from: LadderElement, to: LadderElement): Connection {
+/**
+ * Quart-de-colonne/ligne, même résolution que `CELL_SUBDIVISIONS` dans
+ * `src/ui/utils/ladder/ladder-connection-path.ts` (source canonique, consommée par l'éditeur
+ * interactif) : une colonne `C` a son bord gauche à `4C`, son centre de ligne à `4L+2`.
+ */
+const QUARTERS_PER_CELL = 4;
+const rowCenter = (row: number) => row * QUARTERS_PER_CELL + QUARTERS_PER_CELL / 2;
+const colLeftEdge = (col: number) => col * QUARTERS_PER_CELL;
+
+/**
+ * `bendCol` place le coude au milieu de la colonne de marge qui précède toujours `to` (le "+1"
+ * de `placeSeries`), à distance égale de `to` et de tout élément qui termine une branche voisine
+ * plus courte — sans lui, le coude par défaut de l'éditeur (calculé au rendu, sans connaître les
+ * éléments intercalés) peut tomber pile sur le bord d'un de ces éléments.
+ */
+function link(from: LadderElement, to: LadderElement, bendCol: number): Connection {
+	const points: [number, number][] =
+		from.position.row === to.position.row
+			? []
+			: [
+					[rowCenter(from.position.row), bendCol],
+					[rowCenter(to.position.row), bendCol],
+				];
 	return new Connection(
 		createRandomId(),
 		{ id: from.id, type: from.type, handle: "source" },
 		{ id: to.id, type: to.type, handle: "target" },
+		{ points },
 	);
 }
 
@@ -152,7 +175,8 @@ function placeSeries(
 		if (item.kind === "element") {
 			const placed = item.create(row, col);
 			layout.elements.push(placed);
-			for (const end of ends) layout.connections.push(link(end, placed));
+			const bendCol = colLeftEdge(col) - QUARTERS_PER_CELL / 2;
+			for (const end of ends) layout.connections.push(link(end, placed, bendCol));
 			ends = [placed];
 			// +1: empty column so neighbouring mnemonic labels don't overlap.
 			col += getElementWidth(placed) + 1;

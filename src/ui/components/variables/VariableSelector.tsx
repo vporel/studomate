@@ -76,6 +76,9 @@ interface VariableSelectorProps {
 	 * quand le composant parent porte déjà cette entrée à son propre niveau (ex : menu contextuel
 	 * d'un nœud de contact/bobine Ladder). */
 	disableContextMenu?: boolean;
+	/** Hides the validity signal: the text is free and never checked against declared variables
+	 * (e.g. an element of a program excluded from execution). */
+	suppressStatus?: boolean;
 	/** Affiche la valeur courante de la variable en simulation — activée par défaut. À désactiver
 	 * quand le champ n'a pas la place pour un second niveau de texte (ex : champ d'une propriété de
 	 * widget HMI). */
@@ -125,6 +128,7 @@ const VariableSelector = forwardRef<
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
+		suppressStatus = false,
 		showSimulationValue = true,
 		simulationValueProps,
 		align,
@@ -223,15 +227,17 @@ const VariableSelector = forwardRef<
 	};
 	useEffect(() => () => flushRef.current(), []);
 
-	const status = computeStatus(
-		editingValue,
-		variables,
-		typeFilter,
-		excludeDirection,
-		acceptedLiterals,
-		dialect,
-		excludeBehaviorKinds,
-	);
+	const status = suppressStatus
+		? null
+		: computeStatus(
+				editingValue,
+				variables,
+				typeFilter,
+				excludeDirection,
+				acceptedLiterals,
+				dialect,
+				excludeBehaviorKinds,
+			);
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;
 	const resolvedAlign = align ?? (label ? "left" : "center");

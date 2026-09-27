@@ -43,6 +43,9 @@ export default function stepContextMenuItems(
 		];
 	}
 
+	// An excluded grafcet has no step variable in the simulation environment.
+	if (grafcet.excludedFromExecution) return [];
+
 	const isForcedActive = forcedVariables[stepVariableId] === true;
 	const isForcedInactive = forcedVariables[stepVariableId] === false;
 	const isForced = stepVariableId in forcedVariables;

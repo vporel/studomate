@@ -9,14 +9,14 @@ import {
 
 /** E0 ─dcy→ (E1 ∥ E2) ─capteur1 ET capteur2→ E0 */
 export const AND_DIVERGENCE_SPEC: GrafcetLadderSpec = {
-	steps: ["M0", "M1", "M2"],
-	initial: ["M0"],
+	steps: ["X0", "X1", "X2"],
+	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["M0"], to: ["M1", "M2"], receptivity: [no("dcy")] },
+		{ name: "T0", from: ["X0"], to: ["X1", "X2"], receptivity: [no("dcy")] },
 		{
 			name: "T1",
-			from: ["M1", "M2"],
-			to: ["M0"],
+			from: ["X1", "X2"],
+			to: ["X0"],
 			receptivity: [no("capteur1"), no("capteur2")],
 		},
 	],
@@ -38,8 +38,8 @@ export function createAndDivergenceLadderSolution(): Project {
 	setMainSections(
 		project,
 		grafcetSections(AND_DIVERGENCE_SPEC, [
-			{ variable: "sortie1", steps: ["M1"] },
-			{ variable: "sortie2", steps: ["M2"] },
+			{ variable: "sortie1", steps: ["X1"] },
+			{ variable: "sortie2", steps: ["X2"] },
 		]),
 	);
 	return project;

@@ -66,6 +66,35 @@ describe("ladder-dsl", () => {
 		expect(() => section("n", "", no("a"), or([], [coil("q")]))).toThrow();
 	});
 
+	it("places the closing bend of a shorter branch clear of the longer branch's last element", () => {
+		// Branche longue : [a, b] (2 éléments) ; branche courte : [c] (1 élément) — reproduit le cas
+		// d'une auto-maintien (contact court en parallèle d'un groupe contact+condition) où le coude
+		// par défaut de l'éditeur peut tomber pile sur le bord de `b` faute de connaître les éléments
+		// intercalés (voir la section "Auto-maintien" des templates naïfs).
+		const s = section(
+			"n",
+			"",
+			or([no("a"), no("b")], [no("c")]),
+			nf("r"),
+			coil("q"),
+		);
+		const findByVariable = (name: string) =>
+			s.elements.find((e) => "data" in e && (e as any).data.variable === name)!;
+		const contactB = findByVariable("b");
+		const contactC = findByVariable("c");
+		const nfR = findByVariable("r");
+		const closingConnection = s.connections.find(
+			(c) => c.source.id === contactC.id && c.target.id === nfR.id,
+		)!;
+		expect(closingConnection).toBeDefined();
+
+		const bendCol = closingConnection.data.points[0][1];
+		const bColRightEdge = (contactB.position.col + 1) * 4; // bord droit de `b`, quarts de colonne
+		const rColLeftEdge = nfR.position.col * 4; // bord gauche de `r`, quarts de colonne
+		expect(bendCol).toBeGreaterThan(bColRightEdge);
+		expect(bendCol).toBeLessThan(rColLeftEdge);
+	});
+
 	it("makes the Main call each program in order", () => {
 		const project = projectWithVariables();
 		const sub = project.createLadder("Sub");

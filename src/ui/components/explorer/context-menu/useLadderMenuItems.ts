@@ -5,6 +5,7 @@ import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useCallback } from "react";
 import { useT } from "@/ui/i18n/useT";
+import executionMenuItems from "./execution-menu-items";
 import { explorerContextMenuEventsOut } from "./ExplorerContextMenu";
 
 export default function useLadderMenuItems(): (
@@ -12,6 +13,7 @@ export default function useLadderMenuItems(): (
 ) => ContextMenuItemType[][] {
 	const laddersManager = useProjectStore((state) => state.laddersManager);
 	const pagesManager = useProjectStore((state) => state.pagesManager);
+	const project = useProjectStore((state) => state.project);
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
@@ -55,8 +57,14 @@ export default function useLadderMenuItems(): (
 						},
 					},
 				],
+				...executionMenuItems(
+					project?.getLadder(ladderId),
+					laddersManager,
+					designing,
+					t,
+				),
 			];
 		},
-		[laddersManager, pagesManager, designing, t, tc],
+		[laddersManager, pagesManager, project, designing, t, tc],
 	);
 }

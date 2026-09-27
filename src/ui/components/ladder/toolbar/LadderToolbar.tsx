@@ -10,6 +10,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Box, Button, Divider, IconButton } from "@mui/material";
 import { useState } from "react";
+import ExcludedFromExecutionWarning from "@/ui/components/programs/ExcludedFromExecutionWarning";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderStore } from "../context/LadderContext";
@@ -53,6 +54,11 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 		(state) => state.commandsStackManager,
 	);
 	const mode = useProjectStore((state) => state.mode);
+	const laddersManager = useProjectStore((state) => state.laddersManager);
+	const ladderId = useLadderStore((state) => state.ladder.id);
+	const excludedFromExecution = useLadderStore(
+		(state) => state.ladder.excludedFromExecution,
+	);
 	const t = useT("ladderEditor.toolbar");
 	const tsb = useT("ladderEditor.systemBlocks");
 	const [extraCoilsVisible, setExtraCoilsVisible] = useState(false);
@@ -184,6 +190,14 @@ const LadderToolbar = ({ style }: { style?: React.CSSProperties }) => {
 					{t("addSection")}
 				</Button>
 			</FlexBox>
+			{excludedFromExecution && (
+				<ExcludedFromExecutionWarning
+					includeDisabled={mode !== ProjectMode.DESIGN}
+					onInclude={() =>
+						laddersManager.setExcludedFromExecution(ladderId, false)
+					}
+				/>
+			)}
 		</FlexBox>
 	);
 };

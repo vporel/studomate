@@ -21,6 +21,7 @@ export default abstract class Program {
 	id: string;
 	name: string;
 	abstract readonly type: ProgramType;
+	excludedFromExecution: boolean = false;
 
 	constructor(id: string, name: string) {
 		this.id = id;
@@ -28,6 +29,10 @@ export default abstract class Program {
 	}
 
 	abstract copy(): Program;
+
+	canBeExcludedFromExecution(): boolean {
+		return true;
+	}
 
 	/**
 	 * Traduit les mots-clés des expressions de la notation d'un dialecte vers l'autre (voir

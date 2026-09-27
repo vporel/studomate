@@ -582,6 +582,8 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 			"",
 			"GRAFCET : E0 (initiale) → `dcy` → E1 (`sortie1`) → `fin1` → E2 (`sortie2`) → `fin2` → E3 → VRAI → E0. Le Main l'implante avec un auto-maintien par étape.",
 			"",
+			"Le GRAFCET est dessiné dans le projet (programme « Séquence » de l'explorateur) : consultez-le pour comparer avec le Main. Il est exclu de l'exécution, seul le Ladder est simulé.",
+			"",
 			"### Travail demandé",
 			"",
 			"1. En simulation pas à pas, constater qu'au franchissement deux étapes consécutives restent actives pendant un cycle.",

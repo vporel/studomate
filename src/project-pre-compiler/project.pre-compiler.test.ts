@@ -145,6 +145,26 @@ describe("ProjectPreCompiler", () => {
 			);
 		});
 
+		it("skips a program excluded from execution, even with a malformed expression", () => {
+			const step = new StepBuilder().id("step-1").number(1).initial(true).build();
+			const transition = new TransitionBuilder()
+				.id("transition-1")
+				.expression("dcy et et (")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addTransition(transition)
+				.build();
+			grafcet.excludedFromExecution = true;
+			const project = new ProjectBuilder().addGrafcet(grafcet).build();
+
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
+
+			expect(result.errors).toEqual([]);
+			expect(result.result!.programs).not.toHaveProperty("grafcet-1");
+		});
+
 		it("compiles multiple grafcets", () => {
 			const step1 = new StepBuilder().id("step-1").number(1).build();
 			const step2 = new StepBuilder().id("step-2").number(2).build();

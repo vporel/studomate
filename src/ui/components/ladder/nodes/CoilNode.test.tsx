@@ -48,11 +48,12 @@ function setup({
 		selectorImplementation({
 			simulationVariablesStates,
 			simulationVariablesStatesByMnemonic,
-			project: { variables: projectVariables },
+			project: { variables: projectVariables, getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			ladder: { id: "ladder-1", excludedFromExecution: false },
 			highlightedNodesIds,
 			commandsStackManager: { executeOperation },
 		}),

@@ -33,7 +33,7 @@ function setup(widget: HmiWidget) {
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { variables },
+			project: { variables, getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},
 		}),

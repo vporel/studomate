@@ -338,6 +338,79 @@ describe("LadderAnalyser", () => {
 		});
 	});
 
+	describe("crossProgramChecks with ladders excluded from execution", () => {
+		function getMain(project: Project): Ladder {
+			return Object.values(project.ladders).find((l) => l.role === "main")!;
+		}
+
+		function callFrom(caller: Ladder, calledId: string) {
+			caller.addElements(caller.sections[0].id, [
+				createUserProgramBlockElement(calledId, 0, 0),
+			]);
+		}
+
+		it("never reports an excluded ladder as orphan", () => {
+			const project = ProjectFactory.createEmpty();
+			const excluded = new Ladder("l1", "Illustratif");
+			excluded.excludedFromExecution = true;
+			project.addProgram(excluded);
+
+			expect(LadderAnalyser.checkOrphanLadders(project)).toEqual([]);
+		});
+
+		it("reports as orphan a ladder only called by an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const excluded = new Ladder("l1", "Illustratif");
+			excluded.excludedFromExecution = true;
+			const called = new Ladder("l2", "Appelé");
+			callFrom(excluded, called.id);
+			project.addProgram(excluded);
+			project.addProgram(called);
+
+			const issues = LadderAnalyser.checkOrphanLadders(project);
+
+			expect(issues.map((i) => [i.code, i.source.sourceId])).toEqual([
+				["LADDER_NOT_REFERENCED", "l2"],
+			]);
+		});
+
+		it("ignores a call cycle going through an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const a = new Ladder("a", "A");
+			const b = new Ladder("b", "B");
+			b.excludedFromExecution = true;
+			callFrom(getMain(project), a.id);
+			callFrom(a, b.id);
+			callFrom(b, a.id);
+			project.addProgram(a);
+			project.addProgram(b);
+
+			expect(LadderAnalyser.checkCallCycles(project)).toEqual([]);
+		});
+
+		it("ignores block name conflicts with an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const timer = () =>
+				createTimerBlockElement({ name: "T1", timerType: "TON", pt: "T#5s" }, 0, 0);
+			const executed = new Ladder("l1", "L1", [createSectionWith([timer()], [])]);
+			const excluded = new Ladder("l2", "L2", [createSectionWith([timer()], [])]);
+			excluded.excludedFromExecution = true;
+			project.addProgram(executed);
+			project.addProgram(excluded);
+
+			expect(LadderAnalyser.checkBlockNameConflicts(project)).toEqual([]);
+		});
+
+		it("does not count an excluded Main as the project Main", () => {
+			const project = ProjectFactory.createEmpty();
+			getMain(project).excludedFromExecution = true;
+
+			expect(
+				LadderAnalyser.checkMainUniqueness(project).map((i) => i.code),
+			).toEqual(["PROJECT_MISSING_MAIN"]);
+		});
+	});
+
 	describe("checkBlockNameConflicts", () => {
 		it("ne signale rien quand tous les noms de blocs sont distincts", () => {
 			const timer = createTimerBlockElement(

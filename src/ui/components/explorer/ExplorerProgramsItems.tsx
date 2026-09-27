@@ -3,7 +3,7 @@
 import { LadderRole } from "@/schemas/ladder/ladder.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { Typography } from "@mui/material";
+import { Chip, Typography } from "@mui/material";
 import { ElementType, Fragment, useEffect } from "react";
 import { useT } from "@/ui/i18n/useT";
 import InclinedAccountTreeIcon from "../icons/InclinedAccountTree";
@@ -63,6 +63,11 @@ const ExplorerProgramItem = ({
 	const designing = useProjectStore(
 		(state) => state.mode === ProjectMode.DESIGN,
 	);
+	const excludedFromExecution = useProjectStore(
+		(state) =>
+			state.project?.getProgram(programId)?.excludedFromExecution ?? false,
+	);
+	const tExecution = useT("common.programExecution");
 	const { labelMode, startEditing, onDoubleClick, inputProps } =
 		useRenamableTreeItem({
 			name: programName,
@@ -110,6 +115,22 @@ const ExplorerProgramItem = ({
 			label={programName}
 			labelMode={labelMode}
 			IconComponent={getProgramIcon(programType, programRole)}
+			trailing={
+				excludedFromExecution && (
+					<Chip
+						label={tExecution("badge")}
+						size="small"
+						color="warning"
+						variant="outlined"
+						sx={{
+							ml: "auto",
+							height: "18px",
+							fontSize: "0.65rem",
+							"& .MuiChip-label": { px: "6px" },
+						}}
+					/>
+				)
+			}
 			styles={styles}
 			draggable={draggableAsProgramRef}
 			onDragStart={
