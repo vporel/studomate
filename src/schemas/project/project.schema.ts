@@ -9,6 +9,7 @@ import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema"
 import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
 import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
+import type { HardwareTarget } from "../hardware/hardware-target.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
@@ -81,6 +82,8 @@ export default class Project {
 	hmiPages: Record<string, HmiPage>;
 	/** Énoncé pédagogique du projet — absent si l'auteur n'en a pas rédigé. */
 	exercise?: Exercise;
+	/** Hardware target chosen by the user. Absent on projects saved before this field existed: same meaning as `null` (purely virtual project). */
+	hardwareTarget?: HardwareTarget | null;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;

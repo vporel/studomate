@@ -38,6 +38,7 @@ JS) before considering closures.
 
 ```
 src/schemas/           domain model (Grafcet, Project, Variable, commands...)
+src/hardware/           static descriptors of hardware models (pins, capabilities, limits) + registry
 src/expression-language/  expression language (AND/OR/NOT, FR/EN dialects) — neutral
                         module with no dependencies; used by both the compiler and editing
 src/project-analyser/  project analysis (business rules, never throws: collects issues)

@@ -85,8 +85,33 @@ describe("validateAddress", () => {
 		}
 	});
 
-	it("ADDRESS_INVALID pour un préfixe inconnu", () => {
-		expect(codes(validateAddress("%ZZ1"))).toContain("ADDRESS_INVALID");
+	it("accepte les broches matérielles %PD2, %PD13, %PA0", () => {
+		for (const ok of ["%PD2", "%PD13", "%PA0", "%PA5"]) {
+			expect(validateAddress(ok)).toEqual([]);
+		}
+	});
+
+	it("accepte un préfixe de une ou deux lettres suivi de chiffres, avec un bit optionnel", () => {
+		for (const ok of ["%X1", "%ZZ1", "%I12345.12345"]) {
+			expect(validateAddress(ok)).toEqual([]);
+		}
+	});
+
+	it("ADDRESS_INVALID hors du gabarit %<1-2 lettres majuscules><1-5 chiffres>[.<1-5 chiffres>]", () => {
+		for (const bad of [
+			"%",
+			"%1",
+			"%I",
+			"%i0.0",
+			"%ABC1",
+			"%I123456",
+			"%I0.",
+			"%I0.123456",
+			"%I0.0.0",
+			"%I0 .0",
+		]) {
+			expect(codes(validateAddress(bad))).toContain("ADDRESS_INVALID");
+		}
 	});
 });
 

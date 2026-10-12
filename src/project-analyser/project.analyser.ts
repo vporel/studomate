@@ -5,6 +5,7 @@ import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.buil
 import Variable from "@/schemas/variable/variable.schema";
 import GrafcetAnalyser from "./analysers/grafcet/grafcet.analyser";
 import LadderAnalyser from "./analysers/ladder/ladder.analyser";
+import analyseHardwareTarget from "./hardware-target.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
 
 export type ProjectAnalysisResult = {
@@ -96,6 +97,8 @@ export default class ProjectAnalyser {
 				) ?? []),
 			);
 		}
+
+		issues.push(...analyseHardwareTarget(project));
 
 		return {
 			totalAnalysedElements,

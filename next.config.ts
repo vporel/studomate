@@ -1,11 +1,28 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { APP_URL } from "./src/app-info";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
 	output: "standalone",
+	async redirects() {
+		return [
+			{
+				source: "/:path*",
+				has: [{ type: "host", value: `www.${new URL(APP_URL).host}` }],
+				destination: `${APP_URL}/:path*`,
+				permanent: true,
+			},
+			{
+				source: "/:path*",
+				has: [{ type: "header", key: "x-forwarded-proto", value: "http" }],
+				destination: `${APP_URL}/:path*`,
+				permanent: true,
+			},
+		];
+	},
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {

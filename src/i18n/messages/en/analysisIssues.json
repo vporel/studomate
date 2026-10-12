@@ -5,6 +5,13 @@
 	"PROJECT_MULTIPLE_MAINS": "The project has {count} Main programs; it should have exactly one.",
 	"LADDER_NOT_REFERENCED": "The \"{ladderName}\" ladder is not referenced by any block in the project: it will never run.",
 
+	"HARDWARE_MODEL_UNKNOWN": "The hardware target \"{modelId}\" is unknown to this version of Studomate: its addresses cannot be checked.",
+	"HARDWARE_PIN_UNKNOWN": "Variable \"{variableName}\" has address {address}, which does not exist on the {device} target.",
+	"HARDWARE_PIN_RESERVED": "Variable \"{variableName}\" has address {address}, which is a reserved pin of the {device} target: it cannot carry a variable.",
+	"HARDWARE_PIN_CAPABILITY_MISMATCH": "Variable \"{variableName}\" (zone {zone}) has address {address}, whose pin on the {device} target does not support this use.",
+	"HARDWARE_PIN_DUPLICATE": "Address {address} of the {device} target is claimed by several variables: {variableNames}.",
+	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "Memory variable \"{variableName}\" has address {address}, which is a physical pin of the {device} target. A memory variable cannot be bound to a pin.",
+
 	"GRAFCET_TOO_FEW_STEPS": "The grafcet must contain at least two steps.",
 	"GRAFCET_NO_INITIAL_STEP": "The grafcet has no initial step.",
 	"GRAFCET_MULTIPLE_INITIAL_STEPS": "The grafcet has {count} initial steps. Studomate currently supports only a single initial step (a tool limitation, not a GRAFCET rule).",

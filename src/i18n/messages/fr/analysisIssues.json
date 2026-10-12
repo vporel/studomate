@@ -5,6 +5,13 @@
 	"PROJECT_MULTIPLE_MAINS": "Le projet porte {count} programmes Main, il ne devrait en porter qu'un seul.",
 	"LADDER_NOT_REFERENCED": "Le ladder « {ladderName} » n'est référencé par aucun bloc du projet : il ne s'exécutera pas.",
 
+	"HARDWARE_MODEL_UNKNOWN": "La cible matérielle « {modelId} » est inconnue de cette version de Studomate : ses adresses ne peuvent pas être vérifiées.",
+	"HARDWARE_PIN_UNKNOWN": "La variable « {variableName} » a l'adresse {address}, qui n'existe pas sur la cible {device}.",
+	"HARDWARE_PIN_RESERVED": "La variable « {variableName} » a l'adresse {address}, qui est une broche réservée de la cible {device} : elle ne peut pas porter de variable.",
+	"HARDWARE_PIN_CAPABILITY_MISMATCH": "La variable « {variableName} » (zone {zone}) a l'adresse {address}, dont la broche de la cible {device} ne supporte pas cet usage.",
+	"HARDWARE_PIN_DUPLICATE": "L'adresse {address} de la cible {device} est revendiquée par plusieurs variables : {variableNames}.",
+	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "La variable mémoire « {variableName} » a l'adresse {address}, qui est une broche physique de la cible {device}. Une variable mémoire ne peut pas être liée à une broche.",
+
 	"GRAFCET_TOO_FEW_STEPS": "Le grafcet doit contenir au moins deux étapes.",
 	"GRAFCET_NO_INITIAL_STEP": "Le grafcet ne contient aucune étape initiale.",
 	"GRAFCET_MULTIPLE_INITIAL_STEPS": "Le grafcet contient {count} étapes initiales. Studomate ne supporte pour l'instant qu'une seule étape initiale (limite de l'outil, pas une règle du GRAFCET).",

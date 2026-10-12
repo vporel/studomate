@@ -108,8 +108,7 @@ export function validateAddress(address: string): VariableValidationIssue[] {
 	if (address.length === 0) return []; // adresse optionnelle
 	const issues: VariableValidationIssue[] = [];
 	if (!address.startsWith("%")) issues.push(issue("ADDRESS_MISSING_PERCENT"));
-	const addressRegex =
-		/^%(E|I|Q|O|EA|IW|SA|QW|M|MW|MF|MD)[0-9]{1,5}(\.[0-9]){0,5}$/;
+	const addressRegex = /^%[A-Z]{1,2}[0-9]{1,5}(\.[0-9]{1,5})?$/;
 	if (!addressRegex.test(address)) issues.push(issue("ADDRESS_INVALID"));
 	return issues;
 }
