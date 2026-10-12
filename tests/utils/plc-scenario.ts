@@ -13,7 +13,10 @@ export default class PlcScenario {
 	private readonly project: Project;
 	private cycleError: Error | null = null;
 
-	constructor(project: Project, private readonly scanMs: number = 100) {
+	constructor(
+		project: Project,
+		private readonly scanMs: number = 100,
+	) {
 		this.project = project;
 		const plc = compileToPLC(project, scanMs, undefined, {
 			onCycleError: (error) => {

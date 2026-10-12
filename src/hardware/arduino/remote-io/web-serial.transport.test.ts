@@ -72,6 +72,16 @@ describe("WebSerialTransport", () => {
 		expect(new TextDecoder().decode(fake.written[0])).toBe("PING*00\n");
 	});
 
+	it("writes each character as one raw byte, above 0x7F included", async () => {
+		const fake = fakePort();
+		const transport = new WebSerialTransport(fake.port, opts);
+		await transport.open();
+
+		await transport.write("\u0080\u00ffA");
+
+		expect(Array.from(fake.written[0])).toEqual([0x80, 0xff, 0x41]);
+	});
+
 	it("refuses to write when not open", async () => {
 		const transport = new WebSerialTransport(fakePort().port, opts);
 		await expect(transport.write("x")).rejects.toThrow("not open");
@@ -89,6 +99,22 @@ describe("WebSerialTransport", () => {
 		await tick();
 
 		expect(chunks.join("")).toBe("IN 2=1*00\n");
+	});
+
+	it("delivers every byte value unchanged, including 0x80 to 0x9F", async () => {
+		const fake = fakePort();
+		const transport = new WebSerialTransport(fake.port, opts);
+		const chunks: string[] = [];
+		transport.onData((chunk) => chunks.push(chunk));
+		await transport.open();
+		const all = Uint8Array.from({ length: 256 }, (_, i) => i);
+
+		fake.push(all);
+		await tick();
+
+		expect(Array.from(chunks.join(""), (c) => c.charCodeAt(0))).toEqual(
+			Array.from(all),
+		);
 	});
 
 	it("notifies a close when the stream ends or fails, but not on close()", async () => {

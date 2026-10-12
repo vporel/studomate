@@ -16,12 +16,14 @@ jest.mock("@/hardware/arduino/remote-io/web-serial.transport", () => ({
 function setup({
 	modelId = "arduino-uno-r3" as string | null,
 	status = "disconnected",
-}: { modelId?: string | null; status?: string } = {}) {
+	flashing = false,
+}: { modelId?: string | null; status?: string; flashing?: boolean } = {}) {
 	const hardwareLinkManager = { link: jest.fn(), unlink: jest.fn() };
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: { hardwareTarget: modelId ? { modelId } : null },
 			hardwareLink: { status, drivenInputIds: [] },
+			hardwareFirmware: { phase: flashing ? "flashing" : "idle" },
 			hardwareLinkManager,
 		}),
 	);
@@ -53,6 +55,14 @@ describe("HardwareLinkControl", () => {
 		expect(
 			screen.getByRole("button", { name: "Lier la carte" }),
 		).toBeDisabled();
+	});
+
+	it("shows the firmware upload while the board is being flashed", () => {
+		setup({ status: "connecting", flashing: true });
+		expect(
+			screen.getByText("Téléversement du firmware..."),
+		).toBeInTheDocument();
+		expect(screen.queryByText("Connexion...")).toBeNull();
 	});
 
 	it("shows the linked badge and an unlink button, which unlinks", () => {

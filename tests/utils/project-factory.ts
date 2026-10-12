@@ -28,7 +28,11 @@ export class ProjectFactory {
 	/**
 	 * Creates a project with variables
 	 */
-	static createWithVariables(variables: Variable[], name?: string, author?: string): Project {
+	static createWithVariables(
+		variables: Variable[],
+		name?: string,
+		author?: string,
+	): Project {
 		const projectId = `test-project-${this.counter++}`;
 		return new ProjectBuilder()
 			.id(projectId)
@@ -41,7 +45,11 @@ export class ProjectFactory {
 	/**
 	 * Creates a project with grafcets
 	 */
-	static createWithGrafcets(grafcets: Grafcet[], name?: string, author?: string): Project {
+	static createWithGrafcets(
+		grafcets: Grafcet[],
+		name?: string,
+		author?: string,
+	): Project {
 		const projectId = `test-project-${this.counter++}`;
 		return new ProjectBuilder()
 			.id(projectId)
@@ -54,7 +62,12 @@ export class ProjectFactory {
 	/**
 	 * Creates a complete project with variables and grafcets
 	 */
-	static create(variables: Variable[], grafcets: Grafcet[], name?: string, author?: string): Project {
+	static create(
+		variables: Variable[],
+		grafcets: Grafcet[],
+		name?: string,
+		author?: string,
+	): Project {
 		const projectId = `test-project-${this.counter++}`;
 		return new ProjectBuilder()
 			.id(projectId)

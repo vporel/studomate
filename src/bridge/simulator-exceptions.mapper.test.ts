@@ -38,6 +38,7 @@ import InvalidCounterLastInputNodeException from "@/simulator/interpreter/semant
 import InvalidCounterLastInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-type.exception";
 import SimulatorExceptionsMapper from "./simulator-exceptions.mapper";
 import BitStringArithmeticException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-block-operand.exception";
 import ConstantOutOfRangeException from "@/simulator/interpreter/semantic-analyser/exceptions/constant-out-of-range.exception";
 import ExplicitConversionRequiredException from "@/simulator/interpreter/semantic-analyser/exceptions/explicit-conversion-required.exception";
 import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
@@ -121,6 +122,14 @@ describe("SimulatorExceptionsMapper", () => {
 			const e = new BitStringArithmeticException("+", "WORD", arithmetic());
 			expect(message(e, "fr")).toBe(
 				"Opérateur « + » interdit sur le type WORD (chaîne de bits) : convertissez d'abord la valeur en entier (WORD_TO_INT ou WORD_TO_DINT).",
+			);
+		});
+
+		it("maps BitStringBlockOperandException", () => {
+			const node = counterNode();
+			const e = new BitStringBlockOperandException("PV", "WORD", node, node.presetValue);
+			expect(message(e, "fr")).toBe(
+				"L'opérande PV d'un bloc ne peut pas être de type WORD (chaîne de bits) : utilisez une variable INT, DINT ou TIME.",
 			);
 		});
 

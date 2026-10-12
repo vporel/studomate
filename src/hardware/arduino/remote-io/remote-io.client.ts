@@ -8,6 +8,7 @@ import {
 	type PinValue,
 } from "./messages";
 import { FrameDecoder } from "./frame";
+import { isFirmwareOutdated } from "./firmware-version";
 import type { RemoteIoPlan } from "./remote-io-plan";
 import type { HeartbeatScheduler } from "@/hardware/heartbeat/heartbeat-scheduler";
 import type { SerialTransport } from "./transport";
@@ -19,6 +20,8 @@ export type RemoteIoErrorCode =
 	| "handshake-timeout"
 	/** The firmware speaks another major protocol version. */
 	| "protocol-mismatch"
+	/** The firmware is older than `minFirmwareVersion`. */
+	| "firmware-outdated"
 	/** The board answered `ERR` to the pin configuration. */
 	| "config-rejected"
 	/** The port could not be opened, written to, or was lost. */
@@ -48,12 +51,15 @@ export interface RemoteIoClientOptions {
 	heartbeat: HeartbeatScheduler;
 	/** Interval between `OUT` frames; must stay under the firmware watchdog divided by three. */
 	heartbeatIntervalMs?: number;
+	/** Oldest firmware version accepted; unset accepts any version of the right protocol. */
+	minFirmwareVersion?: string;
 	handshakeTimeoutMs?: number;
 	pingIntervalMs?: number;
 	configTimeoutMs?: number;
 }
 
 const DEFAULTS = {
+	minFirmwareVersion: "",
 	heartbeatIntervalMs: 150,
 	handshakeTimeoutMs: 3000,
 	pingIntervalMs: 250,
@@ -297,6 +303,12 @@ export default class RemoteIoClient {
 				if (message.type !== "PONG") return undefined;
 				if (message.protocolMajor !== PROTOCOL_MAJOR_VERSION) {
 					throw new RemoteIoError("protocol-mismatch", message.protocol);
+				}
+				if (
+					this.options.minFirmwareVersion &&
+					isFirmwareOutdated(message.firmware, this.options.minFirmwareVersion)
+				) {
+					throw new RemoteIoError("firmware-outdated", message.firmware);
 				}
 				return {
 					protocol: message.protocol,

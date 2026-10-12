@@ -7,6 +7,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variable";
+import { NumericRange } from "@/lib/numeric-range";
 
 class MockVisitor extends BaseVisitor<EnvVariableValue> {
 	private env: Environment;
@@ -416,6 +417,107 @@ describe("CounterNodeEvaluator", () => {
 			expect(result).toBe(true);
 			expect(env.getVariableValueByName("output")).toBe(true);
 			expect(env.getVariableValueByName("downOutput")).toBe(false);
+		});
+	});
+
+	describe("sorties calculées sur la valeur courante repliée", () => {
+		const INT_RANGE: NumericRange = {
+			min: -32768,
+			max: 32767,
+			integer: true,
+			wrap: true,
+		};
+
+		beforeEach(() => {
+			const variables = (
+				[
+					["input", "boolean", false],
+					["lastInput", "boolean", false],
+					["control", "boolean", false],
+					["presetValue", "number", 0],
+					["currentValue", "number", 0],
+					["output", "boolean", false],
+					["downInput", "boolean", false],
+					["downLastInput", "boolean", false],
+					["load", "boolean", false],
+					["downOutput", "boolean", false],
+				] as const
+			).map(([name, type, value]) => {
+				const variable = new EnvVariable(
+					`id_${name}`,
+					name,
+					type,
+					"INOUT",
+					name === "currentValue" ? INT_RANGE : null,
+					name === "currentValue" ? "INT" : null,
+				);
+				variable.setValue(value);
+				return variable;
+			});
+			env = new Environment(variables);
+			visitor = new MockVisitor(env);
+			evaluator = new CounterNodeEvaluator(env, visitor);
+		});
+
+		const createNode = (type: "CTU" | "CTD" | "CTUD"): CounterNode =>
+			BlocksBuilder.buildCounterNode(
+				type,
+				IdentifiersBuilder.buildIdentifierNode("input", 0),
+				IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
+				IdentifiersBuilder.buildIdentifierNode("control", 0),
+				IdentifiersBuilder.buildIdentifierNode("presetValue", 0),
+				IdentifiersBuilder.buildIdentifierNode("currentValue", 0),
+				IdentifiersBuilder.buildIdentifierNode("output", 0),
+				type === "CTUD"
+					? {
+							input: IdentifiersBuilder.buildIdentifierNode("downInput", 0),
+							lastInput: IdentifiersBuilder.buildIdentifierNode(
+								"downLastInput",
+								0,
+							),
+							load: IdentifiersBuilder.buildIdentifierNode("load", 0),
+							output: IdentifiersBuilder.buildIdentifierNode("downOutput", 0),
+						}
+					: undefined,
+			);
+
+		it("CTU INT qui dépasse 32767 : Q est faux dès le cycle du débordement", () => {
+			const counter = createNode("CTU");
+			env.setVariableValueByName("presetValue", 32767);
+			env.setVariableValueByName("currentValue", 32767);
+			env.setVariableValueByName("input", true);
+
+			const result = evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(-32768);
+			expect(result).toBe(false);
+			expect(env.getVariableValueByName("output")).toBe(false);
+		});
+
+		it("CTD INT qui passe sous -32768 : Q est faux dès le cycle du débordement", () => {
+			const counter = createNode("CTD");
+			env.setVariableValueByName("currentValue", -32768);
+			env.setVariableValueByName("input", true);
+
+			const result = evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(32767);
+			expect(result).toBe(false);
+			expect(env.getVariableValueByName("output")).toBe(false);
+		});
+
+		it("CTUD INT qui dépasse 32767 : QU faux et QD vrai dès le cycle du débordement", () => {
+			const counter = createNode("CTUD");
+			env.setVariableValueByName("presetValue", 100);
+			env.setVariableValueByName("currentValue", 32767);
+			env.setVariableValueByName("input", true);
+
+			const result = evaluator.evaluate(counter);
+
+			expect(env.getVariableValueByName("currentValue")).toBe(-32768);
+			expect(result).toBe(false);
+			expect(env.getVariableValueByName("output")).toBe(false);
+			expect(env.getVariableValueByName("downOutput")).toBe(true);
 		});
 	});
 });

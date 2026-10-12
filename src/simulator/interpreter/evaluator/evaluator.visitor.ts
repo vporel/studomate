@@ -49,6 +49,7 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 	/** The type of a node depends only on the tree and on the declared types of the variables,
 	 * both fixed for a compiled program: computed on first evaluation, then reused every cycle. */
 	private readonly resultTypes = new WeakMap<ASTNode, NumericType>();
+	private readonly divisionTruncation = new WeakMap<ASTNode, boolean>();
 
 	constructor(environment: Environment, options: EvaluatorVisitorOptions) {
 		super();
@@ -125,7 +126,7 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 				}
 				const quotient = leftValue / rightValue;
 				return this.toType(
-					isIntegerType(type) ? Math.trunc(quotient) : quotient,
+					this.truncatesDivision(node, type) ? Math.trunc(quotient) : quotient,
 					type,
 				);
 			}
@@ -147,6 +148,31 @@ export default class EvaluatorVisitor extends BaseVisitor<EnvVariableValue> {
 			this.resultTypes.set(node, type);
 		}
 		return type;
+	}
+
+	/** `TIME` counts whole milliseconds and an internal variable holds an integer (elapsed time,
+	 * counter value): their quotient truncates like an integer one, unless a real is involved. */
+	private truncatesDivision(node: ArithmeticExpressionNode, type: NumericType): boolean {
+		let truncates = this.divisionTruncation.get(node);
+		if (truncates === undefined) {
+			truncates =
+				isIntegerType(type) ||
+				type === "TIME" ||
+				(type === "ANY_NUM" && !this.involvesReal(node));
+			this.divisionTruncation.set(node, truncates);
+		}
+		return truncates;
+	}
+
+	private involvesReal(node: ASTNode): boolean {
+		const type = this.resultTypeOf(node);
+		if (type === "REAL" || type === "ANY_REAL") return true;
+		if (type !== "ANY_NUM") return false;
+		if (node.type === "ARITHMETIC_EXPRESSION") {
+			return this.involvesReal(node.left) || this.involvesReal(node.right);
+		}
+		if (node.type === "UNARY_EXPRESSION") return this.involvesReal(node.expr);
+		return false;
 	}
 
 	/** An integer result wraps in its type's range, as on a PLC. */

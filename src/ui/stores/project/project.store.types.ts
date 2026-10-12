@@ -17,6 +17,7 @@ import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
 import HardwareLinkManager, {
+	HardwareFirmwareState,
 	HardwareLinkState,
 } from "./managers/hardware-link/hardware-link.manager";
 import SimulationManager from "./managers/simulation/simulation.manager";
@@ -271,6 +272,7 @@ export interface ProjectStoreState {
 
 	//=============== HARDWARE LINK ===============
 	hardwareLink: HardwareLinkState;
+	hardwareFirmware: HardwareFirmwareState;
 	hardwareLinkManager: HardwareLinkManager;
 
 	//=============== COMMANDS ===============

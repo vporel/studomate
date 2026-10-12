@@ -50,6 +50,9 @@ import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-exp
 import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
 import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException, {
+	BlockNumericOperand,
+} from "./exceptions/bit-string-block-operand.exception";
 import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
 import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
 import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
@@ -415,6 +418,21 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				node,
 			);
 		}
+		this.checkNotBitString("PT", node.presetTime, node);
+		this.checkNotBitString("ET", node.elapsedTime, node);
+	}
+
+	/** Timer and counter values are signed quantities (TIME and INT in IEC 61131-3): the
+	 * Arduino VM compares them as signed 32-bit integers, which a DWORD above 2^31 breaks. */
+	private checkNotBitString(
+		operand: BlockNumericOperand,
+		operandNode: ASTNode,
+		blockNode: TimerNode | CounterNode,
+	): void {
+		const type = this.numericTypeAnalyser.visit(operandNode).type;
+		if (isBitStringType(type)) {
+			throw new BitStringBlockOperandException(operand, type, blockNode, operandNode);
+		}
 	}
 
 	protected visitTimerStringDeclarationNode(
@@ -481,6 +499,8 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				node,
 			);
 		}
+		this.checkNotBitString("PV", node.presetValue, node);
+		this.checkNotBitString("CV", node.currentValue, node);
 		if (node.down) this.analyseCounterDownPart(node, node.down);
 	}
 

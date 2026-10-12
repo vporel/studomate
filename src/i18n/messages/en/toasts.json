@@ -26,7 +26,16 @@
 		"handshake-timeout": "The board does not answer: the Studomate firmware is not installed on it.",
 		"protocol-mismatch": "The firmware of the board is not compatible with this version of Studomate.",
 		"config-rejected": "The board rejected the pin configuration.",
-		"transport": "Cannot communicate with the board. Check the USB cable and that no other program is using the port."
+		"transport": "Cannot communicate with the board. Check the USB cable, and that no other program or tab (Studomate included) is using the port.",
+		"firmware-outdated": "The firmware of the board is too old for this version of Studomate."
 	},
-	"hardwareOutputsCutInBackground": "Tab in the background: the outputs of the board were cut."
+	"hardwareOutputsCutInBackground": "Tab in the background: the outputs of the board were cut.",
+	"hardwareFlashFailed": {
+		"sync-failed": "Cannot install the firmware: the board does not answer. Check that no other program is using the port. Only the original Arduino Uno R3 is supported.",
+		"protocol-error": "Cannot install the firmware: unexpected answer from the board. Only the original Arduino Uno R3 is supported.",
+		"unsupported-board": "Cannot install the firmware: this board is not an Arduino Uno R3.",
+		"verify-failed": "The firmware installation failed: verification found differences. Try again.",
+		"transport": "Cannot install the firmware: communication with the board was interrupted.",
+		"firmware-unavailable": "Cannot install the firmware: the firmware file was not found."
+	}
 }

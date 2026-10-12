@@ -245,7 +245,7 @@
 			"Between two different types, only lossless widenings are implicit: INT to DINT or REAL, WORD to DWORD. DINT and REAL cannot be combined without a conversion.",
 			"Storing a value in a smaller type (DINT or REAL into an INT) requires an explicit conversion: DINT_TO_INT, REAL_TO_INT, INT_TO_REAL… functions in an expression, Conversion block in ladder.",
 			"Division between integers truncates: 7 / 2 is 3, even when stored in a REAL. Write 7.0 / 2 to get 3.5.",
-			"WORD and DWORD are bit strings: no arithmetic on these types without first converting them to an integer (WORD_TO_INT…).",
+			"WORD and DWORD are bit strings: no arithmetic on these types without first converting them to an integer (WORD_TO_INT…), and no WORD/DWORD as the preset or current value of a timer or counter.",
 			"A constant is written according to its type: 100 (integer), 2.5 (real), T#5s (duration). A duration is compared with another duration: t > T#2s."
 		],
 		"propertiesTitle": "Properties of a variable",

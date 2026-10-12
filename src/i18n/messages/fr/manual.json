@@ -245,7 +245,7 @@
 			"Entre deux types différents, seuls les élargissements sans perte sont implicites : INT vers DINT ou REAL, WORD vers DWORD. DINT et REAL ne se combinent pas sans conversion.",
 			"Ranger une valeur dans un type plus petit (DINT ou REAL dans un INT) demande une conversion explicite : fonctions DINT_TO_INT, REAL_TO_INT, INT_TO_REAL… dans une expression, bloc Conversion en ladder.",
 			"La division entre entiers tronque : 7 / 2 vaut 3, même rangé dans un REAL. Écrivez 7.0 / 2 pour obtenir 3,5.",
-			"WORD et DWORD sont des chaînes de bits : pas d'opération arithmétique sur ces types sans les convertir d'abord en entier (WORD_TO_INT…).",
+			"WORD et DWORD sont des chaînes de bits : pas d'opération arithmétique sur ces types sans les convertir d'abord en entier (WORD_TO_INT…), ni de WORD/DWORD comme consigne ou valeur courante d'une temporisation ou d'un compteur.",
 			"Une constante s'écrit selon son type : 100 (entier), 2.5 (réel), T#5s (durée). Une durée se compare à une autre durée : t > T#2s."
 		],
 		"propertiesTitle": "Propriétés d'une variable",

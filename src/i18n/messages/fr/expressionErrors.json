@@ -65,6 +65,7 @@
 	"CONVERSION_HINT": " (fonction {function})",
 	"INCOMPATIBLE_NUMERIC_TYPES": "Types {leftType} et {rightType} incompatibles pour l'opérateur « {operator} » : convertissez explicitement l'un des opérandes{hint}.",
 	"BIT_STRING_ARITHMETIC": "Opérateur « {operator} » interdit sur le type {type} (chaîne de bits) : convertissez d'abord la valeur en entier ({type}_TO_INT ou {type}_TO_DINT).",
+	"BIT_STRING_BLOCK_OPERAND": "L'opérande {operand} d'un bloc ne peut pas être de type {type} (chaîne de bits) : utilisez une variable INT, DINT ou TIME.",
 	"CONSTANT_OUT_OF_RANGE": "La constante {value} dépasse les limites du type {type}.",
 	"EXPLICIT_CONVERSION_REQUIRED": "Affectation d'une valeur {valueType} à une variable {targetType} : une conversion explicite est nécessaire{hint}.",
 	"INVALID_CONVERSION_ARGUMENT": "Conversion vers {targetType} impossible : la valeur est de type {actual}, {expected} attendu.",

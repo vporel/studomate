@@ -9,9 +9,10 @@ import HmiManager from "./managers/hmi.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
-import createBrowserRemoteIoClient from "./managers/hardware-link/browser-remote-io-client";
+import createBrowserRemoteIoDevice from "./managers/hardware-link/browser-remote-io-device";
 import HardwareLinkManager, {
 	DISCONNECTED_HARDWARE_LINK,
+	IDLE_HARDWARE_FIRMWARE,
 } from "./managers/hardware-link/hardware-link.manager";
 import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
 import SimulationManager from "./managers/simulation/simulation.manager";
@@ -318,8 +319,9 @@ export const createProjectStore = () => {
 				set,
 				get,
 				new ToastHardwareLinkNotifier(),
-				createBrowserRemoteIoClient,
+				createBrowserRemoteIoDevice,
 			),
+			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
 
 			//=============== COMMANDS STACK ===============
 			hasCommandsToUndo: false,

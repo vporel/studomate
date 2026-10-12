@@ -111,6 +111,38 @@ describe("RemoteIoClient.connect", () => {
 		});
 	});
 
+	it("fails with firmware-outdated when the firmware is older than the minimum", async () => {
+		const board = new FakeRemoteIoBoard({ firmware: "0.9.0" });
+		const client = new RemoteIoClient({
+			transport: board,
+			plan: PLAN,
+			heartbeat: createManualHeartbeat().scheduler,
+			minFirmwareVersion: "1.0.0",
+			handshakeTimeoutMs: 80,
+			pingIntervalMs: 10,
+		});
+		await expect(client.connect()).rejects.toMatchObject({
+			code: "firmware-outdated",
+			detail: "0.9.0",
+		});
+		expect(client.getState()).toBe("disconnected");
+	});
+
+	it("accepts a firmware at or above the minimum", async () => {
+		const board = new FakeRemoteIoBoard({ firmware: "1.2.0" });
+		const client = new RemoteIoClient({
+			transport: board,
+			plan: PLAN,
+			heartbeat: createManualHeartbeat().scheduler,
+			minFirmwareVersion: "1.0.0",
+			handshakeTimeoutMs: 80,
+			pingIntervalMs: 10,
+		});
+		await expect(client.connect()).resolves.toMatchObject({
+			firmware: "1.2.0",
+		});
+	});
+
 	it("fails with config-rejected when the board answers ERR", async () => {
 		const { client } = setup({ knownPins: ["2"] });
 		await expect(client.connect()).rejects.toMatchObject({

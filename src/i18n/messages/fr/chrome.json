@@ -41,6 +41,26 @@
 		"link": "Lier la carte",
 		"unlink": "Dissocier",
 		"unsupported": "La liaison USB avec la carte nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet.",
-		"unsupportedAria": "Liaison USB indisponible dans ce navigateur"
+		"unsupportedAria": "Liaison USB indisponible dans ce navigateur",
+		"flashing": "Téléversement du firmware..."
+	},
+	"hardwareFirmwareDialog": {
+		"missing": {
+			"title": "Installer le firmware Studomate ?",
+			"message": "Cette carte ne contient pas le firmware Studomate. L'installer ? Le programme actuel de la carte sera effacé."
+		},
+		"outdated": {
+			"title": "Mettre à jour le firmware Studomate ?",
+			"message": "Le firmware de la carte est obsolète. Le mettre à jour ? Le programme actuel de la carte sera effacé."
+		},
+		"cancel": "Annuler",
+		"install": "Installer",
+		"flashing": {
+			"title": "Installation du firmware Studomate sur l'Arduino...",
+			"preparing": "Préparation...",
+			"write": "Écriture : page {done} sur {total}",
+			"verify": "Vérification : page {done} sur {total}",
+			"doNotUnplug": "Ne débranchez pas la carte pendant l'installation."
+		}
 	}
 }

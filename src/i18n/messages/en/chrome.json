@@ -41,6 +41,26 @@
 		"link": "Link the board",
 		"unlink": "Unlink",
 		"unsupported": "The USB link with the board requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project.",
-		"unsupportedAria": "USB link unavailable in this browser"
+		"unsupportedAria": "USB link unavailable in this browser",
+		"flashing": "Uploading the firmware..."
+	},
+	"hardwareFirmwareDialog": {
+		"missing": {
+			"title": "Install the Studomate firmware?",
+			"message": "This board does not contain the Studomate firmware. Install it? The program currently on the board will be erased."
+		},
+		"outdated": {
+			"title": "Update the Studomate firmware?",
+			"message": "The firmware of the board is outdated. Update it? The program currently on the board will be erased."
+		},
+		"cancel": "Cancel",
+		"install": "Install",
+		"flashing": {
+			"title": "Installing the Studomate firmware on the Arduino...",
+			"preparing": "Preparing...",
+			"write": "Writing: page {done} of {total}",
+			"verify": "Verifying: page {done} of {total}",
+			"doNotUnplug": "Do not unplug the board during the installation."
+		}
 	}
 }

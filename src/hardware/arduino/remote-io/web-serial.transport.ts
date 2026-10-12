@@ -28,6 +28,16 @@ export interface WebSerialTransportOptions {
 	bootDelayMs?: number;
 }
 
+/**
+ * One character per byte. `TextDecoder("latin1")` is not usable: browsers map it to windows-1252,
+ * which turns bytes 0x80 to 0x9F into other code points.
+ */
+function bytesToString(bytes: Uint8Array): string {
+	let text = "";
+	for (const byte of bytes) text += String.fromCharCode(byte);
+	return text;
+}
+
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** `SerialTransport` over a Web Serial port. `open()` resets the board and resolves once it can be talked to. */
@@ -68,7 +78,9 @@ export default class WebSerialTransport implements SerialTransport {
 
 	async write(data: string): Promise<void> {
 		if (!this.writer) throw new Error("Port is not open");
-		await this.writer.write(new TextEncoder().encode(data));
+		await this.writer.write(
+			Uint8Array.from(data, (char) => char.charCodeAt(0) & 0xff),
+		);
 	}
 
 	onData(listener: (chunk: string) => void) {
@@ -102,12 +114,11 @@ export default class WebSerialTransport implements SerialTransport {
 	}
 
 	private async readLoop(reader: ReadableStreamDefaultReader<Uint8Array>) {
-		const decoder = new TextDecoder("latin1");
 		try {
 			for (;;) {
 				const { value, done } = await reader.read();
 				if (done) break;
-				const text = decoder.decode(value, { stream: true });
+				const text = bytesToString(value);
 				for (const listener of this.dataListeners) listener(text);
 			}
 		} catch {

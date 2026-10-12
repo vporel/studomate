@@ -319,13 +319,26 @@ describe("EvaluatorVisitor : calcul dans le type IEC 61131-3", () => {
 		expect(evaluate("-i")).toBe(-32768);
 	});
 
-	it("une durée divisée par un nombre n'est pas tronquée", () => {
-		expect(evaluate("t / 3")).toBeCloseTo(333.333, 2);
+	it("une durée divisée par un nombre est tronquée à la milliseconde", () => {
+		expect(evaluate("t / 3")).toBe(333);
+		expect(evaluate("-t / 3")).toBe(-333);
 	});
 
-	it("une variable sans type déclaré garde un calcul non typé", () => {
+	it("une durée divisée par un réel reste une durée entière", () => {
+		expect(evaluate("t / 3.0")).toBe(333);
+	});
+
+	it("la division d'une variable sans type déclaré est entière", () => {
 		env.setVariableValueByName("u", 7);
-		expect(evaluate("u / 2")).toBe(3.5);
+		expect(evaluate("u / 2")).toBe(3);
+		expect(evaluate("(u + 2) / 2")).toBe(4);
+	});
+
+	it("la division d'une variable sans type déclaré reste réelle si un réel intervient", () => {
+		env.setVariableValueByName("u", 7);
+		expect(evaluate("u / 2.0")).toBe(3.5);
+		expect(evaluate("(r * u) / 2")).toBe(8.75);
+		expect(evaluate("-(r * u) / 2")).toBe(-8.75);
 	});
 
 	describe("fonctions de conversion", () => {

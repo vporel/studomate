@@ -1,6 +1,10 @@
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
-import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
+import {
+	render,
+	type RenderOptions,
+	type RenderResult,
+} from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
@@ -35,7 +39,10 @@ export function i18nWrapper(locale: Locale = DEFAULT_LOCALE) {
  */
 export function renderWithI18n(
 	ui: ReactElement,
-	{ locale = DEFAULT_LOCALE, ...options }: { locale?: Locale } & RenderOptions = {},
+	{
+		locale = DEFAULT_LOCALE,
+		...options
+	}: { locale?: Locale } & RenderOptions = {},
 ): RenderResult {
 	return render(ui, { wrapper: i18nWrapper(locale), ...options });
 }

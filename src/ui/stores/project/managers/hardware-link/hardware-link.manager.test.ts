@@ -9,8 +9,14 @@ import { VariableFactory } from "@tests/utils/variable-factory";
 import type { ProjectStoreState } from "@/ui/stores/project/project.store";
 import HardwareLinkManager, {
 	DISCONNECTED_HARDWARE_LINK,
+	IDLE_HARDWARE_FIRMWARE,
 } from "./hardware-link.manager";
+import type { SerialTransport } from "@/hardware/arduino/remote-io/transport";
+import FakeUnoBoard from "@tests/utils/fake-uno-board";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import type HardwareLinkNotifier from "./hardware-link.notifier";
+
+const FIRMWARE_IMAGE = Uint8Array.from({ length: 256 }, (_, i) => i);
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -20,6 +26,7 @@ function stubNotifier(): jest.Mocked<HardwareLinkNotifier> {
 		linkFailed: jest.fn(),
 		linkLost: jest.fn(),
 		outputsCutInBackground: jest.fn(),
+		flashFailed: jest.fn(),
 	};
 }
 
@@ -27,6 +34,9 @@ function setup(
 	options: {
 		board?: ConstructorParameters<typeof FakeRemoteIoBoard>[0];
 		createClientError?: unknown;
+		transport?: SerialTransport;
+		minFirmwareVersion?: string;
+		firmwareFileError?: boolean;
 		withTarget?: boolean;
 	} = {},
 ) {
@@ -44,7 +54,10 @@ function setup(
 
 	let state = {
 		project,
+		mode: ProjectMode.SIMULATION,
+		simulationPaused: false,
 		hardwareLink: DISCONNECTED_HARDWARE_LINK,
+		hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
 		simulationManager: { applyHardwareInputs: jest.fn() },
 	} as unknown as ProjectStoreState;
 	const set = (partial: any) => {
@@ -53,20 +66,36 @@ function setup(
 	};
 	const get = () => state;
 
-	const board = new FakeRemoteIoBoard(options.board);
+	const board = (options.transport ??
+		new FakeRemoteIoBoard(options.board)) as FakeRemoteIoBoard;
 	const heartbeat = createManualHeartbeat();
 	const notifier = stubNotifier();
-	const manager = new HardwareLinkManager(set, get, notifier, async (plan) => {
-		if (options.createClientError) throw options.createClientError;
-		return new RemoteIoClient({
-			transport: board,
-			plan,
-			heartbeat: heartbeat.scheduler,
-			handshakeTimeoutMs: 80,
-			pingIntervalMs: 10,
-			configTimeoutMs: 80,
-		});
-	});
+	const manager = new HardwareLinkManager(
+		set,
+		get,
+		notifier,
+		async (plan) => {
+			if (options.createClientError) throw options.createClientError;
+			return {
+				transport: board,
+				createClient: () =>
+					new RemoteIoClient({
+						transport: board,
+						plan,
+						heartbeat: heartbeat.scheduler,
+						minFirmwareVersion: options.minFirmwareVersion,
+						handshakeTimeoutMs: 80,
+						pingIntervalMs: 10,
+						configTimeoutMs: 80,
+					}),
+				loadFirmware: async () => {
+					if (options.firmwareFileError) throw new Error("404");
+					return FIRMWARE_IMAGE;
+				},
+			};
+		},
+		{ postFlashDelayMs: 0 },
+	);
 	return { manager, get, set, board, heartbeat, notifier, project };
 }
 
@@ -104,15 +133,6 @@ describe("HardwareLinkManager.link", () => {
 		const frames = board.received.length;
 		await manager.link();
 		expect(board.received.length).toBe(frames);
-	});
-
-	it("reports the error code and stays disconnected when the firmware is absent", async () => {
-		const { manager, get, notifier } = setup({
-			board: { firmwarePresent: false },
-		});
-		await manager.link();
-		expect(get().hardwareLink).toEqual(DISCONNECTED_HARDWARE_LINK);
-		expect(notifier.linkFailed).toHaveBeenCalledWith("handshake-timeout");
 	});
 
 	it("stays silent when the user dismisses the port chooser", async () => {
@@ -380,6 +400,36 @@ describe("HardwareLinkManager hidden tab", () => {
 		await manager.unlink();
 	});
 
+	it("does not cut the outputs nor notify in Design mode", async () => {
+		const { manager, set, board, notifier } = setup();
+		set({ mode: ProjectMode.DESIGN });
+		await manager.link();
+		const frames = board.received.length;
+
+		setVisibility("hidden");
+		setVisibility("visible");
+		await flush();
+
+		expect(board.received.length).toBe(frames);
+		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
+		await manager.unlink();
+	});
+
+	it("does not cut the outputs of a paused simulation", async () => {
+		const { manager, set, board, notifier } = setup();
+		set({ simulationPaused: true });
+		await manager.link();
+		const frames = board.received.length;
+
+		setVisibility("hidden");
+		setVisibility("visible");
+		await flush();
+
+		expect(board.received.length).toBe(frames);
+		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
+		await manager.unlink();
+	});
+
 	it("does nothing when not linked, and stops listening once unlinked", async () => {
 		const { manager, board, notifier } = setup();
 		setVisibility("hidden");
@@ -393,5 +443,156 @@ describe("HardwareLinkManager hidden tab", () => {
 
 		expect(board.received.length).toBe(frames);
 		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
+	});
+});
+
+describe("HardwareLinkManager firmware installation", () => {
+	const uno = (
+		app: ConstructorParameters<typeof FakeUnoBoard>[0],
+		flashed: ConstructorParameters<typeof FakeUnoBoard>[1] = {
+			firmware: "1.0.0",
+		},
+	) => new FakeUnoBoard(app, flashed);
+	const phase = (get: () => ProjectStoreState) => get().hardwareFirmware.phase;
+	const until = async (condition: () => boolean) => {
+		for (let i = 0; i < 100 && !condition(); i++) await flush();
+	};
+
+	it("asks before installing when the board has no firmware, then links after the flash", async () => {
+		const board = uno(null);
+		const { manager, get, notifier } = setup({
+			transport: board as never,
+			minFirmwareVersion: "1.0.0",
+		});
+
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+		expect(get().hardwareFirmware).toEqual({
+			phase: "confirming",
+			reason: "missing",
+			progress: null,
+		});
+		expect(board.bootloader.flash.size).toBe(0);
+
+		manager.answerFirmwareInstall(true);
+		await linking;
+
+		expect(board.bootloader.flashBytes(256)).toEqual(
+			Array.from(FIRMWARE_IMAGE),
+		);
+		expect(get().hardwareLink.status).toBe("linked");
+		expect(get().hardwareFirmware).toEqual(IDLE_HARDWARE_FIRMWARE);
+		expect(notifier.linked).toHaveBeenCalledTimes(1);
+		expect(notifier.linkFailed).not.toHaveBeenCalled();
+		await manager.unlink();
+	});
+
+	it("offers an update with the reason 'outdated' for an old firmware", async () => {
+		const { manager, get } = setup({
+			transport: uno({ firmware: "0.9.0" }) as never,
+			minFirmwareVersion: "1.0.0",
+		});
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+		expect(get().hardwareFirmware.reason).toBe("outdated");
+
+		manager.answerFirmwareInstall(true);
+		await linking;
+		expect(get().hardwareLink.status).toBe("linked");
+		await manager.unlink();
+	});
+
+	it("offers an update for another protocol version", async () => {
+		const { manager, get } = setup({
+			transport: uno({ protocol: "2.0" }) as never,
+			minFirmwareVersion: "1.0.0",
+		});
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+		expect(get().hardwareFirmware.reason).toBe("outdated");
+		manager.answerFirmwareInstall(false);
+		await linking;
+	});
+
+	it("leaves the board untouched and unlinked when the user declines", async () => {
+		const board = uno(null);
+		const { manager, get, notifier } = setup({ transport: board as never });
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+
+		manager.answerFirmwareInstall(false);
+		await linking;
+
+		expect(board.bootloader.flash.size).toBe(0);
+		expect(get().hardwareLink).toEqual(DISCONNECTED_HARDWARE_LINK);
+		expect(get().hardwareFirmware).toEqual(IDLE_HARDWARE_FIRMWARE);
+		expect(notifier.linkFailed).not.toHaveBeenCalled();
+		expect(notifier.flashFailed).not.toHaveBeenCalled();
+	});
+
+	it("does not offer anything for a firmware that is up to date", async () => {
+		const { manager, get } = setup({
+			transport: uno({ firmware: "1.0.0" }) as never,
+			minFirmwareVersion: "1.0.0",
+		});
+		await manager.link();
+		expect(get().hardwareLink.status).toBe("linked");
+		expect(phase(get)).toBe("idle");
+		await manager.unlink();
+	});
+
+	it("reports a flash failure and stays unlinked", async () => {
+		const board = new FakeUnoBoard(null, {}, { signature: [0, 0, 0] });
+		const { manager, get, notifier } = setup({ transport: board as never });
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+
+		manager.answerFirmwareInstall(true);
+		await linking;
+
+		expect(notifier.flashFailed).toHaveBeenCalledWith("unsupported-board");
+		expect(get().hardwareLink).toEqual(DISCONNECTED_HARDWARE_LINK);
+		expect(get().hardwareFirmware).toEqual(IDLE_HARDWARE_FIRMWARE);
+	});
+
+	it("reports a missing firmware file", async () => {
+		const { manager, get, notifier } = setup({
+			transport: uno(null) as never,
+			firmwareFileError: true,
+		});
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+
+		manager.answerFirmwareInstall(true);
+		await linking;
+
+		expect(notifier.flashFailed).toHaveBeenCalledWith("firmware-unavailable");
+		expect(get().hardwareLink.status).toBe("disconnected");
+	});
+
+	it("does not loop: a board still silent after the flash is an error", async () => {
+		const board = uno(null, { firmwarePresent: false });
+		const { manager, get, notifier } = setup({ transport: board as never });
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+
+		manager.answerFirmwareInstall(true);
+		await linking;
+
+		expect(notifier.linkFailed).toHaveBeenCalledWith("handshake-timeout");
+		expect(get().hardwareLink.status).toBe("disconnected");
+		expect(get().hardwareFirmware.phase).toBe("idle");
+	});
+
+	it("abandons the dialog when unlinked meanwhile", async () => {
+		const { manager, get } = setup({ transport: uno(null) as never });
+		const linking = manager.link();
+		await until(() => phase(get) === "confirming");
+
+		await manager.unlink();
+		await linking;
+
+		expect(get().hardwareFirmware).toEqual(IDLE_HARDWARE_FIRMWARE);
+		expect(get().hardwareLink).toEqual(DISCONNECTED_HARDWARE_LINK);
 	});
 });

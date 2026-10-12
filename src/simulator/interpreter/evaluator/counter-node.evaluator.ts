@@ -12,7 +12,8 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  * (Q) follows IEC 61131-3: `currentValue >= presetValue` for CTU, `currentValue <= 0` for CTD.
  * CTUD counts on `input` (CU) and on `down.input` (CD), the two edges of one cycle cancelling
  * out; `control` (R) takes priority over `down.load` (LD), and `output`/`down.output` are QU
- * (`>= presetValue`) and QD (`<= 0`).
+ * (`>= presetValue`) and QD (`<= 0`). Outputs compare the value as stored in `currentValue`, after
+ * it wraps to the variable's type: an INT counter going past 32767 reads -32768 and Q follows it.
  */
 export default class CounterNodeEvaluator {
 	private env: Environment;
@@ -57,19 +58,20 @@ export default class CounterNodeEvaluator {
 			nextCurrentValue += node.counterType === "CTU" ? 1 : -1;
 		}
 
-		const outputValue =
-			node.counterType === "CTD"
-				? nextCurrentValue <= 0
-				: nextCurrentValue >= presetValueValue;
-
 		this.env.setVariableValueByName(
 			(node.lastInput as IdentifierNode).value,
 			inputValue,
 		);
-		this.env.setVariableValueByName(
-			(node.currentValue as IdentifierNode).value,
-			nextCurrentValue,
-		);
+		const currentValueName = (node.currentValue as IdentifierNode).value;
+		this.env.setVariableValueByName(currentValueName, nextCurrentValue);
+		const storedCurrentValue = this.env.getVariableValueByName(
+			currentValueName,
+		) as number;
+		const outputValue =
+			node.counterType === "CTD"
+				? storedCurrentValue <= 0
+				: storedCurrentValue >= presetValueValue;
+
 		this.env.setVariableValueByName(
 			(node.output as IdentifierNode).value,
 			outputValue,
@@ -81,7 +83,7 @@ export default class CounterNodeEvaluator {
 			);
 			this.env.setVariableValueByName(
 				(node.down.output as IdentifierNode).value,
-				nextCurrentValue <= 0,
+				storedCurrentValue <= 0,
 			);
 		}
 		return outputValue;

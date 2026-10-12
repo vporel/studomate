@@ -44,7 +44,11 @@ export function wireInSeries(elements: LadderElement[]): Connection[] {
 }
 
 /** Relie `from` à chacune des `branches`, puis chaque branche à `to` (OU : divergence/convergence). */
-export function wireInParallel(from: LadderElement, branches: LadderElement[], to: LadderElement): Connection[] {
+export function wireInParallel(
+	from: LadderElement,
+	branches: LadderElement[],
+	to: LadderElement,
+): Connection[] {
 	const connections: Connection[] = [];
 	for (const branch of branches) {
 		connections.push(connect(from, branch), connect(branch, to));

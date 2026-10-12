@@ -24,6 +24,7 @@ import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception"
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
 import SemanticAnalyserVisitor from "./semantic-analyser.visitor";
 import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException from "./exceptions/bit-string-block-operand.exception";
 import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
 import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
 import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
@@ -438,6 +439,7 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 		typed("dw", "DWORD"),
 		typed("t", "TIME"),
 		typed("b", "BOOL"),
+		typed("b2", "BOOL"),
 		new EnvVariable("u", "u", "number", "INOUT"),
 	]);
 	const analyse = (expression: string) =>
@@ -579,6 +581,67 @@ describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
 			expect(() => conversion("t", "DINT")).toThrow(
 				InvalidConversionArgumentException,
 			);
+		});
+	});
+
+	describe("opérandes numériques des blocs", () => {
+		const id = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+		const timer = (presetTime: string, elapsedTime: string) =>
+			BlocksBuilder.buildTimerNode(
+				"TON",
+				id("b"),
+				id("b2"),
+				id(presetTime),
+				id(elapsedTime),
+				id("b"),
+			);
+		const counter = (presetValue: string, currentValue: string) =>
+			BlocksBuilder.buildCounterNode(
+				"CTU",
+				id("b"),
+				id("b2"),
+				id("b"),
+				id(presetValue),
+				id(currentValue),
+				id("b"),
+			);
+		const caught = (node: ASTNode) => {
+			try {
+				new SemanticAnalyserVisitor(env).visit(node);
+			} catch (e) {
+				return e;
+			}
+			return undefined;
+		};
+
+		it("accepte INT, DINT, TIME et une variable interne", () => {
+			expect(caught(timer("t", "u"))).toBeUndefined();
+			expect(caught(timer("d", "d"))).toBeUndefined();
+			expect(caught(counter("i", "i2"))).toBeUndefined();
+			expect(caught(counter("d", "u"))).toBeUndefined();
+		});
+
+		it.each([
+			["PT", () => timer("w", "u"), "WORD"],
+			["ET", () => timer("t", "dw"), "DWORD"],
+			["PV", () => counter("dw", "i"), "DWORD"],
+			["CV", () => counter("i", "w"), "WORD"],
+		] as const)("refuse une chaîne de bits en %s", (operand, build, type) => {
+			const node = build();
+			const error = caught(node);
+			expect(error).toBeInstanceOf(BitStringBlockOperandException);
+			const exception = error as BitStringBlockOperandException;
+			expect(exception.getOperand()).toBe(operand);
+			expect(exception.getOperandType()).toBe(type);
+			const operandNode = {
+				PT: "presetTime",
+				ET: "elapsedTime",
+				PV: "presetValue",
+				CV: "currentValue",
+			}[operand];
+			expect(exception.getInvalidNodes()).toEqual([
+				(node as unknown as Record<string, ASTNode>)[operandNode],
+			]);
 		});
 	});
 });

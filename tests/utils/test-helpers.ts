@@ -1,5 +1,7 @@
 import ProjectAnalyser from "@/project-analyser/project.analyser";
-import ProjectCompiler, { CompiledProject } from "@/project-compiler/project.compiler";
+import ProjectCompiler, {
+	CompiledProject,
+} from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -27,7 +29,10 @@ export function analyserEnvironment(variables: Variable[] = []): Environment {
  * @param dialect Dialect for expressions (default FR)
  * @returns Compiled project or null if errors occurred
  */
-export function compileProject(project: Project, dialect: Dialect = Dialect.FR): CompiledProject | null {
+export function compileProject(
+	project: Project,
+	dialect: Dialect = Dialect.FR,
+): CompiledProject | null {
 	const analysisResult = ProjectAnalyser.analyse(project);
 	if (analysisResult.issues.length > 0) {
 		return null;
@@ -42,7 +47,9 @@ export function compileProject(project: Project, dialect: Dialect = Dialect.FR):
 		return null;
 	}
 
-	const compilationResult = ProjectCompiler.compile(preCompilationResult.result);
+	const compilationResult = ProjectCompiler.compile(
+		preCompilationResult.result,
+	);
 	if (compilationResult.errors.length > 0 || !compilationResult.result) {
 		return null;
 	}
@@ -53,7 +60,10 @@ export function compileProject(project: Project, dialect: Dialect = Dialect.FR):
 /**
  * Runs the complete pipeline and returns all intermediate results
  */
-export function compilePipelineDetailed(project: Project, dialect: Dialect = Dialect.FR) {
+export function compilePipelineDetailed(
+	project: Project,
+	dialect: Dialect = Dialect.FR,
+) {
 	const analysisResult = ProjectAnalyser.analyse(project);
 	const preCompilationResult = ProjectPreCompiler.preCompile(
 		project,
@@ -127,7 +137,11 @@ export function getVariableValue(plc: PLC, mnemonic: string): any {
 /**
  * Asserts that a variable has the expected value
  */
-export function expectVariableValue(plc: PLC, mnemonic: string, expectedValue: any): void {
+export function expectVariableValue(
+	plc: PLC,
+	mnemonic: string,
+	expectedValue: any,
+): void {
 	const value = getVariableValue(plc, mnemonic);
 	expect(value).toBe(expectedValue);
 }

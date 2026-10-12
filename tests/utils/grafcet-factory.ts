@@ -1,4 +1,7 @@
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -681,25 +684,79 @@ export class GrafcetFactory {
 		branchVariables: string[],
 	): Grafcet {
 		const n = branchVariables.length;
-		const step0 = new StepBuilder().id(`${grafcetId}-step-0`).number(0).initial().position(100, 50).build();
+		const step0 = new StepBuilder()
+			.id(`${grafcetId}-step-0`)
+			.number(0)
+			.initial()
+			.position(100, 50)
+			.build();
 		const branchSteps = branchVariables.map((_, i) =>
-			new StepBuilder().id(`${grafcetId}-step-${i + 1}`).number(i + 1).initial(false).position(i * 120, 300).build(),
+			new StepBuilder()
+				.id(`${grafcetId}-step-${i + 1}`)
+				.number(i + 1)
+				.initial(false)
+				.position(i * 120, 300)
+				.build(),
 		);
-		const transDiv = new TransitionBuilder().id(`${grafcetId}-trans-div`).expression(divCondition).position(100, 150).build();
-		const transConv = new TransitionBuilder().id(`${grafcetId}-trans-conv`).expression(convCondition).position(100, 450).build();
-		const jAndStart = new JunctionAndStartBuilder().id(`${grafcetId}-jand-start`).nBranches(n).position(100, 200).build();
-		const jAndEnd = new JunctionAndEndBuilder().id(`${grafcetId}-jand-end`).nBranches(n).position(100, 400).build();
+		const transDiv = new TransitionBuilder()
+			.id(`${grafcetId}-trans-div`)
+			.expression(divCondition)
+			.position(100, 150)
+			.build();
+		const transConv = new TransitionBuilder()
+			.id(`${grafcetId}-trans-conv`)
+			.expression(convCondition)
+			.position(100, 450)
+			.build();
+		const jAndStart = new JunctionAndStartBuilder()
+			.id(`${grafcetId}-jand-start`)
+			.nBranches(n)
+			.position(100, 200)
+			.build();
+		const jAndEnd = new JunctionAndEndBuilder()
+			.id(`${grafcetId}-jand-end`)
+			.nBranches(n)
+			.position(100, 400)
+			.build();
 
 		const connections = [
-			new ConnectionBuilder().id(`${grafcetId}-c0`).source("step", step0.id, "source:successor").target("transition", transDiv.id, "target:predecessor").build(),
-			new ConnectionBuilder().id(`${grafcetId}-c1`).source("transition", transDiv.id, "source:successor").target("junction-and-start", jAndStart.id, "pivot").build(),
-			new ConnectionBuilder().id(`${grafcetId}-c2`).source("junction-and-end", jAndEnd.id, "pivot").target("transition", transConv.id, "target:predecessor").build(),
-			new ConnectionBuilder().id(`${grafcetId}-c3`).source("transition", transConv.id, "source:successor").target("step", step0.id, "target:predecessor").build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c0`)
+				.source("step", step0.id, "source:successor")
+				.target("transition", transDiv.id, "target:predecessor")
+				.build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c1`)
+				.source("transition", transDiv.id, "source:successor")
+				.target("junction-and-start", jAndStart.id, "pivot")
+				.build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c2`)
+				.source("junction-and-end", jAndEnd.id, "pivot")
+				.target("transition", transConv.id, "target:predecessor")
+				.build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c3`)
+				.source("transition", transConv.id, "source:successor")
+				.target("step", step0.id, "target:predecessor")
+				.build(),
 		];
 		branchSteps.forEach((step, i) => {
 			connections.push(
-				new ConnectionBuilder().id(`${grafcetId}-cs${i}`).source("junction-and-start", jAndStart.id, jAndStart.data.branchesOrder[i]).target("step", step.id, "target:predecessor").build(),
-				new ConnectionBuilder().id(`${grafcetId}-ce${i}`).source("step", step.id, "source:successor").target("junction-and-end", jAndEnd.id, jAndEnd.data.branchesOrder[i]).build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-cs${i}`)
+					.source(
+						"junction-and-start",
+						jAndStart.id,
+						jAndStart.data.branchesOrder[i],
+					)
+					.target("step", step.id, "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-ce${i}`)
+					.source("step", step.id, "source:successor")
+					.target("junction-and-end", jAndEnd.id, jAndEnd.data.branchesOrder[i])
+					.build(),
 			);
 		});
 
@@ -707,10 +764,20 @@ export class GrafcetFactory {
 		const actionConnections: ReturnType<ConnectionBuilder["build"]>[] = [];
 		branchVariables.forEach((variable, i) => {
 			if (variable.trim() === "") return;
-			const action = new ActionBuilder().id(`${grafcetId}-action-${i + 1}`).expression(variable).type(ActionType.BOOLEAN_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(i * 120, 300).build();
+			const action = new ActionBuilder()
+				.id(`${grafcetId}-action-${i + 1}`)
+				.expression(variable)
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.position(i * 120, 300)
+				.build();
 			actions.push(action);
 			actionConnections.push(
-				new ConnectionBuilder().id(`${grafcetId}-ca${i}`).source("step", branchSteps[i].id, "source:action").target("action", action.id, "target:step").build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-ca${i}`)
+					.source("step", branchSteps[i].id, "source:action")
+					.target("action", action.id, "target:step")
+					.build(),
 			);
 		});
 
@@ -739,29 +806,83 @@ export class GrafcetFactory {
 		branchVariables: string[] = [],
 	): Grafcet {
 		const n = branchConditions.length;
-		const step0 = new StepBuilder().id(`${grafcetId}-step-0`).number(0).initial().position(100, 50).build();
+		const step0 = new StepBuilder()
+			.id(`${grafcetId}-step-0`)
+			.number(0)
+			.initial()
+			.position(100, 50)
+			.build();
 		const branchSteps = branchConditions.map((_, i) =>
-			new StepBuilder().id(`${grafcetId}-step-${i + 1}`).number(i + 1).initial(false).position(i * 120, 250).build(),
+			new StepBuilder()
+				.id(`${grafcetId}-step-${i + 1}`)
+				.number(i + 1)
+				.initial(false)
+				.position(i * 120, 250)
+				.build(),
 		);
-		const jOrStart = new JunctionOrStartBuilder().id(`${grafcetId}-jor-start`).nBranches(n).position(100, 150).build();
-		const jOrEnd = new JunctionOrEndBuilder().id(`${grafcetId}-jor-end`).nBranches(n).position(100, 400).build();
+		const jOrStart = new JunctionOrStartBuilder()
+			.id(`${grafcetId}-jor-start`)
+			.nBranches(n)
+			.position(100, 150)
+			.build();
+		const jOrEnd = new JunctionOrEndBuilder()
+			.id(`${grafcetId}-jor-end`)
+			.nBranches(n)
+			.position(100, 400)
+			.build();
 		const transIn = branchConditions.map((cond, i) =>
-			new TransitionBuilder().id(`${grafcetId}-trans-in-${i}`).expression(cond).position(i * 120, 200).build(),
+			new TransitionBuilder()
+				.id(`${grafcetId}-trans-in-${i}`)
+				.expression(cond)
+				.position(i * 120, 200)
+				.build(),
 		);
 		const transOut = branchConditions.map((_, i) =>
-			new TransitionBuilder().id(`${grafcetId}-trans-out-${i}`).expression("VRAI").position(i * 120, 350).build(),
+			new TransitionBuilder()
+				.id(`${grafcetId}-trans-out-${i}`)
+				.expression("VRAI")
+				.position(i * 120, 350)
+				.build(),
 		);
 
 		const connections = [
-			new ConnectionBuilder().id(`${grafcetId}-c0`).source("step", step0.id, "source:successor").target("junction-or-start", jOrStart.id, "pivot").build(),
-			new ConnectionBuilder().id(`${grafcetId}-c1`).source("junction-or-end", jOrEnd.id, "pivot").target("step", step0.id, "target:predecessor").build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c0`)
+				.source("step", step0.id, "source:successor")
+				.target("junction-or-start", jOrStart.id, "pivot")
+				.build(),
+			new ConnectionBuilder()
+				.id(`${grafcetId}-c1`)
+				.source("junction-or-end", jOrEnd.id, "pivot")
+				.target("step", step0.id, "target:predecessor")
+				.build(),
 		];
 		branchSteps.forEach((step, i) => {
 			connections.push(
-				new ConnectionBuilder().id(`${grafcetId}-a${i}`).source("junction-or-start", jOrStart.id, jOrStart.data.branchesOrder[i]).target("transition", transIn[i].id, "target:predecessor").build(),
-				new ConnectionBuilder().id(`${grafcetId}-b${i}`).source("transition", transIn[i].id, "source:successor").target("step", step.id, "target:predecessor").build(),
-				new ConnectionBuilder().id(`${grafcetId}-d${i}`).source("step", step.id, "source:successor").target("transition", transOut[i].id, "target:predecessor").build(),
-				new ConnectionBuilder().id(`${grafcetId}-e${i}`).source("transition", transOut[i].id, "source:successor").target("junction-or-end", jOrEnd.id, jOrEnd.data.branchesOrder[i]).build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-a${i}`)
+					.source(
+						"junction-or-start",
+						jOrStart.id,
+						jOrStart.data.branchesOrder[i],
+					)
+					.target("transition", transIn[i].id, "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-b${i}`)
+					.source("transition", transIn[i].id, "source:successor")
+					.target("step", step.id, "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-d${i}`)
+					.source("step", step.id, "source:successor")
+					.target("transition", transOut[i].id, "target:predecessor")
+					.build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-e${i}`)
+					.source("transition", transOut[i].id, "source:successor")
+					.target("junction-or-end", jOrEnd.id, jOrEnd.data.branchesOrder[i])
+					.build(),
 			);
 		});
 
@@ -769,10 +890,20 @@ export class GrafcetFactory {
 		const actionConnections: ReturnType<ConnectionBuilder["build"]>[] = [];
 		branchVariables.forEach((variable, i) => {
 			if (!variable || variable.trim() === "") return;
-			const action = new ActionBuilder().id(`${grafcetId}-action-${i + 1}`).expression(variable).type(ActionType.BOOLEAN_VARIABLE).executionMode(ActionExecutionMode.CONTINUOUS).position(i * 120, 250).build();
+			const action = new ActionBuilder()
+				.id(`${grafcetId}-action-${i + 1}`)
+				.expression(variable)
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.position(i * 120, 250)
+				.build();
 			actions.push(action);
 			actionConnections.push(
-				new ConnectionBuilder().id(`${grafcetId}-ca${i}`).source("step", branchSteps[i].id, "source:action").target("action", action.id, "target:step").build(),
+				new ConnectionBuilder()
+					.id(`${grafcetId}-ca${i}`)
+					.source("step", branchSteps[i].id, "source:action")
+					.target("action", action.id, "target:step")
+					.build(),
 			);
 		});
 

@@ -36,6 +36,7 @@ import ParsingEndedBeforeEOFException from "@/expression-language/parser/excepti
 import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
 import InvalidUnaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-unary-expr-operand-type.exception";
 import BitStringArithmeticException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-block-operand.exception";
 import ConstantOutOfRangeException from "@/simulator/interpreter/semantic-analyser/exceptions/constant-out-of-range.exception";
 import ExplicitConversionRequiredException from "@/simulator/interpreter/semantic-analyser/exceptions/explicit-conversion-required.exception";
 import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
@@ -168,6 +169,16 @@ export default class SimulatorExceptionsMapper {
 				code: "BIT_STRING_ARITHMETIC",
 				params: {
 					operator: operatorLabel(exception.getOperator()),
+					type: exception.getOperandType(),
+				},
+			};
+		}
+
+		if (exception instanceof BitStringBlockOperandException) {
+			return {
+				code: "BIT_STRING_BLOCK_OPERAND",
+				params: {
+					operand: exception.getOperand(),
 					type: exception.getOperandType(),
 				},
 			};

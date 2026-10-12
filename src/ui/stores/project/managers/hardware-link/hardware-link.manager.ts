@@ -1,3 +1,8 @@
+import {
+	FlashError,
+	flashFirmware,
+	type FlashProgress,
+} from "@/hardware/arduino/flash/stk500";
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import { RemoteIoError } from "@/hardware/arduino/remote-io/remote-io.client";
 import buildRemoteIoPlan, {
@@ -10,7 +15,8 @@ import type {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "@/ui/stores/project/project.store";
-import type { RemoteIoClientFactory } from "./browser-remote-io-client";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import type { RemoteIoDevice, RemoteIoDeviceFactory } from "./remote-io-device";
 import type HardwareLinkNotifier from "./hardware-link.notifier";
 
 export type HardwareLinkStatus = "disconnected" | "connecting" | "linked";
@@ -20,6 +26,24 @@ export interface HardwareLinkState {
 	/** Input variables whose value comes from a pin while the board is linked. */
 	drivenInputIds: string[];
 }
+
+/** Why the firmware of the board has to be installed. */
+export type FirmwareInstallReason = "missing" | "outdated";
+
+export interface HardwareFirmwareState {
+	/** `confirming`: the user is asked before the program of the board is erased. */
+	phase: "idle" | "confirming" | "flashing";
+	reason: FirmwareInstallReason | null;
+	progress: FlashProgress | null;
+}
+
+export const IDLE_HARDWARE_FIRMWARE: HardwareFirmwareState = {
+	phase: "idle",
+	reason: null,
+	progress: null,
+};
+
+const POST_FLASH_DELAY_MS = 1500;
 
 export const DISCONNECTED_HARDWARE_LINK: HardwareLinkState = {
 	status: "disconnected",
@@ -38,6 +62,8 @@ export default class HardwareLinkManager {
 	private plan: RemoteIoPlan | null = null;
 	private outputIds = new Set<string>();
 	private lastInputs = new Map<string, boolean | number>();
+	private resolveInstallAnswer: ((accepted: boolean) => void) | null = null;
+	private flashAbort: AbortController | null = null;
 	private readonly onPageHide = () => void this.client?.fallback();
 	/**
 	 * A hidden tab runs the PLC at a throttled rate (down to one cycle per minute), far slower
@@ -47,7 +73,15 @@ export default class HardwareLinkManager {
 	private outputsSuspended = false;
 	private readonly onVisibilityChange = () => {
 		if (document.visibilityState === "hidden") {
-			if (this.getStoreState().hardwareLink.status !== "linked") return;
+			const state = this.getStoreState();
+			// Outside a running simulation no PLC cycle drives the outputs: nothing to cut.
+			if (
+				state.hardwareLink.status !== "linked" ||
+				state.mode !== ProjectMode.SIMULATION ||
+				state.simulationPaused
+			) {
+				return;
+			}
 			this.outputsSuspended = true;
 			void this.client?.fallback();
 		} else if (this.outputsSuspended) {
@@ -60,7 +94,8 @@ export default class HardwareLinkManager {
 		private readonly setStoreState: ProjectStoreSetFunction,
 		private readonly getStoreState: ProjectStoreGetFunction,
 		private readonly notifier: HardwareLinkNotifier,
-		private readonly createClient: RemoteIoClientFactory,
+		private readonly createDevice: RemoteIoDeviceFactory,
+		private readonly options: { postFlashDelayMs?: number } = {},
 	) {}
 
 	/** Opens the link. Call it from a user gesture, as the browser may ask for a port. */
@@ -71,20 +106,41 @@ export default class HardwareLinkManager {
 		this.setLinkState({ status: "connecting", drivenInputIds: [] });
 		const attempt = this.attempt;
 
-		let client: RemoteIoClient | null = null;
+		let device: RemoteIoDevice;
 		try {
-			client = await this.createClient(resolved.plan, resolved.descriptor);
-			if (attempt !== this.attempt) return;
-			this.client = client;
-			client.onInputs((values) => this.handleInputs(values));
-			client.onLinkLost(() => this.handleLinkLost(client!));
-			await client.connect();
+			device = await this.createDevice(resolved.plan, resolved.descriptor);
 		} catch (error) {
 			if (attempt !== this.attempt) return;
-			this.client = null;
 			this.setLinkState(DISCONNECTED_HARDWARE_LINK);
 			this.reportFailure(error);
 			return;
+		}
+		if (attempt !== this.attempt) return;
+
+		let client: RemoteIoClient;
+		let flashed = false;
+		for (;;) {
+			client = device.createClient();
+			this.client = client;
+			client.onInputs((values) => this.handleInputs(values));
+			const current = client;
+			client.onLinkLost(() => this.handleLinkLost(current));
+			try {
+				await client.connect();
+				break;
+			} catch (error) {
+				if (attempt !== this.attempt) return;
+				this.client = null;
+				const reason = !flashed ? firmwareInstallReason(error) : null;
+				if (reason && (await this.installFirmware(device, reason, attempt))) {
+					flashed = true;
+					continue;
+				}
+				if (attempt !== this.attempt) return;
+				this.setLinkState(DISCONNECTED_HARDWARE_LINK);
+				if (!reason) this.reportFailure(error);
+				return;
+			}
 		}
 		if (attempt !== this.attempt) {
 			await client.disconnect();
@@ -100,6 +156,11 @@ export default class HardwareLinkManager {
 			drivenInputIds: resolved.plan.inputs.map((input) => input.variableId),
 		});
 		this.notifier.linked();
+	}
+
+	/** Answer of the user to the firmware installation dialog. */
+	answerFirmwareInstall(accepted: boolean): void {
+		this.resolveInstallAnswer?.(accepted);
 	}
 
 	/** Closes the link, driving the outputs of the board to their fallback state first. */
@@ -214,8 +275,63 @@ export default class HardwareLinkManager {
 		this.notifier.linkLost();
 	}
 
+	/**
+	 * Asks the user, then writes the shipped firmware to the board. Resolves to true when the
+	 * board has restarted on the new firmware; false when declined, failed or abandoned.
+	 */
+	private async installFirmware(
+		device: RemoteIoDevice,
+		reason: FirmwareInstallReason,
+		attempt: number,
+	): Promise<boolean> {
+		this.setFirmwareState({ phase: "confirming", reason, progress: null });
+		const accepted = await new Promise<boolean>((resolve) => {
+			this.resolveInstallAnswer = resolve;
+		});
+		this.resolveInstallAnswer = null;
+		if (!accepted || attempt !== this.attempt) {
+			this.setFirmwareState(IDLE_HARDWARE_FIRMWARE);
+			return false;
+		}
+
+		this.setFirmwareState({ phase: "flashing", reason, progress: null });
+		const abort = new AbortController();
+		this.flashAbort = abort;
+		try {
+			let image: Uint8Array;
+			try {
+				image = await device.loadFirmware();
+			} catch {
+				throw new FlashError("firmware-unavailable");
+			}
+			await flashFirmware({
+				transport: device.transport,
+				image,
+				signal: abort.signal,
+				onProgress: (progress) =>
+					this.setFirmwareState({ phase: "flashing", reason, progress }),
+			});
+			await new Promise((r) =>
+				setTimeout(r, this.options.postFlashDelayMs ?? POST_FLASH_DELAY_MS),
+			);
+			return attempt === this.attempt;
+		} catch (error) {
+			if (attempt === this.attempt) {
+				console.error("Firmware installation failed:", error);
+				const code = error instanceof FlashError ? error.code : "transport";
+				if (code !== "cancelled") this.notifier.flashFailed(code);
+			}
+			return false;
+		} finally {
+			this.flashAbort = null;
+			this.setFirmwareState(IDLE_HARDWARE_FIRMWARE);
+		}
+	}
+
 	private reset() {
 		this.attempt++;
+		this.resolveInstallAnswer?.(false);
+		this.flashAbort?.abort();
 		this.client = null;
 		this.plan = null;
 		this.outputIds = new Set();
@@ -237,7 +353,24 @@ export default class HardwareLinkManager {
 		this.notifier.linkFailed("transport");
 	}
 
+	private setFirmwareState(hardwareFirmware: HardwareFirmwareState) {
+		this.setStoreState(() => ({ hardwareFirmware }));
+	}
+
 	private setLinkState(hardwareLink: HardwareLinkState) {
 		this.setStoreState(() => ({ hardwareLink }));
 	}
+}
+
+/** The firmware has to be (re)installed when the board stays silent or runs an incompatible version. */
+function firmwareInstallReason(error: unknown): FirmwareInstallReason | null {
+	if (!(error instanceof RemoteIoError)) return null;
+	if (error.code === "handshake-timeout") return "missing";
+	if (
+		error.code === "protocol-mismatch" ||
+		error.code === "firmware-outdated"
+	) {
+		return "outdated";
+	}
+	return null;
 }

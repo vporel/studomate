@@ -1,3 +1,4 @@
+import type { FlashErrorCode } from "@/hardware/arduino/flash/stk500";
 import type { RemoteIoErrorCode } from "@/hardware/arduino/remote-io/remote-io.client";
 import { getT } from "@/ui/i18n/translateGlobal";
 import { toast } from "react-toastify";
@@ -15,6 +16,10 @@ export default class ToastHardwareLinkNotifier implements HardwareLinkNotifier {
 
 	outputsCutInBackground(): void {
 		toast.warn(getT("toasts")("hardwareOutputsCutInBackground"));
+	}
+
+	flashFailed(code: Exclude<FlashErrorCode, "cancelled">): void {
+		toast.error(getT("toasts")(`hardwareFlashFailed.${code}`));
 	}
 
 	linkLost(): void {

@@ -26,7 +26,16 @@
 		"handshake-timeout": "La carte ne répond pas : le firmware Studomate n'est pas installé sur la carte.",
 		"protocol-mismatch": "Le firmware de la carte est incompatible avec cette version de Studomate.",
 		"config-rejected": "La carte a refusé la configuration des broches.",
-		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB et qu'aucun autre programme n'utilise le port."
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB, et qu'aucun autre programme ou onglet (Studomate compris) n'utilise le port.",
+		"firmware-outdated": "Le firmware de la carte est trop ancien pour cette version de Studomate."
 	},
-	"hardwareOutputsCutInBackground": "Onglet en arrière-plan : les sorties de la carte ont été coupées."
+	"hardwareOutputsCutInBackground": "Onglet en arrière-plan : les sorties de la carte ont été coupées.",
+	"hardwareFlashFailed": {
+		"sync-failed": "Impossible d'installer le firmware : la carte ne répond pas. Vérifiez qu'aucun autre programme n'utilise le port. Seul l'Arduino Uno R3 d'origine est pris en charge.",
+		"protocol-error": "Impossible d'installer le firmware : réponse inattendue de la carte. Seul l'Arduino Uno R3 d'origine est pris en charge.",
+		"unsupported-board": "Impossible d'installer le firmware : cette carte n'est pas un Arduino Uno R3.",
+		"verify-failed": "L'installation du firmware a échoué : la vérification a détecté des écarts. Réessayez.",
+		"transport": "Impossible d'installer le firmware : la communication avec la carte a été interrompue.",
+		"firmware-unavailable": "Impossible d'installer le firmware : le fichier du firmware est introuvable."
+	}
 }

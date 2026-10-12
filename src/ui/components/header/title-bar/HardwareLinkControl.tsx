@@ -12,10 +12,11 @@ import { useShallow } from "zustand/shallow";
 /** Status badge and link button of the hardware target; absent for a purely virtual project. */
 const HardwareLinkControl = () => {
 	const t = useT("chrome.hardwareLink");
-	const { modelId, status, hardwareLinkManager } = useProjectStore(
+	const { modelId, status, flashing, hardwareLinkManager } = useProjectStore(
 		useShallow((state) => ({
 			modelId: state.project?.hardwareTarget?.modelId ?? null,
 			status: state.hardwareLink.status,
+			flashing: state.hardwareFirmware.phase === "flashing",
 			hardwareLinkManager: state.hardwareLinkManager,
 		})),
 	);
@@ -50,7 +51,7 @@ const HardwareLinkControl = () => {
 					size="small"
 					variant="outlined"
 					icon={<CircularProgress size={12} />}
-					label={t("connecting")}
+					label={flashing ? t("flashing") : t("connecting")}
 				/>
 			) : (
 				<Chip

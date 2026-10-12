@@ -1,4 +1,8 @@
-/** Byte pipe to the board. ASCII only, so chunks are exchanged as strings. */
+/**
+ * Byte pipe to the board. Chunks are exchanged as strings carrying one byte per character
+ * (code 0 to 255), which keeps the text protocol readable and lets the STK500 flasher send raw
+ * bytes.
+ */
 export interface SerialTransport {
 	open(): Promise<void>;
 	write(data: string): Promise<void>;
