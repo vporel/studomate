@@ -8,11 +8,15 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "../projects/ProjectContext";
+import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
 import HardwareConfigurationPage, {
 	HARDWARE_CONFIGURATION_PAGE_ID,
 } from "./HardwareConfigurationPage";
 
 jest.mock("../projects/ProjectContext");
+jest.mock("@/hardware/arduino/remote-io/web-serial.transport", () => ({
+	isWebSerialSupported: jest.fn(() => true),
+}));
 
 const variable = (
 	id: string,
@@ -288,5 +292,30 @@ describe("HardwareConfigurationPage : tableau des broches", () => {
 		).toHaveAttribute("aria-disabled", "true");
 		expect(within(row("%PD2")).getByRole("checkbox")).toBeDisabled();
 		expect(setHardwareTarget).not.toHaveBeenCalled();
+	});
+});
+
+describe("HardwareConfigurationPage : compatibilité navigateur", () => {
+	const message = /nécessite un navigateur basé sur Chromium/;
+
+	afterEach(() => (isWebSerialSupported as jest.Mock).mockReturnValue(true));
+
+	it("n'affiche pas de bandeau quand Web Serial est disponible", () => {
+		setup({ target: UNO });
+		expect(screen.queryByText(message)).toBeNull();
+	});
+
+	it("n'affiche pas le bandeau sans carte sélectionnée", () => {
+		(isWebSerialSupported as jest.Mock).mockReturnValue(false);
+		setup({ target: null });
+		expect(screen.queryByText(message)).toBeNull();
+	});
+
+	it("explique le besoin d'un navigateur Chromium sans bloquer la configuration", () => {
+		(isWebSerialSupported as jest.Mock).mockReturnValue(false);
+		setup({ target: UNO });
+
+		expect(screen.getByText(message)).toBeInTheDocument();
+		expect(screen.getByTestId("pin-row-%PD2")).toBeInTheDocument();
 	});
 });

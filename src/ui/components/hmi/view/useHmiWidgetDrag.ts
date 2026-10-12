@@ -41,60 +41,63 @@ export default function useHmiWidgetDrag(
 		maxY: number;
 	} | null>(null);
 
-	return useCallback((e: ReactMouseEvent, group: HmiWidget[]) => {
-		const minX = Math.min(...group.map((w) => w.position.x));
-		const minY = Math.min(...group.map((w) => w.position.y));
-		const maxX = Math.max(...group.map((w) => w.position.x + w.size.width));
-		const maxY = Math.max(...group.map((w) => w.position.y + w.size.height));
-		dragState.current = {
-			widgetIds: group.map((w) => w.id),
-			startMouseX: e.clientX,
-			startMouseY: e.clientY,
-			minX,
-			minY,
-			maxX,
-			maxY,
-		};
+	return useCallback(
+		(e: ReactMouseEvent, group: HmiWidget[]) => {
+			const minX = Math.min(...group.map((w) => w.position.x));
+			const minY = Math.min(...group.map((w) => w.position.y));
+			const maxX = Math.max(...group.map((w) => w.position.x + w.size.width));
+			const maxY = Math.max(...group.map((w) => w.position.y + w.size.height));
+			dragState.current = {
+				widgetIds: group.map((w) => w.id),
+				startMouseX: e.clientX,
+				startMouseY: e.clientY,
+				minX,
+				minY,
+				maxX,
+				maxY,
+			};
 
-		const clampedDelta = (
-			clientX: number,
-			clientY: number,
-			drag: NonNullable<typeof dragState.current>,
-		) => {
-			const rawDx = (clientX - drag.startMouseX) / zoom;
-			const rawDy = (clientY - drag.startMouseY) / zoom;
-			const dx = snapToGrid(
-				clamp(rawDx, -drag.minX, HMI_CANVAS_WIDTH - drag.maxX),
-			);
-			const dy = snapToGrid(
-				clamp(rawDy, -drag.minY, HMI_CANVAS_HEIGHT - drag.maxY),
-			);
-			return { dx, dy };
-		};
+			const clampedDelta = (
+				clientX: number,
+				clientY: number,
+				drag: NonNullable<typeof dragState.current>,
+			) => {
+				const rawDx = (clientX - drag.startMouseX) / zoom;
+				const rawDy = (clientY - drag.startMouseY) / zoom;
+				const dx = snapToGrid(
+					clamp(rawDx, -drag.minX, HMI_CANVAS_WIDTH - drag.maxX),
+				);
+				const dy = snapToGrid(
+					clamp(rawDy, -drag.minY, HMI_CANVAS_HEIGHT - drag.maxY),
+				);
+				return { dx, dy };
+			};
 
-		const onMouseMove = (moveEvent: MouseEvent) => {
-			const drag = dragState.current;
-			if (!drag) return;
-			const { dx, dy } = clampedDelta(
-				moveEvent.clientX,
-				moveEvent.clientY,
-				drag,
-			);
-			onPreviewChange({ widgetIds: drag.widgetIds, dx, dy });
-		};
+			const onMouseMove = (moveEvent: MouseEvent) => {
+				const drag = dragState.current;
+				if (!drag) return;
+				const { dx, dy } = clampedDelta(
+					moveEvent.clientX,
+					moveEvent.clientY,
+					drag,
+				);
+				onPreviewChange({ widgetIds: drag.widgetIds, dx, dy });
+			};
 
-		const onMouseUp = (upEvent: MouseEvent) => {
-			const drag = dragState.current;
-			dragState.current = null;
-			window.removeEventListener("mousemove", onMouseMove);
-			window.removeEventListener("mouseup", onMouseUp);
-			onPreviewChange(null);
-			if (!drag) return;
-			const { dx, dy } = clampedDelta(upEvent.clientX, upEvent.clientY, drag);
-			moveWidgets(drag.widgetIds, dx, dy);
-		};
+			const onMouseUp = (upEvent: MouseEvent) => {
+				const drag = dragState.current;
+				dragState.current = null;
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+				onPreviewChange(null);
+				if (!drag) return;
+				const { dx, dy } = clampedDelta(upEvent.clientX, upEvent.clientY, drag);
+				moveWidgets(drag.widgetIds, dx, dy);
+			};
 
-		window.addEventListener("mousemove", onMouseMove);
-		window.addEventListener("mouseup", onMouseUp);
-	}, [zoom, onPreviewChange, moveWidgets]);
+			window.addEventListener("mousemove", onMouseMove);
+			window.addEventListener("mouseup", onMouseUp);
+		},
+		[zoom, onPreviewChange, moveWidgets],
+	);
 }

@@ -10,6 +10,7 @@ import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
 import { memo, MouseEvent as ReactMouseEvent, useMemo } from "react";
 import useBoundInputBehavior from "./useBoundInputBehavior";
+import useHardwareDrivenVariable from "./useHardwareDrivenVariable";
 import { HMI_WIDGET_ZINDEX_OFFSET } from "@/ui/components/hmi/logic/constants";
 import {
 	useHmiPositionAnimationOffset,
@@ -27,7 +28,11 @@ const RESIZE_HANDLES: {
 }[] = [
 	{ direction: "nw", cursor: "nwse-resize", style: { top: "0%", left: "0%" } },
 	{ direction: "n", cursor: "ns-resize", style: { top: "0%", left: "50%" } },
-	{ direction: "ne", cursor: "nesw-resize", style: { top: "0%", left: "100%" } },
+	{
+		direction: "ne",
+		cursor: "nesw-resize",
+		style: { top: "0%", left: "100%" },
+	},
 	{ direction: "e", cursor: "ew-resize", style: { top: "50%", left: "100%" } },
 	{
 		direction: "se",
@@ -90,10 +95,10 @@ const HmiWidgetItem = ({
 	const size = previewSize ?? widget.size;
 	// Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" à écrire en
 	// simulation — voir `RectangleData`/`EllipseData`/`TextData`.
-	const boundMnemonic =
-		"variable" in widget.data ? widget.data.variable : null;
+	const boundMnemonic = "variable" in widget.data ? widget.data.variable : null;
 
 	const boundBehavior = useBoundInputBehavior(boundMnemonic);
+	const drivenByHardware = useHardwareDrivenVariable(boundMnemonic);
 	const data = useMemo(
 		() => withBehaviorImposedData(widget, boundBehavior),
 		[widget, boundBehavior],
@@ -141,7 +146,7 @@ const HmiWidgetItem = ({
 				animationsEnabled={isSimulation}
 				selected={isSelected && !isSimulation}
 				onValueChange={
-					isSimulation && boundMnemonic !== null
+					isSimulation && boundMnemonic !== null && !drivenByHardware
 						? (v) => onSetVariableValue(boundMnemonic, v)
 						: undefined
 				}

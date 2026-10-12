@@ -5,10 +5,7 @@ import type {
 } from "@/schemas/variable/variable.schema";
 
 export type PinCapability =
-	| "digital-input"
-	| "digital-output"
-	| "analog-input"
-	| "pwm-output";
+	"digital-input" | "digital-output" | "analog-input" | "pwm-output";
 
 /** Pin capability a variable needs, by zone. Memory variables never use a pin. */
 export const ZONE_TO_PIN_CAPABILITY: Record<

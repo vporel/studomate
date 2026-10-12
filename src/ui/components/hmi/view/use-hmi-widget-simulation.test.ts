@@ -52,8 +52,7 @@ describe("useHmiPositionAnimationOffset", () => {
 		position: { xVariable?: string; yVariable?: string } | undefined,
 	) {
 		const widget = HmiWidget.create("push-button", 0, 0);
-		if (position)
-			widget.data = { ...widget.data, animations: { position } };
+		if (position) widget.data = { ...widget.data, animations: { position } };
 		return widget;
 	}
 

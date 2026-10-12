@@ -17,7 +17,9 @@ describe("useHelpMenu", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("exposes the help menu structure", () => {
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 		expect(result.current.id).toBe("help");
 		expect(result.current.items).toHaveLength(2);
 		expect(result.current.items[0]).toHaveLength(4);
@@ -30,7 +32,9 @@ describe("useHelpMenu", () => {
 
 	it("ouvre le mailto de signalement au clic sur 'Signaler un problème'", () => {
 		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current.items[1][0].onClick?.();
 
@@ -43,7 +47,9 @@ describe("useHelpMenu", () => {
 	});
 
 	it("starts the guided tour when 'Revoir la visite guidée' is clicked", () => {
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current.items[0][3].onClick?.();
 
@@ -52,7 +58,9 @@ describe("useHelpMenu", () => {
 
 	it("opens the user manual in a new tab when clicked", () => {
 		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current.items[0][0].onClick?.();
 
@@ -66,7 +74,9 @@ describe("useHelpMenu", () => {
 
 	it("opens the training page in a new tab when clicked", () => {
 		const openSpy = jest.spyOn(window, "open").mockImplementation(() => null);
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 
 		result.current.items[0][1].onClick?.();
 
@@ -79,7 +89,9 @@ describe("useHelpMenu", () => {
 	});
 
 	it("appelle onShortcutsOpen au clic sur 'Raccourcis clavier'", () => {
-		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useHelpMenu(onShortcutsOpen), {
+			wrapper: i18nWrapper(),
+		});
 
 		act(() => result.current.items[0][2].onClick?.());
 

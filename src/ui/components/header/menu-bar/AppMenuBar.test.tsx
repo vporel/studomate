@@ -17,17 +17,33 @@ const editMenu = makeMenu("edit", "Édition");
 const viewMenu = makeMenu("view", "Affichage");
 const helpMenu = makeMenu("help", "Aide");
 
-jest.mock("./file/useFileMenu", () => ({ __esModule: true, default: () => fileMenu }));
-jest.mock("./project/useProjectMenu", () => ({ __esModule: true, default: () => projectMenu }));
-jest.mock("./edit/useEditMenu", () => ({ __esModule: true, default: () => editMenu }));
-jest.mock("./view/useViewMenu", () => ({ __esModule: true, default: () => viewMenu }));
-jest.mock("./help/useHelpMenu", () => ({ __esModule: true, default: () => helpMenu }));
+jest.mock("./file/useFileMenu", () => ({
+	__esModule: true,
+	default: () => fileMenu,
+}));
+jest.mock("./project/useProjectMenu", () => ({
+	__esModule: true,
+	default: () => projectMenu,
+}));
+jest.mock("./edit/useEditMenu", () => ({
+	__esModule: true,
+	default: () => editMenu,
+}));
+jest.mock("./view/useViewMenu", () => ({
+	__esModule: true,
+	default: () => viewMenu,
+}));
+jest.mock("./help/useHelpMenu", () => ({
+	__esModule: true,
+	default: () => helpMenu,
+}));
 
 const stub = { __esModule: true, default: () => null };
 jest.mock("@/ui/components/header/title-bar/AnalyseButton", () => stub);
 jest.mock("@/ui/components/header/title-bar/ProjectModeSwitcher", () => stub);
 jest.mock("@/ui/components/header/title-bar/SimulationModeSelect", () => stub);
 jest.mock("@/ui/components/header/title-bar/SimulationControls", () => stub);
+jest.mock("@/ui/components/header/title-bar/HardwareLinkControl", () => stub);
 jest.mock("./help/ShortcutsModal", () => stub);
 
 import AppMenuBar from "./AppMenuBar";
@@ -88,6 +104,8 @@ describe("AppMenuBar — navigation clavier", () => {
 		title("Aide").focus();
 
 		fireEvent.keyDown(title("Aide"), { key: "ArrowDown" });
-		expect(await screen.findByRole("menu", { name: "Aide" })).toBeInTheDocument();
+		expect(
+			await screen.findByRole("menu", { name: "Aide" }),
+		).toBeInTheDocument();
 	});
 });

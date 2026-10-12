@@ -9,7 +9,9 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { HmiWidgetPropertyField } from "@/ui/components/hmi/widgets/hmi-widget-ui";
-import HmiWidgetPropertyFields, { groupPropertyFields } from "./HmiWidgetPropertyFields";
+import HmiWidgetPropertyFields, {
+	groupPropertyFields,
+} from "./HmiWidgetPropertyFields";
 
 jest.mock("@/ui/components/hmi/HmiContext");
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -18,7 +20,12 @@ const field = (
 	kind: HmiWidgetPropertyField<unknown>["kind"],
 	label: string,
 ): HmiWidgetPropertyField<unknown> =>
-	({ kind, label, get: () => undefined, set: (d: unknown) => d }) as unknown as HmiWidgetPropertyField<unknown>;
+	({
+		kind,
+		label,
+		get: () => undefined,
+		set: (d: unknown) => d,
+	}) as unknown as HmiWidgetPropertyField<unknown>;
 
 describe("groupPropertyFields", () => {
 	it("apparie deux champs couleur qui se suivent", () => {
@@ -29,10 +36,9 @@ describe("groupPropertyFields", () => {
 		]);
 		expect(groups).toHaveLength(2);
 		expect(Array.isArray(groups[0])).toBe(true);
-		expect((groups[0] as HmiWidgetPropertyField<unknown>[]).map((f) => f.label)).toEqual([
-			"Remplissage",
-			"Contour",
-		]);
+		expect(
+			(groups[0] as HmiWidgetPropertyField<unknown>[]).map((f) => f.label),
+		).toEqual(["Remplissage", "Contour"]);
 		expect(groups[1]).toMatchObject({ label: "Épaisseur du contour" });
 	});
 
@@ -62,11 +68,18 @@ describe("groupPropertyFields", () => {
 describe("HmiWidgetPropertyFields — champs imposés par le comportement de l'entrée liée", () => {
 	function setup(widget: HmiWidget, behavior: InputBehavior | null) {
 		const updateWidget = jest.fn();
-		(useHmiStore as jest.Mock).mockImplementation(selectorImplementation({ updateWidget }));
+		(useHmiStore as jest.Mock).mockImplementation(
+			selectorImplementation({ updateWidget }),
+		);
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: {
-					variables: [{ mnemonic: (widget.data as { variable: string }).variable, behavior }],
+					variables: [
+						{
+							mnemonic: (widget.data as { variable: string }).variable,
+							behavior,
+						},
+					],
 				},
 			}),
 		);
@@ -91,10 +104,15 @@ describe("HmiWidgetPropertyFields — champs imposés par le comportement de l'e
 	it("explique au survol d'où vient la valeur imposée", async () => {
 		setup(pushButton, { kind: "push-button-nc", params: null });
 
-		fireEvent.mouseOver(screen.getByRole("combobox").closest(".MuiTextField-root")!.parentElement!);
+		fireEvent.mouseOver(
+			screen.getByRole("combobox").closest(".MuiTextField-root")!
+				.parentElement!,
+		);
 
 		expect(
-			await screen.findByText(/Imposé par le comportement de la variable « arret » \(Bouton poussoir NF\)/),
+			await screen.findByText(
+				/Imposé par le comportement de la variable « arret » \(Bouton poussoir NF\)/,
+			),
 		).toBeInTheDocument();
 	});
 

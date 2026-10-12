@@ -1,12 +1,14 @@
 "use client";
 
 import type { PinCapability } from "@/hardware/hardware-device.descriptor";
+import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
 import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
 import type { HardwareModelId } from "@/schemas/hardware/hardware-target.schema";
 import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
+	Alert,
 	Box,
 	Chip,
 	MenuItem,
@@ -19,7 +21,7 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
@@ -46,6 +48,9 @@ const HardwareConfigurationPage = () => {
 				setHardwareTarget: state.setHardwareTarget,
 			})),
 		);
+	// Read after mounting, to match the server-rendered markup.
+	const [supported, setSupported] = useState<boolean | null>(null);
+	useEffect(() => setSupported(isWebSerialSupported()), []);
 	const device = target
 		? HardwareDeviceRegistry.get(target.modelId)
 		: undefined;
@@ -73,6 +78,11 @@ const HardwareConfigurationPage = () => {
 				<Typography sx={{ mt: 2, mb: 3 }} color="text.secondary">
 					{t("intro")}
 				</Typography>
+				{target && supported === false && (
+					<Alert severity="info" sx={{ mb: 3 }}>
+						{t("webSerialUnsupported")}
+					</Alert>
+				)}
 				<TextField
 					select
 					label={t("target")}

@@ -30,6 +30,10 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 	const nativeType = variable.getNativeType();
 	const behavior = variable.behavior;
 	const normallyClosed = isNormallyClosed(behavior);
+	// A pin of the linked board is the source of truth of this input.
+	const drivenByHardware = useProjectStore((state) =>
+		state.hardwareLink.drivenInputIds.includes(variable.id),
+	);
 
 	const changeValue = (newValue: any) => {
 		if (variable.getDirection() === "IN") {
@@ -65,6 +69,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 								min={behavior.params.min}
 								max={behavior.params.max}
 								step={1}
+								disabled={drivenByHardware}
 								value={typeof value === "number" ? value : 0}
 								onChange={(_, next) => changeValue(next as number)}
 								slotProps={{ input: { "aria-label": variable.mnemonic } }}
@@ -82,6 +87,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 								>
 									<PushButtonControl
 										ariaLabel={variable.mnemonic}
+										disabled={drivenByHardware}
 										pressed={value === !getInputRestValue(behavior)}
 										onPress={() => changeValue(!getInputRestValue(behavior))}
 										onRelease={() => changeValue(getInputRestValue(behavior))}
@@ -109,6 +115,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 												normallyClosed ? !e.target.checked : e.target.checked,
 											);
 										}}
+										disabled={drivenByHardware}
 										inputProps={{ "aria-label": variable.mnemonic }}
 									/>
 								}
@@ -120,6 +127,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 					) : (
 						<TextField
 							size="small"
+							disabled={drivenByHardware}
 							type={nativeType === "number" ? "number" : "text"}
 							slotProps={{ htmlInput: { "aria-label": variable.mnemonic } }}
 							value={value === undefined ? "" : String(value)}
@@ -153,11 +161,13 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
  * release. */
 function PushButtonControl({
 	ariaLabel,
+	disabled,
 	pressed,
 	onPress,
 	onRelease,
 }: {
 	ariaLabel: string;
+	disabled: boolean;
 	pressed: boolean;
 	onPress: () => void;
 	onRelease: () => void;
@@ -181,6 +191,7 @@ function PushButtonControl({
 			variant={pressed ? "contained" : "outlined"}
 			aria-label={ariaLabel}
 			aria-pressed={pressed}
+			disabled={disabled}
 			disableRipple
 			onPointerDown={press}
 			onPointerUp={release}

@@ -209,6 +209,7 @@ export default class SimulationManager {
 		//sur ce cycle : aucune temporisation n'avance.
 		const simulationMode = this.getStoreState().simulationMode;
 		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
+		this.getStoreState().hardwareLinkManager.onSimulationStart();
 		this.plc.pause();
 		this.plc.stepOnce();
 		if (!startPaused) {
@@ -281,7 +282,9 @@ export default class SimulationManager {
 			routinesById: projectCompilationResult.result!.routinesById,
 			variables: projectCompilationResult.result!.variables,
 			onCycleEnd: (plcInstance) => {
-				this.publishCycleState(plcInstance.getVariablesSnapshot());
+				const snapshot = plcInstance.getVariablesSnapshot();
+				this.publishCycleState(snapshot);
+				this.getStoreState().hardwareLinkManager.onCycleEnd(snapshot);
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
 			onCycleError: (error) => {
@@ -394,6 +397,9 @@ export default class SimulationManager {
 			this.plc = null;
 		}
 
+		//Les sorties de la carte liée ne doivent pas rester dans le dernier état du PLC
+		this.getStoreState().hardwareLinkManager.fallback();
+
 		//Reset simulation variables states
 		this.lastPublishedValues = null;
 		this.setStoreState(() => ({
@@ -438,10 +444,33 @@ export default class SimulationManager {
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
+		//La broche est la source de vérité d'une entrée pilotée par la carte liée
+		if (this.getStoreState().hardwareLink.drivenInputIds.includes(variableId)) {
+			return;
+		}
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
 		const stored = this.plc.setPhysicalInputValueById(variableId, coerced);
 		this.publishImmediateValue(variableId, stored);
+	}
+
+	/**
+	 * Valeurs lues sur les broches de la carte liée, écrites dans les entrées physiques du PLC.
+	 * Sans simulation en cours, rien à faire : `HardwareLinkManager` rejoue les dernières valeurs
+	 * au démarrage de la simulation.
+	 */
+	public applyHardwareInputs(
+		values: ReadonlyMap<string, boolean | number>,
+	): void {
+		if (!this.plc) return;
+		for (const [variableId, value] of values) {
+			const coerced = this.coerceToPlcType(variableId, value);
+			if (coerced === undefined) continue;
+			this.publishImmediateValue(
+				variableId,
+				this.plc.setPhysicalInputValueById(variableId, coerced),
+			);
+		}
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {

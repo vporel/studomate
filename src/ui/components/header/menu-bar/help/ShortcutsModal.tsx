@@ -30,7 +30,10 @@ export default function ShortcutsModal({ open, onClose }: Props) {
 		{
 			title: t("groups.file"),
 			items: [
-				{ label: t("openProject"), shortcut: platformShortcut("Ctrl+O", "Cmd+O") },
+				{
+					label: t("openProject"),
+					shortcut: platformShortcut("Ctrl+O", "Cmd+O"),
+				},
 				{ label: t("save"), shortcut: platformShortcut("Ctrl+S", "Cmd+S") },
 				{
 					label: t("saveAs"),
@@ -41,8 +44,14 @@ export default function ShortcutsModal({ open, onClose }: Props) {
 		{
 			title: t("groups.project"),
 			items: [
-				{ label: t("newGrafcet"), shortcut: platformShortcut("Ctrl+G", "Cmd+G") },
-				{ label: t("newLadder"), shortcut: platformShortcut("Ctrl+L", "Cmd+L") },
+				{
+					label: t("newGrafcet"),
+					shortcut: platformShortcut("Ctrl+G", "Cmd+G"),
+				},
+				{
+					label: t("newLadder"),
+					shortcut: platformShortcut("Ctrl+L", "Cmd+L"),
+				},
 			],
 		},
 		{
@@ -50,7 +59,10 @@ export default function ShortcutsModal({ open, onClose }: Props) {
 			items: [
 				{ label: t("undo"), shortcut: platformShortcut("Ctrl+Z", "Cmd+Z") },
 				{ label: t("redo"), shortcut: platformShortcut("Ctrl+Y", "Cmd+Y") },
-				{ label: t("selectAll"), shortcut: platformShortcut("Ctrl+A", "Cmd+A") },
+				{
+					label: t("selectAll"),
+					shortcut: platformShortcut("Ctrl+A", "Cmd+A"),
+				},
 				{ label: t("copy"), shortcut: platformShortcut("Ctrl+C", "Cmd+C") },
 				{ label: t("cut"), shortcut: platformShortcut("Ctrl+X", "Cmd+X") },
 				{ label: t("paste"), shortcut: platformShortcut("Ctrl+V", "Cmd+V") },
@@ -60,12 +72,7 @@ export default function ShortcutsModal({ open, onClose }: Props) {
 	];
 
 	return (
-		<CustomModal
-			open={open}
-			onClose={onClose}
-			title={t("title")}
-			width={480}
-		>
+		<CustomModal open={open} onClose={onClose} title={t("title")} width={480}>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 				{groups.map((group, i) => (
 					<Box key={group.title}>

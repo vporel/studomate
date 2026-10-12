@@ -16,6 +16,9 @@ import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
+import HardwareLinkManager, {
+	HardwareLinkState,
+} from "./managers/hardware-link/hardware-link.manager";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
@@ -265,6 +268,10 @@ export interface ProjectStoreState {
 	 */
 	forcedVariables: Record<string, unknown>;
 	simulationManager: SimulationManager;
+
+	//=============== HARDWARE LINK ===============
+	hardwareLink: HardwareLinkState;
+	hardwareLinkManager: HardwareLinkManager;
 
 	//=============== COMMANDS ===============
 	hasCommandsToUndo: boolean;

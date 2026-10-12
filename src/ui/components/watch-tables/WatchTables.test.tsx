@@ -46,6 +46,7 @@ describe("WatchTables", () => {
 					setMemoryValue: jest.fn(),
 				},
 				simulationVariablesStates: {},
+				hardwareLink: { status: "disconnected", drivenInputIds: [] },
 			}),
 		);
 		return renderWithI18n(<WatchTables />);

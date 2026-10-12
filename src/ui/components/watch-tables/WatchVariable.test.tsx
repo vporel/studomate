@@ -16,16 +16,19 @@ function setup({
 	dialect = Dialect.FR,
 	setPhysicalInputValue = jest.fn(),
 	setMemoryValue = jest.fn(),
+	drivenInputIds = [],
 }: {
 	variable: Variable;
 	value?: any;
 	dialect?: Dialect;
 	setPhysicalInputValue?: jest.Mock;
 	setMemoryValue?: jest.Mock;
+	drivenInputIds?: string[];
 }) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: { dialect },
+			hardwareLink: { status: "linked", drivenInputIds },
 			simulationManager: { setPhysicalInputValue, setMemoryValue },
 			simulationVariablesStates:
 				value === undefined ? {} : { [variable.id]: { value } },
@@ -143,10 +146,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("bouton poussoir NO : VRAI à l'appui, FAUX au relâchement", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
-				kind: "push-button-no",
-				params: null,
-			}),
+			variable: withBehavior(
+				new Variable("v1", "marche", "logic-input", "BOOL"),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
 			value: false,
 		});
 		const button = screen.getByRole("button", { name: "marche" });
@@ -162,10 +168,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("bouton poussoir NF : FAUX à l'appui, VRAI au relâchement, affiché enfoncé quand FAUX", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "arret", "logic-input", "BOOL"), {
-				kind: "push-button-nc",
-				params: null,
-			}),
+			variable: withBehavior(
+				new Variable("v1", "arret", "logic-input", "BOOL"),
+				{
+					kind: "push-button-nc",
+					params: null,
+				},
+			),
 			value: false,
 		});
 		const button = screen.getByRole("button", { name: "arret" });
@@ -184,10 +193,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("bouton poussoir : Espace maintenu appuie une seule fois, relâché revient au repos", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
-				kind: "push-button-no",
-				params: null,
-			}),
+			variable: withBehavior(
+				new Variable("v1", "marche", "logic-input", "BOOL"),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
 			value: false,
 		});
 		const button = screen.getByRole("button", { name: "marche" });
@@ -204,10 +216,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("bouton poussoir : un relâchement sans appui préalable n'écrit rien", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "marche", "logic-input", "BOOL"), {
-				kind: "push-button-no",
-				params: null,
-			}),
+			variable: withBehavior(
+				new Variable("v1", "marche", "logic-input", "BOOL"),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
 			value: false,
 		});
 
@@ -218,10 +233,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("commutateur NF : la position actionnée écrit FAUX", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "arret", "logic-input", "BOOL"), {
-				kind: "toggle-switch-nc",
-				params: null,
-			}),
+			variable: withBehavior(
+				new Variable("v1", "arret", "logic-input", "BOOL"),
+				{
+					kind: "toggle-switch-nc",
+					params: null,
+				},
+			),
 			value: true,
 		});
 		const control = screen.getByRole("switch");
@@ -234,10 +252,13 @@ describe("WatchVariable — comportement physique des entrées", () => {
 
 	it("curseur : affiche la valeur et écrit la valeur choisie", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: withBehavior(new Variable("v1", "niveau", "analog-input", "INT"), {
-				kind: "slider",
-				params: { min: 0, max: 100 },
-			}),
+			variable: withBehavior(
+				new Variable("v1", "niveau", "analog-input", "INT"),
+				{
+					kind: "slider",
+					params: { min: 0, max: 100 },
+				},
+			),
 			value: 40,
 		});
 		const slider = screen.getByRole("slider", { name: "niveau" });
@@ -248,5 +269,58 @@ describe("WatchVariable — comportement physique des entrées", () => {
 		fireEvent.change(slider, { target: { value: 70 } });
 
 		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", 70);
+	});
+});
+
+describe("WatchVariable — entrée pilotée par la carte liée", () => {
+	const driven = ["v1"];
+
+	it("désactive l'interrupteur d'une entrée TOR", () => {
+		setup({
+			variable: new Variable("v1", "bp", "logic-input", "BOOL"),
+			value: false,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("switch")).toBeDisabled();
+	});
+
+	it("laisse l'interrupteur actif pour une entrée non pilotée", () => {
+		setup({
+			variable: new Variable("v1", "bp", "logic-input", "BOOL"),
+			value: false,
+			drivenInputIds: ["autre"],
+		});
+		expect(screen.getByRole("switch")).toBeEnabled();
+	});
+
+	it("désactive le bouton poussoir", () => {
+		setup({
+			variable: new Variable("v1", "bp", "logic-input", "BOOL").update({
+				behavior: { kind: "push-button-no", params: null },
+			}),
+			value: false,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("button", { name: "bp" })).toBeDisabled();
+	});
+
+	it("désactive le curseur et le champ numérique", () => {
+		setup({
+			variable: new Variable("v1", "niveau", "analog-input", "INT").update({
+				behavior: { kind: "slider", params: { min: 0, max: 100 } },
+			}),
+			value: 40,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("slider", { name: "niveau" })).toBeDisabled();
+	});
+
+	it("désactive le champ d'une entrée analogique sans comportement", () => {
+		setup({
+			variable: new Variable("v1", "niveau", "analog-input", "INT"),
+			value: 40,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("spinbutton", { name: "niveau" })).toBeDisabled();
 	});
 });

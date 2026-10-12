@@ -8,7 +8,8 @@ import { HmiAction } from "@/schemas/hmi/hmi-widget.schema";
 import HmiContextMenu from "@/ui/components/hmi/context-menu/HmiContextMenu";
 import { HmiContextMenuElement } from "@/ui/components/hmi/context-menu/hmi-context-menu";
 import useContextMenuState from "@/ui/lib/context-menu/useContextMenuState";
-import { useT } from "@/ui/i18n/useT";import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { useT } from "@/ui/i18n/useT";
+import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { Box, Typography } from "@mui/material";
 import {
@@ -19,7 +20,11 @@ import {
 	useState,
 	WheelEvent as ReactWheelEvent,
 } from "react";
-import { clampZoom, SNAP_GRID, ZOOM_STEP } from "@/ui/components/hmi/logic/constants";
+import {
+	clampZoom,
+	SNAP_GRID,
+	ZOOM_STEP,
+} from "@/ui/components/hmi/logic/constants";
 import { executeHmiAction } from "@/ui/components/hmi/logic/hmi-action.executor";
 import HmiCanvasSidebarSection from "./HmiCanvasSidebarSection";
 import HmiObjectsPanel from "./HmiObjectsPanel";
@@ -41,7 +46,6 @@ interface HmiCanvasProps {
 	zoom: number;
 	onZoomChange: (zoom: number) => void;
 }
-
 
 const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 	const t = useT("hmiEditor.panel");

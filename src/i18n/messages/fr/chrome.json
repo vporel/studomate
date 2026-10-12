@@ -33,5 +33,14 @@
 		"ok": "(OK)",
 		"errors": "(Erreurs)",
 		"warnings": "(Avertissements)"
+	},
+	"hardwareLink": {
+		"linked": "{board} lié",
+		"connecting": "Connexion...",
+		"disconnected": "{board} déconnecté",
+		"link": "Lier la carte",
+		"unlink": "Dissocier",
+		"unsupported": "La liaison USB avec la carte nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet.",
+		"unsupportedAria": "Liaison USB indisponible dans ce navigateur"
 	}
 }

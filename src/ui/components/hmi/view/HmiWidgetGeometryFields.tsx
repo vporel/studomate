@@ -41,7 +41,11 @@ export function applyGeometryEdit(
 	} else if (key === "width") {
 		width = clamp(value, minSize.width, HMI_CANVAS_WIDTH - x);
 		if (aspectRatio)
-			height = clamp(width / aspectRatio, minSize.height, HMI_CANVAS_HEIGHT - y);
+			height = clamp(
+				width / aspectRatio,
+				minSize.height,
+				HMI_CANVAS_HEIGHT - y,
+			);
 	} else {
 		height = clamp(value, minSize.height, HMI_CANVAS_HEIGHT - y);
 		if (aspectRatio)
@@ -173,13 +177,7 @@ const HmiWidgetGeometryFields = ({
 			<Section title={t("dimensions")}>
 				{field(widthField, t("width"))}
 				{canLockAspectRatio && (
-					<Tooltip
-						title={
-							linked
-								? t("sizeLinked")
-								: t("linkSize")
-						}
-					>
+					<Tooltip title={linked ? t("sizeLinked") : t("linkSize")}>
 						<IconButton
 							size="small"
 							onClick={() =>

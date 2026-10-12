@@ -9,6 +9,11 @@ import HmiManager from "./managers/hmi.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import createBrowserRemoteIoClient from "./managers/hardware-link/browser-remote-io-client";
+import HardwareLinkManager, {
+	DISCONNECTED_HARDWARE_LINK,
+} from "./managers/hardware-link/hardware-link.manager";
+import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
@@ -193,6 +198,7 @@ export const createProjectStore = () => {
 				if (!project) return;
 				const current = project.hardwareTarget ?? null;
 				if ((current?.modelId ?? null) === modelId) return;
+				void get().hardwareLinkManager.unlink();
 				set(() => {
 					const newProject = project.copy();
 					newProject.hardwareTarget = modelId ? { modelId } : null;
@@ -304,6 +310,15 @@ export const createProjectStore = () => {
 				set,
 				get,
 				new ToastSimulationNotifier(),
+			),
+
+			//=============== HARDWARE LINK ===============
+			hardwareLink: DISCONNECTED_HARDWARE_LINK,
+			hardwareLinkManager: new HardwareLinkManager(
+				set,
+				get,
+				new ToastHardwareLinkNotifier(),
+				createBrowserRemoteIoClient,
 			),
 
 			//=============== COMMANDS STACK ===============

@@ -37,7 +37,12 @@ describe("isContained", () => {
 
 	it("ignore un widget qui contient entièrement le rectangle", () => {
 		expect(
-			isContained(widgetAt(0, 0, 200, 200), { x: 50, y: 50, width: 10, height: 10 }),
+			isContained(widgetAt(0, 0, 200, 200), {
+				x: 50,
+				y: 50,
+				width: 10,
+				height: 10,
+			}),
 		).toBe(false);
 	});
 });

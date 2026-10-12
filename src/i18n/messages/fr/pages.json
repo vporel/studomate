@@ -153,6 +153,7 @@
 			},
 			"pinModeAria": "Mode d'entrée de la broche {pin}",
 			"pinInvertedAria": "Inverser la broche {pin} (vrai quand la broche est à 0 V)"
-		}
+		},
+		"webSerialUnsupported": "La liaison USB directe avec l'Arduino nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet."
 	}
 }

@@ -33,5 +33,14 @@
 		"ok": "(OK)",
 		"errors": "(Errors)",
 		"warnings": "(Warnings)"
+	},
+	"hardwareLink": {
+		"linked": "{board} linked",
+		"connecting": "Connecting...",
+		"disconnected": "{board} disconnected",
+		"link": "Link the board",
+		"unlink": "Unlink",
+		"unsupported": "The USB link with the board requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project.",
+		"unsupportedAria": "USB link unavailable in this browser"
 	}
 }

@@ -3,6 +3,7 @@
 import AnalyseButton from "@/ui/components/header/title-bar/AnalyseButton";
 import ProjectModeSwitcher from "@/ui/components/header/title-bar/ProjectModeSwitcher";
 import SimulationModeSelect from "@/ui/components/header/title-bar/SimulationModeSelect";
+import HardwareLinkControl from "@/ui/components/header/title-bar/HardwareLinkControl";
 import SimulationControls from "@/ui/components/header/title-bar/SimulationControls";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -141,6 +142,7 @@ const MenuBar = () => {
 				<ProjectModeSwitcher />
 				<SimulationModeSelect />
 				<SimulationControls />
+				<HardwareLinkControl />
 			</FlexBox>
 			<ShortcutsModal
 				open={shortcutsOpen}

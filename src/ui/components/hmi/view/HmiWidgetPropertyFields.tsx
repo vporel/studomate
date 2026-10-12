@@ -64,7 +64,9 @@ const HmiWidgetPropertyFields = ({ widget }: { widget: HmiWidget }) => {
 	const boundBehavior = useBoundInputBehavior(boundMnemonic);
 	const imposed = getBehaviorImposedData(widget.type, boundBehavior);
 	// Fields imposed by the bound input's behavior show the imposed value, read-only.
-	const data = (imposed ? { ...widget.data, ...imposed } : widget.data) as HmiWidgetData;
+	const data = (
+		imposed ? { ...widget.data, ...imposed } : widget.data
+	) as HmiWidgetData;
 	const isLocked = (field: PropertyField) =>
 		!!imposed &&
 		(field.kind === "select" || field.kind === "number") &&

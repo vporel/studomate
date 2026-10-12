@@ -52,6 +52,12 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 			openHmiSimulationPageIfAny: jest.fn(),
 			closeHmiSimulationPage: jest.fn(),
 		},
+		hardwareLink: { status: "disconnected", drivenInputIds: [] },
+		hardwareLinkManager: {
+			onSimulationStart: jest.fn(),
+			onCycleEnd: jest.fn(),
+			fallback: jest.fn(),
+		},
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -718,6 +724,91 @@ describe("SimulationManager", () => {
 				manager.setPlcSimulationMode(SimulationMode.STEP_BY_STEP),
 			).not.toThrow();
 			expect(get().simulationMode).toBe(SimulationMode.STEP_BY_STEP);
+		});
+	});
+
+	describe("liaison matérielle", () => {
+		it("prévient le gestionnaire de liaison au démarrage, à chaque fin de cycle et à l'arrêt", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const link = get().hardwareLinkManager as unknown as Record<
+				string,
+				jest.Mock
+			>;
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			expect(link.onSimulationStart).toHaveBeenCalledTimes(1);
+
+			await jest.advanceTimersByTimeAsync(35);
+			expect(link.onCycleEnd).toHaveBeenCalled();
+			expect(link.fallback).not.toHaveBeenCalled();
+
+			manager.setDesignMode();
+			expect(link.fallback).toHaveBeenCalled();
+		});
+
+		it("ne met pas la carte en repli lors d'une pause", async () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const link = get().hardwareLinkManager as unknown as Record<
+				string,
+				jest.Mock
+			>;
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+
+			manager.pauseSimulation();
+
+			expect(link.fallback).not.toHaveBeenCalled();
+			manager.setDesignMode();
+		});
+
+		it("applyHardwareInputs écrit les valeurs des broches dans le PLC et le store", () => {
+			const inputVar = VariableFactory.createLogicInput("I0", "i0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+
+			manager.applyHardwareInputs(new Map([["i0", true]]));
+
+			expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
+			manager.setDesignMode();
+		});
+
+		it("applyHardwareInputs est sans effet hors simulation", () => {
+			const project = ProjectFactory.create([], []);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(() =>
+				manager.applyHardwareInputs(new Map([["x", true]])),
+			).not.toThrow();
+			expect(get().simulationVariablesStates).toEqual({});
+		});
+
+		it("ignore une saisie de l'IHM sur une entrée pilotée par la carte", () => {
+			const inputVar = VariableFactory.createLogicInput("I0", "i0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+			set({ hardwareLink: { status: "linked", drivenInputIds: ["i0"] } });
+
+			manager.setPhysicalInputValue("i0", true);
+			expect(get().simulationVariablesStates["i0"]?.value).not.toBe(true);
+
+			set({ hardwareLink: { status: "disconnected", drivenInputIds: [] } });
+			manager.setPhysicalInputValue("i0", true);
+			expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
+			manager.setDesignMode();
 		});
 	});
 });

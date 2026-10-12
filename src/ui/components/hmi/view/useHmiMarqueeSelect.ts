@@ -95,9 +95,7 @@ export default function useHmiMarqueeSelect(
 			);
 			// Glisser nul (simple clic) : laissé au `onClick` du canvas, qui vide la sélection.
 			if (rect.width === 0 && rect.height === 0) return;
-			const hit = widgets
-				.filter((w) => isContained(w, rect))
-				.map((w) => w.id);
+			const hit = widgets.filter((w) => isContained(w, rect)).map((w) => w.id);
 			setSelection(Array.from(new Set([...drag.additiveBase, ...hit])));
 		};
 

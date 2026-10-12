@@ -153,6 +153,7 @@
 			},
 			"pinModeAria": "Input mode of pin {pin}",
 			"pinInvertedAria": "Invert pin {pin} (true when the pin is at 0 V)"
-		}
+		},
+		"webSerialUnsupported": "The direct USB link with the Arduino requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project."
 	}
 }

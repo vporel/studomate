@@ -19,5 +19,14 @@
 	"moveToCloudFailed": "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
 	"shareRevokeFailed": "Impossible de révoquer le partage.",
 	"shareLoginPrompt": "Connectez-vous pour partager ce projet.",
-	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page."
+	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page.",
+	"hardwareLinked": "Carte Arduino liée.",
+	"hardwareLinkLost": "Liaison avec la carte perdue. Ses sorties sont revenues à l'état de repli.",
+	"hardwareLinkFailed": {
+		"handshake-timeout": "La carte ne répond pas : le firmware Studomate n'est pas installé sur la carte.",
+		"protocol-mismatch": "Le firmware de la carte est incompatible avec cette version de Studomate.",
+		"config-rejected": "La carte a refusé la configuration des broches.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB et qu'aucun autre programme n'utilise le port."
+	},
+	"hardwareOutputsCutInBackground": "Onglet en arrière-plan : les sorties de la carte ont été coupées."
 }

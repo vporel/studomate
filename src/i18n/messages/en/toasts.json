@@ -19,5 +19,14 @@
 	"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",
 	"shareRevokeFailed": "Could not revoke the share.",
 	"shareLoginPrompt": "Sign in to share this project.",
-	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page."
+	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page.",
+	"hardwareLinked": "Arduino board linked.",
+	"hardwareLinkLost": "Link with the board lost. Its outputs went back to the fallback state.",
+	"hardwareLinkFailed": {
+		"handshake-timeout": "The board does not answer: the Studomate firmware is not installed on it.",
+		"protocol-mismatch": "The firmware of the board is not compatible with this version of Studomate.",
+		"config-rejected": "The board rejected the pin configuration.",
+		"transport": "Cannot communicate with the board. Check the USB cable and that no other program is using the port."
+	},
+	"hardwareOutputsCutInBackground": "Tab in the background: the outputs of the board were cut."
 }

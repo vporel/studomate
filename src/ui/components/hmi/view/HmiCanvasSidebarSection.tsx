@@ -57,7 +57,11 @@ const HmiCanvasSidebarSection = ({
 					<IconButton
 						size="small"
 						onClick={onToggle}
-						aria-label={collapsed ? t("expandNamed", { name: String(title) }) : t("collapseNamed", { name: String(title) })}
+						aria-label={
+							collapsed
+								? t("expandNamed", { name: String(title) })
+								: t("collapseNamed", { name: String(title) })
+						}
 					>
 						{collapsed ? (
 							<ExpandMoreIcon fontSize="small" />
