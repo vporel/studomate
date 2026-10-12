@@ -1,7 +1,7 @@
 import type {
 	HardwareDeviceDescriptor,
 	HardwarePin,
-} from "./hardware-device.descriptor";
+} from "../hardware-device.descriptor";
 
 const PWM_DIGITAL_PINS = new Set([3, 5, 6, 9, 10, 11]);
 

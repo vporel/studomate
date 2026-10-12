@@ -1,5 +1,5 @@
 import type { HardwareModelId } from "@/schemas/hardware/hardware-target.schema";
-import arduinoUnoR3 from "./arduino-uno-r3.descriptor";
+import arduinoUnoR3 from "./arduino/uno-r3.descriptor";
 import type { HardwareDeviceDescriptor } from "./hardware-device.descriptor";
 
 const DESCRIPTORS: Record<HardwareModelId, HardwareDeviceDescriptor> = {

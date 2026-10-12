@@ -20,6 +20,8 @@ export function usePageTitle() {
 				return t("projectProperties");
 			case "exercise":
 				return t("exercise");
+			case "hardware-configuration":
+				return t("hardwareConfiguration");
 			case "project-startup":
 				return t("projectStartup");
 			case "variables":

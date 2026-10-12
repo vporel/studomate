@@ -1,5 +1,9 @@
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
+import type {
+	HardwareTarget,
+	HardwareModelId,
+} from "@/schemas/hardware/hardware-target.schema";
 import ProjectRepository, {
 	StorageLocation,
 } from "@/persistence/repositories/project.repository";
@@ -26,6 +30,7 @@ export type PageType =
 	| "project-properties"
 	| "preferences"
 	| "exercise"
+	| "hardware-configuration"
 	| "grafcet"
 	| "ladder"
 	| "variables"
@@ -183,6 +188,10 @@ export interface ProjectStoreState {
 	setProjectDialect: (dialect: Dialect) => void;
 	/** Met à jour l'énoncé du projet. Une valeur vide (après trim) retire l'énoncé. */
 	setExerciseStatement: (statement: string) => void;
+	/** Chooses the hardware target of the project; `null` removes it (purely virtual project). */
+	setHardwareModel: (modelId: HardwareModelId | null) => void;
+	/** Replaces the configuration of the current target (same model). No-op without a target. */
+	setHardwareTarget: (target: HardwareTarget) => void;
 
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setNewProjectModalVisible: (visible: boolean) => void;

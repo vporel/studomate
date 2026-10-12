@@ -7,7 +7,8 @@
 		"inputVariables": "Input variables",
 		"outputVariables": "Output variables",
 		"memoryVariables": "Memory variables",
-		"systemVariables": "System variables"
+		"systemVariables": "System variables",
+		"hardwareConfiguration": "Hardware configuration"
 	},
 	"systemVariables": {
 		"heading": "System variables",
@@ -53,7 +54,8 @@
 		"noPrograms": "You don't have any program yet.",
 		"actions": "Actions",
 		"newGrafcet": "New grafcet",
-		"newLadder": "New ladder"
+		"newLadder": "New ladder",
+		"hardwareConfiguration": "Hardware configuration"
 	},
 	"variablesGrid": {
 		"toolbar": {
@@ -116,5 +118,41 @@
 		"openProject": "Open a project",
 		"saveProject": "Save the project",
 		"newGrafcet": "New grafcet"
+	},
+	"hardware": {
+		"heading": "Hardware configuration",
+		"intro": "Link the project to a real board. Without a board, the project stays fully simulated.",
+		"target": "Target board",
+		"targetNone": "None (simulated project)",
+		"readOnlyInSimulation": "Editable in Design mode only.",
+		"unknownModel": "The board \"{modelId}\" is unknown to this version of Studomate.",
+		"pinsHeading": "Pins",
+		"pinsIntro": "A pin is linked to a variable through the variable's address.",
+		"columns": {
+			"pin": "Pin",
+			"capabilities": "Capabilities",
+			"variable": "Variable"
+		},
+		"reserved": "Reserved (USB link)",
+		"capabilities": {
+			"digital-input": "Digital input",
+			"digital-output": "Digital output",
+			"analog-input": "Analog input",
+			"pwm-output": "PWM output"
+		},
+		"arduinoUnoR3": {
+			"intro": "Example: %PD2 for pin D2. Mode and inversion can be set for pins carrying a digital input variable.",
+			"wiringHelp": "The mode tells whether the internal pull-up resistor is enabled. Inversion tells at which level the variable is true: when checked, it is true when the pin is at 0 V (usual wiring of a button between the pin and GND, with pull-up); when unchecked, it is true at 5 V (active-high sensor).",
+			"columns": {
+				"mode": "Input mode",
+				"inverted": "Inverted"
+			},
+			"pinModes": {
+				"INPUT_PULLUP": "With internal pull-up",
+				"INPUT": "Floating input"
+			},
+			"pinModeAria": "Input mode of pin {pin}",
+			"pinInvertedAria": "Invert pin {pin} (true when the pin is at 0 V)"
+		}
 	}
 }

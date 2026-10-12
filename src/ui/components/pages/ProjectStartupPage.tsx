@@ -3,6 +3,7 @@
 import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
 import AddIcon from "@mui/icons-material/Add";
+import MemoryIcon from "@mui/icons-material/Memory";
 import {
 	Box,
 	Divider,
@@ -18,6 +19,7 @@ import VariablesIcon from "../icons/VariablesIcon";
 import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
 import { useT } from "@/ui/i18n/useT";
+import { HARDWARE_CONFIGURATION_PAGE_DATA } from "./HardwareConfigurationPage";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
 import { getVariablesPageData, VariablesPageId } from "./VariablesPage";
@@ -116,6 +118,21 @@ function ProgramsList() {
 	);
 }
 
+function HardwareAction() {
+	const t = useT("pages.startup");
+	const pagesManager = useProjectStore((state) => state.pagesManager);
+	return (
+		<MenuItem
+			onClick={() => pagesManager.openPage(HARDWARE_CONFIGURATION_PAGE_DATA)}
+		>
+			<ListItemIcon>
+				<MemoryIcon />
+			</ListItemIcon>
+			<ListItemText>{t("hardwareConfiguration")}</ListItemText>
+		</MenuItem>
+	);
+}
+
 function StartupAction({
 	label,
 	onClick,
@@ -152,6 +169,8 @@ function Actions() {
 				label={t("newLadder")}
 				onClick={() => laddersManager.newLadder()}
 			/>
+			<Divider sx={{ my: 1 }} />
+			<HardwareAction />
 		</>
 	);
 }

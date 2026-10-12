@@ -7,7 +7,8 @@
 		"inputVariables": "Variables d'entrée",
 		"outputVariables": "Variables de sortie",
 		"memoryVariables": "Variables de mémoire",
-		"systemVariables": "Variables système"
+		"systemVariables": "Variables système",
+		"hardwareConfiguration": "Configuration matérielle"
 	},
 	"systemVariables": {
 		"heading": "Variables système",
@@ -53,7 +54,8 @@
 		"noPrograms": "Vous n'avez pas encore de programme.",
 		"actions": "Actions",
 		"newGrafcet": "Nouveau grafcet",
-		"newLadder": "Nouveau ladder"
+		"newLadder": "Nouveau ladder",
+		"hardwareConfiguration": "Configuration matérielle"
 	},
 	"variablesGrid": {
 		"toolbar": {
@@ -116,5 +118,41 @@
 		"openProject": "Ouvrir un projet",
 		"saveProject": "Enregistrer le projet",
 		"newGrafcet": "Nouveau grafcet"
+	},
+	"hardware": {
+		"heading": "Configuration matérielle",
+		"intro": "Associez le projet à une carte réelle. Sans carte, le projet reste entièrement simulé.",
+		"target": "Carte cible",
+		"targetNone": "Aucune (projet simulé)",
+		"readOnlyInSimulation": "Modifiable en mode Conception uniquement.",
+		"unknownModel": "La carte « {modelId} » est inconnue de cette version de Studomate.",
+		"pinsHeading": "Broches",
+		"pinsIntro": "Une broche est liée à une variable par l'adresse de celle-ci.",
+		"columns": {
+			"pin": "Broche",
+			"capabilities": "Capacités",
+			"variable": "Variable"
+		},
+		"reserved": "Réservée (liaison USB)",
+		"capabilities": {
+			"digital-input": "Entrée TOR",
+			"digital-output": "Sortie TOR",
+			"analog-input": "Entrée analogique",
+			"pwm-output": "Sortie PWM"
+		},
+		"arduinoUnoR3": {
+			"intro": "Exemple : %PD2 pour la broche D2. Le mode et l'inversion se règlent pour les broches portant une variable d'entrée TOR.",
+			"wiringHelp": "Le mode indique si la résistance de rappel interne est activée. L'inversion indique à quel niveau la variable est vraie : cochée, elle est vraie quand la broche est à 0 V (câblage habituel d'un bouton entre la broche et GND, avec pull-up) ; décochée, elle est vraie à 5 V (capteur actif à l'état haut).",
+			"columns": {
+				"mode": "Mode d'entrée",
+				"inverted": "Inversée"
+			},
+			"pinModes": {
+				"INPUT_PULLUP": "Avec pull-up interne",
+				"INPUT": "Entrée flottante"
+			},
+			"pinModeAria": "Mode d'entrée de la broche {pin}",
+			"pinInvertedAria": "Inverser la broche {pin} (vrai quand la broche est à 0 V)"
+		}
 	}
 }

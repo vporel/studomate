@@ -13,6 +13,7 @@ import { PageType } from "@/ui/stores/project/project.store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
+import MemoryIcon from "@mui/icons-material/Memory";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
 	alpha,
@@ -35,6 +36,7 @@ const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"project-properties": ProjectPropertiesIcon,
 	preferences: SettingsIcon,
 	exercise: ExerciseIcon,
+	"hardware-configuration": MemoryIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,
 	"system-variables": VariablesIcon,

@@ -17,18 +17,19 @@ jest.mock("./usePageTitle", () => ({
 }));
 
 function setup() {
+	const openPage = jest.fn();
 	const newGrafcet = jest.fn();
 	const newLadder = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			activePageId: "project-startup",
-			pagesManager: { openPage: jest.fn() },
+			pagesManager: { openPage },
 			grafcetsManager: { newGrafcet },
 			laddersManager: { newLadder },
 		}),
 	);
 	renderWithI18n(<ProjectStartupPage />);
-	return { newGrafcet, newLadder };
+	return { newGrafcet, newLadder, openPage };
 }
 
 describe("ProjectStartupPage : actions", () => {
@@ -59,5 +60,23 @@ describe("ProjectStartupPage : actions", () => {
 
 		expect(newLadder).toHaveBeenCalledTimes(1);
 		expect(newGrafcet).not.toHaveBeenCalled();
+	});
+});
+
+describe("ProjectStartupPage : configuration matérielle", () => {
+	it("ouvre la page de configuration matérielle au clic", () => {
+		const { openPage, newGrafcet, newLadder } = setup();
+
+		fireEvent.click(
+			screen.getByRole("menuitem", { name: "Configuration matérielle" }),
+		);
+
+		expect(openPage).toHaveBeenCalledWith({
+			id: "hardware-configuration",
+			type: "hardware-configuration",
+			title: "Configuration matérielle",
+		});
+		expect(newGrafcet).not.toHaveBeenCalled();
+		expect(newLadder).not.toHaveBeenCalled();
 	});
 });

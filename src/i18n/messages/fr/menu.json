@@ -34,7 +34,8 @@
 		"exerciseStatement": "Énoncé de l'exercice",
 		"share": "Partager",
 		"manageSharing": "Gérer le partage",
-		"properties": "Propriétés"
+		"properties": "Propriétés",
+		"hardwareConfiguration": "Configuration matérielle"
 	},
 	"help": {
 		"title": "Aide",

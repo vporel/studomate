@@ -188,6 +188,28 @@ export const createProjectStore = () => {
 				});
 			},
 
+			setHardwareModel: (modelId) => {
+				const project = get().project;
+				if (!project) return;
+				const current = project.hardwareTarget ?? null;
+				if ((current?.modelId ?? null) === modelId) return;
+				set(() => {
+					const newProject = project.copy();
+					newProject.hardwareTarget = modelId ? { modelId } : null;
+					return { project: newProject, hasUnsavedChanges: true };
+				});
+			},
+
+			setHardwareTarget: (target) => {
+				const project = get().project;
+				if (!project?.hardwareTarget) return;
+				set(() => {
+					const newProject = project.copy();
+					newProject.hardwareTarget = target;
+					return { project: newProject, hasUnsavedChanges: true };
+				});
+			},
+
 			setUnsavedChangesDialogVisible: modalSetter("unsavedChangesDialogVisible"),
 			setNewProjectModalVisible: modalSetter("newProjectModalVisible"),
 			setSaveAsModalVisible: modalSetter("saveAsModalVisible"),

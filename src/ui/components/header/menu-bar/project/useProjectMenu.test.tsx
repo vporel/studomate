@@ -16,6 +16,13 @@ jest.mock("@/ui/components/pages/ProjectPropertiesPage", () => ({
 		title: "Propriétés",
 	},
 }));
+jest.mock("@/ui/components/pages/HardwareConfigurationPage", () => ({
+	HARDWARE_CONFIGURATION_PAGE_DATA: {
+		id: "hardware-configuration",
+		type: "hardware-configuration",
+		title: "Configuration matérielle",
+	},
+}));
 jest.mock("@/ui/components/pages/ExercisePage", () => ({
 	EXERCISE_PAGE_DATA: {
 		id: "exercise",
@@ -62,7 +69,8 @@ describe("useProjectMenu", () => {
 		expect(result.current.id).toBe("project");
 		expect(result.current.items[0][0].label).toBe("Nouveau grafcet");
 		expect(result.current.items[1][0].label).toBe("Partager");
-		expect(result.current.items[2][0].label).toBe("Propriétés");
+		expect(result.current.items[2][0].label).toBe("Configuration matérielle");
+		expect(result.current.items[2][1].label).toBe("Propriétés");
 	});
 
 	it("n'expose l'item 'Énoncé de l'exercice' que si l'énoncé est non vide (trim)", () => {
@@ -125,12 +133,26 @@ describe("useProjectMenu", () => {
 
 	it("opens the project properties page regardless of mode", () => {
 		const { result } = setup(ProjectMode.SIMULATION);
-		act(() => result.current.items[2][0].onClick?.());
+		act(() => result.current.items[2][1].onClick?.());
 		expect(pagesManager.openPage).toHaveBeenCalledWith({
 			id: "project-properties",
 			type: "project-properties",
 			title: "Propriétés",
 		});
+	});
+
+	it("opens the hardware configuration page regardless of mode", () => {
+		for (const mode of [ProjectMode.DESIGN, ProjectMode.SIMULATION]) {
+			pagesManager.openPage.mockClear();
+			const { result } = setup(mode);
+			expect(result.current.items[2][0].disabled).toBeFalsy();
+			act(() => result.current.items[2][0].onClick?.());
+			expect(pagesManager.openPage).toHaveBeenCalledWith({
+				id: "hardware-configuration",
+				type: "hardware-configuration",
+				title: "Configuration matérielle",
+			});
+		}
 	});
 
 	describe("groupe Partager", () => {

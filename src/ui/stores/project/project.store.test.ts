@@ -161,6 +161,89 @@ describe("createProjectStore", () => {
 		});
 	});
 
+	describe("setHardwareModel", () => {
+		it("sets the target and marks unsaved changes", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: false });
+
+			store.getState().setHardwareModel("arduino-uno-r3");
+
+			expect(store.getState().project?.hardwareTarget).toEqual({
+				modelId: "arduino-uno-r3",
+			});
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("removes the target with null", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setHardwareModel("arduino-uno-r3");
+
+			store.getState().setHardwareModel(null);
+
+			expect(store.getState().project?.hardwareTarget).toBeNull();
+		});
+
+		it("does nothing when the model is unchanged, whether set or absent", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: false });
+			const projectBefore = store.getState().project;
+
+			store.getState().setHardwareModel(null);
+			expect(store.getState().project).toBe(projectBefore);
+
+			store.getState().setHardwareModel("arduino-uno-r3");
+			store.setState({ hasUnsavedChanges: false });
+			const projectWithTarget = store.getState().project;
+			store.getState().setHardwareModel("arduino-uno-r3");
+
+			expect(store.getState().project).toBe(projectWithTarget);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+
+		it("does not touch the previous project instance", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const before = store.getState().project!;
+
+			store.getState().setHardwareModel("arduino-uno-r3");
+
+			expect(before.hardwareTarget).toBeUndefined();
+		});
+	});
+
+	describe("setHardwareTarget", () => {
+		it("replaces the target configuration", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setHardwareModel("arduino-uno-r3");
+			store.setState({ hasUnsavedChanges: false });
+
+			const next = {
+				modelId: "arduino-uno-r3" as const,
+				pins: { "%PD2": { mode: "INPUT" as const, inverted: false } },
+			};
+			store.getState().setHardwareTarget(next);
+
+			expect(store.getState().project?.hardwareTarget).toEqual(next);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("is a no-op without a target", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: false });
+			const projectBefore = store.getState().project;
+
+			store.getState().setHardwareTarget({ modelId: "arduino-uno-r3" });
+
+			expect(store.getState().project).toBe(projectBefore);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+	});
+
 	describe("setProjectDialect", () => {
 		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
 			const store = createProjectStore();
