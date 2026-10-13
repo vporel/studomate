@@ -17,6 +17,8 @@ export default class PLCVariable {
 	/** Declared PLC type, used by the typing rules of the language (`null` for an internal
 	 * variable such as a step memo). */
 	private declaredType: VariableType | null;
+	/** A constant keeps the value it was created with: any later write is refused. */
+	private constant: boolean;
 
 	constructor(
 		id: string,
@@ -25,6 +27,8 @@ export default class PLCVariable {
 		type: PLCVariableType,
 		numericRange: NumericRange | null = null,
 		declaredType: VariableType | null = null,
+		isConstant = false,
+		initialValue?: PLCVariableValue,
 	) {
 		this.id = id;
 		this.name = name;
@@ -35,6 +39,9 @@ export default class PLCVariable {
 		if (scope !== "memory" && type === "string")
 			throw new Error("A string variable is only allowed for the memory scope");
 		this.value = type === "boolean" ? false : type === "number" ? 0 : "";
+		this.constant = false;
+		if (initialValue !== undefined) this.setValue(initialValue);
+		this.constant = isConstant;
 	}
 
 	public getId(): string {
@@ -61,11 +68,16 @@ export default class PLCVariable {
 		return this.declaredType;
 	}
 
+	public isConstant(): boolean {
+		return this.constant;
+	}
+
 	public getValue(): PLCVariableValue {
 		return this.value;
 	}
 
 	public setValue(value: PLCVariableValue): void {
+		if (this.constant) throw new Error(`"${this.name}" is a constant`);
 		if (typeof value !== this.type)
 			throw new Error("The type of the value does not match the variable type");
 		this.value =
@@ -82,6 +94,7 @@ export default class PLCVariable {
 			this.type,
 			this.numericRange,
 			this.declaredType,
+			this.constant,
 		);
 		copy.value = this.value;
 		return copy;

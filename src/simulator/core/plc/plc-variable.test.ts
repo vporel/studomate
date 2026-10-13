@@ -160,7 +160,56 @@ describe("PLCVariable", () => {
 	});
 
 	it("copy() conserve le type déclaré", () => {
-		const variable = new PLCVariable("id", "d", "memory", "number", null, "DINT");
+		const variable = new PLCVariable(
+			"id",
+			"d",
+			"memory",
+			"number",
+			null,
+			"DINT",
+		);
 		expect(variable.copy().getDeclaredType()).toBe("DINT");
+	});
+});
+
+describe("PLCVariable constant", () => {
+	it("starts at its initial value and refuses any later write", () => {
+		const k = new PLCVariable(
+			"id",
+			"K",
+			"memory",
+			"number",
+			null,
+			"INT",
+			true,
+			7,
+		);
+
+		expect(k.isConstant()).toBe(true);
+		expect(k.getValue()).toBe(7);
+		expect(() => k.setValue(1)).toThrow('"K" is a constant');
+	});
+
+	it("copy stays constant and keeps the value", () => {
+		const copy = new PLCVariable(
+			"id",
+			"K",
+			"memory",
+			"boolean",
+			null,
+			"BOOL",
+			true,
+			true,
+		).copy();
+
+		expect(copy.isConstant()).toBe(true);
+		expect(copy.getValue()).toBe(true);
+		expect(() => copy.setValue(false)).toThrow();
+	});
+
+	it("an ordinary variable is not constant", () => {
+		expect(new PLCVariable("id", "v", "memory", "number").isConstant()).toBe(
+			false,
+		);
 	});
 });

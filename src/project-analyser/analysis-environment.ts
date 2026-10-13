@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import SchemaVariablesMapper from "@/project-analyser/variables.mapper";
 import {
 	isSystemVariableName,
@@ -20,11 +21,12 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  */
 export default function buildAnalysisEnvironment(
 	schemaVariables: Variable[],
+	dialect: Dialect = Dialect.FR,
 ): Environment {
 	return new Environment([
 		...schemaVariables
 			.filter((variable) => !isSystemVariableName(variable.mnemonic))
-			.map(SchemaVariablesMapper.schemaToEnv),
+			.map((variable) => SchemaVariablesMapper.schemaToEnv(variable, dialect)),
 		...SYSTEM_VARIABLES.map(
 			(variable) =>
 				new EnvVariable(

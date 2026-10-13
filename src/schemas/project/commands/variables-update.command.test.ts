@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	ActionExecutionMode,
 	ActionType,
@@ -185,5 +186,49 @@ describe("VariablesUpdateCommand", () => {
 				Object.values(updated.grafcets["g-a"].actions)[0].data.expression,
 			).toBe("pompe");
 		});
+	});
+});
+
+describe("VariablesUpdateCommand constants", () => {
+	function projectWithConstant(dialect = Dialect.FR, value = "FAUX") {
+		const project = new Project("p1", "Projet", "");
+		project.dialect = dialect;
+		project.variables = [
+			new Variable("k", "K", "constant", "BOOL", undefined, value, dialect),
+		];
+		return project;
+	}
+
+	it("updates the value and cancel restores the previous one", () => {
+		const project = projectWithConstant();
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "VRAI" }, oldData: { value: "FAUX" } },
+		]);
+
+		command.execute(project);
+		expect(project.variables[0].value).toBe("VRAI");
+		command.cancel(project);
+
+		expect(project.variables[0].value).toBe("FAUX");
+	});
+
+	it("replays with the dialect of the project", () => {
+		const project = projectWithConstant(Dialect.EN, "FALSE");
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "TRUE" }, oldData: { value: "FALSE" } },
+		]);
+
+		command.execute(project);
+
+		expect(project.variables[0].value).toBe("TRUE");
+	});
+
+	it("refuses a value written in the other dialect", () => {
+		const project = projectWithConstant(Dialect.EN, "FALSE");
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "VRAI" }, oldData: { value: "FALSE" } },
+		]);
+
+		expect(() => command.execute(project)).toThrow("CONSTANT_VALUE_INVALID");
 	});
 });

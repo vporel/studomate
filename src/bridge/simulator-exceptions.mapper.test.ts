@@ -14,6 +14,7 @@ import ParsingEndedBeforeEOFException from "@/expression-language/parser/excepti
 import UnknownVariableNameException from "@/simulator/interpreter/environment/exceptions/unknown-variable-name.exception";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import IncompatibleOperandsTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
+import AssignmentToConstantException from "@/simulator/interpreter/semantic-analyser/exceptions/assignment-to-constant.exception";
 import InputIdentifierAssignmentException from "@/simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
 import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
@@ -102,7 +103,12 @@ describe("SimulatorExceptionsMapper", () => {
 		});
 
 		it("maps IncompatibleNumericTypesException, converting a bit string to the integer", () => {
-			const e = new IncompatibleNumericTypesException("=", "INT", "WORD", arithmetic());
+			const e = new IncompatibleNumericTypesException(
+				"=",
+				"INT",
+				"WORD",
+				arithmetic(),
+			);
 			expect(message(e, "fr")).toContain("(fonction WORD_TO_INT)");
 		});
 
@@ -127,7 +133,12 @@ describe("SimulatorExceptionsMapper", () => {
 
 		it("maps BitStringBlockOperandException", () => {
 			const node = counterNode();
-			const e = new BitStringBlockOperandException("PV", "WORD", node, node.presetValue);
+			const e = new BitStringBlockOperandException(
+				"PV",
+				"WORD",
+				node,
+				node.presetValue,
+			);
 			expect(message(e, "fr")).toBe(
 				"L'opérande PV d'un bloc ne peut pas être de type WORD (chaîne de bits) : utilisez une variable INT, DINT ou TIME.",
 			);
@@ -138,7 +149,9 @@ describe("SimulatorExceptionsMapper", () => {
 			expect(message(e, "fr")).toBe(
 				"La constante 40000 dépasse les limites du type INT.",
 			);
-			expect(message(e, "en")).toBe("Constant 40000 is out of the range of type INT.");
+			expect(message(e, "en")).toBe(
+				"Constant 40000 is out of the range of type INT.",
+			);
 		});
 
 		it("maps ExplicitConversionRequiredException, naming the conversion function", () => {
@@ -170,10 +183,18 @@ describe("SimulatorExceptionsMapper", () => {
 				x(),
 			);
 			expect(
-				message(new InvalidConversionArgumentException("INT", "DINT", "REAL", node), "fr"),
-			).toBe("Conversion vers INT impossible : la valeur est de type REAL, DINT attendu.");
+				message(
+					new InvalidConversionArgumentException("INT", "DINT", "REAL", node),
+					"fr",
+				),
+			).toBe(
+				"Conversion vers INT impossible : la valeur est de type REAL, DINT attendu.",
+			);
 			expect(
-				message(new InvalidConversionArgumentException("WORD", null, "REAL", node), "fr"),
+				message(
+					new InvalidConversionArgumentException("WORD", null, "REAL", node),
+					"fr",
+				),
 			).toBe("Aucune conversion de REAL vers WORD.");
 		});
 
@@ -273,6 +294,21 @@ describe("SimulatorExceptionsMapper", () => {
 			);
 		});
 
+		it("maps AssignmentToConstantException", () => {
+			const node = StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode("SEUIL", 0),
+				LiteralsBuilder.buildNumberNode(2, 0),
+				0,
+			);
+			const e = new AssignmentToConstantException(node);
+			expect(message(e, "fr")).toBe(
+				"Affectation invalide : une constante est en lecture seule.",
+			);
+			expect(message(e, "en")).toBe(
+				"Invalid assignment: a constant is read-only.",
+			);
+		});
+
 		it("maps IncompatibleOperandsTypesException", () => {
 			const node = ExpressionsBuilder.buildComparisonExpressionNode(
 				"=",
@@ -308,7 +344,9 @@ describe("SimulatorExceptionsMapper", () => {
 
 			it("maps InvalidTimerLastInputTypeException", () => {
 				const e = new InvalidTimerLastInputTypeException("number", timerNode());
-				expect(message(e, "fr")).toContain("doit être un booléen (trouvé nombre)");
+				expect(message(e, "fr")).toContain(
+					"doit être un booléen (trouvé nombre)",
+				);
 			});
 
 			it("maps InvalidCounterLastInputNodeException", () => {
@@ -322,7 +360,10 @@ describe("SimulatorExceptionsMapper", () => {
 			});
 
 			it("maps InvalidCounterLastInputTypeException", () => {
-				const e = new InvalidCounterLastInputTypeException("number", counterNode());
+				const e = new InvalidCounterLastInputTypeException(
+					"number",
+					counterNode(),
+				);
 				expect(message(e, "fr")).toContain(
 					"dernière valeur d'entrée d'un bloc compteur doit être un booléen (trouvé nombre)",
 				);
@@ -343,12 +384,18 @@ describe("SimulatorExceptionsMapper", () => {
 			});
 
 			it("maps InvalidTimerPresetTimeTypeException", () => {
-				const e = new InvalidTimerPresetTimeTypeException("boolean", timerNode());
+				const e = new InvalidTimerPresetTimeTypeException(
+					"boolean",
+					timerNode(),
+				);
 				expect(message(e, "fr")).toContain("attendu nombre, obtenu booléen");
 			});
 
 			it("maps InvalidTimerElapsedTimeTypeException", () => {
-				const e = new InvalidTimerElapsedTimeTypeException("string", timerNode());
+				const e = new InvalidTimerElapsedTimeTypeException(
+					"string",
+					timerNode(),
+				);
 				expect(message(e, "fr")).toContain(
 					"attendu nombre, obtenu chaîne de caractères",
 				);
@@ -411,7 +458,9 @@ describe("SimulatorExceptionsMapper", () => {
 	describe("lexer exceptions", () => {
 		it("maps InvalidCharacterException", () => {
 			const e = new InvalidCharacterException("$", 2);
-			expect(message(e, "fr")).toBe("Caractère inattendu « $ » à la position 2");
+			expect(message(e, "fr")).toBe(
+				"Caractère inattendu « $ » à la position 2",
+			);
 		});
 
 		it("maps InvalidKeywordException", () => {
@@ -468,7 +517,8 @@ describe("SimulatorExceptionsMapper", () => {
 			const names: string[] = [];
 			for (const entry of readdirSync(dir, { withFileTypes: true })) {
 				const full = join(dir, entry.name);
-				if (entry.isDirectory()) names.push(...collectExceptionClassNames(full));
+				if (entry.isDirectory())
+					names.push(...collectExceptionClassNames(full));
 				else if (entry.name.endsWith(".exception.ts")) {
 					const match = readFileSync(full, "utf8").match(
 						/class\s+([A-Za-z0-9_]+)/,

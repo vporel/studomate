@@ -17,7 +17,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		project.variables = project.variables.map((v) => {
 			const payload = this.payload.find((p) => p.id === v.id);
 			if (!payload) return v;
-			return v.update(payload.newData);
+			return v.update(payload.newData, project.dialect);
 		});
 		this.applyMnemonicRenames(project, "forward");
 		return [project, true];
@@ -27,7 +27,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		project.variables = project.variables.map((v) => {
 			const payload = this.payload.find((p) => p.id === v.id);
 			if (!payload) return v;
-			return v.update(payload.oldData);
+			return v.update(payload.oldData, project.dialect);
 		});
 		this.applyMnemonicRenames(project, "backward");
 		return project;

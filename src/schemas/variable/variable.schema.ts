@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { NumericRange } from "@/lib/numeric-range";
 import type { InputBehavior } from "./input-behavior";
 import { validateVariable } from "./variable.validator";
@@ -12,7 +13,8 @@ export type VariableZone =
 	| "logic-output"
 	| "analog-input"
 	| "analog-output"
-	| "memory";
+	| "memory"
+	| "constant";
 export type VariableDirection = "IN" | "OUT" | "INOUT";
 
 export const VARIABLE_TYPES = [
@@ -34,6 +36,7 @@ export const ZONES_TO_TYPES: Record<VariableZone, VariableType[]> = {
 	"analog-input": ["INT", "WORD", "DWORD"],
 	"analog-output": ["INT", "WORD", "DWORD"],
 	memory: ["BOOL", "INT", "DINT", "WORD", "DWORD", "REAL", "STRING", "TIME"],
+	constant: ["BOOL", "INT", "DINT", "WORD", "DWORD", "REAL", "STRING", "TIME"],
 };
 
 /** Types valides pour l'union de plusieurs zones, sans doublon. */
@@ -89,6 +92,7 @@ export const VARIABLE_UPDATABLE_FIELDS = [
 	"address",
 	"comment",
 	"behavior",
+	"value",
 ] as const;
 
 export type VariableUpdatableFields = Pick<
@@ -113,6 +117,9 @@ export default class Variable {
 	comment?: string;
 	/** Absent on projects saved before this field existed: same meaning as `null`. */
 	behavior?: InputBehavior | null;
+	/** Literal fixed at design time, required for the `"constant"` zone (form expected by
+	 * `parseConstantLiteral`: `T#5s`, `123`, the boolean keyword of the project dialect, `"text"`). */
+	value?: string;
 	ownerBlock?: VariableOwnerBlock;
 
 	constructor(
@@ -121,6 +128,8 @@ export default class Variable {
 		zone: VariableZone,
 		type: VariableType,
 		ownerBlock?: VariableOwnerBlock,
+		value?: string,
+		dialect: Dialect = Dialect.FR,
 	) {
 		this.id = id;
 		this.mnemonic = mnemonic;
@@ -130,8 +139,9 @@ export default class Variable {
 		this.comment = "";
 		this.behavior = null;
 		this.ownerBlock = ownerBlock;
+		if (value !== undefined) this.value = value;
 
-		const issues = validateVariable(this);
+		const issues = validateVariable(this, dialect);
 		if (issues.length > 0) {
 			throw new Error(
 				`Invalid variable: ${issues.map((i) => i.code).join(", ")}`,
@@ -158,7 +168,10 @@ export default class Variable {
 	/** Retourne une nouvelle instance avec les champs appliqués, sans muter `this` : les variables
 	 * sont traitées comme immuables pour que `Project.copy()` puisse réutiliser les instances
 	 * inchangées par référence. */
-	update(updatedFields: Partial<VariableUpdatableFields>): Variable {
+	update(
+		updatedFields: Partial<VariableUpdatableFields>,
+		dialect: Dialect = Dialect.FR,
+	): Variable {
 		if (updatedFields.type)
 			updatedFields.type = updatedFields.type
 				.trim()
@@ -167,7 +180,7 @@ export default class Variable {
 			updatedFields.address = updatedFields.address.trim().toUpperCase();
 		const updatedVariable = this.copy();
 		Object.assign(updatedVariable, updatedFields);
-		const issues = validateVariable(updatedVariable);
+		const issues = validateVariable(updatedVariable, dialect);
 		if (issues.length > 0) {
 			throw new Error(
 				`Invalid variable update: ${issues.map((i) => i.code).join(", ")}`,

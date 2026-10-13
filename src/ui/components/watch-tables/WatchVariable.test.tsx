@@ -365,3 +365,32 @@ describe("WatchVariable — programme exécuté par la carte", () => {
 		expect(screen.getByRole("switch")).toBeDisabled();
 	});
 });
+
+describe("WatchVariable: constantes", () => {
+	it("affiche une constante booléenne sans interrupteur", () => {
+		setup({
+			variable: new Variable(
+				"k",
+				"ACTIF",
+				"constant",
+				"BOOL",
+				undefined,
+				"VRAI",
+			),
+			value: true,
+		});
+
+		expect(screen.getByText("VRAI")).toBeInTheDocument();
+		expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+	});
+
+	it("affiche une constante numérique sans champ de saisie", () => {
+		setup({
+			variable: new Variable("k", "SEUIL", "constant", "INT", undefined, "40"),
+			value: 40,
+		});
+
+		expect(screen.getByText("40")).toBeInTheDocument();
+		expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+	});
+});

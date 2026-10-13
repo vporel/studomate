@@ -163,3 +163,26 @@ describe("Environment", () => {
 		});
 	});
 });
+
+describe("Environment constants", () => {
+	const build = () =>
+		new Environment([
+			new EnvVariable("k", "K", "number", "INOUT", null, "INT", true, 5),
+		]);
+
+	it("tells a constant by name", () => {
+		expect(build().isConstantByName("K")).toBe(true);
+	});
+
+	it("hydrateVariableValue leaves a constant untouched", () => {
+		const env = build();
+
+		env.hydrateVariableValue("k", 0);
+
+		expect(env.getVariableValueByName("K")).toBe(5);
+	});
+
+	it("refuses a write to a constant", () => {
+		expect(() => build().setVariableValueByName("K", 1)).toThrow();
+	});
+});

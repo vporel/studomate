@@ -377,3 +377,42 @@ describe("VariablesTable", () => {
 		});
 	});
 });
+
+describe("VariablesTable: page des constantes", () => {
+	function setupConstants() {
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				variablesManager: {
+					existsByMnemonic: () => undefined,
+					existsByAddress: () => undefined,
+				},
+				project: {
+					variables: [
+						new Variable("k1", "DELAI", "constant", "TIME", undefined, "T#5s"),
+						new Variable("k2", "SEUIL", "constant", "INT", undefined, "40"),
+						new Variable("m1", "M0", "memory", "BOOL"),
+					],
+				},
+				mode: ProjectMode.DESIGN,
+			}),
+		);
+		renderWithI18n(<VariablesTable zones={["constant"]} pageTitle="Constantes" />);
+	}
+
+	it("n'affiche que les constantes, avec leur valeur déclarée", () => {
+		setupConstants();
+
+		expect(screen.getByText("DELAI")).toBeInTheDocument();
+		expect(screen.getByText("T#5s")).toBeInTheDocument();
+		expect(screen.getByText("SEUIL")).toBeInTheDocument();
+		expect(screen.getByText("40")).toBeInTheDocument();
+		expect(screen.queryByText("M0")).not.toBeInTheDocument();
+	});
+
+	it("remplace la colonne Adresse par la colonne Valeur déclarée", () => {
+		setupConstants();
+
+		expect(screen.getByText("Valeur déclarée")).toBeInTheDocument();
+		expect(screen.queryByText("Adresse")).not.toBeInTheDocument();
+	});
+});

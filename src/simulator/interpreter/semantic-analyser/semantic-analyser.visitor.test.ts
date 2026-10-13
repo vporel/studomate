@@ -15,6 +15,7 @@ import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-outp
 import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
 import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
+import AssignmentToConstantException from "./exceptions/assignment-to-constant.exception";
 import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
@@ -59,7 +60,18 @@ describe("SemanticAnalyserVisitor", () => {
 			"boolean",
 			"IN",
 		);
+		const varLimit = new EnvVariable(
+			"id6",
+			"LIMIT",
+			"number",
+			"INOUT",
+			null,
+			null,
+			true,
+			5,
+		);
 		env = new Environment([
+			varLimit,
 			varX,
 			varY,
 			varFlag,
@@ -230,6 +242,17 @@ describe("SemanticAnalyserVisitor", () => {
 		it("accepts assignment to OUT and INOUT variables", () => {
 			expect(() => parseAndCheck("result := 42")).not.toThrow();
 			expect(() => parseAndCheck("y := 100")).not.toThrow();
+		});
+
+		it("throws AssignmentToConstantException on a constant, even though its direction is not IN", () => {
+			expect(env.getVariableDirectionByName("LIMIT")).toBe("INOUT");
+			expect(() => parseAndCheck("LIMIT := 3")).toThrow(
+				AssignmentToConstantException,
+			);
+		});
+
+		it("reads a constant in an expression", () => {
+			expect(() => parseAndCheck("y := LIMIT + 1")).not.toThrow();
 		});
 
 		it("throws AssignmentToSystemVariableException on a _SYS_ target", () => {

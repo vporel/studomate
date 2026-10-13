@@ -23,6 +23,7 @@ import {
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { Environment } from "../environment/environment";
+import AssignmentToConstantException from "./exceptions/assignment-to-constant.exception";
 import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
@@ -328,6 +329,9 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		if (isSystemVariableName(node.left.value)) {
 			throw new AssignmentToSystemVariableException(node);
+		}
+		if (this.env.isConstantByName(node.left.value)) {
+			throw new AssignmentToConstantException(node);
 		}
 		const identifierDirection = this.env.getVariableDirectionByName(
 			node.left.value,

@@ -89,6 +89,35 @@ describe("VariablesRemoveCommand", () => {
 		command.execute(project);
 		command.cancel(project);
 
-		expect(project.variables[0].behavior).toEqual({ kind: "push-button-nc", params: null });
+		expect(project.variables[0].behavior).toEqual({
+			kind: "push-button-nc",
+			params: null,
+		});
+	});
+});
+
+describe("VariablesRemoveCommand constants", () => {
+	it("cancel restores a constant with its value", () => {
+		const project = new Project("p1", "Projet", "");
+		const payload = [
+			{
+				id: "k",
+				mnemonic: "K",
+				zone: "constant" as const,
+				type: "INT" as const,
+				value: "42",
+			},
+		];
+		new VariablesAddCommand(payload).execute(project);
+		const command = new VariablesRemoveCommand(payload);
+
+		command.execute(project);
+		expect(project.variables).toHaveLength(0);
+		command.cancel(project);
+
+		expect(project.variables[0]).toMatchObject({
+			zone: "constant",
+			value: "42",
+		});
 	});
 });

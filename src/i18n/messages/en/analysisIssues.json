@@ -14,6 +14,7 @@
 	"HARDWARE_INPUT_UNBOUND": "Input \"{variableName}\" is read by a program but has no address on the {device} target: in a program sent to the board it stays at false (0) for ever.",
 	"HARDWARE_TYPE_NOT_SUPPORTED": "Type {type} is not supported by the {device} target.",
 	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "Variable \"{variableName}\" has type {type}, which is not supported by the {device} target.",
+	"PROJECT_CONSTANT_INVALID": "Constant \"{variableName}\" is invalid: declared value missing or incompatible with its type, or an address is set.",
 
 	"GRAFCET_TOO_FEW_STEPS": "The grafcet must contain at least two steps.",
 	"GRAFCET_NO_INITIAL_STEP": "The grafcet has no initial step.",
@@ -55,6 +56,7 @@
 	"ACTION_NUMERIC_TYPE_MISMATCH": "The action is numeric but the assigned variable has an incompatible type ({actualType}).",
 	"ACTION_STRING_TYPE_MISMATCH": "The action is a string but the assigned variable has an incompatible type ({actualType}).",
 	"ACTION_VARIABLE_IS_INPUT": "The action cannot change variable \"{variableName}\" because it is an input variable.",
+	"ACTION_VARIABLE_IS_CONSTANT": "The action cannot change \"{variableName}\" because it is a constant.",
 	"ACTION_STEP_VARIABLE_READONLY": "The action cannot change \"{variableName}\": it is an automatically generated, read-only step variable.",
 	"ACTION_SET_RESET_CONFLICT_SAME_STEP": "This step carries both a SET and a RESET action on variable \"{variableName}\": contradictory behaviour within the same cycle.",
 
@@ -87,6 +89,7 @@
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",
 	"LADDER_ELEMENT_NO_PREDECESSOR": "This element is not linked to any previous element or to the power rail.",
 	"LADDER_COIL_VARIABLE_IS_INPUT": "The coil cannot change variable \"{variableName}\" because it is an input variable.",
+	"LADDER_COIL_VARIABLE_IS_CONSTANT": "The coil cannot change variable \"{variableName}\" because it is a constant.",
 
 	"LADDER_CONNECTION_INVALID_ORDER": "A connection links an element to another one located in an earlier column.",
 

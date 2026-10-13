@@ -68,7 +68,10 @@ export default class ProjectPreCompiler {
 		dialect: Dialect = Dialect.FR,
 	): ProjectPreCompilationResult {
 		const variables = [
-			...VariableCompiler.compile([...project.variables, ...stepsVariables]),
+			...VariableCompiler.compile(
+				[...project.variables, ...stepsVariables],
+				dialect,
+			),
 			...VariableCompiler.compileSystemVariables(),
 		];
 		const errors: ProjectPreCompilerError[] = [];

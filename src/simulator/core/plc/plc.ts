@@ -203,6 +203,8 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	public forceVariable(id: string, value: PLCVariableValue): void {
+		if (this.memory[id]?.isConstant())
+			throw new Error(`"${this.memory[id].getName()}" is a constant`);
 		this.forcedVariables.set(id, value);
 	}
 
@@ -290,7 +292,8 @@ export default class PLC extends ClockedRunnable {
 				this.environment.getVariableValueById(id),
 			);
 		}
-		for (const id of Object.keys(this.memory)) {
+		for (const [id, variable] of Object.entries(this.memory)) {
+			if (variable.isConstant()) continue;
 			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
 		}
 	}

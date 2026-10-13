@@ -44,6 +44,7 @@ export default function analyseHardwareTarget(
 			device: device.label,
 		};
 
+		if (variable.zone === "constant") continue;
 		if (variable.zone === "memory") {
 			if (pin) {
 				issues.push(

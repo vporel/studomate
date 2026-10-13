@@ -173,6 +173,7 @@ const VariablesTable = ({
 					mnemonic: v.mnemonic,
 					type: v.type,
 					address: v.address || "",
+					declaredValue: v.value || "",
 					comment: v.comment || "",
 				},
 			]),
@@ -190,6 +191,7 @@ const VariablesTable = ({
 					mnemonic: "",
 					type: draft.type,
 					address: "",
+					declaredValue: "",
 					comment: "",
 				});
 			} else if (byId.has(id)) {
@@ -205,6 +207,7 @@ const VariablesTable = ({
 			mnemonic: "",
 			type: "BOOL",
 			address: "",
+			declaredValue: "",
 			comment: "",
 		});
 		return rows;
@@ -223,7 +226,7 @@ const VariablesTable = ({
 				if (!rowUpdatedValues) return;
 				updatedValues[field] = rowUpdatedValues[field];
 			});
-			const { id, ...newData } = updatedValues;
+			const { id, declaredValue, ...newData } = updatedValues;
 			const isDraft = typeof id === "string" && id.startsWith("draft-");
 			//Check if the row is an empty row (bottom add row or inserted draft)
 			if (oldValues.mnemonic === "") {
@@ -236,6 +239,9 @@ const VariablesTable = ({
 					variablesManager.addVariables([
 						{
 							...(newData as any),
+							...(zone === "constant" && declaredValue
+								? { value: declaredValue }
+								: {}),
 							zone,
 							behavior:
 								zone === "logic-input" ? DEFAULT_LOGIC_INPUT_BEHAVIOR : null,
@@ -246,13 +252,19 @@ const VariablesTable = ({
 					setDraft(null);
 				}
 			} else {
+				const zone = chooseZone(zones, newData.type);
+				const declaredValueChanged =
+					zone === "constant" &&
+					declaredValue !==
+						projectVariables.find((v) => v.id === id.toString())?.value;
 				variablesManager.updateVariable(id.toString(), {
 					...newData,
-					zone: chooseZone(zones, newData.type),
+					...(declaredValueChanged ? { value: declaredValue } : {}),
+					zone,
 				});
 			}
 		},
-		[variablesManager, zones],
+		[variablesManager, zones, projectVariables],
 	);
 
 	const [rowSelectionModel, setRowSelectionModel] =

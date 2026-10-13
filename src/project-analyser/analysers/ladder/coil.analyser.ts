@@ -50,6 +50,16 @@ export default class CoilAnalyser extends LadderElementAnalyser<CoilElement> {
 					),
 				);
 			}
+			if (variable.zone === "constant") {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"LADDER_COIL_VARIABLE_IS_CONSTANT",
+						source,
+						{ variableName: element.data.variable },
+					),
+				);
+			}
 			if (variable.getDirection() === "IN") {
 				issues.push(
 					new ProjectAnalyserIssue(

@@ -14,6 +14,7 @@
 		"inputs": "Inputs",
 		"outputs": "Outputs",
 		"memories": "Memories",
+		"constants": "Constants",
 		"system": "System"
 	},
 	"hmiMain": "Main",

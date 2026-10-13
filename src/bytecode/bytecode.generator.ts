@@ -232,8 +232,9 @@ class ProgramGenerator {
 
 	generate(): { code: number[]; offsets: number[]; maxStack: number } {
 		const offsets: number[] = [];
-		for (const routine of this.routinesToEmbed) {
+		for (const [position, routine] of this.routinesToEmbed.entries()) {
 			offsets.push(this.emitter.offset);
+			if (position === 0) this.emitConstantsPrologue();
 			for (const instruction of routine.getInstructions()) {
 				if (instruction.kind === "node") {
 					this.emitStatement(instruction.node);
@@ -261,6 +262,25 @@ class ProgramGenerator {
 			offsets,
 			maxStack: this.emitter.maxDepth,
 		};
+	}
+
+	/** Rewrites every constant of the image at the start of each cycle, ahead of the user
+	 * routines: the firmware zeroes the memory when it loads an image. */
+	private emitConstantsPrologue(): void {
+		for (const variable of this.compiled.variables) {
+			if (!variable.isConstant()) continue;
+			const slot = this.slotByName.get(variable.getName());
+			if (!slot) continue;
+			const value = variable.getValue();
+			if (typeof value === "boolean") {
+				this.emitter.op(value ? Op.PUSH1 : Op.PUSH0);
+			} else if (typeof value === "number") {
+				this.emitConstant(value);
+			} else {
+				throw new BytecodeGenerationError("A string cannot be embedded.");
+			}
+			this.emitter.op(Op.STORE, [slot.index]);
+		}
 	}
 
 	private slotOf(name: string): VariableSlot {

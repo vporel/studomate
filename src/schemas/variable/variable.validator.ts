@@ -8,6 +8,8 @@
  * `variable.schema.ts` importe en retour `validateVariable` (appelé uniquement dans le
  * constructeur / `update`) — aucun des deux modules n'utilise l'autre à l'évaluation.
  */
+import { Dialect } from "@/expression-language/dialect.enum";
+import { parseConstantLiteral } from "./constant-value";
 import {
 	getAllowedInputBehaviorKinds,
 	type InputBehavior,
@@ -37,6 +39,9 @@ export type VariableValidationCode =
 	| "ZONE_TYPE_INCOMPATIBLE"
 	| "ADDRESS_MISSING_PERCENT"
 	| "ADDRESS_INVALID"
+	| "CONSTANT_VALUE_MISSING"
+	| "CONSTANT_VALUE_INVALID"
+	| "ADDRESS_NOT_ALLOWED_FOR_CONSTANT"
 	| "BEHAVIOR_NOT_ALLOWED"
 	| "SLIDER_BOUNDS_NOT_INTEGER"
 	| "SLIDER_BOUNDS_ORDER"
@@ -113,6 +118,19 @@ export function validateAddress(address: string): VariableValidationIssue[] {
 	return issues;
 }
 
+export function validateConstantValue(
+	zone: VariableZone,
+	type: VariableType,
+	value: string | undefined,
+	dialect: Dialect,
+): VariableValidationIssue[] {
+	if (zone !== "constant") return [];
+	if (!value || value.trim() === "") return [issue("CONSTANT_VALUE_MISSING")];
+	if (parseConstantLiteral(value, type, dialect) === null)
+		return [issue("CONSTANT_VALUE_INVALID", { type })];
+	return [];
+}
+
 export function validateBehavior(
 	zone: VariableZone,
 	type: VariableType,
@@ -144,19 +162,31 @@ export type ValidatableVariable = {
 	zone: VariableZone;
 	type: VariableType;
 	address?: string;
+	value?: string;
 	ownerBlock?: unknown;
 	behavior?: InputBehavior | null;
 };
 
 /** Validation composite d'une variable : mnémonique + compatibilité zone/type + adresse +
- * comportement d'entrée. */
+ * valeur de constante + comportement d'entrée. Le dialecte ne sert qu'au littéral booléen d'une
+ * constante. */
 export function validateVariable(
 	variable: ValidatableVariable,
+	dialect: Dialect = Dialect.FR,
 ): VariableValidationIssue[] {
 	return [
 		...validateMnemonic(variable.mnemonic, variable.ownerBlock !== undefined),
 		...validateZoneType(variable.zone, variable.type),
 		...(variable.address ? validateAddress(variable.address) : []),
+		...(variable.zone === "constant" && variable.address
+			? [issue("ADDRESS_NOT_ALLOWED_FOR_CONSTANT")]
+			: []),
+		...validateConstantValue(
+			variable.zone,
+			variable.type,
+			variable.value,
+			dialect,
+		),
 		...validateBehavior(variable.zone, variable.type, variable.behavior),
 	];
 }

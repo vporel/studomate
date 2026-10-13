@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import VariableCompiler from "./variable.pre-compiler";
 
@@ -46,7 +47,12 @@ describe("VariableCompiler", () => {
 			expect(a.getValue()).toBe(true);
 			expect(m.getValue()).toBe(false);
 			expect(n.getValue()).toBe(20);
-			expect(n.getNumericRange()).toEqual({ min: 20, max: 80, integer: true, wrap: false });
+			expect(n.getNumericRange()).toEqual({
+				min: 20,
+				max: 80,
+				integer: true,
+				wrap: false,
+			});
 			n.setValue(500);
 			expect(n.getValue()).toBe(80);
 		});
@@ -62,7 +68,9 @@ describe("VariableCompiler", () => {
 			const [n] = VariableCompiler.compile([niveau]);
 
 			expect(n.getValue()).toBe(0);
-			expect(n.getNumericRange()).toEqual(expect.objectContaining({ min: -32768, max: 32767 }));
+			expect(n.getNumericRange()).toEqual(
+				expect.objectContaining({ min: -32768, max: 32767 }),
+			);
 		});
 
 		it("compiles a BOOL variable to boolean PLCVariable", () => {
@@ -256,5 +264,50 @@ describe("VariableCompiler", () => {
 			expect(result).toHaveLength(4);
 			expect(result.map((v) => v.getId())).toEqual(["v1", "v2", "v3", "v4"]);
 		});
+	});
+});
+
+describe("VariableCompiler constants", () => {
+	const constant = (
+		type: "INT" | "TIME" | "BOOL",
+		value: string,
+		dialect = Dialect.FR,
+	) =>
+		new VariableBuilder()
+			.id(`k-${type}`)
+			.mnemonic(`K_${type}`)
+			.zone("constant")
+			.type(type)
+			.value(value)
+			.dialect(dialect)
+			.build();
+
+	it("compiles a constant into a memory PLC variable that holds its declared value", () => {
+		const [time, int] = VariableCompiler.compile([
+			constant("TIME", "T#5s"),
+			constant("INT", "-3"),
+		]);
+
+		expect(time.isConstant()).toBe(true);
+		expect(time.getScope()).toBe("memory");
+		expect(time.getValue()).toBe(5000);
+		expect(int.getValue()).toBe(-3);
+	});
+
+	it("reads a boolean with the dialect given", () => {
+		const [flag] = VariableCompiler.compile(
+			[constant("BOOL", "TRUE", Dialect.EN)],
+			Dialect.EN,
+		);
+
+		expect(flag.getValue()).toBe(true);
+	});
+
+	it("an ordinary variable is not constant", () => {
+		const [memory] = VariableCompiler.compile([
+			new VariableBuilder().id("m").mnemonic("M").build(),
+		]);
+
+		expect(memory.isConstant()).toBe(false);
 	});
 });

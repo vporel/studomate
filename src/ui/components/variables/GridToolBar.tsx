@@ -97,6 +97,7 @@ export default function GridToolBar({
 				mnemonic: tColumns("mnemonic"),
 				type: tColumns("type"),
 				address: tColumns("address"),
+				declaredValue: tColumns("declaredValue"),
 				comment: tColumns("comment"),
 			},
 		})

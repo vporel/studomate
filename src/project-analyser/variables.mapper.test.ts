@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import SchemaVariablesMapper from "./variables.mapper";
 
@@ -57,5 +58,56 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 		expect(SchemaVariablesMapper.schemaToEnv(variable).getDeclaredType()).toBe(
 			"DINT",
 		);
+	});
+});
+
+describe("SchemaVariablesMapper.schemaToEnv constants", () => {
+	const constant = (
+		type: "TIME" | "INT" | "BOOL" | "STRING",
+		value: string,
+		dialect = Dialect.FR,
+	) =>
+		new VariableBuilder()
+			.id("k")
+			.mnemonic("K")
+			.zone("constant")
+			.type(type)
+			.value(value)
+			.dialect(dialect)
+			.build();
+
+	it("a TIME constant starts at its value in milliseconds", () => {
+		const env = SchemaVariablesMapper.schemaToEnv(constant("TIME", "T#5s"));
+
+		expect(env.isConstant()).toBe(true);
+		expect(env.getValue()).toBe(5000);
+	});
+
+	it("a boolean constant is read with the project dialect", () => {
+		const env = SchemaVariablesMapper.schemaToEnv(
+			constant("BOOL", "TRUE", Dialect.EN),
+			Dialect.EN,
+		);
+
+		expect(env.getValue()).toBe(true);
+	});
+
+	it("a string constant loses its quotes", () => {
+		expect(
+			SchemaVariablesMapper.schemaToEnv(constant("STRING", '"abc"')).getValue(),
+		).toBe("abc");
+	});
+
+	it("an out-of-range value is not coerced: the constant stays at the type zero", () => {
+		const invalid = constant("INT", "5");
+		invalid.value = "99999";
+
+		expect(SchemaVariablesMapper.schemaToEnv(invalid).getValue()).toBe(0);
+	});
+
+	it("an ordinary variable is not constant", () => {
+		const memory = new VariableBuilder().id("m").mnemonic("M").build();
+
+		expect(SchemaVariablesMapper.schemaToEnv(memory).isConstant()).toBe(false);
 	});
 });

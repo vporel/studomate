@@ -215,6 +215,20 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 				);
 			}
 
+			if (
+				env.existsVariableWithName(writtenVariableName) &&
+				env.isConstantByName(writtenVariableName)
+			) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"ACTION_VARIABLE_IS_CONSTANT",
+						source,
+						{ variableName: writtenVariableName },
+					),
+				);
+			}
+
 			const stepVariableMnemonics = new Set(
 				Object.values(grafcet.steps)
 					.filter(

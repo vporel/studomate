@@ -1,5 +1,6 @@
 import IncompatibleOperandsTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
 import InputIdentifierAssignmentException from "@/simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
+import AssignmentToConstantException from "@/simulator/interpreter/semantic-analyser/exceptions/assignment-to-constant.exception";
 import AssignmentToSystemVariableException from "@/simulator/interpreter/semantic-analyser/exceptions/assignment-to-system-variable.exception";
 import InvalidAssignmentTargetException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
 import UnknownIdentifierException from "@/simulator/interpreter/semantic-analyser/exceptions/unknown-identifier.exception";
@@ -283,6 +284,10 @@ export default class SimulatorExceptionsMapper {
 
 		if (exception instanceof AssignmentToSystemVariableException) {
 			return { code: "ASSIGNMENT_TO_SYSTEM_VARIABLE", params: {} };
+		}
+
+		if (exception instanceof AssignmentToConstantException) {
+			return { code: "ASSIGNMENT_TO_CONSTANT", params: {} };
 		}
 
 		if (exception instanceof IncompatibleOperandsTypesException) {

@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	getValidTypesForZones,
 	ZONES_TO_TYPES,
@@ -6,6 +7,7 @@ import {
 import {
 	validateAddress,
 	validateBehavior,
+	validateConstantValue,
 	validateMnemonic,
 	validateVariable,
 	validateVariableType,
@@ -258,5 +260,75 @@ describe("validateBehavior", () => {
 				}),
 			),
 		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
+	});
+});
+
+describe("validateConstantValue", () => {
+	it("ignores every zone but constant", () => {
+		expect(validateConstantValue("memory", "INT", undefined, Dialect.FR)).toEqual(
+			[],
+		);
+	});
+
+	it("CONSTANT_VALUE_MISSING for an absent or blank value", () => {
+		expect(
+			codes(validateConstantValue("constant", "INT", undefined, Dialect.FR)),
+		).toEqual(["CONSTANT_VALUE_MISSING"]);
+		expect(
+			codes(validateConstantValue("constant", "INT", "  ", Dialect.FR)),
+		).toEqual(["CONSTANT_VALUE_MISSING"]);
+	});
+
+	it.each([
+		["BOOL", "vrai", Dialect.FR, true],
+		["BOOL", "true", Dialect.FR, false],
+		["BOOL", "TRUE", Dialect.EN, true],
+		["INT", "12", Dialect.FR, true],
+		["INT", "40000", Dialect.FR, false],
+		["INT", "1.5", Dialect.FR, false],
+		["REAL", "1.5", Dialect.FR, true],
+		["STRING", '"a"', Dialect.FR, true],
+		["STRING", "a", Dialect.FR, false],
+		["TIME", "T#5s", Dialect.FR, true],
+		["TIME", "5", Dialect.FR, false],
+	] as const)("%s %s (%s) valid: %s", (type, value, dialect, valid) => {
+		const issues = validateConstantValue("constant", type, value, dialect);
+		expect(issues).toEqual(
+			valid ? [] : [{ code: "CONSTANT_VALUE_INVALID", params: { type } }],
+		);
+	});
+});
+
+describe("validateVariable on a constant", () => {
+	const constant = {
+		mnemonic: "SEUIL",
+		zone: "constant" as const,
+		type: "INT" as const,
+		value: "10",
+	};
+
+	it("accepts a complete constant", () => {
+		expect(validateVariable(constant)).toEqual([]);
+	});
+
+	it("rejects a constant without value", () => {
+		expect(codes(validateVariable({ ...constant, value: undefined }))).toEqual([
+			"CONSTANT_VALUE_MISSING",
+		]);
+	});
+
+	it("rejects an address on a constant", () => {
+		expect(codes(validateVariable({ ...constant, address: "%MW10" }))).toEqual([
+			"ADDRESS_NOT_ALLOWED_FOR_CONSTANT",
+		]);
+	});
+
+	it("validates the boolean literal against the given dialect", () => {
+		const boolConstant = { ...constant, type: "BOOL" as const, value: "TRUE" };
+
+		expect(codes(validateVariable(boolConstant, Dialect.FR))).toEqual([
+			"CONSTANT_VALUE_INVALID",
+		]);
+		expect(validateVariable(boolConstant, Dialect.EN)).toEqual([]);
 	});
 });

@@ -132,7 +132,7 @@ const HmiCanvas = ({ isSimulation, zoom, onZoomChange }: HmiCanvasProps) => {
 		(mnemonic: string, value: boolean | number) => {
 			if (!project) return;
 			const variable = project.variables.find((v) => v.mnemonic === mnemonic);
-			if (!variable) return;
+			if (!variable || variable.zone === "constant") return;
 			if (variable.getDirection() === "IN") {
 				simulationManager.setPhysicalInputValue(variable.id, value);
 			} else {

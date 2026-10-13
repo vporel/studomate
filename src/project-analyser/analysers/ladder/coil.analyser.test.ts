@@ -5,6 +5,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
@@ -79,6 +80,32 @@ describe("CoilAnalyser", () => {
 
 		expect(issues.map((i) => i.code)).toContain(
 			"LADDER_COIL_VARIABLE_IS_INPUT",
+		);
+	});
+
+	it("signale LADDER_COIL_VARIABLE_IS_CONSTANT quand la bobine piloterait une constante", () => {
+		const rail = createRailTerminalElement(0);
+		const k = new VariableBuilder()
+			.id("k")
+			.mnemonic("K")
+			.zone("constant")
+			.type("BOOL")
+			.value("VRAI")
+			.build();
+		const coil = createCoilElement("K", "normal", 0, 1);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
+
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesContext(k),
+			ProjectFactory.createEmpty(),
+		);
+
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_COIL_VARIABLE_IS_CONSTANT",
 		);
 	});
 

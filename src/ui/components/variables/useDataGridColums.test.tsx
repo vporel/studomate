@@ -27,7 +27,10 @@ describe("useGridColumns", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("defines the mnemonic, type, address, behavior and comment columns for the inputs", () => {
-		const { result } = setup(ProjectMode.DESIGN, ["logic-input", "analog-input"]);
+		const { result } = setup(ProjectMode.DESIGN, [
+			"logic-input",
+			"analog-input",
+		]);
 		expect(result.current.map((c) => c.field)).toEqual([
 			"mnemonic",
 			"type",
@@ -44,15 +47,24 @@ describe("useGridColumns", () => {
 		const simulating = setup(ProjectMode.SIMULATION, ["memory"]);
 		const fields = simulating.result.current.map((c) => c.field);
 		expect(fields.indexOf("value")).toBe(fields.indexOf("address") + 1);
-		expect(simulating.result.current.find((c) => c.field === "value")!.editable).toBe(false);
+		expect(
+			simulating.result.current.find((c) => c.field === "value")!.editable,
+		).toBe(false);
 	});
 
 	it("has no behavior column outside the inputs", () => {
-		const outputs = setup(ProjectMode.DESIGN, ["logic-output", "analog-output"]);
-		expect(outputs.result.current.map((c) => c.field)).not.toContain("behavior");
+		const outputs = setup(ProjectMode.DESIGN, [
+			"logic-output",
+			"analog-output",
+		]);
+		expect(outputs.result.current.map((c) => c.field)).not.toContain(
+			"behavior",
+		);
 
 		const memories = setup(ProjectMode.DESIGN, ["memory"]);
-		expect(memories.result.current.map((c) => c.field)).not.toContain("behavior");
+		expect(memories.result.current.map((c) => c.field)).not.toContain(
+			"behavior",
+		);
 	});
 
 	it("makes columns editable in design mode, and read-only otherwise", () => {
@@ -61,8 +73,12 @@ describe("useGridColumns", () => {
 			columns.filter((c) => c.field !== "behavior");
 
 		const designing = setup(ProjectMode.DESIGN);
-		expect(rowEditable(designing.result.current).every((c: any) => c.editable)).toBe(true);
-		expect(designing.result.current.find((c) => c.field === "behavior")!.editable).toBe(false);
+		expect(
+			rowEditable(designing.result.current).every((c: any) => c.editable),
+		).toBe(true);
+		expect(
+			designing.result.current.find((c) => c.field === "behavior")!.editable,
+		).toBe(false);
 
 		const simulating = setup(ProjectMode.SIMULATION);
 		expect(simulating.result.current.every((c) => !c.editable)).toBe(true);
@@ -131,5 +147,81 @@ describe("useGridColumns", () => {
 				undefined as any,
 			),
 		).toBe("foo");
+	});
+
+	describe("constants page", () => {
+		it("replaces the address column by the declared value column", () => {
+			const { result } = setup(ProjectMode.DESIGN, ["constant"]);
+
+			expect(result.current.map((c) => c.field)).toEqual([
+				"mnemonic",
+				"type",
+				"declaredValue",
+				"comment",
+			]);
+		});
+
+		it("offers the 8 types and keeps the declared value editable in design mode only", () => {
+			const designing = setup(ProjectMode.DESIGN, ["constant"]);
+			const typeColumn = designing.result.current.find(
+				(c) => c.field === "type",
+			)! as any;
+			expect(typeColumn.valueOptions).toHaveLength(8);
+			expect(
+				designing.result.current.find((c) => c.field === "declaredValue")!
+					.editable,
+			).toBe(true);
+
+			const simulating = setup(ProjectMode.SIMULATION, ["constant"]);
+			const fields = simulating.result.current.map((c) => c.field);
+			expect(fields).toContain("value");
+			expect(
+				simulating.result.current.find((c) => c.field === "declaredValue")!
+					.editable,
+			).toBe(false);
+		});
+
+		it("rejects a declared value that does not fit the type of the row", () => {
+			const { result } = setup(ProjectMode.DESIGN, ["constant"]);
+			const column = result.current.find((c) => c.field === "declaredValue")!;
+			const edit = (value: string, type: string) =>
+				(
+					column.preProcessEditCellProps!({
+						id: "k",
+						hasChanged: true,
+						row: { type: "INT" },
+						otherFieldsProps: { type: { value: type } },
+						props: { value },
+					} as any) as any
+				).error;
+
+			expect(edit("40000", "INT")).toBeTruthy();
+			expect(edit("1.5", "INT")).toBeTruthy();
+			expect(edit("", "INT")).toBeTruthy();
+			expect(edit("40000", "DINT")).toBe(false);
+			expect(edit("T#5s", "TIME")).toBe(false);
+		});
+
+		it("falls back on the type of the row when the type is not being edited", () => {
+			const { result } = setup(ProjectMode.DESIGN, ["constant"]);
+			const column = result.current.find((c) => c.field === "declaredValue")!;
+
+			const params = column.preProcessEditCellProps!({
+				id: "k",
+				hasChanged: true,
+				row: { type: "TIME" },
+				otherFieldsProps: {},
+				props: { value: "12" },
+			} as any) as any;
+
+			expect(params.error).toBeTruthy();
+		});
+
+		it("other pages keep the address column and have no declared value column", () => {
+			const { result } = setup(ProjectMode.DESIGN, ["memory"]);
+
+			expect(result.current.map((c) => c.field)).toContain("address");
+			expect(result.current.map((c) => c.field)).not.toContain("declaredValue");
+		});
 	});
 });

@@ -689,5 +689,42 @@ describe("ActionAnalyser", () => {
 				issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP"),
 			).toBeUndefined();
 		});
+		it("detects a boolean action writing to a constant", () => {
+			const constant = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("K")
+				.zone("constant")
+				.type("BOOL")
+				.value("VRAI")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("K")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([constant]),
+			);
+
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_CONSTANT")?.severity,
+			).toBe("error");
+		});
 	});
 });

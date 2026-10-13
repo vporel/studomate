@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable, { VariableZone, ZONES_TO_TYPES } from "./variable.schema";
 
 describe("Variable", () => {
@@ -174,5 +175,67 @@ describe("Variable", () => {
 			const variable = new Variable("id", "M", "memory", "BOOL");
 			expect(variable.ownerBlock).toBeUndefined();
 		});
+	});
+});
+
+describe("Variable constant zone", () => {
+	it("accepts the 8 types of a memory", () => {
+		expect(ZONES_TO_TYPES.constant).toEqual(ZONES_TO_TYPES.memory);
+	});
+
+	it("is neither an input nor an output (direction INOUT)", () => {
+		const constant = new Variable("c", "SEUIL", "constant", "INT", undefined, "5");
+
+		expect(constant.getDirection()).toBe("INOUT");
+	});
+
+	it("is built with its value and validated at construction", () => {
+		const constant = new Variable("c", "SEUIL", "constant", "INT", undefined, "5");
+
+		expect(constant.value).toBe("5");
+		expect(() => new Variable("c", "SEUIL", "constant", "INT")).toThrow(
+			"CONSTANT_VALUE_MISSING",
+		);
+		expect(
+			() => new Variable("c", "SEUIL", "constant", "INT", undefined, "99999"),
+		).toThrow("CONSTANT_VALUE_INVALID");
+	});
+
+	it("validates a boolean value with the dialect given to the constructor", () => {
+		expect(
+			() => new Variable("c", "B", "constant", "BOOL", undefined, "TRUE"),
+		).toThrow("CONSTANT_VALUE_INVALID");
+		expect(
+			new Variable("c", "B", "constant", "BOOL", undefined, "TRUE", Dialect.EN)
+				.value,
+		).toBe("TRUE");
+	});
+
+	it("update revalidates the value with the dialect", () => {
+		const constant = new Variable("c", "B", "constant", "BOOL", undefined, "FAUX");
+
+		expect(() => constant.update({ value: "FALSE" })).toThrow(
+			"CONSTANT_VALUE_INVALID",
+		);
+		expect(constant.update({ value: "FALSE" }, Dialect.EN).value).toBe("FALSE");
+		expect(constant.value).toBe("FAUX");
+	});
+
+	it("update refuses an address and a type that no longer fits the value", () => {
+		const constant = new Variable("c", "S", "constant", "INT", undefined, "5");
+
+		expect(() => constant.update({ address: "%MW1" })).toThrow(
+			"ADDRESS_NOT_ALLOWED_FOR_CONSTANT",
+		);
+		expect(() => constant.update({ type: "TIME" })).toThrow(
+			"CONSTANT_VALUE_INVALID",
+		);
+	});
+
+	it("copy and createFromJSON keep the value", () => {
+		const constant = new Variable("c", "S", "constant", "INT", undefined, "5");
+
+		expect(constant.copy().value).toBe("5");
+		expect(Variable.createFromJSON(JSON.stringify(constant)).value).toBe("5");
 	});
 });

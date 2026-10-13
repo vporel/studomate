@@ -1,6 +1,7 @@
 "use client";
 
 import { HmiStyleAnimation } from "@/schemas/hmi/hmi-widget.schema";
+import { isHmiBindable } from "@/ui/components/hmi/logic/hmi-bindable-variable";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 
 /**
@@ -16,7 +17,7 @@ export default function useHmiStyleAnimation<TProps extends string>(
 	enabled: boolean,
 ): Partial<Record<TProps, string>> {
 	const value = useProjectStore((s) =>
-		animation
+		animation && isHmiBindable(s.project, animation.variable)
 			? s.simulationVariablesStatesByMnemonic[animation.variable]?.value
 			: undefined,
 	);

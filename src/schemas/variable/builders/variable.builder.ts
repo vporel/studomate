@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { InputBehavior } from "../input-behavior";
 import Variable, {
 	VariableOwnerBlock,
@@ -12,6 +13,8 @@ export default class VariableBuilder {
 	private _type: VariableType;
 	private _address?: string;
 	private _comment?: string;
+	private _value?: string;
+	private _dialect: Dialect = Dialect.FR;
 	private _ownerBlock?: VariableOwnerBlock;
 	private _behavior: InputBehavior | null = null;
 
@@ -52,6 +55,16 @@ export default class VariableBuilder {
 		return this;
 	}
 
+	value(value: string): VariableBuilder {
+		this._value = value;
+		return this;
+	}
+
+	dialect(dialect: Dialect): VariableBuilder {
+		this._dialect = dialect;
+		return this;
+	}
+
 	behavior(behavior: InputBehavior | null): VariableBuilder {
 		this._behavior = behavior;
 		return this;
@@ -69,6 +82,8 @@ export default class VariableBuilder {
 			this._zone,
 			this._type,
 			this._ownerBlock,
+			this._value,
+			this._dialect,
 		);
 		if (this._address !== undefined) {
 			variable.address = this._address;
@@ -120,6 +135,21 @@ export default class VariableBuilder {
 			.mnemonic(mnemonic)
 			.zone("memory")
 			.type("INT")
+			.build();
+	}
+
+	static buildConstant(
+		id: string,
+		mnemonic: string,
+		type: VariableType,
+		value: string,
+	): Variable {
+		return new VariableBuilder()
+			.id(id)
+			.mnemonic(mnemonic)
+			.zone("constant")
+			.type(type)
+			.value(value)
 			.build();
 	}
 

@@ -49,6 +49,19 @@ describe("computeStatus", () => {
 		).toBe("ok");
 	});
 
+	it("retourne excluded-zone pour une variable d'une zone exclue", () => {
+		const constant = new Variable("k", "SEUIL", "constant", "INT", undefined, "4");
+		const excluded = ["constant"] as const;
+
+		expect(
+			computeStatus("SEUIL", [constant], undefined, undefined, undefined, Dialect.FR, undefined, excluded),
+		).toBe("excluded-zone");
+		expect(computeStatus("SEUIL", [constant])).toBe("ok");
+		expect(
+			computeStatus("compteur", [intMemory("compteur")], undefined, undefined, undefined, Dialect.FR, undefined, excluded),
+		).toBe("ok");
+	});
+
 	it("retourne undeclared quand le mnémonique est inconnu", () => {
 		expect(computeStatus("inconnu", [boolInput("moteur")])).toBe("undeclared");
 	});

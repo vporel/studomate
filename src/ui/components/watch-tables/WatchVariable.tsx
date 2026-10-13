@@ -35,6 +35,8 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 		state.hardwareLink.drivenInputIds.includes(variable.id),
 	);
 	const locked = drivenByHardware;
+	const readOnly =
+		variable.getDirection() === "OUT" || variable.zone === "constant";
 
 	const changeValue = (newValue: any) => {
 		if (variable.getDirection() === "IN") {
@@ -111,7 +113,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 							label={formatBooleanValue(value, dialect)}
 						/>
 					) : nativeType === "boolean" ? (
-						variable.getDirection() === "OUT" ? (
+						readOnly ? (
 							<Typography
 								color={value === true ? "primary.main" : "text.primary"}
 							>
@@ -136,7 +138,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 								label={formatBooleanValue(value, dialect)}
 							/>
 						)
-					) : variable.getDirection() === "OUT" ? (
+					) : readOnly ? (
 						<Typography>{value === undefined ? "-" : String(value)}</Typography>
 					) : (
 						<TextField

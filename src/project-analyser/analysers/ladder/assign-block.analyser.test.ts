@@ -79,4 +79,15 @@ describe("AssignBlockAnalyser", () => {
 			"BLOCK_ASSIGN_INVALID",
 		]);
 	});
+
+	it("signale BLOCK_ASSIGN_INVALID quand la cible est une constante", () => {
+		const k = new Variable("v1", "K", "constant", "INT", undefined, "5");
+		expect(analyse({ out: "K", in: "1" }, k)).toEqual(["BLOCK_ASSIGN_INVALID"]);
+	});
+
+	it("accepte une constante en source", () => {
+		const a = new Variable("v1", "A", "memory", "INT");
+		const k = new Variable("v2", "K", "constant", "INT", undefined, "5");
+		expect(analyse({ out: "A", in: "K" }, a, k)).toEqual([]);
+	});
 });

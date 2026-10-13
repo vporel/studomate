@@ -10,6 +10,7 @@ import {
 import {
 	VariableDirection,
 	VariableType,
+	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { SxProps, Theme } from "@mui/material";
 
@@ -18,6 +19,7 @@ export type SelectorStatus =
 	| "wrong-type"
 	| "excluded-direction"
 	| "excluded-behavior"
+	| "excluded-zone"
 	| "ok"
 	| null;
 
@@ -87,6 +89,7 @@ export function computeStatus(
 		mnemonic: string;
 		type: VariableType;
 		behavior?: InputBehavior | null;
+		zone?: VariableZone;
 		getDirection(): VariableDirection;
 	}[],
 	typeFilter?: VariableType[],
@@ -94,6 +97,7 @@ export function computeStatus(
 	acceptedLiterals?: LiteralKind[],
 	dialect: Dialect = Dialect.FR,
 	excludeBehaviorKinds?: readonly InputBehaviorKind[],
+	excludeZones?: readonly VariableZone[],
 ): SelectorStatus {
 	const trimmed = mnemonic.trim();
 	if (!trimmed) return null;
@@ -109,6 +113,7 @@ export function computeStatus(
 		return "excluded-direction";
 	if (hasExcludedBehavior(match, excludeBehaviorKinds))
 		return "excluded-behavior";
+	if (match.zone && excludeZones?.includes(match.zone)) return "excluded-zone";
 	return "ok";
 }
 

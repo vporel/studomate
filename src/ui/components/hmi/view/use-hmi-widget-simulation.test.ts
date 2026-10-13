@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import Variable from "@/schemas/variable/variable.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -96,5 +97,26 @@ describe("useHmiPositionAnimationOffset", () => {
 			useHmiPositionAnimationOffset(widget, true),
 		);
 		expect(result.current).toEqual({ dx: 0, dy: 0 });
+	});
+});
+
+describe("useHmiSimulationValue: constantes", () => {
+	it("ignore un mnémonique lié qui est devenu une constante", () => {
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				project: {
+					variables: [
+						new Variable("k", "SEUIL", "constant", "INT", undefined, "4"),
+					],
+				},
+				simulationVariablesStatesByMnemonic: {
+					SEUIL: { id: "k", mnemonic: "SEUIL", value: 4 },
+				},
+			}),
+		);
+
+		const { result } = renderHook(() => useHmiSimulationValue("SEUIL"));
+
+		expect(result.current).toBeUndefined();
 	});
 });

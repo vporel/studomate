@@ -4,6 +4,8 @@ import ControlsBuilder from "@/expression-language/ast/builders/controls.builder
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import PLCRoutine from "@/simulator/core/plc/plc-routine";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
+import { getNumericRange } from "@/schemas/variable/variable.schema";
 import {
 	compiledProject,
 	disassemble,
@@ -854,5 +856,76 @@ describe("generateBytecode", () => {
 			"_SYS_TB_1s",
 			"_SYS_TB_2s",
 		]);
+	});
+});
+
+describe("generateBytecode constants", () => {
+	const constant = (
+		name: string,
+		type: "INT" | "BOOL" | "TIME",
+		value: number | boolean,
+	) =>
+		new PLCVariable(
+			name,
+			name,
+			"memory",
+			type === "BOOL" ? "boolean" : "number",
+			getNumericRange(type),
+			type,
+			true,
+			value,
+		);
+
+	it("writes each referenced constant at the start of the first routine, ahead of the user code", () => {
+		const image = generate({
+			variables: [
+				constant("K_INT", "INT", 7),
+				constant("K_BOOL", "BOOL", true),
+				plcVariable("out:INT"),
+				plcVariable("flag:BOOL"),
+			],
+			routines: [["out := K_INT", "flag := K_BOOL"], ["out := 1"]],
+		});
+
+		const lines = code(image);
+		const at = (name: string) => image.layout.variableIndexByName[name];
+		expect(lines.slice(0, 4)).toEqual([
+			`PUSH8 7`,
+			`STORE ${at("K_INT")}`,
+			"PUSH1",
+			`STORE ${at("K_BOOL")}`,
+		]);
+		expect(lines.filter((line) => line.startsWith("STORE"))).toHaveLength(5);
+	});
+
+	it("writes a zero constant too, so that an external write is undone", () => {
+		const image = generate({
+			variables: [constant("K", "INT", 0), plcVariable("out:INT")],
+			routines: [["out := K"]],
+		});
+
+		expect(code(image).slice(0, 2)).toEqual([
+			"PUSH0",
+			`STORE ${image.layout.variableIndexByName["K"]}`,
+		]);
+	});
+
+	it("leaves out a constant the program never references", () => {
+		const image = generate({
+			variables: [constant("K", "INT", 7), plcVariable("out:INT")],
+			routines: [["out := 1"]],
+		});
+
+		expect(image.layout.variableIndexByName["K"]).toBeUndefined();
+		expect(code(image).filter((line) => line.startsWith("STORE"))).toHaveLength(1);
+	});
+
+	it("adds no prologue when the project has no constant", () => {
+		const image = generate({
+			variables: [plcVariable("out:INT")],
+			routines: [["out := 1"]],
+		});
+
+		expect(code(image)[0]).toBe("PUSH1");
 	});
 });

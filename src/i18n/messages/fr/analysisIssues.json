@@ -14,6 +14,7 @@
 	"HARDWARE_INPUT_UNBOUND": "L'entrée « {variableName} » est lue par un programme mais n'a pas d'adresse sur la cible {device} : dans un programme téléversé sur la carte, elle restera à faux (0) en permanence.",
 	"HARDWARE_TYPE_NOT_SUPPORTED": "Le type {type} n'est pas supporté par la cible {device}.",
 	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "La variable « {variableName} » a le type {type}, non supporté par la cible {device}.",
+	"PROJECT_CONSTANT_INVALID": "La constante « {variableName} » est invalide : valeur déclarée absente ou incompatible avec son type, ou adresse renseignée.",
 
 	"GRAFCET_TOO_FEW_STEPS": "Le grafcet doit contenir au moins deux étapes.",
 	"GRAFCET_NO_INITIAL_STEP": "Le grafcet ne contient aucune étape initiale.",
@@ -55,6 +56,7 @@
 	"ACTION_NUMERIC_TYPE_MISMATCH": "L'action est de type numérique mais la variable affectée est d'un type incompatible ({actualType}).",
 	"ACTION_STRING_TYPE_MISMATCH": "L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible ({actualType}).",
 	"ACTION_VARIABLE_IS_INPUT": "L'action ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+	"ACTION_VARIABLE_IS_CONSTANT": "L'action ne peut pas modifier « {variableName} » car c'est une constante.",
 	"ACTION_STEP_VARIABLE_READONLY": "L'action ne peut pas modifier « {variableName} » : c'est une variable d'étape générée automatiquement, en lecture seule.",
 	"ACTION_SET_RESET_CONFLICT_SAME_STEP": "Cette étape porte à la fois une action SET et une action RESET sur la variable « {variableName} » : comportement contradictoire au même cycle.",
 
@@ -87,6 +89,7 @@
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "La variable « {variableName} » est pilotée par {count} bobines normales distinctes.",
 	"LADDER_ELEMENT_NO_PREDECESSOR": "Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
 	"LADDER_COIL_VARIABLE_IS_INPUT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+	"LADDER_COIL_VARIABLE_IS_CONSTANT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une constante.",
 
 	"LADDER_CONNECTION_INVALID_ORDER": "Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 

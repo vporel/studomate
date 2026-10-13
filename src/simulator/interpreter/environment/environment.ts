@@ -42,7 +42,9 @@ export class Environment {
 	/** Charge la valeur courante d'une variable en début de cycle, sans passer par le garde de
 	 * forçage : les images du PLC portent déjà la valeur imposée. Le contrôle de type reste fait. */
 	hydrateVariableValue(id: string, value: EnvVariableValue): void {
-		this.getVariableById(id).setValue(value);
+		const variable = this.getVariableById(id);
+		if (variable.isConstant()) return;
+		variable.setValue(value);
 	}
 
 	private getVariableById(id: string): EnvVariable {
@@ -86,6 +88,10 @@ export class Environment {
 
 	getVariableDirectionByName(name: string): EnvVariableDirection {
 		return this.getVariableByName(name).getDirection();
+	}
+
+	isConstantByName(name: string): boolean {
+		return this.getVariableByName(name).isConstant();
 	}
 
 	getVariableValueById(id: string): EnvVariableValue {

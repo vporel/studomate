@@ -59,7 +59,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		const stepsVariables = this.generateVariables(grafcet);
 		// Construit une seule fois pour tout le grafcet : `analyseInContext` reçoit l'`Environment`
 		// et non la liste, pour qu'il soit structurellement impossible de le reconstruire par élément.
-		const environment = buildAnalysisEnvironment(allVariables);
+		const environment = buildAnalysisEnvironment(allVariables, project.dialect);
 		const elementsIssues = grafcet
 			.getAllElements()
 			.flatMap((element) => {

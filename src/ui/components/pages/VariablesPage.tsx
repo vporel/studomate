@@ -9,7 +9,10 @@ import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
 
 export type VariablesPageId =
-	"input-variables" | "output-variables" | "memory-variables";
+	| "input-variables"
+	| "output-variables"
+	| "memory-variables"
+	| "constant-variables";
 
 export type VariablesPageData = Omit<PageData, "id"> & { id: VariablesPageId };
 
@@ -17,11 +20,13 @@ const VARIABLES_PAGES_TITLES: Record<VariablesPageId, string> = {
 	"input-variables": "Variables d'entrée",
 	"output-variables": "Variables de sortie",
 	"memory-variables": "Variables de mémoire",
+	"constant-variables": "Constantes",
 };
 
 export function getVariablesPageIdForZone(
 	zone: VariableZone,
 ): VariablesPageId {
+	if (zone === "constant") return "constant-variables";
 	if (zone.includes("input")) return "input-variables";
 	if (zone.includes("output")) return "output-variables";
 	return "memory-variables";
@@ -50,6 +55,8 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 				return ["logic-output", "analog-output"];
 			case "memory-variables":
 				return ["memory"];
+			case "constant-variables":
+				return ["constant"];
 		}
 	}, [pageData.id]);
 

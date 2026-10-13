@@ -1,3 +1,4 @@
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import {
 	ActionExecutionMode,
 	ActionType,
@@ -540,6 +541,32 @@ describe("SimulationManager", () => {
 			manager.setPhysicalInputValue(niveau.id, -5);
 			expect(get().simulationVariablesStates[niveau.id].value).toBe(0);
 
+			manager.setDesignMode();
+		});
+	});
+
+	describe("constantes", () => {
+		it("ignore l'écriture et le forçage d'une constante", async () => {
+			const seuil = VariableBuilder.buildConstant("k", "SEUIL", "INT", "40");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[seuil, VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(20);
+			const id = Object.keys(get().simulationVariablesStates).find(
+				(key) => get().simulationVariablesStates[key].mnemonic === "SEUIL",
+			)!;
+
+			expect(() => manager.setMemoryValue(id, 1)).not.toThrow();
+			expect(() => manager.forceVariable(id, 1)).not.toThrow();
+			await jest.advanceTimersByTimeAsync(300);
+
+			expect(get().forcedVariables[id]).toBeUndefined();
+			expect(get().simulationVariablesStates[id].value).toBe(40);
 			manager.setDesignMode();
 		});
 	});

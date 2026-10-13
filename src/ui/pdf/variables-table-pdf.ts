@@ -7,11 +7,18 @@ export interface VariablesTablePdfLabels {
 	mnemonic: string;
 	type: string;
 	address: string;
+	declaredValue: string;
 	comment: string;
 }
 
 /** Largeurs de colonnes (mm) pour une page A4 paysage, marges 15 mm (267 mm utiles). */
-const COLUMN_WIDTHS = { mnemonic: 50, type: 22, address: 30, comment: 165 };
+const COLUMN_WIDTHS = {
+	mnemonic: 50,
+	type: 22,
+	address: 30,
+	declaredValue: 60,
+	comment: 165,
+};
 
 export function buildVariablesTableModel(
 	variables: Variable[],
@@ -20,6 +27,23 @@ export function buildVariablesTableModel(
 	const sorted = [...variables].sort((a, b) =>
 		a.mnemonic.localeCompare(b.mnemonic),
 	);
+	if (sorted.some((v) => v.zone === "constant")) {
+		return {
+			columns: [
+				{ header: labels.mnemonic, width: COLUMN_WIDTHS.mnemonic },
+				{ header: labels.type, width: COLUMN_WIDTHS.type },
+				{ header: labels.declaredValue, width: COLUMN_WIDTHS.declaredValue },
+				{
+					header: labels.comment,
+					width:
+						COLUMN_WIDTHS.comment +
+						COLUMN_WIDTHS.address -
+						COLUMN_WIDTHS.declaredValue,
+				},
+			],
+			rows: sorted.map((v) => [v.mnemonic, v.type, v.value ?? "", v.comment ?? ""]),
+		};
+	}
 	return {
 		columns: [
 			{ header: labels.mnemonic, width: COLUMN_WIDTHS.mnemonic },
@@ -53,18 +77,20 @@ export function buildVariablesTableSection(
 }
 
 /** Groupes de variables, calqués sur les pages entrées / sorties / mémoires. */
-export type VariableGroupKey = "input" | "output" | "memory";
+export type VariableGroupKey = "input" | "output" | "memory" | "constant";
 
 export const VARIABLE_GROUP_KEYS: VariableGroupKey[] = [
 	"input",
 	"output",
 	"memory",
+	"constant",
 ];
 
 const GROUP_ZONES: Record<VariableGroupKey, VariableZone[]> = {
 	input: ["logic-input", "analog-input"],
 	output: ["logic-output", "analog-output"],
 	memory: ["memory"],
+	constant: ["constant"],
 };
 
 export interface ProjectVariablesPdfLabels {
@@ -90,7 +116,7 @@ export function buildVariableGroupSection(
 	return buildVariablesTableSection(title, group, columns);
 }
 
-/** Une section par groupe non vide (entrées, sorties, mémoires). */
+/** Une section par groupe non vide (entrées, sorties, mémoires, constantes). */
 export function buildProjectVariablesSections(
 	variables: Variable[],
 	labels: ProjectVariablesPdfLabels,

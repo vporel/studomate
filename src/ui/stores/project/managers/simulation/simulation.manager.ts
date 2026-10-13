@@ -533,11 +533,20 @@ export default class SimulationManager {
 		}
 	}
 
+	private isConstantVariable(variableId: string): boolean {
+		return (
+			this.getStoreState().project?.variables.some(
+				(variable) => variable.id === variableId && variable.zone === "constant",
+			) ?? false
+		);
+	}
+
 	public setMemoryValue(variableId: string, value: any): void {
 		const mode = this.getStoreState().mode;
 		if (mode !== ProjectMode.SIMULATION) {
 			throw new Error("Cannot set memory value when not in simulation mode");
 		}
+		if (this.isConstantVariable(variableId)) return;
 		if (this.mirror) {
 			this.writeToBoard(variableId, value);
 			return;
@@ -591,6 +600,7 @@ export default class SimulationManager {
 	}
 
 	public forceVariable(variableId: string, value: any): void {
+		if (this.isConstantVariable(variableId)) return;
 		if (this.mirror) {
 			const name = this.mirror.nameOf(variableId);
 			const numeric = toBoardValue(value);

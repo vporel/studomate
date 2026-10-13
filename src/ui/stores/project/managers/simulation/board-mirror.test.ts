@@ -1,5 +1,6 @@
 import generateBytecode from "@/bytecode/bytecode.generator";
 import PLC from "@/simulator/core/plc/plc";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compileProject } from "@tests/utils/test-helpers";
 import BoardMirror from "./board-mirror";
@@ -136,5 +137,19 @@ describe("BoardMirror", () => {
 		const compiled = compileProject(solutionOf("traffic-light"))!;
 		const mirror = new BoardMirror(compiled);
 		expect(() => mirror.snapshot({ unknown: true })).not.toThrow();
+	});
+
+	it("keeps the declared value of a constant the board reports", () => {
+		const compiled = compileProject(solutionOf("traffic-light"))!;
+		compiled.variables.push(
+			new PLCVariable("k", "K", "memory", "number", null, "INT", true, 8),
+		);
+		const mirror = new BoardMirror(compiled);
+
+		const snapshot = mirror.snapshot({ K: 0 });
+
+		const constant = snapshot.find((variable) => variable.getName() === "K")!;
+		expect(constant.getValue()).toBe(8);
+		expect(constant.isConstant()).toBe(true);
 	});
 });

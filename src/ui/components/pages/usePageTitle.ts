@@ -27,6 +27,7 @@ export function usePageTitle() {
 			case "variables":
 				if (page.id === "input-variables") return t("inputVariables");
 				if (page.id === "output-variables") return t("outputVariables");
+				if (page.id === "constant-variables") return t("constantVariables");
 				return t("memoryVariables");
 			case "system-variables":
 				return t("systemVariables");

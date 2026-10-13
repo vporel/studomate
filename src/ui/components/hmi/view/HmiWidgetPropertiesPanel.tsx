@@ -11,6 +11,7 @@ import {
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
+import { NON_BINDABLE_ZONES } from "@/ui/components/hmi/logic/hmi-bindable-variable";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
 import useCommittedField from "@/ui/lib/hooks/useCommittedField";
@@ -117,6 +118,7 @@ const HmiWidgetPropertiesPanel = ({
 						typeFilter={variableBinding.types}
 						excludeDirection={excludeDirection}
 						excludeBehaviorKinds={getExcludedBehaviorKinds(widget.type)}
+						excludeZones={NON_BINDABLE_ZONES}
 						cols={["mnemonic", "address", "scope"]}
 						sx={{ width: "100% !important" }}
 						baseInputSx={{ fontSize: "0.85rem !important" }}

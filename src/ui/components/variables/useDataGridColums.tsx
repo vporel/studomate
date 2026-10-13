@@ -2,12 +2,15 @@
 
 import {
 	getValidTypesForZones,
+	VariableType,
 	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import {
 	validateAddress,
+	validateConstantValue,
 	validateMnemonic,
 } from "@/schemas/variable/variable.validator";
+import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { GridColDef } from "@mui/x-data-grid";
@@ -28,6 +31,9 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const simulating = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
+
+	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
+	const isConstantsPage = zones.length === 1 && zones[0] === "constant";
 
 	const hasInputZone = zones.some(
 		(zone) => zone === "logic-input" || zone === "analog-input",
@@ -70,29 +76,58 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 					label: type,
 				})),
 			},
-			{
-				field: "address",
-				headerName: t("address"),
-				width: 100,
-				hideable: false,
-				editable: designing,
-				preProcessEditCellProps: (params) => {
-					const errors = validateAddress(params.props.value).map((i) =>
-						tv(i.code as never, i.params as never),
-					);
-					const existingVariableId = variablesManager.existsByAddress(
-						params.props.value,
-					);
-					if (existingVariableId && existingVariableId !== params.id)
-						errors.push(tError("addressExists"));
-					return {
-						...params.props,
-						error: errors.length > 0 ? errors[0] : false,
-					};
-				},
-				renderEditCell: EditInputCell,
-				valueParser: (value) => (value ? value.trim().toUpperCase() : ""),
-			},
+			...(isConstantsPage
+				? [
+						{
+							field: "declaredValue",
+							headerName: t("declaredValue"),
+							width: 160,
+							hideable: false,
+							editable: designing,
+							preProcessEditCellProps: (params) => {
+								const type = (params.otherFieldsProps?.type?.value ??
+									params.row.type) as VariableType;
+								const errors = validateConstantValue(
+									"constant",
+									type,
+									params.props.value,
+									dialect,
+								).map((i) => tv(i.code as never, i.params as never));
+								return {
+									...params.props,
+									error: errors.length > 0 ? errors[0] : false,
+								};
+							},
+							renderEditCell: EditInputCell,
+							valueParser: (value) => (value ? value.trim() : ""),
+						} satisfies GridColDef,
+					]
+				: [
+						{
+							field: "address",
+							headerName: t("address"),
+							width: 100,
+							hideable: false,
+							editable: designing,
+							preProcessEditCellProps: (params) => {
+								const errors = validateAddress(params.props.value).map((i) =>
+									tv(i.code as never, i.params as never),
+								);
+								const existingVariableId = variablesManager.existsByAddress(
+									params.props.value,
+								);
+								if (existingVariableId && existingVariableId !== params.id)
+									errors.push(tError("addressExists"));
+								return {
+									...params.props,
+									error: errors.length > 0 ? errors[0] : false,
+								};
+							},
+							renderEditCell: EditInputCell,
+							valueParser: (value) =>
+								value ? value.trim().toUpperCase() : "",
+						} satisfies GridColDef,
+					]),
 			...(simulating
 				? [
 						{
@@ -139,6 +174,8 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 			variablesManager,
 			zones,
 			hasInputZone,
+			isConstantsPage,
+			dialect,
 			designing,
 			simulating,
 			t,

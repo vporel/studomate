@@ -1,5 +1,5 @@
 import type { ArduinoUnoR3Target } from "@/schemas/hardware/hardware-target.schema";
-import type Variable from "@/schemas/variable/variable.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import uno from "../uno-r3.descriptor";
 import buildRemoteIoPlan, { arduinoPinName } from "./remote-io-plan";
@@ -92,5 +92,17 @@ describe("buildRemoteIoPlan", () => {
 		]);
 		expect(plan.pins).toEqual([{ pin: "2", mode: "IP" }]);
 		expect(plan.inputs.map((input) => input.variableId)).toEqual(["v1", "v2"]);
+	});
+});
+
+describe("buildRemoteIoPlan: constantes", () => {
+	it("n'attribue jamais de broche à une constante", () => {
+		const constant = VariableFactory.createLogicInput("BP", "v1");
+		const k = new Variable("k", "K", "constant", "INT", undefined, "4");
+		k.address = "%PD2";
+
+		const plan = build([k, constant]);
+
+		expect(plan).toEqual({ pins: [], inputs: [], outputs: [] });
 	});
 });

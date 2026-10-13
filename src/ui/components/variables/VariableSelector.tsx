@@ -8,6 +8,7 @@ import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.buil
 import Variable, {
 	VariableDirection,
 	VariableType,
+	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
@@ -64,6 +65,9 @@ interface VariableSelectorProps {
 	/** Excludes the inputs having one of these behaviors from the suggestions and the valid
 	 * status (e.g. a toggle-switch widget cannot drive a push-button input). */
 	excludeBehaviorKinds?: readonly InputBehaviorKind[];
+	/** Excludes the variables of these zones from the suggestions and the valid status (e.g.
+	 * `"constant"` for anything a program or a widget writes or binds). */
+	excludeZones?: readonly VariableZone[];
 	/** Formes de littéral acceptées en plus d'un nom de variable (voir
 	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé
 	 * comme mnémonique non déclaré. */
@@ -125,6 +129,7 @@ const VariableSelector = forwardRef<
 		typeFilter,
 		excludeDirection,
 		excludeBehaviorKinds,
+		excludeZones,
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
@@ -196,9 +201,10 @@ const VariableSelector = forwardRef<
 				(v) =>
 					(!typeFilter || typeFilter.includes(v.type)) &&
 					(!excludeDirection || v.getDirection() !== excludeDirection) &&
-					!hasExcludedBehavior(v, excludeBehaviorKinds),
+					!hasExcludedBehavior(v, excludeBehaviorKinds) &&
+					!excludeZones?.includes(v.zone),
 			),
-		[variables, typeFilter, excludeDirection, excludeBehaviorKinds],
+		[variables, typeFilter, excludeDirection, excludeBehaviorKinds, excludeZones],
 	);
 
 	// Calculé ici (pas seulement dans `filterOptions`) pour aussi piloter l'affichage du popup :
@@ -237,6 +243,7 @@ const VariableSelector = forwardRef<
 				acceptedLiterals,
 				dialect,
 				excludeBehaviorKinds,
+				excludeZones,
 			);
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;

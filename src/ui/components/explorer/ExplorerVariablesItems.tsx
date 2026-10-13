@@ -60,6 +60,11 @@ const ExplorerVariablesItems = ({
 			label: t("memories"),
 			IconComponent: VariablesIcon,
 		},
+		{
+			id: "constant-variables",
+			label: t("constants"),
+			IconComponent: VariablesIcon,
+		},
 	];
 
 	return (

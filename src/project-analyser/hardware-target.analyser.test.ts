@@ -345,3 +345,18 @@ describe("analyseHardwareTarget", () => {
 		});
 	});
 });
+
+describe("analyseHardwareTarget: constantes", () => {
+	it("ignore une constante, même portant une adresse de broche", () => {
+		const constant = new VariableBuilder()
+			.id("k")
+			.mnemonic("K")
+			.zone("constant")
+			.type("INT")
+			.value("4")
+			.build();
+		constant.address = "%PD2";
+
+		expect(codes(projectWith([constant]))).toEqual([]);
+	});
+});

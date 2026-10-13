@@ -1,4 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
+import { Keyword } from "@/expression-language/keyword.enum";
+import { getKeywordString } from "@/expression-language/keywords";
+import { parseConstantLiteral } from "@/schemas/variable/constant-value";
 import Grafcet from "../grafcet/grafcet.schema";
 import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
@@ -55,7 +58,7 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 3;
+export const PROJECT_SCHEMA_VERSION = 4;
 
 export default class Project {
 	id: string;
@@ -327,6 +330,18 @@ export default class Project {
 		const from = this.dialect;
 		Object.values(this.programs).forEach((program) => {
 			program.translateExpressionsKeywords(from, dialect);
+		});
+		this.variables = this.variables.map((variable) => {
+			if (variable.zone !== "constant" || variable.type !== "BOOL")
+				return variable;
+			const isTrue = parseConstantLiteral(variable.value ?? "", "BOOL", from);
+			if (isTrue === null) return variable;
+			const translated = variable.copy();
+			translated.value = getKeywordString(
+				isTrue ? Keyword.TRUE : Keyword.FALSE,
+				dialect,
+			);
+			return translated;
 		});
 		this.dialect = dialect;
 		this.touch();

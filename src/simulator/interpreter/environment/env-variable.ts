@@ -17,6 +17,8 @@ export default class EnvVariable {
 	/** Declared PLC type, used by the typing rules of the language (`null` for an internal
 	 * variable such as a step memo). */
 	private declaredType: VariableType | null;
+	/** A constant keeps the value it was created with: any later write is refused. */
+	private constant: boolean;
 
 	constructor(
 		id: string,
@@ -25,6 +27,8 @@ export default class EnvVariable {
 		direction: EnvVariableDirection,
 		numericRange: NumericRange | null = null,
 		declaredType: VariableType | null = null,
+		isConstant = false,
+		initialValue?: EnvVariableValue,
 	) {
 		this.id = id;
 		this.name = name;
@@ -32,6 +36,7 @@ export default class EnvVariable {
 		this.direction = direction;
 		this.numericRange = numericRange;
 		this.declaredType = declaredType;
+		this.constant = false;
 		switch (type) {
 			case "number":
 				this.value = 0;
@@ -43,6 +48,8 @@ export default class EnvVariable {
 				this.value = false;
 				break;
 		}
+		if (initialValue !== undefined) this.setValue(initialValue);
+		this.constant = isConstant;
 	}
 
 	getId(): string {
@@ -65,6 +72,10 @@ export default class EnvVariable {
 		return this.declaredType;
 	}
 
+	isConstant(): boolean {
+		return this.constant;
+	}
+
 	getDirection(): EnvVariableDirection {
 		return this.direction;
 	}
@@ -74,6 +85,7 @@ export default class EnvVariable {
 	}
 
 	setValue(value: EnvVariableValue): void {
+		if (this.constant) throw new Error(`"${this.name}" is a constant`);
 		const valueType = typeof value;
 		if (valueType !== this.type) {
 			throw new IllegalVariableValueTypeException(

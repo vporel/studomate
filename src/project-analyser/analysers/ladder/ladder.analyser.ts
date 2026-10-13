@@ -122,7 +122,7 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 		// par élément.
 		const variables = {
 			variablesByMnemonic: new Map(allVariables.map((v) => [v.mnemonic, v])),
-			environment: buildAnalysisEnvironment(allVariables),
+			environment: buildAnalysisEnvironment(allVariables, project.dialect),
 		};
 
 		const issues: ProjectAnalyserIssue[] = [

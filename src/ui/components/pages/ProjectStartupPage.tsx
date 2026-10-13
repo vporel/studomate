@@ -38,6 +38,7 @@ function VariblesPagesList() {
 		"input-variables",
 		"output-variables",
 		"memory-variables",
+		"constant-variables",
 	];
 	const pagesData = pagedsIds.map((id) => getVariablesPageData(id));
 	const pagesManager = useProjectStore((state) => state.pagesManager);

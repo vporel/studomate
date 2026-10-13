@@ -73,6 +73,7 @@ export default class BoardMirror {
 		value: boolean | number | string,
 	): PLCVariable {
 		const copy = variable.copy();
+		if (copy.isConstant()) return copy;
 		copy.setValue(value);
 		return copy;
 	}

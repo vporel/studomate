@@ -14,7 +14,8 @@ function setup(variable: Variable, value: unknown, dialect = Dialect.FR) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: { dialect, variables: [variable] },
-			simulationVariablesStates: value === undefined ? {} : { [variable.id]: { value } },
+			simulationVariablesStates:
+				value === undefined ? {} : { [variable.id]: { value } },
 		}),
 	);
 	return render(<VariableValueCell variableId={variable.id} />);
@@ -46,7 +47,9 @@ describe("VariableValueCell", () => {
 				simulationVariablesStates: {},
 			}),
 		);
-		const { container } = render(<VariableValueCell variableId="new-variable" />);
+		const { container } = render(
+			<VariableValueCell variableId="new-variable" />,
+		);
 		expect(container).toBeEmptyDOMElement();
 	});
 
@@ -64,5 +67,16 @@ describe("VariableValueCell", () => {
 
 		setup(new Variable("v4", "compteur", "memory", "INT"), -3);
 		expect(badge("-3")).toHaveAttribute("data-inactive", "false");
+	});
+});
+
+describe("VariableValueCell constants", () => {
+	it("shows the value of a constant in simulation", () => {
+		setup(
+			new Variable("k", "DELAI", "constant", "TIME", undefined, "T#5s"),
+			5000,
+		);
+
+		expect(screen.getByText("5s")).toBeInTheDocument();
 	});
 });

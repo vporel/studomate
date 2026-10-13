@@ -56,7 +56,12 @@ export default function buildRemoteIoPlan(
 	const outputs: RemoteIoOutput[] = [];
 
 	for (const variable of variables) {
-		if (!variable.address || variable.zone === "memory") continue;
+		if (
+			!variable.address ||
+			variable.zone === "memory" ||
+			variable.zone === "constant"
+		)
+			continue;
 		const pin = pinsByAddress.get(variable.address);
 		const pinName = arduinoPinName(variable.address);
 		if (!pin || pin.reservedFor || !pinName) continue;

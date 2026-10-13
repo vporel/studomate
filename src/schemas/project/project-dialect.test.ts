@@ -1,3 +1,4 @@
+import Variable from "@/schemas/variable/variable.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	ActionExecutionMode,
@@ -142,5 +143,37 @@ describe("Project — dialecte des expressions", () => {
 				Object.values(project.grafcets.g1.transitions)[0].data.expression,
 			).toBe("Btn1 ET NON Btn2");
 		});
+	});
+});
+
+describe("Project.setDialect: boolean constants", () => {
+	function projectWithBoolConstant(value: string, dialect: Dialect) {
+		const project = new Project("p", "n", "");
+		project.dialect = dialect;
+		project.variables = [
+			new Variable("k", "K", "constant", "BOOL", undefined, value, dialect),
+			new Variable("n", "N", "constant", "INT", undefined, "5"),
+		];
+		return project;
+	}
+
+	it("translates the boolean keyword of a constant", () => {
+		const project = projectWithBoolConstant("VRAI", Dialect.FR);
+
+		project.setDialect(Dialect.EN);
+
+		expect(project.variables[0].value).toBe("TRUE");
+		expect(project.variables[1].value).toBe("5");
+		project.setDialect(Dialect.FR);
+		expect(project.variables[0].value).toBe("VRAI");
+	});
+
+	it("does not mutate the previous variable instance", () => {
+		const project = projectWithBoolConstant("FAUX", Dialect.FR);
+		const before = project.variables[0];
+
+		project.setDialect(Dialect.EN);
+
+		expect(before.value).toBe("FAUX");
 	});
 });

@@ -3,7 +3,8 @@ import ControlsBuilder from "@/expression-language/ast/builders/controls.builder
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import PLCRoutine from "@/simulator/core/plc/plc-routine";
-import type PLCVariable from "@/simulator/core/plc/plc-variable";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
+import { getNumericRange } from "@/schemas/variable/variable.schema";
 import {
 	compiledProject,
 	parseStatement,
@@ -653,6 +654,45 @@ describe("native VM", () => {
 						];
 			});
 			expect(mismatches).toEqual([]);
+		});
+	});
+
+	describe("constants", () => {
+		const constant = (name: string, value: number) =>
+			new PLCVariable(
+				name,
+				name,
+				"memory",
+				"number",
+				getNumericRange("INT"),
+				"INT",
+				true,
+				value,
+			);
+
+		it("holds the declared value from the first cycle and restores it after an external write", () => {
+			const { vm, at } = build(
+				[constant("K", 123), plcVariable("out:INT")],
+				[["out := K"]],
+			);
+
+			const cycles = vm.run(["cycle", `set ${at("K")} 5`, "cycle"]);
+
+			expect(cycles[0].variables[at("K")]).toBe(123);
+			expect(cycles[0].variables[at("out")]).toBe(123);
+			expect(cycles[1].variables[at("K")]).toBe(123);
+			expect(cycles[1].variables[at("out")]).toBe(123);
+		});
+
+		it("restores a zero constant as well", () => {
+			const { vm, at } = build(
+				[constant("K", 0), plcVariable("out:INT")],
+				[["out := K"]],
+			);
+
+			const [cycle] = vm.run([`set ${at("K")} 9`, "cycle"]);
+
+			expect(cycle.variables[at("out")]).toBe(0);
 		});
 	});
 });

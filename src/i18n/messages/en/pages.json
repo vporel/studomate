@@ -7,6 +7,7 @@
 		"inputVariables": "Input variables",
 		"outputVariables": "Output variables",
 		"memoryVariables": "Memory variables",
+		"constantVariables": "Constants",
 		"systemVariables": "System variables",
 		"hardwareConfiguration": "Hardware configuration"
 	},
@@ -76,6 +77,7 @@
 			"type": "Type",
 			"address": "Address",
 			"value": "Value",
+			"declaredValue": "Declared value",
 			"comment": "Comment",
 			"behavior": "Behaviour"
 		},

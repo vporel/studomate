@@ -10,6 +10,7 @@ const labels = {
 	mnemonic: "Mnémonique",
 	type: "Type",
 	address: "Adresse",
+	declaredValue: "Valeur déclarée",
 	comment: "Commentaire",
 };
 
@@ -74,7 +75,12 @@ describe("buildVariableGroupSection", () => {
 describe("buildProjectVariablesSections", () => {
 	const groupLabels = {
 		columns: labels,
-		groups: { input: "Entrées", output: "Sorties", memory: "Mémoires" },
+		groups: {
+			input: "Entrées",
+			output: "Sorties",
+			memory: "Mémoires",
+			constant: "Constantes",
+		},
 	};
 
 	it("une section par groupe non vide, dans l'ordre entrées / sorties / mémoires", () => {
@@ -99,5 +105,62 @@ describe("buildProjectVariablesSections", () => {
 			groupLabels,
 		);
 		expect(sections.map((s) => s.title)).toEqual(["Sorties"]);
+	});
+});
+
+describe("constants in the PDF export", () => {
+	const groupLabels = {
+		columns: labels,
+		groups: {
+			input: "Entrées",
+			output: "Sorties",
+			memory: "Mémoires",
+			constant: "Constantes",
+		},
+	};
+	const constants = [
+		new Variable("c2", "SEUIL", "constant", "INT", undefined, "42"),
+		new Variable("c1", "DELAI", "constant", "TIME", undefined, "T#5s"),
+	];
+
+	it("adds a Constantes section after the memories, with the declared value and no address column", () => {
+		const sections = buildProjectVariablesSections(
+			[new Variable("v1", "M0", "memory", "BOOL"), ...constants],
+			groupLabels,
+		);
+
+		expect(sections.map((s) => s.title)).toEqual(["Mémoires", "Constantes"]);
+		const table = sections[1].table!;
+		expect(table.columns.map((c) => c.header)).toEqual([
+			"Mnémonique",
+			"Type",
+			"Valeur déclarée",
+			"Commentaire",
+		]);
+		expect(table.rows).toEqual([
+			["DELAI", "TIME", "T#5s", ""],
+			["SEUIL", "INT", "42", ""],
+		]);
+	});
+
+	it("keeps the address column for the other groups", () => {
+		const model = buildVariablesTableModel(
+			[new Variable("v1", "M0", "memory", "BOOL")],
+			labels,
+		);
+
+		expect(model.columns.map((c) => c.header)).toContain("Adresse");
+		expect(model.columns.map((c) => c.header)).not.toContain("Valeur déclarée");
+	});
+
+	it("the active page export of the constants page builds the same table", () => {
+		const section = buildVariableGroupSection(
+			"constant",
+			[...constants, new Variable("v1", "M0", "memory", "BOOL")],
+			"Constantes",
+			labels,
+		);
+
+		expect(section.table!.rows.map((r) => r[0])).toEqual(["DELAI", "SEUIL"]);
 	});
 });

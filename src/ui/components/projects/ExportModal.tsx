@@ -39,6 +39,7 @@ const VARIABLES_PAGE_GROUP: Record<VariablesPageId, VariableGroupKey> = {
 	"input-variables": "input",
 	"output-variables": "output",
 	"memory-variables": "memory",
+	"constant-variables": "constant",
 };
 const isVariablesPageId = (id: string): id is VariablesPageId =>
 	id in VARIABLES_PAGE_GROUP;
@@ -85,6 +86,7 @@ export default function ExportModal() {
 			mnemonic: tColumns("mnemonic"),
 			type: tColumns("type"),
 			address: tColumns("address"),
+			declaredValue: tColumns("declaredValue"),
 			comment: tColumns("comment"),
 		}),
 		[tColumns],
@@ -235,6 +237,7 @@ export default function ExportModal() {
 							input: tPageTitles("inputVariables"),
 							output: tPageTitles("outputVariables"),
 							memory: tPageTitles("memoryVariables"),
+							constant: tPageTitles("constantVariables"),
 						},
 					})
 				: [];

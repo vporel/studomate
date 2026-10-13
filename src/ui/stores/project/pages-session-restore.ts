@@ -37,6 +37,7 @@ const VARIABLES_PAGE_IDS: VariablesPageId[] = [
 	"input-variables",
 	"output-variables",
 	"memory-variables",
+	"constant-variables",
 ];
 
 /**

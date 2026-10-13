@@ -1,3 +1,5 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import { parseConstantLiteral } from "@/schemas/variable/constant-value";
 import {
 	getInputRestValue,
 	getSliderRange,
@@ -20,6 +22,7 @@ const ZONE_TO_SCOPE: Record<VariableZone, PLCVariableScope> = {
 	"analog-input": "input",
 	"analog-output": "output",
 	memory: "memory",
+	constant: "memory",
 };
 
 /**
@@ -42,9 +45,13 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
 export default class VariableCompiler {
 	/**
 	 * Converts all project-level variables to PLCVariables. An input with a behavior starts at
-	 * its rest value, and a slider input is bounded by the slider's range.
+	 * its rest value, a slider input is bounded by the slider's range, and a constant starts at
+	 * its declared value.
 	 */
-	static compile(variables: Variable[]): PLCVariable[] {
+	static compile(
+		variables: Variable[],
+		dialect: Dialect = Dialect.FR,
+	): PLCVariable[] {
 		const result: PLCVariable[] = [];
 
 		for (const variable of variables) {
@@ -52,6 +59,7 @@ export default class VariableCompiler {
 			if (!plcType) continue;
 
 			const scope = ZONE_TO_SCOPE[variable.zone];
+			const isConstant = variable.zone === "constant";
 			const plcVariable = new PLCVariable(
 				variable.id,
 				variable.mnemonic,
@@ -59,6 +67,11 @@ export default class VariableCompiler {
 				plcType,
 				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
 				variable.type,
+				isConstant,
+				isConstant
+					? (parseConstantLiteral(variable.value ?? "", variable.type, dialect) ??
+							undefined)
+					: undefined,
 			);
 			const restValue = getInputRestValue(variable.behavior);
 			if (restValue !== undefined) plcVariable.setValue(restValue);
