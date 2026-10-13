@@ -41,6 +41,7 @@
 		"analysis-run": "Run the analysis",
 		"analysis-checks": "Types of checks",
 		"analysis-messages": "Example messages",
+		"hardware": "Hardware (Arduino)",
 		"shortcuts": "Keyboard shortcuts"
 	},
 	"intro": {
@@ -688,6 +689,47 @@
 		"explorerItems": ["F2 — Rename the selected grafcet or ladder"],
 		"inlineTitle": "Inline editing",
 		"inlineItems": ["Enter — Confirm the change", "Esc — Cancel the change"]
+	},
+	"hardware": {
+		"title": "Hardware: the Arduino Uno R3",
+		"p1": "Studomate can link a project to a real Arduino Uno R3 board: load it with a program it runs by itself, use it as the inputs and outputs of a simulation, or observe its program while it runs. This needs a Chromium-based browser (Google Chrome, Microsoft Edge...): Firefox and Safari do not offer it, but the rest of Studomate works in them.",
+		"configTitle": "Choose the board and wire the variables",
+		"configIntro": "Open Project > Hardware configuration (or the button on the project home page) and choose \"Arduino Uno R3\" as the target board. A variable is linked to a pin by its address:",
+		"configItems": [
+			"%PD2 to %PD13: digital pins D2 to D13;",
+			"%PA0 to %PA5: pins A0 to A5, analog or digital inputs;",
+			"pins D0 and D1 are reserved for the USB link;",
+			"the zone of the variable gives the direction: logic input, logic output, analog input (value from 0 to 1023) or analog output (PWM, value from 0 to 255, on D3, D5, D6, D9, D10 and D11 only)."
+		],
+		"configBody": "For each logic input, the page sets the mode (with or without internal pull-up) and the inversion: when checked, the variable is true when the pin is at 0 V, the usual wiring of a button between the pin and ground. Address errors are reported by the analysis.",
+		"actionsTitle": "Load the program and open the online link",
+		"actionsIntro": "As soon as a board is configured, two actions appear in the toolbar. There is no permanent link by default, as in an automation tool:",
+		"actionsItems": [
+			"Load the program into the board (Design mode): Studomate opens a link for the time of the loading, compiles the project, checks that it fits the board (about 1 KB of program and 512 bytes of variables) and says precisely what does not fit when it does not, then closes the link. The board then runs the program by itself, with the USB cable unplugged, and starts it again at each power-up;",
+			"Online link: opens a link you keep until \"Close the link\". It does not change what the board does. It gives access to the ▶ (start the board program, from its initial state) and ■ (stop it, its outputs are then cut) icons, and a badge shows what the board is doing. Loading the program during an online link leaves it open."
+		],
+		"actionsOutro": "The first time, Studomate offers to install its firmware on the board: the program currently on it is then erased. Opening a link restarts the board: if it holds a program, it starts for a moment from its initial state.",
+		"modesTitle": "The modes that use the board",
+		"modesIntro": "With a board configured, the mode menu offers two more entries. They open the link if it is not open, and close it when they end if they had opened it:",
+		"modesItems": [
+			"Simulation with real I/O: the simulation runs in Studomate, but wired inputs take the value read on their pin and the outputs of the simulation drive the pins. The program of the board, if it was running, is stopped. Wired inputs can no longer be changed by hand; variables without an address can still be driven from the HMI and the watch table, so real and virtual elements can be mixed. If the link is lost or the tab goes to the background, the outputs of the board are cut;",
+			"Board observation: Studomate runs nothing, it shows what the board reports of the program it runs. Grafcet steps light up, Ladder contacts and links animate, the watch table and the HMI show the real values. The program of the board must be the one of the project, compared by its identifier: otherwise Studomate asks to load it again. If the program is stopped, a window offers to start it or to cancel. There is no pause or step-by-step, and editing is locked."
+		],
+		"observationTitle": "Write and force while observing",
+		"observationIntro": "While observing, variables are written from Studomate as in simulation: you enter an input that is not wired to a pin, write a memory or force a variable from the watch table and the HMI. An input wired to a pin is still read on the pin.",
+		"observationOutro": "The board keeps a forced value until it is released. Studomate releases everything forced when you leave the observation, but if the link is lost before, the forced value stays on the board until its next restart. If the board reports a fault (a division by zero for example) or if its program is stopped, the observation is left and the cause is shown.",
+		"behaviorTitle": "What the program of the board does not take over",
+		"behaviorItems": [
+			"the REAL and STRING types are not supported by the board: the analysis reports it;",
+			"an input read by a program but without an address stays false on the board: the analysis raises a warning;",
+			"the \"behavior\" field of variables (push button, switch, NO/NC, slider) is only used by the simulation. On the board, the real wiring is what counts: the NO/NC of a contact is set by the inversion of its pin, the bounds of a slider do not apply, and an input without an address always starts false, even NC."
+		],
+		"limitsTitle": "Limits",
+		"limitsItems": [
+			"only the original Arduino Uno R3 is supported (not clones with another bootloader, nor other boards);",
+			"a tab in the background slows the simulation down: with real I/O, the outputs are then cut. The program running on the board is not affected;",
+			"inputs are read with a 5 ms debounce; a pulse shorter than the reading period may be missed."
+		]
 	},
 	"navHeading": "Manual outline",
 	"searchPlaceholder": "Search the manual…",

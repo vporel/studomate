@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import HardwareLinkNotifier, {
 	type LinkFailureCode,
 	type ProgramBlockingIssue,
+	type OnlineFailure,
+	type OnlineLoss,
 	type ProgramCommandFailure,
 	type ProgramUploadFailure,
 } from "./hardware-link.notifier";
@@ -76,6 +78,28 @@ export default class ToastHardwareLinkNotifier implements HardwareLinkNotifier {
 
 	programCommandFailed(code: ProgramCommandFailure): void {
 		toast.error(getT("toasts")(`hardwareProgramCommandFailed.${code}`));
+	}
+
+	onlineFailed(reason: OnlineFailure): void {
+		toast.error(getT("toasts")(`hardwareOnlineFailed.${reason}`));
+	}
+
+	onlineLost(reason: OnlineLoss, fault: number): void {
+		const t = getT("toasts");
+		if (reason !== "board-fault") {
+			toast.error(t(`hardwareOnlineLost.${reason}`));
+			return;
+		}
+		const known = [1, 2, 3, 4].includes(fault);
+		toast.error(
+			t(known ? `hardwareBoardFault.${fault}` : "hardwareBoardFault.other", {
+				fault,
+			}),
+		);
+	}
+
+	boardVariableFailed(code: ProgramCommandFailure): void {
+		toast.error(getT("toasts")(`hardwareVariableWriteFailed.${code}`));
 	}
 
 	linkLost(): void {

@@ -10,6 +10,10 @@ import {
 	encodeProgramRun,
 	encodeProgramStop,
 	encodeStatusRequest,
+	encodeForce,
+	encodeSetVariable,
+	encodeUnforce,
+	encodeWatch,
 	PROGRAM_CHUNK_BYTES,
 } from "./messages";
 import { MAX_FRAME_LENGTH } from "./frame";
@@ -166,5 +170,65 @@ describe("program start and stop frames", () => {
 	it("decodes PROG_STOPPED and rejects one with arguments", () => {
 		expect(decode("PROG_STOPPED")).toEqual({ type: "PROG_STOPPED" });
 		expect(decode("PROG_STOPPED", ["x"])).toBeNull();
+	});
+});
+
+describe("telemetry frames", () => {
+	it("encodes WATCH 1 and WATCH 0", () => {
+		expect(encodeWatch(true)).toMatch(/^WATCH 1\*[0-9A-F]{2}\n$/);
+		expect(encodeWatch(false)).toMatch(/^WATCH 0\*[0-9A-F]{2}\n$/);
+	});
+
+	it("decodes WATCH_OK", () => {
+		expect(decode("WATCH_OK")).toEqual({ type: "WATCH_OK" });
+		expect(decode("WATCH_OK", ["x"])).toBeNull();
+	});
+
+	it("decodes a TEL frame into its bytes", () => {
+		expect(decode("TEL", ["ABCD", "12", "16", "00FF7A"])).toEqual({
+			type: "TEL",
+			tag: 0xabcd,
+			cycle: 12,
+			offset: 16,
+			data: Uint8Array.from([0x00, 0xff, 0x7a]),
+		});
+	});
+
+	it("keeps a frame of 16 bytes under the transmit buffer of the board", () => {
+		const frame = encodeFrame("TEL", ["ABCD", "65535", "496", "00".repeat(16)]);
+		expect(frame.length).toBeLessThan(64);
+	});
+
+	it.each([
+		[["ABC", "1", "0", "00"]],
+		[["ABCD", "x", "0", "00"]],
+		[["ABCD", "1", "-1", "00"]],
+		[["ABCD", "1", "0", "0"]],
+		[["ABCD", "1", "0", "ZZ"]],
+		[["ABCD", "1", "0"]],
+	])("rejects a malformed TEL frame %j", (args) => {
+		expect(decode("TEL", args)).toBeNull();
+	});
+});
+
+describe("variable write frames", () => {
+	it("encodes SET, FORCE and UNFORCE", () => {
+		expect(encodeSetVariable(3, 42)).toMatch(/^SET 3 42\*[0-9A-F]{2}\n$/);
+		expect(encodeForce(5, -7)).toMatch(/^FORCE 5 -7\*[0-9A-F]{2}\n$/);
+		expect(encodeUnforce(5)).toMatch(/^UNFORCE 5\*[0-9A-F]{2}\n$/);
+		expect(encodeUnforce("all")).toMatch(/^UNFORCE ALL\*[0-9A-F]{2}\n$/);
+	});
+
+	it("sends a value as a signed 32-bit decimal, as the variable holds it", () => {
+		expect(encodeForce(1, 4000000000)).toMatch(/^FORCE 1 -294967296\*/);
+		expect(encodeSetVariable(1, 2147483648)).toMatch(/^SET 1 -2147483648\*/);
+		expect(encodeSetVariable(1, 65535)).toMatch(/^SET 1 65535\*/);
+	});
+
+	it("decodes the acknowledgements, and rejects arguments", () => {
+		expect(decode("FORCE_OK")).toEqual({ type: "FORCE_OK" });
+		expect(decode("SET_OK")).toEqual({ type: "SET_OK" });
+		expect(decode("FORCE_OK", ["x"])).toBeNull();
+		expect(decode("SET_OK", ["x"])).toBeNull();
 	});
 });

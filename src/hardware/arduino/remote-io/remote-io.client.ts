@@ -1,6 +1,7 @@
 import {
 	decodeDeviceMessage,
 	encodeConfig,
+	encodeForce,
 	encodeOutputs,
 	encodePing,
 	encodeProgramBegin,
@@ -8,7 +9,10 @@ import {
 	encodeProgramEnd,
 	encodeProgramRun,
 	encodeProgramStop,
+	encodeSetVariable,
 	encodeStatusRequest,
+	encodeUnforce,
+	encodeWatch,
 	PROGRAM_CHUNK_BYTES,
 	PROTOCOL_MAJOR_VERSION,
 	type DeviceMessage,
@@ -18,6 +22,9 @@ import { FrameDecoder } from "./frame";
 import { isFirmwareOutdated } from "./firmware-version";
 import type { RemoteIoPlan } from "./remote-io-plan";
 import type { HeartbeatScheduler } from "@/hardware/heartbeat/heartbeat-scheduler";
+import TelemetryAssembler, {
+	type TelemetrySnapshot,
+} from "./telemetry-assembler";
 import type { SerialTransport } from "./transport";
 
 export type RemoteIoState = "disconnected" | "connecting" | "linked";
@@ -78,6 +85,17 @@ export interface RemoteIoStatus {
 	imageId: number;
 }
 
+export interface RemoteIoWatchOptions {
+	/** Bytes of variable memory of the program, as the layout of its image gives them. */
+	memorySize: number;
+	/** Identifier of the program image the memory layout belongs to. */
+	imageId: number;
+	/** A complete image of the variable memory, about every 50 ms. */
+	onSnapshot: (snapshot: TelemetrySnapshot) => void;
+	/** The board runs another program than `imageId`: its memory cannot be read. Called once. */
+	onProgramMismatch: () => void;
+}
+
 export type RemoteIoInputValues = Map<string, boolean | number>;
 
 export interface RemoteIoClientOptions {
@@ -115,6 +133,14 @@ export default class RemoteIoClient {
 	private plan: RemoteIoPlan;
 	private reconfiguring = false;
 	private uploading = false;
+	/** Tail of the queue of request/response exchanges: one at a time, as they share one listener. */
+	private exchanges: Promise<unknown> = Promise.resolve();
+	private watch: {
+		assembler: TelemetryAssembler;
+		tag: number;
+		options: RemoteIoWatchOptions;
+		mismatchReported: boolean;
+	} | null = null;
 	/** False while the board runs a program of its own: it then ignores `OUT` and sends no `IN`. */
 	private remoteIoActive = true;
 	private readonly decoder = new FrameDecoder();
@@ -152,7 +178,14 @@ export default class RemoteIoClient {
 		this.lostListener = listener;
 	}
 
-	async connect(): Promise<RemoteIoFirmwareInfo> {
+	/**
+	 * Opens the link. With `remoteIo` (the default) the board is then configured to serve its pins
+	 * to Studomate; without it the board is left as it is, and `resumeRemoteIo` can configure it
+	 * later.
+	 */
+	async connect({
+		remoteIo = true,
+	}: { remoteIo?: boolean } = {}): Promise<RemoteIoFirmwareInfo> {
 		if (this.state !== "disconnected") {
 			throw new Error("RemoteIoClient is already connecting or linked");
 		}
@@ -173,14 +206,14 @@ export default class RemoteIoClient {
 					throw new RemoteIoError("transport", String(cause));
 				}
 				const info = await this.handshake();
-				await this.configure();
+				if (remoteIo) await this.configure();
 				return info;
 			};
 			const info = await Promise.race([run(), aborted]);
 			this.connectAbort = null;
-			this.remoteIoActive = true;
+			this.remoteIoActive = remoteIo;
 			this.setState("linked");
-			this.startHeartbeat();
+			if (remoteIo) this.startHeartbeat();
 			return info;
 		} catch (error) {
 			this.connectAbort = null;
@@ -233,7 +266,7 @@ export default class RemoteIoClient {
 	/**
 	 * Transfers a program image to the board, which stores it and runs it on its own. The link
 	 * stays up, but the board no longer serves remote I/O until `resumeRemoteIo`. If the transfer
-	 * fails the board is put back in remote I/O mode.
+	 * fails the board is put back in remote I/O mode if it was in it.
 	 */
 	async uploadProgram(
 		image: Uint8Array,
@@ -244,9 +277,11 @@ export default class RemoteIoClient {
 			throw new Error("RemoteIoClient is not linked");
 		}
 
+		const wasActive = this.remoteIoActive;
 		this.stopHeartbeat?.();
 		this.stopHeartbeat = null;
 		this.remoteIoActive = false;
+		this.watch = null;
 		this.uploading = true;
 		try {
 			await this.sendProgramFrame(
@@ -274,14 +309,16 @@ export default class RemoteIoClient {
 			}
 		} catch (error) {
 			this.uploading = false;
-			try {
-				await this.configure();
-				this.remoteIoActive = true;
-				this.startHeartbeat();
-			} catch {
-				this.loseLink(
-					new RemoteIoError("transport", "board lost after a failed upload"),
-				);
+			if (wasActive) {
+				try {
+					await this.configure();
+					this.remoteIoActive = true;
+					this.startHeartbeat();
+				} catch {
+					this.loseLink(
+						new RemoteIoError("transport", "board lost after a failed upload"),
+					);
+				}
 			}
 			throw error instanceof RemoteIoError
 				? error
@@ -316,6 +353,7 @@ export default class RemoteIoClient {
 			throw new Error("RemoteIoClient is not linked");
 		}
 		const wasActive = this.remoteIoActive;
+		this.watch = null;
 		this.stopHeartbeat?.();
 		this.stopHeartbeat = null;
 		this.remoteIoActive = false;
@@ -343,6 +381,36 @@ export default class RemoteIoClient {
 	}
 
 	/**
+	 * Has the board stop serving its pins: its outputs fall back to 0 and it keeps no
+	 * configuration. The link stays open; `resumeRemoteIo` serves the pins again.
+	 */
+	async leaveRemoteIo(): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		if (!this.remoteIoActive) return;
+		await this.fallback();
+		this.stopHeartbeat?.();
+		this.stopHeartbeat = null;
+		this.remoteIoActive = false;
+		this.reconfiguring = true;
+		try {
+			await this.serialize(async () => {
+				const wait = this.waitFor<true>(
+					(message) => (message.type === "CFG_OK" ? true : undefined),
+					this.options.configTimeoutMs,
+					() => new RemoteIoError("config-rejected", "timeout"),
+				);
+				wait.catch(() => {});
+				await this.options.transport.write(encodeConfig([]));
+				await wait;
+			});
+		} finally {
+			this.reconfiguring = false;
+		}
+	}
+
+	/**
 	 * Takes the pins back from the program the board runs: the board goes back to remote I/O with
 	 * the current pin plan, and the program stays stored in it until the next reset.
 	 */
@@ -351,6 +419,7 @@ export default class RemoteIoClient {
 			throw new Error("RemoteIoClient is not linked");
 		}
 		if (this.remoteIoActive) return;
+		this.watch = null;
 		this.resetOutputs();
 		this.reconfiguring = true;
 		try {
@@ -362,33 +431,100 @@ export default class RemoteIoClient {
 		this.startHeartbeat();
 	}
 
+	/**
+	 * Has the board send the variable memory of its running program, to follow it from here. The
+	 * telemetry stops when the program stops or the board is given its pins back.
+	 */
+	async startWatching(options: RemoteIoWatchOptions): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		this.watch = {
+			assembler: new TelemetryAssembler(options.memorySize),
+			tag: options.imageId & 0xffff,
+			options,
+			mismatchReported: false,
+		};
+		try {
+			await this.sendProgramFrame(encodeWatch(true), (message) =>
+				message.type === "WATCH_OK" ? true : undefined,
+			);
+		} catch (error) {
+			this.watch = null;
+			throw error;
+		}
+	}
+
+	/** Stops following the program; the board stops sending its memory. */
+	async stopWatching(): Promise<void> {
+		if (!this.watch) return;
+		this.watch = null;
+		if (this.state !== "linked") return;
+		try {
+			await this.sendProgramFrame(encodeWatch(false), (message) =>
+				message.type === "WATCH_OK" ? true : undefined,
+			);
+		} catch {
+			// The board is gone or busy: it stops sending when its program stops.
+		}
+	}
+
+	/** Writes a variable of the running program, by its index in the image, once. */
+	async writeVariable(index: number, value: number): Promise<void> {
+		await this.commandVariable(encodeSetVariable(index, value), "SET_OK");
+	}
+
+	/** Imposes a value on a variable until released: the program no longer changes it. */
+	async forceVariable(index: number, value: number): Promise<void> {
+		await this.commandVariable(encodeForce(index, value), "FORCE_OK");
+	}
+
+	/** Releases a forced variable, or every forced variable with `"all"`. */
+	async releaseVariable(index: number | "all"): Promise<void> {
+		await this.commandVariable(encodeUnforce(index), "FORCE_OK");
+	}
+
+	private async commandVariable(
+		frame: string,
+		answer: "SET_OK" | "FORCE_OK",
+	): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		await this.sendProgramFrame(frame, (message) =>
+			message.type === answer ? true : undefined,
+		);
+	}
+
 	/** Asks the board what it is doing and which program it holds. */
 	async requestStatus(): Promise<RemoteIoStatus> {
 		if (this.state !== "linked") {
 			throw new Error("RemoteIoClient is not linked");
 		}
-		const wait = this.waitFor<RemoteIoStatus>(
-			(message) =>
-				message.type === "STATUS"
-					? {
-							state:
-								(["remote-io", "running", "fault", "stopped"] as const)[
-									message.state
-								] ?? "fault",
-							fault: message.fault,
-							imageId: message.imageId,
-						}
-					: undefined,
-			this.options.configTimeoutMs,
-			() => new RemoteIoError("upload-timeout", "status"),
-		);
-		wait.catch(() => {});
-		try {
-			await this.options.transport.write(encodeStatusRequest());
-		} catch (cause) {
-			throw new RemoteIoError("transport", String(cause));
-		}
-		return wait;
+		return this.serialize(async () => {
+			const wait = this.waitFor<RemoteIoStatus>(
+				(message) =>
+					message.type === "STATUS"
+						? {
+								state:
+									(["remote-io", "running", "fault", "stopped"] as const)[
+										message.state
+									] ?? "fault",
+								fault: message.fault,
+								imageId: message.imageId,
+							}
+						: undefined,
+				this.options.configTimeoutMs,
+				() => new RemoteIoError("upload-timeout", "status"),
+			);
+			wait.catch(() => {});
+			try {
+				await this.options.transport.write(encodeStatusRequest());
+			} catch (cause) {
+				throw new RemoteIoError("transport", String(cause));
+			}
+			return wait;
+		});
 	}
 
 	/** Forces every output to 0 right away, and keeps them there until `setOutputs` is called. */
@@ -440,14 +576,37 @@ export default class RemoteIoClient {
 		for (const frame of this.decoder.push(chunk)) {
 			const message = decodeDeviceMessage(frame);
 			if (!message) continue;
+			if (message.type === "TEL") {
+				this.handleTelemetry(message);
+				continue;
+			}
 			if (message.type === "IN") {
-				if (this.state === "linked" && !this.reconfiguring && !this.uploading) {
+				if (
+					this.state === "linked" &&
+					this.remoteIoActive &&
+					!this.reconfiguring &&
+					!this.uploading
+				) {
 					this.emitInputs(message.values);
 				}
 				continue;
 			}
 			this.messageListener?.(message);
 		}
+	}
+
+	private handleTelemetry(message: Extract<DeviceMessage, { type: "TEL" }>) {
+		const { watch } = this;
+		if (!watch) return;
+		if (message.tag !== watch.tag) {
+			if (!watch.mismatchReported) {
+				watch.mismatchReported = true;
+				watch.options.onProgramMismatch();
+			}
+			return;
+		}
+		const snapshot = watch.assembler.push(message);
+		if (snapshot) watch.options.onSnapshot(snapshot);
 	}
 
 	private emitInputs(values: PinValue[]) {
@@ -550,7 +709,21 @@ export default class RemoteIoClient {
 	}
 
 	/** Sends one program frame and waits for its answer, resending it when the answer never comes. */
-	private async sendProgramFrame<T>(
+	private sendProgramFrame<T>(
+		frame: string,
+		pick: (message: DeviceMessage) => T | undefined,
+	): Promise<T> {
+		return this.serialize(() => this.exchangeProgramFrame(frame, pick));
+	}
+
+	/** Runs `task` after the exchanges queued before it have finished, whatever their outcome. */
+	private serialize<T>(task: () => Promise<T>): Promise<T> {
+		const result = this.exchanges.then(task, task);
+		this.exchanges = result.catch(() => {});
+		return result;
+	}
+
+	private async exchangeProgramFrame<T>(
 		frame: string,
 		pick: (message: DeviceMessage) => T | undefined,
 	): Promise<T> {
@@ -596,6 +769,7 @@ export default class RemoteIoClient {
 	}
 
 	private async teardown(): Promise<void> {
+		this.watch = null;
 		this.stopHeartbeat?.();
 		this.stopHeartbeat = null;
 		this.messageListener = null;

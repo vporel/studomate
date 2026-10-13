@@ -1,8 +1,9 @@
+import arduinoIoBindings from "@/bytecode/arduino-io-bindings";
+import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import {
 	isRemoteIoUploadError,
 	RemoteIoError,
 } from "@/hardware/arduino/remote-io/remote-io.client";
-import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import buildRemoteIoPlan from "@/hardware/arduino/remote-io/remote-io-plan";
 import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
 import type PLCVariable from "@/simulator/core/plc/plc-variable";
@@ -10,25 +11,27 @@ import type {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "@/ui/stores/project/project.store";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import BoardProgramController from "./board-program.controller";
 import FirmwareInstaller from "./firmware-installer";
 import type HardwareLinkContext from "./hardware-link.context";
 import type { ResolvedHardwarePlan } from "./hardware-link.context";
 import type HardwareLinkNotifier from "./hardware-link.notifier";
-import HardwareLinkSession from "./hardware-link.session";
+import HardwareLinkSession, { type LinkOpener } from "./hardware-link.session";
 import {
 	DISCONNECTED_HARDWARE_LINK,
-	drivenInputIdsOf,
 	type HardwareLinkState,
 } from "./hardware-link.state";
 import HardwareSimulationBridge from "./hardware-simulation.bridge";
+import OnlineModeController from "./online-mode.controller";
 import type { RemoteIoDevice, RemoteIoDeviceFactory } from "./remote-io-device";
 
 /**
- * Link between the project and its real board. Independent of the project mode: the board can be
- * linked in Design or Simulation. It opens and closes the link; the firmware installation, the
- * program of the board and the coupling with the simulation are carried out by collaborators it
- * delegates to.
+ * Link between the project and its real board. The link is a means, not a state of the project:
+ * it is opened by the user (the online link), for a program transfer, or by a mode that needs the
+ * board (simulation with the real I/O, observation), and it leaves the board as it is. The
+ * firmware installation, the program of the board, the observation and the coupling with the
+ * simulation are carried out by collaborators it delegates to.
  */
 export default class HardwareLinkManager {
 	private readonly session = new HardwareLinkSession();
@@ -36,13 +39,15 @@ export default class HardwareLinkManager {
 	private readonly firmwareInstaller: FirmwareInstaller;
 	private readonly simulationBridge: HardwareSimulationBridge;
 	private readonly programController: BoardProgramController;
+	private readonly onlineController: OnlineModeController;
+	private opening: Promise<boolean> | null = null;
 
 	constructor(
 		private readonly setStoreState: ProjectStoreSetFunction,
 		private readonly getStoreState: ProjectStoreGetFunction,
 		notifier: HardwareLinkNotifier,
 		private readonly createDevice: RemoteIoDeviceFactory,
-		options: { postFlashDelayMs?: number } = {},
+		options: { postFlashDelayMs?: number; onlinePollMs?: number } = {},
 	) {
 		this.context = {
 			session: this.session,
@@ -51,6 +56,8 @@ export default class HardwareLinkManager {
 			setStoreState,
 			setLinkState: (hardwareLink) => this.setLinkState(hardwareLink),
 			resolvePlan: () => this.resolvePlan(),
+			ioBindings: (plan) => arduinoIoBindings(plan),
+			ensureLink: (openedBy) => this.ensureLink(openedBy),
 			unlink: () => this.unlink(),
 			reportFailure: (error) => this.reportFailure(error),
 		};
@@ -60,17 +67,44 @@ export default class HardwareLinkManager {
 			this.context,
 			this.simulationBridge,
 		);
+		this.onlineController = new OnlineModeController(
+			this.context,
+			this.simulationBridge,
+			options,
+		);
 	}
 
-	/** Opens the link. Call it from a user gesture, as the browser may ask for a port. */
+	/**
+	 * Opens the online link, which the user keeps until they close it. Call it from a user
+	 * gesture, as the browser may ask for a port.
+	 */
 	async link(): Promise<void> {
-		if (this.getStoreState().hardwareLink.status !== "disconnected") return;
+		if (this.getStoreState().hardwareLink.status === "linked") {
+			// A link a mode or a transfer opened becomes the user's own: it stays open.
+			this.session.openedBy = "user";
+			return;
+		}
+		await this.ensureLink("user");
+	}
+
+	/** Opens the link if it is not open. True when the board is linked afterwards. */
+	async ensureLink(openedBy: LinkOpener): Promise<boolean> {
+		const status = this.getStoreState().hardwareLink.status;
+		if (status === "linked") return true;
+		if (status === "connecting" && this.opening) return this.opening;
+		this.opening = this.openLink(openedBy).finally(() => {
+			this.opening = null;
+		});
+		return this.opening;
+	}
+
+	private async openLink(openedBy: LinkOpener): Promise<boolean> {
 		const resolved = this.resolvePlan();
-		if (!resolved) return;
+		if (!resolved) return false;
 		this.setLinkState({
 			status: "connecting",
 			drivenInputIds: [],
-			boardMode: "remote-io",
+			boardMode: "idle",
 			programPresent: false,
 		});
 		const { session } = this;
@@ -80,12 +114,12 @@ export default class HardwareLinkManager {
 		try {
 			device = await this.createDevice(resolved.plan, resolved.descriptor);
 		} catch (error) {
-			if (!session.isCurrent(attempt)) return;
+			if (!session.isCurrent(attempt)) return false;
 			this.setLinkState(DISCONNECTED_HARDWARE_LINK);
 			this.reportFailure(error);
-			return;
+			return false;
 		}
-		if (!session.isCurrent(attempt)) return;
+		if (!session.isCurrent(attempt)) return false;
 
 		let client: RemoteIoClient;
 		let flashed = false;
@@ -96,10 +130,10 @@ export default class HardwareLinkManager {
 			const current = client;
 			client.onLinkLost(() => this.handleLinkLost(current));
 			try {
-				await client.connect();
+				await client.connect({ remoteIo: false });
 				break;
 			} catch (error) {
-				if (!session.isCurrent(attempt)) return;
+				if (!session.isCurrent(attempt)) return false;
 				session.client = null;
 				const reason = !flashed ? FirmwareInstaller.reasonFor(error) : null;
 				if (
@@ -109,32 +143,39 @@ export default class HardwareLinkManager {
 					flashed = true;
 					continue;
 				}
-				if (!session.isCurrent(attempt)) return;
+				if (!session.isCurrent(attempt)) return false;
 				this.setLinkState(DISCONNECTED_HARDWARE_LINK);
 				if (!reason) this.reportFailure(error);
-				return;
+				return false;
 			}
 		}
 		if (!session.isCurrent(attempt)) {
 			await client.disconnect();
-			return;
+			return false;
 		}
 
 		session.plan = resolved.plan;
+		session.openedBy = openedBy;
 		this.simulationBridge.attach(resolved.plan);
 		this.setLinkState({
 			status: "linked",
-			drivenInputIds: drivenInputIdsOf(resolved.plan),
-			boardMode: "remote-io",
+			drivenInputIds: [],
+			boardMode: "idle",
 			programPresent: false,
 		});
-		this.context.notifier.linked();
-		void this.programController.refreshPresence();
+		if (openedBy === "user") this.context.notifier.linked();
+		await this.programController.refreshStatus();
+		return session.isCurrent(attempt);
 	}
 
 	/** Answer of the user to the firmware installation dialog. */
 	answerFirmwareInstall(accepted: boolean): void {
 		this.firmwareInstaller.answer(accepted);
+	}
+
+	/** Answer of the user to the question whether to start the program of the board. */
+	answerObservationStart(accepted: boolean): void {
+		this.onlineController.answerStart(accepted);
 	}
 
 	/** Closes the link, driving the outputs of the board to their fallback state first. */
@@ -149,7 +190,7 @@ export default class HardwareLinkManager {
 		else await client.disconnect();
 	}
 
-	/** Sends the program of the project to the board, which then runs it by itself. */
+	/** Loads the program of the project into the board, which then runs it by itself. */
 	uploadProgram(): Promise<void> {
 		return this.programController.upload();
 	}
@@ -164,9 +205,69 @@ export default class HardwareLinkManager {
 		return this.programController.stop();
 	}
 
-	/** Takes the pins back from the program of the board, to link them to the project again. */
-	resumeRemoteIo(): Promise<void> {
-		return this.programController.resumeRemoteIo();
+	/**
+	 * Has the board serve its pins to the simulation about to start, opening the link if needed.
+	 * True when it does.
+	 */
+	async enterHardwareIo(): Promise<boolean> {
+		if (!(await this.ensureLink("mode"))) return false;
+		return this.programController.enterRemoteIo();
+	}
+
+	/** The board stops serving its pins to a simulation that could not start. */
+	leaveHardwareIo(): Promise<void> {
+		return this.programController.leaveRemoteIo();
+	}
+
+	/**
+	 * Observes the program of the board, opening the link if needed. True when the observation
+	 * began.
+	 */
+	goOnline(): Promise<boolean> {
+		return this.onlineController.start();
+	}
+
+	/** Writes a variable of the observed program once. */
+	writeBoardVariable(name: string, value: boolean | number): Promise<void> {
+		return this.onlineController.writeVariable(name, value);
+	}
+
+	/** Imposes a value on a variable of the observed program until it is released. */
+	forceBoardVariable(name: string, value: boolean | number): Promise<void> {
+		return this.onlineController.forceVariable(name, value);
+	}
+
+	releaseBoardVariable(name: string): Promise<void> {
+		return this.onlineController.releaseVariable(name);
+	}
+
+	/**
+	 * Called when a simulation is about to stop: the board is left as the simulation found it
+	 * (pins released, observation over).
+	 */
+	async onSimulationStop(): Promise<void> {
+		const kind = this.getStoreState().simulationKind;
+		if (kind === "observation") await this.onlineController.stop();
+		else if (kind === "hardware-io")
+			await this.programController.leaveRemoteIo();
+	}
+
+	/**
+	 * Called once a mode is in place: a link a mode opened for itself is closed when the mode in
+	 * place no longer needs the board.
+	 */
+	async onModeSettled(): Promise<void> {
+		const state = this.getStoreState();
+		if (
+			this.session.openedBy === "mode" &&
+			state.hardwareLink.status === "linked" &&
+			!(
+				state.mode === ProjectMode.SIMULATION &&
+				state.simulationKind !== "virtual"
+			)
+		) {
+			await this.unlink();
+		}
 	}
 
 	/**
@@ -201,11 +302,18 @@ export default class HardwareLinkManager {
 
 	private handleLinkLost(client: RemoteIoClient) {
 		if (this.session.client !== client) return;
+		const state = this.getStoreState();
+		const hadHardwareIo =
+			state.mode === ProjectMode.SIMULATION &&
+			state.simulationKind === "hardware-io";
 		this.reset();
+		// A simulation with the real I/O goes on, with virtual inputs.
+		if (hadHardwareIo) state.simulationManager.setSimulationKind("virtual");
 		this.context.notifier.linkLost();
 	}
 
 	private reset() {
+		this.onlineController.detach();
 		this.session.invalidate();
 		this.firmwareInstaller.cancel();
 		this.simulationBridge.detach();

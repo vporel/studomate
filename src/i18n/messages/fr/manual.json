@@ -41,6 +41,7 @@
 		"analysis-run": "Lancer l'analyse",
 		"analysis-checks": "Types de vérifications",
 		"analysis-messages": "Exemples de messages",
+		"hardware": "Matériel (Arduino)",
 		"shortcuts": "Raccourcis clavier"
 	},
 	"intro": {
@@ -695,6 +696,47 @@
 		"inlineItems": [
 			"Entrée — Valider la modification",
 			"Échap — Annuler la modification"
+		]
+	},
+	"hardware": {
+		"title": "Matériel : l'Arduino Uno R3",
+		"p1": "Studomate peut relier un projet à une carte Arduino Uno R3 réelle : la charger d'un programme qu'elle exécute toute seule, s'en servir comme entrées et sorties d'une simulation, ou observer son programme pendant qu'il tourne. Cette fonction demande un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...) : Firefox et Safari ne la proposent pas, mais tout le reste de Studomate y fonctionne.",
+		"configTitle": "Choisir la carte et câbler les variables",
+		"configIntro": "Ouvrez Projet > Configuration matérielle (ou le bouton de la page d'accueil du projet) et choisissez « Arduino Uno R3 » comme carte cible. Une variable est liée à une broche par son adresse :",
+		"configItems": [
+			"%PD2 à %PD13 : broches numériques D2 à D13 ;",
+			"%PA0 à %PA5 : broches A0 à A5, entrées analogiques ou numériques ;",
+			"les broches D0 et D1 sont réservées à la liaison USB ;",
+			"la zone de la variable donne le sens : entrée logique, sortie logique, entrée analogique (valeur de 0 à 1023) ou sortie analogique (PWM, valeur de 0 à 255, sur D3, D5, D6, D9, D10 et D11 seulement)."
+		],
+		"configBody": "Pour chaque entrée logique, la page règle le mode (avec ou sans pull-up interne) et l'inversion : cochée, la variable est vraie quand la broche est à 0 V, câblage habituel d'un bouton entre la broche et la masse. Les erreurs d'adresse sont signalées par l'analyse.",
+		"actionsTitle": "Charger le programme et ouvrir la liaison en ligne",
+		"actionsIntro": "Dès qu'une carte est configurée, deux actions apparaissent dans la barre d'outils. Il n'y a pas de liaison permanente par défaut, comme dans un outil d'automatisme :",
+		"actionsItems": [
+			"Charger le programme dans la carte (mode Conception) : Studomate ouvre une liaison le temps du chargement, compile le projet, vérifie qu'il tient dans la carte (environ 1 Ko de programme et 512 octets de variables) et indique précisément ce qui ne tient pas le cas échéant, puis referme la liaison. La carte exécute ensuite le programme seule, câble USB débranché, et le relance à chaque mise sous tension ;",
+			"Liaison en ligne : ouvre une liaison que vous gardez jusqu'à « Fermer la liaison ». Elle ne change pas ce que fait la carte. Elle donne accès aux icônes ▶ (lancer le programme de la carte, depuis son état initial) et ■ (l'arrêter, ses sorties sont alors coupées), et un badge indique ce que fait la carte. Charger le programme pendant une liaison en ligne la laisse ouverte."
+		],
+		"actionsOutro": "La première fois, Studomate propose d'installer son firmware sur la carte : le programme présent est alors effacé. Ouvrir une liaison redémarre la carte : si elle contient un programme, il démarre un instant depuis son état initial.",
+		"modesTitle": "Les modes qui utilisent la carte",
+		"modesIntro": "Avec une carte configurée, le menu des modes propose deux entrées de plus. Elles ouvrent la liaison si elle ne l'est pas, et la referment en les quittant si ce sont elles qui l'avaient ouverte :",
+		"modesItems": [
+			"Simulation avec E/S réelles : la simulation tourne dans Studomate, mais les entrées câblées prennent la valeur lue sur leur broche et les sorties de la simulation commandent les broches. Le programme de la carte, s'il tournait, est arrêté. Les entrées câblées ne sont plus modifiables à la main ; les variables sans adresse restent pilotables depuis l'IHM et la table de visualisation, ce qui permet de mêler éléments réels et virtuels. Si la liaison est perdue ou si l'onglet passe en arrière-plan, les sorties de la carte sont coupées ;",
+			"Observation de la carte : Studomate n'exécute rien, il affiche ce que la carte rapporte du programme qu'elle exécute. Les étapes du grafcet s'allument, les contacts et les liaisons du Ladder s'animent, la table de visualisation et l'IHM montrent les valeurs réelles. Le programme de la carte doit être celui du projet, comparé par son identifiant : sinon Studomate demande de le recharger. Si le programme est arrêté, une fenêtre propose de le démarrer ou d'annuler. Il n'y a ni pause ni pas-à-pas, et l'édition est verrouillée."
+		],
+		"observationTitle": "Écrire et forcer en observation",
+		"observationIntro": "En observation, les variables s'écrivent depuis Studomate comme en simulation : on saisit une entrée qui n'est pas câblée sur une broche, on écrit une mémoire ou on force une variable depuis la table de visualisation et l'IHM. Une entrée câblée sur une broche reste lue sur la broche.",
+		"observationOutro": "Un forçage est retenu par la carte jusqu'à sa libération. Studomate libère tout ce qui est forcé quand on quitte l'observation, mais si la liaison est perdue avant, la valeur forcée reste sur la carte jusqu'à son prochain redémarrage. Si la carte signale un défaut (division par zéro par exemple) ou si son programme est arrêté, l'observation est quittée et la cause est affichée.",
+		"behaviorTitle": "Ce que le programme de la carte ne reprend pas",
+		"behaviorItems": [
+			"les types REAL et STRING ne sont pas pris en charge par la carte : l'analyse le signale ;",
+			"une entrée lue par un programme mais sans adresse reste à faux sur la carte : l'analyse émet un avertissement ;",
+			"le champ « comportement » des variables (bouton-poussoir, interrupteur, NO/NC, curseur) ne sert qu'à la simulation. Sur la carte, c'est le câblage réel qui compte : le NO/NC d'un contact se règle par l'inversion de sa broche, les bornes d'un curseur ne s'appliquent pas, et une entrée sans adresse démarre toujours à faux, même en NC."
+		],
+		"limitsTitle": "Limites",
+		"limitsItems": [
+			"seul l'Arduino Uno R3 d'origine est pris en charge (pas les clones à bootloader différent, ni les autres cartes) ;",
+			"un onglet en arrière-plan ralentit la simulation : avec les E/S réelles, les sorties sont alors coupées. Le programme embarqué n'est pas concerné ;",
+			"les entrées sont lues avec un antirebond de 5 ms ; une impulsion plus courte que la période de lecture peut être manquée."
 		]
 	},
 	"navHeading": "Plan du manuel",

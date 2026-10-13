@@ -37,6 +37,14 @@
 		"properties": "Propriétés",
 		"hardwareConfiguration": "Configuration matérielle"
 	},
+	"target": {
+		"title": "Cible",
+		"upload": "Charger le programme",
+		"link": "Liaison en ligne",
+		"unlink": "Fermer la liaison",
+		"start": "Démarrer le programme",
+		"stop": "Arrêter le programme"
+	},
 	"help": {
 		"title": "Aide",
 		"userManual": "Manuel utilisateur",

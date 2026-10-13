@@ -63,7 +63,16 @@ export interface BytecodeLayout {
 	routineProgramIds: (string | null)[];
 	/** Index in the image of each kept variable, by variable name. */
 	variableIndexByName: Record<string, number>;
+	/** Each kept variable with its storage class and type, in index order. */
+	variables: VariableLayout[];
 	imageSize: number;
+}
+
+export interface VariableLayout {
+	name: string;
+	index: number;
+	storageClass: StorageClass;
+	typeCode: TypeCode;
 }
 
 export interface BytecodeImage {
@@ -689,7 +698,7 @@ export function imageIdentifier(image: Uint8Array): number {
 
 /**
  * Translates a compiled project into the bytecode image run by the Arduino VM
- * (`_ai/support-arduino/spec-bytecode.md`). Throws `BytecodeGenerationError` when the project
+ * (`BYTECODE-SPEC.md`). Throws `BytecodeGenerationError` when the project
  * holds something the format cannot express: the analysis should have rejected it.
  */
 export default function generateBytecode(
@@ -788,6 +797,9 @@ export default function generateBytecode(
 		variableIndexByName: Object.fromEntries(
 			[...slots].map(([name, slot]) => [name, slot.index]),
 		),
+		variables: [...slots]
+			.map(([name, slot]) => ({ name, ...slot }))
+			.sort((a, b) => a.index - b.index),
 		imageSize:
 			HEADER_SIZE +
 			ioTable.length +

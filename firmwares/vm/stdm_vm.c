@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-/* Opcodes (spec §4). */
+/* Opcodes (README §4). */
 enum {
 	OP_PUSH0 = 0x01, OP_PUSH1 = 0x02, OP_PUSH8 = 0x03, OP_PUSH16 = 0x04, OP_PUSH32 = 0x05,
 	OP_LOAD = 0x06, OP_STORE = 0x07, OP_POP = 0x08,
@@ -21,7 +21,7 @@ extern uint32_t stdm_executed_ops;
 #define STDM_COUNT_OP() ((void)0)
 #endif
 
-/* Type codes (spec §2). */
+/* Type codes (README §2). */
 enum {
 	T_BOOL = 0, T_INT = 1, T_WORD = 2, T_DINT = 3, T_DWORD = 4, T_TIME = 5, T_INTERNAL = 6
 };
@@ -357,8 +357,8 @@ static uint32_t variable_load(const stdm_vm *vm, uint8_t index) {
 	}
 }
 
-/* Writes a cell value truncated to the storage class of the variable. */
-static void variable_store(stdm_vm *vm, uint8_t index, uint32_t value) {
+/* Writes a cell value truncated to the storage class of the variable, forced or not. */
+static void variable_write(stdm_vm *vm, uint8_t index, uint32_t value) {
 	layout_t l = vm_layout(vm);
 	uint8_t *at = &vm->memory[variable_offset(&l, index)];
 	switch (class_of(&l, index)) {
@@ -376,7 +376,26 @@ static void variable_store(stdm_vm *vm, uint8_t index, uint32_t value) {
 	}
 }
 
+static uint8_t is_forced(const stdm_vm *vm, uint8_t index) {
+	return (uint8_t)((vm->forced[index >> 3] >> (index & 7)) & 1u);
+}
+
+/* The write of the program: ignored on a forced variable. */
+static void variable_store(stdm_vm *vm, uint8_t index, uint32_t value) {
+	if (is_forced(vm, index)) return;
+	variable_write(vm, index, value);
+}
+
 uint8_t stdm_vm_fault(const stdm_vm *vm) { return vm->fault; }
+
+uint16_t stdm_vm_cycle_count(const stdm_vm *vm) { return vm->cycle_count; }
+
+const uint8_t *stdm_vm_memory(const stdm_vm *vm) { return vm->memory; }
+
+uint16_t stdm_vm_memory_size(const stdm_vm *vm) {
+	return (uint16_t)(vm->bool_count + 2u * (uint16_t)(vm->int_count + vm->word_count) +
+		4u * vm->int32_count);
+}
 
 uint8_t stdm_vm_variable_count(const stdm_vm *vm) {
 	return (uint8_t)(vm->bool_count + vm->int_count + vm->word_count + vm->int32_count);
@@ -385,7 +404,25 @@ uint8_t stdm_vm_variable_count(const stdm_vm *vm) {
 int32_t stdm_vm_get_variable(const stdm_vm *vm, uint8_t index) { return (int32_t)variable_load(vm, index); }
 
 void stdm_vm_set_variable(stdm_vm *vm, uint8_t index, int32_t value) {
-	variable_store(vm, index, (uint32_t)value);
+	variable_write(vm, index, (uint32_t)value);
+}
+
+uint8_t stdm_vm_force(stdm_vm *vm, uint8_t index, int32_t value) {
+	if (index >= stdm_vm_variable_count(vm)) return 0;
+	variable_write(vm, index, (uint32_t)value);
+	vm->forced[index >> 3] = (uint8_t)(vm->forced[index >> 3] | (1u << (index & 7)));
+	return 1;
+}
+
+uint8_t stdm_vm_release(stdm_vm *vm, uint8_t index) {
+	if (index >= stdm_vm_variable_count(vm)) return 0;
+	vm->forced[index >> 3] = (uint8_t)(vm->forced[index >> 3] & ~(1u << (index & 7)));
+	return 1;
+}
+
+void stdm_vm_release_all(stdm_vm *vm) {
+	uint8_t i;
+	for (i = 0; i < sizeof vm->forced; i++) vm->forced[i] = 0;
 }
 
 /* ------------------------------------------------------------------ execution */
@@ -714,6 +751,7 @@ static void run_cycle(stdm_vm *vm, uint32_t dt) {
 	read_inputs(vm);
 	update_system_variables(vm, dt);
 	vm->first_cycle = 0;
+	vm->cycle_count++;
 	for (r = 0; r < vm->scan_count && vm->fault == STDM_FAULT_NONE; r++) run_routine(vm, r, dt);
 	write_outputs(vm, vm->fault != STDM_FAULT_NONE);
 }
@@ -768,6 +806,8 @@ stdm_status stdm_vm_start(stdm_vm *vm, const stdm_platform *platform, uint16_t c
 	vm->code_size = l.code_size;
 	vm->fault = STDM_FAULT_NONE;
 	vm->first_cycle = 1;
+	vm->cycle_count = 0;
+	stdm_vm_release_all(vm);
 	vm->last_tick = 0;
 	for (i = 0; i < STDM_SYSTEM_VARIABLE_COUNT; i++) vm->sys_phase[i] = 0;
 	for (cell = 0; cell < STDM_VM_MEM_BYTES; cell++) vm->memory[cell] = 0;

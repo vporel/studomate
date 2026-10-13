@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -270,6 +270,25 @@ describe("VariableSelector — suggestions", () => {
 		expect(screen.getByRole("listbox")).toBe(listboxBefore);
 		expect(screen.getByText("Marche")).toBeInTheDocument();
 		expect(screen.getByText("Mnémonique")).toBeInTheDocument();
+	});
+});
+
+describe("VariableSelector — validation au clavier", () => {
+	it("Entrée sur une suggestion surlignée au clavier la commite", async () => {
+		const variables = [
+			new Variable("v1", "E0", "logic-input", "BOOL"),
+			new Variable("v2", "E1", "logic-input", "BOOL"),
+		];
+		const { onCommit } = setup({ value: "", variables });
+
+		act(() => input().focus());
+		fireEvent.keyDown(input(), { key: "ArrowDown" });
+		fireEvent.keyDown(input(), { key: "ArrowDown" });
+		fireEvent.keyDown(input(), { key: "Enter" });
+		await act(async () => {});
+
+		expect(onCommit).toHaveBeenCalledTimes(1);
+		expect(onCommit).toHaveBeenCalledWith("E1");
 	});
 });
 

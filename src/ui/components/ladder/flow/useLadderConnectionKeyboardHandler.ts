@@ -3,6 +3,7 @@
 import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
 import { Edge } from "@xyflow/react";
 import { useCallback } from "react";
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { useLadderStore } from "../context/LadderContext";
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import { LadderConnectionEdgeType } from "../edges/LadderConnectionEdge";
@@ -22,6 +23,7 @@ export default function useLadderConnectionKeyboardHandler(edges: Edge[]) {
 	return useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+			if (isTextEntryTarget(e.target)) return;
 			const selectedEdges = edges.filter(
 				(edge) => edge.selected && edge.type === LADDER_CONNECTION_EDGE_TYPE,
 			);

@@ -1,6 +1,7 @@
 import FakeRemoteIoBoard, {
 	createManualHeartbeat,
 } from "@tests/utils/fake-remote-io-board";
+import { encodeFrame } from "./frame";
 import generateBytecode from "@/bytecode/bytecode.generator";
 import { compiledProject, plcVariable } from "@tests/utils/bytecode-program";
 import RemoteIoClient, {
@@ -733,5 +734,267 @@ describe("RemoteIoClient.runProgram and stopProgram", () => {
 		const { client } = setup();
 		await expect(client.runProgram()).rejects.toThrow("not linked");
 		await expect(client.stopProgram()).rejects.toThrow("not linked");
+	});
+});
+
+describe("RemoteIoClient telemetry", () => {
+	const watched = async (onProgramMismatch = jest.fn()) => {
+		const context = setup();
+		await context.client.connect();
+		const snapshots: Array<{ cycle: number; memory: number[] }> = [];
+		await context.client.startWatching({
+			memorySize: 20,
+			imageId: 0x1234abcd,
+			onSnapshot: (snapshot) =>
+				snapshots.push({ cycle: snapshot.cycle, memory: [...snapshot.memory] }),
+			onProgramMismatch,
+		});
+		return { ...context, snapshots, onProgramMismatch };
+	};
+	const memory = (fill: number) => Array.from({ length: 20 }, () => fill);
+
+	it("asks the board to send its memory and delivers each complete image", async () => {
+		const { board, snapshots } = await watched();
+		expect(board.watching).toBe(true);
+
+		board.emitTelemetry(memory(1), { cycle: 4, tag: 0xabcd });
+		board.emitTelemetry(memory(2), { cycle: 5, tag: 0xabcd });
+
+		expect(snapshots).toEqual([
+			{ cycle: 4, memory: memory(1) },
+			{ cycle: 5, memory: memory(2) },
+		]);
+	});
+
+	it("reassembles an image whose frame is split across chunks", async () => {
+		const { board, snapshots } = await watched();
+		const line = encodeFrame("TEL", ["ABCD", "9", "0", "01".repeat(16)]);
+		board.emit(line.slice(0, 20));
+		board.emit(line.slice(20));
+		board.emit(encodeFrame("TEL", ["ABCD", "9", "16", "01".repeat(4)]));
+		expect(snapshots).toEqual([{ cycle: 9, memory: memory(1) }]);
+	});
+
+	it("reports once that the board runs another program, and delivers nothing", async () => {
+		const { board, snapshots, onProgramMismatch } = await watched();
+		board.emitTelemetry(memory(1), { cycle: 1, tag: 0x0001 });
+		board.emitTelemetry(memory(1), { cycle: 2, tag: 0x0001 });
+		expect(onProgramMismatch).toHaveBeenCalledTimes(1);
+		expect(snapshots).toEqual([]);
+	});
+
+	it("does not mix telemetry frames with the answers it waits for", async () => {
+		const { board, client } = await watched();
+		board.emitTelemetry(memory(1), { cycle: 1, tag: 0xabcd });
+		await expect(client.requestStatus()).resolves.toMatchObject({
+			state: "remote-io",
+		});
+	});
+
+	it("stops delivering once watching is stopped, and tells the board", async () => {
+		const { board, client, snapshots } = await watched();
+		await client.stopWatching();
+		expect(board.watching).toBe(false);
+		board.emitTelemetry(memory(1), { cycle: 1, tag: 0xabcd });
+		expect(snapshots).toEqual([]);
+	});
+
+	it("stops delivering when the program is stopped from here", async () => {
+		const { board, client, snapshots } = await watched();
+		await client.stopProgram();
+		board.emitTelemetry(memory(1), { cycle: 1, tag: 0xabcd });
+		expect(snapshots).toEqual([]);
+	});
+
+	it("ignores telemetry nobody asked for", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		expect(() => board.emitTelemetry(memory(1), { cycle: 1 })).not.toThrow();
+	});
+
+	it("gives up and forgets the watch when the board does not answer", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		(board as unknown as { answer: () => void }).answer = () => {};
+		const onSnapshot = jest.fn();
+		await expect(
+			client.startWatching({
+				memorySize: 4,
+				imageId: 1,
+				onSnapshot,
+				onProgramMismatch: jest.fn(),
+			}),
+		).rejects.toMatchObject({ code: "upload-timeout" });
+		board.emitTelemetry([1, 2, 3, 4], { cycle: 1, tag: 1 });
+		expect(onSnapshot).not.toHaveBeenCalled();
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(
+			client.startWatching({
+				memorySize: 1,
+				imageId: 1,
+				onSnapshot: jest.fn(),
+				onProgramMismatch: jest.fn(),
+			}),
+		).rejects.toThrow("not linked");
+	});
+});
+
+describe("RemoteIoClient variable writes", () => {
+	const running = async () => {
+		const context = setup();
+		await context.client.connect();
+		context.board.autonomous = true;
+		return context;
+	};
+
+	it("writes, forces and releases variables of the running program", async () => {
+		const { board, client } = await running();
+
+		await client.writeVariable(2, 7);
+		await client.forceVariable(3, 1);
+		await client.forceVariable(4, 9);
+		await client.releaseVariable(4);
+
+		expect(board.written.get(2)).toBe(7);
+		expect([...board.forced]).toEqual([[3, 1]]);
+	});
+
+	it("releases every forced variable at once", async () => {
+		const { board, client } = await running();
+		await client.forceVariable(1, 1);
+		await client.forceVariable(2, 1);
+		await client.releaseVariable("all");
+		expect(board.forced.size).toBe(0);
+	});
+
+	it("passes a DWORD above 2^31 as its signed pattern", async () => {
+		const { board, client } = await running();
+		await client.forceVariable(0, 4000000000);
+		expect(board.forced.get(0)).toBe(-294967296);
+	});
+
+	it("reports the refusal of the board for an unknown variable", async () => {
+		const { client } = await running();
+		await expect(client.forceVariable(99, 1)).rejects.toMatchObject({
+			code: "upload-rejected",
+			detail: "FORCE_INDEX",
+		});
+	});
+
+	it("reports the refusal of the board when no program runs", async () => {
+		const { board, client } = await running();
+		board.autonomous = false;
+		await expect(client.writeVariable(0, 1)).rejects.toMatchObject({
+			code: "upload-rejected",
+			detail: "FORCE_STATE",
+		});
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(client.writeVariable(0, 1)).rejects.toThrow("not linked");
+		await expect(client.forceVariable(0, 1)).rejects.toThrow("not linked");
+		await expect(client.releaseVariable(0)).rejects.toThrow("not linked");
+	});
+});
+
+describe("RemoteIoClient without remote I/O", () => {
+	const neutral = async () => {
+		const context = setup({ firmware: "1.0.0" });
+		await context.client.connect({ remoteIo: false });
+		return context;
+	};
+
+	it("links without configuring the board or starting the heartbeat", async () => {
+		const { board, client, heartbeat, states } = await neutral();
+		expect(client.getState()).toBe("linked");
+		expect(states).toEqual(["connecting", "linked"]);
+		expect(board.received.map((frame) => frame.command)).not.toContain("CFG");
+		expect(heartbeat.state.tick).toBeNull();
+	});
+
+	it("sends no output image and ignores input images until remote I/O is taken", async () => {
+		const { board, client } = await neutral();
+		const received: RemoteIoInputValues[] = [];
+		client.onInputs((values) => received.push(values));
+		client.setOutputs({ led: true });
+		await flush();
+		board.emitInputs({ "2": 0 });
+		expect(board.outImages()).toEqual([]);
+		expect(received).toEqual([]);
+	});
+
+	it("takes the pins of the board when asked, then serves them", async () => {
+		const { board, client, heartbeat } = await neutral();
+		await client.resumeRemoteIo();
+		expect(
+			board.received.filter((frame) => frame.command === "CFG"),
+		).toHaveLength(1);
+		expect(heartbeat.state.stopped).toBe(false);
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toMatchObject({ "13": 1 });
+	});
+
+	it("reports a refused transfer without configuring the board", async () => {
+		const context = setup({ programCapacity: 20 });
+		await context.client.connect({ remoteIo: false });
+		const image = new Uint8Array(40);
+		await expect(context.client.uploadProgram(image, 1)).rejects.toMatchObject({
+			code: "upload-rejected",
+		});
+		expect(
+			context.board.received.filter((frame) => frame.command === "CFG"),
+		).toHaveLength(0);
+		expect(context.client.getState()).toBe("linked");
+	});
+});
+
+describe("RemoteIoClient.leaveRemoteIo", () => {
+	it("drops the outputs and leaves the board with no pins configured", async () => {
+		const { board, client, heartbeat } = setup();
+		await client.connect();
+		client.setOutputs({ led: true });
+		await flush();
+
+		await client.leaveRemoteIo();
+
+		expect(board.outImages().at(-1)).toEqual({ "13": 0, "9": 0 });
+		expect(
+			board.received.filter((frame) => frame.command === "CFG").at(-1)?.args,
+		).toEqual([]);
+		expect(heartbeat.state.stopped).toBe(true);
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toEqual({ "13": 0, "9": 0 });
+	});
+
+	it("can serve the pins again afterwards", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		await client.leaveRemoteIo();
+
+		await client.resumeRemoteIo();
+
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toMatchObject({ "13": 1 });
+	});
+
+	it("is a no-op when the board does not serve its pins", async () => {
+		const { board, client } = setup();
+		await client.connect({ remoteIo: false });
+		await client.leaveRemoteIo();
+		expect(
+			board.received.filter((frame) => frame.command === "CFG"),
+		).toHaveLength(0);
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(client.leaveRemoteIo()).rejects.toThrow("not linked");
 	});
 });

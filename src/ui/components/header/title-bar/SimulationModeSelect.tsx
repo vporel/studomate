@@ -9,6 +9,12 @@ const SimulationModeSelect = () => {
 	const t = useT("chrome.simulationMode");
 	const simulationMode = useProjectStore((state) => state.simulationMode);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
+	// The program runs on a board: there is no local cycle to pace.
+	const followsBoard = useProjectStore(
+		(state) => state.simulationKind === "observation",
+	);
+
+	if (followsBoard) return null;
 
 	return (
 		<Box

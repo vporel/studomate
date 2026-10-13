@@ -16,7 +16,12 @@ import {
 	clearShareTokenFromUrl,
 	setProjectIdInUrl,
 } from "@/ui/stores/project/url/project-url";
-import { Draft, deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
+import {
+	Draft,
+	deleteDraft,
+	getDraft,
+	saveDraft,
+} from "@/persistence/draft.storage";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
 import trackEvent from "@/ui/services/analytics";
 import { getT } from "@/ui/i18n/translateGlobal";
@@ -203,10 +208,7 @@ export default class ProjectLifecycleManager {
 			}
 			const stored = await get().projectRepository.get(projectId);
 			if (draft && draftProject) {
-				if (
-					stored &&
-					stored.lastModificationDate.getTime() > draft.savedAt
-				) {
+				if (stored && stored.lastModificationDate.getTime() > draft.savedAt) {
 					// Le projet enregistré est plus récent que le brouillon : proposer le choix
 					this.openDraftConflictModal(projectId, draft);
 					return true;

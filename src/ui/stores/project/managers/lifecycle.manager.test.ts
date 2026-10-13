@@ -1,6 +1,5 @@
 /** @jest-environment jsdom */
-import Grafcet, {
-} from "@/schemas/grafcet/grafcet.schema";
+import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Project, {
 	DEFAULT_PROJECT_NAME,
 } from "@/schemas/project/project.schema";
@@ -98,12 +97,18 @@ describe("ProjectLifecycleManager", () => {
 		it("injecte l'énoncé du template dans le projet, exercice comme solution", async () => {
 			const store = createProjectStore();
 
-			await lifecycle(store).newProjectFromTemplate("traffic-light", "exercise");
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"exercise",
+			);
 			expect(store.getState().project?.exercise?.statement).toContain(
 				"Feu tricolore",
 			);
 
-			await lifecycle(store).newProjectFromTemplate("traffic-light", "solution");
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"solution",
+			);
 			expect(store.getState().project?.exercise?.statement).toContain(
 				"Feu tricolore",
 			);
@@ -549,7 +554,9 @@ describe("ProjectLifecycleManager", () => {
 				} as never,
 			});
 
-			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(false);
+			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(
+				false,
+			);
 		});
 	});
 

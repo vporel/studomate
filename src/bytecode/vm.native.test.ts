@@ -471,6 +471,106 @@ describe("native VM", () => {
 		});
 	});
 
+	describe("forced variables", () => {
+		it("keeps the value of a forced variable whatever the program writes, until released", () => {
+			const { vm, at } = build([plcVariable("i:INT")], [["i := i + 1"]]);
+			const cycles = vm.run([
+				"cycle",
+				`force ${at("i")} 100`,
+				"cycle",
+				"cycle",
+				`release ${at("i")}`,
+				"cycle",
+			]);
+			expect(cycles.map((cycle) => cycle.variables[at("i")])).toEqual([
+				1, 100, 100, 101,
+			]);
+		});
+
+		it("keeps a forced output on its pin", () => {
+			const { vm, at } = build(
+				[plcVariable("a:BOOL", "output", "id-a")],
+				[["a := false"]],
+				{
+					pins: [{ pin: "13", mode: "O" }],
+					inputs: [],
+					outputs: [
+						{
+							variableId: "id-a",
+							pin: "13",
+							kind: "digital",
+							range: { min: 0, max: 1 },
+						},
+					],
+				},
+			);
+			const [cycle] = vm.run([`force ${at("a")} 1`, "cycle"]);
+			expect(cycle.pins[13]).toBe(1);
+		});
+
+		it("lets the forced value override a pin that feeds an input", () => {
+			const { vm, at } = build(
+				[plcVariable("btn:BOOL", "input", "id-btn")],
+				[[]],
+				{
+					pins: [{ pin: "2", mode: "I" }],
+					inputs: [
+						{
+							variableId: "id-btn",
+							pin: "2",
+							kind: "digital",
+							inverted: false,
+						},
+					],
+					outputs: [],
+				},
+			);
+			const cycles = vm.run([
+				"pin 2 1",
+				"cycle",
+				`force ${at("btn")} 0`,
+				"cycle",
+			]);
+			expect(cycles.map((cycle) => cycle.variables[at("btn")])).toEqual([1, 0]);
+		});
+
+		it("holds the output of a timer block back from a forced elapsed time", () => {
+			const { vm, at } = build(
+				[
+					plcVariable("in:BOOL"),
+					plcVariable("last:internal-bool"),
+					plcVariable("et:internal-number"),
+					plcVariable("q:internal-bool"),
+				],
+				[
+					[
+						BlocksBuilder.buildTimerNode(
+							"TON",
+							ident("in"),
+							ident("last"),
+							LiteralsBuilder.buildNumberNode(250),
+							ident("et"),
+							ident("q"),
+						),
+					],
+				],
+			);
+			const cycles = vm.run([
+				`set ${at("in")} 1`,
+				"cycle",
+				`force ${at("et")} 1000`,
+				"cycle",
+			]);
+			expect(cycles[1].variables[at("et")]).toBe(1000);
+			expect(cycles[1].variables[at("q")]).toBe(1);
+		});
+
+		it("ignores a force on an index that is not a variable", () => {
+			const { vm } = build([plcVariable("i:INT")], [["i := 1"]]);
+			expect(() => vm.run(["force 200 1", "cycle"])).not.toThrow();
+		});
+	});
+
 	describe("image verification", () => {
 		it("refuses to start on a corrupted image", () => {
 			const { image } = build([plcVariable("i:INT")], [["i := 1"]]);

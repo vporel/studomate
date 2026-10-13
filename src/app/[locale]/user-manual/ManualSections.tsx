@@ -7,6 +7,7 @@ import CrossReferencesSection from "./sections/CrossReferencesSection";
 import ExplorerSection from "./sections/ExplorerSection";
 import GettingStartedSection from "./sections/GettingStartedSection";
 import GrafcetSection from "./sections/GrafcetSection";
+import HardwareSection from "./sections/HardwareSection";
 import IntroSection from "./sections/IntroSection";
 import HmiSection from "./sections/HmiSection";
 import LadderSection from "./sections/LadderSection";
@@ -43,6 +44,7 @@ export default function ManualSections({ selected }: { selected: string }) {
 			{isSectionOrChild(selected, "analysis") && (
 				<AnalysisSection selected={selected} />
 			)}
+			{selected === "hardware" && <HardwareSection />}
 			{selected === "shortcuts" && <ShortcutsSection />}
 		</Box>
 	);

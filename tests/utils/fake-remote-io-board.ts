@@ -34,6 +34,16 @@ export default class FakeRemoteIoBoard implements SerialTransport {
 	programming = false;
 	/** True after `PROG_STOP`, until the next `CFG`, `PROG_RUN` or transfer. */
 	stopped = false;
+	/** Fault code the board reports in `STATUS` (0: none). */
+	fault = 0;
+	/** Variables written with `SET`, by index. */
+	written = new Map<number, number>();
+	/** Variables forced with `FORCE`, by index. */
+	forced = new Map<number, number>();
+	/** Number of variables of the program, for the index check. */
+	variableCount = 8;
+	/** True between `WATCH 1` and `WATCH 0`. */
+	watching = false;
 	private incoming: number[] = [];
 	private expectedSeq = 0;
 	private programSize = 0;
@@ -105,6 +115,29 @@ export default class FakeRemoteIoBoard implements SerialTransport {
 		const middle = Math.floor(line.length / 2);
 		this.emit(line.slice(0, middle));
 		this.emit(line.slice(middle));
+	}
+
+	/** Sends an image of the variable memory in `TEL` frames of 16 bytes, as the firmware does. */
+	emitTelemetry(
+		memory: ArrayLike<number>,
+		{ cycle = 1, tag = 0 }: { cycle?: number; tag?: number } = {},
+	) {
+		for (let offset = 0; offset < memory.length; offset += 16) {
+			const bytes = Array.from(
+				{ length: Math.min(16, memory.length - offset) },
+				(_, i) => memory[offset + i],
+			);
+			this.emit(
+				encodeFrame("TEL", [
+					tag.toString(16).toUpperCase().padStart(4, "0"),
+					String(cycle),
+					String(offset),
+					bytes
+						.map((b) => b.toString(16).toUpperCase().padStart(2, "0"))
+						.join(""),
+				]),
+			);
+		}
 	}
 
 	emit(chunk: string) {
@@ -181,6 +214,7 @@ export default class FakeRemoteIoBoard implements SerialTransport {
 			this.autonomous = false;
 			this.stopped = true;
 			this.programming = false;
+			this.watching = false;
 			this.emit(encodeFrame("PROG_STOPPED"));
 		} else if (frame.command === "PROG_END") {
 			if (!this.programming) return error("PROG_STATE");
@@ -222,17 +256,44 @@ export default class FakeRemoteIoBoard implements SerialTransport {
 				: 0;
 			this.emit(
 				encodeFrame("STATUS", [
-					this.autonomous ? "1" : this.stopped ? "3" : "0",
-					"0",
+					this.fault > 0
+						? "2"
+						: this.autonomous
+							? "1"
+							: this.stopped
+								? "3"
+								: "0",
+					String(this.fault),
 					id.toString(16).toUpperCase().padStart(8, "0"),
 				]),
 			);
+		} else if (["SET", "FORCE", "UNFORCE"].includes(frame.command)) {
+			if (!this.autonomous)
+				return this.emit(encodeFrame("ERR", ["FORCE_STATE"]));
+			const target = frame.args[0];
+			const index = Number(target);
+			if (frame.command === "UNFORCE" && target === "ALL") {
+				this.forced.clear();
+			} else if (!(index >= 0 && index < this.variableCount)) {
+				return this.emit(encodeFrame("ERR", ["FORCE_INDEX"]));
+			} else if (frame.command === "UNFORCE") {
+				this.forced.delete(index);
+			} else if (frame.command === "FORCE") {
+				this.forced.set(index, Number(frame.args[1]));
+			} else {
+				this.written.set(index, Number(frame.args[1]));
+			}
+			this.emit(encodeFrame(frame.command === "SET" ? "SET_OK" : "FORCE_OK"));
+		} else if (frame.command === "WATCH") {
+			this.watching = frame.args[0] === "1";
+			this.emit(encodeFrame("WATCH_OK"));
 		} else if (frame.command.startsWith("PROG_")) {
 			this.answerProgram(frame);
 		} else if (frame.command === "CFG") {
 			this.autonomous = false;
 			this.programming = false;
 			this.stopped = false;
+			this.watching = false;
 			const unknown = frame.args
 				.map((arg) => arg.split(":")[0])
 				.find((pin) => !this.options.knownPins.includes(pin));

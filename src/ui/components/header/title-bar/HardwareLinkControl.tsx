@@ -2,14 +2,13 @@
 
 import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
 import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
-import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import SettingsInputComponentRoundedIcon from "@mui/icons-material/SettingsInputComponentRounded";
 import StopRoundedIcon from "@mui/icons-material/StopRounded";
-import UploadRoundedIcon from "@mui/icons-material/UploadRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import {
 	Box,
 	Button,
@@ -17,6 +16,7 @@ import {
 	CircularProgress,
 	IconButton,
 	Tooltip,
+	Typography,
 } from "@mui/material";
 import { useEffect, useState, type ReactNode } from "react";
 import { useShallow } from "zustand/shallow";
@@ -48,7 +48,10 @@ const ActionButton = ({
 	</Tooltip>
 );
 
-/** Status badge and link button of the hardware target; absent for a purely virtual project. */
+/**
+ * Actions on the board of the project (load the program, online link, start and stop its program)
+ * and the state of the link, shown only while there is one. Absent for a purely virtual project.
+ */
 const HardwareLinkControl = () => {
 	const t = useT("chrome.hardwareLink");
 	const {
@@ -58,6 +61,8 @@ const HardwareLinkControl = () => {
 		designing,
 		boardMode,
 		programPresent,
+		kind,
+		mode,
 		upload,
 		hardwareLinkManager,
 	} = useProjectStore(
@@ -68,6 +73,8 @@ const HardwareLinkControl = () => {
 			designing: state.mode === ProjectMode.DESIGN,
 			boardMode: state.hardwareLink.boardMode,
 			programPresent: state.hardwareLink.programPresent,
+			kind: state.simulationKind,
+			mode: state.mode,
 			upload: state.hardwareUpload,
 			hardwareLinkManager: state.hardwareLinkManager,
 		})),
@@ -98,85 +105,91 @@ const HardwareLinkControl = () => {
 	}
 
 	const board = HardwareDeviceRegistry.get(modelId)?.label ?? modelId;
+	// A mode of the menu uses the board: its program and pins are not left to the user meanwhile.
+	const boardInUse = mode === ProjectMode.SIMULATION && kind !== "virtual";
 
-	return (
-		<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-			{uploading ? (
+	const badge = () => {
+		if (uploading) {
+			return (
 				<Chip
 					size="small"
 					variant="outlined"
 					icon={<CircularProgress size={12} />}
 					label={t("uploading", { percent })}
 				/>
-			) : status === "linked" && boardMode === "program-running" ? (
-				<Chip size="small" color="info" label={t("running", { board })} />
-			) : status === "linked" && boardMode === "program-stopped" ? (
-				<Chip size="small" color="warning" label={t("stopped", { board })} />
-			) : status === "linked" ? (
-				<Chip size="small" color="success" label={t("linked", { board })} />
-			) : status === "connecting" ? (
+			);
+		}
+		if (status === "connecting") {
+			return (
 				<Chip
 					size="small"
 					variant="outlined"
 					icon={<CircularProgress size={12} />}
 					label={flashing ? t("flashing") : t("connecting")}
 				/>
-			) : (
-				<Chip
-					size="small"
-					variant="outlined"
-					color="warning"
-					label={t("disconnected", { board })}
-				/>
+			);
+		}
+		if (status !== "linked") return null;
+		if (mode === ProjectMode.SIMULATION && kind === "observation") {
+			return <Chip size="small" color="info" label={t("observing")} />;
+		}
+		switch (boardMode) {
+			case "remote-io":
+				return <Chip size="small" color="success" label={t("remoteIo")} />;
+			case "program-running":
+				return <Chip size="small" color="info" label={t("running")} />;
+			case "program-stopped":
+				return <Chip size="small" color="warning" label={t("stopped")} />;
+			default:
+				return <Chip size="small" color="success" label={t("online")} />;
+		}
+	};
+
+	return (
+		<Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+			<Typography variant="body2" sx={{ fontWeight: 600, mr: 0.5 }}>
+				{board}
+			</Typography>
+			{badge()}
+			{boardMode === "program-running" && status === "linked" && (
+				<ActionButton
+					title={t("stop")}
+					disabled={uploading || boardInUse}
+					onClick={() => void hardwareLinkManager.stopProgram()}
+				>
+					<StopRoundedIcon fontSize="small" />
+				</ActionButton>
 			)}
-			{status === "linked" ? (
-				<>
-					{boardMode === "program-running" && (
-						<ActionButton
-							title={t("stop")}
-							disabled={uploading}
-							onClick={() => void hardwareLinkManager.stopProgram()}
-						>
-							<StopRoundedIcon fontSize="small" />
-						</ActionButton>
-					)}
-					{boardMode !== "program-running" && programPresent && (
-						<ActionButton
-							title={t("start")}
-							disabled={uploading}
-							onClick={() => void hardwareLinkManager.runProgram()}
-						>
-							<PlayArrowRoundedIcon fontSize="small" />
-						</ActionButton>
-					)}
-					{boardMode !== "remote-io" && (
-						<ActionButton
-							title={t("resume")}
-							disabled={uploading}
-							onClick={() => void hardwareLinkManager.resumeRemoteIo()}
-						>
-							<SettingsInputComponentRoundedIcon fontSize="small" />
-						</ActionButton>
-					)}
+			{boardMode !== "program-running" &&
+				programPresent &&
+				status === "linked" && (
 					<ActionButton
-						title={t("upload")}
-						disabled={!designing || uploading}
-						onClick={() => void hardwareLinkManager.uploadProgram()}
+						title={t("start")}
+						disabled={uploading || boardInUse}
+						onClick={() => void hardwareLinkManager.runProgram()}
 					>
-						<UploadRoundedIcon fontSize="small" />
+						<PlayArrowRoundedIcon fontSize="small" />
 					</ActionButton>
-					<Button
-						size="small"
-						disabled={uploading}
-						onClick={() => void hardwareLinkManager.unlink()}
-					>
-						{t("unlink")}
-					</Button>
-				</>
+				)}
+			<ActionButton
+				title={t("upload")}
+				disabled={!designing || uploading || status === "connecting"}
+				onClick={() => void hardwareLinkManager.uploadProgram()}
+			>
+				<FileDownloadRoundedIcon fontSize="small" />
+			</ActionButton>
+			{status === "linked" ? (
+				<Button
+					size="small"
+					disabled={uploading || boardInUse}
+					onClick={() => void hardwareLinkManager.unlink()}
+				>
+					{t("unlink")}
+				</Button>
 			) : (
 				<Button
 					size="small"
-					disabled={status === "connecting"}
+					disabled={status === "connecting" || uploading}
 					onClick={() => void hardwareLinkManager.link()}
 				>
 					{t("link")}

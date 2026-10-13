@@ -15,6 +15,7 @@ const fileMenu = makeMenu("file", "Fichier");
 const projectMenu = makeMenu("project", "Projet");
 const editMenu = makeMenu("edit", "Édition");
 const viewMenu = makeMenu("view", "Affichage");
+const targetMenu = makeMenu("target", "Cible");
 const helpMenu = makeMenu("help", "Aide");
 
 jest.mock("./file/useFileMenu", () => ({
@@ -32,6 +33,10 @@ jest.mock("./edit/useEditMenu", () => ({
 jest.mock("./view/useViewMenu", () => ({
 	__esModule: true,
 	default: () => viewMenu,
+}));
+jest.mock("./target/useTargetMenu", () => ({
+	__esModule: true,
+	default: () => targetMenu,
 }));
 jest.mock("./help/useHelpMenu", () => ({
 	__esModule: true,
@@ -60,6 +65,21 @@ describe("AppMenuBar — navigation clavier", () => {
 		expect(title("Fichier")).toBeInTheDocument();
 	});
 
+	it("ordonne les menus : Fichier, Édition, Affichage, Projet, Cible, Aide", () => {
+		renderWithI18n(<AppMenuBar />);
+		const names = screen
+			.getAllByRole("menuitem", { hidden: true })
+			.map((el) => el.textContent);
+		expect(names).toEqual([
+			"Fichier",
+			"Édition",
+			"Affichage",
+			"Projet",
+			"Cible",
+			"Aide",
+		]);
+	});
+
 	it("un seul titre est tabbable (roving tabindex)", () => {
 		renderWithI18n(<AppMenuBar />);
 		expect(title("Fichier")).toHaveAttribute("tabindex", "0");
@@ -71,9 +91,9 @@ describe("AppMenuBar — navigation clavier", () => {
 		title("Fichier").focus();
 
 		fireEvent.keyDown(title("Fichier"), { key: "ArrowRight" });
-		expect(title("Projet")).toHaveFocus();
+		expect(title("Édition")).toHaveFocus();
 
-		fireEvent.keyDown(title("Projet"), { key: "ArrowLeft" });
+		fireEvent.keyDown(title("Édition"), { key: "ArrowLeft" });
 		expect(title("Fichier")).toHaveFocus();
 
 		fireEvent.keyDown(title("Fichier"), { key: "ArrowLeft" });

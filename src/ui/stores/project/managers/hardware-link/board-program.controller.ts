@@ -1,4 +1,3 @@
-import arduinoIoBindings from "@/bytecode/arduino-io-bindings";
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import {
 	isRemoteIoUploadError,
@@ -17,7 +16,7 @@ import {
 import type HardwareSimulationBridge from "./hardware-simulation.bridge";
 import buildProgram from "./program-builder";
 
-/** The program the linked board holds: sending it, starting it, stopping it, and the pins. */
+/** The program the linked board holds: loading it, starting it, stopping it, and the pins. */
 export default class BoardProgramController {
 	constructor(
 		private readonly context: HardwareLinkContext,
@@ -25,25 +24,24 @@ export default class BoardProgramController {
 	) {}
 
 	/**
-	 * Compiles the project, checks that it fits the board, and sends it. The board then runs the
+	 * Compiles the project, checks that it fits the board, and loads it. The board then runs the
 	 * program by itself. Only in Design mode: no PLC cycle may write to the board during the
-	 * transfer.
+	 * transfer. Without a link, one is opened for the transfer and closed after it.
 	 */
 	async upload(): Promise<void> {
 		const { session, notifier } = this.context;
 		const state = this.context.getStoreState();
-		const client = session.client;
+		const project = state.project;
+		const resolved = this.context.resolvePlan();
 		if (
-			state.hardwareLink.status !== "linked" ||
-			!client ||
+			!project ||
+			!resolved ||
 			state.mode !== ProjectMode.DESIGN ||
-			state.hardwareUpload.phase !== "idle"
+			state.hardwareUpload.phase !== "idle" ||
+			state.hardwareLink.status === "connecting"
 		) {
 			return;
 		}
-		const resolved = this.context.resolvePlan();
-		const project = state.project;
-		if (!resolved || !project) return;
 
 		const { ok, projectAnalysisResult } =
 			state.simulationManager.analyze(false);
@@ -54,7 +52,7 @@ export default class BoardProgramController {
 		const built = buildProgram({
 			project,
 			analysis: projectAnalysisResult,
-			ioBindings: arduinoIoBindings(resolved.plan),
+			ioBindings: this.context.ioBindings(resolved.plan),
 			limits: resolved.descriptor.limits,
 			cyclePeriodMs: state.plcConfig.scanTimeMs,
 		});
@@ -68,7 +66,12 @@ export default class BoardProgramController {
 		}
 		const { image } = built;
 
+		if (!(await this.context.ensureLink("upload"))) return;
+		const client = session.client;
+		if (!client) return;
 		const attempt = session.attempt;
+		const temporary = session.openedBy === "upload";
+
 		this.setUploadState({
 			phase: "uploading",
 			sentBytes: 0,
@@ -86,6 +89,7 @@ export default class BoardProgramController {
 			// A lost link has already been reported and reset.
 			if (!session.isCurrent(attempt)) return;
 			notifier.programUploadFailed(uploadFailureOf(error));
+			if (temporary) await this.context.unlink();
 			return;
 		}
 		this.setUploadState(IDLE_HARDWARE_UPLOAD);
@@ -94,6 +98,7 @@ export default class BoardProgramController {
 		session.plan = resolved.plan;
 		this.setBoardMode("program-running", { programPresent: true });
 		notifier.programUploaded();
+		if (temporary) await this.context.unlink();
 	}
 
 	/** Starts the program stored in the board, from its initial state. */
@@ -128,39 +133,65 @@ export default class BoardProgramController {
 		this.setBoardMode("program-stopped");
 	}
 
-	/** Takes the pins back from the program of the board, to link them to the project again. */
-	async resumeRemoteIo(): Promise<void> {
+	/**
+	 * Has the board serve its pins to the project (its program, if it runs, is stopped). True when
+	 * the board is serving them.
+	 */
+	async enterRemoteIo(): Promise<boolean> {
 		const { session } = this.context;
 		const state = this.context.getStoreState();
 		const client = session.client;
 		if (
 			state.hardwareLink.status !== "linked" ||
-			state.hardwareLink.boardMode === "remote-io" ||
 			!client ||
 			state.hardwareUpload.phase !== "idle"
 		) {
-			return;
+			return false;
 		}
+		if (state.hardwareLink.boardMode === "remote-io") return true;
 		const resolved = this.context.resolvePlan();
-		if (!resolved) return;
+		if (!resolved) return false;
 		const attempt = session.attempt;
 		try {
 			await client.reconfigure(resolved.plan);
 			await client.resumeRemoteIo();
 		} catch (error) {
-			if (!session.isCurrent(attempt)) return;
+			if (!session.isCurrent(attempt)) return false;
 			void this.context.unlink();
 			this.context.reportFailure(error);
-			return;
+			return false;
 		}
-		if (!session.isCurrent(attempt)) return;
+		if (!session.isCurrent(attempt)) return false;
 		session.plan = resolved.plan;
 		this.bridge.adoptPlan(resolved.plan);
 		this.setBoardMode("remote-io", { plan: resolved.plan });
+		return true;
 	}
 
-	/** Asks the board whether it holds a program, once the link is up. */
-	async refreshPresence(): Promise<void> {
+	/** The board stops serving its pins: its outputs fall back to 0 and it is left alone. */
+	async leaveRemoteIo(): Promise<void> {
+		const { session } = this.context;
+		const client = session.client;
+		if (
+			this.context.getStoreState().hardwareLink.boardMode !== "remote-io" ||
+			!client
+		) {
+			return;
+		}
+		const attempt = session.attempt;
+		try {
+			await client.leaveRemoteIo();
+		} catch {
+			// The board is gone: the link reports it.
+			return;
+		}
+		if (!session.isCurrent(attempt)) return;
+		this.bridge.clearInputs();
+		this.setBoardMode("idle");
+	}
+
+	/** Asks the board what it is doing and whether it holds a program, once the link is up. */
+	async refreshStatus(): Promise<void> {
 		const { session } = this.context;
 		const client = session.client;
 		if (!client) return;
@@ -168,8 +199,11 @@ export default class BoardProgramController {
 		try {
 			const status = await client.requestStatus();
 			if (!session.isCurrent(attempt)) return;
+			const link = this.context.getStoreState().hardwareLink;
+			if (link.status !== "linked") return;
 			this.context.setLinkState({
-				...this.context.getStoreState().hardwareLink,
+				...link,
+				boardMode: boardModeOf(status.state, link.boardMode),
 				programPresent: status.imageId !== 0,
 			});
 		} catch {
@@ -216,6 +250,16 @@ export default class BoardProgramController {
 	private setUploadState(hardwareUpload: HardwareUploadState) {
 		this.context.setStoreState(() => ({ hardwareUpload }));
 	}
+}
+
+/** What the board reports about itself, as a mode; a board serving its pins is told apart here. */
+function boardModeOf(
+	state: "remote-io" | "running" | "fault" | "stopped",
+	current: BoardMode,
+): BoardMode {
+	if (state === "running") return "program-running";
+	if (state === "stopped" || state === "fault") return "program-stopped";
+	return current === "remote-io" ? "remote-io" : "idle";
 }
 
 function uploadFailureOf(error: unknown): ProgramUploadFailure {

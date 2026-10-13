@@ -239,7 +239,9 @@ describe("store — brouillons", () => {
 				data: "{ json invalide",
 			});
 
-			const opened = await store.getState().lifecycleManager.openProject("p1", true);
+			const opened = await store
+				.getState()
+				.lifecycleManager.openProject("p1", true);
 
 			expect(opened).toBe(true);
 			expect(store.getState().hasUnsavedChanges).toBe(false);

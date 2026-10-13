@@ -12,17 +12,23 @@ import { useT } from "@/ui/i18n/useT";
 
 const SimulationControls = () => {
 	const t = useT("chrome.simulationControls");
-	const { mode, simulationMode, simulationPaused, simulationManager } =
-		useProjectStore(
-			useShallow((state) => ({
-				mode: state.mode,
-				simulationMode: state.simulationMode,
-				simulationPaused: state.simulationPaused,
-				simulationManager: state.simulationManager,
-			})),
-		);
+	const {
+		mode,
+		followsBoard,
+		simulationMode,
+		simulationPaused,
+		simulationManager,
+	} = useProjectStore(
+		useShallow((state) => ({
+			mode: state.mode,
+			followsBoard: state.simulationKind === "observation",
+			simulationMode: state.simulationMode,
+			simulationPaused: state.simulationPaused,
+			simulationManager: state.simulationManager,
+		})),
+	);
 
-	if (mode !== ProjectMode.SIMULATION) return null;
+	if (mode !== ProjectMode.SIMULATION || followsBoard) return null;
 
 	if (simulationMode === SimulationMode.CONTINUOUS) {
 		return simulationPaused ? (

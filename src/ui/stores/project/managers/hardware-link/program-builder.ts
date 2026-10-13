@@ -6,13 +6,15 @@ import generateBytecode, {
 } from "@/bytecode/bytecode.generator";
 import type { HardwareDeviceDescriptor } from "@/hardware/hardware-device.descriptor";
 import type { ProjectAnalysisResult } from "@/project-analyser/project.analyser";
-import ProjectCompiler from "@/project-compiler/project.compiler";
+import ProjectCompiler, {
+	type CompiledProject,
+} from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import type Project from "@/schemas/project/project.schema";
 import type { ProgramBlockingIssue } from "./hardware-link.notifier";
 
 export type ProgramBuildResult =
-	| { kind: "built"; image: BytecodeImage }
+	| { kind: "built"; image: BytecodeImage; compiled: CompiledProject }
 	/** The project does not compile, or uses something the board cannot run. */
 	| { kind: "failed"; failure: "compilation" | "unsupported" }
 	/** The program does not fit the board. */
@@ -73,5 +75,5 @@ export default function buildProgram(input: {
 			}),
 		};
 	}
-	return { kind: "built", image };
+	return { kind: "built", image, compiled: compilation.result };
 }

@@ -9,7 +9,9 @@
 	"analyse": "Analyser",
 	"mode": {
 		"design": "Conception",
-		"simulation": "Simulation"
+		"simulation": "Simulation",
+		"simulationHardwareIo": "Simulation avec E/S réelles",
+		"observation": "Observation de la carte"
 	},
 	"simulationMode": {
 		"continuous": "Continu",
@@ -35,21 +37,27 @@
 		"warnings": "(Avertissements)"
 	},
 	"hardwareLink": {
-		"linked": "{board} lié en E/S",
 		"connecting": "Connexion...",
-		"disconnected": "{board} déconnecté",
-		"link": "Lier la carte",
-		"unlink": "Dissocier",
-		"upload": "Téléverser le programme",
-		"running": "{board} exécute son programme",
-		"stopped": "{board} : programme arrêté",
+		"flashing": "Installation du firmware...",
+		"link": "Liaison en ligne",
+		"unlink": "Fermer la liaison",
+		"upload": "Charger le programme dans la carte",
+		"uploading": "Chargement du programme... {percent} %",
+		"online": "En ligne",
+		"remoteIo": "Mode E/S réelles",
+		"observing": "En observation",
+		"running": "Programme en cours",
+		"stopped": "Programme arrêté",
 		"start": "Lancer le programme de la carte",
 		"stop": "Arrêter le programme de la carte",
-		"resume": "Utiliser la carte en E/S",
-		"uploading": "Téléversement du programme... {percent} %",
 		"unsupported": "La liaison USB avec la carte nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet.",
-		"unsupportedAria": "Liaison USB indisponible dans ce navigateur",
-		"flashing": "Téléversement du firmware..."
+		"unsupportedAria": "Liaison USB indisponible dans ce navigateur"
+	},
+	"hardwareObservationDialog": {
+		"title": "Démarrer le programme de la carte ?",
+		"message": "Le programme de la carte est arrêté. Pour l'observer, il doit tourner : il repartira de son état initial.",
+		"cancel": "Annuler",
+		"start": "Démarrer"
 	},
 	"hardwareFirmwareDialog": {
 		"missing": {

@@ -12,6 +12,13 @@ export interface ConformityOptions {
 	/** Probability, per cycle and per input, that the input changes. */
 	changeProbability: number;
 	scanTimeMs?: number;
+	/** Variables forced (or released) just before a cycle, in the simulator and in the VM. */
+	forces?: Array<{
+		cycle: number;
+		name: string;
+		/** Absent: the variable is released. */
+		value?: boolean | number;
+	}>;
 }
 
 export interface ConformityReport {
@@ -126,6 +133,19 @@ export function compareSimulatorAndVm(
 			commands.push(
 				`set ${indexByName[variable.getName()]} ${toNumber(value)}`,
 			);
+		}
+		for (const force of (options.forces ?? []).filter(
+			(f) => f.cycle === cycle,
+		)) {
+			const variable = variablesByName.get(force.name)!;
+			const index = indexByName[force.name];
+			if (force.value === undefined) {
+				plc.releaseVariable(variable.getId());
+				commands.push(`release ${index}`);
+			} else {
+				plc.forceVariable(variable.getId(), force.value);
+				commands.push(`force ${index} ${toNumber(force.value)}`);
+			}
 		}
 		commands.push("cycle");
 		if (cycle === 0) {

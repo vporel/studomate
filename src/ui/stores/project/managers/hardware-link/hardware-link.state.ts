@@ -4,10 +4,11 @@ import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
 export type HardwareLinkStatus = "disconnected" | "connecting" | "linked";
 
 /**
- * What the linked board does with its pins: serves them to Studomate (`remote-io`), runs its own
- * program, or is halted with its pins released.
+ * What the linked board does with its pins: nothing in particular (`idle`), serves them to
+ * Studomate (`remote-io`), runs its own program, or is halted with its pins released.
  */
-export type BoardMode = "remote-io" | "program-running" | "program-stopped";
+export type BoardMode =
+	"idle" | "remote-io" | "program-running" | "program-stopped";
 
 export interface HardwareLinkState {
 	status: HardwareLinkStatus;
@@ -47,10 +48,19 @@ export const IDLE_HARDWARE_UPLOAD: HardwareUploadState = {
 	totalBytes: 0,
 };
 
+/** The program of the board is stopped: `confirming` asks whether to start it to observe it. */
+export interface HardwareObservationState {
+	phase: "idle" | "confirming";
+}
+
+export const IDLE_HARDWARE_OBSERVATION: HardwareObservationState = {
+	phase: "idle",
+};
+
 export const DISCONNECTED_HARDWARE_LINK: HardwareLinkState = {
 	status: "disconnected",
 	drivenInputIds: [],
-	boardMode: "remote-io",
+	boardMode: "idle",
 	programPresent: false,
 };
 

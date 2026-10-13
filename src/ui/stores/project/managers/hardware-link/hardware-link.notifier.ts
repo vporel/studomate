@@ -30,6 +30,21 @@ export type ProgramUploadFailure =
 /** Why the board did not start or stop its program. */
 export type ProgramCommandFailure = RemoteIoUploadErrorCode | "transport";
 
+/** Why the interface could not start following the program of the board. */
+export type OnlineFailure =
+	| "analysis"
+	| "compilation"
+	| "unsupported"
+	/** The board holds no program. */
+	| "no-program"
+	/** The board holds another program than the one of the project. */
+	| "program-differs"
+	| RemoteIoUploadErrorCode
+	| "transport";
+
+/** Why the interface stopped following the program of the board. */
+export type OnlineLoss = "program-differs" | "board-fault" | "board-stopped";
+
 /**
  * What the hardware link has to tell the user. The manager describes what happened, the
  * implementation decides how to say it (see `simulation.notifier.ts`).
@@ -49,6 +64,12 @@ export default interface HardwareLinkNotifier {
 	programUploadFailed(code: ProgramUploadFailure): void;
 	/** The board did not start or stop its program. */
 	programCommandFailed(code: ProgramCommandFailure): void;
+	/** The interface could not start following the program of the board. */
+	onlineFailed(reason: OnlineFailure): void;
+	/** The interface stopped following the program of the board; `fault` is the code it reports. */
+	onlineLost(reason: OnlineLoss, fault: number): void;
+	/** A write to a variable of the program of the board did not reach it. */
+	boardVariableFailed(code: ProgramCommandFailure): void;
 	/** The tab came back to the foreground after its outputs were cut while hidden. */
 	outputsCutInBackground(): void;
 }

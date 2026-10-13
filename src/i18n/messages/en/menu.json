@@ -37,6 +37,14 @@
 		"properties": "Properties",
 		"hardwareConfiguration": "Hardware configuration"
 	},
+	"target": {
+		"title": "Target",
+		"upload": "Load the program",
+		"link": "Online link",
+		"unlink": "Close the link",
+		"start": "Start the program",
+		"stop": "Stop the program"
+	},
 	"help": {
 		"title": "Help",
 		"userManual": "User manual",

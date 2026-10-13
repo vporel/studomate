@@ -34,6 +34,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 	const drivenByHardware = useProjectStore((state) =>
 		state.hardwareLink.drivenInputIds.includes(variable.id),
 	);
+	const locked = drivenByHardware;
 
 	const changeValue = (newValue: any) => {
 		if (variable.getDirection() === "IN") {
@@ -82,7 +83,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 								min={behavior.params.min}
 								max={behavior.params.max}
 								step={1}
-								disabled={drivenByHardware}
+								disabled={locked}
 								value={typeof value === "number" ? value : 0}
 								onChange={(_, next) => changeValue(next as number)}
 								slotProps={{ input: { "aria-label": variable.mnemonic } }}
@@ -100,7 +101,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 								>
 									<PushButtonControl
 										ariaLabel={variable.mnemonic}
-										disabled={drivenByHardware}
+										disabled={locked}
 										pressed={value === !getInputRestValue(behavior)}
 										onPress={() => changeValue(!getInputRestValue(behavior))}
 										onRelease={() => changeValue(getInputRestValue(behavior))}
@@ -128,7 +129,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 												normallyClosed ? !e.target.checked : e.target.checked,
 											);
 										}}
-										disabled={drivenByHardware}
+										disabled={locked}
 										inputProps={{ "aria-label": variable.mnemonic }}
 									/>
 								}
@@ -140,7 +141,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 					) : (
 						<TextField
 							size="small"
-							disabled={drivenByHardware}
+							disabled={locked}
 							type={nativeType === "number" ? "number" : "text"}
 							slotProps={{ htmlInput: { "aria-label": variable.mnemonic } }}
 							value={value === undefined ? "" : String(value)}

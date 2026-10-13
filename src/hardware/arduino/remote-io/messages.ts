@@ -21,6 +21,12 @@ export interface PinValue {
 /** Bytes of program carried by one `PROG_CHUNK` (96 hexadecimal characters: the frame stays under 128). */
 export const PROGRAM_CHUNK_BYTES = 48;
 
+/**
+ * Bytes of variable memory in one `TEL` frame: the board writes a frame only when its transmit
+ * buffer can take it whole (64 bytes on the Uno), so it never blocks the program.
+ */
+export const TELEMETRY_CHUNK_BYTES = 16;
+
 const toHex = (bytes: ArrayLike<number>) =>
 	Array.from({ length: bytes.length }, (_, i) =>
 		bytes[i].toString(16).toUpperCase().padStart(2, "0"),
@@ -39,6 +45,19 @@ export type DeviceMessage =
 	| { type: "PROG_ACK"; seq: number }
 	| { type: "PROG_OK"; imageId: number }
 	| { type: "PROG_STOPPED" }
+	| { type: "WATCH_OK" }
+	| { type: "FORCE_OK" }
+	| { type: "SET_OK" }
+	| {
+			type: "TEL";
+			/** Low 16 bits of the identifier of the program that produced the frame. */
+			tag: number;
+			/** Cycle counter of the program when the frame was written, modulo 65536. */
+			cycle: number;
+			/** Position of the bytes in the variable memory. */
+			offset: number;
+			data: Uint8Array;
+	  }
 	| {
 			type: "STATUS";
 			/** 0 remote I/O, 1 program running, 2 fault, 3 program stopped. */
@@ -83,6 +102,25 @@ export const encodeProgramRun = () => encodeFrame("PROG_RUN");
 
 /** Halts the program and releases the pins; answered by `PROG_STOPPED`. */
 export const encodeProgramStop = () => encodeFrame("PROG_STOP");
+
+/** Signed 32-bit decimal of a value as a variable holds it (a `DWORD` above 2^31 wraps). */
+const int32Decimal = (value: number) => String(value | 0);
+
+/** Writes a variable of the running program once; answered by `SET_OK`. */
+export const encodeSetVariable = (index: number, value: number) =>
+	encodeFrame("SET", [String(index), int32Decimal(value)]);
+
+/** Imposes a value on a variable until it is released; answered by `FORCE_OK`. */
+export const encodeForce = (index: number, value: number) =>
+	encodeFrame("FORCE", [String(index), int32Decimal(value)]);
+
+/** Releases a forced variable, or all of them with `"all"`; answered by `FORCE_OK`. */
+export const encodeUnforce = (index: number | "all") =>
+	encodeFrame("UNFORCE", [index === "all" ? "ALL" : String(index)]);
+
+/** Starts or stops the telemetry of the running program; answered by `WATCH_OK`. */
+export const encodeWatch = (on: boolean) =>
+	encodeFrame("WATCH", [on ? "1" : "0"]);
 
 export const encodeProgramEnd = () => encodeFrame("PROG_END");
 
@@ -148,6 +186,33 @@ export function decodeDeviceMessage(frame: Frame): DeviceMessage | null {
 		}
 		case "PROG_READY":
 			return frame.args.length === 0 ? { type: "PROG_READY" } : null;
+		case "FORCE_OK":
+			return frame.args.length === 0 ? { type: "FORCE_OK" } : null;
+		case "SET_OK":
+			return frame.args.length === 0 ? { type: "SET_OK" } : null;
+		case "WATCH_OK":
+			return frame.args.length === 0 ? { type: "WATCH_OK" } : null;
+		case "TEL": {
+			const [tag, cycle, offset, hex] = frame.args;
+			if (
+				frame.args.length !== 4 ||
+				!/^[0-9A-Fa-f]{4}$/.test(tag) ||
+				!INTEGER_REGEX.test(cycle) ||
+				!INTEGER_REGEX.test(offset) ||
+				!/^(?:[0-9A-Fa-f]{2})+$/.test(hex)
+			) {
+				return null;
+			}
+			return {
+				type: "TEL",
+				tag: Number.parseInt(tag, 16),
+				cycle: Number(cycle),
+				offset: Number(offset),
+				data: Uint8Array.from({ length: hex.length / 2 }, (_, i) =>
+					Number.parseInt(hex.slice(2 * i, 2 * i + 2), 16),
+				),
+			};
+		}
 		case "PROG_STOPPED":
 			return frame.args.length === 0 ? { type: "PROG_STOPPED" } : null;
 		case "PROG_ACK":

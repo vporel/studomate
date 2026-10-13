@@ -7,15 +7,28 @@ describe("manual-sections", () => {
 		const ids = MANUAL_SECTIONS.map((s) => s.id);
 		expect(ids).toContain("accounts");
 		expect(ids.indexOf("accounts")).toBe(ids.indexOf("projects") + 1);
-		expect(MANUAL_SECTIONS.find((s) => s.id === "accounts")?.children).toBeUndefined();
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "accounts")?.children,
+		).toBeUndefined();
 	});
 
 	it("expose une section « cross-references » sans sous-section, avant « simulation »", () => {
 		const ids = MANUAL_SECTIONS.map((s) => s.id);
 		expect(ids).toContain("cross-references");
-		expect(ids.indexOf("cross-references")).toBeLessThan(ids.indexOf("simulation"));
+		expect(ids.indexOf("cross-references")).toBeLessThan(
+			ids.indexOf("simulation"),
+		);
 		expect(
 			MANUAL_SECTIONS.find((s) => s.id === "cross-references")?.children,
+		).toBeUndefined();
+	});
+
+	it("expose une section « hardware » sans sous-section, après « analysis » et avant « shortcuts »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids.indexOf("hardware")).toBe(ids.indexOf("analysis") + 1);
+		expect(ids.indexOf("hardware")).toBe(ids.indexOf("shortcuts") - 1);
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "hardware")?.children,
 		).toBeUndefined();
 	});
 

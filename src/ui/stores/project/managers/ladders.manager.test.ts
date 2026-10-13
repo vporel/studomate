@@ -233,17 +233,17 @@ describe("LaddersManager", () => {
 
 			manager.setExcludedFromExecution(ladderId, true);
 
-			expect(getState().project!.getLadder(ladderId)!.excludedFromExecution).toBe(
-				true,
-			);
+			expect(
+				getState().project!.getLadder(ladderId)!.excludedFromExecution,
+			).toBe(true);
 			expect(getState().project).not.toBe(project);
 			expect(getState().hasUnsavedChanges).toBe(true);
 
 			manager.setExcludedFromExecution(ladderId, false);
 
-			expect(getState().project!.getLadder(ladderId)!.excludedFromExecution).toBe(
-				false,
-			);
+			expect(
+				getState().project!.getLadder(ladderId)!.excludedFromExecution,
+			).toBe(false);
 		});
 
 		it("refuses the change outside DESIGN mode", () => {
@@ -261,7 +261,9 @@ describe("LaddersManager", () => {
 
 		it("never excludes the Main", () => {
 			const project = new Project("p1", "Projet", "auteur");
-			const main = Object.values(project.ladders).find((l) => l.role === "main")!;
+			const main = Object.values(project.ladders).find(
+				(l) => l.role === "main",
+			)!;
 			const { manager, getState } = makeManager({ project });
 
 			manager.setExcludedFromExecution(main.id, true);
@@ -294,7 +296,9 @@ describe("LaddersManager", () => {
 				project: new Project("p1", "Projet", "auteur"),
 			});
 
-			expect(() => manager.setExcludedFromExecution("inexistant", true)).toThrow();
+			expect(() =>
+				manager.setExcludedFromExecution("inexistant", true),
+			).toThrow();
 		});
 	});
 

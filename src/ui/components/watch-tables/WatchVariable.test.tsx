@@ -17,7 +17,9 @@ function setup({
 	setPhysicalInputValue = jest.fn(),
 	setMemoryValue = jest.fn(),
 	drivenInputIds = [],
+	simulationSource = "local",
 }: {
+	simulationSource?: "local" | "board";
 	variable: Variable;
 	value?: any;
 	dialect?: Dialect;
@@ -29,6 +31,7 @@ function setup({
 		selectorImplementation({
 			project: { dialect },
 			hardwareLink: { status: "linked", drivenInputIds },
+			simulationSource,
 			simulationManager: { setPhysicalInputValue, setMemoryValue },
 			simulationVariablesStates:
 				value === undefined ? {} : { [variable.id]: { value } },
@@ -341,5 +344,24 @@ describe("WatchVariable — adresse", () => {
 			value: false,
 		});
 		expect(screen.queryByText(/^%/)).not.toBeInTheDocument();
+	});
+});
+
+describe("WatchVariable — programme exécuté par la carte", () => {
+	it("laisse saisir une entrée sans broche quand on suit le programme d'une carte", () => {
+		const variable = new Variable("v1", "E1", "logic-input", "BOOL");
+		setup({ variable, value: false, simulationSource: "board" });
+		expect(screen.getByRole("switch")).toBeEnabled();
+	});
+
+	it("verrouille une entrée câblée sur une broche, même quand on suit une carte", () => {
+		const variable = new Variable("v1", "E1", "logic-input", "BOOL");
+		setup({
+			variable,
+			value: false,
+			simulationSource: "board",
+			drivenInputIds: ["v1"],
+		});
+		expect(screen.getByRole("switch")).toBeDisabled();
 	});
 });

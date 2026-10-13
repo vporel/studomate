@@ -82,9 +82,15 @@ export default class HardwareSimulationBridge {
 	 */
 	onSimulationStart(): void {
 		const { session } = this.context;
-		const link = this.context.getStoreState().hardwareLink;
+		const state = this.context.getStoreState();
+		const link = state.hardwareLink;
 		if (link.status !== "linked" || !session.client) return;
-		if (link.boardMode !== "remote-io") return;
+		if (
+			link.boardMode !== "remote-io" ||
+			state.simulationKind !== "hardware-io"
+		) {
+			return;
+		}
 		const resolved = this.context.resolvePlan();
 		if (!resolved) {
 			void this.context.unlink();
@@ -114,8 +120,10 @@ export default class HardwareSimulationBridge {
 	/** Writes the output image of a finished PLC cycle to the board. */
 	onCycleEnd(snapshot: readonly PLCVariable[]): void {
 		const { session } = this.context;
-		const link = this.context.getStoreState().hardwareLink;
+		const state = this.context.getStoreState();
+		const link = state.hardwareLink;
 		if (
+			state.simulationKind !== "hardware-io" ||
 			link.status !== "linked" ||
 			link.boardMode !== "remote-io" ||
 			!session.client ||

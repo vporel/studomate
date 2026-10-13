@@ -137,4 +137,52 @@ describe("simulator ↔ VM conformity on typed programs", () => {
 		expect(report.vmFaultCycle).toBe(2);
 		expect(report.mismatches).toEqual([]);
 	});
+
+	it("keeps a forced variable at its value, then lets the program write it again", () => {
+		const compiled = compiledProject({
+			variables: [
+				plcVariable("i:INT"),
+				plcVariable("big:BOOL"),
+				plcVariable("t:internal-number"),
+				plcVariable("q:BOOL"),
+			],
+			routines: [
+				["i := i + 1", "big := i > 5", "t := t + 100", "q := t >= 500"],
+			],
+		});
+		const report = compareSimulatorAndVm(compiled, {
+			cycles: 30,
+			seed: 1,
+			changeProbability: 0,
+			forces: [
+				{ cycle: 3, name: "i", value: 2 },
+				{ cycle: 12, name: "i" },
+				{ cycle: 14, name: "q", value: true },
+				{ cycle: 20, name: "t", value: 0 },
+				{ cycle: 25, name: "t" },
+				{ cycle: 26, name: "q" },
+			],
+		});
+		expect(report.mismatches).toEqual([]);
+		expect(report.distinctStates).toBeGreaterThan(10);
+	});
+
+	it("forces the variables of a template as the simulator does", () => {
+		const compiled = compileProject(
+			PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(),
+		)!;
+		const stepNames = compiled.variables
+			.map((variable) => variable.getName())
+			.filter((name) => /^X\d/.test(name));
+		const report = compareSimulatorAndVm(compiled, {
+			cycles: 300,
+			seed: 3,
+			changeProbability: 0.1,
+			forces: [
+				{ cycle: 40, name: stepNames[0], value: true },
+				{ cycle: 120, name: stepNames[0] },
+			],
+		});
+		expect(report.mismatches).toEqual([]);
+	});
 });

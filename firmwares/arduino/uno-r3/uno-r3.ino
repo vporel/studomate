@@ -14,11 +14,19 @@
 //   host  -> PROG_END                  board -> PROG_OK <imageId> | ERR <PROG_STATE|PROG_INVALID|PROG_RAM>
 //   host  -> PROG_RUN                  board -> PROG_OK <imageId> | ERR <PROG_INVALID|PROG_RAM>
 //   host  -> PROG_STOP                 board -> PROG_STOPPED
+//   host  -> WATCH 1|0                 board -> WATCH_OK | ERR WATCH_STATE (not running)
+//   host  -> SET <idx> <value>         board -> SET_OK | ERR FORCE_STATE | ERR FORCE_INDEX
+//   host  -> FORCE <idx> <value>       board -> FORCE_OK | ERR FORCE_STATE | ERR FORCE_INDEX
+//   host  -> UNFORCE <idx>|ALL         board -> FORCE_OK | ERR FORCE_STATE | ERR FORCE_INDEX
+//                                      (a forced variable keeps its value whatever the program writes;
+//                                       values are signed 32-bit decimals, variables are indexed as in the image)
+//   board -> TEL <tag> <cycle> <offset> <hex>   (variable memory of the running program, every
+//                                                TELEMETRY_PERIOD_MS, 16 bytes per frame)
 //
 // Modes: I input, IP input with pull-up, O output, P PWM output, A analog input.
 // Without a valid OUT frame for WATCHDOG_TIMEOUT ms, every output falls back to 0.
 //
-// A program image (bytecode, spec in _ai/support-arduino/spec-bytecode.md) lives at the start of
+// A program image (bytecode, spec in BYTECODE-SPEC.md) lives at the start of
 // the EEPROM. At boot a valid image starts the VM; a CFG frame hands the pins back to the host
 // (remote I/O) until the next reset. PROG_RUN starts the stored program, PROG_STOP halts it and
 // releases the pins without serving remote I/O. STATUS reports `state` 0 remote I/O, 1 running,
@@ -62,6 +70,11 @@ const uint8_t FAULT_INVALID_IMAGE = 4;
 const uint32_t WATCHDOG_MARKER = 0x57444721UL;
 const uint8_t LED_PIN = 13;
 const unsigned long BLINK_MS = 250;
+const unsigned long TELEMETRY_PERIOD_MS = 50;
+const uint8_t TELEMETRY_CHUNK_BYTES = 16;
+// A whole TEL frame (at most 55 bytes with its checksum) must fit the 64-byte transmit buffer, so
+// that writing it never blocks the program.
+const int TELEMETRY_FRAME_ROOM = 60;
 
 stdm_vm vm;
 RunState runState = STATE_REMOTE_IO;
@@ -69,6 +82,11 @@ uint8_t faultCode = 0;
 // Set by the watchdog interrupt, which runs one second before the reset it announces: after a
 // reset, the marker tells a watchdog reset from a power-up or a serial reset.
 uint32_t watchdogMarker __attribute__((section(".noinit")));
+
+bool watching = false;
+uint16_t telemetryOffset = 0;
+unsigned long telemetryStart = 0;
+uint16_t programTag = 0;  // low 16 bits of the identifier of the running program
 
 bool programming = false;
 uint16_t programSize = 0;
@@ -100,6 +118,14 @@ void sendFrame(const char* body) {
   Serial.print('*');
   Serial.print(hex);
   Serial.print('\n');
+}
+
+// Same, for a constant frame body kept in flash: the answers of the board need no RAM.
+void sendFrame(const __FlashStringHelper* body) {
+  char buffer[32];
+  strncpy_P(buffer, (PGM_P)body, sizeof(buffer) - 1);
+  buffer[sizeof(buffer) - 1] = '\0';
+  sendFrame(buffer);
 }
 
 // "2".."13" -> 2..13, "A0".."A5" -> 14..19, anything else -> -1.
@@ -232,12 +258,16 @@ stdm_status startProgram() {
   }
   runState = STATE_RUNNING;
   faultCode = 0;
+  watching = false;
+  telemetryOffset = 0;
+  programTag = (uint16_t)EEPROM.read(22) | ((uint16_t)EEPROM.read(23) << 8);
   armWatchdog();
   return STDM_OK;
 }
 
 // Releases the pins and the watchdog; the stored program stays in the EEPROM.
 void stopProgram() {
+  watching = false;
   if (runState == STATE_REMOTE_IO) return;
   disarmWatchdog();
   resetPins();
@@ -265,17 +295,17 @@ void handleConfig(char* args) {
 
   for (char* token = strtok(args, " "); token != NULL; token = strtok(NULL, " ")) {
     char* colon = strchr(token, ':');
-    if (colon == NULL) { sendFrame("ERR FORMAT"); return; }
+    if (colon == NULL) { sendFrame(F("ERR FORMAT")); return; }
     *colon = '\0';
     int8_t pin = parsePin(token);
-    if (pin < 0) { sendFrame("ERR PIN"); return; }
+    if (pin < 0) { sendFrame(F("ERR PIN")); return; }
     const char* mode = colon + 1;
     if (strcmp(mode, "I") == 0) wanted[pin] = IN;
     else if (strcmp(mode, "IP") == 0) wanted[pin] = IN_PULLUP;
     else if (strcmp(mode, "O") == 0) wanted[pin] = OUT_DIGITAL;
     else if (strcmp(mode, "P") == 0) wanted[pin] = OUT_PWM;
     else if (strcmp(mode, "A") == 0 && pin >= FIRST_ANALOG) wanted[pin] = IN_ANALOG;
-    else { sendFrame("ERR MODE"); return; }
+    else { sendFrame(F("ERR MODE")); return; }
   }
 
   resetPins();
@@ -300,7 +330,7 @@ void handleConfig(char* args) {
     }
   }
   configured = true;
-  sendFrame("CFG_OK");
+  sendFrame(F("CFG_OK"));
 }
 
 void handleOutputs(char* args) {
@@ -343,23 +373,23 @@ void handleStatus() {
 
 void handleProgramBegin(char* args) {
   char* size = strtok(args, " ");
-  if (size == NULL || strtok(NULL, " ") == NULL) { sendFrame("ERR PROG_FORMAT"); return; }
+  if (size == NULL || strtok(NULL, " ") == NULL) { sendFrame(F("ERR PROG_FORMAT")); return; }
   long value = atol(size);
-  if (value <= 0 || value > (long)EEPROM.length()) { sendFrame("ERR PROG_SIZE"); return; }
+  if (value <= 0 || value > (long)EEPROM.length()) { sendFrame(F("ERR PROG_SIZE")); return; }
   stopProgram();
   resetPins();
   programming = true;
   programSize = (uint16_t)value;
   programWritten = 0;
   expectedSeq = 0;
-  sendFrame("PROG_READY");
+  sendFrame(F("PROG_READY"));
 }
 
 void handleProgramChunk(char* args) {
-  if (!programming) { sendFrame("ERR PROG_STATE"); return; }
+  if (!programming) { sendFrame(F("ERR PROG_STATE")); return; }
   char* seqText = strtok(args, " ");
   char* hex = strtok(NULL, " ");
-  if (seqText == NULL || hex == NULL) { sendFrame("ERR PROG_FORMAT"); return; }
+  if (seqText == NULL || hex == NULL) { sendFrame(F("ERR PROG_FORMAT")); return; }
   uint16_t seq = (uint16_t)atoi(seqText);
   char body[24];
   if (expectedSeq > 0 && seq == expectedSeq - 1) {  // answer to the previous chunk was lost
@@ -368,11 +398,11 @@ void handleProgramChunk(char* args) {
     return;
   }
   size_t digits = strlen(hex);
-  if (seq != expectedSeq) { sendFrame("ERR PROG_SEQ"); return; }
-  if (digits % 2 != 0 || programWritten + digits / 2 > programSize) { sendFrame("ERR PROG_FORMAT"); return; }
+  if (seq != expectedSeq) { sendFrame(F("ERR PROG_SEQ")); return; }
+  if (digits % 2 != 0 || programWritten + digits / 2 > programSize) { sendFrame(F("ERR PROG_FORMAT")); return; }
   for (size_t i = 0; i < digits; i += 2) {
     uint8_t byte;
-    if (!hexByte(hex + i, &byte)) { sendFrame("ERR PROG_FORMAT"); return; }
+    if (!hexByte(hex + i, &byte)) { sendFrame(F("ERR PROG_FORMAT")); return; }
     EEPROM.update(programWritten++, byte);
   }
   expectedSeq++;
@@ -381,23 +411,79 @@ void handleProgramChunk(char* args) {
 }
 
 void handleProgramEnd() {
-  if (!programming) { sendFrame("ERR PROG_STATE"); return; }
+  if (!programming) { sendFrame(F("ERR PROG_STATE")); return; }
   programming = false;
-  if (programWritten != programSize) { sendFrame("ERR PROG_INVALID"); return; }
+  if (programWritten != programSize) { sendFrame(F("ERR PROG_INVALID")); return; }
   stdm_status status = startProgram();
-  if (status == STDM_ERR_RAM) { sendFrame("ERR PROG_RAM"); return; }
-  if (status != STDM_OK) { sendFrame("ERR PROG_INVALID"); return; }
+  if (status == STDM_ERR_RAM) { sendFrame(F("ERR PROG_RAM")); return; }
+  if (status != STDM_OK) { sendFrame(F("ERR PROG_INVALID")); return; }
   char body[24];
   snprintf(body, sizeof(body), "PROG_OK %08lX", (unsigned long)storedImageId());
   sendFrame(body);
 }
 
+void handleWatch(char* args) {
+  if (args[0] != '1') {
+    watching = false;
+    sendFrame(F("WATCH_OK"));
+    return;
+  }
+  if (runState != STATE_RUNNING) { sendFrame(F("ERR WATCH_STATE")); return; }
+  watching = true;
+  telemetryOffset = 0;
+  telemetryStart = 0;
+  sendFrame(F("WATCH_OK"));
+}
+
+// Parses `<idx> [<value>]`; false when the index is not a variable of the running program.
+bool parseVariableArgs(char* args, bool withValue, uint8_t* index, int32_t* value) {
+  char* indexText = strtok(args, " ");
+  char* valueText = withValue ? strtok(NULL, " ") : NULL;
+  if (indexText == NULL || (withValue && valueText == NULL)) { sendFrame(F("ERR FORCE_FORMAT")); return false; }
+  int parsed = atoi(indexText);
+  if (parsed < 0 || parsed >= stdm_vm_variable_count(&vm)) { sendFrame(F("ERR FORCE_INDEX")); return false; }
+  *index = (uint8_t)parsed;
+  if (withValue) *value = atol(valueText);
+  return true;
+}
+
+void handleSetVariable(char* args) {
+  if (runState != STATE_RUNNING) { sendFrame(F("ERR FORCE_STATE")); return; }
+  uint8_t index;
+  int32_t value;
+  if (!parseVariableArgs(args, true, &index, &value)) return;
+  stdm_vm_set_variable(&vm, index, value);
+  sendFrame(F("SET_OK"));
+}
+
+void handleForce(char* args) {
+  if (runState != STATE_RUNNING) { sendFrame(F("ERR FORCE_STATE")); return; }
+  uint8_t index;
+  int32_t value;
+  if (!parseVariableArgs(args, true, &index, &value)) return;
+  stdm_vm_force(&vm, index, value);
+  sendFrame(F("FORCE_OK"));
+}
+
+void handleUnforce(char* args) {
+  if (runState != STATE_RUNNING) { sendFrame(F("ERR FORCE_STATE")); return; }
+  if (args[0] == 'A') {
+    stdm_vm_release_all(&vm);
+  } else {
+    uint8_t index;
+    int32_t value;
+    if (!parseVariableArgs(args, false, &index, &value)) return;
+    stdm_vm_release(&vm, index);
+  }
+  sendFrame(F("FORCE_OK"));
+}
+
 void handleProgramRun() {
   programming = false;
-  if (storedImageId() == 0) { sendFrame("ERR PROG_INVALID"); return; }
+  if (storedImageId() == 0) { sendFrame(F("ERR PROG_INVALID")); return; }
   stdm_status status = startProgram();
-  if (status == STDM_ERR_RAM) { sendFrame("ERR PROG_RAM"); return; }
-  if (status != STDM_OK) { sendFrame("ERR PROG_INVALID"); return; }
+  if (status == STDM_ERR_RAM) { sendFrame(F("ERR PROG_RAM")); return; }
+  if (status != STDM_OK) { sendFrame(F("ERR PROG_INVALID")); return; }
   char body[24];
   snprintf(body, sizeof(body), "PROG_OK %08lX", (unsigned long)storedImageId());
   sendFrame(body);
@@ -406,7 +492,7 @@ void handleProgramRun() {
 void handleProgramStop() {
   programming = false;
   haltProgram();
-  sendFrame("PROG_STOPPED");
+  sendFrame(F("PROG_STOPPED"));
 }
 
 void handleLine() {
@@ -430,6 +516,10 @@ void handleLine() {
   else if (strcmp(line, "PROG_END") == 0) handleProgramEnd();
   else if (strcmp(line, "PROG_RUN") == 0) handleProgramRun();
   else if (strcmp(line, "PROG_STOP") == 0) handleProgramStop();
+  else if (strcmp(line, "WATCH") == 0) handleWatch(args);
+  else if (strcmp(line, "SET") == 0) handleSetVariable(args);
+  else if (strcmp(line, "FORCE") == 0) handleForce(args);
+  else if (strcmp(line, "UNFORCE") == 0) handleUnforce(args);
 }
 
 void readSerial() {
@@ -504,6 +594,31 @@ void runProgram() {
   if (stdm_vm_fault(&vm) != 0) enterFault(stdm_vm_fault(&vm));
 }
 
+// Sends the variable memory of the running program, one frame per turn of the loop and only when
+// the transmit buffer can take it whole. A new image starts every TELEMETRY_PERIOD_MS.
+void emitTelemetry() {
+  if (!watching || runState != STATE_RUNNING) return;
+  uint16_t size = stdm_vm_memory_size(&vm);
+  if (size == 0) return;
+  unsigned long now = millis();
+  if (telemetryOffset == 0 && now - telemetryStart < TELEMETRY_PERIOD_MS) return;
+  if (Serial.availableForWrite() < TELEMETRY_FRAME_ROOM) return;
+
+  uint16_t remaining = size - telemetryOffset;
+  uint8_t count = remaining < TELEMETRY_CHUNK_BYTES ? (uint8_t)remaining : TELEMETRY_CHUNK_BYTES;
+  const uint8_t* memory = stdm_vm_memory(&vm);
+  char body[64];
+  int length = snprintf(body, sizeof(body), "TEL %04X %u %u ", programTag, stdm_vm_cycle_count(&vm), telemetryOffset);
+  for (uint8_t i = 0; i < count; i++) {
+    length += snprintf(body + length, 3, "%02X", memory[telemetryOffset + i]);
+  }
+  sendFrame(body);
+
+  if (telemetryOffset == 0) telemetryStart = now;
+  telemetryOffset += count;
+  if (telemetryOffset >= size) telemetryOffset = 0;
+}
+
 // A fault is shown on the built-in LED, unless the program drives it.
 void blinkFault(unsigned long now) {
   if (modes[LED_PIN] != UNUSED || now - lastBlink < BLINK_MS) return;
@@ -515,6 +630,7 @@ void blinkFault(unsigned long now) {
 void loop() {
   readSerial();
   runProgram();
+  emitTelemetry();
   unsigned long now = millis();
   if (runState == STATE_FAULT) blinkFault(now);
 

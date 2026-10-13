@@ -278,7 +278,10 @@ const VariableSelector = forwardRef<
 			params.inputProps.onKeyDown?.(
 				e as unknown as ReactKeyboardEvent<HTMLInputElement>,
 			);
-			if (e.key === "Enter" || e.key === "Escape") inputRef.current?.blur();
+			// Différé : le blur valide `editingValue`, qui n'a la suggestion choisie par Entrée
+			// qu'une fois le rendu suivant appliqué.
+			if (e.key === "Enter" || e.key === "Escape")
+				queueMicrotask(() => inputRef.current?.blur());
 		};
 
 	// `stopPropagation` : sans lui, un parent qui porte aussi un menu contextuel (ex : le

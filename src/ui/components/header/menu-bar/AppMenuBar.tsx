@@ -13,6 +13,7 @@ import useEditMenu from "./edit/useEditMenu";
 import useFileMenu from "./file/useFileMenu";
 import useHelpMenu from "./help/useHelpMenu";
 import useProjectMenu from "./project/useProjectMenu";
+import useTargetMenu from "./target/useTargetMenu";
 import useViewMenu from "./view/useViewMenu";
 import ShortcutsModal from "./help/ShortcutsModal";
 import { useT } from "@/ui/i18n/useT";
@@ -28,13 +29,14 @@ const MenuBar = () => {
 
 	const fileMenu = useFileMenu();
 	const projectMenu = useProjectMenu();
+	const targetMenu = useTargetMenu();
 	const editMenu = useEditMenu();
 	const viewMenu = useViewMenu();
 	const helpMenu = useHelpMenu(onShortcutsOpen);
 
 	const menus: AppMenuType[] = useMemo(
-		() => [fileMenu, projectMenu, editMenu, viewMenu, helpMenu],
-		[fileMenu, projectMenu, editMenu, viewMenu, helpMenu],
+		() => [fileMenu, editMenu, viewMenu, projectMenu, targetMenu, helpMenu],
+		[fileMenu, editMenu, viewMenu, projectMenu, targetMenu, helpMenu],
 	);
 
 	const registerTitleRef = useCallback(

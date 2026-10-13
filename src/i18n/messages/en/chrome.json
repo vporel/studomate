@@ -9,7 +9,9 @@
 	"analyse": "Analyse",
 	"mode": {
 		"design": "Design",
-		"simulation": "Simulation"
+		"simulation": "Simulation",
+		"simulationHardwareIo": "Simulation with real I/O",
+		"observation": "Board observation"
 	},
 	"simulationMode": {
 		"continuous": "Continuous",
@@ -35,21 +37,27 @@
 		"warnings": "(Warnings)"
 	},
 	"hardwareLink": {
-		"linked": "{board} linked as I/O",
 		"connecting": "Connecting...",
-		"disconnected": "{board} disconnected",
-		"link": "Link the board",
-		"unlink": "Unlink",
-		"upload": "Send the program",
-		"running": "{board} runs its program",
-		"stopped": "{board}: program stopped",
+		"flashing": "Installing the firmware...",
+		"link": "Online link",
+		"unlink": "Close the link",
+		"upload": "Load the program into the board",
+		"uploading": "Loading the program... {percent}%",
+		"online": "Online",
+		"remoteIo": "Real I/O mode",
+		"observing": "Observed",
+		"running": "Program running",
+		"stopped": "Program stopped",
 		"start": "Start the board program",
 		"stop": "Stop the board program",
-		"resume": "Use the board as I/O",
-		"uploading": "Sending the program... {percent}%",
 		"unsupported": "The USB link with the board requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project.",
-		"unsupportedAria": "USB link unavailable in this browser",
-		"flashing": "Uploading the firmware..."
+		"unsupportedAria": "USB link unavailable in this browser"
+	},
+	"hardwareObservationDialog": {
+		"title": "Start the board program?",
+		"message": "The program of the board is stopped. To observe it, it has to run: it will start again from its initial state.",
+		"cancel": "Cancel",
+		"start": "Start"
 	},
 	"hardwareFirmwareDialog": {
 		"missing": {

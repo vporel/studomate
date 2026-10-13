@@ -16,9 +16,12 @@ import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
+import type { SimulationKind } from "./SimulationKind";
+import type ModeManager from "./managers/mode.manager";
 import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
 import type {
 	HardwareFirmwareState,
+	HardwareObservationState,
 	HardwareUploadState,
 	HardwareLinkState,
 } from "./managers/hardware-link/hardware-link.state";
@@ -223,6 +226,8 @@ export interface ProjectStoreState {
 	mode: ProjectMode;
 	simulationPaused: boolean;
 	simulationMode: SimulationMode;
+	/** What the simulation in progress is made of (meaningful in Simulation mode). */
+	simulationKind: SimulationKind;
 	analysisHasErrors: boolean;
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;
@@ -276,7 +281,9 @@ export interface ProjectStoreState {
 	hardwareLink: HardwareLinkState;
 	hardwareFirmware: HardwareFirmwareState;
 	hardwareUpload: HardwareUploadState;
+	hardwareObservation: HardwareObservationState;
 	hardwareLinkManager: HardwareLinkManager;
+	modeManager: ModeManager;
 
 	//=============== COMMANDS ===============
 	hasCommandsToUndo: boolean;

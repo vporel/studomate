@@ -65,6 +65,7 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 		id: "analysis",
 		children: ["analysis-run", "analysis-checks", "analysis-messages"],
 	},
+	{ id: "hardware" },
 	{ id: "shortcuts" },
 ];
 

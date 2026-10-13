@@ -53,7 +53,7 @@ function refuse(reason: string): never {
 
 /**
  * Structural check of an image, equivalent to the one the VM runs before executing a program
- * (`_ai/support-arduino/spec-bytecode.md`, §7.1). `capacityBytes` is the storage available to
+ * (`BYTECODE-SPEC.md`, §7.1). `capacityBytes` is the storage available to
  * the image.
  */
 export default function verifyBytecode(

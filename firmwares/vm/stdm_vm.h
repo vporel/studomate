@@ -1,6 +1,6 @@
 /*
  * Studomate bytecode virtual machine: portable C core (no Arduino dependency).
- * Format and semantics: _ai/support-arduino/spec-bytecode.md.
+ * Format and semantics: BYTECODE-SPEC.md.
  *
  * The image is read through `read_byte` (EEPROM on the board, an array in the native test
  * executable); pins, clock and code storage are all behind `stdm_platform`.
@@ -105,6 +105,9 @@ typedef struct stdm_vm {
 	uint16_t io_start, sys_start, routines_start, code_start, code_size;
 	uint8_t fault;
 	uint8_t first_cycle;
+	uint16_t cycle_count;
+	/* One bit per variable: a forced variable keeps its value whatever the program writes. */
+	uint8_t forced[(STDM_MAX_INDEXED + 7) / 8];
 	uint32_t last_tick;
 	uint16_t sys_phase[STDM_SYSTEM_VARIABLE_COUNT];
 	uint32_t stack[STDM_VM_MAX_STACK];
@@ -112,7 +115,7 @@ typedef struct stdm_vm {
 	uint8_t memory[STDM_VM_MEM_BYTES];
 } stdm_vm;
 
-/* Checks the whole image (§7.1 of the spec); `capacity` is the storage available to it. */
+/* Checks the whole image (§7.1 of BYTECODE-SPEC.md); `capacity` is the storage available to it. */
 stdm_status stdm_vm_verify(const stdm_platform *platform, uint16_t capacity);
 
 /* Verifies the image, then prepares the VM and the pins. Nothing runs before a successful start. */
@@ -122,10 +125,22 @@ stdm_status stdm_vm_start(stdm_vm *vm, const stdm_platform *platform, uint16_t c
 uint8_t stdm_vm_poll(stdm_vm *vm);
 
 uint8_t stdm_vm_fault(const stdm_vm *vm);
+/* Cycles run since the start, modulo 65536: tells a snapshot of the memory from the next one. */
+uint16_t stdm_vm_cycle_count(const stdm_vm *vm);
+/* Variable memory of the program, as laid out by the image (BYTECODE-SPEC.md §3.1), and its size in bytes. */
+const uint8_t *stdm_vm_memory(const stdm_vm *vm);
+uint16_t stdm_vm_memory_size(const stdm_vm *vm);
 uint8_t stdm_vm_variable_count(const stdm_vm *vm);
 /* Value of a variable as the program sees it (INT signed, WORD unsigned, 4-byte class as int32). */
 int32_t stdm_vm_get_variable(const stdm_vm *vm, uint8_t index);
 void stdm_vm_set_variable(stdm_vm *vm, uint8_t index, int32_t value);
+/*
+ * Imposes a value on a variable until it is released: the program's writes (and the pins) no
+ * longer change it. Returns 0 for an index that is not a variable.
+ */
+uint8_t stdm_vm_force(stdm_vm *vm, uint8_t index, int32_t value);
+uint8_t stdm_vm_release(stdm_vm *vm, uint8_t index);
+void stdm_vm_release_all(stdm_vm *vm);
 
 #ifdef __cplusplus
 }

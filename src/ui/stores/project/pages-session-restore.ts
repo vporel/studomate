@@ -47,7 +47,8 @@ const VARIABLES_PAGE_IDS: VariablesPageId[] = [
  */
 function resolvePageData(pageId: string, project: Project): PageData | null {
 	if (pageId === PROJECT_STARTUP_PAGE_ID) return PROJECT_STARTUP_PAGE_DATA;
-	if (pageId === PROJECT_PROPERTIES_PAGE_ID) return PROJECT_PROPERTIES_PAGE_DATA;
+	if (pageId === PROJECT_PROPERTIES_PAGE_ID)
+		return PROJECT_PROPERTIES_PAGE_DATA;
 	if (pageId === EXERCISE_PAGE_ID) return EXERCISE_PAGE_DATA;
 	if (pageId === HARDWARE_CONFIGURATION_PAGE_ID)
 		return HARDWARE_CONFIGURATION_PAGE_DATA;

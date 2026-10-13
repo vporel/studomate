@@ -12,6 +12,7 @@ import ProjectCompiler, {
 } from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
 import PLC from "@/simulator/core/plc/plc";
+import type { CompiledProject } from "@/project-compiler/project.compiler";
 import PLCVariable, {
 	PLCVariableValue,
 } from "@/simulator/core/plc/plc-variable";
@@ -25,6 +26,8 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { readString, writeString } from "@/persistence/safe-local-storage";
 import trackEvent from "@/ui/services/analytics";
+import BoardMirror from "./board-mirror";
+import type { SimulationKind } from "@/ui/stores/project/SimulationKind";
 import SimulationNotifier from "./simulation.notifier";
 
 const SIMULATION_MODE_STORAGE_KEY = "studomate:simulationMode";
@@ -34,6 +37,8 @@ export default class SimulationManager {
 	private getStoreState: ProjectStoreGetFunction;
 
 	private plc: PLC | null = null;
+	/** Set while the interface follows the program a board runs, instead of a local PLC. */
+	private mirror: BoardMirror | null = null;
 
 	/**
 	 * Id de variable de mémoire (portant une valeur observable) → propriétaire (transition) et
@@ -133,17 +138,28 @@ export default class SimulationManager {
 		this.stopSimulation();
 		this.getStoreState().hmiManager.closeHmiSimulationPage();
 		this.setStoreState(() => ({ mode: ProjectMode.DESIGN }));
+		void this.getStoreState().hardwareLinkManager.onModeSettled();
 	}
 
-	setSimulationMode() {
-		if (this.plc) this.stopSimulation();
+	/** Changes what the simulation in progress is made of, without restarting it. */
+	setSimulationKind(kind: SimulationKind): void {
+		this.setStoreState(() => ({ simulationKind: kind }));
+	}
+
+	/**
+	 * Starts a simulation with the local PLC. `hardware-io` has the pins of the linked board serve
+	 * as inputs and outputs (the caller has put the board in that state first). True when the
+	 * simulation started.
+	 */
+	setSimulationMode(kind: "virtual" | "hardware-io" = "virtual"): boolean {
+		if (this.plc || this.mirror) this.stopSimulation();
 
 		const project = this.getStoreState().project;
-		if (!project) return;
+		if (!project) return false;
 
 		//Reanalyze project when switching to simulation mode
 		const { ok: analysisOK, projectAnalysisResult } = this.analyze(false);
-		if (!analysisOK || !projectAnalysisResult) return;
+		if (!analysisOK || !projectAnalysisResult) return false;
 
 		//Pre compile the project
 		const projectPreCompilationResult = ProjectPreCompiler.preCompile(
@@ -160,7 +176,7 @@ export default class SimulationManager {
 				"Errors during project pre-compilation:",
 				projectPreCompilationResult.errors,
 			);
-			return;
+			return false;
 		}
 
 		//Compile the project
@@ -176,26 +192,11 @@ export default class SimulationManager {
 				"Errors during project compilation:",
 				projectCompilationResult.errors,
 			);
-			return;
+			return false;
 		}
 		this.notifier.simulationStarting();
 
-		//Valeurs observables (état des réceptivités pour le surlignage, temps écoulé des tempos
-		//nommées...) : la routine d'observation compilée écrit ces valeurs dans des variables de
-		//mémoire, on retient juste l'association variable → (propriétaire, étiquette) pour la
-		//publication.
-		this.observationVariableToSource = new Map();
-		for (const [ownerId, refs] of Object.entries(
-			projectCompilationResult.result!.observableExpressionVariableIds,
-		)) {
-			for (const ref of refs) {
-				this.observationVariableToSource.set(ref.variableId, {
-					ownerId,
-					label: ref.label,
-				});
-			}
-		}
-		this.currentObservableEntries = new Map();
+		this.registerObservations(projectCompilationResult.result!);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -208,6 +209,7 @@ export default class SimulationManager {
 		//sur ce cycle : aucune temporisation n'avance.
 		const simulationMode = this.getStoreState().simulationMode;
 		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
+		this.setStoreState(() => ({ simulationKind: kind }));
 		this.getStoreState().hardwareLinkManager.onSimulationStart();
 		this.plc.pause();
 		this.plc.stepOnce();
@@ -224,6 +226,55 @@ export default class SimulationManager {
 		if (getAutoOpenHmiSimulationOnStart()) {
 			this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
 		}
+		void this.getStoreState().hardwareLinkManager.onModeSettled();
+		return true;
+	}
+
+	/**
+	 * Valeurs observables (état des réceptivités pour le surlignage, temps écoulé des tempos
+	 * nommées...) : la routine d'observation compilée écrit ces valeurs dans des variables de
+	 * mémoire, on retient juste l'association variable → (propriétaire, étiquette) pour la
+	 * publication.
+	 */
+	private registerObservations(compiled: CompiledProject): void {
+		this.observationVariableToSource = new Map();
+		for (const [ownerId, refs] of Object.entries(
+			compiled.observableExpressionVariableIds,
+		)) {
+			for (const ref of refs) {
+				this.observationVariableToSource.set(ref.variableId, {
+					ownerId,
+					label: ref.label,
+				});
+			}
+		}
+		this.currentObservableEntries = new Map();
+	}
+
+	/**
+	 * Enters the simulation mode without a local PLC: the program runs on a board, and the
+	 * interface shows what it reports (`publishBoardSnapshot`).
+	 */
+	startOnline(compiled: CompiledProject): void {
+		if (this.plc || this.mirror) this.stopSimulation();
+		this.registerObservations(compiled);
+		this.mirror = new BoardMirror(compiled);
+		this.lastPublishedValues = null;
+		this.setStoreState(() => ({
+			mode: ProjectMode.SIMULATION,
+			simulationPaused: false,
+			simulationKind: "observation",
+		}));
+		if (getAutoOpenHmiSimulationOnStart()) {
+			this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
+		}
+		void this.getStoreState().hardwareLinkManager.onModeSettled();
+	}
+
+	/** Values of the variables the board reported, published as a PLC cycle would be. */
+	publishBoardSnapshot(values: Record<string, boolean | number>): void {
+		if (!this.mirror) return;
+		this.publishCycleState(this.mirror.snapshot(values));
 	}
 
 	pauseSimulation(): void {
@@ -385,6 +436,10 @@ export default class SimulationManager {
 	}
 
 	private stopSimulation(): void {
+		//Leave the board as the simulation found it (pins released, observation over)
+		this.mirror = null;
+		void this.getStoreState().hardwareLinkManager.onSimulationStop();
+
 		//Stop the PLC if it is running or paused
 		if (this.plc) {
 			this.plc.releaseAllVariables();
@@ -402,6 +457,7 @@ export default class SimulationManager {
 			simulationVariablesStatesByMnemonic: {},
 			observableExpressionsValues: {},
 			simulationPaused: false,
+			simulationKind: "virtual",
 			forcedVariables: {},
 		}));
 
@@ -435,6 +491,15 @@ export default class SimulationManager {
 			throw new Error(
 				"Cannot set physical input value when not in simulation mode",
 			);
+		}
+		if (this.mirror) {
+			//Un pin de la carte reste la source de vérité de son entrée
+			if (
+				!this.getStoreState().hardwareLink.drivenInputIds.includes(variableId)
+			) {
+				this.writeToBoard(variableId, value);
+			}
+			return;
 		}
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
@@ -473,6 +538,10 @@ export default class SimulationManager {
 		if (mode !== ProjectMode.SIMULATION) {
 			throw new Error("Cannot set memory value when not in simulation mode");
 		}
+		if (this.mirror) {
+			this.writeToBoard(variableId, value);
+			return;
+		}
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
@@ -510,7 +579,31 @@ export default class SimulationManager {
 		}));
 	}
 
+	/** Writes a value, once, to a variable of the program a board runs. */
+	private writeToBoard(variableId: string, value: unknown): void {
+		const name = this.mirror?.nameOf(variableId);
+		const numeric = toBoardValue(value);
+		if (name === undefined || numeric === undefined) return;
+		void this.getStoreState().hardwareLinkManager.writeBoardVariable(
+			name,
+			numeric,
+		);
+	}
+
 	public forceVariable(variableId: string, value: any): void {
+		if (this.mirror) {
+			const name = this.mirror.nameOf(variableId);
+			const numeric = toBoardValue(value);
+			if (name === undefined || numeric === undefined) return;
+			void this.getStoreState().hardwareLinkManager.forceBoardVariable(
+				name,
+				numeric,
+			);
+			this.setStoreState((state) => ({
+				forcedVariables: { ...state.forcedVariables, [variableId]: numeric },
+			}));
+			return;
+		}
 		if (!this.plc) return;
 		const coerced = this.coerceToPlcType(variableId, value);
 		if (coerced === undefined) return;
@@ -521,6 +614,17 @@ export default class SimulationManager {
 	}
 
 	public releaseVariable(variableId: string): void {
+		if (this.mirror) {
+			const name = this.mirror.nameOf(variableId);
+			if (name === undefined) return;
+			void this.getStoreState().hardwareLinkManager.releaseBoardVariable(name);
+			this.setStoreState((state) => {
+				const next = { ...state.forcedVariables };
+				delete next[variableId];
+				return { forcedVariables: next };
+			});
+			return;
+		}
 		if (!this.plc) return;
 		this.plc.releaseVariable(variableId);
 		this.setStoreState((state) => {
@@ -529,4 +633,11 @@ export default class SimulationManager {
 			return { forcedVariables: next };
 		});
 	}
+}
+
+/** A value from the interface as the board takes it: a number, a boolean being 0 or 1. */
+function toBoardValue(value: unknown): boolean | number | undefined {
+	if (typeof value === "boolean") return value;
+	const numeric = typeof value === "number" ? value : Number(value);
+	return Number.isFinite(numeric) ? Math.trunc(numeric) : undefined;
 }

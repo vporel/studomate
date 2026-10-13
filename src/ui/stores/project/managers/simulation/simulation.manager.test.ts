@@ -14,6 +14,8 @@ import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import { getAutoOpenHmiSimulationOnStart } from "@/persistence/preferences.storage";
 import { isSystemVariableName } from "@/schemas/variable/system-variables";
+import { PROJECT_TEMPLATES } from "@/templates";
+import { compileProject } from "@tests/utils/test-helpers";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -41,6 +43,7 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 		mode: ProjectMode.DESIGN,
 		plcConfig: { scanTimeMs: 10 },
 		ui: { watchTablesVisible: false, analysisResultVisible: false },
+		simulationKind: "virtual",
 		simulationVariablesStates: {},
 		simulationVariablesStatesByMnemonic: {},
 		observableExpressionsValues: {},
@@ -58,6 +61,11 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 			onSimulationStart: jest.fn(),
 			onCycleEnd: jest.fn(),
 			fallback: jest.fn(),
+			onSimulationStop: jest.fn(),
+			onModeSettled: jest.fn(),
+			writeBoardVariable: jest.fn(),
+			forceBoardVariable: jest.fn(),
+			releaseBoardVariable: jest.fn(),
 		},
 	} as unknown as ProjectStoreState;
 
@@ -318,10 +326,89 @@ describe("SimulationManager", () => {
 			const { get, set } = makeStore(project);
 			const manager = new SimulationManager(set, get, notifier);
 
-			manager.setSimulationMode();
+			const started = manager.setSimulationMode();
 
+			expect(started).toBe(false);
 			expect(get().mode).toBe(ProjectMode.DESIGN);
 			expect(notifier.simulationStarting).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("types de simulation (virtuelle, E/S réelles, observation)", () => {
+		const startable = () => {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			return ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+		};
+
+		it("démarre une simulation virtuelle par défaut, et le dit", () => {
+			const { get, set } = makeStore(startable());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(manager.setSimulationMode()).toBe(true);
+
+			expect(get().mode).toBe(ProjectMode.SIMULATION);
+			expect(get().simulationKind).toBe("virtual");
+			manager.setDesignMode();
+		});
+
+		it("retient le type « E/S réelles » avant d'avertir la liaison du démarrage", () => {
+			const { get, set } = makeStore(startable());
+			const manager = new SimulationManager(set, get, stubNotifier());
+			let kindWhenStarting: unknown = null;
+			(
+				get().hardwareLinkManager.onSimulationStart as jest.Mock
+			).mockImplementation(() => {
+				kindWhenStarting = get().simulationKind;
+			});
+
+			expect(manager.setSimulationMode("hardware-io")).toBe(true);
+
+			expect(kindWhenStarting).toBe("hardware-io");
+			expect(get().simulationKind).toBe("hardware-io");
+			manager.setDesignMode();
+		});
+
+		it("laisse le type inchangé quand la simulation ne démarre pas", () => {
+			const grafcet = new GrafcetBuilder().id("g1").build();
+			const { get, set } = makeStore(
+				ProjectFactory.createWithGrafcets([grafcet]),
+			);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(manager.setSimulationMode("hardware-io")).toBe(false);
+
+			expect(get().simulationKind).toBe("virtual");
+		});
+
+		it("change le type d'une simulation en cours sans la redémarrer", async () => {
+			const { get, set } = makeStore(startable());
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode("hardware-io");
+
+			manager.setSimulationKind("virtual");
+
+			expect(get().simulationKind).toBe("virtual");
+			expect(get().mode).toBe(ProjectMode.SIMULATION);
+			manager.setDesignMode();
+		});
+
+		it("prévient la liaison quand un mode est en place, et avant d'arrêter une simulation", () => {
+			const { get, set } = makeStore(startable());
+			const manager = new SimulationManager(set, get, stubNotifier());
+			const link = get().hardwareLinkManager as unknown as {
+				onModeSettled: jest.Mock;
+				onSimulationStop: jest.Mock;
+			};
+
+			manager.setSimulationMode();
+			expect(link.onModeSettled).toHaveBeenCalledTimes(1);
+
+			manager.setDesignMode();
+			expect(link.onSimulationStop).toHaveBeenCalled();
+			expect(link.onModeSettled).toHaveBeenCalledTimes(2);
 		});
 	});
 
@@ -730,6 +817,163 @@ describe("SimulationManager", () => {
 
 			manager.setDesignMode();
 			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
+		});
+	});
+
+	describe("suivi du programme d'une carte (mode en ligne)", () => {
+		const trafficLight = () =>
+			compileProject(
+				PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(),
+			)!;
+
+		it("passe en simulation sans PLC local, la source étant la carte", () => {
+			const { get, set } = makeStore(ProjectFactory.create([], []));
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.startOnline(trafficLight());
+
+			expect(get().mode).toBe(ProjectMode.SIMULATION);
+			expect(get().simulationKind).toBe("observation");
+			expect(get().simulationPaused).toBe(false);
+			expect(get().hmiManager.openHmiSimulationPageIfAny).toHaveBeenCalled();
+		});
+
+		it("publie les valeurs rapportées par la carte, et les valeurs observées qui en découlent", () => {
+			const compiled = trafficLight();
+			const { get, set } = makeStore(ProjectFactory.create([], []));
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.startOnline(compiled);
+			const stepName = compiled.variables
+				.find((v) => /^X\d/.test(v.getName()))!
+				.getName();
+
+			manager.publishBoardSnapshot({ [stepName]: true });
+
+			const state = get();
+			expect(state.simulationVariablesStatesByMnemonic[stepName]?.value).toBe(
+				true,
+			);
+			expect(
+				Object.keys(state.observableExpressionsValues).length,
+			).toBeGreaterThan(0);
+		});
+
+		it("ne publie rien sans suivi de carte", () => {
+			const { get, set } = makeStore(ProjectFactory.create([], []));
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.publishBoardSnapshot({ X0: true });
+			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
+		});
+
+		describe("écritures de l'interface vers la carte", () => {
+			const setupOnline = () => {
+				const compiled = compileProject(
+					PROJECT_TEMPLATES.find((t) => t.id === "elevator")!.solution!(),
+				)!;
+				const store = makeStore(ProjectFactory.create([], []));
+				const manager = new SimulationManager(
+					store.set,
+					store.get,
+					stubNotifier(),
+				);
+				manager.startOnline(compiled);
+				const input = compiled.variables.find((v) => v.getScope() === "input")!;
+				const memory = compiled.variables.find(
+					(v) => v.getScope() === "memory" && !v.getName().startsWith("_"),
+				)!;
+				const link = store.get().hardwareLinkManager as unknown as {
+					writeBoardVariable: jest.Mock;
+					forceBoardVariable: jest.Mock;
+					releaseBoardVariable: jest.Mock;
+				};
+				return { ...store, manager, input, memory, link };
+			};
+
+			it("transmet à la carte la saisie d'une entrée qui n'est pas câblée sur une broche", () => {
+				const { manager, input, link } = setupOnline();
+				manager.setPhysicalInputValue(input.getId(), true);
+				expect(link.writeBoardVariable).toHaveBeenCalledWith(
+					input.getName(),
+					true,
+				);
+			});
+
+			it("ne transmet pas la saisie d'une entrée pilotée par une broche", () => {
+				const { manager, input, link, get, set } = setupOnline();
+				set({
+					hardwareLink: {
+						...get().hardwareLink,
+						drivenInputIds: [input.getId()],
+					},
+				});
+				manager.setPhysicalInputValue(input.getId(), true);
+				expect(link.writeBoardVariable).not.toHaveBeenCalled();
+			});
+
+			it("transmet l'écriture d'une mémoire, un nombre étant tronqué à l'entier", () => {
+				const { manager, memory, link } = setupOnline();
+				manager.setMemoryValue(memory.getId(), 3.9);
+				expect(link.writeBoardVariable).toHaveBeenCalledWith(
+					memory.getName(),
+					3,
+				);
+			});
+
+			it("ignore une valeur qui n'est pas un nombre, et une variable inconnue", () => {
+				const { manager, memory, link } = setupOnline();
+				manager.setMemoryValue(memory.getId(), "abc");
+				manager.setMemoryValue("inconnue", 1);
+				expect(link.writeBoardVariable).not.toHaveBeenCalled();
+			});
+
+			it("force et libère une variable sur la carte, et le retient dans le store", () => {
+				const { manager, memory, link, get } = setupOnline();
+
+				manager.forceVariable(memory.getId(), true);
+				expect(link.forceBoardVariable).toHaveBeenCalledWith(
+					memory.getName(),
+					true,
+				);
+				expect(get().forcedVariables[memory.getId()]).toBe(true);
+
+				manager.releaseVariable(memory.getId());
+				expect(link.releaseBoardVariable).toHaveBeenCalledWith(
+					memory.getName(),
+				);
+				expect(get().forcedVariables).toEqual({});
+			});
+		});
+
+		it("revient à la conception : source locale, états vidés, suivi de la carte arrêté", () => {
+			const compiled = trafficLight();
+			const { get, set } = makeStore(ProjectFactory.create([], []));
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.startOnline(compiled);
+			manager.publishBoardSnapshot({ X0: true });
+
+			manager.setDesignMode();
+
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(get().simulationKind).toBe("virtual");
+			expect(get().simulationVariablesStatesByMnemonic).toEqual({});
+			expect(get().hardwareLinkManager.onSimulationStop).toHaveBeenCalled();
+		});
+
+		it("quitte d'abord une simulation locale en cours", async () => {
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0")],
+			);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(30);
+
+			manager.startOnline(trafficLight());
+
+			expect(get().simulationKind).toBe("observation");
+			expect(get().simulationVariablesStates).toEqual({});
+			manager.setDesignMode();
 		});
 	});
 

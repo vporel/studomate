@@ -11,8 +11,11 @@
  *   advance <ms>      move the virtual clock forward
  *   poll              run a cycle if one is due, as the board's main loop does
  *   set <idx> <v>     write a variable (bypasses the pins)
+ *   force <idx> <v>   impose a value on a variable until `release`
+ *   release <idx>     release a forced variable
  *   pin <n> <v>       set the level (digital) or value (analog) read on pin n
  *   mem               print the variable memory
+ *   dump              print `D <cycle> <memory in hex>`: the variable memory, as telemetry sends it
  *   ops               print the opcodes executed since the last `ops` and reset the count
  *
  * Each cycle prints `<fault> | <variables...> | <pin>=<value>...` (outputs the image drives).
@@ -157,11 +160,21 @@ int main(int argc, char **argv) {
 			print_state(&vm, &sim);
 		} else if (strcmp(command, "set") == 0) {
 			stdm_vm_set_variable(&vm, (uint8_t)a, (int32_t)b);
+		} else if (strcmp(command, "force") == 0) {
+			stdm_vm_force(&vm, (uint8_t)a, (int32_t)b);
+		} else if (strcmp(command, "release") == 0) {
+			stdm_vm_release(&vm, (uint8_t)a);
 		} else if (strcmp(command, "pin") == 0) {
 			if (a >= 0 && a < PIN_COUNT) {
 				sim.digital_in[a] = (uint16_t)b;
 				sim.analog_in[a] = (uint16_t)b;
 			}
+		} else if (strcmp(command, "dump") == 0) {
+			const uint8_t *memory = stdm_vm_memory(&vm);
+			uint16_t size = stdm_vm_memory_size(&vm), i;
+			printf("D %u ", (unsigned)stdm_vm_cycle_count(&vm));
+			for (i = 0; i < size; i++) printf("%02X", memory[i]);
+			printf("\n");
 		} else if (strcmp(command, "ops") == 0) {
 			printf("ops %lu\n", (unsigned long)stdm_executed_ops);
 			stdm_executed_ops = 0;

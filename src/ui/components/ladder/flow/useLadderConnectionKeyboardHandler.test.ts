@@ -188,4 +188,27 @@ describe("useLadderConnectionKeyboardHandler", () => {
 
 		expect(executeOperation).not.toHaveBeenCalled();
 	});
+
+	it("ignore une touche saisie dans un champ de texte", () => {
+		const edges = [
+			{
+				id: "c1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+				selected: true,
+				data: {
+					points: [
+						[1, 4],
+						[5, 4],
+					],
+				},
+			},
+		];
+		const { result } = setup(edges);
+		const e = { ...keyEvent("ArrowRight"), target: document.createElement("input") };
+
+		result.current(e);
+
+		expect(executeOperation).not.toHaveBeenCalled();
+		expect(e.preventDefault).not.toHaveBeenCalled();
+	});
 });

@@ -10,10 +10,12 @@ import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import createBrowserRemoteIoDevice from "./managers/hardware-link/browser-remote-io-device";
+import ModeManager from "./managers/mode.manager";
 import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
 import {
 	DISCONNECTED_HARDWARE_LINK,
 	IDLE_HARDWARE_FIRMWARE,
+	IDLE_HARDWARE_OBSERVATION,
 	IDLE_HARDWARE_UPLOAD,
 } from "./managers/hardware-link/hardware-link.state";
 import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
@@ -273,6 +275,7 @@ export const createProjectStore = () => {
 			mode: ProjectMode.DESIGN,
 			simulationPaused: false,
 			simulationMode: SimulationManager.getPersistedSimulationMode(),
+			simulationKind: "virtual",
 			analysisHasErrors: false,
 			analysisHasWarnings: false,
 			analysisErrors: emptyAnalysisIssues(),
@@ -328,6 +331,8 @@ export const createProjectStore = () => {
 			),
 			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
 			hardwareUpload: IDLE_HARDWARE_UPLOAD,
+			hardwareObservation: IDLE_HARDWARE_OBSERVATION,
+			modeManager: new ModeManager(get),
 
 			//=============== COMMANDS STACK ===============
 			hasCommandsToUndo: false,

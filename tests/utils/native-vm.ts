@@ -119,6 +119,27 @@ export class NativeVm {
 			.map((line) => Number(line.slice(4)));
 	}
 
+	/** Variable memory after each `cycle` of the commands, as telemetry would send it. */
+	memoryAfterEachCycle(commands: string[]): NativeMemoryDump[] {
+		const withDumps = commands.flatMap((command) =>
+			/^cycle/.test(command) ? [command, "dump"] : [command],
+		);
+		const result = spawnSync(nativeDriverPath(), [this.imagePath], {
+			input: withDumps.join("\n") + "\n",
+			encoding: "utf8",
+		});
+		return result.stdout
+			.split("\n")
+			.filter((line) => line.startsWith("D "))
+			.map((line) => {
+				const [, cycle, hex] = line.split(" ");
+				return {
+					cycle: Number(cycle),
+					memory: Uint8Array.from(Buffer.from(hex ?? "", "hex")),
+				};
+			});
+	}
+
 	/** Output of a start that the VM refuses. */
 	startError(): string {
 		return spawnSync(nativeDriverPath(), [this.imagePath], {
@@ -138,4 +159,9 @@ export function nativeVerifyMany(images: Uint8Array[]): number[] {
 		maxBuffer: 64 * 1024 * 1024,
 	});
 	return result.stdout.split("\n").filter(Boolean).map(Number);
+}
+
+export interface NativeMemoryDump {
+	cycle: number;
+	memory: Uint8Array;
 }

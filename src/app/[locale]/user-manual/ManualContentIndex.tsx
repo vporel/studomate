@@ -9,6 +9,7 @@ import ExplorerSection from "./sections/ExplorerSection";
 import GettingStartedSection from "./sections/GettingStartedSection";
 import GrafcetSection from "./sections/GrafcetSection";
 import HmiSection from "./sections/HmiSection";
+import HardwareSection from "./sections/HardwareSection";
 import IntroSection from "./sections/IntroSection";
 import LadderSection from "./sections/LadderSection";
 import ProjectsSection from "./sections/ProjectsSection";
@@ -58,6 +59,7 @@ export default function ManualContentIndex({
 			<HmiSection selected="hmi" />
 			<SimulationSection selected="simulation" />
 			<AnalysisSection selected="analysis" />
+			<HardwareSection />
 			<ShortcutsSection />
 		</Box>
 	);

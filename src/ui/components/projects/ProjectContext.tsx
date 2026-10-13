@@ -37,6 +37,7 @@ import DraftConflictDialog from "./DraftConflictDialog";
 import CloudConflictDialog from "./CloudConflictDialog";
 import SaveLocationModal from "./SaveLocationModal";
 import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
+import HardwareObservationDialog from "./HardwareObservationDialog";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
 import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
@@ -191,6 +192,7 @@ export const ProjectContextProvider = ({
 			<ShortcutsHandler />
 			<UnsavedChangesDialog />
 			<HardwareFirmwareDialog />
+			<HardwareObservationDialog />
 			<NewProjectModal />
 			<ProjectOpenModal />
 			<ExportModal />
