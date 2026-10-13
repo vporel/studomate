@@ -29,6 +29,30 @@
 		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB, et qu'aucun autre programme ou onglet (Studomate compris) n'utilise le port.",
 		"firmware-outdated": "Le firmware de la carte est trop ancien pour cette version de Studomate."
 	},
+	"hardwareProgramUploaded": "Programme transféré. La carte l'exécute maintenant seule : vous pouvez débrancher le câble USB.",
+	"hardwareProgramBlocked": {
+		"IMAGE_TOO_LARGE": "Le programme est trop volumineux pour la carte : {size} octets pour {limit} disponibles.",
+		"IMAGE_TOO_LARGE_WITH_PROGRAM": "Le programme est trop volumineux pour la carte : {size} octets pour {limit} disponibles. Le programme le plus gros est « {program} » ({programSize} octets).",
+		"VARIABLE_MEMORY_EXCEEDED": "Les variables demandent {size} octets de mémoire, la carte en offre {limit}.",
+		"STACK_TOO_DEEP": "Une expression est trop profonde pour la carte (profondeur {depth}, maximum {limit}). Découpez-la.",
+		"CALL_DEPTH_EXCEEDED": "Les programmes s'appellent trop profondément pour la carte (profondeur {depth}, maximum {limit}).",
+		"JUMP_NESTING_EXCEEDED": "Les conditions sont imbriquées trop profondément pour la carte (maximum {limit} niveaux)."
+	},
+	"hardwareProgramFailed": {
+		"analysis": "Corrigez les erreurs signalées par l'analyse avant d'envoyer le programme à la carte.",
+		"compilation": "Le projet ne compile pas : le programme ne peut pas être envoyé à la carte.",
+		"unsupported": "Le projet utilise une fonctionnalité que la carte ne sait pas exécuter.",
+		"upload-rejected": "La carte a refusé le programme.",
+		"upload-timeout": "La carte a cessé de répondre pendant la réception du programme. Réessayez.",
+		"upload-mismatch": "La carte n'a pas enregistré le programme envoyé. Réessayez.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
+	"hardwareProgramCommandFailed": {
+		"upload-rejected": "La carte n'a pas pu lancer son programme : elle n'en contient aucun de valide, ou manque de mémoire.",
+		"upload-timeout": "La carte n'a pas répondu. Réessayez.",
+		"upload-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
 	"hardwareOutputsCutInBackground": "Onglet en arrière-plan : les sorties de la carte ont été coupées.",
 	"hardwareFlashFailed": {
 		"sync-failed": "Impossible d'installer le firmware : la carte ne répond pas. Vérifiez qu'aucun autre programme n'utilise le port. Seul l'Arduino Uno R3 d'origine est pris en charge.",

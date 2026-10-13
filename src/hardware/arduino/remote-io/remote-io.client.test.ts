@@ -1,6 +1,8 @@
 import FakeRemoteIoBoard, {
 	createManualHeartbeat,
 } from "@tests/utils/fake-remote-io-board";
+import generateBytecode from "@/bytecode/bytecode.generator";
+import { compiledProject, plcVariable } from "@tests/utils/bytecode-program";
 import RemoteIoClient, {
 	RemoteIoError,
 	type RemoteIoInputValues,
@@ -50,6 +52,7 @@ function setup(
 		handshakeTimeoutMs: 80,
 		pingIntervalMs: 10,
 		configTimeoutMs: 80,
+		uploadAckTimeoutMs: 40,
 	});
 	const states: RemoteIoState[] = [];
 	client.onStateChange((state) => states.push(state));
@@ -460,5 +463,275 @@ describe("RemoteIoClient.reconfigure", () => {
 	it("refuses when not linked", async () => {
 		const { client } = setup();
 		await expect(client.reconfigure(NEW_PLAN)).rejects.toThrow("not linked");
+	});
+});
+
+const uploadImage = (
+	client: RemoteIoClient,
+	image: Uint8Array,
+	onProgress?: (sent: number, total: number) => void,
+) =>
+	client.uploadProgram(
+		image,
+		new DataView(image.buffer, image.byteOffset).getUint32(22, true),
+		onProgress,
+	);
+
+describe("RemoteIoClient.uploadProgram", () => {
+	const imageOf = (statements: number) =>
+		generateBytecode({
+			compiled: compiledProject({
+				variables: [plcVariable("i:INT")],
+				routines: [
+					Array.from({ length: statements }, (_, k) => `i := ${k + 2}`),
+				],
+			}),
+			ioBindings: [],
+			cyclePeriodMs: 100,
+		}).bytes;
+	const frames = (board: FakeRemoteIoBoard, command: string) =>
+		board.received.filter((frame) => frame.command === command);
+	const linked = async (options: Parameters<typeof setup>[0] = {}) => {
+		const context = setup(options);
+		await context.client.connect();
+		return context;
+	};
+
+	it("transfers the image in chunks, reports progress and keeps the link", async () => {
+		const { board, client, states } = await linked();
+		const image = imageOf(40);
+		expect(image.length).toBeGreaterThan(96);
+		const progress: Array<[number, number]> = [];
+
+		await uploadImage(client, image, (sent, total) =>
+			progress.push([sent, total]),
+		);
+
+		expect(board.program).toEqual(image);
+		expect(board.autonomous).toBe(true);
+		expect(frames(board, "PROG_BEGIN")).toHaveLength(1);
+		expect(frames(board, "PROG_CHUNK")).toHaveLength(
+			Math.ceil(image.length / 48),
+		);
+		expect(progress.at(-1)).toEqual([image.length, image.length]);
+		expect(progress.map(([sent]) => sent)).toEqual(
+			[...progress.map(([sent]) => sent)].sort((a, b) => a - b),
+		);
+		expect(client.getState()).toBe("linked");
+		expect(states.at(-1)).toBe("linked");
+		expect(board.closed).toBe(false);
+	});
+
+	it("sends no output image while the board runs its program, and can upload again", async () => {
+		const { board, client, heartbeat } = await linked();
+		await uploadImage(client, imageOf(5));
+		const frames = board.received.length;
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.received.length).toBe(frames);
+		expect(heartbeat.state.stopped).toBe(true);
+
+		const second = imageOf(6);
+		await uploadImage(client, second);
+		expect(board.program).toEqual(second);
+	});
+
+	it("takes back remote I/O after a transfer", async () => {
+		const { board, client, heartbeat } = await linked();
+		await uploadImage(client, imageOf(5));
+
+		await client.resumeRemoteIo();
+
+		expect(board.autonomous).toBe(false);
+		expect(frames(board, "CFG")).toHaveLength(2);
+		expect(heartbeat.state.stopped).toBe(false);
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toEqual({ "13": 1, "9": 0 });
+	});
+
+	it("resumeRemoteIo is a no-op while remote I/O is active, and refuses when not linked", async () => {
+		const { board, client } = await linked();
+		await client.resumeRemoteIo();
+		expect(frames(board, "CFG")).toHaveLength(1);
+		const { client: other } = setup();
+		await expect(other.resumeRemoteIo()).rejects.toThrow("not linked");
+	});
+
+	it("keeps the new pin plan for later when reconfigured while the program runs", async () => {
+		const { board, client } = await linked();
+		await uploadImage(client, imageOf(5));
+		await client.reconfigure({ ...PLAN, pins: [{ pin: "4", mode: "I" }] });
+		expect(frames(board, "CFG")).toHaveLength(1);
+		await client.resumeRemoteIo();
+		expect(frames(board, "CFG").at(-1)?.args).toEqual(["4:I"]);
+	});
+
+	it("stops the heartbeat and ignores input images during the transfer", async () => {
+		const { board, client, heartbeat } = await linked();
+		const received: RemoteIoInputValues[] = [];
+		client.onInputs((values) => received.push(values));
+		const upload = uploadImage(client, imageOf(5));
+		board.emitInputs({ "2": 0 });
+		await upload;
+		expect(heartbeat.state.stopped).toBe(true);
+		expect(received).toEqual([]);
+	});
+
+	it("resends a chunk whose frame or acknowledgement was lost", async () => {
+		const { board, client } = await linked({ dropChunks: 1, dropAcks: 1 });
+		const image = imageOf(40);
+		await uploadImage(client, image);
+		expect(board.program).toEqual(image);
+		expect(frames(board, "PROG_CHUNK").length).toBeGreaterThan(
+			Math.ceil(image.length / 48),
+		);
+	});
+
+	it("fails with upload-timeout when the board stops answering, and restores the link", async () => {
+		const { board, client, heartbeat } = await linked({ dropChunks: 99 });
+		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
+			code: "upload-timeout",
+		});
+		expect(client.getState()).toBe("linked");
+		expect(heartbeat.state.stopped).toBe(false);
+		expect(frames(board, "CFG")).toHaveLength(2);
+		expect(board.autonomous).toBe(false);
+	});
+
+	it("fails with upload-rejected when the image does not fit", async () => {
+		const { client } = await linked({ programCapacity: 20 });
+		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
+			code: "upload-rejected",
+			detail: "PROG_SIZE",
+		});
+		expect(client.getState()).toBe("linked");
+	});
+
+	it("fails with upload-rejected when the board refuses the final check", async () => {
+		const { board, client } = await linked({
+			rejectProgramEnd: "PROG_INVALID",
+		});
+		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
+			code: "upload-rejected",
+			detail: "PROG_INVALID",
+		});
+		expect(board.program).toBeNull();
+		expect(client.getState()).toBe("linked");
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(uploadImage(client, imageOf(5))).rejects.toThrow("not linked");
+	});
+});
+
+describe("RemoteIoClient.requestStatus", () => {
+	it("reports remote I/O mode, then the running program after a transfer", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		await expect(client.requestStatus()).resolves.toEqual({
+			state: "remote-io",
+			fault: 0,
+			imageId: 0,
+		});
+		expect(board.received.at(-1)?.command).toBe("STATUS");
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(client.requestStatus()).rejects.toThrow("not linked");
+	});
+
+	it("times out when the board stays silent", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		(board as unknown as { answer: () => void }).answer = () => {};
+		await expect(client.requestStatus()).rejects.toMatchObject({
+			code: "upload-timeout",
+		});
+	});
+});
+
+describe("RemoteIoClient.runProgram and stopProgram", () => {
+	const imageOf = () =>
+		generateBytecode({
+			compiled: compiledProject({
+				variables: [plcVariable("i:INT")],
+				routines: [["i := 1"]],
+			}),
+			ioBindings: [],
+			cyclePeriodMs: 100,
+		}).bytes;
+	const linkedWithProgram = async () => {
+		const context = setup();
+		await context.client.connect();
+		await uploadImage(context.client, imageOf());
+		return context;
+	};
+
+	it("stops the program and leaves the board without remote I/O", async () => {
+		const { board, client, heartbeat } = await linkedWithProgram();
+
+		await client.stopProgram();
+
+		expect(board.autonomous).toBe(false);
+		expect(board.stopped).toBe(true);
+		expect(client.getState()).toBe("linked");
+		expect(heartbeat.state.stopped).toBe(true);
+		await expect(client.requestStatus()).resolves.toMatchObject({
+			state: "stopped",
+		});
+	});
+
+	it("starts the stored program again", async () => {
+		const { board, client } = await linkedWithProgram();
+		await client.stopProgram();
+
+		await client.runProgram();
+
+		expect(board.autonomous).toBe(true);
+		expect(board.stopped).toBe(false);
+		await expect(client.requestStatus()).resolves.toMatchObject({
+			state: "running",
+		});
+	});
+
+	it("starts the program from remote I/O, silencing the heartbeat", async () => {
+		const { board, client, heartbeat } = setup();
+		await client.connect();
+		board.program = imageOf();
+
+		await client.runProgram();
+
+		expect(board.autonomous).toBe(true);
+		expect(heartbeat.state.stopped).toBe(true);
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toBeUndefined();
+	});
+
+	it("keeps remote I/O when the board has no program to start", async () => {
+		const { board, client, heartbeat } = setup();
+		await client.connect();
+
+		await expect(client.runProgram()).rejects.toMatchObject({
+			code: "upload-rejected",
+			detail: "PROG_INVALID",
+		});
+
+		expect(heartbeat.state.stopped).toBe(false);
+		expect(
+			board.received.filter((frame) => frame.command === "CFG"),
+		).toHaveLength(2);
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().at(-1)).toMatchObject({ "13": 1 });
+	});
+
+	it("refuses when not linked", async () => {
+		const { client } = setup();
+		await expect(client.runProgram()).rejects.toThrow("not linked");
+		await expect(client.stopProgram()).rejects.toThrow("not linked");
 	});
 });

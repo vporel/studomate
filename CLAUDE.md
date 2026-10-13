@@ -38,13 +38,17 @@ JS) before considering closures.
 
 ```
 src/schemas/           domain model (Grafcet, Project, Variable, commands...)
-src/hardware/           static descriptors of hardware models (pins, capabilities, limits) + registry
+src/hardware/           static descriptors of hardware models (pins, capabilities, limits) + registry,
+                        and the Arduino serial link (remote I/O protocol, STK500 flasher)
 src/expression-language/  expression language (AND/OR/NOT, FR/EN dialects) — neutral
                         module with no dependencies; used by both the compiler and editing
 src/project-analyser/  project analysis (business rules, never throws: collects issues)
 src/project-pre-compiler/  lexes/parses/analyses/simplifies expressions once and for all
 src/project-compiler/  produces the executable program (PLCRoutine[]) from the pre-compiled form
 src/simulator/          expression-language lexer/parser/interpreter + PLC engine
+src/bytecode/           bytecode for embedded targets: format, generator (from the compiled
+                        project), verifier, admissibility check; target-independent, the Arduino
+                        pin mapping is an adapter (`arduino-io-bindings.ts`)
 src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
 src/lib/                neutral utilities (array, object), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
@@ -259,6 +263,21 @@ in English, `migrate: () => void`), file `vN-to-vN+1.ts` + test, registered at t
 `LAYOUT_MIGRATIONS` in `local-storage/index.ts`, and bump `CURRENT_LAYOUT_VERSION` in
 `local-storage/keys.ts`. `ensureLocalStorageLayout()` applies the chain on the first operation
 of `LocalStorageProjectRepository`.
+
+## Firmware version (`firmwares/arduino/uno-r3/`)
+
+A board reporting a firmware older than `SHIPPED_FIRMWARE_VERSION`
+(`src/hardware/arduino/remote-io/firmware-version.ts`) is offered an update when it is linked.
+Any change to the firmware (sketch, VM core in `firmwares/vm/`, protocol commands) must reach the
+boards, so before touching the version, **ask the developer whether the current version has
+already been deployed**: if so, increment it; if not, stay on the current one (a board already
+flashed with a development build of that same version is not offered the update, which the
+developer handles by hand).
+
+Bumping means changing together `FIRMWARE_VERSION` in the sketch and `SHIPPED_FIRMWARE_VERSION`,
+then rebuilding the precompiled hex with `firmwares/arduino/build-uno-r3.sh` (a test checks that
+all three agree). After **any** firmware change, rebuild the hex even when the version stays the
+same.
 
 ## Expression parsing cache (`parseExpressionCached`)
 

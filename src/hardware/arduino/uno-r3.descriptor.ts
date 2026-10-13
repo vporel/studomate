@@ -37,7 +37,11 @@ const arduinoUnoR3: HardwareDeviceDescriptor = {
 		inputRange: { min: 0, max: 1023 },
 		outputRange: { min: 0, max: 255 },
 	},
-	limits: { ramBytes: 2048, programStorageBytes: 1024 },
+	limits: {
+		ramBytes: 2048,
+		programStorageBytes: 1024,
+		vm: { variableBytes: 512, maxStack: 16, maxCallDepth: 4 },
+	},
 };
 
 export default arduinoUnoR3;

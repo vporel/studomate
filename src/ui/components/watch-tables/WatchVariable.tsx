@@ -45,9 +45,22 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 
 	return (
 		<FlexBox key={variable.id} between centerVertical sx={{ mb: 1, gap: 2 }}>
-			<Typography variant="subtitle2" sx={{ width: "100px" }}>
-				{variable.mnemonic}
-			</Typography>
+			<Box sx={{ width: "100px" }}>
+				<Typography variant="subtitle2">{variable.mnemonic}</Typography>
+				{variable.address && (
+					<Typography
+						variant="caption"
+						sx={{
+							display: "block",
+							color: "grey.700",
+							fontSize: ".62rem",
+							lineHeight: 1.2,
+						}}
+					>
+						{variable.address}
+					</Typography>
+				)}
+			</Box>
 			<FlexBox centerVertical sx={{ gap: 1.5 }}>
 				<Typography
 					sx={{

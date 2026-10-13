@@ -3,6 +3,13 @@ import {
 	encodeConfig,
 	encodeOutputs,
 	encodePing,
+	encodeProgramBegin,
+	encodeProgramChunk,
+	encodeProgramEnd,
+	encodeProgramRun,
+	encodeProgramStop,
+	encodeStatusRequest,
+	PROGRAM_CHUNK_BYTES,
 	PROTOCOL_MAJOR_VERSION,
 	type DeviceMessage,
 	type PinValue,
@@ -15,6 +22,20 @@ import type { SerialTransport } from "./transport";
 
 export type RemoteIoState = "disconnected" | "connecting" | "linked";
 
+/** Failures of a program transfer. */
+export type RemoteIoUploadErrorCode =
+	"upload-rejected" | "upload-timeout" | "upload-mismatch";
+
+export function isRemoteIoUploadError(
+	code: string,
+): code is RemoteIoUploadErrorCode {
+	return (
+		code === "upload-rejected" ||
+		code === "upload-timeout" ||
+		code === "upload-mismatch"
+	);
+}
+
 export type RemoteIoErrorCode =
 	/** No valid `PONG` within the handshake window: blank board or another program. */
 	| "handshake-timeout"
@@ -24,6 +45,12 @@ export type RemoteIoErrorCode =
 	| "firmware-outdated"
 	/** The board answered `ERR` to the pin configuration. */
 	| "config-rejected"
+	/** The board refused the program transfer (`ERR` code in the detail). */
+	| "upload-rejected"
+	/** The board stopped answering during the program transfer. */
+	| "upload-timeout"
+	/** The board stored a program whose identifier differs from the one sent. */
+	| "upload-mismatch"
 	/** The port could not be opened, written to, or was lost. */
 	| "transport"
 	| "cancelled";
@@ -43,6 +70,14 @@ export interface RemoteIoFirmwareInfo {
 	inputPeriodMs: number;
 }
 
+export interface RemoteIoStatus {
+	state: "remote-io" | "running" | "fault" | "stopped";
+	/** 0 when there is no fault. */
+	fault: number;
+	/** Identifier of the program image stored in the board, 0 when there is none. */
+	imageId: number;
+}
+
 export type RemoteIoInputValues = Map<string, boolean | number>;
 
 export interface RemoteIoClientOptions {
@@ -56,6 +91,9 @@ export interface RemoteIoClientOptions {
 	handshakeTimeoutMs?: number;
 	pingIntervalMs?: number;
 	configTimeoutMs?: number;
+	/** Wait for the acknowledgement of one program frame (writing a chunk to the EEPROM takes ~160 ms). */
+	uploadAckTimeoutMs?: number;
+	uploadAttempts?: number;
 }
 
 const DEFAULTS = {
@@ -64,6 +102,8 @@ const DEFAULTS = {
 	handshakeTimeoutMs: 3000,
 	pingIntervalMs: 250,
 	configTimeoutMs: 1000,
+	uploadAckTimeoutMs: 1500,
+	uploadAttempts: 3,
 };
 
 /**
@@ -74,6 +114,9 @@ export default class RemoteIoClient {
 	private readonly options: Required<RemoteIoClientOptions>;
 	private plan: RemoteIoPlan;
 	private reconfiguring = false;
+	private uploading = false;
+	/** False while the board runs a program of its own: it then ignores `OUT` and sends no `IN`. */
+	private remoteIoActive = true;
 	private readonly decoder = new FrameDecoder();
 	private state: RemoteIoState = "disconnected";
 	private messageListener: ((message: DeviceMessage) => void) | null = null;
@@ -135,6 +178,7 @@ export default class RemoteIoClient {
 			};
 			const info = await Promise.race([run(), aborted]);
 			this.connectAbort = null;
+			this.remoteIoActive = true;
 			this.setState("linked");
 			this.startHeartbeat();
 			return info;
@@ -177,12 +221,174 @@ export default class RemoteIoClient {
 		}
 		this.plan = plan;
 		this.resetOutputs();
+		if (!this.remoteIoActive) return;
 		this.reconfiguring = true;
 		try {
 			await this.configure();
 		} finally {
 			this.reconfiguring = false;
 		}
+	}
+
+	/**
+	 * Transfers a program image to the board, which stores it and runs it on its own. The link
+	 * stays up, but the board no longer serves remote I/O until `resumeRemoteIo`. If the transfer
+	 * fails the board is put back in remote I/O mode.
+	 */
+	async uploadProgram(
+		image: Uint8Array,
+		imageId: number,
+		onProgress?: (sentBytes: number, totalBytes: number) => void,
+	): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+
+		this.stopHeartbeat?.();
+		this.stopHeartbeat = null;
+		this.remoteIoActive = false;
+		this.uploading = true;
+		try {
+			await this.sendProgramFrame(
+				encodeProgramBegin(image.length, imageId),
+				(message) => (message.type === "PROG_READY" ? true : undefined),
+			);
+			for (let offset = 0, seq = 0; offset < image.length; seq++) {
+				const chunk = image.subarray(offset, offset + PROGRAM_CHUNK_BYTES);
+				await this.sendProgramFrame(
+					encodeProgramChunk(seq, chunk),
+					(message) =>
+						message.type === "PROG_ACK" && message.seq === seq
+							? true
+							: undefined,
+				);
+				offset += chunk.length;
+				onProgress?.(offset, image.length);
+			}
+			const stored = await this.sendProgramFrame(
+				encodeProgramEnd(),
+				(message) => (message.type === "PROG_OK" ? message.imageId : undefined),
+			);
+			if (stored !== imageId) {
+				throw new RemoteIoError("upload-mismatch", String(stored));
+			}
+		} catch (error) {
+			this.uploading = false;
+			try {
+				await this.configure();
+				this.remoteIoActive = true;
+				this.startHeartbeat();
+			} catch {
+				this.loseLink(
+					new RemoteIoError("transport", "board lost after a failed upload"),
+				);
+			}
+			throw error instanceof RemoteIoError
+				? error
+				: new RemoteIoError("transport", String(error));
+		}
+		this.uploading = false;
+	}
+
+	/** Starts the program stored in the board, from its initial state. */
+	async runProgram(): Promise<void> {
+		await this.commandProgram(encodeProgramRun(), (message) =>
+			message.type === "PROG_OK" ? true : undefined,
+		);
+	}
+
+	/** Halts the program of the board and releases its pins. */
+	async stopProgram(): Promise<void> {
+		await this.commandProgram(encodeProgramStop(), (message) =>
+			message.type === "PROG_STOPPED" ? true : undefined,
+		);
+	}
+
+	/**
+	 * Sends a command that takes the board out of remote I/O. If the board refuses, remote I/O is
+	 * restored when it was active.
+	 */
+	private async commandProgram(
+		frame: string,
+		pick: (message: DeviceMessage) => true | undefined,
+	): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		const wasActive = this.remoteIoActive;
+		this.stopHeartbeat?.();
+		this.stopHeartbeat = null;
+		this.remoteIoActive = false;
+		try {
+			await this.sendProgramFrame(frame, pick);
+		} catch (error) {
+			if (wasActive) {
+				try {
+					await this.configure();
+					this.remoteIoActive = true;
+					this.startHeartbeat();
+				} catch {
+					this.loseLink(
+						new RemoteIoError(
+							"transport",
+							"board lost after a refused command",
+						),
+					);
+				}
+			}
+			throw error instanceof RemoteIoError
+				? error
+				: new RemoteIoError("transport", String(error));
+		}
+	}
+
+	/**
+	 * Takes the pins back from the program the board runs: the board goes back to remote I/O with
+	 * the current pin plan, and the program stays stored in it until the next reset.
+	 */
+	async resumeRemoteIo(): Promise<void> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		if (this.remoteIoActive) return;
+		this.resetOutputs();
+		this.reconfiguring = true;
+		try {
+			await this.configure();
+		} finally {
+			this.reconfiguring = false;
+		}
+		this.remoteIoActive = true;
+		this.startHeartbeat();
+	}
+
+	/** Asks the board what it is doing and which program it holds. */
+	async requestStatus(): Promise<RemoteIoStatus> {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+		const wait = this.waitFor<RemoteIoStatus>(
+			(message) =>
+				message.type === "STATUS"
+					? {
+							state:
+								(["remote-io", "running", "fault", "stopped"] as const)[
+									message.state
+								] ?? "fault",
+							fault: message.fault,
+							imageId: message.imageId,
+						}
+					: undefined,
+			this.options.configTimeoutMs,
+			() => new RemoteIoError("upload-timeout", "status"),
+		);
+		wait.catch(() => {});
+		try {
+			await this.options.transport.write(encodeStatusRequest());
+		} catch (cause) {
+			throw new RemoteIoError("transport", String(cause));
+		}
+		return wait;
 	}
 
 	/** Forces every output to 0 right away, and keeps them there until `setOutputs` is called. */
@@ -215,7 +421,7 @@ export default class RemoteIoClient {
 	}
 
 	private async sendOutputs(): Promise<void> {
-		if (this.state !== "linked") return;
+		if (this.state !== "linked" || !this.remoteIoActive) return;
 		try {
 			await this.options.transport.write(encodeOutputs(this.currentImage()));
 		} catch (cause) {
@@ -235,7 +441,7 @@ export default class RemoteIoClient {
 			const message = decodeDeviceMessage(frame);
 			if (!message) continue;
 			if (message.type === "IN") {
-				if (this.state === "linked" && !this.reconfiguring) {
+				if (this.state === "linked" && !this.reconfiguring && !this.uploading) {
 					this.emitInputs(message.values);
 				}
 				continue;
@@ -341,6 +547,39 @@ export default class RemoteIoClient {
 			throw new RemoteIoError("transport", String(cause));
 		}
 		await wait;
+	}
+
+	/** Sends one program frame and waits for its answer, resending it when the answer never comes. */
+	private async sendProgramFrame<T>(
+		frame: string,
+		pick: (message: DeviceMessage) => T | undefined,
+	): Promise<T> {
+		const { uploadAttempts, uploadAckTimeoutMs, transport } = this.options;
+		for (let attempt = 1; ; attempt++) {
+			const wait = this.waitFor<T>(
+				(message) => {
+					if (message.type === "ERR") {
+						throw new RemoteIoError("upload-rejected", message.code);
+					}
+					return pick(message);
+				},
+				uploadAckTimeoutMs,
+				() => new RemoteIoError("upload-timeout"),
+			);
+			wait.catch(() => {});
+			try {
+				await transport.write(frame);
+			} catch (cause) {
+				throw new RemoteIoError("transport", String(cause));
+			}
+			try {
+				return await wait;
+			} catch (error) {
+				const retryable =
+					error instanceof RemoteIoError && error.code === "upload-timeout";
+				if (!retryable || attempt >= uploadAttempts) throw error;
+			}
+		}
 	}
 
 	private handleTransportClosed() {

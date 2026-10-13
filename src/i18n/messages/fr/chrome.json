@@ -35,11 +35,18 @@
 		"warnings": "(Avertissements)"
 	},
 	"hardwareLink": {
-		"linked": "{board} lié",
+		"linked": "{board} lié en E/S",
 		"connecting": "Connexion...",
 		"disconnected": "{board} déconnecté",
 		"link": "Lier la carte",
 		"unlink": "Dissocier",
+		"upload": "Téléverser le programme",
+		"running": "{board} exécute son programme",
+		"stopped": "{board} : programme arrêté",
+		"start": "Lancer le programme de la carte",
+		"stop": "Arrêter le programme de la carte",
+		"resume": "Utiliser la carte en E/S",
+		"uploading": "Téléversement du programme... {percent} %",
 		"unsupported": "La liaison USB avec la carte nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet.",
 		"unsupportedAria": "Liaison USB indisponible dans ce navigateur",
 		"flashing": "Téléversement du firmware..."

@@ -10,10 +10,12 @@ import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
 import createBrowserRemoteIoDevice from "./managers/hardware-link/browser-remote-io-device";
-import HardwareLinkManager, {
+import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
+import {
 	DISCONNECTED_HARDWARE_LINK,
 	IDLE_HARDWARE_FIRMWARE,
-} from "./managers/hardware-link/hardware-link.manager";
+	IDLE_HARDWARE_UPLOAD,
+} from "./managers/hardware-link/hardware-link.state";
 import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
@@ -95,16 +97,17 @@ export const createProjectStore = () => {
 		};
 
 		/** Setter d'un drapeau de visibilité simple de `ui` (sans logique de garde). */
-		const modalSetter =
-			(key: BooleanUiKey) => (visible: boolean) =>
-				set((state) => ({ ui: { ...state.ui, [key]: visible } }));
+		const modalSetter = (key: BooleanUiKey) => (visible: boolean) =>
+			set((state) => ({ ui: { ...state.ui, [key]: visible } }));
 
 		return {
 			project: null,
 			bootStatus:
-				getProjectIdFromUrl() || getShareTokenFromUrl() || getTemplateIdFromUrl()
-						? "restoring"
-						: "idle",
+				getProjectIdFromUrl() ||
+				getShareTokenFromUrl() ||
+				getTemplateIdFromUrl()
+					? "restoring"
+					: "idle",
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
 			ui: {
@@ -217,7 +220,9 @@ export const createProjectStore = () => {
 				});
 			},
 
-			setUnsavedChangesDialogVisible: modalSetter("unsavedChangesDialogVisible"),
+			setUnsavedChangesDialogVisible: modalSetter(
+				"unsavedChangesDialogVisible",
+			),
 			setNewProjectModalVisible: modalSetter("newProjectModalVisible"),
 			setSaveAsModalVisible: modalSetter("saveAsModalVisible"),
 			setShareModalVisible: modalSetter("shareModalVisible"),
@@ -322,6 +327,7 @@ export const createProjectStore = () => {
 				createBrowserRemoteIoDevice,
 			),
 			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
+			hardwareUpload: IDLE_HARDWARE_UPLOAD,
 
 			//=============== COMMANDS STACK ===============
 			hasCommandsToUndo: false,

@@ -43,7 +43,7 @@ describe("shipped firmware", () => {
 
 	it("the sketch declares the shipped version", () => {
 		const sketch = readFileSync(
-			join(root, "firmwares/arduino/uno-r3-remote-io/uno-r3-remote-io.ino"),
+			join(root, "firmwares/arduino/uno-r3/uno-r3.ino"),
 			"utf8",
 		);
 		expect(sketch).toContain(
@@ -53,7 +53,7 @@ describe("shipped firmware", () => {
 
 	it("the precompiled .hex embeds the shipped version", () => {
 		const hex = readFileSync(
-			join(root, "public/firmwares/arduino/uno-r3-remote-io.hex"),
+			join(root, "public/firmwares/arduino/uno-r3.hex"),
 			"utf8",
 		);
 		const image = parseIntelHex(hex);

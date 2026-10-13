@@ -6,8 +6,7 @@ import WebSerialTransport, {
 } from "@/hardware/arduino/remote-io/web-serial.transport";
 import type { RemoteIoDeviceFactory } from "./remote-io-device";
 
-export const ARDUINO_UNO_R3_FIRMWARE_URL =
-	"/firmwares/arduino/uno-r3-remote-io.hex";
+export const ARDUINO_UNO_R3_FIRMWARE_URL = "/firmwares/arduino/uno-r3.hex";
 
 /**
  * Device over the real serial port. Must be called from a user gesture: without an authorised

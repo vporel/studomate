@@ -248,9 +248,7 @@ describe("createProjectStore", () => {
 		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
-			const grafcet = store
-				.getState()
-				.grafcetsManager.newGrafcet("G1")!;
+			const grafcet = store.getState().grafcetsManager.newGrafcet("G1")!;
 			const syncSpy = jest.spyOn(
 				store.getState().grafcetsManager,
 				"syncMountedStoresFromProject",
@@ -281,9 +279,7 @@ describe("createProjectStore", () => {
 		it("déduit activeScopeType depuis le type de page (grafcet)", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
-			const grafcet = store
-				.getState()
-				.grafcetsManager.newGrafcet("G1")!;
+			const grafcet = store.getState().grafcetsManager.newGrafcet("G1")!;
 
 			store.getState().setActiveScope(grafcet.id);
 
@@ -303,12 +299,8 @@ describe("createProjectStore", () => {
 		it("ne re-focalise pas le flow quand le scope demandé est déjà le scope actif", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
-			const grafcetA = store
-				.getState()
-				.grafcetsManager.newGrafcet("A")!;
-			const grafcetB = store
-				.getState()
-				.grafcetsManager.newGrafcet("B")!;
+			const grafcetA = store.getState().grafcetsManager.newGrafcet("A")!;
+			const grafcetB = store.getState().grafcetsManager.newGrafcet("B")!;
 			const focusA = jest.fn();
 			const focusB = jest.fn();
 			store.getState().grafcetsManager.registerStoreManager(grafcetA.id, {

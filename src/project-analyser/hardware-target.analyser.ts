@@ -5,6 +5,8 @@ import {
 import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
 import type Project from "@/schemas/project/project.schema";
 import type Variable from "@/schemas/variable/variable.schema";
+import CrossReferenceCollector from "./cross-reference/cross-reference-collector";
+import analyseHardwareTypes from "./hardware-type.analyser";
 import ProjectAnalyserIssue from "./project.analyser.issue";
 
 /**
@@ -27,7 +29,7 @@ export default function analyseHardwareTarget(
 		];
 	}
 
-	const issues: ProjectAnalyserIssue[] = [];
+	const issues: ProjectAnalyserIssue[] = analyseHardwareTypes(project, device);
 	const pinsByAddress = new Map<string, HardwarePin>(
 		device.pins.map((pin) => [pin.address, pin]),
 	);
@@ -106,5 +108,42 @@ export default function analyseHardwareTarget(
 		);
 	}
 
+	issues.push(...analyseUnboundInputs(project, source, device.label));
 	return issues;
+}
+
+/**
+ * An input a program reads but that has no pin address: on the board it is never written, so a
+ * program sent to it sees it at false (0) for ever. Legitimate while the board only serves its
+ * pins (the input stays driven from the HMI), hence a warning.
+ */
+function analyseUnboundInputs(
+	project: Project,
+	source: { sourceType: "project"; sourceId: string },
+	deviceLabel: string,
+): ProjectAnalyserIssue[] {
+	const readByPrograms = new Set(
+		CrossReferenceCollector.collect(project)
+			.filter(({ references }) =>
+				references.some(
+					(reference) =>
+						reference.programType !== "hmi" && reference.access === "read",
+				),
+			)
+			.map(({ variableName }) => variableName),
+	);
+	return project.variables
+		.filter(
+			(variable) =>
+				(variable.zone === "logic-input" || variable.zone === "analog-input") &&
+				!variable.address &&
+				readByPrograms.has(variable.mnemonic),
+		)
+		.map(
+			(variable) =>
+				new ProjectAnalyserIssue("warning", "HARDWARE_INPUT_UNBOUND", source, {
+					variableName: variable.mnemonic,
+					device: deviceLabel,
+				}),
+		);
 }

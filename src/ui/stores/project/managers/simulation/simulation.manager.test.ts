@@ -13,6 +13,7 @@ import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import { getAutoOpenHmiSimulationOnStart } from "@/persistence/preferences.storage";
+import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -98,16 +99,22 @@ describe("SimulationManager", () => {
 
 			//Les variables de mémoire qui portent l'état des réceptivités ne fuient pas dans les
 			//variables de simulation : ici I0 + X0 + X1 + 2 mémos d'étape = 5 au plus, jamais les
-			//2 variables d'observation en plus.
+			//2 variables d'observation en plus (les variables système sont publiées à part).
 			expect(
-				Object.keys(get().simulationVariablesStates).length,
+				Object.keys(get().simulationVariablesStates).filter(
+					(id) => !isSystemVariableName(id),
+				).length,
 			).toBeLessThanOrEqual(5);
 
 			manager.setDesignMode();
 		});
 
 		it("publie le temps écoulé d'une tempo nommée, à côté de l'état booléen de la transition", async () => {
-			const grafcet = GrafcetFactory.createSimpleCycle("g1", "VRAI", "T1/X1/2s");
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"g1",
+				"VRAI",
+				"T1/X1/2s",
+			);
 			const project = ProjectFactory.create([], [grafcet]);
 			const { get, set } = makeStore(project);
 			const manager = new SimulationManager(set, get, stubNotifier());
@@ -424,7 +431,11 @@ describe("SimulationManager", () => {
 			const niveau = VariableFactory.createAnalogInput("niveau").update({
 				behavior: { kind: "slider", params: { min: 0, max: 100 } },
 			});
-			const grafcet = GrafcetFactory.createSimpleCycle("g1", "arret", "NON arret");
+			const grafcet = GrafcetFactory.createSimpleCycle(
+				"g1",
+				"arret",
+				"NON arret",
+			);
 			const project = ProjectFactory.create([arret, niveau], [grafcet]);
 			const { get, set } = makeStore(project);
 			set(() => ({ simulationMode: SimulationMode.STEP_BY_STEP }));
@@ -625,6 +636,22 @@ describe("SimulationManager", () => {
 
 		const varPatches = (patches: Array<Record<string, unknown>>) =>
 			patches.filter((p) => "simulationVariablesStates" in p);
+		// Les bases de temps système changent d'elles-mêmes : seules les variables du projet
+		// doivent rester silencieuses quand rien ne bouge. Chaque patch porte l'état complet,
+		// on compte donc les patches où la part « projet » diffère du patch précédent.
+		const projectVarPatches = (patches: Array<Record<string, unknown>>) => {
+			let previous = "";
+			return varPatches(patches).filter((patch) => {
+				const projectPart = JSON.stringify(
+					Object.entries(patch.simulationVariablesStates as object).filter(
+						([id]) => !isSystemVariableName(id),
+					),
+				);
+				const changed = projectPart !== previous;
+				previous = projectPart;
+				return changed;
+			});
+		};
 
 		it("ne republie simulationVariablesStates que lorsqu'une valeur change", async () => {
 			const { get, set, patches } = recordingStore(frozenProject());
@@ -632,11 +659,11 @@ describe("SimulationManager", () => {
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(40); // stabilisation
-			const countAfterSettle = varPatches(patches).length;
+			const countAfterSettle = projectVarPatches(patches).length;
 			expect(countAfterSettle).toBeGreaterThan(0);
 
 			await jest.advanceTimersByTimeAsync(150); // ~15 cycles, état figé
-			expect(varPatches(patches).length).toBe(countAfterSettle);
+			expect(projectVarPatches(patches).length).toBe(countAfterSettle);
 
 			manager.setDesignMode();
 		});
@@ -660,6 +687,29 @@ describe("SimulationManager", () => {
 				.simulationVariablesStates as Record<string, unknown>;
 			// Toutes les variables sont republiées d'un coup, pas seulement un delta.
 			expect(Object.keys(firstRepublish).sort()).toEqual(allVarIds.sort());
+
+			manager.setDesignMode();
+		});
+
+		it("publie les variables système, pour que les contacts Ladder qui les lisent s'éclairent", async () => {
+			const { get, set } = recordingStore(frozenProject());
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			manager.setSimulationMode();
+			await jest.advanceTimersByTimeAsync(250);
+
+			const byMnemonic = get().simulationVariablesStatesByMnemonic;
+			expect(byMnemonic["_SYS_FIRST_SCAN"]).toBeDefined();
+			expect(typeof byMnemonic["_SYS_TB_200ms"].value).toBe("boolean");
+			const seen = new Set<unknown>();
+			for (let i = 0; i < 6; i++) {
+				seen.add(
+					get().simulationVariablesStatesByMnemonic["_SYS_TB_200ms"].value,
+				);
+				await jest.advanceTimersByTimeAsync(100);
+			}
+			// Un signal carré : il prend les deux valeurs au fil des cycles.
+			expect(seen).toEqual(new Set([true, false]));
 
 			manager.setDesignMode();
 		});

@@ -1,5 +1,5 @@
 /**
- * Version of the firmware shipped with Studomate (`firmwares/arduino/uno-r3-remote-io`). A board
+ * Version of the firmware shipped with Studomate (`firmwares/arduino/uno-r3`). A board
  * reporting an older version is offered an update. Keep in sync with `FIRMWARE_VERSION` of the
  * sketch: `firmware-version.test.ts` checks the sketch and the precompiled `.hex`.
  */

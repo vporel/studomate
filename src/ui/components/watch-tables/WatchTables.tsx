@@ -43,6 +43,13 @@ function Header({ onClose }: { onClose: () => void }) {
 export default function WatchTables() {
 	const t = useT("pages.watchTables");
 	const setWatchTablesVisible = useProjectStore((s) => s.setWatchTablesVisible);
+	// The pins of a linked board are the source of its inputs: they cannot be written from here.
+	const inputsDrivenByBoard = useProjectStore(
+		(s) =>
+			!!s.project?.hardwareTarget &&
+			s.hardwareLink.status === "linked" &&
+			s.hardwareLink.boardMode === "remote-io",
+	);
 	const [tab, setTab] = useState(0);
 
 	const onClose = () => {
@@ -53,15 +60,17 @@ export default function WatchTables() {
 	// wheel doesn't move them by default, so vertical wheel movement is forwarded to the
 	// horizontal scroller here.
 	const onTabsWheel = (e: WheelEvent<HTMLDivElement>) => {
-		const scroller = e.currentTarget.querySelector<HTMLDivElement>(
-			".MuiTabs-scroller",
-		);
+		const scroller =
+			e.currentTarget.querySelector<HTMLDivElement>(".MuiTabs-scroller");
 		if (!scroller || e.deltaY === 0) return;
 		scroller.scrollLeft += e.deltaY;
 	};
 
 	return (
-		<Box p={1}>
+		<Box
+			p={1}
+			sx={{ display: "flex", flexDirection: "column", height: "100%" }}
+		>
 			<Header onClose={onClose} />
 			<Divider sx={{ mt: 0.5, mb: 1 }} />
 			<Tabs
@@ -75,16 +84,33 @@ export default function WatchTables() {
 			>
 				<Tab label={t("inputs")} sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }} />
 				<Tab label={t("outputs")} sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }} />
-				<Tab label={t("memories")} sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }} />
-				<Tab label={t("grafcets")} sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }} />
+				<Tab
+					label={t("memories")}
+					sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }}
+				/>
+				<Tab
+					label={t("grafcets")}
+					sx={{ minHeight: 0, minWidth: 0, pt: 0.3 }}
+				/>
 			</Tabs>
 
-			<Box sx={{ py: 1 }}>
+			<Box sx={{ py: 1, flex: 1, minHeight: 0, overflowY: "auto" }}>
 				{tab === 0 && <TabContent variableDirection="IN" />}
 				{tab === 1 && <TabContent variableDirection="OUT" />}
 				{tab === 2 && <TabContent variableDirection="INOUT" />}
 				{tab === 3 && <GrafcetsTabContent />}
 			</Box>
+			{inputsDrivenByBoard && (
+				<>
+					<Divider />
+					<Typography
+						variant="caption"
+						sx={{ pt: 1, color: "text.secondary", textAlign: "center" }}
+					>
+						{t("hardwareInputsReadOnly")}
+					</Typography>
+				</>
+			)}
 		</Box>
 	);
 }

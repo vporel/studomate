@@ -23,9 +23,8 @@ function GrafcetRow({ grafcetId }: { grafcetId: string }) {
 		useShallow((state) =>
 			stepNumbers.filter(
 				(number) =>
-					state.simulationVariablesStates[
-						getStepVariableId(grafcetId, number)
-					]?.value === true,
+					state.simulationVariablesStates[getStepVariableId(grafcetId, number)]
+						?.value === true,
 			),
 		),
 	);

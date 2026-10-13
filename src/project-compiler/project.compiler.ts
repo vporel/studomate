@@ -13,6 +13,8 @@ import LaddersCompiler from "./compilers/ladder/ladders.compiler";
  * - variables    : all PLCVariables needed at runtime (user + steps Xi + generated memos)
  * - routines     : les routines scannées directement à chaque cycle — tous les grafcets, et
  *                  seulement le Main parmi les ladders (voir `routinesById` pour les autres)
+ * - scanRoutineCount : nombre de routines de `routines` exécutées dans le cycle de l'automate
+ *                  (les suivantes, d'observation, ne servent qu'à l'interface du simulateur)
  * - routinesById : toutes les routines compilées, y compris les ladders appelés par un bloc
  *                  `"user-program"` mais jamais scannés directement — registre consommé par
  *                  `PLCRoutine.execute` pour résoudre un appel par `programId`
@@ -20,6 +22,7 @@ import LaddersCompiler from "./compilers/ladder/ladders.compiler";
 export type CompiledProject = {
 	variables: PLCVariable[];
 	routines: PLCRoutine[];
+	scanRoutineCount: number;
 	routinesById: Record<string, PLCRoutine>;
 	timers: TimerNode[];
 	counters: CounterNode[];
@@ -84,8 +87,9 @@ export default class ProjectCompiler {
 				);
 			}
 
+			const scanRoutines = outputs.flatMap((output) => output.scanRoutines);
 			const routines: PLCRoutine[] = [
-				...outputs.flatMap((output) => output.scanRoutines),
+				...scanRoutines,
 				...outputs.flatMap((output) => output.trailingRoutines),
 			];
 
@@ -118,6 +122,7 @@ export default class ProjectCompiler {
 				result: {
 					variables: preCompiledProject.variables,
 					routines,
+					scanRoutineCount: scanRoutines.length,
 					routinesById,
 					timers,
 					counters,

@@ -1,3 +1,5 @@
+import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import ProjectBuilder from "@/schemas/project/builders/project.builder";
 import type Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
@@ -28,11 +30,7 @@ function projectWith(
 	variables: ReturnType<typeof variable>[],
 	hardwareTarget: Project["hardwareTarget"] = { modelId: "arduino-uno-r3" },
 ): Project {
-	const project = new ProjectBuilder()
-		.id("p1")
-		.name("P")
-		.author("A")
-		.build();
+	const project = new ProjectBuilder().id("p1").name("P").author("A").build();
 	project.variables = variables;
 	project.hardwareTarget = hardwareTarget;
 	return project;
@@ -87,10 +85,9 @@ describe("analyseHardwareTarget", () => {
 		});
 
 		it("reports HARDWARE_MODEL_UNKNOWN for a model this version does not know", () => {
-			const project = projectWith(
-				[variable("btn", "logic-input", "%PD2")],
-				{ modelId: "arduino-mega" } as unknown as Project["hardwareTarget"],
-			);
+			const project = projectWith([variable("btn", "logic-input", "%PD2")], {
+				modelId: "arduino-mega",
+			} as unknown as Project["hardwareTarget"]);
 			const issues = analyseHardwareTarget(project);
 			expect(issues.map((i) => i.code)).toEqual(["HARDWARE_MODEL_UNKNOWN"]);
 			expect(issues[0].params).toEqual({ modelId: "arduino-mega" });
@@ -100,7 +97,9 @@ describe("analyseHardwareTarget", () => {
 			it.each(["%I0.0", "%PD14", "%PA6", "%PX2"])(
 				"reports an I/O variable at %s",
 				(address) => {
-					const project = projectWith([variable("btn", "logic-input", address)]);
+					const project = projectWith([
+						variable("btn", "logic-input", address),
+					]);
 					const issues = analyseHardwareTarget(project);
 					expect(issues.map((i) => i.code)).toEqual(["HARDWARE_PIN_UNKNOWN"]);
 					expect(issues[0].params).toEqual({
@@ -145,11 +144,14 @@ describe("analyseHardwareTarget", () => {
 				).toEqual(["HARDWARE_PIN_CAPABILITY_MISMATCH"]);
 			});
 
-			it.each([3, 5, 6, 9, 10, 11])("accepts an analog output on %%PD%i", (n) => {
-				expect(
-					codes(projectWith([variable("dim", "analog-output", `%PD${n}`)])),
-				).toEqual([]);
-			});
+			it.each([3, 5, 6, 9, 10, 11])(
+				"accepts an analog output on %%PD%i",
+				(n) => {
+					expect(
+						codes(projectWith([variable("dim", "analog-output", `%PD${n}`)])),
+					).toEqual([]);
+				},
+			);
 		});
 
 		describe("HARDWARE_MEMORY_VARIABLE_ON_PIN", () => {
@@ -236,11 +238,110 @@ describe("analyseHardwareTarget", () => {
 		});
 
 		it("adds nothing for a project without a target", () => {
-			const project = projectWith([variable("rx", "logic-input", "%PD0")], null);
+			const project = projectWith(
+				[variable("rx", "logic-input", "%PD0")],
+				null,
+			);
 			const result = ProjectAnalyser.analyse(project);
 			expect(
 				result.issues.filter((i) => i.code.startsWith("HARDWARE_")),
 			).toEqual([]);
+		});
+	});
+
+	describe("HARDWARE_INPUT_UNBOUND", () => {
+		const withGrafcetReading = (
+			variables: ReturnType<typeof variable>[],
+			expression: string,
+			hardwareTarget: Project["hardwareTarget"] = { modelId: "arduino-uno-r3" },
+		) => {
+			const project = projectWith(variables, hardwareTarget);
+			project.addProgram(
+				new GrafcetBuilder()
+					.id("g1")
+					.name("G")
+					.addTransition(
+						new TransitionBuilder().id("t1").expression(expression).build(),
+					)
+					.build(),
+			);
+			return project;
+		};
+		const unbound = (project: Project) =>
+			analyseHardwareTarget(project).filter(
+				(i) => i.code === "HARDWARE_INPUT_UNBOUND",
+			);
+
+		it("warns about an input read by a program that has no address", () => {
+			const issues = unbound(
+				withGrafcetReading([variable("E1", "logic-input")], "E1"),
+			);
+			expect(issues).toHaveLength(1);
+			expect(issues[0].severity).toBe("warning");
+			expect(issues[0].params).toEqual({
+				variableName: "E1",
+				device: "Arduino Uno R3",
+			});
+		});
+
+		it("warns about an analog input too", () => {
+			expect(
+				unbound(withGrafcetReading([variable("P1", "analog-input")], "P1 > 3")),
+			).toHaveLength(1);
+		});
+
+		it("does not warn about an input that has an address", () => {
+			expect(
+				unbound(
+					withGrafcetReading([variable("E1", "logic-input", "%PD2")], "E1"),
+				),
+			).toEqual([]);
+		});
+
+		it("does not warn about an input no program reads", () => {
+			expect(
+				unbound(
+					withGrafcetReading(
+						[variable("E1", "logic-input"), variable("E2", "logic-input")],
+						"E2 ET E2",
+					),
+				).map((i) => i.params.variableName),
+			).toEqual(["E2"]);
+		});
+
+		it("does not warn about outputs or memory variables", () => {
+			expect(
+				unbound(
+					withGrafcetReading(
+						[variable("S1", "logic-output"), variable("M1", "memory")],
+						"S1 ET M1",
+					),
+				),
+			).toEqual([]);
+		});
+
+		it("ignores a program excluded from execution", () => {
+			const project = withGrafcetReading([variable("E1", "logic-input")], "E1");
+			project.grafcets["g1"].excludedFromExecution = true;
+			expect(unbound(project)).toEqual([]);
+		});
+
+		it("says nothing without a hardware target", () => {
+			expect(
+				unbound(
+					withGrafcetReading([variable("E1", "logic-input")], "E1", null),
+				),
+			).toEqual([]);
+		});
+
+		it("is reported by the whole project analysis", () => {
+			const result = ProjectAnalyser.analyse(
+				withGrafcetReading([variable("E1", "logic-input")], "E1"),
+			);
+			expect(
+				result.issues.find((i) => i.code === "HARDWARE_INPUT_UNBOUND")
+					?.severity,
+			).toBe("warning");
 		});
 	});
 });

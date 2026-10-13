@@ -112,7 +112,8 @@
 		"outputs": "Sorties",
 		"memories": "Mémoires",
 		"grafcets": "Grafcets",
-		"noGrafcets": "Aucun grafcet dans le projet"
+		"noGrafcets": "Aucun grafcet dans le projet",
+		"hardwareInputsReadOnly": "Les entrées liées à une borne physique de la carte ne sont pas modifiables depuis cette table."
 	},
 	"noPage": {
 		"openProject": "Ouvrir un projet",

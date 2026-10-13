@@ -11,6 +11,9 @@
 	"HARDWARE_PIN_CAPABILITY_MISMATCH": "La variable « {variableName} » (zone {zone}) a l'adresse {address}, dont la broche de la cible {device} ne supporte pas cet usage.",
 	"HARDWARE_PIN_DUPLICATE": "L'adresse {address} de la cible {device} est revendiquée par plusieurs variables : {variableNames}.",
 	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "La variable mémoire « {variableName} » a l'adresse {address}, qui est une broche physique de la cible {device}. Une variable mémoire ne peut pas être liée à une broche.",
+	"HARDWARE_INPUT_UNBOUND": "L'entrée « {variableName} » est lue par un programme mais n'a pas d'adresse sur la cible {device} : dans un programme téléversé sur la carte, elle restera à faux (0) en permanence.",
+	"HARDWARE_TYPE_NOT_SUPPORTED": "Le type {type} n'est pas supporté par la cible {device}.",
+	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "La variable « {variableName} » a le type {type}, non supporté par la cible {device}.",
 
 	"GRAFCET_TOO_FEW_STEPS": "Le grafcet doit contenir au moins deux étapes.",
 	"GRAFCET_NO_INITIAL_STEP": "Le grafcet ne contient aucune étape initiale.",

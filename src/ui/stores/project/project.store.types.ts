@@ -16,10 +16,12 @@ import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
-import HardwareLinkManager, {
+import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
+import type {
 	HardwareFirmwareState,
+	HardwareUploadState,
 	HardwareLinkState,
-} from "./managers/hardware-link/hardware-link.manager";
+} from "./managers/hardware-link/hardware-link.state";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
@@ -273,6 +275,7 @@ export interface ProjectStoreState {
 	//=============== HARDWARE LINK ===============
 	hardwareLink: HardwareLinkState;
 	hardwareFirmware: HardwareFirmwareState;
+	hardwareUpload: HardwareUploadState;
 	hardwareLinkManager: HardwareLinkManager;
 
 	//=============== COMMANDS ===============

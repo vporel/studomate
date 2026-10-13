@@ -324,3 +324,22 @@ describe("WatchVariable — entrée pilotée par la carte liée", () => {
 		expect(screen.getByRole("spinbutton", { name: "niveau" })).toBeDisabled();
 	});
 });
+
+describe("WatchVariable — adresse", () => {
+	it("affiche l'adresse de la variable sous son mnémonique", () => {
+		const variable = new Variable("v1", "E1", "logic-input", "BOOL").update({
+			address: "%PD2",
+		});
+		setup({ variable, value: false });
+		expect(screen.getByText("%PD2")).toBeInTheDocument();
+		expect(screen.getByText("E1")).toBeInTheDocument();
+	});
+
+	it("n'affiche rien sous le mnémonique d'une variable sans adresse", () => {
+		setup({
+			variable: new Variable("v1", "E1", "logic-input", "BOOL"),
+			value: false,
+		});
+		expect(screen.queryByText(/^%/)).not.toBeInTheDocument();
+	});
+});

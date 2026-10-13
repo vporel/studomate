@@ -101,7 +101,11 @@ describe("Arduino Uno R3 descriptor", () => {
 	});
 
 	it("declares the RAM and the EEPROM available to the program", () => {
-		expect(uno.limits).toEqual({ ramBytes: 2048, programStorageBytes: 1024 });
+		expect(uno.limits).toEqual({
+			ramBytes: 2048,
+			programStorageBytes: 1024,
+			vm: { variableBytes: 512, maxStack: 16, maxCallDepth: 4 },
+		});
 	});
 
 	it("declares the raw analog ranges: analogRead 0..1023, analogWrite 0..255", () => {
@@ -132,6 +136,9 @@ describe("every descriptor", () => {
 			}
 			expect(descriptor.limits.ramBytes).toBeGreaterThan(0);
 			expect(descriptor.limits.programStorageBytes).toBeGreaterThan(0);
+			expect(descriptor.limits.vm.variableBytes).toBeGreaterThan(0);
+			expect(descriptor.limits.vm.maxStack).toBeGreaterThan(0);
+			expect(descriptor.limits.vm.maxCallDepth).toBeGreaterThan(0);
 		},
 	);
 });

@@ -29,6 +29,30 @@
 		"transport": "Cannot communicate with the board. Check the USB cable, and that no other program or tab (Studomate included) is using the port.",
 		"firmware-outdated": "The firmware of the board is too old for this version of Studomate."
 	},
+	"hardwareProgramUploaded": "Program transferred. The board now runs it by itself: you can unplug the USB cable.",
+	"hardwareProgramBlocked": {
+		"IMAGE_TOO_LARGE": "The program is too large for the board: {size} bytes for {limit} available.",
+		"IMAGE_TOO_LARGE_WITH_PROGRAM": "The program is too large for the board: {size} bytes for {limit} available. The largest program is \"{program}\" ({programSize} bytes).",
+		"VARIABLE_MEMORY_EXCEEDED": "The variables need {size} bytes of memory, the board offers {limit}.",
+		"STACK_TOO_DEEP": "An expression is too deep for the board (depth {depth}, maximum {limit}). Split it.",
+		"CALL_DEPTH_EXCEEDED": "Programs call each other too deeply for the board (depth {depth}, maximum {limit}).",
+		"JUMP_NESTING_EXCEEDED": "Conditions are nested too deeply for the board (maximum {limit} levels)."
+	},
+	"hardwareProgramFailed": {
+		"analysis": "Fix the errors reported by the analysis before sending the program to the board.",
+		"compilation": "The project does not compile: the program cannot be sent to the board.",
+		"unsupported": "The project uses a feature the board cannot run.",
+		"upload-rejected": "The board refused the program.",
+		"upload-timeout": "The board stopped answering while receiving the program. Try again.",
+		"upload-mismatch": "The board did not store the program it was sent. Try again.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
+	"hardwareProgramCommandFailed": {
+		"upload-rejected": "The board could not start its program: it holds no valid program, or lacks memory for it.",
+		"upload-timeout": "The board did not answer. Try again.",
+		"upload-mismatch": "The board did not answer as expected. Try again.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
 	"hardwareOutputsCutInBackground": "Tab in the background: the outputs of the board were cut.",
 	"hardwareFlashFailed": {
 		"sync-failed": "Cannot install the firmware: the board does not answer. Check that no other program is using the port. Only the original Arduino Uno R3 is supported.",

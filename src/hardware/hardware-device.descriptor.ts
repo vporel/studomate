@@ -43,6 +43,11 @@ export interface HardwareDeviceDescriptor {
 	 * `inputRange`, an `analog-output` variable is saturated to `outputRange`. Same for every pin.
 	 */
 	analog: { inputRange: AnalogRange; outputRange: AnalogRange };
-	/** `programStorageBytes`: non-volatile space available to the uploaded program. */
-	limits: { ramBytes: number; programStorageBytes: number };
+	limits: {
+		ramBytes: number;
+		/** Non-volatile space available to the uploaded program image. */
+		programStorageBytes: number;
+		/** Capacities of the bytecode VM the shipped firmware is built with. */
+		vm: { variableBytes: number; maxStack: number; maxCallDepth: number };
+	};
 }

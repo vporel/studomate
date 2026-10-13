@@ -112,7 +112,8 @@
 		"outputs": "Outputs",
 		"memories": "Memories",
 		"grafcets": "Grafcets",
-		"noGrafcets": "No grafcet in the project"
+		"noGrafcets": "No grafcet in the project",
+		"hardwareInputsReadOnly": "Inputs wired to a physical pin of the board cannot be changed from this table."
 	},
 	"noPage": {
 		"openProject": "Open a project",

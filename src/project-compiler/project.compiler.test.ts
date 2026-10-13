@@ -184,11 +184,15 @@ describe("ProjectCompiler", () => {
 				result.result!.routines[result.result!.routines.length - 1];
 			expect(observationRoutine.getInstructions()).toHaveLength(1);
 			expect(observationRoutine.getInstructions()[0]).toMatchObject({ kind: "node", node: { type: "ASSIGN_STATEMENT" } });
+			expect(result.result!.scanRoutineCount).toBe(
+				result.result!.routines.length - 1,
+			);
 		});
 
 		it("n'ajoute pas de routine d'observation quand aucune transition n'est observable", () => {
 			const result = ProjectCompiler.compile({ variables: [], programs: {} });
 			expect(result.result!.routines).toEqual([]);
+			expect(result.result!.scanRoutineCount).toBe(0);
 			expect(result.result!.observableExpressionVariableIds).toEqual({});
 		});
 

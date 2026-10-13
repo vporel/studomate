@@ -11,6 +11,9 @@
 	"HARDWARE_PIN_CAPABILITY_MISMATCH": "Variable \"{variableName}\" (zone {zone}) has address {address}, whose pin on the {device} target does not support this use.",
 	"HARDWARE_PIN_DUPLICATE": "Address {address} of the {device} target is claimed by several variables: {variableNames}.",
 	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "Memory variable \"{variableName}\" has address {address}, which is a physical pin of the {device} target. A memory variable cannot be bound to a pin.",
+	"HARDWARE_INPUT_UNBOUND": "Input \"{variableName}\" is read by a program but has no address on the {device} target: in a program sent to the board it stays at false (0) for ever.",
+	"HARDWARE_TYPE_NOT_SUPPORTED": "Type {type} is not supported by the {device} target.",
+	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "Variable \"{variableName}\" has type {type}, which is not supported by the {device} target.",
 
 	"GRAFCET_TOO_FEW_STEPS": "The grafcet must contain at least two steps.",
 	"GRAFCET_NO_INITIAL_STEP": "The grafcet has no initial step.",

@@ -35,11 +35,18 @@
 		"warnings": "(Warnings)"
 	},
 	"hardwareLink": {
-		"linked": "{board} linked",
+		"linked": "{board} linked as I/O",
 		"connecting": "Connecting...",
 		"disconnected": "{board} disconnected",
 		"link": "Link the board",
 		"unlink": "Unlink",
+		"upload": "Send the program",
+		"running": "{board} runs its program",
+		"stopped": "{board}: program stopped",
+		"start": "Start the board program",
+		"stop": "Stop the board program",
+		"resume": "Use the board as I/O",
+		"uploading": "Sending the program... {percent}%",
 		"unsupported": "The USB link with the board requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project.",
 		"unsupportedAria": "USB link unavailable in this browser",
 		"flashing": "Uploading the firmware..."

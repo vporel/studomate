@@ -11,7 +11,6 @@ import ProjectCompiler, {
 	ProjectCompilationResult,
 } from "@/project-compiler/project.compiler";
 import ProjectPreCompiler from "@/project-pre-compiler/project.pre-compiler";
-import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import PLC from "@/simulator/core/plc/plc";
 import PLCVariable, {
 	PLCVariableValue,
@@ -316,10 +315,6 @@ export default class SimulationManager {
 		for (const v of variablesSnapshot) {
 			const id = v.getId();
 			const value = v.getValue();
-
-			//Variables système (`_SYS_TB_*`) : fournies par le moteur, elles n'apparaissent pas
-			//dans les variables de simulation (leur place est l'entrée « Variables système »).
-			if (isSystemVariableName(v.getName())) continue;
 
 			const source = this.observationVariableToSource.get(id);
 			if (source !== undefined) {

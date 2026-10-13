@@ -6,11 +6,14 @@ import FakeRemoteIoBoard, {
 } from "@tests/utils/fake-remote-io-board";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
+import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
 import type { ProjectStoreState } from "@/ui/stores/project/project.store";
-import HardwareLinkManager, {
+import HardwareLinkManager from "./hardware-link.manager";
+import {
 	DISCONNECTED_HARDWARE_LINK,
 	IDLE_HARDWARE_FIRMWARE,
-} from "./hardware-link.manager";
+	IDLE_HARDWARE_UPLOAD,
+} from "./hardware-link.state";
 import type { SerialTransport } from "@/hardware/arduino/remote-io/transport";
 import FakeUnoBoard from "@tests/utils/fake-uno-board";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
@@ -27,6 +30,10 @@ function stubNotifier(): jest.Mocked<HardwareLinkNotifier> {
 		linkLost: jest.fn(),
 		outputsCutInBackground: jest.fn(),
 		flashFailed: jest.fn(),
+		programUploaded: jest.fn(),
+		programBlocked: jest.fn(),
+		programUploadFailed: jest.fn(),
+		programCommandFailed: jest.fn(),
 	};
 }
 
@@ -38,6 +45,8 @@ function setup(
 		minFirmwareVersion?: string;
 		firmwareFileError?: boolean;
 		withTarget?: boolean;
+		mode?: ProjectMode;
+		analysisOk?: boolean;
 	} = {},
 ) {
 	VariableFactory.reset();
@@ -54,11 +63,23 @@ function setup(
 
 	let state = {
 		project,
-		mode: ProjectMode.SIMULATION,
+		mode: options.mode ?? ProjectMode.SIMULATION,
 		simulationPaused: false,
 		hardwareLink: DISCONNECTED_HARDWARE_LINK,
 		hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
-		simulationManager: { applyHardwareInputs: jest.fn() },
+		hardwareUpload: IDLE_HARDWARE_UPLOAD,
+		plcConfig: { scanTimeMs: 100 },
+		simulationManager: {
+			applyHardwareInputs: jest.fn(),
+			analyze: jest.fn(() => ({
+				ok: options.analysisOk !== false,
+				projectAnalysisResult: {
+					totalAnalysedElements: 0,
+					issues: [],
+					generatedVariables: [],
+				},
+			})),
+		},
 	} as unknown as ProjectStoreState;
 	const set = (partial: any) => {
 		const patch = typeof partial === "function" ? partial(state) : partial;
@@ -111,9 +132,10 @@ describe("HardwareLinkManager.link", () => {
 
 		await manager.link();
 
-		expect(get().hardwareLink).toEqual({
+		expect(get().hardwareLink).toMatchObject({
 			status: "linked",
 			drivenInputIds: ["bp"],
+			boardMode: "remote-io",
 		});
 		expect(notifier.linked).toHaveBeenCalled();
 		const cfg = board.received.find((frame) => frame.command === "CFG");
@@ -594,5 +616,253 @@ describe("HardwareLinkManager firmware installation", () => {
 
 		expect(get().hardwareFirmware).toEqual(IDLE_HARDWARE_FIRMWARE);
 		expect(get().hardwareLink).toEqual(DISCONNECTED_HARDWARE_LINK);
+	});
+});
+
+describe("HardwareLinkManager.uploadProgram", () => {
+	const linkedSetup = async (options: Parameters<typeof setup>[0] = {}) => {
+		const context = setup({
+			mode: ProjectMode.DESIGN,
+			...options,
+		});
+		await context.manager.link();
+		return context;
+	};
+
+	it("sends the program, keeps the link and notifies", async () => {
+		const { manager, get, board, notifier } = await linkedSetup();
+
+		await manager.uploadProgram();
+
+		expect(board.program).not.toBeNull();
+		expect(board.autonomous).toBe(true);
+		expect(notifier.programUploaded).toHaveBeenCalled();
+		expect(notifier.programUploadFailed).not.toHaveBeenCalled();
+		expect(get().hardwareLink).toEqual({
+			status: "linked",
+			drivenInputIds: [],
+			boardMode: "program-running",
+			programPresent: true,
+		});
+		expect(get().hardwareUpload).toEqual(IDLE_HARDWARE_UPLOAD);
+		expect(board.closed).toBe(false);
+	});
+
+	it("can send another program without linking again", async () => {
+		const { manager, board, notifier } = await linkedSetup();
+		await manager.uploadProgram();
+		board.program = null;
+		await manager.uploadProgram();
+		expect(board.program).not.toBeNull();
+		expect(notifier.programUploaded).toHaveBeenCalledTimes(2);
+	});
+
+	it("takes the pins back from the running program", async () => {
+		const { manager, get, board } = await linkedSetup();
+		await manager.uploadProgram();
+
+		await manager.resumeRemoteIo();
+
+		expect(board.autonomous).toBe(false);
+		expect(get().hardwareLink).toEqual({
+			status: "linked",
+			drivenInputIds: ["bp"],
+			boardMode: "remote-io",
+			programPresent: true,
+		});
+	});
+
+	it("does not drive the board from the simulation while it runs its program", async () => {
+		const { manager, board, get } = await linkedSetup();
+		await manager.uploadProgram();
+		const frames = board.received.length;
+		manager.onSimulationStart();
+		manager.onCycleEnd(snapshotOf({ lampe: true }));
+		await flush();
+		expect(board.received.length).toBe(frames);
+		expect(get().hardwareLink.drivenInputIds).toEqual([]);
+	});
+
+	it("resumeRemoteIo does nothing when no program runs", async () => {
+		const { manager, board } = await linkedSetup();
+		const frames = board.received.length;
+		await manager.resumeRemoteIo();
+		expect(board.received.length).toBe(frames);
+	});
+
+	it("wires the pins of the project into the program", async () => {
+		const { manager, board } = await linkedSetup();
+		await manager.uploadProgram();
+		const image = board.program!;
+		const ioCount = image[12];
+		expect(ioCount).toBe(2);
+		const entries = Array.from(image.subarray(26, 26 + 3 * ioCount));
+		expect(entries.filter((_, i) => i % 3 === 2)).toEqual([2, 13]);
+	});
+
+	it("publishes that a transfer is in progress, then returns to idle", async () => {
+		const { manager, get } = await linkedSetup();
+		const upload = manager.uploadProgram();
+		expect(get().hardwareUpload.phase).toBe("uploading");
+		expect(get().hardwareUpload.totalBytes).toBeGreaterThan(0);
+		await upload;
+		expect(get().hardwareUpload).toEqual(IDLE_HARDWARE_UPLOAD);
+	});
+
+	it("does nothing while simulating", async () => {
+		const { manager, board, notifier } = await linkedSetup({
+			mode: ProjectMode.SIMULATION,
+		});
+		await manager.uploadProgram();
+		expect(board.received.some((frame) => frame.command === "PROG_BEGIN")).toBe(
+			false,
+		);
+		expect(notifier.programUploaded).not.toHaveBeenCalled();
+	});
+
+	it("does nothing when the board is not linked", async () => {
+		const { manager, board, notifier } = setup({ mode: ProjectMode.DESIGN });
+		await manager.uploadProgram();
+		expect(board.opened).toBe(false);
+		expect(notifier.programUploadFailed).not.toHaveBeenCalled();
+	});
+
+	it("refuses to send a project the analysis rejects", async () => {
+		const { manager, board, notifier } = await linkedSetup({
+			analysisOk: false,
+		});
+		await manager.uploadProgram();
+		expect(notifier.programUploadFailed).toHaveBeenCalledWith("analysis");
+		expect(board.received.some((frame) => frame.command === "PROG_BEGIN")).toBe(
+			false,
+		);
+	});
+
+	it("blocks a program that does not fit and names the limit", async () => {
+		const { manager, board, notifier } = await linkedSetup();
+		const descriptor = HardwareDeviceRegistry.get("arduino-uno-r3")!;
+		const spy = jest.spyOn(HardwareDeviceRegistry, "get").mockReturnValue({
+			...descriptor,
+			limits: { ...descriptor.limits, programStorageBytes: 10 },
+		});
+		try {
+			await manager.uploadProgram();
+		} finally {
+			spy.mockRestore();
+		}
+		expect(notifier.programBlocked).toHaveBeenCalledWith([
+			expect.objectContaining({ code: "IMAGE_TOO_LARGE", limitBytes: 10 }),
+		]);
+		expect(board.received.some((frame) => frame.command === "PROG_BEGIN")).toBe(
+			false,
+		);
+	});
+
+	it("reports a refusal of the board and keeps the link", async () => {
+		const { manager, get, notifier } = await linkedSetup({
+			board: { rejectProgramEnd: "PROG_INVALID" },
+		});
+		await manager.uploadProgram();
+		expect(notifier.programUploadFailed).toHaveBeenCalledWith(
+			"upload-rejected",
+		);
+		expect(get().hardwareLink.status).toBe("linked");
+		expect(get().hardwareUpload).toEqual(IDLE_HARDWARE_UPLOAD);
+		expect(notifier.programUploaded).not.toHaveBeenCalled();
+	});
+});
+
+describe("HardwareLinkManager program control", () => {
+	const linkedWithProgram = async () => {
+		const context = setup({ mode: ProjectMode.DESIGN });
+		await context.manager.link();
+		await context.manager.uploadProgram();
+		return context;
+	};
+
+	it("learns from the board whether it holds a program, once linked", async () => {
+		const { manager, get, board } = setup();
+		await manager.link();
+		expect(get().hardwareLink.programPresent).toBe(false);
+		await manager.unlink();
+
+		board.program = new Uint8Array(30);
+		new DataView(board.program.buffer).setUint32(22, 0xabc, true);
+		await manager.link();
+		await flush();
+		expect(get().hardwareLink.programPresent).toBe(true);
+	});
+
+	it("stops the program, then starts it again", async () => {
+		const { manager, get, board } = await linkedWithProgram();
+
+		await manager.stopProgram();
+		expect(board.stopped).toBe(true);
+		expect(get().hardwareLink).toMatchObject({
+			boardMode: "program-stopped",
+			drivenInputIds: [],
+			programPresent: true,
+		});
+
+		await manager.runProgram();
+		expect(board.autonomous).toBe(true);
+		expect(get().hardwareLink.boardMode).toBe("program-running");
+	});
+
+	it("starts the stored program from remote I/O", async () => {
+		const { manager, get, board } = await linkedWithProgram();
+		await manager.resumeRemoteIo();
+		expect(get().hardwareLink.boardMode).toBe("remote-io");
+
+		await manager.runProgram();
+
+		expect(board.autonomous).toBe(true);
+		expect(get().hardwareLink).toMatchObject({
+			boardMode: "program-running",
+			drivenInputIds: [],
+		});
+	});
+
+	it("takes the pins back from a stopped program", async () => {
+		const { manager, get, board } = await linkedWithProgram();
+		await manager.stopProgram();
+
+		await manager.resumeRemoteIo();
+
+		expect(board.stopped).toBe(false);
+		expect(get().hardwareLink).toMatchObject({
+			boardMode: "remote-io",
+			drivenInputIds: ["bp"],
+		});
+	});
+
+	it("does not drive the board from the simulation while its program is stopped", async () => {
+		const { manager, board } = await linkedWithProgram();
+		await manager.stopProgram();
+		const frames = board.received.length;
+		manager.onSimulationStart();
+		manager.onCycleEnd(snapshotOf({ lampe: true }));
+		await flush();
+		expect(board.received.length).toBe(frames);
+	});
+
+	it("reports a board that has no program to start, and keeps remote I/O", async () => {
+		const { manager, get, notifier } = setup();
+		await manager.link();
+
+		await manager.runProgram();
+
+		expect(notifier.programCommandFailed).toHaveBeenCalledWith(
+			"upload-rejected",
+		);
+		expect(get().hardwareLink.boardMode).toBe("remote-io");
+	});
+
+	it("does nothing when the board is not linked", async () => {
+		const { manager, board, notifier } = setup();
+		await manager.runProgram();
+		await manager.stopProgram();
+		expect(board.opened).toBe(false);
+		expect(notifier.programCommandFailed).not.toHaveBeenCalled();
 	});
 });
