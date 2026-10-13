@@ -42,6 +42,7 @@
 		"analysis-checks": "Types of checks",
 		"analysis-messages": "Example messages",
 		"hardware": "Hardware (Arduino)",
+		"scene3d": "3D scene",
 		"shortcuts": "Keyboard shortcuts"
 	},
 	"intro": {
@@ -55,6 +56,8 @@
 			"Static project analysis with error and warning detection",
 			"Real-time PLC simulation",
 			"Animated HMI screens to visualise and drive the system",
+			"Link with an Arduino Uno R3 board: program upload, simulation with real I/O, board observation",
+			"3D simulation scenes: a virtual plant (lift, crossroads, carton sorting) driven by the program",
 			"Project export as JSON or PDF"
 		],
 		"p3": "The interface is available in French and English (Preferences page, which also sets the default storage location for projects) and is designed for use in an educational or professional context.",
@@ -73,7 +76,7 @@
 			"Widget (HMI) — a graphical element on an HMI page; an interactive widget is bound to a variable.",
 			"Animation (HMI) — a change in a widget's position or appearance driven by a variable during simulation."
 		],
-		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Networks, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed."
+		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Networks, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed. The Hardware (Arduino) and 3D scene sections apply to projects linked to a real board or to a virtual plant."
 	},
 	"gettingStarted": {
 		"title": "Getting started",
@@ -93,7 +96,7 @@
 		"interfaceTitle": "Main interface",
 		"interfaceIntro": "The interface is divided into several areas:",
 		"interfaceItems": [
-			"Menu bar (top): File, Edit, Project, View, Help",
+			"Menu bar (top): File, Edit, View, Project, Target (Arduino board), Help",
 			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
 			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
 			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties). Click a tab to activate it, click its cross to close it.",
@@ -109,7 +112,7 @@
 		"createIntro": "File → New project. A window opens to choose the starting point:",
 		"createItems": [
 			"Empty project — starts with no variables and no HMI screen.",
-			"Templates — pre-configured projects with variables and an HMI screen already in place. Most templates offer two variants at creation: \"exercise\" (the program still has to be written) and, when \"A solution is available\" is shown, \"solution\" (the \"Open the solution\" button: the program is complete and ready to simulate). Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park, carton sorting station)."
+			"Templates — pre-configured projects with variables and an HMI screen already in place. Most templates offer two variants at creation: \"exercise\" (the program still has to be written) and, when \"A solution is available\" is shown, \"solution\" (the \"Open the solution\" button: the program is complete and ready to simulate). Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park, carton sorting station). The drilling station, lift, crossroads and carton sorting templates come with a 3D scene already configured: the plant is simulated in 3D (see the 3D scene section)."
 		],
 		"openTitle": "Open a project",
 		"openBody": "File → Open project (Ctrl+O). The list of saved projects is shown with their last-modified date. Click a project to open it. Each project in the list also has a delete button (with confirmation), and an \"Open from a file…\" button lets you re-import a project exported as JSON.",
@@ -471,7 +474,7 @@
 		"analysisTitle": "Analysis and mode",
 		"analysisItems": [
 			"Analyse button — runs the project's static analysis. Turns red on errors, orange on warnings only.",
-			"Mode selector — switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode."
+			"Mode selector — switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
 		],
 		"grafcetToolsTitle": "Grafcet creation tools",
 		"grafcetToolsIntro": "When a grafcet is open, extra tools appear. Drag the chosen tool onto the canvas to create the matching element:",
@@ -613,6 +616,7 @@
 			"The actions of active steps are applied.",
 			"Powered contacts, coils and links are highlighted in the ladder editors.",
 			"Variable values are updated in real time.",
+			"If the project is bound to a 3D scene, its sensors feed the bound inputs and the program outputs drive the scene (see the 3D scene section).",
 			"The grafcet and ladder editors are read-only.",
 			"The \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section)."
 		],
@@ -649,7 +653,9 @@
 			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
 			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",
 			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence",
-			"Programs excluded from execution: skipped by every check; a block calling an excluded ladder is reported"
+			"Programs excluded from execution: skipped by every check; a block calling an excluded ladder is reported",
+			"Hardware configuration: unknown board, pin used by several variables, invalid pin address or capability, type not supported by the board, input read without an address (warning)",
+			"3D scene: unknown scene, unbound point (warning), bound variable missing, sensor not bound to an input or actuator not bound to an output, incompatible type, sensor bound to several points or already wired to a pin, sensor written by an HMI widget"
 		],
 		"checksOutro": "Click a problem in the list to navigate to the element concerned, in the matching grafcet or ladder.",
 		"messagesTitle": "Example messages",
@@ -703,7 +709,7 @@
 		],
 		"configBody": "For each logic input, the page sets the mode (with or without internal pull-up) and the inversion: when checked, the variable is true when the pin is at 0 V, the usual wiring of a button between the pin and ground. Address errors are reported by the analysis.",
 		"actionsTitle": "Load the program and open the online link",
-		"actionsIntro": "As soon as a board is configured, two actions appear in the toolbar. There is no permanent link by default, as in an automation tool:",
+		"actionsIntro": "As soon as a board is configured, two actions appear in the toolbar and in the Target menu. There is no permanent link by default, as in an automation tool:",
 		"actionsItems": [
 			"Load the program into the board (Design mode): Studomate opens a link for the time of the loading, compiles the project, checks that it fits the board (about 1 KB of program and 512 bytes of variables) and says precisely what does not fit when it does not, then closes the link. The board then runs the program by itself, with the USB cable unplugged, and starts it again at each power-up;",
 			"Online link: opens a link you keep until \"Close the link\". It does not change what the board does. It gives access to the ▶ (start the board program, from its initial state) and ■ (stop it, its outputs are then cut) icons, and a badge shows what the board is doing. Loading the program during an online link leaves it open."
@@ -726,9 +732,37 @@
 		],
 		"limitsTitle": "Limits",
 		"limitsItems": [
+			"a pin can only carry one variable: the analysis reports duplicates;",
 			"only the original Arduino Uno R3 is supported (not clones with another bootloader, nor other boards);",
 			"a tab in the background slows the simulation down: with real I/O, the outputs are then cut. The program running on the board is not affected;",
 			"inputs are read with a 5 ms debounce; a pulse shorter than the reading period may be missed."
+		]
+	},
+	"scene3d": {
+		"title": "3D simulation scene",
+		"p1": "A 3D scene is a virtual plant: at each cycle, a physical model (carton sorting, elevator, traffic lights...) receives the outputs of your program, advances by the elapsed time and returns the sensors. It is displayed in a separate browser tab, full screen, while the simulation runs in the editor.",
+		"configTitle": "Choosing the scene and wiring the variables",
+		"configIntro": "Open Project > 3D scene configuration (or the button on the project start page), pick a scene from the catalogue, then bind each of its points to a variable:",
+		"configItems": [
+			"a sensor is bound to an input of the project (logic or analog, depending on the point);",
+			"an actuator is bound to an output of the project;",
+			"the selector of each point only offers variables of the right zone and type;",
+			"\"Create missing variables\" creates the variables of the unbound points with the name suggested by the scene (or reuses a compatible variable already carrying that name) and binds them, as a single undoable operation."
+		],
+		"openTitle": "Showing the scene",
+		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu opens the scene tab, before or during the simulation:",
+		"openItems": [
+			"outside simulation, the scene shows its initial state: 3D controls animate but have no effect on the project;",
+			"during simulation, the scene sensors feed the bound inputs, and the 3D controls (placing a carton, pressing a button...) act on the model;",
+			"pause and step-by-step execution of the simulation apply to the scene too;",
+			"closing the project closes the scene tab."
+		],
+		"limitsTitle": "Limits",
+		"limitsItems": [
+			"an input bound to a scene sensor can no longer be typed by hand: forcing remains possible and takes precedence over the scene;",
+			"a sensor cannot be bound to a variable already wired to a board pin;",
+			"if a sensor pulses twice within a single cycle, the program only sees one: shorten the cycle time if needed;",
+			"the analysis reports unbound points (warning) and inconsistent bindings (error): sensor bound to several points, sensor written by an HMI widget, incompatible variable type or area."
 		]
 	},
 	"navHeading": "Manual outline",

@@ -1089,7 +1089,7 @@ describe("SimulationManager", () => {
 			manager.setDesignMode();
 		});
 
-		it("applyHardwareInputs écrit les valeurs des broches dans le PLC et le store", () => {
+		it("applyExternalInputs écrit les valeurs des broches dans le PLC et le store", () => {
 			const inputVar = VariableFactory.createLogicInput("I0", "i0");
 			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
 			const project = ProjectFactory.create([inputVar], [grafcet]);
@@ -1097,21 +1097,73 @@ describe("SimulationManager", () => {
 			const manager = new SimulationManager(set, get, stubNotifier());
 			manager.setSimulationMode();
 
-			manager.applyHardwareInputs(new Map([["i0", true]]));
+			manager.applyExternalInputs(new Map([["i0", true]]));
 
 			expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
 			manager.setDesignMode();
 		});
 
-		it("applyHardwareInputs est sans effet hors simulation", () => {
+		it("applyExternalInputs est sans effet hors simulation", () => {
 			const project = ProjectFactory.create([], []);
 			const { get, set } = makeStore(project);
 			const manager = new SimulationManager(set, get, stubNotifier());
 
 			expect(() =>
-				manager.applyHardwareInputs(new Map([["x", true]])),
+				manager.applyExternalInputs(new Map([["x", true]])),
 			).not.toThrow();
 			expect(get().simulationVariablesStates).toEqual({});
+		});
+
+		describe("scène 3D", () => {
+			function startWithScene() {
+				const inputVar = VariableFactory.createLogicInput("I0", "i0");
+				const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+				const project = ProjectFactory.create([inputVar], [grafcet]);
+				project.scene3d = {
+					sceneId: "carton-sorting",
+					bindings: { p1AtIn: "i0" },
+				};
+				const { get, set } = makeStore(project);
+				const manager = new SimulationManager(set, get, stubNotifier());
+				manager.setSimulationMode();
+				return { get, manager };
+			}
+
+			it("donne au PLC les capteurs initiaux de la scène dès l'entrée en simulation", () => {
+				const { get, manager } = startWithScene();
+				expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
+				manager.setDesignMode();
+			});
+
+			it("ignore une saisie de l'IHM sur une entrée pilotée par un capteur de la scène", () => {
+				const { get, manager } = startWithScene();
+				manager.setPhysicalInputValue("i0", false);
+				expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
+				manager.setDesignMode();
+			});
+
+			it("publie l'état de la scène à chaque cycle puis le remet à zéro à l'arrêt", async () => {
+				const { manager } = startWithScene();
+				const times: number[] = [];
+				manager.subscribeScene3d((snapshot) => times.push(snapshot.simTimeMs));
+				await jest.advanceTimersByTimeAsync(35);
+				expect(times.length).toBeGreaterThan(0);
+				expect(Math.max(...times)).toBeGreaterThan(0);
+				manager.setDesignMode();
+				expect(times[times.length - 1]).toBe(0);
+			});
+
+			it("laisse une entrée sans scène modifiable par l'IHM", () => {
+				const inputVar = VariableFactory.createLogicInput("I0", "i0");
+				const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+				const project = ProjectFactory.create([inputVar], [grafcet]);
+				const { get, set } = makeStore(project);
+				const manager = new SimulationManager(set, get, stubNotifier());
+				manager.setSimulationMode();
+				manager.setPhysicalInputValue("i0", true);
+				expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
+				manager.setDesignMode();
+			});
 		});
 
 		it("ignore une saisie de l'IHM sur une entrée pilotée par la carte", () => {

@@ -43,6 +43,7 @@
 		"grafcet-action-assign": "{programName} · étape {stepNumber} · action",
 		"grafcet-step": "{programName} · étape {stepNumber} · activité de l'étape",
 		"hmi-widget-binding": "{programName} · {widgetTypeLabel} « {widgetName} »",
-		"hmi-widget-animation": "{programName} · {widgetTypeLabel} « {widgetName} » · animation"
+		"hmi-widget-animation": "{programName} · {widgetTypeLabel} « {widgetName} » · animation",
+		"scene3d-point": "{programName} · point « {pointLabel} »"
 	}
 }

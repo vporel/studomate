@@ -21,7 +21,7 @@ import {
 import { FrameDecoder } from "./frame";
 import { isFirmwareOutdated } from "./firmware-version";
 import type { RemoteIoPlan } from "./remote-io-plan";
-import type { HeartbeatScheduler } from "@/hardware/heartbeat/heartbeat-scheduler";
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import TelemetryAssembler, {
 	type TelemetrySnapshot,
 } from "./telemetry-assembler";

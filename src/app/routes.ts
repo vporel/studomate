@@ -1,6 +1,7 @@
 const routes = {
 	home: () => "/",
 	app: () => "/app",
+	scene: () => "/app/3d-scene",
 	about: () => "/a-propos",
 	legalMentions: () => "/mentions-legales",
 	termsOfUse: () => "/conditions-d-utilisation",

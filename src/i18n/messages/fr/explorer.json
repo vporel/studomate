@@ -8,7 +8,12 @@
 		"programs": "Programmes",
 		"blockInstances": "Instances de blocs",
 		"systemBlocks": "Blocs systèmes",
-		"hmi": "Interfaces HMI"
+		"hmi": "Interfaces HMI",
+		"configuration": "Configuration"
+	},
+	"configurationItems": {
+		"hardware": "Configuration matérielle",
+		"scene3d": "Configuration scène 3D"
 	},
 	"variableGroups": {
 		"inputs": "Entrées",

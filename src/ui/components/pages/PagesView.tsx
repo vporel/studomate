@@ -8,6 +8,7 @@ import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import ExercisePage from "./ExercisePage";
 import HardwareConfigurationPage from "./HardwareConfigurationPage";
+import Scene3dConfigurationPage from "./Scene3dConfigurationPage";
 import GrafcetPage from "./GrafcetPage";
 import LadderPage from "./LadderPage";
 import ProjectPropertiesPage from "./ProjectPropertiesPage";
@@ -147,6 +148,8 @@ const PagesView = () => {
 								return <ExercisePage key={id} />;
 							case "hardware-configuration":
 								return <HardwareConfigurationPage key={id} />;
+							case "scene3d-configuration":
+								return <Scene3dConfigurationPage key={id} />;
 							case "variables":
 								return (
 									<VariablesPage

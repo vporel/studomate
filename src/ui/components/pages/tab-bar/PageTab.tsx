@@ -15,6 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
 import MemoryIcon from "@mui/icons-material/Memory";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import {
 	alpha,
 	Box,
@@ -23,7 +24,8 @@ import {
 	Typography,
 	useTheme,
 } from "@mui/material";
-import { ElementType } from "react";
+import type { SxProps } from "@mui/material";
+import { ComponentType, ElementType } from "react";
 import { useShallow } from "zustand/shallow";
 
 /**
@@ -37,6 +39,7 @@ const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	preferences: SettingsIcon,
 	exercise: ExerciseIcon,
 	"hardware-configuration": MemoryIcon,
+	"scene3d-configuration": ViewInArIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,
 	"system-variables": VariablesIcon,
@@ -75,6 +78,10 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				? LadderMainIcon
 				: LadderIcon
 			: TYPE_ICONS[type];
+	const TypeIcon = TypeIconComponent as ComponentType<{
+		className?: string;
+		sx?: SxProps;
+	}>;
 
 	const {
 		setNodeRef,
@@ -138,7 +145,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-				<TypeIconComponent
+				<TypeIcon
 					className="page__tab__type-icon"
 					sx={{
 						color: active ? "white" : th.palette.primary.main,

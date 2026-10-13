@@ -2,9 +2,9 @@ import { ProgramType } from "@/schemas/program/program.schema";
 
 export type ReferenceAccess = "read" | "write";
 
-/** Notation ou page portant une référence — les pages HMI ne sont pas des `Program`, d'où
- * l'élargissement local. */
-export type ReferenceProgramType = ProgramType | "hmi";
+/** Notation ou page portant une référence — les pages HMI et la scène 3D ne sont pas des
+ * `Program`, d'où l'élargissement local. */
+export type ReferenceProgramType = ProgramType | "hmi" | "scene3d";
 
 /**
  * Nature de l'emplacement d'une référence — pilote la clé de message localisé côté
@@ -19,7 +19,8 @@ export type ReferenceLocationKind =
 	| "grafcet-action-assign"
 	| "grafcet-step"
 	| "hmi-widget-binding"
-	| "hmi-widget-animation";
+	| "hmi-widget-animation"
+	| "scene3d-point";
 
 /** Un endroit précis qui lit ou écrit une variable, avec de quoi y naviguer. */
 export type Reference = {

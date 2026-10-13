@@ -1,3 +1,4 @@
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import AnalysisIssuesMapper from "@/bridge/analysis-issues.mapper";
 import SimulatorExceptionsMapper from "@/bridge/simulator-exceptions.mapper";
 import {
@@ -27,6 +28,9 @@ import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { readString, writeString } from "@/persistence/safe-local-storage";
 import trackEvent from "@/ui/services/analytics";
 import BoardMirror from "./board-mirror";
+import Scene3dSimulationBridge, {
+	type Scene3dStateSnapshot,
+} from "../3d-scene/scene3d-simulation.bridge";
 import type { SimulationKind } from "@/ui/stores/project/SimulationKind";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -67,11 +71,16 @@ export default class SimulationManager {
 	private lastPublishedValues: Map<string, unknown> | null = null;
 
 	private notifier: SimulationNotifier;
+	private readonly scene3dBridge = new Scene3dSimulationBridge({
+		getProject: () => this.getStoreState().project,
+		applyExternalInputs: (values) => this.applyExternalInputs(values),
+	});
 
 	constructor(
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
 		notifier: SimulationNotifier,
+		private readonly heartbeat?: HeartbeatScheduler,
 	) {
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
@@ -211,6 +220,7 @@ export default class SimulationManager {
 		const startPaused = simulationMode === SimulationMode.STEP_BY_STEP;
 		this.setStoreState(() => ({ simulationKind: kind }));
 		this.getStoreState().hardwareLinkManager.onSimulationStart();
+		this.scene3dBridge.onSimulationStart(startPaused);
 		this.plc.pause();
 		this.plc.stepOnce();
 		if (!startPaused) {
@@ -282,6 +292,7 @@ export default class SimulationManager {
 		if (!this.plc) return;
 		this.plc.pause();
 		this.setStoreState(() => ({ simulationPaused: true }));
+		this.scene3dBridge.setPaused(true);
 	}
 
 	resumeSimulation(): void {
@@ -289,6 +300,7 @@ export default class SimulationManager {
 		if (!this.plc) return;
 		this.plc.resume();
 		this.setStoreState(() => ({ simulationPaused: false }));
+		this.scene3dBridge.setPaused(false);
 	}
 
 	stepSimulation(): void {
@@ -335,8 +347,13 @@ export default class SimulationManager {
 				const snapshot = plcInstance.getVariablesSnapshot();
 				this.publishCycleState(snapshot);
 				this.getStoreState().hardwareLinkManager.onCycleEnd(snapshot);
+				this.scene3dBridge.onCycleEnd(
+					snapshot,
+					plcInstance.getLastCycleDeltaMs(),
+				);
 			},
 			//L'erreur est déjà journalisée par le PLC lui-même (voir PLC.tick)
+			heartbeat: this.heartbeat,
 			onCycleError: (error) => {
 				this.notifier.simulationCrashed(
 					SimulatorExceptionsMapper.getUserFriendlyMessage(
@@ -449,6 +466,7 @@ export default class SimulationManager {
 
 		//Les sorties de la carte liée ne doivent pas rester dans le dernier état du PLC
 		this.getStoreState().hardwareLinkManager.fallback();
+		this.scene3dBridge.onSimulationStop();
 
 		//Reset simulation variables states
 		this.lastPublishedValues = null;
@@ -504,8 +522,11 @@ export default class SimulationManager {
 		if (!this.plc) {
 			throw new Error("PLC instance is not initialized");
 		}
-		//La broche est la source de vérité d'une entrée pilotée par la carte liée
-		if (this.getStoreState().hardwareLink.drivenInputIds.includes(variableId)) {
+		//La broche (ou le capteur de la scène 3D) est la source de vérité de son entrée
+		if (
+			this.getStoreState().hardwareLink.drivenInputIds.includes(variableId) ||
+			this.scene3dBridge.drives(variableId)
+		) {
 			return;
 		}
 		const coerced = this.coerceToPlcType(variableId, value);
@@ -515,11 +536,11 @@ export default class SimulationManager {
 	}
 
 	/**
-	 * Valeurs lues sur les broches de la carte liée, écrites dans les entrées physiques du PLC.
-	 * Sans simulation en cours, rien à faire : `HardwareLinkManager` rejoue les dernières valeurs
-	 * au démarrage de la simulation.
+	 * Valeurs venues d'une source externe (broches de la carte liée, capteurs d'une scène 3D),
+	 * écrites dans les entrées physiques du PLC. Sans simulation en cours, rien à faire : chaque
+	 * source rejoue ses dernières valeurs au démarrage de la simulation.
 	 */
-	public applyHardwareInputs(
+	public applyExternalInputs(
 		values: ReadonlyMap<string, boolean | number>,
 	): void {
 		if (!this.plc) return;
@@ -533,10 +554,26 @@ export default class SimulationManager {
 		}
 	}
 
+	/** Interaction of the user inside the 3D scene, applied at the end of the next PLC cycle. */
+	public sendScene3dInteraction(interaction: unknown): void {
+		this.scene3dBridge.queueInteraction(interaction);
+	}
+
+	public subscribeScene3d(
+		listener: Parameters<Scene3dSimulationBridge["subscribe"]>[0],
+	): () => void {
+		return this.scene3dBridge.subscribe(listener);
+	}
+
+	public getScene3dSnapshot(): Scene3dStateSnapshot | null {
+		return this.scene3dBridge.getSnapshot();
+	}
+
 	private isConstantVariable(variableId: string): boolean {
 		return (
 			this.getStoreState().project?.variables.some(
-				(variable) => variable.id === variableId && variable.zone === "constant",
+				(variable) =>
+					variable.id === variableId && variable.zone === "constant",
 			) ?? false
 		);
 	}

@@ -124,6 +124,63 @@ describe("createProjectStore", () => {
 		});
 	});
 
+	describe("project properties undo", () => {
+		it("undoes and redoes the project name", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const original = store.getState().project!.name;
+			store.getState().setProjectName("Mon projet");
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project?.name).toBe(original);
+
+			store.getState().commandsStackManager.redoOperation();
+			expect(store.getState().project?.name).toBe("Mon projet");
+		});
+
+		it("undoes the author", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const original = store.getState().project!.author;
+			store.getState().setProjectAuthor("Alice");
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(store.getState().project?.author).toBe(original);
+		});
+
+		it("undoes the exercise statement, including its removal", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setExerciseStatement("Un énoncé");
+			store.getState().setExerciseStatement("  ");
+			expect(store.getState().project?.exercise).toBeUndefined();
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project?.exercise?.statement).toBe("Un énoncé");
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project?.exercise).toBeUndefined();
+		});
+
+		it("undoes the dialect, translating expressions back and resyncing mounted grafcets", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().grafcetsManager.newGrafcet("G1");
+			const initial = store.getState().project!.dialect;
+			store.getState().setProjectDialect(Dialect.EN);
+			const syncSpy = jest.spyOn(
+				store.getState().grafcetsManager,
+				"syncMountedStoresFromProject",
+			);
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(store.getState().project!.dialect).toBe(initial);
+			expect(syncSpy).toHaveBeenCalled();
+		});
+	});
+
 	describe("setExerciseStatement", () => {
 		it("enregistre l'énoncé et marque des changements non sauvegardés", async () => {
 			const store = createProjectStore();
@@ -241,6 +298,166 @@ describe("createProjectStore", () => {
 
 			expect(store.getState().project).toBe(projectBefore);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
+		});
+	});
+
+	describe("setScene3d", () => {
+		const scene = { sceneId: "carton-sorting", bindings: { t1: "v1" } };
+
+		it("sets the scene on a copy of the project and marks unsaved changes", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: false });
+			const before = store.getState().project!;
+
+			store.getState().setScene3d(scene);
+
+			expect(store.getState().project?.scene3d).toEqual(scene);
+			expect(before.scene3d).toBeUndefined();
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("tells the scene tab link that the scene changed", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const onSceneChanged = jest.spyOn(
+				store.getState().scene3dLinkManager,
+				"onSceneChanged",
+			);
+
+			store.getState().setScene3d(scene);
+
+			expect(onSceneChanged).toHaveBeenCalledTimes(1);
+		});
+
+		it("removes the scene with null", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setScene3d(scene);
+
+			store.getState().setScene3d(null);
+
+			expect(store.getState().project?.scene3d).toBeNull();
+		});
+
+		it("is undoable and redoable, and the scene tab link is told each time", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const onSceneChanged = jest.spyOn(
+				store.getState().scene3dLinkManager,
+				"onSceneChanged",
+			);
+			store.getState().setScene3d(scene);
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project?.scene3d).toBeNull();
+			expect(onSceneChanged).toHaveBeenCalledTimes(2);
+
+			store.getState().commandsStackManager.redoOperation();
+			expect(store.getState().project?.scene3d).toEqual(scene);
+			expect(onSceneChanged).toHaveBeenCalledTimes(3);
+		});
+
+		it("does not notify the scene tab link when a variable operation is undone", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().variablesManager.addVariables([
+				{
+					mnemonic: "x",
+					zone: "memory",
+					type: "BOOL",
+					address: "",
+					comment: "",
+				} as never,
+			]);
+			const onSceneChanged = jest.spyOn(
+				store.getState().scene3dLinkManager,
+				"onSceneChanged",
+			);
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(onSceneChanged).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("hardware configuration undo", () => {
+		it("undoes and redoes the model choice", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setHardwareModel("arduino-uno-r3");
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project?.hardwareTarget).toBeNull();
+
+			store.getState().commandsStackManager.redoOperation();
+			expect(store.getState().project?.hardwareTarget).toEqual({
+				modelId: "arduino-uno-r3",
+			});
+		});
+
+		it("undoes a pin configuration change back to the previous target", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setHardwareModel("arduino-uno-r3");
+			const next = {
+				modelId: "arduino-uno-r3" as const,
+				pins: { "%PD2": { mode: "INPUT" as const, inverted: false } },
+			};
+			store.getState().setHardwareTarget(next);
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(store.getState().project?.hardwareTarget).toEqual({
+				modelId: "arduino-uno-r3",
+			});
+		});
+
+		it("does not touch the board link when undoing", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setHardwareModel("arduino-uno-r3");
+			const unlink = jest.spyOn(store.getState().hardwareLinkManager, "unlink");
+
+			store.getState().commandsStackManager.undoOperation();
+
+			expect(unlink).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("createMissingScene3dVariables", () => {
+		it("creates and binds the unbound points, undoable in one step", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().setScene3d({ sceneId: "elevator", bindings: {} });
+			const before = store.getState().project!.variables.length;
+
+			store.getState().createMissingScene3dVariables();
+
+			const { project } = store.getState();
+			const bindings = project!.scene3d!.bindings;
+			expect(Object.keys(bindings)).toHaveLength(8);
+			expect(project!.variables).toHaveLength(before + 8);
+			const up = project!.variables.find((v) => v.id === bindings.up)!;
+			expect(up).toMatchObject({ mnemonic: "monter", zone: "logic-output" });
+			const position = project!.variables.find(
+				(v) => v.id === bindings.cabinPosition,
+			)!;
+			expect(position).toMatchObject({ zone: "analog-input", type: "INT" });
+
+			store.getState().commandsStackManager.undoOperation();
+			expect(store.getState().project!.variables).toHaveLength(before);
+			expect(store.getState().project!.scene3d!.bindings).toEqual({});
+		});
+
+		it("does nothing without a scene", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const projectBefore = store.getState().project;
+
+			store.getState().createMissingScene3dVariables();
+
+			expect(store.getState().project).toBe(projectBefore);
 		});
 	});
 

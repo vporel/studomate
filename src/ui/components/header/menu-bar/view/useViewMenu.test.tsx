@@ -21,18 +21,24 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 const setCrossReferenceResultVisible = jest.fn();
 const setAnalysisResultVisible = jest.fn();
 
+const openScene3d = jest.fn();
+
 function mockProjectStore({
 	crossReferenceResultVisible = false,
 	analysisResultVisible = false,
+	scene3d = null,
 }: {
 	crossReferenceResultVisible?: boolean;
 	analysisResultVisible?: boolean;
+	scene3d?: object | null;
 } = {}) {
 	(useProjectStore as jest.Mock).mockImplementation(
 		selectorImplementation({
 			ui: { crossReferenceResultVisible, analysisResultVisible },
 			setCrossReferenceResultVisible,
 			setAnalysisResultVisible,
+			project: { scene3d },
+			scene3dLinkManager: { open: openScene3d },
 		}),
 	);
 }
@@ -79,5 +85,20 @@ describe("useViewMenu", () => {
 
 		act(() => result.current.items[1][1].onClick?.());
 		expect(setAnalysisResultVisible).toHaveBeenCalledWith(true);
+	});
+
+	it("has no 3D scene entry when the project has no scene", () => {
+		const { result } = renderHook(() => useViewMenu(), { wrapper });
+		expect(result.current.items).toHaveLength(2);
+	});
+
+	it("adds a 3D scene entry that opens the scene tab when the project has a scene", () => {
+		mockProjectStore({ scene3d: { sceneId: "carton-sorting", bindings: {} } });
+		const { result } = renderHook(() => useViewMenu(), { wrapper });
+
+		const entry = result.current.items[2][0];
+		expect(entry.label).toBe("Scène 3D");
+		act(() => entry.onClick?.());
+		expect(openScene3d).toHaveBeenCalledTimes(1);
 	});
 });

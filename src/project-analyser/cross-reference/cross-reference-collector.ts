@@ -2,6 +2,7 @@ import Project from "@/schemas/project/project.schema";
 import collectGrafcetReferences from "./grafcet-references";
 import collectHmiReferences from "./hmi-references";
 import collectLadderReferences from "./ladder-references";
+import collectScene3dReferences from "./scene3d-references";
 import { CrossReference, Reference } from "./cross-reference.types";
 
 /**
@@ -12,7 +13,8 @@ import { CrossReference, Reference } from "./cross-reference.types";
  * jamais — une expression invalide ne produit simplement aucune référence. Coût par action
  * utilisateur explicite : recalculé à chaque ouverture du panneau, sans cache (cf. CLAUDE.md).
  *
- * Couvre ladder, grafcet et pages HMI (liaisons et animations de widgets).
+ * Couvre ladder, grafcet, pages HMI (liaisons et animations de widgets) et liaisons de la
+ * scène 3D.
  *
  * Périmètre : uniquement les variables visibles dans la table des variables — `project.variables`,
  * variables exposées de blocs (`<Nom>.Q`…) et variables système `_SYS_*` si référencées ; jamais
@@ -31,6 +33,7 @@ export default class CrossReferenceCollector {
 			...Object.values(project.hmiPages).flatMap((page) =>
 				collectHmiReferences(page),
 			),
+			...collectScene3dReferences(project),
 		];
 
 		const referencesByName = new Map<string, Reference[]>();

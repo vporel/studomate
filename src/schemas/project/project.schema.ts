@@ -13,6 +13,7 @@ import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
 import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
 import type { HardwareTarget } from "../hardware/hardware-target.schema";
+import type { Scene3d } from "../3d-scene/scene3d.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
@@ -87,6 +88,8 @@ export default class Project {
 	exercise?: Exercise;
 	/** Hardware target chosen by the user. Absent on projects saved before this field existed: same meaning as `null` (purely virtual project). */
 	hardwareTarget?: HardwareTarget | null;
+	/** 3D simulation scene of the project. Absent on projects saved before this field existed: same meaning as `null` (no scene). */
+	scene3d?: Scene3d | null;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;

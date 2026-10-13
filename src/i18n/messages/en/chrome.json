@@ -4,7 +4,8 @@
 		"save": "Save",
 		"saveCopy": "Save a copy",
 		"undo": "Undo",
-		"redo": "Redo"
+		"redo": "Redo",
+		"scene3d": "3D scene"
 	},
 	"analyse": "Analyse",
 	"mode": {

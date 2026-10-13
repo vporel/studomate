@@ -20,6 +20,10 @@ export default function useViewMenu(): AppMenuType {
 	const setAnalysisResultVisible = useProjectStore(
 		(state) => state.setAnalysisResultVisible,
 	);
+	const hasScene3d = useProjectStore((state) => !!state.project?.scene3d);
+	const scene3dLinkManager = useProjectStore(
+		(state) => state.scene3dLinkManager,
+	);
 	const t = useT("menu.view");
 
 	return useMemo(
@@ -51,6 +55,16 @@ export default function useViewMenu(): AppMenuType {
 						onClick: () => setAnalysisResultVisible(!analysisResultVisible),
 					},
 				],
+				...(hasScene3d
+					? [
+							[
+								{
+									label: t("scene3d"),
+									onClick: () => scene3dLinkManager.open(),
+								},
+							],
+						]
+					: []),
 			],
 		}),
 		[
@@ -60,6 +74,8 @@ export default function useViewMenu(): AppMenuType {
 			setCrossReferenceResultVisible,
 			analysisResultVisible,
 			setAnalysisResultVisible,
+			hasScene3d,
+			scene3dLinkManager,
 			t,
 		],
 	);

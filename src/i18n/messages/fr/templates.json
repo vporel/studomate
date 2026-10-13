@@ -5,15 +5,15 @@
 	},
 	"crossroads": {
 		"label": "Carrefour de feux tricolores",
-		"description": "12 sorties booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2) + interface HMI avec carrefour. À programmer."
+		"description": "12 sorties booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2) + interface HMI avec carrefour. Partie opérative simulée par la scène 3D. À programmer."
 	},
 	"drilling": {
 		"label": "Poste de perçage",
-		"description": "Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Modèle de partie opérative fourni. À programmer."
+		"description": "Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Partie opérative simulée par la scène 3D. À programmer."
 	},
 	"elevator": {
 		"label": "Ascenseur",
-		"description": "Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Modèle de partie opérative fourni. À programmer."
+		"description": "Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Partie opérative simulée par la scène 3D. À programmer."
 	},
 	"parking": {
 		"label": "Parking à barrière",
@@ -21,7 +21,7 @@
 	},
 	"carton-sorting": {
 		"label": "Poste de tri de caisses",
-		"description": "Tri de caisses par hauteur : détection au poste, aiguillage par trois vérins vers deux tapis de sortie, comptage. Modèle de partie opérative fourni. À programmer."
+		"description": "Tri de caisses par hauteur : détection au poste, aiguillage par trois vérins vers deux tapis de sortie, comptage. Partie opérative simulée par la scène 3D. À programmer."
 	},
 	"linear-sequence": {
 		"label": "Séquence linéaire",

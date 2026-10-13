@@ -42,6 +42,7 @@
 		"analysis-checks": "Types de vérifications",
 		"analysis-messages": "Exemples de messages",
 		"hardware": "Matériel (Arduino)",
+		"scene3d": "Scène 3D",
 		"shortcuts": "Raccourcis clavier"
 	},
 	"intro": {
@@ -55,6 +56,8 @@
 			"Analyse statique du projet avec détection d'erreurs et d'avertissements",
 			"Simulation PLC en temps réel",
 			"Interfaces HMI animées pour visualiser et piloter le système",
+			"Liaison avec une carte Arduino Uno R3 : chargement du programme, simulation avec E/S réelles, observation de la carte",
+			"Scènes 3D de simulation : une partie opérative virtuelle (ascenseur, carrefour, tri de caisses) pilotée par le programme",
 			"Export du projet au format JSON ou PDF"
 		],
 		"p3": "L'interface est disponible en français et en anglais (page Préférences, où se règle aussi l'emplacement de sauvegarde par défaut des projets) et est conçue pour être utilisée dans un contexte pédagogique ou professionnel.",
@@ -73,7 +76,7 @@
 			"Widget (HMI) — élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
 			"Animation (HMI) — variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
 		],
-		"readingOrder": "Pour une première découverte : commencer par Démarrer, puis parcourir la notation visée — Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs) — avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin."
+		"readingOrder": "Pour une première découverte : commencer par Démarrer, puis parcourir la notation visée — Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs) — avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin. Les sections Matériel (Arduino) et Scène 3D concernent les projets reliés à une carte réelle ou à une partie opérative virtuelle."
 	},
 	"gettingStarted": {
 		"title": "Démarrer",
@@ -93,7 +96,7 @@
 		"interfaceTitle": "Interface principale",
 		"interfaceIntro": "L'interface est divisée en plusieurs zones :",
 		"interfaceItems": [
-			"Barre de menus (haut) : Fichier, Édition, Projet, Interface, Aide",
+			"Barre de menus (haut) : Fichier, Édition, Interface, Projet, Cible (carte Arduino), Aide",
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
@@ -109,7 +112,7 @@
 		"createIntro": "Fichier → Nouveau projet. Une fenêtre s'ouvre pour choisir le point de départ :",
 		"createItems": [
 			"Projet vide — démarre sans variable ni interface HMI.",
-			"Maquettes — projets pré-configurés avec des variables et une interface HMI déjà en place. La plupart des maquettes proposent deux variantes à la création : « exercice » (le programme reste à écrire) et, lorsque « Une solution est disponible » s'affiche, « solution » (bouton « Ouvrir la solution » : le programme est complet et directement simulable). Plusieurs maquettes sont proposées (feu tricolore, carrefour de feux, perceuse, ascenseur, parking à barrière, poste de tri de caisses)."
+			"Maquettes — projets pré-configurés avec des variables et une interface HMI déjà en place. La plupart des maquettes proposent deux variantes à la création : « exercice » (le programme reste à écrire) et, lorsque « Une solution est disponible » s'affiche, « solution » (bouton « Ouvrir la solution » : le programme est complet et directement simulable). Plusieurs maquettes sont proposées (feu tricolore, carrefour de feux, perceuse, ascenseur, parking à barrière, poste de tri de caisses). Les maquettes poste de perçage, ascenseur, carrefour de feux et poste de tri de caisses sont fournies avec une scène 3D déjà configurée : la partie opérative est simulée en 3D (voir la section Scène 3D)."
 		],
 		"openTitle": "Ouvrir un projet",
 		"openBody": "Fichier → Ouvrir projet (Ctrl+O). La liste des projets sauvegardés s'affiche avec leur date de dernière modification. Cliquez sur un projet pour l'ouvrir. Chaque projet de la liste dispose aussi d'un bouton de suppression (avec confirmation), et un bouton « Ouvrir depuis un fichier… » permet de réimporter un projet exporté en JSON.",
@@ -471,7 +474,7 @@
 		"analysisTitle": "Analyse et mode",
 		"analysisItems": [
 			"Bouton Analyser — lance l'analyse statique du projet. Devient rouge en cas d'erreurs, orange en cas d'avertissements seulement.",
-			"Sélecteur de mode — permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation."
+			"Sélecteur de mode — permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
 		],
 		"grafcetToolsTitle": "Outils de création Grafcet",
 		"grafcetToolsIntro": "Lorsqu'un grafcet est ouvert, des outils supplémentaires apparaissent. Faites glisser l'outil choisi sur le canvas pour créer l'élément correspondant :",
@@ -613,6 +616,7 @@
 			"Les actions des étapes actives sont appliquées.",
 			"Les contacts, bobines et liaisons alimentés sont mis en évidence dans les éditeurs ladder.",
 			"Les valeurs des variables sont mises à jour en temps réel.",
+			"Si le projet est lié à une scène 3D, ses capteurs alimentent les entrées liées et les sorties du programme commandent la scène (voir la section Scène 3D).",
 			"Les éditeurs grafcet et ladder sont en lecture seule.",
 			"L'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI)."
 		],
@@ -649,7 +653,9 @@
 			"Expressions : syntaxe des réceptivités et des actions (transitions, actions grafcet, blocs comparaison et affectation)",
 			"Variables : références à des variables inexistantes, types incompatibles, affectation à une variable d'entrée",
 			"Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante",
-			"Programmes exclus de l'exécution : ignorés par toutes les vérifications ; un bloc qui appelle un ladder exclu est signalé"
+			"Programmes exclus de l'exécution : ignorés par toutes les vérifications ; un bloc qui appelle un ladder exclu est signalé",
+			"Configuration matérielle : carte inconnue, broche utilisée par plusieurs variables, adresse ou capacité de broche invalide, type non pris en charge par la carte, entrée lue sans adresse (avertissement)",
+			"Scène 3D : scène inconnue, point non lié (avertissement), variable liée absente, capteur non lié à une entrée ou actionneur non lié à une sortie, type incompatible, capteur lié à plusieurs points ou déjà câblé sur une broche, capteur écrit par un widget HMI"
 		],
 		"checksOutro": "Cliquez sur un problème dans la liste pour naviguer vers l'élément concerné, dans le grafcet ou le ladder correspondant.",
 		"messagesTitle": "Exemples de messages",
@@ -673,10 +679,7 @@
 			"Exporter et Fermer le projet — aucun raccourci (menu Fichier)"
 		],
 		"projectTitle": "Projet",
-		"projectItems": [
-			"Ctrl+G — Nouveau grafcet",
-			"Ctrl+L — Nouveau ladder"
-		],
+		"projectItems": ["Ctrl+G — Nouveau grafcet", "Ctrl+L — Nouveau ladder"],
 		"editTitle": "Édition",
 		"editItems": [
 			"Ctrl+Z — Annuler",
@@ -689,9 +692,7 @@
 			"Flèches — Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": [
-			"F2 — Renommer le grafcet ou le ladder sélectionné"
-		],
+		"explorerItems": ["F2 — Renommer le grafcet ou le ladder sélectionné"],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
 			"Entrée — Valider la modification",
@@ -711,7 +712,7 @@
 		],
 		"configBody": "Pour chaque entrée logique, la page règle le mode (avec ou sans pull-up interne) et l'inversion : cochée, la variable est vraie quand la broche est à 0 V, câblage habituel d'un bouton entre la broche et la masse. Les erreurs d'adresse sont signalées par l'analyse.",
 		"actionsTitle": "Charger le programme et ouvrir la liaison en ligne",
-		"actionsIntro": "Dès qu'une carte est configurée, deux actions apparaissent dans la barre d'outils. Il n'y a pas de liaison permanente par défaut, comme dans un outil d'automatisme :",
+		"actionsIntro": "Dès qu'une carte est configurée, deux actions apparaissent dans la barre d'outils et dans le menu Cible. Il n'y a pas de liaison permanente par défaut, comme dans un outil d'automatisme :",
 		"actionsItems": [
 			"Charger le programme dans la carte (mode Conception) : Studomate ouvre une liaison le temps du chargement, compile le projet, vérifie qu'il tient dans la carte (environ 1 Ko de programme et 512 octets de variables) et indique précisément ce qui ne tient pas le cas échéant, puis referme la liaison. La carte exécute ensuite le programme seule, câble USB débranché, et le relance à chaque mise sous tension ;",
 			"Liaison en ligne : ouvre une liaison que vous gardez jusqu'à « Fermer la liaison ». Elle ne change pas ce que fait la carte. Elle donne accès aux icônes ▶ (lancer le programme de la carte, depuis son état initial) et ■ (l'arrêter, ses sorties sont alors coupées), et un badge indique ce que fait la carte. Charger le programme pendant une liaison en ligne la laisse ouverte."
@@ -734,9 +735,37 @@
 		],
 		"limitsTitle": "Limites",
 		"limitsItems": [
+			"une broche ne peut porter qu'une seule variable : l'analyse signale les doublons ;",
 			"seul l'Arduino Uno R3 d'origine est pris en charge (pas les clones à bootloader différent, ni les autres cartes) ;",
 			"un onglet en arrière-plan ralentit la simulation : avec les E/S réelles, les sorties sont alors coupées. Le programme embarqué n'est pas concerné ;",
 			"les entrées sont lues avec un antirebond de 5 ms ; une impulsion plus courte que la période de lecture peut être manquée."
+		]
+	},
+	"scene3d": {
+		"title": "Scène 3D de simulation",
+		"p1": "Une scène 3D est une partie opérative virtuelle : à chaque cycle, un modèle physique (tri de caisses, ascenseur, carrefour de feux...) reçoit les sorties de votre programme, avance du temps écoulé et renvoie les capteurs. Elle s'affiche dans un onglet du navigateur à part, en plein écran, pendant que la simulation tourne dans l'éditeur.",
+		"configTitle": "Choisir la scène et câbler les variables",
+		"configIntro": "Ouvrez Projet > Configuration scène 3D (ou le bouton de la page d'accueil du projet), choisissez une scène dans le catalogue, puis liez chacun de ses points à une variable :",
+		"configItems": [
+			"un capteur se lie à une entrée du projet (logique ou analogique, selon le point) ;",
+			"un actionneur se lie à une sortie du projet ;",
+			"le sélecteur de chaque point ne propose que les variables de la bonne zone et du bon type ;",
+			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
+		],
+		"openTitle": "Afficher la scène",
+		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Interface ouvre l'onglet de la scène, avant ou pendant la simulation :",
+		"openItems": [
+			"hors simulation, la scène montre son état initial : les commandes 3D s'animent mais sont sans effet sur le projet ;",
+			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes 3D (poser une caisse, appuyer sur un bouton...) agissent sur le modèle ;",
+			"la pause et l'exécution pas à pas de la simulation s'appliquent aussi à la scène ;",
+			"fermer le projet ferme l'onglet de la scène."
+		],
+		"limitsTitle": "Limites",
+		"limitsItems": [
+			"une entrée liée à un capteur de la scène ne peut plus être saisie à la main : le forçage reste possible et l'emporte sur la scène ;",
+			"un capteur ne peut pas être lié à une variable déjà câblée sur une broche d'une carte ;",
+			"si deux impulsions d'un même capteur ont lieu pendant un seul cycle, le programme n'en voit qu'une : réduisez le temps de cycle si nécessaire ;",
+			"l'analyse signale les points non liés (avertissement) et les liaisons incohérentes (erreur) : capteur lié à plusieurs points, capteur écrit par un widget HMI, type ou zone de variable incompatible."
 		]
 	},
 	"navHeading": "Plan du manuel",

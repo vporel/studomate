@@ -19,7 +19,7 @@ const createBrowserRemoteIoDevice: RemoteIoDeviceFactory = async (
 ) => {
 	const port = await acquireArduinoPort();
 	const { browserHeartbeat } =
-		await import("@/hardware/heartbeat/browser-heartbeat");
+		await import("@/lib/heartbeat/browser-heartbeat");
 	const transport = new WebSerialTransport(port, {
 		baudRate: descriptor.channel.baudRate,
 	});

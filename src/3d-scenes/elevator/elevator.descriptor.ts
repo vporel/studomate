@@ -1,0 +1,39 @@
+import type {
+	SceneDescriptor,
+	ScenePointDescriptor,
+} from "../scene.descriptor";
+
+const LABEL_PREFIX = "elevator.points";
+
+function point(
+	id: string,
+	kind: ScenePointDescriptor["kind"],
+	valueType: ScenePointDescriptor["valueType"],
+	suggestedMnemonic: string,
+): ScenePointDescriptor {
+	return {
+		id,
+		kind,
+		valueType,
+		labelKey: `${LABEL_PREFIX}.${id}`,
+		suggestedMnemonic,
+	};
+}
+
+const ElevatorDescriptor: SceneDescriptor = {
+	id: "elevator",
+	labelKey: "elevator.label",
+	descriptionKey: "elevator.description",
+	points: [
+		point("up", "actuator", "boolean", "monter"),
+		point("down", "actuator", "boolean", "descendre"),
+		point("door", "actuator", "boolean", "porte"),
+		point("floor0", "sensor", "boolean", "etage_0"),
+		point("floor1", "sensor", "boolean", "etage_1"),
+		point("floor2", "sensor", "boolean", "etage_2"),
+		point("doorOpen", "sensor", "boolean", "porte_ouverte"),
+		point("cabinPosition", "sensor", "number", "position"),
+	],
+};
+
+export default ElevatorDescriptor;

@@ -88,10 +88,7 @@ const ExplorerHmiItem = ({
 	);
 };
 
-const ExplorerHmiItems = ({
-	styles,
-	onContextMenu,
-}: ExplorerItemsProps) => {
+const ExplorerHmiItems = ({ styles, onContextMenu }: ExplorerItemsProps) => {
 	const t = useT("explorer");
 	// `useShallow` sur des sélecteurs à valeurs primitives (ids, noms) pour éviter les
 	// re-rendus infinis : un sélecteur retournant des objets reconstruits à chaque appel

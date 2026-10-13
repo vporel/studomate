@@ -1,3 +1,4 @@
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import ClockedRunnable from "./clocked-runnable";
 
 class TestClockedRunnable extends ClockedRunnable {
@@ -5,8 +6,8 @@ class TestClockedRunnable extends ClockedRunnable {
 	/** Delta imputé au dernier `tick()` — pour vérifier l'horloge libre. */
 	public lastDeltaMs = 0;
 
-	constructor(clockIntervalMs: number) {
-		super(clockIntervalMs);
+	constructor(clockIntervalMs: number, heartbeat?: HeartbeatScheduler) {
+		super(clockIntervalMs, heartbeat);
 	}
 
 	protected tick(): void {
@@ -268,6 +269,65 @@ describe("ClockedRunnable", () => {
 			jest.advanceTimersByTime(400);
 			expect(slowRunnable.tickCount).toBe(2);
 			slowRunnable.stop();
+		});
+	});
+
+	describe("injected heartbeat", () => {
+		function createFakeHeartbeat() {
+			const stop = jest.fn();
+			let beat: () => void = () => {};
+			let intervalMs = 0;
+			const scheduler = jest.fn((tick: () => void, ms: number) => {
+				beat = tick;
+				intervalMs = ms;
+				return stop;
+			});
+			return {
+				scheduler,
+				stop,
+				beat: () => beat(),
+				getIntervalMs: () => intervalMs,
+			};
+		}
+
+		it("schedules its clock on the injected heartbeat instead of setInterval", () => {
+			const fake = createFakeHeartbeat();
+			const runnable = new TestClockedRunnable(100, fake.scheduler);
+			runnable.start();
+			expect(fake.getIntervalMs()).toBe(100);
+			jest.advanceTimersByTime(1000);
+			expect(runnable.tickCount).toBe(0);
+			fake.beat();
+			fake.beat();
+			expect(runnable.tickCount).toBe(2);
+			expect(runnable.lastDeltaMs).toBe(100);
+			runnable.stop();
+		});
+
+		it("counts beats while paused and does not charge the pause on resume", () => {
+			const fake = createFakeHeartbeat();
+			const runnable = new TestClockedRunnable(100, fake.scheduler);
+			runnable.start();
+			runnable.pause();
+			fake.beat();
+			fake.beat();
+			expect(runnable.tickCount).toBe(0);
+			runnable.stepForTest();
+			expect(runnable.lastDeltaMs).toBe(200);
+			fake.beat();
+			runnable.resume();
+			fake.beat();
+			expect(runnable.lastDeltaMs).toBe(100);
+			runnable.stop();
+		});
+
+		it("calls the stop function of the heartbeat on stop", () => {
+			const fake = createFakeHeartbeat();
+			const runnable = new TestClockedRunnable(100, fake.scheduler);
+			runnable.start();
+			runnable.stop();
+			expect(fake.stop).toHaveBeenCalledTimes(1);
+			expect(runnable.isRunning()).toBe(false);
 		});
 	});
 });

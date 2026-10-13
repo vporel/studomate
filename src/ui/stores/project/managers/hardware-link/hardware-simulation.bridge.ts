@@ -152,6 +152,6 @@ export default class HardwareSimulationBridge {
 
 	private applyToSimulation(values: ReadonlyMap<string, boolean | number>) {
 		if (values.size === 0) return;
-		this.context.getStoreState().simulationManager.applyHardwareInputs(values);
+		this.context.getStoreState().simulationManager.applyExternalInputs(values);
 	}
 }

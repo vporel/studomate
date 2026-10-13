@@ -24,7 +24,8 @@
 		"title": "Interface",
 		"explorer": "Explorateur",
 		"crossReferences": "Références croisées",
-		"analysisResults": "Résultats de l'analyse"
+		"analysisResults": "Résultats de l'analyse",
+		"scene3d": "Scène 3D"
 	},
 	"project": {
 		"title": "Projet",
@@ -35,7 +36,8 @@
 		"share": "Partager",
 		"manageSharing": "Gérer le partage",
 		"properties": "Propriétés",
-		"hardwareConfiguration": "Configuration matérielle"
+		"hardwareConfiguration": "Configuration matérielle",
+		"scene3dConfiguration": "Configuration scène 3D"
 	},
 	"target": {
 		"title": "Cible",

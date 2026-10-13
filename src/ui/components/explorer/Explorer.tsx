@@ -12,6 +12,7 @@ import ExplorerSystemBlockInstancesItems from "./ExplorerSystemBlockInstancesIte
 import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
 import ExplorerHmiItems from "./ExplorerHmiItems";
+import ExplorerConfigurationItems from "./ExplorerConfigurationItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
 import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
 import useContextMenuState from "@/ui/lib/context-menu/useContextMenuState";
@@ -75,8 +76,16 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			<ExplorerHeader />
 			<SimpleTreeView
 				aria-label={t("ariaLabel")}
-				defaultExpandedItems={["variables", "programs", "hmi"]}
+				defaultExpandedItems={["variables", "programs", "hmi", "configuration"]}
 			>
+				<CustomTreeItem
+					itemId="configuration"
+					label={t("sections.configuration")}
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+				>
+					<ExplorerConfigurationItems styles={treeItemStyles} />
+				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="variables"
 					label={t("sections.variables")}

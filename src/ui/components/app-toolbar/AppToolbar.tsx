@@ -5,6 +5,7 @@ import React from "react";
 import HomeTool from "./HomeTool";
 import RedoTool from "./RedoTool";
 import SaveTool from "./SaveTool";
+import Scene3dTool from "./Scene3dTool";
 import UndoTool from "./UndoTool";
 
 const AppToolbar = ({ style }: { style?: React.CSSProperties }) => {
@@ -28,6 +29,7 @@ const AppToolbar = ({ style }: { style?: React.CSSProperties }) => {
 			<Divider orientation="vertical" style={{ margin: "10px 0" }} />
 			<UndoTool />
 			<RedoTool />
+			<Scene3dTool />
 		</Box>
 	);
 };

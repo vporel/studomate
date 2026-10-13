@@ -2,6 +2,7 @@
 
 import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import { HARDWARE_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/HardwareConfigurationPage";
+import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/Scene3dConfigurationPage";
 import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/components/pages/ProjectPropertiesPage";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
@@ -63,6 +64,20 @@ export default function useProjectMenu(): AppMenuType {
 							hmiManager.newHmiPage();
 						},
 					},
+				],
+				[
+					{
+						label: t("hardwareConfiguration"),
+						onClick: () =>
+							pageManager.openPage(HARDWARE_CONFIGURATION_PAGE_DATA),
+					},
+					{
+						label: t("scene3dConfiguration"),
+						onClick: () =>
+							pageManager.openPage(SCENE3D_CONFIGURATION_PAGE_DATA),
+					},
+				],
+				[
 					...(hasExercise
 						? [
 								{
@@ -92,16 +107,11 @@ export default function useProjectMenu(): AppMenuType {
 				],
 				[
 					{
-						label: t("hardwareConfiguration"),
-						onClick: () =>
-							pageManager.openPage(HARDWARE_CONFIGURATION_PAGE_DATA),
-					},
-					{
 						label: t("properties"),
 						onClick: () => pageManager.openPage(PROJECT_PROPERTIES_PAGE_DATA),
 					},
 				],
-			],
+			].filter((group) => group.length > 0),
 		}),
 		[
 			grafcetsManager,

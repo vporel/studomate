@@ -1,3 +1,4 @@
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import Project from "@/schemas/project/project.schema";
 import {
 	createCrossroadsProject,
@@ -38,6 +39,22 @@ describe("crossroads.template", () => {
 				(w) => w.type === "indicator",
 			);
 			expect(indicators).toHaveLength(12);
+		});
+
+		it("câble les 12 sorties sur les points de la scène 3D « Carrefour de feux »", () => {
+			const scene = project.scene3d!;
+			const descriptor = getSceneDescriptor(scene.sceneId)!;
+			expect(scene.sceneId).toBe("crossroads");
+			expect(Object.keys(scene.bindings).sort()).toEqual(
+				descriptor.points.map((p) => p.id).sort(),
+			);
+			for (const point of descriptor.points) {
+				const variable = project.variables.find(
+					(v) => v.id === scene.bindings[point.id],
+				);
+				expect(variable?.mnemonic).toBe(point.suggestedMnemonic);
+				expect(variable?.zone).toBe("logic-output");
+			}
 		});
 
 		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {

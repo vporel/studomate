@@ -17,6 +17,7 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
+import DrillingDescriptor from "@/3d-scenes/drilling/drilling.descriptor";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import {
@@ -326,16 +327,37 @@ export function addDrillingOperativePart(
 /**
  * Crée un projet "Poste de perçage" pré-configuré :
  * — 1 entrée booléenne `dcy` + 3 sorties (`descendre`, `monter`, `broche`)
- * — les capteurs `h`/`b` et la position `position` en mémoire, calculés par le modèle de partie
- *   opérative (Ladder « Partie opérative », fourni et référencé par le Main)
+ * — 2 capteurs de fin de course booléens `h`/`b` et l'entrée analogique `position` (course du
+ *   foret), fournis par la scène 3D « Perçage »
  * — 1 page HMI (bâti, foret animé, bouton, voyants)
+ * — scène 3D câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
 export function createDrillingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de perçage", "");
 
-	project.variables.push(...createDrillingVariables());
-	addDrillingOperativePart(project);
+	project.variables.push(
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
+		VariableBuilder.buildLogicInput(createRandomId(), "h"),
+		VariableBuilder.buildLogicInput(createRandomId(), "b"),
+		VariableBuilder.buildAnalogInput(createRandomId(), "position"),
+	);
+
+	const variableIdByMnemonic = new Map(
+		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	);
+	project.scene3d = {
+		sceneId: DrillingDescriptor.id,
+		bindings: Object.fromEntries(
+			DrillingDescriptor.points.map((point) => [
+				point.id,
+				variableIdByMnemonic.get(point.suggestedMnemonic)!,
+			]),
+		),
+	};
 
 	const page = buildDrillingPage();
 	project.hmiPages[page.id] = page;
@@ -347,10 +369,10 @@ export function createDrillingProject(): Project {
  * Version complète et simulable du poste de perçage.
  *
  * GRAFCET "Commande" :
- *   E0 (initial) ─[dcy]→ E1 (descendre) ─[b]→ E2 (broche, 2 s) ─[t2/X2/2s]→ E3 (monter) ─[h]→ E0
+ *   E0 (initial) ─[dcy]→ E1 (descendre) ─[b]→ E2 (broche, 3 s) ─[t2/X2/3s]→ E3 (monter) ─[h]→ E0
  *
- * Les capteurs `h`/`b` proviennent du modèle de partie opérative (Ladder), pas d'entrées
- * physiques : la simulation tourne donc sans intervention après appui sur « Départ cycle ».
+ * Les capteurs `h`/`b` proviennent de la scène 3D, pas d'entrées physiques : la simulation tourne
+ * donc sans intervention après appui sur « Départ cycle ».
  */
 export function createDrillingSolution(): Project {
 	const project = createDrillingProject();
@@ -385,7 +407,7 @@ export function createDrillingSolution(): Project {
 		.build();
 	const t2 = new TransitionBuilder()
 		.id(createRandomId())
-		.expression("t2/X2/2s")
+		.expression("t2/X2/3s")
 		.position(X, 290)
 		.build();
 	const e3 = new StepBuilder()

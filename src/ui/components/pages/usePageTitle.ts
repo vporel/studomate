@@ -22,6 +22,8 @@ export function usePageTitle() {
 				return t("exercise");
 			case "hardware-configuration":
 				return t("hardwareConfiguration");
+			case "scene3d-configuration":
+				return t("scene3dConfiguration");
 			case "project-startup":
 				return t("projectStartup");
 			case "variables":

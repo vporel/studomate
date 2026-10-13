@@ -9,7 +9,8 @@
 		"memoryVariables": "Variables de mémoire",
 		"constantVariables": "Constantes",
 		"systemVariables": "Variables système",
-		"hardwareConfiguration": "Configuration matérielle"
+		"hardwareConfiguration": "Configuration matérielle",
+		"scene3dConfiguration": "Configuration scène 3D"
 	},
 	"systemVariables": {
 		"heading": "Variables système",
@@ -56,7 +57,8 @@
 		"actions": "Actions",
 		"newGrafcet": "Nouveau grafcet",
 		"newLadder": "Nouveau ladder",
-		"hardwareConfiguration": "Configuration matérielle"
+		"hardwareConfiguration": "Configuration matérielle",
+		"scene3dConfiguration": "Configuration scène 3D"
 	},
 	"variablesGrid": {
 		"toolbar": {
@@ -158,5 +160,27 @@
 			"pinInvertedAria": "Inverser la broche {pin} (vrai quand la broche est à 0 V)"
 		},
 		"webSerialUnsupported": "La liaison USB directe avec l'Arduino nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet."
+	},
+	"scene3d": {
+		"heading": "Configuration scène 3D",
+		"intro": "Associez le projet à une scène de simulation 3D : un modèle physique (tapis, ascenseur, carrefour...) reçoit les sorties du programme et renvoie les capteurs. Sans scène, le projet reste simulé par ses seuls programmes.",
+		"scene": "Scène",
+		"sceneNone": "Aucune",
+		"readOnlyInSimulation": "Modifiable en mode Conception uniquement.",
+		"unknownScene": "La scène « {sceneId} » est inconnue de cette version de Studomate.",
+		"pointsHeading": "Points de la scène",
+		"pointsIntro": "Chaque capteur est une entrée du projet et chaque actionneur une sortie. Un point non lié reste inerte.",
+		"createMissing": "Créer les variables manquantes",
+		"columns": {
+			"point": "Point",
+			"kind": "Rôle",
+			"variable": "Variable"
+		},
+		"kinds": {
+			"sensor": "Capteur",
+			"actuator": "Actionneur"
+		},
+		"variableAria": "Variable liée au point {point}",
+		"openScene": "Ouvrir la scène"
 	}
 }

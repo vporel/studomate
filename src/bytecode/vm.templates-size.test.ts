@@ -8,13 +8,15 @@ import generateBytecode from "./bytecode.generator";
 function measure(id: string) {
 	const template = PROJECT_TEMPLATES.find((candidate) => candidate.id === id)!;
 	const project = template.solution!();
-	// On a real maquette the sensors are wired: the plant model is not embedded, and the Main
-	// that only calls it is emptied.
-	Object.values(project.ladders).forEach((ladder) => {
-		if (ladder.name === "Partie opérative") ladder.excludedFromExecution = true;
-		if (ladder.name === "Main")
-			ladder.sections.forEach((section) => (section.elements = []));
-	});
+	// On a real maquette the sensors are wired: a plant model written in Ladder is not
+	// embedded, and the Main that only calls it is emptied.
+	const plantModel = Object.values(project.ladders).find(
+		(ladder) => ladder.name === "Partie opérative",
+	);
+	if (plantModel) {
+		plantModel.excludedFromExecution = true;
+		project.main.sections.forEach((section) => (section.elements = []));
+	}
 	const compiled = compileProject(project)!;
 	const image = generateBytecode({
 		compiled,
@@ -37,7 +39,7 @@ function measure(id: string) {
 
 describe("size of the reference templates on the Uno R3", () => {
 	it.each([
-		["elevator", 700],
+		["elevator", 800],
 		["carton-sorting", 1000],
 	])("%s fits the board with its sensors wired", (id, maxStorageBytes) => {
 		const { image, report, physicalIo, opcodes } = measure(id);

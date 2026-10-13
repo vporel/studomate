@@ -1,4 +1,7 @@
-import { VariableUpdatableFields } from "@/schemas/variable/variable.schema";
+import {
+	VariableUpdatableFields,
+	VariableUpdatableFieldsWithId,
+} from "@/schemas/variable/variable.schema";
 import Project from "@/schemas/project/project.schema";
 import VariablesCommandsFactory from "../factories/variables-commands.factory";
 import {
@@ -61,15 +64,22 @@ export default class VariablesManager {
 		return this.getIndex()?.byAddress.get(address.toLowerCase()) ?? false;
 	}
 
-	addVariables(data: VariableUpdatableFields[]): void {
+	/** @returns The variables actually created (those with a blank or already used mnemonic are skipped). */
+	addVariables(
+		data: VariableUpdatableFields[],
+	): VariableUpdatableFieldsWithId[] {
 		const project = this.getStoreState().project;
-		if (!project) return;
+		if (!project) return [];
 		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
 			console.warn("Cannot add variable in non-design mode");
-			return;
+			return [];
 		}
-		const { commands } = VariablesCommandsFactory.onAddVariable(project, data);
+		const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(
+			project,
+			data,
+		);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
+		return variablesToAdd;
 	}
 
 	updateVariable(

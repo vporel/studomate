@@ -1,7 +1,7 @@
 import { FrameDecoder, encodeFrame } from "@/hardware/arduino/remote-io/frame";
 import verifyBytecode from "@/bytecode/bytecode.verifier";
 import type { SerialTransport } from "@/hardware/arduino/remote-io/transport";
-import type { HeartbeatScheduler } from "@/hardware/heartbeat/heartbeat-scheduler";
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 
 export interface FakeBoardOptions {
 	/** Answers `PING`. When false the board behaves like a blank board or another sketch. */

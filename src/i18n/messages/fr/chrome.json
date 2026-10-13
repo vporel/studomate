@@ -4,7 +4,8 @@
 		"save": "Enregistrer",
 		"saveCopy": "Enregistrer une copie",
 		"undo": "Annuler",
-		"redo": "Rétablir"
+		"redo": "Rétablir",
+		"scene3d": "Scène 3D"
 	},
 	"analyse": "Analyser",
 	"mode": {

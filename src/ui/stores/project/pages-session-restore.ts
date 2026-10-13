@@ -16,6 +16,10 @@ import {
 	HARDWARE_CONFIGURATION_PAGE_ID,
 } from "@/ui/components/pages/HardwareConfigurationPage";
 import {
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_ID,
+} from "@/ui/components/pages/Scene3dConfigurationPage";
+import {
 	getVariablesPageData,
 	VariablesPageId,
 } from "@/ui/components/pages/VariablesPage";
@@ -53,6 +57,8 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 	if (pageId === EXERCISE_PAGE_ID) return EXERCISE_PAGE_DATA;
 	if (pageId === HARDWARE_CONFIGURATION_PAGE_ID)
 		return HARDWARE_CONFIGURATION_PAGE_DATA;
+	if (pageId === SCENE3D_CONFIGURATION_PAGE_ID)
+		return SCENE3D_CONFIGURATION_PAGE_DATA;
 	if ((VARIABLES_PAGE_IDS as string[]).includes(pageId))
 		return getVariablesPageData(pageId as VariablesPageId);
 	const program = project.getProgram(pageId);

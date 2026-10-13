@@ -47,6 +47,28 @@ describe("ProjectLifecycleManager", () => {
 		});
 	});
 
+	describe("scene 3D tab", () => {
+		it("is closed when another project is opened", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const close = jest.spyOn(store.getState().scene3dLinkManager, "close");
+
+			await openBlankProject(store);
+
+			expect(close).toHaveBeenCalled();
+		});
+
+		it("is closed when the project is closed", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const close = jest.spyOn(store.getState().scene3dLinkManager, "close");
+
+			await lifecycle(store).closeProject();
+
+			expect(close).toHaveBeenCalled();
+		});
+	});
+
 	describe("newProject", () => {
 		it("opens the new-project modal when there are no unsaved changes", async () => {
 			const store = createProjectStore();

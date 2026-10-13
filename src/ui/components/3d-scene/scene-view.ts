@@ -1,0 +1,130 @@
+import SceneChannel, {
+	type SceneTransport,
+} from "@/3d-scenes/link/scene-channel";
+import type {
+	EditorToSceneMessage,
+	SceneSimulationStatus,
+	SceneToEditorMessage,
+} from "@/3d-scenes/link/scene-messages";
+import StateInterpolator from "@/3d-scenes/state-interpolator";
+
+export type SceneViewPhase =
+	"waiting" | "stopped" | "running" | "paused" | "editor-closed";
+
+export type SceneViewSnapshot = {
+	phase: SceneViewPhase;
+	sceneId: string | null;
+};
+
+type Lerp = (from: unknown, to: unknown, ratio: number) => unknown;
+
+export const EDITOR_SILENCE_TIMEOUT_MS = 6000;
+const WATCH_INTERVAL_MS = 1000;
+
+export interface SceneViewDeps {
+	transport: SceneTransport;
+	now(): number;
+	/** Interpolation of the states of a scene; absent for a scene unknown to this version. */
+	getLerp(sceneId: string): Lerp | undefined;
+	onClose(): void;
+}
+
+/**
+ * Scene tab side of the link: holds the connection, the latest state received from the editor
+ * and the phase to display. It holds no physics and no simulation clock.
+ */
+export default class SceneView {
+	private readonly channel: SceneChannel<
+		SceneToEditorMessage,
+		EditorToSceneMessage
+	>;
+	private interpolator: StateInterpolator<unknown> | null = null;
+	private snapshot: SceneViewSnapshot = { phase: "waiting", sceneId: null };
+	private lastSeenAt: number;
+	private readonly listeners = new Set<() => void>();
+	private readonly watchTimer: ReturnType<typeof setInterval>;
+
+	constructor(private readonly deps: SceneViewDeps) {
+		this.lastSeenAt = deps.now();
+		this.channel = new SceneChannel(deps.transport);
+		this.channel.onMessage((message) => this.handleMessage(message));
+		this.watchTimer = setInterval(() => this.watchEditor(), WATCH_INTERVAL_MS);
+		this.channel.send({ type: "hello" });
+	}
+
+	getSnapshot = (): SceneViewSnapshot => this.snapshot;
+
+	subscribe = (listener: () => void): (() => void) => {
+		this.listeners.add(listener);
+		return () => this.listeners.delete(listener);
+	};
+
+	/** Latest state of the model, blended for the current frame. */
+	sampleState(): unknown {
+		return this.interpolator?.sample(this.deps.now()) ?? null;
+	}
+
+	/** Forwards an interaction of the user; ignored unless the simulation is running or paused. */
+	sendInteraction(interaction: unknown): void {
+		const { phase } = this.snapshot;
+		if (phase !== "running" && phase !== "paused") return;
+		this.channel.send({ type: "interaction", interaction });
+	}
+
+	dispose(): void {
+		clearInterval(this.watchTimer);
+		this.channel.send({ type: "bye" });
+		this.channel.close();
+		this.listeners.clear();
+	}
+
+	private handleMessage(message: EditorToSceneMessage): void {
+		const wasSilent = this.snapshot.phase === "editor-closed";
+		this.lastSeenAt = this.deps.now();
+		switch (message.type) {
+			case "config":
+				this.useScene(message.sceneId);
+				break;
+			case "state":
+				this.useScene(message.sceneId);
+				this.interpolator?.push(
+					{ simTimeMs: message.simTimeMs, state: message.state },
+					this.deps.now(),
+				);
+				this.setPhase(message.status satisfies SceneSimulationStatus);
+				break;
+			case "ping":
+				this.channel.send({ type: "pong" });
+				if (wasSilent) this.channel.send({ type: "hello" });
+				break;
+			case "close":
+				this.deps.onClose();
+				break;
+		}
+	}
+
+	private useScene(sceneId: string): void {
+		if (this.snapshot.sceneId === sceneId) return;
+		const lerp = this.deps.getLerp(sceneId);
+		this.interpolator = lerp ? new StateInterpolator(lerp) : null;
+		this.update({ ...this.snapshot, sceneId });
+	}
+
+	private setPhase(phase: SceneViewPhase): void {
+		if (this.snapshot.phase === phase) return;
+		this.update({ ...this.snapshot, phase });
+	}
+
+	private watchEditor(): void {
+		const silent =
+			this.deps.now() - this.lastSeenAt > EDITOR_SILENCE_TIMEOUT_MS;
+		if (silent && this.snapshot.phase !== "editor-closed") {
+			this.setPhase("editor-closed");
+		}
+	}
+
+	private update(next: SceneViewSnapshot): void {
+		this.snapshot = next;
+		this.listeners.forEach((listener) => listener());
+	}
+}

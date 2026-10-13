@@ -24,6 +24,7 @@ import frCrossReference from "./fr/crossReference.json";
 import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
 import frProfile from "./fr/profile.json";
 import frTour from "./fr/tour.json";
+import frScene3d from "./fr/scene3d.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
@@ -48,6 +49,7 @@ import enCrossReference from "./en/crossReference.json";
 import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
 import enProfile from "./en/profile.json";
 import enTour from "./en/tour.json";
+import enScene3d from "./en/scene3d.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -74,6 +76,7 @@ export type Messages = {
 	variableSelectorMenu: typeof frVariableSelectorMenu;
 	profile: typeof frProfile;
 	tour: typeof frTour;
+	scene3d: typeof frScene3d;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -102,6 +105,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		variableSelectorMenu: frVariableSelectorMenu,
 		profile: frProfile,
 		tour: frTour,
+		scene3d: frScene3d,
 	},
 	en: {
 		common: enCommon,
@@ -128,6 +132,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		variableSelectorMenu: enVariableSelectorMenu,
 		profile: enProfile,
 		tour: enTour,
+		scene3d: enScene3d,
 	},
 };
 

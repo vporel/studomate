@@ -26,9 +26,17 @@ describe("manual-sections", () => {
 	it("expose une section « hardware » sans sous-section, après « analysis » et avant « shortcuts »", () => {
 		const ids = MANUAL_SECTIONS.map((s) => s.id);
 		expect(ids.indexOf("hardware")).toBe(ids.indexOf("analysis") + 1);
-		expect(ids.indexOf("hardware")).toBe(ids.indexOf("shortcuts") - 1);
 		expect(
 			MANUAL_SECTIONS.find((s) => s.id === "hardware")?.children,
+		).toBeUndefined();
+	});
+
+	it("expose une section « scene3d » sans sous-section, après « hardware » et avant « shortcuts »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids.indexOf("scene3d")).toBe(ids.indexOf("hardware") + 1);
+		expect(ids.indexOf("scene3d")).toBe(ids.indexOf("shortcuts") - 1);
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "scene3d")?.children,
 		).toBeUndefined();
 	});
 

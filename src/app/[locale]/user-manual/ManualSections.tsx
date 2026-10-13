@@ -12,6 +12,7 @@ import IntroSection from "./sections/IntroSection";
 import HmiSection from "./sections/HmiSection";
 import LadderSection from "./sections/LadderSection";
 import ProjectsSection from "./sections/ProjectsSection";
+import Scene3dSection from "./sections/Scene3dSection";
 import ShortcutsSection from "./sections/ShortcutsSection";
 import SimulationSection from "./sections/SimulationSection";
 import ToolbarSection from "./sections/ToolbarSection";
@@ -45,6 +46,7 @@ export default function ManualSections({ selected }: { selected: string }) {
 				<AnalysisSection selected={selected} />
 			)}
 			{selected === "hardware" && <HardwareSection />}
+			{selected === "scene3d" && <Scene3dSection />}
 			{selected === "shortcuts" && <ShortcutsSection />}
 		</Box>
 	);

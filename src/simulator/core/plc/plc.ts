@@ -1,3 +1,4 @@
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import {
 	SYSTEM_FIRST_SCAN,
 	SYSTEM_TIME_BASES,
@@ -12,10 +13,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
 import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
-import PLCVariable, {
-	PLCVariableType,
-	PLCVariableValue,
-} from "./plc-variable";
+import PLCVariable, { PLCVariableType, PLCVariableValue } from "./plc-variable";
 
 export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
@@ -57,6 +55,7 @@ export default class PLC extends ClockedRunnable {
 	);
 	/** Rearmed by `start()`, consumed by the first `executeProgram()` that follows. */
 	private firstScanPending = true;
+	private lastCycleDeltaMs = 0;
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -68,8 +67,9 @@ export default class PLC extends ClockedRunnable {
 		onCycleStart?: RunnableCallback<PLC>;
 		onCycleEnd?: RunnableCallback<PLC>;
 		onCycleError?: (error: Error) => void;
+		heartbeat?: HeartbeatScheduler;
 	}) {
-		super(config.scanTimeMs);
+		super(config.scanTimeMs, config.heartbeat);
 		this.program = config.program;
 		this.routinesById = config.routinesById ?? {};
 		if (config.onPLCStart) this.onStart = config.onPLCStart;
@@ -81,7 +81,10 @@ export default class PLC extends ClockedRunnable {
 			const variableCopy = variable.copy();
 			if (variable.getScope() === "input") {
 				this.physicalInputs[variableCopy.getId()] = variableCopy;
-				this.physicalInputIdsByName.set(variableCopy.getName(), variableCopy.getId());
+				this.physicalInputIdsByName.set(
+					variableCopy.getName(),
+					variableCopy.getId(),
+				);
 				this.inputImage[variableCopy.getId()] = variableCopy.copy();
 			} else if (variable.getScope() === "output") {
 				this.physicalOutputs[variableCopy.getId()] = variableCopy.copy();
@@ -120,6 +123,11 @@ export default class PLC extends ClockedRunnable {
 	 * Returns read-only copies of all variables (input image, output image, memory).
 	 * Callers cannot mutate PLC state through these copies.
 	 */
+	/** Time (ms) charged to the last executed cycle. */
+	public getLastCycleDeltaMs(): number {
+		return this.lastCycleDeltaMs;
+	}
+
 	public getVariablesSnapshot(): readonly PLCVariable[] {
 		return [
 			...Object.values(this.inputImage),
@@ -184,7 +192,10 @@ export default class PLC extends ClockedRunnable {
 		return input.getValue();
 	}
 
-	public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {
+	public setPhysicalInputValueByName(
+		name: string,
+		value: PLCVariableValue,
+	): void {
 		const input = this.getPhysicalInputByName(name);
 		input.setValue(value);
 	}
@@ -275,6 +286,7 @@ export default class PLC extends ClockedRunnable {
 		}
 
 		const deltaTimeMs = this.consumeElapsedMs();
+		this.lastCycleDeltaMs = deltaTimeMs;
 		this.updateSystemTimeBases(deltaTimeMs);
 		this.environment.setVariableValueByName(
 			SYSTEM_FIRST_SCAN.name,
@@ -306,10 +318,14 @@ export default class PLC extends ClockedRunnable {
 	private updateSystemTimeBases(deltaTimeMs: number): void {
 		for (const base of SYSTEM_TIME_BASES) {
 			const phase =
-				((this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) + deltaTimeMs) %
+				((this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) +
+					deltaTimeMs) %
 				base.periodMs;
 			this.systemTimeBaseAccumulatorsMs.set(base.name, phase);
-			this.environment.setVariableValueByName(base.name, phase < base.periodMs / 2);
+			this.environment.setVariableValueByName(
+				base.name,
+				phase < base.periodMs / 2,
+			);
 		}
 	}
 

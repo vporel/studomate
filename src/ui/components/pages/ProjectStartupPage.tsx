@@ -4,6 +4,7 @@ import { APP_NAME, APP_SLOGAN } from "@/app-info";
 import { PageData } from "@/ui/stores/project/project.store";
 import AddIcon from "@mui/icons-material/Add";
 import MemoryIcon from "@mui/icons-material/Memory";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import {
 	Box,
 	Divider,
@@ -20,6 +21,7 @@ import { useProjectStore } from "../projects/ProjectContext";
 import useProjectPrograms from "../projects/useProjectPrograms";
 import { useT } from "@/ui/i18n/useT";
 import { HARDWARE_CONFIGURATION_PAGE_DATA } from "./HardwareConfigurationPage";
+import { SCENE3D_CONFIGURATION_PAGE_DATA } from "./Scene3dConfigurationPage";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
 import { getVariablesPageData, VariablesPageId } from "./VariablesPage";
@@ -134,6 +136,21 @@ function HardwareAction() {
 	);
 }
 
+function Scene3dAction() {
+	const t = useT("pages.startup");
+	const pagesManager = useProjectStore((state) => state.pagesManager);
+	return (
+		<MenuItem
+			onClick={() => pagesManager.openPage(SCENE3D_CONFIGURATION_PAGE_DATA)}
+		>
+			<ListItemIcon>
+				<ViewInArIcon />
+			</ListItemIcon>
+			<ListItemText>{t("scene3dConfiguration")}</ListItemText>
+		</MenuItem>
+	);
+}
+
 function StartupAction({
 	label,
 	onClick,
@@ -162,6 +179,9 @@ function Actions() {
 			<Typography variant="h4" color="rgb(80, 80, 80)" sx={{ marginBottom: 1 }}>
 				{t("actions")}
 			</Typography>
+			<HardwareAction />
+			<Scene3dAction />
+			<Divider sx={{ my: 1 }} />
 			<StartupAction
 				label={t("newGrafcet")}
 				onClick={() => grafcetsManager.newGrafcet()}
@@ -170,8 +190,6 @@ function Actions() {
 				label={t("newLadder")}
 				onClick={() => laddersManager.newLadder()}
 			/>
-			<Divider sx={{ my: 1 }} />
-			<HardwareAction />
 		</>
 	);
 }

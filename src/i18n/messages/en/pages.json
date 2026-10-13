@@ -9,7 +9,8 @@
 		"memoryVariables": "Memory variables",
 		"constantVariables": "Constants",
 		"systemVariables": "System variables",
-		"hardwareConfiguration": "Hardware configuration"
+		"hardwareConfiguration": "Hardware configuration",
+		"scene3dConfiguration": "3D scene configuration"
 	},
 	"systemVariables": {
 		"heading": "System variables",
@@ -56,7 +57,8 @@
 		"actions": "Actions",
 		"newGrafcet": "New grafcet",
 		"newLadder": "New ladder",
-		"hardwareConfiguration": "Hardware configuration"
+		"hardwareConfiguration": "Hardware configuration",
+		"scene3dConfiguration": "3D scene configuration"
 	},
 	"variablesGrid": {
 		"toolbar": {
@@ -158,5 +160,27 @@
 			"pinInvertedAria": "Invert pin {pin} (true when the pin is at 0 V)"
 		},
 		"webSerialUnsupported": "The direct USB link with the Arduino requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project."
+	},
+	"scene3d": {
+		"heading": "3D scene configuration",
+		"intro": "Link the project to a 3D simulation scene: a physical model (conveyor, elevator, crossroads...) receives the program outputs and returns the sensors. Without a scene, the project is simulated by its programs alone.",
+		"scene": "Scene",
+		"sceneNone": "None",
+		"readOnlyInSimulation": "Editable in Design mode only.",
+		"unknownScene": "The scene \"{sceneId}\" is unknown to this version of Studomate.",
+		"pointsHeading": "Scene points",
+		"pointsIntro": "Each sensor is an input of the project and each actuator an output. An unbound point stays inert.",
+		"createMissing": "Create missing variables",
+		"columns": {
+			"point": "Point",
+			"kind": "Role",
+			"variable": "Variable"
+		},
+		"kinds": {
+			"sensor": "Sensor",
+			"actuator": "Actuator"
+		},
+		"variableAria": "Variable bound to the point {point}",
+		"openScene": "Open the scene"
 	}
 }

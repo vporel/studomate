@@ -17,6 +17,7 @@ import { useMemo } from "react";
 import BottomPanel from "../BottomPanel";
 import { useProjectStore } from "../ProjectContext";
 import useGotoProgram from "../useGotoProgram";
+import { SCENE3D_CONFIGURATION_PAGE_DATA } from "@/ui/components/pages/Scene3dConfigurationPage";
 
 type GotoLocation = (location: CrossReferenceLocation) => void;
 
@@ -89,6 +90,10 @@ function CrossReferencePanel() {
 				type: "hmi",
 				title: project?.getHmiPage(location.programId)?.name ?? "",
 			});
+			return;
+		}
+		if (location.programType === "scene3d") {
+			pagesManager.openPage(SCENE3D_CONFIGURATION_PAGE_DATA);
 			return;
 		}
 		onGotoProgram(

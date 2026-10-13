@@ -24,7 +24,8 @@
 		"title": "View",
 		"explorer": "Explorer",
 		"crossReferences": "Cross-references",
-		"analysisResults": "Analysis results"
+		"analysisResults": "Analysis results",
+		"scene3d": "3D scene"
 	},
 	"project": {
 		"title": "Project",
@@ -35,7 +36,8 @@
 		"share": "Share",
 		"manageSharing": "Manage sharing",
 		"properties": "Properties",
-		"hardwareConfiguration": "Hardware configuration"
+		"hardwareConfiguration": "Hardware configuration",
+		"scene3dConfiguration": "3D scene configuration"
 	},
 	"target": {
 		"title": "Target",

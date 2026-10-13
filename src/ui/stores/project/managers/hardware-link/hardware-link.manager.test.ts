@@ -85,7 +85,7 @@ function setup(
 		hardwareObservation: IDLE_HARDWARE_OBSERVATION,
 		plcConfig: { scanTimeMs: 100 },
 		simulationManager: {
-			applyHardwareInputs: jest.fn(),
+			applyExternalInputs: jest.fn(),
 			startOnline: jest.fn(),
 			publishBoardSnapshot: jest.fn(),
 			setDesignMode: jest.fn(),
@@ -379,7 +379,7 @@ describe("HardwareLinkManager inputs", () => {
 	it("forwards changed pin values to the simulation, without repeating unchanged ones", async () => {
 		const { manager, get, board } = setup();
 		await manager.enterHardwareIo();
-		const apply = get().simulationManager.applyHardwareInputs as jest.Mock;
+		const apply = get().simulationManager.applyExternalInputs as jest.Mock;
 
 		board.emitInputs({ "2": 0 });
 		board.emitInputs({ "2": 0 });
@@ -394,7 +394,7 @@ describe("HardwareLinkManager inputs", () => {
 		const { manager, get, board } = setup();
 		await manager.enterHardwareIo();
 		board.emitInputs({ "2": 0 });
-		const apply = get().simulationManager.applyHardwareInputs as jest.Mock;
+		const apply = get().simulationManager.applyExternalInputs as jest.Mock;
 		apply.mockClear();
 
 		manager.onSimulationStart();
@@ -406,7 +406,7 @@ describe("HardwareLinkManager inputs", () => {
 	it("does nothing at simulation start when not linked", () => {
 		const { manager, get } = setup();
 		manager.onSimulationStart();
-		expect(get().simulationManager.applyHardwareInputs).not.toHaveBeenCalled();
+		expect(get().simulationManager.applyExternalInputs).not.toHaveBeenCalled();
 	});
 
 	it("reconfigures the board at simulation start when the project changed", async () => {

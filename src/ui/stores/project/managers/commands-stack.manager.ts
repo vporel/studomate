@@ -33,6 +33,7 @@ export default class ProjectCommandsStackManager {
 			return;
 		}
 		if (!commands || commands.length === 0) return;
+		const previousScene = project.scene3d;
 		const newProject = this.commandsStack.execute(commands, project.copy());
 		this.setStoreState(() => ({
 			project: newProject,
@@ -44,6 +45,9 @@ export default class ProjectCommandsStackManager {
 		//rewrites the expressions/references to it), so the mounted stores must adopt the result
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		if (newProject.scene3d !== previousScene) {
+			this.getStoreState().scene3dLinkManager.onSceneChanged();
+		}
 	}
 
 	undoOperation(): void {
@@ -54,6 +58,7 @@ export default class ProjectCommandsStackManager {
 			console.warn("Cannot undo operation in non-design mode");
 			return;
 		}
+		const previousScene = project.scene3d;
 		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
 		this.setStoreState(() => ({
@@ -64,6 +69,9 @@ export default class ProjectCommandsStackManager {
 		}));
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		if (newProject.scene3d !== previousScene) {
+			this.getStoreState().scene3dLinkManager.onSceneChanged();
+		}
 	}
 
 	redoOperation(): void {
@@ -74,6 +82,7 @@ export default class ProjectCommandsStackManager {
 			console.warn("Cannot redo operation in non-design mode");
 			return;
 		}
+		const previousScene = project.scene3d;
 		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;
 		this.setStoreState(() => ({
@@ -84,5 +93,8 @@ export default class ProjectCommandsStackManager {
 		}));
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		if (newProject.scene3d !== previousScene) {
+			this.getStoreState().scene3dLinkManager.onSceneChanged();
+		}
 	}
 }

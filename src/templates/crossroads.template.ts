@@ -19,6 +19,7 @@ import {
 } from "@/schemas/grafcet/transition.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget, IndicatorData } from "@/schemas/hmi/hmi-widget.schema";
+import CrossroadsDescriptor from "@/3d-scenes/crossroads/crossroads.descriptor";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createRandomId } from "@/ids";
@@ -73,6 +74,8 @@ function indicatorData(
  * Crée un projet "Carrefour de feux tricolores" pré-configuré :
  * — 12 variables de sortie booléennes (rouge/orange/vert × 4 feux : NS1, NS2, EO1, EO2)
  * — 1 page HMI avec 4 feux disposés autour d'un carrefour central
+ * — scène 3D « Carrefour de feux » câblée sur les 12 sorties : les voitures obéissent aux feux
+ *   et se percutent si deux axes passent en même temps
  * — aucun programme (l'étudiant l'écrit)
  */
 export function createCrossroadsProject(): Project {
@@ -90,6 +93,19 @@ export function createCrossroadsProject(): Project {
 			VariableBuilder.buildLogicOutput(createRandomId(), `vert${key}`),
 		);
 	}
+
+	const variableIdByMnemonic = new Map(
+		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	);
+	project.scene3d = {
+		sceneId: CrossroadsDescriptor.id,
+		bindings: Object.fromEntries(
+			CrossroadsDescriptor.points.map((point) => [
+				point.id,
+				variableIdByMnemonic.get(point.suggestedMnemonic)!,
+			]),
+		),
+	};
 
 	// — Page HMI ——————————————————————————————————————————————————————————
 	const page = new HmiPage(createRandomId(), "Carrefour", true);
@@ -119,12 +135,12 @@ export function createCrossroadsProject(): Project {
 	page.addWidget(
 		HmiWidget.create(
 			"text",
-			CX - 130,
-			16,
+			44,
+			12,
 			{ width: 260, height: 28 },
 			{
 				text: "Carrefour de feux tricolores",
-				style: { fontSize: 16, color: "#333333", align: "center" },
+				style: { fontSize: 16, color: "#333333", align: "left" },
 			},
 			stack++,
 			"Titre",

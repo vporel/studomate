@@ -49,8 +49,10 @@ src/simulator/          expression-language lexer/parser/interpreter + PLC engin
 src/bytecode/           bytecode for embedded targets: format, generator (from the compiled
                         project), verifier, admissibility check; target-independent, the Arduino
                         pin mapping is an adapter (`arduino-io-bindings.ts`)
+src/3d-scenes/          3D simulation scenes: descriptors, physical models, fixed-step stepper, editor/scene-tab
+                        link protocol (rendering lives in `src/ui/`)
 src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
-src/lib/                neutral utilities (array, object), no domain dependency
+src/lib/                neutral utilities (array, object, heartbeat), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
 src/app-info.ts         app identity (name, tagline...), neutral root module

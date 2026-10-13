@@ -137,7 +137,11 @@ describe("PLC", () => {
 				integer: true,
 				wrap: true,
 			});
-			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [slider, memory] });
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [slider, memory],
+			});
 
 			expect(plc.setPhysicalInputValueById("s1", 150)).toBe(100);
 			expect(plc.setMemoryValueById("m1", 32768)).toBe(-32768);
@@ -148,7 +152,9 @@ describe("PLC", () => {
 			stop.setValue(true);
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [stop] });
 
-			const snapshot = plc.getVariablesSnapshot().find((v) => v.getId() === "b1")!;
+			const snapshot = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getId() === "b1")!;
 			expect(snapshot.getValue()).toBe(true);
 		});
 
@@ -596,7 +602,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100 * 50);
 			plc.stop();
 
-			const count = plc.getVariablesSnapshot().find((v) => v.getName() === "count");
+			const count = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "count");
 			expect(count?.getValue()).toBe(50);
 		});
 
@@ -620,7 +628,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100);
 			plc.stop();
 
-			const result = plc.getVariablesSnapshot().find((v) => v.getName() === "result");
+			const result = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "result");
 			expect(result?.getValue()).toBe(9);
 		});
 
@@ -642,7 +652,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100);
 			plc.stop();
 
-			const flag = plc.getVariablesSnapshot().find((v) => v.getName() === "flag");
+			const flag = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "flag");
 			expect(flag?.getValue()).toBe(true);
 		});
 	});
@@ -692,7 +704,9 @@ describe("PLC", () => {
 
 	describe("bases de temps système", () => {
 		const pulseOf = (plc: PLC, name: string): boolean =>
-			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+			plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === name)
 				?.getValue() as boolean;
 
 		it("_SYS_TB_200ms : alterne à chaque scan quand la demi-période vaut le temps de scan", () => {
@@ -759,14 +773,20 @@ describe("PLC", () => {
 	});
 	describe("bit de premier scan système", () => {
 		const valueOf = (plc: PLC, name: string): boolean =>
-			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+			plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === name)
 				?.getValue() as boolean;
 
 		it("_SYS_FIRST_SCAN est vrai au premier scan seulement, et lisible par le programme", () => {
 			const tokens = new Lexer(Dialect.FR).tokenize("init := _SYS_FIRST_SCAN");
 			const routine = PLCRoutine.fromNodes([new Parser(tokens).parse()]);
 			const initVar = new PLCVariable("id_init", "init", "memory", "boolean");
-			const plc = new PLC({ scanTimeMs: 100, program: [routine], variables: [initVar] });
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [initVar],
+			});
 			plc.start();
 
 			jest.advanceTimersByTime(100);
@@ -815,6 +835,48 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100);
 			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
 
+			plc.stop();
+		});
+	});
+
+	describe("cycle delta", () => {
+		function createFakeHeartbeat() {
+			let beat: () => void = () => {};
+			const scheduler = (tick: () => void) => {
+				beat = tick;
+				return () => {};
+			};
+			return { scheduler, beat: () => beat() };
+		}
+
+		function createPlc(heartbeat: () => () => void) {
+			return new PLC({
+				scanTimeMs: 50,
+				program: [],
+				variables: [],
+				heartbeat: heartbeat as never,
+			});
+		}
+
+		it("exposes the time charged to the last cycle in continuous mode", () => {
+			const fake = createFakeHeartbeat();
+			const plc = createPlc(fake.scheduler as never);
+			plc.start();
+			fake.beat();
+			expect(plc.getLastCycleDeltaMs()).toBe(50);
+			plc.stop();
+		});
+
+		it("exposes the real time elapsed between two steps in step-by-step mode", () => {
+			const fake = createFakeHeartbeat();
+			const plc = createPlc(fake.scheduler as never);
+			plc.start();
+			plc.pause();
+			fake.beat();
+			fake.beat();
+			fake.beat();
+			plc.stepOnce();
+			expect(plc.getLastCycleDeltaMs()).toBe(150);
 			plc.stop();
 		});
 	});

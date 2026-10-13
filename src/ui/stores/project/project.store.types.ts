@@ -1,3 +1,5 @@
+import type Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
+import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import type {
@@ -40,6 +42,7 @@ export type PageType =
 	| "preferences"
 	| "exercise"
 	| "hardware-configuration"
+	| "scene3d-configuration"
 	| "grafcet"
 	| "ladder"
 	| "variables"
@@ -201,6 +204,14 @@ export interface ProjectStoreState {
 	setHardwareModel: (modelId: HardwareModelId | null) => void;
 	/** Replaces the configuration of the current target (same model). No-op without a target. */
 	setHardwareTarget: (target: HardwareTarget) => void;
+	/** Sets the 3D scene of the project; `null` removes it. */
+	setScene3d: (scene: Scene3d | null) => void;
+	/**
+	 * Wires every unbound point of the current scene: reuses the compatible variable already
+	 * carrying the suggested mnemonic, creates the others (one undoable operation for the variables).
+	 * Design mode only.
+	 */
+	createMissingScene3dVariables: () => void;
 
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setNewProjectModalVisible: (visible: boolean) => void;
@@ -283,6 +294,7 @@ export interface ProjectStoreState {
 	hardwareUpload: HardwareUploadState;
 	hardwareObservation: HardwareObservationState;
 	hardwareLinkManager: HardwareLinkManager;
+	scene3dLinkManager: Scene3dLinkManager;
 	modeManager: ModeManager;
 
 	//=============== COMMANDS ===============

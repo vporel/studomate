@@ -1,0 +1,90 @@
+{
+	"title": "Scène 3D",
+	"status": {
+		"waiting": "En attente de l'éditeur",
+		"stopped": "Simulation arrêtée : visualisation seule, les commandes sont sans effet",
+		"running": "Simulation en cours",
+		"paused": "Simulation en pause",
+		"editorClosed": "Éditeur fermé"
+	},
+	"missingSession": "Session introuvable. Ouvrez la scène depuis l'éditeur.",
+	"unknownScene": "Scène inconnue de cette version de Studomate.",
+	"cartonSorting": {
+		"label": "Tri de caisses",
+		"description": "Tapis d'entrée, trois vérins de poussée et deux sorties : les caisses basses vont au niveau de P2, les caisses hautes au niveau de P3.",
+		"newCarton": "Placer la caisse",
+		"heightSwitch": "Hauteur de la caisse",
+		"lowMark": "Basse",
+		"highMark": "Haute",
+		"points": {
+			"t1": "Tapis T1",
+			"t2t3": "Tapis T2 / T3",
+			"p1Out": "P1 sortir",
+			"p1In": "P1 rentrer",
+			"p2Out": "P2 sortir",
+			"p2In": "P2 rentrer",
+			"p3Out": "P3 sortir",
+			"p3In": "P3 rentrer",
+			"cartonAtStation": "Caisse présente au poste",
+			"cartonHigh": "Caisse haute",
+			"cartonAtP2": "Caisse au niveau de P2",
+			"cartonAtP3": "Caisse au niveau de P3",
+			"p1AtOut": "P1 sorti",
+			"p1AtIn": "P1 rentré",
+			"p2AtOut": "P2 sorti",
+			"p2AtIn": "P2 rentré",
+			"p3AtOut": "P3 sorti",
+			"p3AtIn": "P3 rentré"
+		}
+	},
+	"crossroads": {
+		"label": "Carrefour de feux",
+		"description": "Deux routes qui se croisent, quatre feux tricolores et un flux automatique de voitures qui respectent les feux. Si deux axes passent en même temps, les voitures se percutent.",
+		"accidents": "Accidents : {count}",
+		"collision": "Collision !",
+		"points": {
+			"redNS1": "Feu Nord : rouge",
+			"orangeNS1": "Feu Nord : orange",
+			"greenNS1": "Feu Nord : vert",
+			"redNS2": "Feu Sud : rouge",
+			"orangeNS2": "Feu Sud : orange",
+			"greenNS2": "Feu Sud : vert",
+			"redEO1": "Feu Est : rouge",
+			"orangeEO1": "Feu Est : orange",
+			"greenEO1": "Feu Est : vert",
+			"redEO2": "Feu Ouest : rouge",
+			"orangeEO2": "Feu Ouest : orange",
+			"greenEO2": "Feu Ouest : vert"
+		}
+	},
+	"drilling": {
+		"label": "Perçage",
+		"description": "Poste de perçage : un foret descend et remonte entre deux fins de course (haut et bas), la broche le fait tourner. Percer demande de faire tourner la broche, foret en bas, pendant 1,5 s.",
+		"workpiece": "Pièce",
+		"points": {
+			"down": "Descendre le foret",
+			"up": "Monter le foret",
+			"spindle": "Faire tourner la broche",
+			"high": "Foret en haut",
+			"low": "Foret en bas",
+			"drillPosition": "Position du foret"
+		}
+	},
+	"elevator": {
+		"label": "Ascenseur",
+		"description": "Cabine à trois étages : commandes de montée, de descente et de porte, capteurs de présence à chaque étage et de porte ouverte. La porte reste ouverte au moins 2 s avant de pouvoir se refermer.",
+		"floor0": "RDC",
+		"floor1": "Étage 1",
+		"floor2": "Étage 2",
+		"points": {
+			"up": "Monter",
+			"down": "Descendre",
+			"door": "Ouvrir la porte",
+			"floor0": "Cabine au RDC",
+			"floor1": "Cabine à l'étage 1",
+			"floor2": "Cabine à l'étage 2",
+			"doorOpen": "Porte ouverte",
+			"cabinPosition": "Position de la cabine"
+		}
+	}
+}
