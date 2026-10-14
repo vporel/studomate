@@ -3,7 +3,7 @@ import { IO_ROLE, type IoRole } from "./bytecode-format";
 import type { IoBinding } from "./bytecode.generator";
 
 /** Pin number of the I/O table, as in the serial protocol: D2..D13 are 2..13, A0..A5 are 14..19. */
-function pinNumber(pin: string): number {
+export function pinNumber(pin: string): number {
 	return pin.startsWith("A") ? 14 + Number(pin.slice(1)) : Number(pin);
 }
 

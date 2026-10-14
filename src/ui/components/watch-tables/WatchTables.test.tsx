@@ -37,6 +37,7 @@ describe("WatchTables", () => {
 			hardwareTarget?: object | null;
 			status?: string;
 			boardMode?: string;
+			scene3dDrivenInputIds?: string[];
 		} = {},
 	) {
 		(useProjectStore as jest.Mock).mockImplementation(
@@ -58,6 +59,7 @@ describe("WatchTables", () => {
 					drivenInputIds: [],
 					boardMode: board.boardMode ?? "remote-io",
 				},
+				scene3dDrivenInputIds: board.scene3dDrivenInputIds ?? [],
 			}),
 		);
 		return renderWithI18n(<WatchTables />);
@@ -99,9 +101,9 @@ describe("WatchTables", () => {
 		expect(setWatchTablesVisible).toHaveBeenCalledWith(false);
 	});
 
-	describe("message sur les entrées liées à la carte", () => {
+	describe("message sur les entrées pilotées (carte ou scène 3D)", () => {
 		const message =
-			"Les entrées liées à une borne physique de la carte ne sont pas modifiables depuis cette table.";
+			"Les entrées pilotées par une borne de la carte ou un capteur de la scène 3D ne sont pas modifiables depuis cette table.";
 		const target = { modelId: "arduino-uno-r3" };
 
 		it("s'affiche quand une carte est configurée et liée en E/S", () => {
@@ -116,6 +118,16 @@ describe("WatchTables", () => {
 
 		it("est absent quand la carte n'est pas liée", () => {
 			setup({ hardwareTarget: target, status: "disconnected" });
+			expect(screen.queryByText(message)).not.toBeInTheDocument();
+		});
+
+		it("s'affiche avec seulement des capteurs de scène 3D", () => {
+			setup({ scene3dDrivenInputIds: ["e1"] });
+			expect(screen.getByText(message)).toBeInTheDocument();
+		});
+
+		it("est absent sans capteur de scène 3D ni carte", () => {
+			setup({ scene3dDrivenInputIds: [] });
 			expect(screen.queryByText(message)).not.toBeInTheDocument();
 		});
 

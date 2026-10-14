@@ -43,7 +43,8 @@
 		"dialectFr": "Français — ET, OU, NON, VRAI, FAUX",
 		"dialectEn": "Anglais — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Énoncé de l'exercice",
-		"exerciseFieldHelper": "Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice."
+		"exerciseFieldHelper": "Format Markdown. Affiché en lecture seule depuis le menu Projet › Énoncé de l'exercice.",
+		"readOnlyInSimulation": "Modifiable en mode Conception uniquement."
 	},
 	"exercise": {
 		"heading": "Énoncé de l'exercice",
@@ -117,7 +118,7 @@
 		"memories": "Mémoires",
 		"grafcets": "Grafcets",
 		"noGrafcets": "Aucun grafcet dans le projet",
-		"hardwareInputsReadOnly": "Les entrées liées à une borne physique de la carte ne sont pas modifiables depuis cette table."
+		"drivenInputsReadOnly": "Les entrées pilotées par une borne de la carte ou un capteur de la scène 3D ne sont pas modifiables depuis cette table."
 	},
 	"noPage": {
 		"openProject": "Ouvrir un projet",

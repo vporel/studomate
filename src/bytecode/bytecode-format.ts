@@ -44,6 +44,14 @@ export const TYPE_CODE = {
 } as const;
 export type TypeCode = (typeof TYPE_CODE)[keyof typeof TYPE_CODE];
 
+/** Types an arithmetic opcode accepts: the signed ones. */
+export const SIGNED_ARITHMETIC_TYPES: readonly TypeCode[] = [
+	TYPE_CODE.INT,
+	TYPE_CODE.DINT,
+	TYPE_CODE.TIME,
+	TYPE_CODE.INTERNAL,
+];
+
 export const Op = {
 	PUSH0: 0x01,
 	PUSH1: 0x02,
@@ -78,6 +86,7 @@ export const CMP_UNSIGNED_BIT = 0x08;
 
 export const TIMER_KINDS = ["TON", "TOF", "TP"] as const;
 export const COUNTER_KINDS = ["CTU", "CTD", "CTUD"] as const;
+export const COUNTER_KIND_CTUD = COUNTER_KINDS.indexOf("CTUD");
 
 /** Storage class of a variable, in index order. */
 export type StorageClass = "bool" | "int" | "word" | "int32";
@@ -104,12 +113,6 @@ export function isInputRole(role: number): boolean {
 
 /** Identifier of a system variable in the image: its position in `SYSTEM_VARIABLES`. */
 export const SYSTEM_VARIABLE_IDS: readonly SystemVariable[] = SYSTEM_VARIABLES;
-
-/**
- * Pin number used in the I/O table, as in the serial protocol: D2..D13 are 2..13, A0..A5 are
- * 14..19.
- */
-export const MAX_PIN_NUMBER = 19;
 
 /** Operand layout and stack effect of the fixed-shape opcodes. */
 export const OPCODE_SHAPES: Record<
@@ -145,8 +148,8 @@ export const TIMER_OPERAND_BYTES = 4;
 export const TIMER_POPS = 2;
 /** `k lastIn current out` (CTU, CTD) or `k lastIn current out downLast downOut` (CTUD). */
 export function counterOperandBytes(kind: number): number {
-	return kind === 2 ? 6 : 4;
+	return kind === COUNTER_KIND_CTUD ? 6 : 4;
 }
 export function counterPops(kind: number): number {
-	return kind === 2 ? 5 : 3;
+	return kind === COUNTER_KIND_CTUD ? 5 : 3;
 }

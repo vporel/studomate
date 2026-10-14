@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useState, WheelEvent } from "react";
 import { useT } from "@/ui/i18n/useT";
+import { hasDrivenInputs } from "@/ui/stores/project/driven-inputs.selector";
 import { useProjectStore } from "../projects/ProjectContext";
 import GrafcetsTabContent from "./GrafcetsTabContent";
 import TabContent from "./TabContent";
@@ -43,13 +44,9 @@ function Header({ onClose }: { onClose: () => void }) {
 export default function WatchTables() {
 	const t = useT("pages.watchTables");
 	const setWatchTablesVisible = useProjectStore((s) => s.setWatchTablesVisible);
-	// The pins of a linked board are the source of its inputs: they cannot be written from here.
-	const inputsDrivenByBoard = useProjectStore(
-		(s) =>
-			!!s.project?.hardwareTarget &&
-			s.hardwareLink.status === "linked" &&
-			s.hardwareLink.boardMode === "remote-io",
-	);
+	// The pins of a linked board and the sensors of a running 3D scene are the source of their
+	// inputs: they cannot be written from here.
+	const drivenInputs = useProjectStore(hasDrivenInputs);
 	const [tab, setTab] = useState(0);
 
 	const onClose = () => {
@@ -100,14 +97,14 @@ export default function WatchTables() {
 				{tab === 2 && <TabContent variableDirection="INOUT" />}
 				{tab === 3 && <GrafcetsTabContent />}
 			</Box>
-			{inputsDrivenByBoard && (
+			{drivenInputs && (
 				<>
 					<Divider />
 					<Typography
 						variant="caption"
 						sx={{ pt: 1, color: "text.secondary", textAlign: "center" }}
 					>
-						{t("hardwareInputsReadOnly")}
+						{t("drivenInputsReadOnly")}
 					</Typography>
 				</>
 			)}

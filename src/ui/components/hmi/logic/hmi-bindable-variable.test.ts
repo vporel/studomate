@@ -1,12 +1,26 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import { isHmiBindable, NON_BINDABLE_ZONES } from "./hmi-bindable-variable";
+import { isHmiBindable } from "./hmi-bindable-variable";
 
 describe("isHmiBindable", () => {
 	const project = new Project("p", "n", "");
 	project.variables = [
-		new Variable("k", "SEUIL", "constant", "INT", undefined, "4"),
-		new Variable("m", "Compteur", "memory", "INT"),
+		new Variable({
+			id: "k",
+			mnemonic: "SEUIL",
+			zone: "constant",
+			type: "INT",
+			value: "4",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "m",
+			mnemonic: "Compteur",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		}),
 	];
 
 	it("refuses a constant", () => {
@@ -17,9 +31,5 @@ describe("isHmiBindable", () => {
 		expect(isHmiBindable(project, "Compteur")).toBe(true);
 		expect(isHmiBindable(project, "Inconnue")).toBe(true);
 		expect(isHmiBindable(null, "SEUIL")).toBe(true);
-	});
-
-	it("excludes the constant zone from the selectors", () => {
-		expect(NON_BINDABLE_ZONES).toEqual(["constant"]);
 	});
 });

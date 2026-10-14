@@ -20,6 +20,7 @@ import type { SceneComponentProps } from "../scene-views";
 import Box from "../parts/Box";
 import Label from "../parts/Label";
 import TrafficLightHead from "../parts/TrafficLightHead";
+import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 
 /** Model units to world units. */
 const S = 0.01;
@@ -39,7 +40,6 @@ const CAR_COLORS = [
 	"#f5f5f5",
 ];
 /** Where the crossing sits in the world, at the point the camera looks at. */
-const ORIGIN: [number, number, number] = [4, 0, 1.5];
 
 const carMaterials = CAR_COLORS.map(
 	(color) => new MeshStandardMaterial({ color }),
@@ -102,7 +102,7 @@ export default function CrossroadsScene({ sample }: SceneComponentProps) {
 	});
 
 	return (
-		<group position={ORIGIN}>
+		<group position={SCENE_ORIGIN}>
 			<Box
 				position={[0, 0, 0]}
 				size={[ROAD_WIDTH, 0.1, ROAD_LENGTH]}

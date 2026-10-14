@@ -19,6 +19,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useRef } from "react";
+import { isInputDriven } from "@/ui/stores/project/driven-inputs.selector";
 import { useProjectStore } from "../projects/ProjectContext";
 
 export default function WatchVariable({ variable }: { variable: Variable }) {
@@ -30,11 +31,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 	const nativeType = variable.getNativeType();
 	const behavior = variable.behavior;
 	const normallyClosed = isNormallyClosed(behavior);
-	// A pin of the linked board is the source of truth of this input.
-	const drivenByHardware = useProjectStore((state) =>
-		state.hardwareLink.drivenInputIds.includes(variable.id),
-	);
-	const locked = drivenByHardware;
+	const locked = useProjectStore((state) => isInputDriven(state, variable.id));
 	const readOnly =
 		variable.getDirection() === "OUT" || variable.zone === "constant";
 

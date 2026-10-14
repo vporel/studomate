@@ -171,8 +171,7 @@ export default class Grafcet extends Program {
 		type: ElementType,
 	): T | undefined {
 		return this.getCollection(ELEMENT_COLLECTIONS[type].collection)[id] as
-			| T
-			| undefined;
+			T | undefined;
 	}
 
 	getElementById<T extends Element<any>>(id: string): T | undefined {
@@ -334,7 +333,7 @@ export default class Grafcet extends Program {
 	 */
 	renameIdentifiersInExpressions(
 		renames: Record<string, string>,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): void {
 		if (Object.keys(renames).length === 0) return;
 

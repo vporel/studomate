@@ -41,27 +41,57 @@ describe("formatTimeValue", () => {
 
 describe("formatVariableValue", () => {
 	it("retourne undefined quand la valeur n'est pas connue", () => {
-		const v = new Variable("v1", "A", "memory", "INT");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		expect(formatVariableValue(v, undefined, Dialect.FR)).toBeUndefined();
 	});
 
 	it("formate un BOOL", () => {
-		const v = new Variable("v1", "A", "memory", "BOOL");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		expect(formatVariableValue(v, true, Dialect.FR)).toBe("VRAI");
 	});
 
 	it("formate un TIME", () => {
-		const v = new Variable("v1", "A", "memory", "TIME");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "TIME",
+			dialect: Dialect.FR,
+		});
 		expect(formatVariableValue(v, 5000, Dialect.FR)).toBe("5s");
 	});
 
 	it("formate un INT tel quel", () => {
-		const v = new Variable("v1", "A", "memory", "INT");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		expect(formatVariableValue(v, 42, Dialect.FR)).toBe("42");
 	});
 
 	it("formate un STRING tel quel", () => {
-		const v = new Variable("v1", "A", "memory", "STRING");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "STRING",
+			dialect: Dialect.FR,
+		});
 		expect(formatVariableValue(v, "hello", Dialect.FR)).toBe("hello");
 	});
 });

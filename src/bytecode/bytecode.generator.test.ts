@@ -12,15 +12,19 @@ import {
 	parseStatement,
 	plcVariable,
 	systemPlcVariables,
+	UNO_PIN_RANGE,
 } from "@tests/utils/bytecode-program";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
 import arduinoIoBindings from "./arduino-io-bindings";
-import { FORMAT_VERSION, HEADER_OFFSETS, HEADER_SIZE } from "./bytecode-format";
+import {
+	FORMAT_VERSION,
+	HEADER_OFFSETS,
+	HEADER_SIZE,
+	IO_ROLE,
+} from "./bytecode-format";
 import BytecodeGenerationError from "./bytecode.error";
-import generateBytecode, {
-	imageChecksum,
-	imageIdentifier,
-} from "./bytecode.generator";
+import { imageChecksum, imageIdentifier } from "./bytecode-image";
+import generateBytecode from "./bytecode.generator";
 import verifyBytecode from "./bytecode.verifier";
 import { crc16CcittFalse, crc32 } from "./crc";
 
@@ -35,8 +39,11 @@ function generate(
 		compiled: compiledProject(config),
 		ioBindings: arduinoIoBindings(ioPlan),
 		cyclePeriodMs: 100,
+		pinRange: UNO_PIN_RANGE,
 	});
-	expect(verifyBytecode(image.bytes, 1024)).toEqual({ valid: true });
+	expect(verifyBytecode(image.bytes, 1024, UNO_PIN_RANGE)).toEqual({
+		valid: true,
+	});
 	return image;
 }
 
@@ -99,6 +106,7 @@ describe("generateBytecode", () => {
 					compiled: compiledProject({ variables: [], routines: [[]] }),
 					ioBindings: [],
 					cyclePeriodMs: 0,
+					pinRange: UNO_PIN_RANGE,
 				}),
 			).toThrow(BytecodeGenerationError);
 		});
@@ -654,8 +662,11 @@ describe("generateBytecode", () => {
 				compiled: callerAndCallee(),
 				ioBindings: [],
 				cyclePeriodMs: 100,
+				pinRange: UNO_PIN_RANGE,
 			});
-			expect(verifyBytecode(image.bytes, 1024)).toEqual({ valid: true });
+			expect(verifyBytecode(image.bytes, 1024, UNO_PIN_RANGE)).toEqual({
+				valid: true,
+			});
 			expect(image.layout).toMatchObject({
 				routineCount: 2,
 				scanCount: 1,
@@ -679,6 +690,7 @@ describe("generateBytecode", () => {
 				compiled,
 				ioBindings: [],
 				cyclePeriodMs: 100,
+				pinRange: UNO_PIN_RANGE,
 			});
 			expect(image.layout.routineCount).toBe(1);
 		});
@@ -694,7 +706,12 @@ describe("generateBytecode", () => {
 				]),
 			];
 			expect(() =>
-				generateBytecode({ compiled, ioBindings: [], cyclePeriodMs: 100 }),
+				generateBytecode({
+					compiled,
+					ioBindings: [],
+					cyclePeriodMs: 100,
+					pinRange: UNO_PIN_RANGE,
+				}),
 			).toThrow(/ghost/);
 		});
 
@@ -717,8 +734,11 @@ describe("generateBytecode", () => {
 				compiled,
 				ioBindings: [],
 				cyclePeriodMs: 100,
+				pinRange: UNO_PIN_RANGE,
 			});
-			expect(verifyBytecode(image.bytes, 1024)).toEqual({ valid: true });
+			expect(verifyBytecode(image.bytes, 1024, UNO_PIN_RANGE)).toEqual({
+				valid: true,
+			});
 			expect(image.layout.maxCallDepth).toBe(2);
 			expect(image.layout.routineProgramIds).toEqual([
 				"main",
@@ -917,7 +937,9 @@ describe("generateBytecode constants", () => {
 		});
 
 		expect(image.layout.variableIndexByName["K"]).toBeUndefined();
-		expect(code(image).filter((line) => line.startsWith("STORE"))).toHaveLength(1);
+		expect(code(image).filter((line) => line.startsWith("STORE"))).toHaveLength(
+			1,
+		);
 	});
 
 	it("adds no prologue when the project has no constant", () => {
@@ -927,5 +949,42 @@ describe("generateBytecode constants", () => {
 		});
 
 		expect(code(image)[0]).toBe("PUSH1");
+	});
+});
+
+describe("generateBytecode pin range", () => {
+	const generateOnPin = (pin: number, pinRange: { min: number; max: number }) =>
+		generateBytecode({
+			compiled: compiledProject({
+				variables: [plcVariable("lamp:BOOL", "memory", "id-lamp")],
+				routines: [[]],
+			}),
+			ioBindings: [
+				{ variableId: "id-lamp", role: IO_ROLE.DIGITAL_OUTPUT, pin },
+			],
+			cyclePeriodMs: 100,
+			pinRange,
+		});
+
+	it.each([
+		[3, false],
+		[4, true],
+		[6, true],
+		[7, false],
+	])("with the range 4..6, pin %i is accepted: %s", (pin, accepted) => {
+		const range = { min: 4, max: 6 };
+		if (accepted) {
+			const image = generateOnPin(pin, range);
+			expect(verifyBytecode(image.bytes, 1024, range)).toEqual({ valid: true });
+		} else {
+			expect(() => generateOnPin(pin, range)).toThrow(BytecodeGenerationError);
+			expect(() => generateOnPin(pin, range)).toThrow(
+				`Pin ${pin} is unknown or used twice.`,
+			);
+		}
+	});
+
+	it("accepts a pin outside the Uno range when the range allows it", () => {
+		expect(() => generateOnPin(30, { min: 20, max: 40 })).not.toThrow();
 	});
 });

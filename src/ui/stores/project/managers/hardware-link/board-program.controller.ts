@@ -1,12 +1,8 @@
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
-import {
-	isRemoteIoUploadError,
-	RemoteIoError,
-} from "@/hardware/arduino/remote-io/remote-io.client";
+import { remoteIoFailureCode } from "@/hardware/arduino/remote-io/remote-io.client";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import type HardwareLinkContext from "./hardware-link.context";
-import type { ProgramUploadFailure } from "./hardware-link.notifier";
 import {
 	drivenInputIdsOf,
 	IDLE_HARDWARE_UPLOAD,
@@ -14,7 +10,7 @@ import {
 	type HardwareUploadState,
 } from "./hardware-link.state";
 import type HardwareSimulationBridge from "./hardware-simulation.bridge";
-import buildProgram from "./program-builder";
+import prepareBoardProgram from "./prepare-board-program";
 
 /** The program the linked board holds: loading it, starting it, stopping it, and the pins. */
 export default class BoardProgramController {
@@ -43,28 +39,12 @@ export default class BoardProgramController {
 			return;
 		}
 
-		const { ok, projectAnalysisResult } =
-			state.simulationManager.analyze(false);
-		if (!ok || !projectAnalysisResult) {
-			notifier.programUploadFailed("analysis");
-			return;
-		}
-		const built = buildProgram({
-			project,
-			analysis: projectAnalysisResult,
-			ioBindings: this.context.ioBindings(resolved.plan),
-			limits: resolved.descriptor.limits,
-			cyclePeriodMs: state.plcConfig.scanTimeMs,
+		const prepared = prepareBoardProgram(this.context, project, resolved, {
+			publishAnalysis: true,
+			onFailed: (failure) => notifier.programUploadFailed(failure),
 		});
-		if (built.kind === "failed") {
-			notifier.programUploadFailed(built.failure);
-			return;
-		}
-		if (built.kind === "blocked") {
-			notifier.programBlocked(built.issues);
-			return;
-		}
-		const { image } = built;
+		if (!prepared) return;
+		const { image } = prepared;
 
 		if (!(await this.context.ensureLink("upload"))) return;
 		const client = session.client;
@@ -88,7 +68,7 @@ export default class BoardProgramController {
 			this.setUploadState(IDLE_HARDWARE_UPLOAD);
 			// A lost link has already been reported and reset.
 			if (!session.isCurrent(attempt)) return;
-			notifier.programUploadFailed(uploadFailureOf(error));
+			notifier.programUploadFailed(remoteIoFailureCode(error));
 			if (temporary) await this.context.unlink();
 			return;
 		}
@@ -227,11 +207,7 @@ export default class BoardProgramController {
 	private reportCommandFailure(error: unknown, attempt: number) {
 		// A lost link has already been reported and reset.
 		if (!this.context.session.isCurrent(attempt)) return;
-		this.context.notifier.programCommandFailed(
-			error instanceof RemoteIoError && isRemoteIoUploadError(error.code)
-				? error.code
-				: "transport",
-		);
+		this.context.notifier.programCommandFailed(remoteIoFailureCode(error));
 	}
 
 	private setBoardMode(
@@ -260,11 +236,4 @@ function boardModeOf(
 	if (state === "running") return "program-running";
 	if (state === "stopped" || state === "fault") return "program-stopped";
 	return current === "remote-io" ? "remote-io" : "idle";
-}
-
-function uploadFailureOf(error: unknown): ProgramUploadFailure {
-	if (error instanceof RemoteIoError && isRemoteIoUploadError(error.code)) {
-		return error.code;
-	}
-	return "transport";
 }

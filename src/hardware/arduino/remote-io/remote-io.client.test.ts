@@ -3,9 +3,14 @@ import FakeRemoteIoBoard, {
 } from "@tests/utils/fake-remote-io-board";
 import { encodeFrame } from "./frame";
 import generateBytecode from "@/bytecode/bytecode.generator";
-import { compiledProject, plcVariable } from "@tests/utils/bytecode-program";
+import {
+	compiledProject,
+	plcVariable,
+	UNO_PIN_RANGE,
+} from "@tests/utils/bytecode-program";
 import RemoteIoClient, {
 	RemoteIoError,
+	remoteIoFailureCode,
 	type RemoteIoInputValues,
 	type RemoteIoState,
 } from "./remote-io.client";
@@ -61,6 +66,18 @@ function setup(
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
+
+/** Holds every board answer until `release` is called, like a slow serial link. */
+const holdAnswers = (board: FakeRemoteIoBoard) => {
+	const target = board as unknown as { answer: (frame: unknown) => void };
+	const original = target.answer.bind(board);
+	const held: Array<() => void> = [];
+	target.answer = (frame) => held.push(() => original(frame));
+	return {
+		release: () => held.splice(0).forEach((answer) => answer()),
+		pending: () => held.length,
+	};
+};
 
 describe("RemoteIoClient.connect", () => {
 	it("pings, reads the PONG, sends the configuration and becomes linked", async () => {
@@ -316,6 +333,85 @@ describe("RemoteIoClient outputs", () => {
 		expect(images.at(-1)).toEqual({ "13": 1, "9": 0 });
 	});
 
+	it("sends no frame when setOutputs repeats the same values", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		client.setOutputs({ led: true, pwm: 50 });
+		await flush();
+		const before = board.outImages().length;
+
+		client.setOutputs({ led: true, pwm: 50 });
+		client.setOutputs({ led: true });
+		await flush();
+
+		expect(board.outImages().length).toBe(before);
+	});
+
+	it("sends exactly one full image when a value changes", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		client.setOutputs({ led: true, pwm: 50 });
+		await flush();
+		const before = board.outImages().length;
+
+		client.setOutputs({ led: true, pwm: 60 });
+		await flush();
+
+		const images = board.outImages();
+		expect(images.length).toBe(before + 1);
+		expect(images.at(-1)).toEqual({ "13": 1, "9": 60 });
+	});
+
+	it("sends nothing for unknown variables or values saturating to the stored one", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		client.setOutputs({ pwm: 300 });
+		await flush();
+		const before = board.outImages().length;
+
+		client.setOutputs({ inconnue: 5 });
+		client.setOutputs({ pwm: 400 });
+		await flush();
+
+		expect(board.outImages().length).toBe(before);
+	});
+
+	it("still sends the full image on a heartbeat tick when nothing changed", async () => {
+		const { board, client, heartbeat } = setup();
+		await client.connect();
+		client.setOutputs({ led: true });
+		await flush();
+		const before = board.outImages().length;
+
+		client.setOutputs({ led: true });
+		heartbeat.state.tick!();
+		await flush();
+
+		const images = board.outImages();
+		expect(images.length).toBe(before + 1);
+		expect(images.at(-1)).toEqual({ "13": 1, "9": 0 });
+	});
+
+	it("compares against the minimum image after a fallback", async () => {
+		const { board, client, heartbeat } = setup();
+		await client.connect();
+		client.setOutputs({ led: true });
+		await flush();
+		heartbeat.state.tick!();
+		await flush();
+		await client.fallback();
+		await flush();
+		const before = board.outImages().length;
+
+		client.setOutputs({ led: false });
+		await flush();
+		expect(board.outImages().length).toBe(before);
+
+		client.setOutputs({ led: true });
+		await flush();
+		expect(board.outImages().length).toBe(before + 1);
+	});
+
 	it("sends an all-zero image right after connecting through the heartbeat", async () => {
 		const { board, client, heartbeat } = setup();
 		await client.connect();
@@ -437,7 +533,7 @@ describe("RemoteIoClient.reconfigure", () => {
 	});
 
 	it("resets outputs and ignores input images until the board acknowledges", async () => {
-		const { board, client } = setup();
+		const { board, client, heartbeat } = setup();
 		const received: RemoteIoInputValues[] = [];
 		client.onInputs((values) => received.push(values));
 		await client.connect();
@@ -448,7 +544,7 @@ describe("RemoteIoClient.reconfigure", () => {
 		await reconfiguring;
 
 		expect(received).toEqual([]);
-		client.setOutputs({});
+		heartbeat.state.tick!();
 		await flush();
 		expect(board.outImages().at(-1)).toEqual({ "12": 0 });
 	});
@@ -489,6 +585,7 @@ describe("RemoteIoClient.uploadProgram", () => {
 			}),
 			ioBindings: [],
 			cyclePeriodMs: 100,
+			pinRange: UNO_PIN_RANGE,
 		}).bytes;
 	const frames = (board: FakeRemoteIoBoard, command: string) =>
 		board.received.filter((frame) => frame.command === command);
@@ -589,10 +686,10 @@ describe("RemoteIoClient.uploadProgram", () => {
 		);
 	});
 
-	it("fails with upload-timeout when the board stops answering, and restores the link", async () => {
+	it("fails with exchange-timeout when the board stops answering, and restores the link", async () => {
 		const { board, client, heartbeat } = await linked({ dropChunks: 99 });
 		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
-			code: "upload-timeout",
+			code: "exchange-timeout",
 		});
 		expect(client.getState()).toBe("linked");
 		expect(heartbeat.state.stopped).toBe(false);
@@ -600,21 +697,21 @@ describe("RemoteIoClient.uploadProgram", () => {
 		expect(board.autonomous).toBe(false);
 	});
 
-	it("fails with upload-rejected when the image does not fit", async () => {
+	it("fails with exchange-rejected when the image does not fit", async () => {
 		const { client } = await linked({ programCapacity: 20 });
 		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 			detail: "PROG_SIZE",
 		});
 		expect(client.getState()).toBe("linked");
 	});
 
-	it("fails with upload-rejected when the board refuses the final check", async () => {
+	it("fails with exchange-rejected when the board refuses the final check", async () => {
 		const { board, client } = await linked({
 			rejectProgramEnd: "PROG_INVALID",
 		});
 		await expect(uploadImage(client, imageOf(5))).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 			detail: "PROG_INVALID",
 		});
 		expect(board.program).toBeNull();
@@ -649,7 +746,7 @@ describe("RemoteIoClient.requestStatus", () => {
 		await client.connect();
 		(board as unknown as { answer: () => void }).answer = () => {};
 		await expect(client.requestStatus()).rejects.toMatchObject({
-			code: "upload-timeout",
+			code: "exchange-timeout",
 		});
 	});
 });
@@ -663,6 +760,7 @@ describe("RemoteIoClient.runProgram and stopProgram", () => {
 			}),
 			ioBindings: [],
 			cyclePeriodMs: 100,
+			pinRange: UNO_PIN_RANGE,
 		}).bytes;
 	const linkedWithProgram = async () => {
 		const context = setup();
@@ -717,7 +815,7 @@ describe("RemoteIoClient.runProgram and stopProgram", () => {
 		await client.connect();
 
 		await expect(client.runProgram()).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 			detail: "PROG_INVALID",
 		});
 
@@ -824,7 +922,7 @@ describe("RemoteIoClient telemetry", () => {
 				onSnapshot,
 				onProgramMismatch: jest.fn(),
 			}),
-		).rejects.toMatchObject({ code: "upload-timeout" });
+		).rejects.toMatchObject({ code: "exchange-timeout" });
 		board.emitTelemetry([1, 2, 3, 4], { cycle: 1, tag: 1 });
 		expect(onSnapshot).not.toHaveBeenCalled();
 	});
@@ -879,7 +977,7 @@ describe("RemoteIoClient variable writes", () => {
 	it("reports the refusal of the board for an unknown variable", async () => {
 		const { client } = await running();
 		await expect(client.forceVariable(99, 1)).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 			detail: "FORCE_INDEX",
 		});
 	});
@@ -888,7 +986,7 @@ describe("RemoteIoClient variable writes", () => {
 		const { board, client } = await running();
 		board.autonomous = false;
 		await expect(client.writeVariable(0, 1)).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 			detail: "FORCE_STATE",
 		});
 	});
@@ -944,7 +1042,7 @@ describe("RemoteIoClient without remote I/O", () => {
 		await context.client.connect({ remoteIo: false });
 		const image = new Uint8Array(40);
 		await expect(context.client.uploadProgram(image, 1)).rejects.toMatchObject({
-			code: "upload-rejected",
+			code: "exchange-rejected",
 		});
 		expect(
 			context.board.received.filter((frame) => frame.command === "CFG"),
@@ -953,7 +1051,65 @@ describe("RemoteIoClient without remote I/O", () => {
 	});
 });
 
+describe("RemoteIoClient exchanges are serialized", () => {
+	const commands = (board: FakeRemoteIoBoard) =>
+		board.received.map((frame) => frame.command);
+
+	it("keeps the STATUS answer when a reconfiguration is requested meanwhile", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const link = holdAnswers(board);
+
+		const status = client.requestStatus();
+		await flush();
+		const reconfiguration = client.reconfigure({ ...PLAN, pins: [] });
+		await flush();
+		expect(commands(board).at(-1)).toBe("STATUS");
+
+		link.release();
+		await expect(status).resolves.toMatchObject({ state: "remote-io" });
+		await flush();
+		expect(commands(board).at(-1)).toBe("CFG");
+		link.release();
+		await expect(reconfiguration).resolves.toBeUndefined();
+	});
+
+	it("waits for the configuration before asking the status", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const link = holdAnswers(board);
+
+		const reconfiguration = client.reconfigure(PLAN);
+		await flush();
+		const status = client.requestStatus();
+		await flush();
+		expect(commands(board).at(-1)).toBe("CFG");
+
+		link.release();
+		await expect(reconfiguration).resolves.toBeUndefined();
+		await flush();
+		expect(commands(board).at(-1)).toBe("STATUS");
+		link.release();
+		await expect(status).resolves.toMatchObject({ state: "remote-io" });
+	});
+});
+
 describe("RemoteIoClient.leaveRemoteIo", () => {
+	it("reports a configuration the board rejects", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const target = board as unknown as {
+			answer: (frame: { command: string }) => void;
+			emit: (line: string) => void;
+		};
+		target.answer = (frame) => {
+			if (frame.command === "CFG") target.emit(encodeFrame("ERR", ["pin"]));
+		};
+		await expect(client.leaveRemoteIo()).rejects.toMatchObject({
+			code: "config-rejected",
+		});
+	});
+
 	it("drops the outputs and leaves the board with no pins configured", async () => {
 		const { board, client, heartbeat } = setup();
 		await client.connect();
@@ -996,5 +1152,130 @@ describe("RemoteIoClient.leaveRemoteIo", () => {
 	it("refuses when not linked", async () => {
 		const { client } = setup();
 		await expect(client.leaveRemoteIo()).rejects.toThrow("not linked");
+	});
+
+	it("stops following a watched program", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const onSnapshot = jest.fn();
+		await client.startWatching({
+			memorySize: 4,
+			imageId: 0x1234abcd,
+			onSnapshot,
+			onProgramMismatch: jest.fn(),
+		});
+
+		await client.leaveRemoteIo();
+		board.emitTelemetry([1, 2, 3, 4], { cycle: 1, tag: 0xabcd });
+
+		expect(onSnapshot).not.toHaveBeenCalled();
+	});
+});
+
+describe("RemoteIoClient restores remote I/O after a failed exchange", () => {
+	const silenceConfiguration = (board: FakeRemoteIoBoard) => {
+		const target = board as unknown as {
+			answer: (frame: { command: string }) => void;
+		};
+		const original = target.answer.bind(board);
+		target.answer = (frame) => {
+			if (frame.command !== "CFG") original(frame);
+		};
+	};
+	const lostWith = async (client: RemoteIoClient, action: Promise<unknown>) => {
+		const lost: RemoteIoError[] = [];
+		client.onLinkLost((error) => lost.push(error));
+		await expect(action).rejects.toBeInstanceOf(RemoteIoError);
+		await flush();
+		return lost;
+	};
+
+	it("ignores input images while a transfer is in progress", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		const received: RemoteIoInputValues[] = [];
+		client.onInputs((values) => received.push(values));
+		const link = holdAnswers(board);
+
+		const upload = client.uploadProgram(new Uint8Array(100), 1);
+		await flush();
+		board.emitInputs({ "2": 0 });
+		link.release();
+		await flush();
+		board.emitInputs({ "2": 0 });
+		expect(received).toEqual([]);
+
+		link.release();
+		await upload.catch(() => {});
+	});
+
+	it("delivers input images again after a failed transfer", async () => {
+		const { board, client } = setup({ dropChunks: 99 });
+		await client.connect();
+		const received: RemoteIoInputValues[] = [];
+		client.onInputs((values) => received.push(values));
+
+		await expect(
+			client.uploadProgram(new Uint8Array(10), 1),
+		).rejects.toBeInstanceOf(RemoteIoError);
+		board.emitInputs({ "2": 0 });
+
+		expect(received).toHaveLength(1);
+	});
+
+	it("ends the link when the board is lost after a failed transfer", async () => {
+		const { board, client } = setup({ rejectProgramEnd: "PROG_INVALID" });
+		await client.connect();
+		silenceConfiguration(board);
+
+		const lost = await lostWith(
+			client,
+			client.uploadProgram(new Uint8Array(10), 1),
+		);
+
+		expect(lost).toHaveLength(1);
+		expect(lost[0]).toMatchObject({
+			code: "transport",
+			detail: "board lost after a failed upload",
+		});
+		expect(client.getState()).toBe("disconnected");
+	});
+
+	it("ends the link when the board is lost after a refused command", async () => {
+		const { board, client } = setup();
+		await client.connect();
+		silenceConfiguration(board);
+
+		const lost = await lostWith(client, client.runProgram());
+
+		expect(lost).toHaveLength(1);
+		expect(lost[0]).toMatchObject({
+			code: "transport",
+			detail: "board lost after a refused command",
+		});
+		expect(client.getState()).toBe("disconnected");
+	});
+});
+
+describe("remoteIoFailureCode", () => {
+	it.each([
+		"exchange-rejected",
+		"exchange-timeout",
+		"exchange-mismatch",
+	] as const)("returns the %s code of a failed exchange as is", (code) => {
+		expect(remoteIoFailureCode(new RemoteIoError(code))).toBe(code);
+	});
+
+	it.each(["config-rejected", "handshake-timeout"] as const)(
+		"maps the %s code, which is not an exchange failure, to transport",
+		(code) => {
+			expect(remoteIoFailureCode(new RemoteIoError(code))).toBe("transport");
+		},
+	);
+
+	it("maps any other failure to transport", () => {
+		expect(remoteIoFailureCode(new Error("boom"))).toBe("transport");
+		expect(remoteIoFailureCode("exchange-timeout")).toBe("transport");
+		expect(remoteIoFailureCode(undefined)).toBe("transport");
 	});
 });

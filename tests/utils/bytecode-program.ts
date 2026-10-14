@@ -12,6 +12,7 @@ import {
 	SYS_ENTRY_SIZE,
 	ROUTINE_ENTRY_SIZE,
 } from "@/bytecode/bytecode-format";
+import arduinoUnoR3 from "@/hardware/arduino/uno-r3.descriptor";
 import type { CompiledProject } from "@/project-compiler/project.compiler";
 import PLCRoutine from "@/simulator/core/plc/plc-routine";
 import PLCVariable, {
@@ -21,6 +22,9 @@ import { getNumericRange } from "@/schemas/variable/variable.schema";
 import type { VariableType } from "@/schemas/variable/variable.schema";
 import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import { VARIABLE_TYPE_TO_NATIVE_TYPE } from "@/schemas/variable/variable.schema";
+
+/** Pin range of the Uno R3 firmware. */
+export const UNO_PIN_RANGE = arduinoUnoR3.limits.vm.pinRange;
 
 /** `name:TYPE` (declared type) or `name:internal-bool` / `name:internal-number`. */
 export function plcVariable(

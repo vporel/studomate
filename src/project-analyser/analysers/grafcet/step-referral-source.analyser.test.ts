@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -16,7 +17,9 @@ describe("StepReferralSourceAnalyser", () => {
 				.targetStepNumber(5)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -27,7 +30,9 @@ describe("StepReferralSourceAnalyser", () => {
 				.targetStepNumber("")
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -42,6 +47,7 @@ describe("StepReferralSourceAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(referral, {
 				allowEmptyContent: true,
+				dialect: Dialect.FR,
 			});
 
 			expect(issues).toHaveLength(0);
@@ -53,7 +59,9 @@ describe("StepReferralSourceAnalyser", () => {
 				.targetStepNumber(-1)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -66,7 +74,9 @@ describe("StepReferralSourceAnalyser", () => {
 				.targetStepNumber(2.5)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -79,7 +89,9 @@ describe("StepReferralSourceAnalyser", () => {
 				.targetStepNumber(0)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -104,7 +116,9 @@ describe("StepReferralSourceAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const notExistIssue = issues.find((i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND");
+			const notExistIssue = issues.find(
+				(i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
+			);
 			expect(notExistIssue).toBeDefined();
 			expect(notExistIssue?.severity).toBe("error");
 		});
@@ -143,8 +157,8 @@ describe("StepReferralSourceAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const notExistIssues = issues.filter((i) =>
-				i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
+			const notExistIssues = issues.filter(
+				(i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 			);
 			expect(notExistIssues).toHaveLength(0);
 		});
@@ -205,8 +219,8 @@ describe("StepReferralSourceAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const selfRefIssue = issues.find((i) =>
-				i.code === "STEP_REFERRAL_SELF_REFERENCE",
+			const selfRefIssue = issues.find(
+				(i) => i.code === "STEP_REFERRAL_SELF_REFERENCE",
 			);
 			expect(selfRefIssue).toBeDefined();
 			expect(selfRefIssue?.severity).toBe("error");

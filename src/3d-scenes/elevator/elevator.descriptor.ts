@@ -1,24 +1,8 @@
-import type {
-	SceneDescriptor,
-	ScenePointDescriptor,
-} from "../scene.descriptor";
+import { createPointFactory, type SceneDescriptor } from "../scene.descriptor";
 
 const LABEL_PREFIX = "elevator.points";
 
-function point(
-	id: string,
-	kind: ScenePointDescriptor["kind"],
-	valueType: ScenePointDescriptor["valueType"],
-	suggestedMnemonic: string,
-): ScenePointDescriptor {
-	return {
-		id,
-		kind,
-		valueType,
-		labelKey: `${LABEL_PREFIX}.${id}`,
-		suggestedMnemonic,
-	};
-}
+const point = createPointFactory(LABEL_PREFIX);
 
 const ElevatorDescriptor: SceneDescriptor = {
 	id: "elevator",

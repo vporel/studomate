@@ -1,11 +1,11 @@
 import arduinoIoBindings from "@/bytecode/arduino-io-bindings";
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import {
-	isRemoteIoUploadError,
+	isRemoteIoExchangeError,
 	RemoteIoError,
 } from "@/hardware/arduino/remote-io/remote-io.client";
 import buildRemoteIoPlan from "@/hardware/arduino/remote-io/remote-io-plan";
-import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
+import { getHardwareDevice } from "@/hardware/hardware-device.registry";
 import type PLCVariable from "@/simulator/core/plc/plc-variable";
 import type {
 	ProjectStoreGetFunction,
@@ -292,7 +292,7 @@ export default class HardwareLinkManager {
 		const project = this.getStoreState().project;
 		const target = project?.hardwareTarget;
 		if (!project || !target || target.modelId !== "arduino-uno-r3") return null;
-		const descriptor = HardwareDeviceRegistry.get(target.modelId);
+		const descriptor = getHardwareDevice(target.modelId);
 		if (!descriptor) return null;
 		return {
 			plan: buildRemoteIoPlan(target, project.variables, descriptor),
@@ -326,7 +326,7 @@ export default class HardwareLinkManager {
 		if (error instanceof RemoteIoError) {
 			if (error.code === "cancelled") return;
 			this.context.notifier.linkFailed(
-				isRemoteIoUploadError(error.code) ? "transport" : error.code,
+				isRemoteIoExchangeError(error.code) ? "transport" : error.code,
 			);
 			return;
 		}

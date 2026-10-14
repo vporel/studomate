@@ -2,6 +2,10 @@ import Variable, { VariableZone } from "@/schemas/variable/variable.schema";
 import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
 import { PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
 import { PdfTableModel } from "@/ui/lib/pdf/pdf-table";
+import {
+	VARIABLES_PAGES,
+	type VariableGroupKey,
+} from "@/ui/stores/project/variables-pages";
 
 export interface VariablesTablePdfLabels {
 	mnemonic: string;
@@ -20,14 +24,17 @@ const COLUMN_WIDTHS = {
 	comment: 165,
 };
 
+export type VariablesTableColumns = "address" | "declaredValue";
+
 export function buildVariablesTableModel(
 	variables: Variable[],
 	labels: VariablesTablePdfLabels,
+	columns: VariablesTableColumns,
 ): PdfTableModel {
 	const sorted = [...variables].sort((a, b) =>
 		a.mnemonic.localeCompare(b.mnemonic),
 	);
-	if (sorted.some((v) => v.zone === "constant")) {
+	if (columns === "declaredValue") {
 		return {
 			columns: [
 				{ header: labels.mnemonic, width: COLUMN_WIDTHS.mnemonic },
@@ -41,7 +48,12 @@ export function buildVariablesTableModel(
 						COLUMN_WIDTHS.declaredValue,
 				},
 			],
-			rows: sorted.map((v) => [v.mnemonic, v.type, v.value ?? "", v.comment ?? ""]),
+			rows: sorted.map((v) => [
+				v.mnemonic,
+				v.type,
+				v.value ?? "",
+				v.comment ?? "",
+			]),
 		};
 	}
 	return {
@@ -68,30 +80,18 @@ export function buildVariablesTableSection(
 	title: string,
 	variables: Variable[],
 	labels: VariablesTablePdfLabels,
+	columns: VariablesTableColumns,
 ): PdfExportSection {
 	return {
 		title,
 		orientation: "landscape",
-		table: buildVariablesTableModel(variables, labels),
+		table: buildVariablesTableModel(variables, labels, columns),
 	};
 }
 
-/** Groupes de variables, calqués sur les pages entrées / sorties / mémoires. */
-export type VariableGroupKey = "input" | "output" | "memory" | "constant";
-
-export const VARIABLE_GROUP_KEYS: VariableGroupKey[] = [
-	"input",
-	"output",
-	"memory",
-	"constant",
-];
-
-const GROUP_ZONES: Record<VariableGroupKey, VariableZone[]> = {
-	input: ["logic-input", "analog-input"],
-	output: ["logic-output", "analog-output"],
-	memory: ["memory"],
-	constant: ["constant"],
-};
+export const VARIABLE_GROUP_KEYS: VariableGroupKey[] = VARIABLES_PAGES.map(
+	(page) => page.group,
+);
 
 export interface ProjectVariablesPdfLabels {
 	columns: VariablesTablePdfLabels;
@@ -109,11 +109,12 @@ export function buildVariableGroupSection(
 	title: string,
 	columns: VariablesTablePdfLabels,
 ): PdfExportSection {
-	const zones = GROUP_ZONES[key];
+	const page = VARIABLES_PAGES.find((p) => p.group === key)!;
+	const zones: readonly VariableZone[] = page.zones;
 	const group = variables.filter(
 		(v) => zones.includes(v.zone) && !v.ownerBlock,
 	);
-	return buildVariablesTableSection(title, group, columns);
+	return buildVariablesTableSection(title, group, columns, page.columns);
 }
 
 /** Une section par groupe non vide (entrées, sorties, mémoires, constantes). */
@@ -137,6 +138,7 @@ export async function exportVariablesTablePdf(params: {
 	title: string;
 	variables: Variable[];
 	labels: VariablesTablePdfLabels;
+	columns: VariablesTableColumns;
 }): Promise<void> {
 	await new JsPdfExporter().export({
 		filename: params.filename,
@@ -145,6 +147,7 @@ export async function exportVariablesTablePdf(params: {
 				params.title,
 				params.variables,
 				params.labels,
+				params.columns,
 			),
 		],
 	});

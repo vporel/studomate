@@ -24,7 +24,8 @@ import { HARDWARE_CONFIGURATION_PAGE_DATA } from "./HardwareConfigurationPage";
 import { SCENE3D_CONFIGURATION_PAGE_DATA } from "./Scene3dConfigurationPage";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
-import { getVariablesPageData, VariablesPageId } from "./VariablesPage";
+import { VARIABLES_PAGE_IDS } from "@/ui/stores/project/variables-pages";
+import { getVariablesPageData } from "./VariablesPage";
 
 export const PROJECT_STARTUP_PAGE_ID = "project-startup";
 export const PROJECT_STARTUP_PAGE_DATA: PageData = {
@@ -36,13 +37,7 @@ export const PROJECT_STARTUP_PAGE_DATA: PageData = {
 function VariblesPagesList() {
 	const t = useT("pages.startup");
 	const pageTitle = usePageTitle();
-	const pagedsIds: VariablesPageId[] = [
-		"input-variables",
-		"output-variables",
-		"memory-variables",
-		"constant-variables",
-	];
-	const pagesData = pagedsIds.map((id) => getVariablesPageData(id));
+	const pagesData = VARIABLES_PAGE_IDS.map((id) => getVariablesPageData(id));
 	const pagesManager = useProjectStore((state) => state.pagesManager);
 
 	return (
@@ -92,9 +87,7 @@ function ProgramsList() {
 				{t("programs")}
 			</Typography>
 			{programs.length === 0 && (
-				<Typography color="rgb(80, 80, 80)">
-					{t("noPrograms")}
-				</Typography>
+				<Typography color="rgb(80, 80, 80)">{t("noPrograms")}</Typography>
 			)}
 			{programs.map((program) => (
 				<MenuItem

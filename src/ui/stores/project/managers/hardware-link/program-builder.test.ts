@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import * as generator from "@/bytecode/bytecode.generator";
 import BytecodeGenerationError from "@/bytecode/bytecode.error";
 import arduinoUnoR3 from "@/hardware/arduino/uno-r3.descriptor";
@@ -13,12 +14,18 @@ import buildProgram from "./program-builder";
 
 function setup(withGrafcet = false) {
 	VariableFactory.reset();
-	const button = VariableFactory.createLogicInput("BP", "bp").update({
-		address: "%PD2",
-	});
-	const lamp = VariableFactory.createLogicOutput("LAMPE", "lampe").update({
-		address: "%PD13",
-	});
+	const button = VariableFactory.createLogicInput("BP", "bp").update(
+		{
+			address: "%PD2",
+		},
+		Dialect.FR,
+	);
+	const lamp = VariableFactory.createLogicOutput("LAMPE", "lampe").update(
+		{
+			address: "%PD13",
+		},
+		Dialect.FR,
+	);
 	const grafcets = withGrafcet
 		? [GrafcetFactory.createSimpleCycle("g1", "BP", "NON BP")]
 		: [];

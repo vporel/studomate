@@ -20,22 +20,7 @@ export default class VariablesRemoveCommand extends AbstractProjectCommand<
 
 	cancel(project: Project): Project {
 		project.variables.push(
-			...this.payload.map((v) => {
-				const variable = new Variable(
-					v.id,
-					v.mnemonic,
-					v.zone,
-					v.type,
-					undefined,
-					v.value,
-					project.dialect,
-				);
-				if (v.address) variable.address = v.address;
-				if (v.comment) variable.comment = v.comment;
-				return v.behavior
-					? variable.update({ behavior: v.behavior }, project.dialect)
-					: variable;
-			}),
+			...this.payload.map((v) => Variable.fromData(v, project.dialect)),
 		);
 		return project;
 	}

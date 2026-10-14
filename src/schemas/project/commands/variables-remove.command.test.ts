@@ -96,6 +96,37 @@ describe("VariablesRemoveCommand", () => {
 	});
 });
 
+describe("VariablesRemoveCommand round trip", () => {
+	it("restaure address, comment et behavior après remove puis cancel", () => {
+		const project = new Project("p1", "Projet", "");
+		const payload = [
+			{
+				id: "v1",
+				mnemonic: "arret",
+				zone: "logic-input" as const,
+				type: "BOOL" as const,
+				address: "%I0.0",
+				comment: "bouton",
+				behavior: { kind: "push-button-nc" as const, params: null },
+			},
+		];
+		new VariablesAddCommand(payload).execute(project);
+		const added = JSON.stringify(project.variables);
+		const command = new VariablesRemoveCommand(payload);
+
+		command.execute(project);
+		expect(project.variables).toEqual([]);
+		command.cancel(project);
+
+		expect(JSON.stringify(project.variables)).toBe(added);
+		expect(project.variables[0]).toMatchObject({
+			address: "%I0.0",
+			comment: "bouton",
+			behavior: { kind: "push-button-nc", params: null },
+		});
+	});
+});
+
 describe("VariablesRemoveCommand constants", () => {
 	it("cancel restores a constant with its value", () => {
 		const project = new Project("p1", "Projet", "");

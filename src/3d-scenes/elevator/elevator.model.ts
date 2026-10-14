@@ -1,3 +1,4 @@
+import { clamp } from "@/3d-scenes/scene-math";
 import type { SceneModel, ScenePointValues } from "../scene-model";
 
 /** Height of the shaft, from the ground floor (0) to the top floor. */
@@ -27,10 +28,6 @@ export interface ElevatorState {
 	doorOpenMs: number;
 	/** Set once the door has been held open long enough; released when it is closed again. */
 	doorHoldElapsed: boolean;
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
 }
 
 const ElevatorModel: SceneModel<ElevatorState, never> = {

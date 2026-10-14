@@ -1,3 +1,4 @@
+import { UNO_PIN_RANGE } from "@tests/utils/bytecode-program";
 import generateBytecode from "@/bytecode/bytecode.generator";
 import PLC from "@/simulator/core/plc/plc";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
@@ -21,6 +22,7 @@ function compareObservations(id: string, cycles: number) {
 		compiled,
 		ioBindings: [],
 		cyclePeriodMs: 100,
+		pinRange: UNO_PIN_RANGE,
 	});
 	const mirror = new BoardMirror(compiled);
 	const observationIds = new Set(

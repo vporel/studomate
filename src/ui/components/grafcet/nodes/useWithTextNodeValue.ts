@@ -65,12 +65,14 @@ export default function useWithTextNodeValue(
 			_setValue(newValue);
 			//Check errors
 			const transformedValue = transformValue(newValue);
-			const grafcet = store!.getState().grafcet!;
-			const elementCopy = grafcet.getElementById(nodeId)!.copy();
+			const { grafcet, getDialect } = store!.getState();
+			const elementCopy = grafcet!.getElementById(nodeId)!.copy();
 			elementCopy.updateData({ [valueProperty]: transformedValue });
 			const issues =
-				analyser?.analyseIsolated(elementCopy, { allowEmptyContent: true }) ??
-				[];
+				analyser?.analyseIsolated(elementCopy, {
+					allowEmptyContent: true,
+					dialect: getDialect(),
+				}) ?? [];
 			const errors = issues.filter((issue) => issue.severity === "error");
 			setError(
 				errors.length > 0 ? formatAnalysisIssue(errors[0], locale) : false,

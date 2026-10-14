@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import {
 	ActionExecutionMode,
@@ -17,6 +18,7 @@ import { getAutoOpenHmiSimulationOnStart } from "@/persistence/preferences.stora
 import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compileProject } from "@tests/utils/test-helpers";
+import { stubLocalStorage } from "@tests/utils/local-storage-stub";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
@@ -24,6 +26,9 @@ jest.mock("@/persistence/preferences.storage", () => ({
 	...jest.requireActual("@/persistence/preferences.storage"),
 	getAutoOpenHmiSimulationOnStart: jest.fn(() => true),
 }));
+
+const plcOf = (manager: SimulationManager) =>
+	(manager as unknown as { plc: { onCycleError(error: unknown): void } }).plc;
 
 function stubNotifier(): SimulationNotifier {
 	return {
@@ -513,12 +518,18 @@ describe("SimulationManager", () => {
 
 	describe("comportement physique des entrées", () => {
 		it("démarre une entrée NF à VRAI et ramène l'écriture d'un curseur à sa borne", async () => {
-			const arret = VariableFactory.createLogicInput("arret").update({
-				behavior: { kind: "push-button-nc", params: null },
-			});
-			const niveau = VariableFactory.createAnalogInput("niveau").update({
-				behavior: { kind: "slider", params: { min: 0, max: 100 } },
-			});
+			const arret = VariableFactory.createLogicInput("arret").update(
+				{
+					behavior: { kind: "push-button-nc", params: null },
+				},
+				Dialect.FR,
+			);
+			const niveau = VariableFactory.createAnalogInput("niveau").update(
+				{
+					behavior: { kind: "slider", params: { min: 0, max: 100 } },
+				},
+				Dialect.FR,
+			);
 			const grafcet = GrafcetFactory.createSimpleCycle(
 				"g1",
 				"arret",
@@ -701,7 +712,7 @@ describe("SimulationManager", () => {
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
 			// Simule un crash de cycle en appelant directement le callback enregistré sur le PLC.
-			(manager as any).plc.onCycleError(new Error("boom"));
+			plcOf(manager).onCycleError(new Error("boom"));
 
 			expect(notifier.simulationCrashed).toHaveBeenCalled();
 			expect(get().mode).toBe(ProjectMode.DESIGN);
@@ -718,8 +729,12 @@ describe("SimulationManager", () => {
 
 			manager.setSimulationMode();
 			await jest.advanceTimersByTimeAsync(20);
-			(manager as any).plc.onCycleError(
-				new DivisionByZeroException(10, 0, null as any),
+			plcOf(manager).onCycleError(
+				new DivisionByZeroException(10, 0, {
+					id: "n1",
+					type: "NUMBER_LITERAL",
+					value: 0,
+				}),
 			);
 
 			expect(notifier.simulationCrashed).toHaveBeenCalledWith(
@@ -1005,15 +1020,13 @@ describe("SimulationManager", () => {
 	});
 
 	describe("mode de simulation persisté", () => {
-		const original = (globalThis as any).localStorage;
-		afterEach(() => {
-			(globalThis as any).localStorage = original;
-		});
+		let restoreLocalStorage: () => void = () => {};
+		afterEach(() => restoreLocalStorage());
 
 		it("relit le mode pas à pas depuis le stockage", () => {
-			(globalThis as any).localStorage = {
+			restoreLocalStorage = stubLocalStorage({
 				getItem: () => SimulationMode.STEP_BY_STEP,
-			};
+			});
 
 			expect(SimulationManager.getPersistedSimulationMode()).toBe(
 				SimulationMode.STEP_BY_STEP,
@@ -1021,11 +1034,11 @@ describe("SimulationManager", () => {
 		});
 
 		it("retombe sur le mode continu quand le stockage est indisponible", () => {
-			(globalThis as any).localStorage = {
+			restoreLocalStorage = stubLocalStorage({
 				getItem: () => {
 					throw new Error("blocked");
 				},
-			};
+			});
 
 			expect(SimulationManager.getPersistedSimulationMode()).toBe(
 				SimulationMode.CONTINUOUS,
@@ -1033,11 +1046,11 @@ describe("SimulationManager", () => {
 		});
 
 		it("applique le mode même si l'écriture dans le stockage échoue", () => {
-			(globalThis as any).localStorage = {
+			restoreLocalStorage = stubLocalStorage({
 				setItem: () => {
 					throw new Error("blocked");
 				},
-			};
+			});
 			const { get, set } = makeStore(ProjectFactory.createEmpty());
 			const manager = new SimulationManager(set, get, stubNotifier());
 
@@ -1133,6 +1146,13 @@ describe("SimulationManager", () => {
 				const { get, manager } = startWithScene();
 				expect(get().simulationVariablesStates["i0"]?.value).toBe(true);
 				manager.setDesignMode();
+			});
+
+			it("publie les entrées pilotées par la scène dans le store, vidées à l'arrêt", () => {
+				const { get, manager } = startWithScene();
+				expect(get().scene3dDrivenInputIds).toEqual(["i0"]);
+				manager.setDesignMode();
+				expect(get().scene3dDrivenInputIds).toEqual([]);
 			});
 
 			it("ignore une saisie de l'IHM sur une entrée pilotée par un capteur de la scène", () => {

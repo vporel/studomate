@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -21,7 +22,9 @@ describe("JunctionAndEndAnalyser", () => {
 				.nBranches(2)
 				.build();
 
-			const issues = analyser.analyseIsolated(junction);
+			const issues = analyser.analyseIsolated(junction, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -32,7 +35,9 @@ describe("JunctionAndEndAnalyser", () => {
 				.nBranches(5)
 				.build();
 
-			const issues = analyser.analyseIsolated(junction);
+			const issues = analyser.analyseIsolated(junction, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -55,7 +60,9 @@ describe("JunctionAndEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const pivotIssue = issues.find((i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED");
+			const pivotIssue = issues.find(
+				(i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED",
+			);
 			expect(pivotIssue).toBeDefined();
 			expect(pivotIssue?.severity).toBe("error");
 		});
@@ -82,7 +89,9 @@ describe("JunctionAndEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const branchIssue = issues.find((i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED");
+			const branchIssue = issues.find(
+				(i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED",
+			);
 			expect(branchIssue).toBeDefined();
 			expect(branchIssue?.severity).toBe("error");
 		});
@@ -120,8 +129,8 @@ describe("JunctionAndEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const divergenceIssue = issues.find((i) =>
-				i.code === "JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
+			const divergenceIssue = issues.find(
+				(i) => i.code === "JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
 			);
 			expect(divergenceIssue).toBeDefined();
 			expect(divergenceIssue?.severity).toBe("error");
@@ -137,8 +146,8 @@ describe("JunctionAndEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const divergenceIssue = issues.find((i) =>
-				i.code === "JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
+			const divergenceIssue = issues.find(
+				(i) => i.code === "JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE",
 			);
 			expect(divergenceIssue).toBeDefined();
 			expect(divergenceIssue?.severity).toBe("error");
@@ -154,8 +163,8 @@ describe("JunctionAndEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const mismatchIssue = issues.find((i) =>
-				i.code === "JUNCTION_AND_BRANCH_COUNT_MISMATCH",
+			const mismatchIssue = issues.find(
+				(i) => i.code === "JUNCTION_AND_BRANCH_COUNT_MISMATCH",
 			);
 			expect(mismatchIssue).toBeDefined();
 			expect(mismatchIssue?.severity).toBe("error");

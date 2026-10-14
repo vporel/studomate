@@ -204,7 +204,13 @@ const VariableSelector = forwardRef<
 					!hasExcludedBehavior(v, excludeBehaviorKinds) &&
 					!excludeZones?.includes(v.zone),
 			),
-		[variables, typeFilter, excludeDirection, excludeBehaviorKinds, excludeZones],
+		[
+			variables,
+			typeFilter,
+			excludeDirection,
+			excludeBehaviorKinds,
+			excludeZones,
+		],
 	);
 
 	// Calculé ici (pas seulement dans `filterOptions`) pour aussi piloter l'affichage du popup :
@@ -238,10 +244,10 @@ const VariableSelector = forwardRef<
 		: computeStatus(
 				editingValue,
 				variables,
+				dialect,
 				typeFilter,
 				excludeDirection,
 				acceptedLiterals,
-				dialect,
 				excludeBehaviorKinds,
 				excludeZones,
 			);

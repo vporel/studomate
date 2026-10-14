@@ -29,17 +29,17 @@ import type { SerialTransport } from "./transport";
 
 export type RemoteIoState = "disconnected" | "connecting" | "linked";
 
-/** Failures of a program transfer. */
-export type RemoteIoUploadErrorCode =
-	"upload-rejected" | "upload-timeout" | "upload-mismatch";
+/** Failures of an exchange with the board (program transfer, status, watch, variable write). */
+export type RemoteIoExchangeErrorCode =
+	"exchange-rejected" | "exchange-timeout" | "exchange-mismatch";
 
-export function isRemoteIoUploadError(
+export function isRemoteIoExchangeError(
 	code: string,
-): code is RemoteIoUploadErrorCode {
+): code is RemoteIoExchangeErrorCode {
 	return (
-		code === "upload-rejected" ||
-		code === "upload-timeout" ||
-		code === "upload-mismatch"
+		code === "exchange-rejected" ||
+		code === "exchange-timeout" ||
+		code === "exchange-mismatch"
 	);
 }
 
@@ -52,12 +52,12 @@ export type RemoteIoErrorCode =
 	| "firmware-outdated"
 	/** The board answered `ERR` to the pin configuration. */
 	| "config-rejected"
-	/** The board refused the program transfer (`ERR` code in the detail). */
-	| "upload-rejected"
-	/** The board stopped answering during the program transfer. */
-	| "upload-timeout"
-	/** The board stored a program whose identifier differs from the one sent. */
-	| "upload-mismatch"
+	/** The board answered `ERR` to an exchange (code in the detail). */
+	| "exchange-rejected"
+	/** The board stopped answering during an exchange. */
+	| "exchange-timeout"
+	/** The board stored a program whose identifier differs from the one sent (program transfer). */
+	| "exchange-mismatch"
 	/** The port could not be opened, written to, or was lost. */
 	| "transport"
 	| "cancelled";
@@ -69,6 +69,16 @@ export class RemoteIoError extends Error {
 	) {
 		super(detail ? `${code}: ${detail}` : code);
 	}
+}
+
+/** The exchange code of a failed exchange with the board, `"transport"` for any other failure. */
+export function remoteIoFailureCode(
+	error: unknown,
+): RemoteIoExchangeErrorCode | "transport" {
+	if (error instanceof RemoteIoError && isRemoteIoExchangeError(error.code)) {
+		return error.code;
+	}
+	return "transport";
 }
 
 export interface RemoteIoFirmwareInfo {
@@ -132,7 +142,6 @@ export default class RemoteIoClient {
 	private readonly options: Required<RemoteIoClientOptions>;
 	private plan: RemoteIoPlan;
 	private reconfiguring = false;
-	private uploading = false;
 	/** Tail of the queue of request/response exchanges: one at a time, as they share one listener. */
 	private exchanges: Promise<unknown> = Promise.resolve();
 	private watch: {
@@ -225,23 +234,27 @@ export default class RemoteIoClient {
 	}
 
 	/**
-	 * Sets the wanted value of output variables and sends the full output image. Values of
-	 * unknown variables are ignored; analog values are rounded and saturated to the pin range.
+	 * Sets the wanted value of output variables and sends the full output image when it changed;
+	 * the heartbeat re-sends it periodically. Values of unknown variables are ignored; analog
+	 * values are rounded and saturated to the pin range.
 	 */
 	setOutputs(
 		values: Map<string, boolean | number> | Record<string, boolean | number>,
 	) {
 		const entries =
 			values instanceof Map ? values : new Map(Object.entries(values));
+		let changed = false;
 		for (const output of this.plan.outputs) {
 			if (!entries.has(output.variableId)) continue;
 			const raw = entries.get(output.variableId)!;
 			const { min, max } = output.range;
 			const numeric =
 				typeof raw === "boolean" ? (raw ? 1 : 0) : Math.round(raw);
-			this.outputValues.set(output.pin, Math.min(max, Math.max(min, numeric)));
+			const value = Math.min(max, Math.max(min, numeric));
+			if (this.outputValues.get(output.pin) !== value) changed = true;
+			this.outputValues.set(output.pin, value);
 		}
-		void this.sendOutputs();
+		if (changed) void this.sendOutputs();
 	}
 
 	/**
@@ -249,9 +262,7 @@ export default class RemoteIoClient {
 	 * until the board acknowledges the new configuration.
 	 */
 	async reconfigure(plan: RemoteIoPlan): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		this.plan = plan;
 		this.resetOutputs();
 		if (!this.remoteIoActive) return;
@@ -273,16 +284,9 @@ export default class RemoteIoClient {
 		imageId: number,
 		onProgress?: (sentBytes: number, totalBytes: number) => void,
 	): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 
-		const wasActive = this.remoteIoActive;
-		this.stopHeartbeat?.();
-		this.stopHeartbeat = null;
-		this.remoteIoActive = false;
-		this.watch = null;
-		this.uploading = true;
+		const wasActive = this.detachRemoteIo();
 		try {
 			await this.sendProgramFrame(
 				encodeProgramBegin(image.length, imageId),
@@ -305,26 +309,16 @@ export default class RemoteIoClient {
 				(message) => (message.type === "PROG_OK" ? message.imageId : undefined),
 			);
 			if (stored !== imageId) {
-				throw new RemoteIoError("upload-mismatch", String(stored));
+				throw new RemoteIoError("exchange-mismatch", String(stored));
 			}
 		} catch (error) {
-			this.uploading = false;
 			if (wasActive) {
-				try {
-					await this.configure();
-					this.remoteIoActive = true;
-					this.startHeartbeat();
-				} catch {
-					this.loseLink(
-						new RemoteIoError("transport", "board lost after a failed upload"),
-					);
-				}
+				await this.restoreRemoteIo("board lost after a failed upload");
 			}
 			throw error instanceof RemoteIoError
 				? error
 				: new RemoteIoError("transport", String(error));
 		}
-		this.uploading = false;
 	}
 
 	/** Starts the program stored in the board, from its initial state. */
@@ -349,30 +343,13 @@ export default class RemoteIoClient {
 		frame: string,
 		pick: (message: DeviceMessage) => true | undefined,
 	): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
-		const wasActive = this.remoteIoActive;
-		this.watch = null;
-		this.stopHeartbeat?.();
-		this.stopHeartbeat = null;
-		this.remoteIoActive = false;
+		this.assertLinked();
+		const wasActive = this.detachRemoteIo();
 		try {
 			await this.sendProgramFrame(frame, pick);
 		} catch (error) {
 			if (wasActive) {
-				try {
-					await this.configure();
-					this.remoteIoActive = true;
-					this.startHeartbeat();
-				} catch {
-					this.loseLink(
-						new RemoteIoError(
-							"transport",
-							"board lost after a refused command",
-						),
-					);
-				}
+				await this.restoreRemoteIo("board lost after a refused command");
 			}
 			throw error instanceof RemoteIoError
 				? error
@@ -385,26 +362,13 @@ export default class RemoteIoClient {
 	 * configuration. The link stays open; `resumeRemoteIo` serves the pins again.
 	 */
 	async leaveRemoteIo(): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		if (!this.remoteIoActive) return;
 		await this.fallback();
-		this.stopHeartbeat?.();
-		this.stopHeartbeat = null;
-		this.remoteIoActive = false;
+		this.detachRemoteIo();
 		this.reconfiguring = true;
 		try {
-			await this.serialize(async () => {
-				const wait = this.waitFor<true>(
-					(message) => (message.type === "CFG_OK" ? true : undefined),
-					this.options.configTimeoutMs,
-					() => new RemoteIoError("config-rejected", "timeout"),
-				);
-				wait.catch(() => {});
-				await this.options.transport.write(encodeConfig([]));
-				await wait;
-			});
+			await this.configure([]);
 		} finally {
 			this.reconfiguring = false;
 		}
@@ -415,9 +379,7 @@ export default class RemoteIoClient {
 	 * the current pin plan, and the program stays stored in it until the next reset.
 	 */
 	async resumeRemoteIo(): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		if (this.remoteIoActive) return;
 		this.watch = null;
 		this.resetOutputs();
@@ -436,9 +398,7 @@ export default class RemoteIoClient {
 	 * telemetry stops when the program stops or the board is given its pins back.
 	 */
 	async startWatching(options: RemoteIoWatchOptions): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		this.watch = {
 			assembler: new TelemetryAssembler(options.memorySize),
 			tag: options.imageId & 0xffff,
@@ -488,9 +448,7 @@ export default class RemoteIoClient {
 		frame: string,
 		answer: "SET_OK" | "FORCE_OK",
 	): Promise<void> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		await this.sendProgramFrame(frame, (message) =>
 			message.type === answer ? true : undefined,
 		);
@@ -498,9 +456,7 @@ export default class RemoteIoClient {
 
 	/** Asks the board what it is doing and which program it holds. */
 	async requestStatus(): Promise<RemoteIoStatus> {
-		if (this.state !== "linked") {
-			throw new Error("RemoteIoClient is not linked");
-		}
+		this.assertLinked();
 		return this.serialize(async () => {
 			const wait = this.waitFor<RemoteIoStatus>(
 				(message) =>
@@ -515,7 +471,7 @@ export default class RemoteIoClient {
 							}
 						: undefined,
 				this.options.configTimeoutMs,
-				() => new RemoteIoError("upload-timeout", "status"),
+				() => new RemoteIoError("exchange-timeout", "status"),
 			);
 			wait.catch(() => {});
 			try {
@@ -565,6 +521,32 @@ export default class RemoteIoClient {
 		}
 	}
 
+	private assertLinked(): void {
+		if (this.state !== "linked") {
+			throw new Error("RemoteIoClient is not linked");
+		}
+	}
+
+	/** Takes the board out of remote I/O on this side; returns whether it was serving its pins. */
+	private detachRemoteIo(): boolean {
+		const wasActive = this.remoteIoActive;
+		this.stopHeartbeat?.();
+		this.stopHeartbeat = null;
+		this.remoteIoActive = false;
+		this.watch = null;
+		return wasActive;
+	}
+
+	private async restoreRemoteIo(lossReason: string): Promise<void> {
+		try {
+			await this.configure();
+			this.remoteIoActive = true;
+			this.startHeartbeat();
+		} catch {
+			this.loseLink(new RemoteIoError("transport", lossReason));
+		}
+	}
+
 	private startHeartbeat() {
 		this.stopHeartbeat = this.options.heartbeat(
 			() => void this.sendOutputs(),
@@ -584,8 +566,7 @@ export default class RemoteIoClient {
 				if (
 					this.state === "linked" &&
 					this.remoteIoActive &&
-					!this.reconfiguring &&
-					!this.uploading
+					!this.reconfiguring
 				) {
 					this.emitInputs(message.values);
 				}
@@ -688,7 +669,11 @@ export default class RemoteIoClient {
 		);
 	}
 
-	private async configure(): Promise<void> {
+	private configure(pins = this.plan.pins): Promise<void> {
+		return this.serialize(() => this.exchangeConfig(pins));
+	}
+
+	private async exchangeConfig(pins: RemoteIoPlan["pins"]): Promise<void> {
 		const wait = this.waitFor<true>(
 			(message) => {
 				if (message.type === "CFG_OK") return true;
@@ -701,7 +686,7 @@ export default class RemoteIoClient {
 			() => new RemoteIoError("config-rejected", "timeout"),
 		);
 		try {
-			await this.options.transport.write(encodeConfig(this.plan.pins));
+			await this.options.transport.write(encodeConfig(pins));
 		} catch (cause) {
 			throw new RemoteIoError("transport", String(cause));
 		}
@@ -732,12 +717,12 @@ export default class RemoteIoClient {
 			const wait = this.waitFor<T>(
 				(message) => {
 					if (message.type === "ERR") {
-						throw new RemoteIoError("upload-rejected", message.code);
+						throw new RemoteIoError("exchange-rejected", message.code);
 					}
 					return pick(message);
 				},
 				uploadAckTimeoutMs,
-				() => new RemoteIoError("upload-timeout"),
+				() => new RemoteIoError("exchange-timeout"),
 			);
 			wait.catch(() => {});
 			try {
@@ -749,7 +734,7 @@ export default class RemoteIoClient {
 				return await wait;
 			} catch (error) {
 				const retryable =
-					error instanceof RemoteIoError && error.code === "upload-timeout";
+					error instanceof RemoteIoError && error.code === "exchange-timeout";
 				if (!retryable || attempt >= uploadAttempts) throw error;
 			}
 		}

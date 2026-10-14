@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
@@ -62,7 +63,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const errors = result.issues.filter((i) => i.severity === "error");
@@ -92,13 +93,14 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const initialStepError = result.issues.find(
 				(issue) =>
 					issue.source.sourceType === "grafcet" &&
-					(issue.code === "GRAFCET_NO_INITIAL_STEP" || issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
+					(issue.code === "GRAFCET_NO_INITIAL_STEP" ||
+						issue.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -133,7 +135,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(result.stepsVariables).toHaveLength(3);
@@ -177,7 +179,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(result.stepsVariables).toHaveLength(0);
@@ -212,7 +214,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			// Only one X1 variable despite 3 steps with number 1
@@ -239,7 +241,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const elementIssues = result.issues.filter(
@@ -276,7 +278,7 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			// Should have issues from both step and transition
@@ -323,7 +325,7 @@ describe("GrafcetAnalyser", () => {
 			// This should not throw - analysers receive both project vars and step vars
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(result).toBeDefined();
@@ -361,7 +363,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const conflictIssue = result.issues.find(
@@ -404,7 +406,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(
@@ -423,8 +425,17 @@ describe("GrafcetAnalyser", () => {
 				.zone("memory")
 				.type("BOOL")
 				.build();
-			const step1 = new StepBuilder().id("step-1").number(1).initial().position(0, 0).build();
-			const step2 = new StepBuilder().id("step-2").number(2).position(0, 100).build();
+			const step1 = new StepBuilder()
+				.id("step-1")
+				.number(1)
+				.initial()
+				.position(0, 0)
+				.build();
+			const step2 = new StepBuilder()
+				.id("step-2")
+				.number(2)
+				.position(0, 100)
+				.build();
 			const grafcet = new GrafcetBuilder()
 				.id("grafcet-1")
 				.name("Test")
@@ -439,7 +450,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 				generatedVar,
 			]);
 
@@ -451,12 +462,38 @@ describe("GrafcetAnalyser", () => {
 		});
 
 		it("does not raise a name-conflict for X{n} shared with another grafcet's step variable", () => {
-			const g1s1 = new StepBuilder().id("g1-s1").number(1).initial().position(0, 0).build();
-			const g1s2 = new StepBuilder().id("g1-s2").number(2).position(0, 100).build();
-			const g2s1 = new StepBuilder().id("g2-s1").number(1).initial().position(0, 0).build();
-			const g2s2 = new StepBuilder().id("g2-s2").number(2).position(0, 100).build();
-			const grafcet1 = new GrafcetBuilder().id("grafcet-1").name("G1").addSteps(g1s1, g1s2).build();
-			const grafcet2 = new GrafcetBuilder().id("grafcet-2").name("G2").addSteps(g2s1, g2s2).build();
+			const g1s1 = new StepBuilder()
+				.id("g1-s1")
+				.number(1)
+				.initial()
+				.position(0, 0)
+				.build();
+			const g1s2 = new StepBuilder()
+				.id("g1-s2")
+				.number(2)
+				.position(0, 100)
+				.build();
+			const g2s1 = new StepBuilder()
+				.id("g2-s1")
+				.number(1)
+				.initial()
+				.position(0, 0)
+				.build();
+			const g2s2 = new StepBuilder()
+				.id("g2-s2")
+				.number(2)
+				.position(0, 100)
+				.build();
+			const grafcet1 = new GrafcetBuilder()
+				.id("grafcet-1")
+				.name("G1")
+				.addSteps(g1s1, g1s2)
+				.build();
+			const grafcet2 = new GrafcetBuilder()
+				.id("grafcet-2")
+				.name("G2")
+				.addSteps(g2s1, g2s2)
+				.build();
 			const project = new ProjectBuilder()
 				.id("project-1")
 				.name("Test")
@@ -466,8 +503,8 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet1, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet1),
-				...grafcetAnalyser.generateVariables(grafcet2),
+				...grafcetAnalyser.generateVariables(grafcet1, Dialect.FR),
+				...grafcetAnalyser.generateVariables(grafcet2, Dialect.FR),
 			]);
 
 			expect(
@@ -486,13 +523,15 @@ describe("GrafcetAnalyser", () => {
 				.build();
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(result.stepsVariables).toEqual([]);
 			// Should have error about missing initial step
-			const initialStepError = result.issues.find((i) =>
-				(i.code === "GRAFCET_NO_INITIAL_STEP" || i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
+			const initialStepError = result.issues.find(
+				(i) =>
+					i.code === "GRAFCET_NO_INITIAL_STEP" ||
+					i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS",
 			);
 			expect(initialStepError).toBeDefined();
 		});
@@ -523,11 +562,13 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
-			const initialStepError = result.issues.find((i) =>
-				(i.code === "GRAFCET_NO_INITIAL_STEP" || i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS"),
+			const initialStepError = result.issues.find(
+				(i) =>
+					i.code === "GRAFCET_NO_INITIAL_STEP" ||
+					i.code === "GRAFCET_MULTIPLE_INITIAL_STEPS",
 			);
 			expect(initialStepError).toBeDefined();
 			expect(initialStepError?.severity).toBe("error");
@@ -576,7 +617,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const connectivityError = result.issues.find(
@@ -669,7 +710,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const unreachableError = result.issues.find(
@@ -761,7 +802,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const deadEndWarning = result.issues.find(
@@ -817,7 +858,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(
@@ -887,7 +928,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			expect(
@@ -1017,7 +1058,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const deadEnd = result.issues.find(
@@ -1100,7 +1141,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const connectivityError = result.issues.find(
@@ -1133,7 +1174,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const connectivityError = result.issues.find(
@@ -1186,7 +1227,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const connectionTypeError = result.issues.find(
@@ -1229,7 +1270,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const connectionTypeError = result.issues.find(
@@ -1271,7 +1312,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const danglingError = result.issues.find(
@@ -1291,7 +1332,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const twoStepsError = result.issues.find(
@@ -1324,7 +1365,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const twoStepsError = result.issues.find(
@@ -1366,7 +1407,7 @@ describe("GrafcetAnalyser", () => {
 
 			const result = grafcetAnalyser.analyse(grafcet, project, [
 				...project.variables,
-				...grafcetAnalyser.generateVariables(grafcet),
+				...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 			]);
 
 			const twoStepsError = result.issues.find(
@@ -1386,7 +1427,7 @@ describe("GrafcetAnalyser", () => {
 					.build();
 				return grafcetAnalyser.analyse(grafcet, project, [
 					...project.variables,
-					...grafcetAnalyser.generateVariables(grafcet),
+					...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 				]);
 			};
 
@@ -1479,10 +1520,10 @@ describe("GrafcetAnalyser", () => {
 				.author("Author")
 				.build();
 
-			expect(grafcetAnalyser.generateVariables(grafcet)).toEqual(
+			expect(grafcetAnalyser.generateVariables(grafcet, Dialect.FR)).toEqual(
 				grafcetAnalyser.analyse(grafcet, project, [
 					...project.variables,
-					...grafcetAnalyser.generateVariables(grafcet),
+					...grafcetAnalyser.generateVariables(grafcet, Dialect.FR),
 				]).stepsVariables,
 			);
 		});

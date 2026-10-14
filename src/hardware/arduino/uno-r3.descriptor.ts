@@ -40,7 +40,13 @@ const arduinoUnoR3: HardwareDeviceDescriptor = {
 	limits: {
 		ramBytes: 2048,
 		programStorageBytes: 1024,
-		vm: { variableBytes: 512, maxStack: 16, maxCallDepth: 4 },
+		vm: {
+			variableBytes: 512,
+			maxStack: 16,
+			maxCallDepth: 4,
+			// D2..D13 are 2..13, A0..A5 are 14..19 (D0/D1 are the serial link).
+			pinRange: { min: 2, max: 19 },
+		},
 	},
 };
 

@@ -1,6 +1,7 @@
 import type { HardwareDeviceDescriptor } from "@/hardware/hardware-device.descriptor";
 import { MAX_PENDING_TARGETS } from "./bytecode-format";
 import type { BytecodeImage } from "./bytecode.generator";
+import { variableMemorySize } from "./variable-memory";
 import verifyBytecode, { TOO_MANY_PENDING_JUMPS } from "./bytecode.verifier";
 
 export type AdmissibilityIssue =
@@ -40,10 +41,7 @@ export default function checkAdmissibility(
 	limits: HardwareDeviceDescriptor["limits"],
 ): AdmissibilityReport {
 	const { layout } = image;
-	const variableBytes =
-		layout.boolCount +
-		2 * (layout.intCount + layout.wordCount) +
-		4 * layout.int32Count;
+	const variableBytes = variableMemorySize(layout);
 	const ramBytes =
 		variableBytes +
 		4 * layout.maxStack +
@@ -87,7 +85,11 @@ export default function checkAdmissibility(
 			limit: limits.vm.maxCallDepth,
 		});
 	}
-	const structure = verifyBytecode(image.bytes, image.bytes.length);
+	const structure = verifyBytecode(
+		image.bytes,
+		image.bytes.length,
+		limits.vm.pinRange,
+	);
 	if (!structure.valid) {
 		if (structure.reason === TOO_MANY_PENDING_JUMPS) {
 			issues.push({

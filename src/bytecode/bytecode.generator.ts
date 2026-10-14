@@ -30,11 +30,11 @@ import {
 	IO_ROLE,
 	MAGIC,
 	MAX_INDEXED_ENTRIES,
-	MAX_PIN_NUMBER,
 	OPCODE_SHAPES,
 	Op,
 	SYSTEM_VARIABLE_IDS,
 	SYS_ENTRY_SIZE,
+	SIGNED_ARITHMETIC_TYPES,
 	TIMER_KINDS,
 	TYPE_CODE,
 	type IoRole,
@@ -42,7 +42,13 @@ import {
 	type TypeCode,
 } from "./bytecode-format";
 import BytecodeGenerationError from "./bytecode.error";
-import { crc16CcittFalse, crc32 } from "./crc";
+import {
+	imageIdentifier,
+	writeU16,
+	writeU32,
+	imageChecksum,
+} from "./bytecode-image";
+import type { PinNumberRange } from "@/hardware/hardware-device.descriptor";
 
 export interface BytecodeLayout {
 	cyclePeriodMs: number;
@@ -94,6 +100,7 @@ export interface BytecodeGeneratorInput {
 	compiled: CompiledProject;
 	ioBindings: IoBinding[];
 	cyclePeriodMs: number;
+	pinRange: PinNumberRange;
 }
 
 interface VariableSlot {
@@ -121,13 +128,6 @@ const CONVERSION_TARGET_TO_CODE: Record<
 	DINT: TYPE_CODE.DINT,
 	DWORD: TYPE_CODE.DWORD,
 };
-
-const SIGNED_ARITHMETIC_TYPES: readonly TypeCode[] = [
-	TYPE_CODE.INT,
-	TYPE_CODE.DINT,
-	TYPE_CODE.TIME,
-	TYPE_CODE.INTERNAL,
-];
 
 const ARITHMETIC_OPCODES = {
 	"+": Op.ADD,
@@ -653,6 +653,7 @@ function assignSlots(
 function buildIoTable(
 	bindings: IoBinding[],
 	slotsById: Map<string, VariableSlot>,
+	pinRange: PinNumberRange,
 ): number[] {
 	const seenPins = new Set<number>();
 	const entries: number[] = [];
@@ -673,7 +674,7 @@ function buildIoTable(
 			);
 		}
 		if (
-			!(binding.pin >= 2 && binding.pin <= MAX_PIN_NUMBER) ||
+			!(binding.pin >= pinRange.min && binding.pin <= pinRange.max) ||
 			seenPins.has(binding.pin)
 		) {
 			throw new BytecodeGenerationError(
@@ -688,32 +689,6 @@ function buildIoTable(
 		);
 	}
 	return entries;
-}
-
-function writeU16(target: Uint8Array, offset: number, value: number): void {
-	target[offset] = value & 0xff;
-	target[offset + 1] = (value >>> 8) & 0xff;
-}
-
-function writeU32(target: Uint8Array, offset: number, value: number): void {
-	writeU16(target, offset, value & 0xffff);
-	writeU16(target, offset + 2, value >>> 16);
-}
-
-/** CRC-16 of the whole image, its own field (bytes 20 and 21) excluded. */
-export function imageChecksum(image: Uint8Array): number {
-	const covered = new Uint8Array(image.length - 2);
-	covered.set(image.subarray(0, HEADER_OFFSETS.crc16));
-	covered.set(image.subarray(HEADER_OFFSETS.crc16 + 2), HEADER_OFFSETS.crc16);
-	return crc16CcittFalse(covered);
-}
-
-/** Identity of an image: CRC-32 with its checksum and identifier fields zeroed. */
-export function imageIdentifier(image: Uint8Array): number {
-	const copy = new Uint8Array(image);
-	writeU16(copy, HEADER_OFFSETS.crc16, 0);
-	writeU32(copy, HEADER_OFFSETS.imageId, 0);
-	return crc32(copy);
 }
 
 /**
@@ -780,7 +755,7 @@ export default function generateBytecode(
 		sysTable.push(slot.index, id);
 	});
 
-	const ioTable = buildIoTable(input.ioBindings, slotsById);
+	const ioTable = buildIoTable(input.ioBindings, slotsById, input.pinRange);
 	const { code, offsets, maxStack } = new ProgramGenerator(
 		compiled,
 		routinesToEmbed,

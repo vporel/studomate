@@ -23,3 +23,19 @@ export interface SceneDescriptor {
 	descriptionKey: string;
 	points: ScenePointDescriptor[];
 }
+
+/** Builds the point factory of a scene: label keys are `${labelPrefix}.${id}`. */
+export function createPointFactory(labelPrefix: string) {
+	return (
+		id: string,
+		kind: ScenePointKind,
+		valueType: NativeType,
+		suggestedMnemonic: string,
+	): ScenePointDescriptor => ({
+		id,
+		kind,
+		valueType,
+		labelKey: `${labelPrefix}.${id}`,
+		suggestedMnemonic,
+	});
+}

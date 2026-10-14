@@ -23,20 +23,56 @@ function setup(variable: Variable, value: unknown, dialect = Dialect.FR) {
 
 describe("VariableValueCell", () => {
 	it("affiche une valeur booléenne dans le dialecte du projet", () => {
-		setup(new Variable("v1", "moteur", "logic-output", "BOOL"), true);
+		setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "moteur",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			true,
+		);
 		expect(screen.getByText("VRAI")).toBeInTheDocument();
 	});
 
 	it("affiche une valeur numérique et une durée TIME formatée", () => {
-		setup(new Variable("v1", "niveau", "analog-input", "INT"), 42);
+		setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
+			42,
+		);
 		expect(screen.getByText("42")).toBeInTheDocument();
 
-		setup(new Variable("v2", "duree", "memory", "TIME"), 5000);
+		setup(
+			new Variable({
+				id: "v2",
+				mnemonic: "duree",
+				zone: "memory",
+				type: "TIME",
+				dialect: Dialect.FR,
+			}),
+			5000,
+		);
 		expect(screen.getByText("5s")).toBeInTheDocument();
 	});
 
 	it("affiche '-' tant que la valeur n'est pas connue", () => {
-		setup(new Variable("v1", "moteur", "logic-output", "BOOL"), undefined);
+		setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "moteur",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			undefined,
+		);
 		expect(screen.getByText("-")).toBeInTheDocument();
 	});
 
@@ -56,16 +92,52 @@ describe("VariableValueCell", () => {
 	it("met en valeur VRAI et les nombres non nuls, grise FAUX et 0", () => {
 		const badge = (text: string) => screen.getByText(text);
 
-		setup(new Variable("v1", "moteur", "logic-output", "BOOL"), true);
+		setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "moteur",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			true,
+		);
 		expect(badge("VRAI")).toHaveAttribute("data-inactive", "false");
 
-		setup(new Variable("v2", "voyant", "logic-output", "BOOL"), false);
+		setup(
+			new Variable({
+				id: "v2",
+				mnemonic: "voyant",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			false,
+		);
 		expect(badge("FAUX")).toHaveAttribute("data-inactive", "true");
 
-		setup(new Variable("v3", "niveau", "analog-input", "INT"), 0);
+		setup(
+			new Variable({
+				id: "v3",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
+			0,
+		);
 		expect(badge("0")).toHaveAttribute("data-inactive", "true");
 
-		setup(new Variable("v4", "compteur", "memory", "INT"), -3);
+		setup(
+			new Variable({
+				id: "v4",
+				mnemonic: "compteur",
+				zone: "memory",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
+			-3,
+		);
 		expect(badge("-3")).toHaveAttribute("data-inactive", "false");
 	});
 });
@@ -73,7 +145,14 @@ describe("VariableValueCell", () => {
 describe("VariableValueCell constants", () => {
 	it("shows the value of a constant in simulation", () => {
 		setup(
-			new Variable("k", "DELAI", "constant", "TIME", undefined, "T#5s"),
+			new Variable({
+				id: "k",
+				mnemonic: "DELAI",
+				zone: "constant",
+				type: "TIME",
+				value: "T#5s",
+				dialect: Dialect.FR,
+			}),
 			5000,
 		);
 

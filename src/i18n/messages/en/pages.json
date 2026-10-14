@@ -43,7 +43,8 @@
 		"dialectFr": "French — ET, OU, NON, VRAI, FAUX",
 		"dialectEn": "English — AND, OR, NOT, TRUE, FALSE",
 		"exerciseField": "Exercise brief",
-		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu."
+		"exerciseFieldHelper": "Markdown format. Shown read-only from the Project › Exercise brief menu.",
+		"readOnlyInSimulation": "Editable in Design mode only."
 	},
 	"exercise": {
 		"heading": "Exercise brief",
@@ -117,7 +118,7 @@
 		"memories": "Memories",
 		"grafcets": "Grafcets",
 		"noGrafcets": "No grafcet in the project",
-		"hardwareInputsReadOnly": "Inputs wired to a physical pin of the board cannot be changed from this table."
+		"drivenInputsReadOnly": "Inputs driven by a pin of the board or a sensor of the 3D scene cannot be changed from this table."
 	},
 	"noPage": {
 		"openProject": "Open a project",

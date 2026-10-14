@@ -13,6 +13,7 @@ import type { Group } from "three";
 import type { SceneComponentProps } from "../scene-views";
 import Box from "../parts/Box";
 import Label from "../parts/Label";
+import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 
 /** Model units to world units. */
 const S = 0.014;
@@ -39,7 +40,6 @@ const ROPE_Y = SHAFT_TOP - 0.05;
 const PULLEY_RADIUS = 0.07;
 const FLOOR_KEYS = ["floor0", "floor1", "floor2"] as const;
 /** Where the lift sits in the world, at the point the camera looks at. */
-const ORIGIN: [number, number, number] = [4, 0, 1.5];
 
 /** 3D rendering of the lift from the states of its physical model. */
 export default function ElevatorScene({ sample }: SceneComponentProps) {
@@ -83,7 +83,7 @@ export default function ElevatorScene({ sample }: SceneComponentProps) {
 	const frontZ = SHAFT_DEPTH / 2;
 
 	return (
-		<group position={ORIGIN}>
+		<group position={SCENE_ORIGIN}>
 			<Box
 				position={[0, -SLAB / 2, 0]}
 				size={[SHAFT_WIDTH + 0.2, SLAB, SHAFT_DEPTH + 0.2]}

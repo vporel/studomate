@@ -31,6 +31,12 @@ export interface AnalogRange {
 	max: number;
 }
 
+/** Inclusive range of pin numbers of the bytecode I/O table. */
+export interface PinNumberRange {
+	min: number;
+	max: number;
+}
+
 /** Static description of a hardware model: never persisted in a project. */
 export interface HardwareDeviceDescriptor {
 	modelId: HardwareModelId;
@@ -48,6 +54,12 @@ export interface HardwareDeviceDescriptor {
 		/** Non-volatile space available to the uploaded program image. */
 		programStorageBytes: number;
 		/** Capacities of the bytecode VM the shipped firmware is built with. */
-		vm: { variableBytes: number; maxStack: number; maxCallDepth: number };
+		vm: {
+			variableBytes: number;
+			maxStack: number;
+			maxCallDepth: number;
+			/** Pin numbers the VM's I/O table accepts. */
+			pinRange: PinNumberRange;
+		};
 	};
 }

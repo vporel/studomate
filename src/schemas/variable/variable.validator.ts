@@ -14,7 +14,10 @@ import {
 	getAllowedInputBehaviorKinds,
 	type InputBehavior,
 } from "./input-behavior";
-import { isSystemVariableName, SYSTEM_VARIABLE_PREFIX } from "./system-variables";
+import {
+	isSystemVariableName,
+	SYSTEM_VARIABLE_PREFIX,
+} from "./system-variables";
 import {
 	getNumericRange,
 	getValidTypesForZones,
@@ -113,7 +116,8 @@ export function validateAddress(address: string): VariableValidationIssue[] {
 	if (address.length === 0) return []; // adresse optionnelle
 	const issues: VariableValidationIssue[] = [];
 	if (!address.startsWith("%")) issues.push(issue("ADDRESS_MISSING_PERCENT"));
-	const addressRegex = /^%[A-Z]{1,2}[0-9]{1,5}(\.[0-9]{1,5})?$/;
+	const addressRegex =
+		/^%(E|I|Q|O|EA|IW|SA|QW|M|MW|MF|MD|PD|PA)[0-9]{1,5}(\.[0-9]{1,5})?$/;
 	if (!addressRegex.test(address)) issues.push(issue("ADDRESS_INVALID"));
 	return issues;
 }
@@ -172,7 +176,7 @@ export type ValidatableVariable = {
  * constante. */
 export function validateVariable(
 	variable: ValidatableVariable,
-	dialect: Dialect = Dialect.FR,
+	dialect: Dialect,
 ): VariableValidationIssue[] {
 	return [
 		...validateMnemonic(variable.mnemonic, variable.ownerBlock !== undefined),

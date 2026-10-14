@@ -1,3 +1,4 @@
+import { clamp } from "@/3d-scenes/scene-math";
 import type { SceneModel, ScenePointValues } from "../scene-model";
 
 /** Distance travelled on T1 up to the detection station. */
@@ -57,10 +58,6 @@ export type CartonSortingInteraction =
 	{ type: "newCarton" } | { type: "setCartonHigh"; high: boolean };
 
 type CylinderKey = keyof CartonSortingState["cylinders"];
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
-}
 
 function moveCylinder(
 	position: number,

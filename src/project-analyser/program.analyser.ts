@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Program from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -33,7 +34,7 @@ export type ProgramAnalysisResult = {
  *   `analyse`, une seule fois par notation. Absente pour une notation sans règle de ce genre.
  */
 export default interface ProgramAnalyser<P extends Program = Program> {
-	generateVariables(program: P): Variable[];
+	generateVariables(program: P, dialect: Dialect): Variable[];
 	analyse(
 		program: P,
 		project: Project,

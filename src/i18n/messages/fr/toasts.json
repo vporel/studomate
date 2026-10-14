@@ -42,15 +42,15 @@
 		"analysis": "Corrigez les erreurs signalées par l'analyse avant de charger le programme dans la carte.",
 		"compilation": "Le projet ne compile pas : le programme ne peut pas être chargé dans la carte.",
 		"unsupported": "Le projet utilise une fonctionnalité que la carte ne sait pas exécuter.",
-		"upload-rejected": "La carte a refusé le programme.",
-		"upload-timeout": "La carte a cessé de répondre pendant le chargement du programme. Réessayez.",
-		"upload-mismatch": "La carte n'a pas enregistré le programme chargé. Réessayez.",
+		"exchange-rejected": "La carte a refusé le programme.",
+		"exchange-timeout": "La carte a cessé de répondre pendant le chargement du programme. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas enregistré le programme chargé. Réessayez.",
 		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
 	},
 	"hardwareProgramCommandFailed": {
-		"upload-rejected": "La carte n'a pas pu lancer son programme : elle n'en contient aucun de valide, ou manque de mémoire.",
-		"upload-timeout": "La carte n'a pas répondu. Réessayez.",
-		"upload-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
+		"exchange-rejected": "La carte n'a pas pu lancer son programme : elle n'en contient aucun de valide, ou manque de mémoire.",
+		"exchange-timeout": "La carte n'a pas répondu. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
 		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
 	},
 	"hardwareOnlineFailed": {
@@ -59,9 +59,9 @@
 		"unsupported": "Le projet utilise une fonctionnalité que la carte ne sait pas exécuter.",
 		"no-program": "La carte ne contient aucun programme : chargez-le d'abord.",
 		"program-differs": "Le programme de la carte n'est pas celui du projet : rechargez-le avant d'observer la carte.",
-		"upload-rejected": "La carte a refusé de lancer son programme.",
-		"upload-timeout": "La carte n'a pas répondu. Réessayez.",
-		"upload-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
+		"exchange-rejected": "La carte a refusé de lancer son programme.",
+		"exchange-timeout": "La carte n'a pas répondu. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
 		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
 	},
 	"hardwareOnlineLost": {
@@ -76,12 +76,11 @@
 		"other": "Le programme de la carte s'est arrêté sur un défaut (code {fault}). Les sorties ont été coupées."
 	},
 	"hardwareVariableWriteFailed": {
-		"upload-rejected": "La carte a refusé la valeur : la variable est inconnue de son programme.",
-		"upload-timeout": "La carte n'a pas répondu : la valeur n'a peut-être pas été écrite.",
-		"upload-mismatch": "La carte n'a pas répondu comme prévu.",
+		"exchange-rejected": "La carte a refusé la valeur : la variable est inconnue de son programme.",
+		"exchange-timeout": "La carte n'a pas répondu : la valeur n'a peut-être pas été écrite.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu.",
 		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
 	},
-	"hardwareOutputsCutInBackground": "Onglet en arrière-plan : les sorties de la carte ont été coupées.",
 	"hardwareFlashFailed": {
 		"sync-failed": "Impossible d'installer le firmware : la carte ne répond pas. Vérifiez qu'aucun autre programme n'utilise le port. Seul l'Arduino Uno R3 d'origine est pris en charge.",
 		"protocol-error": "Impossible d'installer le firmware : réponse inattendue de la carte. Seul l'Arduino Uno R3 d'origine est pris en charge.",

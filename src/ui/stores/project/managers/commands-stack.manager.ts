@@ -35,19 +35,7 @@ export default class ProjectCommandsStackManager {
 		if (!commands || commands.length === 0) return;
 		const previousScene = project.scene3d;
 		const newProject = this.commandsStack.execute(commands, project.copy());
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
-			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
-		}));
-		//A project command can rewrite the grafcets/ladders themselves (renaming a variable
-		//rewrites the expressions/references to it), so the mounted stores must adopt the result
-		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
-		this.getStoreState().laddersManager.syncMountedStoresFromProject();
-		if (newProject.scene3d !== previousScene) {
-			this.getStoreState().scene3dLinkManager.onSceneChanged();
-		}
+		this.adopt(newProject, previousScene);
 	}
 
 	undoOperation(): void {
@@ -61,17 +49,7 @@ export default class ProjectCommandsStackManager {
 		const previousScene = project.scene3d;
 		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
-			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
-		}));
-		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
-		this.getStoreState().laddersManager.syncMountedStoresFromProject();
-		if (newProject.scene3d !== previousScene) {
-			this.getStoreState().scene3dLinkManager.onSceneChanged();
-		}
+		this.adopt(newProject, previousScene);
 	}
 
 	redoOperation(): void {
@@ -85,12 +63,18 @@ export default class ProjectCommandsStackManager {
 		const previousScene = project.scene3d;
 		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;
+		this.adopt(newProject, previousScene);
+	}
+
+	private adopt(newProject: Project, previousScene: Project["scene3d"]): void {
 		this.setStoreState(() => ({
 			project: newProject,
 			hasUnsavedChanges: true,
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
+		//A project command can rewrite the grafcets/ladders themselves (renaming a variable
+		//rewrites the expressions/references to it), so the mounted stores must adopt the result
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 		if (newProject.scene3d !== previousScene) {

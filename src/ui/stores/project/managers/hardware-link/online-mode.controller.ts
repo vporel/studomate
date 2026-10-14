@@ -3,20 +3,15 @@ import decodeVariableMemory, {
 	variableMemorySize,
 } from "@/bytecode/variable-memory";
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
-import {
-	isRemoteIoUploadError,
-	RemoteIoError,
-} from "@/hardware/arduino/remote-io/remote-io.client";
-import ProjectAnalyser from "@/project-analyser/project.analyser";
+import { remoteIoFailureCode } from "@/hardware/arduino/remote-io/remote-io.client";
 import type HardwareLinkContext from "./hardware-link.context";
-import type { OnlineFailure } from "./hardware-link.notifier";
 import {
 	drivenInputIdsOf,
 	IDLE_HARDWARE_OBSERVATION,
 	type HardwareObservationState,
 } from "./hardware-link.state";
 import type HardwareSimulationBridge from "./hardware-simulation.bridge";
-import buildProgram from "./program-builder";
+import prepareBoardProgram from "./prepare-board-program";
 
 const DEFAULT_STATUS_POLL_MS = 2000;
 
@@ -58,27 +53,12 @@ export default class OnlineModeController {
 		const resolved = this.context.resolvePlan();
 		if (!project || !resolved || this.active) return false;
 
-		const analysis = ProjectAnalyser.analyse(project);
-		if (analysis.issues.some((issue) => issue.severity === "error")) {
-			notifier.onlineFailed("analysis");
-			return false;
-		}
-		const built = buildProgram({
-			project,
-			analysis,
-			ioBindings: this.context.ioBindings(resolved.plan),
-			limits: resolved.descriptor.limits,
-			cyclePeriodMs: state.plcConfig.scanTimeMs,
+		const prepared = prepareBoardProgram(this.context, project, resolved, {
+			publishAnalysis: false,
+			onFailed: (failure) => notifier.onlineFailed(failure),
 		});
-		if (built.kind === "failed") {
-			notifier.onlineFailed(built.failure);
-			return false;
-		}
-		if (built.kind === "blocked") {
-			notifier.programBlocked(built.issues);
-			return false;
-		}
-		const { image, compiled } = built;
+		if (!prepared) return false;
+		const { image, compiled } = prepared;
 
 		if (!(await this.context.ensureLink("mode"))) return false;
 		const client = session.client;
@@ -106,7 +86,7 @@ export default class OnlineModeController {
 			await this.watch(client, image.layout, image.imageId);
 		} catch (error) {
 			if (!session.isCurrent(attempt)) return false;
-			notifier.onlineFailed(onlineFailureOf(error));
+			notifier.onlineFailed(remoteIoFailureCode(error));
 			return false;
 		}
 		if (!session.isCurrent(attempt)) return false;
@@ -214,11 +194,7 @@ export default class OnlineModeController {
 			await send(client, index);
 		} catch (error) {
 			if (!session.isCurrent(attempt)) return;
-			this.context.notifier.boardVariableFailed(
-				error instanceof RemoteIoError && isRemoteIoUploadError(error.code)
-					? error.code
-					: "transport",
-			);
+			this.context.notifier.boardVariableFailed(remoteIoFailureCode(error));
 		}
 	}
 
@@ -260,11 +236,4 @@ export default class OnlineModeController {
 
 function asNumber(value: boolean | number): number {
 	return typeof value === "boolean" ? (value ? 1 : 0) : value;
-}
-
-function onlineFailureOf(error: unknown): OnlineFailure {
-	if (error instanceof RemoteIoError && isRemoteIoUploadError(error.code)) {
-		return error.code;
-	}
-	return "transport";
 }

@@ -6,15 +6,15 @@ const DESCRIPTORS: Record<HardwareModelId, HardwareDeviceDescriptor> = {
 	"arduino-uno-r3": arduinoUnoR3,
 };
 
-export default class HardwareDeviceRegistry {
-	/** `undefined` for a `modelId` this version of the application does not know. */
-	static get(modelId: string): HardwareDeviceDescriptor | undefined {
-		return Object.hasOwn(DESCRIPTORS, modelId)
-			? DESCRIPTORS[modelId as HardwareModelId]
-			: undefined;
-	}
+/** `undefined` for a `modelId` this version of the application does not know. */
+export function getHardwareDevice(
+	modelId: string,
+): HardwareDeviceDescriptor | undefined {
+	return Object.hasOwn(DESCRIPTORS, modelId)
+		? DESCRIPTORS[modelId as HardwareModelId]
+		: undefined;
+}
 
-	static list(): HardwareDeviceDescriptor[] {
-		return Object.values(DESCRIPTORS);
-	}
+export function listHardwareDevices(): HardwareDeviceDescriptor[] {
+	return Object.values(DESCRIPTORS);
 }

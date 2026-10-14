@@ -20,10 +20,6 @@ export default class ToastHardwareLinkNotifier implements HardwareLinkNotifier {
 		toast.error(getT("toasts")(`hardwareLinkFailed.${code}`));
 	}
 
-	outputsCutInBackground(): void {
-		toast.warn(getT("toasts")("hardwareOutputsCutInBackground"));
-	}
-
 	flashFailed(code: Exclude<FlashErrorCode, "cancelled">): void {
 		toast.error(getT("toasts")(`hardwareFlashFailed.${code}`));
 	}

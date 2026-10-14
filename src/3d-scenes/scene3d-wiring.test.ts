@@ -71,6 +71,18 @@ describe("scene3d-wiring", () => {
 			expect(plan.toCreate.some((c) => c.pointId === "up")).toBe(false);
 		});
 
+		it("leaves a point unbound when its mnemonic belongs to a variable already bound to another point", () => {
+			const taken = VariableBuilder.buildLogicOutput("v-up", "monter");
+			const plan = planMissingVariables(
+				elevator,
+				{ sceneId: "elevator", bindings: { down: "v-up" } },
+				[taken],
+			);
+
+			expect(plan.reused).toEqual({});
+			expect(plan.toCreate.some((c) => c.pointId === "up")).toBe(false);
+		});
+
 		it("keeps points already bound to an existing variable", () => {
 			const bound = VariableBuilder.buildLogicOutput("v-x", "autre");
 			const plan = planMissingVariables(

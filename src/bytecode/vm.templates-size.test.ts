@@ -1,3 +1,4 @@
+import { UNO_PIN_RANGE } from "@tests/utils/bytecode-program";
 import arduinoUnoR3 from "@/hardware/arduino/uno-r3.descriptor";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compileProject } from "@tests/utils/test-helpers";
@@ -22,6 +23,7 @@ function measure(id: string) {
 		compiled,
 		ioBindings: [],
 		cyclePeriodMs: 100,
+		pinRange: UNO_PIN_RANGE,
 	});
 	const opcodes = new NativeVm(image.bytes).opcodesPerCycle(
 		Array(50).fill("cycle"),

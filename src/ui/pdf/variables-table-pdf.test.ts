@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import {
 	buildProjectVariablesSections,
@@ -18,10 +19,23 @@ describe("buildVariablesTableModel", () => {
 	it("trie les variables par mnémonique et remplit les colonnes", () => {
 		const model = buildVariablesTableModel(
 			[
-				new Variable("v2", "ZEBRE", "memory", "BOOL"),
-				new Variable("v1", "ALPHA", "memory", "INT"),
+				new Variable({
+					id: "v2",
+					mnemonic: "ZEBRE",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v1",
+					mnemonic: "ALPHA",
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
 			],
 			labels,
+			"address",
 		);
 		expect(model.columns.map((c) => c.header)).toEqual([
 			"Mnémonique",
@@ -33,12 +47,24 @@ describe("buildVariablesTableModel", () => {
 	});
 
 	it("reprend adresse et commentaire, vides si absents", () => {
-		const withData = new Variable("v1", "M0", "memory", "BOOL");
+		const withData = new Variable({
+			id: "v1",
+			mnemonic: "M0",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		withData.address = "%M0";
 		withData.comment = "un commentaire";
-		const bare = new Variable("v2", "M1", "memory", "BOOL");
+		const bare = new Variable({
+			id: "v2",
+			mnemonic: "M1",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
-		const model = buildVariablesTableModel([withData, bare], labels);
+		const model = buildVariablesTableModel([withData, bare], labels, "address");
 		expect(model.rows[0]).toEqual(["M0", "BOOL", "%M0", "un commentaire"]);
 		expect(model.rows[1]).toEqual(["M1", "BOOL", "", ""]);
 	});
@@ -46,7 +72,7 @@ describe("buildVariablesTableModel", () => {
 
 describe("buildVariablesTableSection", () => {
 	it("produit une section paysage portant un tableau", () => {
-		const section = buildVariablesTableSection("Titre", [], labels);
+		const section = buildVariablesTableSection("Titre", [], labels, "address");
 		expect(section.orientation).toBe("landscape");
 		expect(section.table).toBeDefined();
 		expect(section.scene).toBeUndefined();
@@ -58,10 +84,35 @@ describe("buildVariableGroupSection", () => {
 		const section = buildVariableGroupSection(
 			"input",
 			[
-				new Variable("v1", "I0", "logic-input", "BOOL"),
-				new Variable("v2", "AI0", "analog-input", "INT"),
-				new Variable("v3", "M0", "memory", "BOOL"),
-				new Variable("v4", "T.Q", "logic-input", "BOOL", { id: "b1" }),
+				new Variable({
+					id: "v1",
+					mnemonic: "I0",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v2",
+					mnemonic: "AI0",
+					zone: "analog-input",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v3",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v4",
+					mnemonic: "T.Q",
+					zone: "logic-input",
+					type: "BOOL",
+					ownerBlock: { id: "b1" },
+					dialect: Dialect.FR,
+				}),
 			],
 			"Entrées",
 			labels,
@@ -86,9 +137,27 @@ describe("buildProjectVariablesSections", () => {
 	it("une section par groupe non vide, dans l'ordre entrées / sorties / mémoires", () => {
 		const sections = buildProjectVariablesSections(
 			[
-				new Variable("v1", "M0", "memory", "BOOL"),
-				new Variable("v2", "I0", "logic-input", "BOOL"),
-				new Variable("v3", "AI0", "analog-input", "INT"),
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v2",
+					mnemonic: "I0",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v3",
+					mnemonic: "AI0",
+					zone: "analog-input",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
 			],
 			groupLabels,
 		);
@@ -99,8 +168,21 @@ describe("buildProjectVariablesSections", () => {
 	it("omet les variables de bloc et les groupes vides", () => {
 		const sections = buildProjectVariablesSections(
 			[
-				new Variable("v1", "Tempo.Q", "memory", "BOOL", { id: "b1" }),
-				new Variable("v2", "O0", "logic-output", "BOOL"),
+				new Variable({
+					id: "v1",
+					mnemonic: "Tempo.Q",
+					zone: "memory",
+					type: "BOOL",
+					ownerBlock: { id: "b1" },
+					dialect: Dialect.FR,
+				}),
+				new Variable({
+					id: "v2",
+					mnemonic: "O0",
+					zone: "logic-output",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
 			],
 			groupLabels,
 		);
@@ -119,13 +201,36 @@ describe("constants in the PDF export", () => {
 		},
 	};
 	const constants = [
-		new Variable("c2", "SEUIL", "constant", "INT", undefined, "42"),
-		new Variable("c1", "DELAI", "constant", "TIME", undefined, "T#5s"),
+		new Variable({
+			id: "c2",
+			mnemonic: "SEUIL",
+			zone: "constant",
+			type: "INT",
+			value: "42",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "c1",
+			mnemonic: "DELAI",
+			zone: "constant",
+			type: "TIME",
+			value: "T#5s",
+			dialect: Dialect.FR,
+		}),
 	];
 
 	it("adds a Constantes section after the memories, with the declared value and no address column", () => {
 		const sections = buildProjectVariablesSections(
-			[new Variable("v1", "M0", "memory", "BOOL"), ...constants],
+			[
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				...constants,
+			],
 			groupLabels,
 		);
 
@@ -145,8 +250,17 @@ describe("constants in the PDF export", () => {
 
 	it("keeps the address column for the other groups", () => {
 		const model = buildVariablesTableModel(
-			[new Variable("v1", "M0", "memory", "BOOL")],
+			[
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			labels,
+			"address",
 		);
 
 		expect(model.columns.map((c) => c.header)).toContain("Adresse");
@@ -156,7 +270,16 @@ describe("constants in the PDF export", () => {
 	it("the active page export of the constants page builds the same table", () => {
 		const section = buildVariableGroupSection(
 			"constant",
-			[...constants, new Variable("v1", "M0", "memory", "BOOL")],
+			[
+				...constants,
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			"Constantes",
 			labels,
 		);

@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen } from "@testing-library/react";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Variable from "@/schemas/variable/variable.schema";
@@ -15,10 +16,25 @@ jest.mock("@/ui/components/hmi/HmiContext");
 jest.mock("@/ui/components/projects/ProjectContext");
 
 const variables = [
-	new Variable("v1", "arret", "logic-input", "BOOL").update({
-		behavior: { kind: "push-button-nc", params: null },
+	new Variable({
+		id: "v1",
+		mnemonic: "arret",
+		zone: "logic-input",
+		type: "BOOL",
+		dialect: Dialect.FR,
+	}).update(
+		{
+			behavior: { kind: "push-button-nc", params: null },
+		},
+		Dialect.FR,
+	),
+	new Variable({
+		id: "v2",
+		mnemonic: "libre",
+		zone: "logic-input",
+		type: "BOOL",
+		dialect: Dialect.FR,
 	}),
-	new Variable("v2", "libre", "logic-input", "BOOL"),
 ];
 
 function setup(widget: HmiWidget) {

@@ -1,4 +1,8 @@
-import { compiledProject, plcVariable } from "@tests/utils/bytecode-program";
+import {
+	compiledProject,
+	plcVariable,
+	UNO_PIN_RANGE,
+} from "@tests/utils/bytecode-program";
 import { NativeVm } from "@tests/utils/native-vm";
 import generateBytecode from "./bytecode.generator";
 import decodeVariableMemory, { variableMemorySize } from "./variable-memory";
@@ -32,6 +36,7 @@ function build() {
 		}),
 		ioBindings: [],
 		cyclePeriodMs: 100,
+		pinRange: UNO_PIN_RANGE,
 	});
 	return { image, vm: new NativeVm(image.bytes) };
 }

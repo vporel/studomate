@@ -2,7 +2,7 @@ import type { AdmissibilityIssue } from "@/bytecode/bytecode.admissibility";
 import type { FlashErrorCode } from "@/hardware/arduino/flash/stk500";
 import type {
 	RemoteIoErrorCode,
-	RemoteIoUploadErrorCode,
+	RemoteIoExchangeErrorCode,
 } from "@/hardware/arduino/remote-io/remote-io.client";
 
 /** An admissibility issue, with the name of the program it points at when there is one. */
@@ -13,7 +13,7 @@ export type ProgramBlockingIssue = AdmissibilityIssue & {
 /** Why a link could not be established. */
 export type LinkFailureCode = Exclude<
 	RemoteIoErrorCode,
-	"cancelled" | RemoteIoUploadErrorCode
+	"cancelled" | RemoteIoExchangeErrorCode
 >;
 
 /** Why a program could not be sent to the board. */
@@ -24,11 +24,11 @@ export type ProgramUploadFailure =
 	| "compilation"
 	/** The project uses something the board cannot run, which the analysis let through. */
 	| "unsupported"
-	| RemoteIoUploadErrorCode
+	| RemoteIoExchangeErrorCode
 	| "transport";
 
 /** Why the board did not start or stop its program. */
-export type ProgramCommandFailure = RemoteIoUploadErrorCode | "transport";
+export type ProgramCommandFailure = RemoteIoExchangeErrorCode | "transport";
 
 /** Why the interface could not start following the program of the board. */
 export type OnlineFailure =
@@ -39,7 +39,7 @@ export type OnlineFailure =
 	| "no-program"
 	/** The board holds another program than the one of the project. */
 	| "program-differs"
-	| RemoteIoUploadErrorCode
+	| RemoteIoExchangeErrorCode
 	| "transport";
 
 /** Why the interface stopped following the program of the board. */
@@ -70,6 +70,4 @@ export default interface HardwareLinkNotifier {
 	onlineLost(reason: OnlineLoss, fault: number): void;
 	/** A write to a variable of the program of the board did not reach it. */
 	boardVariableFailed(code: ProgramCommandFailure): void;
-	/** The tab came back to the foreground after its outputs were cut while hidden. */
-	outputsCutInBackground(): void;
 }

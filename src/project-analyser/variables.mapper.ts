@@ -1,5 +1,5 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { parseConstantLiteral } from "@/schemas/variable/constant-value";
+import { getConstantNativeValue } from "@/schemas/variable/constant-value";
 import Variable from "@/schemas/variable/variable.schema";
 import EnvVariable from "@/simulator/interpreter/environment/env-variable";
 
@@ -10,18 +10,9 @@ import EnvVariable from "@/simulator/interpreter/environment/env-variable";
 export default class SchemaVariablesMapper {
 	/** The declared value of a constant is parsed with the project dialect. A constant whose
 	 * literal is invalid (reported by the analysis) is built at the type's zero value. */
-	static schemaToEnv(
-		schemaVar: Variable,
-		dialect: Dialect = Dialect.FR,
-	): EnvVariable {
+	static schemaToEnv(schemaVar: Variable, dialect: Dialect): EnvVariable {
 		const isConstant = schemaVar.zone === "constant";
-		const initialValue = isConstant
-			? (parseConstantLiteral(
-					schemaVar.value ?? "",
-					schemaVar.type,
-					dialect,
-				) ?? undefined)
-			: undefined;
+		const initialValue = getConstantNativeValue(schemaVar, dialect);
 		const envVar = new EnvVariable(
 			schemaVar.id,
 			schemaVar.mnemonic,

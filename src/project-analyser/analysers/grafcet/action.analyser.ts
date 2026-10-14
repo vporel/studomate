@@ -24,7 +24,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 	 */
 	analyseIsolated(
 		action: Action,
-		{ dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
+		{ dialect }: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		const source = {
 			sourceType: "grafcet-action" as const,
@@ -113,7 +113,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		action: Action,
 		grafcet: Grafcet,
 		env: Environment,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): ProjectAnalyserIssue[] {
 		if (action.data.type === ActionType.TEXT) return [];
 

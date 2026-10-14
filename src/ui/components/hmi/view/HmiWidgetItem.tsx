@@ -10,7 +10,7 @@ import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
 import { memo, MouseEvent as ReactMouseEvent, useMemo } from "react";
 import useBoundInputBehavior from "./useBoundInputBehavior";
-import useHardwareDrivenVariable from "./useHardwareDrivenVariable";
+import useDrivenInputVariable from "./useDrivenInputVariable";
 import { HMI_WIDGET_ZINDEX_OFFSET } from "@/ui/components/hmi/logic/constants";
 import {
 	useHmiPositionAnimationOffset,
@@ -98,7 +98,7 @@ const HmiWidgetItem = ({
 	const boundMnemonic = "variable" in widget.data ? widget.data.variable : null;
 
 	const boundBehavior = useBoundInputBehavior(boundMnemonic);
-	const drivenByHardware = useHardwareDrivenVariable(boundMnemonic);
+	const drivenInput = useDrivenInputVariable(boundMnemonic);
 	const data = useMemo(
 		() => withBehaviorImposedData(widget, boundBehavior),
 		[widget, boundBehavior],
@@ -146,7 +146,7 @@ const HmiWidgetItem = ({
 				animationsEnabled={isSimulation}
 				selected={isSelected && !isSimulation}
 				onValueChange={
-					isSimulation && boundMnemonic !== null && !drivenByHardware
+					isSimulation && boundMnemonic !== null && !drivenInput
 						? (v) => onSetVariableValue(boundMnemonic, v)
 						: undefined
 				}

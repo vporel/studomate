@@ -2,7 +2,7 @@ import {
 	ZONE_TO_PIN_CAPABILITY,
 	type HardwarePin,
 } from "@/hardware/hardware-device.descriptor";
-import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
+import { getHardwareDevice } from "@/hardware/hardware-device.registry";
 import type Project from "@/schemas/project/project.schema";
 import type Variable from "@/schemas/variable/variable.schema";
 import CrossReferenceCollector from "./cross-reference/cross-reference-collector";
@@ -20,7 +20,7 @@ export default function analyseHardwareTarget(
 	if (!target) return [];
 
 	const source = { sourceType: "project", sourceId: project.id } as const;
-	const device = HardwareDeviceRegistry.get(target.modelId);
+	const device = getHardwareDevice(target.modelId);
 	if (!device) {
 		return [
 			new ProjectAnalyserIssue("error", "HARDWARE_MODEL_UNKNOWN", source, {

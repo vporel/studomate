@@ -1,6 +1,6 @@
 ---
 name: process-audit
-description: Process, work through, and resolve the points of an audit file (typically _ai/audit-code.md or _ai/audit-perfs.md). Loop top to bottom over the numbered points: verify, propose a plan, wait for approval, implement, test, delete the point. With --parallel, approved plans are delegated to background agents while independent points are handled in the meantime.
+description: Process, work through, and resolve the points of an audit file (typically _ai/audit-code.md or _ai/audit-perfs.md). Loop top to bottom over the numbered points: verify, propose a plan, wait for approval, implement, test, delete the point. With --parallel, approved plans are delegated to background agents while independent points are handled in the meantime. With --auto, points that need no developer decision are processed without waiting for approval, then the skill switches to normal validation mode for the skipped points.
 ---
 
 # Skill: processing an audit file
@@ -18,6 +18,9 @@ argument (`/process-audit _ai/audit-perfs.md`) and it isn't obvious from the
 conversation, explicitly ask which file to process. Don't guess.
 
 The optional `--parallel` flag enables delegation to agents (see the dedicated section below).
+The optional `--auto` flag enables an unattended first phase (see the dedicated section below).
+`--auto` and `--parallel` are **mutually exclusive**: if both are passed, refuse and ask the
+developer to pick one.
 
 ## The loop
 
@@ -175,6 +178,66 @@ remaining point is independent of in-flight agents, stop and say what you're wai
 
 At the very end, once all agents are done and all points handled, run the **whole test
 suite** (command defined in CLAUDE.md), plus the other checks it lists, and report the result.
+
+## `--auto` mode
+
+Activated with `/process-audit _ai/audit-tests.md --auto`. Typical use: a test audit, where the
+agent should not touch production code. Without the flag, everything above applies unchanged.
+Not combinable with `--parallel`.
+
+The run has two phases: an **auto phase** (no developer validation), then a **validation
+phase** (the normal loop, on the points skipped during the auto phase).
+
+### Auto phase
+
+Loop top to bottom over the points, like the normal loop, with these changes:
+
+- **Step 2 (verify)**: a confirmed point continues. A **false positive** is skipped (reason:
+  "false positive"), never deleted.
+- **Eligibility**: a confirmed point is processed in auto only if ALL of these hold:
+  - it only touches test files (tests, factories in `tests/utils/`, test helpers);
+  - it changes no existing contract (public API of a module, behavior, schema field, analyser
+    issue code...);
+  - it changes nothing in `src/schemas/` that alters persisted data, so needs no project or
+    `localStorage` migration;
+  - it doesn't touch the firmware (`firmwares/`, protocol commands), so raises no
+    `SHIPPED_FIRMWARE_VERSION` question;
+  - it needs no decision from the developer (anything CLAUDE.md says to ask about, new i18n
+    wording, naming or product choices).
+
+  Otherwise it is skipped with the reason. In particular, if a test reveals a real bug in
+  production code, do **not** fix the code: skip the point (reason: "bug in production code").
+- **Steps 3-4 (plan / approval)**: write a short plan (2-3 lines) in the output for
+  traceability, then **go on without waiting for approval**.
+- **Step 5 (implement)**: unchanged, including the CLAUDE.md rules (tests, `jsdom` environment
+  docblock for DOM tests, no commit...). No need to check that an added test fails before the fix.
+- **Step 6 (verify)**: run the targeted tests after each point, plus `npx tsc --noEmit` and
+  lint on the touched files only if the change warrants it (CLAUDE.md verification cadence).
+  If checks stay red after a reasonable attempt, or the plan proves insufficient, **undo the
+  changes made for that point** by reverting only the files you touched, by hand. Never use
+  `git stash`, `checkout` or `reset` (the working tree holds the developer's uncommitted
+  changes). Then skip the point with the reason.
+- **Step 7 (delete)**: delete the point from the audit file only once it is fully processed
+  and green. Skipped points stay in the file, unchanged except for an optional one-line
+  "skipped (auto): <reason>" note. Don't renumber.
+- **Step 8 (ripple)**: update related points' text as usual. A related point that becomes
+  entirely moot is **skipped** (reason: "moot after point N"), never deleted.
+- **Step 9**: move on to the next point not yet examined, without asking anything.
+
+The auto phase ends when every remaining point has been examined once.
+
+### End of the auto phase
+
+1. Run the **whole test suite**, `npx tsc --noEmit` and `npm run lint` (commands defined in
+   CLAUDE.md), and report the result. Fix regressions caused by auto changes; if one can't be
+   fixed simply, report it. Don't run `npm run build`.
+2. Give a recap: points processed, and points skipped with the reason for each.
+3. Pass on anything CLAUDE.md says to flag.
+
+### Validation phase
+
+Switch to the normal loop (steps 1-9, with developer approval) on the points still in the
+file, i.e. the skipped ones, top to bottom. The `--auto` behavior no longer applies.
 
 ## End
 

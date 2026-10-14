@@ -1,6 +1,10 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import {
+	getVariablesPageDefinition,
+	isVariablesPageId,
+} from "@/ui/stores/project/variables-pages";
 import type { PageData } from "@/ui/stores/project/project.store";
 
 /**
@@ -27,10 +31,11 @@ export function usePageTitle() {
 			case "project-startup":
 				return t("projectStartup");
 			case "variables":
-				if (page.id === "input-variables") return t("inputVariables");
-				if (page.id === "output-variables") return t("outputVariables");
-				if (page.id === "constant-variables") return t("constantVariables");
-				return t("memoryVariables");
+				return t(
+					isVariablesPageId(page.id)
+						? getVariablesPageDefinition(page.id).titleKey
+						: "memoryVariables",
+				);
 			case "system-variables":
 				return t("systemVariables");
 			default:

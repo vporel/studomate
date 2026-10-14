@@ -20,7 +20,15 @@ import VariablesUpdateCommand from "./variables-update.command";
  */
 function buildProject() {
 	const project = new Project("p1", "Projet", "");
-	project.variables = [new Variable("v1", "moteur", "memory", "BOOL")];
+	project.variables = [
+		new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}),
+	];
 
 	const grafcetA = new GrafcetBuilder()
 		.id("g-a")
@@ -194,7 +202,14 @@ describe("VariablesUpdateCommand constants", () => {
 		const project = new Project("p1", "Projet", "");
 		project.dialect = dialect;
 		project.variables = [
-			new Variable("k", "K", "constant", "BOOL", undefined, value, dialect),
+			new Variable({
+				id: "k",
+				mnemonic: "K",
+				zone: "constant",
+				type: "BOOL",
+				value,
+				dialect,
+			}),
 		];
 		return project;
 	}

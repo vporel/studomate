@@ -5,6 +5,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 import SceneView, { type SceneViewPhase } from "./scene-view";
 import { getSceneViewDefinition, type SceneCamera } from "./scene-views";
 
@@ -41,7 +42,7 @@ export default function SceneApp({ session }: { session: string }) {
 
 const DEFAULT_CAMERA: SceneCamera = {
 	position: [4, 6, 7],
-	target: [4, 0, 1.5],
+	target: SCENE_ORIGIN,
 };
 
 const NO_SNAPSHOT = { phase: "waiting", sceneId: null } as const;
@@ -59,7 +60,10 @@ function SceneContent({ view }: { view: SceneView }) {
 
 	return (
 		<div style={{ position: "fixed", inset: 0, background: "#eef1f3" }}>
-			<Canvas key={sceneId ?? ""} camera={{ position: camera.position, fov: 50 }}>
+			<Canvas
+				key={sceneId ?? ""}
+				camera={{ position: camera.position, fov: 50 }}
+			>
 				<ambientLight intensity={0.7} />
 				<directionalLight position={[5, 8, 4]} intensity={1.2} />
 				{definition && (

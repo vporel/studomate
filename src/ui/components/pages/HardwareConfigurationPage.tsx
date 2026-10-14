@@ -1,8 +1,10 @@
 "use client";
 
 import type { PinCapability } from "@/hardware/hardware-device.descriptor";
-import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
-import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
+import {
+	getHardwareDevice,
+	listHardwareDevices,
+} from "@/hardware/hardware-device.registry";
 import type { HardwareModelId } from "@/schemas/hardware/hardware-target.schema";
 import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
@@ -21,7 +23,8 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import useWebSerialSupported from "@/ui/components/hardware/useWebSerialSupported";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
@@ -48,11 +51,9 @@ const HardwareConfigurationPage = () => {
 				setHardwareTarget: state.setHardwareTarget,
 			})),
 		);
-	// Read after mounting, to match the server-rendered markup.
-	const [supported, setSupported] = useState<boolean | null>(null);
-	useEffect(() => setSupported(isWebSerialSupported()), []);
+	const supported = useWebSerialSupported();
 	const device = target
-		? HardwareDeviceRegistry.get(target.modelId)
+		? getHardwareDevice(target.modelId)
 		: undefined;
 	const editor = target ? getHardwareTargetEditor(target.modelId) : undefined;
 
@@ -106,7 +107,7 @@ const HardwareConfigurationPage = () => {
 							{target.modelId}
 						</MenuItem>
 					)}
-					{HardwareDeviceRegistry.list().map((descriptor) => (
+					{listHardwareDevices().map((descriptor) => (
 						<MenuItem key={descriptor.modelId} value={descriptor.modelId}>
 							{descriptor.label}
 						</MenuItem>

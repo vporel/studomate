@@ -21,7 +21,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  */
 export default function buildAnalysisEnvironment(
 	schemaVariables: Variable[],
-	dialect: Dialect = Dialect.FR,
+	dialect: Dialect,
 ): Environment {
 	return new Environment([
 		...schemaVariables

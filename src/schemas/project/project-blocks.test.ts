@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import Project from "./project.schema";
@@ -31,7 +32,15 @@ describe("Project — blocs timer", () => {
 
 	it("isNameTaken détecte une collision avec une variable existante", () => {
 		const project = new Project("p1", "Projet", "");
-		project.variables.push(new Variable("v1", "Tempo1", "memory", "BOOL"));
+		project.variables.push(
+			new Variable({
+				id: "v1",
+				mnemonic: "Tempo1",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 
 		expect(project.isNameTaken("Tempo1")).toBe(true);
 		expect(project.isNameTaken("Autre")).toBe(false);

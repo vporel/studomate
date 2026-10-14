@@ -18,7 +18,7 @@ export default class StepReferralTargetAnalyser extends GrafcetElementAnalyser<S
 	 */
 	analyseIsolated(
 		stepReferral: StepReferralTarget,
-		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
+		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		const source = {
 			sourceType: "grafcet-step-referral-target" as const,

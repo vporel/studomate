@@ -56,7 +56,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const maVar = new Variable("v1", "MaVar", "memory", "INT");
+		const maVar = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -76,7 +82,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const reset = new Variable("v1", "Reset", "memory", "BOOL");
+		const reset = new Variable({
+			id: "v1",
+			mnemonic: "Reset",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -111,7 +123,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -129,7 +147,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -147,7 +171,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -167,8 +197,20 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
-		const maVar = new Variable("v2", "MaVar", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const maVar = new Variable({
+			id: "v2",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -188,8 +230,20 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
-		const consigne = new Variable("v2", "MaConsigne", "memory", "TIME");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const consigne = new Variable({
+			id: "v2",
+			mnemonic: "MaConsigne",
+			zone: "memory",
+			type: "TIME",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -209,7 +263,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -233,7 +293,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -259,8 +325,20 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
-		const maVar = new Variable("v2", "MaVar", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const maVar = new Variable({
+			id: "v2",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -286,8 +364,20 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
-		const consigne = new Variable("v2", "MaConsigne", "memory", "TIME");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const consigne = new Variable({
+			id: "v2",
+			mnemonic: "MaConsigne",
+			zone: "memory",
+			type: "TIME",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -307,7 +397,13 @@ describe("CounterBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const r = new Variable("v1", "R", "memory", "BOOL");
+		const r = new Variable({
+			id: "v1",
+			mnemonic: "R",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = CounterBlockAnalyser.analyse(
 			element,
@@ -363,7 +459,13 @@ describe("CounterBlockAnalyser", () => {
 		it("signale une variable CD non déclarée ou non booléenne", () => {
 			const issues = analyse(
 				ctud({ down: "Inconnue", load: "Nombre" }),
-				new Variable("v1", "Nombre", "memory", "INT"),
+				new Variable({
+					id: "v1",
+					mnemonic: "Nombre",
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
 			);
 
 			expect(issues.map((i) => [i.code, i.params.pin])).toEqual([
@@ -374,15 +476,31 @@ describe("CounterBlockAnalyser", () => {
 
 		it("valide QD comme variable booléenne existante quand renseignée", () => {
 			expect(
-				analyse(ctud({ qd: "Vide" }), new Variable("v1", "Vide", "memory", "BOOL")),
+				analyse(
+					ctud({ qd: "Vide" }),
+					new Variable({
+						id: "v1",
+						mnemonic: "Vide",
+						zone: "memory",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
+				),
 			).toEqual([]);
 			expect(analyse(ctud({ qd: "Inconnue" })).map((i) => i.code)).toEqual([
 				"BLOCK_COUNTER_QD_UNDECLARED_VARIABLE",
 			]);
 			expect(
-				analyse(ctud({ qd: "Nombre" }), new Variable("v1", "Nombre", "memory", "INT")).map(
-					(i) => i.code,
-				),
+				analyse(
+					ctud({ qd: "Nombre" }),
+					new Variable({
+						id: "v1",
+						mnemonic: "Nombre",
+						zone: "memory",
+						type: "INT",
+						dialect: Dialect.FR,
+					}),
+				).map((i) => i.code),
 			).toEqual(["BLOCK_COUNTER_QD_INVALID_TYPE"]);
 		});
 

@@ -93,9 +93,15 @@ describe("validateAddress", () => {
 		}
 	});
 
-	it("accepte un préfixe de une ou deux lettres suivi de chiffres, avec un bit optionnel", () => {
-		for (const ok of ["%X1", "%ZZ1", "%I12345.12345"]) {
+	it("accepte les préfixes de la liste fermée et un bit optionnel", () => {
+		for (const ok of ["%E1", "%EA3", "%I12345.12345", "%QW10", "%MD100"]) {
 			expect(validateAddress(ok)).toEqual([]);
+		}
+	});
+
+	it("ADDRESS_INVALID pour un préfixe hors de la liste", () => {
+		for (const bad of ["%ZZ1", "%X0"]) {
+			expect(codes(validateAddress(bad))).toContain("ADDRESS_INVALID");
 		}
 	});
 
@@ -167,12 +173,15 @@ describe("getValidTypesForZones", () => {
 
 describe("validateVariable", () => {
 	it("compose mnémonique + zone/type + adresse", () => {
-		const issues = validateVariable({
-			mnemonic: "1bad",
-			zone: "logic-input",
-			type: "INT",
-			address: "nope",
-		});
+		const issues = validateVariable(
+			{
+				mnemonic: "1bad",
+				zone: "logic-input",
+				type: "INT",
+				address: "nope",
+			},
+			Dialect.FR,
+		);
 		expect(codes(issues)).toEqual(
 			expect.arrayContaining([
 				"MNEMONIC_MUST_START_WITH_LETTER",
@@ -184,7 +193,10 @@ describe("validateVariable", () => {
 
 	it("ne valide pas l'adresse quand elle est absente", () => {
 		expect(
-			validateVariable({ mnemonic: "M", zone: "memory", type: "BOOL" }),
+			validateVariable(
+				{ mnemonic: "M", zone: "memory", type: "BOOL" },
+				Dialect.FR,
+			),
 		).toEqual([]);
 	});
 });
@@ -196,43 +208,91 @@ describe("validateBehavior", () => {
 	});
 
 	it("accepte un bouton poussoir ou un commutateur sur une entrée TOR", () => {
-		expect(validateBehavior("logic-input", "BOOL", { kind: "push-button-nc", params: null })).toEqual([]);
-		expect(validateBehavior("logic-input", "BOOL", { kind: "toggle-switch-no", params: null })).toEqual([]);
+		expect(
+			validateBehavior("logic-input", "BOOL", {
+				kind: "push-button-nc",
+				params: null,
+			}),
+		).toEqual([]);
+		expect(
+			validateBehavior("logic-input", "BOOL", {
+				kind: "toggle-switch-no",
+				params: null,
+			}),
+		).toEqual([]);
 	});
 
 	it("BEHAVIOR_NOT_ALLOWED hors des entrées ou pour un type incompatible", () => {
-		expect(codes(validateBehavior("memory", "BOOL", { kind: "push-button-no", params: null }))).toEqual([
-			"BEHAVIOR_NOT_ALLOWED",
-		]);
 		expect(
-			codes(validateBehavior("memory", "INT", { kind: "slider", params: { min: 0, max: 10 } })),
+			codes(
+				validateBehavior("memory", "BOOL", {
+					kind: "push-button-no",
+					params: null,
+				}),
+			),
 		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
 		expect(
-			codes(validateBehavior("analog-input", "INT", { kind: "push-button-no", params: null })),
+			codes(
+				validateBehavior("memory", "INT", {
+					kind: "slider",
+					params: { min: 0, max: 10 },
+				}),
+			),
 		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
 		expect(
-			codes(validateBehavior("logic-input", "BOOL", { kind: "slider", params: { min: 0, max: 10 } })),
+			codes(
+				validateBehavior("analog-input", "INT", {
+					kind: "push-button-no",
+					params: null,
+				}),
+			),
+		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
+		expect(
+			codes(
+				validateBehavior("logic-input", "BOOL", {
+					kind: "slider",
+					params: { min: 0, max: 10 },
+				}),
+			),
 		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
 	});
 
 	it("accepte un curseur aux bornes entières, ordonnées, dans la plage du type", () => {
 		expect(
-			validateBehavior("analog-input", "INT", { kind: "slider", params: { min: -10, max: 100 } }),
+			validateBehavior("analog-input", "INT", {
+				kind: "slider",
+				params: { min: -10, max: 100 },
+			}),
 		).toEqual([]);
 	});
 
 	it("SLIDER_BOUNDS_NOT_INTEGER pour une borne décimale ou absente", () => {
 		expect(
-			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: 0.5, max: 10 } })),
+			codes(
+				validateBehavior("analog-input", "INT", {
+					kind: "slider",
+					params: { min: 0.5, max: 10 },
+				}),
+			),
 		).toEqual(["SLIDER_BOUNDS_NOT_INTEGER"]);
 		expect(
-			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: NaN, max: 10 } })),
+			codes(
+				validateBehavior("analog-input", "INT", {
+					kind: "slider",
+					params: { min: NaN, max: 10 },
+				}),
+			),
 		).toEqual(["SLIDER_BOUNDS_NOT_INTEGER"]);
 	});
 
 	it("SLIDER_BOUNDS_ORDER quand min n'est pas strictement inférieur à max", () => {
 		expect(
-			codes(validateBehavior("analog-input", "INT", { kind: "slider", params: { min: 10, max: 10 } })),
+			codes(
+				validateBehavior("analog-input", "INT", {
+					kind: "slider",
+					params: { min: 10, max: 10 },
+				}),
+			),
 		).toEqual(["SLIDER_BOUNDS_ORDER"]);
 	});
 
@@ -252,12 +312,15 @@ describe("validateBehavior", () => {
 	it("est appelée par validateVariable", () => {
 		expect(
 			codes(
-				validateVariable({
-					mnemonic: "m",
-					zone: "memory",
-					type: "BOOL",
-					behavior: { kind: "push-button-no", params: null },
-				}),
+				validateVariable(
+					{
+						mnemonic: "m",
+						zone: "memory",
+						type: "BOOL",
+						behavior: { kind: "push-button-no", params: null },
+					},
+					Dialect.FR,
+				),
 			),
 		).toEqual(["BEHAVIOR_NOT_ALLOWED"]);
 	});
@@ -265,9 +328,9 @@ describe("validateBehavior", () => {
 
 describe("validateConstantValue", () => {
 	it("ignores every zone but constant", () => {
-		expect(validateConstantValue("memory", "INT", undefined, Dialect.FR)).toEqual(
-			[],
-		);
+		expect(
+			validateConstantValue("memory", "INT", undefined, Dialect.FR),
+		).toEqual([]);
 	});
 
 	it("CONSTANT_VALUE_MISSING for an absent or blank value", () => {
@@ -308,19 +371,19 @@ describe("validateVariable on a constant", () => {
 	};
 
 	it("accepts a complete constant", () => {
-		expect(validateVariable(constant)).toEqual([]);
+		expect(validateVariable(constant, Dialect.FR)).toEqual([]);
 	});
 
 	it("rejects a constant without value", () => {
-		expect(codes(validateVariable({ ...constant, value: undefined }))).toEqual([
-			"CONSTANT_VALUE_MISSING",
-		]);
+		expect(
+			codes(validateVariable({ ...constant, value: undefined }, Dialect.FR)),
+		).toEqual(["CONSTANT_VALUE_MISSING"]);
 	});
 
 	it("rejects an address on a constant", () => {
-		expect(codes(validateVariable({ ...constant, address: "%MW10" }))).toEqual([
-			"ADDRESS_NOT_ALLOWED_FOR_CONSTANT",
-		]);
+		expect(
+			codes(validateVariable({ ...constant, address: "%MW10" }, Dialect.FR)),
+		).toEqual(["ADDRESS_NOT_ALLOWED_FOR_CONSTANT"]);
 	});
 
 	it("validates the boolean literal against the given dialect", () => {

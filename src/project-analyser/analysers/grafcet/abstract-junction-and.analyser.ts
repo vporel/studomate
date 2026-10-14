@@ -32,7 +32,7 @@ export default abstract class AbstractJunctionAndAnalyser<
 	 */
 	analyseIsolated(
 		_junction: T,
-		_options: ElementAnalyseIsolatedOptions = {},
+		_options: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		//Aucune règle isolée : la validité d'une jonction dépend entièrement de ses
 		//connexions, donc de son contexte (voir analyseInContext).

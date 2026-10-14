@@ -1,6 +1,5 @@
 import type PLCVariable from "@/simulator/core/plc/plc-variable";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import type HardwareLinkContext from "./hardware-link.context";
 import { drivenInputIdsOf } from "./hardware-link.state";
 
@@ -13,30 +12,6 @@ export default class HardwareSimulationBridge {
 	private lastInputs = new Map<string, boolean | number>();
 	private readonly onPageHide = () =>
 		void this.context.session.client?.fallback();
-	/**
-	 * A hidden tab runs the PLC at a throttled rate (down to one cycle per minute), far slower
-	 * than the heartbeat: the outputs would stay frozen at their last state. They are cut while
-	 * the tab is hidden, and the PLC does not drive them until it is visible again.
-	 */
-	private outputsSuspended = false;
-	private readonly onVisibilityChange = () => {
-		if (document.visibilityState === "hidden") {
-			const state = this.context.getStoreState();
-			// Outside a running simulation no PLC cycle drives the outputs: nothing to cut.
-			if (
-				state.hardwareLink.status !== "linked" ||
-				state.mode !== ProjectMode.SIMULATION ||
-				state.simulationPaused
-			) {
-				return;
-			}
-			this.outputsSuspended = true;
-			void this.context.session.client?.fallback();
-		} else if (this.outputsSuspended) {
-			this.outputsSuspended = false;
-			this.context.notifier.outputsCutInBackground();
-		}
-	};
 
 	constructor(private readonly context: HardwareLinkContext) {}
 
@@ -44,7 +19,6 @@ export default class HardwareSimulationBridge {
 	attach(plan: RemoteIoPlan): void {
 		this.adoptPlan(plan);
 		window.addEventListener("pagehide", this.onPageHide);
-		document.addEventListener("visibilitychange", this.onVisibilityChange);
 	}
 
 	/** Forgets everything about the link that was closed. */
@@ -52,8 +26,6 @@ export default class HardwareSimulationBridge {
 		this.outputIds = new Set();
 		this.lastInputs = new Map();
 		window.removeEventListener("pagehide", this.onPageHide);
-		document.removeEventListener("visibilitychange", this.onVisibilityChange);
-		this.outputsSuspended = false;
 	}
 
 	/** Outputs of this plan are the ones written to the board after each cycle. */
@@ -127,7 +99,6 @@ export default class HardwareSimulationBridge {
 			link.status !== "linked" ||
 			link.boardMode !== "remote-io" ||
 			!session.client ||
-			this.outputsSuspended ||
 			this.outputIds.size === 0
 		) {
 			return;

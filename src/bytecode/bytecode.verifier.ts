@@ -1,5 +1,7 @@
 import {
 	CMP_OPERATORS,
+	COUNTER_KINDS,
+	COUNTER_KIND_CTUD,
 	FORMAT_VERSION,
 	HEADER_OFFSETS,
 	HEADER_SIZE,
@@ -9,20 +11,23 @@ import {
 	MAGIC,
 	MAX_INDEXED_ENTRIES,
 	MAX_PENDING_TARGETS,
-	MAX_PIN_NUMBER,
 	OPCODE_SHAPES,
 	Op,
 	ROUTINE_ENTRY_SIZE,
+	SIGNED_ARITHMETIC_TYPES,
 	SYSTEM_VARIABLE_IDS,
 	SYS_ENTRY_SIZE,
+	TIMER_KINDS,
 	TIMER_OPERAND_BYTES,
 	TIMER_POPS,
 	TYPE_CODE,
 	counterOperandBytes,
 	counterPops,
 	type StorageClass,
+	type TypeCode,
 } from "./bytecode-format";
-import { imageChecksum } from "./bytecode.generator";
+import { imageChecksum } from "./bytecode-image";
+import type { PinNumberRange } from "@/hardware/hardware-device.descriptor";
 
 /** Reason reported when conditional jumps are nested deeper than the VM can check. */
 export const TOO_MANY_PENDING_JUMPS = "too many pending jumps";
@@ -30,12 +35,6 @@ export const TOO_MANY_PENDING_JUMPS = "too many pending jumps";
 export type BytecodeVerification =
 	{ valid: true } | { valid: false; reason: string };
 
-const SIGNED_ARITHMETIC_TYPES = [
-	TYPE_CODE.INT,
-	TYPE_CODE.DINT,
-	TYPE_CODE.TIME,
-	TYPE_CODE.INTERNAL,
-];
 const CONVERSION_TYPES = [
 	TYPE_CODE.INT,
 	TYPE_CODE.WORD,
@@ -59,9 +58,10 @@ function refuse(reason: string): never {
 export default function verifyBytecode(
 	image: Uint8Array,
 	capacityBytes: number,
+	pinRange: PinNumberRange,
 ): BytecodeVerification {
 	try {
-		check(image, capacityBytes);
+		check(image, capacityBytes, pinRange);
 		return { valid: true };
 	} catch (error) {
 		if (error instanceof Refusal)
@@ -70,7 +70,11 @@ export default function verifyBytecode(
 	}
 }
 
-function check(image: Uint8Array, capacityBytes: number): void {
+function check(
+	image: Uint8Array,
+	capacityBytes: number,
+	pinRange: PinNumberRange,
+): void {
 	if (image.length < HEADER_SIZE) refuse("image shorter than its header");
 	if (MAGIC.some((byte, i) => image[i] !== byte)) refuse("bad magic");
 	if (image[HEADER_OFFSETS.formatVersion] !== FORMAT_VERSION) {
@@ -135,7 +139,7 @@ function check(image: Uint8Array, capacityBytes: number): void {
 		if ((classOf(index) === "bool") !== digital) {
 			refuse("I/O variable class does not suit its role");
 		}
-		if (pin < 2 || pin > MAX_PIN_NUMBER || pins.has(pin)) {
+		if (pin < pinRange.min || pin > pinRange.max || pins.has(pin)) {
 			refuse("invalid or duplicated pin");
 		}
 		pins.add(pin);
@@ -251,7 +255,7 @@ function checkRoutine(context: RoutineContext): void {
 		} else if (opcode === Op.COUNTER) {
 			if (pc + 1 >= end) refuse("operands outside the routine");
 			const kind = byteAt(pc + 1);
-			if (kind > 2) refuse("unknown counter kind");
+			if (kind >= COUNTER_KINDS.length) refuse("unknown counter kind");
 			length = 1 + counterOperandBytes(kind);
 			pops = counterPops(kind);
 			pushes = 1;
@@ -284,7 +288,7 @@ function checkRoutine(context: RoutineContext): void {
 				break;
 			}
 			case Op.TIMER:
-				if (operand(0) > 2) refuse("unknown timer kind");
+				if (operand(0) >= TIMER_KINDS.length) refuse("unknown timer kind");
 				requireClass(operand(1), ["bool"]);
 				requireClass(operand(2), ["int", "int32"]);
 				requireClass(operand(3), ["bool"]);
@@ -294,7 +298,7 @@ function checkRoutine(context: RoutineContext): void {
 				requireClass(operand(1), ["bool"]);
 				requireClass(operand(2), ["int", "int32"]);
 				requireClass(operand(3), ["bool"]);
-				if (kind === 2) {
+				if (kind === COUNTER_KIND_CTUD) {
 					requireClass(operand(4), ["bool"]);
 					requireClass(operand(5), ["bool"]);
 				}
@@ -302,7 +306,7 @@ function checkRoutine(context: RoutineContext): void {
 			}
 			default:
 				if (ARITHMETIC_OPS.includes(opcode)) {
-					if (!SIGNED_ARITHMETIC_TYPES.includes(operand(0) as never)) {
+					if (!SIGNED_ARITHMETIC_TYPES.includes(operand(0) as TypeCode)) {
 						refuse("type not allowed in arithmetic");
 					}
 				} else if (opcode === Op.CONV) {

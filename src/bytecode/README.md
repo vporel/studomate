@@ -17,16 +17,17 @@ the firmware.
 
 ## Files
 
-| File | Role |
-|---|---|
-| `bytecode-format.ts` | Constants of the format: header offsets, opcodes, type codes, I/O roles, limits |
-| `bytecode.generator.ts` | `generateBytecode`: compiled project to image, plus its layout (sizes, indices) |
-| `bytecode.verifier.ts` | `verifyBytecode`: structural check of an image, same rules as the VM's loader |
-| `bytecode.admissibility.ts` | `checkAdmissibility`: does the image fit the target's limits? |
-| `variable-memory.ts` | `decodeVariableMemory`: values by name from a copy of the VM variable memory |
-| `arduino-io-bindings.ts` | Adapter from the Arduino pin plan (`RemoteIoPlan`) to neutral `IoBinding`s |
-| `bytecode.error.ts` | `BytecodeGenerationError`: the project holds something the format cannot express |
-| `crc.ts` | CRC-16/CCITT-FALSE (image integrity) and CRC-32 (image identifier) |
+| File                        | Role                                                                                                                                                           |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bytecode-format.ts`        | Constants of the format: header offsets, opcodes, type codes, I/O roles, limits                                                                                |
+| `bytecode-image.ts`         | Image primitives shared by generator and verifier: little-endian writers, CRC-16 checksum, image identifier                                                    |
+| `bytecode.generator.ts`     | `generateBytecode`: compiled project to image, plus its layout (sizes, indices)                                                                                |
+| `bytecode.verifier.ts`      | `verifyBytecode`: structural check of an image, same rules as the VM's loader; the valid pin range is an input (`limits.vm.pinRange` of the target descriptor) |
+| `bytecode.admissibility.ts` | `checkAdmissibility`: does the image fit the target's limits?                                                                                                  |
+| `variable-memory.ts`        | `decodeVariableMemory`: values by name from a copy of the VM variable memory                                                                                   |
+| `arduino-io-bindings.ts`    | Adapter from the Arduino pin plan (`RemoteIoPlan`) to neutral `IoBinding`s                                                                                     |
+| `bytecode.error.ts`         | `BytecodeGenerationError`: the project holds something the format cannot express                                                                               |
+| `crc.ts`                    | CRC-16/CCITT-FALSE (image integrity) and CRC-32 (image identifier)                                                                                             |
 
 The VM itself is C, in `firmwares/vm/` (`stdm_vm.c`, `stdm_vm.h`), with no Arduino dependency: I/O,
 clock and image storage sit behind a small platform interface (`stdm_platform`). The Uno R3

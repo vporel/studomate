@@ -11,7 +11,7 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 			.type("INT")
 			.build();
 
-		const envVar = SchemaVariablesMapper.schemaToEnv(variable);
+		const envVar = SchemaVariablesMapper.schemaToEnv(variable, Dialect.FR);
 
 		expect(envVar.getId()).toBe("var-1");
 		expect(envVar.getName()).toBe("Counter");
@@ -24,9 +24,9 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 			.zone("logic-input")
 			.type("BOOL")
 			.build();
-		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe(
-			"IN",
-		);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(variable, Dialect.FR).getDirection(),
+		).toBe("IN");
 	});
 
 	it("maps an output zone to the OUT direction", () => {
@@ -34,30 +34,36 @@ describe("SchemaVariablesMapper.schemaToEnv", () => {
 			.zone("logic-output")
 			.type("BOOL")
 			.build();
-		expect(SchemaVariablesMapper.schemaToEnv(variable).getDirection()).toBe(
-			"OUT",
-		);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(variable, Dialect.FR).getDirection(),
+		).toBe("OUT");
 	});
 
 	it("initialises the environment variable with the type's default value", () => {
 		const boolVar = new VariableBuilder().zone("memory").type("BOOL").build();
-		expect(SchemaVariablesMapper.schemaToEnv(boolVar).getValue()).toBe(false);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(boolVar, Dialect.FR).getValue(),
+		).toBe(false);
 
 		const intVar = new VariableBuilder().zone("memory").type("INT").build();
-		expect(SchemaVariablesMapper.schemaToEnv(intVar).getValue()).toBe(0);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(intVar, Dialect.FR).getValue(),
+		).toBe(0);
 
 		const stringVar = new VariableBuilder()
 			.zone("memory")
 			.type("STRING")
 			.build();
-		expect(SchemaVariablesMapper.schemaToEnv(stringVar).getValue()).toBe("");
+		expect(
+			SchemaVariablesMapper.schemaToEnv(stringVar, Dialect.FR).getValue(),
+		).toBe("");
 	});
 
 	it("carries over the declared PLC type, used by the typing rules", () => {
 		const variable = new VariableBuilder().zone("memory").type("DINT").build();
-		expect(SchemaVariablesMapper.schemaToEnv(variable).getDeclaredType()).toBe(
-			"DINT",
-		);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(variable, Dialect.FR).getDeclaredType(),
+		).toBe("DINT");
 	});
 });
 
@@ -77,7 +83,10 @@ describe("SchemaVariablesMapper.schemaToEnv constants", () => {
 			.build();
 
 	it("a TIME constant starts at its value in milliseconds", () => {
-		const env = SchemaVariablesMapper.schemaToEnv(constant("TIME", "T#5s"));
+		const env = SchemaVariablesMapper.schemaToEnv(
+			constant("TIME", "T#5s"),
+			Dialect.FR,
+		);
 
 		expect(env.isConstant()).toBe(true);
 		expect(env.getValue()).toBe(5000);
@@ -94,7 +103,10 @@ describe("SchemaVariablesMapper.schemaToEnv constants", () => {
 
 	it("a string constant loses its quotes", () => {
 		expect(
-			SchemaVariablesMapper.schemaToEnv(constant("STRING", '"abc"')).getValue(),
+			SchemaVariablesMapper.schemaToEnv(
+				constant("STRING", '"abc"'),
+				Dialect.FR,
+			).getValue(),
 		).toBe("abc");
 	});
 
@@ -102,12 +114,16 @@ describe("SchemaVariablesMapper.schemaToEnv constants", () => {
 		const invalid = constant("INT", "5");
 		invalid.value = "99999";
 
-		expect(SchemaVariablesMapper.schemaToEnv(invalid).getValue()).toBe(0);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(invalid, Dialect.FR).getValue(),
+		).toBe(0);
 	});
 
 	it("an ordinary variable is not constant", () => {
 		const memory = new VariableBuilder().id("m").mnemonic("M").build();
 
-		expect(SchemaVariablesMapper.schemaToEnv(memory).isConstant()).toBe(false);
+		expect(
+			SchemaVariablesMapper.schemaToEnv(memory, Dialect.FR).isConstant(),
+		).toBe(false);
 	});
 });

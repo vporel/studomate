@@ -1,7 +1,13 @@
 import type { SerialTransport } from "./transport";
 
-/** USB vendor id of Arduino SA, used to filter the port chooser and the remembered ports. */
-export const ARDUINO_USB_VENDOR_ID = 0x2341;
+/**
+ * USB vendor ids of the boards offered in the port chooser and of the remembered ports: Arduino
+ * SA, arduino.org, and the CH340 chip of the common clones.
+ */
+export const ARDUINO_USB_VENDOR_IDS = [0x2341, 0x2a03, 0x1a86];
+
+const isArduinoVendor = (vendorId: number | undefined) =>
+	vendorId !== undefined && ARDUINO_USB_VENDOR_IDS.includes(vendorId);
 
 export function isWebSerialSupported(): boolean {
 	return typeof navigator !== "undefined" && "serial" in navigator;
@@ -12,9 +18,11 @@ export function isWebSerialSupported(): boolean {
  * chooser (needs a user gesture; rejects with `NotFoundError` if the user dismisses it).
  */
 export async function acquireArduinoPort(): Promise<SerialPort> {
-	const filters = [{ usbVendorId: ARDUINO_USB_VENDOR_ID }];
-	const known = (await navigator.serial.getPorts()).filter(
-		(port) => port.getInfo().usbVendorId === ARDUINO_USB_VENDOR_ID,
+	const filters = ARDUINO_USB_VENDOR_IDS.map((usbVendorId) => ({
+		usbVendorId,
+	}));
+	const known = (await navigator.serial.getPorts()).filter((port) =>
+		isArduinoVendor(port.getInfo().usbVendorId),
 	);
 	if (known.length === 1) return known[0];
 	return navigator.serial.requestPort({ filters });

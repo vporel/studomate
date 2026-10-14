@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -106,7 +107,14 @@ describe("useHmiSimulationValue: constantes", () => {
 			selectorImplementation({
 				project: {
 					variables: [
-						new Variable("k", "SEUIL", "constant", "INT", undefined, "4"),
+						new Variable({
+							id: "k",
+							mnemonic: "SEUIL",
+							zone: "constant",
+							type: "INT",
+							value: "4",
+							dialect: Dialect.FR,
+						}),
 					],
 				},
 				simulationVariablesStatesByMnemonic: {

@@ -7,8 +7,10 @@ import {
 	compiledProject,
 	parseStatement,
 	plcVariable,
+	UNO_PIN_RANGE,
 } from "@tests/utils/bytecode-program";
 import checkAdmissibility from "./bytecode.admissibility";
+import { IO_ROLE } from "./bytecode-format";
 import generateBytecode from "./bytecode.generator";
 
 const ident = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
@@ -18,6 +20,7 @@ function imageOf(config: Parameters<typeof compiledProject>[0]) {
 		compiled: compiledProject(config),
 		ioBindings: [],
 		cyclePeriodMs: 100,
+		pinRange: UNO_PIN_RANGE,
 	});
 }
 
@@ -80,6 +83,7 @@ describe("checkAdmissibility", () => {
 			compiled,
 			ioBindings: [],
 			cyclePeriodMs: 100,
+			pinRange: UNO_PIN_RANGE,
 		});
 		const report = checkAdmissibility(
 			image,
@@ -116,10 +120,18 @@ describe("checkAdmissibility", () => {
 			compiled,
 			ioBindings: [],
 			cyclePeriodMs: 100,
+			pinRange: UNO_PIN_RANGE,
 		});
 		const report = checkAdmissibility(
 			image,
-			withLimits({ vm: { variableBytes: 4, maxStack: 2, maxCallDepth: 0 } }),
+			withLimits({
+				vm: {
+					...arduinoUnoR3.limits.vm,
+					variableBytes: 4,
+					maxStack: 2,
+					maxCallDepth: 0,
+				},
+			}),
 		);
 		expect(report.issues.map((issue) => issue.code)).toEqual([
 			"VARIABLE_MEMORY_EXCEEDED",
@@ -164,5 +176,34 @@ describe("checkAdmissibility", () => {
 		expect(report.issues).toEqual([
 			{ code: "JUMP_NESTING_EXCEEDED", limit: 16 },
 		]);
+	});
+
+	describe("pin range", () => {
+		const imageOnPin3 = () =>
+			generateBytecode({
+				compiled: compiledProject({
+					variables: [plcVariable("lamp:BOOL", "memory", "id-lamp")],
+					routines: [[]],
+				}),
+				ioBindings: [
+					{ variableId: "id-lamp", role: IO_ROLE.DIGITAL_OUTPUT, pin: 3 },
+				],
+				cyclePeriodMs: 100,
+				pinRange: UNO_PIN_RANGE,
+			});
+		const withPinRange = (pinRange: { min: number; max: number }) =>
+			withLimits({ vm: { ...arduinoUnoR3.limits.vm, pinRange } });
+
+		it("accepts an image whose pins are inside limits.vm.pinRange", () => {
+			expect(checkAdmissibility(imageOnPin3(), withLimits({})).admissible).toBe(
+				true,
+			);
+		});
+
+		it("throws when a pin of the image is outside limits.vm.pinRange", () => {
+			expect(() =>
+				checkAdmissibility(imageOnPin3(), withPinRange({ min: 4, max: 6 })),
+			).toThrow(/invalid image: invalid or duplicated pin/);
+		});
 	});
 });

@@ -31,6 +31,7 @@ import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
 import GridToolBar from "./GridToolBar";
+import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import VariableRowContextMenu, {
 	VariableRowMenuTarget,
 } from "./VariableRowContextMenu";
@@ -76,9 +77,7 @@ const VariablesTable = ({
 
 	const zoneVariables = useMemo(
 		() =>
-			projectVariables.filter(
-				(v) => zones.includes(v.zone) && !v.ownerBlock,
-			),
+			projectVariables.filter((v) => zones.includes(v.zone) && !v.ownerBlock),
 		[projectVariables, zones],
 	);
 
@@ -397,6 +396,7 @@ const VariablesTable = ({
 				slots={{
 					toolbar: () => (
 						<GridToolBar
+							pdfColumns={getVariablesPageDefinitionForZone(zones[0]).columns}
 							rowSelectionModel={rowSelectionModel}
 							zoneVariables={zoneVariables}
 							pageTitle={pageTitle}

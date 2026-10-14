@@ -119,15 +119,15 @@ export default class PLC extends ClockedRunnable {
 		);
 	}
 
-	/**
-	 * Returns read-only copies of all variables (input image, output image, memory).
-	 * Callers cannot mutate PLC state through these copies.
-	 */
 	/** Time (ms) charged to the last executed cycle. */
 	public getLastCycleDeltaMs(): number {
 		return this.lastCycleDeltaMs;
 	}
 
+	/**
+	 * Returns read-only copies of all variables (input image, output image, memory).
+	 * Callers cannot mutate PLC state through these copies.
+	 */
 	public getVariablesSnapshot(): readonly PLCVariable[] {
 		return [
 			...Object.values(this.inputImage),

@@ -53,6 +53,7 @@ export default function buildProgram(input: {
 			compiled: compilation.result,
 			ioBindings,
 			cyclePeriodMs,
+			pinRange: limits.vm.pinRange,
 		});
 	} catch (error) {
 		if (!(error instanceof BytecodeGenerationError)) throw error;

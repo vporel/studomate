@@ -122,7 +122,7 @@ export default class ElementsCommandsFactory {
 			  ) => Partial<GrafcetNodeType["data"]>),
 
 		grafcet: Grafcet,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): {
 		commands: AbstractGrafcetCommand<any>[];
 		nodeDataToUpdate?: GrafcetNodeType["data"];
@@ -136,9 +136,7 @@ export default class ElementsCommandsFactory {
 		// l'expression conservée. Le garde-fou ne concerne que l'édition du contenu lui-même.
 		const isStructuralOnlyChange =
 			Object.keys(newData).length > 0 &&
-			Object.keys(newData).every((key) =>
-				STRUCTURAL_DATA_FIELDS.includes(key),
-			);
+			Object.keys(newData).every((key) => STRUCTURAL_DATA_FIELDS.includes(key));
 		newData = element.fixNewDataConsistency(newData, prevData);
 		const analyser = GrafcetElementAnalyserFactory.getAnalyser(element.type);
 		if (!analyser) return { commands: [] };

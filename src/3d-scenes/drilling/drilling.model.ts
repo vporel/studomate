@@ -1,3 +1,4 @@
+import { clamp } from "@/3d-scenes/scene-math";
 import type { SceneModel, ScenePointValues } from "../scene-model";
 
 /** Travel of the drill, from the top limit (0) to the bottom limit. */
@@ -16,10 +17,6 @@ export interface DrillingState {
 	spindleAngle: number;
 	/** Progress of the hole in the workpiece, from 0 (none) to 1 (through). */
 	holeProgress: number;
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.min(max, Math.max(min, value));
 }
 
 const DrillingModel: SceneModel<DrillingState, never> = {

@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import type { ArduinoUnoR3Target } from "@/schemas/hardware/hardware-target.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { VariableFactory } from "@tests/utils/variable-factory";
@@ -5,7 +6,7 @@ import uno from "../uno-r3.descriptor";
 import buildRemoteIoPlan, { arduinoPinName } from "./remote-io-plan";
 
 const at = (variable: Variable, address: string): Variable =>
-	variable.update({ address });
+	variable.update({ address }, Dialect.FR);
 const TARGET: ArduinoUnoR3Target = { modelId: "arduino-uno-r3" };
 const build = (variables: Variable[], target = TARGET) =>
 	buildRemoteIoPlan(target, variables, uno);
@@ -98,7 +99,14 @@ describe("buildRemoteIoPlan", () => {
 describe("buildRemoteIoPlan: constantes", () => {
 	it("n'attribue jamais de broche à une constante", () => {
 		const constant = VariableFactory.createLogicInput("BP", "v1");
-		const k = new Variable("k", "K", "constant", "INT", undefined, "4");
+		const k = new Variable({
+			id: "k",
+			mnemonic: "K",
+			zone: "constant",
+			type: "INT",
+			value: "4",
+			dialect: Dialect.FR,
+		});
 		k.address = "%PD2";
 
 		const plan = build([k, constant]);

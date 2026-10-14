@@ -1,6 +1,6 @@
 "use client";
 
-import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
+import useWebSerialSupported from "@/ui/components/hardware/useWebSerialSupported";
 import {
 	modeChoiceOf,
 	type ModeChoice,
@@ -28,9 +28,7 @@ const ProjectModeSwitcher = () => {
 		})),
 	);
 	const [blinkOff, setBlinkOff] = useState(false);
-	// Browser capabilities are read after mounting, to match the server-rendered markup.
-	const [serialSupported, setSerialSupported] = useState(false);
-	useEffect(() => setSerialSupported(isWebSerialSupported()), []);
+	const serialSupported = useWebSerialSupported() === true;
 	const t = useT("chrome.mode");
 
 	// Le sélecteur clignote uniquement en simulation continue d'un PLC local, pour signaler que des

@@ -76,15 +76,15 @@ export default class VariableBuilder {
 	}
 
 	build(): Variable {
-		const variable = new Variable(
-			this._id,
-			this._mnemonic,
-			this._zone,
-			this._type,
-			this._ownerBlock,
-			this._value,
-			this._dialect,
-		);
+		const variable = new Variable({
+			id: this._id,
+			mnemonic: this._mnemonic,
+			zone: this._zone,
+			type: this._type,
+			ownerBlock: this._ownerBlock,
+			value: this._value,
+			dialect: this._dialect,
+		});
 		if (this._address !== undefined) {
 			variable.address = this._address;
 		}
@@ -92,7 +92,7 @@ export default class VariableBuilder {
 			variable.comment = this._comment;
 		}
 		return this._behavior
-			? variable.update({ behavior: this._behavior })
+			? variable.update({ behavior: this._behavior }, this._dialect)
 			: variable;
 	}
 

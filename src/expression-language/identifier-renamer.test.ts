@@ -4,99 +4,125 @@ import IdentifierRenamer from "./identifier-renamer";
 describe("IdentifierRenamer", () => {
 	describe("rename", () => {
 		it("renames a simple identifier", () => {
-			expect(IdentifierRenamer.rename("moteur", { moteur: "pompe" })).toBe(
-				"pompe",
-			);
+			expect(
+				IdentifierRenamer.rename("moteur", { moteur: "pompe" }, Dialect.FR),
+			).toBe("pompe");
 		});
 
 		it("renames every occurrence in an expression", () => {
 			expect(
-				IdentifierRenamer.rename("moteur ET NON moteur", { moteur: "pompe" }),
+				IdentifierRenamer.rename(
+					"moteur ET NON moteur",
+					{ moteur: "pompe" },
+					Dialect.FR,
+				),
 			).toBe("pompe ET NON pompe");
 		});
 
 		it("preserves whitespace and formatting", () => {
 			expect(
-				IdentifierRenamer.rename("  moteur   ET  capteur ", {
-					moteur: "pompe",
-				}),
+				IdentifierRenamer.rename(
+					"  moteur   ET  capteur ",
+					{
+						moteur: "pompe",
+					},
+					Dialect.FR,
+				),
 			).toBe("  pompe   ET  capteur ");
 		});
 
 		// Régression : l'ancienne implémentation par split/join corrompait ces cas
 		describe("ne touche pas ce qui ressemble à l'identifiant", () => {
 			it("laisse intact un identifiant dont l'ancien nom est un préfixe", () => {
-				expect(IdentifierRenamer.rename("moteur_1", { moteur: "pompe" })).toBe(
-					"moteur_1",
-				);
+				expect(
+					IdentifierRenamer.rename("moteur_1", { moteur: "pompe" }, Dialect.FR),
+				).toBe("moteur_1");
 			});
 
 			it("laisse intact un identifiant dont l'ancien nom est un suffixe", () => {
 				expect(
-					IdentifierRenamer.rename("gros_moteur", { moteur: "pompe" }),
+					IdentifierRenamer.rename(
+						"gros_moteur",
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
 				).toBe("gros_moteur");
 			});
 
 			it("distingue l'identifiant exact de ses variantes dans une même expression", () => {
 				expect(
-					IdentifierRenamer.rename("moteur ET moteur_1 OU gros_moteur", {
-						moteur: "pompe",
-					}),
+					IdentifierRenamer.rename(
+						"moteur ET moteur_1 OU gros_moteur",
+						{
+							moteur: "pompe",
+						},
+						Dialect.FR,
+					),
 				).toBe("pompe ET moteur_1 OU gros_moteur");
 			});
 
 			it("ne touche pas le contenu des chaînes de caractères", () => {
 				expect(
-					IdentifierRenamer.rename('etat := "moteur en marche"', {
-						moteur: "pompe",
-					}),
+					IdentifierRenamer.rename(
+						'etat := "moteur en marche"',
+						{
+							moteur: "pompe",
+						},
+						Dialect.FR,
+					),
 				).toBe('etat := "moteur en marche"');
 			});
 
 			it("ne touche pas un mot-clé du langage", () => {
 				// "ET" est un mot-clé en FR : il ne doit jamais être renommé
-				expect(IdentifierRenamer.rename("a ET b", { ET: "X" })).toBe("a ET b");
+				expect(
+					IdentifierRenamer.rename("a ET b", { ET: "X" }, Dialect.FR),
+				).toBe("a ET b");
 			});
 		});
 
 		describe("renommages simultanés", () => {
 			it("applique plusieurs renommages en une seule passe", () => {
-				expect(IdentifierRenamer.rename("a ET b", { a: "x", b: "y" })).toBe(
-					"x ET y",
-				);
+				expect(
+					IdentifierRenamer.rename("a ET b", { a: "x", b: "y" }, Dialect.FR),
+				).toBe("x ET y");
 			});
 
 			it("n'enchaîne pas les renommages (a→b et b→c ne donne pas a→c)", () => {
-				expect(IdentifierRenamer.rename("a ET b", { a: "b", b: "c" })).toBe(
-					"b ET c",
-				);
+				expect(
+					IdentifierRenamer.rename("a ET b", { a: "b", b: "c" }, Dialect.FR),
+				).toBe("b ET c");
 			});
 
 			it("gère un échange de noms", () => {
-				expect(IdentifierRenamer.rename("a ET b", { a: "b", b: "a" })).toBe(
-					"b ET a",
-				);
+				expect(
+					IdentifierRenamer.rename("a ET b", { a: "b", b: "a" }, Dialect.FR),
+				).toBe("b ET a");
 			});
 		});
 
 		describe("cas limites", () => {
 			it("retourne l'expression inchangée si aucun identifiant ne correspond", () => {
-				expect(IdentifierRenamer.rename("a ET b", { z: "x" })).toBe("a ET b");
+				expect(IdentifierRenamer.rename("a ET b", { z: "x" }, Dialect.FR)).toBe(
+					"a ET b",
+				);
 			});
 
 			it("retourne l'expression inchangée si la table de renommage est vide", () => {
-				expect(IdentifierRenamer.rename("a ET b", {})).toBe("a ET b");
+				expect(IdentifierRenamer.rename("a ET b", {}, Dialect.FR)).toBe(
+					"a ET b",
+				);
 			});
 
 			it("gère une expression vide", () => {
-				expect(IdentifierRenamer.rename("", { a: "b" })).toBe("");
+				expect(IdentifierRenamer.rename("", { a: "b" }, Dialect.FR)).toBe("");
 			});
 
 			it("respecte l'unité d'une durée", () => {
 				// Le `s` de `5s` ne doit pas être vu comme un identifiant
-				expect(IdentifierRenamer.rename("t1/X10/5s", { s: "SECONDE" })).toBe(
-					"t1/X10/5s",
-				);
+				expect(
+					IdentifierRenamer.rename("t1/X10/5s", { s: "SECONDE" }, Dialect.FR),
+				).toBe("t1/X10/5s");
 			});
 		});
 
@@ -107,25 +133,41 @@ describe("IdentifierRenamer", () => {
 		describe("expressions en cours d'édition (non lexables)", () => {
 			it("renomme malgré un caractère hors alphabet du lexer", () => {
 				expect(
-					IdentifierRenamer.rename("moteur, capteur", { moteur: "pompe" }),
+					IdentifierRenamer.rename(
+						"moteur, capteur",
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
 				).toBe("pompe, capteur");
 			});
 
 			it("renomme malgré un caractère accentué", () => {
 				expect(
-					IdentifierRenamer.rename("moteur ET arrêt", { moteur: "pompe" }),
+					IdentifierRenamer.rename(
+						"moteur ET arrêt",
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
 				).toBe("pompe ET arrêt");
 			});
 
 			it("renomme malgré une expression incomplète", () => {
 				expect(
-					IdentifierRenamer.rename("moteur ET ", { moteur: "pompe" }),
+					IdentifierRenamer.rename(
+						"moteur ET ",
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
 				).toBe("pompe ET ");
 			});
 
 			it("protège quand même le contenu d'une chaîne non terminée", () => {
 				expect(
-					IdentifierRenamer.rename('moteur ET "moteur', { moteur: "pompe" }),
+					IdentifierRenamer.rename(
+						'moteur ET "moteur',
+						{ moteur: "pompe" },
+						Dialect.FR,
+					),
 				).toBe('pompe ET "moteur');
 			});
 
@@ -144,45 +186,65 @@ describe("IdentifierRenamer", () => {
 	describe("usesAnyIdentifier", () => {
 		it("détecte un identifiant utilisé", () => {
 			expect(
-				IdentifierRenamer.usesAnyIdentifier("moteur ET capteur", ["moteur"]),
+				IdentifierRenamer.usesAnyIdentifier(
+					"moteur ET capteur",
+					["moteur"],
+					Dialect.FR,
+				),
 			).toBe(true);
 		});
 
 		it("ne confond pas avec un identifiant plus long", () => {
-			expect(IdentifierRenamer.usesAnyIdentifier("moteur_1", ["moteur"])).toBe(
-				false,
-			);
+			expect(
+				IdentifierRenamer.usesAnyIdentifier("moteur_1", ["moteur"], Dialect.FR),
+			).toBe(false);
 		});
 
 		it("ignore le contenu des chaînes", () => {
 			expect(
-				IdentifierRenamer.usesAnyIdentifier('a := "moteur"', ["moteur"]),
+				IdentifierRenamer.usesAnyIdentifier(
+					'a := "moteur"',
+					["moteur"],
+					Dialect.FR,
+				),
 			).toBe(false);
 		});
 
 		it("retourne false sur une expression vide ou sans correspondance", () => {
-			expect(IdentifierRenamer.usesAnyIdentifier("", ["moteur"])).toBe(false);
-			expect(IdentifierRenamer.usesAnyIdentifier("a ET b", ["moteur"])).toBe(
-				false,
-			);
+			expect(
+				IdentifierRenamer.usesAnyIdentifier("", ["moteur"], Dialect.FR),
+			).toBe(false);
+			expect(
+				IdentifierRenamer.usesAnyIdentifier("a ET b", ["moteur"], Dialect.FR),
+			).toBe(false);
 		});
 
 		it("détecte l'identifiant même dans une expression non lexable", () => {
-			expect(IdentifierRenamer.usesAnyIdentifier("a, b", ["a"])).toBe(true);
+			expect(
+				IdentifierRenamer.usesAnyIdentifier("a, b", ["a"], Dialect.FR),
+			).toBe(true);
 		});
 	});
 
 	describe("constantes TIME", () => {
 		it("ne renomme pas les lettres d'une constante T#", () => {
 			expect(
-				IdentifierRenamer.rename("T > T#5s", { T: "duree", s: "x" }),
+				IdentifierRenamer.rename(
+					"T > T#5s",
+					{ T: "duree", s: "x" },
+					Dialect.FR,
+				),
 			).toBe("duree > T#5s");
 		});
 
 		it("n'y voit aucune occurrence d'identifiant", () => {
-			expect(IdentifierRenamer.usesAnyIdentifier("a > T#1m30s", ["m", "s", "T"])).toBe(
-				false,
-			);
+			expect(
+				IdentifierRenamer.usesAnyIdentifier(
+					"a > T#1m30s",
+					["m", "s", "T"],
+					Dialect.FR,
+				),
+			).toBe(false);
 		});
 	});
 });

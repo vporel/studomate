@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Project from "@/schemas/project/project.schema";
@@ -130,7 +131,15 @@ describe("VariableSelector — statut affiché", () => {
 	it("undeclared : le mnémonique ne correspond à aucune variable connue", () => {
 		setup({
 			value: "INCONNUE",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 		});
 		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
 	});
@@ -138,7 +147,15 @@ describe("VariableSelector — statut affiché", () => {
 	it("shows no status with suppressStatus, even for an unknown mnemonic", () => {
 		setup({
 			value: "INCONNUE",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			suppressStatus: true,
 		});
 		expect(input()).not.toHaveAttribute("data-variable-status");
@@ -147,7 +164,15 @@ describe("VariableSelector — statut affiché", () => {
 	it("wrong-type : la variable existe mais hors du typeFilter", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "INT")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
+			],
 			typeFilter: ["BOOL"],
 		});
 		expect(input()).toHaveAttribute("data-variable-status", "wrong-type");
@@ -156,7 +181,15 @@ describe("VariableSelector — statut affiché", () => {
 	it("excluded-direction : la variable existe mais sa direction est exclue", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "logic-input", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			excludeDirection: "IN",
 		});
 		expect(input()).toHaveAttribute(
@@ -168,7 +201,15 @@ describe("VariableSelector — statut affiché", () => {
 	it("ok : la variable existe, respecte le typeFilter et n'a pas la direction exclue", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "logic-output", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "logic-output",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			typeFilter: ["BOOL"],
 			excludeDirection: "IN",
 		});
@@ -189,7 +230,11 @@ describe("VariableSelector — statut affiché", () => {
 		const project = ProjectFactory.createEmpty();
 		const ladder = project.createLadder("L1");
 		ladder.addElements(ladder.sections[0].id, [
-			createTimerBlockElement({ name: "t_etoile", timerType: "TON", pt: "T#5s" }, 0, 0),
+			createTimerBlockElement(
+				{ name: "t_etoile", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			),
 		]);
 
 		setup({ value: "t_etoile.Q", project });
@@ -201,9 +246,27 @@ describe("VariableSelector — statut affiché", () => {
 describe("VariableSelector — suggestions", () => {
 	it("respecte typeFilter et excludeDirection dans les suggestions proposées", () => {
 		const variables = [
-			new Variable("v1", "Bonne", "logic-output", "BOOL"),
-			new Variable("v2", "MauvaisType", "memory", "INT"),
-			new Variable("v3", "MauvaiseDirection", "logic-input", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "Bonne",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "MauvaisType",
+				zone: "memory",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v3",
+				mnemonic: "MauvaiseDirection",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		];
 		setup({
 			value: "",
@@ -221,13 +284,37 @@ describe("VariableSelector — suggestions", () => {
 
 	it("écarte des suggestions les entrées dont le comportement est exclu", () => {
 		const variables = [
-			new Variable("v1", "Libre", "logic-input", "BOOL"),
-			new Variable("v2", "Commutateur", "logic-input", "BOOL").update({
-				behavior: { kind: "toggle-switch-no", params: null },
+			new Variable({
+				id: "v1",
+				mnemonic: "Libre",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
 			}),
-			new Variable("v3", "Poussoir", "logic-input", "BOOL").update({
-				behavior: { kind: "push-button-no", params: null },
-			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "Commutateur",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "toggle-switch-no", params: null },
+				},
+				Dialect.FR,
+			),
+			new Variable({
+				id: "v3",
+				mnemonic: "Poussoir",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "push-button-no", params: null },
+				},
+				Dialect.FR,
+			),
 		];
 		setup({
 			value: "",
@@ -243,7 +330,15 @@ describe("VariableSelector — suggestions", () => {
 	});
 
 	it("n'affiche aucun popup de suggestions quand rien ne correspond au texte saisi", () => {
-		const variables = [new Variable("v1", "Bonne", "memory", "BOOL")];
+		const variables = [
+			new Variable({
+				id: "v1",
+				mnemonic: "Bonne",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		];
 		setup({ value: "", variables });
 
 		fireEvent.focus(input());
@@ -256,8 +351,20 @@ describe("VariableSelector — suggestions", () => {
 
 	it("ne démonte pas la liste de suggestions entre deux frappes qui la gardent non vide", () => {
 		const variables = [
-			new Variable("v1", "Moteur", "memory", "BOOL"),
-			new Variable("v2", "Marche", "memory", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "Moteur",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "Marche",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		];
 		setup({ value: "", variables });
 
@@ -276,8 +383,20 @@ describe("VariableSelector — suggestions", () => {
 describe("VariableSelector — validation au clavier", () => {
 	it("Entrée sur une suggestion surlignée au clavier la commite", async () => {
 		const variables = [
-			new Variable("v1", "E0", "logic-input", "BOOL"),
-			new Variable("v2", "E1", "logic-input", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "E0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "E1",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		];
 		const { onCommit } = setup({ value: "", variables });
 
@@ -294,7 +413,15 @@ describe("VariableSelector — validation au clavier", () => {
 
 describe("VariableSelector — colonnes", () => {
 	it("restreint les colonnes affichées mais garde toujours mnemonic", () => {
-		const variables = [new Variable("v1", "A", "logic-input", "BOOL")];
+		const variables = [
+			new Variable({
+				id: "v1",
+				mnemonic: "A",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		];
 		setup({ value: "", variables, cols: ["type"] });
 
 		fireEvent.focus(input());
@@ -348,7 +475,15 @@ describe("VariableSelector — menu contextuel", () => {
 	it("ouvre le menu au clic droit quand le champ contient une variable réelle", () => {
 		setupMenu({
 			value: "M0",
-			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 		});
 
 		input().focus();
@@ -363,7 +498,15 @@ describe("VariableSelector — menu contextuel", () => {
 	it("ignore le clic droit quand le contenu n'est pas une variable déclarée", () => {
 		setupMenu({
 			value: "PASUNEVAR",
-			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 		});
 
 		const event = fireEvent.contextMenu(input());
@@ -375,7 +518,15 @@ describe("VariableSelector — menu contextuel", () => {
 	it("n'ouvre aucun menu quand disableContextMenu est vrai", () => {
 		setupMenu({
 			value: "M0",
-			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			disableContextMenu: true,
 		});
 
@@ -387,7 +538,15 @@ describe("VariableSelector — menu contextuel", () => {
 	it("« Ouvrir la déclaration » ouvre la page de la zone et cible la ligne", () => {
 		const { openPage, setVariableToReveal } = setupMenu({
 			value: "M0",
-			variables: [new Variable("v1", "M0", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "M0",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 		});
 
 		fireEvent.contextMenu(input());
@@ -403,7 +562,15 @@ describe("VariableSelector — menu contextuel", () => {
 		const { setCrossReferenceFilter, setCrossReferenceResultVisible } =
 			setupMenu({
 				value: "M0",
-				variables: [new Variable("v1", "M0", "memory", "BOOL")],
+				variables: [
+					new Variable({
+						id: "v1",
+						mnemonic: "M0",
+						zone: "memory",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
+				],
 			});
 
 		fireEvent.contextMenu(input());
@@ -429,7 +596,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("n'affiche rien en mode DESIGN", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: { v1: { value: true } },
 		});
@@ -439,7 +614,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("affiche la valeur BOOL formatée en simulation", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 		});
@@ -449,7 +632,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("affiche la valeur TIME formatée en simulation", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "TIME")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "TIME",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: 5000 } },
 		});
@@ -459,7 +650,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("affiche la valeur INT telle quelle en simulation", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "INT")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: 42 } },
 		});
@@ -469,7 +668,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("n'affiche rien quand showSimulationValue vaut false", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 			showSimulationValue: false,
@@ -480,7 +687,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("n'affiche rien quand le mnémonique ne correspond à aucune variable déclarée", () => {
 		setup({
 			value: "INCONNUE",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 		});
@@ -490,7 +705,15 @@ describe("VariableSelector — valeur de simulation", () => {
 	it("n'affiche rien tant que la valeur n'est pas encore connue", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: {},
 		});
@@ -503,7 +726,15 @@ describe("VariableSelector — position de la valeur de simulation", () => {
 	it("positionne la valeur au-dessus du champ par défaut (TOP)", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 		});
@@ -513,7 +744,15 @@ describe("VariableSelector — position de la valeur de simulation", () => {
 	it("positionne la valeur en dessous du champ avec position: BOTTOM", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 			simulationValueProps: { position: "BOTTOM" },
@@ -541,7 +780,15 @@ describe("VariableSelector — alignement", () => {
 	it("cale la valeur de simulation sur le même bord que le texte (align: right)", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 			align: "right",
@@ -555,7 +802,15 @@ describe("VariableSelector — alignement", () => {
 	it("cale la valeur de simulation sur le même bord que le texte (align: left)", () => {
 		setup({
 			value: "A",
-			variables: [new Variable("v1", "A", "memory", "BOOL")],
+			variables: [
+				new Variable({
+					id: "v1",
+					mnemonic: "A",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+			],
 			mode: ProjectMode.SIMULATION,
 			simulationVariablesStates: { v1: { value: true } },
 			align: "left",

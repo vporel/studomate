@@ -1,11 +1,20 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import { variableDraft } from "@tests/utils/variable-factory";
 import VariablesCommandsFactory from "./variables-commands.factory";
 
 function projectWithVariable() {
 	const project = new Project("p1", "Projet", "auteur");
-	project.variables = [new Variable("v1", "Moteur", "logic-output", "BOOL")];
+	project.variables = [
+		new Variable({
+			id: "v1",
+			mnemonic: "Moteur",
+			zone: "logic-output",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}),
+	];
 	return project;
 }
 
@@ -16,7 +25,11 @@ describe("VariablesCommandsFactory", () => {
 
 			const { commands, variablesToAdd } =
 				VariablesCommandsFactory.onAddVariable(project, [
-					{ mnemonic: "Capteur", zone: "logic-input", type: "BOOL" } as any,
+					variableDraft({
+						mnemonic: "Capteur",
+						zone: "logic-input",
+						type: "BOOL",
+					}),
 				]);
 
 			expect(commands).toHaveLength(1);
@@ -30,7 +43,7 @@ describe("VariablesCommandsFactory", () => {
 
 			const { commands, variablesToAdd } =
 				VariablesCommandsFactory.onAddVariable(project, [
-					{ mnemonic: "   ", zone: "logic-input", type: "BOOL" } as any,
+					variableDraft({ mnemonic: "   ", zone: "logic-input", type: "BOOL" }),
 				]);
 
 			expect(commands).toHaveLength(0);
@@ -42,7 +55,11 @@ describe("VariablesCommandsFactory", () => {
 
 			const { commands, variablesToAdd } =
 				VariablesCommandsFactory.onAddVariable(project, [
-					{ mnemonic: "Moteur", zone: "logic-output", type: "BOOL" } as any,
+					variableDraft({
+						mnemonic: "Moteur",
+						zone: "logic-output",
+						type: "BOOL",
+					}),
 				]);
 
 			expect(commands).toHaveLength(0);
@@ -53,7 +70,7 @@ describe("VariablesCommandsFactory", () => {
 			const project = new Project("p1", "Projet", "auteur");
 
 			const { commands } = VariablesCommandsFactory.onAddVariable(project, [
-				{ mnemonic: "", zone: "memory", type: "BOOL" } as any,
+				variableDraft({ mnemonic: "", zone: "memory", type: "BOOL" }),
 			]);
 
 			expect(commands).toHaveLength(0);
@@ -129,7 +146,13 @@ describe("VariablesCommandsFactory", () => {
 		) {
 			const project = new Project("p1", "Projet", "auteur");
 			project.variables = [
-				new Variable("v1", "e", zone, type).update({ behavior }),
+				new Variable({
+					id: "v1",
+					mnemonic: "e",
+					zone,
+					type,
+					dialect: Dialect.FR,
+				}).update({ behavior }, Dialect.FR),
 			];
 			return project;
 		}
@@ -222,7 +245,14 @@ describe("VariablesCommandsFactory constants", () => {
 	function projectWithConstant(type: "INT" | "TIME" | "BOOL", value: string) {
 		const project = new Project("p1", "Projet", "auteur");
 		project.variables = [
-			new Variable("k", "K", "constant", type, undefined, value),
+			new Variable({
+				id: "k",
+				mnemonic: "K",
+				zone: "constant",
+				type,
+				value,
+				dialect: Dialect.FR,
+			}),
 		];
 		return project;
 	}
@@ -232,8 +262,8 @@ describe("VariablesCommandsFactory constants", () => {
 		project.dialect = Dialect.EN;
 
 		const { variablesToAdd } = VariablesCommandsFactory.onAddVariable(project, [
-			{ mnemonic: "B", zone: "constant", type: "BOOL" } as any,
-			{ mnemonic: "T", zone: "constant", type: "TIME" } as any,
+			variableDraft({ mnemonic: "B", zone: "constant", type: "BOOL" }),
+			variableDraft({ mnemonic: "T", zone: "constant", type: "TIME" }),
 		]);
 
 		expect(variablesToAdd.map((v) => v.value)).toEqual(["FALSE", "T#0s"]);
@@ -243,7 +273,12 @@ describe("VariablesCommandsFactory constants", () => {
 		const project = new Project("p1", "Projet", "auteur");
 
 		const { variablesToAdd } = VariablesCommandsFactory.onAddVariable(project, [
-			{ mnemonic: "S", zone: "constant", type: "INT", value: "7" } as any,
+			variableDraft({
+				mnemonic: "S",
+				zone: "constant",
+				type: "INT",
+				value: "7",
+			}),
 		]);
 
 		expect(variablesToAdd[0].value).toBe("7");
@@ -283,7 +318,13 @@ describe("VariablesCommandsFactory constants", () => {
 
 	it("gives a value to a variable that becomes a constant and clears its address", () => {
 		const project = new Project("p1", "Projet", "auteur");
-		const memory = new Variable("m", "M", "memory", "INT");
+		const memory = new Variable({
+			id: "m",
+			mnemonic: "M",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		memory.address = "%MW10";
 		project.variables = [memory];
 

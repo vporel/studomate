@@ -20,7 +20,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  * construit une fois par grafcet.
  */
 export function analyserEnvironment(variables: Variable[] = []): Environment {
-	return buildAnalysisEnvironment(variables);
+	return buildAnalysisEnvironment(variables, Dialect.FR);
 }
 
 /**

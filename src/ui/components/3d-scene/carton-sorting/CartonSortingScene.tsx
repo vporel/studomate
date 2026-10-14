@@ -70,7 +70,6 @@ export default function CartonSortingScene({
 	const sortedCartons = useRef<(Group | null)[]>([]);
 	const [canPlace, setCanPlace] = useState(true);
 	const canPlaceRef = useRef(true);
-	const [localHigh, setLocalHigh] = useState(false);
 	const [liveHigh, setLiveHigh] = useState(false);
 	const liveHighRef = useRef(false);
 	const belts = useRef({ t1: false, t2t3: false });
@@ -125,7 +124,6 @@ export default function CartonSortingScene({
 
 	const sendInteraction = (interaction: CartonSortingInteraction) =>
 		send(interaction);
-	const high = interactive ? liveHigh : localHigh;
 	const outputX = CHANNEL_X + CHANNEL_WIDTH / 2 + OUTPUT_LENGTH / 2;
 
 	return (
@@ -229,11 +227,10 @@ export default function CartonSortingScene({
 				label={t("heightSwitch")}
 				lowLabel={t("lowMark")}
 				highLabel={t("highMark")}
-				on={high}
+				on={liveHigh}
 				onToggle={() => {
 					if (interactive)
 						sendInteraction({ type: "setCartonHigh", high: !liveHigh });
-					else setLocalHigh((value) => !value);
 				}}
 			/>
 		</group>

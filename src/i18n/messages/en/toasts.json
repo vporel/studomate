@@ -42,15 +42,15 @@
 		"analysis": "Fix the errors reported by the analysis before loading the program into the board.",
 		"compilation": "The project does not compile: the program cannot be loaded into the board.",
 		"unsupported": "The project uses a feature the board cannot run.",
-		"upload-rejected": "The board refused the program.",
-		"upload-timeout": "The board stopped answering while the program was loaded. Try again.",
-		"upload-mismatch": "The board did not store the program that was loaded. Try again.",
+		"exchange-rejected": "The board refused the program.",
+		"exchange-timeout": "The board stopped answering while the program was loaded. Try again.",
+		"exchange-mismatch": "The board did not store the program that was loaded. Try again.",
 		"transport": "Cannot communicate with the board. Check the USB cable."
 	},
 	"hardwareProgramCommandFailed": {
-		"upload-rejected": "The board could not start its program: it holds no valid program, or lacks memory for it.",
-		"upload-timeout": "The board did not answer. Try again.",
-		"upload-mismatch": "The board did not answer as expected. Try again.",
+		"exchange-rejected": "The board could not start its program: it holds no valid program, or lacks memory for it.",
+		"exchange-timeout": "The board did not answer. Try again.",
+		"exchange-mismatch": "The board did not answer as expected. Try again.",
 		"transport": "Cannot communicate with the board. Check the USB cable."
 	},
 	"hardwareOnlineFailed": {
@@ -59,9 +59,9 @@
 		"unsupported": "The project uses a feature the board cannot run.",
 		"no-program": "The board holds no program: load it first.",
 		"program-differs": "The program of the board is not the one of the project: load it again before observing the board.",
-		"upload-rejected": "The board refused to start its program.",
-		"upload-timeout": "The board did not answer. Try again.",
-		"upload-mismatch": "The board did not answer as expected. Try again.",
+		"exchange-rejected": "The board refused to start its program.",
+		"exchange-timeout": "The board did not answer. Try again.",
+		"exchange-mismatch": "The board did not answer as expected. Try again.",
 		"transport": "Cannot communicate with the board. Check the USB cable."
 	},
 	"hardwareOnlineLost": {
@@ -76,12 +76,11 @@
 		"other": "The program of the board stopped on a fault (code {fault}). The outputs were cut."
 	},
 	"hardwareVariableWriteFailed": {
-		"upload-rejected": "The board refused the value: the variable is unknown to its program.",
-		"upload-timeout": "The board did not answer: the value may not have been written.",
-		"upload-mismatch": "The board did not answer as expected.",
+		"exchange-rejected": "The board refused the value: the variable is unknown to its program.",
+		"exchange-timeout": "The board did not answer: the value may not have been written.",
+		"exchange-mismatch": "The board did not answer as expected.",
 		"transport": "Cannot communicate with the board. Check the USB cable."
 	},
-	"hardwareOutputsCutInBackground": "Tab in the background: the outputs of the board were cut.",
 	"hardwareFlashFailed": {
 		"sync-failed": "Cannot install the firmware: the board does not answer. Check that no other program is using the port. Only the original Arduino Uno R3 is supported.",
 		"protocol-error": "Cannot install the firmware: unexpected answer from the board. Only the original Arduino Uno R3 is supported.",

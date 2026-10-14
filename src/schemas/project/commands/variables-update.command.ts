@@ -56,7 +56,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		if (Object.keys(renames).length === 0) return;
 
 		Object.values(project.grafcets).forEach((grafcet) => {
-			grafcet.renameIdentifiersInExpressions(renames);
+			grafcet.renameIdentifiersInExpressions(renames, project.dialect);
 		});
 		Object.values(project.ladders).forEach((ladder) => {
 			ladder.renameVariableReferences(renames);

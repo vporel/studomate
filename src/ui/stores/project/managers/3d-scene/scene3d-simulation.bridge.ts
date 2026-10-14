@@ -1,7 +1,6 @@
 import SceneStepper from "@/3d-scenes/scene-stepper";
 import type { ScenePointValues } from "@/3d-scenes/scene-model";
 import { getSceneDescriptor, getSceneModel } from "@/3d-scenes/scene.registry";
-import type { ScenePointDescriptor } from "@/3d-scenes/scene.descriptor";
 import type Project from "@/schemas/project/project.schema";
 import type PLCVariable from "@/simulator/core/plc/plc-variable";
 
@@ -24,8 +23,8 @@ type ActiveScene = {
 	stepper: SceneStepper<unknown, unknown>;
 	/** Variable id → sensor point id. */
 	sensorByVariableId: Map<string, string>;
-	/** Actuator point id → variable id. */
-	actuatorVariableIds: Map<string, string>;
+	/** Variable id → actuator point id (the last point bound to a variable wins). */
+	actuatorPointByVariableId: Map<string, string>;
 	lastSensors: Map<string, boolean | number>;
 };
 
@@ -52,6 +51,11 @@ export default class Scene3dSimulationBridge {
 	/** Input variables driven by a sensor of the running scene. */
 	drives(variableId: string): boolean {
 		return this.active?.sensorByVariableId.has(variableId) ?? false;
+	}
+
+	/** Ids of the input variables driven by a sensor of the running scene. */
+	drivenVariableIds(): string[] {
+		return this.active ? [...this.active.sensorByVariableId.keys()] : [];
 	}
 
 	/**
@@ -140,47 +144,32 @@ export default class Scene3dSimulationBridge {
 		if (!descriptor || !model) return null;
 
 		const sensorByVariableId = new Map<string, string>();
-		const actuatorVariableIds = new Map<string, string>();
+		const actuatorPointByVariableId = new Map<string, string>();
 		for (const point of descriptor.points) {
 			const variableId = scene.bindings[point.id];
 			if (!variableId) continue;
-			this.registerPoint(
-				point,
-				variableId,
-				sensorByVariableId,
-				actuatorVariableIds,
-			);
+			if (point.kind === "sensor") {
+				sensorByVariableId.set(variableId, point.id);
+			} else {
+				actuatorPointByVariableId.set(variableId, point.id);
+			}
 		}
 		return {
 			sceneId: scene.sceneId,
 			stepper: new SceneStepper(model),
 			sensorByVariableId,
-			actuatorVariableIds,
+			actuatorPointByVariableId,
 			lastSensors: new Map(),
 		};
-	}
-
-	private registerPoint(
-		point: ScenePointDescriptor,
-		variableId: string,
-		sensorByVariableId: Map<string, string>,
-		actuatorVariableIds: Map<string, string>,
-	): void {
-		if (point.kind === "sensor") sensorByVariableId.set(variableId, point.id);
-		else actuatorVariableIds.set(point.id, variableId);
 	}
 
 	private readActuators(
 		active: ActiveScene,
 		snapshot: readonly PLCVariable[],
 	): ScenePointValues {
-		const pointByVariableId = new Map<string, string>();
-		for (const [pointId, variableId] of active.actuatorVariableIds) {
-			pointByVariableId.set(variableId, pointId);
-		}
 		const actuators: ScenePointValues = {};
 		for (const variable of snapshot) {
-			const pointId = pointByVariableId.get(variable.getId());
+			const pointId = active.actuatorPointByVariableId.get(variable.getId());
 			if (pointId === undefined) continue;
 			const value = variable.getValue();
 			if (typeof value === "boolean" || typeof value === "number") {

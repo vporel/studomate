@@ -1,9 +1,11 @@
-import type {
-	SceneDescriptor,
-	ScenePointDescriptor,
+import {
+	createPointFactory,
+	type SceneDescriptor,
+	type ScenePointDescriptor,
 } from "../scene.descriptor";
 
 const LABEL_PREFIX = "crossroads.points";
+const point = createPointFactory(LABEL_PREFIX);
 const LIGHT_KEYS = ["NS1", "NS2", "EO1", "EO2"] as const;
 const COLORS = [
 	{ id: "red", mnemonic: "rouge" },
@@ -12,13 +14,9 @@ const COLORS = [
 ] as const;
 
 const points: ScenePointDescriptor[] = LIGHT_KEYS.flatMap((key) =>
-	COLORS.map(({ id, mnemonic }) => ({
-		id: `${id}${key}`,
-		kind: "actuator" as const,
-		valueType: "boolean" as const,
-		labelKey: `${LABEL_PREFIX}.${id}${key}`,
-		suggestedMnemonic: `${mnemonic}${key}`,
-	})),
+	COLORS.map(({ id, mnemonic }) =>
+		point(`${id}${key}`, "actuator", "boolean", `${mnemonic}${key}`),
+	),
 );
 
 const CrossroadsDescriptor: SceneDescriptor = {

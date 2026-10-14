@@ -8,7 +8,14 @@ import ProjectDialectSetCommand from "./project-dialect-set.command";
 function buildProject() {
 	const project = new Project("p1", "Projet", "");
 	project.variables = [
-		new Variable("k", "K", "constant", "BOOL", undefined, "VRAI", Dialect.FR),
+		new Variable({
+			id: "k",
+			mnemonic: "K",
+			zone: "constant",
+			type: "BOOL",
+			value: "VRAI",
+			dialect: Dialect.FR,
+		}),
 	];
 	project.addProgram(
 		new GrafcetBuilder()

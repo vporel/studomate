@@ -2,10 +2,10 @@
 
 import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
 import {
+	READ_ONLY_ZONES,
 	VARIABLE_TYPES,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
 	VariableType,
-	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { useLadderStore } from "@/ui/components/ladder/context/LadderContext";
 import VariableSelector, {
@@ -16,8 +16,6 @@ import { Fragment, useRef } from "react";
 
 /** PT/ET/PV/CV (et tout futur paramètre numérique) référencent une variable native "nombre" —
  * TIME est stockée en ms, donc au même titre qu'un entier/réel classique. */
-const NON_WRITABLE_ZONES: readonly VariableZone[] = ["constant"];
-
 const NUMERIC_VARIABLE_TYPES = (
 	Object.keys(VARIABLE_TYPE_TO_NATIVE_TYPE) as VariableType[]
 ).filter((type) => VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "number");
@@ -89,7 +87,7 @@ export default function ParamPin({
 			typeFilter={getTypeFilter(spec)}
 			acceptedLiterals={spec.acceptedLiterals}
 			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
-			excludeZones={spec.excludeInputVariable ? NON_WRITABLE_ZONES : undefined}
+			excludeZones={spec.excludeInputVariable ? READ_ONLY_ZONES : undefined}
 			className="nodrag"
 			simulationValueProps={{ position: "BOTTOM" }}
 			align={side === "left" ? "right" : "left"}

@@ -332,6 +332,7 @@ export const createProjectStore = () => {
 			simulationPaused: false,
 			simulationMode: SimulationManager.getPersistedSimulationMode(),
 			simulationKind: "virtual",
+			scene3dDrivenInputIds: [],
 			analysisHasErrors: false,
 			analysisHasWarnings: false,
 			analysisErrors: emptyAnalysisIssues(),

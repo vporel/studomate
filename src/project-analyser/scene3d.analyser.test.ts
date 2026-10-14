@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import type Project from "@/schemas/project/project.schema";
@@ -99,7 +100,7 @@ describe("analyseScene3d", () => {
 				(v) => v.mnemonic === "cpt_psce_c",
 			)!;
 			project.variables = project.variables.map((v) =>
-				v.id === sensor.id ? v.update({ address: "%PD2" }) : v,
+				v.id === sensor.id ? v.update({ address: "%PD2" }, Dialect.FR) : v,
 			);
 			expect(codes(project)).toEqual(["SCENE3D_SENSOR_ALSO_ON_PIN"]);
 		});
@@ -109,7 +110,7 @@ describe("analyseScene3d", () => {
 				(v) => v.mnemonic === "cpt_psce_c",
 			)!;
 			project.variables = project.variables.map((v) =>
-				v.id === sensor.id ? v.update({ address: "%PD2" }) : v,
+				v.id === sensor.id ? v.update({ address: "%PD2" }, Dialect.FR) : v,
 			);
 			expect(analyseScene3d(project)).toEqual([]);
 		});

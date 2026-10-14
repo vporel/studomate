@@ -9,149 +9,264 @@ import {
 } from "./variable-selector-utils";
 
 function boolInput(mnemonic: string): Variable {
-	return new Variable("v1", mnemonic, "logic-input", "BOOL");
+	return new Variable({
+		id: "v1",
+		mnemonic,
+		zone: "logic-input",
+		type: "BOOL",
+		dialect: Dialect.FR,
+	});
 }
 
 function intMemory(mnemonic: string): Variable {
-	return new Variable("v2", mnemonic, "memory", "INT");
+	return new Variable({
+		id: "v2",
+		mnemonic,
+		zone: "memory",
+		type: "INT",
+		dialect: Dialect.FR,
+	});
 }
 
 describe("computeStatus", () => {
 	it("retourne null pour un mnémonique vide", () => {
-		expect(computeStatus("", [])).toBeNull();
-		expect(computeStatus("   ", [])).toBeNull();
+		expect(computeStatus("", [], Dialect.FR)).toBeNull();
+		expect(computeStatus("   ", [], Dialect.FR)).toBeNull();
 	});
 
 	it("retourne ok pour une constante TIME sur une pinoche d'opérande de bloc", () => {
 		expect(
-			computeStatus("T#2s", [], undefined, undefined, [...BLOCK_OPERAND_LITERALS]),
+			computeStatus("T#2s", [], Dialect.FR, undefined, undefined, [
+				...BLOCK_OPERAND_LITERALS,
+			]),
 		).toBe("ok");
 	});
 
 	it("retourne ok pour un mnémonique déclaré sans filtre", () => {
 		const variables = [boolInput("moteur")];
 
-		expect(computeStatus("moteur", variables)).toBe("ok");
+		expect(computeStatus("moteur", variables, Dialect.FR)).toBe("ok");
 	});
 
 	it("retourne excluded-behavior pour une entrée dont le comportement est exclu", () => {
-		const pushButton = boolInput("arret").update({
-			behavior: { kind: "push-button-nc", params: null },
-		});
+		const pushButton = boolInput("arret").update(
+			{ behavior: { kind: "push-button-nc", params: null } },
+			Dialect.FR,
+		);
 		const free = boolInput("libre");
 		const excluded = ["push-button-no", "push-button-nc"] as const;
 
 		expect(
-			computeStatus("arret", [pushButton], undefined, undefined, undefined, Dialect.FR, excluded),
+			computeStatus(
+				"arret",
+				[pushButton],
+				Dialect.FR,
+				undefined,
+				undefined,
+				undefined,
+				excluded,
+			),
 		).toBe("excluded-behavior");
 		expect(
-			computeStatus("libre", [free], undefined, undefined, undefined, Dialect.FR, excluded),
+			computeStatus(
+				"libre",
+				[free],
+				Dialect.FR,
+				undefined,
+				undefined,
+				undefined,
+				excluded,
+			),
 		).toBe("ok");
 	});
 
 	it("retourne excluded-zone pour une variable d'une zone exclue", () => {
-		const constant = new Variable("k", "SEUIL", "constant", "INT", undefined, "4");
+		const constant = new Variable({
+			id: "k",
+			mnemonic: "SEUIL",
+			zone: "constant",
+			type: "INT",
+			value: "4",
+			dialect: Dialect.FR,
+		});
 		const excluded = ["constant"] as const;
 
 		expect(
-			computeStatus("SEUIL", [constant], undefined, undefined, undefined, Dialect.FR, undefined, excluded),
+			computeStatus(
+				"SEUIL",
+				[constant],
+				Dialect.FR,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				excluded,
+			),
 		).toBe("excluded-zone");
-		expect(computeStatus("SEUIL", [constant])).toBe("ok");
+		expect(computeStatus("SEUIL", [constant], Dialect.FR)).toBe("ok");
 		expect(
-			computeStatus("compteur", [intMemory("compteur")], undefined, undefined, undefined, Dialect.FR, undefined, excluded),
+			computeStatus(
+				"compteur",
+				[intMemory("compteur")],
+				Dialect.FR,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				excluded,
+			),
 		).toBe("ok");
 	});
 
 	it("retourne undeclared quand le mnémonique est inconnu", () => {
-		expect(computeStatus("inconnu", [boolInput("moteur")])).toBe("undeclared");
+		expect(computeStatus("inconnu", [boolInput("moteur")], Dialect.FR)).toBe(
+			"undeclared",
+		);
 	});
 
 	it("retourne wrong-type quand la variable existe mais hors du typeFilter", () => {
 		const variables = [intMemory("compteur")];
 
-		expect(computeStatus("compteur", variables, ["BOOL"])).toBe("wrong-type");
+		expect(computeStatus("compteur", variables, Dialect.FR, ["BOOL"])).toBe(
+			"wrong-type",
+		);
 	});
 
 	it("retourne excluded-direction quand la direction est exclue", () => {
 		const variables = [boolInput("capteur")];
 
-		expect(computeStatus("capteur", variables, undefined, "IN")).toBe(
-			"excluded-direction",
-		);
+		expect(
+			computeStatus("capteur", variables, Dialect.FR, undefined, "IN"),
+		).toBe("excluded-direction");
 	});
 
 	it("retourne ok pour une constante TIME si 'time' est accepté", () => {
-		expect(computeStatus("T#5s", [], undefined, undefined, ["time"])).toBe("ok");
+		expect(
+			computeStatus("T#5s", [], Dialect.FR, undefined, undefined, ["time"]),
+		).toBe("ok");
 	});
 
 	it("ne retourne pas ok pour une constante TIME mal formée", () => {
-		expect(computeStatus("T#s5s", [], undefined, undefined, ["time"])).not.toBe(
-			"ok",
-		);
+		expect(
+			computeStatus("T#s5s", [], Dialect.FR, undefined, undefined, ["time"]),
+		).not.toBe("ok");
 	});
 
 	it("retourne undeclared pour T# si 'time' n'est pas accepté", () => {
-		expect(computeStatus("T#5s", [], undefined, undefined, ["number"])).toBe(
-			"undeclared",
-		);
+		expect(
+			computeStatus("T#5s", [], Dialect.FR, undefined, undefined, ["number"]),
+		).toBe("undeclared");
 	});
 
 	it("retourne ok pour un littéral numérique si 'number' est accepté", () => {
-		expect(computeStatus("42", [], undefined, undefined, ["number"])).toBe("ok");
+		expect(
+			computeStatus("42", [], Dialect.FR, undefined, undefined, ["number"]),
+		).toBe("ok");
 	});
 
 	it("retourne ok pour un littéral booléen selon le dialecte", () => {
 		expect(
-			computeStatus("vrai", [], undefined, undefined, ["boolean"], Dialect.FR),
+			computeStatus("vrai", [], Dialect.FR, undefined, undefined, ["boolean"]),
 		).toBe("ok");
 		expect(
-			computeStatus("vrai", [], undefined, undefined, ["boolean"], Dialect.EN),
+			computeStatus("vrai", [], Dialect.EN, undefined, undefined, ["boolean"]),
 		).toBe("undeclared");
 	});
 
 	it("retourne ok pour un littéral chaîne si 'string' est accepté", () => {
 		expect(
-			computeStatus('"abc"', [], undefined, undefined, ["string"]),
+			computeStatus('"abc"', [], Dialect.FR, undefined, undefined, ["string"]),
 		).toBe("ok");
 	});
 });
 
 describe("cellValue", () => {
 	it("retourne l'adresse ou — si absente", () => {
-		const v = new Variable("v1", "moteur", "logic-output", "BOOL");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "logic-output",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		v.address = "%Q0.0";
 
 		expect(cellValue(v, "address")).toBe("%Q0.0");
 	});
 
 	it("retourne — quand l'adresse est absente", () => {
-		const v = new Variable("v1", "moteur", "memory", "BOOL");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		expect(cellValue(v, "address")).toBe("—");
 	});
 
 	it("retourne le mnémonique", () => {
-		const v = new Variable("v1", "moteur", "memory", "BOOL");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		expect(cellValue(v, "mnemonic")).toBe("moteur");
 	});
 
 	it("retourne le type", () => {
-		const v = new Variable("v1", "moteur", "memory", "INT");
+		const v = new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 
 		expect(cellValue(v, "type")).toBe("INT");
 	});
 
 	it("retourne le libellé de direction", () => {
 		expect(
-			cellValue(new Variable("v1", "a", "logic-input", "BOOL"), "scope"),
+			cellValue(
+				new Variable({
+					id: "v1",
+					mnemonic: "a",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				"scope",
+			),
 		).toBe("Entrée");
 		expect(
-			cellValue(new Variable("v2", "b", "logic-output", "BOOL"), "scope"),
+			cellValue(
+				new Variable({
+					id: "v2",
+					mnemonic: "b",
+					zone: "logic-output",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				"scope",
+			),
 		).toBe("Sortie");
-		expect(cellValue(new Variable("v3", "c", "memory", "BOOL"), "scope")).toBe(
-			"Mémoire",
-		);
+		expect(
+			cellValue(
+				new Variable({
+					id: "v3",
+					mnemonic: "c",
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				"scope",
+			),
+		).toBe("Mémoire");
 	});
 });
 

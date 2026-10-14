@@ -1,5 +1,18 @@
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import Variable from "@/schemas/variable/variable.schema";
+import Variable, {
+	VariableType,
+	VariableUpdatableFields,
+	VariableZone,
+} from "@/schemas/variable/variable.schema";
+
+export function variableDraft(fields: {
+	mnemonic: string;
+	zone: VariableZone;
+	type: VariableType;
+	value?: string;
+}): VariableUpdatableFields {
+	return { address: "", comment: "", behavior: null, ...fields };
+}
 
 /**
  * Factory for creating test variables with auto-generated IDs

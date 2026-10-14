@@ -1,4 +1,4 @@
-import { VariablesPageId } from "@/ui/components/pages/VariablesPage";
+import { VariablesPageId } from "@/ui/stores/project/variables-pages";
 
 export type ExplorerContextMenuElement =
 	| { type: "pane" }

@@ -92,10 +92,10 @@ export function computeStatus(
 		zone?: VariableZone;
 		getDirection(): VariableDirection;
 	}[],
+	dialect: Dialect,
 	typeFilter?: VariableType[],
 	excludeDirection?: VariableDirection,
 	acceptedLiterals?: LiteralKind[],
-	dialect: Dialect = Dialect.FR,
 	excludeBehaviorKinds?: readonly InputBehaviorKind[],
 	excludeZones?: readonly VariableZone[],
 ): SelectorStatus {

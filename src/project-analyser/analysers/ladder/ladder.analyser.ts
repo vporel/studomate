@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	BLOCK_DEFINITIONS,
 	resolveStructuralPorts,
@@ -97,11 +98,11 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * ladder : `ProjectAnalyser` l'appelle pour TOUS les programmes avant d'analyser quiconque,
 	 * pour que chaque programme puisse voir ce que les autres génèrent.
 	 */
-	generateVariables(ladder: Ladder): Variable[] {
+	generateVariables(ladder: Ladder, dialect: Dialect): Variable[] {
 		return [
-			...this.buildEdgeMemoryVariables(ladder),
-			...this.buildBlockPortVariables(ladder),
-			...this.buildBlockLastInputVariables(ladder),
+			...this.buildEdgeMemoryVariables(ladder, dialect),
+			...this.buildBlockPortVariables(ladder, dialect),
+			...this.buildBlockLastInputVariables(ladder, dialect),
 			...this.buildTimerExposedVariables(ladder),
 			...this.buildCounterExposedVariables(ladder),
 		];
@@ -265,12 +266,9 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 				);
 			} else if (namesSeen.has(block.name)) {
 				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"BLOCK_NAME_DUPLICATE",
-						source,
-						{ blockName: block.name },
-					),
+					new ProjectAnalyserIssue("error", "BLOCK_NAME_DUPLICATE", source, {
+						blockName: block.name,
+					}),
 				);
 			}
 			namesSeen.add(block.name);
@@ -386,7 +384,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * balayage précédent) par bobine de front — même mécanisme que les
 	 * variables d'étape `Xn` du GRAFCET (`GrafcetAnalyser.buildstepsVariables`).
 	 */
-	private buildEdgeMemoryVariables(ladder: Ladder): Variable[] {
+	private buildEdgeMemoryVariables(
+		ladder: Ladder,
+		dialect: Dialect,
+	): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
 			const isEdgeContact =
@@ -396,22 +397,24 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 				element.type === "coil" && isEdgeCoilType(element.data.type);
 			if (isEdgeContact || isEdgeCoil) {
 				variables.push(
-					new Variable(
-						getContactMemoryVariableId(ladder.id, element.id),
-						getContactMemoryVariableMnemonic(element.id),
-						"memory",
-						"BOOL",
-					),
+					new Variable({
+						id: getContactMemoryVariableId(ladder.id, element.id),
+						mnemonic: getContactMemoryVariableMnemonic(element.id),
+						zone: "memory",
+						type: "BOOL",
+						dialect,
+					}),
 				);
 			}
 			if (isEdgeContact) {
 				variables.push(
-					new Variable(
-						getContactPulseVariableId(ladder.id, element.id),
-						getContactPulseVariableMnemonic(element.id),
-						"memory",
-						"BOOL",
-					),
+					new Variable({
+						id: getContactPulseVariableId(ladder.id, element.id),
+						mnemonic: getContactPulseVariableMnemonic(element.id),
+						zone: "memory",
+						type: "BOOL",
+						dialect,
+					}),
 				);
 			}
 		}
@@ -425,7 +428,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * config (`buildTimerExposedVariables`/`buildCounterExposedVariables`), pas des variables
 	 * cachées propres à ce mécanisme.
 	 */
-	private buildBlockPortVariables(ladder: Ladder): Variable[] {
+	private buildBlockPortVariables(
+		ladder: Ladder,
+		dialect: Dialect,
+	): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
 			if (
@@ -436,12 +442,13 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 			const ports = resolveStructuralPorts(element.data);
 			for (const portName of [ports.input, ports.output]) {
 				variables.push(
-					new Variable(
-						getBlockPortVariableId(ladder.id, element.id, portName),
-						getBlockPortVariableMnemonic(element.id, portName),
-						"memory",
-						"BOOL",
-					),
+					new Variable({
+						id: getBlockPortVariableId(ladder.id, element.id, portName),
+						mnemonic: getBlockPortVariableMnemonic(element.id, portName),
+						zone: "memory",
+						type: "BOOL",
+						dialect,
+					}),
 				);
 			}
 		}
@@ -454,7 +461,10 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 	 * exposed, unlike `<Name>.IN`/`.Q`/`.ET`/`.CV` (see `buildTimerExposedVariables` and
 	 * `buildCounterExposedVariables`).
 	 */
-	private buildBlockLastInputVariables(ladder: Ladder): Variable[] {
+	private buildBlockLastInputVariables(
+		ladder: Ladder,
+		dialect: Dialect,
+	): Variable[] {
 		const variables: Variable[] = [];
 		for (const element of ladder.getAllElements()) {
 			if (
@@ -470,12 +480,13 @@ export default class LadderAnalyser implements ProgramAnalyser<Ladder> {
 					: ["lastInput"];
 			for (const port of edgeInputs) {
 				variables.push(
-					new Variable(
-						getBlockPortVariableId(ladder.id, element.id, port),
-						getBlockPortVariableMnemonic(element.id, port),
-						"memory",
-						"BOOL",
-					),
+					new Variable({
+						id: getBlockPortVariableId(ladder.id, element.id, port),
+						mnemonic: getBlockPortVariableMnemonic(element.id, port),
+						zone: "memory",
+						type: "BOOL",
+						dialect,
+					}),
 				);
 			}
 		}

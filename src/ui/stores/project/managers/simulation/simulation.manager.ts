@@ -221,6 +221,9 @@ export default class SimulationManager {
 		this.setStoreState(() => ({ simulationKind: kind }));
 		this.getStoreState().hardwareLinkManager.onSimulationStart();
 		this.scene3dBridge.onSimulationStart(startPaused);
+		this.setStoreState(() => ({
+			scene3dDrivenInputIds: this.scene3dBridge.drivenVariableIds(),
+		}));
 		this.plc.pause();
 		this.plc.stepOnce();
 		if (!startPaused) {
@@ -476,6 +479,7 @@ export default class SimulationManager {
 			observableExpressionsValues: {},
 			simulationPaused: false,
 			simulationKind: "virtual",
+			scene3dDrivenInputIds: [],
 			forcedVariables: {},
 		}));
 

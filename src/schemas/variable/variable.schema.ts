@@ -15,6 +15,8 @@ export type VariableZone =
 	| "analog-output"
 	| "memory"
 	| "constant";
+/** Zones whose variables cannot be written: a constant is fixed at design time. */
+export const READ_ONLY_ZONES: readonly VariableZone[] = ["constant"];
 export type VariableDirection = "IN" | "OUT" | "INOUT";
 
 export const VARIABLE_TYPES = [
@@ -69,17 +71,19 @@ export const VARIABLE_TYPE_TO_NATIVE_TYPE: Record<VariableType, NativeType> = {
  * temporisations, le borner casserait leur accumulation. Les entiers replient comme sur un
  * automate.
  */
-const VARIABLE_TYPE_TO_NUMERIC_RANGE: Record<VariableType, NumericRange | null> =
-	{
-		BOOL: null,
-		STRING: null,
-		REAL: null,
-		TIME: null,
-		INT: { min: -32768, max: 32767, integer: true, wrap: true },
-		DINT: { min: -2147483648, max: 2147483647, integer: true, wrap: true },
-		WORD: { min: 0, max: 65535, integer: true, wrap: true },
-		DWORD: { min: 0, max: 4294967295, integer: true, wrap: true },
-	};
+const VARIABLE_TYPE_TO_NUMERIC_RANGE: Record<
+	VariableType,
+	NumericRange | null
+> = {
+	BOOL: null,
+	STRING: null,
+	REAL: null,
+	TIME: null,
+	INT: { min: -32768, max: 32767, integer: true, wrap: true },
+	DINT: { min: -2147483648, max: 2147483647, integer: true, wrap: true },
+	WORD: { min: 0, max: 65535, integer: true, wrap: true },
+	DWORD: { min: 0, max: 4294967295, integer: true, wrap: true },
+};
 
 export function getNumericRange(type: VariableType): NumericRange | null {
 	return VARIABLE_TYPE_TO_NUMERIC_RANGE[type];
@@ -108,6 +112,16 @@ export type VariableUpdatableFieldsWithId = VariableUpdatableFields & {
  * automatiquement (ex. `Tempo1.PT`) — absent pour une variable créée normalement par l'utilisateur. */
 export type VariableOwnerBlock = { id: string };
 
+export interface VariableInit {
+	id: string;
+	mnemonic: string;
+	zone: VariableZone;
+	type: VariableType;
+	ownerBlock?: VariableOwnerBlock;
+	value?: string;
+	dialect: Dialect;
+}
+
 export default class Variable {
 	id: string;
 	mnemonic: string;
@@ -122,15 +136,8 @@ export default class Variable {
 	value?: string;
 	ownerBlock?: VariableOwnerBlock;
 
-	constructor(
-		id: string,
-		mnemonic: string,
-		zone: VariableZone,
-		type: VariableType,
-		ownerBlock?: VariableOwnerBlock,
-		value?: string,
-		dialect: Dialect = Dialect.FR,
-	) {
+	constructor(init: VariableInit) {
+		const { id, mnemonic, zone, type, ownerBlock, value, dialect } = init;
 		this.id = id;
 		this.mnemonic = mnemonic;
 		this.zone = zone;
@@ -147,6 +154,25 @@ export default class Variable {
 				`Invalid variable: ${issues.map((i) => i.code).join(", ")}`,
 			);
 		}
+	}
+
+	static fromData(
+		data: VariableUpdatableFieldsWithId,
+		dialect: Dialect,
+	): Variable {
+		const variable = new Variable({
+			id: data.id,
+			mnemonic: data.mnemonic,
+			zone: data.zone,
+			type: data.type,
+			value: data.value,
+			dialect,
+		});
+		if (data.address) variable.address = data.address;
+		if (data.comment) variable.comment = data.comment;
+		return data.behavior
+			? variable.update({ behavior: data.behavior }, dialect)
+			: variable;
 	}
 
 	getDirection(): VariableDirection {
@@ -170,7 +196,7 @@ export default class Variable {
 	 * inchangées par référence. */
 	update(
 		updatedFields: Partial<VariableUpdatableFields>,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): Variable {
 		if (updatedFields.type)
 			updatedFields.type = updatedFields.type
@@ -189,18 +215,23 @@ export default class Variable {
 		return updatedVariable;
 	}
 
+	/** Valid stand-in whose fields are overwritten right after by `Object.assign`. */
+	private static placeholder(): Variable {
+		return new Variable({
+			id: "id",
+			mnemonic: "mnemonic",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+	}
+
 	copy(): Variable {
-		return Object.assign(
-			new Variable("id", "mnemonic", "memory", "BOOL"),
-			this,
-		);
+		return Object.assign(Variable.placeholder(), this);
 	}
 
 	static createFromJSON(json: string): Variable {
 		const jsonParsed = JSON.parse(json);
-		return Object.assign(
-			new Variable("id", "mnemonic", "memory", "BOOL"),
-			jsonParsed,
-		);
+		return Object.assign(Variable.placeholder(), jsonParsed);
 	}
 }

@@ -1,5 +1,5 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { parseConstantLiteral } from "@/schemas/variable/constant-value";
+import { getConstantNativeValue } from "@/schemas/variable/constant-value";
 import {
 	getInputRestValue,
 	getSliderRange,
@@ -48,10 +48,7 @@ export default class VariableCompiler {
 	 * its rest value, a slider input is bounded by the slider's range, and a constant starts at
 	 * its declared value.
 	 */
-	static compile(
-		variables: Variable[],
-		dialect: Dialect = Dialect.FR,
-	): PLCVariable[] {
+	static compile(variables: Variable[], dialect: Dialect): PLCVariable[] {
 		const result: PLCVariable[] = [];
 
 		for (const variable of variables) {
@@ -68,10 +65,7 @@ export default class VariableCompiler {
 				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
 				variable.type,
 				isConstant,
-				isConstant
-					? (parseConstantLiteral(variable.value ?? "", variable.type, dialect) ??
-							undefined)
-					: undefined,
+				getConstantNativeValue(variable, dialect),
 			);
 			const restValue = getInputRestValue(variable.behavior);
 			if (restValue !== undefined) plcVariable.setValue(restValue);

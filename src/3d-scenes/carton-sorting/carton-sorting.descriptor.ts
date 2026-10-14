@@ -1,28 +1,19 @@
-import type {
-	SceneDescriptor,
-	ScenePointDescriptor,
+import {
+	createPointFactory,
+	type SceneDescriptor,
+	type ScenePointDescriptor,
 } from "../scene.descriptor";
 
 const LABEL_PREFIX = "cartonSorting.points";
 
+const point = createPointFactory(LABEL_PREFIX);
+
 function actuator(id: string, suggestedMnemonic: string): ScenePointDescriptor {
-	return {
-		id,
-		kind: "actuator",
-		valueType: "boolean",
-		labelKey: `${LABEL_PREFIX}.${id}`,
-		suggestedMnemonic,
-	};
+	return point(id, "actuator", "boolean", suggestedMnemonic);
 }
 
 function sensor(id: string, suggestedMnemonic: string): ScenePointDescriptor {
-	return {
-		id,
-		kind: "sensor",
-		valueType: "boolean",
-		labelKey: `${LABEL_PREFIX}.${id}`,
-		suggestedMnemonic,
-	};
+	return point(id, "sensor", "boolean", suggestedMnemonic);
 }
 
 const CartonSortingDescriptor: SceneDescriptor = {

@@ -1,5 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import { ActionExecutionMode, ActionType } from "@/schemas/grafcet/action.schema";
+import {
+	ActionExecutionMode,
+	ActionType,
+} from "@/schemas/grafcet/action.schema";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -81,8 +84,20 @@ describe("Pipeline — garde-fou de charge", () => {
 	it("analyse + compile + 2000 cycles PLC sur un grafcet de 40 étapes en moins de 3 s", () => {
 		const project = new Project("p-load", "Charge", "");
 		project.variables = [
-			new Variable("v-go", "go", "logic-input", "BOOL"),
-			new Variable("v-flag", "flag", "memory", "BOOL"),
+			new Variable({
+				id: "v-go",
+				mnemonic: "go",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v-flag",
+				mnemonic: "flag",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		];
 		project.addProgram(buildRingGrafcet(40));
 

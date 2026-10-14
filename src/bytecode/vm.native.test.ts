@@ -9,12 +9,14 @@ import {
 	compiledProject,
 	parseStatement,
 	plcVariable,
+	UNO_PIN_RANGE,
 } from "@tests/utils/bytecode-program";
 import { NativeVm, nativeVerifyMany } from "@tests/utils/native-vm";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
 import arduinoIoBindings from "./arduino-io-bindings";
 import { HEADER_OFFSETS } from "./bytecode-format";
-import generateBytecode, { imageChecksum } from "./bytecode.generator";
+import { imageChecksum } from "./bytecode-image";
+import generateBytecode from "./bytecode.generator";
 import verifyBytecode from "./bytecode.verifier";
 
 const NO_IO: RemoteIoPlan = { pins: [], inputs: [], outputs: [] };
@@ -30,6 +32,7 @@ function build(
 		compiled: compiledProject({ variables, routines }),
 		ioBindings: arduinoIoBindings(ioPlan),
 		cyclePeriodMs,
+		pinRange: UNO_PIN_RANGE,
 	});
 	const vm = new NativeVm(image.bytes);
 	const at = (name: string) => image.layout.variableIndexByName[name];
@@ -165,6 +168,7 @@ describe("native VM", () => {
 				compiled,
 				ioBindings: [],
 				cyclePeriodMs: 100,
+				pinRange: UNO_PIN_RANGE,
 			});
 			const vm = new NativeVm(image.bytes);
 			const a = image.layout.variableIndexByName.a;
@@ -640,7 +644,7 @@ describe("native VM", () => {
 			const nativeStatuses = nativeVerifyMany([image.bytes, ...candidates]);
 			expect(nativeStatuses[0]).toBe(0);
 			const mismatches = candidates.flatMap((candidate, i) => {
-				const typescript = verifyBytecode(candidate, 1024);
+				const typescript = verifyBytecode(candidate, 1024, UNO_PIN_RANGE);
 				const native = nativeStatuses[i + 1];
 				return typescript.valid === (native === 0)
 					? []

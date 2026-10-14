@@ -151,8 +151,22 @@ describe("Project.setDialect: boolean constants", () => {
 		const project = new Project("p", "n", "");
 		project.dialect = dialect;
 		project.variables = [
-			new Variable("k", "K", "constant", "BOOL", undefined, value, dialect),
-			new Variable("n", "N", "constant", "INT", undefined, "5"),
+			new Variable({
+				id: "k",
+				mnemonic: "K",
+				zone: "constant",
+				type: "BOOL",
+				value,
+				dialect,
+			}),
+			new Variable({
+				id: "n",
+				mnemonic: "N",
+				zone: "constant",
+				type: "INT",
+				value: "5",
+				dialect: Dialect.FR,
+			}),
 		];
 		return project;
 	}

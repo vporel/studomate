@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -15,7 +16,9 @@ describe("JunctionOrEndAnalyser", () => {
 				.nBranches(2)
 				.build();
 
-			const issues = analyser.analyseIsolated(junction);
+			const issues = analyser.analyseIsolated(junction, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -26,7 +29,9 @@ describe("JunctionOrEndAnalyser", () => {
 				.nBranches(5)
 				.build();
 
-			const issues = analyser.analyseIsolated(junction);
+			const issues = analyser.analyseIsolated(junction, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -49,7 +54,9 @@ describe("JunctionOrEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const pivotIssue = issues.find((i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED");
+			const pivotIssue = issues.find(
+				(i) => i.code === "JUNCTION_PIVOT_NOT_CONNECTED",
+			);
 			expect(pivotIssue).toBeDefined();
 			expect(pivotIssue?.severity).toBe("error");
 		});
@@ -76,7 +83,9 @@ describe("JunctionOrEndAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const branchIssue = issues.find((i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED");
+			const branchIssue = issues.find(
+				(i) => i.code === "JUNCTION_BRANCH_NOT_CONNECTED",
+			);
 			expect(branchIssue).toBeDefined();
 			expect(branchIssue?.severity).toBe("error");
 		});

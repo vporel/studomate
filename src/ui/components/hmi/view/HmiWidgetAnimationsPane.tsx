@@ -13,7 +13,7 @@ import {
 	HmiAnimatableStyleProp,
 } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { NON_BINDABLE_ZONES } from "@/ui/components/hmi/logic/hmi-bindable-variable";
+import { READ_ONLY_ZONES } from "@/schemas/variable/variable.schema";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
 import HmiFloatingPane from "./HmiFloatingPane";
@@ -95,7 +95,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				value={position?.xVariable ?? ""}
 				onCommit={(mnemonic) => setPosition({ xVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
-				excludeZones={NON_BINDABLE_ZONES}
+				excludeZones={READ_ONLY_ZONES}
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}
@@ -106,7 +106,7 @@ const PositionTab = ({ widget }: { widget: HmiWidget }) => {
 				value={position?.yVariable ?? ""}
 				onCommit={(mnemonic) => setPosition({ yVariable: mnemonic })}
 				typeFilter={NUMERIC_VARIABLE_TYPES}
-				excludeZones={NON_BINDABLE_ZONES}
+				excludeZones={READ_ONLY_ZONES}
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}
@@ -207,7 +207,7 @@ const StyleTab = ({
 				value={style?.variable ?? ""}
 				onCommit={handleVariableChange}
 				typeFilter={STYLE_VARIABLE_TYPES}
-				excludeZones={NON_BINDABLE_ZONES}
+				excludeZones={READ_ONLY_ZONES}
 				cols={["mnemonic", "address", "scope"]}
 				sx={{ width: 320, maxWidth: "100% !important" }}
 				baseInputSx={{ fontSize: "0.85rem !important" }}

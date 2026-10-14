@@ -14,12 +14,48 @@ describe("ConvertBlockAnalyser", () => {
 		sourceId: "b1",
 	};
 	const variables = [
-		new Variable("v1", "D", "memory", "DINT"),
-		new Variable("v2", "I", "memory", "INT"),
-		new Variable("v3", "R", "memory", "REAL"),
-		new Variable("v4", "W", "memory", "WORD"),
-		new Variable("v5", "B", "memory", "BOOL"),
-		new Variable("v6", "E", "analog-input", "INT"),
+		new Variable({
+			id: "v1",
+			mnemonic: "D",
+			zone: "memory",
+			type: "DINT",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "v2",
+			mnemonic: "I",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "v3",
+			mnemonic: "R",
+			zone: "memory",
+			type: "REAL",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "v4",
+			mnemonic: "W",
+			zone: "memory",
+			type: "WORD",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "v5",
+			mnemonic: "B",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}),
+		new Variable({
+			id: "v6",
+			mnemonic: "E",
+			zone: "analog-input",
+			type: "INT",
+			dialect: Dialect.FR,
+		}),
 	];
 
 	function analyse(params: ConvertBlockParams): string[] {
@@ -27,7 +63,7 @@ describe("ConvertBlockAnalyser", () => {
 			createConvertBlockElement(0, 0, params),
 			source,
 			Dialect.FR,
-			buildAnalysisEnvironment(variables),
+			buildAnalysisEnvironment(variables, Dialect.FR),
 		).map((i) => i.code);
 	}
 
@@ -54,7 +90,9 @@ describe("ConvertBlockAnalyser", () => {
 	});
 
 	it("signale une variable non déclarée", () => {
-		expect(analyse({ out: "I", in: "inconnue" })).toEqual(["BLOCK_CONVERT_INVALID"]);
+		expect(analyse({ out: "I", in: "inconnue" })).toEqual([
+			"BLOCK_CONVERT_INVALID",
+		]);
 	});
 
 	it("exige une variable OUT de type convertible", () => {

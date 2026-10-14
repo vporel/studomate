@@ -1,4 +1,5 @@
 import { FrameDecoder, encodeFrame } from "@/hardware/arduino/remote-io/frame";
+import arduinoUnoR3 from "@/hardware/arduino/uno-r3.descriptor";
 import verifyBytecode from "@/bytecode/bytecode.verifier";
 import type { SerialTransport } from "@/hardware/arduino/remote-io/transport";
 import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
@@ -223,7 +224,11 @@ export default class FakeRemoteIoBoard implements SerialTransport {
 			const image = Uint8Array.from(this.incoming);
 			if (
 				image.length !== this.programSize ||
-				!verifyBytecode(image, this.options.programCapacity).valid
+				!verifyBytecode(
+					image,
+					this.options.programCapacity,
+					arduinoUnoR3.limits.vm.pinRange,
+				).valid
 			) {
 				return error("PROG_INVALID");
 			}

@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { ContactType } from "@/schemas/ladder/element.schema";
@@ -50,7 +51,11 @@ function setup({
 		selectorImplementation({
 			simulationVariablesStates,
 			simulationVariablesStatesByMnemonic,
-			project: { variables: projectVariables, getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
+			project: {
+				variables: projectVariables,
+				getAllTimerBlockElements: () => [],
+				getAllCounterBlockElements: () => [],
+			},
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
@@ -292,7 +297,13 @@ describe("ContactNode", () => {
 			const { executeOperation } = setup({
 				variable: "E1",
 				projectVariables: [
-					new Variable("v1", "AutreVariable", "logic-input", "BOOL"),
+					new Variable({
+						id: "v1",
+						mnemonic: "AutreVariable",
+						zone: "logic-input",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
 				],
 			});
 

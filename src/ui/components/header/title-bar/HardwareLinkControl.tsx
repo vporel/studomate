@@ -1,9 +1,10 @@
 "use client";
 
-import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
-import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
+import useWebSerialSupported from "@/ui/components/hardware/useWebSerialSupported";
+import { getHardwareDevice } from "@/hardware/hardware-device.registry";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
+import { selectHardwareActions } from "@/ui/stores/project/hardware-actions.selector";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -18,7 +19,7 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useShallow } from "zustand/shallow";
 
 /** Icon button with a tooltip; the span lets the tooltip show on a disabled button. */
@@ -54,28 +55,29 @@ const ActionButton = ({
  */
 const HardwareLinkControl = () => {
 	const t = useT("chrome.hardwareLink");
+	const supported = useWebSerialSupported();
 	const {
 		modelId,
 		status,
 		flashing,
-		designing,
 		boardMode,
 		programPresent,
 		kind,
 		mode,
 		upload,
+		actions,
 		hardwareLinkManager,
 	} = useProjectStore(
 		useShallow((state) => ({
 			modelId: state.project?.hardwareTarget?.modelId ?? null,
 			status: state.hardwareLink.status,
 			flashing: state.hardwareFirmware.phase === "flashing",
-			designing: state.mode === ProjectMode.DESIGN,
 			boardMode: state.hardwareLink.boardMode,
 			programPresent: state.hardwareLink.programPresent,
 			kind: state.simulationKind,
 			mode: state.mode,
 			upload: state.hardwareUpload,
+			actions: selectHardwareActions(state, supported === true),
 			hardwareLinkManager: state.hardwareLinkManager,
 		})),
 	);
@@ -84,9 +86,6 @@ const HardwareLinkControl = () => {
 		upload.totalBytes > 0
 			? Math.round((100 * upload.sentBytes) / upload.totalBytes)
 			: 0;
-	// Browser capabilities are read after mounting, to match the server-rendered markup.
-	const [supported, setSupported] = useState<boolean | null>(null);
-	useEffect(() => setSupported(isWebSerialSupported()), []);
 
 	if (!modelId || supported === null) return null;
 
@@ -104,9 +103,7 @@ const HardwareLinkControl = () => {
 		);
 	}
 
-	const board = HardwareDeviceRegistry.get(modelId)?.label ?? modelId;
-	// A mode of the menu uses the board: its program and pins are not left to the user meanwhile.
-	const boardInUse = mode === ProjectMode.SIMULATION && kind !== "virtual";
+	const board = getHardwareDevice(modelId)?.label ?? modelId;
 
 	const badge = () => {
 		if (uploading) {
@@ -154,7 +151,7 @@ const HardwareLinkControl = () => {
 			{boardMode === "program-running" && status === "linked" && (
 				<ActionButton
 					title={t("stop")}
-					disabled={uploading || boardInUse}
+					disabled={!actions.canStop}
 					onClick={() => void hardwareLinkManager.stopProgram()}
 				>
 					<StopRoundedIcon fontSize="small" />
@@ -165,7 +162,7 @@ const HardwareLinkControl = () => {
 				status === "linked" && (
 					<ActionButton
 						title={t("start")}
-						disabled={uploading || boardInUse}
+						disabled={!actions.canStart}
 						onClick={() => void hardwareLinkManager.runProgram()}
 					>
 						<PlayArrowRoundedIcon fontSize="small" />
@@ -173,7 +170,7 @@ const HardwareLinkControl = () => {
 				)}
 			<ActionButton
 				title={t("upload")}
-				disabled={!designing || uploading || status === "connecting"}
+				disabled={!actions.canUpload}
 				onClick={() => void hardwareLinkManager.uploadProgram()}
 			>
 				<FileDownloadRoundedIcon fontSize="small" />
@@ -181,7 +178,7 @@ const HardwareLinkControl = () => {
 			{status === "linked" ? (
 				<Button
 					size="small"
-					disabled={uploading || boardInUse}
+					disabled={!actions.canUnlink}
 					onClick={() => void hardwareLinkManager.unlink()}
 				>
 					{t("unlink")}
@@ -189,7 +186,7 @@ const HardwareLinkControl = () => {
 			) : (
 				<Button
 					size="small"
-					disabled={status === "connecting" || uploading}
+					disabled={!actions.canLink}
 					onClick={() => void hardwareLinkManager.link()}
 				>
 					{t("link")}

@@ -1,3 +1,4 @@
+import { UNO_PIN_RANGE } from "@tests/utils/bytecode-program";
 import generateBytecode from "@/bytecode/bytecode.generator";
 import type { CompiledProject } from "@/project-compiler/project.compiler";
 import { isSystemVariableName } from "@/schemas/variable/system-variables";
@@ -80,6 +81,7 @@ export function compareSimulatorAndVm(
 		compiled,
 		ioBindings: [],
 		cyclePeriodMs: scanTimeMs,
+		pinRange: UNO_PIN_RANGE,
 	});
 	const indexByName = image.layout.variableIndexByName;
 

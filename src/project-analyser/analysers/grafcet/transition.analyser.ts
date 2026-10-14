@@ -20,10 +20,7 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 	 */
 	analyseIsolated(
 		transition: Transition,
-		{
-			allowEmptyContent = false,
-			dialect = Dialect.FR,
-		}: ElementAnalyseIsolatedOptions = {},
+		{ allowEmptyContent = false, dialect }: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = {
@@ -105,7 +102,7 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 		transition: Transition,
 		grafcet: Grafcet,
 		env: Environment,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = {
@@ -115,11 +112,7 @@ export default class TransitionAnalyser extends GrafcetElementAnalyser<Transitio
 
 		if (!TransitionHelper.hasPredecessor(transition.id, grafcet)) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"TRANSITION_NO_PREDECESSOR",
-					source,
-				),
+				new ProjectAnalyserIssue("error", "TRANSITION_NO_PREDECESSOR", source),
 			);
 		}
 

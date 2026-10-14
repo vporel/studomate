@@ -70,4 +70,17 @@ describe("parseIntelHex", () => {
 			parseIntelHex(record(0, 4, [0, 1]) + "\n" + EOF_RECORD),
 		).toThrow("Unsupported");
 	});
+
+	it.each([
+		[3, [0x00, 0x00, 0x00, 0x00]],
+		[4, [0x00, 0x01]],
+		[5, [0x00, 0x00, 0x00, 0x00]],
+	])(
+		"rejects record type 0%i (only 00, 01 and 02 are supported)",
+		(type, data) => {
+			expect(() =>
+				parseIntelHex(record(0, type, data) + "\n" + EOF_RECORD),
+			).toThrow(`Unsupported record type ${type}`);
+		},
+	);
 });

@@ -1,4 +1,6 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "@/schemas/project/project.schema";
+import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
 import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.command";
 import Variable from "@/schemas/variable/variable.schema";
 import { ProjectStoreState } from "../project.store";
@@ -11,9 +13,27 @@ function renameCommand(from: string, to: string) {
 	]);
 }
 
+const SCENE = { sceneId: "carton-sorting", bindings: {} };
+
+function sceneCommand() {
+	return new ProjectFieldSetCommand({
+		field: "scene3d",
+		newValue: SCENE,
+		oldValue: undefined,
+	});
+}
+
 function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 	const project = new Project("p1", "Projet", "");
-	project.variables = [new Variable("v1", "moteur", "memory", "BOOL")];
+	project.variables = [
+		new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}),
+	];
 
 	let state = {
 		project,
@@ -23,6 +43,7 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 		hasCommandsToRedo: false,
 		grafcetsManager: { syncMountedStoresFromProject: jest.fn() },
 		laddersManager: { syncMountedStoresFromProject: jest.fn() },
+		scene3dLinkManager: { onSceneChanged: jest.fn() },
 	} as unknown as ProjectStoreState;
 
 	const set = (partial: any) => {
@@ -182,6 +203,47 @@ describe("ProjectCommandsStackManager (project)", () => {
 			manager.redoOperation();
 
 			expect(get().project!.variables[0].mnemonic).toBe("pompe");
+		});
+	});
+
+	describe("scene 3D notification", () => {
+		it("notifies when a command changes the scene, on execute, undo and redo", () => {
+			const { get, manager } = makeStore();
+			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+
+			manager.executeOperation([sceneCommand()]);
+			expect(notify).toHaveBeenCalledTimes(1);
+
+			manager.undoOperation();
+			expect(notify).toHaveBeenCalledTimes(2);
+
+			manager.redoOperation();
+			expect(notify).toHaveBeenCalledTimes(3);
+		});
+
+		it("does not notify when the scene is untouched, on execute, undo and redo", () => {
+			const { get, manager } = makeStore();
+			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+
+			manager.executeOperation([renameCommand("moteur", "pompe")]);
+			manager.undoOperation();
+			manager.redoOperation();
+
+			expect(notify).not.toHaveBeenCalled();
+		});
+
+		it("syncs the mounted stores when the scene changes", () => {
+			const { get, manager } = makeStore();
+
+			manager.executeOperation([sceneCommand()]);
+			manager.undoOperation();
+
+			expect(
+				get().grafcetsManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(2);
+			expect(
+				get().laddersManager.syncMountedStoresFromProject,
+			).toHaveBeenCalledTimes(2);
 		});
 	});
 });

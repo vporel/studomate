@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	createCoilElement,
 	createContactElement,
@@ -20,7 +21,7 @@ describe("CoilAnalyser", () => {
 	function variablesContext(...variables: Variable[]) {
 		return {
 			variablesByMnemonic: new Map(variables.map((v) => [v.mnemonic, v])),
-			environment: buildAnalysisEnvironment(variables),
+			environment: buildAnalysisEnvironment(variables, Dialect.FR),
 		};
 	}
 

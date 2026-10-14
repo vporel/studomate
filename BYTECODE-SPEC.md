@@ -141,6 +141,7 @@ byte 1: role     (bits 0-2): 0 digital input, 1 digital input with pull-up, 2 an
         inverted (bit 3)   : digital inputs, the variable is true when the pin is at 0 (`inverted` field)
         bits 4-7: reserved (0)
 byte 2: pin, numbering of the serial protocol: D2 to D13 = 2 to 13, A0 to A5 = 14 to 19
+        (the accepted range is a property of the target's firmware: 2 to 19 on the Uno R3)
 ```
 
 ### 3.3. System variables table (2 bytes per variable)

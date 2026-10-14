@@ -31,7 +31,7 @@ export default class IdentifierRenamer {
 	static rename(
 		expression: string,
 		renames: Record<string, string>,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): string {
 		if (!expression || Object.keys(renames).length === 0) return expression;
 
@@ -57,7 +57,7 @@ export default class IdentifierRenamer {
 	static usesAnyIdentifier(
 		expression: string,
 		identifiers: string[],
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): boolean {
 		if (!expression || identifiers.length === 0) return false;
 		return this.scanIdentifiers(expression, dialect).some((o) =>

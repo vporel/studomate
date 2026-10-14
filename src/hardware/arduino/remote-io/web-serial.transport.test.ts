@@ -1,4 +1,7 @@
-import WebSerialTransport from "./web-serial.transport";
+import WebSerialTransport, {
+	ARDUINO_USB_VENDOR_IDS,
+	acquireArduinoPort,
+} from "./web-serial.transport";
 
 function fakePort() {
 	const incoming: Array<Uint8Array | "end" | Error> = [];
@@ -148,5 +151,58 @@ describe("WebSerialTransport", () => {
 		fake.events.get("disconnect")!();
 
 		expect(onClose).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe("acquireArduinoPort", () => {
+	const portOf = (usbVendorId?: number) =>
+		({ getInfo: () => ({ usbVendorId }) }) as unknown as SerialPort;
+	const mockSerial = (known: SerialPort[], chosen = portOf(0x2341)) => {
+		const serial = {
+			getPorts: jest.fn(async () => known),
+			requestPort: jest.fn(async () => chosen),
+		};
+		Object.defineProperty(navigator, "serial", {
+			configurable: true,
+			value: serial,
+		});
+		return { serial, chosen };
+	};
+
+	afterEach(() => {
+		Reflect.deleteProperty(navigator, "serial");
+	});
+
+	it("offers every supported vendor in the chooser", async () => {
+		const { serial, chosen } = mockSerial([]);
+		await expect(acquireArduinoPort()).resolves.toBe(chosen);
+		expect(serial.requestPort).toHaveBeenCalledWith({
+			filters: ARDUINO_USB_VENDOR_IDS.map((usbVendorId) => ({ usbVendorId })),
+		});
+		expect(ARDUINO_USB_VENDOR_IDS).toEqual(
+			expect.arrayContaining([0x2341, 0x2a03, 0x1a86]),
+		);
+	});
+
+	it.each([0x2341, 0x2a03, 0x1a86])(
+		"reuses the single remembered port of vendor %s",
+		async (vendorId) => {
+			const remembered = portOf(vendorId);
+			const { serial } = mockSerial([remembered]);
+			await expect(acquireArduinoPort()).resolves.toBe(remembered);
+			expect(serial.requestPort).not.toHaveBeenCalled();
+		},
+	);
+
+	it("ignores remembered ports of other vendors and unknown vendors", async () => {
+		const { serial, chosen } = mockSerial([portOf(0x1234), portOf(undefined)]);
+		await expect(acquireArduinoPort()).resolves.toBe(chosen);
+		expect(serial.requestPort).toHaveBeenCalledTimes(1);
+	});
+
+	it("opens the chooser when several supported ports are remembered", async () => {
+		const { serial } = mockSerial([portOf(0x2341), portOf(0x1a86)]);
+		await acquireArduinoPort();
+		expect(serial.requestPort).toHaveBeenCalledTimes(1);
 	});
 });

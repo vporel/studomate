@@ -11,7 +11,7 @@ describe("VariableCompiler", () => {
 				.type("INT")
 				.behavior({ kind: "slider", params: { min: 0, max: 27648 } })
 				.build();
-			const [plcVariable] = VariableCompiler.compile([brut]);
+			const [plcVariable] = VariableCompiler.compile([brut], Dialect.FR);
 			expect(plcVariable.getDeclaredType()).toBe("INT");
 		});
 
@@ -42,7 +42,10 @@ describe("VariableCompiler", () => {
 				.behavior({ kind: "slider", params: { min: 20, max: 80 } })
 				.build();
 
-			const [a, m, n] = VariableCompiler.compile([arret, marche, niveau]);
+			const [a, m, n] = VariableCompiler.compile(
+				[arret, marche, niveau],
+				Dialect.FR,
+			);
 
 			expect(a.getValue()).toBe(true);
 			expect(m.getValue()).toBe(false);
@@ -65,7 +68,7 @@ describe("VariableCompiler", () => {
 				.type("INT")
 				.build();
 
-			const [n] = VariableCompiler.compile([niveau]);
+			const [n] = VariableCompiler.compile([niveau], Dialect.FR);
 
 			expect(n.getValue()).toBe(0);
 			expect(n.getNumericRange()).toEqual(
@@ -81,7 +84,7 @@ describe("VariableCompiler", () => {
 				.zone("memory")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result).toHaveLength(1);
 			expect(result[0].getId()).toBe("var-1");
@@ -124,7 +127,7 @@ describe("VariableCompiler", () => {
 					.build(),
 			];
 
-			const result = VariableCompiler.compile(variables);
+			const result = VariableCompiler.compile(variables, Dialect.FR);
 
 			expect(result).toHaveLength(5);
 			result.forEach((plcVar) => {
@@ -140,7 +143,7 @@ describe("VariableCompiler", () => {
 				.zone("memory")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result).toHaveLength(1);
 			expect(result[0].getType()).toBe("number");
@@ -154,7 +157,7 @@ describe("VariableCompiler", () => {
 				.zone("memory")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result).toHaveLength(1);
 			expect(result[0].getType()).toBe("string");
@@ -168,7 +171,7 @@ describe("VariableCompiler", () => {
 				.zone("logic-input")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result[0].getScope()).toBe("input");
 		});
@@ -181,7 +184,7 @@ describe("VariableCompiler", () => {
 				.zone("logic-output")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result[0].getScope()).toBe("output");
 		});
@@ -194,7 +197,7 @@ describe("VariableCompiler", () => {
 				.zone("analog-input")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result[0].getScope()).toBe("input");
 		});
@@ -207,7 +210,7 @@ describe("VariableCompiler", () => {
 				.zone("analog-output")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result[0].getScope()).toBe("output");
 		});
@@ -220,13 +223,13 @@ describe("VariableCompiler", () => {
 				.zone("memory")
 				.build();
 
-			const result = VariableCompiler.compile([variable]);
+			const result = VariableCompiler.compile([variable], Dialect.FR);
 
 			expect(result[0].getScope()).toBe("memory");
 		});
 
 		it("handles empty array", () => {
-			const result = VariableCompiler.compile([]);
+			const result = VariableCompiler.compile([], Dialect.FR);
 
 			expect(result).toEqual([]);
 		});
@@ -259,7 +262,7 @@ describe("VariableCompiler", () => {
 					.build(),
 			];
 
-			const result = VariableCompiler.compile(variables);
+			const result = VariableCompiler.compile(variables, Dialect.FR);
 
 			expect(result).toHaveLength(4);
 			expect(result.map((v) => v.getId())).toEqual(["v1", "v2", "v3", "v4"]);
@@ -283,10 +286,10 @@ describe("VariableCompiler constants", () => {
 			.build();
 
 	it("compiles a constant into a memory PLC variable that holds its declared value", () => {
-		const [time, int] = VariableCompiler.compile([
-			constant("TIME", "T#5s"),
-			constant("INT", "-3"),
-		]);
+		const [time, int] = VariableCompiler.compile(
+			[constant("TIME", "T#5s"), constant("INT", "-3")],
+			Dialect.FR,
+		);
 
 		expect(time.isConstant()).toBe(true);
 		expect(time.getScope()).toBe("memory");
@@ -304,9 +307,10 @@ describe("VariableCompiler constants", () => {
 	});
 
 	it("an ordinary variable is not constant", () => {
-		const [memory] = VariableCompiler.compile([
-			new VariableBuilder().id("m").mnemonic("M").build(),
-		]);
+		const [memory] = VariableCompiler.compile(
+			[new VariableBuilder().id("m").mnemonic("M").build()],
+			Dialect.FR,
+		);
 
 		expect(memory.isConstant()).toBe(false);
 	});

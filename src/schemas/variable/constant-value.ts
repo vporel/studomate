@@ -5,6 +5,7 @@ import { isBooleanLiteral } from "@/expression-language/literals/boolean";
 import { parseNumberLiteral } from "@/expression-language/literals/number";
 import { isStringLiteral } from "@/expression-language/literals/string";
 import { parseTimeLiteral } from "@/expression-language/literals/time";
+import type Variable from "./variable.schema";
 import { getNumericRange, type VariableType } from "./variable.schema";
 
 export type ConstantNativeValue = number | boolean | string;
@@ -58,4 +59,19 @@ export function parseConstantLiteral(
 			return value;
 		}
 	}
+}
+
+/**
+ * Native value of a constant, parsed from its declared literal with the project dialect.
+ * `undefined` for a non-constant variable or an invalid literal.
+ */
+export function getConstantNativeValue(
+	variable: Pick<Variable, "zone" | "value" | "type">,
+	dialect: Dialect,
+): ConstantNativeValue | undefined {
+	if (variable.zone !== "constant") return undefined;
+	return (
+		parseConstantLiteral(variable.value ?? "", variable.type, dialect) ??
+		undefined
+	);
 }

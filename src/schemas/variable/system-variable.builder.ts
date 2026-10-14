@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { SYSTEM_VARIABLES } from "./system-variables";
 import Variable from "./variable.schema";
 
@@ -12,12 +13,21 @@ import Variable from "./variable.schema";
  * (cycle `variable.schema` ↔ `variable.validator` ↔ `system-variables`), alors qu'instancier
  * `Variable` au chargement du module l'exigerait.
  */
-export const SYSTEM_SCHEMA_VARIABLES: readonly Variable[] = SYSTEM_VARIABLES.map(
-	(systemVariable) =>
-		Object.assign(new Variable("_sys", "sys", "logic-input", "BOOL"), {
-			id: systemVariable.name,
-			mnemonic: systemVariable.name,
-			zone: "logic-input",
-			type: systemVariable.type,
-		}),
-);
+export const SYSTEM_SCHEMA_VARIABLES: readonly Variable[] =
+	SYSTEM_VARIABLES.map((systemVariable) =>
+		Object.assign(
+			new Variable({
+				id: "_sys",
+				mnemonic: "sys",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			{
+				id: systemVariable.name,
+				mnemonic: systemVariable.name,
+				zone: "logic-input",
+				type: systemVariable.type,
+			},
+		),
+	);

@@ -60,7 +60,7 @@ export default class ProjectAnalyser {
 			if (!analyser) continue;
 			generatedVariablesByProgram.set(
 				program.id,
-				analyser.generateVariables(program),
+				analyser.generateVariables(program, project.dialect),
 			);
 		}
 		const allVariables = [

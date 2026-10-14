@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import ElementsUpdateCommand from "@/schemas/grafcet/commands/elements-update.command";
 import ActionBuilder from "@/schemas/grafcet/builders/action.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -33,6 +34,7 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 					"step-1",
 					{ number: 5 } as Partial<StepData>,
 					grafcet,
+					Dialect.FR,
 				);
 
 			expect(commands).toHaveLength(1);
@@ -47,6 +49,7 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 				"step-1",
 				{ number: 1 } as Partial<StepData>,
 				grafcet,
+				Dialect.FR,
 			);
 
 			expect(commands).toHaveLength(0);
@@ -57,6 +60,7 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 				"inexistant",
 				{ number: 5 } as Partial<StepData>,
 				grafcetWithStep(1),
+				Dialect.FR,
 			);
 
 			expect(commands).toHaveLength(0);
@@ -83,6 +87,7 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 					"action-1",
 					{ type: ActionType.NUMERIC_VARIABLE } as Partial<ActionData>,
 					grafcet,
+					Dialect.FR,
 				);
 
 			expect(commands).toHaveLength(1);
@@ -99,6 +104,7 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 				"action-1",
 				{ expression: "moteur :=" } as Partial<ActionData>,
 				grafcet,
+				Dialect.FR,
 			);
 
 			expect(commands).toHaveLength(0);

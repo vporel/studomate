@@ -1,8 +1,5 @@
 import type { DrillingState } from "./drilling.model";
-
-function mix(from: number, to: number, ratio: number): number {
-	return from + (to - from) * ratio;
-}
+import { mix } from "@/3d-scenes/scene-math";
 
 /** Blend of two consecutive states for a smooth rendering of the drill and the spindle. */
 export default function interpolateDrilling(

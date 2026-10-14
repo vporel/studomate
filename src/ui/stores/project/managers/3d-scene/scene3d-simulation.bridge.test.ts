@@ -42,6 +42,17 @@ describe("Scene3dSimulationBridge", () => {
 		expect(bridge.drives("v-station")).toBe(false);
 	});
 
+	it("lists the sensor-bound variables only during a run", () => {
+		const { bridge } = createHarness(BINDINGS);
+		expect(bridge.drivenVariableIds()).toEqual([]);
+		bridge.onSimulationStart();
+		expect(bridge.drivenVariableIds().sort()).toEqual(
+			["v-p1in", "v-p1outsw", "v-station"].sort(),
+		);
+		bridge.onSimulationStop();
+		expect(bridge.drivenVariableIds()).toEqual([]);
+	});
+
 	it("applies the initial sensors before the first cycle", () => {
 		const { bridge, applied } = createHarness(BINDINGS);
 		bridge.onSimulationStart();
@@ -83,6 +94,61 @@ describe("Scene3dSimulationBridge", () => {
 		applied.length = 0;
 		bridge.onCycleEnd(actuators({ "v-t1": true }), T1_MS + 100);
 		expect(applied).toEqual([]);
+	});
+
+	it("drives only the bound actuator when the snapshot holds unbound variables", () => {
+		const { bridge, applied } = createHarness({
+			t1: "v-t1",
+			cartonAtStation: "v-station",
+		});
+		bridge.onSimulationStart();
+		bridge.queueInteraction({ type: "newCarton" });
+		applied.length = 0;
+
+		bridge.onCycleEnd(
+			actuators({ "v-other": true, "v-t1": true, "v-p1out": true }),
+			T1_MS + 100,
+		);
+
+		expect([...applied[0]]).toEqual([["v-station", true]]);
+	});
+
+	it("ignores a bound actuator whose value is neither boolean nor number", () => {
+		const { bridge, applied } = createHarness({
+			t1: "v-t1",
+			cartonAtStation: "v-station",
+		});
+		bridge.onSimulationStart();
+		bridge.queueInteraction({ type: "newCarton" });
+		applied.length = 0;
+		const text = new PLCVariable("v-t1", "v-t1", "memory", "string");
+		text.setValue("on");
+
+		bridge.onCycleEnd([text], T1_MS + 100);
+
+		expect(applied).toEqual([]);
+	});
+
+	it("uses the binding of the current run after a stop and a restart", () => {
+		const { project, bridge, applied } = createHarness({
+			t1: "v-t1",
+			cartonAtStation: "v-station",
+		});
+		bridge.onSimulationStart();
+		bridge.onSimulationStop();
+		project.scene3d = {
+			sceneId: "carton-sorting",
+			bindings: { t1: "v-new", cartonAtStation: "v-station" },
+		};
+		bridge.onSimulationStart();
+		bridge.queueInteraction({ type: "newCarton" });
+		applied.length = 0;
+
+		bridge.onCycleEnd(actuators({ "v-t1": true }), T1_MS + 100);
+		expect(applied).toEqual([]);
+
+		bridge.onCycleEnd(actuators({ "v-new": true }), T1_MS + 100);
+		expect([...applied[0]]).toEqual([["v-station", true]]);
 	});
 
 	it("ignores interactions queued outside a simulation", () => {

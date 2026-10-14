@@ -10,7 +10,7 @@ export default abstract class ClockedRunnable extends Runnable {
 	private stopClock: (() => void) | null = null;
 	private paused = false;
 	/**
-	 * Horloge libre : incrémentée à **chaque** battement de `setInterval`, y compris en pause.
+	 * Horloge libre : incrémentée à **chaque** battement de l'horloge (`heartbeat`), y compris en pause.
 	 * `consumedLoops` mémorise sa valeur au dernier cycle réellement exécuté ; l'écart
 	 * `loops - consumedLoops` (× `clockIntervalMs`) est le temps écoulé à imputer au prochain
 	 * cycle. Conséquence voulue : en pas-à-pas, le temps réel entre deux « Avancer d'un cycle »

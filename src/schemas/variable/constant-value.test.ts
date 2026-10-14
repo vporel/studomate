@@ -1,5 +1,6 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import {
+	getConstantNativeValue,
 	getDefaultConstantValue,
 	parseConstantLiteral,
 } from "./constant-value";
@@ -88,5 +89,53 @@ describe("parseConstantLiteral", () => {
 	it("integer types refuse a decimal", () => {
 		expect(parseConstantLiteral("1.5", "INT", Dialect.FR)).toBeNull();
 		expect(parseConstantLiteral("2.0", "DWORD", Dialect.FR)).toBe(2);
+	});
+});
+
+describe("getConstantNativeValue", () => {
+	it.each([
+		["INT", "42", 42],
+		["TIME", "T#5s", 5000],
+		["BOOL", "VRAI", true],
+	] as const)(
+		"%s constant %s gives its native value",
+		(type, value, expected) => {
+			expect(
+				getConstantNativeValue({ zone: "constant", type, value }, Dialect.FR),
+			).toBe(expected);
+		},
+	);
+
+	it("gives undefined for an invalid or missing literal", () => {
+		expect(
+			getConstantNativeValue(
+				{ zone: "constant", type: "INT", value: "abc" },
+				Dialect.FR,
+			),
+		).toBeUndefined();
+		expect(
+			getConstantNativeValue({ zone: "constant", type: "INT" }, Dialect.FR),
+		).toBeUndefined();
+		expect(
+			getConstantNativeValue(
+				{ zone: "constant", type: "INT", value: "" },
+				Dialect.FR,
+			),
+		).toBeUndefined();
+	});
+
+	it("gives undefined for a non-constant variable", () => {
+		expect(
+			getConstantNativeValue(
+				{ zone: "memory", type: "INT", value: "42" },
+				Dialect.FR,
+			),
+		).toBeUndefined();
+	});
+
+	it("reads the boolean keywords of the given dialect", () => {
+		const variable = { zone: "constant", type: "BOOL", value: "TRUE" } as const;
+		expect(getConstantNativeValue(variable, Dialect.EN)).toBe(true);
+		expect(getConstantNativeValue(variable, Dialect.FR)).toBeUndefined();
 	});
 });

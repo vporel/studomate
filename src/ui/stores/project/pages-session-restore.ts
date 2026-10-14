@@ -19,10 +19,8 @@ import {
 	SCENE3D_CONFIGURATION_PAGE_DATA,
 	SCENE3D_CONFIGURATION_PAGE_ID,
 } from "@/ui/components/pages/Scene3dConfigurationPage";
-import {
-	getVariablesPageData,
-	VariablesPageId,
-} from "@/ui/components/pages/VariablesPage";
+import { getVariablesPageData } from "@/ui/components/pages/VariablesPage";
+import { isVariablesPageId } from "./variables-pages";
 import { getPagesSession } from "@/persistence/pages-session.storage";
 import {
 	PageData,
@@ -36,13 +34,6 @@ export function getInitialPagesData(): Record<string, PageData> {
 
 	return pagesData;
 }
-
-const VARIABLES_PAGE_IDS: VariablesPageId[] = [
-	"input-variables",
-	"output-variables",
-	"memory-variables",
-	"constant-variables",
-];
 
 /**
  * Reconstruit la `PageData` d'un id de page persisté (session ou URL, voir `restorePagesSession`
@@ -59,8 +50,7 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 		return HARDWARE_CONFIGURATION_PAGE_DATA;
 	if (pageId === SCENE3D_CONFIGURATION_PAGE_ID)
 		return SCENE3D_CONFIGURATION_PAGE_DATA;
-	if ((VARIABLES_PAGE_IDS as string[]).includes(pageId))
-		return getVariablesPageData(pageId as VariablesPageId);
+	if (isVariablesPageId(pageId)) return getVariablesPageData(pageId);
 	const program = project.getProgram(pageId);
 	if (program)
 		return { id: program.id, title: program.name, type: program.type };

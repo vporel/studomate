@@ -12,9 +12,8 @@ export type ElementAnalyseIsolatedOptions = {
 	allowEmptyContent?: boolean;
 	/**
 	 * Dialecte dans lequel les expressions de l'élément sont écrites.
-	 * @default Dialect.FR
 	 */
-	dialect?: Dialect;
+	dialect: Dialect;
 };
 
 export default abstract class GrafcetElementAnalyser<E extends Element<any>> {
@@ -23,7 +22,7 @@ export default abstract class GrafcetElementAnalyser<E extends Element<any>> {
 	 */
 	abstract analyseIsolated(
 		element: E,
-		options?: ElementAnalyseIsolatedOptions,
+		options: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[];
 
 	/**

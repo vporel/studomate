@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen, within } from "@testing-library/react";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -18,7 +19,9 @@ function setup(variable: Variable, editable = true) {
 			variablesManager: { updateVariable },
 		}),
 	);
-	renderWithI18n(<InputBehaviorCell variableId={variable.id} editable={editable} />);
+	renderWithI18n(
+		<InputBehaviorCell variableId={variable.id} editable={editable} />,
+	);
 	return { updateVariable };
 }
 
@@ -30,9 +33,18 @@ function chooseKind(label: string) {
 describe("InputBehaviorCell", () => {
 	it("affiche le résumé du comportement d'un curseur", () => {
 		setup(
-			new Variable("v1", "niveau", "analog-input", "INT").update({
-				behavior: { kind: "slider", params: { min: 0, max: 100 } },
-			}),
+			new Variable({
+				id: "v1",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "slider", params: { min: 0, max: 100 } },
+				},
+				Dialect.FR,
+			),
 			false,
 		);
 
@@ -40,16 +52,34 @@ describe("InputBehaviorCell", () => {
 	});
 
 	it("n'affiche rien pour une variable sans comportement possible", () => {
-		setup(new Variable("v1", "m", "memory", "BOOL"));
+		setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "m",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 
 		expect(screen.queryByRole("button")).not.toBeInTheDocument();
 		expect(screen.queryByText("Aucun")).not.toBeInTheDocument();
 	});
 
 	it("propose les comportements d'une entrée TOR et applique le choix", () => {
-		const { updateVariable } = setup(new Variable("v1", "arret", "logic-input", "BOOL"));
+		const { updateVariable } = setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "arret",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Modifier le comportement de arret" }));
+		fireEvent.click(
+			screen.getByRole("button", { name: "Modifier le comportement de arret" }),
+		);
 		fireEvent.mouseDown(screen.getByRole("combobox"));
 		const options = within(screen.getByRole("listbox"))
 			.getAllByRole("option")
@@ -61,7 +91,9 @@ describe("InputBehaviorCell", () => {
 			"Commutateur NO",
 			"Commutateur NF",
 		]);
-		fireEvent.click(within(screen.getByRole("listbox")).getByText("Bouton poussoir NF"));
+		fireEvent.click(
+			within(screen.getByRole("listbox")).getByText("Bouton poussoir NF"),
+		);
 		fireEvent.click(screen.getByRole("button", { name: "Appliquer" }));
 
 		expect(updateVariable).toHaveBeenCalledWith("v1", {
@@ -70,9 +102,21 @@ describe("InputBehaviorCell", () => {
 	});
 
 	it("pré-remplit un nouveau curseur de 0 à 100 et refuse des bornes invalides", () => {
-		const { updateVariable } = setup(new Variable("v1", "niveau", "analog-input", "WORD"));
+		const { updateVariable } = setup(
+			new Variable({
+				id: "v1",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "WORD",
+				dialect: Dialect.FR,
+			}),
+		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Modifier le comportement de niveau" }));
+		fireEvent.click(
+			screen.getByRole("button", {
+				name: "Modifier le comportement de niveau",
+			}),
+		);
 		chooseKind("Curseur");
 		const [min, max] = screen.getAllByRole("spinbutton");
 		expect(min).toHaveValue(0);
@@ -92,12 +136,25 @@ describe("InputBehaviorCell", () => {
 
 	it("« Aucun » remet le comportement à null", () => {
 		const { updateVariable } = setup(
-			new Variable("v1", "marche", "logic-input", "BOOL").update({
-				behavior: { kind: "push-button-no", params: null },
-			}),
+			new Variable({
+				id: "v1",
+				mnemonic: "marche",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "push-button-no", params: null },
+				},
+				Dialect.FR,
+			),
 		);
 
-		fireEvent.click(screen.getByRole("button", { name: "Modifier le comportement de marche" }));
+		fireEvent.click(
+			screen.getByRole("button", {
+				name: "Modifier le comportement de marche",
+			}),
+		);
 		chooseKind("Aucun");
 		fireEvent.click(screen.getByRole("button", { name: "Appliquer" }));
 
@@ -106,9 +163,18 @@ describe("InputBehaviorCell", () => {
 
 	it("n'ouvre pas le popover hors conception", () => {
 		setup(
-			new Variable("v1", "marche", "logic-input", "BOOL").update({
-				behavior: { kind: "push-button-no", params: null },
-			}),
+			new Variable({
+				id: "v1",
+				mnemonic: "marche",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "push-button-no", params: null },
+				},
+				Dialect.FR,
+			),
 			false,
 		);
 

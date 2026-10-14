@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
 import RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import type PLCVariable from "@/simulator/core/plc/plc-variable";
 import FakeRemoteIoBoard, {
@@ -7,7 +8,7 @@ import FakeRemoteIoBoard, {
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
-import HardwareDeviceRegistry from "@/hardware/hardware-device.registry";
+import * as hardwareRegistry from "@/hardware/hardware-device.registry";
 import type { ProjectStoreState } from "@/ui/stores/project/project.store";
 import HardwareLinkManager from "./hardware-link.manager";
 import {
@@ -30,7 +31,6 @@ function stubNotifier(): jest.Mocked<HardwareLinkNotifier> {
 		linked: jest.fn(),
 		linkFailed: jest.fn(),
 		linkLost: jest.fn(),
-		outputsCutInBackground: jest.fn(),
 		flashFailed: jest.fn(),
 		programUploaded: jest.fn(),
 		programBlocked: jest.fn(),
@@ -57,12 +57,18 @@ function setup(
 	} = {},
 ) {
 	VariableFactory.reset();
-	const button = VariableFactory.createLogicInput("BP", "bp").update({
-		address: "%PD2",
-	});
-	const lamp = VariableFactory.createLogicOutput("LAMPE", "lampe").update({
-		address: "%PD13",
-	});
+	const button = VariableFactory.createLogicInput("BP", "bp").update(
+		{
+			address: "%PD2",
+		},
+		Dialect.FR,
+	);
+	const lamp = VariableFactory.createLogicOutput("LAMPE", "lampe").update(
+		{
+			address: "%PD13",
+		},
+		Dialect.FR,
+	);
 	const project = ProjectFactory.create([button, lamp], []);
 	if (options.withTarget !== false) {
 		project.hardwareTarget = { modelId: "arduino-uno-r3" };
@@ -413,9 +419,12 @@ describe("HardwareLinkManager inputs", () => {
 		const { manager, get, set, board, project } = setup();
 		await manager.enterHardwareIo();
 
-		const extra = VariableFactory.createLogicInput("BP2", "bp2").update({
-			address: "%PD3",
-		});
+		const extra = VariableFactory.createLogicInput("BP2", "bp2").update(
+			{
+				address: "%PD3",
+			},
+			Dialect.FR,
+		);
 		const changed = project.copy();
 		changed.variables = [...project.variables, extra];
 		set({ project: changed });
@@ -425,6 +434,69 @@ describe("HardwareLinkManager inputs", () => {
 		const configs = board.received.filter((frame) => frame.command === "CFG");
 		expect(configs.at(-1)?.args).toEqual(["2:IP", "13:O", "3:IP"]);
 		expect(get().hardwareLink.drivenInputIds).toEqual(["bp", "bp2"]);
+	});
+
+	describe("when the board refuses the new configuration at simulation start", () => {
+		const changeProject = (
+			set: (partial: any) => void,
+			project: ReturnType<typeof setup>["project"],
+		) => {
+			const extra = VariableFactory.createLogicInput("BP2", "bp2").update(
+				{ address: "%PD3" },
+				Dialect.FR,
+			);
+			const changed = project.copy();
+			changed.variables = [...project.variables, extra];
+			set({ project: changed });
+		};
+		const restrictPins = (board: FakeRemoteIoBoard) => {
+			(
+				board as unknown as { options: { knownPins: string[] } }
+			).options.knownPins = ["2", "13"];
+		};
+
+		it("unlinks and notifies the failure", async () => {
+			const { manager, get, set, board, project, notifier } = setup();
+			await manager.enterHardwareIo();
+			restrictPins(board);
+			changeProject(set, project);
+
+			manager.onSimulationStart();
+			await flush();
+
+			expect(get().hardwareLink.status).toBe("disconnected");
+			expect(board.closed).toBe(true);
+			expect(notifier.linkFailed).toHaveBeenCalledTimes(1);
+		});
+
+		it("ignores a late refusal once the link was replaced", async () => {
+			const { manager, get, set, board, project, notifier } = setup();
+			await manager.enterHardwareIo();
+			restrictPins(board);
+			changeProject(set, project);
+			const target = board as unknown as { answer: (frame: unknown) => void };
+			const original = target.answer.bind(board);
+			const held: Array<() => void> = [];
+			target.answer = (frame) => {
+				if ((frame as { command: string }).command === "CFG") {
+					held.push(() => original(frame));
+				} else {
+					original(frame);
+				}
+			};
+
+			manager.onSimulationStart();
+			await flush();
+			await manager.unlink();
+			target.answer = original;
+			set({ project });
+			await manager.enterHardwareIo();
+			held.splice(0).forEach((answer) => answer());
+			await flush();
+
+			expect(get().hardwareLink.status).toBe("linked");
+			expect(notifier.linkFailed).not.toHaveBeenCalled();
+		});
 	});
 
 	it("does not resend the configuration when the plan is unchanged", async () => {
@@ -463,6 +535,21 @@ describe("HardwareLinkManager outputs and fallback", () => {
 		manager.onCycleEnd(snapshotOf({ lampe: true, bp: true, autre: 5 }));
 		await flush();
 
+		expect(board.outImages().at(-1)).toEqual({ "13": 1 });
+	});
+
+	it("sends one OUT frame for several cycles with identical outputs", async () => {
+		const { manager, board } = setup();
+		await manager.enterHardwareIo();
+		await flush();
+		const before = board.outImages().length;
+
+		manager.onCycleEnd(snapshotOf({ lampe: true }));
+		manager.onCycleEnd(snapshotOf({ lampe: true }));
+		manager.onCycleEnd(snapshotOf({ lampe: true }));
+		await flush();
+
+		expect(board.outImages().length).toBe(before + 1);
 		expect(board.outImages().at(-1)).toEqual({ "13": 1 });
 	});
 
@@ -596,86 +683,16 @@ describe("HardwareLinkManager hidden tab", () => {
 
 	afterEach(() => setVisibility("visible"));
 
-	it("cuts the outputs when the tab is hidden and ignores PLC cycles meanwhile", async () => {
+	it("keeps writing the PLC outputs while the tab is hidden", async () => {
 		const { manager, board } = setup();
 		await manager.enterHardwareIo();
-		manager.onCycleEnd(snapshotOf({ lampe: true }));
 
 		setVisibility("hidden");
-		await flush();
-		expect(board.outImages().at(-1)).toEqual({ "13": 0 });
-
 		manager.onCycleEnd(snapshotOf({ lampe: true }));
 		await flush();
-		expect(board.outImages().at(-1)).toEqual({ "13": 0 });
-		await manager.unlink();
-	});
 
-	it("resumes the PLC outputs and tells the user when the tab is visible again", async () => {
-		const { manager, board, notifier } = setup();
-		await manager.enterHardwareIo();
-		setVisibility("hidden");
-
-		setVisibility("visible");
-		expect(notifier.outputsCutInBackground).toHaveBeenCalledTimes(1);
-
-		manager.onCycleEnd(snapshotOf({ lampe: true }));
-		await flush();
 		expect(board.outImages().at(-1)).toEqual({ "13": 1 });
 		await manager.unlink();
-	});
-
-	it("does not notify when the tab becomes visible without having been cut", async () => {
-		const { manager, notifier } = setup();
-		await manager.enterHardwareIo();
-		setVisibility("visible");
-		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
-		await manager.unlink();
-	});
-
-	it("does not cut the outputs nor notify in Design mode", async () => {
-		const { manager, set, board, notifier } = setup();
-		set({ mode: ProjectMode.DESIGN });
-		await manager.enterHardwareIo();
-		const frames = board.received.length;
-
-		setVisibility("hidden");
-		setVisibility("visible");
-		await flush();
-
-		expect(board.received.length).toBe(frames);
-		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
-		await manager.unlink();
-	});
-
-	it("does not cut the outputs of a paused simulation", async () => {
-		const { manager, set, board, notifier } = setup();
-		set({ simulationPaused: true });
-		await manager.enterHardwareIo();
-		const frames = board.received.length;
-
-		setVisibility("hidden");
-		setVisibility("visible");
-		await flush();
-
-		expect(board.received.length).toBe(frames);
-		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
-		await manager.unlink();
-	});
-
-	it("does nothing when not linked, and stops listening once unlinked", async () => {
-		const { manager, board, notifier } = setup();
-		setVisibility("hidden");
-		await manager.enterHardwareIo();
-		await manager.unlink();
-		const frames = board.received.length;
-
-		setVisibility("hidden");
-		setVisibility("visible");
-		await flush();
-
-		expect(board.received.length).toBe(frames);
-		expect(notifier.outputsCutInBackground).not.toHaveBeenCalled();
 	});
 });
 
@@ -883,7 +900,7 @@ describe("HardwareLinkManager.uploadProgram", () => {
 		await manager.uploadProgram();
 
 		expect(notifier.programUploadFailed).toHaveBeenCalledWith(
-			"upload-rejected",
+			"exchange-rejected",
 		);
 		expect(get().hardwareLink.status).toBe("disconnected");
 		expect(board.closed).toBe(true);
@@ -966,11 +983,13 @@ describe("HardwareLinkManager.uploadProgram", () => {
 
 	it("blocks a program that does not fit and names the limit, without opening a link", async () => {
 		const { manager, board, notifier } = setup({ mode: ProjectMode.DESIGN });
-		const descriptor = HardwareDeviceRegistry.get("arduino-uno-r3")!;
-		const spy = jest.spyOn(HardwareDeviceRegistry, "get").mockReturnValue({
-			...descriptor,
-			limits: { ...descriptor.limits, programStorageBytes: 10 },
-		});
+		const descriptor = hardwareRegistry.getHardwareDevice("arduino-uno-r3")!;
+		const spy = jest
+			.spyOn(hardwareRegistry, "getHardwareDevice")
+			.mockReturnValue({
+				...descriptor,
+				limits: { ...descriptor.limits, programStorageBytes: 10 },
+			});
 		try {
 			await manager.uploadProgram();
 		} finally {
@@ -988,7 +1007,7 @@ describe("HardwareLinkManager.uploadProgram", () => {
 		});
 		await manager.uploadProgram();
 		expect(notifier.programUploadFailed).toHaveBeenCalledWith(
-			"upload-rejected",
+			"exchange-rejected",
 		);
 		expect(get().hardwareLink.status).toBe("linked");
 		expect(get().hardwareUpload).toEqual(IDLE_HARDWARE_UPLOAD);
@@ -1085,7 +1104,7 @@ describe("HardwareLinkManager program control", () => {
 		await manager.runProgram();
 
 		expect(notifier.programCommandFailed).toHaveBeenCalledWith(
-			"upload-rejected",
+			"exchange-rejected",
 		);
 		expect(get().hardwareLink.boardMode).toBe("idle");
 	});
@@ -1369,7 +1388,7 @@ describe("HardwareLinkManager online mode", () => {
 		board.autonomous = false;
 		await manager.writeBoardVariable("LAMPE", true);
 		expect(notifier.boardVariableFailed).toHaveBeenCalledWith(
-			"upload-rejected",
+			"exchange-rejected",
 		);
 		await manager.unlink();
 	});

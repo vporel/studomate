@@ -239,6 +239,8 @@ export interface ProjectStoreState {
 	simulationMode: SimulationMode;
 	/** What the simulation in progress is made of (meaningful in Simulation mode). */
 	simulationKind: SimulationKind;
+	/** Input variables written by a sensor of the running 3D scene (empty outside a simulation). */
+	scene3dDrivenInputIds: string[];
 	analysisHasErrors: boolean;
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;

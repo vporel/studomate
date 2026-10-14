@@ -1,6 +1,9 @@
 "use client";
 
-import { DRILL_TRAVEL, type DrillingState } from "@/3d-scenes/drilling/drilling.model";
+import {
+	DRILL_TRAVEL,
+	type DrillingState,
+} from "@/3d-scenes/drilling/drilling.model";
 import { useFrame } from "@react-three/fiber";
 import { useTranslations } from "next-intl";
 import { useRef } from "react";
@@ -8,6 +11,7 @@ import type { Group, Mesh } from "three";
 import type { SceneComponentProps } from "../scene-views";
 import Box from "../parts/Box";
 import Label from "../parts/Label";
+import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 
 /** Model units to world units. */
 const S = 0.014;
@@ -24,7 +28,6 @@ const CHUCK_HEIGHT = 0.3;
 const MOTOR_HEIGHT = 0.5;
 const HOLE_RADIUS = 0.1;
 /** Where the station sits in the world, at the point the camera looks at. */
-const ORIGIN: [number, number, number] = [4, 0, 1.5];
 
 /** 3D rendering of the drilling station from the states of its physical model. */
 export default function DrillingScene({ sample }: SceneComponentProps) {
@@ -43,7 +46,7 @@ export default function DrillingScene({ sample }: SceneComponentProps) {
 	});
 
 	return (
-		<group position={ORIGIN}>
+		<group position={SCENE_ORIGIN}>
 			<Box
 				position={[0, BASE_HEIGHT / 2, 0]}
 				size={[2.2, BASE_HEIGHT, 1.2]}
