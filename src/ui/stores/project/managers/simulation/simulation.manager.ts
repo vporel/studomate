@@ -23,6 +23,7 @@ import {
 	ProjectStoreSetFunction,
 	SimulationVariableState,
 } from "@/ui/stores/project/project.store";
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { SimulationMode } from "@/ui/stores/project/SimulationMode.enum";
 import { readString, writeString } from "@/persistence/safe-local-storage";
@@ -235,12 +236,28 @@ export default class SimulationManager {
 			mode: ProjectMode.SIMULATION,
 			simulationPaused: startPaused,
 		}));
-		trackEvent("simulation-started", { mode: simulationMode });
-		if (getAutoOpenHmiSimulationOnStart()) {
-			this.getStoreState().hmiManager.openHmiSimulationPageIfAny();
-		}
+		trackEvent("simulation-started", {
+			mode: simulationMode,
+			hardware: kind !== "virtual",
+			scene3d: Boolean(this.getStoreState().project?.scene3d),
+		});
+		if (getAutoOpenHmiSimulationOnStart()) this.openSimulationView();
 		void this.getStoreState().hardwareLinkManager.onModeSettled();
 		return true;
+	}
+
+	/**
+	 * Shows what the user simulates: the main HMI page when the project has one, otherwise the
+	 * tab of its 3D scene.
+	 */
+	private openSimulationView(): void {
+		const { project, hmiManager, scene3dLinkManager } = this.getStoreState();
+		if (hmiManager.openHmiSimulationPageIfAny()) return;
+		if (project?.scene3d && getSceneDescriptor(project.scene3d.sceneId)) {
+			if (!scene3dLinkManager.open()) {
+				this.notifier.scene3dOpenBlocked(() => scene3dLinkManager.open());
+			}
+		}
 	}
 
 	/**

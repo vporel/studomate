@@ -232,6 +232,42 @@ describe("ProjectCommandsStackManager (project)", () => {
 			expect(notify).not.toHaveBeenCalled();
 		});
 
+		it("notifies when the project is renamed, on execute, undo and redo", () => {
+			const { get, manager } = makeStore();
+			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+
+			manager.executeOperation([
+				new ProjectFieldSetCommand({
+					field: "name",
+					newValue: "Renamed",
+					oldValue: "Projet",
+				}),
+			]);
+			expect(get().project!.name).toBe("Renamed");
+			expect(notify).toHaveBeenCalledTimes(1);
+
+			manager.undoOperation();
+			expect(notify).toHaveBeenCalledTimes(2);
+
+			manager.redoOperation();
+			expect(notify).toHaveBeenCalledTimes(3);
+		});
+
+		it("does not notify for a field touching neither the name nor the scene", () => {
+			const { get, manager } = makeStore();
+			const notify = get().scene3dLinkManager.onSceneChanged as jest.Mock;
+
+			manager.executeOperation([
+				new ProjectFieldSetCommand({
+					field: "author",
+					newValue: "Someone",
+					oldValue: "",
+				}),
+			]);
+
+			expect(notify).not.toHaveBeenCalled();
+		});
+
 		it("syncs the mounted stores when the scene changes", () => {
 			const { get, manager } = makeStore();
 

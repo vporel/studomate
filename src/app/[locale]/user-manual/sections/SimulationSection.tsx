@@ -15,6 +15,14 @@ export default function SimulationSection({ selected }: { selected: string }) {
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
+			{!isChild && (
+				<>
+					<Typography variant="h5" mb={1}>
+						{t("modesCompareTitle")}
+					</Typography>
+					<ManualList items={t.raw("modesCompareItems") as string[]} />
+				</>
+			)}
 
 			{show("simulation-start") && (
 				<article id="simulation-start">
@@ -37,6 +45,12 @@ export default function SimulationSection({ selected }: { selected: string }) {
 						{t("runningTitle")}
 					</Typography>
 					<ManualList items={t.raw("runningItems") as string[]} />
+					<Typography variant="h5" mb={1}>
+						{t("cycleOrderTitle")}
+					</Typography>
+					<Typography mb={1}>{t("cycleOrderIntro")}</Typography>
+					<ManualList items={t.raw("cycleOrderItems") as string[]} />
+					<Typography mb={2}>{t("cycleOrderOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}

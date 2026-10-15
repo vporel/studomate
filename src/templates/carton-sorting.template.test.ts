@@ -6,6 +6,12 @@ import {
 	createCartonSortingSolution,
 } from "./carton-sorting.template";
 
+const ZONE_OF_KIND = {
+	sensor: "logic-input",
+	actuator: "logic-output",
+	display: "memory",
+} as const;
+
 describe("carton-sorting.template", () => {
 	describe("createCartonSortingProject (exercice)", () => {
 		let project: Project;
@@ -14,7 +20,7 @@ describe("carton-sorting.template", () => {
 			project = createCartonSortingProject();
 		});
 
-		it("déclare l'entrée, les sorties, les capteurs, le compteur et la page HMI", () => {
+		it("déclare l'entrée, les sorties, les capteurs et le compteur, sans page HMI", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
 				expect.arrayContaining([
@@ -27,7 +33,7 @@ describe("carton-sorting.template", () => {
 					"C",
 				]),
 			);
-			expect(Object.values(project.hmiPages)).toHaveLength(1);
+			expect(Object.values(project.hmiPages)).toHaveLength(0);
 		});
 
 		it("n'embarque plus de programme de partie opérative", () => {
@@ -46,13 +52,16 @@ describe("carton-sorting.template", () => {
 			expect(zoneOf("Cmd_P2_in")).toBe("logic-output");
 		});
 
-		it("donne à l'entrée de départ le comportement d'un bouton-poussoir", () => {
-			const behaviorKinds = Object.fromEntries(
-				project.variables
-					.filter((v) => v.mnemonic === "dcy")
-					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
-			);
-			expect(behaviorKinds).toEqual({ dcy: "push-button-no" });
+		it("déclare l'entrée de départ comme un capteur, sans comportement propre", () => {
+			const dcy = project.variables.find((v) => v.mnemonic === "dcy");
+			expect(dcy?.zone).toBe("logic-input");
+			expect(dcy?.behavior ?? null).toBeNull();
+		});
+
+		it("déclare le compteur en mémoire, lié au point d'affichage de la scène", () => {
+			const counter = project.variables.find((v) => v.mnemonic === "C");
+			expect(counter?.zone).toBe("memory");
+			expect(project.scene3d?.bindings.counter).toBe(counter?.id);
 		});
 
 		it("câble chaque point de la scène 3D sur une variable existante de la bonne zone", () => {
@@ -66,19 +75,8 @@ describe("carton-sorting.template", () => {
 					(v) => v.id === scene.bindings[point.id],
 				);
 				expect(variable?.mnemonic).toBe(point.suggestedMnemonic);
-				expect(variable?.zone).toBe(
-					point.kind === "sensor" ? "logic-input" : "logic-output",
-				);
+				expect(variable?.zone).toBe(ZONE_OF_KIND[point.kind]);
 			}
-		});
-
-		it("ne garde sur la page HMI que le pupitre, le compteur et les voyants", () => {
-			const widgets = Object.values(Object.values(project.hmiPages)[0].widgets);
-			expect(widgets.some((w) => w.name === "Caisse")).toBe(false);
-			expect(widgets.some((w) => w.name === "BP départ")).toBe(true);
-			expect(widgets.some((w) => w.name === "Compteur caisses")).toBe(true);
-			expect(widgets.some((w) => w.name.startsWith("Voyant "))).toBe(true);
-			expect(widgets.some((w) => w.name === "Indication scène 3D")).toBe(true);
 		});
 
 		it("passe l'analyse sans erreur (le projet seul, sans commande, est valide)", () => {

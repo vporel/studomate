@@ -64,6 +64,24 @@ describe("analyseScene3d", () => {
 		expect(codes(project)).toEqual(["SCENE3D_ACTUATOR_NOT_OUTPUT"]);
 	});
 
+	it("reports a display bound to something else than a memory variable", () => {
+		project.scene3d!.bindings.counter = idOf(project, "Cmd_T1");
+		expect(codes(project)).toEqual(["SCENE3D_DISPLAY_NOT_MEMORY"]);
+	});
+
+	it("accepts a display bound to a numeric memory variable", () => {
+		expect(project.variables.find((v) => v.mnemonic === "C")?.zone).toBe(
+			"memory",
+		);
+		expect(codes(project)).toEqual([]);
+	});
+
+	it("does not treat a display as a source of its variable", () => {
+		project.scene3d!.bindings.counter = idOf(project, "C");
+		project.scene3d!.bindings.startButton = idOf(project, "dcy");
+		expect(codes(project)).toEqual([]);
+	});
+
 	it("reports a variable of an incompatible type", () => {
 		const integer = new VariableBuilder()
 			.id("int-input")

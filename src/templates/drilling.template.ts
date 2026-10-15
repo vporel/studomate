@@ -300,7 +300,11 @@ function buildDrillingPage(): HmiPage {
 
 export function createDrillingVariables(): Variable[] {
 	return [
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
@@ -321,7 +325,10 @@ export function addDrillingOperativePart(
 	const mainRail = createRailTerminalElement(0);
 	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
 	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
-	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
+	project.main.addConnections(
+		mainSection.id,
+		wireInSeries([mainRail, mainBlock]),
+	);
 }
 
 /**
@@ -337,7 +344,11 @@ export function createDrillingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de perçage", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),

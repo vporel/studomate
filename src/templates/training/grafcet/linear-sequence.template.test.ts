@@ -22,13 +22,7 @@ describe("linear-sequence.template", () => {
 		it("déclare les variables d'entrée/sortie attendues", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
-				expect.arrayContaining([
-					"dcy",
-					"fin1",
-					"fin2",
-					"sortie1",
-					"sortie2",
-				]),
+				expect.arrayContaining(["dcy", "fin1", "fin2", "sortie1", "sortie2"]),
 			);
 		});
 

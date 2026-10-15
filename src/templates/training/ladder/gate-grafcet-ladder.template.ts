@@ -1,6 +1,12 @@
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import { nf, no, or, rising, setMainSections } from "@/templates/training/utils/ladder-dsl";
+import {
+	nf,
+	no,
+	or,
+	rising,
+	setMainSections,
+} from "@/templates/training/utils/ladder-dsl";
 import { createGateCommonVariables } from "./ladder-gate.template";
 import {
 	GrafcetLadderSpec,
@@ -20,10 +26,25 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 	steps: ["X0", "X1", "X2", "X3", "X4", "X5"],
 	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [rising("telecommande")] },
+		{
+			name: "T0",
+			from: ["X0"],
+			to: ["X1"],
+			receptivity: [rising("telecommande")],
+		},
 		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("fc_ouvert")] },
-		{ name: "T2", from: ["X1"], to: ["X4"], receptivity: [pressOrStop, nf("fc_ouvert")] },
-		{ name: "T3", from: ["X2"], to: ["X3"], receptivity: [rising("telecommande")] },
+		{
+			name: "T2",
+			from: ["X1"],
+			to: ["X4"],
+			receptivity: [pressOrStop, nf("fc_ouvert")],
+		},
+		{
+			name: "T3",
+			from: ["X2"],
+			to: ["X3"],
+			receptivity: [rising("telecommande")],
+		},
 		{ name: "T4", from: ["X3"], to: ["X0"], receptivity: [no("fc_ferme")] },
 		{
 			name: "T5",
@@ -31,9 +52,24 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 			to: ["X5"],
 			receptivity: [pressOrStop, nf("barriere_immaterielle"), nf("fc_ferme")],
 		},
-		{ name: "T6", from: ["X3"], to: ["X1"], receptivity: [no("barriere_immaterielle"), nf("fc_ferme")] },
-		{ name: "T7", from: ["X4"], to: ["X3"], receptivity: [rising("telecommande")] },
-		{ name: "T8", from: ["X5"], to: ["X1"], receptivity: [rising("telecommande")] },
+		{
+			name: "T6",
+			from: ["X3"],
+			to: ["X1"],
+			receptivity: [no("barriere_immaterielle"), nf("fc_ferme")],
+		},
+		{
+			name: "T7",
+			from: ["X4"],
+			to: ["X3"],
+			receptivity: [rising("telecommande")],
+		},
+		{
+			name: "T8",
+			from: ["X5"],
+			to: ["X1"],
+			receptivity: [rising("telecommande")],
+		},
 	],
 };
 

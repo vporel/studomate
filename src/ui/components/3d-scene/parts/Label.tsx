@@ -13,13 +13,6 @@ export const labelStyle: React.CSSProperties = {
 	pointerEvents: "none",
 };
 
-export const markStyle: React.CSSProperties = {
-	fontSize: 11,
-	color: "#37474f",
-	whiteSpace: "nowrap",
-	pointerEvents: "none",
-};
-
 /** Text anchored to a point of the scene, mounted once the first frame has been rendered. */
 export default function Label({
 	position,

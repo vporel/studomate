@@ -41,6 +41,8 @@ export interface PinNumberRange {
 export interface HardwareDeviceDescriptor {
 	modelId: HardwareModelId;
 	label: string;
+	/** File name of the board picture, located in `public/images/targets/`. */
+	image?: string;
 	channel: { kind: "web-serial"; baudRate: number };
 	supportedVariableTypes: VariableType[];
 	pins: HardwarePin[];

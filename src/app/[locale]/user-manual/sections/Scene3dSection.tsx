@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function Scene3dSection() {
 	const t = useT("manual.scene3d");
@@ -12,6 +12,18 @@ export default function Scene3dSection() {
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
+			<ManualFigure
+				src="/user-manual/scene-3d/scene-3d-1.png"
+				alt={t("cartonSortingFigureAlt")}
+				width={900}
+			/>
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("scenesTitle")}
+			</Typography>
+			<Typography mb={2}>{t("scenesIntro")}</Typography>
+			<ManualList items={t.raw("scenesItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

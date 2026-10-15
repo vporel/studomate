@@ -12,9 +12,14 @@ import type {
 } from "./scene.descriptor";
 
 export function getExpectedZones(kind: ScenePointKind): VariableZone[] {
-	return kind === "sensor"
-		? ["logic-input", "analog-input"]
-		: ["logic-output", "analog-output"];
+	switch (kind) {
+		case "sensor":
+			return ["logic-input", "analog-input"];
+		case "actuator":
+			return ["logic-output", "analog-output"];
+		case "display":
+			return ["memory"];
+	}
 }
 
 export function isVariableCompatible(
@@ -38,17 +43,16 @@ function newVariableFields(
 	point: ScenePointDescriptor,
 ): VariableUpdatableFields {
 	const analog = point.valueType === "number";
+	const type = analog ? "INT" : "BOOL";
+	if (point.kind === "display") {
+		return { mnemonic: point.suggestedMnemonic, zone: "memory", type };
+	}
 	const input = point.kind === "sensor";
+	const direction = input ? "input" : "output";
 	return {
 		mnemonic: point.suggestedMnemonic,
-		zone: analog
-			? input
-				? "analog-input"
-				: "analog-output"
-			: input
-				? "logic-input"
-				: "logic-output",
-		type: analog ? "INT" : "BOOL",
+		zone: `${analog ? "analog" : "logic"}-${direction}`,
+		type,
 	};
 }
 

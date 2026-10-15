@@ -6,6 +6,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { createStore, useStore } from "zustand";
 import HardwareLinkControl from "./HardwareLinkControl";
 
 jest.mock("@/ui/components/projects/ProjectContext");
@@ -244,5 +245,34 @@ describe("HardwareLinkControl", () => {
 	it("falls back to the model id for an unknown model", () => {
 		setup({ modelId: "inconnu", status: "linked" });
 		expect(screen.getByText("inconnu")).toBeInTheDocument();
+	});
+});
+
+describe("HardwareLinkControl with a real store", () => {
+	it("renders without an infinite selector loop", () => {
+		const store = createStore(() => ({
+			project: { hardwareTarget: { modelId: "arduino-uno-r3" } },
+			hardwareLink: {
+				status: "disconnected",
+				drivenInputIds: [],
+				boardMode: "idle",
+				programPresent: false,
+			},
+			hardwareFirmware: { phase: "idle" },
+			mode: "DESIGN",
+			simulationKind: "virtual",
+			hardwareUpload: { phase: "idle", sentBytes: 0, totalBytes: 0 },
+			hardwareLinkManager: {},
+		}));
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			(selector: (state: unknown) => unknown) => useStore(store, selector),
+		);
+		const error = jest.spyOn(console, "error").mockImplementation(() => {});
+
+		renderWithI18n(<HardwareLinkControl />);
+
+		expect(error).not.toHaveBeenCalled();
+		expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
+		error.mockRestore();
 	});
 });

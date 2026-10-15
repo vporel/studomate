@@ -27,6 +27,13 @@ export default function GettingStartedSection() {
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>
+				{t("firstProjectTitle")}
+			</Typography>
+			<Typography mb={1}>{t("firstProjectIntro")}</Typography>
+			<ManualList items={t.raw("firstProjectItems") as string[]} />
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
 				{t("openTitle")}
 			</Typography>
 			<Typography mb={2}>{t("openBody")}</Typography>
@@ -36,6 +43,14 @@ export default function GettingStartedSection() {
 				{t("saveTitle")}
 			</Typography>
 			<Typography mb={2}>{t("saveBody")}</Typography>
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("storageTitle")}
+			</Typography>
+			<Typography mb={1}>{t("storageIntro")}</Typography>
+			<ManualList items={t.raw("storageItems") as string[]} />
+			<Typography mb={2}>{t("storageOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>
@@ -49,6 +64,20 @@ export default function GettingStartedSection() {
 				{t("helpMenuTitle")}
 			</Typography>
 			<Typography mb={2}>{t("helpMenuBody")}</Typography>
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("preferencesTitle")}
+			</Typography>
+			<Typography mb={1}>{t("preferencesBody")}</Typography>
+			<ManualList items={t.raw("preferencesItems") as string[]} />
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("deviceTitle")}
+			</Typography>
+			<Typography mb={1}>{t("deviceIntro")}</Typography>
+			<ManualList items={t.raw("deviceItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 		</section>
 	);

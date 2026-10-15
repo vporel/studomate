@@ -13,7 +13,8 @@ describe("ladder-timers.template", () => {
 		let sawStar = false;
 		for (let i = 0; i < 70; i++) {
 			await scenario.cycles(1);
-			if (scenario.get("km_etoile") && scenario.get("km_triangle")) overlap = true;
+			if (scenario.get("km_etoile") && scenario.get("km_triangle"))
+				overlap = true;
 			if (scenario.get("km_etoile")) sawStar = true;
 		}
 		expect(overlap).toBe(false);

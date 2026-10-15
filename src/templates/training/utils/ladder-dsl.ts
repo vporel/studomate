@@ -106,9 +106,7 @@ export const compare = (
 	);
 
 export const assign = (out: string, input: string) =>
-	element((row, col) =>
-		createAssignBlockElement(row, col, { out, in: input }),
-	);
+	element((row, col) => createAssignBlockElement(row, col, { out, in: input }));
 
 export const arithmetic = (
 	out: string,
@@ -121,7 +119,9 @@ export const arithmetic = (
 	);
 
 export const convert = (out: string, input: string) =>
-	element((row, col) => createConvertBlockElement(row, col, { out, in: input }));
+	element((row, col) =>
+		createConvertBlockElement(row, col, { out, in: input }),
+	);
 
 export const callProgram = (programId: string) =>
 	element((row, col) => createUserProgramBlockElement(programId, row, col));
@@ -136,7 +136,8 @@ type Placement = { ends: LadderElement[]; col: number; height: number };
  * interactif) : une colonne `C` a son bord gauche à `4C`, son centre de ligne à `4L+2`.
  */
 const QUARTERS_PER_CELL = 4;
-const rowCenter = (row: number) => row * QUARTERS_PER_CELL + QUARTERS_PER_CELL / 2;
+const rowCenter = (row: number) =>
+	row * QUARTERS_PER_CELL + QUARTERS_PER_CELL / 2;
 const colLeftEdge = (col: number) => col * QUARTERS_PER_CELL;
 
 /**
@@ -145,7 +146,11 @@ const colLeftEdge = (col: number) => col * QUARTERS_PER_CELL;
  * plus courte — sans lui, le coude par défaut de l'éditeur (calculé au rendu, sans connaître les
  * éléments intercalés) peut tomber pile sur le bord d'un de ces éléments.
  */
-function link(from: LadderElement, to: LadderElement, bendCol: number): Connection {
+function link(
+	from: LadderElement,
+	to: LadderElement,
+	bendCol: number,
+): Connection {
 	const points: [number, number][] =
 		from.position.row === to.position.row
 			? []
@@ -176,7 +181,8 @@ function placeSeries(
 			const placed = item.create(row, col);
 			layout.elements.push(placed);
 			const bendCol = colLeftEdge(col) - QUARTERS_PER_CELL / 2;
-			for (const end of ends) layout.connections.push(link(end, placed, bendCol));
+			for (const end of ends)
+				layout.connections.push(link(end, placed, bendCol));
 			ends = [placed];
 			// +1: empty column so neighbouring mnemonic labels don't overlap.
 			col += getElementWidth(placed) + 1;

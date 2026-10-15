@@ -71,7 +71,7 @@ describe("HmiManager", () => {
 			const page = project.createHmiPage("Vue 1");
 			const { manager, getState } = makeManager({ project });
 
-			manager.openHmiSimulationPageIfAny();
+			expect(manager.openHmiSimulationPageIfAny()).toBe(true);
 
 			expect(getState().hmiSimulationActivePageId).toBe(page.id);
 			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({
@@ -85,7 +85,7 @@ describe("HmiManager", () => {
 			const project = new Project("p1", "Projet", "");
 			const { manager, getState } = makeManager({ project });
 
-			manager.openHmiSimulationPageIfAny();
+			expect(manager.openHmiSimulationPageIfAny()).toBe(false);
 
 			expect(getState().hmiSimulationActivePageId).toBeNull();
 			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();

@@ -1,5 +1,6 @@
 import { FlashError, flashFirmware } from "@/hardware/arduino/flash/stk500";
 import { RemoteIoError } from "@/hardware/arduino/remote-io/remote-io.client";
+import trackEvent from "@/ui/services/analytics";
 import type HardwareLinkContext from "./hardware-link.context";
 import {
 	IDLE_HARDWARE_FIRMWARE,
@@ -63,6 +64,7 @@ export default class FirmwareInstaller {
 		});
 		this.resolveAnswer = null;
 		if (!accepted || !session.isCurrent(attempt)) {
+			if (!accepted) trackEvent("firmware-installed", { outcome: "declined" });
 			this.setState(IDLE_HARDWARE_FIRMWARE);
 			return false;
 		}
@@ -87,12 +89,16 @@ export default class FirmwareInstaller {
 			await new Promise((r) =>
 				setTimeout(r, this.options.postFlashDelayMs ?? POST_FLASH_DELAY_MS),
 			);
+			trackEvent("firmware-installed", { outcome: "installed" });
 			return session.isCurrent(attempt);
 		} catch (error) {
 			if (session.isCurrent(attempt)) {
 				console.error("Firmware installation failed:", error);
 				const code = error instanceof FlashError ? error.code : "transport";
-				if (code !== "cancelled") notifier.flashFailed(code);
+				if (code !== "cancelled") {
+					trackEvent("firmware-installed", { outcome: "failed" });
+					notifier.flashFailed(code);
+				}
 			}
 			return false;
 		} finally {

@@ -154,7 +154,7 @@
 	"a2LadderBasicsTitle": "Du schéma à relais au Ladder",
 	"a2LadderBasicsBody": [
 		"Le Ladder (LD dans l'IEC 61131-3) descend du schéma à relais : deux rails d'alimentation verticaux, et entre eux des lignes horizontales qui portent des contacts et des bobines. Chaque ligne, appelée **réseau**, se lit de gauche à droite : si le chemin de contacts est passant, la bobine est alimentée. Deux contacts en série expriment un ET, deux contacts en parallèle un OU.",
-		"Ces contacts et bobines correspondent à du matériel réel sur une armoire électrique :\n\n<figure><img src=\"/images/training/bouton-poussoir.svg\" width=\"56\" height=\"56\" alt=\"Bouton poussoir\" /><figcaption>Bouton poussoir</figcaption></figure><figure><img src=\"/images/training/commutateur.svg\" width=\"56\" height=\"56\" alt=\"Commutateur\" /><figcaption>Commutateur</figcaption></figure><figure><img src=\"/images/training/voyant.svg\" width=\"56\" height=\"56\" alt=\"Voyant\" /><figcaption>Voyant</figcaption></figure><figure><img src=\"/images/training/arret-urgence.svg\" width=\"56\" height=\"56\" alt=\"Arrêt d'urgence\" /><figcaption>Arrêt d'urgence</figcaption></figure><figure><img src=\"/images/training/bobine-enfichable.svg\" width=\"56\" height=\"56\" alt=\"Contacteur\" /><figcaption>Contacteur</figcaption></figure><figure><img src=\"/images/training/bobine-automobile.svg\" width=\"56\" height=\"56\" alt=\"Mini-relais\" /><figcaption>Mini-relais (auto)</figcaption></figure>",
+		"Ces contacts et bobines correspondent à du matériel réel sur une armoire électrique :\n\n<figure><img src=\"/training/bouton-poussoir.svg\" width=\"56\" height=\"56\" alt=\"Bouton poussoir\" /><figcaption>Bouton poussoir</figcaption></figure><figure><img src=\"/training/commutateur.svg\" width=\"56\" height=\"56\" alt=\"Commutateur\" /><figcaption>Commutateur</figcaption></figure><figure><img src=\"/training/voyant.svg\" width=\"56\" height=\"56\" alt=\"Voyant\" /><figcaption>Voyant</figcaption></figure><figure><img src=\"/training/arret-urgence.svg\" width=\"56\" height=\"56\" alt=\"Arrêt d'urgence\" /><figcaption>Arrêt d'urgence</figcaption></figure><figure><img src=\"/training/bobine-enfichable.svg\" width=\"56\" height=\"56\" alt=\"Contacteur\" /><figcaption>Contacteur</figcaption></figure><figure><img src=\"/training/bobine-automobile.svg\" width=\"56\" height=\"56\" alt=\"Mini-relais\" /><figcaption>Mini-relais (auto)</figcaption></figure>",
 		"Une différence avec le schéma à relais : le flux d'énergie va du rail gauche vers la droite uniquement. Dans un schéma à relais, le courant peut circuler dans les deux sens au sein d'une branche ; en Ladder, il n'existe pas de retour de courant possible.",
 		"Les réseaux s'exécutent de haut en bas à chaque cycle de scrutation (rappel du module A0). La conséquence est importante : elle est traitée plus loin dans ce module, avec les bobines S/R et le télérupteur.",
 		"Les variables se désignent par un mnémonique parlant (pompe, arret) plutôt que par une adresse. La norme définit aussi l'adressage direct (%I0.1 pour une entrée, %Q0.1 pour une sortie, %M pour une mémoire), que vous rencontrerez sur les automates réels."
@@ -162,7 +162,7 @@
 	"a2TheoryContactsCoilsTitle": "Contacts, bobines et mémoires internes",
 	"a2TheoryContactsCoilsBody": [
 		"Les symboles normalisés :\n\n- le contact à fermeture NO (--| |--), passant quand sa variable est vraie\n- le contact à ouverture NF (--|/|--), passant quand elle est fausse\n- la bobine (--( )--), qui prend la valeur du réseau à chaque cycle\n- la bobine inversée (--(/)--), qui prend l'inverse : elle est rare en pratique, et ne doit pas être confondue avec le contact NF",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/ladder-symbols.svg\" width=\"400\" alt=\"Symboles Ladder : contact NO, contact NF, bobine, bobine inversée\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/ladder-symbols.svg\" width=\"400\" alt=\"Symboles Ladder : contact NO, contact NF, bobine, bobine inversée\" /></figure></div>",
 		"Une mémoire interne (bit interne, mémento) est une variable écrite et lue par le programme sans jamais toucher le terrain : elle sert à retenir un état ou à préparer une condition.",
 		"Un contact peut être câblé de deux façons :\n\n- à fermeture (NO) : au repos le circuit est ouvert, il se ferme quand on actionne le bouton ou le commutateur\n- à ouverture (NF) : au repos le circuit est fermé, il s'ouvre quand on actionne le bouton ou le commutateur (c'est ce câblage qu'utilise par exemple un bouton d'arrêt, pour qu'une rupture de fil provoque l'arrêt selon l'EN 60204-1)",
 		"Ce câblage physique est indépendant du type de contact choisi dans le programme (NO ou NF) pour lire la variable. Dans Studomate, il se définit sur la variable via son **comportement** (bouton poussoir ou commutateur, NO ou NF) : la simulation en tient compte pour l'état de l'entrée au repos.",
@@ -182,7 +182,7 @@
 		"Une pompe se démarre par un appui bref sur un bouton poussoir, mais doit continuer à tourner une fois le bouton relâché : il faut mémoriser l'ordre de marche.",
 		"Un contact ne retient rien : dès que le bouton poussoir est relâché, la bobine retombe. Pour mémoriser, on place en parallèle du bouton un contact de la bobine elle-même : une fois la sortie vraie, elle s'entretient. C'est l'auto-maintien.",
 		"Selon la position du contact d'arrêt, on obtient une marche prioritaire (l'arrêt est en parallèle) ou un arrêt prioritaire (l'arrêt est en série, après le parallèle). Pour une commande de machine, l'arrêt l'emporte : c'est une exigence de l'EN 60204-1, et le fondement de l'auto-maintien à arrêt prioritaire.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/self-holding.svg\" width=\"380\" alt=\"Auto-maintien : marche prioritaire et arrêt prioritaire\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/self-holding.svg\" width=\"380\" alt=\"Auto-maintien : marche prioritaire et arrêt prioritaire\" /></figure></div>",
 		"La forme à marche prioritaire resservira au module A4, pour écrire une étape de GRAFCET."
 	],
 	"a2ExerciseSelfHoldingTitle": "Exercice : pompe",
@@ -198,7 +198,7 @@
 	"a2TheorySetResetTitle": "Bobines S/R",
 	"a2TheorySetResetBody": [
 		"Une bobine S (set) met la variable à vrai quand son réseau est vrai, et ne fait rien sinon : elle ne l'éteint jamais. Une bobine R (reset) la met à faux. Le dernier réseau qui écrit la variable l'emporte : la priorité vient donc de l'ordre des réseaux. La norme définit des bistables SR (enclenchement prioritaire) et RS (déclenchement prioritaire) ; Studomate ne les propose pas, mais l'ordre des réseaux S/R donne les mêmes priorités.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/set-reset.svg\" width=\"300\" alt=\"Bobines S et R : le dernier réseau exécuté l'emporte\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/set-reset.svg\" width=\"300\" alt=\"Bobines S et R : le dernier réseau exécuté l'emporte\" /></figure></div>",
 		"Auto-maintien ou bobine S pour une marche ? La norme EN 60204-1 interdit le redémarrage au retour de la tension : un auto-maintien retombe à la coupure, alors qu'une bobine S sur une mémoire rémanente relancerait la machine à la remise sous tension. Studomate n'a pas de mémoire rémanente.",
 		"Bonne pratique (qui n'est pas une règle de la norme, mais que l'analyse de Studomate vérifie) : une bobine normale n'est écrite que dans un seul réseau. Avec une double bobine, le dernier réseau écrase les autres."
 	],
@@ -211,7 +211,7 @@
 	"a2TheoryEdgesTitle": "Fronts P et N",
 	"a2TheoryEdgesBody": [
 		"Un contact NO reste vrai tant que son entrée l'est. Quand une action doit se produire une seule fois par appui, il faut détecter le front : un contact P (front montant) n'est vrai que le temps d'un seul cycle, quand la variable passe de faux à vrai ; un contact N l'est quand elle passe de vrai à faux.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/edges-chronogram.svg\" width=\"340\" alt=\"Chronogramme : entrée, contact P, contact N\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/edges-chronogram.svg\" width=\"340\" alt=\"Chronogramme : entrée, contact P, contact N\" /></figure></div>",
 		"Chaque contact P ou N a sa propre mémoire de front : deux contacts P sur la même variable détectent donc le même front au même cycle. Les bobines de front (--(P)--) et (--(N)--) donnent la même impulsion, appliquée à la condition du réseau plutôt qu'à une variable.",
 		"Chez les constructeurs : chez Siemens, la mémoire de front est explicite (une variable à fournir) et ne doit pas être partagée entre deux contacts : c'est une erreur courante.",
 		"Dans Studomate, cette mémoire de front est générée automatiquement pour chaque contact P ou N : il n'y a pas de variable à fournir, et le choix du contact suffit."
@@ -242,7 +242,7 @@
 	"a3TheoryTimersTitle": "Les temporisations TON, TOF et TP",
 	"a3TheoryTimersBody": [
 		"Retarder une mise en route, prolonger un signal après relâchement, ou émettre une impulsion calibrée : ces trois besoins reviennent sans cesse sur une machine, et un simple contact ne peut pas les exprimer. C'est le rôle des temporisations. Un bloc de temporisation a toujours les mêmes broches : IN (l'entrée surveillée), PT (la durée réglée, *preset time*), Q (la sortie) et ET (le temps écoulé, *elapsed time*).\n\n- **TON** (retard à l'enclenchement) : met sa sortie Q à vrai quand son entrée IN est vraie depuis la durée PT ; Q retombe dès que IN retombe.\n- **TOF** (retard au déclenchement) : suit IN à la montée, puis retient Q pendant PT après la chute de IN.\n- **TP** (impulsion) : émet une impulsion de durée PT sur front montant de IN ; il n'est pas redéclenchable, et l'impulsion dure PT même si IN retombe avant.\n\nDans les trois cas, ET donne le temps écoulé. Les durées s'écrivent avec le littéral normalisé T#5s.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/timers-chronogram.svg\" width=\"340\" alt=\"Chronogramme TON, TOF, TP\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/timers-chronogram.svg\" width=\"340\" alt=\"Chronogramme TON, TOF, TP\" /></figure></div>",
 		"Une temporisation est une instance : elle garde son état d'un cycle à l'autre. Sa condition passe par IN (dans Studomate, les contacts placés devant le bloc), et le bloc doit être exécuté à chaque cycle.",
 		"Usages types : retard, prolongation, filtrage d'un capteur (un TON ignore un signal plus court que PT), surveillance de mouvement (défaut si un fin de course n'est pas atteint dans le temps prévu : citée ici, pratiquée au module A4).",
 		"Les bases de temps système _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s... sont des signaux carrés (rapport cyclique 50 %), comme les bits d'horloge des vrais automates : câblées directement sur une bobine, elles font clignoter une lampe sans détour par un télérupteur. C'est la méthode retenue dans la suite. Deux TON croisés donnent le même résultat de façon portable, quand l'automate n'a pas de base de temps."
@@ -260,8 +260,8 @@
 	"a3TheoryCountersTitle": "Les compteurs CTU, CTD et CTUD",
 	"a3TheoryCountersBody": [
 		"Compter des pièces sur un convoyeur, des cycles machine, un niveau de stock : ces besoins reviennent souvent, et demandent un bloc dédié plutôt qu'un totalisateur bricolé en Ladder. C'est le rôle des compteurs. Un bloc compteur a toujours les mêmes broches : PV (la présélection, *preset value*, à ne pas confondre avec le PT d'une temporisation) et CV (la valeur courante, *current value*). Le comptage se fait sur front montant : un capteur maintenu actionné ne compte qu'une fois.\n\n- **CTU** (compte en avant, incrémente) : compte les fronts montants de son entrée CU. Sa sortie Q vaut CV >= PV. Une entrée R le remet à zéro (CV := 0).\n- **CTD** (compte en arrière, décrémente) : compte les fronts montants de son entrée CD. Sa sortie Q vaut CV <= 0. Une entrée LD le recharge à PV (CV := PV).\n- **CTUD** : cumule les deux sens de comptage dans un seul bloc.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/counter-ctu-block.svg\" width=\"220\" alt=\"Bloc compteur CTU : entrées CU, R, PV et sorties Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctd-block.svg\" width=\"220\" alt=\"Bloc compteur CTD : entrées CD, LD, PV et sorties Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctud-block.svg\" width=\"260\" alt=\"Bloc compteur CTUD : entrées CU, CD, R, LD, PV et sorties QU, QD, CV\" /></figure></div>",
-		"Sur un CTUD, R est prioritaire sur LD si les deux sont actifs, et seule CU est câblée sur le rail : CD, R et LD se saisissent directement sur les pinoches, comme des contacts posés devant elles. Ses sorties sont QU (CV >= PV) et QD (CV <= 0), et deux fronts simultanés sur CU et CD s'annulent."
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/counter-ctu-block.svg\" width=\"220\" alt=\"Bloc compteur CTU : entrées CU, R, PV et sorties Q, CV\" /></figure><figure><img src=\"/training/ladder/counter-ctd-block.svg\" width=\"220\" alt=\"Bloc compteur CTD : entrées CD, LD, PV et sorties Q, CV\" /></figure><figure><img src=\"/training/ladder/counter-ctud-block.svg\" width=\"260\" alt=\"Bloc compteur CTUD : entrées CU, CD, R, LD, PV et sorties QU, QD, CV\" /></figure></div>",
+		"Sur un CTUD, R est prioritaire sur LD si les deux sont actifs, et seule CU est câblée sur le rail : CD, R et LD se saisissent directement sur les broches, comme des contacts posés devant elles. Ses sorties sont QU (CV >= PV) et QD (CV <= 0), et deux fronts simultanés sur CU et CD s'annulent."
 	],
 	"a3ExerciseCountersTitle": "Exercice : comptage",
 	"a3ExerciseCountersBody": [
@@ -293,7 +293,7 @@
 	"a3TheoryStructureTitle": "Structurer un programme",
 	"a3TheoryStructureBody": [
 		"Un programme se découpe : le Main appelle des sous-programmes, un par fonction de la machine (défauts, marche, comptage...), grâce au bloc d'appel. La norme organise plutôt un programme en POU (PROGRAM, FUNCTION_BLOCK, FUNCTION) affectés à des tâches ; le Main et le bloc d'appel relèvent de la pratique des constructeurs.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/program-structure.svg\" width=\"340\" alt=\"Main qui appelle des sous-programmes\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/program-structure.svg\" width=\"340\" alt=\"Main qui appelle des sous-programmes\" /></figure></div>",
 		"Un programme jamais appelé ne s'exécute pas : l'analyse le signale. Règle pour ce niveau : appelez les sous-programmes sans condition. Un sous-programme non appelé rate les fronts, et ses temporisations ne sont plus mises à jour de façon fiable (elles sont figées dans Studomate, le comportement varie selon le constructeur).",
 		"Chez les constructeurs : OB1 et FC chez Siemens, sections SR chez Schneider, MainRoutine et JSR chez Rockwell."
 	],
@@ -314,7 +314,7 @@
 	"a4TheoryStepsLadderBody": [
 		"Reprenons le portail du module A2, piloté cette fois par une télécommande à un seul bouton : ouvrir, fermer ou arrêter selon l'état. Écrite en logique combinatoire, une telle séquence devient vite illisible. Il faut une méthode.",
 		"Une étape de GRAFCET est une mémoire : Xn = (Xn-1 ET Rn-1) + Xn ET NON Rn, où Rn-1 et Rn sont les réceptivités des transitions amont et aval. Elle est activée par le franchissement de la transition amont (son étape amont Xn-1 active ET sa réceptivité Rn-1 vraie), et désactivée par le franchissement de sa transition aval. C'est l'auto-maintien à marche prioritaire du module A2, et cette priorité à l'activation est exactement la règle 5 du GRAFCET (l'activation l'emporte sur la désactivation). On notera Tn-1 = Xn-1 ET Rn-1 et Tn = Xn ET Rn le franchissement de chaque transition, ce qui permet d'alléger l'équation en Xn = Tn-1 + Xn ET NON Tn : c'est la notation utilisée dans la suite du module.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/step-memory.svg\" width=\"380\" alt=\"Étape de GRAFCET et son équivalent Ladder\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/step-memory.svg\" width=\"380\" alt=\"Étape de GRAFCET et son équivalent Ladder\" /></figure></div>",
 		"Vous rencontrerez parfois une autre méthode : Xn = Xn-1 ET Rn-1 + Xn ET NON Xn+1, où l'étape est désactivée par l'étape suivante, écrite en un auto-maintien par étape, réseau après réseau. C'est la méthode par étape suivante : l'exercice suivant en fait constater les limites."
 	],
 	"a4ExerciseGrafcetNaiveTitle": "Exercice : diagnostiquer la méthode par étape suivante",
@@ -325,7 +325,7 @@
 	"a4TheoryMethodLadderTitle": "La méthode en trois blocs",
 	"a4TheoryMethodLadderBody": [
 		"La méthode se compose de trois blocs de réseaux, dans cet ordre :\n\n1. les conditions de franchissement Tn = Xn ET Rn, toutes calculées avant toute évolution (règle 4, franchissement simultané)\n2. l'évolution des étapes : tous les reset de toutes les transitions, puis tous les set, pour que l'activation l'emporte (règle 5)\n3. les sorties, limitées ici aux actions continues : le OU des étapes qui les commandent, en un seul réseau",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/three-blocks-method.svg\" width=\"300\" alt=\"Les trois blocs de réseaux, dans l'ordre\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/three-blocks-method.svg\" width=\"300\" alt=\"Les trois blocs de réseaux, dans l'ordre\" /></figure></div>",
 		"Contre-exemple : traiter chaque transition l'une après l'autre (ses reset puis ses set) laisse désactivée une étape activée par une transition et désactivée par une autre, écrite plus bas. Les bobines S et R écrivent la même mémoire que l'équation Xn = Tn-1 + Xn ET NON Tn, réparties en deux réseaux au lieu d'un, ce qui rend chaque transition lisible.",
 		"L'étape initiale s'active au premier cycle par le montage classique : une mémoire init, fausse au démarrage, active l'étape initiale puis se verrouille. Studomate propose aussi la variable système _SYS_FIRST_SCAN, équivalent du bit de premier cycle des automates réels.",
 		"Deux écarts avec la norme. Elle autorise l'évolution fugace (franchissements en cascade jusqu'à stabilité) ; cette méthode franchit au plus une transition par branche et par cycle, comme le GRAFCET de Studomate et les automates réels. Et la norme connaît la réceptivité sur front (↑a) : elle s'implante avec un contact P dans la condition de franchissement.",
@@ -344,7 +344,7 @@
 	"a4TheoryTimedActionsLadderBody": [
 		"Une temporisation dans une réceptivité (5s/X10 en notation normalisée) se traduit par un TON dont IN est l'étape et dont Q entre dans la condition de franchissement. Dans Studomate, la syntaxe est t1/X10/5s, proche de l'ancienne notation française T/X10/5s (NF C 03-190), encore présente dans beaucoup de manuels.",
 		"Les actions retardée et limitée dans le temps (IEC 60848) sont différentes d'une temporisation dans une réceptivité : un TON sur l'étape, dont Q (action retardée) ou NON Q (action limitée) entre dans la condition de l'action.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/timed-action.svg\" width=\"340\" alt=\"TON sur une étape : réceptivité temporisée et action retardée\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/timed-action.svg\" width=\"340\" alt=\"TON sur une étape : réceptivité temporisée et action retardée\" /></figure></div>",
 		"Enfin, la surveillance d'une étape de mouvement, annoncée au module A3 : un TON sur l'étape, dont Q signale un défaut si la réceptivité n'est pas franchie à temps."
 	],
 	"a4SynthesisDrillingTitle": "Épreuve de synthèse : poste de perçage",
@@ -356,7 +356,7 @@
 	"a4TheoryDivergencesLadderBody": [
 		"Divergence en OU : une condition de franchissement par branche. Si deux réceptivités sont vraies en même temps, la méthode active les deux branches (conforme à la règle 4, mais presque toujours une erreur de conception : la norme n'impose pas l'exclusivité, mais il faut la garantir). Convergence en OU : l'étape aval est activée par l'une ou l'autre des transitions (Xn = T1 + T2 + ...). Le saut d'étapes et la reprise de séquence sont des cas particuliers de divergence en OU.",
 		"Divergence en ET : une transition active plusieurs étapes. Convergence en ET : la transition exige toutes les étapes amont, et les désactive toutes.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/divergences.svg\" width=\"360\" alt=\"Divergence/convergence en OU et en ET\" /></figure></div>"
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/divergences.svg\" width=\"360\" alt=\"Divergence/convergence en OU et en ET\" /></figure></div>"
 	],
 	"a4ExerciseGrafcetOrDivergenceTitle": "Exercice : divergence en OU",
 	"a4ExerciseGrafcetOrDivergenceBody": [

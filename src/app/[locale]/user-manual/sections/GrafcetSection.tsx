@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function GrafcetSection({ selected }: { selected: string }) {
 	const t = useT("manual.grafcet");
@@ -15,6 +15,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
+			{!isChild && <Typography mb={2}>{t("scopeBody")}</Typography>}
 
 			{show("grafcet-canvas") && (
 				<article id="grafcet-canvas">
@@ -35,6 +36,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						{t("stepsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("stepsIntro")}</Typography>
+					<ManualFigure
+						src="/user-manual/grafcet/steps.svg"
+						alt={t("stepsFigureAlt")}
+						width={200}
+					/>
 					<Typography variant="h5" mb={1}>
 						{t("stepsTypesTitle")}
 					</Typography>
@@ -47,6 +53,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					<Typography mb={2}>{t("stepsBody2")}</Typography>
 					<Typography mb={2}>{t("stepsBody3")}</Typography>
 					<Typography mb={2}>{t("stepsBody4")}</Typography>
+					<Typography mb={2}>{t("stepsBody5")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}
@@ -63,6 +70,16 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					<Typography mb={2}>{t("transitionsReceptivityBody")}</Typography>
 					<ManualList items={t.raw("transitionsItems") as string[]} />
 					<Typography mb={2}>{t("transitionsOutro")}</Typography>
+					<Typography variant="h5" mb={1}>
+						{t("transitionsTimerTitle")}
+					</Typography>
+					<Typography mb={2}>{t("transitionsTimerBody")}</Typography>
+					<ManualList items={t.raw("transitionsTimerItems") as string[]} />
+					<Typography mb={2}>{t("transitionsTimerOutro")}</Typography>
+					<Typography variant="h5" mb={1}>
+						{t("transitionsSyntaxTitle")}
+					</Typography>
+					<ManualList items={t.raw("transitionsSyntaxItems") as string[]} />
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}
@@ -78,6 +95,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						{t("actionsTypesTitle")}
 					</Typography>
 					<ManualList items={t.raw("actionsTypes") as string[]} />
+					<ManualList items={t.raw("actionsSyntaxItems") as string[]} />
 					<Typography mb={2}>{t("actionsTypeChange")}</Typography>
 					<Divider sx={{ my: 1 }} />
 					<Typography variant="h5" mb={1}>
@@ -99,6 +117,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						{t("junctionsTypesTitle")}
 					</Typography>
 					<ManualList items={t.raw("junctionsTypes") as string[]} />
+					<ManualFigure
+						src="/user-manual/grafcet/junctions.svg"
+						alt={t("junctionsFigureAlt")}
+						width={400}
+					/>
 					<Typography variant="h5" mb={1}>
 						{t("junctionsBranchesTitle")}
 					</Typography>

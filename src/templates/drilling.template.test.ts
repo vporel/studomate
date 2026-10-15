@@ -35,7 +35,9 @@ describe("drilling.template", () => {
 		});
 
 		it("n'a plus de Ladder de partie opérative : la scène 3D la remplace", () => {
-			expect(Object.values(project.ladders).map((l) => l.name)).toEqual(["Main"]);
+			expect(Object.values(project.ladders).map((l) => l.name)).toEqual([
+				"Main",
+			]);
 			expect(project.main.sections.flatMap((s) => s.elements)).toHaveLength(0);
 		});
 

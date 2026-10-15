@@ -25,6 +25,7 @@ const analogPins: HardwarePin[] = Array.from({ length: 6 }, (_, n) => ({
 const arduinoUnoR3: HardwareDeviceDescriptor = {
 	modelId: "arduino-uno-r3",
 	label: "Arduino Uno R3",
+	image: "arduino-uno-r3.jpg",
 	channel: { kind: "web-serial", baudRate: 115200 },
 	supportedVariableTypes: ["BOOL", "INT", "WORD", "DINT", "DWORD", "TIME"],
 	pins: [

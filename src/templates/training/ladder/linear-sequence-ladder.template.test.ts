@@ -10,8 +10,12 @@ describe("linear-sequence-ladder.template", () => {
 	afterEach(() => jest.useRealTimers());
 
 	it("l'énoncé fournit les variables de linear-sequence et les mémoires d'étape", () => {
-		const mnemonics = createLinearSequenceLadderProject().variables.map((v) => v.mnemonic);
-		expect(mnemonics).toEqual(expect.arrayContaining(["dcy", "sortie1", "X0", "X3", "T0", "init"]));
+		const mnemonics = createLinearSequenceLadderProject().variables.map(
+			(v) => v.mnemonic,
+		);
+		expect(mnemonics).toEqual(
+			expect.arrayContaining(["dcy", "sortie1", "X0", "X3", "T0", "init"]),
+		);
 	});
 
 	it("le corrigé déroule la séquence, une seule étape active à la fois", async () => {
@@ -61,7 +65,9 @@ describe("linear-sequence-ladder.template", () => {
 	});
 
 	it("l'énoncé naïf montre le GRAFCET implémenté, exclu de l'exécution", () => {
-		const grafcets = Object.values(createLinearSequenceNaiveLadderProject().grafcets);
+		const grafcets = Object.values(
+			createLinearSequenceNaiveLadderProject().grafcets,
+		);
 		expect(grafcets).toHaveLength(1);
 		expect(grafcets[0].excludedFromExecution).toBe(true);
 	});

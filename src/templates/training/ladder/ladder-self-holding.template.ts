@@ -1,12 +1,26 @@
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
-import { coil, nf, no, or, section, setMainSections } from "@/templates/training/utils/ladder-dsl";
-import { output, pushButton } from "@/templates/training/utils/training-variables";
+import {
+	coil,
+	nf,
+	no,
+	or,
+	section,
+	setMainSections,
+} from "@/templates/training/utils/ladder-dsl";
+import {
+	output,
+	pushButton,
+} from "@/templates/training/utils/training-variables";
 
 export function createLadderSelfHoldingProject(): Project {
 	const project = new Project(createRandomId(), "Pompe : auto-maintien", "");
-	project.variables.push(pushButton("marche"), pushButton("arret"), output("pompe"));
+	project.variables.push(
+		pushButton("marche"),
+		pushButton("arret"),
+		output("pompe"),
+	);
 	return project;
 }
 

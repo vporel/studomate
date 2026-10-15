@@ -54,20 +54,34 @@ describe("ladder-scaling.template", () => {
 		overflow.variables.push(memory("intermediaire", "INT"));
 		setMainSections(overflow, [
 			section("Copie", "", assign("intermediaire", "brut")),
-			section("Produit", "", arithmetic("intermediaire", "intermediaire", "*", "100")),
+			section(
+				"Produit",
+				"",
+				arithmetic("intermediaire", "intermediaire", "*", "100"),
+			),
 		]);
 		const overflowScenario = new PlcScenario(overflow);
 		overflowScenario.set("brut", RAW_MAX);
 		await overflowScenario.cycles(3);
-		expect(overflowScenario.get("intermediaire") as number).not.toBe(RAW_MAX * 100);
+		expect(overflowScenario.get("intermediaire") as number).not.toBe(
+			RAW_MAX * 100,
+		);
 		overflowScenario.stop();
 
 		const truncation = createLadderScalingProject();
 		truncation.variables.push(memory("intermediaire", "INT"));
 		setMainSections(truncation, [
 			section("Copie", "", assign("intermediaire", "brut")),
-			section("Division", "", arithmetic("intermediaire", "intermediaire", "/", `${RAW_MAX}`)),
-			section("Produit", "", arithmetic("intermediaire", "intermediaire", "*", "100")),
+			section(
+				"Division",
+				"",
+				arithmetic("intermediaire", "intermediaire", "/", `${RAW_MAX}`),
+			),
+			section(
+				"Produit",
+				"",
+				arithmetic("intermediaire", "intermediaire", "*", "100"),
+			),
 		]);
 		const truncationScenario = new PlcScenario(truncation);
 		truncationScenario.set("brut", RAW_MAX / 2);
@@ -80,12 +94,22 @@ describe("ladder-scaling.template", () => {
 		const project = createLadderScalingProject();
 		setMainSections(project, [
 			section("Copie", "", assign("calcul_dint", "brut")),
-			section("Produit", "", arithmetic("calcul_dint", "calcul_dint", "*", "100")),
-			section("Division", "", arithmetic("calcul_dint", "calcul_dint", "/", `${RAW_MAX}`)),
+			section(
+				"Produit",
+				"",
+				arithmetic("calcul_dint", "calcul_dint", "*", "100"),
+			),
+			section(
+				"Division",
+				"",
+				arithmetic("calcul_dint", "calcul_dint", "/", `${RAW_MAX}`),
+			),
 			section("Retour en INT", "", convert("niveau", "calcul_dint")),
 		]);
 		const { analysis } = compilePipelineDetailed(project);
-		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(
+			0,
+		);
 		const scenario = new PlcScenario(project);
 		scenario.set("brut", RAW_MAX / 2);
 		await scenario.cycles(3);

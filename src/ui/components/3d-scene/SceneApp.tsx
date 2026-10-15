@@ -4,8 +4,9 @@ import { createBrowserSceneTransport } from "@/3d-scenes/link/scene-channel";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
+import ProjectTitle from "./ProjectTitle";
 import SceneView, { type SceneViewPhase } from "./scene-view";
 import { getSceneViewDefinition, type SceneCamera } from "./scene-views";
 
@@ -29,12 +30,11 @@ export default function SceneApp({ session }: { session: string }) {
 			onClose: () => window.close(),
 		});
 		setView(created);
-		document.title = t("title");
 		return () => {
 			created.dispose();
 			setView(null);
 		};
-	}, [session, t]);
+	}, [session]);
 
 	if (!view) return null;
 	return <SceneContent view={view} />;
@@ -45,18 +45,32 @@ const DEFAULT_CAMERA: SceneCamera = {
 	target: SCENE_ORIGIN,
 };
 
-const NO_SNAPSHOT = { phase: "waiting", sceneId: null } as const;
+const NO_SNAPSHOT = {
+	phase: "waiting",
+	sceneId: null,
+	projectName: null,
+} as const;
 
 function SceneContent({ view }: { view: SceneView }) {
 	const t = useTranslations("scene3d");
-	const { phase, sceneId } = useSyncExternalStore(
+	const { phase, sceneId, projectName } = useSyncExternalStore(
 		view.subscribe,
 		view.getSnapshot,
 		() => NO_SNAPSHOT,
 	);
+	useEffect(() => {
+		document.title = projectName
+			? t("titleWithProject", { project: projectName })
+			: t("title");
+	}, [projectName, t]);
 	const definition = sceneId ? getSceneViewDefinition(sceneId) : undefined;
 	const camera = definition?.camera ?? DEFAULT_CAMERA;
 	const interactive = phase === "running" || phase === "paused";
+	const sample = useCallback(() => view.sampleState(), [view]);
+	const send = useCallback(
+		(interaction: unknown) => view.sendInteraction(interaction),
+		[view],
+	);
 
 	return (
 		<div style={{ position: "fixed", inset: 0, background: "#eef1f3" }}>
@@ -68,14 +82,24 @@ function SceneContent({ view }: { view: SceneView }) {
 				<directionalLight position={[5, 8, 4]} intensity={1.2} />
 				{definition && (
 					<definition.Component
-						sample={() => view.sampleState()}
+						sample={sample}
 						interactive={interactive}
-						send={(interaction) => view.sendInteraction(interaction)}
+						send={send}
 					/>
 				)}
 				<gridHelper args={[20, 20]} position={[4, -0.06, 1.5]} />
 				<OrbitControls target={camera.target} />
 			</Canvas>
+			<ProjectTitle name={projectName} />
+			{definition?.Controls && (
+				<div style={{ position: "absolute", top: 12, right: 12 }}>
+					<definition.Controls
+						sample={sample}
+						interactive={interactive}
+						send={send}
+					/>
+				</div>
+			)}
 			<div
 				style={{
 					position: "absolute",

@@ -341,12 +341,36 @@ export function createElevatorProject(): Project {
 	const project = new Project(createRandomId(), "Ascenseur", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_0", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_1", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "appel_2", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_0", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_1", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "cabine_2", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"appel_0",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"appel_1",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"appel_2",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"cabine_0",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"cabine_1",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"cabine_2",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "porte"),
@@ -378,7 +402,10 @@ export function createElevatorProject(): Project {
 	const mainRail = createRailTerminalElement(0);
 	const mainBlock = createUserProgramBlockElement(displayLadder.id, 0, 0);
 	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
-	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
+	project.main.addConnections(
+		mainSection.id,
+		wireInSeries([mainRail, mainBlock]),
+	);
 
 	const page = buildElevatorPage();
 	project.hmiPages[page.id] = page;
@@ -609,14 +636,7 @@ export function createElevatorSolution(): Project {
 		.addJunctionsOrEnds(conv1, conv2)
 		.addStepReferralsSources(renvoiVersE0)
 		.addStepReferralsTargets(provenanceE8)
-		.addActions(
-			aCible0,
-			aCible1,
-			aCible2,
-			aMonter,
-			aDescendre,
-			aPorte,
-		)
+		.addActions(aCible0, aCible1, aCible2, aMonter, aDescendre, aPorte)
 		.addConnections(
 			stepToJunction(e0, div1),
 			junctionToTransition(div1, d1a, t0a),

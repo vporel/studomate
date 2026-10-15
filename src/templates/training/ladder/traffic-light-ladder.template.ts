@@ -1,6 +1,12 @@
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import { nf, no, section, setMainSections, timer } from "@/templates/training/utils/ladder-dsl";
+import {
+	nf,
+	no,
+	section,
+	setMainSections,
+	timer,
+} from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
 	grafcetMemories,
@@ -49,9 +55,24 @@ export function createTrafficLightLadderProject(): Project {
 export function createTrafficLightLadderSolution(): Project {
 	const project = createBase("Feu tricolore en Ladder : solution");
 	setMainSections(project, [
-		section("Temporisation du vert", "", no("X0"), timer("TON", "t_vert", "T#5s")),
-		section("Temporisation de l'orange", "", no("X1"), timer("TON", "t_orange", "T#2s")),
-		section("Temporisation du rouge", "", no("X2"), timer("TON", "t_rouge", "T#5s")),
+		section(
+			"Temporisation du vert",
+			"",
+			no("X0"),
+			timer("TON", "t_vert", "T#5s"),
+		),
+		section(
+			"Temporisation de l'orange",
+			"",
+			no("X1"),
+			timer("TON", "t_orange", "T#2s"),
+		),
+		section(
+			"Temporisation du rouge",
+			"",
+			no("X2"),
+			timer("TON", "t_rouge", "T#5s"),
+		),
 		...grafcetSections(TRAFFIC_LIGHT_SPEC, [
 			{ variable: "vert", steps: ["X0"] },
 			{ variable: "orange", steps: ["X1"] },

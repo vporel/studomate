@@ -16,7 +16,10 @@ import {
 	grafcetMemories,
 	grafcetSections,
 } from "@/templates/training/utils/grafcet-ladder";
-import { memory, toggleSwitch } from "@/templates/training/utils/training-variables";
+import {
+	memory,
+	toggleSwitch,
+} from "@/templates/training/utils/training-variables";
 
 export const DESCENT_WATCHDOG_SECONDS = 8;
 
@@ -58,21 +61,35 @@ export function createDrillingLadderSolution(): Project {
 	const [callSection] = project.main.sections;
 	project.main.sections = [
 		callSection,
-		section("Temporisation de perçage", "Le TON mesure le perçage.", no("X2"), timer("TON", "t_perc", "T#2s")),
+		section(
+			"Temporisation de perçage",
+			"Le TON mesure le perçage.",
+			no("X2"),
+			timer("TON", "t_perc", "T#2s"),
+		),
 		section(
 			"Surveillance de la descente",
 			`Le TON surveille la descente : au bout de ${DESCENT_WATCHDOG_SECONDS} s sans atteindre le bas, la transition de repli est franchie.`,
 			no("X1"),
 			timer("TON", "t_surv", `T#${DESCENT_WATCHDOG_SECONDS}s`),
 		),
-		section("Défaut mémorisé", "Le défaut de descente est mémorisé.", no("t_surv.Q"), setCoil("defaut")),
+		section(
+			"Défaut mémorisé",
+			"Le défaut de descente est mémorisé.",
+			no("t_surv.Q"),
+			setCoil("defaut"),
+		),
 		...grafcetSections(DRILLING_SPEC, [
 			{ variable: "descendre", steps: ["X1"] },
 			{ variable: "broche", steps: ["X1", "X2", "X3"] },
 			{ variable: "monter", steps: ["X3"] },
 		]),
-		section("Acquittement du défaut", "Un nouveau cycle efface le défaut.", no("T0"), resetCoil("defaut")),
+		section(
+			"Acquittement du défaut",
+			"Un nouveau cycle efface le défaut.",
+			no("T0"),
+			resetCoil("defaut"),
+		),
 	];
 	return project;
 }
-

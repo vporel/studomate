@@ -20,7 +20,9 @@ describe("parking-ladder.template", () => {
 	it("l'énoncé fournit la signalisation déjà implantée, appelée par le Main", () => {
 		const project = createParkingLadderProject();
 		expect(project.main.sections).toHaveLength(1);
-		expect(Object.values(project.programs).some((p) => p.name === "Signalisation")).toBe(true);
+		expect(
+			Object.values(project.programs).some((p) => p.name === "Signalisation"),
+		).toBe(true);
 	});
 
 	it("une seule unité ajoutée par passage, même passage maintenu plusieurs cycles", async () => {

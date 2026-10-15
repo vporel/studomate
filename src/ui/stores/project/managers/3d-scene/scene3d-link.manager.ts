@@ -13,6 +13,7 @@ const CONNECTION_TIMEOUT_MS = 3 * PING_INTERVAL_MS;
 
 export interface Scene3dLinkHost {
 	getScene(): Scene3d | null;
+	getProjectName(): string;
 	getSnapshot(): Scene3dStateSnapshot | null;
 	subscribeState(
 		listener: (snapshot: Scene3dStateSnapshot) => void,
@@ -21,7 +22,8 @@ export interface Scene3dLinkHost {
 	createTransport(sessionId: string): SceneTransport;
 	/** Stable id of this editor tab, kept across a page reload. */
 	getSessionId(): string;
-	openWindow(sessionId: string): void;
+	/** False when the browser refused to open the tab (blocked pop-up). */
+	openWindow(sessionId: string): boolean;
 	now(): number;
 }
 
@@ -41,12 +43,16 @@ export default class Scene3dLinkManager {
 
 	constructor(private readonly host: Scene3dLinkHost) {}
 
-	/** Opens (or focuses) the scene tab of this editor tab and connects to it. */
-	open(): void {
+	/**
+	 * Opens (or focuses) the scene tab of this editor tab and connects to it. False when the
+	 * browser blocked the tab: opening it again from a click on the page then succeeds.
+	 */
+	open(): boolean {
 		const sessionId = this.host.getSessionId();
 		this.connect(sessionId);
-		this.host.openWindow(sessionId);
+		const opened = this.host.openWindow(sessionId);
 		this.channel?.send({ type: "ping" });
+		return opened;
 	}
 
 	/** True while the scene tab answers the pings. */
@@ -64,7 +70,7 @@ export default class Scene3dLinkManager {
 		this.disconnect();
 	}
 
-	/** To call when the scene of the project was replaced or removed. */
+	/** To call when the scene or the name of the project changed. */
 	onSceneChanged(): void {
 		if (!this.channel) return;
 		if (!this.host.getScene()) {
@@ -123,7 +129,11 @@ export default class Scene3dLinkManager {
 	private sendConfigAndState(): void {
 		const scene = this.host.getScene();
 		if (!scene || !this.channel) return;
-		this.channel.send({ type: "config", sceneId: scene.sceneId });
+		this.channel.send({
+			type: "config",
+			sceneId: scene.sceneId,
+			projectName: this.host.getProjectName(),
+		});
 		this.lastSentKey = null;
 		const snapshot = this.host.getSnapshot();
 		if (snapshot) this.sendState(snapshot);

@@ -1,10 +1,15 @@
 import ToastSimulationNotifier from "./toast.simulation.notifier";
 
-const toastCalls: { level: string; message: string }[] = [];
+const toastCalls: {
+	level: string;
+	message: string;
+	options?: { autoClose?: boolean; onClick?: () => void };
+}[] = [];
 jest.mock("react-toastify", () => ({
 	toast: {
 		success: (m: string) => toastCalls.push({ level: "success", message: m }),
-		warn: (m: string) => toastCalls.push({ level: "warn", message: m }),
+		warn: (m: string, options?: object) =>
+			toastCalls.push({ level: "warn", message: m, options }),
 		error: (m: string) => toastCalls.push({ level: "error", message: m }),
 	},
 }));
@@ -116,6 +121,19 @@ describe("ToastSimulationNotifier", () => {
 
 			notifier.simulationCouldNotStart({ step: "compilation", errorsCount: 3 });
 			expect(toastCalls[1].message).toContain("3 erreurs");
+		});
+	});
+
+	describe("scène 3D bloquée", () => {
+		it("avertit, reste affiché, et rouvre la scène au clic", () => {
+			const open = jest.fn();
+			notifier.scene3dOpenBlocked(open);
+
+			expect(toastCalls[0].level).toBe("warn");
+			expect(toastCalls[0].message).toContain("scène 3D");
+			expect(toastCalls[0].options?.autoClose).toBe(false);
+			toastCalls[0].options?.onClick?.();
+			expect(open).toHaveBeenCalledTimes(1);
 		});
 	});
 });

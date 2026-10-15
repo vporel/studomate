@@ -36,8 +36,16 @@ export function createOrDivergenceProject(): Project {
 	const project = new Project(createRandomId(), "Divergence en OU", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy1", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy2", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy1",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy2",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),
@@ -92,8 +100,16 @@ export function createOrDivergenceSolution(): Project {
 		.position(XR, 160)
 		.build();
 
-	const e1 = new StepBuilder().id(createRandomId()).number(1).position(XL, 220).build();
-	const e2 = new StepBuilder().id(createRandomId()).number(2).position(XR, 220).build();
+	const e1 = new StepBuilder()
+		.id(createRandomId())
+		.number(1)
+		.position(XL, 220)
+		.build();
+	const e2 = new StepBuilder()
+		.id(createRandomId())
+		.number(2)
+		.position(XR, 220)
+		.build();
 
 	const t1 = new TransitionBuilder()
 		.id(createRandomId())

@@ -6,6 +6,7 @@ import CartonSortingModel, {
 	CYLINDER_STROKES,
 	OUTPUT_STROKE,
 	P1_STROKE,
+	START_MIN_PRESS_MS,
 	SPEED_PER_MS,
 	T1_LENGTH,
 } from "./carton-sorting.model";
@@ -434,5 +435,82 @@ describe("carton sorting model", () => {
 		const frozen = structuredClone(state);
 		CartonSortingModel.step(state, 10, { p1Out: true, t1: true, t2t3: true });
 		expect(state).toEqual(frozen);
+	});
+
+	describe("start button", () => {
+		it("reads as released at the start", () => {
+			expect(createStepper().readSensors().startButton).toBe(false);
+		});
+
+		it("reads as pressed while it is held, however long", () => {
+			const stepper = createStepper();
+			stepper.applyInteraction({ type: "pressStart" });
+			stepper.advance(START_MIN_PRESS_MS * 5, {});
+			expect(stepper.readSensors().startButton).toBe(true);
+			stepper.applyInteraction({ type: "releaseStart" });
+			stepper.advance(START_MIN_PRESS_MS + 20, {});
+			expect(stepper.readSensors().startButton).toBe(false);
+		});
+
+		it("stays pressed for a minimum time after a click shorter than a PLC cycle", () => {
+			const stepper = createStepper();
+			stepper.applyInteraction({ type: "pressStart" });
+			stepper.applyInteraction({ type: "releaseStart" });
+			expect(stepper.advance(100, {}).startButton).toBe(true);
+			expect(stepper.advance(100, {}).startButton).toBe(true);
+			stepper.advance(START_MIN_PRESS_MS, {});
+			expect(stepper.advance(100, {}).startButton).toBe(false);
+		});
+
+		it("is not mistaken for a carton interaction", () => {
+			const stepper = createStepper();
+			stepper.applyInteraction({ type: "pressStart" });
+			expect(stepper.getState()).toMatchObject({
+				cartonExists: false,
+				cartonHigh: false,
+			});
+		});
+	});
+
+	describe("counter display", () => {
+		it("is unknown until a value is given", () => {
+			const stepper = createStepper();
+			expect(stepper.getState().counter).toBeNull();
+			stepper.advance(20, {});
+			expect(stepper.getState().counter).toBeNull();
+		});
+
+		it("shows the value the PLC gives it, and forgets it when unbound", () => {
+			const stepper = createStepper();
+			stepper.advance(20, { counter: 3 });
+			expect(stepper.getState().counter).toBe(3);
+			stepper.advance(20, { counter: 4 });
+			expect(stepper.getState().counter).toBe(4);
+			stepper.advance(20, {});
+			expect(stepper.getState().counter).toBeNull();
+		});
+
+		it("ignores a boolean value", () => {
+			const stepper = createStepper();
+			stepper.advance(20, { counter: true });
+			expect(stepper.getState().counter).toBeNull();
+		});
+	});
+
+	describe("cylinder commands", () => {
+		it("remember the commands of the last cycle, for each cylinder", () => {
+			const stepper = createStepper();
+			stepper.advance(20, { p1Out: true, p2In: true, p3Out: true });
+			expect(stepper.getState().commands).toEqual({
+				p1Out: true,
+				p1In: false,
+				p2Out: false,
+				p2In: true,
+				p3Out: true,
+				p3In: false,
+			});
+			stepper.advance(20, {});
+			expect(Object.values(stepper.getState().commands)).not.toContain(true);
+		});
 	});
 });

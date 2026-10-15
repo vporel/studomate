@@ -11,7 +11,11 @@ import {
 	setCoil,
 	setMainSections,
 } from "@/templates/training/utils/ladder-dsl";
-import { memory, output, pushButton } from "@/templates/training/utils/training-variables";
+import {
+	memory,
+	output,
+	pushButton,
+} from "@/templates/training/utils/training-variables";
 
 function createToggleVariables(project: Project): void {
 	project.variables.push(pushButton("bp"), output("lampe"), memory("imp"));
@@ -22,8 +26,20 @@ export function createLadderToggleProject(): Project {
 	const project = new Project(createRandomId(), "Télérupteur", "");
 	createToggleVariables(project);
 	setMainSections(project, [
-		section("Allumer", "Front de bp et lampe éteinte : allumer.", rising("bp"), nf("lampe"), setCoil("lampe")),
-		section("Éteindre", "Front de bp et lampe allumée : éteindre.", rising("bp"), no("lampe"), resetCoil("lampe")),
+		section(
+			"Allumer",
+			"Front de bp et lampe éteinte : allumer.",
+			rising("bp"),
+			nf("lampe"),
+			setCoil("lampe"),
+		),
+		section(
+			"Éteindre",
+			"Front de bp et lampe allumée : éteindre.",
+			rising("bp"),
+			no("lampe"),
+			resetCoil("lampe"),
+		),
 	]);
 	return project;
 }
@@ -33,7 +49,12 @@ export function createLadderToggleSolution(): Project {
 	const project = new Project(createRandomId(), "Télérupteur : solution", "");
 	createToggleVariables(project);
 	setMainSections(project, [
-		section("Impulsion", "Un seul contact P mémorise le front dans imp.", rising("bp"), coil("imp")),
+		section(
+			"Impulsion",
+			"Un seul contact P mémorise le front dans imp.",
+			rising("bp"),
+			coil("imp"),
+		),
 		section(
 			"Bascule",
 			"La lampe change d'état à chaque impulsion.",

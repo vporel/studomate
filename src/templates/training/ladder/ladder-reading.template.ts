@@ -8,7 +8,10 @@ import {
 	section,
 	setMainSections,
 } from "@/templates/training/utils/ladder-dsl";
-import { output, toggleSwitch } from "@/templates/training/utils/training-variables";
+import {
+	output,
+	toggleSwitch,
+} from "@/templates/training/utils/training-variables";
 
 /**
  * "Reading a Ladder program" project: a Main of combinational sections is provided, the student
@@ -26,9 +29,26 @@ export function createLadderReadingProject(): Project {
 		output("s4"),
 	);
 	setMainSections(project, [
-		section("Série", "s1 est vraie quand a ET b sont vraies.", no("a"), no("b"), coil("s1")),
-		section("Parallèle", "s2 est vraie quand a OU b est vraie.", or([no("a")], [no("b")]), coil("s2")),
-		section("Contact à ouverture", "s3 est vraie quand a est vraie ET b est fausse.", no("a"), nf("b"), coil("s3")),
+		section(
+			"Série",
+			"s1 est vraie quand a ET b sont vraies.",
+			no("a"),
+			no("b"),
+			coil("s1"),
+		),
+		section(
+			"Parallèle",
+			"s2 est vraie quand a OU b est vraie.",
+			or([no("a")], [no("b")]),
+			coil("s2"),
+		),
+		section(
+			"Contact à ouverture",
+			"s3 est vraie quand a est vraie ET b est fausse.",
+			no("a"),
+			nf("b"),
+			coil("s3"),
+		),
 		section(
 			"Combinaison",
 			"s4 est vraie quand (a OU b) est vraie ET c est fausse.",

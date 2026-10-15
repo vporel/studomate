@@ -37,7 +37,11 @@ export function createAndDivergenceProject(): Project {
 	const project = new Project(createRandomId(), "Divergence en ET", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicInput(createRandomId(), "capteur1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "capteur2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),
@@ -86,8 +90,16 @@ export function createAndDivergenceSolution(): Project {
 		.build();
 	const [branch1In, branch2In] = andStart.data.branchesOrder;
 
-	const e1 = new StepBuilder().id(createRandomId()).number(1).position(XL, 190).build();
-	const e2 = new StepBuilder().id(createRandomId()).number(2).position(XR, 190).build();
+	const e1 = new StepBuilder()
+		.id(createRandomId())
+		.number(1)
+		.position(XL, 190)
+		.build();
+	const e2 = new StepBuilder()
+		.id(createRandomId())
+		.number(2)
+		.position(XR, 190)
+		.build();
 
 	const andEnd = new JunctionAndEndBuilder()
 		.id(createRandomId())

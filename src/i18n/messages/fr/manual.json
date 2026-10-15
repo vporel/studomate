@@ -43,6 +43,8 @@
 		"analysis-messages": "Exemples de messages",
 		"hardware": "Matériel (Arduino)",
 		"scene3d": "Scène 3D",
+		"limits": "Limites",
+		"troubleshooting": "Dépannage",
 		"shortcuts": "Raccourcis clavier"
 	},
 	"intro": {
@@ -57,42 +59,80 @@
 			"Simulation PLC en temps réel",
 			"Interfaces HMI animées pour visualiser et piloter le système",
 			"Liaison avec une carte Arduino Uno R3 : chargement du programme, simulation avec E/S réelles, observation de la carte",
-			"Scènes 3D de simulation : une partie opérative virtuelle (ascenseur, carrefour, tri de caisses) pilotée par le programme",
+			"Scènes 3D de simulation : une partie opérative virtuelle (ascenseur, carrefour, tri de caisses, perçage) pilotée par le programme",
 			"Export du projet au format JSON ou PDF"
 		],
-		"p3": "L'interface est disponible en français et en anglais (page Préférences, où se règle aussi l'emplacement de sauvegarde par défaut des projets) et est conçue pour être utilisée dans un contexte pédagogique ou professionnel.",
+		"p3": "L'interface est disponible en français et en anglais (Fichier → Préférences, où se règle aussi l'emplacement de sauvegarde par défaut des projets) et est conçue pour être utilisée dans un contexte pédagogique ou professionnel.",
 		"landmarksTitle": "Repères",
 		"landmarksIntro": "Ce manuel documente l'outil, pas les méthodes (Grafcet, logique à contacts) elles-mêmes. Quelques repères utiles si les termes ci-dessous ne sont pas déjà familiers :",
 		"landmarks": [
-			"Étape (Grafcet) — état stable du système, actif ou inactif.",
-			"Transition (Grafcet) — condition de passage d'une étape à la suivante.",
-			"Réceptivité (Grafcet) — expression booléenne associée à une transition ; elle doit être vraie pour que la transition soit franchie.",
-			"Divergence / convergence en ET (Grafcet) — ouverture puis fermeture de branches parallèles, toutes actives en même temps.",
-			"Divergence / convergence en OU (Grafcet) — ouverture puis fermeture de branches alternatives, une seule active à la fois.",
-			"Front montant / descendant (Grafcet) — instant où une condition passe respectivement de faux à vrai, ou de vrai à faux.",
-			"Contact (Ladder) — teste une variable booléenne : NO (normalement ouvert) laisse passer si elle est vraie, NF (normalement fermé) si elle est fausse.",
-			"Bobine (Ladder) — affecte une variable booléenne en sortie d'un circuit de contacts.",
-			"Réseau / rung (Ladder) — ligne de circuit indépendante, alimentée par le rail vertical de gauche.",
-			"Widget (HMI) — élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
-			"Animation (HMI) — variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
+			"Étape (Grafcet) : état stable du système, actif ou inactif.",
+			"Transition (Grafcet) : condition de passage d'une étape à la suivante.",
+			"Réceptivité (Grafcet) : expression booléenne associée à une transition ; elle doit être vraie pour que la transition soit franchie.",
+			"Divergence / convergence en ET (Grafcet) : ouverture puis fermeture de branches parallèles, toutes actives en même temps.",
+			"Divergence / convergence en OU (Grafcet) : ouverture puis fermeture de branches alternatives, une seule active à la fois.",
+			"Front montant / descendant (Grafcet) : instant où une condition passe respectivement de faux à vrai, ou de vrai à faux.",
+			"Contact (Ladder) : teste une variable booléenne. NO (normalement ouvert) laisse passer si elle est vraie, NF (normalement fermé) si elle est fausse.",
+			"Bobine (Ladder) : affecte une variable booléenne en sortie d'un circuit de contacts.",
+			"Réseau / rung (Ladder) : ligne de circuit indépendante, alimentée par le rail vertical de gauche.",
+			"Mnémonique : nom d'une variable tel qu'on l'écrit dans les expressions (« capteur1 »), unique dans le projet.",
+			"Dialecte : langue des mots-clés des expressions (ET, OU, NON, VRAI, FAUX en français ; AND, OR, NOT, TRUE, FALSE en anglais). C'est une propriété du projet, indépendante de la langue de l'interface.",
+			"Automate programmable (PLC) / cycle : l'appareil industriel qui exécute le programme en boucle. Un cycle (ou « scan ») enchaîne la lecture des entrées, l'exécution du programme et l'écriture des sorties ; Studomate simule ce fonctionnement.",
+			"Main (Ladder) : ladder spécial toujours présent (un projet neuf en contient un), point d'entrée de l'exécution qui appelle les autres ladders.",
+			"Broche (Ladder) : point de connexion d'un bloc (entrée ou sortie), où l'on renseigne une variable ou une constante.",
+			"Widget (HMI) : élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
+			"Animation (HMI) : variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
 		],
-		"readingOrder": "Pour une première découverte : commencer par Démarrer, puis parcourir la notation visée — Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs) — avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin. Les sections Matériel (Arduino) et Scène 3D concernent les projets reliés à une carte réelle ou à une partie opérative virtuelle."
+		"taskMapTitle": "Je veux…",
+		"taskMapIntro": "Un index par tâche, pour aller directement à la bonne section :",
+		"taskMapItems": [
+			"voir un grafcet tourner sans rien écrire : Démarrer, « Premier projet en quelques minutes » ;",
+			"attendre un délai : une temporisation dans la réceptivité d'une transition (Grafcet, Transitions) ou un bloc TON en Ladder (Ladder, Blocs) ;",
+			"faire clignoter une lampe : les bases de temps « _SYS_TB_… » (Variables, Variables système) ;",
+			"compter des pièces : le bloc Compteur (Ladder, Blocs) ;",
+			"mémoriser un état : les bobines Set et Reset (Ladder, Bobines) ou les actions Set et Reset d'une étape (Grafcet, Actions) ;",
+			"produire une impulsion d'un cycle : une bobine de front montant ou descendant (Ladder, Bobines) ;",
+			"recommencer un cycle : Dépannage, « Comment faire boucler un cycle ? » ;",
+			"actionner un capteur pendant la simulation : Dépannage, « Comment actionner un capteur en simulation ? » ;",
+			"afficher une interface de pilotage : Interfaces HMI ;",
+			"relier une carte Arduino ou une scène 3D : Matériel (Arduino) et Scène 3D ;",
+			"préparer et distribuer un TP : Projets, « Préparer et distribuer un TP »."
+		],
+		"readingOrder": "Si vous découvrez l'automatisme, commencez par les Formations (menu Aide) : une théorie courte suivie d'exercices auto-corrigés, sans compte requis. La progression est gardée dans le navigateur, et sauvegardée sur votre compte si vous êtes connecté. Pour une première découverte de l'outil, commencez par Démarrer, puis parcourez la notation visée : Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs), avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin. Les sections Matériel (Arduino) et Scène 3D concernent les projets reliés à une carte réelle ou à une partie opérative virtuelle."
 	},
 	"gettingStarted": {
 		"title": "Démarrer",
 		"newProjectTitle": "Créer un nouveau projet",
 		"newProjectIntro": "Au démarrage de l'application, la page d'accueil s'affiche. Vous pouvez :",
 		"newProjectItems": [
-			"Cliquer sur « Nouveau projet » pour créer un projet.",
+			"Cliquer sur « Créer un nouveau projet » pour créer un projet.",
 			"Utiliser le menu Fichier → Nouveau projet (aucun raccourci clavier : Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre)."
 		],
 		"newProjectOutro": "Un projet vide ne contient qu'un ladder Main vide (aucun grafcet) ; il est prêt à recevoir grafcets, ladders et pages HMI. Vous pouvez définir le nom du projet et l'auteur via le menu Projet → Propriétés.",
 		"featuredTitle": "Découvrir avec un exemple",
-		"featuredBody": "L'écran d'accueil met en avant une maquette accompagnée de sa solution. Le bouton « Ouvrir la solution et simuler » crée le projet complet et permet de le simuler immédiatement — utile pour explorer l'outil avant de partir d'une feuille blanche.",
+		"featuredBody": "L'écran d'accueil met en avant une maquette accompagnée de sa solution. Le bouton « Ouvrir la solution et simuler » crée le projet complet et permet de le simuler immédiatement. C'est utile pour explorer l'outil avant de partir d'une feuille blanche.",
+		"firstProjectTitle": "Premier projet en quelques minutes",
+		"firstProjectIntro": "Pour voir un grafcet tourner sans rien écrire, avec la maquette « Feu tricolore » mise en avant sur la page d'accueil :",
+		"firstProjectItems": [
+			"Sur la page d'accueil, cliquez sur « Ouvrir la solution et simuler » : le projet complet est créé.",
+			"Observez le grafcet : trois étapes (vert, orange, rouge), la première est l'étape initiale. Chaque transition porte une temporisation, par exemple « t0/X0/5s » : elle devient vraie 5 secondes après l'activation de l'étape. Les actions allument la lampe de l'étape, et la dernière transition ramène à la première étape.",
+			"Lancez la simulation depuis le sélecteur de mode (Simulation) : l'étape active est mise en évidence et le feu change de couleur. La page HMI du projet montre les trois voyants.",
+			"Repassez en mode Conception, double-cliquez sur une transition et changez sa durée (« t0/X0/10s »), puis relancez la simulation pour voir la différence.",
+			"Pour apprendre à construire un grafcet vous-même, suivez la formation « Bases du GRAFCET » (menu Aide → Formations) ou ouvrez la maquette en variante « exercice », dont le programme reste à écrire."
+		],
 		"openTitle": "Ouvrir un projet existant",
 		"openBody": "Via le menu Fichier → Ouvrir projet (Ctrl+O), une liste de tous les projets sauvegardés s'affiche. Cliquez sur un projet pour l'ouvrir. Si un projet est déjà ouvert avec des modifications non sauvegardées, une confirmation vous sera demandée.",
 		"saveTitle": "Sauvegarder",
-		"saveBody": "Utilisez Fichier → Enregistrer (Ctrl+S) pour sauvegarder votre projet. Un indicateur dans la barre de titre signale les modifications non sauvegardées. Les projets sont stockés dans le navigateur (localStorage).",
+		"saveBody": "Utilisez Fichier → Enregistrer (Ctrl+S) pour sauvegarder votre projet. Un indicateur dans la barre de titre signale les modifications non sauvegardées. Les projets sont stockés dans le navigateur (voir « Où sont mes projets ? » ci-dessous).",
+		"storageTitle": "Où sont mes projets ?",
+		"storageIntro": "Par défaut, vos projets sont enregistrés dans le navigateur de cet appareil, pas sur un serveur. Cela a des conséquences :",
+		"storageItems": [
+			"ils sont perdus si vous videz les données du site, et ne vous suivent pas sur un autre navigateur ou un autre appareil ;",
+			"une fenêtre de navigation privée peut ne pas les conserver à sa fermeture, selon le navigateur ;",
+			"le navigateur limite l'espace disponible : si l'enregistrement échoue parce qu'il est plein, Studomate le signale et conseille d'exporter le projet ;",
+			"les modifications non enregistrées sont conservées en brouillon dans le navigateur : à la réouverture, Studomate propose de les reprendre."
+		],
+		"storageOutro": "Pour ne pas perdre votre travail : exportez régulièrement vos projets en fichier JSON (Fichier → Exporter), ou créez un compte pour les sauvegarder dans le cloud (voir la section Comptes & partage).",
 		"interfaceTitle": "Interface principale",
 		"interfaceIntro": "L'interface est divisée en plusieurs zones :",
 		"interfaceItems": [
@@ -100,30 +140,55 @@
 			"Barre d'outils (haut) : accès rapide aux actions courantes et outils de création Grafcet ou Ladder",
 			"Explorateur (gauche) : arborescence des variables, grafcets, ladders et interfaces HMI du projet",
 			"Zone principale (centre) : onglets des pages ouvertes (grafcets, ladders, variables, propriétés). Cliquez sur un onglet pour l'activer, sur sa croix pour le fermer.",
-			"Panneau inférieur : tables de variables (simulation) et résultats d'analyse"
+			"Barre inférieure (bas) : boutons qui ouvrent les panneaux « Résultats de l'analyse » et « Références croisées » ; en simulation, aussi « Tables de visualisation » et, si le projet a des pages HMI, « Simulation HMI » (ouvre l'onglet de la simulation HMI)"
 		],
 		"helpMenuTitle": "Menu Aide",
-		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis) et Signaler un problème (ouvre un courriel prérempli)."
+		"helpMenuBody": "Le menu Aide contient : Manuel utilisateur (ouvre ce manuel dans un nouvel onglet), Formations (ouvre le parcours d'apprentissage dans un nouvel onglet), Raccourcis clavier (ouvre la liste des raccourcis), Revoir la visite guidée (relance la présentation de l'interface) et Signaler un problème (ouvre un courriel prérempli).",
+		"deviceTitle": "Navigateur et appareil",
+		"deviceIntro": "Studomate s'utilise dans un navigateur, sans installation :",
+		"deviceItems": [
+			"Écran : l'éditeur est prévu pour un ordinateur. Quand la fenêtre fait moins de 768 pixels de large (téléphone, fenêtre très réduite), Studomate affiche « Application desktop uniquement » ; agrandissez la fenêtre ou passez sur un ordinateur.",
+			"Souris et clavier : de nombreuses actions passent par le clic droit (menus contextuels), le glisser-déposer et les raccourcis clavier. L'usage tactile (tablette) n'est pas garanti ; un Chromebook convient comme n'importe quel ordinateur avec un navigateur Chromium.",
+			"Navigateur : tout fonctionne dans les navigateurs de bureau courants ; seule la liaison avec une carte Arduino demande un navigateur basé sur Chromium (Chrome, Edge...), voir la section Matériel (Arduino).",
+			"Connexion : il n'y a pas de mode hors ligne. L'application se charge depuis le web, une connexion est donc nécessaire pour l'ouvrir (en salle de TP, vérifiez l'accès réseau avant la séance)."
+		],
+		"preferencesTitle": "Préférences",
+		"preferencesBody": "Fichier → Préférences ouvre la page des réglages de l'application, qui sont au nombre de trois :",
+		"preferencesItems": [
+			"Langue de l'interface : français ou anglais. Le sélecteur de langue du bandeau des pages publiques (accueil, manuel) est distinct et ne concerne pas l'application ;",
+			"Lieu de stockage par défaut : local ou cloud, utilisé pour le premier enregistrement d'un projet neuf ;",
+			"Ouvrir automatiquement la vue de simulation : à l'entrée en simulation, bascule sur l'onglet « Simulation HMI » si le projet a une page HMI, sinon sur l'onglet de la scène 3D si le projet en a une."
+		]
 	},
 	"projects": {
 		"title": "Projets",
-		"p1": "Un projet Studomate regroupe un ou plusieurs programmes (grafcets et/ou ladders), un ensemble de variables, des interfaces HMI et des métadonnées (nom, auteur, dialecte). Toutes les données sont stockées localement dans le navigateur (localStorage) ; un compte permet aussi de les sauvegarder dans le cloud.",
+		"p1": "Un projet Studomate regroupe un ou plusieurs programmes (grafcets et/ou ladders), un ensemble de variables, des interfaces HMI et des métadonnées (nom, auteur, dialecte). Toutes les données sont stockées localement dans le navigateur ; un compte permet aussi de les sauvegarder dans le cloud.",
 		"createTitle": "Créer un projet",
 		"createIntro": "Fichier → Nouveau projet. Une fenêtre s'ouvre pour choisir le point de départ :",
 		"createItems": [
-			"Projet vide — démarre sans variable ni interface HMI.",
-			"Maquettes — projets pré-configurés avec des variables et une interface HMI déjà en place. La plupart des maquettes proposent deux variantes à la création : « exercice » (le programme reste à écrire) et, lorsque « Une solution est disponible » s'affiche, « solution » (bouton « Ouvrir la solution » : le programme est complet et directement simulable). Plusieurs maquettes sont proposées (feu tricolore, carrefour de feux, perceuse, ascenseur, parking à barrière, poste de tri de caisses). Les maquettes poste de perçage, ascenseur, carrefour de feux et poste de tri de caisses sont fournies avec une scène 3D déjà configurée : la partie opérative est simulée en 3D (voir la section Scène 3D)."
+			"Projet vide : démarre sans variable ni interface HMI.",
+			"Maquettes : projets pré-configurés avec des variables déjà en place. La plupart des maquettes proposent deux variantes à la création : « exercice » (le programme reste à écrire) et, lorsque « Une solution est disponible » s'affiche, « solution » (bouton « Ouvrir la solution » : le programme est complet et directement simulable). Une maquette peut aussi être fournie avec une scène 3D déjà configurée (voir la section Scène 3D)."
 		],
 		"openTitle": "Ouvrir un projet",
 		"openBody": "Fichier → Ouvrir projet (Ctrl+O). La liste des projets sauvegardés s'affiche avec leur date de dernière modification. Cliquez sur un projet pour l'ouvrir. Chaque projet de la liste dispose aussi d'un bouton de suppression (avec confirmation), et un bouton « Ouvrir depuis un fichier… » permet de réimporter un projet exporté en JSON.",
 		"saveTitle": "Enregistrer un projet",
-		"saveBody1": "Fichier → Enregistrer (Ctrl+S) — sauvegarde le projet courant en écrasant la version précédente.",
-		"saveBody2": "Fichier → Enregistrer sous (Ctrl+Shift+S) — crée une copie indépendante du projet. Une fenêtre demande le nom souhaité ; à la validation, la copie est sauvegardée et devient le projet actif. Le projet d'origine reste inchangé dans la liste des projets.",
+		"saveBody1": "Fichier → Enregistrer (Ctrl+S) : sauvegarde le projet courant en écrasant la version précédente.",
+		"saveBody2": "Fichier → Enregistrer sous (Ctrl+Shift+S) : crée une copie indépendante du projet. Une fenêtre demande le nom souhaité ; à la validation, la copie est sauvegardée et devient le projet actif. Le projet d'origine reste inchangé dans la liste des projets.",
 		"propertiesTitle": "Propriétés du projet",
 		"propertiesBody1": "Projet → Propriétés. Permet de modifier le nom, l'auteur, le dialecte et l'énoncé de l'exercice du projet. Ces informations sont sauvegardées avec le projet.",
-		"propertiesBody2": "Le dialecte détermine les mots-clés utilisés dans les expressions (réceptivités, actions) : Français (ET, OU, NON, VRAI, FAUX) ou Anglais (AND, OR, NOT, TRUE, FALSE). Changer le dialecte traduit les expressions déjà écrites. Le dialecte est indépendant de la langue de l'interface.",
+		"propertiesBody2": "Le dialecte détermine les mots-clés utilisés dans les expressions (réceptivités, actions) : Français (ET, OU, NON, VRAI, FAUX) ou Anglais (AND, OR, NOT, TRUE, FALSE). Changer le dialecte traduit les expressions déjà écrites. Le dialecte est indépendant de la langue de l'interface. Il ne concerne que ces cinq mots-clés : les noms de blocs et de fonctions (TON, TOF, TP, CTU, CTD, DINT_TO_INT…) et le préfixe des durées (T#5s) restent en anglais quel que soit le dialecte.",
 		"exerciseTitle": "Énoncé de l'exercice",
-		"exerciseBody": "Une maquette d'exercice est accompagnée d'un énoncé rédigé en Markdown (contexte et travail demandé). Il s'ouvre dans un onglet via Projet → Énoncé de l'exercice — entrée visible uniquement si le projet a un énoncé. Le texte se modifie dans le champ « Énoncé de l'exercice » de Projet → Propriétés ; un projet vide peut aussi s'en voir attribuer un.",
+		"exerciseBody": "Une maquette d'exercice est accompagnée d'un énoncé rédigé en Markdown (contexte et travail demandé). Il s'ouvre dans un onglet via Projet → Énoncé de l'exercice (entrée visible uniquement si le projet a un énoncé). Le texte se modifie dans le champ « Énoncé de l'exercice » de Projet → Propriétés ; un projet vide peut aussi s'en voir attribuer un.",
+		"teacherTitle": "Préparer et distribuer un TP",
+		"teacherIntro": "Un scénario type pour un enseignant :",
+		"teacherItems": [
+			"Préparer : créez un projet (ou partez d'une maquette), rédigez l'énoncé dans Projet → Propriétés (champ « Énoncé de l'exercice », en Markdown), puis retirez la partie à faire écrire aux élèves. Fichier → Enregistrer sous conserve une copie indépendante avec le corrigé complet.",
+			"Distribuer par lien : Projet → Partager (compte cloud requis) donne un lien. Chaque élève qui l'ouvre obtient sa propre copie, sans compte, et l'énoncé voyage avec le projet. Le lien affiche la version actuelle du projet : modifier le projet change ce que reçoivent les élèves qui l'ouvrent ensuite, pas les copies déjà ouvertes. Un projet a un seul lien, révocable depuis « Gérer le partage ».",
+			"Distribuer par fichier : Fichier → Exporter → Fichier projet (JSON) produit un fichier que les élèves rouvrent par Fichier → Ouvrir projet → « Ouvrir depuis un fichier… ».",
+			"Garder le corrigé : ne partagez que le projet exercice ; le corrigé reste dans un autre projet, non partagé. Les maquettes de Studomate suivent le même principe avec une variante « exercice » et une variante « solution ».",
+			"Récupérer le travail : Studomate n'a pas de vue enseignant, vous ne voyez pas les projets cloud de vos élèves. Chaque élève vous envoie un fichier (Fichier → Exporter → Fichier projet), que vous ouvrez par « Ouvrir depuis un fichier… », ou un lien de partage de son propre projet.",
+			"Compte rendu : l'export PDF du projet complet donne une page de garde (nom, auteur, énoncé) puis les grafcets, les ladders et, si la case est cochée, les tables de variables."
+		],
 		"addProgramTitle": "Ajouter un grafcet, un ladder ou une page HMI",
 		"addProgramBody": "Projet → Nouveau grafcet (Ctrl+G), Projet → Nouveau ladder (Ctrl+L) ou Projet → Nouvelle page HMI (sans raccourci). Le nouvel élément est ajouté au projet et son onglet s'ouvre automatiquement. Vous pouvez le renommer en double-cliquant sur son nom dans l'explorateur ou via le clic droit → Renommer (F2).",
 		"addProgramOutro": "Le menu Projet regroupe aussi « Énoncé de l'exercice » (si le projet en a un), « Partager » / « Gérer le partage » (voir la section Comptes & partage) et « Propriétés ».",
@@ -131,16 +196,16 @@
 		"exportSubtitle": "Fichier → Exporter (Ctrl+E)",
 		"exportIntro": "Une fenêtre s'ouvre vous proposant deux formats :",
 		"exportFormats": [
-			"Fichier projet (JSON) — sauvegarde externe du projet entier, réimportable via Fichier → Ouvrir projet → « Ouvrir depuis un fichier… ».",
-			"PDF — un document visuel des programmes."
+			"Fichier projet (JSON) : sauvegarde externe du projet entier, réimportable via Fichier → Ouvrir projet → « Ouvrir depuis un fichier… ».",
+			"PDF : un document visuel des grafcets, des ladders et, en option, des tables de variables (les pages HMI n'y figurent pas)."
 		],
 		"exportScopeIntro": "Pour le PDF, deux portées :",
 		"exportScopes": [
-			"Projet complet — une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée.",
-			"Page active uniquement — une seule page, titrée, pour le grafcet ou le ladder actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
+			"Projet complet : une page de garde (nom du projet, auteur, date, statistiques, énoncé s'il y en a un) puis une page par grafcet/ladder coché, chaque page titrée. La page de garde peut être décochée. La case « Tables de variables » (cochée par défaut) ajoute les tables de variables, regroupées par zone, après les programmes.",
+			"Page active uniquement : une seule page, titrée, pour le grafcet, le ladder ou la page de variables actuellement ouvert (sans page de garde). Indisponible si aucun programme n'est ouvert."
 		],
-		"exportOutro": "Une barre de progression indique l'avancement (rendu, capture, assemblage) ; le fichier est téléchargé automatiquement à la fin. Le champ « Nom du fichier » est pré-rempli.",
-		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme — sans passer par cette fenêtre et sans page de garde.",
+		"exportOutro": "Une barre de progression indique l'avancement (rendu, assemblage) ; le fichier est téléchargé automatiquement à la fin. Le champ « Nom du fichier » est pré-rempli.",
+		"exportContextMenu": "Raccourci : un clic droit sur le fond du canvas d'un grafcet ou d'un ladder propose « Exporter », qui génère directement le PDF de ce seul programme, sans passer par cette fenêtre et sans page de garde.",
 		"closeTitle": "Fermer un projet",
 		"closeBody": "Fichier → Fermer le projet (Ctrl+F4 sur Windows/Linux, Cmd+W sur macOS). Si des modifications non sauvegardées existent, une confirmation est demandée."
 	},
@@ -152,17 +217,17 @@
 		"authTitle": "Se connecter ou s'inscrire",
 		"authIntro": "La fenêtre d'authentification propose :",
 		"authItems": [
-			"Connexion — avec l'adresse e-mail et le mot de passe d'un compte existant.",
-			"Inscription — création d'un compte réel (adresse e-mail + mot de passe), ou d'un compte anonyme identifié par un simple pseudo et un mot de passe, sans adresse e-mail.",
-			"Mot de passe oublié — envoi d'un lien de réinitialisation à l'adresse e-mail du compte (comptes réels uniquement)."
+			"Connexion : avec l'adresse e-mail et le mot de passe d'un compte existant.",
+			"Inscription : création d'un compte réel (adresse e-mail + mot de passe), ou d'un compte anonyme identifié par un simple pseudo et un mot de passe, sans adresse e-mail.",
+			"Mot de passe oublié : envoi d'un lien de réinitialisation à l'adresse e-mail du compte (comptes réels uniquement)."
 		],
 		"storageTitle": "Emplacement de sauvegarde",
-		"storageBody": "Une fois connecté, chaque projet de la liste des projets peut être basculé entre stockage local et stockage cloud. L'emplacement par défaut des nouveaux projets se règle dans la page Préférences.",
+		"storageBody": "Une fois connecté, chaque projet de la liste des projets peut être basculé entre stockage local et stockage cloud. L'emplacement par défaut des nouveaux projets se règle dans Fichier → Préférences.",
 		"sharingTitle": "Partager un projet",
 		"sharingIntro": "Projet → Partager crée un lien de partage contenant un jeton. Toute personne disposant du lien peut ouvrir une copie du projet.",
 		"sharingItems": [
 			"Le partage exige un compte cloud : si vous n'êtes pas connecté, la fenêtre de connexion s'ouvre et le partage reprend ensuite ; si le projet est encore stocké en local, une fenêtre propose de le déplacer dans le cloud au préalable.",
-			"La fenêtre de partage permet de copier le lien et de révoquer le partage — le lien cesse alors de fonctionner.",
+			"La fenêtre de partage permet de copier le lien et de révoquer le partage : le lien cesse alors de fonctionner.",
 			"Projet → Gérer le partage rouvre cette fenêtre pour un projet déjà partagé."
 		],
 		"sharingOpenedTitle": "Ouvrir un projet partagé",
@@ -177,11 +242,11 @@
 		"structureIntro": "L'explorateur est organisé en plusieurs sections :",
 		"variablesLabel": "Variables :",
 		"variablesItems": [
-			"Entrées logiques — variables booléennes d'entrée",
-			"Entrées analogiques — variables numériques d'entrée",
-			"Sorties logiques — variables booléennes de sortie",
-			"Sorties analogiques — variables numériques de sortie",
-			"Mémoires — variables internes (tous types)"
+			"Entrées logiques : variables booléennes d'entrée",
+			"Entrées analogiques : variables numériques d'entrée",
+			"Sorties logiques : variables booléennes de sortie",
+			"Sorties analogiques : variables numériques de sortie",
+			"Mémoires : variables internes (tous types)"
 		],
 		"programsLabel": "Programmes :",
 		"programsItems": [
@@ -229,19 +294,21 @@
 			"Entrées analogiques : valeurs numériques provenant de l'extérieur",
 			"Sorties logiques : signaux booléens envoyés vers l'extérieur (actionneurs, voyants)",
 			"Sorties analogiques : valeurs numériques envoyées vers l'extérieur",
-			"Mémoires : variables internes utilisées pour la logique interne"
+			"Mémoires : variables internes utilisées pour la logique interne",
+			"Constantes : valeurs fixées à la conception (« valeur déclarée »), en lecture seule : le programme ne peut pas les écrire"
 		],
 		"typesTitle": "Types de données",
 		"typesItems": [
-			"BOOL — booléen (vrai/faux), disponible dans toutes les zones",
-			"INT — entier signé, disponible pour les analogiques et mémoires",
-			"DINT — entier signé 32 bits, disponible dans les mémoires",
-			"WORD — entier non signé 16 bits, disponible pour les analogiques et mémoires",
-			"DWORD — entier non signé 32 bits, disponible pour les analogiques et mémoires",
-			"REAL — nombre flottant, disponible dans les mémoires",
-			"STRING — chaîne de caractères, disponible dans les mémoires",
-			"TIME — durée (ex. T#5s), disponible dans les mémoires — utilisé notamment pour les temporisations"
+			"BOOL : booléen (vrai/faux), disponible dans les zones logiques, les mémoires et les constantes",
+			"INT : entier signé, disponible pour les analogiques, mémoires et constantes",
+			"DINT : entier signé 32 bits, disponible dans les mémoires et constantes",
+			"WORD : entier non signé 16 bits, disponible pour les analogiques, mémoires et constantes",
+			"DWORD : entier non signé 32 bits, disponible pour les analogiques, mémoires et constantes",
+			"REAL : nombre flottant, disponible dans les mémoires et constantes",
+			"STRING : chaîne de caractères, disponible dans les mémoires et constantes",
+			"TIME : durée (ex. T#5s), disponible dans les mémoires et constantes, utilisé notamment pour les temporisations"
 		],
+		"typesByZone": "Types acceptés par zone : entrées et sorties logiques, BOOL ; entrées et sorties analogiques, INT, WORD ou DWORD ; mémoires et constantes, tous les types.",
 		"typesOutro": "En simulation, les variables entières sont ramenées à la plage de leur type à chaque écriture : INT, DINT, WORD et DWORD repartent de l'autre borne en cas de dépassement (un INT qui dépasse 32767 revient à −32768). À garder en tête pour une accumulation du type « position := position + pas ».",
 		"typesCalcTitle": "Calculs et conversions",
 		"typesCalcItems": [
@@ -275,15 +342,17 @@
 		"managementTitle": "Gestion des variables",
 		"managementBody1": "Depuis la page Variables (accessible via l'explorateur ou le menu), vous pouvez ajouter, modifier et supprimer des variables. La modification et la suppression sont désactivées en mode Simulation ; une colonne « Valeur » affiche alors la valeur courante de chaque variable, en lecture seule.",
 		"managementBody2": "Renommer le mnémonique d'une variable met à jour toutes les expressions qui l'utilisent dans les grafcets et les ladders du projet.",
-		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables (CSV) ou de l'imprimer.",
+		"managementBody3": "La barre d'outils de la table permet aussi d'exporter la liste des variables via le menu « Exporter » : en CSV (pour un tableur) ou en PDF (la page de variables ouverte, avec le nom du projet et la date d'export).",
+		"managementBody4": "Pour savoir où une variable est utilisée (quel grafcet, ladder ou page HMI la lit ou l'écrit), faites un clic droit sur la variable puis choisissez « Références croisées » : voir la section Références croisées.",
 		"systemTitle": "Variables système",
 		"systemBody1": "Le préfixe « _SYS_ » est réservé : vous ne pouvez pas créer de variable dont le mnémonique commence par « _SYS_ », ni leur affecter de valeur (lecture seule). Elles ne sont pas enregistrées avec le projet : le moteur les injecte à l'analyse et à la compilation. La liste complète est visible dans l'explorateur, sous Variables › Système.",
-		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens en signal carré, vrais pendant la première moitié de chaque période de temps simulé puis faux pendant la seconde (comme les bits d'horloge des automates réels) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate. Utilisées directement (contact à fermeture), elles font clignoter une lampe ; pour déclencher une action une seule fois par période plutôt qu'à chaque scan où le niveau est vrai — par exemple faire avancer une position d'un pas fixe — utilisez un contact à front montant : « position := position + pas » exécuté sur front de « _SYS_TB_200ms ».",
-		"systemBody3": "« _SYS_FIRST_SCAN » est vrai pendant le seul premier scan après le démarrage de la simulation, faux ensuite (une pause suivie d'une reprise ne le réarme pas). Il sert à initialiser une fois pour toutes des mémoires ou des valeurs au démarrage, comme le bit de premier cycle des automates réels."
+		"systemBody2": "Les bases de temps « _SYS_TB_… » sont des booléens en signal carré, vrais pendant la première moitié de chaque période de temps simulé puis faux pendant la seconde (comme les bits d'horloge des automates réels) : _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s et _SYS_TB_2s. Elles servent à cadencer une évolution sur le temps plutôt que sur le cycle automate. Utilisées directement (contact à fermeture), elles font clignoter une lampe ; pour déclencher une action une seule fois par période plutôt qu'à chaque scan où le niveau est vrai (par exemple faire avancer une position d'un pas fixe), utilisez un contact à front montant : « position := position + pas » exécuté sur front de « _SYS_TB_200ms ».",
+		"systemBody3": "« _SYS_FIRST_SCAN » est vrai pendant le seul premier cycle après le démarrage de la simulation, faux ensuite (une pause suivie d'une reprise ne le réarme pas). Il sert à initialiser une fois pour toutes des mémoires ou des valeurs au démarrage, comme le bit de premier cycle des automates réels."
 	},
 	"grafcet": {
 		"title": "Grafcet",
 		"p1": "Un grafcet est un diagramme fonctionnel représentant le comportement séquentiel d'un système automatisé. Studomate permet de créer et de modifier des grafcets à l'aide d'un éditeur graphique interactif.",
+		"scopeBody": "Ce que Studomate gère : étapes (une seule étape initiale), transitions avec réceptivité et temporisation, actions continues, sur front ou mémorisées (Set et Reset), divergences et convergences en ET et en OU, renvois, commentaires, et le forçage d'une étape en simulation. Ce qu'il ne gère pas : macro-étapes, encapsulation, ordres de forçage de grafcets partiels, actions conditionnelles (voir la section Limites).",
 		"canvasTitle": "Canvas",
 		"canvasIntro": "Le canvas est la zone de travail principale du grafcet. Il offre les interactions suivantes :",
 		"canvasItems": [
@@ -297,9 +366,10 @@
 			"Clic droit sur le canvas pour afficher le menu contextuel"
 		],
 		"canvasOutro1": "Les éléments se positionnent sur une grille pour faciliter l'alignement. En mode Simulation, le canvas passe en lecture seule.",
-		"canvasOutro2": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante — y compris les sélections multi-éléments. Les éléments collés sont placés légèrement décalés par rapport aux originaux.",
+		"canvasOutro2": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante, y compris les sélections multi-éléments. Les éléments collés sont placés légèrement décalés par rapport aux originaux.",
 		"stepsTitle": "Étapes",
 		"stepsIntro": "Les étapes représentent les états stables du système. Une étape peut être active ou inactive à tout moment de l'exécution.",
+		"stepsFigureAlt": "Schéma : une étape initiale (numéro 0, double bordure), suivie d'une transition (barre horizontale), puis d'une étape normale (numéro 1) reliée à une action (rectangle à droite).",
 		"stepsTypesTitle": "Types d'étapes",
 		"stepsTypes": [
 			"Étape initiale : étape active au démarrage du grafcet, représentée avec une double bordure",
@@ -311,9 +381,10 @@
 			"Nom : libellé affiché sur l'étape"
 		],
 		"stepsBody1": "Pour modifier le nom ou le numéro d'une étape, double-cliquez sur le champ correspondant. En simulation, les étapes actives sont mises en évidence visuellement.",
-		"stepsBody2": "Via le clic droit sur une étape, vous pouvez la définir comme étape initiale — utile pour changer l'étape initiale d'un grafcet existant sans recréer l'étape.",
-		"stepsBody3": "Limite actuelle : un grafcet ne peut avoir qu'une seule étape initiale. La norme autorise une situation initiale composée de plusieurs étapes actives simultanément (par exemple une par branche d'un parallélisme) ; Studomate ne le permet pas encore.",
-		"stepsBody4": "Chaque étape numérotée n expose une variable booléenne Xn, vraie tant que l'étape est active — utilisable dans n'importe quelle expression du projet (réceptivité, action, contact de ladder) pour réagir à l'activité d'une étape. Vous pouvez aussi définir vos propres variables X0, X1… (par exemple pour construire une logique de cycle en ladder sans grafcet) : le mnémonique Xn n'est pas réservé. L'analyse signale uniquement le cas où un grafcet contient réellement une étape n alors qu'une variable Xn existe par ailleurs.",
+		"stepsBody2": "Via le clic droit sur une étape, vous pouvez la définir comme étape initiale : utile pour changer l'étape initiale d'un grafcet existant sans recréer l'étape.",
+		"stepsBody3": "Limite : un grafcet ne peut avoir qu'une seule étape initiale. La norme autorise une situation initiale composée de plusieurs étapes actives simultanément (par exemple une par branche d'un parallélisme) ; Studomate ne le permet pas. Pour démarrer plusieurs branches en parallèle, placez une seule étape initiale, suivie d'une transition « VRAI » qui mène à une divergence en ET : les branches s'activent aussitôt après le démarrage.",
+		"stepsBody4": "Chaque étape numérotée n expose une variable booléenne Xn, vraie tant que l'étape est active. Elle est utilisable dans n'importe quelle expression du projet (réceptivité, action, contact de ladder) pour réagir à l'activité d'une étape. Vous pouvez aussi définir vos propres variables X0, X1… (par exemple pour construire une logique de cycle en ladder sans grafcet) : le mnémonique Xn n'est pas réservé. L'analyse signale uniquement le cas où un grafcet contient réellement une étape n alors qu'une variable Xn existe par ailleurs.",
+		"stepsBody5": "Forcer une étape en simulation : clic droit sur l'étape, puis « Forcer active », « Forcer inactive » ou « Relâcher le forçage » (l'entrée cochée indique le forçage en cours). Utile pour faire démarrer un élève au milieu du cycle ou isoler un défaut en déboguant. L'étape garde la valeur imposée tant que le forçage dure, même si une transition devrait la modifier ; un cadenas et une bordure d'avertissement la signalent. Le forçage ne fait franchir aucune transition : forcer une étape active ne désactive pas ses étapes amont. Il disparaît à l'arrêt de la simulation.",
 		"transitionsTitle": "Transitions",
 		"transitionsIntro": "Les transitions définissent les conditions de passage d'une étape à la suivante. Une transition est franchie lorsque toutes les étapes amont sont actives ET que sa réceptivité est vraie.",
 		"transitionsReceptivityTitle": "Réceptivité",
@@ -327,34 +398,58 @@
 			"Réceptivité toujours vraie : écrire « VRAI »"
 		],
 		"transitionsOutro": "Pour modifier la réceptivité, double-cliquez sur la zone de texte de la transition. La syntaxe est vérifiée lors de l'analyse du projet. Une transition doit être une expression booléenne : une affectation (:=) ou une constante numérique seule ne sont pas acceptées.",
+		"transitionsTimerTitle": "Temporisation",
+		"transitionsTimerBody": "Pour attendre avant de franchir une transition (par exemple 5 secondes après l'activation d'une étape), on écrit une temporisation directement dans la réceptivité, sous la forme « identifiant/entrée/durée » :",
+		"transitionsTimerItems": [
+			"Identifiant : le nom de la temporisation (« t1 », « tempo_porte »…). Il doit être unique dans le grafcet et ne pas porter le nom d'une variable du projet, sinon l'analyse signale une erreur",
+			"Entrée : la condition qui déclenche le décompte. Le plus souvent l'activité d'une étape (« X10 »), mais aussi une variable, « VRAI », ou une expression entre parenthèses (« (X10 ET capteur1) »)",
+			"Durée : un nombre suivi d'une unité, « ms », « s », « m », « h » ou « d » pour les jours (« 500ms », « 5s », « 2m »). La forme « T#5s » n'est pas acceptée ici : elle est réservée aux blocs de temporisation du Ladder",
+			"Exemple : « t1/X10/5s » devient vrai lorsque l'étape 10 est active depuis 5 secondes",
+			"Exemple combiné : « porte_ouverte ET t7/X7/4s »"
+		],
+		"transitionsTimerOutro": "La temporisation est vraie lorsque son entrée est restée vraie pendant toute la durée, et redevient fausse dès que l'entrée tombe : le décompte repart donc de zéro à chaque nouvelle activation de l'étape. En simulation, le temps écoulé de chaque temporisation est affiché avec la transition concernée.",
+		"transitionsSyntaxTitle": "Syntaxe des expressions (réceptivités et actions)",
+		"transitionsSyntaxItems": [
+			"Précédence, du plus faible au plus fort : OU, ET, NON, comparaisons, + et −, * et /, moins unaire. Ainsi « a ET b OU c » se lit « (a ET b) OU c » et « NON a = b » se lit « NON (a = b) ». Les parenthèses sont acceptées pour imposer un autre groupement.",
+			"Casse : les mots-clés ne tiennent pas compte de la casse (« et » équivaut à « ET »), mais les noms de variables y sont sensibles (« Capteur1 » et « capteur1 » sont deux variables différentes).",
+			"Booléens : VRAI et FAUX (TRUE et FALSE en dialecte anglais). Chaînes : entre guillemets simples ou doubles (« 'Prêt' » ou « \"Prêt\" »), sans caractère d'échappement : une chaîne ne peut pas contenir son propre guillemet.",
+			"Fonctions : seules les conversions de type du standard existent (« DINT_TO_INT(x) », « INT_TO_REAL(x) »…, entre INT, DINT, WORD, DWORD et REAL), leurs noms restent en anglais dans tous les dialectes. Il n'y a pas d'ABS, MIN, MAX ni d'autre fonction.",
+			"Absents du langage : OU exclusif (XOR) et modulo (MOD).",
+			"Front dans une réceptivité : il n'existe pas de syntaxe de front (pas de « ↑a »). Pour réagir à un changement de valeur, faites écrire une variable mémoire par une bobine de front montant ou descendant d'un ladder (vraie pendant un seul cycle), ou par une action de front sur une étape, puis utilisez cette variable dans la réceptivité."
+		],
 		"actionsTitle": "Actions",
 		"actionsIntro": "Les actions sont des blocs liés aux étapes qui décrivent ce que fait le système lorsqu'une étape est active. Une étape peut avoir plusieurs actions.",
 		"actionsTypesTitle": "Types d'actions",
 		"actionsTypes": [
-			"Texte — description textuelle libre, sans exécution ni vérification syntaxique. Représentée par une bordure fine.",
-			"Variable booléenne — manipule une ou plusieurs variables de type BOOL. La bordure est épaisse ; la syntaxe et la cohérence des variables sont vérifiées. Si une variable booléenne est écrite sans assignation explicite (ex. « var1 » au lieu de « var1 := 1 »), elle est considérée comme une mise à 1.",
-			"Variable numérique — manipule des variables numériques (INT, REAL, etc.). Bordure épaisse avec validation.",
-			"Variable chaîne de caractères — manipule des variables de type STRING. Bordure épaisse avec validation."
+			"Texte : description textuelle libre, sans exécution ni vérification syntaxique. Représentée par une bordure fine.",
+			"Variable booléenne : manipule une ou plusieurs variables de type BOOL. La bordure est épaisse ; la syntaxe et la cohérence des variables sont vérifiées. On écrit une variable par ligne, seule (ex. « var1 ») : la valeur écrite dépend du mode d'exécution, et une affectation (« var1 := 1 ») est refusée par l'analyse.",
+			"Variable numérique : manipule des variables numériques (INT, REAL, etc.). Bordure épaisse avec validation.",
+			"Variable chaîne de caractères : manipule des variables de type STRING. Bordure épaisse avec validation."
+		],
+		"actionsSyntaxItems": [
+			"Action numérique ou chaîne : une affectation « variable := expression » par ligne (ex. « compteur := compteur + 1 », « message := 'Prêt' »). Il n'y a pas de séparateur : pour plusieurs affectations, une par ligne dans le champ de l'action.",
+			"Pas d'action conditionnelle (« SI … ALORS ») : pour exécuter une action selon une condition, placez-la sur une étape distincte derrière une transition portant la condition."
 		],
 		"actionsTypeChange": "Le type d'une action se modifie via le clic droit → Type.",
 		"actionsModesTitle": "Modes d'exécution",
 		"actionsModes": [
-			"Continue (C) — l'action s'exécute tant que l'étape est active.",
-			"Front montant (↗) — l'action s'exécute une seule fois au moment où l'étape devient active.",
-			"Front descendant (↘) — l'action s'exécute une seule fois au moment où l'étape devient inactive.",
-			"Set (S) — force la variable booléenne à VRAI (disponible uniquement pour les actions de type variable booléenne).",
-			"Reset (R) — force la variable booléenne à FAUX (disponible uniquement pour les actions de type variable booléenne)."
+			"Continue (C) : l'action s'exécute tant que l'étape est active.",
+			"Front montant (↗) : l'action s'exécute une seule fois au moment où l'étape devient active.",
+			"Front descendant (↘) : l'action s'exécute une seule fois au moment où l'étape devient inactive.",
+			"Set (S) : force la variable booléenne à VRAI (disponible uniquement pour les actions de type variable booléenne).",
+			"Reset (R) : force la variable booléenne à FAUX (disponible uniquement pour les actions de type variable booléenne)."
 		],
 		"actionsModeChange": "Le mode d'exécution se modifie via le clic droit → Mode d'exécution. Les modes disponibles dépendent du type de l'action.",
 		"junctionsTitle": "Jonctions",
 		"junctionsIntro": "Les jonctions permettent de modéliser des séquences parallèles ou alternatives dans le grafcet.",
 		"junctionsTypesTitle": "Types de jonctions",
 		"junctionsTypes": [
-			"Divergence en ET — divise le flux en plusieurs branches parallèles qui s'exécutent simultanément.",
-			"Convergence en ET — synchronise plusieurs branches parallèles et reprend un flux unique.",
-			"Divergence en OU — crée des branches alternatives, une seule peut être active.",
-			"Convergence en OU — regroupe des branches alternatives."
+			"Divergence en ET : divise le flux en plusieurs branches parallèles qui s'exécutent simultanément.",
+			"Convergence en ET : synchronise plusieurs branches parallèles et reprend un flux unique.",
+			"Divergence en OU : crée des branches alternatives, une seule peut être active.",
+			"Convergence en OU : regroupe des branches alternatives."
 		],
+		"junctionsFigureAlt": "Schéma des quatre jonctions, de gauche à droite : divergence en OU (une barre), convergence en OU, divergence en ET (double barre), convergence en ET.",
 		"junctionsBranchesTitle": "Branches",
 		"junctionsBranchesIntro": "Chaque jonction possède un point pivot et plusieurs branches. Via le clic droit sur une jonction, vous pouvez :",
 		"junctionsBranches": [
@@ -365,8 +460,8 @@
 		"referralsTitle": "Renvois",
 		"referralsIntro": "Les renvois permettent de relier des parties éloignées d'un grafcet sans tracer une longue liaison, ou de référencer des étapes situées dans une autre zone du diagramme.",
 		"referralsItems": [
-			"Tenant (source de renvoi) — point de départ du renvoi, indique l'étape cible.",
-			"Aboutissant (cible de renvoi) — point d'arrivée du renvoi, indique l'étape source."
+			"Tenant (source de renvoi) : point de départ du renvoi, indique l'étape cible.",
+			"Aboutissant (cible de renvoi) : point d'arrivée du renvoi, indique l'étape source."
 		],
 		"referralsOutro": "Un tenant et un aboutissant se correspondent par leur numéro d'étape référencé.",
 		"commentsTitle": "Commentaires",
@@ -391,7 +486,7 @@
 	"ladder": {
 		"title": "Ladder",
 		"p1": "Le ladder (schéma à contacts) est une notation graphique représentant la logique du programme sous forme de circuits électriques : des contacts en série ou en parallèle commandent des bobines. Studomate permet de créer et de modifier des ladders à l'aide d'un éditeur graphique interactif, dans un onglet séparé du grafcet.",
-		"p2": "Un projet contient toujours un ladder spécial appelé « Main ». C'est le point d'entrée de l'exécution : il est lancé en premier à chaque cycle PLC et orchestre les autres ladders via des blocs d'appel de programme. Le ladder Main ne peut pas être supprimé.",
+		"p2": "Un projet contient toujours un ladder spécial appelé « Main ». C'est le point d'entrée de l'exécution : il est lancé à chaque cycle PLC, après les grafcets, et orchestre les autres ladders via des blocs d'appel de programme. Le ladder Main ne peut pas être supprimé.",
 		"p3": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante dans un réseau.",
 		"sectionsTitle": "Réseaux",
 		"sectionsIntro": "Un ladder est composé d'un ou plusieurs réseaux, empilés verticalement. Chaque réseau porte son propre circuit, indépendant des autres.",
@@ -401,54 +496,62 @@
 			"Description (optionnelle) : zone de texte libre sous le titre, pour documenter le réseau.",
 			"Poignée à gauche du titre : glissez-la pour réordonner les réseaux (visible uniquement s'il y en a plus d'un).",
 			"Flèche à gauche du titre : replie ou déplie le réseau.",
-			"Icône corbeille : supprime le réseau. Désactivée s'il n'en reste qu'un seul — un ladder porte toujours au moins un réseau."
+			"Icônes Zoomer et Dézoomer : règlent le zoom de ce réseau seulement (visibles quand le réseau est déplié).",
+			"Icône Copier : place le réseau entier (titre, description, éléments, connexions) dans le presse-papiers ; Ctrl+V le colle sous le réseau actif, ou en bas du ladder s'il n'y en a pas. Désactivée si plusieurs réseaux sont sélectionnés.",
+			"Icône Dupliquer : insère immédiatement une copie du réseau juste en dessous. Les blocs temporisation et compteur copiés sont renommés pour rester des instances uniques dans le ladder.",
+			"Icône corbeille : supprime le réseau. Désactivée s'il n'en reste qu'un seul : un ladder porte toujours au moins un réseau."
 		],
 		"contactsTitle": "Contacts",
 		"contactsIntro": "Un contact teste l'état d'une variable booléenne et transmet ou non l'alimentation du rail à sa droite.",
 		"contactsItems": [
-			"NO (normalement ouvert) — transmet lorsque la variable est vraie.",
-			"NF (normalement fermé, barre diagonale) — transmet lorsque la variable est fausse.",
-			"P (front montant) — transmet une seule fois, au passage de la variable de faux à vrai.",
-			"N (front descendant) — transmet une seule fois, au passage de la variable de vrai à faux."
+			"NO (normalement ouvert) : transmet lorsque la variable est vraie.",
+			"NF (normalement fermé, barre diagonale) : transmet lorsque la variable est fausse.",
+			"P (front montant) : transmet une seule fois, au passage de la variable de faux à vrai.",
+			"N (front descendant) : transmet une seule fois, au passage de la variable de vrai à faux."
 		],
 		"contactsOutro": "Faites glisser le symbole depuis la barre d'outils ladder sur la grille du réseau pour poser un contact. Double-cliquez dessus pour choisir la variable associée (aucune vérification de type n'est imposée à la saisie : une variable incompatible sera signalée par l'analyse, pas bloquée à la pose). En simulation, le contact change de couleur lorsque la variable qu'il teste vaut vrai.",
+		"contactsFigureAlt": "Symboles des contacts, de gauche à droite : NO, NF (barre diagonale), P (lettre P) et N (lettre N).",
+		"coilsFigureAlt": "Symboles des bobines, de gauche à droite : normale, Set (lettre S), Reset (lettre R), inversée (barre oblique), front montant (lettre P), front descendant (lettre N).",
 		"coilsTitle": "Bobines",
 		"coilsIntro": "Une bobine affecte une variable booléenne en sortie d'un circuit de contacts.",
 		"coilsItems": [
-			"Normale — la variable prend l'état du circuit qui alimente la bobine (vrai si alimentée, faux sinon).",
-			"Set (S) — force la variable à VRAI lorsque le circuit est alimenté ; ne la remet jamais à FAUX.",
-			"Reset (R) — force la variable à FAUX lorsque le circuit est alimenté ; ne la met jamais à VRAI."
+			"Normale : la variable prend l'état du circuit qui alimente la bobine (vrai si alimentée, faux sinon).",
+			"Set (S) : force la variable à VRAI lorsque le circuit est alimenté ; ne la remet jamais à FAUX.",
+			"Reset (R) : force la variable à FAUX lorsque le circuit est alimenté ; ne la met jamais à VRAI.",
+			"Inversée : la variable prend l'état contraire du circuit (vraie si le circuit n'est pas alimenté, fausse sinon).",
+			"Front montant : la variable est vraie pendant un seul cycle, au moment où le circuit passe de non alimenté à alimenté. C'est la bobine à utiliser pour une impulsion à l'activation.",
+			"Front descendant : la variable est vraie pendant un seul cycle, au moment où le circuit passe d'alimenté à non alimenté."
 		],
-		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence.",
+		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence. Dans la barre d'outils ladder, seules les bobines normale, Set et Reset sont visibles par défaut : le bouton « Afficher d'autres bobines » révèle l'inversée et les deux bobines de front, et « Masquer les bobines supplémentaires » les cache de nouveau.",
 		"blocksTitle": "Blocs",
-		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou — pour la Comparaison, l'Affectation, le Calcul et la Conversion — depuis l'outil dédié de la barre d'outils ladder.",
-		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les pinoches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
+		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul et la Conversion) depuis l'outil dédié de la barre d'outils ladder.",
+		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les broches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
 		"timerTitle": "Temporisation",
 		"timerIntro": "Mesure une durée et expose un signal de sortie. Trois variantes :",
 		"timerItems": [
-			"TON — retard à l'enclenchement : la sortie Q passe à vrai après que l'entrée IN est vraie pendant la durée PT.",
-			"TOF — retard au déclenchement : la sortie Q reste vraie pendant PT après que IN est passée à faux.",
-			"TP — impulsion calibrée : la sortie Q est vraie pendant exactement PT après un front montant sur IN, même si IN retombe avant ; un front montant pendant l'impulsion est ignoré (non redéclenchable)."
+			"TON (retard à l'enclenchement) : la sortie Q passe à vrai après que l'entrée IN est vraie pendant la durée PT.",
+			"TOF (retard au déclenchement) : la sortie Q reste vraie pendant PT après que IN est passée à faux.",
+			"TP (impulsion calibrée) : la sortie Q est vraie pendant exactement PT après un front montant sur IN, même si IN retombe avant ; un front montant pendant l'impulsion est ignoré (non redéclenchable)."
 		],
-		"timerOutro": "Configuration : nom (unique dans le projet) et variante (TON/TOF/TP). Les paramètres PT (durée de consigne, ex. T#5s) et ET (durée écoulée en sortie, optionnelle) se renseignent directement sur les pinoches du bloc dans le canvas, sous forme de variable ou de constante TIME.",
+		"timerOutro": "Configuration : nom (unique dans le projet) et variante (TON/TOF/TP). Les paramètres PT (durée de consigne, ex. T#5s) et ET (durée écoulée en sortie, optionnelle) se renseignent directement sur les broches du bloc dans le canvas, sous forme de variable ou de constante TIME.",
 		"counterTitle": "Compteur",
 		"counterIntro": "Compte des impulsions. Trois variantes :",
 		"counterItems": [
 			"CTU (compte vers le haut) : incrémente CV à chaque front montant de CU ; R remet CV à zéro.",
 			"CTD (compte vers le bas) : décrémente CV à chaque front montant de CD ; LD charge PV dans CV.",
-			"CTUD (compte vers le haut et vers le bas) : incrémente CV à chaque front montant de CU, le décrémente à chaque front montant de CD ; R remet CV à zéro (prioritaire) et LD charge PV dans CV. CD, R et LD se renseignent sur les pinoches."
+			"CTUD (compte vers le haut et vers le bas) : incrémente CV à chaque front montant de CU, le décrémente à chaque front montant de CD ; R remet CV à zéro (prioritaire) et LD charge PV dans CV. CD, R et LD se renseignent sur les broches."
 		],
-		"counterOutro": "La sortie Q passe à vrai lorsque CV atteint PV (CTU) ou descend à zéro (CTD). Le CTUD a deux sorties : QU (CV ≥ PV) et QD (CV ≤ 0). Configuration : nom et variante. PV (valeur de consigne) et la variable de contrôle (R ou LD) se renseignent sur les pinoches.",
+		"counterOutro": "La sortie Q passe à vrai lorsque CV atteint PV (CTU) ou descend à zéro (CTD). Le CTUD a deux sorties : QU (CV ≥ PV) et QD (CV ≤ 0). Configuration : nom et variante. PV (valeur de consigne) et la variable de contrôle (R ou LD) se renseignent sur les broches.",
 		"compareTitle": "Comparaison",
-		"compareBody": "Compare deux valeurs IN1 et IN2 selon un opérateur (=, !=, <, >, <=, >=) et transmet l'alimentation si le résultat est vrai. S'insère dans un réseau comme un contact. IN1 et IN2 se renseignent sur les pinoches (variable ou constante) ; l'opérateur se choisit dans le menu qui s'ouvre au clic sur le bloc.",
+		"compareBody": "Compare deux valeurs IN1 et IN2 selon un opérateur (=, !=, <, >, <=, >=) et transmet l'alimentation si le résultat est vrai. S'insère dans un réseau comme un contact. IN1 et IN2 se renseignent sur les broches (variable ou constante) ; l'opérateur se choisit dans le menu qui s'ouvre au clic sur le bloc.",
 		"assignTitle": "Affectation",
-		"assignBody": "Affecte une valeur à une variable (out := in) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. L'opérande in (variable ou constante) et la variable de destination out se renseignent sur les pinoches du bloc.",
+		"assignBody": "Affecte une valeur à une variable (out := in) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. L'opérande in (variable ou constante) et la variable de destination out se renseignent sur les broches du bloc.",
 		"calcTitle": "Calcul",
 		"calcBody": "Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.",
 		"convertTitle": "Conversion",
-		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Le bloc affiche le nom normalisé de la conversion appliquée, par exemple DINT_TO_INT. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les pinoches du bloc (variables uniquement).",
+		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Le bloc affiche le nom normalisé de la conversion appliquée, par exemple DINT_TO_INT. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
 		"programCallTitle": "Appel de programme",
-		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet — un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
+		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet : un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",
 		"connectionsIntro": "Un réseau est alimenté par le rail à gauche (trait vertical). Les éléments se relient entre eux en glissant depuis un point de connexion vers l'élément cible ; le validateur de connexions empêche les liaisons invalides (ex. relier deux bobines entre elles).",
 		"connectionsItems": [
@@ -461,20 +564,21 @@
 	},
 	"toolbar": {
 		"title": "Barre d'outils",
-		"p1": "La barre d'outils est divisée en deux zones : les actions générales (haut gauche) et les outils de création (haut, spécifiques au type de programme ouvert — Grafcet ou Ladder).",
+		"p1": "La barre d'outils est divisée en deux zones : les actions générales (haut gauche) et les outils de création (haut, spécifiques au type de programme ouvert : Grafcet ou Ladder).",
 		"generalTitle": "Actions générales",
 		"generalItems": [
-			"Accueil — retour à la page d'accueil",
-			"Enregistrer — sauvegarde le projet en cours",
-			"Annuler (Ctrl+Z) — annule la dernière action",
-			"Rétablir (Ctrl+Y) — rétablit l'action annulée"
+			"Accueil : retour à la page d'accueil",
+			"Enregistrer : sauvegarde le projet en cours",
+			"Annuler (Ctrl+Z) : annule la dernière action du document ouvert",
+			"Rétablir (Ctrl+Y) : rétablit l'action annulée"
 		],
+		"undoScopeBody": "L'historique est propre à chaque document : Ctrl+Z annule la dernière action du grafcet, du ladder ou de la page HMI ouvert, pas la dernière action du projet. Les variables et les propriétés du projet ont leur propre historique. Changer d'onglet change donc d'historique. L'annulation n'est disponible qu'en mode Conception.",
 		"nameTitle": "Nom du projet et indicateur",
 		"nameBody": "Le champ de nom du projet (en haut, centre) est modifiable directement. Un indicateur visuel signale les modifications non sauvegardées.",
 		"analysisTitle": "Analyse et mode",
 		"analysisItems": [
-			"Bouton Analyser — lance l'analyse statique du projet. Devient rouge en cas d'erreurs, orange en cas d'avertissements seulement.",
-			"Sélecteur de mode — permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
+			"Bouton Analyser : lance l'analyse statique du projet. Devient rouge en cas d'erreurs, orange en cas d'avertissements seulement.",
+			"Sélecteur de mode : permet de basculer entre le mode Conception (édition) et le mode Simulation. Le fond clignote en orange-gris en mode Simulation. Avec une carte configurée, le menu des modes propose aussi « Simulation avec E/S réelles » et « Observation de la carte » (voir la section Matériel)."
 		],
 		"grafcetToolsTitle": "Outils de création Grafcet",
 		"grafcetToolsIntro": "Lorsqu'un grafcet est ouvert, des outils supplémentaires apparaissent. Faites glisser l'outil choisi sur le canvas pour créer l'élément correspondant :",
@@ -496,7 +600,7 @@
 		"ladderToolsIntro": "Lorsqu'un ladder est ouvert, sa propre barre d'outils apparaît sous la barre d'outils générale. Faites glisser l'outil choisi sur un réseau pour créer l'élément correspondant :",
 		"ladderTools": [
 			"Contact NO, NF, P (front montant) et N (front descendant)",
-			"Bobine normale, Set et Reset",
+			"Bobine normale, Set et Reset ; inversée et fronts montant/descendant via le bouton « Afficher d'autres bobines »",
 			"Blocs Comparaison, Affectation, Calcul et Conversion (les autres blocs systèmes se glissent depuis l'explorateur)",
 			"Bouton « Réseau » : ajoute un nouveau réseau au ladder"
 		],
@@ -504,18 +608,18 @@
 	},
 	"crossReferences": {
 		"title": "Références croisées",
-		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite — grafcets, ladders et interfaces HMI confondus.",
+		"p1": "Les références croisées indiquent, pour n'importe quelle variable du projet, tous les endroits où elle est lue et tous les endroits où elle est écrite (grafcets, ladders et interfaces HMI confondus).",
 		"openTitle": "Ouvrir le panneau",
 		"openBody": "Cliquez sur le bouton « Références croisées » dans la barre inférieure, ou utilisez le menu Interface → Références croisées. L'entrée de menu bascule l'affichage du panneau.",
 		"panelTitle": "Contenu du panneau",
 		"panelIntro": "Le panneau liste les variables du projet avec un champ de filtre. Pour la variable sélectionnée, il affiche deux listes :",
 		"panelItems": [
-			"Lu par — chaque emplacement où la valeur de la variable est consultée.",
-			"Écrit par — chaque emplacement où une valeur lui est affectée."
+			"Lu par : chaque emplacement où la valeur de la variable est consultée.",
+			"Écrit par : chaque emplacement où une valeur lui est affectée."
 		],
-		"panelOutro": "Chaque entrée désigne un emplacement précis : contact ou bobine de ladder, pinoche de bloc, réceptivité de transition, action d'étape, activité d'une étape, liaison ou animation d'un widget HMI. Cliquez dessus pour naviguer directement vers cet emplacement.",
+		"panelOutro": "Chaque entrée désigne un emplacement précis : contact ou bobine de ladder, broche de bloc, réceptivité de transition, action d'étape, activité d'une étape, liaison ou animation d'un widget HMI. Cliquez dessus pour naviguer directement vers cet emplacement.",
 		"quickTitle": "Accès rapide depuis une variable",
-		"quickBody": "Un clic droit sur une variable — dans la table des variables, dans un sélecteur de variable, ou sur un contact ou un bloc de ladder — propose « Références croisées », qui ouvre le panneau déjà filtré sur cette variable.",
+		"quickBody": "Un clic droit sur une variable (dans la table des variables, dans un sélecteur de variable) ou sur un contact ou un bloc de ladder propose « Références croisées », qui ouvre le panneau déjà filtré sur cette variable.",
 		"scopeBody": "Les références croisées sont un outil de navigation, pas de diagnostic : elles n'émettent aucun avertissement (une variable jamais lue ou jamais écrite n'est pas signalée comme un problème)."
 	},
 	"hmi": {
@@ -541,7 +645,7 @@
 			"Clic simple sur un widget : sélectionne ce widget.",
 			"Clic sur zone vide : vide la sélection.",
 			"Shift+clic ou Ctrl+clic : ajoute ou retire un widget de la sélection.",
-			"Cliquer-glisser sur zone vide : rectangle de sélection — sélectionne tous les widgets qu'il intersecte.",
+			"Cliquer-glisser sur zone vide : trace un rectangle de sélection qui sélectionne tous les widgets qu'il intersecte.",
 			"Ctrl+A : sélectionner tout."
 		],
 		"canvasMoveTitle": "Déplacer et redimensionner",
@@ -573,14 +677,14 @@
 		"animationsStyleTitle": "Animation de style",
 		"animationsStyleBody": "Disponible pour rectangle, ellipse, trait et texte. Choisissez une variable pilote (BOOL ou numérique), puis définissez une table de correspondance valeur → propriétés de style :",
 		"animationsStyleItems": [
-			"Variable BOOL : deux lignes fixes (valeur 0 et valeur 1) — associez une couleur à chaque état.",
-			"Variable numérique : lignes libres — ajoutez autant de valeurs que nécessaire, chacune associée à une couleur ou un texte."
+			"Variable BOOL : deux lignes fixes (valeur 0 et valeur 1) ; associez une couleur à chaque état.",
+			"Variable numérique : lignes libres ; ajoutez autant de valeurs que nécessaire, chacune associée à une couleur ou un texte."
 		],
 		"animationsStyleOutro": "En simulation, la première ligne dont la valeur correspond exactement à la valeur courante de la variable pilote est appliquée. Si aucune ne correspond, le style statique du widget s'affiche.",
 		"eventsTitle": "Événements",
 		"eventsIntro": "Les événements permettent de déclencher des actions lors d'interactions avec un widget en simulation. Cliquez sur le bouton « Événements » (icône éclair) en bas du panneau Propriétés pour ouvrir la fenêtre d'événements. Ce bouton n'apparaît que pour les widgets qui exposent des événements.",
 		"eventsBody1": "Actuellement, seul le bouton poussoir expose un événement : « Bouton pressé » (déclenché à chaque appui, indépendamment du comportement configuré).",
-		"eventsBody2": "Action disponible : « Changer de page » — navigue vers la page HMI choisie dans la vue Simulation HMI. Plusieurs actions peuvent être associées à un même événement et sont exécutées dans l'ordre.",
+		"eventsBody2": "Action disponible : « Changer de page », qui navigue vers la page HMI choisie dans la vue Simulation HMI. Plusieurs actions peuvent être associées à un même événement et sont exécutées dans l'ordre.",
 		"simulationTitle": "Simulation HMI",
 		"simulationBody1": "L'onglet « Simulation HMI » s'ouvre automatiquement au démarrage de la simulation (si le projet contient au moins une page HMI). Il affiche la page principale et se ferme à l'arrêt de la simulation.",
 		"simulationBody2": "En simulation, le canvas est en lecture/interaction seule : la palette, le panneau de propriétés et la sélection sont désactivés. Les widgets reflètent en temps réel les valeurs des variables du programme.",
@@ -594,21 +698,37 @@
 	},
 	"simulation": {
 		"title": "Simulation",
-		"p1": "Le mode Simulation exécute le projet comme un automate programmable (PLC) : les ladders sont compilés en routines exécutées à chaque cycle, le grafcet évalue ses réceptivités et déclenche ses actions, et les interfaces HMI deviennent interactives.",
+		"p1": "Le mode Simulation exécute le projet comme un automate programmable (PLC) : les ladders sont compilés en programmes exécutés à chaque cycle, le grafcet évalue ses réceptivités et déclenche ses actions, et les interfaces HMI deviennent interactives.",
+		"modesCompareTitle": "Les modes en un coup d'œil",
+		"modesCompareItems": [
+			"Conception : rien ne s'exécute. L'édition est libre, pour les programmes comme pour les variables.",
+			"Simulation : Studomate exécute le projet dans le navigateur. L'édition est verrouillée ; les entrées et les mémoires se modifient depuis la table de visualisation ou les pages HMI (les entrées liées à une scène 3D sont pilotées par la scène), les sorties sont en lecture seule.",
+			"Simulation avec E/S réelles (carte configurée) : Studomate exécute le projet, mais les entrées câblées prennent la valeur lue sur la broche de la carte et les sorties commandent les broches. Les entrées câblées ne se modifient plus à la main.",
+			"Observation de la carte (carte configurée) : c'est la carte qui exécute, Studomate affiche ce qu'elle rapporte. L'édition est verrouillée, il n'y a ni pause ni pas-à-pas ; les entrées non câblées, les mémoires et le forçage restent possibles depuis Studomate."
+		],
 		"startTitle": "Démarrer la simulation",
 		"startIntro": "Sélectionnez « Simulation » dans le sélecteur de mode (en haut à droite). Avant le démarrage :",
 		"startItems": [
 			"Le projet est analysé.",
-			"Le projet est compilé en routines PLC exécutables.",
-			"Le cycle PLC démarre (temps de cycle par défaut : 100 ms)."
+			"Le projet est compilé en programmes exécutables par l'automate simulé.",
+			"Le cycle PLC démarre (temps de cycle fixe : 100 ms, non réglable)."
 		],
 		"startError": "Si des erreurs sont détectées lors de l'analyse, la simulation ne démarrera pas.",
-		"startModesIntro": "Deux modes d'exécution sont disponibles dans le sélecteur à côté du sélecteur de mode :",
+		"startModesIntro": "Deux modes d'exécution se choisissent dans la liste déroulante « Continu / Pas-à-pas », juste à droite du sélecteur de mode (Conception / Simulation), puis un bouton icône à côté de cette liste pilote l'exécution :",
 		"startModes": [
-			"Continu — le cycle PLC tourne automatiquement à intervalle régulier (100 ms). Un bouton Pause suspend l'exécution ; Reprendre la relance.",
-			"Pas-à-pas — le cycle PLC n'avance que d'un cran à chaque clic sur le bouton « Étape ». Utile pour observer précisément le comportement cycle par cycle."
+			"Continu : le cycle PLC tourne automatiquement à intervalle régulier (100 ms). L'icône Pause (infobulle « Mettre en pause ») suspend l'exécution ; elle devient une icône Lecture (« Reprendre la simulation ») qui la relance.",
+			"Pas-à-pas : le cycle PLC n'avance que d'un cran à chaque clic sur l'icône « Avancer d'un cycle » (flèche vers la droite). Utile pour observer précisément le comportement cycle par cycle."
 		],
-		"startTimers": "Les temporisations suivent le temps réel écoulé, y compris en pas-à-pas : si vous laissez passer deux secondes entre deux clics sur « Étape », une temporisation de 2 s arrivera à échéance au clic suivant — inutile de cliquer autant de fois qu'il y a de cycles. Les temporisations ne se figent que dans un seul cas : le mode continu mis en pause. Elles reprennent alors là où elles s'étaient arrêtées, la durée de la pause n'étant pas comptée.",
+		"startTimers": "Les temporisations suivent le temps réel écoulé, y compris en pas-à-pas : si vous laissez passer deux secondes entre deux clics sur « Avancer d'un cycle », une temporisation de 2 s arrivera à échéance au clic suivant. Inutile de cliquer autant de fois qu'il y a de cycles. Les temporisations ne se figent que dans un seul cas : le mode continu mis en pause. Elles reprennent alors là où elles s'étaient arrêtées, la durée de la pause n'étant pas comptée.",
+		"cycleOrderTitle": "Ordre d'exécution d'un cycle",
+		"cycleOrderIntro": "À chaque cycle PLC, les étapes se déroulent toujours dans cet ordre :",
+		"cycleOrderItems": [
+			"Lecture des entrées : les valeurs saisies, forcées ou fournies par la scène 3D ou la carte sont figées pour tout le cycle.",
+			"Grafcets : chaque grafcet évalue ses réceptivités, franchit ses transitions et applique ses actions.",
+			"Ladder Main, puis les ladders qu'il appelle, à l'endroit des blocs d'appel.",
+			"Écriture des sorties : les sorties ne sont modifiées vers l'extérieur (HMI, scène 3D, carte) qu'à la fin du cycle."
+		],
+		"cycleOrderOutro": "Conséquence pratique : les grafcets passant avant le ladder, un grafcet voit seulement au cycle suivant ce qu'un ladder écrit, tandis qu'un ladder voit dans le même cycle ce qu'un grafcet écrit (variables Xn et variables affectées par ses actions).",
 		"runningTitle": "Pendant la simulation",
 		"runningItems": [
 			"Les étapes actives sont mises en évidence sur le canvas grafcet.",
@@ -618,15 +738,15 @@
 			"Les valeurs des variables sont mises à jour en temps réel.",
 			"Si le projet est lié à une scène 3D, ses capteurs alimentent les entrées liées et les sorties du programme commandent la scène (voir la section Scène 3D).",
 			"Les éditeurs grafcet et ladder sont en lecture seule.",
-			"L'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI)."
+			"À l'entrée en simulation, l'onglet « Simulation HMI » s'ouvre automatiquement si le projet contient des pages HMI (voir la section Interfaces HMI) ; sans page HMI, c'est l'onglet de la scène 3D qui s'ouvre si le projet en a une (voir la section Scène 3D). Cette ouverture automatique se désactive dans Fichier → Préférences."
 		],
 		"watchTitle": "Tables de visualisation et de modification des variables",
 		"watchIntro": "Le panneau inférieur affiche les tables de visualisation et de modification des variables avec quatre onglets :",
 		"watchItems": [
-			"Entrées — valeurs actuelles des variables d'entrée",
-			"Sorties — valeurs actuelles des variables de sortie",
-			"Mémoires — valeurs actuelles des variables mémoire",
-			"Grafcets — pour chaque grafcet du projet, le ou les numéros de ses étapes actives"
+			"Entrées : valeurs actuelles des variables d'entrée",
+			"Sorties : valeurs actuelles des variables de sortie",
+			"Mémoires : valeurs actuelles des variables mémoire",
+			"Grafcets : pour chaque grafcet du projet, le ou les numéros de ses étapes actives"
 		],
 		"watchOutro": "Les valeurs se mettent à jour après chaque cycle PLC. Vous pouvez modifier directement les valeurs des variables d'entrée et mémoire depuis la table pour simuler des signaux externes ou forcer un état interne. Les sorties sont affichées en lecture seule.",
 		"stopTitle": "Arrêter la simulation",
@@ -655,16 +775,16 @@
 			"Jonctions : branches insuffisantes, branches non connectées, divergence ET sans convergence correspondante",
 			"Programmes exclus de l'exécution : ignorés par toutes les vérifications ; un bloc qui appelle un ladder exclu est signalé",
 			"Configuration matérielle : carte inconnue, broche utilisée par plusieurs variables, adresse ou capacité de broche invalide, type non pris en charge par la carte, entrée lue sans adresse (avertissement)",
-			"Scène 3D : scène inconnue, point non lié (avertissement), variable liée absente, capteur non lié à une entrée ou actionneur non lié à une sortie, type incompatible, capteur lié à plusieurs points ou déjà câblé sur une broche, capteur écrit par un widget HMI"
+			"Scène 3D : scène inconnue, point non lié (avertissement), variable liée absente, capteur non lié à une entrée, actionneur non lié à une sortie ou affichage non lié à une variable mémoire, type incompatible, capteur lié à plusieurs points ou déjà câblé sur une broche, capteur écrit par un widget HMI"
 		],
 		"checksOutro": "Cliquez sur un problème dans la liste pour naviguer vers l'élément concerné, dans le grafcet ou le ladder correspondant.",
 		"messagesTitle": "Exemples de messages",
 		"messagesIntro": "Quelques messages fréquents et leur cause :",
 		"messagesItems": [
-			"« La transition n'a pas d'expression. Elle ne pourra jamais être franchie. » — le champ de réceptivité est vide.",
-			"« Expression invalide : une transition doit être une expression retournant un booléen. » — la réceptivité contient par exemple un calcul numérique au lieu d'une condition logique.",
-			"« Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément. » — plusieurs liaisons partent directement d'une même transition sans passer par une jonction.",
-			"« L'action n'est connectée à aucune étape. » — une action a été déposée sur le canvas sans être reliée à une étape."
+			"« La transition n'a pas d'expression. Elle ne pourra jamais être franchie. » : le champ de réceptivité est vide.",
+			"« Expression invalide : une transition doit être une expression retournant un booléen. » : la réceptivité contient par exemple un calcul numérique au lieu d'une condition logique.",
+			"« Une transition ne peut avoir qu'un seul successeur direct. Utilisez une divergence en ET pour activer plusieurs étapes simultanément. » : plusieurs liaisons partent directement d'une même transition sans passer par une jonction.",
+			"« L'action n'est connectée à aucune étape. » : une action a été déposée sur le canvas sans être reliée à une étape."
 		]
 	},
 	"shortcuts": {
@@ -672,31 +792,31 @@
 		"intro": "Les raccourcis ci-dessous utilisent Ctrl sur Windows/Linux et Cmd sur macOS.",
 		"fileTitle": "Fichier",
 		"fileItems": [
-			"Nouveau projet — aucun raccourci (Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre)",
-			"Ctrl+O — Ouvrir projet",
-			"Ctrl+S — Enregistrer",
-			"Ctrl+Shift+S — Enregistrer sous (crée une copie du projet sous un nouveau nom)",
-			"Exporter et Fermer le projet — aucun raccourci (menu Fichier)"
+			"Nouveau projet : aucun raccourci (Ctrl+N est réservé par le navigateur pour ouvrir une nouvelle fenêtre)",
+			"Ctrl+O : Ouvrir projet",
+			"Ctrl+S : Enregistrer",
+			"Ctrl+Shift+S : Enregistrer sous (crée une copie du projet sous un nouveau nom)",
+			"Exporter et Fermer le projet : aucun raccourci (menu Fichier)"
 		],
 		"projectTitle": "Projet",
-		"projectItems": ["Ctrl+G — Nouveau grafcet", "Ctrl+L — Nouveau ladder"],
+		"projectItems": ["Ctrl+G : Nouveau grafcet", "Ctrl+L : Nouveau ladder"],
 		"editTitle": "Édition",
 		"editItems": [
-			"Ctrl+Z — Annuler",
-			"Ctrl+Y — Rétablir",
-			"Ctrl+C — Copier (canvas Grafcet, Ladder ou HMI actif)",
-			"Ctrl+V — Coller (canvas Grafcet, Ladder ou HMI actif)",
-			"Ctrl+X — Couper (canvas Grafcet, Ladder ou HMI actif)",
-			"Ctrl+A — Sélectionner tout (canvas Grafcet, Ladder ou HMI actif)",
-			"Suppr ou Retour arrière — Supprimer la sélection (canvas Grafcet, Ladder ou HMI actif, en mode conception)",
-			"Flèches — Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
+			"Ctrl+Z : Annuler",
+			"Ctrl+Y : Rétablir",
+			"Ctrl+C : Copier (canvas Grafcet, Ladder ou HMI actif)",
+			"Ctrl+V : Coller (canvas Grafcet, Ladder ou HMI actif)",
+			"Ctrl+X : Couper (canvas Grafcet, Ladder ou HMI actif)",
+			"Ctrl+A : Sélectionner tout (canvas Grafcet, Ladder ou HMI actif)",
+			"Suppr ou Retour arrière : Supprimer la sélection (canvas Grafcet, Ladder ou HMI actif, en mode conception)",
+			"Flèches : Déplacer les widgets sélectionnés d'un pas de grille (canvas HMI actif, mode conception)"
 		],
 		"explorerTitle": "Explorateur",
-		"explorerItems": ["F2 — Renommer le grafcet ou le ladder sélectionné"],
+		"explorerItems": ["F2 : Renommer le grafcet ou le ladder sélectionné"],
 		"inlineTitle": "Édition sur place",
 		"inlineItems": [
-			"Entrée — Valider la modification",
-			"Échap — Annuler la modification"
+			"Entrée : Valider la modification",
+			"Échap : Annuler la modification"
 		]
 	},
 	"hardware": {
@@ -743,29 +863,161 @@
 	},
 	"scene3d": {
 		"title": "Scène 3D de simulation",
-		"p1": "Une scène 3D est une partie opérative virtuelle : à chaque cycle, un modèle physique (tri de caisses, ascenseur, carrefour de feux...) reçoit les sorties de votre programme, avance du temps écoulé et renvoie les capteurs. Elle s'affiche dans un onglet du navigateur à part, en plein écran, pendant que la simulation tourne dans l'éditeur.",
+		"p1": "Une scène 3D est une partie opérative virtuelle : à chaque cycle, un modèle physique (tri de caisses, ascenseur, carrefour de feux, perçage...) reçoit les sorties de votre programme, avance du temps écoulé et renvoie les capteurs. Elle s'affiche dans un onglet du navigateur à part, en plein écran, pendant que la simulation tourne dans l'éditeur.",
+		"cartonSortingFigureAlt": "Capture de la scène 3D du poste de tri de caisses en simulation : un tapis d'arrivée, un tapis de tri avec trois vérins qui poussent les caisses vers les bacs de sortie, et à droite le panneau de commande avec le bouton Départ cycle, le compteur de caisses triées et les voyants des capteurs et des commandes.",
+		"scenesTitle": "Scènes disponibles",
+		"scenesIntro": "Le catalogue propose quatre scènes, chacune livrée avec une maquette « à programmer » qui la câble déjà :",
+		"scenesItems": [
+			"Tri de caisses (maquette « Poste de tri de caisses ») : des capteurs de présence, de hauteur et de fin de course des vérins ; des sorties pour les tapis et les six commandes des trois vérins ; un affichage numérique pour le compteur de caisses triées. C'est la seule scène avec des commandes manuelles : placer une caisse, choisir sa hauteur (basse ou haute) et un bouton de départ de cycle ;",
+			"Carrefour de feux (maquette « Carrefour de feux tricolores ») : aucune entrée ; douze sorties, rouge, orange et vert pour chacun des quatre feux (Nord, Sud, Est, Ouest). Si deux axes passent au vert en même temps, les voitures se percutent et un compteur d'accidents s'incrémente ;",
+			"Perçage (maquette « Poste de perçage ») : des sorties pour descendre le foret, le monter et faire tourner la broche ; des capteurs de foret en haut, foret en bas et de position (numérique). Percer demande de faire tourner la broche, foret en bas, pendant 1,5 s ;",
+			"Ascenseur (maquette « Ascenseur ») : des sorties de montée, de descente et d'ouverture de porte ; des capteurs de présence de la cabine à chaque étage, de porte ouverte et de position (numérique). La porte reste ouverte au moins 2 s avant de pouvoir se refermer."
+		],
 		"configTitle": "Choisir la scène et câbler les variables",
 		"configIntro": "Ouvrez Projet > Configuration scène 3D (ou le bouton de la page d'accueil du projet), choisissez une scène dans le catalogue, puis liez chacun de ses points à une variable :",
 		"configItems": [
 			"un capteur se lie à une entrée du projet (logique ou analogique, selon le point) ;",
 			"un actionneur se lie à une sortie du projet ;",
+			"un affichage se lie à une variable mémoire du projet : la scène en montre la valeur ;",
 			"le sélecteur de chaque point ne propose que les variables de la bonne zone et du bon type ;",
 			"« Créer les variables manquantes » crée les variables des points non liés avec le nom suggéré par la scène (ou réutilise une variable compatible portant déjà ce nom) et les lie, en une seule opération annulable."
 		],
 		"openTitle": "Afficher la scène",
 		"openBody": "Dès qu'une scène est choisie, l'entrée « Scène 3D » du menu Interface ouvre l'onglet de la scène, avant ou pendant la simulation :",
 		"openItems": [
-			"hors simulation, la scène montre son état initial : les commandes 3D s'animent mais sont sans effet sur le projet ;",
-			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes 3D (poser une caisse, appuyer sur un bouton...) agissent sur le modèle ;",
+			"hors simulation, la scène montre son état initial : les commandes éventuelles de la scène sont désactivées et sans effet sur le projet ;",
+			"en simulation, les capteurs de la scène alimentent les entrées liées, et les commandes éventuelles de la scène agissent sur le modèle ;",
+			"à l'entrée en simulation, l'onglet de la scène s'ouvre automatiquement si le projet n'a aucune page HMI (sinon la page HMI est affichée) ; si le navigateur bloque cette ouverture, un message cliquable propose de l'ouvrir (l'entrée « Scène 3D » du menu Interface le permet aussi) ;",
 			"la pause et l'exécution pas à pas de la simulation s'appliquent aussi à la scène ;",
+			"dans l'onglet de la scène, la souris oriente la vue : glisser pour tourner autour de la scène, molette pour zoomer, clic droit (ou glisser avec Maj) pour déplacer la vue ;",
 			"fermer le projet ferme l'onglet de la scène."
 		],
 		"limitsTitle": "Limites",
 		"limitsItems": [
 			"une entrée liée à un capteur de la scène ne peut plus être saisie à la main : le forçage reste possible et l'emporte sur la scène ;",
-			"un capteur ne peut pas être lié à une variable déjà câblée sur une broche d'une carte ;",
-			"si deux impulsions d'un même capteur ont lieu pendant un seul cycle, le programme n'en voit qu'une : réduisez le temps de cycle si nécessaire ;",
+			"un capteur ne peut pas être lié à une variable déjà câblée sur une broche d'un matériel physique (section Matériel) ;",
+			"si deux impulsions d'un même capteur ont lieu pendant un seul cycle, le programme n'en voit qu'une (le temps de cycle, fixé à 100 ms, n'est pas réglable) ;",
 			"l'analyse signale les points non liés (avertissement) et les liaisons incohérentes (erreur) : capteur lié à plusieurs points, capteur écrit par un widget HMI, type ou zone de variable incompatible."
+		]
+	},
+	"limits": {
+		"title": "Limites de l'outil",
+		"intro": "Ce que Studomate ne fait pas, regroupé par thème. Chaque limite est détaillée dans la section indiquée.",
+		"groups": [
+			{
+				"title": "Grafcet",
+				"items": [
+					"une seule étape initiale par grafcet : pour démarrer plusieurs branches, placez une étape initiale suivie d'une transition « VRAI » et d'une divergence en ET (section Grafcet, Étapes) ;",
+					"pas de macro-étape, pas d'encapsulation, pas d'ordre de forçage de grafcets partiels : le « forçage » de Studomate est un outil de simulation qui impose la valeur d'une étape ;",
+					"pas d'action conditionnelle : une action ne porte pas de condition propre, placez-la sur une étape distincte derrière une transition (section Grafcet, Actions) ;",
+					"pas de détection de front dans une réceptivité : passez par une variable mémoire écrite par une bobine ou une action de front (section Grafcet, Transitions)."
+				]
+			},
+			{
+				"title": "Expressions et variables",
+				"items": [
+					"pas de OU exclusif (XOR), de modulo (MOD) ni de fonction autre que les conversions de type (section Grafcet, Transitions) ;",
+					"WORD et DWORD sont des chaînes de bits : pas d'arithmétique sans conversion en entier (section Variables) ;",
+					"les entiers bouclent à la plage de leur type en simulation : un INT qui dépasse 32767 revient à −32768 (section Variables) ;",
+					"le temps de cycle est fixé à 100 ms et n'est pas réglable (section Simulation)."
+				]
+			},
+			{
+				"title": "Matériel (Arduino)",
+				"items": [
+					"seul l'Arduino Uno R3 d'origine est pris en charge, pas les clones à bootloader différent ni les autres cartes ;",
+					"une broche ne porte qu'une seule variable, et les types REAL et STRING ne sont pas pris en charge par la carte ;",
+					"le programme doit tenir dans la carte (environ 1 Ko de programme et 512 octets de variables) ;",
+					"un onglet en arrière-plan ralentit la simulation, et coupe les sorties en simulation avec E/S réelles ;",
+					"la liaison avec la carte demande un navigateur basé sur Chromium (section Matériel)."
+				]
+			},
+			{
+				"title": "Scène 3D",
+				"items": [
+					"une entrée liée à un capteur de la scène ne peut plus être saisie à la main, mais elle peut être forcée ;",
+					"un capteur ne peut pas être lié à une variable déjà câblée sur une broche d'un matériel physique (section Matériel) ;",
+					"si deux impulsions d'un même capteur ont lieu pendant un seul cycle, le programme n'en voit qu'une (section Scène 3D)."
+				]
+			},
+			{
+				"title": "Application et stockage",
+				"items": [
+					"application pour ordinateur : elle s'efface sous 768 pixels de large, et l'usage tactile (tablette) n'est pas garanti ;",
+					"pas de mode hors ligne : une connexion est nécessaire pour ouvrir l'application ;",
+					"par défaut, les projets ne sont stockés que dans le navigateur de l'appareil : exportez-les ou créez un compte pour les sauvegarder dans le cloud (section Démarrer) ;",
+					"pas de vue enseignant : un professeur ne voit pas les projets cloud de ses élèves, ils lui envoient un fichier ou un lien de partage (section Projets)."
+				]
+			}
+		]
+	},
+	"troubleshooting": {
+		"title": "Dépannage",
+		"intro": "Cette section part des symptômes les plus fréquents. Chaque entrée renvoie vers la section qui détaille le sujet.",
+		"entries": [
+			{
+				"title": "La simulation ne démarre pas",
+				"intro": "En passant en mode Simulation, Studomate relance l'analyse du projet. S'il trouve des erreurs, le projet reste en mode Conception et le panneau « Résultats de l'analyse » s'ouvre en bas de l'écran avec la liste des erreurs :",
+				"items": [
+					"cliquez sur une erreur pour aller directement à l'élément concerné ;",
+					"corrigez-les, puis repassez en Simulation ;",
+					"les avertissements n'empêchent pas de simuler."
+				],
+				"outro": "Voir la section Analyse pour les types de vérifications et des exemples de messages."
+			},
+			{
+				"title": "Mon grafcet ne bouge pas",
+				"intro": "Si les étapes ne s'enchaînent pas, vérifiez dans cet ordre :",
+				"items": [
+					"la simulation avance : en mode Pas-à-pas, le cycle ne progresse qu'à chaque clic sur « Avancer d'un cycle » ; en mode Continu, vérifiez qu'elle n'est pas en pause ;",
+					"le grafcet n'est pas exclu de l'exécution : un grafcet exclu n'a aucune étape active ;",
+					"la réceptivité de la transition suivante est vraie : ouvrez « Tables de visualisation » (barre inférieure) et regardez la valeur des variables qu'elle utilise ;",
+					"une entrée à comportement « bouton poussoir » n'est vraie que tant qu'on la maintient enfoncée (à la souris ou avec la touche Espace) ;",
+					"une temporisation (« t1/X1/5s ») attend la durée indiquée avant de devenir vraie ;",
+					"une étape forcée (cadenas sur l'étape) garde sa valeur : relâchez le forçage par clic droit sur l'étape ;",
+					"une variable écrite par un ladder n'est vue par un grafcet qu'au cycle suivant (voir « Ordre d'exécution d'un cycle » dans la section Simulation)."
+				]
+			},
+			{
+				"title": "Comment actionner un capteur en simulation ?",
+				"intro": "Une entrée peut être pilotée de quatre façons :",
+				"items": [
+					"la table de visualisation : bouton « Tables de visualisation » de la barre inférieure ; l'entrée y prend la forme de son organe (bouton, interrupteur ou curseur) ;",
+					"une page HMI : les widgets liés à l'entrée (bouton, interrupteur...) se manipulent dans l'onglet « Simulation HMI » ;",
+					"une scène 3D : si l'entrée est liée à un capteur de la scène, c'est la scène qui la commande et elle ne peut plus être saisie à la main ;",
+					"une carte Arduino : en « Simulation avec E/S réelles », les entrées câblées sur une broche sont lues sur la carte."
+				],
+				"outro": "Voir les sections Variables (comportement d'une entrée), Simulation, Interfaces HMI, Scène 3D et Matériel (Arduino)."
+			},
+			{
+				"title": "Entrée, sortie ou mémoire : laquelle choisir ?",
+				"intro": "La zone d'une variable dit qui l'écrit :",
+				"items": [
+					"Entrée : une information qui vient de l'extérieur (bouton, capteur). Le programme ne l'écrit pas : l'analyse signale une affectation à une variable d'entrée ;",
+					"Sortie : une commande qui part vers l'extérieur (lampe, moteur, vérin). Le programme l'écrit ;",
+					"Mémoire : un état interne (drapeau, compteur, consigne), lu et écrit par le programme ;",
+					"Constante : une valeur fixée à la conception, en lecture seule."
+				],
+				"outro": "Le type dépend de la zone : les entrées et sorties logiques sont BOOL ; les entrées et sorties analogiques sont INT, WORD ou DWORD ; les mémoires et les constantes acceptent tous les types (BOOL, INT, DINT, WORD, DWORD, REAL, STRING, TIME). Pour un REAL, il faut donc une mémoire."
+			},
+			{
+				"title": "Comment faire boucler un cycle ?",
+				"intro": "Pour recommencer le cycle après la dernière étape :",
+				"items": [
+					"tracez la liaison de la dernière transition vers l'étape initiale (ou vers n'importe quelle étape précédente) : la maquette « Feu tricolore » boucle ainsi ;",
+					"si la liaison traverse tout le diagramme, utilisez un renvoi (tenant et aboutissant) pour éviter un long trait."
+				],
+				"outro": "Voir les sections Liaisons et Renvois dans Grafcet."
+			},
+			{
+				"title": "Je ne comprends pas un message d'erreur",
+				"intro": "Le texte du message dit ce qui est faux, et un clic dessus mène à l'élément concerné :",
+				"items": [
+					"pour une erreur d'expression, relisez la syntaxe des expressions dans la section Grafcet, Transitions ;",
+					"pour une erreur de structure (étape sans successeur, liaison manquante), regardez l'élément indiqué sur le canvas ;",
+					"la section Analyse décrit les familles de vérifications et donne des exemples."
+				]
+			}
 		]
 	},
 	"navHeading": "Plan du manuel",

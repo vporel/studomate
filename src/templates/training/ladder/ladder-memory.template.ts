@@ -11,7 +11,11 @@ import {
 	setMainSections,
 } from "@/templates/training/utils/ladder-dsl";
 import { createPumpSelfHoldingSection } from "./ladder-self-holding.template";
-import { output, pushButton, toggleSwitchNc } from "@/templates/training/utils/training-variables";
+import {
+	output,
+	pushButton,
+	toggleSwitchNc,
+} from "@/templates/training/utils/training-variables";
 
 function createFaultVariables(project: Project): void {
 	project.variables.push(

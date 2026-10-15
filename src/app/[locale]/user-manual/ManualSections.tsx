@@ -11,11 +11,13 @@ import HardwareSection from "./sections/HardwareSection";
 import IntroSection from "./sections/IntroSection";
 import HmiSection from "./sections/HmiSection";
 import LadderSection from "./sections/LadderSection";
+import LimitsSection from "./sections/LimitsSection";
 import ProjectsSection from "./sections/ProjectsSection";
 import Scene3dSection from "./sections/Scene3dSection";
 import ShortcutsSection from "./sections/ShortcutsSection";
 import SimulationSection from "./sections/SimulationSection";
 import ToolbarSection from "./sections/ToolbarSection";
+import TroubleshootingSection from "./sections/TroubleshootingSection";
 import VariablesSection from "./sections/VariablesSection";
 
 const isSectionOrChild = (selected: string, id: string) =>
@@ -47,6 +49,8 @@ export default function ManualSections({ selected }: { selected: string }) {
 			)}
 			{selected === "hardware" && <HardwareSection />}
 			{selected === "scene3d" && <Scene3dSection />}
+			{selected === "limits" && <LimitsSection />}
+			{selected === "troubleshooting" && <TroubleshootingSection />}
 			{selected === "shortcuts" && <ShortcutsSection />}
 		</Box>
 	);

@@ -1,6 +1,10 @@
 import type { NativeType } from "@/schemas/variable/variable.schema";
 
-export type ScenePointKind = "sensor" | "actuator";
+/**
+ * `sensor`: the scene drives an input variable. `actuator`: an output variable drives the scene.
+ * `display`: the scene shows the value of a memory variable.
+ */
+export type ScenePointKind = "sensor" | "actuator" | "display";
 
 export type ScenePointValue = boolean | number;
 

@@ -36,9 +36,7 @@ import {
 	createOrDivergenceProject,
 	createOrDivergenceSolution,
 } from "./training/grafcet/or-divergence.template";
-import {
-	createLadderReadingProject,
-} from "./training/ladder/ladder-reading.template";
+import { createLadderReadingProject } from "./training/ladder/ladder-reading.template";
 import {
 	createLadderLogicProject,
 	createLadderLogicSolution,
@@ -55,9 +53,7 @@ import {
 	createLadderMemoryProject,
 	createLadderMemorySolution,
 } from "./training/ladder/ladder-memory.template";
-import {
-	createLadderEdgesReadingProject,
-} from "./training/ladder/ladder-edges-reading.template";
+import { createLadderEdgesReadingProject } from "./training/ladder/ladder-edges-reading.template";
 import {
 	createLadderToggleProject,
 	createLadderToggleSolution,
@@ -66,9 +62,7 @@ import {
 	createLadderGateProject,
 	createLadderGateSolution,
 } from "./training/ladder/ladder-gate.template";
-import {
-	createLadderTimersReadingProject,
-} from "./training/ladder/ladder-timers-reading.template";
+import { createLadderTimersReadingProject } from "./training/ladder/ladder-timers-reading.template";
 import {
 	createLadderTimersProject,
 	createLadderTimersSolution,

@@ -179,7 +179,8 @@
 		},
 		"kinds": {
 			"sensor": "Capteur",
-			"actuator": "Actionneur"
+			"actuator": "Actionneur",
+			"display": "Affichage"
 		},
 		"variableAria": "Variable liée au point {point}",
 		"openScene": "Ouvrir la scène"

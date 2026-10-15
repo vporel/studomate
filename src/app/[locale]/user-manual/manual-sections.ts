@@ -67,6 +67,8 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 	},
 	{ id: "hardware" },
 	{ id: "scene3d" },
+	{ id: "limits" },
+	{ id: "troubleshooting" },
 	{ id: "shortcuts" },
 ];
 

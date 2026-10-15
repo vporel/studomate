@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 60" font-family="Helvetica, Arial, sans-serif" fill="none" stroke="#263238">
+	<line x1="0" y1="30" x2="30.0" y2="30" stroke-width="2" />
+	<line x1="70.0" y1="30" x2="100" y2="30" stroke-width="2" />
+	<line x1="30.0" y1="14" x2="30.0" y2="46" stroke-width="2" />
+	<line x1="70.0" y1="14" x2="70.0" y2="46" stroke-width="2" />
+	<line x1="110" y1="30" x2="140.0" y2="30" stroke-width="2" />
+	<line x1="180.0" y1="30" x2="210" y2="30" stroke-width="2" />
+	<line x1="140.0" y1="14" x2="140.0" y2="46" stroke-width="2" />
+	<line x1="180.0" y1="14" x2="180.0" y2="46" stroke-width="2" />
+	<line x1="142.0" y1="44" x2="178.0" y2="16" stroke-width="2" />
+	<line x1="220" y1="30" x2="250.0" y2="30" stroke-width="2" />
+	<line x1="290.0" y1="30" x2="320" y2="30" stroke-width="2" />
+	<line x1="250.0" y1="14" x2="250.0" y2="46" stroke-width="2" />
+	<line x1="290.0" y1="14" x2="290.0" y2="46" stroke-width="2" />
+	<text x="270.0" y="30" font-size="11" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">P</text>
+	<line x1="330" y1="30" x2="360.0" y2="30" stroke-width="2" />
+	<line x1="400.0" y1="30" x2="430" y2="30" stroke-width="2" />
+	<line x1="360.0" y1="14" x2="360.0" y2="46" stroke-width="2" />
+	<line x1="400.0" y1="14" x2="400.0" y2="46" stroke-width="2" />
+	<text x="380.0" y="30" font-size="11" text-anchor="middle" dominant-baseline="central" fill="#263238" stroke="none">N</text>
+</svg>

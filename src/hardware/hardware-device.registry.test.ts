@@ -1,3 +1,5 @@
+import { existsSync } from "fs";
+import { join } from "path";
 import { ZONE_TO_PIN_CAPABILITY } from "./hardware-device.descriptor";
 import {
 	getHardwareDevice,
@@ -24,6 +26,25 @@ describe("hardware device registry", () => {
 		for (const descriptor of descriptors) {
 			expect(getHardwareDevice(descriptor.modelId)).toBe(descriptor);
 		}
+	});
+});
+
+describe("hardware device images", () => {
+	it("points every declared image to an existing file in public/images/targets", () => {
+		for (const descriptor of listHardwareDevices()) {
+			if (!descriptor.image) continue;
+			expect(
+				existsSync(
+					join(__dirname, "../../public/images/targets", descriptor.image),
+				),
+			).toBe(true);
+		}
+	});
+
+	it("declares an image for the Arduino Uno R3", () => {
+		expect(getHardwareDevice("arduino-uno-r3")?.image).toBe(
+			"arduino-uno-r3.jpg",
+		);
 	});
 });
 

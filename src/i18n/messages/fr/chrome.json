@@ -78,5 +78,19 @@
 			"verify": "Vérification : page {done} sur {total}",
 			"doNotUnplug": "Ne débranchez pas la carte pendant l'installation."
 		}
+	},
+	"startup": {
+		"homeAria": "{name} : accueil",
+		"featuredOverline": "Découvrir avec un exemple",
+		"openSolutionAndSimulate": "Ouvrir la solution et simuler",
+		"helpPrompt": "Besoin d'aide pour démarrer ?",
+		"openManual": "Consulter le manuel utilisateur",
+		"alreadyComfortable": "Déjà à l'aise ?",
+		"createProject": "Créer un nouveau projet",
+		"openProject": "Ouvrir un projet existant"
+	},
+	"mobileGuard": {
+		"title": "Application desktop uniquement",
+		"body": "Cette application est disponible uniquement sur desktop. Veuillez y accéder depuis un ordinateur."
 	}
 }

@@ -1,6 +1,7 @@
 import type RemoteIoClient from "@/hardware/arduino/remote-io/remote-io.client";
 import { remoteIoFailureCode } from "@/hardware/arduino/remote-io/remote-io.client";
 import type { RemoteIoPlan } from "@/hardware/arduino/remote-io/remote-io-plan";
+import trackEvent from "@/ui/services/analytics";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import type HardwareLinkContext from "./hardware-link.context";
 import {
@@ -68,6 +69,7 @@ export default class BoardProgramController {
 			this.setUploadState(IDLE_HARDWARE_UPLOAD);
 			// A lost link has already been reported and reset.
 			if (!session.isCurrent(attempt)) return;
+			trackEvent("board-program-uploaded", { result: "error" });
 			notifier.programUploadFailed(remoteIoFailureCode(error));
 			if (temporary) await this.context.unlink();
 			return;
@@ -77,6 +79,7 @@ export default class BoardProgramController {
 		this.bridge.clearInputs();
 		session.plan = resolved.plan;
 		this.setBoardMode("program-running", { programPresent: true });
+		trackEvent("board-program-uploaded", { result: "ok" });
 		notifier.programUploaded();
 		if (temporary) await this.context.unlink();
 	}

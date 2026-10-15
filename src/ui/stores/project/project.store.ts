@@ -4,6 +4,7 @@ import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { planMissingVariables } from "@/3d-scenes/scene3d-wiring";
 import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
 import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
+import trackEvent from "@/ui/services/analytics";
 import { createStore } from "zustand";
 import VariablesCommandsFactory from "./factories/variables-commands.factory";
 import ProjectCommandsStackManager from "./managers/commands-stack.manager";
@@ -240,6 +241,9 @@ export const createProjectStore = () => {
 			setScene3d: (scene) => {
 				const project = get().project;
 				if (!project) return;
+				if (scene && scene.sceneId !== project.scene3d?.sceneId) {
+					trackEvent("scene-attached", { scene: scene.sceneId });
+				}
 				get().commandsStackManager.executeOperation([
 					new ProjectFieldSetCommand({
 						field: "scene3d",

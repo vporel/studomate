@@ -22,6 +22,14 @@ import FakeUnoBoard from "@tests/utils/fake-uno-board";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import type HardwareLinkNotifier from "./hardware-link.notifier";
 
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: (...args: any[]) => mockTrackEvent(...args),
+}));
+
+beforeEach(() => mockTrackEvent.mockClear());
+
 const FIRMWARE_IMAGE = Uint8Array.from({ length: 256 }, (_, i) => i);
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -1163,6 +1171,28 @@ describe("HardwareLinkManager online mode", () => {
 		await manager.unlink();
 	});
 
+	it("does not track the online mode when the user declines to start the program", async () => {
+		const { manager } = await linkedWithProgram();
+		await manager.stopProgram();
+		const online = manager.goOnline();
+		await flush();
+		manager.answerObservationStart(false);
+		await online;
+		expect(mockTrackEvent).not.toHaveBeenCalledWith(
+			"hardware-mode-entered",
+			expect.anything(),
+		);
+	});
+
+	it("tracks the online mode when the observation began", async () => {
+		const { manager } = await linkedWithProgram();
+		await manager.goOnline();
+		expect(mockTrackEvent).toHaveBeenCalledWith("hardware-mode-entered", {
+			mode: "online",
+		});
+		await manager.unlink();
+	});
+
 	it("asks before starting a stopped program, then starts it and observes it", async () => {
 		const { manager, get, board } = await linkedWithProgram();
 		await manager.stopProgram();
@@ -1407,6 +1437,118 @@ describe("HardwareLinkManager online mode", () => {
 		await manager.goOnline();
 		await flushLong(60);
 		expect(notifier.onlineLost).not.toHaveBeenCalled();
+		await manager.unlink();
+	});
+});
+
+describe("HardwareLinkManager analytics", () => {
+	it("tracks the link with the model of the board", async () => {
+		const { manager } = setup({ mode: ProjectMode.DESIGN });
+		await manager.link();
+		expect(mockTrackEvent).toHaveBeenCalledWith("hardware-linked", {
+			model: "arduino-uno-r3",
+		});
+		await manager.unlink();
+	});
+
+	it("tracks a link failure with a closed reason, never the raw message", async () => {
+		const { manager } = setup({
+			createClientError: new Error("denied: /dev/x"),
+		});
+		await manager.link();
+		expect(mockTrackEvent).toHaveBeenCalledWith("hardware-link-failed", {
+			reason: "transport",
+		});
+		expect(mockTrackEvent).not.toHaveBeenCalledWith(
+			"hardware-linked",
+			expect.anything(),
+		);
+	});
+
+	it("tracks nothing when the user dismisses the port chooser", async () => {
+		const { manager } = setup({
+			createClientError: new DOMException("none chosen", "NotFoundError"),
+		});
+		await manager.link();
+		expect(mockTrackEvent).not.toHaveBeenCalled();
+	});
+
+	it("tracks the I/O mode once the board serves its pins", async () => {
+		const { manager } = setup();
+		await manager.enterHardwareIo();
+		expect(mockTrackEvent).toHaveBeenCalledWith("hardware-mode-entered", {
+			mode: "io",
+		});
+		await manager.unlink();
+	});
+
+	it("does not track the I/O mode without a hardware target", async () => {
+		const { manager } = setup({ withTarget: false });
+		await manager.enterHardwareIo();
+		expect(mockTrackEvent).not.toHaveBeenCalledWith(
+			"hardware-mode-entered",
+			expect.anything(),
+		);
+	});
+
+	describe("firmware installation", () => {
+		const until = async (condition: () => boolean) => {
+			for (let i = 0; i < 100 && !condition(); i++) await flush();
+		};
+
+		it("tracks an accepted installation", async () => {
+			const { manager, get } = setup({
+				transport: new FakeUnoBoard(null, { firmware: "1.0.0" }) as never,
+				minFirmwareVersion: "1.0.0",
+			});
+			const linking = manager.link();
+			await until(() => get().hardwareFirmware.phase === "confirming");
+			manager.answerFirmwareInstall(true);
+			await linking;
+			expect(mockTrackEvent).toHaveBeenCalledWith("firmware-installed", {
+				outcome: "installed",
+			});
+			await manager.unlink();
+		});
+
+		it("tracks a declined installation", async () => {
+			const { manager, get } = setup({
+				transport: new FakeUnoBoard(null, { firmware: "1.0.0" }) as never,
+			});
+			const linking = manager.link();
+			await until(() => get().hardwareFirmware.phase === "confirming");
+			manager.answerFirmwareInstall(false);
+			await linking;
+			expect(mockTrackEvent).toHaveBeenCalledWith("firmware-installed", {
+				outcome: "declined",
+			});
+		});
+
+		it("tracks a failed installation", async () => {
+			const { manager, get } = setup({
+				transport: new FakeUnoBoard(
+					null,
+					{},
+					{ signature: [0, 0, 0] },
+				) as never,
+			});
+			const linking = manager.link();
+			await until(() => get().hardwareFirmware.phase === "confirming");
+			manager.answerFirmwareInstall(true);
+			await linking;
+			expect(mockTrackEvent).toHaveBeenCalledWith("firmware-installed", {
+				outcome: "failed",
+			});
+		});
+	});
+
+	it("tracks a successful program upload", async () => {
+		const { manager } = setup({ mode: ProjectMode.DESIGN });
+		await manager.link();
+		await manager.uploadProgram();
+		expect(mockTrackEvent).toHaveBeenCalledWith("board-program-uploaded", {
+			result: "ok",
+		});
 		await manager.unlink();
 	});
 });

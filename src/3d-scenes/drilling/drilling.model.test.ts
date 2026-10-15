@@ -50,7 +50,9 @@ describe("drilling model", () => {
 		it("rises back up to the top limit, never above", () => {
 			const bottom = run(DrillingModel.createState(), 10000, { down: true });
 			const risen = run(bottom, 500, { up: true });
-			expect(risen.position).toBeCloseTo(DRILL_TRAVEL - 500 * DRILL_SPEED_PER_MS);
+			expect(risen.position).toBeCloseTo(
+				DRILL_TRAVEL - 500 * DRILL_SPEED_PER_MS,
+			);
 			const top = run(risen, 10000, { up: true });
 			expect(top.position).toBe(0);
 			expect(DrillingModel.readSensors(top)).toMatchObject({ high: true });
@@ -120,7 +122,9 @@ describe("drilling model", () => {
 
 	it("ignores interactions", () => {
 		const state = DrillingModel.createState();
-		expect(DrillingModel.applyInteraction(state, undefined as never)).toBe(state);
+		expect(DrillingModel.applyInteraction(state, undefined as never)).toBe(
+			state,
+		);
 	});
 
 	it("does not mutate the previous state", () => {

@@ -19,6 +19,7 @@
 	"SCENE3D_BINDING_VARIABLE_MISSING": "The 3D scene point \"{point}\" is bound to a variable that no longer exists.",
 	"SCENE3D_SENSOR_NOT_INPUT": "The 3D scene sensor \"{point}\" is bound to variable \"{variableName}\", which is not an input.",
 	"SCENE3D_ACTUATOR_NOT_OUTPUT": "The 3D scene actuator \"{point}\" is bound to variable \"{variableName}\", which is not an output.",
+	"SCENE3D_DISPLAY_NOT_MEMORY": "The 3D scene display \"{point}\" is bound to variable \"{variableName}\", which is not a memory variable.",
 	"SCENE3D_TYPE_MISMATCH": "The 3D scene point \"{point}\" expects a {expectedType} value, but variable \"{variableName}\" is of type {variableType}.",
 	"SCENE3D_SENSOR_DUPLICATE": "Variable \"{variableName}\" is bound to several 3D scene sensors ({points}): an input can only have one source.",
 	"SCENE3D_SENSOR_ALSO_ON_PIN": "Input \"{variableName}\" is driven by the 3D scene sensor \"{point}\" but also has address {address} on the hardware target: it would have two sources.",
@@ -27,7 +28,7 @@
 
 	"GRAFCET_TOO_FEW_STEPS": "The grafcet must contain at least two steps.",
 	"GRAFCET_NO_INITIAL_STEP": "The grafcet has no initial step.",
-	"GRAFCET_MULTIPLE_INITIAL_STEPS": "The grafcet has {count} initial steps. Studomate currently supports only a single initial step (a tool limitation, not a GRAFCET rule).",
+	"GRAFCET_MULTIPLE_INITIAL_STEPS": "The grafcet has {count} initial steps. Studomate supports only a single initial step (a tool limitation, not a GRAFCET rule).",
 	"GRAFCET_DISCONNECTED_COMPONENTS": "The grafcet contains several disconnected networks (several separate cycles).",
 	"GRAFCET_CONNECTION_DANGLING_ELEMENT": "A connection references a non-existent element ({elementType} \"{elementId}\").",
 	"GRAFCET_CONNECTION_INVALID_TYPE": "Invalid connection between a \"{sourceType}\" element and a \"{targetType}\" element.",

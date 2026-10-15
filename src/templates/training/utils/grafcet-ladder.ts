@@ -116,10 +116,7 @@ export function grafcetResetSections(spec: GrafcetLadderSpec): Section[] {
 }
 
 /** Continuous action: the output is true while any of its steps is active. */
-export function grafcetOutputSection(
-	output: string,
-	steps: string[],
-): Section {
+export function grafcetOutputSection(output: string, steps: string[]): Section {
 	return section(
 		`Sortie ${output}`,
 		"Action continue : vraie tant qu'une des étapes qui la commandent est active.",

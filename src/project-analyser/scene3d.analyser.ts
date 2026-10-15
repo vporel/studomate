@@ -5,6 +5,12 @@ import { VARIABLE_TYPE_TO_NATIVE_TYPE } from "@/schemas/variable/variable.schema
 import CrossReferenceCollector from "./cross-reference/cross-reference-collector";
 import ProjectAnalyserIssue from "./project.analyser.issue";
 
+const NOT_COMPATIBLE_ZONE_CODES = {
+	sensor: "SCENE3D_SENSOR_NOT_INPUT",
+	actuator: "SCENE3D_ACTUATOR_NOT_OUTPUT",
+	display: "SCENE3D_DISPLAY_NOT_MEMORY",
+} as const;
+
 /**
  * Checks the wiring of the 3D scene of the project against the catalogue: every bound point must
  * target an existing variable of the right zone and type, and a sensor must be the only source
@@ -62,9 +68,7 @@ export default function analyseScene3d(
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",
-					point.kind === "sensor"
-						? "SCENE3D_SENSOR_NOT_INPUT"
-						: "SCENE3D_ACTUATOR_NOT_OUTPUT",
+					NOT_COMPATIBLE_ZONE_CODES[point.kind],
 					source,
 					variableParams,
 				),

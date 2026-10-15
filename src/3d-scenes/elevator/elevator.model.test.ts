@@ -41,18 +41,18 @@ describe("elevator model", () => {
 
 	describe("cabin", () => {
 		it("rises at its speed while `up` is commanded", () => {
-			const state = ElevatorModel.step(
-				ElevatorModel.createState(),
-				100,
-				{ up: true },
-			);
+			const state = ElevatorModel.step(ElevatorModel.createState(), 100, {
+				up: true,
+			});
 			expect(state.position).toBeCloseTo(100 * CABIN_SPEED_PER_MS);
 		});
 
 		it("goes back down while `down` is commanded, never below the ground floor", () => {
 			const risen = run(ElevatorModel.createState(), 1000, { up: true });
 			const lowered = run(risen, 300, { down: true });
-			expect(lowered.position).toBeCloseTo(risen.position - 300 * CABIN_SPEED_PER_MS);
+			expect(lowered.position).toBeCloseTo(
+				risen.position - 300 * CABIN_SPEED_PER_MS,
+			);
 			expect(run(lowered, 5000, { down: true }).position).toBe(0);
 		});
 
@@ -75,13 +75,25 @@ describe("elevator model", () => {
 					...ElevatorModel.createState(),
 					position: FLOOR_POSITIONS[floor],
 				});
-			expect(at(1)).toMatchObject({ floor0: false, floor1: true, floor2: false });
-			expect(at(2)).toMatchObject({ floor0: false, floor1: false, floor2: true });
+			expect(at(1)).toMatchObject({
+				floor0: false,
+				floor1: true,
+				floor2: false,
+			});
+			expect(at(2)).toMatchObject({
+				floor0: false,
+				floor1: false,
+				floor2: true,
+			});
 			const between = ElevatorModel.readSensors({
 				...ElevatorModel.createState(),
 				position: 50,
 			});
-			expect(between).toMatchObject({ floor0: false, floor1: false, floor2: false });
+			expect(between).toMatchObject({
+				floor0: false,
+				floor1: false,
+				floor2: false,
+			});
 		});
 
 		it("reports its position as an integer", () => {
@@ -157,13 +169,17 @@ describe("elevator model", () => {
 
 	it("does not change its state on an interaction", () => {
 		const state = ElevatorModel.createState();
-		expect(ElevatorModel.applyInteraction(state, undefined as never)).toBe(state);
+		expect(ElevatorModel.applyInteraction(state, undefined as never)).toBe(
+			state,
+		);
 	});
 
 	it("does not mutate the state it steps from", () => {
 		const state = ElevatorModel.createState();
 		const frozen = Object.freeze({ ...state });
-		expect(() => ElevatorModel.step(frozen, 10, { up: true, door: true })).not.toThrow();
+		expect(() =>
+			ElevatorModel.step(frozen, 10, { up: true, door: true }),
+		).not.toThrow();
 		expect(frozen).toEqual(state);
 	});
 });

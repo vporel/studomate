@@ -289,7 +289,15 @@
 			},
 			"scene3d": {
 				"title": "3D simulation scene: Studomate manual",
-				"description": "Link a virtual 3D plant (crate sorting, elevator, traffic lights) to a program running in simulation."
+				"description": "Link a virtual 3D plant (crate sorting, elevator, traffic lights, drilling) to a program running in simulation."
+			},
+			"limits": {
+				"title": "Tool limits: Studomate manual",
+				"description": "What Studomate does not do: limits of Grafcet, expressions, Arduino hardware, 3D scenes and project storage."
+			},
+			"troubleshooting": {
+				"title": "Troubleshooting: Studomate manual",
+				"description": "What to do when the simulation will not start, the grafcet stays stuck or an input does not respond: common symptoms and their causes."
 			},
 			"shortcuts": {
 				"title": "Keyboard shortcuts: Studomate manual",

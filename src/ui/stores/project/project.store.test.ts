@@ -3,6 +3,11 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import { createProjectStore } from "./project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: (...args: unknown[]) => mockTrackEvent(...args),
+}));
 jest.mock("react-toastify", () => ({ toast: { error: jest.fn() } }));
 
 /** Ouvre un projet vierge : `newProject()` n'ouvre plus que la modale, c'est `newProjectFromTemplate(null)` qui crée réellement. */
@@ -315,6 +320,22 @@ describe("createProjectStore", () => {
 			expect(store.getState().project?.scene3d).toEqual(scene);
 			expect(before.scene3d).toBeUndefined();
 			expect(store.getState().hasUnsavedChanges).toBe(true);
+		});
+
+		it("tracks the attachment of a scene, not a rebinding of the same scene nor a removal", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			mockTrackEvent.mockClear();
+
+			store.getState().setScene3d(scene);
+			expect(mockTrackEvent).toHaveBeenCalledWith("scene-attached", {
+				scene: "carton-sorting",
+			});
+
+			mockTrackEvent.mockClear();
+			store.getState().setScene3d({ ...scene, bindings: { t1: "v2" } });
+			store.getState().setScene3d(null);
+			expect(mockTrackEvent).not.toHaveBeenCalled();
 		});
 
 		it("tells the scene tab link that the scene changed", async () => {

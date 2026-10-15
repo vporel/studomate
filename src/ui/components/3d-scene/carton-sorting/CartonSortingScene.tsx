@@ -1,24 +1,19 @@
 "use client";
 
 import {
-	canPlaceCarton,
 	CARTON_Y_P2,
 	CARTON_Y_P3,
 	SPEED_PER_MS,
 	T1_LENGTH,
-	type CartonSortingInteraction,
 	type CartonSortingState,
 } from "@/3d-scenes/carton-sorting/carton-sorting.model";
 import { useFrame } from "@react-three/fiber";
-import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { type Group, type Mesh, MeshStandardMaterial } from "three";
 import type { SceneComponentProps } from "../scene-views";
 import Box from "../parts/Box";
 import ConveyorBelt from "../parts/ConveyorBelt";
-import PushButton from "../parts/PushButton";
 import PushCylinder from "../parts/PushCylinder";
-import ToggleSwitch from "../parts/ToggleSwitch";
 
 const SPEED = SPEED_PER_MS * 1000;
 /** Model units to world units. */
@@ -53,12 +48,7 @@ const sortedMaterials = {
 };
 
 /** 3D rendering of the carton sorting station from the states of its physical model. */
-export default function CartonSortingScene({
-	sample,
-	interactive,
-	send,
-}: SceneComponentProps) {
-	const t = useTranslations("scene3d.cartonSorting");
+export default function CartonSortingScene({ sample }: SceneComponentProps) {
 	const carton = useRef<Group>(null);
 	const cartonBox = useRef<Mesh>(null);
 	const cartonMaterial = useRef<MeshStandardMaterial>(null);
@@ -68,10 +58,6 @@ export default function CartonSortingScene({
 		p3: useRef(0),
 	};
 	const sortedCartons = useRef<(Group | null)[]>([]);
-	const [canPlace, setCanPlace] = useState(true);
-	const canPlaceRef = useRef(true);
-	const [liveHigh, setLiveHigh] = useState(false);
-	const liveHighRef = useRef(false);
 	const belts = useRef({ t1: false, t2t3: false });
 
 	useFrame(() => {
@@ -111,19 +97,8 @@ export default function CartonSortingScene({
 				? sortedMaterials.high
 				: sortedMaterials.low;
 		});
-		const placeable = canPlaceCarton(state);
-		if (canPlaceRef.current !== placeable) {
-			canPlaceRef.current = placeable;
-			setCanPlace(placeable);
-		}
-		if (liveHighRef.current !== state.cartonHigh) {
-			liveHighRef.current = state.cartonHigh;
-			setLiveHigh(state.cartonHigh);
-		}
 	});
 
-	const sendInteraction = (interaction: CartonSortingInteraction) =>
-		send(interaction);
 	const outputX = CHANNEL_X + CHANNEL_WIDTH / 2 + OUTPUT_LENGTH / 2;
 
 	return (
@@ -212,27 +187,6 @@ export default function CartonSortingScene({
 					<meshStandardMaterial ref={cartonMaterial} color={LOW_COLOR} />
 				</mesh>
 			</group>
-
-			{/* Console */}
-			<PushButton
-				position={[1, 0, 2.4]}
-				label={t("newCarton")}
-				disabled={!canPlace}
-				onPress={() => {
-					if (interactive && canPlace) sendInteraction({ type: "newCarton" });
-				}}
-			/>
-			<ToggleSwitch
-				position={[2.4, 0, 2.4]}
-				label={t("heightSwitch")}
-				lowLabel={t("lowMark")}
-				highLabel={t("highMark")}
-				on={liveHigh}
-				onToggle={() => {
-					if (interactive)
-						sendInteraction({ type: "setCartonHigh", high: !liveHigh });
-				}}
-			/>
 		</group>
 	);
 }

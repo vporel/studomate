@@ -31,7 +31,11 @@ export function createLinearSequenceProject(): Project {
 	const project = new Project(createRandomId(), "Séquence linéaire", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(createRandomId(), "dcy", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin1"),
 		VariableBuilder.buildLogicInput(createRandomId(), "fin2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "sortie1"),
@@ -63,19 +67,31 @@ export function createLinearSequenceSolution(): Project {
 		.expression("dcy")
 		.position(X, 110)
 		.build();
-	const e1 = new StepBuilder().id(createRandomId()).number(1).position(X, 160).build();
+	const e1 = new StepBuilder()
+		.id(createRandomId())
+		.number(1)
+		.position(X, 160)
+		.build();
 	const t1 = new TransitionBuilder()
 		.id(createRandomId())
 		.expression("fin1")
 		.position(X, 210)
 		.build();
-	const e2 = new StepBuilder().id(createRandomId()).number(2).position(X, 260).build();
+	const e2 = new StepBuilder()
+		.id(createRandomId())
+		.number(2)
+		.position(X, 260)
+		.build();
 	const t2 = new TransitionBuilder()
 		.id(createRandomId())
 		.expression("fin2")
 		.position(X, 310)
 		.build();
-	const e3 = new StepBuilder().id(createRandomId()).number(3).position(X, 360).build();
+	const e3 = new StepBuilder()
+		.id(createRandomId())
+		.number(3)
+		.position(X, 360)
+		.build();
 	const t3 = new TransitionBuilder()
 		.id(createRandomId())
 		.expression("VRAI")

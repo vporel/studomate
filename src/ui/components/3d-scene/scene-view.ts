@@ -14,6 +14,7 @@ export type SceneViewPhase =
 export type SceneViewSnapshot = {
 	phase: SceneViewPhase;
 	sceneId: string | null;
+	projectName: string | null;
 };
 
 type Lerp = (from: unknown, to: unknown, ratio: number) => unknown;
@@ -39,7 +40,11 @@ export default class SceneView {
 		EditorToSceneMessage
 	>;
 	private interpolator: StateInterpolator<unknown> | null = null;
-	private snapshot: SceneViewSnapshot = { phase: "waiting", sceneId: null };
+	private snapshot: SceneViewSnapshot = {
+		phase: "waiting",
+		sceneId: null,
+		projectName: null,
+	};
 	private lastSeenAt: number;
 	private readonly listeners = new Set<() => void>();
 	private readonly watchTimer: ReturnType<typeof setInterval>;
@@ -84,6 +89,7 @@ export default class SceneView {
 		switch (message.type) {
 			case "config":
 				this.useScene(message.sceneId);
+				this.setProjectName(message.projectName);
 				break;
 			case "state":
 				this.useScene(message.sceneId);
@@ -108,6 +114,11 @@ export default class SceneView {
 		const lerp = this.deps.getLerp(sceneId);
 		this.interpolator = lerp ? new StateInterpolator(lerp) : null;
 		this.update({ ...this.snapshot, sceneId });
+	}
+
+	private setProjectName(projectName: string): void {
+		if (this.snapshot.projectName === projectName) return;
+		this.update({ ...this.snapshot, projectName });
 	}
 
 	private setPhase(phase: SceneViewPhase): void {

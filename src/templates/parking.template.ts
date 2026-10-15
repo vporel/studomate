@@ -248,9 +248,21 @@ function buildParkingPage(): HmiPage {
 
 export function createParkingVariables(): Variable[] {
 	return [
-		VariableBuilder.buildLogicInput(createRandomId(), "dem_entree", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "dem_sortie", PUSH_BUTTON_NO_BEHAVIOR),
-		VariableBuilder.buildLogicInput(createRandomId(), "passage", PUSH_BUTTON_NO_BEHAVIOR),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dem_entree",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dem_sortie",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"passage",
+			PUSH_BUTTON_NO_BEHAVIOR,
+		),
 		VariableBuilder.buildLogicOutput(createRandomId(), "barriere"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "complet"),
 		VariableBuilder.buildMemoryInt(createRandomId(), "places"),

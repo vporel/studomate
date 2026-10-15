@@ -179,7 +179,8 @@
 		},
 		"kinds": {
 			"sensor": "Sensor",
-			"actuator": "Actuator"
+			"actuator": "Actuator",
+			"display": "Display"
 		},
 		"variableAria": "Variable bound to the point {point}",
 		"openScene": "Open the scene"

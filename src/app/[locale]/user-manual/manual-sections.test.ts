@@ -39,9 +39,27 @@ describe("manual-sections", () => {
 	it("expose une section « scene3d » sans sous-section, après « hardware » et avant « shortcuts »", () => {
 		const ids = MANUAL_SECTIONS.map((s) => s.id);
 		expect(ids.indexOf("scene3d")).toBe(ids.indexOf("hardware") + 1);
-		expect(ids.indexOf("scene3d")).toBe(ids.indexOf("shortcuts") - 1);
+		expect(ids.indexOf("scene3d")).toBeLessThan(ids.indexOf("shortcuts"));
 		expect(
 			MANUAL_SECTIONS.find((s) => s.id === "scene3d")?.children,
+		).toBeUndefined();
+	});
+
+	it("expose une section « troubleshooting » sans sous-section, après « scene3d » et avant « shortcuts »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids.indexOf("troubleshooting")).toBe(ids.indexOf("limits") + 1);
+		expect(ids.indexOf("troubleshooting")).toBe(ids.indexOf("shortcuts") - 1);
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "troubleshooting")?.children,
+		).toBeUndefined();
+	});
+
+	it("expose une section « limits » sans sous-section, après « scene3d » et avant « troubleshooting »", () => {
+		const ids = MANUAL_SECTIONS.map((s) => s.id);
+		expect(ids.indexOf("limits")).toBe(ids.indexOf("scene3d") + 1);
+		expect(ids.indexOf("limits")).toBe(ids.indexOf("troubleshooting") - 1);
+		expect(
+			MANUAL_SECTIONS.find((s) => s.id === "limits")?.children,
 		).toBeUndefined();
 	});
 

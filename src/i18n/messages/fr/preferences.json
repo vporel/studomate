@@ -8,8 +8,8 @@
 	"simulation": {
 		"heading": "Simulation",
 		"autoOpenHmi": {
-			"label": "Ouvrir automatiquement la simulation HMI",
-			"description": "À l'entrée en simulation, bascule automatiquement sur l'onglet « Simulation HMI » si le projet a au moins une page HMI."
+			"label": "Ouvrir automatiquement la vue de simulation",
+			"description": "À l'entrée en simulation, bascule automatiquement sur l'onglet « Simulation HMI » si le projet a au moins une page HMI, sinon ouvre l'onglet de la scène 3D si le projet en a une."
 		}
 	}
 }

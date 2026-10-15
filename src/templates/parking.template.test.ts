@@ -120,7 +120,9 @@ describe("parking.template", () => {
 			expect(renvois).toHaveLength(2);
 			expect(renvois.every((r) => r.data.targetStepNumber === 0)).toBe(true);
 			// L'étape 0 est rejointe uniquement par renvoi : aucune connexion ne la cible.
-			const e0 = Object.values(commande.steps).find((s) => s.data.number === 0)!;
+			const e0 = Object.values(commande.steps).find(
+				(s) => s.data.number === 0,
+			)!;
 			const versE0 = Object.values(commande.connections).filter(
 				(c) => c.target.id === e0.id,
 			);
@@ -139,7 +141,9 @@ describe("parking.template", () => {
 				...Object.values(commande.stepsReferralsSources),
 			];
 			const minX = Math.min(...elements.map((e) => e.position.x));
-			const maxX = Math.max(...elements.map((e) => e.position.x + e.size.width));
+			const maxX = Math.max(
+				...elements.map((e) => e.position.x + e.size.width),
+			);
 			// A4 portrait ≈ 210 mm ≈ 794 px à 96 dpi
 			expect(maxX - minX).toBeLessThan(794);
 		});

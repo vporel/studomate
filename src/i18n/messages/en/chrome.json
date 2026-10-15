@@ -78,5 +78,19 @@
 			"verify": "Verifying: page {done} of {total}",
 			"doNotUnplug": "Do not unplug the board during the installation."
 		}
+	},
+	"startup": {
+		"homeAria": "{name}: home",
+		"featuredOverline": "Discover with an example",
+		"openSolutionAndSimulate": "Open the solution and simulate",
+		"helpPrompt": "Need help getting started?",
+		"openManual": "Read the user manual",
+		"alreadyComfortable": "Already comfortable?",
+		"createProject": "Create a new project",
+		"openProject": "Open an existing project"
+	},
+	"mobileGuard": {
+		"title": "Desktop application only",
+		"body": "This application is only available on desktop. Please open it from a computer."
 	}
 }

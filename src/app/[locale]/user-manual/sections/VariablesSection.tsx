@@ -24,6 +24,7 @@ export default function VariablesSection() {
 				{t("typesTitle")}
 			</Typography>
 			<ManualList items={t.raw("typesItems") as string[]} />
+			<Typography mb={2}>{t("typesByZone")}</Typography>
 			<Typography mb={2}>{t("typesOutro")}</Typography>
 			<Typography variant="h5" mb={1}>
 				{t("typesCalcTitle")}
@@ -52,6 +53,7 @@ export default function VariablesSection() {
 			<Typography mb={2}>{t("managementBody1")}</Typography>
 			<Typography mb={2}>{t("managementBody2")}</Typography>
 			<Typography mb={2}>{t("managementBody3")}</Typography>
+			<Typography mb={2}>{t("managementBody4")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2} id="system-variables">

@@ -23,6 +23,12 @@ export default function IntroSection() {
 			<ManualList items={t.raw("landmarks") as string[]} />
 			<Typography mb={2}>{t("readingOrder")}</Typography>
 			<Divider sx={{ my: 2 }} />
+			<Typography variant="h4" mb={2}>
+				{t("taskMapTitle")}
+			</Typography>
+			<Typography mb={1}>{t("taskMapIntro")}</Typography>
+			<ManualList items={t.raw("taskMapItems") as string[]} />
+			<Divider sx={{ my: 2 }} />
 		</section>
 	);
 }

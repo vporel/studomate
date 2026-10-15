@@ -16,6 +16,10 @@ function sensor(id: string, suggestedMnemonic: string): ScenePointDescriptor {
 	return point(id, "sensor", "boolean", suggestedMnemonic);
 }
 
+function display(id: string, suggestedMnemonic: string): ScenePointDescriptor {
+	return point(id, "display", "number", suggestedMnemonic);
+}
+
 const CartonSortingDescriptor: SceneDescriptor = {
 	id: "carton-sorting",
 	labelKey: "cartonSorting.label",
@@ -29,6 +33,7 @@ const CartonSortingDescriptor: SceneDescriptor = {
 		actuator("p2In", "Cmd_P2_in"),
 		actuator("p3Out", "Cmd_P3_out"),
 		actuator("p3In", "Cmd_P3_in"),
+		sensor("startButton", "dcy"),
 		sensor("cartonAtStation", "cpt_psce_c"),
 		sensor("cartonHigh", "cpt_c_hte"),
 		sensor("cartonAtP2", "cpt_psce_p2"),
@@ -39,6 +44,7 @@ const CartonSortingDescriptor: SceneDescriptor = {
 		sensor("p2AtIn", "cpt_p2_in"),
 		sensor("p3AtOut", "cpt_p3_out"),
 		sensor("p3AtIn", "cpt_p3_in"),
+		display("counter", "C"),
 	],
 };
 

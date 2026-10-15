@@ -2,9 +2,10 @@
 
 import type { ProjectStoreGetFunction } from "@/ui/stores/project/project.store.types";
 
+const mockTrackEvent = jest.fn();
 jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
-	default: jest.fn(),
+	default: (...args: unknown[]) => mockTrackEvent(...args),
 }));
 
 const KEY = "studomate:3d-scene-session";
@@ -125,5 +126,44 @@ describe("createBrowserScene3dLinkHost session id", () => {
 		(await loadHost())(getStore).openWindow("a b");
 		expect(open.mock.calls[0][0]).toContain("session=a%20b");
 		expect(open.mock.calls[0][1]).toBe("studomate-3d-scene-a b");
+	});
+
+	it("tracks the opening of the scene tab with the scene id", async () => {
+		removeLocks();
+		jest.spyOn(window, "open").mockImplementation(() => ({}) as Window);
+		const store = (() => ({
+			project: { scene3d: { sceneId: "carton-sorting", bindings: {} } },
+		})) as unknown as ProjectStoreGetFunction;
+		(await loadHost())(store).openWindow("s1");
+		expect(mockTrackEvent).toHaveBeenCalledWith("scene-opened", {
+			scene: "carton-sorting",
+		});
+	});
+
+	it("reads the project name from the store, empty without a project", async () => {
+		removeLocks();
+		const withProject = (() => ({
+			project: { name: "Mon projet" },
+		})) as unknown as ProjectStoreGetFunction;
+		const without = (() => ({
+			project: null,
+		})) as unknown as ProjectStoreGetFunction;
+		const create = await loadHost();
+		expect(create(withProject).getProjectName()).toBe("Mon projet");
+		expect(create(without).getProjectName()).toBe("");
+	});
+
+	it("reports an opened tab, and tracks it", async () => {
+		removeLocks();
+		jest.spyOn(window, "open").mockImplementation(() => ({}) as Window);
+		expect((await loadHost())(getStore).openWindow("s1")).toBe(true);
+	});
+
+	it("reports a blocked tab, and does not track an opening that did not happen", async () => {
+		removeLocks();
+		jest.spyOn(window, "open").mockImplementation(() => null);
+		mockTrackEvent.mockClear();
+		expect((await loadHost())(getStore).openWindow("s1")).toBe(false);
+		expect(mockTrackEvent).not.toHaveBeenCalled();
 	});
 });

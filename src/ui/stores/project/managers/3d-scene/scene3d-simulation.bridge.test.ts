@@ -279,4 +279,31 @@ describe("Scene3dSimulationBridge", () => {
 			expect(bridge.getSnapshot()).toBeNull();
 		});
 	});
+
+	it("gives the value of a memory variable bound to a display to the model, which is no driven input", () => {
+		const { bridge } = createHarness({ counter: "v-counter", ...BINDINGS });
+		bridge.onSimulationStart();
+		const counter = new PLCVariable("v-counter", "C", "memory", "number");
+		counter.setValue(2);
+
+		bridge.onCycleEnd([counter], 100);
+
+		expect(bridge.getSnapshot()?.state).toMatchObject({ counter: 2 });
+		expect(bridge.drives("v-counter")).toBe(false);
+	});
+
+	it("drives the start button input from the operator interaction", () => {
+		const { bridge, applied } = createHarness({
+			startButton: "v-dcy",
+			...BINDINGS,
+		});
+		bridge.onSimulationStart();
+		applied.length = 0;
+
+		bridge.queueInteraction({ type: "pressStart" });
+		bridge.queueInteraction({ type: "releaseStart" });
+		bridge.onCycleEnd([], 100);
+
+		expect(applied[0]?.get("v-dcy")).toBe(true);
+	});
 });

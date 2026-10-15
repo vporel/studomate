@@ -26,172 +26,42 @@ import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
-
-/** Page HMI commune : cadre de voyants regroupés par organe, pupitre. */
-function buildCartonSortingPage(): HmiPage {
-	const page = new HmiPage(createRandomId(), "Poste de tri", true);
-	let stack = 0;
-
-	const addWidget = (
-		type: Parameters<typeof HmiWidget.create>[0],
-		x: number,
-		y: number,
-		size: { width: number; height: number },
-		data: Parameters<typeof HmiWidget.create>[4],
-		name: string,
-	) => page.addWidget(HmiWidget.create(type, x, y, size, data, stack++, name));
-
-	const label = (text: string, x: number, y: number, w = 90) =>
-		addWidget(
-			"text",
-			x,
-			y,
-			{ width: w, height: 18 },
-			{ text, style: { fontSize: 11, color: "#555555", align: "center" } },
-			`Étiquette ${text}`,
-		);
-	const voyant = (mnemonic: string, lbl: string, x: number, y: number) =>
-		addWidget(
-			"indicator",
-			x,
-			y,
-			{ width: 26, height: 26 },
-			{ variable: mnemonic, label: lbl },
-			`Voyant ${mnemonic}`,
-		);
-
-	addWidget(
-		"text",
-		44,
-		12,
-		{ width: 320, height: 24 },
-		{
-			text: "Poste de tri de caisses",
-			style: { fontSize: 16, color: "#333333", align: "left" },
-		},
-		"Titre",
-	);
-
-	// Cadre des voyants (en bas à gauche, sous le tapis), regroupés par organe
-	const vx = 40;
-	const vy = 60;
-	addWidget(
-		"rectangle",
-		vx,
-		vy,
-		{ width: 530, height: 192 },
-		{
-			style: {
-				fill: "#f6f7f8",
-				stroke: "#cfd4d8",
-				strokeWidth: 1,
-				borderRadius: 4,
-			},
-		},
-		"Cadre voyants",
-	);
-	label("Voyants", vx + 16, vy + 6, 70);
-	label("cmd +", vx + 97, vy + 26, 52);
-	label("cmd −", vx + 163, vy + 26, 52);
-	label("sorti", vx + 229, vy + 26, 52);
-	label("rentré", vx + 295, vy + 26, 52);
-	(
-		[
-			["P1", "Cmd_P1_out", "Cmd_P1_in", "cpt_p1_out", "cpt_p1_in"],
-			["P2", "Cmd_P2_out", "Cmd_P2_in", "cpt_p2_out", "cpt_p2_in"],
-			["P3", "Cmd_P3_out", "Cmd_P3_in", "cpt_p3_out", "cpt_p3_in"],
-		] as const
-	).forEach(([name, cmdOut, cmdIn, cptOut, cptIn], i) => {
-		const y = vy + 48 + i * 34;
-		label(name, vx + 16, y + 2, 34);
-		voyant(cmdOut, "", vx + 110, y);
-		voyant(cmdIn, "", vx + 176, y);
-		voyant(cptOut, "", vx + 242, y);
-		voyant(cptIn, "", vx + 308, y);
-	});
-	label("Tapis", vx + 16, vy + 154, 40);
-	voyant("Cmd_T1", "", vx + 66, vy + 150);
-	label("T1", vx + 92, vy + 154, 22);
-	voyant("Cmd_T2T3", "", vx + 124, vy + 150);
-	label("T2 / T3", vx + 150, vy + 154, 44);
-	label("Poste", vx + 212, vy + 154, 40);
-	voyant("cpt_psce_c", "", vx + 260, vy + 150);
-	label("prés.", vx + 286, vy + 154, 34);
-	voyant("cpt_c_hte", "", vx + 328, vy + 150);
-	label("haute", vx + 354, vy + 154, 38);
-	voyant("cpt_psce_p2", "", vx + 400, vy + 150);
-	label("P2", vx + 426, vy + 154, 24);
-	voyant("cpt_psce_p3", "", vx + 458, vy + 150);
-	label("P3", vx + 484, vy + 154, 24);
-
-	addWidget(
-		"text",
-		vx,
-		vy + 192 + 16,
-		{ width: 530, height: 24 },
-		{
-			text: "Ouvrez la scène 3D pour visualiser le poste en fonctionnement.",
-			style: { fontSize: 13, color: "#555555", align: "left" },
-		},
-		"Indication scène 3D",
-	);
-
-	// Pupitre
-	const colX = 620;
-	addWidget(
-		"push-button",
-		colX,
-		vy,
-		{ width: 150, height: 40 },
-		{ variable: "dcy", label: "Départ cycle" },
-		"BP départ",
-	);
-	addWidget(
-		"numeric-display",
-		colX,
-		vy + 62,
-		{ width: 150, height: 44 },
-		{ variable: "C", label: "Caisses triées", decimalPlaces: 0 },
-		"Compteur caisses",
-	);
-
-	return page;
-}
 
 /**
  * Crée un projet "Poste de tri de caisses" pré-configuré :
- * — entrée : `dcy` (départ cycle)
  * — sorties : `Cmd_T1`, `Cmd_T2T3`, `Cmd_Px_out` / `Cmd_Px_in` (vérins P1/P2/P3)
- * — capteurs en entrées (`cpt_*`), pilotés par la scène 3D « Tri de caisses »
- * — compteur `C` en mémoire
- * — scène 3D câblée sur les sorties et les capteurs, qui joue la partie opérative
- * — 1 page HMI (pupitre, compteur, voyants)
+ * — entrées : `dcy` (départ cycle) et capteurs `cpt_*`, pilotés par la scène 3D « Tri de caisses »
+ * — compteur `C` en mémoire, affiché sur le pupitre de la scène 3D
+ * — scène 3D câblée sur les sorties, les entrées et le compteur : elle joue la partie opérative
+ *   et porte le pupitre (départ cycle, compteur) et l'arrivée des caisses
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
 export function createCartonSortingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de tri de caisses", "");
 
-	const pointsOfKind = (kind: "sensor" | "actuator") =>
-		CartonSortingDescriptor.points.filter((point) => point.kind === kind);
-	const sensors = pointsOfKind("sensor").map((point) =>
-		VariableBuilder.buildLogicInput(createRandomId(), point.suggestedMnemonic),
-	);
-	const outputs = pointsOfKind("actuator").map((point) =>
-		VariableBuilder.buildLogicOutput(createRandomId(), point.suggestedMnemonic),
-	);
+	const sensors = CartonSortingDescriptor.points
+		.filter((point) => point.kind === "sensor")
+		.map((point) =>
+			VariableBuilder.buildLogicInput(
+				createRandomId(),
+				point.suggestedMnemonic,
+			),
+		);
+	const outputs = CartonSortingDescriptor.points
+		.filter((point) => point.kind === "actuator")
+		.map((point) =>
+			VariableBuilder.buildLogicOutput(
+				createRandomId(),
+				point.suggestedMnemonic,
+			),
+		);
+	const startCycle = sensors.find((sensor) => sensor.mnemonic === "dcy")!;
 	project.variables.push(
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"dcy",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
+		startCycle,
 		...outputs,
-		...sensors,
+		...sensors.filter((sensor) => sensor !== startCycle),
 	);
 	const counter = VariableBuilder.buildMemoryInt(createRandomId(), "C");
 	counter.comment = "compteur de caisses triées";
@@ -209,9 +79,6 @@ export function createCartonSortingProject(): Project {
 			]),
 		),
 	};
-
-	const page = buildCartonSortingPage();
-	project.hmiPages[page.id] = page;
 
 	return project;
 }

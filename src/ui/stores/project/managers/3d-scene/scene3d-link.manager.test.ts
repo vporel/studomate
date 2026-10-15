@@ -27,11 +27,13 @@ function createHarness() {
 	let current: Scene3dStateSnapshot | null = snapshot({ n: 0 }, "stopped");
 	let stateListener: ((s: Scene3dStateSnapshot) => void) | null = null;
 	let now = 0;
+	let projectName = "Mon projet";
 	const interactions: unknown[] = [];
-	const openWindow = jest.fn();
+	const openWindow = jest.fn(() => true);
 	const unsubscribe = jest.fn();
 	const host: Scene3dLinkHost = {
 		getScene: () => scene,
+		getProjectName: () => projectName,
 		getSnapshot: () => current,
 		subscribeState: (listener) => {
 			stateListener = listener;
@@ -62,6 +64,7 @@ function createHarness() {
 		openWindow,
 		unsubscribe,
 		emit: (s: Scene3dStateSnapshot) => stateListener!(s),
+		setProjectName: (name: string) => (projectName = name),
 		setScene: (s: Scene3d | null) => (scene = s),
 		setSnapshot: (s: Scene3dStateSnapshot | null) => (current = s),
 		advance: (ms: number) => {
@@ -82,12 +85,24 @@ describe("Scene3dLinkManager", () => {
 		expect(h.received).toEqual([{ type: "ping" }]);
 	});
 
+	it("tells whether the browser opened the window, and stays connected when it did not", () => {
+		const h = createHarness();
+		h.openWindow.mockReturnValueOnce(false);
+		expect(h.manager.open()).toBe(false);
+		expect(h.received).toEqual([{ type: "ping" }]);
+		expect(h.manager.open()).toBe(true);
+	});
+
 	it("answers hello with the configuration and the current state, also outside a simulation", () => {
 		const h = createHarness();
 		h.open();
 		h.sceneChannel.send({ type: "hello" });
 		expect(h.received).toEqual([
-			{ type: "config", sceneId: "carton-sorting" },
+			{
+				type: "config",
+				sceneId: "carton-sorting",
+				projectName: "Mon projet",
+			},
 			{ type: "state", ...snapshot({ n: 0 }, "stopped") },
 		]);
 	});
@@ -151,7 +166,25 @@ describe("Scene3dLinkManager", () => {
 		h.open();
 		h.setScene({ sceneId: "other", bindings: {} });
 		h.manager.onSceneChanged();
-		expect(h.received[0]).toEqual({ type: "config", sceneId: "other" });
+		expect(h.received[0]).toEqual({
+			type: "config",
+			sceneId: "other",
+			projectName: "Mon projet",
+		});
+	});
+
+	it("sends a new configuration when the project is renamed", () => {
+		const h = createHarness();
+		h.open();
+		h.sceneChannel.send({ type: "hello" });
+		h.received.length = 0;
+		h.setProjectName("Nouveau nom");
+		h.manager.onSceneChanged();
+		expect(h.received[0]).toEqual({
+			type: "config",
+			sceneId: "carton-sorting",
+			projectName: "Nouveau nom",
+		});
 	});
 
 	it("tracks the connection of the scene tab with pings, pongs and bye", () => {

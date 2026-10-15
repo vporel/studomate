@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function LadderSection({ selected }: { selected: string }) {
 	const t = useT("manual.ladder");
@@ -36,6 +36,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("contactsIntro")}</Typography>
 					<ManualList items={t.raw("contactsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/contacts.svg"
+						alt={t("contactsFigureAlt")}
+						width={440}
+					/>
 					<Typography mb={2}>{t("contactsOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
@@ -48,6 +53,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("coilsIntro")}</Typography>
 					<ManualList items={t.raw("coilsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/coils.svg"
+						alt={t("coilsFigureAlt")}
+						width={660}
+					/>
 					<Typography mb={2}>{t("coilsOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

@@ -21,16 +21,19 @@ describe("PROJECT_TEMPLATES — registre", () => {
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
-	it.each(LOCALES)("a un libellé et une description en %s pour chaque template", (locale) => {
-		const templates = getMessages(locale).templates as Record<
-			string,
-			{ label?: string; description?: string }
-		>;
-		for (const { id } of PROJECT_TEMPLATES) {
-			expect(templates[id]?.label).toBeTruthy();
-			expect(templates[id]?.description).toBeTruthy();
-		}
-	});
+	it.each(LOCALES)(
+		"a un libellé et une description en %s pour chaque template",
+		(locale) => {
+			const templates = getMessages(locale).templates as Record<
+				string,
+				{ label?: string; description?: string }
+			>;
+			for (const { id } of PROJECT_TEMPLATES) {
+				expect(templates[id]?.label).toBeTruthy();
+				expect(templates[id]?.description).toBeTruthy();
+			}
+		},
+	);
 
 	it("FEATURED_TEMPLATE_ID désigne une entrée existante pourvue d'une solution", () => {
 		const featured = PROJECT_TEMPLATES.find(

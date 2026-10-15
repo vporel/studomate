@@ -1,7 +1,17 @@
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
-import { coil, nf, no, or, section, setMainSections } from "@/templates/training/utils/ladder-dsl";
-import { output, toggleSwitch } from "@/templates/training/utils/training-variables";
+import {
+	coil,
+	nf,
+	no,
+	or,
+	section,
+	setMainSections,
+} from "@/templates/training/utils/ladder-dsl";
+import {
+	output,
+	toggleSwitch,
+} from "@/templates/training/utils/training-variables";
 
 export function createLadderLogicProject(): Project {
 	const project = new Project(createRandomId(), "Éclairage en va-et-vient", "");

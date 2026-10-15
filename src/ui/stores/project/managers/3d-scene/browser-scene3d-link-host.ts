@@ -70,6 +70,7 @@ export default function createBrowserScene3dLinkHost(
 	claimPageSession();
 	return {
 		getScene: () => getStoreState().project?.scene3d ?? null,
+		getProjectName: () => getStoreState().project?.name ?? "",
 		getSnapshot: () => getStoreState().simulationManager.getScene3dSnapshot(),
 		subscribeState: (listener) =>
 			getStoreState().simulationManager.subscribeScene3d(listener),
@@ -78,11 +79,15 @@ export default function createBrowserScene3dLinkHost(
 		createTransport: createBrowserSceneTransport,
 		getSessionId: claimPageSession,
 		openWindow: (sessionId) => {
-			trackEvent("scene-opened");
-			window.open(
+			const opened = window.open(
 				`${routes.scene()}?session=${encodeURIComponent(sessionId)}`,
 				`studomate-3d-scene-${sessionId}`,
 			);
+			if (!opened) return false;
+			trackEvent("scene-opened", {
+				scene: getStoreState().project?.scene3d?.sceneId,
+			});
+			return true;
 		},
 		now: () => Date.now(),
 	};

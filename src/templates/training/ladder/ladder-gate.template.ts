@@ -37,15 +37,31 @@ export function createGateCommonVariables(): Variable[] {
 }
 
 export function createLadderGateSolution(): Project {
-	const project = new Project(createRandomId(), "Portail motorisé : solution", "");
+	const project = new Project(
+		createRandomId(),
+		"Portail motorisé : solution",
+		"",
+	);
 	project.variables.push(
 		pushButton("bp_ouvrir"),
 		pushButton("bp_fermer"),
 		...createGateCommonVariables(),
 	);
 	setMainSections(project, [
-		section("Ouverture", "Ordre d'ouverture, verrouillé par la fermeture.", no("bp_ouvrir"), nf("fermer"), setCoil("ouvrir")),
-		section("Fermeture", "Ordre de fermeture, verrouillé par l'ouverture.", no("bp_fermer"), nf("ouvrir"), setCoil("fermer")),
+		section(
+			"Ouverture",
+			"Ordre d'ouverture, verrouillé par la fermeture.",
+			no("bp_ouvrir"),
+			nf("fermer"),
+			setCoil("ouvrir"),
+		),
+		section(
+			"Fermeture",
+			"Ordre de fermeture, verrouillé par l'ouverture.",
+			no("bp_fermer"),
+			nf("ouvrir"),
+			setCoil("fermer"),
+		),
 		section(
 			"Réouverture sur barrière immatérielle",
 			"Barrière immatérielle coupée pendant la fermeture : la fermeture s'arrête et le portail se rouvre.",

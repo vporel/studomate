@@ -21,6 +21,10 @@ describe("scene3d-wiring", () => {
 		]);
 	});
 
+	it("expects a memory variable for a display", () => {
+		expect(getExpectedZones("display")).toEqual(["memory"]);
+	});
+
 	it("filters candidate variables by direction and native type", () => {
 		const variables = [
 			VariableBuilder.buildLogicInput("a", "a"),
@@ -103,6 +107,35 @@ describe("scene3d-wiring", () => {
 			);
 
 			expect(plan.toCreate.some((c) => c.pointId === "up")).toBe(true);
+		});
+	});
+
+	describe("display point", () => {
+		const cartonSorting = getSceneDescriptor("carton-sorting")!;
+		const counter = cartonSorting.points.find((p) => p.id === "counter")!;
+
+		it("accepts a numeric memory variable only", () => {
+			const variables = [
+				VariableBuilder.buildMemoryInt("m", "m"),
+				VariableBuilder.buildMemoryBool("b", "b"),
+				VariableBuilder.buildAnalogOutput("o", "o"),
+				VariableBuilder.buildAnalogInput("i", "i"),
+			];
+			expect(
+				getCandidateVariables(counter, variables).map((v) => v.id),
+			).toEqual(["m"]);
+		});
+
+		it("is created as an integer memory variable, or reuses the one named like it", () => {
+			const scene: Scene3d = { sceneId: "carton-sorting", bindings: {} };
+			const created = planMissingVariables(cartonSorting, scene, []);
+			expect(
+				created.toCreate.find((c) => c.pointId === "counter")!.fields,
+			).toEqual({ mnemonic: "C", zone: "memory", type: "INT" });
+
+			const existing = VariableBuilder.buildMemoryInt("c-id", "C");
+			const reused = planMissingVariables(cartonSorting, scene, [existing]);
+			expect(reused.reused.counter).toBe("c-id");
 		});
 	});
 });

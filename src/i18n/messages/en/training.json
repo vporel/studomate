@@ -154,7 +154,7 @@
 	"a2LadderBasicsTitle": "From the relay diagram to Ladder",
 	"a2LadderBasicsBody": [
 		"Ladder (LD in IEC 61131-3) descends from the relay diagram: two vertical power rails, and between them horizontal lines carrying contacts and coils. Each line, called a **network**, is read from left to right: if the chain of contacts conducts, the coil is energised. Two contacts in series express an AND, two contacts in parallel an OR.",
-		"These contacts and coils correspond to real hardware on a control panel:\n\n<figure><img src=\"/images/training/bouton-poussoir.svg\" width=\"56\" height=\"56\" alt=\"Push button\" /><figcaption>Push button</figcaption></figure><figure><img src=\"/images/training/commutateur.svg\" width=\"56\" height=\"56\" alt=\"Selector switch\" /><figcaption>Selector switch</figcaption></figure><figure><img src=\"/images/training/voyant.svg\" width=\"56\" height=\"56\" alt=\"Pilot light\" /><figcaption>Pilot light</figcaption></figure><figure><img src=\"/images/training/arret-urgence.svg\" width=\"56\" height=\"56\" alt=\"Emergency stop\" /><figcaption>Emergency stop</figcaption></figure><figure><img src=\"/images/training/bobine-enfichable.svg\" width=\"56\" height=\"56\" alt=\"Contactor\" /><figcaption>Contactor</figcaption></figure><figure><img src=\"/images/training/bobine-automobile.svg\" width=\"56\" height=\"56\" alt=\"Mini relay\" /><figcaption>Mini relay (automotive)</figcaption></figure>",
+		"These contacts and coils correspond to real hardware on a control panel:\n\n<figure><img src=\"/training/bouton-poussoir.svg\" width=\"56\" height=\"56\" alt=\"Push button\" /><figcaption>Push button</figcaption></figure><figure><img src=\"/training/commutateur.svg\" width=\"56\" height=\"56\" alt=\"Selector switch\" /><figcaption>Selector switch</figcaption></figure><figure><img src=\"/training/voyant.svg\" width=\"56\" height=\"56\" alt=\"Pilot light\" /><figcaption>Pilot light</figcaption></figure><figure><img src=\"/training/arret-urgence.svg\" width=\"56\" height=\"56\" alt=\"Emergency stop\" /><figcaption>Emergency stop</figcaption></figure><figure><img src=\"/training/bobine-enfichable.svg\" width=\"56\" height=\"56\" alt=\"Contactor\" /><figcaption>Contactor</figcaption></figure><figure><img src=\"/training/bobine-automobile.svg\" width=\"56\" height=\"56\" alt=\"Mini relay\" /><figcaption>Mini relay (automotive)</figcaption></figure>",
 		"One difference from the relay diagram: power flows from the left rail towards the right only. In a relay diagram, current can flow in both directions within a branch; in Ladder, no backward flow is possible.",
 		"Networks run from top to bottom on every scan cycle (a reminder from module A0). The consequence is important: it is covered later in this module, with the S/R coils and the toggle switch.",
 		"Variables are designated by a meaningful mnemonic (pump, stop) rather than by an address. The standard also defines direct addressing (%I0.1 for an input, %Q0.1 for an output, %M for a memory bit), which you will meet on real PLCs."
@@ -162,7 +162,7 @@
 	"a2TheoryContactsCoilsTitle": "Contacts, coils and internal memories",
 	"a2TheoryContactsCoilsBody": [
 		"The standard symbols:\n\n- the normally open contact NO (--| |--), conducting when its variable is true\n- the normally closed contact NF (--|/|--), conducting when it is false\n- the coil (--( )--), which takes the value of the network on every scan\n- the inverted coil (--(/)--), which takes the opposite value: it is rare in practice, and must not be confused with the NF contact",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/ladder-symbols-en.svg\" width=\"400\" alt=\"Ladder symbols: NO contact, NF contact, coil, inverted coil\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/ladder-symbols-en.svg\" width=\"400\" alt=\"Ladder symbols: NO contact, NF contact, coil, inverted coil\" /></figure></div>",
 		"An internal memory (internal bit, marker) is a variable written and read by the program without ever touching the field: it is used to remember a state or to prepare a condition.",
 		"A contact can be wired in two ways:\n\n- normally open (NO): at rest the circuit is open, it closes when the button or switch is actuated\n- normally closed (NF): at rest the circuit is closed, it opens when the button or switch is actuated (this is the wiring used for example on a stop button, so that a broken wire causes a stop per EN 60204-1)",
 		"This physical wiring is independent of the type of contact chosen in the program (NO or NF) to read the variable. In Studomate, it is set on the variable through its **behavior** (push button or switch, NO or NF): the simulation accounts for it when setting the input's rest state.",
@@ -182,7 +182,7 @@
 		"A pump is started by a brief press on a push button, but must keep running once the button is released: the run command must be memorised.",
 		"A contact remembers nothing: as soon as the push button is released, the coil drops out. To memorise, a contact of the coil itself is placed in parallel with the button: once the output is true, it holds itself. This is self-holding.",
 		"Depending on where the stop contact is placed, you get set-priority (the stop is in parallel) or stop-priority (the stop is in series, after the parallel). For a machine control, stop wins: this is a requirement of EN 60204-1, and the basis of the stop-priority self-holding circuit.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/self-holding-en.svg\" width=\"380\" alt=\"Self-holding circuit: start priority and stop priority\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/self-holding-en.svg\" width=\"380\" alt=\"Self-holding circuit: start priority and stop priority\" /></figure></div>",
 		"The set-priority form will be used again in module A4, to write a GRAFCET step."
 	],
 	"a2ExerciseSelfHoldingTitle": "Exercise: pump",
@@ -198,7 +198,7 @@
 	"a2TheorySetResetTitle": "S/R coils",
 	"a2TheorySetResetBody": [
 		"An S (set) coil sets the variable to true when its network is true, and does nothing otherwise: it never clears it. An R (reset) coil sets it to false. The last network that writes the variable wins: priority therefore comes from the order of the networks. The standard defines SR (set-dominant) and RS (reset-dominant) bistables; Studomate does not offer them, but the order of S/R networks gives the same priorities.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/set-reset-en.svg\" width=\"300\" alt=\"S and R coils: the last network executed wins\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/set-reset-en.svg\" width=\"300\" alt=\"S and R coils: the last network executed wins\" /></figure></div>",
 		"Self-holding or S coil for a run command? EN 60204-1 forbids restarting when power returns: a self-holding circuit drops out on power loss, whereas an S coil on a retentive memory would restart the machine when power is restored. Studomate has no retentive memory.",
 		"Good practice (not a rule of the standard, but checked by Studomate's analysis): a normal coil is written in a single network only. With a double coil, the last network overwrites the others."
 	],
@@ -211,7 +211,7 @@
 	"a2TheoryEdgesTitle": "P and N edges",
 	"a2TheoryEdgesBody": [
 		"A NO contact stays true as long as its input is. When an action must happen only once per press, the edge must be detected: a P contact (rising edge) is true for a single scan only, when the variable goes from false to true; an N contact is true when it goes from true to false.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/edges-chronogram.svg\" width=\"340\" alt=\"Chronogram: input, P contact, N contact\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/edges-chronogram.svg\" width=\"340\" alt=\"Chronogram: input, P contact, N contact\" /></figure></div>",
 		"Each P or N contact has its own edge memory: two P contacts on the same variable therefore detect the same edge on the same scan. The edge coils (--(P)--) and (--(N)--) give the same pulse, applied to the network condition rather than to a variable.",
 		"At the vendors: on Siemens, the edge memory is explicit (a variable you provide) and must not be shared between two contacts: this is a common mistake.",
 		"In Studomate, this edge memory is generated automatically for each P or N contact: there is no variable to provide, and choosing the contact is enough."
@@ -242,7 +242,7 @@
 	"a3TheoryTimersTitle": "Timers TON, TOF and TP",
 	"a3TheoryTimersBody": [
 		"Delaying a start-up, extending a signal after release, or emitting a calibrated pulse: these three needs come up constantly on a machine, and a plain contact cannot express them. That is the role of timers. A timer block always has the same pins: IN (the monitored input), PT (the configured duration, preset time), Q (the output) and ET (the elapsed time).\n\n- **TON** (on-delay): sets its output Q to true when its input IN has been true for the duration PT; Q drops as soon as IN drops.\n- **TOF** (off-delay): follows IN on the way up, then holds Q for PT after IN drops.\n- **TP** (pulse): emits a pulse of duration PT on a rising edge of IN; it is not retriggerable, and the pulse lasts PT even if IN drops earlier.\n\nIn all three cases, ET gives the elapsed time. Durations are written with the standard literal T#5s.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/timers-chronogram.svg\" width=\"340\" alt=\"Chronogram: TON, TOF, TP\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/timers-chronogram.svg\" width=\"340\" alt=\"Chronogram: TON, TOF, TP\" /></figure></div>",
 		"A timer is an instance: it keeps its state from one scan to the next. Its condition goes through IN (in Studomate, the contacts placed in front of the block), and the block must run on every scan.",
 		"Typical uses: delay, extension, sensor filtering (a TON ignores a signal shorter than PT), movement supervision (fault if a limit switch is not reached in the expected time: mentioned here, practised in module A4).",
 		"The system time bases _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s... are square waves (50% duty cycle), like real PLCs' clock bits: wired directly to a coil, they blink a lamp with no toggle switch needed. This is the method used from here on. Two crossed TONs give the same result portably, when the PLC has no time base."
@@ -260,7 +260,7 @@
 	"a3TheoryCountersTitle": "Counters CTU, CTD and CTUD",
 	"a3TheoryCountersBody": [
 		"Counting parts on a conveyor, machine cycles, a stock level: these needs come up often, and call for a dedicated block rather than a totaliser cobbled together in Ladder. That is the role of counters. A counter block always has the same pins: PV (the preset, *preset value*, not to be confused with a timer's PT) and CV (the current value). Counting happens on a rising edge: a sensor held actuated counts only once.\n\n- **CTU** (counts up, increments): counts the rising edges of its CU input. Its output Q equals CV >= PV. An R input resets it (CV := 0).\n- **CTD** (counts down, decrements): counts the rising edges of its CD input. Its output Q equals CV <= 0. An LD input reloads it to PV (CV := PV).\n- **CTUD**: combines both counting directions in a single block.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/counter-ctu-block.svg\" width=\"220\" alt=\"CTU counter block: inputs CU, R, PV and outputs Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctd-block.svg\" width=\"220\" alt=\"CTD counter block: inputs CD, LD, PV and outputs Q, CV\" /></figure><figure><img src=\"/images/training/ladder/counter-ctud-block.svg\" width=\"260\" alt=\"CTUD counter block: inputs CU, CD, R, LD, PV and outputs QU, QD, CV\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/counter-ctu-block.svg\" width=\"220\" alt=\"CTU counter block: inputs CU, R, PV and outputs Q, CV\" /></figure><figure><img src=\"/training/ladder/counter-ctd-block.svg\" width=\"220\" alt=\"CTD counter block: inputs CD, LD, PV and outputs Q, CV\" /></figure><figure><img src=\"/training/ladder/counter-ctud-block.svg\" width=\"260\" alt=\"CTUD counter block: inputs CU, CD, R, LD, PV and outputs QU, QD, CV\" /></figure></div>",
 		"On a CTUD, R takes priority over LD when both are active, and only CU is wired to the rail: CD, R and LD are entered directly on the pins, like contacts placed in front of them. Its outputs are QU (CV >= PV) and QD (CV <= 0), and simultaneous edges on CU and CD cancel each other."
 	],
 	"a3ExerciseCountersTitle": "Exercise: counting",
@@ -293,7 +293,7 @@
 	"a3TheoryStructureTitle": "Structuring a program",
 	"a3TheoryStructureBody": [
 		"A program is split up: the Main calls subprograms, one per function of the machine (faults, run, counting...), through the call block. The standard instead organises a program into POUs (PROGRAM, FUNCTION_BLOCK, FUNCTION) assigned to tasks; the Main and the call block belong to vendor practice.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/program-structure-en.svg\" width=\"340\" alt=\"Main calling subprograms\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/program-structure-en.svg\" width=\"340\" alt=\"Main calling subprograms\" /></figure></div>",
 		"A program that is never called does not run: the analysis reports it. Rule for this level: call subprograms unconditionally. A subprogram that is not called misses edges, and its timers are no longer updated reliably (they freeze in Studomate, behaviour varies by vendor).",
 		"At the vendors: OB1 and FC on Siemens, SR sections on Schneider, MainRoutine and JSR on Rockwell."
 	],
@@ -314,7 +314,7 @@
 	"a4TheoryStepsLadderBody": [
 		"Let us take the gate from module A2 again, this time driven by a single-button remote: open, close or stop depending on the state. Written as combinational logic, such a sequence quickly becomes unreadable. A method is needed.",
 		"A GRAFCET step is a memory: Xn = (Xn-1 AND Rn-1) + Xn AND NOT Rn, where Rn-1 and Rn are the receptivities of the upstream and downstream transitions. It is activated when the upstream transition is crossed (its upstream step Xn-1 active AND its receptivity Rn-1 true), and deactivated when its downstream transition is crossed. This is the set-priority self-holding of module A2, and this priority to activation is exactly rule 5 of GRAFCET (activation wins over deactivation). Tn-1 = Xn-1 AND Rn-1 and Tn = Xn AND Rn denote the crossing of each transition, which shortens the equation to Xn = Tn-1 + Xn AND NOT Tn: this is the notation used for the rest of the module.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/step-memory-en.svg\" width=\"380\" alt=\"GRAFCET step and its equivalent Ladder network\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/step-memory-en.svg\" width=\"380\" alt=\"GRAFCET step and its equivalent Ladder network\" /></figure></div>",
 		"You will sometimes meet another method: Xn = Xn-1 AND Rn-1 + Xn AND NOT Xn+1, where the step is deactivated by the next step, written as one self-holding per step, network after network. This is the next-step method: the next exercise shows its limits."
 	],
 	"a4ExerciseGrafcetNaiveTitle": "Exercise: diagnose the next-step method",
@@ -325,7 +325,7 @@
 	"a4TheoryMethodLadderTitle": "The three-block method",
 	"a4TheoryMethodLadderBody": [
 		"The method consists of three blocks of networks, in this order:\n\n1. the crossing conditions Tn = Xn AND Rn, all computed before any evolution (rule 4, simultaneous crossing)\n2. the evolution of the steps: all the resets of all the transitions, then all the sets, so that activation wins (rule 5)\n3. the outputs, limited here to continuous actions: the OR of the steps that command them, in a single network",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/three-blocks-method-en.svg\" width=\"300\" alt=\"The three blocks of networks, in order\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/three-blocks-method-en.svg\" width=\"300\" alt=\"The three blocks of networks, in order\" /></figure></div>",
 		"Counter-example: handling each transition one after another (its resets then its sets) leaves deactivated a step that is activated by one transition and deactivated by another written further down. The S and R coils write the same memory as the equation Xn = Tn-1 + Xn AND NOT Tn, split over two networks instead of one, which makes each transition readable.",
 		"The initial step is activated on the first scan with the classic arrangement: an init memory, false at start-up, activates the initial step then latches. Studomate also offers the system variable _SYS_FIRST_SCAN, equivalent to the first-scan bit of real PLCs.",
 		"Two differences from the standard. It allows transient evolution (cascading crossings until stability); this method crosses at most one transition per branch and per scan, like Studomate's GRAFCET and real PLCs. And the standard knows the edge receptivity (↑a): it is implemented with a P contact in the crossing condition.",
@@ -344,7 +344,7 @@
 	"a4TheoryTimedActionsLadderBody": [
 		"A delay in a receptivity (5s/X10 in the standard notation) becomes a TON whose IN is the step and whose Q enters the crossing condition. In Studomate, the syntax is t1/X10/5s, close to the old French notation T/X10/5s (NF C 03-190), still present in many textbooks.",
 		"Delayed and time-limited actions (IEC 60848) are different from a delay in a receptivity: a TON on the step, whose Q (delayed action) or NOT Q (limited action) enters the action condition.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/timed-action-en.svg\" width=\"340\" alt=\"TON on a step: timed receptivity and delayed action\" /></figure></div>",
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/timed-action-en.svg\" width=\"340\" alt=\"TON on a step: timed receptivity and delayed action\" /></figure></div>",
 		"Finally, supervising a movement step, announced in module A3: a TON on the step, whose Q signals a fault if the receptivity is not crossed in time."
 	],
 	"a4SynthesisDrillingTitle": "Synthesis: drilling station",
@@ -356,7 +356,7 @@
 	"a4TheoryDivergencesLadderBody": [
 		"OR divergence: one crossing condition per branch. If two receptivities are true at the same time, the method activates both branches (compliant with rule 4, but almost always a design error: the standard does not require exclusivity, but it must be guaranteed). OR convergence: the downstream step is activated by either transition (Xn = T1 + T2 + ...). Step skipping and sequence loops are special cases of OR divergence.",
 		"AND divergence: one transition activates several steps. AND convergence: the transition requires all upstream steps, and deactivates them all.",
-		"<div style=\"text-align:center\"><figure><img src=\"/images/training/ladder/divergences-en.svg\" width=\"360\" alt=\"OR and AND divergence/convergence\" /></figure></div>"
+		"<div style=\"text-align:center\"><figure><img src=\"/training/ladder/divergences-en.svg\" width=\"360\" alt=\"OR and AND divergence/convergence\" /></figure></div>"
 	],
 	"a4ExerciseGrafcetOrDivergenceTitle": "Exercise: OR divergence",
 	"a4ExerciseGrafcetOrDivergenceBody": [

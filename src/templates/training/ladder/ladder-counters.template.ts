@@ -48,7 +48,12 @@ export function createLadderCountersSolution(): Project {
 			no("capteur_piece"),
 			counter("CTU", "cpt_pieces", { control: "raz", pv: `${PIECES_PRESET}` }),
 		),
-		section("Convoyeur", "Arrêt à la présélection.", nf("cpt_pieces.Q"), coil("convoyeur")),
+		section(
+			"Convoyeur",
+			"Arrêt à la présélection.",
+			nf("cpt_pieces.Q"),
+			coil("convoyeur"),
+		),
 		section(
 			"Zone tampon",
 			"Le capteur d'entrée compte, le capteur de sortie décompte.",
@@ -60,13 +65,26 @@ export function createLadderCountersSolution(): Project {
 				pv: `${BUFFER_CAPACITY}`,
 			}),
 		),
-		section("Tampon plein", "QU vaut CV >= PV.", no("tampon.QU"), coil("tampon_plein")),
-		section("Tampon vide", "QD vaut CV <= 0.", no("tampon.QD"), coil("tampon_vide")),
+		section(
+			"Tampon plein",
+			"QU vaut CV >= PV.",
+			no("tampon.QU"),
+			coil("tampon_plein"),
+		),
+		section(
+			"Tampon vide",
+			"QD vaut CV <= 0.",
+			no("tampon.QD"),
+			coil("tampon_vide"),
+		),
 		section(
 			"Stock de pièces",
 			"Le CTD est chargé à PV par LD et décompte à chaque pièce prélevée.",
 			no("capteur_prelevement"),
-			counter("CTD", "stock", { control: "charge_stock", pv: `${STOCK_INITIAL}` }),
+			counter("CTD", "stock", {
+				control: "charge_stock",
+				pv: `${STOCK_INITIAL}`,
+			}),
 		),
 		section("Stock vide", "Q vaut CV <= 0.", no("stock.Q"), coil("stock_vide")),
 	]);

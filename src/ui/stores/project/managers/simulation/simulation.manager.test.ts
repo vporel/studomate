@@ -22,6 +22,11 @@ import { stubLocalStorage } from "@tests/utils/local-storage-stub";
 import SimulationManager from "./simulation.manager";
 import SimulationNotifier from "./simulation.notifier";
 
+const mockTrackEvent = jest.fn();
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: (...args: unknown[]) => mockTrackEvent(...args),
+}));
 jest.mock("@/persistence/preferences.storage", () => ({
 	...jest.requireActual("@/persistence/preferences.storage"),
 	getAutoOpenHmiSimulationOnStart: jest.fn(() => true),
@@ -36,6 +41,7 @@ function stubNotifier(): SimulationNotifier {
 		simulationStarting: jest.fn(),
 		simulationCouldNotStart: jest.fn(),
 		simulationCrashed: jest.fn(),
+		scene3dOpenBlocked: jest.fn(),
 	};
 }
 
@@ -62,6 +68,7 @@ function makeStore(project: ReturnType<typeof ProjectFactory.create>) {
 			openHmiSimulationPageIfAny: jest.fn(),
 			closeHmiSimulationPage: jest.fn(),
 		},
+		scene3dLinkManager: { open: jest.fn(() => true) },
 		hardwareLink: { status: "disconnected", drivenInputIds: [] },
 		hardwareLinkManager: {
 			onSimulationStart: jest.fn(),
@@ -262,6 +269,102 @@ describe("SimulationManager", () => {
 			).not.toHaveBeenCalled();
 
 			manager.setDesignMode();
+		});
+	});
+
+	describe("setSimulationMode() — vue ouverte à l'entrée en simulation", () => {
+		afterEach(() => {
+			(getAutoOpenHmiSimulationOnStart as jest.Mock).mockReturnValue(true);
+		});
+
+		function start(options: { hmiPage?: boolean; sceneId?: string } = {}) {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			if (options.sceneId) {
+				project.scene3d = { sceneId: options.sceneId, bindings: {} };
+			}
+			const { get, set } = makeStore(project);
+			(
+				get().hmiManager.openHmiSimulationPageIfAny as jest.Mock
+			).mockReturnValue(Boolean(options.hmiPage));
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.setSimulationMode();
+			const opened = {
+				hmi: get().hmiManager.openHmiSimulationPageIfAny as jest.Mock,
+				scene: get().scene3dLinkManager.open as jest.Mock,
+			};
+			manager.setDesignMode();
+			return opened;
+		}
+
+		it("ouvre la page HMI, et pas la scène 3D, quand le projet a les deux", () => {
+			const opened = start({ hmiPage: true, sceneId: "carton-sorting" });
+			expect(opened.hmi).toHaveBeenCalledTimes(1);
+			expect(opened.scene).not.toHaveBeenCalled();
+		});
+
+		it("ouvre la scène 3D quand le projet n'a pas de page HMI", () => {
+			const opened = start({ sceneId: "carton-sorting" });
+			expect(opened.scene).toHaveBeenCalledTimes(1);
+		});
+
+		it("signale une ouverture bloquée par le navigateur, et permet de la retenter", () => {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			project.scene3d = { sceneId: "carton-sorting", bindings: {} };
+			const { get, set } = makeStore(project);
+			const open = get().scene3dLinkManager.open as jest.Mock;
+			open.mockReturnValueOnce(false);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			manager.setDesignMode();
+
+			expect(notifier.scene3dOpenBlocked).toHaveBeenCalledTimes(1);
+			const retry = (notifier.scene3dOpenBlocked as jest.Mock).mock
+				.calls[0][0] as () => void;
+			retry();
+			expect(open).toHaveBeenCalledTimes(2);
+		});
+
+		it("ne signale rien quand la scène s'est ouverte", () => {
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create(
+				[VariableFactory.createLogicInput("I0")],
+				[grafcet],
+			);
+			project.scene3d = { sceneId: "carton-sorting", bindings: {} };
+			const { get, set } = makeStore(project);
+			const notifier = stubNotifier();
+			const manager = new SimulationManager(set, get, notifier);
+
+			manager.setSimulationMode();
+			manager.setDesignMode();
+
+			expect(notifier.scene3dOpenBlocked).not.toHaveBeenCalled();
+		});
+
+		it("n'ouvre rien sans page HMI ni scène 3D", () => {
+			const opened = start();
+			expect(opened.scene).not.toHaveBeenCalled();
+		});
+
+		it("n'ouvre pas une scène 3D inconnue de cette version", () => {
+			const opened = start({ sceneId: "scene-from-the-future" });
+			expect(opened.scene).not.toHaveBeenCalled();
+		});
+
+		it("n'ouvre pas la scène 3D quand la préférence est désactivée", () => {
+			(getAutoOpenHmiSimulationOnStart as jest.Mock).mockReturnValue(false);
+			const opened = start({ sceneId: "carton-sorting" });
+			expect(opened.scene).not.toHaveBeenCalled();
 		});
 	});
 
@@ -1141,6 +1244,16 @@ describe("SimulationManager", () => {
 				manager.setSimulationMode();
 				return { get, manager };
 			}
+
+			it("signale la scène 3D et l'absence de matériel dans simulation-started", () => {
+				mockTrackEvent.mockClear();
+				const { manager } = startWithScene();
+				expect(mockTrackEvent).toHaveBeenCalledWith(
+					"simulation-started",
+					expect.objectContaining({ hardware: false, scene3d: true }),
+				);
+				manager.setDesignMode();
+			});
 
 			it("donne au PLC les capteurs initiaux de la scène dès l'entrée en simulation", () => {
 				const { get, manager } = startWithScene();

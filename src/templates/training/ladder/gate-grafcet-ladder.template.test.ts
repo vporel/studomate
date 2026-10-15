@@ -23,7 +23,12 @@ describe("gate-grafcet-ladder.template", () => {
 	it("l'énoncé n'embarque aucun GRAFCET ni programme de commande", () => {
 		const project = createGateGrafcetLadderProject();
 		expect(project.variables.map((v) => v.mnemonic)).toEqual(
-			expect.arrayContaining(["telecommande", "arret", "barriere_immaterielle", "X0"]),
+			expect.arrayContaining([
+				"telecommande",
+				"arret",
+				"barriere_immaterielle",
+				"X0",
+			]),
 		);
 		expect(project.main.sections[0].elements).toHaveLength(0);
 	});

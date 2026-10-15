@@ -155,18 +155,20 @@ export default class HmiManager {
 
 	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir
 	 * `Project.getMainHmiPage`) — sans effet si le projet n'a aucune page HMI. Appelé à l'entrée en
-	 * simulation (voir `SimulationManager.setSimulationMode`). */
-	openHmiSimulationPageIfAny(): void {
+	 * simulation (voir `SimulationManager.setSimulationMode`). Renvoie `true` si l'onglet a été
+	 * ouvert. */
+	openHmiSimulationPageIfAny(): boolean {
 		const project = this.getStoreState().project;
-		if (!project) return;
+		if (!project) return false;
 		const mainPage = project.getMainHmiPage();
-		if (!mainPage) return;
+		if (!mainPage) return false;
 		this.setStoreState(() => ({ hmiSimulationActivePageId: mainPage.id }));
 		this.getStoreState().pagesManager.openPage({
 			id: HMI_SIMULATION_PAGE_ID,
 			type: "hmi-simulation",
 			title: "Simulation HMI",
 		});
+		return true;
 	}
 
 	/** Ferme l'onglet "Simulation HMI" — appelé à la sortie de simulation (voir

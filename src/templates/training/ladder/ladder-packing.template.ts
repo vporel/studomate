@@ -34,7 +34,11 @@ export function createLadderPackingProject(): Project {
  * and goes out when the fault has disappeared.
  */
 export function createLadderPackingSolution(): Project {
-	const project = new Project(createRandomId(), "Mise en caisse : solution", "");
+	const project = new Project(
+		createRandomId(),
+		"Mise en caisse : solution",
+		"",
+	);
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -50,12 +54,25 @@ export function createLadderPackingSolution(): Project {
 
 	const faultAndStart = project.createLadder("Défaut et marche");
 	faultAndStart.sections = [
-		section("Mémoire de défaut", "Le relais thermique est câblé à ouverture : son déclenchement est un front descendant.", falling("thermique"), setCoil("defaut_mem")),
-		section("Acquittement", "L'acquittement efface le clignotement, même si le défaut est encore présent.", no("acquit"), resetCoil("defaut_mem")),
+		section(
+			"Mémoire de défaut",
+			"Le relais thermique est câblé à ouverture : son déclenchement est un front descendant.",
+			falling("thermique"),
+			setCoil("defaut_mem"),
+		),
+		section(
+			"Acquittement",
+			"L'acquittement efface le clignotement, même si le défaut est encore présent.",
+			no("acquit"),
+			resetCoil("defaut_mem"),
+		),
 		section(
 			"Voyant de défaut",
 			"Clignotant tant que le défaut n'est pas acquitté, fixe s'il est acquitté mais présent. Une base de temps système est un signal carré, directement utilisable pour clignoter.",
-			or([no("defaut_mem"), no("_SYS_TB_500ms")], [nf("thermique"), nf("defaut_mem")]),
+			or(
+				[no("defaut_mem"), no("_SYS_TB_500ms")],
+				[nf("thermique"), nf("defaut_mem")],
+			),
 			coil("voyant_defaut"),
 		),
 		section(
@@ -66,7 +83,13 @@ export function createLadderPackingSolution(): Project {
 			no("thermique"),
 			coil("marche_mem"),
 		),
-		section("Convoyeur", "Arrêt à la présélection du compteur de pièces.", no("marche_mem"), nf("cpt_pieces.Q"), coil("convoyeur")),
+		section(
+			"Convoyeur",
+			"Arrêt à la présélection du compteur de pièces.",
+			no("marche_mem"),
+			nf("cpt_pieces.Q"),
+			coil("convoyeur"),
+		),
 	];
 
 	const counting = project.createLadder("Comptage");
@@ -75,17 +98,29 @@ export function createLadderPackingSolution(): Project {
 			"Comptage des pièces",
 			"Le CTU compte sur front du capteur.",
 			no("capteur_piece"),
-			counter("CTU", "cpt_pieces", { control: "raz_comptage", pv: `${PACKING_PRESET}` }),
+			counter("CTU", "cpt_pieces", {
+				control: "raz_comptage",
+				pv: `${PACKING_PRESET}`,
+			}),
 		),
 	];
 
 	const boxChange = project.createLadder("Changement de caisse");
 	boxChange.sections = [
-		section("Temps de changement", "Le TON mesure le changement de caisse.", no("cpt_pieces.Q"), timer("TON", "t_caisse", "T#5s")),
-		section("Remise à zéro", "Redémarrage automatique : le compteur repart de zéro.", no("t_caisse.Q"), coil("raz_comptage")),
+		section(
+			"Temps de changement",
+			"Le TON mesure le changement de caisse.",
+			no("cpt_pieces.Q"),
+			timer("TON", "t_caisse", "T#5s"),
+		),
+		section(
+			"Remise à zéro",
+			"Redémarrage automatique : le compteur repart de zéro.",
+			no("t_caisse.Q"),
+			coil("raz_comptage"),
+		),
 	];
 
 	callProgramsFromMain(project, [faultAndStart, counting, boxChange]);
 	return project;
 }
-

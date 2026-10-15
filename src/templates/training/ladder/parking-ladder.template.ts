@@ -80,7 +80,13 @@ function createBase(name: string): Project {
 	signalling.sections = grafcetSections(PARKING_SIGNALLING_SPEC, [
 		{ variable: "complet", steps: ["S1"] },
 	]);
-	project.main.sections = [section("Signalisation", "GRAFCET de signalisation, fourni.", callProgram(signalling.id))];
+	project.main.sections = [
+		section(
+			"Signalisation",
+			"GRAFCET de signalisation, fourni.",
+			callProgram(signalling.id),
+		),
+	];
 	return project;
 }
 

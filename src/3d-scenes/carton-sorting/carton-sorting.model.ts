@@ -18,6 +18,11 @@ export const CYLINDER_STROKES = {
 } as const;
 /** Speed of every moving part, in model units per ms (60 units per second). */
 export const SPEED_PER_MS = 0.06;
+/**
+ * Minimum time the start button reads as pressed, in simulated ms: a click shorter than a PLC
+ * cycle is still seen by the next scan.
+ */
+export const START_MIN_PRESS_MS = 300;
 /** Half-width of the detection window of the carton sensors along the channel. */
 const SENSOR_WINDOW = 8;
 
@@ -48,6 +53,14 @@ export interface CartonSortingState {
 	/** Height selected for the next carton, like the operator's switch. */
 	cartonHigh: boolean;
 	sortedCartons: SortedCarton[];
+	/** The operator holds the start button down. */
+	startHeld: boolean;
+	/** Remaining time the start button still reads as pressed after a click. */
+	startHoldMs: number;
+	/** Value of the carton counter variable; null while it is not bound or unknown. */
+	counter: number | null;
+	/** Commands the PLC gives to the cylinders in the last cycle. */
+	commands: Record<CylinderCommand, boolean>;
 	/** Conveyor T1 is driven. */
 	t1Running: boolean;
 	/** Conveyors T2/T3 are driven. */
@@ -55,9 +68,13 @@ export interface CartonSortingState {
 }
 
 export type CartonSortingInteraction =
-	{ type: "newCarton" } | { type: "setCartonHigh"; high: boolean };
+	| { type: "newCarton" }
+	| { type: "setCartonHigh"; high: boolean }
+	| { type: "pressStart" }
+	| { type: "releaseStart" };
 
 type CylinderKey = keyof CartonSortingState["cylinders"];
+export type CylinderCommand = `${CylinderKey}${"Out" | "In"}`;
 
 function moveCylinder(
 	position: number,
@@ -70,6 +87,11 @@ function moveCylinder(
 	if (out) next += distance;
 	if (back) next -= distance;
 	return clamp(next, 0, stroke);
+}
+
+/** What the PLC reads on the start button input. */
+export function isStartPressed(state: CartonSortingState): boolean {
+	return state.startHeld || state.startHoldMs > 0;
 }
 
 /**
@@ -140,6 +162,17 @@ const CartonSortingModel: SceneModel<
 			cylinders: { p1: 0, p2: 0, p3: 0 },
 			cartonHigh: false,
 			sortedCartons: [],
+			startHeld: false,
+			startHoldMs: 0,
+			counter: null,
+			commands: {
+				p1Out: false,
+				p1In: false,
+				p2Out: false,
+				p2In: false,
+				p3Out: false,
+				p3In: false,
+			},
 			t1Running: false,
 			t2t3Running: false,
 		};
@@ -152,6 +185,16 @@ const CartonSortingModel: SceneModel<
 			cylinders: { ...state.cylinders },
 			t1Running: actuators.t1 === true,
 			t2t3Running: actuators.t2t3 === true,
+			commands: {
+				p1Out: actuators.p1Out === true,
+				p1In: actuators.p1In === true,
+				p2Out: actuators.p2Out === true,
+				p2In: actuators.p2In === true,
+				p3Out: actuators.p3Out === true,
+				p3In: actuators.p3In === true,
+			},
+			startHoldMs: Math.max(0, state.startHoldMs - dtMs),
+			counter: typeof actuators.counter === "number" ? actuators.counter : null,
 		};
 
 		(["p1", "p2", "p3"] as CylinderKey[]).forEach((key) => {
@@ -204,6 +247,7 @@ const CartonSortingModel: SceneModel<
 	readSensors(state): ScenePointValues {
 		const atStation = state.cartonPresent && state.cartonPos >= T1_LENGTH;
 		return {
+			startButton: isStartPressed(state),
 			cartonAtStation: atStation,
 			cartonHigh: atStation && state.cartonTall,
 			cartonAtP2: isStoppedAt(state, CARTON_Y_P2),
@@ -220,6 +264,12 @@ const CartonSortingModel: SceneModel<
 	applyInteraction(state, interaction) {
 		if (interaction.type === "setCartonHigh") {
 			return { ...state, cartonHigh: interaction.high };
+		}
+		if (interaction.type === "pressStart") {
+			return { ...state, startHeld: true, startHoldMs: START_MIN_PRESS_MS };
+		}
+		if (interaction.type === "releaseStart") {
+			return { ...state, startHeld: false };
 		}
 		if (!canPlaceCarton(state)) return state;
 		return {

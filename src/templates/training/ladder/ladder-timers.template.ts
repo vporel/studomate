@@ -16,7 +16,11 @@ import {
 } from "@/templates/training/utils/training-variables";
 
 export function createLadderTimersProject(): Project {
-	const project = new Project(createRandomId(), "Démarrage étoile-triangle", "");
+	const project = new Project(
+		createRandomId(),
+		"Démarrage étoile-triangle",
+		"",
+	);
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -45,7 +49,12 @@ export function createLadderTimersSolution(): Project {
 			nf("arret"),
 			coil("km_ligne"),
 		),
-		section("Temps de démarrage", "Le TON mesure la durée en étoile.", no("km_ligne"), timer("TON", "t_etoile", "T#5s")),
+		section(
+			"Temps de démarrage",
+			"Le TON mesure la durée en étoile.",
+			no("km_ligne"),
+			timer("TON", "t_etoile", "T#5s"),
+		),
 		section(
 			"Étoile",
 			"Étoile pendant le démarrage, verrouillé par le triangle.",
@@ -82,7 +91,12 @@ export function createLadderTimersSolution(): Project {
 			no("t_phase_basse.Q"),
 			timer("TON", "t_phase_haute", "T#1s"),
 		),
-		section("Voyant", "Le voyant suit la phase allumée.", no("t_phase_basse.Q"), coil("voyant")),
+		section(
+			"Voyant",
+			"Le voyant suit la phase allumée.",
+			no("t_phase_basse.Q"),
+			coil("voyant"),
+		),
 	]);
 	return project;
 }

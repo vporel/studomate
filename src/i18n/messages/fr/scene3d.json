@@ -1,5 +1,6 @@
 {
 	"title": "Scène 3D",
+	"titleWithProject": "{project} : scène 3D",
 	"status": {
 		"waiting": "En attente de l'éditeur",
 		"stopped": "Simulation arrêtée : visualisation seule, les commandes sont sans effet",
@@ -16,6 +17,20 @@
 		"heightSwitch": "Hauteur de la caisse",
 		"lowMark": "Basse",
 		"highMark": "Haute",
+		"console": "Pupitre",
+		"feeder": "Arrivée des caisses",
+		"startCycle": "Départ cycle",
+		"sortedCounter": "Caisses triées",
+		"lamps": {
+			"cmdOut": "cmd +",
+			"cmdIn": "cmd −",
+			"atOut": "sorti",
+			"atIn": "rentré",
+			"belts": "Tapis",
+			"station": "Poste",
+			"present": "prés.",
+			"high": "haute"
+		},
 		"points": {
 			"t1": "Tapis T1",
 			"t2t3": "Tapis T2 / T3",
@@ -25,6 +40,8 @@
 			"p2In": "P2 rentrer",
 			"p3Out": "P3 sortir",
 			"p3In": "P3 rentrer",
+			"startButton": "Départ cycle",
+			"counter": "Compteur de caisses triées",
 			"cartonAtStation": "Caisse présente au poste",
 			"cartonHigh": "Caisse haute",
 			"cartonAtP2": "Caisse au niveau de P2",

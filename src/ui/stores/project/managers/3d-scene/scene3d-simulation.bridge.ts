@@ -23,7 +23,7 @@ type ActiveScene = {
 	stepper: SceneStepper<unknown, unknown>;
 	/** Variable id → sensor point id. */
 	sensorByVariableId: Map<string, string>;
-	/** Variable id → actuator point id (the last point bound to a variable wins). */
+	/** Variable id → actuator or display point id (the last point bound to a variable wins). */
 	actuatorPointByVariableId: Map<string, string>;
 	lastSensors: Map<string, boolean | number>;
 };

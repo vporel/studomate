@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 import { OG_IMAGES, OG_IMAGE_PATH } from "../og-image";
 import routes from "../routes";
 
-const title = `Application ${APP_NAME} : GRAFCET, Ladder et HMI en ligne`;
+const title = `${APP_NAME} : GRAFCET, Ladder et HMI en ligne`;
 
 export const viewport = rootViewport;
 

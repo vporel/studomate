@@ -4,7 +4,7 @@ export type SceneSimulationStatus = "stopped" | "running" | "paused";
 
 /** Editor tab → scene tab. */
 export type EditorToSceneMessage =
-	| { type: "config"; sceneId: string }
+	| { type: "config"; sceneId: string; projectName: string }
 	| {
 			type: "state";
 			sceneId: string;

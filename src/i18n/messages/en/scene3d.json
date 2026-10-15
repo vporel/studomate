@@ -1,5 +1,6 @@
 {
 	"title": "3D scene",
+	"titleWithProject": "{project}: 3D scene",
 	"status": {
 		"waiting": "Waiting for the editor",
 		"stopped": "Simulation stopped: view only, controls have no effect",
@@ -16,6 +17,20 @@
 		"heightSwitch": "Carton height",
 		"lowMark": "Low",
 		"highMark": "High",
+		"console": "Console",
+		"feeder": "Carton feed",
+		"startCycle": "Start cycle",
+		"sortedCounter": "Sorted cartons",
+		"lamps": {
+			"cmdOut": "cmd +",
+			"cmdIn": "cmd −",
+			"atOut": "out",
+			"atIn": "in",
+			"belts": "Belts",
+			"station": "Station",
+			"present": "pres.",
+			"high": "high"
+		},
 		"points": {
 			"t1": "Conveyor T1",
 			"t2t3": "Conveyor T2 / T3",
@@ -25,6 +40,8 @@
 			"p2In": "P2 retract",
 			"p3Out": "P3 extend",
 			"p3In": "P3 retract",
+			"startButton": "Start cycle",
+			"counter": "Sorted cartons counter",
 			"cartonAtStation": "Carton at the station",
 			"cartonHigh": "High carton",
 			"cartonAtP2": "Carton at P2's level",

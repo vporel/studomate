@@ -22,7 +22,10 @@ export const LEVEL_LOW = 20;
 export const LEVEL_HIGH = 80;
 export const LEVEL_ALARM = 95;
 
-export function createTankVariables(project: Project, levelIsInput: boolean): void {
+export function createTankVariables(
+	project: Project,
+	levelIsInput: boolean,
+): void {
 	project.variables.push(
 		levelIsInput ? analogInput("niveau", 0, 100) : memory("niveau", "INT"),
 		output("pompe"),
@@ -34,9 +37,24 @@ export function createTankVariables(project: Project, levelIsInput: boolean): vo
 /** Pump hysteresis (compare + memory) and high-level alarm. */
 export function createTankControlSections(): Section[] {
 	return [
-		section("Démarrage de la pompe", "Niveau bas : mémoriser la marche.", compare("niveau", "<", `${LEVEL_LOW}`), setCoil("pompe")),
-		section("Arrêt de la pompe", "Niveau haut : arrêter.", compare("niveau", ">", `${LEVEL_HIGH}`), resetCoil("pompe")),
-		section("Alarme", "Niveau très haut.", compare("niveau", ">", `${LEVEL_ALARM}`), coil("alarme")),
+		section(
+			"Démarrage de la pompe",
+			"Niveau bas : mémoriser la marche.",
+			compare("niveau", "<", `${LEVEL_LOW}`),
+			setCoil("pompe"),
+		),
+		section(
+			"Arrêt de la pompe",
+			"Niveau haut : arrêter.",
+			compare("niveau", ">", `${LEVEL_HIGH}`),
+			resetCoil("pompe"),
+		),
+		section(
+			"Alarme",
+			"Niveau très haut.",
+			compare("niveau", ">", `${LEVEL_ALARM}`),
+			coil("alarme"),
+		),
 	];
 }
 

@@ -102,7 +102,11 @@ describe("ladder-dsl", () => {
 		callProgramsFromMain(project, [sub]);
 		expect(project.main.sections).toHaveLength(1);
 		const analysis = compilePipelineDetailed(project).analysis;
-		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(0);
-		expect(buildLadder("x", [section("n", "", coil("q"))]).sections).toHaveLength(1);
+		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(
+			0,
+		);
+		expect(
+			buildLadder("x", [section("n", "", coil("q"))]).sections,
+		).toHaveLength(1);
 	});
 });

@@ -289,7 +289,15 @@
 			},
 			"scene3d": {
 				"title": "Scène 3D de simulation : manuel Studomate",
-				"description": "Relier une partie opérative virtuelle en 3D (tri de caisses, ascenseur, carrefour de feux) à un programme en cours de simulation."
+				"description": "Relier une partie opérative virtuelle en 3D (tri de caisses, ascenseur, carrefour de feux, perçage) à un programme en cours de simulation."
+			},
+			"limits": {
+				"title": "Limites de l'outil : manuel Studomate",
+				"description": "Ce que Studomate ne fait pas : limites du Grafcet, des expressions, du matériel Arduino, des scènes 3D et du stockage des projets."
+			},
+			"troubleshooting": {
+				"title": "Dépannage : manuel Studomate",
+				"description": "Que faire quand la simulation ne démarre pas, que le grafcet reste bloqué ou qu'une entrée ne répond pas : les symptômes courants et leurs causes."
 			},
 			"shortcuts": {
 				"title": "Raccourcis clavier : manuel Studomate",

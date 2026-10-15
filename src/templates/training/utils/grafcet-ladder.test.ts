@@ -29,7 +29,10 @@ function build(): Project {
 		output("q"),
 		...grafcetMemories(spec),
 	);
-	setMainSections(project, grafcetSections(spec, [{ variable: "q", steps: ["M1", "M2"] }]));
+	setMainSections(
+		project,
+		grafcetSections(spec, [{ variable: "q", steps: ["M1", "M2"] }]),
+	);
 	return project;
 }
 
@@ -39,12 +42,20 @@ describe("grafcet-ladder", () => {
 
 	it("génère des sections sans erreur d'analyse", () => {
 		const { analysis } = compilePipelineDetailed(build());
-		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(
+			0,
+		);
 	});
 
 	it("déclare une mémoire par étape et par transition, plus l'initialisation", () => {
 		expect(grafcetMemories(spec).map((v) => v.mnemonic)).toEqual([
-			"M0", "M1", "M2", "T0", "T1", "T2", "init",
+			"M0",
+			"M1",
+			"M2",
+			"T0",
+			"T1",
+			"T2",
+			"init",
 		]);
 	});
 

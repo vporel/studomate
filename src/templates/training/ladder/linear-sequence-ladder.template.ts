@@ -8,7 +8,14 @@ import {
 	grafcetMemories,
 	grafcetSections,
 } from "@/templates/training/utils/grafcet-ladder";
-import { no, coil, nf, or, section, setMainSections } from "@/templates/training/utils/ladder-dsl";
+import {
+	no,
+	coil,
+	nf,
+	or,
+	section,
+	setMainSections,
+} from "@/templates/training/utils/ladder-dsl";
 
 /** E0 (initial) ─dcy→ E1 (sortie1) ─fin1→ E2 (sortie2) ─fin2→ E3 ─VRAI→ E0 */
 export const LINEAR_SEQUENCE_SPEC: GrafcetLadderSpec = {
@@ -35,7 +42,9 @@ export function createLinearSequenceLadderProject(): Project {
 }
 
 export function createLinearSequenceLadderSolution(): Project {
-	const project = createLinearSequenceLadderBase("Séquence linéaire en Ladder : solution");
+	const project = createLinearSequenceLadderBase(
+		"Séquence linéaire en Ladder : solution",
+	);
 	setMainSections(
 		project,
 		grafcetSections(LINEAR_SEQUENCE_SPEC, [
@@ -52,8 +61,12 @@ export function createLinearSequenceLadderSolution(): Project {
  * excluded from execution.
  */
 export function createLinearSequenceNaiveLadderProject(): Project {
-	const project = createLinearSequenceLadderBase("Séquence linéaire : méthode des manuels");
-	for (const grafcet of Object.values(createLinearSequenceSolution().grafcets)) {
+	const project = createLinearSequenceLadderBase(
+		"Séquence linéaire : méthode des manuels",
+	);
+	for (const grafcet of Object.values(
+		createLinearSequenceSolution().grafcets,
+	)) {
 		grafcet.excludedFromExecution = true;
 		project.addProgram(grafcet);
 	}

@@ -17,9 +17,15 @@ describe("SceneChannel", () => {
 		const received: EditorToSceneMessage[] = [];
 		scene.onMessage((message) => received.push(message));
 
-		editor.send({ type: "config", sceneId: "carton-sorting" });
+		editor.send({
+			type: "config",
+			sceneId: "carton-sorting",
+			projectName: "P",
+		});
 
-		expect(received).toEqual([{ type: "config", sceneId: "carton-sorting" }]);
+		expect(received).toEqual([
+			{ type: "config", sceneId: "carton-sorting", projectName: "P" },
+		]);
 	});
 
 	it("drops what is not a message of the protocol", () => {

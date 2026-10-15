@@ -45,7 +45,10 @@ describe("ladder-tank.template", () => {
 
 		const statement = new PlcScenario(createLadderTankProject());
 		statement.plc.setOutputImageValueById(
-			statement.plc.getVariablesSnapshot().find((v) => v.getName() === "pompe")!.getId(),
+			statement.plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "pompe")!
+				.getId(),
 			true,
 		);
 		await statement.cycles(5);

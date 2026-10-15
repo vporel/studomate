@@ -56,7 +56,11 @@ describe("SceneView", () => {
 	it("says hello on creation and waits for the editor", () => {
 		const h = createHarness();
 		expect(h.received).toEqual([{ type: "hello" }]);
-		expect(h.view.getSnapshot()).toEqual({ phase: "waiting", sceneId: null });
+		expect(h.view.getSnapshot()).toEqual({
+			phase: "waiting",
+			sceneId: null,
+			projectName: null,
+		});
 		h.view.dispose();
 	});
 
@@ -64,11 +68,16 @@ describe("SceneView", () => {
 		"shows the %s phase from the state received",
 		(status) => {
 			const h = createHarness();
-			h.editor.send({ type: "config", sceneId: "carton-sorting" });
+			h.editor.send({
+				type: "config",
+				sceneId: "carton-sorting",
+				projectName: "Mon projet",
+			});
 			h.editor.send(state(1, status));
 			expect(h.view.getSnapshot()).toEqual({
 				phase: status,
 				sceneId: "carton-sorting",
+				projectName: "Mon projet",
 			});
 			h.view.dispose();
 		},

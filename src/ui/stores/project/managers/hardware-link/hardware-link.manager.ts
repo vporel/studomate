@@ -11,6 +11,7 @@ import type {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "@/ui/stores/project/project.store";
+import trackEvent from "@/ui/services/analytics";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import BoardProgramController from "./board-program.controller";
 import FirmwareInstaller from "./firmware-installer";
@@ -163,6 +164,9 @@ export default class HardwareLinkManager {
 			boardMode: "idle",
 			programPresent: false,
 		});
+		trackEvent("hardware-linked", {
+			model: this.getStoreState().project?.hardwareTarget?.modelId,
+		});
 		if (openedBy === "user") this.context.notifier.linked();
 		await this.programController.refreshStatus();
 		return session.isCurrent(attempt);
@@ -211,7 +215,9 @@ export default class HardwareLinkManager {
 	 */
 	async enterHardwareIo(): Promise<boolean> {
 		if (!(await this.ensureLink("mode"))) return false;
-		return this.programController.enterRemoteIo();
+		const entered = await this.programController.enterRemoteIo();
+		if (entered) trackEvent("hardware-mode-entered", { mode: "io" });
+		return entered;
 	}
 
 	/** The board stops serving its pins to a simulation that could not start. */
@@ -223,8 +229,10 @@ export default class HardwareLinkManager {
 	 * Observes the program of the board, opening the link if needed. True when the observation
 	 * began.
 	 */
-	goOnline(): Promise<boolean> {
-		return this.onlineController.start();
+	async goOnline(): Promise<boolean> {
+		const started = await this.onlineController.start();
+		if (started) trackEvent("hardware-mode-entered", { mode: "online" });
+		return started;
 	}
 
 	/** Writes a variable of the observed program once. */
@@ -323,14 +331,13 @@ export default class HardwareLinkManager {
 	private reportFailure(error: unknown) {
 		// The user dismissed the port chooser.
 		if (error instanceof DOMException && error.name === "NotFoundError") return;
+		let reason: Parameters<HardwareLinkNotifier["linkFailed"]>[0] = "transport";
 		if (error instanceof RemoteIoError) {
 			if (error.code === "cancelled") return;
-			this.context.notifier.linkFailed(
-				isRemoteIoExchangeError(error.code) ? "transport" : error.code,
-			);
-			return;
+			if (!isRemoteIoExchangeError(error.code)) reason = error.code;
 		}
-		this.context.notifier.linkFailed("transport");
+		trackEvent("hardware-link-failed", { reason });
+		this.context.notifier.linkFailed(reason);
 	}
 
 	private setLinkState(hardwareLink: HardwareLinkState) {

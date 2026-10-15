@@ -65,7 +65,11 @@ const HardwareLinkControl = () => {
 		kind,
 		mode,
 		upload,
-		actions,
+		canStop,
+		canStart,
+		canUpload,
+		canUnlink,
+		canLink,
 		hardwareLinkManager,
 	} = useProjectStore(
 		useShallow((state) => ({
@@ -77,7 +81,7 @@ const HardwareLinkControl = () => {
 			kind: state.simulationKind,
 			mode: state.mode,
 			upload: state.hardwareUpload,
-			actions: selectHardwareActions(state, supported === true),
+			...selectHardwareActions(state, supported === true),
 			hardwareLinkManager: state.hardwareLinkManager,
 		})),
 	);
@@ -151,7 +155,7 @@ const HardwareLinkControl = () => {
 			{boardMode === "program-running" && status === "linked" && (
 				<ActionButton
 					title={t("stop")}
-					disabled={!actions.canStop}
+					disabled={!canStop}
 					onClick={() => void hardwareLinkManager.stopProgram()}
 				>
 					<StopRoundedIcon fontSize="small" />
@@ -162,7 +166,7 @@ const HardwareLinkControl = () => {
 				status === "linked" && (
 					<ActionButton
 						title={t("start")}
-						disabled={!actions.canStart}
+						disabled={!canStart}
 						onClick={() => void hardwareLinkManager.runProgram()}
 					>
 						<PlayArrowRoundedIcon fontSize="small" />
@@ -170,7 +174,7 @@ const HardwareLinkControl = () => {
 				)}
 			<ActionButton
 				title={t("upload")}
-				disabled={!actions.canUpload}
+				disabled={!canUpload}
 				onClick={() => void hardwareLinkManager.uploadProgram()}
 			>
 				<FileDownloadRoundedIcon fontSize="small" />
@@ -178,7 +182,7 @@ const HardwareLinkControl = () => {
 			{status === "linked" ? (
 				<Button
 					size="small"
-					disabled={!actions.canUnlink}
+					disabled={!canUnlink}
 					onClick={() => void hardwareLinkManager.unlink()}
 				>
 					{t("unlink")}
@@ -186,7 +190,7 @@ const HardwareLinkControl = () => {
 			) : (
 				<Button
 					size="small"
-					disabled={!actions.canLink}
+					disabled={!canLink}
 					onClick={() => void hardwareLinkManager.link()}
 				>
 					{t("link")}

@@ -12,10 +12,13 @@ import HmiSection from "./sections/HmiSection";
 import HardwareSection from "./sections/HardwareSection";
 import IntroSection from "./sections/IntroSection";
 import LadderSection from "./sections/LadderSection";
+import LimitsSection from "./sections/LimitsSection";
 import ProjectsSection from "./sections/ProjectsSection";
+import Scene3dSection from "./sections/Scene3dSection";
 import ShortcutsSection from "./sections/ShortcutsSection";
 import SimulationSection from "./sections/SimulationSection";
 import ToolbarSection from "./sections/ToolbarSection";
+import TroubleshootingSection from "./sections/TroubleshootingSection";
 import VariablesSection from "./sections/VariablesSection";
 
 export type ManualContentIndex = Record<string, string>;
@@ -66,6 +69,9 @@ export default function ManualContentIndex({
 			<SimulationSection selected="simulation" />
 			<AnalysisSection selected="analysis" />
 			<HardwareSection />
+			<Scene3dSection />
+			<LimitsSection />
+			<TroubleshootingSection />
 			<ShortcutsSection />
 		</Box>
 	);

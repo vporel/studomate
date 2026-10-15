@@ -3,6 +3,7 @@ import interpolateCrossroads from "@/3d-scenes/crossroads/crossroads.interpolati
 import interpolateDrilling from "@/3d-scenes/drilling/drilling.interpolation";
 import interpolateElevator from "@/3d-scenes/elevator/elevator.interpolation";
 import type { ComponentType } from "react";
+import CartonSortingControls from "./carton-sorting/CartonSortingControls";
 import CartonSortingScene from "./carton-sorting/CartonSortingScene";
 import CrossroadsScene from "./crossroads/CrossroadsScene";
 import DrillingScene from "./drilling/DrillingScene";
@@ -26,12 +27,15 @@ type SceneViewDefinition = {
 	camera?: SceneCamera;
 	interpolate: (from: unknown, to: unknown, ratio: number) => unknown;
 	Component: ComponentType<SceneComponentProps>;
+	/** Operator controls, drawn in a fixed panel over the canvas so that the camera never moves them. */
+	Controls?: ComponentType<SceneComponentProps>;
 };
 
 const SCENE_VIEWS: Record<string, SceneViewDefinition> = {
 	"carton-sorting": {
 		interpolate: interpolateCartonSorting as SceneViewDefinition["interpolate"],
 		Component: CartonSortingScene,
+		Controls: CartonSortingControls,
 	},
 	crossroads: {
 		interpolate: interpolateCrossroads as SceneViewDefinition["interpolate"],
