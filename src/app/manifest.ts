@@ -1,16 +1,18 @@
 import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/app-info";
 import type { MetadataRoute } from "next";
 import routes from "./routes";
+import { THEME_COLOR } from "./root-metadata";
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: APP_NAME,
 		short_name: APP_NAME,
 		description: APP_SHORT_DESCRIPTION,
+		id: routes.app(),
 		start_url: routes.app(),
 		display: "standalone",
 		background_color: "#ffffff",
-		theme_color: "#1976d2",
+		theme_color: THEME_COLOR,
 		icons: [
 			{
 				src: "/images/icon-192.png",

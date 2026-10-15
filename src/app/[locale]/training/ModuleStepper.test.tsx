@@ -38,11 +38,13 @@ const steps: StepData[] = [
 	},
 ];
 
+/** `initialStep` : id de l'étape de l'URL ; `initialHash` : ancien lien `#step-<id>`. */
 function setup(
 	initialHash = "",
 	nextModule?: { href: "/training/a1"; label: string },
+	initialStep?: string,
 ) {
-	window.location.hash = initialHash;
+	window.history.replaceState(null, "", `/${initialHash}`);
 	return renderWithI18n(
 		<ModuleStepper
 			steps={steps}
@@ -50,6 +52,7 @@ function setup(
 			nextLabel="Suivant"
 			moduleId="a1"
 			nextModule={nextModule}
+			initialStepId={initialStep}
 		/>,
 	);
 }
@@ -74,7 +77,7 @@ describe("ModuleStepper", () => {
 	});
 
 	afterEach(() => {
-		window.location.hash = "";
+		window.history.replaceState(null, "", "/");
 	});
 
 	it("affiche la première étape par défaut", async () => {
@@ -89,10 +92,10 @@ describe("ModuleStepper", () => {
 	it("liste les titres des 9 étapes dans le sommaire", () => {
 		setup();
 		expect(
-			screen.getByRole("button", { name: /étape deux/i }),
+			screen.getByRole("link", { name: /étape deux/i }),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("button", { name: /étape trois/i }),
+			screen.getByRole("link", { name: /étape trois/i }),
 		).toBeInTheDocument();
 	});
 
@@ -170,7 +173,7 @@ describe("ModuleStepper", () => {
 		setup();
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
 		expect(await screen.findByText("Corps deux")).toBeInTheDocument();
-		expect(window.location.hash).toBe("#step-s2");
+		expect(window.location.pathname).toBe("/formations/a1/s2");
 	});
 
 	it("Précédent est désactivé sur la première étape", () => {
@@ -208,20 +211,20 @@ describe("ModuleStepper", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s3
 
-		fireEvent.click(screen.getByRole("button", { name: /étape un/i }));
+		fireEvent.click(screen.getByRole("link", { name: /étape un/i }));
 
 		expect(await screen.findByText("Corps un")).toBeInTheDocument();
-		expect(window.location.hash).toBe("#step-s1");
+		expect(window.location.pathname).toBe("/formations/a1");
 	});
 
 	it("met en gras dans le sommaire le titre d'une étape de synthèse, même inactive", () => {
 		setup();
-		const synthesisItem = screen.getByRole("button", { name: /étape quatre/i });
+		const synthesisItem = screen.getByRole("link", { name: /étape quatre/i });
 		expect(within(synthesisItem).getByText("Étape quatre")).toHaveStyle({
 			fontWeight: 700,
 		});
 
-		const theoryItem = screen.getByRole("button", { name: /étape deux/i });
+		const theoryItem = screen.getByRole("link", { name: /étape deux/i });
 		expect(within(theoryItem).getByText("Étape deux")).not.toHaveStyle({
 			fontWeight: 700,
 		});
@@ -254,9 +257,9 @@ describe("ModuleStepper", () => {
 
 	it("coche les étapes déjà franchies dans le sommaire, pas l'étape active ni les suivantes", () => {
 		setup();
-		const item1 = screen.getByRole("button", { name: /étape un/i });
-		const item2 = screen.getByRole("button", { name: /étape deux/i });
-		const item3 = screen.getByRole("button", { name: /étape trois/i });
+		const item1 = screen.getByRole("link", { name: /étape un/i });
+		const item2 = screen.getByRole("link", { name: /étape deux/i });
+		const item3 = screen.getByRole("link", { name: /étape trois/i });
 		expect(within(item1).queryByTestId("CheckIcon")).not.toBeInTheDocument();
 
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
@@ -269,7 +272,7 @@ describe("ModuleStepper", () => {
 
 	it("garde la coche sur une étape déjà franchie même en y revenant", () => {
 		setup();
-		const item1 = screen.getByRole("button", { name: /étape un/i });
+		const item1 = screen.getByRole("link", { name: /étape un/i });
 
 		fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
 		fireEvent.click(screen.getByRole("button", { name: "Précédent" })); // -> s1, déjà franchie
@@ -277,12 +280,90 @@ describe("ModuleStepper", () => {
 		expect(within(item1).getByTestId("CheckIcon")).toBeInTheDocument();
 	});
 
+	describe("URL des étapes", () => {
+		it("lie chaque étape du sommaire à sa propre page, la première à la page du module", () => {
+			setup();
+			expect(screen.getByRole("link", { name: /étape un/i })).toHaveAttribute(
+				"href",
+				"/formations/a1",
+			);
+			expect(screen.getByRole("link", { name: /étape trois/i })).toHaveAttribute(
+				"href",
+				"/formations/a1/s3",
+			);
+		});
+
+		it("préfixe les liens du sommaire avec la langue anglaise", () => {
+			renderWithI18n(
+				<ModuleStepper
+					steps={steps}
+					prevLabel="Previous"
+					nextLabel="Next"
+					moduleId="a1"
+				/>,
+				{ locale: "en" },
+			);
+			expect(screen.getByRole("link", { name: /étape deux/i })).toHaveAttribute(
+				"href",
+				"/en/training/a1/s2",
+			);
+		});
+
+		it("affiche dès le premier rendu l'étape de l'URL, étapes précédentes déverrouillées", async () => {
+			setup("", undefined, "s3");
+			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: /étape deux/i }),
+			).not.toHaveAttribute("aria-disabled");
+			expect(screen.getByRole("link", { name: /étape quatre/i })).toHaveAttribute(
+				"aria-disabled",
+				"true",
+			);
+		});
+
+		it("ne remplace pas l'étape de l'URL par la progression sauvegardée", async () => {
+			mockGetStepId.mockResolvedValue("s4");
+			setup("", undefined, "s2");
+
+			await act(async () => {
+				await Promise.resolve();
+				await Promise.resolve();
+			});
+
+			expect(await screen.findByText("Corps deux")).toBeInTheDocument();
+			expect(window.location.pathname).toBe("/");
+		});
+
+		it("remplace l'URL de la page du module par celle de l'étape reprise", async () => {
+			mockGetStepId.mockResolvedValue("s3");
+			setup();
+
+			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
+			expect(window.location.pathname).toBe("/formations/a1/s3");
+		});
+
+		it("redirige un ancien lien #step-<id> vers l'URL de l'étape", async () => {
+			setup("#step-s3");
+
+			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
+			expect(window.location.pathname).toBe("/formations/a1/s3");
+			expect(window.location.hash).toBe("");
+		});
+
+		it("ne navigue pas au clic sur une étape verrouillée", async () => {
+			setup();
+			fireEvent.click(screen.getByRole("link", { name: /étape quatre/i }));
+			expect(window.location.pathname).toBe("/");
+			expect(await screen.findByText("Corps un")).toBeInTheDocument();
+		});
+	});
+
 	describe("verrouillage du sommaire", () => {
 		it("verrouille les étapes non atteintes", async () => {
 			setup();
 
-			const item3 = screen.getByRole("button", { name: /étape trois/i });
-			expect(item3).toBeDisabled();
+			const item3 = screen.getByRole("link", { name: /étape trois/i });
+			expect(item3).toHaveAttribute("aria-disabled", "true");
 
 			fireEvent.click(item3);
 			expect(screen.queryByText("Corps trois")).not.toBeInTheDocument();
@@ -294,8 +375,8 @@ describe("ModuleStepper", () => {
 
 			fireEvent.click(screen.getByRole("button", { name: "Suivant" })); // -> s2
 
-			const item1 = screen.getByRole("button", { name: /étape un/i });
-			expect(item1).not.toBeDisabled();
+			const item1 = screen.getByRole("link", { name: /étape un/i });
+			expect(item1).not.toHaveAttribute("aria-disabled");
 			fireEvent.click(item1);
 			expect(await screen.findByText("Corps un")).toBeInTheDocument();
 		});

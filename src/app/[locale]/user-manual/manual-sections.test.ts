@@ -1,4 +1,9 @@
-import { flattenManualSections, MANUAL_SECTIONS } from "./manual-sections";
+import {
+	flattenManualSections,
+	isManualSectionId,
+	MANUAL_SECTIONS,
+	resolveManualTarget,
+} from "./manual-sections";
 
 const t = (key: string) => `label:${key}`;
 
@@ -73,5 +78,22 @@ describe("manual-sections", () => {
 			expect(canvas?.parentLabel).toBe("label:grafcet");
 			expect(canvas?.hasChildren).toBeUndefined();
 		});
+	});
+
+	it("résout une section de premier niveau vers sa propre page", () => {
+		expect(isManualSectionId("grafcet")).toBe(true);
+		expect(resolveManualTarget("grafcet")).toEqual({ section: "grafcet" });
+	});
+
+	it("résout une sous-section en ancre dans la page de son parent", () => {
+		expect(isManualSectionId("grafcet-steps")).toBe(false);
+		expect(resolveManualTarget("grafcet-steps")).toEqual({
+			section: "grafcet",
+			hash: "grafcet-steps",
+		});
+	});
+
+	it("renvoie null pour un id inconnu", () => {
+		expect(resolveManualTarget("nope")).toBeNull();
 	});
 });

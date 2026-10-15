@@ -30,6 +30,8 @@ export const APP_REPO_URL = "https://github.com/vporel/studomate";
 export const APP_CONTACT_EMAIL = "dev.vporel@gmail.com";
 export const AUTHOR_NAME = "Vivian NKOUANANG";
 export const AUTHOR_URL = "https://www.vporel.com";
+export const AUTHOR_LINKEDIN_URL =
+	"https://www.linkedin.com/in/vivian-nkouanang/";
 
 /**
  * URL publique de production. Sert de repli au `metadataBase` et de base aux URLs

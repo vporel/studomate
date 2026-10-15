@@ -16,6 +16,35 @@ describe("LandingPage", () => {
 		expect(appLinks.length).toBeGreaterThan(0);
 	});
 
+	it("a une hiérarchie de titres sans saut : un h1, des h2 de section, des h3 de carte", () => {
+		renderWithI18n(<LandingPage />);
+		const levels = screen
+			.getAllByRole("heading")
+			.map((h) => Number(h.tagName.slice(1)));
+
+		expect(levels.filter((l) => l === 1)).toHaveLength(1);
+		expect(levels.filter((l) => l === 3).length).toBeGreaterThan(0);
+		expect(Math.max(...levels)).toBe(3);
+		expect(
+			screen.getByRole("heading", { name: /friction zéro/i, level: 3 }),
+		).toBeInTheDocument();
+	});
+
+	it("renvoie vers chaque module de formation et vers la liste des formations", () => {
+		renderWithI18n(<LandingPage />);
+
+		for (const id of ["a0", "a1", "a2", "a3", "a4"]) {
+			expect(
+				screen.getByRole("link", {
+					name: new RegExp(`^Module ${id.toUpperCase()} :`),
+				}),
+			).toHaveAttribute("href", `/formations/${id}`);
+		}
+		expect(
+			screen.getByRole("link", { name: /voir toutes les formations/i }),
+		).toHaveAttribute("href", "/formations");
+	});
+
 	it("renvoie vers le dépôt GitHub", () => {
 		renderWithI18n(<LandingPage />);
 		expect(

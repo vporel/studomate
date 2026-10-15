@@ -218,7 +218,8 @@ Always check `package.json` before quoting a version: this table goes stale at t
   explanation, a subtitle or an enumeration ("Exercice : séquence linéaire", not "Exercice —
   séquence linéaire"). For an aside, prefer parentheses, commas or a new sentence. This applies
   above all to text meant to be read: UI strings and i18n files, manuals, docs, training
-  content. Do not sprinkle em dashes as a default separator.
+  content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
+  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
 - **Comment/JSDoc language**: English. Existing French comments do not need to be translated
   in passing when a file is touched for an unrelated reason (avoid needless churn); write all
   new comments in English going forward.

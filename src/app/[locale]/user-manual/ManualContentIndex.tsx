@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import AccountsSection from "./sections/AccountsSection";
 import AnalysisSection from "./sections/AnalysisSection";
 import CrossReferencesSection from "./sections/CrossReferencesSection";
@@ -24,6 +24,8 @@ export type ManualContentIndex = Record<string, string>;
  * Monte silencieusement le contenu de toutes les sections (chacune porte déjà son `id` propre,
  * voir `manual-sections.ts`) pour en extraire le texte et construire l'index de recherche. Le
  * DOM produit ici n'est jamais affiché : `ManualSections` reste seul responsable de l'affichage.
+ * Rendu après montage et placé après le contenu visible : le HTML serveur n'est pas dupliqué et
+ * `getElementById` (ancres des sous-sections) retrouve l'élément visible en premier.
  */
 export default function ManualContentIndex({
 	onReady,
@@ -31,18 +33,22 @@ export default function ManualContentIndex({
 	onReady: (index: ManualContentIndex) => void;
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => setMounted(true), []);
 
 	useEffect(() => {
 		const container = containerRef.current;
-		if (!container) return;
+		if (!mounted || !container) return;
 		const index: ManualContentIndex = {};
 		container.querySelectorAll<HTMLElement>("[id]").forEach((el) => {
 			index[el.id] = (el.textContent ?? "").replace(/\s+/g, " ").trim();
 		});
 		onReady(index);
-		// Effet unique au montage : `onReady` est un setter d'état (stable), le contenu des
-		// sections est statique.
-	}, [onReady]);
+		// `onReady` est un setter d'état (stable), le contenu des sections est statique.
+	}, [mounted, onReady]);
+
+	if (!mounted) return null;
 
 	return (
 		<Box ref={containerRef} aria-hidden sx={{ display: "none" }}>

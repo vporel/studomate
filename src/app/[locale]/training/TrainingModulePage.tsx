@@ -9,6 +9,8 @@ type TrainingModulePageProps = {
 	intro: string;
 	steps: StepData[];
 	moduleId: string;
+	/** Étape de l'URL ; absente sur la page du module. */
+	initialStepId?: string;
 	prevLabel: string;
 	nextLabel: string;
 	nextModule?: React.ComponentProps<typeof ModuleStepper>["nextModule"];
@@ -21,6 +23,7 @@ export default function TrainingModulePage({
 	intro,
 	steps,
 	moduleId,
+	initialStepId,
 	prevLabel,
 	nextLabel,
 	nextModule,
@@ -39,6 +42,7 @@ export default function TrainingModulePage({
 				prevLabel={prevLabel}
 				nextLabel={nextLabel}
 				moduleId={moduleId}
+				initialStepId={initialStepId}
 				nextModule={nextModule}
 			/>
 

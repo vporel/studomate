@@ -3,6 +3,7 @@
 import { APP_NAME, APP_REPO_URL } from "@/app-info";
 import routes from "@/app/routes";
 import { Link } from "@/i18n/navigation";
+import { TRAINING_MODULE_IDS } from "@/app/[locale]/training/training-module-ids";
 import { PROJECT_TEMPLATES, type TemplateId } from "@/templates/index";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
@@ -21,6 +22,7 @@ import {
 	Button,
 	Container,
 	Divider,
+	Link as MuiLink,
 	Paper,
 	SvgIconProps,
 	Theme,
@@ -30,6 +32,12 @@ import {
 import NextLink from "next/link";
 import { ComponentType } from "react";
 import HeroCarousel from "./HeroCarousel";
+import {
+	featureKeys,
+	grafcetCapture,
+	hmiCapture,
+	ladderCapture,
+} from "./landing-content";
 
 const OpenAppButton = ({
 	label,
@@ -71,16 +79,12 @@ const featureIcons: ComponentType<SvgIconProps>[] = [
 	MenuBookIcon,
 	CloudQueueIcon,
 ];
-const featureKeys = [
-	"featureEditing",
-	"featureHmi",
-	"featureSimulation",
-	"featureAnalysis",
-	"featureManual",
-	"featureCloud",
-] as const;
 
-const reasonIcons: ComponentType<SvgIconProps>[] = [BoltIcon, HubIcon, RuleIcon];
+const reasonIcons: ComponentType<SvgIconProps>[] = [
+	BoltIcon,
+	HubIcon,
+	RuleIcon,
+];
 const reasonKeys = [
 	"reasonFriction",
 	"reasonAllInOne",
@@ -106,7 +110,7 @@ const IconCardGrid = ({
 						sx={{ p: 3, flex: "1 1 300px", maxWidth: 360 }}
 					>
 						<Icon color="primary" fontSize="large" />
-						<Typography variant="h6" fontWeight={700} mt={1}>
+						<Typography variant="h6" component="h3" fontWeight={700} mt={1}>
 							{t(`${key}Title` as never)}
 						</Typography>
 						<Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -121,20 +125,19 @@ const IconCardGrid = ({
 
 const stepKeys = ["step1", "step2", "step3"] as const;
 
-const grafcetCapture = "/images/captures-projets/parking-a-barriere_grafcet.png";
-const hmiCapture = "/images/captures-projets/parking-a-barriere_hmi.jpeg";
-const ladderCapture = "/images/captures-projets/project-test_ladder.png";
-
 const templateCaptures: Partial<Record<TemplateId, string>> = {
 	parking: grafcetCapture,
 	crossroads: "/images/captures-projets/carrefour-feu-tricolore_hmi.png",
 };
 
-const featuredTemplates = PROJECT_TEMPLATES.filter((t) => t.id in templateCaptures);
+const featuredTemplates = PROJECT_TEMPLATES.filter(
+	(t) => t.id in templateCaptures,
+);
 
 const LandingPage = () => {
 	const t = useT("public.landing");
 	const tTemplates = useT("templates");
+	const tMeta = useT("public.metadata");
 
 	const heroSlides = [
 		{ src: grafcetCapture, alt: t("heroSlideGrafcet", { name: APP_NAME }) },
@@ -311,7 +314,7 @@ const LandingPage = () => {
 							>
 								{i + 1}
 							</FlexBox>
-							<Typography variant="h6" fontWeight={700}>
+							<Typography variant="h6" component="h3" fontWeight={700}>
 								{t(`${key}Title` as never)}
 							</Typography>
 							<Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -322,6 +325,40 @@ const LandingPage = () => {
 				</FlexBox>
 				<FlexBox justifyContent="center" mt={5}>
 					<OpenAppButton label={t("openApp")} />
+				</FlexBox>
+			</Container>
+
+			<Divider />
+
+			{/* Formations */}
+			<Container maxWidth="md" sx={{ py: { xs: 6, md: 8 } }}>
+				<SectionTitle>{t("trainingTitle")}</SectionTitle>
+				<Typography textAlign="center" color="text.secondary" mb={4}>
+					{t("trainingIntro")}
+				</Typography>
+				<Box
+					component="ul"
+					sx={{ listStyle: "none", p: 0, m: 0, textAlign: "center" }}
+				>
+					{TRAINING_MODULE_IDS.map((moduleId) => (
+						<li key={moduleId}>
+							<MuiLink
+								component={Link}
+								href={`/training/${moduleId}`}
+								underline="hover"
+								variant="h6"
+							>
+								{tMeta(
+									`training${moduleId.toUpperCase()}Title` as "trainingA1Title",
+								)}
+							</MuiLink>
+						</li>
+					))}
+				</Box>
+				<FlexBox justifyContent="center" mt={4}>
+					<Button component={Link} href="/training" variant="outlined">
+						{t("trainingCta")}
+					</Button>
 				</FlexBox>
 			</Container>
 
@@ -362,7 +399,7 @@ const LandingPage = () => {
 								}}
 							/>
 							<Box sx={{ p: 2.5, flex: 1 }}>
-								<Typography variant="h6" fontWeight={700}>
+								<Typography variant="h6" component="h3" fontWeight={700}>
 									{tTemplates(`${tpl.id}.label` as never)}
 								</Typography>
 								<Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -400,7 +437,12 @@ const LandingPage = () => {
 									sx={{ p: 3, flex: "1 1 300px", maxWidth: 380 }}
 								>
 									<Icon color="primary" fontSize="large" />
-									<Typography variant="h6" fontWeight={700} mt={1}>
+									<Typography
+										variant="h6"
+										component="h3"
+										fontWeight={700}
+										mt={1}
+									>
 										{t(`${key}Title` as never)}
 									</Typography>
 									<Typography variant="body2" color="text.secondary" mt={0.5}>

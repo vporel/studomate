@@ -9,6 +9,7 @@ import {
 	useProjectStore,
 } from "@/ui/components/projects/ProjectContext";
 import dynamic from "next/dynamic";
+import NoIndexOnQuery from "./NoIndexOnQuery";
 import { useEffect, useState } from "react";
 
 // Charge l'éditeur (React Flow, DataGrid, TreeView) uniquement à l'ouverture d'un projet :
@@ -52,6 +53,7 @@ function AppComponent() {
 export default function App() {
 	return (
 		<LocaleProvider>
+			<NoIndexOnQuery />
 			<AppContextProvider>
 				<ProjectContextProvider>
 					<AppComponent />

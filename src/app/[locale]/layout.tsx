@@ -1,11 +1,22 @@
+import { APP_NAME } from "@/app-info";
+import RootDocument from "@/app/RootDocument";
+import { TITLE_TEMPLATE } from "@/app/metadata";
+import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import SyncHtmlLang from "./SyncHtmlLang";
 import organizationJsonLd from "./organizationJsonLd";
+
+export const viewport = rootViewport;
+
+export const metadata: Metadata = {
+	...rootMetadata,
+	title: { template: TITLE_TEMPLATE, default: APP_NAME },
+};
 
 export function generateStaticParams() {
 	return routing.locales.map((locale) => ({ locale }));
@@ -23,15 +34,16 @@ export default async function LocaleLayout({
 	setRequestLocale(locale);
 
 	return (
-		<NextIntlClientProvider>
-			<SyncHtmlLang locale={locale} />
-			<script
-				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
-			/>
-			<Header />
-			<main>{children}</main>
-			<Footer />
-		</NextIntlClientProvider>
+		<RootDocument lang={locale}>
+			<NextIntlClientProvider>
+				<script
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
+				/>
+				<Header />
+				<main>{children}</main>
+				<Footer />
+			</NextIntlClientProvider>
+		</RootDocument>
 	);
 }

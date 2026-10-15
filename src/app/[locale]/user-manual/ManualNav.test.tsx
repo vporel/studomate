@@ -21,19 +21,32 @@ describe("ManualNav", () => {
 		expect(screen.getByText("Renvois")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "Renvois" })).toHaveAttribute(
 			"href",
-			"#grafcet-referrals",
+			"/manuel-utilisateur/grafcet#grafcet-referrals",
 		);
 	});
 
-	it("déplie automatiquement le parent d'une sous-section sélectionnée", () => {
-		renderWithI18n(<ManualNav selected="ladder-blocks" />);
+	it("déplie la section sélectionnée dès le premier rendu", () => {
+		renderWithI18n(<ManualNav selected="ladder" />);
 		expect(screen.getByText("Blocs")).toBeInTheDocument();
 	});
 
-	it("notifie la sélection au clic", () => {
-		const onSelect = jest.fn();
-		renderWithI18n(<ManualNav onSelect={onSelect} />);
-		fireEvent.click(screen.getByText("Variables"));
-		expect(onSelect).toHaveBeenCalledWith("variables");
+	it("lie chaque section à sa page, l'introduction à l'URL de base du manuel", () => {
+		renderWithI18n(<ManualNav selected="intro" />);
+		expect(screen.getByRole("link", { name: "Introduction" })).toHaveAttribute(
+			"href",
+			"/manuel-utilisateur",
+		);
+		expect(screen.getByRole("link", { name: "Variables" })).toHaveAttribute(
+			"href",
+			"/manuel-utilisateur/variables",
+		);
+	});
+
+	it("préfixe les liens avec la langue anglaise", () => {
+		renderWithI18n(<ManualNav />, { locale: "en" });
+		expect(screen.getByRole("link", { name: "Variables" })).toHaveAttribute(
+			"href",
+			"/en/user-manual/variables",
+		);
 	});
 });

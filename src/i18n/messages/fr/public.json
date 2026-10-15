@@ -71,6 +71,9 @@
 		"step2Text": "Démarrez de zéro ou ouvrez l'un des templates prêts à l'emploi.",
 		"step3Title": "Analysez, puis simulez",
 		"step3Text": "Vérifiez la structure, puis exécutez la logique et observez le système réagir.",
+		"trainingTitle": "Apprenez l'automatisme avec Studomate",
+		"trainingIntro": "Cinq modules guidés pour maîtriser le GRAFCET, puis le Ladder, avec des exercices à simuler dans l'application.",
+		"trainingCta": "Voir toutes les formations",
 		"templatesTitle": "Des exemples pour démarrer",
 		"templatesIntro": "Ouvrez un projet pré-configuré et explorez-le à votre rythme.",
 		"templatePreviewAlt": "Aperçu du projet {label}",
@@ -199,32 +202,200 @@
 		"contactBody": "Pour toute question concernant la confidentialité ou la gestion des données :",
 		"contactLink": "Contactez-nous."
 	},
+	"notFound": {
+		"title": "Page introuvable",
+		"body": "La page que vous cherchez n’existe pas ou a été déplacée.",
+		"back": "Retour à l’accueil"
+	},
 	"metadata": {
-		"homeTitle": "Studomate : Créer, Simuler, Automatiser",
+		"homeTitle": "Simulateur GRAFCET et Ladder en ligne — Studomate",
 		"homeDescription": "Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur — sans installation, sans compte.",
-		"aboutTitle": "À propos — Studomate",
+		"aboutTitle": "À propos",
 		"aboutDescription": "Studomate : un outil pédagogique gratuit pour apprendre, concevoir et simuler le GRAFCET, le Ladder et les HMI dans le navigateur.",
-		"contactTitle": "Contact — Studomate",
+		"contactTitle": "Contact",
 		"contactDescription": "Contacter l'équipe Studomate : idées, retours, contributions.",
-		"legalTitle": "Mentions légales — Studomate",
+		"legalTitle": "Mentions légales",
 		"legalDescription": "Mentions légales du site Studomate.",
-		"termsTitle": "Conditions d'utilisation — Studomate",
+		"termsTitle": "Conditions d'utilisation",
 		"termsDescription": "Conditions générales d'utilisation de Studomate.",
-		"privacyTitle": "Politique de confidentialité — Studomate",
+		"privacyTitle": "Politique de confidentialité",
 		"privacyDescription": "Comment Studomate gère les données personnelles et techniques des utilisateurs.",
-		"manualTitle": "Manuel utilisateur — Studomate",
+		"manualTitle": "Manuel utilisateur",
 		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Formations — Studomate",
+		"trainingTitle": "Formations",
 		"trainingDescription": "Parcours de formation à l'automatisme avec Studomate : théorie, exercices auto-corrigés, épreuves de synthèse.",
-		"trainingA0Title": "Module A0 : Avant de commencer — Formations Studomate",
+		"trainingA0Title": "Module A0 : Avant de commencer",
 		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation — les prérequis avant le GRAFCET.",
-		"trainingA1Title": "Module A1 : Bases du GRAFCET — Formations Studomate",
+		"trainingA1Title": "Module A1 : Bases du GRAFCET",
 		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés.",
-		"trainingA2Title": "Module A2 : Ladder, logique et mémoire — Formations Studomate",
+		"trainingA2Title": "Module A2 : Ladder, logique et mémoire",
 		"trainingA2Description": "Module A2 : du schéma à relais au Ladder, contacts et bobines, auto-maintien, bobines S/R, fronts et ordre d'exécution des réseaux.",
-		"trainingA3Title": "Module A3 : Ladder, temps, comptage et calcul — Formations Studomate",
+		"trainingA3Title": "Module A3 : Ladder, temps et calcul",
 		"trainingA3Description": "Module A3 : temporisations, compteurs, calcul et types numériques, sous-programmes : théorie et exercices auto-corrigés.",
-		"trainingA4Title": "Module A4 : Du GRAFCET au Ladder — Formations Studomate",
-		"trainingA4Description": "Module A4 : implanter un GRAFCET en Ladder, méthode en trois blocs, actions, divergences et réinitialisation."
+		"trainingA4Title": "Module A4 : Du GRAFCET au Ladder",
+		"trainingA4Description": "Module A4 : implanter un GRAFCET en Ladder, méthode en trois blocs, actions, divergences et réinitialisation.",
+		"manualSections": {
+			"getting-started": {
+				"title": "Démarrer avec Studomate : manuel",
+				"description": "Créer un projet, ajouter un grafcet ou un ladder, définir les variables et lancer une première simulation dans Studomate."
+			},
+			"projects": {
+				"title": "Projets Studomate : manuel utilisateur",
+				"description": "Programmes, variables, interfaces HMI et dialecte : ce que contient un projet Studomate, et comment l'enregistrer, l'ouvrir et l'exporter."
+			},
+			"accounts": {
+				"title": "Comptes et partage : manuel Studomate",
+				"description": "Sauvegarde dans le cloud, synchronisation entre appareils et partage d'un projet par lien : utiliser un compte Studomate."
+			},
+			"explorer": {
+				"title": "Explorateur de projet : manuel Studomate",
+				"description": "L'explorateur de Studomate : arborescence du projet, programmes, variables et interfaces HMI, et panneaux de l'interface."
+			},
+			"variables": {
+				"title": "Variables d'automate : manuel Studomate",
+				"description": "Zones, mnémoniques, types et valeurs initiales : déclarer et gérer les variables d'un projet GRAFCET, Ladder et HMI."
+			},
+			"grafcet": {
+				"title": "Éditeur GRAFCET : manuel Studomate",
+				"description": "Étapes, transitions, actions, jonctions, renvois et liaisons : créer et modifier un GRAFCET dans l'éditeur graphique de Studomate."
+			},
+			"ladder": {
+				"title": "Éditeur Ladder : manuel Studomate",
+				"description": "Réseaux, contacts, bobines, blocs et connexions : créer et modifier un programme Ladder dans l'éditeur graphique de Studomate."
+			},
+			"toolbar": {
+				"title": "Barre d'outils : manuel Studomate",
+				"description": "Actions générales et outils de création de la barre d'outils de Studomate, selon le type de programme ouvert (GRAFCET ou Ladder)."
+			},
+			"cross-references": {
+				"title": "Références croisées : manuel Studomate",
+				"description": "Voir où chaque variable est lue et écrite, dans les grafcets, les ladders et les interfaces HMI d'un projet Studomate."
+			},
+			"hmi": {
+				"title": "Interfaces HMI animées : manuel Studomate",
+				"description": "Pages, widgets, propriétés, animations et événements : concevoir une interface homme-machine interactive et la piloter en simulation."
+			},
+			"simulation": {
+				"title": "Simulation d'automate : manuel Studomate",
+				"description": "Démarrer et arrêter la simulation, suivre les variables avec des tables de visualisation et piloter les interfaces HMI en temps réel."
+			},
+			"analysis": {
+				"title": "Analyse du projet : manuel Studomate",
+				"description": "L'analyse statique vérifie la cohérence d'un projet avant simulation : types de vérifications, erreurs bloquantes et avertissements."
+			},
+			"hardware": {
+				"title": "Arduino Uno R3 : manuel Studomate",
+				"description": "Charger un programme sur une carte Arduino Uno R3, l'utiliser comme entrées et sorties d'une simulation ou observer son programme."
+			},
+			"scene3d": {
+				"title": "Scène 3D de simulation : manuel Studomate",
+				"description": "Relier une partie opérative virtuelle en 3D (tri de caisses, ascenseur, carrefour de feux) à un programme en cours de simulation."
+			},
+			"shortcuts": {
+				"title": "Raccourcis clavier : manuel Studomate",
+				"description": "Tous les raccourcis clavier de Studomate pour Windows, Linux et macOS : édition, simulation, navigation et export."
+			}
+		},
+		"trainingStepFallbackTitle": "{step} (module {module}, Formations Studomate)",
+		"trainingSteps": {
+			"a0": {
+				"logic-basics": {
+					"title": "Variables et logique de base en automatisme : formation",
+					"description": "Variables booléennes, états vrai et faux, ET, OU, NON : les bases de logique à connaître avant de programmer un automate."
+				},
+				"scan-cycle": {
+					"title": "Automate et cycle de scrutation : formation",
+					"description": "Comment un automate programmable exécute son programme en boucle : le cycle de scrutation, illustré par un feu tricolore."
+				}
+			},
+			"a1": {
+				"theory": {
+					"title": "Étapes, transitions et réceptivités du GRAFCET : formation",
+					"description": "Étape active ou inactive, transition, réceptivité et action : les éléments de base d'un GRAFCET, avec exemples dans Studomate."
+				},
+				"theory-actions": {
+					"title": "Types et modes d'exécution des actions GRAFCET : formation",
+					"description": "Actions sur variables booléennes ou numériques et modes d'exécution des actions d'un GRAFCET."
+				},
+				"theory-timer": {
+					"title": "Temporiser une réceptivité GRAFCET : formation",
+					"description": "Faire dépendre une réceptivité du temps passé dans une étape, selon la norme IEC 60848 : notation et exemples."
+				},
+				"theory-or-divergence": {
+					"title": "Divergence et convergence en OU d'un GRAFCET : formation",
+					"description": "Choisir entre plusieurs séquences : divergence et convergence en OU d'un GRAFCET, avec exemples."
+				},
+				"reading-errors": {
+					"title": "Lire les erreurs d'analyse d'un GRAFCET : formation",
+					"description": "Analyser un GRAFCET sans le simuler et comprendre les erreurs et avertissements de Studomate pour corriger son programme."
+				}
+			},
+			"a2": {
+				"theory-contacts-coils": {
+					"title": "Contacts, bobines et mémoires internes en Ladder : formation",
+					"description": "Les symboles normalisés du Ladder : contacts à fermeture et à ouverture, bobines et mémoires internes."
+				},
+				"theory-self-holding": {
+					"title": "Auto-maintien en Ladder : formation",
+					"description": "Mémoriser un appui bref sur un bouton poussoir : le montage d'auto-maintien en Ladder, avec l'exemple d'une pompe."
+				},
+				"theory-set-reset": {
+					"title": "Bobines Set et Reset en Ladder : formation",
+					"description": "Bobines S (set) et R (reset) : mémoriser un état sans auto-maintien et comprendre l'ordre d'exécution des réseaux."
+				},
+				"theory-edges": {
+					"title": "Fronts montants et descendants en Ladder : formation",
+					"description": "Contacts de front P et N : déclencher une action une seule fois par appui, avec les fronts montants et descendants."
+				},
+				"conclusion": {
+					"title": "Conclusion du module A2 : logique Ladder",
+					"description": "Bilan du module A2 : logique combinatoire, mémoire, auto-maintien, bobines S/R et fronts en Ladder, et suite du parcours."
+				}
+			},
+			"a3": {
+				"theory-counters": {
+					"title": "Compteurs CTU, CTD et CTUD en Ladder : formation",
+					"description": "Compter des pièces ou des cycles avec les compteurs CTU, CTD et CTUD : fonctionnement des blocs et exemples dans Studomate."
+				},
+				"theory-numeric": {
+					"title": "Traitement de grandeurs numériques en Ladder : formation",
+					"description": "Affectation, calculs et comparaisons : traiter un niveau, un compteur ou une consigne dans un programme Ladder."
+				},
+				"theory-types": {
+					"title": "Types INT, DINT, REAL et conversions en Ladder : formation",
+					"description": "Les types numériques INT, DINT, REAL, WORD et DWORD, et les conversions entre types dans un programme Ladder."
+				},
+				"theory-structure": {
+					"title": "Sous-programmes Ladder : structurer un programme",
+					"description": "Découper un programme : le Main appelle des sous-programmes, un par fonction de la machine."
+				},
+				"conclusion": {
+					"title": "Conclusion du module A3 : Studomate et la norme",
+					"description": "Bilan du module A3 : temporisations, compteurs, grandeurs numériques et structure d'un programme Ladder."
+				}
+			},
+			"a4": {
+				"theory-method-ladder": {
+					"title": "Du GRAFCET au Ladder : la méthode en trois blocs",
+					"description": "Les trois blocs de réseaux, dans l'ordre, pour implanter un GRAFCET en Ladder."
+				},
+				"theory-actions-ladder": {
+					"title": "Implanter les actions d'un GRAFCET en Ladder : formation",
+					"description": "Actions non temporelles et conditionnelles (étape ET condition) d'un GRAFCET traduites en Ladder."
+				},
+				"theory-timed-actions-ladder": {
+					"title": "Le temps dans un GRAFCET implanté en Ladder : formation",
+					"description": "Traduire une temporisation de réceptivité (5s/X10) par un TON en Ladder, et gérer les actions temporelles."
+				},
+				"theory-divergences-ladder": {
+					"title": "Divergences et convergences GRAFCET en Ladder : formation",
+					"description": "Implanter les divergences en OU et en ET d'un GRAFCET en Ladder : une condition de franchissement par branche."
+				},
+				"theory-grafcet-reset": {
+					"title": "Arrêter une séquence GRAFCET en Ladder : formation",
+					"description": "Les deux façons d'arrêter une séquence en Ladder, dont la réinitialisation du GRAFCET."
+				}
+			}
+		}
 	}
 }

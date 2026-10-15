@@ -6,6 +6,7 @@ import { useT } from "@/ui/i18n/useT";
 import LanguageIcon from "@mui/icons-material/Language";
 import { Box, Button, Menu, MenuItem } from "@mui/material";
 import { useLocale } from "next-intl";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
 /**
@@ -19,6 +20,10 @@ export default function LanguageSwitch({
 }) {
 	const currentPathname = usePathname();
 	const target = pathname ?? currentPathname;
+	const params = useParams();
+	const href = (
+		target.includes("[") ? { pathname: target, params } : target
+	) as "/";
 	const current = useLocale() as Locale;
 	const t = useT("public.languageSwitch");
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -36,6 +41,7 @@ export default function LanguageSwitch({
 				{current.toUpperCase()}
 			</Button>
 			<Menu
+				keepMounted
 				anchorEl={anchorEl}
 				open={!!anchorEl}
 				onClose={() => setAnchorEl(null)}
@@ -44,7 +50,7 @@ export default function LanguageSwitch({
 					<MenuItem
 						key={locale}
 						component={Link}
-						href={target}
+						href={href}
 						locale={locale}
 						selected={locale === current}
 						onClick={() => setAnchorEl(null)}
