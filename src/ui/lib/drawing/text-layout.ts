@@ -29,10 +29,7 @@ export function wrapText(
 		let current = "";
 		for (const word of paragraph.split(/\s+/)) {
 			const candidate = current === "" ? word : `${current} ${word}`;
-			if (
-				current !== "" &&
-				estimateTextWidth(candidate, fontSize) > maxWidth
-			) {
+			if (current !== "" && estimateTextWidth(candidate, fontSize) > maxWidth) {
 				lines.push(current);
 				current = word;
 			} else {

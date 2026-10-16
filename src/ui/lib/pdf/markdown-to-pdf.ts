@@ -33,8 +33,7 @@ const SYMBOL_REPLACEMENTS: [RegExp, string][] = [
 ];
 
 /** Codepoints CP1252 (0x80–0x9F) hors Latin-1 mais gérés par jsPDF — conservés tels quels. */
-const WINANSI_EXTRAS =
-	"€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
+const WINANSI_EXTRAS = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
 
 const NON_ENCODABLE = new RegExp(`[^\\x00-\\xFF${WINANSI_EXTRAS}]`, "g");
 
@@ -137,7 +136,13 @@ export default function renderMarkdownToPdf(
 				break;
 			}
 			case "code": {
-				writeBlock((token as Tokens.Code).text, CODE_SIZE, "normal", "courier", 3);
+				writeBlock(
+					(token as Tokens.Code).text,
+					CODE_SIZE,
+					"normal",
+					"courier",
+					3,
+				);
 				y += lineHeight(CODE_SIZE) * 0.5;
 				break;
 			}

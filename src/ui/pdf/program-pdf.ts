@@ -6,8 +6,7 @@ import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
 import { PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
 
 export type ProgramExportConfig =
-	| { type: "grafcet"; program: Grafcet }
-	| { type: "ladder"; program: Ladder };
+	{ type: "grafcet"; program: Grafcet } | { type: "ladder"; program: Ladder };
 
 /**
  * Section PDF d'un programme : une scène portrait pour un GRAFCET, une scène paysage par section

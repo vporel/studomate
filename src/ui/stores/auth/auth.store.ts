@@ -94,7 +94,10 @@ function toAuthErrorCode(
 	const code = error.code ?? "";
 	const message = (error.message ?? "").toLowerCase();
 
-	if (code === "invalid_credentials" || message.includes("invalid login credentials"))
+	if (
+		code === "invalid_credentials" ||
+		message.includes("invalid login credentials")
+	)
 		return "invalidCredentials";
 	if (code === "user_already_exists" || message.includes("already registered"))
 		return "emailAlreadyExists";
@@ -106,18 +109,25 @@ function toAuthErrorCode(
 		return "weakPassword";
 	if (code === "invalid_email" || message.includes("invalid email"))
 		return "invalidEmail";
-	if (message.includes("fetch") || message.includes("network")) return "network";
+	if (message.includes("fetch") || message.includes("network"))
+		return "network";
 	return mode === "signIn" ? "signInFailed" : "signUpFailed";
 }
 
-function isAlreadyRegistered(error: { code?: string; message?: string }): boolean {
+function isAlreadyRegistered(error: {
+	code?: string;
+	message?: string;
+}): boolean {
 	return (
 		error.code === "user_already_exists" ||
 		(error.message ?? "").toLowerCase().includes("already registered")
 	);
 }
 
-function isInvalidCredentials(error: { code?: string; message?: string }): boolean {
+function isInvalidCredentials(error: {
+	code?: string;
+	message?: string;
+}): boolean {
 	return (
 		error.code === "invalid_credentials" ||
 		(error.message ?? "").toLowerCase().includes("invalid login credentials")
@@ -149,8 +159,7 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 
 	signUp: async (email, password, profile = EMPTY_USER_PROFILE) => {
 		const { data, error } = await supabase.auth.signUp({ email, password });
-		if (error)
-			return { ok: false, code: toAuthErrorCode(error, "signUp") };
+		if (error) return { ok: false, code: toAuthErrorCode(error, "signUp") };
 		set({ user: data.user });
 		persistProfile(profile);
 		trackEvent("account-created", { anonymous: false });
@@ -177,8 +186,7 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 			email,
 			password,
 		});
-		if (error)
-			return { ok: false, code: toAuthErrorCode(error, "signIn") };
+		if (error) return { ok: false, code: toAuthErrorCode(error, "signIn") };
 		set({ user: data.user });
 		return { ok: true };
 	},
@@ -201,8 +209,7 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 
 	resetPassword: async (email) => {
 		const { error } = await supabase.auth.resetPasswordForEmail(email);
-		if (error)
-			return { ok: false, code: toAuthErrorCode(error, "signIn") };
+		if (error) return { ok: false, code: toAuthErrorCode(error, "signIn") };
 		return { ok: true };
 	},
 
@@ -226,7 +233,8 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 			return { ok: false, code };
 		}
 
-		const repatriation = await new HybridProjectRepository().moveAllCloudToLocal();
+		const repatriation =
+			await new HybridProjectRepository().moveAllCloudToLocal();
 		if (!repatriation.ok) return { ok: false, code: "repatriationFailed" };
 
 		const { error } = await supabase.rpc("delete_my_account");

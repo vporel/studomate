@@ -8,6 +8,7 @@ export type Scene3dStatus = "stopped" | "running" | "paused";
 
 export type Scene3dStateSnapshot = {
 	sceneId: string;
+	sceneVersion: number;
 	state: unknown;
 	simTimeMs: number;
 	status: Scene3dStatus;
@@ -20,6 +21,7 @@ export interface Scene3dBridgeHost {
 
 type ActiveScene = {
 	sceneId: string;
+	sceneVersion: number;
 	stepper: SceneStepper<unknown, unknown>;
 	/** Variable id → sensor point id. */
 	sensorByVariableId: Map<string, string>;
@@ -91,10 +93,13 @@ export default class Scene3dSimulationBridge {
 	getSnapshot(): Scene3dStateSnapshot | null {
 		if (this.active) return this.snapshotOf(this.active);
 		const scene = this.host.getProject()?.scene3d;
-		const model = scene ? getSceneModel(scene.sceneId) : undefined;
+		const model = scene
+			? getSceneModel(scene.sceneId, scene.sceneVersion)
+			: undefined;
 		if (!scene || !model) return null;
 		return {
 			sceneId: scene.sceneId,
+			sceneVersion: scene.sceneVersion,
 			state: model.createState(),
 			simTimeMs: 0,
 			status: "stopped",
@@ -139,8 +144,8 @@ export default class Scene3dSimulationBridge {
 	private createActiveScene(): ActiveScene | null {
 		const scene = this.host.getProject()?.scene3d;
 		if (!scene) return null;
-		const descriptor = getSceneDescriptor(scene.sceneId);
-		const model = getSceneModel(scene.sceneId);
+		const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion);
+		const model = getSceneModel(scene.sceneId, scene.sceneVersion);
 		if (!descriptor || !model) return null;
 
 		const sensorByVariableId = new Map<string, string>();
@@ -156,6 +161,7 @@ export default class Scene3dSimulationBridge {
 		}
 		return {
 			sceneId: scene.sceneId,
+			sceneVersion: scene.sceneVersion,
 			stepper: new SceneStepper(model),
 			sensorByVariableId,
 			actuatorPointByVariableId,
@@ -198,6 +204,7 @@ export default class Scene3dSimulationBridge {
 	private snapshotOf(active: ActiveScene): Scene3dStateSnapshot {
 		return {
 			sceneId: active.sceneId,
+			sceneVersion: active.sceneVersion,
 			state: active.stepper.getState(),
 			simTimeMs: active.stepper.getSimTimeMs(),
 			status: this.status,

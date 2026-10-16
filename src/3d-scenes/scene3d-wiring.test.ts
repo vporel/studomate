@@ -8,9 +8,13 @@ import {
 	planMissingVariables,
 } from "./scene3d-wiring";
 
-const elevator = getSceneDescriptor("elevator")!;
+const elevator = getSceneDescriptor("elevator", 1)!;
 const point = (id: string) => elevator.points.find((p) => p.id === id)!;
-const emptyScene: Scene3d = { sceneId: "elevator", bindings: {} };
+const emptyScene: Scene3d = {
+	sceneId: "elevator",
+	sceneVersion: 1,
+	bindings: {},
+};
 
 describe("scene3d-wiring", () => {
 	it("expects inputs for sensors and outputs for actuators", () => {
@@ -79,7 +83,7 @@ describe("scene3d-wiring", () => {
 			const taken = VariableBuilder.buildLogicOutput("v-up", "monter");
 			const plan = planMissingVariables(
 				elevator,
-				{ sceneId: "elevator", bindings: { down: "v-up" } },
+				{ sceneId: "elevator", sceneVersion: 1, bindings: { down: "v-up" } },
 				[taken],
 			);
 
@@ -91,7 +95,7 @@ describe("scene3d-wiring", () => {
 			const bound = VariableBuilder.buildLogicOutput("v-x", "autre");
 			const plan = planMissingVariables(
 				elevator,
-				{ sceneId: "elevator", bindings: { up: "v-x" } },
+				{ sceneId: "elevator", sceneVersion: 1, bindings: { up: "v-x" } },
 				[bound],
 			);
 
@@ -102,7 +106,7 @@ describe("scene3d-wiring", () => {
 		it("rebinds a point whose variable was deleted", () => {
 			const plan = planMissingVariables(
 				elevator,
-				{ sceneId: "elevator", bindings: { up: "gone" } },
+				{ sceneId: "elevator", sceneVersion: 1, bindings: { up: "gone" } },
 				[],
 			);
 
@@ -111,7 +115,7 @@ describe("scene3d-wiring", () => {
 	});
 
 	describe("display point", () => {
-		const cartonSorting = getSceneDescriptor("carton-sorting")!;
+		const cartonSorting = getSceneDescriptor("carton-sorting", 1)!;
 		const counter = cartonSorting.points.find((p) => p.id === "counter")!;
 
 		it("accepts a numeric memory variable only", () => {
@@ -127,7 +131,11 @@ describe("scene3d-wiring", () => {
 		});
 
 		it("is created as an integer memory variable, or reuses the one named like it", () => {
-			const scene: Scene3d = { sceneId: "carton-sorting", bindings: {} };
+			const scene: Scene3d = {
+				sceneId: "carton-sorting",
+				sceneVersion: 1,
+				bindings: {},
+			};
 			const created = planMissingVariables(cartonSorting, scene, []);
 			expect(
 				created.toCreate.find((c) => c.pointId === "counter")!.fields,

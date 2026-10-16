@@ -35,9 +35,8 @@ function LadderFlowContent() {
 	const th = useTheme();
 	const tReorderRaw = useT("ladderEditor.reorder");
 	const tReorder = useMemo(
-		() =>
-			(key: string, values?: Record<string, string | number>) =>
-				tReorderRaw(key as never, values as never),
+		() => (key: string, values?: Record<string, string | number>) =>
+			tReorderRaw(key as never, values as never),
 		[tReorderRaw],
 	);
 	const sections = useLadderStore((state) => state.ladder.sections);

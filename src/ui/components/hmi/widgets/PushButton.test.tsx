@@ -16,7 +16,11 @@ function setup(data: Partial<PushButtonData>, value: boolean | undefined) {
 			onTrigger={onTrigger}
 		/>,
 	);
-	return { onValueChange, onTrigger, button: screen.getByText("BP").parentElement! };
+	return {
+		onValueChange,
+		onTrigger,
+		button: screen.getByText("BP").parentElement!,
+	};
 }
 
 describe("PushButton — simulation", () => {

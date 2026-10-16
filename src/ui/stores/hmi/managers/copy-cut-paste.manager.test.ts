@@ -47,13 +47,9 @@ describe("HmiCopyCutPasteManager", () => {
 			const original = store.getState().addWidget("push-button", 100, 100);
 			store.getState().selectWidget(original.id);
 			store.getState().copyCutPasteManager.copySelectedElements();
-			store
-				.getState()
-				.setScreenToCanvasPosition(() => ({ x: 313, y: 247 }));
+			store.getState().setScreenToCanvasPosition(() => ({ x: 313, y: 247 }));
 
-			store
-				.getState()
-				.copyCutPasteManager.pasteElements({ x: 0, y: 0 });
+			store.getState().copyCutPasteManager.pasteElements({ x: 0, y: 0 });
 
 			const pasted = Object.values(store.getState().hmiPage.widgets).find(
 				(w) => w.id !== original.id,

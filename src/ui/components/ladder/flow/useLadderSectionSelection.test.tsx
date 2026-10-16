@@ -44,7 +44,12 @@ function setup(sectionIds = ["s1", "s2", "s3"]) {
 	}
 
 	const utils = render(<Host />);
-	return { ...utils, setSelectedSectionIds, deselectAllElements, deleteSections };
+	return {
+		...utils,
+		setSelectedSectionIds,
+		deselectAllElements,
+		deleteSections,
+	};
 }
 
 describe("useLadderSectionSelection", () => {
@@ -58,9 +63,7 @@ describe("useLadderSectionSelection", () => {
 	});
 
 	const pointerDown = (el: Element, init: MouseEventInit = {}) =>
-		el.dispatchEvent(
-			new MouseEvent("pointerdown", { bubbles: true, ...init }),
-		);
+		el.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true, ...init }));
 
 	it("Ctrl+clic ajoute puis retire une section de la sélection", () => {
 		const { getByTestId, setSelectedSectionIds } = setup();

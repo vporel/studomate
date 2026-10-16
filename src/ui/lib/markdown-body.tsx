@@ -25,8 +25,18 @@ const BASE_SX: SxProps<Theme> = {
 		overflowX: "auto",
 	},
 	"& pre code": { backgroundColor: "transparent", px: 0 },
-	"& figure": { display: "inline-block", textAlign: "center", m: 1, maxWidth: "100%" },
-	"& figure img": { display: "block", mx: "auto", maxWidth: "100%", height: "auto" },
+	"& figure": {
+		display: "inline-block",
+		textAlign: "center",
+		m: 1,
+		maxWidth: "100%",
+	},
+	"& figure img": {
+		display: "block",
+		mx: "auto",
+		maxWidth: "100%",
+		height: "auto",
+	},
 	"& figcaption": { fontSize: "0.8rem", color: "text.secondary", mt: 0.5 },
 	"& table": { borderCollapse: "collapse", my: 1 },
 	"& th, & td": {

@@ -21,230 +21,16 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import ParkingDescriptor from "@/3d-scenes/parking/v1/parking.descriptor";
+import { PARKING_CAPACITY } from "@/3d-scenes/parking/v1/parking.model";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
-/** Nombre de places du parking — sert de borne au compteur et à la jauge. */
-export const CAPACITE = 4;
-
-const CX = 500;
-
-/** Rouge (barrière fermée) / vert (barrière ouverte) — animation de style du bandeau de barrière. */
-const BARRIERE_FERMEE = "#c62828";
-const BARRIERE_OUVERTE = "#2e7d32";
-
-/**
- * Page HMI commune à l'énoncé et à la solution : plan du parking, barrière, boutons de demande,
- * bouton « véhicule passé », voyants et indicateurs d'occupation.
- */
-function buildParkingPage(): HmiPage {
-	const page = new HmiPage(createRandomId(), "Parking", true);
-	let stack = 0;
-
-	page.addWidget(
-		HmiWidget.create(
-			"text",
-			CX - 140,
-			24,
-			{ width: 280, height: 28 },
-			{
-				text: "Parking à barrière",
-				style: { fontSize: 16, color: "#333333", align: "center" },
-			},
-			stack++,
-			"Titre",
-		),
-	);
-
-	// Plan du parking
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			90,
-			110,
-			{ width: 420, height: 380 },
-			{
-				style: {
-					fill: "#cfd8dc",
-					stroke: "#90a4ae",
-					strokeWidth: 2,
-					borderRadius: 4,
-				},
-			},
-			stack++,
-			"Parking",
-		),
-	);
-
-	// Emplacements : l'emplacement i (1-indexé) est occupé dès que `places >= i`. Les animations
-	// ne testant que l'égalité, on énumère chaque valeur de `places` qui le rend occupé.
-	const EMPLACEMENT_OCCUPE = { fill: "#90caf9", stroke: "#42a5f5" };
-	for (let i = 0; i < CAPACITE; i++) {
-		page.addWidget(
-			HmiWidget.create(
-				"rectangle",
-				120 + i * 95,
-				150,
-				{ width: 75, height: 120 },
-				{
-					style: {
-						fill: "#eceff1",
-						stroke: "#b0bec5",
-						strokeWidth: 1,
-						borderRadius: 2,
-					},
-					animations: {
-						style: {
-							variable: "places",
-							rows: Array.from({ length: CAPACITE - i }, (_, k) => ({
-								value: i + 1 + k,
-								properties: EMPLACEMENT_OCCUPE,
-							})),
-						},
-					},
-				},
-				stack++,
-				`Emplacement ${i + 1}`,
-			),
-		);
-	}
-
-	// Bandeau de barrière, à l'entrée du parking
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			90,
-			470,
-			{ width: 150, height: 18 },
-			{
-				style: {
-					fill: BARRIERE_FERMEE,
-					stroke: "#7f1d1d",
-					strokeWidth: 1,
-					borderRadius: 2,
-				},
-				animations: {
-					style: {
-						variable: "barriere",
-						rows: [
-							{
-								value: 0,
-								properties: { fill: BARRIERE_FERMEE, stroke: "#7f1d1d" },
-							},
-							{
-								value: 1,
-								properties: { fill: BARRIERE_OUVERTE, stroke: "#1b5e20" },
-							},
-						],
-					},
-				},
-			},
-			stack++,
-			"Barrière",
-		),
-	);
-
-	// — Colonne de commande, à droite —————————————————————————————————————
-	const colX = 600;
-
-	page.addWidget(
-		HmiWidget.create(
-			"push-button",
-			colX,
-			120,
-			{ width: 220, height: 44 },
-			{ variable: "dem_entree", label: "Demande entrée" },
-			stack++,
-			"BP entrée",
-		),
-	);
-	page.addWidget(
-		HmiWidget.create(
-			"push-button",
-			colX,
-			180,
-			{ width: 220, height: 44 },
-			{ variable: "dem_sortie", label: "Demande sortie" },
-			stack++,
-			"BP sortie",
-		),
-	);
-	page.addWidget(
-		HmiWidget.create(
-			"push-button",
-			colX,
-			240,
-			{ width: 220, height: 44 },
-			{ variable: "passage", label: "Véhicule passé" },
-			stack++,
-			"BP passage",
-		),
-	);
-
-	page.addWidget(
-		HmiWidget.create(
-			"indicator",
-			colX,
-			320,
-			{ width: 40, height: 40 },
-			{ variable: "barriere", label: "Barrière ouverte" },
-			stack++,
-			"Voyant barrière",
-		),
-	);
-	page.addWidget(
-		HmiWidget.create(
-			"indicator",
-			colX + 150,
-			320,
-			{ width: 40, height: 40 },
-			{ variable: "complet", label: "Parking complet" },
-			stack++,
-			"Voyant complet",
-		),
-	);
-
-	page.addWidget(
-		HmiWidget.create(
-			"numeric-display",
-			colX,
-			400,
-			{ width: 220, height: 44 },
-			{
-				variable: "places",
-				label: "Places occupées",
-				unit: `/ ${CAPACITE}`,
-				decimalPlaces: 0,
-			},
-			stack++,
-			"Affichage places",
-		),
-	);
-	page.addWidget(
-		HmiWidget.create(
-			"gauge",
-			colX,
-			470,
-			{ width: 220, height: 40 },
-			{
-				variable: "places",
-				label: "Occupation",
-				min: 0,
-				max: CAPACITE,
-				style: { orientation: "horizontal" },
-			},
-			stack++,
-			"Jauge occupation",
-		),
-	);
-
-	return page;
-}
+/** Nombre de places du parking (celles de la scène 3D), borne du compteur `places`. */
+export const CAPACITE = PARKING_CAPACITY;
 
 export function createParkingVariables(): Variable[] {
 	return [
@@ -271,18 +57,40 @@ export function createParkingVariables(): Variable[] {
 
 /**
  * Crée un projet "Parking à barrière" pré-configuré :
- * — 3 entrées booléennes (dem_entree, dem_sortie, passage) + 2 sorties (barriere, complet)
- * — 1 mémoire entière `places` (compteur de véhicules)
- * — 1 page HMI (plan du parking, boutons, jauge, affichage)
+ * — 3 entrées booléennes fournies par la scène 3D : `dem_entree` et `dem_sortie` (voiture en
+ *   attente devant la barrière d'entrée / de sortie) et `passage` (cellule sous une barrière,
+ *   vraie tant qu'une voiture s'y trouve)
+ * — 3 sorties : `barriere_entree`, `barriere_sortie` (ouverture) et `complet` (voyant)
+ * — 1 mémoire entière `places` (compteur de véhicules, affiché sur le pupitre 3D)
+ * — scène 3D « Parking » câblée sur ces variables
  * — aucun programme (l'étudiant l'écrit)
  */
 export function createParkingProject(): Project {
 	const project = new Project(createRandomId(), "Parking à barrière", "");
 
-	project.variables.push(...createParkingVariables());
+	project.variables.push(
+		VariableBuilder.buildLogicInput(createRandomId(), "dem_entree"),
+		VariableBuilder.buildLogicInput(createRandomId(), "dem_sortie"),
+		VariableBuilder.buildLogicInput(createRandomId(), "passage"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "barriere_entree"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "barriere_sortie"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "complet"),
+		VariableBuilder.buildMemoryInt(createRandomId(), "places"),
+	);
 
-	const page = buildParkingPage();
-	project.hmiPages[page.id] = page;
+	const variableIdByMnemonic = new Map(
+		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	);
+	project.scene3d = {
+		sceneId: ParkingDescriptor.id,
+		sceneVersion: ParkingDescriptor.version,
+		bindings: Object.fromEntries(
+			ParkingDescriptor.points.map((point) => [
+				point.id,
+				variableIdByMnemonic.get(point.suggestedMnemonic)!,
+			]),
+		),
+	};
 
 	return project;
 }
@@ -291,8 +99,8 @@ export function createParkingProject(): Project {
  * Version complète et simulable du parking à barrière.
  *
  * GRAFCET "Commande" — sélection de séquence entrée / sortie :
- *   E0 (initial) ─[dem_entree ET places < CAPACITE]→ E1 : barrière ouverte, places += 1
- *                ─[dem_sortie ET places > 0]────────→ E3 : barrière ouverte, places -= 1
+ *   E0 (initial) ─[dem_entree ET places < CAPACITE]→ E1 : barrière d'entrée ouverte, places += 1
+ *                ─[dem_sortie ET places > 0]────────→ E3 : barrière de sortie ouverte, places -= 1
  *   E1 ─[passage]→ E2 ─[NON passage]→ E0
  *   E3 ─[passage]→ E4 ─[NON passage]→ E0
  *
@@ -308,8 +116,8 @@ export function createParkingSolution(): Project {
 	// « entrée » est la branche de gauche — le pré-compilateur lui donne la priorité si les
 	// deux réceptivités sont vraies simultanément. Chaque branche reboucle sur l'étape 0 par
 	// un renvoi d'étape (=0) plutôt qu'une connexion de retour, pour tenir dans la page A4.
-	const XL = 140;
-	const XR = 460;
+	const XL = 20;
+	const XR = 400;
 	const XC = (XL + XR) / 2;
 
 	const e0 = new StepBuilder()
@@ -322,7 +130,7 @@ export function createParkingSolution(): Project {
 	// aval (offsets alignés sur les centres de t01/t03) et que le pivot soit sous l'étape 0.
 	const orStart = new JunctionOrStartBuilder()
 		.id(createRandomId())
-		.dimensions(360, 30)
+		.dimensions(XR - XL + 40, 30)
 		.branchesPositions(20, XR - XL + 20)
 		.pivotPosition(XC - XL)
 		.position(XL, 95)
@@ -381,10 +189,10 @@ export function createParkingSolution(): Project {
 
 	const aBarriere1 = new ActionBuilder()
 		.id(createRandomId())
-		.expression("barriere")
+		.expression("barriere_entree")
 		.type(ActionType.BOOLEAN_VARIABLE)
 		.executionMode(ActionExecutionMode.CONTINUOUS)
-		.width(70)
+		.width(135)
 		.position(XL + 55, 220)
 		.build();
 	const aInc = new ActionBuilder()
@@ -392,15 +200,15 @@ export function createParkingSolution(): Project {
 		.expression("places := places + 1")
 		.type(ActionType.NUMERIC_VARIABLE)
 		.executionMode(ActionExecutionMode.RISING_EDGE)
-		.width(170)
-		.position(XL + 55 + 70, 220)
+		.width(175)
+		.position(XL + 55 + 135, 220)
 		.build();
 	const aBarriere3 = new ActionBuilder()
 		.id(createRandomId())
-		.expression("barriere")
+		.expression("barriere_sortie")
 		.type(ActionType.BOOLEAN_VARIABLE)
 		.executionMode(ActionExecutionMode.CONTINUOUS)
-		.width(70)
+		.width(135)
 		.position(XR + 55, 220)
 		.build();
 	const aDec = new ActionBuilder()
@@ -408,8 +216,8 @@ export function createParkingSolution(): Project {
 		.expression("places := places - 1")
 		.type(ActionType.NUMERIC_VARIABLE)
 		.executionMode(ActionExecutionMode.RISING_EDGE)
-		.width(170)
-		.position(XR + 55 + 70, 220)
+		.width(175)
+		.position(XR + 55 + 135, 220)
 		.build();
 
 	const renvoiEntree = new StepReferralSourceBuilder()

@@ -92,8 +92,7 @@ export default function useBarDrag(
 				let lastKey = `${baseline.nodeX},${baseline.width}`;
 
 				const onPointerMove = (ev: PointerEvent) => {
-					const dx =
-						(ev.clientX - startClientX) / (stateRef.current.zoom || 1);
+					const dx = (ev.clientX - startClientX) / (stateRef.current.zoom || 1);
 					const resolved = resolveExtremeBranchDrag(
 						baseline,
 						edge,

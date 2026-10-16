@@ -70,11 +70,21 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("blocksIntro1")}</Typography>
 					<Typography mb={2}>{t("blocksIntro2")}</Typography>
+					<ManualFigure
+						src="/user-manual/ladder/timer-block.svg"
+						alt={t("timerBlockFigureAlt")}
+						width={440}
+					/>
 					<Typography variant="h5" mb={1}>
 						{t("timerTitle")}
 					</Typography>
 					<Typography mb={2}>{t("timerIntro")}</Typography>
 					<ManualList items={t.raw("timerItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/timers.svg"
+						alt={t("timersFigureAlt")}
+						width={590}
+					/>
 					<Typography mb={2}>{t("timerOutro")}</Typography>
 					<Typography variant="h5" mb={1}>
 						{t("counterTitle")}
@@ -113,6 +123,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("connectionsIntro")}</Typography>
 					<ManualList items={t.raw("connectionsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/connections.svg"
+						alt={t("connectionsFigureAlt")}
+						width={370}
+					/>
 					<Typography mb={2}>{t("connectionsMenu")}</Typography>
 					<Typography mb={2}>{t("connectionsSim")}</Typography>
 					<Divider sx={{ my: 2 }} />

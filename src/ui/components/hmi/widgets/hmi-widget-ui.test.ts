@@ -86,7 +86,11 @@ describe("descripteurs de champs (propertyFields)", () => {
 		const orientation = HMI_WIDGET_UI.gauge.propertyFields.find(
 			(f) => f.kind === "select" && f.label === "fields.orientation",
 		);
-		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
+		if (
+			!orientation ||
+			orientation.kind !== "select" ||
+			!orientation.widgetPatch
+		)
 			throw new Error("champ orientation introuvable");
 		const patch = orientation.widgetPatch(
 			{ size: { width: 120, height: 40 } } as never,
@@ -99,7 +103,11 @@ describe("descripteurs de champs (propertyFields)", () => {
 		const orientation = HMI_WIDGET_UI.line.propertyFields.find(
 			(f) => f.kind === "select" && f.label === "fields.orientation",
 		);
-		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
+		if (
+			!orientation ||
+			orientation.kind !== "select" ||
+			!orientation.widgetPatch
+		)
 			throw new Error("champ orientation introuvable");
 		const patch = orientation.widgetPatch(
 			{ size: { width: 120, height: 2 } } as never,
@@ -112,7 +120,11 @@ describe("descripteurs de champs (propertyFields)", () => {
 		const orientation = HMI_WIDGET_UI.slider.propertyFields.find(
 			(f) => f.kind === "select" && f.label === "fields.orientation",
 		);
-		if (!orientation || orientation.kind !== "select" || !orientation.widgetPatch)
+		if (
+			!orientation ||
+			orientation.kind !== "select" ||
+			!orientation.widgetPatch
+		)
 			throw new Error("champ orientation introuvable");
 		const patch = orientation.widgetPatch(
 			{ size: { width: 160, height: 40 } } as never,
@@ -136,9 +148,9 @@ describe("animatableStyleProps", () => {
 				staticValue: (d: unknown) => string;
 			}[];
 			props.forEach((prop) => {
-				expect(typeof prop.staticValue(HMI_WIDGET_DEFINITIONS[type].defaultData)).toBe(
-					"string",
-				);
+				expect(
+					typeof prop.staticValue(HMI_WIDGET_DEFINITIONS[type].defaultData),
+				).toBe("string");
 			});
 		});
 	});

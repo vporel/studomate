@@ -37,7 +37,12 @@ export default function ExcludedFromExecutionWarning({
 			>
 				{t("warningLabel")}
 			</Button>
-			<Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
+			<Dialog
+				open={open}
+				onClose={() => setOpen(false)}
+				maxWidth="xs"
+				fullWidth
+			>
 				<DialogTitle>{t("modalTitle")}</DialogTitle>
 				<DialogContent>
 					<DialogContentText sx={{ mb: 1 }}>{t("modalBody")}</DialogContentText>

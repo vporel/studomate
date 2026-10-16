@@ -51,7 +51,9 @@ const texts = (calls: Call[]) =>
 
 describe("toPdfSafeText", () => {
 	it("translittère les flèches et symboles hors WinAnsi", () => {
-		expect(toPdfSafeText("vert → orange ⇒ rouge")).toBe("vert -> orange -> rouge");
+		expect(toPdfSafeText("vert → orange ⇒ rouge")).toBe(
+			"vert -> orange -> rouge",
+		);
 		expect(toPdfSafeText("a ≤ b ≠ c")).toBe("a <= b != c");
 	});
 

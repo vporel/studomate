@@ -67,7 +67,10 @@ export default function InputBehaviorCell({
 	const [max, setMax] = useState("");
 
 	if (!variable) return null;
-	const allowedKinds = getAllowedInputBehaviorKinds(variable.zone, variable.type);
+	const allowedKinds = getAllowedInputBehaviorKinds(
+		variable.zone,
+		variable.type,
+	);
 	if (allowedKinds.length === 0) return null;
 
 	const open = (e: MouseEvent<HTMLElement>) => {
@@ -132,7 +135,13 @@ export default function InputBehaviorCell({
 				}}
 			>
 				<Box
-					sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 2, width: 260 }}
+					sx={{
+						display: "flex",
+						flexDirection: "column",
+						gap: 1.5,
+						p: 2,
+						width: 260,
+					}}
 				>
 					<TextField
 						select

@@ -1,4 +1,4 @@
-import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/carton-sorting.descriptor";
+import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/v1/carton-sorting.descriptor";
 import { createCartonSortingProject } from "@/templates/carton-sorting.template";
 import collectScene3dReferences from "./scene3d-references";
 import CrossReferenceCollector from "./cross-reference-collector";
@@ -12,7 +12,11 @@ describe("collectScene3dReferences", () => {
 
 	it("returns nothing for an unknown scene", () => {
 		const project = createCartonSortingProject();
-		project.scene3d = { sceneId: "nope", bindings: { t1: "x" } };
+		project.scene3d = {
+			sceneId: "nope",
+			sceneVersion: 1,
+			bindings: { t1: "x" },
+		};
 		expect(collectScene3dReferences(project)).toEqual([]);
 	});
 
@@ -24,7 +28,7 @@ describe("collectScene3dReferences", () => {
 		expect(byVariable["cpt_psce_c"]).toMatchObject({
 			access: "write",
 			programType: "scene3d",
-			programId: "carton-sorting",
+			programId: "carton-sorting@1",
 			locationId: "cartonAtStation",
 			locationKind: "scene3d-point",
 		});

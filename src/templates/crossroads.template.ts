@@ -19,7 +19,7 @@ import {
 } from "@/schemas/grafcet/transition.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import { HmiWidget, IndicatorData } from "@/schemas/hmi/hmi-widget.schema";
-import CrossroadsDescriptor from "@/3d-scenes/crossroads/crossroads.descriptor";
+import CrossroadsDescriptor from "@/3d-scenes/crossroads/v1/crossroads.descriptor";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createRandomId } from "@/ids";
@@ -99,6 +99,7 @@ export function createCrossroadsProject(): Project {
 	);
 	project.scene3d = {
 		sceneId: CrossroadsDescriptor.id,
+		sceneVersion: CrossroadsDescriptor.version,
 		bindings: Object.fromEntries(
 			CrossroadsDescriptor.points.map((point) => [
 				point.id,

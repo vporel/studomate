@@ -1,5 +1,6 @@
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import {
 	createParkingProject,
 	createParkingSolution,
@@ -30,53 +31,44 @@ describe("parking.template", () => {
 					"dem_entree",
 					"dem_sortie",
 					"passage",
-					"barriere",
+					"barriere_entree",
+					"barriere_sortie",
 					"complet",
 					"places",
 				]),
 			);
 		});
 
-		it("contient une page HMI avec les boutons et l'affichage du compteur", () => {
-			const pages = Object.values(project.hmiPages);
-			expect(pages).toHaveLength(1);
-			const types = Object.values(pages[0].widgets).map((w) => w.type);
-			expect(types).toEqual(
-				expect.arrayContaining([
-					"push-button",
-					"numeric-display",
-					"gauge",
-					"indicator",
-				]),
-			);
+		it("n'a plus de page HMI : le pupitre est dans la scène 3D", () => {
+			expect(Object.values(project.hmiPages)).toHaveLength(0);
 		});
 
-		it("anime les 4 emplacements sur `places` (occupé dès que places >= n)", () => {
-			const page = Object.values(project.hmiPages)[0];
-			const emplacements = Object.values(page.widgets)
-				.filter((w) => w.name.startsWith("Emplacement "))
-				.sort((a, b) => a.name.localeCompare(b.name));
-			expect(emplacements).toHaveLength(4);
-			emplacements.forEach((w, i) => {
-				const rows = w.data.animations?.style?.rows ?? [];
-				expect(w.data.animations?.style?.variable).toBe("places");
-				expect(rows.map((r) => r.value)).toEqual(
-					Array.from({ length: 4 - i }, (_, k) => i + 1 + k),
-				);
-			});
+		it("câble la scène 3D Parking sur les variables du projet", () => {
+			expect(project.scene3d?.sceneId).toBe("parking");
+			const bindings = project.scene3d!.bindings;
+			const mnemonicOf = (pointId: string) =>
+				project.variables.find((v) => v.id === bindings[pointId])?.mnemonic;
+			expect(mnemonicOf("entryDetector")).toBe("dem_entree");
+			expect(mnemonicOf("exitDetector")).toBe("dem_sortie");
+			expect(mnemonicOf("photocell")).toBe("passage");
+			expect(mnemonicOf("barrierEntry")).toBe("barriere_entree");
+			expect(mnemonicOf("barrierExit")).toBe("barriere_sortie");
+			expect(mnemonicOf("full")).toBe("complet");
+			expect(mnemonicOf("places")).toBe("places");
 		});
 
-		it("donne aux entrées le comportement de leur organe physique", () => {
-			const behaviorKinds = Object.fromEntries(
-				project.variables
-					.filter((v) => v.zone === "logic-input")
-					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
-			);
-			expect(behaviorKinds).toEqual({
-				dem_entree: "push-button-no",
-				dem_sortie: "push-button-no",
-				passage: "push-button-no",
-			});
+		it("lie chaque point de la scène à une variable de la bonne zone", () => {
+			const zones = {
+				sensor: "logic-input",
+				actuator: "logic-output",
+				display: "memory",
+			};
+			for (const point of getSceneDescriptor("parking", 1)!.points) {
+				const variable = project.variables.find(
+					(v) => v.id === project.scene3d!.bindings[point.id],
+				)!;
+				expect(variable.zone).toBe(zones[point.kind]);
+			}
 		});
 
 		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
@@ -93,12 +85,17 @@ describe("parking.template", () => {
 			project = createParkingSolution();
 		});
 
-		it("conserve les variables et la page HMI de l'exercice", () => {
+		it("conserve les variables et la scène 3D de l'exercice", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
-				expect.arrayContaining(["places", "barriere", "complet"]),
+				expect.arrayContaining([
+					"places",
+					"barriere_entree",
+					"barriere_sortie",
+					"complet",
+				]),
 			);
-			expect(Object.values(project.hmiPages)).toHaveLength(1);
+			expect(project.scene3d?.sceneId).toBe("parking");
 		});
 
 		it("passe le pipeline complet sans erreur d'analyse ni de compilation", () => {
@@ -146,6 +143,8 @@ describe("parking.template", () => {
 			);
 			// A4 portrait ≈ 210 mm ≈ 794 px à 96 dpi
 			expect(maxX - minX).toBeLessThan(794);
+			// Le cadre de page de l'éditeur part de x = 0 : rien ne doit le dépasser.
+			expect(maxX).toBeLessThanOrEqual(794);
 		});
 
 		it("produit des routines exécutables (2 grafcets + mémos + init + Main + observation)", () => {

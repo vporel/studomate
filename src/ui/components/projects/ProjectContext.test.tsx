@@ -5,10 +5,7 @@ import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useStore } from "zustand";
 import Project from "@/schemas/project/project.schema";
-import {
-	ProjectContextProvider,
-	useProjectContext,
-} from "./ProjectContext";
+import { ProjectContextProvider, useProjectContext } from "./ProjectContext";
 
 jest.mock("./analysis-result/AnalysisResult", () => () => null);
 jest.mock("./ExportModal", () => () => null);
@@ -28,7 +25,9 @@ const mockUrl = {
 	getShareTokenFromUrl: jest.fn<string | null, []>(() => null),
 	setProjectIdInUrl: jest.fn(),
 	getTemplateIdFromUrl: jest.fn<string | null, []>(() => null),
-	getTemplateModeFromUrl: jest.fn<"exercise" | "solution", []>(() => "exercise"),
+	getTemplateModeFromUrl: jest.fn<"exercise" | "solution", []>(
+		() => "exercise",
+	),
 	getTemplateAutostartFromUrl: jest.fn<boolean, []>(() => false),
 	clearTemplateParamsFromUrl: jest.fn(),
 };
@@ -42,8 +41,12 @@ jest.mock("@/ui/stores/project/url/project-url", () => ({
 	clearTemplateParamsFromUrl: () => mockUrl.clearTemplateParamsFromUrl(),
 }));
 
-const mockCreateExercise = jest.fn(() => new Project("tpl-exercise", "Exercise", ""));
-const mockCreateSolution = jest.fn(() => new Project("tpl-solution", "Solution", ""));
+const mockCreateExercise = jest.fn(
+	() => new Project("tpl-exercise", "Exercise", ""),
+);
+const mockCreateSolution = jest.fn(
+	() => new Project("tpl-solution", "Solution", ""),
+);
 const mockCreateWithStatement = jest.fn(
 	() => new Project("tpl-with-statement-exercise", "Avec énoncé", ""),
 );
@@ -144,7 +147,9 @@ describe("ProjectContextProvider - ouverture depuis un template", () => {
 		);
 		expect(mockCreateSolution).not.toHaveBeenCalled();
 		expect(mockUrl.clearTemplateParamsFromUrl).toHaveBeenCalled();
-		expect(screen.queryByTestId("draft-recovery-dialog")).not.toBeInTheDocument();
+		expect(
+			screen.queryByTestId("draft-recovery-dialog"),
+		).not.toBeInTheDocument();
 	});
 
 	it("ouvre la solution quand demandée et disponible", async () => {

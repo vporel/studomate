@@ -87,7 +87,16 @@ export default function AuthModal() {
 			return;
 		}
 		onClose();
-	}, [signInMode, pseudo, email, password, signIn, signInAnonymous, onClose, tError]);
+	}, [
+		signInMode,
+		pseudo,
+		email,
+		password,
+		signIn,
+		signInAnonymous,
+		onClose,
+		tError,
+	]);
 
 	const onSubmitSignUp = useCallback(async () => {
 		setSubmitting(true);
@@ -102,7 +111,17 @@ export default function AuthModal() {
 			return;
 		}
 		onClose();
-	}, [signUpMode, pseudo, email, password, profile, signUp, signUpAnonymous, onClose, tError]);
+	}, [
+		signUpMode,
+		pseudo,
+		email,
+		password,
+		profile,
+		signUp,
+		signUpAnonymous,
+		onClose,
+		tError,
+	]);
 
 	const onSubmitResetPassword = useCallback(async () => {
 		setSubmitting(true);

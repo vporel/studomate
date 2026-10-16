@@ -1,5 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import type { ElevatorState } from "@/3d-scenes/elevator/elevator.model";
+import type {
+	ElevatorButton,
+	ElevatorState,
+} from "@/3d-scenes/elevator/v1/elevator.model";
 import type PLC from "@/simulator/core/plc/plc";
 import Scene3dSimulationBridge from "@/ui/stores/project/managers/3d-scene/scene3d-simulation.bridge";
 import {
@@ -37,10 +40,10 @@ function startElevator(project: Project, scanTimeMs = 10) {
 	bridge.onSimulationStart();
 	plc.start();
 
-	const press = async (name: string) => {
-		plc!.setPhysicalInputValueByName(name, true);
+	const press = async (button: ElevatorButton) => {
+		bridge.queueInteraction({ type: "pressButton", button });
 		await jest.advanceTimersByTimeAsync(scanTimeMs * 4);
-		plc!.setPhysicalInputValueByName(name, false);
+		bridge.queueInteraction({ type: "releaseButton", button });
 	};
 	return {
 		plc: plc!,
@@ -68,7 +71,6 @@ describe("elevator template with its 3D scene", () => {
 		expect(getVariableValue(plc, "porte_ouverte")).toBe(false);
 		expect(getVariableValue(plc, "position")).toBe(0);
 		expect(getVariableValue(plc, "etage_courant")).toBe(0);
-		expect(getVariableValue(plc, "cabine_y")).toBe(200);
 		stop();
 	});
 
@@ -86,15 +88,12 @@ describe("elevator template with its 3D scene", () => {
 		);
 		await jest.advanceTimersByTimeAsync(50);
 
-		await press("appel_2");
+		await press("landingButton2");
 		await jest.advanceTimersByTimeAsync(6000);
 		if (getError()) throw getError();
 		expect(getState().position).toBeGreaterThan(195);
 		expect(getVariableValue(plc, "etage_2")).toBe(true);
 		expect(getVariableValue(plc, "etage_courant")).toBe(2);
-		expect(getVariableValue(plc, "cabine_y")).toBe(
-			200 - (getVariableValue(plc, "position") as number),
-		);
 
 		await jest.advanceTimersByTimeAsync(8000);
 		if (getError()) throw getError();
@@ -102,7 +101,7 @@ describe("elevator template with its 3D scene", () => {
 		expect(getVariableValue(plc, "porte_ouverte")).toBe(false);
 		expect(getState().doorPosition).toBe(0);
 
-		await press("cabine_0");
+		await press("cabinButton0");
 		await jest.advanceTimersByTimeAsync(12000);
 		if (getError()) throw getError();
 		expect(getState().position).toBeLessThan(5);
@@ -116,7 +115,7 @@ describe("elevator template with its 3D scene", () => {
 			createElevatorSolution(),
 		);
 		await jest.advanceTimersByTimeAsync(50);
-		await press("appel_1");
+		await press("landingButton1");
 		let openedWhileMoving = false;
 		let openAt: number | null = null;
 		let closingAt: number | null = null;
@@ -143,7 +142,7 @@ describe("elevator template with its 3D scene", () => {
 			createElevatorSolution(),
 		);
 		await jest.advanceTimersByTimeAsync(50);
-		await press("appel_2");
+		await press("landingButton2");
 		await jest.advanceTimersByTimeAsync(2000);
 		expect(getState().position).toBeGreaterThan(0);
 		stop();

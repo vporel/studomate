@@ -80,8 +80,10 @@ describe("Slider : conception", () => {
 		fireEvent.click(screen.getByText("Niveau"));
 
 		expect(onClick).toHaveBeenCalled();
-		expect(input.closest("[class*=MuiSlider-root]")!.parentElement).toHaveStyle({
-			pointerEvents: "none",
-		});
+		expect(input.closest("[class*=MuiSlider-root]")!.parentElement).toHaveStyle(
+			{
+				pointerEvents: "none",
+			},
+		);
 	});
 });

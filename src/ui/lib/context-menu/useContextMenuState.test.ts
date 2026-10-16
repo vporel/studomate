@@ -49,7 +49,10 @@ describe("useContextMenuState", () => {
 		const element: Target = { type: "item", id: "a" };
 
 		act(() => {
-			result.current.openContextMenu({ clientX: 5, clientY: 5 } as any, element);
+			result.current.openContextMenu(
+				{ clientX: 5, clientY: 5 } as any,
+				element,
+			);
 		});
 		act(() => {
 			result.current.closeContextMenu();

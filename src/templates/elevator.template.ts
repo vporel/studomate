@@ -25,15 +25,9 @@ import {
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import ElevatorDescriptor from "@/3d-scenes/elevator/elevator.descriptor";
+import ElevatorDescriptor from "@/3d-scenes/elevator/v1/elevator.descriptor";
+import { FLOOR_POSITIONS } from "@/3d-scenes/elevator/v1/elevator.model";
 import {
-	CABIN_TRAVEL,
-	FLOOR_POSITIONS,
-} from "@/3d-scenes/elevator/elevator.model";
-import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
-import {
-	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
@@ -48,14 +42,6 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
-import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
-
-/** Hauteur de gaine, du RDC (0) au 2ᵉ étage (200), en pixels d'animation. */
-const POSITION_MAX = CABIN_TRAVEL;
-/** Position d'animation de chaque palier. */
-const ETAGE_POSITION = FLOOR_POSITIONS;
-
-const CX = 500;
 
 /** Chaîne chaque élément au suivant sur une ligne (ET implicite : rail → … → dernier). */
 function wireInSeries(elements: LadderElement[]): Connection[] {
@@ -108,26 +94,15 @@ function buildLadderSection(
 /**
  * Programme d'affichage de l'ascenseur, en Ladder, **fourni, à ne pas modifier**. La partie
  * opérative (cabine, porte, capteurs) est simulée par la scène 3D : ce programme en déduit les
- * grandeurs destinées à l'IHM, la position d'animation de la cabine et le numéro d'étage courant.
+ * numéro d'étage courant affiché sur le pupitre de la scène.
  */
 function buildDisplayLadder(): Ladder {
 	const affichage = buildLadderSection(
 		"Affichage",
-		"Sorties destinées au pupitre : position d'animation de la cabine et numéro d'étage courant.",
+		"Sortie destinée au pupitre : numéro d'étage courant.",
 		(rung) => {
-			// Position d'animation : la cabine monte quand `position` augmente
-			rung((r) => [
-				createRailTerminalElement(r),
-				createArithmeticBlockElement(r, 1, {
-					in1: `${POSITION_MAX}`,
-					in2: "position",
-					out: "cabine_y",
-					operator: "-",
-				}),
-			]);
-
 			// Numéro d'étage affiché, déduit des capteurs de présence
-			ETAGE_POSITION.forEach((_, etage) => {
+			FLOOR_POSITIONS.forEach((_, etage) => {
 				rung((r) => [
 					createRailTerminalElement(r),
 					createContactElement(`etage_${etage}`, "NO", r, 1),
@@ -143,197 +118,13 @@ function buildDisplayLadder(): Ladder {
 	return new Ladder(createRandomId(), "Affichage", [affichage]);
 }
 
-/** Page HMI commune : gaine, cabine et porte animées, boutons palier et cabine, voyants. */
-function buildElevatorPage(): HmiPage {
-	const page = new HmiPage(createRandomId(), "Ascenseur", true);
-	let stack = 0;
-
-	const addWidget = (
-		type: Parameters<typeof HmiWidget.create>[0],
-		x: number,
-		y: number,
-		size: { width: number; height: number },
-		data: Parameters<typeof HmiWidget.create>[4],
-		name: string,
-	) => page.addWidget(HmiWidget.create(type, x, y, size, data, stack++, name));
-
-	addWidget(
-		"text",
-		CX - 140,
-		20,
-		{ width: 280, height: 28 },
-		{
-			text: "Ascenseur 3 niveaux",
-			style: { fontSize: 16, color: "#333333", align: "center" },
-		},
-		"Titre",
-	);
-
-	// Gaine
-	addWidget(
-		"rectangle",
-		CX - 80,
-		60,
-		{ width: 160, height: 330 },
-		{
-			style: {
-				fill: "#eceff1",
-				stroke: "#90a4ae",
-				strokeWidth: 2,
-				borderRadius: 2,
-			},
-		},
-		"Gaine",
-	);
-
-	// Repères de niveau : un trait horizontal séparant les paliers (l'afficheur donne le numéro).
-	// Le palier haut coïncide avec le bord de la gaine — pas de trait.
-	ETAGE_POSITION.slice(0, -1).forEach((posEtage, etage) => {
-		const y = 70 + (POSITION_MAX - posEtage);
-		addWidget(
-			"rectangle",
-			CX - 80,
-			y,
-			{ width: 160, height: 2 },
-			{
-				style: {
-					fill: "#90a4ae",
-					stroke: "#90a4ae",
-					strokeWidth: 0,
-					borderRadius: 0,
-				},
-			},
-			`Repère ${etage}`,
-		);
-	});
-
-	// Cabine, animée en hauteur sur `cabine_y`
-	addWidget(
-		"rectangle",
-		CX - 55,
-		80,
-		{ width: 90, height: 90 },
-		{
-			style: {
-				fill: "#b0bec5",
-				stroke: "#546e7a",
-				strokeWidth: 2,
-				borderRadius: 2,
-			},
-			animations: { position: { yVariable: "cabine_y" } },
-		},
-		"Cabine",
-	);
-
-	// Porte : bande fine à droite de la cabine, suit la cabine ; verte ouverte, rouge fermée
-	addWidget(
-		"rectangle",
-		CX + 35,
-		80,
-		{ width: 14, height: 90 },
-		{
-			style: {
-				fill: "#c62828",
-				stroke: "#7f1d1d",
-				strokeWidth: 1,
-				borderRadius: 1,
-			},
-			animations: {
-				position: { yVariable: "cabine_y" },
-				style: {
-					variable: "porte_ouverte",
-					rows: [
-						{ value: 0, properties: { fill: "#c62828", stroke: "#7f1d1d" } },
-						{ value: 1, properties: { fill: "#2e7d32", stroke: "#1b5e20" } },
-					],
-				},
-			},
-		},
-		"Porte",
-	);
-
-	// Boutons d'appel palier, alignés sur les niveaux
-	ETAGE_POSITION.forEach((posEtage, etage) => {
-		const y = 70 + (POSITION_MAX - posEtage);
-		addWidget(
-			"push-button",
-			120,
-			y - 8,
-			{ width: 180, height: 40 },
-			{
-				variable: `appel_${etage}`,
-				label: etage === 0 ? "Appel RDC" : `Appel étage ${etage}`,
-			},
-			`Appel palier ${etage}`,
-		);
-	});
-
-	// Pupitre de cabine
-	const colX = 640;
-	addWidget(
-		"text",
-		colX,
-		60,
-		{ width: 200, height: 22 },
-		{
-			text: "Pupitre cabine",
-			style: { fontSize: 13, color: "#333333", align: "left" },
-		},
-		"Titre pupitre",
-	);
-	[2, 1, 0].forEach((etage, i) => {
-		addWidget(
-			"push-button",
-			colX,
-			90 + i * 52,
-			{ width: 200, height: 40 },
-			{
-				variable: `cabine_${etage}`,
-				label: etage === 0 ? "RDC" : `Étage ${etage}`,
-			},
-			`Bouton cabine ${etage}`,
-		);
-	});
-
-	// Voyants
-	const voyants: Array<{ mnemonic: string; label: string }> = [
-		{ mnemonic: "monter", label: "Montée" },
-		{ mnemonic: "descendre", label: "Descente" },
-		{ mnemonic: "porte_ouverte", label: "Porte ouverte" },
-	];
-	voyants.forEach(({ mnemonic, label }, i) => {
-		addWidget(
-			"indicator",
-			colX + i * 80,
-			270,
-			{ width: 36, height: 36 },
-			{ variable: mnemonic, label },
-			`Voyant ${mnemonic}`,
-		);
-	});
-
-	// Afficheur d'étage, à droite du titre du pupitre
-	addWidget(
-		"numeric-display",
-		colX + 150,
-		54,
-		{ width: 140, height: 40 },
-		{ variable: "etage_courant", label: "Étage", decimalPlaces: 0 },
-		"Afficheur étage",
-	);
-
-	return page;
-}
-
 /**
  * Crée un projet "Ascenseur" pré-configuré :
- * — 6 entrées booléennes : `appel_0/1/2` (paliers), `cabine_0/1/2` (pupitre)
  * — 3 sorties : `monter`, `descendre`, `porte`
- * — 4 capteurs booléens fournis par la scène 3D : `etage_0/1/2` (cabine au palier) et
- *   `porte_ouverte`, plus l'entrée analogique `position` (hauteur de la cabine)
- * — en mémoire, `cabine_y` et `etage_courant`, calculés pour l'IHM par le Ladder « Affichage »
+ * — 10 capteurs booléens fournis par la scène 3D : `etage_0/1/2` (cabine au palier),
+ *   `porte_ouverte`, `appel_0/1/2` (boutons palier) et `cabine_0/1/2` (boutons de la cabine), plus l'entrée analogique `position` (hauteur de la cabine)
+ * — en mémoire, `etage_courant`, calculé par le Ladder « Affichage » (affiché sur le pupitre 3D)
  *   (fourni et référencé par le Main)
- * — 1 page HMI (gaine, cabine et porte animées, boutons, voyants, afficheur)
  * — scène 3D « Ascenseur » câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
@@ -341,36 +132,12 @@ export function createElevatorProject(): Project {
 	const project = new Project(createRandomId(), "Ascenseur", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"appel_0",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"appel_1",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"appel_2",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"cabine_0",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"cabine_1",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"cabine_2",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_0"),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_1"),
+		VariableBuilder.buildLogicInput(createRandomId(), "appel_2"),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_0"),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_1"),
+		VariableBuilder.buildLogicInput(createRandomId(), "cabine_2"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "porte"),
@@ -379,7 +146,6 @@ export function createElevatorProject(): Project {
 		VariableBuilder.buildLogicInput(createRandomId(), "etage_2"),
 		VariableBuilder.buildLogicInput(createRandomId(), "porte_ouverte"),
 		VariableBuilder.buildAnalogInput(createRandomId(), "position"),
-		VariableBuilder.buildMemoryInt(createRandomId(), "cabine_y"),
 		VariableBuilder.buildMemoryInt(createRandomId(), "etage_courant"),
 	);
 
@@ -388,6 +154,7 @@ export function createElevatorProject(): Project {
 	);
 	project.scene3d = {
 		sceneId: ElevatorDescriptor.id,
+		sceneVersion: ElevatorDescriptor.version,
 		bindings: Object.fromEntries(
 			ElevatorDescriptor.points.map((point) => [
 				point.id,
@@ -406,9 +173,6 @@ export function createElevatorProject(): Project {
 		mainSection.id,
 		wireInSeries([mainRail, mainBlock]),
 	);
-
-	const page = buildElevatorPage();
-	project.hmiPages[page.id] = page;
 
 	return project;
 }

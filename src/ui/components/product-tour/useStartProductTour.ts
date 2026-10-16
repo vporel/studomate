@@ -8,9 +8,8 @@ import { useCallback } from "react";
 export default function useStartProductTour(): () => Promise<Driver | null> {
 	const t = useT("tour");
 	return useCallback(async () => {
-		const { default: startProductTour } = await import(
-			"@/ui/components/product-tour/start-product-tour"
-		);
+		const { default: startProductTour } =
+			await import("@/ui/components/product-tour/start-product-tour");
 		return startProductTour(
 			PRODUCT_TOUR_STEP_IDS.map((id) => ({
 				id,

@@ -20,11 +20,17 @@ describe("SceneChannel", () => {
 		editor.send({
 			type: "config",
 			sceneId: "carton-sorting",
+			sceneVersion: 1,
 			projectName: "P",
 		});
 
 		expect(received).toEqual([
-			{ type: "config", sceneId: "carton-sorting", projectName: "P" },
+			{
+				type: "config",
+				sceneId: "carton-sorting",
+				sceneVersion: 1,
+				projectName: "P",
+			},
 		]);
 	});
 

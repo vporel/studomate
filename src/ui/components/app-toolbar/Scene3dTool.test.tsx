@@ -30,13 +30,13 @@ describe("Scene3dTool", () => {
 	});
 
 	it("opens the scene tab when clicked", () => {
-		setup({ sceneId: "carton-sorting", bindings: {} });
+		setup({ sceneId: "carton-sorting", sceneVersion: 1, bindings: {} });
 		fireEvent.click(screen.getByRole("button", { name: /scène 3d/i }));
 		expect(open).toHaveBeenCalledTimes(1);
 	});
 
 	it("shows its label as a tooltip on hover", async () => {
-		setup({ sceneId: "carton-sorting", bindings: {} });
+		setup({ sceneId: "carton-sorting", sceneVersion: 1, bindings: {} });
 		fireEvent.mouseOver(screen.getByRole("button", { name: /scène 3d/i }));
 		expect(await screen.findByRole("tooltip")).toHaveTextContent("Scène 3D");
 	});

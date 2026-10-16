@@ -2,10 +2,7 @@
 
 import { JsPdfExporter } from "@/ui/lib/pdf/jspdf.pdf-exporter";
 import { PdfCoverPage, PdfExportSection } from "@/ui/lib/pdf/pdf-exporter";
-import {
-	buildProgramSection,
-	ProgramExportConfig,
-} from "@/ui/pdf/program-pdf";
+import { buildProgramSection, ProgramExportConfig } from "@/ui/pdf/program-pdf";
 import { LadderRenderContext } from "@/ui/pdf/drawing/ladder-render-context";
 import trackEvent from "@/ui/services/analytics";
 import { useT } from "@/ui/i18n/useT";
@@ -87,11 +84,7 @@ export function usePdfExport(): UsePdfExportResult {
 
 				try {
 					programSections.push(
-						buildProgramSection(
-							config,
-							sectionTitle(config),
-							ladderContext,
-						),
+						buildProgramSection(config, sectionTitle(config), ladderContext),
 					);
 				} catch {
 					setExportState({

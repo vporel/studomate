@@ -26,7 +26,8 @@ export default function SceneApp({ session }: { session: string }) {
 		const created = new SceneView({
 			transport: createBrowserSceneTransport(session),
 			now: () => performance.now(),
-			getLerp: (sceneId) => getSceneViewDefinition(sceneId)?.interpolate,
+			getLerp: (sceneId, sceneVersion) =>
+				getSceneViewDefinition(sceneId, sceneVersion)?.interpolate,
 			onClose: () => window.close(),
 		});
 		setView(created);
@@ -48,12 +49,13 @@ const DEFAULT_CAMERA: SceneCamera = {
 const NO_SNAPSHOT = {
 	phase: "waiting",
 	sceneId: null,
+	sceneVersion: null,
 	projectName: null,
 } as const;
 
 function SceneContent({ view }: { view: SceneView }) {
 	const t = useTranslations("scene3d");
-	const { phase, sceneId, projectName } = useSyncExternalStore(
+	const { phase, sceneId, sceneVersion, projectName } = useSyncExternalStore(
 		view.subscribe,
 		view.getSnapshot,
 		() => NO_SNAPSHOT,
@@ -63,7 +65,10 @@ function SceneContent({ view }: { view: SceneView }) {
 			? t("titleWithProject", { project: projectName })
 			: t("title");
 	}, [projectName, t]);
-	const definition = sceneId ? getSceneViewDefinition(sceneId) : undefined;
+	const definition =
+		sceneId && sceneVersion !== null
+			? getSceneViewDefinition(sceneId, sceneVersion)
+			: undefined;
 	const camera = definition?.camera ?? DEFAULT_CAMERA;
 	const interactive = phase === "running" || phase === "paused";
 	const sample = useCallback(() => view.sampleState(), [view]);
@@ -75,7 +80,7 @@ function SceneContent({ view }: { view: SceneView }) {
 	return (
 		<div style={{ position: "fixed", inset: 0, background: "#eef1f3" }}>
 			<Canvas
-				key={sceneId ?? ""}
+				key={`${sceneId}@${sceneVersion}`}
 				camera={{ position: camera.position, fov: 50 }}
 			>
 				<ambientLight intensity={0.7} />

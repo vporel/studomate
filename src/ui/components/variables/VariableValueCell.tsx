@@ -7,7 +7,11 @@ import { useProjectStore } from "../projects/ProjectContext";
 
 /** Current simulation value of a variable, read-only. Subscribed per cell so that a cycle only
  * re-renders the cells whose value changed. */
-export default function VariableValueCell({ variableId }: { variableId: string }) {
+export default function VariableValueCell({
+	variableId,
+}: {
+	variableId: string;
+}) {
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const variable = useProjectStore((s) =>
 		s.project?.variables.find((v) => v.id === variableId),

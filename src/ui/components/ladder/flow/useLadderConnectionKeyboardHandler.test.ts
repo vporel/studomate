@@ -204,7 +204,10 @@ describe("useLadderConnectionKeyboardHandler", () => {
 			},
 		];
 		const { result } = setup(edges);
-		const e = { ...keyEvent("ArrowRight"), target: document.createElement("input") };
+		const e = {
+			...keyEvent("ArrowRight"),
+			target: document.createElement("input"),
+		};
 
 		result.current(e);
 

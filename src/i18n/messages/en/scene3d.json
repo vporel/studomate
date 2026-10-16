@@ -78,12 +78,22 @@
 		"label": "Drilling",
 		"description": "Drilling station: a drill goes down and back up between two limit switches (top and bottom), and a spindle makes it turn. Drilling requires the spindle to turn with the drill at the bottom for 1.5 s.",
 		"workpiece": "Workpiece",
+		"console": "Console",
+		"startCycle": "Start cycle",
+		"lamps": {
+			"down": "Down",
+			"up": "Up",
+			"spindle": "Spindle",
+			"high": "Drill up",
+			"low": "Drill down"
+		},
 		"points": {
 			"down": "Lower the drill",
 			"up": "Raise the drill",
 			"spindle": "Turn the spindle",
 			"high": "Drill at top",
 			"low": "Drill at bottom",
+			"startButton": "Start cycle",
 			"drillPosition": "Drill position"
 		}
 	},
@@ -93,6 +103,15 @@
 		"floor0": "Ground floor",
 		"floor1": "Floor 1",
 		"floor2": "Floor 2",
+		"outside": "Outside the car",
+		"inside": "Inside the car",
+		"lamps": "Lamps",
+		"currentFloor": "Floor",
+		"lampLabels": {
+			"up": "Going up",
+			"down": "Going down",
+			"doorOpen": "Door open"
+		},
 		"points": {
 			"up": "Go up",
 			"down": "Go down",
@@ -101,7 +120,39 @@
 			"floor1": "Car at floor 1",
 			"floor2": "Car at floor 2",
 			"doorOpen": "Door open",
+			"cabinButton0": "Cabin button, ground floor",
+			"cabinButton1": "Cabin button, floor 1",
+			"cabinButton2": "Cabin button, floor 2",
+			"currentFloor": "Current floor",
+			"landingButton0": "Call, ground floor",
+			"landingButton1": "Call, floor 1",
+			"landingButton2": "Call, floor 2",
 			"cabinPosition": "Car position"
 		}
+	},
+	"parking": {
+		"label": "Barrier car park",
+		"description": "Four-space car park with an entry barrier and an exit barrier: sensors for a car waiting in front of each barrier, a photocell under the barrier, a \"full\" lamp and a places counter. The Arrival and Departure buttons of the console bring cars that line up and only move on when the barrier is open.",
+		"console": "Console",
+		"places": "Occupied spaces",
+		"lampLabels": {
+			"entryRequest": "Entry request",
+			"exitRequest": "Exit request",
+			"entryBarrierOpen": "Entry barrier open",
+			"exitBarrierOpen": "Exit barrier open",
+			"full": "Full"
+		},
+		"points": {
+			"barrierEntry": "Open the entry barrier",
+			"barrierExit": "Open the exit barrier",
+			"full": "Full lamp",
+			"entryDetector": "Car waiting at the entry",
+			"exitDetector": "Car waiting at the exit",
+			"photocell": "Photocell under the barrier",
+			"places": "Occupied spaces"
+		},
+		"carsBehaviour": "Cars behaviour",
+		"arrival": "Arrival",
+		"departure": "Departure"
 	}
 }

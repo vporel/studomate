@@ -3,6 +3,7 @@ import Project from "./project.schema";
 
 const scene: Scene3d = {
 	sceneId: "carton-sorting",
+	sceneVersion: 1,
 	bindings: { t1: "var-1", cartonAtStation: "var-2" },
 };
 

@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function SimulationSection({ selected }: { selected: string }) {
 	const t = useT("manual.simulation");
@@ -50,6 +50,11 @@ export default function SimulationSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={1}>{t("cycleOrderIntro")}</Typography>
 					<ManualList items={t.raw("cycleOrderItems") as string[]} />
+					<ManualFigure
+						src={t("cycleOrderFigureSrc")}
+						alt={t("cycleOrderFigureAlt")}
+						width={650}
+					/>
 					<Typography mb={2}>{t("cycleOrderOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

@@ -284,7 +284,11 @@ describe("SimulationManager", () => {
 				[grafcet],
 			);
 			if (options.sceneId) {
-				project.scene3d = { sceneId: options.sceneId, bindings: {} };
+				project.scene3d = {
+					sceneId: options.sceneId,
+					sceneVersion: 1,
+					bindings: {},
+				};
 			}
 			const { get, set } = makeStore(project);
 			(
@@ -301,7 +305,10 @@ describe("SimulationManager", () => {
 		}
 
 		it("ouvre la page HMI, et pas la scène 3D, quand le projet a les deux", () => {
-			const opened = start({ hmiPage: true, sceneId: "carton-sorting" });
+			const opened = start({
+				hmiPage: true,
+				sceneId: "carton-sorting",
+			});
 			expect(opened.hmi).toHaveBeenCalledTimes(1);
 			expect(opened.scene).not.toHaveBeenCalled();
 		});
@@ -317,7 +324,11 @@ describe("SimulationManager", () => {
 				[VariableFactory.createLogicInput("I0")],
 				[grafcet],
 			);
-			project.scene3d = { sceneId: "carton-sorting", bindings: {} };
+			project.scene3d = {
+				sceneId: "carton-sorting",
+				sceneVersion: 1,
+				bindings: {},
+			};
 			const { get, set } = makeStore(project);
 			const open = get().scene3dLinkManager.open as jest.Mock;
 			open.mockReturnValueOnce(false);
@@ -340,7 +351,11 @@ describe("SimulationManager", () => {
 				[VariableFactory.createLogicInput("I0")],
 				[grafcet],
 			);
-			project.scene3d = { sceneId: "carton-sorting", bindings: {} };
+			project.scene3d = {
+				sceneId: "carton-sorting",
+				sceneVersion: 1,
+				bindings: {},
+			};
 			const { get, set } = makeStore(project);
 			const notifier = stubNotifier();
 			const manager = new SimulationManager(set, get, notifier);
@@ -357,7 +372,9 @@ describe("SimulationManager", () => {
 		});
 
 		it("n'ouvre pas une scène 3D inconnue de cette version", () => {
-			const opened = start({ sceneId: "scene-from-the-future" });
+			const opened = start({
+				sceneId: "scene-from-the-future",
+			});
 			expect(opened.scene).not.toHaveBeenCalled();
 		});
 
@@ -1237,6 +1254,7 @@ describe("SimulationManager", () => {
 				const project = ProjectFactory.create([inputVar], [grafcet]);
 				project.scene3d = {
 					sceneId: "carton-sorting",
+					sceneVersion: 1,
 					bindings: { p1AtIn: "i0" },
 				};
 				const { get, set } = makeStore(project);

@@ -66,7 +66,7 @@ describe("carton-sorting.template", () => {
 
 		it("câble chaque point de la scène 3D sur une variable existante de la bonne zone", () => {
 			const scene = project.scene3d!;
-			const descriptor = getSceneDescriptor(scene.sceneId)!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
 			expect(Object.keys(scene.bindings).sort()).toEqual(
 				descriptor.points.map((p) => p.id).sort(),
 			);

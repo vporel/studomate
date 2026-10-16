@@ -463,6 +463,7 @@
 			"Tenant (source de renvoi) : point de départ du renvoi, indique l'étape cible.",
 			"Aboutissant (cible de renvoi) : point d'arrivée du renvoi, indique l'étape source."
 		],
+		"referralsFigureAlt": "Schéma d'un renvoi : à gauche, l'étape 5 suivie d'une transition qui aboutit à un tenant (flèche vers le bas, numéro 0 dessous) ; à droite, un aboutissant (numéro 5, flèche vers le bas) qui mène à l'étape initiale 0.",
 		"referralsOutro": "Un tenant et un aboutissant se correspondent par leur numéro d'étape référencé.",
 		"commentsTitle": "Commentaires",
 		"commentsBody1": "Les commentaires sont des annotations textuelles libres placées sur le canvas. Ils n'ont aucun effet sur l'exécution et servent uniquement à documenter le diagramme.",
@@ -525,6 +526,7 @@
 		"coilsOutro": "Comme pour les contacts, la variable se choisit par double-clic sur la bobine. En simulation, une bobine alimentée est mise en évidence. Dans la barre d'outils ladder, seules les bobines normale, Set et Reset sont visibles par défaut : le bouton « Afficher d'autres bobines » révèle l'inversée et les deux bobines de front, et « Masquer les bobines supplémentaires » les cache de nouveau.",
 		"blocksTitle": "Blocs",
 		"blocksIntro1": "Les blocs sont des éléments fonctionnels avancés qui s'insèrent dans un réseau comme un contact ou une bobine. Deux façons de les poser : en faisant glisser le bloc depuis la section « Blocs systèmes » de l'explorateur vers le canvas d'un ladder, ou (pour la Comparaison, l'Affectation, le Calcul et la Conversion) depuis l'outil dédié de la barre d'outils ladder.",
+		"timerBlockFigureAlt": "Réseau avec un contact S1 relié à l'entrée IN d'un bloc temporisation T1 de variante TON. La broche PT porte la constante T#5s, la broche ET la variable T1_ET, et la sortie Q alimente une bobine H1.",
 		"blocksIntro2": "La Temporisation et le Compteur ouvrent une fenêtre de configuration à la dépose (nom et variante) ; on la rouvre ensuite en double-cliquant sur le bloc ou par clic droit → Paramétrer sur l'instance dans l'explorateur. La Comparaison, l'Affectation, le Calcul et la Conversion sont insérés vides et se configurent directement sur le canvas : opérandes saisis sur les broches (variable ou constante), opérateur choisi dans le menu qui s'ouvre au clic sur le bloc. L'Affectation, le Calcul et la Conversion recopient leur entrée EN sur leur sortie ENO : plusieurs de ces blocs peuvent s'enchaîner sur un même réseau.",
 		"timerTitle": "Temporisation",
 		"timerIntro": "Mesure une durée et expose un signal de sortie. Trois variantes :",
@@ -533,6 +535,7 @@
 			"TOF (retard au déclenchement) : la sortie Q reste vraie pendant PT après que IN est passée à faux.",
 			"TP (impulsion calibrée) : la sortie Q est vraie pendant exactement PT après un front montant sur IN, même si IN retombe avant ; un front montant pendant l'impulsion est ignoré (non redéclenchable)."
 		],
+		"timersFigureAlt": "Chronogrammes des entrées IN et sorties Q des trois temporisations. TON : une impulsion de IN plus courte que PT ne produit rien ; quand IN reste vraie, Q passe à vrai au bout de PT et retombe avec IN. TOF : Q passe à vrai avec IN et ne retombe que PT après la chute de IN ; une courte interruption de IN ne la fait pas retomber. TP : chaque front montant de IN produit une impulsion de durée PT, même si IN retombe avant ; un front montant pendant l'impulsion est ignoré.",
 		"timerOutro": "Configuration : nom (unique dans le projet) et variante (TON/TOF/TP). Les paramètres PT (durée de consigne, ex. T#5s) et ET (durée écoulée en sortie, optionnelle) se renseignent directement sur les broches du bloc dans le canvas, sous forme de variable ou de constante TIME.",
 		"counterTitle": "Compteur",
 		"counterIntro": "Compte des impulsions. Trois variantes :",
@@ -559,6 +562,7 @@
 			"Divergence (une connexion qui se sépare en plusieurs branches) : OU logique entre les branches.",
 			"Convergence (plusieurs branches qui se rejoignent) : referme le OU ouvert par la divergence correspondante."
 		],
+		"connectionsFigureAlt": "Réseau d'auto-maintien : le contact S1 et un contact KM1 sont en parallèle (divergence puis convergence, OU logique), suivis en série d'un contact NF S0 (ET logique), qui alimente la bobine KM1.",
 		"connectionsMenu": "Clic droit sur le fond du réseau : « Tout sélectionner » (Ctrl+A) ou « Sélectionner les liaisons ». Clic droit sur un élément ou une liaison : « Supprimer ».",
 		"connectionsSim": "En simulation, les liaisons alimentées sont mises en évidence, ce qui permet de suivre visuellement le flux d'alimentation dans chaque réseau."
 	},
@@ -728,6 +732,8 @@
 			"Ladder Main, puis les ladders qu'il appelle, à l'endroit des blocs d'appel.",
 			"Écriture des sorties : les sorties ne sont modifiées vers l'extérieur (HMI, scène 3D, carte) qu'à la fin du cycle."
 		],
+		"cycleOrderFigureAlt": "Cycle automate en quatre blocs reliés par des flèches : 1 Lecture des entrées, 2 Grafcets, 3 Ladder Main et ladders appelés, 4 Écriture des sorties, puis retour au bloc 1 au cycle suivant, toutes les 100 ms.",
+		"cycleOrderFigureSrc": "/user-manual/simulation/scan-cycle-fr.svg",
 		"cycleOrderOutro": "Conséquence pratique : les grafcets passant avant le ladder, un grafcet voit seulement au cycle suivant ce qu'un ladder écrit, tandis qu'un ladder voit dans le même cycle ce qu'un grafcet écrit (variables Xn et variables affectées par ses actions).",
 		"runningTitle": "Pendant la simulation",
 		"runningItems": [
@@ -830,6 +836,7 @@
 			"les broches D0 et D1 sont réservées à la liaison USB ;",
 			"la zone de la variable donne le sens : entrée logique, sortie logique, entrée analogique (valeur de 0 à 1023) ou sortie analogique (PWM, valeur de 0 à 255, sur D3, D5, D6, D9, D10 et D11 seulement)."
 		],
+		"buttonFigureAlt": "Câblage d'un bouton poussoir S1 entre la broche D2 et la masse (GND) de l'Arduino Uno R3. À l'intérieur de la carte, une résistance de pull-up relie D2 au 5 V : bouton relâché, D2 est à 5 V ; bouton appuyé, D2 est à 0 V. Avec l'inversion cochée, la variable est vraie quand le bouton est appuyé.",
 		"configBody": "Pour chaque entrée logique, la page règle le mode (avec ou sans pull-up interne) et l'inversion : cochée, la variable est vraie quand la broche est à 0 V, câblage habituel d'un bouton entre la broche et la masse. Les erreurs d'adresse sont signalées par l'analyse.",
 		"actionsTitle": "Charger le programme et ouvrir la liaison en ligne",
 		"actionsIntro": "Dès qu'une carte est configurée, deux actions apparaissent dans la barre d'outils et dans le menu Cible. Il n'y a pas de liaison permanente par défaut, comme dans un outil d'automatisme :",
@@ -866,12 +873,13 @@
 		"p1": "Une scène 3D est une partie opérative virtuelle : à chaque cycle, un modèle physique (tri de caisses, ascenseur, carrefour de feux, perçage...) reçoit les sorties de votre programme, avance du temps écoulé et renvoie les capteurs. Elle s'affiche dans un onglet du navigateur à part, en plein écran, pendant que la simulation tourne dans l'éditeur.",
 		"cartonSortingFigureAlt": "Capture de la scène 3D du poste de tri de caisses en simulation : un tapis d'arrivée, un tapis de tri avec trois vérins qui poussent les caisses vers les bacs de sortie, et à droite le panneau de commande avec le bouton Départ cycle, le compteur de caisses triées et les voyants des capteurs et des commandes.",
 		"scenesTitle": "Scènes disponibles",
-		"scenesIntro": "Le catalogue propose quatre scènes, chacune livrée avec une maquette « à programmer » qui la câble déjà :",
+		"scenesIntro": "Le catalogue propose cinq scènes, chacune livrée avec une maquette « à programmer » qui la câble déjà :",
 		"scenesItems": [
 			"Tri de caisses (maquette « Poste de tri de caisses ») : des capteurs de présence, de hauteur et de fin de course des vérins ; des sorties pour les tapis et les six commandes des trois vérins ; un affichage numérique pour le compteur de caisses triées. C'est la seule scène avec des commandes manuelles : placer une caisse, choisir sa hauteur (basse ou haute) et un bouton de départ de cycle ;",
 			"Carrefour de feux (maquette « Carrefour de feux tricolores ») : aucune entrée ; douze sorties, rouge, orange et vert pour chacun des quatre feux (Nord, Sud, Est, Ouest). Si deux axes passent au vert en même temps, les voitures se percutent et un compteur d'accidents s'incrémente ;",
 			"Perçage (maquette « Poste de perçage ») : des sorties pour descendre le foret, le monter et faire tourner la broche ; des capteurs de foret en haut, foret en bas et de position (numérique). Percer demande de faire tourner la broche, foret en bas, pendant 1,5 s ;",
-			"Ascenseur (maquette « Ascenseur ») : des sorties de montée, de descente et d'ouverture de porte ; des capteurs de présence de la cabine à chaque étage, de porte ouverte et de position (numérique). La porte reste ouverte au moins 2 s avant de pouvoir se refermer."
+			"Ascenseur (maquette « Ascenseur ») : des sorties de montée, de descente et d'ouverture de porte ; des capteurs de présence de la cabine à chaque étage, de porte ouverte et de position (numérique). La porte reste ouverte au moins 2 s avant de pouvoir se refermer.",
+			"Parking (maquette « Parking à barrière ») : deux sorties d'ouverture de barrière (entrée et sortie) et un voyant « complet » ; des détecteurs de voiture en attente devant chaque barrière et une cellule sous les barrières ; un affichage numérique pour le nombre de places occupées. Les boutons Arrivée et Sortie du pupitre ne sont liés à aucune variable : ils font apparaître des voitures, qui s'alignent (6 au plus) et n'avancent que barrière ouverte, un parking plein les laissant à l'extérieur."
 		],
 		"configTitle": "Choisir la scène et câbler les variables",
 		"configIntro": "Ouvrez Projet > Configuration scène 3D (ou le bouton de la page d'accueil du projet), choisissez une scène dans le catalogue, puis liez chacun de ses points à une variable :",

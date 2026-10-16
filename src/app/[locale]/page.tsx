@@ -1,6 +1,9 @@
 import { toLocale } from "@/i18n/config";
 import { createGenerateMetadata } from "@/app/metadata";
-import { featureKeys } from "@/ui/components/public-pages/landing-content";
+import {
+	featureKeys,
+	showcaseKeys,
+} from "@/ui/components/public-pages/landing-content";
 import LandingPage from "@/ui/components/public-pages/LandingPage";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import buildHomeJsonLd from "./homeJsonLd";
@@ -22,7 +25,9 @@ export default async function Home({ params }: Props) {
 		getTranslations({ locale, namespace: "public.metadata" }),
 		getTranslations({ locale, namespace: "public.landing" }),
 	]);
-	const featureList = featureKeys.map((key) => tLanding(`${key}Title`));
+	const featureList = [...showcaseKeys, ...featureKeys].map((key) =>
+		tLanding(`${key}Title`),
+	);
 
 	return (
 		<>

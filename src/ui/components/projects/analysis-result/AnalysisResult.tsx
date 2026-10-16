@@ -31,7 +31,8 @@ export default function AnalysisResult() {
 		[project, t],
 	);
 	const getLadderName = useCallback(
-		(ladderId: string) => project?.getLadder(ladderId)?.name ?? t("unknownName"),
+		(ladderId: string) =>
+			project?.getLadder(ladderId)?.name ?? t("unknownName"),
 		[project, t],
 	);
 

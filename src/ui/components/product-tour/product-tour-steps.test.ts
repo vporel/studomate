@@ -28,7 +28,9 @@ describe("selectAvailableSteps", () => {
 	});
 
 	it("builds the selector from the step id", () => {
-		expect(productTourAnchorSelector("hmiPages")).toBe('[data-tour="hmiPages"]');
+		expect(productTourAnchorSelector("hmiPages")).toBe(
+			'[data-tour="hmiPages"]',
+		);
 	});
 
 	it("declares the steps in display order", () => {

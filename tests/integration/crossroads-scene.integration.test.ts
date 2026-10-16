@@ -1,7 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import type PLC from "@/simulator/core/plc/plc";
 import Scene3dSimulationBridge from "@/ui/stores/project/managers/3d-scene/scene3d-simulation.bridge";
-import type { CrossroadsState } from "@/3d-scenes/crossroads/crossroads.model";
+import type { CrossroadsState } from "@/3d-scenes/crossroads/v1/crossroads.model";
 import {
 	createCrossroadsProject,
 	createCrossroadsSolution,
@@ -105,6 +105,9 @@ describe("crossroads template with its 3D scene", () => {
 		await jest.advanceTimersByTimeAsync(10000);
 		expect(getState().nextCarId).toBeGreaterThan(1);
 		stop();
-		expect(bridge.getSnapshot()!.state).toMatchObject({ nextCarId: 1, accidents: 0 });
+		expect(bridge.getSnapshot()!.state).toMatchObject({
+			nextCarId: 1,
+			accidents: 0,
+		});
 	});
 });

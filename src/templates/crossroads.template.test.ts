@@ -43,7 +43,7 @@ describe("crossroads.template", () => {
 
 		it("câble les 12 sorties sur les points de la scène 3D « Carrefour de feux »", () => {
 			const scene = project.scene3d!;
-			const descriptor = getSceneDescriptor(scene.sceneId)!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
 			expect(scene.sceneId).toBe("crossroads");
 			expect(Object.keys(scene.bindings).sort()).toEqual(
 				descriptor.points.map((p) => p.id).sort(),

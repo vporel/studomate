@@ -9,15 +9,15 @@
 	},
 	"drilling": {
 		"label": "Poste de perçage",
-		"description": "Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Partie opérative simulée par la scène 3D. À programmer."
+		"description": "Cycle séquentiel piloté par capteurs de fin de course : appui départ, descente, perçage temporisé, remontée. Pupitre et partie opérative simulés par la scène 3D. À programmer."
 	},
 	"elevator": {
 		"label": "Ascenseur",
-		"description": "Ascenseur 3 niveaux : boutons d'appel palier et pupitre cabine, cabine et porte animées, afficheur d'étage. Partie opérative simulée par la scène 3D. À programmer."
+		"description": "Ascenseur 3 niveaux : boutons d'appel palier et de cabine, afficheur d'étage et voyants dans la scène 3D qui simule la partie opérative. À programmer."
 	},
 	"parking": {
 		"label": "Parking à barrière",
-		"description": "Barrière + compteur de places : entrées/sorties par boutons, voyant « complet », jauge et affichage d'occupation. À programmer."
+		"description": "Deux barrières (entrée et sortie) et un compteur de places : détecteurs de voiture en attente, cellule sous la barrière, voyant « complet » et compteur dans la scène 3D, où les boutons Arrivée et Sortie font apparaître des voitures. À programmer."
 	},
 	"carton-sorting": {
 		"label": "Poste de tri de caisses",

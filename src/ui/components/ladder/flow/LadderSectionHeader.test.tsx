@@ -91,9 +91,7 @@ describe("LadderSectionHeader — édition du titre", () => {
 
 	it("commit le titre sur Entrée (perd le focus)", () => {
 		const { executeOperation } = setup({ title: "Avant" });
-		const input = screen.getByLabelText(
-			"Titre du réseau",
-		) as HTMLInputElement;
+		const input = screen.getByLabelText("Titre du réseau") as HTMLInputElement;
 		act(() => input.focus());
 
 		fireEvent.change(input, { target: { value: "Après" } });
@@ -104,9 +102,7 @@ describe("LadderSectionHeader — édition du titre", () => {
 
 	it("annule la saisie sur Échap (revient au titre d'origine, aucune commande dispatchée)", () => {
 		const { executeOperation } = setup({ title: "Original" });
-		const input = screen.getByLabelText(
-			"Titre du réseau",
-		) as HTMLInputElement;
+		const input = screen.getByLabelText("Titre du réseau") as HTMLInputElement;
 		act(() => input.focus());
 
 		fireEvent.change(input, { target: { value: "Modifié" } });

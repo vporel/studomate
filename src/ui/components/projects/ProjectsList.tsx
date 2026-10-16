@@ -78,9 +78,7 @@ export default function ProjectsList({
 		[projects, projectRepository, tab],
 	);
 
-	const skippedNewerVersion = skipped.some(
-		(s) => s.reason === "newer-version",
-	);
+	const skippedNewerVersion = skipped.some((s) => s.reason === "newer-version");
 
 	const handleDeleteProject = async (
 		event: React.MouseEvent,
@@ -120,9 +118,7 @@ export default function ProjectsList({
 		event.stopPropagation();
 		const result = await projectRepository.moveToLocal(project);
 		if (!result.ok) {
-			alert(
-				t("moveToLocalFailed"),
-			);
+			alert(t("moveToLocalFailed"));
 			return;
 		}
 		await reload();
@@ -138,11 +134,7 @@ export default function ProjectsList({
 			)}
 
 			{skipped.length > 0 && (
-				<Typography
-					variant="body2"
-					color="warning.main"
-					sx={{ mb: 1, px: 1 }}
-				>
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
 					{skippedNewerVersion
 						? t("skippedProjectsNewerVersion", { count: skipped.length })
 						: t("skippedProjects", { count: skipped.length })}
@@ -213,7 +205,10 @@ export default function ProjectsList({
 							<ListItemButton onClick={() => onProjectClick(project.id)}>
 								<ListItemText
 									primary={project.name}
-									secondary={t("lastModified", { date: project.lastModificationDate.toLocaleDateString(), time: project.lastModificationDate.toLocaleTimeString() })}
+									secondary={t("lastModified", {
+										date: project.lastModificationDate.toLocaleDateString(),
+										time: project.lastModificationDate.toLocaleTimeString(),
+									})}
 									slotProps={{
 										secondary: {
 											sx: { fontSize: "0.8rem" },

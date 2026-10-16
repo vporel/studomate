@@ -52,7 +52,11 @@ describe("nodeOrEdgeContextMenuItems", () => {
 
 	it("supprime un nœud via handleDelete({ nodes: [...] })", () => {
 		const handleDelete = jest.fn();
-		const node = { id: "contact-1", type: "contact", data: { type: "NO" } } as any;
+		const node = {
+			id: "contact-1",
+			type: "contact",
+			data: { type: "NO" },
+		} as any;
 
 		deleteItemFor(node, handleDelete).onClick!();
 
@@ -151,7 +155,12 @@ describe("nodeOrEdgeContextMenuItems", () => {
 			const openCrossReferences = jest.fn();
 			const node = { id: `${type}-1`, type, data } as any;
 
-			const item = itemsFor(node, jest.fn(), fakeWorkflowManager(), openCrossReferences)
+			const item = itemsFor(
+				node,
+				jest.fn(),
+				fakeWorkflowManager(),
+				openCrossReferences,
+			)
 				.flat()
 				.find((i) => i.label === "crossReferences")!;
 			item.onClick!();
@@ -174,7 +183,10 @@ describe("nodeOrEdgeContextMenuItems", () => {
 		});
 
 		it("n'apparaît pas pour une arête", () => {
-			const has = itemsFor({ id: "e1", type: LADDER_CONNECTION_EDGE_TYPE } as any)
+			const has = itemsFor({
+				id: "e1",
+				type: LADDER_CONNECTION_EDGE_TYPE,
+			} as any)
 				.flat()
 				.some((i) => i.label === "crossReferences");
 			expect(has).toBe(false);

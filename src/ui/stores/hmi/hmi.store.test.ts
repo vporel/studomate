@@ -176,7 +176,9 @@ describe("hmi.store", () => {
 			const store = buildStore();
 			const w1 = store.getState().addWidget("push-button", 0, 0);
 			store.getState().clearSelection();
-			const positionBefore = { ...store.getState().hmiPage.widgets[w1.id]!.position };
+			const positionBefore = {
+				...store.getState().hmiPage.widgets[w1.id]!.position,
+			};
 
 			store.getState().moveSelectedWidgets(10, 10);
 

@@ -108,9 +108,9 @@ describe("getInitialConnectionPoints", () => {
 	});
 
 	it("retourne [] quand un nœud est introuvable", () => {
-		expect(
-			getInitialConnectionPoints(fakeRfInstance({}), connection),
-		).toEqual([]);
+		expect(getInitialConnectionPoints(fakeRfInstance({}), connection)).toEqual(
+			[],
+		);
 	});
 });
 

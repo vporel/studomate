@@ -3,7 +3,9 @@ import { escapeXml, sceneToSvg } from "./svg-backend";
 
 describe("escapeXml", () => {
 	it("échappe les caractères réservés", () => {
-		expect(escapeXml('a & b < c > "d"')).toBe("a &amp; b &lt; c &gt; &quot;d&quot;");
+		expect(escapeXml('a & b < c > "d"')).toBe(
+			"a &amp; b &lt; c &gt; &quot;d&quot;",
+		);
 	});
 });
 
@@ -15,7 +17,9 @@ describe("sceneToSvg", () => {
 		const svg = wrap([]);
 		expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
 		expect(svg).toContain('viewBox="0 0 100 50"');
-		expect(svg).toContain('<rect x="0" y="0" width="100" height="50" fill="#ffffff"/>');
+		expect(svg).toContain(
+			'<rect x="0" y="0" width="100" height="50" fill="#ffffff"/>',
+		);
 	});
 
 	it("rend un rectangle arrondi avec ses attributs de trait", () => {

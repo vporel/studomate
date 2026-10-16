@@ -14,6 +14,7 @@ export type SceneViewPhase =
 export type SceneViewSnapshot = {
 	phase: SceneViewPhase;
 	sceneId: string | null;
+	sceneVersion: number | null;
 	projectName: string | null;
 };
 
@@ -26,7 +27,7 @@ export interface SceneViewDeps {
 	transport: SceneTransport;
 	now(): number;
 	/** Interpolation of the states of a scene; absent for a scene unknown to this version. */
-	getLerp(sceneId: string): Lerp | undefined;
+	getLerp(sceneId: string, sceneVersion: number): Lerp | undefined;
 	onClose(): void;
 }
 
@@ -43,6 +44,7 @@ export default class SceneView {
 	private snapshot: SceneViewSnapshot = {
 		phase: "waiting",
 		sceneId: null,
+		sceneVersion: null,
 		projectName: null,
 	};
 	private lastSeenAt: number;
@@ -88,11 +90,11 @@ export default class SceneView {
 		this.lastSeenAt = this.deps.now();
 		switch (message.type) {
 			case "config":
-				this.useScene(message.sceneId);
+				this.useScene(message.sceneId, message.sceneVersion);
 				this.setProjectName(message.projectName);
 				break;
 			case "state":
-				this.useScene(message.sceneId);
+				this.useScene(message.sceneId, message.sceneVersion);
 				this.interpolator?.push(
 					{ simTimeMs: message.simTimeMs, state: message.state },
 					this.deps.now(),
@@ -109,11 +111,16 @@ export default class SceneView {
 		}
 	}
 
-	private useScene(sceneId: string): void {
-		if (this.snapshot.sceneId === sceneId) return;
-		const lerp = this.deps.getLerp(sceneId);
+	private useScene(sceneId: string, sceneVersion: number): void {
+		if (
+			this.snapshot.sceneId === sceneId &&
+			this.snapshot.sceneVersion === sceneVersion
+		) {
+			return;
+		}
+		const lerp = this.deps.getLerp(sceneId, sceneVersion);
 		this.interpolator = lerp ? new StateInterpolator(lerp) : null;
-		this.update({ ...this.snapshot, sceneId });
+		this.update({ ...this.snapshot, sceneId, sceneVersion });
 	}
 
 	private setProjectName(projectName: string): void {

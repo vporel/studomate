@@ -9,6 +9,7 @@ describe("scene messages", () => {
 		const message = {
 			type: "state" as const,
 			sceneId: "carton-sorting",
+			sceneVersion: 1,
 			state: { cartonPos: 12, nested: { a: [1, 2] } },
 			simTimeMs: 300,
 			status: "running" as const,

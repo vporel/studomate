@@ -37,19 +37,25 @@ describe("DeleteAccountModal", () => {
 	it("mentions the repatriation of the cloud projects when there are some", () => {
 		setup({ cloudProjectCount: 3 });
 
-		expect(screen.getByText(/Vos 3 projets cloud seront rapatriés/)).toBeTruthy();
+		expect(
+			screen.getByText(/Vos 3 projets cloud seront rapatriés/),
+		).toBeTruthy();
 	});
 
 	it("says local projects are untouched when there is no cloud project", () => {
 		setup({ cloudProjectCount: 0 });
 
-		expect(screen.getByText(/Vos projets locaux ne sont pas concernés/)).toBeTruthy();
+		expect(
+			screen.getByText(/Vos projets locaux ne sont pas concernés/),
+		).toBeTruthy();
 		expect(screen.queryByText(/rapatrié/)).toBeNull();
 	});
 
 	it("disables the confirm button until a password is typed", () => {
 		setup();
-		const confirm = screen.getByText("Supprimer définitivement") as HTMLButtonElement;
+		const confirm = screen.getByText(
+			"Supprimer définitivement",
+		) as HTMLButtonElement;
 
 		expect(confirm.closest("button")!.disabled).toBe(true);
 		typePassword("secret");
@@ -63,9 +69,13 @@ describe("DeleteAccountModal", () => {
 		typePassword("secret");
 		fireEvent.click(screen.getByText("Supprimer définitivement"));
 
-		await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalledWith("secret"));
 		await waitFor(() =>
-			expect(toast.success).toHaveBeenCalledWith("Votre compte a été supprimé."),
+			expect(mockDeleteAccount).toHaveBeenCalledWith("secret"),
+		);
+		await waitFor(() =>
+			expect(toast.success).toHaveBeenCalledWith(
+				"Votre compte a été supprimé.",
+			),
 		);
 	});
 

@@ -8,7 +8,8 @@ const T1_MS = 516 / 0.06;
 
 function createHarness(bindings: Record<string, string> | null) {
 	const project = new Project("p1", "Projet", "auteur");
-	if (bindings) project.scene3d = { sceneId: "carton-sorting", bindings };
+	if (bindings)
+		project.scene3d = { sceneId: "carton-sorting", sceneVersion: 1, bindings };
 	const applied: Map<string, boolean | number>[] = [];
 	const bridge = new Scene3dSimulationBridge({
 		getProject: () => project,
@@ -138,6 +139,7 @@ describe("Scene3dSimulationBridge", () => {
 		bridge.onSimulationStop();
 		project.scene3d = {
 			sceneId: "carton-sorting",
+			sceneVersion: 1,
 			bindings: { t1: "v-new", cartonAtStation: "v-station" },
 		};
 		bridge.onSimulationStart();
@@ -216,7 +218,7 @@ describe("Scene3dSimulationBridge", () => {
 
 	it("ignores an unknown scene", () => {
 		const { project, bridge, applied } = createHarness(BINDINGS);
-		project.scene3d = { sceneId: "nope", bindings: BINDINGS };
+		project.scene3d = { sceneId: "nope", sceneVersion: 1, bindings: BINDINGS };
 		bridge.onSimulationStart();
 		bridge.onCycleEnd([], 100);
 		expect(applied).toEqual([]);
@@ -254,6 +256,7 @@ describe("Scene3dSimulationBridge", () => {
 			const { bridge } = createHarness(BINDINGS);
 			expect(bridge.getSnapshot()).toMatchObject({
 				sceneId: "carton-sorting",
+				sceneVersion: 1,
 				simTimeMs: 0,
 				status: "stopped",
 				state: { cartonPresent: false },
@@ -275,7 +278,7 @@ describe("Scene3dSimulationBridge", () => {
 		it("has no snapshot without a scene or with an unknown one", () => {
 			const { project, bridge } = createHarness(null);
 			expect(bridge.getSnapshot()).toBeNull();
-			project.scene3d = { sceneId: "nope", bindings: {} };
+			project.scene3d = { sceneId: "nope", sceneVersion: 1, bindings: {} };
 			expect(bridge.getSnapshot()).toBeNull();
 		});
 	});

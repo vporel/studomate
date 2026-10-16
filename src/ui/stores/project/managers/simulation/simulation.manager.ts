@@ -253,7 +253,8 @@ export default class SimulationManager {
 	private openSimulationView(): void {
 		const { project, hmiManager, scene3dLinkManager } = this.getStoreState();
 		if (hmiManager.openHmiSimulationPageIfAny()) return;
-		if (project?.scene3d && getSceneDescriptor(project.scene3d.sceneId)) {
+		const scene = project?.scene3d;
+		if (scene && getSceneDescriptor(scene.sceneId, scene.sceneVersion)) {
 			if (!scene3dLinkManager.open()) {
 				this.notifier.scene3dOpenBlocked(() => scene3dLinkManager.open());
 			}

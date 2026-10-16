@@ -146,9 +146,7 @@ describe("PagesTabBar : réordonnancement par glisser-déposer", () => {
 			.spyOn(HTMLElement.prototype, "getBoundingClientRect")
 			.mockImplementation(function (this: HTMLElement) {
 				const tab = this.closest<HTMLElement>("[data-page-id]");
-				const index = tab
-					? ["p1", "p2", "p3"].indexOf(tab.dataset.pageId!)
-					: 0;
+				const index = tab ? ["p1", "p2", "p3"].indexOf(tab.dataset.pageId!) : 0;
 				const left = index * TAB_WIDTH;
 				return {
 					x: left,

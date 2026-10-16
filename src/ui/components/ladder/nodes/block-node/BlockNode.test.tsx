@@ -36,7 +36,11 @@ function setup({
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { ladders, getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
+			project: {
+				ladders,
+				getAllTimerBlockElements: () => [],
+				getAllCounterBlockElements: () => [],
+			},
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},
 		}),

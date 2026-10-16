@@ -43,9 +43,7 @@ export default function ShareRequiresCloudModal() {
 			width={480}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-				<Typography color="text.secondary">
-					{t("body")}
-				</Typography>
+				<Typography color="text.secondary">{t("body")}</Typography>
 
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<Button onClick={onClose} disabled={submitting}>

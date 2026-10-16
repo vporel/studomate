@@ -7,6 +7,7 @@ export function isHmiBindable(
 	mnemonic: string,
 ): boolean {
 	return !project?.variables.some(
-		(variable) => variable.mnemonic === mnemonic && variable.zone === "constant",
+		(variable) =>
+			variable.mnemonic === mnemonic && variable.zone === "constant",
 	);
 }

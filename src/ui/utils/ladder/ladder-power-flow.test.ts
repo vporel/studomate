@@ -190,8 +190,18 @@ describe("computeEnergizedEdges", () => {
 
 	it("réutilise le résultat mémoïsé tant que ladder et état gardent leur référence", () => {
 		ladder.addElements(sectionId, [
-			{ id: "rail1", type: "railTerminal", data: {}, position: { row: 0, col: 0 } },
-			{ id: "coil1", type: "coil", data: { variable: "Q1", type: "normal" }, position: { row: 0, col: 1 } },
+			{
+				id: "rail1",
+				type: "railTerminal",
+				data: {},
+				position: { row: 0, col: 0 },
+			},
+			{
+				id: "coil1",
+				type: "coil",
+				data: { variable: "Q1", type: "normal" },
+				position: { row: 0, col: 1 },
+			},
 		]);
 		ladder.addConnections(sectionId, [
 			new Connection(
@@ -209,7 +219,12 @@ describe("computeEnergizedEdges", () => {
 
 	it("un bloc timer ne relaie le courant que lorsque sa sortie Q est vraie", () => {
 		ladder.addElements(sectionId, [
-			{ id: "rail1", type: "railTerminal", data: {}, position: { row: 0, col: 0 } },
+			{
+				id: "rail1",
+				type: "railTerminal",
+				data: {},
+				position: { row: 0, col: 0 },
+			},
 			{
 				id: "ton1",
 				type: "block",
@@ -219,7 +234,12 @@ describe("computeEnergizedEdges", () => {
 				},
 				position: { row: 0, col: 1 },
 			},
-			{ id: "coil1", type: "coil", data: { variable: "Q1", type: "normal" }, position: { row: 0, col: 3 } },
+			{
+				id: "coil1",
+				type: "coil",
+				data: { variable: "Q1", type: "normal" },
+				position: { row: 0, col: 3 },
+			},
 		]);
 		ladder.addConnections(sectionId, [
 			new Connection(
@@ -254,7 +274,12 @@ describe("computeEnergizedEdges", () => {
 			[section2.id, "b"],
 		] as const) {
 			ladder.addElements(sId, [
-				{ id: `rail-${suffix}`, type: "railTerminal", data: {}, position: { row: 0, col: 0 } },
+				{
+					id: `rail-${suffix}`,
+					type: "railTerminal",
+					data: {},
+					position: { row: 0, col: 0 },
+				},
 				{
 					id: `contact-${suffix}`,
 					type: "contact",

@@ -23,8 +23,14 @@ jest.mock("@/ui/pdf/drawing/program-scene", () => ({
 		mockRenderProgramScenes(config as { type: string }),
 }));
 
-const grafcet = { type: "grafcet", program: { id: "g1", name: "Feu" } } as never;
-const ladder = { type: "ladder", program: { id: "l1", name: "Pompe" } } as never;
+const grafcet = {
+	type: "grafcet",
+	program: { id: "g1", name: "Feu" },
+} as never;
+const ladder = {
+	type: "ladder",
+	program: { id: "l1", name: "Pompe" },
+} as never;
 
 beforeEach(() => jest.clearAllMocks());
 

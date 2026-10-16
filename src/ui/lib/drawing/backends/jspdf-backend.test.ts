@@ -64,7 +64,9 @@ describe("renderSceneToJsPdf", () => {
 	};
 
 	it("applique l'offset et l'échelle aux coordonnées et longueurs", () => {
-		const calls = run([{ op: "rect", x: 5, y: 5, w: 10, h: 10, strokeWidth: 1 }]);
+		const calls = run([
+			{ op: "rect", x: 5, y: 5, w: 10, h: 10, strokeWidth: 1 },
+		]);
 		expect(calls.rect[0]).toEqual([20, 30, 20, 20, "S"]);
 		expect(calls.setLineWidth[0]).toEqual([2]);
 	});
@@ -102,9 +104,7 @@ describe("renderSceneToJsPdf", () => {
 	});
 
 	it("convertit la taille de police px → pt", () => {
-		const calls = run([
-			{ op: "text", x: 0, y: 0, text: "x", fontSize: 10 },
-		]);
+		const calls = run([{ op: "text", x: 0, y: 0, text: "x", fontSize: 10 }]);
 		// 10px * scale 2 = 20mm → pt
 		expect(calls.setFontSize[0][0]).toBeCloseTo((20 * 72) / 25.4);
 		expect(calls.text[0][0]).toBe("x");

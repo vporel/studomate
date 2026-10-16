@@ -49,7 +49,7 @@ src/simulator/          expression-language lexer/parser/interpreter + PLC engin
 src/bytecode/           bytecode for embedded targets: format, generator (from the compiled
                         project), verifier, admissibility check; target-independent, the Arduino
                         pin mapping is an adapter (`arduino-io-bindings.ts`)
-src/3d-scenes/          3D simulation scenes: descriptors, physical models, fixed-step stepper, editor/scene-tab
+src/3d-scenes/          3D simulation scenes (versioned: <scene>/vN/): descriptors, physical models, fixed-step stepper, editor/scene-tab
                         link protocol (rendering lives in `src/ui/`)
 src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
 src/lib/                neutral utilities (array, object, heartbeat), no domain dependency
@@ -266,6 +266,36 @@ in English, `migrate: () => void`), file `vN-to-vN+1.ts` + test, registered at t
 `LAYOUT_MIGRATIONS` in `local-storage/index.ts`, and bump `CURRENT_LAYOUT_VERSION` in
 `local-storage/keys.ts`. `ensureLocalStorageLayout()` applies the chain on the first operation
 of `LocalStorageProjectRepository`.
+
+## 3D scene versioning (`src/3d-scenes/<scene>/vN/`)
+
+A project pins the scene it was created with: `Scene3d` carries `sceneId` and `sceneVersion`,
+and the registry (`scene.registry.ts`) resolves a scene by `(id, version)`. A teacher who starts
+an assignment must never see the scene change the next day.
+
+- Each scene lives in `src/3d-scenes/<scene>/vN/` (descriptor, model, interpolation, tests) and
+  its rendering in `src/ui/components/3d-scene/<scene>/vN/`. `SceneDescriptor.version` matches
+  the folder. The descriptor carries `imageUrl`, the screenshot shown in the "New project" modal
+  and in the scene chooser (`public/images/scenes-3d/`); a registry test checks that the file exists.
+- **A new version is the exception, not the rule.** Create one only when the scene changes
+  substantially: a visual overhaul, or a change of behaviour (physics, a point added/removed/
+  renamed, a different state shape) that would make a project built on the old one behave
+  differently. Small corrections (a colour, a misplaced object, a threshold slightly off, a
+  typo) never justify a new version: they are made in place, in every version they affect.
+- **Once a version has been deployed, its behaviour is frozen**: model, points, thresholds, state
+  shape. A substantial change is a new `v(N+1)` folder, registered **next to** the previous one
+  in `SCENES` and in `SCENE_VIEWS` (`scene-views.ts`, key `sceneKey(id, N+1)`). Never rewrite
+  the behaviour of a released `vN` in place.
+- **A bug fix on a scene must be checked against every version of that scene**, not only the
+  latest: a student on `v1` has to get the same fix as a teacher on `v2`. Apply it to each
+  affected `vN` and cover it with a test in each.
+- The configuration page offers a version selector next to the scene selector, so that a student
+  can use exactly the version of their teacher. A new scene or template starts on the latest
+  version (`listScenes()` returns the latest of each scene); existing projects keep theirs. A
+  version unknown to the build is reported by the analyser (`SCENE3D_UNKNOWN`).
+- A version that has not been deployed yet can still be edited in place: ask the developer
+  whether the current version has been deployed before deciding between editing it and creating
+  the next one.
 
 ## Firmware version (`firmwares/arduino/uno-r3/`)
 

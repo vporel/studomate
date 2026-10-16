@@ -32,9 +32,19 @@ describe("grafcetToScene — feu tricolore", () => {
 		const rects = scene.ops.filter((o) => o.op === "rect");
 		// 3 étapes (dont l'initiale = 2 rects) + 3 actions = 7
 		expect(rects).toHaveLength(7);
-		const texts = scene.ops.filter((o) => o.op === "text").map((o) => (o as { text: string }).text);
+		const texts = scene.ops
+			.filter((o) => o.op === "text")
+			.map((o) => (o as { text: string }).text);
 		expect(texts).toEqual(
-			expect.arrayContaining(["0", "1", "2", "vert", "orange", "rouge", "t0/X0/5s"]),
+			expect.arrayContaining([
+				"0",
+				"1",
+				"2",
+				"vert",
+				"orange",
+				"rouge",
+				"t0/X0/5s",
+			]),
 		);
 	});
 
@@ -52,9 +62,11 @@ describe("grafcetToScene — feu tricolore", () => {
 			(o) => o.op === "rect" && o.w === 40 && o.h === 40,
 		) as { x: number }[];
 		const minStepX = Math.min(...stepRects.map((r) => r.x));
-		const loopPolyline = (scene.ops.filter((o) => o.op === "polyline") as {
-			points: [number, number][];
-		}[]).find((p) => p.points.length === 6);
+		const loopPolyline = (
+			scene.ops.filter((o) => o.op === "polyline") as {
+				points: [number, number][];
+			}[]
+		).find((p) => p.points.length === 6);
 		expect(loopPolyline).toBeDefined();
 		const loopMinX = Math.min(...loopPolyline!.points.map((p) => p[0]));
 		expect(loopMinX).toBeLessThan(minStepX);

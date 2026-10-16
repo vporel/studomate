@@ -74,6 +74,8 @@ describe("SaveLocationModal", () => {
 	it("ne rend rien quand la modale n'est pas visible", () => {
 		setup({ visible: false });
 
-		expect(screen.queryByText("Où enregistrer ce projet ?")).not.toBeInTheDocument();
+		expect(
+			screen.queryByText("Où enregistrer ce projet ?"),
+		).not.toBeInTheDocument();
 	});
 });

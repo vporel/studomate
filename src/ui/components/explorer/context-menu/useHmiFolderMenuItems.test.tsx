@@ -17,7 +17,9 @@ describe("useHmiFolderMenuItems", () => {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({ hmiManager, mode }),
 		);
-		return renderHook(() => useHmiFolderMenuItems(), { wrapper: i18nWrapper() });
+		return renderHook(() => useHmiFolderMenuItems(), {
+			wrapper: i18nWrapper(),
+		});
 	}
 
 	afterEach(() => jest.clearAllMocks());

@@ -11,13 +11,7 @@ import {
 	setPreferredLocale,
 } from "@/persistence/preferences.storage";
 import { NextIntlClientProvider } from "next-intl";
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type LocaleContextValue = {
 	locale: Locale;

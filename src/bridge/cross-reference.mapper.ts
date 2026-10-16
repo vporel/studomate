@@ -1,3 +1,4 @@
+import { parseSceneKey } from "@/3d-scenes/scene.descriptor";
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
@@ -48,11 +49,14 @@ export default class CrossReferenceMapper {
 			namespace: "scene3d",
 		});
 		const sceneLabel = (
-			sceneId: string,
+			programId: string,
 			key: "labelKey" | "point",
 			pointId = "",
 		) => {
-			const descriptor = getSceneDescriptor(sceneId);
+			const parsed = parseSceneKey(programId);
+			const descriptor = parsed
+				? getSceneDescriptor(parsed.id, parsed.version)
+				: undefined;
 			if (!descriptor) return t("unknownProgram");
 			const labelKey =
 				key === "labelKey"

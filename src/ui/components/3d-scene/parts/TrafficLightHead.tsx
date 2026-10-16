@@ -3,7 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { type MeshStandardMaterial } from "three";
-import type { LightState } from "@/3d-scenes/crossroads/crossroads.model";
+import type { LightState } from "@/3d-scenes/crossroads/v1/crossroads.model";
 import Box from "./Box";
 
 const BULBS = [

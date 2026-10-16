@@ -93,7 +93,9 @@ describe("useViewMenu", () => {
 	});
 
 	it("adds a 3D scene entry that opens the scene tab when the project has a scene", () => {
-		mockProjectStore({ scene3d: { sceneId: "carton-sorting", bindings: {} } });
+		mockProjectStore({
+			scene3d: { sceneId: "carton-sorting", sceneVersion: 1, bindings: {} },
+		});
 		const { result } = renderHook(() => useViewMenu(), { wrapper });
 
 		const entry = result.current.items[2][0];

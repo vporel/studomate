@@ -5,6 +5,7 @@ import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
+import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
@@ -40,9 +41,11 @@ export default async function LocaleLayout({
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
 				/>
-				<Header />
-				<main>{children}</main>
-				<Footer />
+				<div className={PUBLIC_PAGES_CLASS}>
+					<Header />
+					<main>{children}</main>
+					<Footer />
+				</div>
 			</NextIntlClientProvider>
 		</RootDocument>
 	);

@@ -96,8 +96,14 @@ export default function useHmiWidgetMenuItems(): () => ContextMenuItemType[][] {
 							onClick: () => alignSelectedWidgets("center-vertical"),
 						},
 						{ divider: true },
-						{ label: t("alignLeft"), onClick: () => alignSelectedWidgets("left") },
-						{ label: t("alignRight"), onClick: () => alignSelectedWidgets("right") },
+						{
+							label: t("alignLeft"),
+							onClick: () => alignSelectedWidgets("left"),
+						},
+						{
+							label: t("alignRight"),
+							onClick: () => alignSelectedWidgets("right"),
+						},
 						{
 							label: t("alignCenter"),
 							onClick: () => alignSelectedWidgets("center-horizontal"),

@@ -132,7 +132,9 @@ describe("createBrowserScene3dLinkHost session id", () => {
 		removeLocks();
 		jest.spyOn(window, "open").mockImplementation(() => ({}) as Window);
 		const store = (() => ({
-			project: { scene3d: { sceneId: "carton-sorting", bindings: {} } },
+			project: {
+				scene3d: { sceneId: "carton-sorting", sceneVersion: 1, bindings: {} },
+			},
 		})) as unknown as ProjectStoreGetFunction;
 		(await loadHost())(store).openWindow("s1");
 		expect(mockTrackEvent).toHaveBeenCalledWith("scene-opened", {

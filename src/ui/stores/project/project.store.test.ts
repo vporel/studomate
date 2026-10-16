@@ -307,7 +307,11 @@ describe("createProjectStore", () => {
 	});
 
 	describe("setScene3d", () => {
-		const scene = { sceneId: "carton-sorting", bindings: { t1: "v1" } };
+		const scene = {
+			sceneId: "carton-sorting",
+			sceneVersion: 1,
+			bindings: { t1: "v1" },
+		};
 
 		it("sets the scene on a copy of the project and marks unsaved changes", async () => {
 			const store = createProjectStore();
@@ -450,15 +454,17 @@ describe("createProjectStore", () => {
 		it("creates and binds the unbound points, undoable in one step", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);
-			store.getState().setScene3d({ sceneId: "elevator", bindings: {} });
+			store
+				.getState()
+				.setScene3d({ sceneId: "elevator", sceneVersion: 1, bindings: {} });
 			const before = store.getState().project!.variables.length;
 
 			store.getState().createMissingScene3dVariables();
 
 			const { project } = store.getState();
 			const bindings = project!.scene3d!.bindings;
-			expect(Object.keys(bindings)).toHaveLength(8);
-			expect(project!.variables).toHaveLength(before + 8);
+			expect(Object.keys(bindings)).toHaveLength(15);
+			expect(project!.variables).toHaveLength(before + 15);
 			const up = project!.variables.find((v) => v.id === bindings.up)!;
 			expect(up).toMatchObject({ mnemonic: "monter", zone: "logic-output" });
 			const position = project!.variables.find(

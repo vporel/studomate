@@ -32,7 +32,9 @@ describe("ProfilePromptModal", () => {
 	it("stores the profile and closes right away for a non-student", () => {
 		renderWithI18n(<ProfilePromptModal />);
 
-		fireEvent.click(screen.getByRole("button", { name: "Enseignant / formateur" }));
+		fireEvent.click(
+			screen.getByRole("button", { name: "Enseignant / formateur" }),
+		);
 
 		expect(mockSetStored).toHaveBeenCalledWith({
 			userType: "teacher",

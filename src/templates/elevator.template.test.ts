@@ -37,7 +37,6 @@ describe("elevator.template", () => {
 					"descendre",
 					"porte",
 					"position",
-					"cabine_y",
 					"etage_0",
 					"etage_1",
 					"etage_2",
@@ -104,19 +103,19 @@ describe("elevator.template", () => {
 			}
 		});
 
-		it("donne aux boutons le comportement de bouton-poussoir et aux capteurs aucun comportement", () => {
+		it("ne donne aucun comportement aux entrées, pilotées par la scène 3D", () => {
 			const behaviorKinds = Object.fromEntries(
 				project.variables
 					.filter((v) => v.zone === "logic-input")
 					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
 			);
 			expect(behaviorKinds).toEqual({
-				appel_0: "push-button-no",
-				appel_1: "push-button-no",
-				appel_2: "push-button-no",
-				cabine_0: "push-button-no",
-				cabine_1: "push-button-no",
-				cabine_2: "push-button-no",
+				appel_0: null,
+				appel_1: null,
+				appel_2: null,
+				cabine_0: null,
+				cabine_1: null,
+				cabine_2: null,
 				etage_0: null,
 				etage_1: null,
 				etage_2: null,
@@ -132,7 +131,7 @@ describe("elevator.template", () => {
 
 		it("câble chaque point de la scène 3D sur une variable existante de la bonne zone", () => {
 			const scene = project.scene3d!;
-			const descriptor = getSceneDescriptor(scene.sceneId)!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
 			expect(scene.sceneId).toBe("elevator");
 			expect(Object.keys(scene.bindings).sort()).toEqual(
 				descriptor.points.map((p) => p.id).sort(),
@@ -145,34 +144,16 @@ describe("elevator.template", () => {
 				expect(variable?.mnemonic).toBe(point.suggestedMnemonic);
 				if (point.kind === "sensor") {
 					expect(sensorZones).toContain(variable?.zone);
+				} else if (point.kind === "display") {
+					expect(variable?.zone).toBe("memory");
 				} else {
 					expect(variable?.zone).toBe("logic-output");
 				}
 			}
 		});
 
-		it("garde tous les éléments de la page HMI : gaine, cabine, porte, boutons, voyants, afficheur", () => {
-			const widgets = Object.values(Object.values(project.hmiPages)[0].widgets);
-			const names = widgets.map((w) => w.name);
-			expect(names).toEqual(
-				expect.arrayContaining([
-					"Titre",
-					"Gaine",
-					"Cabine",
-					"Porte",
-					"Appel palier 0",
-					"Appel palier 1",
-					"Appel palier 2",
-					"Bouton cabine 0",
-					"Bouton cabine 1",
-					"Bouton cabine 2",
-					"Voyant monter",
-					"Voyant descendre",
-					"Voyant porte_ouverte",
-					"Afficheur étage",
-				]),
-			);
-			expect(widgets).toHaveLength(17);
+		it("n'a pas de page HMI : boutons et voyants sont dans la scène 3D", () => {
+			expect(Object.values(project.hmiPages)).toHaveLength(0);
 		});
 
 		it("passe l'analyse sans erreur ni avertissement de câblage de la scène (sans commande)", () => {
@@ -196,12 +177,11 @@ describe("elevator.template", () => {
 			project = createElevatorSolution();
 		});
 
-		it("conserve les variables, le modèle et la page HMI de l'exercice", () => {
+		it("conserve les variables et le modèle de l'exercice", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
 				expect.arrayContaining(["appel_2", "cabine_0", "position", "cible"]),
 			);
-			expect(Object.values(project.hmiPages)).toHaveLength(1);
 		});
 
 		it("reboucle l'étape 8 vers l'étape 0 par un renvoi d'étape (tenant + aboutissant)", () => {

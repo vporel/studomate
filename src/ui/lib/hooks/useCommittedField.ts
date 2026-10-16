@@ -1,12 +1,6 @@
 "use client";
 
-import {
-	ChangeEvent,
-	KeyboardEvent,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 interface UseCommittedFieldOptions<T> {
 	/** Valeur canonique (le store). */

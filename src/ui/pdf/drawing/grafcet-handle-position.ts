@@ -4,7 +4,10 @@ import {
 	STEP_HANDLE_TARGET_PREDECESSOR,
 } from "@/schemas/grafcet/step.schema";
 import { TRANSITION_HANDLE_TARGET_PREDECESSOR } from "@/schemas/grafcet/transition.schema";
-import { JUNCTION_HANDLE_PIVOT, JunctionData } from "@/schemas/grafcet/junction.schema";
+import {
+	JUNCTION_HANDLE_PIVOT,
+	JunctionData,
+} from "@/schemas/grafcet/junction.schema";
 
 export type Point = [number, number];
 
@@ -26,7 +29,8 @@ export default function grafcetHandlePosition(
 			if (handle === STEP_HANDLE_SOURCE_ACTION) return [x + w, y + h / 2];
 			return [x + w / 2, y + h]; // successor
 		case "transition":
-			if (handle === TRANSITION_HANDLE_TARGET_PREDECESSOR) return [x + w / 2, y];
+			if (handle === TRANSITION_HANDLE_TARGET_PREDECESSOR)
+				return [x + w / 2, y];
 			return [x + w / 2, y + h]; // successor
 		case "action":
 			return [x, y + h / 2]; // target:step, sur le bord gauche
@@ -48,7 +52,8 @@ export default function grafcetHandlePosition(
 		case "junction-or-end": {
 			// Pivot en bas (vers une transition), branches en haut (depuis les étapes).
 			const data = element.data as JunctionData;
-			if (handle === JUNCTION_HANDLE_PIVOT) return [x + data.pivotPosition, y + h];
+			if (handle === JUNCTION_HANDLE_PIVOT)
+				return [x + data.pivotPosition, y + h];
 			const branch = data.branches[handle];
 			return branch ? [x + branch.position, y] : [x + w / 2, y];
 		}

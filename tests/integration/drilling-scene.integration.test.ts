@@ -1,5 +1,5 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import type { DrillingState } from "@/3d-scenes/drilling/drilling.model";
+import type { DrillingState } from "@/3d-scenes/drilling/v1/drilling.model";
 import type PLC from "@/simulator/core/plc/plc";
 import Scene3dSimulationBridge from "@/ui/stores/project/managers/3d-scene/scene3d-simulation.bridge";
 import {
@@ -36,8 +36,14 @@ function startDrilling(project: Project, scanTimeMs = 10) {
 	expect(plc).not.toBeNull();
 	bridge.onSimulationStart();
 	plc.start();
+	const pressStart = async () => {
+		bridge.queueInteraction({ type: "pressStart" });
+		await jest.advanceTimersByTimeAsync(scanTimeMs * 4);
+		bridge.queueInteraction({ type: "releaseStart" });
+	};
 	return {
 		plc: plc!,
+		pressStart,
 		stop: () => {
 			plc!.stop();
 			bridge.onSimulationStop();
@@ -70,14 +76,12 @@ describe("drilling template with its 3D scene", () => {
 	});
 
 	it("runs a full cycle on `dcy`: down, drilling, back up, hole made", async () => {
-		const { plc, getState, stop, getError } = startDrilling(
+		const { plc, pressStart, getState, stop, getError } = startDrilling(
 			createDrillingSolution(),
 		);
 		await jest.advanceTimersByTimeAsync(50);
 
-		plc.setPhysicalInputValueByName("dcy", true);
-		await jest.advanceTimersByTimeAsync(40);
-		plc.setPhysicalInputValueByName("dcy", false);
+		await pressStart();
 
 		await jest.advanceTimersByTimeAsync(10000);
 		if (getError()) throw getError();

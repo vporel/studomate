@@ -132,6 +132,7 @@ export default class Scene3dLinkManager {
 		this.channel.send({
 			type: "config",
 			sceneId: scene.sceneId,
+			sceneVersion: scene.sceneVersion,
 			projectName: this.host.getProjectName(),
 		});
 		this.lastSentKey = null;
@@ -143,6 +144,7 @@ export default class Scene3dLinkManager {
 		if (!this.channel) return;
 		const key = JSON.stringify([
 			snapshot.sceneId,
+			snapshot.sceneVersion,
 			snapshot.status,
 			snapshot.state,
 		]);

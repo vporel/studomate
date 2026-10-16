@@ -109,7 +109,9 @@ describe("LadderFlow", () => {
 		const { KeyboardSensor } = jest.requireActual("@dnd-kit/core");
 		(useLadderStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
-				ladder: { sections: [new Section("s1", "A", ""), new Section("s2", "B", "")] },
+				ladder: {
+					sections: [new Section("s1", "A", ""), new Section("s2", "B", "")],
+				},
 				commandsStackManager: { executeOperation: jest.fn() },
 			}),
 		);

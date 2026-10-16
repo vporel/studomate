@@ -53,7 +53,7 @@ describe("drilling.template", () => {
 
 		it("câble chaque point de la scène 3D sur une variable existante de la bonne zone", () => {
 			const scene = project.scene3d!;
-			const descriptor = getSceneDescriptor(scene.sceneId)!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
 			expect(scene.sceneId).toBe("drilling");
 			expect(Object.keys(scene.bindings).sort()).toEqual(
 				descriptor.points.map((p) => p.id).sort(),
@@ -72,34 +72,18 @@ describe("drilling.template", () => {
 			}
 		});
 
-		it("garde tous les éléments de la page HMI : bâti, table, pièce, broche animée, bouton, voyants", () => {
-			const widgets = Object.values(Object.values(project.hmiPages)[0].widgets);
-			expect(widgets.map((w) => w.name)).toEqual(
-				expect.arrayContaining([
-					"Titre",
-					"Bâti",
-					"Table",
-					"Pièce",
-					"Broche",
-					"BP départ",
-					"Voyant descendre",
-					"Voyant monter",
-					"Voyant broche",
-					"Voyant h",
-					"Voyant b",
-				]),
-			);
-			expect(widgets).toHaveLength(11);
+		it("n'a pas de page HMI : bouton et voyants sont dans la scène 3D", () => {
+			expect(Object.values(project.hmiPages)).toHaveLength(0);
 		});
 
-		it("donne aux entrées le comportement de leur organe physique", () => {
+		it("ne donne aucun comportement aux entrées, pilotées par la scène 3D", () => {
 			const behaviorKinds = Object.fromEntries(
 				project.variables
 					.filter((v) => v.zone === "logic-input")
 					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
 			);
 			expect(behaviorKinds).toEqual({
-				dcy: "push-button-no",
+				dcy: null,
 				h: null,
 				b: null,
 			});
@@ -119,12 +103,11 @@ describe("drilling.template", () => {
 			project = createDrillingSolution();
 		});
 
-		it("conserve les variables, la scène 3D et la page HMI de l'exercice", () => {
+		it("conserve les variables et la scène 3D de l'exercice", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
 				expect.arrayContaining(["dcy", "descendre", "h", "b", "position"]),
 			);
-			expect(Object.values(project.hmiPages)).toHaveLength(1);
 		});
 
 		it("passe le pipeline complet sans erreur d'analyse ni de compilation", () => {

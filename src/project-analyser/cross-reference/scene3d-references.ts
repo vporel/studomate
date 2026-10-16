@@ -1,4 +1,5 @@
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
+import { sceneKey } from "@/3d-scenes/scene.descriptor";
 import type Project from "@/schemas/project/project.schema";
 import type { RawReference } from "./cross-reference.types";
 
@@ -10,7 +11,7 @@ export default function collectScene3dReferences(
 	project: Project,
 ): RawReference[] {
 	const scene = project.scene3d;
-	const descriptor = scene ? getSceneDescriptor(scene.sceneId) : undefined;
+	const descriptor = scene ? getSceneDescriptor(scene.sceneId, scene.sceneVersion) : undefined;
 	if (!scene || !descriptor) return [];
 
 	const references: RawReference[] = [];
@@ -21,7 +22,7 @@ export default function collectScene3dReferences(
 		references.push({
 			variableName: variable.mnemonic,
 			access: point.kind === "sensor" ? "write" : "read",
-			programId: scene.sceneId,
+			programId: sceneKey(scene.sceneId, scene.sceneVersion),
 			programType: "scene3d",
 			locationId: point.id,
 			locationKind: "scene3d-point",

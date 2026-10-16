@@ -15,9 +15,9 @@ describe("describeGrafcetElement", () => {
 	});
 
 	it("décrit une transition, expression multi-ligne aplatie", () => {
-		expect(
-			describeGrafcetElement("transition", { expression: "a\nb" }),
-		).toBe("Transition : a b");
+		expect(describeGrafcetElement("transition", { expression: "a\nb" })).toBe(
+			"Transition : a b",
+		);
 		expect(describeGrafcetElement("transition", { expression: "  " })).toBe(
 			"Transition (vide)",
 		);

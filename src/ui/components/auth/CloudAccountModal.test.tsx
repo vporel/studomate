@@ -83,7 +83,9 @@ describe("CloudAccountModal", () => {
 
 		fireEvent.click(screen.getByText("Supprimer mon compte"));
 
-		await waitFor(() => expect(screen.getByText("delete-modal:2")).toBeTruthy());
+		await waitFor(() =>
+			expect(screen.getByText("delete-modal:2")).toBeTruthy(),
+		);
 	});
 
 	it("closes and signs out on « Se déconnecter »", async () => {

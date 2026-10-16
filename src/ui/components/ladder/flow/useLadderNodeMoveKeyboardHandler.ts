@@ -37,7 +37,11 @@ export default function useLadderNodeMoveKeyboardHandler(
 
 			e.preventDefault();
 			e.stopPropagation();
-			workflowManager.moveSelectedElementsByCells(sectionId, delta[0], delta[1]);
+			workflowManager.moveSelectedElementsByCells(
+				sectionId,
+				delta[0],
+				delta[1],
+			);
 		},
 		[nodes, sectionId, workflowManager],
 	);

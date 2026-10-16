@@ -23,7 +23,8 @@ const mockRenderProgramScenes = jest.fn((config: { type: string }) =>
 );
 jest.mock("@/ui/pdf/drawing/program-scene", () => ({
 	__esModule: true,
-	default: (config: unknown) => mockRenderProgramScenes(config as { type: string }),
+	default: (config: unknown) =>
+		mockRenderProgramScenes(config as { type: string }),
 }));
 
 function makeGrafcet(id: string, name: string): PdfExportProgramConfig {
@@ -68,10 +69,9 @@ describe("usePdfExport", () => {
 		const section = mockExport.mock.calls[0][0].sections[0];
 		expect(section.scene).toBeUndefined();
 		expect(section.orientation).toBe("landscape");
-		expect(section.ladderSections.map((s: { heading: string }) => s.heading)).toEqual([
-			"Section 1",
-			"Section 2",
-		]);
+		expect(
+			section.ladderSections.map((s: { heading: string }) => s.heading),
+		).toEqual(["Section 1", "Section 2"]);
 	});
 
 	it("transmet la page de garde", async () => {

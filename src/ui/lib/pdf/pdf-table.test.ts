@@ -39,7 +39,12 @@ function tableOf(rows: string[][]): PdfTableModel {
 describe("layoutPdfTable", () => {
 	it("répète la ligne d'en-tête en tête de chaque page", () => {
 		const rows = Array.from({ length: 60 }, (_, i) => [`M${i}`, ""]);
-		const pages = layoutPdfTable(tableOf(rows), area, DEFAULT_TABLE_STYLE, measure);
+		const pages = layoutPdfTable(
+			tableOf(rows),
+			area,
+			DEFAULT_TABLE_STYLE,
+			measure,
+		);
 
 		expect(pages.length).toBeGreaterThan(1);
 		for (const page of pages) {
@@ -52,12 +57,14 @@ describe("layoutPdfTable", () => {
 
 	it("agrandit la hauteur de ligne quand une cellule est renvoyée à la ligne", () => {
 		const shortRow = tableOf([["M0", "ok"]]);
-		const longRow = tableOf([
-			["M0", "mot ".repeat(40).trim()],
-		]);
+		const longRow = tableOf([["M0", "mot ".repeat(40).trim()]]);
 
-		const short = layoutPdfTable(shortRow, area, DEFAULT_TABLE_STYLE, measure)[0]
-			.rows[1];
+		const short = layoutPdfTable(
+			shortRow,
+			area,
+			DEFAULT_TABLE_STYLE,
+			measure,
+		)[0].rows[1];
 		const long = layoutPdfTable(longRow, area, DEFAULT_TABLE_STYLE, measure)[0]
 			.rows[1];
 

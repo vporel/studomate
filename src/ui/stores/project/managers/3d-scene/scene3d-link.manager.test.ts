@@ -11,14 +11,24 @@ import Scene3dLinkManager, {
 } from "./scene3d-link.manager";
 import type { Scene3dStateSnapshot } from "./scene3d-simulation.bridge";
 
-const SCENE: Scene3d = { sceneId: "carton-sorting", bindings: {} };
+const SCENE: Scene3d = {
+	sceneId: "carton-sorting",
+	sceneVersion: 1,
+	bindings: {},
+};
 
 function snapshot(
 	state: unknown,
 	status: Scene3dStateSnapshot["status"] = "running",
 	simTimeMs = 0,
 ) {
-	return { sceneId: "carton-sorting", state, simTimeMs, status };
+	return {
+		sceneId: "carton-sorting",
+		sceneVersion: 1,
+		state,
+		simTimeMs,
+		status,
+	};
 }
 
 function createHarness() {
@@ -101,6 +111,7 @@ describe("Scene3dLinkManager", () => {
 			{
 				type: "config",
 				sceneId: "carton-sorting",
+				sceneVersion: 1,
 				projectName: "Mon projet",
 			},
 			{ type: "state", ...snapshot({ n: 0 }, "stopped") },
@@ -164,11 +175,12 @@ describe("Scene3dLinkManager", () => {
 	it("sends a new configuration when the scene is replaced", () => {
 		const h = createHarness();
 		h.open();
-		h.setScene({ sceneId: "other", bindings: {} });
+		h.setScene({ sceneId: "other", sceneVersion: 1, bindings: {} });
 		h.manager.onSceneChanged();
 		expect(h.received[0]).toEqual({
 			type: "config",
 			sceneId: "other",
+			sceneVersion: 1,
 			projectName: "Mon projet",
 		});
 	});
@@ -183,6 +195,7 @@ describe("Scene3dLinkManager", () => {
 		expect(h.received[0]).toEqual({
 			type: "config",
 			sceneId: "carton-sorting",
+			sceneVersion: 1,
 			projectName: "Nouveau nom",
 		});
 	});

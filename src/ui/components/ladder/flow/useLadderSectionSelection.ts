@@ -33,7 +33,8 @@ export default function useLadderSectionSelection() {
 			const state = store.getState();
 
 			if (!sectionId) {
-				if (state.selectedSectionIds.length > 0) state.setSelectedSectionIds([]);
+				if (state.selectedSectionIds.length > 0)
+					state.setSelectedSectionIds([]);
 				anchorId = null;
 				return;
 			}

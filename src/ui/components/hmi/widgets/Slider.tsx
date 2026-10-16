@@ -25,8 +25,7 @@ const Slider = ({
 	const max = data.max ?? 100;
 	const step = data.step !== undefined && data.step > 0 ? data.step : 1;
 	const vertical = (data.style?.orientation ?? "horizontal") === "vertical";
-	const numValue =
-		typeof value === "number" ? value : clamp(0, min, max);
+	const numValue = typeof value === "number" ? value : clamp(0, min, max);
 	const displayedValue = Number(numValue.toFixed(stepDecimals(step)));
 
 	return (

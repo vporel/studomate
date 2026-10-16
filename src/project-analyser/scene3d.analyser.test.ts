@@ -30,11 +30,21 @@ describe("analyseScene3d", () => {
 	});
 
 	it("reports an unknown scene as an error and stops there", () => {
-		project.scene3d = { sceneId: "nope", bindings: {} };
+		project.scene3d = { sceneId: "nope", sceneVersion: 1, bindings: {} };
 		const issues = analyseScene3d(project);
 		expect(issues.map((i) => i.code)).toEqual(["SCENE3D_UNKNOWN"]);
 		expect(issues[0].severity).toBe("error");
 		expect(issues[0].params).toEqual({ sceneId: "nope" });
+	});
+
+	it("reports a known scene at an unknown version as an error", () => {
+		project.scene3d = {
+			sceneId: "carton-sorting",
+			sceneVersion: 999,
+			bindings: {},
+		};
+		const issues = analyseScene3d(project);
+		expect(issues.map((i) => i.code)).toEqual(["SCENE3D_UNKNOWN"]);
 	});
 
 	it("warns about a point that is not wired", () => {

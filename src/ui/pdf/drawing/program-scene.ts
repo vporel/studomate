@@ -6,8 +6,7 @@ import { LadderRenderContext } from "./ladder-render-context";
 import ladderToSectionScenes from "./ladder-scene";
 
 export type ProgramSceneConfig =
-	| { type: "grafcet"; program: Grafcet }
-	| { type: "ladder"; program: Ladder };
+	{ type: "grafcet"; program: Grafcet } | { type: "ladder"; program: Ladder };
 
 /** Une page d'export : sa scène de dessin et, pour une section de ladder, son intitulé à
  * accoler au titre de la page ainsi que sa description. */

@@ -5,10 +5,10 @@
 
 /* Taille des bornes de connexion (leur affichage au survol est dans `flow-page.css`). */
 .ladder-page .react-flow__node .react-flow__handle {
-	width: 1px;
-	height: 1px;
-	min-width: 1px;
-	min-height: 1px;
-	border-width: 0;
-	background: transparent;
+  width: 1px;
+  height: 1px;
+  min-width: 1px;
+  min-height: 1px;
+  border-width: 0;
+  background: transparent;
 }

@@ -78,12 +78,22 @@
 		"label": "Perçage",
 		"description": "Poste de perçage : un foret descend et remonte entre deux fins de course (haut et bas), la broche le fait tourner. Percer demande de faire tourner la broche, foret en bas, pendant 1,5 s.",
 		"workpiece": "Pièce",
+		"console": "Pupitre",
+		"startCycle": "Départ cycle",
+		"lamps": {
+			"down": "Descente",
+			"up": "Montée",
+			"spindle": "Broche",
+			"high": "Foret en haut",
+			"low": "Foret en bas"
+		},
 		"points": {
 			"down": "Descendre le foret",
 			"up": "Monter le foret",
 			"spindle": "Faire tourner la broche",
 			"high": "Foret en haut",
 			"low": "Foret en bas",
+			"startButton": "Départ cycle",
 			"drillPosition": "Position du foret"
 		}
 	},
@@ -93,6 +103,15 @@
 		"floor0": "RDC",
 		"floor1": "Étage 1",
 		"floor2": "Étage 2",
+		"outside": "Extérieur cabine",
+		"inside": "Intérieur cabine",
+		"lamps": "Voyants",
+		"currentFloor": "Étage",
+		"lampLabels": {
+			"up": "Montée",
+			"down": "Descente",
+			"doorOpen": "Porte ouverte"
+		},
 		"points": {
 			"up": "Monter",
 			"down": "Descendre",
@@ -101,7 +120,39 @@
 			"floor1": "Cabine à l'étage 1",
 			"floor2": "Cabine à l'étage 2",
 			"doorOpen": "Porte ouverte",
+			"cabinButton0": "Bouton cabine RDC",
+			"cabinButton1": "Bouton cabine étage 1",
+			"cabinButton2": "Bouton cabine étage 2",
+			"currentFloor": "Étage courant",
+			"landingButton0": "Appel RDC",
+			"landingButton1": "Appel étage 1",
+			"landingButton2": "Appel étage 2",
 			"cabinPosition": "Position de la cabine"
 		}
+	},
+	"parking": {
+		"label": "Parking à barrière",
+		"description": "Parking de quatre places avec une barrière d'entrée et une barrière de sortie : détecteurs de voiture en attente devant chaque barrière, cellule sous la barrière, voyant « complet » et compteur de places. Les boutons Arrivée et Sortie du pupitre font apparaître des voitures qui s'alignent et n'avancent que si la barrière est ouverte.",
+		"console": "Pupitre",
+		"places": "Places occupées",
+		"lampLabels": {
+			"entryRequest": "Demande entrée",
+			"exitRequest": "Demande sortie",
+			"entryBarrierOpen": "Barrière d'entrée ouverte",
+			"exitBarrierOpen": "Barrière de sortie ouverte",
+			"full": "Complet"
+		},
+		"points": {
+			"barrierEntry": "Ouvrir la barrière d'entrée",
+			"barrierExit": "Ouvrir la barrière de sortie",
+			"full": "Voyant complet",
+			"entryDetector": "Voiture en attente à l'entrée",
+			"exitDetector": "Voiture en attente à la sortie",
+			"photocell": "Cellule sous la barrière",
+			"places": "Places occupées"
+		},
+		"carsBehaviour": "Comportement voitures",
+		"arrival": "Arrivée",
+		"departure": "Sortie"
 	}
 }

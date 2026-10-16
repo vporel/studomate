@@ -18,6 +18,7 @@ const VARIABLES = [
 	VariableBuilder.buildLogicOutput("v-out", "moteur"),
 	VariableBuilder.buildLogicInput("v-in", "capteur"),
 	VariableBuilder.buildAnalogInput("v-pos", "hauteur"),
+	VariableBuilder.buildMemoryInt("v-mem", "etage"),
 ];
 
 function setup({
@@ -50,37 +51,36 @@ describe("Scene3dConfigurationPage", () => {
 	it("sans scène, affiche 'Aucune' et pas de tableau", () => {
 		setup();
 
-		expect(screen.getByRole("combobox", { name: "Scène" })).toHaveTextContent(
-			"Aucune",
-		);
+		expect(screen.getByTestId("scene-picker")).toHaveValue("Aucune");
 		expect(screen.queryByRole("table")).not.toBeInTheDocument();
 	});
 
 	it("choisir une scène la pose avec des liaisons vides", () => {
 		const { setScene3d } = setup();
 
-		fireEvent.mouseDown(screen.getByRole("combobox", { name: "Scène" }));
-		fireEvent.click(screen.getByRole("option", { name: "Ascenseur" }));
+		fireEvent.click(screen.getByTestId("scene-picker"));
+		fireEvent.click(screen.getByRole("button", { name: /Ascenseur/ }));
 
 		expect(setScene3d).toHaveBeenCalledWith({
 			sceneId: "elevator",
+			sceneVersion: 1,
 			bindings: {},
 		});
 	});
 
 	it("choisir 'Aucune' retire la scène", () => {
 		const { setScene3d } = setup({
-			scene: { sceneId: "elevator", bindings: {} },
+			scene: { sceneId: "elevator", sceneVersion: 1, bindings: {} },
 		});
 
-		fireEvent.mouseDown(screen.getByRole("combobox", { name: "Scène" }));
-		fireEvent.click(screen.getByRole("option", { name: "Aucune" }));
+		fireEvent.click(screen.getByTestId("scene-picker"));
+		fireEvent.click(screen.getByRole("button", { name: /Aucune/ }));
 
 		expect(setScene3d).toHaveBeenCalledWith(null);
 	});
 
 	it("n'offre pour un point que les variables de la bonne direction et du bon type", () => {
-		setup({ scene: { sceneId: "elevator", bindings: {} } });
+		setup({ scene: { sceneId: "elevator", sceneVersion: 1, bindings: {} } });
 
 		fireEvent.mouseDown(pointSelect("up"));
 		expect(
@@ -90,7 +90,11 @@ describe("Scene3dConfigurationPage", () => {
 
 	it("lier un point ajoute la variable aux liaisons", () => {
 		const { setScene3d } = setup({
-			scene: { sceneId: "elevator", bindings: { down: "v-out" } },
+			scene: {
+				sceneId: "elevator",
+				sceneVersion: 1,
+				bindings: { down: "v-out" },
+			},
 		});
 
 		fireEvent.mouseDown(pointSelect("floor0"));
@@ -98,13 +102,18 @@ describe("Scene3dConfigurationPage", () => {
 
 		expect(setScene3d).toHaveBeenCalledWith({
 			sceneId: "elevator",
+			sceneVersion: 1,
 			bindings: { down: "v-out", floor0: "v-in" },
 		});
 	});
 
 	it("choisir '-' délie le point", () => {
 		const { setScene3d } = setup({
-			scene: { sceneId: "elevator", bindings: { floor0: "v-in" } },
+			scene: {
+				sceneId: "elevator",
+				sceneVersion: 1,
+				bindings: { floor0: "v-in" },
+			},
 		});
 
 		fireEvent.mouseDown(pointSelect("floor0"));
@@ -112,13 +121,14 @@ describe("Scene3dConfigurationPage", () => {
 
 		expect(setScene3d).toHaveBeenCalledWith({
 			sceneId: "elevator",
+			sceneVersion: 1,
 			bindings: {},
 		});
 	});
 
 	it("le bouton crée les variables manquantes", () => {
 		const { createMissingScene3dVariables } = setup({
-			scene: { sceneId: "elevator", bindings: {} },
+			scene: { sceneId: "elevator", sceneVersion: 1, bindings: {} },
 		});
 
 		fireEvent.click(
@@ -132,6 +142,7 @@ describe("Scene3dConfigurationPage", () => {
 		setup({
 			scene: {
 				sceneId: "elevator",
+				sceneVersion: 1,
 				bindings: {
 					up: "v-out",
 					down: "v-out",
@@ -141,6 +152,13 @@ describe("Scene3dConfigurationPage", () => {
 					floor2: "v-in",
 					doorOpen: "v-in",
 					cabinPosition: "v-pos",
+					cabinButton0: "v-in",
+					cabinButton1: "v-in",
+					cabinButton2: "v-in",
+					landingButton0: "v-in",
+					landingButton1: "v-in",
+					landingButton2: "v-in",
+					currentFloor: "v-mem",
 				},
 			},
 		});
@@ -152,14 +170,11 @@ describe("Scene3dConfigurationPage", () => {
 
 	it("tout est verrouillé hors du mode Conception", () => {
 		setup({
-			scene: { sceneId: "elevator", bindings: {} },
+			scene: { sceneId: "elevator", sceneVersion: 1, bindings: {} },
 			mode: ProjectMode.SIMULATION,
 		});
 
-		expect(screen.getByRole("combobox", { name: "Scène" })).toHaveAttribute(
-			"aria-disabled",
-			"true",
-		);
+		expect(screen.getByTestId("scene-picker")).toBeDisabled();
 		expect(pointSelect("up")).toHaveAttribute("aria-disabled", "true");
 		expect(
 			screen.getByRole("button", { name: "Créer les variables manquantes" }),
@@ -168,7 +183,7 @@ describe("Scene3dConfigurationPage", () => {
 
 	it("le bouton « Ouvrir la scène » ouvre l'onglet de la scène, même hors conception", () => {
 		const { open } = setup({
-			scene: { sceneId: "elevator", bindings: {} },
+			scene: { sceneId: "elevator", sceneVersion: 1, bindings: {} },
 			mode: ProjectMode.SIMULATION,
 		});
 
@@ -186,8 +201,33 @@ describe("Scene3dConfigurationPage", () => {
 	});
 
 	it("signale une scène inconnue", () => {
-		setup({ scene: { sceneId: "zzz", bindings: {} } });
+		setup({ scene: { sceneId: "zzz", sceneVersion: 1, bindings: {} } });
 
 		expect(screen.getByText(/« zzz » est inconnue/)).toBeInTheDocument();
+	});
+
+	it("rechoisir la scène courante ne touche pas aux liaisons", () => {
+		const { setScene3d } = setup({
+			scene: {
+				sceneId: "elevator",
+				sceneVersion: 1,
+				bindings: { up: "v-out" },
+			},
+		});
+
+		fireEvent.click(screen.getByTestId("scene-picker"));
+		fireEvent.click(screen.getByRole("button", { name: /Ascenseur/ }));
+
+		expect(setScene3d).not.toHaveBeenCalled();
+	});
+
+	it("la modale de choix montre une capture par scène", () => {
+		setup();
+
+		fireEvent.click(screen.getByTestId("scene-picker"));
+
+		expect(
+			screen.getByRole("img", { name: "Capture de la scène Ascenseur" }),
+		).toHaveAttribute("src", "/images/scenes-3d/elevator.png");
 	});
 });

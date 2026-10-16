@@ -204,15 +204,9 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		const startCol = Math.max(0, Math.floor(xToCol(flowPos.x)));
 
 		// Bounding box des éléments copiés
-		const minRow = Math.min(
-			...clipboard.elements.map((e) => e.position.row),
-		);
-		const minCol = Math.min(
-			...clipboard.elements.map((e) => e.position.col),
-		);
-		const maxCol = Math.max(
-			...clipboard.elements.map((e) => e.position.col),
-		);
+		const minRow = Math.min(...clipboard.elements.map((e) => e.position.row));
+		const minCol = Math.min(...clipboard.elements.map((e) => e.position.col));
+		const maxCol = Math.max(...clipboard.elements.map((e) => e.position.col));
 
 		const width = maxCol - minCol + 1;
 
@@ -273,7 +267,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			state.ladder.getAllElements().flatMap((el) => {
 				const params =
 					el.type === "block"
-						? getTimerBlockParams(el) ?? getCounterBlockParams(el)
+						? (getTimerBlockParams(el) ?? getCounterBlockParams(el))
 						: null;
 				return params?.name ? [params.name] : [];
 			}),
@@ -381,8 +375,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 		const activeIndex = activeSectionId
 			? ladder.sections.findIndex((s) => s.id === activeSectionId)
 			: -1;
-		const atIndex =
-			activeIndex >= 0 ? activeIndex + 1 : ladder.sections.length;
+		const atIndex = activeIndex >= 0 ? activeIndex + 1 : ladder.sections.length;
 		this.insertSections(sections, atIndex);
 	}
 
@@ -403,7 +396,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			ladder.getAllElements().flatMap((el) => {
 				const params =
 					el.type === "block"
-						? getTimerBlockParams(el) ?? getCounterBlockParams(el)
+						? (getTimerBlockParams(el) ?? getCounterBlockParams(el))
 						: null;
 				return params?.name ? [params.name] : [];
 			}),

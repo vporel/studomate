@@ -26,12 +26,17 @@ const exportProgramPdf = jest.fn().mockResolvedValue(undefined);
 jest.mock("@/ui/pdf/program-pdf", () => ({
 	exportProgramPdf: (...args: unknown[]) => exportProgramPdf(...args),
 }));
-jest.mock("@/ui/services/analytics", () => ({ __esModule: true, default: jest.fn() }));
+jest.mock("@/ui/services/analytics", () => ({
+	__esModule: true,
+	default: jest.fn(),
+}));
 
 function setup(getAllElements: () => unknown[] = () => [{}]) {
 	const ladder = { name: "Pompe", getAllElements };
 	const events = mitt();
-	(useLadderContext as jest.Mock).mockReturnValue({ contextMenuEvents: events });
+	(useLadderContext as jest.Mock).mockReturnValue({
+		contextMenuEvents: events,
+	});
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			ladder,

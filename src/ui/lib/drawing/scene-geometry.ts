@@ -70,7 +70,10 @@ export function translateOps(ops: DrawOp[], dx: number, dy: number): DrawOp[] {
 		d.replace(
 			/([MLC])\s*((?:-?\d*\.?\d+[\s,]*)+)/gi,
 			(_m, cmd: string, coords: string) => {
-				const nums = coords.trim().split(/[\s,]+/).map(Number);
+				const nums = coords
+					.trim()
+					.split(/[\s,]+/)
+					.map(Number);
 				const shifted = nums.map((n, i) => (i % 2 === 0 ? n + dx : n + dy));
 				return `${cmd} ${shifted.join(" ")}`;
 			},

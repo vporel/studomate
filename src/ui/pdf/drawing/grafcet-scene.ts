@@ -35,11 +35,22 @@ function connectionVertices(
 	return getConnectionLinePoints(s[0], s[1], t[0], t[1]);
 }
 
-function stepOps(step: Element<{ number: number | ""; initial?: boolean }>): DrawOp[] {
+function stepOps(
+	step: Element<{ number: number | ""; initial?: boolean }>,
+): DrawOp[] {
 	const { x, y } = step.position;
 	const { width: w, height: h } = step.size;
 	const ops: DrawOp[] = [
-		{ op: "rect", x, y, w, h, rx: 5, fill: "#ffffff", strokeWidth: NODE_STROKE },
+		{
+			op: "rect",
+			x,
+			y,
+			w,
+			h,
+			rx: 5,
+			fill: "#ffffff",
+			strokeWidth: NODE_STROKE,
+		},
 	];
 	if (step.data.initial) {
 		ops.push({
@@ -64,16 +75,21 @@ function stepOps(step: Element<{ number: number | ""; initial?: boolean }>): Dra
 	return ops;
 }
 
-function transitionOps(
-	transition: Element<{ expression: string }>,
-): DrawOp[] {
+function transitionOps(transition: Element<{ expression: string }>): DrawOp[] {
 	const { x, y } = transition.position;
 	const { width: w, height: h } = transition.size;
 	const cx = x + w / 2;
 	const midY = y + h / 2;
 	const ops: DrawOp[] = [
 		// Ligne de liaison verticale continue traversant la transition, + barre centrée.
-		{ op: "line", x1: cx, y1: y, x2: cx, y2: y + h, strokeWidth: CONNECTION_STROKE },
+		{
+			op: "line",
+			x1: cx,
+			y1: y,
+			x2: cx,
+			y2: y + h,
+			strokeWidth: CONNECTION_STROKE,
+		},
 		{
 			op: "line",
 			x1: cx - TRANSITION_BAR_HALF,
@@ -104,11 +120,9 @@ function actionOps(action: Action): DrawOp[] {
 	const ops: DrawOp[] = [
 		{ op: "rect", x, y, w, h, rx: 5, fill: "#ffffff", strokeWidth: STROKE },
 	];
-	const lines = wrapText(
-		action.data.expression,
-		w - 16,
-		TEXT_SIZE,
-	).filter((l) => l !== "");
+	const lines = wrapText(action.data.expression, w - 16, TEXT_SIZE).filter(
+		(l) => l !== "",
+	);
 	const lineHeight = TEXT_SIZE * 1.25;
 	const startY = y + h / 2 - ((lines.length - 1) * lineHeight) / 2;
 	lines.forEach((line, i) => {
@@ -157,7 +171,10 @@ function commentOps(comment: Element<{ text: string }>): DrawOp[] {
 }
 
 function referralOps(
-	element: Element<{ targetStepNumber?: number | ""; sourceStepNumber?: number | "" }>,
+	element: Element<{
+		targetStepNumber?: number | "";
+		sourceStepNumber?: number | "";
+	}>,
 	direction: "source" | "target",
 ): DrawOp[] {
 	const { x, y } = element.position;
@@ -184,11 +201,27 @@ function referralOps(
 		return [
 			{ op: "line", x1: cx, y1: y, x2: cx, y2: chevronY, strokeWidth: 1.5 },
 			downChevron,
-			{ op: "text", x: cx, y: y + h - 2, text: String(number ?? ""), fontSize: 14, align: "center", baseline: "alphabetic" },
+			{
+				op: "text",
+				x: cx,
+				y: y + h - 2,
+				text: String(number ?? ""),
+				fontSize: 14,
+				align: "center",
+				baseline: "alphabetic",
+			},
 		];
 	}
 	return [
-		{ op: "text", x: cx, y: y + 10, text: String(number ?? ""), fontSize: 14, align: "center", baseline: "middle" },
+		{
+			op: "text",
+			x: cx,
+			y: y + 10,
+			text: String(number ?? ""),
+			fontSize: 14,
+			align: "center",
+			baseline: "middle",
+		},
 		downChevron,
 		{ op: "line", x1: cx, y1: chevronY, x2: cx, y2: y + h, strokeWidth: 1.5 },
 	];

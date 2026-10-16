@@ -68,18 +68,22 @@ describe("LadderToolbar", () => {
 
 		expect(extraLabels.some(hasTool)).toBe(false);
 
-		fireEvent.click(screen.getByRole("button", { name: "Afficher d'autres bobines" }));
+		fireEvent.click(
+			screen.getByRole("button", { name: "Afficher d'autres bobines" }),
+		);
 		expect(extraLabels.every(hasTool)).toBe(true);
 
-		fireEvent.click(screen.getByRole("button", { name: "Masquer les bobines supplémentaires" }));
+		fireEvent.click(
+			screen.getByRole("button", {
+				name: "Masquer les bobines supplémentaires",
+			}),
+		);
 		expect(extraLabels.some(hasTool)).toBe(false);
 	});
 
 	it("shows no execution warning for an executed ladder", () => {
 		setup();
-		expect(
-			screen.queryByText("Exclu de l'exécution"),
-		).not.toBeInTheDocument();
+		expect(screen.queryByText("Exclu de l'exécution")).not.toBeInTheDocument();
 	});
 
 	it("shows the execution warning for an excluded ladder, whose dialog re-includes it", () => {

@@ -9,7 +9,7 @@ import SceneView, { EDITOR_SILENCE_TIMEOUT_MS } from "./scene-view";
 const lerp = (from: unknown, to: unknown, ratio: number) =>
 	(from as number) + ((to as number) - (from as number)) * ratio;
 
-function createHarness(knownScenes = ["carton-sorting"]) {
+function createHarness(knownScenes = ["carton-sorting@1"]) {
 	const [sceneEnd, editorEnd] = createTransportPair();
 	const editor = new SceneChannel<EditorToSceneMessage, SceneToEditorMessage>(
 		editorEnd,
@@ -21,7 +21,8 @@ function createHarness(knownScenes = ["carton-sorting"]) {
 	const view = new SceneView({
 		transport: sceneEnd,
 		now: () => now,
-		getLerp: (id) => (knownScenes.includes(id) ? lerp : undefined),
+		getLerp: (id, version) =>
+			knownScenes.includes(`${id}@${version}`) ? lerp : undefined,
 		onClose,
 	});
 	return {
@@ -44,6 +45,7 @@ const state = (
 	({
 		type: "state",
 		sceneId: "carton-sorting",
+		sceneVersion: 1,
 		state: value,
 		simTimeMs,
 		status,
@@ -59,6 +61,7 @@ describe("SceneView", () => {
 		expect(h.view.getSnapshot()).toEqual({
 			phase: "waiting",
 			sceneId: null,
+			sceneVersion: null,
 			projectName: null,
 		});
 		h.view.dispose();
@@ -71,12 +74,14 @@ describe("SceneView", () => {
 			h.editor.send({
 				type: "config",
 				sceneId: "carton-sorting",
+				sceneVersion: 1,
 				projectName: "Mon projet",
 			});
 			h.editor.send(state(1, status));
 			expect(h.view.getSnapshot()).toEqual({
 				phase: status,
 				sceneId: "carton-sorting",
+				sceneVersion: 1,
 				projectName: "Mon projet",
 			});
 			h.view.dispose();
@@ -173,6 +178,14 @@ describe("SceneView", () => {
 		const h = createHarness([]);
 		h.editor.send(state(0, "running"));
 		expect(h.view.getSnapshot().sceneId).toBe("carton-sorting");
+		expect(h.view.sampleState()).toBeNull();
+		h.view.dispose();
+	});
+
+	it("treats a version unknown to this build as an unknown scene", () => {
+		const h = createHarness();
+		h.editor.send({ ...state(0, "running"), sceneVersion: 2 });
+		expect(h.view.getSnapshot().sceneVersion).toBe(2);
 		expect(h.view.sampleState()).toBeNull();
 		h.view.dispose();
 	});

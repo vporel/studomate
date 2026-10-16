@@ -17,9 +17,7 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import DrillingDescriptor from "@/3d-scenes/drilling/drilling.descriptor";
-import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import DrillingDescriptor from "@/3d-scenes/drilling/v1/drilling.descriptor";
 import {
 	createArithmeticBlockElement,
 	createCompareBlockElement,
@@ -44,8 +42,6 @@ import { createRandomId } from "@/ids";
 const POSITION_MAX = 100;
 /** Avance du foret par cycle automate, dans le modèle de partie opérative. */
 const PAS = 2;
-
-const CX = 500;
 
 /** Chaîne chaque élément au suivant sur une ligne (ET implicite : rail → … → dernier). */
 function wireInSeries(elements: LadderElement[]): Connection[] {
@@ -150,154 +146,6 @@ export function buildOperativePartLadder(
 	return new Ladder(createRandomId(), "Partie opérative", [section]);
 }
 
-/** Page HMI commune : bâti, foret animé en hauteur, pièce, bouton départ et voyants. */
-function buildDrillingPage(): HmiPage {
-	const page = new HmiPage(createRandomId(), "Poste de perçage", true);
-	let stack = 0;
-
-	page.addWidget(
-		HmiWidget.create(
-			"text",
-			CX - 140,
-			24,
-			{ width: 280, height: 28 },
-			{
-				text: "Poste de perçage",
-				style: { fontSize: 16, color: "#333333", align: "center" },
-			},
-			stack++,
-			"Titre",
-		),
-	);
-
-	// Bâti (colonne verticale)
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX + 90,
-			90,
-			{ width: 40, height: 320 },
-			{
-				style: {
-					fill: "#607d8b",
-					stroke: "#455a64",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Bâti",
-		),
-	);
-
-	// Table
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 120,
-			380,
-			{ width: 260, height: 24 },
-			{
-				style: {
-					fill: "#455a64",
-					stroke: "#37474f",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Table",
-		),
-	);
-
-	// Pièce à percer
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 40,
-			340,
-			{ width: 100, height: 40 },
-			{
-				style: {
-					fill: "#a1887f",
-					stroke: "#6d4c41",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Pièce",
-		),
-	);
-
-	// Broche + foret, descend avec `position`
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 15,
-			110,
-			{ width: 30, height: 120 },
-			{
-				style: {
-					fill: "#eeeeee",
-					stroke: "#9e9e9e",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-				animations: {
-					position: { yVariable: "position" },
-					style: {
-						variable: "broche",
-						rows: [
-							{ value: 0, properties: { fill: "#eeeeee", stroke: "#9e9e9e" } },
-							{ value: 1, properties: { fill: "#fff59d", stroke: "#f9a825" } },
-						],
-					},
-				},
-			},
-			stack++,
-			"Broche",
-		),
-	);
-
-	// Bouton départ cycle
-	page.addWidget(
-		HmiWidget.create(
-			"push-button",
-			140,
-			120,
-			{ width: 200, height: 44 },
-			{ variable: "dcy", label: "Départ cycle" },
-			stack++,
-			"BP départ",
-		),
-	);
-
-	// Voyants
-	const voyants: Array<{ mnemonic: string; label: string }> = [
-		{ mnemonic: "descendre", label: "Descente" },
-		{ mnemonic: "monter", label: "Montée" },
-		{ mnemonic: "broche", label: "Broche" },
-		{ mnemonic: "h", label: "Foret en haut" },
-		{ mnemonic: "b", label: "Foret en bas" },
-	];
-	voyants.forEach(({ mnemonic, label }, i) => {
-		page.addWidget(
-			HmiWidget.create(
-				"indicator",
-				160,
-				200 + i * 64,
-				{ width: 36, height: 36 },
-				{ variable: mnemonic, label },
-				stack++,
-				`Voyant ${mnemonic}`,
-			),
-		);
-	});
-
-	return page;
-}
-
 export function createDrillingVariables(): Variable[] {
 	return [
 		VariableBuilder.buildLogicInput(
@@ -333,10 +181,9 @@ export function addDrillingOperativePart(
 
 /**
  * Crée un projet "Poste de perçage" pré-configuré :
- * — 1 entrée booléenne `dcy` + 3 sorties (`descendre`, `monter`, `broche`)
- * — 2 capteurs de fin de course booléens `h`/`b` et l'entrée analogique `position` (course du
- *   foret), fournis par la scène 3D « Perçage »
- * — 1 page HMI (bâti, foret animé, bouton, voyants)
+ * — 3 sorties (`descendre`, `monter`, `broche`)
+ * — 3 capteurs booléens `dcy` (bouton départ cycle du pupitre), `h`/`b` (fins de course) et l'entrée
+ *   analogique `position` (course du foret), fournis par la scène 3D « Perçage »
  * — scène 3D câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
@@ -344,11 +191,7 @@ export function createDrillingProject(): Project {
 	const project = new Project(createRandomId(), "Poste de perçage", "");
 
 	project.variables.push(
-		VariableBuilder.buildLogicInput(
-			createRandomId(),
-			"dcy",
-			PUSH_BUTTON_NO_BEHAVIOR,
-		),
+		VariableBuilder.buildLogicInput(createRandomId(), "dcy"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
@@ -362,6 +205,7 @@ export function createDrillingProject(): Project {
 	);
 	project.scene3d = {
 		sceneId: DrillingDescriptor.id,
+		sceneVersion: DrillingDescriptor.version,
 		bindings: Object.fromEntries(
 			DrillingDescriptor.points.map((point) => [
 				point.id,
@@ -369,9 +213,6 @@ export function createDrillingProject(): Project {
 			]),
 		),
 	};
-
-	const page = buildDrillingPage();
-	project.hmiPages[page.id] = page;
 
 	return project;
 }

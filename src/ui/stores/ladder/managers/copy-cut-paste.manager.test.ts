@@ -189,9 +189,7 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 
 			const elements = store.getState().ladder.getSection("s1")!.elements;
 			expect(elements).toHaveLength(2);
-			const pasted = elements.find(
-				(e) => e.id !== timer.id,
-			)! as typeof timer;
+			const pasted = elements.find((e) => e.id !== timer.id)! as typeof timer;
 			expect(getTimerBlockParams(pasted)?.name).toBe("Tempo_2");
 			expect(getTimerBlockParams(timer)?.name).toBe("Tempo");
 		});
@@ -254,22 +252,22 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			const ladderB = new Ladder("l2", "LadderB", [sectionB]);
 			const storeB = createLadderStore(ladderB, new CommandsStack<Ladder>(100));
 			stubElementsFromPoint("s2");
-			storeB
-				.getState()
-				.viewManager.registerInstance(
-					"s2",
-					fakeRfInstance({
-						x: POWER_RAIL_OFFSET + 3 * GRID_CELL_WIDTH,
-						y: 5 * GRID_CELL_HEIGHT,
-					}),
-				);
+			storeB.getState().viewManager.registerInstance(
+				"s2",
+				fakeRfInstance({
+					x: POWER_RAIL_OFFSET + 3 * GRID_CELL_WIDTH,
+					y: 5 * GRID_CELL_HEIGHT,
+				}),
+			);
 
 			storeB.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
 
 			expect(
 				storeB.getState().ladder.getSection("s2")!.elements.length,
 			).toBeGreaterThan(0);
-			expect(storeA.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+			expect(storeA.getState().ladder.getSection("s1")!.elements).toHaveLength(
+				1,
+			);
 		});
 
 		it("ne colle rien si le presse-papiers vient d'un autre type de page", () => {
@@ -282,7 +280,9 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 
 			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
 
-			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(
+				1,
+			);
 		});
 
 		it("ne colle rien après vidage du presse-papiers (changement de projet)", () => {
@@ -297,7 +297,9 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			clearClipboard();
 			store.getState().copyCutPasteManager.pasteElements({ x: 10, y: 10 });
 
-			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(1);
+			expect(store.getState().ladder.getSection("s1")!.elements).toHaveLength(
+				1,
+			);
 		});
 	});
 
@@ -311,10 +313,13 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 				{ id: coil.id, type: "coil", handle: "target" },
 				{ points: [[0, 0]] },
 			);
-			const s1 = new Section("s1", "Départ moteur", "commande principale", [
-				contact,
-				coil,
-			], [connection]);
+			const s1 = new Section(
+				"s1",
+				"Départ moteur",
+				"commande principale",
+				[contact, coil],
+				[connection],
+			);
 			const s2 = new Section("s2", "Arrêt", "", []);
 			const ladder = new Ladder("l1", "TestLadder", [s1, s2]);
 			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));

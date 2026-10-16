@@ -257,7 +257,10 @@ export const createProjectStore = () => {
 				const { project, mode } = get();
 				const scene = project?.scene3d;
 				if (!project || !scene || mode !== ProjectMode.DESIGN) return;
-				const descriptor = getSceneDescriptor(scene.sceneId);
+				const descriptor = getSceneDescriptor(
+					scene.sceneId,
+					scene.sceneVersion,
+				);
 				if (!descriptor) return;
 				const plan = planMissingVariables(descriptor, scene, project.variables);
 				const { commands, variablesToAdd } =

@@ -66,7 +66,9 @@ const GrafcetContextMenu = ({
 	);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
-	const projectName = useProjectStore((state) => state.project?.name ?? "export");
+	const projectName = useProjectStore(
+		(state) => state.project?.name ?? "export",
+	);
 
 	const tExport = useT("projects.export");
 	const onExport = useCallback(() => {

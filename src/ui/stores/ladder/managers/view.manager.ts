@@ -108,7 +108,8 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	/** Applique `zoom` (borné) à la section et repince son viewport. */
 	private applyZoom(sectionId: string, zoom: number): void {
 		if (
-			this.clamp(zoom) === (this.getStoreState().zoomBySectionId[sectionId] ?? 1)
+			this.clamp(zoom) ===
+			(this.getStoreState().zoomBySectionId[sectionId] ?? 1)
 		)
 			return;
 		const clamped = this.setSectionZoom(sectionId, zoom);

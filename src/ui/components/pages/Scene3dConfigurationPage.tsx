@@ -1,6 +1,10 @@
 "use client";
 
-import { listScenes, getSceneDescriptor } from "@/3d-scenes/scene.registry";
+import {
+	listScenes,
+	getSceneDescriptor,
+	listSceneVersions,
+} from "@/3d-scenes/scene.registry";
 import { getCandidateVariables } from "@/3d-scenes/scene3d-wiring";
 import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
@@ -19,10 +23,12 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
+import { useState } from "react";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
+import SceneChoiceModal from "./SceneChoiceModal";
 import { whiteFieldSx } from "./hardware/hardware-target-editor";
 
 export const SCENE3D_CONFIGURATION_PAGE_ID = "scene3d-configuration";
@@ -32,8 +38,9 @@ export const SCENE3D_CONFIGURATION_PAGE_DATA: PageData = {
 	title: "Configuration scène 3D",
 };
 
-const NO_SCENE = "none";
 const NO_VARIABLE = "";
+
+const latestScenes = listScenes();
 
 const Scene3dConfigurationPage = () => {
 	const t = useT("pages.scene3d");
@@ -55,8 +62,11 @@ const Scene3dConfigurationPage = () => {
 			scene3dLinkManager: state.scene3dLinkManager,
 		})),
 	);
-	const descriptor = scene ? getSceneDescriptor(scene.sceneId) : undefined;
+	const descriptor = scene
+		? getSceneDescriptor(scene.sceneId, scene.sceneVersion)
+		: undefined;
 	const allVariables = variables ?? [];
+	const [choosingScene, setChoosingScene] = useState(false);
 	const hasUnboundPoint =
 		!!scene &&
 		!!descriptor &&
@@ -92,35 +102,78 @@ const Scene3dConfigurationPage = () => {
 				<Typography sx={{ mt: 2, mb: 3 }} color="text.secondary">
 					{t("intro")}
 				</Typography>
-				<TextField
-					select
-					label={t("scene")}
-					size="small"
-					sx={{ width: 320, ...whiteFieldSx }}
-					slotProps={{ inputLabel: { shrink: true } }}
-					value={scene?.sceneId ?? NO_SCENE}
-					disabled={!designing}
-					onChange={(e) =>
-						setScene3d(
-							e.target.value === NO_SCENE
-								? null
-								: { sceneId: e.target.value, bindings: {} },
-						)
-					}
-					helperText={designing ? undefined : t("readOnlyInSimulation")}
-				>
-					<MenuItem value={NO_SCENE}>{t("sceneNone")}</MenuItem>
-					{scene && !descriptor && (
-						<MenuItem value={scene.sceneId} disabled>
-							{scene.sceneId}
-						</MenuItem>
+				<Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+					<TextField
+						label={t("scene")}
+						size="small"
+						sx={{
+							width: 320,
+							...whiteFieldSx,
+							"& input": { cursor: designing ? "pointer" : "default" },
+						}}
+						value={
+							descriptor
+								? ts(descriptor.labelKey as never)
+								: (scene?.sceneId ?? t("sceneNone"))
+						}
+						disabled={!designing}
+						onClick={() => setChoosingScene(true)}
+						helperText={designing ? undefined : t("readOnlyInSimulation")}
+						slotProps={{
+							inputLabel: { shrink: true },
+							htmlInput: { readOnly: true, "data-testid": "scene-picker" },
+							input: {
+								startAdornment: descriptor && (
+									// eslint-disable-next-line @next/next/no-img-element
+									<img
+										src={descriptor.imageUrl}
+										alt=""
+										width={40}
+										height={28}
+										style={{ objectFit: "contain", marginRight: 8 }}
+									/>
+								),
+							},
+						}}
+					/>
+					{scene && (
+						<TextField
+							select
+							label={t("sceneVersion")}
+							size="small"
+							sx={{ width: 120, ...whiteFieldSx }}
+							slotProps={{ inputLabel: { shrink: true } }}
+							value={scene.sceneVersion}
+							disabled={!designing}
+							onChange={(e) => {
+								const version = Number(e.target.value);
+								const next = getSceneDescriptor(scene.sceneId, version);
+								if (!next) return;
+								const pointIds = new Set(next.points.map((point) => point.id));
+								setScene3d({
+									sceneId: scene.sceneId,
+									sceneVersion: version,
+									bindings: Object.fromEntries(
+										Object.entries(scene.bindings).filter(([pointId]) =>
+											pointIds.has(pointId),
+										),
+									),
+								});
+							}}
+						>
+							{!descriptor && (
+								<MenuItem value={scene.sceneVersion} disabled>
+									{`v${scene.sceneVersion}`}
+								</MenuItem>
+							)}
+							{listSceneVersions(scene.sceneId).map((version) => (
+								<MenuItem key={version} value={version}>
+									{`v${version}`}
+								</MenuItem>
+							))}
+						</TextField>
 					)}
-					{listScenes().map((item) => (
-						<MenuItem key={item.id} value={item.id}>
-							{ts(item.labelKey as never)}
-						</MenuItem>
-					))}
-				</TextField>
+				</Box>
 
 				{scene && !descriptor && (
 					<Typography color="error" sx={{ mt: 3 }}>
@@ -228,6 +281,21 @@ const Scene3dConfigurationPage = () => {
 					</>
 				)}
 			</Box>
+			<SceneChoiceModal
+				open={choosingScene}
+				onClose={() => setChoosingScene(false)}
+				scenes={latestScenes}
+				currentSceneId={scene?.sceneId ?? null}
+				onChoose={(next) => {
+					setChoosingScene(false);
+					if (next?.id === scene?.sceneId) return;
+					setScene3d(
+						next
+							? { sceneId: next.id, sceneVersion: next.version, bindings: {} }
+							: null,
+					);
+				}}
+			/>
 		</Page>
 	);
 };

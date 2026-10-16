@@ -158,7 +158,7 @@ describe("CrossReferenceMapper", () => {
 				references: [
 					{
 						access: "write",
-						programId: "carton-sorting",
+						programId: "carton-sorting@1",
 						programType: "scene3d",
 						locationId: "cartonAtStation",
 						locationKind: "scene3d-point",
@@ -177,7 +177,7 @@ describe("CrossReferenceMapper", () => {
 		);
 		expect(fr.writers[0]).toMatchObject({
 			programType: "scene3d",
-			programId: "carton-sorting",
+			programId: "carton-sorting@1",
 			locationId: "cartonAtStation",
 		});
 	});

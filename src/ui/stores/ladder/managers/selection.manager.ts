@@ -12,13 +12,12 @@ type SelectionMaps = {
 
 const deselectList = <T extends { selected?: boolean }>(items: T[]): T[] =>
 	items.some((item) => item.selected)
-		? items.map((item) =>
-				item.selected ? { ...item, selected: false } : item,
-			)
+		? items.map((item) => (item.selected ? { ...item, selected: false } : item))
 		: items;
 
-const selectList = <T extends { selected?: boolean }>(items: T[] | undefined): T[] =>
-	(items ?? []).map((item) => ({ ...item, selected: true }));
+const selectList = <T extends { selected?: boolean }>(
+	items: T[] | undefined,
+): T[] => (items ?? []).map((item) => ({ ...item, selected: true }));
 
 /**
  * La sélection du Ladder est globale : chaque section a sa propre instance React Flow, qui

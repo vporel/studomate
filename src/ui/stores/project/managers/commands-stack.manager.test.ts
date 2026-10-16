@@ -13,7 +13,7 @@ function renameCommand(from: string, to: string) {
 	]);
 }
 
-const SCENE = { sceneId: "carton-sorting", bindings: {} };
+const SCENE = { sceneId: "carton-sorting", sceneVersion: 1, bindings: {} };
 
 function sceneCommand() {
 	return new ProjectFieldSetCommand({

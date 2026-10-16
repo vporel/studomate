@@ -39,8 +39,7 @@ export default function resolveExtremeBranchDrag(
 	const { data, nodeX, width } = baseline;
 	const order = data.branchesOrder;
 	const posOf = (id: string) => data.branches[id]!.position;
-	const snapped =
-		Math.round(dx / FLOW_GRID_CELL_WIDTH) * FLOW_GRID_CELL_WIDTH;
+	const snapped = Math.round(dx / FLOW_GRID_CELL_WIDTH) * FLOW_GRID_CELL_WIDTH;
 
 	if (edge === "first") {
 		const secondPos = posOf(order[1]!);

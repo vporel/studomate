@@ -138,6 +138,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("referralsIntro")}</Typography>
 					<ManualList items={t.raw("referralsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/grafcet/referrals.svg"
+						alt={t("referralsFigureAlt")}
+						width={260}
+					/>
 					<Typography mb={2}>{t("referralsOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>

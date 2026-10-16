@@ -77,9 +77,7 @@ export default function ShareProjectModal() {
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 				{shareToken ? (
 					<>
-						<Alert severity="success">
-							{t("sharedAlert")}
-						</Alert>
+						<Alert severity="success">{t("sharedAlert")}</Alert>
 
 						<TextField
 							label={t("linkLabel")}
@@ -127,9 +125,7 @@ export default function ShareProjectModal() {
 						</Box>
 					</>
 				) : (
-					<Typography color="text.secondary">
-						{t("noActiveLink")}
-					</Typography>
+					<Typography color="text.secondary">{t("noActiveLink")}</Typography>
 				)}
 
 				<Box sx={{ display: "flex", justifyContent: "flex-end" }}>

@@ -29,15 +29,34 @@
 		"en": "English"
 	},
 	"landing": {
-		"heroTagline": "Le studio d'automatisme le plus rapide et le plus accessible pour apprendre et expérimenter le GRAFCET, le Ladder et les HMI : gratuit, sans installation, directement dans le navigateur.",
+		"heroTitle": "Apprenez le GRAFCET<br></br>et le Ladder en simulant",
+		"heroTagline": "Concevez, simulez et testez vos automatismes avec des HMI animées, directement dans le navigateur.",
 		"heroBadges": "Gratuit et open source · Sans installation · Sans compte · Aucune donnée personnelle",
-		"openManual": "Consulter le manuel",
-		"heroSlideGrafcet": "L'éditeur {name} en cours de simulation d'un GRAFCET",
-		"heroSlideLadder": "L'éditeur {name} en cours de simulation d'un Ladder",
-		"heroSlideHmi": "L'éditeur d'interface HMI de {name}",
-		"heroVideoLabel": "Démonstration de la création et de la simulation d'un projet avec {name}",
-		"notationsTitle": "GRAFCET, Ladder, HMI",
-		"notationsIntro": "Un même environnement pour les trois notations, avec des variables partagées.",
+		"heroSceneLabel": "Animation 3D d'un poste de tri de caisses : un tapis amène chaque caisse, des vérins la trient selon sa hauteur.",
+		"followTraining": "Suivre la formation",
+		"showcaseGrafcetAlt": "L'éditeur {name} en cours de simulation d'un GRAFCET",
+		"showcaseLadderAlt": "L'éditeur {name} en cours de simulation d'un Ladder",
+		"showcaseHmiAlt": "L'éditeur d'interface HMI de {name}",
+		"demoTitle": "Voir {name} en action",
+		"demoVideoLabel": "Démonstration de la création et de la simulation d'un projet avec {name}",
+		"demoVideoPause": "Mettre la démonstration en pause",
+		"demoVideoPlay": "Lire la démonstration",
+		"logicTitle": "Écrivez la logique",
+		"logicIntro": "GRAFCET et Ladder dans le même projet, avec des variables partagées.",
+		"machineTitle": "Pilotez la machine",
+		"machineIntro": "Reliez votre programme à une HMI, à une scène 3D ou à une vraie carte Arduino.",
+		"showcaseGrafcetTitle": "GRAFCET",
+		"showcaseGrafcetText": "Dessinez étapes, transitions et divergences, puis suivez l'évolution du grafcet en simulation : étapes actives, réceptivités vraies, actions en cours.",
+		"showcaseLadderTitle": "Ladder",
+		"showcaseLadderText": "Construisez vos réseaux avec contacts, bobines, temporisations et compteurs, et voyez le courant circuler pendant la simulation.",
+		"showcaseHmiTitle": "HMI",
+		"showcaseHmiText": "Composez des pages de supervision animées (voyants, boutons, réservoirs, objets mobiles) reliées aux mêmes variables que vos programmes.",
+		"showcaseScene3dTitle": "Scènes 3D",
+		"showcaseScene3dText": "Reliez votre programme à une partie opérative virtuelle en 3D (tapis, vérins, capteurs) et regardez la machine réagir en temps réel.",
+		"showcaseScene3dAlt": "Scène 3D d'un poste de tri de caisses piloté par {name}",
+		"showcaseArduinoTitle": "Arduino",
+		"showcaseArduinoText": "Chargez votre programme sur une vraie carte Arduino Uno R3, ou utilisez ses entrées et sorties pendant la simulation, depuis Chrome ou Edge.",
+		"showcaseArduinoAlt": "Carte Arduino Uno R3",
 		"whyTitle": "Pourquoi {name} ?",
 		"whyIntro": "La valeur de {name} n'est pas d'être plus puissant qu'un logiciel industriel, mais de réduire à presque zéro la friction pour apprendre l'automatisme.",
 		"reasonFrictionTitle": "Friction zéro",
@@ -46,20 +65,11 @@
 		"reasonAllInOneText": "GRAFCET, Ladder et HMI animées dans le même environnement, avec des variables partagées entre les trois. Aucun outil gratuit ne combine les trois.",
 		"reasonShortLoopTitle": "Boucle de correction courte",
 		"reasonShortLoopText": "Les erreurs sont signalées pendant l'édition, pas seulement au lancement de la simulation. Un droit à l'erreur rapide et visuel.",
-		"audienceTitle": "Pour qui ?",
-		"audienceIntro": "Studomate s'adresse à toutes celles et ceux qui apprennent ou enseignent l'automatisme.",
 		"audienceStudents": "Étudiants (BTS, IUT, écoles d'ingénieurs, universités)",
 		"audienceTeachers": "Enseignants et formateurs en automatisme / électrotechnique",
 		"audienceProfessionals": "Professionnels en reconversion ou remise à niveau",
-		"featuresTitle": "Ce que propose {name}",
-		"featureEditingTitle": "Édition multi-langages",
-		"featureEditingText": "GRAFCET et Ladder : étapes, transitions, contacts, bobines, temporisations, compteurs.",
-		"featureHmiTitle": "HMI animées",
-		"featureHmiText": "Déplacement d'un objet, remplissage d'un réservoir, changement d'état visuel : une partie opérative virtuelle pour piloter et voir le système réagir.",
 		"featureSimulationTitle": "Simulation temps réel",
 		"featureSimulationText": "Exécution pas-à-pas ou continue, avec visualisation des états, transitions et variables en direct.",
-		"featureAnalysisTitle": "Analyse du projet",
-		"featureAnalysisText": "Détection des erreurs de structure avant de lancer la simulation.",
 		"featureManualTitle": "Manuel intégré",
 		"featureManualText": "Une aide complète accessible directement depuis l'application.",
 		"featureCloudTitle": "Comptes & cloud (optionnel)",
@@ -72,7 +82,17 @@
 		"step3Title": "Analysez, puis simulez",
 		"step3Text": "Vérifiez la structure, puis exécutez la logique et observez le système réagir.",
 		"trainingTitle": "Apprenez l'automatisme avec Studomate",
-		"trainingIntro": "Cinq modules guidés pour maîtriser le GRAFCET, puis le Ladder, avec des exercices à simuler dans l'application.",
+		"trainingIntro": "Des modules guidés pour maîtriser le GRAFCET, puis le Ladder, avec des exercices à simuler dans l'application.",
+		"trainingA0Topic": "Prérequis",
+		"trainingA0Summary": "Automatisme, variables, logique de base et cycle de scrutation.",
+		"trainingA1Topic": "GRAFCET",
+		"trainingA1Summary": "Étapes, transitions, actions, divergences en OU et en ET.",
+		"trainingA2Topic": "Ladder",
+		"trainingA2Summary": "Contacts, bobines, auto-maintien, bobines S/R et fronts.",
+		"trainingA3Topic": "Ladder",
+		"trainingA3Summary": "Temporisations, compteurs, calcul et sous-programmes.",
+		"trainingA4Topic": "GRAFCET → Ladder",
+		"trainingA4Summary": "Implanter un GRAFCET en Ladder avec la méthode en trois blocs.",
 		"trainingCta": "Voir toutes les formations",
 		"templatesTitle": "Des exemples pour démarrer",
 		"templatesIntro": "Ouvrez un projet pré-configuré et explorez-le à votre rythme.",
@@ -82,47 +102,121 @@
 		"durabilityNoLockInTitle": "Aucun enfermement",
 		"durabilityNoLockInText": "Vos projets sont des fichiers que vous exportez et conservez. Le schéma est versionné : un projet exporté aujourd'hui restera ouvrable après les mises à jour de l'outil.",
 		"durabilityIndependenceTitle": "Vous ne dépendez de personne",
-		"durabilityIndependenceText": "Le code est libre sous licence AGPL v3 : si le projet s'arrête, il peut être repris ou auto-hébergé. Il restera libre quoi qu'il arrive.",
+		"durabilityIndependenceText": "Le code est libre sous licence AGPL v3 : si le projet s'arrête, il peut être repris ou auto-hébergé.",
 		"privacyTitle": "Pensé pour la vie privée",
 		"privacyText": "Aucun email requis, aucune donnée personnelle stockée, aucun cookie de suivi. L'authentification se fait par pseudo, et les statistiques d'usage sont anonymes.",
-		"openSourceTitle": "Open source",
-		"openSourceText": "{name} est un projet libre sous licence AGPL v3. Les idées, retours et contributions sont les bienvenus.",
+		"sourceCodeText": "Le code source est public : lisez-le, signalez un problème ou contribuez.",
 		"viewOnGitHub": "Voir sur GitHub",
-		"slogan": "Créer, Simuler, Automatiser",
-		"openApp": "Ouvrir l'application",
-		"heroPrev": "Image précédente",
-		"heroNext": "Image suivante",
-		"heroGoTo": "Aller à l'image {number}"
+		"openApp": "Ouvrir l'application"
 	},
 	"about": {
 		"title": "À propos de Studomate",
 		"missionTitle": "Mission",
 		"missionBody": "<strong>Studomate</strong> est un outil pédagogique dédié à l'<strong>automatisme</strong> : apprentissage, conception et simulation du GRAFCET, du Ladder et des HMI, directement dans le navigateur.",
-		"missionBody2": "Sa valeur n'est pas d'être plus puissant qu'un logiciel industriel, mais de réduire à presque zéro la friction pour apprendre l'automatisme : pas d'installation, pas de licence, pas d'automate à configurer. Son différenciateur : GRAFCET, Ladder et HMI animées dans le même environnement, avec des variables partagées entre les trois.",
+		"missionBody2": "Sa valeur n'est pas d'être plus puissant qu'un logiciel industriel, mais de réduire à presque zéro la friction pour apprendre l'automatisme : pas d'installation, pas de licence, pas d'automate à configurer.",
+		"differentiatorLabel": "Son différenciateur : tout dans le même environnement",
+		"differentiatorEditors": [
+			"GRAFCET",
+			"Ladder",
+			"HMI animées"
+		],
+		"differentiatorItems": [
+			"Variables partagées",
+			"Scène 3D"
+		],
 		"offeringTitle": "Ce que propose Studomate",
 		"offeringItems": [
-			"<strong>Édition et simulation :</strong> logiques d'automatisme (séquences, transitions, I/O virtuelles, temporisations, compteurs, analogiques).",
-			"<strong>Visualisation claire :</strong> états actifs, transitions évaluées, sorties et effets externes.",
-			"<strong>Modes d'apprentissage :</strong> pas-à-pas, scan complet et exécution continue."
+			{
+				"title": "Édition et simulation",
+				"text": "Logiques d'automatisme : séquences, transitions, I/O virtuelles, temporisations, compteurs, analogiques."
+			},
+			{
+				"title": "Visualisation claire",
+				"text": "États actifs, transitions évaluées, sorties et effets externes."
+			},
+			{
+				"title": "Modes d'apprentissage",
+				"text": "Pas-à-pas, scan complet et exécution continue."
+			},
+			{
+				"title": "Scènes 3D",
+				"text": "Une partie opérative virtuelle (tri de caisses, carrefour de feux, perçage, ascenseur) dont les capteurs et actionneurs se lient aux variables du projet."
+			},
+			{
+				"title": "Configuration matérielle",
+				"text": "Association des variables aux broches d'une carte Arduino Uno R3, chargement du programme, simulation avec E/S réelles et observation de la carte en fonctionnement."
+			},
+			{
+				"title": "Outils d'analyse",
+				"text": "Références croisées des variables, modèles de projet et export PDF vectoriel."
+			},
+			{
+				"title": "Français et anglais",
+				"text": "Interface, manuel et expressions disponibles dans les deux langues."
+			}
 		],
 		"valueTitle": "Valeur pédagogique",
 		"valueItems": [
-			"<strong>Compréhension guidée :</strong> des enchaînements logiques et de la causalité (entrées → transitions → étapes → actions → sorties).",
-			"<strong>Apprentissage par l'essai :</strong> tester, corriger, retenir.",
-			"<strong>Usage mixte :</strong> démonstrations en cours, exercices à la maison, corrections collaboratives.",
-			"<strong>Boucle de correction courte :</strong> les erreurs sont signalées pendant l'édition, pas seulement au lancement de la simulation."
+			{
+				"title": "Compréhension guidée",
+				"text": "Des enchaînements logiques et de la causalité."
+			},
+			{
+				"title": "Apprentissage par l'essai",
+				"text": "Tester, corriger, retenir."
+			},
+			{
+				"title": "Usage mixte",
+				"text": "Démonstrations en cours, exercices à la maison, corrections collaboratives."
+			},
+			{
+				"title": "Boucle de correction courte",
+				"text": "Les erreurs sont signalées pendant l'édition, pas seulement au lancement de la simulation."
+			}
+		],
+		"causalityLabel": "La chaîne de causalité, rendue visible",
+		"causalityItems": [
+			"Entrées",
+			"Transitions",
+			"Étapes",
+			"Actions",
+			"Sorties"
 		],
 		"ownershipTitle": "Vos projets vous appartiennent",
-		"ownershipBody": "Vos projets sont des fichiers que vous exportez et conservez. Le schéma est versionné et les migrations sont automatiques : un projet exporté aujourd'hui restera ouvrable après les mises à jour. Le code est libre sous licence AGPL v3. Enfin, Studomate ne demande aucun email, ne stocke aucune donnée personnelle et n'utilise aucun cookie de suivi.",
+		"ownershipItems": [
+			{
+				"title": "Local d'abord",
+				"text": "Vos projets sont stockés dans votre navigateur et exportables en fichiers. Le schéma est versionné et les migrations sont automatiques : un projet exporté aujourd'hui restera ouvrable après les mises à jour."
+			},
+			{
+				"title": "Cloud facultatif",
+				"text": "Un compte, avec ou sans email, permet de sauvegarder vos projets dans le cloud et de les partager par lien. Sans compte, rien ne quitte votre navigateur."
+			},
+			{
+				"title": "Libre et sans traceur",
+				"text": "Le code est libre sous licence AGPL v3. Studomate n'utilise aucun cookie de suivi."
+			}
+		],
 		"audienceTitle": "Public cible",
 		"audienceItems": [
-			"Étudiants (BTS, IUT, écoles d'ingénieurs, universités).",
-			"Enseignants et formateurs en automatisme/électrotechnique.",
-			"Professionnels en reconversion ou remise à niveau."
+			{
+				"title": "Étudiants",
+				"text": "BTS, IUT, écoles d'ingénieurs, universités."
+			},
+			{
+				"title": "Enseignants et formateurs",
+				"text": "En automatisme et en électrotechnique."
+			},
+			{
+				"title": "Professionnels",
+				"text": "En reconversion ou en remise à niveau."
+			}
 		],
+		"ctaTitle": "Prêt à essayer ?",
+		"ctaBody": "Sans installation ni compte : ouvrez l'application et créez votre premier projet.",
 		"contactTitle": "Contact & contribution",
 		"contactBody": "Des idées, des retours ou envie de contribuer ?",
-		"contactLink": "Contactez-nous."
+		"contactLink": "Contactez-nous"
 	},
 	"contact": {
 		"title": "Contactez-nous !",
@@ -208,7 +302,7 @@
 		"back": "Retour à l’accueil"
 	},
 	"metadata": {
-		"homeTitle": "Simulateur GRAFCET et Ladder en ligne — Studomate",
+		"homeTitle": "Studomate : simulateur GRAFCET et Ladder en ligne",
 		"homeDescription": "Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur — sans installation, sans compte.",
 		"aboutTitle": "À propos",
 		"aboutDescription": "Studomate : un outil pédagogique gratuit pour apprendre, concevoir et simuler le GRAFCET, le Ladder et les HMI dans le navigateur.",

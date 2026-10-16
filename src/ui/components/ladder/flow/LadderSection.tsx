@@ -96,7 +96,9 @@ const SECTION_FLOW_SX: SxProps<Theme> = {
 
 function LadderSection({ section, index }: LadderSectionProps) {
 	const viewManager = useLadderStore((state) => state.viewManager);
-	const zoom = useLadderStore((state) => state.zoomBySectionId[section.id] ?? 1);
+	const zoom = useLadderStore(
+		(state) => state.zoomBySectionId[section.id] ?? 1,
+	);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const nodes = useLadderStore(
 		(state) => state.nodesBySectionId[section.id] ?? EMPTY_ARRAY,
@@ -125,8 +127,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	// surbrillance (« localiser dans le ladder »).
 	const contentRef = useRef<HTMLDivElement | null>(null);
 	const nearViewport = useInViewport(contentRef, { rootMargin: "1200px 0px" });
-	const flowMounted =
-		nearViewport || isActiveSection || hasHighlightedNode;
+	const flowMounted = nearViewport || isActiveSection || hasHighlightedNode;
 
 	useEffect(() => {
 		if (hasHighlightedNode) {

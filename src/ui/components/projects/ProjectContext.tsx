@@ -148,7 +148,8 @@ export const ProjectContextProvider = ({
 			setShowDraftDialog(true);
 			return;
 		}
-		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
+		const wantsSolution =
+			getTemplateModeFromUrl() === "solution" && !!template.solution;
 		const autostartSimulation = getTemplateAutostartFromUrl();
 		if (autostartSimulation) suppressProductTourForThisPageLoad();
 		const open = async () => {

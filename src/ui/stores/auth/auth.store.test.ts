@@ -120,7 +120,9 @@ describe("authStore", () => {
 				schoolType: SchoolType.BTS,
 			};
 
-			await authStore.getState().signUp("alice@example.com", "password", profile);
+			await authStore
+				.getState()
+				.signUp("alice@example.com", "password", profile);
 
 			expect(mockSetStoredProfile).toHaveBeenCalledWith(profile);
 			expect(mockSaveProfile).toHaveBeenCalledWith(profile);
@@ -428,7 +430,10 @@ describe("authStore", () => {
 		it("returns wrongPassword and touches nothing when the password is wrong", async () => {
 			mockSignInWithPassword.mockResolvedValue({
 				data: {},
-				error: { code: "invalid_credentials", message: "Invalid login credentials" },
+				error: {
+					code: "invalid_credentials",
+					message: "Invalid login credentials",
+				},
 			});
 
 			const result = await authStore.getState().deleteAccount("nope");
@@ -452,7 +457,10 @@ describe("authStore", () => {
 		});
 
 		it("does not delete the account when the repatriation fails", async () => {
-			mockMoveAllCloudToLocal.mockResolvedValue({ ok: false, reason: "quota-exceeded" });
+			mockMoveAllCloudToLocal.mockResolvedValue({
+				ok: false,
+				reason: "quota-exceeded",
+			});
 
 			const result = await authStore.getState().deleteAccount("secret");
 

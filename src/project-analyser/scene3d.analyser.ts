@@ -23,7 +23,7 @@ export default function analyseScene3d(
 	if (!scene) return [];
 
 	const source = { sourceType: "project", sourceId: project.id } as const;
-	const descriptor = getSceneDescriptor(scene.sceneId);
+	const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion);
 	if (!descriptor) {
 		return [
 			new ProjectAnalyserIssue("error", "SCENE3D_UNKNOWN", source, {

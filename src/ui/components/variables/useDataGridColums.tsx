@@ -124,8 +124,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 								};
 							},
 							renderEditCell: EditInputCell,
-							valueParser: (value) =>
-								value ? value.trim().toUpperCase() : "",
+							valueParser: (value) => (value ? value.trim().toUpperCase() : ""),
 						} satisfies GridColDef,
 					]),
 			...(simulating

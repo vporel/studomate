@@ -56,7 +56,7 @@ describe("PreferencesPage", () => {
 		expect(screen.getByLabelText("Dans le cloud")).toBeChecked();
 	});
 
-	it('affiche "Sur cet appareil" par défaut tant qu\'aucune préférence n\'existe', () => {
+	it("affiche \"Sur cet appareil\" par défaut tant qu'aucune préférence n'existe", () => {
 		mockGetPreferredSaveLocation.mockReturnValue(null);
 
 		setup();

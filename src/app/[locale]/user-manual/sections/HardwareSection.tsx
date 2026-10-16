@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function HardwareSection() {
 	const t = useT("manual.hardware");
@@ -20,6 +20,11 @@ export default function HardwareSection() {
 			<Typography mb={2}>{t("configIntro")}</Typography>
 			<ManualList items={t.raw("configItems") as string[]} />
 			<Typography mb={2}>{t("configBody")}</Typography>
+			<ManualFigure
+				src="/user-manual/hardware/button-pull-up.svg"
+				alt={t("buttonFigureAlt")}
+				width={400}
+			/>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

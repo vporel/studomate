@@ -52,4 +52,17 @@ describe("NewProjectModal", () => {
 			).toBeInTheDocument();
 		}
 	});
+
+	it("affiche la capture des templates qui ont une scène 3D, et d'eux seuls", () => {
+		setup();
+
+		expect(
+			screen.getByRole("img", { name: templateLabels["elevator"].label }),
+		).toHaveAttribute("src", "/images/scenes-3d/elevator.png");
+		expect(
+			screen.queryByRole("img", {
+				name: templateLabels["traffic-light"].label,
+			}),
+		).not.toBeInTheDocument();
+	});
 });

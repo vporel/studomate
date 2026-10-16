@@ -35,9 +35,7 @@ export default function useShortcutsHandler() {
 
 	useEffect(() => {
 		const getActiveCopyCutPasteManager = () =>
-			projectStore
-				? activeCopyCutPasteManager(projectStore.getState())
-				: null;
+			projectStore ? activeCopyCutPasteManager(projectStore.getState()) : null;
 
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const isInput =

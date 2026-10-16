@@ -1,10 +1,10 @@
 .grafcet-page .node__input::-webkit-outer-spin-button,
 .grafcet-page .node__input::-webkit-inner-spin-button {
-	/* display: none; <- Crashes Chrome on hover */
-	-webkit-appearance: none;
-	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }
 .grafcet-page .node__input[type="number"],
 .grafcet-page .node___textarea {
-	-moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield; /* Firefox */
 }

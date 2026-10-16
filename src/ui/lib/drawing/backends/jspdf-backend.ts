@@ -13,7 +13,15 @@ const MM_TO_PT = 72 / 25.4;
 
 type PathSegment =
 	| { type: "M" | "L"; x: number; y: number }
-	| { type: "C"; x1: number; y1: number; x2: number; y2: number; x: number; y: number }
+	| {
+			type: "C";
+			x1: number;
+			y1: number;
+			x2: number;
+			y2: number;
+			x: number;
+			y: number;
+	  }
 	| { type: "Z" };
 
 /** Parseur du sous-ensemble `M`/`L`/`C`/`Z` (coordonnées absolues) accepté par `DrawOp` `path`. */
@@ -106,7 +114,12 @@ export function renderSceneToJsPdf(
 			case "circle": {
 				applyStroke(op);
 				if (op.fill) doc.setFillColor(op.fill);
-				doc.circle(px(op.cx), py(op.cy), len(op.r), styleString(true, !!op.fill));
+				doc.circle(
+					px(op.cx),
+					py(op.cy),
+					len(op.r),
+					styleString(true, !!op.fill),
+				);
 				break;
 			}
 			case "path": {

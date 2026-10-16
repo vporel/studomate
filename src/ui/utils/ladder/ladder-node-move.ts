@@ -176,7 +176,9 @@ export function isCellAcceptable(
 	allowInversion: boolean,
 ): boolean {
 	if (collidesOnGrid(section, element, cell, movingIds)) return false;
-	return allowInversion || isPositionValidForConnections(section, element.id, cell);
+	return (
+		allowInversion || isPositionValidForConnections(section, element.id, cell)
+	);
 }
 
 /**

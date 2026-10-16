@@ -1,4 +1,4 @@
-import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/carton-sorting.descriptor";
+import CartonSortingDescriptor from "@/3d-scenes/carton-sorting/v1/carton-sorting.descriptor";
 import { createRandomId } from "@/ids";
 import {
 	ACTION_HANDLE_TARGET_STEP,
@@ -72,6 +72,7 @@ export function createCartonSortingProject(): Project {
 	);
 	project.scene3d = {
 		sceneId: CartonSortingDescriptor.id,
+		sceneVersion: CartonSortingDescriptor.version,
 		bindings: Object.fromEntries(
 			CartonSortingDescriptor.points.map((point) => [
 				point.id,

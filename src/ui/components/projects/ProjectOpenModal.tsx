@@ -47,9 +47,7 @@ export default function ProjectOpenModal() {
 				text = await readFile(handle);
 			} catch (err: any) {
 				console.error("Failed to open file:", err);
-				alert(
-					t("readError"),
-				);
+				alert(t("readError"));
 			}
 		} else {
 			text = await openFileViaInput(".json");
@@ -60,16 +58,12 @@ export default function ProjectOpenModal() {
 			project = parseProjectFromFile(text);
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
-			alert(
-				t("readError"),
-			);
+			alert(t("readError"));
 			return;
 		}
 		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
-			alert(
-				t("saveError"),
-			);
+			alert(t("saveError"));
 			return;
 		}
 		await lifecycleManager.openProject(project.id);

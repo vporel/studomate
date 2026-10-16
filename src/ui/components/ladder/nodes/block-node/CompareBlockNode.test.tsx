@@ -24,7 +24,11 @@ function setup(
 	const executeOperation = jest.fn();
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: { variables: [], getAllTimerBlockElements: () => [], getAllCounterBlockElements: () => [] },
+			project: {
+				variables: [],
+				getAllTimerBlockElements: () => [],
+				getAllCounterBlockElements: () => [],
+			},
 			simulationVariablesStates: {},
 		}),
 	);

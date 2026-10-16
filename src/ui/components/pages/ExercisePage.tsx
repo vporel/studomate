@@ -38,7 +38,9 @@ const ExercisePage = () => {
 						</Typography>
 						<Button
 							variant="outlined"
-							onClick={() => pagesManager.openPage(PROJECT_PROPERTIES_PAGE_DATA)}
+							onClick={() =>
+								pagesManager.openPage(PROJECT_PROPERTIES_PAGE_DATA)
+							}
 						>
 							{t("openProperties")}
 						</Button>

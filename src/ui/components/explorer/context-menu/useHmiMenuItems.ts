@@ -47,9 +47,7 @@ export default function useHmiMenuItems(): (
 						label: t("delete"),
 						disabled: !designing,
 						onClick: () => {
-							if (
-								confirm(tc("hmiPage"))
-							) {
+							if (confirm(tc("hmiPage"))) {
 								hmiManager.deleteHmiPage(hmiPageId);
 							}
 						},
