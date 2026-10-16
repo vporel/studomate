@@ -46,6 +46,16 @@ Go read the actually affected code and confirm the described defect really exist
 Describe the implementation plan in text: affected files, nature of the changes, any
 schema/data migrations or other project-specific side effects (see CLAUDE.md), risks. Don't write code at this stage.
 
+**Never two plans awaiting validation.** While a plan has not been validated (approved by the
+developer **and** every question attached to it answered), do not present any other plan, and do
+not verify or prepare further points to present them. A message contains a single plan and its
+questions. Never batch plans for several points in the same message, even when the points are
+independent.
+
+As soon as a plan is validated, delegate it (or implement it) and, in the same turn, move on to
+the next point and present its plan, without waiting for the agent to finish and without asking
+the developer whether to continue.
+
 ### 4. Wait for developer approval
 
 **Non-negotiable: implement nothing before the developer has explicitly approved the plan.**
@@ -114,8 +124,10 @@ hand it to an agent and move on to another point that is independent of the work
 
 ### Picking a point (replaces "first point remaining")
 
-Pick the first remaining point that is **independent of every in-flight agent** (and of
-points whose plan is awaiting approval). Independence is judged by you, from the files each
+Pick the first remaining point that is **independent of every in-flight agent**. At most
+**one** plan may be awaiting validation at a time (see "Never two plans awaiting validation"
+in step 3). Once a plan is validated and its agent launched, pick the next point right away.
+Independence is judged by you, from the files each
 plan touches (tests included). Indicative examples: different modules/packages; within the
 same module, different layers (e.g. data layer vs API layer vs business logic). Also treat
 as dependent: shared files (test configuration/fixtures, settings, shared helpers) touched
@@ -172,7 +184,8 @@ and the freed points become pickable again.
 
 ### Stopping (replaces step 9)
 
-Keep chaining: pick an independent point → verify → plan → approval → delegate. When no
+Keep chaining: pick an independent point → verify → plan → validation (approval and answers
+to its questions) → delegate → immediately pick the next point and present its plan. When no
 remaining point is independent of in-flight agents, stop and say what you're waiting for
 (which agent blocks which points). Resume when that agent finishes.
 

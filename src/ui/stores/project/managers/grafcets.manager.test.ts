@@ -117,6 +117,29 @@ describe("GrafcetsManager", () => {
 	});
 
 	describe("deleteProgramById (grafcet)", () => {
+		it("fait adopter le nouveau nom au store monté, pour qu'il ne le réécrase pas à sa prochaine modification", () => {
+			const { project, grafcetId } = projectWithGrafcet();
+			const adoptGrafcet = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "grafcet",
+				activeScope: grafcetId,
+				grafcetsStoresManagers: {
+					[grafcetId]: {
+						workflowManager: {
+							adoptGrafcet,
+							getGrafcet: () => project.getGrafcet(grafcetId)!.copy(),
+						},
+					},
+				},
+			});
+
+			manager.renameProgramById(grafcetId, "Cycle");
+
+			expect(adoptGrafcet).toHaveBeenCalledTimes(1);
+			expect(adoptGrafcet.mock.calls[0][0].name).toBe("Cycle");
+		});
+
 		it("lève une erreur si le grafcet n'existe pas", () => {
 			const { manager } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),

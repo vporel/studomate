@@ -11,6 +11,11 @@ jest.mock("@/i18n/navigation", () => ({
 	usePathname: () => mockPathname,
 }));
 
+jest.mock("next/navigation", () => ({
+	...jest.requireActual("next/navigation"),
+	useParams: () => ({ section: "grafcet" }),
+}));
+
 let supabaseConfigured = false;
 jest.mock("@/persistence/repositories/supabase-client", () => ({
 	get isSupabaseConfigured() {

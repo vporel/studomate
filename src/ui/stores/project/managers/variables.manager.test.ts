@@ -69,28 +69,38 @@ describe("VariablesManager", () => {
 		});
 	});
 
-	describe("existsByAddress", () => {
-		it("retourne l'id de la variable dont l'adresse correspond, insensible à la casse", () => {
+	describe("getByAddress", () => {
+		it("retourne la variable dont l'adresse correspond, insensible à la casse", () => {
 			const project = new Project("p1", "Projet", "auteur");
 			project.variables = [
 				{ id: "v1", mnemonic: "Moteur", type: "BOOL", address: "%Q0.0" } as any,
 			];
 			const { manager } = makeManager({ project });
 
-			expect(manager.existsByAddress("%q0.0")).toBe("v1");
+			expect(manager.getByAddress("%q0.0")).toBe(project.variables[0]);
 		});
 
-		it("retourne false pour une adresse vide", () => {
+		it("retourne null pour une adresse vide", () => {
 			const { manager } = makeManager({ project: projectWithVariables() });
 
-			expect(manager.existsByAddress("")).toBe(false);
-			expect(manager.existsByAddress("   ")).toBe(false);
+			expect(manager.getByAddress("")).toBeNull();
+			expect(manager.getByAddress("   ")).toBeNull();
 		});
 
-		it("retourne false si aucun projet n'est ouvert", () => {
+		it("retourne null si aucune variable n'a cette adresse", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			project.variables = [
+				{ id: "v1", mnemonic: "Moteur", type: "BOOL", address: "%Q0.0" } as any,
+			];
+			const { manager } = makeManager({ project });
+
+			expect(manager.getByAddress("%Q0.1")).toBeNull();
+		});
+
+		it("retourne null si aucun projet n'est ouvert", () => {
 			const { manager } = makeManager({ project: null });
 
-			expect(manager.existsByAddress("%Q0.0")).toBe(false);
+			expect(manager.getByAddress("%Q0.0")).toBeNull();
 		});
 	});
 

@@ -40,6 +40,7 @@ function setup({
 				ladders,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				grafcets: {},
 			},
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},

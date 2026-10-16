@@ -41,8 +41,9 @@ function measure(id: string) {
 
 describe("size of the reference templates on the Uno R3", () => {
 	it.each([
-		["elevator", 800],
-		["carton-sorting", 1000],
+		["elevator", 550],
+		["carton-sorting", 475],
+		["crossroads", 360],
 	])("%s fits the board with its sensors wired", (id, maxStorageBytes) => {
 		const { image, report, physicalIo, opcodes } = measure(id);
 		expect(report.issues).toEqual([]);

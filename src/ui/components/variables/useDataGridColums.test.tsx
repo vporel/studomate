@@ -37,7 +37,7 @@ const parseValue = (column: GridColDef, value: string) =>
 describe("useGridColumns", () => {
 	const variablesManager = {
 		existsByMnemonic: jest.fn((): string | undefined => undefined),
-		existsByAddress: jest.fn((): string | undefined => undefined),
+		getByAddress: jest.fn((): { id: string; mnemonic: string } | null => null),
 	};
 
 	function setup(mode: ProjectMode, zones: VariableZone[] = ["logic-input"]) {
@@ -132,6 +132,36 @@ describe("useGridColumns", () => {
 			props: { value: "OK" },
 		});
 		expect(params.error).toBe("Ce mnémonique existe déjà");
+	});
+
+	it("rejects an address owned by another row and names its owner", () => {
+		variablesManager.getByAddress.mockReturnValue({
+			id: "other-id",
+			mnemonic: "Moteur_M1",
+		});
+		const { result } = setup(ProjectMode.DESIGN);
+		const addressColumn = result.current.find((c) => c.field === "address")!;
+		const params = preProcess(addressColumn, {
+			id: "this-id",
+			props: { value: "%Q0.0" },
+		});
+		expect(params.error).toBe(
+			"Cette adresse est déjà utilisée par « Moteur_M1 »",
+		);
+	});
+
+	it("accepts an address owned by the row being edited", () => {
+		variablesManager.getByAddress.mockReturnValue({
+			id: "this-id",
+			mnemonic: "Moteur_M1",
+		});
+		const { result } = setup(ProjectMode.DESIGN);
+		const addressColumn = result.current.find((c) => c.field === "address")!;
+		const params = preProcess(addressColumn, {
+			id: "this-id",
+			props: { value: "%Q0.0" },
+		});
+		expect(params.error).toBe(false);
 	});
 
 	it("uppercases and trims addresses via valueParser", () => {

@@ -34,8 +34,8 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 	}
 
 	/**
-	 * Renaming a variable must rewrite every expression/reference to it, in *all* the grafcets
-	 * and ladders of the project — not only the ones currently open in the editor.
+	 * Renaming a variable must rewrite every expression/reference to it, in *all* the grafcets,
+	 * ladders and HMI pages of the project — not only the ones currently open in the editor.
 	 *
 	 * Doing it here rather than in a UI manager guarantees two things:
 	 * - it reaches every program, since the command owns the whole project;
@@ -60,6 +60,9 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		});
 		Object.values(project.ladders).forEach((ladder) => {
 			ladder.renameVariableReferences(renames);
+		});
+		Object.values(project.hmiPages).forEach((page) => {
+			page.renameVariableReferences(renames);
 		});
 	}
 }

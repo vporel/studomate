@@ -53,6 +53,7 @@ function setup(widget: HmiWidget) {
 				variables,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				grafcets: {},
 			},
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},

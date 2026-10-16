@@ -25,6 +25,27 @@ describe("PLCVariable", () => {
 			expect(v.getValue()).toBe("");
 		});
 
+		it("is not internal unless created as such", () => {
+			expect(new PLCVariable("id", "v", "memory", "boolean").isInternal()).toBe(
+				false,
+			);
+		});
+
+		it("creates an internal memory variable whose id is its name", () => {
+			const v = PLCVariable.createInternal("memo", "number");
+			expect(v.isInternal()).toBe(true);
+			expect(v.getId()).toBe("memo");
+			expect(v.getName()).toBe("memo");
+			expect(v.getScope()).toBe("memory");
+			expect(v.getType()).toBe("number");
+		});
+
+		it("keeps the internal flag on a copy", () => {
+			expect(PLCVariable.createInternal("memo", "boolean").copy().isInternal()).toBe(
+				true,
+			);
+		});
+
 		it("throws on string variable with non-memory scope", () => {
 			expect(() => new PLCVariable("id", "v", "input", "string")).toThrow(
 				"A string variable is only allowed for the memory scope",

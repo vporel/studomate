@@ -307,6 +307,106 @@ describe("GrafcetPreCompiler", () => {
 			});
 		});
 
+		describe("firedVariables", () => {
+			const linkedGrafcet = () =>
+				new GrafcetBuilder()
+					.addStep(new StepBuilder().id("step-1").number(1).initial(true).build())
+					.addStep(new StepBuilder().id("step-2").number(2).build())
+					.addTransition(
+						new TransitionBuilder().id("trans-1").expression("E1 = VRAI").build(),
+					)
+					.addTransition(
+						new TransitionBuilder().id("trans-2").expression("M1 = VRAI").build(),
+					)
+					.addConnection(
+						new ConnectionBuilder()
+							.source("step", "step-1", "source:successor")
+							.target("transition", "trans-1", "target:predecessor")
+							.build(),
+					)
+					.addConnection(
+						new ConnectionBuilder()
+							.source("transition", "trans-1", "source:successor")
+							.target("step", "step-2", "target:predecessor")
+							.build(),
+					)
+					.addConnection(
+						new ConnectionBuilder()
+							.source("step", "step-2", "source:successor")
+							.target("transition", "trans-2", "target:predecessor")
+							.build(),
+					);
+
+			it("génère une variable booléenne par transition ayant des étapes amont et aval", () => {
+				const grafcet = linkedGrafcet().build();
+				const initialCount = variables.length;
+
+				const result = GrafcetPreCompiler.preCompile(
+					grafcet,
+					variables,
+					Dialect.FR,
+					errors,
+				);
+
+				expect(Array.from(result.firedVariables.keys())).toEqual(["trans-1"]);
+				const fired = result.firedVariables.get("trans-1")!;
+				expect(fired.variable.getScope()).toBe("memory");
+				expect(fired.variable.getType()).toBe("boolean");
+				expect(fired.node.value).toBe(fired.variable.getName());
+				expect(variables).toContain(fired.variable);
+				// 2 step memos + 2 observations + 1 fired variable
+				expect(variables.length).toBe(initialCount + 5);
+			});
+
+			it("ne génère rien pour une transition sans étape amont ou aval", () => {
+				const grafcet = new GrafcetBuilder()
+					.addTransition(
+						new TransitionBuilder().id("trans-1").expression("VRAI").build(),
+					)
+					.build();
+
+				const result = GrafcetPreCompiler.preCompile(
+					grafcet,
+					variables,
+					Dialect.FR,
+					errors,
+				);
+
+				expect(result.firedVariables.size).toBe(0);
+			});
+
+			it("donne des noms uniques, distincts des mémos d'étape, de tempo et d'observation", () => {
+				const grafcet = linkedGrafcet()
+					.addTransition(
+						new TransitionBuilder().id("trans-3").expression("T1/E1/1s").build(),
+					)
+					.addConnection(
+						new ConnectionBuilder()
+							.source("step", "step-2", "source:successor")
+							.target("transition", "trans-3", "target:predecessor")
+							.build(),
+					)
+					.addConnection(
+						new ConnectionBuilder()
+							.source("transition", "trans-3", "source:successor")
+							.target("step", "step-1", "target:predecessor")
+							.build(),
+					)
+					.build();
+
+				const result = GrafcetPreCompiler.preCompile(
+					grafcet,
+					variables,
+					Dialect.FR,
+					errors,
+				);
+
+				expect(result.firedVariables.size).toBe(2);
+				const names = variables.map((v) => v.getName());
+				expect(new Set(names).size).toBe(names.length);
+			});
+		});
+
 		it("collects errors from transition compilation", () => {
 			const transition = new TransitionBuilder()
 				.id("trans-1")

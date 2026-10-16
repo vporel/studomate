@@ -19,6 +19,11 @@ const HMI_ARROW_DELTAS: Record<string, [number, number]> = {
 	ArrowRight: [SNAP_GRID, 0],
 };
 
+/** Grafcet and ladder edits cannot propagate to the project outside design mode. */
+function isReadOnlyProgramScope(scopeType: string | null | undefined) {
+	return scopeType === "grafcet" || scopeType === "ladder";
+}
+
 export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
@@ -118,6 +123,7 @@ export default function useShortcutsHandler() {
 						e.stopPropagation();
 						e.preventDefault();
 						const activeScopeType = projectStore?.getState().activeScopeType;
+						if (!designing && isReadOnlyProgramScope(activeScopeType)) break;
 						const entry = getClipboardEntry();
 						if (
 							entry &&
@@ -137,6 +143,11 @@ export default function useShortcutsHandler() {
 					case "x": {
 						e.stopPropagation();
 						e.preventDefault();
+						if (
+							!designing &&
+							isReadOnlyProgramScope(projectStore?.getState().activeScopeType)
+						)
+							break;
 						getActiveCopyCutPasteManager()?.cutSelectedElements();
 						break;
 					}

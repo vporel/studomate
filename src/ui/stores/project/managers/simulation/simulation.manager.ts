@@ -57,6 +57,9 @@ export default class SimulationManager {
 		{ ownerId: string; label: string | null }
 	> = new Map();
 
+	/** Variables the compilation generates for its own bookkeeping: never published. */
+	private internalVariableIds: Set<string> = new Set();
+
 	/**
 	 * Dernier ensemble complet des entrées observables publiées par propriétaire (transition),
 	 * maintenu à jour à chaque changement pour republier un tableau complet et cohérent (pas
@@ -207,6 +210,7 @@ export default class SimulationManager {
 		this.notifier.simulationStarting();
 
 		this.registerObservations(projectCompilationResult.result!);
+		this.registerInternalVariables(projectCompilationResult.result!);
 
 		//Create a PLC instance
 		this.plc = this.createPLC(projectCompilationResult);
@@ -227,6 +231,8 @@ export default class SimulationManager {
 		}));
 		this.plc.pause();
 		this.plc.stepOnce();
+		// A failing establishing cycle has already notified the crash and torn the PLC down.
+		if (!this.plc) return false;
 		if (!startPaused) {
 			this.plc.resume();
 		}
@@ -282,6 +288,14 @@ export default class SimulationManager {
 		this.currentObservableEntries = new Map();
 	}
 
+	private registerInternalVariables(compiled: CompiledProject): void {
+		this.internalVariableIds = new Set(
+			compiled.variables
+				.filter((variable) => variable.isInternal())
+				.map((variable) => variable.getId()),
+		);
+	}
+
 	/**
 	 * Enters the simulation mode without a local PLC: the program runs on a board, and the
 	 * interface shows what it reports (`publishBoardSnapshot`).
@@ -289,6 +303,7 @@ export default class SimulationManager {
 	startOnline(compiled: CompiledProject): void {
 		if (this.plc || this.mirror) this.stopSimulation();
 		this.registerObservations(compiled);
+		this.registerInternalVariables(compiled);
 		this.mirror = new BoardMirror(compiled);
 		this.lastPublishedValues = null;
 		this.setStoreState(() => ({
@@ -425,6 +440,7 @@ export default class SimulationManager {
 				}
 				continue;
 			}
+			if (this.internalVariableIds.has(id)) continue;
 
 			if (
 				!this.lastPublishedValues.has(id) ||
@@ -502,6 +518,7 @@ export default class SimulationManager {
 		}));
 
 		this.observationVariableToSource = new Map();
+		this.internalVariableIds = new Set();
 		this.currentObservableEntries = new Map();
 	}
 

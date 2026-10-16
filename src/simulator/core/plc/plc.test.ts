@@ -484,6 +484,58 @@ describe("PLC", () => {
 			expect(input?.getValue()).toBe(99);
 		});
 
+		describe("forçage d'une entrée dont la source physique est indépendante", () => {
+			const createPlcCopyingInput = () => {
+				const ast = new Parser(
+					new Lexer(Dialect.FR).tokenize("result := x"),
+				).parse();
+				const plc = new PLC({
+					scanTimeMs: 100,
+					program: [PLCRoutine.fromNodes([ast])],
+					variables: [inputVar, outputVar],
+				});
+				plc.start();
+				plc.pause();
+				return plc;
+			};
+			const readResult = (plc: PLC) =>
+				plc
+					.getVariablesSnapshot()
+					.find((v) => v.getName() === "result")
+					?.getValue();
+
+			it("le programme voit la valeur forcée alors que la source vaut autre chose", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(5);
+			});
+
+			it("après release, le cycle suivant revoit la valeur réelle de la source", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				plc.releaseVariable("id1");
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(0);
+			});
+
+			it("un changement de la source pendant le forçage est ignoré puis visible après release", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				plc.setPhysicalInputValueById("id1", 8);
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(5);
+				plc.releaseVariable("id1");
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(8);
+			});
+		});
+
 		it("forceVariable empêche le programme d'écraser une variable mémoire", () => {
 			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("count := count + 1");

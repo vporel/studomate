@@ -2,6 +2,7 @@
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Project, {
 	DEFAULT_PROJECT_NAME,
+	PROJECT_SCHEMA_VERSION,
 } from "@/schemas/project/project.schema";
 import { toast } from "react-toastify";
 import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
@@ -152,6 +153,45 @@ describe("ProjectLifecycleManager", () => {
 					.getState()
 					.projectRepository.get(store.getState().project!.id),
 			).not.toBeNull();
+		});
+
+		it("nominal save: the store holds the saved copy and the draft is deleted", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const original = store.getState().project!;
+			store.setState({ hasUnsavedChanges: true });
+			saveDraft(original.id, original.name, JSON.stringify(original));
+
+			const result = await lifecycle(store).saveProject();
+
+			expect(result).toBe(true);
+			expect(store.getState().project).not.toBe(original);
+			expect(store.getState().hasUnsavedChanges).toBe(false);
+			expect(getDraft(original.id)).toBeNull();
+		});
+
+		it("edits made during the repository save are kept: project, unsaved flag and draft", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			const original = store.getState().project!;
+			store.setState({ hasUnsavedChanges: true });
+			saveDraft(original.id, original.name, JSON.stringify(original));
+			const edited = original.copy();
+			edited.name = "Modifié pendant l'envoi";
+			jest
+				.spyOn(store.getState().projectRepository, "save")
+				.mockImplementation(async () => {
+					store.setState({ project: edited });
+					return { ok: true } as never;
+				});
+
+			const result = await lifecycle(store).saveProject();
+
+			expect(result).toBe(true);
+			expect(store.getState().project).toBe(edited);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
+			expect(store.getState().savingProject).toBe(false);
+			expect(getDraft(original.id)).not.toBeNull();
 		});
 
 		it("expose savingProject à true le temps de la sauvegarde", async () => {
@@ -452,6 +492,50 @@ describe("ProjectLifecycleManager", () => {
 				expect(store.getState().ui.cloudConflictModalVisible).toBe(false);
 			});
 
+			it("ouvre le brouillon migré quand il a été enregistré dans une version plus ancienne", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "");
+				project.lastModificationDate = new Date(0);
+				await store.getState().projectRepository.save(project);
+				const draft = new Project("p1", "Projet modifié", "");
+				saveDraft(
+					"p1",
+					draft.name,
+					JSON.stringify({
+						...JSON.parse(JSON.stringify(draft)),
+						schemaVersion: PROJECT_SCHEMA_VERSION - 1,
+					}),
+				);
+
+				await lifecycle(store).openProject("p1", true);
+
+				expect(store.getState().project?.name).toBe("Projet modifié");
+				expect(store.getState().project?.schemaVersion).toBe(
+					PROJECT_SCHEMA_VERSION,
+				);
+				expect(store.getState().hasUnsavedChanges).toBe(true);
+			});
+
+			it("se rabat sur le projet enregistré quand le brouillon vient d'une version plus récente", async () => {
+				const store = createProjectStore();
+				const project = new Project("p1", "Projet", "");
+				await store.getState().projectRepository.save(project);
+				saveDraft(
+					"p1",
+					"Projet",
+					JSON.stringify({
+						...JSON.parse(JSON.stringify(project)),
+						name: "Futur",
+						schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+					}),
+				);
+
+				await lifecycle(store).openProject("p1", true);
+
+				expect(store.getState().project?.name).toBe("Projet");
+				expect(getDraft("p1")).toBeNull();
+			});
+
 			it("se rabat sur le projet enregistré quand le brouillon est illisible", async () => {
 				const store = createProjectStore();
 				const project = new Project("p1", "Projet", "");
@@ -632,6 +716,28 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().ui.draftConflictModal.visible).toBe(false);
 			expect(store.getState().hasUnsavedChanges).toBe(true);
 			expect(store.getState().project?.id).toBe("p1");
+		});
+
+		it("ouvre le brouillon migré quand le choix est 'draft' et que la version est ancienne", async () => {
+			const store = createProjectStore();
+			const project = new Project("p1", "Projet", "");
+			const draftData = JSON.stringify({
+				...JSON.parse(JSON.stringify(project)),
+				schemaVersion: PROJECT_SCHEMA_VERSION - 1,
+			});
+			store.setState({
+				ui: {
+					...store.getState().ui,
+					draftConflictModal: { visible: true, projectId: "p1", draftData },
+				},
+			});
+
+			await lifecycle(store).resolveDraftConflict("draft");
+
+			expect(store.getState().project?.schemaVersion).toBe(
+				PROJECT_SCHEMA_VERSION,
+			);
+			expect(store.getState().hasUnsavedChanges).toBe(true);
 		});
 
 		it("affiche un toast et ferme la modale si le brouillon est corrompu", async () => {

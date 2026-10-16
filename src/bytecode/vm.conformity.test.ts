@@ -1,3 +1,6 @@
+import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
+import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
+import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import { PROJECT_TEMPLATES } from "@/templates";
 import { compiledProject, plcVariable } from "@tests/utils/bytecode-program";
 import { compileProject } from "@tests/utils/test-helpers";
@@ -185,4 +188,58 @@ describe("simulator ↔ VM conformity on typed programs", () => {
 		});
 		expect(report.mismatches).toEqual([]);
 	});
+});
+
+describe("simulator ↔ VM conformity on timer blocks", () => {
+	const ident = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+	const timerProgram = () => {
+		const timers = (["TON", "TOF", "TP"] as const).flatMap((type) =>
+			[0, 100, 250, 300].map((presetMs) => ({ type, presetMs })),
+		);
+		return compiledProject({
+			variables: [
+				plcVariable("in:BOOL", "input"),
+				...timers.flatMap(({ type, presetMs }) => {
+					const id = `${type}${presetMs}`;
+					return [
+						plcVariable(`last_${id}:internal-bool`),
+						plcVariable(`et_${id}:internal-number`),
+						plcVariable(`q_${id}:internal-bool`),
+					];
+				}),
+			],
+			routines: [
+				timers.map(({ type, presetMs }) => {
+					const id = `${type}${presetMs}`;
+					return BlocksBuilder.buildTimerNode(
+						type,
+						ident("in"),
+						ident(`last_${id}`),
+						LiteralsBuilder.buildNumberNode(presetMs),
+						ident(`et_${id}`),
+						ident(`q_${id}`),
+					);
+				}),
+			],
+		});
+	};
+
+	it.each([
+		[1, 0.05],
+		[2, 0.2],
+		[3, 0.6],
+	])(
+		"matches on TON, TOF and TP, PT multiple of the scan or not (seed %i)",
+		(seed, changeProbability) => {
+			const report = compareSimulatorAndVm(timerProgram(), {
+				cycles: 600,
+				seed,
+				changeProbability,
+			});
+			expect(report.mismatches).toEqual([]);
+			expect(report.simulatorFaultCycle).toBeNull();
+			expect(report.vmFaultCycle).toBeNull();
+			expect(report.distinctStates).toBeGreaterThan(5);
+		},
+	);
 });

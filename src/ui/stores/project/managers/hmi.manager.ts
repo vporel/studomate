@@ -153,6 +153,21 @@ export default class HmiManager {
 		}));
 	}
 
+	/** Makes every mounted HMI page store adopt the project's version of its page when they
+	 * differ (e.g. after a command rewrote widget bindings). */
+	syncMountedStoresFromProject(): void {
+		const project = this.getStoreState().project;
+		if (!project) return;
+		Object.entries(this.getStoreState().hmiStoresManagers).forEach(
+			([hmiPageId, managers]) => {
+				const page = project.getHmiPage(hmiPageId);
+				if (!page) return;
+				if (deepObjectsComparison(managers.getHmiPage(), page)) return;
+				managers.adoptHmiPage(page.copy());
+			},
+		);
+	}
+
 	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir
 	 * `Project.getMainHmiPage`) — sans effet si le projet n'a aucune page HMI. Appelé à l'entrée en
 	 * simulation (voir `SimulationManager.setSimulationMode`). Renvoie `true` si l'onglet a été

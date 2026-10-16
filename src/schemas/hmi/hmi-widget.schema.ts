@@ -20,13 +20,10 @@ export type HmiWidgetPosition = { x: number; y: number };
 
 /** Comportement d'un bouton poussoir (`push-button`) au clic, en simulation — voir `PushButton`. */
 export type HmiPushButtonBehavior =
-	| "momentary-no"
-	| "momentary-nc"
-	| "set"
-	| "reset"
-	| "toggle";
+	"momentary-no" | "momentary-nc" | "set" | "reset" | "toggle";
 
-export const DEFAULT_PUSH_BUTTON_BEHAVIOR: HmiPushButtonBehavior = "momentary-no";
+export const DEFAULT_PUSH_BUTTON_BEHAVIOR: HmiPushButtonBehavior =
+	"momentary-no";
 
 /** Contact of a toggle-switch: `nc` writes `true` in the rest position. */
 export type HmiSwitchContact = "no" | "nc";
@@ -451,6 +448,41 @@ abstract class HmiWidgetBase<DataType> {
 			this.stackOrder,
 			{ ...this.data },
 		);
+	}
+
+	/** Rewrites the variable mnemonics this widget is bound to (main binding and animations).
+	 * `animations` is replaced rather than mutated: `copy()` shares it with the original. */
+	renameVariableReferences(renames: Record<string, string>): void {
+		const data = this.data as {
+			variable?: string;
+			animations?: HmiWidgetAnimations<string>;
+		};
+		if (data.variable && renames[data.variable])
+			data.variable = renames[data.variable];
+
+		const { position, style } = data.animations ?? {};
+		const renamed = (name: string | undefined) =>
+			name && renames[name] ? renames[name] : name;
+		if (position) {
+			data.animations = {
+				...data.animations,
+				position: {
+					...position,
+					...(position.xVariable !== undefined && {
+						xVariable: renamed(position.xVariable),
+					}),
+					...(position.yVariable !== undefined && {
+						yVariable: renamed(position.yVariable),
+					}),
+				},
+			};
+		}
+		if (style) {
+			data.animations = {
+				...data.animations,
+				style: { ...style, variable: renamed(style.variable) as string },
+			};
+		}
 	}
 }
 

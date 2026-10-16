@@ -11,6 +11,10 @@ jest.mock("@/persistence/draft.storage", () => ({
 	deleteDraft: jest.fn(),
 	getAllDrafts: jest.fn().mockReturnValue([]),
 	deleteAllDrafts: jest.fn(),
+	parseDraftProject:
+		jest.requireActual<typeof import("@/persistence/draft.storage")>(
+			"@/persistence/draft.storage",
+		).parseDraftProject,
 }));
 
 const mockedGetDraft = draftStorage.getDraft as jest.Mock;

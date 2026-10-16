@@ -244,6 +244,8 @@ export default abstract class AbstractProgramsManager<
 			project: newProject,
 			hasUnsavedChanges: true,
 		}));
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
 	}
 
 	setExcludedFromExecution(programId: string, excluded: boolean): void {

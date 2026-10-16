@@ -3,6 +3,7 @@
 import Page from "@/ui/components/pages/Page";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { HMI_SIMULATION_PAGE_ID } from "@/ui/stores/project/managers/hmi.manager";
+import { useT } from "@/ui/i18n/useT";
 import { Typography } from "@mui/material";
 import HmiPageView from "./HmiPageView";
 
@@ -20,6 +21,7 @@ import HmiPageView from "./HmiPageView";
  * n'émettant jamais de commande.
  */
 const HmiSimulationPageView = () => {
+	const t = useT("hmiEditor.simulationView");
 	const project = useProjectStore((s) => s.project);
 	const activeHmiPageId = useProjectStore((s) => s.hmiSimulationActivePageId);
 	const hmiPage = activeHmiPageId
@@ -35,9 +37,7 @@ const HmiSimulationPageView = () => {
 				pageId={HMI_SIMULATION_PAGE_ID}
 				sx={{ justifyContent: "center", alignItems: "center" }}
 			>
-				<Typography sx={{ color: "text.secondary" }}>
-					Aucune page HMI à afficher.
-				</Typography>
+				<Typography sx={{ color: "text.secondary" }}>{t("noPage")}</Typography>
 			</Page>
 		);
 	}

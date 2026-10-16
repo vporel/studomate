@@ -55,7 +55,8 @@ export default function useCommittedField<T = string>({
 	const formatted = toText(value);
 
 	const [text, setText] = useState(formatted);
-	useEffect(() => setText(formatted), [formatted]);
+	const [commitCount, setCommitCount] = useState(0);
+	useEffect(() => setText(formatted), [formatted, commitCount]);
 
 	const commit = () => {
 		const parsed = toValue(text);
@@ -64,8 +65,10 @@ export default function useCommittedField<T = string>({
 			setText(formatted);
 			return;
 		}
-		if (!Object.is(parsed, value)) onCommit(parsed);
-		else setText(formatted);
+		if (!Object.is(parsed, value)) {
+			onCommit(parsed);
+			setCommitCount((n) => n + 1);
+		} else setText(formatted);
 	};
 
 	const flushRef = useRef<() => void>(() => {});

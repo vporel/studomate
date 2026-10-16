@@ -242,11 +242,11 @@ describe("TimerNodeEvaluator", () => {
 				return evaluator.evaluate(timer) as boolean;
 			};
 			expect(scan(true)).toBe(true);
-			expect(scan(false)).toBe(true); // falling edge
-			for (let elapsed = 0; elapsed < 100; elapsed += 10) {
+			expect(scan(false)).toBe(true); // falling edge: ET = 0
+			for (let elapsed = 10; elapsed < 100; elapsed += 10) {
 				expect(scan(false)).toBe(true);
 			}
-			expect(scan(false)).toBe(false);
+			expect(scan(false)).toBe(false); // ET reaches PT
 			expect(scan(false)).toBe(false);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
 		});
@@ -352,9 +352,10 @@ describe("TimerNodeEvaluator", () => {
 			expect(scan(timer, true)).toBe(true);
 			expect(scan(timer, true)).toBe(true);
 			// IN falls with ET = 10 < PT = 100: the pulse goes on.
-			for (let elapsed = 10; elapsed < 100; elapsed += 10) {
+			for (let elapsed = 20; elapsed < 100; elapsed += 10) {
 				expect(scan(timer, false)).toBe(true);
 			}
+			expect(scan(timer, false)).toBe(false); // ET reaches PT
 			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
 			expect(scan(timer, false)).toBe(false);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
@@ -431,6 +432,96 @@ describe("TimerNodeEvaluator", () => {
 			customEvaluator.evaluate(timer);
 
 			expect(env.getVariableValueByName("elapsedTime")).toBe(25);
+		});
+	});
+
+	describe("PT not a multiple of the scan time", () => {
+		const run = (
+			type: "TON" | "TOF" | "TP",
+			preset: number,
+			deltaTimeMs: number,
+			inputs: boolean[],
+		) => {
+			env.setVariableValueByName("presetTime", preset);
+			const timer = createTimerNode(type);
+			const timed = new TimerNodeEvaluator(env, visitor, { deltaTimeMs });
+			return inputs.map((input) => {
+				env.setVariableValueByName("input", input);
+				const q = timed.evaluate(timer) as boolean;
+				return [q, env.getVariableValueByName("elapsedTime")] as const;
+			});
+		};
+
+		it("TON raises Q on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TON", 250, 100, Array(7).fill(true));
+			expect(steps).toEqual([
+				[false, 0],
+				[false, 100],
+				[false, 200],
+				[true, 250],
+				[true, 250],
+				[true, 250],
+				[true, 250],
+			]);
+		});
+
+		it("TON raises Q on the cycle where ET reaches PT when PT is a multiple of the scan", () => {
+			const steps = run("TON", 300, 100, Array(5).fill(true));
+			expect(steps).toEqual([
+				[false, 0],
+				[false, 100],
+				[false, 200],
+				[true, 300],
+				[true, 300],
+			]);
+		});
+
+		it("TON with PT = 0 raises Q on the rising-edge cycle", () => {
+			expect(run("TON", 0, 100, [true, true, false])).toEqual([
+				[true, 0],
+				[true, 0],
+				[false, 0],
+			]);
+		});
+
+		it("TOF drops Q on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TOF", 250, 100, [true, false, false, false, false, false]);
+			expect(steps).toEqual([
+				[true, 0],
+				[true, 0],
+				[true, 100],
+				[true, 200],
+				[false, 250],
+				[false, 250],
+			]);
+		});
+
+		it("TOF with PT = 0 drops Q on the falling-edge cycle", () => {
+			expect(run("TOF", 0, 100, [true, false, false])).toEqual([
+				[true, 0],
+				[false, 0],
+				[false, 0],
+			]);
+		});
+
+		it("TP ends the pulse on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TP", 250, 100, [true, true, true, true, true, false]);
+			expect(steps).toEqual([
+				[true, 0],
+				[true, 100],
+				[true, 200],
+				[false, 250],
+				[false, 250],
+				[false, 0],
+			]);
+		});
+
+		it("TP with PT = 0 produces no pulse", () => {
+			expect(run("TP", 0, 100, [true, true, false])).toEqual([
+				[false, 0],
+				[false, 0],
+				[false, 0],
+			]);
 		});
 	});
 });

@@ -103,7 +103,7 @@ describe("LadderPreCompiler", () => {
 
 		expect(errors).toEqual([]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"(true AND A)",
+			"A",
 		);
 	});
 
@@ -120,7 +120,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"(true AND NOT A)",
+			"NOT A",
 		);
 	});
 
@@ -149,7 +149,7 @@ describe("LadderPreCompiler", () => {
 			),
 		).toEqual([`${pulse} := (A AND NOT ${memo})`, `${memo} := A`]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`(true AND ${pulse})`,
+			`${pulse}`,
 		);
 	});
 
@@ -173,7 +173,7 @@ describe("LadderPreCompiler", () => {
 			),
 		).toEqual([`${pulse} := (NOT A AND ${memo})`, `${memo} := A`]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`(true AND ${pulse})`,
+			`${pulse}`,
 		);
 	});
 
@@ -221,7 +221,7 @@ describe("LadderPreCompiler", () => {
 			expect(result.assignments.map((a) => a.kind)).toEqual(["coil"]);
 			const [coil] = coilAssignments(result);
 			expect(coil.mode).toBe("normal");
-			expect(describeNode(coil.condition)).toBe("NOT (true AND A)");
+			expect(describeNode(coil.condition)).toBe("NOT A");
 		});
 
 		it("bobine de front montant : condition ET NON mémoire, puis mémoire = condition", () => {
@@ -235,13 +235,13 @@ describe("LadderPreCompiler", () => {
 			const [coilAssignment] = coilAssignments(result);
 			expect(coilAssignment.mode).toBe("normal");
 			expect(describeNode(coilAssignment.condition)).toBe(
-				`((true AND A) AND NOT ${memo})`,
+				`(A AND NOT ${memo})`,
 			);
 			expect(
 				contactEdgeAssignments(result).map(
 					(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
 				),
-			).toEqual([`${memo} := (true AND A)`]);
+			).toEqual([`${memo} := A`]);
 		});
 
 		it("bobine de front descendant : NON condition ET mémoire, puis mémoire = condition", () => {
@@ -249,7 +249,7 @@ describe("LadderPreCompiler", () => {
 			const memo = getContactMemoryVariableMnemonic(coil.id);
 
 			expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-				`(NOT (true AND A) AND ${memo})`,
+				`(NOT A AND ${memo})`,
 			);
 			expect(contactEdgeAssignments(result)).toHaveLength(1);
 		});
@@ -269,7 +269,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"((true AND A) AND B)",
+			"(A AND B)",
 		);
 	});
 
@@ -287,7 +287,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"((true AND A) OR (true AND B))",
+			"(A OR B)",
 		);
 	});
 
@@ -438,7 +438,7 @@ describe("LadderPreCompiler", () => {
 			);
 			expect(blockPortAssignments).toHaveLength(2);
 			expect(describeNode((blockPortAssignments[0] as any).value)).toBe(
-				"(true AND A)",
+				"A",
 			);
 			expect(blockPortAssignments[0]).toMatchObject({
 				blockId: block.id,
@@ -571,7 +571,7 @@ describe("LadderPreCompiler", () => {
 			const inAssignment = result.assignments.find(
 				(a) => a.kind === "blockPort" && a.mnemonic === "Tempo1.IN",
 			) as any;
-			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(inAssignment.value)).toBe("A");
 
 			const timer = timerAssignment(result);
 			expect(timer.node.timerType).toBe("TON");
@@ -718,6 +718,33 @@ describe("LadderPreCompiler", () => {
 			);
 			expect(describeNode(counter.control as ASTNode)).toBe("R");
 		});
+
+		it("matérialise un littéral booléen sur R en nœud littéral, pas en identifiant", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "FAUX", pv: "5" },
+				0,
+				1,
+			);
+			const section = createSectionWith(
+				[rail, block],
+				wireInSeries([rail, block]),
+			);
+
+			const { result, errors } = preCompile(
+				new Ladder("l1", "L", [section]),
+			);
+
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+			expect(errors).toEqual([]);
+			expect((counter.control as ASTNode).type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.control as ASTNode)).toBe("false");
+		});
 	});
 
 	describe("bloc compteur CTUD", () => {
@@ -766,6 +793,40 @@ describe("LadderPreCompiler", () => {
 			expect(describeNode(counter.lastInput)).toBe(
 				getBlockPortVariableMnemonic(block.id, "lastInput"),
 			);
+		});
+
+		it("matérialise des littéraux booléens sur CD et LD, et garde les identifiants des autres pinoches", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{
+					name: "Stock",
+					counterType: "CTUD",
+					control: "RAZ",
+					pv: "5",
+					down: "vrai",
+					load: "FAUX",
+				},
+				0,
+				1,
+			);
+			const { result } = preCompile(
+				new Ladder("l1", "L", [
+					createSectionWith([rail, block], wireInSeries([rail, block])),
+				]),
+			);
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+
+			expect(counter.down!.input.type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.down!.input)).toBe("true");
+			expect(counter.down!.load.type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.down!.load)).toBe("false");
+			expect(counter.control.type).toBe("IDENTIFIER");
+			expect(describeNode(counter.control)).toBe("RAZ");
 		});
 
 		it("propage QU vers l'élément suivant", () => {
@@ -818,7 +879,7 @@ describe("LadderPreCompiler", () => {
 			const inAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === inMnemonic,
 			)!;
-			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(inAssignment.value)).toBe("A");
 
 			const qAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === qMnemonic,
@@ -888,7 +949,7 @@ describe("LadderPreCompiler", () => {
 			const enAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === enMnemonic,
 			)!;
-			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(enAssignment.value)).toBe("A");
 
 			const enoAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === enoMnemonic,
@@ -958,7 +1019,7 @@ describe("LadderPreCompiler", () => {
 			const enAssignment = (
 				result.assignments.filter((a) => a.kind === "blockPort") as any[]
 			).find((a) => a.mnemonic === enMnemonic)!;
-			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(enAssignment.value)).toBe("A");
 
 			const assignAssignment = result.assignments.find(
 				(a) => a.kind === "embeddedNode",

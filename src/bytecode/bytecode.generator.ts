@@ -336,11 +336,29 @@ class ProgramGenerator {
 		switch (node.type) {
 			case "ASSIGN_STATEMENT": {
 				const target = this.slotOfIdentifier(node.left, "Assignment target");
+				if (node.right.type === "IDENTIFIER") {
+					this.emitter.op(Op.COPY, [
+						this.slotOf(node.right.value).index,
+						target.index,
+					]);
+					return;
+				}
 				this.emitExpression(node.right);
 				this.emitter.op(Op.STORE, [target.index]);
 				return;
 			}
 			case "IF_CONTROL": {
+				const conditionalWrite =
+					node.falseBranch === null && node.trueBranch.length === 1
+						? this.constantBitWrite(node.trueBranch[0])
+						: null;
+				if (conditionalWrite) {
+					this.emitExpression(node.condition);
+					this.emitter.op(conditionalWrite.value ? Op.SETIF : Op.RSTIF, [
+						conditionalWrite.target.index,
+					]);
+					return;
+				}
 				this.emitExpression(node.condition);
 				const skipTrue = this.emitter.jump(Op.JZ);
 				node.trueBranch.forEach((statement) => this.emitStatement(statement));
@@ -358,6 +376,38 @@ class ProgramGenerator {
 				this.emitExpression(node);
 				this.emitter.op(Op.POP);
 		}
+	}
+
+	/** `v := 0` or `v := 1` (boolean or integer literal), the statement `SETIF` and `RSTIF` write. */
+	private constantBitWrite(
+		node: ASTNode,
+	): { target: VariableSlot; value: 0 | 1 } | null {
+		if (node.type !== "ASSIGN_STATEMENT") return null;
+		const { right } = node;
+		let value: number;
+		if (right.type === "BOOLEAN_LITERAL") value = right.value ? 1 : 0;
+		else if (
+			right.type === "NUMBER_LITERAL" &&
+			getNumberLiteralKind(right) !== "real"
+		)
+			value = right.value;
+		else return null;
+		if (value !== 0 && value !== 1) return null;
+		return {
+			target: this.slotOfIdentifier(node.left, "Assignment target"),
+			value,
+		};
+	}
+
+	/** The variable a logical operand reads, possibly negated: the operand of `AND v`, `ANDN v`... */
+	private booleanVariableOperand(
+		node: ASTNode,
+	): { slot: VariableSlot; negated: boolean } | null {
+		const negated = node.type === "UNARY_EXPRESSION" && node.operator === "NOT";
+		const operand = negated ? node.expr : node;
+		if (operand.type !== "IDENTIFIER") return null;
+		const slot = this.slotOf(operand.value);
+		return slot.storageClass === "bool" ? { slot, negated } : null;
 	}
 
 	private emitExpression(node: ASTNode): void {
@@ -418,6 +468,20 @@ class ProgramGenerator {
 				return;
 			}
 			case "LOGICAL_EXPRESSION": {
+				const variable = this.booleanVariableOperand(node.right);
+				if (variable) {
+					this.emitExpression(node.left);
+					const opcode =
+						node.operator === "AND"
+							? variable.negated
+								? Op.ANDN
+								: Op.AND
+							: variable.negated
+								? Op.ORN
+								: Op.OR;
+					this.emitter.op(opcode, [variable.slot.index]);
+					return;
+				}
 				this.emitExpression(node.left);
 				const end = this.emitter.jump(
 					node.operator === "AND" ? Op.JZK : Op.JNZK,

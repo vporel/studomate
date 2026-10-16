@@ -1,4 +1,7 @@
 {
+	"simulationView": {
+		"noPage": "Aucune page HMI à afficher."
+	},
 	"toolbar": {
 		"zoomIn": "Zoom avant",
 		"zoomOut": "Zoom arrière"

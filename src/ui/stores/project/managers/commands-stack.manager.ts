@@ -77,6 +77,7 @@ export default class ProjectCommandsStackManager {
 		//rewrites the expressions/references to it), so the mounted stores must adopt the result
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		this.getStoreState().hmiManager.syncMountedStoresFromProject();
 		if (
 			newProject.scene3d !== previous.scene3d ||
 			newProject.name !== previous.name

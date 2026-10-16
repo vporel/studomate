@@ -86,7 +86,7 @@
 		},
 		"errors": {
 			"mnemonicExists": "Ce mnémonique existe déjà",
-			"addressExists": "Cette adresse existe déjà"
+			"addressUsed": "Cette adresse est déjà utilisée par « {mnemonic} »"
 		},
 		"selectorPlaceholder": "?",
 		"contextMenu": {

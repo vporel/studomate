@@ -61,7 +61,14 @@ describe("useShortcutsHandler", () => {
 		activeScopeType: "grafcet" | "ladder" | "variables" | "hmi" = "grafcet",
 	) {
 		const hmiManager = {
-			getActiveStoreManagers: jest.fn(() => ({ moveSelectedWidgets })),
+			getActiveStoreManagers: jest.fn(() => ({
+				moveSelectedWidgets,
+				copyCutPasteManager: {
+					copySelectedElements,
+					pasteElements,
+					cutSelectedElements,
+				},
+			})),
 		};
 		const grafcetsManager = {
 			newGrafcet,
@@ -212,6 +219,38 @@ describe("useShortcutsHandler", () => {
 	it("cuts selected elements on Ctrl+X for a ladder", () => {
 		setup(ProjectMode.DESIGN, "ladder");
 		dispatchShortcut("x");
+		expect(cutSelectedElements).toHaveBeenCalled();
+	});
+
+	it.each(["grafcet", "ladder"] as const)(
+		"ignores Ctrl+V and Ctrl+X in simulation for a %s",
+		(scope) => {
+			setup(ProjectMode.SIMULATION, scope);
+			dispatchShortcut("v");
+			dispatchShortcut("x");
+			expect(pasteElements).not.toHaveBeenCalled();
+			expect(cutSelectedElements).not.toHaveBeenCalled();
+		},
+	);
+
+	it("does not show the wrong-scope toast in simulation for a grafcet", () => {
+		setup(ProjectMode.SIMULATION, "grafcet");
+		setClipboardEntry({ scope: "ladder", data: {} });
+		dispatchShortcut("v");
+		expect(toast.error).not.toHaveBeenCalled();
+	});
+
+	it("still copies in simulation", () => {
+		setup(ProjectMode.SIMULATION, "grafcet");
+		dispatchShortcut("c");
+		expect(copySelectedElements).toHaveBeenCalled();
+	});
+
+	it("still pastes and cuts in simulation for the HMI", () => {
+		setup(ProjectMode.SIMULATION, "hmi");
+		dispatchShortcut("v");
+		dispatchShortcut("x");
+		expect(pasteElements).toHaveBeenCalled();
 		expect(cutSelectedElements).toHaveBeenCalled();
 	});
 

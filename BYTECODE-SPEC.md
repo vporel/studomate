@@ -167,7 +167,7 @@ target of a jump (§7.1).
 
 ## 4. Instruction set
 
-Stack of 32-bit cells. `v`: variable index (1 byte). `t`: type code (1 byte, §2). `a`: absolute
+Stack of 32-bit cells. `v`, `w`: variable index (1 byte). `t`: type code (1 byte, §2). `a`: absolute
 address in the code section (2 bytes). `r`: routine index (1 byte). The stack effect reads
 `before → after`.
 
@@ -183,6 +183,9 @@ address in the code section (2 bytes). `r`: routine index (1 byte). The stack ef
 | `06` | `LOAD` | `v` | `→ x` | Push a variable (sign-extended for `INT`, zero-extended for `WORD`) |
 | `07` | `STORE` | `v` | `x →` | Pop and write, wrapped to the variable's storage class (§2) |
 | `08` | `POP` | | `x →` | Pop and discard |
+| `09` | `COPY` | `v w` | | Write variable `v` into `w`: the effect of `LOAD v ; STORE w` |
+| `0A` | `SETIF` | `v` | `c →` | Pop; if `c` is not 0, write 1 into `v` (wrapped like `STORE`) |
+| `0B` | `RSTIF` | `v` | `c →` | Pop; if `c` is not 0, write 0 into `v` |
 
 A constant outside int32 (for example a `DWORD` above 2^31-1) is pushed with `PUSH32` as its bit
 pattern; the type of the consuming operation fixes its interpretation.
@@ -229,11 +232,19 @@ folded by the simplifier, and a remaining non-integer constant is a generator er
 |---|---|---|---|---|
 | `20` | `CMP` | `c` | `a b → 0/1` | Compare. `c` bits 0 to 2: 0 `=`, 1 `!=`, 2 `<`, 3 `<=`, 4 `>`, 5 `>=`. Bit 3: unsigned (for `WORD` and `DWORD`) |
 | `21` | `NOT` | | `a → !a` | 1 if `a` is 0, else 0 |
+| `22` | `AND` | `v` | `a → a∧v` | 1 if `a` and the boolean variable `v` are both not 0, else 0 |
+| `23` | `ANDN` | `v` | `a → a∧¬v` | 1 if `a` is not 0 and `v` is 0, else 0 |
+| `24` | `OR` | `v` | `a → a∨v` | 1 if `a` or `v` is not 0, else 0 |
+| `25` | `ORN` | `v` | `a → a∨¬v` | 1 if `a` is not 0 or `v` is 0, else 0 |
 
 The operands of a comparison have the same type after unification (`unifyNumericTypes`). The
 language never mixes signed and unsigned (the only widenings are `INT`→`DINT` and
 `WORD`→`DWORD`): the unsigned bit is set if and only if that type is `WORD` or `DWORD`. Booleans
 compare as the integers 0 and 1.
+
+The operand `v` of `AND`, `ANDN`, `OR` and `ORN` is a variable of the 1-byte class. Reading a
+variable has no effect, so these opcodes evaluate it unconditionally: the result is the one the
+short-circuit form (§4.4) would give.
 
 ### 4.4. Jumps
 
@@ -254,7 +265,8 @@ or counter placed in the right operand of an `AND` whose left operand is false i
 in the simulator.
 
 `a AND b` is generated `a ; JZK end ; b ; end:` (the result is `a` if `a` is 0, otherwise `b`).
-`a OR b` is `a ; JNZK end ; b ; end:`. Operands are booleans (0 or 1).
+`a OR b` is `a ; JNZK end ; b ; end:`. Operands are booleans (0 or 1). When `b` is a variable
+or the `NOT` of a variable, the generator emits `a ; AND v` (`ANDN`, `OR`, `ORN`) instead (§4.3).
 
 ### 4.5. Calls and blocks
 
@@ -341,7 +353,8 @@ At startup (and after each transfer), the VM validates the image before running 
    - routines: strictly increasing offsets, the first one at 0, each routine ended by its single
      `RET` (§3.4);
    - code: known opcodes, operands entirely inside the routine, indices `v` < `varCount`, indices
-     `r` < `routineCount`, types `t` allowed for the opcode (§4.2);
+     `r` < `routineCount`, types `t` allowed for the opcode (§4.2), the operand of `AND`, `ANDN`,
+     `OR` and `ORN` of the 1-byte class (§4.3);
    - jumps and stack: see below;
    - the variable operands of `TIMER` and `COUNTER` name the right class (`lastIn`, `out`,
      `downLast`, `downOut`: 1-byte class; `elapsed` and `current`: `INT` or 4-byte class, never
@@ -455,8 +468,12 @@ telemetry, which tells two snapshots of the memory apart by their cycle.
 - **Expression**: depth-first traversal, left operand then right operand. Arithmetic, `NEG` and
   `CONV` carry the result type of the node (`NumericTypeAnalyserVisitor`); a node of type
   `ANY_NUM` (internal variable) takes type 6.
-- **Assignment**: `expression ; STORE v`. **`if`**:
-  `condition ; JZ else ; true branch ; JMP end ; else: false branch ; end:`. Any instruction of an
+- **Assignment**: `expression ; STORE v`, or `COPY w v` when the expression is a variable `w`.
+  **`if`**: `condition ; JZ else ; true branch ; JMP end ; else: false branch ; end:`. An `if`
+  with no `else` whose true branch is the single assignment of the constant 1 or 0 (boolean or
+  integer literal) is generated `condition ; SETIF v` or `condition ; RSTIF v`.
+- **Logical operators**: `a ; AND v`, `a ; ANDN v`, `a ; OR v`, `a ; ORN v` when the right
+  operand is a boolean variable or its `NOT`, otherwise the short-circuit form of §4.4. Any instruction of an
   instruction list (a routine or the branch of an `if`) that leaves a value (a timer or counter
   block whose output is ignored) is followed by a `POP`: every instruction leaves the stack at the
   depth where it found it.

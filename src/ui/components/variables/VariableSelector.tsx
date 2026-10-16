@@ -1,6 +1,7 @@
 "use client";
 
 import { getBlockInstanceVariables } from "@/bridge/block-instance-variables.mapper";
+import { getStepVariables } from "@/bridge/step-variables.mapper";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { LiteralKind } from "@/expression-language/literals/kind";
 import { InputBehaviorKind } from "@/schemas/variable/input-behavior";
@@ -151,11 +152,13 @@ const VariableSelector = forwardRef<
 	// Les variables système (`_SYS_TB_*`) sont proposées et reconnues comme valides partout où on
 	// lit une variable ; leur direction `IN` les exclut d'elle-même des sélecteurs d'écriture.
 	// Les variables exposées par les instances de blocs (temporisation/compteur) ne sont jamais
-	// persistées dans `project.variables` : voir `getBlockInstanceVariables`.
+	// persistées dans `project.variables` : voir `getBlockInstanceVariables`. Idem pour les
+	// variables d'étape `Xn` (`getStepVariables`).
 	const variables = useMemo(
 		() => [
 			...projectVariables,
 			...(project ? getBlockInstanceVariables(project) : []),
+			...(project ? getStepVariables(project) : []),
 			...SYSTEM_SCHEMA_VARIABLES,
 		],
 		[projectVariables, project],

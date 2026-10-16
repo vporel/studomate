@@ -3,6 +3,7 @@ import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
 import PLCVariable from "@/simulator/core/plc/plc-variable";
+import withFiredVariables from "@tests/utils/fired-variables";
 import GrafcetsCompiler from "./grafcets.compiler";
 
 function simpleGrafcet(
@@ -11,7 +12,7 @@ function simpleGrafcet(
 ): PreCompiledGrafcet {
 	const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 	const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
-	return {
+	return withFiredVariables({
 		type: "grafcet",
 		transitionObservations,
 		steps: new Map([
@@ -37,7 +38,37 @@ function simpleGrafcet(
 			],
 		]),
 		actions: new Map(),
+	});
+}
+
+function withLevelActions(
+	grafcet: PreCompiledGrafcet,
+	levels: [stepId: string, outputs: string[]][],
+): PreCompiledGrafcet {
+	return {
+		...grafcet,
+		actions: new Map(
+			levels.map(([stepId, levelOutputs], i) => [
+				`action-${i}`,
+				{
+					phases: { onActivation: [], continuous: [], onDeactivation: [] },
+					levelOutputs,
+					stepId,
+				},
+			]),
+		),
 	};
+}
+
+function levelRoutineAssignments(
+	out: ReturnType<GrafcetsCompiler["compile"]>,
+	grafcetCount = 1,
+) {
+	const routine = out.scanRoutines[grafcetCount];
+	return routine.getInstructions().map((instruction: any) => ({
+		target: instruction.node.left.value,
+		value: instruction.node.right,
+	}));
 }
 
 describe("GrafcetsCompiler", () => {
@@ -125,5 +156,56 @@ describe("GrafcetsCompiler", () => {
 
 		expect(out.routinesById).toEqual({});
 		expect(out.scanRoutines).toEqual([]);
+	});
+
+	describe("level outputs", () => {
+		const compile = (programs: PreCompiledProject["programs"]) =>
+			new GrafcetsCompiler().compile({ variables: [], programs });
+
+		it("adds no routine when no continuous boolean action exists", () => {
+			const out = compile({ g: withLevelActions(simpleGrafcet(), []) });
+			expect(out.scanRoutines).toHaveLength(3);
+		});
+
+		it("assigns a single carrying step directly, between grafcets and memos", () => {
+			const out = compile({
+				g: withLevelActions(simpleGrafcet(), [["step-1", ["M"]]]),
+			});
+			expect(out.scanRoutines).toHaveLength(4);
+			const [assign] = levelRoutineAssignments(out);
+			expect(assign.target).toBe("M");
+			expect(assign.value).toMatchObject({ type: "IDENTIFIER", value: "X1" });
+		});
+
+		it("ORs the steps of a same grafcet carrying the same output", () => {
+			const out = compile({
+				g: withLevelActions(simpleGrafcet(), [
+					["step-0", ["M"]],
+					["step-1", ["M"]],
+				]),
+			});
+			const assignments = levelRoutineAssignments(out);
+			expect(assignments).toHaveLength(1);
+			expect(assignments[0].value).toMatchObject({
+				type: "LOGICAL_EXPRESSION",
+				operator: "OR",
+				left: { value: "X0" },
+				right: { value: "X1" },
+			});
+		});
+
+		it("groups an output across several grafcets and keeps first-appearance order", () => {
+			const g2 = simpleGrafcet();
+			const out = compile({
+				g1: withLevelActions(simpleGrafcet(), [
+					["step-0", ["A"]],
+					["step-1", ["M"]],
+				]),
+				g2: withLevelActions(g2, [["step-0", ["M"]]]),
+			});
+			const assignments = levelRoutineAssignments(out, 2);
+			expect(assignments.map((a) => a.target)).toEqual(["A", "M"]);
+			expect(assignments[1].value.type).toBe("LOGICAL_EXPRESSION");
+		});
 	});
 });

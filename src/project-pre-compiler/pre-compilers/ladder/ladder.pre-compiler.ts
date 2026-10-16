@@ -9,6 +9,7 @@ import type { VariableType } from "@/schemas/variable/variable.schema";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { parseBooleanLiteral } from "@/expression-language/literals/boolean";
 import { parseNumberLiteral } from "@/expression-language/literals/number";
 import { parseExpressionCached } from "@/expression-language/parse-expression-cached";
 import { parseTimeLiteral } from "@/expression-language/literals/time";
@@ -133,7 +134,7 @@ export function isPreCompiledLadder(
 }
 
 function mergeAnd(a: ASTNode | null, b: ASTNode): ASTNode {
-	return a === null
+	return a === null || (a.type === "BOOLEAN_LITERAL" && a.value)
 		? b
 		: ExpressionsBuilder.buildLogicalExpressionNode("AND", a, b);
 }
@@ -356,6 +357,13 @@ function buildPresetValueNode(pv: string): ASTNode {
 	return IdentifiersBuilder.buildIdentifierNode(pv);
 }
 
+/** A pin accepting a boolean literal is either `vrai`/`faux` (or `true`/`false`) or a variable mnemonic. */
+function buildBooleanPinNode(pin: string, dialect: Dialect): ASTNode {
+	const literal = parseBooleanLiteral(pin, dialect);
+	if (literal !== null) return LiteralsBuilder.buildBooleanNode(literal);
+	return IdentifiersBuilder.buildIdentifierNode(pin);
+}
+
 /**
  * A `"counter"` block calls nothing: it materializes a `CounterNode` (see
  * `PreCompiledCounterAssignment`) directly referencing the variables generated from its config
@@ -368,6 +376,7 @@ function buildPresetValueNode(pv: string): ASTNode {
 function buildCounterBlockAssignments(
 	block: BlockElement,
 	reach: ASTNode | null,
+	dialect: Dialect,
 ): BuiltBlockAssignments {
 	if (block.data.blockType !== "counter") throw new Error("Bloc non counter");
 	const { name, counterType, control, pv, cv, down, load, qd } =
@@ -379,11 +388,11 @@ function buildCounterBlockAssignments(
 	const downPart =
 		counterType === "CTUD"
 			? {
-					input: IdentifiersBuilder.buildIdentifierNode(down ?? ""),
+					input: buildBooleanPinNode(down ?? "", dialect),
 					lastInput: IdentifiersBuilder.buildIdentifierNode(
 						getBlockPortVariableMnemonic(block.id, "lastCD"),
 					),
-					load: IdentifiersBuilder.buildIdentifierNode(load ?? ""),
+					load: buildBooleanPinNode(load ?? "", dialect),
 					output: IdentifiersBuilder.buildIdentifierNode(mnemonics.QD),
 				}
 			: undefined;
@@ -403,7 +412,7 @@ function buildCounterBlockAssignments(
 				counterType,
 				IdentifiersBuilder.buildIdentifierNode(pulseMnemonic),
 				IdentifiersBuilder.buildIdentifierNode(lastInputMnemonic),
-				IdentifiersBuilder.buildIdentifierNode(control),
+				buildBooleanPinNode(control, dialect),
 				buildPresetValueNode(pv),
 				IdentifiersBuilder.buildIdentifierNode(mnemonics.CV),
 				IdentifiersBuilder.buildIdentifierNode(outputMnemonic),
@@ -617,7 +626,8 @@ const BLOCK_ASSIGNMENT_BUILDERS: Record<
 	"user-program": (block, reach) =>
 		buildUserProgramBlockAssignments(block, reach),
 	timer: (block, reach) => buildTimerBlockAssignments(block, reach),
-	counter: (block, reach) => buildCounterBlockAssignments(block, reach),
+	counter: (block, reach, dialect) =>
+		buildCounterBlockAssignments(block, reach, dialect),
 	compare: (block, reach, dialect) =>
 		buildCompareBlockAssignments(block, reach, dialect),
 	assign: (block, reach, dialect) =>

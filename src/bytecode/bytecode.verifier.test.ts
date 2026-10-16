@@ -251,6 +251,61 @@ describe("verifyBytecode", () => {
 			expect(reason(dead)).toMatch(/unreachable/);
 		});
 
+		it("accepts the logical opcodes on a boolean variable", () => {
+			for (const opcode of [Op.AND, Op.ANDN, Op.OR, Op.ORN]) {
+				expect(
+					reason(
+						crafted({ routines: [0], code: [Op.PUSH1, opcode, 0, Op.POP, Op.RET] }),
+					),
+				).toBeNull();
+			}
+		});
+
+		it("refuses a logical opcode on a numeric variable", () => {
+			expect(
+				reason(
+					crafted({ routines: [0], code: [Op.PUSH1, Op.AND, 1, Op.POP, Op.RET] }),
+				),
+			).toMatch(/not a boolean/);
+		});
+
+		it("refuses a logical opcode on an empty stack", () => {
+			expect(
+				reason(crafted({ routines: [0], code: [Op.OR, 0, Op.POP, Op.RET] })),
+			).toMatch(/underflow/);
+		});
+
+		it("accepts SETIF, RSTIF and COPY on variables of any class", () => {
+			expect(
+				reason(
+					crafted({
+						routines: [0],
+						code: [Op.PUSH1, Op.SETIF, 1, Op.PUSH0, Op.RSTIF, 0, Op.COPY, 1, 2, Op.RET],
+					}),
+				),
+			).toBeNull();
+		});
+
+		it("refuses SETIF and RSTIF without a condition on the stack", () => {
+			for (const opcode of [Op.SETIF, Op.RSTIF]) {
+				expect(
+					reason(crafted({ routines: [0], code: [opcode, 0, Op.RET] })),
+				).toMatch(/underflow/);
+			}
+		});
+
+		it("refuses a variable index out of range in SETIF and in either operand of COPY", () => {
+			for (const code of [
+				[Op.PUSH1, Op.SETIF, 200, Op.RET],
+				[Op.COPY, 200, 0, Op.RET],
+				[Op.COPY, 0, 200, Op.RET],
+			]) {
+				expect(reason(crafted({ routines: [0], code }))).toMatch(
+					/variable index/,
+				);
+			}
+		});
+
 		it("refuses an arithmetic type that is a bit string", () => {
 			const image = mutated((i) => {
 				const at = CODE_START + [...i.subarray(CODE_START)].indexOf(Op.ADD);

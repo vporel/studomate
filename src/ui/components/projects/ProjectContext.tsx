@@ -41,7 +41,7 @@ import HardwareObservationDialog from "./HardwareObservationDialog";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
 import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
-import Project from "@/schemas/project/project.schema";
+import { parseDraftProject } from "@/persistence/draft.storage";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
 
@@ -177,14 +177,11 @@ export const ProjectContextProvider = ({
 	}, []);
 
 	const handleDraftOpen = (draftData: string) => {
-		try {
-			const project = Project.createFromJSON(draftData);
-			void storeRef
-				.current!.getState()
-				.lifecycleManager.openProject(project.id, true);
-		} catch {
-			// brouillon corrompu : ignoré silencieusement
-		}
+		const project = parseDraftProject(draftData);
+		if (!project) return;
+		void storeRef
+			.current!.getState()
+			.lifecycleManager.openProject(project.id, true);
 	};
 
 	return (

@@ -20,6 +20,7 @@ function setup(activeScopeType: string) {
 	const project = {
 		getAllTimerBlockElements: () => [],
 		getAllCounterBlockElements: () => [],
+		grafcets: {},
 	};
 	(useProjectStore as jest.Mock).mockImplementation(
 		selectorImplementation({ project, activeScopeType }),

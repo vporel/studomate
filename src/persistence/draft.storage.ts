@@ -1,3 +1,5 @@
+import Project from "@/schemas/project/project.schema";
+import { deserializeProject } from "./project-deserialization";
 import { readJson, writeJson } from "./safe-local-storage";
 import { StorageWriteResult } from "./storage-write-error";
 
@@ -69,4 +71,21 @@ export function deleteDraft(projectId: string): void {
 
 export function deleteAllDrafts(): void {
 	writeStore({});
+}
+
+/**
+ * Rebuilds the project held by a draft, migrated to the current schema version.
+ * Returns null when the draft is not valid JSON or cannot be read as a project
+ * (no id, written by a newer version, failed migration).
+ */
+export function parseDraftProject(data: string): Project | null {
+	let raw: unknown;
+	try {
+		raw = JSON.parse(data);
+	} catch {
+		return null;
+	}
+	if (typeof raw !== "object" || raw === null) return null;
+	const result = deserializeProject(raw as Record<string, any>);
+	return result.ok ? result.project : null;
 }

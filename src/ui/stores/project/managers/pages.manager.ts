@@ -63,6 +63,9 @@ export default class PagesManager {
 			pagesData: newPagesData,
 			activePageId: newActivePageId,
 		}));
+		if (this.getStoreState().activeScope === pageId) {
+			this.getStoreState().setActiveScope(newActivePageId ?? "project");
+		}
 		this.persistSession();
 	}
 

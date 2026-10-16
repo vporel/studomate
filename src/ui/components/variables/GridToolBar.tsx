@@ -36,6 +36,15 @@ import {
 import * as React from "react";
 import { useProjectStore } from "../projects/ProjectContext";
 
+declare module "@mui/x-data-grid" {
+	interface ToolbarPropsOverrides {
+		rowSelectionModel: GridRowSelectionModel;
+		zoneVariables: Variable[];
+		pageTitle: string;
+		pdfColumns: VariablesTableColumns;
+	}
+}
+
 type OwnerState = {
 	expanded: boolean;
 };

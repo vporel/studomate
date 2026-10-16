@@ -5,9 +5,9 @@
 /* Opcodes (README §4). */
 enum {
 	OP_PUSH0 = 0x01, OP_PUSH1 = 0x02, OP_PUSH8 = 0x03, OP_PUSH16 = 0x04, OP_PUSH32 = 0x05,
-	OP_LOAD = 0x06, OP_STORE = 0x07, OP_POP = 0x08,
+	OP_LOAD = 0x06, OP_STORE = 0x07, OP_POP = 0x08, OP_COPY = 0x09, OP_SETIF = 0x0A, OP_RSTIF = 0x0B,
 	OP_ADD = 0x10, OP_SUB = 0x11, OP_MUL = 0x12, OP_DIV = 0x13, OP_NEG = 0x14, OP_CONV = 0x15,
-	OP_CMP = 0x20, OP_NOT = 0x21,
+	OP_CMP = 0x20, OP_NOT = 0x21, OP_AND = 0x22, OP_ANDN = 0x23, OP_OR = 0x24, OP_ORN = 0x25,
 	OP_JMP = 0x30, OP_JZ = 0x31, OP_JNZ = 0x32, OP_JZK = 0x33, OP_JNZK = 0x34,
 	OP_CALL = 0x40, OP_RET = 0x41,
 	OP_TIMER = 0x50, OP_COUNTER = 0x51
@@ -105,10 +105,13 @@ static uint8_t opcode_shape(uint8_t op, uint8_t *operand_bytes, uint8_t *pops, u
 	case OP_LOAD: *operand_bytes = 1; *pops = 0; *pushes = 1; return 1;
 	case OP_STORE: *operand_bytes = 1; *pops = 1; *pushes = 0; return 1;
 	case OP_POP: *operand_bytes = 0; *pops = 1; *pushes = 0; return 1;
+	case OP_COPY: *operand_bytes = 2; *pops = 0; *pushes = 0; return 1;
+	case OP_SETIF: case OP_RSTIF: *operand_bytes = 1; *pops = 1; *pushes = 0; return 1;
 	case OP_ADD: case OP_SUB: case OP_MUL: case OP_DIV: *operand_bytes = 1; *pops = 2; *pushes = 1; return 1;
 	case OP_NEG: case OP_CONV: *operand_bytes = 1; *pops = 1; *pushes = 1; return 1;
 	case OP_CMP: *operand_bytes = 1; *pops = 2; *pushes = 1; return 1;
 	case OP_NOT: *operand_bytes = 0; *pops = 1; *pushes = 1; return 1;
+	case OP_AND: case OP_ANDN: case OP_OR: case OP_ORN: *operand_bytes = 1; *pops = 1; *pushes = 1; return 1;
 	case OP_JMP: *operand_bytes = 2; *pops = 0; *pushes = 0; return 1;
 	case OP_JZ: case OP_JNZ: *operand_bytes = 2; *pops = 1; *pushes = 0; return 1;
 	case OP_JZK: case OP_JNZK: *operand_bytes = 2; *pops = 0; *pushes = 0; return 1;
@@ -176,7 +179,16 @@ static stdm_status verify_routine(const stdm_platform *p, const layout_t *l, uin
 			switch (op) {
 			case OP_LOAD:
 			case OP_STORE:
+			case OP_SETIF:
+			case OP_RSTIF:
 				if (a0 >= l->var_count) return STDM_ERR_VARIABLE;
+				break;
+			case OP_COPY:
+				if (a0 >= l->var_count || a1 >= l->var_count) return STDM_ERR_VARIABLE;
+				break;
+			case OP_AND: case OP_ANDN: case OP_OR: case OP_ORN:
+				if (a0 >= l->var_count) return STDM_ERR_VARIABLE;
+				if (class_of(l, a0) != CLASS_BOOL) return STDM_ERR_TYPE;
 				break;
 			case OP_CALL:
 				if (a0 >= l->routine_count) return STDM_ERR_ROUTINE_INDEX;
@@ -454,6 +466,11 @@ static uint16_t routine_start(const stdm_vm *vm, uint8_t r) {
 	return ru16(vm->platform, (uint16_t)(vm->routines_start + 2u * r));
 }
 
+static int32_t advanced(int32_t elapsed, uint32_t dt, int32_t pt) {
+	int32_t sum = (int32_t)((uint32_t)elapsed + dt);
+	return sum > pt ? pt : sum;
+}
+
 static uint32_t execute_timer(stdm_vm *vm, uint16_t pc, uint32_t input, uint32_t preset, uint32_t dt) {
 	uint8_t kind = code_at(vm, (uint16_t)(pc + 1));
 	uint8_t last_var = code_at(vm, (uint16_t)(pc + 2));
@@ -466,44 +483,43 @@ static uint32_t execute_timer(stdm_vm *vm, uint16_t pc, uint32_t input, uint32_t
 	uint32_t rising = in && !last;
 	uint32_t falling = !in && last;
 	uint32_t out = 0;
+	int32_t next = 0;
 
+	/*
+	 * ET advances by dt and is clamped at PT; the cycle that starts a timing (rising edge of IN
+	 * for TON and TP, falling edge for TOF) leaves ET at 0. TON: Q = ET >= PT. TOF: Q follows IN,
+	 * then stays true until ET reaches PT. TP: Q falls when ET reaches PT. PT <= 0 acts as 0.
+	 */
+	if (pt < 0) pt = 0;
 	if (kind == 0) { /* TON */
-		if (rising) {
+		if (!in) {
+			next = 0;
 			out = 0;
-		} else if (in) {
-			if (elapsed >= pt) {
-				out = 1;
-			} else {
-				out = 0;
-				variable_store(vm, elapsed_var, (uint32_t)elapsed + dt);
-			}
 		} else {
-			variable_store(vm, elapsed_var, 0);
-			out = 0;
+			next = rising ? 0 : advanced(elapsed, dt, pt);
+			out = next >= pt;
 		}
+		variable_store(vm, elapsed_var, (uint32_t)next);
 	} else if (kind == 1) { /* TOF */
 		if (in) {
 			variable_store(vm, elapsed_var, 0);
 			out = 1;
-		} else if (falling) {
-			out = 1;
-		} else if (variable_load(vm, out_var) != 0 && elapsed < pt) {
-			out = 1;
-			variable_store(vm, elapsed_var, (uint32_t)elapsed + dt);
-		} else {
-			out = 0;
+		} else if (falling || variable_load(vm, out_var) != 0) {
+			next = falling ? 0 : advanced(elapsed, dt, pt);
+			variable_store(vm, elapsed_var, (uint32_t)next);
+			out = next < pt;
 		}
 	} else { /* TP */
 		uint32_t running = variable_load(vm, out_var);
 		if (!running && rising) {
 			variable_store(vm, elapsed_var, 0);
-			out = 1;
-		} else if (running && elapsed < pt) {
-			out = 1;
-			variable_store(vm, elapsed_var, (uint32_t)elapsed + dt);
-		} else {
-			out = 0;
-			if (!in) variable_store(vm, elapsed_var, 0);
+			out = pt > 0;
+		} else if (running) {
+			next = advanced(elapsed, dt, pt);
+			variable_store(vm, elapsed_var, (uint32_t)next);
+			out = next < pt;
+		} else if (!in) {
+			variable_store(vm, elapsed_var, 0);
 		}
 	}
 	variable_store(vm, out_var, out);
@@ -597,6 +613,14 @@ static void run_routine(stdm_vm *vm, uint8_t routine, uint32_t dt) {
 		case OP_LOAD: stack[sp++] = variable_load(vm, code_at(vm, (uint16_t)(pc + 1))); pc += 2; break;
 		case OP_STORE: variable_store(vm, code_at(vm, (uint16_t)(pc + 1)), stack[--sp]); pc += 2; break;
 		case OP_POP: sp--; pc++; break;
+		case OP_COPY:
+			variable_store(vm, code_at(vm, (uint16_t)(pc + 2)), variable_load(vm, code_at(vm, (uint16_t)(pc + 1))));
+			pc += 3;
+			break;
+		case OP_SETIF: case OP_RSTIF:
+			if (stack[--sp] != 0) variable_store(vm, code_at(vm, (uint16_t)(pc + 1)), op == OP_SETIF ? 1u : 0u);
+			pc += 2;
+			break;
 		case OP_ADD: case OP_SUB: case OP_MUL: {
 			uint8_t type = code_at(vm, (uint16_t)(pc + 1));
 			uint32_t b = stack[--sp], a = stack[--sp];
@@ -639,6 +663,13 @@ static void run_routine(stdm_vm *vm, uint8_t routine, uint32_t dt) {
 			break;
 		}
 		case OP_NOT: stack[sp - 1] = stack[sp - 1] == 0; pc++; break;
+		case OP_AND: case OP_ANDN: case OP_OR: case OP_ORN: {
+			uint8_t operand = (uint8_t)(variable_load(vm, code_at(vm, (uint16_t)(pc + 1))) != 0);
+			if (op == OP_ANDN || op == OP_ORN) operand = (uint8_t)!operand;
+			stack[sp - 1] = (op == OP_AND || op == OP_ANDN) ? (stack[sp - 1] != 0 && operand) : (stack[sp - 1] != 0 || operand);
+			pc += 2;
+			break;
+		}
 		case OP_JMP: pc = (uint16_t)((uint16_t)code_at(vm, (uint16_t)(pc + 1)) | (uint16_t)((uint16_t)code_at(vm, (uint16_t)(pc + 2)) << 8)); break;
 		case OP_JZ: case OP_JNZ: {
 			uint32_t v = stack[--sp];

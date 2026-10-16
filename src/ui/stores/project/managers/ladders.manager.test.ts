@@ -155,6 +155,29 @@ describe("LaddersManager", () => {
 			expect(getState().pagesData[ladderId].title).toBe("Nouveau nom");
 		});
 
+		it("fait adopter le nouveau nom au store monté, pour qu'il ne le réécrase pas à sa prochaine modification", () => {
+			const { project, ladderId } = projectWithLadder();
+			const adoptLadder = jest.fn();
+			const { manager } = makeManager({
+				project,
+				activeScopeType: "ladder",
+				activeScope: ladderId,
+				laddersStoresManagers: {
+					[ladderId]: {
+						workflowManager: {
+							adoptLadder,
+							getLadder: () => project.getLadder(ladderId)!.copy(),
+						},
+					},
+				},
+			});
+
+			manager.renameProgramById(ladderId, "Sorties");
+
+			expect(adoptLadder).toHaveBeenCalledTimes(1);
+			expect(adoptLadder.mock.calls[0][0].name).toBe("Sorties");
+		});
+
 		it("lève une erreur si le ladder n'existe pas", () => {
 			const { manager } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),

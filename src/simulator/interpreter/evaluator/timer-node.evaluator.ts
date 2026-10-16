@@ -28,8 +28,13 @@ export default class TimerNodeEvaluator {
 	}
 
 	/**
-	 * @param node
-	 * @returns
+	 * ET advances by the scan time and is clamped at PT; the cycle that starts a timing (rising
+	 * edge of IN for TON and TP, falling edge for TOF) leaves ET at 0.
+	 * - TON: Q = ET >= PT, in the same call where ET reaches PT.
+	 * - TOF: Q follows IN, then stays true until ET reaches PT after IN fell.
+	 * - TP: Q rises with IN (not retriggerable) and falls when ET reaches PT; ET holds PT
+	 *   afterwards while IN stays true.
+	 * PT <= 0 behaves as PT = 0.
 	 */
 	evaluate(node: TimerNode): EnvVariableValue {
 		const inputValue = this.visitor.visit(node.input) as boolean;
@@ -39,88 +44,55 @@ export default class TimerNodeEvaluator {
 		const risingEdge = inputValue && !lastInputValue;
 		const fallingEdge = !inputValue && lastInputValue;
 		let outputValue: boolean;
+		const presetTime = Math.max(presetTimeValue, 0);
+		const setElapsed = (value: number) =>
+			this.env.setVariableValueByName(
+				(node.elapsedTime as IdentifierNode).value,
+				value,
+			);
+		const advanced = () =>
+			Math.min(elapsedTimeValue + this.options.deltaTimeMs, presetTime);
 		switch (node.timerType) {
-			case "TON":
-				if (risingEdge) {
-					this.env.setVariableValueByName(
-						(node.output as IdentifierNode).value,
-						false,
-					);
+			case "TON": {
+				if (!inputValue) {
+					setElapsed(0);
 					outputValue = false;
 					break;
 				}
-				if (inputValue) {
-					if (elapsedTimeValue >= presetTimeValue) {
-						outputValue = true;
-					} else {
-						outputValue = false;
-						this.env.setVariableValueByName(
-							(node.elapsedTime as IdentifierNode).value,
-							elapsedTimeValue + this.options.deltaTimeMs,
-						);
-					}
-				} else {
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						0,
-					);
-					outputValue = false;
-				}
+				const elapsed = risingEdge ? 0 : advanced();
+				setElapsed(elapsed);
+				outputValue = elapsed >= presetTime;
 				break;
+			}
 			case "TOF": {
-				if (inputValue) {
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						0,
-					);
-					outputValue = true;
-					break;
-				}
-				if (fallingEdge) {
-					outputValue = true;
-					break;
-				}
 				// The off-delay only runs after IN has been true: Q stays false at startup.
-				const delayRunning = this.visitor.visit(node.output) as boolean;
-				if (delayRunning && elapsedTimeValue < presetTimeValue) {
-					outputValue = true;
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						elapsedTimeValue + this.options.deltaTimeMs,
-					);
-				} else {
-					outputValue = false;
+				const delayRunning =
+					fallingEdge || (this.visitor.visit(node.output) as boolean);
+				if (inputValue || !delayRunning) {
+					if (inputValue) setElapsed(0);
+					outputValue = inputValue;
+					break;
 				}
+				const elapsed = fallingEdge ? 0 : advanced();
+				setElapsed(elapsed);
+				outputValue = elapsed < presetTime;
 				break;
 			}
 			case "TP": {
-				// IEC 61131-3: once started, the pulse lasts PT whatever IN does, and a rising edge
-				// during the pulse is ignored (not retriggerable). ET holds PT after the pulse
-				// while IN stays true.
 				const pulseRunning = this.visitor.visit(node.output) as boolean;
 				if (!pulseRunning && risingEdge) {
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						0,
-					);
-					outputValue = true;
+					setElapsed(0);
+					outputValue = presetTime > 0;
 					break;
 				}
-				if (pulseRunning && elapsedTimeValue < presetTimeValue) {
-					outputValue = true;
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						elapsedTimeValue + this.options.deltaTimeMs,
-					);
+				if (pulseRunning) {
+					const elapsed = advanced();
+					setElapsed(elapsed);
+					outputValue = elapsed < presetTime;
 					break;
 				}
 				outputValue = false;
-				if (!inputValue) {
-					this.env.setVariableValueByName(
-						(node.elapsedTime as IdentifierNode).value,
-						0,
-					);
-				}
+				if (!inputValue) setElapsed(0);
 				break;
 			}
 		}

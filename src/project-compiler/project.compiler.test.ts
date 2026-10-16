@@ -1,4 +1,4 @@
-import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import withFiredVariables, { firedVariablesOf } from "@tests/utils/fired-variables";
 import { PreCompiledProject } from "@/project-pre-compiler/project.pre-compiler";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
@@ -44,7 +44,7 @@ describe("ProjectCompiler", () => {
 			const var2 = new PLCVariable("var-2", "X1", "memory", "boolean");
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -94,10 +94,10 @@ describe("ProjectCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const preCompiledProject: PreCompiledProject = {
-				variables: [var1, var2, memo0, memo1],
+				variables: [var1, var2, memo0, memo1, ...firedVariablesOf(preCompiledGrafcet)],
 				programs: {
 					"grafcet-1": preCompiledGrafcet,
 				},
@@ -123,7 +123,7 @@ describe("ProjectCompiler", () => {
 			const x1 = new PLCVariable("var-2", "X1", "memory", "boolean");
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				steps: new Map([
 					[
@@ -168,9 +168,9 @@ describe("ProjectCompiler", () => {
 						},
 					],
 				]),
-			};
+			});
 			const preCompiledProject: PreCompiledProject = {
-				variables: [x0, x1, memo0, memo1, obsVar],
+				variables: [x0, x1, memo0, memo1, obsVar, ...firedVariablesOf(preCompiledGrafcet)],
 				programs: { "grafcet-1": preCompiledGrafcet },
 			};
 
@@ -201,7 +201,7 @@ describe("ProjectCompiler", () => {
 			const var2 = new PLCVariable("var-2", "X1", "memory", "boolean");
 			const memo0 = new PLCVariable("memo-0", "_memo_0", "memory", "boolean");
 			const memo1 = new PLCVariable("memo-1", "_memo_1", "memory", "boolean");
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -251,10 +251,10 @@ describe("ProjectCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const preCompiledProject: PreCompiledProject = {
-				variables: [var1, var2, memo0, memo1],
+				variables: [var1, var2, memo0, memo1, ...firedVariablesOf(preCompiledGrafcet)],
 				programs: {
 					"grafcet-1": preCompiledGrafcet,
 				},
@@ -270,7 +270,7 @@ describe("ProjectCompiler", () => {
 			const var1 = new PLCVariable("var-1", "X0", "memory", "boolean");
 
 			// Neither step is initial → initializeSteps throws, which is caught as a compilation error
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -307,7 +307,7 @@ describe("ProjectCompiler", () => {
 				]),
 				transitions: new Map(),
 				actions: new Map(),
-			};
+			});
 
 			const preCompiledProject: PreCompiledProject = {
 				variables: [var1],

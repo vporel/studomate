@@ -4,7 +4,11 @@ import {
 	getAllDrafts,
 	deleteDraft,
 	deleteAllDrafts,
+	parseDraftProject,
 } from "./draft.storage";
+import Project, {
+	PROJECT_SCHEMA_VERSION,
+} from "@/schemas/project/project.schema";
 
 function installLocalStorage() {
 	const store = new Map<string, string>();
@@ -211,6 +215,55 @@ describe("draft.storage", () => {
 
 			expect(() => getAllDrafts()).not.toThrow();
 			expect(getAllDrafts()).toHaveLength(0);
+		});
+	});
+
+	describe("parseDraftProject", () => {
+		function draftJson(overrides: Record<string, unknown> = {}): string {
+			return JSON.stringify({
+				...JSON.parse(JSON.stringify(new Project("p1", "Brouillon", "auteur"))),
+				...overrides,
+			});
+		}
+
+		it("returns a current-version draft unchanged", () => {
+			const project = parseDraftProject(draftJson());
+
+			expect(project).toBeInstanceOf(Project);
+			expect(project!.id).toBe("p1");
+			expect(project!.name).toBe("Brouillon");
+			expect(project!.schemaVersion).toBe(PROJECT_SCHEMA_VERSION);
+		});
+
+		it("migrates a draft saved at an older schema version", () => {
+			const project = parseDraftProject(
+				draftJson({ schemaVersion: PROJECT_SCHEMA_VERSION - 1 }),
+			);
+
+			expect(project).not.toBeNull();
+			expect(project!.schemaVersion).toBe(PROJECT_SCHEMA_VERSION);
+		});
+
+		it("returns null for a draft written by a newer version", () => {
+			expect(
+				parseDraftProject(
+					draftJson({ schemaVersion: PROJECT_SCHEMA_VERSION + 1 }),
+				),
+			).toBeNull();
+		});
+
+		it("returns null for invalid JSON", () => {
+			expect(parseDraftProject("{ invalide")).toBeNull();
+		});
+
+		it("returns null for JSON that is not an object", () => {
+			expect(parseDraftProject("null")).toBeNull();
+			expect(parseDraftProject("42")).toBeNull();
+		});
+
+		it("returns null for a draft without an id", () => {
+			expect(parseDraftProject(draftJson({ id: undefined }))).toBeNull();
+			expect(parseDraftProject("{}")).toBeNull();
 		});
 	});
 });

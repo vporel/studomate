@@ -419,6 +419,63 @@ describe("HybridProjectRepository", () => {
 
 			expect((await repo.list()).projects.map((p) => p.id)).toEqual(["p1"]);
 		});
+
+		it("inscrit à l'index un projet cloud inconnu de l'index, qui est alors rangé comme cloud", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [{ data: rawOf(newProject("cloud1", "C")) }],
+					error: null,
+				}),
+			);
+			const repo = new HybridProjectRepository();
+
+			await repo.list();
+
+			expect(repo.locationOf("cloud1")).toBe("cloud");
+			expect(JSON.parse(store.get(CLOUD_INDEX_KEY)!)).toEqual(["cloud1"]);
+		});
+
+		it("n'inscrit pas à l'index un id qui existe aussi en local", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(
+				resolved({
+					data: [{ data: rawOf(newProject("p1", "A")) }],
+					error: null,
+				}),
+			);
+			const repo = new HybridProjectRepository();
+			await repo.save(newProject("p1", "A"));
+
+			await repo.list();
+
+			expect(repo.locationOf("p1")).toBe("local");
+		});
+
+		it("ne touche pas à l'index sans session", async () => {
+			const repo = new HybridProjectRepository();
+
+			await repo.list();
+
+			expect(store.has(CLOUD_INDEX_KEY)).toBe(false);
+		});
+
+		it("conserve l'index quand le cloud est injoignable", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+			mockFrom.mockReturnValue(resolved({ data: null, error: { message: "x" } }));
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["p1"]));
+			const repo = new HybridProjectRepository();
+
+			await repo.list();
+
+			expect(repo.locationOf("p1")).toBe("cloud");
+		});
 	});
 
 	describe("delete", () => {

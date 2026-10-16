@@ -393,17 +393,16 @@ const VariablesTable = ({
 					setRowSelectionModel(rowSelectionModel)
 				}
 				showToolbar
-				slots={{
-					toolbar: () => (
-						<GridToolBar
-							pdfColumns={getVariablesPageDefinitionForZone(zones[0]).columns}
-							rowSelectionModel={rowSelectionModel}
-							zoneVariables={zoneVariables}
-							pageTitle={pageTitle}
-						/>
-					),
+				slots={{ toolbar: GridToolBar }}
+				slotProps={{
+					row: { onContextMenu: onRowContextMenu },
+					toolbar: {
+						pdfColumns: getVariablesPageDefinitionForZone(zones[0]).columns,
+						rowSelectionModel,
+						zoneVariables,
+						pageTitle,
+					},
 				}}
-				slotProps={{ row: { onContextMenu: onRowContextMenu } }}
 			/>
 			{contextMenu.visible && (
 				<VariableRowContextMenu

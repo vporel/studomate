@@ -45,6 +45,8 @@ export const HmiContextProvider = ({
 			selectAllWidgets: storeRef.current.getState().selectAllWidgets,
 			removeSelectedWidgets: storeRef.current.getState().removeSelectedWidgets,
 			moveSelectedWidgets: storeRef.current.getState().moveSelectedWidgets,
+			adoptHmiPage: storeRef.current.getState().adoptHmiPage,
+			getHmiPage: () => storeRef.current!.getState().hmiPage,
 		});
 		return () => {
 			hmiManager.deleteStoreManager(hmiPageId);

@@ -1,5 +1,6 @@
 import type Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
 import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
+import type HmiPage from "@/schemas/hmi/hmi-page.schema";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
 import type {
@@ -99,7 +100,10 @@ export type HmiStoreManagers = Pick<
 	| "selectAllWidgets"
 	| "removeSelectedWidgets"
 	| "moveSelectedWidgets"
->;
+	| "adoptHmiPage"
+> & {
+	getHmiPage: () => HmiPage;
+};
 
 export type PLCConfig = {
 	scanTimeMs: number;

@@ -32,10 +32,17 @@ export default class HybridProjectRepository
 	async list(): Promise<ProjectListResult> {
 		const local = await this.local.list();
 		if (!(await this.isAuthenticated())) return local;
+		const cloud = await this.cloud.list();
+		// Le serveur fait foi : un projet cloud absent de l'index (créé depuis un autre navigateur,
+		// stockage local vidé...) y est inscrit, sinon il serait rangé et enregistré comme local.
+		// Un id qui existe aussi en local reste ambigu : l'index n'est pas modifié pour lui.
+		const localIds = new Set(local.projects.map((p) => p.id));
+		for (const project of cloud.projects) {
+			if (!localIds.has(project.id)) this.addToIndex(project.id);
+		}
 		// Un projet présent dans l'index cloud n'est plus local, même si `local.list()` le renvoie
 		// encore (nettoyage local incomplet après un `moveToCloud` — voir plus bas).
 		const localOnly = local.projects.filter((p) => !this.isCloud(p.id));
-		const cloud = await this.cloud.list();
 		return {
 			projects: [...localOnly, ...cloud.projects],
 			skipped: [...local.skipped, ...cloud.skipped],

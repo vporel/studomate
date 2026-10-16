@@ -113,11 +113,11 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 								const errors = validateAddress(params.props.value).map((i) =>
 									tv(i.code as never, i.params as never),
 								);
-								const existingVariableId = variablesManager.existsByAddress(
-									params.props.value,
-								);
-								if (existingVariableId && existingVariableId !== params.id)
-									errors.push(tError("addressExists"));
+								const owner = variablesManager.getByAddress(params.props.value);
+								if (owner && owner.id !== params.id)
+									errors.push(
+										tError("addressUsed", { mnemonic: owner.mnemonic }),
+									);
 								return {
 									...params.props,
 									error: errors.length > 0 ? errors[0] : false,

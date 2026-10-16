@@ -1,4 +1,7 @@
 {
+	"simulationView": {
+		"noPage": "No HMI page to display."
+	},
 	"toolbar": {
 		"zoomIn": "Zoom in",
 		"zoomOut": "Zoom out"

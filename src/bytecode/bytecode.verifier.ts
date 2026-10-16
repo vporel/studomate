@@ -274,7 +274,21 @@ function checkRoutine(context: RoutineContext): void {
 		switch (opcode) {
 			case Op.LOAD:
 			case Op.STORE:
+			case Op.SETIF:
+			case Op.RSTIF:
 				requireVariable(operand(0));
+				break;
+			case Op.COPY:
+				requireVariable(operand(0));
+				requireVariable(operand(1));
+				break;
+			case Op.AND:
+			case Op.ANDN:
+			case Op.OR:
+			case Op.ORN:
+				requireVariable(operand(0));
+				if (classOf(operand(0)) !== "bool")
+					refuse("logical operand is not a boolean");
 				break;
 			case Op.CALL:
 				if (operand(0) >= routineCount) refuse("routine index out of range");

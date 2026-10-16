@@ -18,11 +18,19 @@ const SIMULATION_MODE_BACKGROUND_COLOR = "orange";
 const OBSERVATION_MODE_BACKGROUND_COLOR = "lightblue";
 
 const ProjectModeSwitcher = () => {
-	const { mode, kind, simulationMode, hasBoard, modeManager } = useProjectStore(
+	const {
+		mode,
+		kind,
+		simulationMode,
+		simulationPaused,
+		hasBoard,
+		modeManager,
+	} = useProjectStore(
 		useShallow((state) => ({
 			mode: state.mode,
 			kind: state.simulationKind,
 			simulationMode: state.simulationMode,
+			simulationPaused: state.simulationPaused,
 			hasBoard: !!state.project?.hardwareTarget,
 			modeManager: state.modeManager,
 		})),
@@ -32,11 +40,12 @@ const ProjectModeSwitcher = () => {
 	const t = useT("chrome.mode");
 
 	// Le sélecteur clignote uniquement en simulation continue d'un PLC local, pour signaler que des
-	// cycles s'enchaînent. En pas-à-pas rien ne bouge tant qu'on ne le demande pas : couleur fixe.
+	// cycles s'enchaînent. En pas-à-pas ou en pause rien ne bouge tant qu'on ne le demande pas : couleur fixe.
 	const blinking =
 		mode === ProjectMode.SIMULATION &&
 		kind !== "observation" &&
-		simulationMode === SimulationMode.CONTINUOUS;
+		simulationMode === SimulationMode.CONTINUOUS &&
+		!simulationPaused;
 
 	useEffect(() => {
 		if (!blinking) {

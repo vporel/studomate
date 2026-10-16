@@ -1,5 +1,5 @@
 import { PreCompiledAction } from "@/project-pre-compiler/pre-compilers/grafcet/action.pre-compiler";
-import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import withFiredVariables from "@tests/utils/fired-variables";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
@@ -16,6 +16,7 @@ describe("ActionCompiler", () => {
 			);
 
 			const preCompiledAction: PreCompiledAction = {
+				levelOutputs: [],
 				phases: {
 					onActivation: [assignNode],
 					continuous: [],
@@ -24,7 +25,7 @@ describe("ActionCompiler", () => {
 				stepId: "step-1",
 			};
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -41,7 +42,7 @@ describe("ActionCompiler", () => {
 				]),
 				transitions: new Map(),
 				actions: new Map([["action-1", preCompiledAction]]),
-			};
+			});
 
 			const stepMemosNodes = new Map([["step-1", stepMemoNode]]);
 
@@ -52,11 +53,66 @@ describe("ActionCompiler", () => {
 				stepMemosNodes,
 			);
 
-			expect(result).toHaveLength(3);
+			expect(result).toHaveLength(1);
 			expect(result[0].type).toBe("IF_CONTROL");
 			const ifNode = result[0] as any;
 			expect(ifNode.condition.type).toBe("LOGICAL_EXPRESSION");
 			expect(ifNode.condition.operator).toBe("AND");
+		});
+
+		it("compiles only the falling-edge block for an onDeactivation-only action", () => {
+			const stepNode = IdentifiersBuilder.buildIdentifierNode("X1");
+			const stepMemoNode = IdentifiersBuilder.buildIdentifierNode("_memo_1");
+			const assignNode = StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode("M1"),
+				LiteralsBuilder.buildBooleanNode(true),
+			);
+
+			const preCompiledAction: PreCompiledAction = {
+				levelOutputs: [],
+				phases: {
+					onActivation: [],
+					continuous: [],
+					onDeactivation: [assignNode],
+				},
+				stepId: "step-1",
+			};
+
+			const preCompiledGrafcet = withFiredVariables({
+				type: "grafcet",
+				transitionObservations: new Map(),
+				steps: new Map([
+					[
+						"step-1",
+						{
+							node: stepNode,
+							initial: false,
+						},
+					],
+				]),
+				stepsMemos: new Map([
+					["step-1", { variable: {} as any, node: stepMemoNode }],
+				]),
+				transitions: new Map(),
+				actions: new Map([["action-1", preCompiledAction]]),
+			});
+
+			const stepMemosNodes = new Map([["step-1", stepMemoNode]]);
+
+			const result = ActionCompiler.compile(
+				"action-1",
+				preCompiledAction,
+				preCompiledGrafcet,
+				stepMemosNodes,
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].type).toBe("IF_CONTROL");
+			const ifNode = result[0] as any;
+			expect(ifNode.condition.type).toBe("LOGICAL_EXPRESSION");
+			expect(ifNode.condition.left).toBe(stepMemoNode);
+			expect(ifNode.condition.right.operator).toBe("NOT");
+			expect(ifNode.trueBranch).toEqual([assignNode]);
 		});
 
 		it("compiles action with continuous phase", () => {
@@ -68,6 +124,7 @@ describe("ActionCompiler", () => {
 			);
 
 			const preCompiledAction: PreCompiledAction = {
+				levelOutputs: [],
 				phases: {
 					onActivation: [],
 					continuous: [assignNode],
@@ -76,7 +133,7 @@ describe("ActionCompiler", () => {
 				stepId: "step-1",
 			};
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -91,7 +148,7 @@ describe("ActionCompiler", () => {
 				stepsMemos: new Map(),
 				transitions: new Map(),
 				actions: new Map(),
-			};
+			});
 
 			const stepMemosNodes = new Map([["step-1", stepMemoNode]]);
 
@@ -102,9 +159,8 @@ describe("ActionCompiler", () => {
 				stepMemosNodes,
 			);
 
-			// Generates 3 IF controls: onActivation (empty), onDeactivation (empty), continuous (has body)
-			expect(result).toHaveLength(3);
-			const continuousIfNode = result[2] as any;
+			expect(result).toHaveLength(1);
+			const continuousIfNode = result[0] as any;
 			expect(continuousIfNode.condition.type).toBe("IDENTIFIER");
 			expect(continuousIfNode.condition.value).toBe("X1");
 		});
@@ -126,6 +182,7 @@ describe("ActionCompiler", () => {
 			);
 
 			const preCompiledAction: PreCompiledAction = {
+				levelOutputs: [],
 				phases: {
 					onActivation: [assignNode1],
 					continuous: [assignNode2],
@@ -134,7 +191,7 @@ describe("ActionCompiler", () => {
 				stepId: "step-1",
 			};
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -151,7 +208,7 @@ describe("ActionCompiler", () => {
 				]),
 				transitions: new Map(),
 				actions: new Map([["action-1", preCompiledAction]]),
-			};
+			});
 
 			const stepMemosNodes = new Map([["step-1", stepMemoNode]]);
 
@@ -168,11 +225,12 @@ describe("ActionCompiler", () => {
 			expect(result[2].type).toBe("IF_CONTROL");
 		});
 
-		it("generates 3 IF controls even for empty phases", () => {
+		it("generates nothing for empty phases", () => {
 			const stepNode = IdentifiersBuilder.buildIdentifierNode("X1");
 			const stepMemoNode = IdentifiersBuilder.buildIdentifierNode("_memo_1");
 
 			const preCompiledAction: PreCompiledAction = {
+				levelOutputs: [],
 				phases: {
 					onActivation: [],
 					continuous: [],
@@ -181,7 +239,7 @@ describe("ActionCompiler", () => {
 				stepId: "step-1",
 			};
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -196,7 +254,7 @@ describe("ActionCompiler", () => {
 				stepsMemos: new Map(),
 				transitions: new Map(),
 				actions: new Map(),
-			};
+			});
 
 			const stepMemosNodes = new Map([["step-1", stepMemoNode]]);
 
@@ -207,7 +265,7 @@ describe("ActionCompiler", () => {
 				stepMemosNodes,
 			);
 
-			expect(result).toHaveLength(3);
+			expect(result).toEqual([]);
 		});
 	});
 });

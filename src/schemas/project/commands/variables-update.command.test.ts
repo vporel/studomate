@@ -9,6 +9,7 @@ import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { createContactElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
+import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "../project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import VariablesUpdateCommand from "./variables-update.command";
@@ -245,5 +246,45 @@ describe("VariablesUpdateCommand constants", () => {
 		]);
 
 		expect(() => command.execute(project)).toThrow("CONSTANT_VALUE_INVALID");
+	});
+});
+
+describe("VariablesUpdateCommand: HMI widgets", () => {
+	function projectWithHmi() {
+		const project = buildProject();
+		const page = project.createHmiPage("Page");
+		const button = HmiWidget.create("push-button", 0, 0);
+		if (button.type !== "push-button") throw new Error("unreachable");
+		button.data.variable = "moteur";
+		button.data.animations = { position: { xVariable: "moteur" } };
+		page.addWidget(button);
+		return { project, page, button };
+	}
+
+	it("rewrites the widgets bindings on execute", () => {
+		const { project, page, button } = projectWithHmi();
+		renameCommand("moteur", "pompe").execute(project);
+		const widget = project.getHmiPage(page.id)!.widgets[button.id];
+		expect(widget.data).toMatchObject({
+			variable: "pompe",
+			animations: { position: { xVariable: "pompe" } },
+		});
+	});
+
+	it("restores the widgets bindings on cancel", () => {
+		const { project, page, button } = projectWithHmi();
+		const command = renameCommand("moteur", "pompe");
+		command.execute(project);
+		command.cancel(project);
+		const widget = project.getHmiPage(page.id)!.widgets[button.id];
+		expect(widget.data).toMatchObject({
+			variable: "moteur",
+			animations: { position: { xVariable: "moteur" } },
+		});
+	});
+
+	it("leaves a project without HMI pages unaffected", () => {
+		const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+		expect(project.hmiPages).toEqual({});
 	});
 });

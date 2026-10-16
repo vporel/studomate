@@ -128,3 +128,70 @@ describe("HmiPage", () => {
 		});
 	});
 });
+
+describe("HmiPage.renameVariableReferences", () => {
+	function widget(type: "push-button" | "indicator" | "rectangle" | "text") {
+		return HmiWidget.create(type, 0, 0);
+	}
+
+	it("renames the main binding of several widgets", () => {
+		const page = HmiPage.create("P");
+		const a = widget("push-button");
+		const b = widget("indicator");
+		(a.data as { variable: string }).variable = "old";
+		(b.data as { variable: string }).variable = "old";
+		page.addWidget(a);
+		page.addWidget(b);
+		page.renameVariableReferences({ old: "new" });
+		expect((a.data as { variable: string }).variable).toBe("new");
+		expect((b.data as { variable: string }).variable).toBe("new");
+	});
+
+	it("renames each animation variable", () => {
+		const page = HmiPage.create("P");
+		const w = widget("rectangle");
+		if (w.type !== "rectangle") throw new Error("unreachable");
+		w.data.animations = {
+			position: { xVariable: "ax", yVariable: "ay" },
+			style: { variable: "as", rows: [] },
+		};
+		page.addWidget(w);
+		page.renameVariableReferences({ ax: "bx", ay: "by", as: "bs" });
+		expect(w.data.animations).toEqual({
+			position: { xVariable: "bx", yVariable: "by" },
+			style: { variable: "bs", rows: [] },
+		});
+	});
+
+	it("does not mutate animations shared with a copy", () => {
+		const page = HmiPage.create("P");
+		const w = widget("rectangle");
+		if (w.type !== "rectangle") throw new Error("unreachable");
+		w.data.animations = { position: { xVariable: "ax" } };
+		page.addWidget(w);
+		const copy = page.copy();
+		copy.renameVariableReferences({ ax: "bx" });
+		expect(w.data.animations).toEqual({ position: { xVariable: "ax" } });
+	});
+
+	it("changes nothing when no key matches", () => {
+		const page = HmiPage.create("P");
+		const w = widget("push-button");
+		if (w.type !== "push-button") throw new Error("unreachable");
+		w.data.variable = "keep";
+		w.data.animations = { position: { xVariable: "keep" } };
+		page.addWidget(w);
+		const before = structuredClone(w.data);
+		page.renameVariableReferences({ other: "x" });
+		expect(w.data).toEqual(before);
+	});
+
+	it("leaves widgets without binding untouched", () => {
+		const page = HmiPage.create("P");
+		const t = widget("text");
+		page.addWidget(t);
+		const before = structuredClone(t.data);
+		page.renameVariableReferences({ old: "new" });
+		expect(t.data).toEqual(before);
+	});
+});

@@ -18,6 +18,6 @@ export default class MemoVariableGenerator {
 			counter++;
 		}
 		const name = `${MEMO_PREFIX}${counter}`;
-		return new PLCVariable(name, name, "memory", type);
+		return PLCVariable.createInternal(name, type);
 	}
 }

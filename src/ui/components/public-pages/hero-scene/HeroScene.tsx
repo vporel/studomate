@@ -17,7 +17,7 @@ import {
 	type HeroSceneState,
 } from "./hero-timeline";
 
-const LOW_COLOR = "#64b5f6";
+const LOW_COLOR = "#ffffff";
 const HIGH_COLOR = "#ffa726";
 const LOW_HEIGHT = 0.32;
 const HIGH_HEIGHT = 0.5;
@@ -29,6 +29,7 @@ const HEAD_THICKNESS = 0.2;
 const CAMERA_TARGET: [number, number, number] = [3.6, 0.4, 1.4];
 /** Share of the canvas width the plant is shifted right by, leaving the left side to the text. */
 const RIGHT_SHIFT = 0.22;
+const UP_SHIFT = 0.08;
 
 type StateRef = React.RefObject<HeroSceneState>;
 
@@ -268,7 +269,7 @@ function Plant() {
 	);
 }
 
-/** Aims the camera at the plant and shifts the picture right without changing its perspective. */
+/** Aims the camera at the plant and shifts the picture right and up without changing its perspective. */
 function Framing() {
 	const camera = useThree((state) => state.camera);
 	const { width, height } = useThree((state) => state.size);
@@ -280,7 +281,7 @@ function Framing() {
 				width,
 				height,
 				-width * RIGHT_SHIFT,
-				0,
+				height * UP_SHIFT,
 				width,
 				height,
 			);
@@ -306,6 +307,8 @@ export default function HeroScene({ paused }: { paused: boolean }) {
 			<gridHelper
 				args={[30, 30, "#cfd8dc", "#e3e8eb"]}
 				position={[3.5, -0.06, 1.5]}
+				material-transparent
+				material-opacity={0.7}
 			/>
 		</Canvas>
 	);

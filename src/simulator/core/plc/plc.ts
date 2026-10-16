@@ -239,8 +239,8 @@ export default class PLC extends ClockedRunnable {
 	protected tick(): void {
 		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
 		try {
-			this.applyForcedVariables();
 			this.readInputs();
+			this.applyForcedVariables();
 			this.executeProgram();
 			this.writeOutputs();
 		} catch (e) {
@@ -255,10 +255,14 @@ export default class PLC extends ClockedRunnable {
 		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
 	}
 
+	/**
+	 * Must run after `readInputs`: forcing overrides the input image only, so the physical
+	 * source regains control as soon as the variable is released.
+	 */
 	private applyForcedVariables(): void {
 		this.forcedVariables.forEach((value, id) => {
-			if (this.physicalInputs[id]) {
-				this.physicalInputs[id].setValue(value);
+			if (this.inputImage[id]) {
+				this.inputImage[id].setValue(value);
 			} else if (this.outputImage[id]) {
 				this.outputImage[id].setValue(value);
 			} else if (this.memory[id]) {

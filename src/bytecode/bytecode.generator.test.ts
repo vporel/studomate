@@ -390,28 +390,85 @@ describe("generateBytecode", () => {
 			]);
 		});
 
-		it("short-circuits AND and OR and keeps the stack balanced", () => {
+		it("reads a variable right operand of AND and OR in the operator itself", () => {
 			const image = generate({
 				variables: [
 					plcVariable("a:BOOL"),
 					plcVariable("b:BOOL"),
 					plcVariable("c:BOOL"),
 				],
-				routines: [["a := b AND NOT c", "a := b OR c"]],
+				routines: [
+					[
+						"a := b AND c",
+						"a := b AND NOT c",
+						"a := b OR c",
+						"a := b OR NOT c",
+					],
+				],
 			});
 			expect(disassemble(image.bytes)).toEqual([
 				"0: LOAD 1",
-				"2: JZK 8",
-				"5: LOAD 2",
-				"7: NOT",
-				"8: STORE 0",
-				"10: LOAD 1",
-				"12: JNZK 17",
-				"15: LOAD 2",
-				"17: STORE 0",
-				"19: RET",
+				"2: AND 2",
+				"4: STORE 0",
+				"6: LOAD 1",
+				"8: ANDN 2",
+				"10: STORE 0",
+				"12: LOAD 1",
+				"14: OR 2",
+				"16: STORE 0",
+				"18: LOAD 1",
+				"20: ORN 2",
+				"22: STORE 0",
+				"24: RET",
 			]);
 			expect(image.layout.maxStack).toBe(1);
+		});
+
+		it("chains the variable operands of a long AND", () => {
+			const image = generate({
+				variables: [
+					plcVariable("a:BOOL"),
+					plcVariable("b:BOOL"),
+					plcVariable("c:BOOL"),
+					plcVariable("d:BOOL"),
+				],
+				routines: [["a := NOT b AND c AND NOT d"]],
+			});
+			expect(code(image)).toEqual([
+				"LOAD 1",
+				"NOT",
+				"AND 2",
+				"ANDN 3",
+				"STORE 0",
+				"RET",
+			]);
+		});
+
+		it("short-circuits AND and OR when the right operand is not a variable", () => {
+			const image = generate({
+				variables: [
+					plcVariable("a:BOOL"),
+					plcVariable("b:BOOL"),
+					plcVariable("i:INT"),
+				],
+				routines: [["a := b AND i > 0", "a := b OR i > 0"]],
+			});
+			expect(disassemble(image.bytes)).toEqual([
+				"0: LOAD 1",
+				"2: JZK 10",
+				"5: LOAD 2",
+				"7: PUSH0",
+				"8: CMP 4",
+				"10: STORE 0",
+				"12: LOAD 1",
+				"14: JNZK 22",
+				"17: LOAD 2",
+				"19: PUSH0",
+				"20: CMP 4",
+				"22: STORE 0",
+				"24: RET",
+			]);
+			expect(image.layout.maxStack).toBe(2);
 		});
 
 		it("evaluates a division only when its guard lets it through", () => {
@@ -446,11 +503,59 @@ describe("generateBytecode", () => {
 			});
 			expect(disassemble(image.bytes)).toEqual([
 				"0: LOAD 0",
-				"2: JZ 8",
-				"5: PUSH1",
-				"6: STORE 1",
-				"8: RET",
+				"2: SETIF 1",
+				"4: RET",
 			]);
+		});
+
+		it("writes a conditional 0 with RSTIF", () => {
+			const image = generate({
+				variables: [plcVariable("a:BOOL"), plcVariable("b:BOOL")],
+				routines: [
+					[
+						ControlsBuilder.buildIfControlNode(
+							ident("a"),
+							[parseStatement("b := FALSE")],
+							null,
+						),
+					],
+				],
+			});
+			expect(code(image)).toEqual(["LOAD 0", "RSTIF 1", "RET"]);
+		});
+
+		it.each([
+			["a value other than 0 or 1", [parseStatement("i := 2")], null],
+			[
+				"several statements",
+				[parseStatement("i := 1"), parseStatement("b := TRUE")],
+				null,
+			],
+			["an else branch", [parseStatement("i := 1")], [parseStatement("i := 0")]],
+		])("keeps the jump form of an if with %s", (_, trueBranch, falseBranch) => {
+			const image = generate({
+				variables: [
+					plcVariable("a:BOOL"),
+					plcVariable("i:INT"),
+					plcVariable("b:BOOL"),
+				],
+				routines: [
+					[ControlsBuilder.buildIfControlNode(ident("a"), trueBranch, falseBranch)],
+				],
+			});
+			const lines = code(image);
+			expect(lines.some((l) => l.startsWith("JZ "))).toBe(true);
+			expect(
+				lines.some((l) => l.startsWith("SETIF") || l.startsWith("RSTIF")),
+			).toBe(false);
+		});
+
+		it("copies a variable into another with COPY", () => {
+			const image = generate({
+				variables: [plcVariable("i:INT"), plcVariable("d:DINT")],
+				routines: [["d := i"]],
+			});
+			expect(code(image)).toEqual(["COPY 0 1", "RET"]);
 		});
 
 		it("compiles an if with else, nested", () => {
@@ -915,7 +1020,13 @@ describe("generateBytecode constants", () => {
 			"PUSH1",
 			`STORE ${at("K_BOOL")}`,
 		]);
-		expect(lines.filter((line) => line.startsWith("STORE"))).toHaveLength(5);
+		expect(lines.filter((line) => line.startsWith("STORE"))).toHaveLength(3);
+		expect(lines).toEqual(
+			expect.arrayContaining([
+				`COPY ${at("K_INT")} ${at("out")}`,
+				`COPY ${at("K_BOOL")} ${at("flag")}`,
+			]),
+		);
 	});
 
 	it("writes a zero constant too, so that an external write is undone", () => {

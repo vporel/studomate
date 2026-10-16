@@ -65,6 +65,50 @@ describe("CommandsStack", () => {
 			expect(result).toEqual({ value: 5 });
 		});
 
+		it("leaves both stacks untouched and returns the same object when no command is valid", () => {
+			const stack = new CommandsStack<Counter>();
+			const object = { value: 3 };
+			stack.execute([new AddCommand(1)], object);
+			const undoBefore = [...stack.commandsToUndo];
+			const result = stack.execute(
+				[new InvalidCommand(1), new InvalidCommand(2)],
+				object,
+			);
+			expect(result).toBe(object);
+			expect(stack.commandsToUndo).toEqual(undoBefore);
+			expect(stack.commandsToRedo).toEqual([]);
+		});
+
+		it("preserves the redo stack when no command is valid", () => {
+			const stack = new CommandsStack<Counter>();
+			let object = stack.execute([new AddCommand(1)], { value: 0 });
+			[object] = stack.undo(object);
+			object = stack.execute([new InvalidCommand(1)], object);
+			expect(stack.commandsToRedo).toHaveLength(1);
+			const [redoneObject, redone] = stack.redo(object);
+			expect(redone).not.toBeNull();
+			expect(redoneObject).toEqual({ value: 1 });
+		});
+
+		it("does not push an empty entry that a later undo would pop", () => {
+			const stack = new CommandsStack<Counter>();
+			let object = stack.execute([new AddCommand(5)], { value: 0 });
+			object = stack.execute([new InvalidCommand(1)], object);
+			[object] = stack.undo(object);
+			expect(object).toEqual({ value: 0 });
+		});
+
+		it("pushes only the valid commands of a mixed batch as a single entry", () => {
+			const stack = new CommandsStack<Counter>();
+			stack.execute(
+				[new InvalidCommand(1), new AddCommand(2), new InvalidCommand(3)],
+				{ value: 0 },
+			);
+			expect(stack.commandsToUndo).toHaveLength(1);
+			expect(stack.commandsToUndo[0]).toHaveLength(1);
+			expect(stack.commandsToUndo[0][0]).toBeInstanceOf(AddCommand);
+		});
+
 		it("clears the redo stack", () => {
 			const stack = new CommandsStack<Counter>();
 			let object = stack.execute([new AddCommand(1)], { value: 0 });

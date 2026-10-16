@@ -59,4 +59,12 @@ describe("LanguageSwitch", () => {
 		expect(fr).toHaveAttribute("href", "/fr/formations/a2/theory-edges");
 		expect(en).toHaveAttribute("href", "/en/training/a2/theory-edges");
 	});
+
+	it("renvoie à l'accueil quand les paramètres de la route dynamique manquent", () => {
+		mockPathname = "/training/a2/[step]";
+		mockParams = { locale: "fr" };
+		const [fr, en] = openMenu();
+		expect(fr).toHaveAttribute("href", "/fr");
+		expect(en).toHaveAttribute("href", "/en");
+	});
 });

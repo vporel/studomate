@@ -27,6 +27,18 @@ describe("useRenamableTreeItem", () => {
 		expect(result.current.inputProps.value).toBe("Page");
 	});
 
+	it("suit un changement externe du nom quand il n'est pas en édition", () => {
+		let name = "Page";
+		const { result, rerender } = renderHook(() =>
+			useRenamableTreeItem({ name, designing: true, onRename: jest.fn() }),
+		);
+
+		name = "Sorties";
+		rerender();
+
+		expect(result.current.inputProps.value).toBe("Sorties");
+	});
+
 	it("passe en édition au double-clic en mode conception", () => {
 		const { result } = setup();
 

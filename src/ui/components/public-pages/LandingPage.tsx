@@ -320,10 +320,8 @@ const LandingPage = () => {
 			<Box
 				sx={{
 					background: (th: Theme) =>
-						`linear-gradient(180deg, ${alpha(
-							th.palette.primary.main,
-							0.1,
-						)} 0%, ${th.palette.background.paper} 100%)`,
+						`linear-gradient(135deg, ${th.palette.primary.dark} 0%, ${th.palette.primary.main} 100%)`,
+					color: "primary.contrastText",
 					position: "relative",
 					overflow: "hidden",
 					py: { xs: 6, md: 10 },
@@ -354,8 +352,8 @@ const LandingPage = () => {
 							<Typography
 								variant="overline"
 								component="p"
-								color="primary"
 								fontWeight={700}
+								sx={{ opacity: 0.85 }}
 							>
 								{APP_NAME}
 							</Typography>
@@ -378,15 +376,15 @@ const LandingPage = () => {
 							<Typography
 								variant="body1"
 								component="p"
-								color="text.secondary"
 								sx={{
+									opacity: 0.9,
 									maxWidth: 720,
 									fontSize: { xs: "1.1rem", md: "1.25rem" },
 								}}
 							>
 								{t("heroTagline")}
 							</Typography>
-							<Typography variant="body2" color="text.secondary">
+							<Typography variant="body2" sx={{ opacity: 0.8 }}>
 								{t("heroBadges")}
 							</Typography>
 							<Box
@@ -398,13 +396,22 @@ const LandingPage = () => {
 									justifyContent: { xs: "center", md: "flex-start" },
 								}}
 							>
-								<OpenAppButton label={t("openApp")} />
+								<OpenAppButton label={t("openApp")} onPrimary />
 								<Button
 									LinkComponent={Link}
 									href="/training"
 									size="large"
 									variant="outlined"
 									startIcon={<SchoolIcon />}
+									sx={{
+										color: "common.white",
+										borderColor: "common.white",
+										"&:hover": {
+											borderColor: "common.white",
+											bgcolor: (th: Theme) =>
+												alpha(th.palette.common.white, 0.12),
+										},
+									}}
 								>
 									{t("followTraining")}
 								</Button>

@@ -32,7 +32,7 @@ export default class ActionCompiler {
 			ExpressionsBuilder.buildUnaryExpressionNode("NOT", stepNode), //Current value of the step is false
 		);
 		const continuousCondition = stepNode; //Current value of the step is true
-		if (phases.onActivation) {
+		if (phases.onActivation.length > 0) {
 			nodes.push(
 				ControlsBuilder.buildIfControlNode(
 					risingEdgeCondition,
@@ -41,7 +41,7 @@ export default class ActionCompiler {
 				),
 			);
 		}
-		if (phases.onDeactivation) {
+		if (phases.onDeactivation.length > 0) {
 			nodes.push(
 				ControlsBuilder.buildIfControlNode(
 					fallingEdgeCondition,
@@ -50,7 +50,7 @@ export default class ActionCompiler {
 				),
 			);
 		}
-		if (phases.continuous) {
+		if (phases.continuous.length > 0) {
 			nodes.push(
 				ControlsBuilder.buildIfControlNode(
 					continuousCondition,

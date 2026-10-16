@@ -70,6 +70,14 @@ export default class HmiPage {
 		delete this.widgets[widgetId];
 	}
 
+	/** @param renames Map of old mnemonic → new mnemonic */
+	renameVariableReferences(renames: Record<string, string>): void {
+		if (Object.keys(renames).length === 0) return;
+		Object.values(this.widgets).forEach((widget) =>
+			widget.renameVariableReferences(renames),
+		);
+	}
+
 	copy(): HmiPage {
 		const copy = new HmiPage(this.id, this.name, this.isMain);
 		copy.widgets = Object.fromEntries(

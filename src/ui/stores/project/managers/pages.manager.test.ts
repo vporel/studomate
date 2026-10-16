@@ -20,6 +20,7 @@ function makeManager(
 		pagesOrder?: string[];
 		pagesData?: Record<string, PageData>;
 		activePageId?: string | null;
+		activeScope?: string;
 	},
 	projectId: string | null = "p1",
 ) {
@@ -28,6 +29,7 @@ function makeManager(
 		pagesOrder: initial.pagesOrder ?? [],
 		pagesData: initial.pagesData ?? {},
 		activePageId: initial.activePageId ?? null,
+		activeScope: initial.activeScope ?? "project",
 		setActiveScope: jest.fn(),
 	} as unknown as ProjectStoreState;
 
@@ -146,6 +148,72 @@ describe("PagesManager", () => {
 			manager.closePage("a");
 
 			expect(getState().activePageId).toBeNull();
+		});
+
+		it("déplace le scope actif sur la page précédente quand on ferme la page active", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b", "c"],
+				pagesData: { a: page("a"), b: page("b"), c: page("c") },
+				activePageId: "b",
+				activeScope: "b",
+			});
+
+			manager.closePage("b");
+
+			expect(getState().setActiveScope).toHaveBeenCalledTimes(1);
+			expect(getState().setActiveScope).toHaveBeenCalledWith("a");
+		});
+
+		it("déplace le scope actif sur la suivante quand on ferme la première", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+				activeScope: "a",
+			});
+
+			manager.closePage("a");
+
+			expect(getState().setActiveScope).toHaveBeenCalledWith("b");
+		});
+
+		it("réinitialise le scope sur le projet quand on ferme la dernière page", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a"],
+				pagesData: { a: page("a") },
+				activePageId: "a",
+				activeScope: "a",
+			});
+
+			manager.closePage("a");
+
+			expect(getState().setActiveScope).toHaveBeenCalledWith("project");
+		});
+
+		it("corrige un scope resté sur la page fermée même si elle n'était plus la page active", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+				activeScope: "b",
+			});
+
+			manager.closePage("b");
+
+			expect(getState().setActiveScope).toHaveBeenCalledWith("a");
+		});
+
+		it("ne touche pas au scope quand on ferme une page inactive", () => {
+			const { manager, getState } = makeManager({
+				pagesOrder: ["a", "b"],
+				pagesData: { a: page("a"), b: page("b") },
+				activePageId: "a",
+				activeScope: "a",
+			});
+
+			manager.closePage("b");
+
+			expect(getState().setActiveScope).not.toHaveBeenCalled();
 		});
 
 		it("ignore une page non ouverte", () => {

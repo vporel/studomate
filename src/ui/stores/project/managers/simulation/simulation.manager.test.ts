@@ -118,14 +118,14 @@ describe("SimulationManager", () => {
 
 			expect(get().observableExpressionsValues[transitionId]).toBeDefined();
 
-			//Les variables de mémoire qui portent l'état des réceptivités ne fuient pas dans les
-			//variables de simulation : ici I0 + X0 + X1 + 2 mémos d'étape = 5 au plus, jamais les
-			//2 variables d'observation en plus (les variables système sont publiées à part).
+			//Only I0, X0 and X1: the variables the compilation generates (step memos, fired
+			//transitions, observations) are not simulation variables. System variables are
+			//published separately.
 			expect(
 				Object.keys(get().simulationVariablesStates).filter(
 					(id) => !isSystemVariableName(id),
 				).length,
-			).toBeLessThanOrEqual(5);
+			).toBeLessThanOrEqual(3);
 
 			manager.setDesignMode();
 		});
@@ -457,6 +457,80 @@ describe("SimulationManager", () => {
 			expect(started).toBe(false);
 			expect(get().mode).toBe(ProjectMode.DESIGN);
 			expect(notifier.simulationStarting).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("setSimulationMode() — cycle d'établissement en erreur", () => {
+		function managerWithFailingFirstCycle(mode: SimulationMode) {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const notifier = stubNotifier();
+			const { get, set } = makeStore(project);
+			set({ simulationMode: mode });
+			const manager = new SimulationManager(set, get, notifier);
+			const internals = manager as unknown as {
+				createPLC(compiled: unknown): any;
+			};
+			const realCreatePLC = internals.createPLC.bind(manager);
+			jest.spyOn(internals, "createPLC").mockImplementation((compiled) => {
+				const plc = realCreatePLC(compiled);
+				plc.stepOnce = () =>
+					plc.onCycleError(
+						new DivisionByZeroException(1, 0, {
+							id: "n1",
+							type: "NUMBER_LITERAL",
+							value: 0,
+						}),
+					);
+				return plc;
+			});
+			return { manager, get, notifier };
+		}
+
+		it("en continu : ne lève pas, renvoie false et reste en DESIGN", () => {
+			const { manager, get, notifier } = managerWithFailingFirstCycle(
+				SimulationMode.CONTINUOUS,
+			);
+
+			let started: boolean | undefined;
+			expect(() => {
+				started = manager.setSimulationMode();
+			}).not.toThrow();
+
+			expect(started).toBe(false);
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(notifier.simulationCrashed).toHaveBeenCalledTimes(1);
+			expect((manager as unknown as { plc: unknown }).plc).toBeNull();
+		});
+
+		it("en pas-à-pas : renvoie false, reste en DESIGN et non en pause", () => {
+			mockTrackEvent.mockClear();
+			const { manager, get } = managerWithFailingFirstCycle(
+				SimulationMode.STEP_BY_STEP,
+			);
+
+			expect(manager.setSimulationMode()).toBe(false);
+
+			expect(get().mode).toBe(ProjectMode.DESIGN);
+			expect(get().simulationPaused).toBeFalsy();
+			expect(mockTrackEvent).not.toHaveBeenCalledWith(
+				"simulation-started",
+				expect.anything(),
+			);
+		});
+
+		it("un projet sain démarre toujours et renvoie true", () => {
+			const inputVar = VariableFactory.createLogicInput("I0");
+			const grafcet = GrafcetFactory.createSimpleCycle("g1", "I0", "NON I0");
+			const project = ProjectFactory.create([inputVar], [grafcet]);
+			const { get, set } = makeStore(project);
+			const manager = new SimulationManager(set, get, stubNotifier());
+
+			expect(manager.setSimulationMode()).toBe(true);
+			expect(get().mode).toBe(ProjectMode.SIMULATION);
+
+			manager.setDesignMode();
 		});
 	});
 
@@ -1018,6 +1092,35 @@ describe("SimulationManager", () => {
 			expect(
 				Object.keys(state.observableExpressionsValues).length,
 			).toBeGreaterThan(0);
+		});
+
+		it("ne publie pas les variables internes rapportées par la carte", () => {
+			const compiled = trafficLight();
+			const { get, set } = makeStore(ProjectFactory.create([], []));
+			const manager = new SimulationManager(set, get, stubNotifier());
+			manager.startOnline(compiled);
+			const observedIds = new Set(
+				Object.values(compiled.observableExpressionVariableIds).flatMap((refs) =>
+					refs.map((ref) => ref.variableId),
+				),
+			);
+			const internal = compiled.variables.filter(
+				(v) => v.isInternal() && !observedIds.has(v.getId()),
+			);
+			expect(internal.length).toBeGreaterThan(0);
+
+			manager.publishBoardSnapshot(
+				Object.fromEntries(
+					internal.map((v) => [
+						v.getName(),
+						v.getType() === "boolean" ? true : 1,
+					]),
+				),
+			);
+
+			for (const v of internal) {
+				expect(get().simulationVariablesStates[v.getId()]).toBeUndefined();
+			}
 		});
 
 		it("ne publie rien sans suivi de carte", () => {

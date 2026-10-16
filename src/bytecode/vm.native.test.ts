@@ -178,6 +178,140 @@ describe("native VM", () => {
 		});
 	});
 
+	describe("variable operands and conditional writes", () => {
+		it("combines a variable operand with AND, ANDN, OR and ORN", () => {
+			const { vm, at } = build(
+				[
+					plcVariable("b:BOOL"),
+					plcVariable("c:BOOL"),
+					plcVariable("q_and:BOOL"),
+					plcVariable("q_andn:BOOL"),
+					plcVariable("q_or:BOOL"),
+					plcVariable("q_orn:BOOL"),
+				],
+				[
+					[
+						"q_and := b AND c",
+						"q_andn := b AND NOT c",
+						"q_or := b OR c",
+						"q_orn := b OR NOT c",
+					],
+				],
+			);
+			const cycles = vm.run(
+				[
+					[0, 0],
+					[0, 1],
+					[1, 0],
+					[1, 1],
+				].flatMap(([b, c]) => [
+					`set ${at("b")} ${b}`,
+					`set ${at("c")} ${c}`,
+					"cycle",
+				]),
+			);
+			const results = cycles.map((cycle) =>
+				["q_and", "q_andn", "q_or", "q_orn"].map((name) => cycle.variables[at(name)]),
+			);
+			expect(results).toEqual([
+				[0, 0, 0, 1],
+				[0, 0, 1, 0],
+				[0, 1, 1, 1],
+				[1, 0, 1, 1],
+			]);
+		});
+
+		it("writes 1 with SETIF and 0 with RSTIF only when the condition holds", () => {
+			const { vm, at } = build(
+				[plcVariable("s:BOOL"), plcVariable("r:BOOL"), plcVariable("q:BOOL")],
+				[
+					[
+						ControlsBuilder.buildIfControlNode(
+							ident("s"),
+							[parseStatement("q := TRUE")],
+							null,
+						),
+						ControlsBuilder.buildIfControlNode(
+							ident("r"),
+							[parseStatement("q := FALSE")],
+							null,
+						),
+					],
+				],
+			);
+			const cycles = vm.run([
+				"cycle",
+				`set ${at("s")} 1`,
+				"cycle",
+				`set ${at("s")} 0`,
+				"cycle",
+				`set ${at("r")} 1`,
+				"cycle",
+				`set ${at("r")} 0`,
+				"cycle",
+			]);
+			expect(cycles.map((cycle) => cycle.variables[at("q")])).toEqual([
+				0, 1, 1, 0, 0,
+			]);
+		});
+
+		it("writes 1 into a numeric variable with SETIF", () => {
+			const { vm, at } = build(
+				[plcVariable("s:BOOL"), plcVariable("i:INT")],
+				[
+					[
+						ControlsBuilder.buildIfControlNode(
+							ident("s"),
+							[parseStatement("i := 1")],
+							null,
+						),
+					],
+				],
+			);
+			const [cycle] = vm.run([`set ${at("i")} 7`, `set ${at("s")} 1`, "cycle"]);
+			expect(cycle.variables[at("i")]).toBe(1);
+		});
+
+		it("leaves a forced variable alone in SETIF, RSTIF and COPY", () => {
+			const { vm, at } = build(
+				[
+					plcVariable("s:BOOL"),
+					plcVariable("q:BOOL"),
+					plcVariable("i:INT"),
+					plcVariable("j:INT"),
+				],
+				[
+					[
+						ControlsBuilder.buildIfControlNode(
+							ident("s"),
+							[parseStatement("q := FALSE")],
+							null,
+						),
+						"j := i",
+					],
+				],
+			);
+			const [cycle] = vm.run([
+				`set ${at("s")} 1`,
+				`set ${at("i")} 5`,
+				`force ${at("q")} 1`,
+				`force ${at("j")} 9`,
+				"cycle",
+			]);
+			expect(cycle.variables[at("q")]).toBe(1);
+			expect(cycle.variables[at("j")]).toBe(9);
+		});
+
+		it("copies an INT into a DINT with its sign", () => {
+			const { vm, at } = build(
+				[plcVariable("i:INT"), plcVariable("d:DINT")],
+				[["d := i"]],
+			);
+			const [cycle] = vm.run([`set ${at("i")} -5`, "cycle"]);
+			expect(cycle.variables[at("d")]).toBe(-5);
+		});
+	});
+
 	describe("system variables", () => {
 		it("raises _SYS_FIRST_SCAN on the first cycle only", () => {
 			const { vm, at } = build(
@@ -223,9 +357,10 @@ describe("native VM", () => {
 			const { vm, at } = build(timerVariables(), [[timer("TON", 250)]]);
 			const cycles = vm.run([`set ${at("in")} 1`, ...Array(6).fill("cycle")]);
 			expect(cycles.map((cycle) => cycle.variables[at("q")])).toEqual([
-				0, 0, 0, 0, 1, 1,
+				0, 0, 0, 1, 1, 1,
 			]);
-			expect(cycles[3].variables[at("et")]).toBe(300);
+			expect(cycles[3].variables[at("et")]).toBe(250);
+			expect(cycles[5].variables[at("et")]).toBe(250);
 		});
 
 		it("resets a TON when its input falls", () => {
@@ -250,7 +385,7 @@ describe("native VM", () => {
 				...Array(5).fill("cycle"),
 			]);
 			expect(cycles.map((cycle) => cycle.variables[at("q")])).toEqual([
-				1, 1, 1, 1, 1, 0,
+				1, 1, 1, 1, 0, 0,
 			]);
 		});
 
@@ -258,7 +393,7 @@ describe("native VM", () => {
 			const { vm, at } = build(timerVariables(), [[timer("TP", 250)]]);
 			const cycles = vm.run([`set ${at("in")} 1`, ...Array(6).fill("cycle")]);
 			expect(cycles.map((cycle) => cycle.variables[at("q")])).toEqual([
-				1, 1, 1, 1, 0, 0,
+				1, 1, 1, 0, 0, 0,
 			]);
 		});
 
@@ -621,12 +756,26 @@ describe("native VM", () => {
 							ident("q"),
 						),
 						parseStatement("a := in AND NOT q"),
+						parseStatement("a := in OR q"),
+						parseStatement("last := in"),
+						ControlsBuilder.buildIfControlNode(
+							ident("in"),
+							[parseStatement("a := TRUE")],
+							null,
+						),
+						ControlsBuilder.buildIfControlNode(
+							ident("q"),
+							[parseStatement("a := FALSE")],
+							null,
+						),
 					],
 				],
 			);
 			const candidates: Uint8Array[] = [];
 			for (let offset = 0; offset < image.bytes.length; offset++) {
-				for (const value of [0x00, 0x01, 0x07, 0x33, 0x50, 0x80, 0xff]) {
+				for (const value of [
+					0x00, 0x01, 0x07, 0x09, 0x0a, 0x22, 0x25, 0x33, 0x50, 0x80, 0xff,
+				]) {
 					if (image.bytes[offset] === value) continue;
 					const copy = new Uint8Array(image.bytes);
 					copy[offset] = value;

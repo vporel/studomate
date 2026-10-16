@@ -94,8 +94,8 @@ describe("crossroads.template", () => {
 
 		it("produit des routines exécutables (grafcet + Main)", () => {
 			const { compilation } = compilePipelineDetailed(project);
-			// 1 grafcet + mémos d'étape + initialisation + 1 Main + observation des réceptivités
-			expect(compilation.result!.routines).toHaveLength(5);
+			// 1 grafcet + sorties en niveau + mémos d'étape + initialisation + 1 Main + observation des réceptivités
+			expect(compilation.result!.routines).toHaveLength(6);
 		});
 
 		it("active des sorties NS et EO complémentaires selon les phases", () => {

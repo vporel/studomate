@@ -7,7 +7,10 @@ import {
 	createCrossroadsSolution,
 } from "@/templates/crossroads.template";
 import type Project from "@/schemas/project/project.schema";
-import { compileToPLC } from "@tests/utils/test-helpers";
+import {
+	compileToPLC,
+	getVariableValue,
+} from "@tests/utils/test-helpers";
 
 jest.setTimeout(60000);
 
@@ -109,5 +112,27 @@ describe("crossroads template with its 3D scene", () => {
 			nextCarId: 1,
 			accidents: 0,
 		});
+	});
+
+	it("keeps rougeEO1 TRUE during every cycle of X0 after the grafcet has looped", async () => {
+		const plc = compileToPLC(createCrossroadsSolution(), 20)!;
+		expect(plc).not.toBeNull();
+		plc.start();
+		let x0Samples = 0;
+		let loops = 0;
+		let previousX0 = false;
+		for (let tick = 0; tick < 150; tick++) {
+			await jest.advanceTimersByTimeAsync(500);
+			const x0 = getVariableValue(plc, "X0") === true;
+			if (x0 && !previousX0 && tick > 0) loops++;
+			previousX0 = x0;
+			if (x0) {
+				x0Samples++;
+				expect(getVariableValue(plc, "rougeEO1")).toBe(true);
+			}
+		}
+		plc.stop();
+		expect(loops).toBeGreaterThanOrEqual(2);
+		expect(x0Samples).toBeGreaterThan(20);
 	});
 });

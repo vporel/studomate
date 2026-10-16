@@ -4,7 +4,8 @@ import {
 	GRID_CELL_HEIGHT,
 	RAIL_LANE_WIDTH,
 } from "@/ui/utils/ladder/ladder-flow-builder";
-import { Box } from "@mui/material";
+import useLadderRailEnergized from "@/ui/components/ladder/useLadderRailEnergized";
+import { Box, useTheme } from "@mui/material";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 
 export type RailTerminalNodeData = { virtual: boolean };
@@ -26,6 +27,8 @@ export const RAIL_TERMINAL_NODE_DIMENSIONS = {
  */
 const RailTerminalNode = ({ data }: NodeProps<RailTerminalNodeType>) => {
 	const { virtual } = data;
+	const th = useTheme();
+	const energized = useLadderRailEnergized();
 
 	return (
 		<Box
@@ -40,7 +43,11 @@ const RailTerminalNode = ({ data }: NodeProps<RailTerminalNodeType>) => {
 				sx={{
 					width: "100%",
 					height: "2px",
-					background: virtual ? "rgba(0,0,0,0.25)" : "black",
+					background: energized
+						? th.palette.energized.main
+						: virtual
+							? "rgba(0,0,0,0.25)"
+							: "black",
 				}}
 			/>
 			<Handle id="source" type="source" position={Position.Right} />

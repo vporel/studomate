@@ -24,6 +24,7 @@ export default class CommandsStack<T> {
 			validCommands.push(command);
 			object = result;
 		}
+		if (validCommands.length === 0) return object;
 		this.commandsToUndo.push(validCommands);
 		this.commandsToRedo = [];
 		if (this.commandsToUndo.length > this.undoLimit) {

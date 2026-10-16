@@ -1,4 +1,10 @@
-import { ChangeEvent, KeyboardEvent, useCallback, useState } from "react";
+import {
+	ChangeEvent,
+	KeyboardEvent,
+	useCallback,
+	useEffect,
+	useState,
+} from "react";
 
 type UseRenamableTreeItemOptions = {
 	name: string;
@@ -14,6 +20,10 @@ export function useRenamableTreeItem({
 }: UseRenamableTreeItemOptions) {
 	const [labelMode, setLabelMode] = useState<"normal" | "edit">("normal");
 	const [editingName, setEditingName] = useState(name);
+
+	useEffect(() => {
+		if (labelMode === "normal") setEditingName(name);
+	}, [name, labelMode]);
 
 	const commit = useCallback(() => {
 		setLabelMode("normal");

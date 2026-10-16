@@ -39,6 +39,12 @@ export type PreCompiledGrafcet = {
 	 * cycle-ci, l'observation ne fait que lire le résultat (pas de double avance).
 	 */
 	transitionObservations: Map<string, { variable: PLCVariable; node: ASTNode }>;
+	/**
+	 * One boolean memory variable per transition that has both upstream and downstream steps.
+	 * It holds the transition's full firing condition, evaluated once per cycle before any step
+	 * is deactivated or activated.
+	 */
+	firedVariables: Map<string, { variable: PLCVariable; node: IdentifierNode }>;
 };
 
 /**
@@ -159,6 +165,25 @@ export default class GrafcetPreCompiler {
 			});
 		}
 
+		const firedVariables: PreCompiledGrafcet["firedVariables"] = new Map();
+		for (const [transitionId, preCompiledTransition] of transitions) {
+			if (
+				preCompiledTransition.predecessorStepsIds.length === 0 ||
+				preCompiledTransition.successorStepsIds.length === 0
+			)
+				continue;
+			const firedVar = MemoVariableGenerator.generate(
+				"boolean",
+				takenObservationNames,
+			);
+			takenObservationNames.add(firedVar.getName());
+			variables.push(firedVar);
+			firedVariables.set(transitionId, {
+				variable: firedVar,
+				node: IdentifiersBuilder.buildIdentifierNode(firedVar.getName()),
+			});
+		}
+
 		return {
 			type: "grafcet",
 			steps,
@@ -166,6 +191,7 @@ export default class GrafcetPreCompiler {
 			transitions,
 			actions,
 			transitionObservations,
+			firedVariables,
 		};
 	}
 }
