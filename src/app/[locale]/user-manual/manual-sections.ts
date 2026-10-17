@@ -65,8 +65,30 @@ export const MANUAL_SECTIONS: ManualSection[] = [
 		id: "analysis",
 		children: ["analysis-run", "analysis-checks", "analysis-messages"],
 	},
+	{ id: "hardware" },
+	{ id: "scene3d" },
+	{ id: "limits" },
+	{ id: "troubleshooting" },
 	{ id: "shortcuts" },
 ];
+
+export const MANUAL_DEFAULT_SECTION = "intro";
+
+export function isManualSectionId(id: string): boolean {
+	return MANUAL_SECTIONS.some((s) => s.id === id);
+}
+
+/**
+ * Page et ancre d'une entrée du plan : une section de premier niveau a sa propre page, une
+ * sous-section est une ancre dans la page de son parent. `null` si l'`id` est inconnu.
+ */
+export function resolveManualTarget(
+	id: string,
+): { section: string; hash?: string } | null {
+	if (isManualSectionId(id)) return { section: id };
+	const parent = MANUAL_SECTIONS.find((s) => s.children?.includes(id));
+	return parent ? { section: parent.id, hash: id } : null;
+}
 
 export type FlatManualSection = {
 	id: string;

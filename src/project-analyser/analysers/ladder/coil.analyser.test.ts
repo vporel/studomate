@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	createCoilElement,
 	createContactElement,
@@ -5,6 +6,7 @@ import {
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Variable from "@/schemas/variable/variable.schema";
+import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import buildAnalysisEnvironment from "@/project-analyser/analysis-environment";
 import { createSectionWith, wireInSeries } from "@tests/utils/ladder-factory";
 import { ProjectFactory } from "@tests/utils/project-factory";
@@ -19,7 +21,7 @@ describe("CoilAnalyser", () => {
 	function variablesContext(...variables: Variable[]) {
 		return {
 			variablesByMnemonic: new Map(variables.map((v) => [v.mnemonic, v])),
-			environment: buildAnalysisEnvironment(variables),
+			environment: buildAnalysisEnvironment(variables, Dialect.FR),
 		};
 	}
 
@@ -79,6 +81,32 @@ describe("CoilAnalyser", () => {
 
 		expect(issues.map((i) => i.code)).toContain(
 			"LADDER_COIL_VARIABLE_IS_INPUT",
+		);
+	});
+
+	it("signale LADDER_COIL_VARIABLE_IS_CONSTANT quand la bobine piloterait une constante", () => {
+		const rail = createRailTerminalElement(0);
+		const k = new VariableBuilder()
+			.id("k")
+			.mnemonic("K")
+			.zone("constant")
+			.type("BOOL")
+			.value("VRAI")
+			.build();
+		const coil = createCoilElement("K", "normal", 0, 1);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([rail, coil], wireInSeries([rail, coil])),
+		]);
+
+		const issues = analyser.analyseInContext(
+			coil,
+			ladder,
+			variablesContext(k),
+			ProjectFactory.createEmpty(),
+		);
+
+		expect(issues.map((i) => i.code)).toContain(
+			"LADDER_COIL_VARIABLE_IS_CONSTANT",
 		);
 	});
 
@@ -142,6 +170,37 @@ describe("CoilAnalyser", () => {
 		expect(duplicateIssue.severity).toBe("warning");
 		expect(duplicateIssue.params.count).toBe(2);
 	});
+
+	it.each(["inverted", "rising", "falling"] as const)(
+		"signale LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT quand une bobine %s partage sa variable avec une bobine normale",
+		(type) => {
+			const q = VariableFactory.createMemoryBool("Q");
+			const rail1 = createRailTerminalElement(0);
+			const normalCoil = createCoilElement("Q", "normal", 0, 1);
+			const rail2 = createRailTerminalElement(1);
+			const otherCoil = createCoilElement("Q", type, 1, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[rail1, normalCoil, rail2, otherCoil],
+					[
+						...wireInSeries([rail1, normalCoil]),
+						...wireInSeries([rail2, otherCoil]),
+					],
+				),
+			]);
+
+			const issues = analyser.analyseInContext(
+				otherCoil,
+				ladder,
+				variablesContext(q),
+				ProjectFactory.createEmpty(),
+			);
+
+			expect(issues.map((i) => i.code)).toContain(
+				"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT",
+			);
+		},
+	);
 
 	it("n'émet aucune issue quand deux bobines set/reset partagent la même variable", () => {
 		const q = VariableFactory.createMemoryBool("Q");

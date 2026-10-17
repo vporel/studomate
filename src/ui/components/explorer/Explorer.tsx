@@ -12,8 +12,10 @@ import ExplorerSystemBlockInstancesItems from "./ExplorerSystemBlockInstancesIte
 import ExplorerSystemBlocksItems from "./ExplorerSystemBlocksItems";
 import ExplorerVariablesItems from "./ExplorerVariablesItems";
 import ExplorerHmiItems from "./ExplorerHmiItems";
+import ExplorerConfigurationItems from "./ExplorerConfigurationItems";
 import ExplorerContextMenu from "./context-menu/ExplorerContextMenu";
-import useExplorerContextMenu from "./useExplorerContextMenu";
+import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
+import useContextMenuState from "@/ui/lib/context-menu/useContextMenuState";
 import { useProjectStore } from "../projects/ProjectContext";
 
 export const treeItemStyles: CustomTreeItemStyles = {
@@ -51,12 +53,15 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 		position: contextMenuPosition,
 		openContextMenu,
 		closeContextMenu,
-	} = useExplorerContextMenu(explorerRef);
+	} = useContextMenuState<ExplorerContextMenuElement>(explorerRef, {
+		type: "pane",
+	});
 
 	return (
 		<Box
 			ref={explorerRef}
 			className="explorer"
+			data-tour="explorer"
 			style={{
 				height: "100%",
 				width: "100%",
@@ -71,8 +76,16 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 			<ExplorerHeader />
 			<SimpleTreeView
 				aria-label={t("ariaLabel")}
-				defaultExpandedItems={["variables", "programs", "hmi"]}
+				defaultExpandedItems={["variables", "programs", "hmi", "configuration"]}
 			>
+				<CustomTreeItem
+					itemId="configuration"
+					label={t("sections.configuration")}
+					IconComponent={FolderIcon}
+					styles={treeItemStyles}
+				>
+					<ExplorerConfigurationItems styles={treeItemStyles} />
+				</CustomTreeItem>
 				<CustomTreeItem
 					itemId="variables"
 					label={t("sections.variables")}
@@ -125,6 +138,7 @@ const Explorer = ({ style }: { style?: React.CSSProperties }) => {
 				)}
 				<CustomTreeItem
 					itemId="hmi"
+					data-tour="hmiPages"
 					label={t("sections.hmi")}
 					IconComponent={FolderIcon}
 					styles={treeItemStyles}

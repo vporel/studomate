@@ -32,7 +32,14 @@ describe("WatchTables", () => {
 		.type("INT")
 		.build();
 
-	function setup() {
+	function setup(
+		board: {
+			hardwareTarget?: object | null;
+			status?: string;
+			boardMode?: string;
+			scene3dDrivenInputIds?: string[];
+		} = {},
+	) {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({
 				setWatchTablesVisible,
@@ -40,12 +47,19 @@ describe("WatchTables", () => {
 					variables: [inputVar, outputVar, memoryVar],
 					dialect: Dialect.FR,
 					grafcets: {},
+					hardwareTarget: board.hardwareTarget ?? null,
 				},
 				simulationManager: {
 					setPhysicalInputValue: jest.fn(),
 					setMemoryValue: jest.fn(),
 				},
 				simulationVariablesStates: {},
+				hardwareLink: {
+					status: board.status ?? "disconnected",
+					drivenInputIds: [],
+					boardMode: board.boardMode ?? "remote-io",
+				},
+				scene3dDrivenInputIds: board.scene3dDrivenInputIds ?? [],
 			}),
 		);
 		return renderWithI18n(<WatchTables />);
@@ -76,12 +90,53 @@ describe("WatchTables", () => {
 	it("switches to the grafcets tab", () => {
 		setup();
 		fireEvent.click(screen.getByText("Grafcets"));
-		expect(screen.getByText("Aucun grafcet dans le projet")).toBeInTheDocument();
+		expect(
+			screen.getByText("Aucun grafcet dans le projet"),
+		).toBeInTheDocument();
 	});
 
 	it("calls setWatchTablesVisible(false) when closed", () => {
 		setup();
 		fireEvent.click(screen.getByLabelText("close-watch-tables"));
 		expect(setWatchTablesVisible).toHaveBeenCalledWith(false);
+	});
+
+	describe("message sur les entrées pilotées (carte ou scène 3D)", () => {
+		const message =
+			"Les entrées pilotées par une borne de la carte ou un capteur de la scène 3D ne sont pas modifiables depuis cette table.";
+		const target = { modelId: "arduino-uno-r3" };
+
+		it("s'affiche quand une carte est configurée et liée en E/S", () => {
+			setup({ hardwareTarget: target, status: "linked" });
+			expect(screen.getByText(message)).toBeInTheDocument();
+		});
+
+		it("est absent sans carte configurée", () => {
+			setup({ hardwareTarget: null, status: "linked" });
+			expect(screen.queryByText(message)).not.toBeInTheDocument();
+		});
+
+		it("est absent quand la carte n'est pas liée", () => {
+			setup({ hardwareTarget: target, status: "disconnected" });
+			expect(screen.queryByText(message)).not.toBeInTheDocument();
+		});
+
+		it("s'affiche avec seulement des capteurs de scène 3D", () => {
+			setup({ scene3dDrivenInputIds: ["e1"] });
+			expect(screen.getByText(message)).toBeInTheDocument();
+		});
+
+		it("est absent sans capteur de scène 3D ni carte", () => {
+			setup({ scene3dDrivenInputIds: [] });
+			expect(screen.queryByText(message)).not.toBeInTheDocument();
+		});
+
+		it.each(["program-running", "program-stopped"])(
+			"est absent quand la carte est en mode %s (elle ne sert plus les entrées)",
+			(boardMode) => {
+				setup({ hardwareTarget: target, status: "linked", boardMode });
+				expect(screen.queryByText(message)).not.toBeInTheDocument();
+			},
+		);
 	});
 });

@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -12,7 +13,7 @@ describe("StepAnalyser", () => {
 		it("returns no issues for valid step with number", () => {
 			const step = new StepBuilder().id("step-1").number(1).build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(0);
 		});
@@ -20,7 +21,7 @@ describe("StepAnalyser", () => {
 		it("detects missing step number", () => {
 			const step = new StepBuilder().id("step-1").number("").build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -32,6 +33,7 @@ describe("StepAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(step, {
 				allowEmptyContent: true,
+				dialect: Dialect.FR,
 			});
 
 			expect(issues).toHaveLength(0);
@@ -40,7 +42,7 @@ describe("StepAnalyser", () => {
 		it("detects negative step number", () => {
 			const step = new StepBuilder().id("step-1").number(-5).build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -50,7 +52,7 @@ describe("StepAnalyser", () => {
 		it("detects decimal step number", () => {
 			const step = new StepBuilder().id("step-1").number(1.5).build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -60,7 +62,7 @@ describe("StepAnalyser", () => {
 		it("accepts zero as step number", () => {
 			const step = new StepBuilder().id("step-1").number(0).build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(0);
 		});
@@ -68,7 +70,7 @@ describe("StepAnalyser", () => {
 		it("accepts large step numbers", () => {
 			const step = new StepBuilder().id("step-1").number(9999).build();
 
-			const issues = analyser.analyseIsolated(step);
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(0);
 		});
@@ -115,11 +117,11 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noPredecessorIssues = issues.filter((i) =>
-				i.code === "STEP_NO_PREDECESSOR",
+			const noPredecessorIssues = issues.filter(
+				(i) => i.code === "STEP_NO_PREDECESSOR",
 			);
-			const noSuccessorIssues = issues.filter((i) =>
-				i.code === "STEP_NO_SUCCESSOR",
+			const noSuccessorIssues = issues.filter(
+				(i) => i.code === "STEP_NO_SUCCESSOR",
 			);
 			expect(noPredecessorIssues).toHaveLength(0);
 			expect(noSuccessorIssues).toHaveLength(0);
@@ -139,8 +141,8 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const duplicateIssue = issues.find((i) =>
-				i.code === "STEP_NUMBER_DUPLICATE",
+			const duplicateIssue = issues.find(
+				(i) => i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			expect(duplicateIssue).toBeDefined();
 			expect(duplicateIssue?.severity).toBe("error");
@@ -160,8 +162,8 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const duplicateIssue = issues.find((i) =>
-				i.code === "STEP_NUMBER_DUPLICATE",
+			const duplicateIssue = issues.find(
+				(i) => i.code === "STEP_NUMBER_DUPLICATE",
 			);
 			expect(duplicateIssue).toBeUndefined();
 		});
@@ -183,8 +185,8 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noPredecessorIssue = issues.find((i) =>
-				i.code === "STEP_NO_PREDECESSOR",
+			const noPredecessorIssue = issues.find(
+				(i) => i.code === "STEP_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeDefined();
 			expect(noPredecessorIssue?.severity).toBe("error");
@@ -214,8 +216,8 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noPredecessorIssue = issues.find((i) =>
-				i.code === "STEP_NO_PREDECESSOR",
+			const noPredecessorIssue = issues.find(
+				(i) => i.code === "STEP_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeUndefined();
 		});
@@ -233,17 +235,15 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noSuccessorIssue = issues.find((i) => i.code === "STEP_NO_SUCCESSOR");
+			const noSuccessorIssue = issues.find(
+				(i) => i.code === "STEP_NO_SUCCESSOR",
+			);
 			expect(noSuccessorIssue).toBeDefined();
 			expect(noSuccessorIssue?.severity).toBe("error");
 		});
 
 		it("detects a step with more than one successor connection", () => {
-			const step = new StepBuilder()
-				.id("step-1")
-				.number(1)
-				.initial()
-				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
 			const t1 = new TransitionBuilder().id("t1").expression("a").build();
 			const t2 = new TransitionBuilder().id("t2").expression("b").build();
 			const grafcet = new GrafcetBuilder()
@@ -278,11 +278,7 @@ describe("StepAnalyser", () => {
 		});
 
 		it("accepts a step with a single successor connection", () => {
-			const step1 = new StepBuilder()
-				.id("step-1")
-				.number(1)
-				.initial()
-				.build();
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
 			const step2 = new StepBuilder().id("step-2").number(2).build();
 			const transition = new TransitionBuilder()
 				.id("t1")
@@ -342,14 +338,14 @@ describe("StepAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const duplicateIssue1 = issues1.find((i) =>
-				i.code === "STEP_NUMBER_DUPLICATE",
+			const duplicateIssue1 = issues1.find(
+				(i) => i.code === "STEP_NUMBER_DUPLICATE",
 			);
-			const duplicateIssue2 = issues2.find((i) =>
-				i.code === "STEP_NUMBER_DUPLICATE",
+			const duplicateIssue2 = issues2.find(
+				(i) => i.code === "STEP_NUMBER_DUPLICATE",
 			);
-			const duplicateIssue3 = issues3.find((i) =>
-				i.code === "STEP_NUMBER_DUPLICATE",
+			const duplicateIssue3 = issues3.find(
+				(i) => i.code === "STEP_NUMBER_DUPLICATE",
 			);
 
 			expect(duplicateIssue1).toBeUndefined();

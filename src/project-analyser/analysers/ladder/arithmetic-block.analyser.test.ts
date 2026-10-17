@@ -22,12 +22,21 @@ describe("ArithmeticBlockAnalyser", () => {
 			createArithmeticBlockElement(0, 0, params),
 			source,
 			Dialect.FR,
-			buildAnalysisEnvironment(variables),
+			buildAnalysisEnvironment(variables, Dialect.FR),
 		).map((i) => i.code);
 	}
 
 	const ints = (...names: string[]) =>
-		names.map((n, i) => new Variable(`v${i}`, n, "memory", "INT"));
+		names.map(
+			(n, i) =>
+				new Variable({
+					id: `v${i}`,
+					mnemonic: n,
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
+		);
 
 	it("signale les pinoches vides", () => {
 		expect(analyse({ in1: "", in2: "", out: "", operator: "+" })).toEqual([
@@ -72,7 +81,14 @@ describe("ArithmeticBlockAnalyser", () => {
 
 	it("signale BLOCK_ARITHMETIC_INVALID pour des opérandes non numériques", () => {
 		const bools = ["A", "B", "C"].map(
-			(n, i) => new Variable(`v${i}`, n, "memory", "BOOL"),
+			(n, i) =>
+				new Variable({
+					id: `v${i}`,
+					mnemonic: n,
+					zone: "memory",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
 		);
 		expect(
 			analyse({ in1: "A", in2: "B", out: "C", operator: "+" }, ...bools),

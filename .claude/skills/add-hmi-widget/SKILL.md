@@ -50,7 +50,7 @@ One entry in `HMI_WIDGET_UI` (exhaustive `Record<HmiWidgetType, …>`):
 
 - [ ] `component`: the component from step 2 (+ import).
 - [ ] `previewWidth`, `previewValue` (`false`/`0`/demo value), `paletteOrder` (rank within its group).
-- [ ] `manualDescription`: the manual's sentence (`"My widget — … Options: …"`).
+- [ ] `manualDescription`: the manual's sentence (`"My widget: … Options: …"`).
 - [ ] `toolSymbol?`: compact SVG symbol if the actual render is illegible at thumbnail size.
 - [ ] `events`: `[]` or `[{ name: "onName", label: "Label" }]`.
 - [ ] `animatableStyleProps`: `[]` or `[{ name, label, inputType: "color" | "text", staticValue: (data) => … }]`.

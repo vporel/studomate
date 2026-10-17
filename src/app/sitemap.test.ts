@@ -1,4 +1,6 @@
 import { APP_URL } from "@/app-info";
+import { getPathname } from "@/i18n/navigation";
+import { routing, type PublicPathname } from "@/i18n/routing";
 import sitemap from "./sitemap";
 
 describe("sitemap", () => {
@@ -37,11 +39,32 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/en/training/a1`);
 	});
 
+	it("n'expose aucune date lastModified artificielle", () => {
+		expect(sitemap().some((e) => "lastModified" in e)).toBe(false);
+	});
+
+	it("expose chaque page statique du routage, dans les deux langues", () => {
+		const urls = sitemap().map((e) => e.url);
+		const staticKeys = Object.keys(routing.pathnames).filter(
+			(k) => !k.includes("["),
+		);
+		for (const key of staticKeys) {
+			for (const locale of routing.locales) {
+				const url = new URL(
+					getPathname({ locale, href: key as PublicPathname }),
+					APP_URL,
+				).toString();
+				expect(urls).toContain(url);
+			}
+		}
+	});
+
 	it("déclare les alternates hreflang sur les pages localisées", () => {
 		const about = sitemap().find((e) => e.url === `${APP_URL}/a-propos`);
 		expect(about?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/a-propos`,
 			en: `${APP_URL}/en/about`,
+			"x-default": `${APP_URL}/a-propos`,
 		});
 	});
 
@@ -50,6 +73,53 @@ describe("sitemap", () => {
 		expect(training?.alternates?.languages).toEqual({
 			fr: `${APP_URL}/formations`,
 			en: `${APP_URL}/en/training`,
+			"x-default": `${APP_URL}/formations`,
 		});
+	});
+
+	it("expose chaque section du manuel dans les deux langues, hors introduction servie à l'URL de base", () => {
+		const entries = sitemap();
+		const urls = entries.map((e) => e.url);
+		expect(urls).toContain(`${APP_URL}/manuel-utilisateur/grafcet`);
+		expect(urls).toContain(`${APP_URL}/en/user-manual/grafcet`);
+		expect(urls).toContain(`${APP_URL}/manuel-utilisateur/shortcuts`);
+		expect(urls).not.toContain(`${APP_URL}/manuel-utilisateur/intro`);
+		expect(urls.filter((u) => u.endsWith("/manuel-utilisateur"))).toHaveLength(
+			1,
+		);
+
+		const grafcet = entries.find(
+			(e) => e.url === `${APP_URL}/manuel-utilisateur/grafcet`,
+		);
+		expect(grafcet?.alternates?.languages).toEqual({
+			fr: `${APP_URL}/manuel-utilisateur/grafcet`,
+			en: `${APP_URL}/en/user-manual/grafcet`,
+			"x-default": `${APP_URL}/manuel-utilisateur/grafcet`,
+		});
+	});
+
+	it("expose le module A0 et les étapes de théorie des modules, avec leurs alternates", () => {
+		const entries = sitemap();
+		const urls = entries.map((e) => e.url);
+		expect(urls).toContain(`${APP_URL}/formations/a0`);
+		expect(urls).toContain(`${APP_URL}/en/training/a0`);
+		expect(urls).toContain(`${APP_URL}/formations/a1/theory-timer`);
+
+		const step = entries.find(
+			(e) => e.url === `${APP_URL}/formations/a1/theory-timer`,
+		);
+		expect(step?.alternates?.languages).toEqual({
+			fr: `${APP_URL}/formations/a1/theory-timer`,
+			en: `${APP_URL}/en/training/a1/theory-timer`,
+			"x-default": `${APP_URL}/formations/a1/theory-timer`,
+		});
+	});
+
+	it("n'expose ni les exercices et synthèses (noindex), ni la première étape (servie par la page du module)", () => {
+		const urls = sitemap().map((e) => e.url);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/exercise-linear`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/synthesis-parking`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/grafcet-definition`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a0/automatisme`);
 	});
 });

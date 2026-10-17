@@ -86,6 +86,39 @@ describe("LadderElementOpsManager", () => {
 		});
 	});
 
+	describe("setCoilType / setContactType : cibles introuvables", () => {
+		it("ne fait rien pour une section inconnue", () => {
+			const section = new Section("s1", "S");
+			const { manager } = setup(section);
+
+			manager.setCoilType("inconnue", "x", "set");
+			manager.setContactType("inconnue", "x", "NF");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+
+		it("ne fait rien pour un élément inconnu", () => {
+			const section = new Section("s1", "S");
+			const { manager } = setup(section);
+
+			manager.setCoilType(section.id, "inconnu", "set");
+			manager.setContactType(section.id, "inconnu", "NF");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+
+		it("ne change pas le type d'une bobine via setContactType", () => {
+			const section = new Section("s1", "S");
+			const coil = createCoilElement("Q1", "normal", 0, 3);
+			section.elements = [coil];
+			const { manager } = setup(section);
+
+			manager.setContactType(section.id, coil.id, "NF");
+
+			expect(executeOperation).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("setContactType", () => {
 		it("dispatche ElementUpdateCommand avec l'ancien et le nouveau type", () => {
 			const section = new Section("s1", "S");

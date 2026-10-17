@@ -20,9 +20,7 @@ function fakeAction(
 function fakeGrafcet(step: any = null): any {
 	return {
 		getConnectionsByElementIdAndHandle: () =>
-			step
-				? [{ source: { type: "step", id: step.id }, target: {} }]
-				: [],
+			step ? [{ source: { type: "step", id: step.id }, target: {} }] : [],
 		getElementByIdAndType: () => step,
 	};
 }
@@ -94,9 +92,9 @@ describe("actionContextMenuItems", () => {
 			identityT,
 		);
 
-		expect(typeGroupOf(groups).some((item) => item.label === "actionMode")).toBe(
-			false,
-		);
+		expect(
+			typeGroupOf(groups).some((item) => item.label === "actionMode"),
+		).toBe(false);
 	});
 
 	it("liste uniquement les modes d'exécution compatibles avec le type de l'action", () => {
@@ -194,9 +192,9 @@ describe("actionContextMenuItems", () => {
 				identityT,
 			);
 
-			expect(
-				groups.flat().some((item) => item.label === "addAction"),
-			).toBe(false);
+			expect(groups.flat().some((item) => item.label === "addAction")).toBe(
+				false,
+			);
 		});
 	});
 });

@@ -3,6 +3,7 @@
 	"simulationStarting": "Compilation complete, starting the simulation…",
 	"simulationCouldNotStart": "Cannot start the simulation: {count, plural, one {# error} other {# errors}} during {step, select, preCompilation {pre-compilation} other {compilation}}.",
 	"simulationCrashed": "Simulation stopped. Error while running the PLC cycle.",
+	"scene3dOpenBlocked": "The 3D scene could not open: the browser blocked the window. Click here to open it.",
 	"simulationCrashedWithReason": "Simulation stopped. {reason}",
 	"save": {
 		"storageFull": "Cannot save: the browser storage is full. Export the project to a file so you don't lose your work.",
@@ -19,5 +20,74 @@
 	"moveToCloudFailed": "The project could not be sent to the cloud. Check your connection.",
 	"shareRevokeFailed": "Could not revoke the share.",
 	"shareLoginPrompt": "Sign in to share this project.",
-	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page."
+	"pasteWrongScope": "Cannot paste here: the clipboard holds elements from a different kind of page.",
+	"hardwareLinked": "Online link established with the Arduino board.",
+	"hardwareLinkLost": "Link with the board lost. Its outputs went back to the fallback state.",
+	"hardwareLinkFailed": {
+		"handshake-timeout": "The board does not answer: the Studomate firmware is not installed on it.",
+		"protocol-mismatch": "The firmware of the board is not compatible with this version of Studomate.",
+		"config-rejected": "The board rejected the pin configuration.",
+		"transport": "Cannot communicate with the board. Check the USB cable, and that no other program or tab (Studomate included) is using the port.",
+		"firmware-outdated": "The firmware of the board is too old for this version of Studomate."
+	},
+	"hardwareProgramUploaded": "Program loaded into the board. It now runs it by itself: you can unplug the USB cable.",
+	"hardwareProgramBlocked": {
+		"IMAGE_TOO_LARGE": "The program is too large for the board: {size} bytes for {limit} available.",
+		"IMAGE_TOO_LARGE_WITH_PROGRAM": "The program is too large for the board: {size} bytes for {limit} available. The largest program is \"{program}\" ({programSize} bytes).",
+		"VARIABLE_MEMORY_EXCEEDED": "The variables need {size} bytes of memory, the board offers {limit}.",
+		"STACK_TOO_DEEP": "An expression is too deep for the board (depth {depth}, maximum {limit}). Split it.",
+		"CALL_DEPTH_EXCEEDED": "Programs call each other too deeply for the board (depth {depth}, maximum {limit}).",
+		"JUMP_NESTING_EXCEEDED": "Conditions are nested too deeply for the board (maximum {limit} levels)."
+	},
+	"hardwareProgramFailed": {
+		"analysis": "Fix the errors reported by the analysis before loading the program into the board.",
+		"compilation": "The project does not compile: the program cannot be loaded into the board.",
+		"unsupported": "The project uses a feature the board cannot run.",
+		"exchange-rejected": "The board refused the program.",
+		"exchange-timeout": "The board stopped answering while the program was loaded. Try again.",
+		"exchange-mismatch": "The board did not store the program that was loaded. Try again.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
+	"hardwareProgramCommandFailed": {
+		"exchange-rejected": "The board could not start its program: it holds no valid program, or lacks memory for it.",
+		"exchange-timeout": "The board did not answer. Try again.",
+		"exchange-mismatch": "The board did not answer as expected. Try again.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
+	"hardwareOnlineFailed": {
+		"analysis": "Fix the errors reported by the analysis before observing the board.",
+		"compilation": "The project does not compile: its program cannot be compared with the one of the board.",
+		"unsupported": "The project uses a feature the board cannot run.",
+		"no-program": "The board holds no program: load it first.",
+		"program-differs": "The program of the board is not the one of the project: load it again before observing the board.",
+		"exchange-rejected": "The board refused to start its program.",
+		"exchange-timeout": "The board did not answer. Try again.",
+		"exchange-mismatch": "The board did not answer as expected. Try again.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
+	"hardwareOnlineLost": {
+		"program-differs": "The board now runs another program than the one of the project: the observation of the board was left.",
+		"board-stopped": "The program of the board was stopped: the observation of the board was left."
+	},
+	"hardwareBoardFault": {
+		"1": "The program of the board stopped on a division by zero. The outputs were cut.",
+		"2": "The program of the board stopped: programs call each other too deeply. The outputs were cut.",
+		"3": "The board was reset by its watchdog and did not restart its program.",
+		"4": "The board holds an invalid program image.",
+		"other": "The program of the board stopped on a fault (code {fault}). The outputs were cut."
+	},
+	"hardwareVariableWriteFailed": {
+		"exchange-rejected": "The board refused the value: the variable is unknown to its program.",
+		"exchange-timeout": "The board did not answer: the value may not have been written.",
+		"exchange-mismatch": "The board did not answer as expected.",
+		"transport": "Cannot communicate with the board. Check the USB cable."
+	},
+	"hardwareFlashFailed": {
+		"sync-failed": "Cannot install the firmware: the board does not answer. Check that no other program is using the port. Only the original Arduino Uno R3 is supported.",
+		"protocol-error": "Cannot install the firmware: unexpected answer from the board. Only the original Arduino Uno R3 is supported.",
+		"unsupported-board": "Cannot install the firmware: this board is not an Arduino Uno R3.",
+		"verify-failed": "The firmware installation failed: verification found differences. Try again.",
+		"transport": "Cannot install the firmware: communication with the board was interrupted.",
+		"firmware-unavailable": "Cannot install the firmware: the firmware file was not found."
+	}
 }

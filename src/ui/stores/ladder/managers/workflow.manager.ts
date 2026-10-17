@@ -19,8 +19,7 @@ import {
 	NodeChange,
 	Edge,
 } from "@xyflow/react";
-import LadderEdgesFactory from "../factories/edges.factory";
-import LadderNodesFactory from "../factories/nodes.factory";
+import syncLadderViewState from "../ladder-view-state";
 import {
 	LadderStoreGetFunction,
 	LadderStoreSetFunction,
@@ -94,7 +93,10 @@ export default class LadderWorkflowManager {
 					changesToApply,
 					currentEdges,
 				)
-			: { edges: currentEdges, commands: [] as AbstractLadderCommand<unknown>[] };
+			: {
+					edges: currentEdges,
+					commands: [] as AbstractLadderCommand<unknown>[],
+				};
 
 		const selectsThisSection = changesToApply.some(
 			(change) => change.type === "select" && change.selected,
@@ -139,12 +141,7 @@ export default class LadderWorkflowManager {
 			.filter((node) => node.selected)
 			.map((node) => node.id);
 		if (selectedIds.length === 0) return;
-		const changes = buildKeyboardMoveChanges(
-			section,
-			selectedIds,
-			dRow,
-			dCol,
-		);
+		const changes = buildKeyboardMoveChanges(section, selectedIds, dRow, dCol);
 		if (changes.length === 0) return;
 		this.handleNodesChange(sectionId, changes);
 	}
@@ -258,40 +255,6 @@ export default class LadderWorkflowManager {
 	 * through the project command that triggered it.
 	 */
 	adoptLadder(ladder: Ladder): void {
-		this.setStoreState((state) => {
-			const sectionIds = new Set(ladder.sections.map((s) => s.id));
-			const prunedSelected = state.selectedSectionIds.filter((id) =>
-				sectionIds.has(id),
-			);
-			return {
-				ladder,
-				nodesBySectionId: Object.fromEntries(
-					ladder.sections.map((section) => [
-						section.id,
-						LadderNodesFactory.syncNodes(
-							state.nodesBySectionId[section.id] ?? [],
-							section,
-						),
-					]),
-				),
-				edgesBySectionId: Object.fromEntries(
-					ladder.sections.map((section) => [
-						section.id,
-						LadderEdgesFactory.syncEdges(
-							state.edgesBySectionId[section.id] ?? [],
-							section,
-						),
-					]),
-				),
-				activeSectionId:
-					state.activeSectionId && sectionIds.has(state.activeSectionId)
-						? state.activeSectionId
-						: null,
-				selectedSectionIds:
-					prunedSelected.length === state.selectedSectionIds.length
-						? state.selectedSectionIds
-						: prunedSelected,
-			};
-		});
+		this.setStoreState((state) => syncLadderViewState(state, ladder));
 	}
 }

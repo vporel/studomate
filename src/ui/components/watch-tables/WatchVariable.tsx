@@ -3,8 +3,23 @@
 import Variable from "@/schemas/variable/variable.schema";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Dialect } from "@/expression-language/dialect.enum";
-import { formatBooleanValue } from "@/ui/lib/variables/format-variable-value";
-import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
+import {
+	getInputRestValue,
+	isNormallyClosed,
+	isPushButtonBehavior,
+} from "@/schemas/variable/input-behavior";
+import { formatBooleanValue } from "@/ui/components/variables/format-variable-value";
+import {
+	Box,
+	Button,
+	FormControlLabel,
+	Slider,
+	Switch,
+	TextField,
+	Typography,
+} from "@mui/material";
+import { useRef } from "react";
+import { isInputDriven } from "@/ui/stores/project/driven-inputs.selector";
 import { useProjectStore } from "../projects/ProjectContext";
 
 export default function WatchVariable({ variable }: { variable: Variable }) {
@@ -14,6 +29,11 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 		(state) => state.simulationVariablesStates[variable.id]?.value,
 	);
 	const nativeType = variable.getNativeType();
+	const behavior = variable.behavior;
+	const normallyClosed = isNormallyClosed(behavior);
+	const locked = useProjectStore((state) => isInputDriven(state, variable.id));
+	const readOnly =
+		variable.getDirection() === "OUT" || variable.zone === "constant";
 
 	const changeValue = (newValue: any) => {
 		if (variable.getDirection() === "IN") {
@@ -25,9 +45,22 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 
 	return (
 		<FlexBox key={variable.id} between centerVertical sx={{ mb: 1, gap: 2 }}>
-			<Typography variant="subtitle2" sx={{ width: "100px" }}>
-				{variable.mnemonic}
-			</Typography>
+			<Box sx={{ width: "100px" }}>
+				<Typography variant="subtitle2">{variable.mnemonic}</Typography>
+				{variable.address && (
+					<Typography
+						variant="caption"
+						sx={{
+							display: "block",
+							color: "grey.700",
+							fontSize: ".62rem",
+							lineHeight: 1.2,
+						}}
+					>
+						{variable.address}
+					</Typography>
+				)}
+			</Box>
 			<FlexBox centerVertical sx={{ gap: 1.5 }}>
 				<Typography
 					sx={{
@@ -42,8 +75,42 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 					{variable.type}
 				</Typography>
 				<FlexBox centerVertical centerHorizontal sx={{ width: "100px" }}>
-					{nativeType === "boolean" ? (
-						variable.getDirection() === "OUT" ? (
+					{behavior?.kind === "slider" ? (
+						<FlexBox centerVertical sx={{ width: "100%", gap: 1 }}>
+							<Slider
+								size="small"
+								min={behavior.params.min}
+								max={behavior.params.max}
+								step={1}
+								disabled={locked}
+								value={typeof value === "number" ? value : 0}
+								onChange={(_, next) => changeValue(next as number)}
+								slotProps={{ input: { "aria-label": variable.mnemonic } }}
+							/>
+							<Typography variant="body2" sx={{ minWidth: "3ch" }}>
+								{value === undefined ? "-" : String(value)}
+							</Typography>
+						</FlexBox>
+					) : isPushButtonBehavior(behavior) ? (
+						<FormControlLabel
+							control={
+								// Same width as a Switch, so that the value lines up with the switches'.
+								<Box
+									sx={{ width: 58, display: "flex", justifyContent: "center" }}
+								>
+									<PushButtonControl
+										ariaLabel={variable.mnemonic}
+										disabled={locked}
+										pressed={value === !getInputRestValue(behavior)}
+										onPress={() => changeValue(!getInputRestValue(behavior))}
+										onRelease={() => changeValue(getInputRestValue(behavior))}
+									/>
+								</Box>
+							}
+							label={formatBooleanValue(value, dialect)}
+						/>
+					) : nativeType === "boolean" ? (
+						readOnly ? (
 							<Typography
 								color={value === true ? "primary.main" : "text.primary"}
 							>
@@ -52,22 +119,28 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 						) : (
 							<FormControlLabel
 								control={
+									// Checked = actuated position, which writes `false` on a normally
+									// closed switch.
 									<Switch
-										checked={!!value}
+										checked={normallyClosed ? !value : !!value}
 										onChange={(e) => {
-											changeValue(e.target.checked);
+											changeValue(
+												normallyClosed ? !e.target.checked : e.target.checked,
+											);
 										}}
+										disabled={locked}
 										inputProps={{ "aria-label": variable.mnemonic }}
 									/>
 								}
 								label={formatBooleanValue(value, dialect)}
 							/>
 						)
-					) : variable.getDirection() === "OUT" ? (
+					) : readOnly ? (
 						<Typography>{value === undefined ? "-" : String(value)}</Typography>
 					) : (
 						<TextField
 							size="small"
+							disabled={locked}
 							type={nativeType === "number" ? "number" : "text"}
 							slotProps={{ htmlInput: { "aria-label": variable.mnemonic } }}
 							value={value === undefined ? "" : String(value)}
@@ -94,5 +167,60 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 				</FlexBox>
 			</FlexBox>
 		</FlexBox>
+	);
+}
+
+/** Momentary button: working value while held (mouse or Space/Enter key), rest value on
+ * release. */
+function PushButtonControl({
+	ariaLabel,
+	disabled,
+	pressed,
+	onPress,
+	onRelease,
+}: {
+	ariaLabel: string;
+	disabled: boolean;
+	pressed: boolean;
+	onPress: () => void;
+	onRelease: () => void;
+}) {
+	const held = useRef(false);
+	const press = () => {
+		if (held.current) return;
+		held.current = true;
+		onPress();
+	};
+	const release = () => {
+		if (!held.current) return;
+		held.current = false;
+		onRelease();
+	};
+	const isActivationKey = (key: string) => key === " " || key === "Enter";
+
+	return (
+		<Button
+			size="small"
+			variant={pressed ? "contained" : "outlined"}
+			aria-label={ariaLabel}
+			aria-pressed={pressed}
+			disabled={disabled}
+			disableRipple
+			onPointerDown={press}
+			onPointerUp={release}
+			onPointerLeave={release}
+			onKeyDown={(e) => {
+				if (!isActivationKey(e.key)) return;
+				e.preventDefault();
+				press();
+			}}
+			onKeyUp={(e) => {
+				if (!isActivationKey(e.key)) return;
+				e.preventDefault();
+				release();
+			}}
+			onBlur={release}
+			sx={{ minWidth: 0, width: 28, height: 28, p: 0, borderRadius: "50%" }}
+		/>
 	);
 }

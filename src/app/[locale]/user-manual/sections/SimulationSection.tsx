@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function SimulationSection({ selected }: { selected: string }) {
 	const t = useT("manual.simulation");
@@ -15,6 +15,14 @@ export default function SimulationSection({ selected }: { selected: string }) {
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
+			{!isChild && (
+				<>
+					<Typography variant="h5" mb={1}>
+						{t("modesCompareTitle")}
+					</Typography>
+					<ManualList items={t.raw("modesCompareItems") as string[]} />
+				</>
+			)}
 
 			{show("simulation-start") && (
 				<article id="simulation-start">
@@ -37,6 +45,17 @@ export default function SimulationSection({ selected }: { selected: string }) {
 						{t("runningTitle")}
 					</Typography>
 					<ManualList items={t.raw("runningItems") as string[]} />
+					<Typography variant="h5" mb={1}>
+						{t("cycleOrderTitle")}
+					</Typography>
+					<Typography mb={1}>{t("cycleOrderIntro")}</Typography>
+					<ManualList items={t.raw("cycleOrderItems") as string[]} />
+					<ManualFigure
+						src={t("cycleOrderFigureSrc")}
+						alt={t("cycleOrderFigureAlt")}
+						width={650}
+					/>
+					<Typography mb={2}>{t("cycleOrderOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
 			)}

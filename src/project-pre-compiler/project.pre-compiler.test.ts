@@ -120,8 +120,12 @@ describe("ProjectPreCompiler", () => {
 
 			expect(result.errors).toEqual([]);
 			expect(userVariables(result.result!.variables)).toHaveLength(2);
-			expect(userVariables(result.result!.variables).map((v) => v.getName())).toContain("M1");
-			expect(userVariables(result.result!.variables).map((v) => v.getName())).toContain("X1");
+			expect(
+				userVariables(result.result!.variables).map((v) => v.getName()),
+			).toContain("M1");
+			expect(
+				userVariables(result.result!.variables).map((v) => v.getName()),
+			).toContain("X1");
 		});
 
 		it("compiles a grafcet", () => {
@@ -143,6 +147,30 @@ describe("ProjectPreCompiler", () => {
 			expect(asGrafcet(result.result!.programs["grafcet-1"]).steps.size).toBe(
 				1,
 			);
+		});
+
+		it("skips a program excluded from execution, even with a malformed expression", () => {
+			const step = new StepBuilder()
+				.id("step-1")
+				.number(1)
+				.initial(true)
+				.build();
+			const transition = new TransitionBuilder()
+				.id("transition-1")
+				.expression("dcy et et (")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addTransition(transition)
+				.build();
+			grafcet.excludedFromExecution = true;
+			const project = new ProjectBuilder().addGrafcet(grafcet).build();
+
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
+
+			expect(result.errors).toEqual([]);
+			expect(result.result!.programs).not.toHaveProperty("grafcet-1");
 		});
 
 		it("compiles multiple grafcets", () => {
@@ -183,7 +211,9 @@ describe("ProjectPreCompiler", () => {
 			expect(result.errors).toEqual([]);
 			// Should have 1 memo variable (one for the step)
 			expect(userVariables(result.result!.variables)).toHaveLength(1);
-			expect(userVariables(result.result!.variables)[0].getName()).toBe("_GeneratedMemo_0");
+			expect(userVariables(result.result!.variables)[0].getName()).toBe(
+				"_GeneratedMemo_0",
+			);
 		});
 
 		it("ensures memo variables from different grafcets have unique names", () => {
@@ -207,8 +237,12 @@ describe("ProjectPreCompiler", () => {
 			expect(result.errors).toEqual([]);
 			// Should have 2 memo variables
 			expect(userVariables(result.result!.variables)).toHaveLength(2);
-			expect(userVariables(result.result!.variables)[0].getName()).toBe("_GeneratedMemo_0");
-			expect(userVariables(result.result!.variables)[1].getName()).toBe("_GeneratedMemo_1");
+			expect(userVariables(result.result!.variables)[0].getName()).toBe(
+				"_GeneratedMemo_0",
+			);
+			expect(userVariables(result.result!.variables)[1].getName()).toBe(
+				"_GeneratedMemo_1",
+			);
 		});
 
 		it("rebinds a receptivity's reference to another grafcet's step to that step's memo", () => {
@@ -216,7 +250,8 @@ describe("ProjectPreCompiler", () => {
 			// La réceptivité de trans-0 référence directement l'étape X1 de g1.
 			const g2 = GrafcetFactory.createSimpleCycle("g2", "X1", "VRAI", 10); // steps X10, X11
 			const project = ProjectFactory.create([], [g1, g2]);
-			const generatedVariables = ProjectAnalyser.analyse(project).generatedVariables;
+			const generatedVariables =
+				ProjectAnalyser.analyse(project).generatedVariables;
 
 			const result = ProjectPreCompiler.preCompile(
 				project,
@@ -230,7 +265,9 @@ describe("ProjectPreCompiler", () => {
 			const step1Id = Array.from(grafcet1.steps.entries()).find(
 				([, step]) => step.node.value === "X1",
 			)![0];
-			const memoNameForX1 = grafcet1.stepsMemos.get(step1Id)!.variable.getName();
+			const memoNameForX1 = grafcet1.stepsMemos
+				.get(step1Id)!
+				.variable.getName();
 
 			const trans0Node = Array.from(grafcet2.transitions.values())[0].node;
 			const identifiers = new FinderVisitor<IdentifierNode>("IDENTIFIER").visit(
@@ -264,7 +301,8 @@ describe("ProjectPreCompiler", () => {
 				)
 				.build();
 			const project = new ProjectBuilder().addGrafcet(g1).build();
-			const generatedVariables = ProjectAnalyser.analyse(project).generatedVariables;
+			const generatedVariables =
+				ProjectAnalyser.analyse(project).generatedVariables;
 
 			const result = ProjectPreCompiler.preCompile(
 				project,
@@ -280,7 +318,9 @@ describe("ProjectPreCompiler", () => {
 			const memoNameForX2 = grafcet.stepsMemos.get(step2Id)!.variable.getName();
 
 			const t0Node = grafcet.transitions.get("t0")!.node;
-			const identifiers = new FinderVisitor<IdentifierNode>("IDENTIFIER").visit(t0Node);
+			const identifiers = new FinderVisitor<IdentifierNode>("IDENTIFIER").visit(
+				t0Node,
+			);
 			expect(identifiers.map((n) => n.value)).toEqual([memoNameForX2]);
 		});
 
@@ -412,7 +452,7 @@ describe("ProjectPreCompiler", () => {
 				.build();
 			const project = new ProjectBuilder().addGrafcet(grafcet).build();
 
-			const result = ProjectPreCompiler.preCompile(project, []);
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
 
 			expect(result.errors).toEqual([]);
 			expect(result.result).toBeDefined();

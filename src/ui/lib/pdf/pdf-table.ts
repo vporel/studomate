@@ -151,10 +151,7 @@ export function drawPdfTable(
 					doc.text(
 						line,
 						x + style.cellPaddingX,
-						row.y +
-							style.cellPaddingY +
-							style.lineHeight * (lineIndex + 1) -
-							1,
+						row.y + style.cellPaddingY + style.lineHeight * (lineIndex + 1) - 1,
 					);
 				});
 				x += column.width;

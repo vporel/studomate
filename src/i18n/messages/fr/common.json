@@ -4,5 +4,15 @@
 		"description": "Langue de l'interface de l'application.",
 		"fr": "Français",
 		"en": "Anglais"
+	},
+	"programExecution": {
+		"badge": "Non exécuté",
+		"warningLabel": "Exclu de l'exécution",
+		"warningTooltip": "Ce programme n'est pas exécuté",
+		"modalTitle": "Programme non exécuté",
+		"modalBody": "Ce programme est exclu de l'exécution. Il reste dessiné, modifiable et exportable en PDF, mais il n'est ni analysé, ni compilé, ni simulé.",
+		"modalFreeText": "Ses mnémoniques peuvent donc être du texte libre, sans correspondre à une variable déclarée. Ses variables d'étape (Xn) et de bloc n'existent pas pour les autres programmes.",
+		"include": "Inclure dans l'exécution",
+		"close": "Fermer"
 	}
 }

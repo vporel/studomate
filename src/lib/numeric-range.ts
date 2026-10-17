@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 /**
  * Domaine de valeurs d'un type numérique d'automate (INT, WORD…). Concept neutre : ni le schéma
  * ni le simulateur n'en dépendent l'un de l'autre, ils s'accordent sur cette forme.
@@ -20,7 +21,7 @@ export function coerceToRange(value: number, range: NumericRange): number {
 	const truncated = range.integer ? Math.trunc(value) : value;
 	if (truncated >= range.min && truncated <= range.max) return truncated;
 	if (!range.wrap) {
-		return Math.min(range.max, Math.max(range.min, truncated));
+		return clamp(truncated, range.min, range.max);
 	}
 	const span = range.max - range.min + 1;
 	return range.min + (((truncated - range.min) % span) + span) % span;

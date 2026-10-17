@@ -2,6 +2,7 @@ import {
 	ArithmeticOperator,
 	ComparisonOperator,
 } from "@/expression-language/operators";
+import { ConvertibleType } from "@/expression-language/conversions";
 import { ASTNode } from "./ast-node";
 import { BaseNode } from "./base-node";
 
@@ -39,4 +40,18 @@ export interface LogicalExpressionNode extends BaseNode {
 export type BinaryExpressionNode =
 	ArithmeticExpressionNode | ComparisonExpressionNode | LogicalExpressionNode;
 
-export type ExpressionNode = UnaryExpressionNode | BinaryExpressionNode;
+/**
+ * `<sourceType>_TO_<targetType>(expr)`. `sourceType` is `null` when the conversion takes the
+ * operand's own type (Ladder conversion block, whose source is the type of its `IN` variable).
+ */
+export interface ConversionExpressionNode extends BaseNode {
+	type: "CONVERSION_EXPRESSION";
+	sourceType: ConvertibleType | null;
+	targetType: ConvertibleType;
+	expr: ASTNode;
+}
+
+export type ExpressionNode =
+	| UnaryExpressionNode
+	| BinaryExpressionNode
+	| ConversionExpressionNode;

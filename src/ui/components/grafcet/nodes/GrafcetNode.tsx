@@ -1,7 +1,7 @@
 "use client";
 
 import { ElementType } from "@/schemas/grafcet/element.schema";
-import ErrorTooltip from "@/ui/lib/mui/tooltip/ErrorTooltip";
+import ErrorTooltip from "@/ui/components/mui/tooltip/ErrorTooltip";
 import { Box, BoxProps } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { forwardRef, ReactNode } from "react";

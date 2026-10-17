@@ -72,4 +72,49 @@ describe("VariablesMapper", () => {
 			expect(result.getValue()).toBe(original.getValue());
 		});
 	});
+
+	it("conserve le type déclaré dans les deux sens", () => {
+		const envVar = new EnvVariable("id", "d", "number", "INOUT", null, "DINT");
+		const plcVar = VariablesMapper.envToPlc(envVar);
+		expect(plcVar.getDeclaredType()).toBe("DINT");
+		expect(VariablesMapper.plcToEnv(plcVar).getDeclaredType()).toBe("DINT");
+	});
+});
+
+describe("VariablesMapper constants", () => {
+	it("envToPlc keeps the constant flag and the value", () => {
+		const env = new EnvVariable(
+			"id",
+			"K",
+			"number",
+			"INOUT",
+			null,
+			"INT",
+			true,
+			9,
+		);
+
+		const plc = VariablesMapper.envToPlc(env);
+
+		expect(plc.isConstant()).toBe(true);
+		expect(plc.getValue()).toBe(9);
+	});
+
+	it("plcToEnv keeps the constant flag and the value", () => {
+		const plc = new PLCVariable(
+			"id",
+			"K",
+			"memory",
+			"number",
+			null,
+			"INT",
+			true,
+			9,
+		);
+
+		const env = VariablesMapper.plcToEnv(plc);
+
+		expect(env.isConstant()).toBe(true);
+		expect(env.getValue()).toBe(9);
+	});
 });

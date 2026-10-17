@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import {
@@ -42,7 +43,9 @@ function buildProject(): Project {
 		new GrafcetBuilder()
 			.id("g1")
 			.name("Cycle")
-			.addTransition(new TransitionBuilder().id("t1").expression("Moteur").build())
+			.addTransition(
+				new TransitionBuilder().id("t1").expression("Moteur").build(),
+			)
 			.build(),
 	);
 	return project;
@@ -90,7 +93,7 @@ describe("CrossReferenceResult", () => {
 		setup();
 		expect(screen.getByText("Dcy")).toBeInTheDocument();
 		expect(screen.getByText("Moteur")).toBeInTheDocument();
-		expect(screen.getByText(/section « Marche ».*bobine/)).toBeInTheDocument();
+		expect(screen.getByText(/réseau « Marche ».*bobine/)).toBeInTheDocument();
 		expect(
 			screen.getByText(/Cycle · réceptivité de transition/),
 		).toBeInTheDocument();
@@ -120,7 +123,15 @@ describe("CrossReferenceResult", () => {
 
 	it("distingue une variable existante sans référence d'un filtre qui ne correspond à rien", () => {
 		const project = buildProject();
-		project.variables.push(new Variable("v1", "ma_var2", "memory", "BOOL"));
+		project.variables.push(
+			new Variable({
+				id: "v1",
+				mnemonic: "ma_var2",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 
 		setup(true, "ma_var2", project);
 		expect(

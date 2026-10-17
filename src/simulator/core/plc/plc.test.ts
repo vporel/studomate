@@ -124,6 +124,40 @@ describe("PLC", () => {
 			plc.stop();
 		});
 
+		it("returns the stored value, brought back into the input's range", () => {
+			const slider = new PLCVariable("s1", "niveau", "input", "number", {
+				min: 0,
+				max: 100,
+				integer: true,
+				wrap: false,
+			});
+			const memory = new PLCVariable("m1", "compteur", "memory", "number", {
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [],
+				variables: [slider, memory],
+			});
+
+			expect(plc.setPhysicalInputValueById("s1", 150)).toBe(100);
+			expect(plc.setMemoryValueById("m1", 32768)).toBe(-32768);
+		});
+
+		it("keeps the initial value of a compiled input (rest value)", () => {
+			const stop = new PLCVariable("b1", "arret", "input", "boolean");
+			stop.setValue(true);
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [stop] });
+
+			const snapshot = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getId() === "b1")!;
+			expect(snapshot.getValue()).toBe(true);
+		});
+
 		it("throws on unknown input id", () => {
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -201,7 +235,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := x + 5");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -224,7 +258,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -299,7 +333,7 @@ describe("PLC", () => {
 			const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
 			// Create a bad routine that will throw
-			const badRoutine = new PLCRoutine([null as any]);
+			const badRoutine = PLCRoutine.fromNodes([null as any]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -324,7 +358,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -349,7 +383,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -377,7 +411,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -400,7 +434,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -450,12 +484,64 @@ describe("PLC", () => {
 			expect(input?.getValue()).toBe(99);
 		});
 
+		describe("forçage d'une entrée dont la source physique est indépendante", () => {
+			const createPlcCopyingInput = () => {
+				const ast = new Parser(
+					new Lexer(Dialect.FR).tokenize("result := x"),
+				).parse();
+				const plc = new PLC({
+					scanTimeMs: 100,
+					program: [PLCRoutine.fromNodes([ast])],
+					variables: [inputVar, outputVar],
+				});
+				plc.start();
+				plc.pause();
+				return plc;
+			};
+			const readResult = (plc: PLC) =>
+				plc
+					.getVariablesSnapshot()
+					.find((v) => v.getName() === "result")
+					?.getValue();
+
+			it("le programme voit la valeur forcée alors que la source vaut autre chose", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(5);
+			});
+
+			it("après release, le cycle suivant revoit la valeur réelle de la source", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				plc.releaseVariable("id1");
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(0);
+			});
+
+			it("un changement de la source pendant le forçage est ignoré puis visible après release", () => {
+				const plc = createPlcCopyingInput();
+				plc.setPhysicalInputValueById("id1", 0);
+				plc.forceVariable("id1", 5);
+				plc.stepOnce();
+				plc.setPhysicalInputValueById("id1", 8);
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(5);
+				plc.releaseVariable("id1");
+				plc.stepOnce();
+				expect(readResult(plc)).toBe(8);
+			});
+		});
+
 		it("forceVariable empêche le programme d'écraser une variable mémoire", () => {
 			const lexer = new Lexer(Dialect.FR);
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -478,7 +564,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := 99");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -501,7 +587,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -556,7 +642,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("count := count + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -568,7 +654,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100 * 50);
 			plc.stop();
 
-			const count = plc.getVariablesSnapshot().find((v) => v.getName() === "count");
+			const count = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "count");
 			expect(count?.getValue()).toBe(50);
 		});
 
@@ -577,7 +665,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := x + 1");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -592,7 +680,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100);
 			plc.stop();
 
-			const result = plc.getVariablesSnapshot().find((v) => v.getName() === "result");
+			const result = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "result");
 			expect(result?.getValue()).toBe(9);
 		});
 
@@ -602,7 +692,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("flag := NON flag");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -614,7 +704,9 @@ describe("PLC", () => {
 			jest.advanceTimersByTime(100);
 			plc.stop();
 
-			const flag = plc.getVariablesSnapshot().find((v) => v.getName() === "flag");
+			const flag = plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === "flag");
 			expect(flag?.getValue()).toBe(true);
 		});
 	});
@@ -643,7 +735,7 @@ describe("PLC", () => {
 			const tokens = lexer.tokenize("result := 99");
 			const parser = new Parser(tokens);
 			const ast = parser.parse();
-			const routine = new PLCRoutine([ast]);
+			const routine = PLCRoutine.fromNodes([ast]);
 
 			const plc = new PLC({
 				scanTimeMs: 100,
@@ -664,36 +756,54 @@ describe("PLC", () => {
 
 	describe("bases de temps système", () => {
 		const pulseOf = (plc: PLC, name: string): boolean =>
-			plc.getVariablesSnapshot().find((v) => v.getName() === name)
+			plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === name)
 				?.getValue() as boolean;
 
-		it("_SYS_TB_200ms : impulsion d'un scan une fois par période, scan 100 ms", () => {
+		it("_SYS_TB_200ms : alterne à chaque scan quand la demi-période vaut le temps de scan", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
 
-			jest.advanceTimersByTime(100); // acc 100 < 200
+			jest.advanceTimersByTime(100); // phase 100 (>= 100) -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			jest.advanceTimersByTime(100); // acc 100
+			jest.advanceTimersByTime(100); // phase 100 -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
 
 			plc.stop();
 		});
 
-		it("report : un scan couvrant plusieurs périodes soustrait une période et reporte le reliquat sur les scans suivants", () => {
+		it("_SYS_TB_1s : signal carré, niveau haut maintenu sur toute la première moitié de la période", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+
+			for (let i = 0; i < 4; i++) {
+				jest.advanceTimersByTime(100); // phase 100, 200, 300, 400 : < 500 -> vrai
+				expect(pulseOf(plc, "_SYS_TB_1s")).toBe(true);
+			}
+			for (let i = 0; i < 5; i++) {
+				jest.advanceTimersByTime(100); // phase 500, 600, 700, 800, 900 : >= 500 -> faux
+				expect(pulseOf(plc, "_SYS_TB_1s")).toBe(false);
+			}
+			jest.advanceTimersByTime(100); // phase 0 -> vrai, la période recommence
+			expect(pulseOf(plc, "_SYS_TB_1s")).toBe(true);
+
+			plc.stop();
+		});
+
+		it("un scan couvrant plusieurs périodes retombe directement sur la bonne phase", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
 			plc.pause();
-			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle
+			jest.advanceTimersByTime(500); // 5 battements comptés, aucun cycle exécuté
 
-			plc.stepOnce(); // delta 500 : acc 500 -> impulsion, reste 300
-			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			plc.stepOnce(); // delta 0 : acc 300 -> impulsion, reste 100
-			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
-			plc.stepOnce(); // delta 0 : acc 100 -> pas d'impulsion
+			plc.stepOnce(); // delta 500 d'un coup : phase 500 % 200 = 100 -> faux
+			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
+			plc.stepOnce(); // delta 0 : phase toujours 100 -> faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
 
 			plc.stop();
@@ -702,14 +812,123 @@ describe("PLC", () => {
 		it("remet les accumulateurs à zéro au stop puis au redémarrage", () => {
 			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
 			plc.start();
-			jest.advanceTimersByTime(100); // acc 100
+			jest.advanceTimersByTime(100); // phase 100
 			plc.stop();
 
 			plc.start();
-			jest.advanceTimersByTime(100); // acc repart de 0 -> 100, pas d'impulsion
+			jest.advanceTimersByTime(100); // phase repart de 0 -> 100, faux
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(false);
-			jest.advanceTimersByTime(100); // acc 200 -> impulsion
+			jest.advanceTimersByTime(100); // phase 0 -> vrai
 			expect(pulseOf(plc, "_SYS_TB_200ms")).toBe(true);
+			plc.stop();
+		});
+	});
+	describe("bit de premier scan système", () => {
+		const valueOf = (plc: PLC, name: string): boolean =>
+			plc
+				.getVariablesSnapshot()
+				.find((v) => v.getName() === name)
+				?.getValue() as boolean;
+
+		it("_SYS_FIRST_SCAN est vrai au premier scan seulement, et lisible par le programme", () => {
+			const tokens = new Lexer(Dialect.FR).tokenize("init := _SYS_FIRST_SCAN");
+			const routine = PLCRoutine.fromNodes([new Parser(tokens).parse()]);
+			const initVar = new PLCVariable("id_init", "init", "memory", "boolean");
+			const plc = new PLC({
+				scanTimeMs: 100,
+				program: [routine],
+				variables: [initVar],
+			});
+			plc.start();
+
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+			expect(valueOf(plc, "init")).toBe(true);
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+			expect(valueOf(plc, "init")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("cycle d'établissement en pause : vrai sur ce cycle, faux dès le pas suivant", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			plc.pause();
+
+			plc.stepOnce();
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+			plc.stepOnce();
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("pause puis reprise ne le réarment pas", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(100);
+			plc.pause();
+			plc.resume();
+
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(false);
+
+			plc.stop();
+		});
+
+		it("un redémarrage après stop le réarme", () => {
+			const plc = new PLC({ scanTimeMs: 100, program: [], variables: [] });
+			plc.start();
+			jest.advanceTimersByTime(200);
+			plc.stop();
+
+			plc.start();
+			jest.advanceTimersByTime(100);
+			expect(valueOf(plc, "_SYS_FIRST_SCAN")).toBe(true);
+
+			plc.stop();
+		});
+	});
+
+	describe("cycle delta", () => {
+		function createFakeHeartbeat() {
+			let beat: () => void = () => {};
+			const scheduler = (tick: () => void) => {
+				beat = tick;
+				return () => {};
+			};
+			return { scheduler, beat: () => beat() };
+		}
+
+		function createPlc(heartbeat: () => () => void) {
+			return new PLC({
+				scanTimeMs: 50,
+				program: [],
+				variables: [],
+				heartbeat: heartbeat as never,
+			});
+		}
+
+		it("exposes the time charged to the last cycle in continuous mode", () => {
+			const fake = createFakeHeartbeat();
+			const plc = createPlc(fake.scheduler as never);
+			plc.start();
+			fake.beat();
+			expect(plc.getLastCycleDeltaMs()).toBe(50);
+			plc.stop();
+		});
+
+		it("exposes the real time elapsed between two steps in step-by-step mode", () => {
+			const fake = createFakeHeartbeat();
+			const plc = createPlc(fake.scheduler as never);
+			plc.start();
+			plc.pause();
+			fake.beat();
+			fake.beat();
+			fake.beat();
+			plc.stepOnce();
+			expect(plc.getLastCycleDeltaMs()).toBe(150);
 			plc.stop();
 		});
 	});

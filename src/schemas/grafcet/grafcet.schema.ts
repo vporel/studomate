@@ -80,6 +80,7 @@ export const elementsSchemasClasses: Record<ElementType, any> =
  */
 export default class Grafcet extends Program {
 	readonly type: ProgramType = "grafcet";
+
 	steps: Record<string, Step> = {};
 	actions: Record<string, Action> = {};
 	transitions: Record<string, Transition> = {};
@@ -332,7 +333,7 @@ export default class Grafcet extends Program {
 	 */
 	renameIdentifiersInExpressions(
 		renames: Record<string, string>,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): void {
 		if (Object.keys(renames).length === 0) return;
 

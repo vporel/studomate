@@ -13,7 +13,9 @@ import { PageType } from "@/ui/stores/project/project.store";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import CloseIcon from "@mui/icons-material/Close";
+import MemoryIcon from "@mui/icons-material/Memory";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import {
 	alpha,
 	Box,
@@ -22,7 +24,8 @@ import {
 	Typography,
 	useTheme,
 } from "@mui/material";
-import { ElementType } from "react";
+import type { SxProps } from "@mui/material";
+import { ComponentType, ElementType } from "react";
 import { useShallow } from "zustand/shallow";
 
 /**
@@ -35,6 +38,8 @@ const TYPE_ICONS: Record<Exclude<PageType, "ladder">, ElementType> = {
 	"project-properties": ProjectPropertiesIcon,
 	preferences: SettingsIcon,
 	exercise: ExerciseIcon,
+	"hardware-configuration": MemoryIcon,
+	"scene3d-configuration": ViewInArIcon,
 	grafcet: InclinedAccountTreeIcon,
 	variables: VariablesIcon,
 	"system-variables": VariablesIcon,
@@ -73,6 +78,10 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				? LadderMainIcon
 				: LadderIcon
 			: TYPE_ICONS[type];
+	const TypeIcon = TypeIconComponent as ComponentType<{
+		className?: string;
+		sx?: SxProps;
+	}>;
 
 	const {
 		setNodeRef,
@@ -91,6 +100,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			aria-selected={active}
 			{...attributes}
 			{...listeners}
+			style={{ transform: CSS.Transform.toString(transform) }}
 			sx={{
 				height: "100%",
 				width: "fit-content",
@@ -102,7 +112,6 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 				gap: "10px",
 				cursor: "pointer",
 				userSelect: "none",
-				transform: CSS.Transform.toString(transform),
 				transition: [transition, "background-color .2s ease", "color .2s ease"]
 					.filter(Boolean)
 					.join(", "),
@@ -136,7 +145,7 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 			}}
 		>
 			<Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-				<TypeIconComponent
+				<TypeIcon
 					className="page__tab__type-icon"
 					sx={{
 						color: active ? "white" : th.palette.primary.main,

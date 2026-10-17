@@ -22,7 +22,7 @@ import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/s
  *
  * - onActivation  : executed once when the step becomes active  (RISING_EDGE, SET, RESET)
  * - continuous    : executed every scan cycle while step is active (CONTINUOUS)
- * - onDeactivation: executed once when the step becomes inactive (FALLING_EDGE, CONTINUOUS boolean cleanup)
+ * - onDeactivation: executed once when the step becomes inactive (FALLING_EDGE)
  */
 export type PreCompiledActionPhases = {
 	onActivation: ASTNode[];
@@ -36,6 +36,12 @@ export type PreCompiledActionPhases = {
  */
 export type PreCompiledAction = {
 	phases: PreCompiledActionPhases;
+	/**
+	 * Mnemonics of the boolean outputs held at TRUE while the step is active (CONTINUOUS boolean
+	 * actions). They are not driven by the phases: the project-level level routine ORs every
+	 * step carrying the same output.
+	 */
+	levelOutputs: string[];
 	stepId: string; //The id of the single step that can activate this action
 };
 
@@ -63,13 +69,15 @@ export default class ActionPreCompiler {
 			continuous: [],
 			onDeactivation: [],
 		};
+		let levelOutputs: string[] = [];
 		if (action.data.type === ActionType.BOOLEAN_VARIABLE) {
-			phases = this.compileBooleanAction(action, variables);
+			({ phases, levelOutputs } = this.compileBooleanAction(action, variables));
 		} else {
 			phases = this.compileExpressionAction(action, variables, dialect);
 		}
 		return {
 			phases,
+			levelOutputs,
 			stepId: ActionHelper.getStep(action.id, grafcet)!.id, //The analyser should have already verified that the action is connected to exactly one step
 		};
 	}
@@ -84,20 +92,21 @@ export default class ActionPreCompiler {
 	 * |--------------|-------------------|-------------------|
 	 * | SET          | mnemonic := TRUE  | —                 |
 	 * | RESET        | mnemonic := FALSE | —                 |
-	 * | CONTINUOUS   | mnemonic := TRUE  | mnemonic := FALSE |
+	 * | CONTINUOUS   | — (levelOutputs)  | —                 |
 	 * | RISING_EDGE  | mnemonic := TRUE  | —                 |
 	 * | FALLING_EDGE | —                 | mnemonic := TRUE  |
 	 */
 	private static compileBooleanAction(
 		action: Action,
 		plcVariables: PLCVariable[],
-	): PreCompiledActionPhases {
+	): { phases: PreCompiledActionPhases; levelOutputs: string[] } {
 		const env = new Environment(plcVariables.map(PlcVariablesMapper.plcToEnv));
 		const phases: PreCompiledActionPhases = {
 			onActivation: [],
 			continuous: [],
 			onDeactivation: [],
 		};
+		const levelOutputs: string[] = [];
 		action.getExpressionLines().forEach((mnemonic) => {
 			const simplifier = new SimplifierVisitor();
 
@@ -119,8 +128,8 @@ export default class ActionPreCompiler {
 					phases.onActivation.push(buildValidated(false));
 					break;
 				case ActionExecutionMode.CONTINUOUS:
-					phases.onActivation.push(buildValidated(true));
-					phases.onDeactivation.push(buildValidated(false));
+					buildValidated(true);
+					levelOutputs.push(mnemonic);
 					break;
 				case ActionExecutionMode.RISING_EDGE:
 					phases.onActivation.push(buildValidated(true));
@@ -132,7 +141,7 @@ export default class ActionPreCompiler {
 					break;
 			}
 		});
-		return phases;
+		return { phases, levelOutputs };
 	}
 
 	// ─── Numeric / String variable actions ───────────────────────────────────

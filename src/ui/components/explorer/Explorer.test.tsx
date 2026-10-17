@@ -11,6 +11,7 @@ jest.mock("../projects/ProjectContext");
 jest.mock("./ExplorerVariablesItems", () => () => null);
 jest.mock("./ExplorerProgramsItems", () => () => null);
 jest.mock("./ExplorerHmiItems", () => () => null);
+jest.mock("./ExplorerConfigurationItems", () => () => null);
 jest.mock("./ExplorerSystemBlockInstancesItems", () => () => null);
 jest.mock("./ExplorerSystemBlocksItems", () => () => null);
 jest.mock("./context-menu/ExplorerContextMenu", () => () => null);
@@ -19,6 +20,7 @@ function setup(activeScopeType: string) {
 	const project = {
 		getAllTimerBlockElements: () => [],
 		getAllCounterBlockElements: () => [],
+		grafcets: {},
 	};
 	(useProjectStore as jest.Mock).mockImplementation(
 		selectorImplementation({ project, activeScopeType }),
@@ -32,6 +34,11 @@ describe("Explorer", () => {
 	it("affiche la palette « Blocs systèmes » sur un ladder", () => {
 		setup("ladder");
 		expect(screen.getByText("Blocs systèmes")).toBeInTheDocument();
+	});
+
+	it("affiche la section « Configuration »", () => {
+		setup("grafcet");
+		expect(screen.getByText("Configuration")).toBeInTheDocument();
 	});
 
 	it("masque la palette « Blocs systèmes » hors ladder", () => {

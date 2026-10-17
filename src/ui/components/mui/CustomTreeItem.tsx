@@ -79,6 +79,9 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 		}
 	}, [labelMode]);
 
+	const Icon = IconComponent as
+		React.ComponentType<{ sx?: SxProps }> | undefined;
+
 	return (
 		<TreeItemProvider {...getContextProviderProps()}>
 			<TreeItemRoot {...getRootProps(other)} sx={styles?.root}>
@@ -90,7 +93,7 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 					<Box
 						sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1 }}
 					>
-						{IconComponent && <IconComponent sx={styles?.icon} />}
+						{Icon && <Icon sx={styles?.icon} />}
 						{labelMode === "normal" ? (
 							<TreeItemLabel {...getLabelProps()} sx={styles?.label} />
 						) : (

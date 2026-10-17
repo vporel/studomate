@@ -8,6 +8,7 @@ import { IfControlNode } from "../nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "../nodes/expressions";
@@ -100,6 +101,17 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		};
 	}
 
+	protected visitConversionExpressionNode(
+		node: ConversionExpressionNode,
+	): ASTNode {
+		const replacement = this.replacements.find((r) => r.predicate(node));
+		if (replacement) return replacement.replacement;
+		return {
+			...node,
+			expr: this.visit(node.expr),
+		};
+	}
+
 	protected visitAssignStatementNode(node: AssignStatementNode): ASTNode {
 		const replacement = this.replacements.find((r) => r.predicate(node));
 		if (replacement) return replacement.replacement;
@@ -153,10 +165,21 @@ export default class ReplacerVisitor extends BaseVisitor<ASTNode> {
 		return {
 			...node,
 			input: this.visit(node.input),
+			lastInput: this.visit(node.lastInput),
 			control: this.visit(node.control),
 			presetValue: this.visit(node.presetValue),
 			currentValue: this.visit(node.currentValue),
 			output: this.visit(node.output),
+			...(node.down
+				? {
+						down: {
+							input: this.visit(node.down.input),
+							lastInput: this.visit(node.down.lastInput),
+							load: this.visit(node.down.load),
+							output: this.visit(node.down.output),
+						},
+					}
+				: {}),
 		};
 	}
 }

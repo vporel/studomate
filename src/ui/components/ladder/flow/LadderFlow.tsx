@@ -28,15 +28,15 @@ import LadderSection from "./LadderSection";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 import "@xyflow/react/dist/style.css";
+import "@/ui/lib/react-flow/flow-page.css";
 import "./_ladder-page.css";
 
 function LadderFlowContent() {
 	const th = useTheme();
 	const tReorderRaw = useT("ladderEditor.reorder");
 	const tReorder = useMemo(
-		() =>
-			(key: string, values?: Record<string, string | number>) =>
-				tReorderRaw(key as never, values as never),
+		() => (key: string, values?: Record<string, string | number>) =>
+			tReorderRaw(key as never, values as never),
 		[tReorderRaw],
 	);
 	const sections = useLadderStore((state) => state.ladder.sections);
@@ -93,7 +93,7 @@ function LadderFlowContent() {
 
 	return (
 		<Box
-			className="ladder-page"
+			className="ladder-page flow-page"
 			sx={{
 				padding: "25px",
 				width: "100%",

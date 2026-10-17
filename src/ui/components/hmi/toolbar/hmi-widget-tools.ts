@@ -3,7 +3,7 @@ import {
 	HmiWidgetKind,
 	HmiWidgetType,
 } from "@/schemas/hmi/hmi-widget.schema";
-import { HmiWidgetTool } from "@/ui/components/hmi/view/constants";
+import { HmiWidgetTool } from "@/ui/components/hmi/logic/constants";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 
 /** Outils « un type = un outil » d'un groupe de palette, triés par `paletteOrder` — dérivés des

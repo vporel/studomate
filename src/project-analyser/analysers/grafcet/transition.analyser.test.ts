@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
@@ -16,7 +17,9 @@ describe("TransitionAnalyser", () => {
 				.expression("x = VRAI")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -27,7 +30,9 @@ describe("TransitionAnalyser", () => {
 				.expression("")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -42,6 +47,7 @@ describe("TransitionAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(transition, {
 				allowEmptyContent: true,
+				dialect: Dialect.FR,
 			});
 
 			expect(issues).toHaveLength(0);
@@ -53,10 +59,12 @@ describe("TransitionAnalyser", () => {
 				.expression("x := 5")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
-			const assignmentIssue = issues.find((i) =>
-				i.code === "TRANSITION_ASSIGNMENT_NOT_ALLOWED",
+			const assignmentIssue = issues.find(
+				(i) => i.code === "TRANSITION_ASSIGNMENT_NOT_ALLOWED",
 			);
 			expect(assignmentIssue).toBeDefined();
 			expect(assignmentIssue?.severity).toBe("error");
@@ -68,10 +76,12 @@ describe("TransitionAnalyser", () => {
 				.expression("42")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
-			const numericIssue = issues.find((i) =>
-				i.code === "TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
+			const numericIssue = issues.find(
+				(i) => i.code === "TRANSITION_NUMERIC_CONSTANT_NOT_ALLOWED",
 			);
 			expect(numericIssue).toBeDefined();
 			expect(numericIssue?.severity).toBe("error");
@@ -87,8 +97,12 @@ describe("TransitionAnalyser", () => {
 				.expression("FAUX")
 				.build();
 
-			const issues1 = analyser.analyseIsolated(transition1);
-			const issues2 = analyser.analyseIsolated(transition2);
+			const issues1 = analyser.analyseIsolated(transition1, {
+				dialect: Dialect.FR,
+			});
+			const issues2 = analyser.analyseIsolated(transition2, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues1).toHaveLength(0);
 			expect(issues2).toHaveLength(0);
@@ -100,7 +114,9 @@ describe("TransitionAnalyser", () => {
 				.expression("x > 10")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -111,7 +127,9 @@ describe("TransitionAnalyser", () => {
 				.expression("a ET b OU c")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -122,7 +140,9 @@ describe("TransitionAnalyser", () => {
 				.expression("x + +")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues.length).toBeGreaterThan(0);
 			expect(issues[0].severity).toBe("error");
@@ -134,7 +154,9 @@ describe("TransitionAnalyser", () => {
 				.expression("(a OU b) ET NON c")
 				.build();
 
-			const issues = analyser.analyseIsolated(transition);
+			const issues = analyser.analyseIsolated(transition, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -169,13 +191,14 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const noPredecessorIssues = issues.filter((i) =>
-				i.code === "TRANSITION_NO_PREDECESSOR",
+			const noPredecessorIssues = issues.filter(
+				(i) => i.code === "TRANSITION_NO_PREDECESSOR",
 			);
-			const noSuccessorIssues = issues.filter((i) =>
-				i.code === "TRANSITION_NO_SUCCESSOR",
+			const noSuccessorIssues = issues.filter(
+				(i) => i.code === "TRANSITION_NO_SUCCESSOR",
 			);
 			expect(noPredecessorIssues).toHaveLength(0);
 			expect(noSuccessorIssues).toHaveLength(0);
@@ -195,10 +218,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const noPredecessorIssue = issues.find((i) =>
-				i.code === "TRANSITION_NO_PREDECESSOR",
+			const noPredecessorIssue = issues.find(
+				(i) => i.code === "TRANSITION_NO_PREDECESSOR",
 			);
 			expect(noPredecessorIssue).toBeDefined();
 			expect(noPredecessorIssue?.severity).toBe("error");
@@ -218,9 +242,12 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const noSuccessorIssue = issues.find((i) => i.code === "TRANSITION_NO_SUCCESSOR");
+			const noSuccessorIssue = issues.find(
+				(i) => i.code === "TRANSITION_NO_SUCCESSOR",
+			);
 			expect(noSuccessorIssue).toBeDefined();
 			expect(noSuccessorIssue?.severity).toBe("error");
 		});
@@ -239,6 +266,7 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
 			const undefinedVarIssue = issues.find(
@@ -281,6 +309,7 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment([variable]),
+				Dialect.FR,
 			);
 
 			const varIssues = issues.filter(
@@ -311,9 +340,12 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment([variable]),
+				Dialect.FR,
 			);
 
-			const typeIssue = issues.find((i) => i.code === "TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE");
+			const typeIssue = issues.find(
+				(i) => i.code === "TRANSITION_NON_BOOLEAN_VARIABLE_REFERENCE",
+			);
 			expect(typeIssue).toBeDefined();
 			expect(typeIssue?.severity).toBe("error");
 		});
@@ -338,9 +370,12 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment([variable]),
+				Dialect.FR,
 			);
 
-			const conflictIssue = issues.find((i) => i.code === "TRANSITION_TIMER_NAME_CONFLICT");
+			const conflictIssue = issues.find(
+				(i) => i.code === "TRANSITION_TIMER_NAME_CONFLICT",
+			);
 			expect(conflictIssue).toBeDefined();
 			expect(conflictIssue?.severity).toBe("error");
 		});
@@ -373,10 +408,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const conflictIssues = issues.filter((i) =>
-				i.code === "TRANSITION_TIMER_NAME_CONFLICT",
+			const conflictIssues = issues.filter(
+				(i) => i.code === "TRANSITION_TIMER_NAME_CONFLICT",
 			);
 			expect(conflictIssues).toHaveLength(0);
 		});
@@ -395,10 +431,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const divisionIssue = issues.find((i) =>
-				i.code === "TRANSITION_INVALID_EXPRESSION",
+			const divisionIssue = issues.find(
+				(i) => i.code === "TRANSITION_INVALID_EXPRESSION",
 			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
@@ -438,10 +475,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const multiSuccessorIssue = issues.find((i) =>
-				i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
+			const multiSuccessorIssue = issues.find(
+				(i) => i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
 			);
 			expect(multiSuccessorIssue).toBeDefined();
 			expect(multiSuccessorIssue?.severity).toBe("error");
@@ -475,10 +513,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const multiSuccessorIssues = issues.filter((i) =>
-				i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
+			const multiSuccessorIssues = issues.filter(
+				(i) => i.code === "TRANSITION_MULTIPLE_SUCCESSORS",
 			);
 			expect(multiSuccessorIssues).toHaveLength(0);
 		});
@@ -517,10 +556,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const multiPredecessorIssue = issues.find((i) =>
-				i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
+			const multiPredecessorIssue = issues.find(
+				(i) => i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
 			);
 			expect(multiPredecessorIssue).toBeDefined();
 			expect(multiPredecessorIssue?.severity).toBe("error");
@@ -554,10 +594,11 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const multiPredecessorIssues = issues.filter((i) =>
-				i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
+			const multiPredecessorIssues = issues.filter(
+				(i) => i.code === "TRANSITION_MULTIPLE_PREDECESSORS",
 			);
 			expect(multiPredecessorIssues).toHaveLength(0);
 		});
@@ -591,6 +632,7 @@ describe("TransitionAnalyser", () => {
 				transition,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
 			expect(

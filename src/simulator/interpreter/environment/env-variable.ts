@@ -1,4 +1,5 @@
 import { coerceToRange, NumericRange } from "@/lib/numeric-range";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import IllegalVariableValueTypeException from "./exceptions/illegal-variable-value-type.exception";
 
 export type EnvVariableType = "number" | "string" | "boolean";
@@ -13,6 +14,11 @@ export default class EnvVariable {
 	private value: EnvVariableValue;
 	/** Domaine du type numérique d'origine (INT, WORD…) — toute valeur écrite y est ramenée. */
 	private numericRange: NumericRange | null;
+	/** Declared PLC type, used by the typing rules of the language (`null` for an internal
+	 * variable such as a step memo). */
+	private declaredType: VariableType | null;
+	/** A constant keeps the value it was created with: any later write is refused. */
+	private constant: boolean;
 
 	constructor(
 		id: string,
@@ -20,12 +26,17 @@ export default class EnvVariable {
 		type: EnvVariableType,
 		direction: EnvVariableDirection,
 		numericRange: NumericRange | null = null,
+		declaredType: VariableType | null = null,
+		isConstant = false,
+		initialValue?: EnvVariableValue,
 	) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.direction = direction;
 		this.numericRange = numericRange;
+		this.declaredType = declaredType;
+		this.constant = false;
 		switch (type) {
 			case "number":
 				this.value = 0;
@@ -37,6 +48,8 @@ export default class EnvVariable {
 				this.value = false;
 				break;
 		}
+		if (initialValue !== undefined) this.setValue(initialValue);
+		this.constant = isConstant;
 	}
 
 	getId(): string {
@@ -55,6 +68,14 @@ export default class EnvVariable {
 		return this.numericRange;
 	}
 
+	getDeclaredType(): VariableType | null {
+		return this.declaredType;
+	}
+
+	isConstant(): boolean {
+		return this.constant;
+	}
+
 	getDirection(): EnvVariableDirection {
 		return this.direction;
 	}
@@ -64,6 +85,7 @@ export default class EnvVariable {
 	}
 
 	setValue(value: EnvVariableValue): void {
+		if (this.constant) throw new Error(`"${this.name}" is a constant`);
 		const valueType = typeof value;
 		if (valueType !== this.type) {
 			throw new IllegalVariableValueTypeException(

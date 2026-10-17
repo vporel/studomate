@@ -5,9 +5,30 @@
 	"PROJECT_MULTIPLE_MAINS": "The project has {count} Main programs; it should have exactly one.",
 	"LADDER_NOT_REFERENCED": "The \"{ladderName}\" ladder is not referenced by any block in the project: it will never run.",
 
+	"HARDWARE_MODEL_UNKNOWN": "The hardware target \"{modelId}\" is unknown to this version of Studomate: its addresses cannot be checked.",
+	"HARDWARE_PIN_UNKNOWN": "Variable \"{variableName}\" has address {address}, which does not exist on the {device} target.",
+	"HARDWARE_PIN_RESERVED": "Variable \"{variableName}\" has address {address}, which is a reserved pin of the {device} target: it cannot carry a variable.",
+	"HARDWARE_PIN_CAPABILITY_MISMATCH": "Variable \"{variableName}\" (zone {zone}) has address {address}, whose pin on the {device} target does not support this use.",
+	"HARDWARE_PIN_DUPLICATE": "Address {address} of the {device} target is claimed by several variables: {variableNames}.",
+	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "Memory variable \"{variableName}\" has address {address}, which is a physical pin of the {device} target. A memory variable cannot be bound to a pin.",
+	"HARDWARE_INPUT_UNBOUND": "Input \"{variableName}\" is read by a program but has no address on the {device} target: in a program sent to the board it stays at false (0) for ever.",
+	"HARDWARE_TYPE_NOT_SUPPORTED": "Type {type} is not supported by the {device} target.",
+	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "Variable \"{variableName}\" has type {type}, which is not supported by the {device} target.",
+	"SCENE3D_UNKNOWN": "The 3D scene \"{sceneId}\" is unknown to this version of Studomate: it cannot be simulated.",
+	"SCENE3D_POINT_UNBOUND": "The 3D scene point \"{point}\" is not bound to any variable: the scene is still usable, but this point has no effect.",
+	"SCENE3D_BINDING_VARIABLE_MISSING": "The 3D scene point \"{point}\" is bound to a variable that no longer exists.",
+	"SCENE3D_SENSOR_NOT_INPUT": "The 3D scene sensor \"{point}\" is bound to variable \"{variableName}\", which is not an input.",
+	"SCENE3D_ACTUATOR_NOT_OUTPUT": "The 3D scene actuator \"{point}\" is bound to variable \"{variableName}\", which is not an output.",
+	"SCENE3D_DISPLAY_NOT_MEMORY": "The 3D scene display \"{point}\" is bound to variable \"{variableName}\", which is not a memory variable.",
+	"SCENE3D_TYPE_MISMATCH": "The 3D scene point \"{point}\" expects a {expectedType} value, but variable \"{variableName}\" is of type {variableType}.",
+	"SCENE3D_SENSOR_DUPLICATE": "Variable \"{variableName}\" is bound to several 3D scene sensors ({points}): an input can only have one source.",
+	"SCENE3D_SENSOR_ALSO_ON_PIN": "Input \"{variableName}\" is driven by the 3D scene sensor \"{point}\" but also has address {address} on the hardware target: it would have two sources.",
+	"SCENE3D_SENSOR_WRITTEN_BY_HMI": "Input \"{variableName}\" is driven by the 3D scene: writes from an HMI widget are ignored during the simulation.",
+	"PROJECT_CONSTANT_INVALID": "Constant \"{variableName}\" is invalid: declared value missing or incompatible with its type, or an address is set.",
+
 	"GRAFCET_TOO_FEW_STEPS": "The grafcet must contain at least two steps.",
 	"GRAFCET_NO_INITIAL_STEP": "The grafcet has no initial step.",
-	"GRAFCET_MULTIPLE_INITIAL_STEPS": "The grafcet has {count} initial steps. Studomate currently supports only a single initial step (a tool limitation, not a GRAFCET rule).",
+	"GRAFCET_MULTIPLE_INITIAL_STEPS": "The grafcet has {count} initial steps. Studomate supports only a single initial step (a tool limitation, not a GRAFCET rule).",
 	"GRAFCET_DISCONNECTED_COMPONENTS": "The grafcet contains several disconnected networks (several separate cycles).",
 	"GRAFCET_CONNECTION_DANGLING_ELEMENT": "A connection references a non-existent element ({elementType} \"{elementId}\").",
 	"GRAFCET_CONNECTION_INVALID_TYPE": "Invalid connection between a \"{sourceType}\" element and a \"{targetType}\" element.",
@@ -45,6 +66,7 @@
 	"ACTION_NUMERIC_TYPE_MISMATCH": "The action is numeric but the assigned variable has an incompatible type ({actualType}).",
 	"ACTION_STRING_TYPE_MISMATCH": "The action is a string but the assigned variable has an incompatible type ({actualType}).",
 	"ACTION_VARIABLE_IS_INPUT": "The action cannot change variable \"{variableName}\" because it is an input variable.",
+	"ACTION_VARIABLE_IS_CONSTANT": "The action cannot change \"{variableName}\" because it is a constant.",
 	"ACTION_STEP_VARIABLE_READONLY": "The action cannot change \"{variableName}\": it is an automatically generated, read-only step variable.",
 	"ACTION_SET_RESET_CONFLICT_SAME_STEP": "This step carries both a SET and a RESET action on variable \"{variableName}\": contradictory behaviour within the same cycle.",
 
@@ -69,7 +91,7 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "The referral has several preceding steps; the referenced source cannot be determined.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "The referenced source step does not match the step linked to the referral.",
 
-	"LADDER_NETWORK_NO_COIL": "This branch does not drive any coil.",
+	"LADDER_SECTION_NO_COIL": "This branch does not drive any coil.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
@@ -77,12 +99,14 @@
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",
 	"LADDER_ELEMENT_NO_PREDECESSOR": "This element is not linked to any previous element or to the power rail.",
 	"LADDER_COIL_VARIABLE_IS_INPUT": "The coil cannot change variable \"{variableName}\" because it is an input variable.",
+	"LADDER_COIL_VARIABLE_IS_CONSTANT": "The coil cannot change variable \"{variableName}\" because it is a constant.",
 
 	"LADDER_CONNECTION_INVALID_ORDER": "A connection links an element to another one located in an earlier column.",
 
 	"BLOCK_PROGRAM_UNDECLARED": "The program referenced by this block does not exist in the project.",
 	"BLOCK_PROGRAM_NOT_LADDER": "The program \"{programName}\" referenced by this block is not a ladder.",
 	"BLOCK_PROGRAM_IS_MAIN": "The program \"{programName}\" is the project Main: it cannot be called by a block.",
+	"BLOCK_PROGRAM_EXCLUDED": "The program \"{programName}\" is excluded from execution: this block will not call it.",
 	"BLOCK_PROGRAM_DUPLICATE_REFERENCE": "The program \"{programName}\" is referenced by several blocks of this Main.",
 	"BLOCK_PROGRAM_CALL_CYCLE": "Call cycle detected between ladders: {cycle}.",
 
@@ -98,14 +122,16 @@
 	"BLOCK_TIMER_ET_INVALID_TYPE": "Variable \"{variableName}\" referenced by the {pinName} parameter of this block must be numeric or TIME.",
 
 	"BLOCK_COUNTER_NAME_INVALID": "The name \"{blockName}\" of this block is not valid.",
-	"BLOCK_COUNTER_CONTROL_EMPTY": "The reset/load parameter (R/LD) must be filled in.",
-	"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE": "Variable \"{variableName}\" referenced by the reset/load parameter (R/LD) does not exist.",
-	"BLOCK_COUNTER_CONTROL_INVALID_TYPE": "Variable \"{variableName}\" referenced by the reset/load parameter (R/LD) must be boolean.",
+	"BLOCK_COUNTER_CONTROL_EMPTY": "The {pin} parameter of this block must be filled in.",
+	"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE": "Variable \"{variableName}\" referenced by the {pin} parameter of this block does not exist.",
+	"BLOCK_COUNTER_CONTROL_INVALID_TYPE": "Variable \"{variableName}\" referenced by the {pin} parameter of this block must be boolean.",
 	"BLOCK_COUNTER_PV_EMPTY": "The PV parameter of this block must be filled in.",
 	"BLOCK_COUNTER_PV_UNDECLARED_VARIABLE": "Variable \"{variableName}\" referenced by the PV parameter of this block does not exist.",
 	"BLOCK_COUNTER_PV_INVALID_TYPE": "Variable \"{variableName}\" referenced by the PV parameter of this block must be numeric.",
 	"BLOCK_COUNTER_CV_UNDECLARED_VARIABLE": "Variable \"{variableName}\" referenced by the CV parameter of this block does not exist.",
 	"BLOCK_COUNTER_CV_INVALID_TYPE": "Variable \"{variableName}\" referenced by the CV parameter of this block must be numeric.",
+	"BLOCK_COUNTER_QD_UNDECLARED_VARIABLE": "Variable \"{variableName}\" referenced by the QD parameter of this block does not exist.",
+	"BLOCK_COUNTER_QD_INVALID_TYPE": "Variable \"{variableName}\" referenced by the QD parameter of this block must be boolean.",
 
 	"BLOCK_COMPARE_IN1_EMPTY": "The IN1 parameter must be filled in.",
 	"BLOCK_COMPARE_IN2_EMPTY": "The IN2 parameter must be filled in.",
@@ -125,5 +151,12 @@
 	"BLOCK_ARITHMETIC_OPERATOR_INVALID": "\"{operator}\" is not a valid arithmetic operator.",
 	"BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED": "The IN1 and IN2 parameters must contain a variable or a value, not an expression.",
 	"BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
-	"BLOCK_ARITHMETIC_INVALID": "{detail}"
+	"BLOCK_ARITHMETIC_INVALID": "{detail}",
+
+	"BLOCK_CONVERT_IN_EMPTY": "The IN parameter must be filled in.",
+	"BLOCK_CONVERT_OUT_EMPTY": "The OUT parameter must be filled in.",
+	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "The IN parameter must be a variable mnemonic.",
+	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
+	"BLOCK_CONVERT_OUT_INVALID_TYPE": "Variable \"{variableName}\" (OUT) must be of type INT, DINT, WORD, DWORD or REAL.",
+	"BLOCK_CONVERT_INVALID": "{detail}"
 }

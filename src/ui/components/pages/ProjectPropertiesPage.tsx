@@ -1,6 +1,7 @@
 "use client";
 
 import { PageData } from "@/ui/stores/project/project.store";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Grid, MenuItem, TextField, Typography } from "@mui/material";
@@ -23,10 +24,14 @@ const PropertyTextField = ({
 	label,
 	value,
 	onSave,
+	disabled,
+	helperText,
 }: {
 	label: string;
 	value: string;
 	onSave: (value: string) => void;
+	disabled?: boolean;
+	helperText?: string;
 }) => {
 	const [editingValue, setEditingValue] = useState<string>(value);
 	useEffect(() => setEditingValue(value), [value]);
@@ -36,6 +41,8 @@ const PropertyTextField = ({
 			label={label}
 			size="small"
 			fullWidth
+			disabled={disabled}
+			helperText={helperText}
 			sx={whiteFieldSx}
 			slotProps={{ inputLabel: { shrink: true } }}
 			value={editingValue}
@@ -54,9 +61,11 @@ const PropertyTextField = ({
 const ExerciseStatementField = ({
 	value,
 	onSave,
+	disabled,
 }: {
 	value: string;
 	onSave: (value: string) => void;
+	disabled: boolean;
 }) => {
 	const t = useT("pages.properties");
 	const [editingValue, setEditingValue] = useState<string>(value);
@@ -68,6 +77,7 @@ const ExerciseStatementField = ({
 			size="small"
 			fullWidth
 			multiline
+			disabled={disabled}
 			minRows={6}
 			maxRows={20}
 			sx={whiteFieldSx}
@@ -86,6 +96,7 @@ const ProjectPropertiesPage = () => {
 		name,
 		author,
 		dialect,
+		designing,
 		exerciseStatement,
 		changeProjectName,
 		changeProjectAuthor,
@@ -96,6 +107,7 @@ const ProjectPropertiesPage = () => {
 			name: state.project?.name ?? "",
 			author: state.project?.author ?? "",
 			dialect: state.project?.dialect ?? Dialect.FR,
+			designing: state.mode === ProjectMode.DESIGN,
 			exerciseStatement: state.project?.exercise?.statement ?? "",
 			changeProjectName: state.setProjectName,
 			changeProjectAuthor: state.setProjectAuthor,
@@ -122,6 +134,8 @@ const ProjectPropertiesPage = () => {
 							label={t("name")}
 							value={name}
 							onSave={changeProjectName}
+							disabled={!designing}
+							helperText={designing ? undefined : t("readOnlyInSimulation")}
 						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
@@ -129,6 +143,7 @@ const ProjectPropertiesPage = () => {
 							label={t("author")}
 							value={author}
 							onSave={changeProjectAuthor}
+							disabled={!designing}
 						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
@@ -137,13 +152,16 @@ const ProjectPropertiesPage = () => {
 							label={t("expressionLanguage")}
 							fullWidth
 							size="small"
+							disabled={!designing}
 							sx={whiteFieldSx}
 							slotProps={{ inputLabel: { shrink: true } }}
 							value={dialect}
-							onChange={(e) =>
-								changeProjectDialect(e.target.value as Dialect)
+							onChange={(e) => changeProjectDialect(e.target.value as Dialect)}
+							helperText={
+								designing
+									? t("expressionLanguageHelper")
+									: t("readOnlyInSimulation")
 							}
-							helperText={t("expressionLanguageHelper")}
 						>
 							<MenuItem value={Dialect.FR}>{t("dialectFr")}</MenuItem>
 							<MenuItem value={Dialect.EN}>{t("dialectEn")}</MenuItem>
@@ -154,6 +172,7 @@ const ProjectPropertiesPage = () => {
 					<ExerciseStatementField
 						value={exerciseStatement}
 						onSave={changeExerciseStatement}
+						disabled={!designing}
 					/>
 				</Box>
 			</Box>

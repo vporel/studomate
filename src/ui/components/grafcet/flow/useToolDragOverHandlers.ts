@@ -29,7 +29,7 @@ export default function useToolDragOverHandlers(): [
 			if (!draggedElement) return;
 			const { type } = draggedElement;
 			const elementClass = GRAFCET_ELEMENTS_CONFIG[type].elementClass;
-			const position = screenToFlowPosition({ x: e.pageX, y: e.pageY });
+			const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
 			position.x = position.x - elementClass.DEFAULT_DIMENSIONS.width / 2;
 			position.y = position.y - elementClass.DEFAULT_DIMENSIONS.height / 2;
 			const newNode = {

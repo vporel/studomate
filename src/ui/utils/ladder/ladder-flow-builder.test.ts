@@ -165,9 +165,9 @@ describe("grille uniforme + empreinte multi-cellules (bloc timer)", () => {
 		const section = sectionWithTimerAtRow0AndCoilAtRow1();
 		const block = section.elements.find((e) => e.type === "block")!;
 
-		expect(
-			findFootprintCollision(section, elementFootprint(block)),
-		).toBe(block);
+		expect(findFootprintCollision(section, elementFootprint(block))).toBe(
+			block,
+		);
 		expect(
 			findFootprintCollision(section, elementFootprint(block), block.id),
 		).toBeUndefined();

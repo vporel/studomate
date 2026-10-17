@@ -48,6 +48,13 @@ export default function ProjectsSection() {
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>
+				{t("teacherTitle")}
+			</Typography>
+			<Typography mb={1}>{t("teacherIntro")}</Typography>
+			<ManualList items={t.raw("teacherItems") as string[]} />
+			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
 				{t("addProgramTitle")}
 			</Typography>
 			<Typography mb={2}>{t("addProgramBody")}</Typography>

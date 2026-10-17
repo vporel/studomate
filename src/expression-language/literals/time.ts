@@ -48,3 +48,13 @@ export function parseTimeLiteral(text: string): number | null {
 	if (consumed === 0 || consumed !== body.length) return null;
 	return Math.round(totalMs);
 }
+
+/** End index of the `T#...` constant starting at `position` in `text`, or `null` if none starts
+ * there. Only delimits the constant (letters, digits, `_`, `.`), without validating it. */
+export function findTimeLiteralEnd(text: string, position: number): number | null {
+	if (text.slice(position, position + 2).toUpperCase() !== TIME_LITERAL_PREFIX)
+		return null;
+	let end = position + 2;
+	while (end < text.length && /[A-Za-z0-9_.]/.test(text[end])) end++;
+	return end;
+}

@@ -11,6 +11,10 @@ jest.mock("@/persistence/draft.storage", () => ({
 	deleteDraft: jest.fn(),
 	getAllDrafts: jest.fn().mockReturnValue([]),
 	deleteAllDrafts: jest.fn(),
+	parseDraftProject:
+		jest.requireActual<typeof import("@/persistence/draft.storage")>(
+			"@/persistence/draft.storage",
+		).parseDraftProject,
 }));
 
 const mockedGetDraft = draftStorage.getDraft as jest.Mock;
@@ -201,8 +205,12 @@ describe("store — brouillons", () => {
 
 			await store.getState().lifecycleManager.openProject("p1");
 
-			expect(store.getState().ui.draftConflictModal.visible).toBe(true);
-			expect(store.getState().ui.draftConflictModal.projectId).toBe("p1");
+			expect(store.getState().ui.draftConflictModal).toEqual({
+				visible: true,
+				projectId: "p1",
+				draftData: JSON.stringify(project),
+			});
+			expect(store.getState().bootStatus).toBe("idle");
 		});
 	});
 
@@ -235,7 +243,9 @@ describe("store — brouillons", () => {
 				data: "{ json invalide",
 			});
 
-			const opened = await store.getState().lifecycleManager.openProject("p1", true);
+			const opened = await store
+				.getState()
+				.lifecycleManager.openProject("p1", true);
 
 			expect(opened).toBe(true);
 			expect(store.getState().hasUnsavedChanges).toBe(false);

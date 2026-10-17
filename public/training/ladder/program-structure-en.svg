@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 175" font-family="sans-serif">
+	<rect x="120" y="15" width="80" height="35" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" />
+	<text x="160" y="37" font-size="13" font-weight="bold" text-anchor="middle" fill="#0d47a1">Main</text>
+
+	<g stroke="#455a64" stroke-width="1.6" fill="none">
+		<path d="M 160 50 L 60 105" />
+		<path d="M 160 50 L 160 105" />
+		<path d="M 160 50 L 260 105" />
+	</g>
+	<g fill="#455a64">
+		<path d="M 55 97 L 60 108 L 66 98" />
+		<path d="M 155 98 L 160 108 L 165 98" />
+		<path d="M 255 97 L 260 108 L 266 98" />
+	</g>
+
+	<circle cx="90" cy="72" r="8" fill="#fff" stroke="#455a64" stroke-width="1" />
+	<text x="90" y="76" font-size="10" text-anchor="middle" fill="#455a64">1</text>
+	<circle cx="160" cy="80" r="8" fill="#fff" stroke="#455a64" stroke-width="1" />
+	<text x="160" y="84" font-size="10" text-anchor="middle" fill="#455a64">2</text>
+	<circle cx="230" cy="72" r="8" fill="#fff" stroke="#455a64" stroke-width="1" />
+	<text x="230" y="76" font-size="10" text-anchor="middle" fill="#455a64">3</text>
+
+	<rect x="20" y="110" width="80" height="40" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="60" y="134" font-size="12" text-anchor="middle" fill="#263238">Faults</text>
+
+	<rect x="120" y="110" width="80" height="40" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="160" y="134" font-size="12" text-anchor="middle" fill="#263238">Run</text>
+
+	<rect x="220" y="110" width="80" height="40" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="260" y="134" font-size="12" text-anchor="middle" fill="#263238">Counting</text>
+
+	<text x="20" y="168" font-size="9.5" fill="#455a64">Called unconditionally, in the Main's order</text>
+</svg>

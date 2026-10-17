@@ -34,7 +34,9 @@ describe("GrafcetsTabContent", () => {
 
 	it("shows a message when the project has no grafcet", () => {
 		setup();
-		expect(screen.getByText("Aucun grafcet dans le projet")).toBeInTheDocument();
+		expect(
+			screen.getByText("Aucun grafcet dans le projet"),
+		).toBeInTheDocument();
 	});
 
 	it("shows a dash when no step is active", () => {

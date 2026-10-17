@@ -5,9 +5,30 @@
 	"PROJECT_MULTIPLE_MAINS": "Le projet porte {count} programmes Main, il ne devrait en porter qu'un seul.",
 	"LADDER_NOT_REFERENCED": "Le ladder « {ladderName} » n'est référencé par aucun bloc du projet : il ne s'exécutera pas.",
 
+	"HARDWARE_MODEL_UNKNOWN": "La cible matérielle « {modelId} » est inconnue de cette version de Studomate : ses adresses ne peuvent pas être vérifiées.",
+	"HARDWARE_PIN_UNKNOWN": "La variable « {variableName} » a l'adresse {address}, qui n'existe pas sur la cible {device}.",
+	"HARDWARE_PIN_RESERVED": "La variable « {variableName} » a l'adresse {address}, qui est une broche réservée de la cible {device} : elle ne peut pas porter de variable.",
+	"HARDWARE_PIN_CAPABILITY_MISMATCH": "La variable « {variableName} » (zone {zone}) a l'adresse {address}, dont la broche de la cible {device} ne supporte pas cet usage.",
+	"HARDWARE_PIN_DUPLICATE": "L'adresse {address} de la cible {device} est revendiquée par plusieurs variables : {variableNames}.",
+	"HARDWARE_MEMORY_VARIABLE_ON_PIN": "La variable mémoire « {variableName} » a l'adresse {address}, qui est une broche physique de la cible {device}. Une variable mémoire ne peut pas être liée à une broche.",
+	"HARDWARE_INPUT_UNBOUND": "L'entrée « {variableName} » est lue par un programme mais n'a pas d'adresse sur la cible {device} : dans un programme téléversé sur la carte, elle restera à faux (0) en permanence.",
+	"HARDWARE_TYPE_NOT_SUPPORTED": "Le type {type} n'est pas supporté par la cible {device}.",
+	"HARDWARE_VARIABLE_TYPE_NOT_SUPPORTED": "La variable « {variableName} » a le type {type}, non supporté par la cible {device}.",
+	"SCENE3D_UNKNOWN": "La scène 3D « {sceneId} » est inconnue de cette version de Studomate : elle ne peut pas être simulée.",
+	"SCENE3D_POINT_UNBOUND": "Le point « {point} » de la scène 3D n'est lié à aucune variable : la scène reste utilisable, mais ce point est sans effet.",
+	"SCENE3D_BINDING_VARIABLE_MISSING": "Le point « {point} » de la scène 3D est lié à une variable qui n'existe plus.",
+	"SCENE3D_SENSOR_NOT_INPUT": "Le capteur « {point} » de la scène 3D est lié à la variable « {variableName} », qui n'est pas une entrée.",
+	"SCENE3D_ACTUATOR_NOT_OUTPUT": "L'actionneur « {point} » de la scène 3D est lié à la variable « {variableName} », qui n'est pas une sortie.",
+	"SCENE3D_DISPLAY_NOT_MEMORY": "L'affichage « {point} » de la scène 3D est lié à la variable « {variableName} », qui n'est pas une variable mémoire.",
+	"SCENE3D_TYPE_MISMATCH": "Le point « {point} » de la scène 3D attend une valeur de type {expectedType}, mais la variable « {variableName} » est de type {variableType}.",
+	"SCENE3D_SENSOR_DUPLICATE": "La variable « {variableName} » est liée à plusieurs capteurs de la scène 3D ({points}) : une entrée ne peut avoir qu'une source.",
+	"SCENE3D_SENSOR_ALSO_ON_PIN": "L'entrée « {variableName} » est pilotée par le capteur « {point} » de la scène 3D mais a aussi l'adresse {address} sur la cible matérielle : elle aurait deux sources.",
+	"SCENE3D_SENSOR_WRITTEN_BY_HMI": "L'entrée « {variableName} » est pilotée par la scène 3D : les écritures d'un widget IHM sont ignorées pendant la simulation.",
+	"PROJECT_CONSTANT_INVALID": "La constante « {variableName} » est invalide : valeur déclarée absente ou incompatible avec son type, ou adresse renseignée.",
+
 	"GRAFCET_TOO_FEW_STEPS": "Le grafcet doit contenir au moins deux étapes.",
 	"GRAFCET_NO_INITIAL_STEP": "Le grafcet ne contient aucune étape initiale.",
-	"GRAFCET_MULTIPLE_INITIAL_STEPS": "Le grafcet contient {count} étapes initiales. Studomate ne supporte pour l'instant qu'une seule étape initiale (limite de l'outil, pas une règle du GRAFCET).",
+	"GRAFCET_MULTIPLE_INITIAL_STEPS": "Le grafcet contient {count} étapes initiales. Studomate ne supporte qu'une seule étape initiale (limite de l'outil, pas une règle du GRAFCET).",
 	"GRAFCET_DISCONNECTED_COMPONENTS": "Le grafcet contient plusieurs réseaux non connectés (plusieurs cycles distincts).",
 	"GRAFCET_CONNECTION_DANGLING_ELEMENT": "Une connexion référence un élément inexistant ({elementType} « {elementId} »).",
 	"GRAFCET_CONNECTION_INVALID_TYPE": "Connexion invalide entre un élément de type « {sourceType} » et un élément de type « {targetType} ».",
@@ -45,6 +66,7 @@
 	"ACTION_NUMERIC_TYPE_MISMATCH": "L'action est de type numérique mais la variable affectée est d'un type incompatible ({actualType}).",
 	"ACTION_STRING_TYPE_MISMATCH": "L'action est de type chaîne de caractères mais la variable affectée est d'un type incompatible ({actualType}).",
 	"ACTION_VARIABLE_IS_INPUT": "L'action ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+	"ACTION_VARIABLE_IS_CONSTANT": "L'action ne peut pas modifier « {variableName} » car c'est une constante.",
 	"ACTION_STEP_VARIABLE_READONLY": "L'action ne peut pas modifier « {variableName} » : c'est une variable d'étape générée automatiquement, en lecture seule.",
 	"ACTION_SET_RESET_CONFLICT_SAME_STEP": "Cette étape porte à la fois une action SET et une action RESET sur la variable « {variableName} » : comportement contradictoire au même cycle.",
 
@@ -69,7 +91,7 @@
 	"STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS": "Le tenant est précédé par plusieurs étapes, on ne peut pas déterminer laquelle est la source référencée.",
 	"STEP_REFERRAL_SOURCE_MISMATCH": "L'étape source référencée ne correspond pas à l'étape liée au tenant.",
 
-	"LADDER_NETWORK_NO_COIL": "Cette branche ne pilote aucune bobine.",
+	"LADDER_SECTION_NO_COIL": "Cette branche ne pilote aucune bobine.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "La variable « {variableName} » doit être booléenne.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "La variable « {variableName} » n'est pas déclarée.",
@@ -77,12 +99,14 @@
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "La variable « {variableName} » est pilotée par {count} bobines normales distinctes.",
 	"LADDER_ELEMENT_NO_PREDECESSOR": "Cet élément n'est relié à aucun élément précédent ni au rail d'alimentation.",
 	"LADDER_COIL_VARIABLE_IS_INPUT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une variable d'entrée.",
+	"LADDER_COIL_VARIABLE_IS_CONSTANT": "La bobine ne peut pas modifier la variable « {variableName} » car c'est une constante.",
 
 	"LADDER_CONNECTION_INVALID_ORDER": "Une connexion relie un élément à un autre situé dans une colonne antérieure.",
 
 	"BLOCK_PROGRAM_UNDECLARED": "Le programme référencé par ce bloc n'existe pas dans le projet.",
 	"BLOCK_PROGRAM_NOT_LADDER": "Le programme « {programName} » référencé par ce bloc n'est pas un ladder.",
 	"BLOCK_PROGRAM_IS_MAIN": "Le programme « {programName} » est le Main du projet : il ne peut pas être appelé par un bloc.",
+	"BLOCK_PROGRAM_EXCLUDED": "Le programme « {programName} » est exclu de l'exécution : ce bloc ne l'appellera pas.",
 	"BLOCK_PROGRAM_DUPLICATE_REFERENCE": "Le programme « {programName} » est référencé par plusieurs blocs de ce Main.",
 	"BLOCK_PROGRAM_CALL_CYCLE": "Cycle d'appels entre ladders détecté : {cycle}.",
 
@@ -98,14 +122,16 @@
 	"BLOCK_TIMER_ET_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre {pinName} de ce bloc doit être numérique ou TIME.",
 
 	"BLOCK_COUNTER_NAME_INVALID": "Le nom « {blockName} » de ce bloc n'est pas valide.",
-	"BLOCK_COUNTER_CONTROL_EMPTY": "Le paramètre de remise à zéro/chargement (R/LD) doit être renseigné.",
-	"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE": "La variable « {variableName} » référencée par le paramètre de remise à zéro/chargement (R/LD) n'existe pas.",
-	"BLOCK_COUNTER_CONTROL_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre de remise à zéro/chargement (R/LD) doit être booléenne.",
+	"BLOCK_COUNTER_CONTROL_EMPTY": "Le paramètre {pin} de ce bloc doit être renseigné.",
+	"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE": "La variable « {variableName} » référencée par le paramètre {pin} de ce bloc n'existe pas.",
+	"BLOCK_COUNTER_CONTROL_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre {pin} de ce bloc doit être booléenne.",
 	"BLOCK_COUNTER_PV_EMPTY": "Le paramètre PV de ce bloc doit être renseigné.",
 	"BLOCK_COUNTER_PV_UNDECLARED_VARIABLE": "La variable « {variableName} » référencée par le paramètre PV de ce bloc n'existe pas.",
 	"BLOCK_COUNTER_PV_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre PV de ce bloc doit être numérique.",
 	"BLOCK_COUNTER_CV_UNDECLARED_VARIABLE": "La variable « {variableName} » référencée par le paramètre CV de ce bloc n'existe pas.",
 	"BLOCK_COUNTER_CV_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre CV de ce bloc doit être numérique.",
+	"BLOCK_COUNTER_QD_UNDECLARED_VARIABLE": "La variable « {variableName} » référencée par le paramètre QD de ce bloc n'existe pas.",
+	"BLOCK_COUNTER_QD_INVALID_TYPE": "La variable « {variableName} » référencée par le paramètre QD de ce bloc doit être booléenne.",
 
 	"BLOCK_COMPARE_IN1_EMPTY": "Le paramètre IN1 doit être renseigné.",
 	"BLOCK_COMPARE_IN2_EMPTY": "Le paramètre IN2 doit être renseigné.",
@@ -125,5 +151,12 @@
 	"BLOCK_ARITHMETIC_OPERATOR_INVALID": "« {operator} » n'est pas un opérateur arithmétique valide.",
 	"BLOCK_ARITHMETIC_INPUT_NOT_ALLOWED": "Les paramètres IN1 et IN2 doivent contenir une variable ou une valeur, pas une expression.",
 	"BLOCK_ARITHMETIC_OUT_NOT_A_VARIABLE": "Le paramètre OUT doit être un mnémonique de variable.",
-	"BLOCK_ARITHMETIC_INVALID": "{detail}"
+	"BLOCK_ARITHMETIC_INVALID": "{detail}",
+
+	"BLOCK_CONVERT_IN_EMPTY": "Le paramètre IN doit être renseigné.",
+	"BLOCK_CONVERT_OUT_EMPTY": "Le paramètre OUT doit être renseigné.",
+	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "Le paramètre IN doit être un mnémonique de variable.",
+	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "Le paramètre OUT doit être un mnémonique de variable.",
+	"BLOCK_CONVERT_OUT_INVALID_TYPE": "La variable « {variableName} » (OUT) doit être de type INT, DINT, WORD, DWORD ou REAL.",
+	"BLOCK_CONVERT_INVALID": "{detail}"
 }

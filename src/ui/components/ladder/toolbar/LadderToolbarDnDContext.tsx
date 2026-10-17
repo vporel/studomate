@@ -10,8 +10,7 @@ import React, {
 } from "react";
 
 export type DraggedLadderElement =
-	| { kind: "contact"; type: ContactType }
-	| { kind: "coil"; type: CoilType };
+	{ kind: "contact"; type: ContactType } | { kind: "coil"; type: CoilType };
 
 const LadderToolbarDnDContext = createContext<{
 	draggedElement: DraggedLadderElement | null;

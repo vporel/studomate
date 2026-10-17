@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
@@ -51,7 +52,9 @@ describe("StepReferralTargetAnalyser", () => {
 				.sourceStepNumber(5)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -62,7 +65,9 @@ describe("StepReferralTargetAnalyser", () => {
 				.sourceStepNumber("")
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -77,6 +82,7 @@ describe("StepReferralTargetAnalyser", () => {
 
 			const issues = analyser.analyseIsolated(referral, {
 				allowEmptyContent: true,
+				dialect: Dialect.FR,
 			});
 
 			expect(issues).toHaveLength(0);
@@ -88,7 +94,9 @@ describe("StepReferralTargetAnalyser", () => {
 				.sourceStepNumber(-1)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -101,7 +109,9 @@ describe("StepReferralTargetAnalyser", () => {
 				.sourceStepNumber(2.5)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(1);
 			expect(issues[0].severity).toBe("error");
@@ -114,7 +124,9 @@ describe("StepReferralTargetAnalyser", () => {
 				.sourceStepNumber(0)
 				.build();
 
-			const issues = analyser.analyseIsolated(referral);
+			const issues = analyser.analyseIsolated(referral, {
+				dialect: Dialect.FR,
+			});
 
 			expect(issues).toHaveLength(0);
 		});
@@ -143,7 +155,9 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const notExistIssue = issues.find((i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND");
+			const notExistIssue = issues.find(
+				(i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
+			);
 			expect(notExistIssue).toBeDefined();
 			expect(notExistIssue?.severity).toBe("error");
 		});
@@ -173,8 +187,8 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const notExistIssues = issues.filter((i) =>
-				i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
+			const notExistIssues = issues.filter(
+				(i) => i.code === "STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND",
 			);
 			expect(notExistIssues).toHaveLength(0);
 		});
@@ -230,7 +244,9 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const connectionIssue = issues.find((i) => i.code === "STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION");
+			const connectionIssue = issues.find(
+				(i) => i.code === "STEP_REFERRAL_TARGET_MISSING_DOWNSTREAM_CONNECTION",
+			);
 			expect(connectionIssue).toBeDefined();
 			expect(connectionIssue?.severity).toBe("error");
 		});
@@ -315,7 +331,9 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const noPred = issues.find((i) => i.code === "STEP_REFERRAL_TENANT_NO_PREDECESSOR");
+			const noPred = issues.find(
+				(i) => i.code === "STEP_REFERRAL_TENANT_NO_PREDECESSOR",
+			);
 			expect(noPred).toBeDefined();
 			expect(noPred?.severity).toBe("error");
 		});
@@ -346,8 +364,8 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const multiPred = issues.find((i) =>
-				i.code === "STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
+			const multiPred = issues.find(
+				(i) => i.code === "STEP_REFERRAL_TENANT_MULTIPLE_PREDECESSORS",
 			);
 			expect(multiPred).toBeDefined();
 			expect(multiPred?.severity).toBe("error");
@@ -378,8 +396,8 @@ describe("StepReferralTargetAnalyser", () => {
 				analyserEnvironment(),
 			);
 
-			const mismatch = issues.find((i) =>
-				i.code === "STEP_REFERRAL_SOURCE_MISMATCH",
+			const mismatch = issues.find(
+				(i) => i.code === "STEP_REFERRAL_SOURCE_MISMATCH",
 			);
 			expect(mismatch).toBeDefined();
 			expect(mismatch?.severity).toBe("error");

@@ -41,3 +41,36 @@ describe("EnvVariable", () => {
 		expect(v.getValue()).toBe(1e9);
 	});
 });
+
+describe("EnvVariable constant", () => {
+	it("is not constant by default", () => {
+		expect(new EnvVariable("id", "v", "number", "INOUT").isConstant()).toBe(
+			false,
+		);
+	});
+
+	it("keeps its initial value and refuses any later write", () => {
+		const k = new EnvVariable(
+			"id",
+			"K",
+			"number",
+			"INOUT",
+			null,
+			"INT",
+			true,
+			7,
+		);
+
+		expect(k.isConstant()).toBe(true);
+		expect(k.getValue()).toBe(7);
+		expect(() => k.setValue(8)).toThrow('"K" is a constant');
+		expect(k.getValue()).toBe(7);
+	});
+
+	it("an initial value of the wrong type is still refused", () => {
+		expect(
+			() =>
+				new EnvVariable("id", "K", "number", "INOUT", null, null, true, "x"),
+		).toThrow(IllegalVariableValueTypeException);
+	});
+});

@@ -9,7 +9,7 @@ import Action, {
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
-import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
+import GrafcetHandle from "./GrafcetHandle";
 import { Box, Typography, useTheme } from "@mui/material";
 import { Node, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import React, { type FC, useMemo } from "react";
@@ -47,7 +47,9 @@ const ActionNode: FC<ActionNodeProps> = ({
 	// Étape porteuse résolue via les connexions du grafcet : ne change qu'à l'édition du grafcet,
 	// pas par cycle de simulation — le sélecteur `activeInSimulation` ne fait alors qu'un accès
 	// indexé (même patron que `stepVariableId` dans `StepNode`).
-	const grafcet = useProjectStore((state) => state.project?.grafcets[grafcetId]);
+	const grafcet = useProjectStore(
+		(state) => state.project?.grafcets[grafcetId],
+	);
 	const stepVariableId = useMemo(() => {
 		if (!grafcet) return null;
 		const step = ActionHelper.getStep(id, grafcet);
@@ -71,15 +73,12 @@ const ActionNode: FC<ActionNodeProps> = ({
 				maxWidth={Action.DEFAULT_DIMENSIONS.width * 3}
 				maxHeight={Action.DEFAULT_DIMENSIONS.height * 2}
 			/>
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={ACTION_HANDLE_TARGET_STEP}
 				type="target"
 				position={Position.Left}
-				style={{
-					borderColor: borderColor,
-					backgroundColor: borderColor,
-				}}
+				color={borderColor}
 			/>
 			<GrafcetNode
 				id={id}

@@ -43,7 +43,7 @@ export default function usePointPointerEventsHandlers(
 	const handlePointPointerMove = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
 			if (e.buttons !== 1) return;
-			const { x, y } = screenToFlowPosition({ x: e.pageX, y: e.pageY });
+			const { x, y } = screenToFlowPosition({ x: e.clientX, y: e.clientY });
 			setPoints((pts) => {
 				const newPoints = [...pts];
 				newPoints.splice(index, 1, [x, y]);

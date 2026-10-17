@@ -1,9 +1,11 @@
 import { detectBrowserLocale, isLocale, type Locale } from "@/i18n/config";
+import { readString, writeString } from "./safe-local-storage";
 import { StorageLocation } from "./repositories/project.repository";
 
 const STORAGE_KEY = "studomate_preferred_save_location";
 const LOCALE_STORAGE_KEY = "studomate_locale";
 const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
+const PRODUCT_TOUR_SEEN_KEY = "studomate_product_tour_seen";
 
 /**
  * Lieu de stockage par défaut choisi par l'utilisateur (page Préférences, ou premier
@@ -11,20 +13,12 @@ const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
  * déclenche la modale de choix au tout premier enregistrement.
  */
 export function getPreferredSaveLocation(): StorageLocation | null {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		return raw === "local" || raw === "cloud" ? raw : null;
-	} catch {
-		return null;
-	}
+	const raw = readString(STORAGE_KEY);
+	return raw === "local" || raw === "cloud" ? raw : null;
 }
 
 export function setPreferredSaveLocation(location: StorageLocation): void {
-	try {
-		localStorage.setItem(STORAGE_KEY, location);
-	} catch {
-		// Stockage indisponible : la préférence ne sera simplement pas retenue
-	}
+	writeString(STORAGE_KEY, location);
 }
 
 /**
@@ -32,20 +26,12 @@ export function setPreferredSaveLocation(location: StorageLocation): void {
  * été fait — l'appelant retombe alors sur la langue du navigateur.
  */
 export function getPreferredLocale(): Locale | null {
-	try {
-		const raw = localStorage.getItem(LOCALE_STORAGE_KEY);
-		return isLocale(raw) ? raw : null;
-	} catch {
-		return null;
-	}
+	const raw = readString(LOCALE_STORAGE_KEY);
+	return isLocale(raw) ? raw : null;
 }
 
 export function setPreferredLocale(locale: Locale): void {
-	try {
-		localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-	} catch {
-		// Stockage indisponible : la préférence ne sera simplement pas retenue
-	}
+	writeString(LOCALE_STORAGE_KEY, locale);
 }
 
 /**
@@ -54,19 +40,20 @@ export function setPreferredLocale(locale: Locale): void {
  * l'utilisateur n'a rien désactivé dans les Préférences.
  */
 export function getAutoOpenHmiSimulationOnStart(): boolean {
-	try {
-		return localStorage.getItem(AUTO_OPEN_HMI_SIMULATION_KEY) !== "false";
-	} catch {
-		return true;
-	}
+	return readString(AUTO_OPEN_HMI_SIMULATION_KEY) !== "false";
 }
 
 export function setAutoOpenHmiSimulationOnStart(value: boolean): void {
-	try {
-		localStorage.setItem(AUTO_OPEN_HMI_SIMULATION_KEY, String(value));
-	} catch {
-		// Stockage indisponible : la préférence ne sera simplement pas retenue
-	}
+	writeString(AUTO_OPEN_HMI_SIMULATION_KEY, String(value));
+}
+
+/** Whether the guided tour was already shown in this browser. */
+export function getProductTourSeen(): boolean {
+	return readString(PRODUCT_TOUR_SEEN_KEY) === "true";
+}
+
+export function setProductTourSeen(): void {
+	writeString(PRODUCT_TOUR_SEEN_KEY, "true");
 }
 
 /**

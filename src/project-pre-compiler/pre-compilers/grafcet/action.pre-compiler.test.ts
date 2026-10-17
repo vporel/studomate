@@ -139,6 +139,7 @@ describe("ActionPreCompiler", () => {
 					expect(result!.phases.continuous).toEqual([]);
 					expect(result!.phases.onDeactivation).toEqual([]);
 					expect(result!.phases.onActivation[0].type).toBe("ASSIGN_STATEMENT");
+					expect(result!.levelOutputs).toEqual([]);
 				});
 			});
 
@@ -176,7 +177,7 @@ describe("ActionPreCompiler", () => {
 			});
 
 			describe("CONTINUOUS mode", () => {
-				it("creates onActivation and onDeactivation phases", () => {
+				it("produces no phase and exposes the output as a level output", () => {
 					const action = new ActionBuilder()
 						.id("action-1")
 						.type(ActionType.BOOLEAN_VARIABLE)
@@ -202,9 +203,10 @@ describe("ActionPreCompiler", () => {
 					);
 
 					expect(result).not.toBeNull();
-					expect(result!.phases.onActivation).toHaveLength(1); // M1 := TRUE
+					expect(result!.phases.onActivation).toEqual([]);
 					expect(result!.phases.continuous).toEqual([]);
-					expect(result!.phases.onDeactivation).toHaveLength(1); // M1 := FALSE
+					expect(result!.phases.onDeactivation).toEqual([]);
+					expect(result!.levelOutputs).toEqual(["S1"]);
 				});
 			});
 
@@ -336,6 +338,7 @@ describe("ActionPreCompiler", () => {
 					expect(result!.phases.continuous).toHaveLength(1);
 					expect(result!.phases.onDeactivation).toEqual([]);
 					expect(result!.phases.continuous[0].type).toBe("ASSIGN_STATEMENT");
+				expect(result!.levelOutputs).toEqual([]);
 				});
 			});
 

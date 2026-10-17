@@ -68,6 +68,24 @@ describe("CrossReferenceCollector", () => {
 		expect(cnt.references.map((r) => r.access).sort()).toEqual(["read", "write"]);
 	});
 
+	it("ignores programs excluded from execution", () => {
+		const project = buildProject();
+		project.grafcets["g1"].excludedFromExecution = true;
+		project.ladders["lad1"].excludedFromExecution = true;
+
+		expect(CrossReferenceCollector.collect(project)).toEqual([]);
+	});
+
+	it("keeps references of executed programs when another one is excluded", () => {
+		const project = buildProject();
+		project.ladders["lad1"].excludedFromExecution = true;
+
+		const dcy = CrossReferenceCollector.collect(project).find(
+			(c) => c.variableName === "Dcy",
+		)!;
+		expect(dcy.references.map((r) => r.programType)).toEqual(["grafcet"]);
+	});
+
 	it("ne lève pas sur un projet vide", () => {
 		expect(CrossReferenceCollector.collect(new Project("p", "P", ""))).toEqual([]);
 	});

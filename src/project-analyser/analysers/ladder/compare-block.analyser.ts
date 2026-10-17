@@ -13,7 +13,7 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
 import SemanticAnalyserVisitor from "@/simulator/interpreter/semantic-analyser/semantic-analyser.visitor";
 
 /** Une pinoche IN1/IN2 d'un bloc compare est un opérande simple : un identifiant, un littéral, ou
- * au plus une expression arithmétique. Jamais de comparaison imbriquée, d'opérateur logique ni
+ * au plus une expression arithmétique (conversions de type comprises). Jamais de comparaison imbriquée, d'opérateur logique ni
  * d'affectation — liste blanche (voir `AllowedNodeTypesVisitor`). */
 const ALLOWED_OPERAND_NODE_TYPES: ASTNode["type"][] = [
 	"IDENTIFIER",
@@ -21,6 +21,7 @@ const ALLOWED_OPERAND_NODE_TYPES: ASTNode["type"][] = [
 	"NUMBER_LITERAL",
 	"STRING_LITERAL",
 	"ARITHMETIC_EXPRESSION",
+	"CONVERSION_EXPRESSION",
 ];
 
 /**

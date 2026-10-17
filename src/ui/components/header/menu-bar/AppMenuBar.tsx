@@ -3,6 +3,7 @@
 import AnalyseButton from "@/ui/components/header/title-bar/AnalyseButton";
 import ProjectModeSwitcher from "@/ui/components/header/title-bar/ProjectModeSwitcher";
 import SimulationModeSelect from "@/ui/components/header/title-bar/SimulationModeSelect";
+import HardwareLinkControl from "@/ui/components/header/title-bar/HardwareLinkControl";
 import SimulationControls from "@/ui/components/header/title-bar/SimulationControls";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import useEditMenu from "./edit/useEditMenu";
 import useFileMenu from "./file/useFileMenu";
 import useHelpMenu from "./help/useHelpMenu";
 import useProjectMenu from "./project/useProjectMenu";
+import useTargetMenu from "./target/useTargetMenu";
 import useViewMenu from "./view/useViewMenu";
 import ShortcutsModal from "./help/ShortcutsModal";
 import { useT } from "@/ui/i18n/useT";
@@ -27,13 +29,14 @@ const MenuBar = () => {
 
 	const fileMenu = useFileMenu();
 	const projectMenu = useProjectMenu();
+	const targetMenu = useTargetMenu();
 	const editMenu = useEditMenu();
 	const viewMenu = useViewMenu();
 	const helpMenu = useHelpMenu(onShortcutsOpen);
 
 	const menus: AppMenuType[] = useMemo(
-		() => [fileMenu, projectMenu, editMenu, viewMenu, helpMenu],
-		[fileMenu, projectMenu, editMenu, viewMenu, helpMenu],
+		() => [fileMenu, editMenu, viewMenu, projectMenu, targetMenu, helpMenu],
+		[fileMenu, editMenu, viewMenu, projectMenu, targetMenu, helpMenu],
 	);
 
 	const registerTitleRef = useCallback(
@@ -110,6 +113,7 @@ const MenuBar = () => {
 		>
 			<FlexBox
 				role="menubar"
+				data-tour="menubar"
 				aria-label={t("ariaLabel")}
 				className="menu-bar"
 				onKeyDown={onMenuBarKeyDown}
@@ -135,11 +139,12 @@ const MenuBar = () => {
 					/>
 				))}
 			</FlexBox>
-			<FlexBox centerVertical sx={{ gap: 1, px: 1 }}>
+			<FlexBox data-tour="simulation" centerVertical sx={{ gap: 1, px: 1 }}>
 				<AnalyseButton />
 				<ProjectModeSwitcher />
 				<SimulationModeSelect />
 				<SimulationControls />
+				<HardwareLinkControl />
 			</FlexBox>
 			<ShortcutsModal
 				open={shortcutsOpen}

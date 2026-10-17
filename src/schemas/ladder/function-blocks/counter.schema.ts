@@ -1,51 +1,44 @@
 import { createRandomId } from "@/ids";
-import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import Variable from "@/schemas/variable/variable.schema";
-import { BlockPortSpec, requireConcreteType } from "../block-port.schema";
+import { BlockPortSpec, structuralRailPorts } from "../block-port.schema";
 import type { BlockElement, CounterBlockParams } from "../block.schema";
 import type { GridPosition } from "../element.schema";
-import { getBlockVariableMnemonics } from "./function-block.schema";
+import {
+	createBlockVariables,
+	getBlockVariableMnemonics,
+} from "./function-block.schema";
 
-/** Les deux variantes de bloc compteur — CTU (compte vers le haut) et CTD (compte vers le bas).
- * Contrairement au timer, leurs ports structurels diffèrent (voir `getCounterPortSpecs`) : CTU a
- * `IN`/`R`, CTD a `CD`/`LD`. */
-export const COUNTER_TYPES = ["CTU", "CTD"] as const;
+/** Les variantes de bloc compteur — CTU (compte vers le haut), CTD (compte vers le bas) et CTUD
+ * (les deux). Contrairement au timer, leurs ports diffèrent (voir `getCounterPortSpecs`) : CTU a
+ * `CU`/`R`, CTD a `CD`/`LD`, CTUD a `CU`/`CD`/`R`/`LD`. */
+export const COUNTER_TYPES = ["CTU", "CTD", "CTUD"] as const;
 
 export type CounterType = (typeof COUNTER_TYPES)[number];
+
+const booleanInputParameter = (suffix: string): BlockPortSpec => ({
+	suffix,
+	type: "BOOL",
+	kind: "parameter",
+	direction: "input",
+	generatesVariable: false,
+	acceptedLiterals: ["boolean"],
+});
 
 /**
  * Les ports d'un bloc compteur, dans l'ordre pulsion/Q (structurels, câblés sur le rail) puis
  * contrôle/PV (paramètres, entrée) puis CV (paramètre, sortie). La pulsion de comptage s'appelle
- * `IN` pour CTU, `CD` pour CTD ; le port de contrôle `R` (remise à zéro) pour CTU, `LD` (charge
+ * `CU` pour CTU, `CD` pour CTD ; le port de contrôle `R` (remise à zéro) pour CTU, `LD` (charge
  * PV dans CV) pour CTD — ni l'un ni l'autre ne génère de variable, leur valeur est résolue
  * directement depuis la pinoche (nom de variable booléenne ou littéral booléen `TRUE`/`FALSE`).
+ *
+ * CTUD n'a qu'une entrée câblée sur le rail (`CU`, sortie `QU`) : `CD`, `R` et `LD` sont des
+ * pinoches booléennes comme `R` d'un CTU, et `QD` une sortie paramètre comme `CV`.
  */
 export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
-	const pulseSuffix = counterType === "CTU" ? "IN" : "CD";
-	const controlSuffix = counterType === "CTU" ? "R" : "LD";
-	return [
-		{
-			suffix: pulseSuffix,
-			type: "BOOL",
-			kind: "structural",
-			direction: "input",
-			generatesVariable: true,
-		},
-		{
-			suffix: "Q",
-			type: "BOOL",
-			kind: "structural",
-			direction: "output",
-			generatesVariable: true,
-		},
-		{
-			suffix: controlSuffix,
-			type: "BOOL",
-			kind: "parameter",
-			direction: "input",
-			generatesVariable: false,
-			acceptedLiterals: ["boolean"],
-		},
+	const pulseSuffix = counterType === "CTD" ? "CD" : "CU";
+	const outputSuffix = counterType === "CTUD" ? "QU" : "Q";
+	const pulseAndOutput = structuralRailPorts(pulseSuffix, outputSuffix);
+	const presetAndCurrent: BlockPortSpec[] = [
 		{
 			suffix: "PV",
 			type: "INT",
@@ -61,6 +54,28 @@ export function getCounterPortSpecs(counterType: CounterType): BlockPortSpec[] {
 			direction: "output",
 			generatesVariable: true,
 		},
+	];
+	if (counterType === "CTUD") {
+		return [
+			...pulseAndOutput,
+			booleanInputParameter("CD"),
+			booleanInputParameter("R"),
+			booleanInputParameter("LD"),
+			presetAndCurrent[0],
+			{
+				suffix: "QD",
+				type: "BOOL",
+				kind: "parameter",
+				direction: "output",
+				generatesVariable: true,
+			},
+			presetAndCurrent[1],
+		];
+	}
+	return [
+		...pulseAndOutput,
+		booleanInputParameter(counterType === "CTU" ? "R" : "LD"),
+		...presetAndCurrent,
 	];
 }
 
@@ -89,22 +104,12 @@ export function createCounterBlockVariables(
 	name: string,
 	counterType: CounterType,
 ): Variable[] {
-	return getCounterPortSpecs(counterType)
-		.filter((spec) => spec.generatesVariable)
-		.map((spec) =>
-			new VariableBuilder()
-				.id(`${elementId}-${spec.suffix}`)
-				.mnemonic(`${name}.${spec.suffix}`)
-				.zone("memory")
-				.type(requireConcreteType(spec))
-				.ownerBlock({ id: elementId })
-				.build(),
-		);
+	return createBlockVariables(elementId, name, getCounterPortSpecs(counterType));
 }
 
 /**
  * Lecture/écriture d'une pinoche paramètre d'un bloc compteur par son suffixe (`PV`/`CV`, ou le
- * port de contrôle `R`/`LD`) — consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches
+ * port de contrôle `R`/`LD`, et `CD`/`QD` pour un CTUD) — consommé par `BLOCK_DEFINITIONS` pour piloter la grille de pinoches
  * générique de `BoxBlockNode`.
  */
 export function readCounterParam(
@@ -113,6 +118,11 @@ export function readCounterParam(
 ): string {
 	if (suffix === "PV") return params.pv;
 	if (suffix === "CV") return params.cv ?? "";
+	if (params.counterType === "CTUD") {
+		if (suffix === "CD") return params.down ?? "";
+		if (suffix === "LD") return params.load ?? "";
+		if (suffix === "QD") return params.qd ?? "";
+	}
 	return params.control;
 }
 
@@ -123,6 +133,11 @@ export function writeCounterParam(
 ): CounterBlockParams {
 	if (suffix === "PV") return { ...params, pv: value };
 	if (suffix === "CV") return { ...params, cv: value };
+	if (params.counterType === "CTUD") {
+		if (suffix === "CD") return { ...params, down: value };
+		if (suffix === "LD") return { ...params, load: value };
+		if (suffix === "QD") return { ...params, qd: value };
+	}
 	return { ...params, control: value };
 }
 

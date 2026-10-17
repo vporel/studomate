@@ -18,7 +18,9 @@ describe("useProgramsFolderMenuItems", () => {
 		(useProjectStore as jest.Mock).mockImplementation(
 			selectorImplementation({ grafcetsManager, laddersManager, mode }),
 		);
-		return renderHook(() => useProgramsFolderMenuItems(), { wrapper: i18nWrapper() });
+		return renderHook(() => useProgramsFolderMenuItems(), {
+			wrapper: i18nWrapper(),
+		});
 	}
 
 	afterEach(() => jest.clearAllMocks());

@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import { resolveFunctionBlockPin } from "./function-block-pin.resolver";
 
@@ -19,7 +20,13 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("résout 'ok' pour une variable déclarée du bon type natif", () => {
-		const variable = new Variable("v1", "MaVar", "memory", "INT");
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		expect(
 			resolveFunctionBlockPin("MaVar", variablesMap(variable), "number"),
 		).toEqual({
@@ -29,7 +36,13 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("résout 'invalid-type' pour une variable déclarée du mauvais type natif", () => {
-		const variable = new Variable("v1", "MaVar", "memory", "BOOL");
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		expect(
 			resolveFunctionBlockPin("MaVar", variablesMap(variable), "number"),
 		).toEqual({
@@ -60,7 +73,13 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("résout 'invalid-type' pour un type natif correspondant mais un VariableType exclu (ex. TIME pour un counter)", () => {
-		const variable = new Variable("v1", "MaConsigne", "memory", "TIME");
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "MaConsigne",
+			zone: "memory",
+			type: "TIME",
+			dialect: Dialect.FR,
+		});
 		const resolution = resolveFunctionBlockPin(
 			"MaConsigne",
 			variablesMap(variable),
@@ -72,7 +91,13 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("n'exclut pas un VariableType hors de la liste d'exclusion", () => {
-		const variable = new Variable("v1", "MaVar", "memory", "INT");
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		const resolution = resolveFunctionBlockPin(
 			"MaVar",
 			variablesMap(variable),
@@ -84,7 +109,13 @@ describe("resolveFunctionBlockPin", () => {
 	});
 
 	it("retombe sur la résolution de variable quand le pin n'a pas la syntaxe d'un littéral", () => {
-		const variable = new Variable("v1", "MaVar", "memory", "INT");
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		const resolution = resolveFunctionBlockPin(
 			"MaVar",
 			variablesMap(variable),

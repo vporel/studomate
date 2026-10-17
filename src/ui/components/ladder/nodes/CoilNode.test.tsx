@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { CoilType } from "@/schemas/ladder/element.schema";
@@ -48,11 +49,17 @@ function setup({
 		selectorImplementation({
 			simulationVariablesStates,
 			simulationVariablesStatesByMnemonic,
-			project: { variables: projectVariables },
+			project: {
+				variables: projectVariables,
+				getAllTimerBlockElements: () => [],
+				getAllCounterBlockElements: () => [],
+				grafcets: {},
+			},
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			ladder: { id: "ladder-1", excludedFromExecution: false },
 			highlightedNodesIds,
 			commandsStackManager: { executeOperation },
 		}),
@@ -209,7 +216,15 @@ describe("CoilNode", () => {
 		it("accepte une variable d'entrée comme cible de la bobine", () => {
 			const { executeOperation } = setup({
 				variable: "S1",
-				projectVariables: [new Variable("v1", "E1", "logic-input", "BOOL")],
+				projectVariables: [
+					new Variable({
+						id: "v1",
+						mnemonic: "E1",
+						zone: "logic-input",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
+				],
 			});
 
 			const input = screen.getByRole("combobox");

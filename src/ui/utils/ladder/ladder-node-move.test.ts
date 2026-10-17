@@ -22,7 +22,10 @@ function contactAt(id: string, row: number, col: number) {
 	};
 }
 
-function sectionWith(elements: ReturnType<typeof contactAt>[], connections: Connection[] = []) {
+function sectionWith(
+	elements: ReturnType<typeof contactAt>[],
+	connections: Connection[] = [],
+) {
 	const s = new Section(createRandomId(), "S", "");
 	s.elements = elements as never;
 	s.connections = connections;
@@ -43,7 +46,11 @@ describe("ladder-node-move", () => {
 	});
 
 	it("snapPositionChange laisse passer un changement non-position", () => {
-		const change = { type: "select", id: "a", selected: true } as NodeChange<LadderNodeType>;
+		const change = {
+			type: "select",
+			id: "a",
+			selected: true,
+		} as NodeChange<LadderNodeType>;
 		expect(snapPositionChange(change)).toBe(change);
 	});
 
@@ -52,7 +59,11 @@ describe("ladder-node-move", () => {
 	});
 
 	it("isFinishedPositionChange : vrai au relâchement, faux en frame intermédiaire", () => {
-		const base = { type: "position" as const, id: "a", position: { x: 0, y: 0 } };
+		const base = {
+			type: "position" as const,
+			id: "a",
+			position: { x: 0, y: 0 },
+		};
 		expect(isFinishedPositionChange({ ...base, dragging: true })).toBe(false);
 		expect(isFinishedPositionChange({ ...base, dragging: false })).toBe(true);
 		expect(isFinishedPositionChange({ ...base })).toBe(true);
@@ -68,8 +79,12 @@ describe("ladder-node-move", () => {
 			{ points: [] },
 		);
 		const section = sectionWith([a, b], [conn]);
-		expect(isPositionValidForConnections(section, "a", { row: 0, col: 2 })).toBe(true);
-		expect(isPositionValidForConnections(section, "a", { row: 0, col: 4 })).toBe(false);
+		expect(
+			isPositionValidForConnections(section, "a", { row: 0, col: 2 }),
+		).toBe(true);
+		expect(
+			isPositionValidForConnections(section, "a", { row: 0, col: 4 }),
+		).toBe(false);
 	});
 
 	it("singleMoveNeedsRewire est vrai quand le déplacement inverse une connexion", () => {
@@ -82,8 +97,12 @@ describe("ladder-node-move", () => {
 			{ points: [] },
 		);
 		const section = sectionWith([a, b], [conn]);
-		expect(singleMoveNeedsRewire(section, a as never, { row: 0, col: 4 })).toBe(true);
-		expect(singleMoveNeedsRewire(section, a as never, { row: 0, col: 2 })).toBe(false);
+		expect(singleMoveNeedsRewire(section, a as never, { row: 0, col: 4 })).toBe(
+			true,
+		);
+		expect(singleMoveNeedsRewire(section, a as never, { row: 0, col: 2 })).toBe(
+			false,
+		);
 	});
 
 	describe("buildKeyboardMoveChanges", () => {
@@ -103,9 +122,7 @@ describe("ladder-node-move", () => {
 			expect(buildKeyboardMoveChanges(section, ["a"], -1, 0)).toEqual([]);
 			expect(buildKeyboardMoveChanges(section, ["a"], 0, -1)).toEqual([]);
 
-			const atRightEdge = sectionWith([
-				contactAt("a", 0, LADDER_MAX_COLS - 1),
-			]);
+			const atRightEdge = sectionWith([contactAt("a", 0, LADDER_MAX_COLS - 1)]);
 			expect(buildKeyboardMoveChanges(atRightEdge, ["a"], 0, 1)).toEqual([]);
 		});
 
@@ -125,10 +142,7 @@ describe("ladder-node-move", () => {
 		});
 
 		it("déplacement multiple : les deux avancent si les cibles sont libres", () => {
-			const section = sectionWith([
-				contactAt("a", 0, 0),
-				contactAt("b", 0, 2),
-			]);
+			const section = sectionWith([contactAt("a", 0, 0), contactAt("b", 0, 2)]);
 			const changes = buildKeyboardMoveChanges(section, ["a", "b"], 1, 0);
 			expect(changes.map((c) => c.id).sort()).toEqual(["a", "b"]);
 			expect(changes[0].position).toEqual({ x: colToX(0), y: rowToY(1) });

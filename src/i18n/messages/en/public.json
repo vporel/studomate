@@ -29,15 +29,34 @@
 		"en": "English"
 	},
 	"landing": {
-		"heroTagline": "The fastest, most accessible automation studio to learn and experiment with GRAFCET, Ladder and HMIs: free, no install, right in your browser.",
+		"heroTitle": "Learn GRAFCET and Ladder<br></br>by simulating them",
+		"heroTagline": "Design, simulate and test your automation logic with animated HMIs, right in your browser.",
 		"heroBadges": "Free and open source · No install · No account · No personal data",
-		"openManual": "Read the manual",
-		"heroSlideGrafcet": "The {name} editor simulating a GRAFCET",
-		"heroSlideLadder": "The {name} editor simulating a Ladder diagram",
-		"heroSlideHmi": "The {name} HMI editor",
-		"heroVideoLabel": "Demo of building and simulating a project with {name}",
-		"notationsTitle": "GRAFCET, Ladder, HMI",
-		"notationsIntro": "One environment for all three notations, with shared variables.",
+		"heroSceneLabel": "3D animation of a box-sorting station: a conveyor brings each box and cylinders sort it by height.",
+		"followTraining": "Take the course",
+		"showcaseGrafcetAlt": "The {name} editor simulating a GRAFCET",
+		"showcaseLadderAlt": "The {name} editor simulating a Ladder diagram",
+		"showcaseHmiAlt": "The {name} HMI editor",
+		"demoTitle": "See {name} in action",
+		"demoVideoLabel": "Demo of building and simulating a project with {name}",
+		"demoVideoPause": "Pause the demo",
+		"demoVideoPlay": "Play the demo",
+		"logicTitle": "Write the logic",
+		"logicIntro": "GRAFCET and Ladder in the same project, sharing the same variables.",
+		"machineTitle": "Drive the machine",
+		"machineIntro": "Connect your program to an HMI, a 3D scene or a real Arduino board.",
+		"showcaseGrafcetTitle": "GRAFCET",
+		"showcaseGrafcetText": "Draw steps, transitions and branches, then follow the GRAFCET as it runs: active steps, true conditions, running actions.",
+		"showcaseLadderTitle": "Ladder",
+		"showcaseLadderText": "Build rungs with contacts, coils, timers and counters, and watch power flow through them during simulation.",
+		"showcaseHmiTitle": "HMI",
+		"showcaseHmiText": "Build animated supervision pages (lights, buttons, tanks, moving objects) wired to the same variables as your programs.",
+		"showcaseScene3dTitle": "3D scenes",
+		"showcaseScene3dText": "Connect your program to a virtual 3D plant (conveyors, cylinders, sensors) and watch the machine respond in real time.",
+		"showcaseScene3dAlt": "3D scene of a box-sorting station driven by {name}",
+		"showcaseArduinoTitle": "Arduino",
+		"showcaseArduinoText": "Load your program onto a real Arduino Uno R3 board, or use its inputs and outputs during simulation, straight from Chrome or Edge.",
+		"showcaseArduinoAlt": "Arduino Uno R3 board",
 		"whyTitle": "Why {name}?",
 		"whyIntro": "The value of {name} isn't being more powerful than industrial software, but cutting the friction of learning automation down to almost nothing.",
 		"reasonFrictionTitle": "Zero friction",
@@ -46,20 +65,11 @@
 		"reasonAllInOneText": "GRAFCET, Ladder and animated HMIs in the same environment, with variables shared across all three. No free tool combines the three.",
 		"reasonShortLoopTitle": "Short correction loop",
 		"reasonShortLoopText": "Errors are flagged while you edit, not only when you start the simulation. A fast, visual right to make mistakes.",
-		"audienceTitle": "Who is it for?",
-		"audienceIntro": "Studomate is for anyone learning or teaching automation.",
 		"audienceStudents": "Students (technical colleges, engineering schools, universities)",
 		"audienceTeachers": "Teachers and trainers in automation / electrical engineering",
 		"audienceProfessionals": "Professionals retraining or brushing up",
-		"featuresTitle": "What {name} offers",
-		"featureEditingTitle": "Multi-language editing",
-		"featureEditingText": "GRAFCET and Ladder: steps, transitions, contacts, coils, timers, counters.",
-		"featureHmiTitle": "Animated HMIs",
-		"featureHmiText": "Moving an object, filling a tank, changing a visual state: a virtual process to drive the system and watch it react.",
 		"featureSimulationTitle": "Real-time simulation",
 		"featureSimulationText": "Step-by-step or continuous execution, with live visualisation of states, transitions and variables.",
-		"featureAnalysisTitle": "Project analysis",
-		"featureAnalysisText": "Structural errors caught before you start the simulation.",
 		"featureManualTitle": "Built-in manual",
 		"featureManualText": "Complete help available straight from the app.",
 		"featureCloudTitle": "Accounts & cloud (optional)",
@@ -71,6 +81,19 @@
 		"step2Text": "Start from scratch or open one of the ready-made templates.",
 		"step3Title": "Analyse, then simulate",
 		"step3Text": "Check the structure, then run the logic and watch the system react.",
+		"trainingTitle": "Learn industrial automation with Studomate",
+		"trainingIntro": "Guided modules to master GRAFCET, then Ladder, with exercises you can simulate in the app.",
+		"trainingA0Topic": "Basics",
+		"trainingA0Summary": "Automation, variables, basic logic and the scan cycle.",
+		"trainingA1Topic": "GRAFCET",
+		"trainingA1Summary": "Steps, transitions, actions, OR and AND branches.",
+		"trainingA2Topic": "Ladder",
+		"trainingA2Summary": "Contacts, coils, latching, set/reset coils and edges.",
+		"trainingA3Topic": "Ladder",
+		"trainingA3Summary": "Timers, counters, calculations and subroutines.",
+		"trainingA4Topic": "GRAFCET → Ladder",
+		"trainingA4Summary": "Implement a GRAFCET in Ladder with the three-block method.",
+		"trainingCta": "Browse all training",
 		"templatesTitle": "Examples to get you started",
 		"templatesIntro": "Open a pre-configured project and explore it at your own pace.",
 		"templatePreviewAlt": "Preview of the {label} project",
@@ -79,47 +102,121 @@
 		"durabilityNoLockInTitle": "No lock-in",
 		"durabilityNoLockInText": "Your projects are files you export and keep. The schema is versioned: a project exported today will still open after the tool is updated.",
 		"durabilityIndependenceTitle": "You depend on no one",
-		"durabilityIndependenceText": "The code is free under the AGPL v3 licence: if the project stops, it can be forked or self-hosted. It stays free no matter what.",
+		"durabilityIndependenceText": "The code is free under the AGPL v3 licence: if the project stops, it can be forked or self-hosted.",
 		"privacyTitle": "Built for privacy",
 		"privacyText": "No email required, no personal data stored, no tracking cookies. Authentication uses a nickname, and usage statistics are anonymous.",
-		"openSourceTitle": "Open source",
-		"openSourceText": "{name} is a free project under the AGPL v3 licence. Ideas, feedback and contributions are welcome.",
+		"sourceCodeText": "The source code is public: read it, report an issue or contribute.",
 		"viewOnGitHub": "View on GitHub",
-		"slogan": "Design, Simulate, Automate",
-		"openApp": "Open the app",
-		"heroPrev": "Previous image",
-		"heroNext": "Next image",
-		"heroGoTo": "Go to image {number}"
+		"openApp": "Open the app"
 	},
 	"about": {
 		"title": "About Studomate",
 		"missionTitle": "Mission",
 		"missionBody": "<strong>Studomate</strong> is a teaching tool for <strong>automation</strong>: learning, designing and simulating GRAFCET, Ladder and HMIs, right in the browser.",
-		"missionBody2": "Its value isn't being more powerful than industrial software, but cutting the friction of learning automation down to almost nothing: no install, no licence, no PLC to configure. Its differentiator: GRAFCET, Ladder and animated HMIs in the same environment, with variables shared across all three.",
+		"missionBody2": "Its value isn't being more powerful than industrial software, but cutting the friction of learning automation down to almost nothing: no install, no licence, no PLC to configure.",
+		"differentiatorLabel": "Its differentiator: everything in the same environment",
+		"differentiatorEditors": [
+			"GRAFCET",
+			"Ladder",
+			"Animated HMIs"
+		],
+		"differentiatorItems": [
+			"Shared variables",
+			"3D scene"
+		],
 		"offeringTitle": "What Studomate offers",
 		"offeringItems": [
-			"<strong>Editing and simulation:</strong> automation logic (sequences, transitions, virtual I/O, timers, counters, analog values).",
-			"<strong>Clear visualisation:</strong> active states, evaluated transitions, outputs and external effects.",
-			"<strong>Learning modes:</strong> step-by-step, full scan and continuous execution."
+			{
+				"title": "Editing and simulation",
+				"text": "Automation logic: sequences, transitions, virtual I/O, timers, counters, analog values."
+			},
+			{
+				"title": "Clear visualisation",
+				"text": "Active states, evaluated transitions, outputs and external effects."
+			},
+			{
+				"title": "Learning modes",
+				"text": "Step-by-step, full scan and continuous execution."
+			},
+			{
+				"title": "3D scenes",
+				"text": "A virtual plant (carton sorting, traffic lights, drilling, elevator) whose sensors and actuators are bound to the project's variables."
+			},
+			{
+				"title": "Hardware configuration",
+				"text": "Map variables to the pins of an Arduino Uno R3 board, upload the program, simulate with real I/O and observe the board while it runs."
+			},
+			{
+				"title": "Analysis tools",
+				"text": "Variable cross-references, project templates and vector PDF export."
+			},
+			{
+				"title": "French and English",
+				"text": "Interface, manual and expressions available in both languages."
+			}
 		],
 		"valueTitle": "Educational value",
 		"valueItems": [
-			"<strong>Guided understanding:</strong> of logical sequencing and causality (inputs → transitions → steps → actions → outputs).",
-			"<strong>Learning by trial:</strong> test, fix, remember.",
-			"<strong>Mixed use:</strong> classroom demos, homework exercises, collaborative corrections.",
-			"<strong>Short correction loop:</strong> errors are flagged while editing, not only when the simulation starts."
+			{
+				"title": "Guided understanding",
+				"text": "Of logical sequencing and causality."
+			},
+			{
+				"title": "Learning by trial",
+				"text": "Test, fix, remember."
+			},
+			{
+				"title": "Mixed use",
+				"text": "Classroom demos, homework exercises, collaborative corrections."
+			},
+			{
+				"title": "Short correction loop",
+				"text": "Errors are flagged while editing, not only when the simulation starts."
+			}
+		],
+		"causalityLabel": "The causality chain, made visible",
+		"causalityItems": [
+			"Inputs",
+			"Transitions",
+			"Steps",
+			"Actions",
+			"Outputs"
 		],
 		"ownershipTitle": "Your projects are yours",
-		"ownershipBody": "Your projects are files you export and keep. The schema is versioned and migrations are automatic: a project exported today will still open after updates. The code is free under the AGPL v3 licence. Finally, Studomate asks for no email, stores no personal data and uses no tracking cookies.",
+		"ownershipItems": [
+			{
+				"title": "Local first",
+				"text": "Your projects are stored in your browser and can be exported as files. The schema is versioned and migrations are automatic: a project exported today will still open after updates."
+			},
+			{
+				"title": "Optional cloud",
+				"text": "An account, with or without an email, lets you back up your projects to the cloud and share them by link. Without an account, nothing leaves your browser."
+			},
+			{
+				"title": "Open and tracker-free",
+				"text": "The code is free under the AGPL v3 licence. Studomate uses no tracking cookies."
+			}
+		],
 		"audienceTitle": "Target audience",
 		"audienceItems": [
-			"Students (technical colleges, engineering schools, universities).",
-			"Teachers and trainers in automation / electrical engineering.",
-			"Professionals retraining or brushing up."
+			{
+				"title": "Students",
+				"text": "Technical colleges, engineering schools, universities."
+			},
+			{
+				"title": "Teachers and trainers",
+				"text": "In automation and electrical engineering."
+			},
+			{
+				"title": "Professionals",
+				"text": "Retraining or brushing up."
+			}
 		],
+		"ctaTitle": "Ready to try it?",
+		"ctaBody": "No install, no account: open the app and create your first project.",
 		"contactTitle": "Contact & contributing",
 		"contactBody": "Ideas, feedback or want to contribute?",
-		"contactLink": "Get in touch."
+		"contactLink": "Get in touch"
 	},
 	"contact": {
 		"title": "Get in touch!",
@@ -199,26 +296,208 @@
 		"contactBody": "For any question about privacy or data handling:",
 		"contactLink": "Get in touch."
 	},
+	"notFound": {
+		"title": "Page not found",
+		"body": "The page you are looking for does not exist or has been moved.",
+		"back": "Back to home"
+	},
 	"metadata": {
-		"homeTitle": "Studomate — Design, Simulate, Automate",
+		"homeTitle": "Studomate: Online GRAFCET and Ladder Simulator",
 		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser — no install, no account.",
-		"aboutTitle": "About — Studomate",
+		"aboutTitle": "About",
 		"aboutDescription": "Studomate: a free teaching tool to learn, design and simulate GRAFCET, Ladder and HMIs in the browser.",
-		"contactTitle": "Contact — Studomate",
+		"contactTitle": "Contact",
 		"contactDescription": "Contact the Studomate team: ideas, feedback, contributions.",
-		"legalTitle": "Legal notice — Studomate",
+		"legalTitle": "Legal notice",
 		"legalDescription": "Legal notice for the Studomate site.",
-		"termsTitle": "Terms of use — Studomate",
+		"termsTitle": "Terms of use",
 		"termsDescription": "Terms of use for Studomate.",
-		"privacyTitle": "Privacy policy — Studomate",
+		"privacyTitle": "Privacy policy",
 		"privacyDescription": "How Studomate handles users' personal and technical data.",
-		"manualTitle": "User manual — Studomate",
+		"manualTitle": "User manual",
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Training — Studomate",
+		"trainingTitle": "Training",
 		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
-		"trainingA0Title": "Module A0: Before you start — Studomate Training",
+		"trainingA0Title": "Module A0: Before you start",
 		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
-		"trainingA1Title": "Module A1: GRAFCET basics — Studomate Training",
-		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises."
+		"trainingA1Title": "Module A1: GRAFCET basics",
+		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises.",
+		"trainingA2Title": "Module A2: Ladder, logic and memory",
+		"trainingA2Description": "Module A2: from the relay diagram to Ladder, contacts and coils, self-holding, S/R coils, edges and network execution order.",
+		"trainingA3Title": "Module A3: Ladder, time and calculation",
+		"trainingA3Description": "Module A3: timers, counters, calculation and numeric types, subprograms: theory and self-corrected exercises.",
+		"trainingA4Title": "Module A4: From GRAFCET to Ladder",
+		"trainingA4Description": "Module A4: implementing a GRAFCET in Ladder, three-block method, actions, divergences and reset.",
+		"manualSections": {
+			"getting-started": {
+				"title": "Getting started with Studomate: manual",
+				"description": "Create a project, add a GRAFCET or a ladder, define variables and run a first simulation in Studomate."
+			},
+			"projects": {
+				"title": "Studomate projects: user manual",
+				"description": "Programs, variables, HMI screens and dialect: what a Studomate project contains, and how to save, open and export it."
+			},
+			"accounts": {
+				"title": "Accounts and sharing: Studomate manual",
+				"description": "Cloud backup, sync across devices and sharing a project by link: using a Studomate account."
+			},
+			"explorer": {
+				"title": "Project explorer: Studomate manual",
+				"description": "The Studomate explorer: project tree, programs, variables and HMI screens, and the interface panels."
+			},
+			"variables": {
+				"title": "PLC variables: Studomate manual",
+				"description": "Areas, mnemonics, types and initial values: declare and manage the variables of a GRAFCET, Ladder and HMI project."
+			},
+			"grafcet": {
+				"title": "GRAFCET editor: Studomate manual",
+				"description": "Steps, transitions, actions, junctions, referrals and links: create and edit a GRAFCET in the Studomate graphical editor."
+			},
+			"ladder": {
+				"title": "Ladder editor: Studomate manual",
+				"description": "Networks, contacts, coils, blocks and connections: create and edit a Ladder program in the Studomate graphical editor."
+			},
+			"toolbar": {
+				"title": "Toolbar: Studomate manual",
+				"description": "General actions and creation tools of the Studomate toolbar, depending on the open program type (GRAFCET or Ladder)."
+			},
+			"cross-references": {
+				"title": "Cross-references: Studomate manual",
+				"description": "See where each variable is read and written across the GRAFCETs, ladders and HMI screens of a Studomate project."
+			},
+			"hmi": {
+				"title": "Animated HMI screens: Studomate manual",
+				"description": "Pages, widgets, properties, animations and events: design an interactive human-machine interface and drive it in simulation."
+			},
+			"simulation": {
+				"title": "PLC simulation: Studomate manual",
+				"description": "Start and stop the simulation, follow variables with watch tables and drive HMI screens in real time."
+			},
+			"analysis": {
+				"title": "Project analysis: Studomate manual",
+				"description": "Static analysis checks a project's consistency before simulation: types of checks, blocking errors and warnings."
+			},
+			"hardware": {
+				"title": "Arduino Uno R3: Studomate manual",
+				"description": "Load a program onto an Arduino Uno R3 board, use it as the inputs and outputs of a simulation, or observe its program."
+			},
+			"scene3d": {
+				"title": "3D simulation scene: Studomate manual",
+				"description": "Link a virtual 3D plant (crate sorting, elevator, traffic lights, drilling) to a program running in simulation."
+			},
+			"limits": {
+				"title": "Tool limits: Studomate manual",
+				"description": "What Studomate does not do: limits of Grafcet, expressions, Arduino hardware, 3D scenes and project storage."
+			},
+			"troubleshooting": {
+				"title": "Troubleshooting: Studomate manual",
+				"description": "What to do when the simulation will not start, the grafcet stays stuck or an input does not respond: common symptoms and their causes."
+			},
+			"shortcuts": {
+				"title": "Keyboard shortcuts: Studomate manual",
+				"description": "All Studomate keyboard shortcuts for Windows, Linux and macOS: editing, simulation, navigation and export."
+			}
+		},
+		"trainingStepFallbackTitle": "{step} (module {module}, Studomate Training)",
+		"trainingSteps": {
+			"a0": {
+				"logic-basics": {
+					"title": "Variables and basic logic in automation: training",
+					"description": "Boolean variables, true and false states, AND, OR, NOT: the logic basics to know before programming a PLC."
+				},
+				"scan-cycle": {
+					"title": "The PLC and its scan cycle: training",
+					"description": "How a programmable controller runs its program in a loop: the scan cycle, illustrated with a traffic light."
+				}
+			},
+			"a1": {
+				"theory": {
+					"title": "GRAFCET steps, transitions and receptivities: training",
+					"description": "Active or inactive step, transition, receptivity and action: the basic elements of a GRAFCET, with examples in Studomate."
+				},
+				"theory-actions": {
+					"title": "GRAFCET action types and execution modes: training",
+					"description": "Actions on boolean or numeric variables and the execution modes of a GRAFCET's actions."
+				},
+				"theory-timer": {
+					"title": "Timing a GRAFCET receptivity: training",
+					"description": "Make a receptivity depend on the time spent in a step, following the IEC 60848 standard: notation and examples."
+				},
+				"theory-or-divergence": {
+					"title": "GRAFCET OR divergence and convergence: training",
+					"description": "Choose between several sequences: OR divergence and convergence in a GRAFCET, with examples."
+				},
+				"reading-errors": {
+					"title": "Reading GRAFCET analysis errors: training",
+					"description": "Analyze a GRAFCET without simulating it and understand Studomate's errors and warnings to fix your program."
+				}
+			},
+			"a2": {
+				"theory-contacts-coils": {
+					"title": "Contacts, coils and internal memories in Ladder: training",
+					"description": "The standard Ladder symbols: normally open and normally closed contacts, coils and internal memories."
+				},
+				"theory-self-holding": {
+					"title": "Self-holding in Ladder: training",
+					"description": "Remember a short push of a push button: the self-holding circuit in Ladder, with a pump example."
+				},
+				"theory-set-reset": {
+					"title": "Set and Reset coils in Ladder: training",
+					"description": "S (set) and R (reset) coils: remember a state without self-holding and understand the execution order of networks."
+				},
+				"theory-edges": {
+					"title": "Rising and falling edges in Ladder: training",
+					"description": "P and N edge contacts: trigger an action only once per push, with rising and falling edges."
+				},
+				"conclusion": {
+					"title": "Module A2 conclusion: Ladder logic",
+					"description": "Module A2 recap: combinational logic, memory, self-holding, S/R coils and edges in Ladder, and what comes next."
+				}
+			},
+			"a3": {
+				"theory-counters": {
+					"title": "CTU, CTD and CTUD counters in Ladder: training",
+					"description": "Count parts or cycles with CTU, CTD and CTUD counters: how the blocks work, with examples in Studomate."
+				},
+				"theory-numeric": {
+					"title": "Processing numeric values in Ladder: training",
+					"description": "Assignment, calculations and comparisons: process a level, a counter or a setpoint in a Ladder program."
+				},
+				"theory-types": {
+					"title": "INT, DINT, REAL types and conversions in Ladder: training",
+					"description": "The INT, DINT, REAL, WORD and DWORD numeric types, and conversions between types in a Ladder program."
+				},
+				"theory-structure": {
+					"title": "Structuring a Ladder program into subprograms: training",
+					"description": "Split a program: Main calls subprograms, one per machine function."
+				},
+				"conclusion": {
+					"title": "Module A3 conclusion: Studomate and the standard",
+					"description": "Module A3 recap: timers, counters, numeric values and Ladder program structure."
+				}
+			},
+			"a4": {
+				"theory-method-ladder": {
+					"title": "From GRAFCET to Ladder: the three-block method",
+					"description": "The three blocks of networks, in order, to implement a GRAFCET in Ladder."
+				},
+				"theory-actions-ladder": {
+					"title": "Implementing GRAFCET actions in Ladder: training",
+					"description": "Non-timed and conditional actions (step AND condition) of a GRAFCET translated into Ladder."
+				},
+				"theory-timed-actions-ladder": {
+					"title": "Time in a GRAFCET implemented in Ladder: training",
+					"description": "Translate a receptivity timing (5s/X10) into a TON in Ladder, and handle timed actions."
+				},
+				"theory-divergences-ladder": {
+					"title": "GRAFCET divergences and convergences in Ladder: training",
+					"description": "Implement a GRAFCET's OR and AND divergences in Ladder: one transition condition per branch."
+				},
+				"theory-grafcet-reset": {
+					"title": "Stopping a GRAFCET sequence in Ladder: training",
+					"description": "The two ways of stopping a sequence in Ladder, including resetting the GRAFCET."
+				}
+			}
+		}
 	}
 }

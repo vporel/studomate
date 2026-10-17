@@ -12,10 +12,12 @@ type SelectionMaps = {
 
 const deselectList = <T extends { selected?: boolean }>(items: T[]): T[] =>
 	items.some((item) => item.selected)
-		? items.map((item) =>
-				item.selected ? { ...item, selected: false } : item,
-			)
+		? items.map((item) => (item.selected ? { ...item, selected: false } : item))
 		: items;
+
+const selectList = <T extends { selected?: boolean }>(
+	items: T[] | undefined,
+): T[] => (items ?? []).map((item) => ({ ...item, selected: true }));
 
 /**
  * La sélection du Ladder est globale : chaque section a sa propre instance React Flow, qui
@@ -73,17 +75,11 @@ export default class LadderSelectionManager {
 		this.setStoreState((state) => ({
 			nodesBySectionId: {
 				...(state.nodesBySectionId || {}),
-				[sectionId]: (state.nodesBySectionId[sectionId] ?? []).map((n) => ({
-					...n,
-					selected: true,
-				})),
+				[sectionId]: selectList(state.nodesBySectionId[sectionId]),
 			},
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({
-					...e,
-					selected: true,
-				})),
+				[sectionId]: selectList(state.edgesBySectionId[sectionId]),
 			},
 		}));
 	}
@@ -110,10 +106,7 @@ export default class LadderSelectionManager {
 		this.setStoreState((state) => ({
 			edgesBySectionId: {
 				...(state.edgesBySectionId || {}),
-				[sectionId]: (state.edgesBySectionId[sectionId] ?? []).map((e) => ({
-					...e,
-					selected: true,
-				})),
+				[sectionId]: selectList(state.edgesBySectionId[sectionId]),
 			},
 		}));
 	}

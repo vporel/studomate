@@ -29,12 +29,14 @@ jest.mock("./grafcet-nodes-definitions", () => ({
 	},
 }));
 
-function fakeDragEvent(pageX: number, pageY: number) {
+function fakeDragEvent(clientX: number, clientY: number) {
 	return {
 		preventDefault: jest.fn(),
 		dataTransfer: { dropEffect: "" },
-		pageX,
-		pageY,
+		clientX,
+		clientY,
+		pageX: clientX + 1000,
+		pageY: clientY + 1000,
 	} as any;
 }
 

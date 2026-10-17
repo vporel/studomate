@@ -8,8 +8,8 @@
 	"simulation": {
 		"heading": "Simulation",
 		"autoOpenHmi": {
-			"label": "Automatically open the HMI simulation view",
-			"description": "When entering simulation, automatically switch to the \"Simulation HMI\" tab if the project has at least one HMI page."
+			"label": "Automatically open the simulation view",
+			"description": "When entering simulation, automatically switch to the \"Simulation HMI\" tab if the project has at least one HMI page, otherwise open the 3D scene tab if the project has a scene."
 		}
 	}
 }

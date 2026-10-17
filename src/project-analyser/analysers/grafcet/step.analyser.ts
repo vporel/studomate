@@ -1,7 +1,9 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import Step, { STEP_HANDLE_SOURCE_SUCCESSOR } from "@/schemas/grafcet/step.schema";
+import Step, {
+	STEP_HANDLE_SOURCE_SUCCESSOR,
+} from "@/schemas/grafcet/step.schema";
 import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
@@ -13,7 +15,7 @@ export default class StepAnalyser extends GrafcetElementAnalyser<Step> {
 	 */
 	analyseIsolated(
 		step: Step,
-		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions = {},
+		{ allowEmptyContent = false }: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = { sourceType: "grafcet-step" as const, sourceId: step.id };

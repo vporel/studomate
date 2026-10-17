@@ -7,10 +7,7 @@ import resolveExtremeBranchDrag from "@/ui/utils/grafcet/junction-extreme-branch
 import { useUpdateNodeInternals } from "@xyflow/react";
 import React, { useCallback } from "react";
 import { useGrafcetStore } from "@/ui/components/grafcet/context/GrafcetContext";
-import {
-	resolveBranchPosition,
-	resolvePivotPosition,
-} from "./branch-position";
+import { resolveBranchPosition, resolvePivotPosition } from "./branch-position";
 
 export default function useKeyboardEventsHandler(
 	nodeId: string,

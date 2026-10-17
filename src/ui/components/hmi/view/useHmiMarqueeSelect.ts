@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import {
 	HMI_CANVAS_HEIGHT,
 	HMI_CANVAS_WIDTH,
@@ -49,8 +50,8 @@ export default function useHmiMarqueeSelect(
 		if (!el) return { x: 0, y: 0 };
 		const rect = el.getBoundingClientRect();
 		return {
-			x: Math.max(0, Math.min(HMI_CANVAS_WIDTH, (clientX - rect.left) / zoom)),
-			y: Math.max(0, Math.min(HMI_CANVAS_HEIGHT, (clientY - rect.top) / zoom)),
+			x: clamp((clientX - rect.left) / zoom, 0, HMI_CANVAS_WIDTH),
+			y: clamp((clientY - rect.top) / zoom, 0, HMI_CANVAS_HEIGHT),
 		};
 	};
 
@@ -94,9 +95,7 @@ export default function useHmiMarqueeSelect(
 			);
 			// Glisser nul (simple clic) : laissé au `onClick` du canvas, qui vide la sélection.
 			if (rect.width === 0 && rect.height === 0) return;
-			const hit = widgets
-				.filter((w) => isContained(w, rect))
-				.map((w) => w.id);
+			const hit = widgets.filter((w) => isContained(w, rect)).map((w) => w.id);
 			setSelection(Array.from(new Set([...drag.additiveBase, ...hit])));
 		};
 

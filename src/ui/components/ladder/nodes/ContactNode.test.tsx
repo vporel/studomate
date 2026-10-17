@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { ContactType } from "@/schemas/ladder/element.schema";
@@ -50,12 +51,17 @@ function setup({
 		selectorImplementation({
 			simulationVariablesStates,
 			simulationVariablesStatesByMnemonic,
-			project: { variables: projectVariables },
+			project: {
+				variables: projectVariables,
+				getAllTimerBlockElements: () => [],
+				getAllCounterBlockElements: () => [],
+				grafcets: {},
+			},
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			ladder: { id: "ladder-1" },
+			ladder: { id: "ladder-1", excludedFromExecution: false },
 			highlightedNodesIds,
 			commandsStackManager: { executeOperation },
 		}),
@@ -199,15 +205,15 @@ describe("ContactNode", () => {
 			);
 		});
 
-		it("contact front P : 'energized' seulement sur front montant (mémoire à false)", () => {
+		it("contact front P : 'energized' quand le front a été détecté au dernier balayage", () => {
 			setup({
 				variable: "E1",
 				type: "P",
 				simulationVariablesStates: {
 					v1: { mnemonic: "E1", value: true },
-					"ladder-ladder-1-edge-contact-1": {
-						mnemonic: "EDGE_x",
-						value: false,
+					"ladder-ladder-1-edge-pulse-contact-1": {
+						mnemonic: "EDGEQ_x",
+						value: true,
 					},
 				},
 			});
@@ -218,15 +224,15 @@ describe("ContactNode", () => {
 			);
 		});
 
-		it("contact front P : noir si la mémoire de front est déjà à true", () => {
+		it("contact front P : noir sans front détecté, même si sa variable est vraie", () => {
 			setup({
 				variable: "E1",
 				type: "P",
 				simulationVariablesStates: {
 					v1: { mnemonic: "E1", value: true },
-					"ladder-ladder-1-edge-contact-1": {
-						mnemonic: "EDGE_x",
-						value: true,
+					"ladder-ladder-1-edge-pulse-contact-1": {
+						mnemonic: "EDGEQ_x",
+						value: false,
 					},
 				},
 			});
@@ -292,7 +298,13 @@ describe("ContactNode", () => {
 			const { executeOperation } = setup({
 				variable: "E1",
 				projectVariables: [
-					new Variable("v1", "AutreVariable", "logic-input", "BOOL"),
+					new Variable({
+						id: "v1",
+						mnemonic: "AutreVariable",
+						zone: "logic-input",
+						type: "BOOL",
+						dialect: Dialect.FR,
+					}),
 				],
 			});
 

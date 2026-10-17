@@ -18,6 +18,7 @@
 
 # next.js
 /.next/
+/studomate.zip
 /out/
 
 # production
@@ -44,7 +45,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-_ai_context/
 _ai/
 .env
 .env.local

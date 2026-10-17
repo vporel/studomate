@@ -21,6 +21,8 @@ function fakePointerEvent(overrides: Partial<Record<string, unknown>> = {}) {
 		target: { setPointerCapture: jest.fn(), releasePointerCapture: jest.fn() },
 		pointerId: 1,
 		buttons: 0,
+		clientX: 0,
+		clientY: 0,
 		pageX: 0,
 		pageY: 0,
 		...overrides,
@@ -117,7 +119,7 @@ describe("usePointPointerEventsHandlers", () => {
 	describe("handlePointPointerMove", () => {
 		it("updates the moved coude's position when the left button is held", () => {
 			const { result, setPoints } = setup(ProjectMode.DESIGN);
-			const event = fakePointerEvent({ buttons: 1, pageX: 99, pageY: 42 });
+			const event = fakePointerEvent({ buttons: 1, clientX: 99, clientY: 42, pageX: 500, pageY: 600 });
 
 			act(() => result.current.handlePointPointerMove(event, 1));
 

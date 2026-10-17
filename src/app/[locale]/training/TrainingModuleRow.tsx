@@ -2,7 +2,6 @@
 
 import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
-import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
 import { useT } from "@/ui/i18n/useT";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -19,7 +18,6 @@ export default function TrainingModuleRow({
 	completedLabel,
 	comingSoonLabel,
 	href,
-	backgroundColor,
 	moduleId,
 	stepIds,
 }: {
@@ -29,7 +27,6 @@ export default function TrainingModuleRow({
 	completedLabel: string;
 	comingSoonLabel: string;
 	href?: PublicPathname;
-	backgroundColor: string;
 	/** Permet d'afficher la progression (reprise via compte requis, voir
 	 * `TrainingProgressRepository`) — sans effet si omis (`available: false`, ou module sans
 	 * suivi de progression). Ordre des étapes du module, du premier au dernier. */
@@ -40,11 +37,13 @@ export default function TrainingModuleRow({
 	const [savedStepId, setSavedStepId] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!available || !moduleId || !stepIds || !isSupabaseConfigured) return;
+		if (!available || !moduleId || !stepIds) return;
 		let cancelled = false;
-		void new TrainingProgressRepository().getStepId(moduleId).then((stepId) => {
-			if (!cancelled) setSavedStepId(stepId);
-		});
+		void new TrainingProgressRepository()
+			.getStepId(moduleId, stepIds)
+			.then((stepId) => {
+				if (!cancelled) setSavedStepId(stepId);
+			});
 		return () => {
 			cancelled = true;
 		};
@@ -74,25 +73,24 @@ export default function TrainingModuleRow({
 				px: 1.5,
 				borderRadius: 1.5,
 				cursor: "pointer",
-				bgcolor: available ? backgroundColor : "transparent",
-				"&:hover": { bgcolor: available ? backgroundColor : "action.hover" },
+				"&:hover": { bgcolor: "action.hover" },
 			}}
 		>
 			<Stack direction="row" alignItems="center" gap={1.5}>
 				{completed ? (
 					<CheckCircleIcon color="success" fontSize="small" />
 				) : available ? (
-					<PlayCircleIcon color="success" fontSize="small" />
+					<PlayCircleIcon color="primary" fontSize="small" />
 				) : (
 					<ScheduleIcon color="disabled" fontSize="small" />
 				)}
-				<Typography fontWeight={available ? 600 : 400}>{label}</Typography>
+				<Typography fontWeight={available ? 500 : 400}>{label}</Typography>
 			</Stack>
 			<Chip
 				size="small"
 				label={statusText}
-				color={available ? "success" : "default"}
-				variant={available ? "filled" : "outlined"}
+				color={completed ? "success" : "default"}
+				variant={completed ? "filled" : "outlined"}
 			/>
 		</Stack>
 	);

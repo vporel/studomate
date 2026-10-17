@@ -9,19 +9,19 @@ import {
 import { SimulationVariableState } from "@/ui/stores/project/project.store";
 import {
 	getBlockPortVariableMnemonic,
-	getContactMemoryVariableId,
+	getContactPulseVariableId,
 } from "@/project-analyser/analysers/ladder/ladder.analyser";
 
 /**
  * Un contact laisse passer le courant selon son type et l'état de sa variable — pour les fronts
- * (P/N), `frontMemoryValue` est la valeur de la variable mémoire de front du contact au cycle
- * précédent (voir `getContactMemoryVariableId`). Partagé entre le calcul du parcours de puissance
+ * (P/N), `edgePulseValue` est le front détecté par le contact au dernier balayage de son réseau
+ * (voir `getContactPulseVariableId`). Partagé entre le calcul du parcours de puissance
  * (arêtes) et la surbrillance individuelle d'un contact (`ContactNode`).
  */
 export function contactLetsPowerThrough(
 	type: ContactType,
 	variableValue: unknown,
-	frontMemoryValue: unknown,
+	edgePulseValue: unknown,
 ): boolean {
 	switch (type) {
 		case "NO":
@@ -29,9 +29,8 @@ export function contactLetsPowerThrough(
 		case "NF":
 			return variableValue === false;
 		case "P":
-			return variableValue === true && frontMemoryValue === false;
 		case "N":
-			return variableValue === false && frontMemoryValue === true;
+			return edgePulseValue === true;
 	}
 	return false;
 }
@@ -89,7 +88,7 @@ export function computeEnergizedEdges(
 		if (element.type === "railTerminal") return true; // Le rail est la source, il laisse toujours passer
 		if (element.type === "coil") return false; // Une bobine est un puits, elle ne transmet pas le courant
 		if (element.type === "block") {
-			// La sortie structurelle du bloc porte l'état à propager : `ENO` (toujours vrai pour un
+			// La sortie structurelle du bloc porte l'état à propager : `ENO` (égal à `EN` pour un
 			// appel de programme / assign / arithmetic) ou `Q` (timer non échu, compteur, comparaison
 			// fausse → le rail est coupé en aval).
 			const mnemonic = blockOutputMnemonic(element);
@@ -98,11 +97,11 @@ export function computeEnergizedEdges(
 
 		const contact = element;
 		const state = valueByMnemonic.get(contact.data.variable);
-		const memVarId = getContactMemoryVariableId(ladder.id, contact.id);
+		const pulseVarId = getContactPulseVariableId(ladder.id, contact.id);
 		return contactLetsPowerThrough(
 			contact.data.type,
 			state,
-			variablesState[memVarId]?.value,
+			variablesState[pulseVarId]?.value,
 		);
 	};
 

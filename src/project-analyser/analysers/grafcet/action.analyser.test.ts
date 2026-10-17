@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { analyserEnvironment } from "@tests/utils/test-helpers";
 import {
 	ActionExecutionMode,
@@ -22,9 +23,24 @@ describe("ActionAnalyser", () => {
 				.type(ActionType.TEXT)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
 			expect(issues).toHaveLength(0);
+		});
+
+		it("reports an unparsable expression with the original error as cause", () => {
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("A ET ET")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.SET)
+				.build();
+
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
+
+			const issue = issues.find((i) => i.code === "ACTION_INVALID_EXPRESSION");
+			expect(issue?.severity).toBe("error");
+			expect(issue?.cause).toBeInstanceOf(Error);
 		});
 
 		it("detects empty expression for non-TEXT action", () => {
@@ -35,10 +51,10 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.SET)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const emptyExprIssue = issues.find((i) =>
-				i.code === "ACTION_EMPTY_EXPRESSION",
+			const emptyExprIssue = issues.find(
+				(i) => i.code === "ACTION_EMPTY_EXPRESSION",
 			);
 			expect(emptyExprIssue).toBeDefined();
 			expect(emptyExprIssue?.severity).toBe("warning");
@@ -52,10 +68,10 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.SET)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const identifierIssue = issues.find((i) =>
-				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
+			const identifierIssue = issues.find(
+				(i) => i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 			);
 			expect(identifierIssue).toBeDefined();
 			expect(identifierIssue?.severity).toBe("error");
@@ -69,10 +85,10 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.SET)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const identifierIssues = issues.filter((i) =>
-				i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
+			const identifierIssues = issues.filter(
+				(i) => i.code === "ACTION_BOOLEAN_MUST_BE_IDENTIFIER",
 			);
 			expect(identifierIssues).toHaveLength(0);
 		});
@@ -85,9 +101,13 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.CONTINUOUS)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
+			const assignIssue = issues.find(
+				(i) =>
+					i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" ||
+					i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT",
+			);
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -100,10 +120,12 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.CONTINUOUS)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const assignIssues = issues.filter((i) =>
-				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
+			const assignIssues = issues.filter(
+				(i) =>
+					i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" ||
+					i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT",
 			);
 			expect(assignIssues).toHaveLength(0);
 		});
@@ -116,9 +138,13 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.RISING_EDGE)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const assignIssue = issues.find((i) => i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT");
+			const assignIssue = issues.find(
+				(i) =>
+					i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" ||
+					i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT",
+			);
 			expect(assignIssue).toBeDefined();
 			expect(assignIssue?.severity).toBe("error");
 		});
@@ -131,10 +157,12 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.RISING_EDGE)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const assignIssues = issues.filter((i) =>
-				(i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" || i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT"),
+			const assignIssues = issues.filter(
+				(i) =>
+					i.code === "ACTION_NUMERIC_MUST_BE_ASSIGNMENT" ||
+					i.code === "ACTION_STRING_MUST_BE_ASSIGNMENT",
 			);
 			expect(assignIssues).toHaveLength(0);
 		});
@@ -147,10 +175,10 @@ describe("ActionAnalyser", () => {
 				.executionMode(null)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
-			const modeIssue = issues.find((i) =>
-				i.code === "ACTION_INCOMPATIBLE_EXECUTION_MODE",
+			const modeIssue = issues.find(
+				(i) => i.code === "ACTION_INCOMPATIBLE_EXECUTION_MODE",
 			);
 			expect(modeIssue).toBeDefined();
 			expect(modeIssue?.severity).toBe("error");
@@ -164,7 +192,7 @@ describe("ActionAnalyser", () => {
 				.executionMode(ActionExecutionMode.CONTINUOUS)
 				.build();
 
-			const issues = analyser.analyseIsolated(action);
+			const issues = analyser.analyseIsolated(action, { dialect: Dialect.FR });
 
 			expect(issues.length).toBeGreaterThan(0);
 			expect(issues.some((i) => i.severity === "error")).toBe(true);
@@ -184,6 +212,7 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
 			expect(issues).toHaveLength(0);
@@ -202,10 +231,11 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment(),
+				Dialect.FR,
 			);
 
-			const connectionIssue = issues.find((i) =>
-				i.code === "ACTION_NOT_CONNECTED_TO_STEP",
+			const connectionIssue = issues.find(
+				(i) => i.code === "ACTION_NOT_CONNECTED_TO_STEP",
 			);
 			expect(connectionIssue).toBeDefined();
 			expect(connectionIssue?.severity).toBe("error");
@@ -230,7 +260,12 @@ describe("ActionAnalyser", () => {
 				.build();
 
 			expect(() =>
-				analyser.analyseInContext(action, grafcet, analyserEnvironment()),
+				analyser.analyseInContext(
+					action,
+					grafcet,
+					analyserEnvironment(),
+					Dialect.FR,
+				),
 			).not.toThrow();
 		});
 
@@ -264,9 +299,15 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([boolVar]),
+				Dialect.FR,
 			);
 
-			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
+			const typeIssue = issues.find(
+				(i) =>
+					i.code === "ACTION_NUMERIC_TYPE_MISMATCH" ||
+					i.code === "ACTION_STRING_TYPE_MISMATCH" ||
+					i.code === "ACTION_INVALID_EXPRESSION",
+			);
 			expect(typeIssue).toBeDefined();
 		});
 
@@ -300,10 +341,13 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([intVar]),
+				Dialect.FR,
 			);
 
-			const typeIssues = issues.filter((i) =>
-				(i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH"),
+			const typeIssues = issues.filter(
+				(i) =>
+					i.code === "ACTION_NUMERIC_TYPE_MISMATCH" ||
+					i.code === "ACTION_STRING_TYPE_MISMATCH",
 			);
 			expect(typeIssues).toHaveLength(0);
 		});
@@ -338,13 +382,65 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([intVar]),
+				Dialect.FR,
 			);
 
-			const divisionIssue = issues.find((i) =>
-				i.code === "ACTION_INVALID_EXPRESSION",
+			const divisionIssue = issues.find(
+				(i) => i.code === "ACTION_INVALID_EXPRESSION",
 			);
 			expect(divisionIssue).toBeDefined();
 			expect(divisionIssue?.severity).toBe("error");
+		});
+
+		it("signale une affectation qui rétrécit un DINT dans un INT sans conversion", () => {
+			const small = new VariableBuilder()
+				.id("v-i")
+				.mnemonic("niveau")
+				.zone("memory")
+				.type("INT")
+				.build();
+			const wide = new VariableBuilder()
+				.id("v-d")
+				.mnemonic("inter")
+				.zone("memory")
+				.type("DINT")
+				.build();
+			const grafcetWith = (expression: string) => {
+				const action = new ActionBuilder()
+					.id("action-1")
+					.expression(expression)
+					.type(ActionType.NUMERIC_VARIABLE)
+					.executionMode(ActionExecutionMode.CONTINUOUS)
+					.build();
+				const step = new StepBuilder().id("step-1").number(1).initial().build();
+				const grafcet = new GrafcetBuilder()
+					.id("grafcet-1")
+					.addStep(step)
+					.addAction(action)
+					.addConnection(
+						new ConnectionBuilder()
+							.id("c1")
+							.source("step", "step-1", "source:action")
+							.target("action", "action-1", "target:step")
+							.build(),
+					)
+					.build();
+				return analyser
+					.analyseInContext(
+						action,
+						grafcet,
+						analyserEnvironment([small, wide]),
+						Dialect.FR,
+					)
+					.map((i) => i.code);
+			};
+
+			expect(grafcetWith("niveau := inter / 276")).toContain(
+				"ACTION_INVALID_EXPRESSION",
+			);
+			expect(grafcetWith("niveau := DINT_TO_INT(inter / 276)")).not.toContain(
+				"ACTION_INVALID_EXPRESSION",
+			);
 		});
 
 		it("validates variable types in string assignment", () => {
@@ -377,9 +473,15 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([intVar]),
+				Dialect.FR,
 			);
 
-			const typeIssue = issues.find((i) => i.code === "ACTION_NUMERIC_TYPE_MISMATCH" || i.code === "ACTION_STRING_TYPE_MISMATCH" || i.code === "ACTION_INVALID_EXPRESSION");
+			const typeIssue = issues.find(
+				(i) =>
+					i.code === "ACTION_NUMERIC_TYPE_MISMATCH" ||
+					i.code === "ACTION_STRING_TYPE_MISMATCH" ||
+					i.code === "ACTION_INVALID_EXPRESSION",
+			);
 			expect(typeIssue).toBeDefined();
 		});
 
@@ -413,6 +515,7 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([inputVar]),
+				Dialect.FR,
 			);
 
 			const inputIssue = issues.find(
@@ -455,6 +558,7 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([inputVar]),
+				Dialect.FR,
 			);
 
 			expect(
@@ -495,6 +599,7 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([memoryVar]),
+				Dialect.FR,
 			);
 
 			expect(
@@ -533,6 +638,7 @@ describe("ActionAnalyser", () => {
 				action,
 				grafcet,
 				analyserEnvironment([x1]),
+				Dialect.FR,
 			);
 
 			const readonlyIssue = issues.find(
@@ -583,6 +689,7 @@ describe("ActionAnalyser", () => {
 				setAction,
 				grafcet,
 				analyserEnvironment([memoryVar]),
+				Dialect.FR,
 			);
 
 			const conflictIssue = issues.find(
@@ -634,11 +741,50 @@ describe("ActionAnalyser", () => {
 				setAction,
 				grafcet,
 				analyserEnvironment([memoryVar]),
+				Dialect.FR,
 			);
 
 			expect(
 				issues.find((i) => i.code === "ACTION_SET_RESET_CONFLICT_SAME_STEP"),
 			).toBeUndefined();
+		});
+		it("detects a boolean action writing to a constant", () => {
+			const constant = new VariableBuilder()
+				.id("var-1")
+				.mnemonic("K")
+				.zone("constant")
+				.type("BOOL")
+				.value("VRAI")
+				.build();
+			const action = new ActionBuilder()
+				.id("action-1")
+				.expression("K")
+				.type(ActionType.BOOLEAN_VARIABLE)
+				.executionMode(ActionExecutionMode.CONTINUOUS)
+				.build();
+			const step = new StepBuilder().id("step-1").number(1).initial().build();
+			const c1 = new ConnectionBuilder()
+				.id("c1")
+				.source("step", "step-1", "source:action")
+				.target("action", "action-1", "target:step")
+				.build();
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addStep(step)
+				.addAction(action)
+				.addConnection(c1)
+				.build();
+
+			const issues = analyser.analyseInContext(
+				action,
+				grafcet,
+				analyserEnvironment([constant]),
+				Dialect.FR,
+			);
+
+			expect(
+				issues.find((i) => i.code === "ACTION_VARIABLE_IS_CONSTANT")?.severity,
+			).toBe("error");
 		});
 	});
 });

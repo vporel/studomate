@@ -116,6 +116,32 @@ describe("LadderSelectionManager", () => {
 		expect(getState().nodesBySectionId.s1[0].selected).toBe(false);
 	});
 
+	it("selectAllNodesAndEdges sur une section sans contenu la crée vide et laisse les autres intactes", () => {
+		const { manager, getState } = setup({
+			nodesBySectionId: { s2: [{ id: "n2", selected: false }] },
+			edgesBySectionId: { s2: [] },
+		});
+
+		manager.selectAllNodesAndEdges("inconnue");
+
+		expect(getState().nodesBySectionId.inconnue).toEqual([]);
+		expect(getState().edgesBySectionId.inconnue).toEqual([]);
+		expect(getState().nodesBySectionId.s2[0].selected).toBe(false);
+	});
+
+	it("selectAllEdges ne modifie pas les objets d'origine", () => {
+		const edge = { id: "e1" };
+		const { manager, getState } = setup({
+			nodesBySectionId: { s1: [] },
+			edgesBySectionId: { s1: [edge] },
+		});
+
+		manager.selectAllEdges("s1");
+
+		expect(edge).toEqual({ id: "e1" });
+		expect(getState().edgesBySectionId.s1[0]).not.toBe(edge);
+	});
+
 	it("deselectAllElements retire la sélection dans toutes les sections", () => {
 		const { manager, getState } = setup({
 			nodesBySectionId: {

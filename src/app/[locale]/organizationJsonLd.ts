@@ -1,4 +1,11 @@
-import { APP_NAME, APP_REPO_URL, APP_URL, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
+import {
+	APP_NAME,
+	APP_REPO_URL,
+	APP_URL,
+	AUTHOR_LINKEDIN_URL,
+	AUTHOR_NAME,
+	AUTHOR_URL,
+} from "@/app-info";
 import { serializeJsonLd } from "./json-ld";
 
 /**
@@ -11,7 +18,7 @@ const organizationJsonLd = serializeJsonLd({
 	name: APP_NAME,
 	url: APP_URL,
 	logo: new URL("/images/icon.png", APP_URL).toString(),
-	sameAs: [APP_REPO_URL],
+	sameAs: [APP_REPO_URL, AUTHOR_LINKEDIN_URL],
 	founder: {
 		"@type": "Person",
 		name: AUTHOR_NAME,

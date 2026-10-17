@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import {
 	HMI_CANVAS_HEIGHT,
 	HMI_CANVAS_WIDTH,
@@ -12,19 +13,15 @@ import {
 } from "@/schemas/hmi/hmi-widget.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { MouseEvent as ReactMouseEvent, useCallback, useRef } from "react";
-import { HMI_WIDGET_DEFAULT_MIN_SIZE, snapToGrid } from "./constants";
+import {
+	HMI_WIDGET_DEFAULT_MIN_SIZE,
+	snapToGrid,
+} from "@/ui/components/hmi/logic/constants";
 
 /** Poignée de redimensionnement : un point cardinal. `n`/`s`/`e`/`w` déplacent un seul bord, les
  * coins (`ne`, `nw`, `se`, `sw`) deux à la fois. Un bord non cité dans la direction reste ancré. */
 export type HmiResizeDirection =
-	| "n"
-	| "s"
-	| "e"
-	| "w"
-	| "ne"
-	| "nw"
-	| "se"
-	| "sw";
+	"n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
 /** Rectangle d'un widget pendant un redimensionnement en cours (position + taille) : `position`
  * change dès qu'un bord haut/gauche bouge, l'aperçu doit donc porter les deux. */
@@ -76,7 +73,7 @@ export function resizeRect(params: {
 		const rawSide = drivenByWidth
 			? start.width + widthDelta
 			: (start.height + heightDelta) * aspectRatio;
-		const width = snapToGrid(Math.max(minSide, Math.min(maxSide, rawSide)));
+		const width = snapToGrid(clamp(rawSide, minSide, maxSide));
 		const height = width / aspectRatio;
 		return {
 			size: { width, height },
@@ -90,26 +87,18 @@ export function resizeRect(params: {
 	let x = start.x;
 	let width = start.width;
 	if (movesRight) {
-		width = snapToGrid(
-			Math.max(minSize.width, Math.min(roomX, start.width + dx)),
-		);
+		width = snapToGrid(clamp(start.width + dx, minSize.width, roomX));
 	} else if (movesLeft) {
-		x = snapToGrid(
-			Math.max(0, Math.min(right - minSize.width, start.x + dx)),
-		);
+		x = snapToGrid(clamp(start.x + dx, 0, right - minSize.width));
 		width = right - x;
 	}
 
 	let y = start.y;
 	let height = start.height;
 	if (movesBottom) {
-		height = snapToGrid(
-			Math.max(minSize.height, Math.min(roomY, start.height + dy)),
-		);
+		height = snapToGrid(clamp(start.height + dy, minSize.height, roomY));
 	} else if (movesTop) {
-		y = snapToGrid(
-			Math.max(0, Math.min(bottom - minSize.height, start.y + dy)),
-		);
+		y = snapToGrid(clamp(start.y + dy, 0, bottom - minSize.height));
 		height = bottom - y;
 	}
 
@@ -139,62 +128,61 @@ export default function useHmiWidgetResize(
 		aspectRatio?: number;
 	} | null>(null);
 
-	return useCallback((
-		e: ReactMouseEvent,
-		widget: HmiWidget,
-		direction: HmiResizeDirection,
-	) => {
-		const { minSize = HMI_WIDGET_DEFAULT_MIN_SIZE } =
-			HMI_WIDGET_DEFINITIONS[widget.type];
-		resizeState.current = {
-			widgetId: widget.id,
-			direction,
-			startMouseX: e.clientX,
-			startMouseY: e.clientY,
-			start: {
-				x: widget.position.x,
-				y: widget.position.y,
-				width: widget.size.width,
-				height: widget.size.height,
-			},
-			minSize,
-			aspectRatio: HmiWidget.getResizeAspectRatio(widget),
-		};
+	return useCallback(
+		(e: ReactMouseEvent, widget: HmiWidget, direction: HmiResizeDirection) => {
+			const { minSize = HMI_WIDGET_DEFAULT_MIN_SIZE } =
+				HMI_WIDGET_DEFINITIONS[widget.type];
+			resizeState.current = {
+				widgetId: widget.id,
+				direction,
+				startMouseX: e.clientX,
+				startMouseY: e.clientY,
+				start: {
+					x: widget.position.x,
+					y: widget.position.y,
+					width: widget.size.width,
+					height: widget.size.height,
+				},
+				minSize,
+				aspectRatio: HmiWidget.getResizeAspectRatio(widget),
+			};
 
-		const rectAt = (
-			clientX: number,
-			clientY: number,
-			resize: NonNullable<typeof resizeState.current>,
-		) =>
-			resizeRect({
-				direction: resize.direction,
-				start: resize.start,
-				dx: (clientX - resize.startMouseX) / zoom,
-				dy: (clientY - resize.startMouseY) / zoom,
-				minSize: resize.minSize,
-				aspectRatio: resize.aspectRatio,
-			});
+			const rectAt = (
+				clientX: number,
+				clientY: number,
+				resize: NonNullable<typeof resizeState.current>,
+			) =>
+				resizeRect({
+					direction: resize.direction,
+					start: resize.start,
+					dx: (clientX - resize.startMouseX) / zoom,
+					dy: (clientY - resize.startMouseY) / zoom,
+					minSize: resize.minSize,
+					aspectRatio: resize.aspectRatio,
+				});
 
-		const onMouseMove = (moveEvent: MouseEvent) => {
-			const resize = resizeState.current;
-			if (!resize) return;
-			onPreviewChange(rectAt(moveEvent.clientX, moveEvent.clientY, resize));
-		};
-		const onMouseUp = (upEvent: MouseEvent) => {
-			const resize = resizeState.current;
-			resizeState.current = null;
-			window.removeEventListener("mousemove", onMouseMove);
-			window.removeEventListener("mouseup", onMouseUp);
-			onPreviewChange(null);
-			if (!resize) return;
-			const { position, size } = rectAt(
-				upEvent.clientX,
-				upEvent.clientY,
-				resize,
-			);
-			updateWidget(resize.widgetId, { position, size });
-		};
-		window.addEventListener("mousemove", onMouseMove);
-		window.addEventListener("mouseup", onMouseUp);
-	}, [zoom, onPreviewChange, updateWidget]);
+			const onMouseMove = (moveEvent: MouseEvent) => {
+				const resize = resizeState.current;
+				if (!resize) return;
+				onPreviewChange(rectAt(moveEvent.clientX, moveEvent.clientY, resize));
+			};
+			const onMouseUp = (upEvent: MouseEvent) => {
+				const resize = resizeState.current;
+				resizeState.current = null;
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+				onPreviewChange(null);
+				if (!resize) return;
+				const { position, size } = rectAt(
+					upEvent.clientX,
+					upEvent.clientY,
+					resize,
+				);
+				updateWidget(resize.widgetId, { position, size });
+			};
+			window.addEventListener("mousemove", onMouseMove);
+			window.addEventListener("mouseup", onMouseUp);
+		},
+		[zoom, onPreviewChange, updateWidget],
+	);
 }

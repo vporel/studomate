@@ -1,3 +1,9 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import { getConstantNativeValue } from "@/schemas/variable/constant-value";
+import {
+	getInputRestValue,
+	getSliderRange,
+} from "@/schemas/variable/input-behavior";
 import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import Variable, {
 	getNumericRange,
@@ -16,6 +22,7 @@ const ZONE_TO_SCOPE: Record<VariableZone, PLCVariableScope> = {
 	"analog-input": "input",
 	"analog-output": "output",
 	memory: "memory",
+	constant: "memory",
 };
 
 /**
@@ -27,7 +34,7 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
 > = {
 	BOOL: "boolean",
 	INT: "number",
-	LONG: "number",
+	DINT: "number",
 	WORD: "number",
 	DWORD: "number",
 	REAL: "number",
@@ -37,9 +44,11 @@ const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
 
 export default class VariableCompiler {
 	/**
-	 * Converts all project-level variables to PLCVariables.
+	 * Converts all project-level variables to PLCVariables. An input with a behavior starts at
+	 * its rest value, a slider input is bounded by the slider's range, and a constant starts at
+	 * its declared value.
 	 */
-	static compile(variables: Variable[]): PLCVariable[] {
+	static compile(variables: Variable[], dialect: Dialect): PLCVariable[] {
 		const result: PLCVariable[] = [];
 
 		for (const variable of variables) {
@@ -47,15 +56,20 @@ export default class VariableCompiler {
 			if (!plcType) continue;
 
 			const scope = ZONE_TO_SCOPE[variable.zone];
-			result.push(
-				new PLCVariable(
-					variable.id,
-					variable.mnemonic,
-					scope,
-					plcType,
-					getNumericRange(variable.type),
-				),
+			const isConstant = variable.zone === "constant";
+			const plcVariable = new PLCVariable(
+				variable.id,
+				variable.mnemonic,
+				scope,
+				plcType,
+				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
+				variable.type,
+				isConstant,
+				getConstantNativeValue(variable, dialect),
 			);
+			const restValue = getInputRestValue(variable.behavior);
+			if (restValue !== undefined) plcVariable.setValue(restValue);
+			result.push(plcVariable);
 		}
 
 		return result;
@@ -76,6 +90,7 @@ export default class VariableCompiler {
 					"memory",
 					VARIABLE_TYPE_TO_NATIVE_TYPE[variable.type],
 					getNumericRange(variable.type),
+					variable.type,
 				),
 		);
 	}

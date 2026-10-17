@@ -1,4 +1,5 @@
 import Project from "@/schemas/project/project.schema";
+import { readJson } from "../safe-local-storage";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
 import { isSupabaseConfigured, supabase } from "./supabase-client";
@@ -31,10 +32,17 @@ export default class HybridProjectRepository
 	async list(): Promise<ProjectListResult> {
 		const local = await this.local.list();
 		if (!(await this.isAuthenticated())) return local;
+		const cloud = await this.cloud.list();
+		// Le serveur fait foi : un projet cloud absent de l'index (créé depuis un autre navigateur,
+		// stockage local vidé...) y est inscrit, sinon il serait rangé et enregistré comme local.
+		// Un id qui existe aussi en local reste ambigu : l'index n'est pas modifié pour lui.
+		const localIds = new Set(local.projects.map((p) => p.id));
+		for (const project of cloud.projects) {
+			if (!localIds.has(project.id)) this.addToIndex(project.id);
+		}
 		// Un projet présent dans l'index cloud n'est plus local, même si `local.list()` le renvoie
 		// encore (nettoyage local incomplet après un `moveToCloud` — voir plus bas).
 		const localOnly = local.projects.filter((p) => !this.isCloud(p.id));
-		const cloud = await this.cloud.list();
 		return {
 			projects: [...localOnly, ...cloud.projects],
 			skipped: [...local.skipped, ...cloud.skipped],
@@ -51,7 +59,10 @@ export default class HybridProjectRepository
 	 * déjà cloud garde son emplacement, quel que soit `location` — seul le premier enregistrement
 	 * d'un projet peut choisir sa destination.
 	 */
-	async save(project: Project, location?: StorageLocation): Promise<SaveResult> {
+	async save(
+		project: Project,
+		location?: StorageLocation,
+	): Promise<SaveResult> {
 		if (this.isCloud(project.id)) return this.cloud.save(project);
 		// `isCloud` à false ne veut pas dire "projet neuf" : il peut déjà exister en local, auquel
 		// cas `location` ne doit rien changer — seul un id absent des deux repositories est
@@ -107,6 +118,25 @@ export default class HybridProjectRepository
 			"cloud",
 		);
 		return result;
+	}
+
+	/** Projets stockés dans le cloud du compte connecté ; vide sans session. */
+	async listCloud(): Promise<ProjectListResult> {
+		if (!(await this.isAuthenticated())) return { projects: [], skipped: [] };
+		return this.cloud.list();
+	}
+
+	/**
+	 * Rapatrie tous les projets cloud en local, en s'arrêtant au premier échec (les projets déjà
+	 * déplacés restent en local, les autres restent dans le cloud).
+	 */
+	async moveAllCloudToLocal(): Promise<SaveResult> {
+		const { projects } = await this.listCloud();
+		for (const project of projects) {
+			const result = await this.moveToLocal(project);
+			if (!result.ok) return result;
+		}
+		return { ok: true };
 	}
 
 	// Le partage n'existe que pour les projets cloud : le token porte sur une ligne `project_id`
@@ -167,13 +197,8 @@ export default class HybridProjectRepository
 	}
 
 	private readIndex(): string[] {
-		try {
-			const raw = localStorage.getItem(CLOUD_INDEX_KEY);
-			const parsed = raw ? JSON.parse(raw) : [];
-			return Array.isArray(parsed) ? parsed : [];
-		} catch {
-			return [];
-		}
+		const parsed = readJson(CLOUD_INDEX_KEY);
+		return Array.isArray(parsed) ? parsed : [];
 	}
 
 	private writeIndex(ids: string[]): boolean {

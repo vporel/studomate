@@ -5,8 +5,11 @@ import { Box } from "@mui/material";
 
 const COIL_TYPE_LABELS: Record<CoilType, string> = {
 	normal: "",
+	inverted: "/",
 	set: "S",
 	reset: "R",
+	rising: "P",
+	falling: "N",
 };
 
 /**

@@ -24,8 +24,11 @@ const CONTACT_TYPE_KEYS: Record<ContactType, string> = {
 
 const COIL_TYPE_KEYS: Record<CoilType, string> = {
 	normal: "coilNormal",
+	inverted: "coilInverted",
 	set: "coilSet",
 	reset: "coilReset",
+	rising: "coilRising",
+	falling: "coilFalling",
 };
 
 export default function nodeOrEdgeContextMenuItems(

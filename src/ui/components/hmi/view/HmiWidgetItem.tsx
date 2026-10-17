@@ -5,10 +5,13 @@ import {
 	HmiWidgetPosition,
 	HmiWidgetSize,
 } from "@/schemas/hmi/hmi-widget.schema";
+import { withBehaviorImposedData } from "@/schemas/hmi/hmi-widget-input-behavior";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { Box } from "@mui/material";
-import { memo, MouseEvent as ReactMouseEvent } from "react";
-import { HMI_WIDGET_ZINDEX_OFFSET } from "./constants";
+import { memo, MouseEvent as ReactMouseEvent, useMemo } from "react";
+import useBoundInputBehavior from "./useBoundInputBehavior";
+import useDrivenInputVariable from "./useDrivenInputVariable";
+import { HMI_WIDGET_ZINDEX_OFFSET } from "@/ui/components/hmi/logic/constants";
 import {
 	useHmiPositionAnimationOffset,
 	useHmiSimulationValue,
@@ -25,7 +28,11 @@ const RESIZE_HANDLES: {
 }[] = [
 	{ direction: "nw", cursor: "nwse-resize", style: { top: "0%", left: "0%" } },
 	{ direction: "n", cursor: "ns-resize", style: { top: "0%", left: "50%" } },
-	{ direction: "ne", cursor: "nesw-resize", style: { top: "0%", left: "100%" } },
+	{
+		direction: "ne",
+		cursor: "nesw-resize",
+		style: { top: "0%", left: "100%" },
+	},
 	{ direction: "e", cursor: "ew-resize", style: { top: "50%", left: "100%" } },
 	{
 		direction: "se",
@@ -88,14 +95,25 @@ const HmiWidgetItem = ({
 	const size = previewSize ?? widget.size;
 	// Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" à écrire en
 	// simulation — voir `RectangleData`/`EllipseData`/`TextData`.
-	const boundMnemonic =
-		"variable" in widget.data ? widget.data.variable : null;
+	const boundMnemonic = "variable" in widget.data ? widget.data.variable : null;
+
+	const boundBehavior = useBoundInputBehavior(boundMnemonic);
+	const drivenInput = useDrivenInputVariable(boundMnemonic);
+	const data = useMemo(
+		() => withBehaviorImposedData(widget, boundBehavior),
+		[widget, boundBehavior],
+	);
 
 	const rawValue = useHmiSimulationValue(
 		isSimulation && boundMnemonic ? boundMnemonic : undefined,
 	);
-	const value: boolean | number =
-		typeof rawValue === "number" ? rawValue : Boolean(rawValue);
+	// `undefined` outside simulation: widgets then show their rest appearance.
+	const value: boolean | number | undefined =
+		rawValue === undefined
+			? undefined
+			: typeof rawValue === "number"
+				? rawValue
+				: Boolean(rawValue);
 	const animationOffset = useHmiPositionAnimationOffset(widget, isSimulation);
 
 	return (
@@ -123,12 +141,12 @@ const HmiWidgetItem = ({
 			}}
 		>
 			<Component
-				data={widget.data}
+				data={data}
 				value={value}
 				animationsEnabled={isSimulation}
 				selected={isSelected && !isSimulation}
 				onValueChange={
-					isSimulation && boundMnemonic !== null
+					isSimulation && boundMnemonic !== null && !drivenInput
 						? (v) => onSetVariableValue(boundMnemonic, v)
 						: undefined
 				}

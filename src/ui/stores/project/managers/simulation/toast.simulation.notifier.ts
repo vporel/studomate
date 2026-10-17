@@ -40,6 +40,13 @@ export default class ToastSimulationNotifier implements SimulationNotifier {
 		);
 	}
 
+	scene3dOpenBlocked(open: () => void): void {
+		toast.warn(getT("toasts")("scene3dOpenBlocked"), {
+			autoClose: false,
+			onClick: open,
+		});
+	}
+
 	simulationCrashed(reason?: string): void {
 		toast.error(
 			reason

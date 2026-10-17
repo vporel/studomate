@@ -3,6 +3,7 @@
 	"simulationStarting": "Compilation terminée, lancement de la simulation…",
 	"simulationCouldNotStart": "Impossible de lancer la simulation : {count, plural, one {# erreur} other {# erreurs}} lors de {step, select, preCompilation {la pré-compilation} other {la compilation}}.",
 	"simulationCrashed": "Arrêt de la simulation. Erreur lors de l'exécution du cycle automate.",
+	"scene3dOpenBlocked": "La scène 3D n'a pas pu s'ouvrir : le navigateur a bloqué la fenêtre. Cliquez ici pour l'ouvrir.",
 	"simulationCrashedWithReason": "Arrêt de la simulation. {reason}",
 	"save": {
 		"storageFull": "Enregistrement impossible : l'espace de stockage du navigateur est plein. Exportez le projet dans un fichier pour ne pas perdre votre travail.",
@@ -19,5 +20,74 @@
 	"moveToCloudFailed": "Le projet n'a pas pu être envoyé dans le cloud. Vérifiez votre connexion.",
 	"shareRevokeFailed": "Impossible de révoquer le partage.",
 	"shareLoginPrompt": "Connectez-vous pour partager ce projet.",
-	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page."
+	"pasteWrongScope": "Impossible de coller ici : le presse-papiers contient des éléments d'un autre type de page.",
+	"hardwareLinked": "Liaison en ligne établie avec la carte Arduino.",
+	"hardwareLinkLost": "Liaison avec la carte perdue. Ses sorties sont revenues à l'état de repli.",
+	"hardwareLinkFailed": {
+		"handshake-timeout": "La carte ne répond pas : le firmware Studomate n'est pas installé sur la carte.",
+		"protocol-mismatch": "Le firmware de la carte est incompatible avec cette version de Studomate.",
+		"config-rejected": "La carte a refusé la configuration des broches.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB, et qu'aucun autre programme ou onglet (Studomate compris) n'utilise le port.",
+		"firmware-outdated": "Le firmware de la carte est trop ancien pour cette version de Studomate."
+	},
+	"hardwareProgramUploaded": "Programme chargé dans la carte. Elle l'exécute maintenant seule : vous pouvez débrancher le câble USB.",
+	"hardwareProgramBlocked": {
+		"IMAGE_TOO_LARGE": "Le programme est trop volumineux pour la carte : {size} octets pour {limit} disponibles.",
+		"IMAGE_TOO_LARGE_WITH_PROGRAM": "Le programme est trop volumineux pour la carte : {size} octets pour {limit} disponibles. Le programme le plus gros est « {program} » ({programSize} octets).",
+		"VARIABLE_MEMORY_EXCEEDED": "Les variables demandent {size} octets de mémoire, la carte en offre {limit}.",
+		"STACK_TOO_DEEP": "Une expression est trop profonde pour la carte (profondeur {depth}, maximum {limit}). Découpez-la.",
+		"CALL_DEPTH_EXCEEDED": "Les programmes s'appellent trop profondément pour la carte (profondeur {depth}, maximum {limit}).",
+		"JUMP_NESTING_EXCEEDED": "Les conditions sont imbriquées trop profondément pour la carte (maximum {limit} niveaux)."
+	},
+	"hardwareProgramFailed": {
+		"analysis": "Corrigez les erreurs signalées par l'analyse avant de charger le programme dans la carte.",
+		"compilation": "Le projet ne compile pas : le programme ne peut pas être chargé dans la carte.",
+		"unsupported": "Le projet utilise une fonctionnalité que la carte ne sait pas exécuter.",
+		"exchange-rejected": "La carte a refusé le programme.",
+		"exchange-timeout": "La carte a cessé de répondre pendant le chargement du programme. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas enregistré le programme chargé. Réessayez.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
+	"hardwareProgramCommandFailed": {
+		"exchange-rejected": "La carte n'a pas pu lancer son programme : elle n'en contient aucun de valide, ou manque de mémoire.",
+		"exchange-timeout": "La carte n'a pas répondu. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
+	"hardwareOnlineFailed": {
+		"analysis": "Corrigez les erreurs signalées par l'analyse avant d'observer la carte.",
+		"compilation": "Le projet ne compile pas : impossible de comparer son programme à celui de la carte.",
+		"unsupported": "Le projet utilise une fonctionnalité que la carte ne sait pas exécuter.",
+		"no-program": "La carte ne contient aucun programme : chargez-le d'abord.",
+		"program-differs": "Le programme de la carte n'est pas celui du projet : rechargez-le avant d'observer la carte.",
+		"exchange-rejected": "La carte a refusé de lancer son programme.",
+		"exchange-timeout": "La carte n'a pas répondu. Réessayez.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu. Réessayez.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
+	"hardwareOnlineLost": {
+		"program-differs": "La carte exécute maintenant un autre programme que celui du projet : l'observation de la carte est quittée.",
+		"board-stopped": "Le programme de la carte a été arrêté : l'observation de la carte est quittée."
+	},
+	"hardwareBoardFault": {
+		"1": "Le programme de la carte s'est arrêté sur une division par zéro. Les sorties ont été coupées.",
+		"2": "Le programme de la carte s'est arrêté : les programmes s'appellent trop profondément. Les sorties ont été coupées.",
+		"3": "La carte a été réinitialisée par son chien de garde et n'a pas relancé son programme.",
+		"4": "La carte contient une image de programme invalide.",
+		"other": "Le programme de la carte s'est arrêté sur un défaut (code {fault}). Les sorties ont été coupées."
+	},
+	"hardwareVariableWriteFailed": {
+		"exchange-rejected": "La carte a refusé la valeur : la variable est inconnue de son programme.",
+		"exchange-timeout": "La carte n'a pas répondu : la valeur n'a peut-être pas été écrite.",
+		"exchange-mismatch": "La carte n'a pas répondu comme prévu.",
+		"transport": "Impossible de communiquer avec la carte. Vérifiez le câble USB."
+	},
+	"hardwareFlashFailed": {
+		"sync-failed": "Impossible d'installer le firmware : la carte ne répond pas. Vérifiez qu'aucun autre programme n'utilise le port. Seul l'Arduino Uno R3 d'origine est pris en charge.",
+		"protocol-error": "Impossible d'installer le firmware : réponse inattendue de la carte. Seul l'Arduino Uno R3 d'origine est pris en charge.",
+		"unsupported-board": "Impossible d'installer le firmware : cette carte n'est pas un Arduino Uno R3.",
+		"verify-failed": "L'installation du firmware a échoué : la vérification a détecté des écarts. Réessayez.",
+		"transport": "Impossible d'installer le firmware : la communication avec la carte a été interrompue.",
+		"firmware-unavailable": "Impossible d'installer le firmware : le fichier du firmware est introuvable."
+	}
 }

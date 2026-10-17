@@ -1,10 +1,16 @@
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
 import Runnable, { RunnableCallback } from "./runnable";
 
+const intervalHeartbeat: HeartbeatScheduler = (tick, intervalMs) => {
+	const timer = setInterval(tick, intervalMs);
+	return () => clearInterval(timer);
+};
+
 export default abstract class ClockedRunnable extends Runnable {
-	private clockTimer: NodeJS.Timeout | null = null;
+	private stopClock: (() => void) | null = null;
 	private paused = false;
 	/**
-	 * Horloge libre : incrémentée à **chaque** battement de `setInterval`, y compris en pause.
+	 * Horloge libre : incrémentée à **chaque** battement de l'horloge (`heartbeat`), y compris en pause.
 	 * `consumedLoops` mémorise sa valeur au dernier cycle réellement exécuté ; l'écart
 	 * `loops - consumedLoops` (× `clockIntervalMs`) est le temps écoulé à imputer au prochain
 	 * cycle. Conséquence voulue : en pas-à-pas, le temps réel entre deux « Avancer d'un cycle »
@@ -17,9 +23,15 @@ export default abstract class ClockedRunnable extends Runnable {
 	protected onStart: RunnableCallback<this> = () => {};
 	protected onStop: RunnableCallback<this> = () => {};
 
-	constructor(clockIntervalMs: number) {
+	private readonly heartbeat: HeartbeatScheduler;
+
+	constructor(
+		clockIntervalMs: number,
+		heartbeat: HeartbeatScheduler = intervalHeartbeat,
+	) {
 		super();
 		this.clockIntervalMs = clockIntervalMs;
+		this.heartbeat = heartbeat;
 	}
 
 	getClockIntervalMs(): number {
@@ -54,11 +66,11 @@ export default abstract class ClockedRunnable extends Runnable {
 	}
 
 	public start(): void {
-		if (!this.clockTimer && !this.paused) {
+		if (!this.stopClock && !this.paused) {
 			this.loops = 0;
 			this.consumedLoops = 0;
 			this.executeCallback(this.onStart, "Error in onStart callback:");
-			this.clockTimer = setInterval(
+			this.stopClock = this.heartbeat(
 				() => this.onClockBeat(),
 				this.clockIntervalMs,
 			);
@@ -69,9 +81,9 @@ export default abstract class ClockedRunnable extends Runnable {
 		this.paused = false;
 		this.loops = 0;
 		this.consumedLoops = 0;
-		if (this.clockTimer) {
-			clearInterval(this.clockTimer);
-			this.clockTimer = null;
+		if (this.stopClock) {
+			this.stopClock();
+			this.stopClock = null;
 			this.executeCallback(this.onStop, "Error in onStop callback:");
 		}
 	}
@@ -81,7 +93,7 @@ export default abstract class ClockedRunnable extends Runnable {
 	 * les cycles cessent. Sans effet si le runnable n'est pas en cours d'exécution.
 	 */
 	public pause(): void {
-		if (this.clockTimer && !this.paused) {
+		if (this.stopClock && !this.paused) {
 			this.paused = true;
 		}
 	}
@@ -102,6 +114,6 @@ export default abstract class ClockedRunnable extends Runnable {
 	}
 
 	public isRunning(): boolean {
-		return this.clockTimer !== null && !this.paused;
+		return this.stopClock !== null && !this.paused;
 	}
 }

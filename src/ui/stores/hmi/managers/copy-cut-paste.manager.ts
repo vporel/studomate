@@ -6,7 +6,7 @@ import WidgetAddCommand from "@/schemas/hmi/commands/widget-add.command";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import { createRandomId } from "@/ids";
 import { getLastMousePosition } from "@/ui/lib/mouse-position";
-import { snapToGrid } from "@/ui/components/hmi/view/constants";
+import { snapToGrid } from "@/ui/components/hmi/logic/constants";
 import { nextCopyName } from "@/lib/naming";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 import { HmiStoreGetFunction, HmiStoreSetFunction } from "../hmi.store";

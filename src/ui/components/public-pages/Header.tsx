@@ -26,6 +26,9 @@ const Header = () => {
 	const pathname = usePathname();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+	const isActive = (href: string) =>
+		href === pathname || (href !== "/" && !!pathname?.startsWith(`${href}/`));
+
 	const navLinks = [
 		{ label: t("home"), href: "/" as const },
 		{ label: t("training"), href: "/training" as const },
@@ -80,9 +83,9 @@ const Header = () => {
 							key={l.href}
 							LinkComponent={Link}
 							href={l.href}
-							aria-current={l.href === pathname ? "page" : undefined}
-							color={l.href === pathname ? "primary" : "inherit"}
-							sx={{ fontWeight: l.href === pathname ? 700 : 400 }}
+							aria-current={isActive(l.href) ? "page" : undefined}
+							color={isActive(l.href) ? "primary" : "inherit"}
+							sx={{ fontWeight: isActive(l.href) ? 700 : 400 }}
 						>
 							{l.label}
 						</Button>
@@ -128,7 +131,7 @@ const Header = () => {
 							key={l.href}
 							component={Link}
 							href={l.href}
-							selected={l.href === pathname}
+							selected={isActive(l.href)}
 							onClick={() => setAnchorEl(null)}
 						>
 							{l.label}

@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { createCompareBlockElement } from "@/schemas/ladder/block.schema";
 import { createRailTerminalElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
@@ -15,7 +16,10 @@ describe("BlockAnalyser", () => {
 		return analyser.analyseInContext(
 			block as never,
 			ladder,
-			{ variablesByMnemonic: new Map(), environment: buildAnalysisEnvironment([]) },
+			{
+				variablesByMnemonic: new Map(),
+				environment: buildAnalysisEnvironment([], Dialect.FR),
+			},
 			project,
 		);
 	}

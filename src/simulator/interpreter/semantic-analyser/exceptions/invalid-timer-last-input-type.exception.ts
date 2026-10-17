@@ -9,7 +9,7 @@ export default class InvalidTimerLastInputTypeException extends InvalidNodeTypeE
 			"boolean",
 			actualType,
 			originNode,
-			[originNode.input],
+			[originNode.lastInput],
 		);
 	}
 }

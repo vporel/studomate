@@ -25,4 +25,9 @@ export default interface SimulationNotifier {
 	 * quand il a pu être résolu.
 	 */
 	simulationCrashed(reason?: string): void;
+	/**
+	 * Le navigateur a bloqué l'ouverture automatique de l'onglet de la scène 3D. `open` rouvre
+	 * l'onglet et doit être appelé depuis un geste de l'utilisateur.
+	 */
+	scene3dOpenBlocked(open: () => void): void;
 }

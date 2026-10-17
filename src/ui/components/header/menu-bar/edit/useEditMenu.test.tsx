@@ -47,6 +47,20 @@ describe("useEditMenu", () => {
 		})),
 	};
 
+	const hmiManager = {
+		getActiveStoreManagers: jest.fn(() => ({
+			copyCutPasteManager: {
+				copySelectedElements,
+				cutSelectedElements,
+				pasteElements,
+			},
+		})),
+		getActiveStoreValues: jest.fn(() => ({
+			hasCommandsToUndo: true,
+			hasCommandsToRedo: true,
+		})),
+	};
+
 	function setup(
 		overrides: Partial<{
 			activeScopeType: string;
@@ -67,6 +81,7 @@ describe("useEditMenu", () => {
 			activeScopeType: "grafcet",
 			grafcetsManager,
 			laddersManager,
+			hmiManager,
 			mode: ProjectMode.DESIGN,
 			hasCommandsToUndo: true,
 			hasCommandsToRedo: true,
@@ -125,6 +140,29 @@ describe("useEditMenu", () => {
 		const { result } = setup({ activeScopeType: "ladder" });
 		expect(result.current.items[1][0].disabled).toBe(false);
 		expect(result.current.items[1][1].disabled).toBe(false);
+	});
+
+	it("enables copy/cut when editing an HMI page, only in design mode", () => {
+		const { result } = setup({ activeScopeType: "hmi" });
+		expect(result.current.items[1][0].disabled).toBe(false);
+		expect(result.current.items[1][1].disabled).toBe(false);
+	});
+
+	it("disables copy/cut on an HMI page outside design mode", () => {
+		const { result } = setup({
+			activeScopeType: "hmi",
+			mode: ProjectMode.SIMULATION,
+		});
+		expect(result.current.items[1][0].disabled).toBe(true);
+		expect(result.current.items[1][1].disabled).toBe(true);
+	});
+
+	it("enables HMI paste only when the clipboard holds an HMI entry", () => {
+		const other = setup({ activeScopeType: "hmi", clipboardScope: "grafcet" });
+		expect(other.result.current.items[1][2].disabled).toBe(true);
+		clearClipboard();
+		const same = setup({ activeScopeType: "hmi", clipboardScope: "hmi" });
+		expect(same.result.current.items[1][2].disabled).toBe(false);
 	});
 
 	it("keeps paste disabled while the clipboard is empty", () => {

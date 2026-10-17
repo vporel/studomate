@@ -33,9 +33,9 @@ describe("AND Junction Integration Tests", () => {
 			expect(pipeline.preCompilation.errors).toEqual([]);
 			expect(pipeline.compilation.errors).toEqual([]);
 			expect(pipeline.compilation.result).toBeDefined();
-			// 1 grafcet + la routine des mémos d'étape + la routine d'initialisation + le Main
+			// 1 grafcet + la routine des sorties en niveau + la routine des mémos d'étape + la routine d'initialisation + le Main
 			// (voir Project.createMain) + la routine d'observation des réceptivités.
-			expect(pipeline.compilation.result!.routines).toHaveLength(5);
+			expect(pipeline.compilation.result!.routines).toHaveLength(6);
 		});
 
 		it("compiles without actions on branches", () => {

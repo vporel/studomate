@@ -1,7 +1,7 @@
-import {
-	classifyStorageWriteError,
-	StorageWriteErrorReason,
-} from "./storage-write-error";
+import Project from "@/schemas/project/project.schema";
+import { deserializeProject } from "./project-deserialization";
+import { readJson, writeJson } from "./safe-local-storage";
+import { StorageWriteResult } from "./storage-write-error";
 
 const STORAGE_KEY = "studomate_drafts";
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -16,27 +16,17 @@ export type Draft = {
 type DraftStore = Record<string, Draft>; // indexé par projectId
 
 function readStore(): DraftStore {
-	try {
-		const raw = localStorage.getItem(STORAGE_KEY);
-		const parsed = raw ? JSON.parse(raw) : {};
-		return typeof parsed === "object" && parsed !== null ? parsed : {};
-	} catch {
-		return {};
-	}
+	const parsed = readJson(STORAGE_KEY);
+	return typeof parsed === "object" && parsed !== null
+		? (parsed as DraftStore)
+		: {};
 }
 
-export type DraftSaveResult =
-	| { ok: true }
-	| { ok: false; reason: StorageWriteErrorReason };
+export type DraftSaveResult = StorageWriteResult;
 
+// On ne lève pas : le brouillon est ignoré, l'appelant décide quoi en faire.
 function writeStore(store: DraftStore): DraftSaveResult {
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-		return { ok: true };
-	} catch (e) {
-		// On ne lève pas : le brouillon est ignoré, l'appelant décide quoi en faire.
-		return { ok: false, reason: classifyStorageWriteError(e) };
-	}
+	return writeJson(STORAGE_KEY, store);
 }
 
 /** Supprime les entrées expirées et retourne le store nettoyé. */
@@ -81,4 +71,21 @@ export function deleteDraft(projectId: string): void {
 
 export function deleteAllDrafts(): void {
 	writeStore({});
+}
+
+/**
+ * Rebuilds the project held by a draft, migrated to the current schema version.
+ * Returns null when the draft is not valid JSON or cannot be read as a project
+ * (no id, written by a newer version, failed migration).
+ */
+export function parseDraftProject(data: string): Project | null {
+	let raw: unknown;
+	try {
+		raw = JSON.parse(data);
+	} catch {
+		return null;
+	}
+	if (typeof raw !== "object" || raw === null) return null;
+	const result = deserializeProject(raw as Record<string, any>);
+	return result.ok ? result.project : null;
 }

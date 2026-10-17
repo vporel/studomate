@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, render } from "@testing-library/react";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepReferralTargetBuilder from "@/schemas/grafcet/builders/step-referral-target.builder";
@@ -31,7 +32,7 @@ function setup({
 		.build();
 
 	(useGrafcetContext as jest.Mock).mockReturnValue({
-		store: fakeStoreApi({ grafcet }),
+		store: fakeStoreApi({ grafcet, getDialect: () => Dialect.FR }),
 	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({

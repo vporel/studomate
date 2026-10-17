@@ -1,4 +1,4 @@
-import ErrorTooltip from "@/ui/lib/mui/tooltip/ErrorTooltip";
+import ErrorTooltip from "@/ui/components/mui/tooltip/ErrorTooltip";
 import { GridEditInputCell, GridRenderEditCellParams } from "@mui/x-data-grid";
 
 function EditInputCell(props: GridRenderEditCellParams) {

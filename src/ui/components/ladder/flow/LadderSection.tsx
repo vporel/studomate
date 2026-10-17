@@ -2,6 +2,7 @@
 
 import { isConnectionAllowed } from "@/schemas/ladder/commands/connections-add.command";
 import Section from "@/schemas/ladder/section.schema";
+import useLadderRailEnergized from "@/ui/components/ladder/useLadderRailEnergized";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import {
 	LADDER_FLOW_MAX_ZOOM,
@@ -20,7 +21,8 @@ import {
 import { computeLadderFlowDimensions } from "@/ui/utils/ladder/ladder-flow-dimensions";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Box, Collapse, SxProps, Theme } from "@mui/material";
+import { Box, Collapse, Theme } from "@mui/material";
+import { SystemStyleObject } from "@mui/system";
 import {
 	EdgeChange,
 	IsValidConnection,
@@ -59,7 +61,7 @@ interface LadderSectionProps {
 
 const FLOW_MARGIN = 10;
 
-const SECTION_FLOW_SX: SxProps<Theme> = {
+const SECTION_FLOW_SX: SystemStyleObject<Theme> = {
 	width: "100%",
 	height: "100%",
 	// Fond CSS : aligné au pixel près sur la grille (60×45).
@@ -96,7 +98,9 @@ const SECTION_FLOW_SX: SxProps<Theme> = {
 
 function LadderSection({ section, index }: LadderSectionProps) {
 	const viewManager = useLadderStore((state) => state.viewManager);
-	const zoom = useLadderStore((state) => state.zoomBySectionId[section.id] ?? 1);
+	const zoom = useLadderStore(
+		(state) => state.zoomBySectionId[section.id] ?? 1,
+	);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
 	const nodes = useLadderStore(
 		(state) => state.nodesBySectionId[section.id] ?? EMPTY_ARRAY,
@@ -105,6 +109,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 		(state) => state.edgesBySectionId[section.id] ?? EMPTY_ARRAY,
 	);
 	const mode = useProjectStore((state) => state.mode);
+	const railEnergized = useLadderRailEnergized();
 	const [collapsed, setCollapsed] = useState(false);
 	const hasHighlightedNode = useLadderStore((state) =>
 		(state.highlightedNodesIds ?? EMPTY_ARRAY).some(
@@ -125,8 +130,7 @@ function LadderSection({ section, index }: LadderSectionProps) {
 	// surbrillance (« localiser dans le ladder »).
 	const contentRef = useRef<HTMLDivElement | null>(null);
 	const nearViewport = useInViewport(contentRef, { rootMargin: "1200px 0px" });
-	const flowMounted =
-		nearViewport || isActiveSection || hasHighlightedNode;
+	const flowMounted = nearViewport || isActiveSection || hasHighlightedNode;
 
 	useEffect(() => {
 		if (hasHighlightedNode) {
@@ -305,7 +309,13 @@ function LadderSection({ section, index }: LadderSectionProps) {
 						<Box
 							ref={flowWrapperRef}
 							onKeyDown={handleKeyDown}
-							sx={SECTION_FLOW_SX}
+							sx={[
+								SECTION_FLOW_SX,
+								railEnergized &&
+									((th: Theme) => ({
+										borderLeftColor: th.palette.energized.main,
+									})),
+							]}
 						>
 							<ReactFlow
 								nodes={nodes}

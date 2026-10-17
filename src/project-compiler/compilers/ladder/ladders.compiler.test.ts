@@ -16,8 +16,6 @@ function ladder(role: "main" | "standard"): PreCompiledLadder {
 				condition: IdentifiersBuilder.buildIdentifierNode("A"),
 			},
 		],
-		edgeMemoUpdates: [],
-		blockCalls: [],
 		timers: [{ type: "TIMER_BLOCK" } as any],
 		counters: [{ type: "COUNTER_BLOCK" } as any],
 	};

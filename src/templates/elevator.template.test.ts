@@ -1,14 +1,10 @@
-import { Dialect } from "@/expression-language/dialect.enum";
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import {
 	getElementHeight,
 	getElementWidth,
 } from "@/schemas/ladder/element.schema";
 import Project from "@/schemas/project/project.schema";
-import {
-	compilePipelineDetailed,
-	compileToPLC,
-	getVariableValue,
-} from "@tests/utils/test-helpers";
+import { compilePipelineDetailed } from "@tests/utils/test-helpers";
 import {
 	createElevatorProject,
 	createElevatorSolution,
@@ -27,7 +23,7 @@ describe("elevator.template", () => {
 			expect(project.id).toBeTruthy();
 		});
 
-		it("déclare les appels palier, les appels cabine, les sorties et les mémoires", () => {
+		it("déclare les appels palier, les appels cabine, les sorties, les capteurs et les mémoires", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
 				expect.arrayContaining([
@@ -41,8 +37,6 @@ describe("elevator.template", () => {
 					"descendre",
 					"porte",
 					"position",
-					"porte_pos",
-					"cabine_y",
 					"etage_0",
 					"etage_1",
 					"etage_2",
@@ -52,17 +46,13 @@ describe("elevator.template", () => {
 			);
 		});
 
-		it("fournit le modèle de partie opérative en Ladder, référencé par le Main", () => {
-			const operative = Object.values(project.ladders).find(
-				(l) => l.name === "Partie opérative",
+		it("fournit le Ladder d'affichage, référencé par le Main", () => {
+			const display = Object.values(project.ladders).find(
+				(l) => l.name === "Affichage",
 			);
-			expect(operative).toBeDefined();
-			expect(operative!.sections.map((s) => s.title)).toEqual([
-				"Cinématique",
-				"Capteurs",
-				"Affichage",
-			]);
-			for (const section of operative!.sections) {
+			expect(display).toBeDefined();
+			expect(display!.sections.map((s) => s.title)).toEqual(["Affichage"]);
+			for (const section of display!.sections) {
 				expect(section.description).not.toBe("");
 			}
 			const mainCallsIt = project.main.sections
@@ -71,16 +61,27 @@ describe("elevator.template", () => {
 					(e) =>
 						e.type === "block" &&
 						e.data.blockType === "user-program" &&
-						e.data.params.programId === operative!.id,
+						e.data.params.programId === display!.id,
 				);
 			expect(mainCallsIt).toBe(true);
 		});
 
+		it("ne simule plus la partie opérative en Ladder : la scène 3D s'en charge", () => {
+			expect(
+				Object.values(project.ladders).some(
+					(l) => l.name === "Partie opérative",
+				),
+			).toBe(false);
+			const mnemonics = project.variables.map((v) => v.mnemonic);
+			expect(mnemonics).not.toContain("porte_pos");
+			expect(mnemonics).not.toContain("porte_maintien");
+		});
+
 		it("dispose les lignes du modèle sans chevauchement d'empreintes (blocs Calc/Assign sur 2 cellules)", () => {
-			const operative = Object.values(project.ladders).find(
-				(l) => l.name === "Partie opérative",
+			const display = Object.values(project.ladders).find(
+				(l) => l.name === "Affichage",
 			)!;
-			for (const section of operative.sections) {
+			for (const section of display.sections) {
 				const footprints = section.elements.map((el) => ({
 					row: el.position.row,
 					col: el.position.col,
@@ -102,61 +103,70 @@ describe("elevator.template", () => {
 			}
 		});
 
-		it("passe l'analyse sans erreur (le modèle seul, sans commande, est valide)", () => {
+		it("ne donne aucun comportement aux entrées, pilotées par la scène 3D", () => {
+			const behaviorKinds = Object.fromEntries(
+				project.variables
+					.filter((v) => v.zone === "logic-input")
+					.map((v) => [v.mnemonic, v.behavior?.kind ?? null]),
+			);
+			expect(behaviorKinds).toEqual({
+				appel_0: null,
+				appel_1: null,
+				appel_2: null,
+				cabine_0: null,
+				cabine_1: null,
+				cabine_2: null,
+				etage_0: null,
+				etage_1: null,
+				etage_2: null,
+				porte_ouverte: null,
+			});
+		});
+
+		it("déclare la hauteur de la cabine en entrée analogique entière", () => {
+			const position = project.variables.find((v) => v.mnemonic === "position");
+			expect(position?.zone).toBe("analog-input");
+			expect(position?.type).toBe("INT");
+		});
+
+		it("câble chaque point de la scène 3D sur une variable existante de la bonne zone", () => {
+			const scene = project.scene3d!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
+			expect(scene.sceneId).toBe("elevator");
+			expect(Object.keys(scene.bindings).sort()).toEqual(
+				descriptor.points.map((p) => p.id).sort(),
+			);
+			const sensorZones = ["logic-input", "analog-input"];
+			for (const point of descriptor.points) {
+				const variable = project.variables.find(
+					(v) => v.id === scene.bindings[point.id],
+				);
+				expect(variable?.mnemonic).toBe(point.suggestedMnemonic);
+				if (point.kind === "sensor") {
+					expect(sensorZones).toContain(variable?.zone);
+				} else if (point.kind === "display") {
+					expect(variable?.zone).toBe("memory");
+				} else {
+					expect(variable?.zone).toBe("logic-output");
+				}
+			}
+		});
+
+		it("n'a pas de page HMI : boutons et voyants sont dans la scène 3D", () => {
+			expect(Object.values(project.hmiPages)).toHaveLength(0);
+		});
+
+		it("passe l'analyse sans erreur ni avertissement de câblage de la scène (sans commande)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(
+				analysis.issues.filter((i) => i.code.startsWith("SCENE3D_")),
+			).toHaveLength(0);
 		});
 
 		it("ne fournit pas de GRAFCET de commande", () => {
 			expect(Object.values(project.grafcets)).toHaveLength(0);
-		});
-
-		describe("temps de garde porte ouverte", () => {
-			beforeEach(() => jest.useFakeTimers());
-			afterEach(() => jest.useRealTimers());
-
-			it("maintient la porte ouverte ~2 s après la retombée de la commande, puis la laisse se refermer", async () => {
-				let cycleError: Error | null = null;
-				const plc = compileToPLC(project, 10, Dialect.FR, {
-					onCycleError: (e) => (cycleError = e),
-				})!;
-				const porteId = plc
-					.getVariablesSnapshot()
-					.find((v) => v.getName() === "porte")!
-					.getId();
-
-				plc.start();
-				await jest.advanceTimersByTimeAsync(50);
-
-				// Ouverture commandée jusqu'à la position ouverte
-				plc.setOutputImageValueById(porteId, true);
-				await jest.advanceTimersByTimeAsync(1500);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc, "porte_pos")).toBe(100);
-				expect(getVariableValue(plc, "porte_ouverte")).toBe(true);
-
-				// Commande retombée avant l'écoulement du temps de garde : la porte reste ouverte
-				plc.setOutputImageValueById(porteId, false);
-				await jest.advanceTimersByTimeAsync(1000);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc, "porte_pos")).toBe(100);
-				expect(getVariableValue(plc, "porte_ouverte")).toBe(true);
-				expect(getVariableValue(plc, "porte_maintien")).toBe(false);
-
-				// Temps de garde écoulé : le verrou tombe et la porte se referme
-				await jest.advanceTimersByTimeAsync(1200);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc, "porte_ouverte")).toBe(false);
-				expect(getVariableValue(plc, "porte_pos")).toBeLessThan(100);
-
-				await jest.advanceTimersByTimeAsync(1500);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc, "porte_pos")).toBe(0);
-				expect(getVariableValue(plc, "porte_maintien")).toBe(false);
-
-				plc.stop();
-			});
 		});
 	});
 
@@ -167,12 +177,11 @@ describe("elevator.template", () => {
 			project = createElevatorSolution();
 		});
 
-		it("conserve les variables, le modèle et la page HMI de l'exercice", () => {
+		it("conserve les variables et le modèle de l'exercice", () => {
 			const mnemonics = project.variables.map((v) => v.mnemonic);
 			expect(mnemonics).toEqual(
 				expect.arrayContaining(["appel_2", "cabine_0", "position", "cible"]),
 			);
-			expect(Object.values(project.hmiPages)).toHaveLength(1);
 		});
 
 		it("reboucle l'étape 8 vers l'étape 0 par un renvoi d'étape (tenant + aboutissant)", () => {
@@ -216,56 +225,6 @@ describe("elevator.template", () => {
 			expect(preCompilation.errors).toHaveLength(0);
 			expect(compilation.errors).toHaveLength(0);
 			expect(compilation.result).toBeDefined();
-		});
-
-		describe("simulation", () => {
-			beforeEach(() => jest.useFakeTimers());
-			afterEach(() => jest.useRealTimers());
-
-			it("dessert un appel à l'étage 2 puis revient au RDC, sans intervention sur les capteurs", async () => {
-				let cycleError: Error | null = null;
-				const plc = compileToPLC(project, 10, Dialect.FR, {
-					onCycleError: (e) => (cycleError = e),
-				});
-				expect(plc).not.toBeNull();
-
-				plc!.start();
-				await jest.advanceTimersByTimeAsync(50);
-				expect(getVariableValue(plc!, "position")).toBe(0);
-				expect(getVariableValue(plc!, "etage_courant")).toBe(0);
-
-				// Appel de l'étage 2 depuis le palier
-				plc!.setPhysicalInputValueByName("appel_2", true);
-				await jest.advanceTimersByTimeAsync(40);
-				plc!.setPhysicalInputValueByName("appel_2", false);
-
-				// Montée jusqu'au 2ᵉ étage
-				await jest.advanceTimersByTimeAsync(1500);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc!, "position")).toBe(200);
-				expect(getVariableValue(plc!, "etage_2")).toBe(true);
-				expect(getVariableValue(plc!, "etage_courant")).toBe(2);
-
-				// Ouverture de la porte (2 s) puis fermeture, retour à l'état initial
-				await jest.advanceTimersByTimeAsync(3000);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc!, "monter")).toBe(false);
-				expect(getVariableValue(plc!, "porte")).toBe(false);
-				expect(getVariableValue(plc!, "porte_ouverte")).toBe(false);
-
-				// Appel du RDC depuis la cabine
-				plc!.setPhysicalInputValueByName("cabine_0", true);
-				await jest.advanceTimersByTimeAsync(40);
-				plc!.setPhysicalInputValueByName("cabine_0", false);
-
-				await jest.advanceTimersByTimeAsync(1500);
-				if (cycleError) throw cycleError;
-				expect(getVariableValue(plc!, "position")).toBe(0);
-				expect(getVariableValue(plc!, "etage_courant")).toBe(0);
-				expect(getVariableValue(plc!, "descendre")).toBe(false);
-
-				plc!.stop();
-			});
 		});
 	});
 });

@@ -30,7 +30,9 @@ describe("useVariablesMenuItems", () => {
 	afterEach(() => jest.clearAllMocks());
 
 	it("returns a single group with an open action", () => {
-		const { result } = renderHook(() => useVariablesMenuItems(), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useVariablesMenuItems(), {
+			wrapper: i18nWrapper(),
+		});
 		const items = result.current("input-variables");
 		expect(items).toHaveLength(1);
 		expect(items[0]).toHaveLength(1);
@@ -38,7 +40,9 @@ describe("useVariablesMenuItems", () => {
 	});
 
 	it("opens the requested variables page", () => {
-		const { result } = renderHook(() => useVariablesMenuItems(), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useVariablesMenuItems(), {
+			wrapper: i18nWrapper(),
+		});
 
 		act(() => result.current("output-variables")[0][0].onClick?.());
 

@@ -10,12 +10,7 @@ import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import { PageData } from "@/ui/stores/project/project.store";
-import {
-	Box,
-	Checkbox,
-	FormControlLabel,
-	Typography,
-} from "@mui/material";
+import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material";
 import { useState } from "react";
 import StorageLocationRadioGroup from "../projects/StorageLocationRadioGroup";
 import LanguageRadioGroup from "./LanguageRadioGroup";

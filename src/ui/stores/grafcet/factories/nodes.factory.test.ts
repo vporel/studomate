@@ -82,9 +82,7 @@ describe("NodesFactory.syncNodes", () => {
 
 		it("resynchronise la largeur d'une jonction depuis le domaine (elle n'est pas mesurée par React Flow)", () => {
 			const grafcet = new GrafcetBuilder()
-				.addJunctionAndStart(
-					new JunctionAndStartBuilder().id("j1").build(),
-				)
+				.addJunctionAndStart(new JunctionAndStartBuilder().id("j1").build())
 				.build();
 			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
 				...n,
@@ -99,9 +97,7 @@ describe("NodesFactory.syncNodes", () => {
 
 		it("laisse la vue piloter la largeur d'une jonction pendant un redimensionnement", () => {
 			const grafcet = new GrafcetBuilder()
-				.addJunctionAndStart(
-					new JunctionAndStartBuilder().id("j1").build(),
-				)
+				.addJunctionAndStart(new JunctionAndStartBuilder().id("j1").build())
 				.build();
 			const prev = NodesFactory.syncNodes([], grafcet).map((n) => ({
 				...n,

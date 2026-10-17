@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import { JUNCTION_BRANCH_MARGIN } from "@/schemas/grafcet/junction-geometry";
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
@@ -16,10 +17,6 @@ export type ExtremeBranchDragResult = {
 	nodeX: number;
 	width: number;
 };
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.max(min, Math.min(max, value));
-}
 
 /**
  * Géométrie d'une jonction quand on tire l'une de ses branches extrêmes de `dx` px
@@ -42,8 +39,7 @@ export default function resolveExtremeBranchDrag(
 	const { data, nodeX, width } = baseline;
 	const order = data.branchesOrder;
 	const posOf = (id: string) => data.branches[id]!.position;
-	const snapped =
-		Math.round(dx / FLOW_GRID_CELL_WIDTH) * FLOW_GRID_CELL_WIDTH;
+	const snapped = Math.round(dx / FLOW_GRID_CELL_WIDTH) * FLOW_GRID_CELL_WIDTH;
 
 	if (edge === "first") {
 		const secondPos = posOf(order[1]!);

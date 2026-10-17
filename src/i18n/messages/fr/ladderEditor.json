@@ -7,7 +7,12 @@
 		"coilNormal": "Bobine normale",
 		"coilSet": "Bobine Set (mémorisation à 1)",
 		"coilReset": "Bobine Reset (mémorisation à 0)",
-		"addSection": "Section"
+		"coilInverted": "Bobine inversée",
+		"coilRising": "Bobine de front montant (impulsion à l'activation)",
+		"showExtraCoils": "Afficher d'autres bobines",
+		"hideExtraCoils": "Masquer les bobines supplémentaires",
+		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
+		"addSection": "Réseau"
 	},
 	"systemBlocks": {
 		"timerLabel": "Temporisation",
@@ -15,32 +20,36 @@
 		"compareLabel": "Comparaison",
 		"assignLabel": "Affectation",
 		"arithmeticLabel": "Calcul",
+		"convertLabel": "Conversion de type",
 		"compareToolbarLabel": "Bloc Compare — compare deux valeurs",
 		"assignToolbarLabel": "Bloc Assign — affecte une valeur à une variable",
-		"arithmeticToolbarLabel": "Bloc calc — opération arithmétique"
+		"arithmeticToolbarLabel": "Bloc calc — opération arithmétique",
+		"convertToolbarLabel": "Bloc CONV : convertit une valeur vers le type de la variable OUT (DINT_TO_INT…)"
 	},
 	"sectionHeader": {
-		"reorderAria": "Réordonner la section",
+		"reorderAria": "Réordonner le réseau",
 		"expand": "Déplier",
 		"collapse": "Replier",
-		"expandAria": "Déplier la section",
-		"collapseAria": "Replier la section",
-		"number": "Section {number} :",
-		"titleAria": "Titre de la section",
+		"expandAria": "Déplier le réseau",
+		"collapseAria": "Replier le réseau",
+		"number": "Réseau {number} :",
+		"titleAria": "Titre du réseau",
 		"zoomIn": "Zoomer",
 		"zoomOut": "Dézoomer",
-		"zoomInAria": "Zoomer la section",
-		"zoomOutAria": "Dézoomer la section",
+		"zoomInAria": "Zoomer le réseau",
+		"zoomOutAria": "Dézoomer le réseau",
 		"copy": "Copier",
-		"copyAria": "Copier la section",
+		"copyAria": "Copier le réseau",
 		"duplicate": "Dupliquer",
-		"duplicateAria": "Dupliquer la section",
+		"duplicateAria": "Dupliquer le réseau",
 		"delete": "Supprimer",
-		"deleteAria": "Supprimer la section"
+		"deleteAria": "Supprimer le réseau",
+		"pdfHeading": "Réseau {number}",
+		"pdfHeadingWithTitle": "Réseau {number} : {title}"
 	},
 	"sectionDescription": {
 		"placeholder": "Description (optionnelle)…",
-		"aria": "Description de la section"
+		"aria": "Description du réseau"
 	},
 	"contextMenu": {
 		"selectAll": "Tout sélectionner",
@@ -56,6 +65,9 @@
 		"coilNormal": "Bobine normale",
 		"coilSet": "Bobine Set (mémorisation à 1)",
 		"coilReset": "Bobine Reset (mémorisation à 0)",
+		"coilInverted": "Bobine inversée",
+		"coilRising": "Bobine de front montant (impulsion à l'activation)",
+		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
 		"copy": "Copier",
 		"cut": "Couper",
 		"delete": "Supprimer"
@@ -68,7 +80,8 @@
 		"counterVariantAria": "Variante du compteur",
 		"arithmeticOperatorAria": "Opérateur du bloc",
 		"assignStaticLabel": "Assign",
-		"arithmeticStaticLabel": "Calc"
+		"arithmeticStaticLabel": "Calc",
+		"convertStaticLabel": "CONV"
 	},
 	"timerDialog": {
 		"createTitle": "Nouvelle temporisation",
@@ -88,17 +101,18 @@
 		"variant": "Variante",
 		"typeCTU": "CTU — compte vers le haut",
 		"typeCTD": "CTD — compte vers le bas",
-		"note": "Contrairement à une temporisation, ce compteur évalue son entrée à chaque cycle (pas de détection de front) : il compte tant que celle-ci reste vraie, sans stopper à la valeur de consigne.",
+		"typeCTUD": "CTUD — compte vers le haut et vers le bas",
+		"note": "Le compteur compte à chaque front montant de son entrée de comptage (un capteur maintenu ne compte qu'une fois), sans stopper à la valeur de consigne.",
 		"create": "Créer",
 		"save": "Enregistrer"
 	},
 	"reorder": {
-		"instructions": "Pour réordonner une section : Espace ou Entrée pour la saisir, flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
-		"grabbed": "Section {position} saisie.",
-		"moved": "Section {position} déplacée en position {over}.",
-		"outside": "Section {position} n'est plus au-dessus d'une zone de dépôt.",
-		"dropped": "Section déposée en position {over}.",
-		"droppedInitial": "Section {position} déposée à sa position initiale.",
-		"cancelled": "Déplacement annulé. Section {position} remise à sa position initiale."
+		"instructions": "Pour réordonner un réseau : Espace ou Entrée pour le saisir, flèches haut et bas pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+		"grabbed": "Réseau {position} saisi.",
+		"moved": "Réseau {position} déplacé en position {over}.",
+		"outside": "Le réseau {position} n'est plus au-dessus d'une zone de dépôt.",
+		"dropped": "Réseau déposé en position {over}.",
+		"droppedInitial": "Réseau {position} déposé à sa position initiale.",
+		"cancelled": "Déplacement annulé. Réseau {position} remis à sa position initiale."
 	}
 }

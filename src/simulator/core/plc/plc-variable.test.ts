@@ -25,6 +25,27 @@ describe("PLCVariable", () => {
 			expect(v.getValue()).toBe("");
 		});
 
+		it("is not internal unless created as such", () => {
+			expect(new PLCVariable("id", "v", "memory", "boolean").isInternal()).toBe(
+				false,
+			);
+		});
+
+		it("creates an internal memory variable whose id is its name", () => {
+			const v = PLCVariable.createInternal("memo", "number");
+			expect(v.isInternal()).toBe(true);
+			expect(v.getId()).toBe("memo");
+			expect(v.getName()).toBe("memo");
+			expect(v.getScope()).toBe("memory");
+			expect(v.getType()).toBe("number");
+		});
+
+		it("keeps the internal flag on a copy", () => {
+			expect(PLCVariable.createInternal("memo", "boolean").copy().isInternal()).toBe(
+				true,
+			);
+		});
+
 		it("throws on string variable with non-memory scope", () => {
 			expect(() => new PLCVariable("id", "v", "input", "string")).toThrow(
 				"A string variable is only allowed for the memory scope",
@@ -36,6 +57,26 @@ describe("PLCVariable", () => {
 	});
 
 	describe("setValue", () => {
+		it("ramène une valeur numérique dans sa plage", () => {
+			const saturating = new PLCVariable("n", "niveau", "input", "number", {
+				min: 0,
+				max: 100,
+				integer: true,
+				wrap: false,
+			});
+			saturating.setValue(150);
+			expect(saturating.getValue()).toBe(100);
+
+			const wrapping = new PLCVariable("i", "compteur", "memory", "number", {
+				min: -32768,
+				max: 32767,
+				integer: true,
+				wrap: true,
+			});
+			wrapping.setValue(32768);
+			expect(wrapping.getValue()).toBe(-32768);
+		});
+
 		it("sets boolean value correctly", () => {
 			const v = new PLCVariable("id", "flag", "input", "boolean");
 			v.setValue(true);
@@ -137,5 +178,59 @@ describe("PLCVariable", () => {
 			const v = new PLCVariable("id", "s", "memory", "string");
 			expect(v.getType()).toBe("string");
 		});
+	});
+
+	it("copy() conserve le type déclaré", () => {
+		const variable = new PLCVariable(
+			"id",
+			"d",
+			"memory",
+			"number",
+			null,
+			"DINT",
+		);
+		expect(variable.copy().getDeclaredType()).toBe("DINT");
+	});
+});
+
+describe("PLCVariable constant", () => {
+	it("starts at its initial value and refuses any later write", () => {
+		const k = new PLCVariable(
+			"id",
+			"K",
+			"memory",
+			"number",
+			null,
+			"INT",
+			true,
+			7,
+		);
+
+		expect(k.isConstant()).toBe(true);
+		expect(k.getValue()).toBe(7);
+		expect(() => k.setValue(1)).toThrow('"K" is a constant');
+	});
+
+	it("copy stays constant and keeps the value", () => {
+		const copy = new PLCVariable(
+			"id",
+			"K",
+			"memory",
+			"boolean",
+			null,
+			"BOOL",
+			true,
+			true,
+		).copy();
+
+		expect(copy.isConstant()).toBe(true);
+		expect(copy.getValue()).toBe(true);
+		expect(() => copy.setValue(false)).toThrow();
+	});
+
+	it("an ordinary variable is not constant", () => {
+		expect(new PLCVariable("id", "v", "memory", "number").isConstant()).toBe(
+			false,
+		);
 	});
 });

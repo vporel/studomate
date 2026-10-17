@@ -2,9 +2,11 @@ import {
 	getAutoOpenHmiSimulationOnStart,
 	getPreferredLocale,
 	getPreferredSaveLocation,
+	getProductTourSeen,
 	setAutoOpenHmiSimulationOnStart,
 	setPreferredLocale,
 	setPreferredSaveLocation,
+	setProductTourSeen,
 } from "./preferences.storage";
 
 function installLocalStorage() {
@@ -70,6 +72,29 @@ describe("preferences.storage", () => {
 
 			setAutoOpenHmiSimulationOnStart(true);
 			expect(getAutoOpenHmiSimulationOnStart()).toBe(true);
+		});
+	});
+	describe("product tour", () => {
+		it("is not seen until it has been marked", () => {
+			expect(getProductTourSeen()).toBe(false);
+		});
+
+		it("remembers that the tour was seen", () => {
+			setProductTourSeen();
+			expect(getProductTourSeen()).toBe(true);
+		});
+
+		it("falls back to not seen when storage throws", () => {
+			(globalThis as any).localStorage = {
+				getItem: () => {
+					throw new Error("blocked");
+				},
+				setItem: () => {
+					throw new Error("blocked");
+				},
+			};
+			expect(getProductTourSeen()).toBe(false);
+			expect(() => setProductTourSeen()).not.toThrow();
 		});
 	});
 });

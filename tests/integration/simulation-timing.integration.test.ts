@@ -101,6 +101,28 @@ describe("Simulation — timing pause / reprise / pas-à-pas", () => {
 		plc.stop();
 	});
 
+	it("tempo d'une durée non multiple du scan : franchissement au cycle où ET atteint PT", async () => {
+		const grafcet = GrafcetFactory.createSimpleCycle("g", "t0/X0/250ms", "hold");
+		const project = ProjectFactory.create(
+			[VariableFactory.createLogicInput("hold")],
+			[grafcet],
+		);
+		const plc = compileToPLC(project, 100, Dialect.FR);
+		if (!plc) throw new Error("compilation échouée");
+		establish(plc);
+		plc.resume();
+
+		const x1AfterEachCycle: boolean[] = [];
+		for (let cycle = 0; cycle < 6; cycle++) {
+			await jest.advanceTimersByTimeAsync(100);
+			x1AfterEachCycle.push(getVariableValue(plc, "X1") as boolean);
+		}
+		plc.stop();
+
+		// Edge cycle (ET 0), 100, 200, then ET reaches the clamped PT = 250 and the step is crossed.
+		expect(x1AfterEachCycle).toEqual([false, false, false, true, true, true]);
+	});
+
 	it("mode continu : la tempo échoit après ~600 ms de temps réel", async () => {
 		const plc = buildPlc();
 		establish(plc);

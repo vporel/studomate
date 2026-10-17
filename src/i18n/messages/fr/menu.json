@@ -24,7 +24,8 @@
 		"title": "Interface",
 		"explorer": "Explorateur",
 		"crossReferences": "Références croisées",
-		"analysisResults": "Résultats de l'analyse"
+		"analysisResults": "Résultats de l'analyse",
+		"scene3d": "Scène 3D"
 	},
 	"project": {
 		"title": "Projet",
@@ -34,13 +35,24 @@
 		"exerciseStatement": "Énoncé de l'exercice",
 		"share": "Partager",
 		"manageSharing": "Gérer le partage",
-		"properties": "Propriétés"
+		"properties": "Propriétés",
+		"hardwareConfiguration": "Configuration matérielle",
+		"scene3dConfiguration": "Configuration scène 3D"
+	},
+	"target": {
+		"title": "Cible",
+		"upload": "Charger le programme",
+		"link": "Liaison en ligne",
+		"unlink": "Fermer la liaison",
+		"start": "Démarrer le programme",
+		"stop": "Arrêter le programme"
 	},
 	"help": {
 		"title": "Aide",
 		"userManual": "Manuel utilisateur",
 		"training": "Formations",
 		"keyboardShortcuts": "Raccourcis clavier",
+		"replayTour": "Revoir la visite guidée",
 		"reportIssue": "Signaler un problème"
 	}
 }

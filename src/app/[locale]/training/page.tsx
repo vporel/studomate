@@ -1,5 +1,6 @@
 import { toLocale } from "@/i18n/config";
-import { pageMetadata } from "@/i18n/metadata";
+import PageTitle from "@/ui/components/public-pages/PageTitle";
+import { createGenerateMetadata } from "@/app/metadata";
 import type { PublicPathname } from "@/i18n/routing";
 import PublicLink from "@/ui/components/public-pages/PublicLink";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
@@ -7,30 +8,30 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import { alpha, Box, Container, Divider, Paper, Stack, Typography } from "@mui/material";
-import { green } from "@mui/material/colors";
-import type { Metadata } from "next";
+import {
+	Box,
+	Container,
+	Divider,
+	Paper,
+	Stack,
+	Typography,
+} from "@mui/material";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import A0_STEP_IDS from "./a0/step-ids";
 import A1_STEP_IDS from "./a1/step-ids";
+import A2_STEP_IDS from "./a2/step-ids";
+import A3_STEP_IDS from "./a3/step-ids";
+import A4_STEP_IDS from "./a4/step-ids";
 import ResumeSignInHint from "./ResumeSignInHint";
 import TrainingModuleRow from "./TrainingModuleRow";
 
-const AVAILABLE_ROW_BACKGROUND = alpha(green[700], 0.08);
-
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-	const { locale: rawLocale } = await params;
-	const locale = toLocale(rawLocale);
-	const t = await getTranslations({ locale, namespace: "public.metadata" });
-	return pageMetadata(
-		locale,
-		"/training",
-		t("trainingTitle"),
-		t("trainingDescription"),
-	);
-}
+export const generateMetadata = createGenerateMetadata(
+	"/training",
+	"trainingTitle",
+	"trainingDescription",
+);
 
 type ModuleEntry = {
 	label: string;
@@ -79,8 +80,28 @@ export default async function Training({ params }: Props) {
 			moduleId: "a1",
 			stepIds: Object.values(A1_STEP_IDS),
 		},
-		{ label: t("blockA2Label"), available: false },
-		{ label: t("blockA3Label"), available: false },
+		{
+			label: t("blockA2Label"),
+			available: true,
+			href: "/training/a2",
+			moduleId: "a2",
+			stepIds: Object.values(A2_STEP_IDS),
+		},
+		{
+			label: t("blockA3Label"),
+			available: true,
+			href: "/training/a3",
+			moduleId: "a3",
+			stepIds: Object.values(A3_STEP_IDS),
+		},
+		{
+			label: t("blockA4Label"),
+			available: true,
+			href: "/training/a4",
+			moduleId: "a4",
+			stepIds: Object.values(A4_STEP_IDS),
+		},
+		{ label: t("blockA5Label"), available: false },
 	];
 	const modulesB: ModuleEntry[] = [
 		{ label: t("blockB1Label"), available: false },
@@ -111,7 +132,6 @@ export default async function Training({ params }: Props) {
 						statusLabel={t("moduleAvailableStatusLabel")}
 						completedLabel={t("moduleCompletedLabel")}
 						comingSoonLabel={t("comingSoon")}
-						backgroundColor={AVAILABLE_ROW_BACKGROUND}
 						moduleId={module.moduleId}
 						stepIds={module.stepIds}
 					/>
@@ -123,9 +143,9 @@ export default async function Training({ params }: Props) {
 	return (
 		<Container maxWidth="lg" sx={{ my: { xs: 4, md: 6 } }}>
 			<Box maxWidth={720}>
-				<Typography variant="h2" component="h1" color="primary" gutterBottom>
+				<PageTitle>
 					{t("landingTitle")}
-				</Typography>
+				</PageTitle>
 				<Typography textAlign="justify" color="text.secondary">
 					{t("landingIntro")}
 				</Typography>

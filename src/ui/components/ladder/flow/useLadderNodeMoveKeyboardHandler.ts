@@ -2,6 +2,7 @@
 
 import { Node } from "@xyflow/react";
 import { useCallback } from "react";
+import isTextEntryTarget from "@/ui/lib/is-text-entry-target";
 import { useLadderStore } from "../context/LadderContext";
 
 const CELL_DELTAS: Record<string, [number, number]> = {
@@ -26,7 +27,7 @@ export default function useLadderNodeMoveKeyboardHandler(
 
 	return useCallback(
 		(e: React.KeyboardEvent) => {
-			if (e.defaultPrevented) return;
+			if (e.defaultPrevented || isTextEntryTarget(e.target)) return;
 			const delta = CELL_DELTAS[e.key];
 			if (!delta) return;
 			const hasSelection = nodes.some(
@@ -36,7 +37,11 @@ export default function useLadderNodeMoveKeyboardHandler(
 
 			e.preventDefault();
 			e.stopPropagation();
-			workflowManager.moveSelectedElementsByCells(sectionId, delta[0], delta[1]);
+			workflowManager.moveSelectedElementsByCells(
+				sectionId,
+				delta[0],
+				delta[1],
+			);
 		},
 		[nodes, sectionId, workflowManager],
 	);

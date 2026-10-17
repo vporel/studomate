@@ -5,7 +5,7 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { createHmiStore, HmiStoreState } from "@/ui/stores/hmi/hmi.store";
 import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
 import { StoreApi, useStore } from "zustand";
-import { syncHmiPageToProject } from "./hmi-project-sync";
+import { syncHmiPageToProject } from "@/ui/components/hmi/logic/hmi-project-sync";
 
 const HmiContext = createContext<StoreApi<HmiStoreState> | null>(null);
 
@@ -45,6 +45,8 @@ export const HmiContextProvider = ({
 			selectAllWidgets: storeRef.current.getState().selectAllWidgets,
 			removeSelectedWidgets: storeRef.current.getState().removeSelectedWidgets,
 			moveSelectedWidgets: storeRef.current.getState().moveSelectedWidgets,
+			adoptHmiPage: storeRef.current.getState().adoptHmiPage,
+			getHmiPage: () => storeRef.current!.getState().hmiPage,
 		});
 		return () => {
 			hmiManager.deleteStoreManager(hmiPageId);

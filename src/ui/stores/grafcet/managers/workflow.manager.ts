@@ -21,6 +21,7 @@ import ConnectionBuilder from "@/schemas/grafcet/builders/connection.builder";
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import { JUNCTION_TYPES } from "@/schemas/grafcet/element.schema";
+import { Dimensions, XYPosition } from "@/schemas/grafcet/shared-types";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { normalizeJunctionGeometry } from "@/schemas/grafcet/junction-geometry";
 import { createRandomId } from "@/ids";
@@ -408,6 +409,37 @@ export default class GrafcetWorkflowManager {
 		}));
 	}
 
+	private getJunctionOrThrow(nodeId: string): Junction {
+		const element =
+			this.getStoreState().grafcet.getElementById<Junction>(nodeId);
+		if (!element) throw new Error("Element with id " + nodeId + " not found");
+		if (
+			!JUNCTION_TYPES.includes(element.type as (typeof JUNCTION_TYPES)[number])
+		)
+			throw new Error("Element with id " + nodeId + " is not a junction");
+		return element;
+	}
+
+	private junctionUpdate(
+		element: Junction,
+		next: {
+			data: JunctionData;
+			position: XYPosition;
+			size: Dimensions;
+		},
+	) {
+		return {
+			type: element.type,
+			id: element.id,
+			data: next.data,
+			previousData: element.data,
+			position: next.position,
+			previousPosition: element.position,
+			size: next.size,
+			previousSize: element.size,
+		};
+	}
+
 	/**
 	 * Valide en une commande le redimensionnement d'une jonction piloté par une branche
 	 * extrême (voir `resolveExtremeBranchDrag`) : données, position et taille du nœud changent
@@ -422,27 +454,18 @@ export default class GrafcetWorkflowManager {
 			width: number;
 		},
 	): void {
-		const grafcet = this.getStoreState().grafcet;
-		const element = grafcet.getElementById<Junction>(nodeId);
-		if (!element) throw new Error("Element with id " + nodeId + " not found");
-		if (!JUNCTION_TYPES.includes(element.type as (typeof JUNCTION_TYPES)[number]))
-			throw new Error("Element with id " + nodeId + " is not a junction");
+		const element = this.getJunctionOrThrow(nodeId);
 		this.getStoreState().commandsStackManager.executeOperation([
 			new ElementsUpdateCommand([
-				{
-					type: element.type,
-					id: nodeId,
+				this.junctionUpdate(element, {
 					data: {
 						branches: result.branches,
 						branchesOrder: element.data.branchesOrder,
 						pivotPosition: result.pivotPosition,
 					},
-					previousData: element.data,
 					position: { x: result.nodeX, y: element.position.y },
-					previousPosition: element.position,
 					size: { width: result.width, height: element.size.height },
-					previousSize: element.size,
-				},
+				}),
 			]),
 		]);
 	}
@@ -453,47 +476,34 @@ export default class GrafcetWorkflowManager {
 	 * commande (un seul undo). Sans effet s'il n'y a pas la place.
 	 */
 	addJunctionBranch(nodeId: string, insertIndex: number): void {
-		const grafcet = this.getStoreState().grafcet;
-		const element = grafcet.getElementById<Junction>(nodeId);
-		if (!element) throw new Error("Element with id " + nodeId + " not found");
-		if (!JUNCTION_TYPES.includes(element.type as any))
-			throw new Error("Element with id " + nodeId + " is not a junction");
-		const pageWidth = GRAFCET_PAGE_DIMENSIONS.width;
+		const element = this.getJunctionOrThrow(nodeId);
 		const result = computeBranchInsertion(
 			element.data,
 			element.size.width,
 			element.position.x,
-			pageWidth,
+			GRAFCET_PAGE_DIMENSIONS.width,
 			insertIndex,
 			createRandomId(),
 		);
 		if (!result) return;
 		this.getStoreState().commandsStackManager.executeOperation([
 			new ElementsUpdateCommand([
-				{
-					type: element.type,
-					id: nodeId,
+				this.junctionUpdate(element, {
 					data: {
 						branches: result.branches,
 						branchesOrder: result.branchesOrder,
 						pivotPosition: result.pivotPosition,
 					},
-					previousData: element.data,
 					position: { x: result.nodeX, y: element.position.y },
-					previousPosition: element.position,
 					size: { width: result.width, height: element.size.height },
-					previousSize: element.size,
-				},
+				}),
 			]),
 		]);
 	}
 
 	deleteJunctionBranch(nodeId: string, branchId: string): void {
 		const grafcet = this.getStoreState().grafcet;
-		const element = grafcet.getElementById<Junction>(nodeId);
-		if (!element) throw new Error("Element with id " + nodeId + " not found");
-		if (!JUNCTION_TYPES.includes(element.type as any))
-			throw new Error("Element with id " + nodeId + " is not a junction");
+		const element = this.getJunctionOrThrow(nodeId);
 		if (element.data.branchesOrder.length <= 2) return;
 		const connectionsToDelete = grafcet.getConnectionsByElementIdAndHandle(
 			nodeId,
@@ -514,16 +524,11 @@ export default class GrafcetWorkflowManager {
 
 		this.getStoreState().commandsStackManager.executeOperation([
 			new ElementsUpdateCommand([
-				{
-					type: element.type,
-					id: nodeId,
+				this.junctionUpdate(element, {
 					data: geometry.data,
-					previousData: element.data,
 					position: { x: geometry.nodeX, y: element.position.y },
-					previousPosition: element.position,
 					size: { width: geometry.width, height: element.size.height },
-					previousSize: element.size,
-				},
+				}),
 			]),
 			...ConnectionsCommandsFactory.onEdgesRemove(
 				connectionsToDelete.map((c) => c.id),
@@ -531,5 +536,4 @@ export default class GrafcetWorkflowManager {
 			).commands,
 		]);
 	}
-
 }

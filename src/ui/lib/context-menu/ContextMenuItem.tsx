@@ -46,8 +46,7 @@ const ContextMenuItem = ({
 		const itemTop = menuTop + itemRef.current.offsetTop;
 		const roomDown = parentHeight - itemTop;
 		const roomUp = itemTop + itemRef.current.offsetHeight;
-		const openUp =
-			subRef.current.scrollHeight > roomDown && roomUp > roomDown;
+		const openUp = subRef.current.scrollHeight > roomDown && roomUp > roomDown;
 		const maxHeight = Math.max(60, openUp ? roomUp : roomDown);
 
 		const subWidth = subRef.current.offsetWidth;
@@ -61,14 +60,7 @@ const ContextMenuItem = ({
 				? prev
 				: { openUp, openLeft, maxHeight },
 		);
-	}, [
-		hasSubItems,
-		menuTop,
-		menuLeft,
-		menuWidth,
-		parentWidth,
-		parentHeight,
-	]);
+	}, [hasSubItems, menuTop, menuLeft, menuWidth, parentWidth, parentHeight]);
 
 	return (
 		<MenuItem

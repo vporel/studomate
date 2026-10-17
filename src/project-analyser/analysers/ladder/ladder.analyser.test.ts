@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { createUserProgramBlockElement } from "@/schemas/ladder/block.schema";
 import {
 	createCoilElement,
@@ -16,6 +17,7 @@ import { VariableFactory } from "@tests/utils/variable-factory";
 import LadderAnalyser, {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
+	getContactPulseVariableMnemonic,
 } from "./ladder.analyser";
 
 describe("LadderAnalyser", () => {
@@ -26,7 +28,7 @@ describe("LadderAnalyser", () => {
 	function analyse(ladder: Ladder, project: Project) {
 		return ladderAnalyser.analyse(ladder, project, [
 			...project.variables,
-			...ladderAnalyser.generateVariables(ladder),
+			...ladderAnalyser.generateVariables(ladder, Dialect.FR),
 		]);
 	}
 
@@ -36,7 +38,7 @@ describe("LadderAnalyser", () => {
 	});
 
 	describe("buildEdgeMemoryVariables (via generateVariables)", () => {
-		it("crée une variable memory/BOOL par contact P ou N, dont le mnémonique est valide", () => {
+		it("crée deux variables memory/BOOL (mémoire + impulsion) par contact P ou N, aux mnémoniques valides", () => {
 			const rail1 = createRailTerminalElement(0);
 			const contactP = createContactElement("A", "P", 0, 1);
 			const coil1 = createCoilElement("Q1", "normal", 0, 2);
@@ -52,9 +54,12 @@ describe("LadderAnalyser", () => {
 			);
 			const ladder = new Ladder("l1", "L", [section]);
 
-			const generatedVariables = ladderAnalyser.generateVariables(ladder);
+			const generatedVariables = ladderAnalyser.generateVariables(
+				ladder,
+				Dialect.FR,
+			);
 
-			expect(generatedVariables).toHaveLength(2);
+			expect(generatedVariables).toHaveLength(4);
 			expect(
 				generatedVariables.every(
 					(v) => v.zone === "memory" && v.type === "BOOL",
@@ -67,9 +72,44 @@ describe("LadderAnalyser", () => {
 			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
 				[
 					getContactMemoryVariableMnemonic(contactP.id),
+					getContactPulseVariableMnemonic(contactP.id),
 					getContactMemoryVariableMnemonic(contactN.id),
+					getContactPulseVariableMnemonic(contactN.id),
 				].sort(),
 			);
+		});
+
+		it("crée une seule variable mémoire (la condition précédente) par bobine de front, aucune pour les autres bobines", () => {
+			const rail = createRailTerminalElement(0);
+			const rising = createCoilElement("Q1", "rising", 0, 1);
+			const falling = createCoilElement("Q2", "falling", 0, 1);
+			const inverted = createCoilElement("Q3", "inverted", 0, 1);
+			const normal = createCoilElement("Q4", "normal", 0, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[rail, rising, falling, inverted, normal],
+					[rising, falling, inverted, normal].flatMap((coil) =>
+						wireInSeries([rail, coil]),
+					),
+				),
+			]);
+
+			const generatedVariables = ladderAnalyser.generateVariables(
+				ladder,
+				Dialect.FR,
+			);
+
+			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
+				[
+					getContactMemoryVariableMnemonic(rising.id),
+					getContactMemoryVariableMnemonic(falling.id),
+				].sort(),
+			);
+			expect(
+				generatedVariables.every(
+					(v) => v.zone === "memory" && v.type === "BOOL",
+				),
+			).toBe(true);
 		});
 
 		it("ne crée aucune variable mémoire pour un contact NO ou NF", () => {
@@ -83,7 +123,7 @@ describe("LadderAnalyser", () => {
 				),
 			]);
 
-			expect(ladderAnalyser.generateVariables(ladder)).toEqual([]);
+			expect(ladderAnalyser.generateVariables(ladder, Dialect.FR)).toEqual([]);
 		});
 
 		it("rend les variables mémoire de front visibles des analyseurs d'élément (pas de LADDER_CONTACT_VARIABLE_UNDECLARED)", () => {
@@ -117,7 +157,10 @@ describe("LadderAnalyser", () => {
 				createSectionWith([rail, block], wireInSeries([rail, block])),
 			]);
 
-			const generatedVariables = ladderAnalyser.generateVariables(ladder);
+			const generatedVariables = ladderAnalyser.generateVariables(
+				ladder,
+				Dialect.FR,
+			);
 
 			expect(generatedVariables.map((v) => v.mnemonic).sort()).toEqual(
 				[
@@ -133,6 +176,63 @@ describe("LadderAnalyser", () => {
 		});
 	});
 
+	describe("buildBlockLastInputVariables (via generateVariables)", () => {
+		it("crée une variable memory/BOOL cachée par bloc timer et par bloc compteur", () => {
+			const timer = createTimerBlockElement(
+				{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+				0,
+				0,
+			);
+			const counter = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+				1,
+				0,
+			);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith([timer, counter], []),
+			]);
+
+			const generated = ladderAnalyser.generateVariables(ladder, Dialect.FR);
+
+			for (const block of [timer, counter]) {
+				const variable = generated.find(
+					(v) =>
+						v.mnemonic === getBlockPortVariableMnemonic(block.id, "lastInput"),
+				);
+				expect(variable?.zone).toBe("memory");
+				expect(variable?.type).toBe("BOOL");
+			}
+		});
+	});
+
+	it("crée une seconde variable cachée (front de CD) pour un compteur CTUD, aucune pour un CTU", () => {
+		const ctud = createCounterBlockElement(
+			{ name: "Stock", counterType: "CTUD", control: "faux", pv: "5" },
+			0,
+			0,
+		);
+		const ctu = createCounterBlockElement(
+			{ name: "Compteur1", counterType: "CTU", control: "faux", pv: "5" },
+			1,
+			0,
+		);
+		const ladder = new Ladder("l1", "L", [createSectionWith([ctud, ctu], [])]);
+
+		const mnemonics = ladderAnalyser
+			.generateVariables(ladder, Dialect.FR)
+			.map((v) => v.mnemonic);
+
+		expect(mnemonics).toContain(
+			getBlockPortVariableMnemonic(ctud.id, "lastCD"),
+		);
+		expect(mnemonics).not.toContain(
+			getBlockPortVariableMnemonic(ctu.id, "lastCD"),
+		);
+		expect(mnemonics).toEqual(
+			expect.arrayContaining(["Stock.CU", "Stock.QU", "Stock.QD", "Stock.CV"]),
+		);
+	});
+
 	describe("buildTimerExposedVariables/buildCounterExposedVariables (via generateVariables)", () => {
 		it("ignore un bloc tempo dont le nom est invalide, sans lever", () => {
 			const rail = createRailTerminalElement(0);
@@ -145,8 +245,13 @@ describe("LadderAnalyser", () => {
 				createSectionWith([rail, block], wireInSeries([rail, block])),
 			]);
 
-			expect(() => ladderAnalyser.generateVariables(ladder)).not.toThrow();
-			const generatedVariables = ladderAnalyser.generateVariables(ladder);
+			expect(() =>
+				ladderAnalyser.generateVariables(ladder, Dialect.FR),
+			).not.toThrow();
+			const generatedVariables = ladderAnalyser.generateVariables(
+				ladder,
+				Dialect.FR,
+			);
 			expect(
 				generatedVariables.some((v) => v.mnemonic.startsWith("1Tempo.")),
 			).toBe(false);
@@ -163,8 +268,13 @@ describe("LadderAnalyser", () => {
 				createSectionWith([rail, block], wireInSeries([rail, block])),
 			]);
 
-			expect(() => ladderAnalyser.generateVariables(ladder)).not.toThrow();
-			const generatedVariables = ladderAnalyser.generateVariables(ladder);
+			expect(() =>
+				ladderAnalyser.generateVariables(ladder, Dialect.FR),
+			).not.toThrow();
+			const generatedVariables = ladderAnalyser.generateVariables(
+				ladder,
+				Dialect.FR,
+			);
 			expect(
 				generatedVariables.some((v) => v.mnemonic.startsWith("1Compteur.")),
 			).toBe(false);
@@ -241,10 +351,93 @@ describe("LadderAnalyser", () => {
 			]);
 			project.addProgram(ladder);
 
-			const codes = new LadderAnalyser().crossProgramChecks(project).map((i) => i.code);
+			const codes = new LadderAnalyser()
+				.crossProgramChecks(project)
+				.map((i) => i.code);
 
 			expect(codes).toContain("PROJECT_MULTIPLE_MAINS");
 			expect(codes).toContain("BLOCK_NAME_DUPLICATE");
+		});
+	});
+
+	describe("crossProgramChecks with ladders excluded from execution", () => {
+		function getMain(project: Project): Ladder {
+			return Object.values(project.ladders).find((l) => l.role === "main")!;
+		}
+
+		function callFrom(caller: Ladder, calledId: string) {
+			caller.addElements(caller.sections[0].id, [
+				createUserProgramBlockElement(calledId, 0, 0),
+			]);
+		}
+
+		it("never reports an excluded ladder as orphan", () => {
+			const project = ProjectFactory.createEmpty();
+			const excluded = new Ladder("l1", "Illustratif");
+			excluded.excludedFromExecution = true;
+			project.addProgram(excluded);
+
+			expect(LadderAnalyser.checkOrphanLadders(project)).toEqual([]);
+		});
+
+		it("reports as orphan a ladder only called by an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const excluded = new Ladder("l1", "Illustratif");
+			excluded.excludedFromExecution = true;
+			const called = new Ladder("l2", "Appelé");
+			callFrom(excluded, called.id);
+			project.addProgram(excluded);
+			project.addProgram(called);
+
+			const issues = LadderAnalyser.checkOrphanLadders(project);
+
+			expect(issues.map((i) => [i.code, i.source.sourceId])).toEqual([
+				["LADDER_NOT_REFERENCED", "l2"],
+			]);
+		});
+
+		it("ignores a call cycle going through an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const a = new Ladder("a", "A");
+			const b = new Ladder("b", "B");
+			b.excludedFromExecution = true;
+			callFrom(getMain(project), a.id);
+			callFrom(a, b.id);
+			callFrom(b, a.id);
+			project.addProgram(a);
+			project.addProgram(b);
+
+			expect(LadderAnalyser.checkCallCycles(project)).toEqual([]);
+		});
+
+		it("ignores block name conflicts with an excluded ladder", () => {
+			const project = ProjectFactory.createEmpty();
+			const timer = () =>
+				createTimerBlockElement(
+					{ name: "T1", timerType: "TON", pt: "T#5s" },
+					0,
+					0,
+				);
+			const executed = new Ladder("l1", "L1", [
+				createSectionWith([timer()], []),
+			]);
+			const excluded = new Ladder("l2", "L2", [
+				createSectionWith([timer()], []),
+			]);
+			excluded.excludedFromExecution = true;
+			project.addProgram(executed);
+			project.addProgram(excluded);
+
+			expect(LadderAnalyser.checkBlockNameConflicts(project)).toEqual([]);
+		});
+
+		it("does not count an excluded Main as the project Main", () => {
+			const project = ProjectFactory.createEmpty();
+			getMain(project).excludedFromExecution = true;
+
+			expect(
+				LadderAnalyser.checkMainUniqueness(project).map((i) => i.code),
+			).toEqual(["PROJECT_MISSING_MAIN"]);
 		});
 	});
 
@@ -386,13 +579,14 @@ describe("LadderAnalyser", () => {
 			const project = ProjectFactory.createWithVariables([
 				VariableFactory.createMemoryBool("Q1"),
 			]);
-			const crossProgramVariable = new Variable(
-				"v1",
-				"Tempo1.Q",
-				"memory",
-				"BOOL",
-				{ id: "block1" },
-			);
+			const crossProgramVariable = new Variable({
+				id: "v1",
+				mnemonic: "Tempo1.Q",
+				zone: "memory",
+				type: "BOOL",
+				ownerBlock: { id: "block1" },
+				dialect: Dialect.FR,
+			});
 
 			const withoutCrossProgramVariable = ladderAnalyser.analyse(
 				ladder,

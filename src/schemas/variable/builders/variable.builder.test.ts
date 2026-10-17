@@ -1,3 +1,5 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "../input-behavior";
 import Variable from "../variable.schema";
 import VariableBuilder from "./variable.builder";
 
@@ -113,6 +115,24 @@ describe("VariableBuilder", () => {
 			expect(variable.type).toBe("BOOL");
 		});
 
+		it("creates a logic input variable without behavior by default", () => {
+			expect(
+				VariableBuilder.buildLogicInput("var-1", "I0").behavior,
+			).toBeNull();
+		});
+
+		it("creates a logic input variable with the given behavior", () => {
+			const variable = VariableBuilder.buildLogicInput("var-1", "I0", {
+				kind: "toggle-switch-nc",
+				params: null,
+			});
+
+			expect(variable.behavior).toEqual({
+				kind: "toggle-switch-nc",
+				params: null,
+			});
+		});
+
 		it("creates a logic output variable", () => {
 			const variable = VariableBuilder.buildLogicOutput("var-2", "Q0");
 
@@ -161,6 +181,87 @@ describe("VariableBuilder", () => {
 			expect(variable.mnemonic).toBe("AO0");
 			expect(variable.zone).toBe("analog-output");
 			expect(variable.type).toBe("INT");
+		});
+	});
+
+	it("builds a variable with a behavior", () => {
+		const variable = new VariableBuilder()
+			.id("e1")
+			.mnemonic("niveau")
+			.zone("analog-input")
+			.type("INT")
+			.behavior({ kind: "slider", params: { min: 0, max: 100 } })
+			.build();
+
+		expect(variable.behavior).toEqual({
+			kind: "slider",
+			params: { min: 0, max: 100 },
+		});
+	});
+
+	it("rejects a behavior invalid for the zone", () => {
+		expect(() =>
+			new VariableBuilder()
+				.zone("memory")
+				.behavior({ kind: "push-button-no", params: null })
+				.build(),
+		).toThrow();
+	});
+
+	describe("dialect used to validate the behavior", () => {
+		afterEach(() => jest.restoreAllMocks());
+
+		it("passes the builder dialect to Variable.update", () => {
+			const spy = jest.spyOn(Variable.prototype, "update");
+			new VariableBuilder()
+				.id("v")
+				.zone("logic-input")
+				.behavior(PUSH_BUTTON_NO_BEHAVIOR)
+				.dialect(Dialect.EN)
+				.build();
+
+			expect(spy).toHaveBeenCalledWith(
+				{ behavior: PUSH_BUTTON_NO_BEHAVIOR },
+				Dialect.EN,
+			);
+		});
+
+		it("passes the default dialect when none is set", () => {
+			const spy = jest.spyOn(Variable.prototype, "update");
+			new VariableBuilder()
+				.id("v")
+				.zone("logic-input")
+				.behavior(PUSH_BUTTON_NO_BEHAVIOR)
+				.build();
+
+			expect(spy).toHaveBeenCalledWith(
+				{ behavior: PUSH_BUTTON_NO_BEHAVIOR },
+				Dialect.FR,
+			);
+		});
+	});
+
+	describe("constant value and dialect", () => {
+		const boolConstant = (value: string) =>
+			new VariableBuilder()
+				.id("c")
+				.mnemonic("flag")
+				.zone("constant")
+				.type("BOOL")
+				.value(value);
+
+		it("builds an English boolean constant with the EN dialect", () => {
+			const variable = boolConstant("TRUE").dialect(Dialect.EN).build();
+
+			expect(variable.value).toBe("TRUE");
+		});
+
+		it("refuses the English keyword with the default French dialect", () => {
+			expect(() => boolConstant("TRUE").build()).toThrow("Invalid variable:");
+		});
+
+		it("accepts the French keyword with the default dialect", () => {
+			expect(boolConstant("VRAI").build().value).toBe("VRAI");
 		});
 	});
 });

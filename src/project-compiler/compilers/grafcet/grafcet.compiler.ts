@@ -21,6 +21,17 @@ export default class GrafcetCompiler {
 			),
 		);
 
+		const compiledTransitions = Array.from(
+			preCompiledGrafcet.transitions.entries(),
+		).map(([transitionId, preCompiledTransition]) =>
+			TransitionCompiler.compile(
+				transitionId,
+				preCompiledTransition,
+				preCompiledGrafcet,
+				stepMemosNodes,
+			),
+		);
+
 		const nodes: ASTNode[] = [
 			//Évalue chaque tempo une seule fois par cycle, avant toute logique de transition :
 			//les conditions compilées ne lisent ensuite que les variables de sortie des tempos
@@ -29,16 +40,13 @@ export default class GrafcetCompiler {
 			...Array.from(preCompiledGrafcet.transitions.values()).flatMap(
 				(preCompiledTransition) => preCompiledTransition.timers,
 			),
-			//Compile transitions: each transition generates its activation/deactivation block
-			...Array.from(preCompiledGrafcet.transitions.entries()).flatMap(
-				([transitionId, preCompiledTransition]) =>
-					TransitionCompiler.compile(
-						transitionId,
-						preCompiledTransition,
-						preCompiledGrafcet,
-						stepMemosNodes,
-					),
-			),
+			//Every firing condition is evaluated before any step changes. All deactivations then
+			//precede all activations: the outcome of a step that one transition deactivates and
+			//another activates in the same cycle (activation wins) does not depend on the order
+			//of the transitions.
+			...compiledTransitions.flatMap((t) => (t.fired ? [t.fired] : [])),
+			...compiledTransitions.flatMap((t) => t.deactivation),
+			...compiledTransitions.flatMap((t) => t.activation),
 			//Compile actions
 			...Array.from(preCompiledGrafcet.actions.entries())
 				.filter(([, preCompiledAction]) => !!preCompiledAction) //Filter out TEXT actions, or actions with no expression

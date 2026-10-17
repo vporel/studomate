@@ -4,12 +4,15 @@
 		"save": "Enregistrer",
 		"saveCopy": "Enregistrer une copie",
 		"undo": "Annuler",
-		"redo": "Rétablir"
+		"redo": "Rétablir",
+		"scene3d": "Scène 3D"
 	},
 	"analyse": "Analyser",
 	"mode": {
 		"design": "Conception",
-		"simulation": "Simulation"
+		"simulation": "Simulation",
+		"simulationHardwareIo": "Simulation avec E/S réelles",
+		"observation": "Observation de la carte"
 	},
 	"simulationMode": {
 		"continuous": "Continu",
@@ -33,5 +36,61 @@
 		"ok": "(OK)",
 		"errors": "(Erreurs)",
 		"warnings": "(Avertissements)"
+	},
+	"hardwareLink": {
+		"connecting": "Connexion...",
+		"flashing": "Installation du firmware...",
+		"link": "Liaison en ligne",
+		"unlink": "Fermer la liaison",
+		"upload": "Charger le programme dans la carte",
+		"uploading": "Chargement du programme... {percent} %",
+		"online": "En ligne",
+		"remoteIo": "Mode E/S réelles",
+		"observing": "En observation",
+		"running": "Programme en cours",
+		"stopped": "Programme arrêté",
+		"start": "Lancer le programme de la carte",
+		"stop": "Arrêter le programme de la carte",
+		"unsupported": "La liaison USB avec la carte nécessite un navigateur basé sur Chromium (Google Chrome, Microsoft Edge...). Vous pouvez néanmoins concevoir et simuler votre projet.",
+		"unsupportedAria": "Liaison USB indisponible dans ce navigateur"
+	},
+	"hardwareObservationDialog": {
+		"title": "Démarrer le programme de la carte ?",
+		"message": "Le programme de la carte est arrêté. Pour l'observer, il doit tourner : il repartira de son état initial.",
+		"cancel": "Annuler",
+		"start": "Démarrer"
+	},
+	"hardwareFirmwareDialog": {
+		"missing": {
+			"title": "Installer le firmware Studomate ?",
+			"message": "Cette carte ne contient pas le firmware Studomate. L'installer ? Le programme actuel de la carte sera effacé."
+		},
+		"outdated": {
+			"title": "Mettre à jour le firmware Studomate ?",
+			"message": "Le firmware de la carte est obsolète. Le mettre à jour ? Le programme actuel de la carte sera effacé."
+		},
+		"cancel": "Annuler",
+		"install": "Installer",
+		"flashing": {
+			"title": "Installation du firmware Studomate sur l'Arduino...",
+			"preparing": "Préparation...",
+			"write": "Écriture : page {done} sur {total}",
+			"verify": "Vérification : page {done} sur {total}",
+			"doNotUnplug": "Ne débranchez pas la carte pendant l'installation."
+		}
+	},
+	"startup": {
+		"homeAria": "{name} : accueil",
+		"featuredOverline": "Découvrir avec un exemple",
+		"openSolutionAndSimulate": "Ouvrir la solution et simuler",
+		"helpPrompt": "Besoin d'aide pour démarrer ?",
+		"openManual": "Consulter le manuel utilisateur",
+		"alreadyComfortable": "Déjà à l'aise ?",
+		"createProject": "Créer un nouveau projet",
+		"openProject": "Ouvrir un projet existant"
+	},
+	"mobileGuard": {
+		"title": "Application desktop uniquement",
+		"body": "Cette application est disponible uniquement sur desktop. Veuillez y accéder depuis un ordinateur."
 	}
 }

@@ -65,16 +65,20 @@ export default class ProjectPreCompiler {
 	static preCompile(
 		project: Project,
 		stepsVariables: Variable[],
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): ProjectPreCompilationResult {
 		const variables = [
-			...VariableCompiler.compile([...project.variables, ...stepsVariables]),
+			...VariableCompiler.compile(
+				[...project.variables, ...stepsVariables],
+				dialect,
+			),
 			...VariableCompiler.compileSystemVariables(),
 		];
 		const errors: ProjectPreCompilerError[] = [];
 		const programs: Record<string, PreCompiledProgram> = {};
 
 		for (const [programId, program] of Object.entries(project.programs)) {
+			if (program.excludedFromExecution) continue;
 			const preCompiler = PROGRAM_PRE_COMPILERS[program.type];
 			if (!preCompiler) {
 				console.error(

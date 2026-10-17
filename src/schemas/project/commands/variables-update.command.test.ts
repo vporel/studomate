@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	ActionExecutionMode,
 	ActionType,
@@ -8,6 +9,7 @@ import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { createContactElement } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
+import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "../project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import VariablesUpdateCommand from "./variables-update.command";
@@ -19,7 +21,15 @@ import VariablesUpdateCommand from "./variables-update.command";
  */
 function buildProject() {
 	const project = new Project("p1", "Projet", "");
-	project.variables = [new Variable("v1", "moteur", "memory", "BOOL")];
+	project.variables = [
+		new Variable({
+			id: "v1",
+			mnemonic: "moteur",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}),
+	];
 
 	const grafcetA = new GrafcetBuilder()
 		.id("g-a")
@@ -185,5 +195,96 @@ describe("VariablesUpdateCommand", () => {
 				Object.values(updated.grafcets["g-a"].actions)[0].data.expression,
 			).toBe("pompe");
 		});
+	});
+});
+
+describe("VariablesUpdateCommand constants", () => {
+	function projectWithConstant(dialect = Dialect.FR, value = "FAUX") {
+		const project = new Project("p1", "Projet", "");
+		project.dialect = dialect;
+		project.variables = [
+			new Variable({
+				id: "k",
+				mnemonic: "K",
+				zone: "constant",
+				type: "BOOL",
+				value,
+				dialect,
+			}),
+		];
+		return project;
+	}
+
+	it("updates the value and cancel restores the previous one", () => {
+		const project = projectWithConstant();
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "VRAI" }, oldData: { value: "FAUX" } },
+		]);
+
+		command.execute(project);
+		expect(project.variables[0].value).toBe("VRAI");
+		command.cancel(project);
+
+		expect(project.variables[0].value).toBe("FAUX");
+	});
+
+	it("replays with the dialect of the project", () => {
+		const project = projectWithConstant(Dialect.EN, "FALSE");
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "TRUE" }, oldData: { value: "FALSE" } },
+		]);
+
+		command.execute(project);
+
+		expect(project.variables[0].value).toBe("TRUE");
+	});
+
+	it("refuses a value written in the other dialect", () => {
+		const project = projectWithConstant(Dialect.EN, "FALSE");
+		const command = new VariablesUpdateCommand([
+			{ id: "k", newData: { value: "VRAI" }, oldData: { value: "FALSE" } },
+		]);
+
+		expect(() => command.execute(project)).toThrow("CONSTANT_VALUE_INVALID");
+	});
+});
+
+describe("VariablesUpdateCommand: HMI widgets", () => {
+	function projectWithHmi() {
+		const project = buildProject();
+		const page = project.createHmiPage("Page");
+		const button = HmiWidget.create("push-button", 0, 0);
+		if (button.type !== "push-button") throw new Error("unreachable");
+		button.data.variable = "moteur";
+		button.data.animations = { position: { xVariable: "moteur" } };
+		page.addWidget(button);
+		return { project, page, button };
+	}
+
+	it("rewrites the widgets bindings on execute", () => {
+		const { project, page, button } = projectWithHmi();
+		renameCommand("moteur", "pompe").execute(project);
+		const widget = project.getHmiPage(page.id)!.widgets[button.id];
+		expect(widget.data).toMatchObject({
+			variable: "pompe",
+			animations: { position: { xVariable: "pompe" } },
+		});
+	});
+
+	it("restores the widgets bindings on cancel", () => {
+		const { project, page, button } = projectWithHmi();
+		const command = renameCommand("moteur", "pompe");
+		command.execute(project);
+		command.cancel(project);
+		const widget = project.getHmiPage(page.id)!.widgets[button.id];
+		expect(widget.data).toMatchObject({
+			variable: "moteur",
+			animations: { position: { xVariable: "moteur" } },
+		});
+	});
+
+	it("leaves a project without HMI pages unaffected", () => {
+		const [project] = renameCommand("moteur", "pompe").execute(buildProject());
+		expect(project.hmiPages).toEqual({});
 	});
 });

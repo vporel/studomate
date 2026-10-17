@@ -4,12 +4,15 @@
 		"save": "Save",
 		"saveCopy": "Save a copy",
 		"undo": "Undo",
-		"redo": "Redo"
+		"redo": "Redo",
+		"scene3d": "3D scene"
 	},
 	"analyse": "Analyse",
 	"mode": {
 		"design": "Design",
-		"simulation": "Simulation"
+		"simulation": "Simulation",
+		"simulationHardwareIo": "Simulation with real I/O",
+		"observation": "Board observation"
 	},
 	"simulationMode": {
 		"continuous": "Continuous",
@@ -33,5 +36,61 @@
 		"ok": "(OK)",
 		"errors": "(Errors)",
 		"warnings": "(Warnings)"
+	},
+	"hardwareLink": {
+		"connecting": "Connecting...",
+		"flashing": "Installing the firmware...",
+		"link": "Online link",
+		"unlink": "Close the link",
+		"upload": "Load the program into the board",
+		"uploading": "Loading the program... {percent}%",
+		"online": "Online",
+		"remoteIo": "Real I/O mode",
+		"observing": "Observed",
+		"running": "Program running",
+		"stopped": "Program stopped",
+		"start": "Start the board program",
+		"stop": "Stop the board program",
+		"unsupported": "The USB link with the board requires a Chromium-based browser (Google Chrome, Microsoft Edge...). You can still design and simulate your project.",
+		"unsupportedAria": "USB link unavailable in this browser"
+	},
+	"hardwareObservationDialog": {
+		"title": "Start the board program?",
+		"message": "The program of the board is stopped. To observe it, it has to run: it will start again from its initial state.",
+		"cancel": "Cancel",
+		"start": "Start"
+	},
+	"hardwareFirmwareDialog": {
+		"missing": {
+			"title": "Install the Studomate firmware?",
+			"message": "This board does not contain the Studomate firmware. Install it? The program currently on the board will be erased."
+		},
+		"outdated": {
+			"title": "Update the Studomate firmware?",
+			"message": "The firmware of the board is outdated. Update it? The program currently on the board will be erased."
+		},
+		"cancel": "Cancel",
+		"install": "Install",
+		"flashing": {
+			"title": "Installing the Studomate firmware on the Arduino...",
+			"preparing": "Preparing...",
+			"write": "Writing: page {done} of {total}",
+			"verify": "Verifying: page {done} of {total}",
+			"doNotUnplug": "Do not unplug the board during the installation."
+		}
+	},
+	"startup": {
+		"homeAria": "{name}: home",
+		"featuredOverline": "Discover with an example",
+		"openSolutionAndSimulate": "Open the solution and simulate",
+		"helpPrompt": "Need help getting started?",
+		"openManual": "Read the user manual",
+		"alreadyComfortable": "Already comfortable?",
+		"createProject": "Create a new project",
+		"openProject": "Open an existing project"
+	},
+	"mobileGuard": {
+		"title": "Desktop application only",
+		"body": "This application is only available on desktop. Please open it from a computer."
 	}
 }

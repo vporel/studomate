@@ -38,7 +38,7 @@ export default function BlockStructuralRow({
 				<Box
 					sx={{
 						position: "absolute",
-						top: "-4px",
+						top: "-7px",
 						left: 0,
 						width: "100%",
 						display: "flex",

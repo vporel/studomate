@@ -1,9 +1,11 @@
-import SchemaVariablesMapper from "@/bridge/variables.mapper";
+import { Dialect } from "@/expression-language/dialect.enum";
+import SchemaVariablesMapper from "@/project-analyser/variables.mapper";
 import {
 	isSystemVariableName,
 	SYSTEM_VARIABLES,
 } from "@/schemas/variable/system-variables";
 import Variable, {
+	getNumericRange,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
 } from "@/schemas/variable/variable.schema";
 import EnvVariable from "@/simulator/interpreter/environment/env-variable";
@@ -19,11 +21,12 @@ import { Environment } from "@/simulator/interpreter/environment/environment";
  */
 export default function buildAnalysisEnvironment(
 	schemaVariables: Variable[],
+	dialect: Dialect,
 ): Environment {
 	return new Environment([
 		...schemaVariables
 			.filter((variable) => !isSystemVariableName(variable.mnemonic))
-			.map(SchemaVariablesMapper.schemaToEnv),
+			.map((variable) => SchemaVariablesMapper.schemaToEnv(variable, dialect)),
 		...SYSTEM_VARIABLES.map(
 			(variable) =>
 				new EnvVariable(
@@ -31,6 +34,8 @@ export default function buildAnalysisEnvironment(
 					variable.name,
 					VARIABLE_TYPE_TO_NATIVE_TYPE[variable.type],
 					"IN",
+					getNumericRange(variable.type),
+					variable.type,
 				),
 		),
 	]);

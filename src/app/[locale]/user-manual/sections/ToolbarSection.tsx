@@ -18,6 +18,7 @@ export default function ToolbarSection() {
 				{t("generalTitle")}
 			</Typography>
 			<ManualList items={t.raw("generalItems") as string[]} />
+			<Typography mb={2}>{t("undoScopeBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
 			<Typography variant="h4" mb={2}>

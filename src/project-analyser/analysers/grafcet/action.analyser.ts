@@ -11,7 +11,9 @@ import Action, {
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import ProjectAnalyserIssue from "@/project-analyser/project.analyser.issue";
+import ProjectAnalyserIssue, {
+	ProjectAnalyserIssueSource,
+} from "@/project-analyser/project.analyser.issue";
 import GrafcetElementAnalyser, {
 	ElementAnalyseIsolatedOptions,
 } from "./element.analyser";
@@ -22,7 +24,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 	 */
 	analyseIsolated(
 		action: Action,
-		{ dialect = Dialect.FR }: ElementAnalyseIsolatedOptions = {},
+		{ dialect }: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		const source = {
 			sourceType: "grafcet-action" as const,
@@ -39,7 +41,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 				new ProjectAnalyserIssue("warning", "ACTION_EMPTY_EXPRESSION", source),
 			);
 		} else {
-			try {
+			this.collectInvalidExpression(issues, source, () => {
 				action.getExpressionLines().forEach((line) => {
 					const { ast: node } = parseExpressionCached(line, dialect);
 					if (
@@ -78,17 +80,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						}
 					}
 				});
-			} catch (e) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"ACTION_INVALID_EXPRESSION",
-						source,
-						{},
-						e,
-					),
-				);
-			}
+			});
 		}
 
 		// ExecutionMode must be set and compatible with the action type
@@ -121,7 +113,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		action: Action,
 		grafcet: Grafcet,
 		env: Environment,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): ProjectAnalyserIssue[] {
 		if (action.data.type === ActionType.TEXT) return [];
 
@@ -157,7 +149,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		let writtenVariableName: string | null = null;
 
 		if (action.data.expression && action.data.expression.trim() !== "") {
-			try {
+			this.collectInvalidExpression(issues, source, () => {
 				action.getExpressionLines().forEach((line) => {
 					const { ast: node } = parseExpressionCached(line, dialect);
 					const semanticAnalyser = new SemanticAnalyserVisitor(env, {
@@ -205,17 +197,7 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 						}
 					}
 				});
-			} catch (e) {
-				issues.push(
-					new ProjectAnalyserIssue(
-						"error",
-						"ACTION_INVALID_EXPRESSION",
-						source,
-						{},
-						e,
-					),
-				);
-			}
+			});
 		}
 
 		if (writtenVariableName) {
@@ -227,6 +209,20 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 					new ProjectAnalyserIssue(
 						"error",
 						"ACTION_VARIABLE_IS_INPUT",
+						source,
+						{ variableName: writtenVariableName },
+					),
+				);
+			}
+
+			if (
+				env.existsVariableWithName(writtenVariableName) &&
+				env.isConstantByName(writtenVariableName)
+			) {
+				issues.push(
+					new ProjectAnalyserIssue(
+						"error",
+						"ACTION_VARIABLE_IS_CONSTANT",
 						source,
 						{ variableName: writtenVariableName },
 					),
@@ -295,5 +291,25 @@ export default class ActionAnalyser extends GrafcetElementAnalyser<Action> {
 		}
 
 		return issues;
+	}
+
+	private collectInvalidExpression(
+		issues: ProjectAnalyserIssue[],
+		source: ProjectAnalyserIssueSource,
+		run: () => void,
+	): void {
+		try {
+			run();
+		} catch (e) {
+			issues.push(
+				new ProjectAnalyserIssue(
+					"error",
+					"ACTION_INVALID_EXPRESSION",
+					source,
+					{},
+					e,
+				),
+			);
+		}
 	}
 }

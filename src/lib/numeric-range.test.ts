@@ -2,7 +2,7 @@ import { coerceToRange, NumericRange } from "./numeric-range";
 
 const INT: NumericRange = { min: -32768, max: 32767, integer: true, wrap: true };
 const WORD: NumericRange = { min: 0, max: 65535, integer: true, wrap: true };
-const LONG: NumericRange = {
+const SATURATING: NumericRange = {
 	min: -9007199254740991,
 	max: 9007199254740991,
 	integer: true,
@@ -34,8 +34,8 @@ describe("coerceToRange", () => {
 	});
 
 	it("sature au lieu de replier quand wrap est faux", () => {
-		expect(coerceToRange(1e18, LONG)).toBe(LONG.max);
-		expect(coerceToRange(-1e18, LONG)).toBe(LONG.min);
+		expect(coerceToRange(1e18, SATURATING)).toBe(SATURATING.max);
+		expect(coerceToRange(-1e18, SATURATING)).toBe(SATURATING.min);
 	});
 
 	it("laisse passer NaN et Infinity sans les borner", () => {

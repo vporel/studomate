@@ -32,7 +32,9 @@ describe("useBlockInstanceMenuItems", () => {
 					laddersManager: { getActiveStoreManagers },
 				}),
 		);
-		const { result } = renderHook(() => useBlockInstanceMenuItems(), { wrapper: i18nWrapper() });
+		const { result } = renderHook(() => useBlockInstanceMenuItems(), {
+			wrapper: i18nWrapper(),
+		});
 		return result.current("l1", timerElement.id);
 	}
 

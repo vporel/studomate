@@ -5,6 +5,7 @@ import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primar
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";
 import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eof.exception";
 import Parser from "./parser";
+import UnknownFunctionException from "./exceptions/unknown-function.exception";
 
 describe("Parser", () => {
 	let lexer: Lexer;
@@ -393,6 +394,69 @@ describe("Parser", () => {
 			expect((ast as any).left.type).toBe("COMPARISON_EXPRESSION");
 			// Right: y * 2 < 20
 			expect((ast as any).right.type).toBe("COMPARISON_EXPRESSION");
+		});
+	});
+
+	describe("types des littéraux numériques", () => {
+		it("marque un littéral écrit avec une partie décimale comme réel, même entier", () => {
+			expect(parseExpression("2.0")).toMatchObject({
+				type: "NUMBER_LITERAL",
+				value: 2,
+				kind: "real",
+			});
+			expect(parseExpression("2")).toMatchObject({ value: 2, kind: "integer" });
+		});
+
+		it("lit une constante T# comme un littéral de genre time", () => {
+			expect(parseExpression("T#2s")).toMatchObject({
+				type: "NUMBER_LITERAL",
+				value: 2000,
+				kind: "time",
+			});
+		});
+	});
+
+	describe("fonctions de conversion", () => {
+		it("lit un appel de conversion de la norme", () => {
+			const ast = parseExpression("DINT_TO_INT(x * 2)");
+			expect(ast).toMatchObject({
+				type: "CONVERSION_EXPRESSION",
+				sourceType: "DINT",
+				targetType: "INT",
+				expr: { type: "ARITHMETIC_EXPRESSION", operator: "*" },
+			});
+		});
+
+		it("reconnaît le nom sans tenir compte de la casse", () => {
+			expect(parseExpression("int_to_real(x)")).toMatchObject({
+				type: "CONVERSION_EXPRESSION",
+				sourceType: "INT",
+				targetType: "REAL",
+			});
+		});
+
+		it("utilise une conversion dans une expression plus large", () => {
+			const ast = parseExpression("n := REAL_TO_INT(r) + 1");
+			expect(ast).toMatchObject({
+				type: "ASSIGN_STATEMENT",
+				right: {
+					type: "ARITHMETIC_EXPRESSION",
+					left: { type: "CONVERSION_EXPRESSION", targetType: "INT" },
+				},
+			});
+		});
+
+		it("lève UnknownFunctionException pour une fonction inconnue ou une conversion non prise en charge", () => {
+			expect(() => parseExpression("FOO(x)")).toThrow(UnknownFunctionException);
+			expect(() => parseExpression("REAL_TO_WORD(x)")).toThrow(
+				UnknownFunctionException,
+			);
+		});
+
+		it("lève MissingRightParentheseException si l'appel n'est pas fermé", () => {
+			expect(() => parseExpression("DINT_TO_INT(x")).toThrow(
+				MissingRightParentheseException,
+			);
 		});
 	});
 });

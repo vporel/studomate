@@ -7,7 +7,7 @@ import {
 	openFileViaInput,
 	readFile,
 } from "@/ui/lib/file-system";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { Box, Button, Divider } from "@mui/material";
 import { useCallback } from "react";
 import { useShallow } from "zustand/shallow";
@@ -47,9 +47,7 @@ export default function ProjectOpenModal() {
 				text = await readFile(handle);
 			} catch (err: any) {
 				console.error("Failed to open file:", err);
-				alert(
-					t("readError"),
-				);
+				alert(t("readError"));
 			}
 		} else {
 			text = await openFileViaInput(".json");
@@ -60,16 +58,12 @@ export default function ProjectOpenModal() {
 			project = parseProjectFromFile(text);
 		} catch (err: any) {
 			console.error("Failed to parse project JSON:", err);
-			alert(
-				t("readError"),
-			);
+			alert(t("readError"));
 			return;
 		}
 		const saveResult = await projectRepository.save(project);
 		if (!saveResult.ok) {
-			alert(
-				t("saveError"),
-			);
+			alert(t("saveError"));
 			return;
 		}
 		await lifecycleManager.openProject(project.id);

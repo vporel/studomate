@@ -1,6 +1,8 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
+import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import { act, renderHook } from "@testing-library/react";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -36,10 +38,13 @@ describe("useWithTextNodeValue", () => {
 		nodeData: Record<string, unknown>,
 		valueProperty = "number",
 		transformToNumber = true,
+		dialect = Dialect.FR,
 	) {
 		const element = makeStepElement(nodeData);
 		const grafcet = { getElementById: jest.fn(() => element) };
-		const store = { getState: jest.fn(() => ({ grafcet })) };
+		const store = {
+			getState: jest.fn(() => ({ grafcet, getDialect: () => dialect })),
+		};
 		(useGrafcetContext as jest.Mock).mockReturnValue({ store });
 		(useGrafcetStore as jest.Mock).mockImplementation(
 			selectorImplementation({ workflowManager }),
@@ -114,5 +119,20 @@ describe("useWithTextNodeValue", () => {
 		act(() => result.current[3](false)); // setEditing(false), discarding the edit
 
 		expect(result.current[0]).toBe("3");
+	});
+
+	it("validates with the dialect of the project", () => {
+		const analyseIsolated = jest.fn(() => []);
+		jest
+			.spyOn(GrafcetElementAnalyserFactory, "getAnalyser")
+			.mockReturnValueOnce({ analyseIsolated } as never);
+		const { result } = setup({ number: 1 }, "number", true, Dialect.EN);
+
+		act(() => result.current[1]("2"));
+
+		expect(analyseIsolated).toHaveBeenCalledWith(expect.anything(), {
+			allowEmptyContent: true,
+			dialect: Dialect.EN,
+		});
 	});
 });

@@ -7,7 +7,7 @@ import {
 } from "./hmi-widget.schema";
 
 /** Dimensions fixes du canvas HMI, en pixels — multiples de `SNAP_GRID` (voir
- * `src/ui/components/hmi/view/constants.ts`) pour que les bords du canvas tombent sur la grille. */
+ * `src/ui/components/hmi/logic/constants.ts`) pour que les bords du canvas tombent sur la grille. */
 export const HMI_CANVAS_WIDTH = 1000;
 export const HMI_CANVAS_HEIGHT = 640;
 
@@ -68,6 +68,14 @@ export default class HmiPage {
 
 	removeWidget(widgetId: string): void {
 		delete this.widgets[widgetId];
+	}
+
+	/** @param renames Map of old mnemonic → new mnemonic */
+	renameVariableReferences(renames: Record<string, string>): void {
+		if (Object.keys(renames).length === 0) return;
+		Object.values(this.widgets).forEach((widget) =>
+			widget.renameVariableReferences(renames),
+		);
 	}
 
 	copy(): HmiPage {

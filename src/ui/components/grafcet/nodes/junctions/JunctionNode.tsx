@@ -5,7 +5,7 @@ import Junction, {
 	JunctionData,
 } from "@/schemas/grafcet/junction.schema";
 import { FLOW_GRID_CELL_WIDTH } from "@/ui/constants";
-import HandleWithConnectionsLimit from "@/ui/lib/react-flow/HandleWithConnectionsLimit";
+import GrafcetHandle from "../GrafcetHandle";
 import { useTheme } from "@mui/material";
 import {
 	Node,
@@ -92,28 +92,26 @@ const JunctionNodeContent: FC<JunctionNodeProps> = ({
 	return (
 		<>
 			{data.branchesOrder.map((branchId) => (
-				<HandleWithConnectionsLimit
+				<GrafcetHandle
 					key={branchId}
 					limit={1}
 					id={branchId}
 					type={orientation == "start" ? "source" : "target"}
 					position={orientation == "start" ? Position.Bottom : Position.Top}
+					color={borderColor}
 					style={{
 						left: data.branches[branchId]!.position + "px",
-						borderColor: borderColor,
-						backgroundColor: borderColor,
 					}}
 				/>
 			))}
-			<HandleWithConnectionsLimit
+			<GrafcetHandle
 				limit={1}
 				id={JUNCTION_HANDLE_PIVOT}
 				type={orientation == "start" ? "target" : "source"}
 				position={orientation == "start" ? Position.Top : Position.Bottom}
+				color={borderColor}
 				style={{
 					left: data.pivotPosition + "px",
-					borderColor: borderColor,
-					backgroundColor: borderColor,
 				}}
 			/>
 			<GrafcetNode

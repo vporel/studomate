@@ -1,3 +1,5 @@
+import { Dialect } from "@/expression-language/dialect.enum";
+import { InputBehavior } from "../input-behavior";
 import Variable, {
 	VariableOwnerBlock,
 	VariableType,
@@ -11,7 +13,10 @@ export default class VariableBuilder {
 	private _type: VariableType;
 	private _address?: string;
 	private _comment?: string;
+	private _value?: string;
+	private _dialect: Dialect = Dialect.FR;
 	private _ownerBlock?: VariableOwnerBlock;
+	private _behavior: InputBehavior | null = null;
 
 	constructor() {
 		this._id = "";
@@ -50,35 +55,59 @@ export default class VariableBuilder {
 		return this;
 	}
 
+	value(value: string): VariableBuilder {
+		this._value = value;
+		return this;
+	}
+
+	dialect(dialect: Dialect): VariableBuilder {
+		this._dialect = dialect;
+		return this;
+	}
+
+	behavior(behavior: InputBehavior | null): VariableBuilder {
+		this._behavior = behavior;
+		return this;
+	}
+
 	ownerBlock(ownerBlock: VariableOwnerBlock): VariableBuilder {
 		this._ownerBlock = ownerBlock;
 		return this;
 	}
 
 	build(): Variable {
-		const variable = new Variable(
-			this._id,
-			this._mnemonic,
-			this._zone,
-			this._type,
-			this._ownerBlock,
-		);
+		const variable = new Variable({
+			id: this._id,
+			mnemonic: this._mnemonic,
+			zone: this._zone,
+			type: this._type,
+			ownerBlock: this._ownerBlock,
+			value: this._value,
+			dialect: this._dialect,
+		});
 		if (this._address !== undefined) {
 			variable.address = this._address;
 		}
 		if (this._comment !== undefined) {
 			variable.comment = this._comment;
 		}
-		return variable;
+		return this._behavior
+			? variable.update({ behavior: this._behavior }, this._dialect)
+			: variable;
 	}
 
 	// Static factory methods for common variable patterns
-	static buildLogicInput(id: string, mnemonic: string): Variable {
+	static buildLogicInput(
+		id: string,
+		mnemonic: string,
+		behavior: InputBehavior | null = null,
+	): Variable {
 		return new VariableBuilder()
 			.id(id)
 			.mnemonic(mnemonic)
 			.zone("logic-input")
 			.type("BOOL")
+			.behavior(behavior)
 			.build();
 	}
 
@@ -106,6 +135,21 @@ export default class VariableBuilder {
 			.mnemonic(mnemonic)
 			.zone("memory")
 			.type("INT")
+			.build();
+	}
+
+	static buildConstant(
+		id: string,
+		mnemonic: string,
+		type: VariableType,
+		value: string,
+	): Variable {
+		return new VariableBuilder()
+			.id(id)
+			.mnemonic(mnemonic)
+			.zone("constant")
+			.type(type)
+			.value(value)
 			.build();
 	}
 

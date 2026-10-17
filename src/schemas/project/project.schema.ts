@@ -1,4 +1,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
+import { Keyword } from "@/expression-language/keyword.enum";
+import { getKeywordString } from "@/expression-language/keywords";
+import { parseConstantLiteral } from "@/schemas/variable/constant-value";
 import Grafcet from "../grafcet/grafcet.schema";
 import Ladder, { DEFAULT_MAIN_NAME } from "../ladder/ladder.schema";
 import Program, { ProgramType } from "../program/program.schema";
@@ -9,6 +12,8 @@ import { getCounterBlockParams } from "../ladder/function-blocks/counter.schema"
 import { getTimerBlockParams } from "../ladder/function-blocks/timer.schema";
 import { BlockElement, BlockType } from "../ladder/block.schema";
 import HmiPage from "../hmi/hmi-page.schema";
+import type { HardwareTarget } from "../hardware/hardware-target.schema";
+import type { Scene3d } from "../3d-scene/scene3d.schema";
 
 export const DEFAULT_PROJECT_NAME = "Nouveau projet";
 
@@ -54,7 +59,7 @@ export type Exercise = {
  * peuvent ainsi cohabiter, et une version ancienne de l'application peut lister tous les
  * projets tout en refusant proprement d'ouvrir ceux qui la dépassent.
  */
-export const PROJECT_SCHEMA_VERSION = 2;
+export const PROJECT_SCHEMA_VERSION = 4;
 
 export default class Project {
 	id: string;
@@ -81,6 +86,10 @@ export default class Project {
 	hmiPages: Record<string, HmiPage>;
 	/** Énoncé pédagogique du projet — absent si l'auteur n'en a pas rédigé. */
 	exercise?: Exercise;
+	/** Hardware target chosen by the user. Absent on projects saved before this field existed: same meaning as `null` (purely virtual project). */
+	hardwareTarget?: HardwareTarget | null;
+	/** 3D simulation scene of the project. Absent on projects saved before this field existed: same meaning as `null` (no scene). */
+	scene3d?: Scene3d | null;
 
 	constructor(id: string, name: string, author: string) {
 		this.id = id;
@@ -324,6 +333,18 @@ export default class Project {
 		const from = this.dialect;
 		Object.values(this.programs).forEach((program) => {
 			program.translateExpressionsKeywords(from, dialect);
+		});
+		this.variables = this.variables.map((variable) => {
+			if (variable.zone !== "constant" || variable.type !== "BOOL")
+				return variable;
+			const isTrue = parseConstantLiteral(variable.value ?? "", "BOOL", from);
+			if (isTrue === null) return variable;
+			const translated = variable.copy();
+			translated.value = getKeywordString(
+				isTrue ? Keyword.TRUE : Keyword.FALSE,
+				dialect,
+			);
+			return translated;
 		});
 		this.dialect = dialect;
 		this.touch();

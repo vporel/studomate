@@ -12,10 +12,16 @@ import {
 	EXERCISE_PAGE_ID,
 } from "@/ui/components/pages/ExercisePage";
 import {
-	getVariablesPageData,
-	VariablesPageId,
-} from "@/ui/components/pages/VariablesPage";
-import { getPagesSession } from "@/ui/lib/pages-session-storage";
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	HARDWARE_CONFIGURATION_PAGE_ID,
+} from "@/ui/components/pages/HardwareConfigurationPage";
+import {
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_ID,
+} from "@/ui/components/pages/Scene3dConfigurationPage";
+import { getVariablesPageData } from "@/ui/components/pages/VariablesPage";
+import { isVariablesPageId } from "./variables-pages";
+import { getPagesSession } from "@/persistence/pages-session.storage";
 import {
 	PageData,
 	ProjectStoreGetFunction,
@@ -29,12 +35,6 @@ export function getInitialPagesData(): Record<string, PageData> {
 	return pagesData;
 }
 
-const VARIABLES_PAGE_IDS: VariablesPageId[] = [
-	"input-variables",
-	"output-variables",
-	"memory-variables",
-];
-
 /**
  * Reconstruit la `PageData` d'un id de page persisté (session ou URL, voir `restorePagesSession`
  * ci-dessous) — `null` si l'id ne correspond plus à rien (programme supprimé depuis). Les pages
@@ -43,10 +43,14 @@ const VARIABLES_PAGE_IDS: VariablesPageId[] = [
  */
 function resolvePageData(pageId: string, project: Project): PageData | null {
 	if (pageId === PROJECT_STARTUP_PAGE_ID) return PROJECT_STARTUP_PAGE_DATA;
-	if (pageId === PROJECT_PROPERTIES_PAGE_ID) return PROJECT_PROPERTIES_PAGE_DATA;
+	if (pageId === PROJECT_PROPERTIES_PAGE_ID)
+		return PROJECT_PROPERTIES_PAGE_DATA;
 	if (pageId === EXERCISE_PAGE_ID) return EXERCISE_PAGE_DATA;
-	if ((VARIABLES_PAGE_IDS as string[]).includes(pageId))
-		return getVariablesPageData(pageId as VariablesPageId);
+	if (pageId === HARDWARE_CONFIGURATION_PAGE_ID)
+		return HARDWARE_CONFIGURATION_PAGE_DATA;
+	if (pageId === SCENE3D_CONFIGURATION_PAGE_ID)
+		return SCENE3D_CONFIGURATION_PAGE_DATA;
+	if (isVariablesPageId(pageId)) return getVariablesPageData(pageId);
 	const program = project.getProgram(pageId);
 	if (program)
 		return { id: program.id, title: program.name, type: program.type };
@@ -56,7 +60,7 @@ function resolvePageData(pageId: string, project: Project): PageData | null {
 }
 
 /**
- * Rouvre les onglets d'une session de navigateur précédente (voir `pages-session-storage.ts`)
+ * Rouvre les onglets d'une session de navigateur précédente (voir `pages-session.storage.ts`)
  * pour ce projet, et active en priorité `urlActiveId` (lien partagé) sur la page active
  * mémorisée par la session — voir la discussion produit associée. Appelée juste après
  * `_openProject`, qui a déjà posé l'état par défaut (page de démarrage seule) : si rien n'est

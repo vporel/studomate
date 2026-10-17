@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import { ProjectAnalyserIssueSource } from "@/project-analyser/project.analyser.issue";
 import Variable from "@/schemas/variable/variable.schema";
@@ -71,7 +72,13 @@ describe("TimerBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const consigne = new Variable("v1", "MaConsigne", "memory", "TIME");
+		const consigne = new Variable({
+			id: "v1",
+			mnemonic: "MaConsigne",
+			zone: "memory",
+			type: "TIME",
+			dialect: Dialect.FR,
+		});
 
 		const issues = TimerBlockAnalyser.analyse(
 			element,
@@ -88,7 +95,13 @@ describe("TimerBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const maVar = new Variable("v1", "MaVar", "memory", "BOOL");
+		const maVar = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 
 		const issues = TimerBlockAnalyser.analyse(
 			element,
@@ -131,7 +144,13 @@ describe("TimerBlockAnalyser", () => {
 			0,
 			0,
 		);
-		const maVar = new Variable("v1", "MaVar", "memory", "STRING");
+		const maVar = new Variable({
+			id: "v1",
+			mnemonic: "MaVar",
+			zone: "memory",
+			type: "STRING",
+			dialect: Dialect.FR,
+		});
 
 		const issues = TimerBlockAnalyser.analyse(
 			element,

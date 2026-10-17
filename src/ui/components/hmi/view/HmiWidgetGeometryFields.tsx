@@ -1,5 +1,6 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import {
 	HMI_CANVAS_HEIGHT,
 	HMI_CANVAS_WIDTH,
@@ -16,13 +17,10 @@ import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import { ReactNode, useEffect } from "react";
 import { useT } from "@/ui/i18n/useT";
-import { HMI_WIDGET_DEFAULT_MIN_SIZE } from "./constants";
+import { HMI_WIDGET_DEFAULT_MIN_SIZE } from "@/ui/components/hmi/logic/constants";
 import { HmiWidgetRect } from "./useHmiWidgetResize";
 
 type GeometryKey = "x" | "y" | "width" | "height";
-
-const clamp = (value: number, min: number, max: number) =>
-	Math.max(min, Math.min(max, value));
 
 /** Nouveau rectangle après édition d'un seul champ (`key`) à `value` dans les sections Position /
  * Dimensions. Borne au canvas et à `minSize` ; avec `aspectRatio` (voir
@@ -43,7 +41,11 @@ export function applyGeometryEdit(
 	} else if (key === "width") {
 		width = clamp(value, minSize.width, HMI_CANVAS_WIDTH - x);
 		if (aspectRatio)
-			height = clamp(width / aspectRatio, minSize.height, HMI_CANVAS_HEIGHT - y);
+			height = clamp(
+				width / aspectRatio,
+				minSize.height,
+				HMI_CANVAS_HEIGHT - y,
+			);
 	} else {
 		height = clamp(value, minSize.height, HMI_CANVAS_HEIGHT - y);
 		if (aspectRatio)
@@ -175,13 +177,7 @@ const HmiWidgetGeometryFields = ({
 			<Section title={t("dimensions")}>
 				{field(widthField, t("width"))}
 				{canLockAspectRatio && (
-					<Tooltip
-						title={
-							linked
-								? t("sizeLinked")
-								: t("linkSize")
-						}
-					>
+					<Tooltip title={linked ? t("sizeLinked") : t("linkSize")}>
 						<IconButton
 							size="small"
 							onClick={() =>

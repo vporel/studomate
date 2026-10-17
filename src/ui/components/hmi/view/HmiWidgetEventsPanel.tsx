@@ -120,7 +120,9 @@ const HmiWidgetEventsPanel = ({ widget }: { widget: HmiWidget }) => {
 										onClick={() =>
 											setActions(
 												name,
-												actions.filter((_: HmiAction, i: number) => i !== index),
+												actions.filter(
+													(_: HmiAction, i: number) => i !== index,
+												),
 											)
 										}
 										aria-label={t("panel.deleteAction")}

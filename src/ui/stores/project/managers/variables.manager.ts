@@ -1,5 +1,9 @@
-import { VariableUpdatableFields } from "@/schemas/variable/variable.schema";
+import {
+	VariableUpdatableFields,
+	VariableUpdatableFieldsWithId,
+} from "@/schemas/variable/variable.schema";
 import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import VariablesCommandsFactory from "../factories/variables-commands.factory";
 import {
 	ProjectStoreGetFunction,
@@ -15,8 +19,8 @@ export default class VariablesManager {
 	 * cellule en édition (voir `preProcessEditCellProps` de `useDataGridColums`). */
 	private index?: {
 		project: Project;
-		byMnemonic: Map<string, string>;
-		byAddress: Map<string, string>;
+		byMnemonic: Map<string, Variable>;
+		byAddress: Map<string, Variable>;
 	};
 
 	constructor(
@@ -31,11 +35,11 @@ export default class VariablesManager {
 		const project = this.getStoreState().project;
 		if (!project) return undefined;
 		if (this.index?.project !== project) {
-			const byMnemonic = new Map<string, string>();
-			const byAddress = new Map<string, string>();
+			const byMnemonic = new Map<string, Variable>();
+			const byAddress = new Map<string, Variable>();
 			for (const v of project.variables) {
-				byMnemonic.set(v.mnemonic, v.id);
-				if (v.address) byAddress.set(v.address.toLowerCase(), v.id);
+				byMnemonic.set(v.mnemonic, v);
+				if (v.address) byAddress.set(v.address.toLowerCase(), v);
 			}
 			this.index = { project, byMnemonic, byAddress };
 		}
@@ -48,28 +52,35 @@ export default class VariablesManager {
 	 * @returns The id of the variable owning the mnemonic or false if not found
 	 */
 	existsByMnemonic(mnemonic: string): string | false {
-		return this.getIndex()?.byMnemonic.get(mnemonic) ?? false;
+		return this.getIndex()?.byMnemonic.get(mnemonic)?.id ?? false;
 	}
 
 	/**
 	 *
 	 * @param address
-	 * @returns The id of the variable owning the address or false if not found
+	 * @returns The variable owning the address or null if not found
 	 */
-	existsByAddress(address: string): string | false {
-		if (!address || address.trim() === "") return false;
-		return this.getIndex()?.byAddress.get(address.toLowerCase()) ?? false;
+	getByAddress(address: string): Variable | null {
+		if (!address || address.trim() === "") return null;
+		return this.getIndex()?.byAddress.get(address.toLowerCase()) ?? null;
 	}
 
-	addVariables(data: VariableUpdatableFields[]): void {
+	/** @returns The variables actually created (those with a blank or already used mnemonic are skipped). */
+	addVariables(
+		data: VariableUpdatableFields[],
+	): VariableUpdatableFieldsWithId[] {
 		const project = this.getStoreState().project;
-		if (!project) return;
+		if (!project) return [];
 		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
 			console.warn("Cannot add variable in non-design mode");
-			return;
+			return [];
 		}
-		const { commands } = VariablesCommandsFactory.onAddVariable(project, data);
+		const { commands, variablesToAdd } = VariablesCommandsFactory.onAddVariable(
+			project,
+			data,
+		);
 		this.getStoreState().commandsStackManager.executeOperation(commands);
+		return variablesToAdd;
 	}
 
 	updateVariable(

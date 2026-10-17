@@ -3,9 +3,11 @@ import {
 	ArithmeticOperator,
 	ComparisonOperator,
 } from "@/expression-language/operators";
+import { ConvertibleType } from "@/expression-language/conversions";
 import { ASTNode } from "../nodes/ast-node";
 import {
 	ArithmeticExpressionNode,
+	ConversionExpressionNode,
 	ComparisonExpressionNode,
 	LogicalExpressionNode,
 	LogicalOperator,
@@ -23,6 +25,22 @@ export default class ExpressionsBuilder {
 			id: createRandomId(),
 			type: "UNARY_EXPRESSION",
 			operator,
+			expr,
+			position,
+		};
+	}
+
+	static buildConversionExpressionNode(
+		sourceType: ConvertibleType | null,
+		targetType: ConvertibleType,
+		expr: ASTNode,
+		position?: number,
+	): ConversionExpressionNode {
+		return {
+			id: createRandomId(),
+			type: "CONVERSION_EXPRESSION",
+			sourceType,
+			targetType,
 			expr,
 			position,
 		};

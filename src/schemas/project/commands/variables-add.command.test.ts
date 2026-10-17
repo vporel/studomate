@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import Project from "../project.schema";
 import VariablesAddCommand from "./variables-add.command";
 
@@ -72,5 +73,43 @@ describe("VariablesAddCommand", () => {
 		command.cancel(project);
 
 		expect(JSON.stringify(project)).toBe(before);
+	});
+});
+
+describe("VariablesAddCommand constants", () => {
+	it("copies the declared value of a constant and cancel removes it", () => {
+		const project = new Project("p1", "Projet", "");
+		const command = new VariablesAddCommand([
+			{ id: "k", mnemonic: "K", zone: "constant", type: "TIME", value: "T#5s" },
+		]);
+
+		command.execute(project);
+
+		expect(project.variables[0]).toMatchObject({
+			zone: "constant",
+			value: "T#5s",
+		});
+		command.cancel(project);
+		expect(project.variables).toHaveLength(0);
+	});
+
+	it("validates a boolean constant with the dialect of the project", () => {
+		const project = new Project("p1", "Projet", "");
+		project.dialect = Dialect.EN;
+
+		new VariablesAddCommand([
+			{ id: "k", mnemonic: "K", zone: "constant", type: "BOOL", value: "TRUE" },
+		]).execute(project);
+
+		expect(project.variables[0].value).toBe("TRUE");
+	});
+
+	it("refuses a constant without value", () => {
+		const project = new Project("p1", "Projet", "");
+		const command = new VariablesAddCommand([
+			{ id: "k", mnemonic: "K", zone: "constant", type: "INT" },
+		]);
+
+		expect(() => command.execute(project)).toThrow("CONSTANT_VALUE_MISSING");
 	});
 });

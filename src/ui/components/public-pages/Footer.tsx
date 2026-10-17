@@ -5,8 +5,14 @@ import { Link } from "@/i18n/navigation";
 import type { PublicPathname } from "@/i18n/routing";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
-import { openReportIssue } from "@/ui/lib/report-issue";
-import { Box, Container, Divider, Link as MuiLink, Typography } from "@mui/material";
+import { openReportIssue } from "@/ui/services/report-issue";
+import {
+	Box,
+	Container,
+	Divider,
+	Link as MuiLink,
+	Typography,
+} from "@mui/material";
 
 const linkSx = {
 	color: "text.secondary",
@@ -29,25 +35,27 @@ const InternalLink = ({
 const Footer = () => {
 	const t = useT("public.footer");
 
-	const columns: { title: string; links: { label: string; href: PublicPathname }[] }[] =
-		[
-			{
-				title: t("resources"),
-				links: [
-					{ label: t("training"), href: "/training" },
-					{ label: t("manual"), href: "/user-manual" },
-					{ label: t("about"), href: "/about" },
-				],
-			},
-			{
-				title: t("legalTitle"),
-				links: [
-					{ label: t("legalMentions"), href: "/legal" },
-					{ label: t("terms"), href: "/terms" },
-					{ label: t("privacy"), href: "/privacy" },
-				],
-			},
-		];
+	const columns: {
+		title: string;
+		links: { label: string; href: PublicPathname }[];
+	}[] = [
+		{
+			title: t("resources"),
+			links: [
+				{ label: t("training"), href: "/training" },
+				{ label: t("manual"), href: "/user-manual" },
+				{ label: t("about"), href: "/about" },
+			],
+		},
+		{
+			title: t("legalTitle"),
+			links: [
+				{ label: t("legalMentions"), href: "/legal" },
+				{ label: t("terms"), href: "/terms" },
+				{ label: t("privacy"), href: "/privacy" },
+			],
+		},
+	];
 
 	return (
 		<Box

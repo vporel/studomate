@@ -8,7 +8,14 @@ import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import InvalidTimerElapsedTimeNodeException from "./exceptions/invalid-timer-elapsed-time-node.exception";
+import InvalidTimerLastInputTypeException from "./exceptions/invalid-timer-last-input-type.exception";
+import InvalidCounterControlTypeException from "./exceptions/invalid-counter-control-type.exception";
+import InvalidCounterInputTypeException from "./exceptions/invalid-counter-input-type.exception";
+import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-output-type.exception";
+import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
+import AssignmentToConstantException from "./exceptions/assignment-to-constant.exception";
 import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "./exceptions/invalid-assignment-target.exception";
@@ -17,6 +24,19 @@ import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-exp
 import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
 import SemanticAnalyserVisitor from "./semantic-analyser.visitor";
+import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException from "./exceptions/bit-string-block-operand.exception";
+import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "./exceptions/invalid-conversion-argument.exception";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
+import { ConvertibleType } from "@/expression-language/conversions";
+import {
+	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 
 describe("SemanticAnalyserVisitor", () => {
 	let env: Environment;
@@ -40,7 +60,18 @@ describe("SemanticAnalyserVisitor", () => {
 			"boolean",
 			"IN",
 		);
+		const varLimit = new EnvVariable(
+			"id6",
+			"LIMIT",
+			"number",
+			"INOUT",
+			null,
+			null,
+			true,
+			5,
+		);
 		env = new Environment([
+			varLimit,
 			varX,
 			varY,
 			varFlag,
@@ -213,6 +244,17 @@ describe("SemanticAnalyserVisitor", () => {
 			expect(() => parseAndCheck("y := 100")).not.toThrow();
 		});
 
+		it("throws AssignmentToConstantException on a constant, even though its direction is not IN", () => {
+			expect(env.getVariableDirectionByName("LIMIT")).toBe("INOUT");
+			expect(() => parseAndCheck("LIMIT := 3")).toThrow(
+				AssignmentToConstantException,
+			);
+		});
+
+		it("reads a constant in an expression", () => {
+			expect(() => parseAndCheck("y := LIMIT + 1")).not.toThrow();
+		});
+
 		it("throws AssignmentToSystemVariableException on a _SYS_ target", () => {
 			expect(() => parseAndCheck("_SYS_TB_200ms := VRAI")).toThrow(
 				AssignmentToSystemVariableException,
@@ -268,6 +310,124 @@ describe("SemanticAnalyserVisitor", () => {
 				InvalidTimerElapsedTimeNodeException,
 			);
 		});
+
+		it("InvalidTimerLastInputTypeException désigne lastInput comme nœud invalide", () => {
+			const lastInput = IdentifiersBuilder.buildIdentifierNode("x");
+			const node = BlocksBuilder.buildTimerNode(
+				"TON",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				lastInput,
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("result"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+
+			let caught: unknown;
+			try {
+				analyser.visit(node);
+			} catch (e) {
+				caught = e;
+			}
+
+			expect(caught).toBeInstanceOf(InvalidTimerLastInputTypeException);
+			expect(
+				(caught as InvalidTimerLastInputTypeException).getInvalidNodes(),
+			).toEqual([lastInput]);
+		});
+	});
+
+	describe("counter block nodes", () => {
+		function buildCounterNode(
+			lastInput: ASTNode = IdentifiersBuilder.buildIdentifierNode("flag"),
+		) {
+			return BlocksBuilder.buildCounterNode(
+				"CTU",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				lastInput,
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("y"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+			);
+		}
+
+		it("accepts a boolean identifier for lastInput", () => {
+			expect(() => analyser.visit(buildCounterNode())).not.toThrow();
+		});
+
+		it("throws InvalidCounterLastInputNodeException when lastInput is not an identifier", () => {
+			const node = buildCounterNode(LiteralsBuilder.buildBooleanNode(false));
+			expect(() => analyser.visit(node)).toThrow(
+				InvalidCounterLastInputNodeException,
+			);
+		});
+
+		it("throws InvalidCounterLastInputTypeException when lastInput is not boolean, pointing at lastInput", () => {
+			const lastInput = IdentifiersBuilder.buildIdentifierNode("x");
+			const node = buildCounterNode(lastInput);
+
+			let caught: unknown;
+			try {
+				analyser.visit(node);
+			} catch (e) {
+				caught = e;
+			}
+
+			expect(caught).toBeInstanceOf(InvalidCounterLastInputTypeException);
+			expect(
+				(caught as InvalidCounterLastInputTypeException).getInvalidNodes(),
+			).toEqual([lastInput]);
+		});
+	});
+
+	describe("CTUD counter block nodes", () => {
+		const buildCtud = (down: {
+			input?: string;
+			lastInput?: ASTNode;
+			load?: string;
+			output?: ASTNode;
+		}) =>
+			BlocksBuilder.buildCounterNode(
+				"CTUD",
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("flag"),
+				IdentifiersBuilder.buildIdentifierNode("x"),
+				IdentifiersBuilder.buildIdentifierNode("y"),
+				IdentifiersBuilder.buildIdentifierNode("boolResult"),
+				{
+					input: IdentifiersBuilder.buildIdentifierNode(down.input ?? "flag"),
+					lastInput:
+						down.lastInput ?? IdentifiersBuilder.buildIdentifierNode("flag"),
+					load: IdentifiersBuilder.buildIdentifierNode(down.load ?? "flag"),
+					output:
+						down.output ??
+						IdentifiersBuilder.buildIdentifierNode("boolResult"),
+				},
+			);
+
+		it("accepts a valid down part", () => {
+			expect(() => analyser.visit(buildCtud({}))).not.toThrow();
+		});
+
+		it("validates the types of the down part", () => {
+			expect(() => analyser.visit(buildCtud({ input: "x" }))).toThrow(
+				InvalidCounterInputTypeException,
+			);
+			expect(() => analyser.visit(buildCtud({ load: "x" }))).toThrow(
+				InvalidCounterControlTypeException,
+			);
+			expect(() =>
+				analyser.visit(
+					buildCtud({ lastInput: LiteralsBuilder.buildBooleanNode(false) }),
+				),
+			).toThrow(InvalidCounterLastInputNodeException);
+			expect(() =>
+				analyser.visit(
+					buildCtud({ output: IdentifiersBuilder.buildIdentifierNode("x") }),
+				),
+			).toThrow(InvalidCounterOutputTypeException);
+		});
 	});
 
 	describe("complex expressions", () => {
@@ -279,6 +439,232 @@ describe("SemanticAnalyserVisitor", () => {
 			expect(() => parseAndCheck("result := (flag + 5) * 2")).toThrow(
 				InvalidBinaryExprOperandTypeException,
 			);
+		});
+	});
+});
+
+describe("SemanticAnalyserVisitor : typage IEC 61131-3", () => {
+	const typed = (name: string, type: VariableType) =>
+		new EnvVariable(
+			name,
+			name,
+			VARIABLE_TYPE_TO_NATIVE_TYPE[type],
+			"INOUT",
+			getNumericRange(type),
+			type,
+		);
+	const env = new Environment([
+		typed("i", "INT"),
+		typed("i2", "INT"),
+		typed("d", "DINT"),
+		typed("r", "REAL"),
+		typed("w", "WORD"),
+		typed("dw", "DWORD"),
+		typed("t", "TIME"),
+		typed("b", "BOOL"),
+		typed("b2", "BOOL"),
+		new EnvVariable("u", "u", "number", "INOUT"),
+	]);
+	const analyse = (expression: string) =>
+		new SemanticAnalyserVisitor(env).visit(
+			new Parser(new Lexer(Dialect.FR).tokenize(expression)).parse(),
+		);
+
+	describe("opérations arithmétiques", () => {
+		it("accepte des opérandes de même type, un élargissement ou une constante qui tient", () => {
+			expect(() => analyse("i := i * 100")).not.toThrow();
+			expect(() => analyse("d := i + d")).not.toThrow();
+			expect(() => analyse("r := i * r")).not.toThrow();
+			expect(() => analyse("r := r * 2.5")).not.toThrow();
+		});
+
+		it("refuse DINT avec REAL sans conversion", () => {
+			expect(() => analyse("r := d * r")).toThrow(IncompatibleNumericTypesException);
+		});
+
+		it("refuse une constante réelle avec un entier", () => {
+			expect(() => analyse("r := i * 2.5")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+
+		it("refuse une constante hors de la plage du type de l'autre opérande", () => {
+			expect(() => analyse("i := i + 40000")).toThrow(ConstantOutOfRangeException);
+		});
+
+		it("refuse l'arithmétique sur une chaîne de bits, y compris la négation", () => {
+			expect(() => analyse("w := w + 1")).toThrow(BitStringArithmeticException);
+			expect(() => analyse("b := -w = 0")).toThrow(BitStringArithmeticException);
+		});
+
+		it("TIME : additionne deux durées, multiplie une durée par un nombre", () => {
+			expect(() => analyse("t := t + T#1s")).not.toThrow();
+			expect(() => analyse("t := t * 2")).not.toThrow();
+			expect(() => analyse("t := t + 1000")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+
+		it("une variable sans type déclaré échappe aux règles", () => {
+			expect(() => analyse("u := u + w * 2.5")).toThrow(
+				BitStringArithmeticException,
+			);
+			expect(() => analyse("u := u * 2.5 + d")).not.toThrow();
+		});
+	});
+
+	describe("comparaisons", () => {
+		it("compare des types compatibles, chaînes de bits comprises", () => {
+			expect(() => analyse("b := i < d")).not.toThrow();
+			expect(() => analyse("b := w = 0")).not.toThrow();
+			expect(() => analyse("b := t > T#2s")).not.toThrow();
+		});
+
+		it("refuse des types incompatibles", () => {
+			expect(() => analyse("b := i = w")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("b := d < r")).toThrow(IncompatibleNumericTypesException);
+			expect(() => analyse("b := t > 2000")).toThrow(
+				IncompatibleNumericTypesException,
+			);
+		});
+	});
+
+	describe("affectations", () => {
+		it("accepte le même type ou un élargissement", () => {
+			expect(() => analyse("d := i")).not.toThrow();
+			expect(() => analyse("r := i")).not.toThrow();
+			expect(() => analyse("dw := w")).not.toThrow();
+			expect(() => analyse("w := 255")).not.toThrow();
+		});
+
+		it("exige une conversion explicite pour rétrécir", () => {
+			expect(() => analyse("i := d")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := r")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("r := d")).toThrow(ExplicitConversionRequiredException);
+			expect(() => analyse("i := w")).toThrow(ExplicitConversionRequiredException);
+		});
+
+		it("évalue le type d'une expression, pas seulement celui des variables", () => {
+			expect(() => analyse("i := i * d")).toThrow(ExplicitConversionRequiredException);
+		});
+
+		it("refuse une constante hors plage, y compris repliée", () => {
+			expect(() => analyse("i := 40000")).toThrow(ConstantOutOfRangeException);
+			expect(() => analyse("i := 30000 + 30000")).toThrow(
+				ConstantOutOfRangeException,
+			);
+			expect(() => analyse("w := -1")).toThrow(ConstantOutOfRangeException);
+		});
+
+		it("refuse une constante réelle dans un entier", () => {
+			expect(() => analyse("i := 2.5")).toThrow(ExplicitConversionRequiredException);
+		});
+	});
+
+	describe("fonctions de conversion", () => {
+		it("accepte un argument du type source ou d'un type qui s'y élargit", () => {
+			expect(() => analyse("i := DINT_TO_INT(d)")).not.toThrow();
+			expect(() => analyse("i := DINT_TO_INT(i * 100)")).not.toThrow();
+			expect(() => analyse("i := REAL_TO_INT(r * 2.5)")).not.toThrow();
+			expect(() => analyse("i := WORD_TO_INT(w)")).not.toThrow();
+		});
+
+		it("refuse un argument d'un autre type", () => {
+			expect(() => analyse("i := DINT_TO_INT(r)")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => analyse("i := INT_TO_DINT(b)")).toThrow(
+				InvalidConversionArgumentException,
+			);
+		});
+
+		it("le résultat a le type cible", () => {
+			expect(() => analyse("r := DINT_TO_REAL(d) * r")).not.toThrow();
+			expect(() => analyse("i := INT_TO_DINT(i)")).toThrow(
+				ExplicitConversionRequiredException,
+			);
+		});
+
+		it("sans type source, le type de l'opérande doit être convertible vers la cible", () => {
+			const conversion = (source: string, target: ConvertibleType) =>
+				new SemanticAnalyserVisitor(env).visit(
+					ExpressionsBuilder.buildConversionExpressionNode(
+						null,
+						target,
+						IdentifiersBuilder.buildIdentifierNode(source),
+					),
+				);
+			expect(() => conversion("d", "INT")).not.toThrow();
+			expect(() => conversion("r", "WORD")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => conversion("i", "INT")).toThrow(
+				InvalidConversionArgumentException,
+			);
+			expect(() => conversion("t", "DINT")).toThrow(
+				InvalidConversionArgumentException,
+			);
+		});
+	});
+
+	describe("opérandes numériques des blocs", () => {
+		const id = (name: string) => IdentifiersBuilder.buildIdentifierNode(name);
+		const timer = (presetTime: string, elapsedTime: string) =>
+			BlocksBuilder.buildTimerNode(
+				"TON",
+				id("b"),
+				id("b2"),
+				id(presetTime),
+				id(elapsedTime),
+				id("b"),
+			);
+		const counter = (presetValue: string, currentValue: string) =>
+			BlocksBuilder.buildCounterNode(
+				"CTU",
+				id("b"),
+				id("b2"),
+				id("b"),
+				id(presetValue),
+				id(currentValue),
+				id("b"),
+			);
+		const caught = (node: ASTNode) => {
+			try {
+				new SemanticAnalyserVisitor(env).visit(node);
+			} catch (e) {
+				return e;
+			}
+			return undefined;
+		};
+
+		it("accepte INT, DINT, TIME et une variable interne", () => {
+			expect(caught(timer("t", "u"))).toBeUndefined();
+			expect(caught(timer("d", "d"))).toBeUndefined();
+			expect(caught(counter("i", "i2"))).toBeUndefined();
+			expect(caught(counter("d", "u"))).toBeUndefined();
+		});
+
+		it.each([
+			["PT", () => timer("w", "u"), "WORD"],
+			["ET", () => timer("t", "dw"), "DWORD"],
+			["PV", () => counter("dw", "i"), "DWORD"],
+			["CV", () => counter("i", "w"), "WORD"],
+		] as const)("refuse une chaîne de bits en %s", (operand, build, type) => {
+			const node = build();
+			const error = caught(node);
+			expect(error).toBeInstanceOf(BitStringBlockOperandException);
+			const exception = error as BitStringBlockOperandException;
+			expect(exception.getOperand()).toBe(operand);
+			expect(exception.getOperandType()).toBe(type);
+			const operandNode = {
+				PT: "presetTime",
+				ET: "elapsedTime",
+				PV: "presetValue",
+				CV: "currentValue",
+			}[operand];
+			expect(exception.getInvalidNodes()).toEqual([
+				(node as unknown as Record<string, ASTNode>)[operandNode],
+			]);
 		});
 	});
 });

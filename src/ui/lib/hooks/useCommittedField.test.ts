@@ -119,4 +119,29 @@ describe("useCommittedField", () => {
 		} as unknown as KeyboardEvent<HTMLInputElement>);
 		expect(blur).toHaveBeenCalled();
 	});
+
+	it("revient à `value` quand le commit est refusé sans changer `value`", () => {
+		const onCommit = jest.fn();
+		const { result } = renderHook(() =>
+			useCommittedField({ value: "a", onCommit }),
+		);
+		act(() => result.current.onChange(change("refused")));
+		act(() => result.current.onBlur());
+		expect(onCommit).toHaveBeenCalledWith("refused");
+		expect(result.current.value).toBe("a");
+	});
+
+	it("affiche la nouvelle valeur quand le commit est accepté", () => {
+		const { result, rerender } = renderHook(
+			({ value }) =>
+				useCommittedField({
+					value,
+					onCommit: (v: string) => rerender({ value: v }),
+				}),
+			{ initialProps: { value: "a" } },
+		);
+		act(() => result.current.onChange(change("b")));
+		act(() => result.current.onBlur());
+		expect(result.current.value).toBe("b");
+	});
 });

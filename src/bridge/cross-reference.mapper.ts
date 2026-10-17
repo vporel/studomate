@@ -1,3 +1,5 @@
+import { parseSceneKey } from "@/3d-scenes/scene.descriptor";
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 import type {
@@ -41,10 +43,35 @@ export default class CrossReferenceMapper {
 			namespace: "crossReference",
 		});
 
+		const sceneTranslator = createTranslator({
+			locale,
+			messages: getMessages(locale),
+			namespace: "scene3d",
+		});
+		const sceneLabel = (
+			programId: string,
+			key: "labelKey" | "point",
+			pointId = "",
+		) => {
+			const parsed = parseSceneKey(programId);
+			const descriptor = parsed
+				? getSceneDescriptor(parsed.id, parsed.version)
+				: undefined;
+			if (!descriptor) return t("unknownProgram");
+			const labelKey =
+				key === "labelKey"
+					? descriptor.labelKey
+					: descriptor.points.find((point) => point.id === pointId)?.labelKey;
+			return labelKey
+				? sceneTranslator(labelKey as Parameters<typeof sceneTranslator>[0])
+				: t("unknownProgram");
+		};
+
 		const programName = (
 			programId: string,
 			programType: ReferenceProgramType,
 		): string => {
+			if (programType === "scene3d") return sceneLabel(programId, "labelKey");
 			const program =
 				programType === "grafcet"
 					? project.getGrafcet(programId)
@@ -61,10 +88,16 @@ export default class CrossReferenceMapper {
 			const blockLabel =
 				(reference.locationParams.blockName as string) ||
 				(reference.locationParams.blockType
-					? dynamicLabel("blockType", String(reference.locationParams.blockType))
+					? dynamicLabel(
+							"blockType",
+							String(reference.locationParams.blockType),
+						)
 					: "");
 			const widgetTypeLabel = reference.locationParams.widgetType
-				? dynamicLabel("widgetType", String(reference.locationParams.widgetType))
+				? dynamicLabel(
+						"widgetType",
+						String(reference.locationParams.widgetType),
+					)
 				: "";
 			return {
 				label: t(`location.${reference.locationKind}`, {
@@ -72,6 +105,10 @@ export default class CrossReferenceMapper {
 					programName: programName(reference.programId, reference.programType),
 					blockLabel,
 					widgetTypeLabel,
+					pointLabel:
+						reference.programType === "scene3d"
+							? sceneLabel(reference.programId, "point", reference.locationId)
+							: "",
 					stepNumber: reference.locationParams.stepNumber ?? "?",
 				}),
 				programId: reference.programId,

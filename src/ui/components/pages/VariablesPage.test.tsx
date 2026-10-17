@@ -14,6 +14,10 @@ describe("getVariablesPageIdForZone", () => {
 		expect(getVariablesPageIdForZone("analog-output")).toBe("output-variables");
 	});
 
+	it("mappe la zone constante vers constant-variables", () => {
+		expect(getVariablesPageIdForZone("constant")).toBe("constant-variables");
+	});
+
 	it("mappe la zone mémoire vers memory-variables", () => {
 		expect(getVariablesPageIdForZone("memory")).toBe("memory-variables");
 	});

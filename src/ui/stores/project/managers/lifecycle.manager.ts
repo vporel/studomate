@@ -11,14 +11,20 @@ import { toast } from "react-toastify";
 import {
 	getActivePageIdFromUrl,
 	setActivePageIdInUrl,
-} from "@/ui/lib/pages-url";
+} from "@/ui/stores/project/url/pages-url";
 import {
 	clearShareTokenFromUrl,
 	setProjectIdInUrl,
-} from "@/ui/lib/project-url";
-import { deleteDraft, getDraft, saveDraft } from "@/persistence/draft.storage";
+} from "@/ui/stores/project/url/project-url";
+import {
+	Draft,
+	deleteDraft,
+	getDraft,
+	parseDraftProject,
+	saveDraft,
+} from "@/persistence/draft.storage";
 import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	getInitialPagesData,
@@ -67,6 +73,8 @@ export default class ProjectLifecycleManager {
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
 		get().hmiManager.clearCommandsStacks();
+		void get().hardwareLinkManager.unlink();
+		get().scene3dLinkManager.close();
 		//Le presse-papiers aussi : ses éléments référencent des variables par id, sans validité
 		//dans un autre projet.
 		clearClipboard();
@@ -129,6 +137,8 @@ export default class ProjectLifecycleManager {
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
 		get().hmiManager.clearCommandsStacks();
+		void get().hardwareLinkManager.unlink();
+		get().scene3dLinkManager.close();
 		set(() => ({
 			project: null,
 			hasUnsavedChanges: false,
@@ -164,9 +174,22 @@ export default class ProjectLifecycleManager {
 		restorePagesSession(set, get, project, urlActiveId);
 	}
 
+	private openDraftConflictModal(projectId: string, draft: Draft): void {
+		this.setStoreState((state) => ({
+			bootStatus: "idle",
+			ui: {
+				...state.ui,
+				draftConflictModal: {
+					visible: true,
+					projectId,
+					draftData: draft.data,
+				},
+			},
+		}));
+	}
+
 	/** Returns true if a project was opened, false if cancelled or failed. */
 	async openProject(projectId: string, preferDraft = false): Promise<boolean> {
-		const set = this.setStoreState;
 		const get = this.getStoreState;
 		let project: Project | null = null;
 		let fromDraft = false;
@@ -177,33 +200,16 @@ export default class ProjectLifecycleManager {
 			// repository (sans quoi l'enregistrement suivant partirait en faux conflit), et
 			// détecter qu'un autre appareil a écrit depuis la dernière sauvegarde du brouillon.
 			const draft = getDraft(projectId);
-			let draftProject: Project | null = null;
-			if (draft) {
-				try {
-					draftProject = Project.createFromJSON(draft.data);
-				} catch {
-					// Brouillon illisible : suppression et repli sur le projet réel
-					deleteDraft(projectId);
-				}
+			const draftProject = draft ? parseDraftProject(draft.data) : null;
+			if (draft && !draftProject) {
+				// Brouillon illisible : suppression et repli sur le projet réel
+				deleteDraft(projectId);
 			}
 			const stored = await get().projectRepository.get(projectId);
 			if (draft && draftProject) {
-				if (
-					stored &&
-					stored.lastModificationDate.getTime() > draft.savedAt
-				) {
+				if (stored && stored.lastModificationDate.getTime() > draft.savedAt) {
 					// Le projet enregistré est plus récent que le brouillon : proposer le choix
-					set((state) => ({
-						bootStatus: "idle",
-						ui: {
-							...state.ui,
-							draftConflictModal: {
-								visible: true,
-								projectId,
-								draftData: draft.data,
-							},
-						},
-					}));
+					this.openDraftConflictModal(projectId, draft);
 					return true;
 				}
 				project = draftProject;
@@ -219,17 +225,7 @@ export default class ProjectLifecycleManager {
 				if (draft) {
 					if (draft.savedAt > project.lastModificationDate.getTime()) {
 						// Brouillon plus récent : proposer le choix via modale
-						set((state) => ({
-							bootStatus: "idle",
-							ui: {
-								...state.ui,
-								draftConflictModal: {
-									visible: true,
-									projectId,
-									draftData: draft.data,
-								},
-							},
-						}));
+						this.openDraftConflictModal(projectId, draft);
 						return true;
 					} else {
 						// Brouillon périmé : suppression silencieuse
@@ -333,6 +329,13 @@ export default class ProjectLifecycleManager {
 			return false;
 		}
 
+		// Edits made during the await replace `project` with a new object: they live only in
+		// the store and the draft, so both must survive.
+		if (get().project !== project) {
+			set(() => ({ autoSaveUnavailable: false, savingProject: false }));
+			return true;
+		}
+
 		set(() => ({
 			project: newProject,
 			hasUnsavedChanges: false,
@@ -412,7 +415,8 @@ export default class ProjectLifecycleManager {
 		}));
 		if (choice === "draft" && draftData) {
 			try {
-				const project = Project.createFromJSON(draftData);
+				const project = parseDraftProject(draftData);
+				if (!project) throw new Error("Unreadable draft");
 				await this.openAndRestore(project, {
 					shared: false,
 					unsaved: true,

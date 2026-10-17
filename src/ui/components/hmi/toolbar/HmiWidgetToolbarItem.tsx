@@ -1,7 +1,7 @@
 "use client";
 
 import { HMI_WIDGET_DEFINITIONS } from "@/schemas/hmi/hmi-widget.schema";
-import { HmiWidgetTool } from "@/ui/components/hmi/view/constants";
+import { HmiWidgetTool } from "@/ui/components/hmi/logic/constants";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Tooltip } from "@mui/material";

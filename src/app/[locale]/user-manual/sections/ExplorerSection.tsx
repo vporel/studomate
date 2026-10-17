@@ -36,6 +36,13 @@ export default function ExplorerSection() {
 			</Typography>
 			<ManualList items={t.raw("actionsItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("excludedTitle")}
+			</Typography>
+			<Typography mb={1}>{t("excludedP1")}</Typography>
+			<ManualList items={t.raw("excludedItems") as string[]} />
+			<Divider sx={{ my: 2 }} />
 		</section>
 	);
 }

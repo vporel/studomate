@@ -59,6 +59,7 @@ const RightActions = () => {
 				</Button>
 			)}
 			<Button
+				data-tour="crossReference"
 				sx={{
 					color: "black",
 					fontWeight: "normal",
@@ -72,6 +73,7 @@ const RightActions = () => {
 				{tCrossRef("footerButton")}
 			</Button>
 			<Button
+				data-tour="analysis"
 				sx={{
 					color: analysisHasErrors
 						? "red"

@@ -1,4 +1,5 @@
 import { PreCompiledGrafcet } from "@/project-pre-compiler/pre-compilers/grafcet/grafcet.pre-compiler";
+import withFiredVariables from "@tests/utils/fired-variables";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
@@ -12,7 +13,7 @@ describe("GrafcetCompiler", () => {
 			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
 			const transitionNode = LiteralsBuilder.buildBooleanNode(true);
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -50,7 +51,7 @@ describe("GrafcetCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const result = GrafcetCompiler.compile(preCompiledGrafcet);
 
@@ -64,7 +65,7 @@ describe("GrafcetCompiler", () => {
 			const step0Node = IdentifiersBuilder.buildIdentifierNode("X0");
 			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -102,7 +103,7 @@ describe("GrafcetCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const result = GrafcetCompiler.compile(preCompiledGrafcet);
 
@@ -123,7 +124,7 @@ describe("GrafcetCompiler", () => {
 			const step0Node = IdentifiersBuilder.buildIdentifierNode("X0");
 			const step1Node = IdentifiersBuilder.buildIdentifierNode("X1");
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -161,7 +162,7 @@ describe("GrafcetCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const result = GrafcetCompiler.compile(preCompiledGrafcet);
 
@@ -176,7 +177,7 @@ describe("GrafcetCompiler", () => {
 		it("includes timers from transitions", () => {
 			const timer1 = { type: "TIMER_BLOCK", timerType: "TON" } as any;
 
-			const preCompiledGrafcet: PreCompiledGrafcet = {
+			const preCompiledGrafcet = withFiredVariables({
 				type: "grafcet",
 				transitionObservations: new Map(),
 				steps: new Map([
@@ -226,7 +227,7 @@ describe("GrafcetCompiler", () => {
 					],
 				]),
 				actions: new Map(),
-			};
+			});
 
 			const result = GrafcetCompiler.compile(preCompiledGrafcet);
 
@@ -237,6 +238,59 @@ describe("GrafcetCompiler", () => {
 			expect(result.nodes[0]).toBe(timer1);
 		});
 
+		it("places the timers, then the fired assignments, all deactivations and all activations, before the actions", () => {
+			const timer1 = { type: "TIMER_BLOCK", timerType: "TON" } as any;
+			const memo = (name: string) => ({
+				variable: {} as any,
+				node: IdentifiersBuilder.buildIdentifierNode(name),
+			});
+			const transition = (pred: string, succ: string, timers: any[] = []) => ({
+				node: LiteralsBuilder.buildBooleanNode(true),
+				pureNode: LiteralsBuilder.buildBooleanNode(true),
+				timers,
+				timerElapsedVariables: [],
+				predecessorStepsIds: [pred],
+				successorStepsIds: [succ],
+				orPriorityExclusionTransitionIds: [],
+			});
+			const preCompiledGrafcet = withFiredVariables({
+				type: "grafcet",
+				transitionObservations: new Map(),
+				steps: new Map(
+					["X0", "X1", "X2"].map((n, i) => [
+						`step-${i}`,
+						{ node: IdentifiersBuilder.buildIdentifierNode(n), initial: i === 0 },
+					]),
+				),
+				stepsMemos: new Map(
+					["_m0", "_m1", "_m2"].map((n, i) => [`step-${i}`, memo(n)]),
+				),
+				transitions: new Map([
+					["t-1", transition("step-0", "step-1", [timer1])],
+					["t-2", transition("step-1", "step-2")],
+				]),
+				actions: new Map(),
+			});
+
+			const { nodes } = GrafcetCompiler.compile(preCompiledGrafcet);
+
+			expect(nodes).toHaveLength(7);
+			expect(nodes[0]).toBe(timer1);
+			expect(nodes.slice(1, 3).map((n: any) => [n.type, n.left.value])).toEqual([
+				["ASSIGN_STATEMENT", "_fired_t-1"],
+				["ASSIGN_STATEMENT", "_fired_t-2"],
+			]);
+			const guarded = nodes.slice(3).map((n) => {
+				const assign = (n as any).trueBranch[0];
+				return [(n as any).condition.value, assign.left.value, assign.right.value];
+			});
+			expect(guarded).toEqual([
+				["_fired_t-1", "X0", false],
+				["_fired_t-2", "X1", false],
+				["_fired_t-1", "X1", true],
+				["_fired_t-2", "X2", true],
+			]);
+		});
 	});
 
 	describe("buildInitializationNodes", () => {
@@ -250,6 +304,7 @@ describe("GrafcetCompiler", () => {
 				stepsMemos: new Map(),
 				transitions: new Map(),
 				actions: new Map(),
+				firedVariables: new Map(),
 			};
 		}
 

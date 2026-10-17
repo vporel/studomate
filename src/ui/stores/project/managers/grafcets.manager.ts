@@ -1,6 +1,4 @@
-import Grafcet, {
-	GRAFCET_NAME_LABEL,
-} from "@/schemas/grafcet/grafcet.schema";
+import Grafcet, { GRAFCET_NAME_LABEL } from "@/schemas/grafcet/grafcet.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProgramType } from "@/schemas/program/program.schema";
 import {

@@ -18,6 +18,7 @@
 		"compare": "compare",
 		"assign": "assign",
 		"arithmetic": "arithmetic",
+		"convert": "conversion",
 		"user-program": "subprogram"
 	},
 	"widgetType": {
@@ -27,20 +28,22 @@
 		"numeric-display": "display",
 		"gauge": "gauge",
 		"numeric-input": "input",
+		"slider": "slider",
 		"rectangle": "rectangle",
 		"ellipse": "ellipse",
 		"line": "line",
 		"text": "text"
 	},
 	"location": {
-		"ladder-contact": "{programName} · section \"{sectionTitle}\" · row {gridRow} · contact",
-		"ladder-coil": "{programName} · section \"{sectionTitle}\" · row {gridRow} · coil",
-		"ladder-block-pin": "{programName} · section \"{sectionTitle}\" · block {blockLabel} · pin {port}",
+		"ladder-contact": "{programName} · network \"{sectionTitle}\" · row {gridRow} · contact",
+		"ladder-coil": "{programName} · network \"{sectionTitle}\" · row {gridRow} · coil",
+		"ladder-block-pin": "{programName} · network \"{sectionTitle}\" · block {blockLabel} · pin {port}",
 		"grafcet-transition": "{programName} · transition receptivity",
 		"grafcet-action-boolean": "{programName} · step {stepNumber} · action",
 		"grafcet-action-assign": "{programName} · step {stepNumber} · action",
 		"grafcet-step": "{programName} · step {stepNumber} · step activity",
 		"hmi-widget-binding": "{programName} · {widgetTypeLabel} \"{widgetName}\"",
-		"hmi-widget-animation": "{programName} · {widgetTypeLabel} \"{widgetName}\" · animation"
+		"hmi-widget-animation": "{programName} · {widgetTypeLabel} \"{widgetName}\" · animation",
+		"scene3d-point": "{programName} · point \"{pointLabel}\""
 	}
 }

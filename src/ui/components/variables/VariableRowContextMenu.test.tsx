@@ -53,11 +53,8 @@ describe("VariableRowContextMenu", () => {
 	});
 
 	it("ouvre le panneau des références croisées préfiltré sur la variable", () => {
-		const {
-			setCrossReferenceFilter,
-			setCrossReferenceResultVisible,
-			onClose,
-		} = setup();
+		const { setCrossReferenceFilter, setCrossReferenceResultVisible, onClose } =
+			setup();
 		fireEvent.click(screen.getByText("Références croisées"));
 		expect(setCrossReferenceFilter).toHaveBeenCalledWith("M0");
 		expect(setCrossReferenceResultVisible).toHaveBeenCalledWith(true);
@@ -66,9 +63,7 @@ describe("VariableRowContextMenu", () => {
 
 	it("propose « Insérer une variable » en première position et la relaie sur la cible", () => {
 		const { onInsertBelow } = setup();
-		const labels = screen
-			.getAllByRole("menuitem")
-			.map((li) => li.textContent);
+		const labels = screen.getAllByRole("menuitem").map((li) => li.textContent);
 		expect(labels[0]).toContain("Insérer une variable");
 		fireEvent.click(screen.getByText("Insérer une variable"));
 		expect(onInsertBelow).toHaveBeenCalledWith("v1");

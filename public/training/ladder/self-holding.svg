@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" font-family="sans-serif">
+	<!-- Marche prioritaire -->
+	<text x="20" y="14" font-size="13" font-weight="bold" fill="#263238">Marche prioritaire</text>
+
+	<line x1="20" y1="24" x2="20" y2="116" stroke="#263238" stroke-width="3" />
+	<line x1="340" y1="24" x2="340" y2="116" stroke="#263238" stroke-width="3" />
+
+	<line x1="20" y1="44" x2="84" y2="44" stroke="#263238" stroke-width="2" />
+	<line x1="84" y1="34" x2="84" y2="54" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="34" x2="96" y2="54" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="44" x2="200" y2="44" stroke="#263238" stroke-width="2" />
+	<text x="90" y="30" font-size="9" text-anchor="middle" fill="#263238">Marche</text>
+
+	<line x1="20" y1="84" x2="84" y2="84" stroke="#263238" stroke-width="2" />
+	<line x1="84" y1="74" x2="84" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="74" x2="96" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="84" x2="144" y2="84" stroke="#263238" stroke-width="2" />
+	<text x="90" y="104" font-size="9" text-anchor="middle" fill="#263238">Bobine</text>
+
+	<line x1="144" y1="74" x2="144" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="156" y1="74" x2="156" y2="94" stroke="#263238" stroke-width="2.5" />
+	<line x1="142" y1="95" x2="158" y2="73" stroke="#263238" stroke-width="2" />
+	<line x1="156" y1="84" x2="200" y2="84" stroke="#263238" stroke-width="2" />
+	<text x="150" y="104" font-size="9" text-anchor="middle" fill="#263238">Arrêt</text>
+
+	<line x1="200" y1="44" x2="200" y2="84" stroke="#263238" stroke-width="2" />
+	<circle cx="200" cy="64" r="2.5" fill="#263238" />
+	<line x1="200" y1="64" x2="272" y2="64" stroke="#263238" stroke-width="2" />
+	<path d="M 272 54 Q 265 64 272 74" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 288 54 Q 295 64 288 74" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="288" y1="64" x2="340" y2="64" stroke="#263238" stroke-width="2" />
+	<text x="280" y="104" font-size="9" text-anchor="middle" fill="#263238">Bobine</text>
+
+	<!-- Arrêt prioritaire -->
+	<text x="20" y="164" font-size="13" font-weight="bold" fill="#263238">Arrêt prioritaire</text>
+
+	<line x1="20" y1="174" x2="20" y2="266" stroke="#263238" stroke-width="3" />
+	<line x1="370" y1="174" x2="370" y2="266" stroke="#263238" stroke-width="3" />
+
+	<line x1="20" y1="194" x2="84" y2="194" stroke="#263238" stroke-width="2" />
+	<line x1="84" y1="184" x2="84" y2="204" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="184" x2="96" y2="204" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="194" x2="200" y2="194" stroke="#263238" stroke-width="2" />
+	<text x="90" y="180" font-size="9" text-anchor="middle" fill="#263238">Marche</text>
+
+	<line x1="20" y1="234" x2="84" y2="234" stroke="#263238" stroke-width="2" />
+	<line x1="84" y1="224" x2="84" y2="244" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="224" x2="96" y2="244" stroke="#263238" stroke-width="2.5" />
+	<line x1="96" y1="234" x2="200" y2="234" stroke="#263238" stroke-width="2" />
+	<text x="90" y="254" font-size="9" text-anchor="middle" fill="#263238">Bobine</text>
+
+	<line x1="200" y1="194" x2="200" y2="234" stroke="#263238" stroke-width="2" />
+	<circle cx="200" cy="214" r="2.5" fill="#263238" />
+	<line x1="200" y1="214" x2="234" y2="214" stroke="#263238" stroke-width="2" />
+
+	<line x1="234" y1="204" x2="234" y2="224" stroke="#263238" stroke-width="2.5" />
+	<line x1="246" y1="204" x2="246" y2="224" stroke="#263238" stroke-width="2.5" />
+	<line x1="232" y1="225" x2="248" y2="203" stroke="#263238" stroke-width="2" />
+	<line x1="246" y1="214" x2="292" y2="214" stroke="#263238" stroke-width="2" />
+	<text x="240" y="254" font-size="9" text-anchor="middle" fill="#263238">Arrêt</text>
+
+	<path d="M 292 204 Q 285 214 292 224" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 308 204 Q 315 214 308 224" fill="none" stroke="#263238" stroke-width="2.5" />
+	<line x1="308" y1="214" x2="370" y2="214" stroke="#263238" stroke-width="2" />
+	<text x="300" y="254" font-size="9" text-anchor="middle" fill="#263238">Bobine</text>
+</svg>

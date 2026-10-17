@@ -41,6 +41,9 @@ export default function CompareBlockNode({
 		state.highlightedNodesIds?.includes(id),
 	);
 	const color = selected ? th.palette.primary.main : "black";
+	const excludedFromExecution = useLadderStore(
+		(state) => state.ladder.excludedFromExecution,
+	);
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
@@ -102,6 +105,7 @@ export default function CompareBlockNode({
 					value={in1}
 					onCommit={(next) => commit({ in1: next })}
 					acceptedLiterals={[...BLOCK_OPERAND_LITERALS]}
+					suppressStatus={excludedFromExecution}
 					className="nodrag"
 					sx={{ width: 52 }}
 				/>
@@ -134,6 +138,7 @@ export default function CompareBlockNode({
 					value={in2}
 					onCommit={(next) => commit({ in2: next })}
 					acceptedLiterals={[...BLOCK_OPERAND_LITERALS]}
+					suppressStatus={excludedFromExecution}
 					className="nodrag"
 					sx={{ width: 52 }}
 				/>

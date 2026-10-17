@@ -4,7 +4,7 @@ import { ProjectMode } from "../ProjectMode.enum";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/lib/analytics", () => ({
+jest.mock("@/ui/services/analytics", () => ({
 	__esModule: true,
 	default: (...args: any[]) => mockTrackEvent(...args),
 }));
@@ -71,7 +71,7 @@ describe("HmiManager", () => {
 			const page = project.createHmiPage("Vue 1");
 			const { manager, getState } = makeManager({ project });
 
-			manager.openHmiSimulationPageIfAny();
+			expect(manager.openHmiSimulationPageIfAny()).toBe(true);
 
 			expect(getState().hmiSimulationActivePageId).toBe(page.id);
 			expect(getState().pagesManager.openPage).toHaveBeenCalledWith({
@@ -85,7 +85,7 @@ describe("HmiManager", () => {
 			const project = new Project("p1", "Projet", "");
 			const { manager, getState } = makeManager({ project });
 
-			manager.openHmiSimulationPageIfAny();
+			expect(manager.openHmiSimulationPageIfAny()).toBe(false);
 
 			expect(getState().hmiSimulationActivePageId).toBeNull();
 			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();
@@ -124,6 +124,36 @@ describe("HmiManager", () => {
 
 			expect(getState().hmiSimulationActivePageId).toBe(target.id);
 			expect(getState().pagesManager.openPage).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("syncMountedStoresFromProject", () => {
+		function setup(storePageDiffers: boolean) {
+			const project = new Project("p1", "Projet", "auteur");
+			const page = project.createHmiPage("Page");
+			const { manager, getState } = makeManager({ project });
+			const stored = page.copy();
+			if (storePageDiffers) stored.name = "Autre";
+			const adoptHmiPage = jest.fn();
+			(getState() as any).hmiStoresManagers = {
+				[page.id]: { getHmiPage: () => stored, adoptHmiPage },
+			};
+			return { manager, adoptHmiPage, page };
+		}
+
+		it("adopts a copy of the project's page when the store differs", () => {
+			const { manager, adoptHmiPage, page } = setup(true);
+			manager.syncMountedStoresFromProject();
+			expect(adoptHmiPage).toHaveBeenCalledTimes(1);
+			const adopted = adoptHmiPage.mock.calls[0][0];
+			expect(adopted).not.toBe(page);
+			expect(adopted.name).toBe("Page");
+		});
+
+		it("adopts nothing when the store is up to date", () => {
+			const { manager, adoptHmiPage } = setup(false);
+			manager.syncMountedStoresFromProject();
+			expect(adoptHmiPage).not.toHaveBeenCalled();
 		});
 	});
 });

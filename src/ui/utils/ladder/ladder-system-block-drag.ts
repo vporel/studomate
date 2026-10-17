@@ -16,7 +16,7 @@ export const LADDER_SYSTEM_BLOCK_DRAG_MIME_TYPE =
 /**
  * État d'une création de bloc système en attente de validation (voir `LadderStoreState.
  * pendingSystemBlockCreation`) — une entrée par famille de bloc **à fenêtre de configuration**
- * (tempo, compteur), discriminée par `blockType`. Les blocs `"compare"`/`"assign"`/`"arithmetic"`
+ * (tempo, compteur), discriminée par `blockType`. Les blocs `"compare"`/`"assign"`/`"arithmetic"`/`"convert"`
  * n'y figurent pas : leur dépose insère directement un bloc vide, configuré ensuite sur le canevas.
  */
 export type PendingSystemBlockCreation =

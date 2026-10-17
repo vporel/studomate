@@ -1,11 +1,11 @@
 "use client";
 
 import routes from "@/app/routes";
+import type { Locale } from "@/i18n/config";
 import type { PublicPathname } from "@/i18n/routing";
-import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
-import { useAuthStore } from "@/ui/stores/auth/auth.store";
+import MarkdownBody from "@/ui/lib/markdown-body";
 import CheckIcon from "@mui/icons-material/Check";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
@@ -23,9 +23,10 @@ import {
 	useTheme,
 } from "@mui/material";
 import { blue } from "@mui/material/colors";
+import { useLocale } from "next-intl";
 import NextLink from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useShallow } from "zustand/shallow";
+import trainingStepPath from "./training-paths";
 
 const ACCENT_BACKGROUND = alpha(blue[700], 0.05);
 
@@ -43,6 +44,7 @@ export type StepData = {
 	 * l'ajout/réordonnancement d'étapes. */
 	id: string;
 	title: string;
+	/** Blocs Markdown (paragraphe, liste...), joints par une ligne vide avant rendu. */
 	body: string[];
 	kind: StepKind;
 	cta?: {
@@ -58,10 +60,7 @@ export type StepData = {
 	};
 };
 
-function hashForStep(step: StepData): string {
-	return `#step-${step.id}`;
-}
-
+/** Anciens liens `#step-<id>`, redirigés vers l'URL de l'étape. */
 function stepIndexFromHash(hash: string, steps: StepData[]): number | null {
 	const match = /^#step-(.+)$/.exec(hash);
 	if (!match) return null;
@@ -75,6 +74,7 @@ const SummaryItem = ({
 	active,
 	completed,
 	disabled,
+	href,
 	onClick,
 }: {
 	step: StepData;
@@ -82,19 +82,24 @@ const SummaryItem = ({
 	active: boolean;
 	completed: boolean;
 	disabled: boolean;
+	href: string;
 	onClick: () => void;
 }) => (
 	<Stack
-		component="button"
-		type="button"
-		disabled={disabled}
+		component="a"
+		href={href}
 		direction="row"
 		alignItems="center"
 		gap={1.5}
-		onClick={onClick}
+		onClick={(e: React.MouseEvent) => {
+			e.preventDefault();
+			if (!disabled) onClick();
+		}}
 		aria-current={active ? "step" : undefined}
+		aria-disabled={disabled || undefined}
 		sx={{
-			border: "none",
+			color: "inherit",
+			textDecoration: "none",
 			cursor: disabled ? "not-allowed" : "pointer",
 			opacity: disabled ? 0.5 : 1,
 			textAlign: "left",
@@ -141,6 +146,7 @@ export default function ModuleStepper({
 	nextLabel,
 	moduleId,
 	nextModule,
+	initialStepId,
 }: {
 	steps: StepData[];
 	prevLabel: string;
@@ -151,67 +157,75 @@ export default function ModuleStepper({
 	/** Module suivant du parcours, s'il est disponible — remplace le bouton "Suivant" (désactivé
 	 * par défaut) sur la dernière étape par un lien vers ce module. */
 	nextModule?: { href: PublicPathname; label: string };
+	/** Étape affichée au premier rendu (celle de l'URL) ; absente sur la page du module, qui
+	 * reprend la dernière étape sauvegardée une fois montée. */
+	initialStepId?: string;
 }) {
-	const [activeIndex, setActiveIndex] = useState(0);
+	const locale = useLocale() as Locale;
+	const initialIndex = Math.max(
+		steps.findIndex((s) => s.id === initialStepId),
+		0,
+	);
+	const [activeIndex, setActiveIndex] = useState(initialIndex);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const theme = useTheme();
 	// Below `md` the summary and the content stack vertically, so the content can be off-screen
 	// after picking a step — scrolling it into view isn't needed once they sit side by side.
 	const isStackedLayout = useMediaQuery(theme.breakpoints.down("md"));
 
-	const { user, init } = useAuthStore(
-		useShallow((state) => ({ user: state.user, init: state.init })),
-	);
-
-	useEffect(() => {
-		if (isSupabaseConfigured) void init();
-	}, [init]);
-
-	// Verrouille les étapes non encore atteintes dans le sommaire, pour un utilisateur connecté
-	// uniquement : la progression sauvegardée ne doit refléter que des étapes réellement vues,
-	// pas un saut direct vers une étape avancée. Sans compte, rien n'est persisté — la navigation
-	// libre reste sans conséquence.
-	const stepsLocked = isSupabaseConfigured && !!user;
-
 	// La plus grande étape jamais atteinte pour ce module (hash ou progression sauvegardée) :
 	// la sauvegarde ne redescend jamais en dessous, même si l'utilisateur revient en arrière
-	// pour relire une étape. Sert aussi à verrouiller/cocher le sommaire (voir `stepsLocked`) —
+	// pour relire une étape. Sert aussi à verrouiller/cocher le sommaire —
 	// sans verrouillage, un saut direct à une étape avancée ferait cocher à tort les précédentes.
-	const [furthestIndex, setFurthestIndex] = useState(0);
+	const [furthestIndex, setFurthestIndex] = useState(initialIndex);
 
-	// Le hash de l'URL garde la priorité pour l'affichage (lien direct vers une étape) ; sinon,
-	// pour un utilisateur connecté, reprend la dernière étape sauvegardée pour ce module.
+	const pathOf = (index: number) =>
+		trainingStepPath(locale, moduleId, steps[index].id, index);
+
+	// L'URL de l'étape garde la priorité pour l'affichage (lien direct vers une étape) ; sur la
+	// page du module, reprend la dernière étape sauvegardée pour ce module.
 	useEffect(() => {
 		const hashIndex = stepIndexFromHash(window.location.hash, steps);
-		if (hashIndex !== null) setActiveIndex(hashIndex);
-
-		if (!isSupabaseConfigured) {
-			setFurthestIndex(Math.max(hashIndex ?? -1, 0));
-			return;
+		if (hashIndex !== null) {
+			setActiveIndex(hashIndex);
+			window.history.replaceState(
+				null,
+				"",
+				trainingStepPath(locale, moduleId, steps[hashIndex].id, hashIndex),
+			);
 		}
+
 		let cancelled = false;
-		void new TrainingProgressRepository().getStepId(moduleId).then((stepId) => {
-			if (cancelled) return;
-			const savedIndex = stepId ? steps.findIndex((s) => s.id === stepId) : -1;
-			setFurthestIndex(Math.max(hashIndex ?? -1, savedIndex, 0));
-			if (hashIndex === null && savedIndex !== -1) setActiveIndex(savedIndex);
-		});
+		const stepIds = steps.map((s) => s.id);
+		void new TrainingProgressRepository()
+			.getStepId(moduleId, stepIds)
+			.then((stepId) => {
+				if (cancelled) return;
+				const savedIndex = stepId ? stepIds.indexOf(stepId) : -1;
+				setFurthestIndex(Math.max(hashIndex ?? -1, initialIndex, savedIndex, 0));
+				if (hashIndex === null && initialStepId === undefined && savedIndex > 0) {
+					setActiveIndex(savedIndex);
+					window.history.replaceState(
+						null,
+						"",
+						trainingStepPath(locale, moduleId, stepIds[savedIndex], savedIndex),
+					);
+				}
+			});
 		return () => {
 			cancelled = true;
 		};
-	}, [steps, moduleId]);
+	}, [steps, moduleId, locale, initialIndex, initialStepId]);
 
 	const goTo = (index: number) => {
 		setActiveIndex(index);
-		window.history.replaceState(null, "", hashForStep(steps[index]));
+		window.history.replaceState(null, "", pathOf(index));
 		if (isStackedLayout) {
 			contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 		}
 		if (index > furthestIndex) {
 			setFurthestIndex(index);
-			if (isSupabaseConfigured) {
-				void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
-			}
+			void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
 		}
 	};
 
@@ -235,8 +249,9 @@ export default function ModuleStepper({
 						step={s}
 						number={i + 1}
 						active={i === activeIndex}
-						completed={stepsLocked && i < furthestIndex}
-						disabled={stepsLocked && i > furthestIndex}
+						completed={i < furthestIndex}
+						disabled={i > furthestIndex}
+						href={pathOf(i)}
 						onClick={() => goTo(i)}
 					/>
 				))}
@@ -262,13 +277,10 @@ export default function ModuleStepper({
 					</Typography>
 				</Stack>
 
-				<Stack gap={1.5}>
-					{step.body.map((paragraph, i) => (
-						<Typography key={i} textAlign="justify">
-							{paragraph}
-						</Typography>
-					))}
-				</Stack>
+				<MarkdownBody
+					source={step.body.join("\n\n")}
+					sx={{ "& p": { textAlign: "justify" } }}
+				/>
 
 				{step.cta && (
 					<Stack direction="row" gap={1.5} flexWrap="wrap" mt={2}>
@@ -277,6 +289,7 @@ export default function ModuleStepper({
 							href={`${routes.app()}?template=${step.cta.templateId}${
 								step.cta.primaryMode === "solution" ? "&template-mode=solution" : ""
 							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}`}
+							target="_blank"
 							variant="contained"
 						>
 							{step.cta.exerciseLabel}
@@ -285,6 +298,7 @@ export default function ModuleStepper({
 							<Button
 								LinkComponent={NextLink}
 								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution`}
+								target="_blank"
 								variant="outlined"
 							>
 								{step.cta.solutionLabel}

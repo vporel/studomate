@@ -40,7 +40,11 @@ export default function StorageLocationRadioGroup({
 					control={<Radio />}
 					label={t("onThisDevice")}
 				/>
-				<FormControlLabel value="cloud" control={<Radio />} label={t("inTheCloud")} />
+				<FormControlLabel
+					value="cloud"
+					control={<Radio />}
+					label={t("inTheCloud")}
+				/>
 			</RadioGroup>
 			{value === "cloud" && !user && (
 				<Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 4 }}>
@@ -49,12 +53,7 @@ export default function StorageLocationRadioGroup({
 					</Typography>
 					<Button
 						size="small"
-						onClick={() =>
-							setAuthModalVisible(
-								true,
-								t("loginToSaveCloud"),
-							)
-						}
+						onClick={() => setAuthModalVisible(true, t("loginToSaveCloud"))}
 					>
 						{tc("login")}
 					</Button>

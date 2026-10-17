@@ -1,13 +1,12 @@
 import { ComparisonExpressionNode } from "@/expression-language/ast/nodes/expressions";
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { ExpectedNodeResultType } from "../type-analyser.visitor";
-import SemanticException from "./semantic.exception";
+import BinaryOperandsTypesException from "./binary-operands-types.exception";
 
-export default class IncompatibleOperandsTypesException extends SemanticException {
-	private readonly operator: string;
-	private readonly leftType: ExpectedNodeResultType;
-	private readonly rightType: ExpectedNodeResultType;
-
+export default class IncompatibleOperandsTypesException extends BinaryOperandsTypesException<
+	ExpectedNodeResultType,
+	ComparisonExpressionNode | AssignStatementNode
+> {
 	constructor(
 		operator: string,
 		leftType: ExpectedNodeResultType,
@@ -16,23 +15,10 @@ export default class IncompatibleOperandsTypesException extends SemanticExceptio
 	) {
 		super(
 			`Incompatible operand types for operator '${operator}': left operand is ${leftType}, right operand is ${rightType}`,
+			operator,
+			leftType,
+			rightType,
 			originNode,
-			[originNode.left, originNode.right],
 		);
-		this.operator = operator;
-		this.leftType = leftType;
-		this.rightType = rightType;
-	}
-
-	getOperator(): string {
-		return this.operator;
-	}
-
-	getLeftType(): ExpectedNodeResultType {
-		return this.leftType;
-	}
-
-	getRightType(): ExpectedNodeResultType {
-		return this.rightType;
 	}
 }

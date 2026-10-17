@@ -1,21 +1,22 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { fireEvent, screen } from "@testing-library/react";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
-import { exportProject } from "@/ui/utils/project/project-export-utils";
+import { exportProject } from "@/ui/components/projects/project-export";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "./ProjectContext";
 import ExportModal from "./ExportModal";
 
 jest.mock("./ProjectContext");
-jest.mock("@/ui/utils/project/project-export-utils");
+jest.mock("@/ui/components/projects/project-export");
 
 const startExport = jest.fn();
 const reset = jest.fn();
-jest.mock("../pdf/usePdfExport", () => ({
+jest.mock("@/ui/pdf/usePdfExport", () => ({
 	usePdfExport: () => ({
 		exportState: { status: "idle" },
 		startExport,
@@ -50,9 +51,7 @@ describe("ExportModal", () => {
 	it("propose les deux formats, PDF sélectionné par défaut", () => {
 		setup();
 		expect(screen.getByRole("radio", { name: "PDF" })).toBeChecked();
-		expect(
-			screen.getByRole("radio", { name: /JSON/ }),
-		).not.toBeChecked();
+		expect(screen.getByRole("radio", { name: /JSON/ })).not.toBeChecked();
 	});
 
 	it("exporte le projet en JSON puis ferme la modale", () => {
@@ -78,8 +77,20 @@ describe("ExportModal", () => {
 	it("inclut les tables de variables (une par groupe) par défaut", () => {
 		const project = new Project("p1", "Mon projet", "");
 		project.variables.push(
-			new Variable("v1", "I0", "logic-input", "BOOL"),
-			new Variable("v2", "M0", "memory", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "M0",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		);
 		setup({ project });
 
@@ -89,14 +100,23 @@ describe("ExportModal", () => {
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 
 		const { variableSections } = startExport.mock.calls[0][2];
-		expect(
-			variableSections.map((s: { title: string }) => s.title),
-		).toEqual(["Variables d'entrée", "Variables de mémoire"]);
+		expect(variableSections.map((s: { title: string }) => s.title)).toEqual([
+			"Variables d'entrée",
+			"Variables de mémoire",
+		]);
 	});
 
 	it("omet les tables de variables quand la case est décochée", () => {
 		const project = new Project("p1", "Mon projet", "");
-		project.variables.push(new Variable("v1", "I0", "logic-input", "BOOL"));
+		project.variables.push(
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 		setup({ project });
 
 		fireEvent.click(
@@ -109,16 +129,22 @@ describe("ExportModal", () => {
 
 	it("omet la page de garde quand la case est décochée", () => {
 		setup();
-		fireEvent.click(
-			screen.getByRole("checkbox", { name: "Page de garde" }),
-		);
+		fireEvent.click(screen.getByRole("checkbox", { name: "Page de garde" }));
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
 		expect(startExport.mock.calls[0][2].cover).toBeUndefined();
 	});
 
 	it("exporte la page de variables active seule (une section, sans page de garde)", () => {
 		const project = new Project("p1", "Mon projet", "");
-		project.variables.push(new Variable("v1", "M0", "memory", "BOOL"));
+		project.variables.push(
+			new Variable({
+				id: "v1",
+				mnemonic: "M0",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		);
 		setup({
 			project,
 			activeScope: "memory-variables",
@@ -139,9 +165,7 @@ describe("ExportModal", () => {
 
 	it("désactive « page active » sans programme actif", () => {
 		setup();
-		expect(
-			screen.getByRole("radio", { name: /Page active/ }),
-		).toBeDisabled();
+		expect(screen.getByRole("radio", { name: /Page active/ })).toBeDisabled();
 	});
 
 	it("exporte uniquement la page active, sans page de garde", () => {

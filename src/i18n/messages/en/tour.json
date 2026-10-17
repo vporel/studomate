@@ -1,0 +1,37 @@
+{
+	"buttons": {
+		"next": "Next",
+		"previous": "Previous",
+		"done": "Finish"
+	},
+	"steps": {
+		"menubar": {
+			"title": "Menu bar",
+			"description": "Open, save, share and export your project, create new programs (grafcet, ladder) and find the manual, the training modules and the keyboard shortcuts."
+		},
+		"explorer": {
+			"title": "Explorer",
+			"description": "The variables, programs and HMI pages of the project. Right-click opens an action menu."
+		},
+		"pages": {
+			"title": "Workspace",
+			"description": "Editors open here, in tabs: grafcets, ladders, variables and HMI pages."
+		},
+		"hmiPages": {
+			"title": "HMI pages",
+			"description": "Draw an animated operator interface linked to the project variables. Right-click this folder to create a page."
+		},
+		"simulation": {
+			"title": "Analysis and simulation",
+			"description": "Analyse the project, then switch to simulation mode to run it: start, stop or step through it."
+		},
+		"crossReference": {
+			"title": "Cross-references",
+			"description": "For each variable, see which programs read it and which write it."
+		},
+		"analysis": {
+			"title": "Analysis results",
+			"description": "The errors and warnings found in the project. Click to see the details; the colour shows the severity."
+		}
+	}
+}

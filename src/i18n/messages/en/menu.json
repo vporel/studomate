@@ -24,7 +24,8 @@
 		"title": "View",
 		"explorer": "Explorer",
 		"crossReferences": "Cross-references",
-		"analysisResults": "Analysis results"
+		"analysisResults": "Analysis results",
+		"scene3d": "3D scene"
 	},
 	"project": {
 		"title": "Project",
@@ -34,13 +35,24 @@
 		"exerciseStatement": "Exercise brief",
 		"share": "Share",
 		"manageSharing": "Manage sharing",
-		"properties": "Properties"
+		"properties": "Properties",
+		"hardwareConfiguration": "Hardware configuration",
+		"scene3dConfiguration": "3D scene configuration"
+	},
+	"target": {
+		"title": "Target",
+		"upload": "Load the program",
+		"link": "Online link",
+		"unlink": "Close the link",
+		"start": "Start the program",
+		"stop": "Stop the program"
 	},
 	"help": {
 		"title": "Help",
 		"userManual": "User manual",
 		"training": "Training",
 		"keyboardShortcuts": "Keyboard shortcuts",
+		"replayTour": "Replay the guided tour",
 		"reportIssue": "Report a problem"
 	}
 }

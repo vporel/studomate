@@ -1,6 +1,12 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
+import { planMissingVariables } from "@/3d-scenes/scene3d-wiring";
+import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
+import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
+import trackEvent from "@/ui/services/analytics";
 import { createStore } from "zustand";
+import VariablesCommandsFactory from "./factories/variables-commands.factory";
 import ProjectCommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
@@ -9,6 +15,19 @@ import HmiManager from "./managers/hmi.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
+import createBrowserRemoteIoDevice from "./managers/hardware-link/browser-remote-io-device";
+import ModeManager from "./managers/mode.manager";
+import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
+import {
+	DISCONNECTED_HARDWARE_LINK,
+	IDLE_HARDWARE_FIRMWARE,
+	IDLE_HARDWARE_OBSERVATION,
+	IDLE_HARDWARE_UPLOAD,
+} from "./managers/hardware-link/hardware-link.state";
+import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
+import createBrowserScene3dLinkHost from "./managers/3d-scene/browser-scene3d-link-host";
+import Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
+import lazyBrowserHeartbeat from "./managers/simulation/lazy-browser-heartbeat";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
@@ -17,7 +36,7 @@ import {
 	getProjectIdFromUrl,
 	getShareTokenFromUrl,
 	getTemplateIdFromUrl,
-} from "@/ui/lib/project-url";
+} from "@/ui/stores/project/url/project-url";
 import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
 import { deleteDraft } from "@/persistence/draft.storage";
@@ -89,16 +108,17 @@ export const createProjectStore = () => {
 		};
 
 		/** Setter d'un drapeau de visibilité simple de `ui` (sans logique de garde). */
-		const modalSetter =
-			(key: BooleanUiKey) => (visible: boolean) =>
-				set((state) => ({ ui: { ...state.ui, [key]: visible } }));
+		const modalSetter = (key: BooleanUiKey) => (visible: boolean) =>
+			set((state) => ({ ui: { ...state.ui, [key]: visible } }));
 
 		return {
 			project: null,
 			bootStatus:
-				getProjectIdFromUrl() || getShareTokenFromUrl() || getTemplateIdFromUrl()
-						? "restoring"
-						: "idle",
+				getProjectIdFromUrl() ||
+				getShareTokenFromUrl() ||
+				getTemplateIdFromUrl()
+					? "restoring"
+					: "idle",
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
 			ui: {
@@ -141,38 +161,39 @@ export const createProjectStore = () => {
 			setProjectName: (newName: string) => {
 				const project = get().project;
 				if (!project) return;
-				if (project.name === newName) return; //No change
-				set(() => {
-					const newProject = project.copy();
-					newProject.name = newName;
-					return { project: newProject, hasUnsavedChanges: true };
-				});
+				if (project.name === newName) return;
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "name",
+						newValue: newName,
+						oldValue: project.name,
+					}),
+				]);
 			},
 
 			setProjectAuthor: (newAuthor: string) => {
 				const project = get().project;
 				if (!project) return;
-				if (project.author === newAuthor) return; //No change
-				set(() => {
-					const newProject = project.copy();
-					newProject.author = newAuthor;
-					return { project: newProject, hasUnsavedChanges: true };
-				});
+				if (project.author === newAuthor) return;
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "author",
+						newValue: newAuthor,
+						oldValue: project.author,
+					}),
+				]);
 			},
 
 			setProjectDialect: (dialect: Dialect) => {
 				const project = get().project;
 				if (!project) return;
 				if (project.dialect === dialect) return;
-				set(() => {
-					const newProject = project.copy();
-					//Traduit les mots-clés des expressions existantes : sans quoi elles deviendraient
-					//illisibles dans le nouveau dialecte
-					newProject.setDialect(dialect);
-					return { project: newProject, hasUnsavedChanges: true };
-				});
-				//Les grafcets ouverts détiennent leur propre copie : ils doivent adopter la nouvelle
-				get().grafcetsManager.syncMountedStoresFromProject();
+				get().commandsStackManager.executeOperation([
+					new ProjectDialectSetCommand({
+						newDialect: dialect,
+						oldDialect: project.dialect,
+					}),
+				]);
 			},
 
 			setExerciseStatement: (statement: string) => {
@@ -181,14 +202,92 @@ export const createProjectStore = () => {
 				const trimmed = statement.trim();
 				const next = trimmed.length > 0 ? { statement } : undefined;
 				if (project.exercise?.statement === next?.statement) return;
-				set(() => {
-					const newProject = project.copy();
-					newProject.exercise = next;
-					return { project: newProject, hasUnsavedChanges: true };
-				});
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "exercise",
+						newValue: next,
+						oldValue: project.exercise,
+					}),
+				]);
 			},
 
-			setUnsavedChangesDialogVisible: modalSetter("unsavedChangesDialogVisible"),
+			setHardwareModel: (modelId) => {
+				const project = get().project;
+				if (!project) return;
+				const current = project.hardwareTarget ?? null;
+				if ((current?.modelId ?? null) === modelId) return;
+				void get().hardwareLinkManager.unlink();
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "hardwareTarget",
+						newValue: modelId ? { modelId } : null,
+						oldValue: current,
+					}),
+				]);
+			},
+
+			setHardwareTarget: (target) => {
+				const project = get().project;
+				if (!project?.hardwareTarget) return;
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "hardwareTarget",
+						newValue: target,
+						oldValue: project.hardwareTarget,
+					}),
+				]);
+			},
+
+			setScene3d: (scene) => {
+				const project = get().project;
+				if (!project) return;
+				if (scene && scene.sceneId !== project.scene3d?.sceneId) {
+					trackEvent("scene-attached", { scene: scene.sceneId });
+				}
+				get().commandsStackManager.executeOperation([
+					new ProjectFieldSetCommand({
+						field: "scene3d",
+						newValue: scene,
+						oldValue: project.scene3d ?? null,
+					}),
+				]);
+			},
+
+			createMissingScene3dVariables: () => {
+				const { project, mode } = get();
+				const scene = project?.scene3d;
+				if (!project || !scene || mode !== ProjectMode.DESIGN) return;
+				const descriptor = getSceneDescriptor(
+					scene.sceneId,
+					scene.sceneVersion,
+				);
+				if (!descriptor) return;
+				const plan = planMissingVariables(descriptor, scene, project.variables);
+				const { commands, variablesToAdd } =
+					VariablesCommandsFactory.onAddVariable(
+						project,
+						plan.toCreate.map(({ fields }) => fields),
+					);
+				const bindings = { ...scene.bindings, ...plan.reused };
+				for (const { pointId, fields } of plan.toCreate) {
+					const variable = variablesToAdd.find(
+						(v) => v.mnemonic === fields.mnemonic,
+					);
+					if (variable) bindings[pointId] = variable.id;
+				}
+				get().commandsStackManager.executeOperation([
+					...commands,
+					new ProjectFieldSetCommand({
+						field: "scene3d",
+						newValue: { ...scene, bindings },
+						oldValue: scene,
+					}),
+				]);
+			},
+
+			setUnsavedChangesDialogVisible: modalSetter(
+				"unsavedChangesDialogVisible",
+			),
 			setNewProjectModalVisible: modalSetter("newProjectModalVisible"),
 			setSaveAsModalVisible: modalSetter("saveAsModalVisible"),
 			setShareModalVisible: modalSetter("shareModalVisible"),
@@ -239,6 +338,8 @@ export const createProjectStore = () => {
 			mode: ProjectMode.DESIGN,
 			simulationPaused: false,
 			simulationMode: SimulationManager.getPersistedSimulationMode(),
+			simulationKind: "virtual",
+			scene3dDrivenInputIds: [],
 			analysisHasErrors: false,
 			analysisHasWarnings: false,
 			analysisErrors: emptyAnalysisIssues(),
@@ -282,7 +383,24 @@ export const createProjectStore = () => {
 				set,
 				get,
 				new ToastSimulationNotifier(),
+				lazyBrowserHeartbeat,
 			),
+
+			//=============== HARDWARE LINK ===============
+			hardwareLink: DISCONNECTED_HARDWARE_LINK,
+			hardwareLinkManager: new HardwareLinkManager(
+				set,
+				get,
+				new ToastHardwareLinkNotifier(),
+				createBrowserRemoteIoDevice,
+			),
+			scene3dLinkManager: new Scene3dLinkManager(
+				createBrowserScene3dLinkHost(get),
+			),
+			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
+			hardwareUpload: IDLE_HARDWARE_UPLOAD,
+			hardwareObservation: IDLE_HARDWARE_OBSERVATION,
+			modeManager: new ModeManager(get),
 
 			//=============== COMMANDS STACK ===============
 			hasCommandsToUndo: false,

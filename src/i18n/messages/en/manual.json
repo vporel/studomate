@@ -17,7 +17,7 @@
 		"grafcet-comments": "Comments",
 		"grafcet-connections": "Links",
 		"ladder": "Ladder",
-		"ladder-sections": "Sections",
+		"ladder-sections": "Networks",
 		"ladder-contacts": "Contacts",
 		"ladder-coils": "Coils",
 		"ladder-blocks": "Blocks",
@@ -41,6 +41,10 @@
 		"analysis-run": "Run the analysis",
 		"analysis-checks": "Types of checks",
 		"analysis-messages": "Example messages",
+		"hardware": "Hardware (Arduino)",
+		"scene3d": "3D scene",
+		"limits": "Limits",
+		"troubleshooting": "Troubleshooting",
 		"shortcuts": "Keyboard shortcuts"
 	},
 	"intro": {
@@ -54,72 +58,137 @@
 			"Static project analysis with error and warning detection",
 			"Real-time PLC simulation",
 			"Animated HMI screens to visualise and drive the system",
+			"Link with an Arduino Uno R3 board: program upload, simulation with real I/O, board observation",
+			"3D simulation scenes: a virtual plant (lift, crossroads, carton sorting, drilling) driven by the program",
 			"Project export as JSON or PDF"
 		],
-		"p3": "The interface is available in French and English (Preferences page, which also sets the default storage location for projects) and is designed for use in an educational or professional context.",
+		"p3": "The interface is available in French and English (File → Preferences, which also sets the default storage location for projects) and is designed for use in an educational or professional context.",
 		"landmarksTitle": "Reference points",
 		"landmarksIntro": "This manual documents the tool, not the methods (GRAFCET, ladder logic) themselves. A few useful pointers if the terms below aren't already familiar:",
 		"landmarks": [
-			"Step (Grafcet) — a stable state of the system, active or inactive.",
-			"Transition (Grafcet) — the condition for moving from one step to the next.",
-			"Condition (Grafcet) — a Boolean expression attached to a transition; it must be true for the transition to be crossed.",
-			"AND divergence / convergence (Grafcet) — opening then closing parallel branches, all active at the same time.",
-			"OR divergence / convergence (Grafcet) — opening then closing alternative branches, only one active at a time.",
-			"Rising / falling edge (Grafcet) — the instant a condition goes from false to true, or from true to false respectively.",
-			"Contact (Ladder) — tests a Boolean variable: NO (normally open) conducts when it is true, NC (normally closed) when it is false.",
-			"Coil (Ladder) — assigns a Boolean variable at the output of a contact circuit.",
-			"Network / rung (Ladder) — an independent circuit line, powered by the vertical rail on the left.",
-			"Widget (HMI) — a graphical element on an HMI page; an interactive widget is bound to a variable.",
-			"Animation (HMI) — a change in a widget's position or appearance driven by a variable during simulation."
+			"Step (Grafcet): a stable state of the system, active or inactive.",
+			"Transition (Grafcet): the condition for moving from one step to the next.",
+			"Condition (Grafcet): a Boolean expression attached to a transition; it must be true for the transition to be crossed.",
+			"AND divergence / convergence (Grafcet): opening then closing parallel branches, all active at the same time.",
+			"OR divergence / convergence (Grafcet): opening then closing alternative branches, only one active at a time.",
+			"Rising / falling edge (Grafcet): the instant a condition goes from false to true, or from true to false respectively.",
+			"Contact (Ladder): tests a Boolean variable. NO (normally open) conducts when it is true, NC (normally closed) when it is false.",
+			"Coil (Ladder): assigns a Boolean variable at the output of a contact circuit.",
+			"Network / rung (Ladder): an independent circuit line, powered by the vertical rail on the left.",
+			"Mnemonic: the name of a variable as written in expressions (\"sensor1\"), unique within the project.",
+			"Dialect: the language of the expression keywords (ET, OU, NON, VRAI, FAUX in French; AND, OR, NOT, TRUE, FALSE in English). It is a project property, independent of the interface language.",
+			"Programmable logic controller (PLC) / scan: the industrial device that runs the program in a loop. A scan (or cycle) chains reading the inputs, running the program and writing the outputs; Studomate simulates this behaviour.",
+			"Main (Ladder): a special ladder that is always present (a new project contains one), the entry point of execution, which calls the other ladders.",
+			"Pin (Ladder): a block's connection point (input or output), where you enter a variable or a constant.",
+			"Widget (HMI): a graphical element on an HMI page; an interactive widget is bound to a variable.",
+			"Animation (HMI): a change in a widget's position or appearance driven by a variable during simulation."
 		],
-		"readingOrder": "For a first read-through: start with Getting started, then work through the notation you're interested in — Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Sections, Contacts, Coils, Blocks) — before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed."
+		"taskMapTitle": "I want to…",
+		"taskMapIntro": "An index by task, to go straight to the right section:",
+		"taskMapItems": [
+			"see a grafcet run without writing anything: Getting started, \"First project in a few minutes\";",
+			"wait for a delay: a timer in a transition's condition (Grafcet, Transitions) or a TON block in Ladder (Ladder, Blocks);",
+			"blink a lamp: the \"_SYS_TB_…\" time bases (Variables, System variables);",
+			"count parts: the Counter block (Ladder, Blocks);",
+			"memorise a state: the Set and Reset coils (Ladder, Coils) or a step's Set and Reset actions (Grafcet, Actions);",
+			"produce a one-cycle pulse: a rising or falling edge coil (Ladder, Coils);",
+			"restart a cycle: Troubleshooting, \"How do I make a cycle loop?\";",
+			"operate a sensor during simulation: Troubleshooting, \"How do I operate a sensor in simulation?\";",
+			"display a control interface: HMI screens;",
+			"link an Arduino board or a 3D scene: Hardware (Arduino) and 3D scene;",
+			"prepare and hand out a lab: Projects, \"Preparing and handing out a lab\"."
+		],
+		"readingOrder": "If you are new to industrial automation, start with Training (Help menu): short theory followed by self-checking exercises, no account required. Your progress is kept in the browser, and saved to your account if you are signed in. For a first read-through of the tool, start with Getting started, then work through the notation you're interested in: Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Networks, Contacts, Coils, Blocks), before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed. The Hardware (Arduino) and 3D scene sections apply to projects linked to a real board or to a virtual plant."
 	},
 	"gettingStarted": {
 		"title": "Getting started",
 		"newProjectTitle": "Create a new project",
 		"newProjectIntro": "When the application starts, the home page is shown. You can:",
 		"newProjectItems": [
-			"Click \"New project\" to create a project.",
+			"Click \"Create a new project\" to create a project.",
 			"Use the File → New project menu (no keyboard shortcut: Ctrl+N is reserved by the browser to open a new window)."
 		],
 		"newProjectOutro": "An empty project contains only an empty Main ladder (no grafcet); it is ready to receive grafcets, ladders and HMI pages. You can set the project name and author via the Project → Properties menu.",
 		"featuredTitle": "Explore with an example",
-		"featuredBody": "The home screen highlights a template together with its solution. The \"Open the solution and simulate\" button creates the complete project and lets you simulate it right away — handy for exploring the tool before starting from a blank slate.",
+		"featuredBody": "The home screen highlights a template together with its solution. The \"Open the solution and simulate\" button creates the complete project and lets you simulate it right away. It is handy for exploring the tool before starting from a blank slate.",
+		"firstProjectTitle": "First project in a few minutes",
+		"firstProjectIntro": "To see a grafcet run without writing anything, with the \"Traffic light\" template highlighted on the home page:",
+		"firstProjectItems": [
+			"On the home page, click \"Open the solution and simulate\": the complete project is created.",
+			"Look at the grafcet: three steps (green, orange, red), the first one is the initial step. Each transition carries a timer, for example \"t0/X0/5s\": it becomes true 5 seconds after the step is activated. The actions light the step's lamp, and the last transition leads back to the first step.",
+			"Start the simulation from the mode selector (Simulation): the active step is highlighted and the light changes colour. The project's HMI page shows the three indicator lights.",
+			"Switch back to Design mode, double-click a transition and change its duration (\"t0/X0/10s\"), then restart the simulation to see the difference.",
+			"To learn to build a grafcet yourself, follow the \"GRAFCET basics\" training (Help → Training) or open the template in its \"exercise\" variant, whose program is left to write."
+		],
 		"openTitle": "Open an existing project",
 		"openBody": "Via the File → Open project menu (Ctrl+O), a list of all saved projects is shown. Click a project to open it. If a project is already open with unsaved changes, you'll be asked to confirm.",
 		"saveTitle": "Save",
-		"saveBody": "Use File → Save (Ctrl+S) to save your project. An indicator in the title bar shows unsaved changes. Projects are stored in the browser (localStorage).",
+		"saveBody": "Use File → Save (Ctrl+S) to save your project. An indicator in the title bar shows unsaved changes. Projects are stored in the browser (see \"Where are my projects?\" below).",
+		"storageTitle": "Where are my projects?",
+		"storageIntro": "By default, your projects are saved in the browser of this device, not on a server. This has consequences:",
+		"storageItems": [
+			"they are lost if you clear the site's data, and do not follow you to another browser or device;",
+			"a private browsing window may not keep them when it is closed, depending on the browser;",
+			"the browser limits the available space: if saving fails because it is full, Studomate says so and advises exporting the project;",
+			"unsaved changes are kept as a draft in the browser: when you reopen the project, Studomate offers to resume them."
+		],
+		"storageOutro": "To avoid losing your work: export your projects regularly as a JSON file (File → Export), or create an account to back them up to the cloud (see the Accounts & sharing section).",
 		"interfaceTitle": "Main interface",
 		"interfaceIntro": "The interface is divided into several areas:",
 		"interfaceItems": [
-			"Menu bar (top): File, Edit, Project, View, Help",
+			"Menu bar (top): File, Edit, View, Project, Target (Arduino board), Help",
 			"Toolbar (top): quick access to common actions and GRAFCET or Ladder creation tools",
 			"Explorer (left): tree of the project's variables, grafcets, ladders and HMI screens",
 			"Main area (centre): tabs for the open pages (grafcets, ladders, variables, properties). Click a tab to activate it, click its cross to close it.",
-			"Bottom panel: watch tables (simulation) and analysis results"
+			"Bottom bar (bottom): buttons that open the \"Analysis results\" and \"Cross-references\" panels; during simulation, also \"Watch tables\" and, if the project has HMI pages, \"HMI simulation\" (opens the HMI simulation tab)"
 		],
 		"helpMenuTitle": "Help menu",
-		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Keyboard shortcuts (opens the shortcut list) and Report an issue (opens a pre-filled email)."
+		"helpMenuBody": "The Help menu contains: User manual (opens this manual in a new tab), Training (opens the learning path in a new tab), Keyboard shortcuts (opens the shortcut list), Replay the guided tour (restarts the interface walkthrough) and Report an issue (opens a pre-filled email).",
+		"deviceTitle": "Browser and device",
+		"deviceIntro": "Studomate runs in a browser, with nothing to install:",
+		"deviceItems": [
+			"Screen: the editor is designed for a computer. When the window is narrower than 768 pixels (phone, very small window), Studomate shows \"Desktop application only\"; enlarge the window or switch to a computer.",
+			"Mouse and keyboard: many actions go through right-click (context menus), drag and drop and keyboard shortcuts. Touch use (tablet) is not guaranteed; a Chromebook is fine, like any computer with a Chromium browser.",
+			"Browser: everything works in common desktop browsers; only the link with an Arduino board requires a Chromium-based browser (Chrome, Edge...), see the Hardware (Arduino) section.",
+			"Connection: there is no offline mode. The application loads from the web, so a connection is needed to open it (in a lab room, check network access before the session)."
+		],
+		"preferencesTitle": "Preferences",
+		"preferencesBody": "File → Preferences opens the application settings page, which has three settings:",
+		"preferencesItems": [
+			"Interface language: French or English. The language selector in the header of the public pages (home, manual) is separate and does not affect the application;",
+			"Default storage location: local or cloud, used for the first save of a new project;",
+			"Automatically open the simulation view: when simulation starts, switches to the \"HMI simulation\" tab if the project has an HMI page, otherwise to the 3D scene tab if the project has one."
+		]
 	},
 	"projects": {
 		"title": "Projects",
-		"p1": "A Studomate project groups one or more programs (grafcets and/or ladders), a set of variables, HMI screens and metadata (name, author, dialect). All data is stored locally in the browser (localStorage); an account also lets you back it up to the cloud.",
+		"p1": "A Studomate project groups one or more programs (grafcets and/or ladders), a set of variables, HMI screens and metadata (name, author, dialect). All data is stored locally in the browser; an account also lets you back it up to the cloud.",
 		"createTitle": "Create a project",
 		"createIntro": "File → New project. A window opens to choose the starting point:",
 		"createItems": [
-			"Empty project — starts with no variables and no HMI screen.",
-			"Templates — pre-configured projects with variables and an HMI screen already in place. Most templates offer two variants at creation: \"exercise\" (the program still has to be written) and, when \"A solution is available\" is shown, \"solution\" (the \"Open the solution\" button: the program is complete and ready to simulate). Several templates are offered (traffic light, crossroads, drilling machine, lift, barrier car park, carton sorting station)."
+			"Empty project: starts with no variables and no HMI screen.",
+			"Templates: pre-configured projects with variables already in place. Most templates offer two variants at creation: \"exercise\" (the program still has to be written) and, when \"A solution is available\" is shown, \"solution\" (the \"Open the solution\" button: the program is complete and ready to simulate). A template may also come with a 3D scene already configured (see the 3D scene section)."
 		],
 		"openTitle": "Open a project",
 		"openBody": "File → Open project (Ctrl+O). The list of saved projects is shown with their last-modified date. Click a project to open it. Each project in the list also has a delete button (with confirmation), and an \"Open from a file…\" button lets you re-import a project exported as JSON.",
 		"saveTitle": "Save a project",
-		"saveBody1": "File → Save (Ctrl+S) — saves the current project, overwriting the previous version.",
-		"saveBody2": "File → Save as (Ctrl+Shift+S) — creates an independent copy of the project. A window asks for the desired name; on confirmation the copy is saved and becomes the active project. The original project stays unchanged in the project list.",
+		"saveBody1": "File → Save (Ctrl+S): saves the current project, overwriting the previous version.",
+		"saveBody2": "File → Save as (Ctrl+Shift+S): creates an independent copy of the project. A window asks for the desired name; on confirmation the copy is saved and becomes the active project. The original project stays unchanged in the project list.",
 		"propertiesTitle": "Project properties",
 		"propertiesBody1": "Project → Properties. Lets you change the project's name, author, dialect and exercise statement. This information is saved with the project.",
-		"propertiesBody2": "The dialect determines the keywords used in expressions (transition conditions, actions): French (ET, OU, NON, VRAI, FAUX) or English (AND, OR, NOT, TRUE, FALSE). Changing the dialect translates the expressions already written. The dialect is independent of the interface language.",
+		"propertiesBody2": "The dialect determines the keywords used in expressions (transition conditions, actions): French (ET, OU, NON, VRAI, FAUX) or English (AND, OR, NOT, TRUE, FALSE). Changing the dialect translates the expressions already written. The dialect is independent of the interface language. It only concerns these five keywords: block and function names (TON, TOF, TP, CTU, CTD, DINT_TO_INT…) and the duration prefix (T#5s) stay in English whatever the dialect.",
 		"exerciseTitle": "Exercise statement",
-		"exerciseBody": "An exercise template comes with a statement written in Markdown (context and the work to do). It opens in a tab via Project → Exercise statement — an entry shown only when the project has a statement. The text is edited in the \"Exercise statement\" field of Project → Properties; an empty project can be given one too.",
+		"exerciseBody": "An exercise template comes with a statement written in Markdown (context and the work to do). It opens in a tab via Project → Exercise statement (an entry shown only when the project has a statement). The text is edited in the \"Exercise statement\" field of Project → Properties; an empty project can be given one too.",
+		"teacherTitle": "Preparing and handing out a lab",
+		"teacherIntro": "A typical scenario for a teacher:",
+		"teacherItems": [
+			"Prepare: create a project (or start from a template), write the statement in Project → Properties (\"Exercise statement\" field, in Markdown), then remove the part students are to write. File → Save as keeps an independent copy with the full solution.",
+			"Hand out by link: Project → Share (cloud account required) gives a link. Each student who opens it gets their own copy, without an account, and the statement travels with the project. The link shows the project's current version: changing the project changes what students who open it afterwards receive, not the copies already opened. A project has a single link, which can be revoked from \"Manage sharing\".",
+			"Hand out by file: File → Export → Project file (JSON) produces a file that students reopen with File → Open project → \"Open from a file…\".",
+			"Keep the solution: only share the exercise project; the solution stays in another, unshared project. Studomate's templates follow the same principle, with an \"exercise\" and a \"solution\" variant.",
+			"Collect the work: Studomate has no teacher view, you cannot see your students' cloud projects. Each student sends you a file (File → Export → Project file), which you open with \"Open from a file…\", or a share link to their own project.",
+			"Report: the full-project PDF export gives a cover page (name, author, statement) then the grafcets, the ladders and, if the box is checked, the variable tables."
+		],
 		"addProgramTitle": "Add a grafcet, a ladder or an HMI page",
 		"addProgramBody": "Project → New grafcet (Ctrl+G), Project → New ladder (Ctrl+L) or Project → New HMI page (no shortcut). The new item is added to the project and its tab opens automatically. You can rename it by double-clicking its name in the explorer or via right-click → Rename (F2).",
 		"addProgramOutro": "The Project menu also groups \"Exercise statement\" (when the project has one), \"Share\" / \"Manage sharing\" (see the Accounts & sharing section) and \"Properties\".",
@@ -127,16 +196,16 @@
 		"exportSubtitle": "File → Export (Ctrl+E)",
 		"exportIntro": "A window opens offering two formats:",
 		"exportFormats": [
-			"Project file (JSON) — an external backup of the whole project, re-importable via File → Open project → \"Open from a file…\".",
-			"PDF — a visual document of the programs."
+			"Project file (JSON): an external backup of the whole project, re-importable via File → Open project → \"Open from a file…\".",
+			"PDF: a visual document of the grafcets, the ladders and, optionally, the variable tables (HMI pages are not included)."
 		],
 		"exportScopeIntro": "For PDF, two scopes:",
 		"exportScopes": [
-			"Whole project — a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked.",
-			"Active page only — a single titled page for the currently open grafcet or ladder (no cover page). Unavailable if no program is open."
+			"Whole project: a cover page (project name, author, date, statistics, statement if any) then one page per checked grafcet/ladder, each page titled. The cover page can be unchecked. The \"Variable tables\" box (checked by default) adds the variable tables, grouped by zone, after the programs.",
+			"Active page only: a single titled page for the currently open grafcet, ladder or variables page (no cover page). Unavailable if no program is open."
 		],
-		"exportOutro": "A progress bar shows progress (rendering, capture, assembly); the file is downloaded automatically at the end. The \"File name\" field is pre-filled.",
-		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly — bypassing this window and with no cover page.",
+		"exportOutro": "A progress bar shows progress (rendering, assembly); the file is downloaded automatically at the end. The \"File name\" field is pre-filled.",
+		"exportContextMenu": "Shortcut: right-clicking the background of a grafcet or ladder canvas offers \"Export\", which generates the PDF of that single program directly, bypassing this window and with no cover page.",
 		"closeTitle": "Close a project",
 		"closeBody": "File → Close project (Ctrl+F4 on Windows/Linux, Cmd+W on macOS). If there are unsaved changes, you'll be asked to confirm."
 	},
@@ -144,25 +213,27 @@
 		"title": "Accounts & sharing",
 		"p1": "By default, all your projects are stored locally in the browser. Creating an account also lets you save them to the cloud, so they follow you from one device to another.",
 		"statusTitle": "Account status button",
-		"statusBody": "A button in the title bar shows whether you are signed in. When signed out, it reads \"Sign in\" and opens the authentication dialog. When signed in, it shows your identity and opens a menu to sign out.",
+		"statusBody": "A button in the title bar shows whether you are signed in. When signed out, it reads \"Sign in\" and opens the authentication dialog. When signed in, it shows your identity and opens the Cloud account dialog.",
 		"authTitle": "Sign in or sign up",
 		"authIntro": "The authentication dialog offers:",
 		"authItems": [
-			"Sign in — with the email address and password of an existing account.",
-			"Sign up — create a real account (email address + password), or an anonymous account identified by just a nickname and a password, with no email address.",
-			"Forgot password — sends a reset link to the account's email address (real accounts only)."
+			"Sign in: with the email address and password of an existing account.",
+			"Sign up: create a real account (email address + password), or an anonymous account identified by just a nickname and a password, with no email address.",
+			"Forgot password: sends a reset link to the account's email address (real accounts only)."
 		],
 		"storageTitle": "Storage location",
-		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set on the Preferences page.",
+		"storageBody": "Once signed in, each project in the project list can be switched between local and cloud storage. The default location for new projects is set in File → Preferences.",
 		"sharingTitle": "Share a project",
 		"sharingIntro": "Project → Share creates a share link containing a token. Anyone with the link can open a copy of the project.",
 		"sharingItems": [
 			"Sharing requires a cloud account: if you are not signed in, the sign-in dialog opens and sharing resumes afterwards; if the project is still stored locally, a dialog offers to move it to the cloud first.",
-			"The share dialog lets you copy the link and revoke sharing — the link then stops working.",
+			"The share dialog lets you copy the link and revoke sharing: the link then stops working.",
 			"Project → Manage sharing reopens this dialog for an already-shared project."
 		],
 		"sharingOpenedTitle": "Open a shared project",
-		"sharingOpenedBody": "A project opened from a share link is opened as a copy. The \"Save\" button becomes \"Save a copy\": the first save creates your own project, independent of the original. The \"Share\" entry is disabled for this project."
+		"sharingOpenedBody": "A project opened from a share link is opened as a copy. The \"Save\" button becomes \"Save a copy\": the first save creates your own project, independent of the original. The \"Share\" entry is disabled for this project.",
+		"deleteAccountTitle": "Cloud account and account deletion",
+		"deleteAccountBody": "The \"Cloud account\" dialog, opened from the account status button, shows how many projects are stored in the cloud, lets you open a project or sign out, and gives access to account deletion. Deletion is permanent and requires confirming with your password. Your cloud projects are first moved to this browser; your profile, your training progress and the share links of your projects are deleted. Your local projects are not affected."
 	},
 	"explorer": {
 		"title": "Explorer",
@@ -171,15 +242,16 @@
 		"structureIntro": "The explorer is organised into several sections:",
 		"variablesLabel": "Variables:",
 		"variablesItems": [
-			"Logic inputs — Boolean input variables",
-			"Analog inputs — numeric input variables",
-			"Logic outputs — Boolean output variables",
-			"Analog outputs — numeric output variables",
-			"Memory — internal variables (all types)"
+			"Logic inputs: Boolean input variables",
+			"Analog inputs: numeric input variables",
+			"Logic outputs: Boolean output variables",
+			"Analog outputs: numeric output variables",
+			"Memory: internal variables (all types)"
 		],
 		"programsLabel": "Programs:",
 		"programsItems": [
-			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type."
+			"A list of all the project's grafcets and ladders, each marked by an icon specific to its type.",
+			"A program excluded from execution carries the \"Not executed\" badge."
 		],
 		"blockInstancesLabel": "Block instances:",
 		"blockInstancesItems": [
@@ -187,7 +259,7 @@
 		],
 		"systemBlocksLabel": "System blocks:",
 		"systemBlocksItems": [
-			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
+			"Palette of blocks available for the ladder editor: Timer, Counter, Comparison, Assignment, Calculation, Conversion. Drag a block from this section onto a ladder canvas to insert it. This section only appears while a ladder is open."
 		],
 		"hmiLabel": "HMI screens:",
 		"hmiItems": [
@@ -198,8 +270,19 @@
 			"Click a variable section: opens the page to manage those variables",
 			"Click a grafcet or a ladder: opens its tab",
 			"Double-click a program's name: edit the name in place",
-			"Right-click a program → Open, Rename (F2), Delete",
+			"Right-click a program → Open, Rename (F2), Delete, Exclude from execution / Include in execution",
 			"Right-click empty area → Hide the explorer"
+		],
+		"excludedTitle": "Excluding a program from execution",
+		"excludedP1": "A grafcet or a ladder can exist in the project for illustration only: it can still be drawn, edited and exported to PDF, but it is neither analysed, compiled nor simulated. This is useful, for example, to show next to a ladder the grafcet it implements.",
+		"excludedItems": [
+			"To exclude a program: right-click it in the explorer → Exclude from execution. To include it again: Include in execution. Switching is only possible in design mode.",
+			"The Main cannot be excluded: it is the project's execution entry point.",
+			"An excluded program carries the \"Not executed\" badge in the explorer, and the \"Excluded from execution\" label on the right of its toolbar. Clicking this label explains what exclusion means and lets you include the program again.",
+			"Its mnemonics (receptivities, actions, contacts, coils, block parameters) can be free text, without matching a declared variable: no error is reported.",
+			"It is invisible to the rest of the project: its step (Xn) and block variables do not exist for the other programs, and it does not appear in the cross-references. A block calling an excluded ladder is reported as an error by the analysis.",
+			"During simulation, no step of an excluded grafcet is active and its steps cannot be forced.",
+			"Including a program again does not fix it: the analysis resumes and reports any errors it contains."
 		]
 	},
 	"variables": {
@@ -211,39 +294,65 @@
 			"Analog inputs: numeric values coming from outside",
 			"Logic outputs: Boolean signals sent outside (actuators, indicator lights)",
 			"Analog outputs: numeric values sent outside",
-			"Memory: internal variables used for internal logic"
+			"Memory: internal variables used for internal logic",
+			"Constants: values fixed at design time (\"declared value\"), read-only: the program cannot write them"
 		],
 		"typesTitle": "Data types",
 		"typesItems": [
-			"BOOL — Boolean (true/false), available in every zone",
-			"INT — signed integer, available for analog and memory",
-			"LONG — signed long integer, available in memory",
-			"WORD — unsigned 16-bit integer, available for analog and memory",
-			"DWORD — unsigned 32-bit integer, available for analog and memory",
-			"REAL — floating-point number, available in memory",
-			"STRING — character string, available in memory",
-			"TIME — duration (e.g. T#5s), available in memory — used in particular for timers"
+			"BOOL: Boolean (true/false), available in logic zones, memory and constants",
+			"INT: signed integer, available for analog, memory and constants",
+			"DINT: signed 32-bit integer, available in memory and constants",
+			"WORD: unsigned 16-bit integer, available for analog, memory and constants",
+			"DWORD: unsigned 32-bit integer, available for analog, memory and constants",
+			"REAL: floating-point number, available in memory and constants",
+			"STRING: character string, available in memory and constants",
+			"TIME: duration (e.g. T#5s), available in memory and constants, used in particular for timers"
 		],
-		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768), LONG is truncated to an integer. Worth keeping in mind for an accumulation such as \"position := position + step\".",
+		"typesByZone": "Types accepted per zone: logic inputs and outputs, BOOL; analog inputs and outputs, INT, WORD or DWORD; memories and constants, every type.",
+		"typesOutro": "During simulation, integer variables are brought back into their type's range on every write: INT, DINT, WORD and DWORD wrap around on overflow (an INT going past 32767 comes back to −32768). Worth keeping in mind for an accumulation such as \"position := position + step\".",
+		"typesCalcTitle": "Calculations and conversions",
+		"typesCalcItems": [
+			"A calculation is done in the type of its operands (IEC 61131-3): INT * INT gives an INT, which can overflow before it is even stored in a DINT variable.",
+			"Between two different types, only lossless widenings are implicit: INT to DINT or REAL, WORD to DWORD. DINT and REAL cannot be combined without a conversion.",
+			"Storing a value in a smaller type (DINT or REAL into an INT) requires an explicit conversion: DINT_TO_INT, REAL_TO_INT, INT_TO_REAL… functions in an expression, Conversion block in ladder.",
+			"Division between integers truncates: 7 / 2 is 3, even when stored in a REAL. Write 7.0 / 2 to get 3.5.",
+			"WORD and DWORD are bit strings: no arithmetic on these types without first converting them to an integer (WORD_TO_INT…), and no WORD/DWORD as the preset or current value of a timer or counter.",
+			"A constant is written according to its type: 100 (integer), 2.5 (real), T#5s (duration). A duration is compared with another duration: t > T#2s."
+		],
 		"propertiesTitle": "Properties of a variable",
 		"propertiesItems": [
 			"Mnemonic (required): the variable's name, max 32 characters, must start with a letter, alphanumeric characters and underscores allowed, must be unique",
 			"Zone: the variable's category",
 			"Type: the data type",
+			"Behaviour (inputs only, optional): physical device wired to the input, see below",
 			"Address (optional): PLC address (e.g. %I0.0, %QW10, %MD100)",
 			"Comment (optional): free description"
 		],
+		"behaviorTitle": "Input behaviour",
+		"behaviorBody1": "The behaviour describes the physical device wired to an input. It is set in the \"Behaviour\" column of the inputs table (click the cell, in Design mode) and applies to the simulation, whether the watch table is open or not.",
+		"behaviorItems": [
+			"Push button NO: the variable is TRUE while the button is held, FALSE at rest. This is the behaviour given to a new logic input created in the table.",
+			"Push button NC: the variable is FALSE while the button is held, TRUE at rest, hence as soon as the simulation starts (stop button wired as a normally closed contact).",
+			"Switch NO or NC: the switch stays in the chosen position. When actuated, the variable is TRUE (NO) or FALSE (NC); an NC switch therefore starts at TRUE.",
+			"Slider (INT, WORD, DWORD analog inputs): the value is set between an integer minimum and maximum. Any written value (watch table, HMI) is brought back to the nearest bound. At start-up, the input is 0 if 0 is within the range, the minimum otherwise.",
+			"None: the watch table shows a switch (logic input) or a free input field (analog input)."
+		],
+		"behaviorBody2": "In the watch table, the input takes the form of the chosen device: a button to hold down (with the mouse or the Space key), a switch or a slider. On an HMI page, a widget bound to an input that has a behaviour follows it: the mode of a push button, the contact of a switch and the bounds of a numeric input or a slider are imposed and greyed out. A switch cannot be bound to a push-button input, nor a push button to a switch input.",
+		"behaviorBody3": "Changing the zone or the type of a variable resets its behaviour to \"None\" when it is no longer possible (for example an input moved to the memories).",
 		"managementTitle": "Managing variables",
-		"managementBody1": "From the Variables page (reachable via the explorer or the menu), you can add, edit and delete variables. Editing and deleting are disabled in Simulation mode.",
+		"managementBody1": "From the Variables page (reachable via the explorer or the menu), you can add, edit and delete variables. Editing and deleting are disabled in Simulation mode; a \"Value\" column then shows the current value of each variable, read-only.",
 		"managementBody2": "Renaming a variable's mnemonic updates every expression that uses it in the project's grafcets and ladders.",
-		"managementBody3": "The table toolbar also lets you export the variable list (CSV) or print it.",
+		"managementBody3": "The table toolbar also lets you export the variable list via the \"Export\" menu: as CSV (for a spreadsheet) or as PDF (the open variables page, with the project name and export date).",
+		"managementBody4": "To find where a variable is used (which grafcet, ladder or HMI page reads or writes it), right-click the variable then choose \"Cross-references\": see the Cross-references section.",
 		"systemTitle": "System variables",
 		"systemBody1": "The \"_SYS_\" prefix is reserved: you cannot create a variable whose mnemonic starts with \"_SYS_\", nor assign a value to one (read-only). They are not saved with the project: the engine injects them at analysis and compile time. The full list is shown in the explorer, under Variables › System.",
-		"systemBody2": "The \"_SYS_TB_…\" time bases are booleans that are true for a single scan per simulated-time period (a pulse): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle — for instance moving a position by a fixed step: \"position := position + step\" run only while \"_SYS_TB_200ms\" is true."
+		"systemBody2": "The \"_SYS_TB_…\" time bases are square-wave booleans, true for the first half of each simulated-time period and false for the second (like real PLCs' clock memory bits): _SYS_TB_100ms, _SYS_TB_200ms, _SYS_TB_500ms, _SYS_TB_1s and _SYS_TB_2s. Use them to pace a change on time rather than on the PLC cycle. Wired directly (a normally-open contact) they blink a lamp; to trigger an action once per period rather than on every scan the level is true (for instance moving a position by a fixed step), use a rising-edge contact: \"position := position + step\" run on the rising edge of \"_SYS_TB_200ms\".",
+		"systemBody3": "\"_SYS_FIRST_SCAN\" is true only during the first scan after the simulation starts, false afterwards (pausing then resuming does not rearm it). Use it to initialise memories or values once at startup, like the first-scan bit of real PLCs."
 	},
 	"grafcet": {
 		"title": "Grafcet",
 		"p1": "A grafcet is a functional diagram representing the sequential behaviour of an automated system. Studomate lets you create and edit grafcets with an interactive graphical editor.",
+		"scopeBody": "What Studomate handles: steps (a single initial step), transitions with a condition and a timer, continuous, edge and stored actions (Set and Reset), AND and OR divergences and convergences, referrals, comments, and forcing a step in simulation. What it does not handle: macro-steps, encapsulation, forcing orders for partial grafcets, conditional actions (see the Limits section).",
 		"canvasTitle": "Canvas",
 		"canvasIntro": "The canvas is the grafcet's main working area. It offers the following interactions:",
 		"canvasItems": [
@@ -257,9 +366,10 @@
 			"Right-click the canvas to show the context menu"
 		],
 		"canvasOutro1": "Elements snap to a grid to make alignment easier. In Simulation mode the canvas becomes read-only.",
-		"canvasOutro2": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection — including multi-element selections. Pasted elements are placed slightly offset from the originals.",
+		"canvasOutro2": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection, including multi-element selections. Pasted elements are placed slightly offset from the originals.",
 		"stepsTitle": "Steps",
 		"stepsIntro": "Steps represent the stable states of the system. A step can be active or inactive at any point during execution.",
+		"stepsFigureAlt": "Diagram: an initial step (number 0, double border), followed by a transition (horizontal bar), then a normal step (number 1) linked to an action (rectangle on the right).",
 		"stepsTypesTitle": "Step types",
 		"stepsTypes": [
 			"Initial step: active when the grafcet starts, drawn with a double border",
@@ -271,9 +381,10 @@
 			"Name: the label shown on the step"
 		],
 		"stepsBody1": "To change a step's name or number, double-click the corresponding field. In simulation, active steps are highlighted.",
-		"stepsBody2": "Via right-click on a step, you can set it as the initial step — useful for changing the initial step of an existing grafcet without recreating the step.",
-		"stepsBody3": "Current limitation: a grafcet can only have one initial step. The standard allows an initial situation made of several steps active at the same time (for example one per branch of a parallel construct); Studomate does not support this yet.",
-		"stepsBody4": "Every numbered step n exposes a boolean variable Xn, true while the step is active — usable in any expression of the project (transition condition, action, ladder contact) to react to a step's activity. You may also define your own X0, X1… variables (for example to build cycle logic in ladder without a grafcet): the mnemonic Xn is not reserved. Analysis only flags the case where a grafcet actually contains a step n while a variable Xn also exists.",
+		"stepsBody2": "Via right-click on a step, you can set it as the initial step: useful for changing the initial step of an existing grafcet without recreating the step.",
+		"stepsBody3": "Limitation: a grafcet can only have one initial step. The standard allows an initial situation made of several steps active at the same time (for example one per branch of a parallel construct); Studomate does not support this. To start several branches in parallel, use a single initial step followed by a \"TRUE\" transition leading to an AND divergence: the branches become active right after startup.",
+		"stepsBody4": "Every numbered step n exposes a boolean variable Xn, true while the step is active. It is usable in any expression of the project (transition condition, action, ladder contact) to react to a step's activity. You may also define your own X0, X1… variables (for example to build cycle logic in ladder without a grafcet): the mnemonic Xn is not reserved. Analysis only flags the case where a grafcet actually contains a step n while a variable Xn also exists.",
+		"stepsBody5": "Forcing a step during simulation: right-click the step, then \"Force active\", \"Force inactive\" or \"Release the force\" (the checked entry shows the current forcing). Useful to start a student mid-cycle or to isolate a fault while debugging. The step keeps the imposed value for as long as the forcing lasts, even if a transition should change it; a padlock and a warning border mark it. Forcing never crosses a transition: forcing a step active does not deactivate its upstream steps. It is cleared when the simulation stops.",
 		"transitionsTitle": "Transitions",
 		"transitionsIntro": "Transitions define the conditions for moving from one step to the next. A transition is crossed when all upstream steps are active AND its condition is true.",
 		"transitionsReceptivityTitle": "Condition",
@@ -287,34 +398,58 @@
 			"Always-true condition: write \"TRUE\""
 		],
 		"transitionsOutro": "To change the condition, double-click the transition's text area. The syntax is checked when the project is analysed. A transition must be a Boolean expression: an assignment (:=) or a bare numeric constant is not accepted.",
+		"transitionsTimerTitle": "Timer",
+		"transitionsTimerBody": "To wait before crossing a transition (for example 5 seconds after a step becomes active), write a timer directly in the condition, in the form \"identifier/input/duration\":",
+		"transitionsTimerItems": [
+			"Identifier: the timer's name (\"t1\", \"door_timer\"...). It must be unique within the grafcet and must not match a project variable name, otherwise the analysis reports an error",
+			"Input: the condition that starts the countdown. Most often a step's activity (\"X10\"), but also a variable, \"TRUE\", or an expression in parentheses (\"(X10 AND sensor1)\")",
+			"Duration: a number followed by a unit, \"ms\", \"s\", \"m\", \"h\" or \"d\" for days (\"500ms\", \"5s\", \"2m\"). The \"T#5s\" form is not accepted here: it is reserved for Ladder timer blocks",
+			"Example: \"t1/X10/5s\" becomes true once step 10 has been active for 5 seconds",
+			"Combined example: \"door_open AND t7/X7/4s\""
+		],
+		"transitionsTimerOutro": "The timer is true once its input has stayed true for the whole duration, and becomes false again as soon as the input drops: the countdown therefore restarts from zero each time the step is activated. During simulation, each timer's elapsed time is shown with its transition.",
+		"transitionsSyntaxTitle": "Expression syntax (conditions and actions)",
+		"transitionsSyntaxItems": [
+			"Precedence, from lowest to highest: OR, AND, NOT, comparisons, + and −, * and /, unary minus. So \"a AND b OR c\" reads \"(a AND b) OR c\" and \"NOT a = b\" reads \"NOT (a = b)\". Parentheses can be used to force another grouping.",
+			"Case: keywords are case-insensitive (\"and\" equals \"AND\"), but variable names are case-sensitive (\"Sensor1\" and \"sensor1\" are two different variables).",
+			"Booleans: TRUE and FALSE (VRAI and FAUX in the French dialect). Strings: in single or double quotes (\"'Ready'\" or \"\\\"Ready\\\"\"), with no escape character: a string cannot contain its own delimiting quote.",
+			"Functions: only the standard's type conversions exist (\"DINT_TO_INT(x)\", \"INT_TO_REAL(x)\"..., between INT, DINT, WORD, DWORD and REAL), and their names stay in English in every dialect. There is no ABS, MIN, MAX or any other function.",
+			"Not in the language: exclusive OR (XOR) and modulo (MOD).",
+			"Edges in a condition: there is no edge syntax (no \"↑a\"). To react to a change of value, have a memory variable written by a rising or falling edge coil in a ladder (true for a single cycle), or by an edge action on a step, then use that variable in the condition."
+		],
 		"actionsTitle": "Actions",
 		"actionsIntro": "Actions are blocks attached to steps that describe what the system does while a step is active. A step can have several actions.",
 		"actionsTypesTitle": "Action types",
 		"actionsTypes": [
-			"Text — free text description, with no execution or syntax check. Drawn with a thin border.",
-			"Boolean variable — handles one or more BOOL variables. The border is thick; syntax and variable consistency are checked. If a Boolean variable is written without an explicit assignment (e.g. \"var1\" instead of \"var1 := 1\"), it is treated as being set to 1.",
-			"Numeric variable — handles numeric variables (INT, REAL, etc.). Thick border with validation.",
-			"String variable — handles STRING variables. Thick border with validation."
+			"Text: free text description, with no execution or syntax check. Drawn with a thin border.",
+			"Boolean variable: handles one or more BOOL variables. The border is thick; syntax and variable consistency are checked. Write one variable per line, on its own (e.g. \"var1\"): the value written depends on the execution mode, and an assignment (\"var1 := 1\") is rejected by the analysis.",
+			"Numeric variable: handles numeric variables (INT, REAL, etc.). Thick border with validation.",
+			"String variable: handles STRING variables. Thick border with validation."
+		],
+		"actionsSyntaxItems": [
+			"Numeric or string action: one \"variable := expression\" assignment per line (e.g. \"counter := counter + 1\", \"message := 'Ready'\"). There is no separator: for several assignments, put one per line in the action field.",
+			"No conditional action (\"IF … THEN\"): to run an action depending on a condition, put it on a separate step behind a transition carrying the condition."
 		],
 		"actionsTypeChange": "An action's type is changed via right-click → Type.",
 		"actionsModesTitle": "Execution modes",
 		"actionsModes": [
-			"Continuous (C) — the action runs while the step is active.",
-			"Rising edge (↗) — the action runs once, the moment the step becomes active.",
-			"Falling edge (↘) — the action runs once, the moment the step becomes inactive.",
-			"Set (S) — forces the Boolean variable to TRUE (available only for Boolean-variable actions).",
-			"Reset (R) — forces the Boolean variable to FALSE (available only for Boolean-variable actions)."
+			"Continuous (C): the action runs while the step is active.",
+			"Rising edge (↗): the action runs once, the moment the step becomes active.",
+			"Falling edge (↘): the action runs once, the moment the step becomes inactive.",
+			"Set (S): forces the Boolean variable to TRUE (available only for Boolean-variable actions).",
+			"Reset (R): forces the Boolean variable to FALSE (available only for Boolean-variable actions)."
 		],
 		"actionsModeChange": "The execution mode is changed via right-click → Execution mode. The available modes depend on the action's type.",
 		"junctionsTitle": "Junctions",
 		"junctionsIntro": "Junctions let you model parallel or alternative sequences in the grafcet.",
 		"junctionsTypesTitle": "Junction types",
 		"junctionsTypes": [
-			"AND divergence — splits the flow into several parallel branches that run at the same time.",
-			"AND convergence — synchronises several parallel branches and resumes a single flow.",
-			"OR divergence — creates alternative branches, only one can be active.",
-			"OR convergence — merges alternative branches."
+			"AND divergence: splits the flow into several parallel branches that run at the same time.",
+			"AND convergence: synchronises several parallel branches and resumes a single flow.",
+			"OR divergence: creates alternative branches, only one can be active.",
+			"OR convergence: merges alternative branches."
 		],
+		"junctionsFigureAlt": "Diagram of the four junctions, from left to right: OR divergence (one bar), OR convergence, AND divergence (double bar), AND convergence.",
 		"junctionsBranchesTitle": "Branches",
 		"junctionsBranchesIntro": "Every junction has a pivot point and several branches. Via right-click on a junction, you can:",
 		"junctionsBranches": [
@@ -325,9 +460,10 @@
 		"referralsTitle": "Referrals",
 		"referralsIntro": "Referrals let you link distant parts of a grafcet without drawing a long link, or reference steps located in another area of the diagram.",
 		"referralsItems": [
-			"Source referral — the referral's starting point, points to the target step.",
-			"Target referral — the referral's end point, points to the source step."
+			"Source referral: the referral's starting point, points to the target step.",
+			"Target referral: the referral's end point, points to the source step."
 		],
+		"referralsFigureAlt": "Diagram of a referral: on the left, step 5 followed by a transition leading to a source referral (downward arrow, number 0 below); on the right, a target referral (number 5, downward arrow) leading to initial step 0.",
 		"referralsOutro": "A source and a target referral match by the step number they reference.",
 		"commentsTitle": "Comments",
 		"commentsBody1": "Comments are free text annotations placed on the canvas. They have no effect on execution and only serve to document the diagram.",
@@ -351,87 +487,102 @@
 	"ladder": {
 		"title": "Ladder",
 		"p1": "Ladder (contact diagram) is a graphical notation representing the program's logic as electrical circuits: contacts in series or in parallel drive coils. Studomate lets you create and edit ladders with an interactive graphical editor, in a tab separate from the grafcet.",
-		"p2": "A project always contains a special ladder called \"Main\". It is the execution entry point: it runs first on every PLC scan and orchestrates the other ladders via program-call blocks. The Main ladder cannot be deleted.",
-		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a rung.",
-		"sectionsTitle": "Sections",
-		"sectionsIntro": "A ladder is made of one or more rungs (also called \"sections\"), stacked vertically. Each rung carries its own circuit, independent of the others.",
+		"p2": "A project always contains a special ladder called \"Main\". It is the execution entry point: it runs on every PLC scan, after the grafcets, and orchestrates the other ladders via program-call blocks. The Main ladder cannot be deleted.",
+		"p3": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection within a network.",
+		"sectionsTitle": "Networks",
+		"sectionsIntro": "A ladder is made of one or more networks, stacked vertically. Each network carries its own circuit, independent of the others.",
 		"sectionsItems": [
-			"\"Section\" button in the ladder toolbar: adds a new empty rung.",
-			"Rung title: click in it to edit (Enter confirms, Esc cancels).",
-			"Description (optional): a free text area under the title, to document the rung.",
-			"Handle to the left of the title: drag it to reorder the rungs (only shown when there is more than one).",
-			"Arrow to the left of the title: collapses or expands the rung.",
-			"Bin icon: deletes the rung. Disabled when only one remains — a ladder always has at least one rung."
+			"\"Network\" button in the ladder toolbar: adds a new empty network.",
+			"Network title: click in it to edit (Enter confirms, Esc cancels).",
+			"Description (optional): a free text area under the title, to document the network.",
+			"Handle to the left of the title: drag it to reorder the networks (only shown when there is more than one).",
+			"Arrow to the left of the title: collapses or expands the network.",
+			"Zoom in and Zoom out icons: adjust the zoom of this network only (shown when the network is expanded).",
+			"Copy icon: places the whole network (title, description, elements, connections) on the clipboard; Ctrl+V pastes it below the active network, or at the bottom of the ladder if there is none. Disabled when several networks are selected.",
+			"Duplicate icon: immediately inserts a copy of the network just below it. Copied timer and counter blocks are renamed so they remain unique instances in the ladder.",
+			"Bin icon: deletes the network. Disabled when only one remains: a ladder always has at least one network."
 		],
 		"contactsTitle": "Contacts",
 		"contactsIntro": "A contact tests the state of a Boolean variable and passes power from the rail to its right, or not.",
 		"contactsItems": [
-			"NO (normally open) — passes power when the variable is true.",
-			"NC (normally closed, diagonal bar) — passes power when the variable is false.",
-			"P (rising edge) — passes power once, when the variable goes from false to true.",
-			"N (falling edge) — passes power once, when the variable goes from true to false."
+			"NO (normally open): passes power when the variable is true.",
+			"NC (normally closed, diagonal bar): passes power when the variable is false.",
+			"P (rising edge): passes power once, when the variable goes from false to true.",
+			"N (falling edge): passes power once, when the variable goes from true to false."
 		],
-		"contactsOutro": "Drag the symbol from the ladder toolbar onto the rung grid to place a contact. Double-click it to choose the associated variable (no type check is enforced on entry: an incompatible variable is flagged by the analysis, not blocked at placement). In simulation, the contact changes colour when the variable it tests is true.",
+		"contactsOutro": "Drag the symbol from the ladder toolbar onto the network grid to place a contact. Double-click it to choose the associated variable (no type check is enforced on entry: an incompatible variable is flagged by the analysis, not blocked at placement). In simulation, the contact changes colour when the variable it tests is true.",
+		"contactsFigureAlt": "Contact symbols, from left to right: NO, NC (diagonal bar), P (letter P) and N (letter N).",
+		"coilsFigureAlt": "Coil symbols, from left to right: normal, Set (letter S), Reset (letter R), inverted (slash), rising edge (letter P), falling edge (letter N).",
 		"coilsTitle": "Coils",
 		"coilsIntro": "A coil assigns a Boolean variable at the output of a contact circuit.",
 		"coilsItems": [
-			"Normal — the variable takes the state of the circuit feeding the coil (true if powered, false otherwise).",
-			"Set (S) — forces the variable to TRUE when the circuit is powered; never resets it to FALSE.",
-			"Reset (R) — forces the variable to FALSE when the circuit is powered; never sets it to TRUE."
+			"Normal: the variable takes the state of the circuit feeding the coil (true if powered, false otherwise).",
+			"Set (S): forces the variable to TRUE when the circuit is powered; never resets it to FALSE.",
+			"Reset (R): forces the variable to FALSE when the circuit is powered; never sets it to TRUE.",
+			"Inverted: the variable takes the opposite state of the circuit (true if the circuit is not powered, false otherwise).",
+			"Rising edge: the variable is true for a single cycle, when the circuit goes from unpowered to powered. Use this coil for a pulse on activation.",
+			"Falling edge: the variable is true for a single cycle, when the circuit goes from powered to unpowered."
 		],
-		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted.",
+		"coilsOutro": "As with contacts, the variable is chosen by double-clicking the coil. In simulation, a powered coil is highlighted. In the ladder toolbar, only the normal, Set and Reset coils are visible by default: the \"Show more coils\" button reveals the inverted coil and the two edge coils, and \"Hide extra coils\" hides them again.",
 		"blocksTitle": "Blocks",
-		"blocksIntro1": "Blocks are advanced functional elements that fit into a rung like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or — for Comparison, Assignment and Calculation — from the dedicated tool in the ladder toolbar.",
-		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment and Calculation are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block.",
+		"blocksIntro1": "Blocks are advanced functional elements that fit into a network like a contact or a coil. Two ways to place them: by dragging the block from the \"System blocks\" section of the explorer onto a ladder canvas, or (for Comparison, Assignment, Calculation and Conversion) from the dedicated tool in the ladder toolbar.",
+		"timerBlockFigureAlt": "Network with a contact S1 wired to the IN input of a timer block T1, TON variant. The PT pin holds the constant T#5s, the ET pin the variable T1_ET, and the Q output powers a coil H1.",
+		"blocksIntro2": "Timer and Counter open a configuration window when dropped (name and variant); reopen it later by double-clicking the block or via right-click → Configure on the instance in the explorer. Comparison, Assignment, Calculation and Conversion are inserted empty and configured directly on the canvas: operands entered on the pins (variable or constant), operator chosen from the menu that opens when you click the block. Assignment, Calculation and Conversion copy their EN input to their ENO output: several of these blocks can be chained on the same network.",
 		"timerTitle": "Timer",
 		"timerIntro": "Measures a duration and exposes an output signal. Three variants:",
 		"timerItems": [
-			"TON — on-delay: output Q goes true after input IN has been true for the duration PT.",
-			"TOF — off-delay: output Q stays true for PT after IN goes false.",
-			"TP — calibrated pulse: output Q is true for exactly PT after a rising edge on IN."
+			"TON (on-delay): output Q goes true after input IN has been true for the duration PT.",
+			"TOF (off-delay): output Q stays true for PT after IN goes false.",
+			"TP (calibrated pulse): output Q is true for exactly PT after a rising edge on IN, even if IN falls earlier; a rising edge during the pulse is ignored (not retriggerable)."
 		],
+		"timersFigureAlt": "Timing diagrams of the IN inputs and Q outputs of the three timers. TON: an IN pulse shorter than PT produces nothing; when IN stays true, Q becomes true after PT and falls with IN. TOF: Q becomes true with IN and only falls PT after IN falls; a short interruption of IN does not make it fall. TP: each rising edge of IN produces a pulse lasting PT, even if IN falls earlier; a rising edge during the pulse is ignored.",
 		"timerOutro": "Configuration: name (unique in the project) and variant (TON/TOF/TP). The PT (preset duration, e.g. T#5s) and ET (elapsed time output, optional) parameters are entered directly on the block's pins on the canvas, as a variable or a TIME constant.",
 		"counterTitle": "Counter",
-		"counterIntro": "Counts pulses. Two variants:",
+		"counterIntro": "Counts pulses. Three variants:",
 		"counterItems": [
-			"CTU — counts up: increments CV on every scan where IN is true; R resets CV to zero.",
-			"CTD — counts down: decrements CV on every scan where CD is true; LD loads PV into CV."
+			"CTU (counts up): increments CV on each rising edge of CU; R resets CV to zero.",
+			"CTD (counts down): decrements CV on each rising edge of CD; LD loads PV into CV.",
+			"CTUD (counts up and down): increments CV on each rising edge of CU and decrements it on each rising edge of CD; R resets CV to zero (highest priority) and LD loads PV into CV. CD, R and LD are entered on the pins."
 		],
-		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
+		"counterOutro": "Output Q goes true when CV reaches PV (CTU) or drops to zero (CTD). The CTUD has two outputs: QU (CV ≥ PV) and QD (CV ≤ 0). Configuration: name and variant. PV (preset value) and the control variable (R or LD) are entered on the pins.",
 		"compareTitle": "Comparison",
-		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a rung like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
+		"compareBody": "Compares two values IN1 and IN2 with an operator (=, !=, <, >, <=, >=) and passes power if the result is true. Fits into a network like a contact. IN1 and IN2 are entered on the pins (variable or constant); the operator is chosen from the menu that opens when you click the block.",
 		"assignTitle": "Assignment",
-		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
+		"assignBody": "Assigns a value to a variable (out := in) when the circuit feeding it (EN) is true. Fits at the end of a network like a coil. The operand in (variable or constant) and the destination variable out are entered on the block's pins.",
 		"calcTitle": "Calculation",
-		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a rung like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
+		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a network like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
+		"convertTitle": "Conversion",
+		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The block shows the standard name of the conversion it applies, for example DINT_TO_INT. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
 		"programCallTitle": "Program call",
-		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true. This is the mechanism by which Main orchestrates the project's other ladders — a ladder not called by Main will never run (the analysis flags this as a warning).",
+		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders: a ladder not called by Main will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",
-		"connectionsIntro": "A rung is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
+		"connectionsIntro": "A network is powered by the rail on the left (vertical line). Elements are connected by dragging from a connection point to the target element; the connection validator prevents invalid links (e.g. connecting two coils together).",
 		"connectionsItems": [
 			"Simple chain (contacts one after another on the same line): logical AND.",
 			"Divergence (one connection splitting into several branches): logical OR between the branches.",
 			"Convergence (several branches joining back): closes the OR opened by the matching divergence."
 		],
-		"connectionsMenu": "Right-click the rung background: \"Select all\" (Ctrl+A) or \"Select links\". Right-click an element or a link: \"Delete\".",
-		"connectionsSim": "In simulation, powered links are highlighted, letting you visually follow the power flow in each rung."
+		"connectionsFigureAlt": "Self-holding network: contact S1 and a contact KM1 are in parallel (divergence then convergence, logical OR), followed in series by an NC contact S0 (logical AND), which powers coil KM1.",
+		"connectionsMenu": "Right-click the network background: \"Select all\" (Ctrl+A) or \"Select links\". Right-click an element or a link: \"Delete\".",
+		"connectionsSim": "In simulation, powered links are highlighted, letting you visually follow the power flow in each network."
 	},
 	"toolbar": {
 		"title": "Toolbar",
-		"p1": "The toolbar is divided into two areas: general actions (top left) and creation tools (top, specific to the type of program open — Grafcet or Ladder).",
+		"p1": "The toolbar is divided into two areas: general actions (top left) and creation tools (top, specific to the type of program open: Grafcet or Ladder).",
 		"generalTitle": "General actions",
 		"generalItems": [
-			"Home — back to the home page",
-			"Save — saves the current project",
-			"Undo (Ctrl+Z) — undoes the last action",
-			"Redo (Ctrl+Y) — redoes the undone action"
+			"Home: back to the home page",
+			"Save: saves the current project",
+			"Undo (Ctrl+Z): undoes the last action of the open document",
+			"Redo (Ctrl+Y): redoes the undone action"
 		],
+		"undoScopeBody": "History is per document: Ctrl+Z undoes the last action of the open grafcet, ladder or HMI page, not the last action in the project. Variables and project properties have their own history. Switching tab therefore switches history. Undo is only available in Design mode.",
 		"nameTitle": "Project name and indicator",
 		"nameBody": "The project name field (top, centre) can be edited directly. A visual indicator shows unsaved changes.",
 		"analysisTitle": "Analysis and mode",
 		"analysisItems": [
-			"Analyse button — runs the project's static analysis. Turns red on errors, orange on warnings only.",
-			"Mode selector — switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode."
+			"Analyse button: runs the project's static analysis. Turns red on errors, orange on warnings only.",
+			"Mode selector: switches between Design mode (editing) and Simulation mode. The background flashes orange-grey in Simulation mode. With a configured board, the mode menu also offers \"Simulation with real I/O\" and \"Board observation\" (see the Hardware section)."
 		],
 		"grafcetToolsTitle": "Grafcet creation tools",
 		"grafcetToolsIntro": "When a grafcet is open, extra tools appear. Drag the chosen tool onto the canvas to create the matching element:",
@@ -450,29 +601,29 @@
 		],
 		"grafcetToolsZoom": "The Zoom + and Zoom − buttons adjust the canvas zoom level.",
 		"ladderToolsTitle": "Ladder creation tools",
-		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a rung to create the matching element:",
+		"ladderToolsIntro": "When a ladder is open, its own toolbar appears below the general toolbar. Drag the chosen tool onto a network to create the matching element:",
 		"ladderTools": [
 			"NO, NC, P (rising edge) and N (falling edge) contacts",
-			"Normal, Set and Reset coils",
-			"Comparison, Assignment and Calculation blocks (the other system blocks are dragged from the explorer)",
-			"\"Section\" button — adds a new rung to the ladder"
+			"Normal, Set and Reset coils; inverted and rising/falling edge coils via the \"Show more coils\" button",
+			"Comparison, Assignment, Calculation and Conversion blocks (the other system blocks are dragged from the explorer)",
+			"\"Network\" button: adds a new network to the ladder"
 		],
 		"ladderToolsOutro": "See the Ladder section for details of these elements."
 	},
 	"crossReferences": {
 		"title": "Cross-references",
-		"p1": "Cross-references show, for any variable in the project, every place where it is read and every place where it is written — across grafcets, ladders and HMI screens alike.",
+		"p1": "Cross-references show, for any variable in the project, every place where it is read and every place where it is written (across grafcets, ladders and HMI screens alike).",
 		"openTitle": "Open the panel",
 		"openBody": "Click the \"Cross-references\" button in the bottom bar, or use the View → Cross-references menu. The menu entry toggles the panel.",
 		"panelTitle": "Panel contents",
 		"panelIntro": "The panel lists the project's variables with a filter field. For the selected variable, it shows two lists:",
 		"panelItems": [
-			"Read by — every location where the variable's value is used.",
-			"Written by — every location where a value is assigned to it."
+			"Read by: every location where the variable's value is used.",
+			"Written by: every location where a value is assigned to it."
 		],
 		"panelOutro": "Each entry points to a precise location: a ladder contact or coil, a block pin, a transition condition, a step action, a step's activity, or an HMI widget binding or animation. Click it to navigate straight there.",
 		"quickTitle": "Quick access from a variable",
-		"quickBody": "Right-clicking a variable — in the variables table, in a variable selector, or on a ladder contact or block — offers \"Cross-references\", which opens the panel already filtered on that variable.",
+		"quickBody": "Right-clicking a variable (in the variables table, in a variable selector) or a ladder contact or block offers \"Cross-references\", which opens the panel already filtered on that variable.",
 		"scopeBody": "Cross-references are a navigation tool, not a diagnostic one: they raise no warnings (a variable that is never read or never written is not flagged as a problem)."
 	},
 	"hmi": {
@@ -498,7 +649,7 @@
 			"Single click on a widget: selects that widget.",
 			"Click on an empty area: clears the selection.",
 			"Shift+click or Ctrl+click: adds or removes a widget from the selection.",
-			"Click-drag on an empty area: selection rectangle — selects every widget it intersects.",
+			"Click-drag on an empty area: draws a selection rectangle that selects every widget it intersects.",
 			"Ctrl+A: select all."
 		],
 		"canvasMoveTitle": "Move and resize",
@@ -530,14 +681,14 @@
 		"animationsStyleTitle": "Style animation",
 		"animationsStyleBody": "Available for rectangle, ellipse, line and text. Choose a driving variable (BOOL or numeric), then define a value → style-properties mapping table:",
 		"animationsStyleItems": [
-			"BOOL variable: two fixed rows (value 0 and value 1) — assign a colour to each state.",
-			"Numeric variable: free rows — add as many values as needed, each mapped to a colour or a text."
+			"BOOL variable: two fixed rows (value 0 and value 1); assign a colour to each state.",
+			"Numeric variable: free rows; add as many values as needed, each mapped to a colour or a text."
 		],
 		"animationsStyleOutro": "In simulation, the first row whose value exactly matches the driving variable's current value is applied. If none matches, the widget's static style is shown.",
 		"eventsTitle": "Events",
 		"eventsIntro": "Events let you trigger actions on interactions with a widget during simulation. Click the \"Events\" button (lightning icon) at the bottom of the Properties panel to open the events window. This button only appears for widgets that expose events.",
 		"eventsBody1": "Currently, only the push button exposes an event: \"Button pressed\" (fired on every press, regardless of the configured behaviour).",
-		"eventsBody2": "Available action: \"Change page\" — navigates to the chosen HMI page in the HMI simulation view. Several actions can be attached to the same event and run in order.",
+		"eventsBody2": "Available action: \"Change page\", which navigates to the chosen HMI page in the HMI simulation view. Several actions can be attached to the same event and run in order.",
 		"simulationTitle": "HMI simulation",
 		"simulationBody1": "The \"HMI simulation\" tab opens automatically when simulation starts (if the project contains at least one HMI page). It shows the main page and closes when simulation stops.",
 		"simulationBody2": "In simulation, the canvas is interaction-only: the palette, the properties panel and selection are disabled. Widgets reflect the program's variable values in real time.",
@@ -551,21 +702,39 @@
 	},
 	"simulation": {
 		"title": "Simulation",
-		"p1": "Simulation mode runs the project like a programmable logic controller (PLC): ladders are compiled into routines executed on every scan, the grafcet evaluates its conditions and triggers its actions, and HMI screens become interactive.",
+		"p1": "Simulation mode runs the project like a programmable logic controller (PLC): ladders are compiled into programs executed on every scan, the grafcet evaluates its conditions and triggers its actions, and HMI screens become interactive.",
+		"modesCompareTitle": "The modes at a glance",
+		"modesCompareItems": [
+			"Design: nothing runs. Editing is free, for programs and variables alike.",
+			"Simulation: Studomate runs the project in the browser. Editing is locked; inputs and memories can be changed from the watch table or HMI pages (inputs linked to a 3D scene are driven by the scene), and outputs are read-only.",
+			"Simulation with real I/O (configured board): Studomate runs the project, but wired inputs take the value read on the board's pin and outputs drive the pins. Wired inputs can no longer be changed by hand.",
+			"Board observation (configured board): the board runs, Studomate displays what it reports. Editing is locked, there is no pause or step-by-step; unwired inputs, memories and forcing remain possible from Studomate."
+		],
 		"startTitle": "Start the simulation",
 		"startIntro": "Select \"Simulation\" in the mode selector (top right). Before it starts:",
 		"startItems": [
 			"The project is analysed.",
-			"The project is compiled into executable PLC routines.",
-			"The PLC scan starts (default scan time: 100 ms)."
+			"The project is compiled into programs the simulated PLC can run.",
+			"The PLC scan starts (fixed scan time: 100 ms, not adjustable)."
 		],
 		"startError": "If errors are found during the analysis, the simulation will not start.",
-		"startModesIntro": "Two execution modes are available in the selector next to the mode selector:",
+		"startModesIntro": "Two execution modes are chosen in the \"Continuous / Step by step\" drop-down, just to the right of the mode selector (Design / Simulation), then an icon button next to that list drives execution:",
 		"startModes": [
-			"Continuous — the PLC scan runs automatically at a regular interval (100 ms). A Pause button suspends execution; Resume restarts it.",
-			"Step-by-step — the PLC scan advances by one step on each click of the \"Step\" button. Useful for observing the behaviour scan by scan."
+			"Continuous: the PLC scan runs automatically at a regular interval (100 ms). The Pause icon (tooltip \"Pause\") suspends execution; it turns into a Play icon (\"Resume the simulation\") that restarts it.",
+			"Step-by-step: the PLC scan advances by one step on each click of the \"Step one cycle\" icon (right-pointing arrow). Useful for observing the behaviour scan by scan."
 		],
-		"startTimers": "Timers follow the real elapsed time, including in step-by-step: if you let two seconds pass between two clicks on \"Step\", a 2 s timer will elapse on the next click — no need to click as many times as there are scans. Timers freeze in only one case: continuous mode when paused. They then resume where they stopped, the pause duration not being counted.",
+		"startTimers": "Timers follow the real elapsed time, including in step-by-step: if you let two seconds pass between two clicks on \"Step one cycle\", a 2 s timer will elapse on the next click. No need to click as many times as there are scans. Timers freeze in only one case: continuous mode when paused. They then resume where they stopped, the pause duration not being counted.",
+		"cycleOrderTitle": "Order of execution within a cycle",
+		"cycleOrderIntro": "On every PLC cycle, the stages always run in this order:",
+		"cycleOrderItems": [
+			"Reading the inputs: the values entered, forced or supplied by the 3D scene or the board are frozen for the whole cycle.",
+			"Grafcets: each grafcet evaluates its conditions, crosses its transitions and applies its actions.",
+			"Main ladder, then the ladders it calls, at the place of the call blocks.",
+			"Writing the outputs: outputs only reach the outside (HMI, 3D scene, board) at the end of the cycle."
+		],
+		"cycleOrderFigureAlt": "PLC cycle as four blocks linked by arrows: 1 Read inputs, 2 Grafcets, 3 Main ladder and called ladders, 4 Write outputs, then back to block 1 for the next cycle, every 100 ms.",
+		"cycleOrderFigureSrc": "/user-manual/simulation/scan-cycle-en.svg",
+		"cycleOrderOutro": "In practice: since grafcets run before the ladder, a grafcet only sees at the next cycle what a ladder writes, whereas a ladder sees within the same cycle what a grafcet writes (Xn variables and variables assigned by its actions).",
 		"runningTitle": "During simulation",
 		"runningItems": [
 			"Active steps are highlighted on the grafcet canvas.",
@@ -573,16 +742,17 @@
 			"The actions of active steps are applied.",
 			"Powered contacts, coils and links are highlighted in the ladder editors.",
 			"Variable values are updated in real time.",
+			"If the project is bound to a 3D scene, its sensors feed the bound inputs and the program outputs drive the scene (see the 3D scene section).",
 			"The grafcet and ladder editors are read-only.",
-			"The \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section)."
+			"When simulation starts, the \"HMI simulation\" tab opens automatically if the project contains HMI pages (see the HMI screens section); without an HMI page, the 3D scene tab opens instead if the project has a scene (see the 3D scene section). This automatic opening can be turned off in File → Preferences."
 		],
 		"watchTitle": "Watch and modify tables for variables",
 		"watchIntro": "The bottom panel shows the watch-and-modify tables for variables, with four tabs:",
 		"watchItems": [
-			"Inputs — current values of the input variables",
-			"Outputs — current values of the output variables",
-			"Memory — current values of the memory variables",
-			"Grafcets — for each grafcet in the project, the number(s) of its active step(s)"
+			"Inputs: current values of the input variables",
+			"Outputs: current values of the output variables",
+			"Memory: current values of the memory variables",
+			"Grafcets: for each grafcet in the project, the number(s) of its active step(s)"
 		],
 		"watchOutro": "Values update after every PLC scan. You can change the values of input and memory variables directly from the table to simulate external signals or force an internal state. Outputs are shown read-only.",
 		"stopTitle": "Stop the simulation",
@@ -604,20 +774,23 @@
 			"Project consistency: Main ladder missing or duplicated, ladder not called by Main, duplicate step numbers across grafcets",
 			"Grafcet structure: initial step missing or multiple, unreachable steps or steps with no successor, invalid or missing links",
 			"Referrals (source / target): referenced step does not exist, referral with no connection, circular references",
-			"Ladder structure: rungs with no coil, invalid connections",
+			"Ladder structure: networks with no coil, invalid connections",
 			"System blocks: name missing or duplicated, parameters (PT, PV, control, ET/CV) missing, of the wrong type or referencing a non-existent variable",
 			"Expressions: syntax of transition conditions and actions (transitions, grafcet actions, comparison and assignment blocks)",
 			"Variables: references to non-existent variables, incompatible types, assignment to an input variable",
-			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence"
+			"Junctions: too few branches, disconnected branches, AND divergence with no matching convergence",
+			"Programs excluded from execution: skipped by every check; a block calling an excluded ladder is reported",
+			"Hardware configuration: unknown board, pin used by several variables, invalid pin address or capability, type not supported by the board, input read without an address (warning)",
+			"3D scene: unknown scene, unbound point (warning), bound variable missing, sensor not bound to an input, actuator not bound to an output or display not bound to a memory variable, incompatible type, sensor bound to several points or already wired to a pin, sensor written by an HMI widget"
 		],
 		"checksOutro": "Click a problem in the list to navigate to the element concerned, in the matching grafcet or ladder.",
 		"messagesTitle": "Example messages",
 		"messagesIntro": "A few common messages and their cause:",
 		"messagesItems": [
-			"\"The transition has no expression. It can never be crossed.\" — the condition field is empty.",
-			"\"Invalid expression: a transition must be an expression that returns a Boolean.\" — the condition contains, for example, a numeric calculation instead of a logical condition.",
-			"\"A transition can only have one direct successor. Use an AND divergence to activate several steps at the same time.\" — several links leave the same transition directly without going through a junction.",
-			"\"The action is not connected to any step.\" — an action was dropped on the canvas without being linked to a step."
+			"\"The transition has no expression. It can never be crossed.\": the condition field is empty.",
+			"\"Invalid expression: a transition must be an expression that returns a Boolean.\": the condition contains, for example, a numeric calculation instead of a logical condition.",
+			"\"A transition can only have one direct successor. Use an AND divergence to activate several steps at the same time.\": several links leave the same transition directly without going through a junction.",
+			"\"The action is not connected to any step.\": an action was dropped on the canvas without being linked to a step."
 		]
 	},
 	"shortcuts": {
@@ -625,29 +798,232 @@
 		"intro": "The shortcuts below use Ctrl on Windows/Linux and Cmd on macOS.",
 		"fileTitle": "File",
 		"fileItems": [
-			"New project — no shortcut (Ctrl+N is reserved by the browser to open a new window)",
-			"Ctrl+O — Open project",
-			"Ctrl+S — Save",
-			"Ctrl+Shift+S — Save as (creates a copy of the project under a new name)",
-			"Export and Close project — no shortcut (File menu)"
+			"New project: no shortcut (Ctrl+N is reserved by the browser to open a new window)",
+			"Ctrl+O: Open project",
+			"Ctrl+S: Save",
+			"Ctrl+Shift+S: Save as (creates a copy of the project under a new name)",
+			"Export and Close project: no shortcut (File menu)"
 		],
 		"projectTitle": "Project",
-		"projectItems": ["Ctrl+G — New grafcet", "Ctrl+L — New ladder"],
+		"projectItems": ["Ctrl+G: New grafcet", "Ctrl+L: New ladder"],
 		"editTitle": "Edit",
 		"editItems": [
-			"Ctrl+Z — Undo",
-			"Ctrl+Y — Redo",
-			"Ctrl+C — Copy (active Grafcet, Ladder or HMI canvas)",
-			"Ctrl+V — Paste (active Grafcet, Ladder or HMI canvas)",
-			"Ctrl+X — Cut (active Grafcet, Ladder or HMI canvas)",
-			"Ctrl+A — Select all (active Grafcet, Ladder or HMI canvas)",
-			"Delete or Backspace — Delete the selection (active Grafcet, Ladder or HMI canvas, in design mode)",
-			"Arrow keys — Move the selected widgets by one grid step (active HMI canvas, design mode)"
+			"Ctrl+Z: Undo",
+			"Ctrl+Y: Redo",
+			"Ctrl+C: Copy (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+V: Paste (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+X: Cut (active Grafcet, Ladder or HMI canvas)",
+			"Ctrl+A: Select all (active Grafcet, Ladder or HMI canvas)",
+			"Delete or Backspace: Delete the selection (active Grafcet, Ladder or HMI canvas, in design mode)",
+			"Arrow keys: Move the selected widgets by one grid step (active HMI canvas, design mode)"
 		],
 		"explorerTitle": "Explorer",
-		"explorerItems": ["F2 — Rename the selected grafcet or ladder"],
+		"explorerItems": ["F2: Rename the selected grafcet or ladder"],
 		"inlineTitle": "Inline editing",
-		"inlineItems": ["Enter — Confirm the change", "Esc — Cancel the change"]
+		"inlineItems": ["Enter: Confirm the change", "Esc: Cancel the change"]
+	},
+	"hardware": {
+		"title": "Hardware: the Arduino Uno R3",
+		"p1": "Studomate can link a project to a real Arduino Uno R3 board: load it with a program it runs by itself, use it as the inputs and outputs of a simulation, or observe its program while it runs. This needs a Chromium-based browser (Google Chrome, Microsoft Edge...): Firefox and Safari do not offer it, but the rest of Studomate works in them.",
+		"configTitle": "Choose the board and wire the variables",
+		"configIntro": "Open Project > Hardware configuration (or the button on the project home page) and choose \"Arduino Uno R3\" as the target board. A variable is linked to a pin by its address:",
+		"configItems": [
+			"%PD2 to %PD13: digital pins D2 to D13;",
+			"%PA0 to %PA5: pins A0 to A5, analog or digital inputs;",
+			"pins D0 and D1 are reserved for the USB link;",
+			"the zone of the variable gives the direction: logic input, logic output, analog input (value from 0 to 1023) or analog output (PWM, value from 0 to 255, on D3, D5, D6, D9, D10 and D11 only)."
+		],
+		"buttonFigureAlt": "Wiring of a push button S1 between pin D2 and ground (GND) of the Arduino Uno R3. Inside the board, a pull-up resistor ties D2 to 5 V: button released, D2 is at 5 V; button pressed, D2 is at 0 V. With inversion checked, the variable is true when the button is pressed.",
+		"configBody": "For each logic input, the page sets the mode (with or without internal pull-up) and the inversion: when checked, the variable is true when the pin is at 0 V, the usual wiring of a button between the pin and ground. Address errors are reported by the analysis.",
+		"actionsTitle": "Load the program and open the online link",
+		"actionsIntro": "As soon as a board is configured, two actions appear in the toolbar and in the Target menu. There is no permanent link by default, as in an automation tool:",
+		"actionsItems": [
+			"Load the program into the board (Design mode): Studomate opens a link for the time of the loading, compiles the project, checks that it fits the board (about 1 KB of program and 512 bytes of variables) and says precisely what does not fit when it does not, then closes the link. The board then runs the program by itself, with the USB cable unplugged, and starts it again at each power-up;",
+			"Online link: opens a link you keep until \"Close the link\". It does not change what the board does. It gives access to the ▶ (start the board program, from its initial state) and ■ (stop it, its outputs are then cut) icons, and a badge shows what the board is doing. Loading the program during an online link leaves it open."
+		],
+		"actionsOutro": "The first time, Studomate offers to install its firmware on the board: the program currently on it is then erased. Opening a link restarts the board: if it holds a program, it starts for a moment from its initial state.",
+		"modesTitle": "The modes that use the board",
+		"modesIntro": "With a board configured, the mode menu offers two more entries. They open the link if it is not open, and close it when they end if they had opened it:",
+		"modesItems": [
+			"Simulation with real I/O: the simulation runs in Studomate, but wired inputs take the value read on their pin and the outputs of the simulation drive the pins. The program of the board, if it was running, is stopped. Wired inputs can no longer be changed by hand; variables without an address can still be driven from the HMI and the watch table, so real and virtual elements can be mixed. If the link is lost or the tab goes to the background, the outputs of the board are cut;",
+			"Board observation: Studomate runs nothing, it shows what the board reports of the program it runs. Grafcet steps light up, Ladder contacts and links animate, the watch table and the HMI show the real values. The program of the board must be the one of the project, compared by its identifier: otherwise Studomate asks to load it again. If the program is stopped, a window offers to start it or to cancel. There is no pause or step-by-step, and editing is locked."
+		],
+		"observationTitle": "Write and force while observing",
+		"observationIntro": "While observing, variables are written from Studomate as in simulation: you enter an input that is not wired to a pin, write a memory or force a variable from the watch table and the HMI. An input wired to a pin is still read on the pin.",
+		"observationOutro": "The board keeps a forced value until it is released. Studomate releases everything forced when you leave the observation, but if the link is lost before, the forced value stays on the board until its next restart. If the board reports a fault (a division by zero for example) or if its program is stopped, the observation is left and the cause is shown.",
+		"behaviorTitle": "What the program of the board does not take over",
+		"behaviorItems": [
+			"the REAL and STRING types are not supported by the board: the analysis reports it;",
+			"an input read by a program but without an address stays false on the board: the analysis raises a warning;",
+			"the \"behavior\" field of variables (push button, switch, NO/NC, slider) is only used by the simulation. On the board, the real wiring is what counts: the NO/NC of a contact is set by the inversion of its pin, the bounds of a slider do not apply, and an input without an address always starts false, even NC."
+		],
+		"limitsTitle": "Limits",
+		"limitsItems": [
+			"a pin can only carry one variable: the analysis reports duplicates;",
+			"only the original Arduino Uno R3 is supported (not clones with another bootloader, nor other boards);",
+			"a tab in the background slows the simulation down: with real I/O, the outputs are then cut. The program running on the board is not affected;",
+			"inputs are read with a 5 ms debounce; a pulse shorter than the reading period may be missed."
+		]
+	},
+	"scene3d": {
+		"title": "3D simulation scene",
+		"p1": "A 3D scene is a virtual plant: at each cycle, a physical model (carton sorting, elevator, traffic lights, drilling...) receives the outputs of your program, advances by the elapsed time and returns the sensors. It is displayed in a separate browser tab, full screen, while the simulation runs in the editor.",
+		"cartonSortingFigureAlt": "Screenshot of the carton sorting station 3D scene during a simulation: an input conveyor, a sorting conveyor with three cylinders that push the cartons toward the output bins, and on the right the control panel with the Start cycle button, the sorted cartons counter and the sensor and command indicators.",
+		"scenesTitle": "Available scenes",
+		"scenesIntro": "The catalogue offers five scenes, each delivered with a \"to be programmed\" template that already wires it:",
+		"scenesItems": [
+			"Carton sorting (template \"Carton sorting station\"): presence, height and cylinder end-of-stroke sensors; outputs for the conveyors and the six commands of the three cylinders; a numeric display for the count of sorted cartons. It is the only scene with manual controls: place a carton, choose its height (low or high) and a cycle start button;",
+			"Traffic-light crossroads (template \"Traffic light crossroads\"): no inputs; twelve outputs, red, orange and green for each of the four lights (North, South, East, West). If two axes turn green at the same time, the cars collide and an accident counter increments;",
+			"Drilling (template \"Drilling station\"): outputs to lower the drill, raise it and spin the spindle; drill-up, drill-down and position (numeric) sensors. Drilling requires the spindle to run, drill down, for 1.5 s;",
+			"Elevator (template \"Lift\"): up, down and door-open outputs; cabin presence sensors at each floor, a door-open sensor and a position (numeric) sensor. The door stays open at least 2 s before it can close again.",
+			"Car park (template \"Barrier car park\"): two barrier-opening outputs (entry and exit) and a \"full\" lamp; sensors for a car waiting in front of each barrier and a photocell under the barriers; a numeric display for the number of occupied spaces. The Arrival and Departure buttons of the console are bound to no variable: they bring cars, which line up (6 at most) and only move on when the barrier is open, a full lot leaving them outside."
+		],
+		"configTitle": "Choosing the scene and wiring the variables",
+		"configIntro": "Open Project > 3D scene configuration (or the button on the project start page), pick a scene from the catalogue, then bind each of its points to a variable:",
+		"configItems": [
+			"a sensor is bound to an input of the project (logic or analog, depending on the point);",
+			"an actuator is bound to an output of the project;",
+			"a display is bound to a memory variable of the project: the scene shows its value;",
+			"the selector of each point only offers variables of the right zone and type;",
+			"\"Create missing variables\" creates the variables of the unbound points with the name suggested by the scene (or reuses a compatible variable already carrying that name) and binds them, as a single undoable operation."
+		],
+		"openTitle": "Showing the scene",
+		"openBody": "Once a scene is chosen, the \"3D scene\" entry of the View menu opens the scene tab, before or during the simulation:",
+		"openItems": [
+			"outside simulation, the scene shows its initial state: the controls the scene may offer are disabled and have no effect on the project;",
+			"during simulation, the scene sensors feed the bound inputs, and the controls the scene may offer act on the model;",
+			"when simulation starts, the scene tab opens automatically if the project has no HMI page (otherwise the HMI page is shown); if the browser blocks this, a clickable message offers to open it (the \"3D scene\" entry of the View menu does too);",
+			"pause and step-by-step execution of the simulation apply to the scene too;",
+			"in the scene tab, the mouse moves the view: drag to orbit around the scene, wheel to zoom, right-click (or Shift-drag) to pan;",
+			"closing the project closes the scene tab."
+		],
+		"limitsTitle": "Limits",
+		"limitsItems": [
+			"an input bound to a scene sensor can no longer be typed by hand: forcing remains possible and takes precedence over the scene;",
+			"a sensor cannot be bound to a variable already wired to a pin of a physical device (Hardware section);",
+			"if a sensor pulses twice within a single cycle, the program only sees one (the cycle time, fixed at 100 ms, cannot be changed);",
+			"the analysis reports unbound points (warning) and inconsistent bindings (error): sensor bound to several points, sensor written by an HMI widget, incompatible variable type or area."
+		]
+	},
+	"limits": {
+		"title": "Tool limits",
+		"intro": "What Studomate does not do, grouped by theme. Each limit is detailed in the section shown.",
+		"groups": [
+			{
+				"title": "Grafcet",
+				"items": [
+					"a single initial step per grafcet: to start several branches, place one initial step followed by a \"TRUE\" transition and an AND divergence (Grafcet section, Steps);",
+					"no macro-step, no encapsulation, no forcing orders for partial grafcets: Studomate's \"force\" is a simulation tool that imposes a step's value;",
+					"no conditional action: an action carries no condition of its own, place it on a separate step behind a transition (Grafcet section, Actions);",
+					"no edge detection in a condition: use a memory variable written by an edge coil or edge action (Grafcet section, Transitions)."
+				]
+			},
+			{
+				"title": "Expressions and variables",
+				"items": [
+					"no exclusive OR (XOR), no modulo (MOD) and no function other than type conversions (Grafcet section, Transitions);",
+					"WORD and DWORD are bit strings: no arithmetic without converting to an integer (Variables section);",
+					"integers wrap around to their type's range in simulation: an INT going past 32767 comes back to −32768 (Variables section);",
+					"the cycle time is fixed at 100 ms and cannot be changed (Simulation section)."
+				]
+			},
+			{
+				"title": "Hardware (Arduino)",
+				"items": [
+					"only the original Arduino Uno R3 is supported, not clones with a different bootloader nor other boards;",
+					"a pin carries a single variable, and the REAL and STRING types are not supported by the board;",
+					"the program must fit in the board (about 1 KB of program and 512 bytes of variables);",
+					"a background tab slows the simulation, and cuts the outputs in simulation with real I/O;",
+					"the link with the board needs a Chromium-based browser (Hardware section)."
+				]
+			},
+			{
+				"title": "3D scene",
+				"items": [
+					"an input linked to a scene sensor can no longer be entered by hand, but it can be forced;",
+					"a sensor cannot be linked to a variable already wired to a pin of a physical device (Hardware section);",
+					"if a sensor pulses twice within a single cycle, the program only sees one (3D scene section)."
+				]
+			},
+			{
+				"title": "Application and storage",
+				"items": [
+					"desktop application: it hides itself below 768 pixels of width, and touch use (tablet) is not guaranteed;",
+					"no offline mode: a connection is needed to open the application;",
+					"by default, projects are only stored in the device's browser: export them or create an account to back them up to the cloud (Getting started section);",
+					"no teacher view: a teacher cannot see students' cloud projects, they send a file or a share link (Projects section)."
+				]
+			}
+		]
+	},
+	"troubleshooting": {
+		"title": "Troubleshooting",
+		"intro": "This section starts from the most common symptoms. Each entry points to the section that covers the topic in detail.",
+		"entries": [
+			{
+				"title": "The simulation does not start",
+				"intro": "When you switch to Simulation mode, Studomate re-runs the project analysis. If it finds errors, the project stays in Design mode and the \"Analysis results\" panel opens at the bottom of the screen with the list of errors:",
+				"items": [
+					"click an error to go straight to the element concerned;",
+					"fix them, then switch to Simulation again;",
+					"warnings do not prevent simulating."
+				],
+				"outro": "See the Analysis section for the kinds of checks and example messages."
+			},
+			{
+				"title": "My grafcet does not move",
+				"intro": "If the steps do not follow one another, check in this order:",
+				"items": [
+					"the simulation is advancing: in Step by step mode, the cycle only moves on each click of \"Step one cycle\"; in Continuous mode, check that it is not paused;",
+					"the grafcet is not excluded from execution: an excluded grafcet has no active step;",
+					"the condition of the next transition is true: open \"Watch tables\" (bottom bar) and look at the value of the variables it uses;",
+					"an input with a \"push button\" behaviour is only true while you hold it down (with the mouse or the Space key);",
+					"a timer (\"t1/X1/5s\") waits for the given duration before becoming true;",
+					"a forced step (padlock on the step) keeps its value: release the force with a right-click on the step;",
+					"a variable written by a ladder is only seen by a grafcet on the next cycle (see \"Order of execution within a cycle\" in the Simulation section)."
+				]
+			},
+			{
+				"title": "How do I operate a sensor in simulation?",
+				"intro": "An input can be driven in four ways:",
+				"items": [
+					"the watch table: \"Watch tables\" button in the bottom bar; the input appears there as its device (button, switch or slider);",
+					"an HMI page: widgets linked to the input (button, switch...) are operated in the \"HMI simulation\" tab;",
+					"a 3D scene: if the input is linked to a scene sensor, the scene drives it and it can no longer be entered by hand;",
+					"an Arduino board: in \"Simulation with real I/O\", inputs wired to a pin are read from the board."
+				],
+				"outro": "See the Variables (input behaviour), Simulation, HMI screens, 3D scene and Hardware (Arduino) sections."
+			},
+			{
+				"title": "Input, output or memory: which one to choose?",
+				"intro": "A variable's zone says who writes it:",
+				"items": [
+					"Input: information coming from the outside (button, sensor). The program does not write it: the analysis flags an assignment to an input variable;",
+					"Output: a command going out (lamp, motor, cylinder). The program writes it;",
+					"Memory: an internal state (flag, counter, setpoint), read and written by the program;",
+					"Constant: a value fixed at design time, read-only."
+				],
+				"outro": "The type depends on the zone: logic inputs and outputs are BOOL; analog inputs and outputs are INT, WORD or DWORD; memories and constants accept every type (BOOL, INT, DINT, WORD, DWORD, REAL, STRING, TIME). A REAL therefore needs a memory."
+			},
+			{
+				"title": "How do I make a cycle loop?",
+				"intro": "To start the cycle again after the last step:",
+				"items": [
+					"draw the link from the last transition back to the initial step (or to any earlier step): the \"Traffic light\" template loops this way;",
+					"if the link crosses the whole diagram, use a referral (tenant and target) to avoid a long line."
+				],
+				"outro": "See the Connections and Referrals parts of the Grafcet section."
+			},
+			{
+				"title": "I do not understand an error message",
+				"intro": "The message text says what is wrong, and a click on it leads to the element concerned:",
+				"items": [
+					"for an expression error, re-read the expression syntax in the Grafcet section, Transitions;",
+					"for a structure error (step with no successor, missing link), look at the element shown on the canvas;",
+					"the Analysis section describes the kinds of checks and gives examples."
+				]
+			}
+		]
 	},
 	"navHeading": "Manual outline",
 	"searchPlaceholder": "Search the manual…",

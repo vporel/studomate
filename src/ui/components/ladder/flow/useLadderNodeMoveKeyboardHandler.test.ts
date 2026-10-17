@@ -71,4 +71,15 @@ describe("useLadderNodeMoveKeyboardHandler", () => {
 		result.current(keyEvent("a"));
 		expect(moveSelectedElementsByCells).not.toHaveBeenCalled();
 	});
+
+	it("ignores keys typed in a text field", () => {
+		const { result } = setup(selectedContact);
+		const e = {
+			...keyEvent("ArrowLeft"),
+			target: document.createElement("input"),
+		};
+		result.current(e);
+		expect(moveSelectedElementsByCells).not.toHaveBeenCalled();
+		expect(e.preventDefault).not.toHaveBeenCalled();
+	});
 });

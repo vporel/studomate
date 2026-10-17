@@ -310,12 +310,19 @@ export default class Ladder extends Program {
 	}
 
 	copy(): Ladder {
-		return new Ladder(
+		const ladder = new Ladder(
 			this.id,
 			this.name,
 			this.sections.map((section) => section.copy()),
 			this.role,
 		);
+		ladder.excludedFromExecution = this.excludedFromExecution;
+		return ladder;
+	}
+
+	/** The Main is the project's execution entry point. */
+	canBeExcludedFromExecution(): boolean {
+		return this.role !== "main";
 	}
 
 	translateExpressionsKeywords(): void {

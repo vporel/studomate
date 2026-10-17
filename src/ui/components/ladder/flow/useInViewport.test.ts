@@ -41,8 +41,9 @@ function refToDiv() {
 describe("useInViewport", () => {
 	beforeEach(() => {
 		IntersectionObserverStub.instances.length = 0;
-		(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
-			IntersectionObserverStub;
+		(
+			global as unknown as { IntersectionObserver: unknown }
+		).IntersectionObserver = IntersectionObserverStub;
 	});
 
 	it("renvoie false tant que l'élément n'a pas croisé le viewport", () => {
@@ -74,8 +75,9 @@ describe("useInViewport", () => {
 	});
 
 	it("renvoie true d'emblée sans IntersectionObserver", () => {
-		(global as unknown as { IntersectionObserver?: unknown }).IntersectionObserver =
-			undefined;
+		(
+			global as unknown as { IntersectionObserver?: unknown }
+		).IntersectionObserver = undefined;
 		const { result } = renderHook(() => useInViewport(refToDiv()));
 		expect(result.current).toBe(true);
 	});

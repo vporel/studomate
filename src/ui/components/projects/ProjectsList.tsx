@@ -4,7 +4,7 @@ import HybridProjectRepository from "@/persistence/repositories/hybrid.project.r
 import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
-import { clearPagesSession } from "@/ui/lib/pages-session-storage";
+import { clearPagesSession } from "@/persistence/pages-session.storage";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { useProjectStore } from "./ProjectContext";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -78,9 +78,7 @@ export default function ProjectsList({
 		[projects, projectRepository, tab],
 	);
 
-	const skippedNewerVersion = skipped.some(
-		(s) => s.reason === "newer-version",
-	);
+	const skippedNewerVersion = skipped.some((s) => s.reason === "newer-version");
 
 	const handleDeleteProject = async (
 		event: React.MouseEvent,
@@ -120,9 +118,7 @@ export default function ProjectsList({
 		event.stopPropagation();
 		const result = await projectRepository.moveToLocal(project);
 		if (!result.ok) {
-			alert(
-				t("moveToLocalFailed"),
-			);
+			alert(t("moveToLocalFailed"));
 			return;
 		}
 		await reload();
@@ -138,11 +134,7 @@ export default function ProjectsList({
 			)}
 
 			{skipped.length > 0 && (
-				<Typography
-					variant="body2"
-					color="warning.main"
-					sx={{ mb: 1, px: 1 }}
-				>
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
 					{skippedNewerVersion
 						? t("skippedProjectsNewerVersion", { count: skipped.length })
 						: t("skippedProjects", { count: skipped.length })}
@@ -213,7 +205,10 @@ export default function ProjectsList({
 							<ListItemButton onClick={() => onProjectClick(project.id)}>
 								<ListItemText
 									primary={project.name}
-									secondary={t("lastModified", { date: project.lastModificationDate.toLocaleDateString(), time: project.lastModificationDate.toLocaleTimeString() })}
+									secondary={t("lastModified", {
+										date: project.lastModificationDate.toLocaleDateString(),
+										time: project.lastModificationDate.toLocaleTimeString(),
+									})}
 									slotProps={{
 										secondary: {
 											sx: { fontSize: "0.8rem" },

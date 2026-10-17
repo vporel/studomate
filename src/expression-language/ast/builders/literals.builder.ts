@@ -1,5 +1,10 @@
 import { createRandomId } from "@/ids";
-import { BooleanNode, NumberNode, StringNode } from "../nodes/literals";
+import {
+	BooleanNode,
+	NumberLiteralKind,
+	NumberNode,
+	StringNode,
+} from "../nodes/literals";
 
 export default class LiteralsBuilder {
 	static buildBooleanNode(value: boolean, position?: number): BooleanNode {
@@ -11,12 +16,17 @@ export default class LiteralsBuilder {
 		};
 	}
 
-	static buildNumberNode(value: number, position?: number): NumberNode {
+	static buildNumberNode(
+		value: number,
+		position?: number,
+		kind?: NumberLiteralKind,
+	): NumberNode {
 		return {
 			id: createRandomId(),
 			type: "NUMBER_LITERAL",
 			value,
 			position,
+			...(kind ? { kind } : {}),
 		};
 	}
 

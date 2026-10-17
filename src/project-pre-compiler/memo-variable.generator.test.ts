@@ -10,6 +10,7 @@ describe("MemoVariableGenerator", () => {
 			expect(variable.getName()).toBe("_GeneratedMemo_0");
 			expect(variable.getScope()).toBe("memory");
 			expect(variable.getType()).toBe("boolean");
+			expect(variable.isInternal()).toBe(true);
 		});
 
 		it("generates a memo variable with type number", () => {

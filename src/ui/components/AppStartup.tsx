@@ -5,18 +5,12 @@ import { FEATURED_TEMPLATE_ID, PROJECT_TEMPLATES } from "@/templates/index";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
-import {
-	alpha,
-	Box,
-	Button,
-	Divider,
-	Theme,
-	Typography,
-} from "@mui/material";
+import { alpha, Box, Button, Divider, Theme, Typography } from "@mui/material";
 import Link from "next/link";
 import { useShallow } from "zustand/shallow";
 import routes from "@/app/routes";
 import AccountStatus from "./auth/AccountStatus";
+import ProfilePromptModal from "./profile/ProfilePromptModal";
 import { useProjectStore } from "./projects/ProjectContext";
 
 const featuredTemplate = PROJECT_TEMPLATES.find(
@@ -25,17 +19,15 @@ const featuredTemplate = PROJECT_TEMPLATES.find(
 
 const AppStartup = () => {
 	const tTemplates = useT("templates");
-	const {
-		setOpenModalVisible,
-		lifecycleManager,
-		setNewProjectModalVisible,
-	} = useProjectStore(
-		useShallow((state) => ({
-			setOpenModalVisible: state.setOpenModalVisible,
-			lifecycleManager: state.lifecycleManager,
-			setNewProjectModalVisible: state.setNewProjectModalVisible,
-		})),
-	);
+	const t = useT("chrome.startup");
+	const { setOpenModalVisible, lifecycleManager, setNewProjectModalVisible } =
+		useProjectStore(
+			useShallow((state) => ({
+				setOpenModalVisible: state.setOpenModalVisible,
+				lifecycleManager: state.lifecycleManager,
+				setNewProjectModalVisible: state.setNewProjectModalVisible,
+			})),
+		);
 
 	return (
 		<FlexBox
@@ -63,7 +55,7 @@ const AppStartup = () => {
 					<Box
 						component={Link}
 						href={routes.home()}
-						aria-label={`${APP_NAME} — accueil`}
+						aria-label={t("homeAria", { name: APP_NAME })}
 					>
 						<Box
 							component="img"
@@ -100,6 +92,8 @@ const AppStartup = () => {
 					</Box>
 				</FlexBox>
 
+				<ProfilePromptModal />
+
 				{featuredTemplate && (
 					<Box
 						sx={{
@@ -111,7 +105,7 @@ const AppStartup = () => {
 						}}
 					>
 						<Typography variant="overline" color="primary" fontWeight={600}>
-							Découvrir avec un exemple
+							{t("featuredOverline")}
 						</Typography>
 						<Typography variant="h5" fontWeight={600} mt={0.5}>
 							{tTemplates(`${featuredTemplate.id}.label`)}
@@ -129,7 +123,7 @@ const AppStartup = () => {
 								)
 							}
 						>
-							Ouvrir la solution et simuler
+							{t("openSolutionAndSimulate")}
 						</Button>
 					</Box>
 				)}
@@ -137,7 +131,7 @@ const AppStartup = () => {
 				<FlexBox alignItems="center" gap={1} mt={2}>
 					<MenuBookIcon fontSize="small" color="action" />
 					<Typography variant="body2" color="text.secondary">
-						Besoin d&apos;aide pour démarrer ?{" "}
+						{t("helpPrompt")}{" "}
 						<Box
 							component={Link}
 							href={routes.userManual()}
@@ -147,7 +141,7 @@ const AppStartup = () => {
 								textDecoration: "none",
 							}}
 						>
-							Consulter le manuel utilisateur
+							{t("openManual")}
 						</Box>
 					</Typography>
 				</FlexBox>
@@ -160,16 +154,16 @@ const AppStartup = () => {
 						color="text.secondary"
 						sx={{ mr: "auto" }}
 					>
-						Déjà à l&apos;aise ?
+						{t("alreadyComfortable")}
 					</Typography>
 					<Button
 						variant="outlined"
 						onClick={() => setNewProjectModalVisible(true)}
 					>
-						Créer un nouveau projet
+						{t("createProject")}
 					</Button>
 					<Button color="primary" onClick={() => setOpenModalVisible(true)}>
-						Ouvrir un projet existant
+						{t("openProject")}
 					</Button>
 				</FlexBox>
 			</Box>

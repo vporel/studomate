@@ -1,6 +1,6 @@
 "use client";
 
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Button, Typography } from "@mui/material";
@@ -43,9 +43,7 @@ export default function ShareRequiresCloudModal() {
 			width={480}
 		>
 			<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-				<Typography color="text.secondary">
-					{t("body")}
-				</Typography>
+				<Typography color="text.secondary">{t("body")}</Typography>
 
 				<Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
 					<Button onClick={onClose} disabled={submitting}>

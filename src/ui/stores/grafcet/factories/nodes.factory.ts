@@ -41,7 +41,9 @@ class NodesFactory extends AbstractNodesFactory<
 	): GrafcetNodeType {
 		const synced = super.syncNode(prevNode, domain);
 		if (
-			!JUNCTION_TYPES.includes(domain.type as (typeof JUNCTION_TYPES)[number]) ||
+			!JUNCTION_TYPES.includes(
+				domain.type as (typeof JUNCTION_TYPES)[number],
+			) ||
 			this.isNodeInGesture(prevNode) ||
 			(synced.width === domain.element.size.width &&
 				synced.height === domain.element.size.height)

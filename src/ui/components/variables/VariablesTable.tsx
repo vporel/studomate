@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_LOGIC_INPUT_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import {
 	VariableType,
 	VariableZone,
@@ -30,6 +31,7 @@ import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import EMPTY_ARRAY from "@/ui/lib/empty";
 import { useProjectStore } from "../projects/ProjectContext";
 import GridToolBar from "./GridToolBar";
+import { getVariablesPageDefinitionForZone } from "@/ui/stores/project/variables-pages";
 import VariableRowContextMenu, {
 	VariableRowMenuTarget,
 } from "./VariableRowContextMenu";
@@ -75,9 +77,7 @@ const VariablesTable = ({
 
 	const zoneVariables = useMemo(
 		() =>
-			projectVariables.filter(
-				(v) => zones.includes(v.zone) && !v.ownerBlock,
-			),
+			projectVariables.filter((v) => zones.includes(v.zone) && !v.ownerBlock),
 		[projectVariables, zones],
 	);
 
@@ -172,6 +172,7 @@ const VariablesTable = ({
 					mnemonic: v.mnemonic,
 					type: v.type,
 					address: v.address || "",
+					declaredValue: v.value || "",
 					comment: v.comment || "",
 				},
 			]),
@@ -189,6 +190,7 @@ const VariablesTable = ({
 					mnemonic: "",
 					type: draft.type,
 					address: "",
+					declaredValue: "",
 					comment: "",
 				});
 			} else if (byId.has(id)) {
@@ -204,6 +206,7 @@ const VariablesTable = ({
 			mnemonic: "",
 			type: "BOOL",
 			address: "",
+			declaredValue: "",
 			comment: "",
 		});
 		return rows;
@@ -222,7 +225,7 @@ const VariablesTable = ({
 				if (!rowUpdatedValues) return;
 				updatedValues[field] = rowUpdatedValues[field];
 			});
-			const { id, ...newData } = updatedValues;
+			const { id, declaredValue, ...newData } = updatedValues;
 			const isDraft = typeof id === "string" && id.startsWith("draft-");
 			//Check if the row is an empty row (bottom add row or inserted draft)
 			if (oldValues.mnemonic === "") {
@@ -231,21 +234,36 @@ const VariablesTable = ({
 					if (isDraft) {
 						pendingInsert.current = { draftId: id, mnemonic };
 					}
+					const zone = chooseZone(zones, newData.type);
 					variablesManager.addVariables([
-						{ ...(newData as any), zone: chooseZone(zones, newData.type) },
+						{
+							...(newData as any),
+							...(zone === "constant" && declaredValue
+								? { value: declaredValue }
+								: {}),
+							zone,
+							behavior:
+								zone === "logic-input" ? DEFAULT_LOGIC_INPUT_BEHAVIOR : null,
+						},
 					]);
 				} else if (isDraft) {
 					setOrder((prev) => prev.filter((x) => x !== id));
 					setDraft(null);
 				}
 			} else {
+				const zone = chooseZone(zones, newData.type);
+				const declaredValueChanged =
+					zone === "constant" &&
+					declaredValue !==
+						projectVariables.find((v) => v.id === id.toString())?.value;
 				variablesManager.updateVariable(id.toString(), {
 					...newData,
-					zone: chooseZone(zones, newData.type),
+					...(declaredValueChanged ? { value: declaredValue } : {}),
+					zone,
 				});
 			}
 		},
-		[variablesManager, zones],
+		[variablesManager, zones, projectVariables],
 	);
 
 	const [rowSelectionModel, setRowSelectionModel] =
@@ -375,16 +393,16 @@ const VariablesTable = ({
 					setRowSelectionModel(rowSelectionModel)
 				}
 				showToolbar
-				slots={{
-					toolbar: () => (
-						<GridToolBar
-							rowSelectionModel={rowSelectionModel}
-							zoneVariables={zoneVariables}
-							pageTitle={pageTitle}
-						/>
-					),
+				slots={{ toolbar: GridToolBar }}
+				slotProps={{
+					row: { onContextMenu: onRowContextMenu },
+					toolbar: {
+						pdfColumns: getVariablesPageDefinitionForZone(zones[0]).columns,
+						rowSelectionModel,
+						zoneVariables,
+						pageTitle,
+					},
 				}}
-				slotProps={{ row: { onContextMenu: onRowContextMenu } }}
 			/>
 			{contextMenu.visible && (
 				<VariableRowContextMenu

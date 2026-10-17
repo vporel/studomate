@@ -15,7 +15,11 @@ const SCREEN_POSITION = { x: 12, y: 34 };
 
 const onExport = jest.fn();
 
-function items(viewManager: any, canPaste = false, ccp = fakeCopyCutPasteManager()) {
+function items(
+	viewManager: any,
+	canPaste = false,
+	ccp = fakeCopyCutPasteManager(),
+) {
 	return paneContextMenuItems(
 		viewManager,
 		ccp,

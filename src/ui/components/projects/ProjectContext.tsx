@@ -12,7 +12,7 @@ import {
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
 	setProjectIdInUrl,
-} from "@/ui/lib/project-url";
+} from "@/ui/stores/project/url/project-url";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import {
@@ -36,9 +36,12 @@ import DraftRecoveryDialog from "./DraftRecoveryDialog";
 import DraftConflictDialog from "./DraftConflictDialog";
 import CloudConflictDialog from "./CloudConflictDialog";
 import SaveLocationModal from "./SaveLocationModal";
+import HardwareFirmwareDialog from "./HardwareFirmwareDialog";
+import HardwareObservationDialog from "./HardwareObservationDialog";
 import UnsavedChangesDialog from "./ProjectUnsavedChangesDialog";
 import useShortcutsHandler from "./useShortcutsHandler";
-import Project from "@/schemas/project/project.schema";
+import { suppressProductTourForThisPageLoad } from "@/ui/components/product-tour/product-tour-eligibility";
+import { parseDraftProject } from "@/persistence/draft.storage";
 
 const ProjectContext = createContext<StoreApi<ProjectStoreState> | null>(null);
 
@@ -101,6 +104,7 @@ export const ProjectContextProvider = ({
 	useEffect(() => {
 		const shareToken = getShareTokenFromUrl();
 		if (!shareToken) return;
+		suppressProductTourForThisPageLoad();
 		const reopen = async () => {
 			const opened = await storeRef
 				.current!.getState()
@@ -144,8 +148,10 @@ export const ProjectContextProvider = ({
 			setShowDraftDialog(true);
 			return;
 		}
-		const wantsSolution = getTemplateModeFromUrl() === "solution" && !!template.solution;
+		const wantsSolution =
+			getTemplateModeFromUrl() === "solution" && !!template.solution;
 		const autostartSimulation = getTemplateAutostartFromUrl();
+		if (autostartSimulation) suppressProductTourForThisPageLoad();
 		const open = async () => {
 			await storeRef
 				.current!.getState()
@@ -171,14 +177,11 @@ export const ProjectContextProvider = ({
 	}, []);
 
 	const handleDraftOpen = (draftData: string) => {
-		try {
-			const project = Project.createFromJSON(draftData);
-			void storeRef
-				.current!.getState()
-				.lifecycleManager.openProject(project.id, true);
-		} catch {
-			// brouillon corrompu : ignoré silencieusement
-		}
+		const project = parseDraftProject(draftData);
+		if (!project) return;
+		void storeRef
+			.current!.getState()
+			.lifecycleManager.openProject(project.id, true);
 	};
 
 	return (
@@ -186,6 +189,8 @@ export const ProjectContextProvider = ({
 			{children}
 			<ShortcutsHandler />
 			<UnsavedChangesDialog />
+			<HardwareFirmwareDialog />
+			<HardwareObservationDialog />
 			<NewProjectModal />
 			<ProjectOpenModal />
 			<ExportModal />

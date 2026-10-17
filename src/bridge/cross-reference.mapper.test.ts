@@ -39,7 +39,11 @@ const crossRefs: CrossReference[] = [
 
 describe("CrossReferenceMapper", () => {
 	it("sépare lecteurs et écrivains et résout le nom du programme", () => {
-		const [row] = CrossReferenceMapper.analyserToApp(crossRefs, project(), "fr");
+		const [row] = CrossReferenceMapper.analyserToApp(
+			crossRefs,
+			project(),
+			"fr",
+		);
 		expect(row.variableName).toBe("Moteur");
 		expect(row.writers).toHaveLength(1);
 		expect(row.readers).toHaveLength(1);
@@ -54,7 +58,11 @@ describe("CrossReferenceMapper", () => {
 	});
 
 	it("localise le libellé en anglais", () => {
-		const [row] = CrossReferenceMapper.analyserToApp(crossRefs, project(), "en");
+		const [row] = CrossReferenceMapper.analyserToApp(
+			crossRefs,
+			project(),
+			"en",
+		);
 		expect(row.writers[0].label).toContain("coil");
 		expect(row.readers[0].label).toContain("transition receptivity");
 	});
@@ -114,7 +122,10 @@ describe("CrossReferenceMapper", () => {
 		expect(row.writers[0].label).toContain("Vue conduite");
 		expect(row.writers[0].label).toContain("BP_1");
 		expect(row.writers[0].label).toContain("bouton");
-		expect(row.writers[0]).toMatchObject({ programType: "hmi", locationId: "w1" });
+		expect(row.writers[0]).toMatchObject({
+			programType: "hmi",
+			locationId: "w1",
+		});
 	});
 
 	it("remplace un numéro d'étape manquant par un marqueur", () => {
@@ -138,5 +149,36 @@ describe("CrossReferenceMapper", () => {
 			"fr",
 		);
 		expect(row.writers[0].label).toContain("?");
+	});
+
+	it("résout le nom de la scène 3D et le libellé du point pour une référence de scène", () => {
+		const sceneRefs: CrossReference[] = [
+			{
+				variableName: "cpt_psce_c",
+				references: [
+					{
+						access: "write",
+						programId: "carton-sorting@1",
+						programType: "scene3d",
+						locationId: "cartonAtStation",
+						locationKind: "scene3d-point",
+						locationParams: {},
+					},
+				],
+			},
+		];
+		const [fr] = CrossReferenceMapper.analyserToApp(sceneRefs, project(), "fr");
+		expect(fr.writers[0].label).toBe(
+			"Tri de caisses · point « Caisse présente au poste »",
+		);
+		const [en] = CrossReferenceMapper.analyserToApp(sceneRefs, project(), "en");
+		expect(en.writers[0].label).toBe(
+			'Carton sorting · point "Carton at the station"',
+		);
+		expect(fr.writers[0]).toMatchObject({
+			programType: "scene3d",
+			programId: "carton-sorting@1",
+			locationId: "cartonAtStation",
+		});
 	});
 });

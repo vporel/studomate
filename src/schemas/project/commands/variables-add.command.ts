@@ -13,12 +13,7 @@ export default class VariablesAddCommand extends AbstractProjectCommand<
 
 	execute(project: Project): [project: Project, isCommandValid: boolean] {
 		project.variables.push(
-			...this.payload.map((v) => {
-				const variable = new Variable(v.id, v.mnemonic, v.zone, v.type);
-				if (v.address) variable.address = v.address;
-				if (v.comment) variable.comment = v.comment;
-				return variable;
-			}),
+			...this.payload.map((v) => Variable.fromData(v, project.dialect)),
 		);
 		return [project, true];
 	}

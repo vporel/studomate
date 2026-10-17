@@ -5,9 +5,15 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import Header from "./Header";
 
+let mockPathname = "/training";
 jest.mock("@/i18n/navigation", () => ({
 	...jest.requireActual("@/i18n/navigation"),
-	usePathname: () => "/training",
+	usePathname: () => mockPathname,
+}));
+
+jest.mock("next/navigation", () => ({
+	...jest.requireActual("next/navigation"),
+	useParams: () => ({ section: "grafcet" }),
 }));
 
 let supabaseConfigured = false;
@@ -38,6 +44,7 @@ jest.mock("@/ui/stores/auth/auth.store", () => ({
 describe("Header", () => {
 	beforeEach(() => {
 		supabaseConfigured = false;
+		mockPathname = "/training";
 	});
 
 	it("affiche l'état de connexion (compte) quand le cloud est configuré", () => {
@@ -69,18 +76,29 @@ describe("Header", () => {
 	it("ouvre un menu avec les liens de navigation sur mobile", () => {
 		renderWithI18n(<Header />);
 		fireEvent.click(screen.getByRole("button", { name: /menu/i }));
-		expect(
-			screen.getByRole("menuitem", { name: /manuel/i }),
-		).toHaveAttribute("href", "/manuel-utilisateur");
+		expect(screen.getByRole("menuitem", { name: /manuel/i })).toHaveAttribute(
+			"href",
+			"/manuel-utilisateur",
+		);
 	});
 
 	it("marque le lien de la page courante comme actif (aria-current)", () => {
 		renderWithI18n(<Header />);
-		expect(
-			screen.getByRole("link", { name: /formations/i }),
-		).toHaveAttribute("aria-current", "page");
+		expect(screen.getByRole("link", { name: /formations/i })).toHaveAttribute(
+			"aria-current",
+			"page",
+		);
 		expect(screen.getByRole("link", { name: /accueil/i })).not.toHaveAttribute(
 			"aria-current",
+		);
+	});
+
+	it("marque le lien du manuel comme actif sur une page de section", () => {
+		mockPathname = "/user-manual/[section]";
+		renderWithI18n(<Header />);
+		expect(screen.getByRole("link", { name: /manuel/i })).toHaveAttribute(
+			"aria-current",
+			"page",
 		);
 	});
 });

@@ -2,14 +2,13 @@
 
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import { PdfCoverPage } from "@/ui/lib/pdf/pdf-exporter";
 import {
 	buildProjectVariablesSections,
 	buildVariableGroupSection,
-	VariableGroupKey,
-} from "@/ui/lib/pdf/variables-table-pdf";
-import { exportProject } from "@/ui/utils/project/project-export-utils";
+} from "@/ui/pdf/variables-table-pdf";
+import { exportProject } from "@/ui/components/projects/project-export";
 import {
 	Alert,
 	Box,
@@ -25,23 +24,19 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import useLadderRenderContext from "../pdf/useLadderRenderContext";
-import { PdfExportProgramConfig, usePdfExport } from "../pdf/usePdfExport";
+import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
+import { PdfExportProgramConfig, usePdfExport } from "@/ui/pdf/usePdfExport";
 import { usePageTitle } from "../pages/usePageTitle";
-import type { VariablesPageId } from "../pages/VariablesPage";
+import {
+	getVariablesPageDefinition,
+	isVariablesPageId,
+	type VariablesPageId,
+} from "@/ui/stores/project/variables-pages";
 import { useProjectStore } from "./ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 
 type ExportFormat = "pdf" | "json";
 type PdfScope = "full" | "active";
-
-const VARIABLES_PAGE_GROUP: Record<VariablesPageId, VariableGroupKey> = {
-	"input-variables": "input",
-	"output-variables": "output",
-	"memory-variables": "memory",
-};
-const isVariablesPageId = (id: string): id is VariablesPageId =>
-	id in VARIABLES_PAGE_GROUP;
 
 /** Cible d'un export « page active » : un programme ou une page de variables utilisateur. */
 type ActiveExport =
@@ -85,6 +80,7 @@ export default function ExportModal() {
 			mnemonic: tColumns("mnemonic"),
 			type: tColumns("type"),
 			address: tColumns("address"),
+			declaredValue: tColumns("declaredValue"),
 			comment: tColumns("comment"),
 		}),
 		[tColumns],
@@ -205,7 +201,7 @@ export default function ExportModal() {
 				void startExport([], name, {
 					variableSections: [
 						buildVariableGroupSection(
-							VARIABLES_PAGE_GROUP[activeExport.pageId],
+							getVariablesPageDefinition(activeExport.pageId).group,
 							project.variables,
 							t("variablesPdfHeading", {
 								project: project.name,
@@ -235,6 +231,7 @@ export default function ExportModal() {
 							input: tPageTitles("inputVariables"),
 							output: tPageTitles("outputVariables"),
 							memory: tPageTitles("memoryVariables"),
+							constant: tPageTitles("constantVariables"),
 						},
 					})
 				: [];
@@ -279,7 +276,11 @@ export default function ExportModal() {
 
 	const progressLabel = (() => {
 		if (exportState.status === "rendering")
-			return t("progressRendering", { current: exportState.current, total: exportState.total, label: exportState.label });
+			return t("progressRendering", {
+				current: exportState.current,
+				total: exportState.total,
+				label: exportState.label,
+			});
 		if (exportState.status === "assembling") return t("progressAssembling");
 		return "";
 	})();
@@ -292,180 +293,175 @@ export default function ExportModal() {
 			width={560}
 			closeButton={!isExporting}
 		>
-				<Box display="flex" flexDirection="column" gap={2}>
-					<RadioGroup
-						row
-						value={format}
-						onChange={(e) => setFormat(e.target.value as ExportFormat)}
-					>
-						<FormControlLabel
-							value="pdf"
-							control={<Radio size="small" disabled={isExporting} />}
-							label={t("formatPdf")}
-						/>
-						<FormControlLabel
-							value="json"
-							control={<Radio size="small" disabled={isExporting} />}
-							label={t("formatJson")}
-						/>
-					</RadioGroup>
-
-					<Divider sx={{ mt: -1 }} />
-
-					{format === "pdf" && (
-						<>
-							<RadioGroup
-								row
-								value={scope}
-								onChange={(e) => changeScope(e.target.value as PdfScope)}
-							>
-								<FormControlLabel
-									value="full"
-									control={<Radio size="small" disabled={isExporting} />}
-									label={t("scopeFull")}
-								/>
-								<FormControlLabel
-									value="active"
-									control={
-										<Radio
-											size="small"
-											disabled={isExporting || !activeExport}
-										/>
-									}
-									label={
-										activeExport
-											? t("scopeActiveNamed", { name: activeExport.name })
-											: t("scopeActive")
-									}
-								/>
-							</RadioGroup>
-							{!activeExport && (
-								<Typography variant="caption" color="text.secondary">
-									{t("openProgramHint")}
-								</Typography>
-							)}
-
-							{scope === "full" && (
-								<>
-									<Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 3 }}>
-										<FormControlLabel
-											control={
-												<Checkbox
-													checked={includeCover}
-													onChange={(e) => setIncludeCover(e.target.checked)}
-													disabled={isExporting}
-													size="small"
-												/>
-											}
-											label={t("includeCover")}
-										/>
-										<FormControlLabel
-											control={
-												<Checkbox
-													checked={includeVariables}
-													onChange={(e) =>
-														setIncludeVariables(e.target.checked)
-													}
-													disabled={isExporting}
-													size="small"
-												/>
-											}
-											label={t("includeVariables")}
-										/>
-									</Box>
-									<Box>
-										{grafcets.length > 0 && (
-											<Typography
-												variant="subtitle2"
-												sx={{ mb: 0.5, fontWeight: 600 }}
-											>
-												{t("grafcets")}
-											</Typography>
-										)}
-										{grafcets.map((g) => (
-											<FormControlLabel
-												key={g.id}
-												control={
-													<Checkbox
-														checked={selectedIds.has(g.id)}
-														onChange={() => toggleId(g.id)}
-														disabled={isExporting}
-														size="small"
-													/>
-												}
-												label={g.name}
-											/>
-										))}
-
-										{ladders.length > 0 && (
-											<Typography
-												variant="subtitle2"
-												sx={{ mt: 1, mb: 0.5, fontWeight: 600 }}
-											>
-												{t("ladders")}
-											</Typography>
-										)}
-										{ladders.map((l) => (
-											<FormControlLabel
-												key={l.id}
-												control={
-													<Checkbox
-														checked={selectedIds.has(l.id)}
-														onChange={() => toggleId(l.id)}
-														disabled={isExporting}
-														size="small"
-													/>
-												}
-												label={l.name}
-											/>
-										))}
-									</Box>
-								</>
-							)}
-						</>
-					)}
-
-					<TextField
-						label={t("filename")}
-						value={filename}
-						onChange={(e) => setFilename(e.target.value)}
-						size="small"
-						disabled={isExporting}
-						fullWidth
+			<Box display="flex" flexDirection="column" gap={2}>
+				<RadioGroup
+					row
+					value={format}
+					onChange={(e) => setFormat(e.target.value as ExportFormat)}
+				>
+					<FormControlLabel
+						value="pdf"
+						control={<Radio size="small" disabled={isExporting} />}
+						label={t("formatPdf")}
 					/>
+					<FormControlLabel
+						value="json"
+						control={<Radio size="small" disabled={isExporting} />}
+						label={t("formatJson")}
+					/>
+				</RadioGroup>
 
-					{isExporting && (
-						<Box>
-							<LinearProgress
-								variant="determinate"
-								value={progressValue}
-								sx={{ mb: 0.5 }}
-							/>
-							<Typography variant="caption" color="text.secondary">
-								{progressLabel}
-							</Typography>
-						</Box>
-					)}
+				<Divider sx={{ mt: -1 }} />
 
-					{exportState.status === "error" && (
-						<Alert severity="error" onClose={reset}>
-							{exportState.message}
-						</Alert>
-					)}
-
-					<Box display="flex" justifyContent="flex-end" gap={1}>
-						<Button onClick={onClose} disabled={isExporting} variant="outlined">
-							{tc("cancel")}
-						</Button>
-						<Button
-							variant="contained"
-							onClick={onExport}
-							disabled={exportDisabled}
+				{format === "pdf" && (
+					<>
+						<RadioGroup
+							row
+							value={scope}
+							onChange={(e) => changeScope(e.target.value as PdfScope)}
 						>
-							{isExporting ? t("exporting") : t("title")}
-						</Button>
+							<FormControlLabel
+								value="full"
+								control={<Radio size="small" disabled={isExporting} />}
+								label={t("scopeFull")}
+							/>
+							<FormControlLabel
+								value="active"
+								control={
+									<Radio size="small" disabled={isExporting || !activeExport} />
+								}
+								label={
+									activeExport
+										? t("scopeActiveNamed", { name: activeExport.name })
+										: t("scopeActive")
+								}
+							/>
+						</RadioGroup>
+						{!activeExport && (
+							<Typography variant="caption" color="text.secondary">
+								{t("openProgramHint")}
+							</Typography>
+						)}
+
+						{scope === "full" && (
+							<>
+								<Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 3 }}>
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={includeCover}
+												onChange={(e) => setIncludeCover(e.target.checked)}
+												disabled={isExporting}
+												size="small"
+											/>
+										}
+										label={t("includeCover")}
+									/>
+									<FormControlLabel
+										control={
+											<Checkbox
+												checked={includeVariables}
+												onChange={(e) => setIncludeVariables(e.target.checked)}
+												disabled={isExporting}
+												size="small"
+											/>
+										}
+										label={t("includeVariables")}
+									/>
+								</Box>
+								<Box>
+									{grafcets.length > 0 && (
+										<Typography
+											variant="subtitle2"
+											sx={{ mb: 0.5, fontWeight: 600 }}
+										>
+											{t("grafcets")}
+										</Typography>
+									)}
+									{grafcets.map((g) => (
+										<FormControlLabel
+											key={g.id}
+											control={
+												<Checkbox
+													checked={selectedIds.has(g.id)}
+													onChange={() => toggleId(g.id)}
+													disabled={isExporting}
+													size="small"
+												/>
+											}
+											label={g.name}
+										/>
+									))}
+
+									{ladders.length > 0 && (
+										<Typography
+											variant="subtitle2"
+											sx={{ mt: 1, mb: 0.5, fontWeight: 600 }}
+										>
+											{t("ladders")}
+										</Typography>
+									)}
+									{ladders.map((l) => (
+										<FormControlLabel
+											key={l.id}
+											control={
+												<Checkbox
+													checked={selectedIds.has(l.id)}
+													onChange={() => toggleId(l.id)}
+													disabled={isExporting}
+													size="small"
+												/>
+											}
+											label={l.name}
+										/>
+									))}
+								</Box>
+							</>
+						)}
+					</>
+				)}
+
+				<TextField
+					label={t("filename")}
+					value={filename}
+					onChange={(e) => setFilename(e.target.value)}
+					size="small"
+					disabled={isExporting}
+					fullWidth
+				/>
+
+				{isExporting && (
+					<Box>
+						<LinearProgress
+							variant="determinate"
+							value={progressValue}
+							sx={{ mb: 0.5 }}
+						/>
+						<Typography variant="caption" color="text.secondary">
+							{progressLabel}
+						</Typography>
 					</Box>
+				)}
+
+				{exportState.status === "error" && (
+					<Alert severity="error" onClose={reset}>
+						{exportState.message}
+					</Alert>
+				)}
+
+				<Box display="flex" justifyContent="flex-end" gap={1}>
+					<Button onClick={onClose} disabled={isExporting} variant="outlined">
+						{tc("cancel")}
+					</Button>
+					<Button
+						variant="contained"
+						onClick={onExport}
+						disabled={exportDisabled}
+					>
+						{isExporting ? t("exporting") : t("title")}
+					</Button>
 				</Box>
-			</CustomModal>
+			</Box>
+		</CustomModal>
 	);
 }

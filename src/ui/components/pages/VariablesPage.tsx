@@ -1,37 +1,28 @@
 "use client";
 
 import { VariableZone } from "@/schemas/variable/variable.schema";
+import {
+	getVariablesPageDefinition,
+	getVariablesPageDefinitionForZone,
+	VariablesPageId,
+} from "@/ui/stores/project/variables-pages";
 import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Typography } from "@mui/material";
-import { useMemo } from "react";
 import VariablesTable from "../variables/VariablesTable";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
 
-export type VariablesPageId =
-	"input-variables" | "output-variables" | "memory-variables";
-
 export type VariablesPageData = Omit<PageData, "id"> & { id: VariablesPageId };
 
-const VARIABLES_PAGES_TITLES: Record<VariablesPageId, string> = {
-	"input-variables": "Variables d'entrée",
-	"output-variables": "Variables de sortie",
-	"memory-variables": "Variables de mémoire",
-};
-
-export function getVariablesPageIdForZone(
-	zone: VariableZone,
-): VariablesPageId {
-	if (zone.includes("input")) return "input-variables";
-	if (zone.includes("output")) return "output-variables";
-	return "memory-variables";
+export function getVariablesPageIdForZone(zone: VariableZone): VariablesPageId {
+	return getVariablesPageDefinitionForZone(zone).id;
 }
 
 export function getVariablesPageData(pageId: VariablesPageId): PageData {
 	return {
 		id: pageId,
 		type: "variables",
-		title: VARIABLES_PAGES_TITLES[pageId],
+		title: getVariablesPageDefinition(pageId).title,
 	};
 }
 
@@ -42,16 +33,9 @@ const VariablesPage = ({ pageData }: { pageData: VariablesPageData }) => {
 		type: "variables",
 		title: pageData.title,
 	});
-	const zones: VariableZone[] = useMemo(() => {
-		switch (pageData.id) {
-			case "input-variables":
-				return ["logic-input", "analog-input"];
-			case "output-variables":
-				return ["logic-output", "analog-output"];
-			case "memory-variables":
-				return ["memory"];
-		}
-	}, [pageData.id]);
+	const zones: VariableZone[] = [
+		...getVariablesPageDefinition(pageData.id).zones,
+	];
 
 	return (
 		<Page

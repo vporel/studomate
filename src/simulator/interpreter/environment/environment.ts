@@ -3,6 +3,7 @@ import EnvVariable, {
 	EnvVariableType,
 	EnvVariableValue,
 } from "./env-variable";
+import type { VariableType } from "@/schemas/variable/variable.schema";
 import UnknownVariableIdException from "./exceptions/unknown-variable-id.exception";
 import UnknownVariableNameException from "./exceptions/unknown-variable-name.exception";
 
@@ -41,7 +42,9 @@ export class Environment {
 	/** Charge la valeur courante d'une variable en début de cycle, sans passer par le garde de
 	 * forçage : les images du PLC portent déjà la valeur imposée. Le contrôle de type reste fait. */
 	hydrateVariableValue(id: string, value: EnvVariableValue): void {
-		this.getVariableById(id).setValue(value);
+		const variable = this.getVariableById(id);
+		if (variable.isConstant()) return;
+		variable.setValue(value);
 	}
 
 	private getVariableById(id: string): EnvVariable {
@@ -75,12 +78,20 @@ export class Environment {
 		return this.getVariableByName(name).getType();
 	}
 
+	getVariableDeclaredTypeByName(name: string): VariableType | null {
+		return this.getVariableByName(name).getDeclaredType();
+	}
+
 	getVariableDirectionById(id: string): EnvVariableDirection {
 		return this.getVariableById(id).getDirection();
 	}
 
 	getVariableDirectionByName(name: string): EnvVariableDirection {
 		return this.getVariableByName(name).getDirection();
+	}
+
+	isConstantByName(name: string): boolean {
+		return this.getVariableByName(name).isConstant();
 	}
 
 	getVariableValueById(id: string): EnvVariableValue {

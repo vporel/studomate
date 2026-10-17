@@ -4,8 +4,13 @@ import {
 	matchesAnyAcceptedLiteral,
 } from "@/expression-language/literals/kind";
 import {
+	InputBehavior,
+	InputBehaviorKind,
+} from "@/schemas/variable/input-behavior";
+import {
 	VariableDirection,
 	VariableType,
+	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { SxProps, Theme } from "@mui/material";
 
@@ -13,6 +18,8 @@ export type SelectorStatus =
 	| "undeclared"
 	| "wrong-type"
 	| "excluded-direction"
+	| "excluded-behavior"
+	| "excluded-zone"
 	| "ok"
 	| null;
 
@@ -81,12 +88,16 @@ export function computeStatus(
 	variables: {
 		mnemonic: string;
 		type: VariableType;
+		behavior?: InputBehavior | null;
+		zone?: VariableZone;
 		getDirection(): VariableDirection;
 	}[],
+	dialect: Dialect,
 	typeFilter?: VariableType[],
 	excludeDirection?: VariableDirection,
 	acceptedLiterals?: LiteralKind[],
-	dialect: Dialect = Dialect.FR,
+	excludeBehaviorKinds?: readonly InputBehaviorKind[],
+	excludeZones?: readonly VariableZone[],
 ): SelectorStatus {
 	const trimmed = mnemonic.trim();
 	if (!trimmed) return null;
@@ -100,15 +111,36 @@ export function computeStatus(
 	if (typeFilter && !typeFilter.includes(match.type)) return "wrong-type";
 	if (excludeDirection && match.getDirection() === excludeDirection)
 		return "excluded-direction";
+	if (hasExcludedBehavior(match, excludeBehaviorKinds))
+		return "excluded-behavior";
+	if (match.zone && excludeZones?.includes(match.zone)) return "excluded-zone";
 	return "ok";
+}
+
+export function hasExcludedBehavior(
+	variable: { behavior?: InputBehavior | null },
+	excludeBehaviorKinds?: readonly InputBehaviorKind[],
+): boolean {
+	return (
+		!!variable.behavior &&
+		!!excludeBehaviorKinds?.includes(variable.behavior.kind)
+	);
 }
 
 export function columnsGridTemplate(columns: VariableColumn[]): string {
 	return columns.map((c) => `${COLUMNS[c].width}px`).join(" ");
 }
 
+// 1px/character beyond the padding: a canvas-measured width is occasionally a hair narrower
+// than the input's actual rendered width (font rendering/rounding varies by OS and display),
+// which clips the last characters of a long mnemonic — a flat margin isn't enough since the gap
+// grows with the text length, so this one scales with it instead.
 export function inputWidthPx(text: string, font: string): number {
-	return Math.max(MIN_WIDTH_PX, measureTextWidthPx(text || "?", font) + 24);
+	const measured = text || "?";
+	return Math.max(
+		MIN_WIDTH_PX,
+		measureTextWidthPx(measured, font) + 24 + measured.length * 1,
+	);
 }
 
 export type SimulationValueAlign = "left" | "center" | "right";
@@ -157,7 +189,7 @@ export function simulationValueSx(
 	const { textAlign: _textAlign, ...edgeSx } = alignEdgeSx(align, !label);
 	return {
 		position: "absolute" as const,
-		...(position === "TOP" ? { bottom: "100%" } : { top: "100%" }),
+		...(position === "TOP" ? { bottom: "100%" } : { top: "60%" }),
 		...(align === "right"
 			? { right: 0 }
 			: align === "center"
@@ -169,7 +201,7 @@ export function simulationValueSx(
 		whiteSpace: "nowrap" as const,
 		pointerEvents: "none" as const,
 		background: "rgba(0, 0, 0, 0.15)",
-		padding: "2px",
+		padding: "0px 1px",
 	};
 }
 

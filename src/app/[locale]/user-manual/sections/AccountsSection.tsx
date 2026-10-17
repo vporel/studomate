@@ -45,6 +45,12 @@ export default function AccountsSection() {
 			</Typography>
 			<Typography mb={2}>{t("sharingOpenedBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
+
+			<Typography variant="h4" mb={2}>
+				{t("deleteAccountTitle")}
+			</Typography>
+			<Typography mb={2}>{t("deleteAccountBody")}</Typography>
+			<Divider sx={{ my: 2 }} />
 		</section>
 	);
 }

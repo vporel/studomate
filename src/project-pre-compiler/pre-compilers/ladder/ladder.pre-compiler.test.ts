@@ -1,23 +1,27 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
-import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
 	getBlockPortVariableMnemonic,
 	getContactMemoryVariableMnemonic,
+	getContactPulseVariableMnemonic,
 } from "@/project-analyser/analysers/ladder/ladder.analyser";
 import ProjectPreCompilerError from "@/project-pre-compiler/project.pre-compiler.error";
 import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
 	createCompareBlockElement,
+	createConvertBlockElement,
 	createUserProgramBlockElement,
 } from "@/schemas/ladder/block.schema";
+import PLCVariable from "@/simulator/core/plc/plc-variable";
 import {
 	createContactElement,
 	createCoilElement,
 	createRailTerminalElement,
 } from "@/schemas/ladder/element.schema";
 import Ladder from "@/schemas/ladder/ladder.schema";
+import { createCounterBlockElement } from "@/schemas/ladder/function-blocks/counter.schema";
 import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import {
 	createSectionWith,
@@ -26,6 +30,7 @@ import {
 } from "@tests/utils/ladder-factory";
 import LadderPreCompiler, {
 	PreCompiledCoilAssignment,
+	PreCompiledContactEdgeAssignment,
 	PreCompiledEmbeddedNodeAssignment,
 	PreCompiledLadder,
 } from "./ladder.pre-compiler";
@@ -36,6 +41,14 @@ function coilAssignments(
 ): PreCompiledCoilAssignment[] {
 	return result.assignments.filter(
 		(a): a is PreCompiledCoilAssignment => a.kind === "coil",
+	);
+}
+
+function contactEdgeAssignments(
+	result: PreCompiledLadder,
+): PreCompiledContactEdgeAssignment[] {
+	return result.assignments.filter(
+		(a): a is PreCompiledContactEdgeAssignment => a.kind === "contactEdge",
 	);
 }
 
@@ -60,6 +73,8 @@ function describeNode(node: ASTNode): string {
 			return `${describeNode(node.left)} := ${describeNode(node.right)}`;
 		case "IF_CONTROL":
 			return `IF ${describeNode(node.condition)} THEN [${node.trueBranch.map(describeNode).join(", ")}]`;
+		case "CONVERSION_EXPRESSION":
+			return `${node.sourceType ?? "?"}_TO_${node.targetType}(${describeNode(node.expr)})`;
 		default:
 			throw new Error(
 				`Nœud inattendu dans un ladder pré-compilé : ${node.type}`,
@@ -88,7 +103,7 @@ describe("LadderPreCompiler", () => {
 
 		expect(errors).toEqual([]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"(true AND A)",
+			"A",
 		);
 	});
 
@@ -105,11 +120,11 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"(true AND NOT A)",
+			"NOT A",
 		);
 	});
 
-	it("condition d'un contact P : variable ET NON mémoire de front", () => {
+	it("contact P : impulsion = variable ET NON mémoire, puis mémoire = variable, avant la bobine qui lit l'impulsion", () => {
 		const rail = createRailTerminalElement(0);
 		const contact = createContactElement("A", "P", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
@@ -119,15 +134,26 @@ describe("LadderPreCompiler", () => {
 		);
 		const ladder = new Ladder("l1", "L", [section]);
 		const memo = getContactMemoryVariableMnemonic(contact.id);
+		const pulse = getContactPulseVariableMnemonic(contact.id);
 
 		const { result } = preCompile(ladder);
 
+		expect(result.assignments.map((a) => a.kind)).toEqual([
+			"contactEdge",
+			"contactEdge",
+			"coil",
+		]);
+		expect(
+			contactEdgeAssignments(result).map(
+				(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
+			),
+		).toEqual([`${pulse} := (A AND NOT ${memo})`, `${memo} := A`]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`(true AND (A AND NOT ${memo}))`,
+			`${pulse}`,
 		);
 	});
 
-	it("condition d'un contact N : NON variable ET mémoire de front", () => {
+	it("contact N : impulsion = NON variable ET mémoire", () => {
 		const rail = createRailTerminalElement(0);
 		const contact = createContactElement("A", "N", 0, 1);
 		const coil = createCoilElement("Q", "normal", 0, 2);
@@ -137,12 +163,96 @@ describe("LadderPreCompiler", () => {
 		);
 		const ladder = new Ladder("l1", "L", [section]);
 		const memo = getContactMemoryVariableMnemonic(contact.id);
+		const pulse = getContactPulseVariableMnemonic(contact.id);
 
 		const { result } = preCompile(ladder);
 
+		expect(
+			contactEdgeAssignments(result).map(
+				(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
+			),
+		).toEqual([`${pulse} := (NOT A AND ${memo})`, `${memo} := A`]);
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`(true AND (NOT A AND ${memo}))`,
+			`${pulse}`,
 		);
+	});
+
+	it("échantillonne le front d'un contact à sa position, entre les réseaux qui l'entourent", () => {
+		const railA = createRailTerminalElement(0);
+		const coilA = createCoilElement("QA", "normal", 0, 1);
+		const railB = createRailTerminalElement(0);
+		const contact = createContactElement("A", "P", 0, 1);
+		const coilB = createCoilElement("QB", "normal", 0, 2);
+		const railC = createRailTerminalElement(0);
+		const coilC = createCoilElement("QC", "normal", 0, 1);
+		const ladder = new Ladder("l1", "L", [
+			createSectionWith([railA, coilA], wireInSeries([railA, coilA])),
+			createSectionWith(
+				[railB, contact, coilB],
+				wireInSeries([railB, contact, coilB]),
+			),
+			createSectionWith([railC, coilC], wireInSeries([railC, coilC])),
+		]);
+
+		const { result } = preCompile(ladder);
+
+		expect(
+			result.assignments.map((a) =>
+				a.kind === "coil" ? a.variable : a.kind,
+			),
+		).toEqual(["QA", "contactEdge", "contactEdge", "QB", "QC"]);
+	});
+
+	describe("bobines inversée et de front", () => {
+		const build = (type: "inverted" | "rising" | "falling") => {
+			const rail = createRailTerminalElement(0);
+			const contact = createContactElement("A", "NO", 0, 1);
+			const coil = createCoilElement("Q", type, 0, 2);
+			const section = createSectionWith(
+				[rail, contact, coil],
+				wireInSeries([rail, contact, coil]),
+			);
+			return { coil, ...preCompile(new Ladder("l1", "L", [section])) };
+		};
+
+		it("bobine inversée : écriture normale de NON condition", () => {
+			const { result } = build("inverted");
+
+			expect(result.assignments.map((a) => a.kind)).toEqual(["coil"]);
+			const [coil] = coilAssignments(result);
+			expect(coil.mode).toBe("normal");
+			expect(describeNode(coil.condition)).toBe("NOT A");
+		});
+
+		it("bobine de front montant : condition ET NON mémoire, puis mémoire = condition", () => {
+			const { coil, result } = build("rising");
+			const memo = getContactMemoryVariableMnemonic(coil.id);
+
+			expect(result.assignments.map((a) => a.kind)).toEqual([
+				"coil",
+				"contactEdge",
+			]);
+			const [coilAssignment] = coilAssignments(result);
+			expect(coilAssignment.mode).toBe("normal");
+			expect(describeNode(coilAssignment.condition)).toBe(
+				`(A AND NOT ${memo})`,
+			);
+			expect(
+				contactEdgeAssignments(result).map(
+					(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
+				),
+			).toEqual([`${memo} := A`]);
+		});
+
+		it("bobine de front descendant : NON condition ET mémoire, puis mémoire = condition", () => {
+			const { coil, result } = build("falling");
+			const memo = getContactMemoryVariableMnemonic(coil.id);
+
+			expect(describeNode(coilAssignments(result)[0].condition)).toBe(
+				`(NOT A AND ${memo})`,
+			);
+			expect(contactEdgeAssignments(result)).toHaveLength(1);
+		});
 	});
 
 	it("deux contacts en série : ET des deux conditions, borne d'alimentation toujours vraie", () => {
@@ -159,7 +269,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"((true AND A) AND B)",
+			"(A AND B)",
 		);
 	});
 
@@ -177,7 +287,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"((true AND A) OR (true AND B))",
+			"(A OR B)",
 		);
 	});
 
@@ -244,7 +354,7 @@ describe("LadderPreCompiler", () => {
 	});
 
 	it("ordonne les réseaux d'une section par ligne d'apparition, pas colonne par colonne", () => {
-		// Rung du haut (ligne 0) : bobine en colonne 3. Rung du bas (ligne 1) : bobine en colonne 1.
+		// Circuit du haut (ligne 0) : bobine en colonne 3. Circuit du bas (ligne 1) : bobine en colonne 1.
 		// Un tri colonne-major placerait Bas avant Haut ; l'ordre attendu suit la ligne.
 		const railHaut = createRailTerminalElement(0);
 		const contactHaut = createContactElement("A", "NO", 0, 1);
@@ -270,7 +380,7 @@ describe("LadderPreCompiler", () => {
 		]);
 	});
 
-	it("un edgeMemoUpdate par contact P/N, aucun pour NO/NF", () => {
+	it("deux affectations de front par contact P/N, aucune pour NO/NF", () => {
 		const rail = createRailTerminalElement(0);
 		const contactNO = createContactElement("A", "NO", 0, 1);
 		const contactNF = createContactElement("B", "NF", 1, 1);
@@ -286,9 +396,9 @@ describe("LadderPreCompiler", () => {
 
 		const { result } = preCompile(ladder);
 
-		expect(result.edgeMemoUpdates.map((u) => u.contactId).sort()).toEqual(
-			[contactN.id, contactP.id].sort(),
-		);
+		expect(
+			contactEdgeAssignments(result).map((a) => a.contactId).sort(),
+		).toEqual([contactN.id, contactN.id, contactP.id, contactP.id].sort());
 	});
 
 	it("collecte une erreur claire (pas un crash) quand une connexion viole l'ordre de colonnes", () => {
@@ -309,7 +419,7 @@ describe("LadderPreCompiler", () => {
 	});
 
 	describe("blocs", () => {
-		it("matérialise EN depuis reach, et ENO toujours vrai pour un appel de programme utilisateur", () => {
+		it("matérialise EN depuis reach, et ENO = EN pour un appel de programme utilisateur", () => {
 			const rail = createRailTerminalElement(0);
 			const contactA = createContactElement("A", "NO", 0, 1);
 			const block = createUserProgramBlockElement("prog1", 0, 2);
@@ -328,23 +438,22 @@ describe("LadderPreCompiler", () => {
 			);
 			expect(blockPortAssignments).toHaveLength(2);
 			expect(describeNode((blockPortAssignments[0] as any).value)).toBe(
-				"(true AND A)",
+				"A",
 			);
 			expect(blockPortAssignments[0]).toMatchObject({
 				blockId: block.id,
 				mnemonic: enMnemonic,
 			});
-			expect((blockPortAssignments[1] as any).value).toMatchObject({
-				type: "BOOLEAN_LITERAL",
-				value: true,
-			});
+			expect(describeNode((blockPortAssignments[1] as any).value)).toBe(
+				enMnemonic,
+			);
 			expect(blockPortAssignments[1]).toMatchObject({
 				blockId: block.id,
 				mnemonic: enoMnemonic,
 			});
 		});
 
-		it("l'assignation EN précède celle d'une bobine placée après le bloc sur la même ligne", () => {
+		it("l'assignation EN et l'appel précèdent une bobine placée après le bloc sur la même ligne", () => {
 			const rail = createRailTerminalElement(0);
 			const block = createUserProgramBlockElement("prog1", 0, 1);
 			const coil = createCoilElement("Q", "normal", 0, 2);
@@ -359,6 +468,7 @@ describe("LadderPreCompiler", () => {
 			expect(result.assignments.map((a) => a.kind)).toEqual([
 				"blockPort",
 				"blockPort",
+				"call",
 				"coil",
 			]);
 		});
@@ -391,13 +501,42 @@ describe("LadderPreCompiler", () => {
 
 			const { result } = preCompile(ladder);
 
-			expect(result.blockCalls).toEqual([
+			expect(result.assignments.filter((a) => a.kind === "call")).toEqual([
 				{
+					kind: "call",
 					blockId: block.id,
 					programId: "prog1",
 					enMnemonic: getBlockPortVariableMnemonic(block.id, "EN"),
 				},
 			]);
+		});
+
+		it("place l'appel à la position du bloc, après ses ports et avant les réseaux suivants", () => {
+			const railAbove = createRailTerminalElement(0);
+			const coilAbove = createCoilElement("QA", "normal", 0, 1);
+			const railCall = createRailTerminalElement(0);
+			const block = createUserProgramBlockElement("prog1", 0, 1);
+			const railBelow = createRailTerminalElement(0);
+			const coilBelow = createCoilElement("QB", "normal", 0, 1);
+			const ladder = new Ladder("l1", "L", [
+				createSectionWith(
+					[railAbove, coilAbove],
+					wireInSeries([railAbove, coilAbove]),
+				),
+				createSectionWith([railCall, block], wireInSeries([railCall, block])),
+				createSectionWith(
+					[railBelow, coilBelow],
+					wireInSeries([railBelow, coilBelow]),
+				),
+			]);
+
+			const { result } = preCompile(ladder);
+
+			expect(
+				result.assignments.map((a) =>
+					a.kind === "coil" ? a.variable : a.kind,
+				),
+			).toEqual(["QA", "blockPort", "blockPort", "call", "QB"]);
 		});
 	});
 
@@ -432,7 +571,7 @@ describe("LadderPreCompiler", () => {
 			const inAssignment = result.assignments.find(
 				(a) => a.kind === "blockPort" && a.mnemonic === "Tempo1.IN",
 			) as any;
-			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(inAssignment.value)).toBe("A");
 
 			const timer = timerAssignment(result);
 			expect(timer.node.timerType).toBe("TON");
@@ -551,6 +690,171 @@ describe("LadderPreCompiler", () => {
 		});
 	});
 
+	describe("blocs compteur", () => {
+		it("matérialise un CounterNode dont lastInput référence la variable cachée du bloc", () => {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "R", pv: "5" },
+				0,
+				2,
+			);
+			const section = createSectionWith(
+				[rail, contactA, block],
+				wireInSeries([rail, contactA, block]),
+			);
+			const ladder = new Ladder("l1", "L", [section]);
+
+			const { result } = preCompile(ladder);
+
+			const found = result.assignments.find(
+				(a): a is PreCompiledEmbeddedNodeAssignment =>
+					a.kind === "embeddedNode" && a.simRole === "counter",
+			);
+			const counter = found?.node as CounterNode;
+			expect(describeNode(counter.input as ASTNode)).toBe("Compteur1.CU");
+			expect(describeNode(counter.lastInput as ASTNode)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastInput"),
+			);
+			expect(describeNode(counter.control as ASTNode)).toBe("R");
+		});
+
+		it("matérialise un littéral booléen sur R en nœud littéral, pas en identifiant", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{ name: "Compteur1", counterType: "CTU", control: "FAUX", pv: "5" },
+				0,
+				1,
+			);
+			const section = createSectionWith(
+				[rail, block],
+				wireInSeries([rail, block]),
+			);
+
+			const { result, errors } = preCompile(
+				new Ladder("l1", "L", [section]),
+			);
+
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+			expect(errors).toEqual([]);
+			expect((counter.control as ASTNode).type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.control as ASTNode)).toBe("false");
+		});
+	});
+
+	describe("bloc compteur CTUD", () => {
+		function build(qd?: string) {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{
+					name: "Stock",
+					counterType: "CTUD",
+					control: "RAZ",
+					pv: "5",
+					down: "sortie",
+					load: "charge",
+					qd,
+				},
+				0,
+				1,
+			);
+			const coil = createCoilElement("Q", "normal", 0, 3);
+			const section = createSectionWith(
+				[rail, block, coil],
+				wireInSeries([rail, block, coil]),
+			);
+			return { block, ...preCompile(new Ladder("l1", "L", [section])) };
+		}
+
+		it("matérialise CU en entrée câblée, R/CD/LD en pinoches et une mémoire de front dédiée à CD", () => {
+			const { block, result } = build();
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+
+			expect(counter.counterType).toBe("CTUD");
+			expect(describeNode(counter.input)).toBe("Stock.CU");
+			expect(describeNode(counter.control)).toBe("RAZ");
+			expect(describeNode(counter.output)).toBe("Stock.QU");
+			expect(describeNode(counter.down!.input)).toBe("sortie");
+			expect(describeNode(counter.down!.load)).toBe("charge");
+			expect(describeNode(counter.down!.output)).toBe("Stock.QD");
+			expect(describeNode(counter.down!.lastInput)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastCD"),
+			);
+			expect(describeNode(counter.lastInput)).toBe(
+				getBlockPortVariableMnemonic(block.id, "lastInput"),
+			);
+		});
+
+		it("matérialise des littéraux booléens sur CD et LD, et garde les identifiants des autres pinoches", () => {
+			const rail = createRailTerminalElement(0);
+			const block = createCounterBlockElement(
+				{
+					name: "Stock",
+					counterType: "CTUD",
+					control: "RAZ",
+					pv: "5",
+					down: "vrai",
+					load: "FAUX",
+				},
+				0,
+				1,
+			);
+			const { result } = preCompile(
+				new Ladder("l1", "L", [
+					createSectionWith([rail, block], wireInSeries([rail, block])),
+				]),
+			);
+			const counter = (
+				result.assignments.find(
+					(a): a is PreCompiledEmbeddedNodeAssignment =>
+						a.kind === "embeddedNode" && a.simRole === "counter",
+				) as PreCompiledEmbeddedNodeAssignment
+			).node as CounterNode;
+
+			expect(counter.down!.input.type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.down!.input)).toBe("true");
+			expect(counter.down!.load.type).toBe("BOOLEAN_LITERAL");
+			expect(describeNode(counter.down!.load)).toBe("false");
+			expect(counter.control.type).toBe("IDENTIFIER");
+			expect(describeNode(counter.control)).toBe("RAZ");
+		});
+
+		it("propage QU vers l'élément suivant", () => {
+			const { result } = build();
+
+			expect(describeNode(coilAssignments(result)[0].condition)).toBe(
+				"Stock.QU",
+			);
+		});
+
+		it("copie QD dans la variable de la pinoche QD quand elle est renseignée", () => {
+			const { result } = build("vide");
+
+			const copies = result.assignments.filter(
+				(a) => a.kind === "blockPort" && a.mnemonic === "vide",
+			);
+			expect(copies).toHaveLength(1);
+			expect(describeNode((copies[0] as { value: ASTNode }).value)).toBe(
+				"Stock.QD",
+			);
+			expect(
+				build().result.assignments.some(
+					(a) => a.kind === "blockPort" && a.mnemonic === "vide",
+				),
+			).toBe(false);
+		});
+	});
+
 	describe("blocs compare", () => {
 		it("matérialise IN depuis reach, et Q = IN ET l'expression", () => {
 			const rail = createRailTerminalElement(0);
@@ -575,7 +879,7 @@ describe("LadderPreCompiler", () => {
 			const inAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === inMnemonic,
 			)!;
-			expect(describeNode(inAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(inAssignment.value)).toBe("A");
 
 			const qAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === qMnemonic,
@@ -645,12 +949,12 @@ describe("LadderPreCompiler", () => {
 			const enAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === enMnemonic,
 			)!;
-			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(enAssignment.value)).toBe("A");
 
 			const enoAssignment = blockPortAssignments.find(
 				(a) => a.mnemonic === enoMnemonic,
 			)!;
-			expect(describeNode(enoAssignment.value)).toBe("true");
+			expect(describeNode(enoAssignment.value)).toBe(enMnemonic);
 
 			const assignAssignment = result.assignments.find(
 				(a) => a.kind === "embeddedNode",
@@ -660,7 +964,7 @@ describe("LadderPreCompiler", () => {
 			);
 		});
 
-		it("propage ENO (toujours vrai) aux éléments suivants sur la même ligne", () => {
+		it("propage ENO aux éléments suivants sur la même ligne", () => {
 			const rail = createRailTerminalElement(0);
 			const block = createAssignBlockElement(0, 1, { out: "X", in: "Y" });
 			const coil = createCoilElement("Q", "normal", 0, 2);
@@ -715,7 +1019,7 @@ describe("LadderPreCompiler", () => {
 			const enAssignment = (
 				result.assignments.filter((a) => a.kind === "blockPort") as any[]
 			).find((a) => a.mnemonic === enMnemonic)!;
-			expect(describeNode(enAssignment.value)).toBe("(true AND A)");
+			expect(describeNode(enAssignment.value)).toBe("A");
 
 			const assignAssignment = result.assignments.find(
 				(a) => a.kind === "embeddedNode",
@@ -723,6 +1027,57 @@ describe("LadderPreCompiler", () => {
 			expect(describeNode(assignAssignment.node)).toBe(
 				`IF ${enMnemonic} THEN [Z := (X + Y)]`,
 			);
+
+			const enoMnemonic = getBlockPortVariableMnemonic(block.id, "ENO");
+			const enoAssignment = (
+				result.assignments.filter((a) => a.kind === "blockPort") as any[]
+			).find((a) => a.mnemonic === enoMnemonic)!;
+			expect(describeNode(enoAssignment.value)).toBe(enMnemonic);
 		});
 	});
+
+describe("LadderPreCompiler : bloc convert", () => {
+	const variables = [
+		new PLCVariable("d", "D", "memory", "number", null, "DINT"),
+		new PLCVariable("i", "I", "memory", "number", null, "INT"),
+		new PLCVariable("b", "B", "memory", "boolean", null, "BOOL"),
+	];
+
+	function preCompileConvert(out: string) {
+		const rail = createRailTerminalElement(0);
+		const contactA = createContactElement("A", "NO", 0, 1);
+		const block = createConvertBlockElement(0, 2, { out, in: "D" });
+		const section = createSectionWith(
+			[rail, contactA, block],
+			wireInSeries([rail, contactA, block]),
+		);
+		const errors: ProjectPreCompilerError[] = [];
+		const result = LadderPreCompiler.preCompile(
+			new Ladder("l1", "L", [section]),
+			variables,
+			Dialect.FR,
+			errors,
+		);
+		return { result, errors, block };
+	}
+
+	it("affecte OUT par une conversion vers son type déclaré, gardée par EN", () => {
+		const { result, errors, block } = preCompileConvert("I");
+		const enMnemonic = getBlockPortVariableMnemonic(block.id, "EN");
+
+		expect(errors).toEqual([]);
+		const embedded = result.assignments.find(
+			(a) => a.kind === "embeddedNode",
+		) as PreCompiledEmbeddedNodeAssignment;
+		expect(describeNode(embedded.node)).toBe(
+			`IF ${enMnemonic} THEN [I := ?_TO_INT(D)]`,
+		);
+	});
+
+	it("signale une erreur si OUT n'a pas de type convertible", () => {
+		const { errors } = preCompileConvert("B");
+		expect(errors).toHaveLength(1);
+		expect(errors[0].message).toContain("type convertible");
+	});
+});
 });

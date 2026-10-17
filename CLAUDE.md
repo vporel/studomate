@@ -38,18 +38,31 @@ JS) before considering closures.
 
 ```
 src/schemas/           domain model (Grafcet, Project, Variable, commands...)
+src/hardware/           static descriptors of hardware models (pins, capabilities, limits) + registry,
+                        and the Arduino serial link (remote I/O protocol, STK500 flasher)
 src/expression-language/  expression language (AND/OR/NOT, FR/EN dialects) — neutral
                         module with no dependencies; used by both the compiler and editing
 src/project-analyser/  project analysis (business rules, never throws: collects issues)
 src/project-pre-compiler/  lexes/parses/analyses/simplifies expressions once and for all
 src/project-compiler/  produces the executable program (PLCRoutine[]) from the pre-compiled form
 src/simulator/          expression-language lexer/parser/interpreter + PLC engine
+src/bytecode/           bytecode for embedded targets: format, generator (from the compiled
+                        project), verifier, admissibility check; target-independent, the Arduino
+                        pin mapping is an adapter (`arduino-io-bindings.ts`)
+src/3d-scenes/          3D simulation scenes (versioned: <scene>/vN/): descriptors, physical models, fixed-step stepper, editor/scene-tab
+                        link protocol (rendering lives in `src/ui/`)
 src/bridge/             mappers between the domain/analysis and the UI (exceptions, variables, issues)
-src/lib/                neutral utilities (array, date, object), no domain dependency
+src/lib/                neutral utilities (array, object, heartbeat), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
 src/app-info.ts         app identity (name, tagline...), neutral root module
+src/user-profile/       user profile model (database-side schema, not part of the project schema), neutral root module
 ```
+
+`src/ui/lib/` only holds generic, project-agnostic code that could be copied to another
+project as is (boxes, context menu, split pane, platform detection...). Anything that knows the
+Studomate domain (schemas, stores, i18n keys, app identity) belongs elsewhere. `src/ui/utils/`
+holds pure editing/geometry logic specific to an editor (`grafcet/`, `ladder/`).
 
 Dependencies flow top to bottom in this list: the domain never depends on the UI. A project
 has a `dialect` (FR/EN) that travels with it — this is not a UI preference, it's a property of
@@ -57,9 +70,8 @@ the expressions it contains.
 
 `src/bridge/` only contains mappers where the UI is one of the two ends (domain/analysis ↔
 UI). A mapper between two internal layers stays in the layer concerned — `PlcVariablesMapper`
-(environment ↔ PLC) lives in `src/simulator/`. Accepted exception: `SchemaVariablesMapper`
-(schema → environment) is in `src/bridge/` even though its only consumers are in
-`src/project-analyser/`; move it to `src/project-analyser/` if it's touched again.
+(environment ↔ PLC) lives in `src/simulator/`, and `SchemaVariablesMapper` (schema →
+environment) in `src/project-analyser/`.
 
 ### Accounts & cloud storage
 
@@ -68,7 +80,7 @@ UI). A mapper between two internal layers stays in the layer concerned — `PlcV
 `hybrid` (switches local/cloud based on authentication). Auth (Supabase, `src/ui/stores/auth/`)
 handles sign-up, sign-in, anonymous accounts (username + password), password reset. Sharing a
 project goes through a URL token (`ShareableProjectRepository`, `?share=` handled in
-`src/ui/lib/project-url.ts`). Error monitoring is wired via Sentry
+`src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
 
 This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`).
@@ -77,10 +89,11 @@ Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KE
 
 ### PDF export
 
-`src/ui/lib/program-export-drawing/` draws each program (grafcet, ladder) **directly from the
-schema** into an IR of primitives (`DrawOp[]` → `Scene`), without mounting React Flow. Two
-backends: `backends/jspdf-backend.ts` (vector primitives via jsPDF, used by
-`JsPdfExporter.drawSection`) and `backends/svg-backend.ts` (`<svg>` string, for test snapshots).
+`src/ui/pdf/drawing/` draws each program (grafcet, ladder) **directly from the schema** into an
+IR of primitives (`DrawOp[]` → `Scene`, defined in `src/ui/lib/drawing/`), without mounting React
+Flow. Two backends in `src/ui/lib/drawing/backends/`: `jspdf-backend.ts` (vector primitives via
+jsPDF, used by `JsPdfExporter.drawSection`) and `svg-backend.ts` (`<svg>` string, for test
+snapshots).
 `usePdfExport` assembles the scenes; `JsPdfExporter` adds a cover page and titles. Rendering is
 vector-based and synchronous — no rasterization, no editor capture.
 
@@ -170,14 +183,17 @@ Always check `package.json` before quoting a version: this table goes stale at t
 - **Platform detection**: prefer `navigator.userAgentData.platform` with a fallback to
   `navigator.userAgent`, never `navigator.platform` (deprecated) — see `src/ui/lib/platform.ts`.
 - **Modals**: their visibility lives in the relevant zustand store (`openModalVisible`,
-  `exportModalVisible`, ...), not in local React state — so it can be driven from anywhere
-  (keyboard shortcuts, menus).
+  `exportModalVisible`, ...) when its state is shared between components or when it must be
+  openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
+  itself, with nothing else able to drive it, keeps its visibility in local React state.
 - **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
   after any change touching their body.
 - **`box-sizing`**: already set to `border-box` globally for all elements
   (`src/app/globals.css`, `*` selector) — never redeclare it in an `sx` prop or component style.
 - Minimal, targeted changes; follow the existing style (tabs, no trailing superfluous
   semicolons, etc. — see neighboring files).
+- **Never `git commit` unless explicitly asked.** Leave changes staged/unstaged for the
+  developer to review and commit themselves.
 - **Comments**: never document decision history (alternatives tried, "before/after",
   justification for a choice already made) — that belongs in the conversation or the commit
   message, not the code, and it rots at the first refactor. A comment is only worth writing if
@@ -198,6 +214,12 @@ Always check `package.json` before quoting a version: this table goes stale at t
   strongest when creating a new file, where the instinct is to justify why this file exists
   rather than letting it speak for itself. Describe only what the code does, never why it
   exists relative to another option — even when phrased positively.
+- **Punctuation in prose**: prefer a colon (`:`) over an em dash (`—`) to introduce an
+  explanation, a subtitle or an enumeration ("Exercice : séquence linéaire", not "Exercice —
+  séquence linéaire"). For an aside, prefer parentheses, commas or a new sentence. This applies
+  above all to text meant to be read: UI strings and i18n files, manuals, docs, training
+  content. Do not sprinkle em dashes as a default separator. Exception: the site-name suffix of
+  page titles stays an em dash (`À propos — Studomate`, `About — Studomate`); keep it as is.
 - **Comment/JSDoc language**: English. Existing French comments do not need to be translated
   in passing when a file is touched for an unrelated reason (avoid needless churn); write all
   new comments in English going forward.
@@ -245,6 +267,51 @@ in English, `migrate: () => void`), file `vN-to-vN+1.ts` + test, registered at t
 `local-storage/keys.ts`. `ensureLocalStorageLayout()` applies the chain on the first operation
 of `LocalStorageProjectRepository`.
 
+## 3D scene versioning (`src/3d-scenes/<scene>/vN/`)
+
+A project pins the scene it was created with: `Scene3d` carries `sceneId` and `sceneVersion`,
+and the registry (`scene.registry.ts`) resolves a scene by `(id, version)`. A teacher who starts
+an assignment must never see the scene change the next day.
+
+- Each scene lives in `src/3d-scenes/<scene>/vN/` (descriptor, model, interpolation, tests) and
+  its rendering in `src/ui/components/3d-scene/<scene>/vN/`. `SceneDescriptor.version` matches
+  the folder. The descriptor carries `imageUrl`, the screenshot shown in the "New project" modal
+  and in the scene chooser (`public/images/scenes-3d/`); a registry test checks that the file exists.
+- **A new version is the exception, not the rule.** Create one only when the scene changes
+  substantially: a visual overhaul, or a change of behaviour (physics, a point added/removed/
+  renamed, a different state shape) that would make a project built on the old one behave
+  differently. Small corrections (a colour, a misplaced object, a threshold slightly off, a
+  typo) never justify a new version: they are made in place, in every version they affect.
+- **Once a version has been deployed, its behaviour is frozen**: model, points, thresholds, state
+  shape. A substantial change is a new `v(N+1)` folder, registered **next to** the previous one
+  in `SCENES` and in `SCENE_VIEWS` (`scene-views.ts`, key `sceneKey(id, N+1)`). Never rewrite
+  the behaviour of a released `vN` in place.
+- **A bug fix on a scene must be checked against every version of that scene**, not only the
+  latest: a student on `v1` has to get the same fix as a teacher on `v2`. Apply it to each
+  affected `vN` and cover it with a test in each.
+- The configuration page offers a version selector next to the scene selector, so that a student
+  can use exactly the version of their teacher. A new scene or template starts on the latest
+  version (`listScenes()` returns the latest of each scene); existing projects keep theirs. A
+  version unknown to the build is reported by the analyser (`SCENE3D_UNKNOWN`).
+- A version that has not been deployed yet can still be edited in place: ask the developer
+  whether the current version has been deployed before deciding between editing it and creating
+  the next one.
+
+## Firmware version (`firmwares/arduino/uno-r3/`)
+
+A board reporting a firmware older than `SHIPPED_FIRMWARE_VERSION`
+(`src/hardware/arduino/remote-io/firmware-version.ts`) is offered an update when it is linked.
+Any change to the firmware (sketch, VM core in `firmwares/vm/`, protocol commands) must reach the
+boards, so before touching the version, **ask the developer whether the current version has
+already been deployed**: if so, increment it; if not, stay on the current one (a board already
+flashed with a development build of that same version is not offered the update, which the
+developer handles by hand).
+
+Bumping means changing together `FIRMWARE_VERSION` in the sketch and `SHIPPED_FIRMWARE_VERSION`,
+then rebuilding the precompiled hex with `firmwares/arduino/build-uno-r3.sh` (a test checks that
+all three agree). After **any** firmware change, rebuild the hex even when the version stays the
+same.
+
 ## Expression parsing cache (`parseExpressionCached`)
 
 The analyser and the pre-compiler lex/parse each expression via
@@ -280,6 +347,12 @@ When in doubt about exactly what the user is asking for (which interaction mecha
 the exact scope, etc.), ask for clarification rather than guessing and implementing — even for
 a detail that seems minor. An implementation in the wrong direction costs more to undo than a
 question asked upfront.
+
+**Verifiable facts**: never ask the user a question whose answer you can obtain yourself
+(library compatibility with the installed React/Next versions, whether a menu/file/component
+exists, an npm package's license or peer dependencies...). Run the check (`npm view`, grep,
+reading the code) and report the result. Questions are reserved for real choices (scope,
+product decisions, naming).
 
 ## Tests and bugs discovered while testing
 

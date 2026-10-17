@@ -17,7 +17,7 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		project.variables = project.variables.map((v) => {
 			const payload = this.payload.find((p) => p.id === v.id);
 			if (!payload) return v;
-			return v.update(payload.newData);
+			return v.update(payload.newData, project.dialect);
 		});
 		this.applyMnemonicRenames(project, "forward");
 		return [project, true];
@@ -27,15 +27,15 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		project.variables = project.variables.map((v) => {
 			const payload = this.payload.find((p) => p.id === v.id);
 			if (!payload) return v;
-			return v.update(payload.oldData);
+			return v.update(payload.oldData, project.dialect);
 		});
 		this.applyMnemonicRenames(project, "backward");
 		return project;
 	}
 
 	/**
-	 * Renaming a variable must rewrite every expression/reference to it, in *all* the grafcets
-	 * and ladders of the project — not only the ones currently open in the editor.
+	 * Renaming a variable must rewrite every expression/reference to it, in *all* the grafcets,
+	 * ladders and HMI pages of the project — not only the ones currently open in the editor.
 	 *
 	 * Doing it here rather than in a UI manager guarantees two things:
 	 * - it reaches every program, since the command owns the whole project;
@@ -56,10 +56,13 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 		if (Object.keys(renames).length === 0) return;
 
 		Object.values(project.grafcets).forEach((grafcet) => {
-			grafcet.renameIdentifiersInExpressions(renames);
+			grafcet.renameIdentifiersInExpressions(renames, project.dialect);
 		});
 		Object.values(project.ladders).forEach((ladder) => {
 			ladder.renameVariableReferences(renames);
+		});
+		Object.values(project.hmiPages).forEach((page) => {
+			page.renameVariableReferences(renames);
 		});
 	}
 }

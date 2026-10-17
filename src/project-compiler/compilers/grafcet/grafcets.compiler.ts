@@ -1,5 +1,6 @@
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import ExpressionsBuilder from "@/expression-language/ast/builders/expressions.builder";
 import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import NotationCompiler, {
@@ -15,6 +16,9 @@ import GrafcetCompiler from "./grafcet.compiler";
  * Compile tous les grafcets d'un projet et leurs artefacts de niveau projet :
  *
  * - une routine par grafcet (transitions + actions), scannée directement chaque cycle ;
+ * - la routine des sorties en niveau (`M := Xa OR Xb ...`, actions booléennes continues), groupées
+ *   par variable à travers tous les grafcets : une sortie portée par plusieurs étapes reste vraie
+ *   tant que l'une d'elles est active. Scannée après les routines de grafcet et avant les mémos ;
  * - la routine d'assignation des mémos d'étape (`Xi_memo := Xi` pour toutes les étapes de tous
  *   les grafcets), scannée après toutes les routines de grafcet pour que chacune ait lu la même
  *   situation — franchissements simultanés entre grafcets (règle 3, voir
@@ -41,9 +45,37 @@ export default class GrafcetsCompiler implements NotationCompiler {
 		for (const [programId, grafcet] of grafcets) {
 			const compiled = GrafcetCompiler.compile(grafcet);
 			timers.push(...compiled.timers);
-			const routine = new PLCRoutine(compiled.nodes);
+			const routine = PLCRoutine.fromNodes(compiled.nodes);
 			routinesById[programId] = routine;
 			scanRoutines.push(routine);
+		}
+
+		const stepsByOutput = new Map<string, ASTNode[]>();
+		for (const [, grafcet] of grafcets) {
+			for (const action of grafcet.actions.values()) {
+				if (!action) continue;
+				const step = grafcet.steps.get(action.stepId);
+				if (!step) continue;
+				for (const mnemonic of action.levelOutputs) {
+					const stepNodes = stepsByOutput.get(mnemonic) ?? [];
+					stepNodes.push(step.node);
+					stepsByOutput.set(mnemonic, stepNodes);
+				}
+			}
+		}
+		const levelNodes: ASTNode[] = [];
+		for (const [mnemonic, stepNodes] of stepsByOutput) {
+			levelNodes.push(
+				StatementsBuilder.buildAssignStatementNode(
+					IdentifiersBuilder.buildIdentifierNode(mnemonic),
+					stepNodes.length === 1
+						? stepNodes[0]
+						: ExpressionsBuilder.buildChainedLogicalExpressionNode("OR", stepNodes),
+				),
+			);
+		}
+		if (levelNodes.length > 0) {
+			scanRoutines.push(PLCRoutine.fromNodes(levelNodes));
 		}
 
 		const stepMemoNodes: ASTNode[] = [];
@@ -57,7 +89,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			}
 		}
 		if (stepMemoNodes.length > 0) {
-			scanRoutines.push(new PLCRoutine(stepMemoNodes));
+			scanRoutines.push(PLCRoutine.fromNodes(stepMemoNodes));
 		}
 
 		const initNodes: ASTNode[] = [];
@@ -65,7 +97,7 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			initNodes.push(...GrafcetCompiler.buildInitializationNodes(grafcet));
 		}
 		if (initNodes.length > 0) {
-			scanRoutines.push(new PLCRoutine(initNodes));
+			scanRoutines.push(PLCRoutine.fromNodes(initNodes));
 		}
 
 		const observableExpressionVariableIds: Record<
@@ -98,7 +130,9 @@ export default class GrafcetsCompiler implements NotationCompiler {
 			}
 		}
 		const trailingRoutines =
-			observationNodes.length > 0 ? [new PLCRoutine(observationNodes)] : [];
+			observationNodes.length > 0
+				? [PLCRoutine.fromNodes(observationNodes)]
+				: [];
 
 		return {
 			routinesById,

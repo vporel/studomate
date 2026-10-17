@@ -1,3 +1,4 @@
+import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import Project from "@/schemas/project/project.schema";
 import {
 	createCrossroadsProject,
@@ -40,6 +41,22 @@ describe("crossroads.template", () => {
 			expect(indicators).toHaveLength(12);
 		});
 
+		it("câble les 12 sorties sur les points de la scène 3D « Carrefour de feux »", () => {
+			const scene = project.scene3d!;
+			const descriptor = getSceneDescriptor(scene.sceneId, scene.sceneVersion)!;
+			expect(scene.sceneId).toBe("crossroads");
+			expect(Object.keys(scene.bindings).sort()).toEqual(
+				descriptor.points.map((p) => p.id).sort(),
+			);
+			for (const point of descriptor.points) {
+				const variable = project.variables.find(
+					(v) => v.id === scene.bindings[point.id],
+				);
+				expect(variable?.mnemonic).toBe(point.suggestedMnemonic);
+				expect(variable?.zone).toBe("logic-output");
+			}
+		});
+
 		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
 			const { analysis } = compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
@@ -77,8 +94,8 @@ describe("crossroads.template", () => {
 
 		it("produit des routines exécutables (grafcet + Main)", () => {
 			const { compilation } = compilePipelineDetailed(project);
-			// 1 grafcet + mémos d'étape + initialisation + 1 Main + observation des réceptivités
-			expect(compilation.result!.routines).toHaveLength(5);
+			// 1 grafcet + sorties en niveau + mémos d'étape + initialisation + 1 Main + observation des réceptivités
+			expect(compilation.result!.routines).toHaveLength(6);
 		});
 
 		it("active des sorties NS et EO complémentaires selon les phases", () => {

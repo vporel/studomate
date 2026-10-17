@@ -56,7 +56,7 @@ describe("PreferencesPage", () => {
 		expect(screen.getByLabelText("Dans le cloud")).toBeChecked();
 	});
 
-	it('affiche "Sur cet appareil" par défaut tant qu\'aucune préférence n\'existe', () => {
+	it("affiche \"Sur cet appareil\" par défaut tant qu'aucune préférence n'existe", () => {
 		mockGetPreferredSaveLocation.mockReturnValue(null);
 
 		setup();
@@ -87,7 +87,7 @@ describe("PreferencesPage", () => {
 		setup();
 
 		expect(
-			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+			screen.getByLabelText("Ouvrir automatiquement la vue de simulation"),
 		).toBeChecked();
 	});
 
@@ -96,7 +96,7 @@ describe("PreferencesPage", () => {
 		setup({ autoOpenHmi: false });
 
 		expect(
-			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+			screen.getByLabelText("Ouvrir automatiquement la vue de simulation"),
 		).not.toBeChecked();
 	});
 
@@ -106,12 +106,12 @@ describe("PreferencesPage", () => {
 		setup();
 
 		fireEvent.click(
-			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+			screen.getByLabelText("Ouvrir automatiquement la vue de simulation"),
 		);
 
 		expect(mockSetAutoOpenHmiSimulationOnStart).toHaveBeenCalledWith(false);
 		expect(
-			screen.getByLabelText("Ouvrir automatiquement la simulation HMI"),
+			screen.getByLabelText("Ouvrir automatiquement la vue de simulation"),
 		).not.toBeChecked();
 	});
 });

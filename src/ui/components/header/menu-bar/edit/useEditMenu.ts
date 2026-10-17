@@ -27,11 +27,10 @@ export default function useEditMenu(): AppMenuType {
 	const t = useT("menu.edit");
 
 	return useMemo(() => {
-		// Copier/Couper/Coller existent aussi bien pour un grafcet que pour un ladder (voir
-		// useShortcutsHandler, qui applique déjà les deux) : le menu doit refléter les deux, pas
-		// seulement le grafcet.
 		const isCopyCutPasteScope =
-			activeScopeType === "grafcet" || activeScopeType === "ladder";
+			activeScopeType === "grafcet" ||
+			activeScopeType === "ladder" ||
+			activeScopeType === "hmi";
 		const canPaste = clipboardScope === activeScopeType;
 
 		return {

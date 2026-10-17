@@ -1,3 +1,4 @@
+import { Dialect } from "@/expression-language/dialect.enum";
 import {
 	createCoilElement,
 	createContactElement,
@@ -19,7 +20,7 @@ describe("ContactAnalyser", () => {
 	function variablesContext(...variables: Variable[]) {
 		return {
 			variablesByMnemonic: new Map(variables.map((v) => [v.mnemonic, v])),
-			environment: buildAnalysisEnvironment(variables),
+			environment: buildAnalysisEnvironment(variables, Dialect.FR),
 		};
 	}
 
@@ -70,7 +71,7 @@ describe("ContactAnalyser", () => {
 		);
 	});
 
-	it("signale LADDER_NETWORK_NO_COIL (warning) quand le contact ne pilote aucune bobine", () => {
+	it("signale LADDER_SECTION_NO_COIL (warning) quand le contact ne pilote aucune bobine", () => {
 		const rail = createRailTerminalElement(0);
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 1);
@@ -85,7 +86,7 @@ describe("ContactAnalyser", () => {
 			ProjectFactory.createEmpty(),
 		);
 
-		const issue = issues.find((i) => i.code === "LADDER_NETWORK_NO_COIL");
+		const issue = issues.find((i) => i.code === "LADDER_SECTION_NO_COIL");
 		expect(issue).toBeDefined();
 		expect(issue?.severity).toBe("warning");
 	});
@@ -110,7 +111,7 @@ describe("ContactAnalyser", () => {
 		);
 	});
 
-	it("cumule LADDER_NETWORK_NO_COIL et LADDER_ELEMENT_NO_PREDECESSOR sur un contact totalement isolé", () => {
+	it("cumule LADDER_SECTION_NO_COIL et LADDER_ELEMENT_NO_PREDECESSOR sur un contact totalement isolé", () => {
 		const a = VariableFactory.createLogicInput("A");
 		const contact = createContactElement("A", "NO", 0, 0);
 		const ladder = new Ladder("l1", "L", [createSectionWith([contact])]);
@@ -124,7 +125,7 @@ describe("ContactAnalyser", () => {
 
 		expect(issues.map((i) => i.code).sort()).toEqual([
 			"LADDER_ELEMENT_NO_PREDECESSOR",
-			"LADDER_NETWORK_NO_COIL",
+			"LADDER_SECTION_NO_COIL",
 		]);
 	});
 

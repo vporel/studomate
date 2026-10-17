@@ -38,8 +38,8 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * l'appelle pour TOUS les programmes avant d'analyser quiconque, pour que chaque programme
 	 * puisse voir ce que les autres génèrent.
 	 */
-	generateVariables(grafcet: Grafcet): Variable[] {
-		return this.buildstepsVariables(grafcet);
+	generateVariables(grafcet: Grafcet, dialect: Dialect): Variable[] {
+		return this.buildstepsVariables(grafcet, dialect);
 	}
 
 	/**
@@ -56,10 +56,10 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	): GrafcetAnalysisResult {
 		// Propre à ce grafcet, indépendant de `allVariables` : sert au conflit de nom
 		// (`checkStepVariableNameConflicts`) et reste exposé dans le résultat.
-		const stepsVariables = this.generateVariables(grafcet);
+		const stepsVariables = this.generateVariables(grafcet, project.dialect);
 		// Construit une seule fois pour tout le grafcet : `analyseInContext` reçoit l'`Environment`
 		// et non la liste, pour qu'il soit structurellement impossible de le reconstruire par élément.
-		const environment = buildAnalysisEnvironment(allVariables);
+		const environment = buildAnalysisEnvironment(allVariables, project.dialect);
 		const elementsIssues = grafcet
 			.getAllElements()
 			.flatMap((element) => {
@@ -182,7 +182,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 	 * Mnemonic: X{stepNumber} — deduplicated by mnemonic so duplicate-number errors
 	 * don't produce duplicate variables.
 	 */
-	private buildstepsVariables(grafcet: Grafcet): Variable[] {
+	private buildstepsVariables(grafcet: Grafcet, dialect: Dialect): Variable[] {
 		const seen = new Set<number>();
 		const variables: Variable[] = [];
 
@@ -199,12 +199,13 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 			if (seen.has(n as number)) continue;
 			seen.add(n as number);
 			variables.push(
-				new Variable(
-					getStepVariableId(grafcet.id, n),
-					getStepVariableMnemonic(n),
-					"memory",
-					"BOOL",
-				),
+				new Variable({
+					id: getStepVariableId(grafcet.id, n),
+					mnemonic: getStepVariableMnemonic(n),
+					zone: "memory",
+					type: "BOOL",
+					dialect,
+				}),
 			);
 		}
 
@@ -231,7 +232,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		grafcetsById.set(grafcet.id, grafcet);
 		const stepVariableIds = new Set(
 			[...grafcetsById.values()].flatMap((g) =>
-				this.generateVariables(g).map((v) => v.id),
+				this.generateVariables(g, project.dialect).map((v) => v.id),
 			),
 		);
 		const externalMnemonics = new Set(
@@ -512,9 +513,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 		if (unreachableSteps.length > 0) {
 			issues.push(
 				new ProjectAnalyserIssue("error", "GRAFCET_UNREACHABLE_STEPS", source, {
-					stepNumbers: unreachableSteps
-						.map((s) => s.data.number)
-						.join(", "),
+					stepNumbers: unreachableSteps.map((s) => s.data.number).join(", "),
 				}),
 			);
 		}
@@ -543,9 +542,7 @@ export default class GrafcetAnalyser implements ProgramAnalyser<Grafcet> {
 						"GRAFCET_DEAD_END_STEPS",
 						source,
 						{
-							stepNumbers: deadEndSteps
-								.map((s) => s.data.number)
-								.join(", "),
+							stepNumbers: deadEndSteps.map((s) => s.data.number).join(", "),
 						},
 					),
 				);

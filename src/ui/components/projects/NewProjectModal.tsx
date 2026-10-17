@@ -1,20 +1,28 @@
 "use client";
 
+import { listScenes } from "@/3d-scenes/scene.registry";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import { useT } from "@/ui/i18n/useT";
-import CustomModal from "@/ui/lib/mui/CustomModal";
+import CustomModal from "@/ui/components/mui/CustomModal";
 import {
 	Box,
 	Button,
 	Card,
 	CardActionArea,
 	CardContent,
+	CardMedia,
 	Divider,
 	Typography,
 } from "@mui/material";
 import { useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "./ProjectContext";
+
+const latestScenes = listScenes();
+
+/** Templates built on a scene share its id. */
+const sceneImageOf = (templateId: string) =>
+	latestScenes.find((scene) => scene.id === templateId)?.imageUrl;
 
 export default function NewProjectModal() {
 	const {
@@ -112,9 +120,24 @@ export default function NewProjectModal() {
 											sx={{
 												height: "100%",
 												display: "flex",
+												flexDirection: "column",
 												alignItems: "stretch",
+												justifyContent: "flex-start",
 											}}
 										>
+											{sceneImageOf(template.id) && (
+												<CardMedia
+													component="img"
+													loading="lazy"
+													image={sceneImageOf(template.id)}
+													alt={tTemplates(`${template.id}.label`)}
+													sx={{
+														height: 160,
+														objectFit: "contain",
+														bgcolor: "#eef1f3",
+													}}
+												/>
+											)}
 											<CardContent>
 												<Typography variant="subtitle1" fontWeight={600}>
 													{tTemplates(`${template.id}.label`)}

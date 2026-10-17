@@ -6,33 +6,27 @@ import {
 	isAnonymousUser,
 	useAuthStore,
 } from "@/ui/stores/auth/auth.store";
-import ArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import {
-	Box,
-	Button,
-	Menu,
-	MenuItem,
-	Tooltip,
-	Typography,
-} from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import AuthModal from "./AuthModal";
+import CloudAccountModal from "./CloudAccountModal";
 import { useT } from "@/ui/i18n/useT";
 
 export default function AccountStatus() {
-	const { user, loading, init, signOut, setAuthModalVisible } = useAuthStore(
+	const { user, loading, init, setAuthModalVisible } = useAuthStore(
 		useShallow((state) => ({
 			user: state.user,
 			loading: state.loading,
 			init: state.init,
-			signOut: state.signOut,
 			setAuthModalVisible: state.setAuthModalVisible,
 		})),
 	);
 
 	const t = useT("auth.accountStatus");
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [cloudAccountModalVisible, setCloudAccountModalVisible] =
+		useState(false);
 
 	useEffect(() => {
 		if (isSupabaseConfigured) void init();
@@ -62,8 +56,8 @@ export default function AccountStatus() {
 			<Button
 				size="small"
 				color="inherit"
-				onClick={(e) => setAnchorEl(e.currentTarget)}
-				endIcon={<ArrowDownIcon fontSize="small" />}
+				onClick={() => setCloudAccountModalVisible(true)}
+				endIcon={<AccountCircleIcon fontSize="small" />}
 				sx={{ textTransform: "none" }}
 			>
 				<Typography
@@ -75,20 +69,10 @@ export default function AccountStatus() {
 					{displayName}
 				</Typography>
 			</Button>
-			<Menu
-				anchorEl={anchorEl}
-				open={Boolean(anchorEl)}
-				onClose={() => setAnchorEl(null)}
-			>
-				<MenuItem
-					onClick={() => {
-						setAnchorEl(null);
-						void signOut();
-					}}
-				>
-					{t("signOut")}
-				</MenuItem>
-			</Menu>
+			<CloudAccountModal
+				open={cloudAccountModalVisible}
+				onClose={() => setCloudAccountModalVisible(false)}
+			/>
 		</Box>
 	);
 }

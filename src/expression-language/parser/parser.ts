@@ -15,6 +15,8 @@ import BadTokenTypeException from "./exceptions/bad-token-type.exception";
 import MissingPrimaryOrLeftParentheseException from "./exceptions/missing-primary-or-left-parenthese.exception";
 import MissingRightParentheseException from "./exceptions/missing-right-parenthese.exception";
 import ParsingEndedBeforeEOFException from "./exceptions/parsing-ended-before-eof.exception";
+import UnknownFunctionException from "./exceptions/unknown-function.exception";
+import { parseConversionFunctionName } from "../conversions";
 
 export default class Parser {
 	private tokens: Token[];
@@ -159,6 +161,9 @@ export default class Parser {
 			if (this.isTimerPattern()) {
 				return this.parseTimerDefinition();
 			}
+			if (this.tokens[this.position + 1]?.type === TokenType.LPAREN) {
+				return this.parseFunctionCall();
+			}
 			this.consume(TokenType.IDENTIFIER);
 			return IdentifiersBuilder.buildIdentifierNode(
 				token.value,
@@ -179,6 +184,16 @@ export default class Parser {
 			return LiteralsBuilder.buildNumberNode(
 				parseFloat(token.value),
 				token.position,
+				token.value.includes(".") ? "real" : "integer",
+			);
+		}
+
+		if (this.at(TokenType.TIME_LITERAL)) {
+			this.consume(TokenType.TIME_LITERAL);
+			return LiteralsBuilder.buildNumberNode(
+				Number(token.value),
+				token.position,
+				"time",
 			);
 		}
 
@@ -204,6 +219,30 @@ export default class Parser {
 		}
 
 		throw new MissingPrimaryOrLeftParentheseException(token);
+	}
+
+	/** Only the standard's conversion functions exist: `DINT_TO_INT(expr)`. */
+	private parseFunctionCall(): ASTNode {
+		const nameToken = this.consume(TokenType.IDENTIFIER);
+		const conversion = parseConversionFunctionName(nameToken.value);
+		if (!conversion)
+			throw new UnknownFunctionException(nameToken.value, nameToken.position);
+		this.consume(TokenType.LPAREN);
+		const argument = this.parseExpr();
+		if (!this.at(TokenType.RPAREN)) {
+			const t = this.current();
+			throw new MissingRightParentheseException(
+				t.position,
+				t.type === TokenType.EOF,
+			);
+		}
+		this.consume(TokenType.RPAREN);
+		return ExpressionsBuilder.buildConversionExpressionNode(
+			conversion.source,
+			conversion.target,
+			argument,
+			nameToken.position,
+		);
 	}
 
 	private isTimerPattern(): boolean {

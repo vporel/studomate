@@ -8,12 +8,18 @@
 		"programs": "Programmes",
 		"blockInstances": "Instances de blocs",
 		"systemBlocks": "Blocs systèmes",
-		"hmi": "Interfaces HMI"
+		"hmi": "Interfaces HMI",
+		"configuration": "Configuration"
+	},
+	"configurationItems": {
+		"hardware": "Configuration matérielle",
+		"scene3d": "Configuration scène 3D"
 	},
 	"variableGroups": {
 		"inputs": "Entrées",
 		"outputs": "Sorties",
 		"memories": "Mémoires",
+		"constants": "Constantes",
 		"system": "Système"
 	},
 	"hmiMain": "Principale",
@@ -24,6 +30,8 @@
 		"configure": "Paramétrer",
 		"rename": "Renommer",
 		"delete": "Supprimer",
+		"excludeFromExecution": "Exclure de l'exécution",
+		"includeInExecution": "Inclure dans l'exécution",
 		"newGrafcet": "Nouveau grafcet",
 		"newLadder": "Nouveau ladder",
 		"newHmiPage": "Nouvelle page HMI",

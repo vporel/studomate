@@ -200,6 +200,13 @@ describe("Ladder", () => {
 		});
 	});
 
+	it("can be excluded from execution, except the Main", () => {
+		expect(new Ladder("l1", "L").canBeExcludedFromExecution()).toBe(true);
+		expect(
+			new Ladder("l2", "Main", undefined, "main").canBeExcludedFromExecution(),
+		).toBe(false);
+	});
+
 	describe("copy", () => {
 		it("copie en profondeur sections, éléments et connexions", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
@@ -229,6 +236,13 @@ describe("Ladder", () => {
 		it("préserve le rôle du ladder", () => {
 			const main = new Ladder("l1", "Main", undefined, "main");
 			expect(main.copy().role).toBe("main");
+		});
+
+		it("preserves excludedFromExecution", () => {
+			const ladder = new Ladder("l1", "L");
+			expect(ladder.copy().excludedFromExecution).toBe(false);
+			ladder.excludedFromExecution = true;
+			expect(ladder.copy().excludedFromExecution).toBe(true);
 		});
 	});
 
@@ -335,6 +349,19 @@ describe("Ladder", () => {
 				sections: [],
 			});
 			expect(Ladder.createFromJSON(legacyJSON).role).toBe("standard");
+		});
+
+		it("restores excludedFromExecution, and defaults to false when absent from the JSON", () => {
+			const ladder = new Ladder("l1", "L");
+			ladder.excludedFromExecution = true;
+			expect(
+				Ladder.createFromJSON(JSON.stringify(ladder)).excludedFromExecution,
+			).toBe(true);
+
+			const legacyJSON = JSON.stringify({ id: "l2", name: "L2", sections: [] });
+			expect(Ladder.createFromJSON(legacyJSON).excludedFromExecution).toBe(
+				false,
+			);
 		});
 	});
 });

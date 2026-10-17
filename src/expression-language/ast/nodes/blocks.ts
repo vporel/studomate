@@ -25,23 +25,32 @@ export interface TimerStringDeclarationNode extends BaseNode {
 	presetTime: number; //in ms
 }
 
-export type CounterType = "CTU" | "CTD";
+export type CounterType = "CTU" | "CTD" | "CTUD";
 
 /**
- * CTU (compte vers le haut, `input`/`control` = `CU`/`R`) ou CTD (compte vers le bas,
- * `input`/`control` = `CD`/`LD`) — les deux variantes partagent la même forme de nœud, seul le
- * sens du comptage et la cible de `control` diffèrent (`CounterNodeEvaluator`). `input` et
- * `control` sont évalués en niveau (pas de détection de front, contrairement à `TimerNode`) :
- * `control` vrai est prioritaire sur `input` et fige `currentValue` à sa valeur cible (`0` pour
- * CTU, `presetValue` pour CTD) le temps qu'il reste vrai.
+ * CTU (counts up, `input`/`control` = `CU`/`R`), CTD (counts down, `input`/`control` =
+ * `CD`/`LD`) or CTUD (both, see `down`): the variants share the same node shape, only the counting
+ * direction and the target of `control` differ (`CounterNodeEvaluator`). `input` counts on its rising edge
+ * (detected through `lastInput`); `control` is evaluated on level: while true, it takes priority
+ * over `input` and holds `currentValue` at its target value (`0` for CTU, `presetValue` for CTD).
  */
 export interface CounterNode extends BaseNode {
 	type: "COUNTER_BLOCK";
 	counterType: CounterType;
 	input: ASTNode; //should be of native type boolean
+	lastInput: ASTNode; //should be an identifier node referencing a boolean variable (used to detect edges)
 	control: ASTNode; //should be of native type boolean
 	presetValue: ASTNode; //should be of native type number
 	currentValue: ASTNode; //should be an identifier node referencing a numeric variable
+	output: ASTNode; //should be an identifier node referencing a boolean variable
+	/** CTUD only: the counting-down half (`CD`, its edge memory, `LD`, `QD`); `input`/`control`/`output` then carry `CU`/`R`/`QU`. */
+	down?: CounterDownPart;
+}
+
+export interface CounterDownPart {
+	input: ASTNode; //should be of native type boolean
+	lastInput: ASTNode; //should be an identifier node referencing a boolean variable (used to detect edges)
+	load: ASTNode; //should be of native type boolean
 	output: ASTNode; //should be an identifier node referencing a boolean variable
 }
 

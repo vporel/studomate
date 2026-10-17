@@ -1,5 +1,6 @@
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import {
+	CounterDownPart,
 	CounterNode,
 	TimerNode,
 	TimerStringDeclarationNode,
@@ -8,6 +9,7 @@ import { IfControlNode } from "@/expression-language/ast/nodes/controls";
 import {
 	ArithmeticExpressionNode,
 	ComparisonExpressionNode,
+	ConversionExpressionNode,
 	LogicalExpressionNode,
 	UnaryExpressionNode,
 } from "@/expression-language/ast/nodes/expressions";
@@ -21,6 +23,7 @@ import {
 import { AssignStatementNode } from "@/expression-language/ast/nodes/statements";
 import { BaseVisitor } from "@/expression-language/ast/visitors/base.visitor";
 import { Environment } from "../environment/environment";
+import AssignmentToConstantException from "./exceptions/assignment-to-constant.exception";
 import AssignmentToSystemVariableException from "./exceptions/assignment-to-system-variable.exception";
 import IncompatibleOperandsTypesException from "./exceptions/incompatible-operands-types.exception";
 import InputIdentifierAssignmentException from "./exceptions/input-identifier-assignment.exception";
@@ -31,6 +34,8 @@ import InvalidCounterControlTypeException from "./exceptions/invalid-counter-con
 import InvalidCounterCurrentValueNodeException from "./exceptions/invalid-counter-current-value-node.exception";
 import InvalidCounterCurrentValueTypeException from "./exceptions/invalid-counter-current-value-type.exception";
 import InvalidCounterInputTypeException from "./exceptions/invalid-counter-input-type.exception";
+import InvalidCounterLastInputNodeException from "./exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "./exceptions/invalid-counter-last-input-type.exception";
 import InvalidCounterOutputNodeException from "./exceptions/invalid-counter-output-node.exception";
 import InvalidCounterOutputTypeException from "./exceptions/invalid-counter-output-type.exception";
 import InvalidCounterPresetValueTypeException from "./exceptions/invalid-counter-preset-value-type.exception";
@@ -45,6 +50,28 @@ import InvalidTimerPresetTimeTypeException from "./exceptions/invalid-timer-pres
 import InvalidUnaryExprOperandTypeException from "./exceptions/invalid-unary-expr-operand-type.exception";
 import UnauthorizedNodeException from "./exceptions/unauthorized-node.exception";
 import UnknownIdentifierException from "./exceptions/unknown-identifier.exception";
+import BitStringArithmeticException from "./exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException, {
+	BlockNumericOperand,
+} from "./exceptions/bit-string-block-operand.exception";
+import ConstantOutOfRangeException from "./exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "./exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "./exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "./exceptions/invalid-conversion-argument.exception";
+import NumericTypeAnalyserVisitor from "./numeric-type-analyser.visitor";
+import {
+	arithmeticResultType,
+	isBitStringType,
+	isConstantOutOfRange,
+	isImplicitlyAssignable,
+	NumericType,
+	TypedNumber,
+	unifyNumericTypes,
+} from "./numeric-typing";
+import {
+	isConversionSupported,
+	isConvertibleType,
+} from "@/expression-language/conversions";
 import TypeAnalyserVisitor, {
 	ExpectedNodeResultType,
 } from "./type-analyser.visitor";
@@ -59,12 +86,14 @@ export type SemanticAnalyserOptions = {
 export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 	private env: Environment;
 	private typeAnalyser: TypeAnalyserVisitor;
+	private numericTypeAnalyser: NumericTypeAnalyserVisitor;
 	private unauthorizedNodes: ASTNode["type"][];
 
 	constructor(environment: Environment, options?: SemanticAnalyserOptions) {
 		super();
 		this.env = environment;
 		this.typeAnalyser = new TypeAnalyserVisitor(environment);
+		this.numericTypeAnalyser = new NumericTypeAnalyserVisitor(environment);
 		this.unauthorizedNodes = options?.unauthorizedNodes || [];
 	}
 
@@ -109,7 +138,7 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 					);
 				}
 				break;
-			case "-":
+			case "-": {
 				if (operandType !== "number") {
 					throw new InvalidUnaryExprOperandTypeException(
 						"-",
@@ -118,7 +147,11 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 						node,
 					);
 				}
+				const numericType = this.numericTypeAnalyser.visit(node.expr).type;
+				if (isBitStringType(numericType))
+					throw new BitStringArithmeticException("-", numericType, node);
 				break;
+			}
 		}
 		this.visit(node.expr);
 	}
@@ -149,6 +182,71 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.visit(node.left);
 		this.visit(node.right);
+
+		const left = this.numericTypeAnalyser.visit(node.left);
+		const right = this.numericTypeAnalyser.visit(node.right);
+		for (const operand of [left, right]) {
+			if (isBitStringType(operand.type))
+				throw new BitStringArithmeticException(node.operator, operand.type, node);
+		}
+		if (arithmeticResultType(node.operator, left, right) === null)
+			this.throwIncompatibleOperands(node, left, right);
+	}
+
+	/** Two numeric operands that no implicit conversion reconciles: a constant out of the range
+	 * of the other operand's type is reported as such, anything else as a type mismatch. */
+	private throwIncompatibleOperands(
+		node: ArithmeticExpressionNode | ComparisonExpressionNode,
+		left: TypedNumber,
+		right: TypedNumber,
+	): never {
+		if (left.value !== undefined && isConstantOutOfRange(left, right.type))
+			throw new ConstantOutOfRangeException(left.value, right.type, node.left);
+		if (right.value !== undefined && isConstantOutOfRange(right, left.type))
+			throw new ConstantOutOfRangeException(right.value, left.type, node.right);
+		throw new IncompatibleNumericTypesException(
+			node.operator,
+			left.type,
+			right.type,
+			node,
+		);
+	}
+
+	protected visitConversionExpressionNode(node: ConversionExpressionNode): void {
+		this.visit(node.expr);
+		const nativeType = this.typeAnalyser.visit(node.expr);
+		if (nativeType !== "number") {
+			throw new InvalidConversionArgumentException(
+				node.targetType,
+				node.sourceType,
+				nativeType === "void" ? "unknown" : nativeType,
+				node,
+			);
+		}
+		const argument = this.numericTypeAnalyser.visit(node.expr);
+		if (node.sourceType !== null) {
+			if (!isImplicitlyAssignable(argument, node.sourceType))
+				throw new InvalidConversionArgumentException(
+					node.targetType,
+					node.sourceType,
+					argument.type,
+					node,
+				);
+			return;
+		}
+		if (
+			argument.type !== "ANY_NUM" &&
+			!(
+				isConvertibleType(argument.type) &&
+				isConversionSupported(argument.type, node.targetType)
+			)
+		)
+			throw new InvalidConversionArgumentException(
+				node.targetType,
+				null,
+				argument.type,
+				node,
+			);
 	}
 
 	protected visitComparisonExpressionNode(
@@ -163,6 +261,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				rightType as ExpectedNodeResultType,
 				node,
 			);
+		}
+		if (leftType === "number") {
+			const left = this.numericTypeAnalyser.visit(node.left);
+			const right = this.numericTypeAnalyser.visit(node.right);
+			const mixesTimeWithNonTime =
+				(left.type === "TIME") !== (right.type === "TIME") &&
+				left.type !== "ANY_NUM" &&
+				right.type !== "ANY_NUM";
+			if (mixesTimeWithNonTime || unifyNumericTypes(left, right) === null)
+				this.throwIncompatibleOperands(node, left, right);
 		}
 		if (node.operator !== "=" && node.operator !== "!=") {
 			// For comparison operators other than equality and inequality, check that both operands are numbers
@@ -222,6 +330,9 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (isSystemVariableName(node.left.value)) {
 			throw new AssignmentToSystemVariableException(node);
 		}
+		if (this.env.isConstantByName(node.left.value)) {
+			throw new AssignmentToConstantException(node);
+		}
 		const identifierDirection = this.env.getVariableDirectionByName(
 			node.left.value,
 		);
@@ -241,6 +352,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		}
 		this.visit(node.left);
 		this.visit(node.right);
+
+		if (leftType === "number") {
+			const target: NumericType = this.numericTypeAnalyser.visit(node.left).type;
+			const value = this.numericTypeAnalyser.visit(node.right);
+			if (!isImplicitlyAssignable(value, target)) {
+				if (value.value !== undefined && isConstantOutOfRange(value, target))
+					throw new ConstantOutOfRangeException(value.value, target, node.right);
+				throw new ExplicitConversionRequiredException(value.type, target, node);
+			}
+		}
 	}
 
 	protected visitIfControlNode(node: IfControlNode): void {
@@ -301,6 +422,21 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 				node,
 			);
 		}
+		this.checkNotBitString("PT", node.presetTime, node);
+		this.checkNotBitString("ET", node.elapsedTime, node);
+	}
+
+	/** Timer and counter values are signed quantities (TIME and INT in IEC 61131-3): the
+	 * Arduino VM compares them as signed 32-bit integers, which a DWORD above 2^31 breaks. */
+	private checkNotBitString(
+		operand: BlockNumericOperand,
+		operandNode: ASTNode,
+		blockNode: TimerNode | CounterNode,
+	): void {
+		const type = this.numericTypeAnalyser.visit(operandNode).type;
+		if (isBitStringType(type)) {
+			throw new BitStringBlockOperandException(operand, type, blockNode, operandNode);
+		}
 	}
 
 	protected visitTimerStringDeclarationNode(
@@ -320,6 +456,16 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (inputType !== "boolean") {
 			throw new InvalidCounterInputTypeException(
 				inputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (node.lastInput.type !== "IDENTIFIER") {
+			throw new InvalidCounterLastInputNodeException(node);
+		}
+		const lastInputType = this.typeAnalyser.visit(node.lastInput);
+		if (lastInputType !== "boolean") {
+			throw new InvalidCounterLastInputTypeException(
+				lastInputType as ExpectedNodeResultType,
 				node,
 			);
 		}
@@ -354,6 +500,49 @@ export default class SemanticAnalyserVisitor extends BaseVisitor<void> {
 		if (presetValueType !== "number") {
 			throw new InvalidCounterPresetValueTypeException(
 				presetValueType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		this.checkNotBitString("PV", node.presetValue, node);
+		this.checkNotBitString("CV", node.currentValue, node);
+		if (node.down) this.analyseCounterDownPart(node, node.down);
+	}
+
+	private analyseCounterDownPart(
+		node: CounterNode,
+		down: CounterDownPart,
+	): void {
+		const inputType = this.typeAnalyser.visit(down.input);
+		if (inputType !== "boolean") {
+			throw new InvalidCounterInputTypeException(
+				inputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (down.lastInput.type !== "IDENTIFIER") {
+			throw new InvalidCounterLastInputNodeException(node);
+		}
+		const lastInputType = this.typeAnalyser.visit(down.lastInput);
+		if (lastInputType !== "boolean") {
+			throw new InvalidCounterLastInputTypeException(
+				lastInputType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		const loadType = this.typeAnalyser.visit(down.load);
+		if (loadType !== "boolean") {
+			throw new InvalidCounterControlTypeException(
+				loadType as ExpectedNodeResultType,
+				node,
+			);
+		}
+		if (down.output.type !== "IDENTIFIER") {
+			throw new InvalidCounterOutputNodeException(node);
+		}
+		const outputType = this.typeAnalyser.visit(down.output);
+		if (outputType !== "boolean") {
+			throw new InvalidCounterOutputTypeException(
+				outputType as ExpectedNodeResultType,
 				node,
 			);
 		}

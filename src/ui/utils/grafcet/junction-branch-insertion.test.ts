@@ -1,10 +1,7 @@
 import { JunctionData } from "@/schemas/grafcet/junction.schema";
 import computeBranchInsertion from "./junction-branch-insertion";
 
-function data(
-	positions: number[],
-	pivotPosition = 100,
-): JunctionData {
+function data(positions: number[], pivotPosition = 100): JunctionData {
 	const branches: JunctionData["branches"] = {};
 	const branchesOrder: string[] = [];
 	positions.forEach((p, i) => {
@@ -19,7 +16,14 @@ const PAGE = 1000;
 
 describe("computeBranchInsertion — milieu", () => {
 	it("insère à mi-distance des voisines, arrondi grille", () => {
-		const res = computeBranchInsertion(data([10, 190]), 200, 300, PAGE, 1, "n")!;
+		const res = computeBranchInsertion(
+			data([10, 190]),
+			200,
+			300,
+			PAGE,
+			1,
+			"n",
+		)!;
 		expect(res.width).toBe(200);
 		expect(res.nodeX).toBe(300);
 		expect(res.branchesOrder).toEqual(["b1", "n", "b2"]);
@@ -58,7 +62,14 @@ describe("computeBranchInsertion — droite", () => {
 
 	it("bride la nouvelle branche au bord de page", () => {
 		// jonction en x=700 : l'écart idéal (180) sortirait de la page.
-		const res = computeBranchInsertion(data([10, 190]), 200, 700, PAGE, 2, "n")!;
+		const res = computeBranchInsertion(
+			data([10, 190]),
+			200,
+			700,
+			PAGE,
+			2,
+			"n",
+		)!;
 		expect(res.branches["n"].position).toBe(290); // 1000 - 700 - 10
 		expect(res.width).toBe(300);
 		expect(res.nodeX).toBe(700);
@@ -73,7 +84,14 @@ describe("computeBranchInsertion — droite", () => {
 
 describe("computeBranchInsertion — gauche", () => {
 	it("décale la jonction vers la gauche en gardant l'écart extérieur", () => {
-		const res = computeBranchInsertion(data([10, 190]), 200, 300, PAGE, 0, "n")!;
+		const res = computeBranchInsertion(
+			data([10, 190]),
+			200,
+			300,
+			PAGE,
+			0,
+			"n",
+		)!;
 		expect(res.nodeX).toBe(120); // 300 - 180
 		expect(res.width).toBe(380);
 		expect(res.pivotPosition).toBe(280); // 100 + 180

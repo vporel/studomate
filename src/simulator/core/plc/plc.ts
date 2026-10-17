@@ -1,13 +1,19 @@
-import { SYSTEM_TIME_BASES } from "@/schemas/variable/system-variables";
+import type { HeartbeatScheduler } from "@/lib/heartbeat/heartbeat-scheduler";
+import {
+	SYSTEM_FIRST_SCAN,
+	SYSTEM_TIME_BASES,
+	SYSTEM_VARIABLES,
+} from "@/schemas/variable/system-variables";
+import {
+	getNumericRange,
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+} from "@/schemas/variable/variable.schema";
 import PlcVariablesMapper from "@/simulator/environment-plc.mapper";
 import { Environment } from "@/simulator/interpreter/environment/environment";
 import ClockedRunnable from "../clocked-runnable";
 import { RunnableCallback } from "../runnable";
 import PLCRoutine from "./plc-routine";
-import PLCVariable, {
-	PLCVariableType,
-	PLCVariableValue,
-} from "./plc-variable";
+import PLCVariable, { PLCVariableType, PLCVariableValue } from "./plc-variable";
 
 export default class PLC extends ClockedRunnable {
 	private inputImage: Record<string, PLCVariable> = {};
@@ -40,19 +46,16 @@ export default class PLC extends ClockedRunnable {
 	 */
 	private readonly environment: Environment;
 	/**
-	 * Temps accumulé (ms) depuis la dernière impulsion de chaque base de temps système
-	 * (`_SYS_TB_*`). `acc -= période` (et non `= 0`) à chaque impulsion, pour ne pas perdre le
-	 * reliquat de phase quand un scan dépasse un peu la période.
-	 *
-	 * Le moteur n'émet qu'**une** impulsion par scan. Si un scan couvre plusieurs périodes (cas
-	 * hors contrat : `temps de scan ≤ période`, cf. `SystemTimeBase` — n'arrive en pratique qu'en
-	 * pas-à-pas après une longue pause réelle), une seule période est soustraite : l'impulsion
-	 * reprend au scan suivant si le reliquat le justifie, mais les tops purement intermédiaires
-	 * d'un même scan sont perdus.
+	 * Phase courante (ms, dans `[0, période[`) de chaque base de temps système (`_SYS_TB_*`) au
+	 * sein de sa période. Le niveau vaut vrai sur la première moitié de la période, faux sur la
+	 * seconde (signal carré, rapport cyclique 50 %).
 	 */
 	private readonly systemTimeBaseAccumulatorsMs = new Map<string, number>(
 		SYSTEM_TIME_BASES.map((base) => [base.name, 0]),
 	);
+	/** Rearmed by `start()`, consumed by the first `executeProgram()` that follows. */
+	private firstScanPending = true;
+	private lastCycleDeltaMs = 0;
 
 	constructor(config: {
 		scanTimeMs: number;
@@ -64,8 +67,9 @@ export default class PLC extends ClockedRunnable {
 		onCycleStart?: RunnableCallback<PLC>;
 		onCycleEnd?: RunnableCallback<PLC>;
 		onCycleError?: (error: Error) => void;
+		heartbeat?: HeartbeatScheduler;
 	}) {
-		super(config.scanTimeMs);
+		super(config.scanTimeMs, config.heartbeat);
 		this.program = config.program;
 		this.routinesById = config.routinesById ?? {};
 		if (config.onPLCStart) this.onStart = config.onPLCStart;
@@ -77,7 +81,10 @@ export default class PLC extends ClockedRunnable {
 			const variableCopy = variable.copy();
 			if (variable.getScope() === "input") {
 				this.physicalInputs[variableCopy.getId()] = variableCopy;
-				this.physicalInputIdsByName.set(variableCopy.getName(), variableCopy.getId());
+				this.physicalInputIdsByName.set(
+					variableCopy.getName(),
+					variableCopy.getId(),
+				);
 				this.inputImage[variableCopy.getId()] = variableCopy.copy();
 			} else if (variable.getScope() === "output") {
 				this.physicalOutputs[variableCopy.getId()] = variableCopy.copy();
@@ -90,13 +97,15 @@ export default class PLC extends ClockedRunnable {
 
 		// Variables système : garanties présentes même quand le programme ne vient pas du
 		// pré-compilateur (tests, usages directs). Le PLC les met à jour lui-même chaque cycle.
-		for (const base of SYSTEM_TIME_BASES) {
-			if (!this.memory[base.name]) {
-				this.memory[base.name] = new PLCVariable(
-					base.name,
-					base.name,
+		for (const systemVariable of SYSTEM_VARIABLES) {
+			if (!this.memory[systemVariable.name]) {
+				this.memory[systemVariable.name] = new PLCVariable(
+					systemVariable.name,
+					systemVariable.name,
 					"memory",
-					"boolean",
+					VARIABLE_TYPE_TO_NATIVE_TYPE[systemVariable.type],
+					getNumericRange(systemVariable.type),
+					systemVariable.type,
 				);
 			}
 		}
@@ -108,6 +117,11 @@ export default class PLC extends ClockedRunnable {
 				...Object.values(this.memory),
 			].map(PlcVariablesMapper.plcToEnv),
 		);
+	}
+
+	/** Time (ms) charged to the last executed cycle. */
+	public getLastCycleDeltaMs(): number {
+		return this.lastCycleDeltaMs;
 	}
 
 	/**
@@ -152,9 +166,14 @@ export default class PLC extends ClockedRunnable {
 		return variable;
 	}
 
-	public setMemoryValueById(id: string, value: PLCVariableValue): void {
+	/** Returns the value actually stored, after coercion to the variable's range. */
+	public setMemoryValueById(
+		id: string,
+		value: PLCVariableValue,
+	): PLCVariableValue {
 		const variable = this.getMemoryVariableById(id);
 		variable.setValue(value);
+		return variable.getValue();
 	}
 
 	private getMemoryVariableById(id: string): PLCVariable {
@@ -163,12 +182,20 @@ export default class PLC extends ClockedRunnable {
 		return variable;
 	}
 
-	public setPhysicalInputValueById(id: string, value: PLCVariableValue): void {
+	/** Returns the value actually stored, after coercion to the input's range. */
+	public setPhysicalInputValueById(
+		id: string,
+		value: PLCVariableValue,
+	): PLCVariableValue {
 		const input = this.getPhysicalInputById(id);
 		input.setValue(value);
+		return input.getValue();
 	}
 
-	public setPhysicalInputValueByName(name: string, value: PLCVariableValue): void {
+	public setPhysicalInputValueByName(
+		name: string,
+		value: PLCVariableValue,
+	): void {
 		const input = this.getPhysicalInputByName(name);
 		input.setValue(value);
 	}
@@ -187,6 +214,8 @@ export default class PLC extends ClockedRunnable {
 	}
 
 	public forceVariable(id: string, value: PLCVariableValue): void {
+		if (this.memory[id]?.isConstant())
+			throw new Error(`"${this.memory[id].getName()}" is a constant`);
 		this.forcedVariables.set(id, value);
 	}
 
@@ -210,8 +239,8 @@ export default class PLC extends ClockedRunnable {
 	protected tick(): void {
 		this.executeCallback(this.onCycleStart, "Error in onCycleStart callback:");
 		try {
-			this.applyForcedVariables();
 			this.readInputs();
+			this.applyForcedVariables();
 			this.executeProgram();
 			this.writeOutputs();
 		} catch (e) {
@@ -226,10 +255,14 @@ export default class PLC extends ClockedRunnable {
 		this.executeCallback(this.onCycleEnd, "Error in onCycleEnd callback:");
 	}
 
+	/**
+	 * Must run after `readInputs`: forcing overrides the input image only, so the physical
+	 * source regains control as soon as the variable is released.
+	 */
 	private applyForcedVariables(): void {
 		this.forcedVariables.forEach((value, id) => {
-			if (this.physicalInputs[id]) {
-				this.physicalInputs[id].setValue(value);
+			if (this.inputImage[id]) {
+				this.inputImage[id].setValue(value);
 			} else if (this.outputImage[id]) {
 				this.outputImage[id].setValue(value);
 			} else if (this.memory[id]) {
@@ -257,7 +290,13 @@ export default class PLC extends ClockedRunnable {
 		}
 
 		const deltaTimeMs = this.consumeElapsedMs();
+		this.lastCycleDeltaMs = deltaTimeMs;
 		this.updateSystemTimeBases(deltaTimeMs);
+		this.environment.setVariableValueByName(
+			SYSTEM_FIRST_SCAN.name,
+			this.firstScanPending,
+		);
+		this.firstScanPending = false;
 
 		for (const routine of this.program) {
 			routine.execute(this.environment, deltaTimeMs, this.routinesById);
@@ -269,30 +308,28 @@ export default class PLC extends ClockedRunnable {
 				this.environment.getVariableValueById(id),
 			);
 		}
-		for (const id of Object.keys(this.memory)) {
+		for (const [id, variable] of Object.entries(this.memory)) {
+			if (variable.isConstant()) continue;
 			this.setMemoryValueById(id, this.environment.getVariableValueById(id));
 		}
 	}
 
 	/**
-	 * Calcule les impulsions des bases de temps système pour ce cycle et les écrit dans
-	 * l'environnement, **avant** l'exécution des routines. `deltaTimeMs` est celui déjà consommé
-	 * pour les temporisations — les bases suivent donc le même temps simulé.
-	 *
-	 * Au plus une impulsion par scan et par base. Une base dont la période est plus courte que le
-	 * temps de scan est interdite (cf. `SystemTimeBase`) ; le comportement quand `deltaTimeMs`
-	 * couvre néanmoins plusieurs périodes est décrit sur `systemTimeBaseAccumulatorsMs`.
+	 * Calcule le niveau des bases de temps système pour ce cycle et l'écrit dans l'environnement,
+	 * **avant** l'exécution des routines. `deltaTimeMs` est celui déjà consommé pour les
+	 * temporisations — les bases suivent donc le même temps simulé.
 	 */
 	private updateSystemTimeBases(deltaTimeMs: number): void {
 		for (const base of SYSTEM_TIME_BASES) {
-			const accumulated =
-				(this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) + deltaTimeMs;
-			const pulse = accumulated >= base.periodMs;
-			this.systemTimeBaseAccumulatorsMs.set(
+			const phase =
+				((this.systemTimeBaseAccumulatorsMs.get(base.name) ?? 0) +
+					deltaTimeMs) %
+				base.periodMs;
+			this.systemTimeBaseAccumulatorsMs.set(base.name, phase);
+			this.environment.setVariableValueByName(
 				base.name,
-				pulse ? accumulated - base.periodMs : accumulated,
+				phase < base.periodMs / 2,
 			);
-			this.environment.setVariableValueByName(base.name, pulse);
 		}
 	}
 
@@ -304,6 +341,7 @@ export default class PLC extends ClockedRunnable {
 
 	public start(): void {
 		this.resetSystemTimeBases();
+		this.firstScanPending = true;
 		super.start();
 	}
 

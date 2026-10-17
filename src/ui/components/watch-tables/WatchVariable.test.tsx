@@ -16,16 +16,25 @@ function setup({
 	dialect = Dialect.FR,
 	setPhysicalInputValue = jest.fn(),
 	setMemoryValue = jest.fn(),
+	drivenInputIds = [],
+	scene3dDrivenInputIds = [],
+	simulationSource = "local",
 }: {
+	simulationSource?: "local" | "board";
 	variable: Variable;
 	value?: any;
 	dialect?: Dialect;
 	setPhysicalInputValue?: jest.Mock;
 	setMemoryValue?: jest.Mock;
+	drivenInputIds?: string[];
+	scene3dDrivenInputIds?: string[];
 }) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: { dialect },
+			hardwareLink: { status: "linked", drivenInputIds },
+			scene3dDrivenInputIds,
+			simulationSource,
 			simulationManager: { setPhysicalInputValue, setMemoryValue },
 			simulationVariablesStates:
 				value === undefined ? {} : { [variable.id]: { value } },
@@ -38,7 +47,13 @@ function setup({
 describe("WatchVariable — variables booléennes", () => {
 	it("affiche VRAI/FAUX (dialecte FR) pour une sortie, sans contrôle éditable", () => {
 		setup({
-			variable: new Variable("v1", "Q0", "logic-output", "BOOL"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "Q0",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 			value: true,
 			dialect: Dialect.FR,
 		});
@@ -48,7 +63,13 @@ describe("WatchVariable — variables booléennes", () => {
 
 	it("affiche TRUE/FALSE (dialecte EN) pour une sortie", () => {
 		setup({
-			variable: new Variable("v1", "Q0", "logic-output", "BOOL"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "Q0",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 			value: false,
 			dialect: Dialect.EN,
 		});
@@ -56,13 +77,27 @@ describe("WatchVariable — variables booléennes", () => {
 	});
 
 	it("affiche '-' quand la valeur n'est pas encore connue", () => {
-		setup({ variable: new Variable("v1", "Q0", "logic-output", "BOOL") });
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "Q0",
+				zone: "logic-output",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		});
 		expect(screen.getByText("-")).toBeInTheDocument();
 	});
 
 	it("affiche un interrupteur pour une entrée, et appelle setPhysicalInputValue au changement", () => {
 		const { setPhysicalInputValue, setMemoryValue } = setup({
-			variable: new Variable("v1", "I0", "logic-input", "BOOL"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 			value: false,
 		});
 
@@ -74,7 +109,13 @@ describe("WatchVariable — variables booléennes", () => {
 
 	it("appelle setMemoryValue pour une variable mémoire (ni IN ni OUT)", () => {
 		const { setMemoryValue, setPhysicalInputValue } = setup({
-			variable: new Variable("v1", "M0", "memory", "BOOL"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "M0",
+				zone: "memory",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 			value: false,
 		});
 
@@ -88,7 +129,13 @@ describe("WatchVariable — variables booléennes", () => {
 describe("WatchVariable — variables non booléennes", () => {
 	it("affiche la valeur en lecture seule pour une sortie", () => {
 		setup({
-			variable: new Variable("v1", "AQ0", "analog-output", "INT"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "AQ0",
+				zone: "analog-output",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
 			value: 42,
 		});
 		expect(screen.getByText("42")).toBeInTheDocument();
@@ -97,7 +144,13 @@ describe("WatchVariable — variables non booléennes", () => {
 
 	it("affiche un champ éditable pour une entrée numérique, et tronque en entier si le type n'est pas REAL", () => {
 		const { setPhysicalInputValue } = setup({
-			variable: new Variable("v1", "AI0", "analog-input", "INT"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "AI0",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
 			value: 0,
 		});
 
@@ -110,7 +163,13 @@ describe("WatchVariable — variables non booléennes", () => {
 
 	it("ne tronque pas les valeurs REAL", () => {
 		const { setMemoryValue } = setup({
-			variable: new Variable("v1", "R0", "memory", "REAL"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "R0",
+				zone: "memory",
+				type: "REAL",
+				dialect: Dialect.FR,
+			}),
 			value: 0,
 		});
 
@@ -123,7 +182,13 @@ describe("WatchVariable — variables non booléennes", () => {
 
 	it("empêche la saisie de '.' pour une variable numérique non REAL", () => {
 		setup({
-			variable: new Variable("v1", "AI0", "analog-input", "INT"),
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "AI0",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
 			value: 0,
 		});
 		const input = screen.getByRole("spinbutton");
@@ -134,5 +199,395 @@ describe("WatchVariable — variables non booléennes", () => {
 		});
 		const prevented = !input.dispatchEvent(event);
 		expect(prevented).toBe(true);
+	});
+});
+
+describe("WatchVariable — comportement physique des entrées", () => {
+	const withBehavior = (variable: Variable, behavior: Variable["behavior"]) =>
+		variable.update({ behavior }, Dialect.FR);
+
+	it("bouton poussoir NO : VRAI à l'appui, FAUX au relâchement", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "marche",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "marche" });
+
+		fireEvent.pointerDown(button);
+		fireEvent.pointerUp(button);
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", true],
+			["v1", false],
+		]);
+	});
+
+	it("bouton poussoir NF : FAUX à l'appui, VRAI au relâchement, affiché enfoncé quand FAUX", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "arret",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "push-button-nc",
+					params: null,
+				},
+			),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "arret" });
+		expect(button).toHaveAttribute("aria-pressed", "true");
+		expect(button).toHaveTextContent("");
+		expect(screen.getByText("FAUX")).toBeInTheDocument();
+
+		fireEvent.pointerDown(button);
+		fireEvent.pointerLeave(button);
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", false],
+			["v1", true],
+		]);
+	});
+
+	it("bouton poussoir : Espace maintenu appuie une seule fois, relâché revient au repos", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "marche",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
+			value: false,
+		});
+		const button = screen.getByRole("button", { name: "marche" });
+
+		fireEvent.keyDown(button, { key: " " });
+		fireEvent.keyDown(button, { key: " " });
+		fireEvent.keyUp(button, { key: " " });
+
+		expect(setPhysicalInputValue.mock.calls).toEqual([
+			["v1", true],
+			["v1", false],
+		]);
+	});
+
+	it("bouton poussoir : un relâchement sans appui préalable n'écrit rien", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "marche",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "push-button-no",
+					params: null,
+				},
+			),
+			value: false,
+		});
+
+		fireEvent.pointerLeave(screen.getByRole("button", { name: "marche" }));
+
+		expect(setPhysicalInputValue).not.toHaveBeenCalled();
+	});
+
+	it("commutateur NF : la position actionnée écrit FAUX", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "arret",
+					zone: "logic-input",
+					type: "BOOL",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "toggle-switch-nc",
+					params: null,
+				},
+			),
+			value: true,
+		});
+		const control = screen.getByRole("switch");
+		expect(control).not.toBeChecked();
+
+		fireEvent.click(control);
+
+		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", false);
+	});
+
+	it("curseur : affiche la valeur et écrit la valeur choisie", () => {
+		const { setPhysicalInputValue } = setup({
+			variable: withBehavior(
+				new Variable({
+					id: "v1",
+					mnemonic: "niveau",
+					zone: "analog-input",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
+				{
+					kind: "slider",
+					params: { min: 0, max: 100 },
+				},
+			),
+			value: 40,
+		});
+		const slider = screen.getByRole("slider", { name: "niveau" });
+		expect(slider).toHaveAttribute("aria-valuemin", "0");
+		expect(slider).toHaveAttribute("aria-valuemax", "100");
+		expect(screen.getByText("40")).toBeInTheDocument();
+
+		fireEvent.change(slider, { target: { value: 70 } });
+
+		expect(setPhysicalInputValue).toHaveBeenCalledWith("v1", 70);
+	});
+});
+
+describe("WatchVariable — entrée pilotée par la carte liée", () => {
+	const driven = ["v1"];
+
+	it("désactive l'interrupteur d'une entrée TOR", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "bp",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			value: false,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("switch")).toBeDisabled();
+	});
+
+	it("laisse l'interrupteur actif pour une entrée non pilotée", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "bp",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			value: false,
+			drivenInputIds: ["autre"],
+		});
+		expect(screen.getByRole("switch")).toBeEnabled();
+	});
+
+	it("désactive le bouton poussoir", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "bp",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "push-button-no", params: null },
+				},
+				Dialect.FR,
+			),
+			value: false,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("button", { name: "bp" })).toBeDisabled();
+	});
+
+	it("désactive le curseur et le champ numérique", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}).update(
+				{
+					behavior: { kind: "slider", params: { min: 0, max: 100 } },
+				},
+				Dialect.FR,
+			),
+			value: 40,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("slider", { name: "niveau" })).toBeDisabled();
+	});
+
+	it("désactive le champ d'une entrée analogique sans comportement", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "niveau",
+				zone: "analog-input",
+				type: "INT",
+				dialect: Dialect.FR,
+			}),
+			value: 40,
+			drivenInputIds: driven,
+		});
+		expect(screen.getByRole("spinbutton", { name: "niveau" })).toBeDisabled();
+	});
+});
+
+describe("WatchVariable — entrée pilotée par un capteur de la scène 3D", () => {
+	it("désactive l'interrupteur d'une entrée pilotée par un capteur", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "bp",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			value: false,
+			scene3dDrivenInputIds: ["v1"],
+		});
+		expect(screen.getByRole("switch")).toBeDisabled();
+	});
+
+	it("laisse l'interrupteur actif si le capteur pilote une autre entrée", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "bp",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			value: false,
+			scene3dDrivenInputIds: ["autre"],
+		});
+		expect(screen.getByRole("switch")).toBeEnabled();
+	});
+});
+
+describe("WatchVariable — adresse", () => {
+	it("affiche l'adresse de la variable sous son mnémonique", () => {
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "E1",
+			zone: "logic-input",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		}).update(
+			{
+				address: "%PD2",
+			},
+			Dialect.FR,
+		);
+		setup({ variable, value: false });
+		expect(screen.getByText("%PD2")).toBeInTheDocument();
+		expect(screen.getByText("E1")).toBeInTheDocument();
+	});
+
+	it("n'affiche rien sous le mnémonique d'une variable sans adresse", () => {
+		setup({
+			variable: new Variable({
+				id: "v1",
+				mnemonic: "E1",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			value: false,
+		});
+		expect(screen.queryByText(/^%/)).not.toBeInTheDocument();
+	});
+});
+
+describe("WatchVariable — programme exécuté par la carte", () => {
+	it("laisse saisir une entrée sans broche quand on suit le programme d'une carte", () => {
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "E1",
+			zone: "logic-input",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		setup({ variable, value: false, simulationSource: "board" });
+		expect(screen.getByRole("switch")).toBeEnabled();
+	});
+
+	it("verrouille une entrée câblée sur une broche, même quand on suit une carte", () => {
+		const variable = new Variable({
+			id: "v1",
+			mnemonic: "E1",
+			zone: "logic-input",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		setup({
+			variable,
+			value: false,
+			simulationSource: "board",
+			drivenInputIds: ["v1"],
+		});
+		expect(screen.getByRole("switch")).toBeDisabled();
+	});
+});
+
+describe("WatchVariable: constantes", () => {
+	it("affiche une constante booléenne sans interrupteur", () => {
+		setup({
+			variable: new Variable({
+				id: "k",
+				mnemonic: "ACTIF",
+				zone: "constant",
+				type: "BOOL",
+				value: "VRAI",
+				dialect: Dialect.FR,
+			}),
+			value: true,
+		});
+
+		expect(screen.getByText("VRAI")).toBeInTheDocument();
+		expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+	});
+
+	it("affiche une constante numérique sans champ de saisie", () => {
+		setup({
+			variable: new Variable({
+				id: "k",
+				mnemonic: "SEUIL",
+				zone: "constant",
+				type: "INT",
+				value: "40",
+				dialect: Dialect.FR,
+			}),
+			value: 40,
+		});
+
+		expect(screen.getByText("40")).toBeInTheDocument();
+		expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
 	});
 });

@@ -33,7 +33,9 @@ const cover: PdfCoverPage = {
 	},
 };
 
-function makeDoc(overrides: Partial<PdfExportDocument> = {}): PdfExportDocument {
+function makeDoc(
+	overrides: Partial<PdfExportDocument> = {},
+): PdfExportDocument {
 	return {
 		filename: "projet",
 		sections: [makeSection("GRAFCET — G1")],
@@ -67,7 +69,7 @@ jest.mock("jspdf", () => ({
 }));
 
 const mockRenderSceneToJsPdf = jest.fn();
-jest.mock("@/ui/lib/program-export-drawing/backends/jspdf-backend", () => ({
+jest.mock("@/ui/lib/drawing/backends/jspdf-backend", () => ({
 	renderSceneToJsPdf: (...args: unknown[]) => mockRenderSceneToJsPdf(...args),
 }));
 
@@ -230,7 +232,9 @@ describe("JsPdfExporter", () => {
 		};
 		await new JsPdfExporter().export(
 			makeDoc({
-				sections: [{ title: "Variables de mémoire", orientation: "landscape", table }],
+				sections: [
+					{ title: "Variables de mémoire", orientation: "landscape", table },
+				],
 			}),
 		);
 		const printed = mockText.mock.calls.flatMap((c) =>
@@ -264,6 +268,8 @@ describe("JsPdfExporter", () => {
 		const scale = callTall[2].scale;
 		// Hauteur utile d'une page (A4 paysage) : (210-15) - 15 (marge basse) - 7 (intitulé).
 		const availableSectionHeight = 210 - 15 - 15 - 7;
-		expect(tall.height * scale).toBeLessThanOrEqual(availableSectionHeight + 0.01);
+		expect(tall.height * scale).toBeLessThanOrEqual(
+			availableSectionHeight + 0.01,
+		);
 	});
 });

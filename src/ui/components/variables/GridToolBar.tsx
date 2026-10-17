@@ -16,8 +16,11 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import Variable from "@/schemas/variable/variable.schema";
-import { exportVariablesTablePdf } from "@/ui/lib/pdf/variables-table-pdf";
-import trackEvent from "@/ui/lib/analytics";
+import {
+	exportVariablesTablePdf,
+	type VariablesTableColumns,
+} from "@/ui/pdf/variables-table-pdf";
+import trackEvent from "@/ui/services/analytics";
 import {
 	ExportCsv,
 	FilterPanelTrigger,
@@ -32,6 +35,15 @@ import {
 } from "@mui/x-data-grid";
 import * as React from "react";
 import { useProjectStore } from "../projects/ProjectContext";
+
+declare module "@mui/x-data-grid" {
+	interface ToolbarPropsOverrides {
+		rowSelectionModel: GridRowSelectionModel;
+		zoneVariables: Variable[];
+		pageTitle: string;
+		pdfColumns: VariablesTableColumns;
+	}
+}
 
 type OwnerState = {
 	expanded: boolean;
@@ -68,10 +80,12 @@ export default function GridToolBar({
 	rowSelectionModel,
 	zoneVariables,
 	pageTitle,
+	pdfColumns,
 }: {
 	rowSelectionModel: GridRowSelectionModel;
 	zoneVariables: Variable[];
 	pageTitle: string;
+	pdfColumns: VariablesTableColumns;
 }) {
 	const t = useT("pages.variablesGrid.toolbar");
 	const tColumns = useT("pages.variablesGrid.columns");
@@ -93,10 +107,12 @@ export default function GridToolBar({
 				date,
 			}),
 			variables: zoneVariables,
+			columns: pdfColumns,
 			labels: {
 				mnemonic: tColumns("mnemonic"),
 				type: tColumns("type"),
 				address: tColumns("address"),
+				declaredValue: tColumns("declaredValue"),
 				comment: tColumns("comment"),
 			},
 		})

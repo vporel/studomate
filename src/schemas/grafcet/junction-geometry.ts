@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import { JunctionData } from "./junction.schema";
 
 /**
@@ -18,10 +19,6 @@ function snap(px: number): number {
 	return (
 		Math.round(px / JUNCTION_BRANCH_MARGIN) * JUNCTION_BRANCH_MARGIN || 0
 	);
-}
-
-function clamp(value: number, min: number, max: number): number {
-	return Math.max(min, Math.min(max, value));
 }
 
 /**

@@ -36,8 +36,8 @@ describe("SYSTEM_TIME_BASES", () => {
 		}
 	});
 
-	// Simplification assumée : le moteur n'émet qu'une impulsion par scan, une base plus rapide
-	// que le temps de scan par défaut (100 ms) perdrait des tops.
+	// Simplification assumée : en dessous du temps de scan par défaut (100 ms), la demi-période
+	// d'une base plus rapide ne serait plus résolue par le programme.
 	it("aucune base n'a de période inférieure au temps de scan par défaut (100 ms)", () => {
 		for (const base of SYSTEM_TIME_BASES) {
 			expect(base.periodMs).toBeGreaterThanOrEqual(100);
@@ -56,6 +56,12 @@ describe("SYSTEM_VARIABLES / getSystemVariable", () => {
 		for (const base of SYSTEM_TIME_BASES) {
 			expect(SYSTEM_VARIABLES).toContainEqual(base);
 		}
+	});
+
+	it("expose le bit de premier scan en BOOL", () => {
+		expect(getSystemVariable("_SYS_FIRST_SCAN")).toEqual(
+			expect.objectContaining({ name: "_SYS_FIRST_SCAN", type: "BOOL" }),
+		);
 	});
 
 	it("getSystemVariable retrouve par nom, undefined sinon", () => {

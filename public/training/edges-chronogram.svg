@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" font-family="sans-serif">
+	<g stroke="#cfd8dc" stroke-width="1" stroke-dasharray="2,2">
+		<line x1="30" y1="10" x2="30" y2="170" />
+		<line x1="60" y1="10" x2="60" y2="170" />
+		<line x1="90" y1="10" x2="90" y2="170" />
+		<line x1="120" y1="10" x2="120" y2="170" />
+		<line x1="150" y1="10" x2="150" y2="170" />
+		<line x1="180" y1="10" x2="180" y2="170" />
+		<line x1="210" y1="10" x2="210" y2="170" />
+		<line x1="240" y1="10" x2="240" y2="170" />
+		<line x1="270" y1="10" x2="270" y2="170" />
+	</g>
+
+	<text x="5" y="33" font-size="12" font-weight="bold" fill="#263238">IN</text>
+	<path d="M 30 40 L 90 40 L 90 20 L 180 20 L 180 40 L 270 40" fill="none" stroke="#1565c0" stroke-width="2" />
+
+	<text x="8" y="93" font-size="12" font-weight="bold" fill="#263238">P</text>
+	<path d="M 30 100 L 90 100 L 90 80 L 120 80 L 120 100 L 270 100" fill="none" stroke="#2e7d32" stroke-width="2" />
+
+	<text x="7" y="153" font-size="12" font-weight="bold" fill="#263238">N</text>
+	<path d="M 30 160 L 180 160 L 180 140 L 210 140 L 210 160 L 270 160" fill="none" stroke="#c62828" stroke-width="2" />
+
+	<g font-size="10" fill="#607d8b" text-anchor="middle">
+		<text x="45" y="185">1</text>
+		<text x="75" y="185">2</text>
+		<text x="105" y="185">3</text>
+		<text x="135" y="185">4</text>
+		<text x="165" y="185">5</text>
+		<text x="195" y="185">6</text>
+		<text x="225" y="185">7</text>
+		<text x="255" y="185">8</text>
+	</g>
+</svg>

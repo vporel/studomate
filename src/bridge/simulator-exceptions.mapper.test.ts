@@ -3,7 +3,7 @@ import IdentifiersBuilder from "@/expression-language/ast/builders/identifiers.b
 import LiteralsBuilder from "@/expression-language/ast/builders/literals.builder";
 import StatementsBuilder from "@/expression-language/ast/builders/statements.builder";
 import BlocksBuilder from "@/expression-language/ast/builders/blocks.builder";
-import { TimerNode } from "@/expression-language/ast/nodes/blocks";
+import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import InvalidCharacterException from "@/expression-language/lexer/exceptions/invalid-character.exception";
 import InvalidKeywordException from "@/expression-language/lexer/exceptions/invalid-keyword.exception";
 import UnterminatedStringException from "@/expression-language/lexer/exceptions/unterminated-string.exception";
@@ -14,6 +14,7 @@ import ParsingEndedBeforeEOFException from "@/expression-language/parser/excepti
 import UnknownVariableNameException from "@/simulator/interpreter/environment/exceptions/unknown-variable-name.exception";
 import { DivisionByZeroException } from "@/expression-language/interpreter/exceptions/division-by-zero.exception";
 import IncompatibleOperandsTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-operands-types.exception";
+import AssignmentToConstantException from "@/simulator/interpreter/semantic-analyser/exceptions/assignment-to-constant.exception";
 import InputIdentifierAssignmentException from "@/simulator/interpreter/semantic-analyser/exceptions/input-identifier-assignment.exception";
 import InvalidAssignmentTargetException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-assignment-target.exception";
 import InvalidBinaryExprOperandTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-binary-expr-operand-type.exception";
@@ -34,7 +35,17 @@ import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import frExpressionErrors from "@/i18n/messages/fr/expressionErrors.json";
 import enExpressionErrors from "@/i18n/messages/en/expressionErrors.json";
+import InvalidCounterLastInputNodeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-node.exception";
+import InvalidCounterLastInputTypeException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-counter-last-input-type.exception";
 import SimulatorExceptionsMapper from "./simulator-exceptions.mapper";
+import BitStringArithmeticException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-arithmetic.exception";
+import BitStringBlockOperandException from "@/simulator/interpreter/semantic-analyser/exceptions/bit-string-block-operand.exception";
+import ConstantOutOfRangeException from "@/simulator/interpreter/semantic-analyser/exceptions/constant-out-of-range.exception";
+import ExplicitConversionRequiredException from "@/simulator/interpreter/semantic-analyser/exceptions/explicit-conversion-required.exception";
+import IncompatibleNumericTypesException from "@/simulator/interpreter/semantic-analyser/exceptions/incompatible-numeric-types.exception";
+import InvalidConversionArgumentException from "@/simulator/interpreter/semantic-analyser/exceptions/invalid-conversion-argument.exception";
+import InvalidTimeLiteralException from "@/expression-language/lexer/exceptions/invalid-time-literal.exception";
+import UnknownFunctionException from "@/expression-language/parser/exceptions/unknown-function.exception";
 
 function timerNode(): TimerNode {
 	return BlocksBuilder.buildTimerNode(
@@ -43,6 +54,18 @@ function timerNode(): TimerNode {
 		IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
 		LiteralsBuilder.buildNumberNode(1000, 0),
 		IdentifiersBuilder.buildIdentifierNode("elapsed", 0),
+		IdentifiersBuilder.buildIdentifierNode("output", 0),
+	);
+}
+
+function counterNode(): CounterNode {
+	return BlocksBuilder.buildCounterNode(
+		"CTU",
+		LiteralsBuilder.buildBooleanNode(true, 0),
+		IdentifiersBuilder.buildIdentifierNode("lastInput", 0),
+		LiteralsBuilder.buildBooleanNode(false, 0),
+		LiteralsBuilder.buildNumberNode(5, 0),
+		IdentifiersBuilder.buildIdentifierNode("cv", 0),
 		IdentifiersBuilder.buildIdentifierNode("output", 0),
 	);
 }
@@ -56,6 +79,132 @@ describe("SimulatorExceptionsMapper", () => {
 			const e = new UnknownVariableNameException("Foo");
 			expect(message(e, "fr")).toBe("Variable inconnue : Foo");
 			expect(message(e, "en")).toBe("Unknown variable name: Foo");
+		});
+	});
+
+	describe("numeric typing exceptions", () => {
+		const x = () => IdentifiersBuilder.buildIdentifierNode("x", 0);
+		const arithmetic = () =>
+			ExpressionsBuilder.buildArithmeticExpressionNode("*", x(), x(), 0);
+
+		it("maps IncompatibleNumericTypesException with a conversion hint toward REAL", () => {
+			const e = new IncompatibleNumericTypesException(
+				"*",
+				"DINT",
+				"REAL",
+				arithmetic(),
+			);
+			expect(message(e, "fr")).toBe(
+				"Types DINT et REAL incompatibles pour l'opérateur « * » : convertissez explicitement l'un des opérandes (fonction DINT_TO_REAL).",
+			);
+			expect(message(e, "en")).toBe(
+				'Types DINT and REAL are incompatible for operator "*": explicitly convert one of the operands (function DINT_TO_REAL).',
+			);
+		});
+
+		it("maps IncompatibleNumericTypesException, converting a bit string to the integer", () => {
+			const e = new IncompatibleNumericTypesException(
+				"=",
+				"INT",
+				"WORD",
+				arithmetic(),
+			);
+			expect(message(e, "fr")).toContain("(fonction WORD_TO_INT)");
+		});
+
+		it("maps IncompatibleNumericTypesException without a hint for a constant", () => {
+			const e = new IncompatibleNumericTypesException(
+				"*",
+				"INT",
+				"ANY_REAL",
+				arithmetic(),
+			);
+			expect(message(e, "fr")).toBe(
+				"Types INT et constante réelle incompatibles pour l'opérateur « * » : convertissez explicitement l'un des opérandes.",
+			);
+		});
+
+		it("maps BitStringArithmeticException", () => {
+			const e = new BitStringArithmeticException("+", "WORD", arithmetic());
+			expect(message(e, "fr")).toBe(
+				"Opérateur « + » interdit sur le type WORD (chaîne de bits) : convertissez d'abord la valeur en entier (WORD_TO_INT ou WORD_TO_DINT).",
+			);
+		});
+
+		it("maps BitStringBlockOperandException", () => {
+			const node = counterNode();
+			const e = new BitStringBlockOperandException(
+				"PV",
+				"WORD",
+				node,
+				node.presetValue,
+			);
+			expect(message(e, "fr")).toBe(
+				"L'opérande PV d'un bloc ne peut pas être de type WORD (chaîne de bits) : utilisez une variable INT, DINT ou TIME.",
+			);
+		});
+
+		it("maps ConstantOutOfRangeException", () => {
+			const e = new ConstantOutOfRangeException(40000, "INT", x());
+			expect(message(e, "fr")).toBe(
+				"La constante 40000 dépasse les limites du type INT.",
+			);
+			expect(message(e, "en")).toBe(
+				"Constant 40000 is out of the range of type INT.",
+			);
+		});
+
+		it("maps ExplicitConversionRequiredException, naming the conversion function", () => {
+			const e = new ExplicitConversionRequiredException(
+				"DINT",
+				"INT",
+				StatementsBuilder.buildAssignStatementNode(x(), x()),
+			);
+			expect(message(e, "fr")).toBe(
+				"Affectation d'une valeur DINT à une variable INT : une conversion explicite est nécessaire (fonction DINT_TO_INT).",
+			);
+		});
+
+		it("maps ExplicitConversionRequiredException without a hint when no conversion exists", () => {
+			const e = new ExplicitConversionRequiredException(
+				"TIME",
+				"INT",
+				StatementsBuilder.buildAssignStatementNode(x(), x()),
+			);
+			expect(message(e, "fr")).toBe(
+				"Affectation d'une valeur TIME à une variable INT : une conversion explicite est nécessaire.",
+			);
+		});
+
+		it("maps InvalidConversionArgumentException, with or without an expected type", () => {
+			const node = ExpressionsBuilder.buildConversionExpressionNode(
+				"DINT",
+				"INT",
+				x(),
+			);
+			expect(
+				message(
+					new InvalidConversionArgumentException("INT", "DINT", "REAL", node),
+					"fr",
+				),
+			).toBe(
+				"Conversion vers INT impossible : la valeur est de type REAL, DINT attendu.",
+			);
+			expect(
+				message(
+					new InvalidConversionArgumentException("WORD", null, "REAL", node),
+					"fr",
+				),
+			).toBe("Aucune conversion de REAL vers WORD.");
+		});
+
+		it("maps UnknownFunctionException and InvalidTimeLiteralException", () => {
+			expect(message(new UnknownFunctionException("FOO", 3), "fr")).toContain(
+				"Fonction inconnue « FOO » à la position 3",
+			);
+			expect(message(new InvalidTimeLiteralException("T#abc", 0), "fr")).toBe(
+				"Constante de temps invalide « T#abc » à la position 0",
+			);
 		});
 	});
 
@@ -145,6 +294,21 @@ describe("SimulatorExceptionsMapper", () => {
 			);
 		});
 
+		it("maps AssignmentToConstantException", () => {
+			const node = StatementsBuilder.buildAssignStatementNode(
+				IdentifiersBuilder.buildIdentifierNode("SEUIL", 0),
+				LiteralsBuilder.buildNumberNode(2, 0),
+				0,
+			);
+			const e = new AssignmentToConstantException(node);
+			expect(message(e, "fr")).toBe(
+				"Affectation invalide : une constante est en lecture seule.",
+			);
+			expect(message(e, "en")).toBe(
+				"Invalid assignment: a constant is read-only.",
+			);
+		});
+
 		it("maps IncompatibleOperandsTypesException", () => {
 			const node = ExpressionsBuilder.buildComparisonExpressionNode(
 				"=",
@@ -180,7 +344,29 @@ describe("SimulatorExceptionsMapper", () => {
 
 			it("maps InvalidTimerLastInputTypeException", () => {
 				const e = new InvalidTimerLastInputTypeException("number", timerNode());
-				expect(message(e, "fr")).toContain("doit être un booléen (trouvé nombre)");
+				expect(message(e, "fr")).toContain(
+					"doit être un booléen (trouvé nombre)",
+				);
+			});
+
+			it("maps InvalidCounterLastInputNodeException", () => {
+				const e = new InvalidCounterLastInputNodeException(counterNode());
+				expect(message(e, "fr")).toContain(
+					"la dernière valeur d'entrée d'un bloc compteur doit être une variable",
+				);
+				expect(message(e, "en")).toContain(
+					"the last input of a counter block must be an identifier",
+				);
+			});
+
+			it("maps InvalidCounterLastInputTypeException", () => {
+				const e = new InvalidCounterLastInputTypeException(
+					"number",
+					counterNode(),
+				);
+				expect(message(e, "fr")).toContain(
+					"dernière valeur d'entrée d'un bloc compteur doit être un booléen (trouvé nombre)",
+				);
 			});
 
 			it("maps InvalidTimerOutputNodeException", () => {
@@ -198,12 +384,18 @@ describe("SimulatorExceptionsMapper", () => {
 			});
 
 			it("maps InvalidTimerPresetTimeTypeException", () => {
-				const e = new InvalidTimerPresetTimeTypeException("boolean", timerNode());
+				const e = new InvalidTimerPresetTimeTypeException(
+					"boolean",
+					timerNode(),
+				);
 				expect(message(e, "fr")).toContain("attendu nombre, obtenu booléen");
 			});
 
 			it("maps InvalidTimerElapsedTimeTypeException", () => {
-				const e = new InvalidTimerElapsedTimeTypeException("string", timerNode());
+				const e = new InvalidTimerElapsedTimeTypeException(
+					"string",
+					timerNode(),
+				);
 				expect(message(e, "fr")).toContain(
 					"attendu nombre, obtenu chaîne de caractères",
 				);
@@ -266,7 +458,9 @@ describe("SimulatorExceptionsMapper", () => {
 	describe("lexer exceptions", () => {
 		it("maps InvalidCharacterException", () => {
 			const e = new InvalidCharacterException("$", 2);
-			expect(message(e, "fr")).toBe("Caractère inattendu « $ » à la position 2");
+			expect(message(e, "fr")).toBe(
+				"Caractère inattendu « $ » à la position 2",
+			);
 		});
 
 		it("maps InvalidKeywordException", () => {
@@ -314,6 +508,7 @@ describe("SimulatorExceptionsMapper", () => {
 			"EnvironmentException", // classe de base
 			"SemanticException", // classe de base
 			"InvalidNodeTypeException", // classe de base des exceptions de type
+			"BinaryOperandsTypesException", // classe de base des exceptions d'opérandes incompatibles
 			"UnknownVariableIdException", // lookup par id interne : l'environnement pré-résout les noms
 			"IllegalVariableValueTypeException", // invariant interne sur l'écriture d'une variable d'env
 		]);
@@ -322,7 +517,8 @@ describe("SimulatorExceptionsMapper", () => {
 			const names: string[] = [];
 			for (const entry of readdirSync(dir, { withFileTypes: true })) {
 				const full = join(dir, entry.name);
-				if (entry.isDirectory()) names.push(...collectExceptionClassNames(full));
+				if (entry.isDirectory())
+					names.push(...collectExceptionClassNames(full));
 				else if (entry.name.endsWith(".exception.ts")) {
 					const match = readFileSync(full, "utf8").match(
 						/class\s+([A-Za-z0-9_]+)/,

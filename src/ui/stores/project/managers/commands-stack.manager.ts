@@ -33,17 +33,9 @@ export default class ProjectCommandsStackManager {
 			return;
 		}
 		if (!commands || commands.length === 0) return;
+		const previous = project;
 		const newProject = this.commandsStack.execute(commands, project.copy());
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
-			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
-		}));
-		//A project command can rewrite the grafcets/ladders themselves (renaming a variable
-		//rewrites the expressions/references to it), so the mounted stores must adopt the result
-		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
-		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		this.adopt(newProject, previous);
 	}
 
 	undoOperation(): void {
@@ -54,16 +46,10 @@ export default class ProjectCommandsStackManager {
 			console.warn("Cannot undo operation in non-design mode");
 			return;
 		}
+		const previous = project;
 		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
-		this.setStoreState(() => ({
-			project: newProject,
-			hasUnsavedChanges: true,
-			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
-			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
-		}));
-		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
-		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		this.adopt(newProject, previous);
 	}
 
 	redoOperation(): void {
@@ -74,15 +60,29 @@ export default class ProjectCommandsStackManager {
 			console.warn("Cannot redo operation in non-design mode");
 			return;
 		}
+		const previous = project;
 		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;
+		this.adopt(newProject, previous);
+	}
+
+	private adopt(newProject: Project, previous: Project): void {
 		this.setStoreState(() => ({
 			project: newProject,
 			hasUnsavedChanges: true,
 			hasCommandsToUndo: this.commandsStack.commandsToUndo.length > 0,
 			hasCommandsToRedo: this.commandsStack.commandsToRedo.length > 0,
 		}));
+		//A project command can rewrite the grafcets/ladders themselves (renaming a variable
+		//rewrites the expressions/references to it), so the mounted stores must adopt the result
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
+		this.getStoreState().hmiManager.syncMountedStoresFromProject();
+		if (
+			newProject.scene3d !== previous.scene3d ||
+			newProject.name !== previous.name
+		) {
+			this.getStoreState().scene3dLinkManager.onSceneChanged();
+		}
 	}
 }

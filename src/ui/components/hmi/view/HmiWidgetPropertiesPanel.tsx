@@ -4,8 +4,14 @@ import {
 	HMI_WIDGET_DEFINITIONS,
 	HmiWidget,
 } from "@/schemas/hmi/hmi-widget.schema";
+import {
+	getBehaviorImposedData,
+	getExcludedBehaviorKinds,
+} from "@/schemas/hmi/hmi-widget-input-behavior";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { HMI_WIDGET_UI } from "@/ui/components/hmi/widgets/hmi-widget-ui";
+import { READ_ONLY_ZONES } from "@/schemas/variable/variable.schema";
 import VariableSelector from "@/ui/components/variables/VariableSelector";
 import { useT } from "@/ui/i18n/useT";
 import useCommittedField from "@/ui/lib/hooks/useCommittedField";
@@ -35,6 +41,7 @@ const HmiWidgetPropertiesPanel = ({
 	// Un widget qui écrit dans la variable liée en simulation (voir `HmiCanvas.setVariableValue`)
 	// ne peut pas cibler une sortie : sa valeur est calculée par le programme, pas pilotable.
 	const excludeDirection = variableBinding?.writes ? "OUT" : undefined;
+	const projectVariables = useProjectStore((s) => s.project?.variables);
 
 	// Un nom vide ou en doublon est silencieusement ignoré par le store (voir
 	// `HmiStoreState.updateWidget`) : on le refuse au blur pour ne pas laisser le champ afficher une
@@ -95,13 +102,23 @@ const HmiWidgetPropertiesPanel = ({
 					<VariableSelector
 						label={t("boundVariable")}
 						value={widget.data.variable}
-						onCommit={(mnemonic) =>
+						onCommit={(mnemonic) => {
+							// Binding an input with a behavior aligns the fields it imposes.
+							const behavior = projectVariables?.find(
+								(v) => v.mnemonic === mnemonic,
+							)?.behavior;
 							updateWidget(widget.id, {
-								data: { ...widget.data, variable: mnemonic },
-							})
-						}
+								data: {
+									...widget.data,
+									...getBehaviorImposedData(widget.type, behavior),
+									variable: mnemonic,
+								},
+							});
+						}}
 						typeFilter={variableBinding.types}
 						excludeDirection={excludeDirection}
+						excludeBehaviorKinds={getExcludedBehaviorKinds(widget.type)}
+						excludeZones={READ_ONLY_ZONES}
 						cols={["mnemonic", "address", "scope"]}
 						sx={{ width: "100% !important" }}
 						baseInputSx={{ fontSize: "0.85rem !important" }}

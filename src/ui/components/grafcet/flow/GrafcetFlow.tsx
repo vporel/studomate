@@ -39,6 +39,7 @@ import useContextMenuOpeningHandlers from "./useContextMenuOpeningHandlers";
 import useToolDragOverHandlers from "./useToolDragOverHandlers";
 
 import "@xyflow/react/dist/style.css";
+import "@/ui/lib/react-flow/flow-page.css";
 import "./_grafcet-page.css";
 
 const DEFAULT_EDGE_OPTIONS = { type: "grafcet-connection" } as const;
@@ -160,7 +161,7 @@ export function GrafcetFlowContent() {
 
 	return (
 		<Box
-			className="grafcet-page"
+			className="grafcet-page flow-page"
 			id={`grafcet-${grafcetId}`}
 			ref={setContainerElement}
 			sx={OUTER_CONTAINER_SX}

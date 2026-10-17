@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, render } from "@testing-library/react";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import CommentBuilder from "@/schemas/grafcet/builders/comment.builder";
@@ -19,7 +20,7 @@ function setup({ text = "Un commentaire", updateNodeData = jest.fn() } = {}) {
 	const grafcet = new GrafcetBuilder().id("g1").addComment(comment).build();
 
 	(useGrafcetContext as jest.Mock).mockReturnValue({
-		store: fakeStoreApi({ grafcet }),
+		store: fakeStoreApi({ grafcet, getDialect: () => Dialect.FR }),
 	});
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({

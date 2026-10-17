@@ -11,27 +11,24 @@ import {
 	Typography,
 } from "@mui/material";
 import { useT } from "@/ui/i18n/useT";
+import type { Locale } from "@/i18n/config";
+import { useLocale } from "next-intl";
+import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
+import manualPath from "./manual-path";
 import { MANUAL_SECTIONS } from "./manual-sections";
 
-export default function ManualNav({
-	selected,
-	onSelect,
-}: {
-	selected?: string;
-	onSelect?: (id: string) => void;
-}) {
+export default function ManualNav({ selected }: { selected?: string }) {
 	const t = useT("manual");
 	const tNav = useT("manual.nav");
-	const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+	const locale = useLocale() as Locale;
+	const [openMap, setOpenMap] = useState<Record<string, boolean>>(
+		() => (selected ? { [selected]: true } : {}),
+	);
 
 	useEffect(() => {
 		if (!selected) return;
-		// Déplie le parent dont un enfant est sélectionné (ex : lien direct vers une sous-section).
-		const parent = MANUAL_SECTIONS.find((s) =>
-			s.children?.some((c) => c === selected),
-		);
-		if (parent) setOpenMap((m) => ({ ...m, [parent.id]: true }));
+		setOpenMap((m) => ({ ...m, [selected]: true }));
 	}, [selected]);
 
 	return (
@@ -48,12 +45,10 @@ export default function ManualNav({
 					return (
 						<React.Fragment key={s.id}>
 							<ListItemButton
-								component="a"
-								href={`#${s.id}`}
+								component={NextLink}
+								href={manualPath(locale, s.id)!}
 								selected={selected === s.id}
-								onClick={(e) => {
-									e.preventDefault();
-									onSelect?.(s.id);
+								onClick={() => {
 									if (hasChildren)
 										setOpenMap((m) => ({ ...m, [s.id]: !m[s.id] }));
 								}}
@@ -71,14 +66,9 @@ export default function ManualNav({
 								s.children!.map((c) => (
 									<ListItemButton
 										key={c}
-										component="a"
-										href={`#${c}`}
+										component={NextLink}
+										href={manualPath(locale, c)!}
 										sx={{ pl: 4 }}
-										selected={selected === c}
-										onClick={(e) => {
-											e.preventDefault();
-											onSelect?.(c);
-										}}
 									>
 										<ListItemText primary={tNav(c as never)} />
 									</ListItemButton>

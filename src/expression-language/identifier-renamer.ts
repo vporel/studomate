@@ -1,10 +1,5 @@
-import {
-	isDigit,
-	isLetterOrUnderscore,
-	isLetterOrUnderscoreOrDigit,
-	isQuote,
-} from "./alphabet";
 import { getKeywordsStringsForDialect } from "./keywords";
+import scanWords from "./scan-words";
 import { Dialect } from "@/expression-language/dialect.enum";
 
 type IdentifierOccurrence = { start: number; end: number; name: string };
@@ -22,16 +17,8 @@ type IdentifierOccurrence = { start: number; end: number; name: string };
  * All renames are applied in a single pass, so chained renames cannot cascade
  * (renaming a→b and b→c at once never turns an original `a` into `c`).
  *
- * ## Why a tolerant scan rather than the Lexer
- *
- * Expressions are plain strings while the user edits them: they are only lexed and parsed
- * when an analysis or a simulation is started. A half-typed expression is therefore the
- * normal case, not the exception, and the Lexer throws on anything outside its alphabet
- * (a comma, a `%`, an accented letter, an unterminated string...).
- *
- * Refusing to rename in that situation would silently leave a stale mnemonic behind, and the
- * user would only discover it at the next analysis. So this scanner never fails: whatever it
- * does not recognise is copied through untouched.
+ * Identifiers are located with `scanWords`, which never fails on a half-typed expression:
+ * refusing to rename there would silently leave a stale mnemonic behind.
  */
 export default class IdentifierRenamer {
 	/**
@@ -44,7 +31,7 @@ export default class IdentifierRenamer {
 	static rename(
 		expression: string,
 		renames: Record<string, string>,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): string {
 		if (!expression || Object.keys(renames).length === 0) return expression;
 
@@ -70,7 +57,7 @@ export default class IdentifierRenamer {
 	static usesAnyIdentifier(
 		expression: string,
 		identifiers: string[],
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): boolean {
 		if (!expression || identifiers.length === 0) return false;
 		return this.scanIdentifiers(expression, dialect).some((o) =>
@@ -80,7 +67,7 @@ export default class IdentifierRenamer {
 
 	/**
 	 * Locates every identifier occurrence in the expression.
-	 * Never throws: unrecognised characters are simply skipped.
+	 * Never throws.
 	 */
 	private static scanIdentifiers(
 		expression: string,
@@ -88,58 +75,11 @@ export default class IdentifierRenamer {
 	): IdentifierOccurrence[] {
 		const keywords = getKeywordsStringsForDialect(dialect);
 		const occurrences: IdentifierOccurrence[] = [];
-		let position = 0;
-
-		while (position < expression.length) {
-			const char = expression[position];
-
-			//String literal: skipped whole, so its content is never renamed.
-			//An unterminated string runs to the end of the expression, which is fine here.
-			if (isQuote(char)) {
-				const quote = char;
-				position++;
-				while (position < expression.length && expression[position] !== quote)
-					position++;
-				position++; //closing quote (or past the end, harmless)
-				continue;
+		scanWords(expression, (name, start, end) => {
+			if (!keywords.includes(name.toUpperCase())) {
+				occurrences.push({ start, end, name });
 			}
-
-			//Number literal, including the unit of a duration (100ms, 2s...), so that the
-			//unit is not read as an identifier
-			if (isDigit(char)) {
-				while (
-					position < expression.length &&
-					(isDigit(expression[position]) || expression[position] === ".")
-				)
-					position++;
-				while (
-					position < expression.length &&
-					isLetterOrUnderscore(expression[position])
-				)
-					position++;
-				continue;
-			}
-
-			//Identifier or keyword
-			if (isLetterOrUnderscore(char)) {
-				const start = position;
-				while (
-					position < expression.length &&
-					isLetterOrUnderscoreOrDigit(expression[position])
-				)
-					position++;
-				const name = expression.slice(start, position);
-				if (!keywords.includes(name.toUpperCase())) {
-					occurrences.push({ start, end: position, name });
-				}
-				continue;
-			}
-
-			//Anything else (operators, parentheses, but also characters the Lexer would
-			//reject) is irrelevant here and simply skipped
-			position++;
-		}
-
+		});
 		return occurrences;
 	}
 }

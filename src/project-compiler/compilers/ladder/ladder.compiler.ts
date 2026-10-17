@@ -5,52 +5,42 @@ import StatementsBuilder from "@/expression-language/ast/builders/statements.bui
 import { ASTNode } from "@/expression-language/ast/nodes/ast-node";
 import { CounterNode, TimerNode } from "@/expression-language/ast/nodes/blocks";
 import {
+	PreCompiledCallAssignment,
 	PreCompiledCoilAssignment,
 	PreCompiledLadder,
 	PreCompiledLadderAssignment,
 } from "@/project-pre-compiler/pre-compilers/ladder/ladder.pre-compiler";
-import { PLCRoutineCall } from "@/simulator/core/plc/plc-routine";
+import { PLCRoutineInstruction } from "@/simulator/core/plc/plc-routine";
 
 export type CompiledLadder = {
-	nodes: ASTNode[];
+	instructions: PLCRoutineInstruction[];
 	timers: TimerNode[];
 	counters: CounterNode[];
-	calls: PLCRoutineCall[];
 };
 
 export default class LadderCompiler {
 	/**
-	 * Une instruction par bobine/port de bloc (dans l'ordre déjà garanti par `LadderPreCompiler`,
-	 * impératif pour les ports de bloc — voir `PreCompiledBlockPortAssignment`), puis une par mise
-	 * à jour de variable mémoire de contact P/N. Les appels de bloc (`calls`) ne sont pas des
-	 * `ASTNode` : ce sont des instructions au niveau `PLCRoutine`, exécutées après les `nodes`,
-	 * chacune invoquant la routine d'un autre programme si la variable mémoire de son port `EN`
-	 * (déjà affectée parmi les `nodes`) est vraie — voir `PLCRoutine.execute`.
+	 * Une instruction par affectation pré-compilée (bobine, front de contact, port de bloc, appel
+	 * de programme), dans l'ordre déjà garanti par `LadderPreCompiler`. Un appel n'est pas un
+	 * `ASTNode` : c'est une instruction au niveau `PLCRoutine`, qui invoque la routine d'un autre
+	 * programme si la variable mémoire de son port `EN` (affectée juste avant) est vraie — voir
+	 * `PLCRoutine.execute`.
 	 */
 	static compile(preCompiledLadder: PreCompiledLadder): CompiledLadder {
-		const nodes: ASTNode[] = [
-			...preCompiledLadder.assignments.map((assignment) =>
-				this.compileAssignment(assignment),
-			),
-			...preCompiledLadder.edgeMemoUpdates.map((update) =>
-				StatementsBuilder.buildAssignStatementNode(
-					update.memoIdentifier,
-					update.sourceIdentifier,
-				),
-			),
-		];
-		const calls: PLCRoutineCall[] = preCompiledLadder.blockCalls.map(
-			(call) => ({
-				programId: call.programId,
-				condition: IdentifiersBuilder.buildIdentifierNode(call.enMnemonic),
-			}),
-		);
-
 		return {
-			nodes,
+			instructions: preCompiledLadder.assignments.map((assignment) =>
+				assignment.kind === "call"
+					? {
+							kind: "call",
+							programId: assignment.programId,
+							condition: IdentifiersBuilder.buildIdentifierNode(
+								assignment.enMnemonic,
+							),
+						}
+					: { kind: "node", node: this.compileAssignment(assignment) },
+			),
 			timers: preCompiledLadder.timers,
 			counters: preCompiledLadder.counters,
-			calls,
 		};
 	}
 
@@ -59,12 +49,12 @@ export default class LadderCompiler {
 	 * enveloppé dans une affectation, `PLCRoutine.execute` l'évalue directement pour ses effets de
 	 * bord (voir `PreCompiledEmbeddedNodeAssignment`). */
 	private static compileAssignment(
-		assignment: PreCompiledLadderAssignment,
+		assignment: Exclude<PreCompiledLadderAssignment, PreCompiledCallAssignment>,
 	): ASTNode {
 		if (assignment.kind === "embeddedNode") {
 			return assignment.node;
 		}
-		if (assignment.kind === "blockPort") {
+		if (assignment.kind === "blockPort" || assignment.kind === "contactEdge") {
 			return StatementsBuilder.buildAssignStatementNode(
 				IdentifiersBuilder.buildIdentifierNode(assignment.mnemonic),
 				assignment.value,

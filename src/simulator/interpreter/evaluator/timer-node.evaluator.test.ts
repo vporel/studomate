@@ -48,6 +48,10 @@ class MockVisitor extends BaseVisitor<EnvVariableValue> {
 		return false;
 	}
 
+	protected visitConversionExpressionNode(): EnvVariableValue {
+		return 0;
+	}
+
 	protected visitAssignStatementNode(): EnvVariableValue {
 		return 0;
 	}
@@ -178,6 +182,14 @@ describe("TimerNodeEvaluator", () => {
 	});
 
 	describe("TOF (Off-Delay Timer)", () => {
+		it("keeps output false at startup while input has never been true", () => {
+			const timer = createTimerNode("TOF");
+			for (let cycle = 0; cycle < 15; cycle++) {
+				expect(evaluator.evaluate(timer)).toBe(false);
+			}
+			expect(env.getVariableValueByName("output")).toBe(false);
+		});
+
 		it("sets output true on falling edge", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", false);
@@ -204,6 +216,7 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TOF");
 			env.setVariableValueByName("input", false);
 			env.setVariableValueByName("lastInput", false);
+			env.setVariableValueByName("output", true);
 			env.setVariableValueByName("elapsedTime", 50);
 
 			evaluator.evaluate(timer);
@@ -219,6 +232,35 @@ describe("TimerNodeEvaluator", () => {
 			const result = evaluator.evaluate(timer);
 
 			expect(result).toBe(true);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
+		});
+
+		it("holds output true for PT after input falls, then keeps it false", () => {
+			const timer = createTimerNode("TOF");
+			const scan = (input: boolean): boolean => {
+				env.setVariableValueByName("input", input);
+				return evaluator.evaluate(timer) as boolean;
+			};
+			expect(scan(true)).toBe(true);
+			expect(scan(false)).toBe(true); // falling edge: ET = 0
+			for (let elapsed = 10; elapsed < 100; elapsed += 10) {
+				expect(scan(false)).toBe(true);
+			}
+			expect(scan(false)).toBe(false); // ET reaches PT
+			expect(scan(false)).toBe(false);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
+		});
+
+		it("restarts the delay when input comes back true during it", () => {
+			const timer = createTimerNode("TOF");
+			const scan = (input: boolean): boolean => {
+				env.setVariableValueByName("input", input);
+				return evaluator.evaluate(timer) as boolean;
+			};
+			scan(true);
+			scan(false);
+			scan(false); // ET = 10
+			expect(scan(true)).toBe(true);
 			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
 		});
 
@@ -260,6 +302,7 @@ describe("TimerNodeEvaluator", () => {
 			const timer = createTimerNode("TP");
 			env.setVariableValueByName("input", true);
 			env.setVariableValueByName("lastInput", true);
+			env.setVariableValueByName("output", true);
 			env.setVariableValueByName("elapsedTime", 50);
 
 			evaluator.evaluate(timer);
@@ -297,6 +340,59 @@ describe("TimerNodeEvaluator", () => {
 			env.setVariableValueByName("elapsedTime", 100);
 			result = evaluator.evaluate(timer);
 			expect(result).toBe(false);
+		});
+
+		const scan = (timer: TimerNode, input: boolean): boolean => {
+			env.setVariableValueByName("input", input);
+			return evaluator.evaluate(timer) as boolean;
+		};
+
+		it("completes the pulse when input falls before preset time", () => {
+			const timer = createTimerNode("TP");
+			expect(scan(timer, true)).toBe(true);
+			expect(scan(timer, true)).toBe(true);
+			// IN falls with ET = 10 < PT = 100: the pulse goes on.
+			for (let elapsed = 20; elapsed < 100; elapsed += 10) {
+				expect(scan(timer, false)).toBe(true);
+			}
+			expect(scan(timer, false)).toBe(false); // ET reaches PT
+			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
+			expect(scan(timer, false)).toBe(false);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
+		});
+
+		it("ignores a rising edge during the pulse (not retriggerable)", () => {
+			const timer = createTimerNode("TP");
+			scan(timer, true);
+			scan(timer, true); // ET = 10
+			scan(timer, false); // ET = 20
+			expect(scan(timer, true)).toBe(true); // new rising edge: ET not restarted
+			expect(env.getVariableValueByName("elapsedTime")).toBe(30);
+			while (scan(timer, true)) {
+				// run the pulse to its end
+			}
+			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
+		});
+
+		it("holds ET at PT while input stays true after the pulse, then resets it", () => {
+			const timer = createTimerNode("TP");
+			while (scan(timer, true) || env.getVariableValueByName("elapsedTime") === 0) {
+				// run the pulse to its end with IN held
+			}
+			expect(scan(timer, true)).toBe(false);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(100);
+			expect(scan(timer, false)).toBe(false);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
+		});
+
+		it("starts a new pulse on the first rising edge after the previous one ended", () => {
+			const timer = createTimerNode("TP");
+			while (scan(timer, true) || env.getVariableValueByName("elapsedTime") === 0) {
+				// first pulse, IN held
+			}
+			scan(timer, false);
+			expect(scan(timer, true)).toBe(true);
+			expect(env.getVariableValueByName("elapsedTime")).toBe(0);
 		});
 	});
 
@@ -336,6 +432,96 @@ describe("TimerNodeEvaluator", () => {
 			customEvaluator.evaluate(timer);
 
 			expect(env.getVariableValueByName("elapsedTime")).toBe(25);
+		});
+	});
+
+	describe("PT not a multiple of the scan time", () => {
+		const run = (
+			type: "TON" | "TOF" | "TP",
+			preset: number,
+			deltaTimeMs: number,
+			inputs: boolean[],
+		) => {
+			env.setVariableValueByName("presetTime", preset);
+			const timer = createTimerNode(type);
+			const timed = new TimerNodeEvaluator(env, visitor, { deltaTimeMs });
+			return inputs.map((input) => {
+				env.setVariableValueByName("input", input);
+				const q = timed.evaluate(timer) as boolean;
+				return [q, env.getVariableValueByName("elapsedTime")] as const;
+			});
+		};
+
+		it("TON raises Q on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TON", 250, 100, Array(7).fill(true));
+			expect(steps).toEqual([
+				[false, 0],
+				[false, 100],
+				[false, 200],
+				[true, 250],
+				[true, 250],
+				[true, 250],
+				[true, 250],
+			]);
+		});
+
+		it("TON raises Q on the cycle where ET reaches PT when PT is a multiple of the scan", () => {
+			const steps = run("TON", 300, 100, Array(5).fill(true));
+			expect(steps).toEqual([
+				[false, 0],
+				[false, 100],
+				[false, 200],
+				[true, 300],
+				[true, 300],
+			]);
+		});
+
+		it("TON with PT = 0 raises Q on the rising-edge cycle", () => {
+			expect(run("TON", 0, 100, [true, true, false])).toEqual([
+				[true, 0],
+				[true, 0],
+				[false, 0],
+			]);
+		});
+
+		it("TOF drops Q on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TOF", 250, 100, [true, false, false, false, false, false]);
+			expect(steps).toEqual([
+				[true, 0],
+				[true, 0],
+				[true, 100],
+				[true, 200],
+				[false, 250],
+				[false, 250],
+			]);
+		});
+
+		it("TOF with PT = 0 drops Q on the falling-edge cycle", () => {
+			expect(run("TOF", 0, 100, [true, false, false])).toEqual([
+				[true, 0],
+				[false, 0],
+				[false, 0],
+			]);
+		});
+
+		it("TP ends the pulse on the cycle where ET reaches PT and never exceeds it", () => {
+			const steps = run("TP", 250, 100, [true, true, true, true, true, false]);
+			expect(steps).toEqual([
+				[true, 0],
+				[true, 100],
+				[true, 200],
+				[false, 250],
+				[false, 250],
+				[false, 0],
+			]);
+		});
+
+		it("TP with PT = 0 produces no pulse", () => {
+			expect(run("TP", 0, 100, [true, true, false])).toEqual([
+				[false, 0],
+				[false, 0],
+				[false, 0],
+			]);
 		});
 	});
 });

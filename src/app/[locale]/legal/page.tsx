@@ -1,20 +1,19 @@
 import { APP_CONTACT_EMAIL, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
+import PageTitle from "@/ui/components/public-pages/PageTitle";
 import { toLocale } from "@/i18n/config";
-import { pageMetadata } from "@/i18n/metadata";
+import { createGenerateMetadata } from "@/app/metadata";
 import PublicLink from "@/ui/components/public-pages/PublicLink";
 import { Container, Divider, Link as MuiLink, Typography } from "@mui/material";
-import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import LegalArticle, { renderStrong } from "./LegalArticle";
 
 type Props = { params: Promise<{ locale: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-	const { locale: rawLocale } = await params;
-	const locale = toLocale(rawLocale);
-	const t = await getTranslations({ locale, namespace: "public.metadata" });
-	return pageMetadata(locale, "/legal", t("legalTitle"), t("legalDescription"));
-}
+export const generateMetadata = createGenerateMetadata(
+	"/legal",
+	"legalTitle",
+	"legalDescription",
+);
 
 export default async function LegalNotice({ params }: Props) {
 	const { locale: rawLocale } = await params;
@@ -24,9 +23,9 @@ export default async function LegalNotice({ params }: Props) {
 
 	return (
 		<Container maxWidth="md" sx={{ my: 4 }}>
-			<Typography variant="h2" component="h1" color="primary" gutterBottom>
+			<PageTitle>
 				{t("title")}
-			</Typography>
+			</PageTitle>
 			<Typography>{t("lastUpdated")}</Typography>
 			<Divider sx={{ my: 2 }} />
 

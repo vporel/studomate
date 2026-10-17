@@ -1,0 +1,29 @@
+{
+	"prompt": {
+		"userTypeTitle": "You use Studomate as a…",
+		"userTypeHint": "Optional, to help us understand who uses the app.",
+		"schoolTypeTitle": "One last question",
+		"schoolTypeQuestion": "What kind of school do you study in?",
+		"skip": "Skip"
+	},
+	"fields": {
+		"userType": "You use Studomate as a",
+		"schoolType": "Type of school",
+		"notProvided": "Not provided"
+	},
+	"userTypes": {
+		"student": "Student",
+		"teacher": "Teacher / trainer",
+		"professional": "Automation professional",
+		"self_learner": "Self-learner / curious",
+		"other": "Other"
+	},
+	"schoolTypes": {
+		"high_school": "High school",
+		"bts": "BTS (vocational post-secondary)",
+		"iut": "IUT / BUT (university institute of technology)",
+		"university": "University",
+		"engineering_school": "Engineering school",
+		"other": "Other"
+	}
+}

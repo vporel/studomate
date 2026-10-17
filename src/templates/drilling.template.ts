@@ -17,8 +17,7 @@ import {
 	TRANSITION_HANDLE_TARGET_PREDECESSOR,
 	TRANSITION_HANDLE_SOURCE_SUCCESSOR,
 } from "@/schemas/grafcet/transition.schema";
-import HmiPage from "@/schemas/hmi/hmi-page.schema";
-import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import DrillingDescriptor from "@/3d-scenes/drilling/v1/drilling.descriptor";
 import {
 	createArithmeticBlockElement,
 	createCompareBlockElement,
@@ -34,15 +33,15 @@ import {
 import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import Project from "@/schemas/project/project.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
+import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
 
 /** Course du foret, du point haut (0) au point bas (100), en pixels d'animation. */
 const POSITION_MAX = 100;
 /** Avance du foret par cycle automate, dans le modèle de partie opérative. */
 const PAS = 2;
-
-const CX = 500;
 
 /** Chaîne chaque élément au suivant sur une ligne (ET implicite : rail → … → dernier). */
 function wireInSeries(elements: LadderElement[]): Connection[] {
@@ -70,11 +69,14 @@ function wireInSeries(elements: LadderElement[]): Connection[] {
  * capteurs de fin de course `h` (foret en haut) et `b` (foret en bas), utilisés comme entrées
  * par le GRAFCET de commande.
  */
-function buildOperativePartLadder(): Ladder {
+export function buildOperativePartLadder(
+	options: { blockable?: boolean } = {},
+): Ladder {
 	// Les lignes à bloc Calc occupent 2 cellules de haut : la ligne suivante démarre 2 rangées
 	// plus bas (rung1 en 2, capteurs en 4 et 5).
 	const rail0 = createRailTerminalElement(0);
 	const descendreContact = createContactElement("descendre", "NO", 0, 1);
+	const blockageContact = createContactElement("blocage", "NF", 0, 2);
 	const canDescend = createCompareBlockElement(0, 3, {
 		in1: "position",
 		in2: `${POSITION_MAX}`,
@@ -117,7 +119,13 @@ function buildOperativePartLadder(): Ladder {
 	});
 	const lowSensorCoil = createCoilElement("b", "normal", 5, 3);
 
-	const rung0 = [rail0, descendreContact, canDescend, descendStep];
+	const rung0 = [
+		rail0,
+		descendreContact,
+		...(options.blockable ? [blockageContact] : []),
+		canDescend,
+		descendStep,
+	];
 	const rung1 = [rail1, monterContact, canRise, riseStep];
 	const rung2 = [rail2, highSensorCompare, highSensorCoil];
 	const rung3 = [rail3, lowSensorCompare, lowSensorCoil];
@@ -138,160 +146,45 @@ function buildOperativePartLadder(): Ladder {
 	return new Ladder(createRandomId(), "Partie opérative", [section]);
 }
 
-/** Page HMI commune : bâti, foret animé en hauteur, pièce, bouton départ et voyants. */
-function buildDrillingPage(): HmiPage {
-	const page = new HmiPage(createRandomId(), "Poste de perçage", true);
-	let stack = 0;
-
-	page.addWidget(
-		HmiWidget.create(
-			"text",
-			CX - 140,
-			24,
-			{ width: 280, height: 28 },
-			{
-				text: "Poste de perçage",
-				style: { fontSize: 16, color: "#333333", align: "center" },
-			},
-			stack++,
-			"Titre",
+export function createDrillingVariables(): Variable[] {
+	return [
+		VariableBuilder.buildLogicInput(
+			createRandomId(),
+			"dcy",
+			PUSH_BUTTON_NO_BEHAVIOR,
 		),
-	);
-
-	// Bâti (colonne verticale)
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX + 90,
-			90,
-			{ width: 40, height: 320 },
-			{
-				style: {
-					fill: "#607d8b",
-					stroke: "#455a64",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Bâti",
-		),
-	);
-
-	// Table
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 120,
-			380,
-			{ width: 260, height: 24 },
-			{
-				style: {
-					fill: "#455a64",
-					stroke: "#37474f",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Table",
-		),
-	);
-
-	// Pièce à percer
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 40,
-			340,
-			{ width: 100, height: 40 },
-			{
-				style: {
-					fill: "#a1887f",
-					stroke: "#6d4c41",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-			},
-			stack++,
-			"Pièce",
-		),
-	);
-
-	// Broche + foret, descend avec `position`
-	page.addWidget(
-		HmiWidget.create(
-			"rectangle",
-			CX - 15,
-			110,
-			{ width: 30, height: 120 },
-			{
-				style: {
-					fill: "#eeeeee",
-					stroke: "#9e9e9e",
-					strokeWidth: 2,
-					borderRadius: 2,
-				},
-				animations: {
-					position: { yVariable: "position" },
-					style: {
-						variable: "broche",
-						rows: [
-							{ value: 0, properties: { fill: "#eeeeee", stroke: "#9e9e9e" } },
-							{ value: 1, properties: { fill: "#fff59d", stroke: "#f9a825" } },
-						],
-					},
-				},
-			},
-			stack++,
-			"Broche",
-		),
-	);
-
-	// Bouton départ cycle
-	page.addWidget(
-		HmiWidget.create(
-			"push-button",
-			140,
-			120,
-			{ width: 200, height: 44 },
-			{ variable: "dcy", label: "Départ cycle" },
-			stack++,
-			"BP départ",
-		),
-	);
-
-	// Voyants
-	const voyants: Array<{ mnemonic: string; label: string }> = [
-		{ mnemonic: "descendre", label: "Descente" },
-		{ mnemonic: "monter", label: "Montée" },
-		{ mnemonic: "broche", label: "Broche" },
-		{ mnemonic: "h", label: "Foret en haut" },
-		{ mnemonic: "b", label: "Foret en bas" },
+		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
+		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
+		VariableBuilder.buildMemoryBool(createRandomId(), "h"),
+		VariableBuilder.buildMemoryBool(createRandomId(), "b"),
+		VariableBuilder.buildMemoryInt(createRandomId(), "position"),
 	];
-	voyants.forEach(({ mnemonic, label }, i) => {
-		page.addWidget(
-			HmiWidget.create(
-				"indicator",
-				160,
-				200 + i * 64,
-				{ width: 36, height: 36 },
-				{ variable: mnemonic, label },
-				stack++,
-				`Voyant ${mnemonic}`,
-			),
-		);
-	});
+}
 
-	return page;
+/** Adds the operative part model to the project and makes the Main call it. */
+export function addDrillingOperativePart(
+	project: Project,
+	options: { blockable?: boolean } = {},
+): void {
+	const operativePart = buildOperativePartLadder(options);
+	project.addProgram(operativePart);
+	const [mainSection] = project.main.sections;
+	const mainRail = createRailTerminalElement(0);
+	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
+	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
+	project.main.addConnections(
+		mainSection.id,
+		wireInSeries([mainRail, mainBlock]),
+	);
 }
 
 /**
  * Crée un projet "Poste de perçage" pré-configuré :
- * — 1 entrée booléenne `dcy` + 3 sorties (`descendre`, `monter`, `broche`)
- * — les capteurs `h`/`b` et la position `position` en mémoire, calculés par le modèle de partie
- *   opérative (Ladder « Partie opérative », fourni et référencé par le Main)
- * — 1 page HMI (bâti, foret animé, bouton, voyants)
+ * — 3 sorties (`descendre`, `monter`, `broche`)
+ * — 3 capteurs booléens `dcy` (bouton départ cycle du pupitre), `h`/`b` (fins de course) et l'entrée
+ *   analogique `position` (course du foret), fournis par la scène 3D « Perçage »
+ * — scène 3D câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
 export function createDrillingProject(): Project {
@@ -302,21 +195,24 @@ export function createDrillingProject(): Project {
 		VariableBuilder.buildLogicOutput(createRandomId(), "descendre"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "monter"),
 		VariableBuilder.buildLogicOutput(createRandomId(), "broche"),
-		VariableBuilder.buildMemoryBool(createRandomId(), "h"),
-		VariableBuilder.buildMemoryBool(createRandomId(), "b"),
-		VariableBuilder.buildMemoryInt(createRandomId(), "position"),
+		VariableBuilder.buildLogicInput(createRandomId(), "h"),
+		VariableBuilder.buildLogicInput(createRandomId(), "b"),
+		VariableBuilder.buildAnalogInput(createRandomId(), "position"),
 	);
 
-	const operativePart = buildOperativePartLadder();
-	project.addProgram(operativePart);
-	const [mainSection] = project.main.sections;
-	const mainRail = createRailTerminalElement(0);
-	const mainBlock = createUserProgramBlockElement(operativePart.id, 0, 0);
-	project.main.addElements(mainSection.id, [mainRail, mainBlock]);
-	project.main.addConnections(mainSection.id, wireInSeries([mainRail, mainBlock]));
-
-	const page = buildDrillingPage();
-	project.hmiPages[page.id] = page;
+	const variableIdByMnemonic = new Map(
+		project.variables.map((variable) => [variable.mnemonic, variable.id]),
+	);
+	project.scene3d = {
+		sceneId: DrillingDescriptor.id,
+		sceneVersion: DrillingDescriptor.version,
+		bindings: Object.fromEntries(
+			DrillingDescriptor.points.map((point) => [
+				point.id,
+				variableIdByMnemonic.get(point.suggestedMnemonic)!,
+			]),
+		),
+	};
 
 	return project;
 }
@@ -325,10 +221,10 @@ export function createDrillingProject(): Project {
  * Version complète et simulable du poste de perçage.
  *
  * GRAFCET "Commande" :
- *   E0 (initial) ─[dcy]→ E1 (descendre) ─[b]→ E2 (broche, 2 s) ─[t2/X2/2s]→ E3 (monter) ─[h]→ E0
+ *   E0 (initial) ─[dcy]→ E1 (descendre) ─[b]→ E2 (broche, 3 s) ─[t2/X2/3s]→ E3 (monter) ─[h]→ E0
  *
- * Les capteurs `h`/`b` proviennent du modèle de partie opérative (Ladder), pas d'entrées
- * physiques : la simulation tourne donc sans intervention après appui sur « Départ cycle ».
+ * Les capteurs `h`/`b` proviennent de la scène 3D, pas d'entrées physiques : la simulation tourne
+ * donc sans intervention après appui sur « Départ cycle ».
  */
 export function createDrillingSolution(): Project {
 	const project = createDrillingProject();
@@ -363,7 +259,7 @@ export function createDrillingSolution(): Project {
 		.build();
 	const t2 = new TransitionBuilder()
 		.id(createRandomId())
-		.expression("t2/X2/2s")
+		.expression("t2/X2/3s")
 		.position(X, 290)
 		.build();
 	const e3 = new StepBuilder()

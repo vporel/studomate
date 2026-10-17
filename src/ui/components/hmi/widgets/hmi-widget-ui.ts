@@ -1,15 +1,22 @@
 import {
 	DEFAULT_INDICATOR_OFF_COLOR,
 	DEFAULT_INDICATOR_ON_COLOR,
+	DEFAULT_PUSH_BUTTON_BEHAVIOR,
+	DEFAULT_SWITCH_CONTACT,
+	GaugeData,
 	HmiPushButtonBehavior,
+	HmiSwitchContact,
 	HmiWidget,
 	HmiWidgetSize,
 	HmiWidgetType,
+	NumericInputData,
+	SliderData,
 } from "@/schemas/hmi/hmi-widget.schema";
 import { ComponentType } from "react";
 import GaugeSymbol from "../toolbar/GaugeSymbol";
 import LineSymbol from "../toolbar/LineSymbol";
 import NumericInputSymbol from "../toolbar/NumericInputSymbol";
+import SliderSymbol from "../toolbar/SliderSymbol";
 import Ellipse from "./Ellipse";
 import Gauge from "./Gauge";
 import Line from "./Line";
@@ -19,6 +26,7 @@ import NumericDisplay from "./NumericDisplay";
 import NumericInput from "./NumericInput";
 import PushButton from "./PushButton";
 import Rectangle from "./Rectangle";
+import Slider from "./Slider";
 import Text from "./Text";
 import ToggleSwitch from "./ToggleSwitch";
 
@@ -50,6 +58,9 @@ export type HmiWidgetPropertyField<D> =
 			label: string;
 			min?: number;
 			max?: number;
+			/** Field imposed by the behavior of the bound input (see `getBehaviorImposedData`):
+			 * read-only while the binding lasts. */
+			imposedByInputBehavior?: boolean;
 			get: (data: D) => number;
 			set: (data: D, value: number) => D;
 	  }
@@ -57,6 +68,8 @@ export type HmiWidgetPropertyField<D> =
 			kind: "select";
 			label: string;
 			options: { value: string; label: string }[];
+			/** See the `number` field. */
+			imposedByInputBehavior?: boolean;
 			get: (data: D) => string;
 			set: (data: D, value: string) => D;
 			/** Patch supplémentaire du widget appliqué en même temps que `set` — échappatoire pour
@@ -86,7 +99,7 @@ export type HmiAnimatableStyleProp<D> = {
  * (domaine). Ajouter un widget = une entrée ici (composant + aperçu + descripteurs de champs).
  *
  * Les `label` (champs, options, événements) sont des **clés de traduction** relatives au
- * namespace `hmiEditor` (ex. `"fields.behavior"`, `"options.momentary"`) : le rendu passe par
+ * namespace `hmiEditor` (ex. `"fields.behavior"`, `"options.momentaryNo"`) : le rendu passe par
  * `useT("hmiEditor")` dans les panneaux qui consomment ces descripteurs. `manualDescription`
  * est une **clé de traduction** (namespace `hmiEditor.widgetManual`), résolue par `HmiSection`. */
 export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
@@ -109,11 +122,123 @@ export type HmiWidgetUi<T extends HmiWidgetType = HmiWidgetType> = {
 
 const PUSH_BUTTON_BEHAVIORS: { value: HmiPushButtonBehavior; label: string }[] =
 	[
-		{ value: "momentary", label: "options.momentary" },
+		{ value: "momentary-no", label: "options.momentaryNo" },
+		{ value: "momentary-nc", label: "options.momentaryNc" },
 		{ value: "set", label: "options.set" },
 		{ value: "reset", label: "options.reset" },
 		{ value: "toggle", label: "options.toggle" },
 	];
+
+const SWITCH_CONTACTS: { value: HmiSwitchContact; label: string }[] = [
+	{ value: "no", label: "options.contactNo" },
+	{ value: "nc", label: "options.contactNc" },
+];
+
+type Orientation = "horizontal" | "vertical";
+
+/** Orientation select. The stored size stays expressed "as if horizontal": width and height are
+ * swapped when the orientation changes rather than computing resize bounds per orientation
+ * (`useHmiWidgetResize` stays generic). */
+function orientationField<
+	D extends { style?: { orientation?: Orientation } },
+>(): HmiWidgetPropertyField<D> {
+	return {
+		kind: "select",
+		label: "fields.orientation",
+		options: [
+			{ value: "horizontal", label: "options.horizontal" },
+			{ value: "vertical", label: "options.vertical" },
+		],
+		get: (data) => data.style?.orientation ?? "horizontal",
+		set: (data, value) =>
+			({
+				...data,
+				style: { ...data.style, orientation: value as Orientation },
+			}) as D,
+		widgetPatch: (widget) => ({
+			size: { width: widget.size.height, height: widget.size.width },
+		}),
+	};
+}
+
+function minMaxFields<D extends { min?: number; max?: number }>(
+	imposedByInputBehavior?: boolean,
+): HmiWidgetPropertyField<D>[] {
+	return [
+		{
+			kind: "number",
+			label: "fields.min",
+			imposedByInputBehavior,
+			get: (data) => data.min ?? 0,
+			set: (data, value) => ({ ...data, min: value }),
+		},
+		{
+			kind: "number",
+			label: "fields.max",
+			imposedByInputBehavior,
+			get: (data) => data.max ?? 100,
+			set: (data, value) => ({ ...data, max: value }),
+		},
+	];
+}
+
+type FillStrokeData = {
+	style: { fill: string; stroke: string; strokeWidth?: number };
+};
+
+function fillStrokeAnimatableProps<
+	D extends FillStrokeData,
+>(): HmiAnimatableStyleProp<D>[] {
+	return [
+		{
+			name: "fill",
+			label: "fields.fill",
+			inputType: "color",
+			staticValue: (data) => data.style.fill,
+		},
+		{
+			name: "stroke",
+			label: "fields.stroke",
+			inputType: "color",
+			staticValue: (data) => data.style.stroke,
+		},
+	];
+}
+
+function fillStrokeFields<
+	D extends FillStrokeData,
+>(): HmiWidgetPropertyField<D>[] {
+	return [
+		{
+			kind: "color",
+			label: "fields.fill",
+			get: (data) => data.style.fill,
+			set: (data, value) => ({
+				...data,
+				style: { ...data.style, fill: value },
+			}),
+		},
+		{
+			kind: "color",
+			label: "fields.stroke",
+			get: (data) => data.style.stroke,
+			set: (data, value) => ({
+				...data,
+				style: { ...data.style, stroke: value },
+			}),
+		},
+		{
+			kind: "number",
+			label: "fields.strokeWidth",
+			min: 0,
+			get: (data) => data.style.strokeWidth ?? 0,
+			set: (data, value) => ({
+				...data,
+				style: { ...data.style, strokeWidth: value },
+			}),
+		},
+	];
+}
 
 export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 	"push-button": {
@@ -129,7 +254,8 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 				kind: "select",
 				label: "fields.behavior",
 				options: PUSH_BUTTON_BEHAVIORS,
-				get: (data) => data.behavior ?? "momentary",
+				imposedByInputBehavior: true,
+				get: (data) => data.behavior ?? DEFAULT_PUSH_BUTTON_BEHAVIOR,
 				set: (data, value) => ({
 					...data,
 					behavior: value as HmiPushButtonBehavior,
@@ -145,7 +271,19 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		manualDescription: "widgetManual.toggleSwitch",
 		animatableStyleProps: [],
 		events: [],
-		propertyFields: [],
+		propertyFields: [
+			{
+				kind: "select",
+				label: "fields.contact",
+				options: SWITCH_CONTACTS,
+				imposedByInputBehavior: true,
+				get: (data) => data.contact ?? DEFAULT_SWITCH_CONTACT,
+				set: (data, value) => ({
+					...data,
+					contact: value as HmiSwitchContact,
+				}),
+			},
+		],
 	},
 	indicator: {
 		component: Indicator,
@@ -204,42 +342,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		manualDescription: "widgetManual.gauge",
 		animatableStyleProps: [],
 		events: [],
-		propertyFields: [
-			{
-				kind: "select",
-				label: "fields.orientation",
-				options: [
-					{ value: "horizontal", label: "options.horizontal" },
-					{ value: "vertical", label: "options.vertical" },
-				],
-				get: (data) => data.style?.orientation ?? "horizontal",
-				set: (data, value) => ({
-					...data,
-					style: {
-						...data.style,
-						orientation: value as "horizontal" | "vertical",
-					},
-				}),
-				// La taille stockée reste exprimée "comme si horizontal" : on échange largeur/hauteur
-				// au changement d'orientation plutôt que de recalculer les bornes de redimensionnement
-				// par orientation (voir `useHmiWidgetResize`, resté générique).
-				widgetPatch: (widget) => ({
-					size: { width: widget.size.height, height: widget.size.width },
-				}),
-			},
-			{
-				kind: "number",
-				label: "fields.min",
-				get: (data) => data.min ?? 0,
-				set: (data, value) => ({ ...data, min: value }),
-			},
-			{
-				kind: "number",
-				label: "fields.max",
-				get: (data) => data.max ?? 100,
-				set: (data, value) => ({ ...data, max: value }),
-			},
-		],
+		propertyFields: [orientationField(), ...minMaxFields<GaugeData>()],
 	},
 	"numeric-input": {
 		component: NumericInput,
@@ -250,18 +353,25 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		manualDescription: "widgetManual.numericInput",
 		animatableStyleProps: [],
 		events: [],
+		propertyFields: [...minMaxFields<NumericInputData>(true)],
+	},
+	slider: {
+		component: Slider,
+		toolSymbol: SliderSymbol,
+		previewWidth: 60,
+		previewValue: 40,
+		paletteOrder: 7,
+		manualDescription: "widgetManual.slider",
+		animatableStyleProps: [],
+		events: [],
 		propertyFields: [
+			orientationField(),
+			...minMaxFields<SliderData>(true),
 			{
 				kind: "number",
-				label: "fields.min",
-				get: (data) => data.min ?? 0,
-				set: (data, value) => ({ ...data, min: value }),
-			},
-			{
-				kind: "number",
-				label: "fields.max",
-				get: (data) => data.max ?? 100,
-				set: (data, value) => ({ ...data, max: value }),
+				label: "fields.step",
+				get: (data) => data.step ?? 1,
+				set: (data, value) => ({ ...data, step: value }),
 			},
 		],
 	},
@@ -350,50 +460,10 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewValue: 0,
 		paletteOrder: 3,
 		manualDescription: "widgetManual.rectangle",
-		animatableStyleProps: [
-			{
-				name: "fill",
-				label: "fields.fill",
-				inputType: "color",
-				staticValue: (data) => data.style.fill,
-			},
-			{
-				name: "stroke",
-				label: "fields.stroke",
-				inputType: "color",
-				staticValue: (data) => data.style.stroke,
-			},
-		],
+		animatableStyleProps: fillStrokeAnimatableProps(),
 		events: [],
 		propertyFields: [
-			{
-				kind: "color",
-				label: "fields.fill",
-				get: (data) => data.style.fill,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, fill: value },
-				}),
-			},
-			{
-				kind: "color",
-				label: "fields.stroke",
-				get: (data) => data.style.stroke,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, stroke: value },
-				}),
-			},
-			{
-				kind: "number",
-				label: "fields.strokeWidth",
-				min: 0,
-				get: (data) => data.style.strokeWidth ?? 0,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, strokeWidth: value },
-				}),
-			},
+			...fillStrokeFields(),
 			{
 				kind: "number",
 				label: "fields.borderRadius",
@@ -412,51 +482,9 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 		previewValue: 0,
 		paletteOrder: 4,
 		manualDescription: "widgetManual.ellipse",
-		animatableStyleProps: [
-			{
-				name: "fill",
-				label: "fields.fill",
-				inputType: "color",
-				staticValue: (data) => data.style.fill,
-			},
-			{
-				name: "stroke",
-				label: "fields.stroke",
-				inputType: "color",
-				staticValue: (data) => data.style.stroke,
-			},
-		],
+		animatableStyleProps: fillStrokeAnimatableProps(),
 		events: [],
-		propertyFields: [
-			{
-				kind: "color",
-				label: "fields.fill",
-				get: (data) => data.style.fill,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, fill: value },
-				}),
-			},
-			{
-				kind: "color",
-				label: "fields.stroke",
-				get: (data) => data.style.stroke,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, stroke: value },
-				}),
-			},
-			{
-				kind: "number",
-				label: "fields.strokeWidth",
-				min: 0,
-				get: (data) => data.style.strokeWidth ?? 0,
-				set: (data, value) => ({
-					...data,
-					style: { ...data.style, strokeWidth: value },
-				}),
-			},
-		],
+		propertyFields: [...fillStrokeFields()],
 	},
 	line: {
 		component: Line,
@@ -494,27 +522,7 @@ export const HMI_WIDGET_UI: { [T in HmiWidgetType]: HmiWidgetUi<T> } = {
 					style: { ...data.style, thickness: value },
 				}),
 			},
-			{
-				kind: "select",
-				label: "fields.orientation",
-				options: [
-					{ value: "horizontal", label: "options.horizontal" },
-					{ value: "vertical", label: "options.vertical" },
-				],
-				get: (data) => data.style.orientation ?? "horizontal",
-				set: (data, value) => ({
-					...data,
-					style: {
-						...data.style,
-						orientation: value as "horizontal" | "vertical",
-					},
-				}),
-				// La taille stockée reste exprimée "comme si horizontal" : on échange
-				// largeur/hauteur au changement d'orientation (voir `gauge`).
-				widgetPatch: (widget) => ({
-					size: { width: widget.size.height, height: widget.size.width },
-				}),
-			},
+			orientationField(),
 		],
 	},
 };

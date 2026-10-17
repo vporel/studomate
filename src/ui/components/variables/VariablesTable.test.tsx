@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
@@ -8,11 +9,11 @@ import { useProjectStore } from "../projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import Variable from "@/schemas/variable/variable.schema";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import { exportVariablesTablePdf } from "@/ui/lib/pdf/variables-table-pdf";
+import { exportVariablesTablePdf } from "@/ui/pdf/variables-table-pdf";
 import VariablesTable from "./VariablesTable";
 
 jest.mock("../projects/ProjectContext");
-jest.mock("@/ui/lib/pdf/variables-table-pdf", () => ({
+jest.mock("@/ui/pdf/variables-table-pdf", () => ({
 	exportVariablesTablePdf: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -24,14 +25,16 @@ function setupWithVariables(
 		selectorImplementation({
 			variablesManager: {
 				existsByMnemonic: () => undefined,
-				existsByAddress: () => undefined,
+				getByAddress: () => null,
 				removeVariables,
 			},
 			project: { variables },
 			mode: ProjectMode.DESIGN,
 		}),
 	);
-	renderWithI18n(<VariablesTable zones={["logic-input"]} pageTitle="Variables" />);
+	renderWithI18n(
+		<VariablesTable zones={["logic-input"]} pageTitle="Variables" />,
+	);
 	return { removeVariables };
 }
 
@@ -44,7 +47,9 @@ describe("VariablesTable", () => {
 				mode: ProjectMode.DESIGN,
 			}),
 		);
-		expect(() => renderWithI18n(<VariablesTable zones={[]} pageTitle="Variables" />)).toThrow();
+		expect(() =>
+			renderWithI18n(<VariablesTable zones={[]} pageTitle="Variables" />),
+		).toThrow();
 	});
 
 	it("affiche une ligne par variable des zones demandées, plus la ligne vide d'ajout", () => {
@@ -52,26 +57,48 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
-					existsByAddress: () => undefined,
+					getByAddress: () => null,
 				},
 				project: {
 					variables: [
-						new Variable("v1", "I0", "logic-input", "BOOL"),
-						new Variable("v2", "M0", "memory", "BOOL"),
+						new Variable({
+							id: "v1",
+							mnemonic: "I0",
+							zone: "logic-input",
+							type: "BOOL",
+							dialect: Dialect.FR,
+						}),
+						new Variable({
+							id: "v2",
+							mnemonic: "M0",
+							zone: "memory",
+							type: "BOOL",
+							dialect: Dialect.FR,
+						}),
 					],
 				},
 				mode: ProjectMode.DESIGN,
 			}),
 		);
 
-		renderWithI18n(<VariablesTable zones={["logic-input"]} pageTitle="Variables" />);
+		renderWithI18n(
+			<VariablesTable zones={["logic-input"]} pageTitle="Variables" />,
+		);
 
 		expect(screen.getByText("I0")).toBeInTheDocument();
 		expect(screen.queryByText("M0")).not.toBeInTheDocument();
 	});
 
 	it("désactive le bouton de suppression tant qu'aucune ligne n'est sélectionnée", () => {
-		setupWithVariables([new Variable("v1", "I0", "logic-input", "BOOL")]);
+		setupWithVariables([
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		]);
 		const deleteButton = screen
 			.getAllByRole("button")
 			.find((b) => b.querySelector('[data-testid="DeleteIcon"]'))!;
@@ -80,7 +107,13 @@ describe("VariablesTable", () => {
 
 	it("supprime les variables sélectionnées au clic sur le bouton de suppression", () => {
 		const { removeVariables } = setupWithVariables([
-			new Variable("v1", "I0", "logic-input", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		]);
 
 		const rowCheckbox = screen.getAllByRole("checkbox")[1]; // [0] = case "tout sélectionner"
@@ -94,15 +127,28 @@ describe("VariablesTable", () => {
 	});
 
 	it("n'affiche pas les variables appartenant à un bloc système (ownerBlock)", () => {
-		const userVar = new Variable("v1", "M0", "memory", "BOOL");
-		const blockVar = new Variable("v2", "Tempo1.PT", "memory", "TIME", {
-			id: "block1",
+		const userVar = new Variable({
+			id: "v1",
+			mnemonic: "M0",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const blockVar = new Variable({
+			id: "v2",
+			mnemonic: "Tempo1.PT",
+			zone: "memory",
+			type: "TIME",
+			ownerBlock: {
+				id: "block1",
+			},
+			dialect: Dialect.FR,
 		});
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
-					existsByAddress: () => undefined,
+					getByAddress: () => null,
 				},
 				project: { variables: [userVar, blockVar] },
 				mode: ProjectMode.DESIGN,
@@ -117,8 +163,20 @@ describe("VariablesTable", () => {
 
 	it("filtre les lignes affichées via la recherche rapide", async () => {
 		setupWithVariables([
-			new Variable("v1", "I0", "logic-input", "BOOL"),
-			new Variable("v2", "I1", "logic-input", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "I1",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		]);
 
 		fireEvent.click(screen.getByRole("button", { name: "Rechercher" }));
@@ -138,7 +196,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
-					existsByAddress: () => undefined,
+					getByAddress: () => null,
 					removeVariables: jest.fn(),
 				},
 				project: { variables: [] },
@@ -152,17 +210,15 @@ describe("VariablesTable", () => {
 			</LocaleProvider>,
 		);
 
-		expect(
-			screen.getByRole("button", { name: "Search" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();
 		window.localStorage.removeItem("studomate_locale");
 	});
 
 	describe("insertion d'une variable via le menu contextuel", () => {
 		function rowIds() {
-			return Array.from(
-				document.querySelectorAll(".MuiDataGrid-row"),
-			).map((r) => r.getAttribute("data-id"));
+			return Array.from(document.querySelectorAll(".MuiDataGrid-row")).map(
+				(r) => r.getAttribute("data-id"),
+			);
 		}
 
 		function openInsert() {
@@ -175,19 +231,33 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
-						existsByAddress: () => undefined,
+						getByAddress: () => null,
 						addVariables: jest.fn(),
 					},
 					project: {
 						variables: [
-							new Variable("v1", "I0", "logic-input", "BOOL"),
-							new Variable("v2", "I1", "logic-input", "BOOL"),
+							new Variable({
+								id: "v1",
+								mnemonic: "I0",
+								zone: "logic-input",
+								type: "BOOL",
+								dialect: Dialect.FR,
+							}),
+							new Variable({
+								id: "v2",
+								mnemonic: "I1",
+								zone: "logic-input",
+								type: "BOOL",
+								dialect: Dialect.FR,
+							}),
 						],
 					},
 					mode: ProjectMode.DESIGN,
 				}),
 			);
-			renderWithI18n(<VariablesTable zones={["logic-input"]} pageTitle="Variables" />);
+			renderWithI18n(
+				<VariablesTable zones={["logic-input"]} pageTitle="Variables" />,
+			);
 
 			openInsert();
 
@@ -206,16 +276,26 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
-						existsByAddress: () => undefined,
+						getByAddress: () => null,
 						addVariables,
 					},
 					project: {
-						variables: [new Variable("v1", "C0", "memory", "INT")],
+						variables: [
+							new Variable({
+								id: "v1",
+								mnemonic: "C0",
+								zone: "memory",
+								type: "INT",
+								dialect: Dialect.FR,
+							}),
+						],
 					},
 					mode: ProjectMode.DESIGN,
 				}),
 			);
-			renderWithI18n(<VariablesTable zones={["memory"]} pageTitle="Variables" />);
+			renderWithI18n(
+				<VariablesTable zones={["memory"]} pageTitle="Variables" />,
+			);
 
 			fireEvent.contextMenu(screen.getByText("C0"));
 			fireEvent.click(screen.getByText("Insérer une variable"));
@@ -230,7 +310,15 @@ describe("VariablesTable", () => {
 	});
 
 	it("le bouton « Nouvelle variable » passe la ligne d'ajout du bas en édition", async () => {
-		setupWithVariables([new Variable("v1", "I0", "logic-input", "BOOL")]);
+		setupWithVariables([
+			new Variable({
+				id: "v1",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+		]);
 
 		fireEvent.click(screen.getByRole("button", { name: "Nouvelle variable" }));
 
@@ -242,22 +330,23 @@ describe("VariablesTable", () => {
 		});
 	});
 
-	it("valide au clavier sans perdre les derniers caractères (Entrée juste après la frappe)", async () => {
+	async function addVariableFromBottomRow(
+		zones: import("@/schemas/variable/variable.schema").VariableZone[],
+		mnemonics: string[],
+	) {
 		const addVariables = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
-					existsByAddress: () => undefined,
+					getByAddress: () => null,
 					addVariables,
 				},
 				project: { variables: [] },
 				mode: ProjectMode.DESIGN,
 			}),
 		);
-		renderWithI18n(
-			<VariablesTable zones={["logic-input"]} pageTitle="Variables" />,
-		);
+		renderWithI18n(<VariablesTable zones={zones} pageTitle="Variables" />);
 
 		fireEvent.click(screen.getByRole("button", { name: "Nouvelle variable" }));
 
@@ -269,21 +358,69 @@ describe("VariablesTable", () => {
 			return el;
 		})) as HTMLInputElement;
 
-		// Frappe rapide puis Entrée immédiate, sans laisser le debounce s'écouler.
-		fireEvent.change(input, { target: { value: "Feu_Ora" } });
-		fireEvent.change(input, { target: { value: "Feu_Orange" } });
+		for (const mnemonic of mnemonics)
+			fireEvent.change(input, { target: { value: mnemonic } });
 		fireEvent.keyDown(input, { key: "Enter" });
 
 		await waitFor(() => expect(addVariables).toHaveBeenCalled());
+		return addVariables;
+	}
+
+	it("valide au clavier sans perdre les derniers caractères (Entrée juste après la frappe)", async () => {
+		// Frappe rapide puis Entrée immédiate, sans laisser le debounce s'écouler.
+		const addVariables = await addVariableFromBottomRow(
+			["logic-input"],
+			["Feu_Ora", "Feu_Orange"],
+		);
+
 		expect(addVariables).toHaveBeenCalledWith([
 			expect.objectContaining({ mnemonic: "Feu_Orange" }),
 		]);
 	});
 
+	it("crée une nouvelle entrée TOR avec le comportement bouton poussoir NO", async () => {
+		const addVariables = await addVariableFromBottomRow(
+			["logic-input", "analog-input"],
+			["marche"],
+		);
+
+		expect(addVariables).toHaveBeenCalledWith([
+			expect.objectContaining({
+				mnemonic: "marche",
+				zone: "logic-input",
+				behavior: { kind: "push-button-no", params: null },
+			}),
+		]);
+	});
+
+	it("crée une variable hors des entrées sans comportement", async () => {
+		const addVariables = await addVariableFromBottomRow(["memory"], ["m0"]);
+
+		expect(addVariables).toHaveBeenCalledWith([
+			expect.objectContaining({
+				mnemonic: "m0",
+				zone: "memory",
+				behavior: null,
+			}),
+		]);
+	});
+
 	it("exporte toutes les variables de la zone en PDF depuis le menu d'export", async () => {
 		setupWithVariables([
-			new Variable("v1", "I1", "logic-input", "BOOL"),
-			new Variable("v2", "I0", "logic-input", "BOOL"),
+			new Variable({
+				id: "v1",
+				mnemonic: "I1",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
+			new Variable({
+				id: "v2",
+				mnemonic: "I0",
+				zone: "logic-input",
+				type: "BOOL",
+				dialect: Dialect.FR,
+			}),
 		]);
 
 		fireEvent.click(screen.getByRole("button", { name: "Exporter" }));
@@ -305,12 +442,24 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
-						existsByAddress: () => undefined,
+						getByAddress: () => null,
 					},
 					project: {
 						variables: [
-							new Variable("v1", "I0", "logic-input", "BOOL"),
-							new Variable("v2", "M0", "memory", "BOOL"),
+							new Variable({
+								id: "v1",
+								mnemonic: "I0",
+								zone: "logic-input",
+								type: "BOOL",
+								dialect: Dialect.FR,
+							}),
+							new Variable({
+								id: "v2",
+								mnemonic: "M0",
+								zone: "memory",
+								type: "BOOL",
+								dialect: Dialect.FR,
+							}),
 						],
 					},
 					mode: ProjectMode.DESIGN,
@@ -342,5 +491,66 @@ describe("VariablesTable", () => {
 				document.querySelector(".MuiDataGrid-row.row-revealed"),
 			).toBeNull();
 		});
+	});
+});
+
+describe("VariablesTable: page des constantes", () => {
+	function setupConstants() {
+		(useProjectStore as unknown as jest.Mock).mockImplementation(
+			selectorImplementation({
+				variablesManager: {
+					existsByMnemonic: () => undefined,
+					getByAddress: () => null,
+				},
+				project: {
+					variables: [
+						new Variable({
+							id: "k1",
+							mnemonic: "DELAI",
+							zone: "constant",
+							type: "TIME",
+							value: "T#5s",
+							dialect: Dialect.FR,
+						}),
+						new Variable({
+							id: "k2",
+							mnemonic: "SEUIL",
+							zone: "constant",
+							type: "INT",
+							value: "40",
+							dialect: Dialect.FR,
+						}),
+						new Variable({
+							id: "m1",
+							mnemonic: "M0",
+							zone: "memory",
+							type: "BOOL",
+							dialect: Dialect.FR,
+						}),
+					],
+				},
+				mode: ProjectMode.DESIGN,
+			}),
+		);
+		renderWithI18n(
+			<VariablesTable zones={["constant"]} pageTitle="Constantes" />,
+		);
+	}
+
+	it("n'affiche que les constantes, avec leur valeur déclarée", () => {
+		setupConstants();
+
+		expect(screen.getByText("DELAI")).toBeInTheDocument();
+		expect(screen.getByText("T#5s")).toBeInTheDocument();
+		expect(screen.getByText("SEUIL")).toBeInTheDocument();
+		expect(screen.getByText("40")).toBeInTheDocument();
+		expect(screen.queryByText("M0")).not.toBeInTheDocument();
+	});
+
+	it("remplace la colonne Adresse par la colonne Valeur déclarée", () => {
+		setupConstants();
+
+		expect(screen.getByText("Valeur déclarée")).toBeInTheDocument();
+		expect(screen.queryByText("Adresse")).not.toBeInTheDocument();
 	});
 });

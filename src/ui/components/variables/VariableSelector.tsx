@@ -1,14 +1,18 @@
 "use client";
 
+import { getBlockInstanceVariables } from "@/bridge/block-instance-variables.mapper";
+import { getStepVariables } from "@/bridge/step-variables.mapper";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { LiteralKind } from "@/expression-language/literals/kind";
+import { InputBehaviorKind } from "@/schemas/variable/input-behavior";
 import { SYSTEM_SCHEMA_VARIABLES } from "@/schemas/variable/system-variable.builder";
 import Variable, {
 	VariableDirection,
 	VariableType,
+	VariableZone,
 } from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
-import { formatVariableValue } from "@/ui/lib/variables/format-variable-value";
+import { formatVariableValue } from "@/ui/components/variables/format-variable-value";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	Autocomplete,
@@ -34,6 +38,7 @@ import {
 	ALL_COLUMNS,
 	COLUMNS,
 	computeStatus,
+	hasExcludedBehavior,
 	inputBaseSx,
 	inputWidthPx,
 	simulationValueSx,
@@ -58,6 +63,12 @@ interface VariableSelectorProps {
 	/** Exclut les variables de cette direction des suggestions et du statut valide (ex :
 	 * `"IN"` pour une bobine de ladder, voir `LADDER_COIL_VARIABLE_IS_INPUT` dans `coil.analyser.ts`). */
 	excludeDirection?: VariableDirection;
+	/** Excludes the inputs having one of these behaviors from the suggestions and the valid
+	 * status (e.g. a toggle-switch widget cannot drive a push-button input). */
+	excludeBehaviorKinds?: readonly InputBehaviorKind[];
+	/** Excludes the variables of these zones from the suggestions and the valid status (e.g.
+	 * `"constant"` for anything a program or a widget writes or binds). */
+	excludeZones?: readonly VariableZone[];
 	/** Formes de littéral acceptées en plus d'un nom de variable (voir
 	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé
 	 * comme mnémonique non déclaré. */
@@ -70,6 +81,9 @@ interface VariableSelectorProps {
 	 * quand le composant parent porte déjà cette entrée à son propre niveau (ex : menu contextuel
 	 * d'un nœud de contact/bobine Ladder). */
 	disableContextMenu?: boolean;
+	/** Hides the validity signal: the text is free and never checked against declared variables
+	 * (e.g. an element of a program excluded from execution). */
+	suppressStatus?: boolean;
 	/** Affiche la valeur courante de la variable en simulation — activée par défaut. À désactiver
 	 * quand le champ n'a pas la place pour un second niveau de texte (ex : champ d'une propriété de
 	 * widget HMI). */
@@ -115,9 +129,12 @@ const VariableSelector = forwardRef<
 		label,
 		typeFilter,
 		excludeDirection,
+		excludeBehaviorKinds,
+		excludeZones,
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
+		suppressStatus = false,
 		showSimulationValue = true,
 		simulationValueProps,
 		align,
@@ -131,11 +148,20 @@ const VariableSelector = forwardRef<
 	const projectVariables = useProjectStore(
 		useShallow((s) => s.project?.variables ?? []),
 	);
+	const project = useProjectStore((s) => s.project);
 	// Les variables système (`_SYS_TB_*`) sont proposées et reconnues comme valides partout où on
 	// lit une variable ; leur direction `IN` les exclut d'elle-même des sélecteurs d'écriture.
+	// Les variables exposées par les instances de blocs (temporisation/compteur) ne sont jamais
+	// persistées dans `project.variables` : voir `getBlockInstanceVariables`. Idem pour les
+	// variables d'étape `Xn` (`getStepVariables`).
 	const variables = useMemo(
-		() => [...projectVariables, ...SYSTEM_SCHEMA_VARIABLES],
-		[projectVariables],
+		() => [
+			...projectVariables,
+			...(project ? getBlockInstanceVariables(project) : []),
+			...(project ? getStepVariables(project) : []),
+			...SYSTEM_SCHEMA_VARIABLES,
+		],
+		[projectVariables, project],
 	);
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -177,9 +203,17 @@ const VariableSelector = forwardRef<
 			variables.filter(
 				(v) =>
 					(!typeFilter || typeFilter.includes(v.type)) &&
-					(!excludeDirection || v.getDirection() !== excludeDirection),
+					(!excludeDirection || v.getDirection() !== excludeDirection) &&
+					!hasExcludedBehavior(v, excludeBehaviorKinds) &&
+					!excludeZones?.includes(v.zone),
 			),
-		[variables, typeFilter, excludeDirection],
+		[
+			variables,
+			typeFilter,
+			excludeDirection,
+			excludeBehaviorKinds,
+			excludeZones,
+		],
 	);
 
 	// Calculé ici (pas seulement dans `filterOptions`) pour aussi piloter l'affichage du popup :
@@ -208,14 +242,18 @@ const VariableSelector = forwardRef<
 	};
 	useEffect(() => () => flushRef.current(), []);
 
-	const status = computeStatus(
-		editingValue,
-		variables,
-		typeFilter,
-		excludeDirection,
-		acceptedLiterals,
-		dialect,
-	);
+	const status = suppressStatus
+		? null
+		: computeStatus(
+				editingValue,
+				variables,
+				dialect,
+				typeFilter,
+				excludeDirection,
+				acceptedLiterals,
+				excludeBehaviorKinds,
+				excludeZones,
+			);
 	const statusColor =
 		status && status !== "ok" ? th.palette.error.main : undefined;
 	const resolvedAlign = align ?? (label ? "left" : "center");
@@ -256,7 +294,10 @@ const VariableSelector = forwardRef<
 			params.inputProps.onKeyDown?.(
 				e as unknown as ReactKeyboardEvent<HTMLInputElement>,
 			);
-			if (e.key === "Enter" || e.key === "Escape") inputRef.current?.blur();
+			// Différé : le blur valide `editingValue`, qui n'a la suggestion choisie par Entrée
+			// qu'une fois le rendu suivant appliqué.
+			if (e.key === "Enter" || e.key === "Escape")
+				queueMicrotask(() => inputRef.current?.blur());
 		};
 
 	// `stopPropagation` : sans lui, un parent qui porte aussi un menu contextuel (ex : le

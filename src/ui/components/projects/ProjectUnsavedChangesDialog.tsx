@@ -89,10 +89,7 @@ const UnsavedChangesDialog = ({
 				</IconButton>
 			</Tooltip>
 			<DialogContent dividers>
-				<Typography gutterBottom>
-					{message ||
-						t("defaultMessage")}
-				</Typography>
+				<Typography gutterBottom>{message || t("defaultMessage")}</Typography>
 			</DialogContent>
 			<DialogActions>
 				<Button autoFocus onClick={() => void onSave()}>

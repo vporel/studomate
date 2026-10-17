@@ -10,7 +10,7 @@ import Variable from "@/schemas/variable/variable.schema";
 import { resolveFunctionBlockPin } from "./function-block-pin.resolver";
 
 /**
- * Validation propre à un bloc `"counter"` — pins contrôle (R/LD), PV, CV (voir
+ * Validation propre à un bloc `"counter"` — pins contrôle (R/LD, plus CD/LD/QD pour un CTUD), PV, CV (voir
  * `CounterBlockParams`) : contrôle et PV sont obligatoires, contrôle accepte un littéral booléen
  * (`vrai`/`faux`) et PV un littéral numérique en plus d'une variable ; CV est optionnel mais
  * doit référencer une variable numérique existante si renseigné. Appelé par `BlockAnalyser`, qui
@@ -24,12 +24,39 @@ export default class CounterBlockAnalyser {
 		variablesByMnemonic: Map<string, Variable>,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "counter") return [];
-		const { name, control, pv, cv } = element.data.params;
+		const { name, counterType, control, pv, cv, down, load, qd } =
+			element.data.params;
 
 		const issues: ProjectAnalyserIssue[] = [
-			...this.validateControlPin(control, source, dialect, variablesByMnemonic),
+			...this.validateControlPin(
+				control,
+				counterType === "CTD" ? "LD" : "R",
+				source,
+				dialect,
+				variablesByMnemonic,
+			),
 			...this.validatePresetValuePin(pv, source, variablesByMnemonic),
 		];
+		if (counterType === "CTUD") {
+			issues.push(
+				...this.validateControlPin(
+					down ?? "",
+					"CD",
+					source,
+					dialect,
+					variablesByMnemonic,
+				),
+				...this.validateControlPin(
+					load ?? "",
+					"LD",
+					source,
+					dialect,
+					variablesByMnemonic,
+				),
+			);
+			if (qd)
+				issues.push(...this.validateQdPin(qd, source, variablesByMnemonic));
+		}
 		if (validateBlockName(name).length > 0) {
 			issues.push(
 				new ProjectAnalyserIssue(
@@ -49,6 +76,7 @@ export default class CounterBlockAnalyser {
 
 	private static validateControlPin(
 		pin: string,
+		pinName: string,
 		source: ProjectAnalyserIssueSource,
 		dialect: Dialect,
 		variablesByMnemonic: Map<string, Variable>,
@@ -67,6 +95,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_EMPTY",
 						source,
+						{ pin: pinName },
 					),
 				];
 			case "undeclared":
@@ -75,7 +104,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_UNDECLARED_VARIABLE",
 						source,
-						{ variableName: pin },
+						{ variableName: pin, pin: pinName },
 					),
 				];
 			case "invalid-type":
@@ -84,7 +113,7 @@ export default class CounterBlockAnalyser {
 						"error",
 						"BLOCK_COUNTER_CONTROL_INVALID_TYPE",
 						source,
-						{ variableName: pin },
+						{ variableName: pin, pin: pinName },
 					),
 				];
 			default:
@@ -159,6 +188,40 @@ export default class CounterBlockAnalyser {
 					new ProjectAnalyserIssue(
 						"error",
 						"BLOCK_COUNTER_CV_INVALID_TYPE",
+						source,
+						{ variableName: pin },
+					),
+				];
+			default:
+				return [];
+		}
+	}
+
+	private static validateQdPin(
+		pin: string,
+		source: ProjectAnalyserIssueSource,
+		variablesByMnemonic: Map<string, Variable>,
+	): ProjectAnalyserIssue[] {
+		const resolution = resolveFunctionBlockPin(
+			pin,
+			variablesByMnemonic,
+			"boolean",
+		);
+		switch (resolution.kind) {
+			case "undeclared":
+				return [
+					new ProjectAnalyserIssue(
+						"error",
+						"BLOCK_COUNTER_QD_UNDECLARED_VARIABLE",
+						source,
+						{ variableName: pin },
+					),
+				];
+			case "invalid-type":
+				return [
+					new ProjectAnalyserIssue(
+						"error",
+						"BLOCK_COUNTER_QD_INVALID_TYPE",
 						source,
 						{ variableName: pin },
 					),

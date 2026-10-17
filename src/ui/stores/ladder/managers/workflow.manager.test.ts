@@ -591,9 +591,9 @@ describe("LadderWorkflowManager", () => {
 			]);
 
 			expect(
-				executeOperation.mock.calls.flatMap(([cmds]: any) => cmds).some(
-					(c: any) => c instanceof ConnectionsRemoveCommand,
-				),
+				executeOperation.mock.calls
+					.flatMap(([cmds]: any) => cmds)
+					.some((c: any) => c instanceof ConnectionsRemoveCommand),
 			).toBe(false);
 			expect(posOf(getState(), x1.id)).toEqual({ x: x(3), y: y(0) });
 		});

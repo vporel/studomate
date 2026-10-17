@@ -4,11 +4,11 @@ import { getCounterBlockParams } from "@/schemas/ladder/function-blocks/counter.
 import { getTimerBlockParams } from "@/schemas/ladder/function-blocks/timer.schema";
 import CounterBlockIcon from "@/ui/components/icons/CounterBlockIcon";
 import TimerBlockIcon from "@/ui/components/icons/TimerBlockIcon";
-import { ElementType, Fragment, MouseEvent } from "react";
-import CustomTreeItem, { CustomTreeItemStyles } from "../mui/CustomTreeItem";
+import { ElementType, Fragment } from "react";
+import CustomTreeItem from "../mui/CustomTreeItem";
 import { useProjectStore } from "../projects/ProjectContext";
 import useGotoProgram from "../projects/useGotoProgram";
-import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu";
+import { ExplorerItemsProps } from "./explorer-items-props";
 
 /**
  * Toutes les instances de blocs système du projet (tempo, compteur), tous ladders confondus —
@@ -22,13 +22,7 @@ import { ExplorerContextMenuElement } from "./context-menu/explorer-context-menu
 const ExplorerSystemBlockInstancesItems = ({
 	styles,
 	onContextMenu,
-}: {
-	styles: CustomTreeItemStyles;
-	onContextMenu: (
-		event: MouseEvent,
-		element: ExplorerContextMenuElement,
-	) => void;
-}) => {
+}: ExplorerItemsProps) => {
 	const project = useProjectStore((state) => state.project);
 	const onGotoProgram = useGotoProgram();
 

@@ -22,7 +22,7 @@ describe("AssignBlockAnalyser", () => {
 			createAssignBlockElement(0, 0, params),
 			source,
 			Dialect.FR,
-			buildAnalysisEnvironment(variables),
+			buildAnalysisEnvironment(variables, Dialect.FR),
 		).map((i) => i.code);
 	}
 
@@ -34,19 +34,44 @@ describe("AssignBlockAnalyser", () => {
 	});
 
 	it("accepte une affectation de variable à variable de même type", () => {
-		const a = new Variable("v1", "A", "memory", "BOOL");
-		const b = new Variable("v2", "B", "memory", "BOOL");
+		const a = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const b = new Variable({
+			id: "v2",
+			mnemonic: "B",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		expect(analyse({ out: "A", in: "B" }, a, b)).toEqual([]);
 	});
 
 	it("accepte un littéral en source", () => {
-		const a = new Variable("v1", "A", "memory", "INT");
+		const a = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		expect(analyse({ out: "A", in: "42" }, a)).toEqual([]);
 	});
 
 	it("signale BLOCK_ASSIGN_IN_NOT_ALLOWED pour une expression en source", () => {
 		const vars = ["A", "B"].map(
-			(n, i) => new Variable(`v${i}`, n, "memory", "INT"),
+			(n, i) =>
+				new Variable({
+					id: `v${i}`,
+					mnemonic: n,
+					zone: "memory",
+					type: "INT",
+					dialect: Dialect.FR,
+				}),
 		);
 		expect(analyse({ out: "A", in: "B + 1" }, ...vars)).toEqual([
 			"BLOCK_ASSIGN_IN_NOT_ALLOWED",
@@ -60,7 +85,13 @@ describe("AssignBlockAnalyser", () => {
 	});
 
 	it("signale BLOCK_ASSIGN_INVALID quand la cible est une entrée", () => {
-		const a = new Variable("v1", "A", "logic-input", "BOOL");
+		const a = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "logic-input",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
 		expect(analyse({ out: "A", in: "vrai" }, a)).toEqual([
 			"BLOCK_ASSIGN_INVALID",
 		]);
@@ -73,10 +104,53 @@ describe("AssignBlockAnalyser", () => {
 	});
 
 	it("signale BLOCK_ASSIGN_INVALID pour une incompatibilité de type", () => {
-		const a = new Variable("v1", "A", "memory", "BOOL");
-		const b = new Variable("v2", "B", "memory", "INT");
+		const a = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "BOOL",
+			dialect: Dialect.FR,
+		});
+		const b = new Variable({
+			id: "v2",
+			mnemonic: "B",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
 		expect(analyse({ out: "A", in: "B" }, a, b)).toEqual([
 			"BLOCK_ASSIGN_INVALID",
 		]);
+	});
+
+	it("signale BLOCK_ASSIGN_INVALID quand la cible est une constante", () => {
+		const k = new Variable({
+			id: "v1",
+			mnemonic: "K",
+			zone: "constant",
+			type: "INT",
+			value: "5",
+			dialect: Dialect.FR,
+		});
+		expect(analyse({ out: "K", in: "1" }, k)).toEqual(["BLOCK_ASSIGN_INVALID"]);
+	});
+
+	it("accepte une constante en source", () => {
+		const a = new Variable({
+			id: "v1",
+			mnemonic: "A",
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
+		const k = new Variable({
+			id: "v2",
+			mnemonic: "K",
+			zone: "constant",
+			type: "INT",
+			value: "5",
+			dialect: Dialect.FR,
+		});
+		expect(analyse({ out: "A", in: "K" }, a, k)).toEqual([]);
 	});
 });

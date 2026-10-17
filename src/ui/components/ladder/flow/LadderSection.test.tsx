@@ -15,6 +15,7 @@ import Section from "@/schemas/ladder/section.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
+import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import LadderSection from "./LadderSection";
 
@@ -66,6 +67,7 @@ function setup({
 	highlightedNodesIds = [] as string[],
 	activeSectionId = null as string | null,
 	section = new Section("s1", "Ma section", ""),
+	excludedFromExecution = false,
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ mode }),
@@ -93,21 +95,23 @@ function setup({
 			setActiveSectionId: jest.fn(),
 			selectedSectionIds: [],
 			commandsStackManager: { executeOperation: jest.fn() },
-			ladder: { sections: [section] },
+			ladder: { sections: [section], excludedFromExecution },
 		}),
 	);
 
 	const rendered = renderWithI18n(
-		<ReactFlowProvider>
-			<DndContext>
-				<SortableContext
-					items={[section.id]}
-					strategy={verticalListSortingStrategy}
-				>
-					<LadderSection section={section} index={0} />
-				</SortableContext>
-			</DndContext>
-		</ReactFlowProvider>,
+		<AppThemeProvider>
+			<ReactFlowProvider>
+				<DndContext>
+					<SortableContext
+						items={[section.id]}
+						strategy={verticalListSortingStrategy}
+					>
+						<LadderSection section={section} index={0} />
+					</SortableContext>
+				</DndContext>
+			</ReactFlowProvider>
+		</AppThemeProvider>,
 	);
 
 	return {
@@ -178,13 +182,44 @@ describe("LadderSection", () => {
 		).toBeInTheDocument();
 	});
 
+	describe("barre d'alimentation", () => {
+		const hasEnergizedRail = (container: HTMLElement) =>
+			[...container.querySelectorAll("*")].some(
+				(el) =>
+					getComputedStyle(el).borderLeftColor === "rgb(0, 216, 0)" &&
+					getComputedStyle(el).borderLeftWidth === "2px",
+			);
+
+		it("est verte en simulation", () => {
+			const { container } = setup({
+				mode: ProjectMode.SIMULATION,
+				activeSectionId: "s1",
+			});
+			expect(hasEnergizedRail(container)).toBe(true);
+		});
+
+		it("reste noire en conception", () => {
+			const { container } = setup({ activeSectionId: "s1" });
+			expect(hasEnergizedRail(container)).toBe(false);
+		});
+
+		it("reste noire en simulation pour un ladder exclu de l'exécution", () => {
+			const { container } = setup({
+				mode: ProjectMode.SIMULATION,
+				activeSectionId: "s1",
+				excludedFromExecution: true,
+			});
+			expect(hasEnergizedRail(container)).toBe(false);
+		});
+	});
+
 	it("replie/déplie le contenu au clic sur le bouton de repli de l'en-tête", () => {
 		setup();
-		const collapseButton = screen.getByLabelText("Replier la section");
+		const collapseButton = screen.getByLabelText("Replier le réseau");
 
 		fireEvent.click(collapseButton);
 
-		expect(screen.getByLabelText("Déplier la section")).toBeInTheDocument();
+		expect(screen.getByLabelText("Déplier le réseau")).toBeInTheDocument();
 	});
 
 	it("se déplie automatiquement quand un de ses éléments est mis en surbrillance", () => {
@@ -192,12 +227,12 @@ describe("LadderSection", () => {
 		const section = new Section("s1", "Ma section", "", [contact]);
 		const { rerenderWith } = setup({ section });
 
-		fireEvent.click(screen.getByLabelText("Replier la section"));
-		expect(screen.getByLabelText("Déplier la section")).toBeInTheDocument();
+		fireEvent.click(screen.getByLabelText("Replier le réseau"));
+		expect(screen.getByLabelText("Déplier le réseau")).toBeInTheDocument();
 
 		rerenderWith([contact.id]);
 
-		expect(screen.getByLabelText("Replier la section")).toBeInTheDocument();
+		expect(screen.getByLabelText("Replier le réseau")).toBeInTheDocument();
 	});
 
 	describe("virtualisation du canvas (montage à l'approche du viewport)", () => {
@@ -230,8 +265,8 @@ describe("LadderSection", () => {
 			const countAfterMount = reactFlowProps.length;
 			expect(countAfterMount).toBeGreaterThan(0);
 
-			fireEvent.click(screen.getByLabelText("Replier la section"));
-			fireEvent.click(screen.getByLabelText("Déplier la section"));
+			fireEvent.click(screen.getByLabelText("Replier le réseau"));
+			fireEvent.click(screen.getByLabelText("Déplier le réseau"));
 
 			expect(reactFlowProps.length).toBeGreaterThan(countAfterMount);
 		});

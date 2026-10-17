@@ -1,7 +1,8 @@
 "use client";
 
+import { clamp } from "@/lib/number";
 import { NumericInputData } from "@/schemas/hmi/hmi-widget.schema";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import {
 	ChangeEvent,
 	FocusEvent,
@@ -10,6 +11,8 @@ import {
 	useState,
 } from "react";
 import { HmiWidgetComponentProps } from "./hmi-widget-component";
+import widgetBorder from "./widget-border";
+import HmiWidgetFrame from "./HmiWidgetFrame";
 
 const NumericInput = ({
 	data,
@@ -22,7 +25,6 @@ const NumericInput = ({
 	const numValue = typeof value === "number" ? value : 0;
 	const min = data.min ?? 0;
 	const max = data.max ?? 100;
-	const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
 	const [text, setText] = useState(String(numValue));
 
@@ -34,7 +36,7 @@ const NumericInput = ({
 		e: FocusEvent<HTMLInputElement> | KeyboardEvent<HTMLInputElement>,
 	) => {
 		const parsed = Number(e.currentTarget.value);
-		const next = Number.isFinite(parsed) ? clamp(parsed) : numValue;
+		const next = Number.isFinite(parsed) ? clamp(parsed, min, max) : numValue;
 		setText(String(next));
 		onValueChange?.(next);
 	};
@@ -44,16 +46,7 @@ const NumericInput = ({
 	};
 
 	return (
-		<Box
-			sx={{
-				position: "relative",
-				width: "100%",
-				height: "100%",
-				cursor: onClick ? "pointer" : "default",
-				userSelect: "none",
-			}}
-			onClick={onClick}
-		>
+		<HmiWidgetFrame label={data.label} hideLabel={hideLabel} onClick={onClick}>
 			<Box
 				component="input"
 				type="number"
@@ -67,7 +60,7 @@ const NumericInput = ({
 				sx={{
 					width: "100%",
 					height: "100%",
-					border: selected ? "2px solid #1976d2" : "2px solid #555",
+					border: widgetBorder(selected),
 					borderRadius: 1,
 					backgroundColor: "#fff",
 					fontFamily: "inherit",
@@ -88,26 +81,7 @@ const NumericInput = ({
 					},
 				}}
 			/>
-			{!hideLabel && data.label && (
-				<Typography
-					sx={{
-						position: "absolute",
-						top: "100%",
-						left: "50%",
-						transform: "translateX(-50%)",
-						width: "max-content",
-						maxWidth: "none",
-						mt: 0.5,
-						fontSize: "0.7rem",
-						color: "#333",
-						textAlign: "center",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{data.label}
-				</Typography>
-			)}
-		</Box>
+		</HmiWidgetFrame>
 	);
 };
 

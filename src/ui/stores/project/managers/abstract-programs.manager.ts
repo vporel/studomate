@@ -5,7 +5,7 @@ import Program, {
 	ProgramType,
 } from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
@@ -244,6 +244,35 @@ export default abstract class AbstractProgramsManager<
 			project: newProject,
 			hasUnsavedChanges: true,
 		}));
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
+	}
+
+	setExcludedFromExecution(programId: string, excluded: boolean): void {
+		const project = this.getStoreState().project;
+		if (!project) return;
+		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
+			console.warn(
+				`Cannot change execution of ${this.programType} in non-design mode`,
+			);
+			return;
+		}
+		const program = this.getProgram(project, programId);
+		if (!program) {
+			throw new Error(
+				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
+			);
+		}
+		if (excluded && !program.canBeExcludedFromExecution()) return;
+		if (program.excludedFromExecution === excluded) return;
+		const newProject = project.copy();
+		this.getProgram(newProject, programId)!.excludedFromExecution = excluded;
+		this.setStoreState(() => ({
+			project: newProject,
+			hasUnsavedChanges: true,
+		}));
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
 	}
 
 	getProgramOrThrow(programId: string): TProgram {

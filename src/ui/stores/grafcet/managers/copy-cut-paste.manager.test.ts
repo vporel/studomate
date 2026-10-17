@@ -245,15 +245,18 @@ describe("GrafcetCopyCutPasteManager", () => {
 				.copyCutPasteManager.pasteElements();
 
 			expect(addedNodes).toHaveLength(1);
-			expect(storeB.getState().nodes.some((n) => n.id === addedNodes[0].id)).toBe(
-				true,
-			);
+			expect(
+				storeB.getState().nodes.some((n) => n.id === addedNodes[0].id),
+			).toBe(true);
 			expect(storeA.getState().nodes).toHaveLength(1);
 		});
 
 		it("ne colle rien si le presse-papiers vient d'un autre type de page", () => {
 			const store = buildStore();
-			setClipboardEntry({ scope: "ladder", data: { elements: [], connections: [] } });
+			setClipboardEntry({
+				scope: "ladder",
+				data: { elements: [], connections: [] },
+			});
 
 			const { addedNodes } = store
 				.getState()

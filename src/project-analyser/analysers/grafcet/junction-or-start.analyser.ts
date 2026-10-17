@@ -22,7 +22,7 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 	 */
 	analyseIsolated(
 		_junctionOrStart: JunctionOrStart,
-		_options: ElementAnalyseIsolatedOptions = {},
+		_options: ElementAnalyseIsolatedOptions,
 	): ProjectAnalyserIssue[] {
 		//Aucune règle isolée : la validité d'une jonction dépend entièrement de ses
 		//connexions, donc de son contexte (voir analyseInContext).
@@ -36,7 +36,7 @@ export default class JunctionOrStartAnalyser extends GrafcetElementAnalyser<Junc
 		junctionOrStart: JunctionOrStart,
 		grafcet: Grafcet,
 		_environment: Environment,
-		dialect: Dialect = Dialect.FR,
+		dialect: Dialect,
 	): ProjectAnalyserIssue[] {
 		const issues: ProjectAnalyserIssue[] = [];
 		const source = {

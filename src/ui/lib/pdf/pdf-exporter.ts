@@ -1,4 +1,4 @@
-import { Scene } from "@/ui/lib/program-export-drawing/draw-op";
+import { Scene } from "@/ui/lib/drawing/draw-op";
 import { PdfTableModel } from "./pdf-table";
 
 export type PdfExportOrientation = "portrait" | "landscape";

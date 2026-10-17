@@ -16,7 +16,7 @@ export function getT(
 	const translator = createTranslator({
 		locale,
 		messages: getMessages(locale),
-	
+
 		namespace: namespace as any,
 	});
 	return (key, values) => (translator as any)(key, values);

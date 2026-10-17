@@ -1,5 +1,12 @@
+import type Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
+import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
+import type HmiPage from "@/schemas/hmi/hmi-page.schema";
 import Project from "@/schemas/project/project.schema";
 import { Dialect } from "@/expression-language/dialect.enum";
+import type {
+	HardwareTarget,
+	HardwareModelId,
+} from "@/schemas/hardware/hardware-target.schema";
 import ProjectRepository, {
 	StorageLocation,
 } from "@/persistence/repositories/project.repository";
@@ -12,6 +19,15 @@ import GrafcetsManager from "./managers/grafcets.manager";
 import LaddersManager from "./managers/ladders.manager";
 import PagesManager from "./managers/pages.manager";
 import HmiManager from "./managers/hmi.manager";
+import type { SimulationKind } from "./SimulationKind";
+import type ModeManager from "./managers/mode.manager";
+import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
+import type {
+	HardwareFirmwareState,
+	HardwareObservationState,
+	HardwareUploadState,
+	HardwareLinkState,
+} from "./managers/hardware-link/hardware-link.state";
 import SimulationManager from "./managers/simulation/simulation.manager";
 import VariablesManager from "./managers/variables.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
@@ -26,6 +42,8 @@ export type PageType =
 	| "project-properties"
 	| "preferences"
 	| "exercise"
+	| "hardware-configuration"
+	| "scene3d-configuration"
 	| "grafcet"
 	| "ladder"
 	| "variables"
@@ -82,7 +100,10 @@ export type HmiStoreManagers = Pick<
 	| "selectAllWidgets"
 	| "removeSelectedWidgets"
 	| "moveSelectedWidgets"
->;
+	| "adoptHmiPage"
+> & {
+	getHmiPage: () => HmiPage;
+};
 
 export type PLCConfig = {
 	scanTimeMs: number;
@@ -183,6 +204,18 @@ export interface ProjectStoreState {
 	setProjectDialect: (dialect: Dialect) => void;
 	/** Met à jour l'énoncé du projet. Une valeur vide (après trim) retire l'énoncé. */
 	setExerciseStatement: (statement: string) => void;
+	/** Chooses the hardware target of the project; `null` removes it (purely virtual project). */
+	setHardwareModel: (modelId: HardwareModelId | null) => void;
+	/** Replaces the configuration of the current target (same model). No-op without a target. */
+	setHardwareTarget: (target: HardwareTarget) => void;
+	/** Sets the 3D scene of the project; `null` removes it. */
+	setScene3d: (scene: Scene3d | null) => void;
+	/**
+	 * Wires every unbound point of the current scene: reuses the compatible variable already
+	 * carrying the suggested mnemonic, creates the others (one undoable operation for the variables).
+	 * Design mode only.
+	 */
+	createMissingScene3dVariables: () => void;
 
 	setUnsavedChangesDialogVisible: (visible: boolean) => void;
 	setNewProjectModalVisible: (visible: boolean) => void;
@@ -208,6 +241,10 @@ export interface ProjectStoreState {
 	mode: ProjectMode;
 	simulationPaused: boolean;
 	simulationMode: SimulationMode;
+	/** What the simulation in progress is made of (meaningful in Simulation mode). */
+	simulationKind: SimulationKind;
+	/** Input variables written by a sensor of the running 3D scene (empty outside a simulation). */
+	scene3dDrivenInputIds: string[];
 	analysisHasErrors: boolean;
 	analysisHasWarnings: boolean;
 	analysisErrors: AnalysisIssues;
@@ -256,6 +293,15 @@ export interface ProjectStoreState {
 	 */
 	forcedVariables: Record<string, unknown>;
 	simulationManager: SimulationManager;
+
+	//=============== HARDWARE LINK ===============
+	hardwareLink: HardwareLinkState;
+	hardwareFirmware: HardwareFirmwareState;
+	hardwareUpload: HardwareUploadState;
+	hardwareObservation: HardwareObservationState;
+	hardwareLinkManager: HardwareLinkManager;
+	scene3dLinkManager: Scene3dLinkManager;
+	modeManager: ModeManager;
 
 	//=============== COMMANDS ===============
 	hasCommandsToUndo: boolean;

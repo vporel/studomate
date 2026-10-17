@@ -141,9 +141,7 @@ describe("ProjectsList", () => {
 			skipped: [{ reason: "newer-version", id: "p2" }],
 		});
 		await waitFor(() =>
-			expect(
-				screen.getByText(/version plus récente/),
-			).toBeInTheDocument(),
+			expect(screen.getByText(/version plus récente/)).toBeInTheDocument(),
 		);
 	});
 
@@ -239,7 +237,9 @@ describe("ProjectsList", () => {
 		setup({
 			list: [project("p1", "Projet A")],
 			authenticated: true,
-			moveToCloudFn: jest.fn().mockResolvedValue({ ok: false, reason: "conflict" }),
+			moveToCloudFn: jest
+				.fn()
+				.mockResolvedValue({ ok: false, reason: "conflict" }),
 		});
 		await waitFor(() => screen.getByText("Projet A"));
 

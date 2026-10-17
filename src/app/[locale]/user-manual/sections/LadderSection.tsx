@@ -2,7 +2,7 @@
 
 import { useT } from "@/ui/i18n/useT";
 import { Divider, Typography } from "@mui/material";
-import { ManualList } from "./manual-ui";
+import { ManualFigure, ManualList } from "./manual-ui";
 
 export default function LadderSection({ selected }: { selected: string }) {
 	const t = useT("manual.ladder");
@@ -36,6 +36,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("contactsIntro")}</Typography>
 					<ManualList items={t.raw("contactsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/contacts.svg"
+						alt={t("contactsFigureAlt")}
+						width={440}
+					/>
 					<Typography mb={2}>{t("contactsOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
@@ -48,6 +53,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("coilsIntro")}</Typography>
 					<ManualList items={t.raw("coilsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/coils.svg"
+						alt={t("coilsFigureAlt")}
+						width={660}
+					/>
 					<Typography mb={2}>{t("coilsOutro")}</Typography>
 					<Divider sx={{ my: 2 }} />
 				</article>
@@ -60,11 +70,21 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("blocksIntro1")}</Typography>
 					<Typography mb={2}>{t("blocksIntro2")}</Typography>
+					<ManualFigure
+						src="/user-manual/ladder/timer-block.svg"
+						alt={t("timerBlockFigureAlt")}
+						width={440}
+					/>
 					<Typography variant="h5" mb={1}>
 						{t("timerTitle")}
 					</Typography>
 					<Typography mb={2}>{t("timerIntro")}</Typography>
 					<ManualList items={t.raw("timerItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/timers.svg"
+						alt={t("timersFigureAlt")}
+						width={590}
+					/>
 					<Typography mb={2}>{t("timerOutro")}</Typography>
 					<Typography variant="h5" mb={1}>
 						{t("counterTitle")}
@@ -85,6 +105,10 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("calcBody")}</Typography>
 					<Typography variant="h5" mb={1}>
+						{t("convertTitle")}
+					</Typography>
+					<Typography mb={2}>{t("convertBody")}</Typography>
+					<Typography variant="h5" mb={1}>
 						{t("programCallTitle")}
 					</Typography>
 					<Typography mb={2}>{t("programCallBody")}</Typography>
@@ -99,6 +123,11 @@ export default function LadderSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("connectionsIntro")}</Typography>
 					<ManualList items={t.raw("connectionsItems") as string[]} />
+					<ManualFigure
+						src="/user-manual/ladder/connections.svg"
+						alt={t("connectionsFigureAlt")}
+						width={370}
+					/>
 					<Typography mb={2}>{t("connectionsMenu")}</Typography>
 					<Typography mb={2}>{t("connectionsSim")}</Typography>
 					<Divider sx={{ my: 2 }} />

@@ -6,6 +6,11 @@ import VariablesUpdateCommand from "@/schemas/project/commands/variables-update.
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
+	getDefaultConstantValue,
+	parseConstantLiteral,
+} from "@/schemas/variable/constant-value";
+import { validateBehavior } from "@/schemas/variable/variable.validator";
+import Variable, {
 	VARIABLE_UPDATABLE_FIELDS,
 	VariableUpdatableFields,
 	VariableUpdatableFieldsWithId,
@@ -25,7 +30,13 @@ export default class VariablesCommandsFactory {
 					d.mnemonic.trim() != "" &&
 					!project.variables.some((v) => d.mnemonic === v.mnemonic),
 			)
-			.map((d) => ({ ...d, id: createRandomId() }));
+			.map((d) => ({
+				...d,
+				...(d.zone === "constant" && !d.value
+					? { value: getDefaultConstantValue(d.type, project.dialect) }
+					: {}),
+				id: createRandomId(),
+			}));
 		const commands = [];
 		if (variablesToAdd.length > 0) {
 			commands.push(new VariablesAddCommand(variablesToAdd));
@@ -49,6 +60,15 @@ export default class VariablesCommandsFactory {
 				commands: [],
 			};
 		}
+		newData = VariablesCommandsFactory.withInvalidatedBehaviorReset(
+			variableToUpdate,
+			newData,
+		);
+		newData = VariablesCommandsFactory.withConstantValueKeptValid(
+			project,
+			variableToUpdate,
+			newData,
+		);
 		const oldData = extractFields(Object.keys(newData), variableToUpdate);
 		const commands = [];
 		if (!deepObjectsComparison(newData, oldData)) {
@@ -64,6 +84,52 @@ export default class VariablesCommandsFactory {
 		}
 		return {
 			commands,
+		};
+	}
+
+	/**
+	 * A zone or type change can make the current behavior invalid (push-button moved to memory,
+	 * slider bounds outside the new type's range...): it is then reset to `null` within the same
+	 * command, so that undo restores it.
+	 */
+	private static withInvalidatedBehaviorReset(
+		variable: Variable,
+		newData: Partial<VariableUpdatableFields>,
+	): Partial<VariableUpdatableFields> {
+		if ("behavior" in newData || !variable.behavior) return newData;
+		const zone = newData.zone ?? variable.zone;
+		const type = newData.type ?? variable.type;
+		if (validateBehavior(zone, type, variable.behavior).length === 0)
+			return newData;
+		return { ...newData, behavior: null };
+	}
+
+	/**
+	 * A constant always carries a literal valid for its type: becoming a constant, or changing the
+	 * type of a constant, replaces a declared value that no longer fits by the type's default,
+	 * within the same command so that undo restores it.
+	 */
+	private static withConstantValueKeptValid(
+		project: Project,
+		variable: Variable,
+		newData: Partial<VariableUpdatableFields>,
+	): Partial<VariableUpdatableFields> {
+		const zone = newData.zone ?? variable.zone;
+		if (zone !== "constant") return newData;
+		const withoutAddress =
+			variable.address && !("address" in newData)
+				? { ...newData, address: "" }
+				: newData;
+		if ("value" in newData) return withoutAddress;
+		const type = newData.type ?? variable.type;
+		if (
+			variable.value &&
+			parseConstantLiteral(variable.value, type, project.dialect) !== null
+		)
+			return withoutAddress;
+		return {
+			...withoutAddress,
+			value: getDefaultConstantValue(type, project.dialect),
 		};
 	}
 

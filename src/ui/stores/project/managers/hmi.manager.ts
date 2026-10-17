@@ -8,7 +8,7 @@ import {
 	ProjectStoreSetFunction,
 } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
-import trackEvent from "@/ui/lib/analytics";
+import trackEvent from "@/ui/services/analytics";
 
 const COMMANDS_STACK_SIZE = 100;
 
@@ -153,20 +153,37 @@ export default class HmiManager {
 		}));
 	}
 
-	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir
-	 * `Project.getMainHmiPage`) — sans effet si le projet n'a aucune page HMI. Appelé à l'entrée en
-	 * simulation (voir `SimulationManager.setSimulationMode`). */
-	openHmiSimulationPageIfAny(): void {
+	/** Makes every mounted HMI page store adopt the project's version of its page when they
+	 * differ (e.g. after a command rewrote widget bindings). */
+	syncMountedStoresFromProject(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
+		Object.entries(this.getStoreState().hmiStoresManagers).forEach(
+			([hmiPageId, managers]) => {
+				const page = project.getHmiPage(hmiPageId);
+				if (!page) return;
+				if (deepObjectsComparison(managers.getHmiPage(), page)) return;
+				managers.adoptHmiPage(page.copy());
+			},
+		);
+	}
+
+	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir
+	 * `Project.getMainHmiPage`) — sans effet si le projet n'a aucune page HMI. Appelé à l'entrée en
+	 * simulation (voir `SimulationManager.setSimulationMode`). Renvoie `true` si l'onglet a été
+	 * ouvert. */
+	openHmiSimulationPageIfAny(): boolean {
+		const project = this.getStoreState().project;
+		if (!project) return false;
 		const mainPage = project.getMainHmiPage();
-		if (!mainPage) return;
+		if (!mainPage) return false;
 		this.setStoreState(() => ({ hmiSimulationActivePageId: mainPage.id }));
 		this.getStoreState().pagesManager.openPage({
 			id: HMI_SIMULATION_PAGE_ID,
 			type: "hmi-simulation",
 			title: "Simulation HMI",
 		});
+		return true;
 	}
 
 	/** Ferme l'onglet "Simulation HMI" — appelé à la sortie de simulation (voir

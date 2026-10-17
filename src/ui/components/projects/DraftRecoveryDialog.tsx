@@ -83,12 +83,12 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 			<Dialog open maxWidth="xs" fullWidth>
 				<DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
 				<DialogContent>
-					<Typography>
-						{t("confirmDeleteAll")}
-					</Typography>
+					<Typography>{t("confirmDeleteAll")}</Typography>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setConfirmDeleteAll(false)}>{tc("cancel")}</Button>
+					<Button onClick={() => setConfirmDeleteAll(false)}>
+						{tc("cancel")}
+					</Button>
 					<Button color="error" variant="contained" onClick={handleDeleteAll}>
 						{t("deleteAll")}
 					</Button>
@@ -108,7 +108,9 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 					</Typography>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setConfirmDeleteId(null)}>{tc("cancel")}</Button>
+					<Button onClick={() => setConfirmDeleteId(null)}>
+						{tc("cancel")}
+					</Button>
 					<Button
 						color="error"
 						variant="contained"
@@ -135,7 +137,12 @@ export default function DraftRecoveryDialog({ onOpen }: Props) {
 							<ListItem disablePadding sx={{ py: 1, gap: 1, flexWrap: "wrap" }}>
 								<ListItemText
 									primary={draft.projectName}
-									secondary={t("savedAgo", { ago: formatDistanceToNow(draft.savedAt, { addSuffix: true, locale: locale === "en" ? enUS : fr }) })}
+									secondary={t("savedAgo", {
+										ago: formatDistanceToNow(draft.savedAt, {
+											addSuffix: true,
+											locale: locale === "en" ? enUS : fr,
+										}),
+									})}
 									sx={{ flex: 1, minWidth: 0 }}
 								/>
 								<Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>

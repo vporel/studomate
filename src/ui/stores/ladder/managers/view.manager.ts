@@ -1,3 +1,4 @@
+import { clamp } from "@/lib/number";
 import AbstractHighlightingViewManager from "@/ui/stores/shared/abstract-highlighting-view-manager";
 import {
 	LadderStoreGetFunction,
@@ -97,10 +98,7 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	}
 
 	private setSectionZoom(sectionId: string, zoom: number): number {
-		const clamped = Math.min(
-			LADDER_FLOW_MAX_ZOOM,
-			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
-		);
+		const clamped = clamp(zoom, LADDER_FLOW_MIN_ZOOM, LADDER_FLOW_MAX_ZOOM);
 		this.setStoreState((state) => ({
 			zoomBySectionId: { ...state.zoomBySectionId, [sectionId]: clamped },
 		}));
@@ -110,7 +108,8 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	/** Applique `zoom` (borné) à la section et repince son viewport. */
 	private applyZoom(sectionId: string, zoom: number): void {
 		if (
-			this.clamp(zoom) === (this.getStoreState().zoomBySectionId[sectionId] ?? 1)
+			this.clamp(zoom) ===
+			(this.getStoreState().zoomBySectionId[sectionId] ?? 1)
 		)
 			return;
 		const clamped = this.setSectionZoom(sectionId, zoom);
@@ -119,10 +118,7 @@ export default class LadderViewManager extends AbstractHighlightingViewManager<L
 	}
 
 	private clamp(zoom: number): number {
-		return Math.min(
-			LADDER_FLOW_MAX_ZOOM,
-			Math.max(LADDER_FLOW_MIN_ZOOM, zoom),
-		);
+		return clamp(zoom, LADDER_FLOW_MIN_ZOOM, LADDER_FLOW_MAX_ZOOM);
 	}
 
 	/**

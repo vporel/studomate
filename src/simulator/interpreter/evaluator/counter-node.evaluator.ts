@@ -5,11 +5,15 @@ import { EnvVariableValue } from "@/simulator/interpreter/environment/env-variab
 import { Environment } from "@/simulator/interpreter/environment/environment";
 
 /**
- * `input`/`control` sont évalués en niveau, pas en front : tant que `control` (R pour CTU, LD
- * pour CTD) est vrai, `currentValue` est figé à sa valeur cible chaque cycle, prioritaire sur
- * `input` — sinon `currentValue` change d'une unité par cycle tant que `input` (CU/CD) reste
- * vrai, sans saturation à `presetValue` (continue au-delà). `output` (Q) vaut
- * `currentValue >= presetValue`, même règle pour CTU et CTD.
+ * `input` (CU/CD) counts on its rising edge, detected against `lastInput`; `control` (R for CTU,
+ * LD for CTD) is evaluated on level: while true, `currentValue` is held at its target value every
+ * cycle, with priority over `input`. Otherwise `currentValue` moves by one unit per rising edge of
+ * `input`, without saturating (CTU keeps counting past `presetValue`, CTD below zero). `output`
+ * (Q) follows IEC 61131-3: `currentValue >= presetValue` for CTU, `currentValue <= 0` for CTD.
+ * CTUD counts on `input` (CU) and on `down.input` (CD), the two edges of one cycle cancelling
+ * out; `control` (R) takes priority over `down.load` (LD), and `output`/`down.output` are QU
+ * (`>= presetValue`) and QD (`<= 0`). Outputs compare the value as stored in `currentValue`, after
+ * it wraps to the variable's type: an INT counter going past 32767 reads -32768 and Q follows it.
  */
 export default class CounterNodeEvaluator {
 	private env: Environment;
@@ -29,32 +33,59 @@ export default class CounterNodeEvaluator {
 
 	evaluate(node: CounterNode): EnvVariableValue {
 		const inputValue = this.visitor.visit(node.input) as boolean;
+		const lastInputValue = this.visitor.visit(node.lastInput) as boolean;
 		const controlValue = this.visitor.visit(node.control) as boolean;
 		const presetValueValue = this.visitor.visit(node.presetValue) as number;
 		const currentValueValue = this.visitor.visit(node.currentValue) as number;
+		const down = node.down && {
+			input: this.visitor.visit(node.down.input) as boolean,
+			lastInput: this.visitor.visit(node.down.lastInput) as boolean,
+			load: this.visitor.visit(node.down.load) as boolean,
+		};
 
-		let nextCurrentValue: number;
-		if (controlValue) {
+		const risingInput = inputValue && !lastInputValue;
+		let nextCurrentValue = currentValueValue;
+		if (node.counterType === "CTUD") {
+			if (controlValue) nextCurrentValue = 0;
+			else if (down!.load) nextCurrentValue = presetValueValue;
+			else {
+				if (risingInput) nextCurrentValue += 1;
+				if (down!.input && !down!.lastInput) nextCurrentValue -= 1;
+			}
+		} else if (controlValue) {
 			nextCurrentValue = node.counterType === "CTU" ? 0 : presetValueValue;
-		} else if (inputValue) {
-			nextCurrentValue =
-				node.counterType === "CTU"
-					? currentValueValue + 1
-					: currentValueValue - 1;
-		} else {
-			nextCurrentValue = currentValueValue;
+		} else if (risingInput) {
+			nextCurrentValue += node.counterType === "CTU" ? 1 : -1;
 		}
 
-		const outputValue = nextCurrentValue >= presetValueValue;
-
 		this.env.setVariableValueByName(
-			(node.currentValue as IdentifierNode).value,
-			nextCurrentValue,
+			(node.lastInput as IdentifierNode).value,
+			inputValue,
 		);
+		const currentValueName = (node.currentValue as IdentifierNode).value;
+		this.env.setVariableValueByName(currentValueName, nextCurrentValue);
+		const storedCurrentValue = this.env.getVariableValueByName(
+			currentValueName,
+		) as number;
+		const outputValue =
+			node.counterType === "CTD"
+				? storedCurrentValue <= 0
+				: storedCurrentValue >= presetValueValue;
+
 		this.env.setVariableValueByName(
 			(node.output as IdentifierNode).value,
 			outputValue,
 		);
+		if (node.down && down) {
+			this.env.setVariableValueByName(
+				(node.down.lastInput as IdentifierNode).value,
+				down.input,
+			);
+			this.env.setVariableValueByName(
+				(node.down.output as IdentifierNode).value,
+				storedCurrentValue <= 0,
+			);
+		}
 		return outputValue;
 	}
 }

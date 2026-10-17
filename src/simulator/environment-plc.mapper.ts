@@ -25,8 +25,10 @@ export default class PlcVariablesMapper {
 			scope,
 			envVar.getType(),
 			envVar.getNumericRange(),
+			envVar.getDeclaredType(),
+			envVar.isConstant(),
+			envVar.getValue(),
 		);
-		plcVar.setValue(envVar.getValue());
 		return plcVar;
 	}
 
@@ -38,8 +40,10 @@ export default class PlcVariablesMapper {
 			plcVar.getType(),
 			direction,
 			plcVar.getNumericRange(),
+			plcVar.getDeclaredType(),
+			plcVar.isConstant(),
+			plcVar.getValue(),
 		);
-		envVar.setValue(plcVar.getValue());
 		return envVar;
 	}
 }

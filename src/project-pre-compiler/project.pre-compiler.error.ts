@@ -5,7 +5,7 @@ export type ProjectPreCompilerErrorSource = {
 		| "grafcet-transition"
 		| "grafcet-action"
 		| "ladder"
-		| "ladder-network";
+		| "ladder-section";
 	sourceId: string;
 };
 
@@ -28,10 +28,10 @@ export class ProjectPreCompilerErrorSourceBuilder {
 		return { sourceType: "grafcet-action", sourceId: actionId };
 	}
 
-	static buildLadderNetworkSource(
-		networkId: string,
+	static buildLadderSectionSource(
+		sectionId: string,
 	): ProjectPreCompilerErrorSource {
-		return { sourceType: "ladder-network", sourceId: networkId };
+		return { sourceType: "ladder-section", sourceId: sectionId };
 	}
 }
 
