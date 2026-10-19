@@ -6,10 +6,11 @@ import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ClientMessagesProvider from "./ClientMessagesProvider";
 import organizationJsonLd from "./organizationJsonLd";
 
 export const viewport = rootViewport;
@@ -36,7 +37,15 @@ export default async function LocaleLayout({
 
 	return (
 		<RootDocument lang={locale}>
-			<NextIntlClientProvider>
+			<ClientMessagesProvider
+				namespaces={[
+					"public.header",
+					"public.footer",
+					"public.languageSwitch",
+					"auth",
+					"profile",
+				]}
+			>
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{ __html: organizationJsonLd }}
@@ -46,7 +55,7 @@ export default async function LocaleLayout({
 					<main>{children}</main>
 					<Footer />
 				</div>
-			</NextIntlClientProvider>
+			</ClientMessagesProvider>
 		</RootDocument>
 	);
 }

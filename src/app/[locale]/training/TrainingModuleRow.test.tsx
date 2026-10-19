@@ -20,6 +20,7 @@ const defaultProps = {
 	statusLabel: "Disponible",
 	completedLabel: "Terminé",
 	comingSoonLabel: "à venir",
+	comingSoonMessage: "Ce module sera bientôt disponible.",
 };
 
 describe("TrainingModuleRow", () => {

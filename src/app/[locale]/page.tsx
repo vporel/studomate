@@ -6,6 +6,7 @@ import {
 } from "@/ui/components/public-pages/landing-content";
 import LandingPage from "@/ui/components/public-pages/LandingPage";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import ClientMessagesProvider from "./ClientMessagesProvider";
 import buildHomeJsonLd from "./homeJsonLd";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -37,7 +38,11 @@ export default async function Home({ params }: Props) {
 					__html: buildHomeJsonLd(locale, t("homeDescription"), featureList),
 				}}
 			/>
-			<LandingPage />
+			<ClientMessagesProvider
+				namespaces={["public.landing", "public.metadata", "templates"]}
+			>
+				<LandingPage />
+			</ClientMessagesProvider>
 		</>
 	);
 }

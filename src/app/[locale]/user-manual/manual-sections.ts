@@ -1,3 +1,5 @@
+import type { MessagesNamespace } from "@/i18n/pick-messages";
+
 /** Traducteur des libellés du plan (namespace `manual.nav`), fourni par le composant. */
 export type NavTranslate = (key: string) => string;
 
@@ -115,3 +117,10 @@ export function flattenManualSections(t: NavTranslate): FlatManualSection[] {
 	}
 	return flat;
 }
+
+/** Messages read by the manual's client components (`HmiSection` resolves each widget's
+ * `manualDescription` against `hmiEditor`). */
+export const MANUAL_CLIENT_NAMESPACES: readonly MessagesNamespace[] = [
+	"manual",
+	"hmiEditor.widgetManual",
+];

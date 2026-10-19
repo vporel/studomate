@@ -132,6 +132,7 @@ export default async function Training({ params }: Props) {
 						statusLabel={t("moduleAvailableStatusLabel")}
 						completedLabel={t("moduleCompletedLabel")}
 						comingSoonLabel={t("comingSoon")}
+						comingSoonMessage={t("comingSoonMessage")}
 						moduleId={module.moduleId}
 						stepIds={module.stepIds}
 					/>

@@ -5,8 +5,13 @@ import { routing } from "@/i18n/routing";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { permanentRedirect } from "next/navigation";
+import ClientMessagesProvider from "@/app/[locale]/ClientMessagesProvider";
 import ManualPage from "../ManualPage";
-import { MANUAL_DEFAULT_SECTION, MANUAL_SECTIONS } from "../manual-sections";
+import {
+	MANUAL_CLIENT_NAMESPACES,
+	MANUAL_DEFAULT_SECTION,
+	MANUAL_SECTIONS,
+} from "../manual-sections";
 
 type Props = { params: Promise<{ locale: string; section: string }> };
 
@@ -39,5 +44,9 @@ export default async function UserManualSection({ params }: Props) {
 	if (section === MANUAL_DEFAULT_SECTION)
 		permanentRedirect(getPathname({ locale, href: "/user-manual" }));
 	setRequestLocale(locale);
-	return <ManualPage section={section} />;
+	return (
+		<ClientMessagesProvider namespaces={MANUAL_CLIENT_NAMESPACES}>
+			<ManualPage section={section} />
+		</ClientMessagesProvider>
+	);
 }
