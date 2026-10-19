@@ -35,7 +35,7 @@ import {
 import NextLink from "next/link";
 import { ComponentType } from "react";
 import DemoVideo from "./DemoVideo";
-import HeroSceneSlot from "./hero-scene/HeroSceneSlot";
+import Illustration3dSlot from "@/ui/components/3d-illustrations/Illustration3dSlot";
 import {
 	arduinoPhoto,
 	featureKeys,
@@ -309,6 +309,12 @@ const featuredTemplates = PROJECT_TEMPLATES.filter(
 	(t) => t.id in templateCaptures,
 );
 
+/** Fades the scene out on the text side and at the bottom edge, onto the hero's own background. */
+const HERO_SCENE_MASK = [
+	"linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 35%, #000 58%)",
+	"linear-gradient(180deg, #000 75%, transparent 100%)",
+].join(", ");
+
 const LandingPage = () => {
 	const t = useT("public.landing");
 	const tTemplates = useT("templates");
@@ -328,7 +334,11 @@ const LandingPage = () => {
 				}}
 			>
 				<Box sx={{ display: { xs: "none", md: "block" } }}>
-					<HeroSceneSlot label={t("heroSceneLabel")} />
+					<Illustration3dSlot
+						illustration="carton-sorting"
+						label={t("heroSceneLabel")}
+						mask={HERO_SCENE_MASK}
+					/>
 				</Box>
 				<Container
 					maxWidth="lg"

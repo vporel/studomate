@@ -42,6 +42,7 @@ export default function ProjectsList({
 	const tc = useT("projects.common");
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [skipped, setSkipped] = useState<SkippedProjectInfo[]>([]);
+	const [cloudUnavailable, setCloudUnavailable] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [tab, setTab] = useState<ProjectsTab>("local");
 	const projectRepository = useProjectStore(
@@ -55,10 +56,14 @@ export default function ProjectsList({
 	const reload = useCallback(async () => {
 		setLoading(true);
 		try {
-			const { projects: loadedProjects, skipped: skippedProjects } =
-				await projectRepository.list();
+			const {
+				projects: loadedProjects,
+				skipped: skippedProjects,
+				failed,
+			} = await projectRepository.list();
 			setProjects(loadedProjects);
 			setSkipped(skippedProjects);
+			setCloudUnavailable(!!failed);
 		} catch (error) {
 			console.error("Erreur lors du chargement des projets:", error);
 		} finally {
@@ -131,6 +136,12 @@ export default function ProjectsList({
 					<Tab label={t("tabLocal")} value="local" />
 					<Tab label={t("tabCloud")} value="cloud" />
 				</Tabs>
+			)}
+
+			{cloudUnavailable && (
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
+					{t("cloudUnavailable")}
+				</Typography>
 			)}
 
 			{skipped.length > 0 && (

@@ -1,4 +1,5 @@
 import Project from "@/schemas/project/project.schema";
+import { setProjectEverSaved } from "../preferences.storage";
 import { readJson } from "../safe-local-storage";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
@@ -32,7 +33,9 @@ export default class HybridProjectRepository
 	async list(): Promise<ProjectListResult> {
 		const local = await this.local.list();
 		if (!(await this.isAuthenticated())) return local;
+		const indexBeforeListing = this.readIndex();
 		const cloud = await this.cloud.list();
+		if (!cloud.failed) this.pruneIndex(indexBeforeListing, cloud);
 		// Le serveur fait foi : un projet cloud absent de l'index (créé depuis un autre navigateur,
 		// stockage local vidé...) y est inscrit, sinon il serait rangé et enregistré comme local.
 		// Un id qui existe aussi en local reste ambigu : l'index n'est pas modifié pour lui.
@@ -43,10 +46,32 @@ export default class HybridProjectRepository
 		// Un projet présent dans l'index cloud n'est plus local, même si `local.list()` le renvoie
 		// encore (nettoyage local incomplet après un `moveToCloud` — voir plus bas).
 		const localOnly = local.projects.filter((p) => !this.isCloud(p.id));
+		// Conversely, a project the index places locally is listed once, from the local copy, even
+		// if the cloud still returns it (incomplete cloud cleanup after a `moveToLocal`).
+		const localOnlyIds = new Set(localOnly.map((p) => p.id));
+		const cloudOnly = cloud.projects.filter((p) => !localOnlyIds.has(p.id));
 		return {
-			projects: [...localOnly, ...cloud.projects],
+			projects: [...localOnly, ...cloudOnly],
 			skipped: [...local.skipped, ...cloud.skipped],
+			...(cloud.failed && { failed: true }),
 		};
+	}
+
+	/**
+	 * Removes from the index the ids that the account's cloud no longer holds (deleted from another
+	 * device, or projects of another account). Only ids indexed before the listing started are
+	 * candidates, so a project moved to the cloud while the listing was in flight stays indexed.
+	 * A skipped cloud project without a readable id could be any of them: nothing is removed then.
+	 */
+	private pruneIndex(candidates: string[], cloud: ProjectListResult) {
+		if (cloud.skipped.some((s) => s.id === null)) return;
+		const cloudIds = new Set([
+			...cloud.projects.map((p) => p.id),
+			...cloud.skipped.map((s) => s.id),
+		]);
+		const stale = new Set(candidates.filter((id) => !cloudIds.has(id)));
+		if (stale.size === 0) return;
+		this.writeIndex(this.readIndex().filter((id) => !stale.has(id)));
 	}
 
 	async get(projectId: string): Promise<Project | null> {
@@ -60,6 +85,15 @@ export default class HybridProjectRepository
 	 * d'un projet peut choisir sa destination.
 	 */
 	async save(
+		project: Project,
+		location?: StorageLocation,
+	): Promise<SaveResult> {
+		const result = await this.saveTo(project, location);
+		if (result.ok) setProjectEverSaved();
+		return result;
+	}
+
+	private async saveTo(
 		project: Project,
 		location?: StorageLocation,
 	): Promise<SaveResult> {
@@ -120,18 +154,34 @@ export default class HybridProjectRepository
 		return result;
 	}
 
-	/** Projets stockés dans le cloud du compte connecté ; vide sans session. */
+	/**
+	 * Projets stockés dans le cloud du compte connecté ; vide sans session. Une copie cloud d'un
+	 * projet que l'index range en local est périmée (nettoyage cloud incomplet après un
+	 * `moveToLocal`) : elle est écartée, la copie locale fait foi.
+	 */
 	async listCloud(): Promise<ProjectListResult> {
 		if (!(await this.isAuthenticated())) return { projects: [], skipped: [] };
-		return this.cloud.list();
+		const [cloud, local] = await Promise.all([
+			this.cloud.list(),
+			this.local.list(),
+		]);
+		const localIds = new Set(local.projects.map((p) => p.id));
+		return {
+			...cloud,
+			projects: cloud.projects.filter(
+				(p) => this.isCloud(p.id) || !localIds.has(p.id),
+			),
+		};
 	}
 
 	/**
 	 * Rapatrie tous les projets cloud en local, en s'arrêtant au premier échec (les projets déjà
-	 * déplacés restent en local, les autres restent dans le cloud).
+	 * déplacés restent en local, les autres restent dans le cloud). Un cloud illisible est un
+	 * échec : l'appelant ne doit pas croire le cloud vide.
 	 */
 	async moveAllCloudToLocal(): Promise<SaveResult> {
-		const { projects } = await this.listCloud();
+		const { projects, failed } = await this.listCloud();
+		if (failed) return { ok: false, reason: "network" };
 		for (const project of projects) {
 			const result = await this.moveToLocal(project);
 			if (!result.ok) return result;

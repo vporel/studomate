@@ -1,173 +1,220 @@
 "use client";
 
-import { APP_NAME, APP_SHORT_DESCRIPTION, APP_SLOGAN } from "@/app-info";
-import { FEATURED_TEMPLATE_ID, PROJECT_TEMPLATES } from "@/templates/index";
+import { APP_NAME } from "@/app-info";
+import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
-import FlexBox from "@/ui/lib/boxes/FlexBox";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
-import { alpha, Box, Button, Divider, Theme, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import { Box, Button, Paper, Skeleton, Typography } from "@mui/material";
 import Link from "next/link";
 import { useShallow } from "zustand/shallow";
-import routes from "@/app/routes";
 import AccountStatus from "./auth/AccountStatus";
 import ProfilePromptModal from "./profile/ProfilePromptModal";
 import { useProjectStore } from "./projects/ProjectContext";
+import ExampleCard, { type ExampleVariant } from "./startup/ExampleCard";
+import FeaturedExample from "./startup/FeaturedExample";
+import RecentProjects from "./startup/RecentProjects";
+import StartupAside from "./startup/StartupAside";
+import {
+	listStartupExamples,
+	type StartupExample,
+} from "./startup/startup-examples";
+import useRecentProjects from "./startup/useRecentProjects";
 
-const featuredTemplate = PROJECT_TEMPLATES.find(
-	(t) => t.id === FEATURED_TEMPLATE_ID && t.solution,
-);
+const RECENT_PROJECTS_LIMIT = 5;
+const EXAMPLE_GRID_SIZE = 3;
+
+const examples = listStartupExamples();
 
 const AppStartup = () => {
-	const tTemplates = useT("templates");
 	const t = useT("chrome.startup");
-	const { setOpenModalVisible, lifecycleManager, setNewProjectModalVisible } =
+	const { lifecycleManager, setOpenModalVisible, setNewProjectModalVisible } =
 		useProjectStore(
 			useShallow((state) => ({
-				setOpenModalVisible: state.setOpenModalVisible,
 				lifecycleManager: state.lifecycleManager,
+				setOpenModalVisible: state.setOpenModalVisible,
 				setNewProjectModalVisible: state.setNewProjectModalVisible,
 			})),
 		);
+	const recent = useRecentProjects(RECENT_PROJECTS_LIMIT);
+	const returning = !recent.loading && recent.returning;
+
+	const openExample = (example: StartupExample, variant: ExampleVariant) =>
+		void lifecycleManager.newProjectFromTemplate(example.id, variant);
+
+	const [featured, ...others] = examples;
+	const gridExamples = (returning ? examples : others).slice(
+		0,
+		EXAMPLE_GRID_SIZE,
+	);
 
 	return (
-		<FlexBox
-			center
-			sx={{
-				background: (th: Theme) => th.palette.background.default,
-				minHeight: "100vh",
-				py: 6,
-			}}
-		>
+		<Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+			<ProfilePromptModal />
 			<Box
 				sx={{
-					width: "760px",
-					maxWidth: "100%",
-					backgroundColor: "white",
-					padding: 4,
-					boxShadow: "1px 1px 5px rgba(0,0,0,0.2)",
+					maxWidth: 1240,
+					mx: "auto",
+					px: 6,
+					py: 5,
+					display: "grid",
+					gridTemplateColumns: "minmax(0, 1fr) 260px",
+					columnGap: 6,
+					alignItems: "start",
 				}}
 			>
-				<FlexBox justifyContent="flex-end">
-					<AccountStatus />
-				</FlexBox>
-
-				<FlexBox alignItems="flex-start" gap={2.5}>
-					<Box
-						component={Link}
-						href={routes.home()}
-						aria-label={t("homeAria", { name: APP_NAME })}
-					>
-						<Box
-							component="img"
-							src="/images/icon.png"
-							alt=""
-							sx={{ width: "72px", mt: "0.35rem", display: "block" }}
-						/>
-					</Box>
-					<Box flex={1}>
-						<Typography
-							variant="h2"
-							component={Link}
-							href={routes.home()}
-							sx={{
-								display: "inline-block",
-								fontWeight: "bold",
-								color: "text.primary",
-								textDecoration: "none",
-								"&:hover": { color: "primary.main" },
-							}}
-						>
-							{APP_NAME}
-						</Typography>
-						<Typography
-							variant="h5"
-							color="text.secondary"
-							sx={{ fontWeight: 600 }}
-						>
-							{APP_SLOGAN}
-						</Typography>
-						<Typography color="text.secondary" mt={0.5}>
-							{APP_SHORT_DESCRIPTION}
-						</Typography>
-					</Box>
-				</FlexBox>
-
-				<ProfilePromptModal />
-
-				{featuredTemplate && (
-					<Box
+				<Box component="main">
+					<Paper
+						component="header"
+						variant="outlined"
 						sx={{
-							mt: 3,
-							p: 3,
-							border: (th) => `2px solid ${th.palette.primary.main}`,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							gap: 2,
 							borderRadius: 2,
-							background: (th) => alpha(th.palette.primary.main, 0.04),
+							px: 2.5,
+							py: 1.5,
 						}}
 					>
-						<Typography variant="overline" color="primary" fontWeight={600}>
-							{t("featuredOverline")}
-						</Typography>
-						<Typography variant="h5" fontWeight={600} mt={0.5}>
-							{tTemplates(`${featuredTemplate.id}.label`)}
-						</Typography>
-						<Typography variant="body2" color="text.secondary" mt={0.5} mb={2}>
-							{tTemplates(`${featuredTemplate.id}.description`)}
-						</Typography>
-						<Button
-							variant="contained"
-							size="large"
-							onClick={() =>
-								void lifecycleManager.newProjectFromTemplate(
-									featuredTemplate.id,
-									"solution",
-								)
-							}
-						>
-							{t("openSolutionAndSimulate")}
-						</Button>
-					</Box>
-				)}
-
-				<FlexBox alignItems="center" gap={1} mt={2}>
-					<MenuBookIcon fontSize="small" color="action" />
-					<Typography variant="body2" color="text.secondary">
-						{t("helpPrompt")}{" "}
 						<Box
 							component={Link}
-							href={routes.userManual()}
+							href={routes.home()}
+							aria-label={t("homeAria", { name: APP_NAME })}
 							sx={{
-								color: "primary.main",
-								fontWeight: 600,
+								display: "inline-flex",
+								alignItems: "center",
+								gap: 1.25,
+								color: "text.primary",
 								textDecoration: "none",
 							}}
 						>
-							{t("openManual")}
+							<Box
+								component="img"
+								src="/images/icon.png"
+								alt=""
+								sx={{ width: 32, display: "block" }}
+							/>
+							<Typography sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
+								{APP_NAME}
+							</Typography>
 						</Box>
-					</Typography>
-				</FlexBox>
+						<AccountStatus />
+					</Paper>
 
-				<Divider sx={{ my: 3 }} />
+					<Box
+						sx={{
+							display: "flex",
+							alignItems: "flex-end",
+							justifyContent: "space-between",
+							gap: 3,
+							mt: 6,
+							mb: 3,
+						}}
+					>
+						<Box>
+							<Typography
+								component="h1"
+								sx={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.2 }}
+							>
+								{recent.loading ? (
+									<Skeleton width={280} />
+								) : returning ? (
+									t("resumeTitle")
+								) : (
+									t("welcomeTitle")
+								)}
+							</Typography>
+							{!recent.loading && !returning && (
+								<Typography color="text.secondary" mt={1}>
+									{t("welcomeSubtitle")}
+								</Typography>
+							)}
+						</Box>
+						<Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
+							<Button
+								variant={returning ? "contained" : "outlined"}
+								disableElevation
+								startIcon={<AddIcon />}
+								onClick={() => setNewProjectModalVisible(true)}
+							>
+								{t("newProject")}
+							</Button>
+							<Button
+								variant="outlined"
+								startIcon={<FolderOpenOutlinedIcon />}
+								onClick={() => setOpenModalVisible(true)}
+							>
+								{t("openProject")}
+							</Button>
+						</Box>
+					</Box>
 
-				<FlexBox alignItems="center" gap={2} flexWrap="wrap">
-					<Typography
-						variant="body2"
-						color="text.secondary"
-						sx={{ mr: "auto" }}
-					>
-						{t("alreadyComfortable")}
-					</Typography>
-					<Button
-						variant="outlined"
-						onClick={() => setNewProjectModalVisible(true)}
-					>
-						{t("createProject")}
-					</Button>
-					<Button color="primary" onClick={() => setOpenModalVisible(true)}>
-						{t("openProject")}
-					</Button>
-				</FlexBox>
+					{recent.loading ? (
+						<Skeleton variant="rounded" height={340} />
+					) : (
+						<>
+							{returning ? (
+								<RecentProjects
+									projects={recent.projects}
+									total={recent.total}
+									cloudUnavailable={recent.cloudUnavailable}
+								/>
+							) : (
+								featured && (
+									<FeaturedExample
+										example={featured}
+										onOpen={(variant) => openExample(featured, variant)}
+									/>
+								)
+							)}
+
+							<Box component="section" mt={5}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+										mb: 1,
+									}}
+								>
+									<Typography
+										component="h2"
+										variant="overline"
+										color="text.secondary"
+									>
+										{returning ? t("examplesTitle") : t("otherExamplesTitle")}
+									</Typography>
+									<Button
+										size="small"
+										onClick={() => setNewProjectModalVisible(true)}
+									>
+										{t("allTemplates")}
+									</Button>
+								</Box>
+								<Box
+									sx={{
+										display: "grid",
+										gridTemplateColumns: `repeat(${EXAMPLE_GRID_SIZE}, minmax(0, 1fr))`,
+										gap: 2,
+									}}
+								>
+									{gridExamples.map((example) => (
+										<ExampleCard
+											key={example.id}
+											example={example}
+											onOpen={(variant) => openExample(example, variant)}
+										/>
+									))}
+								</Box>
+							</Box>
+						</>
+					)}
+				</Box>
+
+				<StartupAside />
 			</Box>
-		</FlexBox>
+		</Box>
 	);
 };
 

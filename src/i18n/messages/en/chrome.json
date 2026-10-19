@@ -81,13 +81,42 @@
 	},
 	"startup": {
 		"homeAria": "{name}: home",
-		"featuredOverline": "Discover with an example",
-		"openSolutionAndSimulate": "Open the solution and simulate",
-		"helpPrompt": "Need help getting started?",
-		"openManual": "Read the user manual",
-		"alreadyComfortable": "Already comfortable?",
-		"createProject": "Create a new project",
-		"openProject": "Open an existing project"
+		"welcomeTitle": "Where to start?",
+		"welcomeSubtitle": "Open a complete example and watch it run, or start from a blank page.",
+		"resumeTitle": "Pick up a project",
+		"newProject": "New project",
+		"openProject": "Open a project",
+		"recentProjects": "Recent projects",
+		"allProjects": "All projects ({count})",
+		"noProjects": "No saved project yet. Create a new one or open a project file.",
+		"modifiedAgo": "Modified {ago}",
+		"cloudProject": "Saved in the cloud",
+		"contents": {
+			"grafcet": "GRAFCET",
+			"ladder": "Ladder",
+			"hmi": "HMI",
+			"scene3d": "3D scene"
+		},
+		"featuredOverline": "Example to simulate",
+		"examplesTitle": "Examples",
+		"otherExamplesTitle": "More examples",
+		"allTemplates": "All templates",
+		"simulateSolution": "Simulate the solution",
+		"seeSolution": "See the solution",
+		"doExercise": "Do the exercise",
+		"examples": {
+			"crossroads": "Alternate two traffic axes without ever causing a crash.",
+			"carton-sorting": "Route each carton to the right conveyor according to its height.",
+			"drilling": "Sequence the lowering, drilling and raising of an automatic drill.",
+			"elevator": "Bring the car to the right floor and handle the doors."
+		},
+		"resources": "Resources",
+		"userManual": "User manual",
+		"training": "Training",
+		"sceneLabels": {
+			"crossroads": "3D animation of a crossroads: cars arrive on all four roads and stop at red while the two axes take turns on green.",
+			"carton-sorting": "3D animation of a box-sorting station: a conveyor brings each box and cylinders sort it by height."
+		}
 	},
 	"mobileGuard": {
 		"title": "Desktop application only",

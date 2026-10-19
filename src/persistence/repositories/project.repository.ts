@@ -8,6 +8,8 @@ import { SkippedProjectInfo } from "../project-deserialization";
 export type ProjectListResult = {
 	projects: Project[];
 	skipped: SkippedProjectInfo[];
+	/** The storage could not be read: `projects` is empty for that reason, not for lack of projects. */
+	failed?: true;
 };
 
 /**

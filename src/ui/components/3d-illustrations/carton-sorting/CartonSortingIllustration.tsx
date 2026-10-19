@@ -13,9 +13,9 @@ import {
 	STATION_X,
 	T1_START_X,
 	T1_WIDTH,
-	sampleHeroScene,
-	type HeroSceneState,
-} from "./hero-timeline";
+	sampleCartonSorting,
+	type CartonSortingIllustrationState,
+} from "./carton-sorting-timeline";
 
 const LOW_COLOR = "#ffffff";
 const HIGH_COLOR = "#ffa726";
@@ -31,7 +31,7 @@ const CAMERA_TARGET: [number, number, number] = [3.6, 0.4, 1.4];
 const RIGHT_SHIFT = 0.22;
 const UP_SHIFT = 0.08;
 
-type StateRef = React.RefObject<HeroSceneState>;
+type StateRef = React.RefObject<CartonSortingIllustrationState>;
 
 function Conveyor({
 	center,
@@ -47,7 +47,7 @@ function Conveyor({
 	axis: "x" | "z";
 	length: number;
 	width: number;
-	running: (state: HeroSceneState) => boolean;
+	running: (state: CartonSortingIllustrationState) => boolean;
 	color: string;
 	slatColor: string;
 	state: StateRef;
@@ -109,7 +109,7 @@ function Pusher({
 	across: number;
 	bodyEnd: number;
 	frontAtRest: number;
-	stroke: (state: HeroSceneState) => number;
+	stroke: (state: CartonSortingIllustrationState) => number;
 	color: string;
 	state: StateRef;
 }) {
@@ -200,9 +200,9 @@ function Cartons({ state }: { state: StateRef }) {
 }
 
 function Plant() {
-	const state = useRef<HeroSceneState>(sampleHeroScene(0));
+	const state = useRef<CartonSortingIllustrationState>(sampleCartonSorting(0));
 	useFrame(({ clock }) => {
-		state.current = sampleHeroScene(clock.getElapsedTime());
+		state.current = sampleCartonSorting(clock.getElapsedTime());
 	});
 	const outputX = T1_END_X + OUTPUT_LENGTH / 2;
 	const sideBodyEnd = STATION_X - 1.3 + 0.5;
@@ -291,8 +291,12 @@ function Framing() {
 	return null;
 }
 
-/** Looping, scripted 3D sorting station drawn as the backdrop of the landing hero. */
-export default function HeroScene({ paused }: { paused: boolean }) {
+/** Looping, scripted 3D sorting station drawn as a page backdrop. */
+export default function CartonSortingIllustration({
+	paused,
+}: {
+	paused: boolean;
+}) {
 	return (
 		<Canvas
 			frameloop={paused ? "never" : "always"}

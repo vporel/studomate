@@ -3,10 +3,12 @@ import {
 	getPreferredLocale,
 	getPreferredSaveLocation,
 	getProductTourSeen,
+	getProjectEverSaved,
 	setAutoOpenHmiSimulationOnStart,
 	setPreferredLocale,
 	setPreferredSaveLocation,
 	setProductTourSeen,
+	setProjectEverSaved,
 } from "./preferences.storage";
 
 function installLocalStorage() {
@@ -95,6 +97,16 @@ describe("preferences.storage", () => {
 			};
 			expect(getProductTourSeen()).toBe(false);
 			expect(() => setProductTourSeen()).not.toThrow();
+		});
+	});
+	describe("project ever saved", () => {
+		it("is false until a save has been marked", () => {
+			expect(getProjectEverSaved()).toBe(false);
+		});
+
+		it("remembers that a project was saved", () => {
+			setProjectEverSaved();
+			expect(getProjectEverSaved()).toBe(true);
 		});
 	});
 });

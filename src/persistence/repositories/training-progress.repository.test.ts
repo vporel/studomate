@@ -49,7 +49,10 @@ describe("TrainingProgressRepository", () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 			setLocal({ m1: "s2" });
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s2");
 			expect(mockFrom).not.toHaveBeenCalled();
@@ -58,16 +61,22 @@ describe("TrainingProgressRepository", () => {
 		it("retourne null sans progression locale ni compte", async () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 		});
 
 		it("ignore un localStorage corrompu ou une étape inconnue", async () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: null } });
 			localStorage.setItem(TRAINING_PROGRESS_LOCAL_KEY, "{not json");
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 
 			setLocal({ m1: "unknown" });
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBeNull();
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBeNull();
 		});
 
 		it("retourne l'étape cloud si elle est plus avancée que la locale, sans réécrire le cloud", async () => {
@@ -79,7 +88,10 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s3");
 			expect(mockFrom).toHaveBeenCalledWith("training_progress");
@@ -95,11 +107,18 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			const result = await new TrainingProgressRepository().getStepId("m1", STEPS);
+			const result = await new TrainingProgressRepository().getStepId(
+				"m1",
+				STEPS,
+			);
 
 			expect(result).toBe("s4");
 			expect(upsert).toHaveBeenCalledWith(
-				expect.objectContaining({ user_id: "u1", module_id: "m1", step_id: "s4" }),
+				expect.objectContaining({
+					user_id: "u1",
+					module_id: "m1",
+					step_id: "s4",
+				}),
 			);
 		});
 
@@ -112,7 +131,9 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBe("s2");
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBe("s2");
 			expect(upsert).toHaveBeenCalledTimes(1);
 		});
 
@@ -125,7 +146,9 @@ describe("TrainingProgressRepository", () => {
 				upsert,
 			});
 
-			expect(await new TrainingProgressRepository().getStepId("m1", STEPS)).toBe("s2");
+			expect(
+				await new TrainingProgressRepository().getStepId("m1", STEPS),
+			).toBe("s2");
 			expect(upsert).not.toHaveBeenCalled();
 		});
 	});
@@ -137,7 +160,9 @@ describe("TrainingProgressRepository", () => {
 
 			await new TrainingProgressRepository().saveStepId("m1", "s3");
 
-			expect(JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!)).toEqual({
+			expect(
+				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
+			).toEqual({
 				other: "s1",
 				m1: "s3",
 			});
@@ -151,12 +176,18 @@ describe("TrainingProgressRepository", () => {
 
 			await new TrainingProgressRepository().saveStepId("m1", "s3");
 
-			expect(JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!)).toEqual({
+			expect(
+				JSON.parse(localStorage.getItem(TRAINING_PROGRESS_LOCAL_KEY)!),
+			).toEqual({
 				m1: "s3",
 			});
 			expect(mockFrom).toHaveBeenCalledWith("training_progress");
 			expect(upsert).toHaveBeenCalledWith(
-				expect.objectContaining({ user_id: "u1", module_id: "m1", step_id: "s3" }),
+				expect.objectContaining({
+					user_id: "u1",
+					module_id: "m1",
+					step_id: "s3",
+				}),
 			);
 		});
 	});

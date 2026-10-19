@@ -12,7 +12,10 @@ Without an account, projects are stored locally in the browser; cloud backup and
 
 - **Multi-language graphical editing**: GRAFCET and Ladder (steps, transitions, contacts, coils, timers, counters...).
 - **Animated HMI**: moving an object, filling a tank, changing a visual state — a virtual plant driven by the project's variables.
+- **3D scenes**: drive ready-made 3D plants (carton sorting, crossroads, drilling, elevator, parking...) from your programs. Scenes are versioned, so a project always keeps the one it was created with.
 - **Simulation and visualization**: step-by-step or continuous execution, with real-time visualization of states, transitions, and live variables.
+- **Run on a real Arduino Uno R3**: link a board from the browser (serial), flash the firmware, run your project on it and observe it live.
+- **Typed variables and constants**: IEC 61131-3 numeric types with explicit conversions, and constants usable in all expressions.
 - **Continuous analysis**: structural errors are flagged while editing (`error` / `warning` severities), not only when starting the simulation.
 - **User manual** built into the application.
 - **Link sharing**: send a project to your students; they open it with no account or install.
@@ -30,6 +33,7 @@ Target audience: students (vocational/technical schools, engineering schools, un
 - [Next.js](https://nextjs.org) (App Router) + React 19 + TypeScript
 - [MUI](https://mui.com) for the UI
 - [React Flow (@xyflow/react)](https://reactflow.dev) for the graphical editor
+- [Three.js](https://threejs.org) with [React Three Fiber](https://r3f.docs.pmnd.rs) for the 3D scenes
 - [Zustand](https://github.com/pmndrs/zustand) for state management
 - [Supabase](https://supabase.com) for authentication and cloud project storage
 - [Sentry](https://sentry.io) for error monitoring

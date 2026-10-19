@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "next build --turbopack && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static && rm -f studomate.zip && (cd .next/standalone && zip -rqX ../../studomate.zip . -x '*.DS_Store' '__MACOSX/*' 'node_modules/@img/*darwin*')",
+		"build": "next build --turbopack && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static && rm -f studomate.zip && (cd .next/standalone && zip -rqX ../../studomate.zip . -x '*.DS_Store' '__MACOSX/*' 'node_modules/*')",
 		"start": "next start",
 		"lint": "eslint .",
 		"test": "jest",

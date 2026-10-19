@@ -28,6 +28,7 @@ function project(id: string, name: string): Project {
 function setup({
 	list = [] as Project[],
 	skipped = [] as SkippedProjectInfo[],
+	failed = undefined as true | undefined,
 	deleteFn = jest.fn(),
 	moveToCloudFn = jest.fn().mockResolvedValue({ ok: true }),
 	moveToLocalFn = jest.fn().mockResolvedValue({ ok: true }),
@@ -40,7 +41,7 @@ function setup({
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			projectRepository: {
-				list: () => ({ projects: list, skipped }),
+				list: () => ({ projects: list, skipped, failed }),
 				delete: deleteFn,
 				moveToCloud: moveToCloudFn,
 				moveToLocal: moveToLocalFn,
@@ -152,6 +153,16 @@ describe("ProjectsList", () => {
 		expect(
 			screen.queryByText(/n'a pas pu être ouvert/),
 		).not.toBeInTheDocument();
+		expect(screen.queryByText(/projets cloud/)).not.toBeInTheDocument();
+	});
+
+	it("signale que les projets cloud n'ont pas pu être chargés", async () => {
+		setup({ list: [project("p1", "Projet A")], failed: true });
+		await waitFor(() => screen.getByText("Projet A"));
+
+		expect(
+			screen.getByText(/Vos projets cloud n'ont pas pu être chargés/),
+		).toBeInTheDocument();
 	});
 
 	it("propose de se connecter dans l'onglet Cloud sans compte", async () => {

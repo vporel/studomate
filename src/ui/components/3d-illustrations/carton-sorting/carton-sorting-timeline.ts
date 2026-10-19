@@ -1,4 +1,4 @@
-/** Scripted sorting cycle of the landing hero scene: world units, seconds. */
+/** Scripted sorting cycle of the carton-sorting illustration: world units, seconds. */
 
 export const STATION_X = 5.16;
 export const T1_START_X = -0.6;
@@ -24,21 +24,30 @@ const HOLD = 0.6;
 /** Sorted cartons shrink away at the end of the loop, before it restarts empty. */
 export const FADE = 0.4;
 
-export type HeroCarton = { x: number; z: number; tall: boolean; scale: number };
+export type IllustrationCarton = {
+	x: number;
+	z: number;
+	tall: boolean;
+	scale: number;
+};
 
-export type HeroSceneState = {
+export type CartonSortingIllustrationState = {
 	t1Running: boolean;
 	t2Running: boolean;
 	/** Cylinder strokes, in world units. */
 	p1: number;
 	p2: number;
 	p3: number;
-	cartons: HeroCarton[];
+	cartons: IllustrationCarton[];
 };
 
 type Phase = {
 	duration: number;
-	apply: (ratio: number, state: HeroSceneState, carton: HeroCarton) => void;
+	apply: (
+		ratio: number,
+		state: CartonSortingIllustrationState,
+		carton: IllustrationCarton,
+	) => void;
 };
 
 const lerp = (from: number, to: number, ratio: number) =>
@@ -119,7 +128,7 @@ export const LOOP_DURATION =
 	CYCLE.reduce((sum, { phases }) => sum + cartonDuration(phases), 0) + FADE;
 
 /** Scene state `time` seconds into the loop (any time, wrapped to the loop). */
-const idleState = (): HeroSceneState => ({
+const idleState = (): CartonSortingIllustrationState => ({
 	t1Running: false,
 	t2Running: false,
 	p1: 0,
@@ -128,7 +137,9 @@ const idleState = (): HeroSceneState => ({
 	cartons: [],
 });
 
-export function sampleHeroScene(time: number): HeroSceneState {
+export function sampleCartonSorting(
+	time: number,
+): CartonSortingIllustrationState {
 	const t = ((time % LOOP_DURATION) + LOOP_DURATION) % LOOP_DURATION;
 	const state = idleState();
 	const fading = t > LOOP_DURATION - FADE;
@@ -137,7 +148,7 @@ export function sampleHeroScene(time: number): HeroSceneState {
 	let start = 0;
 	for (const { tall, phases } of CYCLE) {
 		if (t < start) break;
-		const carton: HeroCarton = { x: APPEAR_X, z: 0, tall, scale: 1 };
+		const carton: IllustrationCarton = { x: APPEAR_X, z: 0, tall, scale: 1 };
 		let phaseStart = start;
 		for (const phase of phases) {
 			const local = t - phaseStart;

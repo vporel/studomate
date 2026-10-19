@@ -12,6 +12,7 @@
 		"lastModified": "Dernière modification : {date} à {time}",
 		"skippedProjects": "{count, plural, one {# projet n'a pas pu être ouvert} other {# projets n'ont pas pu être ouverts}} et n'apparaissent pas dans la liste.",
 		"skippedProjectsNewerVersion": "{count, plural, one {# projet n'a pas pu être ouvert} other {# projets n'ont pas pu être ouverts}} : enregistré(s) par une version plus récente de l'application. Ouvrez-les depuis une version à jour.",
+		"cloudUnavailable": "Vos projets cloud n'ont pas pu être chargés. Vérifiez votre connexion.",
 		"sendToCloud": "Envoyer vers le cloud",
 		"sendToCloudAria": "envoyer vers le cloud",
 		"bringLocal": "Rapatrier en local",

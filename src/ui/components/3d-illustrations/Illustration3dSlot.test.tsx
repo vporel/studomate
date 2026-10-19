@@ -2,13 +2,20 @@
  * @jest-environment jsdom
  */
 import { act, render, screen } from "@testing-library/react";
-import HeroSceneSlot from "./HeroSceneSlot";
+import Illustration3dSlot, {
+	isIllustration3dId,
+	type Illustration3dId,
+} from "./Illustration3dSlot";
 
-jest.mock("./HeroScene", () => ({
+jest.mock("./carton-sorting/CartonSortingIllustration", () => ({
 	__esModule: true,
 	default: ({ paused }: { paused: boolean }) => (
 		<div data-testid="hero-scene" data-paused={String(paused)} />
 	),
+}));
+jest.mock("./crossroads/CrossroadsIllustration", () => ({
+	__esModule: true,
+	default: () => <div data-testid="crossroads-illustration" />,
 }));
 
 let intersect: (isIntersecting: boolean) => void = () => {};
@@ -41,9 +48,26 @@ beforeEach(() => {
 
 afterEach(() => jest.restoreAllMocks());
 
-const renderSlot = () => render(<HeroSceneSlot label="Poste de tri" />);
+const renderSlot = (illustration: Illustration3dId = "carton-sorting") =>
+	render(
+		<Illustration3dSlot
+			illustration={illustration}
+			label="Poste de tri"
+			mask="none"
+		/>,
+	);
 
-describe("HeroSceneSlot", () => {
+describe("Illustration3dSlot", () => {
+	it("charge l'illustration demandée", async () => {
+		setEnvironment();
+		renderSlot("crossroads");
+
+		expect(
+			await screen.findByTestId("crossroads-illustration"),
+		).toBeInTheDocument();
+		expect(screen.queryByTestId("hero-scene")).not.toBeInTheDocument();
+	});
+
 	it("charge la scène animée sur grand écran, avec WebGL et sans préférence de mouvement réduit", async () => {
 		setEnvironment();
 		renderSlot();
@@ -103,5 +127,42 @@ describe("HeroSceneSlot", () => {
 			document.dispatchEvent(new Event("visibilitychange"));
 		});
 		expect(scene).toHaveAttribute("data-paused", "false");
+	});
+
+	it("affiche le contenu de repli quand la scène ne peut pas tourner", () => {
+		setEnvironment({ webGl: false });
+		render(
+			<Illustration3dSlot
+				illustration="crossroads"
+				label="Carrefour"
+				fallback={<div data-testid="fallback" />}
+			/>,
+		);
+
+		expect(screen.getByTestId("fallback")).toBeInTheDocument();
+	});
+
+	it("n'affiche pas le contenu de repli quand la scène tourne", async () => {
+		setEnvironment();
+		render(
+			<Illustration3dSlot
+				illustration="crossroads"
+				label="Carrefour"
+				fallback={<div data-testid="fallback" />}
+			/>,
+		);
+
+		expect(
+			await screen.findByTestId("crossroads-illustration"),
+		).toBeInTheDocument();
+		expect(screen.queryByTestId("fallback")).not.toBeInTheDocument();
+	});
+});
+
+describe("isIllustration3dId", () => {
+	it("reconnaît les illustrations disponibles et elles seules", () => {
+		expect(isIllustration3dId("crossroads")).toBe(true);
+		expect(isIllustration3dId("drilling")).toBe(false);
+		expect(isIllustration3dId("toString")).toBe(false);
 	});
 });

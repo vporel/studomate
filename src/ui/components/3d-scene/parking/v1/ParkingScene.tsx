@@ -14,24 +14,16 @@ import {
 } from "@/3d-scenes/parking/v1/parking.model";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { type Group, type Mesh, MeshStandardMaterial } from "three";
+import type { Group } from "three";
 import type { SceneComponentProps } from "@/ui/components/3d-scene/scene-views";
 import Box from "@/ui/components/3d-scene/parts/Box";
+import Car, { paintCar } from "@/ui/components/3d-scene/parts/Car";
 import { SCENE_ORIGIN } from "@/ui/components/3d-scene/scene-origin";
 
 /** Model units to world units. */
 const S = 0.01;
 const ROAD_COLOR = "#455a64";
-const CAR_HEIGHT = 0.22;
 const CAR_POOL_SIZE = 12;
-const CAR_COLORS = [
-	"#e53935",
-	"#1e88e5",
-	"#fdd835",
-	"#43a047",
-	"#8e24aa",
-	"#f5f5f5",
-];
 const STALL_WIDTH = 46;
 const STALL_DEPTH = 2 * LANE_OFFSET - 2 * CAR_WIDTH;
 const LOT_START = 60;
@@ -44,10 +36,6 @@ const ARMS = [
 	{ side: 1, lane: LANE_OFFSET, gate: "entry" },
 	{ side: -1, lane: -LANE_OFFSET, gate: "exit" },
 ] as const;
-
-const carMaterials = CAR_COLORS.map(
-	(color) => new MeshStandardMaterial({ color }),
-);
 
 /** 3D rendering of the car park from the states of its physical model. */
 export default function ParkingScene({ sample }: SceneComponentProps) {
@@ -70,10 +58,9 @@ export default function ParkingScene({ sample }: SceneComponentProps) {
 			group.visible = !!car;
 			if (!car) return;
 			const pose = carPose(car);
-			group.position.set(pose.x * S, 0.05 + CAR_HEIGHT / 2, pose.z * S);
+			group.position.set(pose.x * S, 0.05, pose.z * S);
 			group.rotation.y = carHeading(pose);
-			(group.children[0] as Mesh).material =
-				carMaterials[car.id % carMaterials.length];
+			paintCar(group, car.id);
 		});
 	});
 
@@ -161,9 +148,7 @@ export default function ParkingScene({ sample }: SceneComponentProps) {
 						cars.current[index] = group;
 					}}
 				>
-					<mesh material={carMaterials[0]}>
-						<boxGeometry args={[CAR_WIDTH * S, CAR_HEIGHT, CAR_LENGTH * S]} />
-					</mesh>
+					<Car width={CAR_WIDTH * S} length={CAR_LENGTH * S} />
 				</group>
 			))}
 		</group>

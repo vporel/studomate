@@ -142,10 +142,10 @@ export type ProjectTemplate = {
 };
 
 /**
- * Template mis en avant sur l'écran de démarrage. Doit avoir une `solution`.
- * Changer cette valeur suffit pour modifier le template affiché.
+ * Template mis en avant sur l'écran de démarrage. Doit avoir une `solution` et figurer dans
+ * `STARTUP_EXAMPLE_IDS` (`src/ui/components/startup/startup-examples.ts`).
  */
-export const FEATURED_TEMPLATE_ID = "traffic-light";
+export const FEATURED_TEMPLATE_ID = "crossroads";
 
 /**
  * Pour ajouter un template : créer un fichier `xxx.template.ts`, y exporter une fonction

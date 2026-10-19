@@ -105,7 +105,9 @@ function buildRichProject(): Project {
 	);
 	project.setMainHmiPage(pageB.id);
 
-	project.exercise = { statement: "# Consigne\n\nDémarrer le convoyeur sur `I0`." };
+	project.exercise = {
+		statement: "# Consigne\n\nDémarrer le convoyeur sur `I0`.",
+	};
 	project.setDialect(Dialect.EN);
 
 	return project;

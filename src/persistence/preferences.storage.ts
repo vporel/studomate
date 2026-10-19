@@ -6,6 +6,7 @@ const STORAGE_KEY = "studomate_preferred_save_location";
 const LOCALE_STORAGE_KEY = "studomate_locale";
 const AUTO_OPEN_HMI_SIMULATION_KEY = "studomate_auto_open_hmi_simulation";
 const PRODUCT_TOUR_SEEN_KEY = "studomate_product_tour_seen";
+const PROJECT_EVER_SAVED_KEY = "studomate_project_ever_saved";
 
 /**
  * Lieu de stockage par défaut choisi par l'utilisateur (page Préférences, ou premier
@@ -54,6 +55,18 @@ export function getProductTourSeen(): boolean {
 
 export function setProductTourSeen(): void {
 	writeString(PRODUCT_TOUR_SEEN_KEY, "true");
+}
+
+/**
+ * Whether a project was ever saved from this browser. Never cleared, even when every project is
+ * deleted afterwards.
+ */
+export function getProjectEverSaved(): boolean {
+	return readString(PROJECT_EVER_SAVED_KEY) === "true";
+}
+
+export function setProjectEverSaved(): void {
+	writeString(PROJECT_EVER_SAVED_KEY, "true");
 }
 
 /**

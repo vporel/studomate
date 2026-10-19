@@ -19,8 +19,8 @@ const SHARES_TABLE = "project_shares";
 /**
  * Stockage des projets dans Supabase (table `projects`, colonne `data` en jsonb).
  *
- * Le RLS de la table filtre déjà par utilisateur connecté (`auth.uid() = owner_id`) : ce
- * repository ne fait donc jamais de filtrage explicite par utilisateur dans ses requêtes.
+ * Le RLS de la table limite l'écriture au propriétaire (`auth.uid() = owner_id`), mais laisse
+ * n'importe qui lire un projet partagé : `list` filtre donc explicitement par propriétaire.
  *
  * Comme `LocalStorageProjectRepository`, le projet est stocké tel quel (JSON versionné) et
  * migré à la lecture — jamais en base, cf. `deserializeProject`.
@@ -50,11 +50,19 @@ export default class SupabaseProjectRepository
 {
 	private readonly versions = new Map<string, number>();
 
+	/** The signed-in user's own projects, other users' shared projects excluded. */
 	async list(): Promise<ProjectListResult> {
-		const { data, error } = await supabase.from(TABLE).select("data");
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		if (!session) return { projects: [], skipped: [] };
+		const { data, error } = await supabase
+			.from(TABLE)
+			.select("data")
+			.eq("owner_id", session.user.id);
 		if (error) {
 			console.error("Impossible de lister les projets cloud :", error);
-			return { projects: [], skipped: [] };
+			return { projects: [], skipped: [], failed: true };
 		}
 		return deserializeProjects(
 			(data ?? []).map((row) => row.data as Record<string, any>),
@@ -170,7 +178,8 @@ export default class SupabaseProjectRepository
 	private failureReason(error: unknown): SaveFailureReason {
 		// Code Postgres de violation de contrainte unique (ici, la clé primaire `id`) : la ligne
 		// existe déjà, écrite par un appareil dont celui-ci ignorait l'existence.
-		if ((error as { code?: string } | null)?.code === "23505") return "conflict";
+		if ((error as { code?: string } | null)?.code === "23505")
+			return "conflict";
 		return "network";
 	}
 }

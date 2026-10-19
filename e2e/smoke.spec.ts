@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+test.use({ locale: "fr-FR" });
+
 /**
  * Parcours unique : ouvrir la solution du template mis en avant → l'éditeur complet se monte →
  * ouvrir le grafcet → entrer en simulation → la boucle PLC tourne sans erreur.
@@ -27,9 +29,7 @@ test("ouvre une solution de template, monte l'éditeur et simule sans erreur", a
 
 	await page.goto("/app");
 
-	await page
-		.getByRole("button", { name: "Ouvrir la solution et simuler" })
-		.click();
+	await page.getByRole("button", { name: "Simuler la solution" }).click();
 
 	// Shell monté : le sélecteur de mode (design/simulation) est là.
 	const modeSelect = page
@@ -39,7 +39,10 @@ test("ouvre une solution de template, monte l'éditeur et simule sans erreur", a
 
 	// Ouvre le grafcet depuis l'explorateur → le canvas React Flow se monte.
 	await page
-		.getByRole("treeitem", { name: "Feu tricolore", exact: true })
+		.getByRole("treeitem", {
+			name: "Carrefour de feux tricolores",
+			exact: true,
+		})
 		.click();
 	await expect(page.locator(".react-flow").first()).toBeVisible();
 
@@ -53,7 +56,7 @@ test("ouvre une solution de template, monte l'éditeur et simule sans erreur", a
 	await expect(modeSelect).toHaveValue("SIMULATION");
 
 	// Laisse la boucle PLC enchaîner de nombreux cycles (le premier franchissement temporisé du
-	// feu tricolore tombe à 10 s) : une erreur de cycle remonterait en toast ou en pageerror.
+	// carrefour tombe à 10 s) : une erreur de cycle remonterait en toast ou en pageerror.
 	await page.waitForTimeout(12_000);
 
 	await expect(modeSelect).toHaveValue("SIMULATION");

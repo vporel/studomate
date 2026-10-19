@@ -1,11 +1,15 @@
 import Project from "@/schemas/project/project.schema";
 
 const mockAuthGetUser = jest.fn();
+const mockGetSession = jest.fn();
 const mockFrom = jest.fn();
 
 jest.mock("./supabase-client", () => ({
 	supabase: {
-		auth: { getUser: (...args: any[]) => mockAuthGetUser(...args) },
+		auth: {
+			getUser: (...args: any[]) => mockAuthGetUser(...args),
+			getSession: (...args: any[]) => mockGetSession(...args),
+		},
 		from: (...args: any[]) => mockFrom(...args),
 	},
 }));
@@ -39,6 +43,12 @@ describe("SupabaseProjectRepository", () => {
 	});
 
 	describe("list", () => {
+		beforeEach(() => {
+			mockGetSession.mockResolvedValue({
+				data: { session: { user: { id: "u1" } } },
+			});
+		});
+
 		it("migre et retourne les projets lisibles", async () => {
 			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
 			mockFrom.mockReturnValue(
@@ -52,7 +62,28 @@ describe("SupabaseProjectRepository", () => {
 			expect(projects[0].id).toBe("p1");
 		});
 
-		it("retourne une liste vide en cas d'erreur réseau, sans lever", async () => {
+		it("ne liste que les projets de l'utilisateur connecté, pas ceux partagés par d'autres", async () => {
+			const eq = jest.fn(() => resolved({ data: [], error: null }));
+			mockFrom.mockReturnValue({ select: () => ({ eq }) });
+
+			await new SupabaseProjectRepository().list();
+
+			expect(eq).toHaveBeenCalledWith("owner_id", "u1");
+		});
+
+		it("retourne une liste vide sans session", async () => {
+			mockGetSession.mockResolvedValue({ data: { session: null } });
+
+			await expect(new SupabaseProjectRepository().list()).resolves.toEqual({
+				projects: [],
+				skipped: [],
+			});
+			expect(mockFrom).not.toHaveBeenCalled();
+			expect(mockAuthGetUser).not.toHaveBeenCalled();
+		});
+
+		it("signale l'échec en cas d'erreur réseau, sans lever", async () => {
+			const error = jest.spyOn(console, "error").mockImplementation(() => {});
 			mockFrom.mockReturnValue(
 				resolved({ data: null, error: new Error("offline") }),
 			);
@@ -60,7 +91,9 @@ describe("SupabaseProjectRepository", () => {
 			await expect(new SupabaseProjectRepository().list()).resolves.toEqual({
 				projects: [],
 				skipped: [],
+				failed: true,
 			});
+			error.mockRestore();
 		});
 	});
 

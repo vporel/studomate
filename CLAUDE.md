@@ -229,6 +229,34 @@ Always check `package.json` before quoting a version: this table goes stale at t
   `claude-in-chrome` when going in circles (e.g. several failed attempts at fixing a bug) and a
   visual check would help break out of the loop.
 
+## Public pages and SEO
+
+Public pages are the indexable, localized pages under `src/app/[locale]/` (landing, about,
+user manual, training, legal pages...) and the components they render
+(`src/ui/components/public-pages/`, manual and training content). `/app` is not one. Any change
+to a public page, its content or its i18n messages (`public.json`, manual, training) gets
+particular attention to SEO, and the end-of-task report says what was checked:
+
+- **Metadata**: every page goes through `pageMetadata` / `createGenerateMetadata`
+  (`src/app/metadata.ts`), which sets title, description, `canonical`, `hreflang` and Open
+  Graph. Title and description are specific to the page, in both locales, and stay within
+  reasonable lengths (title around 60 characters before the site suffix, description around
+  150–160).
+- **Indexing**: a new route is reachable from the sitemap (`src/app/sitemap.ts`) and allowed
+  by `robots.ts`; a removed or renamed route doesn't leave dead internal links behind.
+- **Locale parity**: FR and EN carry the same content, translated slugs come from
+  `routing.pathnames`, and internal links go through the localized `Link` / `PublicLink`.
+- **Structure**: one `h1` per page, headings in order without skipped levels, meaningful link
+  text, an `alt` on every informative image (`alt=""` only for decorative ones).
+- **Rendered content**: text meant to be indexed is rendered on the server. Never put it only
+  inside a client-only, lazy or WebGL component (3D illustrations, videos), which crawlers may
+  not run.
+- **Structured data**: the JSON-LD (`src/app/[locale]/*JsonLd.ts`) stays consistent with the
+  visible content when that content changes (FAQ, organization, offers...).
+- **Performance**: the public pages' Core Web Vitals count for ranking. No heavy client
+  JavaScript loaded eagerly above the fold (three.js, data grids...), images sized and in a
+  modern format, no layout shift from content appearing late.
+
 ## Schema changes and migrations
 
 Two independent versioning levels:
