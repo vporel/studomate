@@ -1,4 +1,5 @@
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { SESSION_LOOKUP_TIMEOUT_MS } from "@/persistence/repositories/session-lookup";
 import { supabase } from "@/persistence/repositories/supabase-client";
 import { User } from "@supabase/supabase-js";
 import ProfileRepository from "@/persistence/repositories/profile.repository";
@@ -145,11 +146,39 @@ export const authStore = createStore<AuthStoreState>((set, get) => ({
 	init: async () => {
 		if (!initPromise) {
 			initPromise = (async () => {
-				const {
+				let authEventReceived = false;
+				const applySession = ({
 					data: { session },
-				} = await supabase.auth.getSession();
-				set({ user: session?.user ?? null, loading: false });
+				}: Awaited<ReturnType<typeof supabase.auth.getSession>>) =>
+					set({ user: session?.user ?? null });
+				const timedOut = Symbol("timeout");
+				let timer: ReturnType<typeof setTimeout> | undefined;
+				try {
+					const pending = supabase.auth.getSession();
+					const first = await Promise.race([
+						pending,
+						new Promise<typeof timedOut>((resolve) => {
+							timer = setTimeout(
+								() => resolve(timedOut),
+								SESSION_LOOKUP_TIMEOUT_MS,
+							);
+						}),
+					]);
+					if (first === timedOut) {
+						// A late answer must not overwrite a newer auth event.
+						pending.then(
+							(result) => !authEventReceived && applySession(result),
+							() => undefined,
+						);
+					} else applySession(first);
+				} catch {
+					// Offline: the app starts without a user; the cloud is unreachable anyway.
+				} finally {
+					clearTimeout(timer);
+				}
+				set({ loading: false });
 				supabase.auth.onAuthStateChange((_event, session) => {
+					authEventReceived = true;
 					set({ user: session?.user ?? null });
 				});
 			})();

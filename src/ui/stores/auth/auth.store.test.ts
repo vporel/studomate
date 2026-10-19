@@ -61,6 +61,7 @@ jest.mock("@/persistence/repositories/supabase-client", () => ({
 }));
 
 // Import après le mock
+import { SESSION_LOOKUP_TIMEOUT_MS } from "@/persistence/repositories/session-lookup";
 import { authStore } from "./auth.store";
 
 function makeUser(email: string): User {
@@ -101,6 +102,110 @@ describe("getAnonymousPseudo", () => {
 		const user = makeUser("x");
 		(user as any).email = undefined;
 		expect(getAnonymousPseudo(user)).toBe("");
+	});
+});
+
+describe("authStore.init", () => {
+	type AuthModule = typeof import("./auth.store");
+	async function loadFreshStore(): Promise<AuthModule> {
+		let loaded!: AuthModule;
+		await jest.isolateModulesAsync(async () => {
+			loaded = await import("./auth.store");
+		});
+		return loaded;
+	}
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		jest.useFakeTimers();
+	});
+	afterEach(() => jest.useRealTimers());
+
+	it("sets the user of the stored session", async () => {
+		const user = makeUser("a@b.fr");
+		mockGetSession.mockResolvedValue({ data: { session: { user } } });
+		const { authStore: store } = await loadFreshStore();
+
+		await store.getState().init();
+
+		expect(store.getState().user).toBe(user);
+		expect(store.getState().loading).toBe(false);
+	});
+
+	it("starts without a user when getSession rejects, and later init calls do not reject", async () => {
+		mockGetSession.mockRejectedValue(new Error("Failed to fetch"));
+		const { authStore: store } = await loadFreshStore();
+
+		await expect(store.getState().init()).resolves.toBeUndefined();
+		await expect(store.getState().init()).resolves.toBeUndefined();
+
+		expect(store.getState().loading).toBe(false);
+		expect(store.getState().user).toBeNull();
+		expect(mockOnAuthStateChange).toHaveBeenCalledTimes(1);
+	});
+
+	it("starts without waiting once getSession exceeds the timeout, then adopts its late answer", async () => {
+		const user = makeUser("a@b.fr");
+		let resolveSession!: (value: unknown) => void;
+		mockGetSession.mockReturnValue(
+			new Promise((resolve) => (resolveSession = resolve)),
+		);
+		const { authStore: store } = await loadFreshStore();
+
+		const started = store.getState().init();
+		await jest.advanceTimersByTimeAsync(SESSION_LOOKUP_TIMEOUT_MS);
+		await started;
+		expect(store.getState().loading).toBe(false);
+		expect(store.getState().user).toBeNull();
+
+		resolveSession({ data: { session: { user } } });
+		await jest.advanceTimersByTimeAsync(0);
+		expect(store.getState().user).toBe(user);
+	});
+
+	it("leaves no timer behind once getSession answered in time", async () => {
+		mockGetSession.mockResolvedValue({ data: { session: null } });
+		const { authStore: store } = await loadFreshStore();
+
+		await store.getState().init();
+
+		expect(jest.getTimerCount()).toBe(0);
+	});
+
+	it("keeps the user of a newer auth event over a late answer of getSession", async () => {
+		const stale = makeUser("old@b.fr");
+		const fresh = makeUser("new@b.fr");
+		let resolveSession!: (value: unknown) => void;
+		mockGetSession.mockReturnValue(
+			new Promise((resolve) => (resolveSession = resolve)),
+		);
+		const { authStore: store } = await loadFreshStore();
+
+		const started = store.getState().init();
+		await jest.advanceTimersByTimeAsync(SESSION_LOOKUP_TIMEOUT_MS);
+		await started;
+		const [onChange] = mockOnAuthStateChange.mock.calls[0];
+		onChange("SIGNED_IN", { user: fresh });
+		resolveSession({ data: { session: { user: stale } } });
+		await jest.advanceTimersByTimeAsync(0);
+
+		expect(store.getState().user).toBe(fresh);
+	});
+
+	it("ignores a late failure of getSession after the timeout", async () => {
+		let rejectSession!: (reason: unknown) => void;
+		mockGetSession.mockReturnValue(
+			new Promise((_, reject) => (rejectSession = reject)),
+		);
+		const { authStore: store } = await loadFreshStore();
+
+		const started = store.getState().init();
+		await jest.advanceTimersByTimeAsync(SESSION_LOOKUP_TIMEOUT_MS);
+		await started;
+		rejectSession(new Error("offline"));
+		await jest.advanceTimersByTimeAsync(0);
+
+		expect(store.getState().user).toBeNull();
 	});
 });
 

@@ -249,9 +249,13 @@ export default class ProjectLifecycleManager {
 		// jetable : c'est cette instance-là qui retient la `version` cloud servant de `baseVersion`
 		// à un enregistrement conditionnel ultérieur (voir `SupabaseProjectRepository`).
 		const repo = this.getStoreState().projectRepository;
-		if (!isShareable(repo)) return false;
-		const project = await repo.getByShareToken(token);
-		if (!project) return false;
+		const project = isShareable(repo)
+			? await repo.getByShareToken(token)
+			: null;
+		if (!project) {
+			toast.error(getT("toasts")("shareLinkOpenFailed"));
+			return false;
+		}
 		await this.doOpenProject(project);
 		trackEvent("shared-project-opened");
 		set(() => ({ isSharedProject: true, shareToken: null }));
@@ -466,22 +470,30 @@ export default class ProjectLifecycleManager {
 		await this.openAndRestore(reloaded, { shared: false, unsaved: false });
 	}
 
+	/** Writes the unsaved changes of the open project to its local draft. */
+	/**
+	 * Writes the draft of pending changes. Returns whether a reload would lose nothing: `false`
+	 * when the write failed, or for a shared project, which has no draft.
+	 */
+	flushDraft(): boolean {
+		const { project, hasUnsavedChanges, isSharedProject } =
+			this.getStoreState();
+		if (!project || !hasUnsavedChanges) return true;
+		if (isSharedProject) return false;
+		const result = saveDraft(project.id, project.name, JSON.stringify(project));
+		this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
+		if (!result.ok) {
+			console.error("Auto-save of the draft failed:", result.reason);
+		}
+		return result.ok;
+	}
+
 	startAutoSave(): void {
 		if (this.autoSaveTimer !== null) return;
-		this.autoSaveTimer = setInterval(() => {
-			const { project, hasUnsavedChanges, isSharedProject } =
-				this.getStoreState();
-			if (!project || !hasUnsavedChanges || isSharedProject) return;
-			const result = saveDraft(
-				project.id,
-				project.name,
-				JSON.stringify(project),
-			);
-			this.setStoreState(() => ({ autoSaveUnavailable: !result.ok }));
-			if (!result.ok) {
-				console.error("Auto-save of the draft failed:", result.reason);
-			}
-		}, AUTO_SAVE_INTERVAL_MS);
+		this.autoSaveTimer = setInterval(
+			() => this.flushDraft(),
+			AUTO_SAVE_INTERVAL_MS,
+		);
 	}
 
 	stopAutoSave(): void {

@@ -1,4 +1,5 @@
 import Project from "@/schemas/project/project.schema";
+import { AuthRetryableFetchError } from "@supabase/supabase-js";
 
 const mockGetSession = jest.fn();
 const mockAuthGetUser = jest.fn();
@@ -407,6 +408,19 @@ describe("HybridProjectRepository", () => {
 			});
 		}
 
+		it("échoue sans lever quand la session ne peut être lue, pour ne pas faire croire le cloud vide", async () => {
+			mockGetSession.mockResolvedValue({
+				data: { session: null },
+				error: new AuthRetryableFetchError("Failed to fetch", 0),
+			});
+			const repo = new HybridProjectRepository();
+
+			await expect(repo.moveAllCloudToLocal()).resolves.toEqual({
+				ok: false,
+				reason: "network",
+			});
+		});
+
 		it("ne fait rien sans session", async () => {
 			const repo = new HybridProjectRepository();
 
@@ -504,6 +518,31 @@ describe("HybridProjectRepository", () => {
 				data: { session: { user: { id: "u1" } } },
 			});
 		}
+
+		it("liste les projets locaux et signale le cloud injoignable quand la session ne peut être lue", async () => {
+			mockGetSession.mockRejectedValue(new Error("Failed to fetch"));
+			const repo = new HybridProjectRepository();
+			await repo.save(newProject("l1", "Local"));
+
+			const result = await repo.list();
+
+			expect(result.failed).toBe(true);
+			expect(result.projects.map((p) => p.id)).toEqual(["l1"]);
+			expect(mockFrom).not.toHaveBeenCalled();
+		});
+
+		it("n'expose pas la copie locale d'un projet passé dans le cloud quand le cloud est injoignable", async () => {
+			mockGetSession.mockRejectedValue(new Error("Failed to fetch"));
+			const repo = new HybridProjectRepository();
+			await repo.save(newProject("l1", "Local"));
+			await repo.save(newProject("c1", "Copie restée en local"));
+			store.set(CLOUD_INDEX_KEY, JSON.stringify(["c1"]));
+
+			const result = await repo.list();
+
+			expect(result.failed).toBe(true);
+			expect(result.projects.map((p) => p.id)).toEqual(["l1"]);
+		});
 
 		it("retire de l'index les ids que le cloud du compte ne contient plus", async () => {
 			signIn();

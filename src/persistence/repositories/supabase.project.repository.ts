@@ -4,6 +4,7 @@ import {
 	deserializeProject,
 	deserializeProjects,
 } from "../project-deserialization";
+import lookupSession from "./session-lookup";
 import { supabase } from "./supabase-client";
 import ProjectRepository, {
 	ProjectListResult,
@@ -52,14 +53,15 @@ export default class SupabaseProjectRepository
 
 	/** The signed-in user's own projects, other users' shared projects excluded. */
 	async list(): Promise<ProjectListResult> {
-		const {
-			data: { session },
-		} = await supabase.auth.getSession();
-		if (!session) return { projects: [], skipped: [] };
+		const lookup = await lookupSession();
+		if (lookup.status === "unreachable") {
+			return { projects: [], skipped: [], failed: true };
+		}
+		if (lookup.status === "signed-out") return { projects: [], skipped: [] };
 		const { data, error } = await supabase
 			.from(TABLE)
 			.select("data")
-			.eq("owner_id", session.user.id);
+			.eq("owner_id", lookup.session.user.id);
 		if (error) {
 			console.error("Impossible de lister les projets cloud :", error);
 			return { projects: [], skipped: [], failed: true };

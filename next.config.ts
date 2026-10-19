@@ -1,5 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import { withSerwist } from "@serwist/turbopack";
 import createNextIntlPlugin from "next-intl/plugin";
 import { APP_URL } from "./src/app-info";
 
@@ -26,7 +27,7 @@ const nextConfig: NextConfig = {
 	},
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+export default withSentryConfig(withSerwist(withNextIntl(nextConfig)), {
 	silent: true,
 	// Désactive l'upload des source maps si la variable n'est pas définie
 	disableLogger: true,

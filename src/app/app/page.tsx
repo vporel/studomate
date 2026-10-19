@@ -4,6 +4,7 @@ import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
 import FullScreenLoader from "@/ui/components/FullScreenLoader";
+import ServiceWorkerUpdater from "@/ui/components/offline/ServiceWorkerUpdater";
 import {
 	ProjectContextProvider,
 	useProjectStore,
@@ -56,6 +57,7 @@ export default function App() {
 			<NoIndexOnQuery />
 			<AppContextProvider>
 				<ProjectContextProvider>
+					<ServiceWorkerUpdater />
 					<AppComponent />
 				</ProjectContextProvider>
 			</AppContextProvider>

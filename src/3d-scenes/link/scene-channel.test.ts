@@ -48,6 +48,23 @@ describe("SceneChannel", () => {
 		expect(handler).not.toHaveBeenCalled();
 	});
 
+	it("reports a message of another protocol version without delivering it", () => {
+		const [ta, tb] = createTransportPair();
+		const scene = new SceneChannel<SceneToEditorMessage, EditorToSceneMessage>(
+			tb,
+		);
+		const handler = jest.fn();
+		const onForeignVersion = jest.fn();
+		scene.onMessage(handler, onForeignVersion);
+
+		ta.postMessage({ type: "ping", protocolVersion: 999 });
+		ta.postMessage("garbage");
+
+		expect(handler).not.toHaveBeenCalled();
+		expect(onForeignVersion).toHaveBeenCalledTimes(1);
+		expect(onForeignVersion).toHaveBeenCalledWith("ping");
+	});
+
 	it("stops delivering and closes the transport on close", () => {
 		const [ta, tb] = createTransportPair();
 		const editor = new SceneChannel<EditorToSceneMessage, SceneToEditorMessage>(

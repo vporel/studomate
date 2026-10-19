@@ -16,10 +16,10 @@ const PHASE_KEYS = {
 	running: "running",
 	paused: "paused",
 	"editor-closed": "editorClosed",
+	"protocol-mismatch": "protocolMismatch",
 } as const satisfies Record<SceneViewPhase, string>;
 
 export default function SceneApp({ session }: { session: string }) {
-	const t = useTranslations("scene3d");
 	const [view, setView] = useState<SceneView | null>(null);
 
 	useEffect(() => {

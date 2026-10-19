@@ -1,7 +1,8 @@
 import SceneChannel from "@/3d-scenes/link/scene-channel";
-import type {
-	EditorToSceneMessage,
-	SceneToEditorMessage,
+import {
+	type EditorToSceneMessage,
+	SCENE_PROTOCOL_VERSION,
+	type SceneToEditorMessage,
 } from "@/3d-scenes/link/scene-messages";
 import { createTransportPair } from "@tests/utils/transport-pair";
 import SceneView, { EDITOR_SILENCE_TIMEOUT_MS } from "./scene-view";
@@ -28,6 +29,7 @@ function createHarness(knownScenes = ["carton-sorting@1"]) {
 	return {
 		view,
 		editor,
+		editorEnd,
 		received,
 		onClose,
 		advance: (ms: number) => {
@@ -145,6 +147,51 @@ describe("SceneView", () => {
 		const h = createHarness();
 		h.editor.send({ type: "ping" });
 		expect(h.received.some((m) => m.type === "pong")).toBe(true);
+		h.view.dispose();
+	});
+
+	it("asks to reload when the editor speaks another protocol version, and keeps saying so through the silence", () => {
+		const h = createHarness();
+		h.editor.send(state(0, "running"));
+		h.editorEnd.postMessage({ type: "ping", protocolVersion: 999 });
+		expect(h.view.getSnapshot().phase).toBe("protocol-mismatch");
+
+		h.advance(EDITOR_SILENCE_TIMEOUT_MS + 1500);
+		expect(h.view.getSnapshot().phase).toBe("protocol-mismatch");
+
+		h.editor.send(state(0, "running", 100));
+		expect(h.view.getSnapshot().phase).toBe("running");
+		h.view.dispose();
+	});
+
+	it("leaves the mismatch on the next ping of an editor on this version, and says hello again", () => {
+		const h = createHarness();
+		h.editorEnd.postMessage({ type: "ping", protocolVersion: 999 });
+		expect(h.view.getSnapshot().phase).toBe("protocol-mismatch");
+
+		h.received.length = 0;
+		h.editor.send({ type: "ping" });
+
+		expect(h.view.getSnapshot().phase).toBe("waiting");
+		expect(h.received.map((m) => m.type)).toEqual(["pong", "hello"]);
+		h.view.dispose();
+	});
+
+	it("ignores the messages of another scene tab on the channel, whatever its version", () => {
+		const h = createHarness();
+		h.editor.send(state(0, "running"));
+
+		h.editorEnd.postMessage({ type: "pong", protocolVersion: 999 });
+		h.editorEnd.postMessage({ type: "bye", protocolVersion: 999 });
+		expect(h.view.getSnapshot().phase).toBe("running");
+
+		h.advance(EDITOR_SILENCE_TIMEOUT_MS - 1000);
+		h.editorEnd.postMessage({
+			type: "pong",
+			protocolVersion: SCENE_PROTOCOL_VERSION,
+		});
+		h.advance(1500);
+		expect(h.view.getSnapshot().phase).toBe("editor-closed");
 		h.view.dispose();
 	});
 

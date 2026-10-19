@@ -3,7 +3,8 @@ import { setProjectEverSaved } from "../preferences.storage";
 import { readJson } from "../safe-local-storage";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import SupabaseProjectRepository from "./supabase.project.repository";
-import { isSupabaseConfigured, supabase } from "./supabase-client";
+import lookupSession from "./session-lookup";
+import { isSupabaseConfigured } from "./supabase-client";
 import ProjectRepository, {
 	ProjectListResult,
 	SaveResult,
@@ -32,7 +33,15 @@ export default class HybridProjectRepository
 
 	async list(): Promise<ProjectListResult> {
 		const local = await this.local.list();
-		if (!(await this.isAuthenticated())) return local;
+		const signedIn = await this.signInStatus();
+		if (signedIn === "signed-out") return local;
+		if (signedIn === "unreachable") {
+			return {
+				...local,
+				projects: local.projects.filter((p) => !this.isCloud(p.id)),
+				failed: true,
+			};
+		}
 		const indexBeforeListing = this.readIndex();
 		const cloud = await this.cloud.list();
 		if (!cloud.failed) this.pruneIndex(indexBeforeListing, cloud);
@@ -160,7 +169,11 @@ export default class HybridProjectRepository
 	 * `moveToLocal`) : elle est écartée, la copie locale fait foi.
 	 */
 	async listCloud(): Promise<ProjectListResult> {
-		if (!(await this.isAuthenticated())) return { projects: [], skipped: [] };
+		const signedIn = await this.signInStatus();
+		if (signedIn === "signed-out") return { projects: [], skipped: [] };
+		if (signedIn === "unreachable") {
+			return { projects: [], skipped: [], failed: true };
+		}
 		const [cloud, local] = await Promise.all([
 			this.cloud.list(),
 			this.local.list(),
@@ -224,12 +237,11 @@ export default class HybridProjectRepository
 		}
 	}
 
-	private async isAuthenticated(): Promise<boolean> {
-		if (!isSupabaseConfigured) return false;
-		const {
-			data: { session },
-		} = await supabase.auth.getSession();
-		return session !== null;
+	private async signInStatus(): Promise<
+		"signed-in" | "signed-out" | "unreachable"
+	> {
+		if (!isSupabaseConfigured) return "signed-out";
+		return (await lookupSession()).status;
 	}
 
 	private isCloud(projectId: string): boolean {

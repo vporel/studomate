@@ -135,7 +135,7 @@
 			"Écran : l'éditeur est prévu pour un ordinateur. Quand la fenêtre fait moins de 768 pixels de large (téléphone, fenêtre très réduite), Studomate affiche « Application desktop uniquement » ; agrandissez la fenêtre ou passez sur un ordinateur.",
 			"Souris et clavier : de nombreuses actions passent par le clic droit (menus contextuels), le glisser-déposer et les raccourcis clavier. L'usage tactile (tablette) n'est pas garanti ; un Chromebook convient comme n'importe quel ordinateur avec un navigateur Chromium.",
 			"Navigateur : tout fonctionne dans les navigateurs de bureau courants ; seule la liaison avec une carte Arduino demande un navigateur basé sur Chromium (Chrome, Edge...), voir la section Matériel (Arduino).",
-			"Connexion : il n'y a pas de mode hors ligne. L'application se charge depuis le web, une connexion est donc nécessaire pour l'ouvrir (en salle de TP, vérifiez l'accès réseau avant la séance)."
+			"Connexion : une fois chargée, l'application fonctionne sans réseau (édition, simulation, scène 3D, liaison Arduino, ce manuel) et peut s'installer depuis le navigateur. La première visite sur un appareil demande une connexion, ainsi que les projets cloud, les liens de partage, les comptes et les autres pages du site. En salle de TP dont le profil est effacé à la déconnexion, ouvrez l'application au début de la séance pendant que le réseau est disponible."
 		],
 		"preferencesTitle": "Préférences",
 		"preferencesBody": "Fichier → Préférences ouvre la page des réglages de l'application, qui sont au nombre de trois :",
@@ -937,7 +937,7 @@
 				"title": "Application et stockage",
 				"items": [
 					"application pour ordinateur : elle s'efface sous 768 pixels de large, et l'usage tactile (tablette) n'est pas garanti ;",
-					"pas de mode hors ligne : une connexion est nécessaire pour ouvrir l'application ;",
+					"hors ligne, seuls les projets stockés dans le navigateur sont disponibles : les projets cloud, les liens de partage et la connexion à un compte demandent le réseau, et l'application doit avoir été ouverte au moins une fois sur l'appareil avec une connexion ;",
 					"par défaut, les projets ne sont stockés que dans le navigateur de l'appareil : exportez-les ou créez un compte pour les sauvegarder dans le cloud (section Démarrer) ;",
 					"pas de vue enseignant : un professeur ne voit pas les projets cloud de ses élèves, ils lui envoient un fichier ou un lien de partage (section Projets)."
 				]

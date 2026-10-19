@@ -1,15 +1,22 @@
 import SceneChannel, {
 	type SceneTransport,
 } from "@/3d-scenes/link/scene-channel";
-import type {
-	EditorToSceneMessage,
-	SceneSimulationStatus,
-	SceneToEditorMessage,
+import {
+	EDITOR_TO_SCENE_TYPES,
+	type EditorToSceneMessage,
+	type SceneMessage,
+	type SceneSimulationStatus,
+	type SceneToEditorMessage,
 } from "@/3d-scenes/link/scene-messages";
 import StateInterpolator from "@/3d-scenes/state-interpolator";
 
 export type SceneViewPhase =
-	"waiting" | "stopped" | "running" | "paused" | "editor-closed";
+	| "waiting"
+	| "stopped"
+	| "running"
+	| "paused"
+	| "editor-closed"
+	| "protocol-mismatch";
 
 export type SceneViewSnapshot = {
 	phase: SceneViewPhase;
@@ -54,7 +61,10 @@ export default class SceneView {
 	constructor(private readonly deps: SceneViewDeps) {
 		this.lastSeenAt = deps.now();
 		this.channel = new SceneChannel(deps.transport);
-		this.channel.onMessage((message) => this.handleMessage(message));
+		this.channel.onMessage(
+			(message) => this.handleMessage(message),
+			(type) => this.handleForeignVersion(type),
+		);
 		this.watchTimer = setInterval(() => this.watchEditor(), WATCH_INTERVAL_MS);
 		this.channel.send({ type: "hello" });
 	}
@@ -85,8 +95,23 @@ export default class SceneView {
 		this.listeners.clear();
 	}
 
+	/** Another scene tab may share the channel: only the editor's messages tell about the editor. */
+	private isFromEditor(type: SceneMessage["type"]): boolean {
+		return (EDITOR_TO_SCENE_TYPES as readonly string[]).includes(type);
+	}
+
+	private handleForeignVersion(type: SceneMessage["type"]): void {
+		if (!this.isFromEditor(type)) return;
+		this.lastSeenAt = this.deps.now();
+		this.setPhase("protocol-mismatch");
+	}
+
 	private handleMessage(message: EditorToSceneMessage): void {
-		const wasSilent = this.snapshot.phase === "editor-closed";
+		if (!this.isFromEditor(message.type)) return;
+		const { phase } = this.snapshot;
+		const wasDisconnected =
+			phase === "editor-closed" || phase === "protocol-mismatch";
+		if (phase === "protocol-mismatch") this.setPhase("waiting");
 		this.lastSeenAt = this.deps.now();
 		switch (message.type) {
 			case "config":
@@ -103,7 +128,7 @@ export default class SceneView {
 				break;
 			case "ping":
 				this.channel.send({ type: "pong" });
-				if (wasSilent) this.channel.send({ type: "hello" });
+				if (wasDisconnected) this.channel.send({ type: "hello" });
 				break;
 			case "close":
 				this.deps.onClose();
@@ -136,7 +161,8 @@ export default class SceneView {
 	private watchEditor(): void {
 		const silent =
 			this.deps.now() - this.lastSeenAt > EDITOR_SILENCE_TIMEOUT_MS;
-		if (silent && this.snapshot.phase !== "editor-closed") {
+		const { phase } = this.snapshot;
+		if (silent && phase !== "editor-closed" && phase !== "protocol-mismatch") {
 			this.setPhase("editor-closed");
 		}
 	}

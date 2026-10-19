@@ -82,6 +82,16 @@ describe("SupabaseProjectRepository", () => {
 			expect(mockAuthGetUser).not.toHaveBeenCalled();
 		});
 
+		it("signale l'échec sans lever quand la session ne peut être lue", async () => {
+			mockGetSession.mockRejectedValue(new Error("Failed to fetch"));
+
+			await expect(new SupabaseProjectRepository().list()).resolves.toEqual({
+				projects: [],
+				skipped: [],
+				failed: true,
+			});
+		});
+
 		it("signale l'échec en cas d'erreur réseau, sans lever", async () => {
 			const error = jest.spyOn(console, "error").mockImplementation(() => {});
 			mockFrom.mockReturnValue(

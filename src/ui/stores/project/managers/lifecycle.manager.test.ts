@@ -663,6 +663,30 @@ describe("ProjectLifecycleManager", () => {
 			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(
 				false,
 			);
+			expect(toast.error).toHaveBeenCalledTimes(1);
+		});
+
+		it("signale l'échec par un toast quand le projet partagé est introuvable ou injoignable", async () => {
+			const store = createProjectStore();
+			store.setState({
+				projectRepository: {
+					list: async () => ({ projects: [], skipped: [] }),
+					get: async () => null,
+					save: async () => ({ ok: true }),
+					delete: async () => ({ ok: true }),
+					getByShareToken: async () => null,
+					getShareToken: async () => null,
+					createShareToken: async () => ({ ok: false, message: "" }),
+					deleteShareToken: async () => ({ ok: true }),
+				} as never,
+			});
+			(toast.error as jest.Mock).mockClear();
+
+			expect(await lifecycle(store).openProjectByShareToken("tok-1")).toBe(
+				false,
+			);
+			expect(toast.error).toHaveBeenCalledTimes(1);
+			expect(store.getState().project).toBeNull();
 		});
 	});
 

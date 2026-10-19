@@ -2,6 +2,7 @@ import { APP_NAME, APP_SHORT_DESCRIPTION } from "@/app-info";
 import RootDocument from "@/app/RootDocument";
 import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import MobileGuard from "@/ui/components/MobileGuard";
+import OfflineProvider from "@/ui/components/offline/OfflineProvider";
 import type { Metadata } from "next";
 import { OG_IMAGES, OG_IMAGE_PATH } from "../og-image";
 import routes from "../routes";
@@ -39,10 +40,12 @@ export default function AppLayout({
 }>) {
 	return (
 		<RootDocument lang="fr">
-			<MobileGuard>
-				<div id="boot-splash" aria-hidden="true" />
-				{children}
-			</MobileGuard>
+			<OfflineProvider>
+				<MobileGuard>
+					<div id="boot-splash" aria-hidden="true" />
+					{children}
+				</MobileGuard>
+			</OfflineProvider>
 		</RootDocument>
 	);
 }

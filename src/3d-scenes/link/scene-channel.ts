@@ -1,5 +1,6 @@
 import {
 	type SceneMessage,
+	foreignVersionMessageType,
 	parseSceneMessage,
 	toEnvelope,
 } from "./scene-messages";
@@ -35,11 +36,22 @@ export default class SceneChannel<
 		this.transport.postMessage(toEnvelope(message));
 	}
 
-	/** Messages of another protocol version, or not of the protocol, are dropped. */
-	onMessage(handler: (message: Received) => void): void {
+	/**
+	 * Messages of another protocol version, or not of the protocol, are dropped;
+	 * `onForeignVersion` is told the type of those sent by a tab on another protocol version.
+	 */
+	onMessage(
+		handler: (message: Received) => void,
+		onForeignVersion?: (type: SceneMessage["type"]) => void,
+	): void {
 		this.transport.onmessage = (event) => {
 			const message = parseSceneMessage(event.data);
-			if (message) handler(message as Received);
+			if (message) {
+				handler(message as Received);
+				return;
+			}
+			const foreignType = foreignVersionMessageType(event.data);
+			if (foreignType) onForeignVersion?.(foreignType);
 		};
 	}
 

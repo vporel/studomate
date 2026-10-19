@@ -11,10 +11,9 @@ jest.mock("@/persistence/draft.storage", () => ({
 	deleteDraft: jest.fn(),
 	getAllDrafts: jest.fn().mockReturnValue([]),
 	deleteAllDrafts: jest.fn(),
-	parseDraftProject:
-		jest.requireActual<typeof import("@/persistence/draft.storage")>(
-			"@/persistence/draft.storage",
-		).parseDraftProject,
+	parseDraftProject: jest.requireActual<
+		typeof import("@/persistence/draft.storage")
+	>("@/persistence/draft.storage").parseDraftProject,
 }));
 
 const mockedGetDraft = draftStorage.getDraft as jest.Mock;
@@ -41,6 +40,41 @@ describe("store — brouillons", () => {
 		// Sans préférence de lieu de stockage, le premier enregistrement d'un projet neuf ouvrirait
 		// la modale de choix — hors sujet ici (voir lifecycle.manager.test.ts).
 		setPreferredSaveLocation("local");
+	});
+
+	describe("flushDraft", () => {
+		it("écrit immédiatement le brouillon quand des modifications existent", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: true });
+
+			expect(store.getState().lifecycleManager.flushDraft()).toBe(true);
+
+			expect(mockedSaveDraft).toHaveBeenCalledTimes(1);
+		});
+
+		it("n'écrit rien sans modification en attente ni pour un projet partagé", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			expect(store.getState().lifecycleManager.flushDraft()).toBe(true);
+			store.setState({ hasUnsavedChanges: true, isSharedProject: true });
+			// Shared project: nothing is written, so its pending changes are not safe.
+			expect(store.getState().lifecycleManager.flushDraft()).toBe(false);
+
+			expect(mockedSaveDraft).not.toHaveBeenCalled();
+		});
+
+		it("signale l'indisponibilité de la sauvegarde quand l'écriture échoue", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.setState({ hasUnsavedChanges: true });
+			mockedSaveDraft.mockReturnValue({ ok: false, reason: "quota" });
+			jest.spyOn(console, "error").mockImplementation(() => {});
+
+			expect(store.getState().lifecycleManager.flushDraft()).toBe(false);
+
+			expect(store.getState().autoSaveUnavailable).toBe(true);
+		});
 	});
 
 	describe("startAutoSave / stopAutoSave", () => {

@@ -5,6 +5,7 @@ import { rootMetadata, rootViewport } from "@/app/root-metadata";
 import { routing } from "@/i18n/routing";
 import Footer from "@/ui/components/public-pages/Footer";
 import Header from "@/ui/components/public-pages/Header";
+import StandaloneBackButton from "@/ui/components/public-pages/StandaloneBackButton";
 import PUBLIC_PAGES_CLASS from "@/ui/components/public-pages/public-pages-class";
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -54,6 +55,7 @@ export default async function LocaleLayout({
 					<Header />
 					<main>{children}</main>
 					<Footer />
+					<StandaloneBackButton />
 				</div>
 			</ClientMessagesProvider>
 		</RootDocument>

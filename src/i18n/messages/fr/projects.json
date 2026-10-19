@@ -9,6 +9,7 @@
 		"tabLocal": "Local",
 		"tabCloud": "Cloud",
 		"empty": "Aucun projet enregistré",
+		"safariAppStorage": "Cette application installée a son propre espace de stockage, séparé de Safari : les projets enregistrés dans Safari n'y apparaissent pas. Pour les retrouver, exportez-les depuis Safari (Fichier, puis Exporter, au format JSON) et importez-les ici avec « Ouvrir depuis un fichier... ».",
 		"lastModified": "Dernière modification : {date} à {time}",
 		"skippedProjects": "{count, plural, one {# projet n'a pas pu être ouvert} other {# projets n'ont pas pu être ouverts}} et n'apparaissent pas dans la liste.",
 		"skippedProjectsNewerVersion": "{count, plural, one {# projet n'a pas pu être ouvert} other {# projets n'ont pas pu être ouverts}} : enregistré(s) par une version plus récente de l'application. Ouvrez-les depuis une version à jour.",

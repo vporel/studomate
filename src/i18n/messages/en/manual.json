@@ -135,7 +135,7 @@
 			"Screen: the editor is designed for a computer. When the window is narrower than 768 pixels (phone, very small window), Studomate shows \"Desktop application only\"; enlarge the window or switch to a computer.",
 			"Mouse and keyboard: many actions go through right-click (context menus), drag and drop and keyboard shortcuts. Touch use (tablet) is not guaranteed; a Chromebook is fine, like any computer with a Chromium browser.",
 			"Browser: everything works in common desktop browsers; only the link with an Arduino board requires a Chromium-based browser (Chrome, Edge...), see the Hardware (Arduino) section.",
-			"Connection: there is no offline mode. The application loads from the web, so a connection is needed to open it (in a lab room, check network access before the session)."
+			"Connection: once loaded, the application works without a network (editing, simulation, 3D scene, Arduino link, this manual) and can be installed from the browser. The first visit on a device needs a connection, as do cloud projects, share links, accounts and the other pages of the site. In a lab room whose profile is wiped at logout, open the application at the start of the session while the network is available."
 		],
 		"preferencesTitle": "Preferences",
 		"preferencesBody": "File → Preferences opens the application settings page, which has three settings:",
@@ -934,7 +934,7 @@
 				"title": "Application and storage",
 				"items": [
 					"desktop application: it hides itself below 768 pixels of width, and touch use (tablet) is not guaranteed;",
-					"no offline mode: a connection is needed to open the application;",
+					"offline, only the projects stored in the browser are available: cloud projects, share links and signing in need the network, and the application must have been opened at least once on the device with a connection;",
 					"by default, projects are only stored in the device's browser: export them or create an account to back them up to the cloud (Getting started section);",
 					"no teacher view: a teacher cannot see students' cloud projects, they send a file or a share link (Projects section)."
 				]

@@ -1,4 +1,5 @@
 jest.mock("@sentry/nextjs", () => ({ withSentryConfig: (c: unknown) => c }));
+jest.mock("@serwist/turbopack", () => ({ withSerwist: (c: unknown) => c }));
 jest.mock("next-intl/plugin", () => () => (c: unknown) => c);
 
 import nextConfig from "./next.config";

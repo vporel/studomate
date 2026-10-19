@@ -27,7 +27,9 @@
 	"autoSaveUnavailable": "Sauvegarde automatique indisponible — enregistrez manuellement",
 	"statusBar": {
 		"author": "Auteur : {name}",
-		"unknownAuthor": "Inconnu"
+		"unknownAuthor": "Inconnu",
+		"offline": "Hors ligne",
+		"offlineHint": "Les projets cloud, les liens de partage et la connexion à un compte sont indisponibles sans réseau."
 	},
 	"footerActions": {
 		"watchTables": "Tables de visualisation",

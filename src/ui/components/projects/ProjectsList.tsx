@@ -5,6 +5,7 @@ import { SkippedProjectInfo } from "@/persistence/project-deserialization";
 import { isSupabaseConfigured } from "@/persistence/repositories/supabase-client";
 import Project from "@/schemas/project/project.schema";
 import { clearPagesSession } from "@/persistence/pages-session.storage";
+import { isSafari, isStandaloneDisplay } from "@/ui/lib/platform";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { useProjectStore } from "./ProjectContext";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -83,6 +84,13 @@ export default function ProjectsList({
 		[projects, projectRepository, tab],
 	);
 
+	const showSafariAppNotice =
+		tab === "local" &&
+		!loading &&
+		visibleProjects.length === 0 &&
+		isSafari() &&
+		isStandaloneDisplay();
+
 	const skippedNewerVersion = skipped.some((s) => s.reason === "newer-version");
 
 	const handleDeleteProject = async (
@@ -149,6 +157,12 @@ export default function ProjectsList({
 					{skippedNewerVersion
 						? t("skippedProjectsNewerVersion", { count: skipped.length })
 						: t("skippedProjects", { count: skipped.length })}
+				</Typography>
+			)}
+
+			{showSafariAppNotice && (
+				<Typography variant="body2" color="warning.main" sx={{ mb: 1, px: 1 }}>
+					{t("safariAppStorage")}
 				</Typography>
 			)}
 

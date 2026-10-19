@@ -34,11 +34,15 @@ export type SceneEnvelope<M extends SceneMessage = SceneMessage> = M & {
 	protocolVersion: number;
 };
 
-const MESSAGE_TYPES: readonly SceneMessage["type"][] = [
+export const EDITOR_TO_SCENE_TYPES: readonly EditorToSceneMessage["type"][] = [
 	"config",
 	"state",
 	"close",
 	"ping",
+];
+
+const MESSAGE_TYPES: readonly SceneMessage["type"][] = [
+	...EDITOR_TO_SCENE_TYPES,
 	"hello",
 	"interaction",
 	"pong",
@@ -61,4 +65,21 @@ export function parseSceneMessage(raw: unknown): SceneMessage | null {
 	}
 	const { protocolVersion: _version, ...message } = raw as SceneEnvelope;
 	return message as SceneMessage;
+}
+
+/**
+ * The type of `raw` when it is a message of this protocol sent by a tab running another protocol
+ * version, `null` otherwise.
+ */
+export function foreignVersionMessageType(
+	raw: unknown,
+): SceneMessage["type"] | null {
+	if (typeof raw !== "object" || raw === null) return null;
+	const candidate = raw as { protocolVersion?: unknown; type?: unknown };
+	const type = candidate.type as SceneMessage["type"];
+	return typeof candidate.protocolVersion === "number" &&
+		candidate.protocolVersion !== SCENE_PROTOCOL_VERSION &&
+		MESSAGE_TYPES.includes(type)
+		? type
+		: null;
 }

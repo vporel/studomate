@@ -27,7 +27,9 @@
 	"autoSaveUnavailable": "Automatic backup unavailable — save manually",
 	"statusBar": {
 		"author": "Author: {name}",
-		"unknownAuthor": "Unknown"
+		"unknownAuthor": "Unknown",
+		"offline": "Offline",
+		"offlineHint": "Cloud projects, share links and signing in are unavailable without a network."
 	},
 	"footerActions": {
 		"watchTables": "Watch tables",
