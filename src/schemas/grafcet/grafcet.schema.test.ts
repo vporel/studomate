@@ -271,3 +271,42 @@ describe("Grafcet — table des collections d'éléments", () => {
 		});
 	});
 });
+
+describe("Grafcet : étapes initiales", () => {
+	function grafcetWithSteps(initials: (boolean | undefined)[]): Grafcet {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		grafcet.addElements(
+			initials.map((initial, i) => ({
+				type: "step" as const,
+				id: `s${i}`,
+				data: { number: i, initial },
+				position: { x: i, y: i },
+			})),
+		);
+		return grafcet;
+	}
+
+	it("returns no initial step when there is no step", () => {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		expect(grafcet.getInitialSteps()).toEqual([]);
+		expect(grafcet.hasInitialStep()).toBe(false);
+	});
+
+	it("ignores steps whose initial flag is false or undefined", () => {
+		const grafcet = grafcetWithSteps([false, undefined]);
+		expect(grafcet.getInitialSteps()).toEqual([]);
+		expect(grafcet.hasInitialStep()).toBe(false);
+	});
+
+	it("returns the single initial step", () => {
+		const grafcet = grafcetWithSteps([false, true, undefined]);
+		expect(grafcet.getInitialSteps().map((s) => s.id)).toEqual(["s1"]);
+		expect(grafcet.hasInitialStep()).toBe(true);
+	});
+
+	it("returns every initial step", () => {
+		const grafcet = grafcetWithSteps([true, false, true]);
+		expect(grafcet.getInitialSteps().map((s) => s.id)).toEqual(["s0", "s2"]);
+		expect(grafcet.hasInitialStep()).toBe(true);
+	});
+});

@@ -4,6 +4,7 @@
 import { Dialect } from "@/expression-language/dialect.enum";
 import { fireEvent, screen } from "@testing-library/react";
 import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useHmiStore } from "@/ui/components/hmi/HmiContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -49,12 +50,7 @@ function setup(widget: HmiWidget) {
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: {
-				variables,
-				getAllTimerBlockElements: () => [],
-				getAllCounterBlockElements: () => [],
-				grafcets: {},
-			},
+			project: Object.assign(new Project("p1", "Projet", ""), { variables }),
 			mode: ProjectMode.DESIGN,
 			simulationVariablesStates: {},
 		}),

@@ -56,6 +56,8 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 					);
 					if (existingVariableId && existingVariableId !== params.id)
 						errors.push(tError("mnemonicExists"));
+					if (variablesManager.isMnemonicUsedByBlock(params.props.value))
+						errors.push(tError("mnemonicUsedByBlock"));
 					return {
 						...params.props,
 						error: errors.length > 0 ? errors[0] : false,

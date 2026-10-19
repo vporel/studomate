@@ -31,7 +31,7 @@ export default function useLadderRenderContext(): LadderRenderContext {
 				getConvertBlockFunctionName(
 					params,
 					(mnemonic) =>
-						project?.variables.find((v) => v.mnemonic === mnemonic)?.type,
+						project?.findVariableByMnemonic(mnemonic)?.type,
 				) ?? undefined,
 			sectionHeading: (number, title) =>
 				title

@@ -95,7 +95,11 @@ function setup({
 			setActiveSectionId: jest.fn(),
 			selectedSectionIds: [],
 			commandsStackManager: { executeOperation: jest.fn() },
-			ladder: { sections: [section], excludedFromExecution },
+			ladder: {
+				sections: [section],
+				excludedFromExecution,
+				canDeleteSection: () => false,
+			},
 		}),
 	);
 
@@ -136,7 +140,7 @@ function setup({
 					setActiveSectionId: jest.fn(),
 					selectedSectionIds: [],
 					commandsStackManager: { executeOperation: jest.fn() },
-					ladder: { sections: [section] },
+					ladder: { sections: [section], canDeleteSection: () => false },
 				}),
 			);
 			rendered.rerender(

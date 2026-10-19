@@ -1,20 +1,18 @@
 "use client";
 
-import { APP_NAME } from "@/app-info";
-import routes from "@/app/routes";
 import { useT } from "@/ui/i18n/useT";
 import AddIcon from "@mui/icons-material/Add";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
-import { Box, Button, Paper, Skeleton, Typography } from "@mui/material";
-import Link from "next/link";
+import { Box, Button, Skeleton, Typography } from "@mui/material";
 import { useShallow } from "zustand/shallow";
-import AccountStatus from "./auth/AccountStatus";
 import ProfilePromptModal from "./profile/ProfilePromptModal";
 import { useProjectStore } from "./projects/ProjectContext";
 import ExampleCard, { type ExampleVariant } from "./startup/ExampleCard";
 import FeaturedExample from "./startup/FeaturedExample";
 import RecentProjects from "./startup/RecentProjects";
 import StartupAside from "./startup/StartupAside";
+import StartupFooter from "./startup/StartupFooter";
+import StartupHeader from "./startup/StartupHeader";
 import {
 	listStartupExamples,
 	type StartupExample,
@@ -64,43 +62,7 @@ const AppStartup = () => {
 				}}
 			>
 				<Box component="main">
-					<Paper
-						component="header"
-						variant="outlined"
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-							gap: 2,
-							borderRadius: 2,
-							px: 2.5,
-							py: 1.5,
-						}}
-					>
-						<Box
-							component={Link}
-							href={routes.home()}
-							aria-label={t("homeAria", { name: APP_NAME })}
-							sx={{
-								display: "inline-flex",
-								alignItems: "center",
-								gap: 1.25,
-								color: "text.primary",
-								textDecoration: "none",
-							}}
-						>
-							<Box
-								component="img"
-								src="/images/icon.png"
-								alt=""
-								sx={{ width: 32, display: "block" }}
-							/>
-							<Typography sx={{ fontWeight: 700, fontSize: "1.15rem" }}>
-								{APP_NAME}
-							</Typography>
-						</Box>
-						<AccountStatus />
-					</Paper>
+					<StartupHeader />
 
 					<Box
 						sx={{
@@ -210,6 +172,7 @@ const AppStartup = () => {
 							</Box>
 						</>
 					)}
+					<StartupFooter />
 				</Box>
 
 				<StartupAside />

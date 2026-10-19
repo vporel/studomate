@@ -13,6 +13,7 @@ import JunctionOrStart from "./junction-or-start.schema";
 import { Dimensions, XYPosition } from "./shared-types";
 import StepReferralSource from "./step-referral-source.schema";
 import StepReferralTarget from "./step-referral-target.schema";
+import StepHelper from "./helpers/step.helper";
 import Step from "./step.schema";
 import Transition from "./transition.schema";
 
@@ -95,6 +96,16 @@ export default class Grafcet extends Program {
 
 	constructor(id: string, name: string) {
 		super(id, name);
+	}
+
+	getInitialSteps(): Step[] {
+		return Object.values(this.steps).filter((s) =>
+			StepHelper.isInitial(s.data),
+		);
+	}
+
+	hasInitialStep(): boolean {
+		return this.getInitialSteps().length > 0;
 	}
 
 	/**

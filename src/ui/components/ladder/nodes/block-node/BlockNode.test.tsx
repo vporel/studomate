@@ -40,6 +40,7 @@ function setup({
 				ladders,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
 			mode: ProjectMode.DESIGN,

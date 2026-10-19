@@ -141,4 +141,44 @@ describe("ElementsCommandsFactory (sans instance React Flow)", () => {
 			expect(nodesIdsToDelete).toEqual([]);
 		});
 	});
+
+	describe("onNodesAdd", () => {
+		function stepNode(id: string, number: unknown) {
+			return {
+				id,
+				type: "step",
+				position: { x: 0, y: 0 },
+				data: { number },
+			} as unknown as GrafcetNodeType;
+		}
+
+		it.each([
+			["undefined", undefined],
+			["une chaîne vide", ""],
+			["null", null],
+		])(
+			"attribue le prochain numéro disponible à une étape dont le numéro est %s",
+			(_label, number) => {
+				const grafcet = grafcetWithStep(3);
+
+				const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+					[stepNode("step-2", number)],
+					grafcet,
+					[],
+				);
+
+				expect((nodesToAdd[0].data as StepData).number).toBe(4);
+			},
+		);
+
+		it("conserve le numéro 0 d'une étape ajoutée", () => {
+			const { nodesToAdd } = ElementsCommandsFactory.onNodesAdd(
+				[stepNode("step-2", 0)],
+				grafcetWithStep(3),
+				[],
+			);
+
+			expect((nodesToAdd[0].data as StepData).number).toBe(0);
+		});
+	});
 });

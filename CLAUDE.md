@@ -79,7 +79,7 @@ environment) in `src/project-analyser/`.
 `local-storage` (default, browser-local storage), `supabase` (cloud: `projects` table + RLS),
 `hybrid` (switches local/cloud based on authentication). Auth (Supabase, `src/ui/stores/auth/`)
 handles sign-up, sign-in, anonymous accounts (username + password), password reset. Sharing a
-project goes through a URL token (`ShareableProjectRepository`, `?share=` handled in
+project goes through a URL token (`ShareableProjectRepository`, `?shareToken=` handled in
 `src/ui/stores/project/url/project-url.ts`). Error monitoring is wired via Sentry
 (`sentry.{client,server,edge}.config.ts` at the root).
 
@@ -186,12 +186,30 @@ Always check `package.json` before quoting a version: this table goes stale at t
   `exportModalVisible`, ...) when its state is shared between components or when it must be
   openable from several places (keyboard shortcuts, menus, ...). A modal that opens and closes
   itself, with nothing else able to drive it, keeps its visibility in local React state.
+- **Business rules on the schema live with the schema**: when code checks or derives something
+  from a schema entity's structure (a ladder is empty, a program is executed, a page is the main
+  one, a step has a number, a variable is read-only...), write that rule once, as a named method,
+  and call it everywhere. Before writing such a check, look for an existing method or helper that
+  already expresses it, and reuse it rather than re-deriving it from the fields. Placement:
+  - a **method of the class** (`Ladder.isEmpty()`, `Project.getMainHmiPage()`) when the rule only
+    involves the object and its children and is intrinsic to the concept;
+  - a **helper next to it** (`src/schemas/<entity>/helpers/`, static and taking the data) when
+    callers hold plain data rather than class instances (React Flow nodes, raw JSON) or when the
+    rule spans several entities;
+  - a **`src/ui/utils/<editor>/` function** when it's editing geometry (grid footprints,
+    collisions), not a domain rule.
+  A simple field read or a TypeScript union discriminant (`element.type === "block"`) is not a
+  rule and needs no method. Migrations never call schema methods: they work on raw data frozen
+  at their version.
 - **Hook dependencies** (`useEffect`, `useCallback`, `useMemo`): check that they're complete
   after any change touching their body.
 - **`box-sizing`**: already set to `border-box` globally for all elements
   (`src/app/globals.css`, `*` selector) — never redeclare it in an `sx` prop or component style.
 - Minimal, targeted changes; follow the existing style (tabs, no trailing superfluous
   semicolons, etc. — see neighboring files).
+- **Prettier reformatting**: when running prettier on a file reformats parts of it beyond the
+  change at hand, keep the result and never restore the file (`git checkout`, manual revert).
+  The developer accepts that noise.
 - **Never `git commit` unless explicitly asked.** Leave changes staged/unstaged for the
   developer to review and commit themselves.
 - **Comments**: never document decision history (alternatives tried, "before/after",

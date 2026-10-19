@@ -69,7 +69,8 @@ const PageTab = ({ id, title, type }: PageTabProps) => {
 	// Le Main a sa propre icône dans l'onglet, comme dans l'explorateur (voir `getProgramIcon`
 	// d'`ExplorerProgramsItems`) : l'id de page d'un ladder est son id de programme.
 	const isMain = useProjectStore(
-		(state) => type === "ladder" && state.project?.ladders[id]?.role === "main",
+		(state) =>
+			type === "ladder" && state.project?.ladders[id]?.isMain() === true,
 	);
 	const active = id === activePageId;
 	const TypeIconComponent =

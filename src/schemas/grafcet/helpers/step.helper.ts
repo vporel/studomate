@@ -1,5 +1,6 @@
 import Grafcet from "../grafcet.schema";
 import Step, {
+	StepData,
 	STEP_HANDLE_SOURCE_ACTION,
 	STEP_HANDLE_SOURCE_SUCCESSOR,
 	STEP_HANDLE_TARGET_PREDECESSOR,
@@ -14,10 +15,36 @@ import TransitionHelper from "./transition.helper";
 
 export default class StepHelper {
 	/**
+	 * Whether the step data flags the step as initial. Works on plain data (e.g. React Flow node data).
+	 */
+	static isInitial(data: StepData): boolean {
+		return data.initial === true;
+	}
+
+	/**
+	 * Whether the step data carries a number. Works on plain data and also covers
+	 * null/undefined, which imported or migrated data may carry despite the type.
+	 */
+	static hasNumber(data: StepData): data is StepData & { number: number } {
+		return (
+			data.number !== "" && data.number !== null && data.number !== undefined
+		);
+	}
+
+	/**
 	 * Mnémonique de la variable synthétique X{n} associée à une étape numérotée n.
 	 */
 	static getStepVariableMnemonic(stepNumber: number): string {
 		return `X${stepNumber}`;
+	}
+
+	/**
+	 * Inverse of `getStepVariableMnemonic`: the step number encoded in an `X{n}`
+	 * mnemonic, or `null` when the mnemonic does not follow the convention.
+	 */
+	static parseStepVariableMnemonic(mnemonic: string): number | null {
+		const match = /^X(\d+)$/.exec(mnemonic);
+		return match ? Number(match[1]) : null;
 	}
 
 	/**

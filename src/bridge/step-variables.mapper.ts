@@ -9,7 +9,7 @@ import Variable from "@/schemas/variable/variable.schema";
  */
 export function getStepVariables(project: Project): Variable[] {
 	const analyser = new GrafcetAnalyser();
-	return Object.values(project.grafcets)
-		.filter((grafcet) => !grafcet.excludedFromExecution)
+	return project
+		.getExecutedGrafcets()
 		.flatMap((grafcet) => analyser.generateVariables(grafcet, project.dialect));
 }

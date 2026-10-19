@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import Project from "@/schemas/project/project.schema";
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -14,9 +14,13 @@ jest.mock("./startup/StartupAside", () => ({
 	__esModule: true,
 	default: () => <aside data-testid="startup-aside" />,
 }));
-jest.mock("./auth/AccountStatus", () => ({
+jest.mock("./startup/StartupHeader", () => ({
 	__esModule: true,
-	default: () => <div data-testid="account-status" />,
+	default: () => <header data-testid="startup-header" />,
+}));
+jest.mock("./startup/StartupFooter", () => ({
+	__esModule: true,
+	default: () => <footer data-testid="startup-footer" />,
 }));
 jest.mock("./profile/ProfilePromptModal", () => ({
 	__esModule: true,
@@ -203,15 +207,11 @@ describe("AppStartup", () => {
 		);
 	});
 
-	it("affiche dans l'en-tête le lien vers l'accueil et le compte, à côté du cadre latéral", () => {
+	it("assemble l'en-tête, le cadre latéral et le pied de page", () => {
 		renderWithI18n(<AppStartup />);
-		expect(
-			screen.getByRole("link", { name: "Studomate : accueil" }),
-		).toBeInTheDocument();
+		expect(screen.getByTestId("startup-header")).toBeInTheDocument();
 		expect(screen.getByTestId("startup-aside")).toBeInTheDocument();
-		expect(
-			within(screen.getByRole("banner")).getByTestId("account-status"),
-		).toBeInTheDocument();
+		expect(screen.getByTestId("startup-footer")).toBeInTheDocument();
 	});
 
 	it("reste en mode retour quand tous les projets enregistrés ont été supprimés", () => {

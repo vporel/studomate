@@ -25,6 +25,7 @@ function setupWithVariables(
 		selectorImplementation({
 			variablesManager: {
 				existsByMnemonic: () => undefined,
+				isMnemonicUsedByBlock: () => false,
 				getByAddress: () => null,
 				removeVariables,
 			},
@@ -57,6 +58,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: {
@@ -148,6 +150,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: { variables: [userVar, blockVar] },
@@ -196,6 +199,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					removeVariables: jest.fn(),
 				},
@@ -231,6 +235,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 						addVariables: jest.fn(),
 					},
@@ -276,6 +281,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 						addVariables,
 					},
@@ -339,6 +345,7 @@ describe("VariablesTable", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					addVariables,
 				},
@@ -442,6 +449,7 @@ describe("VariablesTable", () => {
 				selectorImplementation({
 					variablesManager: {
 						existsByMnemonic: () => undefined,
+						isMnemonicUsedByBlock: () => false,
 						getByAddress: () => null,
 					},
 					project: {
@@ -500,6 +508,7 @@ describe("VariablesTable: page des constantes", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 				},
 				project: {

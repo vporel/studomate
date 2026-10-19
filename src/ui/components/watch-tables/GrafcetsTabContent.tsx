@@ -1,6 +1,7 @@
 "use client";
 
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import { Typography } from "@mui/material";
@@ -14,8 +15,9 @@ function GrafcetRow({ grafcetId }: { grafcetId: string }) {
 	const stepNumbers = useProjectStore(
 		useShallow((state) =>
 			Object.values(state.project!.getGrafcet(grafcetId)!.steps)
-				.filter((step) => step.data.number !== "")
-				.map((step) => step.data.number as number)
+				.flatMap((step) =>
+					StepHelper.hasNumber(step.data) ? [step.data.number] : [],
+				)
 				.sort((a, b) => a - b),
 		),
 	);

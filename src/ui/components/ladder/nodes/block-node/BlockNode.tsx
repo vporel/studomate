@@ -73,7 +73,7 @@ const BoxBlockNode = ({
 			? getConvertBlockFunctionName(
 					data.params,
 					(mnemonic) =>
-						state.project?.variables.find((v) => v.mnemonic === mnemonic)?.type,
+						state.project?.findVariableByMnemonic(mnemonic)?.type,
 				)
 			: null,
 	);

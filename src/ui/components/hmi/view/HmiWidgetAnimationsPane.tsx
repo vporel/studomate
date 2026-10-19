@@ -139,9 +139,7 @@ const StyleTab = ({
 		widget.data as { animations?: HmiWidgetAnimations<string> }
 	).animations;
 	const style = animations?.style;
-	const styleVariable = project?.variables.find(
-		(v) => v.mnemonic === style?.variable,
-	);
+	const styleVariable = project?.findVariableByMnemonic(style?.variable ?? "");
 	const isBoolStyle = styleVariable?.getNativeType() === "boolean";
 
 	const setStyle = (next: HmiStyleAnimationRow<string>[]) => {
@@ -159,7 +157,7 @@ const StyleTab = ({
 	// (leurs valeurs forcées à 0/1, la forme imposée par ce type) ; vers une variable numérique,
 	// le tableau est conservé tel quel (les valeurs restent libres, éditables).
 	const handleVariableChange = (mnemonic: string) => {
-		const variable = project?.variables.find((v) => v.mnemonic === mnemonic);
+		const variable = project?.findVariableByMnemonic(mnemonic);
 		const existingRows = style?.rows ?? [];
 		const defaults = defaultRowProperties(widget, styleProps);
 		const rows: HmiStyleAnimationRow<string>[] =

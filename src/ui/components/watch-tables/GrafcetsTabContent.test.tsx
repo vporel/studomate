@@ -83,6 +83,24 @@ describe("GrafcetsTabContent", () => {
 		expect(screen.getByText("1, 2")).toBeInTheDocument();
 	});
 
+	it("does not list a step without number", () => {
+		const grafcet = new GrafcetBuilder()
+			.id("g1")
+			.name("Grafcet_1")
+			.addStep(new StepBuilder().id("s1").number(1).position(0, 0).build())
+			.addStep(new StepBuilder().id("s2").position(0, 0).build())
+			.build();
+		(grafcet.steps["s2"].data as { number?: number }).number = undefined;
+		setup({
+			grafcets: { g1: grafcet },
+			simulationVariablesStates: {
+				[getStepVariableId("g1", 1)]: { value: true },
+				"grafcet-g1-step-undefined": { value: true },
+			},
+		});
+		expect(screen.getByText("1")).toBeInTheDocument();
+	});
+
 	it("shows one row per grafcet", () => {
 		const grafcet1 = new GrafcetBuilder().id("g1").name("Grafcet_1").build();
 		const grafcet2 = new GrafcetBuilder().id("g2").name("Grafcet_2").build();

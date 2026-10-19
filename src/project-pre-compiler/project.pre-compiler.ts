@@ -77,8 +77,7 @@ export default class ProjectPreCompiler {
 		const errors: ProjectPreCompilerError[] = [];
 		const programs: Record<string, PreCompiledProgram> = {};
 
-		for (const [programId, program] of Object.entries(project.programs)) {
-			if (program.excludedFromExecution) continue;
+		for (const program of project.getExecutedPrograms()) {
 			const preCompiler = PROGRAM_PRE_COMPILERS[program.type];
 			if (!preCompiler) {
 				console.error(
@@ -86,7 +85,7 @@ export default class ProjectPreCompiler {
 				);
 				continue;
 			}
-			programs[programId] = preCompiler(program, variables, dialect, errors);
+			programs[program.id] = preCompiler(program, variables, dialect, errors);
 		}
 
 		this.rebindStepReferencesToMemos(programs);

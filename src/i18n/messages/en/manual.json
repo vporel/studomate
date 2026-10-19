@@ -83,21 +83,6 @@
 			"Widget (HMI): a graphical element on an HMI page; an interactive widget is bound to a variable.",
 			"Animation (HMI): a change in a widget's position or appearance driven by a variable during simulation."
 		],
-		"taskMapTitle": "I want to…",
-		"taskMapIntro": "An index by task, to go straight to the right section:",
-		"taskMapItems": [
-			"see a grafcet run without writing anything: Getting started, \"First project in a few minutes\";",
-			"wait for a delay: a timer in a transition's condition (Grafcet, Transitions) or a TON block in Ladder (Ladder, Blocks);",
-			"blink a lamp: the \"_SYS_TB_…\" time bases (Variables, System variables);",
-			"count parts: the Counter block (Ladder, Blocks);",
-			"memorise a state: the Set and Reset coils (Ladder, Coils) or a step's Set and Reset actions (Grafcet, Actions);",
-			"produce a one-cycle pulse: a rising or falling edge coil (Ladder, Coils);",
-			"restart a cycle: Troubleshooting, \"How do I make a cycle loop?\";",
-			"operate a sensor during simulation: Troubleshooting, \"How do I operate a sensor in simulation?\";",
-			"display a control interface: HMI screens;",
-			"link an Arduino board or a 3D scene: Hardware (Arduino) and 3D scene;",
-			"prepare and hand out a lab: Projects, \"Preparing and handing out a lab\"."
-		],
 		"readingOrder": "If you are new to industrial automation, start with Training (Help menu): short theory followed by self-checking exercises, no account required. Your progress is kept in the browser, and saved to your account if you are signed in. For a first read-through of the tool, start with Getting started, then work through the notation you're interested in: Grafcet (Canvas, Steps, Transitions, Actions) or Ladder (Networks, Contacts, Coils, Blocks), before Simulation and Analysis. The Variables, HMI screens, Explorer, Toolbar and Shortcuts sections can be consulted as needed. The Hardware (Arduino) and 3D scene sections apply to projects linked to a real board or to a virtual plant."
 	},
 	"gettingStarted": {

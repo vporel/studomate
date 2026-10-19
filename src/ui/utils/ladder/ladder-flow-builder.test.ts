@@ -161,7 +161,7 @@ describe("grille uniforme + empreinte multi-cellules (bloc timer)", () => {
 		).toBe(false);
 	});
 
-	it("findFootprintCollision ignore l'élément passé à ignoreId", () => {
+	it("findFootprintCollision ignore les éléments passés à ignoreIds", () => {
 		const section = sectionWithTimerAtRow0AndCoilAtRow1();
 		const block = section.elements.find((e) => e.type === "block")!;
 
@@ -169,7 +169,32 @@ describe("grille uniforme + empreinte multi-cellules (bloc timer)", () => {
 			block,
 		);
 		expect(
-			findFootprintCollision(section, elementFootprint(block), block.id),
+			findFootprintCollision(
+				section,
+				elementFootprint(block),
+				new Set([block.id]),
+			),
+		).toBeUndefined();
+	});
+
+	it("findFootprintCollision : plusieurs ids ignorés, et une borne d'alimentation n'est jamais renvoyée", () => {
+		const section = new Section("s1", "Section 1");
+		const a = createContactElement("A", "NO", 0, 0);
+		const b = createContactElement("B", "NO", 0, 1);
+		const rail = createRailTerminalElement(0);
+		section.elements = [rail, a, b];
+		const zone = { row: 0, col: 0, width: 2, height: 1 };
+
+		expect(
+			findFootprintCollision(section, zone, new Set([a.id, b.id])),
+		).toBeUndefined();
+		expect(findFootprintCollision(section, zone, new Set([a.id]))).toBe(b);
+		expect(
+			findFootprintCollision(
+				section,
+				{ row: 0, col: 0, width: 1, height: 1 },
+				new Set([a.id]),
+			),
 		).toBeUndefined();
 	});
 

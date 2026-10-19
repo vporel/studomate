@@ -12,7 +12,7 @@ import {
 	scene3dCapture,
 } from "@/ui/components/public-pages/landing-content";
 import routes from "@/app/routes";
-import { APP_NAME, APP_REPO_URL } from "@/app-info";
+import { APP_REPO_URL } from "@/app-info";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import CastForEducationIcon from "@mui/icons-material/CastForEducation";
 import CloudQueueIcon from "@mui/icons-material/CloudQueue";
@@ -114,11 +114,11 @@ export default async function About({ params }: Props) {
 	> = {
 		3: {
 			src: scene3dCapture,
-			alt: tLanding("showcaseScene3dAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseScene3dAlt"),
 		},
 		4: {
 			src: arduinoPhoto,
-			alt: tLanding("showcaseArduinoAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseArduinoAlt"),
 			contain: true,
 		},
 	};
@@ -126,13 +126,13 @@ export default async function About({ params }: Props) {
 	const editorCaptures = [
 		{
 			src: grafcetCapture,
-			alt: tLanding("showcaseGrafcetAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseGrafcetAlt"),
 		},
 		{
 			src: ladderCapture,
-			alt: tLanding("showcaseLadderAlt", { name: APP_NAME }),
+			alt: tLanding("showcaseLadderAlt"),
 		},
-		{ src: hmiCapture, alt: tLanding("showcaseHmiAlt", { name: APP_NAME }) },
+		{ src: hmiCapture, alt: tLanding("showcaseHmiAlt") },
 	];
 
 	const cards = (

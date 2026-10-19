@@ -1,3 +1,4 @@
+import { createTimerBlockElement } from "@/schemas/ladder/function-blocks/timer.schema";
 import Project from "@/schemas/project/project.schema";
 import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
@@ -66,6 +67,30 @@ describe("VariablesManager", () => {
 			const { manager } = makeManager({ project: projectWithVariables() });
 
 			expect(manager.existsByMnemonic("Inconnue")).toBe(false);
+		});
+	});
+
+	describe("isMnemonicUsedByBlock", () => {
+		it("retourne true pour un nom de bloc, false pour un nom libre", () => {
+			const project = new Project("p1", "Projet", "auteur");
+			const ladder = project.createLadder("L1");
+			ladder.addElements(ladder.sections[0].id, [
+				createTimerBlockElement(
+					{ name: "Tempo1", timerType: "TON", pt: "T#5s" },
+					0,
+					0,
+				),
+			]);
+			const { manager } = makeManager({ project });
+
+			expect(manager.isMnemonicUsedByBlock("Tempo1")).toBe(true);
+			expect(manager.isMnemonicUsedByBlock("Libre")).toBe(false);
+		});
+
+		it("retourne false si aucun projet n'est ouvert", () => {
+			const { manager } = makeManager({ project: null });
+
+			expect(manager.isMnemonicUsedByBlock("Tempo1")).toBe(false);
 		});
 	});
 

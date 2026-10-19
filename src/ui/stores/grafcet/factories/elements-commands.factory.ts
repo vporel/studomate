@@ -37,13 +37,15 @@ export default class ElementsCommandsFactory {
 				(n) =>
 					!existingNodes.find((en) => en.id === n.id) &&
 					(n.type !== "step" ||
-						!n.data.initial ||
-						!existingNodes.find((en) => en.type === "step" && en.data.initial)),
+						!StepHelper.isInitial(n.data) ||
+						!existingNodes.find(
+							(en) => en.type === "step" && StepHelper.isInitial(en.data),
+						)),
 			)
 			.map((node) => {
 				if (node.type === "step") {
 					//If no number is provided for the step, we will assign it the next available number
-					if (node.data.number === undefined || node.data.number === "") {
+					if (!StepHelper.hasNumber(node.data)) {
 						node.data.number = StepHelper.getNextAvailableNumber(grafcet);
 					}
 				}

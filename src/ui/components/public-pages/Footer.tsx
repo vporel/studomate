@@ -145,7 +145,7 @@ const Footer = () => {
 					}}
 				>
 					<Typography variant="body2" color="text.secondary">
-						{t("copyright", { year: new Date().getFullYear(), name: APP_NAME })}
+						{t("copyright", { year: new Date().getFullYear() })}
 						{" — "}
 						{t("createdBy")}{" "}
 						<MuiLink

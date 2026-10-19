@@ -126,9 +126,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 				//For a copy, if the step was initial we should past a non-initial step,
 				//because there can be only one initial step in a grafcet
 				//We first check if an initial step already exists in the grafcet
-				const initialStepExists = Object.values(grafcet.steps).some(
-					(s) => s.data.initial,
-				);
+				const initialStepExists = grafcet.hasInitialStep();
 				newNode.data.initial = initialStepExists ? false : newNode.data.initial;
 			}
 

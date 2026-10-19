@@ -28,6 +28,15 @@ describe("StepAnalyser", () => {
 			expect(issues[0].code).toBe("STEP_NUMBER_MISSING");
 		});
 
+		it("detects an undefined step number", () => {
+			const step = new StepBuilder().id("step-1").build();
+			(step.data as { number?: number }).number = undefined;
+
+			const issues = analyser.analyseIsolated(step, { dialect: Dialect.FR });
+
+			expect(issues.map((i) => i.code)).toEqual(["STEP_NUMBER_MISSING"]);
+		});
+
 		it("allows empty number when allowEmptyContent is true", () => {
 			const step = new StepBuilder().id("step-1").number("").build();
 
@@ -146,6 +155,29 @@ describe("StepAnalyser", () => {
 			);
 			expect(duplicateIssue).toBeDefined();
 			expect(duplicateIssue?.severity).toBe("error");
+		});
+
+		it("does not flag duplicates for steps without a number", () => {
+			const step1 = new StepBuilder().id("step-1").number(1).initial().build();
+			const step2 = new StepBuilder().id("step-2").build();
+			const step3 = new StepBuilder().id("step-3").build();
+			(step2.data as { number?: number }).number = undefined;
+			(step3.data as { number?: number }).number = undefined;
+			const grafcet = new GrafcetBuilder()
+				.id("grafcet-1")
+				.addSteps(step1, step2, step3)
+				.build();
+
+			for (const step of [step2, step3]) {
+				const issues = analyser.analyseInContext(
+					step,
+					grafcet,
+					analyserEnvironment(),
+				);
+				expect(
+					issues.find((i) => i.code === "STEP_NUMBER_DUPLICATE"),
+				).toBeUndefined();
+			}
 		});
 
 		it("allows same number if one is empty", () => {

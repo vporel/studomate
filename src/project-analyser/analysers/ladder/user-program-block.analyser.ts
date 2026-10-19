@@ -55,7 +55,7 @@ export default class UserProgramBlockAnalyser {
 			);
 			return issues;
 		}
-		if ((referenced as Ladder).role === "main") {
+		if ((referenced as Ladder).isMain()) {
 			issues.push(
 				new ProjectAnalyserIssue(
 					"error",

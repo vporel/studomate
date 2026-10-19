@@ -32,6 +32,7 @@ describe("VariablesTable toolbar", () => {
 			selectorImplementation({
 				variablesManager: {
 					existsByMnemonic: () => undefined,
+					isMnemonicUsedByBlock: () => false,
 					getByAddress: () => null,
 					removeVariables: jest.fn(),
 				},

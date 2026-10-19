@@ -80,7 +80,7 @@
 		}
 	},
 	"startup": {
-		"homeAria": "{name} : accueil",
+		"homeAria": "Studomate : accueil",
 		"welcomeTitle": "Par où commencer ?",
 		"welcomeSubtitle": "Ouvrez un exemple complet et regardez-le fonctionner, ou partez d'une page blanche.",
 		"resumeTitle": "Reprendre un projet",
@@ -113,6 +113,14 @@
 		"resources": "Ressources",
 		"userManual": "Manuel utilisateur",
 		"training": "Formations",
+		"footer": {
+			"copyright": "© {year} Studomate",
+			"about": "À propos",
+			"legalMentions": "Mentions légales",
+			"terms": "Conditions d'utilisation",
+			"privacy": "Politique de confidentialité",
+			"reportIssue": "Signaler un problème"
+		},
 		"sceneLabels": {
 			"crossroads": "Animation 3D d'un carrefour : des voitures arrivent sur les quatre branches et s'arrêtent au rouge, les deux axes passant au vert à tour de rôle.",
 			"carton-sorting": "Animation 3D d'un poste de tri de caisses : un tapis amène chaque caisse, des vérins la trient selon sa hauteur."

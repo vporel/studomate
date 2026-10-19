@@ -10,7 +10,6 @@ import { parseExpressionCached } from "@/expression-language/parse-expression-ca
 import type { HardwareDeviceDescriptor } from "@/hardware/hardware-device.descriptor";
 import { ActionType } from "@/schemas/grafcet/action.schema";
 import type Action from "@/schemas/grafcet/action.schema";
-import type Grafcet from "@/schemas/grafcet/grafcet.schema";
 import type Transition from "@/schemas/grafcet/transition.schema";
 import {
 	BLOCK_DEFINITIONS,
@@ -20,7 +19,6 @@ import {
 	getCompareBlockParams,
 	type BlockElement,
 } from "@/schemas/ladder/block.schema";
-import type Ladder from "@/schemas/ladder/ladder.schema";
 import type Project from "@/schemas/project/project.schema";
 import type { VariableType } from "@/schemas/variable/variable.schema";
 import ProjectAnalyserIssue, {
@@ -114,8 +112,7 @@ export default function analyseHardwareTypes(
 		);
 	}
 
-	for (const grafcet of Object.values(project.grafcets) as Grafcet[]) {
-		if (grafcet.excludedFromExecution) continue;
+	for (const grafcet of project.getExecutedGrafcets()) {
 		for (const transition of Object.values(
 			grafcet.transitions,
 		) as Transition[]) {
@@ -141,8 +138,7 @@ export default function analyseHardwareTypes(
 		}
 	}
 
-	for (const ladder of Object.values(project.ladders) as Ladder[]) {
-		if (ladder.excludedFromExecution) continue;
+	for (const ladder of project.getExecutedLadders()) {
 		for (const section of ladder.sections) {
 			for (const element of section.elements) {
 				if (element.type !== "block") continue;

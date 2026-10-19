@@ -56,6 +56,14 @@ export default class VariablesManager {
 	}
 
 	/**
+	 * @param mnemonic
+	 * @returns True if a timer or counter block of the current project already uses this name
+	 */
+	isMnemonicUsedByBlock(mnemonic: string): boolean {
+		return this.getStoreState().project?.isBlockNameTaken(mnemonic) ?? false;
+	}
+
+	/**
 	 *
 	 * @param address
 	 * @returns The variable owning the address or null if not found

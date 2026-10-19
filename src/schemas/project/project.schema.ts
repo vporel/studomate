@@ -124,6 +124,26 @@ export default class Project {
 		return result;
 	}
 
+	/** Programmes pris en compte par l'analyse, la compilation et la simulation : les programmes
+	 * exclus de l'exécution (illustratifs) n'en font pas partie. */
+	getExecutedPrograms(): Program[] {
+		return Object.values(this.programs).filter(
+			(program) => !program.excludedFromExecution,
+		);
+	}
+
+	getExecutedLadders(): Ladder[] {
+		return Object.values(this.ladders).filter(
+			(ladder) => !ladder.excludedFromExecution,
+		);
+	}
+
+	getExecutedGrafcets(): Grafcet[] {
+		return Object.values(this.grafcets).filter(
+			(grafcet) => !grafcet.excludedFromExecution,
+		);
+	}
+
 	addProgram(program: Program): void {
 		if (this.programs[program.id]) {
 			throw new Error(
@@ -152,7 +172,7 @@ export default class Project {
 	/** Ne supprime jamais le Main : un projet en porte toujours exactement un. */
 	deleteProgram(programId: string) {
 		const program = this.programs[programId];
-		if (program instanceof Ladder && program.role === "main") return;
+		if (program instanceof Ladder && program.isMain()) return;
 		delete this.programs[programId];
 		this.touch();
 	}
@@ -238,6 +258,11 @@ export default class Project {
 		);
 	}
 
+	/** Même règle que `getMainHmiPage` (repli sur la première page incluse). */
+	isMainHmiPage(hmiPageId: string): boolean {
+		return this.getMainHmiPage()?.id === hmiPageId;
+	}
+
 	/** Une seule page principale à la fois : les autres perdent le statut. */
 	setMainHmiPage(hmiPageId: string): void {
 		for (const id in this.hmiPages) {
@@ -252,7 +277,7 @@ export default class Project {
 	get main(): Ladder {
 		const found = Object.values(this.programs).find(
 			(program): program is Ladder =>
-				program.type === "ladder" && (program as Ladder).role === "main",
+				program.type === "ladder" && (program as Ladder).isMain(),
 		);
 		if (!found)
 			throw new Error("Project has no Main program — invariant violated.");
@@ -261,8 +286,7 @@ export default class Project {
 
 	createMain(name: string = DEFAULT_MAIN_NAME): Ladder {
 		const existing = Object.values(this.programs).some(
-			(program) =>
-				program.type === "ladder" && (program as Ladder).role === "main",
+			(program) => program.type === "ladder" && (program as Ladder).isMain(),
 		);
 		if (existing) throw new Error("A project can only have one Main program.");
 		const main = new Ladder(createRandomId(), name, undefined, "main");
@@ -302,11 +326,23 @@ export default class Project {
 		);
 	}
 
+	/** Variable déclarée dans le projet portant ce mnémonique (comparaison exacte). Les variables
+	 * système `_SYS_*` n'ont pas d'instance dans le projet et ne sont donc jamais trouvées. */
+	findVariableByMnemonic(mnemonic: string): Variable | undefined {
+		return this.variables.find((variable) => variable.mnemonic === mnemonic);
+	}
+
 	/** Un nom de bloc partage son espace de noms avec les mnémoniques de variable : il doit être
 	 * unique parmi les deux. */
 	isNameTaken(name: string): boolean {
-		if (this.variables.some((variable) => variable.mnemonic === name))
-			return true;
+		return (
+			this.findVariableByMnemonic(name) !== undefined ||
+			this.isBlockNameTaken(name)
+		);
+	}
+
+	/** Nom déjà porté par un bloc timer ou compteur du projet. */
+	isBlockNameTaken(name: string): boolean {
 		if (
 			this.getAllTimerBlockElements().some(
 				({ element }) => getTimerBlockParams(element)?.name === name,

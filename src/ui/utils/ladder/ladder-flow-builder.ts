@@ -90,16 +90,16 @@ export function cellRectsOverlap(a: CellRect, b: CellRect): boolean {
 }
 
 /** Élément de la section dont l'empreinte recouvre le rectangle `rect` — `undefined` si la zone
- * est entièrement libre. `ignoreId` exclut l'élément en cours de déplacement de sa propre
+ * est entièrement libre. `ignoreIds` exclut les éléments en cours de déplacement de leur propre
  * détection de collision. */
 export function findFootprintCollision(
 	section: Section,
 	rect: CellRect,
-	ignoreId?: string,
+	ignoreIds?: ReadonlySet<string>,
 ): LadderElement | undefined {
 	return section.elements.find(
 		(element) =>
-			element.id !== ignoreId &&
+			!ignoreIds?.has(element.id) &&
 			element.type !== "railTerminal" &&
 			cellRectsOverlap(rect, elementFootprint(element)),
 	);

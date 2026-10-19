@@ -7,6 +7,7 @@ import Action, {
 	ActionType,
 } from "@/schemas/grafcet/action.schema";
 import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
+import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import GrafcetHandle from "./GrafcetHandle";
@@ -53,7 +54,7 @@ const ActionNode: FC<ActionNodeProps> = ({
 	const stepVariableId = useMemo(() => {
 		if (!grafcet) return null;
 		const step = ActionHelper.getStep(id, grafcet);
-		if (!step || step.data.number === "") return null;
+		if (!step || !StepHelper.hasNumber(step.data)) return null;
 		return getStepVariableId(grafcetId, step.data.number);
 	}, [id, grafcet, grafcetId]);
 

@@ -55,8 +55,10 @@ export default function LadderSectionHeader({
 	const commandsStackManager = useLadderStore(
 		(state) => state.commandsStackManager,
 	);
-	// Un ladder porte toujours au moins une section (voir SectionRemoveCommand.execute) : le
-	// bouton se désactive plutôt que de dispatcher une commande qu'on sait invalide.
+	// Le bouton Supprimer se désactive plutôt que de dispatcher une commande qu'on sait invalide.
+	const canDeleteSection = useLadderStore((state) =>
+		state.ladder.canDeleteSection(),
+	);
 	const sectionsCount = useLadderStore((state) => state.ladder.sections.length);
 	const viewManager = useLadderStore((state) => state.viewManager);
 	const workflowManager = useLadderStore((state) => state.workflowManager);
@@ -262,7 +264,7 @@ export default function LadderSectionHeader({
 						size="small"
 						onPointerDown={stopSelect}
 						onClick={handleDeleteSection}
-						disabled={sectionsCount <= 1}
+						disabled={!canDeleteSection}
 						sx={{ p: 0.25 }}
 						aria-label={t("deleteAria")}
 					>

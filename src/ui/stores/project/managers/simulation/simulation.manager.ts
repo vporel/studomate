@@ -608,13 +608,12 @@ export default class SimulationManager {
 		return this.scene3dBridge.getSnapshot();
 	}
 
-	private isConstantVariable(variableId: string): boolean {
+	private isReadOnlyVariable(variableId: string): boolean {
 		return (
-			this.getStoreState().project?.variables.some(
-				(variable) =>
-					variable.id === variableId && variable.zone === "constant",
-			) ?? false
-		);
+			this.getStoreState()
+				.project?.variables.find((variable) => variable.id === variableId)
+				?.isReadOnly() ?? false
+		)
 	}
 
 	public setMemoryValue(variableId: string, value: any): void {
@@ -622,7 +621,7 @@ export default class SimulationManager {
 		if (mode !== ProjectMode.SIMULATION) {
 			throw new Error("Cannot set memory value when not in simulation mode");
 		}
-		if (this.isConstantVariable(variableId)) return;
+		if (this.isReadOnlyVariable(variableId)) return;
 		if (this.mirror) {
 			this.writeToBoard(variableId, value);
 			return;
@@ -676,7 +675,7 @@ export default class SimulationManager {
 	}
 
 	public forceVariable(variableId: string, value: any): void {
-		if (this.isConstantVariable(variableId)) return;
+		if (this.isReadOnlyVariable(variableId)) return;
 		if (this.mirror) {
 			const name = this.mirror.nameOf(variableId);
 			const numeric = toBoardValue(value);

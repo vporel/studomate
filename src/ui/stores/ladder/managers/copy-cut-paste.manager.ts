@@ -1,4 +1,5 @@
 import {
+	getElementHeight,
 	getElementWidth,
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
@@ -20,6 +21,7 @@ import SectionReorderCommand from "@/schemas/ladder/commands/section-reorder.com
 import AbstractLadderCommand from "@/schemas/ladder/commands/abstract-ladder.command";
 import {
 	computeSectionLayout,
+	findFootprintCollision,
 	LADDER_MAX_COLS,
 	xToCol,
 	yToRow,
@@ -157,9 +159,7 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	 * défensif, réordonné selon l'ordre du ladder.
 	 */
 	copySections(sectionIds: string[]): void {
-		const ordered = this.getStoreState().ladder.sections.filter((s) =>
-			sectionIds.includes(s.id),
-		);
+		const ordered = this.getStoreState().ladder.getSectionsInOrder(sectionIds);
 		if (ordered.length === 0) return;
 		this.writeClipboard({
 			kind: "sections",
@@ -225,8 +225,9 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 
 		let offsetRow = startRow - minRow;
 
-		// Gestion des collisions — chevauchement d'empreinte (largeur, voir `getElementWidth`), pas
-		// une simple égalité de colonne : un `block` colle occupe 2 colonnes.
+		// Gestion des collisions — chevauchement d'empreinte complète (largeur et hauteur, voir
+		// `getElementWidth`/`getElementHeight`), pas une simple égalité de cellule de départ : un
+		// `block` colle occupe 2 colonnes et plusieurs lignes.
 		const { leafPositions } = computeSectionLayout(section);
 		let collision = true;
 
@@ -237,18 +238,19 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 			for (const copiedEl of clipboard.elements) {
 				const r = copiedEl.position.row + offsetRow;
 				const c = copiedEl.position.col + offsetCol;
-				const cEnd = c + getElementWidth(copiedEl) - 1;
 
-				const occupant = section.elements.find((el) => {
-					if (el.position.row !== r) return false;
-					const elStart = el.position.col;
-					const elEnd = elStart + getElementWidth(el) - 1;
-					return elStart <= cEnd && elEnd >= c;
+				const occupant = findFootprintCollision(section, {
+					row: r,
+					col: c,
+					width: getElementWidth(copiedEl),
+					height: getElementHeight(copiedEl),
 				});
 				if (occupant) {
 					collision = true;
-					if (occupant.position.row > maxRowInCollision) {
-						maxRowInCollision = occupant.position.row;
+					const occupantBottomRow =
+						occupant.position.row + getElementHeight(occupant) - 1;
+					if (occupantBottomRow > maxRowInCollision) {
+						maxRowInCollision = occupantBottomRow;
 					}
 				}
 			}

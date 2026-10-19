@@ -41,7 +41,7 @@ const HmiWidgetPropertiesPanel = ({
 	// Un widget qui écrit dans la variable liée en simulation (voir `HmiCanvas.setVariableValue`)
 	// ne peut pas cibler une sortie : sa valeur est calculée par le programme, pas pilotable.
 	const excludeDirection = variableBinding?.writes ? "OUT" : undefined;
-	const projectVariables = useProjectStore((s) => s.project?.variables);
+	const project = useProjectStore((s) => s.project);
 
 	// Un nom vide ou en doublon est silencieusement ignoré par le store (voir
 	// `HmiStoreState.updateWidget`) : on le refuse au blur pour ne pas laisser le champ afficher une
@@ -104,9 +104,8 @@ const HmiWidgetPropertiesPanel = ({
 						value={widget.data.variable}
 						onCommit={(mnemonic) => {
 							// Binding an input with a behavior aligns the fields it imposes.
-							const behavior = projectVariables?.find(
-								(v) => v.mnemonic === mnemonic,
-							)?.behavior;
+							const behavior =
+								project?.findVariableByMnemonic(mnemonic)?.behavior;
 							updateWidget(widget.id, {
 								data: {
 									...widget.data,

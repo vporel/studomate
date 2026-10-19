@@ -28,6 +28,7 @@ function setup(
 				variables: [],
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
+				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
 			simulationVariablesStates: {},

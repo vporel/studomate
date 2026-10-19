@@ -37,6 +37,7 @@ const parseValue = (column: GridColDef, value: string) =>
 describe("useGridColumns", () => {
 	const variablesManager = {
 		existsByMnemonic: jest.fn((): string | undefined => undefined),
+		isMnemonicUsedByBlock: jest.fn(() => false),
 		getByAddress: jest.fn((): { id: string; mnemonic: string } | null => null),
 	};
 
@@ -132,6 +133,22 @@ describe("useGridColumns", () => {
 			props: { value: "OK" },
 		});
 		expect(params.error).toBe("Ce mnémonique existe déjà");
+	});
+
+	it("rejects a mnemonic used by a block and accepts it otherwise", () => {
+		variablesManager.existsByMnemonic.mockReturnValue(undefined);
+		const { result } = setup(ProjectMode.DESIGN);
+		const mnemonicColumn = result.current.find((c) => c.field === "mnemonic")!;
+
+		variablesManager.isMnemonicUsedByBlock.mockReturnValue(true);
+		expect(
+			preProcess(mnemonicColumn, { id: "1", props: { value: "Tempo1" } }).error,
+		).toBe("Ce nom est déjà utilisé par un bloc");
+
+		variablesManager.isMnemonicUsedByBlock.mockReturnValue(false);
+		expect(
+			preProcess(mnemonicColumn, { id: "1", props: { value: "Tempo1" } }).error,
+		).toBe(false);
 	});
 
 	it("rejects an address owned by another row and names its owner", () => {

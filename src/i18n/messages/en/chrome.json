@@ -80,7 +80,7 @@
 		}
 	},
 	"startup": {
-		"homeAria": "{name}: home",
+		"homeAria": "Studomate: home",
 		"welcomeTitle": "Where to start?",
 		"welcomeSubtitle": "Open a complete example and watch it run, or start from a blank page.",
 		"resumeTitle": "Pick up a project",
@@ -113,6 +113,14 @@
 		"resources": "Resources",
 		"userManual": "User manual",
 		"training": "Training",
+		"footer": {
+			"copyright": "© {year} Studomate",
+			"about": "About",
+			"legalMentions": "Legal notice",
+			"terms": "Terms of use",
+			"privacy": "Privacy policy",
+			"reportIssue": "Report an issue"
+		},
 		"sceneLabels": {
 			"crossroads": "3D animation of a crossroads: cars arrive on all four roads and stop at red while the two axes take turns on green.",
 			"carton-sorting": "3D animation of a box-sorting station: a conveyor brings each box and cylinders sort it by height."

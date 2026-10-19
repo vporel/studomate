@@ -31,6 +31,30 @@ describe("Ladder", () => {
 			expect(section.description).toBe("Commande principale");
 		});
 
+		it("getSectionsInOrder suit l'ordre du ladder quel que soit l'ordre des ids", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+			const b = ladder.createSection("B");
+			const c = ladder.createSection("C");
+
+			expect(ladder.getSectionsInOrder([c.id, a.id, b.id])).toEqual([a, b, c]);
+		});
+
+		it("getSectionsInOrder ignore les ids inconnus et renvoie [] pour une liste vide", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+
+			expect(ladder.getSectionsInOrder(["inconnu", a.id])).toEqual([a]);
+			expect(ladder.getSectionsInOrder([])).toEqual([]);
+		});
+
+		it("getSectionsInOrder ne duplique pas une section dont l'id est répété", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const a = ladder.createSection("A");
+
+			expect(ladder.getSectionsInOrder([a.id, a.id])).toEqual([a]);
+		});
+
 		it("renameSection / setSectionDescription mettent à jour la section ciblée", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
 			const [initial] = ladder.sections;
@@ -40,6 +64,15 @@ describe("Ladder", () => {
 
 			expect(initial.title).toBe("Nouveau titre");
 			expect(initial.description).toBe("Nouvelle description");
+		});
+
+		it("canDeleteSection est faux avec une seule section et vrai dès qu'il y en a deux", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			expect(ladder.canDeleteSection()).toBe(false);
+
+			ladder.createSection();
+
+			expect(ladder.canDeleteSection()).toBe(true);
 		});
 
 		it("deleteSection refuse de supprimer la dernière section", () => {
@@ -74,6 +107,27 @@ describe("Ladder", () => {
 				first.id,
 				second.id,
 			]);
+		});
+	});
+
+	describe("isEmpty", () => {
+		it("est vrai pour un ladder neuf, dont l'unique section n'a aucun élément", () => {
+			expect(new Ladder("l1", "Mon ladder").isEmpty()).toBe(true);
+		});
+
+		it("reste vrai avec plusieurs sections toutes vides", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			ladder.createSection("Section 2");
+
+			expect(ladder.isEmpty()).toBe(true);
+		});
+
+		it("est faux dès qu'une section porte un élément", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const section = ladder.createSection("Section 2");
+			ladder.addElements(section.id, [createContactElement("A", "NO", 0, 0)]);
+
+			expect(ladder.isEmpty()).toBe(false);
 		});
 	});
 
@@ -198,6 +252,12 @@ describe("Ladder", () => {
 				},
 			]);
 		});
+	});
+
+	it("isMain is true only for the main role", () => {
+		expect(new Ladder("l1", "L").isMain()).toBe(false);
+		expect(new Ladder("l2", "S", undefined, "standard").isMain()).toBe(false);
+		expect(new Ladder("l3", "Main", undefined, "main").isMain()).toBe(true);
 	});
 
 	it("can be excluded from execution, except the Main", () => {

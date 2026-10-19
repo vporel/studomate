@@ -129,6 +129,36 @@ describe("Project — page HMI principale", () => {
 
 		expect(project.getMainHmiPage()).toBeUndefined();
 	});
+
+	it("isMainHmiPage est vrai pour la page marquée principale uniquement", () => {
+		const project = new Project("p1", "Projet", "");
+		const first = project.createHmiPage("Vue 1");
+		const second = project.createHmiPage("Vue 2");
+		const third = project.createHmiPage("Vue 3");
+		project.setMainHmiPage(second.id);
+
+		expect(project.isMainHmiPage(first.id)).toBe(false);
+		expect(project.isMainHmiPage(second.id)).toBe(true);
+		expect(project.isMainHmiPage(third.id)).toBe(false);
+	});
+
+	it("isMainHmiPage retombe sur la première page si aucune n'est marquée", () => {
+		const project = new Project("p1", "Projet", "");
+		const first = project.createHmiPage("Vue 1");
+		const second = project.createHmiPage("Vue 2");
+		first.isMain = false;
+
+		expect(project.isMainHmiPage(first.id)).toBe(true);
+		expect(project.isMainHmiPage(second.id)).toBe(false);
+	});
+
+	it("isMainHmiPage est faux pour un id inconnu ou sans page HMI", () => {
+		const project = new Project("p1", "Projet", "");
+		expect(project.isMainHmiPage("absent")).toBe(false);
+
+		project.createHmiPage("Vue 1");
+		expect(project.isMainHmiPage("absent")).toBe(false);
+	});
 });
 
 describe("Project.nextHmiPageName", () => {

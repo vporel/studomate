@@ -83,21 +83,6 @@
 			"Widget (HMI) : élément graphique d'une page HMI ; un widget interactif est lié à une variable.",
 			"Animation (HMI) : variation de position ou d'apparence d'un widget pilotée par une variable pendant la simulation."
 		],
-		"taskMapTitle": "Je veux…",
-		"taskMapIntro": "Un index par tâche, pour aller directement à la bonne section :",
-		"taskMapItems": [
-			"voir un grafcet tourner sans rien écrire : Démarrer, « Premier projet en quelques minutes » ;",
-			"attendre un délai : une temporisation dans la réceptivité d'une transition (Grafcet, Transitions) ou un bloc TON en Ladder (Ladder, Blocs) ;",
-			"faire clignoter une lampe : les bases de temps « _SYS_TB_… » (Variables, Variables système) ;",
-			"compter des pièces : le bloc Compteur (Ladder, Blocs) ;",
-			"mémoriser un état : les bobines Set et Reset (Ladder, Bobines) ou les actions Set et Reset d'une étape (Grafcet, Actions) ;",
-			"produire une impulsion d'un cycle : une bobine de front montant ou descendant (Ladder, Bobines) ;",
-			"recommencer un cycle : Dépannage, « Comment faire boucler un cycle ? » ;",
-			"actionner un capteur pendant la simulation : Dépannage, « Comment actionner un capteur en simulation ? » ;",
-			"afficher une interface de pilotage : Interfaces HMI ;",
-			"relier une carte Arduino ou une scène 3D : Matériel (Arduino) et Scène 3D ;",
-			"préparer et distribuer un TP : Projets, « Préparer et distribuer un TP »."
-		],
 		"readingOrder": "Si vous découvrez l'automatisme, commencez par les Formations (menu Aide) : une théorie courte suivie d'exercices auto-corrigés, sans compte requis. La progression est gardée dans le navigateur, et sauvegardée sur votre compte si vous êtes connecté. Pour une première découverte de l'outil, commencez par Démarrer, puis parcourez la notation visée : Grafcet (Canvas, Étapes, Transitions, Actions) ou Ladder (Réseaux, Contacts, Bobines, Blocs), avant Simulation et Analyse. Les sections Variables, Interfaces HMI, Explorateur, Barre d'outils et Raccourcis se consultent au besoin. Les sections Matériel (Arduino) et Scène 3D concernent les projets reliés à une carte réelle ou à une partie opérative virtuelle."
 	},
 	"gettingStarted": {

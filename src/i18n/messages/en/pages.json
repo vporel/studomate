@@ -86,6 +86,7 @@
 		},
 		"errors": {
 			"mnemonicExists": "This mnemonic already exists",
+			"mnemonicUsedByBlock": "This name is already used by a block",
 			"addressUsed": "This address is already used by \"{mnemonic}\""
 		},
 		"selectorPlaceholder": "?",

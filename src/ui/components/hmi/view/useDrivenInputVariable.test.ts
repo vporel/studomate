@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import { Dialect } from "@/expression-language/dialect.enum";
+import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { renderHook } from "@testing-library/react";
@@ -17,7 +18,7 @@ function setup(
 ) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
-			project: {
+			project: Object.assign(new Project("p1", "Projet", ""), {
 				variables: [
 					new Variable({
 						id: "v1",
@@ -27,7 +28,7 @@ function setup(
 						dialect: Dialect.FR,
 					}),
 				],
-			},
+			}),
 			hardwareLink: { status: "linked", drivenInputIds },
 			scene3dDrivenInputIds,
 		}),

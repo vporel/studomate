@@ -4,6 +4,7 @@
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
+import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { useLadderStore } from "../context/LadderContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
@@ -27,10 +28,12 @@ function setup({
 	selectedSectionIds = [] as string[],
 } = {}) {
 	const section = new Section("s1", title, "", [], []);
+	const ladder = new Ladder("l1", "Ladder");
+	for (let i = 1; i < sectionsCount; i++) ladder.createSection();
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			commandsStackManager: { executeOperation },
-			ladder: { sections: new Array(sectionsCount).fill(null) },
+			ladder,
 			viewManager: { zoomIn, zoomOut },
 			workflowManager: { deleteSections },
 			copyCutPasteManager: { duplicateSection, copySections },

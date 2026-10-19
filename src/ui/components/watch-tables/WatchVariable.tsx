@@ -33,7 +33,7 @@ export default function WatchVariable({ variable }: { variable: Variable }) {
 	const normallyClosed = isNormallyClosed(behavior);
 	const locked = useProjectStore((state) => isInputDriven(state, variable.id));
 	const readOnly =
-		variable.getDirection() === "OUT" || variable.zone === "constant";
+		variable.getDirection() === "OUT" || variable.isReadOnly();
 
 	const changeValue = (newValue: any) => {
 		if (variable.getDirection() === "IN") {

@@ -271,7 +271,7 @@ const Showcase = ({
 							src={showcaseMedia[key].src}
 							loading="lazy"
 							decoding="async"
-							alt={t(`${key}Alt`, { name: APP_NAME })}
+							alt={t(`${key}Alt`)}
 							sx={
 								showcaseMedia[key].portrait
 									? {
@@ -433,11 +433,11 @@ const LandingPage = () => {
 
 			{/* Démo vidéo */}
 			<Section>
-				<SectionTitle>{t("demoTitle", { name: APP_NAME })}</SectionTitle>
+				<SectionTitle>{t("demoTitle")}</SectionTitle>
 				<FlexBox justifyContent="center">
 					<DemoVideo
 						src="/videos/demo-feu-tricolore.mp4"
-						label={t("demoVideoLabel", { name: APP_NAME })}
+						label={t("demoVideoLabel")}
 					/>
 				</FlexBox>
 			</Section>
@@ -461,9 +461,9 @@ const LandingPage = () => {
 
 			{/* Pourquoi Studomate ? */}
 			<Section tone="muted">
-				<SectionTitle>{t("whyTitle", { name: APP_NAME })}</SectionTitle>
+				<SectionTitle>{t("whyTitle")}</SectionTitle>
 				<Typography textAlign="center" color="text.secondary" mb={3}>
-					{t("whyIntro", { name: APP_NAME })}
+					{t("whyIntro")}
 				</Typography>
 				<FlexBox gap={1.5} wrap justifyContent="center" mb={5}>
 					{audiences.map(({ key, Icon }) => (
