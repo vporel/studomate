@@ -30,6 +30,11 @@ function setup({
 	data,
 	executeOperation = jest.fn(),
 	variables = [] as Variable[],
+	mode = ProjectMode.DESIGN,
+	simulationVariablesStatesByMnemonic = {} as Record<
+		string,
+		{ value: unknown }
+	>,
 }: {
 	programId?: string;
 	ladders?: Record<string, { name: string }>;
@@ -37,6 +42,8 @@ function setup({
 	data?: BlockNodeData;
 	executeOperation?: jest.Mock;
 	variables?: Variable[];
+	mode?: ProjectMode;
+	simulationVariablesStatesByMnemonic?: Record<string, { value: unknown }>;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -48,8 +55,9 @@ function setup({
 				getExecutedGrafcets: () => [],
 				grafcets: {},
 			},
-			mode: ProjectMode.DESIGN,
+			mode,
 			simulationVariablesStates: {},
+			simulationVariablesStatesByMnemonic,
 		}),
 	);
 	(useLadderStore as unknown as jest.Mock).mockImplementation(
@@ -316,6 +324,53 @@ describe("BlockNode", () => {
 			expect(ptField).toHaveValue("T#5s");
 			expect(etField).toHaveValue("Sortie");
 			expect(ptField).toHaveAttribute("placeholder", "?");
+		});
+
+		describe("valeur de ET en simulation", () => {
+			const unassignedData: BlockNodeData = {
+				blockType: "timer",
+				params: { name: "Tempo1", timerType: "TON", pt: "T#5s", et: "" },
+			};
+			const running = {
+				mode: ProjectMode.SIMULATION,
+				simulationVariablesStatesByMnemonic: {
+					"Tempo1.ET": { value: 1500 },
+				},
+			};
+
+			it("affiche le temps écoulé de la variable générée quand ET n'a pas de variable", () => {
+				setup({ data: unassignedData, ...running });
+
+				expect(screen.getByText("1.5s")).toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")).toHaveLength(2);
+			});
+
+			it("affiche le champ ET en mode conception", () => {
+				setup({
+					data: unassignedData,
+					...running,
+					mode: ProjectMode.DESIGN,
+				});
+
+				expect(screen.queryByText("1.5s")).not.toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")).toHaveLength(3);
+			});
+
+			it("laisse le champ de la variable assignée quand ET en a une", () => {
+				setup({ data: timerData, ...running });
+
+				expect(screen.queryByText("1.5s")).not.toBeInTheDocument();
+				expect(screen.getAllByRole("combobox")[1]).toHaveValue("Sortie");
+			});
+
+			it("garde le champ tant que la simulation n'a pas publié de valeur", () => {
+				setup({
+					data: unassignedData,
+					mode: ProjectMode.SIMULATION,
+				});
+
+				expect(screen.getAllByRole("combobox")).toHaveLength(3);
+			});
 		});
 
 		it("un double-clic sur le libellé PT donne le focus au champ PT", () => {

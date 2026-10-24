@@ -6,7 +6,8 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "../projects/ProjectContext";
 import { useAuthStore } from "@/ui/stores/auth/auth.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import PreferencesPage, { PREFERENCES_PAGE_ID } from "./PreferencesPage";
+import PreferencesPage from "./PreferencesPage";
+import { PREFERENCES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 jest.mock("../projects/ProjectContext");
 jest.mock("@/ui/stores/auth/auth.store");

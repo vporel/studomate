@@ -8,7 +8,9 @@ const target: HardwareTarget = {
 
 describe("Project hardwareTarget", () => {
 	it("a new project has no target", () => {
-		expect(new Project("p1", "Projet", "auteur").hardwareTarget).toBeUndefined();
+		expect(
+			new Project("p1", "Projet", "auteur").hardwareTarget,
+		).toBeUndefined();
 	});
 
 	it("copy() keeps the target", () => {

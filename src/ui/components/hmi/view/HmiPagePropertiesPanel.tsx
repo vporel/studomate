@@ -8,7 +8,13 @@ import { Box, Button, Typography } from "@mui/material";
  * la page HMI elle-même plutôt que d'un widget. Lit le statut de page principale depuis le projet (pas depuis le store
  * de la page, voir `HmiManager.setMainHmiPage`) : une seule page principale à la fois dans tout le
  * projet, une mutation qu'un store borné à une seule page ne peut pas porter lui-même. */
-const HmiPagePropertiesPanel = ({ hmiPageId }: { hmiPageId: string }) => {
+const HmiPagePropertiesPanel = ({
+	hmiPageId,
+	readOnly = false,
+}: {
+	hmiPageId: string;
+	readOnly?: boolean;
+}) => {
 	const t = useT("hmiEditor.panel");
 	const hmiManager = useProjectStore((s) => s.hmiManager);
 	const isMain = useProjectStore(
@@ -23,7 +29,7 @@ const HmiPagePropertiesPanel = ({ hmiPageId }: { hmiPageId: string }) => {
 			<Button
 				size="small"
 				variant="outlined"
-				disabled={isMain}
+				disabled={isMain || readOnly}
 				onClick={() => hmiManager.setMainHmiPage(hmiPageId)}
 				sx={{ alignSelf: "flex-start" }}
 			>

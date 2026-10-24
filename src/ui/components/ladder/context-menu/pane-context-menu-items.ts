@@ -12,7 +12,7 @@ export default function paneContextMenuItems(
 	screenPosition: { x: number; y: number },
 	canPaste: boolean,
 	t: MenuTranslate,
-	onExport: () => void,
+	onExport: (() => void) | null,
 	exportDisabled: boolean,
 ): {
 	label: string;
@@ -44,12 +44,16 @@ export default function paneContextMenuItems(
 				disabled: !canPaste,
 			},
 		],
-		[
-			{
-				label: t("export"),
-				onClick: onExport,
-				disabled: exportDisabled,
-			},
-		],
+		...(onExport
+			? [
+					[
+						{
+							label: t("export"),
+							onClick: onExport,
+							disabled: exportDisabled,
+						},
+					],
+				]
+			: []),
 	];
 }

@@ -2,18 +2,11 @@
 
 import { useT } from "@/ui/i18n/useT";
 import MarkdownBody from "@/ui/lib/markdown-body";
-import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Button, Typography } from "@mui/material";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
-import { PROJECT_PROPERTIES_PAGE_DATA } from "./ProjectPropertiesPage";
-
-export const EXERCISE_PAGE_ID = "exercise";
-export const EXERCISE_PAGE_DATA: PageData = {
-	id: EXERCISE_PAGE_ID,
-	type: "exercise",
-	title: "Énoncé de l'exercice",
-};
+import { PROJECT_PROPERTIES_PAGE_DATA } from "@/ui/stores/project/pages-data";
+import { EXERCISE_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 const ExercisePage = () => {
 	const t = useT("pages.exercise");

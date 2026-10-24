@@ -28,9 +28,12 @@ describe.each([
 		expect(descriptions.length).toBeGreaterThan(0);
 	});
 
-	it.each(descriptions)("%s ne contient pas de tiret cadratin", (_path, text) => {
-		expect(text).not.toContain("—");
-	});
+	it.each(descriptions)(
+		"%s ne contient pas de tiret cadratin",
+		(_path, text) => {
+			expect(text).not.toContain("—");
+		},
+	);
 });
 
 describe.each([
@@ -46,9 +49,12 @@ describe.each([
 			),
 	);
 
-	it.each(stepDescriptions)("%s a une description assez développée", (_path, text) => {
-		expect(text.length).toBeGreaterThanOrEqual(MIN_STEP_DESCRIPTION_LENGTH);
-	});
+	it.each(stepDescriptions)(
+		"%s a une description assez développée",
+		(_path, text) => {
+			expect(text.length).toBeGreaterThanOrEqual(MIN_STEP_DESCRIPTION_LENGTH);
+		},
+	);
 });
 
 it("la description courte de l'application ne contient pas de tiret cadratin", () => {

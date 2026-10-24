@@ -18,8 +18,6 @@ const grafcetLadderText = (locale: Locale) =>
 	createTemplateText("grafcet-ladder", locale);
 
 export type GrafcetTransitionSpec = {
-	/** Name of the memory holding the crossing condition (`Tn = Xn ET Rn`). */
-	name: string;
 	from: string[];
 	to: string[];
 	/** Receptivity as series items, appended after the upstream step contacts. */
@@ -42,23 +40,17 @@ const DEFAULT_INIT_MEMORY = "init";
 const inParallel = (items: LadderItem[]): LadderItem[] =>
 	items.length === 1 ? items : [or(...items.map((item) => [item]))];
 
-/** Every memory a spec needs: steps, crossing conditions and the start-up memory. */
+/** Every memory a spec needs: the step memories and the start-up memory. */
 export function grafcetMemories(spec: GrafcetLadderSpec): Variable[] {
-	return [
-		...[
-			...spec.steps,
-			...spec.transitions.map((transition) => transition.name),
-		].map((name) => memory(name)),
-		grafcetInitMemory(spec),
-	];
+	return [...spec.steps.map((name) => memory(name)), grafcetInitMemory(spec)];
 }
 
 export function grafcetInitMemory(spec: GrafcetLadderSpec): Variable {
 	return memory(spec.initMemory ?? DEFAULT_INIT_MEMORY);
 }
 
-/** Initial-step activation followed by the crossing conditions of all transitions. */
-export function grafcetConditionSections(
+/** Initial-step activation and its latch. */
+export function grafcetInitSections(
 	spec: GrafcetLadderSpec,
 	locale: Locale = "fr",
 ): Section[] {
@@ -77,40 +69,89 @@ export function grafcetConditionSections(
 			nf(initMemory),
 			setCoil(initMemory),
 		),
-		...spec.transitions.map((transition) =>
-			section(
-				t("crossingTitle", { name: transition.name }),
-				t("crossingDescription"),
-				...transition.from.map((step) => no(step)),
-				...transition.receptivity,
-				coil(transition.name),
-			),
-		),
 	];
 }
 
-/** All the resets of all transitions, then all the sets, so that an activation wins over a deactivation. */
-export function grafcetEvolutionSections(
+/**
+ * One network per transition, in the order of the spec: the upstream steps in series, then the
+ * receptivity, then in parallel the resets of the upstream steps and the sets of the downstream
+ * steps. A transition reads the step memories as the previous networks left them.
+ */
+export function grafcetTransitionSections(
 	spec: GrafcetLadderSpec,
 	locale: Locale = "fr",
 ): Section[] {
 	const t = grafcetLadderText(locale);
+	return spec.transitions.map((transition) =>
+		section(
+			`${transition.from.join(" + ")} -> ${transition.to.join(" + ")}`,
+			t("transitionDescription"),
+			...transition.from.map((step) => no(step)),
+			...transition.receptivity,
+			...inParallel([
+				...transition.from.map((step) => resetCoil(step)),
+				...transition.to.map((step) => setCoil(step)),
+			]),
+		),
+	);
+}
+
+/** Name of the memory holding the crossing condition of the transition at `index` (`Tn = Xn ET Rn`). */
+export const grafcetCrossingMemoryName = (index: number) => `T${index}`;
+
+/** Every memory the three-block method needs: steps, one crossing memory per transition and the start-up memory. */
+export function grafcetThreeBlockMemories(spec: GrafcetLadderSpec): Variable[] {
 	return [
-		...spec.transitions.map((transition) =>
+		...[
+			...spec.steps,
+			...spec.transitions.map((_, index) => grafcetCrossingMemoryName(index)),
+		].map((name) => memory(name)),
+		grafcetInitMemory(spec),
+	];
+}
+
+/**
+ * The three-block method: every crossing condition first, then all the resets of all the
+ * transitions, then all the sets, so that each transition reads the state of the start of the
+ * scan and an activation wins over a deactivation.
+ */
+export function grafcetThreeBlockSections(
+	spec: GrafcetLadderSpec,
+	outputs: { variable: string; steps: string[] }[] = [],
+	locale: Locale = "fr",
+): Section[] {
+	const t = grafcetLadderText(locale);
+	const crossing = (index: number) => grafcetCrossingMemoryName(index);
+	return [
+		...grafcetInitSections(spec, locale),
+		...spec.transitions.map((transition, index) =>
 			section(
-				t("deactivationTitle", { name: transition.name }),
+				t("crossingTitle", { name: crossing(index) }),
+				t("crossingDescription"),
+				...transition.from.map((step) => no(step)),
+				...transition.receptivity,
+				coil(crossing(index)),
+			),
+		),
+		...spec.transitions.map((transition, index) =>
+			section(
+				t("deactivationTitle", { name: crossing(index) }),
 				t("deactivationDescription"),
-				no(transition.name),
+				no(crossing(index)),
 				...inParallel(transition.from.map((step) => resetCoil(step))),
 			),
 		),
-		...spec.transitions.map((transition) =>
+		...spec.transitions.map((transition, index) =>
 			section(
-				t("activationTitle", { name: transition.name }),
+				t("activationTitle", { name: crossing(index) }),
 				t("activationDescription"),
-				no(transition.name),
+				no(crossing(index)),
 				...inParallel(transition.to.map((step) => setCoil(step))),
 			),
+		),
+		...grafcetResetSections(spec, locale),
+		...outputs.map(({ variable, steps }) =>
+			grafcetOutputSection(variable, steps, locale),
 		),
 	];
 }
@@ -153,15 +194,15 @@ export function grafcetOutputSection(
 	);
 }
 
-/** The method's three blocks in order: conditions, evolution (then reset), outputs. */
+/** The method's blocks in order: start-up, one network per transition, reset, outputs. */
 export function grafcetSections(
 	spec: GrafcetLadderSpec,
 	outputs: { variable: string; steps: string[] }[] = [],
 	locale: Locale = "fr",
 ): Section[] {
 	return [
-		...grafcetConditionSections(spec, locale),
-		...grafcetEvolutionSections(spec, locale),
+		...grafcetInitSections(spec, locale),
+		...grafcetTransitionSections(spec, locale),
 		...grafcetResetSections(spec, locale),
 		...outputs.map(({ variable, steps }) =>
 			grafcetOutputSection(variable, steps, locale),

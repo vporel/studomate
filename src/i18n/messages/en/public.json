@@ -114,15 +114,8 @@
 		"missionBody": "<strong>Studomate</strong> is a teaching tool for <strong>automation</strong>: learning, designing and simulating GRAFCET, Ladder and HMIs, right in the browser.",
 		"missionBody2": "It exists to cut the friction of learning automation down to almost nothing: no install, no licence, no PLC to configure.",
 		"differentiatorLabel": "Its differentiator: everything in the same environment",
-		"differentiatorEditors": [
-			"GRAFCET",
-			"Ladder",
-			"Animated HMIs"
-		],
-		"differentiatorItems": [
-			"Shared variables",
-			"3D scene"
-		],
+		"differentiatorEditors": ["GRAFCET", "Ladder", "Animated HMIs"],
+		"differentiatorItems": ["Shared variables", "3D scene"],
 		"offeringTitle": "What Studomate offers",
 		"offeringItems": [
 			{
@@ -174,13 +167,7 @@
 			}
 		],
 		"causalityLabel": "The causality chain, made visible",
-		"causalityItems": [
-			"Inputs",
-			"Transitions",
-			"Steps",
-			"Actions",
-			"Outputs"
-		],
+		"causalityItems": ["Inputs", "Transitions", "Steps", "Actions", "Outputs"],
 		"ownershipTitle": "Your projects are yours",
 		"ownershipItems": [
 			{

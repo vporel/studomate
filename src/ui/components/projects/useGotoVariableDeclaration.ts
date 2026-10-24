@@ -1,12 +1,12 @@
 import { isSystemVariableName } from "@/schemas/variable/system-variables";
 import Variable from "@/schemas/variable/variable.schema";
 import { useCallback } from "react";
-import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
-import {
-	getVariablesPageData,
-	getVariablesPageIdForZone,
-} from "../pages/VariablesPage";
+import { getVariablesPageIdForZone } from "../pages/VariablesPage";
 import { useProjectStore } from "./ProjectContext";
+import {
+	SYSTEM_VARIABLES_PAGE_DATA,
+	getVariablesPageData,
+} from "@/ui/stores/project/pages-data";
 
 /**
  * Ouvre la table où une variable est déclarée et l'y met en évidence.

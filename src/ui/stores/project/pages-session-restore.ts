@@ -1,32 +1,24 @@
 import Project from "@/schemas/project/project.schema";
-import {
-	PROJECT_STARTUP_PAGE_DATA,
-	PROJECT_STARTUP_PAGE_ID,
-} from "@/ui/components/pages/ProjectStartupPage";
-import {
-	PROJECT_PROPERTIES_PAGE_DATA,
-	PROJECT_PROPERTIES_PAGE_ID,
-} from "@/ui/components/pages/ProjectPropertiesPage";
-import {
-	EXERCISE_PAGE_DATA,
-	EXERCISE_PAGE_ID,
-} from "@/ui/components/pages/ExercisePage";
-import {
-	HARDWARE_CONFIGURATION_PAGE_DATA,
-	HARDWARE_CONFIGURATION_PAGE_ID,
-} from "@/ui/components/pages/HardwareConfigurationPage";
-import {
-	SCENE3D_CONFIGURATION_PAGE_DATA,
-	SCENE3D_CONFIGURATION_PAGE_ID,
-} from "@/ui/components/pages/Scene3dConfigurationPage";
-import { getVariablesPageData } from "@/ui/components/pages/VariablesPage";
 import { isVariablesPageId } from "./variables-pages";
-import { getPagesSession } from "@/persistence/pages-session.storage";
+import type { ProjectStorePersistence } from "./environment/project-store-environment";
 import {
 	PageData,
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "./project.store.types";
+import {
+	EXERCISE_PAGE_DATA,
+	EXERCISE_PAGE_ID,
+	HARDWARE_CONFIGURATION_PAGE_DATA,
+	HARDWARE_CONFIGURATION_PAGE_ID,
+	PROJECT_PROPERTIES_PAGE_DATA,
+	PROJECT_PROPERTIES_PAGE_ID,
+	PROJECT_STARTUP_PAGE_DATA,
+	PROJECT_STARTUP_PAGE_ID,
+	SCENE3D_CONFIGURATION_PAGE_DATA,
+	SCENE3D_CONFIGURATION_PAGE_ID,
+	getVariablesPageData,
+} from "@/ui/stores/project/pages-data";
 
 export function getInitialPagesData(): Record<string, PageData> {
 	const pagesData: Record<string, PageData> = {};
@@ -71,8 +63,9 @@ export function restorePagesSession(
 	get: ProjectStoreGetFunction,
 	project: Project,
 	urlActiveId: string | null,
+	pagesSession: ProjectStorePersistence["pagesSession"],
 ) {
-	const session = getPagesSession(project.id);
+	const session = pagesSession.get(project.id);
 	if (!session && !urlActiveId) return;
 
 	set(() => ({ pagesData: {}, pagesOrder: [], activePageId: null }));

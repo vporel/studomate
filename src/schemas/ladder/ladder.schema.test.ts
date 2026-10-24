@@ -115,6 +115,10 @@ describe("Ladder", () => {
 		});
 	});
 
+	it("is never skipped, even empty", () => {
+		expect(new Ladder("l1", "Mon ladder").isSkippedWhenEmpty()).toBe(false);
+	});
+
 	describe("isEmpty", () => {
 		it("est vrai pour un ladder neuf, dont l'unique section n'a aucun élément", () => {
 			expect(new Ladder("l1", "Mon ladder").isEmpty()).toBe(true);

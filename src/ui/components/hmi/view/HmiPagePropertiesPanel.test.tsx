@@ -17,9 +17,10 @@ const setup = (
 		mainIndex?: number | null;
 		panelIndex?: number;
 		locale?: "fr" | "en";
+		readOnly?: boolean;
 	} = {},
 ) => {
-	const { mainIndex = 1, panelIndex = 1, locale } = options;
+	const { mainIndex = 1, panelIndex = 1, locale, readOnly } = options;
 	const project = new Project("p1", "Projet", "");
 	const pages = [
 		project.createHmiPage("Vue 1"),
@@ -34,9 +35,13 @@ const setup = (
 			project,
 		}),
 	);
-	renderWithI18n(<HmiPagePropertiesPanel hmiPageId={pages[panelIndex].id} />, {
-		locale,
-	});
+	renderWithI18n(
+		<HmiPagePropertiesPanel
+			hmiPageId={pages[panelIndex].id}
+			readOnly={readOnly}
+		/>,
+		{ locale },
+	);
 	return pages;
 };
 
@@ -54,6 +59,17 @@ describe("HmiPagePropertiesPanel", () => {
 		);
 
 		expect(setMainHmiPage).toHaveBeenCalledWith(pages[1].id);
+	});
+
+	it("désactive le bouton en lecture seule, même sur une page qui n'est pas principale", () => {
+		setup({ mainIndex: 0, panelIndex: 1, readOnly: true });
+
+		const button = screen.getByRole("button", {
+			name: "Définir en page principale",
+		});
+		expect(button).toBeDisabled();
+		fireEvent.click(button);
+		expect(setMainHmiPage).not.toHaveBeenCalled();
 	});
 
 	it("désactive le bouton sur la page déjà principale", () => {

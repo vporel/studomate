@@ -1,12 +1,12 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
+import { canEdit } from "./editability";
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { planMissingVariables } from "@/3d-scenes/scene3d-wiring";
 import { localizeMnemonic } from "@/templates/localize-project";
 import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
 import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
-import trackEvent from "@/ui/services/analytics";
 import { createStore } from "zustand";
+import { createClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import VariablesCommandsFactory from "./factories/variables-commands.factory";
 import ProjectCommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetsManager from "./managers/grafcets.manager";
@@ -16,7 +16,6 @@ import HmiManager from "./managers/hmi.manager";
 import ProjectLifecycleManager from "./managers/lifecycle.manager";
 import ProjectSharingManager from "./managers/sharing.manager";
 import { emptyAnalysisIssues } from "@/bridge/analysis-issues.mapper";
-import createBrowserRemoteIoDevice from "./managers/hardware-link/browser-remote-io-device";
 import ModeManager from "./managers/mode.manager";
 import HardwareLinkManager from "./managers/hardware-link/hardware-link.manager";
 import {
@@ -25,29 +24,22 @@ import {
 	IDLE_HARDWARE_OBSERVATION,
 	IDLE_HARDWARE_UPLOAD,
 } from "./managers/hardware-link/hardware-link.state";
-import ToastHardwareLinkNotifier from "./managers/hardware-link/toast.hardware-link.notifier";
-import createBrowserScene3dLinkHost from "./managers/3d-scene/browser-scene3d-link-host";
 import Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
-import lazyBrowserHeartbeat from "./managers/simulation/lazy-browser-heartbeat";
 import SimulationManager from "./managers/simulation/simulation.manager";
-import ToastSimulationNotifier from "./managers/simulation/toast.simulation.notifier";
 import VariablesManager from "./managers/variables.manager";
 import { ProjectMode } from "./ProjectMode.enum";
-import {
-	getProjectIdFromUrl,
-	getShareTokenFromUrl,
-	getTemplateIdFromUrl,
-} from "@/ui/stores/project/url/project-url";
+import type { ProjectStoreEnvironment } from "./environment/project-store-environment";
+import UNAVAILABLE_REPOSITORY from "./environment/unavailable-repository";
+import unavailableRemoteIoDevice from "./environment/unavailable-remote-io-device";
 import { performRedo, performUndo } from "./undo-redo";
 import { getInitialPagesData } from "./pages-session-restore";
-import { deleteDraft } from "@/persistence/draft.storage";
 import { getT } from "@/ui/i18n/translateGlobal";
-import { PROJECT_STARTUP_PAGE_ID } from "@/ui/components/pages/ProjectStartupPage";
 import {
 	ProjectStoreState,
 	ProjectUiState,
 	ScopeType,
 } from "./project.store.types";
+import { PROJECT_STARTUP_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 /** Clés de `ProjectUiState` portant un simple `boolean` de visibilité. */
 type BooleanUiKey = {
@@ -74,9 +66,9 @@ export type {
 	ProjectStoreGetFunction,
 } from "./project.store.types";
 
-export const createProjectStore = () => {
+export const createProjectStore = (env: ProjectStoreEnvironment) => {
 	return createStore<ProjectStoreState>((set, get) => {
-		const lifecycleManager = new ProjectLifecycleManager(set, get);
+		const lifecycleManager = new ProjectLifecycleManager(set, get, env);
 
 		/** Ouvre une modale, en intercalant le dialogue « modifications non enregistrées »
 		 * si besoin. `discardDraft` supprime le brouillon quand l'utilisateur continue sans
@@ -101,7 +93,8 @@ export const createProjectStore = () => {
 					onUnsavedChangesDialogCancel: null,
 					onUnsavedChangesDialogContinue: () => {
 						const project = get().project;
-						if (discardDraft && project) deleteDraft(project.id);
+						if (discardDraft && project)
+							env.persistence?.drafts.delete(project.id);
 						set((state) => ({ ui: { ...state.ui, [uiKey]: true } }));
 					},
 				},
@@ -114,12 +107,14 @@ export const createProjectStore = () => {
 
 		return {
 			project: null,
-			bootStatus:
-				getProjectIdFromUrl() ||
-				getShareTokenFromUrl() ||
-				getTemplateIdFromUrl()
-					? "restoring"
-					: "idle",
+			bootStatus: env.persistence?.initialBootStatus() ?? "idle",
+			clipboard: createClipboardStore(),
+			capabilities: {
+				...env.capabilities,
+				hardware: env.hardware !== undefined,
+			},
+			editingEnabled: true,
+			setEditingEnabled: (enabled) => set(() => ({ editingEnabled: enabled })),
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
 			ui: {
@@ -146,7 +141,7 @@ export const createProjectStore = () => {
 				onSaveLocationChosen: null,
 			},
 			savingProject: false,
-			projectRepository: new HybridProjectRepository(),
+			projectRepository: env.persistence?.repository ?? UNAVAILABLE_REPOSITORY,
 			isSharedProject: false,
 			shareToken: null,
 			pendingShareAfterAuth: false,
@@ -154,7 +149,7 @@ export const createProjectStore = () => {
 			activeScopeType: "project",
 			variablesManager: new VariablesManager(set, get),
 			lifecycleManager,
-			sharingManager: new ProjectSharingManager(set, get),
+			sharingManager: new ProjectSharingManager(set, get, env),
 
 			getProject: () => get().project,
 			finishBoot: () => set(() => ({ bootStatus: "idle" })),
@@ -243,7 +238,7 @@ export const createProjectStore = () => {
 				const project = get().project;
 				if (!project) return;
 				if (scene && scene.sceneId !== project.scene3d?.sceneId) {
-					trackEvent("scene-attached", { scene: scene.sceneId });
+					env.analytics.trackEvent("scene-attached", { scene: scene.sceneId });
 				}
 				get().commandsStackManager.executeOperation([
 					new ProjectFieldSetCommand({
@@ -255,9 +250,9 @@ export const createProjectStore = () => {
 			},
 
 			createMissingScene3dVariables: () => {
-				const { project, mode } = get();
+				const project = get().project;
 				const scene = project?.scene3d;
-				if (!project || !scene || mode !== ProjectMode.DESIGN) return;
+				if (!project || !scene || !canEdit(get())) return;
 				const descriptor = getSceneDescriptor(
 					scene.sceneId,
 					scene.sceneVersion,
@@ -344,7 +339,7 @@ export const createProjectStore = () => {
 			//=============== SIMULATION ===============
 			mode: ProjectMode.DESIGN,
 			simulationPaused: false,
-			simulationMode: SimulationManager.getPersistedSimulationMode(),
+			simulationMode: env.preferences.getSimulationMode(),
 			simulationKind: "virtual",
 			scene3dDrivenInputIds: [],
 			analysisHasErrors: false,
@@ -386,24 +381,17 @@ export const createProjectStore = () => {
 			simulationVariablesStatesByMnemonic: {},
 			observableExpressionsValues: {},
 			forcedVariables: {},
-			simulationManager: new SimulationManager(
-				set,
-				get,
-				new ToastSimulationNotifier(),
-				lazyBrowserHeartbeat,
-			),
+			simulationManager: new SimulationManager(set, get, env),
 
 			//=============== HARDWARE LINK ===============
 			hardwareLink: DISCONNECTED_HARDWARE_LINK,
 			hardwareLinkManager: new HardwareLinkManager(
 				set,
 				get,
-				new ToastHardwareLinkNotifier(),
-				createBrowserRemoteIoDevice,
+				env.hardwareNotifier,
+				env.hardware?.createDevice ?? unavailableRemoteIoDevice,
 			),
-			scene3dLinkManager: new Scene3dLinkManager(
-				createBrowserScene3dLinkHost(get),
-			),
+			scene3dLinkManager: new Scene3dLinkManager(env.createScene3dHost(get)),
 			hardwareFirmware: IDLE_HARDWARE_FIRMWARE,
 			hardwareUpload: IDLE_HARDWARE_UPLOAD,
 			hardwareObservation: IDLE_HARDWARE_OBSERVATION,
@@ -419,24 +407,24 @@ export const createProjectStore = () => {
 			//=============== GRAFCETS ===============
 			grafcetsStoresValues: {},
 			grafcetsStoresManagers: {},
-			grafcetsManager: new GrafcetsManager(set, get),
+			grafcetsManager: new GrafcetsManager(set, get, env.analytics),
 
 			//=============== LADDERS ===============
 			laddersStoresValues: {},
 			laddersStoresManagers: {},
-			laddersManager: new LaddersManager(set, get),
+			laddersManager: new LaddersManager(set, get, env.analytics),
 
 			//=============== HMI ===============
 			hmiStoresValues: {},
 			hmiStoresManagers: {},
-			hmiManager: new HmiManager(set, get),
+			hmiManager: new HmiManager(set, get, env.analytics),
 			hmiSimulationActivePageId: null,
 
 			//=============== PAGES ===============
 			pagesData: getInitialPagesData(),
 			pagesOrder: [PROJECT_STARTUP_PAGE_ID],
 			activePageId: PROJECT_STARTUP_PAGE_ID,
-			pagesManager: new PagesManager(set, get),
+			pagesManager: new PagesManager(set, get, env.persistence),
 		};
 	});
 };

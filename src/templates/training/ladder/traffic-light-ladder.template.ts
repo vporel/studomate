@@ -33,19 +33,16 @@ export function createTrafficLightSpec(
 		initial: ["X0"],
 		transitions: [
 			{
-				name: "T0",
 				from: ["X0"],
 				to: ["X1"],
 				receptivity: [no(`${greenTimer}.Q`)],
 			},
 			{
-				name: "T1",
 				from: ["X1"],
 				to: ["X2"],
 				receptivity: [no(`${amberTimer}.Q`)],
 			},
 			{
-				name: "T2",
 				from: ["X2"],
 				to: ["X0"],
 				receptivity: [no(`${redTimer}.Q`), no("marche")],

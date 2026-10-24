@@ -2,7 +2,6 @@
 
 import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import { useT } from "@/ui/i18n/useT";
-import { PageData } from "@/ui/stores/project/project.store";
 import {
 	Box,
 	Table,
@@ -14,13 +13,10 @@ import {
 } from "@mui/material";
 import Page from "./Page";
 import { usePageTitle } from "./usePageTitle";
-
-export const SYSTEM_VARIABLES_PAGE_ID = "system-variables";
-export const SYSTEM_VARIABLES_PAGE_DATA: PageData = {
-	id: SYSTEM_VARIABLES_PAGE_ID,
-	type: "system-variables",
-	title: "Variables système",
-};
+import {
+	SYSTEM_VARIABLES_PAGE_DATA,
+	SYSTEM_VARIABLES_PAGE_ID,
+} from "@/ui/stores/project/pages-data";
 
 const SystemVariablesPage = () => {
 	const t = useT("pages.systemVariables");

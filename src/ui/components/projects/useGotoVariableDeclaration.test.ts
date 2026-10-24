@@ -6,8 +6,8 @@ import { renderHook } from "@testing-library/react";
 import Variable from "@/schemas/variable/variable.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
-import { SYSTEM_VARIABLES_PAGE_DATA } from "../pages/SystemVariablesPage";
 import useGotoVariableDeclaration from "./useGotoVariableDeclaration";
+import { SYSTEM_VARIABLES_PAGE_DATA } from "@/ui/stores/project/pages-data";
 
 jest.mock("@/ui/components/projects/ProjectContext");
 

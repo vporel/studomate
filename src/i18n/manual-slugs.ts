@@ -49,6 +49,8 @@ export function manualSlug(locale: Locale, id: string): string {
 
 /** Section id behind a slug of `locale`, `null` when the slug is unknown. */
 export function manualIdFromSlug(locale: Locale, slug: string): string | null {
-	const entry = Object.entries(MANUAL_SLUGS[locale]).find(([, s]) => s === slug);
+	const entry = Object.entries(MANUAL_SLUGS[locale]).find(
+		([, s]) => s === slug,
+	);
 	return entry ? entry[0] : null;
 }

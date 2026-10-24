@@ -1,11 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { i18nWrapper } from "@tests/utils/i18n";
+import { createClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import mitt from "mitt";
 import { act } from "react";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useLadderContext, useLadderStore } from "../context/LadderContext";
 import LadderContextMenu from "./LadderContextMenu";
@@ -31,7 +33,10 @@ jest.mock("@/ui/services/analytics", () => ({
 	default: jest.fn(),
 }));
 
-function setup(getAllElements: () => unknown[] = () => [{}]) {
+function setup(
+	getAllElements: () => unknown[] = () => [{}],
+	{ editingEnabled = true, pdfExport = true } = {},
+) {
 	const ladder = { name: "Pompe", getAllElements };
 	const events = mitt();
 	(useLadderContext as jest.Mock).mockReturnValue({
@@ -49,6 +54,10 @@ function setup(getAllElements: () => unknown[] = () => [{}]) {
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
+			clipboard: createClipboardStore(),
+			mode: ProjectMode.DESIGN,
+			editingEnabled,
+			capabilities: { pdfExport },
 			project: { name: "Mon projet" },
 			setCrossReferenceFilter: jest.fn(),
 			setCrossReferenceResultVisible: jest.fn(),
@@ -76,19 +85,34 @@ function setup(getAllElements: () => unknown[] = () => [{}]) {
 afterEach(() => jest.clearAllMocks());
 
 describe("LadderContextMenu — export", () => {
-	it("exporte le ladder courant au clic sur 'Exporter'", () => {
+	it("exporte le ladder courant au clic sur 'Exporter'", async () => {
 		const { ladder } = setup();
 
 		fireEvent.click(screen.getByText("Exporter"));
 
-		expect(exportProgramPdf).toHaveBeenCalledWith(
-			expect.objectContaining({
-				config: { type: "ladder", program: ladder },
-				filename: "Mon projet - Pompe",
-				sectionTitle: "Ladder - Pompe",
-				ladderContext: ladderRenderContext,
-			}),
+		await waitFor(() =>
+			expect(exportProgramPdf).toHaveBeenCalledWith(
+				expect.objectContaining({
+					config: { type: "ladder", program: ladder },
+					filename: "Mon projet - Pompe",
+					sectionTitle: "Ladder - Pompe",
+					ladderContext: ladderRenderContext,
+				}),
+			),
 		);
+	});
+
+	it("ne propose pas l'export quand le store ne sait pas exporter", () => {
+		setup(undefined, { pdfExport: false });
+
+		expect(screen.queryByText("Exporter")).not.toBeInTheDocument();
+		expect(screen.getByText("Coller")).toBeInTheDocument();
+	});
+
+	it("n'ouvre pas de menu sur un projet en lecture seule sans export", () => {
+		setup(undefined, { editingEnabled: false, pdfExport: false });
+
+		expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 	});
 
 	it("grise 'Exporter' quand le ladder n'a aucun élément", () => {

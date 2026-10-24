@@ -15,10 +15,7 @@ describe("isLocale", () => {
 });
 
 describe("detectBrowserLocale", () => {
-	const original = Object.getOwnPropertyDescriptor(
-		globalThis,
-		"navigator",
-	);
+	const original = Object.getOwnPropertyDescriptor(globalThis, "navigator");
 
 	function setNavigator(value: unknown) {
 		Object.defineProperty(globalThis, "navigator", {

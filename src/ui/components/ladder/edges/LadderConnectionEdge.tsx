@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import ConnectionUpdateCommand from "@/schemas/ladder/commands/connection-update.command";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
@@ -94,7 +95,7 @@ const LadderConnectionEdge = ({
 		(state) => state.commandsStackManager,
 	);
 	const ladder = useLadderStore((state) => state.ladder);
-	const mode = useProjectStore((state) => state.mode);
+	const canEdit = useCanEdit();
 	const pageVisible = usePageVisible();
 	const energized = useProjectStore(
 		useShallow((state) => {
@@ -180,10 +181,10 @@ const LadderConnectionEdge = ({
 		<Box
 			component="g"
 			sx={{
-				pointerEvents: mode === ProjectMode.DESIGN ? "all" : "none",
+				pointerEvents: canEdit ? "all" : "none",
 				".ladder-edge-point": { opacity: 0 },
 				"&:hover .ladder-edge-point": {
-					opacity: mode === ProjectMode.DESIGN ? 1 : 0,
+					opacity: canEdit ? 1 : 0,
 				},
 			}}
 		>

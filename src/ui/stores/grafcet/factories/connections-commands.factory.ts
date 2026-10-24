@@ -5,8 +5,8 @@ import ConnectionsAddCommand from "@/schemas/grafcet/commands/connections-add.co
 import ConnectionsRemoveCommand from "@/schemas/grafcet/commands/connections-remove.command";
 import ConnectionsUpdateCommand from "@/schemas/grafcet/commands/connections-update.command";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import { GrafcetConnectionEdgeData } from "@/ui/components/grafcet/edges/GrafcetConnectionEdge";
-import {
+import type { GrafcetConnectionEdgeData } from "@/ui/components/grafcet/edges/GrafcetConnectionEdge";
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";

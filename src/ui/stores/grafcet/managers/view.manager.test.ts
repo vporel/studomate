@@ -7,6 +7,7 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { createGrafcetStore } from "../grafcet.store";
+import { GRAFCET_FLOW_MAX_ZOOM, GRAFCET_FLOW_MIN_ZOOM } from "./view.manager";
 
 function buildStore() {
 	const grafcet = new GrafcetBuilder()
@@ -26,6 +27,7 @@ function fakeRfInstance(zoom: number) {
 		zoomIn: jest.fn(),
 		zoomOut: jest.fn(),
 		fitView: jest.fn(),
+		setViewport: jest.fn().mockResolvedValue(true),
 	} as any;
 }
 
@@ -90,6 +92,39 @@ describe("GrafcetViewManager — instance React Flow", () => {
 		const store = buildStore();
 		store.getState().viewManager.setReactFlowInstance(fakeRfInstance(2.5));
 		expect(store.getState().viewManager.getZoom()).toBe(2.5);
+	});
+
+	it("le zoom est inconnu du store tant que l'instance n'est pas fournie", () => {
+		expect(buildStore().getState().zoom).toBeNull();
+	});
+
+	it("setReactFlowInstance reporte le zoom de l'instance dans le store", () => {
+		const store = buildStore();
+		store.getState().viewManager.setReactFlowInstance(fakeRfInstance(0.6));
+		expect(store.getState().zoom).toBe(0.6);
+	});
+
+	it("setZoom met à jour le store, sans notifier quand le zoom ne change pas", () => {
+		const store = buildStore();
+		const listener = jest.fn();
+		store.getState().viewManager.setZoom(1.5);
+		store.subscribe(listener);
+
+		store.getState().viewManager.setZoom(1.5);
+		expect(listener).not.toHaveBeenCalled();
+
+		store.getState().viewManager.setZoom(2);
+		expect(store.getState().zoom).toBe(2);
+		expect(listener).toHaveBeenCalledTimes(1);
+	});
+
+	it("setMinZoom met à jour le zoom minimal du store", () => {
+		const store = buildStore();
+		expect(store.getState().minZoom).toBe(GRAFCET_FLOW_MIN_ZOOM);
+
+		store.getState().viewManager.setMinZoom(0.2);
+
+		expect(store.getState().minZoom).toBe(0.2);
 	});
 
 	it("zoomIn/zoomOut/fitView ne font rien sans instance", () => {
@@ -306,5 +341,123 @@ describe("GrafcetViewManager.focus", () => {
 		raf.flush();
 
 		expect(flow.focus).not.toHaveBeenCalled();
+	});
+});
+
+describe("GrafcetViewManager — viewport verrouillé à l'origine", () => {
+	function pinnedStore(zoom = 1) {
+		const store = buildStore();
+		const rfInstance = fakeRfInstance(zoom);
+		store.getState().viewManager.setReactFlowInstance(rfInstance);
+		store.getState().viewManager.setViewportPinned(true);
+		return { store, rfInstance, viewManager: store.getState().viewManager };
+	}
+
+	it("part de 0,5 à 2", () => {
+		expect(GRAFCET_FLOW_MIN_ZOOM).toBe(0.5);
+		expect(GRAFCET_FLOW_MAX_ZOOM).toBe(2);
+	});
+
+	it("setReactFlowInstance garde un zoom déjà connu du store", () => {
+		const store = buildStore();
+		store.getState().viewManager.setZoom(0.7);
+
+		store.getState().viewManager.setReactFlowInstance(fakeRfInstance(1));
+
+		expect(store.getState().zoom).toBe(0.7);
+	});
+
+	it("pinViewport verrouille le viewport à (0,0) au zoom du store", () => {
+		const { store, rfInstance, viewManager } = pinnedStore();
+		store.getState().viewManager.setZoom(0.6);
+
+		viewManager.pinViewport();
+
+		expect(rfInstance.setViewport).toHaveBeenCalledWith({
+			x: 0,
+			y: 0,
+			zoom: 0.6,
+		});
+	});
+
+	it("pinViewport ne fait rien quand la page est ajustée à son conteneur", () => {
+		const { rfInstance, viewManager } = pinnedStore();
+		viewManager.setViewportPinned(false);
+
+		viewManager.pinViewport();
+
+		expect(rfInstance.setViewport).not.toHaveBeenCalled();
+	});
+
+	it("zoomIn et zoomOut changent le zoom du store de 1,2 et pincent le viewport", () => {
+		const { store, rfInstance, viewManager } = pinnedStore();
+
+		viewManager.zoomIn();
+		expect(store.getState().zoom).toBeCloseTo(1.2);
+		expect(rfInstance.setViewport).toHaveBeenLastCalledWith({
+			x: 0,
+			y: 0,
+			zoom: expect.closeTo(1.2),
+		});
+
+		viewManager.zoomOut();
+		expect(store.getState().zoom).toBe(1);
+		expect(rfInstance.zoomIn).not.toHaveBeenCalled();
+		expect(rfInstance.zoomOut).not.toHaveBeenCalled();
+	});
+
+	it("un pas qui traverse 100 % s'y arrête, dans les deux sens", () => {
+		const up = pinnedStore();
+		up.store.getState().viewManager.setZoom(0.9);
+		up.viewManager.zoomIn();
+		expect(up.store.getState().zoom).toBe(1);
+
+		const down = pinnedStore();
+		down.store.getState().viewManager.setZoom(1.1);
+		down.viewManager.zoomOut();
+		expect(down.store.getState().zoom).toBe(1);
+	});
+
+	it("borne le zoom à la plage", () => {
+		const { store, viewManager } = pinnedStore();
+
+		viewManager.applyZoom(10);
+		expect(store.getState().zoom).toBe(GRAFCET_FLOW_MAX_ZOOM);
+
+		viewManager.applyZoom(0.01);
+		expect(store.getState().zoom).toBe(GRAFCET_FLOW_MIN_ZOOM);
+	});
+
+	it("syncFromInstance reprend le zoom d'un geste et re-verrouille l'origine", () => {
+		const { store, rfInstance, viewManager } = pinnedStore();
+
+		viewManager.syncFromInstance({ x: -40, y: 12, zoom: 1.5 });
+
+		expect(store.getState().zoom).toBe(1.5);
+		expect(rfInstance.setViewport).toHaveBeenCalledWith({
+			x: 0,
+			y: 0,
+			zoom: 1.5,
+		});
+	});
+
+	it("syncFromInstance ne reboucle pas sur un viewport déjà verrouillé", () => {
+		const { rfInstance, viewManager } = pinnedStore();
+		viewManager.applyZoom(1.5);
+		rfInstance.setViewport.mockClear();
+
+		viewManager.syncFromInstance({ x: 0, y: 0, zoom: 1.5 });
+
+		expect(rfInstance.setViewport).not.toHaveBeenCalled();
+	});
+
+	it("syncFromInstance ne fait rien quand la page est ajustée à son conteneur", () => {
+		const { store, rfInstance, viewManager } = pinnedStore();
+		viewManager.setViewportPinned(false);
+
+		viewManager.syncFromInstance({ x: -40, y: 12, zoom: 1.5 });
+
+		expect(store.getState().zoom).toBe(1);
+		expect(rfInstance.setViewport).not.toHaveBeenCalled();
 	});
 });

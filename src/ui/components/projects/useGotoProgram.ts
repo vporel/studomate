@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import type { PageData } from "@/ui/stores/project/project.store.types";
 import { useProjectStore } from "./ProjectContext";
 
 /**
@@ -6,8 +7,13 @@ import { useProjectStore } from "./ProjectContext";
  * surbrillance une fois la page active — le `setTimeout` laisse le temps au manager de la page
  * cible de devenir actif (`getActiveStoreManagers` ne retourne que les managers de la page
  * courante).
+ *
+ * @param openPage Ouvre la page du programme et dit si elle l'est : par défaut elle s'ajoute aux
+ * onglets ; un appelant dont les onglets sont fixes peut se contenter de sélectionner l'existant.
  */
-export default function useGotoProgram() {
+export default function useGotoProgram(
+	openPage?: (pageData: PageData) => boolean,
+) {
 	const project = useProjectStore((s) => s.project);
 	const grafcetsManager = useProjectStore((s) => s.grafcetsManager);
 	const laddersManager = useProjectStore((s) => s.laddersManager);
@@ -23,11 +29,16 @@ export default function useGotoProgram() {
 				programType === "grafcet"
 					? (project?.getGrafcet(programId)?.name ?? "Nom inconnu")
 					: (project?.getLadder(programId)?.name ?? "Nom inconnu");
-			pagesManager.openPage({
+			const pageData: PageData = {
 				type: programType,
 				id: programId,
 				title: name,
-			});
+			};
+			if (openPage) {
+				if (!openPage(pageData)) return;
+			} else {
+				pagesManager.openPage(pageData);
+			}
 
 			if (elementId) {
 				setTimeout(() => {
@@ -44,6 +55,6 @@ export default function useGotoProgram() {
 				}, 100);
 			}
 		},
-		[project, grafcetsManager, laddersManager, pagesManager],
+		[project, grafcetsManager, laddersManager, pagesManager, openPage],
 	);
 }

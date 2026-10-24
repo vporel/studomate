@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
-import { createOrDivergenceProject } from "@/templates/training/grafcet/or-divergence.template";
+import { createOrDivergenceBase } from "@/templates/training/grafcet/or-divergence.template";
 import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
@@ -14,15 +14,15 @@ export const OR_DIVERGENCE_SPEC: GrafcetLadderSpec = {
 	steps: ["X0", "X1", "X2"],
 	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("dcy1")] },
-		{ name: "T1", from: ["X0"], to: ["X2"], receptivity: [no("dcy2")] },
-		{ name: "T2", from: ["X1"], to: ["X0"], receptivity: [no("fin1")] },
-		{ name: "T3", from: ["X2"], to: ["X0"], receptivity: [no("fin2")] },
+		{ from: ["X0"], to: ["X1"], receptivity: [no("dcy1")] },
+		{ from: ["X0"], to: ["X2"], receptivity: [no("dcy2")] },
+		{ from: ["X1"], to: ["X0"], receptivity: [no("fin1")] },
+		{ from: ["X2"], to: ["X0"], receptivity: [no("fin2")] },
 	],
 };
 
 function createBase(name: string, locale: Locale): Project {
-	const project = createOrDivergenceProject(locale);
+	const project = createOrDivergenceBase(locale);
 	project.name = name;
 	project.variables.push(...grafcetMemories(OR_DIVERGENCE_SPEC));
 	return project;

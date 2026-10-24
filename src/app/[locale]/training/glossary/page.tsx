@@ -39,7 +39,7 @@ export default async function Glossary({ params }: Props) {
 	const entries = buildGlossaryEntries(locale);
 
 	return (
-		<Container maxWidth="md" sx={{ my: { xs: 4, md: 6 } }}>
+		<Container maxWidth="md" sx={{ my: 4 }}>
 			<script
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{

@@ -1,4 +1,4 @@
-import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import type { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import { Edge } from "@xyflow/react";
 import {
 	LadderStoreGetFunction,

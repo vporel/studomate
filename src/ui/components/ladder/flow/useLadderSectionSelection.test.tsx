@@ -2,12 +2,16 @@
  * @jest-environment jsdom
  */
 import { fireEvent, render } from "@testing-library/react";
+import { useRef } from "react";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useLadderContext } from "../context/LadderContext";
 import useLadderSectionSelection from "./useLadderSectionSelection";
 
 jest.mock("../context/LadderContext");
+jest.mock("@/ui/components/projects/useCanEdit");
 
-function setup(sectionIds = ["s1", "s2", "s3"]) {
+function setup(sectionIds = ["s1", "s2", "s3"], canEdit = true) {
+	(useCanEdit as jest.Mock).mockReturnValue(canEdit);
 	const setSelectedSectionIds = jest.fn();
 	const deselectAllElements = jest.fn();
 	const deleteSections = jest.fn();
@@ -30,9 +34,10 @@ function setup(sectionIds = ["s1", "s2", "s3"]) {
 	});
 
 	function Host() {
-		useLadderSectionSelection();
+		const container = useRef<HTMLDivElement>(null);
+		useLadderSectionSelection(container);
 		return (
-			<div>
+			<div ref={container}>
 				{sectionIds.map((id) => (
 					<div key={id} data-section-header={id} data-testid={`h-${id}`}>
 						<button data-testid={`btn-${id}`}>x</button>
@@ -121,6 +126,43 @@ describe("useLadderSectionSelection", () => {
 		fireEvent.keyDown(document.body, { key: "Delete" });
 
 		expect(deleteSections).not.toHaveBeenCalled();
+	});
+
+	it("Suppr sur un projet en lecture seule → ne supprime rien", () => {
+		const { getByTestId, deleteSections } = setup(["s1", "s2", "s3"], false);
+		pointerDown(getByTestId("h-s1"));
+
+		fireEvent.keyDown(document.body, { key: "Delete" });
+
+		expect(deleteSections).not.toHaveBeenCalled();
+	});
+
+	it("un en-tête situé hors de son conteneur ne sélectionne rien", () => {
+		const { getByTestId, setSelectedSectionIds } = setup();
+		pointerDown(getByTestId("h-s1"));
+		const foreign = document.createElement("div");
+		foreign.setAttribute("data-section-header", "s2");
+		document.body.appendChild(foreign);
+
+		foreign.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
+
+		expect(setSelectedSectionIds).toHaveBeenLastCalledWith([]);
+		foreign.remove();
+	});
+
+	it("Suppr venu d'un autre bloc embarqué → ignoré", () => {
+		const { getByTestId, deleteSections } = setup();
+		pointerDown(getByTestId("h-s1"));
+		const otherBlock = document.createElement("div");
+		otherBlock.setAttribute("data-embedded-block", "");
+		const inside = document.createElement("span");
+		otherBlock.appendChild(inside);
+		document.body.appendChild(otherBlock);
+
+		fireEvent.keyDown(inside, { key: "Delete" });
+
+		expect(deleteSections).not.toHaveBeenCalled();
+		otherBlock.remove();
 	});
 
 	it("Suppr en cours de saisie dans un input → ignoré", () => {

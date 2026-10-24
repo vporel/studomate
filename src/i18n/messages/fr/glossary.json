@@ -42,7 +42,7 @@
 		"mnemonic": {
 			"term": "Mnémonique",
 			"aliases": "nom de variable",
-			"definition": "Nom court et parlant d'une variable (`pompe`, `arret`), utilisé à la place d'une adresse numérique.",
+			"definition": "Nom court et parlant d'une variable (`pompe`, `arret`), que les programmes utilisent pour la désigner. Une adresse (`%I0.1`) peut s'y ajouter pour relier la variable à du matériel physique.",
 			"details": "",
 			"figureAlt": ""
 		},
@@ -301,8 +301,8 @@
 		"network": {
 			"term": "Réseau",
 			"aliases": "rung; section",
-			"definition": "Une ligne de programme Ladder, lue de gauche à droite : des contacts, puis une bobine. Si le chemin de contacts laisse passer le courant, la bobine est activée.",
-			"details": "",
+			"definition": "Un bloc du programme Ladder, délimité par ses deux rails. Il contient des lignes de contacts menant à des bobines. Dans le cas le plus simple, une seule ligne : des contacts à gauche, une bobine à droite. Il se lit de gauche à droite.",
+			"details": "Si le chemin de contacts d'une ligne laisse passer le courant, la bobine est activée.",
 			"figureAlt": ""
 		},
 		"contact": {

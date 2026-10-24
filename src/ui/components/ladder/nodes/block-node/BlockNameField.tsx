@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { validateBlockName } from "@/schemas/ladder/function-blocks/function-block.schema";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
@@ -25,6 +26,7 @@ export default function BlockNameField({
 	onCommit: (name: string) => void;
 }) {
 	const project = useProjectStore((state) => state.project);
+	const canEdit = useCanEdit();
 	const t = useT("ladderEditor.block");
 	const [draft, setDraft] = useState(value);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +53,7 @@ export default function BlockNameField({
 
 	return (
 		<InputBase
+			readOnly={!canEdit}
 			inputRef={inputRef}
 			className="nodrag"
 			value={draft}

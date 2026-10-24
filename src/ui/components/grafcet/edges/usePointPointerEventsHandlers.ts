@@ -1,9 +1,8 @@
 "use client";
 
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useReactFlow } from "@xyflow/react";
 import { useCallback } from "react";
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { useGrafcetStore } from "../context/GrafcetContext";
 
 /**
@@ -17,12 +16,12 @@ export default function usePointPointerEventsHandlers(
 ) {
 	const { screenToFlowPosition } = useReactFlow();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
-	const projectMode = useProjectStore((state) => state.mode);
+	const canEdit = useCanEdit();
 
 	const handlePointPointerDown = useCallback(
 		(e: React.PointerEvent<SVGCircleElement>, index: number) => {
 			e.stopPropagation();
-			if (projectMode !== ProjectMode.DESIGN) return;
+			if (!canEdit) return;
 			(e.target as SVGCircleElement).setPointerCapture(e.pointerId);
 			if (e.buttons === 2) {
 				//Right click : delete the coude
@@ -37,7 +36,7 @@ export default function usePointPointerEventsHandlers(
 				});
 			}
 		},
-		[workflowManager, edgeId, projectMode],
+		[workflowManager, edgeId, canEdit],
 	);
 
 	const handlePointPointerMove = useCallback(

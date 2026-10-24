@@ -1,4 +1,5 @@
 import { deepObjectsComparison } from "@/lib/object";
+import { canEdit } from "../editability";
 import Project from "@/schemas/project/project.schema";
 import HmiPage, { HMI_PAGE_NAME_LABEL } from "@/schemas/hmi/hmi-page.schema";
 import {
@@ -6,8 +7,6 @@ import {
 	HmiStoreValues,
 	ProjectStoreState,
 } from "../project.store";
-import { ProjectMode } from "../ProjectMode.enum";
-import trackEvent from "@/ui/services/analytics";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /** Id fixe de l'unique onglet "Simulation HMI" (voir `HmiSimulationPageView`) — pas lié à une
@@ -64,11 +63,11 @@ export default class HmiManager extends AbstractDocumentsManager<
 	newHmiPage(name?: string): HmiPage | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) return null;
+		if (!canEdit(this.getStoreState())) return null;
 		const resolvedName = name ?? project.nextHmiPageName(HMI_PAGE_NAME_LABEL);
 		const newProject = project.copy();
 		const page = newProject.createHmiPage(resolvedName);
-		trackEvent("hmi-page-created");
+		this.analytics.trackEvent("hmi-page-created");
 		this.getStoreState().pagesManager.openPage({
 			id: page.id,
 			type: "hmi",
@@ -84,7 +83,7 @@ export default class HmiManager extends AbstractDocumentsManager<
 	deleteHmiPage(hmiPageId: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) return;
+		if (!canEdit(this.getStoreState())) return;
 		const newProject = project.copy();
 		newProject.deleteHmiPage(hmiPageId);
 		this.deleteCommandsStack(hmiPageId);
@@ -98,7 +97,7 @@ export default class HmiManager extends AbstractDocumentsManager<
 	renameHmiPage(hmiPageId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) return;
+		if (!canEdit(this.getStoreState())) return;
 		const newProject = project.copy();
 		const page = newProject.getHmiPage(hmiPageId);
 		if (!page) return;

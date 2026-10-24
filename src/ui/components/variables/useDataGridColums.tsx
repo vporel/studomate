@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "../projects/useCanEdit";
 import {
 	getValidTypesForZones,
 	VariableType,
@@ -25,9 +26,7 @@ export default function useGridColumns(zones: VariableZone[]): GridColDef[] {
 	const tError = useT("pages.variablesGrid.errors");
 	const tv = useT("variableValidation");
 	const variablesManager = useProjectStore((state) => state.variablesManager);
-	const designing = useProjectStore(
-		(state) => state.mode === ProjectMode.DESIGN,
-	);
+	const designing = useCanEdit();
 	const simulating = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);

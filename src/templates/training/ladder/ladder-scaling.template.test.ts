@@ -197,7 +197,11 @@ describe("ladder-scaling.template", () => {
 				"",
 				arithmetic("calcul_dint", "calcul_dint", "/", `${RAW_MAX}`),
 			),
-			section("Retour en INT", "", convert("niveau", "calcul_dint", "DINT", "INT")),
+			section(
+				"Retour en INT",
+				"",
+				convert("niveau", "calcul_dint", "DINT", "INT"),
+			),
 		]);
 		const { analysis } = compilePipelineDetailed(project);
 		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(

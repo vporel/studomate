@@ -4,6 +4,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import BlockNameField from "./BlockNameField";
 
@@ -13,13 +14,19 @@ function setup({
 	value = "Tempo1",
 	isNameTaken = () => false,
 	onCommit = jest.fn(),
+	editingEnabled = true,
 }: {
 	value?: string;
 	isNameTaken?: (name: string) => boolean;
 	onCommit?: jest.Mock;
+	editingEnabled?: boolean;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ project: { isNameTaken } }),
+		selectorImplementation({
+			project: { isNameTaken },
+			mode: ProjectMode.DESIGN,
+			editingEnabled,
+		}),
 	);
 	renderWithI18n(<BlockNameField value={value} onCommit={onCommit} />);
 	return { onCommit, input: screen.getByLabelText("Nom du bloc") };
@@ -27,6 +34,11 @@ function setup({
 
 describe("BlockNameField", () => {
 	afterEach(() => jest.clearAllMocks());
+
+	it("n'est pas éditable quand le projet ne peut pas être modifié", () => {
+		const { input } = setup({ editingEnabled: false });
+		expect(input).toHaveAttribute("readonly");
+	});
 
 	it("rend un champ épuré toujours éditable, pré-rempli", () => {
 		const { input } = setup();

@@ -1,5 +1,8 @@
 import { Dialect } from "@/expression-language/dialect.enum";
-import Variable from "@/schemas/variable/variable.schema";
+import Variable, {
+	VARIABLE_TYPE_TO_NATIVE_TYPE,
+	VariableType,
+} from "@/schemas/variable/variable.schema";
 
 //VRAI/TRUE relève du vocabulaire du langage d'expression, pas de la langue de l'interface
 export function formatBooleanValue(
@@ -40,9 +43,18 @@ export function formatVariableValue(
 	value: unknown,
 	dialect: Dialect,
 ): string | undefined {
+	return formatTypedValue(variable.type, value, dialect);
+}
+
+/** Même formatage que `formatVariableValue`, pour une valeur dont on ne connaît que le type. */
+export function formatTypedValue(
+	type: VariableType,
+	value: unknown,
+	dialect: Dialect,
+): string | undefined {
 	if (value === undefined) return undefined;
-	if (variable.getNativeType() === "boolean")
+	if (VARIABLE_TYPE_TO_NATIVE_TYPE[type] === "boolean")
 		return formatBooleanValue(value as boolean, dialect);
-	if (variable.type === "TIME") return formatTimeValue(value as number);
+	if (type === "TIME") return formatTimeValue(value as number);
 	return String(value);
 }

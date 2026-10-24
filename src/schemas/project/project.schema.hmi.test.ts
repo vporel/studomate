@@ -70,7 +70,9 @@ describe("Project — intégration HMI", () => {
 			const restored = Project.createFromJSON(JSON.stringify(project));
 
 			expect(restored.getHmiPage(page.id)).toBeInstanceOf(HmiPage);
-			expect(Object.keys(restored.getHmiPage(page.id)!.widgets)).toHaveLength(1);
+			expect(Object.keys(restored.getHmiPage(page.id)!.widgets)).toHaveLength(
+				1,
+			);
 		});
 
 		it("tolère l'absence du champ hmiPages (projets antérieurs)", () => {

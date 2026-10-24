@@ -8,6 +8,7 @@ import frCartonSorting from "./template-content/carton-sorting.json";
 import frLinearSequence from "./template-content/linear-sequence.json";
 import frAndDivergence from "./template-content/and-divergence.json";
 import frOrDivergence from "./template-content/or-divergence.json";
+import frTimerCycle from "./template-content/timer-cycle.json";
 import frLadderAndOr from "./template-content/ladder-and-or.json";
 import frLadderReading from "./template-content/ladder-reading.json";
 import frLadderLogic from "./template-content/ladder-logic.json";
@@ -44,6 +45,7 @@ const frTemplateContent: Record<string, TemplateContent> = {
 	"linear-sequence": frLinearSequence,
 	"and-divergence": frAndDivergence,
 	"or-divergence": frOrDivergence,
+	"timer-cycle": frTimerCycle,
 	"ladder-and-or": frLadderAndOr,
 	"ladder-reading": frLadderReading,
 	"ladder-logic": frLadderLogic,

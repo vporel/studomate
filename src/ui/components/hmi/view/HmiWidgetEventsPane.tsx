@@ -9,7 +9,13 @@ import HmiWidgetEventsPanel from "./HmiWidgetEventsPanel";
 
 /** Pane flottant affichant la liste des événements du widget sélectionné, ouvert depuis
  * `HmiWidgetPropertiesPanel` (visibilité portée par le store). */
-const HmiWidgetEventsPane = ({ widget }: { widget: HmiWidget }) => {
+const HmiWidgetEventsPane = ({
+	widget,
+	readOnly = false,
+}: {
+	widget: HmiWidget;
+	readOnly?: boolean;
+}) => {
 	const t = useT("hmiEditor.panel");
 	const visible = useHmiStore((s) => s.eventsPaneVisible);
 	const close = useHmiStore((s) => s.closeEventsPane);
@@ -24,7 +30,9 @@ const HmiWidgetEventsPane = ({ widget }: { widget: HmiWidget }) => {
 			maxHeight="min(80vh, 520px)"
 		>
 			<Box sx={{ overflow: "auto" }}>
-				<HmiWidgetEventsPanel widget={widget} />
+				<Box inert={readOnly}>
+					<HmiWidgetEventsPanel widget={widget} />
+				</Box>
 			</Box>
 		</HmiFloatingPane>
 	);

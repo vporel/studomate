@@ -66,3 +66,28 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useLocaleContext = () => useContext(LocaleContext);
+
+/**
+ * Fournit une langue imposée par la page hôte, dont l'utilisateur ne peut pas changer ici : ni
+ * lue dans `localStorage` ni écrite, et les messages complets sont chargés.
+ */
+export function FixedLocaleProvider({
+	locale,
+	children,
+}: {
+	locale: Locale;
+	children: React.ReactNode;
+}) {
+	const value = useMemo<LocaleContextValue>(
+		() => ({ locale, setLocale: () => {} }),
+		[locale],
+	);
+
+	return (
+		<LocaleContext.Provider value={value}>
+			<NextIntlClientProvider locale={locale} messages={getMessages(locale)}>
+				{children}
+			</NextIntlClientProvider>
+		</LocaleContext.Provider>
+	);
+}

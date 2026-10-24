@@ -38,7 +38,7 @@ const variables = [
 	}),
 ];
 
-function setup(widget: HmiWidget) {
+function setup(widget: HmiWidget, readOnly = false) {
 	const updateWidget = jest.fn();
 	(useHmiStore as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -56,7 +56,11 @@ function setup(widget: HmiWidget) {
 		}),
 	);
 	renderWithI18n(
-		<HmiWidgetPropertiesPanel widget={widget} onGeometryPreview={jest.fn()} />,
+		<HmiWidgetPropertiesPanel
+			widget={widget}
+			onGeometryPreview={jest.fn()}
+			readOnly={readOnly}
+		/>,
 	);
 	return { updateWidget };
 }
@@ -96,5 +100,38 @@ describe("HmiWidgetPropertiesPanel — liaison à une entrée à comportement", 
 		expect(updateWidget).toHaveBeenCalledWith("w1", {
 			data: { variable: "libre", label: "BP", behavior: "toggle" },
 		});
+	});
+});
+
+describe("HmiWidgetPropertiesPanel — lecture seule", () => {
+	it("laisse les champs modifiables hors lecture seule", () => {
+		setup(pushButton);
+
+		expect(
+			screen.getByLabelText("Variable liée").closest("[inert]"),
+		).toBeNull();
+	});
+
+	it("rend les champs inertes en lecture seule, tout en montrant la variable liée", () => {
+		setup(
+			{
+				...pushButton,
+				data: { variable: "libre", label: "BP", behavior: "toggle" },
+			} as unknown as HmiWidget,
+			true,
+		);
+
+		const variable = screen.getByLabelText("Variable liée");
+		expect(variable).toHaveValue("libre");
+		expect(variable.closest("[inert]")).not.toBeNull();
+		expect(screen.getByLabelText("Nom").closest("[inert]")).not.toBeNull();
+	});
+
+	it("garde actif le bouton qui ouvre les animations, pour les lire", () => {
+		setup(pushButton, true);
+
+		expect(
+			screen.getByRole("button", { name: "Animations" }).closest("[inert]"),
+		).toBeNull();
 	});
 });

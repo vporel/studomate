@@ -6,17 +6,16 @@ import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useVariablesMenuItems from "./useVariablesMenuItems";
+import { getVariablesPageData } from "@/ui/stores/project/pages-data";
 
 jest.mock("@/ui/components/projects/ProjectContext");
-jest.mock("@/ui/components/pages/VariablesPage", () => ({
+jest.mock("@/ui/stores/project/pages-data", () => ({
 	getVariablesPageData: jest.fn((id: string) => ({
 		id,
 		type: "variables",
 		title: id,
 	})),
 }));
-
-import { getVariablesPageData } from "@/ui/components/pages/VariablesPage";
 
 describe("useVariablesMenuItems", () => {
 	const pagesManager = { openPage: jest.fn() };

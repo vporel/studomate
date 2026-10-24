@@ -15,9 +15,14 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			kind: "exercise",
 			title: t("a4ExerciseGrafcetNaiveTitle"),
 			body: t.raw("a4ExerciseGrafcetNaiveBody") as string[],
+			embeddedTemplateId: "linear-sequence-naive-ladder",
+			embeddedWatchOpen: true,
+			embeddedInitialView: { type: "ladder" },
 			cta: {
 				templateId: "linear-sequence-naive-ladder",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
 			},
 		},
 		{
@@ -33,7 +38,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4ExerciseGrafcetLinearBody") as string[],
 			cta: {
 				templateId: "linear-sequence-ladder",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -56,7 +61,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4SynthesisDrillingBody") as string[],
 			cta: {
 				templateId: "drilling-ladder",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -73,7 +78,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4ExerciseGrafcetOrDivergenceBody") as string[],
 			cta: {
 				templateId: "or-divergence-ladder",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -84,7 +89,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4ExerciseGrafcetAndDivergenceBody") as string[],
 			cta: {
 				templateId: "and-divergence-ladder",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -101,7 +106,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4ExerciseGrafcetResetBody") as string[],
 			cta: {
 				templateId: "traffic-light-ladder",
-				exerciseLabel: t("openExerciseCta"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -112,7 +117,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4SynthesisParkingBody") as string[],
 			cta: {
 				templateId: "parking-ladder",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},
@@ -123,7 +128,7 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a4SynthesisGateGrafcetBody") as string[],
 			cta: {
 				templateId: "gate-grafcet-ladder",
-				exerciseLabel: t("ctaExercise"),
+				exerciseLabel: t("openEditorCta"),
 				solutionLabel: t("ctaSolution"),
 			},
 		},

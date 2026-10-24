@@ -1,17 +1,8 @@
-import Action from "@/schemas/grafcet/action.schema";
-import Comment from "@/schemas/grafcet/comment.schema";
+import { GRAFCET_ELEMENT_CLASSES } from "@/ui/utils/grafcet/grafcet-element-classes";
 import {
-	ElementType,
 	ElementConstructor,
+	ElementType,
 } from "@/schemas/grafcet/element.schema";
-import JunctionOrStart from "@/schemas/grafcet/junction-or-start.schema";
-import JunctionOrEnd from "@/schemas/grafcet/junction-or-end.schema";
-import JunctionAndStart from "@/schemas/grafcet/junction-and-start.schema";
-import JunctionAndEnd from "@/schemas/grafcet/junction-and-end.schema";
-import StepReferralSource from "@/schemas/grafcet/step-referral-source.schema";
-import StepReferralTarget from "@/schemas/grafcet/step-referral-target.schema";
-import Step from "@/schemas/grafcet/step.schema";
-import Transition from "@/schemas/grafcet/transition.schema";
 
 import GrafcetConnectionEdge, {
 	GrafcetConnectionEdgeType,
@@ -58,34 +49,43 @@ export const GRAFCET_ELEMENTS_CONFIG: Record<
 	ElementType,
 	{ elementClass: ElementConstructor<any>; nodeType: any }
 > = {
-	step: { elementClass: Step, nodeType: StepNode },
-	action: { elementClass: Action, nodeType: ActionNode },
-	transition: { elementClass: Transition, nodeType: TransitionNode },
+	step: { elementClass: GRAFCET_ELEMENT_CLASSES["step"], nodeType: StepNode },
+	action: {
+		elementClass: GRAFCET_ELEMENT_CLASSES["action"],
+		nodeType: ActionNode,
+	},
+	transition: {
+		elementClass: GRAFCET_ELEMENT_CLASSES["transition"],
+		nodeType: TransitionNode,
+	},
 	"step-referral-source": {
-		elementClass: StepReferralSource,
+		elementClass: GRAFCET_ELEMENT_CLASSES["step-referral-source"],
 		nodeType: StepReferralSourceNode,
 	},
 	"step-referral-target": {
-		elementClass: StepReferralTarget,
+		elementClass: GRAFCET_ELEMENT_CLASSES["step-referral-target"],
 		nodeType: StepReferralTargetNode,
 	},
 	"junction-or-start": {
-		elementClass: JunctionOrStart,
+		elementClass: GRAFCET_ELEMENT_CLASSES["junction-or-start"],
 		nodeType: JunctionOrStartNode,
 	},
 	"junction-or-end": {
-		elementClass: JunctionOrEnd,
+		elementClass: GRAFCET_ELEMENT_CLASSES["junction-or-end"],
 		nodeType: JunctionOrEndNode,
 	},
 	"junction-and-start": {
-		elementClass: JunctionAndStart,
+		elementClass: GRAFCET_ELEMENT_CLASSES["junction-and-start"],
 		nodeType: JunctionAndStartNode,
 	},
 	"junction-and-end": {
-		elementClass: JunctionAndEnd,
+		elementClass: GRAFCET_ELEMENT_CLASSES["junction-and-end"],
 		nodeType: JunctionAndEndNode,
 	},
-	comment: { elementClass: Comment, nodeType: CommentNode },
+	comment: {
+		elementClass: GRAFCET_ELEMENT_CLASSES["comment"],
+		nodeType: CommentNode,
+	},
 };
 
 export const nodeTypes = Object.fromEntries(

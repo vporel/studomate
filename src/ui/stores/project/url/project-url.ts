@@ -3,6 +3,7 @@ import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url-query-param";
 
 const PROJECT_ID_PARAM = "projectId";
 const SHARE_TOKEN_PARAM = "shareToken";
+const HANDOFF_PARAM = "handoff";
 const TEMPLATE_ID_PARAM = "template";
 const TEMPLATE_MODE_PARAM = "template-mode";
 const TEMPLATE_AUTOSTART_PARAM = "template-autostart";
@@ -70,4 +71,13 @@ export function clearTemplateParamsFromUrl(): void {
 	setUrlQueryParam(TEMPLATE_MODE_PARAM, null);
 	setUrlQueryParam(TEMPLATE_AUTOSTART_PARAM, null);
 	setUrlQueryParam(TEMPLATE_LOCALE_PARAM, null);
+}
+
+/** Token d'un projet transmis par une page du site (voir `handoff.storage`), ou null. */
+export function getHandoffIdFromUrl(): string | null {
+	return getUrlQueryParam(HANDOFF_PARAM);
+}
+
+export function clearHandoffFromUrl(): void {
+	setUrlQueryParam(HANDOFF_PARAM, null);
 }

@@ -6,7 +6,8 @@ import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useStore } from "zustand";
 import Project from "@/schemas/project/project.schema";
-import { ProjectContextProvider, useProjectContext } from "./ProjectContext";
+import { ProjectContextProvider } from "./ProjectContextProvider";
+import { useProjectContext } from "./ProjectContext";
 
 jest.mock("./analysis-result/AnalysisResult", () => () => null);
 jest.mock("./ExportModal", () => () => null);
@@ -34,6 +35,8 @@ const mockUrl = {
 	getTemplateAutostartFromUrl: jest.fn<boolean, []>(() => false),
 	getTemplateLocaleFromUrl: jest.fn<"fr" | "en" | null, []>(() => null),
 	clearTemplateParamsFromUrl: jest.fn(),
+	getHandoffIdFromUrl: jest.fn<string | null, []>(() => null),
+	clearHandoffFromUrl: jest.fn(),
 };
 jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getProjectIdFromUrl: () => mockUrl.getProjectIdFromUrl(),
@@ -47,6 +50,13 @@ jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getTemplateAutostartFromUrl: () => mockUrl.getTemplateAutostartFromUrl(),
 	getTemplateLocaleFromUrl: () => mockUrl.getTemplateLocaleFromUrl(),
 	clearTemplateParamsFromUrl: () => mockUrl.clearTemplateParamsFromUrl(),
+	getHandoffIdFromUrl: () => mockUrl.getHandoffIdFromUrl(),
+	clearHandoffFromUrl: () => mockUrl.clearHandoffFromUrl(),
+}));
+
+const mockGetHandoff = jest.fn();
+jest.mock("@/persistence/handoff.storage", () => ({
+	getHandoff: (...args: unknown[]) => mockGetHandoff(...args),
 }));
 
 const mockCreateExercise = jest.fn(
@@ -104,6 +114,9 @@ afterEach(() => {
 	mockUrl.getTemplateModeFromUrl.mockReturnValue("exercise");
 	mockUrl.getTemplateAutostartFromUrl.mockReturnValue(false);
 	mockUrl.clearTemplateParamsFromUrl.mockReset();
+	mockUrl.getHandoffIdFromUrl.mockReturnValue(null);
+	mockUrl.clearHandoffFromUrl.mockReset();
+	mockGetHandoff.mockReset();
 	mockCreateExercise.mockClear();
 	mockCreateSolution.mockClear();
 	mockCreateWithStatement.mockClear();
@@ -316,5 +329,85 @@ describe("ProjectContextProvider - beforeunload", () => {
 		);
 
 		expect(dispatchBeforeUnload().defaultPrevented).toBe(true);
+	});
+});
+
+describe("ProjectContextProvider - ouverture d'un projet transmis", () => {
+	it("ouvre le projet transmis, sans enregistrement, et retire le token de l'URL", async () => {
+		mockUrl.getHandoffIdFromUrl.mockReturnValue("tok");
+		mockGetHandoff.mockReturnValue({
+			project: new Project("handed-over", "Mon travail", ""),
+			templateId: null,
+			locale: "fr",
+			pages: { pagesOrder: [], activePageId: null },
+		});
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(await screen.findByTestId("project-probe")).toHaveTextContent(
+			"handed-over",
+		);
+		expect(mockGetHandoff).toHaveBeenCalledWith("tok");
+		expect(mockUrl.clearHandoffFromUrl).toHaveBeenCalled();
+		expect(
+			screen.queryByTestId("draft-recovery-dialog"),
+		).not.toBeInTheDocument();
+	});
+
+	it("rouvre les onglets de la page d'origine", async () => {
+		mockUrl.getHandoffIdFromUrl.mockReturnValue("tok");
+		const project = new Project("handed-over", "Mon travail", "");
+		const grafcet = project.createGrafcet("G1");
+		mockGetHandoff.mockReturnValue({
+			project,
+			templateId: "tpl-with-statement",
+			locale: "fr",
+			pages: { pagesOrder: [grafcet.id], activePageId: grafcet.id },
+		});
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(await screen.findByTestId("active-page-probe")).toHaveTextContent(
+			grafcet.id,
+		);
+	});
+
+	it("retombe sur la modale de brouillon quand le token est inconnu", async () => {
+		mockUrl.getHandoffIdFromUrl.mockReturnValue("stale");
+		mockGetHandoff.mockReturnValue(null);
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		expect(
+			await screen.findByTestId("draft-recovery-dialog"),
+		).toBeInTheDocument();
+		expect(screen.getByTestId("project-probe")).toHaveTextContent("none");
+		expect(mockUrl.clearHandoffFromUrl).toHaveBeenCalled();
+	});
+
+	it("laisse la priorité à l'id de projet de l'URL", async () => {
+		mockUrl.getProjectIdFromUrl.mockReturnValue("deleted-id");
+		mockUrl.getHandoffIdFromUrl.mockReturnValue("tok");
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		await screen.findByTestId("draft-recovery-dialog");
+		expect(mockGetHandoff).not.toHaveBeenCalled();
 	});
 });

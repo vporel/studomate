@@ -68,6 +68,7 @@ async function renderModule(
 			breadcrumb={breadcrumb}
 			title={moduleLabel}
 			intro={t(`${moduleId}Intro`)}
+			introLabel={t("introToggle")}
 			steps={steps}
 			moduleId={moduleId}
 			initialStepId={stepId ?? undefined}
@@ -133,7 +134,8 @@ export default function createTrainingModulePages(
 			if (!step) return {};
 
 			const isTheory = step.kind === "theory";
-			const key = `trainingSteps.${moduleId}.${stepId}` as "trainingSteps.a1.theory";
+			const key =
+				`trainingSteps.${moduleId}.${stepId}` as "trainingSteps.a1.theory";
 			const metadata = pageMetadata(
 				locale,
 				(l) => ({

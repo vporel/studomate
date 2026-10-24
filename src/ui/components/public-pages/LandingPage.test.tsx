@@ -260,9 +260,7 @@ describe("LandingPage", () => {
 			.getAllByRole("heading", { level: 2 })
 			.map((h) => h.textContent);
 
-		expect(sectionTitles[0]).toBe(
-			messages.landing.demoTitle,
-		);
+		expect(sectionTitles[0]).toBe(messages.landing.demoTitle);
 		expect(sectionTitles[1]).toBe(messages.landing.logicTitle);
 		expect(sectionTitles[2]).toBe(messages.landing.machineTitle);
 		expect(sectionTitles.at(-1)).toBe(messages.landing.stepsTitle);

@@ -8,6 +8,7 @@ import enCartonSorting from "./template-content/carton-sorting.json";
 import enLinearSequence from "./template-content/linear-sequence.json";
 import enAndDivergence from "./template-content/and-divergence.json";
 import enOrDivergence from "./template-content/or-divergence.json";
+import enTimerCycle from "./template-content/timer-cycle.json";
 import enLadderAndOr from "./template-content/ladder-and-or.json";
 import enLadderReading from "./template-content/ladder-reading.json";
 import enLadderLogic from "./template-content/ladder-logic.json";
@@ -44,6 +45,7 @@ const enTemplateContent: Record<string, TemplateContent> = {
 	"linear-sequence": enLinearSequence,
 	"and-divergence": enAndDivergence,
 	"or-divergence": enOrDivergence,
+	"timer-cycle": enTimerCycle,
 	"ladder-and-or": enLadderAndOr,
 	"ladder-reading": enLadderReading,
 	"ladder-logic": enLadderLogic,

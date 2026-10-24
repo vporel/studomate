@@ -6,6 +6,7 @@ import FakeRemoteIoBoard, {
 	createManualHeartbeat,
 } from "@tests/utils/fake-remote-io-board";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
+import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { ProjectFactory } from "@tests/utils/project-factory";
 import { VariableFactory } from "@tests/utils/variable-factory";
 import * as hardwareRegistry from "@/hardware/hardware-device.registry";
@@ -82,7 +83,14 @@ function setup(
 		project.hardwareTarget = { modelId: "arduino-uno-r3" };
 	}
 	if (options.invalidProject) {
-		project.addProgram(new GrafcetBuilder().id("g-empty").build());
+		project.addProgram(
+			new GrafcetBuilder()
+				.id("g-one-step")
+				.addStep(
+					new StepBuilder().id("s1").number(0).initial().position(0, 0).build(),
+				)
+				.build(),
+		);
 	}
 
 	let state = {

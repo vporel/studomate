@@ -28,13 +28,8 @@ import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 
-/**
- * Creates a pre-configured "OR divergence" project: boolean input/output variables, no
- * program (the student writes it). Training module mini-exercise (M1): a single OR
- * divergence (two mutually exclusive branches), each looping back to the initial step
- * independently, no other complexity (no timer, no nesting).
- */
-export function createOrDivergenceProject(locale: Locale = "fr"): Project {
+/** Input and output variables, shared by the exercise, the solution and the Ladder variants. */
+export function createOrDivergenceBase(locale: Locale = "fr"): Project {
 	const t = createTemplateText("or-divergence", locale);
 	const project = new Project(createRandomId(), t("projectName"), "");
 
@@ -59,6 +54,19 @@ export function createOrDivergenceProject(locale: Locale = "fr"): Project {
 }
 
 /**
+ * Creates a pre-configured "OR divergence" project: boolean input/output variables and an
+ * empty GRAFCET (the student draws it). Training module mini-exercise (M1): a single OR
+ * divergence (two mutually exclusive branches), each looping back to the initial step
+ * independently, no other complexity (no timer, no nesting).
+ */
+export function createOrDivergenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("or-divergence", locale);
+	const project = createOrDivergenceBase(locale);
+	project.createGrafcet(t("grafcetName"));
+	return project;
+}
+
+/**
  * Full, simulable version: a GRAFCET with an initial step, an OR divergence into two
  * exclusive branches, each looping back to the initial step on its own end condition.
  *
@@ -67,7 +75,7 @@ export function createOrDivergenceProject(locale: Locale = "fr"): Project {
  */
 export function createOrDivergenceSolution(locale: Locale = "fr"): Project {
 	const t = createTemplateText("or-divergence", locale);
-	const project = createOrDivergenceProject(locale);
+	const project = createOrDivergenceBase(locale);
 	project.name = t("solutionName");
 
 	const XL = 140;

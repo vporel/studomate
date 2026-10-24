@@ -1,5 +1,4 @@
-import { setActivePageIdInUrl } from "@/ui/stores/project/url/pages-url";
-import { setPagesSession } from "@/persistence/pages-session.storage";
+import type { ProjectStorePersistence } from "../environment/project-store-environment";
 import {
 	PageData,
 	ProjectStoreGetFunction,
@@ -10,7 +9,11 @@ export default class PagesManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
 
-	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
+	constructor(
+		set: ProjectStoreSetFunction,
+		get: ProjectStoreGetFunction,
+		private readonly persistence?: ProjectStorePersistence,
+	) {
 		this.setStoreState = set;
 		this.getStoreState = get;
 	}
@@ -98,7 +101,10 @@ export default class PagesManager {
 		const project = this.getStoreState().project;
 		if (!project) return;
 		const { pagesOrder, activePageId } = this.getStoreState();
-		setPagesSession(project.id, { pagesOrder, activePageId });
-		setActivePageIdInUrl(activePageId);
+		this.persistence?.pagesSession.set(project.id, {
+			pagesOrder,
+			activePageId,
+		});
+		this.persistence?.url.setActivePageId(activePageId);
 	}
 }

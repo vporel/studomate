@@ -62,7 +62,9 @@ describe("Project.renameMnemonics", () => {
 			"pump",
 		]);
 		const grafcet = project.grafcets["g1"];
-		expect(grafcet.transitions["t1"].data.expression).toBe("start ET NON arret");
+		expect(grafcet.transitions["t1"].data.expression).toBe(
+			"start ET NON arret",
+		);
 		expect(grafcet.actions["a1"].data.expression).toBe("pump");
 		expect(ladderContactVariable(project)).toBe("start");
 	});

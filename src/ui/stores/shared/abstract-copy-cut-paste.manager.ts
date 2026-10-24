@@ -1,7 +1,6 @@
-import {
+import type {
 	ClipboardScope,
-	getClipboardEntry,
-	setClipboardEntry,
+	ClipboardStore,
 } from "@/ui/stores/shared/clipboard.store";
 
 /**
@@ -16,17 +15,19 @@ import {
 export default abstract class AbstractCopyCutPasteManager<TClipboard> {
 	protected abstract readonly scope: ClipboardScope;
 
+	constructor(private readonly clipboard: ClipboardStore) {}
+
 	abstract copySelectedElements(): void;
 	abstract pasteElements(mousePosition?: { x: number; y: number }): void;
 	protected abstract isSelectionEmpty(): boolean;
 	protected abstract deleteSelectedElements(): void;
 
 	protected writeClipboard(data: TClipboard): void {
-		setClipboardEntry({ scope: this.scope, data });
+		this.clipboard.getState().setEntry({ scope: this.scope, data });
 	}
 
 	protected readClipboard(): TClipboard | null {
-		const entry = getClipboardEntry();
+		const entry = this.clipboard.getState().entry;
 		return entry && entry.scope === this.scope
 			? (entry.data as TClipboard)
 			: null;

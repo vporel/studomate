@@ -35,6 +35,10 @@
 		"label": "OR divergence",
 		"description": "A two-branch OR divergence with mutually exclusive branches, each looping back to the initial state on its own. Training module mini-exercise."
 	},
+	"timer-cycle": {
+		"label": "Timer",
+		"description": "A 2-step GRAFCET alternating on two timers, no input. Training module observation."
+	},
 	"ladder-and-or": {
 		"label": "Series and parallel contacts",
 		"description": "Two networks provided: toggle a and b in simulation to observe AND and OR. Training module mini-exercise."

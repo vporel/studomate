@@ -18,7 +18,7 @@ import {
 	toggleSwitch,
 } from "@/templates/training/utils/training-variables";
 
-/** Same input on a NO, a `P` and a `N` contact, each latching its own output. No solution. */
+/** Same input on a NO, a `P` and a `N` contact, each latching its own output. */
 export function createLadderEdgesReadingProject(
 	locale: Locale = "fr",
 ): Project {

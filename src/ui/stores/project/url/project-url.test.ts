@@ -9,6 +9,8 @@ import {
 	getTemplateModeFromUrl,
 	getTemplateLocaleFromUrl,
 	clearTemplateParamsFromUrl,
+	clearHandoffFromUrl,
+	getHandoffIdFromUrl,
 } from "./project-url";
 
 describe("project-url", () => {
@@ -82,6 +84,24 @@ describe("project-url", () => {
 
 		it("ne lève pas si le shareToken est absent", () => {
 			expect(() => clearShareTokenFromUrl()).not.toThrow();
+		});
+	});
+
+	describe("handoff", () => {
+		it("retourne null si aucun token dans l'URL", () => {
+			expect(getHandoffIdFromUrl()).toBeNull();
+		});
+
+		it("relit le token présent dans l'URL, puis le retire sans toucher au reste", () => {
+			window.history.replaceState(null, "", "/app?handoff=abc&other=1");
+			expect(getHandoffIdFromUrl()).toBe("abc");
+
+			clearHandoffFromUrl();
+
+			expect(getHandoffIdFromUrl()).toBeNull();
+			expect(new URLSearchParams(window.location.search).get("other")).toBe(
+				"1",
+			);
 		});
 	});
 

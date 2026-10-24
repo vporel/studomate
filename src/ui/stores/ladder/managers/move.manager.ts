@@ -12,7 +12,7 @@ import {
 	LadderElement,
 } from "@/schemas/ladder/element.schema";
 import Section from "@/schemas/ladder/section.schema";
-import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
+import type { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import { initialConnectionPoints } from "@/ui/utils/ladder/ladder-connection-path";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import {

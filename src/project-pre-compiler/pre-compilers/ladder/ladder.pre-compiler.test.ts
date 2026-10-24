@@ -102,9 +102,7 @@ describe("LadderPreCompiler", () => {
 		const { result, errors } = preCompile(ladder);
 
 		expect(errors).toEqual([]);
-		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"A",
-		);
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe("A");
 	});
 
 	it("condition d'un contact NF : NOT de la variable", () => {
@@ -119,9 +117,7 @@ describe("LadderPreCompiler", () => {
 
 		const { result } = preCompile(ladder);
 
-		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"NOT A",
-		);
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe("NOT A");
 	});
 
 	it("contact P : impulsion = variable ET NON mémoire, puis mémoire = variable, avant la bobine qui lit l'impulsion", () => {
@@ -148,9 +144,7 @@ describe("LadderPreCompiler", () => {
 				(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
 			),
 		).toEqual([`${pulse} := (A AND NOT ${memo})`, `${memo} := A`]);
-		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`${pulse}`,
-		);
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe(`${pulse}`);
 	});
 
 	it("contact N : impulsion = NON variable ET mémoire", () => {
@@ -172,9 +166,7 @@ describe("LadderPreCompiler", () => {
 				(a) => `${a.mnemonic} := ${describeNode(a.value)}`,
 			),
 		).toEqual([`${pulse} := (NOT A AND ${memo})`, `${memo} := A`]);
-		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			`${pulse}`,
-		);
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe(`${pulse}`);
 	});
 
 	it("échantillonne le front d'un contact à sa position, entre les réseaux qui l'entourent", () => {
@@ -197,9 +189,7 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(
-			result.assignments.map((a) =>
-				a.kind === "coil" ? a.variable : a.kind,
-			),
+			result.assignments.map((a) => (a.kind === "coil" ? a.variable : a.kind)),
 		).toEqual(["QA", "contactEdge", "contactEdge", "QB", "QC"]);
 	});
 
@@ -286,9 +276,59 @@ describe("LadderPreCompiler", () => {
 
 		const { result } = preCompile(ladder);
 
-		expect(describeNode(coilAssignments(result)[0].condition)).toBe(
-			"(A OR B)",
+		expect(describeNode(coilAssignments(result)[0].condition)).toBe("(A OR B)");
+	});
+
+	it("deux bobines en parallèle sur le même contact partagent la même alimentation (reachId)", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("A", "NO", 0, 1);
+		const reset = createCoilElement("X0", "reset", 0, 2);
+		const set = createCoilElement("X1", "set", 1, 2);
+		const section = createSectionWith(
+			[rail, contact, reset, set],
+			[
+				...wireInSeries([rail, contact, reset]),
+				...wireInSeries([contact, set]),
+			],
 		);
+
+		const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+		const [first, second] = coilAssignments(result);
+		expect(first.reachId).toBeDefined();
+		expect(first.reachId).toBe(second.reachId);
+		expect(describeNode(first.reach!)).toBe("A");
+	});
+
+	it("une bobine inversée garde la condition d'alimentation et le marquage inversé", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("A", "NO", 0, 1);
+		const coil = createCoilElement("Q", "inverted", 0, 2);
+		const section = createSectionWith(
+			[rail, contact, coil],
+			wireInSeries([rail, contact, coil]),
+		);
+
+		const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+		const [assignment] = coilAssignments(result);
+		expect(assignment.inverted).toBe(true);
+		expect(describeNode(assignment.reach!)).toBe("A");
+		expect(describeNode(assignment.condition)).toBe("NOT A");
+	});
+
+	it("une bobine de front ne rejoint jamais un groupe d'alimentation", () => {
+		const rail = createRailTerminalElement(0);
+		const contact = createContactElement("A", "NO", 0, 1);
+		const coil = createCoilElement("Q", "rising", 0, 2);
+		const section = createSectionWith(
+			[rail, contact, coil],
+			wireInSeries([rail, contact, coil]),
+		);
+
+		const { result } = preCompile(new Ladder("l1", "L", [section]));
+
+		expect(coilAssignments(result)[0].reachId).toBeUndefined();
 	});
 
 	it("bobine sans prédécesseur : condition repliée sur true", () => {
@@ -397,7 +437,9 @@ describe("LadderPreCompiler", () => {
 		const { result } = preCompile(ladder);
 
 		expect(
-			contactEdgeAssignments(result).map((a) => a.contactId).sort(),
+			contactEdgeAssignments(result)
+				.map((a) => a.contactId)
+				.sort(),
 		).toEqual([contactN.id, contactN.id, contactP.id, contactP.id].sort());
 	});
 
@@ -437,9 +479,7 @@ describe("LadderPreCompiler", () => {
 				(a) => a.kind === "blockPort",
 			);
 			expect(blockPortAssignments).toHaveLength(2);
-			expect(describeNode((blockPortAssignments[0] as any).value)).toBe(
-				"A",
-			);
+			expect(describeNode((blockPortAssignments[0] as any).value)).toBe("A");
 			expect(blockPortAssignments[0]).toMatchObject({
 				blockId: block.id,
 				mnemonic: enMnemonic,
@@ -731,9 +771,7 @@ describe("LadderPreCompiler", () => {
 				wireInSeries([rail, block]),
 			);
 
-			const { result, errors } = preCompile(
-				new Ladder("l1", "L", [section]),
-			);
+			const { result, errors } = preCompile(new Ladder("l1", "L", [section]));
 
 			const counter = (
 				result.assignments.find(
@@ -859,7 +897,11 @@ describe("LadderPreCompiler", () => {
 		it("matérialise IN depuis reach, et Q = IN ET l'expression", () => {
 			const rail = createRailTerminalElement(0);
 			const contactA = createContactElement("A", "NO", 0, 1);
-			const block = createCompareBlockElement(0, 2, { in1: "X", in2: "Y", operator: ">" });
+			const block = createCompareBlockElement(0, 2, {
+				in1: "X",
+				in2: "Y",
+				operator: ">",
+			});
 			const section = createSectionWith(
 				[rail, contactA, block],
 				wireInSeries([rail, contactA, block]),
@@ -891,7 +933,11 @@ describe("LadderPreCompiler", () => {
 
 		it("propage Q aux éléments suivants sur la même ligne", () => {
 			const rail = createRailTerminalElement(0);
-			const block = createCompareBlockElement(0, 1, { in1: "X", in2: "Y", operator: ">" });
+			const block = createCompareBlockElement(0, 1, {
+				in1: "X",
+				in2: "Y",
+				operator: ">",
+			});
 			const coil = createCoilElement("Q", "normal", 0, 2);
 			const section = createSectionWith(
 				[rail, block, coil],
@@ -908,7 +954,11 @@ describe("LadderPreCompiler", () => {
 
 		it("ne produit ni TimerNode ni CounterNode", () => {
 			const rail = createRailTerminalElement(0);
-			const block = createCompareBlockElement(0, 1, { in1: "X", in2: "Y", operator: ">" });
+			const block = createCompareBlockElement(0, 1, {
+				in1: "X",
+				in2: "Y",
+				operator: ">",
+			});
 			const section = createSectionWith(
 				[rail, block],
 				wireInSeries([rail, block]),
@@ -1036,53 +1086,53 @@ describe("LadderPreCompiler", () => {
 		});
 	});
 
-describe("LadderPreCompiler : bloc convert", () => {
-	const variables = [
-		new PLCVariable("d", "D", "memory", "number", null, "DINT"),
-		new PLCVariable("i", "I", "memory", "number", null, "INT"),
-		new PLCVariable("b", "B", "memory", "boolean", null, "BOOL"),
-	];
+	describe("LadderPreCompiler : bloc convert", () => {
+		const variables = [
+			new PLCVariable("d", "D", "memory", "number", null, "DINT"),
+			new PLCVariable("i", "I", "memory", "number", null, "INT"),
+			new PLCVariable("b", "B", "memory", "boolean", null, "BOOL"),
+		];
 
-	function preCompileConvert(out: string) {
-		const rail = createRailTerminalElement(0);
-		const contactA = createContactElement("A", "NO", 0, 1);
-		const block = createConvertBlockElement(0, 2, {
-			out,
-			in: "D",
-			inType: "DINT",
-			outType: "INT",
+		function preCompileConvert(out: string) {
+			const rail = createRailTerminalElement(0);
+			const contactA = createContactElement("A", "NO", 0, 1);
+			const block = createConvertBlockElement(0, 2, {
+				out,
+				in: "D",
+				inType: "DINT",
+				outType: "INT",
+			});
+			const section = createSectionWith(
+				[rail, contactA, block],
+				wireInSeries([rail, contactA, block]),
+			);
+			const errors: ProjectPreCompilerError[] = [];
+			const result = LadderPreCompiler.preCompile(
+				new Ladder("l1", "L", [section]),
+				variables,
+				Dialect.FR,
+				errors,
+			);
+			return { result, errors, block };
+		}
+
+		it("affecte OUT par une conversion vers son type déclaré, gardée par EN", () => {
+			const { result, errors, block } = preCompileConvert("I");
+			const enMnemonic = getBlockPortVariableMnemonic(block.id, "EN");
+
+			expect(errors).toEqual([]);
+			const embedded = result.assignments.find(
+				(a) => a.kind === "embeddedNode",
+			) as PreCompiledEmbeddedNodeAssignment;
+			expect(describeNode(embedded.node)).toBe(
+				`IF ${enMnemonic} THEN [I := ?_TO_INT(D)]`,
+			);
 		});
-		const section = createSectionWith(
-			[rail, contactA, block],
-			wireInSeries([rail, contactA, block]),
-		);
-		const errors: ProjectPreCompilerError[] = [];
-		const result = LadderPreCompiler.preCompile(
-			new Ladder("l1", "L", [section]),
-			variables,
-			Dialect.FR,
-			errors,
-		);
-		return { result, errors, block };
-	}
 
-	it("affecte OUT par une conversion vers son type déclaré, gardée par EN", () => {
-		const { result, errors, block } = preCompileConvert("I");
-		const enMnemonic = getBlockPortVariableMnemonic(block.id, "EN");
-
-		expect(errors).toEqual([]);
-		const embedded = result.assignments.find(
-			(a) => a.kind === "embeddedNode",
-		) as PreCompiledEmbeddedNodeAssignment;
-		expect(describeNode(embedded.node)).toBe(
-			`IF ${enMnemonic} THEN [I := ?_TO_INT(D)]`,
-		);
+		it("signale une erreur si OUT n'a pas de type convertible", () => {
+			const { errors } = preCompileConvert("B");
+			expect(errors).toHaveLength(1);
+			expect(errors[0].message).toContain("type convertible");
+		});
 	});
-
-	it("signale une erreur si OUT n'a pas de type convertible", () => {
-		const { errors } = preCompileConvert("B");
-		expect(errors).toHaveLength(1);
-		expect(errors[0].message).toContain("type convertible");
-	});
-});
 });

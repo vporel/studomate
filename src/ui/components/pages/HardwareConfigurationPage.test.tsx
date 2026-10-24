@@ -9,9 +9,8 @@ import { renderWithI18n } from "@tests/utils/i18n";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import { useProjectStore } from "../projects/ProjectContext";
 import { isWebSerialSupported } from "@/hardware/arduino/remote-io/web-serial.transport";
-import HardwareConfigurationPage, {
-	HARDWARE_CONFIGURATION_PAGE_ID,
-} from "./HardwareConfigurationPage";
+import HardwareConfigurationPage from "./HardwareConfigurationPage";
+import { HARDWARE_CONFIGURATION_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 jest.mock("../projects/ProjectContext");
 jest.mock("@/hardware/arduino/remote-io/web-serial.transport", () => ({

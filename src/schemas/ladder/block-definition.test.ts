@@ -31,7 +31,10 @@ function defaultData(blockType: BlockType): BlockData {
 		case "assign":
 			return { blockType, params: { out: "", in: "" } };
 		case "arithmetic":
-			return { blockType, params: { in1: "", in2: "", out: "", operator: "+" } };
+			return {
+				blockType,
+				params: { in1: "", in2: "", out: "", operator: "+" },
+			};
 		case "convert":
 			return {
 				blockType,
@@ -42,7 +45,9 @@ function defaultData(blockType: BlockType): BlockData {
 
 describe("BLOCK_DEFINITIONS", () => {
 	it("a une entrée par type de bloc", () => {
-		expect(Object.keys(BLOCK_DEFINITIONS).sort()).toEqual([...BLOCK_TYPES].sort());
+		expect(Object.keys(BLOCK_DEFINITIONS).sort()).toEqual(
+			[...BLOCK_TYPES].sort(),
+		);
 	});
 
 	it.each(BLOCK_TYPES)("%s : specs de ports cohérentes", (blockType) => {

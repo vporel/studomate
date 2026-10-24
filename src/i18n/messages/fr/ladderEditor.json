@@ -1,5 +1,8 @@
 {
 	"toolbar": {
+		"systemBlocksButton": "Blocs systèmes",
+		"zoomIn": "Zoom avant",
+		"zoomOut": "Zoom arrière",
 		"contactNO": "Contact normalement ouvert (NO)",
 		"contactNF": "Contact normalement fermé (NF)",
 		"contactP": "Contact détection front montant (P)",
@@ -13,6 +16,10 @@
 		"hideExtraCoils": "Masquer les bobines supplémentaires",
 		"coilFalling": "Bobine de front descendant (impulsion à la désactivation)",
 		"addSection": "Réseau"
+	},
+	"systemBlocksPalette": {
+		"title": "Blocs systèmes",
+		"close": "Fermer"
 	},
 	"systemBlocks": {
 		"timerLabel": "Temporisation",
@@ -34,10 +41,6 @@
 		"collapseAria": "Replier le réseau",
 		"number": "Réseau {number} :",
 		"titleAria": "Titre du réseau",
-		"zoomIn": "Zoomer",
-		"zoomOut": "Dézoomer",
-		"zoomInAria": "Zoomer le réseau",
-		"zoomOutAria": "Dézoomer le réseau",
 		"copy": "Copier",
 		"copyAria": "Copier le réseau",
 		"duplicate": "Dupliquer",

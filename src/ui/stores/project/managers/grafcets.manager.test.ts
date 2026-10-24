@@ -4,16 +4,13 @@ import { ProjectStoreState } from "../project.store";
 import GrafcetsManager from "./grafcets.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/services/analytics", () => ({
-	__esModule: true,
-	default: (...args: any[]) => mockTrackEvent(...args),
-}));
 
 beforeEach(() => mockTrackEvent.mockClear());
 
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 	activeScope?: string;
 	activeScopeType?: "project" | "grafcet" | "ladder";
 	grafcetsStoresValues?: Record<string, any>;
@@ -23,6 +20,7 @@ function makeManager(initial: {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: initial.editingEnabled ?? true,
 		activeScope: initial.activeScope ?? "project",
 		activeScopeType: initial.activeScopeType ?? "project",
 		grafcetsStoresValues: initial.grafcetsStoresValues ?? {},
@@ -37,7 +35,10 @@ function makeManager(initial: {
 	};
 	const get = () => state;
 
-	return { manager: new GrafcetsManager(set, get), getState: () => state };
+	return {
+		manager: new GrafcetsManager(set, get, { trackEvent: mockTrackEvent }),
+		getState: () => state,
+	};
 }
 
 function projectWithGrafcet() {
@@ -78,6 +79,15 @@ describe("GrafcetsManager", () => {
 			const { manager } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),
 				mode: ProjectMode.SIMULATION,
+			});
+
+			expect(manager.newGrafcet("G1")).toBeNull();
+		});
+
+		it("refuse la création sur un projet en lecture seule", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				editingEnabled: false,
 			});
 
 			expect(manager.newGrafcet("G1")).toBeNull();

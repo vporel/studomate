@@ -7,6 +7,7 @@ import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import TransitionBuilder from "@/schemas/grafcet/builders/transition.builder";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import TransitionNode, { TransitionNodeType } from "./TransitionNode";
 
@@ -51,7 +52,11 @@ function setup({
 		}),
 	);
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ observableExpressionsValues }),
+		selectorImplementation({
+			mode: ProjectMode.DESIGN,
+			editingEnabled: true,
+			observableExpressionsValues,
+		}),
 	);
 
 	const props = {

@@ -1,6 +1,5 @@
 "use client";
 
-import { PageData } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { Dialect } from "@/expression-language/dialect.enum";
 import { useT } from "@/ui/i18n/useT";
@@ -9,13 +8,7 @@ import { useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
-
-export const PROJECT_PROPERTIES_PAGE_ID = "project-properties";
-export const PROJECT_PROPERTIES_PAGE_DATA: PageData = {
-	id: PROJECT_PROPERTIES_PAGE_ID,
-	type: "project-properties",
-	title: "Propriétés du projet",
-};
+import { PROJECT_PROPERTIES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 /** Fond blanc des champs, la page étant posée sur un gris clair. */
 const whiteFieldSx = { "& .MuiInputBase-root": { backgroundColor: "#fff" } };

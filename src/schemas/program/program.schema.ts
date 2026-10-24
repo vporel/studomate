@@ -30,6 +30,13 @@ export default abstract class Program {
 
 	abstract copy(): Program;
 
+	abstract isEmpty(): boolean;
+
+	/** Whether analysis and compilation ignore the program while it is empty. */
+	isSkippedWhenEmpty(): boolean {
+		return false;
+	}
+
 	canBeExcludedFromExecution(): boolean {
 		return true;
 	}

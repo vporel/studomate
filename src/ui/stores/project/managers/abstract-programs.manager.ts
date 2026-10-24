@@ -1,11 +1,10 @@
 import { deepObjectsComparison } from "@/lib/object";
+import { refuseEdit } from "../editability";
 import Program, {
 	PROGRAM_TYPE_LABELS,
 	ProgramType,
 } from "@/schemas/program/program.schema";
 import Project from "@/schemas/project/project.schema";
-import trackEvent from "@/ui/services/analytics";
-import { ProjectMode } from "../ProjectMode.enum";
 import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /**
@@ -35,13 +34,11 @@ export default abstract class AbstractProgramsManager<
 	): TProgram | null {
 		const project = this.getStoreState().project;
 		if (!project) return null;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn(`Cannot create ${this.programType} in non-design mode`);
+		if (refuseEdit(this.getStoreState(), `create ${this.programType}`))
 			return null;
-		}
 		const newProject = project.copy();
 		const program = create(newProject);
-		trackEvent("program-created", { type: this.programType });
+		this.analytics.trackEvent("program-created", { type: this.programType });
 		this.getStoreState().pagesManager.openPage({
 			id: program.id,
 			type: this.programType,
@@ -57,10 +54,7 @@ export default abstract class AbstractProgramsManager<
 	updateProgramData(program: TProgram): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn(`Cannot update ${this.programType} in non-design mode`);
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), `update ${this.programType}`)) return;
 		const existing = this.getDocument(project, program.id);
 		if (!existing)
 			throw new Error(
@@ -77,10 +71,7 @@ export default abstract class AbstractProgramsManager<
 	deleteProgramById(programId: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn(`Cannot delete ${this.programType} in non-design mode`);
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), `delete ${this.programType}`)) return;
 		if (!this.getDocument(project, programId)) {
 			throw new Error(
 				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
@@ -99,10 +90,7 @@ export default abstract class AbstractProgramsManager<
 	renameProgramById(programId: string, newName: string): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn(`Cannot rename ${this.programType} in non-design mode`);
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), `rename ${this.programType}`)) return;
 		if (!this.getDocument(project, programId)) {
 			throw new Error(
 				`${PROGRAM_TYPE_LABELS[this.programType]} not found in project`,
@@ -128,12 +116,13 @@ export default abstract class AbstractProgramsManager<
 	setExcludedFromExecution(programId: string, excluded: boolean): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		if (this.getStoreState().mode !== ProjectMode.DESIGN) {
-			console.warn(
-				`Cannot change execution of ${this.programType} in non-design mode`,
-			);
+		if (
+			refuseEdit(
+				this.getStoreState(),
+				`change execution of ${this.programType}`,
+			)
+		)
 			return;
-		}
 		const program = this.getDocument(project, programId);
 		if (!program) {
 			throw new Error(

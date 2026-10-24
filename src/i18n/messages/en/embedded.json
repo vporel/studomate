@@ -1,0 +1,22 @@
+{
+	"loading": "Loading…",
+	"region": "Studomate editor",
+	"tabs": {
+		"unavailable": "View unavailable",
+		"scene3d": "3D scene"
+	},
+	"unavailable": {
+		"grafcet": "The grafcet \"{id}\" does not exist in this project.",
+		"ladder": "The ladder \"{id}\" does not exist in this project.",
+		"hmi": "The page \"{id}\" does not exist in this project.",
+		"scene3d": "This project has no 3D scene.",
+		"unknown": "This view is not available."
+	},
+	"app": {
+		"open": "Open in the application"
+	},
+	"fullscreen": {
+		"enter": "Full screen",
+		"exit": "Exit full screen"
+	}
+}

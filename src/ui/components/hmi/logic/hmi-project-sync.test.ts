@@ -14,7 +14,10 @@ function setup() {
 		updateHmiPageData: jest.fn(),
 		setStoreValues: jest.fn(),
 	};
-	const unsubscribe = syncHmiPageToProject(store as unknown as StoreApi<HmiStoreState>, manager as unknown as HmiManager);
+	const unsubscribe = syncHmiPageToProject(
+		store as unknown as StoreApi<HmiStoreState>,
+		manager as unknown as HmiManager,
+	);
 	return { store, manager, unsubscribe };
 }
 
@@ -45,7 +48,10 @@ describe("syncHmiPageToProject", () => {
 		const { store, manager, unsubscribe } = setup();
 		unsubscribe();
 
-		store.setState({ hmiPage: { id: "x1", changed: true }, hasCommandsToUndo: true });
+		store.setState({
+			hmiPage: { id: "x1", changed: true },
+			hasCommandsToUndo: true,
+		});
 
 		expect(manager.updateHmiPageData).not.toHaveBeenCalled();
 		expect(manager.setStoreValues).not.toHaveBeenCalled();

@@ -16,6 +16,7 @@ export default function ParamPinRow({
 	row,
 	getValue,
 	getValidator,
+	getLiveMnemonic,
 	onCommit,
 }: {
 	top: number;
@@ -24,6 +25,9 @@ export default function ParamPinRow({
 	getValidator?: (
 		suffix: string,
 	) => ((variable: Variable) => string | null) | undefined;
+	/** Mnémonique de la variable générée par le bloc pour ce pin, dont la valeur est affichée en
+	 * simulation quand le pin n'a pas de variable assignée. */
+	getLiveMnemonic?: (suffix: string) => string | undefined;
 	onCommit: (suffix: string, value: string) => void;
 }) {
 	return (
@@ -46,6 +50,7 @@ export default function ParamPinRow({
 					spec={row.input}
 					value={getValue(row.input.suffix)}
 					validate={getValidator?.(row.input.suffix)}
+					liveMnemonic={getLiveMnemonic?.(row.input.suffix)}
 					onCommit={(next) => onCommit(row.input!.suffix, next)}
 				/>
 			) : (
@@ -57,6 +62,7 @@ export default function ParamPinRow({
 					spec={row.output}
 					value={getValue(row.output.suffix)}
 					validate={getValidator?.(row.output.suffix)}
+					liveMnemonic={getLiveMnemonic?.(row.output.suffix)}
 					onCommit={(next) => onCommit(row.output!.suffix, next)}
 				/>
 			) : (

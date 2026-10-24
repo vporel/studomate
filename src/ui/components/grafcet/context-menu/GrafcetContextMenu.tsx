@@ -11,9 +11,9 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import trackEvent from "@/ui/services/analytics";
-import { exportProgramPdf } from "@/ui/pdf/program-pdf";
 import { useT } from "@/ui/i18n/useT";
-import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
@@ -59,12 +59,14 @@ const GrafcetContextMenu = ({
 	const copyCutPasteManager = useGrafcetStore(
 		(state) => state.copyCutPasteManager,
 	);
-	const canPaste = useClipboardStore((s) => s.entry?.scope === "grafcet");
+	const canPaste = useProjectClipboard((s) => s.entry?.scope === "grafcet");
 	const grafcet = useGrafcetStore((state) => state.grafcet);
 	const grafcetId = grafcet.id;
 	const inSimulation = useProjectStore(
 		(state) => state.mode === ProjectMode.SIMULATION,
 	);
+	const canEdit = useCanEdit();
+	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
 	const simulationManager = useProjectStore((state) => state.simulationManager);
 	const forcedVariables = useProjectStore((state) => state.forcedVariables);
 	const projectName = useProjectStore(
@@ -73,11 +75,14 @@ const GrafcetContextMenu = ({
 
 	const tExport = useT("projects.export");
 	const onExport = useCallback(() => {
-		void exportProgramPdf({
-			config: { type: "grafcet", program: grafcet },
-			filename: `${projectName} - ${grafcet.name}`,
-			sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
-		})
+		void import("@/ui/pdf/program-pdf")
+			.then(({ exportProgramPdf }) =>
+				exportProgramPdf({
+					config: { type: "grafcet", program: grafcet },
+					filename: `${projectName} - ${grafcet.name}`,
+					sectionTitle: tExport("sectionTitleGrafcet", { name: grafcet.name }),
+				}),
+			)
 			.then(() =>
 				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
 			)
@@ -111,7 +116,7 @@ const GrafcetContextMenu = ({
 					screenPosition,
 					canPaste,
 					tMenu,
-					onExport,
+					pdfExport ? onExport : null,
 				),
 			);
 		} else {
@@ -184,6 +189,7 @@ const GrafcetContextMenu = ({
 		screenPosition,
 		contextMenuEvents,
 		onExport,
+		pdfExport,
 		inSimulation,
 		grafcet,
 		grafcetId,
@@ -194,14 +200,21 @@ const GrafcetContextMenu = ({
 		tActionModes,
 	]);
 
+	//Nothing to offer on an element once it can neither be edited nor forced, nor on the pane
+	//when there is neither something to paste into nor a file to export.
 	const showMenu = useCallback(
 		(props: GrafcetContextMenuProps) => {
+			const offersSomething =
+				props.element.type === "pane"
+					? canEdit || pdfExport
+					: canEdit || inSimulation;
+			if (!offersSomething) return;
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[show],
+		[show, canEdit, pdfExport, inSimulation],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

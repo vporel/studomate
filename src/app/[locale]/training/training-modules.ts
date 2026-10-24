@@ -11,11 +11,17 @@ import buildA4Steps from "./a4/steps";
 import type { TrainingModuleId } from "@/training/module-ids";
 import type { TrainingTranslator } from "./training-translator";
 
-
 type TrainingModule = {
 	buildSteps: (t: TrainingTranslator) => StepData[];
 	/** Module suivant du parcours et clé du libellé de son lien dans `training`. */
-	next?: { href: PublicPathname; labelKey: "nextModuleA1Cta" | "nextModuleA2Cta" | "nextModuleA3Cta" | "nextModuleA4Cta" };
+	next?: {
+		href: PublicPathname;
+		labelKey:
+			| "nextModuleA1Cta"
+			| "nextModuleA2Cta"
+			| "nextModuleA3Cta"
+			| "nextModuleA4Cta";
+	};
 };
 
 export const TRAINING_MODULES: Record<TrainingModuleId, TrainingModule> = {
@@ -40,7 +46,9 @@ export const TRAINING_MODULES: Record<TrainingModuleId, TrainingModule> = {
 
 /** Tout module de formation est servi à `/training/<module>` ; ses étapes (hors la première,
  * servie par la page du module) à `/training/<module>/[step]`. */
-export function moduleEntryPathname(moduleId: TrainingModuleId): PublicPathname {
+export function moduleEntryPathname(
+	moduleId: TrainingModuleId,
+): PublicPathname {
 	return `/training/${moduleId}`;
 }
 

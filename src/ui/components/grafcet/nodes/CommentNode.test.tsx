@@ -10,6 +10,10 @@ import { fakeStoreApi, selectorImplementation } from "@tests/utils/store-mocks";
 import CommentNode, { CommentNodeType } from "./CommentNode";
 
 jest.mock("../context/GrafcetContext");
+jest.mock("@/ui/components/projects/useCanEdit", () => ({
+	__esModule: true,
+	default: () => true,
+}));
 
 function setup({ text = "Un commentaire", updateNodeData = jest.fn() } = {}) {
 	const comment = new CommentBuilder()

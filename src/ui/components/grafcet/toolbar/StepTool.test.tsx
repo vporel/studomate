@@ -17,7 +17,10 @@ function setup({
 	nodes = [] as { type: string; data: any }[],
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
-		selectorImplementation({ mode: ProjectMode.DESIGN }),
+		selectorImplementation({
+			mode: ProjectMode.DESIGN,
+			editingEnabled: true,
+		}),
 	);
 	(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({ nodes }),

@@ -98,8 +98,9 @@ describe("PublicBreadcrumbs", () => {
 			container.querySelector('script[type="application/ld+json"]')!
 				.textContent!,
 		);
-		expect(
-			data.itemListElement.map((i: { name: string }) => i.name),
-		).toEqual(["Formations", "Module A1"]);
+		expect(data.itemListElement.map((i: { name: string }) => i.name)).toEqual([
+			"Formations",
+			"Module A1",
+		]);
 	});
 });

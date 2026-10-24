@@ -9,7 +9,9 @@ import BoardMirror from "./board-mirror";
 jest.useFakeTimers();
 
 function solutionOf(id: string) {
-	return PROJECT_TEMPLATES.find((template) => template.id === id)!.solution!("fr");
+	return PROJECT_TEMPLATES.find((template) => template.id === id)!.solution!(
+		"fr",
+	);
 }
 
 /**

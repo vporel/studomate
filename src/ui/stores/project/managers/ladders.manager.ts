@@ -8,6 +8,7 @@ import {
 	ProjectStoreSetFunction,
 	ProjectStoreState,
 } from "../project.store";
+import type { ProjectStoreAnalytics } from "../environment/project-store-environment";
 import AbstractProgramsManager from "./abstract-programs.manager";
 
 export default class LaddersManager extends AbstractProgramsManager<
@@ -20,8 +21,9 @@ export default class LaddersManager extends AbstractProgramsManager<
 	constructor(
 		setStoreState: ProjectStoreSetFunction,
 		getStoreState: ProjectStoreGetFunction,
+		analytics: ProjectStoreAnalytics,
 	) {
-		super(setStoreState, getStoreState);
+		super(setStoreState, getStoreState, analytics);
 	}
 
 	protected getDocument(project: Project, id: string): Ladder | undefined {
@@ -52,7 +54,10 @@ export default class LaddersManager extends AbstractProgramsManager<
 		return { laddersStoresManagers: managers };
 	}
 
-	protected adoptDocument(managers: LadderStoreManagers, program: Ladder): void {
+	protected adoptDocument(
+		managers: LadderStoreManagers,
+		program: Ladder,
+	): void {
 		managers.workflowManager.adoptLadder(program);
 	}
 

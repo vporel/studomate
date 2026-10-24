@@ -37,17 +37,15 @@ function createDrillingSpec(
 		steps: ["X0", "X1", "X2", "X3"],
 		initial: ["X0"],
 		transitions: [
-			{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("dcy")] },
-			{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("b")] },
+			{ from: ["X0"], to: ["X1"], receptivity: [no("dcy")] },
+			{ from: ["X1"], to: ["X2"], receptivity: [no("b")] },
 			{
-				name: "T2",
 				from: ["X2"],
 				to: ["X3"],
 				receptivity: [no(`${drillTimer}.Q`)],
 			},
-			{ name: "T3", from: ["X3"], to: ["X0"], receptivity: [no("h")] },
+			{ from: ["X3"], to: ["X0"], receptivity: [no("h")] },
 			{
-				name: "T4",
 				from: ["X1"],
 				to: ["X3"],
 				receptivity: [no(`${watchdogTimer}.Q`)],
@@ -106,6 +104,13 @@ export function createDrillingLadderSolution(locale: Locale = "fr"): Project {
 			no(`${watchdogTimer}.Q`),
 			setCoil("defaut"),
 		),
+		section(
+			t("faultResetTitle"),
+			t("faultResetDescription"),
+			no("X0"),
+			no("dcy"),
+			resetCoil("defaut"),
+		),
 		...grafcetSections(
 			spec,
 			[
@@ -114,12 +119,6 @@ export function createDrillingLadderSolution(locale: Locale = "fr"): Project {
 				{ variable: "monter", steps: ["X3"] },
 			],
 			locale,
-		),
-		section(
-			t("faultResetTitle"),
-			t("faultResetDescription"),
-			no("T0"),
-			resetCoil("defaut"),
 		),
 	];
 	return project;

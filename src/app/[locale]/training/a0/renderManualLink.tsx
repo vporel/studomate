@@ -7,7 +7,10 @@ export default function renderManualLink(t: TrainingTranslator) {
 		<Box mt={2}>
 			<Typography color="text.secondary">
 				{t("scanCycleManualLinkPrefix")}{" "}
-				<PublicLink href="/user-manual">{t("scanCycleManualLinkLabel")}</PublicLink>.
+				<PublicLink href="/user-manual">
+					{t("scanCycleManualLinkLabel")}
+				</PublicLink>
+				.
 			</Typography>
 		</Box>
 	);

@@ -43,7 +43,7 @@ describe("useGridColumns", () => {
 
 	function setup(mode: ProjectMode, zones: VariableZone[] = ["logic-input"]) {
 		(useProjectStore as jest.Mock).mockImplementation(
-			selectorImplementation({ variablesManager, mode }),
+			selectorImplementation({ variablesManager, mode, editingEnabled: true }),
 		);
 		return renderHook(() => useGridColumns(zones), { wrapper: i18nWrapper() });
 	}

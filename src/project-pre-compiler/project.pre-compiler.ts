@@ -78,6 +78,7 @@ export default class ProjectPreCompiler {
 		const programs: Record<string, PreCompiledProgram> = {};
 
 		for (const program of project.getExecutedPrograms()) {
+			if (program.isEmpty() && program.isSkippedWhenEmpty()) continue;
 			const preCompiler = PROGRAM_PRE_COMPILERS[program.type];
 			if (!preCompiler) {
 				console.error(

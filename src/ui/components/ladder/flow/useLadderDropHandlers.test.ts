@@ -142,6 +142,19 @@ describe("useLadderDropHandlers", () => {
 		});
 	});
 
+	it("ignore un dépôt au-dessus de la première ligne ou à gauche de la première colonne", () => {
+		const { result } = setup(new Section("s1", "S"), [], {
+			kind: "contact",
+			type: "NO",
+		});
+		const [, handleDrop] = result.current;
+
+		act(() => handleDrop(fakeDragEvent(colToX(1), rowToY(0) - 1)));
+		act(() => handleDrop(fakeDragEvent(colToX(0) - 1, rowToY(1))));
+
+		expect(executeOperation).not.toHaveBeenCalled();
+	});
+
 	it("connecte automatiquement depuis l'élément le plus proche à gauche sur la même ligne", () => {
 		const section = new Section("s1", "S");
 		const existing = createContactElement("A", "NO", 0, 0);

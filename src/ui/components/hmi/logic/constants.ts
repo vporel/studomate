@@ -26,6 +26,8 @@ export const ZOOM_MIN = 0.8;
 export const ZOOM_MAX = 2;
 export const ZOOM_STEP = 0.1;
 export const ZOOM_DEFAULT = 1;
+/** Plancher du zoom d'une page HMI qui s'adapte à son conteneur. */
+export const FIT_ZOOM_MIN = 0.5;
 
 /** Un outil de la palette — dans le cas général un par `HmiWidgetType`, mais plusieurs outils
  * peuvent partager le même type avec une taille de départ différente (ex. "Ellipse"/"Cercle" :
@@ -48,6 +50,6 @@ export function snapToGrid(value: number): number {
 	return Math.round(value / SNAP_GRID) * SNAP_GRID;
 }
 
-export function clampZoom(z: number): number {
-	return clamp(z, ZOOM_MIN, ZOOM_MAX);
+export function clampZoom(z: number, minZoom = ZOOM_MIN): number {
+	return clamp(z, minZoom, ZOOM_MAX);
 }

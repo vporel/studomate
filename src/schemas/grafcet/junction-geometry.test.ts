@@ -53,9 +53,7 @@ describe("normalizeJunctionGeometry", () => {
 
 		// décalage de 70 → pivot voudrait passer à 20 ; reste ≥ marge
 		expect(result.data.pivotPosition).toBeGreaterThanOrEqual(10);
-		expect(result.data.pivotPosition).toBeLessThanOrEqual(
-			result.width - 10,
-		);
+		expect(result.data.pivotPosition).toBeLessThanOrEqual(result.width - 10);
 	});
 
 	it("aligne les positions sur la grille", () => {

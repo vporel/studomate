@@ -1,4 +1,5 @@
 import { deepObjectsComparison } from "@/lib/object";
+import { refuseEdit } from "../editability";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
 import Project from "@/schemas/project/project.schema";
@@ -6,7 +7,6 @@ import {
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store";
-import { ProjectMode } from "../ProjectMode.enum";
 
 export default class ProjectCommandsStackManager {
 	private static COMMANDS_STACK_SIZE = 100;
@@ -28,11 +28,7 @@ export default class ProjectCommandsStackManager {
 	executeOperation(commands: AbstractProjectCommand<any>[]): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		const mode = this.getStoreState().mode;
-		if (mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot execute operation in non-design mode");
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), "execute operation")) return;
 		if (!commands || commands.length === 0) return;
 		const previous = project;
 		const newProject = this.commandsStack.execute(commands, project.copy());
@@ -42,11 +38,7 @@ export default class ProjectCommandsStackManager {
 	undoOperation(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		const mode = this.getStoreState().mode;
-		if (mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot undo operation in non-design mode");
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), "undo operation")) return;
 		const previous = project;
 		const [newProject, commands] = this.commandsStack.undo(project.copy());
 		if (!commands) return;
@@ -56,11 +48,7 @@ export default class ProjectCommandsStackManager {
 	redoOperation(): void {
 		const project = this.getStoreState().project;
 		if (!project) return;
-		const mode = this.getStoreState().mode;
-		if (mode !== ProjectMode.DESIGN) {
-			console.warn("Cannot redo operation in non-design mode");
-			return;
-		}
+		if (refuseEdit(this.getStoreState(), "redo operation")) return;
 		const previous = project;
 		const [newProject, commands] = this.commandsStack.redo(project.copy());
 		if (!commands) return;

@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 import { Dialect } from "@/expression-language/dialect.enum";
+import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
 import { createProjectStore } from "./project.store";
 import { getDraft, saveDraft } from "@/persistence/draft.storage";
 
@@ -21,20 +22,20 @@ describe("createProjectStore", () => {
 	});
 
 	it("starts with no project open", () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		expect(store.getState().project).toBeNull();
 		expect(store.getState().hasUnsavedChanges).toBe(false);
 	});
 
 	describe("setOpenModalVisible", () => {
 		it("opens the modal directly when there are no unsaved changes", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setOpenModalVisible(true);
 			expect(store.getState().ui.openModalVisible).toBe(true);
 		});
 
 		it("can always be closed regardless of unsaved changes", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.setState({
 				hasUnsavedChanges: true,
 				ui: { ...store.getState().ui, openModalVisible: true },
@@ -44,7 +45,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("asks for confirmation instead of opening when there are unsaved changes", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.setState({ hasUnsavedChanges: true });
 			store.getState().setOpenModalVisible(true);
 			expect(store.getState().ui.openModalVisible).toBe(false);
@@ -54,13 +55,13 @@ describe("createProjectStore", () => {
 
 	describe("setExportModalVisible", () => {
 		it("opens the modal directly when there are no unsaved changes", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setExportModalVisible(true);
 			expect(store.getState().ui.exportModalVisible).toBe(true);
 		});
 
 		it("asks for confirmation with an export-specific message when there are unsaved changes", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.setState({ hasUnsavedChanges: true });
 			store.getState().setExportModalVisible(true);
 			expect(store.getState().ui.exportModalVisible).toBe(false);
@@ -73,7 +74,7 @@ describe("createProjectStore", () => {
 
 	describe("panneaux analyse / références croisées mutuellement exclusifs", () => {
 		it("ferme les références croisées à l'ouverture du panneau d'analyse", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setCrossReferenceResultVisible(true);
 
 			store.getState().setAnalysisResultVisible(true);
@@ -83,7 +84,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("ferme le panneau d'analyse à l'ouverture des références croisées", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setAnalysisResultVisible(true);
 
 			store.getState().setCrossReferenceResultVisible(true);
@@ -93,7 +94,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("fermer un panneau ne touche pas à l'autre", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			store.getState().setAnalysisResultVisible(true);
 
 			store.getState().setCrossReferenceResultVisible(false);
@@ -104,7 +105,7 @@ describe("createProjectStore", () => {
 
 	describe("setProjectName / setProjectAuthor", () => {
 		it("updates the project name and marks unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			store.getState().setProjectName("Mon projet");
@@ -114,14 +115,14 @@ describe("createProjectStore", () => {
 		});
 
 		it("does not mark unsaved changes when the name doesn't actually change", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectName(store.getState().project!.name);
 			expect(store.getState().hasUnsavedChanges).toBe(false);
 		});
 
 		it("updates the project author and marks unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setProjectAuthor("Alice");
 			expect(store.getState().project?.author).toBe("Alice");
@@ -131,7 +132,7 @@ describe("createProjectStore", () => {
 
 	describe("project properties undo", () => {
 		it("undoes and redoes the project name", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const original = store.getState().project!.name;
 			store.getState().setProjectName("Mon projet");
@@ -144,7 +145,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("undoes the author", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const original = store.getState().project!.author;
 			store.getState().setProjectAuthor("Alice");
@@ -155,7 +156,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("undoes the exercise statement, including its removal", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setExerciseStatement("Un énoncé");
 			store.getState().setExerciseStatement("  ");
@@ -169,7 +170,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("undoes the dialect, translating expressions back and resyncing mounted grafcets", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().grafcetsManager.newGrafcet("G1");
 			const initial = store.getState().project!.dialect;
@@ -188,7 +189,7 @@ describe("createProjectStore", () => {
 
 	describe("setExerciseStatement", () => {
 		it("enregistre l'énoncé et marque des changements non sauvegardés", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			store.getState().setExerciseStatement("## Consignes\n\nFaire X.");
@@ -200,7 +201,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("retire l'énoncé quand la valeur est vide après trim", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setExerciseStatement("Un énoncé");
 
@@ -210,7 +211,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("ne fait rien quand l'énoncé est inchangé", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setExerciseStatement("Stable");
 			store.setState({ hasUnsavedChanges: false });
@@ -225,7 +226,7 @@ describe("createProjectStore", () => {
 
 	describe("setHardwareModel", () => {
 		it("sets the target and marks unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: false });
 
@@ -238,7 +239,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("removes the target with null", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setHardwareModel("arduino-uno-r3");
 
@@ -248,7 +249,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("does nothing when the model is unchanged, whether set or absent", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: false });
 			const projectBefore = store.getState().project;
@@ -266,7 +267,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("does not touch the previous project instance", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const before = store.getState().project!;
 
@@ -278,7 +279,7 @@ describe("createProjectStore", () => {
 
 	describe("setHardwareTarget", () => {
 		it("replaces the target configuration", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setHardwareModel("arduino-uno-r3");
 			store.setState({ hasUnsavedChanges: false });
@@ -294,7 +295,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("is a no-op without a target", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: false });
 			const projectBefore = store.getState().project;
@@ -314,7 +315,7 @@ describe("createProjectStore", () => {
 		};
 
 		it("sets the scene on a copy of the project and marks unsaved changes", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: false });
 			const before = store.getState().project!;
@@ -327,7 +328,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("tracks the attachment of a scene, not a rebinding of the same scene nor a removal", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			mockTrackEvent.mockClear();
 
@@ -343,7 +344,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("tells the scene tab link that the scene changed", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const onSceneChanged = jest.spyOn(
 				store.getState().scene3dLinkManager,
@@ -356,7 +357,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("removes the scene with null", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setScene3d(scene);
 
@@ -366,7 +367,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("is undoable and redoable, and the scene tab link is told each time", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const onSceneChanged = jest.spyOn(
 				store.getState().scene3dLinkManager,
@@ -384,7 +385,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("does not notify the scene tab link when a variable operation is undone", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().variablesManager.addVariables([
 				{
@@ -408,7 +409,7 @@ describe("createProjectStore", () => {
 
 	describe("hardware configuration undo", () => {
 		it("undoes and redoes the model choice", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setHardwareModel("arduino-uno-r3");
 
@@ -422,7 +423,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("undoes a pin configuration change back to the previous target", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setHardwareModel("arduino-uno-r3");
 			const next = {
@@ -439,7 +440,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("does not touch the board link when undoing", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().setHardwareModel("arduino-uno-r3");
 			const unlink = jest.spyOn(store.getState().hardwareLinkManager, "unlink");
@@ -452,7 +453,7 @@ describe("createProjectStore", () => {
 
 	describe("createMissingScene3dVariables", () => {
 		it("creates and binds the unbound points, undoable in one step", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store
 				.getState()
@@ -478,7 +479,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("creates the variables under their English names in an English project", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.getState().project!.setDialect(Dialect.EN);
 			store
@@ -495,7 +496,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("does nothing without a scene", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const projectBefore = store.getState().project;
 
@@ -507,7 +508,7 @@ describe("createProjectStore", () => {
 
 	describe("setProjectDialect", () => {
 		it("traduit les mots-clés d'une expression existante et resynchronise les grafcets montés", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const grafcet = store.getState().grafcetsManager.newGrafcet("G1")!;
 			const syncSpy = jest.spyOn(
@@ -524,7 +525,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("ne fait rien quand le dialecte demandé est déjà le dialecte courant", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const currentDialect = store.getState().project!.dialect;
 			const projectBefore = store.getState().project;
@@ -538,7 +539,7 @@ describe("createProjectStore", () => {
 
 	describe("setActiveScope", () => {
 		it("déduit activeScopeType depuis le type de page (grafcet)", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const grafcet = store.getState().grafcetsManager.newGrafcet("G1")!;
 
@@ -549,7 +550,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("retombe sur le scope 'project' pour un scope sans page associée", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 
 			store.getState().setActiveScope("inexistant");
@@ -558,7 +559,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("ne re-focalise pas le flow quand le scope demandé est déjà le scope actif", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const grafcetA = store.getState().grafcetsManager.newGrafcet("A")!;
 			const grafcetB = store.getState().grafcetsManager.newGrafcet("B")!;
@@ -590,25 +591,25 @@ describe("createProjectStore", () => {
 		});
 
 		it("est 'idle' au démarrage à froid (aucun id ni token dans l'URL)", () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			expect(store.getState().bootStatus).toBe("idle");
 		});
 
 		it("est 'restoring' quand l'URL porte un projectId", () => {
 			window.history.replaceState(null, "", "/?projectId=p1");
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			expect(store.getState().bootStatus).toBe("restoring");
 		});
 
 		it("est 'restoring' quand l'URL porte un shareToken", () => {
 			window.history.replaceState(null, "", "/?shareToken=abc");
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			expect(store.getState().bootStatus).toBe("restoring");
 		});
 
 		it("repasse à 'idle' via finishBoot quand la réouverture échoue", async () => {
 			window.history.replaceState(null, "", "/?projectId=does-not-exist");
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 
 			const opened = await store
 				.getState()
@@ -633,7 +634,7 @@ describe("createProjectStore", () => {
 		}
 
 		it("supprime le brouillon quand on continue depuis setOpenModalVisible", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const projectId = await openProjectWithDraft(store);
 
 			store.getState().setOpenModalVisible(true);
@@ -643,7 +644,7 @@ describe("createProjectStore", () => {
 		});
 
 		it("conserve le brouillon pour l'export (le projet reste ouvert)", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const projectId = await openProjectWithDraft(store);
 
 			store.getState().setExportModalVisible(true);

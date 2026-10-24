@@ -1,14 +1,19 @@
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import HmiPage from "@/schemas/hmi/hmi-page.schema";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import { createHmiStore } from "../hmi.store";
 
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
+
 function buildStore() {
 	const page = HmiPage.create("Vue 1");
-	return createHmiStore(page, new CommandsStack<HmiPage>(100));
+	return createHmiStore(page, new CommandsStack<HmiPage>(100), clipboard);
 }
 
 describe("HmiCopyCutPasteManager", () => {
@@ -249,10 +254,12 @@ describe("HmiCopyCutPasteManager", () => {
 			const pageA = createHmiStore(
 				HmiPage.create("Vue A"),
 				new CommandsStack<HmiPage>(100),
+				clipboard,
 			);
 			const pageB = createHmiStore(
 				HmiPage.create("Vue B"),
 				new CommandsStack<HmiPage>(100),
+				clipboard,
 			);
 			const original = pageA.getState().addWidget("push-button", 10, 20);
 			pageA.getState().selectWidget(original.id);

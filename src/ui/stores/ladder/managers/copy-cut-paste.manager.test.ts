@@ -16,8 +16,8 @@ import Ladder from "@/schemas/ladder/ladder.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { LadderNodeType } from "@/ui/components/ladder/flow/ladder-nodes-definitions";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import {
 	cellRectsOverlap,
@@ -30,6 +30,11 @@ import {
 } from "@/ui/utils/ladder/ladder-flow-builder";
 import { createLadderStore } from "../ladder.store";
 
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
+
 /** `pasteElements` n'a besoin que de `screenToFlowPosition` de l'instance React Flow. */
 function fakeRfInstance(flowPosition: { x: number; y: number }) {
 	return { screenToFlowPosition: () => flowPosition } as any;
@@ -39,7 +44,11 @@ function buildStore() {
 	const contact = createContactElement("Capteur", "NO", 0, 3);
 	const section = new Section("s1", "Section", "", [contact]);
 	const ladder = new Ladder("l1", "TestLadder", [section]);
-	const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+	const store = createLadderStore(
+		ladder,
+		new CommandsStack<Ladder>(100),
+		clipboard,
+	);
 	return { store, contactId: contact.id };
 }
 
@@ -179,7 +188,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			);
 			const section = new Section("s1", "Section", "", [timer]);
 			const ladder = new Ladder("l1", "TestLadder", [section]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			stubElementsFromPoint("s1");
 			store.getState().viewManager.registerInstance(
 				"s1",
@@ -209,7 +222,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 		) {
 			const section = new Section("s1", "Section", "", existing);
 			const ladder = new Ladder("l1", "TestLadder", [section]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			stubElementsFromPoint("s1");
 			store.getState().viewManager.registerInstance(
 				"s1",
@@ -286,7 +303,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 				[connection],
 			);
 			const ladder = new Ladder("l1", "TestLadder", [section]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			stubElementsFromPoint("s1");
 			const flowPosition = {
 				x: POWER_RAIL_OFFSET + 5 * GRID_CELL_WIDTH,
@@ -323,7 +344,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 
 			const sectionB = new Section("s2", "Section B", "", []);
 			const ladderB = new Ladder("l2", "LadderB", [sectionB]);
-			const storeB = createLadderStore(ladderB, new CommandsStack<Ladder>(100));
+			const storeB = createLadderStore(
+				ladderB,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			stubElementsFromPoint("s2");
 			storeB.getState().viewManager.registerInstance(
 				"s2",
@@ -395,7 +420,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			);
 			const s2 = new Section("s2", "Arrêt", "", []);
 			const ladder = new Ladder("l1", "TestLadder", [s1, s2]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			return { store, contact, coil };
 		}
 
@@ -439,7 +468,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			);
 			const s1 = new Section("s1", "Section", "", [timer]);
 			const ladder = new Ladder("l1", "TestLadder", [s1]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 
 			store.getState().copyCutPasteManager.duplicateSection("s1");
 
@@ -500,7 +533,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			const s2 = new Section("s2", "Arrêt", "", []);
 			const s3 = new Section("s3", "Sécurité", "", []);
 			const ladder = new Ladder("l1", "TestLadder", [s1, s2, s3]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 			return { store, contact, coil };
 		}
 
@@ -581,7 +618,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			);
 			const s1 = new Section("s1", "Section", "", [timer]);
 			const ladder = new Ladder("l1", "TestLadder", [s1]);
-			const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+			const store = createLadderStore(
+				ladder,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 
 			store.getState().copyCutPasteManager.copySections(["s1"]);
 			store.getState().copyCutPasteManager.pasteElements();
@@ -600,7 +641,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 			const ladderB = new Ladder("l2", "LadderB", [
 				new Section("b1", "Base", "", []),
 			]);
-			const storeB = createLadderStore(ladderB, new CommandsStack<Ladder>(100));
+			const storeB = createLadderStore(
+				ladderB,
+				new CommandsStack<Ladder>(100),
+				clipboard,
+			);
 
 			storeB.getState().copyCutPasteManager.pasteElements();
 
@@ -685,7 +730,11 @@ describe("LadderCopyCutPasteManager (ladder)", () => {
 					),
 				]);
 				const ladder = new Ladder("l1", "TestLadder", [s1, s2]);
-				const store = createLadderStore(ladder, new CommandsStack<Ladder>(100));
+				const store = createLadderStore(
+					ladder,
+					new CommandsStack<Ladder>(100),
+					clipboard,
+				);
 
 				store.getState().copyCutPasteManager.copySections(["s1", "s2"]);
 				store.getState().copyCutPasteManager.pasteElements();

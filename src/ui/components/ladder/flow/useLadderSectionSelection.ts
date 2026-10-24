@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type RefObject } from "react";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { usePageVisible } from "@/ui/components/pages/page-visibility-context";
 import { useLadderContext } from "../context/LadderContext";
 
@@ -13,14 +14,20 @@ import { useLadderContext } from "../context/LadderContext";
  * - Shift+clic → étend la sélection de l'ancre jusqu'à cette section, dans l'ordre du ladder ;
  * - clic ailleurs (flow de la section sélectionnée inclus, reste de l'app) → vide la sélection ;
  * - Suppr / Retour arrière avec au moins une section sélectionnée → supprime les sections
- *   sélectionnées (voir `LadderWorkflowManager.deleteSections`).
+ *   sélectionnées (voir `LadderWorkflowManager.deleteSections`), si le projet est modifiable.
+ *
+ * Seuls les en-têtes de `container` sélectionnent ; une suppression venue d'un autre bloc
+ * embarqué (`data-embedded-block`) est ignorée.
  *
  * Toute sélection de section vide aussi la sélection d'éléments de toutes les sections. Les
  * boutons d'action de l'en-tête arrêtent la propagation du pointer-down pour ne pas y entrer.
  */
-export default function useLadderSectionSelection() {
+export default function useLadderSectionSelection(
+	container: RefObject<HTMLElement | null>,
+) {
 	const store = useLadderContext()?.store ?? null;
 	const visible = usePageVisible();
+	const canEdit = useCanEdit();
 
 	useEffect(() => {
 		if (!store || !visible) return;
@@ -29,7 +36,9 @@ export default function useLadderSectionSelection() {
 		const onPointerDown = (event: PointerEvent) => {
 			const target = event.target as Element | null;
 			const header = target?.closest?.("[data-section-header]");
-			const sectionId = header?.getAttribute("data-section-header") ?? null;
+			const sectionId = container.current?.contains(header ?? null)
+				? (header?.getAttribute("data-section-header") ?? null)
+				: null;
 			const state = store.getState();
 
 			if (!sectionId) {
@@ -78,11 +87,14 @@ export default function useLadderSectionSelection() {
 				(target.tagName === "INPUT" || target.tagName === "TEXTAREA")
 			)
 				return;
+			const embeddedBlock = target?.closest?.("[data-embedded-block]");
+			if (embeddedBlock && !embeddedBlock.contains(container.current)) return;
 			const state = store.getState();
 			if (state.selectedSectionIds.length === 0) return;
 			event.preventDefault();
 			event.stopPropagation();
-			state.workflowManager.deleteSections(state.selectedSectionIds);
+			if (canEdit)
+				state.workflowManager.deleteSections(state.selectedSectionIds);
 		};
 
 		document.addEventListener("pointerdown", onPointerDown);
@@ -92,5 +104,5 @@ export default function useLadderSectionSelection() {
 			document.removeEventListener("keydown", onKeyDown);
 			store.getState().setSelectedSectionIds([]);
 		};
-	}, [store, visible]);
+	}, [store, visible, container, canEdit]);
 }

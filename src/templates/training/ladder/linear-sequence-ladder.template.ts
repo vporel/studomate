@@ -2,7 +2,7 @@ import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import {
-	createLinearSequenceProject,
+	createLinearSequenceBase,
 	createLinearSequenceSolution,
 } from "@/templates/training/grafcet/linear-sequence.template";
 import {
@@ -24,16 +24,16 @@ export const LINEAR_SEQUENCE_SPEC: GrafcetLadderSpec = {
 	steps: ["X0", "X1", "X2", "X3"],
 	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1"], receptivity: [no("dcy")] },
-		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("fin1")] },
-		{ name: "T2", from: ["X2"], to: ["X3"], receptivity: [no("fin2")] },
-		{ name: "T3", from: ["X3"], to: ["X0"], receptivity: [] },
+		{ from: ["X0"], to: ["X1"], receptivity: [no("dcy")] },
+		{ from: ["X1"], to: ["X2"], receptivity: [no("fin1")] },
+		{ from: ["X2"], to: ["X3"], receptivity: [no("fin2")] },
+		{ from: ["X3"], to: ["X0"], receptivity: [] },
 	],
 };
 
 /** Variables of `linear-sequence` plus the step memories (X0…X3), shared by both Ladder variants. */
 function createLinearSequenceLadderBase(name: string, locale: Locale): Project {
-	const project = createLinearSequenceProject(locale);
+	const project = createLinearSequenceBase(locale);
 	project.name = name;
 	project.variables.push(...grafcetMemories(LINEAR_SEQUENCE_SPEC));
 	return project;

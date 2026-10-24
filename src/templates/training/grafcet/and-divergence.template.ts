@@ -29,13 +29,8 @@ import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 
-/**
- * Creates a pre-configured "AND divergence" project: boolean input/output variables, no
- * program (the student writes it). Training module mini-exercise (M1): a single AND
- * divergence (two parallel branches) closed by its convergence, no other complexity (no
- * timer, no nesting).
- */
-export function createAndDivergenceProject(locale: Locale = "fr"): Project {
+/** Input and output variables, shared by the exercise, the solution and the Ladder variants. */
+export function createAndDivergenceBase(locale: Locale = "fr"): Project {
 	const t = createTemplateText("and-divergence", locale);
 	const project = new Project(createRandomId(), t("projectName"), "");
 
@@ -55,6 +50,19 @@ export function createAndDivergenceProject(locale: Locale = "fr"): Project {
 }
 
 /**
+ * Creates a pre-configured "AND divergence" project: boolean input/output variables and an
+ * empty GRAFCET (the student draws it). Training module mini-exercise (M1): a single AND
+ * divergence (two parallel branches) closed by its convergence, no other complexity (no
+ * timer, no nesting).
+ */
+export function createAndDivergenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("and-divergence", locale);
+	const project = createAndDivergenceBase(locale);
+	project.createGrafcet(t("grafcetName"));
+	return project;
+}
+
+/**
  * Full, simulable version: a GRAFCET with a source step, an AND divergence into two parallel
  * steps (one output each), and an AND convergence that only allows continuing once both
  * branches are done.
@@ -63,7 +71,7 @@ export function createAndDivergenceProject(locale: Locale = "fr"): Project {
  */
 export function createAndDivergenceSolution(locale: Locale = "fr"): Project {
 	const t = createTemplateText("and-divergence", locale);
-	const project = createAndDivergenceProject(locale);
+	const project = createAndDivergenceBase(locale);
 	project.name = t("solutionName");
 
 	const XL = 140;

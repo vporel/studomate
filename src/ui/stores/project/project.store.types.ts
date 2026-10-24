@@ -1,3 +1,5 @@
+import type { ProjectCapabilities } from "./environment/project-store-environment";
+import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import type Scene3dLinkManager from "./managers/3d-scene/scene3d-link.manager";
 import type { Scene3d } from "@/schemas/3d-scene/scene3d.schema";
 import type HmiPage from "@/schemas/hmi/hmi-page.schema";
@@ -49,7 +51,9 @@ export type PageType =
 	| "variables"
 	| "system-variables"
 	| "hmi"
-	| "hmi-simulation";
+	| "hmi-simulation"
+	| "embedded-unavailable"
+	| "scene3d-view";
 
 /**
  * The variables are managed in the project scope
@@ -64,6 +68,8 @@ export type PageData = {
 	id: string;
 	type: PageType;
 	title: string;
+	/** The page cannot be modified, whatever the mode. */
+	locked?: boolean;
 };
 
 export type GrafcetStoreValues = Pick<
@@ -181,6 +187,13 @@ export interface ProjectStoreState {
 	//Project
 	project: Project | null; //null when no project is opened
 	bootStatus: ProjectBootStatus;
+	/** Presse-papiers propre à ce projet ouvert (voir `clipboard.store.ts`). */
+	clipboard: ClipboardStore;
+	/** False: the project is shown but cannot be modified, whatever the mode (see `canEdit`). */
+	/** What this project store can do beyond editing and simulating. */
+	capabilities: ProjectCapabilities;
+	editingEnabled: boolean;
+	setEditingEnabled: (enabled: boolean) => void;
 	hasUnsavedChanges: boolean;
 	/**
 	 * Vrai quand la dernière auto-sauvegarde du brouillon a échoué (quota `localStorage` dépassé

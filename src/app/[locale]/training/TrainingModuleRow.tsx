@@ -49,9 +49,8 @@ export default function TrainingModuleRow({
 		};
 	}, [available, moduleId, stepIds]);
 
-	const currentStepNumber = stepIds && savedStepId
-		? stepIds.indexOf(savedStepId) + 1
-		: 0;
+	const currentStepNumber =
+		stepIds && savedStepId ? stepIds.indexOf(savedStepId) + 1 : 0;
 	const completed = !!stepIds && currentStepNumber === stepIds.length;
 
 	const statusText = completed

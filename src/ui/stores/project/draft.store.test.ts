@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 import Project from "@/schemas/project/project.schema";
+import createAppProjectStoreEnvironment from "./environment/app-project-store-environment";
 import { createProjectStore } from "./project.store";
 import * as draftStorage from "@/persistence/draft.storage";
 import { setPreferredSaveLocation } from "@/persistence/preferences.storage";
@@ -44,7 +45,7 @@ describe("store — brouillons", () => {
 
 	describe("flushDraft", () => {
 		it("écrit immédiatement le brouillon quand des modifications existent", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -54,7 +55,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("n'écrit rien sans modification en attente ni pour un projet partagé", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			expect(store.getState().lifecycleManager.flushDraft()).toBe(true);
 			store.setState({ hasUnsavedChanges: true, isSharedProject: true });
@@ -65,7 +66,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("signale l'indisponibilité de la sauvegarde quand l'écriture échoue", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 			mockedSaveDraft.mockReturnValue({ ok: false, reason: "quota" });
@@ -82,7 +83,7 @@ describe("store — brouillons", () => {
 		afterEach(() => jest.useRealTimers());
 
 		it("sauvegarde le brouillon toutes les 30 secondes si des modifications existent", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -99,7 +100,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("ne sauvegarde pas si aucune modification n'est en attente", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			// hasUnsavedChanges est false après ouverture d'un projet vierge
 
@@ -111,7 +112,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("ne sauvegarde pas si le projet est partagé (lecture seule)", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true, isSharedProject: true });
 
@@ -123,7 +124,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("stopAutoSave arrête l'intervalle", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -135,7 +136,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("signale l'indisponibilité quand l'auto-sauvegarde échoue, puis la lève au succès suivant", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -155,7 +156,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("un double appel à startAutoSave ne crée pas deux intervalles", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -170,7 +171,7 @@ describe("store — brouillons", () => {
 
 	describe("saveProject — suppression du brouillon", () => {
 		it("supprime le brouillon après un enregistrement réussi", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			store.setState({ hasUnsavedChanges: true });
 
@@ -184,7 +185,7 @@ describe("store — brouillons", () => {
 
 	describe("openProject — ouverture délibérée", () => {
 		it("réinitialise autoSaveUnavailable à l'ouverture d'un projet", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 			store.setState({ autoSaveUnavailable: true });
@@ -195,7 +196,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("ouvre le projet réel si aucun brouillon n'existe", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 
@@ -207,7 +208,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("supprime silencieusement le brouillon périmé sans afficher de modale", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const savedAt = new Date("2024-01-01T10:00:00Z");
 			const project = projectWithDate("p1", new Date("2024-01-02T10:00:00Z")); // projet plus récent
 			await store.getState().projectRepository.save(project);
@@ -225,7 +226,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("affiche la modale de conflit si le brouillon est plus récent que le projet", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const projectDate = new Date("2024-01-01T10:00:00Z");
 			const project = projectWithDate("p1", projectDate);
 			await store.getState().projectRepository.save(project);
@@ -250,7 +251,7 @@ describe("store — brouillons", () => {
 
 	describe("openProject — rechargement via URL (preferDraft)", () => {
 		it("charge le brouillon en priorité et marque hasUnsavedChanges", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 			mockedGetDraft.mockReturnValue({
@@ -267,7 +268,7 @@ describe("store — brouillons", () => {
 		});
 
 		it("se rabat sur le projet réel si le brouillon est corrompu", async () => {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			await store.getState().projectRepository.save(project);
 			mockedGetDraft.mockReturnValue({
@@ -288,7 +289,7 @@ describe("store — brouillons", () => {
 
 	describe("resolveDraftConflict", () => {
 		async function storeAvecConflitActif() {
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			const project = new Project("p1", "Projet", "");
 			const draftData = JSON.stringify(project);
 			await store.getState().projectRepository.save(project);

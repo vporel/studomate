@@ -8,11 +8,11 @@ import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
+import useProjectClipboard from "@/ui/components/projects/useProjectClipboard";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import useLadderRenderContext from "@/ui/pdf/useLadderRenderContext";
 import trackEvent from "@/ui/services/analytics";
-import { exportProgramPdf } from "@/ui/pdf/program-pdf";
 import { useT } from "@/ui/i18n/useT";
 import { useLadderContext } from "../context/LadderContext";
 import { useLadderStore } from "../context/LadderContext";
@@ -41,21 +41,26 @@ const LadderContextMenu = ({
 	);
 	// Le menu du flow ne colle que des éléments : un presse-papiers contenant une section
 	// entière se colle par Ctrl+V ou le menu Édition, pas ici.
-	const canPaste = useClipboardStore(
+	const canPaste = useProjectClipboard(
 		(s) =>
 			s.entry?.scope === "ladder" &&
 			(s.entry.data as { kind?: string })?.kind === "elements",
 	);
+	const canEdit = useCanEdit();
+	const pdfExport = useProjectStore((s) => s.capabilities.pdfExport);
 	const projectName = useProjectStore((s) => s.project?.name ?? "export");
 	const ladderContext = useLadderRenderContext();
 	const tExport = useT("projects.export");
 	const onExport = useCallback(() => {
-		void exportProgramPdf({
-			config: { type: "ladder", program: ladder },
-			filename: `${projectName} - ${ladder.name}`,
-			sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
-			ladderContext,
-		})
+		void import("@/ui/pdf/program-pdf")
+			.then(({ exportProgramPdf }) =>
+				exportProgramPdf({
+					config: { type: "ladder", program: ladder },
+					filename: `${projectName} - ${ladder.name}`,
+					sectionTitle: tExport("sectionTitleLadder", { name: ladder.name }),
+					ladderContext,
+				}),
+			)
 			.then(() =>
 				trackEvent("pdf-exported", { programs: 1, withVariablesTable: false }),
 			)
@@ -98,7 +103,7 @@ const LadderContextMenu = ({
 				screenPosition,
 				canPaste,
 				t,
-				onExport,
+				pdfExport ? onExport : null,
 				ladder.getAllElements().length === 0,
 			);
 		}
@@ -125,6 +130,7 @@ const LadderContextMenu = ({
 		sectionId,
 		handleDelete,
 		onExport,
+		pdfExport,
 		openCrossReferences,
 		t,
 	]);
@@ -137,12 +143,13 @@ const LadderContextMenu = ({
 				hide();
 				return;
 			}
+			if (props.element.type === "pane" && !canEdit && !pdfExport) return;
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
 		},
-		[hide, show, sectionId],
+		[hide, show, sectionId, canEdit, pdfExport],
 	);
 	useContextMenuBus(contextMenuEvents, showMenu, hide);
 

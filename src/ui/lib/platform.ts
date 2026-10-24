@@ -29,7 +29,8 @@ export function isSafari(): boolean {
 	}
 	const ua = navigator.userAgent;
 	return (
-		/Safari\//.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Android/.test(ua)
+		/Safari\//.test(ua) &&
+		!/Chrome|Chromium|CriOS|Edg|OPR|FxiOS|Android/.test(ua)
 	);
 }
 

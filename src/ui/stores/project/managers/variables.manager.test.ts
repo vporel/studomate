@@ -10,10 +10,12 @@ import VariablesManager from "./variables.manager";
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 }) {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: initial.editingEnabled ?? true,
 		commandsStackManager: { executeOperation: jest.fn() },
 	} as unknown as ProjectStoreState;
 
@@ -171,6 +173,24 @@ describe("VariablesManager", () => {
 			expect(
 				getState().commandsStackManager.executeOperation,
 			).not.toHaveBeenCalled();
+		});
+
+		it("refuse d'ajouter une variable sur un projet en lecture seule, sans avertir", () => {
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const { manager, getState } = makeManager({
+				project: projectWithVariables(),
+				editingEnabled: false,
+			});
+
+			manager.addVariables([
+				{ mnemonic: "X", zone: "memory", type: "BOOL" } as any,
+			]);
+
+			expect(
+				getState().commandsStackManager.executeOperation,
+			).not.toHaveBeenCalled();
+			expect(warn).not.toHaveBeenCalled();
+			warn.mockRestore();
 		});
 
 		it("dispatche une commande d'ajout en mode DESIGN", () => {

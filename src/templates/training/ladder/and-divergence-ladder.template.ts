@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
-import { createAndDivergenceProject } from "@/templates/training/grafcet/and-divergence.template";
+import { createAndDivergenceBase } from "@/templates/training/grafcet/and-divergence.template";
 import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
 import {
 	GrafcetLadderSpec,
@@ -14,9 +14,8 @@ export const AND_DIVERGENCE_SPEC: GrafcetLadderSpec = {
 	steps: ["X0", "X1", "X2"],
 	initial: ["X0"],
 	transitions: [
-		{ name: "T0", from: ["X0"], to: ["X1", "X2"], receptivity: [no("dcy")] },
+		{ from: ["X0"], to: ["X1", "X2"], receptivity: [no("dcy")] },
 		{
-			name: "T1",
 			from: ["X1", "X2"],
 			to: ["X0"],
 			receptivity: [no("capteur1"), no("capteur2")],
@@ -25,7 +24,7 @@ export const AND_DIVERGENCE_SPEC: GrafcetLadderSpec = {
 };
 
 function createBase(name: string, locale: Locale): Project {
-	const project = createAndDivergenceProject(locale);
+	const project = createAndDivergenceBase(locale);
 	project.name = name;
 	project.variables.push(...grafcetMemories(AND_DIVERGENCE_SPEC));
 	return project;

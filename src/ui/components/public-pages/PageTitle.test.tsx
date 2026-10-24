@@ -13,7 +13,7 @@ describe("PageTitle", () => {
 		).toBeInTheDocument();
 	});
 
-	it("garde l'aspect sans exposer de titre avec as=\"p\"", () => {
+	it('garde l\'aspect sans exposer de titre avec as="p"', () => {
 		render(<PageTitle as="p">Module A1</PageTitle>);
 
 		expect(screen.queryByRole("heading")).not.toBeInTheDocument();

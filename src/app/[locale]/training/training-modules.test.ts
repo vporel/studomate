@@ -48,7 +48,9 @@ describe("training modules", () => {
 					.map((s) => s.id)
 					.sort();
 				expect(Object.keys(messages[moduleId] ?? {}).sort()).toEqual(expected);
-				for (const { title, description } of Object.values(messages[moduleId])) {
+				for (const { title, description } of Object.values(
+					messages[moduleId],
+				)) {
 					expect(title).toBeTruthy();
 					expect(description).toBeTruthy();
 				}

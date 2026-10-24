@@ -1,0 +1,22 @@
+{
+	"loading": "Chargement…",
+	"region": "Éditeur Studomate",
+	"tabs": {
+		"unavailable": "Vue indisponible",
+		"scene3d": "Scène 3D"
+	},
+	"unavailable": {
+		"grafcet": "Le grafcet « {id} » n'existe pas dans ce projet.",
+		"ladder": "Le ladder « {id} » n'existe pas dans ce projet.",
+		"hmi": "La page « {id} » n'existe pas dans ce projet.",
+		"scene3d": "Ce projet n'a pas de scène 3D.",
+		"unknown": "Cette vue n'est pas disponible."
+	},
+	"app": {
+		"open": "Ouvrir dans l'application"
+	},
+	"fullscreen": {
+		"enter": "Plein écran",
+		"exit": "Quitter le plein écran"
+	}
+}

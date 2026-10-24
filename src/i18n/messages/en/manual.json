@@ -74,7 +74,7 @@
 			"Rising / falling edge (Grafcet): the instant a condition goes from false to true, or from true to false respectively.",
 			"Contact (Ladder): tests a Boolean variable. NO (normally open) conducts when it is true, NC (normally closed) when it is false.",
 			"Coil (Ladder): assigns a Boolean variable at the output of a contact circuit.",
-			"Network / rung (Ladder): an independent circuit line, powered by the vertical rail on the left.",
+			"Network / rung (Ladder): a block of the program bounded by the two vertical rails, containing lines of contacts leading to coils.",
 			"Mnemonic: the name of a variable as written in expressions (\"sensor1\"), unique within the project.",
 			"Dialect: the language of the expression keywords (ET, OU, NON, VRAI, FAUX in French; AND, OR, NOT, TRUE, FALSE in English). It is a project property, independent of the interface language.",
 			"Programmable logic controller (PLC) / scan: the industrial device that runs the program in a loop. A scan (or cycle) chains reading the inputs, running the program and writing the outputs; Studomate simulates this behaviour.",

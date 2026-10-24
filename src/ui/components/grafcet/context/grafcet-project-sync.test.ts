@@ -14,7 +14,10 @@ function setup() {
 		updateProgramData: jest.fn(),
 		setStoreValues: jest.fn(),
 	};
-	const unsubscribe = syncGrafcetToProject(store as unknown as StoreApi<GrafcetStoreState>, manager as unknown as GrafcetsManager);
+	const unsubscribe = syncGrafcetToProject(
+		store as unknown as StoreApi<GrafcetStoreState>,
+		manager as unknown as GrafcetsManager,
+	);
 	return { store, manager, unsubscribe };
 }
 
@@ -45,7 +48,10 @@ describe("syncGrafcetToProject", () => {
 		const { store, manager, unsubscribe } = setup();
 		unsubscribe();
 
-		store.setState({ grafcet: { id: "x1", changed: true }, hasCommandsToUndo: true });
+		store.setState({
+			grafcet: { id: "x1", changed: true },
+			hasCommandsToUndo: true,
+		});
 
 		expect(manager.updateProgramData).not.toHaveBeenCalled();
 		expect(manager.setStoreValues).not.toHaveBeenCalled();

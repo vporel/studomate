@@ -88,6 +88,30 @@ This layer is consumed by the UI; it never leaks into the domain (`src/schemas/`
 Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for cloud,
 `NEXT_PUBLIC_SENTRY_DSN` for monitoring. Without them, the app stays local-only.
 
+### Project store environment and embedded block
+
+`createProjectStore(env)` (`src/ui/stores/project/project.store.ts`) reaches the outside world
+(repository, URL, storage, analytics, toasts, board, 3D scene host, clipboard) only through a
+`ProjectStoreEnvironment` (`src/ui/stores/project/environment/`). `/app` passes
+`createAppProjectStoreEnvironment()` (the only module that imports Supabase, the auth store and the
+browser storage); an embedded block passes `createEmbeddedProjectStoreEnvironment({ locale })`, which
+has no `persistence`: reaching a save, draft, share or repository path then throws explicitly. A new
+side effect in a manager goes through `env` too, never a direct import of `trackEvent`, `toast`,
+`localStorage` or the URL helpers. `project.store.imports.test.ts` fails if the store module starts
+loading Supabase, the data grid or three.js: keep page constants in `pages-data.ts` and the editors'
+node types as `import type` in the stores.
+
+"Can the project be modified" is one rule, `canEdit(state)` (`stores/project/editability.ts`, hook
+`useCanEdit()`): design mode **and** the `editingEnabled` flag. Use it for anything that edits
+(commands, toolbars, in-place editors, menus); keep `state.mode` for what depends on the simulation
+itself. The clipboard belongs to each store (`state.clipboard`), and what the surrounding interface
+can offer (PDF export, cross-references, board) is read from `state.capabilities`.
+
+`EmbeddedApp` (`src/ui/components/embedded/`) shows a `Project` with its editors inside a page, in
+memory only (copy of the project, nothing saved, `onDirtyChange`/`warnOnLeave` for the host). It
+brings full messages and Three.js/data-grid views, so a consumer must load it with `next/dynamic`
+and run `npm run build` after changing how it is imported.
+
 ### PDF export
 
 `src/ui/pdf/drawing/` draws each program (grafcet, ladder) **directly from the schema** into an

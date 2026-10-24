@@ -26,7 +26,7 @@ import { Dimensions, XYPosition } from "@/schemas/grafcet/shared-types";
 import Junction, { JunctionData } from "@/schemas/grafcet/junction.schema";
 import { normalizeJunctionGeometry } from "@/schemas/grafcet/junction-geometry";
 import { createRandomId } from "@/ids";
-import {
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";

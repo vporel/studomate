@@ -14,7 +14,10 @@ function setup() {
 		updateProgramData: jest.fn(),
 		setStoreValues: jest.fn(),
 	};
-	const unsubscribe = syncLadderToProject(store as unknown as StoreApi<LadderStoreState>, manager as unknown as LaddersManager);
+	const unsubscribe = syncLadderToProject(
+		store as unknown as StoreApi<LadderStoreState>,
+		manager as unknown as LaddersManager,
+	);
 	return { store, manager, unsubscribe };
 }
 
@@ -45,7 +48,10 @@ describe("syncLadderToProject", () => {
 		const { store, manager, unsubscribe } = setup();
 		unsubscribe();
 
-		store.setState({ ladder: { id: "x1", changed: true }, hasCommandsToUndo: true });
+		store.setState({
+			ladder: { id: "x1", changed: true },
+			hasCommandsToUndo: true,
+		});
 
 		expect(manager.updateProgramData).not.toHaveBeenCalled();
 		expect(manager.setStoreValues).not.toHaveBeenCalled();

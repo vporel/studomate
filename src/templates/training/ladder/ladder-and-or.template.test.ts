@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/config";
 import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import { compilePipelineDetailed } from "@tests/utils/test-helpers";
+import { PROJECT_TEMPLATES } from "@/templates";
 import { createLadderAndOrProject } from "./ladder-and-or.template";
 
 describe("ladder-and-or.template", () => {
@@ -38,6 +39,15 @@ describe("ladder-and-or.template", () => {
 			expect(scenario.get(name)).toBe(value);
 		}
 		scenario.stop();
+	});
+});
+
+describe("ladder-and-or.template (enregistrement)", () => {
+	it("est son propre corrigé : le projet fourni est déjà complet, il s'observe en simulation", () => {
+		const template = PROJECT_TEMPLATES.find((t) => t.id === "ladder-and-or");
+
+		expect(template?.create).toBe(createLadderAndOrProject);
+		expect(template?.solution).toBe(createLadderAndOrProject);
 	});
 });
 

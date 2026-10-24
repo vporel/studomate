@@ -1,8 +1,12 @@
+import {
+	createClipboardStore,
+	type ClipboardStore,
+} from "@/ui/stores/shared/clipboard.store";
 import { Dialect } from "@/expression-language/dialect.enum";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { createStore } from "zustand";
-import {
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
@@ -10,7 +14,9 @@ import EdgesFactory from "./factories/edges.factory";
 import NodesFactory from "./factories/nodes.factory";
 import GrafcetCommandsStackManager from "./managers/commands-stack.manager";
 import GrafcetCopyCutPasteManager from "./managers/copy-cut-paste.manager";
-import GrafcetViewManager from "./managers/view.manager";
+import GrafcetViewManager, {
+	GRAFCET_FLOW_MIN_ZOOM,
+} from "./managers/view.manager";
 import GrafcetWorkflowManager from "./managers/workflow.manager";
 
 export interface GrafcetStoreState {
@@ -30,6 +36,10 @@ export interface GrafcetStoreState {
 	 */
 	highlightedNodesIds: string[];
 	highlightedEdgesIds: string[];
+	/** Zoom courant du flow, `null` tant que l'instance React Flow n'est pas prête. */
+	zoom: number | null;
+	/** Zoom minimal du flow : plus bas dans un bloc intégré, qui doit pouvoir montrer tout le grafcet. */
+	minZoom: number;
 	viewManager: GrafcetViewManager;
 	copyCutPasteManager: GrafcetCopyCutPasteManager;
 
@@ -56,6 +66,7 @@ export const createGrafcetStore = (
 	grafcet: Grafcet,
 	commandsStack: CommandsStack<Grafcet>,
 	getDialect: () => Dialect,
+	clipboard: ClipboardStore = createClipboardStore(),
 ) => {
 	return createStore<GrafcetStoreState>((set, get) => ({
 		getDialect,
@@ -67,8 +78,10 @@ export const createGrafcetStore = (
 		edges: EdgesFactory.getInitialEdges(grafcet),
 		highlightedNodesIds: [],
 		highlightedEdgesIds: [],
+		zoom: null,
+		minZoom: GRAFCET_FLOW_MIN_ZOOM,
 		viewManager: new GrafcetViewManager(set, get),
-		copyCutPasteManager: new GrafcetCopyCutPasteManager(set, get),
+		copyCutPasteManager: new GrafcetCopyCutPasteManager(set, get, clipboard),
 
 		workflowManager: new GrafcetWorkflowManager(set, get),
 

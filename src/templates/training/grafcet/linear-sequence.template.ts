@@ -24,12 +24,8 @@ import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
 import createTemplateText from "@/templates/template-text";
 
-/**
- * Creates a pre-configured "Linear sequence" project: boolean input/output variables, no
- * program (the student writes it). Training module mini-exercise (M1): no timer, no
- * divergence, just a step → transition → step chain.
- */
-export function createLinearSequenceProject(locale: Locale = "fr"): Project {
+/** Input and output variables, shared by the exercise, the solution and the Ladder variants. */
+export function createLinearSequenceBase(locale: Locale = "fr"): Project {
 	const t = createTemplateText("linear-sequence", locale);
 	const project = new Project(createRandomId(), t("projectName"), "");
 
@@ -49,6 +45,18 @@ export function createLinearSequenceProject(locale: Locale = "fr"): Project {
 }
 
 /**
+ * Creates a pre-configured "Linear sequence" project: boolean input/output variables and an
+ * empty GRAFCET (the student draws it). Training module mini-exercise (M1): no timer, no
+ * divergence, just a step → transition → step chain.
+ */
+export function createLinearSequenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("linear-sequence", locale);
+	const project = createLinearSequenceBase(locale);
+	project.createGrafcet(t("grafcetName"));
+	return project;
+}
+
+/**
  * Full, simulable version: a 4-step GRAFCET, a single chain (no divergence), simple boolean
  * receptivities, no timer.
  *
@@ -56,7 +64,7 @@ export function createLinearSequenceProject(locale: Locale = "fr"): Project {
  */
 export function createLinearSequenceSolution(locale: Locale = "fr"): Project {
 	const t = createTemplateText("linear-sequence", locale);
-	const project = createLinearSequenceProject(locale);
+	const project = createLinearSequenceBase(locale);
 	project.name = t("solutionName");
 
 	const X = 200;

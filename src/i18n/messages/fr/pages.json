@@ -32,7 +32,8 @@
 	"tabBar": {
 		"ariaLabel": "Onglets ouverts",
 		"close": "Fermer",
-		"closeAria": "Fermer l'onglet"
+		"closeAria": "Fermer l'onglet",
+		"readOnly": "Lecture seule"
 	},
 	"properties": {
 		"heading": "Propriétés du projet",

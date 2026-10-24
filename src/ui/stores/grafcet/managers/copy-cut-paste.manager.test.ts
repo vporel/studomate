@@ -10,10 +10,15 @@ import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import { StepData } from "@/schemas/grafcet/step.schema";
 import { GrafcetNodeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import { createGrafcetStore } from "../grafcet.store";
+
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
 
 /**
  * Instance React Flow minimale : `pasteElements` n'a besoin que de ces deux méthodes.
@@ -41,6 +46,7 @@ function buildStore() {
 		grafcet,
 		new CommandsStack<Grafcet>(100),
 		() => Dialect.FR,
+		clipboard,
 	);
 	store.getState().viewManager.rfInstance = fakeRfInstance();
 	return store;
@@ -256,6 +262,7 @@ describe("GrafcetCopyCutPasteManager", () => {
 				grafcetB,
 				new CommandsStack<Grafcet>(100),
 				() => Dialect.FR,
+				clipboard,
 			);
 			storeB.getState().viewManager.rfInstance = fakeRfInstance();
 

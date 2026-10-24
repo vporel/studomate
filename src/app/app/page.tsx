@@ -5,10 +5,8 @@ import { AppContextProvider } from "@/ui/components/AppContext";
 import AppStartup from "@/ui/components/AppStartup";
 import FullScreenLoader from "@/ui/components/FullScreenLoader";
 import ServiceWorkerUpdater from "@/ui/components/offline/ServiceWorkerUpdater";
-import {
-	ProjectContextProvider,
-	useProjectStore,
-} from "@/ui/components/projects/ProjectContext";
+import { ProjectContextProvider } from "@/ui/components/projects/ProjectContextProvider";
+import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import dynamic from "next/dynamic";
 import NoIndexOnQuery from "./NoIndexOnQuery";
 import { useEffect, useState } from "react";
@@ -22,7 +20,9 @@ const AppShell = dynamic(() => import("@/ui/components/AppShell"), {
 
 function AppComponent() {
 	const projectOpened = useProjectStore((state) => !!state.project);
-	const restoring = useProjectStore((state) => state.bootStatus === "restoring");
+	const restoring = useProjectStore(
+		(state) => state.bootStatus === "restoring",
+	);
 
 	// `bootStatus` dépend de l'URL, indisponible au rendu serveur : on rend d'abord la sortie
 	// prérendue (page de démarrage), le splash pré-hydratation couvrant l'écran le temps que ce

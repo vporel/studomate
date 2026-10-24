@@ -28,6 +28,7 @@ function setup({
 	onCommit = jest.fn(),
 	ref,
 	mode = ProjectMode.DESIGN,
+	editingEnabled = true,
 	simulationVariablesStates = {} as Record<string, { value: unknown }>,
 	showSimulationValue,
 	simulationValueProps,
@@ -48,6 +49,7 @@ function setup({
 	onCommit?: (next: string) => void;
 	ref?: React.Ref<VariableSelectorHandle>;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 	simulationVariablesStates?: Record<string, { value: unknown }>;
 	showSimulationValue?: boolean;
 	simulationValueProps?: { position?: "TOP" | "BOTTOM" };
@@ -60,6 +62,7 @@ function setup({
 		selectorImplementation({
 			project: project ?? ProjectFactory.createWithVariables(variables),
 			mode,
+			editingEnabled,
 			simulationVariablesStates,
 		}),
 	);
@@ -86,12 +89,34 @@ function setup({
 	return { onCommit };
 }
 
+describe("VariableSelector — lecture seule", () => {
+	it("n'est pas éditable sur un projet en lecture seule", () => {
+		setup({ value: "X1", editingEnabled: false });
+
+		expect(screen.getByRole("combobox")).toHaveAttribute("readonly");
+	});
+
+	it("n'est pas éditable en simulation", () => {
+		setup({ value: "X1", mode: ProjectMode.SIMULATION });
+
+		expect(screen.getByRole("combobox")).toHaveAttribute("readonly");
+	});
+
+	it("est éditable en conception", () => {
+		setup({ value: "X1" });
+
+		expect(screen.getByRole("combobox")).not.toHaveAttribute("readonly");
+	});
+});
+
 describe("VariableSelector — validation différée", () => {
 	it("commite la saisie en cours au démontage", () => {
 		const onCommit = jest.fn();
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: ProjectFactory.createWithVariables([]),
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
 				simulationVariablesStates: {},
 			}),
 		);
@@ -110,6 +135,8 @@ describe("VariableSelector — validation différée", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: ProjectFactory.createWithVariables([]),
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
 				simulationVariablesStates: {},
 			}),
 		);
@@ -511,6 +538,8 @@ describe("VariableSelector — menu contextuel", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				project: ProjectFactory.createWithVariables(variables),
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
 				simulationVariablesStates: {},
 				setCrossReferenceFilter,
 				setCrossReferenceResultVisible,

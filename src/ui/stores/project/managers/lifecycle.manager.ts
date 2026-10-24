@@ -3,7 +3,6 @@ import Project, {
 } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import type { Locale } from "@/i18n/config";
-import { resolveUiLocale } from "@/persistence/preferences.storage";
 import { PROJECT_TEMPLATES } from "@/templates/index";
 import localizeProject from "@/templates/localize-project";
 import { getTemplateStatement } from "@/templates/template-text";
@@ -13,23 +12,14 @@ import {
 } from "@/persistence/repositories/project.repository";
 import { toast } from "react-toastify";
 import {
-	getActivePageIdFromUrl,
-	setActivePageIdInUrl,
-} from "@/ui/stores/project/url/pages-url";
-import {
-	clearShareTokenFromUrl,
-	setProjectIdInUrl,
-	setShareTokenInUrl,
-} from "@/ui/stores/project/url/project-url";
-import {
 	Draft,
 	deleteDraft,
 	getDraft,
 	parseDraftProject,
 	saveDraft,
 } from "@/persistence/draft.storage";
-import { clearClipboard } from "@/ui/stores/shared/clipboard.store";
-import trackEvent from "@/ui/services/analytics";
+import type { PagesSession } from "@/persistence/pages-session.storage";
+import type { ProjectStoreEnvironment } from "../environment/project-store-environment";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
 	getInitialPagesData,
@@ -37,6 +27,7 @@ import {
 } from "../pages-session-restore";
 import resolveSaveLocationIfNeeded from "../save-location";
 import {
+	PageData,
 	ProjectStoreGetFunction,
 	ProjectStoreSetFunction,
 } from "../project.store.types";
@@ -70,12 +61,19 @@ export default class ProjectLifecycleManager {
 	private unprimedDraft: { projectId: string; draftSavedAt: number } | null =
 		null;
 
-	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
+	constructor(
+		set: ProjectStoreSetFunction,
+		get: ProjectStoreGetFunction,
+		private readonly env: ProjectStoreEnvironment,
+	) {
 		this.setStoreState = set;
 		this.getStoreState = get;
 	}
 
-	private async doOpenProject(project: Project): Promise<void> {
+	private applyOpenedProject(
+		project: Project,
+		initialPagesData: Record<string, PageData>,
+	): void {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
 		this.unprimedDraft = null;
@@ -87,31 +85,54 @@ export default class ProjectLifecycleManager {
 		get().scene3dLinkManager.close();
 		//Le presse-papiers aussi : ses éléments référencent des variables par id, sans validité
 		//dans un autre projet.
-		clearClipboard();
-		const initialPagesData = getInitialPagesData();
+		get().clipboard.getState().clear();
+		const pagesOrder = Object.keys(initialPagesData);
 		set(() => ({
 			project: project,
 			bootStatus: "idle",
 			hasUnsavedChanges: false,
 			autoSaveUnavailable: false,
 			pagesData: initialPagesData,
-			pagesOrder: Object.keys(initialPagesData),
-			activePageId: Object.keys(initialPagesData)[0],
+			pagesOrder,
+			activePageId: pagesOrder[0] ?? null,
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
+	}
+
+	/**
+	 * Opens `project` as given, with `pages` as the only open tabs (the first one active, unless
+	 * `activePageId` designates another of them). Touches neither the URL, the storage nor the
+	 * repository, so it works on a store without persistence.
+	 */
+	openProjectInstance(
+		project: Project,
+		pages: PageData[],
+		activePageId?: string,
+	): void {
+		const pagesData: Record<string, PageData> = {};
+		for (const page of pages) pagesData[page.id] = page;
+		this.applyOpenedProject(project, pagesData);
+		const active = pages.find((page) => page.id === activePageId) ?? pages[0];
+		if (!active) return;
+		this.setStoreState(() => ({ activePageId: active.id }));
+		this.getStoreState().setActiveScope(active.id);
+	}
+
+	private async doOpenProject(project: Project): Promise<void> {
+		this.applyOpenedProject(project, getInitialPagesData());
 		//Pour qu'un rechargement de la page rouvre le même projet, voir ProjectContextProvider
-		setProjectIdInUrl(project.id);
-		clearShareTokenFromUrl();
+		this.env.persistence?.url.setProjectId(project.id);
+		this.env.persistence?.url.clearShareToken();
 		//Repart de zéro : un `activePage` d'URL laissé par un projet précédent n'a aucun sens ici.
 		//`openProject` l'a lu avant cet appel s'il doit le restaurer, voir restorePagesSession.
-		setActivePageIdInUrl(null);
+		this.env.persistence?.url.setActivePageId(null);
 	}
 
 	private async doNewProject(
 		templateId: string | null = null,
 		variant: "exercise" | "solution" = "exercise",
-		locale: Locale = resolveUiLocale(),
+		locale: Locale = this.env.getLocale(),
 	): Promise<void> {
 		let project: Project;
 		if (templateId !== null) {
@@ -136,7 +157,10 @@ export default class ProjectLifecycleManager {
 		} else {
 			project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
 		}
-		trackEvent("project-created", { template: templateId ?? "blank", variant });
+		this.env.analytics.trackEvent("project-created", {
+			template: templateId ?? "blank",
+			variant,
+		});
 		await this.doOpenProject(project);
 	}
 
@@ -167,9 +191,9 @@ export default class ProjectLifecycleManager {
 			activeScope: "project",
 			activeScopeType: "project",
 		}));
-		setProjectIdInUrl(null);
-		clearShareTokenFromUrl();
-		setActivePageIdInUrl(null);
+		this.env.persistence?.url.setProjectId(null);
+		this.env.persistence?.url.clearShareToken();
+		this.env.persistence?.url.setActivePageId(null);
 	}
 
 	/**
@@ -182,13 +206,20 @@ export default class ProjectLifecycleManager {
 	): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
-		const urlActiveId = getActivePageIdFromUrl();
+		const urlActiveId = this.env.persistence?.url.getActivePageId() ?? null;
 		await this.doOpenProject(project);
 		set(() => ({
 			isSharedProject: opts.shared,
 			hasUnsavedChanges: opts.unsaved,
 		}));
-		restorePagesSession(set, get, project, urlActiveId);
+		if (this.env.persistence)
+			restorePagesSession(
+				set,
+				get,
+				project,
+				urlActiveId,
+				this.env.persistence.pagesSession,
+			);
 	}
 
 	private openDraftConflictModal(projectId: string, draft: Draft): void {
@@ -279,12 +310,12 @@ export default class ProjectLifecycleManager {
 			return false;
 		}
 		await this.doOpenProject(project);
-		trackEvent("shared-project-opened");
+		this.env.analytics.trackEvent("shared-project-opened");
 		set(() => ({ isSharedProject: true, shareToken: null }));
 		//Un projet partagé n'a pas de brouillon ni d'entrée dans l'index local : seul le token
 		//permet de le rouvrir après un rechargement.
-		setProjectIdInUrl(null);
-		setShareTokenInUrl(token);
+		this.env.persistence?.url.setProjectId(null);
+		this.env.persistence?.url.setShareToken(token);
 		return true;
 	}
 
@@ -322,6 +353,37 @@ export default class ProjectLifecycleManager {
 		await this.doNewProject(templateId, variant, locale);
 	}
 
+	/**
+	 * Opens a project built outside the application (a page of the site) as a new project, with
+	 * the statement of the template it comes from and the tabs that were open on it.
+	 */
+	async newProjectFromHandoff(
+		project: Project,
+		templateId: string | null,
+		locale: Locale,
+		pages: PagesSession,
+	): Promise<void> {
+		const statement = templateId
+			? getTemplateStatement(templateId, locale)
+			: null;
+		if (statement) project.exercise = { statement };
+		this.env.analytics.trackEvent("project-created", {
+			template: templateId ?? "blank",
+			variant: "handoff",
+		});
+		await this.doOpenProject(project);
+		const persistence = this.env.persistence;
+		if (!persistence) return;
+		persistence.pagesSession.set(project.id, pages);
+		restorePagesSession(
+			this.setStoreState,
+			this.getStoreState,
+			project,
+			null,
+			persistence.pagesSession,
+		);
+	}
+
 	/** true si réellement enregistré. */
 	async saveProject(): Promise<boolean> {
 		const set = this.setStoreState;
@@ -348,7 +410,12 @@ export default class ProjectLifecycleManager {
 			}
 			if (stored) this.unprimedDraft = null;
 		}
-		const location = await resolveSaveLocationIfNeeded(project, get, set);
+		const location = await resolveSaveLocationIfNeeded(
+			project,
+			get,
+			set,
+			this.env,
+		);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;
@@ -403,7 +470,12 @@ export default class ProjectLifecycleManager {
 		copy.touch();
 
 		set(() => ({ savingProject: true }));
-		const location = await resolveSaveLocationIfNeeded(copy, get, set);
+		const location = await resolveSaveLocationIfNeeded(
+			copy,
+			get,
+			set,
+			this.env,
+		);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
 			return false;

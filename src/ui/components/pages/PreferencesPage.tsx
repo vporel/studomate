@@ -9,19 +9,12 @@ import {
 import { StorageLocation } from "@/persistence/repositories/project.repository";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
-import { PageData } from "@/ui/stores/project/project.store";
 import { Box, Checkbox, FormControlLabel, Typography } from "@mui/material";
 import { useState } from "react";
 import StorageLocationRadioGroup from "../projects/StorageLocationRadioGroup";
 import LanguageRadioGroup from "./LanguageRadioGroup";
 import Page from "./Page";
-
-export const PREFERENCES_PAGE_ID = "preferences";
-export const PREFERENCES_PAGE_DATA: PageData = {
-	id: PREFERENCES_PAGE_ID,
-	type: "preferences",
-	title: "Préférences",
-};
+import { PREFERENCES_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 const PreferencesPage = () => {
 	const t = useT("preferences");

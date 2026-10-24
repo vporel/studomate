@@ -27,7 +27,10 @@ function sceneCommand() {
 	});
 }
 
-function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
+function makeStore(
+	mode: ProjectMode = ProjectMode.DESIGN,
+	editingEnabled = true,
+) {
 	const project = new Project("p1", "Projet", "");
 	project.variables = [
 		new Variable({
@@ -42,6 +45,7 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 	let state = {
 		project,
 		mode,
+		editingEnabled,
 		hasUnsavedChanges: false,
 		hasCommandsToUndo: false,
 		hasCommandsToRedo: false,
@@ -70,6 +74,18 @@ function makeStore(mode: ProjectMode = ProjectMode.DESIGN) {
 
 describe("ProjectCommandsStackManager (project)", () => {
 	describe("executeOperation", () => {
+		it("n'applique rien sur un projet en lecture seule, sans avertir", () => {
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const { get, manager } = makeStore(ProjectMode.DESIGN, false);
+
+			manager.executeOperation([renameCommand("moteur", "pompe")]);
+
+			expect(get().project!.variables[0].mnemonic).toBe("moteur");
+			expect(get().hasUnsavedChanges).toBe(false);
+			expect(warn).not.toHaveBeenCalled();
+			warn.mockRestore();
+		});
+
 		it("applique la commande et marque le projet modifié", () => {
 			const { get, manager } = makeStore();
 
@@ -350,8 +366,10 @@ describe("ProjectCommandsStackManager (project)", () => {
 			ids: { grafcet: string; ladder: string; page: string },
 			times: number,
 		) {
-			const clearGrafcets = get().grafcetsManager.clearCommandsStacksOf as jest.Mock;
-			const clearLadders = get().laddersManager.clearCommandsStacksOf as jest.Mock;
+			const clearGrafcets = get().grafcetsManager
+				.clearCommandsStacksOf as jest.Mock;
+			const clearLadders = get().laddersManager
+				.clearCommandsStacksOf as jest.Mock;
 			const clearPages = get().hmiManager.clearCommandsStacksOf as jest.Mock;
 			expect(clearGrafcets).toHaveBeenCalledTimes(times);
 			expect(clearGrafcets).toHaveBeenLastCalledWith([ids.grafcet]);
@@ -387,7 +405,9 @@ describe("ProjectCommandsStackManager (project)", () => {
 				]),
 			]);
 
-			expect(get().grafcetsManager.clearCommandsStacksOf).not.toHaveBeenCalled();
+			expect(
+				get().grafcetsManager.clearCommandsStacksOf,
+			).not.toHaveBeenCalled();
 			expect(get().laddersManager.clearCommandsStacksOf).not.toHaveBeenCalled();
 			expect(get().hmiManager.clearCommandsStacksOf).not.toHaveBeenCalled();
 		});

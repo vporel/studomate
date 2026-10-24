@@ -1,4 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
+import useCanEdit from "../projects/useCanEdit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -16,10 +17,7 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import Variable from "@/schemas/variable/variable.schema";
-import {
-	exportVariablesTablePdf,
-	type VariablesTableColumns,
-} from "@/ui/pdf/variables-table-pdf";
+import type { VariablesTableColumns } from "@/ui/pdf/variables-table-pdf";
 import trackEvent from "@/ui/services/analytics";
 import {
 	ExportCsv,
@@ -94,28 +92,33 @@ export default function GridToolBar({
 	const [exportMenuOpen, setExportMenuOpen] = React.useState(false);
 	const exportMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
 	const variablesManager = useProjectStore((state) => state.variablesManager);
+	const canEdit = useCanEdit();
+	const pdfExport = useProjectStore((state) => state.capabilities.pdfExport);
 	const apiRef = useGridApiContext();
 
 	const exportPdf = () => {
 		setExportMenuOpen(false);
 		const date = new Date().toLocaleDateString();
-		void exportVariablesTablePdf({
-			filename: `${projectName} - ${pageTitle}`,
-			title: tExport("variablesPdfHeading", {
-				page: pageTitle,
-				project: projectName,
-				date,
-			}),
-			variables: zoneVariables,
-			columns: pdfColumns,
-			labels: {
-				mnemonic: tColumns("mnemonic"),
-				type: tColumns("type"),
-				address: tColumns("address"),
-				declaredValue: tColumns("declaredValue"),
-				comment: tColumns("comment"),
-			},
-		})
+		void import("@/ui/pdf/variables-table-pdf")
+			.then(({ exportVariablesTablePdf }) =>
+				exportVariablesTablePdf({
+					filename: `${projectName} - ${pageTitle}`,
+					title: tExport("variablesPdfHeading", {
+						page: pageTitle,
+						project: projectName,
+						date,
+					}),
+					variables: zoneVariables,
+					columns: pdfColumns,
+					labels: {
+						mnemonic: tColumns("mnemonic"),
+						type: tColumns("type"),
+						address: tColumns("address"),
+						declaredValue: tColumns("declaredValue"),
+						comment: tColumns("comment"),
+					},
+				}),
+			)
 			.then(() =>
 				trackEvent("pdf-exported", { programs: 0, withVariablesTable: true }),
 			)
@@ -141,28 +144,34 @@ export default function GridToolBar({
 	return (
 		<Toolbar>
 			<Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 0.5 }}>
-				<Tooltip title={t("delete")}>
-					<span>
-						<IconButton
-							disabled={rowSelectionModel.ids.size === 0}
-							onClick={() =>
-								variablesManager.removeVariables(
-									Array.from(rowSelectionModel.ids).map((id) => id.toString()),
-								)
-							}
-							aria-label={t("deleteSelectedAria")}
+				{canEdit && (
+					<>
+						<Tooltip title={t("delete")}>
+							<span>
+								<IconButton
+									disabled={rowSelectionModel.ids.size === 0}
+									onClick={() =>
+										variablesManager.removeVariables(
+											Array.from(rowSelectionModel.ids).map((id) =>
+												id.toString(),
+											),
+										)
+									}
+									aria-label={t("deleteSelectedAria")}
+								>
+									<DeleteIcon />
+								</IconButton>
+							</span>
+						</Tooltip>
+						<Button
+							size="small"
+							startIcon={<AddIcon />}
+							onClick={goToNewVariableRow}
 						>
-							<DeleteIcon />
-						</IconButton>
-					</span>
-				</Tooltip>
-				<Button
-					size="small"
-					startIcon={<AddIcon />}
-					onClick={goToNewVariableRow}
-				>
-					{t("newVariable")}
-				</Button>
+							{t("newVariable")}
+						</Button>
+					</>
+				)}
 			</Box>
 			<Tooltip title={t("filters")}>
 				<FilterPanelTrigger
@@ -214,7 +223,7 @@ export default function GridToolBar({
 					},
 				}}
 			>
-				<MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>
+				{pdfExport && <MenuItem onClick={exportPdf}>{t("exportPdf")}</MenuItem>}
 				<ExportCsv
 					render={<MenuItem />}
 					onClick={() => setExportMenuOpen(false)}

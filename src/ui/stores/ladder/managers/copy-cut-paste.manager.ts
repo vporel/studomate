@@ -28,6 +28,7 @@ import {
 } from "@/ui/utils/ladder/ladder-flow-builder";
 import { computeAutoConnectionsForElements } from "@/ui/utils/ladder/ladder-auto-connect";
 import { CELL_SUBDIVISIONS } from "@/ui/utils/ladder/ladder-connection-path";
+import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
 /** Renvoie la copie d'un bloc timer/compteur nommé avec un nom suffixé absent de `takenNames`
@@ -64,8 +65,9 @@ export default class LadderCopyCutPasteManager extends AbstractCopyCutPasteManag
 	constructor(
 		setStoreState: LadderStoreSetFunction,
 		getStoreState: LadderStoreGetFunction,
+		clipboard: ClipboardStore,
 	) {
-		super();
+		super(clipboard);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}

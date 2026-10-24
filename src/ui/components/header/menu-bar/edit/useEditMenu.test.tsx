@@ -6,11 +6,16 @@ import { i18nWrapper } from "@tests/utils/i18n";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
-	clearClipboard,
-	setClipboardEntry,
+	createClipboardStore,
+	type ClipboardEntry,
 } from "@/ui/stores/shared/clipboard.store";
 import { selectorImplementation } from "@tests/utils/store-mocks";
 import useEditMenu from "./useEditMenu";
+
+const clipboard = createClipboardStore();
+const clearClipboard = () => clipboard.getState().clear();
+const setClipboardEntry = (entry: ClipboardEntry) =>
+	clipboard.getState().setEntry(entry);
 
 jest.mock("@/ui/components/projects/ProjectContext");
 
@@ -79,6 +84,7 @@ describe("useEditMenu", () => {
 		});
 		const state = {
 			activeScopeType: "grafcet",
+			clipboard,
 			grafcetsManager,
 			laddersManager,
 			hmiManager,

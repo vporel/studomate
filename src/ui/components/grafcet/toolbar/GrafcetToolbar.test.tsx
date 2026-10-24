@@ -16,12 +16,17 @@ jest.mock("../context/GrafcetContext");
 describe("GrafcetToolbar", () => {
 	it("assemble tous les outils sans planter", () => {
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ mode: ProjectMode.DESIGN }),
+			selectorImplementation({
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+			}),
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				grafcet: { id: "g1", excludedFromExecution: false },
 				nodes: [],
+				zoom: 1,
+				minZoom: 0.5,
 				viewManager: {
 					getZoom: () => 1,
 					zoomIn: jest.fn(),
@@ -53,6 +58,7 @@ describe("GrafcetToolbar", () => {
 				document.querySelector(`.grafcet-toolbar__${cls}`),
 			).toBeInTheDocument();
 		});
+		expect(screen.getByText("100%")).toBeInTheDocument();
 		expect(document.querySelector(".app-toolbar__zoom-in")).toBeInTheDocument();
 		expect(
 			document.querySelector(".app-toolbar__zoom-out"),
@@ -62,12 +68,18 @@ describe("GrafcetToolbar", () => {
 	it("shows the execution warning for an excluded grafcet, whose dialog re-includes it", () => {
 		const grafcetsManager = { setExcludedFromExecution: jest.fn() };
 		(useProjectStore as unknown as jest.Mock).mockImplementation(
-			selectorImplementation({ mode: ProjectMode.DESIGN, grafcetsManager }),
+			selectorImplementation({
+				mode: ProjectMode.DESIGN,
+				editingEnabled: true,
+				grafcetsManager,
+			}),
 		);
 		(useGrafcetStore as unknown as jest.Mock).mockImplementation(
 			selectorImplementation({
 				grafcet: { id: "g1", excludedFromExecution: true },
 				nodes: [],
+				zoom: 1,
+				minZoom: 0.5,
 				viewManager: {
 					getZoom: () => 1,
 					zoomIn: jest.fn(),

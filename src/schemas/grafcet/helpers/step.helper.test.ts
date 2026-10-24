@@ -58,7 +58,9 @@ describe("StepHelper.parseStepVariableMnemonic", () => {
 
 	it.each([0, 1, 7, 42, 100])("round-trips step number %i", (n) => {
 		expect(
-			StepHelper.parseStepVariableMnemonic(StepHelper.getStepVariableMnemonic(n)),
+			StepHelper.parseStepVariableMnemonic(
+				StepHelper.getStepVariableMnemonic(n),
+			),
 		).toBe(n);
 	});
 });

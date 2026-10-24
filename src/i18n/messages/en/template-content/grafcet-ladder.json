@@ -4,6 +4,7 @@
 		"initialStepDescription": "On the first scan, the initialization memory is false: the initial steps are activated.",
 		"initLatchTitle": "Initialization latch",
 		"initLatchDescription": "The initialization memory latches: activation happens only once.",
+		"transitionDescription": "If the upstream step is active and the receptivity true, the upstream step is deactivated and the downstream step is activated.",
 		"crossingTitle": "Crossing condition {name}",
 		"crossingDescription": "All conditions are computed before any evolution (rule 4).",
 		"deactivationTitle": "Deactivation by {name}",

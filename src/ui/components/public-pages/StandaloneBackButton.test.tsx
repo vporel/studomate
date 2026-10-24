@@ -58,7 +58,9 @@ describe("StandaloneBackButton", () => {
 	});
 
 	it("goes back in the history on click", () => {
-		const back = jest.spyOn(window.history, "back").mockImplementation(() => {});
+		const back = jest
+			.spyOn(window.history, "back")
+			.mockImplementation(() => {});
 		setup(true, true);
 
 		fireEvent.click(screen.getByRole("button", { name: "Retour" }));

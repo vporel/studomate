@@ -52,7 +52,11 @@ export default class ProjectAnalyser {
 		// `<Nom>.IN/.Q/.ET` d'un bloc tempo...), sans encore rien analyser — un programme ne peut
 		// valider ses propres références qu'après avoir vu ce que TOUS les autres génèrent (voir
 		// `ProgramAnalyser.generateVariables`).
-		const executedPrograms = project.getExecutedPrograms();
+		const executedPrograms = project
+			.getExecutedPrograms()
+			.filter(
+				(program) => !(program.isEmpty() && program.isSkippedWhenEmpty()),
+			);
 		for (const program of executedPrograms) {
 			const analyser = PROGRAM_ANALYSERS[program.type];
 			if (!analyser) continue;

@@ -7,7 +7,6 @@ import {
 } from "@/hardware/hardware-device.registry";
 import type { HardwareModelId } from "@/schemas/hardware/hardware-target.schema";
 import { useT } from "@/ui/i18n/useT";
-import { PageData } from "@/ui/stores/project/project.store";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import {
 	Alert,
@@ -30,13 +29,7 @@ import { useProjectStore } from "../projects/ProjectContext";
 import Page from "./Page";
 import getHardwareTargetEditor from "./hardware/hardware-target-editors";
 import { pinLabel, whiteFieldSx } from "./hardware/hardware-target-editor";
-
-export const HARDWARE_CONFIGURATION_PAGE_ID = "hardware-configuration";
-export const HARDWARE_CONFIGURATION_PAGE_DATA: PageData = {
-	id: HARDWARE_CONFIGURATION_PAGE_ID,
-	type: "hardware-configuration",
-	title: "Configuration matérielle",
-};
+import { HARDWARE_CONFIGURATION_PAGE_ID } from "@/ui/stores/project/pages-data";
 
 const NO_TARGET = "none";
 const HardwareConfigurationPage = () => {

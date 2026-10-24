@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import SectionUpdateCommand from "@/schemas/ladder/commands/section-update.command";
 import Section from "@/schemas/ladder/section.schema";
 import { InputBase } from "@mui/material";
@@ -16,6 +17,7 @@ export default function LadderSectionDescription({
 		(state) => state.commandsStackManager,
 	);
 	const t = useT("ladderEditor.sectionDescription");
+	const canEdit = useCanEdit();
 
 	const handleBlur = useCallback(
 		(e: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -34,6 +36,7 @@ export default function LadderSectionDescription({
 
 	return (
 		<InputBase
+			readOnly={!canEdit}
 			defaultValue={section.description}
 			key={`desc-${section.description}`}
 			placeholder={t("placeholder")}

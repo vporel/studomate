@@ -76,3 +76,21 @@ export function isShareable(repo: unknown): repo is ShareableProjectRepository {
 		typeof candidate.deleteShareToken === "function"
 	);
 }
+
+/** Repository that stores each project either locally or in the cloud (`HybridProjectRepository`). */
+export interface StorageLocationAwareRepository extends ProjectRepository {
+	locationOf(projectId: string): StorageLocation;
+	moveToCloud(project: Project): Promise<SaveResult>;
+	moveToLocal(project: Project): Promise<SaveResult>;
+}
+
+export function isStorageLocationAware(
+	repo: unknown,
+): repo is StorageLocationAwareRepository {
+	const candidate = repo as StorageLocationAwareRepository;
+	return (
+		typeof candidate.locationOf === "function" &&
+		typeof candidate.moveToCloud === "function" &&
+		typeof candidate.moveToLocal === "function"
+	);
+}

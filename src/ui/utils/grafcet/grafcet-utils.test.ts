@@ -2,6 +2,7 @@ import {
 	GRAFCET_PAGE_DIMENSIONS,
 	getConnectionLinePoints,
 	getInitialConnectionPoints,
+	getPageFitZoom,
 	grafcetConnectionFromXYFlowConnectionOrEdge,
 } from "./grafcet-utils";
 
@@ -150,5 +151,21 @@ describe("grafcetConnectionFromXYFlowConnectionOrEdge", () => {
 describe("GRAFCET_PAGE_DIMENSIONS", () => {
 	it("correspond à une page A4 portrait en pixels (96 dpi)", () => {
 		expect(GRAFCET_PAGE_DIMENSIONS).toEqual({ width: 794, height: 1123 });
+	});
+});
+
+describe("getPageFitZoom", () => {
+	const { width: PAGE_WIDTH } = GRAFCET_PAGE_DIMENSIONS;
+
+	it("cale le zoom sur la largeur de la page dans un conteneur étroit", () => {
+		expect(getPageFitZoom(PAGE_WIDTH / 1.25, 0.5)).toBeCloseTo(0.8);
+	});
+
+	it("ne dépasse pas le zoom 1 dans un conteneur plus large que la page", () => {
+		expect(getPageFitZoom(PAGE_WIDTH + 200, 0.5)).toBe(1);
+	});
+
+	it("ne descend pas sous le zoom minimal", () => {
+		expect(getPageFitZoom(200, 0.5)).toBe(0.5);
 	});
 });

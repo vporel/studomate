@@ -1,8 +1,5 @@
 import Ladder from "../ladder.schema";
-import {
-	GridPosition,
-	LadderElementDataChanges,
-} from "../element.schema";
+import { GridPosition, LadderElementDataChanges } from "../element.schema";
 import AbstractLadderCommand from "./abstract-ladder.command";
 
 type ElementChanges = {

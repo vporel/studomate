@@ -1,10 +1,10 @@
 "use client";
 
 import HomeIcon from "@mui/icons-material/HomeOutlined";
-import { PROJECT_STARTUP_PAGE_DATA } from "../pages/ProjectStartupPage";
 import { useProjectStore } from "../projects/ProjectContext";
 import { useT } from "@/ui/i18n/useT";
 import AppTool from "./AppTool";
+import { PROJECT_STARTUP_PAGE_DATA } from "@/ui/stores/project/pages-data";
 
 const HomeTool = () => {
 	const t = useT("chrome.toolbar");

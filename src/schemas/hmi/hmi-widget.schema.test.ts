@@ -267,23 +267,41 @@ describe("HmiWidget.getResizeAspectRatio", () => {
 	});
 
 	it("fige le ratio courant quand lockAspectRatio est vrai", () => {
-		const w = HmiWidget.create("rectangle", 0, 0, { width: 120, height: 80 }, {
-			lockAspectRatio: true,
-		});
+		const w = HmiWidget.create(
+			"rectangle",
+			0,
+			0,
+			{ width: 120, height: 80 },
+			{
+				lockAspectRatio: true,
+			},
+		);
 		expect(HmiWidget.getResizeAspectRatio(w)).toBeCloseTo(1.5);
 	});
 
 	it("donne 1 pour un widget carré verrouillé (cercle via l'outil palette)", () => {
-		const w = HmiWidget.create("ellipse", 0, 0, { width: 40, height: 40 }, {
-			lockAspectRatio: true,
-		});
+		const w = HmiWidget.create(
+			"ellipse",
+			0,
+			0,
+			{ width: 40, height: 40 },
+			{
+				lockAspectRatio: true,
+			},
+		);
 		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);
 	});
 
 	it("le ratio imposé par le type l'emporte sur lockAspectRatio", () => {
-		const w = HmiWidget.create("indicator", 0, 0, { width: 40, height: 40 }, {
-			lockAspectRatio: true,
-		});
+		const w = HmiWidget.create(
+			"indicator",
+			0,
+			0,
+			{ width: 40, height: 40 },
+			{
+				lockAspectRatio: true,
+			},
+		);
 		expect(HmiWidget.getResizeAspectRatio(w)).toBe(1);
 	});
 });
@@ -408,19 +426,12 @@ describe("HMI_WIDGET_DEFINITIONS", () => {
 
 	it("les widgets numériques ne lient pas de variable BOOL", () => {
 		(
-			[
-				"numeric-display",
-				"gauge",
-				"numeric-input",
-				"slider",
-			] as HmiWidgetType[]
-		).forEach(
-			(type) => {
-				const types = HMI_WIDGET_DEFINITIONS[type].variableBinding?.types ?? [];
-				expect(types).not.toContain("BOOL");
-				expect(types.length).toBeGreaterThan(0);
-			},
-		);
+			["numeric-display", "gauge", "numeric-input", "slider"] as HmiWidgetType[]
+		).forEach((type) => {
+			const types = HMI_WIDGET_DEFINITIONS[type].variableBinding?.types ?? [];
+			expect(types).not.toContain("BOOL");
+			expect(types.length).toBeGreaterThan(0);
+		});
 	});
 
 	it("les formes n'ont pas de liaison à une variable", () => {

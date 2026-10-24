@@ -42,15 +42,8 @@ const COLUMN_HEIGHT = 3 * VOYANT_SIZE.height + 2 * VOYANT_GAP;
 /** Y du premier voyant (rouge), centré verticalement avec un décalage pour laisser de la place au titre */
 const Y_START = CY - COLUMN_HEIGHT / 2 + 30;
 
-/**
- * Crée un projet "Feu tricolore" pré-configuré :
- * — 3 variables de sortie booléennes (rouge, orange, vert)
- * — 1 page HMI avec 3 voyants animés par style + un titre
- * — aucun programme (l'étudiant l'écrit)
- *
- * Appelée par `_newProject` quand l'utilisateur choisit ce template.
- */
-export function createTrafficLightProject(locale: Locale = "fr"): Project {
+/** Variables and HMI page, shared by the exercise, the solution and the Ladder variants. */
+export function createTrafficLightBase(locale: Locale = "fr"): Project {
 	const t = createTemplateText("traffic-light", locale);
 	const project = new Project(createRandomId(), t("projectName"), "");
 
@@ -160,6 +153,21 @@ export function createTrafficLightProject(locale: Locale = "fr"): Project {
 }
 
 /**
+ * Crée un projet "Feu tricolore" pré-configuré :
+ * — 3 variables de sortie booléennes (rouge, orange, vert)
+ * — 1 page HMI avec 3 voyants animés par style + un titre
+ * — un GRAFCET vide (l'étudiant le dessine)
+ *
+ * Appelée par `_newProject` quand l'utilisateur choisit ce template.
+ */
+export function createTrafficLightProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("traffic-light", locale);
+	const project = createTrafficLightBase(locale);
+	project.createGrafcet(t("grafcetName"));
+	return project;
+}
+
+/**
  * Version complète et simulable du feu tricolore :
  * GRAFCET à 3 étapes (une par couleur, la première initiale) avec temporisations,
  * et le même HMI que la version exercice.
@@ -168,7 +176,7 @@ export function createTrafficLightProject(locale: Locale = "fr"): Project {
  */
 export function createTrafficLightSolution(locale: Locale = "fr"): Project {
 	const t = createTemplateText("traffic-light", locale);
-	const project = createTrafficLightProject(locale);
+	const project = createTrafficLightBase(locale);
 	project.name = t("solutionName");
 
 	// Positions verticales : étapes et transitions alternées, espacées de 50 px

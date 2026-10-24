@@ -50,7 +50,11 @@ describe("TrainingModuleRow", () => {
 
 	it("un module pas encore disponible affiche un message au clic", () => {
 		renderWithI18n(
-			<TrainingModuleRow {...defaultProps} label="Module 2" available={false} />,
+			<TrainingModuleRow
+				{...defaultProps}
+				label="Module 2"
+				available={false}
+			/>,
 		);
 
 		fireEvent.click(screen.getByRole("button", { name: /module 2/i }));
@@ -62,7 +66,11 @@ describe("TrainingModuleRow", () => {
 
 	it("un module pas encore disponible réagit aussi au clavier (Entrée)", () => {
 		renderWithI18n(
-			<TrainingModuleRow {...defaultProps} label="Module 3" available={false} />,
+			<TrainingModuleRow
+				{...defaultProps}
+				label="Module 3"
+				available={false}
+			/>,
 		);
 
 		fireEvent.keyDown(screen.getByRole("button", { name: /module 3/i }), {

@@ -45,10 +45,22 @@ describe("and-divergence.template", () => {
 			});
 		});
 
-		it("passe l'analyse sans erreur (projet sans programme est valide)", () => {
-			const { analysis } = compilePipelineDetailed(project);
+		it("fournit un grafcet vide à dessiner, nommé comme la solution", () => {
+			const grafcets = Object.values(project.grafcets);
+			expect(grafcets).toHaveLength(1);
+			expect(grafcets[0].isEmpty()).toBe(true);
+			expect(grafcets[0].name).toBe(
+				Object.values(createAndDivergenceSolution().grafcets)[0].name,
+			);
+		});
+
+		it("passe l'analyse, la pré-compilation et la compilation sans erreur (le grafcet vide n'est pas exécuté)", () => {
+			const { analysis, preCompilation, compilation } =
+				compilePipelineDetailed(project);
 			const errors = analysis.issues.filter((i) => i.severity === "error");
 			expect(errors).toHaveLength(0);
+			expect(preCompilation.errors).toHaveLength(0);
+			expect(compilation.errors).toHaveLength(0);
 		});
 	});
 

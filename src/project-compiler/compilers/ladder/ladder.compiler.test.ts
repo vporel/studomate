@@ -16,6 +16,85 @@ function compileToNodes(preCompiled: PreCompiledLadder): ASTNode[] {
 }
 
 describe("LadderCompiler", () => {
+	describe("bobines partageant la même alimentation", () => {
+		const reach = IdentifiersBuilder.buildIdentifierNode("A");
+		const coil = (
+			coilId: string,
+			variable: string,
+			mode: "normal" | "set" | "reset",
+			extra: { reachId?: string; inverted?: boolean } = { reachId: "r1" },
+		) =>
+			({
+				kind: "coil",
+				coilId,
+				variable,
+				mode,
+				condition: reach,
+				reach,
+				...extra,
+			}) as const;
+		const ladderOf = (assignments: PreCompiledLadder["assignments"]) =>
+			({
+				type: "ladder",
+				role: "standard",
+				assignments,
+				timers: [],
+				counters: [],
+			}) as PreCompiledLadder;
+
+		it("évalue la condition une seule fois pour un reset suivi d'un set", () => {
+			const nodes = compileToNodes(
+				ladderOf([coil("c1", "X0", "reset"), coil("c2", "X1", "set")]),
+			);
+
+			expect(nodes).toHaveLength(1);
+			expect(nodes[0]).toMatchObject({
+				type: "IF_CONTROL",
+				condition: { type: "IDENTIFIER", value: "A" },
+				falseBranch: null,
+			});
+			const { trueBranch } = nodes[0] as { trueBranch: ASTNode[] };
+			expect(trueBranch).toMatchObject([
+				{ left: { value: "X0" }, right: { value: false } },
+				{ left: { value: "X1" }, right: { value: true } },
+			]);
+		});
+
+		it("écrit aussi la valeur inverse des bobines normales et inversées quand la condition est fausse", () => {
+			const nodes = compileToNodes(
+				ladderOf([
+					coil("c1", "Q1", "normal"),
+					coil("c2", "Q2", "normal", { reachId: "r1", inverted: true }),
+				]),
+			);
+
+			expect(nodes).toHaveLength(1);
+			expect(nodes[0]).toMatchObject({
+				type: "IF_CONTROL",
+				trueBranch: [
+					{ left: { value: "Q1" }, right: { value: true } },
+					{ left: { value: "Q2" }, right: { value: false } },
+				],
+				falseBranch: [
+					{ left: { value: "Q1" }, right: { value: false } },
+					{ left: { value: "Q2" }, right: { value: true } },
+				],
+			});
+		});
+
+		it("ne regroupe pas des bobines d'alimentations différentes ni une bobine isolée", () => {
+			const nodes = compileToNodes(
+				ladderOf([
+					coil("c1", "X0", "reset", { reachId: "r1" }),
+					coil("c2", "X1", "set", { reachId: "r2" }),
+					coil("c3", "X2", "set", {}),
+				]),
+			);
+
+			expect(nodes).toHaveLength(3);
+		});
+	});
+
 	it("compile une bobine normal en une simple affectation", () => {
 		const condition = IdentifiersBuilder.buildIdentifierNode("A");
 		const preCompiled: PreCompiledLadder = {

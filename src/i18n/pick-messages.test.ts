@@ -18,14 +18,15 @@ describe("pickMessages", () => {
 		const picked = pickMessages(messages, ["public.header", "public.footer"]);
 
 		expect(picked).toEqual({
-			public: { header: messages.public.header, footer: messages.public.footer },
+			public: {
+				header: messages.public.header,
+				footer: messages.public.footer,
+			},
 		});
 	});
 
 	it("ignore un namespace absent", () => {
-		expect(
-			pickMessages(messages, ["missing.namespace" as "auth"]),
-		).toEqual({});
+		expect(pickMessages(messages, ["missing.namespace" as "auth"])).toEqual({});
 	});
 
 	it("ne retient pas les namespaces non demandés", () => {

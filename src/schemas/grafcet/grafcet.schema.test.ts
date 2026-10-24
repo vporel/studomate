@@ -272,6 +272,28 @@ describe("Grafcet — table des collections d'éléments", () => {
 	});
 });
 
+describe("Grafcet : vide", () => {
+	it("is empty until it holds an element", () => {
+		const grafcet = new Grafcet("g1", "Grafcet");
+		expect(grafcet.isEmpty()).toBe(true);
+
+		grafcet.addElements([
+			{
+				type: "step",
+				id: "s0",
+				data: { number: 0, initial: true },
+				position: { x: 0, y: 0 },
+			},
+		]);
+
+		expect(grafcet.isEmpty()).toBe(false);
+	});
+
+	it("is skipped while empty", () => {
+		expect(new Grafcet("g1", "Grafcet").isSkippedWhenEmpty()).toBe(true);
+	});
+});
+
 describe("Grafcet : étapes initiales", () => {
 	function grafcetWithSteps(initials: (boolean | undefined)[]): Grafcet {
 		const grafcet = new Grafcet("g1", "Grafcet");

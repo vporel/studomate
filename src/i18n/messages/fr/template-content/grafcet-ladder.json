@@ -4,6 +4,7 @@
 		"initialStepDescription": "Au premier cycle, la mémoire d'initialisation est fausse : les étapes initiales s'activent.",
 		"initLatchTitle": "Verrouillage de l'initialisation",
 		"initLatchDescription": "La mémoire d'initialisation se verrouille : l'activation n'a lieu qu'une fois.",
+		"transitionDescription": "Si l'étape amont est active et la réceptivité vraie, l'étape amont se désactive et l'étape aval s'active.",
 		"crossingTitle": "Condition de franchissement {name}",
 		"crossingDescription": "Toutes les conditions sont calculées avant toute évolution (règle 4).",
 		"deactivationTitle": "Désactivation par {name}",

@@ -114,15 +114,8 @@
 		"missionBody": "<strong>Studomate</strong> est un outil pédagogique dédié à l'<strong>automatisme</strong> : apprentissage, conception et simulation du GRAFCET, du Ladder et des HMI, directement dans le navigateur.",
 		"missionBody2": "Sa raison d'être est de réduire à presque zéro la friction pour apprendre l'automatisme : pas d'installation, pas de licence, pas d'automate à configurer.",
 		"differentiatorLabel": "Son différenciateur : tout dans le même environnement",
-		"differentiatorEditors": [
-			"GRAFCET",
-			"Ladder",
-			"HMI animées"
-		],
-		"differentiatorItems": [
-			"Variables partagées",
-			"Scène 3D"
-		],
+		"differentiatorEditors": ["GRAFCET", "Ladder", "HMI animées"],
+		"differentiatorItems": ["Variables partagées", "Scène 3D"],
 		"offeringTitle": "Ce que propose Studomate",
 		"offeringItems": [
 			{

@@ -1,6 +1,6 @@
 import Connection from "@/schemas/grafcet/connection.schema";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
-import { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
+import type { GrafcetEdgeType } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
 import AbstractEdgesFactory from "@/ui/stores/shared/abstract-edges.factory";
 
 class EdgesFactory extends AbstractEdgesFactory<

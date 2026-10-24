@@ -26,6 +26,7 @@ const setup = (props = {}) =>
 		<TrainingModulePage
 			title="Module A0"
 			intro={"Introduction du module\n\n- point un\n- point deux"}
+			introLabel="Présentation et prérequis"
 			steps={steps}
 			moduleId="a0"
 			prevLabel="Précédent"
@@ -45,6 +46,16 @@ describe("TrainingModulePage", () => {
 		).toBeInTheDocument();
 		expect(screen.getByText("Introduction du module")).toBeInTheDocument();
 		expect(screen.getAllByRole("listitem")).toHaveLength(2);
+	});
+
+	it("place l'introduction dans un bloc dépliable, ouvert tant qu'aucune étape n'est passée", () => {
+		setup();
+
+		const details = screen
+			.getByText("Introduction du module")
+			.closest("details");
+		expect(details).toHaveAttribute("open");
+		expect(details).toHaveTextContent("Présentation et prérequis");
 	});
 
 	it("sur une page d'étape, rend le titre du module sans balise de titre et sans introduction", () => {
@@ -69,7 +80,10 @@ describe("TrainingModulePage", () => {
 	});
 
 	it("transmet ses propriétés au stepper", () => {
-		const nextModule = { href: "/training/a1" as const, label: "Module suivant" };
+		const nextModule = {
+			href: "/training/a1" as const,
+			label: "Module suivant",
+		};
 		setup({ nextModule });
 
 		expect(mockStepper).toHaveBeenCalledWith({

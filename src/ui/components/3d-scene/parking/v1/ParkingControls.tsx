@@ -60,10 +60,9 @@ export default function ParkingControls({
 					<ConsoleDisplay value={places} label={t("places")} />
 					<div
 						style={{
-							display: "grid",
-							gridTemplateColumns: "repeat(2, auto)",
-							justifyContent: "start",
-							gap: "8px 24px",
+							display: "flex",
+							flexDirection: "column",
+							gap: 8,
 						}}
 					>
 						{(

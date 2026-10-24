@@ -3,6 +3,8 @@ import { ProjectMode } from "../ProjectMode.enum";
 import { ProjectStoreState } from "../project.store";
 import LaddersManager from "./ladders.manager";
 
+const mockTrackEvent = jest.fn();
+
 function makeManager(initial: {
 	project?: Project | null;
 	mode?: ProjectMode;
@@ -15,6 +17,7 @@ function makeManager(initial: {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: true,
 		activeScope: initial.activeScope ?? "project",
 		activeScopeType: initial.activeScopeType ?? "project",
 		laddersStoresValues: initial.laddersStoresValues ?? {},
@@ -29,7 +32,10 @@ function makeManager(initial: {
 	};
 	const get = () => state;
 
-	return { manager: new LaddersManager(set, get), getState: () => state };
+	return {
+		manager: new LaddersManager(set, get, { trackEvent: mockTrackEvent }),
+		getState: () => state,
+	};
 }
 
 function projectWithLadder() {

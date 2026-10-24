@@ -1,7 +1,6 @@
-import { useProjectStore } from "@/ui/components/projects/ProjectContext";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { EDGE_INTERACTION_WIDTH } from "@/ui/constants";
 import { getStraightPathFromPoints } from "@/ui/lib/svg";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { getConnectionLinePoints } from "@/ui/utils/grafcet/grafcet-utils";
 import { Box, SxProps, Theme, useTheme } from "@mui/material";
 import { Edge, type EdgeProps } from "@xyflow/react";
@@ -60,7 +59,7 @@ const GrafcetConnectionEdge = ({
 		handlePointPointerMove,
 		handlePointPointerUp,
 	} = usePointPointerEventsHandlers(points, setPoints, id);
-	const projectMode = useProjectStore((state) => state.mode);
+	const canEdit = useCanEdit();
 
 	useEffect(() => {
 		if (!data || !data.points) return;
@@ -74,17 +73,16 @@ const GrafcetConnectionEdge = ({
 				visibility: "hidden",
 				opacity: 0,
 			},
-			"&:hover":
-				projectMode === ProjectMode.DESIGN
-					? {
-							".react-flow__edge-path__point": {
-								visibility: "visible",
-								opacity: 1,
-							},
-						}
-					: {},
+			"&:hover": canEdit
+				? {
+						".react-flow__edge-path__point": {
+							visibility: "visible",
+							opacity: 1,
+						},
+					}
+				: {},
 		}),
-		[projectMode],
+		[canEdit],
 	);
 
 	return (

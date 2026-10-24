@@ -20,10 +20,21 @@ import HmiPageView from "./HmiPageView";
  * `HmiManager.getCommandsStack`, tenue par id de page) — sans risque pour les données, cette vue
  * n'émettant jamais de commande.
  */
-const HmiSimulationPageView = () => {
+const HmiSimulationPageView = ({
+	tabPageId = HMI_SIMULATION_PAGE_ID,
+	defaultHmiPageId = null,
+	fitToContainer,
+}: {
+	/** Id de l'onglet à des fins de visibilité : l'onglet fixe de la simulation HMI par défaut. */
+	tabPageId?: string;
+	/** Page affichée tant qu'aucune navigation n'a désigné `hmiSimulationActivePageId`. */
+	defaultHmiPageId?: string | null;
+	fitToContainer?: boolean;
+}) => {
 	const t = useT("hmiEditor.simulationView");
 	const project = useProjectStore((s) => s.project);
-	const activeHmiPageId = useProjectStore((s) => s.hmiSimulationActivePageId);
+	const activeHmiPageId =
+		useProjectStore((s) => s.hmiSimulationActivePageId) ?? defaultHmiPageId;
 	const hmiPage = activeHmiPageId
 		? project?.getHmiPage(activeHmiPageId)
 		: undefined;
@@ -34,7 +45,7 @@ const HmiSimulationPageView = () => {
 	if (!hmiPage) {
 		return (
 			<Page
-				pageId={HMI_SIMULATION_PAGE_ID}
+				pageId={tabPageId}
 				sx={{ justifyContent: "center", alignItems: "center" }}
 			>
 				<Typography sx={{ color: "text.secondary" }}>{t("noPage")}</Typography>
@@ -46,8 +57,9 @@ const HmiSimulationPageView = () => {
 		<HmiPageView
 			key={hmiPage.id}
 			initialHmiPage={hmiPage}
-			tabPageId={HMI_SIMULATION_PAGE_ID}
+			tabPageId={tabPageId}
 			isSimulation
+			fitToContainer={fitToContainer}
 		/>
 	);
 };

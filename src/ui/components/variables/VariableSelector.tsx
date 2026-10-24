@@ -1,5 +1,6 @@
 "use client";
 
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { getBlockInstanceVariables } from "@/bridge/block-instance-variables.mapper";
 import { getStepVariables } from "@/bridge/step-variables.mapper";
 import { Dialect } from "@/expression-language/dialect.enum";
@@ -169,6 +170,7 @@ const VariableSelector = forwardRef<
 		[projectVariables, project],
 	);
 	const dialect = useProjectStore((s) => s.project?.dialect ?? Dialect.FR);
+	const canEdit = useCanEdit();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [editingValue, setEditingValue] = useState(value);
 	const [widthPx, setWidthPx] = useState(44);
@@ -329,6 +331,7 @@ const VariableSelector = forwardRef<
 			<Autocomplete
 				freeSolo
 				openOnFocus
+				readOnly={!canEdit}
 				size="small"
 				options={suggestions}
 				getOptionLabel={(option) =>

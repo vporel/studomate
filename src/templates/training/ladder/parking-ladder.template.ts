@@ -29,21 +29,19 @@ export const PARKING_COMMAND_SPEC: GrafcetLadderSpec = {
 	initial: ["X0"],
 	transitions: [
 		{
-			name: "T0",
 			from: ["X0"],
 			to: ["X1"],
 			receptivity: [no("dem_entree"), compare("places", "<", `${CAPACITE}`)],
 		},
 		{
-			name: "T1",
 			from: ["X0"],
 			to: ["X3"],
 			receptivity: [no("dem_sortie"), compare("places", ">", "0")],
 		},
-		{ name: "T2", from: ["X1"], to: ["X2"], receptivity: [no("passage")] },
-		{ name: "T3", from: ["X3"], to: ["X4"], receptivity: [no("passage")] },
-		{ name: "T4", from: ["X2"], to: ["X0"], receptivity: [nf("passage")] },
-		{ name: "T5", from: ["X4"], to: ["X0"], receptivity: [nf("passage")] },
+		{ from: ["X1"], to: ["X2"], receptivity: [no("passage")] },
+		{ from: ["X3"], to: ["X4"], receptivity: [no("passage")] },
+		{ from: ["X2"], to: ["X0"], receptivity: [nf("passage")] },
+		{ from: ["X4"], to: ["X0"], receptivity: [nf("passage")] },
 	],
 	resetCondition: [nf("arret")],
 };
@@ -55,13 +53,11 @@ export const PARKING_SIGNALLING_SPEC: GrafcetLadderSpec = {
 	initMemory: "init_signalisation",
 	transitions: [
 		{
-			name: "TS0",
 			from: ["S0"],
 			to: ["S1"],
 			receptivity: [compare("places", ">=", `${CAPACITE}`)],
 		},
 		{
-			name: "TS1",
 			from: ["S1"],
 			to: ["S0"],
 			receptivity: [compare("places", "<", `${CAPACITE}`)],

@@ -13,8 +13,8 @@ import { createGateCommonVariables } from "./ladder-gate.template";
 import {
 	GrafcetLadderSpec,
 	grafcetInitMemory,
-	grafcetMemories,
-	grafcetSections,
+	grafcetThreeBlockMemories,
+	grafcetThreeBlockSections,
 } from "@/templates/training/utils/grafcet-ladder";
 import { pushButton } from "@/templates/training/utils/training-variables";
 
@@ -30,45 +30,38 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 	initial: ["X0"],
 	transitions: [
 		{
-			name: "T0",
 			from: ["X0"],
 			to: ["X1"],
 			receptivity: [rising("telecommande")],
 		},
-		{ name: "T1", from: ["X1"], to: ["X2"], receptivity: [no("fc_ouvert")] },
+		{ from: ["X1"], to: ["X2"], receptivity: [no("fc_ouvert")] },
 		{
-			name: "T2",
 			from: ["X1"],
 			to: ["X4"],
 			receptivity: [pressOrStop, nf("fc_ouvert")],
 		},
 		{
-			name: "T3",
 			from: ["X2"],
 			to: ["X3"],
 			receptivity: [rising("telecommande")],
 		},
-		{ name: "T4", from: ["X3"], to: ["X0"], receptivity: [no("fc_ferme")] },
+		{ from: ["X3"], to: ["X0"], receptivity: [no("fc_ferme")] },
 		{
-			name: "T5",
 			from: ["X3"],
 			to: ["X5"],
 			receptivity: [pressOrStop, nf("barriere_immaterielle"), nf("fc_ferme")],
 		},
 		{
-			name: "T6",
 			from: ["X3"],
 			to: ["X1"],
 			receptivity: [no("barriere_immaterielle"), nf("fc_ferme")],
 		},
 		{
-			name: "T7",
 			from: ["X4"],
 			to: ["X3"],
 			receptivity: [rising("telecommande")],
 		},
 		{
-			name: "T8",
 			from: ["X5"],
 			to: ["X1"],
 			receptivity: [rising("telecommande")],
@@ -99,11 +92,13 @@ export function createGateGrafcetLadderSolution(
 	const project = createBase(t("solutionName"), locale);
 	const provided = new Set(project.variables.map((v) => v.mnemonic));
 	project.variables.push(
-		...grafcetMemories(GATE_SPEC).filter((v) => !provided.has(v.mnemonic)),
+		...grafcetThreeBlockMemories(GATE_SPEC).filter(
+			(v) => !provided.has(v.mnemonic),
+		),
 	);
 	setMainSections(
 		project,
-		grafcetSections(
+		grafcetThreeBlockSections(
 			GATE_SPEC,
 			[
 				{ variable: "ouvrir", steps: ["X1"] },

@@ -1,7 +1,11 @@
-import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
-import { isShareable } from "@/persistence/repositories/project.repository";
-import { authStore, isAnonymousUser } from "@/ui/stores/auth/auth.store";
-import trackEvent from "@/ui/services/analytics";
+import {
+	isShareable,
+	isStorageLocationAware,
+} from "@/persistence/repositories/project.repository";
+import {
+	requirePersistence,
+	type ProjectStoreEnvironment,
+} from "../environment/project-store-environment";
 import { toast } from "react-toastify";
 import { getT } from "@/ui/i18n/translateGlobal";
 import {
@@ -19,7 +23,11 @@ export default class ProjectSharingManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
 
-	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
+	constructor(
+		set: ProjectStoreSetFunction,
+		get: ProjectStoreGetFunction,
+		private readonly env: ProjectStoreEnvironment,
+	) {
 		this.setStoreState = set;
 		this.getStoreState = get;
 	}
@@ -29,6 +37,8 @@ export default class ProjectSharingManager {
 		const get = this.getStoreState;
 		const project = get().project;
 		if (!project) return;
+		const { auth } = requirePersistence(this.env, "Sharing");
+		const authStore = auth.store;
 		const repo = get().projectRepository;
 		if (!isShareable(repo)) return;
 
@@ -55,7 +65,7 @@ export default class ProjectSharingManager {
 
 		// Connecté mais projet stocké en local : il doit d'abord passer dans le cloud.
 		if (
-			repo instanceof HybridProjectRepository &&
+			isStorageLocationAware(repo) &&
 			repo.locationOf(project.id) === "local"
 		) {
 			set((state) => ({
@@ -76,8 +86,8 @@ export default class ProjectSharingManager {
 			toast.error(getT("toasts")("shareLinkFailed"));
 			return;
 		}
-		trackEvent("share-link-created", {
-			anonymous: isAnonymousUser(authStore.getState().user),
+		this.env.analytics.trackEvent("share-link-created", {
+			anonymous: auth.isAnonymousUser(authStore.getState().user),
 		});
 		set(() => ({ shareToken: result.token }));
 		set((state) => ({ ui: { ...state.ui, shareModalVisible: true } }));
@@ -89,7 +99,7 @@ export default class ProjectSharingManager {
 		const project = get().project;
 		if (!project) return;
 		const repo = get().projectRepository;
-		if (!(repo instanceof HybridProjectRepository)) return;
+		if (!isStorageLocationAware(repo)) return;
 		const result = await repo.moveToCloud(project);
 		if (!result.ok) {
 			toast.error(

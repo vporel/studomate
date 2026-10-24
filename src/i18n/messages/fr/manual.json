@@ -74,7 +74,7 @@
 			"Front montant / descendant (Grafcet) : instant où une condition passe respectivement de faux à vrai, ou de vrai à faux.",
 			"Contact (Ladder) : teste une variable booléenne. NO (normalement ouvert) laisse passer si elle est vraie, NF (normalement fermé) si elle est fausse.",
 			"Bobine (Ladder) : affecte une variable booléenne en sortie d'un circuit de contacts.",
-			"Réseau / rung (Ladder) : ligne de circuit indépendante, alimentée par le rail vertical de gauche.",
+			"Réseau / rung (Ladder) : bloc du programme délimité par les deux rails verticaux, qui contient des lignes de contacts menant à des bobines.",
 			"Mnémonique : nom d'une variable tel qu'on l'écrit dans les expressions (« capteur1 »), unique dans le projet.",
 			"Dialecte : langue des mots-clés des expressions (ET, OU, NON, VRAI, FAUX en français ; AND, OR, NOT, TRUE, FALSE en anglais). C'est une propriété du projet, indépendante de la langue de l'interface.",
 			"Automate programmable (PLC) / cycle : l'appareil industriel qui exécute le programme en boucle. Un cycle (ou « scan ») enchaîne la lecture des entrées, l'exécution du programme et l'écriture des sorties ; Studomate simule ce fonctionnement.",

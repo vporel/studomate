@@ -1,6 +1,6 @@
 import StepHelper from "@/schemas/grafcet/helpers/step.helper";
 import { createRandomId } from "@/ids";
-import {
+import type {
 	GrafcetEdgeType,
 	GrafcetNodeType,
 } from "@/ui/components/grafcet/flow/grafcet-nodes-definitions";
@@ -9,6 +9,7 @@ import {
 	GrafcetStoreGetFunction,
 	GrafcetStoreSetFunction,
 } from "../grafcet.store";
+import type { ClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import AbstractCopyCutPasteManager from "@/ui/stores/shared/abstract-copy-cut-paste.manager";
 
 export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteManager<{
@@ -22,8 +23,9 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 	constructor(
 		setStoreState: GrafcetStoreSetFunction,
 		getStoreState: GrafcetStoreGetFunction,
+		clipboard: ClipboardStore,
 	) {
-		super();
+		super(clipboard);
 		this.setStoreState = setStoreState;
 		this.getStoreState = getStoreState;
 	}

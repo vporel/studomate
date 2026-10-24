@@ -35,6 +35,10 @@
 		"label": "Divergence en OU",
 		"description": "Une divergence en OU à deux branches exclusives, chacune rebouclant seule vers l'état initial. Mini-exercice du module Formations."
 	},
+	"timer-cycle": {
+		"label": "Temporisation",
+		"description": "GRAFCET à 2 étapes qui alternent selon deux temporisations, sans entrée. Observation du module Formations."
+	},
 	"ladder-and-or": {
 		"label": "Contacts en série et en parallèle",
 		"description": "Deux réseaux fournis : manipuler a et b en simulation pour observer ET et OU. Mini-exercice du module Formations."

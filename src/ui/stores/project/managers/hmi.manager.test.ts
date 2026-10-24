@@ -5,19 +5,17 @@ import { ProjectMode } from "../ProjectMode.enum";
 import HmiManager, { HMI_SIMULATION_PAGE_ID } from "./hmi.manager";
 
 const mockTrackEvent = jest.fn();
-jest.mock("@/ui/services/analytics", () => ({
-	__esModule: true,
-	default: (...args: any[]) => mockTrackEvent(...args),
-}));
 
 function makeManager(initial: {
 	project?: Project | null;
 	hmiSimulationActivePageId?: string | null;
 	mode?: ProjectMode;
+	editingEnabled?: boolean;
 }) {
 	let state = {
 		project: initial.project ?? null,
 		mode: initial.mode ?? ProjectMode.DESIGN,
+		editingEnabled: initial.editingEnabled ?? true,
 		hmiSimulationActivePageId: initial.hmiSimulationActivePageId ?? null,
 		hmiStoresManagers: {},
 		pagesData: {},
@@ -30,7 +28,10 @@ function makeManager(initial: {
 	};
 	const get = () => state;
 
-	return { manager: new HmiManager(set, get), getState: () => state };
+	return {
+		manager: new HmiManager(set, get, { trackEvent: mockTrackEvent }),
+		getState: () => state,
+	};
 }
 
 function mountFakeStore(
@@ -52,6 +53,15 @@ describe("HmiManager", () => {
 	beforeEach(() => mockTrackEvent.mockClear());
 
 	describe("newHmiPage", () => {
+		it("refuse la création sur un projet en lecture seule", () => {
+			const { manager } = makeManager({
+				project: new Project("p1", "Projet", "auteur"),
+				editingEnabled: false,
+			});
+
+			expect(manager.newHmiPage("Vue 1")).toBeNull();
+		});
+
 		it("crée la page, ouvre son onglet et enregistre l'événement", () => {
 			const { manager, getState } = makeManager({
 				project: new Project("p1", "Projet", "auteur"),

@@ -3,6 +3,8 @@ import { Container, Divider } from "@mui/material";
 import type { TrainingModuleId } from "@/training/module-ids";
 import { ReactNode } from "react";
 import MarkdownBodyServer from "./MarkdownBodyServer";
+import ModuleIntro from "./ModuleIntro";
+import ModuleIntroProvider from "./ModuleIntroContext";
 import ModuleStepper, { StepData } from "./ModuleStepper";
 import TrainingPageFooter from "./TrainingPageFooter";
 
@@ -12,6 +14,8 @@ type TrainingModulePageProps = {
 	breadcrumb?: ReactNode;
 	/** Introduction en Markdown (rendue côté serveur). */
 	intro: string;
+	/** Titre du bloc repliable qui contient l'introduction. */
+	introLabel: string;
 	steps: StepData[];
 	moduleId: TrainingModuleId;
 	/** Étape de l'URL ; absente sur la page du module. Sur une page d'étape, le titre du module
@@ -28,6 +32,7 @@ export default function TrainingModulePage({
 	breadcrumb,
 	title,
 	intro,
+	introLabel,
 	steps,
 	moduleId,
 	initialStepId,
@@ -43,21 +48,28 @@ export default function TrainingModulePage({
 			{breadcrumb}
 			<PageTitle as={isStepPage ? "p" : "h1"}>{title}</PageTitle>
 			<Divider sx={{ my: 2 }} />
-			{!isStepPage && (
-				<MarkdownBodyServer
-					source={intro}
-					sx={{ color: "text.secondary", mb: 4, "& p": { textAlign: "justify" } }}
-				/>
-			)}
+			<ModuleIntroProvider>
+				{!isStepPage && (
+					<ModuleIntro label={introLabel}>
+						<MarkdownBodyServer
+							source={intro}
+							sx={{
+								color: "text.secondary",
+								"& p": { textAlign: "justify" },
+							}}
+						/>
+					</ModuleIntro>
+				)}
 
-			<ModuleStepper
-				steps={steps}
-				prevLabel={prevLabel}
-				nextLabel={nextLabel}
-				moduleId={moduleId}
-				initialStepId={initialStepId}
-				nextModule={nextModule}
-			/>
+				<ModuleStepper
+					steps={steps}
+					prevLabel={prevLabel}
+					nextLabel={nextLabel}
+					moduleId={moduleId}
+					initialStepId={initialStepId}
+					nextModule={nextModule}
+				/>
+			</ModuleIntroProvider>
 
 			{children}
 

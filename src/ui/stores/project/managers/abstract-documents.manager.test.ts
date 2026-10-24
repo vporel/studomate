@@ -75,7 +75,9 @@ function makeManager(initial: Partial<Record<string, any>> = {}) {
 		state = { ...state, ...patch } as ProjectStoreState;
 	};
 	return {
-		manager: new FakeDocumentsManager(set, () => state),
+		manager: new FakeDocumentsManager(set, () => state, {
+			trackEvent: jest.fn(),
+		}),
 		getState: () => state as any,
 	};
 }

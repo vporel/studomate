@@ -1,3 +1,7 @@
+import {
+	createClipboardStore,
+	type ClipboardStore,
+} from "@/ui/stores/shared/clipboard.store";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import WidgetAddCommand from "@/schemas/hmi/commands/widget-add.command";
 import WidgetRemoveCommand from "@/schemas/hmi/commands/widget-remove.command";
@@ -153,6 +157,7 @@ function widgetRemoveCommand(widget: HmiWidget): WidgetRemoveCommand {
 export const createHmiStore = (
 	initialHmiPage: HmiPage,
 	commandsStack: CommandsStack<HmiPage>,
+	clipboard: ClipboardStore = createClipboardStore(),
 ) =>
 	createStore<HmiStoreState>((set, get) => ({
 		hmiPage: initialHmiPage,
@@ -450,7 +455,7 @@ export const createHmiStore = (
 		setScreenToCanvasPosition: (fn) =>
 			set(() => ({ screenToCanvasPosition: fn })),
 
-		copyCutPasteManager: new HmiCopyCutPasteManager(set, get),
+		copyCutPasteManager: new HmiCopyCutPasteManager(set, get, clipboard),
 
 		//=============== COMMANDS STACK ===============
 		//Lu depuis la pile, pas figé à false : l'historique survit à la fermeture de la page, donc

@@ -25,13 +25,13 @@ describe("or-divergence-ladder.template", () => {
 		},
 	);
 
-	it("deux réceptivités vraies ensemble activent les deux branches (règle 4)", async () => {
+	it("deux réceptivités vraies ensemble : seule la première branche écrite est franchie", async () => {
 		const scenario = new PlcScenario(createOrDivergenceLadderSolution());
 		await scenario.cycles(2);
 		await scenario.press("dcy1");
 		await scenario.press("dcy2", 2);
 		expect(scenario.get("sortie1")).toBe(true);
-		expect(scenario.get("sortie2")).toBe(true);
+		expect(scenario.get("sortie2")).toBe(false);
 		scenario.stop();
 	});
 });

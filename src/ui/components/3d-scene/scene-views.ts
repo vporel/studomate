@@ -63,7 +63,7 @@ const SCENE_VIEWS: Record<string, SceneViewDefinition> = {
 		interpolate: interpolateParking as SceneViewDefinition["interpolate"],
 		Component: ParkingScene,
 		Controls: ParkingControls,
-		camera: { position: [3.7, 6, 9], target: [3.7, 0, 1.5] },
+		camera: { position: [9.45, 6, 8], target: [5.7, 0, 1.5] },
 	},
 };
 

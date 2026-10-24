@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import createAppProjectStoreEnvironment from "../environment/app-project-store-environment";
 import { createProjectStore } from "../project.store";
 import { authStore } from "@/ui/stores/auth/auth.store";
 import { toast } from "react-toastify";
@@ -26,14 +27,14 @@ describe("ProjectSharingManager", () => {
 	});
 
 	it("ne fait rien si aucun projet n'est ouvert", async () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await expect(
 			store.getState().sharingManager.shareProject(),
 		).resolves.not.toThrow();
 	});
 
 	it("ouvre la modale de connexion quand l'utilisateur n'est pas connecté", async () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await openBlankProject(store);
 
 		await store.getState().sharingManager.shareProject();
@@ -44,7 +45,7 @@ describe("ProjectSharingManager", () => {
 	});
 
 	it("reprend le partage automatiquement après connexion (projet local → modale cloud)", async () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await openBlankProject(store);
 		await store.getState().sharingManager.shareProject();
 
@@ -59,7 +60,7 @@ describe("ProjectSharingManager", () => {
 	});
 
 	it("abandonne la reprise si la modale de connexion se ferme sans connexion", async () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await openBlankProject(store);
 		await store.getState().sharingManager.shareProject();
 
@@ -71,7 +72,7 @@ describe("ProjectSharingManager", () => {
 
 	it("connecté + projet local : ouvre la modale « envoyer dans le cloud »", async () => {
 		authStore.setState({ user: { id: "u1" } as never });
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await openBlankProject(store);
 
 		await store.getState().sharingManager.shareProject();
@@ -82,7 +83,7 @@ describe("ProjectSharingManager", () => {
 
 	it("moveToCloudAndShare : toast d'erreur si l'envoi cloud échoue", async () => {
 		authStore.setState({ user: { id: "u1" } as never });
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 		await openBlankProject(store);
 		store.getState().setShareRequiresCloudModalVisible(true);
 		jest
@@ -99,7 +100,7 @@ describe("ProjectSharingManager", () => {
 	describe("connecté, projet dans le cloud", () => {
 		async function openCloudProject() {
 			authStore.setState({ user: { id: "u1" } as never });
-			const store = createProjectStore();
+			const store = createProjectStore(createAppProjectStoreEnvironment());
 			await openBlankProject(store);
 			const repo = store.getState()
 				.projectRepository as HybridProjectRepository;
@@ -208,7 +209,7 @@ describe("ProjectSharingManager", () => {
 	});
 
 	it("unshareProject et moveToCloudAndShare ne font rien sans projet ouvert", async () => {
-		const store = createProjectStore();
+		const store = createProjectStore(createAppProjectStoreEnvironment());
 
 		await store.getState().sharingManager.unshareProject();
 		await store.getState().sharingManager.moveToCloudAndShare();

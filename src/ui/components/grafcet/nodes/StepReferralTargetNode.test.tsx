@@ -12,6 +12,10 @@ import StepReferralTargetNode, {
 } from "./StepReferralTargetNode";
 
 jest.mock("../context/GrafcetContext");
+jest.mock("@/ui/components/projects/useCanEdit", () => ({
+	__esModule: true,
+	default: () => true,
+}));
 jest.mock("@/ui/lib/react-flow/HandleWithConnectionsLimit", () => ({
 	__esModule: true,
 	default: () => null,

@@ -55,7 +55,10 @@ describe("training module pages", () => {
 	describe("generateStepMetadata", () => {
 		it("indexe une étape de théorie avec son titre et sa description propres", async () => {
 			const metadata = await a1.generateStepMetadata({
-				params: Promise.resolve({ locale: "fr", step: "theorie-temporisation" }),
+				params: Promise.resolve({
+					locale: "fr",
+					step: "theorie-temporisation",
+				}),
 			});
 
 			expect(metadata.title).toEqual({
@@ -69,7 +72,8 @@ describe("training module pages", () => {
 			expect(metadata.alternates?.languages).toEqual({
 				fr: "https://studomate.com/formations/a1/theorie-temporisation",
 				en: "https://studomate.com/en/training/a1/theory-timer",
-				"x-default": "https://studomate.com/formations/a1/theorie-temporisation",
+				"x-default":
+					"https://studomate.com/formations/a1/theorie-temporisation",
 			});
 		});
 
@@ -121,7 +125,10 @@ describe("training module pages", () => {
 			expect(page.props.breadcrumb.props).toEqual({
 				locale: "fr",
 				ancestors: [{ label: "Formations", href: "/training" }],
-				current: { label: "Module A1 : Bases du GRAFCET", href: "/training/a1" },
+				current: {
+					label: "Module A1 : Bases du GRAFCET",
+					href: "/training/a1",
+				},
 			});
 		});
 
@@ -142,11 +149,16 @@ describe("training module pages", () => {
 
 		it("la page d'étape transmet l'étape de l'URL, et toutes les étapes du module", async () => {
 			const page = (await a1.StepPage({
-				params: Promise.resolve({ locale: "fr", step: "theorie-temporisation" }),
+				params: Promise.resolve({
+					locale: "fr",
+					step: "theorie-temporisation",
+				}),
 			})) as { props: { initialStepId: string; steps: unknown[] } };
 
 			expect(page.props.initialStepId).toBe("theory-timer");
-			expect(page.props.steps).toHaveLength(buildModuleSteps("a1", "fr").length);
+			expect(page.props.steps).toHaveLength(
+				buildModuleSteps("a1", "fr").length,
+			);
 		});
 
 		it("répond 404 sur l'ancien slug français (identifiant anglais)", async () => {
@@ -159,7 +171,9 @@ describe("training module pages", () => {
 
 		it("répond 404 pour une étape inconnue", async () => {
 			await expect(
-				a1.StepPage({ params: Promise.resolve({ locale: "fr", step: "nope" }) }),
+				a1.StepPage({
+					params: Promise.resolve({ locale: "fr", step: "nope" }),
+				}),
 			).rejects.toThrow("NEXT_NOT_FOUND");
 		});
 	});

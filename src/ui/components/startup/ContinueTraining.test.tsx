@@ -44,7 +44,10 @@ describe("ContinueTraining", () => {
 			),
 		).toBeInTheDocument();
 		const link = screen.getByRole("link", { name: "Reprendre" });
-		expect(link).toHaveAttribute("href", expect.stringContaining(trainingStepSlug("fr", "a1", stepIds[2])));
+		expect(link).toHaveAttribute(
+			"href",
+			expect.stringContaining(trainingStepSlug("fr", "a1", stepIds[2])),
+		);
 		expect(link).toHaveAttribute("target", "_blank");
 	});
 

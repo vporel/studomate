@@ -14,11 +14,12 @@ describe("linear-sequence-ladder.template", () => {
 			(v) => v.mnemonic,
 		);
 		expect(mnemonics).toEqual(
-			expect.arrayContaining(["dcy", "sortie1", "X0", "X3", "T0", "init"]),
+			expect.arrayContaining(["dcy", "sortie1", "X0", "X3", "init"]),
 		);
+		expect(mnemonics.filter((name) => /^T\d+$/.test(name))).toEqual([]);
 	});
 
-	it("le corrigé déroule la séquence, une seule étape active à la fois", async () => {
+	it("le corrigé déroule la séquence, une seule étape active à la fois, X3 étant franchie aussitôt", async () => {
 		const scenario = new PlcScenario(createLinearSequenceLadderSolution());
 		await scenario.cycles(2);
 		expect(scenario.get("X0")).toBe(true);
@@ -40,14 +41,18 @@ describe("linear-sequence-ladder.template", () => {
 
 		scenario.set("fin2", true);
 		await scenario.cycles(1);
-		expect(activeSteps()).toEqual(["X3"]);
-		await scenario.cycles(1);
 		expect(activeSteps()).toEqual(["X0"]);
 		scenario.stop();
 	});
 
-	it("le corrigé compte 16 réseaux : 2 d'initialisation, 4 de franchissement, 8 d'évolution, 2 de sortie", () => {
-		expect(createLinearSequenceLadderSolution().main.sections).toHaveLength(16);
+	it("le corrigé compte 8 réseaux : 2 d'initialisation, 4 de transition, 2 de sortie", () => {
+		const titles = createLinearSequenceLadderSolution().main.sections.map(
+			(section) => section.title,
+		);
+		expect(titles).toHaveLength(8);
+		expect(titles).toEqual(
+			expect.arrayContaining(["X0 -> X1", "X1 -> X2", "X2 -> X3", "X3 -> X0"]),
+		);
 	});
 
 	it("l'énoncé naïf commande deux sorties ensemble pendant un cycle au franchissement", async () => {
@@ -83,7 +88,7 @@ describe("linear-sequence-ladder.template", () => {
 		scenario.stop();
 	});
 
-	it("la méthode en trois blocs ne franchit qu'une transition par cycle quand dcy et fin1 sont vraies ensemble", async () => {
+	it("le corrigé enchaîne deux transitions consécutives dans le même cycle quand dcy et fin1 sont vraies ensemble", async () => {
 		const scenario = new PlcScenario(createLinearSequenceLadderSolution());
 		await scenario.cycles(2);
 		const activeSteps = () =>
@@ -91,8 +96,6 @@ describe("linear-sequence-ladder.template", () => {
 
 		scenario.set("dcy", true);
 		scenario.set("fin1", true);
-		await scenario.cycles(1);
-		expect(activeSteps()).toEqual(["X1"]);
 		await scenario.cycles(1);
 		expect(activeSteps()).toEqual(["X2"]);
 		scenario.stop();

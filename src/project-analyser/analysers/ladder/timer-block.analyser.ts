@@ -36,12 +36,9 @@ export default class TimerBlockAnalyser {
 		const issues: ProjectAnalyserIssue[] = [];
 		if (validateBlockName(name).length > 0) {
 			issues.push(
-				new ProjectAnalyserIssue(
-					"error",
-					"BLOCK_TIMER_NAME_INVALID",
-					source,
-					{ blockName: name },
-				),
+				new ProjectAnalyserIssue("error", "BLOCK_TIMER_NAME_INVALID", source, {
+					blockName: name,
+				}),
 			);
 		}
 		issues.push(
@@ -95,30 +92,23 @@ export default class TimerBlockAnalyser {
 			case "invalid-constant":
 				if (!codes.invalidConstant) return [];
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						codes.invalidConstant,
-						source,
-						{ value: pin },
-					),
+					new ProjectAnalyserIssue("error", codes.invalidConstant, source, {
+						value: pin,
+					}),
 				];
 			case "undeclared":
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						codes.undeclaredVariable,
-						source,
-						{ variableName: pin, pinName },
-					),
+					new ProjectAnalyserIssue("error", codes.undeclaredVariable, source, {
+						variableName: pin,
+						pinName,
+					}),
 				];
 			case "invalid-type":
 				return [
-					new ProjectAnalyserIssue(
-						"error",
-						codes.invalidType,
-						source,
-						{ variableName: pin, pinName },
-					),
+					new ProjectAnalyserIssue("error", codes.invalidType, source, {
+						variableName: pin,
+						pinName,
+					}),
 				];
 			case "ok":
 				return [];

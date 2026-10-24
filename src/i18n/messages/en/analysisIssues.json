@@ -93,8 +93,10 @@
 	"STEP_REFERRAL_SOURCE_MISMATCH": "The referenced source step does not match the step linked to the referral.",
 
 	"LADDER_SECTION_NO_COIL": "This branch does not drive any coil.",
+	"LADDER_CONTACT_NO_VARIABLE": "No variable assigned.",
 	"LADDER_CONTACT_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_CONTACT_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
+	"LADDER_COIL_NO_VARIABLE": "No variable assigned.",
 	"LADDER_COIL_VARIABLE_UNDECLARED": "Variable \"{variableName}\" is not declared.",
 	"LADDER_COIL_VARIABLE_NOT_BOOLEAN": "Variable \"{variableName}\" must be boolean.",
 	"LADDER_COIL_DUPLICATE_NORMAL_ASSIGNMENT": "Variable \"{variableName}\" is driven by {count} separate normal coils.",

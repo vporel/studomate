@@ -37,6 +37,10 @@ import {
 	createOrDivergenceProject,
 	createOrDivergenceSolution,
 } from "./training/grafcet/or-divergence.template";
+import {
+	createTimerCycleProject,
+	createTimerCycleSolution,
+} from "./training/grafcet/timer-cycle.template";
 import { createLadderAndOrProject } from "./training/ladder/ladder-and-or.template";
 import { createLadderReadingProject } from "./training/ladder/ladder-reading.template";
 import {
@@ -214,9 +218,17 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		solution: createOrDivergenceSolution,
 	},
 	{
+		id: "timer-cycle",
+		hiddenFromCatalog: true,
+		create: createTimerCycleProject,
+		solution: createTimerCycleSolution,
+	},
+
+	{
 		id: "ladder-and-or",
 		hiddenFromCatalog: true,
 		create: createLadderAndOrProject,
+		solution: createLadderAndOrProject,
 	},
 	{
 		id: "ladder-reading",
@@ -251,6 +263,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		id: "ladder-edges-reading",
 		hiddenFromCatalog: true,
 		create: createLadderEdgesReadingProject,
+		solution: createLadderEdgesReadingProject,
 	},
 	{
 		id: "ladder-toggle",
@@ -268,6 +281,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		id: "ladder-timers-reading",
 		hiddenFromCatalog: true,
 		create: createLadderTimersReadingProject,
+		solution: createLadderTimersReadingProject,
 	},
 	{
 		id: "ladder-timers",
@@ -309,6 +323,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
 		id: "linear-sequence-naive-ladder",
 		hiddenFromCatalog: true,
 		create: createLinearSequenceNaiveLadderProject,
+		solution: createLinearSequenceNaiveLadderProject,
 	},
 	{
 		id: "linear-sequence-ladder",

@@ -1,6 +1,7 @@
 import { formatAnalysisIssue } from "@/bridge/analysis-issue-formatter";
 import GrafcetElementAnalyserFactory from "@/project-analyser/analysers/grafcet/element-analyser.factory";
 import { ElementType } from "@/schemas/grafcet/element.schema";
+import useCanEdit from "@/ui/components/projects/useCanEdit";
 import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import {
 	Dispatch,
@@ -30,7 +31,16 @@ export default function useWithTextNodeValue(
 	const { locale } = useLocaleContext();
 	const workflowManager = useGrafcetStore((state) => state.workflowManager);
 	const [value, _setValue] = useState(data[valueProperty] + "");
-	const [editing, setEditing] = useState(false);
+	const canEdit = useCanEdit();
+	const [editing, setEditingState] = useState(false);
+	const setEditing = useCallback<Dispatch<SetStateAction<boolean>>>(
+		(next) =>
+			setEditingState((previous) => {
+				const value = typeof next === "function" ? next(previous) : next;
+				return value && canEdit;
+			}),
+		[canEdit],
+	);
 	const [error, setError] = useState<string | false>(false);
 	const analyser = useMemo(
 		() => GrafcetElementAnalyserFactory.getAnalyser(nodeType),

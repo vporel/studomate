@@ -75,7 +75,8 @@ export const SYSTEM_TIME_BASES: readonly SystemTimeBase[] = [
 export const SYSTEM_FIRST_SCAN: SystemVariable = {
 	name: "_SYS_FIRST_SCAN",
 	type: "BOOL",
-	description: "Vrai pendant le premier scan après le démarrage de la simulation.",
+	description:
+		"Vrai pendant le premier scan après le démarrage de la simulation.",
 };
 
 /** Toutes les variables système exposées, toutes catégories confondues. */

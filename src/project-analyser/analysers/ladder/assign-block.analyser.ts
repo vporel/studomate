@@ -48,7 +48,13 @@ export default class AssignBlockAnalyser {
 			);
 		} catch (e) {
 			return [
-				new ProjectAnalyserIssue("error", "BLOCK_ASSIGN_INVALID", source, {}, e),
+				new ProjectAnalyserIssue(
+					"error",
+					"BLOCK_ASSIGN_INVALID",
+					source,
+					{},
+					e,
+				),
 			];
 		}
 

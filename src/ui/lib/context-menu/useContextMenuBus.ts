@@ -8,11 +8,7 @@ import { useEffect } from "react";
  */
 export default function useContextMenuBus<
 	E extends Record<EventType, unknown> & { show: unknown; hide: unknown },
->(
-	events: Emitter<E>,
-	onShow: (props: E["show"]) => void,
-	hide: () => void,
-) {
+>(events: Emitter<E>, onShow: (props: E["show"]) => void, hide: () => void) {
 	useEffect(() => {
 		events.on("show", onShow);
 		events.on("hide", hide);

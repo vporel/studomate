@@ -173,6 +173,24 @@ describe("ProjectPreCompiler", () => {
 			expect(result.result!.programs).not.toHaveProperty("grafcet-1");
 		});
 
+		it("keeps the empty Main ladder, the entry point of the program", () => {
+			const project = new ProjectBuilder().build();
+
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
+
+			expect(result.result!.programs).toHaveProperty(project.main.id);
+		});
+
+		it("skips an empty grafcet", () => {
+			const grafcet = new GrafcetBuilder().id("grafcet-1").build();
+			const project = new ProjectBuilder().addGrafcet(grafcet).build();
+
+			const result = ProjectPreCompiler.preCompile(project, [], Dialect.FR);
+
+			expect(result.errors).toEqual([]);
+			expect(result.result!.programs).not.toHaveProperty("grafcet-1");
+		});
+
 		it("compiles multiple grafcets", () => {
 			const step1 = new StepBuilder().id("step-1").number(1).build();
 			const step2 = new StepBuilder().id("step-2").number(2).build();

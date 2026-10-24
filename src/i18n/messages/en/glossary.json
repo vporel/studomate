@@ -42,7 +42,7 @@
 		"mnemonic": {
 			"term": "Mnemonic",
 			"aliases": "variable name",
-			"definition": "The short, meaningful name of a variable (`pump`, `stop`), used instead of a numeric address.",
+			"definition": "The short, meaningful name of a variable (`pump`, `stop`), which programs use to refer to it. An address (`%I0.1`) can be added to link the variable to physical hardware.",
 			"details": "",
 			"figureAlt": ""
 		},
@@ -301,8 +301,8 @@
 		"network": {
 			"term": "Network",
 			"aliases": "rung; section",
-			"definition": "One line of a Ladder program, read from left to right: contacts, then a coil. If the contact path lets current through, the coil is activated.",
-			"details": "",
+			"definition": "A block of the Ladder program, bounded by its two rails. It contains lines of contacts leading to coils. In the simplest case, a single line: contacts on the left, a coil on the right. It is read from left to right.",
+			"details": "If the contact path of a line lets current through, the coil is activated.",
 			"figureAlt": ""
 		},
 		"contact": {

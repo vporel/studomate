@@ -25,8 +25,11 @@ import { HmiWidgetRect } from "./useHmiWidgetResize";
 const HmiWidgetPropertiesPanel = ({
 	widget,
 	onGeometryPreview,
+	readOnly = false,
 }: {
 	widget: HmiWidget;
+	/** The properties can be read but not modified; the events and animations panes still open. */
+	readOnly?: boolean;
 	/** Aperçu visuel live pendant la saisie dans les sections Position / Dimensions (voir
 	 * `HmiCanvas`, même canal que les poignées de redimensionnement). */
 	onGeometryPreview: (rect: HmiWidgetRect | null) => void;
@@ -67,68 +70,76 @@ const HmiWidgetPropertiesPanel = ({
 
 	return (
 		<Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, p: 1.5 }}>
-			<TextField
-				label={t("name")}
-				size="small"
-				slotProps={{
-					inputLabel: { shrink: true },
-					htmlInput: { onKeyDown: nameField.onKeyDown },
-				}}
-				value={nameField.value}
-				onChange={nameField.onChange}
-				onBlur={nameField.onBlur}
-				sx={{
-					"& .MuiInputBase-input": {
-						color: nameConflicts ? "error.main" : undefined,
-					},
-				}}
-			/>
-			{/* Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" — voir
+			<Box
+				inert={readOnly}
+				sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+			>
+				<TextField
+					label={t("name")}
+					size="small"
+					slotProps={{
+						inputLabel: { shrink: true },
+						htmlInput: { onKeyDown: nameField.onKeyDown },
+					}}
+					value={nameField.value}
+					onChange={nameField.onChange}
+					onBlur={nameField.onBlur}
+					sx={{
+						"& .MuiInputBase-input": {
+							color: nameConflicts ? "error.main" : undefined,
+						},
+					}}
+				/>
+				{/* Une forme (rectangle, ellipse, texte) n'a pas de variable "principale" — voir
 			`RectangleData`/`EllipseData`/`TextData`. Le `in` rétrécit l'union `widget.data`
 			(même idiome que `HmiWidgetItem`). */}
-			{"variable" in widget.data && variableBinding && (
-				<>
-					<TextField
-						label={t("label")}
-						size="small"
-						slotProps={{
-							inputLabel: { shrink: true },
-							htmlInput: { onKeyDown: labelField.onKeyDown },
-						}}
-						value={labelField.value}
-						onChange={labelField.onChange}
-						onBlur={labelField.onBlur}
-					/>
-					<VariableSelector
-						label={t("boundVariable")}
-						value={widget.data.variable}
-						onCommit={(mnemonic) => {
-							// Binding an input with a behavior aligns the fields it imposes.
-							const behavior =
-								project?.findVariableByMnemonic(mnemonic)?.behavior;
-							updateWidget(widget.id, {
-								data: {
-									...widget.data,
-									...getBehaviorImposedData(widget.type, behavior),
-									variable: mnemonic,
-								},
-							});
-						}}
-						typeFilter={variableBinding.types}
-						excludeDirection={excludeDirection}
-						excludeBehaviorKinds={getExcludedBehaviorKinds(widget.type)}
-						excludeZones={READ_ONLY_ZONES}
-						cols={["mnemonic", "address", "scope"]}
-						sx={{ width: "100% !important" }}
-						baseInputSx={{ fontSize: "0.85rem !important" }}
-						showSimulationValue={false}
-					/>
-				</>
-			)}
+				{"variable" in widget.data && variableBinding && (
+					<>
+						<TextField
+							label={t("label")}
+							size="small"
+							slotProps={{
+								inputLabel: { shrink: true },
+								htmlInput: { onKeyDown: labelField.onKeyDown },
+							}}
+							value={labelField.value}
+							onChange={labelField.onChange}
+							onBlur={labelField.onBlur}
+						/>
+						<VariableSelector
+							label={t("boundVariable")}
+							value={widget.data.variable}
+							onCommit={(mnemonic) => {
+								// Binding an input with a behavior aligns the fields it imposes.
+								const behavior =
+									project?.findVariableByMnemonic(mnemonic)?.behavior;
+								updateWidget(widget.id, {
+									data: {
+										...widget.data,
+										...getBehaviorImposedData(widget.type, behavior),
+										variable: mnemonic,
+									},
+								});
+							}}
+							typeFilter={variableBinding.types}
+							excludeDirection={excludeDirection}
+							excludeBehaviorKinds={getExcludedBehaviorKinds(widget.type)}
+							excludeZones={READ_ONLY_ZONES}
+							cols={["mnemonic", "address", "scope"]}
+							sx={{ width: "100% !important" }}
+							baseInputSx={{ fontSize: "0.85rem !important" }}
+							showSimulationValue={false}
+						/>
+					</>
+				)}
 
-			<HmiWidgetPropertyFields widget={widget} />
+				<HmiWidgetPropertyFields widget={widget} />
 
-			<HmiWidgetGeometryFields widget={widget} onPreview={onGeometryPreview} />
+				<HmiWidgetGeometryFields
+					widget={widget}
+					onPreview={onGeometryPreview}
+				/>
+			</Box>
 
 			<Box sx={{ display: "flex", gap: 1 }}>
 				{HMI_WIDGET_UI[widget.type].events.length > 0 && (

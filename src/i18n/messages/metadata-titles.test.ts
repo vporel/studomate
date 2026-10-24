@@ -25,14 +25,17 @@ describe.each([
 		([path]) => !path.includes("trainingStepFallbackTitle"),
 	);
 
-	it.each(titles)("%s tient dans la limite de longueur une fois suffixé", (path, title) => {
-		const hasOwnSuffix =
-			path === "homeTitle" ||
-			path.startsWith("manualSections.") ||
-			path.startsWith("trainingSteps.");
-		const full = hasOwnSuffix ? title : TITLE_TEMPLATE.replace("%s", title);
-		expect(full.length).toBeLessThanOrEqual(MAX_TITLE_LENGTH);
-	});
+	it.each(titles)(
+		"%s tient dans la limite de longueur une fois suffixé",
+		(path, title) => {
+			const hasOwnSuffix =
+				path === "homeTitle" ||
+				path.startsWith("manualSections.") ||
+				path.startsWith("trainingSteps.");
+			const full = hasOwnSuffix ? title : TITLE_TEMPLATE.replace("%s", title);
+			expect(full.length).toBeLessThanOrEqual(MAX_TITLE_LENGTH);
+		},
+	);
 
 	it("les titres soumis au template ne répètent pas le suffixe", () => {
 		const templated = titles.filter(

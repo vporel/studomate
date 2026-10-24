@@ -181,6 +181,15 @@ export default class Grafcet extends Program {
 		return allElements;
 	}
 
+	isEmpty(): boolean {
+		return this.getAllElements().length === 0;
+	}
+
+	/** A blank grafcet is a page to draw on, not an incomplete program. */
+	isSkippedWhenEmpty(): boolean {
+		return true;
+	}
+
 	getElementsByType<T extends Element<any>>(type: ElementType): T[] {
 		return Object.values(
 			this.getCollection(ELEMENT_COLLECTIONS[type].collection),

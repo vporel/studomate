@@ -1,33 +1,18 @@
 "use client";
 
-import { getLastMousePosition } from "@/ui/lib/mouse-position";
-import { getClipboardEntry } from "@/ui/stores/shared/clipboard.store";
-import { activeCopyCutPasteManager } from "@/ui/stores/project/copy-cut-paste";
-import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
-import { SNAP_GRID } from "@/ui/components/hmi/logic/constants";
-import { getT } from "@/ui/i18n/translateGlobal";
+import { canEdit } from "@/ui/stores/project/editability";
 import { useEffect } from "react";
-import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
+import handleEditingShortcut from "./editing-shortcuts";
 import { useProjectContext, useProjectStore } from "./ProjectContext";
 
-/** Pas d'un appui flèche pour déplacer les widgets HMI sélectionnés — un pas de grille. */
-const HMI_ARROW_DELTAS: Record<string, [number, number]> = {
-	ArrowUp: [0, -SNAP_GRID],
-	ArrowDown: [0, SNAP_GRID],
-	ArrowLeft: [-SNAP_GRID, 0],
-	ArrowRight: [SNAP_GRID, 0],
-};
-
-/** Grafcet and ladder edits cannot propagate to the project outside design mode. */
-function isReadOnlyProgramScope(scopeType: string | null | undefined) {
-	return scopeType === "grafcet" || scopeType === "ladder";
-}
-
+/**
+ * Raccourcis de l'application (ouvrir, enregistrer, nouveau grafcet / ladder) puis ceux de
+ * l'édition (voir `handleEditingShortcut`), écoutés sur tout le document.
+ */
 export default function useShortcutsHandler() {
 	const grafcetsManager = useProjectStore((state) => state.grafcetsManager);
 	const laddersManager = useProjectStore((state) => state.laddersManager);
-	const hmiManager = useProjectStore((state) => state.hmiManager);
 	const { setOpenModalVisible, lifecycleManager, setSaveAsModalVisible } =
 		useProjectStore(
 			useShallow((state) => ({
@@ -39,16 +24,14 @@ export default function useShortcutsHandler() {
 	const projectStore = useProjectContext();
 
 	useEffect(() => {
-		const getActiveCopyCutPasteManager = () =>
-			projectStore ? activeCopyCutPasteManager(projectStore.getState()) : null;
+		if (!projectStore) return;
 
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const isInput =
 				(e.target as HTMLElement).tagName === "INPUT" ||
 				(e.target as HTMLElement).tagName === "TEXTAREA";
 			if (isInput) return; //Don't trigger shortcuts when the user is typing in an input or textarea
-			const projectMode = projectStore?.getState().mode;
-			const designing = projectMode === ProjectMode.DESIGN;
+			const designing = canEdit(projectStore.getState());
 
 			if (e.ctrlKey || e.metaKey) {
 				switch (e.key.toLowerCase()) {
@@ -57,7 +40,7 @@ export default function useShortcutsHandler() {
 						e.preventDefault();
 						if (!designing) break;
 						setOpenModalVisible(true);
-						break;
+						return;
 					}
 					case "s": {
 						e.stopPropagation();
@@ -67,111 +50,25 @@ export default function useShortcutsHandler() {
 						} else {
 							void lifecycleManager.saveProject();
 						}
-						break;
+						return;
 					}
 					case "g": {
 						e.stopPropagation();
 						e.preventDefault();
 						if (!designing) break;
 						grafcetsManager.newGrafcet();
-						break;
+						return;
 					}
 					case "l": {
 						e.stopPropagation();
 						e.preventDefault();
 						if (!designing) break;
 						laddersManager.newLadder();
-						break;
-					}
-					case "a": {
-						e.stopPropagation();
-						e.preventDefault();
-						if (!designing) break;
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (activeScopeType === "grafcet") {
-							const grafcetViewManager =
-								grafcetsManager.getActiveStoreManagers()?.viewManager;
-							grafcetViewManager?.selectAllNodesAndEdges();
-						} else if (activeScopeType === "ladder") {
-							const ladderWorkflowManager =
-								laddersManager.getActiveStoreManagers()?.workflowManager;
-							ladderWorkflowManager?.selectAllInActiveSection();
-						} else if (activeScopeType === "hmi") {
-							hmiManager.getActiveStoreManagers()?.selectAllWidgets();
-						}
-						break;
-					}
-					case "z": {
-						e.stopPropagation();
-						e.preventDefault();
-						projectStore?.getState().undoActiveScope();
-						break;
-					}
-					case "y": {
-						e.stopPropagation();
-						e.preventDefault();
-						projectStore?.getState().redoActiveScope();
-						break;
-					}
-					case "c": {
-						e.stopPropagation();
-						e.preventDefault();
-						getActiveCopyCutPasteManager()?.copySelectedElements();
-						break;
-					}
-					case "v": {
-						e.stopPropagation();
-						e.preventDefault();
-						const activeScopeType = projectStore?.getState().activeScopeType;
-						if (!designing && isReadOnlyProgramScope(activeScopeType)) break;
-						const entry = getClipboardEntry();
-						if (
-							entry &&
-							(activeScopeType === "grafcet" ||
-								activeScopeType === "ladder" ||
-								activeScopeType === "hmi") &&
-							entry.scope !== activeScopeType
-						) {
-							toast.error(getT("toasts")("pasteWrongScope"));
-							break;
-						}
-						getActiveCopyCutPasteManager()?.pasteElements(
-							getLastMousePosition(),
-						);
-						break;
-					}
-					case "x": {
-						e.stopPropagation();
-						e.preventDefault();
-						if (
-							!designing &&
-							isReadOnlyProgramScope(projectStore?.getState().activeScopeType)
-						)
-							break;
-						getActiveCopyCutPasteManager()?.cutSelectedElements();
-						break;
+						return;
 					}
 				}
-			} else if ((e.key === "Delete" || e.key === "Backspace") && designing) {
-				//Le grafcet/ladder gèrent leur propre suppression (React Flow, deleteKeyCode) :
-				//seul le canvas HMI (une simple <div>, pas de mécanisme natif) en a besoin ici.
-				if (projectStore?.getState().activeScopeType === "hmi") {
-					e.stopPropagation();
-					e.preventDefault();
-					hmiManager.getActiveStoreManagers()?.removeSelectedWidgets();
-				}
-			} else if (
-				designing &&
-				HMI_ARROW_DELTAS[e.key] &&
-				projectStore?.getState().activeScopeType === "hmi"
-			) {
-				//Déplacement des widgets sélectionnés à la grille (grafcet/ladder ont leur propre
-				//gestion des flèches ; le canvas HMI est une simple <div>).
-				e.stopPropagation();
-				e.preventDefault();
-				const [dx, dy] = HMI_ARROW_DELTAS[e.key];
-				hmiManager.getActiveStoreManagers()?.moveSelectedWidgets(dx, dy);
 			}
+			handleEditingShortcut(e, projectStore);
 		};
 		document.addEventListener("keydown", handleKeyDown);
 		return () => {
@@ -184,6 +81,5 @@ export default function useShortcutsHandler() {
 		projectStore,
 		grafcetsManager,
 		laddersManager,
-		hmiManager,
 	]);
 }

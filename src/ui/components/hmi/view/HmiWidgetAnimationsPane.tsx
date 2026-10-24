@@ -332,7 +332,13 @@ const StyleTab = ({
  * ouvert depuis `HmiWidgetPropertiesPanel`, visibilité portée par le store (voir `HmiStoreState`).
  * Onglets verticaux : la table de style a besoin de largeur, pas de hauteur, pour rester lisible.
  */
-const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
+const HmiWidgetAnimationsPane = ({
+	widget,
+	readOnly = false,
+}: {
+	widget: HmiWidget;
+	readOnly?: boolean;
+}) => {
 	const t = useT("hmiEditor.panel");
 	const visible = useHmiStore((s) => s.animationsPaneVisible);
 	const close = useHmiStore((s) => s.closeAnimationsPane);
@@ -375,10 +381,12 @@ const HmiWidgetAnimationsPane = ({ widget }: { widget: HmiWidget }) => {
 					)}
 				</Tabs>
 				<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: 2 }}>
-					{activeTab === "position" && <PositionTab widget={widget} />}
-					{activeTab === "style" && hasStyleTab && (
-						<StyleTab widget={widget} styleProps={styleProps} />
-					)}
+					<Box inert={readOnly}>
+						{activeTab === "position" && <PositionTab widget={widget} />}
+						{activeTab === "style" && hasStyleTab && (
+							<StyleTab widget={widget} styleProps={styleProps} />
+						)}
+					</Box>
 				</Box>
 			</Box>
 		</HmiFloatingPane>

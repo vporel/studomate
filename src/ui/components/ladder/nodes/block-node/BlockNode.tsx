@@ -26,6 +26,7 @@ import CompareBlockNode from "./CompareBlockNode";
 import ConvertTypeSelects from "./ConvertTypeSelects";
 import { BLOCK_NODE_DIMENSIONS, PIN_ROW_HEIGHT } from "./dimensions";
 import OperatorSelect from "./OperatorSelect";
+import { getBlockVariableMnemonics } from "@/schemas/ladder/function-blocks/function-block.schema";
 import ParamPinRow from "./ParamPinRow";
 
 export type BlockNodeData = BlockData;
@@ -85,6 +86,14 @@ const BoxBlockNode = ({
 	const portSpecs = resolvePortSpecs(data);
 	const height = getBlockHeightInCellUnits(portSpecs) * GRID_CELL_HEIGHT;
 	const parameterRows = getParameterPinRows(portSpecs);
+
+	const instanceName =
+		data.blockType === "timer" || data.blockType === "counter"
+			? data.params.name
+			: undefined;
+	const generatedMnemonics = instanceName
+		? getBlockVariableMnemonics(instanceName, portSpecs)
+		: {};
 
 	const getPinValidator =
 		data.blockType === "convert"
@@ -164,6 +173,7 @@ const BoxBlockNode = ({
 					row={row}
 					getValue={(suffix) => def.readParam(data.params, suffix)}
 					getValidator={getPinValidator}
+					getLiveMnemonic={(suffix) => generatedMnemonics[suffix]}
 					onCommit={(suffix, value) =>
 						runUpdate(def.writeParam(data.params, suffix, value))
 					}

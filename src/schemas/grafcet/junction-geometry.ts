@@ -16,9 +16,7 @@ export type JunctionGeometry = {
 };
 
 function snap(px: number): number {
-	return (
-		Math.round(px / JUNCTION_BRANCH_MARGIN) * JUNCTION_BRANCH_MARGIN || 0
-	);
+	return Math.round(px / JUNCTION_BRANCH_MARGIN) * JUNCTION_BRANCH_MARGIN || 0;
 }
 
 /**
