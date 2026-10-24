@@ -9,6 +9,15 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
 	output: "standalone",
 	experimental: { globalNotFound: true },
+	async headers() {
+		return [
+			{
+				source: "/app",
+				has: [{ type: "query" as const, key: "template" }],
+				headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+			},
+		];
+	},
 	async redirects() {
 		return [
 			{

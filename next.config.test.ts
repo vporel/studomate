@@ -4,6 +4,20 @@ jest.mock("next-intl/plugin", () => () => (c: unknown) => c);
 
 import nextConfig from "./next.config";
 
+describe("next.config headers", () => {
+	it("marks the template variants of /app as noindex at the server", async () => {
+		const headers = await (nextConfig as any).headers();
+
+		expect(headers).toEqual([
+			{
+				source: "/app",
+				has: [{ type: "query", key: "template" }],
+				headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+			},
+		]);
+	});
+});
+
 describe("next.config redirects", () => {
 	it("redirects www and plain-http requests permanently to the canonical origin", async () => {
 		const redirects = await (nextConfig as any).redirects();

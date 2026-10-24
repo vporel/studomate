@@ -1,6 +1,7 @@
 import { getMessages } from "@/i18n/messages";
 import { createTranslator } from "next-intl";
 import { buildModuleSteps } from "./training-modules";
+import { trainingStepSlug } from "@/training/step-slugs";
 import createTrainingModulePages from "./training-pages";
 
 jest.mock("next-intl/server", () => ({
@@ -42,6 +43,11 @@ describe("training module pages", () => {
 
 			expect(params).toHaveLength((stepIds.length - 1) * 2);
 			expect(params).toContainEqual({ locale: "en", step: stepIds[1] });
+			expect(params).toContainEqual({
+				locale: "fr",
+				step: trainingStepSlug("fr", "a1", stepIds[1]),
+			});
+			expect(params).not.toContainEqual({ locale: "fr", step: "theory-timer" });
 			expect(params).not.toContainEqual({ locale: "fr", step: stepIds[0] });
 		});
 	});
@@ -49,7 +55,7 @@ describe("training module pages", () => {
 	describe("generateStepMetadata", () => {
 		it("indexe une étape de théorie avec son titre et sa description propres", async () => {
 			const metadata = await a1.generateStepMetadata({
-				params: Promise.resolve({ locale: "fr", step: "theory-timer" }),
+				params: Promise.resolve({ locale: "fr", step: "theorie-temporisation" }),
 			});
 
 			expect(metadata.title).toEqual({
@@ -58,12 +64,12 @@ describe("training module pages", () => {
 			expect(metadata.description).toContain("IEC 60848");
 			expect(metadata.robots).toBeUndefined();
 			expect(metadata.alternates?.canonical).toBe(
-				"https://studomate.com/formations/a1/theory-timer",
+				"https://studomate.com/formations/a1/theorie-temporisation",
 			);
 			expect(metadata.alternates?.languages).toEqual({
-				fr: "https://studomate.com/formations/a1/theory-timer",
+				fr: "https://studomate.com/formations/a1/theorie-temporisation",
 				en: "https://studomate.com/en/training/a1/theory-timer",
-				"x-default": "https://studomate.com/formations/a1/theory-timer",
+				"x-default": "https://studomate.com/formations/a1/theorie-temporisation",
 			});
 		});
 
@@ -107,13 +113,48 @@ describe("training module pages", () => {
 			expect(page.props.initialStepId).toBeUndefined();
 		});
 
+		it("le fil d'Ariane du module s'arrête sur le module (page courante)", async () => {
+			const page = (await a1.ModulePage({
+				params: Promise.resolve({ locale: "fr" }),
+			})) as { props: { breadcrumb: { props: Record<string, unknown> } } };
+
+			expect(page.props.breadcrumb.props).toEqual({
+				locale: "fr",
+				ancestors: [{ label: "Formations", href: "/training" }],
+				current: { label: "Module A1 : Bases du GRAFCET", href: "/training/a1" },
+			});
+		});
+
+		it("le fil d'Ariane d'une étape lie le module sans figer l'étape affichée", async () => {
+			const page = (await a1.StepPage({
+				params: Promise.resolve({ locale: "en", step: "theory-timer" }),
+			})) as { props: { breadcrumb: { props: Record<string, unknown> } } };
+
+			expect(page.props.breadcrumb.props).toEqual({
+				locale: "en",
+				ancestors: [
+					{ label: "Training", href: "/training" },
+					{ label: "Module A1: GRAFCET basics", href: "/training/a1" },
+				],
+				current: undefined,
+			});
+		});
+
 		it("la page d'étape transmet l'étape de l'URL, et toutes les étapes du module", async () => {
 			const page = (await a1.StepPage({
-				params: Promise.resolve({ locale: "fr", step: "theory-timer" }),
+				params: Promise.resolve({ locale: "fr", step: "theorie-temporisation" }),
 			})) as { props: { initialStepId: string; steps: unknown[] } };
 
 			expect(page.props.initialStepId).toBe("theory-timer");
 			expect(page.props.steps).toHaveLength(buildModuleSteps("a1", "fr").length);
+		});
+
+		it("répond 404 sur l'ancien slug français (identifiant anglais)", async () => {
+			await expect(
+				a1.StepPage({
+					params: Promise.resolve({ locale: "fr", step: "theory-timer" }),
+				}),
+			).rejects.toThrow("NEXT_NOT_FOUND");
 		});
 
 		it("répond 404 pour une étape inconnue", async () => {

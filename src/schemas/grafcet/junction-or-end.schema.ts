@@ -6,6 +6,7 @@ import Junction, {
 
 export const JUNCTION_OR_END_HANDLE_PIVOT_TYPES = [
 	"step",
+	"step-referral-source",
 ] as const satisfies readonly ElementType[];
 
 export const JUNCTION_OR_END_HANDLES_TO_TYPES: Record<

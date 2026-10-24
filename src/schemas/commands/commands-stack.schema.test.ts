@@ -183,6 +183,20 @@ describe("CommandsStack", () => {
 			expect(undone).toBeNull();
 			expect(redone).toBeNull();
 		});
+
+		it("keeps the stack object and stays usable afterwards", () => {
+			const stack = new CommandsStack<Counter>();
+			stack.execute([new AddCommand(5)], { value: 0 });
+			const same = stack;
+
+			stack.clear();
+
+			expect(same).toBe(stack);
+			expect(stack.commandsToUndo).toEqual([]);
+			expect(stack.commandsToRedo).toEqual([]);
+			const object = stack.execute([new AddCommand(2)], { value: 0 });
+			expect(stack.undo(object)[0]).toEqual({ value: 0 });
+		});
 	});
 
 	describe("undoLimit", () => {

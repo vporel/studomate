@@ -11,6 +11,7 @@ import {
 	ladderCapture,
 	scene3dCapture,
 } from "@/ui/components/public-pages/landing-content";
+import { hasNoSkippedLevel, headingLevels } from "@tests/utils/headings";
 import About from "./page";
 
 jest.mock("next-intl/server", () => ({
@@ -149,6 +150,18 @@ describe("About page", () => {
 			screen.getByRole("link", { name: "Get in touch" }).getAttribute("href"),
 		).toBe("/contact");
 	});
+
+	it.each(["fr", "en"] as const)(
+		"has an h1 followed by h2 sections without skipped heading levels (%s)",
+		async (locale) => {
+			const { container } = await renderAbout(locale);
+			const levels = headingLevels(container);
+
+			expect(levels.filter((l) => l === 1)).toHaveLength(1);
+			expect(levels).toContain(2);
+			expect(hasNoSkippedLevel(levels)).toBe(true);
+		},
+	);
 
 	it("has as many icons as items in each icon-backed section", async () => {
 		const { container } = await renderAbout("fr");

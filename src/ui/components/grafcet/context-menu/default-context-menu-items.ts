@@ -7,7 +7,7 @@ import { platformShortcut } from "@/ui/lib/platform";
 import GrafcetCopyCutPasteManager from "@/ui/stores/grafcet/managers/copy-cut-paste.manager";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { GrafcetContextMenuElement } from "./grafcet-context-menu";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 //The default context menu items for a node in the grafcet editor. This is used when the user right-clicks on a node that does not have a specific context menu defined (like a step or transition).
 export default function defaultContextMenuItems(

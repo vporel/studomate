@@ -32,4 +32,22 @@ describe("buildHomeJsonLd", () => {
 		expect(parsed.screenshot).toHaveLength(3);
 		for (const url of parsed.screenshot) expect(url).toMatch(/^https:\/\//);
 	});
+
+	it("builds its screenshot URLs on NEXT_PUBLIC_SITE_URL when set", async () => {
+		const previous = process.env.NEXT_PUBLIC_SITE_URL;
+		process.env.NEXT_PUBLIC_SITE_URL = "https://staging.example.com";
+		jest.resetModules();
+		const build = (await import("./homeJsonLd")).default;
+		const parsed: { screenshot: string[]; url: string } = JSON.parse(
+			build("fr", "d", []),
+		);
+		if (previous === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+		else process.env.NEXT_PUBLIC_SITE_URL = previous;
+
+		expect(parsed.url).toBe("https://staging.example.com/");
+		expect(parsed.screenshot).toHaveLength(3);
+		for (const url of parsed.screenshot) {
+			expect(url.startsWith("https://staging.example.com/")).toBe(true);
+		}
+	});
 });

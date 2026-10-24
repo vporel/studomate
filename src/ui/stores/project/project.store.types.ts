@@ -56,6 +56,10 @@ export type PageType =
  */
 export type ScopeType = "project" | "grafcet" | "ladder" | "hmi";
 
+/** The kinds of document (grafcet, ladder, HMI page) a tab can open, unlike `ScopeType` which
+ * also has the project level. */
+export type ProjectDocumentType = Exclude<ScopeType, "project">;
+
 export type PageData = {
 	id: string;
 	type: PageType;

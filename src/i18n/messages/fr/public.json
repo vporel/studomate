@@ -8,6 +8,9 @@
 		"menu": "Menu",
 		"back": "Retour"
 	},
+	"breadcrumb": {
+		"label": "Fil d'Ariane"
+	},
 	"footer": {
 		"resources": "Ressources",
 		"manual": "Manuel utilisateur",
@@ -299,7 +302,7 @@
 	},
 	"metadata": {
 		"homeTitle": "Studomate : simulateur GRAFCET et Ladder en ligne",
-		"homeDescription": "Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur — sans installation, sans compte.",
+		"homeDescription": "Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur : sans installation, sans compte.",
 		"aboutTitle": "À propos",
 		"aboutDescription": "Studomate : un outil pédagogique gratuit pour apprendre, concevoir et simuler le GRAFCET, le Ladder et les HMI dans le navigateur.",
 		"contactTitle": "Contact",
@@ -312,14 +315,14 @@
 		"privacyDescription": "Comment Studomate gère les données personnelles et techniques des utilisateurs.",
 		"manualTitle": "Manuel utilisateur",
 		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Formations",
+		"trainingTitle": "Formation GRAFCET et Ladder gratuite",
 		"trainingDescription": "Parcours de formation à l'automatisme avec Studomate : théorie, exercices auto-corrigés, épreuves de synthèse.",
 		"glossaryTitle": "Glossaire de l'automatisme : GRAFCET et Ladder",
 		"glossaryDescription": "Glossaire de l'automatisme : étape, transition, contact, bobine, TON, compteur, front... chaque terme du GRAFCET et du Ladder défini simplement, avec schémas.",
 		"trainingA0Title": "Module A0 : Avant de commencer",
-		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation — les prérequis avant le GRAFCET.",
+		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation. Les prérequis avant le GRAFCET.",
 		"trainingA1Title": "Module A1 : Bases du GRAFCET",
-		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET — théorie et exercices auto-corrigés.",
+		"trainingA1Description": "Module A1 : étapes, transitions, réceptivités, actions, divergences en OU et en ET. Théorie et exercices auto-corrigés.",
 		"trainingA2Title": "Module A2 : Ladder, logique et mémoire",
 		"trainingA2Description": "Module A2 : du schéma à relais au Ladder, contacts et bobines, auto-maintien, bobines S/R, fronts et ordre d'exécution des réseaux.",
 		"trainingA3Title": "Module A3 : Ladder, temps et calcul",

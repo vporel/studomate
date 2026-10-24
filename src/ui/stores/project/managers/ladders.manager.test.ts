@@ -404,4 +404,42 @@ describe("LaddersManager", () => {
 			expect(adoptLadder).not.toHaveBeenCalled();
 		});
 	});
+
+	describe("clearCommandsStacksOf", () => {
+		it("empties the existing stacks in place, only for the given ids", () => {
+			const { manager } = makeManager({});
+			const target = manager.getCommandsStack("a");
+			const other = manager.getCommandsStack("b");
+			target.commandsToUndo.push([{} as any]);
+			other.commandsToUndo.push([{} as any]);
+
+			manager.clearCommandsStacksOf(["a"]);
+
+			expect(manager.getCommandsStack("a")).toBe(target);
+			expect(target.commandsToUndo).toHaveLength(0);
+			expect(other.commandsToUndo).toHaveLength(1);
+		});
+
+		it("does not create a stack for an unknown id", () => {
+			const { manager } = makeManager({});
+
+			manager.clearCommandsStacksOf(["unknown"]);
+
+			expect(manager.getCommandsStack("unknown").commandsToUndo).toEqual([]);
+			expect((manager as any).commandsStacks.size).toBe(1);
+		});
+
+		it("refreshes the flags of the mounted store", () => {
+			const refreshFlags = jest.fn();
+			const { manager } = makeManager({
+				laddersStoresManagers: {
+					a: { commandsStackManager: { refreshFlags } },
+				},
+			});
+
+			manager.clearCommandsStacksOf(["a", "no-store"]);
+
+			expect(refreshFlags).toHaveBeenCalledTimes(1);
+		});
+	});
 });

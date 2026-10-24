@@ -3,30 +3,17 @@ import {
 	getPagesSession,
 	setPagesSession,
 } from "./pages-session.storage";
-
-/** localStorage minimal énumérable, l'environnement de test étant en `node` */
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	const mock = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-		get length() {
-			return store.size;
-		},
-		key: (i: number) => [...store.keys()][i] ?? null,
-	};
-	(globalThis as any).localStorage = mock;
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 describe("pages-session.storage", () => {
 	let store: Map<string, string>;
+	let restoreLocalStorage: () => void;
 
 	beforeEach(() => {
-		store = installLocalStorage();
+		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("retourne null quand aucune session n'est enregistrée pour ce projet", () => {
 		expect(getPagesSession("p1")).toBeNull();

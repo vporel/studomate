@@ -83,7 +83,7 @@ export const generateMetadata = createGenerateMetadata(
 );
 
 const SectionTitle = ({ children }: { children: ReactNode }) => (
-	<Typography variant="h3" gutterBottom mt={5}>
+	<Typography variant="h3" component="h2" gutterBottom mt={5}>
 		{children}
 	</Typography>
 );
@@ -162,7 +162,7 @@ export default async function About({ params }: Props) {
 			<PageTitle>{t("title")}</PageTitle>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h3" gutterBottom mt={3}>
+			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{t("missionTitle")}
 			</Typography>
 			<Typography fontSize="1.1rem">
@@ -270,7 +270,7 @@ export default async function About({ params }: Props) {
 					color: "primary.contrastText",
 				}}
 			>
-				<Typography variant="h3" gutterBottom>
+				<Typography variant="h3" component="h2" gutterBottom>
 					{t("ctaTitle")}
 				</Typography>
 				<Typography mb={2}>{t("ctaBody")}</Typography>
@@ -291,7 +291,7 @@ export default async function About({ params }: Props) {
 			</Paper>
 
 			<TintedPaper sx={{ mt: 2, p: 3, textAlign: "center" }}>
-				<Typography variant="h3" gutterBottom>
+				<Typography variant="h3" component="h2" gutterBottom>
 					{t("contactTitle")}
 				</Typography>
 				<Typography mb={2}>{t("contactBody")}</Typography>

@@ -1,86 +1,62 @@
 import { deepObjectsComparison } from "@/lib/object";
-import CommandsStack from "@/schemas/commands/commands-stack.schema";
+import Project from "@/schemas/project/project.schema";
 import HmiPage, { HMI_PAGE_NAME_LABEL } from "@/schemas/hmi/hmi-page.schema";
 import {
 	HmiStoreManagers,
 	HmiStoreValues,
-	ProjectStoreGetFunction,
-	ProjectStoreSetFunction,
+	ProjectStoreState,
 } from "../project.store";
 import { ProjectMode } from "../ProjectMode.enum";
 import trackEvent from "@/ui/services/analytics";
-
-const COMMANDS_STACK_SIZE = 100;
+import AbstractDocumentsManager from "./abstract-documents.manager";
 
 /** Id fixe de l'unique onglet "Simulation HMI" (voir `HmiSimulationPageView`) — pas lié à une
  * page HMI précise, contrairement aux onglets `"hmi"` classiques. */
 export const HMI_SIMULATION_PAGE_ID = "hmi-simulation";
 
-export default class HmiManager {
-	private setStoreState: ProjectStoreSetFunction;
-	private getStoreState: ProjectStoreGetFunction;
+export default class HmiManager extends AbstractDocumentsManager<
+	HmiPage,
+	HmiStoreValues,
+	HmiStoreManagers
+> {
+	protected readonly documentType = "hmi" as const;
 
-	/**
-	 * Undo history de chaque page HMI, tenu ici plutôt que dans son store : un store est créé au
-	 * montage de la page et abandonné à sa fermeture, garder l'historique là-bas signifierait que
-	 * fermer un onglet détruit silencieusement l'historique. Le garder au niveau projet le fait
-	 * survivre à la page (même principe que `AbstractProgramsManager`).
-	 */
-	private commandsStacks: Map<string, CommandsStack<HmiPage>> = new Map();
-
-	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
-		this.setStoreState = set;
-		this.getStoreState = get;
+	protected getDocument(project: Project, id: string): HmiPage | undefined {
+		return project.getHmiPage(id);
 	}
 
-	getCommandsStack(hmiPageId: string): CommandsStack<HmiPage> {
-		let stack = this.commandsStacks.get(hmiPageId);
-		if (!stack) {
-			stack = new CommandsStack<HmiPage>(COMMANDS_STACK_SIZE);
-			this.commandsStacks.set(hmiPageId, stack);
-		}
-		return stack;
+	protected getStoresValues(
+		state: ProjectStoreState,
+	): Record<string, HmiStoreValues> {
+		return state.hmiStoresValues;
 	}
 
-	clearCommandsStacks(): void {
-		this.commandsStacks.clear();
+	protected setStoresValues(
+		values: Record<string, HmiStoreValues>,
+	): Partial<ProjectStoreState> {
+		return { hmiStoresValues: values };
 	}
 
-	getActiveStoreValues(): HmiStoreValues | null {
-		const activeScope = this.getStoreState().activeScope;
-		const activeScopeType = this.getStoreState().activeScopeType;
-		if (activeScopeType !== "hmi" || !activeScope) return null;
-		return this.getStoreState().hmiStoresValues[activeScope] || null;
+	protected getStoresManagers(
+		state: ProjectStoreState,
+	): Record<string, HmiStoreManagers> {
+		return state.hmiStoresManagers;
 	}
 
-	getActiveStoreManagers(): HmiStoreManagers | null {
-		const activeScope = this.getStoreState().activeScope;
-		const activeScopeType = this.getStoreState().activeScopeType;
-		if (activeScopeType !== "hmi" || !activeScope) return null;
-		return this.getStoreState().hmiStoresManagers[activeScope] || null;
+	protected setStoresManagers(
+		managers: Record<string, HmiStoreManagers>,
+	): Partial<ProjectStoreState> {
+		return { hmiStoresManagers: managers };
 	}
 
-	setStoreValues(hmiPageId: string, values: HmiStoreValues): void {
-		this.setStoreState((state) => ({
-			hmiStoresValues: {
-				...state.hmiStoresValues,
-				[hmiPageId]: { ...state.hmiStoresValues[hmiPageId], ...values },
-			},
-		}));
+	protected adoptDocument(managers: HmiStoreManagers, page: HmiPage): void {
+		managers.adoptHmiPage(page);
 	}
 
-	registerStoreManager(hmiPageId: string, managers: HmiStoreManagers): void {
-		this.setStoreState((state) => ({
-			hmiStoresManagers: { ...state.hmiStoresManagers, [hmiPageId]: managers },
-		}));
-	}
-
-	deleteStoreManager(hmiPageId: string): void {
-		this.setStoreState((state) => {
-			const current = { ...state.hmiStoresManagers };
-			delete current[hmiPageId];
-			return { hmiStoresManagers: current };
-		});
+	protected getAdoptedDocument(
+		managers: HmiStoreManagers,
+	): HmiPage | undefined {
+		return managers.getHmiPage();
 	}
 
 	/** @param name Absent : auto-généré au format "Page HMI_N", unique parmi les pages du projet
@@ -111,7 +87,7 @@ export default class HmiManager {
 		if (this.getStoreState().mode !== ProjectMode.DESIGN) return;
 		const newProject = project.copy();
 		newProject.deleteHmiPage(hmiPageId);
-		this.commandsStacks.delete(hmiPageId);
+		this.deleteCommandsStack(hmiPageId);
 		this.getStoreState().pagesManager.closePage(hmiPageId);
 		this.setStoreState(() => ({
 			project: newProject,
@@ -137,6 +113,8 @@ export default class HmiManager {
 			project: newProject,
 			hasUnsavedChanges: true,
 		}));
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
 	}
 
 	/** Une seule page principale à la fois dans tout le projet (voir `Project.setMainHmiPage`) —
@@ -151,21 +129,8 @@ export default class HmiManager {
 			project: newProject,
 			hasUnsavedChanges: true,
 		}));
-	}
-
-	/** Makes every mounted HMI page store adopt the project's version of its page when they
-	 * differ (e.g. after a command rewrote widget bindings). */
-	syncMountedStoresFromProject(): void {
-		const project = this.getStoreState().project;
-		if (!project) return;
-		Object.entries(this.getStoreState().hmiStoresManagers).forEach(
-			([hmiPageId, managers]) => {
-				const page = project.getHmiPage(hmiPageId);
-				if (!page) return;
-				if (deepObjectsComparison(managers.getHmiPage(), page)) return;
-				managers.adoptHmiPage(page.copy());
-			},
-		);
+		// A mounted store pushes its own copy back to the project on its next change.
+		this.syncMountedStoresFromProject();
 	}
 
 	/** Ouvre l'onglet "Simulation HMI" sur la page principale du projet (voir

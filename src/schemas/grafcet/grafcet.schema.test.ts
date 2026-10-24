@@ -310,3 +310,28 @@ describe("Grafcet : étapes initiales", () => {
 		expect(grafcet.hasInitialStep()).toBe(true);
 	});
 });
+
+describe("Grafcet.getStepByNumber", () => {
+	const grafcet = new Grafcet("g1", "Grafcet");
+	grafcet.addElements([
+		{ type: "step", id: "s0", data: { number: 0 }, position: { x: 0, y: 0 } },
+		{ type: "step", id: "s3", data: { number: 3 }, position: { x: 0, y: 1 } },
+		{ type: "step", id: "sx", data: { number: "" }, position: { x: 0, y: 2 } },
+	]);
+
+	it("returns the step carrying the number, zero included", () => {
+		expect(grafcet.getStepByNumber(3)?.id).toBe("s3");
+		expect(grafcet.getStepByNumber(0)?.id).toBe("s0");
+	});
+
+	it("returns undefined when no step carries the number", () => {
+		expect(grafcet.getStepByNumber(7)).toBeUndefined();
+	});
+
+	it.each(["", null, undefined] as const)(
+		"returns undefined for the empty value %p, even when a step has no number",
+		(value) => {
+			expect(grafcet.getStepByNumber(value)).toBeUndefined();
+		},
+	);
+});

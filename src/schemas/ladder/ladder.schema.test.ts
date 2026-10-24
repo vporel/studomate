@@ -298,6 +298,28 @@ describe("Ladder", () => {
 			expect(copiedSection.connections).toEqual(section.connections);
 		});
 
+		it("ne partage pas les params des blocs avec l'original", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const compare = createCompareBlockElement(0, 0, {
+				in1: "A",
+				in2: "1",
+				operator: "<",
+			});
+			ladder.addElements(section.id, [compare]);
+
+			const copy = ladder.copy();
+			const copiedBlock = copy.sections[0].elements[0] as typeof compare;
+
+			expect(copiedBlock.data.params).toEqual(compare.data.params);
+			expect(copiedBlock.data.params).not.toBe(compare.data.params);
+
+			copy.renameVariableReferences({ A: "B" });
+
+			expect(copiedBlock.data.params).toMatchObject({ in1: "B" });
+			expect(compare.data.params).toMatchObject({ in1: "A" });
+		});
+
 		it("préserve le rôle du ladder", () => {
 			const main = new Ladder("l1", "Main", undefined, "main");
 			expect(main.copy().role).toBe("main");

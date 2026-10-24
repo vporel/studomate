@@ -3,17 +3,18 @@
 import { getStepVariableId } from "@/project-analyser/analysers/grafcet/grafcet.analyser";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
+import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { XYPosition } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import trackEvent from "@/ui/services/analytics";
 import { exportProgramPdf } from "@/ui/pdf/program-pdf";
 import { useT } from "@/ui/i18n/useT";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
-import type { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import { useGrafcetContext, useGrafcetStore } from "../context/GrafcetContext";
 import {
 	GrafcetNodeType,
@@ -193,21 +194,16 @@ const GrafcetContextMenu = ({
 		tActionModes,
 	]);
 
-	//Show the menu on 'show' event
-	useEffect(() => {
-		const showMenu = (props: GrafcetContextMenuProps) => {
+	const showMenu = useCallback(
+		(props: GrafcetContextMenuProps) => {
 			setElement(props.element);
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
-		};
-		contextMenuEvents.on("show", showMenu);
-		contextMenuEvents.on("hide", hide);
-		return () => {
-			contextMenuEvents.off("show", showMenu);
-			contextMenuEvents.off("hide", hide);
-		};
-	}, [contextMenuEvents, hide, show]);
+		},
+		[show],
+	);
+	useContextMenuBus(contextMenuEvents, showMenu, hide);
 
 	return (
 		<ContextMenu

@@ -1,18 +1,19 @@
 import { setProductTourSeen } from "@/persistence/preferences.storage";
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 import shouldStartProductTour, {
 	resetProductTourSuppression,
 	suppressProductTourForThisPageLoad,
 } from "./product-tour-eligibility";
 
 describe("shouldStartProductTour", () => {
+	let restoreLocalStorage: () => void;
+
 	beforeEach(() => {
-		const store = new Map<string, string>();
-		(globalThis as any).localStorage = {
-			getItem: (k: string) => store.get(k) ?? null,
-			setItem: (k: string, v: string) => store.set(k, v),
-		};
+		({ restore: restoreLocalStorage } = installMemoryLocalStorage());
 		resetProductTourSuppression();
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("starts for a browser that never saw the tour", () => {
 		expect(shouldStartProductTour()).toBe(true);

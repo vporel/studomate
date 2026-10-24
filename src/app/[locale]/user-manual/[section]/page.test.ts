@@ -91,6 +91,22 @@ describe("manual section page", () => {
 		).rejects.toThrow("NEXT_NOT_FOUND");
 	});
 
+	it("fournit un fil d'Ariane Manuel > section avec le titre de la section", async () => {
+		mockGetTranslations.mockResolvedValue(
+			(key: string) => `msg:${key}`,
+		);
+		const page = (await UserManualSection({
+			params: Promise.resolve({ locale: "fr", section: "depannage" }),
+		})) as {
+			props: { children: { props: { breadcrumb: { props: Record<string, unknown> } } } };
+		};
+
+		const { ancestors, current, locale } = page.props.children.props.breadcrumb.props;
+		expect(locale).toBe("fr");
+		expect(ancestors).toEqual([{ label: "msg:pageTitle", href: "/user-manual" }]);
+		expect(current).toMatchObject({ label: "msg:troubleshooting" });
+	});
+
 	it("rend la section désignée par un slug traduit", async () => {
 		await expect(
 			UserManualSection({

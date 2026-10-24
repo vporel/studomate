@@ -19,6 +19,7 @@ import {
 import {
 	clearShareTokenFromUrl,
 	setProjectIdInUrl,
+	setShareTokenInUrl,
 } from "@/ui/stores/project/url/project-url";
 import {
 	Draft,
@@ -64,6 +65,10 @@ export default class ProjectLifecycleManager {
 	private setStoreState: ProjectStoreSetFunction;
 	private getStoreState: ProjectStoreGetFunction;
 	private autoSaveTimer: ReturnType<typeof setInterval> | null = null;
+	// Draft opened while the stored project was unreachable: the repository only knows the
+	// cloud version after a successful read, so the next save must read it first.
+	private unprimedDraft: { projectId: string; draftSavedAt: number } | null =
+		null;
 
 	constructor(set: ProjectStoreSetFunction, get: ProjectStoreGetFunction) {
 		this.setStoreState = set;
@@ -73,6 +78,7 @@ export default class ProjectLifecycleManager {
 	private async doOpenProject(project: Project): Promise<void> {
 		const set = this.setStoreState;
 		const get = this.getStoreState;
+		this.unprimedDraft = null;
 		//The undo histories belong to the project being left
 		get().grafcetsManager.clearCommandsStacks();
 		get().laddersManager.clearCommandsStacks();
@@ -96,6 +102,7 @@ export default class ProjectLifecycleManager {
 		}));
 		//Pour qu'un rechargement de la page rouvre le même projet, voir ProjectContextProvider
 		setProjectIdInUrl(project.id);
+		clearShareTokenFromUrl();
 		//Repart de zéro : un `activePage` d'URL laissé par un projet précédent n'a aucun sens ici.
 		//`openProject` l'a lu avant cet appel s'il doit le restaurer, voir restorePagesSession.
 		setActivePageIdInUrl(null);
@@ -161,6 +168,7 @@ export default class ProjectLifecycleManager {
 			activeScopeType: "project",
 		}));
 		setProjectIdInUrl(null);
+		clearShareTokenFromUrl();
 		setActivePageIdInUrl(null);
 	}
 
@@ -202,6 +210,7 @@ export default class ProjectLifecycleManager {
 		const get = this.getStoreState;
 		let project: Project | null = null;
 		let fromDraft = false;
+		let unprimedDraft: ProjectLifecycleManager["unprimedDraft"] = null;
 
 		if (preferDraft) {
 			// Rechargement via URL : le brouillon est prioritaire, mais on lit tout de même le
@@ -223,6 +232,9 @@ export default class ProjectLifecycleManager {
 				}
 				project = draftProject;
 				fromDraft = true;
+				if (!stored) {
+					unprimedDraft = { projectId, draftSavedAt: draft.savedAt };
+				}
 			} else {
 				project = stored;
 			}
@@ -249,6 +261,7 @@ export default class ProjectLifecycleManager {
 			shared: false,
 			unsaved: fromDraft,
 		});
+		this.unprimedDraft = unprimedDraft;
 		return true;
 	}
 
@@ -268,7 +281,10 @@ export default class ProjectLifecycleManager {
 		await this.doOpenProject(project);
 		trackEvent("shared-project-opened");
 		set(() => ({ isSharedProject: true, shareToken: null }));
-		clearShareTokenFromUrl();
+		//Un projet partagé n'a pas de brouillon ni d'entrée dans l'index local : seul le token
+		//permet de le rouvrir après un rechargement.
+		setProjectIdInUrl(null);
+		setShareTokenInUrl(token);
 		return true;
 	}
 
@@ -318,6 +334,20 @@ export default class ProjectLifecycleManager {
 			return false;
 		}
 		set(() => ({ savingProject: true }));
+		if (this.unprimedDraft?.projectId === project.id) {
+			const stored = await get().projectRepository.get(project.id);
+			if (
+				stored &&
+				stored.lastModificationDate.getTime() > this.unprimedDraft.draftSavedAt
+			) {
+				set((state) => ({
+					savingProject: false,
+					ui: { ...state.ui, cloudConflictModalVisible: true },
+				}));
+				return false;
+			}
+			if (stored) this.unprimedDraft = null;
+		}
 		const location = await resolveSaveLocationIfNeeded(project, get, set);
 		if (location === "cancelled") {
 			set(() => ({ savingProject: false }));
@@ -357,6 +387,7 @@ export default class ProjectLifecycleManager {
 			savingProject: false,
 		}));
 		deleteDraft(newProject.id);
+		this.unprimedDraft = null;
 		return true;
 	}
 

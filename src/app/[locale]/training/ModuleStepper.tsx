@@ -3,6 +3,7 @@
 import routes from "@/app/routes";
 import type { Locale } from "@/i18n/config";
 import type { PublicPathname } from "@/i18n/routing";
+import type { TrainingModuleId } from "@/training/module-ids";
 import TrainingProgressRepository from "@/persistence/repositories/training-progress.repository";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import MarkdownBody from "@/ui/lib/markdown-body";
@@ -153,7 +154,7 @@ export default function ModuleStepper({
 	nextLabel: string;
 	/** Clé de module (ex. `"m1"`) — sert de clé de reprise de progression, distincte de l'id de
 	 * chaque étape. */
-	moduleId: string;
+	moduleId: TrainingModuleId;
 	/** Module suivant du parcours, s'il est disponible — remplace le bouton "Suivant" (désactivé
 	 * par défaut) sur la dernière étape par un lien vers ce module. */
 	nextModule?: { href: PublicPathname; label: string };
@@ -288,7 +289,11 @@ export default function ModuleStepper({
 			>
 				<Stack direction="row" alignItems="center" gap={1} mb={1.5}>
 					<Icon fontSize="small" color={step.cta ? "primary" : "disabled"} />
-					<Typography variant="h5" component="h2" fontWeight={700}>
+					<Typography
+						variant="h5"
+						component={initialStepId === undefined ? "h2" : "h1"}
+						fontWeight={700}
+					>
 						{step.title}
 					</Typography>
 				</Stack>

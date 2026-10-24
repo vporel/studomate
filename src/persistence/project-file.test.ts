@@ -2,7 +2,11 @@ import Project from "@/schemas/project/project.schema";
 import GrafcetBuilder from "@/schemas/grafcet/builders/grafcet.builder";
 import StepBuilder from "@/schemas/grafcet/builders/step.builder";
 import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
-import { parseProjectFromFile, serializeProjectToFile } from "./project-file";
+import {
+	importProjectFromFile,
+	parseProjectFromFile,
+	serializeProjectToFile,
+} from "./project-file";
 
 function projetAvecGrafcet() {
 	const project = new Project("p1", "Projet", "Enseignante");
@@ -98,6 +102,59 @@ describe("fichier de projet", () => {
 			});
 
 			expect(() => parseProjectFromFile(futur)).toThrow("version plus récente");
+		});
+	});
+
+	describe("importProjectFromFile", () => {
+		it("attribue un identifiant différent de celui du fichier", () => {
+			const importe = importProjectFromFile(
+				serializeProjectToFile(projetAvecGrafcet()),
+			);
+
+			expect(importe.id).toBeTruthy();
+			expect(importe.id).not.toBe("p1");
+		});
+
+		it("attribue un identifiant distinct à chaque import du même fichier", () => {
+			const texte = serializeProjectToFile(projetAvecGrafcet());
+
+			expect(importProjectFromFile(texte).id).not.toBe(
+				importProjectFromFile(texte).id,
+			);
+		});
+
+		it("conserve le contenu du projet", () => {
+			const texte = serializeProjectToFile(projetAvecGrafcet());
+
+			const importe = importProjectFromFile(texte);
+			const { id: _lu, ...attendu } = JSON.parse(
+				JSON.stringify(parseProjectFromFile(texte)),
+			);
+			const { id: _importe, ...obtenu } = JSON.parse(JSON.stringify(importe));
+
+			expect(obtenu).toEqual(attendu);
+			expect(importe.name).toBe("Projet");
+			expect(Object.keys(importe.grafcets)).toEqual(["g1"]);
+		});
+
+		it("refuse un contenu qui n'est pas un objet", () => {
+			expect(() => importProjectFromFile("[]")).toThrow(
+				"ne contient pas un projet",
+			);
+			expect(() => importProjectFromFile("42")).toThrow(
+				"ne contient pas un projet",
+			);
+		});
+
+		it("refuse un projet écrit par une version plus récente", () => {
+			const futur = JSON.stringify({
+				id: "p1",
+				schemaVersion: PROJECT_SCHEMA_VERSION + 1,
+			});
+
+			expect(() => importProjectFromFile(futur)).toThrow(
+				"version plus récente",
+			);
 		});
 	});
 });

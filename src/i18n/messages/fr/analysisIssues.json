@@ -75,6 +75,7 @@
 	"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE": "La convergence en ET ne provient pas d'une divergence en ET.",
 	"JUNCTION_AND_BRANCH_COUNT_MISMATCH": "Le nombre de branches de la divergence en ET et de la convergence en ET ne correspond pas.",
 	"JUNCTION_AND_DIVERGENCE_NOT_CLOSED": "La divergence en ET n'est pas fermée par une convergence en ET.",
+	"JUNCTION_AND_MIN_BRANCHES": "Une jonction en ET doit avoir au moins deux branches.",
 	"JUNCTION_OR_MIN_BRANCHES": "Une jonction en OU doit avoir au moins deux branches.",
 	"JUNCTION_OR_START_BRANCH_NOT_TRANSITION": "Une divergence en OU doit distribuer vers des transitions.",
 	"JUNCTION_OR_END_BRANCH_NOT_TRANSITION": "Une convergence en OU doit provenir de transitions.",

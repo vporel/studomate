@@ -13,7 +13,7 @@ import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager"
 import { LADDER_CONNECTION_EDGE_TYPE } from "@/ui/utils/ladder/ladder-flow-builder";
 import { Edge, Node, OnDelete } from "@xyflow/react";
 import { LadderContextMenuElement } from "./ladder-context-menu";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 const CONTACT_TYPE_KEYS: Record<ContactType, string> = {
 	NO: "contactNO",

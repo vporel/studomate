@@ -25,6 +25,8 @@ const mockUrl = {
 	getProjectIdFromUrl: jest.fn<string | null, []>(() => null),
 	getShareTokenFromUrl: jest.fn<string | null, []>(() => null),
 	setProjectIdInUrl: jest.fn(),
+	setShareTokenInUrl: jest.fn(),
+	clearShareTokenFromUrl: jest.fn(),
 	getTemplateIdFromUrl: jest.fn<string | null, []>(() => null),
 	getTemplateModeFromUrl: jest.fn<"exercise" | "solution", []>(
 		() => "exercise",
@@ -37,6 +39,9 @@ jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getProjectIdFromUrl: () => mockUrl.getProjectIdFromUrl(),
 	getShareTokenFromUrl: () => mockUrl.getShareTokenFromUrl(),
 	setProjectIdInUrl: (...args: unknown[]) => mockUrl.setProjectIdInUrl(...args),
+	setShareTokenInUrl: (...args: unknown[]) =>
+		mockUrl.setShareTokenInUrl(...args),
+	clearShareTokenFromUrl: () => mockUrl.clearShareTokenFromUrl(),
 	getTemplateIdFromUrl: () => mockUrl.getTemplateIdFromUrl(),
 	getTemplateModeFromUrl: () => mockUrl.getTemplateModeFromUrl(),
 	getTemplateAutostartFromUrl: () => mockUrl.getTemplateAutostartFromUrl(),

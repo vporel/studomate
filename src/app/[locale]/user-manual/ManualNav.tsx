@@ -33,7 +33,7 @@ export default function ManualNav({ selected }: { selected?: string }) {
 
 	return (
 		<Box sx={{ width: "100%", pr: 2 }}>
-			<Typography variant="h6" gutterBottom>
+			<Typography variant="h6" component="p" gutterBottom>
 				{t("navHeading")}
 			</Typography>
 			<List disablePadding>

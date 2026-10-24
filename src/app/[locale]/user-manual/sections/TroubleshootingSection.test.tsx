@@ -19,7 +19,7 @@ describe("TroubleshootingSection", () => {
 
 	it("rend un titre par symptôme", () => {
 		renderWithI18n(<TroubleshootingSection />);
-		const headings = screen.getAllByRole("heading", { level: 4 });
+		const headings = screen.getAllByRole("heading", { level: 3 });
 		expect(headings.map((h) => h.textContent)).toEqual(
 			entries.map((e) => e.title),
 		);

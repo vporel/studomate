@@ -9,22 +9,17 @@ import {
 import Project, {
 	PROJECT_SCHEMA_VERSION,
 } from "@/schemas/project/project.schema";
-
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 describe("draft.storage", () => {
+	let store: Map<string, string>;
+	let restoreLocalStorage: () => void;
+
 	beforeEach(() => {
-		installLocalStorage();
+		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	describe("saveDraft / getDraft", () => {
 		it("retrouve un brouillon après l'avoir enregistré", () => {
@@ -96,13 +91,6 @@ describe("draft.storage", () => {
 
 		it("trie du plus récent au plus ancien", () => {
 			const now = Date.now();
-			const store = new Map<string, string>();
-			(globalThis as any).localStorage = {
-				getItem: (k: string) => store.get(k) ?? null,
-				setItem: (k: string, v: string) => store.set(k, v),
-				removeItem: (k: string) => store.delete(k),
-				clear: () => store.clear(),
-			};
 			// Insertion manuelle avec savedAt explicites
 			const raw = {
 				p1: {
@@ -152,13 +140,6 @@ describe("draft.storage", () => {
 	describe("expiration (TTL 7 jours)", () => {
 		it("ignore les brouillons expirés", () => {
 			const now = Date.now();
-			const store = new Map<string, string>();
-			(globalThis as any).localStorage = {
-				getItem: (k: string) => store.get(k) ?? null,
-				setItem: (k: string, v: string) => store.set(k, v),
-				removeItem: (k: string) => store.delete(k),
-				clear: () => store.clear(),
-			};
 			const expired = now - 8 * 24 * 60 * 60 * 1000; // 8 jours
 			store.set(
 				"studomate_drafts",
@@ -178,13 +159,6 @@ describe("draft.storage", () => {
 
 		it("conserve les brouillons dans les 7 jours", () => {
 			const now = Date.now();
-			const store = new Map<string, string>();
-			(globalThis as any).localStorage = {
-				getItem: (k: string) => store.get(k) ?? null,
-				setItem: (k: string, v: string) => store.set(k, v),
-				removeItem: (k: string) => store.delete(k),
-				clear: () => store.clear(),
-			};
 			const recent = now - 6 * 24 * 60 * 60 * 1000; // 6 jours
 			store.set(
 				"studomate_drafts",
@@ -204,13 +178,6 @@ describe("draft.storage", () => {
 
 	describe("robustesse", () => {
 		it("retourne un store vide si le localStorage contient du JSON invalide", () => {
-			const store = new Map<string, string>();
-			(globalThis as any).localStorage = {
-				getItem: (k: string) => store.get(k) ?? null,
-				setItem: (k: string, v: string) => store.set(k, v),
-				removeItem: (k: string) => store.delete(k),
-				clear: () => store.clear(),
-			};
 			store.set("studomate_drafts", "{ pas du JSON");
 
 			expect(() => getAllDrafts()).not.toThrow();

@@ -2,10 +2,11 @@
 
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import ContextMenu from "@/ui/lib/context-menu/ContextMenu";
+import useContextMenuBus from "@/ui/lib/context-menu/useContextMenuBus";
 import useBooleanState from "@/ui/lib/hooks/useBooleanState";
 import { OnDelete } from "@xyflow/react";
 import { XYPosition } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useClipboardStore } from "@/ui/stores/shared/clipboard.store";
 import { useProjectStore } from "@/ui/components/projects/ProjectContext";
@@ -19,7 +20,7 @@ import {
 	LadderContextMenuElement,
 	LadderContextMenuProps,
 } from "./ladder-context-menu";
-import type { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 import nodeOrEdgeContextMenuItems from "./node-or-edge-context-menu-items";
 import paneContextMenuItems from "./pane-context-menu-items";
 
@@ -128,8 +129,8 @@ const LadderContextMenu = ({
 		t,
 	]);
 
-	useEffect(() => {
-		const showMenu = (props: LadderContextMenuProps) => {
+	const showMenu = useCallback(
+		(props: LadderContextMenuProps) => {
 			// Bus mitt partagé par toutes les sections : n'afficher que dans la section cliquée, et
 			// refermer les menus des autres sections.
 			if (props.sectionId !== sectionId) {
@@ -140,14 +141,10 @@ const LadderContextMenu = ({
 			setPosition(props.position);
 			setScreenPosition(props.screenPosition);
 			show();
-		};
-		contextMenuEvents.on("show", showMenu);
-		contextMenuEvents.on("hide", hide);
-		return () => {
-			contextMenuEvents.off("show", showMenu);
-			contextMenuEvents.off("hide", hide);
-		};
-	}, [contextMenuEvents, hide, show, sectionId]);
+		},
+		[hide, show, sectionId],
+	);
+	useContextMenuBus(contextMenuEvents, showMenu, hide);
 
 	return (
 		<ContextMenu

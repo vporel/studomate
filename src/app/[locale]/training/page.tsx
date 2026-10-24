@@ -127,7 +127,7 @@ export default async function Training({ params }: Props) {
 			variant="outlined"
 			sx={{ p: { xs: 2, sm: 3 }, flex: 1, borderRadius: 3 }}
 		>
-			<Typography variant="h6" fontWeight={700} gutterBottom>
+			<Typography variant="h6" component="h3" fontWeight={700} gutterBottom>
 				{title}
 			</Typography>
 			<Stack divider={<Divider />}>

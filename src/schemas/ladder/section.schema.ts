@@ -8,7 +8,14 @@ function copyElement(element: LadderElement): LadderElement {
 	if (element.type === "coil")
 		return { ...element, data: { ...element.data }, position };
 	if (element.type === "block")
-		return { ...element, data: { ...element.data }, position };
+		return {
+			...element,
+			data: {
+				...element.data,
+				params: { ...element.data.params },
+			} as typeof element.data,
+			position,
+		};
 	return { ...element, data: { ...element.data }, position };
 }
 

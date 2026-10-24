@@ -4,6 +4,7 @@ import {
 	setProjectIdInUrl,
 	getShareTokenFromUrl,
 	clearShareTokenFromUrl,
+	setShareTokenInUrl,
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
 	getTemplateLocaleFromUrl,
@@ -53,6 +54,20 @@ describe("project-url", () => {
 		it("coexiste avec d'autres paramètres", () => {
 			window.history.replaceState(null, "", "/?projectId=p1&shareToken=tok");
 			expect(getShareTokenFromUrl()).toBe("tok");
+			expect(getProjectIdFromUrl()).toBe("p1");
+		});
+	});
+
+	describe("setShareTokenInUrl", () => {
+		it("pose le shareToken, getShareTokenFromUrl le relit", () => {
+			setShareTokenInUrl("tok");
+			expect(getShareTokenFromUrl()).toBe("tok");
+			expect(window.location.search).toBe("?shareToken=tok");
+		});
+
+		it("ne touche pas aux autres paramètres", () => {
+			window.history.replaceState(null, "", "/?projectId=p1");
+			setShareTokenInUrl("tok");
 			expect(getProjectIdFromUrl()).toBe("p1");
 		});
 	});

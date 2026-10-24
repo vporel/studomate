@@ -6,7 +6,7 @@ import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import SimulationManager from "@/ui/stores/project/managers/simulation/simulation.manager";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { StepNodeType } from "../nodes/StepNode";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function stepContextMenuItems(
 	step: StepNodeType,

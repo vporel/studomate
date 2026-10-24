@@ -7,15 +7,17 @@ import type { User } from "@supabase/supabase-js";
 import { SchoolType } from "@/user-profile/SchoolType.enum";
 import { UserType } from "@/user-profile/UserType.enum";
 
-const mockSignUp = jest.fn();
-const mockSignInWithPassword = jest.fn();
-const mockSignOut = jest.fn();
-const mockGetSession = jest.fn();
-const mockOnAuthStateChange = jest.fn((..._args: any[]) => ({
-	data: { subscription: { unsubscribe: jest.fn() } },
-}));
-const mockResetPasswordForEmail = jest.fn();
-const mockRpc = jest.fn();
+import { supabaseMocks } from "@tests/utils/supabase-mock";
+
+const {
+	signUp: mockSignUp,
+	signInWithPassword: mockSignInWithPassword,
+	signOut: mockSignOut,
+	getSession: mockGetSession,
+	onAuthStateChange: mockOnAuthStateChange,
+	resetPasswordForEmail: mockResetPasswordForEmail,
+	rpc: mockRpc,
+} = supabaseMocks;
 const mockMoveAllCloudToLocal = jest.fn();
 const mockTrackEvent = jest.fn();
 
@@ -45,20 +47,9 @@ jest.mock("@/persistence/repositories/hybrid.project.repository", () => ({
 	},
 }));
 
-jest.mock("@/persistence/repositories/supabase-client", () => ({
-	supabase: {
-		rpc: (...args: any[]) => mockRpc(...args),
-		auth: {
-			getSession: (...args: any[]) => mockGetSession(...args),
-			onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args),
-			signUp: (...args: any[]) => mockSignUp(...args),
-			signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
-			signOut: (...args: any[]) => mockSignOut(...args),
-			resetPasswordForEmail: (...args: any[]) =>
-				mockResetPasswordForEmail(...args),
-		},
-	},
-}));
+jest.mock("@/persistence/repositories/supabase-client", () =>
+	jest.requireActual("@tests/utils/supabase-mock").createSupabaseMock(),
+);
 
 // Import après le mock
 import { SESSION_LOOKUP_TIMEOUT_MS } from "@/persistence/repositories/session-lookup";

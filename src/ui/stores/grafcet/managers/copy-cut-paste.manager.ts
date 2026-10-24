@@ -115,6 +115,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 		}
 		const nodesIdsMap: Record<string, string> = {}; //Map to keep track of the old node ids and the new node ids, to update the edges source and target
 		const nodesOffsetsMaps: Record<string, { x: number; y: number }> = {}; //Map to keep track of the nodes offsets, to update the edges points
+		let nextStepNumber = StepHelper.getNextAvailableNumber(grafcet);
 		const newNodes = structuredClone(copiedElements.nodes).map((node) => {
 			const newNode = {
 				...node,
@@ -122,7 +123,7 @@ export default class GrafcetCopyCutPasteManager extends AbstractCopyCutPasteMana
 			};
 			//If the node is a step, change the number to avoid duplicates with existing steps in the grafcet
 			if (newNode.type === "step") {
-				newNode.data.number = StepHelper.getNextAvailableNumber(grafcet);
+				newNode.data.number = nextStepNumber++;
 				//For a copy, if the step was initial we should past a non-initial step,
 				//because there can be only one initial step in a grafcet
 				//We first check if an initial step already exists in the grafcet

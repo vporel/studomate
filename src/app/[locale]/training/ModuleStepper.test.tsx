@@ -89,6 +89,28 @@ describe("ModuleStepper", () => {
 		expect(screen.queryByText("Corps deux")).not.toBeInTheDocument();
 	});
 
+	it("rend le titre de l'étape en h2 sur la page du module", () => {
+		setup();
+		expect(
+			screen.getByRole("heading", { level: 2, name: "Étape un" }),
+		).toBeInTheDocument();
+		expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+	});
+
+	it("rend le titre de l'étape en h1 sur une page d'étape et le suit au changement d'étape", () => {
+		setup("", undefined, "s2");
+		expect(
+			screen.getByRole("heading", { level: 1, name: "Étape deux" }),
+		).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+
+		expect(
+			screen.getByRole("heading", { level: 1, name: "Étape trois" }),
+		).toBeInTheDocument();
+		expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+	});
+
 	it("liste les titres des 9 étapes dans le sommaire", () => {
 		setup();
 		expect(

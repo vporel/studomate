@@ -1,12 +1,12 @@
 import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 
-const mockGetSession = jest.fn();
+import { supabaseMocks } from "@tests/utils/supabase-mock";
 
-jest.mock("./supabase-client", () => ({
-	supabase: {
-		auth: { getSession: (...args: any[]) => mockGetSession(...args) },
-	},
-}));
+jest.mock("./supabase-client", () =>
+	jest.requireActual("@tests/utils/supabase-mock").createSupabaseMock(),
+);
+
+const mockGetSession = supabaseMocks.getSession;
 
 import lookupSession, { SESSION_LOOKUP_TIMEOUT_MS } from "./session-lookup";
 

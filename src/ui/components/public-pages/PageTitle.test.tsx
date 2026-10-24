@@ -12,4 +12,11 @@ describe("PageTitle", () => {
 			screen.getByRole("heading", { level: 1, name: "Mentions légales" }),
 		).toBeInTheDocument();
 	});
+
+	it("garde l'aspect sans exposer de titre avec as=\"p\"", () => {
+		render(<PageTitle as="p">Module A1</PageTitle>);
+
+		expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+		expect(screen.getByText("Module A1").tagName).toBe("P");
+	});
 });

@@ -1,5 +1,6 @@
 import PageTitle from "@/ui/components/public-pages/PageTitle";
 import { Container, Divider } from "@mui/material";
+import type { TrainingModuleId } from "@/training/module-ids";
 import { ReactNode } from "react";
 import MarkdownBodyServer from "./MarkdownBodyServer";
 import ModuleStepper, { StepData } from "./ModuleStepper";
@@ -7,11 +8,14 @@ import TrainingPageFooter from "./TrainingPageFooter";
 
 type TrainingModulePageProps = {
 	title: string;
+	/** Fil d'Ariane rendu au-dessus du titre. */
+	breadcrumb?: ReactNode;
 	/** Introduction en Markdown (rendue côté serveur). */
 	intro: string;
 	steps: StepData[];
-	moduleId: string;
-	/** Étape de l'URL ; absente sur la page du module. */
+	moduleId: TrainingModuleId;
+	/** Étape de l'URL ; absente sur la page du module. Sur une page d'étape, le titre du module
+	 * n'est qu'un surtitre et l'introduction n'est pas rendue. */
 	initialStepId?: string;
 	prevLabel: string;
 	nextLabel: string;
@@ -21,6 +25,7 @@ type TrainingModulePageProps = {
 };
 
 export default function TrainingModulePage({
+	breadcrumb,
 	title,
 	intro,
 	steps,
@@ -31,14 +36,19 @@ export default function TrainingModulePage({
 	nextModule,
 	children,
 }: TrainingModulePageProps) {
+	const isStepPage = initialStepId !== undefined;
+
 	return (
 		<Container maxWidth="lg" sx={{ my: 4 }}>
-			<PageTitle>{title}</PageTitle>
+			{breadcrumb}
+			<PageTitle as={isStepPage ? "p" : "h1"}>{title}</PageTitle>
 			<Divider sx={{ my: 2 }} />
-			<MarkdownBodyServer
-				source={intro}
-				sx={{ color: "text.secondary", mb: 4, "& p": { textAlign: "justify" } }}
-			/>
+			{!isStepPage && (
+				<MarkdownBodyServer
+					source={intro}
+					sx={{ color: "text.secondary", mb: 4, "& p": { textAlign: "justify" } }}
+				/>
+			)}
 
 			<ModuleStepper
 				steps={steps}

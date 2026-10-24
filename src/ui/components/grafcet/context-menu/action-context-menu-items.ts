@@ -10,7 +10,7 @@ import ActionHelper from "@/schemas/grafcet/helpers/action.helper";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { ActionNodeType } from "../nodes/ActionNode";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function actionContextMenuItems(
 	action: ActionNodeType,

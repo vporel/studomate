@@ -1,11 +1,11 @@
 import {
 	APP_NAME,
 	APP_REPO_URL,
-	APP_URL,
 	AUTHOR_LINKEDIN_URL,
 	AUTHOR_NAME,
 	AUTHOR_URL,
 } from "@/app-info";
+import { SITE_URL } from "@/app/metadata";
 import { serializeJsonLd } from "./json-ld";
 
 /**
@@ -16,8 +16,8 @@ const organizationJsonLd = serializeJsonLd({
 	"@context": "https://schema.org",
 	"@type": "Organization",
 	name: APP_NAME,
-	url: APP_URL,
-	logo: new URL("/images/icon.png", APP_URL).toString(),
+	url: SITE_URL,
+	logo: new URL("/images/icon.png", SITE_URL).toString(),
 	sameAs: [APP_REPO_URL, AUTHOR_LINKEDIN_URL],
 	founder: {
 		"@type": "Person",

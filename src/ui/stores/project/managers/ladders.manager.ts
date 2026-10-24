@@ -24,7 +24,7 @@ export default class LaddersManager extends AbstractProgramsManager<
 		super(setStoreState, getStoreState);
 	}
 
-	protected getProgram(project: Project, id: string): Ladder | undefined {
+	protected getDocument(project: Project, id: string): Ladder | undefined {
 		return project.getLadder(id);
 	}
 
@@ -52,11 +52,11 @@ export default class LaddersManager extends AbstractProgramsManager<
 		return { laddersStoresManagers: managers };
 	}
 
-	protected adoptProgram(managers: LadderStoreManagers, program: Ladder): void {
+	protected adoptDocument(managers: LadderStoreManagers, program: Ladder): void {
 		managers.workflowManager.adoptLadder(program);
 	}
 
-	protected getAdoptedProgram(
+	protected getAdoptedDocument(
 		managers: LadderStoreManagers,
 	): Ladder | undefined {
 		return managers.workflowManager.getLadder();

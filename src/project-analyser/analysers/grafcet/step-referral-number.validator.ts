@@ -40,10 +40,7 @@ export function checkReferredStepExists(
 	grafcet: Grafcet,
 	source: ProjectAnalyserIssueSource,
 ): ProjectAnalyserIssue[] {
-	const exists = Object.values(grafcet.steps).some(
-		(s) => s.data.number === stepNumber,
-	);
-	if (exists) return [];
+	if (grafcet.getStepByNumber(stepNumber)) return [];
 	return [
 		new ProjectAnalyserIssue(
 			"error",

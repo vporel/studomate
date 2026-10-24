@@ -8,6 +8,9 @@
 		"menu": "Menu",
 		"back": "Back"
 	},
+	"breadcrumb": {
+		"label": "Breadcrumb"
+	},
 	"footer": {
 		"resources": "Resources",
 		"manual": "User manual",
@@ -299,7 +302,7 @@
 	},
 	"metadata": {
 		"homeTitle": "Studomate: Online GRAFCET and Ladder Simulator",
-		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser — no install, no account.",
+		"homeDescription": "Design and simulate GRAFCET, Ladder and animated HMIs in the same browser: no install, no account.",
 		"aboutTitle": "About",
 		"aboutDescription": "Studomate: a free teaching tool to learn, design and simulate GRAFCET, Ladder and HMIs in the browser.",
 		"contactTitle": "Contact",
@@ -312,14 +315,14 @@
 		"privacyDescription": "How Studomate handles users' personal and technical data.",
 		"manualTitle": "User manual",
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
-		"trainingTitle": "Training",
+		"trainingTitle": "Free GRAFCET and Ladder training",
 		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
 		"glossaryTitle": "Automation glossary: GRAFCET and Ladder",
 		"glossaryDescription": "Automation glossary: step, transition, contact, coil, TON, counter, edge... every GRAFCET and Ladder term defined simply, with diagrams.",
 		"trainingA0Title": "Module A0: Before you start",
-		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
+		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle. The prerequisites before GRAFCET.",
 		"trainingA1Title": "Module A1: GRAFCET basics",
-		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences — theory and self-corrected exercises.",
+		"trainingA1Description": "Module A1: steps, transitions, receptivities, actions, OR and AND divergences. Theory and self-corrected exercises.",
 		"trainingA2Title": "Module A2: Ladder, logic and memory",
 		"trainingA2Description": "Module A2: from the relay diagram to Ladder, contacts and coils, self-holding, S/R coils, edges and network execution order.",
 		"trainingA3Title": "Module A3: Ladder, time and calculation",
@@ -471,11 +474,11 @@
 				},
 				"theory-structure": {
 					"title": "Structuring a Ladder program into subprograms: training",
-					"description": "Split a program: Main calls subprograms, one per machine function."
+					"description": "Split a Ladder program into subprograms: the Main program calls one subprogram per machine function, so each part stays readable."
 				},
 				"conclusion": {
 					"title": "Module A3 conclusion: Studomate and the standard",
-					"description": "Module A3 recap: timers, counters, numeric values and Ladder program structure."
+					"description": "Module A3 recap: timers, counters, numeric values and how to structure a Ladder program into subprograms."
 				}
 			},
 			"a4": {

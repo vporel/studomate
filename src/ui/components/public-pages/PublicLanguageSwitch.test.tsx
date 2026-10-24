@@ -70,12 +70,30 @@ describe("PublicLanguageSwitch", () => {
 		expect(en).toHaveAttribute("href", "/en");
 	});
 
-	it("résout les paramètres d'une route dynamique (étape de formation)", () => {
+	it("traduit le slug d'une étape de formation vers l'autre langue (depuis le français)", () => {
+		mockPathname = "/training/a2/[step]";
+		mockParams = { locale: "fr", step: "theorie-fronts" };
+		const [fr, en] = openMenu();
+		expect(fr).toHaveAttribute("href", "/fr/formations/a2/theorie-fronts");
+		expect(en).toHaveAttribute("href", "/en/training/a2/theory-edges");
+	});
+
+	it("traduit le slug d'une étape de formation vers l'autre langue (depuis l'anglais)", () => {
 		mockPathname = "/training/a2/[step]";
 		mockParams = { locale: "en", step: "theory-edges" };
-		const [fr, en] = openMenu();
-		expect(fr).toHaveAttribute("href", "/fr/formations/a2/theory-edges");
+		renderWithI18n(<PublicLanguageSwitch />, { locale: "en" });
+		fireEvent.click(screen.getByRole("button"));
+		const [fr, en] = screen.getAllByRole("menuitem");
+		expect(fr).toHaveAttribute("href", "/fr/formations/a2/theorie-fronts");
 		expect(en).toHaveAttribute("href", "/en/training/a2/theory-edges");
+	});
+
+	it("renvoie à l'accueil sur un slug d'étape inconnu dans la langue courante (ancien slug français)", () => {
+		mockPathname = "/training/a2/[step]";
+		mockParams = { locale: "fr", step: "theory-edges" };
+		const [fr, en] = openMenu();
+		expect(fr).toHaveAttribute("href", "/fr");
+		expect(en).toHaveAttribute("href", "/en");
 	});
 
 	it("renvoie à l'accueil quand les paramètres de la route dynamique manquent", () => {

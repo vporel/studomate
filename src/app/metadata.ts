@@ -5,9 +5,10 @@ import { DEFAULT_LOCALE, toLocale, type Locale } from "@/i18n/config";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import type { PublicPathname } from "@/i18n/routing";
-import { OG_IMAGES, OG_IMAGE_PATH } from "./og-image";
+import { OG_IMAGE_SIZE, ogImageKey, ogImageUrl } from "./og-image";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
+/** Origin of the site: `NEXT_PUBLIC_SITE_URL` when set (preview, staging), production otherwise. */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
 
 const OG_LOCALES: Record<Locale, string> = {
 	fr: "fr_FR",
@@ -25,7 +26,7 @@ export type LocalizedHref = PublicHref | ((locale: Locale) => PublicHref);
 
 export function absolute(locale: Locale, href: LocalizedHref): string {
 	const resolved = typeof href === "function" ? href(locale) : href;
-	return new URL(getPathname({ locale, href: resolved }), siteUrl).toString();
+	return new URL(getPathname({ locale, href: resolved }), SITE_URL).toString();
 }
 
 /** `hreflang` of a page: one URL per locale plus `x-default`, the default-locale version. */
@@ -56,6 +57,7 @@ export function pageMetadata(
 ): Metadata {
 	const fullTitle = absoluteTitle ? title : TITLE_TEMPLATE.replace("%s", title);
 	const current = locale as Locale;
+	const image = ogImageUrl(current, ogImageKey(pathname, current));
 
 	return {
 		title: absoluteTitle ? { absolute: title } : title,
@@ -74,13 +76,13 @@ export function pageMetadata(
 			alternateLocale: routing.locales
 				.filter((l) => l !== current)
 				.map((l) => OG_LOCALES[l]),
-			images: OG_IMAGES,
+			images: [{ url: image, ...OG_IMAGE_SIZE, alt: fullTitle }],
 		},
 		twitter: {
 			card: "summary_large_image",
 			title: fullTitle,
 			description,
-			images: [OG_IMAGE_PATH],
+			images: [image],
 		},
 	};
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualFigure, ManualList } from "./manual-ui";
 
@@ -11,7 +12,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 	return (
 		<section id="grafcet">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
@@ -19,7 +20,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-canvas") && (
 				<article id="grafcet-canvas">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("canvasTitle")}
 					</Typography>
 					<Typography mb={2}>{t("canvasIntro")}</Typography>
@@ -32,7 +33,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-steps") && (
 				<article id="grafcet-steps">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("stepsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("stepsIntro")}</Typography>
@@ -46,11 +47,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						alt={t("stepsFigureAlt")}
 						width={200}
 					/>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("stepsTypesTitle")}
 					</Typography>
 					<ManualList items={t.raw("stepsTypes") as string[]} />
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("stepsPropsTitle")}
 					</Typography>
 					<ManualList items={t.raw("stepsProps") as string[]} />
@@ -65,23 +66,23 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-transitions") && (
 				<article id="grafcet-transitions">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("transitionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("transitionsIntro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("transitionsReceptivityTitle")}
 					</Typography>
 					<Typography mb={2}>{t("transitionsReceptivityBody")}</Typography>
 					<ManualList items={t.raw("transitionsItems") as string[]} />
 					<Typography mb={2}>{t("transitionsOutro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("transitionsTimerTitle")}
 					</Typography>
 					<Typography mb={2}>{t("transitionsTimerBody")}</Typography>
 					<ManualList items={t.raw("transitionsTimerItems") as string[]} />
 					<Typography mb={2}>{t("transitionsTimerOutro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("transitionsSyntaxTitle")}
 					</Typography>
 					<ManualList items={t.raw("transitionsSyntaxItems") as string[]} />
@@ -91,19 +92,19 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-actions") && (
 				<article id="grafcet-actions">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("actionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("actionsIntro")}</Typography>
 					<Divider sx={{ my: 1 }} />
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("actionsTypesTitle")}
 					</Typography>
 					<ManualList items={t.raw("actionsTypes") as string[]} />
 					<ManualList items={t.raw("actionsSyntaxItems") as string[]} />
 					<Typography mb={2}>{t("actionsTypeChange")}</Typography>
 					<Divider sx={{ my: 1 }} />
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("actionsModesTitle")}
 					</Typography>
 					<ManualList items={t.raw("actionsModes") as string[]} />
@@ -114,11 +115,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-junctions") && (
 				<article id="grafcet-junctions">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("junctionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("junctionsIntro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("junctionsTypesTitle")}
 					</Typography>
 					<ManualList items={t.raw("junctionsTypes") as string[]} />
@@ -127,7 +128,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 						alt={t("junctionsFigureAlt")}
 						width={400}
 					/>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("junctionsBranchesTitle")}
 					</Typography>
 					<Typography mb={2}>{t("junctionsBranchesIntro")}</Typography>
@@ -138,7 +139,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-referrals") && (
 				<article id="grafcet-referrals">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("referralsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("referralsIntro")}</Typography>
@@ -155,7 +156,7 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-comments") && (
 				<article id="grafcet-comments">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("commentsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("commentsBody1")}</Typography>
@@ -166,20 +167,20 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 
 			{show("grafcet-connections") && (
 				<article id="grafcet-connections">
-					<Typography variant="h3" mb={2}>
+					<Typography variant="h3" component={ManualH3} mb={2}>
 						{t("connectionsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("connectionsIntro")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("connectionsCreateTitle")}
 					</Typography>
 					<Typography mb={2}>{t("connectionsCreateBody")}</Typography>
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("connectionsRulesTitle")}
 					</Typography>
 					<Typography mb={2}>{t("connectionsRulesIntro")}</Typography>
 					<ManualList items={t.raw("connectionsRules") as string[]} />
-					<Typography variant="h5" mb={1}>
+					<Typography variant="h5" component={ManualH4} mb={1}>
 						{t("connectionsWaypointsTitle")}
 					</Typography>
 					<Typography mb={2}>{t("connectionsWaypointsBody")}</Typography>

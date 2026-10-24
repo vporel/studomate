@@ -1,3 +1,4 @@
+import { createRandomId } from "@/ids";
 import Project from "@/schemas/project/project.schema";
 import { isFromNewerVersion, migrateProject } from "./migrations/schema";
 
@@ -29,4 +30,16 @@ export function parseProjectFromFile(text: string): Project {
 	}
 	const { project } = migrateProject(parsed);
 	return Project.createFromJSON(JSON.stringify(project));
+}
+
+/**
+ * Reads a project file and gives the project a fresh id, so that importing never overwrites an
+ * existing project nor collides with another account's cloud project.
+ *
+ * @throws like {@link parseProjectFromFile}
+ */
+export function importProjectFromFile(text: string): Project {
+	const project = parseProjectFromFile(text);
+	project.id = createRandomId();
+	return project;
 }

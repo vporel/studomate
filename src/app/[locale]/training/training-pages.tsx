@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import PublicBreadcrumbs from "@/ui/components/public-pages/PublicBreadcrumbs";
 import TrainingModulePage from "./TrainingModulePage";
 import {
 	buildModuleSteps,
@@ -13,6 +14,10 @@ import {
 	TRAINING_MODULES,
 } from "./training-modules";
 import type { TrainingModuleId } from "@/training/module-ids";
+import {
+	trainingStepIdFromSlug,
+	trainingStepSlug,
+} from "@/training/step-slugs";
 import type { TrainingTranslator } from "./training-translator";
 
 type ModuleParams = { params: Promise<{ locale: string }> };
@@ -21,7 +26,7 @@ type StepParams = { params: Promise<{ locale: string; step: string }> };
 async function renderModule(
 	moduleId: TrainingModuleId,
 	rawLocale: string,
-	stepId: string | undefined,
+	stepSlug: string | undefined,
 	children: ((t: TrainingTranslator) => ReactNode) | undefined,
 ) {
 	const locale = toLocale(rawLocale);
@@ -29,15 +34,43 @@ async function renderModule(
 	const t = await getTranslations({ locale, namespace: "training" });
 	const { buildSteps, next } = TRAINING_MODULES[moduleId];
 	const steps = buildSteps(t);
-	if (stepId !== undefined && !steps.some((s) => s.id === stepId)) notFound();
+	const stepId =
+		stepSlug === undefined
+			? undefined
+			: trainingStepIdFromSlug(
+					locale,
+					moduleId,
+					stepSlug,
+					steps.map((s) => s.id),
+				);
+	if (stepSlug !== undefined && stepId === null) notFound();
+
+	const hub = { label: t("landingTitle"), href: "/training" } as const;
+	const moduleLabel = t(`${moduleId}PageTitle`);
+	const breadcrumb = (
+		<PublicBreadcrumbs
+			locale={locale}
+			ancestors={
+				stepId === undefined
+					? [hub]
+					: [hub, { label: moduleLabel, href: moduleEntryPathname(moduleId) }]
+			}
+			current={
+				stepId === undefined
+					? { label: moduleLabel, href: moduleEntryPathname(moduleId) }
+					: undefined
+			}
+		/>
+	);
 
 	return (
 		<TrainingModulePage
-			title={t(`${moduleId}PageTitle`)}
+			breadcrumb={breadcrumb}
+			title={moduleLabel}
 			intro={t(`${moduleId}Intro`)}
 			steps={steps}
 			moduleId={moduleId}
-			initialStepId={stepId}
+			initialStepId={stepId ?? undefined}
 			prevLabel={t("previousStep")}
 			nextLabel={t("nextStep")}
 			nextModule={next && { href: next.href, label: t(next.labelKey) }}
@@ -75,25 +108,38 @@ export default function createTrainingModulePages(
 			return routing.locales.flatMap((locale) =>
 				buildModuleSteps(moduleId, locale)
 					.slice(1)
-					.map(({ id }) => ({ locale, step: id })),
+					.map(({ id }) => ({
+						locale,
+						step: trainingStepSlug(locale, moduleId, id),
+					})),
 			);
 		},
 
 		async generateStepMetadata({ params }: StepParams): Promise<Metadata> {
-			const { locale: rawLocale, step: stepId } = await params;
+			const { locale: rawLocale, step: stepSlug } = await params;
 			const locale = toLocale(rawLocale);
 			const [t, tMeta] = await Promise.all([
 				getTranslations({ locale, namespace: "training" }),
 				getTranslations({ locale, namespace: "public.metadata" }),
 			]);
-			const step = buildSteps(t).find((s) => s.id === stepId);
+			const steps = buildSteps(t);
+			const stepId = trainingStepIdFromSlug(
+				locale,
+				moduleId,
+				stepSlug,
+				steps.map((s) => s.id),
+			);
+			const step = steps.find((s) => s.id === stepId);
 			if (!step) return {};
 
 			const isTheory = step.kind === "theory";
 			const key = `trainingSteps.${moduleId}.${stepId}` as "trainingSteps.a1.theory";
 			const metadata = pageMetadata(
 				locale,
-				{ pathname: moduleStepPathname(moduleId), params: { step: stepId } },
+				(l) => ({
+					pathname: moduleStepPathname(moduleId),
+					params: { step: trainingStepSlug(l, moduleId, step.id) },
+				}),
 				isTheory
 					? tMeta(`${key}.title`)
 					: tMeta("trainingStepFallbackTitle", {

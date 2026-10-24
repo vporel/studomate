@@ -31,7 +31,12 @@ export function getShareTokenFromUrl(): string | null {
 	return getUrlQueryParam(SHARE_TOKEN_PARAM);
 }
 
-/** Retire le token de partage de l'URL une fois le projet chargé. */
+/** Pose le token de partage dans l'URL pour qu'un rechargement rouvre le projet partagé. */
+export function setShareTokenInUrl(token: string): void {
+	setUrlQueryParam(SHARE_TOKEN_PARAM, token);
+}
+
+/** Retire le token de partage de l'URL. */
 export function clearShareTokenFromUrl(): void {
 	setUrlQueryParam(SHARE_TOKEN_PARAM, null);
 }

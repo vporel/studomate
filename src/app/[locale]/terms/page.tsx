@@ -52,7 +52,7 @@ export default async function TermsOfUse({ params }: Props) {
 				{t("evolutionBody")}
 			</LegalArticle>
 
-			<Typography variant="h3" gutterBottom mt={3}>
+			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{t("contactTitle")}
 			</Typography>
 			<Typography>

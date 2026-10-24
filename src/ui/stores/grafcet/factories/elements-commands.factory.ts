@@ -32,6 +32,7 @@ export default class ElementsCommandsFactory {
 		commands: AbstractGrafcetCommand<any>[];
 		nodesToAdd: GrafcetNodeType[];
 	} {
+		let nextStepNumber: number | undefined;
 		const nodesToAdd = newNodes
 			.filter(
 				(n) =>
@@ -46,7 +47,8 @@ export default class ElementsCommandsFactory {
 				if (node.type === "step") {
 					//If no number is provided for the step, we will assign it the next available number
 					if (!StepHelper.hasNumber(node.data)) {
-						node.data.number = StepHelper.getNextAvailableNumber(grafcet);
+						nextStepNumber ??= StepHelper.getNextAvailableNumber(grafcet);
+						node.data.number = nextStepNumber++;
 					}
 				}
 				return node;

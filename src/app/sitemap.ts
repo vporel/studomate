@@ -1,4 +1,3 @@
-import { APP_URL } from "@/app-info";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 import { routing, type PublicPathname } from "@/i18n/routing";
 import type { MetadataRoute } from "next";
@@ -7,7 +6,7 @@ import {
 	MANUAL_DEFAULT_SECTION,
 	MANUAL_SECTIONS,
 } from "./[locale]/user-manual/manual-sections";
-import { absolute, alternateLanguages, type LocalizedHref } from "./metadata";
+import { SITE_URL, absolute, alternateLanguages, type LocalizedHref } from "./metadata";
 import routes from "./routes";
 import {
 	buildModuleSteps,
@@ -15,8 +14,7 @@ import {
 	moduleStepPathname,
 } from "./[locale]/training/training-modules";
 import { TRAINING_MODULE_IDS } from "@/training/module-ids";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
+import { trainingStepSlug } from "@/training/step-slugs";
 
 const moduleEntryPaths = new Set<string>(
 	TRAINING_MODULE_IDS.map(moduleEntryPathname),
@@ -40,10 +38,13 @@ const publicPaths: LocalizedHref[] = [
 		...buildModuleSteps(moduleId, DEFAULT_LOCALE)
 			.slice(1)
 			.filter((step) => step.kind === "theory")
-			.map(({ id }) => ({
-				pathname: moduleStepPathname(moduleId),
-				params: { step: id },
-			})),
+			.map(
+				({ id }): LocalizedHref =>
+					(locale) => ({
+						pathname: moduleStepPathname(moduleId),
+						params: { step: trainingStepSlug(locale, moduleId, id) },
+					}),
+			),
 	]),
 ];
 
@@ -66,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
 	return [
 		{
-			url: new URL(routes.app(), siteUrl).toString(),
+			url: new URL(routes.app(), SITE_URL).toString(),
 			changeFrequency: "monthly",
 			priority: 0.7,
 		},

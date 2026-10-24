@@ -5,7 +5,7 @@ import TransitionHelper from "@/schemas/grafcet/helpers/transition.helper";
 import { ContextMenuItemType } from "@/ui/lib/context-menu/context-menu";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { TransitionNodeType } from "../nodes/TransitionNode";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function transitionContextMenuItems(
 	transition: TransitionNodeType,

@@ -3,7 +3,7 @@
 import { platformShortcut } from "@/ui/lib/platform";
 import GrafcetCopyCutPasteManager from "@/ui/stores/grafcet/managers/copy-cut-paste.manager";
 import GrafcetViewManager from "@/ui/stores/grafcet/managers/view.manager";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function paneContextMenuItems(
 	viewManager: GrafcetViewManager,

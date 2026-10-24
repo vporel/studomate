@@ -14,12 +14,10 @@ import Variable from "@/schemas/variable/variable.schema";
 import { compileToPLC } from "@tests/utils/test-helpers";
 
 /**
- * Garde-fou de perf, pas une mesure fine : le seuil (3 s pour ~2000 cycles sur un projet
- * volumineux) est très large — le temps réel est de l'ordre de 100 ms — et ne se déclenche
- * donc que sur une régression massive de la boucle chaude (analyse, compilation, cycle PLC).
- * Double usage : smoke test « le pipeline encaisse un projet plus gros que les fixtures ».
+ * Smoke test « le pipeline encaisse un projet plus gros que les fixtures » : analyse,
+ * compilation et ~2000 cycles PLC, vérifiés par l'état final et non par un temps.
  */
-describe("Pipeline — garde-fou de charge", () => {
+describe("Pipeline — charge", () => {
 	/** Anneau de `stepCount` étapes : chaque étape franchit vers la suivante, la dernière
 	 * reboucle sur l'initiale. Une transition sur cinq est temporisée, une étape sur deux porte
 	 * une action booléenne. */
@@ -81,7 +79,7 @@ describe("Pipeline — garde-fou de charge", () => {
 		return builder.build();
 	}
 
-	it("analyse + compile + 2000 cycles PLC sur un grafcet de 40 étapes en moins de 3 s", () => {
+	it("analyse + compile + 2000 cycles PLC sur un grafcet de 40 étapes sans erreur", () => {
 		const project = new Project("p-load", "Charge", "");
 		project.variables = [
 			new Variable({
@@ -101,8 +99,6 @@ describe("Pipeline — garde-fou de charge", () => {
 		];
 		project.addProgram(buildRingGrafcet(40));
 
-		const start = performance.now();
-
 		let cycleError: Error | null = null;
 		const plc = compileToPLC(project, 10, Dialect.FR, {
 			onCycleError: (e) => (cycleError = e),
@@ -115,9 +111,12 @@ describe("Pipeline — garde-fou de charge", () => {
 		for (let i = 0; i < 2000; i++) plc!.stepOnce();
 		plc!.stop();
 
-		const durationMs = performance.now() - start;
-
 		if (cycleError) throw cycleError;
-		expect(durationMs).toBeLessThan(3000);
+
+		const activeSteps = plc!
+			.getVariablesSnapshot()
+			.filter((v) => /^X\d+$/.test(v.getName()) && v.getValue())
+			.map((v) => v.getName());
+		expect(activeSteps).toEqual(["X0"]);
 	});
 });

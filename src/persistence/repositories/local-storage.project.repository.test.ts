@@ -2,24 +2,18 @@ import Project from "@/schemas/project/project.schema";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
 import { PROJECT_SCHEMA_VERSION } from "@/schemas/project/project.schema";
 import { projectKey } from "../migrations/local-storage/keys";
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 const STORAGE_KEY = "studomate_projects_data";
 const LAYOUT_VERSION_KEY = "studomate_local_storage_version";
 
-/** localStorage minimal, l'environnement de test étant en `node` */
-function installLocalStorage(onSet?: (key: string, value: string) => void) {
-	const store = new Map<string, string>();
-	const mock = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => {
-			onSet?.(k, v);
-			store.set(k, v);
-		},
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	(globalThis as any).localStorage = mock;
-	return store;
+let restoreLocalStorage: (() => void) | undefined;
+
+function installLocalStorage(onSetItem?: (key: string, value: string) => void) {
+	restoreLocalStorage?.();
+	const installed = installMemoryLocalStorage({ onSetItem });
+	restoreLocalStorage = installed.restore;
+	return installed.store;
 }
 
 function legacyStoredValue(projects: object[]) {
@@ -37,6 +31,8 @@ describe("LocalStorageProjectRepository", () => {
 	beforeEach(() => {
 		store = installLocalStorage();
 	});
+
+	afterEach(() => restoreLocalStorage?.());
 
 	describe("lecture d'un stockage hérité", () => {
 		// Le cas réel : un projet enregistré avant le versionnement
@@ -288,6 +284,136 @@ describe("LocalStorageProjectRepository", () => {
 
 			expect(reopened?.name).toBe("Contenu réel");
 			expect(store.get(LAYOUT_VERSION_KEY)).toBe("1");
+		});
+	});
+
+	describe("disposition v0 (migration impossible)", () => {
+		afterEach(() => jest.restoreAllMocks());
+
+		beforeEach(() => {
+			jest.spyOn(console, "error").mockImplementation();
+			// Le quota rejette tout ce que la migration écrit (clés par projet, index objet) ;
+			// les écritures du tableau v0 passent.
+			store = installLocalStorage((key, value) => {
+				const writesProjectKey = key.startsWith("studomate_project_");
+				const writesObjectIndex = key === STORAGE_KEY && !value.startsWith("[");
+				if (writesProjectKey || writesObjectIndex) {
+					throw new DOMException("quota", "QuotaExceededError");
+				}
+			});
+		});
+
+		const seed = (...projects: object[]) =>
+			store.set(
+				STORAGE_KEY,
+				legacyStoredValue(projects.map((p) => JSON.parse(JSON.stringify(p)))),
+			);
+		const storedArray = () => JSON.parse(store.get(STORAGE_KEY)!) as unknown[];
+
+		it("get relit le projet depuis le tableau hérité sans poser la version", async () => {
+			seed(newProject("a", "A"), newProject("b", "B"));
+
+			const project = await new LocalStorageProjectRepository().get("b");
+
+			expect(project?.name).toBe("B");
+			expect(store.has(LAYOUT_VERSION_KEY)).toBe(false);
+			expect(Array.isArray(storedArray())).toBe(true);
+		});
+
+		it("get retourne null pour un id absent", async () => {
+			seed(newProject("a", "A"));
+
+			expect(await new LocalStorageProjectRepository().get("zz")).toBeNull();
+		});
+
+		it("list lit le tableau hérité", async () => {
+			seed(newProject("a", "A"), newProject("b", "B"));
+
+			const { projects } = await new LocalStorageProjectRepository().list();
+
+			expect(projects.map((p) => p.id)).toEqual(["a", "b"]);
+		});
+
+		it("save ajoute un nouveau projet au tableau", async () => {
+			seed(newProject("a", "A"));
+
+			const result = await new LocalStorageProjectRepository().save(
+				newProject("b", "B"),
+			);
+
+			expect(result.ok).toBe(true);
+			expect(storedArray()).toHaveLength(2);
+			expect(storedArray()[1]).toMatchObject({ id: "b", name: "B" });
+			expect(store.has(projectKey("b"))).toBe(false);
+		});
+
+		it("save remplace un projet existant au lieu de le dupliquer", async () => {
+			seed(newProject("a", "A"), newProject("b", "B"));
+
+			await new LocalStorageProjectRepository().save(newProject("a", "A2"));
+
+			expect(storedArray()).toHaveLength(2);
+			expect(storedArray()[0]).toMatchObject({ id: "a", name: "A2" });
+		});
+
+		it("save sur un stockage vide crée le tableau", async () => {
+			await new LocalStorageProjectRepository().save(newProject("a", "A"));
+
+			expect(storedArray()).toHaveLength(1);
+		});
+
+		it("delete retire le projet du tableau", async () => {
+			seed(newProject("a", "A"), newProject("b", "B"));
+
+			const result = await new LocalStorageProjectRepository().delete("a");
+
+			expect(result.ok).toBe(true);
+			expect(storedArray()).toHaveLength(1);
+			expect(storedArray()[0]).toMatchObject({ id: "b" });
+		});
+
+		it("lit une entrée doublement échappée (chaîne JSON dans le tableau)", async () => {
+			store.set(
+				STORAGE_KEY,
+				JSON.stringify([
+					JSON.stringify(JSON.parse(JSON.stringify(newProject("a", "A")))),
+					JSON.parse(JSON.stringify(newProject("b", "B"))),
+				]),
+			);
+
+			const { projects } = await new LocalStorageProjectRepository().list();
+
+			expect(projects.map((p) => p.id)).toEqual(["a", "b"]);
+		});
+
+		it("écarte une entrée illisible sans lever d'erreur", async () => {
+			store.set(
+				STORAGE_KEY,
+				JSON.stringify([
+					"{pas du json",
+					JSON.stringify(JSON.parse(JSON.stringify(newProject("a", "A")))),
+				]),
+			);
+
+			const { projects } = await new LocalStorageProjectRepository().list();
+
+			expect(projects.map((p) => p.id)).toEqual(["a"]);
+		});
+
+		it("un stockage hérité qui n'est pas un tableau donne un résultat vide", async () => {
+			store.set(STORAGE_KEY, JSON.stringify("pas un tableau"));
+			const repo = new LocalStorageProjectRepository();
+
+			expect((await repo.list()).projects).toEqual([]);
+			expect(await repo.get("a")).toBeNull();
+		});
+
+		it("un stockage hérité en JSON invalide donne un résultat vide", async () => {
+			store.set(STORAGE_KEY, "{pas du json");
+
+			expect(
+				(await new LocalStorageProjectRepository().list()).projects,
+			).toEqual([]);
 		});
 	});
 });

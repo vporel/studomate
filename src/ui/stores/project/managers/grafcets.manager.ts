@@ -24,7 +24,7 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 		super(setStoreState, getStoreState);
 	}
 
-	protected getProgram(project: Project, id: string): Grafcet | undefined {
+	protected getDocument(project: Project, id: string): Grafcet | undefined {
 		return project.getGrafcet(id);
 	}
 
@@ -52,14 +52,14 @@ export default class GrafcetsManager extends AbstractProgramsManager<
 		return { grafcetsStoresManagers: managers };
 	}
 
-	protected adoptProgram(
+	protected adoptDocument(
 		managers: GrafcetStoreManagers,
 		program: Grafcet,
 	): void {
 		managers.workflowManager.adoptGrafcet(program);
 	}
 
-	protected getAdoptedProgram(
+	protected getAdoptedDocument(
 		managers: GrafcetStoreManagers,
 	): Grafcet | undefined {
 		return managers.workflowManager.getGrafcet();

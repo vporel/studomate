@@ -1,3 +1,4 @@
+import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import EdgesFactory from "../factories/edges.factory";
 import NodesFactory from "../factories/nodes.factory";
@@ -504,7 +505,7 @@ export default class GrafcetWorkflowManager {
 	deleteJunctionBranch(nodeId: string, branchId: string): void {
 		const grafcet = this.getStoreState().grafcet;
 		const element = this.getJunctionOrThrow(nodeId);
-		if (element.data.branchesOrder.length <= 2) return;
+		if (!JunctionHelper.canRemoveBranch(element.data)) return;
 		const connectionsToDelete = grafcet.getConnectionsByElementIdAndHandle(
 			nodeId,
 			branchId,

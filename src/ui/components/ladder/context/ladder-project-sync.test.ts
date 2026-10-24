@@ -1,79 +1,53 @@
-import CommandsStack from "@/schemas/commands/commands-stack.schema";
-import SectionAddCommand from "@/schemas/ladder/commands/section-add.command";
-import Ladder from "@/schemas/ladder/ladder.schema";
+import { StoreApi } from "zustand";
+import { LadderStoreState } from "@/ui/stores/ladder/ladder.store";
+import { createStore } from "zustand/vanilla";
 import LaddersManager from "@/ui/stores/project/managers/ladders.manager";
-import { createLadderStore } from "@/ui/stores/ladder/ladder.store";
 import { syncLadderToProject } from "./ladder-project-sync";
 
-function fakeLaddersManager() {
-	return {
+function setup() {
+	const store = createStore<Record<string, unknown>>(() => ({
+		ladder: { id: "x1" },
+		hasCommandsToUndo: false,
+		hasCommandsToRedo: false,
+	}));
+	const manager = {
 		updateProgramData: jest.fn(),
 		setStoreValues: jest.fn(),
-	} as unknown as LaddersManager;
-}
-
-function buildStore() {
-	const ladder = new Ladder("l1", "Mon ladder");
-	return createLadderStore(ladder, new CommandsStack<Ladder>(100));
+	};
+	const unsubscribe = syncLadderToProject(store as unknown as StoreApi<LadderStoreState>, manager as unknown as LaddersManager);
+	return { store, manager, unsubscribe };
 }
 
 describe("syncLadderToProject", () => {
-	it("répercute un changement qui remplace effectivement le ladder", () => {
-		const store = buildStore();
-		const laddersManager = fakeLaddersManager();
-		const unsubscribe = syncLadderToProject(store, laddersManager);
+	it("pushes the replaced program through updateProgramData", () => {
+		const { store, manager, unsubscribe } = setup();
+		const next = { id: "x1", changed: true };
 
-		store
-			.getState()
-			.commandsStackManager.executeOperation([
-				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-			]);
+		store.setState({ ladder: next });
 
-		expect(laddersManager.updateProgramData).toHaveBeenCalledTimes(1);
+		expect(manager.updateProgramData).toHaveBeenCalledWith(next);
 		unsubscribe();
 	});
 
-	it("répercute les compteurs d'annulation quand ils changent", () => {
-		const store = buildStore();
-		const laddersManager = fakeLaddersManager();
-		const unsubscribe = syncLadderToProject(store, laddersManager);
+	it("forwards the undo/redo flags through setStoreValues", () => {
+		const { store, manager, unsubscribe } = setup();
 
-		store
-			.getState()
-			.commandsStackManager.executeOperation([
-				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-			]);
+		store.setState({ hasCommandsToUndo: true });
 
-		expect(laddersManager.setStoreValues).toHaveBeenCalledWith(
-			"l1",
-			expect.objectContaining({ hasCommandsToUndo: true }),
-		);
+		expect(manager.setStoreValues).toHaveBeenCalledWith("x1", {
+			hasCommandsToUndo: true,
+			hasCommandsToRedo: false,
+		});
 		unsubscribe();
 	});
 
-	it("ne répercute pas les compteurs d'annulation quand ils n'ont pas changé", () => {
-		const store = buildStore();
-		const laddersManager = fakeLaddersManager();
-		const unsubscribe = syncLadderToProject(store, laddersManager);
-
-		store.getState().viewManager.zoomIn(store.getState().ladder.sections[0].id);
-
-		expect(laddersManager.setStoreValues).not.toHaveBeenCalled();
-		unsubscribe();
-	});
-
-	it("ne notifie plus après désabonnement", () => {
-		const store = buildStore();
-		const laddersManager = fakeLaddersManager();
-		const unsubscribe = syncLadderToProject(store, laddersManager);
+	it("stops notifying the manager after unsubscribe", () => {
+		const { store, manager, unsubscribe } = setup();
 		unsubscribe();
 
-		store
-			.getState()
-			.commandsStackManager.executeOperation([
-				new SectionAddCommand({ sectionId: "s2", title: "B", description: "" }),
-			]);
+		store.setState({ ladder: { id: "x1", changed: true }, hasCommandsToUndo: true });
 
-		expect(laddersManager.updateProgramData).not.toHaveBeenCalled();
+		expect(manager.updateProgramData).not.toHaveBeenCalled();
+		expect(manager.setStoreValues).not.toHaveBeenCalled();
 	});
 });

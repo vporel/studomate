@@ -51,12 +51,20 @@ function fakePort() {
 
 const bytes = (text: string) => new TextEncoder().encode(text);
 const opts = { baudRate: 115200, resetPulseMs: 1, bootDelayMs: 1 };
-const tick = () => new Promise((r) => setTimeout(r, 5));
+const tick = () => jest.advanceTimersByTimeAsync(5);
+const open = async (transport: WebSerialTransport) => {
+	const opening = transport.open();
+	await jest.advanceTimersByTimeAsync(opts.resetPulseMs + opts.bootDelayMs);
+	await opening;
+};
 
 describe("WebSerialTransport", () => {
+	beforeEach(() => jest.useFakeTimers());
+	afterEach(() => jest.useRealTimers());
+
 	it("opens at the baud rate and pulses DTR/RTS low then high", async () => {
 		const fake = fakePort();
-		await new WebSerialTransport(fake.port, opts).open();
+		await open(new WebSerialTransport(fake.port, opts));
 
 		expect(fake.mocks.open).toHaveBeenCalledWith({ baudRate: 115200 });
 		expect(fake.mocks.setSignals.mock.calls).toEqual([
@@ -68,7 +76,7 @@ describe("WebSerialTransport", () => {
 	it("writes text as bytes", async () => {
 		const fake = fakePort();
 		const transport = new WebSerialTransport(fake.port, opts);
-		await transport.open();
+		await open(transport);
 
 		await transport.write("PING*00\n");
 
@@ -78,7 +86,7 @@ describe("WebSerialTransport", () => {
 	it("writes each character as one raw byte, above 0x7F included", async () => {
 		const fake = fakePort();
 		const transport = new WebSerialTransport(fake.port, opts);
-		await transport.open();
+		await open(transport);
 
 		await transport.write("\u0080\u00ffA");
 
@@ -95,7 +103,7 @@ describe("WebSerialTransport", () => {
 		const transport = new WebSerialTransport(fake.port, opts);
 		const chunks: string[] = [];
 		transport.onData((chunk) => chunks.push(chunk));
-		await transport.open();
+		await open(transport);
 
 		fake.push(bytes("IN 2="));
 		fake.push(bytes("1*00\n"));
@@ -109,7 +117,7 @@ describe("WebSerialTransport", () => {
 		const transport = new WebSerialTransport(fake.port, opts);
 		const chunks: string[] = [];
 		transport.onData((chunk) => chunks.push(chunk));
-		await transport.open();
+		await open(transport);
 		const all = Uint8Array.from({ length: 256 }, (_, i) => i);
 
 		fake.push(all);
@@ -125,7 +133,7 @@ describe("WebSerialTransport", () => {
 		const transportA = new WebSerialTransport(failing.port, opts);
 		const onCloseA = jest.fn();
 		transportA.onClose(onCloseA);
-		await transportA.open();
+		await open(transportA);
 		failing.push(new Error("device lost"));
 		await tick();
 		expect(onCloseA).toHaveBeenCalledTimes(1);
@@ -134,7 +142,7 @@ describe("WebSerialTransport", () => {
 		const transportB = new WebSerialTransport(calm.port, opts);
 		const onCloseB = jest.fn();
 		transportB.onClose(onCloseB);
-		await transportB.open();
+		await open(transportB);
 		await transportB.close();
 		await tick();
 		expect(onCloseB).not.toHaveBeenCalled();
@@ -146,7 +154,7 @@ describe("WebSerialTransport", () => {
 		const transport = new WebSerialTransport(fake.port, opts);
 		const onClose = jest.fn();
 		transport.onClose(onClose);
-		await transport.open();
+		await open(transport);
 
 		fake.events.get("disconnect")!();
 

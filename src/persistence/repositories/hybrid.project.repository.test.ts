@@ -1,20 +1,19 @@
 import Project from "@/schemas/project/project.schema";
 import { AuthRetryableFetchError } from "@supabase/supabase-js";
 
-const mockGetSession = jest.fn();
-const mockAuthGetUser = jest.fn();
-const mockFrom = jest.fn();
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
+import { supabaseMocks } from "@tests/utils/supabase-mock";
 
 jest.mock("./supabase-client", () => ({
 	isSupabaseConfigured: true,
-	supabase: {
-		auth: {
-			getSession: (...args: any[]) => mockGetSession(...args),
-			getUser: (...args: any[]) => mockAuthGetUser(...args),
-		},
-		from: (...args: any[]) => mockFrom(...args),
-	},
+	...jest.requireActual("@tests/utils/supabase-mock").createSupabaseMock(),
 }));
+
+const {
+	getSession: mockGetSession,
+	authGetUser: mockAuthGetUser,
+	from: mockFrom,
+} = supabaseMocks;
 
 import HybridProjectRepository from "./hybrid.project.repository";
 import LocalStorageProjectRepository from "./local-storage.project.repository";
@@ -22,19 +21,6 @@ import { isShareable } from "./project.repository";
 import { getProjectEverSaved } from "../preferences.storage";
 
 const CLOUD_INDEX_KEY = "studomate_cloud_project_ids";
-
-/** localStorage minimal, l'environnement de test étant en `node` */
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	const mock = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	(globalThis as any).localStorage = mock;
-	return store;
-}
 
 /** Imite le query builder Supabase (thenable, chaînable) pour un résultat donné */
 function resolved(result: { data?: any; error?: any }) {
@@ -62,15 +48,18 @@ function rawOf(project: Project) {
 
 describe("HybridProjectRepository", () => {
 	let store: Map<string, string>;
+	let restoreLocalStorage: () => void;
 
 	beforeEach(() => {
-		store = installLocalStorage();
+		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
 		mockGetSession.mockReset().mockResolvedValue({ data: { session: null } });
 		mockAuthGetUser
 			.mockReset()
 			.mockResolvedValue({ data: { user: { id: "u1" } } });
 		mockFrom.mockReset().mockReturnValue(resolved({ data: [], error: null }));
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("enregistre un nouveau projet en local par défaut", async () => {
 		const repo = new HybridProjectRepository();

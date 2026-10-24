@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 export const APP_NAME = "Studomate";
 export const APP_SLOGAN = "Créer, Simuler, Automatiser";
 export const APP_SHORT_DESCRIPTION =
-	"Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur — sans installation, sans compte.";
+	"Concevez et simulez GRAFCET, Ladder et HMI animées dans le même navigateur : sans installation, sans compte.";
 export const APP_REPO_URL = "https://github.com/vporel/studomate";
 export const APP_CONTACT_EMAIL = "dev.vporel@gmail.com";
 export const AUTHOR_NAME = "Vivian NKOUANANG";

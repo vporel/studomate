@@ -1,5 +1,5 @@
-import { APP_NAME, APP_URL, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
-import { absolute } from "@/app/metadata";
+import { APP_NAME, AUTHOR_NAME, AUTHOR_URL } from "@/app-info";
+import { SITE_URL, absolute } from "@/app/metadata";
 import {
 	grafcetCapture,
 	hmiCapture,
@@ -34,7 +34,7 @@ export default function buildHomeJsonLd(
 			priceCurrency: "EUR",
 		},
 		featureList,
-		screenshot: SCREENSHOTS.map((path) => new URL(path, APP_URL).toString()),
+		screenshot: SCREENSHOTS.map((path) => new URL(path, SITE_URL).toString()),
 		license: "https://www.gnu.org/licenses/agpl-3.0.html",
 		author: {
 			"@type": "Person",

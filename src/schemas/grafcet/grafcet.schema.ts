@@ -104,6 +104,16 @@ export default class Grafcet extends Program {
 		);
 	}
 
+	/**
+	 * Returns the step designated by the given number, or undefined when the number
+	 * is empty or no step carries it.
+	 */
+	getStepByNumber(number: number | "" | null | undefined): Step | undefined {
+		if (number === "" || number === null || number === undefined)
+			return undefined;
+		return Object.values(this.steps).find((s) => s.data.number === number);
+	}
+
 	hasInitialStep(): boolean {
 		return this.getInitialSteps().length > 0;
 	}

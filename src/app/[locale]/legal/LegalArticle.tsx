@@ -17,7 +17,7 @@ export function renderStrong(text: string): ReactNode {
 	});
 }
 
-/** Un article d'une page juridique : un titre `h3` et son corps. */
+/** Un article d'une page juridique : un titre `h2` et son corps. */
 export default function LegalArticle({
 	title,
 	children,
@@ -27,7 +27,7 @@ export default function LegalArticle({
 }) {
 	return (
 		<>
-			<Typography variant="h3" gutterBottom mt={3}>
+			<Typography variant="h3" component="h2" gutterBottom mt={3}>
 				{title}
 			</Typography>
 			{typeof children === "string" ? (

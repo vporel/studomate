@@ -57,6 +57,16 @@ describe("checkReferredStepExists", () => {
 		expect(checkReferredStepExists(3, grafcet, source)).toEqual([]);
 	});
 
+	it.each(["", null, undefined] as const)(
+		"signale l'étape introuvable quand le numéro est vide (%p)",
+		(value) => {
+			const issues = checkReferredStepExists(value, grafcet, source);
+
+			expect(issues).toHaveLength(1);
+			expect(issues[0]!.code).toBe("STEP_REFERRAL_REFERENCED_STEP_NOT_FOUND");
+		},
+	);
+
 	it("signale l'étape introuvable avec son numéro", () => {
 		const issues = checkReferredStepExists(9, grafcet, source);
 

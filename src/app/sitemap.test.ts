@@ -107,23 +107,23 @@ describe("sitemap", () => {
 		const urls = entries.map((e) => e.url);
 		expect(urls).toContain(`${APP_URL}/formations/a0`);
 		expect(urls).toContain(`${APP_URL}/en/training/a0`);
-		expect(urls).toContain(`${APP_URL}/formations/a1/theory-timer`);
+		expect(urls).toContain(`${APP_URL}/formations/a1/theorie-temporisation`);
 
 		const step = entries.find(
-			(e) => e.url === `${APP_URL}/formations/a1/theory-timer`,
+			(e) => e.url === `${APP_URL}/formations/a1/theorie-temporisation`,
 		);
 		expect(step?.alternates?.languages).toEqual({
-			fr: `${APP_URL}/formations/a1/theory-timer`,
+			fr: `${APP_URL}/formations/a1/theorie-temporisation`,
 			en: `${APP_URL}/en/training/a1/theory-timer`,
-			"x-default": `${APP_URL}/formations/a1/theory-timer`,
+			"x-default": `${APP_URL}/formations/a1/theorie-temporisation`,
 		});
 	});
 
 	it("n'expose ni les exercices et synthèses (noindex), ni la première étape (servie par la page du module)", () => {
 		const urls = sitemap().map((e) => e.url);
-		expect(urls).not.toContain(`${APP_URL}/formations/a1/exercise-linear`);
-		expect(urls).not.toContain(`${APP_URL}/formations/a1/synthesis-parking`);
-		expect(urls).not.toContain(`${APP_URL}/formations/a1/grafcet-definition`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/exercice-sequence-lineaire`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/synthese-parking`);
+		expect(urls).not.toContain(`${APP_URL}/formations/a1/definition-grafcet`);
 		expect(urls).not.toContain(`${APP_URL}/formations/a0/automatisme`);
 	});
 });

@@ -47,6 +47,27 @@ describe("TrainingModulePage", () => {
 		expect(screen.getAllByRole("listitem")).toHaveLength(2);
 	});
 
+	it("sur une page d'étape, rend le titre du module sans balise de titre et sans introduction", () => {
+		setup({ initialStepId: "s1" });
+
+		expect(screen.getByText("Module A0")).toBeInTheDocument();
+		expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+		expect(
+			screen.queryByText("Introduction du module"),
+		).not.toBeInTheDocument();
+		expect(mockStepper.mock.calls[0][0].initialStepId).toBe("s1");
+	});
+
+	it("rend le fil d'Ariane avant le titre", () => {
+		setup({ breadcrumb: <nav>fil</nav> });
+
+		const nav = screen.getByText("fil");
+		const title = screen.getByRole("heading", { level: 1 });
+		expect(
+			nav.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+	});
+
 	it("transmet ses propriétés au stepper", () => {
 		const nextModule = { href: "/training/a1" as const, label: "Module suivant" };
 		setup({ nextModule });

@@ -20,8 +20,9 @@ const SHARES_TABLE = "project_shares";
 /**
  * Stockage des projets dans Supabase (table `projects`, colonne `data` en jsonb).
  *
- * Le RLS de la table limite l'écriture au propriétaire (`auth.uid() = owner_id`), mais laisse
- * n'importe qui lire un projet partagé : `list` filtre donc explicitement par propriétaire.
+ * Le RLS de la table limite la lecture et l'écriture au propriétaire (`auth.uid() = owner_id`).
+ * Un projet partagé n'est pas lisible directement : l'accès par token passe par la fonction
+ * RPC `get_shared_project` (voir `getByShareToken`).
  *
  * Comme `LocalStorageProjectRepository`, le projet est stocké tel quel (JSON versionné) et
  * migré à la lecture — jamais en base, cf. `deserializeProject`.
@@ -139,13 +140,15 @@ export default class SupabaseProjectRepository
 	}
 
 	async getByShareToken(token: string): Promise<Project | null> {
-		const { data, error } = await supabase
-			.from(SHARES_TABLE)
-			.select("project_id")
-			.eq("token", token)
-			.maybeSingle();
-		if (error || !data) return null;
-		return this.get(data.project_id as string);
+		const { data, error } = await supabase.rpc("get_shared_project", {
+			share_token: token,
+		});
+		const row = data?.[0];
+		if (error || !row) return null;
+		const result = deserializeProject(row.data as Record<string, any>);
+		if (!result.ok) return null;
+		this.versions.set(result.project.id, row.version as number);
+		return result.project;
 	}
 
 	async getShareToken(projectId: string): Promise<string | null> {

@@ -3,7 +3,7 @@
 import { platformShortcut } from "@/ui/lib/platform";
 import LadderCopyCutPasteManager from "@/ui/stores/ladder/managers/copy-cut-paste.manager";
 import LadderWorkflowManager from "@/ui/stores/ladder/managers/workflow.manager";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function paneContextMenuItems(
 	workflowManager: LadderWorkflowManager,

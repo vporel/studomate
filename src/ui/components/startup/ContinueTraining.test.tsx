@@ -3,6 +3,7 @@
  */
 import { setPreferredLocale } from "@/persistence/preferences.storage";
 import TRAINING_MODULE_STEP_IDS from "@/training/module-step-ids";
+import { trainingStepSlug } from "@/training/step-slugs";
 import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
 import { render, screen } from "@testing-library/react";
 import ContinueTraining from "./ContinueTraining";
@@ -43,7 +44,7 @@ describe("ContinueTraining", () => {
 			),
 		).toBeInTheDocument();
 		const link = screen.getByRole("link", { name: "Reprendre" });
-		expect(link).toHaveAttribute("href", expect.stringContaining(stepIds[2]));
+		expect(link).toHaveAttribute("href", expect.stringContaining(trainingStepSlug("fr", "a1", stepIds[2])));
 		expect(link).toHaveAttribute("target", "_blank");
 	});
 

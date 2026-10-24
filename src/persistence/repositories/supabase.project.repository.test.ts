@@ -1,18 +1,17 @@
 import Project from "@/schemas/project/project.schema";
 
-const mockAuthGetUser = jest.fn();
-const mockGetSession = jest.fn();
-const mockFrom = jest.fn();
+import { supabaseMocks } from "@tests/utils/supabase-mock";
 
-jest.mock("./supabase-client", () => ({
-	supabase: {
-		auth: {
-			getUser: (...args: any[]) => mockAuthGetUser(...args),
-			getSession: (...args: any[]) => mockGetSession(...args),
-		},
-		from: (...args: any[]) => mockFrom(...args),
-	},
-}));
+jest.mock("./supabase-client", () =>
+	jest.requireActual("@tests/utils/supabase-mock").createSupabaseMock(),
+);
+
+const {
+	authGetUser: mockAuthGetUser,
+	getSession: mockGetSession,
+	from: mockFrom,
+	rpc: mockRpc,
+} = supabaseMocks;
 
 import SupabaseProjectRepository from "./supabase.project.repository";
 
@@ -40,6 +39,7 @@ describe("SupabaseProjectRepository", () => {
 	beforeEach(() => {
 		mockAuthGetUser.mockReset();
 		mockFrom.mockReset();
+		mockRpc.mockReset();
 	});
 
 	describe("list", () => {
@@ -209,21 +209,21 @@ describe("SupabaseProjectRepository", () => {
 			mockAuthGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
 			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
 			const repo = new SupabaseProjectRepository();
-			// 1. résolution du token → project_id
-			mockFrom.mockReturnValueOnce(
-				resolved({ data: { project_id: "p1" }, error: null }),
-			);
-			// 2. get interne → data + version courante
-			mockFrom.mockReturnValueOnce(
-				resolved({ data: { data: raw, version: 9 }, error: null }),
-			);
+			mockRpc.mockResolvedValueOnce({
+				data: [{ data: raw, version: 9 }],
+				error: null,
+			});
 			await repo.getByShareToken("tok");
 
-			// 3. save → update conditionnel qui trouve la ligne (pas d'insert → pas de faux conflit)
-			mockFrom.mockReturnValueOnce(
+			// update conditionnel qui trouve la ligne (pas d'insert → pas de faux conflit)
+			const update = jest.fn(() =>
 				resolved({ data: [{ version: 10 }], error: null }),
 			);
+			mockFrom.mockReturnValueOnce({ update });
 			expect(await repo.save(newProject("p1", "A"))).toEqual({ ok: true });
+			expect(update).toHaveBeenCalledWith(
+				expect.objectContaining({ version: 10 }),
+			);
 		});
 
 		it("signale un conflit si la version a changé depuis le dernier get/save", async () => {
@@ -263,26 +263,48 @@ describe("SupabaseProjectRepository", () => {
 	});
 
 	describe("getByShareToken", () => {
-		it("retourne le projet associé au token", async () => {
+		it("retourne le projet associé au token via la RPC, sans lire les tables", async () => {
 			const raw = JSON.parse(JSON.stringify(newProject("p1", "A")));
-			mockFrom
-				.mockReturnValueOnce(
-					resolved({ data: { project_id: "p1" }, error: null }),
-				)
-				.mockReturnValueOnce(resolved({ data: { data: raw }, error: null }));
+			mockRpc.mockResolvedValue({
+				data: [{ data: raw, version: 2 }],
+				error: null,
+			});
 
 			const project = await new SupabaseProjectRepository().getByShareToken(
 				"tok",
 			);
 
 			expect(project?.id).toBe("p1");
+			expect(mockRpc).toHaveBeenCalledWith("get_shared_project", {
+				share_token: "tok",
+			});
+			expect(mockFrom).not.toHaveBeenCalled();
 		});
 
 		it("retourne null si le token est introuvable", async () => {
-			mockFrom.mockReturnValue(resolved({ data: null, error: null }));
+			mockRpc.mockResolvedValue({ data: [], error: null });
 
 			expect(
 				await new SupabaseProjectRepository().getByShareToken("inconnu"),
+			).toBeNull();
+		});
+
+		it("retourne null si la RPC échoue", async () => {
+			mockRpc.mockResolvedValue({ data: null, error: new Error("offline") });
+
+			expect(
+				await new SupabaseProjectRepository().getByShareToken("tok"),
+			).toBeNull();
+		});
+
+		it("retourne null si les données du projet sont illisibles", async () => {
+			mockRpc.mockResolvedValue({
+				data: [{ data: { n: "pas un projet" }, version: 1 }],
+				error: null,
+			});
+
+			expect(
+				await new SupabaseProjectRepository().getByShareToken("tok"),
 			).toBeNull();
 		});
 	});

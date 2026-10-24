@@ -176,6 +176,11 @@ Always check `package.json` before quoting a version: this table goes stale at t
   folder — except for `tests/integration/` (end-to-end tests of the analysis → compilation →
   simulation pipeline) and `tests/utils/` (factories and utilities shared between tests,
   importable via `@tests/utils/...`).
+  When the file under test is very long and a single test file would be just as long, the
+  tests may be split into sub-files. Each one starts with the base name of the tested file,
+  followed by the theme: `project.schema.copy.test.ts`, `project.schema.hmi.test.ts` (as
+  `VariablesTable.toolbar.test.tsx` already does). A sub-file only tests the file whose name
+  it carries.
 - **Test environment**: the global `testEnvironment` is `node` (`jest.config.js`). Any test file
   that touches the DOM — `@testing-library/react`, `@testing-library/dom`, `renderHook`,
   `react-dom`, or direct access to `document`/`window` — must declare `/** @jest-environment jsdom */`

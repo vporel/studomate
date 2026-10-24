@@ -118,4 +118,19 @@ describe("JunctionHelper", () => {
 			).toBe(false);
 		});
 	});
+
+	describe("hasMinimumBranches / canRemoveBranch", () => {
+		const withBranches = (n: number) => ({
+			branchesOrder: Array.from({ length: n }, (_, i) => `b${i}`),
+		});
+
+		it.each([
+			[1, false, false],
+			[2, true, false],
+			[3, true, true],
+		])("with %i branch(es)", (n, hasMin, canRemove) => {
+			expect(JunctionHelper.hasMinimumBranches(withBranches(n))).toBe(hasMin);
+			expect(JunctionHelper.canRemoveBranch(withBranches(n))).toBe(canRemove);
+		});
+	});
 });

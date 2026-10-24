@@ -1,10 +1,11 @@
 "use client";
 
+import JunctionHelper from "@/schemas/grafcet/helpers/junction.helper";
 import GrafcetWorkflowManager from "@/ui/stores/grafcet/managers/workflow.manager";
 import { Emitter } from "mitt";
 import { GrafcetContextMenuEvents } from "../context/context-menu-events";
 import { JunctionNodeType } from "../flow/grafcet-nodes-definitions";
-import { MenuTranslate } from "./menu-translate";
+import type { MenuTranslate } from "@/ui/lib/context-menu/context-menu";
 
 export default function junctionContextMenuItems(
 	junction: JunctionNodeType,
@@ -44,7 +45,7 @@ export default function junctionContextMenuItems(
 			},
 			{
 				label: t("deleteBranch"),
-				disabled: junction.data.branchesOrder.length <= 2,
+				disabled: !JunctionHelper.canRemoveBranch(junction.data),
 				subItems: junction.data.branchesOrder.map((branchId, index) => ({
 					label: t("branch", { n: index + 1 }),
 					onClick: () =>

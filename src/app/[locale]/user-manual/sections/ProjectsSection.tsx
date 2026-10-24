@@ -1,6 +1,7 @@
 "use client";
 
 import { useT } from "@/ui/i18n/useT";
+import { ManualH2, ManualH3, ManualH4 } from "../manual-heading";
 import { Divider, Typography } from "@mui/material";
 import { ManualList } from "./manual-ui";
 
@@ -8,63 +9,63 @@ export default function ProjectsSection() {
 	const t = useT("manual.projects");
 	return (
 		<section id="projects">
-			<Typography variant="h2" mb={3}>
+			<Typography variant="h2" component={ManualH2} mb={3}>
 				{t("title")}
 			</Typography>
 			<Typography mb={2}>{t("p1")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("createTitle")}
 			</Typography>
 			<Typography mb={2}>{t("createIntro")}</Typography>
 			<ManualList items={t.raw("createItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("openTitle")}
 			</Typography>
 			<Typography mb={2}>{t("openBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("saveTitle")}
 			</Typography>
 			<Typography mb={2}>{t("saveBody1")}</Typography>
 			<Typography mb={2}>{t("saveBody2")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("propertiesTitle")}
 			</Typography>
 			<Typography mb={2}>{t("propertiesBody1")}</Typography>
 			<Typography mb={2}>{t("propertiesBody2")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("exerciseTitle")}
 			</Typography>
 			<Typography mb={2}>{t("exerciseBody")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("teacherTitle")}
 			</Typography>
 			<Typography mb={1}>{t("teacherIntro")}</Typography>
 			<ManualList items={t.raw("teacherItems") as string[]} />
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("addProgramTitle")}
 			</Typography>
 			<Typography mb={2}>{t("addProgramBody")}</Typography>
 			<Typography mb={2}>{t("addProgramOutro")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("exportTitle")}
 			</Typography>
-			<Typography variant="h5" mb={1}>
+			<Typography variant="h5" component={ManualH4} mb={1}>
 				{t("exportSubtitle")}
 			</Typography>
 			<Typography mb={2}>{t("exportIntro")}</Typography>
@@ -75,7 +76,7 @@ export default function ProjectsSection() {
 			<Typography mb={2}>{t("exportContextMenu")}</Typography>
 			<Divider sx={{ my: 2 }} />
 
-			<Typography variant="h4" mb={2}>
+			<Typography variant="h4" component={ManualH3} mb={2}>
 				{t("closeTitle")}
 			</Typography>
 			<Typography mb={2}>{t("closeBody")}</Typography>

@@ -1,3 +1,4 @@
+import { deepObjectsComparison } from "@/lib/object";
 import CommandsStack from "@/schemas/commands/commands-stack.schema";
 import AbstractProjectCommand from "@/schemas/project/commands/abstract-project.command";
 import Project from "@/schemas/project/project.schema";
@@ -78,11 +79,57 @@ export default class ProjectCommandsStackManager {
 		this.getStoreState().grafcetsManager.syncMountedStoresFromProject();
 		this.getStoreState().laddersManager.syncMountedStoresFromProject();
 		this.getStoreState().hmiManager.syncMountedStoresFromProject();
+		this.clearCommandsStacksOfRewrittenPrograms(newProject, previous);
 		if (
 			newProject.scene3d !== previous.scene3d ||
 			newProject.name !== previous.name
 		) {
 			this.getStoreState().scene3dLinkManager.onSceneChanged();
 		}
+	}
+
+	/**
+	 * A renamed variable rewrites the programs referencing it, but their histories hold
+	 * snapshots written with the old mnemonic: undoing would reintroduce it. The histories of
+	 * the rewritten programs are dropped; the others keep theirs.
+	 */
+	private clearCommandsStacksOfRewrittenPrograms(
+		newProject: Project,
+		previous: Project,
+	): void {
+		if (!this.hasRenamedVariable(newProject, previous)) return;
+		const changedIds = <T extends { id: string }>(
+			current: T[],
+			before: (id: string) => T | undefined,
+		) =>
+			current
+				.filter((item) => {
+					const old = before(item.id);
+					return !old || !deepObjectsComparison(old, item);
+				})
+				.map((item) => item.id);
+		const state = this.getStoreState();
+		state.grafcetsManager.clearCommandsStacksOf(
+			changedIds(Object.values(newProject.grafcets), (id) =>
+				previous.getGrafcet(id),
+			),
+		);
+		state.laddersManager.clearCommandsStacksOf(
+			changedIds(Object.values(newProject.ladders), (id) =>
+				previous.getLadder(id),
+			),
+		);
+		state.hmiManager.clearCommandsStacksOf(
+			changedIds(Object.values(newProject.hmiPages), (id) =>
+				previous.getHmiPage(id),
+			),
+		);
+	}
+
+	private hasRenamedVariable(newProject: Project, previous: Project): boolean {
+		return newProject.variables.some((variable) => {
+			const old = previous.variables.find((v) => v.id === variable.id);
+			return old !== undefined && old.mnemonic !== variable.mnemonic;
+		});
 	}
 }

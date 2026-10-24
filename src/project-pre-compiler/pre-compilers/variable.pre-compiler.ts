@@ -8,39 +8,9 @@ import { SYSTEM_VARIABLES } from "@/schemas/variable/system-variables";
 import Variable, {
 	getNumericRange,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
-	VariableType,
-	VariableZone,
 } from "@/schemas/variable/variable.schema";
-import PLCVariable, {
-	PLCVariableScope,
-	PLCVariableType,
-} from "@/simulator/core/plc/plc-variable";
-
-const ZONE_TO_SCOPE: Record<VariableZone, PLCVariableScope> = {
-	"logic-input": "input",
-	"logic-output": "output",
-	"analog-input": "input",
-	"analog-output": "output",
-	memory: "memory",
-	constant: "memory",
-};
-
-/**
- * Maps a project VariableType to a PLCVariableType. TIME est stockée en ms, native "number"
- * (voir `VARIABLE_TYPE_TO_NATIVE_TYPE`) — même mapping que les autres types numériques.
- */
-const VARIABLE_TYPE_TO_PLC_TYPE: Partial<
-	Record<VariableType, PLCVariableType>
-> = {
-	BOOL: "boolean",
-	INT: "number",
-	DINT: "number",
-	WORD: "number",
-	DWORD: "number",
-	REAL: "number",
-	STRING: "string",
-	TIME: "number",
-};
+import PLCVariable from "@/simulator/core/plc/plc-variable";
+import { directionToScope } from "@/simulator/environment-plc.mapper";
 
 export default class VariableCompiler {
 	/**
@@ -52,16 +22,13 @@ export default class VariableCompiler {
 		const result: PLCVariable[] = [];
 
 		for (const variable of variables) {
-			const plcType = VARIABLE_TYPE_TO_PLC_TYPE[variable.type];
-			if (!plcType) continue;
-
-			const scope = ZONE_TO_SCOPE[variable.zone];
+			const scope = directionToScope[variable.getDirection()];
 			const isConstant = variable.zone === "constant";
 			const plcVariable = new PLCVariable(
 				variable.id,
 				variable.mnemonic,
 				scope,
-				plcType,
+				variable.getNativeType(),
 				getSliderRange(variable.behavior) ?? getNumericRange(variable.type),
 				variable.type,
 				isConstant,

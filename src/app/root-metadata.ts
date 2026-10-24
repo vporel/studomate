@@ -1,16 +1,15 @@
 import {
 	APP_NAME,
 	APP_SHORT_DESCRIPTION,
-	APP_URL,
 	AUTHOR_NAME,
 	AUTHOR_URL,
 } from "@/app-info";
 import type { Metadata, Viewport } from "next";
+import { SITE_URL } from "./metadata";
 import { OG_IMAGES, OG_IMAGE_PATH } from "./og-image";
 
 export const THEME_COLOR = "#1976d2";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
 
 export function siteVerification(
 	google: string | undefined,
@@ -24,7 +23,7 @@ export function siteVerification(
 }
 
 export const rootMetadata: Metadata = {
-	metadataBase: new URL(siteUrl),
+	metadataBase: new URL(SITE_URL),
 	title: APP_NAME,
 	description: APP_SHORT_DESCRIPTION,
 	icons: {

@@ -75,6 +75,7 @@
 	"JUNCTION_AND_CONVERGENCE_WITHOUT_DIVERGENCE": "The AND convergence does not come from an AND divergence.",
 	"JUNCTION_AND_BRANCH_COUNT_MISMATCH": "The number of branches of the AND divergence and of the AND convergence do not match.",
 	"JUNCTION_AND_DIVERGENCE_NOT_CLOSED": "The AND divergence is not closed by an AND convergence.",
+	"JUNCTION_AND_MIN_BRANCHES": "An AND junction must have at least two branches.",
 	"JUNCTION_OR_MIN_BRANCHES": "An OR junction must have at least two branches.",
 	"JUNCTION_OR_START_BRANCH_NOT_TRANSITION": "An OR divergence must branch out to transitions.",
 	"JUNCTION_OR_END_BRANCH_NOT_TRANSITION": "An OR convergence must come from transitions.",

@@ -1,17 +1,7 @@
 import { DEFAULT_PROJECT_NAME } from "@/schemas/project/project.schema";
 import v0ToV1 from "./v0-to-v1";
 import { PROJECTS_INDEX_KEY, projectKey } from "./keys";
-
-function installLocalStorage() {
-	const store = new Map<string, string>();
-	(globalThis as any).localStorage = {
-		getItem: (k: string) => store.get(k) ?? null,
-		setItem: (k: string, v: string) => store.set(k, v),
-		removeItem: (k: string) => store.delete(k),
-		clear: () => store.clear(),
-	};
-	return store;
-}
+import { installMemoryLocalStorage } from "@tests/utils/local-storage-stub";
 
 const raw = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
 	id,
@@ -22,10 +12,13 @@ const raw = (id: string, name: string, extra: Record<string, unknown> = {}) => (
 
 describe("migration de disposition v0 → v1", () => {
 	let store: Map<string, string>;
+	let restoreLocalStorage: () => void;
 
 	beforeEach(() => {
-		store = installLocalStorage();
+		({ store, restore: restoreLocalStorage } = installMemoryLocalStorage());
 	});
+
+	afterEach(() => restoreLocalStorage());
 
 	it("éclate le tableau unique en une clé par projet + un index { id: { name } }", () => {
 		store.set(
