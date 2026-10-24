@@ -81,7 +81,10 @@
 		"arithmeticOperatorAria": "Opérateur du bloc",
 		"assignStaticLabel": "Assign",
 		"arithmeticStaticLabel": "Calc",
-		"convertStaticLabel": "CONV"
+		"convertStaticLabel": "CONV",
+		"convertInTypeAria": "Type de la source de la conversion",
+		"convertOutTypeAria": "Type de la cible de la conversion",
+		"convertTypeMismatch": "Type attendu : {expected} (la variable est de type {actual})"
 	},
 	"timerDialog": {
 		"createTitle": "Nouvelle temporisation",

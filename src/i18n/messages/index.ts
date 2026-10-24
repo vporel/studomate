@@ -25,6 +25,7 @@ import frVariableSelectorMenu from "./fr/variableSelectorMenu.json";
 import frProfile from "./fr/profile.json";
 import frTour from "./fr/tour.json";
 import frScene3d from "./fr/scene3d.json";
+import frGlossary from "./fr/glossary.json";
 import enCommon from "./en/common.json";
 import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
@@ -50,6 +51,7 @@ import enVariableSelectorMenu from "./en/variableSelectorMenu.json";
 import enProfile from "./en/profile.json";
 import enTour from "./en/tour.json";
 import enScene3d from "./en/scene3d.json";
+import enGlossary from "./en/glossary.json";
 
 export type Messages = {
 	common: typeof frCommon;
@@ -77,6 +79,7 @@ export type Messages = {
 	profile: typeof frProfile;
 	tour: typeof frTour;
 	scene3d: typeof frScene3d;
+	glossary: typeof frGlossary;
 };
 
 const MESSAGES: Record<Locale, Messages> = {
@@ -106,6 +109,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		profile: frProfile,
 		tour: frTour,
 		scene3d: frScene3d,
+		glossary: frGlossary,
 	},
 	en: {
 		common: enCommon,
@@ -133,6 +137,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		profile: enProfile,
 		tour: enTour,
 		scene3d: enScene3d,
+		glossary: enGlossary,
 	},
 };
 

@@ -1,0 +1,505 @@
+{
+	"pageTitle": "Glossaire de l'automatisme",
+	"intro": "Les mots de l'automatisme expliqués simplement : GRAFCET, Ladder, variables, temporisations, compteurs. Chaque terme est défini en quelques phrases, avec un schéma quand c'est utile.",
+	"searchLabel": "Rechercher un terme",
+	"searchPlaceholder": "Étape, contact, TON, front...",
+	"filterLabel": "Filtrer par notation",
+	"filterAll": "Tout",
+	"resultsOne": "1 terme",
+	"resultsOther": "{count} termes",
+	"noResults": "Aucun terme ne correspond à votre recherche.",
+	"aliasesLabel": "Aussi appelé",
+	"relatedLabel": "Voir aussi",
+	"sections": {
+		"general": {
+			"title": "Notions générales"
+		},
+		"grafcet": {
+			"title": "GRAFCET"
+		},
+		"ladder": {
+			"title": "Ladder"
+		},
+		"ladder-advanced": {
+			"title": "Ladder : temps, comptage et calcul"
+		}
+	},
+	"entries": {
+		"plc": {
+			"term": "Automate",
+			"aliases": "API; automate programmable industriel",
+			"definition": "Petit ordinateur industriel qui lit des entrées (boutons, capteurs), exécute un programme, puis commande des sorties (voyants, contacteurs, vannes).",
+			"details": "Il répète sans cesse le même tour, le cycle de scrutation. Dans Studomate, le programme est écrit en GRAFCET et en Ladder.",
+			"figureAlt": ""
+		},
+		"variable": {
+			"term": "Variable",
+			"aliases": "",
+			"definition": "Donnée nommée manipulée par le programme : une entrée, une sortie ou une mémoire interne. Une variable logique vaut VRAI ou FAUX (1 ou 0).",
+			"details": "Studomate déclare les variables dans la table des variables, partagée entre GRAFCET, Ladder et IHM.",
+			"figureAlt": ""
+		},
+		"mnemonic": {
+			"term": "Mnémonique",
+			"aliases": "nom de variable",
+			"definition": "Nom court et parlant d'une variable (`pompe`, `arret`), utilisé à la place d'une adresse numérique.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"input": {
+			"term": "Entrée",
+			"aliases": "",
+			"definition": "Variable lue par le programme et alimentée par le monde extérieur : bouton, commutateur, capteur.",
+			"details": "Dans le programme, une entrée se lit avec un contact. Le programme ne peut pas l'écrire.",
+			"figureAlt": ""
+		},
+		"output": {
+			"term": "Sortie",
+			"aliases": "",
+			"definition": "Variable écrite par le programme pour commander un voyant, un contacteur, une vanne ou un moteur.",
+			"details": "En Ladder, une sortie se commande avec une bobine ; en GRAFCET, avec une action.",
+			"figureAlt": ""
+		},
+		"scan-cycle": {
+			"term": "Cycle de scrutation",
+			"aliases": "cycle automate; scan",
+			"definition": "Tour que l'automate répète sans cesse, en trois temps : lire les entrées, exécuter le programme, écrire les sorties.",
+			"details": "Un cycle dure quelques millisecondes. Pendant l'exécution, les entrées sont figées : elles gardent la valeur lue au début du cycle.",
+			"figureAlt": "Le cycle de scrutation en trois blocs reliés par des flèches : lire les entrées, exécuter le programme, écrire les sorties, puis retour au début."
+		},
+		"execution-order": {
+			"term": "Ordre d'exécution",
+			"aliases": "",
+			"definition": "Règle de lecture du programme : les réseaux s'exécutent de haut en bas, et les GRAFCET avant le Ladder.",
+			"details": "Un réseau placé plus bas voit déjà le résultat des réseaux situés plus haut dans le même cycle. Si deux réseaux écrivent la même variable, le dernier exécuté l'emporte.",
+			"figureAlt": ""
+		},
+		"truth-table": {
+			"term": "Table de vérité",
+			"aliases": "",
+			"definition": "Tableau qui donne la valeur d'une expression logique pour chaque combinaison de ses variables (0 = faux, 1 = vrai).",
+			"details": "",
+			"figureAlt": ""
+		},
+		"and": {
+			"term": "ET",
+			"aliases": "AND; en série",
+			"definition": "Opérateur vrai seulement si toutes ses conditions sont vraies.",
+			"details": "En Ladder, ET correspond à des contacts en série.",
+			"figureAlt": ""
+		},
+		"or": {
+			"term": "OU",
+			"aliases": "OR; en parallèle",
+			"definition": "Opérateur vrai dès qu'une de ses conditions est vraie.",
+			"details": "En Ladder, OU correspond à des contacts en parallèle.",
+			"figureAlt": ""
+		},
+		"not": {
+			"term": "NON",
+			"aliases": "NOT; inversion",
+			"definition": "Opérateur qui inverse une condition : vrai devient faux, faux devient vrai.",
+			"details": "En Ladder, NON correspond à un contact NF.",
+			"figureAlt": ""
+		},
+		"push-button": {
+			"term": "Bouton poussoir",
+			"aliases": "",
+			"definition": "Organe de commande qui change d'état tant qu'on appuie dessus et revient seul au repos quand on le relâche.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"switch": {
+			"term": "Commutateur",
+			"aliases": "interrupteur; commutateur maintenu",
+			"definition": "Organe de commande qui garde sa position après action : il reste enclenché jusqu'à ce qu'on le rebascule.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"contactor": {
+			"term": "Contacteur",
+			"aliases": "",
+			"definition": "Interrupteur de puissance commandé par une bobine : il permet à une sortie de faible puissance de commander un moteur ou une charge importante.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"limit-switch": {
+			"term": "Fin de course",
+			"aliases": "",
+			"definition": "Capteur actionné mécaniquement quand une pièce mobile (portail, vérin) arrive au bout de sa course.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"wiring": {
+			"term": "Câblage à fermeture (NO) et à ouverture (NF)",
+			"aliases": "NO; NF; normalement ouvert; normalement fermé",
+			"definition": "Façon de brancher un bouton ou un capteur. Câblé à fermeture (NO), il vaut 0 au repos et 1 quand on agit dessus ; câblé à ouverture (NF), il vaut 1 au repos et 0 quand on agit dessus.",
+			"details": "Le câblage physique et le contact choisi dans le programme sont deux choses distinctes.",
+			"figureAlt": "Deux boutons : le câblé à fermeture (NO) vaut 0 au repos et 1 à l'appui, le câblé à ouverture (NF) vaut 1 au repos et 0 à l'appui."
+		},
+		"edge": {
+			"term": "Front",
+			"aliases": "",
+			"definition": "Instant précis où un signal change de valeur : front montant (de faux à vrai) ou front descendant (de vrai à faux).",
+			"details": "Un front ne dure qu'un cycle : on s'en sert pour réagir une seule fois à un appui.",
+			"figureAlt": ""
+		},
+		"rising-edge": {
+			"term": "Front montant",
+			"aliases": "",
+			"definition": "Passage d'un signal de faux à vrai, détecté pendant un seul cycle.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"falling-edge": {
+			"term": "Front descendant",
+			"aliases": "",
+			"definition": "Passage d'un signal de vrai à faux, détecté pendant un seul cycle.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"chronogram": {
+			"term": "Chronogramme",
+			"aliases": "diagramme temporel",
+			"definition": "Graphique qui montre l'évolution de plusieurs signaux au cours du temps, les uns sous les autres sur le même axe.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"step": {
+			"term": "Étape",
+			"aliases": "",
+			"definition": "Carré numéroté qui représente un état stable du système. Elle est active ou inactive ; une étape active est repérée par un fond coloré dans l'éditeur.",
+			"details": "La variable `Xn` d'une étape vaut VRAI tant que l'étape n est active.",
+			"figureAlt": "Trois étapes : une étape inactive (numéro 1), une étape active (numéro 2, fond vert) et une étape initiale (numéro 0, double contour)."
+		},
+		"initial-step": {
+			"term": "Étape initiale",
+			"aliases": "",
+			"definition": "Étape à double contour, active à la mise sous tension ou après une remise à zéro. Un GRAFCET en possède au moins une.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"action": {
+			"term": "Action",
+			"aliases": "",
+			"definition": "Rectangle accroché à une étape : ce que le système fait tant que l'étape est active, comme allumer une sortie.",
+			"details": "Une action peut être continue, mémorisée (Set / Reset), conditionnelle, retardée ou limitée dans le temps.",
+			"figureAlt": "Une étape numéro 1 reliée à un rectangle d'action `pompe` à sa droite."
+		},
+		"transition": {
+			"term": "Transition",
+			"aliases": "",
+			"definition": "Petit trait horizontal qui relie deux étapes et porte une réceptivité : la condition à remplir pour passer de l'une à l'autre.",
+			"details": "",
+			"figureAlt": "Deux étapes reliées par une transition, avec la réceptivité `fin1` à droite du trait."
+		},
+		"receptivity": {
+			"term": "Réceptivité",
+			"aliases": "condition de transition",
+			"definition": "Condition de passage d'une transition : une expression vraie ou fausse, comme `fin1` ou `dcy ET NON arret`.",
+			"details": "Une réceptivité peut contenir une temporisation ou un front.",
+			"figureAlt": ""
+		},
+		"directed-link": {
+			"term": "Liaison orientée",
+			"aliases": "",
+			"definition": "Trait qui relie étapes et transitions, lu de haut en bas. Une flèche n'est dessinée que lorsqu'il remonte.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"evolution": {
+			"term": "Évolution",
+			"aliases": "franchir; franchissement d'une transition",
+			"definition": "Franchissement d'une transition : quand l'étape amont est active et la réceptivité vraie, l'étape amont se désactive et l'étape aval s'active.",
+			"details": "L'étape amont doit être active ET la réceptivité vraie : si l'une des deux manque, rien ne bouge.",
+			"figureAlt": ""
+		},
+		"upstream-downstream": {
+			"term": "Amont, aval",
+			"aliases": "",
+			"definition": "Avant et après, dans le sens de lecture du GRAFCET (de haut en bas). L'étape amont précède une transition, l'étape aval la suit.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"step-variable": {
+			"term": "Variable d'étape (Xn)",
+			"aliases": "Xn; X2",
+			"definition": "Variable logique associée à l'étape n : elle vaut VRAI quand l'étape est active (`X2 = VRAI`).",
+			"details": "On l'utilise dans une réceptivité ou dans un programme Ladder pour savoir où en est la séquence.",
+			"figureAlt": ""
+		},
+		"set-action": {
+			"term": "Action mémorisée",
+			"aliases": "Set; Reset; action Set",
+			"definition": "Action dont la variable reste vraie quand l'étape se désactive, jusqu'à ce qu'une autre action la remette à faux (Reset).",
+			"details": "",
+			"figureAlt": ""
+		},
+		"divergences": {
+			"term": "Divergence et convergence",
+			"aliases": "jonction; barre",
+			"definition": "Une divergence sépare une séquence en plusieurs branches, une convergence les rassemble. Une barre simple signifie OU, une barre double signifie ET.",
+			"details": "",
+			"figureAlt": "Quatre jonctions, de gauche à droite : divergence en OU (une barre), convergence en OU, divergence en ET (double barre), convergence en ET."
+		},
+		"or-divergence": {
+			"term": "Divergence en OU",
+			"aliases": "choix de séquence; sélection de séquence",
+			"definition": "Point où la séquence se sépare en plusieurs chemins dont un seul est pris, selon la réceptivité qui devient vraie en premier.",
+			"details": "Les réceptivités des branches doivent être exclusives.",
+			"figureAlt": ""
+		},
+		"and-divergence": {
+			"term": "Divergence en ET",
+			"aliases": "séquences simultanées; parallélisme",
+			"definition": "Point où la séquence se sépare en plusieurs branches qui démarrent toutes en même temps et évoluent ensuite indépendamment.",
+			"details": "Elle est franchie par une seule transition, au-dessus de la double barre.",
+			"figureAlt": ""
+		},
+		"convergence": {
+			"term": "Convergence",
+			"aliases": "",
+			"definition": "Point où des branches se rejoignent. En ET, la suite ne repart que lorsque toutes les branches sont arrivées ; en OU, dès qu'une branche arrive.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"branch": {
+			"term": "Branche",
+			"aliases": "",
+			"definition": "Une des séquences qui partent d'une divergence.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"exclusivity": {
+			"term": "Exclusivité",
+			"aliases": "",
+			"definition": "Propriété des branches d'une divergence en OU dont les réceptivités ne peuvent pas être vraies en même temps.",
+			"details": "Sans exclusivité, plusieurs branches peuvent démarrer à la fois : l'analyse de Studomate le signale.",
+			"figureAlt": ""
+		},
+		"reinitialize": {
+			"term": "Réinitialiser",
+			"aliases": "remise à zéro; reset du GRAFCET",
+			"definition": "Remettre tout le GRAFCET dans son état de départ : toutes les étapes à l'état inactif, sauf l'étape initiale qui redevient active.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"ladder": {
+			"term": "Ladder",
+			"aliases": "LD; langage à contacts; schéma à relais",
+			"definition": "Langage graphique de programmation des automates : des contacts à gauche (les conditions) commandent une bobine à droite (l'action).",
+			"details": "Il descend du schéma à relais et s'écrit « LD » dans la norme IEC 61131-3.",
+			"figureAlt": ""
+		},
+		"rails": {
+			"term": "Rails",
+			"aliases": "rail gauche; rail droit",
+			"definition": "Les deux traits verticaux qui encadrent un réseau Ladder : le courant fictif part du rail gauche et arrive au rail droit.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"network": {
+			"term": "Réseau",
+			"aliases": "rung; section",
+			"definition": "Une ligne de programme Ladder, lue de gauche à droite : des contacts, puis une bobine. Si le chemin de contacts laisse passer le courant, la bobine est activée.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"contact": {
+			"term": "Contact",
+			"aliases": "contact NO; contact NF",
+			"definition": "Symbole qui lit une variable. Un contact NO (normalement ouvert) est passant quand sa variable est vraie ; un contact NF (normalement fermé) est passant quand elle est fausse.",
+			"details": "Le contact dépend du comportement voulu dans le programme, pas du câblage physique du bouton.",
+			"figureAlt": "Deux contacts : un contact NO, deux barres verticales, et un contact NF, deux barres avec une diagonale."
+		},
+		"coil": {
+			"term": "Bobine",
+			"aliases": "bobine de sortie",
+			"definition": "Symbole en bout de réseau qui écrit une variable : elle prend la valeur du chemin de contacts qui la précède.",
+			"details": "On l'utilise pour commander une sortie ou une mémoire interne.",
+			"figureAlt": "Un réseau minimal : un contact `marche` suivi d'une bobine `pompe`, entre les deux rails."
+		},
+		"series-parallel": {
+			"term": "Contacts en série et en parallèle",
+			"aliases": "en série; en parallèle",
+			"definition": "Des contacts en série (l'un derrière l'autre) forment un ET ; des contacts en parallèle (sur deux chemins) forment un OU.",
+			"details": "",
+			"figureAlt": "Deux réseaux : deux contacts a et b en série valent a ET b, les mêmes contacts en parallèle valent a OU b."
+		},
+		"internal-memory": {
+			"term": "Mémoire interne",
+			"aliases": "mémoire; bit mémoire",
+			"definition": "Variable qui n'est ni une entrée ni une sortie : le programme s'en sert pour retenir un état entre deux cycles.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"self-holding": {
+			"term": "Auto-maintien",
+			"aliases": "mémorisation par contact de la bobine; maintien",
+			"definition": "Montage où un contact de la bobine elle-même est placé en parallèle du bouton de marche : la sortie reste active après le relâchement du bouton.",
+			"details": "Avec l'arrêt en série après le parallèle, l'arrêt est prioritaire.",
+			"figureAlt": "Un réseau : `marche` en parallèle avec `pompe`, puis un contact NF `arret` en série, vers la bobine `pompe`."
+		},
+		"priority-stop": {
+			"term": "Arrêt prioritaire",
+			"aliases": "marche prioritaire",
+			"definition": "Auto-maintien où l'arrêt l'emporte si marche et arrêt sont actionnés ensemble. La priorité dépend de l'ordre des contacts.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"interlock": {
+			"term": "Verrouillage",
+			"aliases": "verrouillage mutuel",
+			"definition": "Condition qui interdit à deux sorties d'être actives en même temps, comme les deux sens d'un moteur : chacune ne peut s'enclencher que si l'autre est éteinte.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"set-reset": {
+			"term": "Bobines S et R",
+			"aliases": "Set; Reset; bistable; mise à 1; mise à 0",
+			"definition": "Une bobine S (Set) met sa variable à 1 et la laisse ; une bobine R (Reset) la remet à 0. Entre deux ordres, la variable garde sa valeur.",
+			"details": "Le dernier réseau exécuté l'emporte si les deux sont actifs ensemble.",
+			"figureAlt": ""
+		},
+		"retentive": {
+			"term": "Mémoire rémanente",
+			"aliases": "rémanence",
+			"definition": "Mémoire qui conserve sa valeur après une coupure de courant ou un redémarrage, contrairement à une mémoire ordinaire qui repart à 0.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"edge-contacts": {
+			"term": "Contacts de front P et N",
+			"aliases": "contact P; contact N; front montant; front descendant",
+			"definition": "Un contact P est passant pendant un seul cycle, au front montant de sa variable ; un contact N l'est au front descendant.",
+			"details": "Ils servent à réagir une seule fois à un appui.",
+			"figureAlt": "Deux contacts : un contact P marqué de la lettre P et un contact N marqué de la lettre N."
+		},
+		"toggle": {
+			"term": "Télérupteur",
+			"aliases": "bascule; va-et-vient mémorisé",
+			"definition": "Montage où chaque appui sur un bouton inverse l'état d'une sortie : un appui allume, l'appui suivant éteint.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"double-coil": {
+			"term": "Double bobine",
+			"aliases": "",
+			"definition": "Erreur courante : écrire la même variable avec deux bobines. Seul le dernier réseau exécuté compte, ce qui masque le premier.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"function-block": {
+			"term": "Bloc fonctionnel",
+			"aliases": "bloc",
+			"definition": "Rectangle Ladder qui réalise une fonction toute faite (temporisation, comptage, calcul) à partir de broches d'entrée à gauche et de sortie à droite.",
+			"details": "",
+			"figureAlt": "Un bloc TON : broches IN et PT à gauche, broches Q et ET à droite."
+		},
+		"instance": {
+			"term": "Instance",
+			"aliases": "",
+			"definition": "Exemplaire d'un bloc fonctionnel, avec son propre état : deux temporisations TON sont deux instances indépendantes.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"timer": {
+			"term": "Temporisation",
+			"aliases": "temporisateur; timer",
+			"definition": "Bloc qui mesure une durée. Il reçoit une entrée IN et une durée PT (le temps programmé), et sa sortie Q répond selon le type : TON, TOF ou TP.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"ton": {
+			"term": "TON",
+			"aliases": "retard à l'enclenchement; temporisation au travail",
+			"definition": "Temporisation à l'enclenchement : la sortie Q passe à vrai quand IN est restée vraie pendant toute la durée PT, et retombe dès que IN retombe.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"tof": {
+			"term": "TOF",
+			"aliases": "retard au déclenchement; temporisation au repos",
+			"definition": "Temporisation au déclenchement : Q passe à vrai dès que IN est vraie et reste vraie pendant la durée PT après que IN est retombée.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"tp": {
+			"term": "TP",
+			"aliases": "impulsion",
+			"definition": "Temporisation en impulsion : un front montant sur IN déclenche une sortie Q vraie pendant exactement la durée PT, quoi que fasse IN ensuite.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"system-time-bases": {
+			"term": "Bases de temps système",
+			"aliases": "_SYS_TB; horloge système",
+			"definition": "Variables en lecture seule fournies par Studomate (préfixe `_SYS_`) qui alternent entre vrai et faux à cadence fixe, de 200 ms à 2 s, par exemple pour faire clignoter un voyant.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"counter": {
+			"term": "Compteur",
+			"aliases": "CTU; CTD; CTUD; comptage; décomptage",
+			"definition": "Bloc qui compte des fronts montants. CTU incrémente sur CU, CTD décrémente sur CD (avec LD pour charger la valeur PV), CTUD fait les deux. La valeur courante est sur la broche CV.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"preset-value": {
+			"term": "Valeur de présélection",
+			"aliases": "PV; présélection",
+			"definition": "Valeur cible d'un compteur (broche PV). La sortie Q d'un CTU passe à vrai quand le compte CV atteint PV.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"data-type": {
+			"term": "Type",
+			"aliases": "BOOL; INT; DINT; REAL; type de variable",
+			"definition": "Nature de la valeur d'une variable : BOOL (vrai ou faux), INT et DINT (entiers de 16 et 32 bits), REAL (nombre à virgule).",
+			"details": "Chaque type a sa plage de valeurs et ses règles de calcul.",
+			"figureAlt": ""
+		},
+		"conversion": {
+			"term": "Conversion",
+			"aliases": "élargissement; rétrécissement; *_TO_*",
+			"definition": "Changement du type d'une valeur. Un élargissement (INT vers DINT) est sans risque ; un rétrécissement (REAL vers INT) peut perdre de l'information et se demande explicitement.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"overflow": {
+			"term": "Dépassement",
+			"aliases": "débordement",
+			"definition": "Résultat qui sort de la plage de son type : un INT qui passe 32767 repart de la borne basse.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"scaling": {
+			"term": "Mise à l'échelle",
+			"aliases": "scaling; valeur brute",
+			"definition": "Calcul qui convertit une valeur brute d'un capteur analogique en une grandeur physique (température, niveau), généralement par une droite.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"hysteresis": {
+			"term": "Hystérésis",
+			"aliases": "",
+			"definition": "Écart entre le seuil d'enclenchement et le seuil de déclenchement, pour éviter qu'une sortie ne clignote quand la mesure oscille autour d'une valeur.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"subprogram": {
+			"term": "Sous-programme",
+			"aliases": "appel de sous-programme",
+			"definition": "Programme appelé depuis un autre par un bloc d'appel. Il permet de découper un projet en parties lisibles et réutilisables.",
+			"details": "",
+			"figureAlt": ""
+		},
+		"main": {
+			"term": "Main",
+			"aliases": "programme principal",
+			"definition": "Programme principal d'un projet, exécuté à chaque cycle. Il appelle les sous-programmes et ne peut pas être exclu de l'exécution.",
+			"details": "",
+			"figureAlt": ""
+		}
+	}
+}

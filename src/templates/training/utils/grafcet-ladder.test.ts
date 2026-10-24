@@ -5,6 +5,7 @@ import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
 import { input, output } from "@/templates/training/utils/training-variables";
 import {
 	GrafcetLadderSpec,
+	grafcetInitMemory,
 	grafcetMemories,
 	grafcetSections,
 } from "@/templates/training/utils/grafcet-ladder";
@@ -57,6 +58,13 @@ describe("grafcet-ladder", () => {
 			"T2",
 			"init",
 		]);
+	});
+
+	it("expose la mémoire d'initialisation seule, avec son nom par défaut ou personnalisé", () => {
+		expect(grafcetInitMemory(spec).mnemonic).toBe("init");
+		expect(grafcetInitMemory({ ...spec, initMemory: "init_x" }).mnemonic).toBe(
+			"init_x",
+		);
 	});
 
 	it("active l'étape initiale au premier cycle puis franchit au plus une transition par cycle", async () => {

@@ -27,10 +27,27 @@ describe("gate-grafcet-ladder.template", () => {
 				"telecommande",
 				"arret",
 				"barriere_immaterielle",
-				"X0",
+				"init",
 			]),
 		);
 		expect(project.main.sections[0].elements).toHaveLength(0);
+	});
+
+	it("l'énoncé ne fournit pas les mémoires d'étape et de franchissement", () => {
+		const names = createGateGrafcetLadderProject().variables.map(
+			(v) => v.mnemonic,
+		);
+		expect(names.filter((n) => /^[XT]\d+$/.test(n))).toEqual([]);
+	});
+
+	it("la solution déclare les six étapes, les neuf transitions et init, sans doublon", () => {
+		const names = createGateGrafcetLadderSolution().variables.map(
+			(v) => v.mnemonic,
+		);
+		expect(names.filter((n) => /^X\d+$/.test(n))).toHaveLength(6);
+		expect(names.filter((n) => /^T\d+$/.test(n))).toHaveLength(9);
+		expect(names.filter((n) => n === "init")).toHaveLength(1);
+		expect(new Set(names).size).toBe(names.length);
 	});
 
 	it("un appui ouvre, puis ferme quand le portail est ouvert", async () => {
@@ -92,6 +109,30 @@ describe("gate-grafcet-ladder.template", () => {
 			expect(scenario.get("ouvrir") && scenario.get("fermer")).toBe(false);
 		}
 		expect(scenario.get("ouvrir")).toBe(true);
+		expect(scenario.get("fermer")).toBe(false);
+		scenario.stop();
+	});
+
+	it("la barrière immatérielle est ignorée en ouverture et à l'arrêt", async () => {
+		const scenario = await closedGate();
+		scenario.set("barriere_immaterielle", true);
+		await scenario.cycles(3);
+		expect(scenario.get("ouvrir")).toBe(false);
+		expect(scenario.get("fermer")).toBe(false);
+
+		scenario.set("barriere_immaterielle", false);
+		await press(scenario);
+		scenario.set("fc_ferme", false);
+		scenario.set("barriere_immaterielle", true);
+		await scenario.cycles(3);
+		expect(scenario.get("ouvrir")).toBe(true);
+		expect(scenario.get("fermer")).toBe(false);
+
+		scenario.set("barriere_immaterielle", false);
+		await press(scenario);
+		scenario.set("barriere_immaterielle", true);
+		await scenario.cycles(3);
+		expect(scenario.get("ouvrir")).toBe(false);
 		expect(scenario.get("fermer")).toBe(false);
 		scenario.stop();
 	});

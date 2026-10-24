@@ -6,11 +6,11 @@ import {
 	ComparisonOperator,
 } from "@/expression-language/operators";
 import {
+	CONVERTIBLE_TYPES,
+	ConvertibleType,
 	getConversionFunctionName,
 	isConversionSupported,
-	isConvertibleType,
 } from "@/expression-language/conversions";
-import type { VariableType } from "@/schemas/variable/variable.schema";
 import type { CounterType } from "./function-blocks/counter.schema";
 import type { TimerType } from "./function-blocks/timer.schema";
 import SharedElement from "../shared/element.schema";
@@ -118,7 +118,12 @@ export type CompareBlockParams = {
 
 /** Genres de littéral acceptés sur une pinoche d'opérande de bloc (IN1/IN2 d'un compare, `in`
  * d'un assign). */
-export const BLOCK_OPERAND_LITERALS = ["number", "boolean", "string", "time"] as const;
+export const BLOCK_OPERAND_LITERALS = [
+	"number",
+	"boolean",
+	"string",
+	"time",
+] as const;
 
 /**
  * Bloc `"assign"` : `out := in`, exécuté seulement quand `EN` est vrai ; `ENO = EN`
@@ -139,11 +144,20 @@ export const ARITHMETIC_BLOCK_OPERATORS = ARITHMETIC_OPERATORS;
  * Édité uniquement sur le canevas.
  */
 /**
- * Block `"convert"`: `out := <type of in>_TO_<type of out>(in)`, executed only when `EN` is true;
- * `ENO = EN`. `in` and `out` are variable mnemonics: the conversion applied (IEC 61131-3 name
- * such as `DINT_TO_INT`) follows from their declared types. Edited on the canvas only.
+ * Block `"convert"`: `out := <inType>_TO_<outType>(in)`, executed only when `EN` is true;
+ * `ENO = EN`. `in` and `out` are variable mnemonics expected to be declared with `inType` and
+ * `outType` (the analyser reports a mismatch); the pair is a supported conversion (see
+ * `isConversionSupported`). Edited on the canvas only.
  */
-export type ConvertBlockParams = { out: string; in: string };
+export type ConvertBlockParams = {
+	out: string;
+	in: string;
+	inType: ConvertibleType;
+	outType: ConvertibleType;
+};
+
+export const DEFAULT_CONVERT_IN_TYPE: ConvertibleType = "INT";
+export const DEFAULT_CONVERT_OUT_TYPE: ConvertibleType = "REAL";
 
 export type ArithmeticBlockParams = {
 	in1: string;
@@ -154,7 +168,10 @@ export type ArithmeticBlockParams = {
 
 /** Ports structurels d'un bloc `"compare"` : IN/Q câblés sur le rail. IN1/IN2 ne sont pas des
  * pinoches paramètre au sens `BlockPortSpec` — `CompareBlockNode` les rend lui-même. */
-export const COMPARE_PORT_SPECS: BlockPortSpec[] = structuralRailPorts("IN", "Q");
+export const COMPARE_PORT_SPECS: BlockPortSpec[] = structuralRailPorts(
+	"IN",
+	"Q",
+);
 
 const EN_ENO_PORT_SPECS: BlockPortSpec[] = structuralRailPorts("EN", "ENO");
 
@@ -324,7 +341,12 @@ export function getArithmeticBlockParams(
 export function createConvertBlockElement(
 	row: number,
 	col: number,
-	params: ConvertBlockParams = { out: "", in: "" },
+	params: ConvertBlockParams = {
+		out: "",
+		in: "",
+		inType: DEFAULT_CONVERT_IN_TYPE,
+		outType: DEFAULT_CONVERT_OUT_TYPE,
+	},
 ): BlockElement {
 	return {
 		id: createRandomId(),
@@ -389,16 +411,31 @@ export function writeConvertParam(
 	return suffix === "IN" ? { ...params, in: value } : { ...params, out: value };
 }
 
-/** IEC 61131-3 name of the conversion a `"convert"` block applies (`DINT_TO_INT`), or `null`
- * while its pins do not name two variables of convertible types. */
+/** Target types a `"convert"` block can convert a value of `inType` to. */
+export function getConvertBlockOutTypes(
+	inType: ConvertibleType,
+): ConvertibleType[] {
+	return CONVERTIBLE_TYPES.filter((type) =>
+		isConversionSupported(inType, type),
+	);
+}
+
+/** Changes the source type of a `"convert"` block; when the current target type is no longer a
+ * supported conversion of it, the target falls back to the first one that is. */
+export function withConvertBlockInType(
+	params: ConvertBlockParams,
+	inType: ConvertibleType,
+): ConvertBlockParams {
+	const outTypes = getConvertBlockOutTypes(inType);
+	const outType = outTypes.includes(params.outType)
+		? params.outType
+		: outTypes[0];
+	return { ...params, inType, outType };
+}
+
+/** IEC 61131-3 name of the conversion a `"convert"` block applies (`DINT_TO_INT`). */
 export function getConvertBlockFunctionName(
 	params: ConvertBlockParams,
-	typeOf: (mnemonic: string) => VariableType | undefined,
-): string | null {
-	const source = typeOf(params.in.trim());
-	const target = typeOf(params.out.trim());
-	if (!source || !target) return null;
-	if (!isConvertibleType(source) || !isConvertibleType(target)) return null;
-	if (!isConversionSupported(source, target)) return null;
-	return getConversionFunctionName(source, target);
+): string {
+	return getConversionFunctionName(params.inType, params.outType);
 }

@@ -46,6 +46,10 @@ describe("linear-sequence-ladder.template", () => {
 		scenario.stop();
 	});
 
+	it("le corrigé compte 16 réseaux : 2 d'initialisation, 4 de franchissement, 8 d'évolution, 2 de sortie", () => {
+		expect(createLinearSequenceLadderSolution().main.sections).toHaveLength(16);
+	});
+
 	it("l'énoncé naïf commande deux sorties ensemble pendant un cycle au franchissement", async () => {
 		const scenario = new PlcScenario(createLinearSequenceNaiveLadderProject());
 		await scenario.cycles(2);
@@ -61,6 +65,36 @@ describe("linear-sequence-ladder.template", () => {
 		await scenario.cycles(1);
 		expect(scenario.get("sortie1")).toBe(false);
 		expect(scenario.get("sortie2")).toBe(true);
+		scenario.stop();
+	});
+
+	it("l'énoncé naïf franchit deux transitions dans le même cycle quand dcy et fin1 sont vraies ensemble", async () => {
+		const scenario = new PlcScenario(createLinearSequenceNaiveLadderProject());
+		await scenario.cycles(2);
+		const activeSteps = () =>
+			["X0", "X1", "X2", "X3"].filter((step) => scenario.get(step));
+
+		scenario.set("dcy", true);
+		scenario.set("fin1", true);
+		await scenario.cycles(1);
+		expect(activeSteps()).toEqual(["X0", "X1", "X2"]);
+		await scenario.cycles(1);
+		expect(activeSteps()).toEqual(["X2"]);
+		scenario.stop();
+	});
+
+	it("la méthode en trois blocs ne franchit qu'une transition par cycle quand dcy et fin1 sont vraies ensemble", async () => {
+		const scenario = new PlcScenario(createLinearSequenceLadderSolution());
+		await scenario.cycles(2);
+		const activeSteps = () =>
+			["X0", "X1", "X2", "X3"].filter((step) => scenario.get(step));
+
+		scenario.set("dcy", true);
+		scenario.set("fin1", true);
+		await scenario.cycles(1);
+		expect(activeSteps()).toEqual(["X1"]);
+		await scenario.cycles(1);
+		expect(activeSteps()).toEqual(["X2"]);
 		scenario.stop();
 	});
 

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 264" font-family="sans-serif">
+	<rect x="5" y="5" width="510" height="122" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="14" y="25" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">lampe éteinte</text>
+	<text x="506" y="25" font-size="11" text-anchor="end" fill="#607d8b">les deux interrupteurs sont dans des positions différentes</text>
+	<circle cx="32" cy="79" r="11" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="83" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">+</text>
+	<line x1="43" y1="79" x2="84" y2="79" stroke="#263238" stroke-width="2" />
+	<circle cx="84" cy="79" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="160" cy="57" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="160" cy="101" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<line x1="86" y1="77" x2="157" y2="59" stroke="#263238" stroke-width="2.5" />
+	<line x1="163.5" y1="57" x2="276.5" y2="57" stroke="#263238" stroke-width="2" />
+	<line x1="163.5" y1="101" x2="276.5" y2="101" stroke="#263238" stroke-width="2" />
+	<circle cx="280" cy="57" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="280" cy="101" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="356" cy="79" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<line x1="283" y1="99" x2="353" y2="81" stroke="#263238" stroke-width="2.5" />
+	<line x1="359.5" y1="79" x2="400" y2="79" stroke="#263238" stroke-width="2" />
+	<circle cx="416" cy="79" r="16" fill="#fff" stroke="#263238" stroke-width="2" />
+	<line x1="405" y1="68" x2="427" y2="90" stroke="#263238" stroke-width="2" />
+	<line x1="405" y1="90" x2="427" y2="68" stroke="#263238" stroke-width="2" />
+	<line x1="432" y1="79" x2="486" y2="79" stroke="#263238" stroke-width="2" />
+	<circle cx="494" cy="79" r="8" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<text x="494" y="83" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">-</text>
+	<text x="84" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter1</text>
+	<text x="356" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter2</text>
+	<text x="416" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lampe</text>
+	<rect x="5" y="137" width="510" height="122" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<text x="14" y="157" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">lampe allumée</text>
+	<text x="506" y="157" font-size="11" text-anchor="end" fill="#607d8b">les deux interrupteurs sont dans la même position</text>
+	<circle cx="32" cy="211" r="11" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<text x="32" y="215" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">+</text>
+	<line x1="43" y1="211" x2="84" y2="211" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="84" cy="211" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="160" cy="189" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="160" cy="233" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<line x1="86" y1="209" x2="157" y2="191" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="163.5" y1="189" x2="276.5" y2="189" stroke="#2e7d32" stroke-width="2" />
+	<line x1="163.5" y1="233" x2="276.5" y2="233" stroke="#263238" stroke-width="2" />
+	<circle cx="280" cy="189" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="280" cy="233" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<circle cx="356" cy="211" r="3.5" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<line x1="283" y1="191" x2="353" y2="209" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="359.5" y1="211" x2="400" y2="211" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="416" cy="211" r="16" fill="#fff9c4" stroke="#2e7d32" stroke-width="2" />
+	<line x1="405" y1="200" x2="427" y2="222" stroke="#2e7d32" stroke-width="2" />
+	<line x1="405" y1="222" x2="427" y2="200" stroke="#2e7d32" stroke-width="2" />
+	<line x1="432" y1="211" x2="486" y2="211" stroke="#2e7d32" stroke-width="2" />
+	<circle cx="494" cy="211" r="8" fill="#fff" stroke="#263238" stroke-width="1.5" />
+	<text x="494" y="215" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">-</text>
+	<text x="84" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter1</text>
+	<text x="356" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter2</text>
+	<text x="416" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lampe</text>
+</svg>

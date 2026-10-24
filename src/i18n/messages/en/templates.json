@@ -35,6 +35,10 @@
 		"label": "OR divergence",
 		"description": "A two-branch OR divergence with mutually exclusive branches, each looping back to the initial state on its own. Training module mini-exercise."
 	},
+	"ladder-and-or": {
+		"label": "Series and parallel contacts",
+		"description": "Two networks provided: toggle a and b in simulation to observe AND and OR. Training module mini-exercise."
+	},
 	"ladder-reading": {
 		"label": "Read a Ladder program",
 		"description": "Four combinational networks provided: predict the outputs, then check in simulation. Training module mini-exercise."
@@ -60,8 +64,8 @@
 		"description": "The same input on a NO, P and N contact: record the timing diagram. Training module mini-exercise."
 	},
 	"ladder-toggle": {
-		"label": "Toggle switch",
-		"description": "One button turns a lamp on then off: section execution order and P contact. Training module mini-exercise."
+		"label": "Impulse relay",
+		"description": "One button turns a lamp on then off: network execution order and P contact. Training module mini-exercise."
 	},
 	"ladder-gate": {
 		"label": "Motorised gate",
@@ -86,6 +90,10 @@
 	"ladder-scaling": {
 		"label": "Scaling",
 		"description": "Computing a level from a raw value: overflow, truncation, REAL computation. Training module mini-exercise."
+	},
+	"ladder-subprograms": {
+		"label": "Subprograms",
+		"description": "Call the counting subprogram from the Main, and see the effect of a conditional call. Training module mini-exercise."
 	},
 	"ladder-packing": {
 		"label": "Case packing",

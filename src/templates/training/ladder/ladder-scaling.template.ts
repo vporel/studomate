@@ -23,8 +23,9 @@ function createScalingVariables(project: Project): void {
 	createTankVariables(project, false);
 	project.variables.push(
 		analogInput("brut", 0, RAW_MAX),
-		memory("calcul_real", "REAL"),
+		memory("calcul_int", "INT"),
 		memory("calcul_dint", "DINT"),
+		memory("calcul_real", "REAL"),
 	);
 }
 
@@ -75,7 +76,7 @@ export function createLadderScalingSolution(): Project {
 		section(
 			"Retour en INT",
 			"Le rétrécissement doit être explicite.",
-			convert("niveau", "calcul_real"),
+			convert("niveau", "calcul_real", "REAL", "INT"),
 		),
 		...createTankControlSections(),
 		createCountSection(),

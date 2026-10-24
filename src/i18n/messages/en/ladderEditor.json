@@ -81,7 +81,10 @@
 		"arithmeticOperatorAria": "Block operator",
 		"assignStaticLabel": "Assign",
 		"arithmeticStaticLabel": "Calc",
-		"convertStaticLabel": "CONV"
+		"convertStaticLabel": "CONV",
+		"convertInTypeAria": "Conversion source type",
+		"convertOutTypeAria": "Conversion target type",
+		"convertTypeMismatch": "Expected type: {expected} (the variable is of type {actual})"
 	},
 	"timerDialog": {
 		"createTitle": "New timer",

@@ -89,6 +89,17 @@ export default function buildA3Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("a3TheoryStructureBody") as string[],
 		},
 		{
+			id: A3_STEP_IDS.exerciseSubprograms,
+			kind: "exercise",
+			title: t("a3ExerciseSubprogramsTitle"),
+			body: t.raw("a3ExerciseSubprogramsBody") as string[],
+			cta: {
+				templateId: "ladder-subprograms",
+				exerciseLabel: t("openExerciseCta"),
+				solutionLabel: t("ctaSolution"),
+			},
+		},
+		{
 			id: A3_STEP_IDS.synthesisPacking,
 			kind: "synthesis",
 			title: t("a3SynthesisPackingTitle"),

@@ -14,6 +14,7 @@ const A3_STEP_IDS = {
 	theoryTypes: "theory-types",
 	exerciseScaling: "exercise-scaling",
 	theoryStructure: "theory-structure",
+	exerciseSubprograms: "exercise-subprograms",
 	synthesisPacking: "synthesis-packing",
 	conclusion: "conclusion",
 } as const;

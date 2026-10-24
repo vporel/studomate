@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 316" font-family="sans-serif">
+	<text x="8" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">GRAFCET</text>
+	<rect x="53" y="34" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="68" y="54" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1</text>
+	<line x1="68" y1="64" x2="68" y2="84" stroke="#263238" stroke-width="1.8" />
+	<line x1="58" y1="84" x2="78" y2="84" stroke="#263238" stroke-width="3" />
+	<text x="80" y="88" font-size="12" text-anchor="start" fill="#263238">a</text>
+	<line x1="68" y1="84" x2="68" y2="104" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="101" x2="108" y2="101" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="107" x2="108" y2="107" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="107" x2="28" y2="124" stroke="#263238" stroke-width="1.8" />
+	<rect x="13" y="124" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="28" y="144" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2</text>
+	<line x1="28" y1="154" x2="28" y2="174" stroke="#263238" stroke-width="1.8" />
+	<line x1="108" y1="107" x2="108" y2="124" stroke="#263238" stroke-width="1.8" />
+	<rect x="93" y="124" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="108" y="144" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">3</text>
+	<line x1="108" y1="154" x2="108" y2="174" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="171" x2="108" y2="171" stroke="#263238" stroke-width="1.8" />
+	<line x1="28" y1="177" x2="108" y2="177" stroke="#263238" stroke-width="1.8" />
+	<line x1="68" y1="177" x2="68" y2="194" stroke="#263238" stroke-width="1.8" />
+	<line x1="58" y1="194" x2="78" y2="194" stroke="#263238" stroke-width="3" />
+	<text x="80" y="198" font-size="12" text-anchor="start" fill="#263238">c</text>
+	<line x1="68" y1="194" x2="68" y2="214" stroke="#263238" stroke-width="1.8" />
+	<rect x="53" y="214" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="68" y="234" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">4</text>
+	<text x="168" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">1. Conditions</text>
+	<text x="374" y="18" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">2. Évolution : reset, puis set</text>
+	<line x1="208" y1="50" x2="208" y2="70" stroke="#263238" stroke-width="2.5" />
+	<line x1="220" y1="50" x2="220" y2="70" stroke="#263238" stroke-width="2.5" />
+	<text x="214" y="45" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="260" y1="50" x2="260" y2="70" stroke="#263238" stroke-width="2.5" />
+	<line x1="272" y1="50" x2="272" y2="70" stroke="#263238" stroke-width="2.5" />
+	<text x="266" y="45" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">a</text>
+	<path d="M 316 50 Q 309 60 316 70" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 332 50 Q 339 60 332 70" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="324" y="45" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T1</text>
+	<line x1="168" y1="60" x2="208" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="220" y1="60" x2="260" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="272" y1="60" x2="316" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="332" y1="60" x2="364" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="168" y1="38" x2="168" y2="82" stroke="#263238" stroke-width="3" />
+	<line x1="364" y1="38" x2="364" y2="82" stroke="#263238" stroke-width="3" />
+	<line x1="208" y1="102" x2="208" y2="122" stroke="#263238" stroke-width="2.5" />
+	<line x1="220" y1="102" x2="220" y2="122" stroke="#263238" stroke-width="2.5" />
+	<text x="214" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="244" y1="102" x2="244" y2="122" stroke="#263238" stroke-width="2.5" />
+	<line x1="256" y1="102" x2="256" y2="122" stroke="#263238" stroke-width="2.5" />
+	<text x="250" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="280" y1="102" x2="280" y2="122" stroke="#263238" stroke-width="2.5" />
+	<line x1="292" y1="102" x2="292" y2="122" stroke="#263238" stroke-width="2.5" />
+	<text x="286" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">c</text>
+	<path d="M 316 102 Q 309 112 316 122" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 332 102 Q 339 112 332 122" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="324" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T2</text>
+	<line x1="168" y1="112" x2="208" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="220" y1="112" x2="244" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="256" y1="112" x2="280" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="292" y1="112" x2="316" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="332" y1="112" x2="364" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="168" y1="90" x2="168" y2="134" stroke="#263238" stroke-width="3" />
+	<line x1="364" y1="90" x2="364" y2="134" stroke="#263238" stroke-width="3" />
+	<line x1="414" y1="50" x2="414" y2="70" stroke="#263238" stroke-width="2.5" />
+	<line x1="426" y1="50" x2="426" y2="70" stroke="#263238" stroke-width="2.5" />
+	<text x="420" y="45" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T1</text>
+	<path d="M 504 50 Q 497 60 504 70" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 520 50 Q 527 60 520 70" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="512" y="63.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="512" y="45" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
+	<line x1="374" y1="60" x2="414" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="426" y1="60" x2="504" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="520" y1="60" x2="552" y2="60" stroke="#263238" stroke-width="2" />
+	<line x1="374" y1="38" x2="374" y2="82" stroke="#263238" stroke-width="3" />
+	<line x1="552" y1="38" x2="552" y2="82" stroke="#263238" stroke-width="3" />
+	<line x1="374" y1="126" x2="408" y2="126" stroke="#263238" stroke-width="2" />
+	<line x1="408" y1="116" x2="408" y2="136" stroke="#263238" stroke-width="2.5" />
+	<line x1="420" y1="116" x2="420" y2="136" stroke="#263238" stroke-width="2.5" />
+	<text x="414" y="111" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T2</text>
+	<line x1="420" y1="126" x2="464" y2="126" stroke="#263238" stroke-width="2" />
+	<line x1="464" y1="112" x2="464" y2="140" stroke="#263238" stroke-width="2" />
+	<circle cx="464" cy="126" r="2.5" fill="#263238" />
+	<line x1="464" y1="112" x2="510" y2="112" stroke="#263238" stroke-width="2" />
+	<path d="M 510 102 Q 503 112 510 122" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 526 102 Q 533 112 526 122" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="518" y="115.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="518" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="526" y1="112" x2="552" y2="112" stroke="#263238" stroke-width="2" />
+	<line x1="464" y1="140" x2="510" y2="140" stroke="#263238" stroke-width="2" />
+	<path d="M 510 130 Q 503 140 510 150" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 526 130 Q 533 140 526 150" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="518" y="143.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">R</text>
+	<text x="518" y="166" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="526" y1="140" x2="552" y2="140" stroke="#263238" stroke-width="2" />
+	<line x1="374" y1="100" x2="374" y2="152" stroke="#263238" stroke-width="3" />
+	<line x1="552" y1="100" x2="552" y2="152" stroke="#263238" stroke-width="3" />
+	<line x1="374" y1="210" x2="408" y2="210" stroke="#263238" stroke-width="2" />
+	<line x1="408" y1="200" x2="408" y2="220" stroke="#263238" stroke-width="2.5" />
+	<line x1="420" y1="200" x2="420" y2="220" stroke="#263238" stroke-width="2.5" />
+	<text x="414" y="195" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T1</text>
+	<line x1="420" y1="210" x2="464" y2="210" stroke="#263238" stroke-width="2" />
+	<line x1="464" y1="196" x2="464" y2="224" stroke="#263238" stroke-width="2" />
+	<circle cx="464" cy="210" r="2.5" fill="#263238" />
+	<line x1="464" y1="196" x2="510" y2="196" stroke="#263238" stroke-width="2" />
+	<path d="M 510 186 Q 503 196 510 206" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 526 186 Q 533 196 526 206" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="518" y="199.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="518" y="181" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
+	<line x1="526" y1="196" x2="552" y2="196" stroke="#263238" stroke-width="2" />
+	<line x1="464" y1="224" x2="510" y2="224" stroke="#263238" stroke-width="2" />
+	<path d="M 510 214 Q 503 224 510 234" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 526 214 Q 533 224 526 234" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="518" y="227.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="518" y="250" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X3</text>
+	<line x1="526" y1="224" x2="552" y2="224" stroke="#263238" stroke-width="2" />
+	<line x1="374" y1="184" x2="374" y2="236" stroke="#263238" stroke-width="3" />
+	<line x1="552" y1="184" x2="552" y2="236" stroke="#263238" stroke-width="3" />
+	<line x1="414" y1="268" x2="414" y2="288" stroke="#263238" stroke-width="2.5" />
+	<line x1="426" y1="268" x2="426" y2="288" stroke="#263238" stroke-width="2.5" />
+	<text x="420" y="263" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T2</text>
+	<path d="M 504 268 Q 497 278 504 288" fill="none" stroke="#263238" stroke-width="2.5" />
+	<path d="M 520 268 Q 527 278 520 288" fill="none" stroke="#263238" stroke-width="2.5" />
+	<text x="512" y="281.5" font-size="10" text-anchor="middle" fill="#263238" font-weight="bold">S</text>
+	<text x="512" y="263" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X4</text>
+	<line x1="374" y1="278" x2="414" y2="278" stroke="#263238" stroke-width="2" />
+	<line x1="426" y1="278" x2="504" y2="278" stroke="#263238" stroke-width="2" />
+	<line x1="520" y1="278" x2="552" y2="278" stroke="#263238" stroke-width="2" />
+	<line x1="374" y1="256" x2="374" y2="300" stroke="#263238" stroke-width="3" />
+	<line x1="552" y1="256" x2="552" y2="300" stroke="#263238" stroke-width="3" />
+	<text x="168" y="164" font-size="11" text-anchor="start" fill="#455a64">Une seule condition T1 pour toute</text>
+	<text x="168" y="180" font-size="11" text-anchor="start" fill="#455a64">la divergence : elle active X2 et X3.</text>
+	<text x="168" y="216" font-size="11" text-anchor="start" fill="#455a64">T2 exige les deux étapes amont</text>
+	<text x="168" y="232" font-size="11" text-anchor="start" fill="#455a64">(X2 ET X3) et les désactive</text>
+	<text x="168" y="248" font-size="11" text-anchor="start" fill="#455a64">toutes les deux.</text>
+</svg>

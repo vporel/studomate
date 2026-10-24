@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 236" font-family="sans-serif">
+	<rect x="8" y="6" width="176" height="222" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" rx="6" />
+	<text x="96" y="26" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">1. Étape inactive</text>
+	<rect x="29" y="40" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="44" y="60" font-size="12" text-anchor="middle" fill="#fff" font-weight="bold">n-1</text>
+	<line x1="44" y1="70" x2="44" y2="90" stroke="#263238" stroke-width="1.8" />
+	<line x1="34" y1="90" x2="54" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="44" y1="90" x2="44" y2="110" stroke="#263238" stroke-width="1.8" />
+	<rect x="29" y="110" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="44" y="130" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">n</text>
+	<line x1="44" y1="140" x2="44" y2="160" stroke="#263238" stroke-width="1.8" />
+	<line x1="34" y1="160" x2="54" y2="160" stroke="#263238" stroke-width="3" />
+	<line x1="44" y1="160" x2="44" y2="172" stroke="#263238" stroke-width="1.8" />
+	<text x="66" y="60" font-size="12" text-anchor="start" fill="#263238">Xn-1 = 1</text>
+	<text x="60" y="94" font-size="12" text-anchor="start" fill="#263238">Rn-1 = 0</text>
+	<text x="66" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 0</text>
+	<text x="60" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
+	<line x1="18" y1="182" x2="174" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="96" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Tn-1 = Xn-1 ET Rn-1 = 0</text>
+	<text x="96" y="218" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">Xn reste à 0</text>
+	<rect x="192" y="6" width="176" height="222" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" rx="6" />
+	<text x="280" y="26" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">2. Transition franchie</text>
+	<rect x="213" y="40" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="228" y="60" font-size="12" text-anchor="middle" fill="#fff" font-weight="bold">n-1</text>
+	<line x1="228" y1="70" x2="228" y2="90" stroke="#263238" stroke-width="1.8" />
+	<line x1="218" y1="90" x2="238" y2="90" stroke="#d84315" stroke-width="3" />
+	<line x1="228" y1="90" x2="228" y2="110" stroke="#263238" stroke-width="1.8" />
+	<rect x="213" y="110" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="228" y="130" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">n</text>
+	<line x1="228" y1="140" x2="228" y2="160" stroke="#263238" stroke-width="1.8" />
+	<line x1="218" y1="160" x2="238" y2="160" stroke="#263238" stroke-width="3" />
+	<line x1="228" y1="160" x2="228" y2="172" stroke="#263238" stroke-width="1.8" />
+	<text x="250" y="60" font-size="12" text-anchor="start" fill="#263238">Xn-1 = 1</text>
+	<text x="244" y="94" font-size="12" text-anchor="start" fill="#d84315" font-weight="bold">Rn-1 = 1</text>
+	<text x="250" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 0</text>
+	<text x="244" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
+	<line x1="202" y1="182" x2="358" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="280" y="200" font-size="11" text-anchor="middle" fill="#d84315">Tn-1 = Xn-1 ET Rn-1 = 1</text>
+	<text x="280" y="218" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">Xn passe à 1</text>
+	<rect x="376" y="6" width="176" height="222" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" rx="6" />
+	<text x="464" y="26" font-size="13" text-anchor="middle" fill="#263238" font-weight="bold">3. Étape maintenue</text>
+	<rect x="397" y="40" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="412" y="60" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">n-1</text>
+	<line x1="412" y1="70" x2="412" y2="90" stroke="#263238" stroke-width="1.8" />
+	<line x1="402" y1="90" x2="422" y2="90" stroke="#263238" stroke-width="3" />
+	<line x1="412" y1="90" x2="412" y2="110" stroke="#263238" stroke-width="1.8" />
+	<rect x="397" y="110" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="412" y="130" font-size="12" text-anchor="middle" fill="#fff" font-weight="bold">n</text>
+	<line x1="412" y1="140" x2="412" y2="160" stroke="#263238" stroke-width="1.8" />
+	<line x1="402" y1="160" x2="422" y2="160" stroke="#263238" stroke-width="3" />
+	<line x1="412" y1="160" x2="412" y2="172" stroke="#263238" stroke-width="1.8" />
+	<text x="434" y="60" font-size="12" text-anchor="start" fill="#263238">Xn-1 = 0</text>
+	<text x="428" y="94" font-size="12" text-anchor="start" fill="#263238">Rn-1 = 0</text>
+	<text x="434" y="130" font-size="12" text-anchor="start" fill="#263238">Xn = 1</text>
+	<text x="428" y="164" font-size="12" text-anchor="start" fill="#263238">Rn = 0</text>
+	<line x1="386" y1="182" x2="542" y2="182" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="464" y="200" font-size="11" text-anchor="middle" fill="#607d8b">Tn = Xn ET Rn = 0</text>
+	<text x="464" y="218" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">Xn reste à 1 tout seul</text>
+</svg>

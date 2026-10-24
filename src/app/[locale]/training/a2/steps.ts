@@ -9,6 +9,10 @@ export default function buildA2Steps(t: TrainingTranslator): StepData[] {
 			kind: "theory",
 			title: t("a2LadderBasicsTitle"),
 			body: t.raw("a2LadderBasicsBody") as string[],
+			cta: {
+				templateId: "ladder-and-or",
+				exerciseLabel: t("openExerciseCta"),
+			},
 		},
 		{
 			id: A2_STEP_IDS.theoryContactsCoils,

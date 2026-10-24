@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 310" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+	</defs>
+
+	<!-- Headings -->
+	<text x="20" y="28" font-size="14" font-weight="bold" text-anchor="start" fill="#263238">GRAFCET</text>
+	<text x="510" y="28" font-size="14" font-weight="bold" text-anchor="middle" fill="#263238">Supervision screen (HMI)</text>
+
+	<!-- GRAFCET: links -->
+	<line x1="90" y1="90" x2="90" y2="120" stroke="#263238" stroke-width="1.8" />
+	<line x1="90" y1="150" x2="90" y2="180" stroke="#263238" stroke-width="1.8" />
+	<path d="M 90 210 L 90 245 L 45 245 L 45 150" fill="none" stroke="#263238" stroke-width="1.8" marker-end="url(#arrow)" />
+	<path d="M 45 150 L 45 45 L 90 45 L 90 60" fill="none" stroke="#263238" stroke-width="1.8" />
+
+	<!-- GRAFCET: transitions -->
+	<line x1="80" y1="105" x2="100" y2="105" stroke="#263238" stroke-width="3" />
+	<line x1="80" y1="165" x2="100" y2="165" stroke="#263238" stroke-width="3" />
+	<line x1="80" y1="227" x2="100" y2="227" stroke="#263238" stroke-width="3" />
+
+	<!-- GRAFCET: steps -->
+	<rect x="75" y="60" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<rect x="80" y="65" width="20" height="20" fill="none" stroke="#263238" stroke-width="1.8" />
+	<text x="90" y="79" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
+	<rect x="75" y="120" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
+	<text x="90" y="139" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">1</text>
+	<rect x="75" y="180" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="90" y="199" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
+
+	<!-- GRAFCET: actions -->
+	<line x1="105" y1="75" x2="120" y2="75" stroke="#263238" stroke-width="1.8" />
+	<rect x="120" y="63" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="150" y="79" font-size="12" text-anchor="middle" fill="#263238">vert</text>
+	<line x1="105" y1="135" x2="120" y2="135" stroke="#263238" stroke-width="1.8" />
+	<rect x="120" y="123" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="150" y="139" font-size="12" text-anchor="middle" fill="#263238">orange</text>
+	<line x1="105" y1="195" x2="120" y2="195" stroke="#263238" stroke-width="1.8" />
+	<rect x="120" y="183" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
+	<text x="150" y="199" font-size="12" text-anchor="middle" fill="#263238">rouge</text>
+
+	<!-- Annotation: active step -->
+	<line x1="200" y1="105" x2="108" y2="119" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#arrow)" />
+	<text x="204" y="104" font-size="12" font-weight="bold" text-anchor="start" fill="#2e7d32">active step</text>
+	<text x="204" y="119" font-size="12" text-anchor="start" fill="#2e7d32">X1 = TRUE</text>
+
+	<!-- Annotation: timer -->
+	<line x1="200" y1="170" x2="104" y2="166" stroke="#607d8b" stroke-width="1.5" marker-end="url(#arrow)" />
+	<text x="204" y="174" font-size="12" text-anchor="start" fill="#607d8b">transition: wait for</text>
+	<text x="204" y="189" font-size="12" text-anchor="start" fill="#607d8b">the timer to run out</text>
+
+	<!-- Annotation: output -->
+	<path d="M 182 135 L 466 160" fill="none" stroke="#d84315" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)" />
+	<text x="336" y="133" font-size="12" text-anchor="middle" fill="#d84315">the orange output turns on</text>
+
+	<!-- Traffic light -->
+	<rect x="470" y="60" width="80" height="200" rx="10" fill="#1a1a1a" stroke="#263238" stroke-width="2" />
+	<circle cx="510" cy="95" r="22" fill="#4a1010" />
+	<circle cx="510" cy="160" r="30" fill="#ff9900" fill-opacity="0.3" />
+	<circle cx="510" cy="160" r="22" fill="#ff9900" />
+	<circle cx="510" cy="225" r="22" fill="#0a3010" />
+	<text x="560" y="99" font-size="12" text-anchor="start" fill="#607d8b">off</text>
+	<text x="560" y="157" font-size="12" font-weight="bold" text-anchor="start" fill="#d84315">orange</text>
+	<text x="560" y="172" font-size="12" font-weight="bold" text-anchor="start" fill="#d84315">on</text>
+	<text x="560" y="229" font-size="12" text-anchor="start" fill="#607d8b">off</text>
+
+	<text x="320" y="292" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Light: step 1 is active, the orange indicator is on</text>
+</svg>

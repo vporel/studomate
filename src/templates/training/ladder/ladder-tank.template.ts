@@ -65,7 +65,7 @@ export function createLadderTankProject(): Project {
 	setMainSections(project, [
 		section(
 			"Compteur de démarrages",
-			"Le bloc s'exécute à chaque cycle tant que la pompe est en marche.",
+			"Compte les démarrages de la pompe.",
 			no("pompe"),
 			arithmetic("nb_demarrages", "nb_demarrages", "+", "1"),
 		),

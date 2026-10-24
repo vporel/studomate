@@ -1,6 +1,7 @@
 "use client";
 
 import { ParameterPinRow } from "@/schemas/ladder/block-port.schema";
+import Variable from "@/schemas/variable/variable.schema";
 import { Box } from "@mui/material";
 import ParamPin from "./ParamPin";
 import { PIN_ROW_HEIGHT } from "./dimensions";
@@ -14,11 +15,15 @@ export default function ParamPinRow({
 	top,
 	row,
 	getValue,
+	getValidator,
 	onCommit,
 }: {
 	top: number;
 	row: ParameterPinRow;
 	getValue: (suffix: string) => string;
+	getValidator?: (
+		suffix: string,
+	) => ((variable: Variable) => string | null) | undefined;
 	onCommit: (suffix: string, value: string) => void;
 }) {
 	return (
@@ -40,6 +45,7 @@ export default function ParamPinRow({
 					side="left"
 					spec={row.input}
 					value={getValue(row.input.suffix)}
+					validate={getValidator?.(row.input.suffix)}
 					onCommit={(next) => onCommit(row.input!.suffix, next)}
 				/>
 			) : (
@@ -50,6 +56,7 @@ export default function ParamPinRow({
 					side="right"
 					spec={row.output}
 					value={getValue(row.output.suffix)}
+					validate={getValidator?.(row.output.suffix)}
 					onCommit={(next) => onCommit(row.output!.suffix, next)}
 				/>
 			) : (

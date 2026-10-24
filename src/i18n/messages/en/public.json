@@ -319,6 +319,8 @@
 		"manualDescription": "Studomate user manual: getting started, GRAFCET, Ladder, HMI, simulation.",
 		"trainingTitle": "Training",
 		"trainingDescription": "Automation control training path with Studomate: theory, self-corrected exercises, summary assignments.",
+		"glossaryTitle": "Automation glossary: GRAFCET and Ladder",
+		"glossaryDescription": "Automation glossary: step, transition, contact, coil, TON, counter, edge... every GRAFCET and Ladder term defined simply, with diagrams.",
 		"trainingA0Title": "Module A0: Before you start",
 		"trainingA0Description": "Module A0: what an automated system is, variables and basic logic, the scan cycle — the prerequisites before GRAFCET.",
 		"trainingA1Title": "Module A1: GRAFCET basics",
@@ -428,6 +430,10 @@
 					"title": "GRAFCET OR divergence and convergence: training",
 					"description": "Choose between several sequences: OR divergence and convergence in a GRAFCET, with examples."
 				},
+				"theory-and-divergence": {
+					"title": "GRAFCET AND divergence and convergence: training",
+					"description": "Start several branches in parallel and resynchronise them: AND divergence and convergence in a GRAFCET, with examples."
+				},
 				"reading-errors": {
 					"title": "Reading GRAFCET analysis errors: training",
 					"description": "Analyze a GRAFCET without simulating it and understand Studomate's errors and warnings to fix your program."
@@ -436,7 +442,7 @@
 			"a2": {
 				"theory-contacts-coils": {
 					"title": "Contacts, coils and internal memories in Ladder: training",
-					"description": "The standard Ladder symbols: normally open and normally closed contacts, coils and internal memories."
+					"description": "Ladder symbols: NO and NC contacts, normally open or normally closed button wiring, coils and internal memories."
 				},
 				"theory-self-holding": {
 					"title": "Self-holding in Ladder: training",
@@ -480,23 +486,27 @@
 			"a4": {
 				"theory-method-ladder": {
 					"title": "From GRAFCET to Ladder: the three-block method",
-					"description": "The three blocks of networks, in order, to implement a GRAFCET in Ladder."
+					"description": "Implement a GRAFCET in Ladder: crossing conditions, evolution (all resets then all sets) and outputs, with a complete example and a checklist."
 				},
 				"theory-actions-ladder": {
 					"title": "Implementing GRAFCET actions in Ladder: training",
-					"description": "Non-timed and conditional actions (step AND condition) of a GRAFCET translated into Ladder."
+					"description": "Implement a GRAFCET's actions in Ladder: continuous, stored, edge and conditional, with P and N contacts and a counting example."
 				},
 				"theory-timed-actions-ladder": {
 					"title": "Time in a GRAFCET implemented in Ladder: training",
-					"description": "Translate a receptivity timing (5s/X10) into a TON in Ladder, and handle timed actions."
+					"description": "Delay in a receptivity, delayed action, time-limited action and movement supervision: where to place the TON and what changes in the Ladder."
 				},
 				"theory-divergences-ladder": {
 					"title": "GRAFCET divergences and convergences in Ladder: training",
-					"description": "Implement a GRAFCET's OR and AND divergences in Ladder: one transition condition per branch."
+					"description": "Implement a GRAFCET's OR and AND divergences and convergences in Ladder: one condition per branch for OR, a single one for AND."
 				},
 				"theory-grafcet-reset": {
 					"title": "Stopping a GRAFCET sequence in Ladder: training",
-					"description": "The two ways of stopping a sequence in Ladder, including resetting the GRAFCET."
+					"description": "The two ways of stopping a sequence in Ladder: immediate stop by reinitialisation and end-of-cycle stop, and where to place the reset network."
+				},
+				"conclusion": {
+					"title": "Module A4 conclusion: from GRAFCET to Ladder",
+					"description": "Module A4 recap: steps as memories, the three-block method, actions, time, divergences and stops of a GRAFCET implemented in Ladder."
 				}
 			}
 		}

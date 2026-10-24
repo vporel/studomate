@@ -34,6 +34,7 @@ function setup({
 	align,
 	label,
 	suppressStatus,
+	validate,
 }: {
 	value?: string;
 	variables?: Variable[];
@@ -53,6 +54,7 @@ function setup({
 	align?: "left" | "center" | "right";
 	label?: string;
 	suppressStatus?: boolean;
+	validate?: (variable: Variable) => string | null;
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
@@ -77,6 +79,7 @@ function setup({
 			align={align}
 			label={label}
 			suppressStatus={suppressStatus}
+			validate={validate}
 		/>,
 	);
 
@@ -240,6 +243,65 @@ describe("VariableSelector — statut affiché", () => {
 		setup({ value: "t_etoile.Q", project });
 
 		expect(input()).toHaveAttribute("data-variable-status", "ok");
+	});
+});
+
+describe("VariableSelector — validate", () => {
+	const variable = (mnemonic: string) =>
+		new Variable({
+			id: mnemonic,
+			mnemonic,
+			zone: "memory",
+			type: "INT",
+			dialect: Dialect.FR,
+		});
+
+	it("invalid : le message de validate est affiché en infobulle et le champ signalé", () => {
+		setup({
+			value: "A",
+			variables: [variable("A")],
+			validate: () => "Type attendu : REAL",
+		});
+		expect(input()).toHaveAttribute("data-variable-status", "invalid");
+		expect(input()).toHaveAttribute("title", "Type attendu : REAL");
+	});
+
+	it("ok : validate renvoyant null ne signale rien", () => {
+		setup({ value: "A", variables: [variable("A")], validate: () => null });
+		expect(input()).toHaveAttribute("data-variable-status", "ok");
+		expect(input()).not.toHaveAttribute("title");
+	});
+
+	it("reçoit la variable déclarée correspondant au mnémonique", () => {
+		const validate = jest.fn(() => null);
+		setup({ value: "A", variables: [variable("A")], validate });
+		expect(validate).toHaveBeenCalledWith(
+			expect.objectContaining({ mnemonic: "A" }),
+		);
+	});
+
+	it("n'est pas appelé pour un mnémonique non déclaré, qui reste undeclared", () => {
+		const validate = jest.fn(() => "x");
+		setup({ value: "INCONNUE", variables: [variable("A")], validate });
+		expect(validate).not.toHaveBeenCalled();
+		expect(input()).toHaveAttribute("data-variable-status", "undeclared");
+	});
+
+	it("ne restreint pas les suggestions", () => {
+		setup({
+			value: "",
+			variables: [variable("A"), variable("B")],
+			validate: () => "non",
+		});
+		fireEvent.mouseDown(input());
+		const options = screen.getAllByRole("option").map((o) => o.textContent);
+		expect(options).toEqual(
+			expect.arrayContaining([
+				expect.stringContaining("A"),
+				expect.stringContaining("B"),
+			]),
+		);
+		expect(options.length).toBeGreaterThanOrEqual(2);
 	});
 });
 

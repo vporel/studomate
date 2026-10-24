@@ -35,6 +35,10 @@
 		"label": "Divergence en OU",
 		"description": "Une divergence en OU à deux branches exclusives, chacune rebouclant seule vers l'état initial. Mini-exercice du module Formations."
 	},
+	"ladder-and-or": {
+		"label": "Contacts en série et en parallèle",
+		"description": "Deux réseaux fournis : manipuler a et b en simulation pour observer ET et OU. Mini-exercice du module Formations."
+	},
 	"ladder-reading": {
 		"label": "Lire un programme Ladder",
 		"description": "Quatre réseaux combinatoires fournis : prédire les sorties puis vérifier en simulation. Mini-exercice du module Formations."
@@ -86,6 +90,10 @@
 	"ladder-scaling": {
 		"label": "Mise à l'échelle",
 		"description": "Calcul du niveau à partir d'une valeur brute : dépassement, troncature, calcul en REAL. Mini-exercice du module Formations."
+	},
+	"ladder-subprograms": {
+		"label": "Sous-programmes",
+		"description": "Appeler le sous-programme de comptage depuis le Main, et constater l'effet d'un appel conditionnel. Mini-exercice du module Formations."
 	},
 	"ladder-packing": {
 		"label": "Mise en caisse",

@@ -37,6 +37,11 @@ export default function GrafcetSection({ selected }: { selected: string }) {
 					</Typography>
 					<Typography mb={2}>{t("stepsIntro")}</Typography>
 					<ManualFigure
+						src={t("symbolsFigureSrc")}
+						alt={t("symbolsFigureAlt")}
+						width={380}
+					/>
+					<ManualFigure
 						src="/user-manual/grafcet/steps.svg"
 						alt={t("stepsFigureAlt")}
 						width={200}

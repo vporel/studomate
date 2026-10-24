@@ -12,8 +12,9 @@ import { issue, parseIdentifierNode } from "./block-operand";
 
 /**
  * Validation of a `"convert"` block (see `ConvertBlockParams`). `in` and `out` must be variable
- * mnemonics; `out` must have a convertible numeric type, which is the conversion's target. The
- * checks on the conversion itself (supported pair of types, writable `out`) are delegated to
+ * mnemonics; `out` must have a convertible numeric type, which is the conversion's target, and
+ * both must be declared with the types the block announces (`inType`/`outType`). The checks on
+ * the conversion itself (supported pair of types, writable `out`) are delegated to
  * `SemanticAnalyserVisitor` on the AST `out := <conversion>(in)`.
  */
 export default class ConvertBlockAnalyser {
@@ -24,7 +25,7 @@ export default class ConvertBlockAnalyser {
 		environment: Environment,
 	): ProjectAnalyserIssue[] {
 		if (element.data.blockType !== "convert") return [];
-		const { in: inRaw, out: outRaw } = element.data.params;
+		const { in: inRaw, out: outRaw, inType, outType } = element.data.params;
 
 		const issues: ProjectAnalyserIssue[] = [];
 		if (!inRaw || inRaw.trim() === "")
@@ -52,6 +53,27 @@ export default class ConvertBlockAnalyser {
 					}),
 				];
 
+			const inName = inRaw.trim();
+			const sourceType = environment.getVariableDeclaredTypeByName(inName);
+			const mismatches: ProjectAnalyserIssue[] = [];
+			if (sourceType !== inType)
+				mismatches.push(
+					issue("BLOCK_CONVERT_IN_TYPE_MISMATCH", source, {
+						variableName: inName,
+						expected: inType,
+						actual: sourceType ?? "?",
+					}),
+				);
+			if (targetType !== outType)
+				mismatches.push(
+					issue("BLOCK_CONVERT_OUT_TYPE_MISMATCH", source, {
+						variableName: outName,
+						expected: outType,
+						actual: targetType,
+					}),
+				);
+			if (mismatches.length > 0) return mismatches;
+
 			analyser.visit(
 				StatementsBuilder.buildAssignStatementNode(
 					target,
@@ -64,7 +86,13 @@ export default class ConvertBlockAnalyser {
 			);
 		} catch (e) {
 			return [
-				new ProjectAnalyserIssue("error", "BLOCK_CONVERT_INVALID", source, {}, e),
+				new ProjectAnalyserIssue(
+					"error",
+					"BLOCK_CONVERT_INVALID",
+					source,
+					{},
+					e,
+				),
 			];
 		}
 

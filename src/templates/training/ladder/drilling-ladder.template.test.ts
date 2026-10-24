@@ -49,4 +49,21 @@ describe("drilling-ladder.template", () => {
 		expect(scenario.get("defaut")).toBe(true);
 		scenario.stop();
 	});
+
+	it("un nouvel appui sur dcy efface le défaut", async () => {
+		const scenario = new PlcScenario(createDrillingLadderSolution());
+		await scenario.cycles(3);
+		await scenario.tap("dcy", 1);
+		await scenario.seconds(2);
+		scenario.set("blocage", true);
+		await scenario.seconds(7);
+		expect(scenario.get("defaut")).toBe(true);
+		await scenario.seconds(6);
+		expect(scenario.get("X0")).toBe(true);
+		scenario.set("blocage", false);
+		await scenario.tap("dcy", 1);
+		await scenario.cycles(2);
+		expect(scenario.get("defaut")).toBe(false);
+		scenario.stop();
+	});
 });

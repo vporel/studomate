@@ -354,6 +354,8 @@
 		"canvasOutro2": "Copy / Cut / Paste (Ctrl+C, Ctrl+X, Ctrl+V) work on the current selection, including multi-element selections. Pasted elements are placed slightly offset from the originals.",
 		"stepsTitle": "Steps",
 		"stepsIntro": "Steps represent the stable states of the system. A step can be active or inactive at any point during execution.",
+		"symbolsFigureAlt": "GRAFCET symbols: inactive step, active step, initial step with a double outline, transition with its receptivity, action attached to a step, directed link with a return arrow",
+		"symbolsFigureSrc": "/user-manual/grafcet/grafcet-symbols-en.svg",
 		"stepsFigureAlt": "Diagram: an initial step (number 0, double border), followed by a transition (horizontal bar), then a normal step (number 1) linked to an action (rectangle on the right).",
 		"stepsTypesTitle": "Step types",
 		"stepsTypes": [
@@ -537,7 +539,7 @@
 		"calcTitle": "Calculation",
 		"calcBody": "Evaluates an arithmetic operation (out := in1 op in2, with op one of +, -, *, /) when the circuit feeding it (EN) is true. Fits at the end of a network like a coil. The operands in1 and in2, the destination out and the operator are entered on the block on the canvas.",
 		"convertTitle": "Conversion",
-		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The block shows the standard name of the conversion it applies, for example DINT_TO_INT. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
+		"convertBody": "Converts the value of the variable in to the type of the variable out when the circuit feeding it (EN) is true. The two lists under the CONV label choose the source and target types (INT to REAL by default), which gives the standard conversion applied, for example DINT_TO_INT; only supported pairs are offered. A variable whose type differs from the one chosen for its pin is flagged in red, and the analysis rejects it. An integer too large for the target type wraps around, as on a PLC; a REAL is rounded to the nearest integer. in and out are entered on the block's pins (variables only).",
 		"programCallTitle": "Program call",
 		"programCallBody": "Calls another ladder from the Main ladder. The target ladder runs on every scan where input EN is true, at the block's position: before the networks below it, which therefore see its writes from the same scan. This is the mechanism by which Main orchestrates the project's other ladders: a ladder not called by Main will never run (the analysis flags this as a warning).",
 		"connectionsTitle": "Connections",

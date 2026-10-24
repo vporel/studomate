@@ -1,3 +1,5 @@
+import Project from "@/schemas/project/project.schema";
+import { getInputRestValue } from "@/schemas/variable/input-behavior";
 import PlcScenario from "@tests/utils/plc-scenario";
 import {
 	createLadderGateProject,
@@ -10,6 +12,12 @@ async function startedGate(): Promise<PlcScenario> {
 	return scenario;
 }
 
+function restValue(project: Project, name: string) {
+	return getInputRestValue(
+		project.variables.find((v) => v.mnemonic === name)?.behavior,
+	);
+}
+
 describe("ladder-gate.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
@@ -19,6 +27,35 @@ describe("ladder-gate.template", () => {
 			"ouvrir",
 			"fermer",
 		]);
+	});
+
+	it("le corrigé déclare les six entrées du cahier des charges, l'arrêt câblé à ouverture", () => {
+		const project = createLadderGateSolution();
+		const names = project.variables.map((v) => v.mnemonic);
+		expect(names).toEqual(
+			expect.arrayContaining([
+				"bp_ouvrir",
+				"bp_fermer",
+				"arret",
+				"fc_ouvert",
+				"fc_ferme",
+				"barriere_immaterielle",
+			]),
+		);
+		expect(restValue(project, "arret")).toBe(true);
+		expect(restValue(project, "bp_ouvrir")).toBe(false);
+		expect(restValue(project, "bp_fermer")).toBe(false);
+	});
+
+	it("ignore la barrière immatérielle pendant l'ouverture", async () => {
+		const scenario = await startedGate();
+		await scenario.tap("bp_ouvrir");
+		await scenario.cycles(2);
+		scenario.set("barriere_immaterielle", true);
+		await scenario.cycles(3);
+		expect(scenario.get("ouvrir")).toBe(true);
+		expect(scenario.get("fermer")).toBe(false);
+		scenario.stop();
 	});
 
 	it("ouvre sur bp_ouvrir et s'arrête au fin de course ouvert", async () => {

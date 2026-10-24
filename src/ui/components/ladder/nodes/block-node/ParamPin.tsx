@@ -1,7 +1,7 @@
 "use client";
 
 import { BlockPortSpec } from "@/schemas/ladder/block-port.schema";
-import {
+import Variable, {
 	READ_ONLY_ZONES,
 	VARIABLE_TYPES,
 	VARIABLE_TYPE_TO_NATIVE_TYPE,
@@ -49,11 +49,13 @@ export default function ParamPin({
 	side,
 	spec,
 	value,
+	validate,
 	onCommit,
 }: {
 	side: "left" | "right";
 	spec: BlockPortSpec;
 	value: string;
+	validate?: (variable: Variable) => string | null;
 	onCommit: (value: string) => void;
 }) {
 	const selectorRef = useRef<VariableSelectorHandle>(null);
@@ -85,6 +87,7 @@ export default function ParamPin({
 			onCommit={onCommit}
 			suppressStatus={excludedFromExecution}
 			typeFilter={getTypeFilter(spec)}
+			validate={validate}
 			acceptedLiterals={spec.acceptedLiterals}
 			excludeDirection={spec.excludeInputVariable ? "IN" : undefined}
 			excludeZones={spec.excludeInputVariable ? READ_ONLY_ZONES : undefined}

@@ -354,6 +354,8 @@
 		"canvasOutro2": "Copier / Couper / Coller (Ctrl+C, Ctrl+X, Ctrl+V) fonctionnent sur la sélection courante, y compris les sélections multi-éléments. Les éléments collés sont placés légèrement décalés par rapport aux originaux.",
 		"stepsTitle": "Étapes",
 		"stepsIntro": "Les étapes représentent les états stables du système. Une étape peut être active ou inactive à tout moment de l'exécution.",
+		"symbolsFigureAlt": "Les symboles du GRAFCET : étape inactive, étape active, étape initiale à double contour, transition avec sa réceptivité, action accrochée à une étape, liaison orientée avec une flèche de retour",
+		"symbolsFigureSrc": "/user-manual/grafcet/grafcet-symbols-fr.svg",
 		"stepsFigureAlt": "Schéma : une étape initiale (numéro 0, double bordure), suivie d'une transition (barre horizontale), puis d'une étape normale (numéro 1) reliée à une action (rectangle à droite).",
 		"stepsTypesTitle": "Types d'étapes",
 		"stepsTypes": [
@@ -537,7 +539,7 @@
 		"calcTitle": "Calcul",
 		"calcBody": "Évalue une opération arithmétique (out := in1 op in2, avec op parmi +, -, *, /) lorsque le circuit qui l'alimente (EN) est vrai. S'insère en fin de réseau comme une bobine. Les opérandes in1 et in2, la destination out et l'opérateur se renseignent sur le bloc dans le canvas.",
 		"convertTitle": "Conversion",
-		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Le bloc affiche le nom normalisé de la conversion appliquée, par exemple DINT_TO_INT. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
+		"convertBody": "Convertit la valeur de la variable in vers le type de la variable out lorsque le circuit qui l'alimente (EN) est vrai. Les deux listes sous le libellé CONV choisissent le type de départ et le type d'arrivée (INT vers REAL par défaut), ce qui donne la conversion normalisée appliquée, par exemple DINT_TO_INT ; seules les paires prises en charge sont proposées. Une variable dont le type diffère de celui choisi pour sa broche est signalée en rouge, et l'analyse la refuse. Un entier trop grand pour le type de destination y est ramené par rebouclage, comme sur un automate ; un REAL est arrondi à l'entier le plus proche. in et out se renseignent sur les broches du bloc (variables uniquement).",
 		"programCallTitle": "Appel de programme",
 		"programCallBody": "Appelle un autre ladder depuis le ladder Main. Le ladder ciblé s'exécute à chaque cycle où l'entrée EN est vraie, à l'endroit du bloc : avant les réseaux placés en dessous, qui voient donc ses écritures du même cycle. C'est le mécanisme par lequel le Main orchestre les autres ladders du projet : un ladder non appelé par le Main ne sera jamais exécuté (l'analyse le signale comme avertissement).",
 		"connectionsTitle": "Connexions",

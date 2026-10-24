@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 250" font-family="sans-serif">
+	<defs>
+		<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#263238" />
+		</marker>
+		<marker id="arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#2e7d32" />
+		</marker>
+		<marker id="arrow-hi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+			<path d="M 0 0 L 10 5 L 0 10 z" fill="#d84315" />
+		</marker>
+	</defs>
+
+	<rect x="20" y="80" width="140" height="64" rx="6" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="90" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">INT</text>
+	<text x="90" y="120" font-size="11" text-anchor="middle" fill="#263238">16 bits</text>
+	<text x="90" y="136" font-size="11" text-anchor="middle" fill="#455a64">-32 768 à 32 767</text>
+	<rect x="200" y="80" width="140" height="64" rx="6" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="270" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">DINT</text>
+	<text x="270" y="120" font-size="11" text-anchor="middle" fill="#263238">32 bits</text>
+	<text x="270" y="136" font-size="11" text-anchor="middle" fill="#455a64">environ ±2,1 milliards</text>
+	<rect x="380" y="80" width="140" height="64" rx="6" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="450" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#263238">REAL</text>
+	<text x="450" y="120" font-size="11" text-anchor="middle" fill="#263238">virgule</text>
+	<text x="450" y="136" font-size="11" text-anchor="middle" fill="#455a64">nombres décimaux</text>
+
+	<!-- Widening (implicit) -->
+	<line x1="162" y1="100" x2="198" y2="100" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#arrow-ok)" />
+	<line x1="342" y1="100" x2="378" y2="100" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#arrow-ok)" />
+	<text x="270" y="48" font-size="13" font-weight="bold" text-anchor="middle" fill="#2e7d32">Élargissement : automatique</text>
+	<text x="270" y="66" font-size="11" text-anchor="middle" fill="#455a64">on n'écrit rien de plus</text>
+
+	<!-- Narrowing (explicit) -->
+	<path d="M 450 148 Q 450 190 272 190 Q 90 190 90 150" fill="none" stroke="#d84315" stroke-width="2.5" marker-end="url(#arrow-hi)" />
+	<text x="270" y="214" font-size="13" font-weight="bold" text-anchor="middle" fill="#d84315">Rétrécissement : à demander explicitement</text>
+	<text x="270" y="234" font-size="11" text-anchor="middle" fill="#455a64">bloc de conversion : REAL_TO_INT, DINT_TO_INT...</text>
+</svg>

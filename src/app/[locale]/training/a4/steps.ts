@@ -127,5 +127,11 @@ export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 				solutionLabel: t("ctaSolution"),
 			},
 		},
+		{
+			id: A4_STEP_IDS.conclusion,
+			kind: "theory",
+			title: t("a4ConclusionTitle"),
+			body: t.raw("a4ConclusionBody") as string[],
+		},
 	];
 }

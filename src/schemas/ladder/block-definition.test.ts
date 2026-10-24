@@ -33,7 +33,10 @@ function defaultData(blockType: BlockType): BlockData {
 		case "arithmetic":
 			return { blockType, params: { in1: "", in2: "", out: "", operator: "+" } };
 		case "convert":
-			return { blockType, params: { out: "", in: "" } };
+			return {
+				blockType,
+				params: { out: "", in: "", inType: "INT", outType: "REAL" },
+			};
 	}
 }
 

@@ -32,7 +32,7 @@ const steps: StepData[] = [
 		body: ["Corps quatre"],
 		cta: {
 			templateId: "linear-sequence",
-			exerciseLabel: "Énoncé",
+			exerciseLabel: "Exercice",
 			solutionLabel: "Corrigé",
 		},
 	},
@@ -109,7 +109,7 @@ describe("ModuleStepper", () => {
 
 	it("affiche énoncé et corrigé quand l'étape en propose deux, vers le bon template-mode", () => {
 		setup("#step-s4");
-		const exerciseLink = screen.getByRole("link", { name: "Énoncé" });
+		const exerciseLink = screen.getByRole("link", { name: "Exercice" });
 		const solutionLink = screen.getByRole("link", { name: "Corrigé" });
 		expect(exerciseLink).toHaveAttribute(
 			"href",

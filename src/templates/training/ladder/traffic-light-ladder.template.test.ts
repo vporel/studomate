@@ -42,4 +42,23 @@ describe("traffic-light-ladder.template", () => {
 		expect(scenario.get("orange")).toBe(false);
 		scenario.stop();
 	});
+
+	it("marche passe à faux pendant le vert : le cycle se termine au rouge, qui reste allumé jusqu'au retour de marche", async () => {
+		const scenario = new PlcScenario(createTrafficLightLadderSolution());
+		scenario.set("marche", true);
+		await scenario.seconds(2);
+		expect(scenario.get("vert")).toBe(true);
+		scenario.set("marche", false);
+		await scenario.seconds(5);
+		expect(scenario.get("orange")).toBe(true);
+		await scenario.seconds(2);
+		expect(scenario.get("rouge")).toBe(true);
+		await scenario.seconds(10);
+		expect(scenario.get("rouge")).toBe(true);
+		scenario.set("marche", true);
+		await scenario.seconds(1);
+		expect(scenario.get("vert")).toBe(true);
+		expect(scenario.get("rouge")).toBe(false);
+		scenario.stop();
+	});
 });

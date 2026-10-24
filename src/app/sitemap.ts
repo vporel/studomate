@@ -1,13 +1,13 @@
 import { APP_URL } from "@/app-info";
 import { DEFAULT_LOCALE } from "@/i18n/config";
-import { getPathname } from "@/i18n/navigation";
 import { routing, type PublicPathname } from "@/i18n/routing";
 import type { MetadataRoute } from "next";
+import manualSectionHref from "./[locale]/user-manual/manual-section-href";
 import {
 	MANUAL_DEFAULT_SECTION,
 	MANUAL_SECTIONS,
 } from "./[locale]/user-manual/manual-sections";
-import { alternateLanguages, type PublicHref } from "./metadata";
+import { absolute, alternateLanguages, type LocalizedHref } from "./metadata";
 import routes from "./routes";
 import {
 	buildModuleSteps,
@@ -30,13 +30,10 @@ const staticPaths = (
 );
 
 /** Pages publiques localisées (chemin interne) — une entrée de sitemap par langue. */
-const publicPaths: PublicHref[] = [
+const publicPaths: LocalizedHref[] = [
 	...staticPaths,
 	...MANUAL_SECTIONS.filter((s) => s.id !== MANUAL_DEFAULT_SECTION).map(
-		({ id }) => ({
-			pathname: "/user-manual/[section]" as const,
-			params: { section: id },
-		}),
+		({ id }) => manualSectionHref(id),
 	),
 	...TRAINING_MODULE_IDS.flatMap((moduleId) => [
 		moduleEntryPathname(moduleId),
@@ -53,10 +50,7 @@ const publicPaths: PublicHref[] = [
 export default function sitemap(): MetadataRoute.Sitemap {
 	const localizedEntries = publicPaths.flatMap((path) =>
 		routing.locales.map((locale) => {
-			const url = new URL(
-				getPathname({ locale, href: path }),
-				siteUrl,
-			).toString();
+			const url = absolute(locale, path);
 			const changeFrequency: "weekly" | "monthly" =
 				path === "/" ? "weekly" : "monthly";
 			return {

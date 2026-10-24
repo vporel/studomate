@@ -31,12 +31,14 @@ describe("sitemap", () => {
 		expect(urls).toContain(`${APP_URL}/politique-de-confidentialite`);
 		expect(urls).toContain(`${APP_URL}/formations`);
 		expect(urls).toContain(`${APP_URL}/formations/a1`);
+		expect(urls).toContain(`${APP_URL}/formations/glossaire`);
 		// EN : préfixe /en + slugs traduits
 		expect(urls).toContain(`${APP_URL}/en`);
 		expect(urls).toContain(`${APP_URL}/en/about`);
 		expect(urls).toContain(`${APP_URL}/en/privacy`);
 		expect(urls).toContain(`${APP_URL}/en/training`);
 		expect(urls).toContain(`${APP_URL}/en/training/a1`);
+		expect(urls).toContain(`${APP_URL}/en/training/glossary`);
 	});
 
 	it("n'expose aucune date lastModified artificielle", () => {
@@ -82,7 +84,9 @@ describe("sitemap", () => {
 		const urls = entries.map((e) => e.url);
 		expect(urls).toContain(`${APP_URL}/manuel-utilisateur/grafcet`);
 		expect(urls).toContain(`${APP_URL}/en/user-manual/grafcet`);
-		expect(urls).toContain(`${APP_URL}/manuel-utilisateur/shortcuts`);
+		expect(urls).toContain(`${APP_URL}/manuel-utilisateur/raccourcis-clavier`);
+		expect(urls).toContain(`${APP_URL}/en/user-manual/shortcuts`);
+		expect(urls).not.toContain(`${APP_URL}/manuel-utilisateur/shortcuts`);
 		expect(urls).not.toContain(`${APP_URL}/manuel-utilisateur/intro`);
 		expect(urls.filter((u) => u.endsWith("/manuel-utilisateur"))).toHaveLength(
 			1,

@@ -1,11 +1,13 @@
 import PageTitle from "@/ui/components/public-pages/PageTitle";
-import { Container, Divider, Typography } from "@mui/material";
+import { Container, Divider } from "@mui/material";
 import { ReactNode } from "react";
+import MarkdownBodyServer from "./MarkdownBodyServer";
 import ModuleStepper, { StepData } from "./ModuleStepper";
 import TrainingPageFooter from "./TrainingPageFooter";
 
 type TrainingModulePageProps = {
 	title: string;
+	/** Introduction en Markdown (rendue côté serveur). */
 	intro: string;
 	steps: StepData[];
 	moduleId: string;
@@ -33,9 +35,10 @@ export default function TrainingModulePage({
 		<Container maxWidth="lg" sx={{ my: 4 }}>
 			<PageTitle>{title}</PageTitle>
 			<Divider sx={{ my: 2 }} />
-			<Typography textAlign="justify" color="text.secondary" mb={4}>
-				{intro}
-			</Typography>
+			<MarkdownBodyServer
+				source={intro}
+				sx={{ color: "text.secondary", mb: 4, "& p": { textAlign: "justify" } }}
+			/>
 
 			<ModuleStepper
 				steps={steps}

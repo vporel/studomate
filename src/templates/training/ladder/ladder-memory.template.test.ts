@@ -1,8 +1,16 @@
+import Project from "@/schemas/project/project.schema";
+import { getInputRestValue } from "@/schemas/variable/input-behavior";
 import PlcScenario from "@tests/utils/plc-scenario";
 import {
 	createLadderMemoryProject,
 	createLadderMemorySolution,
 } from "./ladder-memory.template";
+
+function restValue(project: Project, name: string) {
+	return getInputRestValue(
+		project.variables.find((v) => v.mnemonic === name)?.behavior,
+	);
+}
 
 describe("ladder-memory.template", () => {
 	beforeEach(() => jest.useFakeTimers());
@@ -14,6 +22,12 @@ describe("ladder-memory.template", () => {
 		expect(project.variables.map((v) => v.mnemonic)).toEqual(
 			expect.arrayContaining(["temperature_ok", "acquit", "voyant_defaut"]),
 		);
+	});
+
+	it("le capteur est câblé à ouverture : vrai au repos", () => {
+		const project = createLadderMemoryProject();
+		expect(restValue(project, "temperature_ok")).toBe(true);
+		expect(restValue(project, "acquit")).toBe(false);
 	});
 
 	it("un défaut arrête la pompe et se mémorise, sans redémarrage après acquittement", async () => {

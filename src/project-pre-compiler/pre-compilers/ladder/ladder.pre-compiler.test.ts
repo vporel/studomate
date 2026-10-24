@@ -1046,7 +1046,12 @@ describe("LadderPreCompiler : bloc convert", () => {
 	function preCompileConvert(out: string) {
 		const rail = createRailTerminalElement(0);
 		const contactA = createContactElement("A", "NO", 0, 1);
-		const block = createConvertBlockElement(0, 2, { out, in: "D" });
+		const block = createConvertBlockElement(0, 2, {
+			out,
+			in: "D",
+			inType: "DINT",
+			outType: "INT",
+		});
 		const section = createSectionWith(
 			[rail, contactA, block],
 			wireInSeries([rail, contactA, block]),

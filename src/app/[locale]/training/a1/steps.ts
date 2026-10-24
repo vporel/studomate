@@ -17,10 +17,34 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			body: t.raw("theoryBody") as string[],
 		},
 		{
+			id: A1_STEP_IDS.observeLinear,
+			kind: "exercise",
+			title: t("observeLinearTitle"),
+			body: t.raw("observeLinearBody") as string[],
+			cta: {
+				templateId: "linear-sequence",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
+		},
+		{
 			id: A1_STEP_IDS.theoryActions,
 			kind: "theory",
 			title: t("theoryActionsTitle"),
 			body: t.raw("theoryActionsBody") as string[],
+		},
+		{
+			id: A1_STEP_IDS.observeActions,
+			kind: "exercise",
+			title: t("observeActionsTitle"),
+			body: t.raw("observeActionsBody") as string[],
+			cta: {
+				templateId: "parking",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
 		},
 		{
 			id: A1_STEP_IDS.exerciseLinear,
@@ -38,6 +62,18 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			kind: "theory",
 			title: t("theoryTimerTitle"),
 			body: t.raw("theoryTimerBody") as string[],
+		},
+		{
+			id: A1_STEP_IDS.observeTimer,
+			kind: "exercise",
+			title: t("observeTimerTitle"),
+			body: t.raw("observeTimerBody") as string[],
+			cta: {
+				templateId: "traffic-light",
+				exerciseLabel: t("observeSimulationCta"),
+				primaryMode: "solution",
+				autostartSimulation: true,
+			},
 		},
 		{
 			id: A1_STEP_IDS.synthesisTrafficLight,
@@ -68,10 +104,16 @@ export default function buildA1Steps(t: TrainingTranslator): StepData[] {
 			},
 		},
 		{
-			id: A1_STEP_IDS.exerciseAndDivergence,
-			kind: "exercise",
+			id: A1_STEP_IDS.theoryAndDivergence,
+			kind: "theory",
 			title: t("theoryAndDivergenceTitle"),
 			body: t.raw("theoryAndDivergenceBody") as string[],
+		},
+		{
+			id: A1_STEP_IDS.exerciseAndDivergence,
+			kind: "exercise",
+			title: t("exerciseAndDivergenceTitle"),
+			body: t.raw("exerciseAndDivergenceBody") as string[],
 			cta: {
 				templateId: "and-divergence",
 				exerciseLabel: t("exerciseAndDivergenceCta"),

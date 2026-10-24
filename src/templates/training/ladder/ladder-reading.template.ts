@@ -30,28 +30,28 @@ export function createLadderReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Série",
-			"s1 est vraie quand a ET b sont vraies.",
+			"Réseau 1",
+			"Prédisez s1 pour chaque combinaison de a et b.",
 			no("a"),
 			no("b"),
 			coil("s1"),
 		),
 		section(
-			"Parallèle",
-			"s2 est vraie quand a OU b est vraie.",
+			"Réseau 2",
+			"Prédisez s2 pour chaque combinaison de a et b.",
 			or([no("a")], [no("b")]),
 			coil("s2"),
 		),
 		section(
-			"Contact à ouverture",
-			"s3 est vraie quand a est vraie ET b est fausse.",
+			"Réseau 3",
+			"Prédisez s3 pour chaque combinaison de a et b.",
 			no("a"),
 			nf("b"),
 			coil("s3"),
 		),
 		section(
-			"Combinaison",
-			"s4 est vraie quand (a OU b) est vraie ET c est fausse.",
+			"Réseau 4",
+			"Prédisez s4 pour chaque combinaison de a, b et c.",
 			or([no("a")], [no("b")]),
 			nf("c"),
 			coil("s4"),

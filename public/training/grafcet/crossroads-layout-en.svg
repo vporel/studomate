@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" font-family="sans-serif">
+	<rect x="170" y="24" width="80" height="240" fill="#cfd8dc" />
+	<rect x="20" y="110" width="380" height="80" fill="#cfd8dc" />
+	<line x1="210" y1="24" x2="210" y2="110" stroke="#fff" stroke-width="2" stroke-dasharray="8 6" />
+	<line x1="210" y1="190" x2="210" y2="264" stroke="#fff" stroke-width="2" stroke-dasharray="8 6" />
+	<line x1="20" y1="150" x2="170" y2="150" stroke="#fff" stroke-width="2" stroke-dasharray="8 6" />
+	<line x1="250" y1="150" x2="400" y2="150" stroke="#fff" stroke-width="2" stroke-dasharray="8 6" />
+	<rect x="145" y="70" width="20" height="32" rx="4" fill="#37474f" />
+	<circle cx="155" cy="78" r="3.5" fill="#e53935" />
+	<circle cx="155" cy="86" r="3.5" fill="#fb8c00" />
+	<circle cx="155" cy="94" r="3.5" fill="#43a047" />
+	<text x="155" y="62" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">NS1</text>
+	<rect x="255" y="198" width="20" height="32" rx="4" fill="#37474f" />
+	<circle cx="265" cy="206" r="3.5" fill="#e53935" />
+	<circle cx="265" cy="214" r="3.5" fill="#fb8c00" />
+	<circle cx="265" cy="222" r="3.5" fill="#43a047" />
+	<text x="265" y="246" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">NS2</text>
+	<rect x="282" y="76" width="20" height="32" rx="4" fill="#37474f" />
+	<circle cx="292" cy="84" r="3.5" fill="#e53935" />
+	<circle cx="292" cy="92" r="3.5" fill="#fb8c00" />
+	<circle cx="292" cy="100" r="3.5" fill="#43a047" />
+	<text x="292" y="68" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">EO1</text>
+	<rect x="118" y="194" width="20" height="32" rx="4" fill="#37474f" />
+	<circle cx="128" cy="202" r="3.5" fill="#e53935" />
+	<circle cx="128" cy="210" r="3.5" fill="#fb8c00" />
+	<circle cx="128" cy="218" r="3.5" fill="#43a047" />
+	<text x="128" y="240" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">EO2</text>
+	<text x="210" y="16" font-size="12" text-anchor="middle" fill="#607d8b">North</text>
+	<text x="210" y="278" font-size="12" text-anchor="middle" fill="#607d8b">South</text>
+	<text x="14" y="154" font-size="12" text-anchor="start" fill="#607d8b">West</text>
+	<text x="406" y="154" font-size="12" text-anchor="end" fill="#607d8b">East</text>
+	<text x="210" y="296" font-size="11" text-anchor="middle" fill="#607d8b">each light: rouge…, orange…, vert… (for example vertNS1)</text>
+</svg>

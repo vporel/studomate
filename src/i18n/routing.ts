@@ -27,6 +27,10 @@ export const routing = defineRouting({
 			en: "/user-manual/[section]",
 		},
 		"/training": { fr: "/formations", en: "/training" },
+		"/training/glossary": {
+			fr: "/formations/glossaire",
+			en: "/training/glossary",
+		},
 		"/training/a0": { fr: "/formations/a0", en: "/training/a0" },
 		"/training/a0/[step]": {
 			fr: "/formations/a0/[step]",

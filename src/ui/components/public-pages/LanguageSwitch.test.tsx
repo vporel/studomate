@@ -52,6 +52,22 @@ describe("LanguageSwitch", () => {
 		expect(en).toHaveAttribute("href", "/en/user-manual/grafcet");
 	});
 
+	it("traduit le slug d'une section du manuel vers l'autre langue", () => {
+		mockPathname = "/user-manual/[section]";
+		mockParams = { locale: "fr", section: "depannage" };
+		const [fr, en] = openMenu();
+		expect(fr).toHaveAttribute("href", "/fr/manuel-utilisateur/depannage");
+		expect(en).toHaveAttribute("href", "/en/user-manual/troubleshooting");
+	});
+
+	it("renvoie à l'accueil sur un slug de section inconnu dans la langue courante", () => {
+		mockPathname = "/user-manual/[section]";
+		mockParams = { locale: "fr", section: "troubleshooting" };
+		const [fr, en] = openMenu();
+		expect(fr).toHaveAttribute("href", "/fr");
+		expect(en).toHaveAttribute("href", "/en");
+	});
+
 	it("résout les paramètres d'une route dynamique (étape de formation)", () => {
 		mockPathname = "/training/a2/[step]";
 		mockParams = { locale: "en", step: "theory-edges" };

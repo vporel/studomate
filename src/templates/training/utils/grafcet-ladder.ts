@@ -40,10 +40,16 @@ const inParallel = (items: LadderItem[]): LadderItem[] =>
 /** Every memory a spec needs: steps, crossing conditions and the start-up memory. */
 export function grafcetMemories(spec: GrafcetLadderSpec): Variable[] {
 	return [
-		...spec.steps,
-		...spec.transitions.map((transition) => transition.name),
-		spec.initMemory ?? DEFAULT_INIT_MEMORY,
-	].map((name) => memory(name));
+		...[
+			...spec.steps,
+			...spec.transitions.map((transition) => transition.name),
+		].map((name) => memory(name)),
+		grafcetInitMemory(spec),
+	];
+}
+
+export function grafcetInitMemory(spec: GrafcetLadderSpec): Variable {
+	return memory(spec.initMemory ?? DEFAULT_INIT_MEMORY);
 }
 
 /** Initial-step activation followed by the crossing conditions of all transitions. */

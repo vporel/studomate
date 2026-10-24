@@ -6,6 +6,19 @@ describe("ladder-reading.template", () => {
 	beforeEach(() => jest.useFakeTimers());
 	afterEach(() => jest.useRealTimers());
 
+	it("les titres et descriptions des réseaux ne divulguent pas la logique à prédire", () => {
+		const sections = createLadderReadingProject().main.sections;
+		expect(sections.map((s) => s.title)).toEqual([
+			"Réseau 1",
+			"Réseau 2",
+			"Réseau 3",
+			"Réseau 4",
+		]);
+		for (const { description } of sections) {
+			expect(description).not.toMatch(/\b(ET|OU|NON)\b/);
+		}
+	});
+
 	it("passe l'analyse sans erreur", () => {
 		const { analysis } = compilePipelineDetailed(createLadderReadingProject());
 		expect(analysis.issues.filter((i) => i.severity === "error")).toHaveLength(

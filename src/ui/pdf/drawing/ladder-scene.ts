@@ -315,10 +315,7 @@ function boxBlockOps(
 				) ?? "Programme")
 			: data.blockType === "timer" || data.blockType === "counter"
 				? (data.params as { name?: string }).name || data.blockType
-				: ((data.blockType === "convert"
-						? context.convertFunctionName?.(data.params)
-						: undefined) ??
-					context.blockStaticLabel?.(data.blockType) ??
+				: (context.blockStaticLabel?.(data.blockType) ??
 					FALLBACK_STATIC_LABEL[data.blockType] ??
 					data.blockType);
 
@@ -372,6 +369,18 @@ function boxBlockOps(
 			align: "center",
 			baseline: "middle",
 			bold: true,
+		});
+	}
+
+	if (data.blockType === "convert") {
+		ops.push({
+			op: "text",
+			x: x + w / 2,
+			y: structRowY + (boxBottom - structRowY) * 0.35,
+			text: `${data.params.inType} TO ${data.params.outType}`,
+			fontSize: PIN_SIZE,
+			align: "center",
+			baseline: "middle",
 		});
 	}
 

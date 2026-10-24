@@ -56,4 +56,33 @@ describe("ladder-timers.template", () => {
 		expect(scenario.get("voyant")).toBe(false);
 		scenario.stop();
 	});
+
+	it("arret pendant la phase étoile coupe les trois contacteurs, et l'étoile dure 5 s", async () => {
+		const scenario = new PlcScenario(createLadderTimersSolution());
+		await scenario.cycles();
+		await scenario.tap("marche", 2);
+		await scenario.seconds(3);
+		expect(scenario.get("km_ligne")).toBe(true);
+		expect(scenario.get("km_etoile")).toBe(true);
+		expect(scenario.get("km_triangle")).toBe(false);
+		await scenario.press("arret", 2);
+		expect(scenario.get("km_ligne")).toBe(false);
+		expect(scenario.get("km_etoile")).toBe(false);
+		expect(scenario.get("km_triangle")).toBe(false);
+		scenario.release("arret");
+		scenario.stop();
+	});
+
+	it("le triangle prend le relais 5 s après marche", async () => {
+		const scenario = new PlcScenario(createLadderTimersSolution());
+		await scenario.cycles();
+		await scenario.tap("marche", 2);
+		await scenario.seconds(4);
+		expect(scenario.get("km_etoile")).toBe(true);
+		expect(scenario.get("km_triangle")).toBe(false);
+		await scenario.seconds(2);
+		expect(scenario.get("km_etoile")).toBe(false);
+		expect(scenario.get("km_triangle")).toBe(true);
+		scenario.stop();
+	});
 });

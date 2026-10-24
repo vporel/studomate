@@ -67,46 +67,90 @@ describe("ConvertBlockAnalyser", () => {
 		).map((i) => i.code);
 	}
 
+	/** Pins named after variables, with the types announced by the block. */
+	const block = (
+		input: string,
+		out: string,
+		inType: ConvertBlockParams["inType"],
+		outType: ConvertBlockParams["outType"],
+	): ConvertBlockParams => ({ in: input, out, inType, outType });
+
 	it("signale les pinoches vides", () => {
-		expect(analyse({ out: "", in: "" })).toEqual([
+		expect(analyse(block("", "", "INT", "REAL"))).toEqual([
 			"BLOCK_CONVERT_IN_EMPTY",
 			"BLOCK_CONVERT_OUT_EMPTY",
 		]);
 	});
 
 	it("accepte une conversion prise en charge entre deux variables", () => {
-		expect(analyse({ out: "I", in: "D" })).toEqual([]);
-		expect(analyse({ out: "R", in: "I" })).toEqual([]);
-		expect(analyse({ out: "I", in: "W" })).toEqual([]);
+		expect(analyse(block("D", "I", "DINT", "INT"))).toEqual([]);
+		expect(analyse(block("I", "R", "INT", "REAL"))).toEqual([]);
+		expect(analyse(block("W", "I", "WORD", "INT"))).toEqual([]);
 	});
 
 	it("exige des mnémoniques de variable sur IN et OUT", () => {
-		expect(analyse({ out: "42", in: "D" })).toEqual([
+		expect(analyse(block("D", "42", "DINT", "INT"))).toEqual([
 			"BLOCK_CONVERT_OUT_NOT_A_VARIABLE",
 		]);
-		expect(analyse({ out: "I", in: "40000" })).toEqual([
+		expect(analyse(block("40000", "I", "DINT", "INT"))).toEqual([
 			"BLOCK_CONVERT_IN_NOT_A_VARIABLE",
 		]);
 	});
 
 	it("signale une variable non déclarée", () => {
-		expect(analyse({ out: "I", in: "inconnue" })).toEqual([
+		expect(analyse(block("inconnue", "I", "DINT", "INT"))).toEqual([
 			"BLOCK_CONVERT_INVALID",
 		]);
 	});
 
 	it("exige une variable OUT de type convertible", () => {
-		expect(analyse({ out: "B", in: "D" })).toEqual([
+		expect(analyse(block("D", "B", "DINT", "INT"))).toEqual([
 			"BLOCK_CONVERT_OUT_INVALID_TYPE",
 		]);
 	});
 
+	it("signale une variable IN dont le type diffère de celui annoncé par le bloc", () => {
+		expect(analyse(block("I", "R", "DINT", "REAL"))).toEqual([
+			"BLOCK_CONVERT_IN_TYPE_MISMATCH",
+		]);
+	});
+
+	it("signale une variable OUT dont le type diffère de celui annoncé par le bloc", () => {
+		expect(analyse(block("D", "I", "DINT", "REAL"))).toEqual([
+			"BLOCK_CONVERT_OUT_TYPE_MISMATCH",
+		]);
+	});
+
+	it("signale les deux écarts de type à la fois, avec les types attendu et réel", () => {
+		const issues = ConvertBlockAnalyser.analyse(
+			createConvertBlockElement(0, 0, block("I", "R", "DINT", "INT")),
+			source,
+			Dialect.FR,
+			buildAnalysisEnvironment(variables, Dialect.FR),
+		);
+		expect(issues.map((i) => i.code)).toEqual([
+			"BLOCK_CONVERT_IN_TYPE_MISMATCH",
+			"BLOCK_CONVERT_OUT_TYPE_MISMATCH",
+		]);
+		expect(issues[0].params).toMatchObject({
+			variableName: "I",
+			expected: "DINT",
+			actual: "INT",
+		});
+	});
+
 	it("refuse une conversion non prise en charge ou vers le même type", () => {
-		expect(analyse({ out: "W", in: "R" })).toEqual(["BLOCK_CONVERT_INVALID"]);
-		expect(analyse({ out: "I", in: "E" })).toEqual(["BLOCK_CONVERT_INVALID"]);
+		expect(analyse(block("R", "W", "REAL", "WORD"))).toEqual([
+			"BLOCK_CONVERT_INVALID",
+		]);
+		expect(analyse(block("E", "I", "INT", "INT"))).toEqual([
+			"BLOCK_CONVERT_INVALID",
+		]);
 	});
 
 	it("refuse d'écrire une entrée", () => {
-		expect(analyse({ out: "E", in: "D" })).toEqual(["BLOCK_CONVERT_INVALID"]);
+		expect(analyse(block("D", "E", "DINT", "INT"))).toEqual([
+			"BLOCK_CONVERT_INVALID",
+		]);
 	});
 });

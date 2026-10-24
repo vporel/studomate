@@ -18,6 +18,7 @@ const A4_STEP_IDS = {
 	exerciseGrafcetReset: "exercise-grafcet-reset",
 	synthesisParking: "synthesis-parking",
 	synthesisGateGrafcet: "synthesis-gate-grafcet",
+	conclusion: "conclusion",
 } as const;
 
 export default A4_STEP_IDS;

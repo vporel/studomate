@@ -4,8 +4,8 @@ import { generateMetadata, generateStaticParams } from "./page";
 import UserManualSection from "./page";
 
 const mockGetTranslations = jest.fn();
-const mockPermanentRedirect = jest.fn(() => {
-	throw new Error("NEXT_REDIRECT");
+const mockNotFound = jest.fn(() => {
+	throw new Error("NEXT_NOT_FOUND");
 });
 
 jest.mock("next-intl/server", () => ({
@@ -13,7 +13,7 @@ jest.mock("next-intl/server", () => ({
 	setRequestLocale: jest.fn(),
 }));
 jest.mock("next/navigation", () => ({
-	permanentRedirect: (...args: unknown[]) => mockPermanentRedirect(...(args as [])),
+	notFound: () => mockNotFound(),
 }));
 jest.mock("../ManualPage", () => ({ __esModule: true, default: () => null }));
 
@@ -23,11 +23,14 @@ describe("manual section page", () => {
 	});
 	afterEach(() => jest.clearAllMocks());
 
-	it("pré-génère chaque section dans chaque langue", () => {
+	it("pré-génère chaque section hors introduction dans chaque langue, avec son slug traduit", () => {
 		const params = generateStaticParams();
-		expect(params).toHaveLength(MANUAL_SECTIONS.length * 2);
+		expect(params).toHaveLength((MANUAL_SECTIONS.length - 1) * 2);
 		expect(params).toContainEqual({ locale: "en", section: "grafcet" });
-		expect(params).toContainEqual({ locale: "fr", section: "scene3d" });
+		expect(params).toContainEqual({ locale: "fr", section: "scene-3d" });
+		expect(params).toContainEqual({ locale: "fr", section: "depannage" });
+		expect(params).not.toContainEqual({ locale: "fr", section: "troubleshooting" });
+		expect(params).not.toContainEqual({ locale: "fr", section: "intro" });
 	});
 
 	it("lit titre et description propres à la section et pose canonical et hreflang", async () => {
@@ -49,21 +52,52 @@ describe("manual section page", () => {
 		});
 	});
 
-	it("ne produit pas de métadonnées pour l'introduction, qui redirige", async () => {
+	it("pose des hreflang avec le slug propre à chaque langue", async () => {
 		const metadata = await generateMetadata({
-			params: Promise.resolve({ locale: "fr", section: "intro" }),
+			params: Promise.resolve({ locale: "fr", section: "depannage" }),
 		});
-		expect(metadata).toEqual({});
+
+		expect(mockGetTranslations).toHaveBeenCalledWith(
+			expect.objectContaining({ namespace: "public.metadata" }),
+		);
+		expect(metadata.description).toBe(
+			"msg:manualSections.troubleshooting.description",
+		);
+		expect(metadata.alternates?.canonical).toBe(
+			"https://studomate.com/manuel-utilisateur/depannage",
+		);
+		expect(metadata.alternates?.languages).toEqual({
+			fr: "https://studomate.com/manuel-utilisateur/depannage",
+			en: "https://studomate.com/en/user-manual/troubleshooting",
+			"x-default": "https://studomate.com/manuel-utilisateur/depannage",
+		});
+	});
+
+	it("ne produit pas de métadonnées pour un slug inconnu dans la langue", async () => {
+		for (const section of ["intro", "troubleshooting"]) {
+			const metadata = await generateMetadata({
+				params: Promise.resolve({ locale: "fr", section }),
+			});
+			expect(metadata).toEqual({});
+		}
 		expect(mockGetTranslations).not.toHaveBeenCalled();
 	});
 
-	it("redirige définitivement /intro vers l'URL de base du manuel", async () => {
+	it("répond 404 sur un slug inconnu dans la langue, dont l'ancien identifiant", async () => {
 		await expect(
 			UserManualSection({
-				params: Promise.resolve({ locale: "en", section: "intro" }),
+				params: Promise.resolve({ locale: "fr", section: "troubleshooting" }),
 			}),
-		).rejects.toThrow("NEXT_REDIRECT");
-		expect(mockPermanentRedirect).toHaveBeenCalledWith("/en/user-manual");
+		).rejects.toThrow("NEXT_NOT_FOUND");
+	});
+
+	it("rend la section désignée par un slug traduit", async () => {
+		await expect(
+			UserManualSection({
+				params: Promise.resolve({ locale: "fr", section: "depannage" }),
+			}),
+		).resolves.toBeTruthy();
+		expect(mockNotFound).not.toHaveBeenCalled();
 	});
 
 	it("a un titre et une description dans les deux langues pour chaque section hors introduction", () => {

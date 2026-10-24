@@ -319,6 +319,8 @@
 		"manualDescription": "Manuel d'utilisation de Studomate : prise en main, GRAFCET, Ladder, HMI, simulation.",
 		"trainingTitle": "Formations",
 		"trainingDescription": "Parcours de formation à l'automatisme avec Studomate : théorie, exercices auto-corrigés, épreuves de synthèse.",
+		"glossaryTitle": "Glossaire de l'automatisme : GRAFCET et Ladder",
+		"glossaryDescription": "Glossaire de l'automatisme : étape, transition, contact, bobine, TON, compteur, front... chaque terme du GRAFCET et du Ladder défini simplement, avec schémas.",
 		"trainingA0Title": "Module A0 : Avant de commencer",
 		"trainingA0Description": "Module A0 : qu'est-ce qu'un automatisme, variables et logique de base, cycle de scrutation — les prérequis avant le GRAFCET.",
 		"trainingA1Title": "Module A1 : Bases du GRAFCET",
@@ -428,6 +430,10 @@
 					"title": "Divergence et convergence en OU d'un GRAFCET : formation",
 					"description": "Choisir entre plusieurs séquences : divergence et convergence en OU d'un GRAFCET, avec exemples."
 				},
+				"theory-and-divergence": {
+					"title": "Divergence et convergence en ET d'un GRAFCET : formation",
+					"description": "Lancer plusieurs branches en parallèle et les resynchroniser : divergence et convergence en ET d'un GRAFCET, avec exemples."
+				},
 				"reading-errors": {
 					"title": "Lire les erreurs d'analyse d'un GRAFCET : formation",
 					"description": "Analyser un GRAFCET sans le simuler et comprendre les erreurs et avertissements de Studomate pour corriger son programme."
@@ -436,7 +442,7 @@
 			"a2": {
 				"theory-contacts-coils": {
 					"title": "Contacts, bobines et mémoires internes en Ladder : formation",
-					"description": "Les symboles normalisés du Ladder : contacts à fermeture et à ouverture, bobines et mémoires internes."
+					"description": "Symboles du Ladder : contacts NO et NF, câblage à fermeture ou à ouverture d'un bouton, bobines et mémoires internes."
 				},
 				"theory-self-holding": {
 					"title": "Auto-maintien en Ladder : formation",
@@ -480,23 +486,27 @@
 			"a4": {
 				"theory-method-ladder": {
 					"title": "Du GRAFCET au Ladder : la méthode en trois blocs",
-					"description": "Les trois blocs de réseaux, dans l'ordre, pour implanter un GRAFCET en Ladder."
+					"description": "Implanter un GRAFCET en Ladder : conditions de franchissement, évolution (reset puis set) et sorties, avec exemple complet et liste de contrôle."
 				},
 				"theory-actions-ladder": {
 					"title": "Implanter les actions d'un GRAFCET en Ladder : formation",
-					"description": "Actions non temporelles et conditionnelles (étape ET condition) d'un GRAFCET traduites en Ladder."
+					"description": "Implanter les actions d'un GRAFCET en Ladder : continue, mémorisée, sur front et conditionnelle, avec les contacts P et N et un exemple de comptage."
 				},
 				"theory-timed-actions-ladder": {
 					"title": "Le temps dans un GRAFCET implanté en Ladder : formation",
-					"description": "Traduire une temporisation de réceptivité (5s/X10) par un TON en Ladder, et gérer les actions temporelles."
+					"description": "Temporisation de réceptivité, action retardée, action limitée et surveillance de mouvement : où placer le TON et ce qui change dans le Ladder."
 				},
 				"theory-divergences-ladder": {
 					"title": "Divergences et convergences GRAFCET en Ladder : formation",
-					"description": "Implanter les divergences en OU et en ET d'un GRAFCET en Ladder : une condition de franchissement par branche."
+					"description": "Implanter en Ladder les divergences et convergences en OU et en ET d'un GRAFCET : une condition par branche en OU, une seule en ET."
 				},
 				"theory-grafcet-reset": {
 					"title": "Arrêter une séquence GRAFCET en Ladder : formation",
-					"description": "Les deux façons d'arrêter une séquence en Ladder, dont la réinitialisation du GRAFCET."
+					"description": "Les deux façons d'arrêter une séquence en Ladder : arrêt immédiat par réinitialisation et arrêt en fin de cycle, et où placer le réseau de reset."
+				},
+				"conclusion": {
+					"title": "Conclusion du module A4 : du GRAFCET au Ladder",
+					"description": "Bilan du module A4 : étapes en mémoire, méthode en trois blocs, actions, temps, divergences et arrêts d'un GRAFCET implanté en Ladder."
 				}
 			}
 		}

@@ -1,4 +1,3 @@
-import type { VariableType } from "@/schemas/variable/variable.schema";
 import {
 	createArithmeticBlockElement,
 	createAssignBlockElement,
@@ -7,7 +6,10 @@ import {
 	getArithmeticBlockParams,
 	getAssignBlockParams,
 	getCompareBlockParams,
+	createConvertBlockElement,
 	getConvertBlockFunctionName,
+	getConvertBlockOutTypes,
+	withConvertBlockInType,
 } from "./block.schema";
 
 describe("createUserProgramBlockElement", () => {
@@ -143,26 +145,69 @@ describe("createArithmeticBlockElement", () => {
 	});
 });
 
-describe("getConvertBlockFunctionName", () => {
-	const types: Record<string, VariableType> = {
-		D: "DINT",
-		I: "INT",
-		R: "REAL",
-		W: "WORD",
-		B: "BOOL",
-	};
-	const typeOf = (mnemonic: string) => types[mnemonic];
+describe("createConvertBlockElement", () => {
+	it("starts on INT to REAL with empty pins", () => {
+		expect(createConvertBlockElement(0, 0).data).toEqual({
+			blockType: "convert",
+			params: { in: "", out: "", inType: "INT", outType: "REAL" },
+		});
+	});
+});
 
-	it("donne le nom normalisé déduit des types de IN et OUT", () => {
-		expect(getConvertBlockFunctionName({ in: " D ", out: "I" }, typeOf)).toBe(
-			"DINT_TO_INT",
-		);
+describe("getConvertBlockFunctionName", () => {
+	it("names the conversion after the two chosen types", () => {
+		expect(
+			getConvertBlockFunctionName({
+				in: "",
+				out: "",
+				inType: "DINT",
+				outType: "INT",
+			}),
+		).toBe("DINT_TO_INT");
+	});
+});
+
+describe("getConvertBlockOutTypes", () => {
+	it("excludes the source type itself", () => {
+		expect(getConvertBlockOutTypes("INT")).toEqual([
+			"DINT",
+			"WORD",
+			"DWORD",
+			"REAL",
+		]);
 	});
 
-	it("renvoie null tant que la conversion n'est pas définie", () => {
-		expect(getConvertBlockFunctionName({ in: "", out: "I" }, typeOf)).toBeNull();
-		expect(getConvertBlockFunctionName({ in: "B", out: "I" }, typeOf)).toBeNull();
-		expect(getConvertBlockFunctionName({ in: "R", out: "W" }, typeOf)).toBeNull();
-		expect(getConvertBlockFunctionName({ in: "I", out: "I" }, typeOf)).toBeNull();
+	it("excludes bit strings for a REAL source and REAL for a bit string source", () => {
+		expect(getConvertBlockOutTypes("REAL")).toEqual(["INT", "DINT"]);
+		expect(getConvertBlockOutTypes("WORD")).toEqual(["INT", "DINT", "DWORD"]);
+	});
+});
+
+describe("withConvertBlockInType", () => {
+	const params = { in: "a", out: "b", inType: "INT", outType: "REAL" } as const;
+
+	it("keeps the target type when it stays a supported conversion", () => {
+		expect(withConvertBlockInType(params, "DINT")).toEqual({
+			...params,
+			inType: "DINT",
+		});
+	});
+
+	it("falls back to the first supported target when the current one is no longer valid", () => {
+		expect(withConvertBlockInType(params, "REAL")).toEqual({
+			...params,
+			inType: "REAL",
+			outType: "INT",
+		});
+		expect(withConvertBlockInType(params, "WORD")).toEqual({
+			...params,
+			inType: "WORD",
+			outType: "INT",
+		});
+	});
+
+	it("keeps the pins untouched, even with a variable of another type", () => {
+		const next = withConvertBlockInType(params, "WORD");
+		expect([next.in, next.out]).toEqual(["a", "b"]);
 	});
 });

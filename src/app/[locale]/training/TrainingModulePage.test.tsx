@@ -25,7 +25,7 @@ const setup = (props = {}) =>
 	render(
 		<TrainingModulePage
 			title="Module A0"
-			intro="Introduction du module"
+			intro={"Introduction du module\n\n- point un\n- point deux"}
 			steps={steps}
 			moduleId="a0"
 			prevLabel="Précédent"
@@ -44,6 +44,7 @@ describe("TrainingModulePage", () => {
 			screen.getByRole("heading", { level: 1, name: "Module A0" }),
 		).toBeInTheDocument();
 		expect(screen.getByText("Introduction du module")).toBeInTheDocument();
+		expect(screen.getAllByRole("listitem")).toHaveLength(2);
 	});
 
 	it("transmet ses propriétés au stepper", () => {

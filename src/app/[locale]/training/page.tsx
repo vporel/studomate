@@ -5,6 +5,7 @@ import type { PublicPathname } from "@/i18n/routing";
 import PublicLink from "@/ui/components/public-pages/PublicLink";
 import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
@@ -152,7 +153,7 @@ export default async function Training({ params }: Props) {
 				</Typography>
 			</Box>
 
-			<Typography variant="h5" fontWeight={700} mt={5} mb={2}>
+			<Typography variant="h5" component="h2" fontWeight={700} mt={5} mb={2}>
 				{t("howItWorksTitle")}
 			</Typography>
 			<Stack direction={{ xs: "column", sm: "row" }} gap={2}>
@@ -207,6 +208,26 @@ export default async function Training({ params }: Props) {
 					savedHint={t("progressSavedHint")}
 				/>
 			</Box>
+
+			<Typography variant="h5" component="h2" fontWeight={700} mt={5} mb={2}>
+				{t("otherResourcesTitle")}
+			</Typography>
+			<Stack direction={{ xs: "column", sm: "row" }} gap={2}>
+				<Paper
+					variant="outlined"
+					sx={{ p: 2.5, flex: 1, borderRadius: 3, maxWidth: { sm: "50%" } }}
+				>
+					<LibraryBooksIcon color="primary" />
+					<Typography fontWeight={700} mt={1}>
+						<PublicLink href="/training/glossary">
+							{t("glossaryCardTitle")}
+						</PublicLink>
+					</Typography>
+					<Typography variant="body2" color="text.secondary" mt={0.5}>
+						{t("glossaryCardBody")}
+					</Typography>
+				</Paper>
+			</Stack>
 		</Container>
 	);
 }

@@ -9,6 +9,8 @@ import { useProjectStore } from "@/ui/components/projects/ProjectContext";
 import { ProjectMode } from "@/ui/stores/project/ProjectMode.enum";
 import { ThemeProvider as AppThemeProvider } from "@/ui/theme/ThemeContext";
 import { selectorImplementation } from "@tests/utils/store-mocks";
+import { Dialect } from "@/expression-language/dialect.enum";
+import Variable from "@/schemas/variable/variable.schema";
 import BlockNode, {
 	BLOCK_NODE_DIMENSIONS,
 	BlockNodeData,
@@ -27,17 +29,20 @@ function setup({
 	highlightedNodesIds = [] as string[],
 	data,
 	executeOperation = jest.fn(),
+	variables = [] as Variable[],
 }: {
 	programId?: string;
 	ladders?: Record<string, { name: string }>;
 	highlightedNodesIds?: string[];
 	data?: BlockNodeData;
 	executeOperation?: jest.Mock;
+	variables?: Variable[];
 } = {}) {
 	(useProjectStore as unknown as jest.Mock).mockImplementation(
 		selectorImplementation({
 			project: {
 				ladders,
+				variables,
 				getAllTimerBlockElements: () => [],
 				getAllCounterBlockElements: () => [],
 				getExecutedGrafcets: () => [],
@@ -151,6 +156,104 @@ describe("BlockNode", () => {
 			expect(container.firstChild).toHaveStyle({
 				width: `${GRID_CELL_WIDTH * 2}px`,
 			});
+		});
+	});
+
+	describe("bloc convert", () => {
+		const convertData = (
+			overrides: Partial<{
+				in: string;
+				out: string;
+				inType: "INT" | "DINT" | "WORD" | "DWORD" | "REAL";
+				outType: "INT" | "DINT" | "WORD" | "DWORD" | "REAL";
+			}> = {},
+		): BlockNodeData => ({
+			blockType: "convert",
+			params: {
+				in: "",
+				out: "",
+				inType: "INT",
+				outType: "REAL",
+				...overrides,
+			},
+		});
+		const memory = (mnemonic: string, type: Variable["type"]) =>
+			new Variable({
+				id: mnemonic,
+				mnemonic,
+				zone: "memory",
+				type,
+				dialect: Dialect.FR,
+			});
+		const selects = (container: HTMLElement) =>
+			container.querySelectorAll<HTMLElement>(".MuiSelect-select");
+
+		it("affiche le libellé CONV et la paire de types choisie", () => {
+			const { container } = setup({ data: convertData() });
+
+			expect(screen.getByText("CONV")).toBeInTheDocument();
+			expect(screen.getByText("TO")).toBeInTheDocument();
+			const [from, to] = Array.from(selects(container));
+			expect(from).toHaveTextContent("INT");
+			expect(to).toHaveTextContent("REAL");
+		});
+
+		it("n'offre en sortie que les conversions prises en charge depuis le type d'entrée", () => {
+			const { container } = setup({
+				data: convertData({ inType: "REAL", outType: "INT" }),
+			});
+
+			fireEvent.mouseDown(selects(container)[1]);
+
+			expect(
+				screen.getAllByRole("option").map((option) => option.textContent),
+			).toEqual(["INT", "DINT"]);
+		});
+
+		it("change le type d'entrée et replace la sortie sur une conversion valide", () => {
+			const { container, executeOperation } = setup({
+				data: convertData({
+					in: "a",
+					out: "b",
+					inType: "INT",
+					outType: "REAL",
+				}),
+			});
+
+			fireEvent.mouseDown(selects(container)[0]);
+			fireEvent.click(screen.getByRole("option", { name: "WORD" }));
+
+			expect(executeOperation).toHaveBeenCalledTimes(1);
+			expect(executeOperation.mock.calls[0][0][0]).toMatchObject({
+				payload: {
+					changes: {
+						data: {
+							params: {
+								in: "a",
+								out: "b",
+								inType: "WORD",
+								outType: "INT",
+							},
+						},
+					},
+				},
+			});
+		});
+
+		it("signale en rouge une variable dont le type diffère de celui du bloc, sans l'effacer", () => {
+			setup({
+				data: convertData({ in: "brut", out: "niveau", outType: "REAL" }),
+				variables: [memory("brut", "INT"), memory("niveau", "DINT")],
+			});
+
+			const pinIn = screen.getByDisplayValue("brut");
+			const pinOut = screen.getByDisplayValue("niveau");
+			expect(pinIn).toHaveAttribute("data-variable-status", "ok");
+			expect(pinOut).toHaveAttribute("data-variable-status", "invalid");
+			expect(pinOut).toHaveAttribute(
+				"title",
+				"Type attendu : REAL (la variable est de type DINT)",
+			);
 		});
 	});
 

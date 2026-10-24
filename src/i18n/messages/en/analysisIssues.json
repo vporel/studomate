@@ -158,5 +158,7 @@
 	"BLOCK_CONVERT_IN_NOT_A_VARIABLE": "The IN parameter must be a variable mnemonic.",
 	"BLOCK_CONVERT_OUT_NOT_A_VARIABLE": "The OUT parameter must be a variable mnemonic.",
 	"BLOCK_CONVERT_OUT_INVALID_TYPE": "Variable \"{variableName}\" (OUT) must be of type INT, DINT, WORD, DWORD or REAL.",
+	"BLOCK_CONVERT_IN_TYPE_MISMATCH": "Variable \"{variableName}\" (IN) must be of type {expected}, not {actual}.",
+	"BLOCK_CONVERT_OUT_TYPE_MISMATCH": "Variable \"{variableName}\" (OUT) must be of type {expected}, not {actual}.",
 	"BLOCK_CONVERT_INVALID": "{detail}"
 }

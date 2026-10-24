@@ -20,12 +20,16 @@ export const TITLE_TEMPLATE = `%s${TITLE_SEPARATOR}${APP_NAME}`;
 
 export type PublicHref = Parameters<typeof getPathname>[0]["href"];
 
-export function absolute(locale: Locale, href: PublicHref): string {
-	return new URL(getPathname({ locale, href }), siteUrl).toString();
+/** A public page address; a function when its params differ per locale (translated slugs). */
+export type LocalizedHref = PublicHref | ((locale: Locale) => PublicHref);
+
+export function absolute(locale: Locale, href: LocalizedHref): string {
+	const resolved = typeof href === "function" ? href(locale) : href;
+	return new URL(getPathname({ locale, href: resolved }), siteUrl).toString();
 }
 
 /** `hreflang` of a page: one URL per locale plus `x-default`, the default-locale version. */
-export function alternateLanguages(href: PublicHref): Record<string, string> {
+export function alternateLanguages(href: LocalizedHref): Record<string, string> {
 	return {
 		...Object.fromEntries(routing.locales.map((l) => [l, absolute(l, href)])),
 		"x-default": absolute(DEFAULT_LOCALE, href),
@@ -45,7 +49,7 @@ export function alternateLanguages(href: PublicHref): Record<string, string> {
  */
 export function pageMetadata(
 	locale: string,
-	pathname: PublicHref,
+	pathname: LocalizedHref,
 	title: string,
 	description: string,
 	{ absoluteTitle = false }: { absoluteTitle?: boolean } = {},

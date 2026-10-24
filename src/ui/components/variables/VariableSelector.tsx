@@ -69,6 +69,10 @@ interface VariableSelectorProps {
 	/** Excludes the variables of these zones from the suggestions and the valid status (e.g.
 	 * `"constant"` for anything a program or a widget writes or binds). */
 	excludeZones?: readonly VariableZone[];
+	/** Checks a declared variable the filters let through: returns the message explaining why it
+	 * does not suit the field, or `null` when it does. Never restricts the suggestions nor
+	 * blocks the selection: the field is only flagged (red text, message as tooltip). */
+	validate?: (variable: Variable) => string | null;
 	/** Formes de littéral acceptées en plus d'un nom de variable (voir
 	 * `BlockPortSpec.acceptedLiterals`) — un littéral d'un genre accepté n'est jamais signalé
 	 * comme mnémonique non déclaré. */
@@ -131,6 +135,7 @@ const VariableSelector = forwardRef<
 		excludeDirection,
 		excludeBehaviorKinds,
 		excludeZones,
+		validate,
 		acceptedLiterals,
 		cols,
 		disableContextMenu,
@@ -242,7 +247,7 @@ const VariableSelector = forwardRef<
 	};
 	useEffect(() => () => flushRef.current(), []);
 
-	const status = suppressStatus
+	const computedStatus = suppressStatus
 		? null
 		: computeStatus(
 				editingValue,
@@ -254,8 +259,6 @@ const VariableSelector = forwardRef<
 				excludeBehaviorKinds,
 				excludeZones,
 			);
-	const statusColor =
-		status && status !== "ok" ? th.palette.error.main : undefined;
 	const resolvedAlign = align ?? (label ? "left" : "center");
 
 	// Variable réellement déclarée (projet ou système) correspondant au texte courant — pilote
@@ -263,6 +266,14 @@ const VariableSelector = forwardRef<
 	const menuVariable = variables.find(
 		(v) => v.mnemonic === editingValue.trim(),
 	);
+
+	const validationMessage =
+		computedStatus === "ok" && menuVariable && validate
+			? validate(menuVariable)
+			: null;
+	const status = validationMessage ? "invalid" : computedStatus;
+	const statusColor =
+		status && status !== "ok" ? th.palette.error.main : undefined;
 
 	const mode = useProjectStore((s) => s.mode);
 	const rawSimulationValue = useProjectStore(
@@ -364,6 +375,7 @@ const VariableSelector = forwardRef<
 						inputProps={{
 							...params.inputProps,
 							"data-variable-status": status ?? undefined,
+							title: validationMessage ?? undefined,
 						}}
 						// Fusionné à `params.InputProps` (pas remplacé) : il porte la `ref` et le
 						// `onMouseDown` dont Autocomplete a besoin pour se positionner et s'ouvrir au

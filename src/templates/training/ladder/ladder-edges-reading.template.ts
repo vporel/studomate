@@ -13,13 +13,14 @@ import {
 import {
 	output,
 	pushButton,
+	toggleSwitch,
 } from "@/templates/training/utils/training-variables";
 
 /** Same input on a NO, a `P` and a `N` contact, each latching its own output. No solution. */
 export function createLadderEdgesReadingProject(): Project {
 	const project = new Project(createRandomId(), "Lire les fronts", "");
 	project.variables.push(
-		pushButton("bp"),
+		toggleSwitch("commut"),
 		pushButton("raz"),
 		output("s_no"),
 		output("s_p"),
@@ -27,21 +28,21 @@ export function createLadderEdgesReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Contact NO",
-			"s_no se mémorise tant que bp est vrai.",
-			no("bp"),
+			"Réseau 1",
+			"Relevez cycle par cycle l'état de s_no pendant que commut passe de 0 à 1 puis revient à 0.",
+			no("commut"),
 			setCoil("s_no"),
 		),
 		section(
-			"Contact P",
-			"s_p se mémorise au cycle où bp passe à vrai.",
-			rising("bp"),
+			"Réseau 2",
+			"Relevez cycle par cycle l'état de s_p pendant que commut passe de 0 à 1 puis revient à 0.",
+			rising("commut"),
 			setCoil("s_p"),
 		),
 		section(
-			"Contact N",
-			"s_n se mémorise au cycle où bp repasse à faux.",
-			falling("bp"),
+			"Réseau 3",
+			"Relevez cycle par cycle l'état de s_n pendant que commut passe de 0 à 1 puis revient à 0.",
+			falling("commut"),
 			setCoil("s_n"),
 		),
 		section(

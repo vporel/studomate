@@ -13,11 +13,15 @@ export default function OperatorSelect<T extends string>({
 	onChange,
 	operators,
 	ariaLabel,
+	fontSize = 14,
+	menuFontSize = fontSize,
 }: {
 	value: T;
 	onChange: (operator: T) => void;
 	operators: readonly T[];
 	ariaLabel: string;
+	fontSize?: number;
+	menuFontSize?: number;
 }) {
 	return (
 		<Select
@@ -30,7 +34,9 @@ export default function OperatorSelect<T extends string>({
 			disableUnderline
 			inputProps={{ "aria-label": ariaLabel }}
 			sx={{
-				fontSize: 14,
+				fontSize,
+				backgroundColor: "grey.200",
+				borderRadius: "2px",
 				lineHeight: 1,
 				"& .MuiSelect-icon": { display: "none" },
 				"& .MuiSelect-select": {
@@ -41,7 +47,11 @@ export default function OperatorSelect<T extends string>({
 			}}
 		>
 			{operators.map((operator) => (
-				<MenuItem key={operator} value={operator}>
+				<MenuItem
+					key={operator}
+					value={operator}
+					sx={{ fontSize: menuFontSize, minHeight: 0, py: "3px" }}
+				>
 					{operator}
 				</MenuItem>
 			))}

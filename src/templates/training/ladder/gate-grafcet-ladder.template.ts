@@ -10,6 +10,7 @@ import {
 import { createGateCommonVariables } from "./ladder-gate.template";
 import {
 	GrafcetLadderSpec,
+	grafcetInitMemory,
 	grafcetMemories,
 	grafcetSections,
 } from "@/templates/training/utils/grafcet-ladder";
@@ -73,13 +74,13 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 	],
 };
 
-/** Gate variables (single-button remote), step memories; the specification has no GRAFCET. */
+/** Gate inputs and outputs; the step and transition memories are declared by the student. */
 function createBase(name: string): Project {
 	const project = new Project(createRandomId(), name, "");
 	project.variables.push(
 		pushButton("telecommande"),
 		...createGateCommonVariables(),
-		...grafcetMemories(GATE_SPEC),
+		grafcetInitMemory(GATE_SPEC),
 	);
 	return project;
 }
@@ -90,6 +91,10 @@ export function createGateGrafcetLadderProject(): Project {
 
 export function createGateGrafcetLadderSolution(): Project {
 	const project = createBase("Portail à télécommande : solution");
+	const provided = new Set(project.variables.map((v) => v.mnemonic));
+	project.variables.push(
+		...grafcetMemories(GATE_SPEC).filter((v) => !provided.has(v.mnemonic)),
+	);
 	setMainSections(
 		project,
 		grafcetSections(GATE_SPEC, [

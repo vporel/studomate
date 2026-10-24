@@ -682,7 +682,12 @@ describe("Ladder Pipeline Integration Test", () => {
 						out: "inter",
 						operator: "/",
 					}),
-					createConvertBlockElement(0, 7, { in: "inter", out: "niveau" }),
+					createConvertBlockElement(0, 7, {
+						in: "inter",
+						out: "niveau",
+						inType: "DINT",
+						outType: "INT",
+					}),
 				]);
 
 				const { plc, throwOnCycleError } = runPlc(project);

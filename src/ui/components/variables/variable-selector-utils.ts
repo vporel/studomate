@@ -20,6 +20,7 @@ export type SelectorStatus =
 	| "excluded-direction"
 	| "excluded-behavior"
 	| "excluded-zone"
+	| "invalid"
 	| "ok"
 	| null;
 

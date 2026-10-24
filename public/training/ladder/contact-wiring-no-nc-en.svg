@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 354" font-family="sans-serif">
+	<rect x="150" y="8" width="216" height="40" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<rect x="376" y="8" width="216" height="40" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="258" y="33" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">NO contact in the program</text>
+	<text x="484" y="33" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">NC contact in the program</text>
+	<rect x="8" y="56" width="138" height="126" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="77" y="114" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">Button wired NO</text>
+	<text x="77" y="132" font-size="11" text-anchor="middle" fill="#607d8b">variable 0 at rest</text>
+	<rect x="150" y="56" width="216" height="126" rx="4" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<line x1="258" y1="62" x2="258" y2="176" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="204" y="74" font-size="11" text-anchor="middle" fill="#607d8b">at rest</text>
+	<line x1="158" y1="118" x2="198" y2="118" stroke="#263238" stroke-width="2" />
+	<line x1="198" y1="108" x2="198" y2="128" stroke="#263238" stroke-width="2.5" />
+	<line x1="210" y1="108" x2="210" y2="128" stroke="#263238" stroke-width="2.5" />
+	<line x1="210" y1="118" x2="250" y2="118" stroke="#263238" stroke-width="2" />
+	<text x="204" y="98" font-size="11" text-anchor="middle" fill="#263238">var = 0</text>
+	<text x="204" y="156" font-size="12" text-anchor="middle" fill="#607d8b" font-weight="bold">blocked</text>
+	<text x="312" y="74" font-size="11" text-anchor="middle" fill="#607d8b">actuated</text>
+	<line x1="266" y1="118" x2="306" y2="118" stroke="#2e7d32" stroke-width="2" />
+	<line x1="306" y1="108" x2="306" y2="128" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="318" y1="108" x2="318" y2="128" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="318" y1="118" x2="358" y2="118" stroke="#2e7d32" stroke-width="2" />
+	<text x="312" y="98" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">var = 1</text>
+	<text x="312" y="156" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">conducting</text>
+	<rect x="376" y="56" width="216" height="126" rx="4" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<line x1="484" y1="62" x2="484" y2="176" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="430" y="74" font-size="11" text-anchor="middle" fill="#607d8b">at rest</text>
+	<line x1="384" y1="118" x2="424" y2="118" stroke="#2e7d32" stroke-width="2" />
+	<line x1="424" y1="108" x2="424" y2="128" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="436" y1="108" x2="436" y2="128" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="422" y1="129" x2="438" y2="107" stroke="#2e7d32" stroke-width="2" />
+	<line x1="436" y1="118" x2="476" y2="118" stroke="#2e7d32" stroke-width="2" />
+	<text x="430" y="98" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">var = 0</text>
+	<text x="430" y="156" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">conducting</text>
+	<text x="538" y="74" font-size="11" text-anchor="middle" fill="#607d8b">actuated</text>
+	<line x1="492" y1="118" x2="532" y2="118" stroke="#263238" stroke-width="2" />
+	<line x1="532" y1="108" x2="532" y2="128" stroke="#263238" stroke-width="2.5" />
+	<line x1="544" y1="108" x2="544" y2="128" stroke="#263238" stroke-width="2.5" />
+	<line x1="530" y1="129" x2="546" y2="107" stroke="#263238" stroke-width="2" />
+	<line x1="544" y1="118" x2="584" y2="118" stroke="#263238" stroke-width="2" />
+	<text x="538" y="98" font-size="11" text-anchor="middle" fill="#263238">var = 1</text>
+	<text x="538" y="156" font-size="12" text-anchor="middle" fill="#607d8b" font-weight="bold">blocked</text>
+	<rect x="8" y="192" width="138" height="126" rx="4" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
+	<text x="77" y="250" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">Button wired NC</text>
+	<text x="77" y="268" font-size="11" text-anchor="middle" fill="#607d8b">variable 1 at rest</text>
+	<rect x="150" y="192" width="216" height="126" rx="4" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<line x1="258" y1="198" x2="258" y2="312" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="204" y="210" font-size="11" text-anchor="middle" fill="#607d8b">at rest</text>
+	<line x1="158" y1="254" x2="198" y2="254" stroke="#2e7d32" stroke-width="2" />
+	<line x1="198" y1="244" x2="198" y2="264" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="210" y1="244" x2="210" y2="264" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="210" y1="254" x2="250" y2="254" stroke="#2e7d32" stroke-width="2" />
+	<text x="204" y="234" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">var = 1</text>
+	<text x="204" y="292" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">conducting</text>
+	<text x="312" y="210" font-size="11" text-anchor="middle" fill="#607d8b">actuated</text>
+	<line x1="266" y1="254" x2="306" y2="254" stroke="#263238" stroke-width="2" />
+	<line x1="306" y1="244" x2="306" y2="264" stroke="#263238" stroke-width="2.5" />
+	<line x1="318" y1="244" x2="318" y2="264" stroke="#263238" stroke-width="2.5" />
+	<line x1="318" y1="254" x2="358" y2="254" stroke="#263238" stroke-width="2" />
+	<text x="312" y="234" font-size="11" text-anchor="middle" fill="#263238">var = 0</text>
+	<text x="312" y="292" font-size="12" text-anchor="middle" fill="#607d8b" font-weight="bold">blocked</text>
+	<rect x="376" y="192" width="216" height="126" rx="4" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
+	<line x1="484" y1="198" x2="484" y2="312" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
+	<text x="430" y="210" font-size="11" text-anchor="middle" fill="#607d8b">at rest</text>
+	<line x1="384" y1="254" x2="424" y2="254" stroke="#263238" stroke-width="2" />
+	<line x1="424" y1="244" x2="424" y2="264" stroke="#263238" stroke-width="2.5" />
+	<line x1="436" y1="244" x2="436" y2="264" stroke="#263238" stroke-width="2.5" />
+	<line x1="422" y1="265" x2="438" y2="243" stroke="#263238" stroke-width="2" />
+	<line x1="436" y1="254" x2="476" y2="254" stroke="#263238" stroke-width="2" />
+	<text x="430" y="234" font-size="11" text-anchor="middle" fill="#263238">var = 1</text>
+	<text x="430" y="292" font-size="12" text-anchor="middle" fill="#607d8b" font-weight="bold">blocked</text>
+	<text x="538" y="210" font-size="11" text-anchor="middle" fill="#607d8b">actuated</text>
+	<line x1="492" y1="254" x2="532" y2="254" stroke="#2e7d32" stroke-width="2" />
+	<line x1="532" y1="244" x2="532" y2="264" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="544" y1="244" x2="544" y2="264" stroke="#2e7d32" stroke-width="2.5" />
+	<line x1="530" y1="265" x2="546" y2="243" stroke="#2e7d32" stroke-width="2" />
+	<line x1="544" y1="254" x2="584" y2="254" stroke="#2e7d32" stroke-width="2" />
+	<text x="538" y="234" font-size="11" text-anchor="middle" fill="#2e7d32" font-weight="bold">var = 0</text>
+	<text x="538" y="292" font-size="12" text-anchor="middle" fill="#2e7d32" font-weight="bold">conducting</text>
+	<text x="300" y="342" font-size="12" text-anchor="middle" fill="#455a64">Rule: the program's NO contact follows the variable, the NC contact takes the opposite.</text>
+</svg>
