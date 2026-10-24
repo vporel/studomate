@@ -8,6 +8,7 @@ import {
 	LadderElement,
 	LadderElementDataChanges,
 } from "./element.schema";
+import { BLOCK_PIN_PARAM_KEYS } from "./block.schema";
 import Section from "./section.schema";
 
 /** Base du nom auto-généré ("Ladder_1", "Ladder_2"...) à la création — voir
@@ -310,6 +311,15 @@ export default class Ladder extends Program {
 
 		this.sections.forEach((section) => {
 			section.elements.forEach((element) => {
+				if (element.type === "block") {
+					const params = element.data.params as Record<string, unknown>;
+					for (const key of BLOCK_PIN_PARAM_KEYS) {
+						const pin = params[key];
+						if (typeof pin === "string" && renames[pin])
+							params[key] = renames[pin];
+					}
+					return;
+				}
 				if (element.type !== "contact" && element.type !== "coil") return;
 				const data = element.data as ContactData | CoilData;
 				const newName = renames[data.variable];

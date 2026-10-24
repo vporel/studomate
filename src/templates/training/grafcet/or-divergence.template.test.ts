@@ -89,4 +89,30 @@ describe("or-divergence.template", () => {
 			expect(jos.data.branchesOrder).toHaveLength(2);
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createOrDivergenceSolution(),
+				createOrDivergenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Divergence en OU : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Divergence en OU",
+				]);
+			}
+			expect(createOrDivergenceProject().name).toBe("Divergence en OU");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createOrDivergenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["OR divergence: solution", "OR divergence"]);
+			expect(createOrDivergenceProject("en").name).toBe("OR divergence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

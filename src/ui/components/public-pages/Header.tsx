@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import { useState } from "react";
-import LanguageSwitch from "./LanguageSwitch";
+import PublicLanguageSwitch from "./PublicLanguageSwitch";
 
 const Header = () => {
 	const t = useT("public.header");
@@ -51,7 +51,7 @@ const Header = () => {
 			<Box
 				component={Link}
 				href="/"
-				sx={{ textDecoration: "none", "&:hover *": { color: "inherit" } }}
+				sx={{ textDecoration: "none", color: "text.primary" }}
 			>
 				<FlexBox centerVertical gap={1}>
 					<Box
@@ -92,7 +92,7 @@ const Header = () => {
 					))}
 				</FlexBox>
 
-				<LanguageSwitch pathname={pathname} />
+				<PublicLanguageSwitch pathname={pathname} />
 
 				<Box sx={{ display: { xs: "none", sm: "block" } }}>
 					<AccountStatus />

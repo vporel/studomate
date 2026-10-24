@@ -14,10 +14,10 @@
 	<!-- Lamps -->
 	<text x="210" y="14" font-size="11" text-anchor="middle" fill="#455a64">QU: CV ≥ PV</text>
 	<circle cx="210" cy="40" r="14" fill="#fff9c4" stroke="#263238" stroke-width="1.5" />
-	<text x="210" y="70" font-size="11" text-anchor="middle" fill="#263238">tampon_plein</text>
+	<text x="210" y="70" font-size="11" text-anchor="middle" fill="#263238">buffer_full</text>
 	<text x="350" y="14" font-size="11" text-anchor="middle" fill="#455a64">QD: CV ≤ 0</text>
 	<circle cx="350" cy="40" r="14" fill="#fff9c4" stroke="#263238" stroke-width="1.5" />
-	<text x="350" y="70" font-size="11" text-anchor="middle" fill="#263238">tampon_vide</text>
+	<text x="350" y="70" font-size="11" text-anchor="middle" fill="#263238">buffer_empty</text>
 
 	<!-- Conveyor -->
 	<rect x="20" y="166" width="520" height="14" rx="7" fill="#eceff1" stroke="#263238" stroke-width="1.5" />
@@ -47,11 +47,11 @@
 	<rect x="100" y="190" width="60" height="26" rx="4" fill="#bbdefb" stroke="#263238" stroke-width="1.5" />
 	<text x="130" y="207" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">E</text>
 	<line x1="130" y1="190" x2="130" y2="180" stroke="#263238" stroke-width="2" />
-	<text x="130" y="232" font-size="11" text-anchor="middle" fill="#263238">capteur_entree</text>
+	<text x="130" y="232" font-size="11" text-anchor="middle" fill="#263238">entry_sensor</text>
 	<text x="130" y="248" font-size="11" text-anchor="middle" fill="#455a64">part in: CV + 1 (CU)</text>
 	<rect x="400" y="190" width="60" height="26" rx="4" fill="#bbdefb" stroke="#263238" stroke-width="1.5" />
 	<text x="430" y="207" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">E</text>
 	<line x1="430" y1="190" x2="430" y2="180" stroke="#263238" stroke-width="2" />
-	<text x="430" y="232" font-size="11" text-anchor="middle" fill="#263238">capteur_sortie</text>
+	<text x="430" y="232" font-size="11" text-anchor="middle" fill="#263238">exit_sensor</text>
 	<text x="430" y="248" font-size="11" text-anchor="middle" fill="#455a64">part out: CV - 1 (CD)</text>
 </svg>

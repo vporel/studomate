@@ -32,13 +32,13 @@
 	<!-- GRAFCET: actions -->
 	<line x1="105" y1="75" x2="120" y2="75" stroke="#263238" stroke-width="1.8" />
 	<rect x="120" y="63" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
-	<text x="150" y="79" font-size="12" text-anchor="middle" fill="#263238">vert</text>
+	<text x="150" y="79" font-size="12" text-anchor="middle" fill="#263238">green</text>
 	<line x1="105" y1="135" x2="120" y2="135" stroke="#263238" stroke-width="1.8" />
 	<rect x="120" y="123" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
-	<text x="150" y="139" font-size="12" text-anchor="middle" fill="#263238">orange</text>
+	<text x="150" y="139" font-size="12" text-anchor="middle" fill="#263238">amber</text>
 	<line x1="105" y1="195" x2="120" y2="195" stroke="#263238" stroke-width="1.8" />
 	<rect x="120" y="183" width="60" height="24" fill="#fff" stroke="#263238" stroke-width="1.8" />
-	<text x="150" y="199" font-size="12" text-anchor="middle" fill="#263238">rouge</text>
+	<text x="150" y="199" font-size="12" text-anchor="middle" fill="#263238">red</text>
 
 	<!-- Annotation: active step -->
 	<line x1="200" y1="105" x2="108" y2="119" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#arrow)" />
@@ -52,7 +52,7 @@
 
 	<!-- Annotation: output -->
 	<path d="M 182 135 L 466 160" fill="none" stroke="#d84315" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)" />
-	<text x="336" y="133" font-size="12" text-anchor="middle" fill="#d84315">the orange output turns on</text>
+	<text x="336" y="133" font-size="12" text-anchor="middle" fill="#d84315">the amber output turns on</text>
 
 	<!-- Traffic light -->
 	<rect x="470" y="60" width="80" height="200" rx="10" fill="#1a1a1a" stroke="#263238" stroke-width="2" />
@@ -61,9 +61,9 @@
 	<circle cx="510" cy="160" r="22" fill="#ff9900" />
 	<circle cx="510" cy="225" r="22" fill="#0a3010" />
 	<text x="560" y="99" font-size="12" text-anchor="start" fill="#607d8b">off</text>
-	<text x="560" y="157" font-size="12" font-weight="bold" text-anchor="start" fill="#d84315">orange</text>
+	<text x="560" y="157" font-size="12" font-weight="bold" text-anchor="start" fill="#d84315">amber</text>
 	<text x="560" y="172" font-size="12" font-weight="bold" text-anchor="start" fill="#d84315">on</text>
 	<text x="560" y="229" font-size="12" text-anchor="start" fill="#607d8b">off</text>
 
-	<text x="320" y="292" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Light: step 1 is active, the orange indicator is on</text>
+	<text x="320" y="292" font-size="12" font-style="italic" text-anchor="middle" fill="#455a64">Light: step 1 is active, the amber indicator is on</text>
 </svg>

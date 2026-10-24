@@ -100,7 +100,7 @@
 		"firstProjectIntro": "To see a grafcet run without writing anything, with the \"Traffic light\" template highlighted on the home page:",
 		"firstProjectItems": [
 			"On the home page, click \"Open the solution and simulate\": the complete project is created.",
-			"Look at the grafcet: three steps (green, orange, red), the first one is the initial step. Each transition carries a timer, for example \"t0/X0/5s\": it becomes true 5 seconds after the step is activated. The actions light the step's lamp, and the last transition leads back to the first step.",
+			"Look at the grafcet: three steps (green, amber, red), the first one is the initial step. Each transition carries a timer, for example \"t0/X0/5s\": it becomes true 5 seconds after the step is activated. The actions light the step's lamp, and the last transition leads back to the first step.",
 			"Start the simulation from the mode selector (Simulation): the active step is highlighted and the light changes colour. The project's HMI page shows the three indicator lights.",
 			"Switch back to Design mode, double-click a transition and change its duration (\"t0/X0/10s\"), then restart the simulation to see the difference.",
 			"To learn to build a grafcet yourself, follow the \"GRAFCET basics\" training (Help → Training) or open the template in its \"exercise\" variant, whose program is left to write."
@@ -860,7 +860,7 @@
 		"scenesIntro": "The catalogue offers five scenes, each delivered with a \"to be programmed\" template that already wires it:",
 		"scenesItems": [
 			"Carton sorting (template \"Carton sorting station\"): presence, height and cylinder end-of-stroke sensors; outputs for the conveyors and the six commands of the three cylinders; a numeric display for the count of sorted cartons. It is the only scene with manual controls: place a carton, choose its height (low or high) and a cycle start button;",
-			"Traffic-light crossroads (template \"Traffic light crossroads\"): no inputs; twelve outputs, red, orange and green for each of the four lights (North, South, East, West). If two axes turn green at the same time, the cars collide and an accident counter increments;",
+			"Traffic-light crossroads (template \"Traffic light crossroads\"): no inputs; twelve outputs, red, amber and green for each of the four lights (North, South, East, West). If two axes turn green at the same time, the cars collide and an accident counter increments;",
 			"Drilling (template \"Drilling station\"): outputs to lower the drill, raise it and spin the spindle; drill-up, drill-down and position (numeric) sensors. Drilling requires the spindle to run, drill down, for 1.5 s;",
 			"Elevator (template \"Lift\"): up, down and door-open outputs; cabin presence sensors at each floor, a door-open sensor and a position (numeric) sensor. The door stays open at least 2 s before it can close again.",
 			"Car park (template \"Barrier car park\"): two barrier-opening outputs (entry and exit) and a \"full\" lamp; sensors for a car waiting in front of each barrier and a photocell under the barriers; a numeric display for the number of occupied spaces. The Arrival and Departure buttons of the console are bound to no variable: they bring cars, which line up (6 at most) and only move on when the barrier is open, a full lot leaving them outside."

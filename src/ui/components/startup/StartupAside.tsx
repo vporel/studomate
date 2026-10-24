@@ -1,9 +1,11 @@
 "use client";
 
-import routes from "@/app/routes";
+import { Link } from "@/i18n/navigation";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import type { ReactNode } from "react";
 import {
 	List,
 	ListItemButton,
@@ -12,18 +14,22 @@ import {
 	Paper,
 	Typography,
 } from "@mui/material";
-import Link from "next/link";
 
 export default function StartupAside() {
 	const t = useT("chrome.startup");
-	const resources = [
+	const { locale } = useLocaleContext();
+	const resources: {
+		href: "/user-manual" | "/training";
+		label: string;
+		icon: ReactNode;
+	}[] = [
 		{
-			href: routes.userManual(),
+			href: "/user-manual",
 			label: t("userManual"),
 			icon: <MenuBookOutlinedIcon fontSize="small" />,
 		},
 		{
-			href: routes.training(),
+			href: "/training",
 			label: t("training"),
 			icon: <SchoolOutlinedIcon fontSize="small" />,
 		},
@@ -45,7 +51,14 @@ export default function StartupAside() {
 			</Typography>
 			<List dense disablePadding>
 				{resources.map(({ href, label, icon }) => (
-					<ListItemButton key={href} component={Link} href={href}>
+					<ListItemButton
+						key={href}
+						component={Link}
+						href={href}
+						locale={locale}
+						target="_blank"
+						rel="noopener"
+					>
 						<ListItemIcon sx={{ minWidth: 32 }}>{icon}</ListItemIcon>
 						<ListItemText primary={label} />
 					</ListItemButton>

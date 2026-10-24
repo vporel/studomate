@@ -4,7 +4,7 @@
 	<text x="190" y="40" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">0</text>
 	<line x1="190" y1="50" x2="190" y2="100" stroke="#263238" stroke-width="1.8" />
 	<line x1="180" y1="70" x2="200" y2="70" stroke="#263238" stroke-width="3" />
-	<text x="204" y="74" font-size="12" text-anchor="start" fill="#263238">dcy</text>
+	<text x="204" y="74" font-size="12" text-anchor="start" fill="#263238">cycle_start</text>
 	<line x1="100" y1="100" x2="280" y2="100" stroke="#263238" stroke-width="1.8" />
 	<line x1="100" y1="106" x2="280" y2="106" stroke="#263238" stroke-width="1.8" />
 	<line x1="100" y1="106" x2="100" y2="140" stroke="#263238" stroke-width="1.8" />

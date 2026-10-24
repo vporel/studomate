@@ -41,7 +41,9 @@ describe("StartupFooter", () => {
 	it("ouvre le signalement de problème au clic", () => {
 		renderWithI18n(<StartupFooter />);
 
-		fireEvent.click(screen.getByRole("button", { name: "Signaler un problème" }));
+		fireEvent.click(
+			screen.getByRole("button", { name: "Signaler un problème" }),
+		);
 
 		expect(openReportIssue).toHaveBeenCalledTimes(1);
 	});

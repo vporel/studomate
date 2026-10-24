@@ -6,6 +6,7 @@ import {
 	clearShareTokenFromUrl,
 	getTemplateIdFromUrl,
 	getTemplateModeFromUrl,
+	getTemplateLocaleFromUrl,
 	clearTemplateParamsFromUrl,
 } from "./project-url";
 
@@ -105,7 +106,41 @@ describe("project-url", () => {
 		});
 	});
 
+	describe("getTemplateLocaleFromUrl", () => {
+		it("retourne null si le paramètre est absent", () => {
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+
+		it("retourne la langue présente dans l'URL", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=en",
+			);
+			expect(getTemplateLocaleFromUrl()).toBe("en");
+		});
+
+		it("retourne null si la langue est inconnue", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=de",
+			);
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+	});
+
 	describe("clearTemplateParamsFromUrl", () => {
+		it("retire aussi template-locale", () => {
+			window.history.replaceState(
+				null,
+				"",
+				"/?template=parking&template-locale=en",
+			);
+			clearTemplateParamsFromUrl();
+			expect(getTemplateLocaleFromUrl()).toBeNull();
+		});
+
 		it("retire template et template-mode, laisse le reste intact", () => {
 			window.history.replaceState(
 				null,

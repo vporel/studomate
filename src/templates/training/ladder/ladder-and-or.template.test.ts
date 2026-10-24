@@ -1,3 +1,6 @@
+import * as templates from "./ladder-and-or.template";
+import type { Locale } from "@/i18n/config";
+import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import { compilePipelineDetailed } from "@tests/utils/test-helpers";
 import { createLadderAndOrProject } from "./ladder-and-or.template";
@@ -36,4 +39,34 @@ describe("ladder-and-or.template", () => {
 		}
 		scenario.stop();
 	});
+});
+
+describe("ladder-and-or.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[
+			templates.createLadderAndOrProject,
+			"Contacts en série et en parallèle",
+			"Contacts in series and in parallel",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

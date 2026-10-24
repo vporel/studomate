@@ -26,11 +26,11 @@
 	<line x1="482" y1="14" x2="482" y2="176" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
 	<text x="482" y="192" font-size="11" text-anchor="middle" fill="#607d8b">12</text>
 	<text x="496" y="192" font-size="11" text-anchor="start" fill="#607d8b">s</text>
-	<text x="8" y="42" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">vert (green)</text>
+	<text x="8" y="42" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">green</text>
 	<path d="M 170 58 L 170 58 L 170 28 L 300 28 L 300 58 L 482 58" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" />
-	<text x="8" y="94" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">orange (amber)</text>
+	<text x="8" y="94" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">amber</text>
 	<path d="M 170 110 L 300 110 L 300 80 L 352 80 L 352 110 L 482 110" fill="none" stroke="#ef6c00" stroke-width="2.4" stroke-linejoin="round" />
-	<text x="8" y="146" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">rouge (red)</text>
+	<text x="8" y="146" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">red</text>
 	<path d="M 170 162 L 352 162 L 352 132 L 482 132 L 482 162 L 482 162" fill="none" stroke="#c62828" stroke-width="2.4" stroke-linejoin="round" />
 	<text x="326" y="218" font-size="12" text-anchor="middle" fill="#607d8b">only one colour active at a time, then the cycle starts again</text>
 </svg>

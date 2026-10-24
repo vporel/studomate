@@ -1,4 +1,9 @@
 {
+	"languageSwitch": {
+		"label": "Language",
+		"fr": "Français",
+		"en": "English"
+	},
 	"language": {
 		"label": "Language",
 		"description": "Language of the application interface.",

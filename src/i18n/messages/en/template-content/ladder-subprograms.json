@@ -1,0 +1,16 @@
+{
+	"statement": "## Calling a subprogram\n\nThe Main controls the start of a conveyor; the \"Counting\" ladder (a `CTU` with a preset of 3 and its indicator) exists but no block calls it.\n\n| Variable | Role | Type |\n| --- | --- | --- |\n| `start`, `stop` | start and stop the conveyor | push buttons (true while pressed) |\n| `part_sensor` | detects each part | sensor |\n| `clear` | resets the count to zero | push button |\n| `conveyor` | conveyor motor | output |\n| `batch_indicator` | on when 3 parts are counted | output |\n\n### Task\n\n1. Read the \"Counting\" ladder, run the analysis (warning: ladder never called) then the simulation: `batch_indicator` does not light up.\n2. In the Main, add a network and drag \"Counting\" into it from the \"Programs\" section of the explorer. Connect the call block to the rail, without any condition.\n3. Check: after three passes of `part_sensor`, `batch_indicator` lights up; `clear` makes it drop.\n4. Experiment: place a NO contact on `conveyor` in front of the call block. With the conveyor stopped, leave `part_sensor` true and then start the conveyor: `cpt` counts a part that was never counted. Explain why.",
+	"texts": {
+		"projectName": "Subprograms",
+		"solutionName": "Subprograms: solution",
+		"countingProgramName": "Counting",
+		"countPartsTitle": "Part counting",
+		"countPartsDescription": "The CTU counts the rising edges of part_sensor, reset by clear.",
+		"batchIndicatorTitle": "Batch indicator",
+		"batchIndicatorDescription": "On when the batch is complete.",
+		"conveyorRunTitle": "Conveyor run",
+		"conveyorRunDescription": "Self-holding with stop priority.",
+		"callCountingTitle": "Counting call",
+		"callCountingDescription": "Unconditional call: the subprogram runs on every cycle."
+	}
+}

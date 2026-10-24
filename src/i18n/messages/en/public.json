@@ -24,11 +24,6 @@
 		"createdBy": "Created by",
 		"slogan": "Design, Simulate, Automate"
 	},
-	"languageSwitch": {
-		"label": "Language",
-		"fr": "Français",
-		"en": "English"
-	},
 	"landing": {
 		"heroTitle": "Learn GRAFCET and Ladder<br></br>by simulating them",
 		"heroTagline": "Design, simulate and test your automation logic with animated HMIs, right in your browser.",

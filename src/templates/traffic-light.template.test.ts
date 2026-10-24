@@ -83,4 +83,35 @@ describe("traffic-light.template", () => {
 			expect(compilation.result!.routines).toHaveLength(6);
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createTrafficLightSolution(),
+				createTrafficLightSolution("fr"),
+			]) {
+				expect(project.name).toBe("Feu tricolore — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Feu tricolore",
+				]);
+				expect(Object.values(project.hmiPages).map((p) => p.name)).toEqual([
+					"Feu tricolore",
+				]);
+			}
+		});
+
+		it("nomme le projet, le programme, la page et les widgets en anglais, sans accent", () => {
+			const project = createTrafficLightSolution("en");
+			const [page] = Object.values(project.hmiPages);
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+				page.name,
+				...Object.values(page.widgets).map((w) => w.name ?? ""),
+			];
+			expect(project.name).toBe("Traffic light: solution");
+			expect(page.name).toBe("Traffic light");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

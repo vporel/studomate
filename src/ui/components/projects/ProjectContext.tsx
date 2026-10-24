@@ -10,10 +10,13 @@ import {
 	getShareTokenFromUrl,
 	getTemplateAutostartFromUrl,
 	getTemplateIdFromUrl,
+	getTemplateLocaleFromUrl,
 	getTemplateModeFromUrl,
 	setProjectIdInUrl,
 } from "@/ui/stores/project/url/project-url";
+import { resolveUiLocale } from "@/persistence/preferences.storage";
 import { PROJECT_TEMPLATES } from "@/templates/index";
+import { getTemplateStatement } from "@/templates/template-text";
 import { EXERCISE_PAGE_DATA } from "@/ui/components/pages/ExercisePage";
 import {
 	createContext,
@@ -151,6 +154,7 @@ export const ProjectContextProvider = ({
 		const wantsSolution =
 			getTemplateModeFromUrl() === "solution" && !!template.solution;
 		const autostartSimulation = getTemplateAutostartFromUrl();
+		const locale = getTemplateLocaleFromUrl() ?? resolveUiLocale();
 		if (autostartSimulation) suppressProductTourForThisPageLoad();
 		const open = async () => {
 			await storeRef
@@ -158,6 +162,7 @@ export const ProjectContextProvider = ({
 				.lifecycleManager.newProjectFromTemplate(
 					templateId,
 					wantsSolution ? "solution" : "exercise",
+					locale,
 				);
 			clearTemplateParamsFromUrl();
 			if (autostartSimulation) {
@@ -169,7 +174,7 @@ export const ProjectContextProvider = ({
 			}
 			// Un template ouvert depuis un lien porte un énoncé : on l'affiche directement plutôt
 			// que la page de démarrage classique, exercice comme solution.
-			if (template.statement) {
+			if (getTemplateStatement(templateId, locale)) {
 				storeRef.current!.getState().pagesManager.openPage(EXERCISE_PAGE_DATA);
 			}
 		};

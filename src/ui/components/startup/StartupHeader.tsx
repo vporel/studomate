@@ -2,6 +2,7 @@
 
 import { APP_NAME } from "@/app-info";
 import routes from "@/app/routes";
+import AppLanguageSwitch from "@/ui/components/language-switch/AppLanguageSwitch";
 import AccountStatus from "@/ui/components/auth/AccountStatus";
 import { useT } from "@/ui/i18n/useT";
 import { Box, Paper, Typography } from "@mui/material";
@@ -45,7 +46,10 @@ export default function StartupHeader() {
 					{APP_NAME}
 				</Typography>
 			</Box>
-			<AccountStatus />
+			<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+				<AppLanguageSwitch />
+				<AccountStatus />
+			</Box>
 		</Paper>
 	);
 }

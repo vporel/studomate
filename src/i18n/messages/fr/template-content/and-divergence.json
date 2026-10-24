@@ -1,0 +1,8 @@
+{
+	"statement": "## Divergence en ET\n\nEntrées : `dcy`, `capteur1`, `capteur2`. Sorties : `sortie1`, `sortie2`.\n\n### Travail demandé\n\n1. Sur `dcy`, activer **simultanément** `sortie1` et `sortie2`.\n2. Attendre que `capteur1` **et** `capteur2` soient actifs avant de revenir à l'état initial\n   (désactivation des deux sorties).",
+	"texts": {
+		"projectName": "Divergence en ET",
+		"solutionName": "Divergence en ET : solution",
+		"grafcetName": "Divergence en ET"
+	}
+}

@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -75,32 +77,40 @@ export const GATE_SPEC: GrafcetLadderSpec = {
 };
 
 /** Gate inputs and outputs; the step and transition memories are declared by the student. */
-function createBase(name: string): Project {
+function createBase(name: string, locale: Locale): Project {
 	const project = new Project(createRandomId(), name, "");
 	project.variables.push(
 		pushButton("telecommande"),
-		...createGateCommonVariables(),
+		...createGateCommonVariables(locale),
 		grafcetInitMemory(GATE_SPEC),
 	);
 	return project;
 }
 
-export function createGateGrafcetLadderProject(): Project {
-	return createBase("Portail à télécommande");
+export function createGateGrafcetLadderProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("gate-grafcet-ladder", locale);
+	return createBase(t("projectName"), locale);
 }
 
-export function createGateGrafcetLadderSolution(): Project {
-	const project = createBase("Portail à télécommande : solution");
+export function createGateGrafcetLadderSolution(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("gate-grafcet-ladder", locale);
+	const project = createBase(t("solutionName"), locale);
 	const provided = new Set(project.variables.map((v) => v.mnemonic));
 	project.variables.push(
 		...grafcetMemories(GATE_SPEC).filter((v) => !provided.has(v.mnemonic)),
 	);
 	setMainSections(
 		project,
-		grafcetSections(GATE_SPEC, [
-			{ variable: "ouvrir", steps: ["X1"] },
-			{ variable: "fermer", steps: ["X3"] },
-		]),
+		grafcetSections(
+			GATE_SPEC,
+			[
+				{ variable: "ouvrir", steps: ["X1"] },
+				{ variable: "fermer", steps: ["X3"] },
+			],
+			locale,
+		),
 	);
 	return project;
 }

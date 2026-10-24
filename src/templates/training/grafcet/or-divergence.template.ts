@@ -25,6 +25,8 @@ import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 /**
  * Creates a pre-configured "OR divergence" project: boolean input/output variables, no
@@ -32,8 +34,9 @@ import { createRandomId } from "@/ids";
  * divergence (two mutually exclusive branches), each looping back to the initial step
  * independently, no other complexity (no timer, no nesting).
  */
-export function createOrDivergenceProject(): Project {
-	const project = new Project(createRandomId(), "Divergence en OU", "");
+export function createOrDivergenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("or-divergence", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(
@@ -62,9 +65,10 @@ export function createOrDivergenceProject(): Project {
  * Sequence: E0 (initial) --dcy1--> E1 (sortie1) --fin1--> E0
  *                         --dcy2--> E2 (sortie2) --fin2--> E0
  */
-export function createOrDivergenceSolution(): Project {
-	const project = createOrDivergenceProject();
-	project.name = "Divergence en OU : solution";
+export function createOrDivergenceSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("or-divergence", locale);
+	const project = createOrDivergenceProject(locale);
+	project.name = t("solutionName");
 
 	const XL = 140;
 	const XR = 340;
@@ -153,7 +157,7 @@ export function createOrDivergenceSolution(): Project {
 
 	const grafcet = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Divergence en OU")
+		.name(t("grafcetName"))
 		.addSteps(e0, e1, e2)
 		.addTransitions(t01, t02, t1, t2)
 		.addJunctionOrStart(orStart)

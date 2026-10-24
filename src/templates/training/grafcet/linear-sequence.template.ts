@@ -21,14 +21,17 @@ import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { PUSH_BUTTON_NO_BEHAVIOR } from "@/schemas/variable/input-behavior";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 /**
  * Creates a pre-configured "Linear sequence" project: boolean input/output variables, no
  * program (the student writes it). Training module mini-exercise (M1): no timer, no
  * divergence, just a step → transition → step chain.
  */
-export function createLinearSequenceProject(): Project {
-	const project = new Project(createRandomId(), "Séquence linéaire", "");
+export function createLinearSequenceProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("linear-sequence", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(
@@ -51,9 +54,10 @@ export function createLinearSequenceProject(): Project {
  *
  * Sequence: E0 (initial) --dcy--> E1 (sortie1) --fin1--> E2 (sortie2) --fin2--> E3 --VRAI--> E0
  */
-export function createLinearSequenceSolution(): Project {
-	const project = createLinearSequenceProject();
-	project.name = "Séquence linéaire : solution";
+export function createLinearSequenceSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("linear-sequence", locale);
+	const project = createLinearSequenceProject(locale);
+	project.name = t("solutionName");
 
 	const X = 200;
 	const e0 = new StepBuilder()
@@ -115,7 +119,7 @@ export function createLinearSequenceSolution(): Project {
 
 	const grafcet = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Séquence")
+		.name(t("grafcetName"))
 		.addSteps(e0, e1, e2, e3)
 		.addTransitions(t0, t1, t2, t3)
 		.addActions(a1, a2)

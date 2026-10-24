@@ -22,6 +22,8 @@ import { HmiWidget } from "@/schemas/hmi/hmi-widget.schema";
 import Project from "@/schemas/project/project.schema";
 import VariableBuilder from "@/schemas/variable/builders/variable.builder";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 
 /** Centre horizontal du canvas HMI (1000 px) */
 const CX = 500;
@@ -48,8 +50,9 @@ const Y_START = CY - COLUMN_HEIGHT / 2 + 30;
  *
  * Appelée par `_newProject` quand l'utilisateur choisit ce template.
  */
-export function createTrafficLightProject(): Project {
-	const project = new Project(createRandomId(), "Feu tricolore", "");
+export function createTrafficLightProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("traffic-light", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	// — Variables de sortie ———————————————————————————————————————————————
 	const varRouge = VariableBuilder.buildLogicOutput(createRandomId(), "rouge");
@@ -61,7 +64,7 @@ export function createTrafficLightProject(): Project {
 	project.variables.push(varRouge, varOrange, varVert);
 
 	// — Page HMI ——————————————————————————————————————————————————————————
-	const page = new HmiPage(createRandomId(), "Feu tricolore", true);
+	const page = new HmiPage(createRandomId(), t("hmiPageName"), true);
 
 	// Titre
 	const titre = HmiWidget.create(
@@ -70,11 +73,11 @@ export function createTrafficLightProject(): Project {
 		40,
 		{ width: 160, height: 30 },
 		{
-			text: "Feu tricolore",
+			text: t("titleText"),
 			style: { fontSize: 16, color: "#333333", align: "center" },
 		},
 		0,
-		"Titre",
+		t("titleWidgetName"),
 	);
 	page.addWidget(titre);
 
@@ -93,7 +96,7 @@ export function createTrafficLightProject(): Project {
 			},
 		},
 		1,
-		"Fond",
+		t("backgroundWidgetName"),
 	);
 	page.addWidget(fond);
 
@@ -111,7 +114,7 @@ export function createTrafficLightProject(): Project {
 			offColor: "#4a1010",
 		},
 		2,
-		"Voyant rouge",
+		t("redIndicatorName"),
 	);
 	page.addWidget(voyantRouge);
 
@@ -129,7 +132,7 @@ export function createTrafficLightProject(): Project {
 			offColor: "#4a3010",
 		},
 		3,
-		"Voyant orange",
+		t("amberIndicatorName"),
 	);
 	page.addWidget(voyantOrange);
 
@@ -147,7 +150,7 @@ export function createTrafficLightProject(): Project {
 			offColor: "#0a3010",
 		},
 		4,
-		"Voyant vert",
+		t("greenIndicatorName"),
 	);
 	page.addWidget(voyantVert);
 
@@ -163,9 +166,10 @@ export function createTrafficLightProject(): Project {
  *
  * Séquence : E0 (initiale) vert 5s → E1 orange 2s → E2 rouge 5s → retour E0
  */
-export function createTrafficLightSolution(): Project {
-	const project = createTrafficLightProject();
-	project.name = "Feu tricolore — solution";
+export function createTrafficLightSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("traffic-light", locale);
+	const project = createTrafficLightProject(locale);
+	project.name = t("solutionName");
 
 	// Positions verticales : étapes et transitions alternées, espacées de 50 px
 	const X = 200;
@@ -226,7 +230,7 @@ export function createTrafficLightSolution(): Project {
 
 	const grafcet = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Feu tricolore")
+		.name(t("grafcetName"))
 		.addSteps(e0, e1, e2)
 		.addTransitions(t0, t1, t2)
 		.addActions(a0, a1, a2)

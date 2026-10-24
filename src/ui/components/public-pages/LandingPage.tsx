@@ -3,8 +3,9 @@
 import { APP_NAME, APP_REPO_URL } from "@/app-info";
 import routes from "@/app/routes";
 import { Link } from "@/i18n/navigation";
-import { TRAINING_MODULE_IDS } from "@/app/[locale]/training/training-module-ids";
+import { TRAINING_MODULE_IDS } from "@/training/module-ids";
 import { PROJECT_TEMPLATES, type TemplateId } from "@/templates/index";
+import { useLocale } from "next-intl";
 import { useT } from "@/ui/i18n/useT";
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -318,6 +319,7 @@ const HERO_SCENE_MASK = [
 const LandingPage = () => {
 	const t = useT("public.landing");
 	const tTemplates = useT("templates");
+	const locale = useLocale();
 	const tMeta = useT("public.metadata");
 
 	return (
@@ -530,7 +532,7 @@ const LandingPage = () => {
 							<Box sx={{ px: 2.5, pb: 2.5 }}>
 								<Button
 									LinkComponent={NextLink}
-									href={`${routes.app()}?template=${tpl.id}&template-mode=solution`}
+									href={`${routes.app()}?template=${tpl.id}&template-mode=solution&template-locale=${locale}`}
 									variant="outlined"
 									size="small"
 								>

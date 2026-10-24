@@ -1,0 +1,9 @@
+{
+	"statement": "## Two-way lighting\n\nInputs: `sw1`, `sw2`, `enable` (three maintained switches, at 0 at rest). Output: `lamp`.\n\n### Task\n\nIn the Main program, the following behavior is wanted:\n\n- The lamp changes state when either of the two switches is operated (two-way switching).\n- The lamp only lights if `enable` is active.\n\n1. Fill in the lamp's truth table (with `enable` active).\n2. Write the network that drives `lamp`.\n3. Check the four combinations in simulation, with `enable` active then inactive.",
+	"texts": {
+		"projectName": "Two-way lighting",
+		"solutionName": "Two-way lighting: solution",
+		"lightingTitle": "Lighting",
+		"lightingDescription": "The lamp lights when exactly one of the two switches is on, if enable is active."
+	}
+}

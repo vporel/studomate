@@ -1,3 +1,4 @@
+import { isLocale, type Locale } from "@/i18n/config";
 import { getUrlQueryParam, setUrlQueryParam } from "@/ui/lib/url-query-param";
 
 const PROJECT_ID_PARAM = "projectId";
@@ -5,6 +6,7 @@ const SHARE_TOKEN_PARAM = "shareToken";
 const TEMPLATE_ID_PARAM = "template";
 const TEMPLATE_MODE_PARAM = "template-mode";
 const TEMPLATE_AUTOSTART_PARAM = "template-autostart";
+const TEMPLATE_LOCALE_PARAM = "template-locale";
 
 export type TemplateMode = "exercise" | "solution";
 
@@ -51,9 +53,16 @@ export function getTemplateAutostartFromUrl(): boolean {
 	return getUrlQueryParam(TEMPLATE_AUTOSTART_PARAM) === "simulation";
 }
 
+/** Langue dans laquelle créer le template (page d'où vient le lien), ou null si absente ou inconnue. */
+export function getTemplateLocaleFromUrl(): Locale | null {
+	const value = getUrlQueryParam(TEMPLATE_LOCALE_PARAM);
+	return isLocale(value) ? value : null;
+}
+
 /** Retire les paramètres de template de l'URL une fois le projet créé (ou le paramètre ignoré). */
 export function clearTemplateParamsFromUrl(): void {
 	setUrlQueryParam(TEMPLATE_ID_PARAM, null);
 	setUrlQueryParam(TEMPLATE_MODE_PARAM, null);
 	setUrlQueryParam(TEMPLATE_AUTOSTART_PARAM, null);
+	setUrlQueryParam(TEMPLATE_LOCALE_PARAM, null);
 }

@@ -7,15 +7,15 @@
 	<line x1="420" y1="28" x2="420" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
 	<line x1="470" y1="28" x2="470" y2="296" stroke="#cfd8dc" stroke-width="1" stroke-dasharray="3 3" />
 	<text x="8" y="18" font-size="11" text-anchor="start" fill="#607d8b">inputs</text>
-	<text x="8" y="54" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">fin1</text>
+	<text x="8" y="54" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">end1</text>
 	<path d="M 170 62 L 220 62 L 270 62 L 270 36 L 320 36 L 370 36 L 420 36 L 420 62 L 470 62" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
 	<text x="8" y="122" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X1</text>
 	<path d="M 170 104 L 220 104 L 270 104 L 320 104 L 320 130 L 370 130 L 420 130 L 470 130" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
 	<text x="8" y="170" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">X2</text>
 	<path d="M 170 178 L 220 178 L 270 178 L 270 152 L 320 152 L 370 152 L 420 152 L 470 152" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
-	<text x="8" y="238" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">sortie1</text>
+	<text x="8" y="238" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">output1</text>
 	<path d="M 170 220 L 220 220 L 270 220 L 320 220 L 320 246 L 370 246 L 420 246 L 470 246" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
-	<text x="8" y="286" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">sortie2</text>
+	<text x="8" y="286" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">output2</text>
 	<path d="M 170 294 L 220 294 L 270 294 L 270 268 L 320 268 L 370 268 L 420 268 L 470 268" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
 	<line x1="8" y1="82" x2="552" y2="82" stroke="#90a4ae" stroke-width="1.5" />
 	<text x="8" y="98" font-size="11" text-anchor="start" fill="#607d8b">steps (memories)</text>

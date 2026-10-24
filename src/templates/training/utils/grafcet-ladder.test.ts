@@ -94,3 +94,32 @@ describe("grafcet-ladder", () => {
 		scenario.stop();
 	});
 });
+
+describe("grafcet-ladder : langue des titres", () => {
+	const titles = (locale?: "fr" | "en") =>
+		grafcetSections(spec, [{ variable: "q", steps: ["M1"] }], locale).map(
+			(section) => section.title,
+		);
+
+	it("rédige les titres en français par défaut", () => {
+		expect(titles()).toContain("Activation de l'étape initiale");
+		expect(titles()).toContain("Condition de franchissement T0");
+		expect(titles()).toContain("Désactivation par T1");
+		expect(titles()).toContain("Réinitialisation : étape initiale");
+		expect(titles()).toContain("Sortie q");
+	});
+
+	it("rédige les titres en anglais sur demande, sans mot français résiduel", () => {
+		const english = titles("en");
+		expect(english).toContain("Initial step activation");
+		expect(english).toContain("Crossing condition T0");
+		expect(english).toContain("Deactivation by T1");
+		expect(english).toContain("Reset: initial step");
+		expect(english).toContain("Output q");
+		expect(english.join(" ")).not.toMatch(/[éèêà]/);
+	});
+
+	it("les sections anglaises ont autant d'éléments que les françaises", () => {
+		expect(titles("en")).toHaveLength(titles("fr").length);
+	});
+});

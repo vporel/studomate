@@ -1,0 +1,15 @@
+{
+	"statement": "## Traffic light\n\nWe want to control a three-color traffic light. The available outputs are\n`red`, `amber` and `green`; only one must be active at a time.\n\n### Work to do\n\n1. Write the GRAFCET that cycles through the phases in the order **green → amber → red**, in a loop.\n2. Time each phase: green 5 s, amber 2 s, red 5 s.\n3. Check the operation in simulation using the indicators of the HMI interface.",
+	"texts": {
+		"projectName": "Traffic light",
+		"hmiPageName": "Traffic light",
+		"titleText": "Traffic light",
+		"titleWidgetName": "Title",
+		"backgroundWidgetName": "Background",
+		"redIndicatorName": "Red indicator",
+		"amberIndicatorName": "Amber indicator",
+		"greenIndicatorName": "Green indicator",
+		"solutionName": "Traffic light: solution",
+		"grafcetName": "Traffic light"
+	}
+}

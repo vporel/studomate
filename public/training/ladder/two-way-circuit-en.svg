@@ -22,9 +22,9 @@
 	<line x1="432" y1="79" x2="486" y2="79" stroke="#263238" stroke-width="2" />
 	<circle cx="494" cy="79" r="8" fill="#fff" stroke="#263238" stroke-width="1.5" />
 	<text x="494" y="83" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">-</text>
-	<text x="84" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter1</text>
-	<text x="356" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter2</text>
-	<text x="416" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lampe</text>
+	<text x="84" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">sw1</text>
+	<text x="356" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">sw2</text>
+	<text x="416" y="121" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lamp</text>
 	<rect x="5" y="137" width="510" height="122" rx="6" fill="#fff" stroke="#cfd8dc" stroke-width="1.5" />
 	<text x="14" y="157" font-size="13" text-anchor="start" fill="#263238" font-weight="bold">lamp on</text>
 	<text x="506" y="157" font-size="11" text-anchor="end" fill="#607d8b">the two switches are in the same position</text>
@@ -48,7 +48,7 @@
 	<line x1="432" y1="211" x2="486" y2="211" stroke="#2e7d32" stroke-width="2" />
 	<circle cx="494" cy="211" r="8" fill="#fff" stroke="#263238" stroke-width="1.5" />
 	<text x="494" y="215" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">-</text>
-	<text x="84" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter1</text>
-	<text x="356" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">inter2</text>
-	<text x="416" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lampe</text>
+	<text x="84" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">sw1</text>
+	<text x="356" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">sw2</text>
+	<text x="416" y="253" font-size="11" text-anchor="middle" fill="#263238" font-weight="bold">lamp</text>
 </svg>

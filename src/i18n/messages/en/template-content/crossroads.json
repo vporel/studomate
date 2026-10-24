@@ -1,0 +1,22 @@
+{
+	"statement": "## Traffic light crossroads\n\nA crossroads intersects two axes: North-South (lights `NS1`, `NS2`) and East-West (lights `EW1`, `EW2`).\nEach light has its three outputs `red…`, `amber…`, `green…` (for example `greenNS1`).\n\nA 3D scene (Interface → 3D scene menu) shows the crossroads: cars arrive continuously on the four branches and obey the lights.\nIf both axes turn green at the same time, or without enough clearance time, the cars **collide**: the collision is displayed, the accident counter increases and the car flow is reset.\n\n### Work to do\n\n1. Run the two lights of the same axis **in parallel** (same color at the same time).\n2. Alternate the two axes with an **all-red** phase between each change.\n3. Time the phases and validate the full cycle in simulation, checking in the 3D scene that no collision occurs.",
+	"texts": {
+		"projectName": "Traffic light crossroads",
+		"hmiPageName": "Crossroads",
+		"roadWidgetName": "Roadway",
+		"titleText": "Traffic light crossroads",
+		"titleWidgetName": "Title",
+		"directionNorth": "North",
+		"directionSouth": "South",
+		"directionEast": "East",
+		"directionWest": "West",
+		"backgroundWidgetName": "Background {label}",
+		"labelWidgetName": "Label {label}",
+		"colorRed": "red",
+		"colorAmber": "amber",
+		"colorGreen": "green",
+		"indicatorWidgetName": "{color} {label}",
+		"solutionName": "Traffic light crossroads: solution",
+		"grafcetName": "Traffic light crossroads"
+	}
+}

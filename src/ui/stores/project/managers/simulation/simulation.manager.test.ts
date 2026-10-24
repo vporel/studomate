@@ -1059,7 +1059,7 @@ describe("SimulationManager", () => {
 	describe("suivi du programme d'une carte (mode en ligne)", () => {
 		const trafficLight = () =>
 			compileProject(
-				PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!(),
+				PROJECT_TEMPLATES.find((t) => t.id === "traffic-light")!.solution!("fr"),
 			)!;
 
 		it("passe en simulation sans PLC local, la source étant la carte", () => {
@@ -1133,7 +1133,7 @@ describe("SimulationManager", () => {
 		describe("écritures de l'interface vers la carte", () => {
 			const setupOnline = () => {
 				const compiled = compileProject(
-					PROJECT_TEMPLATES.find((t) => t.id === "elevator")!.solution!(),
+					PROJECT_TEMPLATES.find((t) => t.id === "elevator")!.solution!("fr"),
 				)!;
 				const store = makeStore(ProjectFactory.create([], []));
 				const manager = new SimulationManager(

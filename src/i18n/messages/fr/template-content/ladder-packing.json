@@ -1,0 +1,28 @@
+{
+	"statement": "## Mise en caisse\n\nAucune variable n'est fournie : établir puis déclarer la table complète des entrées, sorties et mémoires (nom, rôle, type, nature, comportement physique des entrées).\n\n### Cahier des charges\n\n1. Convoyeur en marche/arrêt : un appui sur Marche le démarre, un appui sur Arrêt l'arrête (arrêt prioritaire).\n2. Le relais thermique est câblé à ouverture : en fonctionnement normal son contact est fermé (variable vraie), un défaut la fait passer à faux (front descendant). Un défaut arrête le convoyeur et est mémorisé ; une fois disparu, il faut un nouvel appui sur Marche.\n3. Voyant de défaut : clignotant (base de temps système `_SYS_TB_500ms`) tant que le défaut n'est pas acquitté par le bouton Acquit, fixe s'il est acquitté mais encore présent, éteint une fois disparu.\n4. Comptage des pièces sur front montant du capteur, présélection de 5 ; à la 5e pièce, arrêt du convoyeur pendant 5 s (changement de caisse), puis redémarrage automatique et remise à zéro du compteur.\n5. Structurer en sous-programmes appelés sans condition par le Main.",
+	"texts": {
+		"projectName": "Mise en caisse",
+		"solutionName": "Mise en caisse : solution",
+		"faultAndStartProgram": "Défaut et marche",
+		"countingProgram": "Comptage",
+		"boxChangeProgram": "Changement de caisse",
+		"piecesCounter": "cpt_pieces",
+		"boxTimer": "t_caisse",
+		"faultMemoryTitle": "Mémoire de défaut",
+		"faultMemoryDescription": "Le relais thermique est câblé à ouverture : son déclenchement est un front descendant.",
+		"ackTitle": "Acquittement",
+		"ackDescription": "L'acquittement efface le clignotement, même si le défaut est encore présent.",
+		"faultLampTitle": "Voyant de défaut",
+		"faultLampDescription": "Clignotant tant que le défaut n'est pas acquitté, fixe s'il est acquitté mais présent. Une base de temps système est un signal carré, directement utilisable pour clignoter.",
+		"startTitle": "Marche",
+		"startDescription": "Auto-maintien à arrêt prioritaire : un défaut l'annule, il faut un nouvel appui sur Marche.",
+		"conveyorTitle": "Convoyeur",
+		"conveyorDescription": "Arrêt à la présélection du compteur de pièces.",
+		"countingTitle": "Comptage des pièces",
+		"countingDescription": "Le CTU compte sur front du capteur.",
+		"changeTimeTitle": "Temps de changement",
+		"changeTimeDescription": "Le TON mesure le changement de caisse.",
+		"resetTitle": "Remise à zéro",
+		"resetDescription": "Redémarrage automatique : le compteur repart de zéro."
+	}
+}

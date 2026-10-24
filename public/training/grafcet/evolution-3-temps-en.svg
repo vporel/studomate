@@ -5,7 +5,7 @@
 	<line x1="55" y1="80" x2="75" y2="80" stroke="#263238" stroke-width="3" />
 	<rect x="50" y="110" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<text x="65" y="130" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
-	<text x="85" y="84" font-size="12" text-anchor="start" fill="#263238">fin1 = FALSE</text>
+	<text x="85" y="84" font-size="12" text-anchor="start" fill="#263238">end1 = FALSE</text>
 	<text x="65" y="172" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">1 · before</text>
 	<text x="65" y="190" font-size="11" text-anchor="middle" fill="#607d8b">X1 = TRUE · X2 = FALSE</text>
 	<rect x="230" y="20" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
@@ -14,7 +14,7 @@
 	<line x1="235" y1="80" x2="255" y2="80" stroke="#d84315" stroke-width="3" />
 	<rect x="230" y="110" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<text x="245" y="130" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
-	<text x="265" y="84" font-size="12" text-anchor="start" fill="#d84315" font-weight="bold">fin1 = TRUE</text>
+	<text x="265" y="84" font-size="12" text-anchor="start" fill="#d84315" font-weight="bold">end1 = TRUE</text>
 	<text x="245" y="172" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">2 · crossing</text>
 	<text x="245" y="190" font-size="11" text-anchor="middle" fill="#607d8b">X1 = TRUE · X2 = FALSE</text>
 	<rect x="410" y="20" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
@@ -23,7 +23,7 @@
 	<line x1="415" y1="80" x2="435" y2="80" stroke="#263238" stroke-width="3" />
 	<rect x="410" y="110" width="30" height="30" fill="#1976d2" stroke="#263238" stroke-width="1.8" />
 	<text x="425" y="130" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">2</text>
-	<text x="445" y="84" font-size="12" text-anchor="start" fill="#263238">fin1 = TRUE</text>
+	<text x="445" y="84" font-size="12" text-anchor="start" fill="#263238">end1 = TRUE</text>
 	<text x="425" y="172" font-size="12" text-anchor="middle" fill="#263238" font-weight="bold">3 · after</text>
 	<text x="425" y="190" font-size="11" text-anchor="middle" fill="#607d8b">X1 = FALSE · X2 = TRUE</text>
 	<text x="176" y="85" font-size="22" text-anchor="middle" fill="#607d8b">→</text>

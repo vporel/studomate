@@ -1,7 +1,7 @@
 /**
- * Identifiants stables des étapes de A1 (voir `StepData.id`, `ModuleStepper.tsx`) — source
- * unique, réutilisée par `a1/page.tsx` (contenu) et `../page.tsx` (savoir si le module est
- * achevé, via la reprise de progression) pour ne jamais désynchroniser les deux.
+ * Identifiants stables des étapes de A1 (voir `StepData.id`, `ModuleStepper.tsx`) : source
+ * unique, réutilisée par `a1/steps.ts` (contenu) et `training-module-step-ids.ts` (savoir si
+ * le module est achevé, via la reprise de progression).
  */
 const A1_STEP_IDS = {
 	grafcetDefinition: "grafcet-definition",

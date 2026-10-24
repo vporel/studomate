@@ -204,4 +204,34 @@ describe("parking.template", () => {
 			});
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createParkingSolution(),
+				createParkingSolution("fr"),
+			]) {
+				expect(project.name).toBe("Parking à barrière — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Commande",
+					"Signalisation",
+				]);
+			}
+		});
+
+		it("nomme le projet et les programmes en anglais, sans accent", () => {
+			const project = createParkingSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual([
+				"Barrier parking: solution",
+				"Control",
+				"Signaling",
+			]);
+			expect(createParkingProject("en").name).toBe("Barrier parking");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

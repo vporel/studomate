@@ -1,0 +1,8 @@
+{
+	"statement": "## OR divergence\n\nInputs: `cycle_start1`, `cycle_start2`, `end1`, `end2`. Outputs: `output1`, `output2`.\n\n### Work to do\n\n1. On `cycle_start1`, activate `output1`; on `end1`, return to the initial state.\n2. On `cycle_start2` (exclusive with `cycle_start1`), activate `output2`; on `end2`, return to the initial state.\n3. Give the same receptivity to both branches and read the message in the analysis panel,\n   then restore exclusive receptivities.",
+	"texts": {
+		"projectName": "OR divergence",
+		"solutionName": "OR divergence: solution",
+		"grafcetName": "OR divergence"
+	}
+}

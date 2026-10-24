@@ -1,0 +1,11 @@
+{
+	"statement": "## Ascenseur 3 niveaux\n\nUn ascenseur dessert trois étages (0, 1, 2). Appels : `appel_0..2` (paliers) et `cabine_0..2` (pupitre).\nSorties : `monter`, `descendre` (déplacement) et `porte` (ouverture). Capteurs de position d'étage\n`etage_0..2` et `porte_ouverte`, ainsi que la hauteur de la cabine `position`, sont fournis par la scène 3D\n(menu Interface → Scène 3D) : la cabine et sa porte y sont animées, la porte reste ouverte au moins 2 s.\n\n### Travail demandé\n\n1. Sur un appel, déplacer la cabine vers l'étage demandé dans le bon sens.\n2. À l'arrivée, arrêter la cabine et ouvrir la porte pendant 3 s, puis la refermer.\n3. Ignorer un nouvel appel tant qu'un déplacement est en cours (traitement d'un appel à la fois).\n4. Valider en simulation avec l'afficheur d'étage et l'animation de la cabine.",
+	"texts": {
+		"projectName": "Ascenseur",
+		"solutionName": "Ascenseur — solution",
+		"controlGrafcet": "Commande",
+		"displayProgram": "Affichage",
+		"displaySectionTitle": "Affichage",
+		"displaySectionDescription": "Sortie destinée au pupitre : numéro d'étage courant."
+	}
+}

@@ -1,10 +1,12 @@
 import type { Locale } from "@/i18n/config";
+import type { TemplateContent } from "./template-content.types";
 
 import frCommon from "./fr/common.json";
 import frPreferences from "./fr/preferences.json";
 import frAnalysisIssues from "./fr/analysisIssues.json";
 import frExpressionErrors from "./fr/expressionErrors.json";
 import frTemplates from "./fr/templates.json";
+import frTemplateContent from "./fr/template-content";
 import frMenu from "./fr/menu.json";
 import frAuth from "./fr/auth.json";
 import frExplorer from "./fr/explorer.json";
@@ -31,6 +33,7 @@ import enPreferences from "./en/preferences.json";
 import enAnalysisIssues from "./en/analysisIssues.json";
 import enExpressionErrors from "./en/expressionErrors.json";
 import enTemplates from "./en/templates.json";
+import enTemplateContent from "./en/template-content";
 import enMenu from "./en/menu.json";
 import enAuth from "./en/auth.json";
 import enExplorer from "./en/explorer.json";
@@ -59,6 +62,7 @@ export type Messages = {
 	analysisIssues: typeof frAnalysisIssues;
 	expressionErrors: typeof frExpressionErrors;
 	templates: typeof frTemplates;
+	templateContent: Record<string, TemplateContent>;
 	menu: typeof frMenu;
 	auth: typeof frAuth;
 	explorer: typeof frExplorer;
@@ -89,6 +93,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		analysisIssues: frAnalysisIssues,
 		expressionErrors: frExpressionErrors,
 		templates: frTemplates,
+		templateContent: frTemplateContent,
 		menu: frMenu,
 		auth: frAuth,
 		explorer: frExplorer,
@@ -117,6 +122,7 @@ const MESSAGES: Record<Locale, Messages> = {
 		analysisIssues: enAnalysisIssues,
 		expressionErrors: enExpressionErrors,
 		templates: enTemplates,
+		templateContent: enTemplateContent,
 		menu: enMenu,
 		auth: enAuth,
 		explorer: enExplorer,

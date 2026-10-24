@@ -1,0 +1,14 @@
+{
+	"statement": "## Lire un programme Ladder\n\nEntrées : `a`, `b`, `c` (trois commutateurs qui gardent leur position, à 0 au repos). Sorties : `s1`, `s2`, `s3`, `s4`.\n\n### Travail demandé\n\n1. Ouvrir le programme Main : quatre réseaux les uns sous les autres.\n2. Sans lancer la simulation, prédire l'état de `s1` à `s4` pour chaque combinaison d'entrées :\n\n   | a | b | c | s1 | s2 | s3 | s4 |\n   |---|---|---|----|----|----|----|\n   | 0 | 0 | 0 |    |    |    |    |\n   | 1 | 0 | 0 |    |    |    |    |\n   | 1 | 1 | 0 |    |    |    |    |\n   | 1 | 1 | 1 |    |    |    |    |\n\n3. Vérifier vos prédictions en simulation, avec la table de visualisation.\n4. Si une prédiction diffère, relire le réseau concerné contact par contact.\n5. Expliquer pourquoi `s3` s'éteint quand `b` est actionné.",
+	"texts": {
+		"projectName": "Lire un programme Ladder",
+		"network1Title": "Réseau 1",
+		"network2Title": "Réseau 2",
+		"network3Title": "Réseau 3",
+		"network4Title": "Réseau 4",
+		"network1Description": "Prédisez s1 pour chaque combinaison de a et b.",
+		"network2Description": "Prédisez s2 pour chaque combinaison de a et b.",
+		"network3Description": "Prédisez s3 pour chaque combinaison de a et b.",
+		"network4Description": "Prédisez s4 pour chaque combinaison de a, b et c."
+	}
+}

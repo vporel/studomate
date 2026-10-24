@@ -12,7 +12,7 @@
 	<text x="78" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X0</text>
 	<line x1="134" y1="60" x2="134" y2="80" stroke="#263238" stroke-width="2.5" />
 	<line x1="146" y1="60" x2="146" y2="80" stroke="#263238" stroke-width="2.5" />
-	<text x="140" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">dcy</text>
+	<text x="140" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">cycle_start</text>
 	<path d="M 230 60 Q 223 70 230 80" fill="none" stroke="#263238" stroke-width="2.5" />
 	<path d="M 246 60 Q 253 70 246 80" fill="none" stroke="#263238" stroke-width="2.5" />
 	<text x="238" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T0</text>
@@ -27,7 +27,7 @@
 	<text x="340" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
 	<line x1="396" y1="60" x2="396" y2="80" stroke="#263238" stroke-width="2.5" />
 	<line x1="408" y1="60" x2="408" y2="80" stroke="#263238" stroke-width="2.5" />
-	<text x="402" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">fin1</text>
+	<text x="402" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">end1</text>
 	<path d="M 492 60 Q 485 70 492 80" fill="none" stroke="#263238" stroke-width="2.5" />
 	<path d="M 508 60 Q 515 70 508 80" fill="none" stroke="#263238" stroke-width="2.5" />
 	<text x="500" y="55" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T1</text>
@@ -42,7 +42,7 @@
 	<text x="78" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
 	<line x1="134" y1="102" x2="134" y2="122" stroke="#263238" stroke-width="2.5" />
 	<line x1="146" y1="102" x2="146" y2="122" stroke="#263238" stroke-width="2.5" />
-	<text x="140" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">fin2</text>
+	<text x="140" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">end2</text>
 	<path d="M 230 102 Q 223 112 230 122" fill="none" stroke="#263238" stroke-width="2.5" />
 	<path d="M 246 102 Q 253 112 246 122" fill="none" stroke="#263238" stroke-width="2.5" />
 	<text x="238" y="97" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">T2</text>
@@ -174,7 +174,7 @@
 	<text x="78" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X1</text>
 	<path d="M 230 456 Q 223 466 230 476" fill="none" stroke="#263238" stroke-width="2.5" />
 	<path d="M 246 456 Q 253 466 246 476" fill="none" stroke="#263238" stroke-width="2.5" />
-	<text x="238" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">sortie1</text>
+	<text x="238" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">output1</text>
 	<line x1="32" y1="466" x2="72" y2="466" stroke="#263238" stroke-width="2" />
 	<line x1="84" y1="466" x2="230" y2="466" stroke="#263238" stroke-width="2" />
 	<line x1="246" y1="466" x2="278" y2="466" stroke="#263238" stroke-width="2" />
@@ -185,7 +185,7 @@
 	<text x="340" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">X2</text>
 	<path d="M 492 456 Q 485 466 492 476" fill="none" stroke="#263238" stroke-width="2.5" />
 	<path d="M 508 456 Q 515 466 508 476" fill="none" stroke="#263238" stroke-width="2.5" />
-	<text x="500" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">sortie2</text>
+	<text x="500" y="451" font-size="11" text-anchor="middle" fill="#263238" font-family="monospace">output2</text>
 	<line x1="294" y1="466" x2="334" y2="466" stroke="#263238" stroke-width="2" />
 	<line x1="346" y1="466" x2="492" y2="466" stroke="#263238" stroke-width="2" />
 	<line x1="508" y1="466" x2="540" y2="466" stroke="#263238" stroke-width="2" />

@@ -1,0 +1,14 @@
+{
+	"statement": "## Reading edges\n\nA single input `selector` (a selector that keeps its position) drives three outputs: `s_no` (NO contact), `s_p` (P contact), `s_n` (N contact), each through an S coil. `clear` resets all three.\n\n### Task\n\n1. In step-by-step simulation, set `selector` to 1, advance several cycles, then set it back to 0.\n2. Note cycle by cycle the state of the three **contacts** (colour in the editor) and of the three outputs: this is a timing diagram. Since the outputs are latched by S, press `clear` between two trials.\n3. Explain why the P contact and the N contact are only conducting for a single cycle, while `s_p` and `s_n` stay true once latched.",
+	"texts": {
+		"projectName": "Reading edges",
+		"network1Title": "Network 1",
+		"network1Description": "Note the state of s_no cycle by cycle while selector goes from 0 to 1 and back to 0.",
+		"network2Title": "Network 2",
+		"network2Description": "Note the state of s_p cycle by cycle while selector goes from 0 to 1 and back to 0.",
+		"network3Title": "Network 3",
+		"network3Description": "Note the state of s_n cycle by cycle while selector goes from 0 to 1 and back to 0.",
+		"resetTitle": "Reset",
+		"resetDescription": "Pressing clear resets the three outputs to false."
+	}
+}

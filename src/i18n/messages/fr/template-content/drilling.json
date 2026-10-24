@@ -1,0 +1,11 @@
+{
+	"statement": "## Poste de perçage\n\nUne perceuse automatique usine une pièce en un cycle. Entrée : `dcy` (bouton départ cycle).\nSorties : `descendre`, `monter` (mouvement de la table) et `broche` (rotation du foret).\nLes capteurs de fin de course `h` (foret en haut) et `b` (foret en bas), ainsi que la course du foret `position`,\nsont fournis par la scène 3D (menu Interface → Scène 3D) : le foret y descend, tourne et perce la pièce.\n\n### Travail demandé\n\n1. Au repos, la table est en position haute, broche à l'arrêt.\n2. Sur appui de `dcy` : mettre la broche en rotation puis descendre jusqu'à `b`.\n3. Maintenir le perçage 3 s en position basse, puis remonter jusqu'à `h` et arrêter la broche.\n4. Le cycle ne redémarre que sur un nouvel appui de `dcy`.\n5. Valider en simulation avec la scène 3D et l'animation de l'IHM.",
+	"texts": {
+		"projectName": "Poste de perçage",
+		"solutionName": "Poste de perçage — solution",
+		"controlGrafcet": "Commande",
+		"operativePartProgram": "Partie opérative",
+		"operativeSectionTitle": "Modèle de partie opérative",
+		"operativeSectionDescription": "Simule le déplacement du foret et les capteurs de fin de course à la place d'une partie opérative réelle. Ne pas modifier : ce n'est pas le programme de commande à écrire."
+	}
+}

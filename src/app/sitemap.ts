@@ -14,7 +14,7 @@ import {
 	moduleEntryPathname,
 	moduleStepPathname,
 } from "./[locale]/training/training-modules";
-import { TRAINING_MODULE_IDS } from "./[locale]/training/training-module-ids";
+import { TRAINING_MODULE_IDS } from "@/training/module-ids";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? APP_URL;
 

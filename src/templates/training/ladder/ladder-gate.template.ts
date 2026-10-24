@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import { createRandomId } from "@/ids";
@@ -18,14 +20,15 @@ import {
 } from "@/templates/training/utils/training-variables";
 
 /** Partial table: only the outputs are declared, the student declares the inputs. */
-export function createLadderGateProject(): Project {
-	const project = new Project(createRandomId(), "Portail motorisé", "");
+export function createLadderGateProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-gate", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(output("ouvrir"), output("fermer"));
 	return project;
 }
 
 /** Stop button, limit switches, photocell and outputs shared by every gate exercise. */
-export function createGateCommonVariables(): Variable[] {
+export function createGateCommonVariables(_locale: Locale = "fr"): Variable[] {
 	return [
 		stopButton("arret"),
 		input("fc_ouvert"),
@@ -36,48 +39,45 @@ export function createGateCommonVariables(): Variable[] {
 	];
 }
 
-export function createLadderGateSolution(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Portail motorisé : solution",
-		"",
-	);
+export function createLadderGateSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-gate", locale);
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	project.variables.push(
 		pushButton("bp_ouvrir"),
 		pushButton("bp_fermer"),
-		...createGateCommonVariables(),
+		...createGateCommonVariables(locale),
 	);
 	setMainSections(project, [
 		section(
-			"Ouverture",
-			"Ordre d'ouverture, verrouillé par la fermeture.",
+			t("openTitle"),
+			t("openDescription"),
 			no("bp_ouvrir"),
 			nf("fermer"),
 			setCoil("ouvrir"),
 		),
 		section(
-			"Fermeture",
-			"Ordre de fermeture, verrouillé par l'ouverture.",
+			t("closeTitle"),
+			t("closeDescription"),
 			no("bp_fermer"),
 			nf("ouvrir"),
 			setCoil("fermer"),
 		),
 		section(
-			"Réouverture sur barrière immatérielle",
-			"Barrière immatérielle coupée pendant la fermeture : la fermeture s'arrête et le portail se rouvre.",
+			t("reopenTitle"),
+			t("reopenDescription"),
 			no("barriere_immaterielle"),
 			no("fermer"),
 			or([setCoil("ouvrir")], [resetCoil("fermer")]),
 		),
 		section(
-			"Arrêt de l'ouverture",
-			"Arrêt (contact NF) ou fin de course ouvert : le mouvement s'arrête, l'arrêt l'emporte.",
+			t("stopOpeningTitle"),
+			t("stopOpeningDescription"),
 			or([nf("arret")], [no("fc_ouvert")]),
 			resetCoil("ouvrir"),
 		),
 		section(
-			"Arrêt de la fermeture",
-			"Arrêt (contact NF) ou fin de course fermé.",
+			t("stopClosingTitle"),
+			t("stopClosingDescription"),
 			or([nf("arret")], [no("fc_ferme")]),
 			resetCoil("fermer"),
 		),

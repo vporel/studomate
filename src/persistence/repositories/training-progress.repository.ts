@@ -5,21 +5,48 @@ const TABLE = "training_progress";
 
 export const TRAINING_PROGRESS_LOCAL_KEY = "studomate_training_progress";
 
-type LocalProgress = Record<string, string>;
+/** `updatedAt` is `null` for progress saved before timestamps were kept (stored as a bare step id). */
+type LocalEntry = { stepId: string; updatedAt: string | null };
+
+type LocalProgress = Record<string, LocalEntry>;
 
 function readLocal(): LocalProgress {
 	const parsed = readJson(TRAINING_PROGRESS_LOCAL_KEY);
-	return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-		? (parsed as LocalProgress)
-		: {};
+	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+	const progress: LocalProgress = {};
+	for (const [moduleId, value] of Object.entries(parsed)) {
+		if (typeof value === "string") {
+			progress[moduleId] = { stepId: value, updatedAt: null };
+		} else if (
+			value &&
+			typeof value === "object" &&
+			typeof (value as LocalEntry).stepId === "string"
+		) {
+			const { stepId, updatedAt } = value as LocalEntry;
+			progress[moduleId] = {
+				stepId,
+				updatedAt: typeof updatedAt === "string" ? updatedAt : null,
+			};
+		}
+	}
+	return progress;
 }
 
 // Quota or storage disabled: progress is simply not kept in this browser.
 function writeLocal(moduleId: string, stepId: string): void {
 	writeJson(TRAINING_PROGRESS_LOCAL_KEY, {
 		...readLocal(),
-		[moduleId]: stepId,
+		[moduleId]: { stepId, updatedAt: new Date().toISOString() },
 	});
+}
+
+export type TrainingModuleSteps = { moduleId: string; stepIds: string[] };
+
+export type LastTrainingProgress = { moduleId: string; stepId: string };
+
+function timestamp(iso: string | null | undefined): number {
+	const time = iso ? Date.parse(iso) : NaN;
+	return Number.isNaN(time) ? 0 : time;
 }
 
 /** The furthest of two saved steps, ignoring ids that are not part of `stepIds`. */
@@ -54,7 +81,7 @@ export default class TrainingProgressRepository {
 
 	/** `stepIds`: the module's steps, first to last, used to compare progress. */
 	async getStepId(moduleId: string, stepIds: string[]): Promise<string | null> {
-		const local = readLocal()[moduleId] ?? null;
+		const local = readLocal()[moduleId]?.stepId ?? null;
 		const userId = await this.getUserId();
 		if (!userId) return furthestStepId(local, null, stepIds);
 
@@ -70,6 +97,47 @@ export default class TrainingProgressRepository {
 		if (best && best !== cloud && !error)
 			await this.upsertCloud(userId, moduleId, best);
 		return best;
+	}
+
+	/**
+	 * The module whose progress was saved most recently, with its furthest saved step. Progress
+	 * saved before timestamps were kept has no date and loses to any dated progress; among
+	 * undated modules the later one in `modules` wins. `null` when no module was started.
+	 */
+	async getLastProgress(
+		modules: TrainingModuleSteps[],
+	): Promise<LastTrainingProgress | null> {
+		const local = readLocal();
+		const cloud = new Map<string, { stepId: string; updatedAt: string }>();
+		const userId = await this.getUserId();
+		if (userId) {
+			const { data, error } = await supabase
+				.from(TABLE)
+				.select("module_id, step_id, updated_at")
+				.eq("user_id", userId);
+			if (!error)
+				for (const row of data ?? [])
+					cloud.set(row.module_id as string, {
+						stepId: row.step_id as string,
+						updatedAt: row.updated_at as string,
+					});
+		}
+
+		let last: (LastTrainingProgress & { time: number }) | null = null;
+		for (const { moduleId, stepIds } of modules) {
+			const stepId = furthestStepId(
+				local[moduleId]?.stepId ?? null,
+				cloud.get(moduleId)?.stepId ?? null,
+				stepIds,
+			);
+			if (!stepId) continue;
+			const time = Math.max(
+				timestamp(local[moduleId]?.updatedAt),
+				timestamp(cloud.get(moduleId)?.updatedAt),
+			);
+			if (!last || time >= last.time) last = { moduleId, stepId, time };
+		}
+		return last && { moduleId: last.moduleId, stepId: last.stepId };
 	}
 
 	async saveStepId(moduleId: string, stepId: string): Promise<void> {

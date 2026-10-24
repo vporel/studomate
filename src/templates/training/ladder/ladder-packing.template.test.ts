@@ -1,3 +1,6 @@
+import * as templates from "./ladder-packing.template";
+import type { Locale } from "@/i18n/config";
+import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import {
 	PACKING_PRESET,
@@ -104,4 +107,35 @@ describe("ladder-packing.template", () => {
 		);
 		expect(project.main.sections).toHaveLength(3);
 	});
+});
+
+describe("ladder-packing.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[templates.createLadderPackingProject, "Mise en caisse", "Case packing"],
+		[
+			templates.createLadderPackingSolution,
+			"Mise en caisse : solution",
+			"Case packing: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

@@ -14,8 +14,8 @@
 	<text x="174" y="88" font-size="11" text-anchor="middle" fill="#607d8b">opening direction</text>
 	<rect x="42" y="118" width="8" height="24" fill="#bbdefb" stroke="#263238" stroke-width="1.5" />
 	<rect x="290" y="118" width="8" height="24" fill="#bbdefb" stroke="#263238" stroke-width="1.5" />
-	<text x="46" y="112" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">fc_ferme</text>
-	<text x="296" y="112" font-size="11" text-anchor="end" fill="#263238" font-weight="bold">fc_ouvert</text>
+	<text x="46" y="112" font-size="11" text-anchor="start" fill="#263238" font-weight="bold">limit_closed</text>
+	<text x="296" y="112" font-size="11" text-anchor="end" fill="#263238" font-weight="bold">limit_open</text>
 	<rect x="182" y="156" width="70" height="26" rx="4" fill="#ffcc80" stroke="#263238" stroke-width="1.5" />
 	<text x="217" y="173" font-size="11" text-anchor="middle" fill="#263238">motor</text>
 	<rect x="50" y="194" width="10" height="16" fill="#bbdefb" stroke="#263238" stroke-width="1.5" />
@@ -35,34 +35,34 @@
 	<text x="472" y="26" font-size="12" text-anchor="start" fill="#263238" font-weight="bold">Role</text>
 	<rect x="312" y="34" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="34" x2="464" y2="68" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="56" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">bp_ouvrir</text>
+	<text x="320" y="56" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">pb_open</text>
 	<text x="472" y="56" font-size="11" text-anchor="start" fill="#263238">Open button</text>
 	<rect x="312" y="68" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="68" x2="464" y2="102" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="90" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">bp_fermer</text>
+	<text x="320" y="90" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">pb_close</text>
 	<text x="472" y="90" font-size="11" text-anchor="start" fill="#263238">Close button</text>
 	<rect x="312" y="102" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="102" x2="464" y2="136" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="124" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">arret</text>
+	<text x="320" y="124" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">stop</text>
 	<text x="472" y="124" font-size="11" text-anchor="start" fill="#263238">stop button</text>
 	<rect x="312" y="136" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="136" x2="464" y2="170" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="158" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">fc_ouvert</text>
+	<text x="320" y="158" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">limit_open</text>
 	<text x="472" y="158" font-size="11" text-anchor="start" fill="#263238">open limit switch</text>
 	<rect x="312" y="170" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="170" x2="464" y2="204" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="192" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">fc_ferme</text>
+	<text x="320" y="192" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">limit_closed</text>
 	<text x="472" y="192" font-size="11" text-anchor="start" fill="#263238">closed limit switch</text>
 	<rect x="312" y="204" width="280" height="34" fill="#e3f2fd" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="204" x2="464" y2="238" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="226" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">barriere_immaterielle</text>
+	<text x="320" y="226" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">photocell</text>
 	<text x="472" y="226" font-size="11" text-anchor="start" fill="#263238">photocell</text>
 	<rect x="312" y="238" width="280" height="34" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="238" x2="464" y2="272" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="260" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">ouvrir</text>
+	<text x="320" y="260" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">open</text>
 	<text x="472" y="260" font-size="11" text-anchor="start" fill="#263238">opening command</text>
 	<rect x="312" y="272" width="280" height="34" fill="#ffe0b2" stroke="#263238" stroke-width="1.5" />
 	<line x1="464" y1="272" x2="464" y2="306" stroke="#263238" stroke-width="1.5" />
-	<text x="320" y="294" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">fermer</text>
+	<text x="320" y="294" font-size="11" text-anchor="start" fill="#263238" font-family="monospace">close</text>
 	<text x="472" y="294" font-size="11" text-anchor="start" fill="#263238">closing command</text>
 </svg>

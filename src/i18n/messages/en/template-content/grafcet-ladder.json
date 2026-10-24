@@ -1,0 +1,20 @@
+{
+	"texts": {
+		"initialStepTitle": "Initial step activation",
+		"initialStepDescription": "On the first scan, the initialization memory is false: the initial steps are activated.",
+		"initLatchTitle": "Initialization latch",
+		"initLatchDescription": "The initialization memory latches: activation happens only once.",
+		"crossingTitle": "Crossing condition {name}",
+		"crossingDescription": "All conditions are computed before any evolution (rule 4).",
+		"deactivationTitle": "Deactivation by {name}",
+		"deactivationDescription": "The upstream steps of the crossed transition are deactivated.",
+		"activationTitle": "Activation by {name}",
+		"activationDescription": "The downstream steps of the crossed transition are activated: activation wins (rule 5).",
+		"resetDeactivationTitle": "Reset: deactivation",
+		"resetDeactivationDescription": "All steps are deactivated.",
+		"resetInitialTitle": "Reset: initial step",
+		"resetInitialDescription": "The initial steps are reactivated.",
+		"outputTitle": "Output {output}",
+		"outputDescription": "Continuous action: true while any of the steps that drive it is active."
+	}
+}

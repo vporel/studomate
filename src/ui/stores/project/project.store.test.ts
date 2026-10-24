@@ -477,6 +477,23 @@ describe("createProjectStore", () => {
 			expect(store.getState().project!.scene3d!.bindings).toEqual({});
 		});
 
+		it("creates the variables under their English names in an English project", async () => {
+			const store = createProjectStore();
+			await openBlankProject(store);
+			store.getState().project!.setDialect(Dialect.EN);
+			store
+				.getState()
+				.setScene3d({ sceneId: "elevator", sceneVersion: 1, bindings: {} });
+
+			store.getState().createMissingScene3dVariables();
+
+			const { project } = store.getState();
+			const up = project!.variables.find(
+				(v) => v.id === project!.scene3d!.bindings.up,
+			)!;
+			expect(up.mnemonic).toBe("up");
+		});
+
 		it("does nothing without a scene", async () => {
 			const store = createProjectStore();
 			await openBlankProject(store);

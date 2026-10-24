@@ -8,7 +8,7 @@ import buildA1Steps from "./a1/steps";
 import buildA2Steps from "./a2/steps";
 import buildA3Steps from "./a3/steps";
 import buildA4Steps from "./a4/steps";
-import type { TrainingModuleId } from "./training-module-ids";
+import type { TrainingModuleId } from "@/training/module-ids";
 import type { TrainingTranslator } from "./training-translator";
 
 

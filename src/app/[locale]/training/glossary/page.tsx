@@ -51,7 +51,7 @@ export default async function Glossary({ params }: Props) {
 					),
 				}}
 			/>
-			<Box maxWidth={720} mb={4}>
+			<Box mb={4}>
 				<PageTitle>{pageTitle}</PageTitle>
 				<Typography textAlign="justify" color="text.secondary">
 					{intro}

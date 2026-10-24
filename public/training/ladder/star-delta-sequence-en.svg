@@ -13,12 +13,12 @@
 	<text x="590" y="312" font-size="11" text-anchor="middle" fill="#607d8b">25</text>
 	<text x="604" y="312" font-size="11" text-anchor="start" fill="#607d8b">s</text>
 
-	<text x="8" y="56" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">marche</text>
-	<text x="8" y="100" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">arret</text>
-	<text x="8" y="144" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_ligne</text>
-	<text x="8" y="188" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_etoile</text>
-	<text x="8" y="232" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_triangle</text>
-	<text x="8" y="276" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">ventilateur</text>
+	<text x="8" y="56" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">start</text>
+	<text x="8" y="100" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">stop</text>
+	<text x="8" y="144" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_line</text>
+	<text x="8" y="188" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_star</text>
+	<text x="8" y="232" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">km_delta</text>
+	<text x="8" y="276" font-size="11" font-family="monospace" font-weight="bold" text-anchor="start" fill="#263238">fan</text>
 	<path d="M 140 64 L 158 64 L 158 42 L 167 42 L 167 64 L 590 64" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
 	<path d="M 140 108 L 410 108 L 410 86 L 419 86 L 419 108 L 590 108" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
 	<path d="M 140 152 L 158 152 L 158 130 L 410 130 L 410 152 L 590 152" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
@@ -32,5 +32,5 @@
 	<text x="500" y="272" font-size="11" text-anchor="middle" fill="#607d8b">10 s after the stop</text>
 	<line x1="410" y1="256" x2="410" y2="268" stroke="#607d8b" stroke-width="1" />
 	<text x="8" y="340" font-size="11" text-anchor="start" fill="#455a64">Interlock: star and delta are never true at the same time.</text>
-	<text x="8" y="358" font-size="11" text-anchor="start" fill="#455a64">The fan stays on for 10 s after the motor stops (km_ligne).</text>
+	<text x="8" y="358" font-size="11" text-anchor="start" fill="#455a64">The fan stays on for 10 s after the motor stops (km_line).</text>
 </svg>

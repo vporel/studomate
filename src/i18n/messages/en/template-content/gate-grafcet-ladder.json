@@ -1,0 +1,7 @@
+{
+	"statement": "## Remote-controlled gate\n\nInputs: `remote` (a single button), `stop` (wired normally closed), `limit_open` and `limit_closed` (limit switches), `photocell` (photoelectric obstacle detection cell, true when the beam is broken). Outputs: `open` and `close`. The `init` memory is already created: once the GRAFCET is drawn, declare the step and crossing memories.\n\n### Specification\n\n1. A press (on rising edge) opens the gate if it is closed, closes it if it is open, and stops it if it is moving.\n2. After a stop mid-travel, the next press restarts in the direction opposite to the last movement.\n3. The stop button produces the same stop. While closing, the cell causes the gate to reopen.\n\n### Task\n\nFirst write the GRAFCET (on paper, or by adding a GRAFCET program to the project, excluded from execution), then implement it in Ladder in three blocks.",
+	"texts": {
+		"projectName": "Remote-controlled gate",
+		"solutionName": "Remote-controlled gate: solution"
+	}
+}

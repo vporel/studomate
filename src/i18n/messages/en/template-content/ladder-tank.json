@@ -1,0 +1,16 @@
+{
+	"statement": "## Tank\n\n| Variable | Role | Type |\n| --- | --- | --- |\n| `level` | tank level, from 0 to 100% | analog input (slider) |\n| `pump` | filling pump | output |\n| `alarm` | very high level alarm | output |\n| `start_count` | number of pump starts | memory (integer) |\n\n### Task\n\n1. The pump starts below 20% and stops above 80% (hysteresis: the pump keeps its state between the two thresholds, so a memory is needed).\n2. Alarm above 95%.\n3. The Main already contains a network that increments `start_count` under a NO contact: set `level` with the slider and observe in simulation that the counter increases on every cycle while the pump runs, then fix it with a P contact.",
+	"texts": {
+		"projectName": "Tank",
+		"solutionName": "Tank: solution",
+		"pumpStartTitle": "Pump start",
+		"pumpStartDescription": "Low level: latch the run command.",
+		"pumpStopTitle": "Pump stop",
+		"pumpStopDescription": "High level: stop.",
+		"alarmTitle": "Alarm",
+		"alarmDescription": "Very high level.",
+		"startCountTitle": "Start counter",
+		"startCountDescription": "Counts the pump starts.",
+		"solutionStartCountDescription": "A P contact increments only once per start."
+	}
+}

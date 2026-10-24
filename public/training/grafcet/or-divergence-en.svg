@@ -6,13 +6,13 @@
 	<line x1="90" y1="80" x2="270" y2="80" stroke="#263238" stroke-width="1.8" />
 	<line x1="90" y1="80" x2="90" y2="130" stroke="#263238" stroke-width="1.8" />
 	<line x1="80" y1="105" x2="100" y2="105" stroke="#263238" stroke-width="3" />
-	<text x="102" y="109" font-size="12" text-anchor="start" fill="#263238">dcy1</text>
+	<text x="102" y="109" font-size="12" text-anchor="start" fill="#263238">cycle_start1</text>
 	<rect x="75" y="130" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<text x="90" y="150" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">1</text>
 	<text x="90" y="182" font-size="12" text-anchor="middle" fill="#607d8b">branch 1</text>
 	<line x1="270" y1="80" x2="270" y2="130" stroke="#263238" stroke-width="1.8" />
 	<line x1="260" y1="105" x2="280" y2="105" stroke="#263238" stroke-width="3" />
-	<text x="282" y="109" font-size="12" text-anchor="start" fill="#263238">dcy2</text>
+	<text x="282" y="109" font-size="12" text-anchor="start" fill="#263238">cycle_start2</text>
 	<rect x="255" y="130" width="30" height="30" fill="#fff" stroke="#263238" stroke-width="1.8" />
 	<text x="270" y="150" font-size="12" font-weight="bold" text-anchor="middle" fill="#263238">2</text>
 	<text x="270" y="182" font-size="12" text-anchor="middle" fill="#607d8b">branch 2</text>

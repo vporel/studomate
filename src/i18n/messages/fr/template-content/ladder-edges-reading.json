@@ -1,0 +1,14 @@
+{
+	"statement": "## Lire les fronts\n\nUne même entrée `commut` (commutateur, qui garde sa position) pilote trois sorties : `s_no` (contact NO), `s_p` (contact P), `s_n` (contact N), chacune par une bobine S. `raz` remet les trois à zéro.\n\n### Travail demandé\n\n1. En simulation pas à pas, mettre `commut` à 1, avancer de plusieurs cycles, puis le remettre à 0.\n2. Relever cycle par cycle l'état des trois **contacts** (couleur dans l'éditeur) et des trois sorties : c'est un chronogramme. Les sorties étant mémorisées par S, appuyer sur `raz` entre deux essais.\n3. Expliquer pourquoi le contact P et le contact N ne sont passants qu'un seul cycle, alors que `s_p` et `s_n` restent à vrai une fois mémorisés.",
+	"texts": {
+		"projectName": "Lire les fronts",
+		"network1Title": "Réseau 1",
+		"network1Description": "Relevez cycle par cycle l'état de s_no pendant que commut passe de 0 à 1 puis revient à 0.",
+		"network2Title": "Réseau 2",
+		"network2Description": "Relevez cycle par cycle l'état de s_p pendant que commut passe de 0 à 1 puis revient à 0.",
+		"network3Title": "Réseau 3",
+		"network3Description": "Relevez cycle par cycle l'état de s_n pendant que commut passe de 0 à 1 puis revient à 0.",
+		"resetTitle": "Remise à zéro",
+		"resetDescription": "Un appui sur raz remet les trois sorties à faux."
+	}
+}

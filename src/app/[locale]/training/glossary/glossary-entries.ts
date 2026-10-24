@@ -140,13 +140,13 @@ const GLOSSARY_ENTRIES: GlossaryEntryDef[] = [
 	{
 		id: "action",
 		section: "grafcet",
-		figure: { name: "action", translatable: false, width: 300 },
+		figure: { name: "action", translatable: true, width: 300 },
 		related: ["step", "set-action", "output"],
 	},
 	{
 		id: "transition",
 		section: "grafcet",
-		figure: { name: "transition", translatable: false, width: 300 },
+		figure: { name: "transition", translatable: true, width: 300 },
 		related: ["receptivity", "evolution", "step"],
 	},
 	{
@@ -239,7 +239,7 @@ const GLOSSARY_ENTRIES: GlossaryEntryDef[] = [
 	{
 		id: "coil",
 		section: "ladder",
-		figure: { name: "coil", translatable: false, width: 300 },
+		figure: { name: "coil", translatable: true, width: 300 },
 		related: ["contact", "network", "output"],
 	},
 	{
@@ -256,7 +256,7 @@ const GLOSSARY_ENTRIES: GlossaryEntryDef[] = [
 	{
 		id: "self-holding",
 		section: "ladder",
-		figure: { name: "self-holding", translatable: false, width: 420 },
+		figure: { name: "self-holding", translatable: true, width: 420 },
 		related: ["priority-stop", "set-reset", "internal-memory"],
 	},
 	{
@@ -282,7 +282,7 @@ const GLOSSARY_ENTRIES: GlossaryEntryDef[] = [
 	{
 		id: "edge-contacts",
 		section: "ladder",
-		figure: { name: "edge-contacts", translatable: false, width: 360 },
+		figure: { name: "edge-contacts", translatable: true, width: 360 },
 		related: ["edge", "rising-edge", "falling-edge"],
 	},
 	{

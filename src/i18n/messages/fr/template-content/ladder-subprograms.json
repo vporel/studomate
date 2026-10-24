@@ -1,0 +1,16 @@
+{
+	"statement": "## Appeler un sous-programme\n\nLe Main commande la marche d'un convoyeur ; le ladder « Comptage » (un `CTU` de présélection 3 et son voyant) existe mais aucun bloc ne l'appelle.\n\n| Variable | Rôle | Nature |\n| --- | --- | --- |\n| `marche`, `arret` | démarre et arrête le convoyeur | boutons poussoirs (vrais tant qu'on appuie) |\n| `capteur_piece` | détecte chaque pièce | capteur |\n| `raz` | remet le comptage à zéro | bouton poussoir |\n| `convoyeur` | moteur du convoyeur | sortie |\n| `voyant_lot` | allumé quand 3 pièces sont comptées | sortie |\n\n### Travail demandé\n\n1. Lire le ladder « Comptage », lancer l'analyse (avertissement : ladder non appelé) puis la simulation : `voyant_lot` ne s'allume pas.\n2. Dans le Main, ajouter un réseau et y faire glisser « Comptage » depuis la section « Programmes » de l'explorateur. Relier le bloc d'appel au rail, sans condition.\n3. Vérifier : après trois passages de `capteur_piece`, `voyant_lot` s'allume ; `raz` le fait retomber.\n4. Expérience : placer un contact NO sur `convoyeur` devant le bloc d'appel. Convoyeur à l'arrêt, laisser `capteur_piece` à vrai puis démarrer le convoyeur : `cpt` compte une pièce jamais comptée. Expliquer pourquoi.",
+	"texts": {
+		"projectName": "Sous-programmes",
+		"solutionName": "Sous-programmes : solution",
+		"countingProgramName": "Comptage",
+		"countPartsTitle": "Comptage des pièces",
+		"countPartsDescription": "Le CTU compte les fronts montants de capteur_piece, remise à zéro par raz.",
+		"batchIndicatorTitle": "Voyant de lot",
+		"batchIndicatorDescription": "Allumé quand le lot est complet.",
+		"conveyorRunTitle": "Marche du convoyeur",
+		"conveyorRunDescription": "Auto-maintien à arrêt prioritaire.",
+		"callCountingTitle": "Appel du comptage",
+		"callCountingDescription": "Appel sans condition : le sous-programme s'exécute à chaque cycle."
+	}
+}

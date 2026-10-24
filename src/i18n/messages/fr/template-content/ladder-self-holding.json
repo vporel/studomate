@@ -1,0 +1,9 @@
+{
+	"statement": "## Pompe : auto-maintien\n\nEntrées : `marche` et `arret` (deux boutons poussoirs câblés à fermeture (NO) : 0 au repos, 1 tant qu'on appuie). Sortie : `pompe`.\n\n### Travail demandé\n\n1. Un appui sur `marche` démarre la pompe, qui reste en marche après le relâchement du bouton.\n2. Un appui sur `arret` l'arrête.\n3. Si on appuie sur les deux en même temps, la pompe reste éteinte (arrêt prioritaire).",
+	"texts": {
+		"projectName": "Pompe : auto-maintien",
+		"solutionName": "Pompe : auto-maintien : solution",
+		"pumpSectionTitle": "Commande de la pompe",
+		"pumpSectionDescription": "Auto-maintien à arrêt prioritaire : l'arrêt est en série, après le parallèle."
+	}
+}

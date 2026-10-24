@@ -1,7 +1,7 @@
 /**
  * Identifiants stables des étapes de A2 (voir `StepData.id`, `ModuleStepper.tsx`) : source
- * unique, réutilisée par `a2/page.tsx` (contenu) et `../page.tsx` (savoir si le module est
- * achevé, via la reprise de progression).
+ * unique, réutilisée par `a2/steps.ts` (contenu) et `training-module-step-ids.ts` (savoir si
+ * le module est achevé, via la reprise de progression).
  */
 const A2_STEP_IDS = {
 	ladderBasics: "ladder-basics",

@@ -2,6 +2,7 @@
 
 import FlexBox from "@/ui/lib/boxes/FlexBox";
 import AppToolbar from "@/ui/components/app-toolbar/AppToolbar";
+import AppLanguageSwitch from "@/ui/components/language-switch/AppLanguageSwitch";
 import AccountStatus from "@/ui/components/auth/AccountStatus";
 import ProjectNameInput from "./ProjectNameInput";
 import UnsavedChangesIndicator from "./UnsavedChangesIndicator";
@@ -28,6 +29,7 @@ const TitleBar = () => {
 				centerVertical
 				sx={{ width: 350, justifyContent: "flex-end", px: 1, gap: 1 }}
 			>
+				<AppLanguageSwitch />
 				<AccountStatus />
 			</FlexBox>
 		</FlexBox>

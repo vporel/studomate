@@ -1,0 +1,17 @@
+{
+	"statement": "## Drilling station in Ladder\n\nThe operative part (the machine: drill, motor, sensors) is provided and called by the Main: do not modify it. Inputs: `cycle_start` (push button, cycle start), `h` (drill up), `b` (drill down) and `blocked` (switch that simulates a jammed drill: the drill no longer moves down while it is true). Outputs: `down`, `up` and `spindle`. Provided memories: `fault`, `X0` to `X3`, `T0` to `T4` and `init`.\n\n### Task\n\n1. Implement the station's GRAFCET: `cycle_start` → descent (`down`, `spindle`) until `b` → drilling for 2 s (`spindle`, a `TON`) → rise (`up`, `spindle`) until `h`.\n2. Monitor the descent: if the drill does not reach `b` within 8 s (a second `TON`), `fault` is stored and the drill rises directly. A new press on `cycle_start` clears `fault`. Test by operating `blocked`.",
+	"texts": {
+		"projectName": "Drilling station in Ladder",
+		"solutionName": "Drilling station in Ladder: solution",
+		"drillTimer": "t_drill",
+		"watchdogTimer": "t_watchdog",
+		"drillTimerTitle": "Drilling delay",
+		"drillTimerDescription": "The TON measures the drilling time.",
+		"watchdogTitle": "Descent monitoring",
+		"watchdogDescription": "The TON monitors the descent: after {seconds} s without reaching the bottom, the fallback transition is crossed.",
+		"faultTitle": "Stored fault",
+		"faultDescription": "The descent fault is stored.",
+		"faultResetTitle": "Fault acknowledgement",
+		"faultResetDescription": "A new cycle clears the fault."
+	}
+}

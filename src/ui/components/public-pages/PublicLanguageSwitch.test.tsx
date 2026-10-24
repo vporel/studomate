@@ -3,7 +3,8 @@
  */
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
-import LanguageSwitch from "./LanguageSwitch";
+import { getPreferredLocale } from "@/persistence/preferences.storage";
+import PublicLanguageSwitch from "./PublicLanguageSwitch";
 
 let mockPathname = "/about";
 let mockParams: Record<string, string> = {};
@@ -18,13 +19,14 @@ jest.mock("next/navigation", () => ({
 }));
 
 function openMenu() {
-	renderWithI18n(<LanguageSwitch />);
+	renderWithI18n(<PublicLanguageSwitch />);
 	fireEvent.click(screen.getByRole("button"));
 	return screen.getAllByRole("menuitem");
 }
 
-describe("LanguageSwitch", () => {
+describe("PublicLanguageSwitch", () => {
 	beforeEach(() => {
+		localStorage.clear();
 		mockPathname = "/about";
 		mockParams = {};
 	});
@@ -36,7 +38,7 @@ describe("LanguageSwitch", () => {
 	});
 
 	it("garde les liens de langue dans le DOM avant ouverture du menu", () => {
-		renderWithI18n(<LanguageSwitch />);
+		renderWithI18n(<PublicLanguageSwitch />);
 
 		const hrefs = screen
 			.getAllByRole("menuitem", { hidden: true })
@@ -82,5 +84,11 @@ describe("LanguageSwitch", () => {
 		const [fr, en] = openMenu();
 		expect(fr).toHaveAttribute("href", "/fr");
 		expect(en).toHaveAttribute("href", "/en");
+	});
+
+	it("mémorise la langue choisie pour /app et l'accueil", () => {
+		const [, en] = openMenu();
+		fireEvent.click(en);
+		expect(getPreferredLocale()).toBe("en");
 	});
 });

@@ -24,11 +24,6 @@
 		"createdBy": "Créé par",
 		"slogan": "Créer, Simuler, Automatiser"
 	},
-	"languageSwitch": {
-		"label": "Langue",
-		"fr": "Français",
-		"en": "English"
-	},
 	"landing": {
 		"heroTitle": "Apprenez le GRAFCET<br></br>et le Ladder en simulant",
 		"heroTagline": "Concevez, simulez et testez vos automatismes avec des HMI animées, directement dans le navigateur.",

@@ -122,4 +122,36 @@ describe("carton-sorting.template", () => {
 			expect(project.scene3d?.sceneId).toBe("carton-sorting");
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createCartonSortingSolution(),
+				createCartonSortingSolution("fr"),
+			]) {
+				expect(project.name).toBe("Poste de tri de caisses — solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Commande",
+				]);
+				expect(project.variables.find((v) => v.mnemonic === "C")?.comment).toBe(
+					"compteur de caisses triées",
+				);
+			}
+		});
+
+		it("traduit les textes visibles en anglais sans toucher aux mnémoniques", () => {
+			const project = createCartonSortingSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["Carton sorting station: solution", "Control"]);
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+			const counter = project.variables.find((v) => v.mnemonic === "C");
+			expect(counter?.comment).toBe("count of sorted cartons");
+			expect(project.variables.map((v) => v.mnemonic)).toEqual(
+				createCartonSortingSolution("fr").variables.map((v) => v.mnemonic),
+			);
+		});
+	});
 });

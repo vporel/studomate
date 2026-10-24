@@ -1,0 +1,7 @@
+{
+	"statement": "## Séquence linéaire en Ladder\n\nGRAFCET : E0 (initiale) → `dcy` → E1 (`sortie1`) → `fin1` → E2 (`sortie2`) → `fin2` → E3 → VRAI → E0. Actions continues.\n\nEntrées : `dcy` (bouton poussoir), `fin1` et `fin2` (fins de course). Sorties : `sortie1` et `sortie2`. Mémoires fournies : `X0` à `X3` (une par étape), `T0` à `T3` (une par transition) et `init`.\n\n### Travail demandé\n\nImplanter le GRAFCET avec la méthode en trois blocs :\n\n1. Activer `X0` au démarrage, une seule fois.\n2. Conditions de franchissement : un réseau par transition.\n3. Évolution des étapes : tous les reset, puis tous les set.\n4. Sorties : un réseau par sortie.\n\n### Comment savoir que c'est juste\n\n- Au démarrage, seule `X0` est vraie ; `dcy` active `X1` seule et allume `sortie1` ; `fin1` active `X2` seule ; `fin2` active `X3`, puis un cycle plus tard `X0`.\n- Avec `dcy` et `fin1` vrais ensemble, une seule transition est franchie par cycle.\n- Le panneau d'analyse n'indique aucune erreur.",
+	"texts": {
+		"projectName": "Séquence linéaire en Ladder",
+		"solutionName": "Séquence linéaire en Ladder : solution"
+	}
+}

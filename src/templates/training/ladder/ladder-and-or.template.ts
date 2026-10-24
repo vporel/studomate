@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -16,12 +18,9 @@ import {
  * "AND / OR observation" project: two provided networks (series and parallel contacts) that the
  * student exercises in simulation to see the truth table at work. No solution to write.
  */
-export function createLadderAndOrProject(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Contacts en série et en parallèle",
-		"",
-	);
+export function createLadderAndOrProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-and-or", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		toggleSwitch("a"),
 		toggleSwitch("b"),
@@ -29,13 +28,8 @@ export function createLadderAndOrProject(): Project {
 		output("s_ou"),
 	);
 	setMainSections(project, [
-		section("Contacts en série", "", no("a"), no("b"), coil("s_et")),
-		section(
-			"Contacts en parallèle",
-			"",
-			or([no("a")], [no("b")]),
-			coil("s_ou"),
-		),
+		section(t("seriesTitle"), "", no("a"), no("b"), coil("s_et")),
+		section(t("parallelTitle"), "", or([no("a")], [no("b")]), coil("s_ou")),
 	]);
 	return project;
 }

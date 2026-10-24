@@ -166,6 +166,26 @@ export type ArithmeticBlockParams = {
 	operator: ArithmeticOperator;
 };
 
+/**
+ * Params of a block that hold the raw text of a pin: a variable mnemonic or a literal. The other
+ * params (`name`, `programId`, `operator`, `inType`, `outType`, `timerType`, `counterType`) never
+ * reference a variable.
+ */
+export const BLOCK_PIN_PARAM_KEYS = [
+	"in",
+	"in1",
+	"in2",
+	"out",
+	"pt",
+	"et",
+	"control",
+	"pv",
+	"cv",
+	"down",
+	"load",
+	"qd",
+] as const;
+
 /** Ports structurels d'un bloc `"compare"` : IN/Q câblés sur le rail. IN1/IN2 ne sont pas des
  * pinoches paramètre au sens `BlockPortSpec` — `CompareBlockNode` les rend lui-même. */
 export const COMPARE_PORT_SPECS: BlockPortSpec[] = structuralRailPorts(

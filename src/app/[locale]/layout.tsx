@@ -42,7 +42,7 @@ export default async function LocaleLayout({
 				namespaces={[
 					"public.header",
 					"public.footer",
-					"public.languageSwitch",
+					"common.languageSwitch",
 					"auth",
 					"profile",
 				]}

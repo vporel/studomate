@@ -202,8 +202,14 @@ export default function ModuleStepper({
 			.then((stepId) => {
 				if (cancelled) return;
 				const savedIndex = stepId ? stepIds.indexOf(stepId) : -1;
-				setFurthestIndex(Math.max(hashIndex ?? -1, initialIndex, savedIndex, 0));
-				if (hashIndex === null && initialStepId === undefined && savedIndex > 0) {
+				setFurthestIndex(
+					Math.max(hashIndex ?? -1, initialIndex, savedIndex, 0),
+				);
+				if (
+					hashIndex === null &&
+					initialStepId === undefined &&
+					savedIndex > 0
+				) {
 					setActiveIndex(savedIndex);
 					window.history.replaceState(
 						null,
@@ -221,11 +227,17 @@ export default function ModuleStepper({
 		setActiveIndex(index);
 		window.history.replaceState(null, "", pathOf(index));
 		if (isStackedLayout) {
-			contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+			contentRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
 		}
 		if (index > furthestIndex) {
 			setFurthestIndex(index);
-			void new TrainingProgressRepository().saveStepId(moduleId, steps[index].id);
+			void new TrainingProgressRepository().saveStepId(
+				moduleId,
+				steps[index].id,
+			);
 		}
 	};
 
@@ -233,7 +245,11 @@ export default function ModuleStepper({
 	const Icon = KIND_ICONS[step.kind];
 
 	return (
-		<Stack direction={{ xs: "column", md: "row" }} gap={3} alignItems="flex-start">
+		<Stack
+			direction={{ xs: "column", md: "row" }}
+			gap={3}
+			alignItems="flex-start"
+		>
 			<Stack
 				gap={0.5}
 				sx={{
@@ -287,8 +303,10 @@ export default function ModuleStepper({
 						<Button
 							LinkComponent={NextLink}
 							href={`${routes.app()}?template=${step.cta.templateId}${
-								step.cta.primaryMode === "solution" ? "&template-mode=solution" : ""
-							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}`}
+								step.cta.primaryMode === "solution"
+									? "&template-mode=solution"
+									: ""
+							}${step.cta.autostartSimulation ? "&template-autostart=simulation" : ""}&template-locale=${locale}`}
 							target="_blank"
 							variant="contained"
 						>
@@ -297,7 +315,7 @@ export default function ModuleStepper({
 						{step.cta.solutionLabel && (
 							<Button
 								LinkComponent={NextLink}
-								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution`}
+								href={`${routes.app()}?template=${step.cta.templateId}&template-mode=solution&template-locale=${locale}`}
 								target="_blank"
 								variant="outlined"
 							>

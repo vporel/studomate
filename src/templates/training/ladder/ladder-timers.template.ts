@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -15,12 +17,9 @@ import {
 	toggleSwitch,
 } from "@/templates/training/utils/training-variables";
 
-export function createLadderTimersProject(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Démarrage étoile-triangle",
-		"",
-	);
+export function createLadderTimersProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-timers", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -38,63 +37,68 @@ export function createLadderTimersProject(): Project {
  * Star-delta start (line + star, then delta after a `TON`), cooling fan held by a `TOF`, and a
  * blinker made of two crossed `TON`s.
  */
-export function createLadderTimersSolution(): Project {
-	const project = createLadderTimersProject();
-	project.name = "Démarrage étoile-triangle : solution";
+export function createLadderTimersSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-timers", locale);
+	const project = createLadderTimersProject(locale);
+	project.name = t("solutionName");
+	const starTimer = t("starTimerName");
+	const fanTimer = t("fanTimerName");
+	const lowPhaseTimer = t("lowPhaseTimerName");
+	const highPhaseTimer = t("highPhaseTimerName");
 	setMainSections(project, [
 		section(
-			"Contacteur de ligne",
-			"Auto-maintien à arrêt prioritaire.",
+			t("lineContactorTitle"),
+			t("lineContactorDescription"),
 			or([no("marche")], [no("km_ligne")]),
 			nf("arret"),
 			coil("km_ligne"),
 		),
 		section(
-			"Temps de démarrage",
-			"Le TON mesure la durée en étoile.",
+			t("startTimeTitle"),
+			t("startTimeDescription"),
 			no("km_ligne"),
-			timer("TON", "t_etoile", "T#5s"),
+			timer("TON", starTimer, "T#5s"),
 		),
 		section(
-			"Étoile",
-			"Étoile pendant le démarrage, verrouillé par le triangle.",
+			t("starTitle"),
+			t("starDescription"),
 			no("km_ligne"),
-			nf("t_etoile.Q"),
+			nf(`${starTimer}.Q`),
 			nf("km_triangle"),
 			coil("km_etoile"),
 		),
 		section(
-			"Triangle",
-			"Triangle après la temporisation, verrouillé par l'étoile.",
+			t("deltaTitle"),
+			t("deltaDescription"),
 			no("km_ligne"),
-			no("t_etoile.Q"),
+			no(`${starTimer}.Q`),
 			nf("km_etoile"),
 			coil("km_triangle"),
 		),
 		section(
-			"Ventilateur",
-			"Le TOF prolonge la ventilation de 10 s après l'arrêt du moteur.",
+			t("fanTitle"),
+			t("fanDescription"),
 			no("km_ligne"),
-			timer("TOF", "t_ventilo", "T#10s"),
+			timer("TOF", fanTimer, "T#10s"),
 			coil("ventilateur"),
 		),
 		section(
-			"Clignotant : phase éteinte",
-			"Premier TON, armé tant que le second n'a pas terminé.",
+			t("blinkOffTitle"),
+			t("blinkOffDescription"),
 			no("inter_clignotant"),
-			nf("t_phase_haute.Q"),
-			timer("TON", "t_phase_basse", "T#1s"),
+			nf(`${highPhaseTimer}.Q`),
+			timer("TON", lowPhaseTimer, "T#1s"),
 		),
 		section(
-			"Clignotant : phase allumée",
-			"Second TON, armé pendant la phase allumée.",
-			no("t_phase_basse.Q"),
-			timer("TON", "t_phase_haute", "T#1s"),
+			t("blinkOnTitle"),
+			t("blinkOnDescription"),
+			no(`${lowPhaseTimer}.Q`),
+			timer("TON", highPhaseTimer, "T#1s"),
 		),
 		section(
-			"Voyant",
-			"Le voyant suit la phase allumée.",
-			no("t_phase_basse.Q"),
+			t("indicatorTitle"),
+			t("indicatorDescription"),
+			no(`${lowPhaseTimer}.Q`),
 			coil("voyant"),
 		),
 	]);

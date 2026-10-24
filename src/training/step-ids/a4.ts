@@ -1,7 +1,7 @@
 /**
  * Identifiants stables des étapes de A4 (voir `StepData.id`, `ModuleStepper.tsx`) : source
- * unique, réutilisée par `a4/page.tsx` (contenu) et `../page.tsx` (savoir si le module est
- * achevé, via la reprise de progression).
+ * unique, réutilisée par `a4/steps.ts` (contenu) et `training-module-step-ids.ts` (savoir si
+ * le module est achevé, via la reprise de progression).
  */
 const A4_STEP_IDS = {
 	theoryStepsLadder: "theory-steps-ladder",

@@ -1,0 +1,7 @@
+{
+	"statement": "## AND divergence in Ladder\n\nGRAFCET: S0 → `cycle_start` → S1 (`output1`) and S2 (`output2`) → `sensor1 AND sensor2` → S0.\n\nInputs: `cycle_start` (push button), `sensor1` and `sensor2`. Outputs: `output1` and `output2`. Provided memories: `X0` to `X2`, `T0`, `T1` and `init`.\n\n### Task\n\n1. Implement the GRAFCET in three blocks: one transition (`T0`) activates `X1` and `X2`; one transition (`T1`) requires `X1`, `X2` and both sensors, and deactivates both steps.\n2. Check: after `cycle_start`, both outputs are true; with `sensor1` alone, nothing changes; as soon as `sensor1` and `sensor2` are both true, back to `X0`.",
+	"texts": {
+		"projectName": "AND divergence in Ladder",
+		"solutionName": "AND divergence in Ladder: solution"
+	}
+}

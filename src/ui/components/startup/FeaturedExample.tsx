@@ -3,6 +3,7 @@
 import Illustration3dSlot, {
 	isIllustration3dId,
 } from "@/ui/components/3d-illustrations/Illustration3dSlot";
+import { useLocaleContext } from "@/ui/i18n/LocaleProvider";
 import { useT } from "@/ui/i18n/useT";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { alpha, Box, Button, Card, Typography } from "@mui/material";
@@ -21,10 +22,13 @@ export default function FeaturedExample({
 }) {
 	const t = useT("chrome.startup");
 	const tTemplates = useT("templates");
+	const { locale } = useLocaleContext();
 	const contents = useMemo(
 		() =>
-			projectContents((example.template.solution ?? example.template.create)()),
-		[example],
+			projectContents(
+				(example.template.solution ?? example.template.create)(locale),
+			),
+		[example, locale],
 	);
 
 	const image = (

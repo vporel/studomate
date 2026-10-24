@@ -1,0 +1,9 @@
+{
+	"statement": "## Carton sorting station\n\nCartons arrive one by one on the `Cmd_T1` belt up to a detection station.\nThe `cpt_psce_c` sensor signals the presence of a carton, `cpt_c_hte` indicates that it is tall.\nThree double-acting cylinders `P1`, `P2`, `P3` (commands `Cmd_Px_out` / `Cmd_Px_in`,\nlimit switches `cpt_px_out` / `cpt_px_in`) route the carton. `P1` pushes it off\n`T1` onto the channel, then `Cmd_T2T3` carries it along the channel: it stops at\n`P2` (sensor `cpt_psce_p2`) if it is short, at `P3` (sensor `cpt_psce_p3`)\nif it is tall. The `C` counter totals the sorted cartons.\n\n### Work to do\n\n1. On `dcy`, start the belts (`Cmd_T2T3` latched, `Cmd_T1` as long as a carton is moving).\n2. **Short** carton: push it with `P1`, wait until it is at `P2`, then evacuate it to `T2` with `P2`.\n3. **Tall** carton: push it with `P1`, wait until it is at `P3`, then evacuate it to `T3` with `P3`.\n4. Increment `C` for each sorted carton; after 2 cartons, reset the whole cycle.\n5. Check the sorting in simulation in the 3D scene (\"Place carton\" button, carton height selector).",
+	"texts": {
+		"projectName": "Carton sorting station",
+		"counterComment": "count of sorted cartons",
+		"solutionName": "Carton sorting station: solution",
+		"controlGrafcet": "Control"
+	}
+}

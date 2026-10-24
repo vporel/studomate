@@ -2,7 +2,11 @@ import Project, {
 	DEFAULT_PROJECT_NAME,
 } from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import { resolveUiLocale } from "@/persistence/preferences.storage";
 import { PROJECT_TEMPLATES } from "@/templates/index";
+import localizeProject from "@/templates/localize-project";
+import { getTemplateStatement } from "@/templates/template-text";
 import {
 	isShareable,
 	SaveFailureReason,
@@ -100,6 +104,7 @@ export default class ProjectLifecycleManager {
 	private async doNewProject(
 		templateId: string | null = null,
 		variant: "exercise" | "solution" = "exercise",
+		locale: Locale = resolveUiLocale(),
 	): Promise<void> {
 		let project: Project;
 		if (templateId !== null) {
@@ -107,12 +112,16 @@ export default class ProjectLifecycleManager {
 			if (template) {
 				project =
 					variant === "solution" && template.solution
-						? template.solution()
-						: template.create();
+						? template.solution(locale)
+						: template.create(locale);
+				localizeProject(project, locale, {
+					keep: template.keepMnemonics,
+				});
 				//L'énoncé accompagne les deux variantes : il donne son sens à la solution comme à
 				//l'exercice, une même maquette pouvant servir de support à des énoncés différents.
-				if (template.statement) {
-					project.exercise = { statement: template.statement };
+				const statement = getTemplateStatement(templateId, locale);
+				if (statement) {
+					project.exercise = { statement };
 				}
 			} else {
 				project = new Project(createRandomId(), DEFAULT_PROJECT_NAME, "");
@@ -289,11 +298,12 @@ export default class ProjectLifecycleManager {
 	async newProjectFromTemplate(
 		templateId: string | null,
 		variant: "exercise" | "solution" = "exercise",
+		locale?: Locale,
 	): Promise<void> {
 		this.setStoreState((state) => ({
 			ui: { ...state.ui, newProjectModalVisible: false },
 		}));
-		await this.doNewProject(templateId, variant);
+		await this.doNewProject(templateId, variant, locale);
 	}
 
 	/** true si réellement enregistré. */

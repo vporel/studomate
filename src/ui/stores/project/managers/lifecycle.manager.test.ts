@@ -1,4 +1,5 @@
 /** @jest-environment jsdom */
+import { Dialect } from "@/expression-language/dialect.enum";
 import Grafcet from "@/schemas/grafcet/grafcet.schema";
 import Project, {
 	DEFAULT_PROJECT_NAME,
@@ -135,6 +136,54 @@ describe("ProjectLifecycleManager", () => {
 			expect(store.getState().project?.exercise?.statement).toContain(
 				"Feu tricolore",
 			);
+		});
+
+		it("crée le projet dans la langue demandée : mnémoniques anglais et dialecte EN", async () => {
+			const store = createProjectStore();
+
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"solution",
+				"en",
+			);
+
+			const project = store.getState().project!;
+			expect(project.dialect).toBe(Dialect.EN);
+			expect(project.variables.map((v) => v.mnemonic)).toEqual([
+				"red",
+				"amber",
+				"green",
+			]);
+		});
+
+		it("garde les mnémoniques français en français", async () => {
+			const store = createProjectStore();
+
+			await lifecycle(store).newProjectFromTemplate(
+				"traffic-light",
+				"solution",
+				"fr",
+			);
+
+			const project = store.getState().project!;
+			expect(project.dialect).toBe(Dialect.FR);
+			expect(project.variables.map((v) => v.mnemonic)).toContain("rouge");
+		});
+
+		it("respecte keepMnemonics du template (carton-sorting garde dcy)", async () => {
+			const store = createProjectStore();
+
+			await lifecycle(store).newProjectFromTemplate(
+				"carton-sorting",
+				"solution",
+				"en",
+			);
+
+			const mnemonics = store
+				.getState()
+				.project!.variables.map((v) => v.mnemonic);
+			expect(mnemonics).toContain("dcy");
+			expect(mnemonics).not.toContain("cycle_start");
 		});
 	});
 

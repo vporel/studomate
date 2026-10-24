@@ -42,7 +42,7 @@
 		"mnemonic": {
 			"term": "Mnemonic",
 			"aliases": "variable name",
-			"definition": "The short, meaningful name of a variable (`pompe`, `arret`), used instead of a numeric address.",
+			"definition": "The short, meaningful name of a variable (`pump`, `stop`), used instead of a numeric address.",
 			"details": "",
 			"figureAlt": ""
 		},
@@ -184,19 +184,19 @@
 			"aliases": "",
 			"definition": "A rectangle attached to a step: what the system does while the step is active, such as turning an output on.",
 			"details": "An action can be continuous, stored (Set / Reset), conditional, delayed or time-limited.",
-			"figureAlt": "A step numbered 1 linked to an action rectangle `pompe` on its right."
+			"figureAlt": "A step numbered 1 linked to an action rectangle `pump` on its right."
 		},
 		"transition": {
 			"term": "Transition",
 			"aliases": "",
 			"definition": "A small horizontal bar linking two steps and carrying a receptivity: the condition to meet to go from one to the other.",
 			"details": "",
-			"figureAlt": "Two steps linked by a transition, with the receptivity `fin1` to the right of the bar."
+			"figureAlt": "Two steps linked by a transition, with the receptivity `end1` to the right of the bar."
 		},
 		"receptivity": {
 			"term": "Receptivity",
 			"aliases": "transition condition",
-			"definition": "The crossing condition of a transition: a true-or-false expression, such as `fin1` or `dcy AND NOT arret`.",
+			"definition": "The crossing condition of a transition: a true-or-false expression, such as `end1` or `cycle_start AND NOT stop`.",
 			"details": "A receptivity can contain a timer or an edge.",
 			"figureAlt": ""
 		},
@@ -317,7 +317,7 @@
 			"aliases": "output coil",
 			"definition": "A symbol at the end of a network that writes a variable: it takes the value of the contact path before it.",
 			"details": "It is used to drive an output or an internal memory.",
-			"figureAlt": "A minimal network: a `marche` contact followed by a `pompe` coil, between the two rails."
+			"figureAlt": "A minimal network: a `start` contact followed by a `pump` coil, between the two rails."
 		},
 		"series-parallel": {
 			"term": "Contacts in series and in parallel",
@@ -338,7 +338,7 @@
 			"aliases": "latching; seal-in",
 			"definition": "A circuit where a contact of the coil itself is placed in parallel with the start button: the output stays on after the button is released.",
 			"details": "With the stop in series after the parallel, the stop has priority.",
-			"figureAlt": "A network: `marche` in parallel with `pompe`, then an NC contact `arret` in series, to the `pompe` coil."
+			"figureAlt": "A network: `start` in parallel with `pump`, then an NC contact `stop` in series, to the `pump` coil."
 		},
 		"priority-stop": {
 			"term": "Stop priority",

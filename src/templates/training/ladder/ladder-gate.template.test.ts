@@ -1,3 +1,5 @@
+import * as templates from "./ladder-gate.template";
+import type { Locale } from "@/i18n/config";
 import Project from "@/schemas/project/project.schema";
 import { getInputRestValue } from "@/schemas/variable/input-behavior";
 import PlcScenario from "@tests/utils/plc-scenario";
@@ -118,4 +120,35 @@ describe("ladder-gate.template", () => {
 		expect(scenario.get("ouvrir")).toBe(false);
 		scenario.stop();
 	});
+});
+
+describe("ladder-gate.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[templates.createLadderGateProject, "Portail motorisé", "Motorized gate"],
+		[
+			templates.createLadderGateSolution,
+			"Portail motorisé : solution",
+			"Motorized gate: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

@@ -1,0 +1,24 @@
+{
+	"statement": "## Comptage\n\nToutes les variables sont fournies. Le comptage se fait sur front montant. Pour chaque compteur, seule l'entrée de comptage est câblée sur le rail ; PV, R, LD et CD (d'un CTUD) se saisissent sur les broches.\n\n### Travail demandé\n\n1. Convoyeur (`CTU`, présélection 5) : entrée `capteur_piece`, remise à zéro par `raz`. Le convoyeur (`convoyeur`) tourne et s'arrête à la 5e pièce.\n2. Zone tampon (`CTUD`, capacité 3) : `capteur_entree` compte, `capteur_sortie` décompte, `raz_tampon` remet à zéro et `charge_tampon` charge PV. Voyant `tampon_plein` sur `QU` (le tampon contient PV pièces), voyant `tampon_vide` sur `QD`.\n3. Facultatif : stock de pièces (`CTD`, 4 pièces au départ) : `charge_stock` charge PV sur LD, `capteur_prelevement` décompte, voyant `stock_vide` sur `Q`.",
+	"texts": {
+		"projectName": "Comptage",
+		"solutionName": "Comptage : solution",
+		"piecesCounter": "cpt_pieces",
+		"bufferCounter": "tampon",
+		"stockCounter": "stock",
+		"piecesTitle": "Comptage des pièces",
+		"piecesDescription": "Le CTU compte sur front montant du capteur, remise à zéro par raz.",
+		"conveyorTitle": "Convoyeur",
+		"conveyorDescription": "Arrêt à la présélection.",
+		"bufferTitle": "Zone tampon",
+		"bufferDescription": "Le capteur d'entrée compte, le capteur de sortie décompte.",
+		"bufferFullTitle": "Tampon plein",
+		"bufferFullDescription": "QU vaut CV >= PV.",
+		"bufferEmptyTitle": "Tampon vide",
+		"bufferEmptyDescription": "QD vaut CV <= 0.",
+		"stockTitle": "Stock de pièces",
+		"stockDescription": "Le CTD est chargé à PV par LD et décompte à chaque pièce prélevée.",
+		"stockEmptyTitle": "Stock vide",
+		"stockEmptyDescription": "Q vaut CV <= 0."
+	}
+}

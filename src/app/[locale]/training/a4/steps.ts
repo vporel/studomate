@@ -1,6 +1,6 @@
 import type { StepData } from "../ModuleStepper";
 import type { TrainingTranslator } from "../training-translator";
-import A4_STEP_IDS from "./step-ids";
+import A4_STEP_IDS from "@/training/step-ids/a4";
 
 export default function buildA4Steps(t: TrainingTranslator): StepData[] {
 	return [

@@ -7,22 +7,21 @@ import PublicLinkButton from "@/ui/components/public-pages/PublicLinkButton";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import {
 	Box,
 	Container,
 	Divider,
+	Link as MuiLink,
 	Paper,
 	Stack,
 	Typography,
 } from "@mui/material";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import A0_STEP_IDS from "./a0/step-ids";
-import A1_STEP_IDS from "./a1/step-ids";
-import A2_STEP_IDS from "./a2/step-ids";
-import A3_STEP_IDS from "./a3/step-ids";
-import A4_STEP_IDS from "./a4/step-ids";
+import type { TrainingModuleId } from "@/training/module-ids";
+import TRAINING_MODULE_STEP_IDS from "@/training/module-step-ids";
 import ResumeSignInHint from "./ResumeSignInHint";
 import TrainingModuleRow from "./TrainingModuleRow";
 
@@ -33,6 +32,11 @@ export const generateMetadata = createGenerateMetadata(
 	"trainingTitle",
 	"trainingDescription",
 );
+
+const STANDARD_CARDS = [
+	{ key: "grafcet", href: "https://webstore.iec.ch/en/publication/3684" },
+	{ key: "ladder", href: "https://webstore.iec.ch/en/publication/68533" },
+] as const;
 
 type ModuleEntry = {
 	label: string;
@@ -66,41 +70,44 @@ export default async function Training({ params }: Props) {
 		},
 	];
 
+	const stepIdsOf = (moduleId: TrainingModuleId) =>
+		TRAINING_MODULE_STEP_IDS.find((m) => m.moduleId === moduleId)?.stepIds;
+
 	const modulesA: ModuleEntry[] = [
 		{
 			label: t("blockA0Label"),
 			available: true,
 			href: "/training/a0",
 			moduleId: "a0",
-			stepIds: Object.values(A0_STEP_IDS),
+			stepIds: stepIdsOf("a0"),
 		},
 		{
 			label: t("blockA1Label"),
 			available: true,
 			href: "/training/a1",
 			moduleId: "a1",
-			stepIds: Object.values(A1_STEP_IDS),
+			stepIds: stepIdsOf("a1"),
 		},
 		{
 			label: t("blockA2Label"),
 			available: true,
 			href: "/training/a2",
 			moduleId: "a2",
-			stepIds: Object.values(A2_STEP_IDS),
+			stepIds: stepIdsOf("a2"),
 		},
 		{
 			label: t("blockA3Label"),
 			available: true,
 			href: "/training/a3",
 			moduleId: "a3",
-			stepIds: Object.values(A3_STEP_IDS),
+			stepIds: stepIdsOf("a3"),
 		},
 		{
 			label: t("blockA4Label"),
 			available: true,
 			href: "/training/a4",
 			moduleId: "a4",
-			stepIds: Object.values(A4_STEP_IDS),
+			stepIds: stepIdsOf("a4"),
 		},
 		{ label: t("blockA5Label"), available: false },
 	];
@@ -145,9 +152,7 @@ export default async function Training({ params }: Props) {
 	return (
 		<Container maxWidth="lg" sx={{ my: { xs: 4, md: 6 } }}>
 			<Box maxWidth={720}>
-				<PageTitle>
-					{t("landingTitle")}
-				</PageTitle>
+				<PageTitle>{t("landingTitle")}</PageTitle>
 				<Typography textAlign="justify" color="text.secondary">
 					{t("landingIntro")}
 				</Typography>
@@ -212,11 +217,12 @@ export default async function Training({ params }: Props) {
 			<Typography variant="h5" component="h2" fontWeight={700} mt={5} mb={2}>
 				{t("otherResourcesTitle")}
 			</Typography>
-			<Stack direction={{ xs: "column", sm: "row" }} gap={2}>
-				<Paper
-					variant="outlined"
-					sx={{ p: 2.5, flex: 1, borderRadius: 3, maxWidth: { sm: "50%" } }}
-				>
+			<Box
+				display="grid"
+				gap={2}
+				gridTemplateColumns={{ xs: "1fr", sm: "repeat(3, 1fr)" }}
+			>
+				<Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
 					<LibraryBooksIcon color="primary" />
 					<Typography fontWeight={700} mt={1}>
 						<PublicLink href="/training/glossary">
@@ -227,7 +233,20 @@ export default async function Training({ params }: Props) {
 						{t("glossaryCardBody")}
 					</Typography>
 				</Paper>
-			</Stack>
+				{STANDARD_CARDS.map(({ key, href }) => (
+					<Paper key={key} variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
+						<OpenInNewIcon color="primary" />
+						<Typography fontWeight={700} mt={1}>
+							<MuiLink href={href} target="_blank" rel="noopener noreferrer">
+								{t(`${key}StandardCardTitle`)}
+							</MuiLink>
+						</Typography>
+						<Typography variant="body2" color="text.secondary" mt={0.5}>
+							{t(`${key}StandardCardBody`)}
+						</Typography>
+					</Paper>
+				))}
+			</Box>
 		</Container>
 	);
 }

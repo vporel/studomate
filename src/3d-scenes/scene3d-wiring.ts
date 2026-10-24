@@ -39,18 +39,23 @@ export function getCandidateVariables(
 	return variables.filter((variable) => isVariableCompatible(point, variable));
 }
 
+export type MnemonicLocalizer = (mnemonic: string) => string;
+
+const KEEP_MNEMONIC: MnemonicLocalizer = (mnemonic) => mnemonic;
+
 function newVariableFields(
 	point: ScenePointDescriptor,
+	mnemonic: string,
 ): VariableUpdatableFields {
 	const analog = point.valueType === "number";
 	const type = analog ? "INT" : "BOOL";
 	if (point.kind === "display") {
-		return { mnemonic: point.suggestedMnemonic, zone: "memory", type };
+		return { mnemonic, zone: "memory", type };
 	}
 	const input = point.kind === "sensor";
 	const direction = input ? "input" : "output";
 	return {
-		mnemonic: point.suggestedMnemonic,
+		mnemonic,
 		zone: `${analog ? "analog" : "logic"}-${direction}`,
 		type,
 	};
@@ -67,11 +72,14 @@ export type MissingVariablesPlan = {
  * Wiring of every unbound point of the scene: a variable already carrying the suggested mnemonic
  * is reused when compatible; otherwise it is created. A point whose suggested mnemonic belongs to
  * an incompatible variable is left unbound (the name is taken, creating it would fail).
+ * `localize` gives the name created for a point (a variable carrying the descriptor's original
+ * name is reused as well).
  */
 export function planMissingVariables(
 	descriptor: SceneDescriptor,
 	scene: Scene3d,
 	variables: readonly Variable[],
+	localize: MnemonicLocalizer = KEEP_MNEMONIC,
 ): MissingVariablesPlan {
 	const plan: MissingVariablesPlan = { reused: {}, toCreate: [] };
 	const stillBound = new Set(
@@ -82,13 +90,14 @@ export function planMissingVariables(
 	for (const point of descriptor.points) {
 		const current = scene.bindings[point.id];
 		if (current && variables.some((v) => v.id === current)) continue;
+		const mnemonic = localize(point.suggestedMnemonic);
 		const sameName = variables.find(
-			(v) => v.mnemonic === point.suggestedMnemonic,
+			(v) => v.mnemonic === mnemonic || v.mnemonic === point.suggestedMnemonic,
 		);
 		if (!sameName) {
 			plan.toCreate.push({
 				pointId: point.id,
-				fields: newVariableFields(point),
+				fields: newVariableFields(point, mnemonic),
 			});
 		} else if (
 			isVariableCompatible(point, sameName) &&

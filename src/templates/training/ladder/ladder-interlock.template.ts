@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -13,8 +15,9 @@ import {
 	pushButton,
 } from "@/templates/training/utils/training-variables";
 
-export function createLadderInterlockProject(): Project {
-	const project = new Project(createRandomId(), "Moteur deux sens", "");
+export function createLadderInterlockProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-interlock", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("avant"),
 		pushButton("arriere"),
@@ -25,21 +28,22 @@ export function createLadderInterlockProject(): Project {
 	return project;
 }
 
-export function createLadderInterlockSolution(): Project {
-	const project = createLadderInterlockProject();
-	project.name = "Moteur deux sens : solution";
+export function createLadderInterlockSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-interlock", locale);
+	const project = createLadderInterlockProject(locale);
+	project.name = t("solutionName");
 	setMainSections(project, [
 		section(
-			"Marche avant",
-			"Auto-maintien à arrêt prioritaire, verrouillé par la marche arrière.",
+			t("forwardTitle"),
+			t("forwardDescription"),
 			or([no("avant")], [no("moteur_av")]),
 			nf("arret"),
 			nf("moteur_ar"),
 			coil("moteur_av"),
 		),
 		section(
-			"Marche arrière",
-			"Auto-maintien à arrêt prioritaire, verrouillé par la marche avant.",
+			t("backwardTitle"),
+			t("backwardDescription"),
 			or([no("arriere")], [no("moteur_ar")]),
 			nf("arret"),
 			nf("moteur_av"),

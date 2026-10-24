@@ -1,0 +1,9 @@
+{
+	"statement": "## Parking à barrière\n\nUn parking de 4 places possède une barrière d'entrée et une barrière de sortie. Entrées : `dem_entree` et\n`dem_sortie` (une voiture attend devant la barrière d'entrée / de sortie) et `passage` (cellule sous une barrière,\nvraie tant qu'une voiture s'y trouve), fournies par la scène 3D (menu Interface → Scène 3D).\nSorties : `barriere_entree`, `barriere_sortie` (ouverture) et `complet` (voyant).\nLe nombre de places occupées est suivi dans `places`, affiché sur le pupitre. Les boutons « Arrivée » et « Sortie »\nde la scène font apparaître des voitures, qui s'alignent et n'avancent que si leur barrière est ouverte.\n\n### Travail demandé\n\n1. Sur `dem_entree`, si le parking n'est pas complet : ouvrir la barrière d'entrée, incrémenter `places`.\n2. Sur `dem_sortie`, si le parking n'est pas vide : ouvrir la barrière de sortie, décrémenter `places`.\n3. Allumer `complet` dès que toutes les places sont occupées et refuser les nouvelles entrées.\n4. Refermer la barrière une fois la voiture passée (`passage`), puis valider en simulation avec la scène 3D.",
+	"texts": {
+		"projectName": "Parking à barrière",
+		"solutionName": "Parking à barrière — solution",
+		"controlGrafcet": "Commande",
+		"signalingGrafcet": "Signalisation"
+	}
+}

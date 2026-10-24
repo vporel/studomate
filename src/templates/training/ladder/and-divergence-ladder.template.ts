@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createAndDivergenceProject } from "@/templates/training/grafcet/and-divergence.template";
 import { no, setMainSections } from "@/templates/training/utils/ladder-dsl";
@@ -22,25 +24,35 @@ export const AND_DIVERGENCE_SPEC: GrafcetLadderSpec = {
 	],
 };
 
-function createBase(name: string): Project {
-	const project = createAndDivergenceProject();
+function createBase(name: string, locale: Locale): Project {
+	const project = createAndDivergenceProject(locale);
 	project.name = name;
 	project.variables.push(...grafcetMemories(AND_DIVERGENCE_SPEC));
 	return project;
 }
 
-export function createAndDivergenceLadderProject(): Project {
-	return createBase("Divergence en ET en Ladder");
+export function createAndDivergenceLadderProject(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("and-divergence-ladder", locale);
+	return createBase(t("projectName"), locale);
 }
 
-export function createAndDivergenceLadderSolution(): Project {
-	const project = createBase("Divergence en ET en Ladder : solution");
+export function createAndDivergenceLadderSolution(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("and-divergence-ladder", locale);
+	const project = createBase(t("solutionName"), locale);
 	setMainSections(
 		project,
-		grafcetSections(AND_DIVERGENCE_SPEC, [
-			{ variable: "sortie1", steps: ["X1"] },
-			{ variable: "sortie2", steps: ["X2"] },
-		]),
+		grafcetSections(
+			AND_DIVERGENCE_SPEC,
+			[
+				{ variable: "sortie1", steps: ["X1"] },
+				{ variable: "sortie2", steps: ["X2"] },
+			],
+			locale,
+		),
 	);
 	return project;
 }

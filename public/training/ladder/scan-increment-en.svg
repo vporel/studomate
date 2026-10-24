@@ -23,7 +23,7 @@
 	<text x="8" y="52" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">Without a P contact: the count climbs on every scan</text>
 	<text x="8" y="96" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">sensor</text>
 	<path d="M 150 100 L 190 100 L 190 80 L 390 80 L 390 100 L 470 100" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
-	<text x="8" y="134" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">places</text>
+	<text x="8" y="134" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">spaces</text>
 	<rect x="150" y="116" width="40" height="24" fill="#fff" stroke="#263238" stroke-width="1.2" />
 	<text x="170" y="133" font-size="12" text-anchor="middle" fill="#263238">0</text>
 	<rect x="190" y="116" width="40" height="24" fill="#ffe0b2" stroke="#263238" stroke-width="1.2" />
@@ -47,7 +47,7 @@
 	<path d="M 150 216 L 190 216 L 190 196 L 390 196 L 390 216 L 470 216" fill="none" stroke="#263238" stroke-width="2.2" stroke-linejoin="round" />
 	<text x="8" y="252" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">P contact</text>
 	<path d="M 150 256 L 190 256 L 190 236 L 230 236 L 230 256 L 470 256" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" />
-	<text x="8" y="292" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">places</text>
+	<text x="8" y="292" font-size="12" font-weight="bold" text-anchor="start" fill="#263238">spaces</text>
 	<rect x="150" y="270" width="40" height="24" fill="#fff" stroke="#263238" stroke-width="1.2" />
 	<text x="170" y="287" font-size="12" text-anchor="middle" fill="#263238">0</text>
 	<rect x="190" y="270" width="40" height="24" fill="#ffe0b2" stroke="#263238" stroke-width="1.2" />

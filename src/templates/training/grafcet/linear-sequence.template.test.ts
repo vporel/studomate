@@ -78,4 +78,30 @@ describe("linear-sequence.template", () => {
 			expect(Object.keys(grafcet.steps)).toHaveLength(4);
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createLinearSequenceSolution(),
+				createLinearSequenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Séquence linéaire : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Séquence",
+				]);
+			}
+			expect(createLinearSequenceProject().name).toBe("Séquence linéaire");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createLinearSequenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["Linear sequence: solution", "Sequence"]);
+			expect(createLinearSequenceProject("en").name).toBe("Linear sequence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

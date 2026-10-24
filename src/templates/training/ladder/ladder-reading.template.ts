@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -17,8 +19,9 @@ import {
  * "Reading a Ladder program" project: a Main of combinational sections is provided, the student
  * predicts the outputs and checks in simulation. No solution to write.
  */
-export function createLadderReadingProject(): Project {
-	const project = new Project(createRandomId(), "Lire un programme Ladder", "");
+export function createLadderReadingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-reading", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		toggleSwitch("a"),
 		toggleSwitch("b"),
@@ -30,28 +33,28 @@ export function createLadderReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Réseau 1",
-			"Prédisez s1 pour chaque combinaison de a et b.",
+			t("network1Title"),
+			t("network1Description"),
 			no("a"),
 			no("b"),
 			coil("s1"),
 		),
 		section(
-			"Réseau 2",
-			"Prédisez s2 pour chaque combinaison de a et b.",
+			t("network2Title"),
+			t("network2Description"),
 			or([no("a")], [no("b")]),
 			coil("s2"),
 		),
 		section(
-			"Réseau 3",
-			"Prédisez s3 pour chaque combinaison de a et b.",
+			t("network3Title"),
+			t("network3Description"),
 			no("a"),
 			nf("b"),
 			coil("s3"),
 		),
 		section(
-			"Réseau 4",
-			"Prédisez s4 pour chaque combinaison de a, b et c.",
+			t("network4Title"),
+			t("network4Description"),
 			or([no("a")], [no("b")]),
 			nf("c"),
 			coil("s4"),

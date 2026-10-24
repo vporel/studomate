@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -29,57 +31,56 @@ function createScalingVariables(project: Project): void {
 	);
 }
 
-function createCountSection() {
+function createCountSection(locale: Locale) {
+	const t = createTemplateText("ladder-scaling", locale);
 	return section(
-		"Compteur de démarrages",
-		"Un contact P n'incrémente qu'une fois par démarrage.",
+		t("startCountTitle"),
+		t("startCountDescription"),
 		rising("pompe"),
 		arithmetic("nb_demarrages", "nb_demarrages", "+", "1"),
 	);
 }
 
 /** The Main holds the tank solution; `niveau` is now computed from `brut`, not an input. */
-export function createLadderScalingProject(): Project {
-	const project = new Project(createRandomId(), "Mise à l'échelle", "");
+export function createLadderScalingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-scaling", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	createScalingVariables(project);
 	setMainSections(project, [
-		...createTankControlSections(),
-		createCountSection(),
+		...createTankControlSections(locale),
+		createCountSection(locale),
 	]);
 	return project;
 }
 
 /** Scaling in a `REAL` intermediate, then narrowing with `REAL_TO_INT`. */
-export function createLadderScalingSolution(): Project {
-	const project = new Project(
-		createRandomId(),
-		"Mise à l'échelle : solution",
-		"",
-	);
+export function createLadderScalingSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-scaling", locale);
+	const project = new Project(createRandomId(), t("solutionName"), "");
 	createScalingVariables(project);
 	setMainSections(project, [
 		section(
-			"Copie de la valeur brute",
-			"L'élargissement INT vers REAL est implicite.",
+			t("copyTitle"),
+			t("copyDescription"),
 			assign("calcul_real", "brut"),
 		),
 		section(
-			"Multiplication",
-			"Calcul en REAL : pas de dépassement.",
+			t("multiplyTitle"),
+			t("multiplyDescription"),
 			arithmetic("calcul_real", "calcul_real", "*", "100"),
 		),
 		section(
-			"Division",
-			"Division en REAL : pas de troncature.",
+			t("divideTitle"),
+			t("divideDescription"),
 			arithmetic("calcul_real", "calcul_real", "/", `${RAW_MAX}`),
 		),
 		section(
-			"Retour en INT",
-			"Le rétrécissement doit être explicite.",
+			t("backToIntTitle"),
+			t("backToIntDescription"),
 			convert("niveau", "calcul_real", "REAL", "INT"),
 		),
-		...createTankControlSections(),
-		createCountSection(),
+		...createTankControlSections(locale),
+		createCountSection(locale),
 	]);
 	return project;
 }

@@ -1,3 +1,5 @@
+import * as templates from "./ladder-interlock.template";
+import type { Locale } from "@/i18n/config";
 import Project from "@/schemas/project/project.schema";
 import { getInputRestValue } from "@/schemas/variable/input-behavior";
 import PlcScenario from "@tests/utils/plc-scenario";
@@ -58,4 +60,39 @@ describe("ladder-interlock.template", () => {
 		expect(scenario.get("moteur_ar")).toBe(true);
 		scenario.stop();
 	});
+});
+
+describe("ladder-interlock.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[
+			templates.createLadderInterlockProject,
+			"Moteur deux sens",
+			"Two-direction motor",
+		],
+		[
+			templates.createLadderInterlockSolution,
+			"Moteur deux sens : solution",
+			"Two-direction motor: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { resolveUiLocale } from "@/persistence/preferences.storage";
 import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@tests/utils/i18n";
 import { useStore } from "zustand";
@@ -29,6 +30,7 @@ const mockUrl = {
 		() => "exercise",
 	),
 	getTemplateAutostartFromUrl: jest.fn<boolean, []>(() => false),
+	getTemplateLocaleFromUrl: jest.fn<"fr" | "en" | null, []>(() => null),
 	clearTemplateParamsFromUrl: jest.fn(),
 };
 jest.mock("@/ui/stores/project/url/project-url", () => ({
@@ -38,11 +40,12 @@ jest.mock("@/ui/stores/project/url/project-url", () => ({
 	getTemplateIdFromUrl: () => mockUrl.getTemplateIdFromUrl(),
 	getTemplateModeFromUrl: () => mockUrl.getTemplateModeFromUrl(),
 	getTemplateAutostartFromUrl: () => mockUrl.getTemplateAutostartFromUrl(),
+	getTemplateLocaleFromUrl: () => mockUrl.getTemplateLocaleFromUrl(),
 	clearTemplateParamsFromUrl: () => mockUrl.clearTemplateParamsFromUrl(),
 }));
 
 const mockCreateExercise = jest.fn(
-	() => new Project("tpl-exercise", "Exercise", ""),
+	(_locale?: string) => new Project("tpl-exercise", "Exercise", ""),
 );
 const mockCreateSolution = jest.fn(
 	() => new Project("tpl-solution", "Solution", ""),
@@ -54,19 +57,23 @@ jest.mock("@/templates/index", () => ({
 	PROJECT_TEMPLATES: [
 		{
 			id: "tpl-with-solution",
-			create: () => mockCreateExercise(),
+			create: (locale: string) => mockCreateExercise(locale),
 			solution: () => mockCreateSolution(),
 		},
 		{
 			id: "tpl-no-solution",
-			create: () => mockCreateExercise(),
+			create: (locale: string) => mockCreateExercise(locale),
 		},
 		{
 			id: "tpl-with-statement",
-			statement: "## Énoncé",
 			create: () => mockCreateWithStatement(),
 		},
 	],
+}));
+
+jest.mock("@/templates/template-text", () => ({
+	getTemplateStatement: (id: string) =>
+		id === "tpl-with-statement" ? "## Énoncé" : undefined,
 }));
 
 function ProjectProbe() {
@@ -88,6 +95,7 @@ afterEach(() => {
 	mockUrl.getShareTokenFromUrl.mockReturnValue(null);
 	mockUrl.setProjectIdInUrl.mockReset();
 	mockUrl.getTemplateIdFromUrl.mockReturnValue(null);
+	mockUrl.getTemplateLocaleFromUrl.mockReturnValue(null);
 	mockUrl.getTemplateModeFromUrl.mockReturnValue("exercise");
 	mockUrl.getTemplateAutostartFromUrl.mockReturnValue(false);
 	mockUrl.clearTemplateParamsFromUrl.mockReset();
@@ -180,6 +188,33 @@ describe("ProjectContextProvider - ouverture depuis un template", () => {
 		expect(await screen.findByTestId("project-probe")).toHaveTextContent(
 			"tpl-exercise",
 		);
+	});
+
+	it("crée le template dans la langue demandée par l'URL", async () => {
+		mockUrl.getTemplateIdFromUrl.mockReturnValue("tpl-with-solution");
+		mockUrl.getTemplateLocaleFromUrl.mockReturnValue("en");
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		await screen.findByText("tpl-exercise");
+		expect(mockCreateExercise).toHaveBeenCalledWith("en");
+	});
+
+	it("crée le template dans la langue de l'interface quand l'URL n'en précise pas", async () => {
+		mockUrl.getTemplateIdFromUrl.mockReturnValue("tpl-with-solution");
+
+		renderWithI18n(
+			<ProjectContextProvider>
+				<ProjectProbe />
+			</ProjectContextProvider>,
+		);
+
+		await screen.findByText("tpl-exercise");
+		expect(mockCreateExercise).toHaveBeenCalledWith(resolveUiLocale());
 	});
 
 	it("ouvre directement l'énoncé quand le template en porte un (exercice)", async () => {

@@ -1,4 +1,8 @@
 import { createRandomId } from "@/ids";
+import type { Locale } from "@/i18n/config";
+import createTemplateText, {
+	type TemplateText,
+} from "@/templates/template-text";
 import {
 	ACTION_HANDLE_TARGET_STEP,
 	ActionExecutionMode,
@@ -96,10 +100,10 @@ function buildLadderSection(
  * opérative (cabine, porte, capteurs) est simulée par la scène 3D : ce programme en déduit les
  * numéro d'étage courant affiché sur le pupitre de la scène.
  */
-function buildDisplayLadder(): Ladder {
+function buildDisplayLadder(t: TemplateText): Ladder {
 	const affichage = buildLadderSection(
-		"Affichage",
-		"Sortie destinée au pupitre : numéro d'étage courant.",
+		t("displaySectionTitle"),
+		t("displaySectionDescription"),
 		(rung) => {
 			// Numéro d'étage affiché, déduit des capteurs de présence
 			FLOOR_POSITIONS.forEach((_, etage) => {
@@ -115,7 +119,7 @@ function buildDisplayLadder(): Ladder {
 		},
 	);
 
-	return new Ladder(createRandomId(), "Affichage", [affichage]);
+	return new Ladder(createRandomId(), t("displayProgram"), [affichage]);
 }
 
 /**
@@ -128,8 +132,9 @@ function buildDisplayLadder(): Ladder {
  * — scène 3D « Ascenseur » câblée sur les sorties et les capteurs
  * — pas de GRAFCET de commande : c'est ce que l'étudiant écrit
  */
-export function createElevatorProject(): Project {
-	const project = new Project(createRandomId(), "Ascenseur", "");
+export function createElevatorProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("elevator", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 
 	project.variables.push(
 		VariableBuilder.buildLogicInput(createRandomId(), "appel_0"),
@@ -163,7 +168,7 @@ export function createElevatorProject(): Project {
 		),
 	};
 
-	const displayLadder = buildDisplayLadder();
+	const displayLadder = buildDisplayLadder(t);
 	project.addProgram(displayLadder);
 	const [mainSection] = project.main.sections;
 	const mainRail = createRailTerminalElement(0);
@@ -191,9 +196,10 @@ export function createElevatorProject(): Project {
  * Les capteurs proviennent de la scène 3D et l'afficheur du Ladder « Affichage » : après un appel, la
  * simulation se déroule sans intervention.
  */
-export function createElevatorSolution(): Project {
-	const project = createElevatorProject();
-	project.name = "Ascenseur — solution";
+export function createElevatorSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("elevator", locale);
+	const project = createElevatorProject(locale);
+	project.name = t("solutionName");
 
 	project.variables.push(
 		VariableBuilder.buildMemoryInt(createRandomId(), "cible"),
@@ -379,7 +385,7 @@ export function createElevatorSolution(): Project {
 
 	const commande = new GrafcetBuilder()
 		.id(createRandomId())
-		.name("Commande")
+		.name(t("controlGrafcet"))
 		.addSteps(e0, e1a, e1b, e1c, e2, e5, e6, e7, e8)
 		.addTransitions(
 			t0a,

@@ -1,20 +1,46 @@
 /**
  * @jest-environment jsdom
  */
-import routes from "@/app/routes";
-import { screen } from "@testing-library/react";
-import { renderWithI18n } from "@tests/utils/i18n";
+import { setPreferredLocale } from "@/persistence/preferences.storage";
+import { LocaleProvider } from "@/ui/i18n/LocaleProvider";
+import { render, screen, waitFor } from "@testing-library/react";
 import StartupAside from "./StartupAside";
 
+function renderAside() {
+	render(
+		<LocaleProvider>
+			<StartupAside />
+		</LocaleProvider>,
+	);
+}
+
 describe("StartupAside", () => {
-	it("donne accès au manuel et aux formations", () => {
-		renderWithI18n(<StartupAside />);
-		expect(
-			screen.getByRole("link", { name: "Manuel utilisateur" }),
-		).toHaveAttribute("href", routes.userManual());
+	beforeEach(() => localStorage.clear());
+
+	it("ouvre le manuel et les formations français dans un nouvel onglet", () => {
+		setPreferredLocale("fr");
+		renderAside();
+		const manual = screen.getByRole("link", { name: "Manuel utilisateur" });
+		expect(manual).toHaveAttribute("href", "/fr/manuel-utilisateur");
+		expect(manual).toHaveAttribute("target", "_blank");
 		expect(screen.getByRole("link", { name: "Formations" })).toHaveAttribute(
 			"href",
-			routes.training(),
+			"/fr/formations",
+		);
+	});
+
+	it("pointe vers les pages anglaises quand l'app est en anglais", async () => {
+		setPreferredLocale("en");
+		renderAside();
+		await waitFor(() =>
+			expect(screen.getByRole("link", { name: "User manual" })).toHaveAttribute(
+				"href",
+				"/en/user-manual",
+			),
+		);
+		expect(screen.getByRole("link", { name: "Training" })).toHaveAttribute(
+			"href",
+			"/en/training",
 		);
 	});
 });

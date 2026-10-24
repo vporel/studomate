@@ -1,0 +1,15 @@
+{
+	"statement": "## Feu tricolore\n\nOn souhaite piloter un feu de circulation à trois couleurs. Les sorties disponibles sont\n`rouge`, `orange` et `vert` ; une seule doit être active à la fois.\n\n### Travail demandé\n\n1. Écrire le GRAFCET qui fait défiler les phases dans l'ordre **vert → orange → rouge**, en boucle.\n2. Temporiser chaque phase : vert 5 s, orange 2 s, rouge 5 s.\n3. Vérifier le fonctionnement en simulation à l'aide des voyants de l'interface HMI.",
+	"texts": {
+		"projectName": "Feu tricolore",
+		"hmiPageName": "Feu tricolore",
+		"titleText": "Feu tricolore",
+		"titleWidgetName": "Titre",
+		"backgroundWidgetName": "Fond",
+		"redIndicatorName": "Voyant rouge",
+		"amberIndicatorName": "Voyant orange",
+		"greenIndicatorName": "Voyant vert",
+		"solutionName": "Feu tricolore — solution",
+		"grafcetName": "Feu tricolore"
+	}
+}

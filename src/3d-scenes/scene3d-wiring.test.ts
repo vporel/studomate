@@ -48,6 +48,27 @@ describe("scene3d-wiring", () => {
 	});
 
 	describe("planMissingVariables", () => {
+		it("creates the points under the localized name and reuses a variable carrying either name", () => {
+			const english = (mnemonic: string) =>
+				mnemonic === "monter" ? "up" : mnemonic;
+
+			const created = planMissingVariables(elevator, emptyScene, [], english);
+			expect(
+				created.toCreate.find((c) => c.pointId === "up")!.fields.mnemonic,
+			).toBe("up");
+
+			const upVariable = VariableBuilder.buildLogicOutput("v-up", "up");
+			const frenchVariable = VariableBuilder.buildLogicOutput("v-fr", "monter");
+			expect(
+				planMissingVariables(elevator, emptyScene, [upVariable], english).reused
+					.up,
+			).toBe("v-up");
+			expect(
+				planMissingVariables(elevator, emptyScene, [frenchVariable], english)
+					.reused.up,
+			).toBe("v-fr");
+		});
+
 		it("creates every point with the right zone and type when nothing exists", () => {
 			const plan = planMissingVariables(elevator, emptyScene, []);
 

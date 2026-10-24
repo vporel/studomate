@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -17,8 +19,11 @@ import {
 } from "@/templates/training/utils/training-variables";
 
 /** Same input on a NO, a `P` and a `N` contact, each latching its own output. No solution. */
-export function createLadderEdgesReadingProject(): Project {
-	const project = new Project(createRandomId(), "Lire les fronts", "");
+export function createLadderEdgesReadingProject(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("ladder-edges-reading", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		toggleSwitch("commut"),
 		pushButton("raz"),
@@ -28,26 +33,26 @@ export function createLadderEdgesReadingProject(): Project {
 	);
 	setMainSections(project, [
 		section(
-			"Réseau 1",
-			"Relevez cycle par cycle l'état de s_no pendant que commut passe de 0 à 1 puis revient à 0.",
+			t("network1Title"),
+			t("network1Description"),
 			no("commut"),
 			setCoil("s_no"),
 		),
 		section(
-			"Réseau 2",
-			"Relevez cycle par cycle l'état de s_p pendant que commut passe de 0 à 1 puis revient à 0.",
+			t("network2Title"),
+			t("network2Description"),
 			rising("commut"),
 			setCoil("s_p"),
 		),
 		section(
-			"Réseau 3",
-			"Relevez cycle par cycle l'état de s_n pendant que commut passe de 0 à 1 puis revient à 0.",
+			t("network3Title"),
+			t("network3Description"),
 			falling("commut"),
 			setCoil("s_n"),
 		),
 		section(
-			"Remise à zéro",
-			"Un appui sur raz remet les trois sorties à faux.",
+			t("resetTitle"),
+			t("resetDescription"),
 			no("raz"),
 			or([resetCoil("s_no")], [resetCoil("s_p")], [resetCoil("s_n")]),
 		),

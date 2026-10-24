@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import {
@@ -23,8 +25,9 @@ export const COUNTING_PROGRAM_NAME = "Comptage";
  * The Main runs the conveyor; the "Comptage" subprogram (a `CTU` and its lamp) exists but no
  * block calls it.
  */
-export function createLadderSubprogramsProject(): Project {
-	const project = new Project(createRandomId(), "Sous-programmes", "");
+export function createLadderSubprogramsProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-subprograms", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -33,11 +36,11 @@ export function createLadderSubprogramsProject(): Project {
 		output("convoyeur"),
 		output("voyant_lot"),
 	);
-	const counting = project.createLadder(COUNTING_PROGRAM_NAME);
+	const counting = project.createLadder(t("countingProgramName"));
 	counting.sections = [
 		section(
-			"Comptage des pièces",
-			"Le CTU compte les fronts montants de capteur_piece, remise à zéro par raz.",
+			t("countPartsTitle"),
+			t("countPartsDescription"),
 			no("capteur_piece"),
 			counter("CTU", "cpt", {
 				control: "raz",
@@ -45,16 +48,16 @@ export function createLadderSubprogramsProject(): Project {
 			}),
 		),
 		section(
-			"Voyant de lot",
-			"Allumé quand le lot est complet.",
+			t("batchIndicatorTitle"),
+			t("batchIndicatorDescription"),
 			no("cpt.Q"),
 			coil("voyant_lot"),
 		),
 	];
 	setMainSections(project, [
 		section(
-			"Marche du convoyeur",
-			"Auto-maintien à arrêt prioritaire.",
+			t("conveyorRunTitle"),
+			t("conveyorRunDescription"),
 			or([no("marche")], [no("convoyeur")]),
 			nf("arret"),
 			coil("convoyeur"),
@@ -64,16 +67,19 @@ export function createLadderSubprogramsProject(): Project {
 }
 
 /** The Main calls "Comptage" unconditionally. */
-export function createLadderSubprogramsSolution(): Project {
-	const project = createLadderSubprogramsProject();
-	project.name = "Sous-programmes : solution";
+export function createLadderSubprogramsSolution(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("ladder-subprograms", locale);
+	const project = createLadderSubprogramsProject(locale);
+	project.name = t("solutionName");
 	const counting = Object.values(project.ladders).find(
-		(ladder) => ladder.name === COUNTING_PROGRAM_NAME,
+		(ladder) => ladder.name === t("countingProgramName"),
 	)!;
 	project.main.sections.push(
 		section(
-			"Appel du comptage",
-			"Appel sans condition : le sous-programme s'exécute à chaque cycle.",
+			t("callCountingTitle"),
+			t("callCountingDescription"),
 			callProgram(counting.id),
 		),
 	);

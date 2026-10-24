@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import { createRandomId } from "@/ids";
 import { CAPACITE, createParkingVariables } from "@/templates/parking.template";
@@ -68,48 +70,55 @@ export const PARKING_SIGNALLING_SPEC: GrafcetLadderSpec = {
 };
 
 /** Parking variables (without HMI), stop button, command memories; signalling already in Ladder. */
-function createBase(name: string): Project {
+function createBase(name: string, locale: Locale): Project {
+	const t = createTemplateText("parking-ladder", locale);
 	const project = new Project(createRandomId(), name, "");
 	project.variables.push(
-		...createParkingVariables(),
+		...createParkingVariables(locale),
 		stopButton("arret"),
 		...grafcetMemories(PARKING_COMMAND_SPEC),
 		...grafcetMemories(PARKING_SIGNALLING_SPEC),
 	);
-	const signalling = project.createLadder("Signalisation");
-	signalling.sections = grafcetSections(PARKING_SIGNALLING_SPEC, [
-		{ variable: "complet", steps: ["S1"] },
-	]);
+	const signalling = project.createLadder(t("signallingProgramName"));
+	signalling.sections = grafcetSections(
+		PARKING_SIGNALLING_SPEC,
+		[{ variable: "complet", steps: ["S1"] }],
+		locale,
+	);
 	project.main.sections = [
 		section(
-			"Signalisation",
-			"GRAFCET de signalisation, fourni.",
+			t("signallingTitle"),
+			t("signallingDescription"),
 			callProgram(signalling.id),
 		),
 	];
 	return project;
 }
 
-export function createParkingLadderProject(): Project {
-	return createBase("Parking en Ladder");
+export function createParkingLadderProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("parking-ladder", locale);
+	return createBase(t("projectName"), locale);
 }
 
-export function createParkingLadderSolution(): Project {
-	const project = createBase("Parking en Ladder : solution");
+export function createParkingLadderSolution(locale: Locale = "fr"): Project {
+	const t = createTemplateText("parking-ladder", locale);
+	const project = createBase(t("solutionName"), locale);
 	setMainSections(project, [
 		...project.main.sections,
-		...grafcetSections(PARKING_COMMAND_SPEC, [
-			{ variable: "barriere", steps: ["X1", "X3"] },
-		]),
+		...grafcetSections(
+			PARKING_COMMAND_SPEC,
+			[{ variable: "barriere", steps: ["X1", "X3"] }],
+			locale,
+		),
 		section(
-			"Entrée d'un véhicule",
-			"Action sur front d'étape : une seule unité ajoutée par passage.",
+			t("vehicleEntryTitle"),
+			t("vehicleEntryDescription"),
 			rising("X1"),
 			arithmetic("places", "places", "+", "1"),
 		),
 		section(
-			"Sortie d'un véhicule",
-			"Action sur front d'étape : une seule unité retirée par passage.",
+			t("vehicleExitTitle"),
+			t("vehicleExitDescription"),
 			rising("X3"),
 			arithmetic("places", "places", "-", "1"),
 		),

@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+import createTemplateText from "@/templates/template-text";
 import Project from "@/schemas/project/project.schema";
 import Section from "@/schemas/ladder/section.schema";
 import { createRandomId } from "@/ids";
@@ -14,8 +16,9 @@ import {
 	pushButton,
 } from "@/templates/training/utils/training-variables";
 
-export function createLadderSelfHoldingProject(): Project {
-	const project = new Project(createRandomId(), "Pompe : auto-maintien", "");
+export function createLadderSelfHoldingProject(locale: Locale = "fr"): Project {
+	const t = createTemplateText("ladder-self-holding", locale);
+	const project = new Project(createRandomId(), t("projectName"), "");
 	project.variables.push(
 		pushButton("marche"),
 		pushButton("arret"),
@@ -25,19 +28,23 @@ export function createLadderSelfHoldingProject(): Project {
 }
 
 /** Self-holding pump command with stop priority. */
-export function createPumpSelfHoldingSection(): Section {
+export function createPumpSelfHoldingSection(locale: Locale = "fr"): Section {
+	const t = createTemplateText("ladder-self-holding", locale);
 	return section(
-		"Commande de la pompe",
-		"Auto-maintien à arrêt prioritaire : l'arrêt est en série, après le parallèle.",
+		t("pumpSectionTitle"),
+		t("pumpSectionDescription"),
 		or([no("marche")], [no("pompe")]),
 		nf("arret"),
 		coil("pompe"),
 	);
 }
 
-export function createLadderSelfHoldingSolution(): Project {
-	const project = createLadderSelfHoldingProject();
-	project.name = "Pompe : auto-maintien : solution";
-	setMainSections(project, [createPumpSelfHoldingSection()]);
+export function createLadderSelfHoldingSolution(
+	locale: Locale = "fr",
+): Project {
+	const t = createTemplateText("ladder-self-holding", locale);
+	const project = createLadderSelfHoldingProject(locale);
+	project.name = t("solutionName");
+	setMainSections(project, [createPumpSelfHoldingSection(locale)]);
 	return project;
 }

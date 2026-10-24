@@ -2,6 +2,7 @@ import { Dialect } from "@/expression-language/dialect.enum";
 import HybridProjectRepository from "@/persistence/repositories/hybrid.project.repository";
 import { getSceneDescriptor } from "@/3d-scenes/scene.registry";
 import { planMissingVariables } from "@/3d-scenes/scene3d-wiring";
+import { localizeMnemonic } from "@/templates/localize-project";
 import ProjectFieldSetCommand from "@/schemas/project/commands/project-field-set.command";
 import ProjectDialectSetCommand from "@/schemas/project/commands/project-dialect-set.command";
 import trackEvent from "@/ui/services/analytics";
@@ -262,7 +263,13 @@ export const createProjectStore = () => {
 					scene.sceneVersion,
 				);
 				if (!descriptor) return;
-				const plan = planMissingVariables(descriptor, scene, project.variables);
+				const locale = project.dialect === Dialect.EN ? "en" : "fr";
+				const plan = planMissingVariables(
+					descriptor,
+					scene,
+					project.variables,
+					(mnemonic) => localizeMnemonic(mnemonic, locale),
+				);
 				const { commands, variablesToAdd } =
 					VariablesCommandsFactory.onAddVariable(
 						project,

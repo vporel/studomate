@@ -1,0 +1,17 @@
+{
+	"statement": "## Mise à l'échelle\n\n`niveau` n'est plus une entrée : c'est une mémoire entière (INT) à calculer à partir de `brut` (curseur de 0 à 27648). Le Main contient le corrigé de la cuve. Variables intermédiaires fournies : `calcul_int` (INT), `calcul_dint` (DINT), `calcul_real` (REAL).\n\n### Travail demandé\n\n1. Calculer `calcul_int := brut * 100` : pour `brut` = 13824, constater le rebouclage (6144 au lieu de 1382400). Puis `calcul_int := calcul_int / 27648` et `niveau := calcul_int`.\n2. Essayer de diviser d'abord (`calcul_int := brut / 27648`, puis `* 100`) : constater la troncature.\n3. Corriger en calculant dans `calcul_real` (copie de `brut`, `* 100`, `/ 27648`) puis en convertissant vers `niveau`.\n4. Variante : le même calcul dans `calcul_dint`.\n\nRésultats attendus pour `niveau` : `brut` = 0, 13824 et 27648 doivent donner 0, 50 et 100.",
+	"texts": {
+		"projectName": "Mise à l'échelle",
+		"solutionName": "Mise à l'échelle : solution",
+		"startCountTitle": "Compteur de démarrages",
+		"startCountDescription": "Un contact P n'incrémente qu'une fois par démarrage.",
+		"copyTitle": "Copie de la valeur brute",
+		"copyDescription": "L'élargissement INT vers REAL est implicite.",
+		"multiplyTitle": "Multiplication",
+		"multiplyDescription": "Calcul en REAL : pas de dépassement.",
+		"divideTitle": "Division",
+		"divideDescription": "Division en REAL : pas de troncature.",
+		"backToIntTitle": "Retour en INT",
+		"backToIntDescription": "Le rétrécissement doit être explicite."
+	}
+}

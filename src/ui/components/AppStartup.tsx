@@ -8,6 +8,7 @@ import { useShallow } from "zustand/shallow";
 import ProfilePromptModal from "./profile/ProfilePromptModal";
 import { useProjectStore } from "./projects/ProjectContext";
 import ExampleCard, { type ExampleVariant } from "./startup/ExampleCard";
+import ContinueTraining from "./startup/ContinueTraining";
 import FeaturedExample from "./startup/FeaturedExample";
 import RecentProjects from "./startup/RecentProjects";
 import StartupAside from "./startup/StartupAside";
@@ -18,6 +19,7 @@ import {
 	type StartupExample,
 } from "./startup/startup-examples";
 import useRecentProjects from "./startup/useRecentProjects";
+import useTrainingResume from "./startup/useTrainingResume";
 
 const RECENT_PROJECTS_LIMIT = 5;
 const EXAMPLE_GRID_SIZE = 3;
@@ -36,6 +38,7 @@ const AppStartup = () => {
 		);
 	const recent = useRecentProjects(RECENT_PROJECTS_LIMIT);
 	const returning = !recent.loading && recent.returning;
+	const trainingResume = useTrainingResume();
 
 	const openExample = (example: StartupExample, variant: ExampleVariant) =>
 		void lifecycleManager.newProjectFromTemplate(example.id, variant);
@@ -130,6 +133,8 @@ const AppStartup = () => {
 									/>
 								)
 							)}
+
+							{trainingResume && <ContinueTraining resume={trainingResume} />}
 
 							<Box component="section" mt={5}>
 								<Box

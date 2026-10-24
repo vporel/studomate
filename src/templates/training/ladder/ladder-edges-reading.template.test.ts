@@ -1,3 +1,6 @@
+import * as templates from "./ladder-edges-reading.template";
+import type { Locale } from "@/i18n/config";
+import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import { createLadderEdgesReadingProject } from "./ladder-edges-reading.template";
 
@@ -60,4 +63,34 @@ describe("ladder-edges-reading.template", () => {
 		expect(scenario.get("s_n")).toBe(false);
 		scenario.stop();
 	});
+});
+
+describe("ladder-edges-reading.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[
+			templates.createLadderEdgesReadingProject,
+			"Lire les fronts",
+			"Reading edges",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

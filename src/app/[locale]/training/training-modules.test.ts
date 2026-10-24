@@ -5,7 +5,7 @@ import {
 	moduleStepPathname,
 	TRAINING_MODULES,
 } from "./training-modules";
-import { TRAINING_MODULE_IDS } from "./training-module-ids";
+import { TRAINING_MODULE_IDS } from "@/training/module-ids";
 
 type StepMetadataMessages = Record<
 	string,

@@ -89,4 +89,30 @@ describe("and-divergence.template", () => {
 			expect(jae.data.branchesOrder).toHaveLength(2);
 		});
 	});
+
+	describe("langue", () => {
+		it("garde les noms français par défaut et en fr", () => {
+			for (const project of [
+				createAndDivergenceSolution(),
+				createAndDivergenceSolution("fr"),
+			]) {
+				expect(project.name).toBe("Divergence en ET : solution");
+				expect(Object.values(project.grafcets).map((g) => g.name)).toEqual([
+					"Divergence en ET",
+				]);
+			}
+			expect(createAndDivergenceProject().name).toBe("Divergence en ET");
+		});
+
+		it("nomme le projet et le programme en anglais, sans accent", () => {
+			const project = createAndDivergenceSolution("en");
+			const names = [
+				project.name,
+				...Object.values(project.grafcets).map((g) => g.name),
+			];
+			expect(names).toEqual(["AND divergence: solution", "AND divergence"]);
+			expect(createAndDivergenceProject("en").name).toBe("AND divergence");
+			expect(names.join("")).not.toMatch(/[À-ÿ]/);
+		});
+	});
 });

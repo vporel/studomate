@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/config";
 import Section from "@/schemas/ladder/section.schema";
 import Variable from "@/schemas/variable/variable.schema";
 import {
@@ -10,7 +11,11 @@ import {
 	section,
 	setCoil,
 } from "@/templates/training/utils/ladder-dsl";
+import createTemplateText from "@/templates/template-text";
 import { memory } from "@/templates/training/utils/training-variables";
+
+const grafcetLadderText = (locale: Locale) =>
+	createTemplateText("grafcet-ladder", locale);
 
 export type GrafcetTransitionSpec = {
 	/** Name of the memory holding the crossing condition (`Tn = Xn ET Rn`). */
@@ -53,25 +58,29 @@ export function grafcetInitMemory(spec: GrafcetLadderSpec): Variable {
 }
 
 /** Initial-step activation followed by the crossing conditions of all transitions. */
-export function grafcetConditionSections(spec: GrafcetLadderSpec): Section[] {
+export function grafcetConditionSections(
+	spec: GrafcetLadderSpec,
+	locale: Locale = "fr",
+): Section[] {
+	const t = grafcetLadderText(locale);
 	const initMemory = spec.initMemory ?? DEFAULT_INIT_MEMORY;
 	return [
 		section(
-			"Activation de l'étape initiale",
-			"Au premier cycle, la mémoire d'initialisation est fausse : les étapes initiales s'activent.",
+			t("initialStepTitle"),
+			t("initialStepDescription"),
 			nf(initMemory),
 			...inParallel(spec.initial.map((step) => setCoil(step))),
 		),
 		section(
-			"Verrouillage de l'initialisation",
-			"La mémoire d'initialisation se verrouille : l'activation n'a lieu qu'une fois.",
+			t("initLatchTitle"),
+			t("initLatchDescription"),
 			nf(initMemory),
 			setCoil(initMemory),
 		),
 		...spec.transitions.map((transition) =>
 			section(
-				`Condition de franchissement ${transition.name}`,
-				"Toutes les conditions sont calculées avant toute évolution (règle 4).",
+				t("crossingTitle", { name: transition.name }),
+				t("crossingDescription"),
 				...transition.from.map((step) => no(step)),
 				...transition.receptivity,
 				coil(transition.name),
@@ -81,20 +90,24 @@ export function grafcetConditionSections(spec: GrafcetLadderSpec): Section[] {
 }
 
 /** All the resets of all transitions, then all the sets, so that an activation wins over a deactivation. */
-export function grafcetEvolutionSections(spec: GrafcetLadderSpec): Section[] {
+export function grafcetEvolutionSections(
+	spec: GrafcetLadderSpec,
+	locale: Locale = "fr",
+): Section[] {
+	const t = grafcetLadderText(locale);
 	return [
 		...spec.transitions.map((transition) =>
 			section(
-				`Désactivation par ${transition.name}`,
-				"Les étapes amont de la transition franchie se désactivent.",
+				t("deactivationTitle", { name: transition.name }),
+				t("deactivationDescription"),
 				no(transition.name),
 				...inParallel(transition.from.map((step) => resetCoil(step))),
 			),
 		),
 		...spec.transitions.map((transition) =>
 			section(
-				`Activation par ${transition.name}`,
-				"Les étapes aval de la transition franchie s'activent : l'activation l'emporte (règle 5).",
+				t("activationTitle", { name: transition.name }),
+				t("activationDescription"),
 				no(transition.name),
 				...inParallel(transition.to.map((step) => setCoil(step))),
 			),
@@ -103,18 +116,22 @@ export function grafcetEvolutionSections(spec: GrafcetLadderSpec): Section[] {
 }
 
 /** Clears every step, then reactivates the initial steps, with priority over the normal evolution. */
-export function grafcetResetSections(spec: GrafcetLadderSpec): Section[] {
+export function grafcetResetSections(
+	spec: GrafcetLadderSpec,
+	locale: Locale = "fr",
+): Section[] {
 	if (!spec.resetCondition) return [];
+	const t = grafcetLadderText(locale);
 	return [
 		section(
-			"Réinitialisation : désactivation",
-			"Toutes les étapes sont désactivées.",
+			t("resetDeactivationTitle"),
+			t("resetDeactivationDescription"),
 			...spec.resetCondition,
 			...inParallel(spec.steps.map((step) => resetCoil(step))),
 		),
 		section(
-			"Réinitialisation : étape initiale",
-			"Les étapes initiales sont réactivées.",
+			t("resetInitialTitle"),
+			t("resetInitialDescription"),
 			...spec.resetCondition,
 			...inParallel(spec.initial.map((step) => setCoil(step))),
 		),
@@ -122,10 +139,15 @@ export function grafcetResetSections(spec: GrafcetLadderSpec): Section[] {
 }
 
 /** Continuous action: the output is true while any of its steps is active. */
-export function grafcetOutputSection(output: string, steps: string[]): Section {
+export function grafcetOutputSection(
+	output: string,
+	steps: string[],
+	locale: Locale = "fr",
+): Section {
+	const t = grafcetLadderText(locale);
 	return section(
-		`Sortie ${output}`,
-		"Action continue : vraie tant qu'une des étapes qui la commandent est active.",
+		t("outputTitle", { output }),
+		t("outputDescription"),
 		...inParallel(steps.map((step) => no(step))),
 		coil(output),
 	);
@@ -135,13 +157,14 @@ export function grafcetOutputSection(output: string, steps: string[]): Section {
 export function grafcetSections(
 	spec: GrafcetLadderSpec,
 	outputs: { variable: string; steps: string[] }[] = [],
+	locale: Locale = "fr",
 ): Section[] {
 	return [
-		...grafcetConditionSections(spec),
-		...grafcetEvolutionSections(spec),
-		...grafcetResetSections(spec),
+		...grafcetConditionSections(spec, locale),
+		...grafcetEvolutionSections(spec, locale),
+		...grafcetResetSections(spec, locale),
 		...outputs.map(({ variable, steps }) =>
-			grafcetOutputSection(variable, steps),
+			grafcetOutputSection(variable, steps, locale),
 		),
 	];
 }

@@ -121,7 +121,17 @@ describe("ModuleStepper", () => {
 		);
 		expect(solutionLink).toHaveAttribute(
 			"href",
-			expect.stringContaining("template=linear-sequence&template-mode=solution"),
+			expect.stringContaining(
+				"template=linear-sequence&template-mode=solution",
+			),
+		);
+		expect(exerciseLink).toHaveAttribute(
+			"href",
+			expect.stringContaining("template-locale=fr"),
+		);
+		expect(solutionLink).toHaveAttribute(
+			"href",
+			expect.stringContaining("template-locale=fr"),
 		);
 		expect(exerciseLink).toHaveAttribute("target", "_blank");
 		expect(solutionLink).toHaveAttribute("target", "_blank");
@@ -155,13 +165,19 @@ describe("ModuleStepper", () => {
 			"href",
 			expect.stringContaining("template=traffic-light&template-mode=solution"),
 		);
-		expect(screen.queryByRole("link", { name: "Corrigé" })).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("link", { name: "Corrigé" }),
+		).not.toBeInTheDocument();
 	});
 
 	it("n'affiche qu'un bouton quand l'étape ne propose pas de corrigé", () => {
 		setup("#step-s3");
-		expect(screen.getByRole("link", { name: "Ouvrir l'exercice" })).toBeInTheDocument();
-		expect(screen.queryByRole("link", { name: "Corrigé" })).not.toBeInTheDocument();
+		expect(
+			screen.getByRole("link", { name: "Ouvrir l'exercice" }),
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole("link", { name: "Corrigé" }),
+		).not.toBeInTheDocument();
 	});
 
 	it("ignore une ancre invalide et reste sur la première étape", async () => {
@@ -287,10 +303,9 @@ describe("ModuleStepper", () => {
 				"href",
 				"/formations/a1",
 			);
-			expect(screen.getByRole("link", { name: /étape trois/i })).toHaveAttribute(
-				"href",
-				"/formations/a1/s3",
-			);
+			expect(
+				screen.getByRole("link", { name: /étape trois/i }),
+			).toHaveAttribute("href", "/formations/a1/s3");
 		});
 
 		it("préfixe les liens du sommaire avec la langue anglaise", () => {
@@ -315,10 +330,9 @@ describe("ModuleStepper", () => {
 			expect(
 				screen.getByRole("link", { name: /étape deux/i }),
 			).not.toHaveAttribute("aria-disabled");
-			expect(screen.getByRole("link", { name: /étape quatre/i })).toHaveAttribute(
-				"aria-disabled",
-				"true",
-			);
+			expect(
+				screen.getByRole("link", { name: /étape quatre/i }),
+			).toHaveAttribute("aria-disabled", "true");
 		});
 
 		it("ne remplace pas l'étape de l'URL par la progression sauvegardée", async () => {
@@ -388,7 +402,12 @@ describe("ModuleStepper", () => {
 			setup();
 
 			expect(await screen.findByText("Corps trois")).toBeInTheDocument();
-			expect(mockGetStepId).toHaveBeenCalledWith("a1", ["s1", "s2", "s3", "s4"]);
+			expect(mockGetStepId).toHaveBeenCalledWith("a1", [
+				"s1",
+				"s2",
+				"s3",
+				"s4",
+			]);
 		});
 
 		it("reste sur la première étape si l'étape sauvegardée n'existe plus dans le module", async () => {

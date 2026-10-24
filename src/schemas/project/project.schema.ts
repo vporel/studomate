@@ -386,6 +386,58 @@ export default class Project {
 		this.touch();
 	}
 
+	/**
+	 * Rewrites every reference to the renamed mnemonics (`{ from: to }`) in all the grafcets,
+	 * ladders and HMI pages. The renames apply simultaneously: swapping two names is safe.
+	 */
+	renameMnemonicReferences(renames: Record<string, string>): void {
+		if (Object.keys(renames).length === 0) return;
+		Object.values(this.grafcets).forEach((grafcet) => {
+			grafcet.renameIdentifiersInExpressions(renames, this.dialect);
+		});
+		Object.values(this.ladders).forEach((ladder) => {
+			ladder.renameVariableReferences(renames);
+		});
+		Object.values(this.hmiPages).forEach((page) => {
+			page.renameVariableReferences(renames);
+		});
+	}
+
+	/**
+	 * Renames the variables whose mnemonic is a key of `renames` and every reference to them.
+	 * Mnemonics absent from the project are ignored. Throws, leaving the project untouched,
+	 * if the renames would give two variables the same mnemonic.
+	 */
+	renameMnemonics(renames: Record<string, string>): void {
+		const applicable: Record<string, string> = {};
+		for (const variable of this.variables) {
+			const to = renames[variable.mnemonic];
+			if (to !== undefined && to !== variable.mnemonic) {
+				applicable[variable.mnemonic] = to;
+			}
+		}
+		if (Object.keys(applicable).length === 0) return;
+
+		const finalMnemonics = this.variables.map(
+			(variable) => applicable[variable.mnemonic] ?? variable.mnemonic,
+		);
+		const duplicate = finalMnemonics.find(
+			(mnemonic, i) => finalMnemonics.indexOf(mnemonic) !== i,
+		);
+		if (duplicate !== undefined) {
+			throw new Error(`Renaming would duplicate the mnemonic "${duplicate}"`);
+		}
+
+		this.variables = this.variables.map((variable) => {
+			const to = applicable[variable.mnemonic];
+			return to === undefined
+				? variable
+				: variable.update({ mnemonic: to }, this.dialect);
+		});
+		this.renameMnemonicReferences(applicable);
+		this.touch();
+	}
+
 	touch() {
 		this.lastModificationDate = new Date();
 	}

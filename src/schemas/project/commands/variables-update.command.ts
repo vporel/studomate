@@ -53,16 +53,6 @@ export default class VariablesUpdateCommand extends AbstractProjectCommand<
 			if (!from || !to || from === to) continue;
 			renames[from] = to;
 		}
-		if (Object.keys(renames).length === 0) return;
-
-		Object.values(project.grafcets).forEach((grafcet) => {
-			grafcet.renameIdentifiersInExpressions(renames, project.dialect);
-		});
-		Object.values(project.ladders).forEach((ladder) => {
-			ladder.renameVariableReferences(renames);
-		});
-		Object.values(project.hmiPages).forEach((page) => {
-			page.renameVariableReferences(renames);
-		});
+		project.renameMnemonicReferences(renames);
 	}
 }

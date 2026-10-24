@@ -1,0 +1,17 @@
+{
+	"statement": "## Scaling\n\n`level` is no longer an input: it is an integer memory (INT) to compute from `raw` (slider from 0 to 27648). The Main contains the tank solution. Intermediate variables provided: `calc_int` (INT), `calc_dint` (DINT), `calc_real` (REAL).\n\n### Task\n\n1. Compute `calc_int := raw * 100`: for `raw` = 13824, observe the wraparound (6144 instead of 1382400). Then `calc_int := calc_int / 27648` and `level := calc_int`.\n2. Try dividing first (`calc_int := raw / 27648`, then `* 100`): observe the truncation.\n3. Fix it by computing in `calc_real` (copy of `raw`, `* 100`, `/ 27648`) and then converting to `level`.\n4. Variant: the same calculation in `calc_dint`.\n\nExpected results for `level`: `raw` = 0, 13824 and 27648 must give 0, 50 and 100.",
+	"texts": {
+		"projectName": "Scaling",
+		"solutionName": "Scaling: solution",
+		"startCountTitle": "Start counter",
+		"startCountDescription": "A P contact increments only once per start.",
+		"copyTitle": "Copy of the raw value",
+		"copyDescription": "The widening from INT to REAL is implicit.",
+		"multiplyTitle": "Multiplication",
+		"multiplyDescription": "REAL calculation: no overflow.",
+		"divideTitle": "Division",
+		"divideDescription": "REAL division: no truncation.",
+		"backToIntTitle": "Back to INT",
+		"backToIntDescription": "The narrowing must be explicit."
+	}
+}

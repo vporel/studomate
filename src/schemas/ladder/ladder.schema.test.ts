@@ -1,6 +1,11 @@
 import Connection from "./connection.schema";
 import Ladder from "./ladder.schema";
 import { createCoilElement, createContactElement } from "./element.schema";
+import {
+	createArithmeticBlockElement,
+	createCompareBlockElement,
+} from "./block.schema";
+import { createTimerBlockElement } from "./function-blocks/timer.schema";
 import Section from "./section.schema";
 
 describe("Ladder", () => {
@@ -322,6 +327,46 @@ describe("Ladder", () => {
 			expect(coil.data.variable).toBe("pompe");
 		});
 
+		it("réécrit les pinoches de variable des blocs sans toucher aux littéraux ni aux autres params", () => {
+			const ladder = new Ladder("l1", "Mon ladder");
+			const [section] = ladder.sections;
+			const arithmetic = createArithmeticBlockElement(0, 0, {
+				in1: "places",
+				in2: "1",
+				out: "places",
+				operator: "+",
+			});
+			const compare = createCompareBlockElement(0, 2, {
+				in1: "niveau",
+				in2: "places",
+				operator: "<",
+			});
+			const timer = createTimerBlockElement(
+				{ name: "places", timerType: "TON", pt: "niveau", et: "T#3s" },
+				4,
+				0,
+			);
+			ladder.addElements(section.id, [arithmetic, compare, timer]);
+
+			ladder.renameVariableReferences({ places: "spaces", niveau: "level" });
+
+			expect(arithmetic.data.params).toEqual({
+				in1: "spaces",
+				in2: "1",
+				out: "spaces",
+				operator: "+",
+			});
+			expect(compare.data.params).toMatchObject({
+				in1: "level",
+				in2: "spaces",
+			});
+			expect(timer.data.params).toMatchObject({
+				name: "places",
+				pt: "level",
+				et: "T#3s",
+			});
+		});
+
 		it("ne touche pas les éléments référençant une autre variable", () => {
 			const ladder = new Ladder("l1", "Mon ladder");
 			const [section] = ladder.sections;
@@ -353,9 +398,7 @@ describe("Ladder", () => {
 			const coil = createCoilElement("moteur", "normal", 0, 1);
 			ladder.addElements(section.id, [contact, coil]);
 
-			expect(() =>
-				ladder.translateExpressionsKeywords(),
-			).not.toThrow();
+			expect(() => ladder.translateExpressionsKeywords()).not.toThrow();
 
 			expect(contact.data.variable).toBe("moteur");
 			expect(coil.data.variable).toBe("moteur");

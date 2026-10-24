@@ -12,7 +12,7 @@ import {
 	moduleStepPathname,
 	TRAINING_MODULES,
 } from "./training-modules";
-import type { TrainingModuleId } from "./training-module-ids";
+import type { TrainingModuleId } from "@/training/module-ids";
 import type { TrainingTranslator } from "./training-translator";
 
 type ModuleParams = { params: Promise<{ locale: string }> };

@@ -55,6 +55,7 @@ src/bridge/             mappers between the domain/analysis and the UI (exceptio
 src/lib/                neutral utilities (array, object, heartbeat), no domain dependency
 src/persistence/        migrations (project shape + localStorage layout) + repositories (localStorage, Supabase cloud, hybrid) + share tokens
 src/ui/                 Next.js (App Router) + zustand stores + MUI components
+src/training/            training module and step identifiers (course order), neutral root module
 src/app-info.ts         app identity (name, tagline...), neutral root module
 src/user-profile/       user profile model (database-side schema, not part of the project schema), neutral root module
 ```

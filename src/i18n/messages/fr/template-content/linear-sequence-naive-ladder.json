@@ -1,0 +1,11 @@
+{
+	"statement": "## Séquence linéaire : méthode des manuels\n\nGRAFCET : E0 (initiale) → `dcy` → E1 (`sortie1`) → `fin1` → E2 (`sortie2`) → `fin2` → E3 → VRAI → E0. Le Main l'implante avec un auto-maintien par étape : chaque étape est activée par l'étape précédente et désactivée par l'étape suivante.\n\nEntrées : `dcy` (bouton poussoir), `fin1` et `fin2` (fins de course). Sorties : `sortie1` et `sortie2`. Mémoires d'étape : `X0` à `X3`.\n\nLe GRAFCET est dessiné dans le projet (programme « Séquence » de l'explorateur) : consultez-le pour comparer avec le Main. Il est exclu de l'exécution, seul le Ladder est simulé.\n\n### Travail demandé\n\n1. Lancer la simulation en pas à pas (« Avancer d'un cycle ») et ajouter `X0` à `X3`, `dcy`, `fin1`, `sortie1` et `sortie2` à la table de visualisation.\n2. Activer `dcy`, puis `fin1` : combien d'étapes sont actives après le franchissement, et pendant combien de cycles ?\n3. Revenir à l'étape `X0`, puis rendre `dcy` et `fin1` vrais en même temps : que se passe-t-il ?\n4. Expliquer ce qui se passe. Pas de programme à écrire.",
+	"texts": {
+		"projectName": "Séquence linéaire : méthode des manuels",
+		"stepTitle": "Étape {step}",
+		"stepDescription": "Auto-maintien : activée par l'étape précédente, désactivée par l'étape suivante.",
+		"initialStepDescription": "Étape initiale : activée au premier cycle ou par la fin de séquence.",
+		"output1Title": "Sortie sortie1",
+		"output2Title": "Sortie sortie2"
+	}
+}

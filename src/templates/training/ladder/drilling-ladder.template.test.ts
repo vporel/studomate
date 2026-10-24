@@ -1,3 +1,6 @@
+import * as templates from "./drilling-ladder.template";
+import type { Locale } from "@/i18n/config";
+import type Project from "@/schemas/project/project.schema";
 import PlcScenario from "@tests/utils/plc-scenario";
 import {
 	createDrillingLadderProject,
@@ -66,4 +69,39 @@ describe("drilling-ladder.template", () => {
 		expect(scenario.get("defaut")).toBe(false);
 		scenario.stop();
 	});
+});
+
+describe("drilling-ladder.template (langues)", () => {
+	const builders: [(locale?: Locale) => Project, string, string][] = [
+		[
+			templates.createDrillingLadderProject,
+			"Poste de perçage en Ladder",
+			"Drilling station in Ladder",
+		],
+		[
+			templates.createDrillingLadderSolution,
+			"Poste de perçage en Ladder : solution",
+			"Drilling station in Ladder: solution",
+		],
+	];
+
+	it.each(builders)("garde le nom français en fr (%#)", (build, fr) => {
+		expect(build().name).toBe(fr);
+		expect(build("fr").name).toBe(fr);
+	});
+
+	it.each(builders)(
+		"nomme le projet en anglais, sans accent (%#)",
+		(build, _fr, en) => {
+			const project = build("en");
+			expect(project.name).toBe(en);
+			const titles = Object.values(project.ladders)
+				.flatMap((ladder) => [
+					ladder.name,
+					...ladder.sections.map((s) => s.title),
+				])
+				.join(" ");
+			expect(titles).not.toMatch(/[À-ÿ]/);
+		},
+	);
 });

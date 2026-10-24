@@ -1,0 +1,27 @@
+{
+	"statement": "## Star-delta start\n\nA large three-phase motor starts in star (reduced voltage) then switches to delta (full voltage). Each connection is closed by a contactor: a line contactor, a star contactor and a delta contactor.\n\n| Variable | Role | Type |\n| --- | --- | --- |\n| `start` | starts the motor | push button (true while pressed) |\n| `stop` | stops the motor | push button (true while pressed) |\n| `km_line`, `km_star`, `km_delta` | line, star and delta contactors | outputs |\n| `fan` | motor cooling | output |\n| `blink_sw` | blinker enable (optional) | switch |\n| `indicator` | blinker indicator (optional) | output |\n\n### Specification\n\n1. After a press on `start`, the motor starts in star for 5 s (`km_line` and `km_star`), then switches to delta (`km_line` and `km_delta`).\n2. `stop` stops the motor at any time (stop priority).\n3. Star and delta are never closed at the same time: program the interlock (an NC contact of the other contactor in each network). On a real machine it is also wired, here the program must guarantee it.\n4. The fan stays active for 10 s after the motor stops (after `km_line` drops).\n5. Optional: a dead time (for example 200 ms) between star and delta; an adjustable blinker (1 s off, 1 s on) made of two crossed `TON`s, enabled by `blink_sw`.",
+	"texts": {
+		"projectName": "Star-delta start",
+		"solutionName": "Star-delta start: solution",
+		"starTimerName": "t_star",
+		"fanTimerName": "t_fan",
+		"lowPhaseTimerName": "t_low_phase",
+		"highPhaseTimerName": "t_high_phase",
+		"lineContactorTitle": "Line contactor",
+		"lineContactorDescription": "Self-holding with stop priority.",
+		"startTimeTitle": "Start time",
+		"startTimeDescription": "The TON measures the time spent in star.",
+		"starTitle": "Star",
+		"starDescription": "Star during start-up, interlocked by the delta.",
+		"deltaTitle": "Delta",
+		"deltaDescription": "Delta after the delay, interlocked by the star.",
+		"fanTitle": "Fan",
+		"fanDescription": "The TOF extends the ventilation by 10 s after the motor stops.",
+		"blinkOffTitle": "Blinker: off phase",
+		"blinkOffDescription": "First TON, armed as long as the second one has not finished.",
+		"blinkOnTitle": "Blinker: on phase",
+		"blinkOnDescription": "Second TON, armed during the on phase.",
+		"indicatorTitle": "Indicator",
+		"indicatorDescription": "The indicator follows the on phase."
+	}
+}

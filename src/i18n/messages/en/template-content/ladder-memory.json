@@ -1,0 +1,13 @@
+{
+	"statement": "## Pump: stored fault\n\nThe Main contains the pump's self-holding, already written: the task is to add the fault networks. New inputs: `temperature_ok` (sensor wired normally closed, a maintained switch: 1 at rest, 0 on overheating), `ack` (push button). New output: `fault_indicator`.\n\n### Task\n\n1. Overheating (`temperature_ok` goes to 0) stops the pump and lights `fault_indicator`.\n2. The indicator stays on even if the temperature returns to normal (stored fault).\n3. A press on `ack` turns the indicator off, once the fault has disappeared.\n4. After acknowledgement, the pump does not restart by itself: a new press on `start` is needed.\n\nTest scenario: normal temperature and press on `start` (pump at 1), overheating (pump at 0, indicator at 1), back to normal (indicator still at 1), press on `ack` (indicator at 0, pump at 0), press on `start` (pump at 1).",
+	"texts": {
+		"projectName": "Pump: stored fault",
+		"solutionName": "Pump: stored fault: solution",
+		"faultMemoryTitle": "Fault storage",
+		"faultMemoryDescription": "The temperature sensor is wired normally closed: an NC contact detects overheating.",
+		"ackTitle": "Acknowledgement",
+		"ackDescription": "Acknowledgement only has an effect if the fault has disappeared.",
+		"pumpTitle": "Pump control",
+		"pumpDescription": "The pump is blocked while the fault is stored and only restarts with a new press on Start."
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"statement": "## Pump: self-holding\n\nInputs: `start` and `stop` (two normally open (NO) push buttons: 0 at rest, 1 while pressed). Output: `pump`.\n\n### Task\n\n1. Pressing `start` starts the pump, which keeps running after the button is released.\n2. Pressing `stop` stops it.\n3. If both are pressed at the same time, the pump stays off (stop priority).",
+	"texts": {
+		"projectName": "Pump: self-holding",
+		"solutionName": "Pump: self-holding: solution",
+		"pumpSectionTitle": "Pump control",
+		"pumpSectionDescription": "Self-holding with stop priority: the stop contact is in series, after the parallel branch."
+	}
+}
